@@ -1,0 +1,74 @@
+name: Pubblica
+
+# Per ora si lancia a mano (Actions → Pubblica → Run workflow), non a ogni push.
+#
+# Il repository è privato, e GitHub Pages su un repository privato chiede un
+# piano a pagamento: con il push automatico, su un account gratuito ogni push
+# su main darebbe una X rossa senza che niente sia rotto. Quando si decide dove
+# pubblicare — Pages con il repository pubblico o con un piano a pagamento, o
+# un altro servizio — si rimettono qui le tre righe del push:
+#
+#   push:
+#     branches:
+#       - main
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  # Preteso da `deploy-pages` dalla v4 in poi: senza, il job di pubblicazione
+  # non riesce a leggere l'artefatto che il job di compilazione ha caricato.
+  actions: read
+
+# Una pubblicazione per volta, senza interrompere quella in corso.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Compila
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Il controllo dei tipi è dentro `npm run build` (tsc -b && vite build):
+      # se non compila, il push è rosso.
+      #
+      # I due segreti sono facoltativi: senza, l'app parte in modalità
+      # prova con un orario inventato, e il client Supabase non finisce nemmeno
+      # nel pacchetto. Si impostano in Settings → Secrets → Actions quando la
+      # palestra ha il suo database (vedi supabase/LEGGIMI.md).
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    name: Pubblica
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pubblicazione.outputs.page_url }}
+    steps:
+      # Niente `configure-pages`: provato due volte, da repository privato e da
+      # pubblico, risponde sempre «Resource not accessible by integration». Il
+      # token del workflow non può creare il sito Pages, e non è un permesso
+      # concedibile da `permissions:`. Accenderlo resta un passaggio a mano in
+      # Settings › Pages › Source: GitHub Actions, una volta sola.
+      - id: pubblicazione
+        uses: actions/deploy-pages@v5
