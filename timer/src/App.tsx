@@ -22,6 +22,7 @@ import { pulisciLink, workoutDaLink } from './lib/condivisione'
 import { type Interrotto, leggiInterrotto, scordaInterrotto } from './lib/ripresa'
 import { Back, Clessidra, Crono, Gear, TimerIcon } from './components/Icons'
 import { Logo, Wordmark } from './components/Logo'
+import { completaAccesso } from './lib/spotify'
 import { PalestraSezione } from './components/PalestraSezione'
 import { type Accesso, accessoRicordato, chiSei, eUnId, haUnServer, nuovoId, sessione } from './lib/palestra'
 import {
@@ -141,6 +142,14 @@ export default function App() {
       window.removeEventListener('pointerdown', sblocca)
       window.removeEventListener('keydown', sblocca)
     }
+  }, [])
+
+  // Di ritorno dall'accesso a Spotify: si riapre dove si era, nelle
+  // impostazioni, così si vede subito se il collegamento è andato.
+  useEffect(() => {
+    void completaAccesso().then((esito) => {
+      if (esito) setTab('impostazioni')
+    })
   }, [])
 
   // Un allenamento può arrivare dentro l'indirizzo, da un QR inquadrato sul

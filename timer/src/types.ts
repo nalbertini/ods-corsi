@@ -100,6 +100,12 @@ export interface Settings {
   volume: number
   keepAwake: boolean
   bigScreen: boolean
+  /** Con Spotify collegato: la musica parte e si ferma insieme al timer. */
+  musicaSegue: boolean
+  /** Con Spotify collegato: nel recupero la musica scende a `musicaRecupero`. */
+  musicaAbbassa: boolean
+  /** Il volume di Spotify nel recupero, 0–100. */
+  musicaRecupero: number
 }
 
 export interface HistoryEntry {

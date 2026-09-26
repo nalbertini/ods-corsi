@@ -21,6 +21,11 @@ export const DEFAULT_SETTINGS: Settings = {
   announceNext: true,
   keepAwake: true,
   bigScreen: false,
+  // Spente finché non le accende qualcuno: comandare la musica della sala è
+  // una scelta di chi la sala la tiene, non un effetto collaterale del timer.
+  musicaSegue: false,
+  musicaAbbassa: false,
+  musicaRecupero: 30,
 }
 
 /**
