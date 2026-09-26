@@ -230,14 +230,13 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
     [aperta?.id, aperta?.corsoId, aperta?.corso],
   )
 
-  // Il timer che la lezione aperta fa partire per primo (lo dice il timer, che
-  // ha la libreria), e la richiesta di farlo partire da qui.
+  // I timer che la lezione aperta ha pronti (li dice il timer, che ha la
+  // libreria), e la richiesta di farne partire uno da qui.
   const [pronto, setPronto] = useState<TimerPronto | null>(null)
   const [avvia, setAvvia] = useState<{ id: string; volta: number } | null>(null)
-  const avviaPronto = () => {
-    if (!pronto) return
+  const avviaPronto = (id: string) => {
     setScheda('timer')
-    setAvvia((a) => ({ id: pronto.id, volta: (a?.volta ?? 0) + 1 }))
+    setAvvia((a) => ({ id, volta: (a?.volta ?? 0) + 1 }))
   }
 
   // --- La musica --------------------------------------------------------------

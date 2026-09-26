@@ -14,9 +14,9 @@ const ETICHETTA = { finita: 'FINITA', aperta: 'SI SEGNA ORA', dopo: 'PIÙ TARDI'
  * A sinistra la lezione in cui ci si segna adesso, con un tasto grande quanto
  * una mano; a destra la giornata della sala. Chi entra deve capire da lontano
  * se è il suo turno. Il timer e la musica stanno nella barra in basso, che è
- * del tablet e non di questa schermata; sotto la lezione aperta c'è però il
- * suo timer, pronto con AVVIA: quello scelto per la lezione in I MIEI TIMER,
- * o se non c'è il primo del corso.
+ * del tablet e non di questa schermata; sotto la lezione aperta ci sono però i
+ * suoi timer, ognuno pronto con AVVIA: quelli scelti per la lezione in I MIEI
+ * TIMER, o se non ce ne sono quelli del corso.
  */
 export function TabletHome({
   sala,
@@ -37,9 +37,9 @@ export function TabletHome({
   onSegna: (l: LezioneSala) => void
   onRecupero: () => void
   onPin: () => void
-  /** Il timer della lezione aperta: `pronto` nullo se né la lezione né il corso ne hanno uno. */
+  /** I timer della lezione aperta: `pronto` nullo se né la lezione né il corso ne hanno. */
   timer?: { lezioneId: string; pronto: TimerPronto | null; inCorso: boolean } | null
-  onAvviaTimer?: () => void
+  onAvviaTimer?: (id: string) => void
   onVaiTimer?: () => void
 }) {
   const oggi = chiaveGiorno(adesso)
@@ -84,29 +84,33 @@ export function TabletHome({
             <button type="button" className="ob tb-btn-segna" onClick={() => onSegna(l)}>
               SEGNA LA PRESENZA
             </button>
-            {timer?.lezioneId === l.id && timer.pronto && (
-              <div className="tb-pronto">
-                <Cronometro size={30} />
-                <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-                  <span className="num tb-pronto-da">{timer.pronto.da === 'lezione' ? 'IL TIMER DI QUESTA LEZIONE' : 'IL TIMER DEL CORSO'}</span>
-                  <span className="ob tb-pronto-nome">{timer.pronto.nome.toUpperCase()}</span>
-                  {timer.pronto.altri > 0 && (
-                    <span className="tb-pronto-altri">
-                      {timer.pronto.altri === 1 ? 'E UN ALTRO' : `E ALTRI ${timer.pronto.altri}`} NELLA SCHEDA TIMER
-                    </span>
+            {timer?.lezioneId === l.id &&
+              timer.pronto?.timer.map((t, i) => (
+                <div key={t.id} className="tb-pronto" data-seguito={i > 0 || undefined}>
+                  <Cronometro size={30} />
+                  <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+                    {i === 0 && (
+                      <span className="num tb-pronto-da">
+                        {timer.pronto!.da === 'lezione'
+                          ? timer.pronto!.timer.length > 1 ? 'I TIMER DI QUESTA LEZIONE' : 'IL TIMER DI QUESTA LEZIONE'
+                          : timer.pronto!.timer.length > 1 ? 'I TIMER DEL CORSO' : 'IL TIMER DEL CORSO'}
+                      </span>
+                    )}
+                    <span className="ob tb-pronto-nome">{t.nome.toUpperCase()}</span>
+                  </span>
+                  {timer.inCorso ? (
+                    i === 0 && (
+                      <button type="button" className="ob tb-btn-timer tb-btn-timer-linea" onClick={onVaiTimer}>
+                        IN CORSO · VEDI
+                      </button>
+                    )
+                  ) : (
+                    <button type="button" className="ob tb-btn-timer" onClick={() => onAvviaTimer?.(t.id)}>
+                      ▶ AVVIA
+                    </button>
                   )}
-                </span>
-                {timer.inCorso ? (
-                  <button type="button" className="ob tb-btn-timer tb-btn-timer-linea" onClick={onVaiTimer}>
-                    IN CORSO · VEDI
-                  </button>
-                ) : (
-                  <button type="button" className="ob tb-btn-timer" onClick={onAvviaTimer}>
-                    ▶ AVVIA
-                  </button>
-                )}
-              </div>
-            )}
+                </div>
+              ))}
           </div>
         ))}
 
