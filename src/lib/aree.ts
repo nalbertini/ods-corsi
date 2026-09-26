@@ -30,11 +30,13 @@ export const INDIRIZZI: Record<Exclude<Area, 'scelta' | 'guida'>, string> = {
 }
 
 /**
- * Il timer delle lezioni, che è un'app a sé (nalbertini/Timer-): da qui c'è
- * solo il collegamento. Sta sullo stesso dominio, quindi i timer salvati sul
- * dispositivo sono quelli di sempre.
+ * Il timer delle lezioni. Il codice sta in `timer/`, in questo repository, ma
+ * resta un'app a sé con il suo service worker: si pubblica nella sottocartella
+ * `timer/` dello stesso sito, e da qui c'è il collegamento. Relativo, così vale
+ * dovunque sia pubblicata l'app; e l'origine resta la stessa, quindi i timer
+ * salvati sul dispositivo sono quelli di sempre.
  */
-export const TIMER = 'https://nalbertini.github.io/Timer-/'
+export const TIMER = 'timer/'
 
 function areaAdesso(): Area {
   // Va chiamata comunque: con `#sala` o `#tablet` è lei a ricordarselo.

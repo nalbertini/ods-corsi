@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #0B0B0B; }
+    a { color: #1B8AC4; } a:hover { color: #4FB0E4; }
+    .ods-c { font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; }
+    .ods-ob { font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #121212; color: #F2F2F0; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="padding: 56px 20px 0 20px; display: flex; align-items: center; gap: 12px;">
+    <button style="width: 44px; height: 44px; background: transparent; border: 2px solid #333333; color: #B8B8B2; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <span class="ods-ob" style="font-size: 26px; font-weight: 700; letter-spacing: 0.1em;">IMPOSTAZIONI</span>
+  </div>
+
+  <div style="display: flex; align-items: baseline; gap: 10px; padding: 24px 20px 10px 20px;">
+    <span class="ods-c" style="font-size: 14px; font-weight: 700; letter-spacing: 0.24em; color: #8C8C88;">AUDIO</span>
+    <div style="flex-grow: 1; height: 2px; background: #2A2A2A;"></div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 20px;">
+    <sc-for list="{{audio}}" as="a" hint-placeholder-count="3">
+      <div style="background: #1C1C1C; border: 2px solid #333333; padding: 0 14px; min-height: 58px; display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0;">
+          <span style="font-size: 15px; font-weight: 600;">{{a.label}}</span>
+          <span style="font-size: 12px; color: #8C8C88;">{{a.hint}}</span>
+        </div>
+        <div style="width: 54px; height: 30px; background: {{a.track}}; display: flex; align-items: center; padding: 3px; justify-content: {{a.align}}; cursor: pointer; flex-shrink: 0;">
+          <div style="width: 24px; height: 24px; background: {{a.knob}};"></div>
+        </div>
+      </div>
+    </sc-for>
+
+    <div style="background: #1C1C1C; border: 2px solid #333333; padding: 12px 14px 14px 14px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: baseline; gap: 8px;">
+        <span style="font-size: 15px; font-weight: 600; flex-grow: 1;">Volume segnali</span>
+        <span class="ods-c" style="font-size: 20px; font-weight: 700; color: #1B8AC4;">80%</span>
+      </div>
+      <div style="height: 10px; background: #242424; display: flex; align-items: center;">
+        <div style="width: 80%; height: 100%; background: #1B8AC4;"></div>
+        <div style="width: 20px; height: 26px; background: #F2F2F0; margin-left: -10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: baseline; gap: 10px; padding: 24px 20px 10px 20px;">
+    <span class="ods-c" style="font-size: 14px; font-weight: 700; letter-spacing: 0.24em; color: #8C8C88;">SCHERMO</span>
+    <div style="flex-grow: 1; height: 2px; background: #2A2A2A;"></div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 20px;">
+    <sc-for list="{{screen}}" as="s" hint-placeholder-count="2">
+      <div style="background: #1C1C1C; border: 2px solid #333333; padding: 0 14px; min-height: 58px; display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0;">
+          <span style="font-size: 15px; font-weight: 600;">{{s.label}}</span>
+          <span style="font-size: 12px; color: #8C8C88;">{{s.hint}}</span>
+        </div>
+        <div style="width: 54px; height: 30px; background: {{s.track}}; display: flex; align-items: center; padding: 3px; justify-content: {{s.align}}; cursor: pointer; flex-shrink: 0;">
+          <div style="width: 24px; height: 24px; background: {{s.knob}};"></div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; align-items: baseline; gap: 10px; padding: 24px 20px 10px 20px;">
+    <span class="ods-c" style="font-size: 14px; font-weight: 700; letter-spacing: 0.24em; color: #8C8C88;">PALESTRA</span>
+    <div style="flex-grow: 1; height: 2px; background: #2A2A2A;"></div>
+  </div>
+
+  <div style="margin: 0 20px; background: #1C1C1C; border: 2px solid #333333; padding: 14px; display: flex; align-items: center; gap: 14px;">
+    <svg width="52" height="36" viewBox="0 0 160 110" aria-label="Officine dello Sport">
+      <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
+        <circle cx="38" cy="40" r="22" stroke="#1B8AC4"></circle>
+        <circle cx="80" cy="40" r="22" stroke="#F2F2F0"></circle>
+        <circle cx="122" cy="40" r="22" stroke="#E4292A"></circle>
+        <circle cx="59" cy="74" r="22" stroke="#F4C31B"></circle>
+        <circle cx="101" cy="74" r="22" stroke="#16A54A"></circle>
+      </g>
+      <g fill="none" stroke-width="5">
+        <circle cx="38" cy="40" r="14" stroke="#1B8AC4"></circle>
+        <circle cx="80" cy="40" r="14" stroke="#F2F2F0"></circle>
+        <circle cx="122" cy="40" r="14" stroke="#E4292A"></circle>
+        <circle cx="59" cy="74" r="14" stroke="#F4C31B"></circle>
+        <circle cx="101" cy="74" r="14" stroke="#16A54A"></circle>
+      </g>
+    </svg>
+    <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0;">
+      <span class="ods-ob" style="font-size: 18px; font-weight: 700; letter-spacing: 0.03em;">OFFICINE DELLO SPORT</span>
+      <span style="font-size: 12px; color: #8C8C88;">[INDIRIZZO] &middot; Collegno (TO)</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 2px; padding: 2px 20px 0 20px;">
+    <div style="background: #1C1C1C; border: 2px solid #333333; padding: 0 14px; min-height: 56px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+      <span style="font-size: 15px; font-weight: 600; flex-grow: 1;">Timer condivisi della palestra</span>
+      <span class="ods-c" style="font-size: 18px; font-weight: 600; color: #8C8C88;">14</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8C8C88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
+    </div>
+    <div style="background: #1C1C1C; border: 2px solid #333333; padding: 0 14px; min-height: 56px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+      <span style="font-size: 15px; font-weight: 600; flex-grow: 1;">Lingua</span>
+      <span style="font-size: 15px; font-weight: 600; color: #8C8C88;">Italiano</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8C8C88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <div style="padding: 16px 20px 34px 20px; display: flex; align-items: center; gap: 10px;">
+    <span style="font-size: 12px; color: #5A5A56; letter-spacing: 0.1em;">ODS TIMER 1.0</span>
+    <div style="flex-grow: 1;"></div>
+    <span style="font-size: 12px; color: #5A5A56; letter-spacing: 0.1em;">Funziona offline</span>
+    <div style="width: 8px; height: 8px; background: #16A54A;"></div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const on = { track: '#16A54A', knob: '#121212', align: 'flex-end' };
+    const off = { track: '#242424', knob: '#5A5A56', align: 'flex-start' };
+    return {
+      audio: [
+        Object.assign({ label: 'Bip conto alla rovescia', hint: 'Tre bip sugli ultimi 3 secondi' }, on),
+        Object.assign({ label: 'Voce italiana', hint: 'Annuncia lo stato e l’esercizio' }, on),
+        Object.assign({ label: 'Vibrazione', hint: 'Solo su telefono' }, off)
+      ],
+      screen: [
+        Object.assign({ label: 'Schermo sempre acceso', hint: 'Durante l’allenamento' }, on),
+        Object.assign({ label: 'Modalità schermo grande', hint: 'Per il tablet in sala' }, on)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

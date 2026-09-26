@@ -61,7 +61,11 @@ export default defineConfig({
         // Le pagine a sé, come l'informativa, restano quelle: senza, il
         // service worker a ogni indirizzo risponde con l'app. Lo stesso i
         // moduli in PDF: aperti in una scheda, senza, si vedeva una pagina bianca.
-        navigateFallbackDenylist: [/informativa\.html$/, /\/moduli\//, /\.pdf$/],
+        //
+        // Il timer, in `timer/`, ha il suo service worker: questo non deve
+        // rispondere con ODS Corsi alle sue pagine, né precaricarne i file.
+        navigateFallbackDenylist: [/informativa\.html$/, /\/moduli\//, /\.pdf$/, /\/timer(\/|$)/],
+        globIgnores: ['timer/**'],
       },
     }),
   ],

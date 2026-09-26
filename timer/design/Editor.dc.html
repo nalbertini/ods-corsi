@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #0B0B0B; }
+    a { color: #1B8AC4; } a:hover { color: #4FB0E4; }
+    .ods-c { font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; }
+    .ods-ob { font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #121212; color: #F2F2F0; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="padding: 56px 20px 0 20px; display: flex; align-items: center; gap: 12px;">
+    <button style="width: 44px; height: 44px; background: transparent; border: 2px solid #333333; color: #B8B8B2; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <span class="ods-ob" style="font-size: 22px; font-weight: 700; letter-spacing: 0.1em; flex-grow: 1;">MODIFICA</span>
+    <button style="height: 44px; padding: 0 20px; background: #16A54A; border: none; color: #121212; cursor: pointer;">
+      <span class="ods-ob" style="font-size: 17px; font-weight: 700; letter-spacing: 0.14em;">SALVA</span>
+    </button>
+  </div>
+
+  <div style="margin: 18px 20px 0 20px; padding: 12px 14px; background: #1C1C1C; border: 2px solid #333333; display: flex; flex-direction: column; gap: 6px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="padding: 3px 9px; background: #E4292A; color: #121212; font-size: 10px; font-weight: 700; letter-spacing: 0.16em;">TABATA</span>
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.16em; color: #8C8C88;">NOME DEL TIMER</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="ods-ob" style="font-size: 26px; font-weight: 700; letter-spacing: 0.03em; flex-grow: 1;">BRUCIA GRASSI</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8C8C88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: baseline; gap: 10px; padding: 20px 20px 10px 20px;">
+    <span class="ods-c" style="font-size: 14px; font-weight: 700; letter-spacing: 0.24em; color: #8C8C88;">STRUTTURA</span>
+    <div style="flex-grow: 1; height: 2px; background: #2A2A2A;"></div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 20px;">
+    <sc-for list="{{tiles}}" as="t" hint-placeholder-count="4">
+      <div style="background: #1C1C1C; border: 2px solid #333333; border-top: 4px solid {{t.tint}}; padding: 10px 12px 12px 12px; display: flex; flex-direction: column; gap: 8px;">
+        <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.16em; color: #8C8C88;">{{t.label}}</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button style="width: 44px; height: 44px; background: #242424; border: none; color: #F2F2F0; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </button>
+          <div style="flex-grow: 1; display: flex; align-items: baseline; justify-content: center; gap: 2px;">
+            <span class="ods-c" style="font-size: 30px; font-weight: 700; line-height: 1;">{{t.value}}</span>
+            <span class="ods-c" style="font-size: 15px; font-weight: 600; color: #8C8C88;">{{t.unit}}</span>
+          </div>
+          <button style="width: 44px; height: 44px; background: #242424; border: none; color: #F2F2F0; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </button>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 20px 0 20px;">
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="2">
+      <div style="background: #1C1C1C; border: 2px solid #333333; padding: 0 12px; height: 52px; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 10px; height: 10px; background: {{r.tint}};"></div>
+        <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.1em; color: #B8B8B2; flex-grow: 1;">{{r.label}}</span>
+        <span class="ods-c" style="font-size: 24px; font-weight: 700;">{{r.value}}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8C8C88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; align-items: baseline; gap: 10px; padding: 20px 20px 10px 20px;">
+    <span class="ods-c" style="font-size: 14px; font-weight: 700; letter-spacing: 0.24em; color: #8C8C88;">ESERCIZI</span>
+    <div style="flex-grow: 1; height: 2px; background: #2A2A2A;"></div>
+    <span class="ods-c" style="font-size: 14px; font-weight: 600; color: #8C8C88;">4</span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px;">
+    <sc-for list="{{moves}}" as="m" hint-placeholder-count="2">
+      <div style="background: #1C1C1C; border: 2px solid #333333; padding: 0 12px; height: 50px; display: flex; align-items: center; gap: 12px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A56" stroke-width="2" stroke-linecap="round"><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="16" x2="20" y2="16"></line></svg>
+        <span class="ods-c" style="font-size: 17px; font-weight: 600; color: #5A5A56; width: 20px;">{{m.n}}</span>
+        <span style="font-size: 15px; font-weight: 600; flex-grow: 1;">{{m.name}}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8C8C88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
+      </div>
+    </sc-for>
+    <button style="width: 100%; height: 50px; background: transparent; border: 2px dashed #4A4A46; color: #B8B8B2; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <span class="ods-ob" style="font-size: 15px; font-weight: 700; letter-spacing: 0.16em;">AGGIUNGI ESERCIZIO</span>
+    </button>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <div style="border-top: 2px solid #2A2A2A; background: #171717; padding: 14px 20px 30px 20px; display: flex; align-items: center; gap: 14px;">
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: #8C8C88;">DURATA TOTALE</span>
+      <span class="ods-c" style="font-size: 30px; font-weight: 700; line-height: 1;">12:30</span>
+    </div>
+    <button style="flex-grow: 1; height: 62px; background: #E4292A; border: none; color: #121212; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg>
+      <span class="ods-ob" style="font-size: 22px; font-weight: 700; letter-spacing: 0.16em;">AVVIA</span>
+    </button>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      tiles: [
+        { label: 'LAVORO', value: '20', unit: 's', tint: '#E4292A' },
+        { label: 'RECUPERO', value: '10', unit: 's', tint: '#16A54A' },
+        { label: 'ROUND', value: '8', unit: '×', tint: '#F2F2F0' },
+        { label: 'SERIE', value: '3', unit: '×', tint: '#F2F2F0' }
+      ],
+      rows: [
+        { label: 'PREPARAZIONE', value: '10s', tint: '#F4C31B' },
+        { label: 'RIPOSO TRA LE SERIE', value: '60s', tint: '#1B8AC4' }
+      ],
+      moves: [
+        { n: '01', name: 'Burpee + salto' },
+        { n: '02', name: 'Mountain climber' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

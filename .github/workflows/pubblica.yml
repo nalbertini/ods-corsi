@@ -36,8 +36,14 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            timer/package-lock.json
 
       - run: npm ci
+
+      # Il timer sta in `timer/` con le sue dipendenze.
+      - run: npm ci --prefix timer
 
       # Il controllo dei tipi è dentro `npm run build` (tsc -b && vite build):
       # se non compila, il push è rosso.
@@ -50,6 +56,10 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      # Il timer si compila dopo, dentro dist/timer: un'app a sé, con il suo
+      # service worker, pubblicata nella sottocartella dello stesso sito.
+      - run: npm run build:timer
 
       - uses: actions/upload-pages-artifact@v5
         with:

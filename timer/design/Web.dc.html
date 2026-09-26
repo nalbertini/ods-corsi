@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #0B0B0B; }
+    a { color: #1B8AC4; } a:hover { color: #4FB0E4; }
+    .ods-c { font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; }
+    .ods-ob { font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; background: #121212; color: #F2F2F0; display: flex; overflow: hidden;">
+
+  <div style="width: 240px; flex-shrink: 0; background: #171717; border-right: 2px solid #2A2A2A; display: flex; flex-direction: column; padding: 26px 0;">
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 22px 26px 22px;">
+      <svg width="104" height="72" viewBox="0 0 160 110" aria-label="Officine dello Sport">
+        <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
+          <circle cx="38" cy="40" r="22" stroke="#1B8AC4"></circle>
+          <circle cx="80" cy="40" r="22" stroke="#F2F2F0"></circle>
+          <circle cx="122" cy="40" r="22" stroke="#E4292A"></circle>
+          <circle cx="59" cy="74" r="22" stroke="#F4C31B"></circle>
+          <circle cx="101" cy="74" r="22" stroke="#16A54A"></circle>
+        </g>
+        <g fill="none" stroke-width="5">
+          <circle cx="38" cy="40" r="14" stroke="#1B8AC4"></circle>
+          <circle cx="80" cy="40" r="14" stroke="#F2F2F0"></circle>
+          <circle cx="122" cy="40" r="14" stroke="#E4292A"></circle>
+          <circle cx="59" cy="74" r="14" stroke="#F4C31B"></circle>
+          <circle cx="101" cy="74" r="14" stroke="#16A54A"></circle>
+        </g>
+      </svg>
+      <div style="display: flex; flex-direction: column; gap: 1px;">
+        <span class="ods-ob" style="font-size: 17px; font-weight: 700; letter-spacing: 0.03em; line-height: 1;">OFFICINE DELLO SPORT</span>
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.2em; color: #8C8C88;">COLLEGNO</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 12px;">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="5">
+        <div style="display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 12px; background: {{n.bg}}; color: {{n.color}}; cursor: pointer;">
+          <div style="width: 8px; height: 8px; background: {{n.dot}};"></div>
+          <span style="font-size: 14px; font-weight: 600; letter-spacing: 0.1em;">{{n.label}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex-grow: 1;"></div>
+
+    <div style="margin: 0 12px; padding: 14px; background: #1C1C1C; border: 2px solid #333333; display: flex; flex-direction: column; gap: 8px;">
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: #8C8C88;">SCHERMO SALA</span>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="width: 8px; height: 8px; background: #16A54A;"></div>
+        <span class="ods-c" style="font-size: 18px; font-weight: 600;">TABLET SALA 1</span>
+      </div>
+      <span style="font-size: 12px; color: #8C8C88; line-height: 1.35;">Connesso &middot; pronto a ricevere</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0;">
+    <div style="display: flex; align-items: center; gap: 16px; padding: 26px 32px 22px 32px; border-bottom: 2px solid #2A2A2A;">
+      <span class="ods-ob" style="font-size: 32px; font-weight: 700; letter-spacing: 0.06em;">LIBRERIA TIMER</span>
+      <div style="flex-grow: 1;"></div>
+      <div style="width: 300px; height: 44px; background: #1C1C1C; border: 2px solid #333333; display: flex; align-items: center; gap: 10px; padding: 0 14px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8C8C88" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="16" y1="16" x2="21" y2="21"></line></svg>
+        <span style="font-size: 14px; color: #5A5A56;">Cerca un timer o un esercizio</span>
+      </div>
+      <button style="height: 44px; padding: 0 20px; background: #E4292A; border: none; color: #121212; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span class="ods-ob" style="font-size: 16px; font-weight: 700; letter-spacing: 0.14em;">NUOVO TIMER</span>
+      </button>
+    </div>
+
+    <div style="display: flex; gap: 8px; padding: 20px 32px 0 32px;">
+      <div style="padding: 9px 16px; background: #1B8AC4; color: #121212; font-size: 12px; font-weight: 700; letter-spacing: 0.14em;">TUTTI</div>
+      <div style="padding: 9px 16px; background: #1C1C1C; border: 2px solid #333333; color: #B8B8B2; font-size: 12px; font-weight: 600; letter-spacing: 0.14em;">TABATA</div>
+      <div style="padding: 9px 16px; background: #1C1C1C; border: 2px solid #333333; color: #B8B8B2; font-size: 12px; font-weight: 600; letter-spacing: 0.14em;">EMOM</div>
+      <div style="padding: 9px 16px; background: #1C1C1C; border: 2px solid #333333; color: #B8B8B2; font-size: 12px; font-weight: 600; letter-spacing: 0.14em;">AMRAP</div>
+      <div style="padding: 9px 16px; background: #1C1C1C; border: 2px solid #333333; color: #B8B8B2; font-size: 12px; font-weight: 600; letter-spacing: 0.14em;">CIRCUITO</div>
+      <div style="padding: 9px 16px; background: #1C1C1C; border: 2px solid #333333; color: #B8B8B2; font-size: 12px; font-weight: 600; letter-spacing: 0.14em;">CORSI</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 20px 32px;">
+      <sc-for list="{{cards}}" as="c" hint-placeholder-count="6">
+        <div style="background: #1C1C1C; border: 2px solid {{c.border}}; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-height: 168px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="padding: 3px 9px; background: {{c.tint}}; color: #121212; font-size: 10px; font-weight: 700; letter-spacing: 0.16em;">{{c.type}}</span>
+            <div style="flex-grow: 1;"></div>
+            <span class="ods-c" style="font-size: 15px; font-weight: 600; letter-spacing: 0.1em; color: #8C8C88;">{{c.dur}}</span>
+          </div>
+          <span class="ods-ob" style="font-size: 24px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05;">{{c.name}}</span>
+          <div style="display: flex; gap: 3px; height: 12px;">
+            <sc-for list="{{c.bars}}" as="b" hint-placeholder-count="10">
+              <div style="flex-grow: {{b.w}}; background: {{b.color}};"></div>
+            </sc-for>
+          </div>
+          <span style="font-size: 13px; color: #8C8C88;">{{c.detail}}</span>
+          <div style="flex-grow: 1;"></div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button style="height: 40px; padding: 0 16px; background: {{c.tint}}; border: none; color: #121212; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg>
+              <span class="ods-ob" style="font-size: 15px; font-weight: 700; letter-spacing: 0.14em;">AVVIA</span>
+            </button>
+            <button style="width: 40px; height: 40px; background: transparent; border: 2px solid #333333; color: #B8B8B2; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13"></rect><line x1="8" y1="21" x2="16" y2="21"></line></svg>
+            </button>
+            <div style="flex-grow: 1;"></div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5A5A56" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="12" cy="19" r="1.6"></circle></svg>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width: 360px; flex-shrink: 0; background: #171717; border-left: 2px solid #2A2A2A; display: flex; flex-direction: column; padding: 26px 24px 24px 24px; gap: 18px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: #8C8C88;">ANTEPRIMA</span>
+      <span class="ods-ob" style="font-size: 30px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05;">TABATA BRUCIA GRASSI</span>
+      <span style="font-size: 13px; color: #8C8C88;">Creato da [ISTRUTTORE] &middot; 12 avvii questa settimana</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+      <sc-for list="{{stats}}" as="s" hint-placeholder-count="4">
+        <div style="background: #1C1C1C; border: 2px solid #333333; border-top: 4px solid {{s.tint}}; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.18em; color: #8C8C88;">{{s.label}}</span>
+          <span class="ods-c" style="font-size: 28px; font-weight: 700; line-height: 1;">{{s.value}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: #8C8C88;">SEQUENZA</span>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <sc-for list="{{seq}}" as="q" hint-placeholder-count="5">
+          <div style="display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; background: #1C1C1C; border-left: 4px solid {{q.tint}};">
+            <span class="ods-c" style="font-size: 14px; font-weight: 600; color: #5A5A56; width: 22px;">{{q.n}}</span>
+            <span style="font-size: 14px; font-weight: 600; flex-grow: 1;">{{q.label}}</span>
+            <span class="ods-c" style="font-size: 17px; font-weight: 700; color: #B8B8B2;">{{q.dur}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1;"></div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button style="width: 100%; height: 60px; background: #E4292A; border: none; color: #121212; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg>
+        <span class="ods-ob" style="font-size: 22px; font-weight: 700; letter-spacing: 0.16em;">AVVIA QUI</span>
+      </button>
+      <button style="width: 100%; height: 52px; background: transparent; border: 2px solid #1B8AC4; color: #1B8AC4; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13"></rect><line x1="8" y1="21" x2="16" y2="21"></line></svg>
+        <span class="ods-ob" style="font-size: 18px; font-weight: 700; letter-spacing: 0.14em;">MANDA AL TABLET SALA 1</span>
+      </button>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const R = '#E4292A', G = '#16A54A', Y = '#F4C31B', B = '#1B8AC4';
+    const tabata = [];
+    for (let i = 0; i < 6; i++) { tabata.push({ w: 2, color: R }); tabata.push({ w: 1, color: G }); }
+    const emom = [];
+    for (let i = 0; i < 6; i++) { emom.push({ w: 3, color: G }); emom.push({ w: 1, color: '#242424' }); }
+    return {
+      nav: [
+        { label: 'LIBRERIA', bg: '#242424', color: '#F2F2F0', dot: B },
+        { label: 'CORSI DELLA SALA', bg: 'transparent', color: '#B8B8B2', dot: '#3A3A38' },
+        { label: 'ESERCIZI', bg: 'transparent', color: '#B8B8B2', dot: '#3A3A38' },
+        { label: 'STORICO', bg: 'transparent', color: '#B8B8B2', dot: '#3A3A38' },
+        { label: 'IMPOSTAZIONI', bg: 'transparent', color: '#B8B8B2', dot: '#3A3A38' }
+      ],
+      cards: [
+        { type: 'TABATA', tint: R, border: R, dur: '12:30', name: 'BRUCIA GRASSI', detail: '8 × 20"/10" · 3 serie', bars: tabata },
+        { type: 'EMOM', tint: G, border: '#333333', dur: '12:00', name: 'EMOM 12 · GAMBE', detail: '12 minuti · 4 esercizi', bars: emom },
+        { type: 'AMRAP', tint: Y, border: '#333333', dur: '20:00', name: 'AMRAP DEL SABATO', detail: 'giro libero · cap 20 min', bars: [{ w: 10, color: Y }] },
+        { type: 'CIRCUITO', tint: B, border: '#333333', dur: '24:00', name: 'CIRCUITO SALA ATTREZZI', detail: '6 stazioni × 4 giri', bars: [{ w: 3, color: B }, { w: 1, color: '#242424' }, { w: 3, color: B }, { w: 1, color: '#242424' }, { w: 3, color: B }] },
+        { type: 'TABATA', tint: R, border: '#333333', dur: '08:00', name: 'CORE EXPRESS', detail: '8 × 20"/10" · 2 serie', bars: tabata },
+        { type: 'FOR TIME', tint: B, border: '#333333', dur: '15:00', name: 'BENCHMARK MENSILE', detail: 'cronometro in salita · cap 15 min', bars: [{ w: 10, color: B }] }
+      ],
+      stats: [
+        { label: 'DURATA', value: '12:30', tint: '#F2F2F0' },
+        { label: 'ROUND', value: '8 × 3', tint: '#F2F2F0' },
+        { label: 'LAVORO', value: '20"', tint: R },
+        { label: 'RECUPERO', value: '10"', tint: G }
+      ],
+      seq: [
+        { n: '01', label: 'Preparazione', dur: '10"', tint: Y },
+        { n: '02', label: 'Burpee + salto', dur: '20"', tint: R },
+        { n: '03', label: 'Recupero', dur: '10"', tint: G },
+        { n: '04', label: 'Mountain climber', dur: '20"', tint: R },
+        { n: '05', label: 'Riposo tra le serie', dur: '60"', tint: B }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

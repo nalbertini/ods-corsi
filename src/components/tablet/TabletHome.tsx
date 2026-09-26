@@ -110,8 +110,8 @@ export function TabletHome({
           <Lucchetto />
           AREA ISTRUTTORE
         </button>
-        {/* Il timer è un'app a sé: si apre al suo indirizzo, e la sua voce
-            CORSI riporta qui, perché la radice su un tablet riapre il tablet. */}
+        {/* Il timer è un'app a sé, in timer/: il suo tasto SALA riporta
+            alla radice, che su un tablet riapre il tablet. */}
         <a className="tb-btn tb-btn-linea" href={TIMER}>
           <Cronometro />
           TIMER
