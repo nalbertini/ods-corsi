@@ -15,6 +15,11 @@ dentro ogni lezione, l'appello.
 3. Restate collegati finché non premete **ESCI** (in alto, accanto al vostro
    nome). Non serve rientrare ogni volta.
 
+L'accesso vale solo qui: se sullo stesso computer qualcuno è entrato in
+segreteria, `istruttori/` chiede comunque il vostro, e da qui in segreteria non
+si va. Vale anche al contrario: chi è di segreteria e vuole fare l'appello da
+qui entra con la sua email anche in questa porta.
+
 La prima volta che entrate, l'account si lega da solo alla vostra scheda di
 istruttore, purché l'email sia la stessa che ha in elenco la segreteria. Se
 all'accesso vi dice che qualcosa non va, chiedete alla segreteria di

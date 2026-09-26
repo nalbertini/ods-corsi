@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
@@ -8,7 +8,7 @@ import { Guida } from './components/Guida'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { INDIRIZZI, TIMER, useArea, vaiA } from './lib/aree'
-import { esci, serveAccesso, type Personale } from './lib/accesso'
+import { esci, passaA, serveAccesso, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
@@ -35,19 +35,13 @@ import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
 export default function App() {
   // Da un'email di Supabase (l'invito, «password dimenticata») si sceglie
   // prima la password, e poi si va nella propria area.
-  const [arrivo, setArrivo] = useState(serveAccesso ? ARRIVO : null)
+  const arrivo = serveAccesso ? ARRIVO : null
   if (arrivo) {
     return (
       <div className="app">
         <Testata luogo="ACCESSO" />
         <main className="scroll">
-          <ScegliPassword
-            arrivo={arrivo}
-            onFatto={(dove) => {
-              window.location.hash = dove
-              setArrivo(null)
-            }}
-          />
+          <ScegliPassword arrivo={arrivo} />
         </main>
       </div>
     )
@@ -138,7 +132,10 @@ function Iscrizioni() {
 
 /**
  * Il calendario e l'appello, dietro la porta. Entra anche chi è di
- * segreteria, se apre questo indirizzo: anche lei fa l'appello.
+ * segreteria, se apre questo indirizzo: anche lei fa l'appello. La porta è
+ * sua, con la sua sessione: l'accesso fatto in segreteria qui non vale, e
+ * chi apre `istruttori/` sul computer della reception trova la porta, non
+ * l'account della segreteria.
  *
  * Le iscrizioni non stanno qui, nemmeno in prova: all'istruttore non
  * servono, e hanno il loro indirizzo (`iscrizioni/`) e la segreteria. In
@@ -198,8 +195,9 @@ function Istruttori() {
 
 /**
  * Il menu degli istruttori sullo schermo largo, fatto come quello della
- * segreteria. In prova (`chi` è `null`) e per chi è di segreteria c'è anche
- * il passaggio alla segreteria.
+ * segreteria. Solo in prova (`chi` è `null`) c'è anche il passaggio alla
+ * segreteria: col database vero le aree sono separate, ognuna con la sua
+ * porta, e da qui non si va in segreteria nemmeno se si è di segreteria.
  */
 function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEsci?: () => void; children: ReactNode }) {
   const esci = onEsci ?? (inProvaScelta ? () => scegliProva(false) : undefined)
@@ -232,7 +230,7 @@ function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEs
           <a className="num sg-voce" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener">
             GUIDA ↗
           </a>
-          {(!chi || chi.ruolo === 'staff') && (
+          {!chi && (
             <a className="num sg-voce" href={INDIRIZZI.segreteria}>
               ← SEGRETERIA
             </a>
@@ -317,9 +315,10 @@ function AreaSegreteria() {
                 {chi.nome}, il tuo account è da istruttore: la segreteria è solo per chi lavora alla reception. Il
                 calendario e l’appello sono all’indirizzo degli istruttori.
               </span>
-              <a className="btn btn-go" href={INDIRIZZI.istruttori}>
+              {/* L'accesso fatto qui passa agli istruttori, e qui non resta. */}
+              <button type="button" className="btn btn-go" onClick={() => void passaA('istruttori')}>
                 VAI AGLI ISTRUTTORI
-              </a>
+              </button>
               <button type="button" className="btn btn-ghost" onClick={() => void esci().then(() => setChi(null))}>
                 ESCI E CAMBIA ACCOUNT
               </button>
