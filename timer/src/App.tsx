@@ -46,7 +46,7 @@ import {
 } from './lib/libreria'
 import { type Lezione, lezioneDaIndirizzo, scordaLezione } from './lib/lezione'
 import { type Gruppo, gruppiDi } from './lib/gruppi'
-import type { Incorporato } from './lib/incorporato'
+import type { Incorporato, TimerPronto } from './lib/incorporato'
 import type { ImpostazioniSala } from './lib/impostazioniSala'
 
 /** I corsi dell'ultima volta, per il titolo della lezione e l'editor senza rete. */
@@ -472,18 +472,18 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   }, [workouts, personaId])
 
   const gruppi: Gruppo[] = useMemo(() => gruppiDi(workouts, accesso, lezione), [workouts, accesso, lezione])
-  // Sul tablet: il timer pronto per la lezione, e la richiesta di farlo partire.
-  const pronto = useMemo(() => {
+  // Sul tablet: i timer pronti per la lezione, e la richiesta di farne partire uno.
+  const pronto = useMemo<TimerPronto | null>(() => {
     const g = gruppi.find((x) => x.chiave === 'lezione' && x.timer.length) ?? gruppi.find((x) => x.chiave === 'corso' && x.timer.length)
-    const w = g?.timer[0]
-    return w ? { id: w.id, nome: w.name, da: g!.chiave === 'lezione' ? ('lezione' as const) : ('corso' as const), altri: g!.timer.length - 1 } : null
+    return g ? { da: g.chiave === 'lezione' ? 'lezione' : 'corso', timer: g.timer.map((w) => ({ id: w.id, nome: w.name })) } : null
   }, [gruppi])
+  const firmaPronto = pronto ? `${pronto.da}|${pronto.timer.map((t) => `${t.id}:${t.nome}`).join('|')}` : ''
   const avvisaPronto = incorporato?.onPronto
   useEffect(() => {
     avvisaPronto?.(pronto)
-    // Si avvisa quando cambia il timer, non quando cambia chi ascolta.
+    // Si avvisa quando cambiano i timer, non quando cambia chi ascolta.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pronto?.id, pronto?.nome, pronto?.da, pronto?.altri])
+  }, [firmaPronto])
   const richiesta = incorporato?.avvia
   const fatta = useRef(0)
   useEffect(() => {

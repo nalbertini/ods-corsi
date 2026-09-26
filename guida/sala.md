@@ -33,11 +33,10 @@ timer collegati al corso, poi quelli della palestra. Li scelgono gli
 istruttori, in [I MIEI TIMER](istruttori.md#i-miei-timer).
 
 **Il timer pronto nella lezione.** Senza cercarlo nella scheda: sotto **SEGNA
-LA PRESENZA** della lezione aperta c'è il suo timer, **IL TIMER DI QUESTA
-LEZIONE** o, se non ce n'è uno, **IL TIMER DEL CORSO**, con **▶ AVVIA**. Se
-ce n'è più d'uno, AVVIA fa partire quello cambiato più di recente, e sotto il
-nome c'è quanti altri ce ne sono: **E ALTRI 2 NELLA SCHEDA TIMER**. Un
-tocco, e il tablet passa al timer e lo fa partire. Mentre va, al posto di
+LA PRESENZA** della lezione aperta ci sono i suoi timer, **I TIMER DI QUESTA
+LEZIONE** o, se non ce ne sono, **I TIMER DEL CORSO**, uno per riga, ognuno
+con il suo **▶ AVVIA** (nell'ordine della scheda TIMER). Un tocco, e il
+tablet passa al timer e fa partire quello. Mentre uno va, al posto degli
 AVVIA c'è **IN CORSO · VEDI**, che riporta al timer. Se né la lezione né il
 corso hanno un timer, la riga non c'è.
 Dal tablet i timer si fanno partire, non si cambiano: si creano e si

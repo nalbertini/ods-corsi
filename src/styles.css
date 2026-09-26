@@ -595,7 +595,7 @@ a.btn { text-decoration: none; }
 }
 .tb-pronto-da { font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); }
 .tb-pronto-nome { font-size: 24px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tb-pronto-altri { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+.tb-pronto[data-seguito] { padding-top: 12px; border-top-style: dashed; }
 .tb-btn-timer {
   min-width: 220px; min-height: 64px; padding: 0 22px;
   background: var(--rosso); color: var(--su-colore);
