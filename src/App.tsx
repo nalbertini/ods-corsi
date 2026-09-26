@@ -8,7 +8,7 @@ import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
-import { INDIRIZZI, TIMER, useArea, vaiA } from './lib/aree'
+import { INDIRIZZI, TIMER, useArea } from './lib/aree'
 import { esci, passaA, serveAccesso, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
@@ -283,8 +283,8 @@ function AreaGuida() {
 }
 
 /**
- * La segreteria, con la sua porta: entra solo chi ne ha il ruolo, e ci resta
- * (il ritorno agli istruttori c'è solo in prova). Un istruttore che arriva
+ * La segreteria, con la sua porta: entra solo chi ne ha il ruolo, e ci resta.
+ * Un istruttore che arriva
  * qui viene mandato al suo indirizzo.
  */
 function AreaSegreteria() {
@@ -295,7 +295,6 @@ function AreaSegreteria() {
       <Segreteria
         nome="Segreteria di prova"
         prova
-        onApp={() => vaiA('istruttori')}
         onEsci={inProvaScelta ? () => scegliProva(false) : undefined}
       />
     )

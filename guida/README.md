@@ -68,7 +68,7 @@ anche se la chiudete, la coda riparte alla prossima apertura.
 | Annullare o chiudere le lezioni dei propri corsi | sì | sì |
 | Cambiare corsi, orari e sale | no | sì |
 | Aggiungere e togliere iscritti | no | sì |
-| Vedere il resoconto delle presenze e le regole | no | sì |
+| Vedere il resoconto delle presenze e le impostazioni | no | sì |
 
 Se vi serve qualcosa della colonna «no» (un iscritto nuovo, un orario da
 spostare, un sostituto da mettere) chiedetelo alla segreteria.
@@ -107,7 +107,8 @@ il tasto col sole in alto la fa diventare bianca. Vale per quel dispositivo.
   [Presenze](segreteria/presenze.md) ·
   [Importa da Excel](segreteria/importa.md) ·
   [Istruttori e accessi](segreteria/istruttori-e-accessi.md) ·
-  [Regole e privacy](segreteria/regole.md)
+  [Esercizi](segreteria/esercizi.md) ·
+  [Impostazioni](segreteria/regole.md)
 
 ## Domande che capitano
 

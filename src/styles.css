@@ -1064,6 +1064,8 @@ a.sg-voce { text-decoration: none; }
 .sg-personale[data-spento='true'] { opacity: 0.5; }
 .sg-permessi { display: grid; grid-template-columns: 1fr 110px 110px; gap: 8px 12px; align-items: center; }
 .sg-regole { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+/* Le frasi da incidere: due colonne finché c'è spazio. */
+.sg-frasi { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 6px; }
 
 @media (max-width: 1000px) {
   .sg-numeri, .sg-cosa-entra { grid-template-columns: repeat(2, minmax(0, 1fr)); }

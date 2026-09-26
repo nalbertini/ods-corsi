@@ -407,6 +407,22 @@ export function italianVoices(): SpeechSynthesisVoice[] {
   return voices.filter((v) => v.lang?.toLowerCase().startsWith('it')).sort((a, b) => rank(b) - rank(a))
 }
 
+/**
+ * La voce di sistema scelta dalla segreteria per i tablet, cercata fra quelle
+ * di questo dispositivo: la segreteria la sceglie dal suo computer, e sul
+ * tablet c'è solo se il sistema è lo stesso. Prima il nome esatto, poi il
+ * nome senza quello che il sistema ci aggiunge fra parentesi («Alice» e
+ * «Alice (italiano (Italia))» sono la stessa). Se non c'è, `null`: parla la
+ * prima voce italiana, come sempre.
+ */
+export function voceDiNome(nome: string | null): string | null {
+  if (!nome) return null
+  const base = (n: string) => n.replace(/\s*\(.*$/, '').trim().toLowerCase()
+  const list = italianVoices()
+  const v = list.find((x) => x.name === nome) ?? list.find((x) => base(x.name) === base(nome))
+  return v?.voiceURI ?? null
+}
+
 function pickVoice(voiceURI: string | null): SpeechSynthesisVoice | undefined {
   const list = italianVoices()
   if (voiceURI) {

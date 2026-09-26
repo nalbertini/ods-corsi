@@ -1,7 +1,7 @@
 import type { Dove, HistoryEntry, Settings, Workout } from '../types'
 import { Coda, type Operazione } from '../../../src/lib/coda'
 import { db, nuovoId, sessione } from './palestra'
-import { type ImpostazioniSala, impostazioniSala } from './impostazioniSala'
+import { type TimerSala, leggiTimerSala } from './impostazioniSala'
 
 /**
  * I timer, lo storico e le preferenze sul database di ODS Corsi.
@@ -279,11 +279,10 @@ export function salvaPreferenze(s: Settings) {
 
 /**
  * Il timer di un tablet di sala, come l'ha scelto la segreteria: sta nella
- * riga delle impostazioni di ODS Corsi, che un tablet può leggere.
+ * riga delle impostazioni di ODS Corsi, che un tablet può leggere. Voce e
+ * catalogo arrivano con `13-voce-esercizi.sql`: finché non c'è, restano
+ * quelli del tablet.
  */
-export async function scaricaImpostazioniSala(): Promise<ImpostazioniSala> {
-  const c = await db()
-  const { data, error } = await c.from('impostazioni').select('timer').maybeSingle()
-  if (error) throw new Error(error.message)
-  return impostazioniSala((data as { timer: unknown } | null)?.timer)
+export async function scaricaTimerSala(): Promise<TimerSala> {
+  return leggiTimerSala(await db())
 }

@@ -27,7 +27,8 @@ A sinistra il menu, a destra la voce scelta. Ogni voce ha la sua guida:
 | **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, il CSV | [Apri](presenze.md) |
 | **IMPORTA DA EXCEL** | Corsi e iscritti dai fogli Excel o dalle risposte del modulo Google | [Apri](importa.md) |
 | **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
-| **REGOLE E PRIVACY** | Per quanto si tengono le presenze, il calendario, le sale, la privacy | [Apri](regole.md) |
+| **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
+| **IMPOSTAZIONI** | Per quanto si tengono le presenze, il calendario, le sale, il timer dei tablet con la sua voce, lo storico dei timer, la privacy | [Apri](regole.md) |
 
 In fondo al menu:
 
@@ -36,7 +37,7 @@ In fondo al menu:
 - **Tema bianco** — per questo computer.
 - **Esci**.
 
-In prova ci sono anche **← ISTRUTTORI**, per tornare all'appello, e **Riparti
+In prova c'è anche **Riparti
 dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
 
 ## Il giro di una settimana normale

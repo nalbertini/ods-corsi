@@ -177,7 +177,7 @@ grant execute on function chiudi_ricorrenza(uuid), calendario_pronto_fino(), fre
 -- ---------------------------------------------------------------------------
 -- Le regole della palestra: per quanto si tengono le presenze e fin dove si
 -- prepara il calendario. Sono scelte della palestra, non del codice, e la
--- segreteria le cambia da REGOLE E PRIVACY. Una riga sola.
+-- segreteria le cambia da IMPOSTAZIONI. Una riga sola.
 -- ---------------------------------------------------------------------------
 create table if not exists impostazioni (
   id                boolean primary key default true check (id),

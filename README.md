@@ -59,10 +59,12 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
   stato del **pagamento**, con chi non è in regola in evidenza. Le **presenze** del mese: medie per corso, chi si sta
   perdendo, gli appelli che mancano, e il CSV. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare.
-  **Istruttori e accessi**, coi PIN del tablet. Le **regole**: per quanto si
+  **Istruttori e accessi**, coi PIN del tablet. Le **impostazioni**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale con la loro
-  musica e il loro **timer** (Maurizio, segnali, schermo, uguali su tutti i
-  tablet), e l'esportazione dei dati di una persona.
+  musica e il loro **timer** (Maurizio, segnali, schermo, la voce e le clip
+  incise, uguali su tutti i tablet), lo storico dei timer e l'esportazione
+  dei dati di una persona. Gli **esercizi** della palestra, che i tablet
+  propongono scrivendo un timer.
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
   iscrive risponde alle domande dal telefono e carica il modulo firmato, il
   documento e la ricevuta; per un minore la data di nascita fa chiedere i dati
@@ -130,12 +132,13 @@ c'è anche la musica, sempre nello stesso punto: il lettore di YouTube non si
 sposta e non si ricarica cambiando scheda. Le liste della musica le prepara la
 segreteria (`supabase/09-musica.sql`), e così le impostazioni del timer dei
 tablet — Maurizio, i segnali, il volume, lo schermo, la musica che segue il
-timer — da **Regole e privacy** (`supabase/10-timer-sale.sql`,
-`timer/src/lib/impostazioniSala.ts`). Nelle impostazioni del timer dentro il
-tablet quelle si leggono soltanto, e non ci sono l'accesso, il tema, il
-salvataggio su file e la versione, che sono di ODS Corsi: restano la libreria
-degli esercizi, lo storico, la fonte della musica con Spotify, la voce incisa
-e la voce di sistema.
+timer, la voce di sistema, le clip della voce incisa e il catalogo degli
+esercizi — da **Impostazioni** ed **Esercizi** (`supabase/10-timer-sale.sql`,
+`supabase/13-voce-esercizi.sql`, `timer/src/lib/impostazioniSala.ts`); in
+Impostazioni c'è anche lo storico dei timer. Nelle impostazioni del timer dentro il tablet
+quelle si leggono soltanto, e non ci sono l'accesso, il tema, il salvataggio
+su file e la versione, che sono di ODS Corsi: resta la fonte della musica con
+Spotify.
 
 Tre cose tengono insieme le due app nella stessa pagina:
 

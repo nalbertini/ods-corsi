@@ -2,6 +2,7 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { ImpostazioniSala } from '../../timer/src/lib/impostazioniSala'
+import type { Esercizio } from '../../timer/src/lib/esercizi'
 
 export type { ListaMusica } from './musica'
 
@@ -165,6 +166,19 @@ export interface PersonaleSeg {
   corsi: string[]
 }
 
+/** Un timer arrivato in fondo (o fermato prima), sul tablet o sul telefono di un istruttore. */
+export interface AllenamentoSeg {
+  id: string
+  nome: string
+  finitoIl: string
+  secondi: number
+  completato: boolean
+  /** La lezione in cui è partito, se c'era: il corso. */
+  corso?: string
+  /** Chi l'ha fatto partire: un istruttore, o il tablet di una sala. */
+  chi: string
+}
+
 export interface Impostazioni {
   mesiPresenze: number
   giorniCalendario: number
@@ -247,6 +261,19 @@ export interface DatiSegreteria {
   /** Il timer dei tablet di sala, uguale per tutti (vedi `impostazioniSala.ts`). */
   timerSale(): Promise<ImpostazioniSala>
   salvaTimerSale(i: ImpostazioniSala): Promise<void>
+  /** La voce di sistema dei tablet, per nome; `null` è la prima voce italiana del tablet. */
+  voceSale(): Promise<string | null>
+  salvaVoceSale(nome: string | null): Promise<void>
+  /** Le clip della voce incisa per i tablet: le chiavi di quelle che ci sono. */
+  clipSale(): Promise<string[]>
+  salvaClip(chiave: string, clip: Blob): Promise<void>
+  apriClip(chiave: string): Promise<Blob | null>
+  togliClip(chiave: string): Promise<void>
+  /** Il catalogo degli esercizi dei tablet; `null` se non se n'è mai fatto uno. */
+  eserciziPalestra(): Promise<Esercizio[] | null>
+  salvaEserciziPalestra(l: Esercizio[]): Promise<void>
+  /** Gli ultimi timer fatti partire, dal più recente. */
+  allenamenti(quanti: number): Promise<AllenamentoSeg[]>
   impostazioni(): Promise<Impostazioni>
   salvaImpostazioni(i: Partial<Impostazioni>): Promise<void>
   /** Quante presenze sono più vecchie del periodo, e la pulizia. */

@@ -70,7 +70,7 @@ begin
   raise notice '4  riallungato: fino al %, % lezioni', fino, n;
 end $$;
 
-\echo '--- 5. segue i giorni scelti in REGOLE E PRIVACY ---'
+\echo '--- 5. segue i giorni scelti in IMPOSTAZIONI ---'
 reset role;
 update impostazioni set giorni_calendario = 180;
 set role authenticated;

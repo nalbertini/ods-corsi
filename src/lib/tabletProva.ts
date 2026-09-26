@@ -3,7 +3,8 @@ import { REGOLE, sigle } from './tablet'
 import { creaDatiProva, memoria } from './datiProva'
 import { archivio } from './archivioProva'
 import { perCognome } from './sala'
-import { impostazioniSala } from '../../timer/src/lib/impostazioniSala'
+import { timerSala } from '../../timer/src/lib/impostazioniSala'
+import { fonteClipProva } from './voceProva'
 
 /**
  * Il tablet senza server: l'orario vero, gli iscritti inventati, e le stesse
@@ -222,8 +223,11 @@ export function creaTabletProva(): DatiTablet {
         .map((l) => ({ id: l.id, nome: l.nome, link: l.link, salaId: l.sala }))
     },
 
-    async impostazioniTimer() {
-      return impostazioniSala(archivio.dati.timerSale)
+    async timerSala() {
+      const a = archivio.dati
+      return timerSala({ timer: a.timerSale, voce: a.voceSale, esercizi: a.eserciziSale })
     },
+
+    clipSala: fonteClipProva,
   }
 }

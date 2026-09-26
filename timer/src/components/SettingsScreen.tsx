@@ -172,7 +172,10 @@ export function SettingsScreen({
 
       {/* Il catalogo non è più una scheda della barra: si cura ogni tanto, non a
           ogni lezione. Resta però la prima voce, perché è quella per cui si
-          entra nelle impostazioni più spesso. */}
+          entra nelle impostazioni più spesso. Sul tablet di sala lo cura la
+          segreteria, e lo storico si guarda da lì. */}
+      {!sala && (
+      <>
       <div className="rule">
         <span className="rule-label">ESERCIZI</span>
         <div className="rule-line" />
@@ -187,8 +190,9 @@ export function SettingsScreen({
           </div>
           <Chevron />
         </button>
-        {incorporato && <TastoStorico historyCount={historyCount} onOpen={onOpenStorico} />}
       </div>
+      </>
+      )}
 
       {!incorporato && (
       <>
@@ -312,6 +316,9 @@ export function SettingsScreen({
 
       <Musica settings={settings} onChange={onChange} sala={sala} />
 
+      {/* Sul tablet di sala la voce la sceglie e la incide la segreteria. */}
+      {!sala && (
+      <>
       <div className="rule">
         <span className="rule-label">VOCE INCISA</span>
         <div className="rule-line" />
@@ -330,14 +337,12 @@ export function SettingsScreen({
           </div>
           <Chevron />
         </button>
-        {!sala && (
-          <Toggle
-            label="Usa le clip incise"
-            hint="Quando ci sono, hanno la precedenza sulla sintesi"
-            on={settings.recordedVoice}
-            onChange={(v) => onChange({ recordedVoice: v })}
-          />
-        )}
+        <Toggle
+          label="Usa le clip incise"
+          hint="Quando ci sono, hanno la precedenza sulla sintesi"
+          on={settings.recordedVoice}
+          onChange={(v) => onChange({ recordedVoice: v })}
+        />
       </div>
 
       <div className="rule">
@@ -383,6 +388,9 @@ export function SettingsScreen({
           </div>
         )}
       </div>
+
+      </>
+      )}
 
       {!sala && (
       <>
@@ -654,9 +662,10 @@ function DallaSegreteria({ settings }: { settings: Settings }) {
     ['Maurizio', COACH_LABEL[settings.coach]],
     ['Segnali', `${AUDIO_ETICHETTA[modo].toLowerCase()}${modo === 'voce' && settings.announceNext ? ', dice il prossimo' : ''}`],
     ['Volume segnali', `${Math.round(settings.volume * 100)}%`],
+    ['Voce', `${italianVoices().find((v) => v.voiceURI === settings.voiceURI)?.name ?? 'la prima italiana del tablet'}${settings.recordedVoice ? ', con le clip incise' : ''}`],
     [
       'Anche',
-      [settings.ticchettio && 'ticchettio', settings.vibrate && 'vibrazione', settings.recordedVoice && 'voce incisa']
+      [settings.ticchettio && 'ticchettio', settings.vibrate && 'vibrazione']
         .filter(Boolean)
         .join(', ') || 'niente',
     ],
@@ -676,8 +685,8 @@ function DallaSegreteria({ settings }: { settings: Settings }) {
       </div>
       <div className="pad stack" style={{ gap: 8 }}>
         <p style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)', margin: 0 }}>
-          Maurizio, i segnali, lo schermo e la musica durante il timer li sceglie la segreteria per tutti i tablet, da
-          ODS Corsi › Segreteria › Regole e privacy. Qui restano le cose di questo tablet.
+          Maurizio, i segnali, la voce, lo schermo, la musica durante il timer e gli esercizi li sceglie la segreteria per
+          tutti i tablet, da ODS Corsi › Segreteria › Impostazioni. Qui restano le cose di questo tablet.
         </p>
         <div className="card stack" style={{ gap: 6, padding: '12px 14px' }}>
           {righe.map(([etichetta, valore]) => (

@@ -11,6 +11,27 @@ import { CLIP_DIR, CLIP_EXTENSIONS } from './voiceClips'
  * le clip a tutti pubblicandole.
  */
 
+/**
+ * Le clip della sala: su un tablet di sala la voce la incide la segreteria, e
+ * arrivano dal database (vedi `clipSala.ts`). Quando ci sono vengono prima
+ * di tutto il resto: è la segreteria a decidere come parla il tablet.
+ */
+export interface FonteClip {
+  /** Le chiavi che ci sono, per non chiedere a vuoto quelle che mancano. */
+  chiavi: ReadonlySet<string>
+  /** Cambia quando cambia una clip, anche rifatta con la stessa chiave: allora si riscaricano. */
+  versione: string
+  scarica(key: string): Promise<Blob | null>
+}
+
+let remota: FonteClip | null = null
+
+/** Mette (o toglie, con `null`) le clip della sala. */
+export function usaClipDellaSala(f: FonteClip | null) {
+  remota = f
+  forgetClips()
+}
+
 let ctx: AudioContext | null = null
 let inCorso: AudioBufferSourceNode[] = []
 interface Clip {
@@ -118,7 +139,16 @@ function clipIndex(): Promise<ClipIndex | null> {
 }
 
 async function load(key: string): Promise<Clip | null> {
-  // Prima la registrazione locale: incidere sul tablet deve avere effetto subito.
+  if (remota?.chiavi.has(key)) {
+    try {
+      const blob = await remota.scarica(key)
+      const buf = blob ? await decode(await blob.arrayBuffer()) : null
+      if (buf) return { buffer: buf, attacco: attaccoDi(buf) }
+    } catch {
+      // Senza rete si passa alle altre: meglio la sintesi che niente.
+    }
+  }
+  // Poi la registrazione locale: incidere sul tablet deve avere effetto subito.
   const recorded = await getClip(key)
   if (recorded) {
     const buf = await decode(await recorded.arrayBuffer())
