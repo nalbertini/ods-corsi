@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { INFORMATIVA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, type Passo } from '../lib/iscrizione'
+import { CONTATTI, SITO } from '../lib/sito'
 import { Costi } from './Costi'
 
 /**
@@ -31,6 +32,8 @@ export function IscrizioniScreen() {
             </li>
           ))}
         </ol>
+
+        <Contatti />
       </div>
 
       <Costi />
@@ -45,6 +48,38 @@ export function IscrizioniScreen() {
         </p>
       )}
     </div>
+  )
+}
+
+/** Per chi si blocca a metà: dove siamo e come ci si trova, dal piede del sito. */
+function Contatti() {
+  return (
+    <section className="pad" style={{ paddingBottom: 16 }}>
+      <div className="card stack" style={{ padding: 14, gap: 8 }}>
+        <span className="passo-titolo">Hai un dubbio? Chiamaci o passa in palestra.</span>
+        <span className="passo-dettaglio">
+          {CONTATTI.indirizzo}, a pochi metri dalla metro Fermi. Telefono{' '}
+          <span className="num" style={{ color: 'var(--text)' }}>{CONTATTI.telefono}</span>.
+        </span>
+        <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <a className="btn btn-ghost passo-btn" href={`tel:+39${CONTATTI.telefono.replace(/\s/g, '')}`}>
+            CHIAMA
+          </a>
+          <a className="btn btn-ghost passo-btn" href={CONTATTI.mappa} target="_blank" rel="noopener noreferrer">
+            MAPPA
+          </a>
+          <a className="btn btn-ghost passo-btn" href={CONTATTI.instagram} target="_blank" rel="noopener noreferrer">
+            INSTAGRAM
+          </a>
+          <a className="btn btn-ghost passo-btn" href={CONTATTI.facebook} target="_blank" rel="noopener noreferrer">
+            FACEBOOK
+          </a>
+          <a className="btn btn-ghost passo-btn" href={SITO} target="_blank" rel="noopener noreferrer">
+            IL SITO
+          </a>
+        </span>
+      </div>
+    </section>
   )
 }
 

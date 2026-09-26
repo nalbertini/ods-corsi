@@ -1,5 +1,6 @@
 import { COSTI, OFFERTE, STAGIONE, type VoceCosto } from '../lib/costi'
 import { LISTINO, PAGAMENTO } from '../lib/iscrizione'
+import { paginaSito, presentazione } from '../lib/sito'
 
 const euro = (n?: number) => (n === undefined ? '—' : `${n} €`)
 
@@ -49,9 +50,11 @@ export function Costi() {
 
 function Voce({ voce }: { voce: VoceCosto }) {
   const conEtichette = voce.prezzi.some((p) => p.etichetta)
+  const sito = presentazione(voce.corso)
   return (
     <div className="card stack costo">
       <span className="ob lezione-nome">{voce.corso.toUpperCase()}</span>
+      {sito && <span className="costo-frase">{sito.frase}</span>}
       <span className="passo-dettaglio" style={{ color: 'var(--text)' }}>{voce.eta}</span>
       {voce.orari.map((o) => (
         <span key={o} className="passo-dettaglio">{o}</span>
@@ -70,6 +73,12 @@ function Voce({ voce }: { voce: VoceCosto }) {
       </div>
 
       {voce.nota && <span className="passo-dettaglio" style={{ color: 'var(--giallo)' }}>{voce.nota}</span>}
+
+      {sito && (
+        <a className="costo-link" href={paginaSito(sito.pagina)} target="_blank" rel="noopener noreferrer">
+          SCOPRI IL CORSO
+        </a>
+      )}
     </div>
   )
 }
