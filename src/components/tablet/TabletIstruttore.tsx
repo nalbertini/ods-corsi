@@ -44,7 +44,7 @@ export function TabletIstruttore({
   const diOggi = utili.filter((l) => chiaveGiorno(new Date(l.inizio)) === oggi)
   const corsi = [...new Map(utili.map((l) => [l.corsoId, l.corso])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'it'))
 
-  const primaDiOggi = diOggi.find((l) => fase(l, adesso) === 'aperta') ?? diOggi.find((l) => fase(l, adesso) === 'in corso') ?? diOggi[0]
+  const primaDiOggi = diOggi.find((l) => fase(l, adesso) === 'aperta') ?? diOggi[0]
   const [scheda, setScheda] = useState<'oggi' | 'corso'>(diOggi.length ? 'oggi' : 'corso')
   const [corsoId, setCorsoId] = useState<string | null>(primaDiOggi?.corsoId ?? corsi[0]?.[0] ?? null)
   const [scelta, setScelta] = useState<string | null>(

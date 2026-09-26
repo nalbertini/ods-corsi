@@ -523,7 +523,6 @@ a.btn { text-decoration: none; }
 .tb-tacca { width: 10px; height: 36px; flex-shrink: 0; }
 .tb-fase { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); white-space: nowrap; }
 .tb-giornata-riga[data-fase='aperta'] .tb-fase { color: var(--verde); }
-.tb-giornata-riga[data-fase='in corso'] .tb-fase { color: var(--giallo-testo); }
 
 .tb-piede {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex-shrink: 0;

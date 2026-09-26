@@ -163,8 +163,9 @@ export function creaTabletProva(): DatiTablet {
       if (d.sessione.stato === 'annullata') throw new Error('lezione annullata')
       const t = adesso().getTime()
       const inizio = Date.parse(d.sessione.inizio)
+      const fine = Date.parse(d.sessione.fine)
       let da: 'tablet' | 'recupero'
-      if (t >= inizio - REGOLE.primaMin * MIN && t <= inizio + REGOLE.dopoMin * MIN) da = 'tablet'
+      if (t >= inizio - REGOLE.primaMin * MIN && t <= fine + REGOLE.dopoMin * MIN) da = 'tablet'
       else if (inizio <= t && inizio >= t - REGOLE.recuperoGiorni * 24 * 60 * MIN) da = 'recupero'
       else throw new Error('fuori orario: la lezione non si può segnare adesso')
       const p = d.elenco.find((x) => x.id === personaId)

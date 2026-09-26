@@ -13,13 +13,11 @@ aprite l'appello completo e lo correggete.
 - In alto: **SALA …**, la data, l'ora, e il tasto del tema bianco.
 - **A sinistra**, la lezione in cui ci si segna adesso, con il grande tasto
   **SEGNA LA PRESENZA**. Il titolo cambia:
-  - **SI SEGNA ADESSO** — c'è una lezione aperta;
-  - **IN QUESTO MOMENTO** — la lezione è in corso ma il tempo per segnarsi è
-    passato: da qui le presenze le segna l'istruttore;
+  - **SI SEGNA ADESSO** — c'è una lezione aperta, anche se è già cominciata;
   - **OGGI** — non c'è niente di aperto; se oggi non ci sono corsi dice quando
     è la prossima lezione, se sono finiti dice **PER OGGI QUI È FINITO**.
 - **A destra**, **OGGI IN QUESTA SALA**: tutte le lezioni del giorno, con
-  FINITA, IN CORSO, SI SEGNA ORA o PIÙ TARDI.
+  FINITA, SI SEGNA ORA o PIÙ TARDI.
 - **In basso** tre tasti: **TI SEI DIMENTICATO DI SEGNARTI?**, **AREA
   ISTRUTTORE** e **TIMER**, che apre il timer della lezione. Dal timer si
   torna al tablet con **SALA**. Il tema bianco scelto qui vale anche nel
@@ -27,8 +25,10 @@ aprite l'appello completo e lo correggete.
 
 ## Quando ci si segna
 
-Da **30 minuti prima** dell'inizio a **10 minuti dopo**. Fuori da questa
-finestra il tasto SEGNA LA PRESENZA non c'è: chi arriva tardi lo dice a voi.
+Da **30 minuti prima** dell'inizio a **10 minuti dopo la fine**: per tutta la
+lezione, perché le presenze le segnano anche gli allievi e chi arriva tardi si
+segna da sé. Dopo, chi se n'è dimenticato usa **TI SEI DIMENTICATO DI
+SEGNARTI?**.
 
 ## Per gli allievi: segnarsi
 

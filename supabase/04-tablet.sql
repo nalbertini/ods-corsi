@@ -42,7 +42,8 @@ revoke all on pin_istruttori, tentativi_pin from authenticated, anon;
 -- ---------------------------------------------------------------------------
 -- Le finestre di tempo. Stanno qui, in un posto solo, perché sono scelte della
 -- palestra e non del codice.
---   · ci si segna da 30 minuti prima dell'inizio a 10 minuti dopo;
+--   · ci si segna da 30 minuti prima dell'inizio a 10 minuti dopo la fine:
+--     le presenze le segnano anche gli allievi, per tutta la lezione;
 --   · chi se n'è dimenticato recupera fino a 14 giorni indietro;
 --   · un tocco sbagliato si annulla entro 2 minuti;
 --   · dopo 5 PIN sbagliati in 5 minuti il tablet aspetta.
@@ -73,8 +74,10 @@ $$;
  * Controlla che chi chiama sia un tablet e che la lezione sia della sua sala.
  * Restituisce la lezione; solleva un errore altrimenti.
  */
+-- Con `fine` le colonne cambiano, e `create or replace` da solo non basta.
+drop function if exists lezione_del_tablet(uuid);
 create or replace function lezione_del_tablet(sessione uuid, out postazione uuid, out corso uuid,
-                                              out inizio timestamptz, out stato stato_sessione)
+                                              out inizio timestamptz, out fine timestamptz, out stato stato_sessione)
   language plpgsql stable security definer set search_path = public, extensions as $$
 declare
   sala_tablet uuid;
@@ -86,7 +89,7 @@ begin
   select * into l from sessione_in_sala(sessione);
   if l.id is null then raise exception 'lezione inesistente' using errcode = 'P0002'; end if;
   if l.sala_id is distinct from sala_tablet then raise exception 'lezione di un''altra sala' using errcode = '42501'; end if;
-  corso := l.corso_id; inizio := l.inizio; stato := l.stato;
+  corso := l.corso_id; inizio := l.inizio; fine := l.fine; stato := l.stato;
 end $$;
 
 -- ---------------------------------------------------------------------------
@@ -165,7 +168,8 @@ end $$;
 -- ---------------------------------------------------------------------------
 -- Il tocco sul nome.
 --
--- Nella finestra della lezione la presenza è «tablet»; dopo, e fino a 14 giorni
+-- Nella finestra della lezione (fino a 10 minuti dopo la fine) la presenza è
+-- «tablet»; dopo, e fino a 14 giorni
 -- indietro, è «recupero». Restituisce cosa è successo, perché il tablet lo
 -- dica a chi ha toccato:
 --   · 'segnata'   presenza scritta
@@ -183,7 +187,7 @@ begin
   select * into r from tablet_regole();
   select * into l from lezione_del_tablet(sessione);
   if l.stato = 'annullata' then raise exception 'lezione annullata' using errcode = '42501'; end if;
-  if now() between l.inizio - r.prima and l.inizio + r.dopo then da := 'tablet';
+  if now() between l.inizio - r.prima and l.fine + r.dopo then da := 'tablet';
   elsif l.inizio <= now() and l.inizio >= now() - r.recupero then da := 'recupero';
   else raise exception 'fuori orario: la lezione non si può segnare adesso' using errcode = '42501';
   end if;

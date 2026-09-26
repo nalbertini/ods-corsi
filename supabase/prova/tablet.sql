@@ -36,13 +36,15 @@ insert into iscrizioni (corso_id, persona_id, dal) values
   ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000004', current_date - 60),
   ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000005', current_date - 60);
 -- Una lezione che comincia fra 5 minuti, una di ieri, una di tre settimane fa,
--- una di domani, e una del Judo, che è in un'altra sala.
+-- una di domani, una del Judo, che è in un'altra sala, e una cominciata da
+-- quaranta minuti, ancora in corso.
 insert into sessioni (id, corso_id, inizio, fine) values
   ('eeeeeeee-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000001', now() + interval '5 minutes', now() + interval '65 minutes'),
   ('eeeeeeee-0000-0000-0000-000000000002', 'cccccccc-0000-0000-0000-000000000001', now() - interval '1 day',    now() - interval '23 hours'),
   ('eeeeeeee-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001', now() - interval '21 days',  now() - interval '21 days' + interval '1 hour'),
   ('eeeeeeee-0000-0000-0000-000000000004', 'cccccccc-0000-0000-0000-000000000001', now() + interval '1 day',    now() + interval '25 hours'),
-  ('eeeeeeee-0000-0000-0000-000000000005', 'cccccccc-0000-0000-0000-000000000002', now() + interval '5 minutes', now() + interval '65 minutes');
+  ('eeeeeeee-0000-0000-0000-000000000005', 'cccccccc-0000-0000-0000-000000000002', now() + interval '5 minutes', now() + interval '65 minutes'),
+  ('eeeeeeee-0000-0000-0000-000000000006', 'cccccccc-0000-0000-0000-000000000001', now() - interval '40 minutes', now() + interval '20 minutes');
 select imposta_pin('aaaaaaaa-0000-0000-0000-000000000002', '4321');
 
 create or replace function chi(u text) returns void language plpgsql as $$
@@ -69,7 +71,7 @@ end $$;
 \echo '--- 1. il tablet della Lotta legge il calendario della sua sala ---'
 select chi('66666666-6666-6666-6666-666666666666');
 set role authenticated;
-select atteso('lezioni della settimana', (select count(*)::text from lezioni_sala(current_date - 30, current_date + 1)), '4');
+select atteso('lezioni della settimana', (select count(*)::text from lezioni_sala(current_date - 30, current_date + 1)), '5');
 select atteso('istruttori di Lotta 2', (select istruttori from lezioni_sala(current_date, current_date + 1) limit 1), 'Federico, Maura');
 select atteso('iscritti',              (select iscritti::text from lezioni_sala(current_date, current_date + 1) limit 1), '3');
 select atteso('le persone',   tenta($$select count(*)::text from persone$$),   '0');
@@ -92,11 +94,13 @@ select atteso('e ritocca',          segna_dal_tablet('eeeeeeee-0000-0000-0000-00
 select atteso('chi non è iscritto', tenta($$select segna_dal_tablet('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000007')$$), 'NEGATO: non è iscritto a questo corso');
 select atteso('la lezione di domani', tenta($$select segna_dal_tablet('eeeeeeee-0000-0000-0000-000000000004', 'aaaaaaaa-0000-0000-0000-000000000004')$$), 'NEGATO: fuori orario…');
 select atteso('ieri, da chi se n''era dimenticato', segna_dal_tablet('eeeeeeee-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000004'), 'segnata');
+select atteso('a lezione in corso', segna_dal_tablet('eeeeeeee-0000-0000-0000-000000000006', 'aaaaaaaa-0000-0000-0000-000000000004'), 'segnata');
 select atteso('tre settimane fa', tenta($$select segna_dal_tablet('eeeeeeee-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000004')$$), 'NEGATO: fuori orario…');
 select atteso('ANNULLA subito dopo', annulla_dal_tablet('eeeeeeee-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000004')::text, 'true');
 select atteso('e rifatto', segna_dal_tablet('eeeeeeee-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000004'), 'segnata');
 reset role;
 select atteso('origine di oggi', (select origine::text from presenze where sessione_id = 'eeeeeeee-0000-0000-0000-000000000001'), 'tablet');
+select atteso('origine a lezione in corso', (select origine::text from presenze where sessione_id = 'eeeeeeee-0000-0000-0000-000000000006'), 'tablet');
 select atteso('origine di ieri', (select origine::text from presenze where sessione_id = 'eeeeeeee-0000-0000-0000-000000000002'), 'recupero');
 select atteso('segnata dal tablet', (select postazione_id::text from presenze where sessione_id = 'eeeeeeee-0000-0000-0000-000000000001'), 'dddddddd-0000-0000-0000-000000000001');
 
