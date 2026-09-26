@@ -78,10 +78,12 @@ da questi stessi file (`App` con la prop `incorporato`, vedi
 - i suoi file (voce, illustrazioni, guida) stanno un piano sotto la pagina, in
   `timer/`: lo dice `__TIMER_RADICE__` (`src/lib/radice.ts`), vuoto qui.
 
-Il tasto **SALA**, nel timer da solo, riporta a ODS Corsi: è grosso come i
-tasti del tablet, in fondo alla barra laterale, in alto sui tablet in
+Il tasto **SALA**, nel timer da solo, riporta al tablet di sala: è grosso come
+i tasti del tablet, in fondo alla barra laterale, in alto sui tablet in
 verticale, nella barra in basso sui telefoni. Apre `../`, la radice di ODS
-Corsi, che su un tablet di sala riapre il tablet della sua sala.
+Corsi, che su un tablet di sala riapre il tablet della sua sala. C'è solo lì
+(ODS Corsi se lo ricorda in `ods-corsi:modo`): altrove la radice è la pagina
+di scelta, con gli istruttori e le altre aree, e dal timer lì non si va.
 
 Il **tema** è nero o bianco, e lo stesso di ODS Corsi: le due app stanno sullo
 stesso dominio e usano la stessa chiave (`ods-tema`), quindi scelto in una vale
