@@ -1,6 +1,6 @@
 # La segreteria
 
-*Indirizzo: `#segreteria` · Per: chi lavora alla reception · Dal computer*
+*Indirizzo: `segreteria/` · Per: chi lavora alla reception · Dal computer*
 
 ← [Torna alla guida generale](../README.md)
 
@@ -10,7 +10,7 @@ rimandato al suo, con **VAI AGLI ISTRUTTORI**.
 
 ## Entrare
 
-1. Aprire <https://nalbertini.github.io/ods-corsi/#segreteria>.
+1. Aprire <https://nalbertini.github.io/ods-corsi/segreteria/>.
 2. Email e password, **ENTRA**. Si resta collegati finché non si preme
    **Esci**, in fondo al menu.
 

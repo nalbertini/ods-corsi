@@ -1,6 +1,6 @@
 # Il tablet di sala
 
-*Indirizzo: `#sala` · Per: il tablet appeso al muro, gli allievi, e voi col PIN*
+*Indirizzo: `sala/` · Per: il tablet appeso al muro, gli allievi, e voi col PIN*
 
 ← [Torna alla guida generale](README.md)
 
@@ -141,7 +141,7 @@ l'account della sala. Non premetelo per uscire: per uscire c'è **ESCI**.
 
 Lo fa la segreteria:
 
-1. Sul tablet aprire <https://nalbertini.github.io/ods-corsi/#sala>. Da quel
+1. Sul tablet aprire <https://nalbertini.github.io/ods-corsi/sala/>. Da quel
    momento il dispositivo si riapre sempre come tablet di sala.
 2. Scrivere il **nome utente della sala** (es. `lotta`) e la password, e
    premere **COLLEGA IL TABLET**.

@@ -108,7 +108,9 @@ export function impostaClientId(id: string) {
 export function indirizzoRitorno(): string {
   // Dal tablet di sala la pagina è quella di ODS Corsi: Spotify torna comunque
   // al timer, che è l'indirizzo registrato, e da lì SALA riporta al tablet.
-  const u = new URL(RADICE || window.location.href, window.location.href)
+  // Relativo alla base del documento: la sala sta in `sala/`, con la radice
+  // di ODS Corsi come base, e il timer è `timer/` da lì.
+  const u = new URL(RADICE || window.location.href, document.baseURI)
   u.search = ''
   u.hash = ''
   u.pathname = u.pathname.replace(/index\.html$/, '')

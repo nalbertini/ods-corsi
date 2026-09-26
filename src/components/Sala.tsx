@@ -5,6 +5,7 @@ import { CalendarioScreen } from './CalendarioScreen'
 import { AppelloScreen } from './AppelloScreen'
 import { Back } from './Icons'
 import { useLargo } from '../lib/largo'
+import { vaiA } from '../lib/aree'
 
 /**
  * Il calendario, e dentro una lezione l'appello.
@@ -58,10 +59,7 @@ export function Sala() {
           <button
             type="button"
             style={{ textDecoration: 'underline', font: 'inherit', letterSpacing: 'inherit', color: 'inherit' }}
-            onClick={() => {
-              window.location.hash = '#sala'
-              window.location.reload()
-            }}
+            onClick={() => vaiA('sala')}
           >
             PROVA IL TABLET DI SALA
           </button>

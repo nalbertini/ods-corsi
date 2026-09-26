@@ -1,6 +1,6 @@
 # Istruttori: il calendario e l'appello
 
-*Indirizzo: `#istruttori` · Per: istruttori e segreteria · Dal telefono*
+*Indirizzo: `istruttori/` · Per: istruttori e segreteria · Dal telefono*
 
 ← [Torna alla guida generale](README.md)
 
@@ -9,7 +9,7 @@ dentro ogni lezione, l'appello.
 
 ## Entrare
 
-1. Aprite <https://nalbertini.github.io/ods-corsi/#istruttori>.
+1. Aprite <https://nalbertini.github.io/ods-corsi/istruttori/>.
 2. Scrivete **email** e **password** dell'account che vi ha dato la palestra e
    premete **ENTRA**.
 3. Restate collegati finché non premete **ESCI** (in alto, accanto al vostro

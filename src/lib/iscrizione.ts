@@ -45,7 +45,7 @@ export const INFORMATIVA_PUBBLICA = INFORMATIVA && (!INFORMATIVA_BOZZA || !haUnS
 export const MODULO_IN_APP = !haUnServer || !!INFORMATIVA_PUBBLICA
 
 /**
- * Il modulo dell'app per la pagina pubblica (`#iscrizioni`), quella del link
+ * Il modulo dell'app per la pagina pubblica (`iscrizioni/`), quella del link
  * che si manda a chi vuole iscriversi: lì la prova non vale, perché una
  * richiesta rimasta sul telefono di chi l'ha mandata non arriva a nessuno.
  * Senza il database vero, quindi, il passo porta al modulo Google; col

@@ -11,17 +11,25 @@ si pubblica insieme a ODS Corsi, nella sottocartella `timer/` dello stesso sito.
 
 ## Cosa fa oggi
 
-L'app ha quattro indirizzi, ognuno con il suo accesso:
+L'app ha quattro indirizzi veri, ognuno con il suo accesso
+(`nalbertini.github.io/ods-corsi/segreteria/` e così via):
 
 | | |
 |---|---|
-| `#istruttori` | Il calendario e l'appello, per istruttori e segreteria. |
-| `#segreteria` | L'area della reception, solo per chi ha il ruolo di segreteria. |
-| `#iscrizioni` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
-| `#sala` | Il tablet di sala (va bene anche il vecchio `#tablet`). |
+| `istruttori/` | Il calendario e l'appello, per istruttori e segreteria. |
+| `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria. |
+| `iscrizioni/` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
+| `sala/` | Il tablet di sala. |
+
+I vecchi indirizzi col cancelletto (`#segreteria`, `#sala`, `#tablet`…)
+portano da soli a quelli nuovi, così i tablet già appesi e i link già mandati
+continuano a funzionare. GitHub Pages serve solo file che esistono, quindi la
+compilazione mette in ogni cartella una copia della pagina con
+`<base href="../">` (vedi `pagineDelleAree` in `vite.config.ts`): l'app resta
+una sola, e i file si prendono dalla radice come prima.
 
 Senza niente in fondo all'indirizzo si apre una pagina con le quattro, tranne
-su un tablet di sala, che riapre sempre il tablet. In fondo alla pagina c'è
+su un tablet di sala, che va sempre al tablet. In fondo alla pagina c'è
 anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/timer/`).
 
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello
@@ -34,7 +42,7 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
   domande e con ANNULLA per chi sbaglia; chi si è dimenticato recupera le
   lezioni delle ultime due settimane partendo dal corso; l'istruttore, col suo
   PIN, apre l'appello completo e vede chi si è segnato da sé. Si apre con
-  `#sala` in fondo all'indirizzo, e da lì il dispositivo resta un tablet.
+  `sala/` in fondo all'indirizzo, e da lì il dispositivo resta un tablet.
 - **La segreteria**: per il computer della reception, a chi ha il ruolo di
   segreteria. La **settimana** in una griglia, con gli appelli che mancano in
   rosso, e ogni lezione si apre per annullarla, dare un sostituto, spostarla di
@@ -65,7 +73,7 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
 - **L'accesso** col database: ogni area ha il suo indirizzo e la sua porta;
   l'istruttore entra nel calendario e nell'appello, la segreteria nella
   segreteria, e nessuno vede schede che non gli servono; al primo accesso l'account si lega da sé alla persona con la
-  stessa email. Chi vuole iscriversi ha la pagina pubblica (`#iscrizioni`),
+  stessa email. Chi vuole iscriversi ha la pagina pubblica (`iscrizioni/`),
   che la segreteria copia con **COPIA LINK ISCRIZIONI**.
 - **Il tema bianco**, oltre al nero del marchio: il tasto col sole in
   testata (in segreteria «Tema bianco», nel riquadro in basso) lo sceglie per
@@ -199,16 +207,16 @@ sul dispositivo e basta.
 
 In prova le porte sono aperte a tutti, e fra le aree si passa con le schede in
 cima, per far vedere l'app intera; col database vero ognuno entra dal suo
-indirizzo. La **segreteria** (`http://localhost:5173/#segreteria`) in prova è
+indirizzo. La **segreteria** (`http://localhost:5173/segreteria/`) in prova è
 aperta a tutti: i corsi, i giorni e gli
 iscritti che si cambiano lì restano su questo dispositivo, e li vedono anche il
 calendario, l'appello e il tablet. «Riparti dall'orario vero», in fondo al menu
 della segreteria, rimette tutto com'era.
 
 Il tablet di sala si prova dal link nel nastro giallo, o aprendo
-`http://localhost:5173/#sala`. In prova la sala si sceglie da un elenco, e
+`http://localhost:5173/sala/`. In prova la sala si sceglie da un elenco, e
 l'orologio si può spostare per vedere una lezione che si apre:
-`http://localhost:5173/?adesso=2026-09-24T17:55#sala` è giovedì alle sei meno
+`http://localhost:5173/sala/?adesso=2026-09-24T17:55` è giovedì alle sei meno
 cinque, con il Judo agonisti in cui ci si segna. I PIN di prova sono 1234
 (Maurizio), 2468 (Maura) e 5678 (Fabio).
 
