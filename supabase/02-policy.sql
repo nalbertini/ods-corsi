@@ -151,3 +151,6 @@ grant usage on schema public to authenticated;
 grant select, insert, update, delete on all tables in schema public to authenticated;
 revoke all on all tables in schema public from anon;
 revoke all on schema public from anon;
+
+-- Che l'API veda subito funzioni e tabelle nuove, senza aspettare.
+notify pgrst, 'reload schema';

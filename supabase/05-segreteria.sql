@@ -177,3 +177,6 @@ end $$;
 
 revoke all on function pin_impostati() from public, anon;
 grant execute on function pin_impostati() to authenticated;
+
+-- Che l'API veda subito funzioni e tabelle nuove, senza aspettare.
+notify pgrst, 'reload schema';

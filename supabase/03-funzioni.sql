@@ -107,3 +107,6 @@ begin
   select count(*) into tolte from andate;
   return tolte;
 end $$;
+
+-- Che l'API veda subito funzioni e tabelle nuove, senza aspettare.
+notify pgrst, 'reload schema';
