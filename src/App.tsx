@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Logo } from './components/Logo'
 import { Sala } from './components/Sala'
+import { Porta } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Tablet } from './components/tablet/Tablet'
 import { eUnTablet } from './lib/tablet'
@@ -12,7 +13,8 @@ import { eUnTablet } from './lib/tablet'
  * riguarda la palestra, il timer una cosa che riguarda la lezione, e tenerle
  * nello stesso posto le legava più di quanto servisse.
  *
- * Accanto ai corsi ci sono i passi per iscriversi. La sala resta montata anche
+ * Accanto ai corsi ci sono i passi per iscriversi, aperti a tutti; i corsi,
+ * con il database vero, solo dopo l'accesso (vedi `Porta`). La sala resta montata anche
  * quando si guardano le iscrizioni, così tornando si ritrova l'appello dov'era.
  *
  * Lo stesso codice fa anche da tablet di sala (`#tablet`): un'altra faccia,
@@ -46,7 +48,9 @@ function AppCorsi() {
       </nav>
       <main className="scroll">
         <div hidden={scheda !== 'corsi'}>
-          <Sala />
+          <Porta>
+            <Sala />
+          </Porta>
         </div>
         {scheda === 'iscrizioni' && <IscrizioniScreen />}
       </main>
