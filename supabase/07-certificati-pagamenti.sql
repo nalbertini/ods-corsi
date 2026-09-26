@@ -1,0 +1,87 @@
+-- ---------------------------------------------------------------------------
+-- ODS Corsi · il certificato medico e il pagamento degli iscritti
+--
+-- Per ogni iscritto la segreteria tiene due cose che all'appello non servono
+-- ma senza le quali in sala non si entra: il certificato medico (fino a
+-- quando vale, e il file) e se ha pagato (del tutto, in parte, niente, e
+-- fino a quando).
+--
+-- Il certificato è un dato sulla salute (art. 9 del GDPR): anche quello per
+-- lo sport non agonistico dice che la persona è stata visitata e con che
+-- esito. Per questo sta in una tabella a parte da `persone`, che gli
+-- istruttori leggono per fare l'appello: questa la vede solo la segreteria,
+-- e il file sta in un contenitore privato che apre solo lei, con un link che
+-- scade.
+--
+-- Si lancia dopo `06-iscrizioni.sql`. Non dà niente ad `anon`.
+-- ---------------------------------------------------------------------------
+
+do $$ begin create type stato_pagamento as enum ('da_pagare', 'in_parte', 'pagato'); exception when duplicate_object then null; end $$;
+
+-- ---------------------------------------------------------------------------
+-- Una riga per iscritto, quando c'è qualcosa da dire: chi non ce l'ha non ha
+-- certificato e deve ancora pagare.
+--
+-- `certificato_file` è il nome del file nello Storage, `<persona>/certificato-<n>.<est>`:
+-- ogni certificato nuovo ha un nome nuovo, e il vecchio si cancella quando il
+-- nuovo è arrivato. `pagato_fino` serve a chi paga il trimestre: passata la
+-- data, «pagato» torna da pagare.
+-- ---------------------------------------------------------------------------
+create table if not exists schede_iscritti (
+  persona_id        uuid primary key references persone on delete cascade,
+  certificato_scade date,
+  certificato_file  text check (certificato_file ~ '^[0-9a-f-]{36}/certificato-[0-9]+\.(jpg|jpeg|png|webp|heic|heif|pdf)$'),
+  pagamento         stato_pagamento not null default 'da_pagare',
+  pagato_fino       date,
+  pagamento_nota    text check (length(pagamento_nota) <= 300),
+  cambiata_il       timestamptz not null default now(),
+  cambiata_da       uuid references persone on delete set null,
+  -- Il file di una persona sta nella sua cartella, non in quella di un'altra.
+  constraint certificato_suo check (certificato_file is null or split_part(certificato_file, '/', 1) = persona_id::text)
+);
+create index if not exists schede_certificato on schede_iscritti (certificato_scade);
+
+-- Chi l'ha cambiata e quando, scritto dal server e non dal browser.
+create or replace function scheda_cambiata() returns trigger language plpgsql as $$
+begin
+  new.cambiata_il := now();
+  new.cambiata_da := persona_corrente();
+  return new;
+end $$;
+drop trigger if exists schede_cambiata on schede_iscritti;
+create trigger schede_cambiata before insert or update on schede_iscritti
+  for each row execute function scheda_cambiata();
+
+-- Solo la segreteria: né gli istruttori né gli iscritti.
+alter table schede_iscritti enable row level security;
+drop policy if exists schede_legge on schede_iscritti;
+drop policy if exists schede_scrive on schede_iscritti;
+drop policy if exists schede_aggiorna on schede_iscritti;
+drop policy if exists schede_cancella on schede_iscritti;
+create policy schede_legge on schede_iscritti for select to authenticated using (e_staff());
+create policy schede_scrive on schede_iscritti for insert to authenticated with check (e_staff());
+create policy schede_aggiorna on schede_iscritti for update to authenticated using (e_staff()) with check (e_staff());
+create policy schede_cancella on schede_iscritti for delete to authenticated using (e_staff());
+revoke all on schede_iscritti from anon, authenticated;
+grant select, insert, update, delete on schede_iscritti to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- I file dei certificati: un contenitore privato, solo per la segreteria.
+-- ---------------------------------------------------------------------------
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('certificati', 'certificati', false, 10485760,
+        array['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'])
+on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists certificati_carica on storage.objects;
+drop policy if exists certificati_legge on storage.objects;
+drop policy if exists certificati_cancella on storage.objects;
+create policy certificati_carica on storage.objects for insert to authenticated
+  with check (bucket_id = 'certificati' and public.e_staff()
+              and name ~ '^[0-9a-f-]{36}/certificato-[0-9]+\.(jpg|jpeg|png|webp|heic|heif|pdf)$');
+create policy certificati_legge on storage.objects for select to authenticated
+  using (bucket_id = 'certificati' and public.e_staff());
+create policy certificati_cancella on storage.objects for delete to authenticated
+  using (bucket_id = 'certificati' and public.e_staff());
+
+notify pgrst, 'reload schema';

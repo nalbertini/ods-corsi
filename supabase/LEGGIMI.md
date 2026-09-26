@@ -24,13 +24,16 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 4. `04-tablet.sql` — il tablet di sala e i PIN degli istruttori
 5. `05-segreteria.sql` — le lezioni che seguono i cambi dei corsi, il primo accesso
 6. `06-iscrizioni.sql` — il modulo di iscrizione, i suoi file, e chi può chiamare cosa
+7. `07-certificati-pagamenti.sql` — il certificato medico e il pagamento degli iscritti
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
 funzioni, quindi dopo va rilanciato anche `06-iscrizioni.sql`.
 
 Su un database già in uso, dopo un aggiornamento dell'app si rilanciano i
-file cambiati e poi `06-iscrizioni.sql`. Per la sala dei singoli giorni
+file cambiati e poi `06-iscrizioni.sql`. Per certificati e pagamenti basta
+lanciare `07-certificati-pagamenti.sql`: finché non c'è, l'elenco degli
+iscritti si vede lo stesso, e salvare un certificato dice che manca. Per la sala dei singoli giorni
 (la colonna `ricorrenze.sala_id`) sono `01-schema.sql`, `03-funzioni.sql`,
 `04-tablet.sql` e `05-segreteria.sql`: le lezioni già generate restano dove
 sono.
@@ -201,6 +204,30 @@ file finché la segreteria non la elimina («Elimina richiesta e file», nella
 richiesta). Il documento d'identità serve per il tesseramento, poi no: quanto
 tenerlo è una scelta della palestra da mettere nell'informativa.
 
+### Il certificato medico e il pagamento
+
+Nella scheda di ogni iscritto (**SEGRETERIA → ISCRITTI**) la segreteria
+carica il certificato medico, con la data fino a cui vale, e segna se ha
+pagato: da pagare, in parte o pagato, e per il trimestre fino a quando.
+L'elenco dice chi non è in regola e si filtra.
+
+Cosa fa `07-certificati-pagamenti.sql`:
+
+- la tabella `schede_iscritti`, una riga per persona, che legge e cambia solo
+  la segreteria. Sta a parte da `persone` apposta: gli istruttori leggono
+  `persone` per l'appello, e il certificato è un dato sulla salute. Chi l'ha
+  cambiata e quando lo scrive il server;
+- il contenitore **`certificati`** nello Storage, privato, solo per la
+  segreteria: il file sta in `<persona>/certificato-<n>.<est>`, si apre con un
+  link di dieci minuti, e quando ne arriva uno nuovo il vecchio si cancella;
+- la riga se ne va con la persona (`on delete cascade`). Il file, se la
+  persona si cancella dal database a mano, resta nel contenitore e va tolto
+  a mano anche lui.
+
+Il modulo online non chiede il certificato: si consegna in segreteria, che lo
+carica. L'esportazione dei dati di una persona (REGOLE E PRIVACY) lo
+comprende.
+
 ## 6. Il calendario
 
 `materializza_sessioni` trasforma le ricorrenze in lezioni vere, ognuna nella
@@ -316,8 +343,11 @@ non è un segreto trapelato. A proteggere i dati sono le policy di
   scaduto e `pulisci_presenze()` lo cancella; il periodo di partenza è
   ventiquattro mesi e si cambia in **REGOLE E PRIVACY**. È una scelta della
   palestra, non una regola che decide il codice.
-- **Niente dati sanitari.** Certificati medici e simili sono un'altra
-  categoria, con un altro livello di obblighi: qui dentro non ci vanno.
+- **Il certificato medico è un dato sanitario.** È l'unico che l'app tiene,
+  perché senza non si fa sport, e lo vede solo la segreteria. È un'altra
+  categoria di dati (art. 9 del GDPR), con altri obblighi: la palestra deve
+  dirlo nell'informativa (la bozza ne parla già) e decidere per quanto
+  tenerlo. Patologie e simili, invece, non ci vanno.
 
 ## Provare lo schema senza Supabase
 
@@ -332,5 +362,6 @@ e il blocco, e che il tablet non veda niente più di quel che deve;
 `segreteria.sql` prova cosa succede alle lezioni quando un corso, o uno dei
 suoi giorni, cambia sala, quando cambiano istruttore o giorni, o si archivia, e il primo accesso; `iscrizioni.sql`
 prova il modulo di iscrizione: cosa può fare chi non ha un accesso, i limiti
-sui file, e chi accoglie le richieste. `finto-supabase.sql` rifà anche le due
+sui file, e chi accoglie le richieste; `certificati.sql` prova che certificati
+e pagamenti li veda e li cambi solo la segreteria. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

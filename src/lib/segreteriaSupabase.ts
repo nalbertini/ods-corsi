@@ -1,7 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StoricoSeg } from './segreteria'
+import type { CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
+import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 
 /**
  * La segreteria col database vero.
@@ -29,13 +30,32 @@ interface RigaSessione {
 
 type Iscrizione = { corso_id: string; persona_id: string; dal: string; al: string | null }
 
+type Scheda = { certificato_scade: string | null; certificato_file: string | null; pagamento: StatoPagamento; pagato_fino: string | null; pagamento_nota: string | null }
+
+/** I certificati medici: un contenitore privato, che apre solo la segreteria (`07-certificati-pagamenti.sql`). */
+const CERTIFICATI = 'certificati'
+const DURATA_LINK = 600
+
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
 
 /** Un errore del database detto in modo che la segreteria lo capisca. */
 function guaio(e: { message?: string; code?: string } | null): Error {
+  // La tabella non c'è sul database: 07-certificati-pagamenti.sql non è stato lanciato.
+  if (e?.code === 'PGRST200' || e?.code === 'PGRST205' || e?.code === '42P01')
+    return new Error('Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
   return new Error(e?.message || 'Il server non risponde')
+}
+
+/** Un errore dello Storage detto per la segreteria. */
+function guaioFile(e: { message?: string; statusCode?: string } | null): Error {
+  const m = e?.message ?? ''
+  if (/row-level security|unauthorized|403/i.test(m + (e?.statusCode ?? ''))) return new Error('Non hai il permesso: serve un accesso da segreteria')
+  if (/bucket not found/i.test(m)) return new Error('Il contenitore dei certificati non c’è: va lanciato 07-certificati-pagamenti.sql')
+  if (/exceeded|too large|413/i.test(m + (e?.statusCode ?? ''))) return new Error('Il file è troppo grande: al massimo 10 MB')
+  if (/mime|type/i.test(m)) return new Error('Questo tipo di file non va: serve una foto o un PDF')
+  return new Error(m || 'Il file non è partito: riprova')
 }
 
 export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
@@ -43,6 +63,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     if (r.error) throw guaio(r.error)
     return r.data
   }
+
+  /** Dove sta il certificato di una persona, se c'è. */
+  const fileCertificato = async (personaId: string) =>
+    (ok(await db.from('schede_iscritti').select('certificato_file').eq('persona_id', personaId).maybeSingle()) as { certificato_file: string | null } | null)?.certificato_file ?? null
   const oggi = () => chiaveGiorno(new Date())
 
   /** Chi insegna ogni corso, per nome, col primo di riferimento davanti. */
@@ -247,14 +271,25 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async persone() {
-      const righe = ok(
-        await db.from('persone').select('id, nome, cognome, email, telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )').eq('ruolo', 'iscritto').order('cognome'),
-      ) as unknown as Array<{
+      const campi = 'id, nome, cognome, email, telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )'
+      const leggi = (schede: boolean) =>
+        db
+          .from('persone')
+          .select(schede ? `${campi}, schede_iscritti ( certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota )` : campi)
+          .eq('ruolo', 'iscritto')
+          .order('cognome')
+      let r0 = await leggi(true)
+      // Un database dove 07-certificati-pagamenti.sql non è ancora passato: l'elenco si vede lo stesso.
+      if (r0.error?.code === 'PGRST200') r0 = await leggi(false)
+      const righe = ok(r0) as unknown as Array<{
         id: string; nome: string; cognome: string; email: string | null; telefono: string | null; attiva: boolean; creata_il: string
         iscrizioni: Array<{ corso_id: string; dal: string; al: string | null }>
+        schede_iscritti?: Scheda | Scheda[] | null
       }>
-      return righe.map(
-        (r): PersonaSeg => ({
+      return righe.map((r): PersonaSeg => {
+        // Una a una con la persona: PostgREST la dà come oggetto, ma meglio non contarci.
+        const s = Array.isArray(r.schede_iscritti) ? r.schede_iscritti[0] : r.schede_iscritti
+        return {
           id: r.id,
           nome: r.nome,
           cognome: r.cognome,
@@ -263,8 +298,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           attiva: r.attiva,
           creataIl: r.creata_il.slice(0, 10),
           iscrizioni: r.iscrizioni.map((i) => ({ corsoId: i.corso_id, dal: i.dal, al: i.al ?? undefined })),
-        }),
-      )
+          certificato: { scade: s?.certificato_scade ?? undefined, conFile: !!s?.certificato_file },
+          pagamento: { stato: s?.pagamento ?? 'da_pagare', fino: s?.pagato_fino ?? undefined, nota: s?.pagamento_nota ?? undefined },
+        }
+      })
     },
 
     async frequenze() {
@@ -320,6 +357,59 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async termina(personaId, corsoId) {
       ok(await db.from('iscrizioni').update({ al: oggi() }).eq('persona_id', personaId).eq('corso_id', corsoId))
+    },
+
+    async salvaCertificato(personaId, scade, file) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(scade)) throw new Error('Serve la data di scadenza del certificato')
+      if (!file) {
+        ok(await db.from('schede_iscritti').upsert({ persona_id: personaId, certificato_scade: scade }, { onConflict: 'persona_id' }))
+        return
+      }
+      const est = ESTENSIONI[file.type]
+      if (!est) throw new Error('Questo tipo di file non va: serve una foto o un PDF')
+      if (file.size > MASSIMO_FILE) throw new Error('Il file è troppo grande: al massimo 10 MB')
+      const prima = await fileCertificato(personaId)
+      // Un nome nuovo ogni volta: il vecchio resta finché il nuovo non è scritto in scheda.
+      const nome = `${personaId}/certificato-${Date.now()}.${est}`
+      const su = await db.storage.from(CERTIFICATI).upload(nome, file, { contentType: file.type, upsert: false })
+      if (su.error) throw guaioFile(su.error)
+      const { error } = await db.from('schede_iscritti').upsert({ persona_id: personaId, certificato_scade: scade, certificato_file: nome }, { onConflict: 'persona_id' })
+      if (error) {
+        await db.storage.from(CERTIFICATI).remove([nome])
+        throw guaio(error)
+      }
+      // Se il vecchio non si cancella resta un file in più, non un guaio: lo si dice e basta.
+      if (prima && prima !== nome) {
+        const via = await db.storage.from(CERTIFICATI).remove([prima])
+        if (via.error) console.warn('Il certificato vecchio non si è cancellato:', prima, via.error.message)
+      }
+    },
+
+    async togliCertificato(personaId) {
+      const prima = await fileCertificato(personaId)
+      if (prima) {
+        const via = await db.storage.from(CERTIFICATI).remove([prima])
+        if (via.error) throw guaioFile(via.error)
+      }
+      ok(await db.from('schede_iscritti').update({ certificato_scade: null, certificato_file: null }).eq('persona_id', personaId))
+    },
+
+    async apriCertificato(personaId) {
+      const nome = await fileCertificato(personaId)
+      if (!nome) return null
+      const { data, error } = await db.storage.from(CERTIFICATI).createSignedUrl(nome, DURATA_LINK)
+      if (error) throw guaioFile(error)
+      return { url: data.signedUrl, pdf: nome.endsWith('.pdf') }
+    },
+
+    async salvaPagamento(personaId, p) {
+      const nota = p.nota?.trim() || null
+      if (nota && nota.length > 300) throw new Error('La nota del pagamento è troppo lunga: al massimo 300 caratteri')
+      ok(
+        await db
+          .from('schede_iscritti')
+          .upsert({ persona_id: personaId, pagamento: p.stato, pagato_fino: p.fino || null, pagamento_nota: nota }, { onConflict: 'persona_id' }),
+      )
     },
     async registro(da, a) {
       const fino = new Date(a)
@@ -450,12 +540,14 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async esporta(personaId) {
-      const [persona, isc, pres, rich] = await Promise.all([
+      const [persona, isc, pres, rich, scheda] = await Promise.all([
         db.from('persone').select('nome, cognome, email, telefono, ruolo, attiva, creata_il').eq('id', personaId).single(),
         db.from('iscrizioni').select('dal, al, corsi ( nome )').eq('persona_id', personaId),
         db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId),
         // Le richieste dal modulo di iscrizione: i file restano nello Storage, qui c'è quali sono.
         db.from('richieste_iscrizione').select('creata_il, stato, nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono, genitore_nome, genitore_cognome, genitore_codice_fiscale, corsi, formula, note, gestita_il').eq('persona_id', personaId),
+        // Il certificato: la scadenza e il nome del file, che si scarica dalla scheda.
+        db.from('schede_iscritti').select('certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota, cambiata_il').eq('persona_id', personaId).maybeSingle(),
       ])
       return {
         esportato_il: new Date().toISOString(),
@@ -463,6 +555,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         iscrizioni: ok(isc),
         presenze: ok(pres),
         richieste_di_iscrizione: ok(rich),
+        certificato_e_pagamento: ok(scheda),
       }
     },
   }

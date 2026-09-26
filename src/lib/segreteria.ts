@@ -89,6 +89,29 @@ export interface PersonaSeg {
   creataIl: string
   /** Anche quelle terminate: dicono da quando a quando. */
   iscrizioni: IscrizioneSeg[]
+  certificato: CertificatoSeg
+  pagamento: PagamentoSeg
+}
+
+/** Il certificato medico: fino a quando vale, e se il file c'è. */
+export interface CertificatoSeg {
+  scade?: string
+  conFile: boolean
+}
+
+export type StatoPagamento = 'da_pagare' | 'in_parte' | 'pagato'
+
+export interface PagamentoSeg {
+  stato: StatoPagamento
+  /** Per chi paga il trimestre: passata la data, torna da pagare. */
+  fino?: string
+  nota?: string
+}
+
+/** Un file da aprire: il link vale poco, col database dieci minuti. */
+export interface FileSeg {
+  url: string
+  pdf: boolean
 }
 
 export interface Frequenza {
@@ -188,6 +211,16 @@ export interface DatiSegreteria {
   attivaPersona(personaId: string, attiva: boolean): Promise<void>
   iscrivi(personaId: string, corsoId: string): Promise<void>
   termina(personaId: string, corsoId: string): Promise<void>
+  /**
+   * Il certificato medico: la scadenza e, se c'è, il file nuovo, che prende
+   * il posto del vecchio. Senza file cambia solo la scadenza.
+   */
+  salvaCertificato(personaId: string, scade: string, file?: File): Promise<void>
+  /** Toglie scadenza e file. */
+  togliCertificato(personaId: string): Promise<void>
+  /** Il file del certificato, o `null` se non c'è. */
+  apriCertificato(personaId: string): Promise<FileSeg | null>
+  salvaPagamento(personaId: string, p: PagamentoSeg): Promise<void>
 
   /** Le lezioni già cominciate fra due giorni, con i loro appelli. */
   registro(da: Date, a: Date): Promise<RigaRegistro[]>
@@ -208,6 +241,40 @@ export interface DatiSegreteria {
 
 /** Un'iscrizione vale oggi se è cominciata e non è finita. */
 export const inCorso = (i: IscrizioneSeg, oggi: string) => i.dal <= oggi && (!i.al || i.al >= oggi)
+
+/** Quanti giorni prima della scadenza un certificato si segna «in scadenza». */
+export const AVVISO_CERTIFICATO = 30
+
+export type ComeCertificato = 'manca' | 'scaduto' | 'in_scadenza' | 'valido'
+
+/** Senza file o senza data il certificato non c'è: in sala non si entra. */
+export function comeCertificato(c: CertificatoSeg, oggi: string): ComeCertificato {
+  if (!c.scade || !c.conFile) return 'manca'
+  if (c.scade < oggi) return 'scaduto'
+  return c.scade <= spostaGiorno(oggi, AVVISO_CERTIFICATO) ? 'in_scadenza' : 'valido'
+}
+
+export type ComePaga = StatoPagamento | 'scaduto'
+
+/** Pagato fino a una data passata vuol dire da pagare di nuovo. */
+export const comePaga = (p: PagamentoSeg, oggi: string): ComePaga => (p.stato === 'pagato' && p.fino && p.fino < oggi ? 'scaduto' : p.stato)
+
+/** In regola: certificato valido (anche se in scadenza) e pagato. */
+export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento'>, oggi: string) =>
+  ['valido', 'in_scadenza'].includes(comeCertificato(p.certificato, oggi)) && comePaga(p.pagamento, oggi) === 'pagato'
+
+export const PAGAMENTI: Array<[StatoPagamento, string]> = [
+  ['da_pagare', 'DA PAGARE'],
+  ['in_parte', 'IN PARTE'],
+  ['pagato', 'PAGATO'],
+]
+
+/** Un giorno `AAAA-MM-GG` spostato di tanti giorni, senza passare dai fusi. */
+function spostaGiorno(g: string, giorni: number) {
+  const [a, m, d] = g.split('-').map(Number)
+  const x = new Date(Date.UTC(a, m - 1, d + giorni))
+  return x.toISOString().slice(0, 10)
+}
 
 export const COLORI = [
   { nome: 'Blu', hex: '#1b8ac4' },

@@ -53,6 +53,9 @@ export interface PersonaProva {
   telefono?: string
   attiva: boolean
   creataIl: string
+  /** Solo degli iscritti, e anche questi possono mancare in un archivio già salvato. */
+  certificato?: { scade?: string; file?: string }
+  pagamento?: { stato: 'da_pagare' | 'in_parte' | 'pagato'; fino?: string; nota?: string }
 }
 
 export interface IscrizioneProva {
@@ -183,6 +186,32 @@ function elenco(seme: number, quanti: number): Array<{ cognome: string; nome: st
 const idPersona = (p: { cognome: string; nome: string }) => `p-${`${p.cognome} ${p.nome}`.toLowerCase().replace(/[^a-z]+/g, '-')}`
 export const idRicorrenza = (corsoId: string, giorno: number, ora: string) => `${corsoId}~${giorno}~${ora}`
 
+/**
+ * Certificato e pagamento inventati, uguali a ogni partenza: quasi tutti in
+ * regola, e qualcuno no, per far vedere i filtri. Le date contano dall'inizio
+ * della stagione, non da oggi, così una prova rifatta dice le stesse cose.
+ */
+function inRegolaDiProva(id: string): Pick<PersonaProva, 'certificato' | 'pagamento'> {
+  const h = [...id].reduce((s, c) => (s * 31 + c.charCodeAt(0)) % 9973, 7)
+  const giorno = (n: number) => {
+    const [a, m, d] = STAGIONE.dal.split('-').map(Number)
+    return new Date(Date.UTC(a, m - 1, d + n)).toISOString().slice(0, 10)
+  }
+  const cert = h % 12
+  const paga = (h >> 4) % 12
+  return {
+    certificato: cert === 0 ? undefined : { scade: giorno(cert === 1 ? -5 : cert === 2 ? 30 : 180 + cert * 20), file: 'certificato.pdf' },
+    pagamento:
+      paga === 0
+        ? { stato: 'da_pagare' }
+        : paga === 1
+          ? { stato: 'in_parte', nota: 'Manca il saldo del trimestre' }
+          : paga === 2
+            ? { stato: 'pagato', fino: giorno(-1) }
+            : { stato: 'pagato', fino: paga % 2 ? STAGIONE.al : giorno(90) },
+  }
+}
+
 function iniziale(): Archivio {
   const persone = new Map<string, PersonaProva>()
   for (const [id, nome] of Object.entries(ISTRUTTORI)) {
@@ -204,6 +233,7 @@ function iniziale(): Archivio {
           email: conEmail ? `${p.nome}.${p.cognome}`.toLowerCase().replace(/[^a-z.]+/g, '') + '@esempio.it' : undefined,
           attiva: true,
           creataIl: STAGIONE.dal,
+          ...inRegolaDiProva(id),
         })
       }
       iscrizioni.push({ corsoId: c.id, personaId: id, dal: STAGIONE.dal })

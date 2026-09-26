@@ -43,7 +43,8 @@ anche il **timer**: è solo un collegamento all'app pubblicata
   istruttori, posti, colore e i giorni in cui si fanno, ognuno anche in
   una sala diversa (il lunedì in Tatami, il giovedì in Lotta). Gli **iscritti**, da
   cercare, iscrivere e togliere dai corsi, con quanto vengono negli ultimi
-  trenta giorni. Le **presenze** del mese: medie per corso, chi si sta
+  trenta giorni, il **certificato medico** (il file e fino a quando vale) e lo
+  stato del **pagamento**, con chi non è in regola in evidenza. Le **presenze** del mese: medie per corso, chi si sta
   perdendo, gli appelli che mancano, e il CSV. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare.
   **Istruttori e accessi**, coi PIN del tablet. Le **regole**: per quanto si
@@ -146,6 +147,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
 | `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
 | `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già. |
+| `supabase/prova/certificati.sql` | Certificati medici e pagamenti: li vede e li cambia solo la segreteria, e il file di una persona sta nella sua cartella. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`
