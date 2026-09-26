@@ -39,7 +39,8 @@ interface Definizione {
   iscritti: string[]
 }
 
-// L'orario 2026/27 del volantino «Corsi e attività». Lunedì 1, venerdì 5.
+// L'orario 2026/27 del volantino «Corsi e attività», corretto dove il foglio
+// dei costi dice altro (vale il foglio dei costi). Lunedì 1, venerdì 5.
 const LMV = [1, 3, 5]
 const MG = [2, 4]
 const ogni = (giorni: number[], ora: string, durata: number): Orario[] => giorni.map((giorno) => ({ giorno, ora, durata }))
@@ -85,28 +86,31 @@ const CORSI: Definizione[] = [
 
   { id: 'psicomotricita', nome: 'Psicomotricità', colore: MOTRICITA, sala: 'Motricità', istruttori: [], orari: [...ogni([5], '17:00', 50), ...ogni([5], '18:00', 50)], iscritti: elenco(6, 9) },
   { id: 'giocomotricita', nome: 'Giocomotricità', colore: MOTRICITA, sala: 'Lotta', istruttori: [], orari: ogni(MG, '17:00', 50), iscritti: elenco(7, 8) },
-  { id: 'avviamento', nome: 'Avviamento arti marziali', colore: MOTRICITA, sala: 'Tatami', istruttori: [], orari: ogni(MG, '17:00', 60), iscritti: elenco(8, 10) },
+  { id: 'avviamento', nome: 'Avviamento arti marziali 1', colore: MOTRICITA, sala: 'Tatami', istruttori: [], orari: ogni(MG, '17:00', 60), iscritti: elenco(8, 10) },
 
   { id: 'lotta-2', nome: 'Lotta 2', colore: LOTTA, sala: 'Lotta', istruttori: ['Maura', 'Federico'], orari: ogni(LMV, '17:00', 60), iscritti: elenco(9, 12) },
   {
     id: 'lotta-3', nome: 'Lotta 3', colore: LOTTA, sala: 'Lotta', istruttori: ['Maura', 'Federico'],
-    orari: [...ogni([1, 3], '18:00', 90), { giorno: 2, ora: '18:00', durata: 60 }, ...ogni([5], '18:00', 60)],
+    orari: ogni([1, 2, 3, 5], '18:00', 60),
     iscritti: elenco(10, 13),
   },
 
-  { id: 'pesi-1', nome: 'Pesi 1', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni(LMV, '17:00', 60), iscritti: elenco(11, 8) },
-  { id: 'pesi-2', nome: 'Pesi 2', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni([1, 5], '18:00', 60), iscritti: elenco(12, 9) },
-  { id: 'body-functional', nome: 'Body functional', colore: PESI, sala: 'Pesi', istruttori: ['Tiziano'], orari: ogni([3], '18:00', 60), iscritti: elenco(13, 11) },
+  { id: 'pesi-1', nome: 'Pesistica 1', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni(LMV, '17:00', 60), iscritti: elenco(11, 8) },
+  { id: 'pesi-2', nome: 'Pesistica 2', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni(LMV, '18:00', 60), iscritti: elenco(12, 9) },
+  { id: 'body-functional', nome: 'Body functional', colore: PESI, sala: 'Motricità', istruttori: ['Tiziano'], orari: ogni([3], '18:00', 60), iscritti: elenco(13, 11) },
   { id: 'pesi-agonisti', nome: 'Pesi agonisti', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni(MG, '17:00', 60), iscritti: elenco(14, 7) },
 
   { id: 'aikido-2', nome: 'Aikido 2', colore: MOTRICITA, sala: 'Motricità', istruttori: ['Fabio'], orari: ogni([1, 4], '17:00', 60), iscritti: elenco(15, 8) },
   { id: 'aikido-3', nome: 'Aikido 3', colore: MOTRICITA, sala: 'Motricità', istruttori: ['Fabio'], orari: ogni([1, 4], '18:00', 60), iscritti: elenco(16, 9) },
 
-  { id: 'pre-pugilistica', nome: 'Pre-pugilistica', colore: LOTTA, sala: 'Pesi', istruttori: [], orari: ogni([3], '19:00', 60), iscritti: elenco(17, 10) },
+  { id: 'pre-pugilistica', nome: 'Prepugilistica', colore: LOTTA, sala: 'Pesi', istruttori: [], orari: ogni(LMV, '19:00', 90), iscritti: elenco(17, 10) },
   { id: 'mga', nome: 'MGA · metodo globale autodifesa', colore: LOTTA, sala: 'Lotta', istruttori: [], orari: ogni([5], '19:00', 60), iscritti: elenco(18, 9) },
 
   { id: 'prep-atletica-1', nome: 'Preparazione atletica 1', colore: PESI, sala: 'Pesi', istruttori: ['Maurizio', 'Katia', 'Manuel'], orari: ogni(MG, '18:00', 60), iscritti: elenco(19, 12) },
   { id: 'prep-atletica-2', nome: 'Preparazione atletica 2', colore: PESI, sala: 'Pesi', istruttori: ['Maurizio', 'Katia', 'Manuel'], orari: ogni(MG, '19:30', 60), iscritti: elenco(20, 11) },
+  // Si allena insieme alla Pesistica 2, stessa sala e stessa ora: due corsi
+  // perché iscritti e prezzi sono diversi, e ognuno ha il suo appello.
+  { id: 'prep-atletica-3', nome: 'Preparazione atletica 3', colore: PESI, sala: 'Pesi', istruttori: ['Maurizio', 'Katia', 'Manuel'], orari: ogni(LMV, '18:00', 60), iscritti: elenco(21, 10) },
 ]
 
 /** Una persona per ogni nome che compare in un elenco, con un id stabile. */
