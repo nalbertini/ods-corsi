@@ -43,9 +43,11 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
   accende quando l'informativa privacy (`public/informativa.html`, per ora una
   bozza da far approvare alla palestra) è approvata; fino ad allora resta il
   link a Google.
-- **L'accesso** col database: calendario, appello e segreteria sono per
-  istruttori e segreteria; al primo accesso l'account si lega da sé alla
-  persona con la stessa email.
+- **L'accesso** col database: l'istruttore entra nel calendario e
+  nell'appello, la segreteria nella segreteria, e nessuno vede schede che non
+  gli servono; al primo accesso l'account si lega da sé alla persona con la
+  stessa email. Chi vuole iscriversi ha la pagina pubblica (`#iscrizioni`),
+  che la segreteria copia con **COPIA LINK ISCRIZIONI**.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa.
 
@@ -60,7 +62,9 @@ Senza configurazione parte in **modalità prova**, con l'orario vero della stagi
 2026/27, degli iscritti inventati e un nastro giallo che lo dichiara. Le presenze segnate in prova restano
 sul dispositivo e basta.
 
-La scheda **SEGRETERIA** in prova è aperta a tutti: i corsi, i giorni e gli
+In prova ci sono tutte e tre le schede, APPELLO, ISCRIZIONI e SEGRETERIA, per
+far vedere l'app intera; col database vero ognuno vede solo la sua parte. La
+**SEGRETERIA** in prova è aperta a tutti: i corsi, i giorni e gli
 iscritti che si cambiano lì restano su questo dispositivo, e li vedono anche il
 calendario, l'appello e il tablet. «Riparti dall'orario vero», in fondo al menu
 della segreteria, rimette tutto com'era.

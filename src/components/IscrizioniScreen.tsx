@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { INFORMATIVA_PUBBLICA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, PROVA, type Passo } from '../lib/iscrizione'
+import { INFORMATIVA_PUBBLICA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, PASSI_PUBBLICI, PROVA, type Passo } from '../lib/iscrizione'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
 import { Costi } from './Costi'
 import { ModuloIscrizione } from './ModuloIscrizione'

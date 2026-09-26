@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Logo } from './components/Logo'
 import { Sala } from './components/Sala'
 import { Porta } from './components/Porta'
@@ -16,15 +16,17 @@ import { inProvaScelta, scegliProva } from './lib/dati'
  * riguarda la palestra, il timer una cosa che riguarda la lezione, e tenerle
  * nello stesso posto le legava più di quanto servisse.
  *
- * Accanto ai corsi ci sono i passi per iscriversi, aperti a tutti; i corsi,
- * con il database vero, solo dopo l'accesso (vedi `Porta`). La sala resta montata anche
- * quando si guardano le iscrizioni, così tornando si ritrova l'appello dov'era.
+ * Con il database vero si entra dall'accesso (vedi `Porta`) e ognuno trova
+ * solo il suo posto, senza schede: l'istruttore l'appello, chi ha il ruolo di
+ * segreteria la sua area, a tutto schermo, per il computer della reception.
+ * Chi vuole iscriversi non passa di qui: ha il suo link, qui sotto.
+ *
+ * In prova invece le schede ci sono tutte — appello, iscrizioni, segreteria —
+ * perché la prova serve a far vedere l'app intera; la sala resta montata anche
+ * quando si guarda altro, così tornando si ritrova l'appello dov'era.
  *
  * Lo stesso codice fa anche da tablet di sala (`#tablet`): un'altra faccia,
- * a pieno schermo, per il tablet appeso al muro. E chi ha il ruolo di
- * segreteria ha la sua area, a tutto schermo, per il computer della reception;
- * in prova la segreteria è aperta a tutti. Chi è di segreteria, appena entra,
- * finisce lì: è il suo posto; l'appello resta a un tocco, da «← APPELLO».
+ * a pieno schermo, per il tablet appeso al muro.
  *
  * Con `#iscrizioni` in fondo all'indirizzo si apre invece la pagina pubblica,
  * quella del link da mandare a chi vuole iscriversi: solo i passi, i costi e
@@ -59,37 +61,26 @@ function Iscrizioni() {
 function AppCorsi() {
   const [scheda, setScheda] = useState<'corsi' | 'iscrizioni' | 'segreteria'>('corsi')
   const [chi, setChi] = useState<Personale | null>(null)
-  const segreteria = !serveAccesso || chi?.ruolo === 'staff'
 
-  // Una volta per accesso: tornando all'appello dalla segreteria la porta si
-  // rimonta e ridice chi c'è, e senza questo si rimbalzerebbe di nuovo là.
-  const portato = useRef(false)
-  const onChi = useCallback((p: Personale | null) => {
-    setChi(p)
-    if (!p) portato.current = false
-    else if (p.ruolo === 'staff' && !portato.current) {
-      portato.current = true
-      setScheda('segreteria')
-    }
-  }, [])
-
-  if (scheda === 'segreteria' && segreteria) {
+  // Col database vero ognuno ha il suo posto e basta: chi è di segreteria sta
+  // nella segreteria, l'istruttore nell'appello.
+  if (serveAccesso && chi?.ruolo === 'staff') {
     return (
       <Segreteria
-        nome={chi ? `${chi.nome} ${chi.cognome}` : 'Segreteria di prova'}
-        prova={!serveAccesso}
+        nome={`${chi.nome} ${chi.cognome}`}
+        prova={false}
+        onEsci={() => void esci().then(() => setChi(null))}
+      />
+    )
+  }
+
+  if (!serveAccesso && scheda === 'segreteria') {
+    return (
+      <Segreteria
+        nome="Segreteria di prova"
+        prova
         onApp={() => setScheda('corsi')}
-        onEsci={
-          serveAccesso
-            ? () =>
-                void esci().then(() => {
-                  onChi(null)
-                  setScheda('corsi')
-                })
-            : inProvaScelta
-              ? () => scegliProva(false)
-              : undefined
-        }
+        onEsci={inProvaScelta ? () => scegliProva(false) : undefined}
       />
     )
   }
@@ -102,23 +93,23 @@ function AppCorsi() {
           <span className="testata-nome">OFFICINE DELLO SPORT</span>
           <span className="testata-luogo">CORSI · COLLEGNO</span>
         </div>
-        <nav className="schede">
-          <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
-            APPELLO
-          </button>
-          <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
-            ISCRIZIONI
-          </button>
-          {segreteria && (
+        {!serveAccesso && (
+          <nav className="schede">
+            <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
+              APPELLO
+            </button>
+            <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
+              ISCRIZIONI
+            </button>
             <button className="scheda" data-on={false} onClick={() => setScheda('segreteria')}>
               SEGRETERIA
             </button>
-          )}
-        </nav>
+          </nav>
+        )}
       </header>
       <main className="scroll">
         <div className="faccia-corsi" hidden={scheda !== 'corsi'}>
-          <Porta onChi={onChi}>
+          <Porta onChi={setChi}>
             <Sala />
           </Porta>
         </div>
