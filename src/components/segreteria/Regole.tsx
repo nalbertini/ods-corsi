@@ -193,7 +193,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             )}
           </div>
           <div className="stack" style={{ gap: 6 }}>
-            <span className="sg-etichetta" style={{ color: 'var(--giallo)' }}>NIENTE DATI SANITARI</span>
+            <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>NIENTE DATI SANITARI</span>
             <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
               Certificati medici, patologie e simili sono un'altra categoria di dati, con altri obblighi. In nessun campo, nemmeno nelle note.
             </span>

@@ -5,7 +5,8 @@
 export function Logo({ width = 58 }: { width?: number }) {
   const gears: Array<[number, number, string]> = [
     [38, 40, '#1b8ac4'],
-    [80, 40, '#f2f2f0'],
+    // L'ingranaggio bianco è il colore del testo: sul tema bianco diventa nero.
+    [80, 40, 'var(--text)'],
     [122, 40, '#e4292a'],
     [59, 74, '#f4c31b'],
     [101, 74, '#16a54a'],

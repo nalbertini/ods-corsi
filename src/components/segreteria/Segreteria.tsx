@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
+import { TastoTema } from '../TastoTema'
 import { Settimana } from './Settimana'
 import { Corsi } from './Corsi'
 import { Iscritti } from './Iscritti'
@@ -125,6 +126,7 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
               Riparti dall'orario vero
             </button>
           )}
+          <TastoTema link />
           {onEsci && (
             <button type="button" className="sg-link" onClick={onEsci}>
               Esci

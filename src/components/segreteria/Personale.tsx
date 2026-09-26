@@ -78,7 +78,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
                     <option value="staff">Segreteria</option>
                   </select>
                 </span>
-                <span role="cell" className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde)' : 'var(--giallo)' }}>
+                <span role="cell" className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde)' : 'var(--giallo-testo)' }}>
                   {!p.attiva ? 'SENZA ACCESSO' : p.collegato ? 'HA FATTO L’ACCESSO' : 'NON ANCORA ENTRATO'}
                 </span>
                 <span role="cell">

@@ -72,7 +72,7 @@ function Voce({ voce }: { voce: VoceCosto }) {
         ))}
       </div>
 
-      {voce.nota && <span className="passo-dettaglio" style={{ color: 'var(--giallo)' }}>{voce.nota}</span>}
+      {voce.nota && <span className="passo-dettaglio" style={{ color: 'var(--giallo-testo)' }}>{voce.nota}</span>}
 
       {sito && (
         <a className="costo-link" href={paginaSito(sito.pagina)} target="_blank" rel="noopener noreferrer">

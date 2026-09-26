@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Logo } from './components/Logo'
+import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
 import { Porta } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
@@ -50,6 +51,7 @@ function Iscrizioni() {
           <span className="testata-nome">OFFICINE DELLO SPORT</span>
           <span className="testata-luogo">ISCRIZIONI · COLLEGNO</span>
         </div>
+        <TastoTema />
       </header>
       <main className="scroll">
         <IscrizioniScreen pubblica />
@@ -93,6 +95,7 @@ function AppCorsi() {
           <span className="testata-nome">OFFICINE DELLO SPORT</span>
           <span className="testata-luogo">CORSI · COLLEGNO</span>
         </div>
+        <TastoTema />
         {!serveAccesso && (
           <nav className="schede">
             <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>

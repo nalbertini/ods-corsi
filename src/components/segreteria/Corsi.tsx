@@ -77,7 +77,7 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
                   </span>
                 </span>
                 <span style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(c)}</span>
-                <span className="num" style={{ fontSize: 17, fontWeight: 700, textAlign: 'right', color: c.capienza && n >= c.capienza ? 'var(--giallo)' : 'var(--text)' }}>
+                <span className="num" style={{ fontSize: 17, fontWeight: 700, textAlign: 'right', color: c.capienza && n >= c.capienza ? 'var(--giallo-testo)' : 'var(--text)' }}>
                   {c.capienza ? `${n}/${c.capienza}` : n}
                 </span>
               </button>
@@ -360,7 +360,7 @@ function Scheda({
       {corso && (
         <div className="stack" style={{ gap: 8 }}>
           <Riga titolo="ISCRITTI">
-            <span className="num" style={{ fontSize: 15, fontWeight: 700, color: corso.capienza && iscritti.length >= corso.capienza ? 'var(--giallo)' : 'var(--text)' }}>
+            <span className="num" style={{ fontSize: 15, fontWeight: 700, color: corso.capienza && iscritti.length >= corso.capienza ? 'var(--giallo-testo)' : 'var(--text)' }}>
               {corso.capienza ? `${iscritti.length} / ${corso.capienza}` : iscritti.length}
             </span>
           </Riga>

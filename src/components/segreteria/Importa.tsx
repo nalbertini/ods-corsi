@@ -212,7 +212,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
                     <span className="num" style={{ fontSize: 34, fontWeight: 700, lineHeight: 1 }}>
                       {controllo.f.righe[f.chiave] ?? 0} <span style={{ fontSize: 15, color: 'var(--dim)' }}>righe</span>
                     </span>
-                    <span style={{ fontSize: 13, color: saltate ? 'var(--giallo)' : 'var(--verde)' }}>
+                    <span style={{ fontSize: 13, color: saltate ? 'var(--giallo-testo)' : 'var(--verde)' }}>
                       {saltate ? `${saltate} saltate, da correggere nel foglio` : 'tutte lette'}
                     </span>
                   </div>
@@ -239,7 +239,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
                 <div className="sg-saltate">
                   {controllo.f.saltate.map((s, i) => (
                     <div key={i} className="contents">
-                      <span className="num" style={{ color: 'var(--giallo)', fontWeight: 700 }}>
+                      <span className="num" style={{ color: 'var(--giallo-testo)', fontWeight: 700 }}>
                         {s.foglio} · riga {s.riga}
                       </span>
                       <span>{s.motivo}</span>
@@ -391,7 +391,7 @@ function Risposte({
       {r.colonne.corsi !== undefined && (
         <section aria-label="Le scelte dei corsi" className="sg-riquadro">
           <Riga titolo="LE SCELTE DEI CORSI" />
-          <span className="sg-sotto" style={{ color: daFare ? 'var(--giallo)' : undefined }}>
+          <span className="sg-sotto" style={{ color: daFare ? 'var(--giallo-testo)' : undefined }}>
             {daFare
               ? `${daFare} ${daFare === 1 ? 'scelta' : 'scelte'} da abbinare: chi l'ha scelta entra lo stesso, senza quel corso.`
               : 'Ogni scelta del modulo ha il suo corso.'}
