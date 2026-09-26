@@ -228,10 +228,18 @@ I numeri stanno in `tablet_regole()`, in cima a `04-tablet.sql`.
 Per metterne uno in una sala: la sala ha un **nome utente** e una password,
 non un'email. Supabase però vuole un'email, e l'app aggiunge da sé
 `@sale.ods-corsi.it` al nome utente (vedi `DOMINIO_SALE` in `src/lib/tablet.ts`):
-a quell'indirizzo non arriva mai niente, serve solo da nome. Quindi si crea un
-utente in **Authentication → Users → Add user → Create new user**, con email
-`lotta@sale.ods-corsi.it`, una password lunga e **Auto Confirm User** acceso,
-poi
+a quell'indirizzo non arriva mai niente, serve solo da nome.
+
+Il modo più corto è **`account-sale.sql`** nel SQL Editor: per ogni sala che
+non ha ancora un tablet crea l'utente e la riga in `postazioni`, e alla fine
+mostra sala, nome utente e password. Il nome utente è il nome della sala in
+minuscolo, senza accenti e con i trattini («Sala grande» → `sala-grande`). Le
+password si vedono solo lì, una volta: vanno scritte subito. Si rilancia senza
+danni, e una sala aggiunta dopo prende il suo account al giro successivo.
+
+A mano, per una sala sola: si crea un utente in **Authentication → Users → Add
+user → Create new user**, con email `lotta@sale.ods-corsi.it`, una password
+lunga e **Auto Confirm User** acceso, poi
 
 ```sql
 insert into postazioni (nome, sala_id, utente_id)
