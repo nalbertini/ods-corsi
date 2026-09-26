@@ -13,14 +13,17 @@
 -- usate dentro le policy di `persone`, e una policy che legge la tabella su cui
 -- sta decidendo andrebbe in ricorsione. Girando come proprietarie saltano l'RLS
 -- e la ricorsione non si apre. `search_path` fissato perché una funzione
--- definer con il path libero è un buco.
+-- definer con il path libero è un buco. Fissato a `public, extensions`: su
+-- Supabase pgcrypto e citext stanno nello schema `extensions`, e senza quello
+-- `crypt()` del PIN e il tipo `citext` delle email non si troverebbero. Su un
+-- Postgres che quello schema non ce l'ha, il nome in più si ignora.
 create or replace function persona_corrente() returns uuid
-  language sql stable security definer set search_path = public as $$
+  language sql stable security definer set search_path = public, extensions as $$
   select id from persone where utente_id = auth.uid() and attiva
 $$;
 
 create or replace function ruolo_corrente() returns ruolo
-  language sql stable security definer set search_path = public as $$
+  language sql stable security definer set search_path = public, extensions as $$
   select ruolo from persone where utente_id = auth.uid() and attiva
 $$;
 
@@ -96,7 +99,7 @@ end $$;
 -- Crearle e cancellarle resta alla segreteria, perché il calendario è una cosa
 -- sola per tutti.
 create or replace function insegna(corso uuid) returns boolean
-  language sql stable security definer set search_path = public as $$
+  language sql stable security definer set search_path = public, extensions as $$
   select exists (select 1 from corsi_istruttori where corso_id = corso and persona_id = persona_corrente())
 $$;
 create policy sessioni_legge on sessioni for select to authenticated using (true);
