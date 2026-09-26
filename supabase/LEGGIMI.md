@@ -143,6 +143,9 @@ un'email e l'accesso attivo. Per metterla in piedi, una volta:
 4. **Il testo della mail**, facoltativo: in **Authentication → Emails →
    Templates**, *Invite user* e *Reset password*. Il link resta
    `{{ .ConfirmationURL }}`; il nome della persona è `{{ .Data.nome }}`.
+   Quelli in italiano sono in `mail/invito.html` e `mail/password.html`, da
+   incollare nel campo *Message body*; oggetti: «Il tuo accesso ai corsi di
+   Officine Dello Sport» e «Scegli la password per i corsi».
 
 Il link vale un'ora (**Authentication → Providers → Email → Email OTP
 Expiration**, fino a un giorno). Se scade, dall'elenco «manda l'invito» ne
