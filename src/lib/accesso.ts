@@ -106,11 +106,21 @@ export async function esci(): Promise<void> {
   await c.auth.signOut()
 }
 
-/** Quando la sessione finisce da sola (scaduta, chiusa da un'altra scheda). */
-export async function quandoEsce(f: () => void): Promise<() => void> {
+/**
+ * Quando l'account cambia senza passare dalla porta: la sessione scaduta o
+ * chiusa, un altro accesso in un'altra scheda o da un'altra area. `f` riceve
+ * se c'è ancora qualcuno collegato; il rinnovo del token, che non cambia
+ * nessuno, non conta.
+ */
+export async function quandoCambia(f: (collegato: boolean) => void): Promise<() => void> {
   const c = await db()
-  const { data } = c.auth.onAuthStateChange((evento) => {
-    if (evento === 'SIGNED_OUT') f()
+  const { data: s } = await c.auth.getSession()
+  let ultimo = s.session?.user.id ?? null
+  const { data } = c.auth.onAuthStateChange((_evento, sessione) => {
+    const adesso = sessione?.user.id ?? null
+    if (adesso === ultimo) return
+    ultimo = adesso
+    f(adesso !== null)
   })
   return () => data.subscription.unsubscribe()
 }

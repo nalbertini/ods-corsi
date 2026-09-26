@@ -1,5 +1,5 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
-import { chiSei, entra, esci, quandoEsce, serveAccesso, type Personale } from '../lib/accesso'
+import { chiSei, entra, esci, quandoCambia, serveAccesso, type Personale } from '../lib/accesso'
 import { scegliProva } from '../lib/dati'
 
 /**
@@ -13,8 +13,16 @@ export function useChi(): [Personale | null | undefined, (p: Personale | null) =
     if (!serveAccesso) return
     let vivo = true
     let smetti: (() => void) | undefined
-    void chiSei().then((p) => vivo && setChi(p), () => vivo && setChi(null))
-    void quandoEsce(() => vivo && setChi(null)).then((f) => (vivo ? (smetti = f) : f()))
+    const rileggi = () => void chiSei().then((p) => vivo && setChi(p), () => vivo && setChi(null))
+    rileggi()
+    // Un altro account entrato altrove va riletto, non tenuto col nome di
+    // prima. Fuori dalla richiamata di Supabase: dentro, una chiamata al
+    // client aspetterebbe sé stessa.
+    void quandoCambia((collegato) => {
+      if (!vivo) return
+      if (collegato) window.setTimeout(rileggi, 0)
+      else setChi(null)
+    }).then((f) => (vivo ? (smetti = f) : f()))
     return () => {
       vivo = false
       smetti?.()

@@ -165,7 +165,7 @@ let unico: Promise<DatiTablet> | null = null
 export function datiTablet(): Promise<DatiTablet> {
   if (!unico) {
     unico = haUnServer
-      ? Promise.all([import('./tabletSupabase'), import('./supabase')]).then(([m, s]) => m.creaTabletSupabase(s.clientSupabase()))
+      ? Promise.all([import('./tabletSupabase'), import('./supabase')]).then(([m, s]) => m.creaTabletSupabase(s.clientSupabase('sala')))
       : import('./tabletProva').then((m) => m.creaTabletProva())
   }
   return unico
