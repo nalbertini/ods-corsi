@@ -2,7 +2,7 @@ import { type ReactNode, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
-import { Accesso, Porta, UnAttimo, useChi } from './components/Porta'
+import { Accesso, AltreAree, Porta, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
@@ -166,6 +166,7 @@ function AreaSegreteria() {
             <div className="rule">
               <span className="rule-label">SEGRETERIA</span>
               <div className="rule-line" />
+              <AltreAree />
             </div>
             <div className="pad stack" style={{ gap: 12, paddingBottom: 16 }}>
               <span className="passo-dettaglio" style={{ fontSize: 15 }}>
