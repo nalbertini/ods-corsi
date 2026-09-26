@@ -152,6 +152,18 @@ input, textarea { font: inherit; color: inherit; }
 .riordina:hover:not(:disabled) { color: var(--text); }
 .riordina:disabled { opacity: 0.3; cursor: default; }
 
+/* Gli esercizi dentro la cella del lavoro: un tocco e si apre il catalogo. */
+.scegli-esercizi {
+  display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 36px;
+  padding: 0 10px; border: 2px solid var(--line-soft); background: var(--surface-2);
+  font-size: 13px; font-weight: 600; text-align: left; color: var(--text);
+}
+.scegli-esercizi[data-vuoto='true'] {
+  justify-content: center; border-style: dashed; border-color: var(--rosso);
+  color: var(--rosso); font-size: 12px; letter-spacing: 0.14em;
+}
+.scegli-esercizi:hover { border-color: var(--rosso); }
+
 .chip {
   padding: 10px 16px; white-space: nowrap;
   font-size: 12px; font-weight: 600; letter-spacing: 0.14em;
