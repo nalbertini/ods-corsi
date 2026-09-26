@@ -67,7 +67,7 @@ type View =
       TIMER e non MODIFICA. Uno schema appena scelto ha già un nome, e sul
       nome soltanto non si distingue da un timer salvato. */
   | { kind: 'editor'; workout: Workout; nuovo?: boolean }
-  | { kind: 'run'; workout: Workout; ripresa?: Interrotto }
+  | { kind: 'run'; workout: Workout; ripresa?: Interrotto; subito?: boolean }
   | { kind: 'condividi'; workout: Workout }
   | { kind: 'ricevuto'; workout: Workout }
   | { kind: 'voce' }
@@ -408,11 +408,11 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
     setWorkouts((list) => list.map(rinomina))
   }, [workouts, personaId])
 
-  const startWorkout = useCallback((w: Workout) => {
+  const startWorkout = useCallback((w: Workout, subito = false) => {
     // Partendo con qualcos'altro, l'allenamento lasciato a metà è acqua passata.
     scordaInterrotto()
     setInterrotto(null)
-    setView({ kind: 'run', workout: w })
+    setView({ kind: 'run', workout: w, subito })
   }, [])
 
   const duplicate = useCallback(
@@ -455,6 +455,29 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   }, [workouts, personaId])
 
   const gruppi: Gruppo[] = useMemo(() => gruppiDi(workouts, accesso, lezione), [workouts, accesso, lezione])
+  // Sul tablet: il timer pronto per la lezione, e la richiesta di farlo partire.
+  const pronto = useMemo(() => {
+    const g = gruppi.find((x) => x.chiave === 'lezione' && x.timer.length) ?? gruppi.find((x) => x.chiave === 'corso' && x.timer.length)
+    const w = g?.timer[0]
+    return w ? { id: w.id, nome: w.name, da: g!.chiave === 'lezione' ? ('lezione' as const) : ('corso' as const) } : null
+  }, [gruppi])
+  const avvisaPronto = incorporato?.onPronto
+  useEffect(() => {
+    avvisaPronto?.(pronto)
+    // Si avvisa quando cambia il timer, non quando cambia chi ascolta.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pronto?.id, pronto?.nome, pronto?.da])
+  const richiesta = incorporato?.avvia
+  const fatta = useRef(0)
+  useEffect(() => {
+    if (!richiesta || richiesta.volta === fatta.current) return
+    fatta.current = richiesta.volta
+    const w = workouts.find((x) => x.id === richiesta.id)
+    if (w) startWorkout(w, true)
+    // Solo per una richiesta nuova: la lista che cambia non la ripete.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [richiesta?.volta])
+
   const nomeLezione = lezione ? lezione.nome || corsi.find((c) => c.id === lezione.corsoId)?.nome || 'la lezione' : null
 
   const body = useMemo(() => {
@@ -576,6 +599,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         workout={view.workout}
         settings={settingsMusica}
         ripresa={view.ripresa}
+        partiSubito={view.subito}
         onStato={incorporato?.onStato}
         tastiera={incorporato ? incorporato.visibile : true}
         conMusica={!incorporato}

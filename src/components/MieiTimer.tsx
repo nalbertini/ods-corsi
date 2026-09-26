@@ -217,7 +217,7 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
                         value={suo}
                         data-suo={Boolean(suo)}
                         disabled={!col.lezioniPronte || sceglibili.length === 0}
-                        aria-label={`Timer di ${l.corso} alle ${oraDi(l.inizio)}`}
+                        aria-label={`Timer di ${l.corso}, ${giornoPerEsteso(g)} alle ${oraDi(l.inizio)}`}
                         onChange={(e) =>
                           void fai(
                             () => d!.scegliPerLezione(l.id, e.target.value || null),

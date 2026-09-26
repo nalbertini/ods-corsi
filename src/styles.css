@@ -586,6 +586,21 @@ a.btn { text-decoration: none; }
   background: var(--verde); color: var(--su-colore);
   font-size: 26px; font-weight: 700; letter-spacing: 0.1em;
 }
+/* Il timer della lezione aperta, sotto il tasto delle presenze: una riga sola,
+   da far partire con un tocco quando si comincia. */
+.tb-aperta { flex-wrap: wrap; }
+.tb-pronto {
+  flex-basis: 100%; display: flex; align-items: center; gap: 16px;
+  padding-top: 16px; border-top: 2px solid var(--line-soft); color: var(--dim);
+}
+.tb-pronto-da { font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); }
+.tb-pronto-nome { font-size: 24px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-btn-timer {
+  min-width: 220px; min-height: 64px; padding: 0 22px;
+  background: var(--rosso); color: var(--su-colore);
+  font-size: 22px; font-weight: 700; letter-spacing: 0.12em;
+}
+.tb-btn-timer-linea { background: none; border: 2px solid var(--line); color: var(--text); font-size: 18px; }
 .tb-incorso {
   display: flex; align-items: center; gap: 18px; padding: 16px 22px;
   background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--tinta);
