@@ -54,11 +54,9 @@ export function PalestraSezione({
           </p>
         )}
 
-        {accesso.chi === 'nessuno' ? (
-          <a className="btn btn-ghost" style={{ minHeight: 50, fontSize: 15 }} href="../#istruttori">
-            ENTRA IN ODS CORSI
-          </a>
-        ) : (
+        {/* Niente tasto per entrare: dal timer non si va negli istruttori, che
+            sono un'area a sé. Senza accesso resta solo la spiegazione. */}
+        {accesso.chi !== 'nessuno' && (
           <button className="btn btn-ghost" style={{ minHeight: 50, fontSize: 15 }} onClick={onAggiorna}>
             RILEGGI DAL DATABASE
           </button>
