@@ -107,6 +107,8 @@ const CORSI: Definizione[] = [
 
   { id: 'prep-atletica-1', nome: 'Preparazione atletica 1', colore: PESI, sala: 'Pesi', istruttori: ['Maurizio', 'Katia', 'Manuel'], orari: ogni(MG, '18:00', 60), iscritti: elenco(19, 12) },
   { id: 'prep-atletica-2', nome: 'Preparazione atletica 2', colore: PESI, sala: 'Pesi', istruttori: ['Maurizio', 'Katia', 'Manuel'], orari: ogni(MG, '19:30', 60), iscritti: elenco(20, 11) },
+  // Si allena insieme alla Pesistica 2, stessa sala e stessa ora: due corsi
+  // perché iscritti e prezzi sono diversi, e ognuno ha il suo appello.
   { id: 'prep-atletica-3', nome: 'Preparazione atletica 3', colore: PESI, sala: 'Pesi', istruttori: ['Maurizio', 'Katia', 'Manuel'], orari: ogni(LMV, '18:00', 60), iscritti: elenco(21, 10) },
 ]
 

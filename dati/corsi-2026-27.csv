@@ -29,9 +29,9 @@ Lotta 3;Lotta;Maura, Federico;venerdì;18:00;60;;#e4292a;
 Pesistica 1;Pesi;;lunedì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
 Pesistica 1;Pesi;;mercoledì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
 Pesistica 1;Pesi;;venerdì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
-Pesistica 2;Pesi;;lunedì;18:00;60;;#f4c31b;nati dal 2012 in poi
-Pesistica 2;Pesi;;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi
-Pesistica 2;Pesi;;venerdì;18:00;60;;#f4c31b;nati dal 2012 in poi
+Pesistica 2;Pesi;;lunedì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Preparazione atletica 3
+Pesistica 2;Pesi;;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Preparazione atletica 3
+Pesistica 2;Pesi;;venerdì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Preparazione atletica 3
 Body functional;Pesi;Tiziano;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi
 Pesi agonisti;Pesi;;martedì;17:00;60;;#f4c31b;solo agonisti di judo e lotta, nati dal 2011 in poi
 Pesi agonisti;Pesi;;giovedì;17:00;60;;#f4c31b;solo agonisti di judo e lotta, nati dal 2011 in poi
@@ -47,6 +47,6 @@ Preparazione atletica 1;Pesi;Maurizio, Katia, Manuel;martedì;18:00;60;;#f4c31b;
 Preparazione atletica 1;Pesi;Maurizio, Katia, Manuel;giovedì;18:00;60;;#f4c31b;nati dal 2012 in poi
 Preparazione atletica 2;Pesi;Maurizio, Katia, Manuel;martedì;19:30;60;;#f4c31b;nati dal 2012 in poi
 Preparazione atletica 2;Pesi;Maurizio, Katia, Manuel;giovedì;19:30;60;;#f4c31b;nati dal 2012 in poi
-Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;lunedì;18:00;60;;#f4c31b;nati dal 2012 in poi
-Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi
-Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;venerdì;18:00;60;;#f4c31b;nati dal 2012 in poi
+Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;lunedì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Pesistica 2
+Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Pesistica 2
+Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;venerdì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Pesistica 2
