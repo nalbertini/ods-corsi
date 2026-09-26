@@ -8,39 +8,45 @@ Judo 3;Tatami;Maurizio;venerdì;18:00;60;;#1b8ac4;nati dal 2016 al 2013
 Judo adulti;Tatami;Maurizio;lunedì;19:00;90;;#1b8ac4;nati dal 2012 in poi
 Judo adulti;Tatami;Maurizio;mercoledì;19:00;90;;#1b8ac4;nati dal 2012 in poi
 Judo adulti;Tatami;Maurizio;venerdì;19:00;90;;#1b8ac4;nati dal 2012 in poi
-Judo principianti;Motricità;Maurizio;lunedì;19:00;90;;#1b8ac4;
-Judo principianti;Motricità;Maurizio;mercoledì;19:00;90;;#1b8ac4;
-Judo principianti;Motricità;Maurizio;venerdì;19:00;90;;#1b8ac4;
+Judo principianti;Motricità;Maurizio;lunedì;19:00;90;;#1b8ac4;nati dal 2012 in poi
+Judo principianti;Motricità;Maurizio;mercoledì;19:00;90;;#1b8ac4;nati dal 2012 in poi
+Judo principianti;Motricità;Maurizio;venerdì;19:00;90;;#1b8ac4;nati dal 2012 in poi
 Judo agonisti;Tatami;Maurizio;martedì;18:00;90;;#1b8ac4;Judo 3 e adulti
 Judo agonisti;Tatami;Maurizio;giovedì;18:00;90;;#1b8ac4;Judo 3 e adulti
 Psicomotricità;Motricità;;venerdì;17:00;50;;#16a54a;3-4-5 anni, primo turno
 Psicomotricità;Motricità;;venerdì;18:00;50;;#16a54a;3-4-5 anni, secondo turno
 Giocomotricità;Lotta;;martedì;17:00;50;;#16a54a;nati 2023-2022
 Giocomotricità;Lotta;;giovedì;17:00;50;;#16a54a;nati 2023-2022
-Avviamento arti marziali;Tatami;;martedì;17:00;60;;#16a54a;nati 2021-2020
-Avviamento arti marziali;Tatami;;giovedì;17:00;60;;#16a54a;nati 2021-2020
+Avviamento arti marziali 1;Tatami;;martedì;17:00;60;;#16a54a;nati 2021-2020
+Avviamento arti marziali 1;Tatami;;giovedì;17:00;60;;#16a54a;nati 2021-2020
 Lotta 2;Lotta;Maura, Federico;lunedì;17:00;60;;#e4292a;nati 2019-2018-2017
 Lotta 2;Lotta;Maura, Federico;mercoledì;17:00;60;;#e4292a;nati 2019-2018-2017
 Lotta 2;Lotta;Maura, Federico;venerdì;17:00;60;;#e4292a;nati 2019-2018-2017
-Lotta 3;Lotta;Maura, Federico;lunedì;18:00;90;;#e4292a;nati dal 2016 in poi
-Lotta 3;Lotta;Maura, Federico;mercoledì;18:00;90;;#e4292a;nati dal 2016 in poi
+Lotta 3;Lotta;Maura, Federico;lunedì;18:00;60;;#e4292a;nati dal 2016 in poi
+Lotta 3;Lotta;Maura, Federico;mercoledì;18:00;60;;#e4292a;nati dal 2016 in poi
 Lotta 3;Lotta;Maura, Federico;martedì;18:00;60;;#e4292a;preparazione atletica e pesi
 Lotta 3;Lotta;Maura, Federico;venerdì;18:00;60;;#e4292a;
-Pesi 1;Pesi;;lunedì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
-Pesi 1;Pesi;;mercoledì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
-Pesi 1;Pesi;;venerdì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
-Pesi 2;Pesi;;lunedì;18:00;60;;#f4c31b;nati dal 2012 in poi
-Pesi 2;Pesi;;venerdì;18:00;60;;#f4c31b;nati dal 2012 in poi
-Body functional;Pesi;Tiziano;mercoledì;18:00;60;;#f4c31b;nati dal 2009 in poi
-Pesi agonisti;Pesi;;martedì;17:00;60;;#f4c31b;judo, lotta, aikido, pugilistica
-Pesi agonisti;Pesi;;giovedì;17:00;60;;#f4c31b;judo, lotta, aikido, pugilistica
+Pesistica 1;Pesi;;lunedì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
+Pesistica 1;Pesi;;mercoledì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
+Pesistica 1;Pesi;;venerdì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
+Pesistica 2;Pesi;;lunedì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Preparazione atletica 3
+Pesistica 2;Pesi;;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Preparazione atletica 3
+Pesistica 2;Pesi;;venerdì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Preparazione atletica 3
+Body functional;Motricità;Tiziano;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi
+Pesi agonisti;Pesi;;martedì;17:00;60;;#f4c31b;solo agonisti di judo e lotta, nati dal 2011 in poi
+Pesi agonisti;Pesi;;giovedì;17:00;60;;#f4c31b;solo agonisti di judo e lotta, nati dal 2011 in poi
 Aikido 2;Motricità;Fabio;lunedì;17:00;60;;#16a54a;nati 2019-2018-2017
 Aikido 2;Motricità;Fabio;giovedì;17:00;60;;#16a54a;nati 2019-2018-2017
 Aikido 3;Motricità;Fabio;lunedì;18:00;60;;#16a54a;nati dal 2016 in poi
 Aikido 3;Motricità;Fabio;giovedì;18:00;60;;#16a54a;nati dal 2016 in poi
-Pre-pugilistica;Pesi;;mercoledì;19:00;60;;#e4292a;nati dal 2015 in poi
-MGA metodo globale autodifesa;Lotta;;venerdì;19:00;60;;#e4292a;nati dal 2015 in poi
+Prepugilistica;Pesi;;lunedì;19:00;90;;#e4292a;nati dal 2008 in poi
+Prepugilistica;Pesi;;mercoledì;19:00;90;;#e4292a;nati dal 2008 in poi
+Prepugilistica;Pesi;;venerdì;19:00;90;;#e4292a;nati dal 2008 in poi
+MGA metodo globale autodifesa;Lotta;;venerdì;19:00;60;;#e4292a;nati dal 2011 in poi
 Preparazione atletica 1;Pesi;Maurizio, Katia, Manuel;martedì;18:00;60;;#f4c31b;nati dal 2012 in poi
 Preparazione atletica 1;Pesi;Maurizio, Katia, Manuel;giovedì;18:00;60;;#f4c31b;nati dal 2012 in poi
 Preparazione atletica 2;Pesi;Maurizio, Katia, Manuel;martedì;19:30;60;;#f4c31b;nati dal 2012 in poi
 Preparazione atletica 2;Pesi;Maurizio, Katia, Manuel;giovedì;19:30;60;;#f4c31b;nati dal 2012 in poi
+Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;lunedì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Pesistica 2
+Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Pesistica 2
+Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;venerdì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Pesistica 2

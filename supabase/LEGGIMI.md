@@ -72,8 +72,9 @@ bene così come sono.
 Le righe che non si capiscono vengono saltate e stampate: si correggono nel
 foglio e si rilancia.
 
-L'orario della stagione 2026/27, copiato dal volantino «Corsi e attività», è
-in [`dati/corsi-2026-27.csv`](../dati/corsi-2026-27.csv). Due cose che il foglio
+L'orario della stagione 2026/27, copiato dal volantino «Corsi e attività» e
+corretto con il foglio dei costi dove i due non coincidono, è in
+[`dati/corsi-2026-27.csv`](../dati/corsi-2026-27.csv). Due cose che il foglio
 dice e l'import non sa ancora fare:
 
 - **gli istruttori hanno solo il nome.** Finché nel foglio non c'è il cognome i

@@ -173,3 +173,36 @@ input, textarea { font: inherit; color: inherit; }
   font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
   color: var(--bg); background: var(--giallo); text-align: center; padding: 4px;
 }
+
+/* ---------- iscrizioni ---------- */
+
+.passi { list-style: none; margin: 0; }
+.passo { display: flex; align-items: flex-start; gap: 14px; padding: 14px; }
+.passo-num {
+  font-size: 26px; font-weight: 700; line-height: 1; color: var(--giallo);
+  min-width: 22px; text-align: center;
+}
+.passo-titolo { font-size: 17px; font-weight: 600; line-height: 1.3; }
+.passo-dettaglio { font-size: 14px; color: var(--dim); line-height: 1.4; }
+.passo-btn { min-height: 48px; padding: 0 16px; font-size: 16px; text-decoration: none; align-self: flex-start; }
+/* L'IBAN in grande, a gruppi di quattro: se va a capo, va a capo fra un gruppo e l'altro. */
+.iban { background: var(--surface-2); border: 2px solid var(--line); padding: 8px 10px; font-size: 17px; font-weight: 600; letter-spacing: 0.02em; user-select: all; }
+
+/* Le due facce dell'app, sotto la testata. */
+.schede { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 0 20px 4px; flex-shrink: 0; }
+.scheda {
+  min-height: 40px; background: var(--surface); border: 2px solid var(--line);
+  font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim);
+}
+.scheda[data-on='true'] { background: var(--surface-2); border-color: var(--text); color: var(--text); }
+
+/* Il listino: una scheda per corso, i tre prezzi in colonna sotto la testa. */
+.costo { padding: 14px; gap: 3px; }
+.costo-griglia {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 10px;
+  margin-top: 8px; padding-top: 10px; border-top: 2px solid var(--line-soft);
+}
+.costo-griglia[data-etichette='true'] { grid-template-columns: auto repeat(3, 1fr); }
+.costo-testa { font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); line-height: 1.2; }
+.costo-euro { font-size: 20px; font-weight: 700; }
+.costo-euro[data-vuoto='true'] { color: var(--faint); }
