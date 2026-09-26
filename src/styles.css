@@ -6,6 +6,7 @@
   --line: #333333;
   --line-soft: #2a2a2a;
   --text: #f2f2f0;
+  --sec: #c9c9c4;
   --dim: #8c8c88;
   --faint: #5a5a56;
 
@@ -172,4 +173,202 @@ input, textarea { font: inherit; color: inherit; }
 .nastro-prova {
   font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
   color: var(--bg); background: var(--giallo); text-align: center; padding: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   Il tablet di sala.
+
+   Si guarda da due metri e si tocca di passaggio: tutto è più grande che nel
+   telefono, i tasti sono alti quanto una mano e le parole si leggono dalla
+   porta. Pensato per un tablet in orizzontale; in verticale le colonne si
+   mettono una sotto l'altra.
+   --------------------------------------------------------------------------- */
+
+.tb {
+  position: relative;
+  display: flex; flex-direction: column;
+  height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--text);
+  user-select: none; -webkit-user-select: none;
+}
+.tb-testata {
+  display: flex; align-items: center; gap: 18px; flex-shrink: 0;
+  padding: calc(var(--safe-t) + 18px) 32px 14px;
+  border-bottom: 2px solid var(--line-soft);
+}
+.tb-sala { font-size: 40px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }
+.tb-data { font-size: 15px; font-weight: 700; letter-spacing: 0.2em; color: var(--dim); }
+.tb-ora { font-size: 56px; font-weight: 700; line-height: 1; letter-spacing: 0.02em; }
+.tb-bollino {
+  font-size: 14px; font-weight: 700; letter-spacing: 0.16em; color: var(--bg);
+  padding: 6px 12px; white-space: nowrap;
+}
+
+.tb-corpo { flex: 1; min-height: 0; padding: 22px 32px 24px; overflow-y: auto; }
+.tb-pila { display: flex; flex-direction: column; gap: 18px; }
+.tb-colonna { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.tb-home { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; }
+.tb-istruttore { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; }
+.tb-pin { display: flex; align-items: center; justify-content: center; gap: 72px; flex-wrap: wrap; }
+.tb-preparazione { display: flex; align-items: center; justify-content: center; }
+.tb-scorre { overflow-y: auto; min-height: 0; }
+
+.tb-etichetta { font-family: var(--cond); font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); }
+.tb-nota { font-size: 15px; line-height: 1.5; color: var(--dim); margin: 0; }
+.tb-sotto { font-size: 17px; color: var(--sec); }
+.tb-orario { font-size: 20px; font-weight: 700; letter-spacing: 0.06em; color: var(--dim); }
+.tb-titolo { font-size: 32px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
+.tb-quando { font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: var(--dim); }
+.tb-invito { font-size: 30px; font-weight: 700; letter-spacing: 0.06em; color: var(--verde); }
+
+.tb-riquadro {
+  display: flex; flex-direction: column; gap: 10px; padding: 28px;
+  background: var(--surface); border: 2px solid var(--line);
+}
+.tb-riquadro-titolo { font-size: 34px; font-weight: 700; letter-spacing: 0.03em; }
+.tb-riquadro-testo { font-size: 18px; line-height: 1.5; color: var(--sec); }
+
+/* La lezione in cui ci si segna adesso: il tasto è il più grande dello schermo. */
+.tb-aperta {
+  display: flex; align-items: center; gap: 22px; padding: 22px 24px;
+  background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--tinta);
+}
+.tb-aperta-testo { display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0; }
+.tb-aperta-nome { font-size: 38px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
+.tb-btn-segna {
+  min-width: 300px; min-height: 88px; padding: 0 24px;
+  background: var(--verde); color: var(--bg);
+  font-size: 26px; font-weight: 700; letter-spacing: 0.1em;
+}
+.tb-incorso {
+  display: flex; align-items: center; gap: 18px; padding: 16px 22px;
+  background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--tinta);
+}
+
+.tb-giornata-riga {
+  display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 14px;
+  background: var(--surface); border: 2px solid var(--line);
+}
+.tb-giornata-riga[data-fase='aperta'] { border-color: var(--verde); }
+.tb-giornata-riga[data-fase='finita'] { opacity: 0.5; }
+.tb-tacca { width: 10px; height: 36px; flex-shrink: 0; }
+.tb-fase { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); white-space: nowrap; }
+.tb-giornata-riga[data-fase='aperta'] .tb-fase { color: var(--verde); }
+.tb-giornata-riga[data-fase='in corso'] .tb-fase { color: var(--giallo); }
+
+.tb-piede {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex-shrink: 0;
+  padding: 14px 32px calc(var(--safe-b) + 20px);
+  border-top: 2px solid var(--line-soft);
+}
+
+.tb-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 60px; padding: 0 22px;
+  font-family: var(--cond); font-style: oblique 9deg;
+  font-size: 18px; font-weight: 700; letter-spacing: 0.12em;
+}
+.tb-btn-linea { border: 2px solid var(--line); color: var(--text); }
+.tb-btn-tratteggio { border: 2px dashed var(--line); color: var(--dim); }
+.tb-btn-verde { background: var(--verde); color: var(--bg); }
+.tb-btn-grande { min-height: 64px; padding: 0 26px; font-size: 20px; }
+.tb-btn:disabled { cursor: default; }
+.tb-btn-verde:disabled { opacity: 0.5; }
+
+.tb-barra { display: flex; align-items: center; gap: 18px; }
+
+/* I nomi da toccare: cinque per riga su un tablet, alti quanto un dito e mezzo. */
+.tb-tessere { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.tb-tessera {
+  display: flex; align-items: center; gap: 10px; min-height: 84px; padding: 0 16px;
+  background: var(--surface); border: 3px solid var(--line); color: var(--text);
+  font-size: 22px; font-weight: 700; text-align: left;
+}
+.tb-tessera[data-fatto='true'] { background: var(--surface-2); border-color: var(--verde); color: var(--verde); }
+
+.tb-fascia {
+  position: absolute; left: 32px; right: 32px; bottom: calc(var(--safe-b) + 24px);
+  display: flex; align-items: center; gap: 18px; padding: 18px 22px;
+  background: var(--surface); border: 3px solid var(--text);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.6);
+}
+.tb-fascia[data-tipo='fatto'] { border-color: var(--verde); }
+.tb-fascia[data-tipo='errore'] { border-color: var(--rosso); }
+.tb-fascia-titolo { font-size: 30px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
+
+.tb-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.tb-scelta {
+  display: flex; flex-direction: column; gap: 4px; padding: 18px 20px;
+  background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--tinta, var(--line));
+  color: var(--text); text-align: left;
+}
+.tb-scelta-riga { flex-direction: row; align-items: center; gap: 14px; min-height: 84px; border-left-width: 2px; }
+
+.tb-pallino { width: 26px; height: 26px; border: 3px solid var(--text); }
+.tb-pallino[data-pieno='true'] { background: var(--text); }
+.tb-pallino[data-guaio='true'] { border-color: var(--rosso); }
+.tb-tastiera { display: grid; grid-template-columns: repeat(3, 110px); gap: 12px; }
+.tb-tasto {
+  height: 96px; border: 2px solid var(--line); background: var(--surface); color: var(--text);
+  font-size: 38px; font-weight: 700; letter-spacing: 0.06em;
+}
+.tb-tasto[data-piccolo='true'] { font-size: 17px; }
+.tb-tasto:active { background: var(--surface-2); }
+
+.tb-schede { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.tb-scheda {
+  min-height: 48px; border: 2px solid var(--line); color: var(--sec);
+  font-size: 15px; font-weight: 700; letter-spacing: 0.14em;
+}
+.tb-scheda[aria-selected='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
+.tb-select, .tb-campo {
+  height: 56px; padding: 0 14px;
+  background: var(--surface); border: 2px solid var(--line); color: var(--text); font-size: 18px;
+}
+.tb-campo:focus, .tb-select:focus { outline: none; border-color: var(--text); }
+.tb-campo { user-select: text; -webkit-user-select: text; }
+.tb-lezione-istr {
+  display: flex; flex-direction: column; gap: 2px; padding: 12px 14px;
+  background: var(--surface); border: 2px solid var(--line); border-left: 6px solid var(--tinta);
+  color: var(--text); text-align: left;
+}
+.tb-lezione-istr[aria-pressed='true'] { background: var(--surface-2); border-color: var(--text); border-left-color: var(--tinta); }
+.tb-scollega { font-size: 14px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; padding: 6px 0; text-align: left; }
+
+.tb-testa-appello {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 18px;
+  background: var(--surface); border: 2px solid var(--line);
+}
+.tb-righe { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-content: start; }
+.tb-riga {
+  display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px;
+  background: var(--surface); border: 2px solid var(--line); color: var(--text); text-align: left;
+}
+.tb-riga-segno { width: 26px; display: flex; justify-content: center; }
+.tb-riga-nome { font-size: 18px; font-weight: 500; }
+.tb-riga[data-stato='presente'] { border-color: var(--verde); }
+.tb-riga[data-stato='presente'] .tb-riga-segno { color: var(--verde); }
+.tb-riga[data-stato='assente'] { border-color: var(--rosso); }
+.tb-riga[data-stato='assente'] .tb-riga-segno { color: var(--rosso); }
+.tb-riga[data-stato='assente'] .tb-riga-nome { color: var(--dim); text-decoration: line-through; }
+.tb-marchio {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap;
+  color: var(--dim); border: 2px solid var(--line); padding: 1px 6px;
+}
+.tb-marchio[data-tipo='dopo'] { color: var(--giallo); border-color: var(--giallo); }
+
+/* In verticale, o su uno schermo piccolo: una colonna sola. */
+@media (max-width: 900px) {
+  .tb-testata { padding-left: 16px; padding-right: 16px; gap: 12px; }
+  .tb-sala { font-size: 30px; }
+  .tb-ora { font-size: 40px; }
+  .tb-corpo { padding: 16px; }
+  .tb-piede { padding-left: 16px; padding-right: 16px; }
+  .tb-home, .tb-istruttore { grid-template-columns: minmax(0, 1fr); }
+  .tb-aperta { flex-direction: column; align-items: stretch; }
+  .tb-btn-segna { min-width: 0; }
+  .tb-righe { grid-template-columns: minmax(0, 1fr); }
+  .tb-fascia { left: 16px; right: 16px; flex-wrap: wrap; }
+  .tb-pin { gap: 32px; }
+  .tb-tastiera { grid-template-columns: repeat(3, 90px); }
 }

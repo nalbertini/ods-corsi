@@ -31,7 +31,19 @@ export function Sala() {
   return (
     <>
       {d.modo === 'prova' && (
-        <div className="nastro-prova">DATI DI PROVA · ORARIO E ISCRITTI INVENTATI</div>
+        <div className="nastro-prova">
+          DATI DI PROVA · ISCRITTI INVENTATI ·{' '}
+          <button
+            type="button"
+            style={{ textDecoration: 'underline', font: 'inherit', letterSpacing: 'inherit', color: 'inherit' }}
+            onClick={() => {
+              window.location.hash = '#tablet'
+              window.location.reload()
+            }}
+          >
+            PROVA IL TABLET DI SALA
+          </button>
+        </div>
       )}
 
       {aperta ? (

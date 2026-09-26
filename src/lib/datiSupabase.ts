@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Dati } from './dati'
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
 import { perCognome } from './sala'
@@ -38,10 +38,7 @@ const SELEZIONE = `
   persone ( nome, cognome )
 `
 
-export function creaDatiSupabase(url: string, chiave: string): Dati {
-  const db: SupabaseClient = createClient(url, chiave, {
-    auth: { persistSession: true, autoRefreshToken: true },
-  })
+export function creaDatiSupabase(db: SupabaseClient): Dati {
 
   // Le scritture in coda si eseguono qui. Se il server rifiuta per davvero —
   // non per mancanza di rete — l'operazione resterebbe in coda per sempre: per

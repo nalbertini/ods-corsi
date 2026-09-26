@@ -15,6 +15,12 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
 - **L'appello**: l'elenco degli iscritti, un tocco per riga — presente, assente,
   non segnato — e `TUTTI PRESENTI` in cima, perché in una classe di ventidue con
   venti presenti si segnano due assenze invece di venti presenze.
+- **Il tablet di sala**: un tablet appeso al muro di ogni sala con il calendario
+  della sala. Chi arriva tocca il suo nome e la presenza è segnata, senza
+  domande e con ANNULLA per chi sbaglia; chi si è dimenticato recupera le
+  lezioni delle ultime due settimane partendo dal corso; l'istruttore, col suo
+  PIN, apre l'appello completo e vede chi si è segnato da sé. Si apre con
+  `#tablet` in fondo all'indirizzo, e da lì il dispositivo resta un tablet.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa.
 
@@ -29,6 +35,13 @@ Senza configurazione parte in **modalità prova**, con l'orario vero della stagi
 2026/27, degli iscritti inventati e un nastro giallo che lo dichiara. Le presenze segnate in prova restano
 sul dispositivo e basta.
 
+Il tablet di sala si prova dal link nel nastro giallo, o aprendo
+`http://localhost:5173/#tablet`. In prova la sala si sceglie da un elenco, e
+l'orologio si può spostare per vedere una lezione che si apre:
+`http://localhost:5173/?adesso=2026-09-24T17:55#tablet` è giovedì alle sei meno
+cinque, con il Judo agonisti in cui ci si segna. I PIN di prova sono 1234
+(Maurizio), 2468 (Maura) e 5678 (Fabio).
+
 ## Il database
 
 Supabase, con la sicurezza tutta nelle policy RLS. Come metterlo in piedi, come
@@ -40,10 +53,12 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | | |
 |---|---|
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
+| `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
+| `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 
-I due file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`
+I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`
 applicato prima: rifà il minimo che Supabase mette a disposizione.
 
 ## Da dove viene

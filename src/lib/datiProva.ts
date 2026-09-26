@@ -16,6 +16,7 @@ import { chiaveGiorno, perCognome } from './sala'
  */
 
 const DOVE = 'ods-corsi:prova-presenze'   // vedi la nota in coda.ts
+const DOVE_ORIGINI = 'ods-corsi:prova-origini'
 
 /** Un orario del corso: lo stesso corso può avere durate diverse nei vari giorni. */
 interface Orario {
@@ -137,32 +138,58 @@ function istante(giorno: string, ora: string): Date {
 }
 
 type Segnate = Record<string, Record<string, StatoPresenza>>
+/**
+ * Da dove arriva una presenza segnata dal tablet, e quando. Chi non è qui è
+ * stato segnato dall'appello: è lo stesso `origine` del database, tenuto a
+ * parte per non cambiare la forma delle presenze già salvate.
+ */
+export type Origini = Record<string, Record<string, { da: 'tablet' | 'recupero'; il: number; postazione: string }>>
 
-const leggiSegnate = (): Segnate => {
+function leggiOggetto<T>(dove: string): T {
   try {
-    const g = localStorage.getItem(DOVE)
+    const g = localStorage.getItem(dove)
     const o: unknown = g ? JSON.parse(g) : {}
-    return o && typeof o === 'object' ? (o as Segnate) : {}
+    return (o && typeof o === 'object' ? o : {}) as T
   } catch {
-    return {}
+    return {} as T
   }
 }
 
+function scriviOggetto(dove: string, o: unknown) {
+  try {
+    localStorage.setItem(dove, JSON.stringify(o))
+  } catch {
+    /* Niente memoria: le presenze restano per questa sessione e basta. */
+  }
+}
+
+/**
+ * Le presenze di prova, una volta sola per pagina: l'app e il tablet di prova
+ * leggono e scrivono le stesse, come col database vero.
+ */
+export const memoria = {
+  segnate: leggiOggetto<Segnate>(DOVE),
+  origini: leggiOggetto<Origini>(DOVE_ORIGINI),
+  salva() {
+    scriviOggetto(DOVE, this.segnate)
+    scriviOggetto(DOVE_ORIGINI, this.origini)
+  },
+}
+
 export function creaDatiProva(): Dati {
-  let segnate = leggiSegnate()
-  const salva = () => {
-    try {
-      localStorage.setItem(DOVE, JSON.stringify(segnate))
-    } catch {
-      /* Niente memoria: le presenze restano per questa sessione e basta. */
-    }
+  const salva = () => memoria.salva()
+  // Chi segna dall'app fa l'appello: la presenza non è più «dal tablet».
+  const daAppello = (sessioneId: string, personaId?: string) => {
+    const o = { ...(memoria.origini[sessioneId] ?? {}) }
+    if (personaId) delete o[personaId]
+    memoria.origini = { ...memoria.origini, [sessioneId]: personaId ? o : {} }
   }
 
   const vista = (c: Definizione, o: Orario, giorno: string): SessioneVista => {
     const inizio = istante(giorno, o.ora)
     const fine = new Date(inizio.getTime() + o.durata * 60_000)
     const id = idSessione(c.id, giorno, o.ora)
-    const mie = segnate[id] ?? {}
+    const mie = memoria.segnate[id] ?? {}
     return {
       id,
       corsoId: c.id,
@@ -205,7 +232,7 @@ export function creaDatiProva(): Dati {
     async dettaglio(sessioneId) {
       const t = trova(sessioneId)
       if (!t) return null
-      const mie = segnate[sessioneId] ?? {}
+      const mie = memoria.segnate[sessioneId] ?? {}
       const elenco = t.corso.iscritti
         .map((n) => REGISTRO.get(n)!)
         .sort(perCognome)
@@ -217,10 +244,11 @@ export function creaDatiProva(): Dati {
     },
 
     async segna(sessioneId, personaId, stato) {
-      const mie = { ...(segnate[sessioneId] ?? {}) }
+      const mie = { ...(memoria.segnate[sessioneId] ?? {}) }
       if (stato === null) delete mie[personaId]
       else mie[personaId] = stato
-      segnate = { ...segnate, [sessioneId]: mie }
+      memoria.segnate = { ...memoria.segnate, [sessioneId]: mie }
+      daAppello(sessioneId, personaId)
       salva()
     },
 
@@ -229,7 +257,8 @@ export function creaDatiProva(): Dati {
       if (!t) return
       const mie: Record<string, StatoPresenza> = {}
       for (const n of t.corso.iscritti) mie[REGISTRO.get(n)!.id] = stato
-      segnate = { ...segnate, [sessioneId]: mie }
+      memoria.segnate = { ...memoria.segnate, [sessioneId]: mie }
+      daAppello(sessioneId)
       salva()
     },
 
@@ -241,8 +270,11 @@ export function creaDatiProva(): Dati {
 
 /** Solo per le prove: svuota le presenze finte. */
 export function scordaProva() {
+  memoria.segnate = {}
+  memoria.origini = {}
   try {
     localStorage.removeItem(DOVE)
+    localStorage.removeItem(DOVE_ORIGINI)
   } catch {
     /* pazienza */
   }

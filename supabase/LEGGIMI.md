@@ -118,9 +118,14 @@ select 'Tablet Lotta', (select id from sale where nome = 'Lotta'),
        (select id from auth.users where email = 'tablet-lotta@esempio.it');
 ```
 
-e sul tablet si fa l'accesso una volta con quell'utente. Se il tablet si perde,
+e sul tablet si apre l'app con `#tablet` in fondo all'indirizzo (per esempio
+`https://…/ods-corsi/#tablet`), si fa l'accesso una volta con quell'utente e
+conviene installarla come app. Da lì il tablet riapre sempre il tablet e lo
+schermo non si spegne. Se il tablet si perde,
 `update postazioni set attiva = false where nome = 'Tablet Lotta'` lo spegne
-subito, e poi si cancella l'utente.
+subito, e poi si cancella l'utente. Per spostarlo in un'altra sala, o per farlo
+tornare un dispositivo qualunque, c'è «Scollega il tablet» nell'area
+istruttore.
 
 ### Il PIN degli istruttori
 
