@@ -7,6 +7,7 @@ import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { richiesteDi } from './richiesteProva'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
+import { impostazioniSala } from '../../timer/src/lib/impostazioniSala'
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -547,6 +548,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async togliListaMusica(id) {
       a().musica = (a().musica ?? []).filter((x) => x.id !== id)
+      salva()
+    },
+
+    async timerSale() {
+      return impostazioniSala(a().timerSale)
+    },
+
+    async salvaTimerSale(i) {
+      a().timerSale = impostazioniSala(i)
       salva()
     },
 
