@@ -160,6 +160,16 @@ alter table presenze add column if not exists origine origine_presenza not null 
 alter table presenze add column if not exists postazione_id uuid references postazioni on delete set null;
 
 -- ---------------------------------------------------------------------------
+-- La sala di un giorno.
+--
+-- Un corso può fare il lunedì in Tatami e il giovedì in Lotta. La sala del
+-- corso resta quella di partenza; la ricorrenza ne ha una sua solo quando è
+-- diversa, e `null` vuol dire «come il corso». `materializza_sessioni` copia
+-- sulla lezione la prima delle due che c'è.
+-- ---------------------------------------------------------------------------
+alter table ricorrenze add column if not exists sala_id uuid references sale on delete set null;
+
+-- ---------------------------------------------------------------------------
 -- Conservazione
 --
 -- Le presenze sono dati personali e non si tengono per sempre. Questa vista

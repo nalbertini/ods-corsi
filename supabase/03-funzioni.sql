@@ -35,7 +35,8 @@ begin
   if a_giorno - da_giorno > 400 then raise exception 'intervallo troppo lungo: % giorni', a_giorno - da_giorno; end if;
 
   with giorni as (
-    select r.*, c.sala_id, c.istruttore_id, g::date as giorno_vero
+    -- La sala del giorno, se ne ha una, altrimenti quella del corso.
+    select r.id, r.corso_id, r.ora, r.durata_min, coalesce(r.sala_id, c.sala_id) as sala_id, c.istruttore_id, g::date as giorno_vero
     from ricorrenze r
     join corsi c on c.id = r.corso_id and c.attivo
     cross join lateral generate_series(

@@ -7,7 +7,10 @@
 -- browser perché devono valere anche per chi scrive dal SQL Editor:
 --
 --   · un corso cambia sala o istruttore → le lezioni future lo seguono, tranne
---     quelle cambiate una per una (una sostituzione resta una sostituzione);
+--     quelle cambiate una per una (una sostituzione resta una sostituzione)
+--     e quelle dei giorni che hanno una sala loro;
+--   · un giorno cambia sala → le sue lezioni future lo seguono, con la stessa
+--     eccezione per quelle spostate a mano;
 --   · un corso si archivia → le lezioni future senza appello spariscono;
 --   · un giorno si toglie da un corso → la ricorrenza si chiude, e le lezioni
 --     con un appello restano dove sono;
@@ -19,15 +22,20 @@
 --
 -- Una lezione «segue il corso» quando ha ancora la sala e l'istruttore che il
 -- corso aveva prima: quella con un sostituto, o spostata in un'altra sala per
--- un giorno, è stata decisa a mano e resta com'è. Le lezioni passate non si
--- toccano mai: sono quello che è successo.
+-- un giorno, è stata decisa a mano e resta com'è. Nemmeno le lezioni di un
+-- giorno che ha una sala sua seguono la sala del corso: seguono quella del
+-- giorno. Le lezioni passate non si toccano mai: sono quello che è successo.
 -- ---------------------------------------------------------------------------
 create or replace function corso_cambiato() returns trigger
   language plpgsql security definer set search_path = public, extensions as $$
 begin
   if new.sala_id is distinct from old.sala_id then
-    update sessioni set sala_id = new.sala_id
-      where corso_id = new.id and inizio > now() and sala_id is not distinct from old.sala_id;
+    update sessioni s set sala_id = new.sala_id
+      where s.corso_id = new.id and s.inizio > now() and s.sala_id is not distinct from old.sala_id
+        and not exists (select 1 from ricorrenze r where r.id = s.ricorrenza_id and r.sala_id is not null);
+    -- Un giorno che aveva una sala sua, e ora è quella del corso, torna a
+    -- seguire il corso: altrimenti al prossimo cambio resterebbe indietro.
+    update ricorrenze set sala_id = null where corso_id = new.id and sala_id = new.sala_id;
   end if;
   if new.istruttore_id is distinct from old.istruttore_id then
     update sessioni set istruttore_id = new.istruttore_id
@@ -45,6 +53,32 @@ end $$;
 drop trigger if exists corsi_cambiati on corsi;
 create trigger corsi_cambiati after update on corsi
   for each row execute function corso_cambiato();
+
+-- ---------------------------------------------------------------------------
+-- Un giorno cambia sala: le sue lezioni future lo seguono.
+--
+-- Stessa regola del corso: segue chi era ancora nella sala di prima (quella
+-- del giorno, o quella del corso se il giorno non ne aveva una), e una
+-- lezione spostata a mano resta dov'è. Tornare a `null` rimette le lezioni
+-- nella sala del corso.
+-- ---------------------------------------------------------------------------
+create or replace function ricorrenza_cambiata() returns trigger
+  language plpgsql security definer set search_path = public, extensions as $$
+declare
+  del_corso uuid;
+begin
+  if new.sala_id is distinct from old.sala_id then
+    select sala_id into del_corso from corsi where id = new.corso_id;
+    update sessioni set sala_id = coalesce(new.sala_id, del_corso)
+      where ricorrenza_id = new.id and inizio > now()
+        and sala_id is not distinct from coalesce(old.sala_id, del_corso);
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists ricorrenze_cambiate on ricorrenze;
+create trigger ricorrenze_cambiate after update on ricorrenze
+  for each row execute function ricorrenza_cambiata();
 
 -- ---------------------------------------------------------------------------
 -- Togliere un giorno a un corso.

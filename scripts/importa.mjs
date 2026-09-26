@@ -142,8 +142,10 @@ for (const c of corsi) {
       dire(`where c.nome = ${q(c.nome)} and p.nome = ${q(i.nome)} and p.cognome = ${q(i.cognome)} on conflict do nothing;`)
     }
   }
-  dire(`insert into ricorrenze (corso_id, giorno, ora, durata_min, dal)`)
-  dire(`select c.id, ${giorno}, ${q(ora)}, ${n(c.durata || 60)}, current_date from corsi c`)
+  // La sala della riga, se non è quella del corso, è la sala di quel giorno.
+  dire(`insert into ricorrenze (corso_id, giorno, ora, durata_min, dal, sala_id)`)
+  dire(`select c.id, ${giorno}, ${q(ora)}, ${n(c.durata || 60)}, current_date,`)
+  dire(`  (select nullif(s.id, c.sala_id) from sale s where s.nome = ${q(c.sala)}) from corsi c`)
   dire(`where c.nome = ${q(c.nome)}`)
   dire(`  and not exists (select 1 from ricorrenze r where r.corso_id = c.id and r.giorno = ${giorno} and r.ora = ${q(ora)});`)
   dire('')

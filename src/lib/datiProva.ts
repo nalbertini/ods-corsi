@@ -98,16 +98,19 @@ export function iscrittiIl(corsoId: string, giorno: string): Persona[] {
     .map((p) => ({ id: p.id, nome: p.nome, cognome: p.cognome, ruolo: p.ruolo }))
 }
 
-/** La sala, l'istruttore e lo stato della lezione: quelli decisi a mano, o quelli del corso. */
+/** La sala, l'istruttore e lo stato della lezione: quelli decisi a mano, o quelli del giorno e del corso. */
 export function comeE(l: LezioneTrovata): { sala: string; istruttori: string[]; sostituto?: string; stato: StatoSessione } {
   const m = archivio.dati.lezioni[l.id] ?? {}
   return {
-    sala: m.sala ?? l.corso.sala,
+    sala: m.sala ?? salaDelGiorno(l),
     istruttori: m.istruttore ? [m.istruttore] : l.corso.istruttori,
     sostituto: m.istruttore ?? undefined,
     stato: m.stato ?? 'prevista',
   }
 }
+
+/** La sala di una lezione se nessuno la sposta: quella del suo giorno, o quella del corso. */
+export const salaDelGiorno = (l: LezioneTrovata) => l.ricorrenza?.sala ?? l.corso.sala
 
 export const nomeIstruttore = (id: string) => {
   const p = archivio.dati.persone.find((x) => x.id === id)

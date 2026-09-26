@@ -28,6 +28,8 @@ export interface RicorrenzaProva {
   durata: number
   dal: string
   al?: string
+  /** La sala di questo giorno, quando non è quella del corso. */
+  sala?: string
 }
 
 export interface CorsoProva {

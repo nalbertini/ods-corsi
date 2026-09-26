@@ -15,12 +15,20 @@ function quando(c: CorsoSeg) {
   return c.ricorrenze.map((r) => `${CORTI[r.giorno]} ${r.ora}`).join(', ')
 }
 
+/** «Tatami», o «Tatami · gio Lotta» quando qualche giorno si fa in un'altra sala. */
+function dove(c: CorsoSeg) {
+  const altrove = new Map<string, string[]>()
+  for (const r of c.ricorrenze) if (r.sala && r.salaId !== c.salaId) altrove.set(r.sala, [...(altrove.get(r.sala) ?? []), CORTI[r.giorno]])
+  return [c.sala, ...[...altrove].map(([sala, giorni]) => `${[...new Set(giorni)].join(' ')} ${sala}`)].filter(Boolean).join(' · ')
+}
+
 /**
  * I corsi: cosa si fa, dove, con chi, e i giorni in cui si fa.
  *
- * Un corso è cosa si fa; le ricorrenze dicono quando. Le lezioni del
- * calendario si generano da quelle, quindi cambiare un giorno qui cambia la
- * settimana, ma solo da oggi in avanti: il passato è già nel registro.
+ * Un corso è cosa si fa; le ricorrenze dicono quando, e dove quando un giorno
+ * si fa in un'altra sala. Le lezioni del calendario si generano da quelle,
+ * quindi cambiare un giorno qui cambia la settimana, ma solo da oggi in
+ * avanti: il passato è già nel registro.
  */
 export function Corsi({ d }: { d: DatiSegreteria }) {
   const corsi = useCarica(() => d.corsi(), [d])
@@ -72,7 +80,7 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
                   <span className="stack" style={{ gap: 2, minWidth: 0 }}>
                     <span className="ob" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.03em' }}>{c.nome.toUpperCase()}</span>
                     <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-                      {[c.sala, c.istruttori.map((i) => i.nome).join(', ') || 'istruttore da assegnare'].filter(Boolean).join(' · ')}
+                      {[dove(c), c.istruttori.map((i) => i.nome).join(', ') || 'istruttore da assegnare'].filter(Boolean).join(' · ')}
                     </span>
                   </span>
                 </span>
@@ -158,7 +166,28 @@ function Scheda({
     if (!bozza.salaId && sale.dato?.length) setBozza((b) => ({ ...b, salaId: sale.dato![0].id }))
   }, [sale.dato, bozza.salaId])
 
-  const [ric, setRic] = useState<{ giorno: number; ora: string; durata: number } | null>(null)
+  const [ric, setRic] = useState<{ giorno: number; ora: string; durata: number; salaId?: string } | null>(null)
+  const salaDelCorso = (sale.dato ?? []).find((s) => s.id === corso?.salaId)?.nome ?? corso?.sala ?? 'nessuna'
+  /** La sala di un giorno: vuoto vuol dire quella del corso. */
+  const sceltaSala = (id: string, valore: string | undefined, cambia: (salaId: string | undefined) => void, etichetta?: string) => (
+    <select
+      id={id}
+      aria-label={etichetta}
+      className="sg-campo"
+      data-acceso={!!valore}
+      value={valore ?? ''}
+      onChange={(e) => cambia(e.target.value || undefined)}
+    >
+      <option value="">Sala del corso · {salaDelCorso}</option>
+      {(sale.dato ?? [])
+        .filter((s) => s.id !== corso?.salaId)
+        .map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.nome}
+          </option>
+        ))}
+    </select>
+  )
   const [daIscrivere, setDaIscrivere] = useState('')
   const cambiato =
     !corso ||
@@ -288,6 +317,22 @@ function Scheda({
                 dal {dataLunga(r.dal)}
                 {r.al ? ` al ${dataLunga(r.al)}` : ''}
               </span>
+              <span className="sg-ricorrenza-sala">
+                <span className="sg-etichetta" aria-hidden="true">
+                  SALA
+                </span>
+                {sceltaSala(
+                  `r-sala-${r.id}`,
+                  r.salaId && r.salaId !== corso.salaId ? r.salaId : undefined,
+                  (salaId) =>
+                    void fai(
+                      () => d.salaRicorrenza(r.id, salaId ?? null),
+                      `${GIORNI_LUNGHI[r.giorno]} ${salaId ? `in ${(sale.dato ?? []).find((s) => s.id === salaId)?.nome ?? 'un’altra sala'}` : 'nella sala del corso'}: le lezioni future la seguono`,
+                      onCambiato,
+                    ),
+                  `Sala del ${GIORNI_LUNGHI[r.giorno].toLowerCase()} alle ${r.ora}`,
+                )}
+              </span>
               <button
                 type="button"
                 className="sg-togli"
@@ -328,6 +373,9 @@ function Scheda({
                   onChange={(e) => setRic({ ...ric, durata: Number(e.target.value) })}
                 />
               </Campo>
+              <Campo id="r-s" etichetta="SALA">
+                {sceltaSala('r-s', ric.salaId, (salaId) => setRic({ ...ric, salaId }))}
+              </Campo>
               <div className="grow" />
               <button type="button" className="num sg-chip" onClick={() => setRic(null)}>
                 LASCIA STARE
@@ -353,7 +401,10 @@ function Scheda({
               + AGGIUNGI UN GIORNO
             </button>
           )}
-          <span style={{ fontSize: 13, color: 'var(--dim)' }}>Cambiare i giorni tocca solo le lezioni future: quelle con un appello restano come sono.</span>
+          <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+            Cambiare i giorni tocca solo le lezioni future: quelle con un appello restano come sono. Anche la sala di un giorno vale da oggi in
+            avanti, e una lezione spostata a mano dalla settimana resta dov'è.
+          </span>
         </div>
       )}
 

@@ -80,11 +80,12 @@ export interface Saltata {
 
 interface CorsoFoglio {
   nome: string
+  /** Quella della prima riga del corso: le altre righe possono dirne un'altra, per il loro giorno. */
   sala?: string
   istruttori: string[]
   capienza?: number
   colore?: string
-  orari: Array<{ giorno: number; ora: string; durata: number }>
+  orari: Array<{ giorno: number; ora: string; durata: number; sala?: string }>
 }
 
 interface IscrittoFoglio {
@@ -131,7 +132,10 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
       colore: r.colore || undefined,
       orari: [],
     }
-    if (!c.orari.some((o) => o.giorno === giorno && o.ora === ora)) c.orari.push({ giorno, ora, durata: Number(r.durata) || 60 })
+    // La prima sala che si trova è quella del corso; una diversa è la sala di quel giorno.
+    if (!c.sala && r.sala) c.sala = r.sala
+    const sala = r.sala && c.sala && piatto(r.sala) !== piatto(c.sala) ? r.sala : undefined
+    if (!c.orari.some((o) => o.giorno === giorno && o.ora === ora)) c.orari.push({ giorno, ora, durata: Number(r.durata) || 60, ...(sala ? { sala } : {}) })
     corsi.set(k, c)
   })
 
@@ -196,7 +200,8 @@ const nomeCognome = (s: string) => {
 export function anteprima(f: Fogli, s: Situazione): Anteprima {
   const avvisi: string[] = []
   const sale = new Set(s.sale.map((x) => piatto(x.nome)))
-  const saleNuove = [...new Set(f.corsi.map((c) => c.sala).filter((x): x is string => !!x))].filter((x) => !sale.has(piatto(x)))
+  const tutte = f.corsi.flatMap((c) => [c.sala, ...c.orari.map((o) => o.sala)]).filter((x): x is string => !!x)
+  const saleNuove = [...new Map(tutte.map((x) => [piatto(x), x])).values()].filter((x) => !sale.has(piatto(x)))
 
   const istruttori = new Map<string, string | null>()
   const istruttoriNuovi: string[] = []
@@ -291,7 +296,9 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
   for (const c of f.corsi) {
     const dentro = corsi.get(piatto(c.nome))!
     for (const o of c.orari) {
-      if (!dentro.ricorrenze.some((r) => r.giorno === o.giorno && r.ora === o.ora)) await d.aggiungiRicorrenza(dentro.id, o, { rigenera: false })
+      if (dentro.ricorrenze.some((r) => r.giorno === o.giorno && r.ora === o.ora)) continue
+      const salaId = o.sala ? salaDi.get(piatto(o.sala)) : undefined
+      await d.aggiungiRicorrenza(dentro.id, { giorno: o.giorno, ora: o.ora, durata: o.durata, salaId: salaId !== dentro.salaId ? salaId : undefined }, { rigenera: false })
     }
   }
 

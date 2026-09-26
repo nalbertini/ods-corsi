@@ -23,6 +23,10 @@ Si caricano file **CSV**:
 Basta anche un foglio solo: gli iscritti si possono iscrivere ai corsi che ci
 sono già.
 
+In `corsi.csv` ogni riga è un giorno, con la sua sala: la prima sala di un
+corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
+(Judo 2 in Tatami il lunedì e in Lotta il venerdì).
+
 ## I tre passi
 
 1. **I FOGLI** — **SCEGLI IL FOGLIO** per ognuno, poi **CONTROLLA** (o

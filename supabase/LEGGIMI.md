@@ -29,6 +29,12 @@ Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
 funzioni, quindi dopo va rilanciato anche `06-iscrizioni.sql`.
 
+Su un database già in uso, dopo un aggiornamento dell'app si rilanciano i
+file cambiati e poi `06-iscrizioni.sql`. Per la sala dei singoli giorni
+(la colonna `ricorrenze.sala_id`) sono `01-schema.sql`, `03-funzioni.sql`,
+`04-tablet.sql` e `05-segreteria.sql`: le lezioni già generate restano dove
+sono.
+
 Se l'app dice *Could not find the function public.… in the schema cache*,
 il file che la crea non è stato lanciato su questo progetto (per
 `corsi_aperti` è `06-iscrizioni.sql`): lanciarlo basta, perché ogni file
@@ -97,7 +103,7 @@ bene così come sono.
 | `corsi.csv` | |
 |---|---|
 | `nome` | Il nome del corso |
-| `sala` | Creata se non c'è |
+| `sala` | Creata se non c'è. La prima riga del corso dà la sala del corso; una riga con un'altra sala mette lì quel giorno |
 | `istruttore` | Nome e cognome; creato se non c'è. Più istruttori separati da virgola: entrano tutti |
 | `giorno` | `lunedì`, `lun` o il numero (0 = domenica) |
 | `ora` | `19:00` o `19.00` |
@@ -197,7 +203,9 @@ tenerlo è una scelta della palestra da mettere nell'informativa.
 
 ## 6. Il calendario
 
-`materializza_sessioni` trasforma le ricorrenze in lezioni vere. L'import la
+`materializza_sessioni` trasforma le ricorrenze in lezioni vere, ognuna nella
+sala del suo giorno (`ricorrenze.sala_id`) o, se il giorno non ne ha una, in
+quella del corso. L'import la
 chiama già per i due mesi successivi; poi va richiamata ogni tanto, con un job
 settimanale (**Database → Cron**). Quanti giorni avanti si decide in
 **SEGRETERIA → REGOLE E PRIVACY**, e il job lo legge da lì:
@@ -321,8 +329,8 @@ legale, `rls.sql` prova gli accessi dal punto di vista di un iscritto, di un
 istruttore, della segreteria e di chi non ha fatto l'accesso, `tablet.sql`
 prova il tablet di sala: le finestre di tempo, il recupero, l'annullo, il PIN
 e il blocco, e che il tablet non veda niente più di quel che deve;
-`segreteria.sql` prova cosa succede alle lezioni quando un corso cambia sala,
-istruttore o giorni, o si archivia, e il primo accesso; `iscrizioni.sql`
+`segreteria.sql` prova cosa succede alle lezioni quando un corso, o uno dei
+suoi giorni, cambia sala, quando cambiano istruttore o giorni, o si archivia, e il primo accesso; `iscrizioni.sql`
 prova il modulo di iscrizione: cosa può fare chi non ha un accesso, i limiti
 sui file, e chi accoglie le richieste. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

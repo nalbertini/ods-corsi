@@ -131,14 +131,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async aggiornaLezione(sessioneId, cambi) {
-      const s = ok(await db.from('sessioni').select('corsi ( sala_id, istruttore_id )').eq('id', sessioneId).single()) as unknown as {
+      const s = ok(await db.from('sessioni').select('corsi ( sala_id, istruttore_id ), ricorrenze ( sala_id )').eq('id', sessioneId).single()) as unknown as {
         corsi: { sala_id: string | null; istruttore_id: string | null } | null
+        ricorrenze: { sala_id: string | null } | null
       }
       const riga: Record<string, unknown> = {}
       if (cambi.stato) riga.stato = cambi.stato
-      // «Come da corso» è il valore del corso: così la lezione torna a seguirlo.
+      // «Come da corso» è il valore del corso (la sala, quella del giorno se
+      // ne ha una): così la lezione torna a seguirlo.
       if (cambi.sostitutoId !== undefined) riga.istruttore_id = cambi.sostitutoId ?? s.corsi?.istruttore_id ?? null
-      if (cambi.salaId !== undefined) riga.sala_id = cambi.salaId ?? s.corsi?.sala_id ?? null
+      if (cambi.salaId !== undefined) riga.sala_id = cambi.salaId ?? s.ricorrenze?.sala_id ?? s.corsi?.sala_id ?? null
       ok(await db.from('sessioni').update(riga).eq('id', sessioneId))
     },
 
@@ -169,11 +171,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async corsi() {
       const righe = ok(
-        await db.from('corsi').select('id, nome, colore, capienza, attivo, sala_id, istruttore_id, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al )').order('nome'),
+        await db.from('corsi').select('id, nome, colore, capienza, attivo, sala_id, istruttore_id, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al, sala_id, sale ( nome ) )').order('nome'),
       ) as unknown as Array<{
         id: string; nome: string; colore: string | null; capienza: number | null; attivo: boolean; sala_id: string | null; istruttore_id: string | null
         sale: { nome: string } | null
-        ricorrenze: Array<{ id: string; giorno: number; ora: string; durata_min: number; dal: string; al: string | null }>
+        ricorrenze: Array<{ id: string; giorno: number; ora: string; durata_min: number; dal: string; al: string | null; sala_id: string | null; sale: { nome: string } | null }>
       }>
       const chi = await insegnanti(righe.map((r) => r.id))
       const g = oggi()
@@ -189,7 +191,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           attivo: r.attivo,
           ricorrenze: r.ricorrenze
             .filter((x) => !x.al || x.al >= g)
-            .map((x) => ({ id: x.id, giorno: x.giorno, ora: x.ora.slice(0, 5), durata: x.durata_min, dal: x.dal, al: x.al ?? undefined }))
+            .map((x) => ({
+              id: x.id,
+              giorno: x.giorno,
+              ora: x.ora.slice(0, 5),
+              durata: x.durata_min,
+              dal: x.dal,
+              al: x.al ?? undefined,
+              salaId: x.sala_id ?? undefined,
+              sala: x.sale?.nome,
+            }))
             .sort((x, y) => ((x.giorno + 6) % 7) - ((y.giorno + 6) % 7) || x.ora.localeCompare(y.ora)),
         }),
       )
@@ -222,8 +233,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async aggiungiRicorrenza(corsoId, r, opzioni) {
-      ok(await db.from('ricorrenze').insert({ corso_id: corsoId, giorno: r.giorno, ora: r.ora, durata_min: r.durata, dal: oggi() }))
+      ok(await db.from('ricorrenze').insert({ corso_id: corsoId, giorno: r.giorno, ora: r.ora, durata_min: r.durata, dal: oggi(), sala_id: r.salaId ?? null }))
       if (opzioni?.rigenera !== false) await rigenera()
+    },
+
+    async salaRicorrenza(ricorrenzaId, salaId) {
+      // Le lezioni future le sposta il trigger di 05-segreteria.sql.
+      ok(await db.from('ricorrenze').update({ sala_id: salaId }).eq('id', ricorrenzaId))
     },
 
     async togliRicorrenza(ricorrenzaId) {

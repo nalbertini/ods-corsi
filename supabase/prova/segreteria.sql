@@ -81,6 +81,49 @@ select atteso('le passate restano in Lotta con Maura',
      and (sala_id <> 'bbbbbbbb-0000-0000-0000-000000000001' or istruttore_id <> 'aaaaaaaa-0000-0000-0000-000000000002')), '0');
 
 \echo ''
+\echo '--- 1b. un giorno in un''altra sala ---'
+-- Il primo giorno va in Tatami; il corso intanto sta in Pesi.
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+update ricorrenze set sala_id = 'bbbbbbbb-0000-0000-0000-000000000002' where id = 'dddddddd-0000-0000-0000-000000000001';
+reset role;
+select atteso('le lezioni future di quel giorno vanno in Tatami',
+  (select count(*)::text from sessioni where inizio > now() and ricorrenza_id = 'dddddddd-0000-0000-0000-000000000001'
+     and sala_id <> 'bbbbbbbb-0000-0000-0000-000000000002'), '0');
+select atteso('quelle dell''altro giorno restano in Pesi',
+  (select count(*)::text from sessioni where inizio > now() and ricorrenza_id = 'dddddddd-0000-0000-0000-000000000002'
+     and sala_id <> 'bbbbbbbb-0000-0000-0000-000000000003' and istruttore_id <> 'aaaaaaaa-0000-0000-0000-000000000003'), '0');
+select atteso('le passate non si muovono',
+  (select count(*)::text from sessioni where inizio < now() and sala_id <> 'bbbbbbbb-0000-0000-0000-000000000001'), '0');
+-- Il corso torna in Lotta: il giorno con la sala sua resta in Tatami.
+update corsi set sala_id = 'bbbbbbbb-0000-0000-0000-000000000001' where id = 'cccccccc-0000-0000-0000-000000000001';
+select atteso('il giorno senza sala segue il corso in Lotta',
+  (select count(*)::text from sessioni where inizio > now() and ricorrenza_id = 'dddddddd-0000-0000-0000-000000000002'
+     and sala_id <> 'bbbbbbbb-0000-0000-0000-000000000001' and istruttore_id <> 'aaaaaaaa-0000-0000-0000-000000000003'), '0');
+select atteso('quello con la sala sua no',
+  (select count(*)::text from sessioni where inizio > now() and ricorrenza_id = 'dddddddd-0000-0000-0000-000000000001'
+     and sala_id <> 'bbbbbbbb-0000-0000-0000-000000000002'), '0');
+select atteso('la lezione spostata a mano resta in Tatami con Federico',
+  (select sa.nome || ' con ' || p.nome from sessioni s join sale sa on sa.id = s.sala_id join persone p on p.id = s.istruttore_id
+     where s.inizio > now() order by s.inizio desc limit 1), 'Tatami con Federico');
+-- Il giorno torna «come il corso».
+update ricorrenze set sala_id = null where id = 'dddddddd-0000-0000-0000-000000000001';
+select atteso('e le sue lezioni tornano in Lotta',
+  (select count(*)::text from sessioni where inizio > now() and ricorrenza_id = 'dddddddd-0000-0000-0000-000000000001'
+     and sala_id <> 'bbbbbbbb-0000-0000-0000-000000000001' and istruttore_id <> 'aaaaaaaa-0000-0000-0000-000000000003'), '0');
+
+-- Il secondo giorno va in Pesi, e poi ci va anche il corso: il giorno torna
+-- a seguirlo, e quando il corso torna in Lotta ci torna anche lui.
+update ricorrenze set sala_id = 'bbbbbbbb-0000-0000-0000-000000000003' where id = 'dddddddd-0000-0000-0000-000000000002';
+update corsi set sala_id = 'bbbbbbbb-0000-0000-0000-000000000003' where id = 'cccccccc-0000-0000-0000-000000000001';
+select atteso('il giorno nella sala del corso torna «come il corso»',
+  (select coalesce(sala_id::text, 'come il corso') from ricorrenze where id = 'dddddddd-0000-0000-0000-000000000002'), 'come il corso');
+update corsi set sala_id = 'bbbbbbbb-0000-0000-0000-000000000001' where id = 'cccccccc-0000-0000-0000-000000000001';
+select atteso('e segue il corso in Lotta',
+  (select count(*)::text from sessioni where inizio > now() and ricorrenza_id = 'dddddddd-0000-0000-0000-000000000002'
+     and sala_id <> 'bbbbbbbb-0000-0000-0000-000000000001' and istruttore_id <> 'aaaaaaaa-0000-0000-0000-000000000003'), '0');
+
+\echo ''
 \echo '--- 2. togliere un giorno ---'
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
@@ -103,10 +146,15 @@ select atteso('nessuna futura senza appello',
 
 \echo ''
 \echo '--- 3. archiviare ---'
--- Rigenerato, con una lezione straordinaria in più.
-insert into ricorrenze (corso_id, giorno, ora, durata_min, dal)
-  values ('cccccccc-0000-0000-0000-000000000001', extract(dow from current_date + 2)::int, '19:00', 60, current_date);
+-- Rigenerato con un giorno nuovo che ha una sala sua, dove nascono le sue
+-- lezioni, e con una lezione straordinaria in più.
+insert into ricorrenze (id, corso_id, giorno, ora, durata_min, dal, sala_id)
+  values ('dddddddd-0000-0000-0000-000000000003', 'cccccccc-0000-0000-0000-000000000001', extract(dow from current_date + 2)::int, '19:00', 60, current_date,
+          'bbbbbbbb-0000-0000-0000-000000000003');
 select materializza_sessioni(current_date, current_date + 30) > 0 as rigenerate;
+select atteso('le lezioni del giorno nuovo nascono in Pesi, non in Lotta',
+  (select string_agg(distinct sa.nome, ',') from sessioni s join sale sa on sa.id = s.sala_id
+     where s.ricorrenza_id = 'dddddddd-0000-0000-0000-000000000003'), 'Pesi');
 insert into sessioni (corso_id, inizio, fine) values ('cccccccc-0000-0000-0000-000000000001', now() + interval '5 days 3 hours', now() + interval '5 days 4 hours');
 update corsi set attivo = false where id = 'cccccccc-0000-0000-0000-000000000001';
 select atteso('archiviato: future solo quelle con un appello',

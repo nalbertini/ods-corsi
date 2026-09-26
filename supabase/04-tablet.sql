@@ -59,12 +59,13 @@ create or replace function postazione_corrente() returns uuid
   select id from postazioni where utente_id = auth.uid() and attiva
 $$;
 
-/** Una lezione, con la sala in cui si fa davvero: la sua, o quella del corso. */
+/** Una lezione, con la sala in cui si fa davvero: la sua, quella del suo giorno, o quella del corso. */
 create or replace function sessione_in_sala(sessione uuid)
   returns table (id uuid, corso_id uuid, inizio timestamptz, fine timestamptz, stato stato_sessione, sala_id uuid)
   language sql stable security definer set search_path = public, extensions as $$
-  select s.id, s.corso_id, s.inizio, s.fine, s.stato, coalesce(s.sala_id, c.sala_id)
+  select s.id, s.corso_id, s.inizio, s.fine, s.stato, coalesce(s.sala_id, r.sala_id, c.sala_id)
   from sessioni s join corsi c on c.id = s.corso_id
+  left join ricorrenze r on r.id = s.ricorrenza_id
   where s.id = sessione
 $$;
 
@@ -119,7 +120,8 @@ begin
          and i.dal <= (s.inizio at time zone 'Europe/Rome')::date and (i.al is null or i.al >= (s.inizio at time zone 'Europe/Rome')::date)),
       (select count(*)::int from presenze pr where pr.sessione_id = s.id and pr.stato = 'presente')
     from sessioni s join corsi c on c.id = s.corso_id
-    where coalesce(s.sala_id, c.sala_id) = sala
+    left join ricorrenze r on r.id = s.ricorrenza_id
+    where coalesce(s.sala_id, r.sala_id, c.sala_id) = sala
       and s.inizio >= (da_giorno::timestamp at time zone 'Europe/Rome')
       and s.inizio < ((a_giorno + 1)::timestamp at time zone 'Europe/Rome')
     order by s.inizio, c.nome;

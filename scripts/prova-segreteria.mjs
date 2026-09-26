@@ -78,6 +78,51 @@ console.log('\n1. il corso cambia sala: le lezioni lo seguono, tranne quelle spo
   ok('e l\'app la vede lì', (await app.calendario(...giorno([8, 28]))).find((l) => l.corsoId === 'lotta-2').sala, 'Tatami')
 }
 
+console.log('\n1b. un giorno in un\'altra sala')
+{
+  // Aikido 2 è in Motricità il lunedì e il giovedì; il giovedì va in Tatami.
+  const aikido = async (g) => (await s.settimana(...giorno(g))).find((l) => l.corsoId === 'aikido-2')
+  const ric = async () => (await s.corsi()).find((c) => c.id === 'aikido-2').ricorrenze
+  const gio = (await ric()).find((r) => r.giorno === 4)
+  ok('di partenza nessun giorno ha una sala sua', (await ric()).map((r) => r.salaId ?? null), [null, null])
+  await s.salaRicorrenza(gio.id, 'Tatami')
+  ok('il giovedì ha la sua sala', (await ric()).map((r) => r.sala ?? null), [null, 'Tatami'])
+  ok('la lezione di giovedì è in Tatami', (await aikido([9, 1])).sala, 'Tatami')
+  ok('quella di lunedì resta in Motricità', (await aikido([8, 28])).sala, 'Motricità')
+  ok('l\'app la vede in Tatami', (await app.calendario(...giorno([9, 1]))).find((l) => l.corsoId === 'aikido-2').sala, 'Tatami')
+  const t = m.creaTabletProva()
+  await t.scegliSala('Tatami')
+  ok('ed è sul tablet del Tatami', (await t.lezioni(...giorno([9, 1]))).some((l) => l.corsoId === 'aikido-2'), true)
+  await t.scegliSala('Motricità')
+  ok('non su quello di Motricità', (await t.lezioni(...giorno([9, 1]))).some((l) => l.corsoId === 'aikido-2'), false)
+  // Spostata a mano per un giorno, e poi «come da corso»: torna nella sala del giovedì.
+  const l = await aikido([9, 1])
+  await s.aggiornaLezione(l.id, { salaId: 'Lotta' })
+  ok('spostata a mano in Lotta', (await aikido([9, 1])).sala, 'Lotta')
+  await s.aggiornaLezione(l.id, { salaId: null })
+  ok('«come da corso» è la sala del giovedì', (await aikido([9, 1])).sala, 'Tatami')
+  // Il corso cambia sala: il lunedì lo segue, il giovedì no.
+  const c = (await s.corsi()).find((x) => x.id === 'aikido-2')
+  await s.salvaCorso({ id: c.id, nome: c.nome, salaId: 'Pesi', istruttori: c.istruttori.map((i) => i.id), capienza: c.capienza, colore: c.colore })
+  ok('il corso in Pesi: lunedì in Pesi, giovedì in Tatami', [(await aikido([8, 28])).sala, (await aikido([9, 1])).sala], ['Pesi', 'Tatami'])
+  await s.salaRicorrenza(gio.id, null)
+  ok('il giovedì torna nella sala del corso', (await aikido([9, 1])).sala, 'Pesi')
+  await s.salaRicorrenza(gio.id, 'Pesi')
+  ok('la sala del corso non si scrive sul giorno', (await ric()).map((r) => r.salaId ?? null), [null, null])
+  // Un giorno nuovo, già in un'altra sala.
+  await s.aggiungiRicorrenza('aikido-2', { giorno: 6, ora: '10:00', durata: 60, salaId: 'Lotta' })
+  ok('il sabato nasce in Lotta', (await aikido([9, 3])).sala, 'Lotta')
+  // Una sala rinominata si porta dietro anche i giorni.
+  await s.salvaSala({ id: 'Lotta', nome: 'Lotta libera' })
+  ok('rinominata anche sul sabato', (await aikido([9, 3])).sala, 'Lotta libera')
+  await s.salvaSala({ id: 'Lotta libera', nome: 'Lotta' })
+  // Il corso va in Lotta: il sabato, che era già lì, torna a seguirlo.
+  await s.salvaCorso({ id: c.id, nome: c.nome, salaId: 'Lotta', istruttori: c.istruttori.map((i) => i.id), capienza: c.capienza, colore: c.colore })
+  ok('il giorno nella sala del corso torna «come il corso»', (await ric()).map((r) => r.salaId ?? null), [null, null, null])
+  await s.salvaCorso({ id: c.id, nome: c.nome, salaId: 'Motricità', istruttori: c.istruttori.map((i) => i.id), capienza: c.capienza, colore: c.colore })
+  await s.togliRicorrenza((await ric()).find((r) => r.giorno === 6).id)
+}
+
 console.log('\n2. il sostituto')
 {
   const [mer] = await lotta2([8, 30])
@@ -203,6 +248,19 @@ console.log('\n10. l\'import dai fogli')
   const a2 = await m.importa(s, m.leggiFogli(corsi, iscritti, (await s.corsi()).map((c) => c.nome)), () => {})
   ok('rifatto: niente di nuovo', [a2.saleNuove.length, a2.corsiNuovi.length, a2.ricorrenzeNuove, a2.iscrittiNuovi, a2.iscrizioniNuove], [0, 0, 0, 0, 0])
   ok('e nessun doppione', (await s.persone()).filter((p) => p.email === 'marta@esempio.it').length, 1)
+}
+
+console.log('\n10b. l\'import con un giorno in un\'altra sala')
+{
+  // La sala della prima riga è quella del corso; una riga con un'altra sala è quel giorno lì.
+  const corsi = 'nome;sala;istruttore;giorno;ora;durata\nTai chi;;;lunedì;09:00;60\nTai chi;Tatami;;martedì;09:00;60\nTai chi;Lotta;;giovedì;09:00;60\nTai chi;Terrazza;;venerdì;09:00;60\n'
+  const f = m.leggiFogli(corsi, null, (await s.corsi()).map((c) => c.nome))
+  const a = await m.importa(s, f, () => {})
+  ok('la sala che c\'è solo su un giorno entra lo stesso', a.saleNuove, ['Terrazza'])
+  const tc = (await s.corsi()).find((c) => c.nome === 'Tai chi')
+  ok('il corso in Tatami, due giorni altrove', [tc.sala, tc.ricorrenze.map((r) => r.sala ?? null)], ['Tatami', [null, null, 'Lotta', 'Terrazza']])
+  const lezioni = (await s.settimana(...giorno([8, 28], [9, 2]))).filter((l) => l.corsoId === tc.id)
+  ok('e le lezioni sono dove devono', lezioni.map((l) => l.sala), ['Tatami', 'Tatami', 'Lotta', 'Terrazza'])
 }
 
 console.log('\n11. le risposte del modulo Google')

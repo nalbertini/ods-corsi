@@ -787,9 +787,12 @@ a.btn { text-decoration: none; }
 }
 .sg-scheda-stretta { width: 360px; flex-grow: 0; flex-shrink: 0; padding: 20px; }
 .sg-ricorrenza {
-  display: grid; grid-template-columns: 130px 70px 80px 1fr 40px; gap: 12px; align-items: center;
-  min-height: 48px; padding: 0 12px; background: var(--bg); border: 2px solid var(--line);
+  display: grid; grid-template-columns: 130px 70px 80px 1fr 40px; gap: 4px 12px; align-items: center;
+  min-height: 48px; padding: 4px 12px 10px; background: var(--bg); border: 2px solid var(--line);
 }
+/* La sala del giorno sta sotto, su tutta la riga. */
+.sg-ricorrenza-sala { order: 1; grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; }
+.sg-ricorrenza-sala .sg-campo { height: 38px; flex-grow: 1; max-width: 320px; }
 .sg-togli { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--dim); }
 .sg-togli:hover { color: var(--rosso); }
 .sg-nuova-ricorrenza { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; padding: 12px; border: 2px solid var(--text); }
