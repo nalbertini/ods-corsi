@@ -40,19 +40,6 @@ export default defineConfig({
         // Le pagine a sé, come l'informativa, restano quelle: senza, il
         // service worker a ogni indirizzo risponde con l'app.
         navigateFallbackDenylist: [/informativa\.html$/],
-        runtimeCaching: [
-          {
-            // Il nome della cache ha il prefisso dell'app: sullo stesso dominio
-            // del timer la Cache Storage è una sola, come il localStorage.
-            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'ods-corsi-fonts',
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
       },
     }),
   ],
