@@ -49,7 +49,9 @@ su un tablet di sala, che riapre sempre il tablet.
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
   iscrive risponde alle domande dal telefono e carica il modulo firmato, il
   documento e la ricevuta; per un minore la data di nascita fa chiedere i dati
-  del genitore. Le richieste arrivano in segreteria, in **RICHIESTE ONLINE**,
+  del genitore. Il codice fiscale si controlla davvero (il carattere di
+  controllo, la data di nascita, e per un minore che quello del genitore sia
+  di un adulto) e cosa non va si scrive sotto il campo. Le richieste arrivano in segreteria, in **RICHIESTE ONLINE**,
   con i file da guardare: accolta, la persona entra in elenco iscritta ai
   corsi che ha scelto, senza doppioni se c'era già. Col database vero si
   accende quando l'informativa privacy (`public/informativa.html`, per ora una

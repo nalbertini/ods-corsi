@@ -349,6 +349,11 @@ input, textarea { font: inherit; color: inherit; }
 .modulo-scegli { align-self: center; flex-shrink: 0; }
 .modulo-privacy { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--sec); line-height: 1.4; cursor: pointer; }
 .modulo-privacy input { width: 22px; height: 22px; margin: 0; flex-shrink: 0; accent-color: var(--verde); }
+/* Cosa non va, sotto il campo: rosso ferma l'invio, giallo è da guardare. */
+.modulo .campo[aria-invalid='true'] { border-color: var(--rosso); }
+.modulo-nota { font-size: 14px; line-height: 1.35; color: var(--rosso); }
+.modulo-nota[data-avviso] { color: var(--giallo-testo); }
+.modulo-corsi:focus, .modulo [role='radiogroup']:focus { outline: none; }
 @media (max-width: 560px) {
   .modulo-griglia, .modulo-corsi { grid-template-columns: minmax(0, 1fr); }
 }

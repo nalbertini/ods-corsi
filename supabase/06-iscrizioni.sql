@@ -96,6 +96,52 @@ create or replace function corsi_aperti()
 $$;
 
 -- ---------------------------------------------------------------------------
+-- Il codice fiscale, letto invece che solo contato: le stesse regole di
+-- `src/lib/codiceFiscale.ts`. L'ultimo carattere si calcola dagli altri
+-- quindici e scopre quasi ogni lettera copiata male; dentro c'è anche la data
+-- di nascita. Le cifre possono essere lettere (LMNPQRSTUV per 0-9): è
+-- l'omocodia, per chi altrimenti avrebbe lo stesso codice di un altro.
+-- ---------------------------------------------------------------------------
+create or replace function cf_controllo(cf text)
+  returns text language sql immutable as $$
+  select chr(65 + (sum(case when i % 2 = 1
+                            then (array[1,0,5,7,9,13,15,17,19,21,2,4,18,20,11,3,6,8,12,14,16,10,22,25,24,23])[v + 1]
+                            else v end) % 26)::int)
+  from (select i, case when c ~ '[0-9]' then ascii(c) - 48 else ascii(c) - 65 end as v
+        from generate_series(1, 15) i, substr(cf, i, 1) c) x
+$$;
+
+-- Scritto giusto: la forma e il carattere di controllo.
+create or replace function cf_valido(cf text)
+  returns boolean language sql immutable as $$
+  select coalesce(cf ~ '^[A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z]$'
+                  and cf_controllo(cf) = substr(cf, 16, 1), false)
+$$;
+
+-- La data di nascita nel codice. L'anno ha due cifre: si prende il secolo più
+-- recente che non la metta nel futuro. Null se il codice non va o se la data
+-- non esiste.
+create or replace function cf_nato_il(cf text)
+  returns date language plpgsql stable as $$
+declare
+  aa int;
+  mese int;
+  gg int;
+  nato date;
+begin
+  if not cf_valido(cf) then return null; end if;
+  aa := translate(substr(cf, 7, 2), 'LMNPQRSTUV', '0123456789')::int;
+  mese := position(substr(cf, 9, 1) in 'ABCDEHLMPRST');
+  gg := translate(substr(cf, 10, 2), 'LMNPQRSTUV', '0123456789')::int;
+  if gg > 40 then gg := gg - 40; end if;
+  nato := make_date(2000 + aa, mese, gg);
+  if nato > current_date then nato := make_date(1900 + aa, mese, gg); end if;
+  return nato;
+exception when others then
+  return null;
+end $$;
+
+-- ---------------------------------------------------------------------------
 -- La richiesta.
 --
 -- Tutto il controllo sta qui e non nel browser: chi chiama l'API con la chiave
@@ -117,7 +163,8 @@ declare
   testo text;
 begin
   -- I campi di testo obbligatori, detti per nome se mancano.
-  foreach testo in array array['nome:nome', 'cognome:cognome', 'nato_a:luogo di nascita', 'indirizzo:indirizzo', 'cap:CAP',
+  foreach testo in array array['nome:nome', 'cognome:cognome', 'nato_il:data di nascita', 'nato_a:luogo di nascita',
+                               'codice_fiscale:codice fiscale', 'indirizzo:indirizzo', 'cap:CAP',
                                'comune:comune', 'email:email', 'telefono:telefono', 'formula:formula di pagamento'] loop
     if coalesce(trim(dati->>split_part(testo, ':', 1)), '') = '' then t := t || split_part(testo, ':', 2) || ', '; end if;
   end loop;
@@ -135,6 +182,34 @@ begin
   if minore and (coalesce(trim(dati->>'genitore_nome'), '') = '' or coalesce(trim(dati->>'genitore_cognome'), '') = '' or cf_gen is null) then
     raise exception 'Per un minore servono nome, cognome e codice fiscale del genitore' using errcode = '22023';
   end if;
+  if concat(dati->>'nome', dati->>'cognome', case when minore then concat(dati->>'genitore_nome', dati->>'genitore_cognome') end) ~ '[0-9]' then
+    raise exception 'Un campo non va: nome e cognome non hanno numeri' using errcode = '22023';
+  end if;
+
+  -- Il codice fiscale: scritto giusto, e di chi deve essere.
+  if cf !~ '^[A-Z0-9]{16}$' then
+    raise exception 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e numeri' using errcode = '22023';
+  end if;
+  if not cf_valido(cf) then
+    raise exception 'Il codice fiscale non torna: controlla di averlo copiato giusto' using errcode = '22023';
+  end if;
+  if to_char(cf_nato_il(cf), 'YYMMDD') is distinct from to_char(nato, 'YYMMDD') then
+    raise exception 'Il codice fiscale e la data di nascita non dicono lo stesso giorno: controlla l’uno e l’altra' using errcode = '22023';
+  end if;
+  if minore then
+    if cf_gen !~ '^[A-Z0-9]{16}$' then
+      raise exception 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e numeri' using errcode = '22023';
+    end if;
+    if not cf_valido(cf_gen) then
+      raise exception 'Il codice fiscale del genitore non torna: controlla di averlo copiato giusto' using errcode = '22023';
+    end if;
+    if cf_gen = cf then
+      raise exception 'Il codice fiscale del genitore è lo stesso di chi si iscrive' using errcode = '22023';
+    end if;
+    if cf_nato_il(cf_gen) > current_date - interval '18 years' then
+      raise exception 'Il codice fiscale del genitore è di un minorenne' using errcode = '22023';
+    end if;
+  end if;
 
   begin
     select array_agg(distinct x::uuid) into scelti from jsonb_array_elements_text(coalesce(dati->'corsi', '[]')) x;
@@ -142,8 +217,26 @@ begin
     raise exception 'I corsi scelti non si capiscono' using errcode = '22023';
   end;
   if scelti is null then raise exception 'Scegli almeno un corso' using errcode = '22023'; end if;
+  if cardinality(scelti) > 6 then
+    raise exception 'Un campo non va: si possono scegliere al massimo sei corsi' using errcode = '22023';
+  end if;
   if exists (select 1 from unnest(scelti) s where not exists (select 1 from corsi c where c.id = s and c.attivo)) then
     raise exception 'Uno dei corsi scelti non c''è più: ricarica la pagina' using errcode = '22023';
+  end if;
+
+  -- Gli altri campi, nell'ordine del modulo. I vincoli della tabella dicono
+  -- le stesse cose, ma qui l'ordine è quello del browser.
+  if trim(dati->>'cap') !~ '^[0-9]{5}$' then
+    raise exception 'Un campo non va: il CAP ha 5 cifre' using errcode = '22023';
+  end if;
+  if mail !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then
+    raise exception 'Un campo non va: l''email non sembra giusta' using errcode = '22023';
+  end if;
+  if trim(dati->>'telefono') !~ '^\+?[0-9 ./()-]+$' or length(regexp_replace(dati->>'telefono', '\D', '', 'g')) not between 6 and 15 then
+    raise exception 'Un campo non va: il telefono non sembra giusto' using errcode = '22023';
+  end if;
+  if dati->>'formula' not in ('annuale', 'trimestre') then
+    raise exception 'Un campo non va: si paga l''annuale o il trimestre' using errcode = '22023';
   end if;
 
   -- La porta.
