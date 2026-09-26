@@ -1,7 +1,7 @@
 -- Il minimo che Supabase mette a disposizione e che lo schema presuppone.
 -- NON è Supabase: è un'impalcatura per provare schema, policy e funzioni.
 create schema if not exists auth;
-create table if not exists auth.users (id uuid primary key default gen_random_uuid(), email text);
+create table if not exists auth.users (id uuid primary key default gen_random_uuid(), email text, email_confirmed_at timestamptz default now());
 create extension if not exists pgcrypto;
 
 -- auth.uid() legge l'utente «collegato» da una variabile di sessione, come fa

@@ -109,5 +109,11 @@ begin
   return tolte;
 end $$;
 
+-- Le due lasciano passare chi non ha un utente, perché è così che le chiama
+-- un job: a chi non ha fatto l'accesso vanno tolte qui, non solo in
+-- 06-iscrizioni.sql, così rilanciare questo file da solo non le riapre.
+revoke all on function materializza_sessioni(date, date), pulisci_presenze() from public, anon;
+grant execute on function materializza_sessioni(date, date), pulisci_presenze() to authenticated;
+
 -- Che l'API veda subito funzioni e tabelle nuove, senza aspettare.
 notify pgrst, 'reload schema';

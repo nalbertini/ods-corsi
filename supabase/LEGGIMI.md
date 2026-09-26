@@ -14,6 +14,12 @@ i dati qui dentro sono nomi e presenze di persone, quindi non è un dettaglio.
 Il piano gratuito basta per una palestra sola: 500 MB di database e 50.000
 utenti attivi al mese sono molto più di quel che serve.
 
+In **Authentication → Sign In / Providers** si spegne **Allow new users to
+sign up**: gli account li crea la segreteria, e con la registrazione aperta
+chiunque avrebbe un accesso con cui leggere il calendario e le note delle
+lezioni. Resta acceso **Confirm email**: il primo accesso lega un account
+alla scheda di un istruttore solo se l'email è confermata.
+
 ## 2. Lo schema
 
 Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
