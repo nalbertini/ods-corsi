@@ -31,9 +31,9 @@ funzioni, quindi dopo va rilanciato anche `06-iscrizioni.sql`.
 
 ## 3. Le persone
 
-Con il database vero la scheda **CORSI** chiede l'accesso: calendario e
-appello sono solo per istruttori e segreteria. **ISCRIZIONI** resta aperta a
-tutti.
+Con il database vero la scheda **APPELLO** chiede l'accesso: calendario e
+appello sono solo per istruttori e segreteria, e chi è di segreteria, appena
+entra, si ritrova nella segreteria. **ISCRIZIONI** resta aperta a tutti.
 
 Ogni istruttore e chi sta in segreteria ha bisogno di due cose: un utente in
 **Authentication → Users** e una riga in `persone` che lo colleghi. Un account

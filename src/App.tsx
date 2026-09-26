@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Logo } from './components/Logo'
 import { Sala } from './components/Sala'
 import { Porta } from './components/Porta'
@@ -22,7 +22,8 @@ import { esci, serveAccesso, type Personale } from './lib/accesso'
  * Lo stesso codice fa anche da tablet di sala (`#tablet`): un'altra faccia,
  * a pieno schermo, per il tablet appeso al muro. E chi ha il ruolo di
  * segreteria ha la sua area, a tutto schermo, per il computer della reception;
- * in prova la segreteria è aperta a tutti.
+ * in prova la segreteria è aperta a tutti. Chi è di segreteria, appena entra,
+ * finisce lì: è il suo posto; l'appello resta a un tocco, da «← APPELLO».
  */
 const tablet = eUnTablet()
 
@@ -35,6 +36,18 @@ function AppCorsi() {
   const [chi, setChi] = useState<Personale | null>(null)
   const segreteria = !serveAccesso || chi?.ruolo === 'staff'
 
+  // Una volta per accesso: tornando all'appello dalla segreteria la porta si
+  // rimonta e ridice chi c'è, e senza questo si rimbalzerebbe di nuovo là.
+  const portato = useRef(false)
+  const onChi = useCallback((p: Personale | null) => {
+    setChi(p)
+    if (!p) portato.current = false
+    else if (p.ruolo === 'staff' && !portato.current) {
+      portato.current = true
+      setScheda('segreteria')
+    }
+  }, [])
+
   if (scheda === 'segreteria' && segreteria) {
     return (
       <Segreteria
@@ -45,7 +58,7 @@ function AppCorsi() {
           serveAccesso
             ? () =>
                 void esci().then(() => {
-                  setChi(null)
+                  onChi(null)
                   setScheda('corsi')
                 })
             : undefined
@@ -64,7 +77,7 @@ function AppCorsi() {
         </div>
         <nav className="schede">
           <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
-            CORSI
+            APPELLO
           </button>
           <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
             ISCRIZIONI
@@ -78,7 +91,7 @@ function AppCorsi() {
       </header>
       <main className="scroll">
         <div className="faccia-corsi" hidden={scheda !== 'corsi'}>
-          <Porta onChi={setChi}>
+          <Porta onChi={onChi}>
             <Sala />
           </Porta>
         </div>
