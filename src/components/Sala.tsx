@@ -5,7 +5,7 @@ import { CalendarioScreen } from './CalendarioScreen'
 import { AppelloScreen } from './AppelloScreen'
 import { Back } from './Icons'
 import { useLargo } from '../lib/largo'
-import { vaiA } from '../lib/aree'
+import { INDIRIZZI, TIMER, vaiA } from '../lib/aree'
 
 /**
  * Il calendario, e dentro una lezione l'appello.
@@ -118,8 +118,36 @@ export function Sala() {
           <AppelloScreen key={aperta.id} dati={d} sessioneId={aperta.id} />
         </>
       ) : (
-        <CalendarioScreen dati={d} onApri={setAperta} />
+        <>
+          <CalendarioScreen dati={d} onApri={setAperta} />
+          <Strumenti />
+        </>
       )}
+    </>
+  )
+}
+
+/**
+ * Sul telefono, sotto le lezioni, quello che sul computer sta nel menu: il
+ * tablet della sala e il timer. In fondo e non in testata, dove ogni riga in
+ * più è una riga d'elenco in meno; in un'altra scheda, così il calendario
+ * resta dov'era.
+ */
+function Strumenti() {
+  return (
+    <>
+      <div className="rule">
+        <span className="rule-label">STRUMENTI</span>
+        <div className="rule-line" />
+      </div>
+      <div className="pad strumenti" style={{ paddingBottom: 20 }}>
+        <a className="btn btn-ghost" href={INDIRIZZI.sala} target="_blank" rel="noopener">
+          TABLET DI SALA ↗
+        </a>
+        <a className="btn btn-ghost" href={TIMER} target="_blank" rel="noopener">
+          TIMER ↗
+        </a>
+      </div>
     </>
   )
 }
