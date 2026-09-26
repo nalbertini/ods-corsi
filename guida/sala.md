@@ -43,13 +43,12 @@ Dal tablet i timer si fanno partire, non si cambiano: si creano e si
 modificano dal proprio telefono, entrando come istruttore. Il tema bianco
 scelto qui vale anche nel timer, e viceversa.
 
-Maurizio, i segnali, il volume, la voce, lo schermo, la musica durante il
-timer e gli esercizi li sceglie la segreteria per tutti i tablet (vedi
-[Impostazioni](segreteria/regole.md#il-timer-delle-sale) ed
-[Esercizi](segreteria/esercizi.md)): nelle
-**IMPOSTAZIONI** del timer si vedono, in cima, ma non si cambiano. Lì resta
-solo quello che è del tablet: da dove viene la musica e il collegamento a
-Spotify. Lo storico dei timer si guarda dalla segreteria.
+Maurizio, i segnali, il volume, lo schermo e la musica durante il timer si
+scelgono nel timer, dalle sue **IMPOSTAZIONI**, come sul telefono: ogni
+tablet tiene le sue. La voce e gli esercizi invece li sceglie la segreteria
+per tutti i tablet (vedi [Impostazioni](segreteria/regole.md#la-voce-dei-tablet)
+ed [Esercizi](segreteria/esercizi.md)); dal tablet si sceglie solo se usare
+le clip incise. Lo storico dei timer si guarda dalla segreteria.
 
 **Il timer non si ferma cambiando scheda.** Con un allenamento in corso:
 
@@ -76,8 +75,8 @@ IMPOSTAZIONI DEL TIMER** torna a quella scelta nelle impostazioni del timer.
 Le liste di Spotify vogliono Spotify collegato sul tablet (Impostazioni del
 timer › Musica); senza, sono spente.
 
-Se la segreteria ha impostato così il timer delle sale, la musica parte e si
-ferma col timer e si abbassa nel recupero, qualunque lista suoni.
+Se nelle impostazioni del timer sono accese, la musica parte e si ferma col
+timer e si abbassa nel recupero, qualunque lista suoni.
 
 ## Quando ci si segna
 

@@ -43,25 +43,11 @@ Le liste che il tablet di sala fa partire dalla sua barra in basso (vedi
 cinque minuti. Le liste di Spotify suonano solo se sul tablet è collegato un
 account Spotify Premium, dalle impostazioni del timer.
 
-## Il timer delle sale
-
-Come va il timer nella scheda **TIMER** dei tablet di sala, uguale per tutti
-i tablet (vedi [Il tablet di sala](../sala.md#il-timer)):
-
-- **MODALITÀ MAURIZIO** — spenta, distratto, classico o spietato;
-- **SEGNALI ACUSTICI** — muto, solo bip, bip + voce; e se dice il prossimo
-  esercizio, se usa la voce incisa quando c'è, il ticchettio, la vibrazione,
-  e il **volume dei segnali**;
-- **SCHERMO** — sempre acceso durante il timer, numeri grandi;
-- **LA MUSICA DURANTE IL TIMER** — se parte e si ferma col timer, e se si
-  abbassa nel recupero, e di quanto.
-
-Ogni tocco si salva subito, e i tablet lo prendono al giro successivo (ogni
-cinque minuti, o quando tornano in rete). Sul tablet queste scelte si leggono
-e non si cambiano. Chi usa il timer dal suo telefono, col suo accesso, tiene
-le sue.
-
 ## La voce dei tablet
+
+Maurizio, i segnali, il volume, lo schermo e la musica durante il timer non
+si scelgono da qui: si scelgono nelle impostazioni del timer, su ogni tablet
+(vedi [Il tablet di sala](../sala.md#il-timer)).
 
 - **VOCE DI SISTEMA** — con che voce parla il timer dei tablet. Le voci le
   mette il dispositivo, non l'app: qui ci sono quelle di questo computer, e
@@ -74,8 +60,8 @@ le sue.
   Maurizio e i nomi degli esercizi della palestra. **REGISTRA** accende il
   microfono del computer, **FERMA** salva la clip, che va sul server e arriva
   a tutti i tablet; **ASCOLTA**, **RIFAI** e **TOGLI** per le altre. Dove
-  manca una clip, il tablet usa la voce di sistema. Il tablet le usa se in
-  **Il timer delle sale** è premuto **VOCE INCISA, SE C'È**. Conviene
+  manca una clip, il tablet usa la voce di sistema. Il tablet le usa se nelle
+  impostazioni del suo timer è acceso **Usa le clip incise**. Conviene
   registrare con lo stesso browser dei tablet: Safari e Chrome registrano in
   formati diversi.
 
