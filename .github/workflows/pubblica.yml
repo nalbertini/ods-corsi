@@ -1,17 +1,15 @@
 name: Pubblica
 
-# Per ora si lancia a mano (Actions → Pubblica → Run workflow), non a ogni push.
+# Si pubblica a ogni push su main, e resta il lancio a mano (Actions → Pubblica
+# → Run workflow) per ripubblicare senza un push.
 #
-# Il repository è privato, e GitHub Pages su un repository privato chiede un
-# piano a pagamento: con il push automatico, su un account gratuito ogni push
-# su main darebbe una X rossa senza che niente sia rotto. Quando si decide dove
-# pubblicare — Pages con il repository pubblico o con un piano a pagamento, o
-# un altro servizio — si rimettono qui le tre righe del push:
-#
-#   push:
-#     branches:
-#       - main
+# Era stato tolto quando il repository era privato e Pages, su un account
+# gratuito, non c'era: ogni push dava una X rossa senza che niente fosse rotto.
+# Ora il sito c'è, e senza il push automatico restava indietro rispetto a main.
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
