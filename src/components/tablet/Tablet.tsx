@@ -188,7 +188,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
 
 /** Il tablet non sa ancora in che sala è. */
 function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | null; onPronto: () => void }) {
-  const [email, setEmail] = useState('')
+  const [utente, setUtente] = useState('')
   const [password, setPassword] = useState('')
   const [errore, setErrore] = useState<string | null>(guaio)
   const [aspetta, setAspetta] = useState(false)
@@ -199,7 +199,7 @@ function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | n
     setAspetta(true)
     setErrore(null)
     try {
-      await d.entra(email.trim(), password)
+      await d.entra(utente, password)
       onPronto()
     } catch (x) {
       setErrore(messaggio(x, 'Accesso non riuscito'))
@@ -240,11 +240,14 @@ function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | n
             </span>
             <input
               className="tb-campo"
-              type="email"
+              type="text"
               autoComplete="username"
-              placeholder="email della sala"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              placeholder="nome utente della sala"
+              value={utente}
+              onChange={(e) => setUtente(e.target.value)}
               required
             />
             <input

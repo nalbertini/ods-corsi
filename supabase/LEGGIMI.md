@@ -225,17 +225,22 @@ non è di nessuna persona e sa fare solo questo:
 
 I numeri stanno in `tablet_regole()`, in cima a `04-tablet.sql`.
 
-Per metterne uno in una sala: si crea un utente in **Authentication → Users**
-(per esempio `tablet-lotta@…`, con una password lunga), poi
+Per metterne uno in una sala: la sala ha un **nome utente** e una password,
+non un'email. Supabase però vuole un'email, e l'app aggiunge da sé
+`@sale.ods-corsi.it` al nome utente (vedi `DOMINIO_SALE` in `src/lib/tablet.ts`):
+a quell'indirizzo non arriva mai niente, serve solo da nome. Quindi si crea un
+utente in **Authentication → Users → Add user → Create new user**, con email
+`lotta@sale.ods-corsi.it`, una password lunga e **Auto Confirm User** acceso,
+poi
 
 ```sql
 insert into postazioni (nome, sala_id, utente_id)
 select 'Tablet Lotta', (select id from sale where nome = 'Lotta'),
-       (select id from auth.users where email = 'tablet-lotta@esempio.it');
+       (select id from auth.users where email = 'lotta@sale.ods-corsi.it');
 ```
 
 e sul tablet si apre l'app con `#sala` in fondo all'indirizzo (per esempio
-`https://…/ods-corsi/#sala`), si fa l'accesso una volta con quell'utente e
+`https://…/ods-corsi/#sala`), si fa l'accesso una volta con il nome utente (`lotta`) e la password, e
 conviene installarla come app. Da lì il tablet riapre sempre il tablet e lo
 schermo non si spegne. Se il tablet si perde,
 `update postazioni set attiva = false where nome = 'Tablet Lotta'` lo spegne
