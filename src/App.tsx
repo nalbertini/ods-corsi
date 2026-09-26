@@ -24,7 +24,7 @@ import { inProvaScelta, scegliProva } from './lib/dati'
  * a pieno schermo, per il tablet appeso al muro. E chi ha il ruolo di
  * segreteria ha la sua area, a tutto schermo, per il computer della reception;
  * in prova la segreteria è aperta a tutti. Chi è di segreteria, appena entra,
- * finisce lì: è il suo posto; l'appello resta a un tocco, da «← APPELLO».
+ * finisce lì: è il suo posto; l'appello resta a un tocco, da «← ISTRUTTORI».
  *
  * Con `#iscrizioni` in fondo all'indirizzo si apre invece la pagina pubblica,
  * quella del link da mandare a chi vuole iscriversi: solo i passi, i costi e
@@ -104,7 +104,7 @@ function AppCorsi() {
         </div>
         <nav className="schede">
           <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
-            APPELLO
+            ISTRUTTORI
           </button>
           <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
             ISCRIZIONI

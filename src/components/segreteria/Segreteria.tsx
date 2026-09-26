@@ -73,7 +73,7 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
         </div>
         <div className="grow" />
         <button type="button" className="num sg-voce" onClick={onApp}>
-          ← APPELLO
+          ← ISTRUTTORI
         </button>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
