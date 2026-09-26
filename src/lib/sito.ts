@@ -78,3 +78,6 @@ export const CONTATTI = {
   instagram: 'https://www.instagram.com/officine.dellosport/',
   facebook: 'https://www.facebook.com/ilCentroJudo/',
 }
+
+/** Il numero per il tasto CHIAMA: senza spazi e col prefisso. */
+export const chiama = `tel:+39${CONTATTI.telefono.replace(/\s/g, '')}`
