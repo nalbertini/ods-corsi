@@ -81,9 +81,6 @@ dice e l'import non sa ancora fare:
 - **Lotta e Preparazione atletica hanno più istruttori**, ma un corso ne tiene
   uno solo (`corsi.istruttore_id`). Entra il primo della lista.
 
-Il martedì la Lotta 3 si fa in sala Pesi: la sala di una singola lezione si
-cambia sulla lezione (`sessioni.sala_id`), non con l'import.
-
 ## 5. Il calendario
 
 `materializza_sessioni` trasforma le ricorrenze in lezioni vere. L'import la

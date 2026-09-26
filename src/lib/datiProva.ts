@@ -23,7 +23,7 @@ interface Orario {
   giorno: number
   ora: string
   durata: number
-  /** Quando quel giorno si fa altrove: la Lotta 3 del martedì è in sala pesi. */
+  /** Quando quel giorno la lezione si fa in un'altra sala. */
   sala?: string
 }
 
@@ -89,7 +89,7 @@ const CORSI: Definizione[] = [
   { id: 'lotta-2', nome: 'Lotta 2', colore: LOTTA, sala: 'Lotta', istruttori: ['Maura', 'Federico'], orari: ogni(LMV, '17:00', 60), iscritti: elenco(9, 12) },
   {
     id: 'lotta-3', nome: 'Lotta 3', colore: LOTTA, sala: 'Lotta', istruttori: ['Maura', 'Federico'],
-    orari: [...ogni([1, 3], '18:00', 90), { giorno: 2, ora: '18:00', durata: 60, sala: 'Pesi' }, ...ogni([5], '18:00', 60)],
+    orari: [...ogni([1, 3], '18:00', 90), { giorno: 2, ora: '18:00', durata: 60 }, ...ogni([5], '18:00', 60)],
     iscritti: elenco(10, 13),
   },
 
@@ -98,8 +98,8 @@ const CORSI: Definizione[] = [
   { id: 'body-functional', nome: 'Body functional', colore: PESI, sala: 'Pesi', istruttori: ['Tiziano'], orari: ogni([3], '18:00', 60), iscritti: elenco(13, 11) },
   { id: 'pesi-agonisti', nome: 'Pesi agonisti', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni(MG, '17:00', 60), iscritti: elenco(14, 7) },
 
-  { id: 'aikido-2', nome: 'Aikido 2', colore: MOTRICITA, sala: 'Tatami', istruttori: ['Fabio'], orari: ogni([1, 4], '17:00', 60), iscritti: elenco(15, 8) },
-  { id: 'aikido-3', nome: 'Aikido 3', colore: MOTRICITA, sala: 'Tatami', istruttori: ['Fabio'], orari: ogni([1, 4], '18:00', 60), iscritti: elenco(16, 9) },
+  { id: 'aikido-2', nome: 'Aikido 2', colore: MOTRICITA, sala: 'Motricità', istruttori: ['Fabio'], orari: ogni([1, 4], '17:00', 60), iscritti: elenco(15, 8) },
+  { id: 'aikido-3', nome: 'Aikido 3', colore: MOTRICITA, sala: 'Motricità', istruttori: ['Fabio'], orari: ogni([1, 4], '18:00', 60), iscritti: elenco(16, 9) },
 
   { id: 'pre-pugilistica', nome: 'Pre-pugilistica', colore: LOTTA, sala: 'Motricità', istruttori: [], orari: ogni([3], '19:00', 60), iscritti: elenco(17, 10) },
   { id: 'mga', nome: 'MGA · metodo globale autodifesa', colore: LOTTA, sala: 'Motricità', istruttori: [], orari: ogni([5], '19:00', 60), iscritti: elenco(18, 9) },
