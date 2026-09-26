@@ -9,6 +9,14 @@
 /** Il modulo Google dove si caricano risposte, foto e pagamento. */
 export const LINK_ISCRIZIONE = 'https://forms.gle/eZyGvAD4h7cNNpXF7'
 
+/**
+ * L'informativa privacy della palestra, che ne è titolare del trattamento.
+ * Va messa prima di usare l'app sul serio: finché è vuota, REGOLE E PRIVACY in
+ * segreteria lo segnala. Sta qui e non nel database perché la deve poter
+ * leggere chiunque, anche chi non ha un accesso.
+ */
+export const INFORMATIVA: string | undefined = undefined
+
 export interface Documento {
   etichetta: string
   /** Relativo alla radice dell'app: i file stanno in `public/moduli/`. */

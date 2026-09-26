@@ -6,10 +6,16 @@ import { chiSei, entra, esci, quandoEsce, serveAccesso, type Personale } from '.
  * iscritti si fa l'accesso. In prova non c'è, e i figli si vedono subito.
  *
  * Solo la scheda dei corsi sta dietro la porta: come ci si iscrive e quanto
- * costa sono cose per tutti.
+ * costa sono cose per tutti. La segreteria si apre da qui, a chi ha il ruolo
+ * `staff`, e `onChi` è come l'app lo sa.
  */
-export function Porta({ children }: { children: ReactNode }) {
+export function Porta({ children, onChi }: { children: ReactNode; onChi?: (p: Personale | null) => void }) {
   const [chi, setChi] = useState<Personale | null | undefined>(serveAccesso ? undefined : null)
+
+  // Chi c'è dietro la porta serve anche fuori: la segreteria si apre solo a lei.
+  useEffect(() => {
+    if (chi !== undefined) onChi?.(chi)
+  }, [chi, onChi])
 
   useEffect(() => {
     if (!serveAccesso) return

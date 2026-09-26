@@ -55,12 +55,15 @@ export async function chiSei(): Promise<Personale | null> {
   const utente = s.session?.user.id
   if (!utente) return null
 
-  const { data, error } = await c
-    .from('persone')
-    .select('nome, cognome, ruolo')
-    .eq('utente_id', utente)
-    .eq('attiva', true)
-    .maybeSingle()
+  const leggi = () => c.from('persone').select('nome, cognome, ruolo').eq('utente_id', utente).eq('attiva', true).maybeSingle()
+  let { data, error } = await leggi()
+  // Al primo accesso l'account non è ancora legato: se in anagrafica c'è un
+  // istruttore o una segreteria con la sua email, `collega_utente()` (in
+  // `05-segreteria.sql`) li lega, e non serve farlo a mano dal SQL Editor.
+  if (!error && !data) {
+    const { data: legato } = await c.rpc('collega_utente')
+    if (legato) ({ data, error } = await leggi())
+  }
   // Senza rete la risposta non c'è, non è un «no»: vale l'ultima vista.
   if (error) return ricordato(utente)
 

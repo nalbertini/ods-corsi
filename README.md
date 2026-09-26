@@ -21,6 +21,20 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
   lezioni delle ultime due settimane partendo dal corso; l'istruttore, col suo
   PIN, apre l'appello completo e vede chi si è segnato da sé. Si apre con
   `#tablet` in fondo all'indirizzo, e da lì il dispositivo resta un tablet.
+- **La segreteria**: per il computer della reception, a chi ha il ruolo di
+  segreteria. La **settimana** in una griglia, con gli appelli che mancano in
+  rosso, e ogni lezione si apre per annullarla, dare un sostituto, spostarla di
+  sala o segnare tutti presenti; le lezioni straordinarie. I **corsi**, con sala,
+  istruttori, posti, colore e i giorni in cui si fanno. Gli **iscritti**, da
+  cercare, iscrivere e togliere dai corsi, con quanto vengono negli ultimi
+  trenta giorni. Le **presenze** del mese: medie per corso, chi si sta
+  perdendo, gli appelli che mancano, e il CSV. L'**import dai fogli Excel**.
+  **Istruttori e accessi**, coi PIN del tablet. Le **regole**: per quanto si
+  tengono le presenze, fin dove si prepara il calendario, le sale, e
+  l'esportazione dei dati di una persona.
+- **L'accesso** col database: calendario, appello e segreteria sono per
+  istruttori e segreteria; al primo accesso l'account si lega da sé alla
+  persona con la stessa email.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa.
 
@@ -34,6 +48,11 @@ npm run dev
 Senza configurazione parte in **modalità prova**, con l'orario vero della stagione
 2026/27, degli iscritti inventati e un nastro giallo che lo dichiara. Le presenze segnate in prova restano
 sul dispositivo e basta.
+
+La scheda **SEGRETERIA** in prova è aperta a tutti: i corsi, i giorni e gli
+iscritti che si cambiano lì restano su questo dispositivo, e li vedono anche il
+calendario, l'appello e il tablet. «Riparti dall'orario vero», in fondo al menu
+della segreteria, rimette tutto com'era.
 
 Il tablet di sala si prova dal link nel nastro giallo, o aprendo
 `http://localhost:5173/#tablet`. In prova la sala si sceglie da un elenco, e
@@ -53,9 +72,11 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | | |
 |---|---|
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
+| `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
+| `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`

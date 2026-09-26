@@ -4,7 +4,9 @@ import { Sala } from './components/Sala'
 import { Porta } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Tablet } from './components/tablet/Tablet'
+import { Segreteria } from './components/segreteria/Segreteria'
 import { eUnTablet } from './lib/tablet'
+import { esci, serveAccesso, type Personale } from './lib/accesso'
 
 /**
  * ODS Corsi: il calendario delle sale e il registro delle presenze.
@@ -18,7 +20,9 @@ import { eUnTablet } from './lib/tablet'
  * quando si guardano le iscrizioni, così tornando si ritrova l'appello dov'era.
  *
  * Lo stesso codice fa anche da tablet di sala (`#tablet`): un'altra faccia,
- * a pieno schermo, per il tablet appeso al muro.
+ * a pieno schermo, per il tablet appeso al muro. E chi ha il ruolo di
+ * segreteria ha la sua area, a tutto schermo, per il computer della reception;
+ * in prova la segreteria è aperta a tutti.
  */
 const tablet = eUnTablet()
 
@@ -27,7 +31,28 @@ export default function App() {
 }
 
 function AppCorsi() {
-  const [scheda, setScheda] = useState<'corsi' | 'iscrizioni'>('corsi')
+  const [scheda, setScheda] = useState<'corsi' | 'iscrizioni' | 'segreteria'>('corsi')
+  const [chi, setChi] = useState<Personale | null>(null)
+  const segreteria = !serveAccesso || chi?.ruolo === 'staff'
+
+  if (scheda === 'segreteria' && segreteria) {
+    return (
+      <Segreteria
+        nome={chi ? `${chi.nome} ${chi.cognome}` : 'Segreteria di prova'}
+        prova={!serveAccesso}
+        onApp={() => setScheda('corsi')}
+        onEsci={
+          serveAccesso
+            ? () =>
+                void esci().then(() => {
+                  setChi(null)
+                  setScheda('corsi')
+                })
+            : undefined
+        }
+      />
+    )
+  }
 
   return (
     <div className="app">
@@ -45,10 +70,15 @@ function AppCorsi() {
         <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
           ISCRIZIONI
         </button>
+        {segreteria && (
+          <button className="scheda" data-on={false} onClick={() => setScheda('segreteria')}>
+            SEGRETERIA
+          </button>
+        )}
       </nav>
       <main className="scroll">
         <div hidden={scheda !== 'corsi'}>
-          <Porta>
+          <Porta onChi={setChi}>
             <Sala />
           </Porta>
         </div>

@@ -1,0 +1,295 @@
+import type { CorsoSeg, DatiSegreteria, PersonaSeg, PersonaleSeg, Sala } from './segreteria'
+
+/**
+ * L'import dei fogli Excel, dalla segreteria.
+ *
+ * Legge gli stessi due fogli di `scripts/importa.mjs` — `corsi.csv` e
+ * `iscritti.csv`, col punto e virgola o la virgola, col BOM o senza — ma
+ * invece di scrivere SQL da incollare fa le stesse operazioni che la
+ * segreteria fa a mano: dal browser l'SQL non si può lanciare. Come lo
+ * script, si può rifare quante volte si vuole: quello che c'è già si
+ * riconosce (i corsi e le sale per nome, le persone per email o per nome e
+ * cognome) e non si duplica.
+ *
+ * Una cosa in più dello script: un istruttore scritto col nome soltanto si
+ * lega a chi ha quel nome, se in palestra ce n'è uno solo.
+ */
+
+const GIORNI: Record<string, number> = {
+  domenica: 0, dom: 0, lunedi: 1, lun: 1, martedi: 2, mar: 2, mercoledi: 3, mer: 3,
+  giovedi: 4, gio: 4, venerdi: 5, ven: 5, sabato: 6, sab: 6,
+}
+
+/** Via accenti e maiuscole: «Martedì», «MARTEDI» e «martedi» sono lo stesso giorno. */
+export const piatto = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+
+/** Un CSV che regge i campi fra virgolette; il separatore si indovina dall'intestazione. */
+export function leggiCsv(testo: string): Array<Record<string, string>> {
+  const pulito = testo.replace(/^﻿/, '').replace(/\r\n?/g, '\n')
+  const primaRiga = pulito.slice(0, pulito.indexOf('\n') + 1 || undefined)
+  const sep = (primaRiga.match(/;/g) ?? []).length >= (primaRiga.match(/,/g) ?? []).length ? ';' : ','
+  const righe: string[][] = []
+  let campo = ''
+  let riga: string[] = []
+  let fra = false
+  for (let i = 0; i < pulito.length; i++) {
+    const c = pulito[i]
+    if (fra) {
+      if (c === '"' && pulito[i + 1] === '"') {
+        campo += '"'
+        i++
+      } else if (c === '"') fra = false
+      else campo += c
+    } else if (c === '"') fra = true
+    else if (c === sep) {
+      riga.push(campo)
+      campo = ''
+    } else if (c === '\n') {
+      riga.push(campo)
+      righe.push(riga)
+      riga = []
+      campo = ''
+    } else campo += c
+  }
+  if (campo || riga.length) {
+    riga.push(campo)
+    righe.push(riga)
+  }
+  const testa = (righe.shift() ?? []).map(piatto)
+  return righe.map((r) => Object.fromEntries(testa.map((h, i) => [h, (r[i] ?? '').trim()])))
+}
+
+export interface Saltata {
+  foglio: 'corsi.csv' | 'iscritti.csv'
+  riga: number
+  motivo: string
+}
+
+interface CorsoFoglio {
+  nome: string
+  sala?: string
+  istruttori: string[]
+  capienza?: number
+  colore?: string
+  orari: Array<{ giorno: number; ora: string; durata: number }>
+}
+
+interface IscrittoFoglio {
+  nome: string
+  cognome: string
+  email?: string
+  telefono?: string
+  corsi: string[]
+}
+
+export interface Fogli {
+  corsi: CorsoFoglio[]
+  iscritti: IscrittoFoglio[]
+  righe: { corsi: number; iscritti: number }
+  saltate: Saltata[]
+}
+
+/** Dai due testi ai corsi e agli iscritti, con le righe che non si capiscono messe da parte. */
+export function leggiFogli(testoCorsi: string | null, testoIscritti: string | null, corsiGiaDentro: string[] = []): Fogli {
+  const saltate: Saltata[] = []
+  const corsi = new Map<string, CorsoFoglio>()
+  const righeCorsi = testoCorsi ? leggiCsv(testoCorsi) : []
+  righeCorsi.forEach((r, i) => {
+    const riga = i + 2
+    if (!Object.values(r).some(Boolean)) return
+    if (!r.nome) return saltate.push({ foglio: 'corsi.csv', riga, motivo: 'Manca il nome del corso' })
+    const giorno = /^\d$/.test(r.giorno ?? '') ? Number(r.giorno) : GIORNI[piatto(r.giorno ?? '')]
+    if (giorno === undefined || giorno > 6) return saltate.push({ foglio: 'corsi.csv', riga, motivo: `«${r.nome}»: non capisco il giorno «${r.giorno ?? ''}»` })
+    if (!/^\d{1,2}[:.]\d{2}$/.test(r.ora ?? '')) return saltate.push({ foglio: 'corsi.csv', riga, motivo: `«${r.nome}»: non capisco l'ora «${r.ora ?? ''}»` })
+    const ora = r.ora.replace('.', ':').padStart(5, '0')
+    const k = piatto(r.nome)
+    const c = corsi.get(k) ?? {
+      nome: r.nome,
+      sala: r.sala || undefined,
+      istruttori: (r.istruttore ?? '').split(',').map((x) => x.trim()).filter(Boolean),
+      capienza: Number(r.capienza) || undefined,
+      colore: r.colore || undefined,
+      orari: [],
+    }
+    if (!c.orari.some((o) => o.giorno === giorno && o.ora === ora)) c.orari.push({ giorno, ora, durata: Number(r.durata) || 60 })
+    corsi.set(k, c)
+  })
+
+  const noti = new Set([...corsi.keys(), ...corsiGiaDentro.map(piatto)])
+  const iscritti = new Map<string, IscrittoFoglio>()
+  const perEmail = new Map<string, { chi: string; riga: number }>()
+  const righeIscritti = testoIscritti ? leggiCsv(testoIscritti) : []
+  righeIscritti.forEach((r, i) => {
+    const riga = i + 2
+    if (!Object.values(r).some(Boolean)) return
+    if (!r.nome || !r.cognome) return saltate.push({ foglio: 'iscritti.csv', riga, motivo: `Manca ${r.nome ? 'il cognome' : 'il nome'}: «${r.nome || r.cognome}»${r.corso ? `, ${r.corso}` : ''}` })
+    if (r.corso && !noti.has(piatto(r.corso))) return saltate.push({ foglio: 'iscritti.csv', riga, motivo: `Il corso «${r.corso}» non è fra i corsi` })
+    const chi = `${piatto(r.nome)} ${piatto(r.cognome)}`
+    const email = r.email?.toLowerCase() || undefined
+    if (email) {
+      const prima = perEmail.get(email)
+      if (prima && prima.chi !== chi) return saltate.push({ foglio: 'iscritti.csv', riga, motivo: `Stessa email della riga ${prima.riga}, ma nome diverso: quale dei due?` })
+      perEmail.set(email, { chi, riga })
+    }
+    // L'email, quando c'è, è l'unica cosa che distingue davvero due omonimi.
+    const k = email ?? chi
+    const x = iscritti.get(k) ?? { nome: r.nome, cognome: r.cognome, email, telefono: r.telefono || undefined, corsi: [] }
+    if (r.corso && !x.corsi.some((c) => piatto(c) === piatto(r.corso))) x.corsi.push(r.corso)
+    iscritti.set(k, x)
+  })
+
+  return {
+    corsi: [...corsi.values()],
+    iscritti: [...iscritti.values()],
+    righe: { corsi: righeCorsi.length, iscritti: righeIscritti.length },
+    saltate,
+  }
+}
+
+/** Com'è il database prima dell'import: serve a dire cosa è nuovo e cosa c'è già. */
+export interface Situazione {
+  sale: Sala[]
+  personale: PersonaleSeg[]
+  corsi: CorsoSeg[]
+  persone: PersonaSeg[]
+}
+
+export interface Anteprima {
+  saleNuove: string[]
+  istruttoriNuovi: string[]
+  istruttoriTrovati: number
+  /** Nome del foglio → persona già in palestra, o `null` se non si lega a nessuno. */
+  istruttori: Map<string, string | null>
+  corsiNuovi: string[]
+  ricorrenzeNuove: number
+  iscrittiNuovi: number
+  iscrizioniNuove: number
+  avvisi: string[]
+}
+
+const nomeCognome = (s: string) => {
+  const p = s.trim().split(/\s+/)
+  return p.length < 2 ? null : { nome: p.slice(0, -1).join(' '), cognome: p[p.length - 1] }
+}
+
+/** Cosa farebbe l'import, senza fare niente. */
+export function anteprima(f: Fogli, s: Situazione): Anteprima {
+  const avvisi: string[] = []
+  const sale = new Set(s.sale.map((x) => piatto(x.nome)))
+  const saleNuove = [...new Set(f.corsi.map((c) => c.sala).filter((x): x is string => !!x))].filter((x) => !sale.has(piatto(x)))
+
+  const istruttori = new Map<string, string | null>()
+  const istruttoriNuovi: string[] = []
+  let istruttoriTrovati = 0
+  for (const nome of new Set(f.corsi.flatMap((c) => c.istruttori))) {
+    const intero = s.personale.find((p) => piatto(`${p.nome} ${p.cognome}`) === piatto(nome))
+    const soloNome = s.personale.filter((p) => piatto(p.nome) === piatto(nome))
+    const trovato = intero ?? (soloNome.length === 1 ? soloNome[0] : undefined)
+    if (trovato) {
+      istruttori.set(nome, trovato.id)
+      istruttoriTrovati++
+    } else if (nomeCognome(nome)) {
+      istruttori.set(nome, null)
+      istruttoriNuovi.push(nome)
+    } else {
+      istruttori.set(nome, null)
+      avvisi.push(
+        soloNome.length > 1
+          ? `«${nome}»: in palestra ce n'è più d'uno con questo nome, scrivi anche il cognome`
+          : `«${nome}»: manca il cognome, il corso entra senza e lo si lega dopo`,
+      )
+    }
+  }
+
+  const corsiDentro = new Map(s.corsi.map((c) => [piatto(c.nome), c]))
+  const corsiNuovi = f.corsi.filter((c) => !corsiDentro.has(piatto(c.nome))).map((c) => c.nome)
+  let ricorrenzeNuove = 0
+  for (const c of f.corsi) {
+    const dentro = corsiDentro.get(piatto(c.nome))
+    ricorrenzeNuove += c.orari.filter((o) => !dentro?.ricorrenze.some((r) => r.giorno === o.giorno && r.ora === o.ora)).length
+  }
+
+  let iscrittiNuovi = 0
+  let iscrizioniNuove = 0
+  const oggi = new Date().toISOString().slice(0, 10)
+  for (const x of f.iscritti) {
+    const p = trovaPersona(x, s.persone)
+    if (!p) iscrittiNuovi++
+    for (const nome of x.corsi) {
+      const c = corsiDentro.get(piatto(nome))
+      if (!p || !c || !p.iscrizioni.some((i) => i.corsoId === c.id && (!i.al || i.al >= oggi))) iscrizioniNuove++
+    }
+  }
+  return { saleNuove, istruttoriNuovi, istruttoriTrovati, istruttori, corsiNuovi, ricorrenzeNuove, iscrittiNuovi, iscrizioniNuove, avvisi }
+}
+
+function trovaPersona(x: IscrittoFoglio, persone: PersonaSeg[]) {
+  return x.email
+    ? persone.find((p) => p.email?.toLowerCase() === x.email)
+    : persone.find((p) => !p.email && piatto(p.nome) === piatto(x.nome) && piatto(p.cognome) === piatto(x.cognome)) ??
+        persone.find((p) => piatto(p.nome) === piatto(x.nome) && piatto(p.cognome) === piatto(x.cognome))
+}
+
+/**
+ * L'import vero. Va in ordine — sale, istruttori, corsi, giorni, iscritti — e
+ * alla fine allunga il calendario una volta sola. `passo` dice a che punto è.
+ */
+export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string) => void) {
+  const leggi = async (): Promise<Situazione> => {
+    const [sale, personale, corsi, persone] = await Promise.all([d.sale(), d.personale(), d.corsi(), d.persone()])
+    return { sale, personale, corsi, persone }
+  }
+  let s = await leggi()
+  const a = anteprima(f, s)
+
+  passo('Le sale…')
+  for (const nome of a.saleNuove) await d.salvaSala({ nome })
+
+  passo('Gli istruttori…')
+  for (const nome of a.istruttoriNuovi) {
+    const nc = nomeCognome(nome)!
+    a.istruttori.set(nome, await d.salvaPersonale({ ...nc, ruolo: 'istruttore' }))
+  }
+  s = await leggi()
+  const salaDi = new Map(s.sale.map((x) => [piatto(x.nome), x.id]))
+
+  passo('I corsi e i loro giorni…')
+  let corsi = new Map(s.corsi.map((c) => [piatto(c.nome), c]))
+  for (const c of f.corsi) {
+    const chi = c.istruttori.map((n) => a.istruttori.get(n)).filter((x): x is string => !!x)
+    const dentro = corsi.get(piatto(c.nome))
+    if (!dentro) {
+      await d.salvaCorso({ nome: c.nome, salaId: c.sala ? salaDi.get(piatto(c.sala)) : undefined, istruttori: chi, capienza: c.capienza, colore: c.colore })
+    } else if (chi.some((x) => !dentro.istruttori.some((i) => i.id === x))) {
+      // Un corso che c'è già non si cambia: gli si aggiunge solo chi mancava fra gli istruttori.
+      const tutti = [...dentro.istruttori.map((i) => i.id), ...chi.filter((x) => !dentro.istruttori.some((i) => i.id === x))]
+      await d.salvaCorso({ id: dentro.id, nome: dentro.nome, salaId: dentro.salaId, istruttori: tutti, capienza: dentro.capienza, colore: dentro.colore })
+    }
+  }
+  corsi = new Map((await d.corsi()).map((c) => [piatto(c.nome), c]))
+  for (const c of f.corsi) {
+    const dentro = corsi.get(piatto(c.nome))!
+    for (const o of c.orari) {
+      if (!dentro.ricorrenze.some((r) => r.giorno === o.giorno && r.ora === o.ora)) await d.aggiungiRicorrenza(dentro.id, o, { rigenera: false })
+    }
+  }
+
+  passo('Gli iscritti…')
+  const persone = [...s.persone]
+  for (const x of f.iscritti) {
+    let p = trovaPersona(x, persone)
+    if (!p) {
+      const id = await d.salvaPersona({ nome: x.nome, cognome: x.cognome, email: x.email, telefono: x.telefono })
+      p = { id, nome: x.nome, cognome: x.cognome, email: x.email, attiva: true, creataIl: '', iscrizioni: [] }
+      persone.push(p)
+    }
+    for (const nome of x.corsi) {
+      const c = corsi.get(piatto(nome))
+      if (c) await d.iscrivi(p.id, c.id)
+    }
+  }
+
+  passo('Il calendario…')
+  await d.rigenera()
+  return a
+}

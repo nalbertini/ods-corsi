@@ -22,6 +22,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 2. `02-policy.sql` — chi può vedere e fare cosa
 3. `03-funzioni.sql` — il calendario, il tracciamento di chi segna, la pulizia
 4. `04-tablet.sql` — il tablet di sala e i PIN degli istruttori
+5. `05-segreteria.sql` — le lezioni che seguono i cambi dei corsi, il primo accesso
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 
@@ -48,10 +49,27 @@ where nome = 'Maurizio' and cognome = 'Innella';
 
 Per la segreteria il ruolo è `staff`.
 
+Se nella riga di `persone` c'è già la sua **email**, il secondo passo si può
+saltare: al primo accesso l'app lega da sé l'account alla persona con la
+stessa email (`collega_utente()`, in `05-segreteria.sql`). Vale solo per
+istruttori e segreteria, e solo per una persona che non ha già un account. La
+prima persona di segreteria va comunque messa a mano, perché prima di lei
+nessuno può scrivere in `persone`.
+
+Chi ha il ruolo `staff` vede anche la scheda **SEGRETERIA**: la settimana, i
+corsi e gli iscritti, pensati per il computer della reception.
+
 Chi frequenta i corsi **non** ha bisogno di un account: in questa fase gli
 iscritti sono nomi in un elenco e basta.
 
 ## 4. Corsi e iscritti dai fogli
+
+Dall'app: **SEGRETERIA → IMPORTA DA EXCEL**. Si caricano i due fogli, si vede
+cosa entra e quali righe non vanno, e si importa; si può rifare quante volte si
+vuole, quello che c'è già non si duplica. Un istruttore scritto col nome
+soltanto si lega a chi ha quel nome, se in palestra ce n'è uno solo.
+
+Oppure, per chi preferisce leggere l'SQL prima di lanciarlo:
 
 ```
 node scripts/importa.mjs corsi.csv iscritti.csv > semina.sql
@@ -99,11 +117,19 @@ corso. `corsi.istruttore_id` resta il primo della lista, quello di riferimento.
 
 `materializza_sessioni` trasforma le ricorrenze in lezioni vere. L'import la
 chiama già per i due mesi successivi; poi va richiamata ogni tanto, con un job
-settimanale (**Database → Cron**):
+settimanale (**Database → Cron**). Quanti giorni avanti si decide in
+**SEGRETERIA → REGOLE E PRIVACY**, e il job lo legge da lì:
 
 ```sql
 select cron.schedule('calendario', '0 3 * * 1',
-  $$select materializza_sessioni(current_date, current_date + 60)$$);
+  $$select materializza_sessioni(current_date, current_date + (select giorni_calendario from impostazioni))$$);
+```
+
+E un secondo job, la prima notte di ogni mese, cancella le presenze più vecchie
+del periodo scelto nelle stesse regole:
+
+```sql
+select cron.schedule('pulizia', '0 4 1 * *', $$select pulisci_presenze()$$);
 ```
 
 ## 6. I tablet di sala
@@ -175,10 +201,12 @@ non è un segreto trapelato. A proteggere i dati sono le policy di
 ## Le cose da decidere prima di usarlo sul serio
 
 - **L'informativa privacy.** Nomi e presenze sono dati personali e la palestra
-  ne è titolare del trattamento.
+  ne è titolare del trattamento. Il link va in `src/lib/iscrizione.ts`
+  (`INFORMATIVA`) e si vede in fondo alla scheda ISCRIZIONI, a tutti: non sta
+  nel database perché lo deve poter leggere anche chi non ha un accesso.
 - **Per quanto si tengono le presenze.** `presenze_scadute` dice cosa è
   scaduto e `pulisci_presenze()` lo cancella; il periodo di partenza è
-  ventiquattro mesi ed è scritto in `01-schema.sql`. È una scelta della
+  ventiquattro mesi e si cambia in **REGOLE E PRIVACY**. È una scelta della
   palestra, non una regola che decide il codice.
 - **Niente dati sanitari.** Certificati medici e simili sono un'altra
   categoria, con un altro livello di obblighi: qui dentro non ci vanno.
@@ -192,4 +220,6 @@ Supabase mette a disposizione (`auth.users`, `auth.uid()`, i ruoli),
 legale, `rls.sql` prova gli accessi dal punto di vista di un iscritto, di un
 istruttore, della segreteria e di chi non ha fatto l'accesso, `tablet.sql`
 prova il tablet di sala: le finestre di tempo, il recupero, l'annullo, il PIN
-e il blocco, e che il tablet non veda niente più di quel che deve.
+e il blocco, e che il tablet non veda niente più di quel che deve;
+`segreteria.sql` prova cosa succede alle lezioni quando un corso cambia sala,
+istruttore o giorni, o si archivia, e il primo accesso.
