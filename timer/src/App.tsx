@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { HistoryEntry, Mode, Settings, Workout } from './types'
 import { DEFAULT_SETTINGS, loadHistory, loadSettings, loadWorkouts, pushHistory, saveSettings, saveWorkouts } from './lib/storage'
 import { type Esercizio, loadEsercizi, normalizza, saveEsercizi } from './lib/esercizi'
@@ -23,6 +23,9 @@ import { type Interrotto, leggiInterrotto, scordaInterrotto } from './lib/ripres
 import { Back, Clessidra, Crono, Gear, TimerIcon } from './components/Icons'
 import { Logo, Wordmark } from './components/Logo'
 import { completaAccesso } from './lib/spotify'
+import { useMusica } from './lib/useMusica'
+import { MusicaBar } from './components/MusicaBar'
+import { PlayerYoutube } from './components/PlayerYoutube'
 import { PalestraSezione } from './components/PalestraSezione'
 import { type Accesso, accessoRicordato, chiSei, eUnId, haUnServer, nuovoId, sessione } from './lib/palestra'
 import {
@@ -486,8 +489,20 @@ export default function App() {
     patchSettings,
   ])
 
+  // La musica scelta nelle impostazioni. Il lettore di YouTube vive qui, alla
+  // radice, così cambiare scheda o aprire un allenamento non lo interrompe: le
+  // schermate gli preparano solo il posto (vedi PlayerYoutube).
+  const musica = useMusica(settings)
+  const conYoutube = musica.fonte === 'youtube' && musica.attiva
+  const con = (schermata: ReactNode) => (
+    <>
+      {schermata}
+      {conYoutube && <PlayerYoutube link={settings.youtube} />}
+    </>
+  )
+
   if (view.kind === 'run') {
-    return (
+    return con(
       <TimerScreen
         workout={view.workout}
         settings={settings}
@@ -499,7 +514,7 @@ export default function App() {
   }
 
   if (view.kind === 'storico') {
-    return (
+    return con(
       <div className="app">
         <div className="topbar">
           <button className="icon-btn" onClick={() => setView({ kind: 'tabs' })} aria-label="Indietro">
@@ -517,12 +532,12 @@ export default function App() {
   }
 
   if (view.kind === 'condividi') {
-    return <CondividiScreen workout={view.workout} onBack={() => setView({ kind: 'tabs' })} />
+    return con(<CondividiScreen workout={view.workout} onBack={() => setView({ kind: 'tabs' })} />)
   }
 
   if (view.kind === 'ricevuto') {
     const ricevuto = view.workout
-    return (
+    return con(
       <RicevutoScreen
         workout={ricevuto}
         onSalva={() => {
@@ -539,7 +554,7 @@ export default function App() {
   }
 
   if (view.kind === 'schema') {
-    return (
+    return con(
       <div className="app">
         <div className="topbar">
           <button className="icon-btn" onClick={() => setView({ kind: 'tabs' })} aria-label="Indietro">
@@ -557,7 +572,7 @@ export default function App() {
   }
 
   if (view.kind === 'esercizi') {
-    return (
+    return con(
       <div className="app">
         <div className="topbar">
           <button className="icon-btn" onClick={() => setView({ kind: 'tabs' })} aria-label="Indietro">
@@ -580,11 +595,11 @@ export default function App() {
   }
 
   if (view.kind === 'voce') {
-    return <VoiceRecorderScreen workouts={workouts} catalogo={catalogo} onBack={() => setView({ kind: 'tabs' })} />
+    return con(<VoiceRecorderScreen workouts={workouts} catalogo={catalogo} onBack={() => setView({ kind: 'tabs' })} />)
   }
 
   if (view.kind === 'editor') {
-    return (
+    return con(
       <EditorScreen
         initial={view.workout}
         nuovo={view.nuovo}
@@ -605,7 +620,7 @@ export default function App() {
     )
   }
 
-  return (
+  return con(
     <div className="shell">
       <nav className="sidebar">
         <div className="stack" style={{ gap: 10, padding: '0 22px 26px' }}>
@@ -658,6 +673,10 @@ export default function App() {
           <CountdownTab settings={settings} />
         </div>
         {!PIENE.includes(tab) && <div className="scroll">{body}</div>}
+
+        {/* La musica si comanda da tutte le schede, non solo dentro un
+            allenamento: in sala la si fa partire prima che arrivino tutti. */}
+        <MusicaBar musica={musica} className="musica-schede" />
 
         <nav className="tabbar">
           {TABS.map((t) => {

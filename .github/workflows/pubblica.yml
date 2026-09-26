@@ -52,10 +52,14 @@ jobs:
       # prova con un orario inventato, e il client Supabase non finisce nemmeno
       # nel pacchetto. Si impostano in Settings → Secrets → Actions quando la
       # palestra ha il suo database (vedi supabase/LEGGIMI.md).
+      #
+      # Il Client ID di Spotify serve anche qui: la sala mostra i comandi della
+      # musica collegata dal timer, e per rinnovarne l'accesso vuole lo stesso ID.
       - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SPOTIFY_CLIENT_ID: ${{ secrets.VITE_SPOTIFY_CLIENT_ID }}
 
       # Il timer si compila dopo, dentro dist/timer: un'app a sé, con il suo
       # service worker, pubblicata nella sottocartella dello stesso sito. Gli

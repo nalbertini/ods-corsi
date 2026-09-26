@@ -36,6 +36,10 @@ altri i nomi si alternano a ogni round e vengono annunciati dalla voce.
   dentro il timer da un riquadro del lettore ufficiale, con gli stessi tasti e
   le stesse automazioni. Niente account; il lettore deve restare visibile e si
   ferma a schermo spento, quindi è pensato per il tablet di sala.
+- La barra della musica sta in tutte le schede, non solo nell'allenamento, e
+  il lettore di YouTube è uno solo per tutta l'app: cambiando schermata non si
+  interrompe. Il tablet di sala di ODS Corsi mostra i comandi di Spotify con lo
+  stesso collegamento.
 - Da tastiera: `spazio` pausa, `←` `→` intervallo precedente e successivo,
   `Esc` esce.
 - Il tempo è ricavato dall'orologio a ogni tick, non accumulato: un tab in

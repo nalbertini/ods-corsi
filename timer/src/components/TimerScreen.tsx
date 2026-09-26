@@ -385,7 +385,7 @@ export function TimerScreen({
         )}
       </div>
 
-      <MusicaBar musica={musica} youtube={settings.youtube} />
+      <MusicaBar musica={musica} />
 
       <div className="row timer-controlli">
         <button className="icon-btn tasto-salto" onClick={() => skip(-1)} aria-label="Intervallo precedente">
