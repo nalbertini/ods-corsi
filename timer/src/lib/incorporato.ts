@@ -1,6 +1,7 @@
 import type { SegmentKind, Settings } from '../types'
 import type { Lezione } from './lezione'
 import type { Status } from './useTimer'
+import type { ImpostazioniSala } from './impostazioniSala'
 
 /**
  * Il timer dentro il tablet di sala.
@@ -11,12 +12,17 @@ import type { Status } from './useTimer'
  * arriva tardi si segna, e il tablet ne mostra lo stato nella sua testata.
  * La musica sta nella barra del tablet, sempre allo stesso posto, e la sceglie
  * la sala: le impostazioni del timer valgono finché non se ne sceglie un'altra.
+ * Il resto delle impostazioni (Maurizio, i segnali, lo schermo) lo sceglie la
+ * segreteria per tutti i tablet: nelle impostazioni del timer resta solo
+ * quello che è del dispositivo.
  */
 export interface Incorporato {
   /** La lezione in cui ci si segna adesso: in cima i timer del suo corso. */
   lezione: Lezione | null
   /** Fonte e link della musica scelti in sala, al posto di quelli delle impostazioni. */
   musica: Pick<Settings, 'musicaFonte' | 'youtube'>
+  /** Il timer come l'ha scelto la segreteria; nullo finché non si è letto (senza rete, quello dell'ultima volta). */
+  impostazioni: ImpostazioniSala | null
   /** Si sta guardando la scheda del timer: senza, la tastiera non lo comanda. */
   visibile: boolean
   onStato: (s: StatoTimer | null) => void

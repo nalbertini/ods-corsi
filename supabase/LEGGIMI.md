@@ -33,6 +33,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 7. `07-certificati-pagamenti.sql` — il certificato medico e il pagamento degli iscritti
 8. `08-timer.sql` — il timer: la libreria della palestra, i timer personali e dei corsi, lo storico, le preferenze
 9. `09-musica.sql` — la musica delle sale, che il tablet fa partire dalla sua barra
+10. `10-timer-sale.sql` — il timer dei tablet di sala, scelto dalla segreteria
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -49,6 +50,9 @@ rilanciare `06-iscrizioni.sql`: finché non c'è, il timer tiene tutto sul
 dispositivo come prima e dice che il database non risponde. Lo stesso per la
 musica delle sale con `09-musica.sql`: finché non c'è, la segreteria dice che
 le liste non si leggono e il tablet suona quella delle impostazioni del timer.
+E per il timer delle sale con `10-timer-sale.sql`: finché non c'è, la
+segreteria dice che il timer delle sale non si legge e i tablet tengono le
+impostazioni che avevano.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -340,6 +344,15 @@ YouTube o di Spotify, per una sala o per tutte (`09-musica.sql`, tabella
 tablet le legge da `musica_sala()` — solo quelle della sua sala e quelle di
 tutte — e non le cambia.
 
+### Il timer delle sale
+
+Maurizio, i segnali, il volume, lo schermo e la musica durante il timer dei
+tablet li sceglie la segreteria, da **Regole e privacy → Il timer delle
+sale**, per tutti i tablet. Stanno nella riga delle impostazioni, colonna
+`timer` (`10-timer-sale.sql`), così come le scrive l'app
+(`timer/src/lib/impostazioniSala.ts`): le legge chiunque abbia un accesso,
+tablet compresi, le cambia la segreteria. Sul tablet non si cambiano.
+
 ## 8. Il timer
 
 Il timer (la cartella `timer/`) non ha una porta sua: trova l'accesso fatto in
@@ -353,7 +366,7 @@ sessione nel `localStorage`. Chi fa cosa, secondo `08-timer.sql`:
 | timer di un collega | vede e copia, se collegato a un corso | vede e fa partire, se collegato a un corso | — |
 | collegare un timer a un corso | sì, a qualunque corso | no | — |
 | storico | scrive il suo, legge tutto | scrive e legge il suo | — |
-| preferenze | le sue | — | — |
+| preferenze | le sue | quelle scelte dalla segreteria, senza cambiarle | — |
 
 Senza accesso, in prova o senza database, il timer tiene tutto sul
 dispositivo, com'è sempre stato. Chi aveva già dei timer sul telefono li porta
@@ -423,5 +436,6 @@ e pagamenti li veda e li cambi solo la segreteria; `timer.sql` prova il timer:
 chi vede e cambia i timer della palestra, i propri e quelli dei colleghi, il
 tablet che li apre senza scriverli, lo storico e le preferenze; `musica.sql`
 prova la musica delle sale: la cura la segreteria, e il tablet vede solo la
-sua. `finto-supabase.sql` rifà anche le due
+sua; in fondo, che il timer delle sale lo cambi solo la segreteria e il
+tablet lo legga. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

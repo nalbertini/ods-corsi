@@ -1,6 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
+import type { ImpostazioniSala } from '../../timer/src/lib/impostazioniSala'
 
 /**
  * Il tablet di sala.
@@ -109,6 +110,8 @@ export interface DatiTablet {
 
   /** Le liste della musica di questa sala e di tutte, preparate dalla segreteria. */
   musica(): Promise<ListaMusica[]>
+  /** Come va il timer della sala: lo sceglie la segreteria, il tablet non lo cambia. */
+  impostazioniTimer(): Promise<ImpostazioniSala>
 }
 
 // ---------------------------------------------------------------------------

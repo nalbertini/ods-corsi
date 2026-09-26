@@ -37,6 +37,7 @@ import {
   salvaPreferenze,
   salvaSulServer,
   scaricaLibreria,
+  scaricaImpostazioniSala,
   scaricaPreferenze,
   soloDelDispositivo,
   unisci,
@@ -45,6 +46,7 @@ import {
 import { type Lezione, lezioneDaIndirizzo, scordaLezione } from './lib/lezione'
 import { type Gruppo, gruppiDi } from './lib/gruppi'
 import type { Incorporato } from './lib/incorporato'
+import type { ImpostazioniSala } from './lib/impostazioniSala'
 
 /** I corsi dell'ultima volta, per il titolo della lezione e l'editor senza rete. */
 const DOVE_CORSI = 'ods-timer:corsi'
@@ -236,6 +238,14 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         setWorkouts(soloDelDispositivo)
         return
       }
+      if (a.chi === 'sala') {
+        scaricaImpostazioniSala().then(
+          (i) => setSalaDalServer((prima) => (JSON.stringify(prima) === JSON.stringify(i) ? prima : i)),
+          () => {
+            // Senza risposta restano quelle dell'ultima volta, già salvate qui.
+          },
+        )
+      }
       const l = await scaricaLibreria(a.chi === 'personale' ? a.personaId : null)
       setWorkouts((attuali) => unisci(attuali, l.timer))
       setCorsi(l.corsi)
@@ -291,6 +301,17 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
     }, 1500)
     return () => window.clearTimeout(t)
   }, [settings, personaId])
+
+  // Su un tablet di sala Maurizio, i segnali e lo schermo li sceglie la
+  // segreteria (vedi `impostazioniSala.ts`): si mettono sopra a quelle del
+  // dispositivo, che se le salva e le ritrova anche senza rete. Dentro il
+  // tablet le legge ODS Corsi; il timer aperto da solo le chiede lui.
+  const [salaDalServer, setSalaDalServer] = useState<ImpostazioniSala | null>(null)
+  const dellaSala = incorporato ? incorporato.impostazioni : salaDalServer
+  const decideLaSegreteria = !!incorporato || accesso.chi === 'sala'
+  useEffect(() => {
+    if (dellaSala) setSettings((s) => ({ ...s, ...dellaSala }))
+  }, [dellaSala])
 
   const patchSettings = useCallback((patch: Partial<Settings>) => {
     setSettings((s) => ({ ...DEFAULT_SETTINGS, ...s, ...patch }))
@@ -473,8 +494,10 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             onOpenRecorder={() => setView({ kind: 'voce' })}
             onOpenStorico={() => setView({ kind: 'storico' })}
             onOpenEsercizi={() => setView({ kind: 'esercizi' })}
+            sala={decideLaSegreteria}
+            incorporato={!!incorporato}
             palestra={
-              haUnServer ? (
+              haUnServer && !incorporato ? (
                 <PalestraSezione
                   accesso={accesso}
                   inCoda={inCoda}
@@ -490,6 +513,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
     }
   }, [
     tab,
+    decideLaSegreteria,
     workouts,
     gruppi,
     corsi,

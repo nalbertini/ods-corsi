@@ -1,6 +1,7 @@
 -- La musica delle sale: la segreteria prepara le liste, il tablet vede solo
 -- quelle della sua sala e di tutte, e non le cambia.
--- Si lancia dopo finto-supabase.sql e i nove file dello schema.
+-- Si lancia dopo finto-supabase.sql e i dieci file dello schema.
+-- In fondo, anche le impostazioni del timer dei tablet (10-timer-sale.sql).
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -98,3 +99,27 @@ reset role;
 \echo '--- 6. Una sala tolta si porta via le sue liste ---'
 delete from sale where id = 'bbbbbbbb-0000-0000-0000-000000000002';
 select atteso('resta quella di tutte e quella della Lotta', (select count(*)::text from musica_sale), '2');
+
+\echo ''
+\echo '--- 7. Il timer dei tablet: lo decide la segreteria, il tablet lo legge ---'
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria lo sceglie',
+  tenta($$update impostazioni set timer = '{"coach":"spietato","volume":0.6}' where id$$), 'FATTO (1 righe)');
+select atteso('un valore che non è un oggetto no',
+  tenta($$update impostazioni set timer = '[1,2]' where id$$), 'NEGATO: …');
+reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('l''istruttrice lo vede', tenta($$select timer->>'coach' from impostazioni$$), 'spietato');
+select atteso('e non lo cambia', tenta($$update impostazioni set timer = '{}' where id$$), 'a vuoto (0 righe)');
+reset role;
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('il tablet lo legge', tenta($$select timer->>'volume' from impostazioni$$), '0.6');
+select atteso('e non lo cambia', tenta($$update impostazioni set timer = '{}' where id$$), 'a vuoto (0 righe)');
+reset role;
+select chi('');
+set role anon;
+select atteso('chi non ha fatto l''accesso no', tenta($$select timer::text from impostazioni$$), 'NEGATO: …');
+reset role;
