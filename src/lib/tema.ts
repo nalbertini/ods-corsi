@@ -6,6 +6,9 @@ import { useEffect, useState } from 'react'
  * Finché nessuno sceglie segue il dispositivo; chi tocca il tasto sceglie per
  * quel dispositivo, e la scelta resta. Il tema sta su `<html data-tema>`: i
  * colori li cambia `styles.css`, qui si decide soltanto quale.
+ *
+ * Il timer usa lo stesso tema con la stessa chiave: scelto in un'app, vale
+ * anche nell'altra.
  */
 export type Tema = 'scuro' | 'chiaro'
 
@@ -44,6 +47,11 @@ export function avviaTema() {
   applica()
   sistema?.addEventListener?.('change', () => {
     if (!scelto()) applica()
+  })
+  // Il timer (nalbertini/Timer-) sta sullo stesso dominio e usa la stessa
+  // chiave: se il tema si cambia lì, in un'altra scheda, cambia anche qui.
+  window.addEventListener('storage', (e) => {
+    if (e.key === DOVE || e.key === null) applica()
   })
 }
 

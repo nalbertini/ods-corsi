@@ -22,7 +22,8 @@ aprite l'appello completo e lo correggete.
   FINITA, IN CORSO, SI SEGNA ORA o PIÙ TARDI.
 - **In basso** tre tasti: **TI SEI DIMENTICATO DI SEGNARTI?**, **AREA
   ISTRUTTORE** e **TIMER**, che apre il timer della lezione. Dal timer si
-  torna al tablet con **CORSI**, l'ultima voce della sua barra.
+  torna al tablet con **SALA**. Il tema bianco scelto qui vale anche nel
+  timer, e viceversa.
 
 ## Quando ci si segna
 
