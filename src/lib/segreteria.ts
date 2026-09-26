@@ -1,5 +1,8 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { haUnServer } from './dati'
+import type { ListaMusica } from './musica'
+
+export type { ListaMusica } from './musica'
 
 /**
  * La segreteria: il calendario della settimana, i corsi con i loro orari, gli
@@ -230,6 +233,10 @@ export interface DatiSegreteria {
   impostaPin(personaId: string, pin: string): Promise<void>
 
   salvaSala(s: { id?: string; nome: string; capienza?: number }): Promise<string>
+  /** La musica delle sale, per il tablet (vedi `musica.ts`). */
+  listeMusica(): Promise<ListaMusica[]>
+  salvaListaMusica(l: { id?: string; nome: string; link: string; salaId: string | null }): Promise<string>
+  togliListaMusica(id: string): Promise<void>
   impostazioni(): Promise<Impostazioni>
   salvaImpostazioni(i: Partial<Impostazioni>): Promise<void>
   /** Quante presenze sono più vecchie del periodo, e la pulizia. */

@@ -72,6 +72,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('07-certificati-pagamenti.sql', 'certificati e pagamenti',
     to_regclass('public.schede_iscritti') is not null),
   ('08-timer.sql', 'il timer: libreria, corsi, storico, preferenze',
-    to_regclass('public.preferenze_timer') is not null)
+    to_regclass('public.preferenze_timer') is not null),
+  ('09-musica.sql', 'la musica delle sale',
+    exists (select 1 from dentro where nome = 'musica_sala'))
 ) as x(file, cosa, c)
 order by file, cosa;

@@ -45,14 +45,17 @@ export function PostoPlayer() {
 }
 
 /** Il lettore vero: da montare una volta, alla radice dell'app. */
-export function PlayerYoutube({ link }: { link: string }) {
+export function PlayerYoutube({ link, parti = false }: { link: string; parti?: boolean }) {
   const host = useRef<HTMLDivElement>(null)
+  // Vale al momento del montaggio: un link scelto adesso, col dito, parte da solo.
+  const partiRef = useRef(parti)
+  partiRef.current = parti
   const posto = useSyncExternalStore(ascolta, postoAttivo)
 
   useEffect(() => {
     const s = leggiLink(link)
     if (!host.current || !s) return
-    return monta(host.current, s)
+    return monta(host.current, s, partiRef.current)
   }, [link])
 
   // Segue il posto a ogni fotogramma: il posto si sposta anche senza cambiare

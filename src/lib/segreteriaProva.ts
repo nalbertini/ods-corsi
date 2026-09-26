@@ -6,6 +6,7 @@ import { memoria } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { richiesteDi } from './richiesteProva'
+import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -516,6 +517,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
           ricorrenze: c.ricorrenze.map((r) => (r.sala === s.id ? { ...r, sala: nome } : r)),
         }))
         a().lezioni = Object.fromEntries(Object.entries(a().lezioni).map(([k, l]) => [k, l.sala === s.id ? { ...l, sala: nome } : l]))
+        a().musica = (a().musica ?? []).map((l) => (l.sala === s.id ? { ...l, sala: nome } : l))
         delete cap[s.id]
       } else if (!s.id) a().sale = [...a().sale, nome]
       if (s.capienza) cap[nome] = s.capienza
@@ -523,6 +525,29 @@ export function creaSegreteriaProva(): DatiSegreteria {
       a().capienzaSale = cap
       salva()
       return nome
+    },
+
+    async listeMusica() {
+      return (a().musica ?? []).map((l) => ({ id: l.id, nome: l.nome, link: l.link, salaId: l.sala }))
+    },
+
+    async salvaListaMusica(l) {
+      const nome = l.nome.trim().slice(0, MAX_NOME_LISTA)
+      const link = l.link.trim()
+      if (!nome) throw new Error('La lista ha bisogno di un nome')
+      if (!fonteDelLink(link)) throw new Error('Il link non è una playlist di YouTube o di Spotify')
+      if (l.salaId && !a().sale.includes(l.salaId)) throw new Error('Sala inesistente')
+      const id = l.id ?? `musica~${unico()}`
+      const riga = { id, nome, link, sala: l.salaId }
+      const prima = a().musica ?? []
+      a().musica = l.id ? prima.map((x) => (x.id === l.id ? riga : x)) : [...prima, riga]
+      salva()
+      return id
+    },
+
+    async togliListaMusica(id) {
+      a().musica = (a().musica ?? []).filter((x) => x.id !== id)
+      salva()
     },
 
     async impostazioni() {

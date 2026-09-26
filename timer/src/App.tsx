@@ -44,6 +44,7 @@ import {
 } from './lib/libreria'
 import { type Lezione, lezioneDaIndirizzo, scordaLezione } from './lib/lezione'
 import { type Gruppo, gruppiDi } from './lib/gruppi'
+import type { Incorporato } from './lib/incorporato'
 
 /** I corsi dell'ultima volta, per il titolo della lezione e l'editor senza rete. */
 const DOVE_CORSI = 'ods-timer:corsi'
@@ -109,7 +110,11 @@ function TornaSala({ className }: { className: string }) {
   )
 }
 
-export default function App() {
+/**
+ * Il timer. Da solo, un'app intera; con `incorporato`, la scheda TIMER del
+ * tablet di sala di ODS Corsi (vedi `lib/incorporato.ts`).
+ */
+export default function App({ incorporato }: { incorporato?: Incorporato } = {}) {
   // Senza un accesso le copie del database non si mostrano: non sarebbero né
   // aggiornate né modificabili. Con l'accesso la lista parte dall'ultima copia
   // vista, con sopra quello che è ancora in coda, e il database la aggiorna.
@@ -118,7 +123,18 @@ export default function App() {
   )
   const [accesso, setAccesso] = useState<Accesso>(() => accessoRicordato())
   const [corsi, setCorsi] = useState<Corso[]>(() => corsiRicordati())
-  const [lezione, setLezione] = useState<Lezione | null>(() => lezioneDaIndirizzo())
+  const [lezione, setLezione] = useState<Lezione | null>(() => (incorporato ? incorporato.lezione : lezioneDaIndirizzo()))
+  // Sul tablet la lezione la dice la sala, e cambia da sola quando ne comincia
+  // un'altra: da qui la si segue.
+  const lezioneSala = incorporato?.lezione
+  const chiaveSala = lezioneSala ? `${lezioneSala.corsoId}:${lezioneSala.sessioneId ?? ''}` : ''
+  const primaSala = useRef(chiaveSala)
+  useEffect(() => {
+    if (!incorporato || primaSala.current === chiaveSala) return
+    primaSala.current = chiaveSala
+    setLezione(lezioneSala ?? null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chiaveSala])
   const [inCoda, setInCoda] = useState(0)
   const [sincronizzato, setSincronizzato] = useState<'no' | 'sì' | 'errore'>('no')
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
@@ -150,6 +166,8 @@ export default function App() {
   // Di ritorno dall'accesso a Spotify: si riapre dove si era, nelle
   // impostazioni, così si vede subito se il collegamento è andato.
   useEffect(() => {
+    // Il ritorno da Spotify arriva al timer da solo, mai al tablet.
+    if (incorporato) return
     void completaAccesso().then((esito) => {
       if (esito) setTab('impostazioni')
     })
@@ -159,6 +177,8 @@ export default function App() {
   // tablet della sala o da un link su WhatsApp. Si mostra subito, e
   // l'indirizzo si ripulisce: un ricarica non deve riproporlo all'infinito.
   useEffect(() => {
+    // Sul tablet il frammento è quello di ODS Corsi (`#sala`), non un timer.
+    if (incorporato) return
     const guarda = () => {
       void workoutDaLink().then((w) => {
         if (!w) return
@@ -195,6 +215,9 @@ export default function App() {
 
   useEffect(() => saveWorkouts(workouts), [workouts])
   useEffect(() => saveSettings(settings), [settings])
+  // Il tablet legge le impostazioni per la sua barra della musica.
+  const avvisaSala = incorporato?.onSettings
+  useEffect(() => avvisaSala?.(settings), [settings, avvisaSala])
   useEffect(() => saveEsercizi(catalogo), [catalogo])
 
   // --- Il database di ODS Corsi ---------------------------------------------
@@ -492,8 +515,16 @@ export default function App() {
   // La musica scelta nelle impostazioni. Il lettore di YouTube vive qui, alla
   // radice, così cambiare scheda o aprire un allenamento non lo interrompe: le
   // schermate gli preparano solo il posto (vedi PlayerYoutube).
-  const musica = useMusica(settings)
-  const conYoutube = musica.fonte === 'youtube' && musica.attiva
+  //
+  // Sul tablet di sala il lettore e la barra sono del tablet, che li tiene
+  // sempre allo stesso posto, e la musica la sceglie la sala: al timer restano
+  // le automazioni, sulla stessa fonte.
+  const settingsMusica = useMemo(
+    () => (incorporato ? { ...settings, ...incorporato.musica } : settings),
+    [settings, incorporato?.musica.musicaFonte, incorporato?.musica.youtube], // eslint-disable-line react-hooks/exhaustive-deps
+  )
+  const musica = useMusica(settingsMusica)
+  const conYoutube = musica.fonte === 'youtube' && musica.attiva && !incorporato
   const con = (schermata: ReactNode) => (
     <>
       {schermata}
@@ -505,8 +536,11 @@ export default function App() {
     return con(
       <TimerScreen
         workout={view.workout}
-        settings={settings}
+        settings={settingsMusica}
         ripresa={view.ripresa}
+        onStato={incorporato?.onStato}
+        tastiera={incorporato ? incorporato.visibile : true}
+        conMusica={!incorporato}
         onExit={() => setView({ kind: 'tabs' })}
         onFinish={recordFinish(view.workout)}
       />
@@ -623,10 +657,13 @@ export default function App() {
   return con(
     <div className="shell">
       <nav className="sidebar">
-        <div className="stack" style={{ gap: 10, padding: '0 22px 26px' }}>
-          <Logo width={104} />
-          <Wordmark />
-        </div>
+        {/* Sul tablet il marchio c'è già, nella testata della sala. */}
+        {!incorporato && (
+          <div className="stack" style={{ gap: 10, padding: '0 22px 26px' }}>
+            <Logo width={104} />
+            <Wordmark />
+          </div>
+        )}
         <div className="stack" style={{ gap: 2, padding: '0 12px' }}>
           {TABS.map((t) => (
             <button key={t.key} className="navitem" data-on={tab === t.key} onClick={() => setTab(t.key)}>
@@ -636,9 +673,11 @@ export default function App() {
           ))}
         </div>
         <div className="grow" />
-        <div className="stack" style={{ padding: '0 12px' }}>
-          <TornaSala className="" />
-        </div>
+        {!incorporato && (
+          <div className="stack" style={{ padding: '0 12px' }}>
+            <TornaSala className="" />
+          </div>
+        )}
       </nav>
 
       <div className="app content">
@@ -658,7 +697,7 @@ export default function App() {
             <span className="ob page-title" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--dim)' }}>
               {TAB_TITLE[tab]}
             </span>
-            <TornaSala className="torna-sala-alto" />
+            {!incorporato && <TornaSala className="torna-sala-alto" />}
           </header>
         )}
 
@@ -676,7 +715,7 @@ export default function App() {
 
         {/* La musica si comanda da tutte le schede, non solo dentro un
             allenamento: in sala la si fa partire prima che arrivino tutti. */}
-        <MusicaBar musica={musica} className="musica-schede" />
+        {!incorporato && <MusicaBar musica={musica} className="musica-schede" />}
 
         <nav className="tabbar">
           {TABS.map((t) => {
@@ -691,10 +730,12 @@ export default function App() {
           {/* Su un telefono in alto non c'è posto accanto al marchio: il ritorno
               sta qui. Da tablet c'è il tasto grosso in alto, se in alto c'è
               la testata; nelle schede a tutto schermo resta questo. */}
-          <a className={PIENE.includes(tab) ? 'tab' : 'tab tab-sala'} href={SALA}>
-            <Back size={22} />
-            SALA
-          </a>
+          {!incorporato && (
+            <a className={PIENE.includes(tab) ? 'tab' : 'tab tab-sala'} href={SALA}>
+              <Back size={22} />
+              SALA
+            </a>
+          )}
         </nav>
       </div>
     </div>

@@ -32,6 +32,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 6. `06-iscrizioni.sql` — il modulo di iscrizione, i suoi file, e chi può chiamare cosa
 7. `07-certificati-pagamenti.sql` — il certificato medico e il pagamento degli iscritti
 8. `08-timer.sql` — il timer: la libreria della palestra, i timer personali e dei corsi, lo storico, le preferenze
+9. `09-musica.sql` — la musica delle sale, che il tablet fa partire dalla sua barra
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -45,7 +46,9 @@ iscritti si vede lo stesso, e salvare un certificato dice che manca. Per la sala
 `04-tablet.sql` e `05-segreteria.sql`: le lezioni già generate restano dove
 sono. Per il timer basta lanciare `08-timer.sql`, che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, il timer tiene tutto sul
-dispositivo come prima e dice che il database non risponde.
+dispositivo come prima e dice che il database non risponde. Lo stesso per la
+musica delle sale con `09-musica.sql`: finché non c'è, la segreteria dice che
+le liste non si leggono e il tablet suona quella delle impostazioni del timer.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -327,6 +330,16 @@ Il PIN è salvato cifrato e due istruttori non possono avere lo stesso. Dopo 5
 PIN sbagliati in 5 minuti il tablet si blocca per qualche minuto: gli altri
 tablet no.
 
+### La musica delle sale
+
+Il tablet ha la musica nella barra in basso, sotto le presenze e sotto il
+timer. Cosa far partire lo prepara la segreteria, da **Regole e privacy → La
+musica delle sale**: qualche lista, ognuna un nome e il link a una playlist di
+YouTube o di Spotify, per una sala o per tutte (`09-musica.sql`, tabella
+`musica_sale`). La segreteria le cura, il resto del personale le vede, il
+tablet le legge da `musica_sala()` — solo quelle della sua sala e quelle di
+tutte — e non le cambia.
+
 ## 8. Il timer
 
 Il timer (la cartella `timer/`) non ha una porta sua: trova l'accesso fatto in
@@ -408,5 +421,7 @@ prova il modulo di iscrizione: cosa può fare chi non ha un accesso, i limiti
 sui file, e chi accoglie le richieste; `certificati.sql` prova che certificati
 e pagamenti li veda e li cambi solo la segreteria; `timer.sql` prova il timer:
 chi vede e cambia i timer della palestra, i propri e quelli dei colleghi, il
-tablet che li apre senza scriverli, lo storico e le preferenze. `finto-supabase.sql` rifà anche le due
+tablet che li apre senza scriverli, lo storico e le preferenze; `musica.sql`
+prova la musica delle sale: la cura la segreteria, e il tablet vede solo la
+sua. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

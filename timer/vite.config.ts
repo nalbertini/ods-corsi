@@ -29,6 +29,8 @@ export default defineConfig({
     __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
     __APP_VERSION__: JSON.stringify(versione),
     __APP_COMMIT__: JSON.stringify(commit()),
+    // Da solo il timer è la pagina: i suoi file stanno accanto (vedi lib/radice.ts).
+    __TIMER_RADICE__: JSON.stringify(''),
   },
   // Percorsi relativi: l'app funziona anche servita da una sottocartella,
   // non solo dalla radice del dominio.

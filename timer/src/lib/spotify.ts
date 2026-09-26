@@ -1,3 +1,4 @@
+import { RADICE } from './radice'
 /**
  * La musica della sala, comandata da Spotify.
  *
@@ -105,7 +106,9 @@ export function impostaClientId(id: string) {
  * barra finale compresa: le impostazioni lo mostrano apposta, da copiare.
  */
 export function indirizzoRitorno(): string {
-  const u = new URL(window.location.href)
+  // Dal tablet di sala la pagina è quella di ODS Corsi: Spotify torna comunque
+  // al timer, che è l'indirizzo registrato, e da lì SALA riporta al tablet.
+  const u = new URL(RADICE || window.location.href, window.location.href)
   u.search = ''
   u.hash = ''
   u.pathname = u.pathname.replace(/index\.html$/, '')
@@ -425,6 +428,24 @@ export function suona() {
       const primo = r?.devices?.find((d) => d.id)
       if (!primo?.id) throw e
       await api('PUT', '/me/player', { device_ids: [primo.id], play: true })
+    }
+  }, { inRiproduzione: true })
+}
+
+export { leggiLinkSpotify } from './link'
+
+/** Fa partire una playlist (o un album) dall'inizio, dove Spotify sta suonando. */
+export function suonaLista(uri: string) {
+  return comando(async () => {
+    try {
+      await api('PUT', '/me/player/play', { context_uri: uri })
+    } catch (e) {
+      if (!(e instanceof ErroreSpotify) || e.stato !== 404) throw e
+      // Come in `suona`: nessun dispositivo attivo, si sveglia il primo.
+      const r = (await api('GET', '/me/player/devices')) as { devices?: Array<{ id: string | null }> } | null
+      const primo = r?.devices?.find((d) => d.id)
+      if (!primo?.id) throw e
+      await api('PUT', `/me/player/play?device_id=${encodeURIComponent(primo.id)}`, { context_uri: uri })
     }
   }, { inRiproduzione: true })
 }

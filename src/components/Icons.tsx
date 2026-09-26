@@ -39,6 +39,15 @@ export const Cronometro = ({ size = 20 }: P) => (
   </svg>
 )
 
+export const Persone = ({ size = 20 }: P) => (
+  <svg {...base(size)} aria-hidden="true">
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6" />
+    <circle cx="17" cy="9" r="2.8" />
+    <path d="M17 14c2.8 0 4.8 2 4.8 5" />
+  </svg>
+)
+
 export const Spunta = ({ size = 24 }: P) => (
   <svg {...base(size)} strokeWidth={3} aria-hidden="true">
     <polyline points="4 12 10 18 20 6" />

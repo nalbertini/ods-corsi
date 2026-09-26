@@ -3,6 +3,7 @@ import type { CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, Pe
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
+import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 
 /**
  * La segreteria col database vero.
@@ -532,6 +533,30 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         return sala.id
       }
       return (ok(await db.from('sale').insert(riga).select('id').single()) as { id: string }).id
+    },
+
+    async listeMusica() {
+      const righe = ok(await db.from('musica_sale').select('id, nome, link, sala_id').order('ordine').order('nome')) as Array<{
+        id: string; nome: string; link: string; sala_id: string | null
+      }>
+      return righe.map((r) => ({ id: r.id, nome: r.nome, link: r.link, salaId: r.sala_id }))
+    },
+
+    async salvaListaMusica(l) {
+      const nome = l.nome.trim().slice(0, MAX_NOME_LISTA)
+      const link = l.link.trim()
+      if (!nome) throw new Error('La lista ha bisogno di un nome')
+      if (!fonteDelLink(link)) throw new Error('Il link non è una playlist di YouTube o di Spotify')
+      const riga = { nome, link, sala_id: l.salaId }
+      if (l.id) {
+        ok(await db.from('musica_sale').update(riga).eq('id', l.id))
+        return l.id
+      }
+      return (ok(await db.from('musica_sale').insert(riga).select('id').single()) as { id: string }).id
+    },
+
+    async togliListaMusica(id) {
+      ok(await db.from('musica_sale').delete().eq('id', id))
     },
 
     impostazioni,

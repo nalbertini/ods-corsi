@@ -9,6 +9,9 @@ import { readFileSync } from 'node:fs'
 // Su GitHub Actions il commit c'è in GITHUB_SHA; in locale lo si chiede a git,
 // e fuori da un repository resta senza.
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }
+// Il timer sta anche dentro il tablet di sala (vedi `TimerSala.tsx`): le sue
+// impostazioni dicono la sua versione, non quella di ODS Corsi.
+const { version: versioneTimer } = JSON.parse(readFileSync(new URL('./timer/package.json', import.meta.url), 'utf8')) as { version: string }
 function commit(): string {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7)
   try {
@@ -26,7 +29,17 @@ export default defineConfig({
     __VERSIONE__: JSON.stringify(version),
     __COMMIT__: JSON.stringify(commit()),
     __COMPILATA__: JSON.stringify(new Date().toISOString()),
+    // Quelle del timer, che qui dentro è la scheda TIMER del tablet di sala:
+    // i suoi file (voce, illustrazioni, guida) stanno in `timer/`.
+    __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
+    __APP_VERSION__: JSON.stringify(versioneTimer),
+    __APP_COMMIT__: JSON.stringify(commit()),
+    __TIMER_RADICE__: JSON.stringify('timer/'),
   },
+  // Il timer ha le sue dipendenze in `timer/node_modules`: senza, i suoi file
+  // prenderebbero da lì una seconda copia di React, e due React nella stessa
+  // pagina non si parlano.
+  resolve: { dedupe: ['react', 'react-dom', '@supabase/supabase-js'] },
   plugins: [
     react(),
     VitePWA({
@@ -66,6 +79,30 @@ export default defineConfig({
         // rispondere con ODS Corsi alle sue pagine, né precaricarne i file.
         navigateFallbackDenylist: [/informativa\.html$/, /\/moduli\//, /\.pdf$/, /\/timer(\/|$)/],
         globIgnores: ['timer/**'],
+        // La voce e le illustrazioni del timer, chieste dal tablet di sala che
+        // lo contiene: come nel timer, entrano in cache alla prima richiesta.
+        // Stessi nomi delle cache del timer: la cache è una per il sito, e
+        // una clip scaricata da una delle due app vale anche per l'altra.
+        runtimeCaching: [
+          {
+            urlPattern: /\/timer\/voce\/.*\.(mp3|m4a|ogg|wav|webm|json)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ods-voce',
+              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /\/timer\/adesivi\/.*\.webp$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'ods-adesivi',
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],

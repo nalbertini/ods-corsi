@@ -1,6 +1,18 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import type { DatiTablet, LezioneSala, Postazione } from '../../lib/tablet'
-import { datiTablet, lasciaTablet, REGOLE } from '../../lib/tablet'
+import { datiTablet, fase, lasciaTablet, REGOLE } from '../../lib/tablet'
+import type { Settings } from '../../../timer/src/types'
+import type { Incorporato, StatoTimer } from '../../../timer/src/lib/incorporato'
+import type { Lezione } from '../../../timer/src/lib/lezione'
+import { loadSettings } from '../../../timer/src/lib/storage'
+import { eUnId } from '../../../timer/src/lib/palestra'
+import { clock } from '../../../timer/src/lib/format'
+import { useMusica, useSpotify } from '../../../timer/src/lib/useMusica'
+import { leggiLinkSpotify, suonaLista } from '../../../timer/src/lib/spotify'
+import { PlayerYoutube } from '../../../timer/src/components/PlayerYoutube'
+import { fonteDelLink, type ListaMusica } from '../../lib/musica'
+import { trattieniAggiornamento } from '../../lib/aggiornamento'
+import { Cronometro, Persone } from '../Icons'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Logo } from '../Logo'
 import { TastoTema } from '../TastoTema'
@@ -10,6 +22,7 @@ import { TabletPresenza } from './TabletPresenza'
 import { TabletRecupero } from './TabletRecupero'
 import { TabletPin } from './TabletPin'
 import { TabletIstruttore } from './TabletIstruttore'
+import { MusicaSala, VideoSala } from './MusicaSala'
 
 /**
  * Il tablet di sala, a pieno schermo.
@@ -115,16 +128,58 @@ type Vista =
   | { s: 'pin' }
   | { s: 'istruttore'; pin: string; nome: string }
 
+/** Il timer pesa quanto il resto dell'app: si scarica solo su un tablet di sala. */
+const TimerSala = lazy(() => import('./TimerSala').then((m) => ({ default: m.TimerSala })))
+
+/** Le due schede della barra in basso. */
+type Scheda = 'presenze' | 'timer'
+
+/** Il colore dell'intervallo del timer, quello del bordo del suo schermo. */
+const COLORE_TIMER: Record<string, string> = {
+  prepare: 'var(--giallo)',
+  work: 'var(--rosso)',
+  rest: 'var(--verde)',
+  setRest: 'var(--blu)',
+  cooldown: 'var(--blu)',
+}
+const coloreDi = (t: StatoTimer) => (t.status === 'done' ? 'var(--verde)' : t.kind ? COLORE_TIMER[t.kind] : 'var(--line)')
+/** Un allenamento che conta: avviato e non finito. */
+const inCorso = (t: StatoTimer | null): t is StatoTimer => !!t && (t.status === 'running' || t.status === 'paused')
+
+/** La lista della musica scelta su questo tablet: resta anche dopo un ricaricamento. */
+const DOVE_MUSICA = 'ods-corsi:musica-sala'
+function listaRicordata(): string | null {
+  try {
+    return localStorage.getItem(DOVE_MUSICA)
+  } catch {
+    return null
+  }
+}
+function ricordaLista(id: string | null) {
+  try {
+    if (id) localStorage.setItem(DOVE_MUSICA, id)
+    else localStorage.removeItem(DOVE_MUSICA)
+  } catch {
+    // Si perde solo la scelta al prossimo ricaricamento.
+  }
+}
+
 function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: Postazione; onScollega: () => void }) {
   const adesso = useAdesso(d)
   const [vista, setVista] = useState<Vista>({ s: 'home' })
+  const [scheda, setScheda] = useState<Scheda>('presenze')
   const [lezioni, setLezioni] = useState<LezioneSala[] | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
 
   // Le ultime due settimane per il recupero, e la prossima per dire quando
-  // si ricomincia: un intervallo solo, riletto ogni cinque minuti.
+  // si ricomincia: un intervallo solo, riletto ogni cinque minuti. Con loro le
+  // liste della musica, che la segreteria può aver cambiato.
+  const [liste, setListe] = useState<ListaMusica[]>([])
   const carica = useCallback(async () => {
     const oggi = d.adesso()
+    d.musica().then(setListe, () => {
+      // Senza rete restano quelle di prima.
+    })
     try {
       setLezioni(await d.lezioni(giornoDopo(oggi, -REGOLE.recuperoGiorni), giornoDopo(oggi, 7)))
       setGuaio(null)
@@ -149,76 +204,202 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
     void carica()
   }, [carica])
 
+  // --- Il timer ---------------------------------------------------------------
+  // Sta sempre montato, anche sotto le presenze: un allenamento avviato va
+  // avanti, e qui in testata se ne vede lo stato.
+  const [timer, setTimer] = useState<StatoTimer | null>(null)
+  const [settingsTimer, setSettingsTimer] = useState<Settings>(() => loadSettings())
+  useEffect(() => {
+    trattieniAggiornamento(inCorso(timer))
+  }, [timer])
+
+  // La lezione in cui ci si segna adesso: il timer mette in cima i suoi timer.
+  const aperta = (lezioni ?? []).find((l) => l.stato !== 'annullata' && fase(l, adesso) === 'aperta') ?? null
+  const lezioneTimer = useMemo<Lezione | null>(
+    () => (aperta ? { corsoId: aperta.corsoId, sessioneId: eUnId(aperta.id) ? aperta.id : null, nome: aperta.corso } : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [aperta?.id, aperta?.corsoId, aperta?.corso],
+  )
+
+  // --- La musica --------------------------------------------------------------
+  // Una lista della sala, se se n'è scelta una; altrimenti quella delle
+  // impostazioni del timer. La barra, il lettore e il timer suonano questa.
+  const [sceltaId, setSceltaId] = useState<string | null>(() => listaRicordata())
+  const [parti, setParti] = useState(false)
+  const lista = liste.find((l) => l.id === sceltaId) ?? null
+  const fonteLista = lista ? fonteDelLink(lista.link) : null
+  const musicaSala = useMemo<Pick<Settings, 'musicaFonte' | 'youtube'>>(
+    () =>
+      lista && fonteLista
+        ? { musicaFonte: fonteLista, youtube: fonteLista === 'youtube' ? lista.link : settingsTimer.youtube }
+        : { musicaFonte: settingsTimer.musicaFonte, youtube: settingsTimer.youtube },
+    [lista, fonteLista, settingsTimer.musicaFonte, settingsTimer.youtube],
+  )
+  const conSala = useMemo(() => ({ ...settingsTimer, ...musicaSala }), [settingsTimer, musicaSala])
+  const musica = useMusica(conSala)
+  const spotify = useSpotify()
+  const conYoutube = musica.fonte === 'youtube' && musica.attiva
+  const scegliLista = (l: ListaMusica | null) => {
+    setSceltaId(l?.id ?? null)
+    ricordaLista(l?.id ?? null)
+    const uri = l ? leggiLinkSpotify(l.link) : null
+    if (uri) void suonaLista(uri)
+    setParti(true)
+  }
+
+  const incorporato = useMemo<Incorporato>(
+    () => ({ lezione: lezioneTimer, musica: musicaSala, visibile: scheda === 'timer', onStato: setTimer, onSettings: setSettingsTimer }),
+    [lezioneTimer, musicaSala, scheda],
+  )
+
   // Chi se ne va a metà lascia il tablet com'era; l'area istruttore si chiude
-  // da sola, perché dentro c'è il PIN di qualcuno.
+  // da sola, perché dentro c'è il PIN di qualcuno. La scheda TIMER invece
+  // resta: un conto alla rovescia avviato non lo dice a nessuno, e chi arriva
+  // si segna comunque dal tasto in testata.
   const inattivo = vista.s === 'istruttore' ? REGOLE.istruttoreInattivoMin * 60_000 : 90_000
   useInattivo(inattivo, () => {
     if (vista.s !== 'home') aHome()
   })
 
+  const vaiPresenze = () => setScheda('presenze')
+  const vaiTimer = () => setScheda('timer')
+  const segnaAperta = () => {
+    if (!aperta) return
+    setScheda('presenze')
+    setVista({ s: 'presenza', lezione: aperta, da: 'home' })
+  }
+
   return (
     <>
-      <header className="tb-testata">
+      {/* Col timer in corso e le presenze davanti, il bordo della testata
+          prende il colore dell'intervallo: si legge da tutta la sala. */}
+      <header className="tb-testata" style={scheda === 'presenze' && inCorso(timer) ? { borderBottom: `8px solid ${coloreDi(timer)}` } : undefined}>
         <Logo width={70} />
         <div className="stack grow" style={{ gap: 2, minWidth: 0 }}>
           <span className="ob tb-sala">SALA {postazione.sala.toUpperCase()}</span>
           <span className="num tb-data">{giornoPerEsteso(chiaveGiorno(adesso)).toUpperCase()} · OFFICINE DELLO SPORT</span>
         </div>
-        {vista.s === 'istruttore' && (
+        {vista.s === 'istruttore' && scheda === 'presenze' && (
           <span className="num tb-bollino" style={{ background: 'var(--blu)' }}>AREA ISTRUTTORE · {vista.nome.toUpperCase()}</span>
+        )}
+        {/* Col timer in corso e le presenze davanti: il timer resta qui, col
+            suo colore, e un tocco ci riporta. */}
+        {scheda === 'presenze' && inCorso(timer) && (
+          <button type="button" className="tb-chip" style={{ ['--tinta' as string]: coloreDi(timer) }} onClick={vaiTimer} aria-label="Torna al timer">
+            <span className="ob tb-chip-fase">{timer.status === 'paused' ? 'IN PAUSA' : timer.etichetta}</span>
+            <span className="num tb-chip-tempo">{clock(timer.secondi)}</span>
+            <span className="stack tb-chip-testo">
+              <span className="tb-chip-nome">{timer.nome.toUpperCase()}</span>
+              <span className="tb-chip-sotto">{timer.conto ? `${timer.conto} · ` : ''}tocca per tornare</span>
+            </span>
+          </button>
+        )}
+        {/* Col timer davanti: chi arriva tardi si segna senza fermarlo. */}
+        {scheda === 'timer' && aperta && (
+          <button type="button" className="tb-chip tb-chip-segna" onClick={segnaAperta}>
+            <span className="stack tb-chip-testo">
+              <span className="tb-chip-sotto" style={{ color: 'var(--verde)', fontWeight: 700, letterSpacing: '0.16em' }}>SI SEGNA ORA</span>
+              <span className="ob tb-chip-nome" style={{ fontSize: 19 }}>
+                {aperta.corso.toUpperCase()} · <span className="num">{aperta.presenti}/{aperta.iscritti}</span>
+              </span>
+            </span>
+            <span className="ob tb-chip-azione">SEGNATI</span>
+          </button>
         )}
         <span className="num tb-ora">{oraDi(adesso.toISOString())}</span>
         <TastoTema />
       </header>
 
-      {vista.s === 'home' && (
-        <TabletHome
-          sala={postazione.sala}
-          adesso={adesso}
-          lezioni={lezioni}
-          guaio={guaio}
-          onSegna={(l) => setVista({ s: 'presenza', lezione: l, da: 'home' })}
-          onRecupero={() => setVista({ s: 'recupero', corsoId: null })}
-          onPin={() => setVista({ s: 'pin' })}
-        />
-      )}
-      {vista.s === 'presenza' && (
-        <TabletPresenza
-          d={d}
-          lezione={vista.lezione}
-          adesso={adesso}
-          onIndietro={() => {
-            if (vista.da === 'recupero') {
-              setVista({ s: 'recupero', corsoId: vista.corsoId ?? null })
-              void carica()
-            } else aHome()
-          }}
-        />
-      )}
-      {vista.s === 'recupero' && (
-        <TabletRecupero
-          adesso={adesso}
-          lezioni={lezioni ?? []}
-          corsoIniziale={vista.corsoId}
-          onApri={(l, corsoId) => setVista({ s: 'presenza', lezione: l, da: 'recupero', corsoId })}
-          onIndietro={aHome}
-        />
-      )}
-      {vista.s === 'pin' && (
-        <TabletPin d={d} onEntrato={(pin, chi) => setVista({ s: 'istruttore', pin, nome: chi.nome })} onAnnulla={aHome} />
-      )}
-      {vista.s === 'istruttore' && (
-        <TabletIstruttore
-          d={d}
-          pin={vista.pin}
-          adesso={adesso}
-          lezioni={lezioni ?? []}
-          onCambiato={() => void carica()}
-          onEsci={aHome}
-          onPinScaduto={() => setVista({ s: 'pin' })}
-          onScollega={onScollega}
-        />
-      )}
+      <div className="tb-centro">
+        <div className="tb-area">
+          {scheda === 'presenze' && (
+            <>
+              {vista.s === 'home' && (
+                <TabletHome
+                  sala={postazione.sala}
+                  adesso={adesso}
+                  lezioni={lezioni}
+                  guaio={guaio}
+                  onSegna={(l) => setVista({ s: 'presenza', lezione: l, da: 'home' })}
+                  onRecupero={() => setVista({ s: 'recupero', corsoId: null })}
+                  onPin={() => setVista({ s: 'pin' })}
+                />
+              )}
+              {vista.s === 'presenza' && (
+                <TabletPresenza
+                  d={d}
+                  lezione={vista.lezione}
+                  adesso={adesso}
+                  onIndietro={() => {
+                    if (vista.da === 'recupero') {
+                      setVista({ s: 'recupero', corsoId: vista.corsoId ?? null })
+                      void carica()
+                    } else aHome()
+                  }}
+                />
+              )}
+              {vista.s === 'recupero' && (
+                <TabletRecupero
+                  adesso={adesso}
+                  lezioni={lezioni ?? []}
+                  corsoIniziale={vista.corsoId}
+                  onApri={(l, corsoId) => setVista({ s: 'presenza', lezione: l, da: 'recupero', corsoId })}
+                  onIndietro={aHome}
+                />
+              )}
+              {vista.s === 'pin' && (
+                <TabletPin d={d} onEntrato={(pin, chi) => setVista({ s: 'istruttore', pin, nome: chi.nome })} onAnnulla={aHome} />
+              )}
+              {vista.s === 'istruttore' && (
+                <TabletIstruttore
+                  d={d}
+                  pin={vista.pin}
+                  adesso={adesso}
+                  lezioni={lezioni ?? []}
+                  onCambiato={() => void carica()}
+                  onEsci={aHome}
+                  onPinScaduto={() => setVista({ s: 'pin' })}
+                  onScollega={onScollega}
+                />
+              )}
+            </>
+          )}
+          <Suspense fallback={scheda === 'timer' ? <p className="tb-nota" style={{ padding: 32 }}>Un attimo…</p> : null}>
+            <TimerSala incorporato={incorporato} visibile={scheda === 'timer'} />
+          </Suspense>
+        </div>
+        {conYoutube && <VideoSala />}
+      </div>
+
+      {/* La barra della sala: la stessa sotto le presenze e sotto il timer. */}
+      <footer className="tb-piede">
+        <button type="button" className="tb-scheda-sala" aria-pressed={scheda === 'presenze'} onClick={vaiPresenze}>
+          <Persone size={26} />
+          <span className="stack" style={{ gap: 1 }}>
+            <span className="ob tb-scheda-nome">PRESENZE</span>
+            <span className="num tb-scheda-sotto">{aperta ? `${aperta.presenti}/${aperta.iscritti} SEGNATI` : 'OGGI IN SALA'}</span>
+          </span>
+        </button>
+        <button type="button" className="tb-scheda-sala" aria-pressed={scheda === 'timer'} onClick={vaiTimer}>
+          <Cronometro size={26} />
+          <span className="stack" style={{ gap: 1 }}>
+            <span className="ob tb-scheda-nome">TIMER</span>
+            <span className="num tb-scheda-sotto" style={inCorso(timer) ? { color: coloreDi(timer) } : undefined}>
+              {inCorso(timer)
+                ? `${timer.status === 'paused' ? 'IN PAUSA' : timer.etichetta} ${clock(timer.secondi)}`
+                : aperta
+                  ? aperta.corso.toUpperCase()
+                  : 'DELLA PALESTRA'}
+            </span>
+          </span>
+        </button>
+        <span className="grow" />
+        <MusicaSala musica={musica} liste={liste} scelta={lista ? lista.id : null} spotifyCollegato={spotify.collegato} onScegli={scegliLista} />
+      </footer>
+
+      {/* Il lettore di YouTube, uno solo e fermo qui: si appoggia sopra il suo
+          posto, a destra, e cambiando scheda non si ricarica. */}
+      {conYoutube && <PlayerYoutube link={musicaSala.youtube} parti={parti} />}
     </>
   )
 }

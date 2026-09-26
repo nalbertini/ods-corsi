@@ -82,11 +82,10 @@ npm install --prefix timer
 npm run dev:timer
 ```
 
-Il tasto TIMER di ODS Corsi (pagina di scelta e tablet di sala) apre `timer/`,
-e il tasto SALA del timer torna a `../`, la radice, che su un tablet di sala
-riapre il tablet. Sono relativi, quindi valgono dovunque sia pubblicato il
-sito; in `npm run dev` il tasto TIMER non trova niente, perché il server di
-sviluppo serve una sola app. Per provarle insieme:
+Il tasto TIMER della pagina di scelta e dell'appello apre `timer/`, e il
+tasto SALA del timer torna a `../`, la radice. Sono relativi, quindi valgono
+dovunque sia pubblicato il sito; in `npm run dev` il tasto TIMER non trova
+niente, perché il server di sviluppo serve una sola app. Per provarle insieme:
 
 ```
 npm run build:tutto   # ODS Corsi in dist/, il timer in dist/timer/
@@ -102,6 +101,31 @@ aggiunta di nuovo alla schermata Home dal nuovo indirizzo. Il service worker di
 ODS Corsi lascia stare `timer/` (`navigateFallbackDenylist` e `globIgnores` in
 `vite.config.ts`): ognuna delle due app si aggiorna per conto suo.
 
+### Il timer dentro il tablet di sala
+
+Sul tablet di sala il timer non è un'altra pagina: è la scheda **TIMER**
+accanto a **PRESENZE**, nella barra in basso, e il codice è lo stesso di
+`timer/src`, compilato dentro ODS Corsi (`src/components/tablet/TimerSala.tsx`,
+caricato solo sul tablet). Resta montato anche quando si guardano le
+presenze, quindi un allenamento avviato continua mentre chi arriva tardi si
+segna; la testata ne mostra l'intervallo, i secondi e il colore. Nella barra
+c'è anche la musica, sempre nello stesso punto: il lettore di YouTube non si
+sposta e non si ricarica cambiando scheda. Le liste della musica le prepara la
+segreteria (`supabase/09-musica.sql`).
+
+Tre cose tengono insieme le due app nella stessa pagina:
+
+- **Gli stili del timer stanno in un'ombra** (Shadow DOM): hanno classi con
+  lo stesso nome di quelle di ODS Corsi (`.btn`, `.card`, `.row`), e le misure
+  sulla finestra (`vh`, `@media`) diventano misure del riquadro (`cqh`,
+  `@container`). Vuole un browser del 2022 in su (Safari 16, Chrome 105).
+- **Una React sola**: `resolve.dedupe` in `vite.config.ts` e `paths` in
+  `tsconfig.json` fanno usare ai file del timer le dipendenze di qui, non
+  quelle di `timer/node_modules`. Il timer, compilato da solo, resta com'è.
+- **I file del timer** (voce, illustrazioni, guida) si cercano in `timer/`
+  (`__TIMER_RADICE__`, vedi `timer/src/lib/radice.ts`), e un aggiornamento
+  dell'app aspetta la fine dell'allenamento prima di ricaricare la pagina.
+
 ### Il timer sul database
 
 Col database, il timer usa l'accesso fatto qui — da istruttore o da tablet di
@@ -113,9 +137,10 @@ sala — e tiene sul database i timer, lo storico e le preferenze
   ritrova su ogni dispositivo in cui entra. Un timer nuovo nasce fra i propri;
   l'editor lascia metterlo nella palestra o solo sul dispositivo.
 - **I timer di un corso.** Nell'editor, alla voce CORSI, un timer si collega
-  ai corsi. Il tasto TIMER del tablet di sala (con una lezione in corso) e
-  dell'appello apre il timer con la lezione — `timer/?corso=…&lezione=…&nome=…`
-  — e i timer del suo corso stanno in cima.
+  ai corsi. Il tasto TIMER dell'appello apre il timer con la lezione —
+  `timer/?corso=…&lezione=…&nome=…` — e i timer del suo corso stanno in cima;
+  sul tablet di sala la scheda TIMER fa lo stesso con la lezione in cui ci si
+  segna.
 - **Lo storico**: ogni allenamento, con la lezione in cui è partito e chi
   l'ha fatto partire (l'istruttore o il tablet).
 - **Le preferenze** che seguono l'istruttore: Maurizio, bip e voce, volume.
@@ -205,6 +230,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `supabase/prova/timer.sql` | Il timer: la libreria della palestra, i timer personali e dei corsi, il tablet che li apre e non li scrive, lo storico, le preferenze. |
 | `supabase/prova/certificati.sql` | Certificati medici e pagamenti: li vede e li cambia solo la segreteria, e il file di una persona sta nella sua cartella. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
+| `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`
 applicato prima: rifà il minimo che Supabase mette a disposizione.

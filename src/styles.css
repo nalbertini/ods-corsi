@@ -588,8 +588,62 @@ a.btn { text-decoration: none; }
 
 .tb-barra { display: flex; align-items: center; gap: 18px; }
 
+/* Sotto la testata: la scheda che si guarda e, con YouTube, il suo lettore. */
+.tb-centro { flex: 1; min-height: 0; display: flex; }
+.tb-area { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; }
+.tb-timer { flex: 1; min-height: 0; }
+.tb-timer[hidden] { display: none; }
+/* YouTube vuole il lettore visibile e non più piccolo di 200×200: sta a
+   destra, sopra la barra, e resta lì qualunque scheda si guardi. */
+.tb-video { flex-shrink: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 32px 16px 0; }
+.tb-video .musica-video { width: 200px; height: 200px; background: #000; }
+.player-youtube { position: fixed; z-index: 30; background: #000; }
+.player-youtube[data-angolo='true'] { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35); }
+.player-youtube iframe { display: block; width: 100%; height: 100%; border: 0; }
+
+/* In testata: il timer in corso, o la lezione in cui ci si segna. */
+.tb-chip {
+  display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 18px; flex-shrink: 0;
+  background: var(--surface); border: 3px solid var(--tinta, var(--line)); text-align: left;
+}
+.tb-chip-fase { font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: var(--tinta); white-space: nowrap; }
+.tb-chip-tempo { font-size: 38px; font-weight: 700; line-height: 1; }
+.tb-chip-testo { gap: 2px; min-width: 0; }
+.tb-chip-nome { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+.tb-chip-sotto { font-size: 13px; color: var(--dim); white-space: nowrap; }
+.tb-chip-segna { padding: 0 8px 0 18px; border-width: 2px; border-color: var(--verde); }
+.tb-chip-azione {
+  display: flex; align-items: center; min-height: 48px; padding: 0 16px;
+  background: var(--verde); color: var(--su-colore); font-size: 17px; font-weight: 700; letter-spacing: 0.1em;
+}
+
+/* Le due schede, in basso a sinistra: alte come i tasti del tablet. */
+.tb-scheda-sala {
+  display: flex; align-items: center; gap: 12px; min-height: 64px; min-width: 190px; padding: 0 20px;
+  border: 2px solid var(--line); color: var(--dim); text-align: left;
+}
+.tb-scheda-sala[aria-pressed='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
+.tb-scheda-nome { font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: var(--text); }
+.tb-scheda-sotto { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+
 /* La musica della sala, nel piede: alta come i tasti accanto. */
+.tb-piede { position: relative; }
 .tb-musica { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.tb-musica-copertina { width: 60px; height: 60px; flex-shrink: 0; object-fit: cover; background: var(--surface-2); }
+.tb-musica-tasto[data-on='true'] { border-color: var(--text); background: var(--surface-2); }
+.tb-liste {
+  position: absolute; right: 32px; bottom: calc(100% + 10px); z-index: 40; width: 440px; max-width: calc(100% - 64px);
+  max-height: 60vh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px; padding: 18px;
+  background: var(--surface); border: 2px solid var(--text); box-shadow: 0 16px 50px rgba(0, 0, 0, 0.45);
+}
+.tb-lista {
+  display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 16px;
+  border: 2px solid var(--line); color: var(--text); text-align: left;
+}
+.tb-lista[aria-pressed='true'] { border-color: var(--verde); background: var(--surface-2); }
+.tb-lista:disabled { opacity: 0.45; cursor: default; }
+.tb-lista-nome { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 .tb-musica-testo { gap: 2px; min-width: 0; max-width: 260px; }
 .tb-musica-titolo { font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tb-musica-sotto { font-size: 13px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -698,6 +752,10 @@ a.btn { text-decoration: none; }
   .tb-fascia { left: 16px; right: 16px; flex-wrap: wrap; }
   .tb-pin { gap: 32px; }
   .tb-tastiera { grid-template-columns: repeat(3, 90px); }
+  .tb-scheda-sala { min-width: 0; padding: 0 14px; }
+  .tb-chip { padding: 0 12px; gap: 10px; }
+  .tb-chip:not(.tb-chip-segna) .tb-chip-testo { display: none; }
+  .tb-video { padding-right: 16px; }
 }
 
 /* ---------- accesso ---------- */
