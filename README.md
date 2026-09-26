@@ -70,6 +70,13 @@ l'orologio si può spostare per vedere una lezione che si apre:
 cinque, con il Judo agonisti in cui ci si segna. I PIN di prova sono 1234
 (Maurizio), 2468 (Maura) e 5678 (Fabio).
 
+Anche quando l'app è collegata al database, la prova si apre dalla porta
+d'accesso con **PROVA CON DATI INVENTATI**, o aggiungendo `?prova`
+all'indirizzo: chi non ha ancora un account vede l'app com'è, e niente di quel
+che tocca arriva al database, che in prova non si carica nemmeno. Resta accesa
+sul dispositivo finché non si preme **ESCI DALLA PROVA** nel nastro giallo (o
+«Esci» nel menu della segreteria), o si apre l'indirizzo con `?prova=no`.
+
 ## Il database
 
 Supabase, con la sicurezza tutta nelle policy RLS. Come metterlo in piedi, come

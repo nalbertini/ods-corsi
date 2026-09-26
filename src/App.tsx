@@ -7,6 +7,7 @@ import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { eUnTablet } from './lib/tablet'
 import { esci, serveAccesso, type Personale } from './lib/accesso'
+import { inProvaScelta, scegliProva } from './lib/dati'
 
 /**
  * ODS Corsi: il calendario delle sale e il registro delle presenze.
@@ -48,7 +49,9 @@ function AppCorsi() {
                   setChi(null)
                   setScheda('corsi')
                 })
-            : undefined
+            : inProvaScelta
+              ? () => scegliProva(false)
+              : undefined
         }
       />
     )

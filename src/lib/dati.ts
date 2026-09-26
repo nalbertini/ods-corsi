@@ -26,8 +26,50 @@ export interface Dati {
 const URL_SUPABASE = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const CHIAVE_SUPABASE = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 
-/** Vero quando l'app è configurata per parlare con un database vero. */
-export const haUnServer = !!(URL_SUPABASE && CHIAVE_SUPABASE)
+/** Vero quando il pacchetto è stato compilato con un database vero. */
+export const configurato = !!(URL_SUPABASE && CHIAVE_SUPABASE)
+
+/**
+ * La prova scelta a mano, su un'app che il database ce l'ha: per far vedere
+ * l'app a chi non ha un account, o provarla senza toccare niente di vero.
+ * Si accende dalla porta (o con `?prova` nell'indirizzo), si spegne dal
+ * nastro giallo (o con `?prova=no`), e resta sul dispositivo finché non la
+ * si spegne. Il database non si tocca nemmeno: il client non si carica.
+ */
+const DOVE_PROVA = 'ods-corsi:prova'   // vedi la nota in coda.ts
+
+function provaScelta(): boolean {
+  if (!configurato) return false
+  try {
+    const q = new URLSearchParams(window.location.search).get('prova')
+    if (q !== null) {
+      if (q === 'no') localStorage.removeItem(DOVE_PROVA)
+      else localStorage.setItem(DOVE_PROVA, '1')
+    }
+    return localStorage.getItem(DOVE_PROVA) === '1'
+  } catch {
+    return false
+  }
+}
+
+/** Vero quando l'app è in prova per scelta, pur avendo un database. */
+export const inProvaScelta = provaScelta()
+
+/** Vero quando l'app parla con un database vero. */
+export const haUnServer = configurato && !inProvaScelta
+
+/** Accende o spegne la prova scelta, e riapre l'app nel modo nuovo. */
+export function scegliProva(accesa: boolean) {
+  try {
+    if (accesa) localStorage.setItem(DOVE_PROVA, '1')
+    else localStorage.removeItem(DOVE_PROVA)
+  } catch {
+    /* senza localStorage resta com'è */
+  }
+  const u = new URL(window.location.href)
+  u.searchParams.delete('prova')
+  window.location.replace(u.toString())
+}
 
 let unico: Promise<Dati> | null = null
 

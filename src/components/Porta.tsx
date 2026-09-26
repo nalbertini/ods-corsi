@@ -1,5 +1,6 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
 import { chiSei, entra, esci, quandoEsce, serveAccesso, type Personale } from '../lib/accesso'
+import { scegliProva } from '../lib/dati'
 
 /**
  * La porta del calendario: con il database vero, prima di vedere lezioni e
@@ -105,6 +106,15 @@ function Accesso({ onEntrato }: { onEntrato: (p: Personale) => void }) {
           </span>
         )}
       </form>
+      <div className="pad stack" style={{ gap: 8, paddingBottom: 16 }}>
+        <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+          Senza account si può guardare l’app in prova: l’orario vero, iscritti inventati, e niente di quel che si
+          tocca arriva al database.
+        </span>
+        <button type="button" className="btn btn-ghost" onClick={() => scegliProva(true)}>
+          PROVA CON DATI INVENTATI
+        </button>
+      </div>
     </div>
   )
 }
