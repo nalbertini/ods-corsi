@@ -38,14 +38,3 @@ export function lezioneDaIndirizzo(href = location.href): Lezione | null {
     return null
   }
 }
-
-/** Chiude la lezione: toglie i suoi dati dall'indirizzo, e un ricarica non la riapre. */
-export function scordaLezione() {
-  try {
-    const u = new URL(location.href)
-    for (const k of ['corso', 'lezione', 'nome']) u.searchParams.delete(k)
-    history.replaceState(null, '', u.toString())
-  } catch {
-    // In contesti isolati `replaceState` può essere negato: pazienza.
-  }
-}

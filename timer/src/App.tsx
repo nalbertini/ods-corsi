@@ -44,7 +44,7 @@ import {
   unisci,
   versoIlServer,
 } from './lib/libreria'
-import { type Lezione, lezioneDaIndirizzo, scordaLezione } from './lib/lezione'
+import { type Lezione, lezioneDaIndirizzo } from './lib/lezione'
 import { type Gruppo, gruppiDi } from './lib/gruppi'
 import type { Incorporato, TimerPronto } from './lib/incorporato'
 import type { ImpostazioniSala } from './lib/impostazioniSala'
@@ -506,10 +506,6 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             modificabile={(w) => !w.dove || (!!personaId && w.dove !== 'collega')}
             corsi={corsi}
             lezione={nomeLezione}
-            onChiudiLezione={() => {
-              scordaLezione()
-              setLezione(null)
-            }}
             onStart={startWorkout}
             onEdit={(w) => setView({ kind: 'editor', workout: w })}
             onDuplicate={duplicate}

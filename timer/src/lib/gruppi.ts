@@ -27,7 +27,12 @@ export function gruppiDi(timer: Workout[], accesso: Accesso, lezione: Lezione | 
   if (perLezione.length) gruppi.push({ chiave: 'lezione', titolo: 'DI QUESTA LEZIONE', timer: perLezione })
   // Senza accesso (in prova, o sul timer da solo) i corsi stanno sui timer
   // del dispositivo: la sezione si mostra solo se ce n'è qualcuno.
-  const delCorso = lezione ? del((w) => !!w.corsi?.includes(lezione.corsoId)) : []
+  // Chi sta già in una di queste sezioni non si ripete in quelle sotto: il
+  // timer di un collega collegato al corso stava due volte, qui e fra i suoi.
+  const giàQui = new Set(perLezione.map((w) => w.id))
+  const delCorso = lezione ? del((w) => !giàQui.has(w.id) && !!w.corsi?.includes(lezione.corsoId)) : []
+  for (const w of delCorso) giàQui.add(w.id)
+  const altri = (f: (w: Workout) => boolean) => del((w) => !giàQui.has(w.id) && f(w))
   if (lezione && accesso.chi === 'nessuno' && delCorso.length) gruppi.push({ chiave: 'corso', titolo: 'DEL CORSO', timer: delCorso })
   if (lezione && accesso.chi !== 'nessuno') {
     gruppi.push({
@@ -43,15 +48,21 @@ export function gruppiDi(timer: Workout[], accesso: Accesso, lezione: Lezione | 
     })
   }
   if (accesso.chi === 'nessuno') {
-    gruppi.push({ chiave: 'tutti', titolo: 'I TUOI TIMER', timer, vuota: 'Nessun timer di questo tipo. Creane uno con il pulsante qui sotto.' })
+    gruppi.push({
+      chiave: 'tutti',
+      titolo: 'I TUOI TIMER',
+      timer: timer.filter((w) => !giàQui.has(w.id)),
+      // Se i timer stanno tutti nelle sezioni sopra, questa semplicemente non c'è.
+      vuota: giàQui.size ? undefined : 'Nessun timer di questo tipo. Creane uno con il pulsante qui sotto.',
+    })
     return gruppi
   }
-  if (accesso.chi === 'personale') gruppi.push({ chiave: 'miei', titolo: 'I MIEI', timer: del((w) => w.dove === 'miei') })
-  gruppi.push({ chiave: 'palestra', titolo: 'DELLA PALESTRA', timer: del((w) => w.dove === 'palestra') })
+  if (accesso.chi === 'personale') gruppi.push({ chiave: 'miei', titolo: 'I MIEI', timer: altri((w) => w.dove === 'miei') })
+  gruppi.push({ chiave: 'palestra', titolo: 'DELLA PALESTRA', timer: altri((w) => w.dove === 'palestra') })
   gruppi.push({
     chiave: 'collega',
     titolo: accesso.chi === 'personale' ? 'DEI COLLEGHI, NEI CORSI' : 'DEI CORSI',
-    timer: del((w) => w.dove === 'collega'),
+    timer: altri((w) => w.dove === 'collega'),
   })
   // Quelli di sempre, sul dispositivo, restano in fondo: i timer di partenza e
   // quelli fatti prima dell'accesso. Non con l'ordine per data, che
@@ -59,7 +70,7 @@ export function gruppiDi(timer: Workout[], accesso: Accesso, lezione: Lezione | 
   gruppi.push({
     chiave: 'qui',
     titolo: accesso.chi === 'sala' ? 'SU QUESTO TABLET' : 'SU QUESTO DISPOSITIVO',
-    timer: timer.filter((w) => !w.dove),
+    timer: timer.filter((w) => !w.dove && !giàQui.has(w.id)),
   })
   return gruppi
 }
