@@ -24,15 +24,21 @@ create or replace function ruolo_corrente() returns ruolo
   select ruolo from persone where utente_id = auth.uid() and attiva
 $$;
 
-/** Istruttori e segreteria: chi lavora in palestra, non chi la frequenta. */
+/**
+ * Istruttori e segreteria: chi lavora in palestra, non chi la frequenta.
+ *
+ * `coalesce` perché chi ha un account ma non una riga in `persone` ha ruolo
+ * nullo, e «nullo = 'staff'» è nullo, non falso: in una policy vale come no,
+ * ma in un `if not e_staff() then raise` farebbe passare chiunque.
+ */
 create or replace function e_personale() returns boolean
   language sql stable as $$
-  select ruolo_corrente() in ('istruttore', 'staff')
+  select coalesce(ruolo_corrente() in ('istruttore', 'staff'), false)
 $$;
 
 create or replace function e_staff() returns boolean
   language sql stable as $$
-  select ruolo_corrente() = 'staff'
+  select coalesce(ruolo_corrente() = 'staff', false)
 $$;
 
 alter table persone     enable row level security;
