@@ -275,9 +275,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const leggi = (schede: boolean) =>
         db
           .from('persone')
-          .select(schede ? `${campi}, schede_iscritti ( certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota )` : campi)
+          .select(schede ? `${campi}, schede_iscritti!persona_id ( certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota )` : campi)
           .eq('ruolo', 'iscritto')
           .order('cognome')
+      // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
       let r0 = await leggi(true)
       // Un database dove 07-certificati-pagamenti.sql non è ancora passato: l'elenco si vede lo stesso.
       if (r0.error?.code === 'PGRST200') r0 = await leggi(false)
