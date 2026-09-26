@@ -22,13 +22,21 @@ function settimana(da: Date): Date[] {
  * ordine di orario. Non una griglia settimanale: su un telefono una griglia si
  * legge male, e chi apre questa schermata nove volte su dieci vuole sapere cosa
  * c'è adesso, non farsi un'idea della settimana.
+ *
+ * Sullo schermo largo l'appello sta accanto: `apertaId` è la lezione che vi si
+ * vede, e `presenti` i conti che l'appello ha cambiato dopo che il calendario
+ * li ha letti.
  */
 export function CalendarioScreen({
   dati,
   onApri,
+  apertaId,
+  presenti,
 }: {
   dati: Dati
   onApri: (s: SessioneVista) => void
+  apertaId?: string
+  presenti?: Record<string, number>
 }) {
   const [primo, setPrimo] = useState(() => {
     const d = new Date()
@@ -126,25 +134,34 @@ export function CalendarioScreen({
           </p>
         )}
 
-        {delGiorno.map((l) => (
-          <button key={l.id} className="card lezione" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }} onClick={() => onApri(l)}>
-            <span className="lezione-ora num">{oraDi(l.inizio)}</span>
-            <span className="stack grow" style={{ gap: 3, minWidth: 0, textAlign: 'left' }}>
-              <span className="ob lezione-nome">{l.corso.toUpperCase()}</span>
-              <span style={{ fontSize: 13, color: 'var(--dim)' }}>
-                {[l.sala, l.istruttore].filter(Boolean).join(' · ')}
+        {delGiorno.map((v) => {
+          const l = presenti?.[v.id] === undefined ? v : { ...v, presenti: presenti[v.id] }
+          return (
+            <button
+              key={l.id}
+              className="card lezione"
+              aria-current={l.id === apertaId ? 'true' : undefined}
+              style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
+              onClick={() => onApri(l)}
+            >
+              <span className="lezione-ora num">{oraDi(l.inizio)}</span>
+              <span className="stack grow" style={{ gap: 3, minWidth: 0, textAlign: 'left' }}>
+                <span className="ob lezione-nome">{l.corso.toUpperCase()}</span>
+                <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+                  {[l.sala, l.istruttore].filter(Boolean).join(' · ')}
+                </span>
               </span>
-            </span>
-            <span className="stack" style={{ gap: 2, alignItems: 'flex-end' }}>
-              <span className="num lezione-conto" data-fatto={l.presenti > 0}>
-                {l.presenti > 0 ? `${l.presenti}/${l.iscritti}` : l.iscritti}
+              <span className="stack" style={{ gap: 2, alignItems: 'flex-end' }}>
+                <span className="num lezione-conto" data-fatto={l.presenti > 0}>
+                  {l.presenti > 0 ? `${l.presenti}/${l.iscritti}` : l.iscritti}
+                </span>
+                <span style={{ fontSize: 11, letterSpacing: '0.14em', color: 'var(--faint)' }}>
+                  {l.presenti > 0 ? 'PRESENTI' : 'ISCRITTI'}
+                </span>
               </span>
-              <span style={{ fontSize: 11, letterSpacing: '0.14em', color: 'var(--faint)' }}>
-                {l.presenti > 0 ? 'PRESENTI' : 'ISCRITTI'}
-              </span>
-            </span>
-          </button>
-        ))}
+            </button>
+          )
+        })}
       </div>
     </>
   )

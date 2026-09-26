@@ -6,33 +6,37 @@ import { Costi } from './Costi'
  * Come ci si iscrive: sette passi, in ordine, con il tasto giusto accanto a
  * quelli che portano da qualche parte. È la stessa lista che la segreteria
  * manda per messaggio, ma qui non si perde in fondo a una chat.
+ *
+ * Sullo schermo largo i costi stanno accanto ai passi invece che sotto.
  */
 export function IscrizioniScreen() {
   return (
-    <>
-      <div className="rule">
-        <span className="rule-label">ISCRIZIONI</span>
-        <div className="rule-line" />
-        <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{PASSI.length} PASSI</span>
-      </div>
+    <div className="iscrizioni">
+      <div className="iscrizioni-passi">
+        <div className="rule">
+          <span className="rule-label">ISCRIZIONI</span>
+          <div className="rule-line" />
+          <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{PASSI.length} PASSI</span>
+        </div>
 
-      <ol className="pad stack passi" style={{ gap: 10, paddingBottom: 16 }}>
-        {PASSI.map((p, i) => (
-          <li key={i} className="card passo">
-            <span className="passo-num num">{i + 1}</span>
-            <span className="stack grow" style={{ gap: 8, minWidth: 0 }}>
-              <span className="passo-titolo">{p.titolo}</span>
-              {p.dettaglio && <span className="passo-dettaglio">{p.dettaglio}</span>}
-              <Azione passo={p} />
-            </span>
-          </li>
-        ))}
-      </ol>
+        <ol className="pad stack passi" style={{ gap: 10, paddingBottom: 16 }}>
+          {PASSI.map((p, i) => (
+            <li key={i} className="card passo">
+              <span className="passo-num num">{i + 1}</span>
+              <span className="stack grow" style={{ gap: 8, minWidth: 0 }}>
+                <span className="passo-titolo">{p.titolo}</span>
+                {p.dettaglio && <span className="passo-dettaglio">{p.dettaglio}</span>}
+                <Azione passo={p} />
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
 
       <Costi />
 
       {INFORMATIVA && (
-        <p className="pad" style={{ fontSize: 13, color: 'var(--dim)', paddingBottom: 20 }}>
+        <p className="pad iscrizioni-nota" style={{ fontSize: 13, color: 'var(--dim)', paddingBottom: 20 }}>
           Come trattiamo i tuoi dati:{' '}
           <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ color: 'var(--sec)' }}>
             l'informativa privacy
@@ -40,7 +44,7 @@ export function IscrizioniScreen() {
           .
         </p>
       )}
-    </>
+    </div>
   )
 }
 
