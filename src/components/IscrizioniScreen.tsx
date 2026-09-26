@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { INFORMATIVA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, PROVA, type Passo } from '../lib/iscrizione'
+import { INFORMATIVA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, PASSI_PUBBLICI, PROVA, type Passo } from '../lib/iscrizione'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
 import { Costi } from './Costi'
 import { ModuloIscrizione } from './ModuloIscrizione'
@@ -11,9 +11,13 @@ import { ModuloIscrizione } from './ModuloIscrizione'
  * il modulo di iscrizione, al posto dei passi.
  *
  * Sullo schermo largo i costi stanno accanto ai passi invece che sotto.
+ *
+ * `pubblica` è la pagina del link per chi vuole iscriversi (`#iscrizioni`):
+ * gli stessi passi, ma senza la prova, vedi `PASSI_PUBBLICI`.
  */
-export function IscrizioniScreen() {
+export function IscrizioniScreen({ pubblica = false }: { pubblica?: boolean }) {
   const [modulo, setModulo] = useState(false)
+  const passi = pubblica ? PASSI_PUBBLICI : PASSI
   const vai = (aperto: boolean) => {
     setModulo(aperto)
     document.querySelector('.scroll')?.scrollTo(0, 0)
@@ -37,13 +41,13 @@ export function IscrizioniScreen() {
         <div className="rule">
           <span className="rule-label">ISCRIZIONI</span>
           <div className="rule-line" />
-          <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{PASSI.length} PASSI</span>
+          <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{passi.length} PASSI</span>
         </div>
 
         <Prova />
 
         <ol className="pad stack passi" style={{ gap: 10, paddingBottom: 16 }}>
-          {PASSI.map((p, i) => (
+          {passi.map((p, i) => (
             <li key={i} className="card passo">
               <span className="passo-num num">{i + 1}</span>
               <span className="stack grow" style={{ gap: 8, minWidth: 0 }}>

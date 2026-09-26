@@ -41,6 +41,11 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
   corsi che ha scelto, senza doppioni se c'era già. Col database vero si
   accende quando c'è l'informativa privacy; fino ad allora resta il link a
   Google.
+- **La pagina pubblica delle iscrizioni**, da mandare a chi vuole iscriversi:
+  `https://nalbertini.github.io/ods-corsi/#iscrizioni`. Solo i passi, i costi e
+  il modulo, senza appello né segreteria e senza accesso. Senza il database
+  vero il passo porta al modulo Google anche in prova, perché una richiesta
+  rimasta sul telefono di chi l'ha mandata non arriverebbe a nessuno.
 - **L'accesso** col database: calendario, appello e segreteria sono per
   istruttori e segreteria; al primo accesso l'account si lega da sé alla
   persona con la stessa email.
