@@ -140,27 +140,16 @@ function Iscrizioni() {
  * Il calendario e l'appello, dietro la porta. Entra anche chi è di
  * segreteria, se apre questo indirizzo: anche lei fa l'appello.
  *
- * In prova ci sono le schede, per passare al resto dell'app: i passi per
- * iscriversi come li vede il personale (con la lezione di prova) e la
- * segreteria. La sala resta montata anche quando si guarda altro, così
- * tornando si ritrova l'appello dov'era.
+ * Le iscrizioni non stanno qui, nemmeno in prova: all'istruttore non
+ * servono, e hanno il loro indirizzo (`iscrizioni/`) e la segreteria. In
+ * prova resta solo il passaggio alla segreteria, per far vedere l'app intera.
  *
  * Sullo schermo largo ha la stessa faccia della segreteria: il menu a
- * sinistra, con le schede, la guida e chi è entrato, e a destra calendario e
- * appello affiancati, alti quanto lo schermo.
+ * sinistra, con la guida e chi è entrato, e a destra calendario e appello
+ * affiancati, alti quanto lo schermo.
  */
 function Istruttori() {
-  const [scheda, setScheda] = useState<Scheda>('corsi')
   const largo = useLargo()
-
-  const facce = (
-    <>
-      <div className="faccia-corsi" hidden={scheda !== 'corsi'}>
-        <Sala />
-      </div>
-      {scheda === 'iscrizioni' && <IscrizioniScreen />}
-    </>
-  )
 
   if (largo) {
     return (
@@ -172,8 +161,10 @@ function Istruttori() {
           </div>
         )}
         dentro={(chi, onEsci) => (
-          <MenuIstruttori scheda={scheda} onScheda={setScheda} chi={chi} onEsci={onEsci}>
-            {facce}
+          <MenuIstruttori chi={chi} onEsci={onEsci}>
+            <div className="faccia-corsi">
+              <Sala />
+            </div>
           </MenuIstruttori>
         )}
       />
@@ -185,11 +176,8 @@ function Istruttori() {
       <Testata luogo="ISTRUTTORI" guida={INDIRIZZO_GUIDA}>
         {!serveAccesso && (
           <nav className="schede">
-            <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
+            <button className="scheda" data-on>
               APPELLO
-            </button>
-            <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
-              ISCRIZIONI
             </button>
             <button className="scheda" data-on={false} onClick={() => vaiA('segreteria')}>
               SEGRETERIA
@@ -198,38 +186,22 @@ function Istruttori() {
         )}
       </Testata>
       <main className="scroll">
-        <div className="faccia-corsi" hidden={scheda !== 'corsi'}>
+        <div className="faccia-corsi">
           <Porta>
             <Sala />
           </Porta>
         </div>
-        {scheda === 'iscrizioni' && <IscrizioniScreen />}
       </main>
     </div>
   )
 }
 
-type Scheda = 'corsi' | 'iscrizioni'
-
 /**
  * Il menu degli istruttori sullo schermo largo, fatto come quello della
- * segreteria. In prova (`chi` è `null`) ci sono anche le iscrizioni e il
- * passaggio alla segreteria; col database vero, chi è di segreteria ha il
- * ritorno alla sua area.
+ * segreteria. In prova (`chi` è `null`) e per chi è di segreteria c'è anche
+ * il passaggio alla segreteria.
  */
-function MenuIstruttori({
-  scheda,
-  onScheda,
-  chi,
-  onEsci,
-  children,
-}: {
-  scheda: Scheda
-  onScheda: (s: Scheda) => void
-  chi: Personale | null
-  onEsci?: () => void
-  children: ReactNode
-}) {
+function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEsci?: () => void; children: ReactNode }) {
   const esci = onEsci ?? (inProvaScelta ? () => scegliProva(false) : undefined)
   return (
     <div className="sg">
@@ -242,19 +214,9 @@ function MenuIstruttori({
           </span>
         </div>
         <div className="sg-voci">
-          <button type="button" className="num sg-voce" aria-current={scheda === 'corsi' ? 'page' : undefined} onClick={() => onScheda('corsi')}>
+          <span className="num sg-voce" aria-current="page">
             APPELLO
-          </button>
-          {!chi && (
-            <button
-              type="button"
-              className="num sg-voce"
-              aria-current={scheda === 'iscrizioni' ? 'page' : undefined}
-              onClick={() => onScheda('iscrizioni')}
-            >
-              ISCRIZIONI
-            </button>
-          )}
+          </span>
         </div>
         <div className="grow" />
         {/* In un'altra scheda: l'appello resta dov'era. */}

@@ -102,7 +102,7 @@ mentre la rete non c'è, parte solo l'ultimo segno.
 
 ## In prova
 
-Nella prova in alto ci sono tre schede — **APPELLO**, **ISCRIZIONI**,
-**SEGRETERIA** — per girare tutta l'app, e nel nastro giallo il link **PROVA IL
-TABLET DI SALA**. Con l'account vero le schede non ci sono: ognuno vede solo
-la sua parte.
+Nella prova c'è in più il passaggio alla **SEGRETERIA** (in alto sul
+telefono, nel menu sul computer) per girare tutta l'app, e nel nastro giallo il
+link **PROVA IL TABLET DI SALA**. Le iscrizioni non stanno qui: hanno il loro
+indirizzo, `iscrizioni/`. Con l'account vero ognuno vede solo la sua parte.
