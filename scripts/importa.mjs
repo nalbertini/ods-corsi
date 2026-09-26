@@ -16,6 +16,8 @@
 // iscritti.csv   nome; cognome; email; telefono; corso
 //
 // `giorno` accetta il nome («martedì», «mar») o il numero (0 = domenica).
+// `istruttore` è «Nome Cognome»; più istruttori si separano con la virgola, ma
+// lo schema ne lega uno solo al corso ed entra il primo.
 // `corso` negli iscritti è il nome del corso, come scritto in corsi.csv.
 // ---------------------------------------------------------------------------
 import { readFileSync } from 'node:fs'
@@ -92,10 +94,20 @@ if (sale.length) dire('')
 // Un istruttore è una persona come le altre, solo con un ruolo diverso: sta
 // nella stessa tabella, così un istruttore che frequenta un corso è una riga
 // sola e non due anagrafiche che parlano della stessa persona.
-const istruttori = [...new Set(corsi.map((c) => c.istruttore).filter(Boolean))]
+/** «Maura, Federico» → ['Maura', 'Federico']. */
+const elencoIstruttori = (v) => (v ?? '').split(',').map((x) => x.trim()).filter(Boolean)
+/** Nome e cognome, o niente: una persona senza cognome non entra in `persone`. */
+function nomeCognome(i) {
+  const parti = i.split(/\s+/)
+  if (parti.length < 2) return null
+  const cognome = parti.pop()
+  return { nome: parti.join(' '), cognome }
+}
+const istruttori = [...new Set(corsi.flatMap((c) => elencoIstruttori(c.istruttore)))]
 for (const i of istruttori) {
-  const [cognome, ...resto] = i.split(/\s+/).reverse()
-  const nome = resto.reverse().join(' ') || cognome
+  const nc = nomeCognome(i)
+  if (!nc) { guai.push(`dell'istruttore «${i}» manca il cognome: il corso entra senza, lo si lega dopo`); continue }
+  const { nome, cognome } = nc
   dire(
     `insert into persone (nome, cognome, ruolo) select ${q(nome)}, ${q(cognome)}, 'istruttore'` +
       ` where not exists (select 1 from persone where nome = ${q(nome)} and cognome = ${q(cognome)});`,
@@ -104,6 +116,7 @@ for (const i of istruttori) {
 if (istruttori.length) dire('')
 
 // --- corsi e ricorrenze -----------------------------------------------------
+const giaDetto = new Set()
 for (const c of corsi) {
   if (!c.nome) { guai.push(`una riga di ${fileCorsi} non ha il nome del corso`); continue }
   const giorno = /^\d$/.test(c.giorno ?? '') ? Number(c.giorno) : GIORNI[piatto(c.giorno ?? '')]
@@ -111,14 +124,18 @@ for (const c of corsi) {
   if (!/^\d{1,2}[:.]\d{2}$/.test(c.ora ?? '')) { guai.push(`«${c.nome}»: non capisco l'ora «${c.ora}»`); continue }
   const ora = c.ora.replace('.', ':')
 
-  const [cog, ...res] = (c.istruttore ?? '').split(/\s+/).reverse()
-  const nomeIstr = res.reverse().join(' ') || cog
+  const tutti = elencoIstruttori(c.istruttore)
+  if (tutti.length > 1 && !giaDetto.has(c.nome)) {
+    giaDetto.add(c.nome)
+    guai.push(`«${c.nome}» ha ${tutti.length} istruttori (${tutti.join(', ')}): lo schema ne tiene uno, entra «${tutti[0]}»`)
+  }
+  const primo = tutti.length ? nomeCognome(tutti[0]) : null
 
   dire(`-- ${c.nome}`)
   dire(`insert into corsi (nome, sala_id, istruttore_id, capienza, colore)`)
   dire(`select ${q(c.nome)},`)
   dire(`  (select id from sale where nome = ${q(c.sala)}),`)
-  dire(`  (select id from persone where nome = ${q(nomeIstr)} and cognome = ${q(cog)}),`)
+  dire(primo ? `  (select id from persone where nome = ${q(primo.nome)} and cognome = ${q(primo.cognome)}),` : '  null,')
   dire(`  ${n(c.capienza)}, ${q(c.colore)}`)
   dire(`where not exists (select 1 from corsi where nome = ${q(c.nome)});`)
   dire(`insert into ricorrenze (corso_id, giorno, ora, durata_min, dal)`)
