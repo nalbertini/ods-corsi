@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Logo } from './components/Logo'
 import { Sala } from './components/Sala'
+import { Porta } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Tablet } from './components/tablet/Tablet'
-import { Accesso } from './components/Accesso'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { eUnTablet } from './lib/tablet'
-import { accesso, type Accesso as Servizio, type Chi } from './lib/accesso'
+import { esci, serveAccesso, type Personale } from './lib/accesso'
 
 /**
  * ODS Corsi: il calendario delle sale e il registro delle presenze.
@@ -15,57 +15,43 @@ import { accesso, type Accesso as Servizio, type Chi } from './lib/accesso'
  * riguarda la palestra, il timer una cosa che riguarda la lezione, e tenerle
  * nello stesso posto le legava più di quanto servisse.
  *
- * Accanto ai corsi ci sono i passi per iscriversi. La sala resta montata anche
+ * Accanto ai corsi ci sono i passi per iscriversi, aperti a tutti; i corsi,
+ * con il database vero, solo dopo l'accesso (vedi `Porta`). La sala resta montata anche
  * quando si guardano le iscrizioni, così tornando si ritrova l'appello dov'era.
  *
  * Lo stesso codice fa anche da tablet di sala (`#tablet`): un'altra faccia,
  * a pieno schermo, per il tablet appeso al muro. E chi ha il ruolo di
- * segreteria ha la sua area, a tutto schermo, per il computer della reception.
+ * segreteria ha la sua area, a tutto schermo, per il computer della reception;
+ * in prova la segreteria è aperta a tutti.
  */
 const tablet = eUnTablet()
 
 export default function App() {
-  return tablet ? <Tablet /> : <ConAccesso />
+  return tablet ? <Tablet /> : <AppCorsi />
 }
 
-/** Col database si entra; in prova si è la segreteria di prova. */
-function ConAccesso() {
-  const [servizio, setServizio] = useState<Servizio | null>(null)
-  const [chi, setChi] = useState<Chi | null>(null)
-
-  const leggi = useCallback(async (s: Servizio) => {
-    try {
-      setChi(await s.chi())
-    } catch {
-      setChi({ stato: 'fuori' })
-    }
-  }, [])
-
-  useEffect(() => {
-    let smetti = () => {}
-    void accesso().then((s) => {
-      setServizio(s)
-      void leggi(s)
-      smetti = s.guarda(() => void leggi(s))
-    })
-    return () => smetti()
-  }, [leggi])
-
-  if (!servizio || !chi) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
-  if (chi.stato !== 'dentro' || chi.ruolo === 'iscritto') {
-    const come: Chi = chi.stato === 'dentro' ? { stato: 'sconosciuto', email: '' } : chi
-    return <Accesso servizio={servizio} chi={come} onDentro={() => void leggi(servizio)} />
-  }
-  const esci = chi.prova ? undefined : () => void servizio.esci().then(() => leggi(servizio))
-  return <AppCorsi chi={chi} onEsci={esci} />
-}
-
-function AppCorsi({ chi, onEsci }: { chi: Extract<Chi, { stato: 'dentro' }>; onEsci?: () => void }) {
+function AppCorsi() {
   const [scheda, setScheda] = useState<'corsi' | 'iscrizioni' | 'segreteria'>('corsi')
-  const staff = chi.ruolo === 'staff'
+  const [chi, setChi] = useState<Personale | null>(null)
+  const segreteria = !serveAccesso || chi?.ruolo === 'staff'
 
-  if (scheda === 'segreteria' && staff) {
-    return <Segreteria nome={chi.nome} prova={chi.prova} onApp={() => setScheda('corsi')} onEsci={onEsci} />
+  if (scheda === 'segreteria' && segreteria) {
+    return (
+      <Segreteria
+        nome={chi ? `${chi.nome} ${chi.cognome}` : 'Segreteria di prova'}
+        prova={!serveAccesso}
+        onApp={() => setScheda('corsi')}
+        onEsci={
+          serveAccesso
+            ? () =>
+                void esci().then(() => {
+                  setChi(null)
+                  setScheda('corsi')
+                })
+            : undefined
+        }
+      />
+    )
   }
 
   return (
@@ -76,11 +62,6 @@ function AppCorsi({ chi, onEsci }: { chi: Extract<Chi, { stato: 'dentro' }>; onE
           <span className="testata-nome">OFFICINE DELLO SPORT</span>
           <span className="testata-luogo">CORSI · COLLEGNO</span>
         </div>
-        {onEsci && (
-          <button type="button" className="icon-btn testo" onClick={onEsci} aria-label={`Esci (${chi.nome})`}>
-            ESCI
-          </button>
-        )}
       </header>
       <nav className="schede">
         <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
@@ -89,7 +70,7 @@ function AppCorsi({ chi, onEsci }: { chi: Extract<Chi, { stato: 'dentro' }>; onE
         <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
           ISCRIZIONI
         </button>
-        {staff && (
+        {segreteria && (
           <button className="scheda" data-on={false} onClick={() => setScheda('segreteria')}>
             SEGRETERIA
           </button>
@@ -97,7 +78,9 @@ function AppCorsi({ chi, onEsci }: { chi: Extract<Chi, { stato: 'dentro' }>; onE
       </nav>
       <main className="scroll">
         <div hidden={scheda !== 'corsi'}>
-          <Sala />
+          <Porta onChi={setChi}>
+            <Sala />
+          </Porta>
         </div>
         {scheda === 'iscrizioni' && <IscrizioniScreen />}
       </main>

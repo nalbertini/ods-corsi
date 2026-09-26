@@ -28,7 +28,9 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
   istruttori, posti, colore e i giorni in cui si fanno. Gli **iscritti**, da
   cercare, iscrivere e togliere dai corsi, con quanto vengono negli ultimi
   trenta giorni.
-- **L'accesso** col database: un link per email, senza password.
+- **L'accesso** col database: calendario, appello e segreteria sono per
+  istruttori e segreteria; al primo accesso l'account si lega da sé alla
+  persona con la stessa email.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa.
 

@@ -406,16 +406,20 @@ input, textarea { font: inherit; color: inherit; }
   .tb-tastiera { grid-template-columns: repeat(3, 90px); }
 }
 
-/* ---------------------------------------------------------------------------
-   L'accesso.
-   --------------------------------------------------------------------------- */
+/* ---------- accesso ---------- */
 
-.accesso { padding-top: calc(var(--safe-t) + 28px); padding-bottom: 28px; max-width: 460px; }
-.campo, .sg-campo {
-  height: 48px; padding: 0 12px; min-width: 0;
-  background: var(--surface); border: 2px solid var(--line); color: var(--text); font-size: 16px;
+.campo {
+  min-height: 52px; padding: 0 14px; font-size: 17px;
+  background: var(--surface); border: 2px solid var(--line); color: var(--text);
 }
-.campo:focus, .sg-campo:focus { outline: none; border-color: var(--text); }
+.campo:focus { outline: none; border-color: var(--text); }
+/* Chi è entrato, in piccolo: sul telefono durante l'appello ogni riga conta. */
+.chi-sei {
+  gap: 10px; padding-top: 10px;
+  font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim);
+}
+.chi-esci { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); text-decoration: underline; padding: 6px 0; }
+
 /* Per chi legge lo schermo, non per chi lo guarda. */
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -478,7 +482,11 @@ input, textarea { font: inherit; color: inherit; }
 .sg-chip-pieno { background: var(--text); border-color: var(--text); color: var(--bg); }
 .sg-scelta { border: 2px solid var(--line); color: var(--sec); min-height: 44px; font-size: 14px; }
 .sg-scelta[aria-checked='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
-.sg-campo { height: 44px; font-size: 15px; background: var(--bg); }
+.sg-campo {
+  height: 44px; padding: 0 12px; min-width: 0;
+  background: var(--bg); border: 2px solid var(--line); color: var(--text); font-size: 15px;
+}
+.sg-campo:focus { outline: none; border-color: var(--text); }
 .sg-campo[data-acceso='true'] { border-color: var(--giallo); }
 .sg-colore { width: 34px; height: 34px; border: 3px solid transparent; }
 .sg-colore[aria-pressed='true'] { border-color: var(--text); }

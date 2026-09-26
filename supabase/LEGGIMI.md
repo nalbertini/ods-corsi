@@ -28,26 +28,36 @@ Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 
 ## 3. Le persone
 
-Si entra con un link mandato per email, senza password. Chi lavora in
-palestra ha bisogno di due cose:
+Con il database vero la scheda **CORSI** chiede l'accesso: calendario e
+appello sono solo per istruttori e segreteria. **ISCRIZIONI** resta aperta a
+tutti.
 
-1. una riga in `persone` con la sua **email** e il ruolo `istruttore` o
-   `staff` (la segreteria);
-2. un utente in **Authentication → Users** con la stessa email: dal pannello,
-   *Add user → Send invitation*.
-
-Al primo accesso l'app lega i due da sé (`collega_utente()`, in
-`05-segreteria.sql`): non serve nessun SQL. La prima persona di segreteria,
-però, va messa a mano, perché prima di lei nessuno può scrivere in `persone`:
+Ogni istruttore e chi sta in segreteria ha bisogno di due cose: un utente in
+**Authentication → Users** e una riga in `persone` che lo colleghi. Un account
+che non ha la sua riga in `persone` (o ce l'ha con ruolo `iscritto`) non entra,
+e l'app lo dice.
 
 ```sql
-insert into persone (nome, cognome, email, ruolo) values ('Anna', 'Rossi', 'anna@esempio.it', 'staff');
+-- dopo aver creato l'utente dal pannello: la persona, se non c'è ancora…
+insert into persone (nome, cognome, ruolo, email, utente_id)
+select 'Maurizio', 'Innella', 'istruttore', email, id from auth.users where email = 'maurizio@esempio.it';
+
+-- …o, se c'è già (per esempio dall'import), si legano i due
+update persone set utente_id = (select id from auth.users where email = 'maurizio@esempio.it')
+where nome = 'Maurizio' and cognome = 'Innella';
 ```
 
-In **Authentication → URL Configuration** l'indirizzo dell'app va messo sia in
-*Site URL* sia fra i *Redirect URLs*, altrimenti il link porta alla pagina
-sbagliata. Chi apre il link senza essere in anagrafica entra ma non vede
-niente: l'app gli dice di chiedere alla segreteria.
+Per la segreteria il ruolo è `staff`.
+
+Se nella riga di `persone` c'è già la sua **email**, il secondo passo si può
+saltare: al primo accesso l'app lega da sé l'account alla persona con la
+stessa email (`collega_utente()`, in `05-segreteria.sql`). Vale solo per
+istruttori e segreteria, e solo per una persona che non ha già un account. La
+prima persona di segreteria va comunque messa a mano, perché prima di lei
+nessuno può scrivere in `persone`.
+
+Chi ha il ruolo `staff` vede anche la scheda **SEGRETERIA**: la settimana, i
+corsi e gli iscritti, pensati per il computer della reception.
 
 Chi frequenta i corsi **non** ha bisogno di un account: in questa fase gli
 iscritti sono nomi in un elenco e basta.
@@ -163,6 +173,11 @@ GitHub Actions dei *repository secrets*):
 VITE_SUPABASE_URL=https://xxxxxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
 ```
+
+L'indirizzo è la *Project URL* (**Integrations → Data API**, oppure
+`https://<id del progetto>.supabase.co`); la chiave è la *publishable key* in
+**Settings → API Keys**, o la vecchia chiave `anon` nella scheda *Legacy API
+Keys*: vanno bene tutte e due.
 
 La chiave `anon` **è pubblica** ed è fatta per finire nel codice del browser:
 non è un segreto trapelato. A proteggere i dati sono le policy di
