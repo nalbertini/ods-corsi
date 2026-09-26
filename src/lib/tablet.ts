@@ -20,7 +20,7 @@ import { haUnServer } from './dati'
 export const REGOLE = {
   /** Ci si segna da mezz'ora prima dell'inizio… */
   primaMin: 30,
-  /** …a dieci minuti dopo. */
+  /** …a dieci minuti dopo la fine: per tutta la lezione, non solo all'ingresso. */
   dopoMin: 10,
   /** Chi se n'è dimenticato recupera fino a due settimane indietro. */
   recuperoGiorni: 14,
@@ -175,25 +175,22 @@ export function datiTablet(): Promise<DatiTablet> {
 // Le fasi di una lezione, dal punto di vista di chi sta davanti al tablet.
 // ---------------------------------------------------------------------------
 
-export type Fase = 'dopo' | 'aperta' | 'in corso' | 'finita'
+export type Fase = 'dopo' | 'aperta' | 'finita'
 
 const MIN = 60_000
 
 /**
- * - `aperta`: ci si segna adesso (da 30' prima a 10' dopo l'inizio);
- * - `in corso`: è cominciata e il tempo per segnarsi è passato;
+ * - `aperta`: ci si segna adesso (da 30' prima dell'inizio a 10' dopo la
+ *   fine). Le presenze le segnano anche gli allievi, sul tablet: la lezione
+ *   non si chiude a loro mentre è in corso;
  * - `finita`, `dopo`: già fatta, o più tardi.
- *
- * `aperta` vince su `in corso`: nei primi dieci minuti si è in sala e ci si
- * può ancora segnare.
  */
 export function fase(l: Pick<LezioneSala, 'inizio' | 'fine'>, adesso: Date): Fase {
   const t = adesso.getTime()
   const inizio = Date.parse(l.inizio)
   const fine = Date.parse(l.fine)
-  if (t >= inizio - REGOLE.primaMin * MIN && t <= inizio + REGOLE.dopoMin * MIN) return 'aperta'
-  if (t < inizio) return 'dopo'
-  return t < fine ? 'in corso' : 'finita'
+  if (t >= inizio - REGOLE.primaMin * MIN && t <= fine + REGOLE.dopoMin * MIN) return 'aperta'
+  return t < inizio ? 'dopo' : 'finita'
 }
 
 /** Si recupera una lezione cominciata da non più di due settimane e non più aperta. */

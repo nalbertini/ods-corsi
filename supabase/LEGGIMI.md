@@ -263,7 +263,7 @@ non è di nessuna persona e sa fare solo questo:
 
 - vede le lezioni della sua sala, e degli iscritti **il nome e l'iniziale** del
   cognome — mai l'anagrafica, le email, i telefoni;
-- segna «presente» da 30 minuti prima dell'inizio a 10 minuti dopo; le lezioni
+- segna «presente» da 30 minuti prima dell'inizio a 10 minuti dopo la fine; le lezioni
   passate si recuperano fino a 14 giorni indietro;
 - un tocco sbagliato si annulla entro 2 minuti;
 - **non scavalca l'istruttore**: se l'istruttore ha già segnato qualcuno

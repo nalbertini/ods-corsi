@@ -6,7 +6,7 @@ import { Cronometro, Lucchetto, Recupero } from '../Icons'
 import { Guaio, orario, Riquadro } from './comune'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
-const ETICHETTA = { finita: 'FINITA', 'in corso': 'IN CORSO', aperta: 'SI SEGNA ORA', dopo: 'PIÙ TARDI' } as const
+const ETICHETTA = { finita: 'FINITA', aperta: 'SI SEGNA ORA', dopo: 'PIÙ TARDI' } as const
 
 /**
  * Quello che il tablet mostra quando nessuno lo tocca.
@@ -36,11 +36,10 @@ export function TabletHome({
   const diOggi = (lezioni ?? []).filter((l) => chiaveGiorno(new Date(l.inizio)) === oggi && l.stato !== 'annullata')
   const conFase = diOggi.map((l) => ({ l, f: fase(l, adesso) }))
   const aperte = conFase.filter((x) => x.f === 'aperta')
-  const inCorso = conFase.filter((x) => x.f === 'in corso')
   const finite = diOggi.length > 0 && conFase.every((x) => x.f === 'finita')
   const prossima = (lezioni ?? []).find((l) => chiaveGiorno(new Date(l.inizio)) > oggi && l.stato !== 'annullata')
 
-  const titolo = aperte.length ? 'SI SEGNA ADESSO' : inCorso.length ? 'IN QUESTO MOMENTO' : 'OGGI'
+  const titolo = aperte.length ? 'SI SEGNA ADESSO' : 'OGGI'
 
   return (
     <>
@@ -79,21 +78,9 @@ export function TabletHome({
             </div>
           ))}
 
-          {inCorso.map(({ l }) => (
-            <div key={l.id} className="tb-incorso" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}>
-              <span className="num tb-orario" style={{ whiteSpace: 'nowrap' }}>{orario(l)}</span>
-              <span className="ob grow" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '0.03em' }}>{l.corso.toUpperCase()}</span>
-              <span className="tb-sotto" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                In corso: le presenze
-                <br />
-                le segna l'istruttore
-              </span>
-            </div>
-          ))}
-
           <div className="grow" />
           <span className="tb-nota">
-            Si segna da {REGOLE.primaMin} minuti prima dell'inizio a {REGOLE.dopoMin} minuti dopo. Qui compaiono solo nome e
+            Si segna da {REGOLE.primaMin} minuti prima dell'inizio a {REGOLE.dopoMin} minuti dopo la fine. Qui compaiono solo nome e
             iniziale del cognome.
           </span>
         </div>
