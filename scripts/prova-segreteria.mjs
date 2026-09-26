@@ -142,7 +142,7 @@ console.log('\n5. iscritti')
 console.log('\n6. quanto viene ciascuno')
 {
   const [lun] = (await s.settimana(...giorno([8, 21]))).filter((l) => l.corsoId === 'judo-2')
-  await s.tuttiPresenti(lun.id)
+  await app.segnaTutti(lun.id, 'presente')
   const f = await s.frequenze()
   const chi = (await app.dettaglio(lun.id)).elenco[0].id
   ok('una sulle sei lezioni di Judo 2 dall\'inizio della stagione', f.get(chi), { presenti: 1, dovute: 6 })

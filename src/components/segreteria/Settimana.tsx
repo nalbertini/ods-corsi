@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, LezioneSeg } from '../../lib/segreteria'
-import type { StatoSessione } from '../../lib/sala'
-import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
+import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/sala'
+import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../../lib/sala'
+import { dati, type Dati } from '../../lib/dati'
 import { Back } from '../Icons'
-import { Campo, dataLunga, Guaio, Riga, Testa, useAvviso, useCarica } from './comune'
+import { Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
 const MESI_CORTI = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC']
@@ -46,6 +47,26 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
   const sett = useCarica(() => d.settimana(giorni[0], giorni[6]), [d, giorni])
   const sale = useCarica(() => d.sale(), [d])
   const pronto = useCarica(() => d.prontoFino(), [d])
+
+  // Le presenze segnate dal cassetto viaggiano nella coda dell'appello: la
+  // griglia si rilegge quando la coda si svuota, cioè quando sono arrivate.
+  const rileggi = sett.ricarica
+  useEffect(() => {
+    let vivo = true
+    let via: (() => void) | undefined
+    void dati().then((x) => {
+      if (!vivo) return
+      let prima = 0
+      via = x.guardaCoda?.((n) => {
+        if (prima > 0 && n === 0) void rileggi()
+        prima = n
+      })
+    })
+    return () => {
+      vivo = false
+      via?.()
+    }
+  }, [rileggi])
 
   const lezioni = (sett.dato ?? []).filter((l) => !sala || l.salaId === sala)
   const ore = [...new Set(lezioni.map((l) => oraDi(l.inizio)))].sort()
@@ -251,8 +272,6 @@ function Lezione({
   fai: Fai
 }) {
   const istruttori = useCarica(() => d.istruttori(), [d])
-  const iscritti = useCarica(() => d.iscrittiLezione(l.id), [d, l.id, l.presenti])
-  const passata = Date.parse(l.inizio) < Date.now()
 
   useEffect(() => {
     const esc = (e: KeyboardEvent) => e.key === 'Escape' && onChiudi()
@@ -330,38 +349,7 @@ function Lezione({
         </div>
         {l.sostitutoId && <span style={{ fontSize: 13, color: 'var(--giallo)' }}>Sostituzione solo per questa lezione: il corso resta com'è.</span>}
 
-        <div className="sg-appello" data-manca={passata && l.segnati === 0 && l.stato !== 'annullata'}>
-          <div className="row" style={{ gap: 10, alignItems: 'baseline' }}>
-            <span className="sg-etichetta grow">APPELLO</span>
-            <span className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', color: l.segnati ? 'var(--verde)' : passata ? 'var(--rosso)' : 'var(--dim)' }}>
-              {l.segnati ? 'FATTO' : passata ? 'NON FATTO' : 'NON ANCORA'}
-            </span>
-          </div>
-          <span className="num" style={{ fontSize: 40, fontWeight: 700, lineHeight: 1 }}>
-            {l.presenti}/{l.iscritti}
-          </span>
-          {passata && l.segnati === 0 && l.stato !== 'annullata' && (
-            <>
-              <span style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)' }}>Nessuno l'ha fatto. Se sai che c'erano tutti, puoi segnarlo da qui.</span>
-              <button type="button" className="sg-btn sg-btn-verde" onClick={() => void fai(() => d.tuttiPresenti(l.id), 'Tutti presenti', onCambiato)}>
-                SEGNA TUTTI PRESENTI
-              </button>
-            </>
-          )}
-        </div>
-
-        <div className="stack" style={{ gap: 8 }}>
-          <Riga titolo="ISCRITTI">
-            <span className="num" style={{ fontSize: 14, fontWeight: 700 }}>
-              {l.capienza ? `${l.iscritti}/${l.capienza}` : l.iscritti}
-            </span>
-          </Riga>
-          <div className="sg-nomi" style={{ gridTemplateColumns: '1fr 1fr' }}>
-            {(iscritti.dato ?? []).map((n, i) => (
-              <span key={i}>{n}</span>
-            ))}
-          </div>
-        </div>
+        <Appello key={l.id} l={l} onCambiato={onCambiato} />
 
         <div className="grow" />
         {l.straordinaria && (
@@ -383,6 +371,133 @@ function Lezione({
           FATTO
         </button>
       </section>
+    </>
+  )
+}
+
+// presente → assente → non segnato, e si ricomincia: come nell'appello.
+const prossimo = (s: StatoPresenza | null): StatoPresenza | null => (s === null ? 'presente' : s === 'presente' ? 'assente' : null)
+
+/**
+ * L'appello dalla segreteria: lo stesso dell'app, un tocco per riga, per
+ * segnare al banco le presenze che l'istruttore ha preso su carta o
+ * correggere un tocco sbagliato. Scrive con gli stessi `dati` dell'appello,
+ * quindi anche da qui senza rete non si perde niente.
+ *
+ * Si apre quando la lezione è cominciata: prima non c'è niente da segnare,
+ * e una presenza messa in anticipo sporcherebbe le medie.
+ */
+function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
+  const [strato, setStrato] = useState<Dati | null>(null)
+  const [elenco, setElenco] = useState<DettaglioSessione['elenco'] | null>(null)
+  const [guaio, setGuaio] = useState<string | null>(null)
+  const cominciata = Date.parse(l.inizio) <= Date.now()
+  const annullata = l.stato === 'annullata'
+  const aperto = cominciata && !annullata
+
+  useEffect(() => {
+    let vivo = true
+    dati()
+      .then(async (x) => {
+        const det = await x.dettaglio(l.id)
+        if (!vivo) return
+        setStrato(x)
+        setElenco(det?.elenco ?? [])
+      })
+      .catch((e: unknown) => vivo && setGuaio(messaggio(e, 'Non riesco a leggere l\'appello')))
+    return () => {
+      vivo = false
+    }
+  }, [l.id])
+
+  const segnati = elenco?.filter((p) => p.stato !== null).length ?? l.segnati
+  const presenti = elenco?.filter((p) => p.stato === 'presente').length ?? l.presenti
+  const quanti = elenco?.length ?? l.iscritti
+  const manca = cominciata && !annullata && segnati === 0
+
+  // In prova la scrittura è già fatta quando torna; col database va in coda,
+  // e la griglia si rilegge quando la coda si svuota (vedi `Settimana`).
+  const scritto = (p: Promise<void>) => void p.then(() => strato?.modo === 'prova' && onCambiato())
+
+  const tocca = (personaId: string, stato: StatoPresenza | null) => {
+    if (!strato) return
+    setElenco((v) => v && v.map((p) => (p.id === personaId ? { ...p, stato } : p)))
+    scritto(strato.segna(l.id, personaId, stato))
+  }
+  const tutti = () => {
+    if (!strato) return
+    setElenco((v) => v && v.map((p) => ({ ...p, stato: 'presente' })))
+    scritto(strato.segnaTutti(l.id, 'presente'))
+  }
+  const azzera = () => {
+    if (!strato || !elenco) return
+    if (segnati && !window.confirm(`Togliere i ${segnati} segni di questa lezione?`)) return
+    setElenco(elenco.map((p) => ({ ...p, stato: null })))
+    scritto(Promise.all(elenco.filter((p) => p.stato !== null).map((p) => strato.segna(l.id, p.id, null))).then(() => undefined))
+  }
+
+  return (
+    <>
+      <div className="sg-appello" data-manca={manca}>
+        <div className="row" style={{ gap: 10, alignItems: 'baseline' }}>
+          <span className="sg-etichetta grow">APPELLO</span>
+          <span
+            className="num"
+            style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', color: segnati ? 'var(--verde)' : manca ? 'var(--rosso)' : 'var(--dim)' }}
+          >
+            {annullata ? 'ANNULLATA' : !cominciata ? 'NON ANCORA' : segnati === quanti && quanti ? 'FATTO' : segnati ? `${quanti - segnati} DA SEGNARE` : 'NON FATTO'}
+          </span>
+        </div>
+        <span className="num" style={{ fontSize: 40, fontWeight: 700, lineHeight: 1 }}>
+          {presenti}/{quanti}
+        </span>
+        {manca && <span style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)' }}>Nessuno l'ha fatto. Segnalo da qui, un nome alla volta o tutti insieme.</span>}
+        {!cominciata && !annullata && <span style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)' }}>Si segna quando la lezione è cominciata.</span>}
+        {aperto && elenco && elenco.length > 0 && (
+          <div className="row" style={{ gap: 8 }}>
+            <button type="button" className="sg-btn sg-btn-verde grow" onClick={tutti}>
+              TUTTI PRESENTI
+            </button>
+            <button type="button" className="sg-btn sg-btn-linea" onClick={azzera} disabled={!segnati}>
+              AZZERA
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="stack" style={{ gap: 8 }}>
+        <Riga titolo="ISCRITTI">
+          <span className="num" style={{ fontSize: 14, fontWeight: 700 }}>
+            {l.capienza ? `${quanti}/${l.capienza}` : quanti}
+          </span>
+        </Riga>
+        {guaio && <Guaio testo={guaio} />}
+        {!elenco && !guaio && <span className="sg-sotto">Sto leggendo l'appello…</span>}
+        {elenco && elenco.length === 0 && <span className="sg-sotto">Nessun iscritto.</span>}
+        {elenco && elenco.length > 0 && (
+          <div className="sg-elenco-appello">
+            {elenco.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className="riga-appello"
+                data-stato={p.stato ?? 'niente'}
+                disabled={!aperto}
+                onClick={() => tocca(p.id, prossimo(p.stato))}
+                aria-label={`${perEsteso(p)}: ${p.stato ?? 'non segnato'}`}
+              >
+                <span className="segno" aria-hidden="true">
+                  {p.stato === 'presente' ? '✓' : p.stato === 'assente' ? '✕' : ''}
+                </span>
+                <span className="nome-appello grow">{perEsteso(p)}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {aperto && elenco && elenco.length > 0 && (
+          <span style={{ fontSize: 12, color: 'var(--faint)' }}>Un tocco: presente, due: assente, tre: non segnato.</span>
+        )}
+      </div>
     </>
   )
 }

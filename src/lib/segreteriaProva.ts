@@ -2,7 +2,7 @@ import type { CorsoSeg, DatiSegreteria, LezioneSeg, PersonaSeg, PersonaleSeg, Ri
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva } from './archivioProva'
 import { comeE, iscrittiIl, lezioniFra, nomeIstruttore, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria } from './datiProva'
-import { chiaveGiorno, perCognome, perEsteso } from './sala'
+import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { richiesteDi } from './richiesteProva'
 
@@ -103,11 +103,6 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return lezioniFra(da, fino).map(vista)
     },
 
-    async iscrittiLezione(sessioneId) {
-      const l = trovaLezione(sessioneId)
-      return l ? iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)).sort(perCognome).map(perEsteso) : []
-    },
-
     async aggiornaLezione(sessioneId, cambi) {
       const l = trovaLezione(sessioneId)
       if (!l) throw new Error('Lezione inesistente')
@@ -134,16 +129,6 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (conti(sessioneId).segnati) throw new Error("Ha già un appello: si annulla invece di toglierla")
       cambiaLezione(sessioneId, () => null)
       salva()
-    },
-
-    async tuttiPresenti(sessioneId) {
-      const l = trovaLezione(sessioneId)
-      if (!l) return
-      const mie = { ...(memoria.segnate[sessioneId] ?? {}) }
-      for (const p of iscrittiIl(l.corso.id, chiaveGiorno(l.inizio))) mie[p.id] = 'presente'
-      memoria.segnate = { ...memoria.segnate, [sessioneId]: mie }
-      memoria.origini = { ...memoria.origini, [sessioneId]: {} }
-      memoria.salva()
     },
 
     async prontoFino() {

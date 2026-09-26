@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StoricoSeg } from './segreteria'
 import type { StatoPresenza, StatoSessione } from './sala'
-import { chiaveGiorno, perCognome, perEsteso } from './sala'
+import { chiaveGiorno } from './sala'
 
 /**
  * La segreteria col database vero.
@@ -132,19 +132,6 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       })
     },
 
-    async iscrittiLezione(sessioneId) {
-      const s = ok(await db.from('sessioni').select('corso_id, inizio').eq('id', sessioneId).single()) as { corso_id: string; inizio: string }
-      const righe = ok(await db.from('iscrizioni').select('dal, al, persone ( nome, cognome, attiva )').eq('corso_id', s.corso_id)) as unknown as Array<{
-        dal: string; al: string | null; persone: { nome: string; cognome: string; attiva: boolean } | null
-      }>
-      const g = giornoDi(s.inizio)
-      return righe
-        .filter((r) => r.persone?.attiva && valeIl(r, g))
-        .map((r) => ({ id: '', ruolo: 'iscritto' as const, nome: r.persone!.nome, cognome: r.persone!.cognome }))
-        .sort(perCognome)
-        .map(perEsteso)
-    },
-
     async aggiornaLezione(sessioneId, cambi) {
       const s = ok(await db.from('sessioni').select('corsi ( sala_id, istruttore_id )').eq('id', sessioneId).single()) as unknown as {
         corsi: { sala_id: string | null; istruttore_id: string | null } | null
@@ -174,19 +161,6 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const { count } = await db.from('presenze').select('id', { count: 'exact', head: true }).eq('sessione_id', sessioneId)
       if (count) throw new Error('Ha già un appello: si annulla invece di toglierla')
       ok(await db.from('sessioni').delete().eq('id', sessioneId).is('ricorrenza_id', null))
-    },
-
-    async tuttiPresenti(sessioneId) {
-      const s = ok(await db.from('sessioni').select('corso_id, inizio').eq('id', sessioneId).single()) as { corso_id: string; inizio: string }
-      const isc = (ok(await db.from('iscrizioni').select('corso_id, persona_id, dal, al').eq('corso_id', s.corso_id)) as Iscrizione[]).filter((i) =>
-        valeIl(i, giornoDi(s.inizio)),
-      )
-      if (!isc.length) return
-      ok(
-        await db
-          .from('presenze')
-          .upsert(isc.map((i) => ({ sessione_id: sessioneId, persona_id: i.persona_id, stato: 'presente' })), { onConflict: 'sessione_id,persona_id' }),
-      )
     },
 
     async prontoFino() {
