@@ -48,9 +48,11 @@ export const MODULO_IN_APP = !haUnServer || !!INFORMATIVA_PUBBLICA
  * Il modulo dell'app per la pagina pubblica (`#iscrizioni`), quella del link
  * che si manda a chi vuole iscriversi: lì la prova non vale, perché una
  * richiesta rimasta sul telefono di chi l'ha mandata non arriva a nessuno.
- * Senza il database vero, quindi, il passo porta al modulo Google.
+ * Senza il database vero, quindi, il passo porta al modulo Google; col
+ * database vero vale come `MODULO_IN_APP`: resta Google finché l'informativa
+ * è una bozza.
  */
-export const MODULO_IN_APP_PUBBLICO = haUnServer && !!INFORMATIVA
+export const MODULO_IN_APP_PUBBLICO = haUnServer && !!INFORMATIVA_PUBBLICA
 
 export interface Documento {
   etichetta: string
