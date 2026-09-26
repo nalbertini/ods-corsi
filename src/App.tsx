@@ -24,11 +24,35 @@ import { esci, serveAccesso, type Personale } from './lib/accesso'
  * segreteria ha la sua area, a tutto schermo, per il computer della reception;
  * in prova la segreteria è aperta a tutti. Chi è di segreteria, appena entra,
  * finisce lì: è il suo posto; l'appello resta a un tocco, da «← APPELLO».
+ *
+ * Con `#iscrizioni` in fondo all'indirizzo si apre invece la pagina pubblica,
+ * quella del link da mandare a chi vuole iscriversi: solo i passi, i costi e
+ * il modulo, senza le schede del personale. Viene prima del tablet, così un
+ * tablet di sala che apre il link non smette di essere un tablet.
  */
-const tablet = eUnTablet()
+const pubblica = window.location.hash === '#iscrizioni'
+const tablet = !pubblica && eUnTablet()
 
 export default function App() {
+  if (pubblica) return <Iscrizioni />
   return tablet ? <Tablet /> : <AppCorsi />
+}
+
+function Iscrizioni() {
+  return (
+    <div className="app">
+      <header className="testata">
+        <Logo />
+        <div className="stack grow" style={{ gap: 1 }}>
+          <span className="testata-nome">OFFICINE DELLO SPORT</span>
+          <span className="testata-luogo">ISCRIZIONI · COLLEGNO</span>
+        </div>
+      </header>
+      <main className="scroll">
+        <IscrizioniScreen pubblica />
+      </main>
+    </div>
+  )
 }
 
 function AppCorsi() {
