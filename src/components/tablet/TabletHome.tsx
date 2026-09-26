@@ -1,5 +1,6 @@
 import type { LezioneSala } from '../../lib/tablet'
 import { fase, REGOLE } from '../../lib/tablet'
+import { TIMER } from '../../lib/aree'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Cronometro, Lucchetto, Recupero } from '../Icons'
 import { Guaio, orario, Riquadro } from './comune'
@@ -121,10 +122,12 @@ export function TabletHome({
           <Lucchetto />
           AREA ISTRUTTORE
         </button>
-        <button type="button" className="tb-btn tb-btn-tratteggio" disabled>
+        {/* Il timer è un'app a sé: si apre al suo indirizzo, e la sua voce
+            CORSI riporta qui, perché la radice su un tablet riapre il tablet. */}
+        <a className="tb-btn tb-btn-linea" href={TIMER}>
           <Cronometro />
-          TIMER · IN ARRIVO
-        </button>
+          TIMER
+        </a>
         <span className="grow" />
         <span className="tb-nota">Tablet di sala · {sala}</span>
       </footer>
