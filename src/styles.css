@@ -495,6 +495,15 @@ input, textarea { font: inherit; color: inherit; }
   gap: 10px; padding-top: 10px;
   font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim);
 }
+/* Oltre il telefono l'accesso non si allarga con lo schermo: una scheda
+   stretta al centro, larga quanto serve per un'email. */
+@media (min-width: 640px) {
+  .accesso {
+    width: 100%; max-width: 460px; margin: 8vh auto 0; padding-bottom: 8px;
+    background: var(--surface); border: 2px solid var(--line);
+  }
+  .accesso .campo { background: var(--bg); }
+}
 .chi-esci { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); text-decoration: underline; padding: 6px 0; }
 
 /* Per chi legge lo schermo, non per chi lo guarda. */

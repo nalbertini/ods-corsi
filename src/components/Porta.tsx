@@ -68,7 +68,7 @@ function Accesso({ onEntrato }: { onEntrato: (p: Personale) => void }) {
   }
 
   return (
-    <>
+    <div className="accesso">
       <div className="rule">
         <span className="rule-label">ACCESSO</span>
         <div className="rule-line" />
@@ -105,6 +105,6 @@ function Accesso({ onEntrato }: { onEntrato: (p: Personale) => void }) {
           </span>
         )}
       </form>
-    </>
+    </div>
   )
 }
