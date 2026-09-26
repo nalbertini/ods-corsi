@@ -101,8 +101,8 @@ const CORSI: Definizione[] = [
   { id: 'aikido-2', nome: 'Aikido 2', colore: MOTRICITA, sala: 'Motricità', istruttori: ['Fabio'], orari: ogni([1, 4], '17:00', 60), iscritti: elenco(15, 8) },
   { id: 'aikido-3', nome: 'Aikido 3', colore: MOTRICITA, sala: 'Motricità', istruttori: ['Fabio'], orari: ogni([1, 4], '18:00', 60), iscritti: elenco(16, 9) },
 
-  { id: 'pre-pugilistica', nome: 'Pre-pugilistica', colore: LOTTA, sala: 'Motricità', istruttori: [], orari: ogni([3], '19:00', 60), iscritti: elenco(17, 10) },
-  { id: 'mga', nome: 'MGA · metodo globale autodifesa', colore: LOTTA, sala: 'Motricità', istruttori: [], orari: ogni([5], '19:00', 60), iscritti: elenco(18, 9) },
+  { id: 'pre-pugilistica', nome: 'Pre-pugilistica', colore: LOTTA, sala: 'Pesi', istruttori: [], orari: ogni([3], '19:00', 60), iscritti: elenco(17, 10) },
+  { id: 'mga', nome: 'MGA · metodo globale autodifesa', colore: LOTTA, sala: 'Lotta', istruttori: [], orari: ogni([5], '19:00', 60), iscritti: elenco(18, 9) },
 
   { id: 'prep-atletica-1', nome: 'Preparazione atletica 1', colore: PESI, sala: 'Pesi', istruttori: ['Maurizio', 'Katia', 'Manuel'], orari: ogni(MG, '18:00', 60), iscritti: elenco(19, 12) },
   { id: 'prep-atletica-2', nome: 'Preparazione atletica 2', colore: PESI, sala: 'Pesi', istruttori: ['Maurizio', 'Katia', 'Manuel'], orari: ogni(MG, '19:30', 60), iscritti: elenco(20, 11) },
