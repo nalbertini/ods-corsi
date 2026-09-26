@@ -130,6 +130,9 @@ function TornaSala({ className }: { className: string }) {
  * Il timer. Da solo, un'app intera; con `incorporato`, la scheda TIMER del
  * tablet di sala di ODS Corsi (vedi `lib/incorporato.ts`).
  */
+/** Ogni quanto il tablet di sala rilegge timer e collegamenti. */
+const RILEGGI_TABLET = 5 * 60_000
+
 export default function App({ incorporato }: { incorporato?: Incorporato } = {}) {
   // Senza un accesso le copie del database non si mostrano: non sarebbero né
   // aggiornate né modificabili. Con l'accesso la lista parte dall'ultima copia
@@ -241,6 +244,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   // piano: il tablet in sala resta aperto per settimane, e un timer preparato
   // a casa la sera prima deve comparire senza che nessuno ricarichi.
   const personaId = accesso.chi === 'personale' ? accesso.personaId : null
+  const suTablet = !!incorporato
   const ultimaLettura = useRef(0)
   const leggiDalServer = useCallback(async () => {
     if (!sessione) return
@@ -280,8 +284,21 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
       if (document.visibilityState === 'visible' && Date.now() - ultimaLettura.current > 60_000) void leggiDalServer()
     }
     document.addEventListener('visibilitychange', torna)
-    return () => document.removeEventListener('visibilitychange', torna)
-  }, [leggiDalServer])
+    // Sul tablet però la pagina non va mai in secondo piano: senza un giro
+    // ogni tanto, il timer scelto oggi in I MIEI TIMER non arriverebbe mai.
+    const giro = suTablet ? window.setInterval(() => void leggiDalServer(), RILEGGI_TABLET) : 0
+    return () => {
+      document.removeEventListener('visibilitychange', torna)
+      window.clearInterval(giro)
+    }
+  }, [leggiDalServer, suTablet])
+  // E quando comincia un'altra lezione, subito: è lì che serve il suo timer.
+  const lezioneLetta = useRef(chiaveSala)
+  useEffect(() => {
+    if (!suTablet || lezioneLetta.current === chiaveSala) return
+    lezioneLetta.current = chiaveSala
+    void leggiDalServer()
+  }, [suTablet, chiaveSala, leggiDalServer])
   useEffect(() => guardaCoda(setInCoda), [])
 
   // Le preferenze seguono l'istruttore: si leggono una volta, e da lì ogni
