@@ -317,6 +317,9 @@ input, textarea { font: inherit; color: inherit; }
 /* I pezzi del design system per le iscrizioni (`components/ds.tsx`). */
 .rule-conto { font-size: 15px; font-weight: 600; color: var(--dim); }
 .rule-dentro { padding: 12px 0 0; }
+/* Tablet di sala e timer, sotto il calendario del telefono. */
+.strumenti { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.strumenti > .btn { min-height: 52px; padding: 0 10px; font-size: 16px; letter-spacing: 0.08em; white-space: nowrap; text-decoration: none; }
 .riquadro { padding: 14px; gap: 8px; }
 .riquadro[data-stretto] { gap: 4px; }
 /* La prova sta prima dei passi e non è uno di loro: niente numero, il bordo giallo. */
@@ -793,8 +796,8 @@ a.btn { text-decoration: none; }
    La segreteria.
 
    Pensata per il computer della reception: il menu a sinistra, una sezione a
-   destra, tabelle larghe. Sotto i 1000 px il menu va in cima e le colonne si
-   mettono una sotto l'altra.
+   destra, tabelle larghe. Sotto i 1000 px le colonne si mettono una sotto
+   l'altra e il menu si stringe; sul telefono va in cima.
    --------------------------------------------------------------------------- */
 
 .sg { display: flex; height: 100%; overflow: hidden; background: var(--bg); position: relative; }
@@ -1030,7 +1033,16 @@ a.sg-voce { text-decoration: none; }
   .sg-lista-testa.sg-riga-personale { display: none; }
 }
 
-@media (max-width: 1000px) {
+/* Sul tablet in verticale il menu resta a sinistra, come sul computer, solo
+   più stretto: in cima occupava tre righe prima di arrivare alla sezione. Va
+   in cima solo sul telefono, dove accanto non ci starebbe niente. */
+@media (min-width: 768px) and (max-width: 1000px) {
+  .sg-menu { width: 200px; padding-left: 12px; padding-right: 12px; }
+  .sg-voce { font-size: 15px; letter-spacing: 0.1em; padding: 0 10px; }
+  .sg-corpo { padding: calc(var(--safe-t) + 20px) 20px 20px; }
+}
+
+@media (max-width: 767px) {
   .sg { flex-direction: column; }
   .sg-menu { width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px; padding: calc(var(--safe-t) + 12px) 16px 12px; border-right: none; border-bottom: 2px solid var(--line-soft); overflow: visible; }
   .sg-menu > .grow, .sg-chi > span:not(.sg-bollino) { display: none; }
@@ -1039,6 +1051,9 @@ a.sg-voce { text-decoration: none; }
   .sg-voce[aria-current='page'] { border-bottom-color: var(--rosso); }
   .sg-chi { flex-direction: row; align-items: center; padding: 6px 10px; }
   .sg-corpo { padding: 16px; }
+}
+
+@media (max-width: 1000px) {
   .sg-due-colonne { flex-direction: column; align-items: stretch; }
   .sg-lista, .sg-scheda-stretta { width: auto; }
   .sg-scheda { position: static; }

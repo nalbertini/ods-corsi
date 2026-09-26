@@ -211,19 +211,24 @@ function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEs
             <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>ISTRUTTORI</span>
           </span>
         </div>
+        {/* Quello che l'istruttore fa, tutto qui: l'appello in questa pagina,
+            il tablet della sala e il timer in un'altra scheda, così l'appello
+            resta dov'era. */}
         <div className="sg-voci">
           <span className="num sg-voce" aria-current="page">
             APPELLO
           </span>
-        </div>
-        <div className="grow" />
-        {/* In un'altra scheda: l'appello resta dov'era. */}
-        <div className="sg-voci">
-          <a className="num sg-voce" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener">
-            GUIDA ↗
+          <a className="num sg-voce" href={INDIRIZZI.sala} target="_blank" rel="noopener">
+            TABLET DI SALA ↗
           </a>
           <a className="num sg-voce" href={TIMER} target="_blank" rel="noopener">
             TIMER ↗
+          </a>
+        </div>
+        <div className="grow" />
+        <div className="sg-voci">
+          <a className="num sg-voce" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener">
+            GUIDA ↗
           </a>
           {!chi && (
             <a className="num sg-voce" href={INDIRIZZI.segreteria}>
