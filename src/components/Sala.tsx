@@ -15,8 +15,11 @@ import { TIMER } from '../lib/aree'
  * largo stanno affiancate, il calendario a sinistra e l'appello della lezione
  * scelta a destra, e il conto dei presenti a sinistra segue l'appello mentre
  * lo si fa.
+ *
+ * `soloDi` è l'istruttore di cui mostrare le lezioni (vedi `CalendarioScreen`);
+ * `onMieiTimer` apre I MIEI TIMER dal fondo del calendario del telefono.
  */
-export function Sala() {
+export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: () => void } = {}) {
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
@@ -74,7 +77,7 @@ export function Sala() {
       {largo ? (
         <div className="sala-due">
           <div className="sala-lato">
-            <CalendarioScreen dati={d} onApri={setAperta} apertaId={aperta?.id} presenti={presenti} />
+            <CalendarioScreen dati={d} onApri={setAperta} apertaId={aperta?.id} presenti={presenti} soloDi={soloDi} />
           </div>
           <div className="sala-lato">
             {aperta ? (
@@ -112,8 +115,8 @@ export function Sala() {
         </>
       ) : (
         <>
-          <CalendarioScreen dati={d} onApri={setAperta} />
-          <Strumenti />
+          <CalendarioScreen dati={d} onApri={setAperta} soloDi={soloDi} />
+          <Strumenti onMieiTimer={onMieiTimer} />
         </>
       )}
     </>
@@ -121,12 +124,12 @@ export function Sala() {
 }
 
 /**
- * Sul telefono, sotto le lezioni, quello che sul computer sta nel menu: il
- * timer. In fondo e non in testata, dove ogni riga in più è una riga d'elenco
+ * Sul telefono, sotto le lezioni, quello che sul computer sta nel menu: I
+ * MIEI TIMER e il timer. In fondo e non in testata, dove ogni riga in più è una riga d'elenco
  * in meno; in un'altra scheda, così il calendario resta dov'era. Il tablet di
  * sala no: è un'area a sé, e dagli istruttori non ci si va.
  */
-function Strumenti() {
+function Strumenti({ onMieiTimer }: { onMieiTimer?: () => void }) {
   return (
     <>
       <div className="rule">
@@ -134,6 +137,11 @@ function Strumenti() {
         <div className="rule-line" />
       </div>
       <div className="pad strumenti" style={{ paddingBottom: 20 }}>
+        {onMieiTimer && (
+          <button type="button" className="btn btn-ghost" onClick={onMieiTimer}>
+            I MIEI TIMER
+          </button>
+        )}
         <a className="btn btn-ghost" href={TIMER} target="_blank" rel="noopener">
           TIMER ↗
         </a>

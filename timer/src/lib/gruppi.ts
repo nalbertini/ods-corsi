@@ -21,13 +21,23 @@ const piùRecenti = (a: Workout, b: Workout) => b.updatedAt - a.updatedAt
 export function gruppiDi(timer: Workout[], accesso: Accesso, lezione: Lezione | null): Gruppo[] {
   const del = (f: (w: Workout) => boolean) => timer.filter(f).sort(piùRecenti)
   const gruppi: Gruppo[] = []
+  // Il timer scelto per questa lezione sola viene prima di quelli del corso
+  // (vedi `Workout.lezioni`). Senza, la sezione non si mostra.
+  const perLezione = lezione?.lezioneId ? del((w) => !!w.lezioni?.includes(lezione.lezioneId!)) : []
+  if (perLezione.length) gruppi.push({ chiave: 'lezione', titolo: 'DI QUESTA LEZIONE', timer: perLezione })
+  // Senza accesso (in prova, o sul timer da solo) i corsi stanno sui timer
+  // del dispositivo: la sezione si mostra solo se ce n'è qualcuno.
+  const delCorso = lezione ? del((w) => !!w.corsi?.includes(lezione.corsoId)) : []
+  if (lezione && accesso.chi === 'nessuno' && delCorso.length) gruppi.push({ chiave: 'corso', titolo: 'DEL CORSO', timer: delCorso })
   if (lezione && accesso.chi !== 'nessuno') {
     gruppi.push({
       chiave: 'corso',
       titolo: 'DEL CORSO',
-      timer: del((w) => !!w.corsi?.includes(lezione.corsoId)),
-      vuota:
-        accesso.chi === 'personale'
+      timer: delCorso,
+      // Con un timer della lezione, un corso senza timer non ha niente da dire.
+      vuota: perLezione.length
+        ? undefined
+        : accesso.chi === 'personale'
           ? 'Nessun timer è collegato a questo corso. Si collega dall’editor del timer, alla voce CORSI.'
           : 'Nessun timer è collegato a questo corso: lo collega un istruttore dal suo timer.',
     })

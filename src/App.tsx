@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
 import { Accesso, AltreAree, Porta, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Guida } from './components/Guida'
+import { MieiTimer } from './components/MieiTimer'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { INDIRIZZI, TIMER, useArea, vaiA } from './lib/aree'
@@ -12,7 +13,7 @@ import { esci, passaA, serveAccesso, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
-import { inProvaScelta, scegliProva } from './lib/dati'
+import { ISTRUTTORE_PROVA, inProvaScelta, scegliProva } from './lib/dati'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
 
 /**
@@ -148,6 +149,13 @@ function Iscrizioni() {
  */
 function Istruttori() {
   const largo = useLargo()
+  // Il calendario resta montato anche in I MIEI TIMER: tornando, l'appello è dov'era.
+  const [pagina, setPagina] = useState<Pagina>('calendario')
+
+  // Di chi sono le lezioni da mostrare: dell'istruttore entrato, o di quello
+  // di prova. La segreteria le vede tutte, perché fa l'appello per chiunque;
+  // e anche un account ricordato da una versione che l'id non lo teneva.
+  const soloDi = (chi: Personale | null) => (chi ? (chi.ruolo === 'staff' ? undefined : chi.id) : ISTRUTTORE_PROVA.id)
 
   if (largo) {
     return (
@@ -159,10 +167,11 @@ function Istruttori() {
           </div>
         )}
         dentro={(chi, onEsci) => (
-          <MenuIstruttori chi={chi} onEsci={onEsci}>
-            <div className="faccia-corsi">
-              <Sala />
+          <MenuIstruttori chi={chi} onEsci={onEsci} pagina={pagina} onPagina={setPagina}>
+            <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
+              <Sala soloDi={soloDi(chi)} />
             </div>
+            {pagina === 'timer' && <MieiTimer soloDi={soloDi(chi)} />}
           </MenuIstruttori>
         )}
       />
@@ -175,7 +184,14 @@ function Istruttori() {
       <main className="scroll">
         <div className="faccia-corsi">
           <Porta>
-            <Sala />
+            {(chi) => (
+              <>
+                <div hidden={pagina !== 'calendario'}>
+                  <Sala soloDi={soloDi(chi)} onMieiTimer={() => setPagina('timer')} />
+                </div>
+                {pagina === 'timer' && <MieiTimer soloDi={soloDi(chi)} onIndietro={() => setPagina('calendario')} />}
+              </>
+            )}
           </Porta>
         </div>
       </main>
@@ -188,7 +204,21 @@ function Istruttori() {
  * segreteria. Niente passaggi alle altre aree, nemmeno in prova: ognuna ha la
  * sua porta, e da qui non si va in segreteria nemmeno se si è di segreteria.
  */
-function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEsci?: () => void; children: ReactNode }) {
+type Pagina = 'calendario' | 'timer'
+
+function MenuIstruttori({
+  chi,
+  onEsci,
+  pagina,
+  onPagina,
+  children,
+}: {
+  chi: Personale | null
+  onEsci?: () => void
+  pagina: Pagina
+  onPagina: (p: Pagina) => void
+  children: ReactNode
+}) {
   const esci = onEsci ?? (inProvaScelta ? () => scegliProva(false) : undefined)
   return (
     <div className="sg">
@@ -200,12 +230,16 @@ function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEs
             <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>ISTRUTTORI</span>
           </span>
         </div>
-        {/* Quello che l'istruttore fa, tutto qui: l'appello in questa pagina,
-            il timer in un'altra scheda, così l'appello resta dov'era. */}
+        {/* Quello che l'istruttore fa, tutto qui: il calendario con l'appello e
+            I MIEI TIMER in questa pagina, il timer in un'altra scheda, così
+            l'appello resta dov'era. */}
         <div className="sg-voci">
-          <span className="num sg-voce" aria-current="page">
-            APPELLO
-          </span>
+          <button type="button" className="num sg-voce" aria-current={pagina === 'calendario' ? 'page' : undefined} onClick={() => onPagina('calendario')}>
+            CALENDARIO
+          </button>
+          <button type="button" className="num sg-voce" aria-current={pagina === 'timer' ? 'page' : undefined} onClick={() => onPagina('timer')}>
+            I MIEI TIMER
+          </button>
           <a className="num sg-voce" href={TIMER} target="_blank" rel="noopener">
             TIMER ↗
           </a>
@@ -217,7 +251,7 @@ function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEs
           </a>
         </div>
         <div className="sg-chi">
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : 'Istruttore di prova'}</span>
+          <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : `${ISTRUTTORE_PROVA.nome} · di prova`}</span>
           <span style={{ fontSize: 12, color: 'var(--dim)' }}>
             {chi?.ruolo === 'staff' ? 'Segreteria · anche l’appello' : 'Istruttore · calendario e appello'}
           </span>

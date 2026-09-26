@@ -51,13 +51,14 @@ export function Porta({
   dentro,
   cornice = (x) => x,
 }: {
-  children?: ReactNode
+  children?: ReactNode | ((chi: Personale | null) => ReactNode)
   dentro?: (chi: Personale | null, onEsci?: () => void) => ReactNode
   cornice?: (x: ReactNode) => ReactNode
 }) {
   const [chi, setChi] = useChi()
 
-  if (!serveAccesso) return <>{dentro ? dentro(null) : children}</>
+  const figli = (c: Personale | null) => (typeof children === 'function' ? children(c) : children)
+  if (!serveAccesso) return <>{dentro ? dentro(null) : figli(null)}</>
   if (chi === undefined) return <>{cornice(<UnAttimo />)}</>
   if (!chi) return <>{cornice(<Accesso per="istruttori" onEntrato={setChi} />)}</>
 
@@ -74,7 +75,7 @@ export function Porta({
           ESCI
         </button>
       </div>
-      {children}
+      {figli(chi)}
     </>
   )
 }
