@@ -4,6 +4,7 @@ import { comeE, iscrittiIl, lezioniFra, nomeIstruttore, trovaLezione, type Lezio
 import { memoria } from './datiProva'
 import { chiaveGiorno, perCognome, perEsteso } from './sala'
 import { PIN_PROVA } from './tabletProva'
+import { richiesteDi } from './richiesteProva'
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -468,6 +469,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         persona: { nome: p.nome, cognome: p.cognome, email: p.email ?? null, telefono: p.telefono ?? null, attiva: p.attiva, in_elenco_dal: p.creataIl },
         iscrizioni: a().iscrizioni.filter((i) => i.personaId === personaId).map((i) => ({ corso: corso(i.corsoId).nome, dal: i.dal, al: i.al ?? null })),
         presenze: presenze.sort((x, y) => x.inizio.localeCompare(y.inizio)),
+        richieste_di_iscrizione: richiesteDi(personaId).map(({ id: _id, personaId: _p, ...r }) => r),
       }
     },
   }

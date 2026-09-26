@@ -9,8 +9,9 @@ import { Presenze } from './Presenze'
 import { Importa } from './Importa'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
+import { Richieste } from './Richieste'
 
-export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'presenze' | 'importa' | 'personale' | 'regole'
+export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'importa' | 'personale' | 'regole'
 
 /** Dove portare la segreteria da un'altra sezione: la scheda di qualcuno, una lezione da aprire. */
 export interface Destinazione {
@@ -22,6 +23,7 @@ const VOCI: Array<[Voce, string]> = [
   ['settimana', 'SETTIMANA'],
   ['corsi', 'CORSI'],
   ['iscritti', 'ISCRITTI'],
+  ['richieste', 'RICHIESTE ONLINE'],
   ['presenze', 'PRESENZE'],
   ['importa', 'IMPORTA DA EXCEL'],
   ['personale', 'ISTRUTTORI E ACCESSI'],
@@ -82,10 +84,11 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
               type="button"
               className="sg-link"
               onClick={() => {
-                if (!window.confirm("Rimettere l'orario vero e togliere i cambi e le presenze fatte in prova su questo dispositivo?")) return
-                void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva')]).then(([a, p]) => {
+                if (!window.confirm("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?")) return
+                void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva')]).then(([a, p, r]) => {
                   a.archivio.azzera()
                   p.scordaProva()
+                  r.scordaRichiesteProva()
                   window.location.reload()
                 })
               }}
@@ -106,6 +109,7 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
         {d && voce === 'settimana' && <Settimana key={dove.lezione?.id ?? ''} d={d} lezioneIniziale={dove.lezione} />}
         {d && voce === 'corsi' && <Corsi d={d} />}
         {d && voce === 'iscritti' && <Iscritti key={dove.persona ?? ''} d={d} personaIniziale={dove.persona} />}
+        {d && voce === 'richieste' && <Richieste d={d} onVai={vai} />}
         {d && voce === 'presenze' && <Presenze d={d} onVai={vai} />}
         {d && voce === 'importa' && <Importa d={d} onVai={vai} />}
         {d && voce === 'personale' && <Personale d={d} />}

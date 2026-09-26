@@ -32,6 +32,14 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
   **Istruttori e accessi**, coi PIN del tablet. Le **regole**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale, e
   l'esportazione dei dati di una persona.
+- **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
+  iscrive risponde alle domande dal telefono e carica il modulo firmato, il
+  documento e la ricevuta; per un minore la data di nascita fa chiedere i dati
+  del genitore. Le richieste arrivano in segreteria, in **RICHIESTE ONLINE**,
+  con i file da guardare: accolta, la persona entra in elenco iscritta ai
+  corsi che ha scelto, senza doppioni se c'era già. Col database vero si
+  accende quando c'è l'informativa privacy; fino ad allora resta il link a
+  Google.
 - **L'accesso** col database: calendario, appello e segreteria sono per
   istruttori e segreteria; al primo accesso l'account si lega da sé alla
   persona con la stessa email.
@@ -73,10 +81,12 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 |---|---|
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. |
+| `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
 | `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
+| `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`

@@ -177,7 +177,8 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             ) : (
               <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
                 Non c'è ancora. Il link va messo in <code>src/lib/iscrizione.ts</code>, accanto a quello del modulo di iscrizione: si vede in fondo alla scheda
-                ISCRIZIONI, a tutti.
+                ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google:
+                chiede codici fiscali e documenti, e prima va detto come si trattano.
               </span>
             )}
           </div>

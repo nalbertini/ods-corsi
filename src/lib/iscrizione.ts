@@ -6,7 +6,12 @@
  * Il resto è impaginazione.
  */
 
-/** Il modulo Google dove si caricano risposte, foto e pagamento. */
+import { haUnServer } from './dati'
+
+/**
+ * Il modulo Google dove si caricavano risposte, foto e pagamento. Resta finché
+ * il modulo dell'app non si può usare col database vero: vedi `MODULO_IN_APP`.
+ */
 export const LINK_ISCRIZIONE = 'https://forms.gle/eZyGvAD4h7cNNpXF7'
 
 /**
@@ -16,6 +21,15 @@ export const LINK_ISCRIZIONE = 'https://forms.gle/eZyGvAD4h7cNNpXF7'
  * leggere chiunque, anche chi non ha un accesso.
  */
 export const INFORMATIVA: string | undefined = undefined
+
+/**
+ * Il modulo di iscrizione dentro l'app (`ModuloIscrizione`), al posto di
+ * quello Google. Raccoglie codici fiscali e documenti d'identità, e col
+ * database vero si accende solo quando c'è l'informativa da far leggere
+ * prima: fino ad allora il passo porta ancora al modulo Google. In prova è
+ * sempre acceso, perché lì i dati restano sul dispositivo.
+ */
+export const MODULO_IN_APP = !haUnServer || !!INFORMATIVA
 
 export interface Documento {
   etichetta: string
@@ -56,10 +70,30 @@ export interface Passo {
   titolo: string
   dettaglio?: string
   /** Cosa mostra il passo sotto il titolo, se ha qualcosa da far fare. */
-  azione?: 'moduli' | 'link' | 'pagamento'
+  azione?: 'moduli' | 'link' | 'pagamento' | 'modulo'
 }
 
-export const PASSI: Passo[] = [
+/** Col modulo dell'app: le domande e le foto stanno tutte nell'ultimo passo. */
+const PASSI_APP: Passo[] = [
+  { titolo: 'Scarica il modulo', dettaglio: 'Quello per maggiorenni, o quello per minori che firma il genitore.', azione: 'moduli' },
+  {
+    titolo: 'Compilalo e firmalo dal telefono',
+    dettaglio: 'Se non ci riesci, stampalo, firmalo a mano e fagli una foto.',
+  },
+  {
+    titolo: 'Fai il pagamento',
+    dettaglio: 'La quota associativa e il trimestre, oppure l’annuale. Tieni la ricevuta.',
+    azione: 'pagamento',
+  },
+  {
+    titolo: 'Manda la richiesta da qui',
+    dettaglio: "Le domande, poi le foto del modulo firmato, della carta d'identità e della ricevuta.",
+    azione: 'modulo',
+  },
+]
+
+/** Col modulo Google, com'era. */
+const PASSI_GOOGLE: Passo[] = [
   { titolo: 'Scarica il modulo', dettaglio: 'Quello per maggiorenni, o quello per minori che firma il genitore.', azione: 'moduli' },
   {
     titolo: 'Compilalo e firmalo dal telefono',
@@ -75,3 +109,5 @@ export const PASSI: Passo[] = [
     azione: 'pagamento',
   },
 ]
+
+export const PASSI: Passo[] = MODULO_IN_APP ? PASSI_APP : PASSI_GOOGLE

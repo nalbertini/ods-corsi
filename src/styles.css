@@ -193,6 +193,32 @@ input, textarea { font: inherit; color: inherit; }
 /* L'IBAN in grande, a gruppi di quattro: se va a capo, va a capo fra un gruppo e l'altro. */
 .iban { background: var(--surface-2); border: 2px solid var(--line); padding: 8px 10px; font-size: 17px; font-weight: 600; letter-spacing: 0.02em; user-select: all; }
 
+/* Il modulo di iscrizione. Due colonne dove c'è posto, una sul telefono:
+   è lì che si compila, col pollice, e i campi sono alti quanto quelli
+   dell'accesso. */
+.modulo-griglia { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-bottom: 4px; }
+.modulo-largo { grid-column: 1 / -1; }
+.modulo-etichetta { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
+.modulo .campo { width: 100%; }
+.modulo-corsi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.modulo-corso {
+  display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;
+  background: var(--surface); border: 2px solid var(--line); text-align: left; font-size: 15px; font-weight: 600;
+}
+.modulo-corso[aria-pressed='true'], .modulo-corso[aria-checked='true'] { border-color: var(--verde); }
+.modulo-spunta {
+  width: 22px; height: 22px; flex-shrink: 0; border: 2px solid var(--line);
+  display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--verde);
+}
+.modulo-file { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.modulo-file[data-fatto='true'] { border-color: var(--verde); }
+.modulo-scegli { align-self: center; flex-shrink: 0; }
+.modulo-privacy { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--sec); line-height: 1.4; cursor: pointer; }
+.modulo-privacy input { width: 22px; height: 22px; margin: 0; flex-shrink: 0; accent-color: var(--verde); }
+@media (max-width: 560px) {
+  .modulo-griglia, .modulo-corsi { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* Le due facce dell'app, sotto la testata. */
 .schede { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; flex-basis: 100%; }
 .scheda {
@@ -615,6 +641,18 @@ input, textarea { font: inherit; color: inherit; }
 .sg-iscritto:hover { background: var(--surface); }
 .sg-iscritto[aria-pressed='true'] { background: var(--surface-2); outline: 2px solid var(--text); outline-offset: -2px; }
 .sg-iscritto[data-spento='true'] { opacity: 0.45; }
+/* Una richiesta online: le risposte in due colonne, i file con l'anteprima. */
+.sg-dati { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; align-items: baseline; }
+.sg-file {
+  display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 12px 6px 6px;
+  background: var(--bg); border: 2px solid var(--line); color: var(--text); text-decoration: none;
+}
+.sg-file:hover { border-color: var(--dim); }
+.sg-file-img { width: 64px; height: 44px; object-fit: cover; background: var(--surface-2); }
+.sg-file-pdf {
+  width: 64px; height: 44px; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.12em; background: var(--surface-2); color: var(--sec);
+}
 .sg-iscrizione { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; background: var(--bg); border: 2px solid var(--line); }
 .sg-storico { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; }
 .sg-quadretto { height: 22px; border: 2px solid var(--line); }
