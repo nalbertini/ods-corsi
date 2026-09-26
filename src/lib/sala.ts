@@ -68,8 +68,15 @@ export const perEsteso = (p: { nome: string; cognome: string }) => `${p.cognome}
 export const perCognome = (a: Persona, b: Persona) =>
   a.cognome.localeCompare(b.cognome, 'it') || a.nome.localeCompare(b.nome, 'it')
 
-/** Il giorno di una data ISO, come chiave per raggruppare il calendario. */
-export const giornoDi = (iso: string) => iso.slice(0, 10)
+/**
+ * Il giorno locale di un istante ISO, come chiave `AAAA-MM-GG`: una lezione
+ * alle 00:30 ora italiana è di quel giorno, anche se in UTC è ancora ieri.
+ * Una data già `AAAA-MM-GG` resta com'è.
+ */
+export const giornoDi = (iso: string) => (iso.length === 10 ? iso : chiaveGiorno(new Date(iso)))
+
+/** Se un'iscrizione vale il giorno `g` (`AAAA-MM-GG`): da `dal` ad `al` compresi, `al` vuoto vuol dire ancora iscritto. */
+export const valeIl = (i: { dal: string; al: string | null }, g: string) => i.dal <= g && (!i.al || i.al >= g)
 
 export const oraDi = (iso: string) =>
   new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })

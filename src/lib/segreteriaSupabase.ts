@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StoricoSeg } from './segreteria'
 import type { StatoPresenza, StatoSessione } from './sala'
-import { chiaveGiorno } from './sala'
+import { chiaveGiorno, giornoDi, valeIl } from './sala'
 
 /**
  * La segreteria col database vero.
@@ -30,8 +30,6 @@ interface RigaSessione {
 type Iscrizione = { corso_id: string; persona_id: string; dal: string; al: string | null }
 
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
-const giornoDi = (iso: string) => chiaveGiorno(new Date(iso))
-const valeIl = (i: { dal: string; al: string | null }, g: string) => i.dal <= g && (!i.al || i.al >= g)
 
 /** Un errore del database detto in modo che la segreteria lo capisca. */
 function guaio(e: { message?: string; code?: string } | null): Error {
