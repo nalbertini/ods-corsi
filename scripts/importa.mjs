@@ -16,8 +16,8 @@
 // iscritti.csv   nome; cognome; email; telefono; corso
 //
 // `giorno` accetta il nome («martedì», «mar») o il numero (0 = domenica).
-// `istruttore` è «Nome Cognome»; più istruttori si separano con la virgola, ma
-// lo schema ne lega uno solo al corso ed entra il primo.
+// `istruttore` è «Nome Cognome»; più istruttori si separano con la virgola:
+// entrano tutti in `corsi_istruttori`, e il primo è quello di riferimento.
 // `corso` negli iscritti è il nome del corso, come scritto in corsi.csv.
 // ---------------------------------------------------------------------------
 import { readFileSync } from 'node:fs'
@@ -124,12 +124,8 @@ for (const c of corsi) {
   if (!/^\d{1,2}[:.]\d{2}$/.test(c.ora ?? '')) { guai.push(`«${c.nome}»: non capisco l'ora «${c.ora}»`); continue }
   const ora = c.ora.replace('.', ':')
 
-  const tutti = elencoIstruttori(c.istruttore)
-  if (tutti.length > 1 && !giaDetto.has(c.nome)) {
-    giaDetto.add(c.nome)
-    guai.push(`«${c.nome}» ha ${tutti.length} istruttori (${tutti.join(', ')}): lo schema ne tiene uno, entra «${tutti[0]}»`)
-  }
-  const primo = tutti.length ? nomeCognome(tutti[0]) : null
+  const tutti = elencoIstruttori(c.istruttore).map(nomeCognome).filter(Boolean)
+  const primo = tutti[0] ?? null
 
   dire(`-- ${c.nome}`)
   dire(`insert into corsi (nome, sala_id, istruttore_id, capienza, colore)`)
@@ -138,6 +134,14 @@ for (const c of corsi) {
   dire(primo ? `  (select id from persone where nome = ${q(primo.nome)} and cognome = ${q(primo.cognome)}),` : '  null,')
   dire(`  ${n(c.capienza)}, ${q(c.colore)}`)
   dire(`where not exists (select 1 from corsi where nome = ${q(c.nome)});`)
+  // Chi lo insegna: tutti, una volta per corso anche se il corso ha più orari.
+  if (!giaDetto.has(c.nome)) {
+    giaDetto.add(c.nome)
+    for (const i of tutti) {
+      dire(`insert into corsi_istruttori (corso_id, persona_id) select c.id, p.id from corsi c, persone p`)
+      dire(`where c.nome = ${q(c.nome)} and p.nome = ${q(i.nome)} and p.cognome = ${q(i.cognome)} on conflict do nothing;`)
+    }
+  }
   dire(`insert into ricorrenze (corso_id, giorno, ora, durata_min, dal)`)
   dire(`select c.id, ${giorno}, ${q(ora)}, ${n(c.durata || 60)}, current_date from corsi c`)
   dire(`where c.nome = ${q(c.nome)}`)

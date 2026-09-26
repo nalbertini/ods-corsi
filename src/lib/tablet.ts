@@ -1,0 +1,205 @@
+import type { StatoPresenza, StatoSessione } from './sala'
+import { haUnServer } from './dati'
+
+/**
+ * Il tablet di sala.
+ *
+ * Un tablet appeso al muro di ogni sala, con il calendario di quella sala: chi
+ * arriva tocca il suo nome e la presenza è segnata. Ha un account suo, che non
+ * è di nessuna persona e sa fare soltanto questo; l'istruttore, con il suo PIN,
+ * ci apre l'appello completo.
+ *
+ * Come per il resto dell'app ci sono due implementazioni dietro la stessa
+ * interfaccia: `tabletProva` (l'orario vero con iscritti inventati) e
+ * `tabletSupabase` (le funzioni di `supabase/04-tablet.sql`). Chi può fare cosa
+ * lo decide il server: qui ci sono solo le regole che servono a disegnare la
+ * schermata giusta, e se divergessero da quelle vere vincerebbe il server.
+ */
+
+/** Le stesse di `tablet_regole()` in `04-tablet.sql`. */
+export const REGOLE = {
+  /** Ci si segna da mezz'ora prima dell'inizio… */
+  primaMin: 30,
+  /** …a dieci minuti dopo. */
+  dopoMin: 10,
+  /** Chi se n'è dimenticato recupera fino a due settimane indietro. */
+  recuperoGiorni: 14,
+  /** L'area istruttore si chiude da sola dopo due minuti senza tocchi. */
+  istruttoreInattivoMin: 2,
+} as const
+
+export type Origine = 'appello' | 'tablet' | 'recupero'
+
+/** Una lezione della sala come la vede il tablet. */
+export interface LezioneSala {
+  id: string
+  corsoId: string
+  corso: string
+  colore?: string
+  descrizione?: string
+  /** Chi la fa: il sostituto se c'è, altrimenti chi insegna il corso. */
+  istruttori?: string
+  inizio: string
+  fine: string
+  stato: StatoSessione
+  iscritti: number
+  presenti: number
+}
+
+/** Un nome da toccare: il nome e l'iniziale del cognome, niente di più. */
+export interface NomeSala {
+  personaId: string
+  nome: string
+  /** «F.», o «Fon.» quando due iscritti sarebbero tutti e due «Giulia F.». */
+  sigla: string
+  segnato: boolean
+}
+
+/**
+ * Cosa è successo al tocco:
+ * - `segnata`: presenza scritta;
+ * - `gia`: era già fra i presenti;
+ * - `istruttore`: l'istruttore l'ha già segnato (assente, di solito) e il
+ *   tablet non lo scavalca.
+ */
+export type EsitoTocco = 'segnata' | 'gia' | 'istruttore'
+
+/** Una riga dell'appello dell'istruttore: qui il cognome c'è. */
+export interface RigaAppelloTablet {
+  personaId: string
+  nome: string
+  cognome: string
+  stato: StatoPresenza | null
+  origine: Origine | null
+}
+
+export interface Postazione {
+  nome: string
+  sala: string
+}
+
+export interface DatiTablet {
+  readonly modo: 'prova' | 'supabase'
+  /** L'ora del tablet. In prova si può spostare, per vedere una lezione che si apre. */
+  adesso(): Date
+  /** In che sala è appeso questo tablet; `null` se non è ancora stato preparato. */
+  postazione(): Promise<Postazione | null>
+  /** Prova: le sale fra cui scegliere. */
+  readonly sale?: string[]
+  /** Prova: il tablet diventa quello di una sala. */
+  scegliSala?(sala: string): Promise<void>
+  /** Supabase: l'accesso con l'account della sala, una volta sola. */
+  entra?(email: string, password: string): Promise<void>
+  /** Il tablet smette di essere il tablet di una sala. */
+  scollega(): Promise<void>
+
+  /** Le lezioni della sala fra due giorni, estremi inclusi. */
+  lezioni(da: Date, a: Date): Promise<LezioneSala[]>
+  elenco(sessioneId: string): Promise<NomeSala[]>
+  segna(sessioneId: string, personaId: string): Promise<EsitoTocco>
+  /** Il tasto ANNULLA. `false` se il tocco non si può più togliere. */
+  annulla(sessioneId: string, personaId: string): Promise<boolean>
+
+  /** Chi ha questo PIN, o `null`. Dopo troppi errori solleva. */
+  entraConPin(pin: string): Promise<{ personaId: string; nome: string } | null>
+  appello(pin: string, sessioneId: string): Promise<RigaAppelloTablet[]>
+  /** `null` toglie il segno, ma solo a una presenza arrivata dal tablet. */
+  correggi(pin: string, sessioneId: string, personaId: string, stato: StatoPresenza | null): Promise<boolean>
+}
+
+// ---------------------------------------------------------------------------
+// Il dispositivo è un tablet di sala?
+//
+// Ci si entra aprendo l'app con `#tablet` in fondo all'indirizzo, e da lì il
+// dispositivo se lo ricorda: il tablet in sala riapre sempre il tablet, anche
+// installato come app, senza che nessuno debba ridigitare niente.
+// ---------------------------------------------------------------------------
+const DOVE_MODO = 'ods-corsi:modo'
+
+export function eUnTablet(): boolean {
+  try {
+    if (window.location.hash === '#tablet') {
+      localStorage.setItem(DOVE_MODO, 'tablet')
+      return true
+    }
+    return localStorage.getItem(DOVE_MODO) === 'tablet'
+  } catch {
+    return window.location.hash === '#tablet'
+  }
+}
+
+/** Torna all'app di sempre: il dispositivo smette di aprirsi come tablet. */
+export function lasciaTablet() {
+  try {
+    localStorage.removeItem(DOVE_MODO)
+  } catch {
+    /* pazienza */
+  }
+  window.location.hash = ''
+  window.location.reload()
+}
+
+let unico: Promise<DatiTablet> | null = null
+
+/** Lo strato dati del tablet, caricato solo quando serve (vedi `dati()`). */
+export function datiTablet(): Promise<DatiTablet> {
+  if (!unico) {
+    unico = haUnServer
+      ? Promise.all([import('./tabletSupabase'), import('./supabase')]).then(([m, s]) => m.creaTabletSupabase(s.clientSupabase()))
+      : import('./tabletProva').then((m) => m.creaTabletProva())
+  }
+  return unico
+}
+
+// ---------------------------------------------------------------------------
+// Le fasi di una lezione, dal punto di vista di chi sta davanti al tablet.
+// ---------------------------------------------------------------------------
+
+export type Fase = 'dopo' | 'aperta' | 'in corso' | 'finita'
+
+const MIN = 60_000
+
+/**
+ * - `aperta`: ci si segna adesso (da 30' prima a 10' dopo l'inizio);
+ * - `in corso`: è cominciata e il tempo per segnarsi è passato;
+ * - `finita`, `dopo`: già fatta, o più tardi.
+ *
+ * `aperta` vince su `in corso`: nei primi dieci minuti si è in sala e ci si
+ * può ancora segnare.
+ */
+export function fase(l: Pick<LezioneSala, 'inizio' | 'fine'>, adesso: Date): Fase {
+  const t = adesso.getTime()
+  const inizio = Date.parse(l.inizio)
+  const fine = Date.parse(l.fine)
+  if (t >= inizio - REGOLE.primaMin * MIN && t <= inizio + REGOLE.dopoMin * MIN) return 'aperta'
+  if (t < inizio) return 'dopo'
+  return t < fine ? 'in corso' : 'finita'
+}
+
+/** Si recupera una lezione cominciata da non più di due settimane e non più aperta. */
+export function recuperabile(l: Pick<LezioneSala, 'inizio' | 'fine' | 'stato'>, adesso: Date): boolean {
+  const t = adesso.getTime()
+  const inizio = Date.parse(l.inizio)
+  return (
+    l.stato !== 'annullata' &&
+    inizio <= t &&
+    inizio >= t - REGOLE.recuperoGiorni * 24 * 60 * MIN &&
+    fase(l, adesso) !== 'aperta'
+  )
+}
+
+/**
+ * «Giulia F.», e «Giulia Fon.» quando nella stessa lezione ci sarebbero due
+ * «Giulia F.». È la stessa regola di `elenco_sala`: serve alla prova, perché
+ * col database la sigla arriva già fatta e il cognome intero non arriva mai.
+ */
+export function sigle<T extends { nome: string; cognome: string }>(persone: T[]): Array<T & { sigla: string }> {
+  const iniziale = (c: string) => c.replace(/^(De|Di|Da|Del|Della|Lo|La)\s+/i, '$1').charAt(0).toUpperCase()
+  const chiave = (p: T) => `${p.nome}|${iniziale(p.cognome)}`
+  const quanti = new Map<string, number>()
+  for (const p of persone) quanti.set(chiave(p), (quanti.get(chiave(p)) ?? 0) + 1)
+  return persone.map((p) => ({
+    ...p,
+    sigla: ((quanti.get(chiave(p)) ?? 0) > 1 ? p.cognome.slice(0, 3) : iniziale(p.cognome)) + '.',
+  }))
+}

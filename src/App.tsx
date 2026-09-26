@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Logo } from './components/Logo'
 import { Sala } from './components/Sala'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
+import { Tablet } from './components/tablet/Tablet'
+import { eUnTablet } from './lib/tablet'
 
 /**
  * ODS Corsi: il calendario delle sale e il registro delle presenze.
@@ -12,8 +14,17 @@ import { IscrizioniScreen } from './components/IscrizioniScreen'
  *
  * Accanto ai corsi ci sono i passi per iscriversi. La sala resta montata anche
  * quando si guardano le iscrizioni, così tornando si ritrova l'appello dov'era.
+ *
+ * Lo stesso codice fa anche da tablet di sala (`#tablet`): un'altra faccia,
+ * a pieno schermo, per il tablet appeso al muro.
  */
+const tablet = eUnTablet()
+
 export default function App() {
+  return tablet ? <Tablet /> : <AppCorsi />
+}
+
+function AppCorsi() {
   const [scheda, setScheda] = useState<'corsi' | 'iscrizioni'>('corsi')
 
   return (

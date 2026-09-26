@@ -41,7 +41,7 @@ let unico: Promise<Dati> | null = null
 export function dati(): Promise<Dati> {
   if (!unico) {
     unico = haUnServer
-      ? import('./datiSupabase').then((m) => m.creaDatiSupabase(URL_SUPABASE!, CHIAVE_SUPABASE!))
+      ? Promise.all([import('./datiSupabase'), import('./supabase')]).then(([m, s]) => m.creaDatiSupabase(s.clientSupabase()))
       : import('./datiProva').then((m) => m.creaDatiProva())
   }
   return unico

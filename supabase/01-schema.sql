@@ -12,6 +12,7 @@ create extension if not exists "citext";     -- email senza distinzione di maius
 do $$ begin create type ruolo as enum ('istruttore', 'staff', 'iscritto'); exception when duplicate_object then null; end $$;
 do $$ begin create type stato_sessione as enum ('prevista', 'svolta', 'annullata'); exception when duplicate_object then null; end $$;
 do $$ begin create type stato_presenza as enum ('presente', 'assente', 'giustificato'); exception when duplicate_object then null; end $$;
+do $$ begin create type origine_presenza as enum ('appello', 'tablet', 'recupero'); exception when duplicate_object then null; end $$;
 
 -- ---------------------------------------------------------------------------
 -- Persone
@@ -119,6 +120,44 @@ create table if not exists presenze (
   unique (sessione_id, persona_id)
 );
 create index if not exists presenze_sessione on presenze (sessione_id);
+
+-- ---------------------------------------------------------------------------
+-- Più istruttori per corso
+--
+-- La Lotta la tengono in due, la Preparazione atletica in tre. `corsi.istruttore_id`
+-- resta dov'è — è quello che riempie l'import e che `materializza_sessioni`
+-- copia sulla lezione — e questa tabella dice chi altro ne risponde. La policy
+-- delle lezioni accetta tutti e due.
+-- ---------------------------------------------------------------------------
+create table if not exists corsi_istruttori (
+  corso_id   uuid not null references corsi on delete cascade,
+  persona_id uuid not null references persone on delete cascade,
+  primary key (corso_id, persona_id)
+);
+create index if not exists corsi_istruttori_persona on corsi_istruttori (persona_id);
+
+-- ---------------------------------------------------------------------------
+-- Postazioni: il tablet appeso al muro di una sala.
+--
+-- Un tablet non è una persona, e per questo non sta in `persone`: così non
+-- entra mai nelle policy del personale e non vede l'anagrafica. Ha un suo
+-- utente (tatami@…), creato dalla segreteria, e può fare solo quello che le
+-- funzioni di 04-tablet.sql gli lasciano fare.
+-- ---------------------------------------------------------------------------
+create table if not exists postazioni (
+  id         uuid primary key default gen_random_uuid(),
+  nome       text not null check (length(trim(nome)) > 0),
+  sala_id    uuid not null references sale on delete cascade,
+  utente_id  uuid not null unique references auth.users on delete cascade,
+  attiva     boolean not null default true,
+  creata_il  timestamptz not null default now()
+);
+
+-- Da dove arriva una presenza: dall'appello di un istruttore, dal tablet nella
+-- finestra della lezione, o dal tablet dopo, da chi si era dimenticato. Lo
+-- decide il server (03-funzioni.sql, 04-tablet.sql), non chi scrive.
+alter table presenze add column if not exists origine origine_presenza not null default 'appello';
+alter table presenze add column if not exists postazione_id uuid references postazioni on delete set null;
 
 -- ---------------------------------------------------------------------------
 -- Conservazione
