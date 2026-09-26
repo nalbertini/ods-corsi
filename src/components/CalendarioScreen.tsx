@@ -26,17 +26,24 @@ function settimana(da: Date): Date[] {
  * Sullo schermo largo l'appello sta accanto: `apertaId` è la lezione che vi si
  * vede, e `presenti` i conti che l'appello ha cambiato dopo che il calendario
  * li ha letti.
+ *
+ * Con `soloDi` si vedono solo le lezioni di quell'istruttore (vedi
+ * `SessioneVista.insegnanti`): sue quelle dei corsi che tiene, e quelle in cui
+ * sostituisce qualcuno; non quelle in cui lo sostituiscono. Senza, tutte: è la
+ * segreteria, che fa l'appello per chiunque.
  */
 export function CalendarioScreen({
   dati,
   onApri,
   apertaId,
   presenti,
+  soloDi,
 }: {
   dati: Dati
   onApri: (s: SessioneVista) => void
   apertaId?: string
   presenti?: Record<string, number>
+  soloDi?: string
 }) {
   const [primo, setPrimo] = useState(() => {
     const d = new Date()
@@ -66,6 +73,7 @@ export function CalendarioScreen({
   const perGiorno = useMemo(() => {
     const m = new Map<string, SessioneVista[]>()
     for (const l of lezioni ?? []) {
+      if (soloDi && !l.insegnanti?.includes(soloDi)) continue
       // Si raggruppa per giorno **locale**, non per la data dentro la stringa
       // ISO: le 19:00 di Collegno sono le 17:00 UTC, e in certi mesi quello
       // basterebbe a far comparire la lezione nel giorno prima.
@@ -73,7 +81,7 @@ export function CalendarioScreen({
       m.set(g, [...(m.get(g) ?? []), l])
     }
     return m
-  }, [lezioni])
+  }, [lezioni, soloDi])
 
   const delGiorno = perGiorno.get(scelto) ?? []
 
@@ -113,7 +121,7 @@ export function CalendarioScreen({
       </div>
 
       <div className="rule">
-        <span className="rule-label">LEZIONI</span>
+        <span className="rule-label">{soloDi ? 'LE TUE LEZIONI' : 'LEZIONI'}</span>
         <div className="rule-line" />
         <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{delGiorno.length}</span>
       </div>
@@ -130,7 +138,7 @@ export function CalendarioScreen({
         )}
         {!guaio && lezioni !== null && delGiorno.length === 0 && (
           <p style={{ color: 'var(--dim)', fontSize: 15, lineHeight: 1.5, margin: '4px 0 0' }}>
-            Nessuna lezione {scelto === oggi ? 'oggi' : 'in questo giorno'}.
+            Nessuna {soloDi ? 'tua ' : ''}lezione {scelto === oggi ? 'oggi' : 'in questo giorno'}.
           </p>
         )}
 

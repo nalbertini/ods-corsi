@@ -26,9 +26,29 @@ interface RigaSessione {
   fine: string
   stato: SessioneVista['stato']
   note: string | null
-  corsi: { nome: string; colore: string | null; capienza: number | null } | null
+  istruttore_id: string | null
+  corsi: {
+    nome: string
+    colore: string | null
+    capienza: number | null
+    istruttore_id: string | null
+    corsi_istruttori: Array<{ persona_id: string }> | null
+  } | null
   sale: { nome: string } | null
   persone: { nome: string; cognome: string } | null
+}
+
+/**
+ * Chi fa la lezione quel giorno. Se sulla lezione c'è un altro istruttore da
+ * quello del corso è un sostituto, e la lezione è solo sua; altrimenti è di
+ * tutti quelli che tengono il corso (`corsi_istruttori`), come nella policy
+ * delle lezioni e nella prova.
+ */
+function insegnantiDi(s: RigaSessione): string[] {
+  const delCorso = s.corsi?.istruttore_id ?? null
+  if (s.istruttore_id && s.istruttore_id !== delCorso) return [s.istruttore_id]
+  const tutti = [delCorso, s.istruttore_id, ...(s.corsi?.corsi_istruttori ?? []).map((r) => r.persona_id)]
+  return [...new Set(tutti.filter((x): x is string => Boolean(x)))]
 }
 
 /**
@@ -55,8 +75,8 @@ const iscrittiIl = (righe: RigaIscrizione[], corsoId: string, giorno: string): P
     })
 
 const SELEZIONE = `
-  id, corso_id, inizio, fine, stato, note,
-  corsi ( nome, colore, capienza ),
+  id, corso_id, inizio, fine, stato, note, istruttore_id,
+  corsi ( nome, colore, capienza, istruttore_id, corsi_istruttori ( persona_id ) ),
   sale ( nome ),
   persone ( nome, cognome )
 `
@@ -116,6 +136,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       stato: s.stato,
       iscritti: iscrittiIl(iscrizioni, s.corso_id, giornoDi(s.inizio)).length,
       presenti: presenti.get(s.id) ?? 0,
+      insegnanti: insegnantiDi(s),
     }))
   }
 

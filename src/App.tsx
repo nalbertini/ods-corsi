@@ -12,7 +12,7 @@ import { esci, passaA, serveAccesso, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
-import { inProvaScelta, scegliProva } from './lib/dati'
+import { ISTRUTTORE_PROVA, inProvaScelta, scegliProva } from './lib/dati'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
 
 /**
@@ -148,6 +148,11 @@ function Iscrizioni() {
 function Istruttori() {
   const largo = useLargo()
 
+  // Di chi sono le lezioni da mostrare: dell'istruttore entrato, o di quello
+  // di prova. La segreteria le vede tutte, perché fa l'appello per chiunque;
+  // e anche un account ricordato da una versione che l'id non lo teneva.
+  const soloDi = (chi: Personale | null) => (chi ? (chi.ruolo === 'staff' ? undefined : chi.id) : ISTRUTTORE_PROVA.id)
+
   if (largo) {
     return (
       <Porta
@@ -160,7 +165,7 @@ function Istruttori() {
         dentro={(chi, onEsci) => (
           <MenuIstruttori chi={chi} onEsci={onEsci}>
             <div className="faccia-corsi">
-              <Sala />
+              <Sala soloDi={soloDi(chi)} />
             </div>
           </MenuIstruttori>
         )}
@@ -174,7 +179,7 @@ function Istruttori() {
         {!serveAccesso && (
           <nav className="schede">
             <button className="scheda" data-on>
-              APPELLO
+              CALENDARIO
             </button>
             <button className="scheda" data-on={false} onClick={() => vaiA('segreteria')}>
               SEGRETERIA
@@ -184,9 +189,7 @@ function Istruttori() {
       </Testata>
       <main className="scroll">
         <div className="faccia-corsi">
-          <Porta>
-            <Sala />
-          </Porta>
+          <Porta>{(chi) => <Sala soloDi={soloDi(chi)} />}</Porta>
         </div>
       </main>
     </div>
@@ -211,12 +214,12 @@ function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEs
             <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>ISTRUTTORI</span>
           </span>
         </div>
-        {/* Quello che l'istruttore fa, tutto qui: l'appello in questa pagina,
-            il tablet della sala e il timer in un'altra scheda, così l'appello
-            resta dov'era. */}
+        {/* Quello che l'istruttore fa, tutto qui: il calendario con l'appello in
+            questa pagina, il tablet della sala e il timer in un'altra scheda,
+            così l'appello resta dov'era. */}
         <div className="sg-voci">
           <span className="num sg-voce" aria-current="page">
-            APPELLO
+            CALENDARIO
           </span>
           <a className="num sg-voce" href={INDIRIZZI.sala} target="_blank" rel="noopener">
             TABLET DI SALA ↗
@@ -237,7 +240,7 @@ function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEs
           )}
         </div>
         <div className="sg-chi">
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : 'Istruttore di prova'}</span>
+          <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : `${ISTRUTTORE_PROVA.nome} · di prova`}</span>
           <span style={{ fontSize: 12, color: 'var(--dim)' }}>
             {chi?.ruolo === 'staff' ? 'Segreteria · anche l’appello' : 'Istruttore · calendario e appello'}
           </span>

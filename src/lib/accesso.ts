@@ -15,6 +15,8 @@ import { indirizzo, INDIRIZZI } from './aree'
  */
 
 export interface Personale {
+  /** L'id in `persone`. Può mancare nell'ultima persona ricordata da una versione vecchia. */
+  id?: string
   nome: string
   cognome: string
   ruolo: Exclude<Ruolo, 'iscritto'>
@@ -31,7 +33,7 @@ const DOVE = () => PERSONA_VISTA[sessioneDellaPagina()]   // vedi la nota in cod
 function ricordato(utente: string): Personale | null {
   try {
     const r = JSON.parse(localStorage.getItem(DOVE()) ?? 'null') as ({ utente: string } & Personale) | null
-    return r && r.utente === utente ? { nome: r.nome, cognome: r.cognome, ruolo: r.ruolo } : null
+    return r && r.utente === utente ? { id: r.id, nome: r.nome, cognome: r.cognome, ruolo: r.ruolo } : null
   } catch {
     return null
   }
@@ -74,7 +76,7 @@ export async function chiSei(): Promise<Personale | null> {
   const utente = s.session?.user.id
   if (!utente) return null
 
-  const leggi = () => c.from('persone').select('nome, cognome, ruolo').eq('utente_id', utente).eq('attiva', true).maybeSingle()
+  const leggi = () => c.from('persone').select('id, nome, cognome, ruolo').eq('utente_id', utente).eq('attiva', true).maybeSingle()
   let { data, error } = await leggi()
   // Al primo accesso l'account non è ancora legato: se in anagrafica c'è un
   // istruttore o una segreteria con la sua email, `collega_utente()` (in
@@ -86,8 +88,8 @@ export async function chiSei(): Promise<Personale | null> {
   // Senza rete la risposta non c'è, non è un «no»: vale l'ultima vista.
   if (error) return ricordato(utente)
 
-  const riga = data as { nome: string; cognome: string; ruolo: Ruolo } | null
-  const p = riga && riga.ruolo !== 'iscritto' ? { nome: riga.nome, cognome: riga.cognome, ruolo: riga.ruolo } : null
+  const riga = data as { id: string; nome: string; cognome: string; ruolo: Ruolo } | null
+  const p = riga && riga.ruolo !== 'iscritto' ? { id: riga.id, nome: riga.nome, cognome: riga.cognome, ruolo: riga.ruolo } : null
   ricorda(utente, p)
   return p
 }

@@ -32,8 +32,11 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 - In cima c'è una **striscia di sette giorni** a partire da oggi. I puntini
   sotto ogni giorno dicono quante lezioni ci sono. Oggi è evidenziato.
 - Le frecce **‹** e **›** spostano di una settimana.
-- Sotto ci sono le **lezioni del giorno scelto**, in ordine di orario, con
-  sala e istruttore.
+- Sotto ci sono **le vostre lezioni del giorno scelto**, in ordine di orario,
+  con sala e istruttore: quelle dei corsi che tenete e quelle in cui fate da
+  sostituti, non quelle in cui un collega sostituisce voi. Anche i puntini dei
+  giorni contano solo le vostre. Chi è di segreteria le vede tutte, perché fa
+  l'appello per chiunque.
 - A destra di ogni lezione c'è un numero:
   - solo un numero (es. `16`) → quanti sono **iscritti**, l'appello non è
     ancora fatto;
@@ -46,7 +49,7 @@ le lezioni, in **STRUMENTI**, ci sono **TABLET DI SALA ↗** e **TIMER ↗**, ch
 si aprono in un'altra scheda. Su un
 tablet in orizzontale o un computer stanno affiancati: calendario a sinistra,
 appello a destra. Lì l'app ha la stessa faccia della segreteria: a sinistra il
-menu, con **APPELLO**, **TABLET DI SALA ↗** e **TIMER ↗** (questi due si aprono
+menu, con **CALENDARIO**, **TABLET DI SALA ↗** e **TIMER ↗** (questi due si aprono
 in un'altra scheda, così l'appello resta dov'era), la guida, e in fondo, sotto
 il vostro nome, il tema ed **Esci**.
 
@@ -113,5 +116,6 @@ mentre la rete non c'è, parte solo l'ultimo segno.
 
 Nella prova c'è in più il passaggio alla **SEGRETERIA** (in alto sul
 telefono, nel menu sul computer) per girare tutta l'app, e nel nastro giallo il
-link **PROVA IL TABLET DI SALA**. Le iscrizioni non stanno qui: hanno il loro
+link **PROVA IL TABLET DI SALA**. L'istruttore della prova è Maurizio: il
+calendario mostra le sue lezioni. Le iscrizioni non stanno qui: hanno il loro
 indirizzo, `iscrizioni/`. Con l'account vero ognuno vede solo la sua parte.

@@ -47,6 +47,11 @@ export interface SessioneVista {
   /** Quanti iscritti ha il corso, e quanti risultano già segnati presenti. */
   iscritti: number
   presenti: number
+  /**
+   * Chi fa questa lezione quel giorno, per id: il sostituto se c'è, altrimenti
+   * gli istruttori del corso. Serve a mostrare a un istruttore solo le sue.
+   */
+  insegnanti?: string[]
 }
 
 /** Tutto quello che serve alla schermata di una lezione, in un colpo solo. */

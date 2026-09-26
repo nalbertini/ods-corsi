@@ -175,6 +175,7 @@ export function creaDatiProva(): Dati {
       colore: l.corso.colore,
       sala: k.sala,
       istruttore: k.istruttori.length ? k.istruttori.map(nomeIstruttore).join(', ') : undefined,
+      insegnanti: k.istruttori,
       inizio: l.inizio.toISOString(),
       fine: l.fine.toISOString(),
       stato: k.stato,

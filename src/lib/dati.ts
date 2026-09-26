@@ -55,6 +55,13 @@ function provaScelta(): boolean {
 /** Vero quando l'app è in prova per scelta, pur avendo un database. */
 export const inProvaScelta = provaScelta()
 
+/**
+ * Chi è l'istruttore in prova: un istruttore vero dei dati di prova (vedi
+ * `archivioProva.ts`), così il calendario mostra le sue lezioni come le
+ * vedrebbe lui, e non tutte quelle della palestra.
+ */
+export const ISTRUTTORE_PROVA = { id: 'i-maurizio', nome: 'Maurizio' }
+
 /** Vero quando l'app parla con un database vero. */
 export const haUnServer = configurato && !inProvaScelta
 

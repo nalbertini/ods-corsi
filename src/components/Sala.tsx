@@ -15,8 +15,10 @@ import { INDIRIZZI, TIMER, vaiA } from '../lib/aree'
  * largo stanno affiancate, il calendario a sinistra e l'appello della lezione
  * scelta a destra, e il conto dei presenti a sinistra segue l'appello mentre
  * lo si fa.
+ *
+ * `soloDi` è l'istruttore di cui mostrare le lezioni (vedi `CalendarioScreen`).
  */
-export function Sala() {
+export function Sala({ soloDi }: { soloDi?: string } = {}) {
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
@@ -81,7 +83,7 @@ export function Sala() {
       {largo ? (
         <div className="sala-due">
           <div className="sala-lato">
-            <CalendarioScreen dati={d} onApri={setAperta} apertaId={aperta?.id} presenti={presenti} />
+            <CalendarioScreen dati={d} onApri={setAperta} apertaId={aperta?.id} presenti={presenti} soloDi={soloDi} />
           </div>
           <div className="sala-lato">
             {aperta ? (
@@ -119,7 +121,7 @@ export function Sala() {
         </>
       ) : (
         <>
-          <CalendarioScreen dati={d} onApri={setAperta} />
+          <CalendarioScreen dati={d} onApri={setAperta} soloDi={soloDi} />
           <Strumenti />
         </>
       )}
