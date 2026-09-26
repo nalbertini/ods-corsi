@@ -180,6 +180,8 @@ input, textarea { font: inherit; color: inherit; }
 /* ---------- iscrizioni ---------- */
 
 .passi { list-style: none; margin: 0; }
+/* La prova sta prima dei passi e non è uno di loro: niente numero, il bordo giallo. */
+.prova { padding: 14px; gap: 6px; border-left: 4px solid var(--giallo); }
 .passo { display: flex; align-items: flex-start; gap: 14px; padding: 14px; }
 .passo-num {
   font-size: 26px; font-weight: 700; line-height: 1; color: var(--giallo);

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { INFORMATIVA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, type Passo } from '../lib/iscrizione'
-import { CONTATTI, SITO } from '../lib/sito'
+import { INFORMATIVA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, PROVA, type Passo } from '../lib/iscrizione'
+import { CONTATTI, SITO, chiama } from '../lib/sito'
 import { Costi } from './Costi'
 
 /**
@@ -19,6 +19,8 @@ export function IscrizioniScreen() {
           <div className="rule-line" />
           <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{PASSI.length} PASSI</span>
         </div>
+
+        <Prova />
 
         <ol className="pad stack passi" style={{ gap: 10, paddingBottom: 16 }}>
           {PASSI.map((p, i) => (
@@ -51,6 +53,25 @@ export function IscrizioniScreen() {
   )
 }
 
+/** Prima dei passi: chi non ha ancora deciso comincia da qui. */
+function Prova() {
+  return (
+    <section className="pad" style={{ paddingBottom: 10 }}>
+      <div className="card stack prova">
+        <span className="rule-label" style={{ fontSize: 12, letterSpacing: '0.2em' }}>PRIMA DI ISCRIVERTI</span>
+        <span className="row" style={{ gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
+          <span className="passo-titolo">Settimana di prova</span>
+          <span className="num" style={{ fontSize: 26, fontWeight: 700 }}>{PROVA.costo}</span>
+        </span>
+        <span className="passo-dettaglio">{PROVA.testo} Per cominciare, passa in palestra o chiamaci.</span>
+        <a className="btn btn-ghost passo-btn" href={chiama}>
+          CHIAMA
+        </a>
+      </div>
+    </section>
+  )
+}
+
 /** Per chi si blocca a metà: dove siamo e come ci si trova, dal piede del sito. */
 function Contatti() {
   return (
@@ -62,7 +83,7 @@ function Contatti() {
           <span className="num" style={{ color: 'var(--text)' }}>{CONTATTI.telefono}</span>.
         </span>
         <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-          <a className="btn btn-ghost passo-btn" href={`tel:+39${CONTATTI.telefono.replace(/\s/g, '')}`}>
+          <a className="btn btn-ghost passo-btn" href={chiama}>
             CHIAMA
           </a>
           <a className="btn btn-ghost passo-btn" href={CONTATTI.mappa} target="_blank" rel="noopener noreferrer">
