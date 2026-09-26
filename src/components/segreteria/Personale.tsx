@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg } from '../../lib/segreteria'
-import { Riga, Testa, useAvviso, useCarica } from './comune'
+import { Guaio, Riga, Testa, useAvviso, useCarica } from './comune'
 
 /** Quello che ciascun ruolo può fare: è il riassunto delle policy di `02-policy.sql`. */
 const PERMESSI: Array<[string, string]> = [
@@ -57,7 +57,8 @@ export function Personale({ d }: { d: DatiSegreteria }) {
               <span role="columnheader" className="sg-etichetta">PIN TABLET</span>
               <span role="columnheader" />
             </div>
-            {lista.dato === null && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo…</p>}
+            {lista.dato === null && lista.guaio && <Guaio testo={lista.guaio} />}
+            {lista.dato === null && !lista.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo…</p>}
             {persone.map((p) => (
               <div key={p.id} role="row" className="sg-riga-personale sg-personale" data-spento={!p.attiva}>
                 <span role="cell" className="stack" style={{ minWidth: 0 }}>

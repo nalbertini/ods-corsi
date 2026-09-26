@@ -3,7 +3,7 @@ import type { ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, 
 import { comeCertificato, comePaga, inCorso, PAGAMENTI } from '../../lib/segreteria'
 import { ESTENSIONI, MASSIMO_FILE } from '../../lib/richieste'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Campo, dataLunga, Guaio, Riga, Testa, useAvviso, useCarica } from './comune'
+import { Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica } from './comune'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
@@ -220,7 +220,14 @@ function Nuovo({
     void fai(
       async () => {
         id = await d.salvaPersona(b)
-        if (b.corso) await d.iscrivi(id, b.corso)
+        if (!b.corso) return
+        try {
+          await d.iscrivi(id, b.corso)
+        } catch (e) {
+          // La scheda c'è: si apre, così un secondo SALVA non ne crea un'altra.
+          onSalvato(id)
+          throw new Error(`Scheda creata, ma l'iscrizione non è andata: ${messaggio(e)}`)
+        }
       },
       b.corso ? 'Scheda creata e iscrizione fatta' : 'Scheda creata',
       () => onSalvato(id),
@@ -490,7 +497,10 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
     // La finestra si apre subito, col clic: dopo l'attesa del link il browser la bloccherebbe.
     const w = window.open('', '_blank')
     void fai(async () => {
-      const f = await d.apriCertificato(p.id)
+      const f = await d.apriCertificato(p.id).catch((e: unknown) => {
+        w?.close()
+        throw e
+      })
       if (!f) {
         w?.close()
         throw new Error(d.modo === 'prova' ? 'In prova il file resta solo finché la pagina è aperta: questo non c’è più' : 'Il file non si trova')

@@ -11,6 +11,7 @@ import { Importa } from './Importa'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Richieste } from './Richieste'
+import { Guaio } from './comune'
 import { indirizzoPagina } from '../../lib/guida'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
@@ -87,13 +88,19 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
     setVoce(v)
   }
 
+  const [guaio, setGuaio] = useState(false)
+  const [tentativo, setTentativo] = useState(0)
   useEffect(() => {
     let vivo = true
-    void datiSegreteria().then((x) => vivo && setD(x))
+    setGuaio(false)
+    datiSegreteria().then(
+      (x) => vivo && setD(x),
+      () => vivo && setGuaio(true),
+    )
     return () => {
       vivo = false
     }
-  }, [])
+  }, [tentativo])
 
   return (
     <div className="sg">
@@ -157,7 +164,15 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
       </nav>
 
       <main className="sg-corpo">
-        {!d && <p className="sg-sotto">Un attimo…</p>}
+        {!d && !guaio && <p className="sg-sotto">Un attimo…</p>}
+        {!d && guaio && (
+          <div className="stack" style={{ gap: 12, alignItems: 'flex-start' }}>
+            <Guaio testo="La segreteria non si è caricata: controlla la connessione." />
+            <button type="button" className="sg-btn sg-btn-linea" onClick={() => setTentativo((t) => t + 1)}>
+              RIPROVA
+            </button>
+          </div>
+        )}
         {d && voce === 'settimana' && <Settimana key={dove.lezione?.id ?? ''} d={d} lezioneIniziale={dove.lezione} />}
         {d && voce === 'corsi' && <Corsi d={d} />}
         {d && voce === 'iscritti' && <Iscritti key={dove.persona ?? ''} d={d} personaIniziale={dove.persona} />}

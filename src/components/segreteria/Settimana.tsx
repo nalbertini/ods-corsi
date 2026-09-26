@@ -326,7 +326,9 @@ function Lezione({
                 const scelto = istruttori.dato?.find((i) => i.id === e.target.value)
                 // Chi insegna già il corso non è un sostituto: la lezione torna come da corso.
                 const suo = !!scelto && l.istruttori.split(', ').includes(scelto.nome) && !l.sostitutoId
-                cambia({ sostitutoId: e.target.value || null }, e.target.value && !suo ? `Sostituto: ${scelto?.nome}` : 'Come da corso')
+                // E si salva così: un secondo istruttore del corso messo come
+                // sostituto comparirebbe da solo, col segno di sostituzione.
+                cambia({ sostitutoId: e.target.value && !suo ? e.target.value : null }, e.target.value && !suo ? `Sostituto: ${scelto?.nome}` : 'Come da corso')
               }}
             >
               <option value="">Come da corso{!l.sostitutoId && l.istruttori ? ` (${l.istruttori})` : ''}</option>
@@ -339,6 +341,7 @@ function Lezione({
           </Campo>
           <Campo id="z-sala" etichetta="SALA">
             <select id="z-sala" className="sg-campo" value={l.salaId ?? ''} onChange={(e) => cambia({ salaId: e.target.value || null }, 'Sala cambiata')}>
+              {!l.salaId && <option value="">Nessuna sala</option>}
               {sale.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.nome}

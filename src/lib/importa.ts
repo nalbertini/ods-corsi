@@ -1,4 +1,5 @@
 import type { CorsoSeg, DatiSegreteria, PersonaSeg, PersonaleSeg, Sala } from './segreteria'
+import { chiaveGiorno } from './sala'
 
 /**
  * L'import dei fogli Excel, dalla segreteria.
@@ -236,7 +237,7 @@ export function anteprima(f: Fogli, s: Situazione): Anteprima {
 
   let iscrittiNuovi = 0
   let iscrizioniNuove = 0
-  const oggi = new Date().toISOString().slice(0, 10)
+  const oggi = chiaveGiorno(new Date())
   for (const x of f.iscritti) {
     const p = trovaPersona(x, s.persone)
     if (!p) iscrittiNuovi++

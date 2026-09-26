@@ -108,7 +108,9 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
   }
 
   const vai = async () => {
-    if (!controllo) return
+    if (!controllo || aspetta) return
+    // Subito, prima della prima attesa: un secondo clic creerebbe i corsi due volte.
+    setAspetta('Comincio…')
     setGuaio(null)
     try {
       const a = await importa(d, controllo.f, setAspetta)
@@ -171,7 +173,12 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
                   )}
                   <label className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start', cursor: 'pointer' }}>
                     {c ? 'CAMBIA FOGLIO' : 'SCEGLI IL FOGLIO'}
-                    <input type="file" accept=".csv,text/csv" className="vh" onChange={(e) => void carica(f.chiave, e.target.files?.[0])} />
+                    <input type="file" accept=".csv,text/csv" className="vh" onChange={(e) => {
+                        void carica(f.chiave, e.target.files?.[0])
+                        // Così lo stesso file, corretto in Excel, si può rileggere.
+                        e.target.value = ''
+                      }}
+                    />
                   </label>
                 </div>
               )

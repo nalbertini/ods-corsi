@@ -120,7 +120,7 @@ const giaDetto = new Set()
 for (const c of corsi) {
   if (!c.nome) { guai.push(`una riga di ${fileCorsi} non ha il nome del corso`); continue }
   const giorno = /^\d$/.test(c.giorno ?? '') ? Number(c.giorno) : GIORNI[piatto(c.giorno ?? '')]
-  if (giorno === undefined) { guai.push(`«${c.nome}»: non capisco il giorno «${c.giorno}»`); continue }
+  if (giorno === undefined || giorno > 6) { guai.push(`«${c.nome}»: non capisco il giorno «${c.giorno}»`); continue }
   if (!/^\d{1,2}[:.]\d{2}$/.test(c.ora ?? '')) { guai.push(`«${c.nome}»: non capisco l'ora «${c.ora}»`); continue }
   const ora = c.ora.replace('.', ':')
 

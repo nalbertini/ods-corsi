@@ -123,11 +123,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const ids = sessioni.map((s) => s.id)
       const vuoto = ['00000000-0000-0000-0000-000000000000']
       const [isc, pres, chi] = await Promise.all([
-        db.from('iscrizioni').select('corso_id, persona_id, dal, al').in('corso_id', corsi.length ? corsi : vuoto),
+        db.from('iscrizioni').select('corso_id, persona_id, dal, al, persone ( attiva )').in('corso_id', corsi.length ? corsi : vuoto),
         db.from('presenze').select('sessione_id, stato').in('sessione_id', ids.length ? ids : vuoto),
         insegnanti(corsi),
       ])
-      const iscrizioni = ok(isc) as Iscrizione[]
+      // Chi è disattivato non conta fra gli iscritti, come nell'appello e in prova.
+      const iscrizioni = (ok(isc) as unknown as Array<Iscrizione & { persone: { attiva: boolean } | null }>).filter((i) => i.persone?.attiva)
       const presenze = ok(pres) as Array<{ sessione_id: string; stato: StatoPresenza }>
       return sessioni.map((s): LezioneSeg => {
         const g = giornoDi(s.inizio)
@@ -243,11 +244,17 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         ? (ok(await db.from('corsi').update(riga).eq('id', c.id)), c.id)
         : (ok(await db.from('corsi').insert(riga).select('id').single()) as { id: string }).id
       // Chi insegna: si tolgono quelli che non ci sono più e si aggiungono i nuovi.
-      const prima = (ok(await db.from('corsi_istruttori').select('persona_id').eq('corso_id', id)) as Array<{ persona_id: string }>).map((r) => r.persona_id)
-      const via = prima.filter((p) => !c.istruttori.includes(p))
-      const nuovi = c.istruttori.filter((p) => !prima.includes(p))
-      if (via.length) ok(await db.from('corsi_istruttori').delete().eq('corso_id', id).in('persona_id', via))
-      if (nuovi.length) ok(await db.from('corsi_istruttori').insert(nuovi.map((persona_id) => ({ corso_id: id, persona_id }))))
+      try {
+        const prima = (ok(await db.from('corsi_istruttori').select('persona_id').eq('corso_id', id)) as Array<{ persona_id: string }>).map((r) => r.persona_id)
+        const via = prima.filter((p) => !c.istruttori.includes(p))
+        const nuovi = c.istruttori.filter((p) => !prima.includes(p))
+        if (via.length) ok(await db.from('corsi_istruttori').delete().eq('corso_id', id).in('persona_id', via))
+        if (nuovi.length) ok(await db.from('corsi_istruttori').insert(nuovi.map((persona_id) => ({ corso_id: id, persona_id }))))
+      } catch (e) {
+        // Il corso nuovo c'è già: chi chiama lo deve sapere, per non crearne un altro.
+        if (!c.id) throw Object.assign(new Error(`Corso creato, ma gli istruttori non sono stati salvati: ${e instanceof Error ? e.message : e}`), { id })
+        throw e
+      }
       return id
     },
 
@@ -351,7 +358,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const c = ok(await db.from('iscrizioni').select('dal, al').eq('persona_id', personaId).eq('corso_id', corsoId).maybeSingle()) as {
         dal: string; al: string | null
       } | null
-      if (c && (!c.al || c.al >= g)) return
+      if (c && !c.al) return
+      // Terminata oggi o più avanti: l'iscrizione non era ancora finita, si
+      // toglie solo la fine (è il TERMINA premuto per sbaglio).
+      if (c && c.al && c.al >= g) {
+        ok(await db.from('iscrizioni').update({ al: null }).eq('persona_id', personaId).eq('corso_id', corsoId))
+        return
+      }
       // Una riga per persona e corso: chi torna riparte da oggi.
       ok(await db.from('iscrizioni').upsert({ persona_id: personaId, corso_id: corsoId, dal: g, al: null }, { onConflict: 'corso_id,persona_id' }))
     },

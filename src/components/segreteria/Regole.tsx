@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { DatiSegreteria, Sala } from '../../lib/segreteria'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
-import { dataLunga, Testa, useAvviso, useCarica } from './comune'
+import { dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
 
 /**
  * Le scelte che spettano alla palestra, non al codice: per quanto si tengono
@@ -35,6 +35,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
       <Testa titolo="REGOLE E PRIVACY" sotto="Le scelte che spettano alla palestra, non al codice." />
 
       <div className="sg-regole">
+        {imp.guaio && <Guaio testo={`Le impostazioni non si leggono: ${imp.guaio}`} />}
         <section aria-label="Per quanto si tengono le presenze" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">PER QUANTO SI TENGONO LE PRESENZE</span>
           <div className="row" style={{ gap: 12 }}>
@@ -45,6 +46,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
               id="mesi"
               className="sg-campo"
               value={imp.dato?.mesiPresenze ?? 24}
+              disabled={!imp.dato}
               onChange={(e) => void fai(() => d.salvaImpostazioni({ mesiPresenze: Number(e.target.value) }), 'Periodo cambiato', imp.ricarica)}
             >
               {[12, 24, 36, 60].map((m) => (
@@ -58,7 +60,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
           <div className="row sg-voce-elenco" style={{ gap: 12 }}>
             <span className="stack grow">
               <span style={{ fontSize: 15, fontWeight: 600 }}>
-                {scadute.dato === null ? '…' : scadute.dato === 0 ? 'Nessuna presenza scaduta' : `${scadute.dato} presenze scadute`}
+                {scadute.guaio ? 'Non si riesce a contarle' : scadute.dato === null ? '…' : scadute.dato === 0 ? 'Nessuna presenza scaduta' : `${scadute.dato} presenze scadute`}
               </span>
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>
                 {d.modo === 'prova' ? 'In prova si cancellano da qui.' : 'Si cancellano col job mensile (vedi supabase/LEGGIMI.md), o da qui.'}
@@ -67,7 +69,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             <button
               type="button"
               className="num sg-chip"
-              disabled={!scadute.dato}
+              disabled={!scadute.dato || !imp.dato}
               onClick={() => {
                 if (window.confirm(`Cancellare ${scadute.dato} presenze più vecchie di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`)) {
                   void fai(() => d.pulisci(), 'Presenze scadute cancellate', scadute.ricarica)
@@ -103,6 +105,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
               id="avanti"
               className="sg-campo"
               value={imp.dato?.giorniCalendario ?? 60}
+              disabled={!imp.dato}
               onChange={(e) => void fai(() => d.salvaImpostazioni({ giorniCalendario: Number(e.target.value) }), 'Cambiato: vale dal prossimo RIGENERA', imp.ricarica)}
             >
               {[30, 60, 90, 180].map((g) => (
