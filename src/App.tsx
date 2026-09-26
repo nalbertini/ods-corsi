@@ -20,7 +20,11 @@ import { inProvaScelta, scegliProva } from './lib/dati'
  * la segreteria per il computer della reception, a tutto schermo e solo per
  * chi ne ha il ruolo; le iscrizioni, la pagina pubblica del link da mandare a
  * chi vuole iscriversi; gli istruttori, col calendario e l'appello; e la sala,
- * il tablet appeso al muro. In prova le porte sono aperte a tutti.
+ * il tablet appeso al muro.
+ *
+ * Col database vero ognuno entra dal suo indirizzo e trova solo il suo posto,
+ * senza schede. In prova le porte sono aperte a tutti e le schede ci sono,
+ * perché la prova serve a far vedere l'app intera.
  */
 export default function App() {
   const area = useArea()
@@ -81,23 +85,32 @@ function Iscrizioni() {
 }
 
 /**
- * Il calendario e l'appello, dietro la porta. Accanto, i passi per iscriversi
- * come li vede il personale (con la lezione di prova): la sala resta montata
- * anche quando si guardano, così tornando si ritrova l'appello dov'era.
+ * Il calendario e l'appello, dietro la porta. Entra anche chi è di
+ * segreteria, se apre questo indirizzo: anche lei fa l'appello.
+ *
+ * In prova ci sono le schede, per passare al resto dell'app: i passi per
+ * iscriversi come li vede il personale (con la lezione di prova) e la
+ * segreteria. La sala resta montata anche quando si guarda altro, così
+ * tornando si ritrova l'appello dov'era.
  */
 function Istruttori() {
   const [scheda, setScheda] = useState<'corsi' | 'iscrizioni'>('corsi')
   return (
     <div className="app">
       <Testata luogo="ISTRUTTORI">
-        <nav className="schede">
-          <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
-            APPELLO
-          </button>
-          <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
-            ISCRIZIONI
-          </button>
-        </nav>
+        {!serveAccesso && (
+          <nav className="schede">
+            <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
+              APPELLO
+            </button>
+            <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
+              ISCRIZIONI
+            </button>
+            <button className="scheda" data-on={false} onClick={() => (window.location.hash = INDIRIZZI.segreteria)}>
+              SEGRETERIA
+            </button>
+          </nav>
+        )}
       </Testata>
       <main className="scroll">
         <div className="faccia-corsi" hidden={scheda !== 'corsi'}>
@@ -112,8 +125,9 @@ function Istruttori() {
 }
 
 /**
- * La segreteria, con la sua porta: entra solo chi ne ha il ruolo. Un
- * istruttore che arriva qui viene mandato al suo indirizzo.
+ * La segreteria, con la sua porta: entra solo chi ne ha il ruolo, e ci resta
+ * (il ritorno agli istruttori c'è solo in prova). Un istruttore che arriva
+ * qui viene mandato al suo indirizzo.
  */
 function AreaSegreteria() {
   const [chi, setChi] = useChi()
@@ -134,7 +148,6 @@ function AreaSegreteria() {
       <Segreteria
         nome={`${chi.nome} ${chi.cognome}`}
         prova={false}
-        onApp={() => (window.location.hash = INDIRIZZI.istruttori)}
         onEsci={() => void esci().then(() => setChi(null))}
       />
     )

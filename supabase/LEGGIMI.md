@@ -31,9 +31,11 @@ funzioni, quindi dopo va rilanciato anche `06-iscrizioni.sql`.
 
 ## 3. Le persone
 
-Con il database vero la scheda **APPELLO** chiede l'accesso: calendario e
-appello sono solo per istruttori e segreteria, e chi è di segreteria, appena
-entra, si ritrova nella segreteria. **ISCRIZIONI** resta aperta a tutti.
+Con il database vero l'app chiede l'accesso e non ha schede: l'istruttore
+entra da `#istruttori` e trova il calendario e l'appello, chi è di segreteria
+entra da `#segreteria` e trova la segreteria, e nient'altro.
+Chi vuole iscriversi non entra da qui: ha la pagina pubblica, `#iscrizioni` in
+fondo all'indirizzo, che la segreteria copia con **COPIA LINK ISCRIZIONI**.
 
 Ogni istruttore e chi sta in segreteria ha bisogno di due cose: un utente in
 **Authentication → Users** e una riga in `persone` che lo colleghi. Un account
@@ -59,10 +61,10 @@ istruttori e segreteria, e solo per una persona che non ha già un account. La
 prima persona di segreteria va comunque messa a mano, perché prima di lei
 nessuno può scrivere in `persone`.
 
-Chi ha il ruolo `staff` entra anche nella **segreteria**, all'indirizzo
-`#segreteria`: la settimana, i corsi e gli iscritti, pensati per il computer
-della reception. Un istruttore che apre quell'indirizzo viene rimandato a
-`#istruttori`.
+Chi ha il ruolo `staff` entra nella **segreteria**, all'indirizzo
+`#segreteria`: la settimana con gli appelli, i corsi e gli iscritti, pensati
+per il computer della reception. Un istruttore che apre quell'indirizzo viene
+rimandato a `#istruttori`.
 
 Chi frequenta i corsi **non** ha bisogno di un account: in questa fase gli
 iscritti sono nomi in un elenco e basta.
@@ -143,7 +145,7 @@ corso. `corsi.istruttore_id` resta il primo della lista, quello di riferimento.
 
 ## 5. Il modulo di iscrizione
 
-Chi si iscrive lo compila dalla scheda **ISCRIZIONI**, senza un accesso: le
+Chi si iscrive lo compila dalla pagina pubblica (`#iscrizioni`), senza un accesso: le
 domande di prima (i dati di chi si iscrive, del genitore se è minorenne, la
 residenza, i corsi, come paga) e tre file, cioè il modulo firmato, il
 documento e la ricevuta. La segreteria le trova in **SEGRETERIA → RICHIESTE
@@ -282,7 +284,7 @@ non è un segreto trapelato. A proteggere i dati sono le policy di
   punti fra quadre: per quanto si tengono richieste, documenti e ricevute, e
   dove si pubblica l'app. Poi si toglie il riquadro BOZZA dalla pagina e si
   mette `INFORMATIVA_BOZZA = false` in `src/lib/iscrizione.ts`: da lì si vede
-  in fondo alla scheda ISCRIZIONI, a tutti, e col database vero accende il
+  in fondo alla pagina delle iscrizioni, a tutti, e col database vero accende il
   modulo di iscrizione dell'app.
 - **Per quanto si tengono le presenze.** `presenze_scadute` dice cosa è
   scaduto e `pulisci_presenze()` lo cancella; il periodo di partenza è
