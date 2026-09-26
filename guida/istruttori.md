@@ -62,6 +62,27 @@ I due tasti in cima:
 
 Non c'è niente da salvare: ogni tocco parte subito.
 
+## Il timer della lezione
+
+Accanto al giorno e all'ora c'è **TIMER**: apre il timer con la lezione, e in
+cima ci sono i timer collegati al suo corso. Siccome siete entrati come
+istruttori, il timer vi riconosce da solo:
+
+- **I MIEI** sono i vostri timer, e li ritrovate su ogni telefono o tablet in
+  cui entrate. **DELLA PALESTRA** sono quelli di tutti: li può sistemare
+  chiunque del personale.
+- Un timer nuovo nasce fra i vostri. Nell'editor, sotto **DOVE**, lo mettete
+  nella palestra o solo sul telefono; sotto **CORSI** lo collegate a uno o più
+  corsi, e da lì compare sul tablet di sala con la lezione.
+- Il timer di un collega collegato a un corso lo vedete e lo fate partire;
+  per cambiarlo, **DUPLICA** ne fa una copia vostra.
+- I timer che avevate già sul telefono si portano fra i vostri da
+  **IMPOSTAZIONI → ODS CORSI → PORTA FRA I MIEI**.
+- Maurizio, bip e voce, volume vi seguono da un dispositivo all'altro.
+
+Anche il timer funziona senza rete: quello che salvate aspetta sul telefono e
+parte da solo quando la rete torna.
+
 ## Senza rete
 
 L'appello funziona anche senza rete. I tocchi si vedono subito e aspettano sul

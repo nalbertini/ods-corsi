@@ -45,7 +45,18 @@ export interface Workout {
   /** Vero per i timer che arrivano con l'app e non sono stati modificati. */
   builtin?: boolean
   updatedAt: number
+  /**
+   * Dove sta, quando c'è il database di ODS Corsi: nella libreria della
+   * palestra, fra i miei, o fra quelli di un collega (che vedo perché li ha
+   * collegati a un corso, e che non posso cambiare). Senza, sta solo su questo
+   * dispositivo, come è sempre stato.
+   */
+  dove?: Dove
+  /** I corsi a cui è collegato: li apre il tablet di sala con la lezione. */
+  corsi?: string[]
 }
+
+export type Dove = 'palestra' | 'miei' | 'collega'
 
 export interface Segment {
   kind: SegmentKind

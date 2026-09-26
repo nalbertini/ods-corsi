@@ -102,6 +102,32 @@ aggiunta di nuovo alla schermata Home dal nuovo indirizzo. Il service worker di
 ODS Corsi lascia stare `timer/` (`navigateFallbackDenylist` e `globIgnores` in
 `vite.config.ts`): ognuna delle due app si aggiorna per conto suo.
 
+### Il timer sul database
+
+Col database, il timer usa l'accesso fatto qui — da istruttore o da tablet di
+sala — e tiene sul database i timer, lo storico e le preferenze
+(`supabase/08-timer.sql`; chi può fare cosa è in
+[`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#8-il-timer)):
+
+- **La libreria della palestra** e **i timer di ogni istruttore**, che li
+  ritrova su ogni dispositivo in cui entra. Un timer nuovo nasce fra i propri;
+  l'editor lascia metterlo nella palestra o solo sul dispositivo.
+- **I timer di un corso.** Nell'editor, alla voce CORSI, un timer si collega
+  ai corsi. Il tasto TIMER del tablet di sala (con una lezione in corso) e
+  dell'appello apre il timer con la lezione — `timer/?corso=…&lezione=…&nome=…`
+  — e i timer del suo corso stanno in cima.
+- **Lo storico**: ogni allenamento, con la lezione in cui è partito e chi
+  l'ha fatto partire (l'istruttore o il tablet).
+- **Le preferenze** che seguono l'istruttore: Maurizio, bip e voce, volume.
+  Quelle del dispositivo (la voce di sistema, lo schermo acceso) restano lì.
+
+Il timer riusa due file di qui: `src/lib/sessioni.ts`, per trovare la
+sessione con le stesse chiavi, e `src/lib/coda.ts`, la coda delle scritture
+offline. Senza database, in prova o senza un accesso, il timer fa quello che
+ha sempre fatto: tutto sul dispositivo.
+
+Restano sul dispositivo, per ora, il catalogo degli esercizi e la voce incisa.
+
 ## La versione
 
 L'app mostra la sua versione — il numero di `package.json` e il commit da cui
@@ -176,6 +202,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
 | `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
 | `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già. |
+| `supabase/prova/timer.sql` | Il timer: la libreria della palestra, i timer personali e dei corsi, il tablet che li apre e non li scrive, lo storico, le preferenze. |
 | `supabase/prova/certificati.sql` | Certificati medici e pagamenti: li vede e li cambia solo la segreteria, e il file di una persona sta nella sua cartella. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 

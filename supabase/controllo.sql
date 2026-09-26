@@ -70,6 +70,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
         and has_function_privilege('anon', p.oid, 'execute')
         and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole'))),
   ('07-certificati-pagamenti.sql', 'certificati e pagamenti',
-    to_regclass('public.schede_iscritti') is not null)
+    to_regclass('public.schede_iscritti') is not null),
+  ('08-timer.sql', 'il timer: libreria, corsi, storico, preferenze',
+    to_regclass('public.preferenze_timer') is not null)
 ) as x(file, cosa, c)
 order by file, cosa;

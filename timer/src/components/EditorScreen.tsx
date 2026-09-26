@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import type { Esercizio } from '../lib/esercizi'
 import { PickerEsercizi } from './PickerEsercizi'
-import type { Exercise, Segment, Workout } from '../types'
+import type { Dove, Exercise, Segment, Workout } from '../types'
+import type { Corso } from '../lib/libreria'
 import { MODE_BADGE, MODE_FIELDS, MODE_HINT, MODE_LABEL, MODE_TINT, buildSegments, descriviObiettivo, totalDuration } from '../lib/engine'
 import { clock, uid } from '../lib/format'
 import { Back, Caret, Minus, Play, Plus, Trash } from './Icons'
@@ -115,9 +116,20 @@ function CampoObiettivo({
   )
 }
 
+/** Dove si può mettere un timer che non sta ancora sul database. `qui` è il dispositivo. */
+export type Destinazione = Exclude<Dove, 'collega'> | 'qui'
+
+const DESTINAZIONE: Record<Destinazione, { etichetta: string; spiega: string }> = {
+  miei: { etichetta: 'I MIEI', spiega: 'Lo ritrovi su ogni dispositivo in cui entri, e lo vedi solo tu finché non lo colleghi a un corso.' },
+  palestra: { etichetta: 'PALESTRA', spiega: 'Nella libreria della palestra: lo vedono e lo aprono tutti, tablet di sala compresi.' },
+  qui: { etichetta: 'SOLO QUI', spiega: 'Resta su questo dispositivo, come prima del database.' },
+}
+
 export function EditorScreen({
   initial,
   nuovo,
+  destinazioni,
+  corsi,
   catalogo,
   onCatalogo,
   onSave,
@@ -127,13 +139,21 @@ export function EditorScreen({
   initial: Workout
   /** Non sta ancora nella libreria: si sta creando, non modificando. */
   nuovo?: boolean
+  /** Dove può andare, se non sta già sul database; `null` quando non si sceglie. */
+  destinazioni: Destinazione[] | null
+  /** I corsi a cui si può collegare, con l'accesso da istruttore. */
+  corsi: Corso[]
   catalogo: Esercizio[]
   onCatalogo: (lista: Esercizio[]) => void
   onSave: (w: Workout) => void
   onCancel: () => void
   onSaveAndStart: (w: Workout) => void
 }) {
-  const [w, setW] = useState<Workout>(initial)
+  // Un timer nuovo, con l'accesso, nasce fra i miei: è quello che si vuole
+  // quasi sempre, e il dispositivo resta a un tocco.
+  const [w, setW] = useState<Workout>(() =>
+    nuovo && destinazioni?.includes('miei') && !initial.dove ? { ...initial, dove: 'miei' } : initial,
+  )
   const [scegliendo, setScegliendo] = useState(false)
   // L'obiettivo si apre una riga per volta: tre campi per ogni esercizio,
   // sempre aperti, trasformerebbero un circuito da otto stazioni in un modulo.
@@ -351,6 +371,70 @@ export function EditorScreen({
             AGGIUNGI {w.mode === 'circuit' ? 'STAZIONE' : 'ESERCIZIO'}
           </button>
         </div>
+
+        {destinazioni && (
+          <>
+            <div className="rule">
+              <span className="rule-label">DOVE</span>
+              <div className="rule-line" />
+            </div>
+            <div className="pad stack" style={{ gap: 8 }}>
+              <div className="segmenti" style={{ gridTemplateColumns: `repeat(${destinazioni.length}, minmax(0, 1fr))` }}>
+                {destinazioni.map((d) => {
+                  const on = (w.dove ?? 'qui') === d
+                  return (
+                    <button
+                      key={d}
+                      className="segmento"
+                      data-on={on}
+                      aria-pressed={on}
+                      onClick={() => set(d === 'qui' ? { dove: undefined, corsi: [] } : { dove: d })}
+                    >
+                      {DESTINAZIONE[d].etichetta}
+                    </button>
+                  )
+                })}
+              </div>
+              <span style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)' }}>{DESTINAZIONE[w.dove === 'palestra' || w.dove === 'miei' ? w.dove : 'qui'].spiega}</span>
+            </div>
+          </>
+        )}
+
+        {/* I corsi: il tablet di sala e l'appello aprono il timer con la
+            lezione, e in cima ci sono quelli del suo corso. Solo per un timer
+            che sta sul database, perché il tablet deve poterlo leggere. */}
+        {corsi.length > 0 && (w.dove === 'miei' || w.dove === 'palestra') && (
+          <>
+            <div className="rule">
+              <span className="rule-label">CORSI</span>
+              <div className="rule-line" />
+              <span className="num" style={{ fontSize: 14, fontWeight: 600, color: 'var(--dim)' }}>
+                {w.corsi?.length ?? 0}
+              </span>
+            </div>
+            <p className="pad" style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)', margin: '0 0 10px' }}>
+              Collegato a un corso, compare in cima quando il timer si apre dalla sua lezione, sul tablet di sala o
+              dall’appello{w.dove === 'miei' ? ', e lo vede chi apre quel corso. Cambiarlo resta tuo' : ''}.
+            </p>
+            <div className="pad row" style={{ gap: 8, flexWrap: 'wrap', paddingBottom: 6 }}>
+              {corsi.map((c) => {
+                const on = !!w.corsi?.includes(c.id)
+                return (
+                  <button
+                    key={c.id}
+                    className="chip"
+                    data-on={on}
+                    aria-pressed={on}
+                    style={c.colore ? { borderColor: c.colore } : undefined}
+                    onClick={() => set({ corsi: on ? (w.corsi ?? []).filter((x) => x !== c.id) : [...(w.corsi ?? []), c.id] })}
+                  >
+                    {c.nome.toUpperCase()}
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        )}
 
         <div className="rule">
           <span className="rule-label">ANTEPRIMA</span>

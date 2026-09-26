@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { DettaglioSessione, StatoPresenza } from '../lib/sala'
 import { giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
+import { timerDellaLezione } from '../lib/aree'
+import { Cronometro } from './Icons'
 
 /**
  * L'appello.
@@ -88,13 +90,20 @@ export function AppelloScreen({
 
   return (
     <>
-      <div className="pad stack" style={{ gap: 4, paddingTop: 14 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: 'var(--faint)' }}>
-          {giornoPerEsteso(d.sessione.inizio).toUpperCase()} · {oraDi(d.sessione.inizio)}
-        </span>
-        <span style={{ fontSize: 13, color: 'var(--dim)' }}>
-          {[d.sessione.sala, d.sessione.istruttore].filter(Boolean).join(' · ')}
-        </span>
+      <div className="pad row" style={{ gap: 10, paddingTop: 14 }}>
+        <div className="stack grow" style={{ gap: 4, minWidth: 0 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: 'var(--faint)' }}>
+            {giornoPerEsteso(d.sessione.inizio).toUpperCase()} · {oraDi(d.sessione.inizio)}
+          </span>
+          <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+            {[d.sessione.sala, d.sessione.istruttore].filter(Boolean).join(' · ')}
+          </span>
+        </div>
+        {/* Il timer della lezione: si apre con i timer del corso in cima. */}
+        <a className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px', gap: 8 }} href={timerDellaLezione(d.sessione)}>
+          <Cronometro size={18} />
+          TIMER
+        </a>
       </div>
 
       <div className="pad" style={{ paddingTop: 14 }}>

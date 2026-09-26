@@ -31,6 +31,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 5. `05-segreteria.sql` — le lezioni che seguono i cambi dei corsi, il primo accesso
 6. `06-iscrizioni.sql` — il modulo di iscrizione, i suoi file, e chi può chiamare cosa
 7. `07-certificati-pagamenti.sql` — il certificato medico e il pagamento degli iscritti
+8. `08-timer.sql` — il timer: la libreria della palestra, i timer personali e dei corsi, lo storico, le preferenze
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -42,7 +43,9 @@ lanciare `07-certificati-pagamenti.sql`: finché non c'è, l'elenco degli
 iscritti si vede lo stesso, e salvare un certificato dice che manca. Per la sala dei singoli giorni
 (la colonna `ricorrenze.sala_id`) sono `01-schema.sql`, `03-funzioni.sql`,
 `04-tablet.sql` e `05-segreteria.sql`: le lezioni già generate restano dove
-sono.
+sono. Per il timer basta lanciare `08-timer.sql`, che non chiede di
+rilanciare `06-iscrizioni.sql`: finché non c'è, il timer tiene tutto sul
+dispositivo come prima e dice che il database non risponde.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -324,7 +327,32 @@ Il PIN è salvato cifrato e due istruttori non possono avere lo stesso. Dopo 5
 PIN sbagliati in 5 minuti il tablet si blocca per qualche minuto: gli altri
 tablet no.
 
-## 8. L'app
+## 8. Il timer
+
+Il timer (la cartella `timer/`) non ha una porta sua: trova l'accesso fatto in
+ODS Corsi, perché le due app stanno sulla stessa origine e Supabase tiene la
+sessione nel `localStorage`. Chi fa cosa, secondo `08-timer.sql`:
+
+| | istruttore o segreteria | tablet di sala | senza accesso |
+|---|---|---|---|
+| timer della palestra | vede, crea, cambia; toglie quelli che ha creato (la segreteria tutti) | vede e fa partire | — |
+| timer propri | vede, crea, cambia, toglie | — | — |
+| timer di un collega | vede e copia, se collegato a un corso | vede e fa partire, se collegato a un corso | — |
+| collegare un timer a un corso | sì, a qualunque corso | no | — |
+| storico | scrive il suo, legge tutto | scrive e legge il suo | — |
+| preferenze | le sue | — | — |
+
+Senza accesso, in prova o senza database, il timer tiene tutto sul
+dispositivo, com'è sempre stato. Chi aveva già dei timer sul telefono li porta
+fra i suoi da **Impostazioni → ODS Corsi → PORTA FRA I MIEI**.
+
+Le modifiche fatte senza rete restano in coda sul dispositivo (la stessa coda
+delle presenze, sotto `ods-timer:coda`) e partono da sole quando il database
+risponde. Quelle che il database rifiuta — un permesso che non c'è — si
+lasciano andare invece di bloccare la coda, e restano solo su quel
+dispositivo.
+
+## 9. L'app
 
 Le due variabili vanno messe dove si compila (in locale un file `.env`, su
 GitHub Actions dei *repository secrets*):
@@ -378,5 +406,7 @@ e il blocco, e che il tablet non veda niente più di quel che deve;
 suoi giorni, cambia sala, quando cambiano istruttore o giorni, o si archivia, e il primo accesso; `iscrizioni.sql`
 prova il modulo di iscrizione: cosa può fare chi non ha un accesso, i limiti
 sui file, e chi accoglie le richieste; `certificati.sql` prova che certificati
-e pagamenti li veda e li cambi solo la segreteria. `finto-supabase.sql` rifà anche le due
+e pagamenti li veda e li cambi solo la segreteria; `timer.sql` prova il timer:
+chi vede e cambia i timer della palestra, i propri e quelli dei colleghi, il
+tablet che li apre senza scriverli, lo storico e le preferenze. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

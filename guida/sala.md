@@ -19,7 +19,11 @@ aprite l'appello completo e lo correggete.
 - **A destra**, **OGGI IN QUESTA SALA**: tutte le lezioni del giorno, con
   FINITA, SI SEGNA ORA o PIÙ TARDI.
 - **In basso** tre tasti: **TI SEI DIMENTICATO DI SEGNARTI?**, **AREA
-  ISTRUTTORE** e **TIMER**, che apre il timer della lezione. Dal timer si
+  ISTRUTTORE** e **TIMER**, che apre il timer. Se in quel momento ci si segna
+  a una lezione, il timer si apre con quella: in cima, in **DEL CORSO**, ci
+  sono i timer che gli istruttori hanno collegato al corso, poi quelli della
+  palestra. Dal tablet i timer si fanno partire, non si cambiano: si creano e
+  si modificano dal proprio telefono, entrando come istruttore. Dal timer si
   torna al tablet con **SALA**. Il tema bianco scelto qui vale anche nel
   timer, e viceversa.
 
