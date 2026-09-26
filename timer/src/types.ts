@@ -100,11 +100,15 @@ export interface Settings {
   volume: number
   keepAwake: boolean
   bigScreen: boolean
-  /** Con Spotify collegato: la musica parte e si ferma insieme al timer. */
+  /** Da dove viene la musica: Spotify, comandato da fuori, o YouTube, suonato qui. */
+  musicaFonte: 'spotify' | 'youtube'
+  /** Il link di YouTube, playlist o video, quando la fonte è YouTube. */
+  youtube: string
+  /** La musica parte e si ferma insieme al timer. */
   musicaSegue: boolean
-  /** Con Spotify collegato: nel recupero la musica scende a `musicaRecupero`. */
+  /** Nel recupero la musica scende a `musicaRecupero`. */
   musicaAbbassa: boolean
-  /** Il volume di Spotify nel recupero, 0–100. */
+  /** Il volume della musica nel recupero, 0–100. */
   musicaRecupero: number
 }
 

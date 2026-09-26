@@ -17,7 +17,8 @@ import {
 } from '../lib/salvataggio'
 import { type Tema, useTema } from '../lib/tema'
 import { clientId, clientIdDaCompilazione, collega, impostaClientId, indirizzoRitorno, scollega } from '../lib/spotify'
-import { useMusica } from '../lib/useMusica'
+import { useMusica, useSpotify } from '../lib/useMusica'
+import { VOLUME_BLOCCATO, leggiLink } from '../lib/youtube'
 import { Chevron } from './Icons'
 import { Logo } from './Logo'
 
@@ -598,17 +599,16 @@ export function SettingsScreen({
 }
 
 /**
- * Spotify: il collegamento e la musica che segue il timer.
+ * La musica: da dove viene, e cosa fa mentre il timer gira.
  *
- * Tre passi, e la sezione mostra solo quello a cui si è arrivati: il Client ID
- * (se non è già nel sito), il collegamento, poi le due automazioni.
+ * Due fonti che funzionano in modo opposto, e la sezione lo dice: Spotify si
+ * comanda da qui ma suona altrove, e vuole Premium e un'app registrata;
+ * YouTube suona dentro il timer, basta un link, ma vuole lo schermo acceso.
+ * Le due automazioni valgono per tutte e due.
  */
 function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: Partial<Settings>) => void }) {
-  const m = useMusica()
-  const [id, setId] = useState(() => clientId())
-  const [copiato, setCopiato] = useState(false)
-  const ritorno = indirizzoRitorno()
-  const l = m.lettore
+  const m = useMusica(settings)
+  const yt = settings.musicaFonte === 'youtube'
 
   return (
     <>
@@ -617,76 +617,39 @@ function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: 
         <div className="rule-line" />
       </div>
       <div className="pad stack" style={{ gap: 8 }}>
-        <p style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)', margin: 0 }}>
-          Nessuna app web può comandare il lettore del telefono. Spotify sì, se lo si collega: dal timer si mette in
-          pausa, si salta un brano e si abbassa il volume nel recupero, ovunque Spotify stia suonando. Serve un
-          account Premium.
-        </p>
-
-        {!clientIdDaCompilazione() && !m.collegato && (
-          <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
-            <span style={{ fontSize: 15, fontWeight: 600 }}>Client ID dell’app Spotify</span>
-            <span style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--dim)' }}>
-              Si ottiene una volta sola registrando un’app gratuita su developer.spotify.com, con questo indirizzo fra
-              i Redirect URI. I passi sono nella guida.
-            </span>
-            <button
-              className="field num"
-              style={{ fontSize: 13, textAlign: 'left', wordBreak: 'break-all', color: copiato ? 'var(--verde)' : undefined }}
-              onClick={() => {
-                void navigator.clipboard?.writeText(ritorno).then(() => setCopiato(true))
-              }}
-              aria-label="Copia l’indirizzo di ritorno"
-            >
-              {copiato ? 'Copiato: ' : ''}
-              {ritorno}
-            </button>
-            <input
-              className="field"
-              value={id}
-              placeholder="Incolla qui il Client ID"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-              onChange={(e) => setId(e.target.value)}
-              onBlur={() => impostaClientId(id)}
-              style={{ fontSize: 15 }}
-            />
-          </div>
-        )}
-
-        {!m.collegato ? (
-          <button
-            className="btn btn-go"
-            style={{ minHeight: 52, fontSize: 16 }}
-            disabled={!id.trim()}
-            onClick={() => {
-              impostaClientId(id)
-              void collega()
-            }}
-          >
-            COLLEGA SPOTIFY
-          </button>
-        ) : (
-          <>
-            <div className="card row" style={{ gap: 12, padding: '10px 14px', minHeight: 58 }}>
-              <div style={{ width: 10, height: 10, flexShrink: 0, background: l ? 'var(--verde)' : 'var(--line)' }} />
-              <div className="stack grow" style={{ gap: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 15, fontWeight: 600 }}>Spotify collegato</span>
-                <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-                  {l
-                    ? `${l.inRiproduzione ? 'Suona' : 'In pausa'} su ${l.dispositivo}${l.volume == null ? ' · volume non regolabile da qui' : ''}`
-                    : 'Nessun dispositivo sta suonando adesso'}
-                </span>
-              </div>
+        <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
+          <span style={{ fontSize: 15, fontWeight: 600 }}>Da dove viene la musica</span>
+          <div className="segmenti" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            {(
+              [
+                ['spotify', 'SPOTIFY'],
+                ['youtube', 'YOUTUBE'],
+              ] as [Settings['musicaFonte'], string][]
+            ).map(([f, etichetta]) => (
               <button
-                className="btn btn-ghost"
-                style={{ minHeight: 40, fontSize: 13, padding: '0 12px' }}
-                onClick={() => scollega()}
+                key={f}
+                className="segmento"
+                data-on={settings.musicaFonte === f}
+                aria-pressed={settings.musicaFonte === f}
+                onClick={() => onChange({ musicaFonte: f })}
               >
-                SCOLLEGA
+                <span className="ob" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.06em' }}>
+                  {etichetta}
+                </span>
               </button>
-            </div>
+            ))}
+          </div>
+          <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--dim)' }}>
+            {yt
+              ? 'Suona dentro il timer, da un link a una playlist o a un video. Niente account. Il lettore resta visibile nel timer e si ferma con lo schermo spento: adatto al tablet di sala.'
+              : 'Il timer comanda Spotify ovunque stia già suonando: tablet, telefono, cassa. Serve un account Premium e un’app registrata una volta su developer.spotify.com.'}
+          </span>
+        </div>
+
+        {yt ? <PassiYoutube settings={settings} onChange={onChange} /> : <PassiSpotify />}
+
+        {m.attiva && (
+          <>
             <Toggle
               label="La musica segue il timer"
               hint="Parte con l’avvio, si ferma con la pausa e a fine allenamento"
@@ -719,9 +682,11 @@ function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: 
                   style={{ width: '100%', accentColor: 'var(--verde)', height: 28 }}
                   aria-label="Volume della musica nel recupero"
                 />
-                {l && l.volume == null && (
+                {(yt ? VOLUME_BLOCCATO : m.lettore?.volume === null) && (
                   <span style={{ fontSize: 12, lineHeight: 1.4, color: 'var(--giallo-testo)' }}>
-                    {l.dispositivo} non lascia cambiare il volume da fuori: qui la musica resta com’è.
+                    {yt
+                      ? 'Su iPhone e iPad il volume lo decidono solo i tasti del dispositivo: qui la musica resta com’è.'
+                      : `${m.lettore?.dispositivo} non lascia cambiare il volume da fuori: qui la musica resta com’è.`}
                   </span>
                 )}
               </div>
@@ -729,8 +694,125 @@ function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: 
           </>
         )}
 
-        {m.errore && <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--rosso)' }}>{m.errore}</span>}
+        {!yt && m.errore && <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--rosso)' }}>{m.errore}</span>}
       </div>
+    </>
+  )
+}
+
+/** YouTube: un link, e subito si vede se lo si è copiato bene. */
+function PassiYoutube({ settings, onChange }: { settings: Settings; onChange: (patch: Partial<Settings>) => void }) {
+  const [testo, setTesto] = useState(settings.youtube)
+  const letto = leggiLink(testo)
+  const esito = !testo.trim()
+    ? 'Incolla il link di una playlist o di un video, dall’app o dal browser. Va bene anche YouTube Music.'
+    : !letto
+      ? 'Questo non sembra un link di YouTube.'
+      : letto.lista
+        ? 'Playlist: suona dall’inizio, un brano dopo l’altro.'
+        : 'Un video solo: finito quello, la musica si ferma.'
+
+  return (
+    <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
+      <span style={{ fontSize: 15, fontWeight: 600 }}>Link di YouTube</span>
+      <input
+        className="field"
+        value={testo}
+        placeholder="https://youtube.com/playlist?list=…"
+        inputMode="url"
+        autoCapitalize="off"
+        autoCorrect="off"
+        spellCheck={false}
+        onChange={(e) => {
+          setTesto(e.target.value)
+          // Si salva solo un link che si legge: uno a metà non deve spegnere la musica.
+          if (leggiLink(e.target.value) || !e.target.value.trim()) onChange({ youtube: e.target.value.trim() })
+        }}
+        style={{ fontSize: 15 }}
+      />
+      <span style={{ fontSize: 12, lineHeight: 1.45, color: testo.trim() && !letto ? 'var(--rosso)' : letto ? 'var(--verde)' : 'var(--dim)' }}>
+        {esito}
+      </span>
+      <span style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--dim)' }}>
+        Possono comparire pubblicità, e i video che il proprietario non lascia incorporare vengono saltati.
+      </span>
+    </div>
+  )
+}
+
+/**
+ * Spotify, tre passi: il Client ID (se non è già nel sito), il collegamento,
+ * e da lì lo stato di cosa suona e dove.
+ */
+function PassiSpotify() {
+  const m = useSpotify()
+  const [id, setId] = useState(() => clientId())
+  const [copiato, setCopiato] = useState(false)
+  const ritorno = indirizzoRitorno()
+  const l = m.lettore
+
+  return (
+    <>
+      {!clientIdDaCompilazione() && !m.collegato && (
+        <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
+          <span style={{ fontSize: 15, fontWeight: 600 }}>Client ID dell’app Spotify</span>
+          <span style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--dim)' }}>
+            Si ottiene una volta sola registrando un’app gratuita su developer.spotify.com, con questo indirizzo fra
+            i Redirect URI. I passi sono nella guida.
+          </span>
+          <button
+            className="field num"
+            style={{ fontSize: 13, textAlign: 'left', wordBreak: 'break-all', color: copiato ? 'var(--verde)' : undefined }}
+            onClick={() => {
+              void navigator.clipboard?.writeText(ritorno).then(() => setCopiato(true))
+            }}
+            aria-label="Copia l’indirizzo di ritorno"
+          >
+            {copiato ? 'Copiato: ' : ''}
+            {ritorno}
+          </button>
+          <input
+            className="field"
+            value={id}
+            placeholder="Incolla qui il Client ID"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            onChange={(e) => setId(e.target.value)}
+            onBlur={() => impostaClientId(id)}
+            style={{ fontSize: 15 }}
+          />
+        </div>
+      )}
+
+      {!m.collegato ? (
+        <button
+          className="btn btn-go"
+          style={{ minHeight: 52, fontSize: 16 }}
+          disabled={!id.trim()}
+          onClick={() => {
+            impostaClientId(id)
+            void collega()
+          }}
+        >
+          COLLEGA SPOTIFY
+        </button>
+      ) : (
+        <div className="card row" style={{ gap: 12, padding: '10px 14px', minHeight: 58 }}>
+          <div style={{ width: 10, height: 10, flexShrink: 0, background: l ? 'var(--verde)' : 'var(--line)' }} />
+          <div className="stack grow" style={{ gap: 1, minWidth: 0 }}>
+            <span style={{ fontSize: 15, fontWeight: 600 }}>Spotify collegato</span>
+            <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+              {l
+                ? `${l.inRiproduzione ? 'Suona' : 'In pausa'} su ${l.dispositivo}${l.volume == null ? ' · volume non regolabile da qui' : ''}`
+                : 'Nessun dispositivo sta suonando adesso'}
+            </span>
+          </div>
+          <button className="btn btn-ghost" style={{ minHeight: 40, fontSize: 13, padding: '0 12px' }} onClick={() => scollega()}>
+            SCOLLEGA
+          </button>
+        </div>
+      )}
     </>
   )
 }

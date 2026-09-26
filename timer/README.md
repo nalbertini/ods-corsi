@@ -32,6 +32,10 @@ altri i nomi si alternano a ogni round e vengono annunciati dalla voce.
   recupero. Serve un account Premium e un'app registrata su
   developer.spotify.com (il Client ID si incolla nelle impostazioni o si passa
   in compilazione come `VITE_SPOTIFY_CLIENT_ID`).
+- **YouTube**, in alternativa: un link a una playlist o a un video, suonato
+  dentro il timer da un riquadro del lettore ufficiale, con gli stessi tasti e
+  le stesse automazioni. Niente account; il lettore deve restare visibile e si
+  ferma a schermo spento, quindi è pensato per il tablet di sala.
 - Da tastiera: `spazio` pausa, `←` `→` intervallo precedente e successivo,
   `Esc` esce.
 - Il tempo è ricavato dall'orologio a ogni tick, non accumulato: un tab in
