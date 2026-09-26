@@ -15,6 +15,7 @@ import { haUnServer } from './dati'
 export interface Sala {
   id: string
   nome: string
+  capienza?: number
 }
 
 export interface Istruttore {
@@ -107,6 +108,37 @@ export interface DatiCorso {
   colore?: string
 }
 
+/** Una lezione passata con il suo appello, per il resoconto delle presenze. */
+export interface RigaRegistro {
+  sessioneId: string
+  corsoId: string
+  corso: string
+  sala?: string
+  istruttori: string
+  inizio: string
+  stato: StatoSessione
+  /** Gli iscritti di quel giorno, con il loro segno. */
+  appello: Array<{ personaId: string; nome: string; cognome: string; stato: StatoPresenza | null }>
+}
+
+export interface PersonaleSeg {
+  id: string
+  nome: string
+  cognome: string
+  email?: string
+  ruolo: 'istruttore' | 'staff'
+  attiva: boolean
+  /** Ha già fatto l'accesso almeno una volta: il suo account è legato. */
+  collegato: boolean
+  haPin: boolean
+  corsi: string[]
+}
+
+export interface Impostazioni {
+  mesiPresenze: number
+  giorniCalendario: number
+}
+
 export interface DatiPersona {
   id?: string
   nome: string
@@ -142,7 +174,8 @@ export interface DatiSegreteria {
   corsi(): Promise<CorsoSeg[]>
   salvaCorso(c: DatiCorso): Promise<string>
   archiviaCorso(corsoId: string, attivo: boolean): Promise<void>
-  aggiungiRicorrenza(corsoId: string, r: { giorno: number; ora: string; durata: number }): Promise<void>
+  /** `rigenera: false` quando se ne aggiungono tante e il calendario si allunga dopo, una volta sola. */
+  aggiungiRicorrenza(corsoId: string, r: { giorno: number; ora: string; durata: number }, opzioni?: { rigenera?: boolean }): Promise<void>
   togliRicorrenza(ricorrenzaId: string): Promise<void>
 
   persone(): Promise<PersonaSeg[]>
@@ -153,6 +186,22 @@ export interface DatiSegreteria {
   attivaPersona(personaId: string, attiva: boolean): Promise<void>
   iscrivi(personaId: string, corsoId: string): Promise<void>
   termina(personaId: string, corsoId: string): Promise<void>
+
+  /** Le lezioni già cominciate fra due giorni, con i loro appelli. */
+  registro(da: Date, a: Date): Promise<RigaRegistro[]>
+
+  personale(): Promise<PersonaleSeg[]>
+  salvaPersonale(p: DatiPersona & { ruolo: 'istruttore' | 'staff' }): Promise<string>
+  impostaPin(personaId: string, pin: string): Promise<void>
+
+  salvaSala(s: { id?: string; nome: string; capienza?: number }): Promise<string>
+  impostazioni(): Promise<Impostazioni>
+  salvaImpostazioni(i: Partial<Impostazioni>): Promise<void>
+  /** Quante presenze sono più vecchie del periodo, e la pulizia. */
+  scadute(): Promise<number>
+  pulisci(): Promise<number>
+  /** Tutto quello che si sa di una persona, per chi lo chiede (GDPR, art. 15). */
+  esporta(personaId: string): Promise<unknown>
 }
 
 /** Un'iscrizione vale oggi se è cominciata e non è finita. */

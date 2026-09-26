@@ -547,7 +547,7 @@ input, textarea { font: inherit; color: inherit; }
   background: var(--surface); border: 2px solid var(--line); border-top: 6px solid var(--tinta, var(--line));
   position: sticky; top: 0;
 }
-.sg-scheda-stretta { width: 380px; flex-grow: 0; flex-shrink: 0; padding: 20px; }
+.sg-scheda-stretta { width: 360px; flex-grow: 0; flex-shrink: 0; padding: 20px; }
 .sg-ricorrenza {
   display: grid; grid-template-columns: 130px 70px 80px 1fr 40px; gap: 12px; align-items: center;
   min-height: 48px; padding: 0 12px; background: var(--bg); border: 2px solid var(--line);
@@ -576,6 +576,56 @@ input, textarea { font: inherit; color: inherit; }
   background: var(--text); color: var(--bg); font-size: 15px; font-weight: 600; line-height: 1.4;
 }
 .sg-avviso[data-guaio='true'] { background: var(--rosso); color: var(--text); }
+
+/* Presenze, import, personale, regole */
+.contents { display: contents; }
+.sg-mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+.sg-riquadro { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; background: var(--surface); border: 2px solid var(--line); min-width: 0; }
+.sg-riquadro[data-fatto='true'] { border-color: var(--verde); }
+.sg-riquadro-titolo { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
+.sg-voce-elenco { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 12px; background: var(--bg); border: 2px solid var(--line); }
+.sg-numeri { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.sg-numero { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; background: var(--surface); border: 2px solid var(--line); }
+.sg-numero[data-allarme='true'] { border-color: var(--rosso); }
+.sg-presenze { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: start; }
+
+/* Un solo valore per corso, una tinta sola: la barra dice quanto, il numero accanto lo dice esatto. */
+.sg-barra { display: grid; grid-template-columns: 170px 1fr 48px; gap: 12px; align-items: center; min-height: 34px; text-align: left; }
+.sg-barra[data-spenta='true'] { opacity: 0.35; }
+.sg-barra-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sg-barra-binario { position: relative; height: 14px; background: var(--surface-2); }
+.sg-barra-pieno { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blu); border-radius: 0 4px 4px 0; }
+.sg-barra:hover .sg-barra-pieno, .sg-barra:focus-visible .sg-barra-pieno, .sg-barra[aria-pressed='true'] .sg-barra-pieno { background: #3aa0d6; }
+.sg-barra-suggerimento {
+  position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 2; white-space: nowrap;
+  padding: 4px 8px; background: var(--text); color: var(--bg); font-size: 12px; font-weight: 600;
+}
+.sg-barra-scala { display: flex; justify-content: space-between; padding: 0 60px 0 182px; font-size: 11px; color: var(--dim); }
+
+.sg-passi { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
+.sg-passi li { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: 2px solid var(--line-soft); color: var(--dim); }
+.sg-passi li[aria-current='step'] { border-color: var(--text); color: var(--text); }
+.sg-passi li[data-fatto='true'] { color: var(--verde); }
+.sg-passo-num { font-size: 20px; font-weight: 700; }
+.sg-importa { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.sg-cosa-entra { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.sg-saltate { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; font-size: 14px; color: var(--sec); }
+
+.sg-riga-personale { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 130px 120px 100px 110px; gap: 12px; align-items: center; }
+.sg-una-riga { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sg-personale { min-height: 60px; padding: 6px 14px; border-bottom: 1px solid var(--surface-2); }
+.sg-personale[data-spento='true'] { opacity: 0.5; }
+.sg-permessi { display: grid; grid-template-columns: 1fr 110px 110px; gap: 8px 12px; align-items: center; }
+.sg-regole { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+
+@media (max-width: 1000px) {
+  .sg-numeri, .sg-cosa-entra { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-presenze, .sg-importa, .sg-regole { grid-template-columns: minmax(0, 1fr); }
+  .sg-barra { grid-template-columns: 110px 1fr 44px; }
+  .sg-barra-scala { padding-left: 122px; padding-right: 56px; }
+  .sg-riga-personale { grid-template-columns: 1fr 1fr; }
+  .sg-lista-testa.sg-riga-personale { display: none; }
+}
 
 @media (max-width: 1000px) {
   .sg { flex-direction: column; }

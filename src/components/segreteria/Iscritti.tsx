@@ -13,7 +13,7 @@ const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovu
  * Un nome in elenco non ha bisogno di un accesso: gli iscritti non entrano
  * nell'app. Qui la segreteria li aggiunge, li iscrive e li toglie dai corsi.
  */
-export function Iscritti({ d }: { d: DatiSegreteria }) {
+export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIniziale?: string }) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
   const freq = useCarica(() => d.frequenze(), [d])
@@ -21,7 +21,7 @@ export function Iscritti({ d }: { d: DatiSegreteria }) {
   const [corso, setCorso] = useState('')
   const [senzaEmail, setSenzaEmail] = useState(false)
   const [poco, setPoco] = useState(false)
-  const [scelta, setScelta] = useState<string | null>(null)
+  const [scelta, setScelta] = useState<string | null>(personaIniziale ?? null)
   const [nuovo, setNuovo] = useState(false)
   const { avviso, fai } = useAvviso()
   const oggi = chiaveGiorno(new Date())

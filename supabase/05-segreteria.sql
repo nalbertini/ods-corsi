@@ -136,3 +136,44 @@ end $$;
 
 revoke all on function chiudi_ricorrenza(uuid), calendario_pronto_fino(), frequenze(int), collega_utente() from public, anon;
 grant execute on function chiudi_ricorrenza(uuid), calendario_pronto_fino(), frequenze(int), collega_utente() to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Le regole della palestra: per quanto si tengono le presenze e fin dove si
+-- prepara il calendario. Sono scelte della palestra, non del codice, e la
+-- segreteria le cambia da REGOLE E PRIVACY. Una riga sola.
+-- ---------------------------------------------------------------------------
+create table if not exists impostazioni (
+  id                boolean primary key default true check (id),
+  mesi_presenze     int not null default 24 check (mesi_presenze between 1 and 120),
+  giorni_calendario int not null default 60 check (giorni_calendario between 7 and 400)
+);
+insert into impostazioni default values on conflict do nothing;
+
+alter table impostazioni enable row level security;
+drop policy if exists impostazioni_legge on impostazioni;
+drop policy if exists impostazioni_aggiorna on impostazioni;
+create policy impostazioni_legge on impostazioni for select to authenticated using (true);
+create policy impostazioni_aggiorna on impostazioni for update to authenticated using (e_staff()) with check (e_staff());
+grant select, update on impostazioni to authenticated;
+revoke all on impostazioni from anon;
+
+-- La vista di `01-schema.sql`, che ora legge il periodo dalle impostazioni
+-- invece di tenerlo scritto dentro. Rilanciare `01-schema.sql` da solo la
+-- rimetterebbe a ventiquattro mesi fissi: i file vanno lanciati in ordine.
+create or replace view presenze_scadute with (security_invoker = true) as
+  select p.* from presenze p
+  join sessioni s on s.id = p.sessione_id
+  where s.inizio < now() - make_interval(months => coalesce((select mesi_presenze from impostazioni), 24));
+
+-- ---------------------------------------------------------------------------
+-- Chi ha il PIN del tablet. Il PIN no, quello non esce mai: solo il sì o il no.
+-- ---------------------------------------------------------------------------
+create or replace function pin_impostati()
+  returns table (persona_id uuid) language plpgsql stable security definer set search_path = public as $$
+begin
+  if not e_staff() then raise exception 'solo la segreteria' using errcode = '42501'; end if;
+  return query select pi.persona_id from pin_istruttori pi;
+end $$;
+
+revoke all on function pin_impostati() from public, anon;
+grant execute on function pin_impostati() to authenticated;

@@ -27,7 +27,11 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
   sala o segnare tutti presenti; le lezioni straordinarie. I **corsi**, con sala,
   istruttori, posti, colore e i giorni in cui si fanno. Gli **iscritti**, da
   cercare, iscrivere e togliere dai corsi, con quanto vengono negli ultimi
-  trenta giorni.
+  trenta giorni. Le **presenze** del mese: medie per corso, chi si sta
+  perdendo, gli appelli che mancano, e il CSV. L'**import dai fogli Excel**.
+  **Istruttori e accessi**, coi PIN del tablet. Le **regole**: per quanto si
+  tengono le presenze, fin dove si prepara il calendario, le sale, e
+  l'esportazione dei dati di una persona.
 - **L'accesso** col database: calendario, appello e segreteria sono per
   istruttori e segreteria; al primo accesso l'account si lega da sé alla
   persona con la stessa email.

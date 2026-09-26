@@ -5,13 +5,27 @@ import { Logo } from '../Logo'
 import { Settimana } from './Settimana'
 import { Corsi } from './Corsi'
 import { Iscritti } from './Iscritti'
+import { Presenze } from './Presenze'
+import { Importa } from './Importa'
+import { Personale } from './Personale'
+import { Regole } from './Regole'
 
-type Voce = 'settimana' | 'corsi' | 'iscritti'
+export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'presenze' | 'importa' | 'personale' | 'regole'
+
+/** Dove portare la segreteria da un'altra sezione: la scheda di qualcuno, una lezione da aprire. */
+export interface Destinazione {
+  persona?: string
+  lezione?: { id: string; inizio: string }
+}
 
 const VOCI: Array<[Voce, string]> = [
   ['settimana', 'SETTIMANA'],
   ['corsi', 'CORSI'],
   ['iscritti', 'ISCRITTI'],
+  ['presenze', 'PRESENZE'],
+  ['importa', 'IMPORTA DA EXCEL'],
+  ['personale', 'ISTRUTTORI E ACCESSI'],
+  ['regole', 'REGOLE E PRIVACY'],
 ]
 
 /**
@@ -24,6 +38,11 @@ const VOCI: Array<[Voce, string]> = [
 export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova: boolean; onApp: () => void; onEsci?: () => void }) {
   const [d, setD] = useState<DatiSegreteria | null>(null)
   const [voce, setVoce] = useState<Voce>('settimana')
+  const [dove, setDove] = useState<Destinazione>({})
+  const vai = (v: Voce, d: Destinazione = {}) => {
+    setDove(d)
+    setVoce(v)
+  }
 
   useEffect(() => {
     let vivo = true
@@ -45,7 +64,7 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
         </div>
         <div className="sg-voci">
           {VOCI.map(([id, testo]) => (
-            <button key={id} type="button" className="num sg-voce" aria-current={voce === id ? 'page' : undefined} onClick={() => setVoce(id)}>
+            <button key={id} type="button" className="num sg-voce" aria-current={voce === id ? 'page' : undefined} onClick={() => vai(id)}>
               {testo}
             </button>
           ))}
@@ -84,9 +103,13 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
 
       <main className="sg-corpo">
         {!d && <p className="sg-sotto">Un attimo…</p>}
-        {d && voce === 'settimana' && <Settimana d={d} />}
+        {d && voce === 'settimana' && <Settimana key={dove.lezione?.id ?? ''} d={d} lezioneIniziale={dove.lezione} />}
         {d && voce === 'corsi' && <Corsi d={d} />}
-        {d && voce === 'iscritti' && <Iscritti d={d} />}
+        {d && voce === 'iscritti' && <Iscritti key={dove.persona ?? ''} d={d} personaIniziale={dove.persona} />}
+        {d && voce === 'presenze' && <Presenze d={d} onVai={vai} />}
+        {d && voce === 'importa' && <Importa d={d} onVai={vai} />}
+        {d && voce === 'personale' && <Personale d={d} />}
+        {d && voce === 'regole' && <Regole d={d} />}
       </main>
     </div>
   )

@@ -1,8 +1,9 @@
-import type { CorsoSeg, DatiSegreteria, LezioneSeg, PersonaSeg, StoricoSeg } from './segreteria'
+import type { CorsoSeg, DatiSegreteria, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StoricoSeg } from './segreteria'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva } from './archivioProva'
 import { comeE, iscrittiIl, lezioniFra, nomeIstruttore, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria } from './datiProva'
 import { chiaveGiorno, perCognome, perEsteso } from './sala'
+import { PIN_PROVA } from './tabletProva'
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -40,6 +41,17 @@ export function creaSegreteriaProva(): DatiSegreteria {
     a().lezioni = lezioni
   }
 
+  /** Le presenze più vecchie del periodo scelto in REGOLE: coppie lezione, persona. */
+  const scadute = () => {
+    const mesi = a().impostazioni?.mesiPresenze ?? 24
+    const limite = new Date()
+    limite.setMonth(limite.getMonth() - mesi)
+    return Object.entries(memoria.segnate).flatMap(([id, segni]) => {
+      const l = trovaLezione(id)
+      return l && l.inizio < limite ? Object.keys(segni).map((p) => [id, p] as const) : []
+    })
+  }
+
   const conti = (id: string) => {
     const segni = Object.values(memoria.segnate[id] ?? {})
     return { presenti: segni.filter((s) => s === 'presente').length, segnati: segni.length }
@@ -70,7 +82,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     modo: 'prova',
 
     async sale() {
-      return a().sale.map((nome) => ({ id: nome, nome }))
+      return a().sale.map((nome) => ({ id: nome, nome, capienza: a().capienzaSale?.[nome] }))
     },
 
     async istruttori() {
@@ -193,7 +205,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
-    async aggiungiRicorrenza(corsoId, r) {
+    async aggiungiRicorrenza(corsoId, r, _opzioni) {
       const c = corso(corsoId)
       if (c.ricorrenze.some((x) => x.giorno === r.giorno && x.ora === r.ora && (!x.al || x.al >= oggi()))) {
         throw new Error('Questo corso ha già una lezione quel giorno a quell’ora')
@@ -316,6 +328,147 @@ export function creaSegreteriaProva(): DatiSegreteria {
         i.personaId === personaId && i.corsoId === corsoId ? { ...i, al: i.dal > g ? i.dal : g } : i,
       )
       salva()
+    },
+    async registro(da, fino) {
+      const adesso = Date.now()
+      return lezioniFra(da, fino)
+        .filter((l) => l.inizio.getTime() < adesso)
+        .map((l): RigaRegistro => {
+          const k = comeE(l)
+          const segni = memoria.segnate[l.id] ?? {}
+          return {
+            sessioneId: l.id,
+            corsoId: l.corso.id,
+            corso: l.corso.nome,
+            sala: k.sala,
+            istruttori: k.istruttori.map(nomeIstruttore).join(', '),
+            inizio: l.inizio.toISOString(),
+            stato: k.stato,
+            appello: iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)).map((p) => ({ personaId: p.id, nome: p.nome, cognome: p.cognome, stato: segni[p.id] ?? null })),
+          }
+        })
+    },
+
+    async personale() {
+      const pin = { ...Object.fromEntries(Object.values(PIN_PROVA).map((x) => [x.personaId, true])), ...a().pin }
+      return a()
+        .persone.filter((p) => p.ruolo !== 'iscritto')
+        .map(
+          (p): PersonaleSeg => ({
+            id: p.id,
+            nome: p.nome,
+            cognome: p.cognome,
+            email: p.email,
+            ruolo: p.ruolo as 'istruttore' | 'staff',
+            attiva: p.attiva,
+            // In prova è entrata solo la segreteria di prova: gli altri aspettano l'invito.
+            collegato: p.id === 's-prova',
+            haPin: !!pin[p.id],
+            corsi: a().corsi.filter((c) => c.attivo && c.istruttori.includes(p.id)).map((c) => c.nome),
+          }),
+        )
+    },
+
+    async salvaPersonale(dati) {
+      const nome = dati.nome.trim()
+      const cognome = dati.cognome.trim()
+      const email = dati.email?.trim() || undefined
+      if (!nome) throw new Error('Serve almeno il nome')
+      const altro = email && a().persone.find((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase())
+      // Come nel database: un'iscritta con la stessa email diventa personale, non un doppione.
+      if (altro && altro.ruolo !== 'iscritto') throw new Error(`Questa email è già di ${nomeDi(altro)}`)
+      if (altro) {
+        a().persone = a().persone.map((p) => (p.id === altro.id ? { ...p, ruolo: dati.ruolo, attiva: true } : p))
+        salva()
+        return altro.id
+      }
+      // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla.
+      const senza = !dati.id && a().persone.find((p) => p.ruolo !== 'iscritto' && !p.email && p.nome.toLowerCase() === nome.toLowerCase() && p.cognome.toLowerCase() === cognome.toLowerCase())
+      if (senza) {
+        a().persone = a().persone.map((p) => (p.id === senza.id ? { ...p, email, ruolo: dati.ruolo, attiva: true } : p))
+        salva()
+        return senza.id
+      }
+      if (!dati.id) {
+        const id = `i-${nome.toLowerCase().normalize('NFD').replace(/[^a-z]+/g, '')}-${Date.now().toString(36)}`
+        a().persone = [...a().persone, { id, nome, cognome, email, ruolo: dati.ruolo, attiva: true, creataIl: oggi() }]
+        salva()
+        return id
+      }
+      persona(dati.id)
+      a().persone = a().persone.map((p) => (p.id === dati.id ? { ...p, nome, cognome, email, ruolo: dati.ruolo } : p))
+      salva()
+      return dati.id
+    },
+
+    async impostaPin(personaId, pin) {
+      if (!/^\d{4}$/.test(pin)) throw new Error('il PIN è di quattro cifre')
+      const p = persona(personaId)
+      if (p.ruolo === 'iscritto') throw new Error('il PIN è solo per istruttori e segreteria')
+      const usati = { ...Object.fromEntries(Object.entries(PIN_PROVA).map(([k, v]) => [v.personaId, k])), ...a().pin }
+      if (Object.entries(usati).some(([chi, x]) => chi !== personaId && x === pin)) throw new Error('questo PIN è già di un altro: scegline un altro')
+      a().pin = { ...a().pin, [personaId]: pin }
+      salva()
+    },
+
+    async salvaSala(s) {
+      const nome = s.nome.trim()
+      if (!nome) throw new Error('La sala ha bisogno di un nome')
+      if (a().sale.some((x) => x.toLowerCase() === nome.toLowerCase() && x !== s.id)) throw new Error('C’è già una sala con questo nome')
+      const cap = { ...a().capienzaSale }
+      if (s.id && s.id !== nome) {
+        // Il nome è anche l'id, in prova: si rinomina ovunque.
+        a().sale = a().sale.map((x) => (x === s.id ? nome : x))
+        a().corsi = a().corsi.map((c) => (c.sala === s.id ? { ...c, sala: nome } : c))
+        a().lezioni = Object.fromEntries(Object.entries(a().lezioni).map(([k, l]) => [k, l.sala === s.id ? { ...l, sala: nome } : l]))
+        delete cap[s.id]
+      } else if (!s.id) a().sale = [...a().sale, nome]
+      if (s.capienza) cap[nome] = s.capienza
+      else delete cap[nome]
+      a().capienzaSale = cap
+      salva()
+      return nome
+    },
+
+    async impostazioni() {
+      return a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }
+    },
+
+    async salvaImpostazioni(i) {
+      a().impostazioni = { ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }), ...i }
+      salva()
+    },
+
+    async scadute() {
+      return scadute().length
+    },
+
+    async pulisci() {
+      const via = scadute()
+      const segnate = { ...memoria.segnate }
+      for (const [sessione, persona] of via) {
+        const mie = { ...segnate[sessione] }
+        delete mie[persona]
+        segnate[sessione] = mie
+      }
+      memoria.segnate = segnate
+      memoria.salva()
+      return via.length
+    },
+
+    async esporta(personaId) {
+      const p = persona(personaId)
+      const presenze = Object.entries(memoria.segnate).flatMap(([id, segni]) => {
+        const stato = segni[personaId]
+        const l = stato && trovaLezione(id)
+        return l ? [{ lezione: l.corso.nome, inizio: l.inizio.toISOString(), stato, origine: memoria.origini[id]?.[personaId]?.da ?? 'appello' }] : []
+      })
+      return {
+        esportato_il: new Date().toISOString(),
+        persona: { nome: p.nome, cognome: p.cognome, email: p.email ?? null, telefono: p.telefono ?? null, attiva: p.attiva, in_elenco_dal: p.creataIl },
+        iscrizioni: a().iscrizioni.filter((i) => i.personaId === personaId).map((i) => ({ corso: corso(i.corsoId).nome, dal: i.dal, al: i.al ?? null })),
+        presenze: presenze.sort((x, y) => x.inizio.localeCompare(y.inizio)),
+      }
     },
   }
 }

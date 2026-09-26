@@ -77,6 +77,11 @@ export interface Archivio {
   iscrizioni: IscrizioneProva[]
   /** Per id di lezione. */
   lezioni: Record<string, LezioneProva>
+  /** Quelle che seguono sono venute dopo: in un archivio già salvato possono mancare. */
+  capienzaSale?: Record<string, number>
+  /** I PIN del tablet cambiati dalla segreteria, per persona. */
+  pin?: Record<string, string>
+  impostazioni?: { mesiPresenze: number; giorniCalendario: number }
 }
 
 // ---------------------------------------------------------------------------
@@ -181,6 +186,8 @@ function iniziale(): Archivio {
   for (const [id, nome] of Object.entries(ISTRUTTORI)) {
     persone.set(`i-${id}`, { id: `i-${id}`, nome, cognome: '', ruolo: 'istruttore', attiva: true, creataIl: STAGIONE.dal })
   }
+  // Chi usa la prova: la segreteria che vede tutto.
+  persone.set('s-prova', { id: 's-prova', nome: 'Segreteria', cognome: 'di prova', ruolo: 'staff', email: 'segreteria@esempio.it', attiva: true, creataIl: STAGIONE.dal })
   const iscrizioni: IscrizioneProva[] = []
   for (const c of CORSI) {
     for (const p of elenco(...c.iscritti)) {

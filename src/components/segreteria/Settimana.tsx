@@ -35,10 +35,10 @@ function titolo(primo: Date) {
  * lezioni che cominciano lì. È la vista da cui la segreteria vede in un colpo
  * solo cosa c'è, dove, e quali appelli mancano.
  */
-export function Settimana({ d }: { d: DatiSegreteria }) {
-  const [primo, setPrimo] = useState(() => lunedi(new Date()))
+export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIniziale?: { id: string; inizio: string } }) {
+  const [primo, setPrimo] = useState(() => lunedi(lezioneIniziale ? new Date(lezioneIniziale.inizio) : new Date()))
   const [sala, setSala] = useState('')
-  const [aperta, setAperta] = useState<string | null>(null)
+  const [aperta, setAperta] = useState<string | null>(lezioneIniziale?.id ?? null)
   const [nuova, setNuova] = useState(false)
   const { avviso, fai } = useAvviso()
 

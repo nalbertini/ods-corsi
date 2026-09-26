@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { CorsoSeg, DatiSegreteria, LezioneSeg, PersonaSeg, StoricoSeg } from './segreteria'
+import type { CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StoricoSeg } from './segreteria'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, perCognome, perEsteso } from './sala'
 
@@ -57,17 +57,26 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     return m
   }
 
+  const impostazioni = async (): Promise<Impostazioni> => {
+    const r = ok(await db.from('impostazioni').select('mesi_presenze, giorni_calendario').maybeSingle()) as {
+      mesi_presenze: number; giorni_calendario: number
+    } | null
+    return { mesiPresenze: r?.mesi_presenze ?? 24, giorniCalendario: r?.giorni_calendario ?? 60 }
+  }
+
+  /** Allunga il calendario fino ai giorni scelti in REGOLE, senza mai accorciarlo. */
   const rigenera = async () => {
-    const pronto = ok(await db.rpc('calendario_pronto_fino')) as string | null
-    const fra60 = chiaveGiorno(new Date(Date.now() + 60 * 24 * 60 * 60_000))
-    return ok(await db.rpc('materializza_sessioni', { da_giorno: oggi(), a_giorno: pronto && pronto > fra60 ? pronto : fra60 })) as number
+    const [pronto, { giorniCalendario }] = await Promise.all([db.rpc('calendario_pronto_fino').then(ok) as Promise<string | null>, impostazioni()])
+    const fino = chiaveGiorno(new Date(Date.now() + giorniCalendario * 24 * 60 * 60_000))
+    return ok(await db.rpc('materializza_sessioni', { da_giorno: oggi(), a_giorno: pronto && pronto > fino ? pronto : fino })) as number
   }
 
   return {
     modo: 'supabase',
 
     async sale() {
-      return ok(await db.from('sale').select('id, nome').order('nome')) as Array<{ id: string; nome: string }>
+      const righe = ok(await db.from('sale').select('id, nome, capienza').order('nome')) as Array<{ id: string; nome: string; capienza: number | null }>
+      return righe.map((r) => ({ id: r.id, nome: r.nome, capienza: r.capienza ?? undefined }))
     },
 
     async istruttori() {
@@ -240,9 +249,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       if (attivo) await rigenera()
     },
 
-    async aggiungiRicorrenza(corsoId, r) {
+    async aggiungiRicorrenza(corsoId, r, opzioni) {
       ok(await db.from('ricorrenze').insert({ corso_id: corsoId, giorno: r.giorno, ora: r.ora, durata_min: r.durata, dal: oggi() }))
-      await rigenera()
+      if (opzioni?.rigenera !== false) await rigenera()
     },
 
     async togliRicorrenza(ricorrenzaId) {
@@ -323,6 +332,147 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async termina(personaId, corsoId) {
       ok(await db.from('iscrizioni').update({ al: oggi() }).eq('persona_id', personaId).eq('corso_id', corsoId))
+    },
+    async registro(da, a) {
+      const fino = new Date(a)
+      fino.setHours(23, 59, 59, 999)
+      const adesso = new Date()
+      const sessioni = ok(
+        await db
+          .from('sessioni')
+          .select('id, corso_id, inizio, stato, istruttore_id, corsi ( nome, istruttore_id ), sale ( nome ), persone ( nome, cognome )')
+          .gte('inizio', da.toISOString())
+          .lte('inizio', (fino < adesso ? fino : adesso).toISOString())
+          .order('inizio'),
+      ) as unknown as Array<{
+        id: string; corso_id: string; inizio: string; stato: RigaRegistro['stato']; istruttore_id: string | null
+        corsi: { nome: string; istruttore_id: string | null } | null; sale: { nome: string } | null; persone: { nome: string; cognome: string } | null
+      }>
+      const corsi = [...new Set(sessioni.map((x) => x.corso_id))]
+      const vuoto = ['00000000-0000-0000-0000-000000000000']
+      const [isc, pres, chi] = await Promise.all([
+        db.from('iscrizioni').select('corso_id, persona_id, dal, al, persone ( nome, cognome, attiva )').in('corso_id', corsi.length ? corsi : vuoto),
+        db.from('presenze').select('sessione_id, persona_id, stato').in('sessione_id', sessioni.length ? sessioni.map((x) => x.id) : vuoto),
+        insegnanti(corsi),
+      ])
+      const iscrizioni = ok(isc) as unknown as Array<Iscrizione & { persone: { nome: string; cognome: string; attiva: boolean } | null }>
+      const presenze = ok(pres) as Array<{ sessione_id: string; persona_id: string; stato: StatoPresenza }>
+      return sessioni.map((x): RigaRegistro => {
+        const g = giornoDi(x.inizio)
+        const segni = new Map(presenze.filter((p) => p.sessione_id === x.id).map((p) => [p.persona_id, p.stato]))
+        const sostituto = x.istruttore_id && x.istruttore_id !== x.corsi?.istruttore_id
+        return {
+          sessioneId: x.id,
+          corsoId: x.corso_id,
+          corso: x.corsi?.nome ?? 'Corso',
+          sala: x.sale?.nome,
+          istruttori: sostituto ? nome(x.persone) : (chi.get(x.corso_id) ?? []).map((i) => i.nome).join(', ') || nome(x.persone),
+          inizio: x.inizio,
+          stato: x.stato,
+          appello: iscrizioni
+            .filter((i) => i.corso_id === x.corso_id && i.persone?.attiva && valeIl(i, g))
+            .map((i) => ({ personaId: i.persona_id, nome: i.persone!.nome, cognome: i.persone!.cognome, stato: segni.get(i.persona_id) ?? null })),
+        }
+      })
+    },
+
+    async personale() {
+      const [righe, legami, pin] = await Promise.all([
+        db.from('persone').select('id, nome, cognome, email, ruolo, attiva, utente_id').in('ruolo', ['istruttore', 'staff']).order('nome'),
+        db.from('corsi_istruttori').select('persona_id, corsi ( nome, attivo )'),
+        db.rpc('pin_impostati'),
+      ])
+      const persone = ok(righe) as Array<{ id: string; nome: string; cognome: string; email: string | null; ruolo: 'istruttore' | 'staff'; attiva: boolean; utente_id: string | null }>
+      const corsi = ok(legami) as unknown as Array<{ persona_id: string; corsi: { nome: string; attivo: boolean } | null }>
+      const conPin = new Set((ok(pin) as Array<{ persona_id: string }>).map((r) => r.persona_id))
+      return persone.map(
+        (p): PersonaleSeg => ({
+          id: p.id,
+          nome: p.nome,
+          cognome: p.cognome,
+          email: p.email ?? undefined,
+          ruolo: p.ruolo,
+          attiva: p.attiva,
+          collegato: !!p.utente_id,
+          haPin: conPin.has(p.id),
+          corsi: corsi.filter((c) => c.persona_id === p.id && c.corsi?.attivo).map((c) => c.corsi!.nome),
+        }),
+      )
+    },
+
+    async salvaPersonale(p) {
+      if (!p.nome.trim()) throw new Error('Serve almeno il nome')
+      const email = p.email?.trim() || null
+      const riga = { nome: p.nome.trim(), cognome: p.cognome.trim() || '—', email, ruolo: p.ruolo }
+      if (p.id) {
+        ok(await db.from('persone').update(riga).eq('id', p.id))
+        return p.id
+      }
+      // Un'iscritta con la stessa email diventa personale, invece di un doppione.
+      if (email) {
+        const c = ok(await db.from('persone').select('id, ruolo').eq('email', email).maybeSingle()) as { id: string; ruolo: string } | null
+        if (c && c.ruolo !== 'iscritto') throw new Error('Questa email è già di un istruttore o della segreteria')
+        if (c) {
+          ok(await db.from('persone').update({ ruolo: p.ruolo, attiva: true }).eq('id', c.id))
+          return c.id
+        }
+      }
+      // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla.
+      const senza = ok(
+        await db.from('persone').select('id').in('ruolo', ['istruttore', 'staff']).is('email', null).ilike('nome', riga.nome).ilike('cognome', riga.cognome).limit(1),
+      ) as Array<{ id: string }>
+      if (senza[0]) {
+        ok(await db.from('persone').update({ email, ruolo: p.ruolo, attiva: true }).eq('id', senza[0].id))
+        return senza[0].id
+      }
+      return (ok(await db.from('persone').insert(riga).select('id').single()) as { id: string }).id
+    },
+
+    async impostaPin(personaId, pin) {
+      ok(await db.rpc('imposta_pin', { persona: personaId, pin }))
+    },
+
+    async salvaSala(sala) {
+      if (!sala.nome.trim()) throw new Error('La sala ha bisogno di un nome')
+      const riga = { nome: sala.nome.trim(), capienza: sala.capienza ?? null }
+      if (sala.id) {
+        ok(await db.from('sale').update(riga).eq('id', sala.id))
+        return sala.id
+      }
+      return (ok(await db.from('sale').insert(riga).select('id').single()) as { id: string }).id
+    },
+
+    impostazioni,
+
+    async salvaImpostazioni(i) {
+      const riga: Record<string, number> = {}
+      if (i.mesiPresenze !== undefined) riga.mesi_presenze = i.mesiPresenze
+      if (i.giorniCalendario !== undefined) riga.giorni_calendario = i.giorniCalendario
+      ok(await db.from('impostazioni').update(riga).eq('id', true))
+    },
+
+    async scadute() {
+      const { count, error } = await db.from('presenze_scadute').select('id', { count: 'exact', head: true })
+      if (error) throw guaio(error)
+      return count ?? 0
+    },
+
+    async pulisci() {
+      return ok(await db.rpc('pulisci_presenze')) as number
+    },
+
+    async esporta(personaId) {
+      const [persona, isc, pres] = await Promise.all([
+        db.from('persone').select('nome, cognome, email, telefono, ruolo, attiva, creata_il').eq('id', personaId).single(),
+        db.from('iscrizioni').select('dal, al, corsi ( nome )').eq('persona_id', personaId),
+        db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId),
+      ])
+      return {
+        esportato_il: new Date().toISOString(),
+        persona: ok(persona),
+        iscrizioni: ok(isc),
+        presenze: ok(pres),
+      }
     },
   }
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, type Passo } from '../lib/iscrizione'
+import { INFORMATIVA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, type Passo } from '../lib/iscrizione'
 import { Costi } from './Costi'
 
 /**
@@ -30,6 +30,16 @@ export function IscrizioniScreen() {
       </ol>
 
       <Costi />
+
+      {INFORMATIVA && (
+        <p className="pad" style={{ fontSize: 13, color: 'var(--dim)', paddingBottom: 20 }}>
+          Come trattiamo i tuoi dati:{' '}
+          <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ color: 'var(--sec)' }}>
+            l'informativa privacy
+          </a>
+          .
+        </p>
+      )}
     </>
   )
 }

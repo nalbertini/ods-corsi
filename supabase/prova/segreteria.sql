@@ -153,4 +153,26 @@ select atteso('né chiude una ricorrenza', tenta($$select chiudi_ricorrenza(gen_
 reset role;
 
 \echo ''
+\echo '--- 6. le regole ---'
+select atteso('di partenza, ventiquattro mesi', (select mesi_presenze::text from impostazioni), '24');
+-- Una presenza di tre anni fa: con ventiquattro mesi è scaduta, con quarantotto no.
+insert into sessioni (id, corso_id, inizio, fine) values
+  ('eeeeeeee-0000-0000-0000-000000000009', 'cccccccc-0000-0000-0000-000000000001', now() - interval '3 years', now() - interval '3 years' + interval '1 hour');
+insert into presenze (sessione_id, persona_id, stato) values ('eeeeeeee-0000-0000-0000-000000000009', 'aaaaaaaa-0000-0000-0000-000000000004', 'presente');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('scaduta', (select count(*)::text from presenze_scadute), '1');
+update impostazioni set mesi_presenze = 48;
+select atteso('con quattro anni non più', (select count(*)::text from presenze_scadute), '0');
+select atteso('fuori misura no', tenta($$update impostazioni set giorni_calendario = 1000$$), 'NEGATO: …');
+select atteso('chi ha il PIN lo vede la segreteria', (select count(*)::text from pin_impostati()), '0');
+reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('un istruttore le legge', (select mesi_presenze::text from impostazioni), '48');
+select atteso('ma non le cambia', tenta($$update impostazioni set mesi_presenze = 1$$), 'a vuoto (0 righe)');
+select atteso('e non sa chi ha il PIN', tenta($$select count(*)::text from pin_impostati()$$), 'NEGATO: solo la segreteria');
+reset role;
+
+\echo ''
 \echo 'TUTTO A POSTO'

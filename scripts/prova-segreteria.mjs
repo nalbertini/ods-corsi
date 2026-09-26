@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -156,6 +156,53 @@ console.log('\n7. archiviare')
   ok('ma il registro di una lezione passata si legge ancora', (await app.dettaglio((await s.settimana(...giorno([8, 21]))).find(() => true).id)) !== null, true)
   await s.archiviaCorso('lotta-2', true)
   ok('ripristinato: mercoledì e venerdì di nuovo lì', (await lotta2([9, 5], [9, 9])).length, 2)
+}
+
+console.log('\n8. il registro e chi ha il PIN')
+{
+  const r = await s.registro(...giorno([8, 21], [8, 21]))
+  ok('il registro di lunedì 21: solo lezioni passate, con gli iscritti', [r.length > 0, r.every((x) => x.appello.length > 0)], [true, true])
+  ok('il PIN di un altro no', await errore(() => s.impostaPin('i-fabio', '1234')), 'questo PIN è già di un altro: scegline un altro')
+  await s.impostaPin('i-fabio', '9090')
+  window.location.search = '?adesso=2026-10-01T16:55'
+  const t = m.creaTabletProva()
+  await t.scegliSala('Motricità')
+  ok('il tablet lo riconosce', (await t.entraConPin('9090'))?.nome, 'Fabio')
+  ok('e il vecchio non vale più', await t.entraConPin('5678'), null)
+  ok('la segreteria sa che ce l\'ha', (await s.personale()).find((p) => p.id === 'i-fabio').haPin, true)
+}
+
+console.log('\n9. sale e regole')
+{
+  await s.salvaSala({ id: 'Pesi', nome: 'Sala pesi', capienza: 12 })
+  ok('la sala cambia nome ovunque', [(await s.corsi()).find((c) => c.id === 'pesi-1').sala, (await s.sale()).find((x) => x.nome === 'Sala pesi').capienza], ['Sala pesi', 12])
+  ok('due sale con lo stesso nome no', await errore(() => s.salvaSala({ nome: 'lotta' })), 'C’è già una sala con questo nome')
+  // Una presenza di tre anni fa, messa a mano nella memoria della prova.
+  await s.straordinaria('judo-2', new Date(2023, 8, 1, 17), 60)
+  const vecchia = (await s.settimana(new Date(2023, 8, 1), new Date(2023, 8, 1)))[0]
+  m.memoria.segnate = { ...m.memoria.segnate, [vecchia.id]: { 'p-qualcuno': 'presente' } }
+  ok('scaduta con ventiquattro mesi', await s.scadute(), 1)
+  await s.salvaImpostazioni({ mesiPresenze: 48 })
+  ok('non con quarantotto', await s.scadute(), 0)
+  await s.salvaImpostazioni({ mesiPresenze: 24 })
+  ok('la pulizia la toglie', [await s.pulisci(), await s.scadute()], [1, 0])
+  const dati = await s.esporta((await app.dettaglio((await lotta2([9, 2]))[0].id)).elenco[0].id)
+  ok('l\'esportazione ha anagrafica, iscrizioni e presenze', Object.keys(dati).sort(), ['esportato_il', 'iscrizioni', 'persona', 'presenze'])
+}
+
+console.log('\n10. l\'import dai fogli')
+{
+  const corsi = 'nome;sala;istruttore;giorno;ora;durata\r\nYoga;Sala nuova;Katia;sabato;10.00;60\r\nLotta 2;Lotta;Maura;sabato;11:00;60\r\nRotto;Pesi;;funedì;18:00;60\r\n'
+  const iscritti = '\uFEFFnome;cognome;email;telefono;corso\nMarta;Nuova;marta@esempio.it;;Yoga\nGiorgia;;;;Yoga\nMarta;Nuova;marta@esempio.it;;Lotta 2\nPaolo;Verdi;marta@esempio.it;;Yoga\n'
+  const f = m.leggiFogli(corsi, iscritti, (await s.corsi()).map((c) => c.nome))
+  ok('le righe che non vanno', f.saltate.map((x) => `${x.foglio}:${x.riga}`), ['corsi.csv:4', 'iscritti.csv:3', 'iscritti.csv:5'])
+  ok('Marta una volta sola, con due corsi', f.iscritti.map((x) => [x.nome, x.corsi]), [['Marta', ['Yoga', 'Lotta 2']]])
+  const a1 = await m.importa(s, f, () => {})
+  ok('entrano la sala, il corso, i giorni', [a1.saleNuove, a1.corsiNuovi, a1.ricorrenzeNuove], [['Sala nuova'], ['Yoga'], 2])
+  ok('Katia si lega col solo nome', (await s.corsi()).find((c) => c.nome === 'Yoga').istruttori.map((i) => i.nome), ['Katia'])
+  const a2 = await m.importa(s, m.leggiFogli(corsi, iscritti, (await s.corsi()).map((c) => c.nome)), () => {})
+  ok('rifatto: niente di nuovo', [a2.saleNuove.length, a2.corsiNuovi.length, a2.ricorrenzeNuove, a2.iscrittiNuovi, a2.iscrizioniNuove], [0, 0, 0, 0, 0])
+  ok('e nessun doppione', (await s.persone()).filter((p) => p.email === 'marta@esempio.it').length, 1)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

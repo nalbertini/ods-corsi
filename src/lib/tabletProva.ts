@@ -1,6 +1,7 @@
 import type { DatiTablet, EsitoTocco, LezioneSala, RigaAppelloTablet } from './tablet'
 import { REGOLE, sigle } from './tablet'
 import { creaDatiProva, memoria } from './datiProva'
+import { archivio } from './archivioProva'
 import { perCognome } from './sala'
 
 /**
@@ -51,6 +52,18 @@ function leggiSala(): string | null {
   }
 }
 
+/**
+ * Di chi è un PIN: prima quelli cambiati dalla segreteria di prova, poi quelli
+ * di partenza — tranne per chi ne ha già uno nuovo, che col vecchio non entra più.
+ */
+function chiHaPin(pin: string): { personaId: string; nome: string } | null {
+  const nuovi = archivio.dati.pin ?? {}
+  const suo = Object.entries(nuovi).find(([, p]) => p === pin)?.[0]
+  if (suo) return { personaId: suo, nome: archivio.dati.persone.find((p) => p.id === suo)?.nome ?? '' }
+  const base = PIN_PROVA[pin]
+  return base && !nuovi[base.personaId] ? base : null
+}
+
 export function creaTabletProva(): DatiTablet {
   const prova = creaDatiProva()
   const scarto = spostamento()
@@ -72,7 +85,7 @@ export function creaTabletProva(): DatiTablet {
     const t = adesso().getTime()
     const sbagliati = tentativi.filter((x) => !x.riuscito && x.quando > t - PIN_BLOCCO_MIN * MIN).length
     if (sbagliati >= PIN_TENTATIVI) throw new Error('troppi PIN sbagliati: riprova fra qualche minuto')
-    const chi = PIN_PROVA[pin] ?? null
+    const chi = chiHaPin(pin)
     tentativi.push({ quando: t, riuscito: !!chi })
     return chi
   }
