@@ -38,6 +38,12 @@ iscritti si vede lo stesso, e salvare un certificato dice che manca. Per la sala
 `04-tablet.sql` e `05-segreteria.sql`: le lezioni già generate restano dove
 sono.
 
+Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
+incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
+LANCIARE», anche quando un file c'è ma in una versione vecchia, o quando dopo
+uno dei primi cinque non è stato rilanciato `06-iscrizioni.sql`. Chi cambia uno
+dei file numerati aggiunge lì una riga per quello che ha aggiunto.
+
 Se l'app dice *Could not find the function public.… in the schema cache*,
 il file che la crea non è stato lanciato su questo progetto (per
 `corsi_aperti` è `06-iscrizioni.sql`): lanciarlo basta, perché ogni file
