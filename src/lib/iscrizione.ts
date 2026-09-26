@@ -15,21 +15,34 @@ import { haUnServer } from './dati'
 export const LINK_ISCRIZIONE = 'https://forms.gle/eZyGvAD4h7cNNpXF7'
 
 /**
- * L'informativa privacy della palestra, che ne è titolare del trattamento.
- * Va messa prima di usare l'app sul serio: finché è vuota, REGOLE E PRIVACY in
- * segreteria lo segnala. Sta qui e non nel database perché la deve poter
- * leggere chiunque, anche chi non ha un accesso.
+ * L'informativa privacy per iscrizioni e corsi, di cui la palestra è titolare
+ * del trattamento. È una pagina dell'app (`public/informativa.html`) e non
+ * sta nel database perché la deve poter leggere chiunque, anche chi non ha un
+ * accesso. Quella del sito della palestra copre solo la navigazione e dice
+ * che il sito non raccoglie dati con dei moduli: per l'iscrizione non basta.
  */
-export const INFORMATIVA: string | undefined = undefined
+export const INFORMATIVA: string | undefined = 'informativa.html'
+
+/**
+ * Vero finché la palestra non ha approvato il testo, che è stato scritto
+ * insieme all'app. Da togliere insieme al riquadro BOZZA in
+ * `public/informativa.html`, quando è approvato: prima, col database vero,
+ * l'informativa non si mostra al pubblico e il modulo di iscrizione resta
+ * spento.
+ */
+export const INFORMATIVA_BOZZA = true
+
+/** L'informativa da far vedere a chi si iscrive: una bozza solo in prova. */
+export const INFORMATIVA_PUBBLICA = INFORMATIVA && (!INFORMATIVA_BOZZA || !haUnServer) ? INFORMATIVA : undefined
 
 /**
  * Il modulo di iscrizione dentro l'app (`ModuloIscrizione`), al posto di
  * quello Google. Raccoglie codici fiscali e documenti d'identità, e col
- * database vero si accende solo quando c'è l'informativa da far leggere
- * prima: fino ad allora il passo porta ancora al modulo Google. In prova è
- * sempre acceso, perché lì i dati restano sul dispositivo.
+ * database vero si accende solo quando c'è un'informativa approvata da far
+ * leggere prima: fino ad allora il passo porta ancora al modulo Google. In
+ * prova è sempre acceso, perché lì i dati restano sul dispositivo.
  */
-export const MODULO_IN_APP = !haUnServer || !!INFORMATIVA
+export const MODULO_IN_APP = !haUnServer || !!INFORMATIVA_PUBBLICA
 
 export interface Documento {
   etichetta: string

@@ -39,8 +39,9 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
   del genitore. Le richieste arrivano in segreteria, in **RICHIESTE ONLINE**,
   con i file da guardare: accolta, la persona entra in elenco iscritta ai
   corsi che ha scelto, senza doppioni se c'era già. Col database vero si
-  accende quando c'è l'informativa privacy; fino ad allora resta il link a
-  Google.
+  accende quando l'informativa privacy (`public/informativa.html`, per ora una
+  bozza da far approvare alla palestra) è approvata; fino ad allora resta il
+  link a Google.
 - **L'accesso** col database: calendario, appello e segreteria sono per
   istruttori e segreteria; al primo accesso l'account si lega da sé alla
   persona con la stessa email.

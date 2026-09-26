@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { INFORMATIVA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, PROVA, type Passo } from '../lib/iscrizione'
+import { INFORMATIVA_PUBBLICA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, PROVA, type Passo } from '../lib/iscrizione'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
 import { Costi } from './Costi'
 import { ModuloIscrizione } from './ModuloIscrizione'
@@ -60,10 +60,10 @@ export function IscrizioniScreen() {
 
       <Costi />
 
-      {INFORMATIVA && (
+      {INFORMATIVA_PUBBLICA && (
         <p className="pad iscrizioni-nota" style={{ fontSize: 13, color: 'var(--dim)', paddingBottom: 20 }}>
           Come trattiamo i tuoi dati:{' '}
-          <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ color: 'var(--sec)' }}>
+          <a href={INFORMATIVA_PUBBLICA} target="_blank" rel="noreferrer" style={{ color: 'var(--sec)' }}>
             l'informativa privacy
           </a>
           .

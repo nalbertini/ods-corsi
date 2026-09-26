@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import type { CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
 import { controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
-import { INFORMATIVA } from '../lib/iscrizione'
+import { INFORMATIVA_PUBBLICA } from '../lib/iscrizione'
 
 /**
  * Il modulo di iscrizione: le domande che prima stavano su Google Form, e i
@@ -242,8 +242,8 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
           <input type="checkbox" checked={privacy} onChange={(e) => setPrivacy(e.target.checked)} />
           <span>
             Ho letto{' '}
-            {INFORMATIVA ? (
-              <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ color: 'var(--sec)' }}>
+            {INFORMATIVA_PUBBLICA ? (
+              <a href={INFORMATIVA_PUBBLICA} target="_blank" rel="noreferrer" style={{ color: 'var(--sec)' }}>
                 l'informativa privacy
               </a>
             ) : (
