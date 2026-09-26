@@ -1,6 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
+import type { ImpostazioniSala } from '../../timer/src/lib/impostazioniSala'
 
 export type { ListaMusica } from './musica'
 
@@ -243,6 +244,9 @@ export interface DatiSegreteria {
   listeMusica(): Promise<ListaMusica[]>
   salvaListaMusica(l: { id?: string; nome: string; link: string; salaId: string | null }): Promise<string>
   togliListaMusica(id: string): Promise<void>
+  /** Il timer dei tablet di sala, uguale per tutti (vedi `impostazioniSala.ts`). */
+  timerSale(): Promise<ImpostazioniSala>
+  salvaTimerSale(i: ImpostazioniSala): Promise<void>
   impostazioni(): Promise<Impostazioni>
   salvaImpostazioni(i: Partial<Impostazioni>): Promise<void>
   /** Quante presenze sono più vecchie del periodo, e la pulizia. */

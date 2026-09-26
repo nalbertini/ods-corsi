@@ -3,6 +3,7 @@ import type { DatiTablet, EsitoTocco, LezioneSala, NomeSala, Origine, RigaAppell
 import { emailDellaSala } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
+import { impostazioniSala } from '../../timer/src/lib/impostazioniSala'
 
 /**
  * Il tablet con il database vero: una chiamata per funzione di
@@ -116,6 +117,13 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     async musica() {
       const righe = await rpc<Array<{ id: string; nome: string; link: string; sala_id: string | null }>>('musica_sala', {})
       return (righe ?? []).map((r) => ({ id: r.id, nome: r.nome, link: r.link, salaId: r.sala_id }))
+    },
+
+    async impostazioniTimer() {
+      // La riga delle impostazioni la legge chiunque abbia un accesso (05-segreteria.sql).
+      const { data, error } = await db.from('impostazioni').select('timer').maybeSingle()
+      if (error) throw guaio(error)
+      return impostazioniSala((data as { timer: unknown } | null)?.timer)
     },
   }
 }

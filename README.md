@@ -48,8 +48,9 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
   perdendo, gli appelli che mancano, e il CSV. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare.
   **Istruttori e accessi**, coi PIN del tablet. Le **regole**: per quanto si
-  tengono le presenze, fin dove si prepara il calendario, le sale, e
-  l'esportazione dei dati di una persona.
+  tengono le presenze, fin dove si prepara il calendario, le sale con la loro
+  musica e il loro **timer** (Maurizio, segnali, schermo, uguali su tutti i
+  tablet), e l'esportazione dei dati di una persona.
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
   iscrive risponde alle domande dal telefono e carica il modulo firmato, il
   documento e la ricevuta; per un minore la data di nascita fa chiedere i dati
@@ -111,7 +112,14 @@ presenze, quindi un allenamento avviato continua mentre chi arriva tardi si
 segna; la testata ne mostra l'intervallo, i secondi e il colore. Nella barra
 c'è anche la musica, sempre nello stesso punto: il lettore di YouTube non si
 sposta e non si ricarica cambiando scheda. Le liste della musica le prepara la
-segreteria (`supabase/09-musica.sql`).
+segreteria (`supabase/09-musica.sql`), e così le impostazioni del timer dei
+tablet — Maurizio, i segnali, il volume, lo schermo, la musica che segue il
+timer — da **Regole e privacy** (`supabase/10-timer-sale.sql`,
+`timer/src/lib/impostazioniSala.ts`). Nelle impostazioni del timer dentro il
+tablet quelle si leggono soltanto, e non ci sono l'accesso, il tema, il
+salvataggio su file e la versione, che sono di ODS Corsi: restano la libreria
+degli esercizi, lo storico, la fonte della musica con Spotify, la voce incisa
+e la voce di sistema.
 
 Tre cose tengono insieme le due app nella stessa pagina:
 
@@ -145,6 +153,8 @@ sala — e tiene sul database i timer, lo storico e le preferenze
   l'ha fatto partire (l'istruttore o il tablet).
 - **Le preferenze** che seguono l'istruttore: Maurizio, bip e voce, volume.
   Quelle del dispositivo (la voce di sistema, lo schermo acceso) restano lì.
+  Sul tablet di sala non ci sono preferenze di qualcuno: vale il timer delle
+  sale scelto dalla segreteria.
 
 Il timer riusa due file di qui: `src/lib/sessioni.ts`, per trovare la
 sessione con le stesse chiavi, e `src/lib/coda.ts`, la coda delle scritture
@@ -230,7 +240,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `supabase/prova/timer.sql` | Il timer: la libreria della palestra, i timer personali e dei corsi, il tablet che li apre e non li scrive, lo storico, le preferenze. |
 | `supabase/prova/certificati.sql` | Certificati medici e pagamenti: li vede e li cambia solo la segreteria, e il file di una persona sta nella sua cartella. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
-| `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. |
+| `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: lo cambia solo la segreteria, il tablet lo legge. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`
 applicato prima: rifà il minimo che Supabase mette a disposizione.

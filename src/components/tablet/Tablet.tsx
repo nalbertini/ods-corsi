@@ -5,6 +5,7 @@ import type { Settings } from '../../../timer/src/types'
 import type { Incorporato, StatoTimer } from '../../../timer/src/lib/incorporato'
 import type { Lezione } from '../../../timer/src/lib/lezione'
 import { loadSettings } from '../../../timer/src/lib/storage'
+import type { ImpostazioniSala } from '../../../timer/src/lib/impostazioniSala'
 import { eUnId } from '../../../timer/src/lib/palestra'
 import { clock } from '../../../timer/src/lib/format'
 import { useMusica, useSpotify } from '../../../timer/src/lib/useMusica'
@@ -173,13 +174,21 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
 
   // Le ultime due settimane per il recupero, e la prossima per dire quando
   // si ricomincia: un intervallo solo, riletto ogni cinque minuti. Con loro le
-  // liste della musica, che la segreteria può aver cambiato.
+  // liste della musica e il timer della sala, che la segreteria può aver cambiato.
   const [liste, setListe] = useState<ListaMusica[]>([])
+  const [impostazioniTimer, setImpostazioniTimer] = useState<ImpostazioniSala | null>(null)
   const carica = useCallback(async () => {
     const oggi = d.adesso()
     d.musica().then(setListe, () => {
       // Senza rete restano quelle di prima.
     })
+    d.impostazioniTimer().then(
+      // Lo stesso valore riletto non deve ridisegnare il timer.
+      (i) => setImpostazioniTimer((prima) => (JSON.stringify(prima) === JSON.stringify(i) ? prima : i)),
+      () => {
+        // Senza rete il timer tiene quelle dell'ultima volta, che ha già salvato.
+      },
+    )
     try {
       setLezioni(await d.lezioni(giornoDopo(oggi, -REGOLE.recuperoGiorni), giornoDopo(oggi, 7)))
       setGuaio(null)
@@ -248,8 +257,15 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   }
 
   const incorporato = useMemo<Incorporato>(
-    () => ({ lezione: lezioneTimer, musica: musicaSala, visibile: scheda === 'timer', onStato: setTimer, onSettings: setSettingsTimer }),
-    [lezioneTimer, musicaSala, scheda],
+    () => ({
+      lezione: lezioneTimer,
+      musica: musicaSala,
+      impostazioni: impostazioniTimer,
+      visibile: scheda === 'timer',
+      onStato: setTimer,
+      onSettings: setSettingsTimer,
+    }),
+    [lezioneTimer, musicaSala, impostazioniTimer, scheda],
   )
 
   // Chi se ne va a metà lascia il tablet com'era; l'area istruttore si chiude

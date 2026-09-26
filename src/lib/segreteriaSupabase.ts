@@ -5,6 +5,7 @@ import { chiaveGiorno, giornoDi, valeIl } from './sala'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
+import { impostazioniSala } from '../../timer/src/lib/impostazioniSala'
 
 /**
  * La segreteria col database vero.
@@ -40,11 +41,20 @@ const DURATA_LINK = 600
 
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
 
+/** Le tabelle che arrivano dopo lo schema, col file che le crea. */
+const TABELLE_DOPO: Array<[RegExp, string]> = [
+  [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
+  [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
+]
+
 /** Un errore del database detto in modo che la segreteria lo capisca. */
 function guaio(e: { message?: string; code?: string } | null): Error {
-  // La tabella non c'è sul database: 07-certificati-pagamenti.sql non è stato lanciato.
-  if (e?.code === 'PGRST200' || e?.code === 'PGRST205' || e?.code === '42P01')
-    return new Error('Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql')
+  // La tabella non c'è sul database: il file che la crea non è stato lanciato.
+  if (e?.code === 'PGRST200' || e?.code === 'PGRST205' || e?.code === '42P01') {
+    const t = TABELLE_DOPO.find(([nome]) => nome.test(e.message ?? ''))
+    if (t) return new Error(t[1])
+    return new Error(`Manca una tabella sul database: va lanciato il file che la crea (controllo.sql dice quale). ${e.message ?? ''}`.trim())
+  }
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
   return new Error(e?.message || 'Il server non risponde')
@@ -586,6 +596,15 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async togliListaMusica(id) {
       ok(await db.from('musica_sale').delete().eq('id', id))
+    },
+
+    async timerSale() {
+      const r = ok(await db.from('impostazioni').select('timer').maybeSingle()) as { timer: unknown } | null
+      return impostazioniSala(r?.timer)
+    },
+
+    async salvaTimerSale(i) {
+      ok(await db.from('impostazioni').update({ timer: impostazioniSala(i) }).eq('id', true))
     },
 
     impostazioni,

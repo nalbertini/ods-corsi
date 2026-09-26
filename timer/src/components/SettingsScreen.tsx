@@ -68,6 +68,8 @@ export function SettingsScreen({
   onOpenRecorder,
   onOpenStorico,
   onOpenEsercizi,
+  sala = false,
+  incorporato = false,
   palestra,
 }: {
   settings: Settings
@@ -76,6 +78,18 @@ export function SettingsScreen({
   onOpenRecorder: () => void
   onOpenStorico: () => void
   onOpenEsercizi: () => void
+  /**
+   * Un tablet di sala: Maurizio, i segnali, lo schermo e le automazioni della
+   * musica li sceglie la segreteria (`impostazioniSala.ts`), e qui non si
+   * cambiano.
+   */
+  sala?: boolean
+  /**
+   * Dentro il tablet di ODS Corsi: l'accesso, il tema, la versione e la guida
+   * sono già di ODS Corsi, e il salvataggio su file non serve a un tablet
+   * i cui timer stanno sul database.
+   */
+  incorporato?: boolean
   /** Il collegamento con ODS Corsi, quando il timer ha un database. */
   palestra?: ReactNode
 }) {
@@ -121,6 +135,9 @@ export function SettingsScreen({
 
   return (
     <>
+      {sala && <DallaSegreteria settings={settings} />}
+
+      {!sala && (
       <div className="pad" style={{ paddingTop: 16 }}>
         <div className="card maurizio-card">
           <div className="row" style={{ gap: 14, alignItems: 'flex-start' }}>
@@ -151,6 +168,7 @@ export function SettingsScreen({
           </span>
         </div>
       </div>
+      )}
 
       {/* Il catalogo non è più una scheda della barra: si cura ogni tanto, non a
           ogni lezione. Resta però la prima voce, perché è quella per cui si
@@ -169,8 +187,11 @@ export function SettingsScreen({
           </div>
           <Chevron />
         </button>
+        {incorporato && <TastoStorico historyCount={historyCount} onOpen={onOpenStorico} />}
       </div>
 
+      {!incorporato && (
+      <>
       <div className="rule">
         <span className="rule-label">TEMA</span>
         <div className="rule-line" />
@@ -196,7 +217,11 @@ export function SettingsScreen({
           </span>
         </div>
       </div>
+      </>
+      )}
 
+      {!sala && (
+      <>
       <div className="rule">
         <span className="rule-label">AUDIO</span>
         <div className="rule-line" />
@@ -282,8 +307,10 @@ export function SettingsScreen({
           />
         </div>
       </div>
+      </>
+      )}
 
-      <Musica settings={settings} onChange={onChange} />
+      <Musica settings={settings} onChange={onChange} sala={sala} />
 
       <div className="rule">
         <span className="rule-label">VOCE INCISA</span>
@@ -303,12 +330,14 @@ export function SettingsScreen({
           </div>
           <Chevron />
         </button>
-        <Toggle
-          label="Usa le clip incise"
-          hint="Quando ci sono, hanno la precedenza sulla sintesi"
-          on={settings.recordedVoice}
-          onChange={(v) => onChange({ recordedVoice: v })}
-        />
+        {!sala && (
+          <Toggle
+            label="Usa le clip incise"
+            hint="Quando ci sono, hanno la precedenza sulla sintesi"
+            on={settings.recordedVoice}
+            onChange={(v) => onChange({ recordedVoice: v })}
+          />
+        )}
       </div>
 
       <div className="rule">
@@ -355,6 +384,8 @@ export function SettingsScreen({
         )}
       </div>
 
+      {!sala && (
+      <>
       <div className="rule">
         <span className="rule-label">SCHERMO</span>
         <div className="rule-line" />
@@ -373,9 +404,15 @@ export function SettingsScreen({
           onChange={(v) => onChange({ bigScreen: v })}
         />
       </div>
+      </>
+      )}
 
       {palestra}
 
+      {incorporato ? (
+        <div style={{ height: 24 }} />
+      ) : (
+      <>
       <div className="rule">
         <span className="rule-label">DATI</span>
         <div className="rule-line" />
@@ -576,15 +613,7 @@ export function SettingsScreen({
 
         {/* Lo storico non è più una scheda — in palestra non si guarda — ma
             continua a registrare, entra nel salvataggio e si apre da qui. */}
-        <button className="card row" style={{ gap: 12, padding: '0 14px', minHeight: 60, textAlign: 'left' }} onClick={onOpenStorico}>
-          <div className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-            <span style={{ fontSize: 15, fontWeight: 600 }}>Storico allenamenti</span>
-            <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-              {historyCount === 0 ? 'ancora nessuno registrato' : `${historyCount} portati a termine`}
-            </span>
-          </div>
-          <Chevron />
-        </button>
+        <TastoStorico historyCount={historyCount} onOpen={onOpenStorico} />
 
         <div className="row" style={{ gap: 10, padding: '16px 2px 0' }}>
           <span style={{ fontSize: 12, color: 'var(--faint)', letterSpacing: '0.1em' }}>ODS TIMER {VERSIONE}</span>
@@ -593,6 +622,72 @@ export function SettingsScreen({
             {historyCount} allenamenti svolti
           </span>
           <div style={{ width: 8, height: 8, background: 'var(--verde)' }} />
+        </div>
+      </div>
+      </>
+      )}
+    </>
+  )
+}
+
+function TastoStorico({ historyCount, onOpen }: { historyCount: number; onOpen: () => void }) {
+  return (
+    <button className="card row" style={{ gap: 12, padding: '0 14px', minHeight: 60, textAlign: 'left' }} onClick={onOpen}>
+      <div className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>Storico allenamenti</span>
+        <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+          {historyCount === 0 ? 'ancora nessuno registrato' : `${historyCount} portati a termine`}
+        </span>
+      </div>
+      <Chevron />
+    </button>
+  )
+}
+
+/**
+ * Sul tablet di sala, al posto di Maurizio, segnali e schermo: come sono, e
+ * chi li cambia. Si leggono, non si toccano.
+ */
+function DallaSegreteria({ settings }: { settings: Settings }) {
+  const modo = modoAudio(settings)
+  const righe: Array<[string, string]> = [
+    ['Maurizio', COACH_LABEL[settings.coach]],
+    ['Segnali', `${AUDIO_ETICHETTA[modo].toLowerCase()}${modo === 'voce' && settings.announceNext ? ', dice il prossimo' : ''}`],
+    ['Volume segnali', `${Math.round(settings.volume * 100)}%`],
+    [
+      'Anche',
+      [settings.ticchettio && 'ticchettio', settings.vibrate && 'vibrazione', settings.recordedVoice && 'voce incisa']
+        .filter(Boolean)
+        .join(', ') || 'niente',
+    ],
+    ['Schermo', [settings.keepAwake ? 'sempre acceso' : 'si spegne', settings.bigScreen && 'grande'].filter(Boolean).join(', ')],
+    [
+      'Musica',
+      settings.musicaSegue || settings.musicaAbbassa
+        ? [settings.musicaSegue && 'segue il timer', settings.musicaAbbassa && `al ${settings.musicaRecupero}% nel recupero`].filter(Boolean).join(', ')
+        : 'la si comanda a mano',
+    ],
+  ]
+  return (
+    <>
+      <div className="rule">
+        <span className="rule-label">IL TIMER DELLA SALA</span>
+        <div className="rule-line" />
+      </div>
+      <div className="pad stack" style={{ gap: 8 }}>
+        <p style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)', margin: 0 }}>
+          Maurizio, i segnali, lo schermo e la musica durante il timer li sceglie la segreteria per tutti i tablet, da
+          ODS Corsi › Segreteria › Regole e privacy. Qui restano le cose di questo tablet.
+        </p>
+        <div className="card stack" style={{ gap: 6, padding: '12px 14px' }}>
+          {righe.map(([etichetta, valore]) => (
+            <div key={etichetta} className="row" style={{ gap: 10, alignItems: 'baseline' }}>
+              <span className="grow" style={{ fontSize: 14, color: 'var(--dim)' }}>
+                {etichetta}
+              </span>
+              <span style={{ fontSize: 14, fontWeight: 600, textAlign: 'right' }}>{valore}</span>
+            </div>
+          ))}
         </div>
       </div>
     </>
@@ -607,7 +702,7 @@ export function SettingsScreen({
  * YouTube suona dentro il timer, basta un link, ma vuole lo schermo acceso.
  * Le due automazioni valgono per tutte e due.
  */
-function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: Partial<Settings>) => void }) {
+function Musica({ settings, onChange, sala }: { settings: Settings; onChange: (patch: Partial<Settings>) => void; sala: boolean }) {
   const m = useMusica(settings)
   const yt = settings.musicaFonte === 'youtube'
 
@@ -649,7 +744,7 @@ function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: 
 
         {yt ? <PassiYoutube settings={settings} onChange={onChange} /> : <PassiSpotify />}
 
-        {m.attiva && (
+        {m.attiva && !sala && (
           <>
             <Toggle
               label="La musica segue il timer"
