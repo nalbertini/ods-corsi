@@ -106,6 +106,29 @@ bene così come sono.
 Le righe che non si capiscono vengono saltate e stampate: si correggono nel
 foglio e si rilancia.
 
+### Dalle risposte del modulo Google
+
+Nella stessa schermata c'è un terzo foglio: le risposte del modulo Google,
+scaricate dal foglio delle risposte con *File → Scarica → Valori separati da
+virgola (.csv)*, così come sono. Le domande di un modulo sono scritte come le
+ha scritte chi l'ha fatto, quindi:
+
+- l'app **indovina le colonne**: nome, cognome (o nome e cognome insieme),
+  email, telefono, corsi. Una domanda che parla del genitore non vale come
+  nome dell'iscritto, ma la sua email e il suo telefono sì. Si correggono
+  dai menu prima di andare avanti. Le altre colonne (le foto caricate, i
+  consensi) non entrano;
+- **le scelte dei corsi** si abbinano ai corsi veri: «Judo 2 (nati
+  2017-2019)» diventa Judo 2 da sé, una scelta che non somiglia a nessun corso
+  resta da abbinare a mano, o da lasciar stare. Chi l'ha scelta entra lo
+  stesso, senza quel corso;
+- due fratelli iscritti con l'email del genitore entrano tutti e due, e il
+  secondo senza email, perché un'email è di una persona sola. Chi ha mandato
+  il modulo due volte è una persona sola, con i corsi di tutte e due.
+
+Si può rifare col foglio che è cresciuto: chi era già entrato si riconosce
+(dall'email con lo stesso nome, o da nome e cognome) e non si duplica.
+
 L'orario della stagione 2026/27, copiato dal volantino «Corsi e attività» e
 corretto con il foglio dei costi dove i due non coincidono, è in
 [`dati/corsi-2026-27.csv`](../dati/corsi-2026-27.csv). Una cosa manca ancora:

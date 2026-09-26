@@ -18,6 +18,12 @@ import { richiesteDi } from './richiesteProva'
 
 const GIORNO = 24 * 60 * 60_000
 
+/**
+ * Un pezzo di id che non si ripete. L'ora da sola non basta: un import crea
+ * dieci persone nello stesso millisecondo, e con lo stesso id diventavano una.
+ */
+const unico = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+
 export function creaSegreteriaProva(): DatiSegreteria {
   const a = () => archivio.dati
   const oggi = () => chiaveGiorno(new Date())
@@ -172,7 +178,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (!dati.nome.trim()) throw new Error('Il corso ha bisogno di un nome')
       if (!dati.id) {
         const base = dati.nome.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'corso'
-        const id = a().corsi.some((c) => c.id === base) ? `${base}-${Date.now().toString(36)}` : base
+        const id = a().corsi.some((c) => c.id === base) ? `${base}-${unico()}` : base
         a().corsi = [
           ...a().corsi,
           { id, nome: dati.nome.trim(), colore: dati.colore ?? '#1b8ac4', sala: dati.salaId ?? a().sale[0], istruttori: dati.istruttori, capienza: dati.capienza, attivo: true, ricorrenze: [] },
@@ -212,7 +218,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         throw new Error('Questo corso ha già una lezione quel giorno a quell’ora')
       }
       const base = idRicorrenza(c.id, r.giorno, r.ora)
-      const id = c.ricorrenze.some((x) => x.id === base) ? `${base}~${Date.now().toString(36)}` : base
+      const id = c.ricorrenze.some((x) => x.id === base) ? `${base}~${unico()}` : base
       const dal = oggi() > STAGIONE.dal ? oggi() : STAGIONE.dal
       a().corsi = a().corsi.map((x) => (x.id === c.id ? { ...x, ricorrenze: [...x.ricorrenze, { id, ...r, dal, al: STAGIONE.al }] } : x))
       salva()
@@ -295,7 +301,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const altro = email && a().persone.find((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase())
       if (altro) throw new Error(`Questa email è già di ${nomeDi(altro)}`)
       if (!dati.id) {
-        const id = `p-nuovo-${Date.now().toString(36)}`
+        const id = `p-nuovo-${unico()}`
         a().persone = [...a().persone, { id, nome, cognome, email, telefono, ruolo: 'iscritto', attiva: true, creataIl: oggi() }]
         salva()
         return id
@@ -391,7 +397,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         return senza.id
       }
       if (!dati.id) {
-        const id = `i-${nome.toLowerCase().normalize('NFD').replace(/[^a-z]+/g, '')}-${Date.now().toString(36)}`
+        const id = `i-${nome.toLowerCase().normalize('NFD').replace(/[^a-z]+/g, '')}-${unico()}`
         a().persone = [...a().persone, { id, nome, cognome, email, ruolo: dati.ruolo, attiva: true, creataIl: oggi() }]
         salva()
         return id

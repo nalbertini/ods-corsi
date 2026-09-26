@@ -28,7 +28,8 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
   istruttori, posti, colore e i giorni in cui si fanno. Gli **iscritti**, da
   cercare, iscrivere e togliere dai corsi, con quanto vengono negli ultimi
   trenta giorni. Le **presenze** del mese: medie per corso, chi si sta
-  perdendo, gli appelli che mancano, e il CSV. L'**import dai fogli Excel**.
+  perdendo, gli appelli che mancano, e il CSV. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
+  si scaricano, con le colonne e i corsi da abbinare.
   **Istruttori e accessi**, coi PIN del tablet. Le **regole**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale, e
   l'esportazione dei dati di una persona.
