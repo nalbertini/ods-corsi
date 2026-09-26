@@ -1,4 +1,5 @@
-import { LINK_ISCRIZIONE, MODULO_ISCRIZIONE, PASSI, type Passo } from '../lib/iscrizione'
+import { useState } from 'react'
+import { LINK_ISCRIZIONE, LISTINO, MODULI, PAGAMENTO, PASSI, type Passo } from '../lib/iscrizione'
 
 /**
  * Come ci si iscrive: sette passi, in ordine, con il tasto giusto accanto a
@@ -20,7 +21,7 @@ export function IscrizioniScreen() {
             <span className="passo-num num">{i + 1}</span>
             <span className="stack grow" style={{ gap: 8, minWidth: 0 }}>
               <span className="passo-titolo">{p.titolo}</span>
-              {p.dettaglio && <span style={{ fontSize: 14, color: 'var(--dim)', lineHeight: 1.4 }}>{p.dettaglio}</span>}
+              {p.dettaglio && <span className="passo-dettaglio">{p.dettaglio}</span>}
               <Azione passo={p} />
             </span>
           </li>
@@ -31,23 +32,60 @@ export function IscrizioniScreen() {
 }
 
 function Azione({ passo }: { passo: Passo }) {
-  if (passo.azione === 'link') {
-    return (
-      <a className="btn btn-primary passo-btn" href={LINK_ISCRIZIONE} target="_blank" rel="noopener noreferrer">
-        APRI IL MODULO
-      </a>
+  switch (passo.azione) {
+    case 'link':
+      return (
+        <a className="btn btn-primary passo-btn" href={LINK_ISCRIZIONE} target="_blank" rel="noopener noreferrer">
+          APRI IL MODULO
+        </a>
+      )
+    case 'moduli':
+      return (
+        <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          {MODULI.map((m) => (
+            <a key={m.file} className="btn btn-ghost passo-btn" href={m.file} download>
+              {m.etichetta}
+            </a>
+          ))}
+        </span>
+      )
+    case 'pagamento':
+      return <Pagamento />
+    default:
+      return null
+  }
+}
+
+/** Quanto e dove: la quota, l'IBAN da copiare e il listino dei corsi. */
+function Pagamento() {
+  const [copiato, setCopiato] = useState(false)
+
+  const copia = () => {
+    // Senza spazi: è così che lo vogliono i campi delle app della banca.
+    navigator.clipboard?.writeText(PAGAMENTO.iban.replace(/\s/g, '')).then(
+      () => {
+        setCopiato(true)
+        setTimeout(() => setCopiato(false), 2000)
+      },
+      () => {},
     )
   }
-  if (passo.azione === 'modulo') {
-    return MODULO_ISCRIZIONE ? (
-      <a className="btn btn-ghost passo-btn" href={MODULO_ISCRIZIONE} download>
-        SCARICA
-      </a>
-    ) : (
-      <span style={{ fontSize: 14, color: 'var(--dim)', lineHeight: 1.4 }}>
-        Lo trovi nel messaggio della segreteria.
+
+  return (
+    <span className="stack" style={{ gap: 8 }}>
+      <span className="passo-dettaglio">
+        Quota associativa {PAGAMENTO.quotaAssociativa}, valida fino a {PAGAMENTO.validaFino}. Bonifico a{' '}
+        {PAGAMENTO.intestatario}:
       </span>
-    )
-  }
-  return null
+      <span className="num iban">{PAGAMENTO.iban}</span>
+      <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+        <button className="btn btn-ghost passo-btn" onClick={copia}>
+          {copiato ? 'COPIATO' : 'COPIA IBAN'}
+        </button>
+        <a className="btn btn-ghost passo-btn" href={LISTINO.file} target="_blank" rel="noopener noreferrer">
+          {LISTINO.etichetta}
+        </a>
+      </span>
+    </span>
+  )
 }
