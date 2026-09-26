@@ -44,6 +44,14 @@ export const INFORMATIVA_PUBBLICA = INFORMATIVA && (!INFORMATIVA_BOZZA || !haUnS
  */
 export const MODULO_IN_APP = !haUnServer || !!INFORMATIVA_PUBBLICA
 
+/**
+ * Il modulo dell'app per la pagina pubblica (`#iscrizioni`), quella del link
+ * che si manda a chi vuole iscriversi: lì la prova non vale, perché una
+ * richiesta rimasta sul telefono di chi l'ha mandata non arriva a nessuno.
+ * Senza il database vero, quindi, il passo porta al modulo Google.
+ */
+export const MODULO_IN_APP_PUBBLICO = haUnServer && !!INFORMATIVA
+
 export interface Documento {
   etichetta: string
   /** Relativo alla radice dell'app: i file stanno in `public/moduli/`. */
@@ -124,3 +132,6 @@ const PASSI_GOOGLE: Passo[] = [
 ]
 
 export const PASSI: Passo[] = MODULO_IN_APP ? PASSI_APP : PASSI_GOOGLE
+
+/** I passi della pagina pubblica: vedi `MODULO_IN_APP_PUBBLICO`. */
+export const PASSI_PUBBLICI: Passo[] = MODULO_IN_APP_PUBBLICO ? PASSI_APP : PASSI_GOOGLE
