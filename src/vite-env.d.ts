@@ -12,3 +12,10 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+/** Il numero di versione di package.json, messo da vite.config.ts. */
+declare const __VERSIONE__: string
+/** Il commit da cui è compilata l'app, sette caratteri; vuoto se non si sa. */
+declare const __COMMIT__: string
+/** Quando è stata compilata, in ISO 8601. */
+declare const __COMPILATA__: string

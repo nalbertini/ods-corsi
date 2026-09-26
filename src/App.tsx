@@ -11,6 +11,7 @@ import { INDIRIZZI, TIMER, useArea } from './lib/aree'
 import { esci, serveAccesso } from './lib/accesso'
 import { INDIRIZZO_GUIDA } from './lib/guida'
 import { inProvaScelta, scegliProva } from './lib/dati'
+import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
 
 /**
  * ODS Corsi: il calendario delle sale e il registro delle presenze.
@@ -90,6 +91,9 @@ function Scelta() {
               L’interval timer per la lezione. È un’app a sé: si apre al suo indirizzo.
             </span>
           </a>
+          <span className="num versione" title={VERSIONE_ESTESA}>
+            {VERSIONE}
+          </span>
         </div>
       </main>
     </div>

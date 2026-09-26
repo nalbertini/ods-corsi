@@ -21,7 +21,8 @@ aprite l'appello completo e lo correggete.
 - **A destra**, **OGGI IN QUESTA SALA**: tutte le lezioni del giorno, con
   FINITA, IN CORSO, SI SEGNA ORA o PIÙ TARDI.
 - **In basso** tre tasti: **TI SEI DIMENTICATO DI SEGNARTI?**, **AREA
-  ISTRUTTORE**, e **TIMER · IN ARRIVO** (non ancora attivo).
+  ISTRUTTORE** e **TIMER**, che apre il timer della lezione. Dal timer si
+  torna al tablet con **CORSI**, l'ultima voce della sua barra.
 
 ## Quando ci si segna
 
