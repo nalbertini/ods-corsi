@@ -80,7 +80,11 @@ export function Porta({
   )
 }
 
-/** Dalla porta di un'area si torna alla pagina con tutte e quattro (vedi `aree.ts`). */
+/**
+ * Dalla porta di un'area si torna alla pagina con tutte e quattro (vedi
+ * `aree.ts`). Non da quella degli istruttori: è un'area a sé, e da lì non si
+ * va nelle altre.
+ */
 export function AltreAree() {
   return (
     <a className="chi-esci" href={INDIRIZZO_AREE}>
@@ -139,7 +143,7 @@ export function Accesso({ per, onEntrato }: { per: keyof typeof SPIEGA; onEntrat
       <div className="rule">
         <span className="rule-label">ACCESSO</span>
         <div className="rule-line" />
-        <AltreAree />
+        {per !== 'istruttori' && <AltreAree />}
       </div>
       <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void accedi(e)}>
         <span className="passo-dettaglio" style={{ fontSize: 15 }}>

@@ -103,9 +103,6 @@ const PIENE: Tab[] = ['crono', 'countdown']
  */
 const SALA = '../'
 
-/** Il calendario e l'appello di ODS Corsi, per chi arriva al timer dal computer. */
-const ISTRUTTORI = '../istruttori/'
-
 /** Il ritorno alla sala, grosso come i tasti del tablet da cui si arriva. */
 function TornaSala({ className }: { className: string }) {
   return (
@@ -708,9 +705,6 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         <div className="grow" />
         {!incorporato && (
           <div className="stack" style={{ gap: 12 }}>
-            <a className="navitem" href={ISTRUTTORI}>
-              ← ISTRUTTORI
-            </a>
             <TornaSala className="" />
             <span className="num sidebar-versione">ODS TIMER {VERSIONE}</span>
           </div>

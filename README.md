@@ -79,8 +79,8 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
   segreteria, e nessuno vede schede che non gli servono. Le aree sono
   separate anche sullo stesso browser: istruttori, segreteria e sala hanno
   ognuna la sua sessione (`src/lib/sessioni.ts`), quindi l'accesso fatto in
-  segreteria non vale in `istruttori/` e da lì non c'è il passaggio alla
-  segreteria; al primo accesso l'account si lega da sé alla persona con la
+  segreteria non vale in `istruttori/`, e da lì non ci sono rimandi alle
+  altre aree (segreteria, sala, iscrizioni), nemmeno in prova; al primo accesso l'account si lega da sé alla persona con la
   stessa email. Chi vuole iscriversi ha la pagina pubblica (`iscrizioni/`),
   che la segreteria copia con **COPIA LINK ISCRIZIONI**.
 - **Il tema bianco**, oltre al nero del marchio: il tasto col sole in

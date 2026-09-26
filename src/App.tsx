@@ -138,9 +138,10 @@ function Iscrizioni() {
  * chi apre `istruttori/` sul computer della reception trova la porta, non
  * l'account della segreteria.
  *
- * Le iscrizioni non stanno qui, nemmeno in prova: all'istruttore non
- * servono, e hanno il loro indirizzo (`iscrizioni/`) e la segreteria. In
- * prova resta solo il passaggio alla segreteria, per far vedere l'app intera.
+ * Da qui non si va da nessun'altra parte, nemmeno in prova: segreteria,
+ * sala e iscrizioni sono aree a sé, ognuna col suo indirizzo, e l'istruttore
+ * non trova rimandi. Restano solo la guida degli istruttori e il timer, che
+ * è uno strumento della lezione.
  *
  * Sullo schermo largo ha la stessa faccia della segreteria: il menu a
  * sinistra, con la guida e chi è entrato, e a destra calendario e appello
@@ -161,7 +162,7 @@ function Istruttori() {
       <Porta
         cornice={(x) => (
           <div className="app">
-            <Testata luogo="ISTRUTTORI" guida={INDIRIZZO_GUIDA} />
+            <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
             <main className="scroll">{x}</main>
           </div>
         )}
@@ -179,18 +180,7 @@ function Istruttori() {
 
   return (
     <div className="app">
-      <Testata luogo="ISTRUTTORI" guida={INDIRIZZO_GUIDA}>
-        {!serveAccesso && (
-          <nav className="schede">
-            <button className="scheda" data-on={pagina === 'calendario'} onClick={() => setPagina('calendario')}>
-              CALENDARIO
-            </button>
-            <button className="scheda" data-on={false} onClick={() => vaiA('segreteria')}>
-              SEGRETERIA
-            </button>
-          </nav>
-        )}
-      </Testata>
+      <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
       <main className="scroll">
         <div className="faccia-corsi">
           <Porta>
@@ -211,9 +201,8 @@ function Istruttori() {
 
 /**
  * Il menu degli istruttori sullo schermo largo, fatto come quello della
- * segreteria. Solo in prova (`chi` è `null`) c'è anche il passaggio alla
- * segreteria: col database vero le aree sono separate, ognuna con la sua
- * porta, e da qui non si va in segreteria nemmeno se si è di segreteria.
+ * segreteria. Niente passaggi alle altre aree, nemmeno in prova: ognuna ha la
+ * sua porta, e da qui non si va in segreteria nemmeno se si è di segreteria.
  */
 type Pagina = 'calendario' | 'timer'
 
@@ -241,9 +230,9 @@ function MenuIstruttori({
             <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>ISTRUTTORI</span>
           </span>
         </div>
-        {/* Quello che l'istruttore fa, tutto qui: il calendario con l'appello in
-            questa pagina, il tablet della sala e il timer in un'altra scheda,
-            così l'appello resta dov'era. */}
+        {/* Quello che l'istruttore fa, tutto qui: il calendario con l'appello e
+            I MIEI TIMER in questa pagina, il timer in un'altra scheda, così
+            l'appello resta dov'era. */}
         <div className="sg-voci">
           <button type="button" className="num sg-voce" aria-current={pagina === 'calendario' ? 'page' : undefined} onClick={() => onPagina('calendario')}>
             CALENDARIO
@@ -251,9 +240,6 @@ function MenuIstruttori({
           <button type="button" className="num sg-voce" aria-current={pagina === 'timer' ? 'page' : undefined} onClick={() => onPagina('timer')}>
             I MIEI TIMER
           </button>
-          <a className="num sg-voce" href={INDIRIZZI.sala} target="_blank" rel="noopener">
-            TABLET DI SALA ↗
-          </a>
           <a className="num sg-voce" href={TIMER} target="_blank" rel="noopener">
             TIMER ↗
           </a>
@@ -263,11 +249,6 @@ function MenuIstruttori({
           <a className="num sg-voce" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener">
             GUIDA ↗
           </a>
-          {!chi && (
-            <a className="num sg-voce" href={INDIRIZZI.segreteria}>
-              ← SEGRETERIA
-            </a>
-          )}
         </div>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : `${ISTRUTTORE_PROVA.nome} · di prova`}</span>

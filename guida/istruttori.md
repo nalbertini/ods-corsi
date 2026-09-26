@@ -16,8 +16,9 @@ dentro ogni lezione, l'appello.
    nome). Non serve rientrare ogni volta.
 
 L'accesso vale solo qui: se sullo stesso computer qualcuno è entrato in
-segreteria, `istruttori/` chiede comunque il vostro, e da qui in segreteria non
-si va. Vale anche al contrario: chi è di segreteria e vuole fare l'appello da
+segreteria, `istruttori/` chiede comunque il vostro. Da qui non si va nelle
+altre parti dell'app (segreteria, tablet di sala, iscrizioni): ognuna ha il suo
+indirizzo. Vale anche al contrario: chi è di segreteria e vuole fare l'appello da
 qui entra con la sua email anche in questa porta.
 
 La prima volta che entrate, l'account si lega da solo alla vostra scheda di
@@ -45,13 +46,12 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 
 Toccate una lezione per aprire l'appello. Sul telefono il calendario lascia il
 posto all'appello; la freccia in alto a sinistra riporta al calendario. Sotto
-le lezioni, in **STRUMENTI**, ci sono **TABLET DI SALA ↗** e **TIMER ↗**, che
-si aprono in un'altra scheda. Su un
-tablet in orizzontale o un computer stanno affiancati: calendario a sinistra,
-appello a destra. Lì l'app ha la stessa faccia della segreteria: a sinistra il
-menu, con **CALENDARIO**, **TABLET DI SALA ↗** e **TIMER ↗** (questi due si aprono
-in un'altra scheda, così l'appello resta dov'era), la guida, e in fondo, sotto
-il vostro nome, il tema ed **Esci**.
+le lezioni, in **STRUMENTI**, ci sono **I MIEI TIMER** e **TIMER ↗** (che si
+apre in un'altra scheda). Su un tablet in orizzontale o un computer stanno
+affiancati: calendario a sinistra, appello a destra. Lì l'app ha la stessa
+faccia della segreteria: a sinistra il menu, con **CALENDARIO**, **I MIEI
+TIMER** e **TIMER ↗** (si apre in un'altra scheda, così l'appello resta
+dov'era), la guida, e in fondo, sotto il vostro nome, il tema ed **Esci**.
 
 ## L'appello
 
@@ -132,8 +132,8 @@ mentre la rete non c'è, parte solo l'ultimo segno.
 
 ## In prova
 
-Nella prova c'è in più il passaggio alla **SEGRETERIA** (in alto sul
-telefono, nel menu sul computer) per girare tutta l'app, e nel nastro giallo il
-link **PROVA IL TABLET DI SALA**. L'istruttore della prova è Maurizio: il
-calendario mostra le sue lezioni. Le iscrizioni non stanno qui: hanno il loro
-indirizzo, `iscrizioni/`. Con l'account vero ognuno vede solo la sua parte.
+Anche in prova da qui non si va nelle altre parti: segreteria, tablet di sala
+e iscrizioni si provano dai loro indirizzi (`segreteria/`, `sala/`,
+`iscrizioni/`). Il nastro giallo dice che i dati sono inventati, e da lì si
+esce dalla prova. L'istruttore della prova è Maurizio: il
+calendario mostra le sue lezioni.
