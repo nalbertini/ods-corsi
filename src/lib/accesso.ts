@@ -1,6 +1,9 @@
 import type { Ruolo } from './sala'
 import { haUnServer } from './dati'
 import { indirizzoDiRitorno } from './invito'
+import { sessioneDellaPagina } from './percorso'
+import { PERSONA_VISTA } from './sessioni'
+import { indirizzo, INDIRIZZI } from './aree'
 
 /**
  * Chi sta usando l'app: con il database vero il calendario e l'appello sono
@@ -23,11 +26,11 @@ export interface Personale {
  * dire chiudere fuori un istruttore in fondo a una sala senza campo. È solo
  * un nome da mostrare: i dati li decidono comunque le policy.
  */
-const DOVE = 'ods-corsi:personale'   // vedi la nota in coda.ts
+const DOVE = () => PERSONA_VISTA[sessioneDellaPagina()]   // vedi la nota in coda.ts
 
 function ricordato(utente: string): Personale | null {
   try {
-    const r = JSON.parse(localStorage.getItem(DOVE) ?? 'null') as ({ utente: string } & Personale) | null
+    const r = JSON.parse(localStorage.getItem(DOVE()) ?? 'null') as ({ utente: string } & Personale) | null
     return r && r.utente === utente ? { nome: r.nome, cognome: r.cognome, ruolo: r.ruolo } : null
   } catch {
     return null
@@ -36,14 +39,29 @@ function ricordato(utente: string): Personale | null {
 
 function ricorda(utente: string, p: Personale | null) {
   try {
-    if (p) localStorage.setItem(DOVE, JSON.stringify({ utente, ...p }))
-    else localStorage.removeItem(DOVE)
+    if (p) localStorage.setItem(DOVE(), JSON.stringify({ utente, ...p }))
+    else localStorage.removeItem(DOVE())
   } catch {
     // Senza localStorage si perde solo l'apertura senza rete.
   }
 }
 
+/**
+ * Il client della sessione di questa pagina: istruttori e segreteria hanno
+ * ognuno la sua (vedi `sessioni.ts`), e l'accesso fatto in una non vale
+ * nell'altra.
+ */
 const db = () => import('./supabase').then((m) => m.clientSupabase())
+
+/**
+ * Va a un'altra area portandosi dietro l'accesso fatto qui: per chi è entrato
+ * dalla porta dell'altra (vedi `spostaSessione`). Qui non resta collegato.
+ */
+export async function passaA(area: 'segreteria' | 'istruttori'): Promise<void> {
+  const m = await import('./supabase')
+  m.spostaSessione(area === 'segreteria' ? 'segreteria' : 'personale')
+  window.location.assign(indirizzo(INDIRIZZI[area]))
+}
 
 /**
  * La persona dell'account collegato, se è di un istruttore o della segreteria.
@@ -158,7 +176,7 @@ export async function esci(): Promise<void> {
 
 /**
  * Quando l'account cambia senza passare dalla porta: la sessione scaduta o
- * chiusa, un altro accesso in un'altra scheda o da un'altra area. `f` riceve
+ * chiusa, un altro accesso in un'altra scheda della stessa area. `f` riceve
  * se c'è ancora qualcuno collegato; il rinnovo del token, che non cambia
  * nessuno, non conta.
  */

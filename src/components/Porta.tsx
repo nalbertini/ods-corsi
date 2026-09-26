@@ -1,7 +1,7 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
-import { accountDalLink, chiSei, entra, esci, mandaLinkPassword, quandoCambia, scegliPassword, serveAccesso, type Personale } from '../lib/accesso'
+import { accountDalLink, chiSei, entra, esci, mandaLinkPassword, passaA, quandoCambia, scegliPassword, serveAccesso, type Personale } from '../lib/accesso'
 import type { Arrivo } from '../lib/invito'
-import { INDIRIZZO_AREE } from '../lib/aree'
+import { INDIRIZZO_AREE, vaiA } from '../lib/aree'
 import { scegliProva } from '../lib/dati'
 
 /**
@@ -195,9 +195,12 @@ export function Accesso({ per, onEntrato }: { per: keyof typeof SPIEGA; onEntrat
 /**
  * Dove porta il link di un'email di Supabase: l'invito della segreteria o
  * «password dimenticata». Si sceglie la password e si entra nella propria
- * area: la segreteria nella segreteria, un istruttore nel calendario.
+ * area: la segreteria nella segreteria, un istruttore nel calendario. Il link
+ * apre la pagina da cui è partito (l'invito la segreteria, «password
+ * dimenticata» la porta dove lo si è chiesto), che può non essere la propria:
+ * l'accesso si porta dietro, perché ogni area ha la sua sessione.
  */
-export function ScegliPassword({ arrivo, onFatto }: { arrivo: Arrivo; onFatto: (dove: string) => void }) {
+export function ScegliPassword({ arrivo }: { arrivo: Arrivo }) {
   const [account, setAccount] = useState<string | null | undefined>(arrivo.tipo === 'scaduto' ? null : undefined)
   const [password, setPassword] = useState('')
   const [ancora, setAncora] = useState('')
@@ -224,10 +227,9 @@ export function ScegliPassword({ arrivo, onFatto }: { arrivo: Arrivo; onFatto: (
     setAspetta(true)
     try {
       const p = await scegliPassword(password)
-      onFatto(p.ruolo === 'staff' ? '#segreteria' : '#istruttori')
+      await passaA(p.ruolo === 'staff' ? 'segreteria' : 'istruttori')
     } catch (x) {
       setErrore(x instanceof Error ? x.message : 'La password non è stata salvata')
-    } finally {
       setAspetta(false)
     }
   }
@@ -245,7 +247,7 @@ export function ScegliPassword({ arrivo, onFatto }: { arrivo: Arrivo; onFatto: (
             {arrivo.tipo === 'scaduto' ? arrivo.testo : 'Il link non vale più.'} Se era un invito, chiedi alla segreteria di
             mandarne un altro; se avevi già una password, dalla porta c’è «password dimenticata».
           </span>
-          <button type="button" className="btn btn-go" onClick={() => onFatto('#istruttori')}>
+          <button type="button" className="btn btn-go" onClick={() => vaiA('istruttori')}>
             VAI ALLA PORTA
           </button>
         </div>
