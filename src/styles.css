@@ -458,7 +458,7 @@ a.btn { text-decoration: none; }
 }
 
 @media (min-width: 768px) {
-  .scroll > .iscrizioni, .sg-corpo > .iscrizioni {
+  .scroll > .iscrizioni {
     display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start;
     grid-template-areas: 'passi costi' 'nota costi';
     max-width: 1280px; margin: 0 auto;
@@ -829,7 +829,6 @@ a.sg-voce { text-decoration: none; }
 .sg-corpo-sala { padding: 0; gap: 0; }
 .sg-corpo-sala > .faccia-corsi { flex: 1; height: auto; min-height: 0; }
 .sg-corpo-sala .sala-due { max-width: none; }
-.sg-corpo-sala > .iscrizioni { padding-top: calc(var(--safe-t) + 8px); }
 .sg-testa { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .sg-titolo { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }
 .sg-sotto { font-size: 14px; color: var(--dim); margin: 0; }
