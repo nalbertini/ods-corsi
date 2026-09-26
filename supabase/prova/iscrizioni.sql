@@ -36,16 +36,25 @@ begin
   end if;
   return 'ok  ' || cosa || ' → ' || avuto;
 end $$;
+-- Un codice fiscale giusto per chi nasce in un giorno che si sposta con la
+-- prova (trent'anni fa, nove anni fa): le sei lettere, la data, Torino e il
+-- carattere di controllo. Per una donna il giorno ha quaranta in più.
+create or replace function cf_prova(lettere text, nato date, donna boolean default false)
+  returns text language sql stable security definer set search_path = public as $$
+  select x || cf_controllo(x) from (
+    select lettere || to_char(nato, 'YY') || substr('ABCDEHLMPRST', extract(month from nato)::int, 1)
+           || lpad((extract(day from nato)::int + case when donna then 40 else 0 end)::text, 2, '0') || 'L219' as x) q
+$$;
 -- Una richiesta valida di un adulto, da cambiare un campo alla volta.
 create or replace function adulto(cambi jsonb default '{}') returns jsonb language sql as $$
   select jsonb_build_object(
     'nome', 'Luca', 'cognome', 'Rossi', 'nato_il', (current_date - interval '30 years')::date,
-    'nato_a', 'Torino', 'codice_fiscale', 'rssLCU96a01 l219x', 'indirizzo', 'Via Roma 1',
+    'nato_a', 'Torino', 'codice_fiscale', (select lower(substr(c, 1, 11)) || ' ' || substr(c, 12) from cf_prova('RSSLCU', (current_date - interval '30 years')::date) c), 'indirizzo', 'Via Roma 1',
     'cap', '10093', 'comune', 'Collegno', 'email', 'Luca@Esempio.it', 'telefono', '347 111 2233',
     'corsi', jsonb_build_array('cccccccc-0000-0000-0000-000000000001'), 'formula', 'annuale'
   ) || cambi
 $$;
-grant execute on function tenta(text), atteso(text, text, text), adulto(jsonb), chi(text) to anon, authenticated;
+grant execute on function tenta(text), atteso(text, text, text), adulto(jsonb), chi(text), cf_prova(text, date, boolean) to anon, authenticated;
 
 \echo ''
 \echo '--- 1. chi non ha un accesso: il minimo, e niente di più ---'
@@ -73,19 +82,45 @@ select atteso('un corso chiuso', tenta($$select invia_iscrizione(adulto('{"corsi
 select atteso('una formula inventata', tenta($$select invia_iscrizione(adulto('{"formula": "gratis"}'))::text$$), 'NEGATO: Un campo non va: si paga…');
 select atteso('un minore senza genitore', tenta($$select invia_iscrizione(adulto(jsonb_build_object('nato_il', current_date - interval '9 years', 'email', 'mamma@esempio.it')))::text$$), 'NEGATO: Per un minore servono…');
 select atteso('un minore col genitore passa', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
-  'nome', 'Giulia', 'codice_fiscale', 'RSSGLI17C41L219X', 'nato_il', current_date - interval '9 years', 'email', 'mamma@esempio.it',
-  'genitore_nome', 'Paola', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPLA80A41L219X',
+  'nome', 'Giulia', 'codice_fiscale', cf_prova('RSSGLI', (current_date - interval '9 years')::date, true), 'nato_il', current_date - interval '9 years', 'email', 'mamma@esempio.it',
+  'genitore_nome', 'Paola', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPLA80A41L219P',
   'corsi', jsonb_build_array('cccccccc-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000002')))) is not null)::text$$), 'true');
 select atteso('il fratello, stessa email', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
-  'nome', 'Marco', 'codice_fiscale', 'RSSMRC15E05L219X', 'nato_il', current_date - interval '11 years', 'email', 'MAMMA@esempio.it',
-  'genitore_nome', 'Paola', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPLA80A41L219X'))) is not null)::text$$), 'true');
-select atteso('la terza dalla stessa email passa', tenta($$select (invia_iscrizione(adulto('{"email": "mamma@esempio.it", "nome": "Terzo", "codice_fiscale": "RSSTRZ90A01L219X"}')) is not null)::text$$), 'true');
+  'nome', 'Marco', 'codice_fiscale', cf_prova('RSSMRC', (current_date - interval '11 years')::date), 'nato_il', current_date - interval '11 years', 'email', 'MAMMA@esempio.it',
+  'genitore_nome', 'Paola', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPLA80A41L219P'))) is not null)::text$$), 'true');
+select atteso('la terza dalla stessa email passa', tenta($$select (invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Terzo', 'codice_fiscale', cf_prova('RSSTRZ', (current_date - interval '30 years')::date)))) is not null)::text$$), 'true');
+select atteso('manca il codice fiscale', tenta($$select invia_iscrizione(adulto('{"codice_fiscale": ""}'))::text$$), 'NEGATO: Mancano: codice fiscale');
+select atteso('manca la data di nascita', tenta($$select invia_iscrizione(adulto('{"nato_il": ""}'))::text$$), 'NEGATO: Mancano: data di nascita');
+select atteso('l''ultima lettera sbagliata', tenta($$select invia_iscrizione(adulto(jsonb_build_object('codice_fiscale',
+  (select substr(c, 1, 15) || case when right(c, 1) = 'A' then 'B' else 'A' end from cf_prova('RSSLCU', (current_date - interval '30 years')::date) c))))::text$$),
+  'NEGATO: Il codice fiscale non torna: controlla di averlo copiato giusto');
+select atteso('un altro giorno di nascita', tenta($$select invia_iscrizione(adulto(jsonb_build_object('nato_il', (current_date - interval '30 years' - interval '1 day')::date)))::text$$),
+  'NEGATO: Il codice fiscale e la data di nascita non dicono lo stesso giorno…');
+select atteso('un numero nel nome', tenta($$select invia_iscrizione(adulto('{"nome": "Luca2"}'))::text$$), 'NEGATO: Un campo non va: nome e cognome non hanno numeri');
+select atteso('lettere nel telefono', tenta($$select invia_iscrizione(adulto('{"telefono": "347 abc 2233"}'))::text$$), 'NEGATO: Un campo non va: il telefono non sembra giusto');
+select atteso('sette corsi no', tenta($$select invia_iscrizione(adulto(jsonb_build_object('corsi', (select jsonb_agg(gen_random_uuid()) from generate_series(1, 7)))))::text$$),
+  'NEGATO: Un campo non va: si possono scegliere al massimo sei corsi');
+select atteso('il genitore sbagliato di una lettera', tenta($$select invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Anna', 'codice_fiscale', cf_prova('RSSNNA', (current_date - interval '9 years')::date, true), 'nato_il', current_date - interval '9 years',
+  'genitore_nome', 'Paola', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPLA80A41L219X')))::text$$),
+  'NEGATO: Il codice fiscale del genitore non torna: controlla di averlo copiato giusto');
+select atteso('il genitore col codice del figlio', tenta($$select invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Anna', 'codice_fiscale', cf_prova('RSSNNA', (current_date - interval '9 years')::date, true), 'nato_il', current_date - interval '9 years',
+  'genitore_nome', 'Paola', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', cf_prova('RSSNNA', (current_date - interval '9 years')::date, true))))::text$$),
+  'NEGATO: Il codice fiscale del genitore è lo stesso di chi si iscrive');
+select atteso('il genitore minorenne', tenta($$select invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Anna', 'codice_fiscale', cf_prova('RSSNNA', (current_date - interval '9 years')::date, true), 'nato_il', current_date - interval '9 years',
+  'genitore_nome', 'Marco', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', cf_prova('RSSMRC', (current_date - interval '11 years')::date))))::text$$),
+  'NEGATO: Il codice fiscale del genitore è di un minorenne');
 select atteso('la quarta nello stesso giorno no', tenta($$select invia_iscrizione(adulto('{"email": "mamma@esempio.it", "nome": "Quarto"}'))::text$$), 'NEGATO: Da questa email sono già arrivate 3 richieste oggi…');
 reset role;
 select atteso('email e codice fiscale messi in ordine',
-  (select email || ' ' || codice_fiscale from richieste_iscrizione where nome = 'Luca'), 'luca@esempio.it RSSLCU96A01L219X');
+  (select email || ' ' || (codice_fiscale = cf_prova('RSSLCU', (current_date - interval '30 years')::date)) from richieste_iscrizione where nome = 'Luca'), 'luca@esempio.it true');
 select atteso('il genitore di un adulto non si tiene',
   (select coalesce(genitore_nome, '—') from richieste_iscrizione where nome = 'Luca'), '—');
+select atteso('l''omocodia: cifre scritte come lettere', (cf_nato_il('RSSMRA85T10A56NH') = '1985-12-10')::text, 'true');
+select atteso('una donna: il giorno più quaranta', cf_nato_il('RSSPLA80A41L219P')::text, '1980-01-01');
+select atteso('il 30 febbraio non esiste', coalesce(cf_nato_il('RSSLCU01B30L219' || cf_controllo('RSSLCU01B30L219'))::text, 'nessuna'), 'nessuna');
 
 \echo ''
 \echo '--- 3. i file ---'
@@ -152,7 +187,8 @@ reset role;
 -- Sara torna dopo un anno: la richiesta la ritrova, non la raddoppia, e la
 -- rimette in Lotta da oggi.
 set role anon;
-select atteso('Sara manda la sua', tenta($$select (invia_iscrizione(adulto('{"nome": "sara", "cognome": "BIANCHI", "codice_fiscale": "BNCSRA90A41L219X", "email": "sara@esempio.it", "corsi": ["cccccccc-0000-0000-0000-000000000002"]}')) is not null)::text$$), 'true');
+select atteso('Sara manda la sua', tenta($$select (invia_iscrizione(adulto('{"nome": "sara", "cognome": "BIANCHI", "email": "sara@esempio.it", "corsi": ["cccccccc-0000-0000-0000-000000000002"]}'
+  || jsonb_build_object('codice_fiscale', cf_prova('BNCSRA', (current_date - interval '30 years')::date, true)))) is not null)::text$$), 'true');
 reset role;
 set role authenticated;
 select atteso('accolta sulla scheda che c''era', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'sara@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000003')::text$$), 'true');
@@ -166,7 +202,7 @@ update iscrizioni set al = current_date + 5
 reset role;
 set role anon;
 select atteso('Giulia la rimanda', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
-  'nome', 'Giulia', 'codice_fiscale', 'rssgli17c41l219x', 'nato_il', current_date - interval '9 years', 'email', 'papa@esempio.it',
+  'nome', 'Giulia', 'codice_fiscale', lower(cf_prova('RSSGLI', (current_date - interval '9 years')::date, true)), 'nato_il', current_date - interval '9 years', 'email', 'papa@esempio.it',
   'genitore_nome', 'Piero', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPRI80A01L219X',
   'corsi', jsonb_build_array('cccccccc-0000-0000-0000-000000000002')))) is not null)::text$$), 'true');
 reset role;

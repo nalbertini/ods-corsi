@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import type { CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne } from '../lib/richieste'
+import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
+import { avvisi, controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA } from '../lib/iscrizione'
 
@@ -12,6 +12,9 @@ import { INFORMATIVA_PUBBLICA } from '../lib/iscrizione'
  * nasce la richiesta, poi i file uno alla volta nella sua cartella. Se un
  * file non parte (la rete, una foto troppo grande) le risposte sono già
  * arrivate, e si riprova solo quello, entro un'ora.
+ *
+ * Cosa non va si scrive sotto il campo: quando lo si lascia, se è scritto
+ * male, e tutto insieme quando si prova a mandare, anche quello che manca.
  */
 
 const VUOTO: DatiRichiesta = {
@@ -33,6 +36,25 @@ const VUOTO: DatiRichiesta = {
   note: '',
 }
 
+/** Il campo da cui si comincia a correggere, nell'ordine in cui si compila. */
+const ID: Record<CampoModulo, string> = {
+  nome: 'm-nome',
+  cognome: 'm-cognome',
+  natoIl: 'm-nato-il',
+  natoA: 'm-nato-a',
+  codiceFiscale: 'm-cf',
+  genitoreNome: 'm-g-nome',
+  genitoreCognome: 'm-g-cognome',
+  genitoreCodiceFiscale: 'm-g-cf',
+  indirizzo: 'm-indirizzo',
+  cap: 'm-cap',
+  comune: 'm-comune',
+  email: 'm-email',
+  telefono: 'm-tel',
+  corsi: 'm-corsi',
+  formula: 'm-formula',
+}
+
 type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'file'; id: string; mancati: TipoFile[]; perche: string } | { tipo: 'fatto' }
 
 export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
@@ -46,6 +68,9 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
   const [trappola, setTrappola] = useState('')
   const [guaio, setGuaio] = useState<string | null>(null)
   const [fase, setFase] = useState<Fase>({ tipo: 'compila' })
+  // I campi già lasciati, e se si è già provato a mandare: prima, niente rosso.
+  const [visti, setVisti] = useState<ReadonlySet<CampoModulo>>(new Set())
+  const [provato, setProvato] = useState(false)
 
   useEffect(() => {
     let vivo = true
@@ -62,6 +87,29 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
   }, [])
 
   const minore = !!b.natoIl && minorenne(b.natoIl)
+  const pronta: DatiRichiesta = {
+    ...b,
+    genitoreNome: minore ? b.genitoreNome : '',
+    genitoreCognome: minore ? b.genitoreCognome : '',
+    genitoreCodiceFiscale: minore ? b.genitoreCodiceFiscale : '',
+  }
+  const errori = problemi(pronta)
+  const attenzione = avvisi(pronta)
+  /** Cosa scrivere sotto un campo: «Manca» solo dopo aver provato a mandare. */
+  const nota = (k: CampoModulo): Nota | undefined => {
+    const e = errori[k]
+    if (e && (provato || (visti.has(k) && e !== 'Manca'))) return { testo: e, guaio: true }
+    if (attenzione[k] && (provato || visti.has(k))) return { testo: attenzione[k]!, guaio: false }
+  }
+  /** Le proprietà che legano un campo alla sua nota. */
+  const segna = (k: CampoModulo) => {
+    const n = nota(k)
+    return {
+      onBlur: () => !visti.has(k) && setVisti(new Set(visti).add(k)),
+      'aria-invalid': n?.guaio || undefined,
+      'aria-describedby': n ? `${ID[k]}-nota` : undefined,
+    }
+  }
   const metti = (k: keyof DatiRichiesta) => (e: { target: { value: string } }) => setB({ ...b, [k]: e.target.value })
   const scegli = (id: string) => setB({ ...b, corsi: b.corsi.includes(id) ? b.corsi.filter((c) => c !== id) : [...b.corsi, id] })
 
@@ -86,7 +134,9 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
     e.preventDefault()
     setGuaio(null)
     if (trappola) return setFase({ tipo: 'fatto' })
-    const pronta = { ...b, genitoreNome: minore ? b.genitoreNome : '', genitoreCognome: minore ? b.genitoreCognome : '', genitoreCodiceFiscale: minore ? b.genitoreCodiceFiscale : '' }
+    setProvato(true)
+    const primo = (Object.keys(ID) as CampoModulo[]).find((k) => errori[k])
+    if (primo) setTimeout(() => document.getElementById(ID[primo])?.focus(), 0)
     const manca = controlla(pronta) ?? FILE.filter((f) => f.obbligatorio && !file[f.tipo]).map((f) => `Manca: ${f.etichetta.toLowerCase()}`)[0]
     if (manca) return setGuaio(manca)
     if (!privacy) return setGuaio("Serve la conferma di aver letto l'informativa privacy")
@@ -145,56 +195,56 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
       </div>
 
       <Sezione titolo="CHI SI ISCRIVE">
-        <Campo id="m-nome" etichetta="NOME">
-          <input id="m-nome" className="campo" autoComplete="given-name" value={b.nome} onChange={metti('nome')} />
+        <Campo id="m-nome" nota={nota('nome')} etichetta="NOME">
+          <input id="m-nome" {...segna('nome')} className="campo" autoComplete="given-name" value={b.nome} onChange={metti('nome')} />
         </Campo>
-        <Campo id="m-cognome" etichetta="COGNOME">
-          <input id="m-cognome" className="campo" autoComplete="family-name" value={b.cognome} onChange={metti('cognome')} />
+        <Campo id="m-cognome" nota={nota('cognome')} etichetta="COGNOME">
+          <input id="m-cognome" {...segna('cognome')} className="campo" autoComplete="family-name" value={b.cognome} onChange={metti('cognome')} />
         </Campo>
-        <Campo id="m-nato-il" etichetta="DATA DI NASCITA">
-          <input id="m-nato-il" className="campo" type="date" value={b.natoIl} onChange={metti('natoIl')} />
+        <Campo id="m-nato-il" nota={nota('natoIl')} etichetta="DATA DI NASCITA">
+          <input id="m-nato-il" {...segna('natoIl')} className="campo" type="date" value={b.natoIl} onChange={metti('natoIl')} />
         </Campo>
-        <Campo id="m-nato-a" etichetta="LUOGO DI NASCITA">
-          <input id="m-nato-a" className="campo" value={b.natoA} onChange={metti('natoA')} />
+        <Campo id="m-nato-a" nota={nota('natoA')} etichetta="LUOGO DI NASCITA">
+          <input id="m-nato-a" {...segna('natoA')} className="campo" value={b.natoA} onChange={metti('natoA')} />
         </Campo>
-        <Campo id="m-cf" etichetta="CODICE FISCALE" largo>
-          <input id="m-cf" className="campo num" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.codiceFiscale} onChange={metti('codiceFiscale')} style={{ letterSpacing: '0.08em' }} />
+        <Campo id="m-cf" nota={nota('codiceFiscale')} etichetta="CODICE FISCALE" largo>
+          <input id="m-cf" {...segna('codiceFiscale')} className="campo num" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.codiceFiscale} onChange={metti('codiceFiscale')} style={{ letterSpacing: '0.08em' }} />
         </Campo>
         {minore && <span className="passo-dettaglio modulo-largo" style={{ color: 'var(--giallo-testo)' }}>È minorenne: servono i dati del genitore qui sotto, e il modulo per minori firmato da lui.</span>}
       </Sezione>
 
       {minore && (
         <Sezione titolo="IL GENITORE">
-          <Campo id="m-g-nome" etichetta="NOME">
-            <input id="m-g-nome" className="campo" value={b.genitoreNome} onChange={metti('genitoreNome')} />
+          <Campo id="m-g-nome" nota={nota('genitoreNome')} etichetta="NOME">
+            <input id="m-g-nome" {...segna('genitoreNome')} className="campo" value={b.genitoreNome} onChange={metti('genitoreNome')} />
           </Campo>
-          <Campo id="m-g-cognome" etichetta="COGNOME">
-            <input id="m-g-cognome" className="campo" value={b.genitoreCognome} onChange={metti('genitoreCognome')} />
+          <Campo id="m-g-cognome" nota={nota('genitoreCognome')} etichetta="COGNOME">
+            <input id="m-g-cognome" {...segna('genitoreCognome')} className="campo" value={b.genitoreCognome} onChange={metti('genitoreCognome')} />
           </Campo>
-          <Campo id="m-g-cf" etichetta="CODICE FISCALE DEL GENITORE" largo>
-            <input id="m-g-cf" className="campo num" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.genitoreCodiceFiscale} onChange={metti('genitoreCodiceFiscale')} style={{ letterSpacing: '0.08em' }} />
+          <Campo id="m-g-cf" nota={nota('genitoreCodiceFiscale')} etichetta="CODICE FISCALE DEL GENITORE" largo>
+            <input id="m-g-cf" {...segna('genitoreCodiceFiscale')} className="campo num" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.genitoreCodiceFiscale} onChange={metti('genitoreCodiceFiscale')} style={{ letterSpacing: '0.08em' }} />
           </Campo>
         </Sezione>
       )}
 
       <Sezione titolo="RESIDENZA">
-        <Campo id="m-indirizzo" etichetta="VIA E NUMERO" largo>
-          <input id="m-indirizzo" className="campo" autoComplete="street-address" value={b.indirizzo} onChange={metti('indirizzo')} />
+        <Campo id="m-indirizzo" nota={nota('indirizzo')} etichetta="VIA E NUMERO" largo>
+          <input id="m-indirizzo" {...segna('indirizzo')} className="campo" autoComplete="street-address" value={b.indirizzo} onChange={metti('indirizzo')} />
         </Campo>
-        <Campo id="m-cap" etichetta="CAP">
-          <input id="m-cap" className="campo num" inputMode="numeric" autoComplete="postal-code" maxLength={5} value={b.cap} onChange={metti('cap')} />
+        <Campo id="m-cap" nota={nota('cap')} etichetta="CAP">
+          <input id="m-cap" {...segna('cap')} className="campo num" inputMode="numeric" autoComplete="postal-code" maxLength={5} value={b.cap} onChange={metti('cap')} />
         </Campo>
-        <Campo id="m-comune" etichetta="COMUNE">
-          <input id="m-comune" className="campo" autoComplete="address-level2" value={b.comune} onChange={metti('comune')} />
+        <Campo id="m-comune" nota={nota('comune')} etichetta="COMUNE">
+          <input id="m-comune" {...segna('comune')} className="campo" autoComplete="address-level2" value={b.comune} onChange={metti('comune')} />
         </Campo>
       </Sezione>
 
       <Sezione titolo={minore ? 'COME RAGGIUNGERE IL GENITORE' : 'COME RAGGIUNGERTI'}>
-        <Campo id="m-email" etichetta="EMAIL">
-          <input id="m-email" className="campo" type="email" autoComplete="email" value={b.email} onChange={metti('email')} />
+        <Campo id="m-email" nota={nota('email')} etichetta="EMAIL">
+          <input id="m-email" {...segna('email')} className="campo" type="email" autoComplete="email" value={b.email} onChange={metti('email')} />
         </Campo>
-        <Campo id="m-tel" etichetta="TELEFONO">
-          <input id="m-tel" className="campo" type="tel" autoComplete="tel" value={b.telefono} onChange={metti('telefono')} />
+        <Campo id="m-tel" nota={nota('telefono')} etichetta="TELEFONO">
+          <input id="m-tel" {...segna('telefono')} className="campo" type="tel" autoComplete="tel" value={b.telefono} onChange={metti('telefono')} />
         </Campo>
       </Sezione>
 
@@ -202,7 +252,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         <div className="modulo-largo stack" style={{ gap: 6 }}>
           {guaioCorsi && <span className="passo-dettaglio" style={{ color: 'var(--rosso)' }}>I corsi non si leggono: {guaioCorsi}</span>}
           {!corsi && !guaioCorsi && <span className="passo-dettaglio">Un attimo…</span>}
-          <div className="modulo-corsi" role="group" aria-label="Corsi">
+          <div id="m-corsi" tabIndex={-1} className="modulo-corsi" role="group" aria-label="Corsi" aria-describedby={nota('corsi') ? 'm-corsi-nota' : undefined}>
             {corsi?.map((c) => (
               <button key={c.id} type="button" className="modulo-corso" aria-pressed={b.corsi.includes(c.id)} onClick={() => scegli(c.id)}>
                 <span className="modulo-spunta" aria-hidden>{b.corsi.includes(c.id) ? '✓' : ''}</span>
@@ -210,10 +260,11 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
               </button>
             ))}
           </div>
+          <Nota id="m-corsi-nota" nota={nota('corsi')} />
         </div>
         <div className="modulo-largo stack" style={{ gap: 6 }}>
           <span className="modulo-etichetta">COME PAGHI</span>
-          <div className="row" style={{ gap: 8 }} role="radiogroup" aria-label="Come paghi">
+          <div id="m-formula" tabIndex={-1} className="row" style={{ gap: 8 }} role="radiogroup" aria-label="Come paghi">
             {FORMULE.map(([f, testo]) => (
               <button key={f} type="button" role="radio" aria-checked={b.formula === f} className="modulo-corso" style={{ flex: 1 }} onClick={() => setB({ ...b, formula: f })}>
                 <span className="modulo-spunta" aria-hidden>{b.formula === f ? '●' : ''}</span>
@@ -280,14 +331,30 @@ function Sezione({ titolo, children }: { titolo: string; children: ReactNode }) 
   )
 }
 
-function Campo({ id, etichetta, children, largo }: { id: string; etichetta: string; children: ReactNode; largo?: boolean }) {
+interface Nota {
+  testo: string
+  /** Un errore che ferma l'invio; altrimenti un avviso, da guardare. */
+  guaio: boolean
+}
+
+function Campo({ id, etichetta, children, largo, nota }: { id: string; etichetta: string; children: ReactNode; largo?: boolean; nota?: Nota }) {
   return (
     <div className={`stack${largo ? ' modulo-largo' : ''}`} style={{ gap: 6, minWidth: 0 }}>
       <label htmlFor={id} className="modulo-etichetta">
         {etichetta}
       </label>
       {children}
+      <Nota id={`${id}-nota`} nota={nota} />
     </div>
+  )
+}
+
+function Nota({ id, nota }: { id: string; nota?: Nota }) {
+  if (!nota) return null
+  return (
+    <span id={id} className="modulo-nota" data-avviso={!nota.guaio || undefined}>
+      {nota.testo}
+    </span>
   )
 }
 

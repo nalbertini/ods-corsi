@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { controlla, minorenne } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { avvisi, controlla, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -64,11 +64,11 @@ const errore = async (f) => {
 }
 
 const adulto = (cambi = {}) => ({
-  nome: 'Luca', cognome: 'Rossi', natoIl: '1996-01-01', natoA: 'Torino', codiceFiscale: 'rsslcu96a01 l219x',
+  nome: 'Luca', cognome: 'Rossi', natoIl: '1996-01-01', natoA: 'Torino', codiceFiscale: 'rsslcu96a01 l219k',
   indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'Luca@Esempio.it', telefono: '347 111 2233',
   corsi: ['judo-adulti'], formula: 'annuale', ...cambi,
 })
-const genitore = { genitoreNome: 'Paola', genitoreCognome: 'Rossi', genitoreCodiceFiscale: 'RSSPLA80A41L219X' }
+const genitore = { genitoreNome: 'Paola', genitoreCognome: 'Rossi', genitoreCodiceFiscale: 'RSSPLA80A41L219P' }
 
 console.log('\n1. i corsi fra cui scegliere')
 {
@@ -95,17 +95,42 @@ console.log('\n2. cosa passa e cosa no: gli stessi messaggi del database')
   ok('diciotto anni domani: minore', m.minorenne('2008-09-27'), true)
 }
 
+console.log('\n2b. il codice fiscale, letto')
+{
+  const minore = (cambi = {}) => adulto({ nome: 'Giulia', codiceFiscale: 'RSSGLI17C41L219G', natoIl: '2017-03-01', ...genitore, ...cambi })
+  ok('manca, detto per nome', await errore(() => r.invia(adulto({ codiceFiscale: '' }))), 'Mancano: codice fiscale')
+  ok('manca la data, detto per nome', await errore(() => r.invia(adulto({ natoIl: '' }))), 'Mancano: data di nascita')
+  ok('l’ultima lettera sbagliata', await errore(() => r.invia(adulto({ codiceFiscale: 'RSSLCU96A01L219X' }))), 'Il codice fiscale non torna: controlla di averlo copiato giusto')
+  ok('due caratteri scambiati', await errore(() => r.invia(adulto({ codiceFiscale: 'RSSLCU69A01L219K' }))), 'Il codice fiscale non torna: controlla di averlo copiato giusto')
+  ok('un altro giorno di nascita', await errore(() => r.invia(adulto({ natoIl: '1996-01-02' }))), 'Il codice fiscale e la data di nascita non dicono lo stesso giorno: controlla l’uno e l’altra')
+  ok('l’omocodia passa', m.controlla(adulto({ nome: 'Mario', codiceFiscale: 'RSSMRA85T10A56NH', natoIl: '1985-12-10' })), null)
+  ok('una donna: il giorno più quaranta', m.controlla(minore()), null)
+  ok('il genitore sbagliato di una lettera', await errore(() => r.invia(minore({ genitoreCodiceFiscale: 'RSSPLA80A41L219X' }))), 'Il codice fiscale del genitore non torna: controlla di averlo copiato giusto')
+  ok('il genitore col codice del figlio', await errore(() => r.invia(minore({ genitoreCodiceFiscale: 'RSSGLI17C41L219G' }))), 'Il codice fiscale del genitore è lo stesso di chi si iscrive')
+  ok('il genitore minorenne', await errore(() => r.invia(minore({ genitoreCodiceFiscale: 'RSSMRC15E05L219V' }))), 'Il codice fiscale del genitore è di un minorenne')
+  ok('un numero nel nome', await errore(() => r.invia(adulto({ nome: 'Luca2' }))), 'Un campo non va: nome e cognome non hanno numeri')
+  ok('lettere nel telefono', await errore(() => r.invia(adulto({ telefono: '347 abc 2233' }))), 'Un campo non va: il telefono non sembra giusto')
+  ok('il telefono col prefisso', m.controlla(adulto({ telefono: '+39 347-111.2233' })), null)
+
+  const p = m.problemi(adulto({ nome: '', cap: '100', codiceFiscale: 'RSSLCU96A01L219X', corsi: [] }))
+  ok('sotto ogni campo la sua', p, { nome: 'Manca', codiceFiscale: 'Non torna: controlla lettere e numeri, uno per uno', corsi: 'Scegline almeno uno', cap: 'Sono 5 cifre' })
+  ok('niente, se va tutto', m.problemi(adulto()), {})
+  ok('un codice giusto ma di un altro: avviso', m.avvisi(adulto({ nome: 'Marco' })), { codiceFiscale: 'Non sembra di Marco Rossi: controlla che sia il suo' })
+  ok('che non ferma l’invio', m.controlla(adulto({ nome: 'Marco' })), null)
+  ok('e non c’è, se è il suo', m.avvisi(adulto({ nome: 'lùca', cognome: 'ROSSI' })), {})
+}
+
 console.log('\n3. le richieste arrivano')
 const luca = await r.invia(adulto())
-const giulia = await r.invia(adulto({ nome: 'Giulia', codiceFiscale: 'RSSGLI17C41L219X', natoIl: '2017-03-01', email: 'mamma@esempio.it', corsi: ['judo-2', 'lotta-2'], ...genitore }))
-const marco = await r.invia(adulto({ nome: 'Marco', codiceFiscale: 'RSSMRC15E05L219X', natoIl: '2015-05-05', email: 'MAMMA@esempio.it', corsi: ['judo-3'], ...genitore }))
-const terzo = await r.invia(adulto({ nome: 'Terzo', codiceFiscale: 'RSSTRZ90A01L219X', email: 'mamma@esempio.it' }))
+const giulia = await r.invia(adulto({ nome: 'Giulia', codiceFiscale: 'RSSGLI17C41L219G', natoIl: '2017-03-01', email: 'mamma@esempio.it', corsi: ['judo-2', 'lotta-2'], ...genitore }))
+const marco = await r.invia(adulto({ nome: 'Marco', codiceFiscale: 'RSSMRC15E05L219V', natoIl: '2015-05-05', email: 'MAMMA@esempio.it', corsi: ['judo-3'], ...genitore }))
+const terzo = await r.invia(adulto({ nome: 'Terzo', codiceFiscale: 'RSSTRZ96A01L219A', email: 'mamma@esempio.it' }))
 {
   ok('la quarta dalla stessa email no', await errore(() => r.invia(adulto({ nome: 'Quarto', email: 'mamma@esempio.it' }))), 'Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria')
   const tutte = await r.richieste()
   ok('sono quattro, nuove', tutte.map((x) => x.stato), ['nuova', 'nuova', 'nuova', 'nuova'])
   const l = tutte.find((x) => x.id === luca)
-  ok('email e codice fiscale messi in ordine', `${l.email} ${l.codiceFiscale}`, 'luca@esempio.it RSSLCU96A01L219X')
+  ok('email e codice fiscale messi in ordine', `${l.email} ${l.codiceFiscale}`, 'luca@esempio.it RSSLCU96A01L219K')
   ok('il genitore di un adulto non si tiene', l.genitoreNome, undefined)
   await r.caricaFile(luca, 'modulo', new File(['x'], 'modulo.pdf', { type: 'application/pdf' }))
   ok('il file si ritrova, come PDF', (await r.file(luca)).map((f) => [f.tipo, f.pdf]), [['modulo', true]])
@@ -133,7 +158,7 @@ console.log('\n4. la segreteria accoglie e rifiuta')
   ok('eliminato, sparisce', (await r.richieste()).some((x) => x.id === terzo), false)
 
   const e = await s.esporta(id)
-  ok("l'esportazione porta la richiesta", e.richieste_di_iscrizione.map((x) => [x.stato, x.codiceFiscale]), [['accolta', 'RSSLCU96A01L219X']])
+  ok("l'esportazione porta la richiesta", e.richieste_di_iscrizione.map((x) => [x.stato, x.codiceFiscale]), [['accolta', 'RSSLCU96A01L219K']])
 }
 
 console.log('\n5. chi torna non diventa un doppione')
@@ -143,7 +168,7 @@ console.log('\n5. chi torna non diventa un doppione')
   const corso = vecchia.iscrizioni[0].corsoId
   await s.termina(vecchia.id, corso)
   await s.attivaPersona(vecchia.id, false)
-  const id = await r.invia(adulto({ nome: vecchia.nome.toUpperCase(), cognome: vecchia.cognome.toLowerCase(), codiceFiscale: 'VCCTRN90A01L219X', email: 'torno@esempio.it', corsi: [corso] }))
+  const id = await r.invia(adulto({ nome: vecchia.nome.toUpperCase(), cognome: vecchia.cognome.toLowerCase(), codiceFiscale: 'VCCTRN96A01L219T', email: 'torno@esempio.it', corsi: [corso] }))
   ok('accolta sulla scheda che c’era', await r.accogli(id), vecchia.id)
   const p = (await s.persone()).find((x) => x.id === vecchia.id)
   ok('di nuovo attiva, con l’email', [p.attiva, p.email], [true, 'torno@esempio.it'])
@@ -157,7 +182,7 @@ console.log('\n6. lo stesso codice fiscale, l’altro genitore')
   // Fra gli iscritti inventati una Giulia Rossi può già esserci: si conta prima e dopo.
   const quante = async () => (await s.persone()).filter((x) => x.nome === 'Giulia' && x.cognome === 'Rossi').length
   const primaDi = await quante()
-  const id = await r.invia(adulto({ nome: 'Giulia', codiceFiscale: 'rssgli17c41l219x', natoIl: '2017-03-01', email: 'papa@esempio.it', corsi: ['psicomotricita'], ...genitore }))
+  const id = await r.invia(adulto({ nome: 'Giulia', codiceFiscale: 'rssgli17c41l219g', natoIl: '2017-03-01', email: 'papa@esempio.it', corsi: ['psicomotricita'], ...genitore }))
   const prima = (await r.richieste()).find((x) => x.id === giulia).personaId
   ok('ritrova Giulia, non ne fa un’altra', await r.accogli(id), prima)
   ok('nessuna Giulia in più', await quante(), primaDi)
