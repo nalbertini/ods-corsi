@@ -397,12 +397,31 @@ a.btn { text-decoration: none; }
    Un tablet in verticale ha la stessa faccia del telefono, ma in una colonna
    che non si allarga fino ai bordi. Da 960 px in su — un computer, un tablet
    in orizzontale — calendario e appello stanno affiancati, ognuno col suo
-   scorrimento, e i costi accanto ai passi dell'iscrizione. La soglia è la
-   stessa di `LARGO` in `lib/largo.ts`.
+   scorrimento. La soglia è la stessa di `LARGO` in `lib/largo.ts`.
+
+   Le iscrizioni si affiancano prima, da 768 px: passi e costi stanno bene
+   anche in due colonne da tablet in verticale, e una colonna sola su un
+   tablet sembrava il telefono ingrandito. La pagina di scelta mette le aree
+   in griglia, e il modulo non si allarga oltre quanto serve per leggerlo.
    --------------------------------------------------------------------------- */
 
 @media (min-width: 640px) and (max-width: 959px) {
   .testata, .scroll > * { width: 100%; max-width: 720px; margin-inline: auto; }
+}
+
+@media (min-width: 640px) {
+  .scelta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  .scroll > .iscrizioni {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start;
+    grid-template-areas: 'passi costi' 'nota costi';
+    max-width: 1280px; margin: 0 auto;
+  }
+  .iscrizioni-passi { grid-area: passi; }
+  .iscrizioni #costi { grid-area: costi; }
+  .iscrizioni-nota { grid-area: nota; }
 }
 
 @media (min-width: 960px) {
@@ -421,14 +440,8 @@ a.btn { text-decoration: none; }
   .lezione[aria-current='true'] { background: var(--surface-2); border-color: var(--text); border-left-color: var(--tinta); }
   .elenco-appello { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 
-  .iscrizioni {
-    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start;
-    grid-template-areas: 'passi costi' 'nota costi';
-    max-width: 1280px; margin: 0 auto;
-  }
-  .iscrizioni-passi { grid-area: passi; }
-  .iscrizioni #costi { grid-area: costi; }
-  .iscrizioni-nota { grid-area: nota; }
+  .scelta { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 1280px; margin: 0 auto; }
+  .iscrizioni-modulo { max-width: 920px; margin: 0 auto; }
 }
 
 /* ---------------------------------------------------------------------------

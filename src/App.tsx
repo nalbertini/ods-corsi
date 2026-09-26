@@ -72,7 +72,7 @@ function Scelta() {
     <div className="app">
       <Testata luogo="CORSI" guida={INDIRIZZO_GUIDA} />
       <main className="scroll">
-        <div className="pad stack" style={{ gap: 10, paddingTop: 16, paddingBottom: 16 }}>
+        <div className="pad stack scelta" style={{ gap: 10, paddingTop: 16, paddingBottom: 16 }}>
           {voci.map(([a, titolo, testo]) => (
             <a key={a} className="card stack scelta-area" href={INDIRIZZI[a]}>
               <span className="scelta-titolo">{titolo}</span>
