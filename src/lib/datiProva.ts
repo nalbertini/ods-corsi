@@ -79,11 +79,11 @@ const CORSI: Definizione[] = [
   { id: 'judo-2', nome: 'Judo 2', colore: JUDO, sala: 'Tatami', istruttori: ['Maurizio'], orari: ogni(LMV, '17:00', 60), iscritti: elenco(1, 14) },
   { id: 'judo-3', nome: 'Judo 3', colore: JUDO, sala: 'Tatami', istruttori: ['Maurizio'], orari: ogni(LMV, '18:00', 60), iscritti: elenco(2, 16) },
   { id: 'judo-adulti', nome: 'Judo adulti', colore: JUDO, sala: 'Tatami', istruttori: ['Maurizio'], orari: ogni(LMV, '19:00', 90), iscritti: elenco(3, 12) },
-  { id: 'judo-principianti', nome: 'Judo principianti', colore: JUDO, sala: 'Tatami', istruttori: ['Maurizio'], orari: ogni(LMV, '19:00', 90), iscritti: elenco(4, 8) },
+  { id: 'judo-principianti', nome: 'Judo principianti', colore: JUDO, sala: 'Motricità', istruttori: ['Maurizio'], orari: ogni(LMV, '19:00', 90), iscritti: elenco(4, 8) },
   { id: 'judo-agonisti', nome: 'Judo agonisti', colore: JUDO, sala: 'Tatami', istruttori: ['Maurizio'], orari: ogni(MG, '18:00', 90), iscritti: elenco(5, 10) },
 
   { id: 'psicomotricita', nome: 'Psicomotricità', colore: MOTRICITA, sala: 'Motricità', istruttori: [], orari: [...ogni([5], '17:00', 50), ...ogni([5], '18:00', 50)], iscritti: elenco(6, 9) },
-  { id: 'giocomotricita', nome: 'Giocomotricità', colore: MOTRICITA, sala: 'Motricità', istruttori: [], orari: ogni(MG, '17:00', 50), iscritti: elenco(7, 8) },
+  { id: 'giocomotricita', nome: 'Giocomotricità', colore: MOTRICITA, sala: 'Lotta', istruttori: [], orari: ogni(MG, '17:00', 50), iscritti: elenco(7, 8) },
   { id: 'avviamento', nome: 'Avviamento arti marziali', colore: MOTRICITA, sala: 'Tatami', istruttori: [], orari: ogni(MG, '17:00', 60), iscritti: elenco(8, 10) },
 
   { id: 'lotta-2', nome: 'Lotta 2', colore: LOTTA, sala: 'Lotta', istruttori: ['Maura', 'Federico'], orari: ogni(LMV, '17:00', 60), iscritti: elenco(9, 12) },
