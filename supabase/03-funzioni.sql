@@ -91,6 +91,27 @@ create trigger presenze_chi_segna before insert or update on presenze
   for each row execute function imposta_segnata_da();
 
 -- ---------------------------------------------------------------------------
+-- Cosa cambia un istruttore di una sua lezione: lo stato (svolta, annullata)
+-- e la nota. Orario, sala, corso e istruttore li decide la segreteria: la
+-- policy dice di chi è la riga, non quali colonne si toccano. Senza utente
+-- (un job, i trigger della segreteria) passa tutto.
+-- ---------------------------------------------------------------------------
+create or replace function sessione_solo_stato() returns trigger
+  language plpgsql security definer set search_path = public, extensions as $$
+begin
+  if persona_corrente() is not null and not e_staff()
+     and (to_jsonb(new) - 'stato' - 'note') is distinct from (to_jsonb(old) - 'stato' - 'note') then
+    raise exception 'di una lezione un istruttore cambia solo lo stato e la nota: il resto lo fa la segreteria'
+      using errcode = '42501';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists sessioni_solo_stato on sessioni;
+create trigger sessioni_solo_stato before update on sessioni
+  for each row execute function sessione_solo_stato();
+
+-- ---------------------------------------------------------------------------
 -- Conservazione: le presenze non si tengono per sempre.
 --
 -- Da chiamare con un job. Il periodo sta in `presenze_scadute` (01-schema.sql)

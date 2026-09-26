@@ -72,11 +72,12 @@ union all select 'presenze', count(*) from presenze;
 select tenta($$insert into presenze (sessione_id, persona_id, stato)
                select id, 'aaaaaaaa-0000-0000-0000-000000000004', 'presente' from sessioni order by inizio offset 1 limit 1$$) as "segna una presenza",
        tenta($$insert into corsi (nome) values ('Corso abusivo')$$)  as "crea un corso",
-       tenta($$delete from presenze$$)                              as "cancella le presenze",
+       tenta($$delete from presenze where persona_id = 'aaaaaaaa-0000-0000-0000-000000000004'$$) as "toglie il segno di Sara",
        tenta($$update sessioni set stato = 'svolta' where corso_id = 'cccccccc-0000-0000-0000-000000000001'$$) as "chiude le sue lezioni",
-       tenta($$update sessioni set stato = 'annullata' where corso_id = 'cccccccc-0000-0000-0000-000000000002'$$) as "annulla quelle di Giulia";
+       tenta($$update sessioni set stato = 'annullata' where corso_id = 'cccccccc-0000-0000-0000-000000000002'$$) as "annulla quelle di Giulia",
+       tenta($$update sessioni set inizio = inizio + interval '1 hour', fine = fine + interval '1 hour' where corso_id = 'cccccccc-0000-0000-0000-000000000001'$$) as "sposta le sue lezioni";
 reset role;
-select count(*) as "presenze sopravvissute al delete dell'istruttore" from presenze;
+select count(*) as "segni di Sara dopo che l'istruttore li ha tolti" from presenze where persona_id = 'aaaaaaaa-0000-0000-0000-000000000004';
 select coalesce(string_agg(distinct stato::text, ', '), '—') as "stato delle lezioni di Giulia"
   from sessioni where corso_id = 'cccccccc-0000-0000-0000-000000000002';
 
