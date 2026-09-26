@@ -30,6 +30,32 @@ const VOCI: Array<[Voce, string]> = [
   ['regole', 'REGOLE E PRIVACY'],
 ]
 
+/** L'indirizzo della pagina pubblica per iscriversi, quello da mandare su WhatsApp. */
+const LINK_PUBBLICO = `${window.location.origin}${window.location.pathname}#iscrizioni`
+
+function CopiaLink() {
+  const [copiato, setCopiato] = useState(false)
+  useEffect(() => {
+    if (!copiato) return
+    const t = window.setTimeout(() => setCopiato(false), 2500)
+    return () => window.clearTimeout(t)
+  }, [copiato])
+  const copia = () => {
+    // Senza appunti (una pagina non sicura, un browser vecchio) si fa vedere
+    // l'indirizzo da copiare a mano.
+    if (!navigator.clipboard) return window.prompt('Il link per iscriversi:', LINK_PUBBLICO)
+    navigator.clipboard.writeText(LINK_PUBBLICO).then(
+      () => setCopiato(true),
+      () => window.prompt('Il link per iscriversi:', LINK_PUBBLICO),
+    )
+  }
+  return (
+    <button type="button" className="num sg-voce" onClick={copia} title={LINK_PUBBLICO}>
+      {copiato ? 'LINK COPIATO ✓' : 'COPIA LINK ISCRIZIONI'}
+    </button>
+  )
+}
+
 /**
  * La segreteria: il menu a sinistra e la sezione scelta a destra.
  *
@@ -37,7 +63,7 @@ const VOCI: Array<[Voce, string]> = [
  * vogliono spazio. Su uno schermo stretto il menu va in cima e le colonne si
  * mettono una sotto l'altra, così si può comunque dare un'occhiata.
  */
-export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova: boolean; onApp: () => void; onEsci?: () => void }) {
+export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova: boolean; onApp?: () => void; onEsci?: () => void }) {
   const [d, setD] = useState<DatiSegreteria | null>(null)
   const [voce, setVoce] = useState<Voce>('settimana')
   const [dove, setDove] = useState<Destinazione>({})
@@ -72,9 +98,12 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
           ))}
         </div>
         <div className="grow" />
-        <button type="button" className="num sg-voce" onClick={onApp}>
-          ← APPELLO
-        </button>
+        <CopiaLink />
+        {onApp && (
+          <button type="button" className="num sg-voce" onClick={onApp}>
+            ← APPELLO
+          </button>
+        )}
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
           <span style={{ fontSize: 12, color: 'var(--dim)' }}>Segreteria · accesso completo</span>
