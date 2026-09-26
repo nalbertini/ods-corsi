@@ -8,8 +8,9 @@ import { Guida } from './components/Guida'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { INDIRIZZI, TIMER, useArea, vaiA } from './lib/aree'
-import { esci, serveAccesso } from './lib/accesso'
-import { INDIRIZZO_GUIDA } from './lib/guida'
+import { esci, serveAccesso, type Personale } from './lib/accesso'
+import { useLargo } from './lib/largo'
+import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
 import { inProvaScelta, scegliProva } from './lib/dati'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
@@ -143,9 +144,42 @@ function Iscrizioni() {
  * iscriversi come li vede il personale (con la lezione di prova) e la
  * segreteria. La sala resta montata anche quando si guarda altro, così
  * tornando si ritrova l'appello dov'era.
+ *
+ * Sullo schermo largo ha la stessa faccia della segreteria: il menu a
+ * sinistra, con le schede, la guida e chi è entrato, e a destra calendario e
+ * appello affiancati, alti quanto lo schermo.
  */
 function Istruttori() {
-  const [scheda, setScheda] = useState<'corsi' | 'iscrizioni'>('corsi')
+  const [scheda, setScheda] = useState<Scheda>('corsi')
+  const largo = useLargo()
+
+  const facce = (
+    <>
+      <div className="faccia-corsi" hidden={scheda !== 'corsi'}>
+        <Sala />
+      </div>
+      {scheda === 'iscrizioni' && <IscrizioniScreen />}
+    </>
+  )
+
+  if (largo) {
+    return (
+      <Porta
+        cornice={(x) => (
+          <div className="app">
+            <Testata luogo="ISTRUTTORI" guida={INDIRIZZO_GUIDA} />
+            <main className="scroll">{x}</main>
+          </div>
+        )}
+        dentro={(chi, onEsci) => (
+          <MenuIstruttori scheda={scheda} onScheda={setScheda} chi={chi} onEsci={onEsci}>
+            {facce}
+          </MenuIstruttori>
+        )}
+      />
+    )
+  }
+
   return (
     <div className="app">
       <Testata luogo="ISTRUTTORI" guida={INDIRIZZO_GUIDA}>
@@ -171,6 +205,90 @@ function Istruttori() {
         </div>
         {scheda === 'iscrizioni' && <IscrizioniScreen />}
       </main>
+    </div>
+  )
+}
+
+type Scheda = 'corsi' | 'iscrizioni'
+
+/**
+ * Il menu degli istruttori sullo schermo largo, fatto come quello della
+ * segreteria. In prova (`chi` è `null`) ci sono anche le iscrizioni e il
+ * passaggio alla segreteria; col database vero, chi è di segreteria ha il
+ * ritorno alla sua area.
+ */
+function MenuIstruttori({
+  scheda,
+  onScheda,
+  chi,
+  onEsci,
+  children,
+}: {
+  scheda: Scheda
+  onScheda: (s: Scheda) => void
+  chi: Personale | null
+  onEsci?: () => void
+  children: ReactNode
+}) {
+  const esci = onEsci ?? (inProvaScelta ? () => scegliProva(false) : undefined)
+  return (
+    <div className="sg">
+      <nav className="sg-menu" aria-label="Istruttori">
+        <div className="row" style={{ gap: 10, padding: '0 8px' }}>
+          <Logo width={46} />
+          <span className="stack" style={{ gap: 2 }}>
+            <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
+            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>ISTRUTTORI</span>
+          </span>
+        </div>
+        <div className="sg-voci">
+          <button type="button" className="num sg-voce" aria-current={scheda === 'corsi' ? 'page' : undefined} onClick={() => onScheda('corsi')}>
+            APPELLO
+          </button>
+          {!chi && (
+            <button
+              type="button"
+              className="num sg-voce"
+              aria-current={scheda === 'iscrizioni' ? 'page' : undefined}
+              onClick={() => onScheda('iscrizioni')}
+            >
+              ISCRIZIONI
+            </button>
+          )}
+        </div>
+        <div className="grow" />
+        {/* In un'altra scheda: l'appello resta dov'era. */}
+        <div className="sg-voci">
+          <a className="num sg-voce" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener">
+            GUIDA ↗
+          </a>
+          <a className="num sg-voce" href={TIMER} target="_blank" rel="noopener">
+            TIMER ↗
+          </a>
+          {(!chi || chi.ruolo === 'staff') && (
+            <a className="num sg-voce" href={INDIRIZZI.segreteria}>
+              ← SEGRETERIA
+            </a>
+          )}
+        </div>
+        <div className="sg-chi">
+          <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : 'Istruttore di prova'}</span>
+          <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+            {chi?.ruolo === 'staff' ? 'Segreteria · anche l’appello' : 'Istruttore · calendario e appello'}
+          </span>
+          {!chi && <span className="num sg-bollino">DATI DI PROVA</span>}
+          <TastoTema link />
+          {esci && (
+            <button type="button" className="sg-link" onClick={esci}>
+              Esci
+            </button>
+          )}
+          <span className="num versione" title={VERSIONE_ESTESA}>
+            {VERSIONE}
+          </span>
+        </div>
+      </nav>
+      <main className="sg-corpo sg-corpo-sala">{children}</main>
     </div>
   )
 }

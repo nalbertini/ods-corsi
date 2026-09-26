@@ -37,8 +37,9 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 
 Toccate una lezione per aprire l'appello. Sul telefono il calendario lascia il
 posto all'appello; la freccia in alto a sinistra riporta al calendario. Su un
-tablet o un computer stanno affiancati: calendario a sinistra, appello a
-destra.
+tablet in orizzontale o un computer stanno affiancati: calendario a sinistra,
+appello a destra. Lì l'app ha la stessa faccia della segreteria: a sinistra il
+menu, con la guida, il timer, il tema e **Esci** in fondo, sotto il vostro nome.
 
 ## L'appello
 
