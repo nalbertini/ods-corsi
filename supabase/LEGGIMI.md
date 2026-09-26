@@ -22,19 +22,32 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 2. `02-policy.sql` — chi può vedere e fare cosa
 3. `03-funzioni.sql` — il calendario, il tracciamento di chi segna, la pulizia
 4. `04-tablet.sql` — il tablet di sala e i PIN degli istruttori
+5. `05-segreteria.sql` — le lezioni che seguono i cambi dei corsi, il primo accesso
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 
 ## 3. Le persone
 
-Ogni istruttore e chi sta in segreteria ha bisogno di due cose: un utente in
-**Authentication → Users** e una riga in `persone` che lo colleghi.
+Si entra con un link mandato per email, senza password. Chi lavora in
+palestra ha bisogno di due cose:
+
+1. una riga in `persone` con la sua **email** e il ruolo `istruttore` o
+   `staff` (la segreteria);
+2. un utente in **Authentication → Users** con la stessa email: dal pannello,
+   *Add user → Send invitation*.
+
+Al primo accesso l'app lega i due da sé (`collega_utente()`, in
+`05-segreteria.sql`): non serve nessun SQL. La prima persona di segreteria,
+però, va messa a mano, perché prima di lei nessuno può scrivere in `persone`:
 
 ```sql
--- dopo aver creato l'utente dal pannello, si legano i due
-update persone set utente_id = (select id from auth.users where email = 'maurizio@esempio.it')
-where nome = 'Maurizio' and cognome = 'Innella';
+insert into persone (nome, cognome, email, ruolo) values ('Anna', 'Rossi', 'anna@esempio.it', 'staff');
 ```
+
+In **Authentication → URL Configuration** l'indirizzo dell'app va messo sia in
+*Site URL* sia fra i *Redirect URLs*, altrimenti il link porta alla pagina
+sbagliata. Chi apre il link senza essere in anagrafica entra ma non vede
+niente: l'app gli dice di chiedere alla segreteria.
 
 Chi frequenta i corsi **non** ha bisogno di un account: in questa fase gli
 iscritti sono nomi in un elenco e basta.
@@ -175,4 +188,6 @@ Supabase mette a disposizione (`auth.users`, `auth.uid()`, i ruoli),
 legale, `rls.sql` prova gli accessi dal punto di vista di un iscritto, di un
 istruttore, della segreteria e di chi non ha fatto l'accesso, `tablet.sql`
 prova il tablet di sala: le finestre di tempo, il recupero, l'annullo, il PIN
-e il blocco, e che il tablet non veda niente più di quel che deve.
+e il blocco, e che il tablet non veda niente più di quel che deve;
+`segreteria.sql` prova cosa succede alle lezioni quando un corso cambia sala,
+istruttore o giorni, o si archivia, e il primo accesso.
