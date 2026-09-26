@@ -96,7 +96,7 @@ npm run dev:timer
 ```
 
 Il tasto TIMER della pagina di scelta e dell'appello apre `timer/`, e il
-tasto SALA del timer torna a `../`, la radice. Sono relativi, quindi valgono
+tasto SALA del timer (solo su un tablet di sala) torna a `../`, la radice. Sono relativi, quindi valgono
 dovunque sia pubblicato il sito; in `npm run dev` il tasto TIMER non trova
 niente, perché il server di sviluppo serve una sola app. Per provarle insieme:
 

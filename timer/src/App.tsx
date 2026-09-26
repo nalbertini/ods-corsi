@@ -103,6 +103,19 @@ const PIENE: Tab[] = ['crono', 'countdown']
  */
 const SALA = '../'
 
+/**
+ * Il ritorno c'è solo su un tablet di sala, che ODS Corsi si ricorda in
+ * `ods-corsi:modo`. Altrove la radice è la pagina di scelta, con dentro gli
+ * istruttori e le altre aree: dal timer lì non si va.
+ */
+const SU_TABLET_DI_SALA = (() => {
+  try {
+    return localStorage.getItem('ods-corsi:modo') === 'tablet'
+  } catch {
+    return false
+  }
+})()
+
 /** Il ritorno alla sala, grosso come i tasti del tablet da cui si arriva. */
 function TornaSala({ className }: { className: string }) {
   return (
@@ -705,7 +718,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         <div className="grow" />
         {!incorporato && (
           <div className="stack" style={{ gap: 12 }}>
-            <TornaSala className="" />
+            {SU_TABLET_DI_SALA && <TornaSala className="" />}
             <span className="num sidebar-versione">ODS TIMER {VERSIONE}</span>
           </div>
         )}
@@ -726,7 +739,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             </div>
             <h1 className="ob page-title">{TAB_TITLE[tab]}</h1>
             <div className="grow" />
-            {!incorporato && <TornaSala className="torna-sala-alto" />}
+            {!incorporato && SU_TABLET_DI_SALA && <TornaSala className="torna-sala-alto" />}
           </header>
         )}
 
@@ -759,7 +772,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
           {/* Su un telefono in alto non c'è posto accanto al marchio: il ritorno
               sta qui. Da tablet c'è il tasto grosso in alto, se in alto c'è
               la testata; nelle schede a tutto schermo resta questo. */}
-          {!incorporato && (
+          {!incorporato && SU_TABLET_DI_SALA && (
             <a className={PIENE.includes(tab) ? 'tab' : 'tab tab-sala'} href={SALA}>
               <Back size={22} />
               SALA
