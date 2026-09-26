@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type FormEve
 import type { DatiTablet, LezioneSala, Postazione } from '../../lib/tablet'
 import { datiTablet, fase, lasciaTablet, REGOLE } from '../../lib/tablet'
 import type { Settings } from '../../../timer/src/types'
-import type { Incorporato, StatoTimer } from '../../../timer/src/lib/incorporato'
+import type { Incorporato, StatoTimer, TimerPronto } from '../../../timer/src/lib/incorporato'
 import type { Lezione } from '../../../timer/src/lib/lezione'
 import { loadSettings } from '../../../timer/src/lib/storage'
 import type { ImpostazioniSala } from '../../../timer/src/lib/impostazioniSala'
@@ -230,6 +230,16 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
     [aperta?.id, aperta?.corsoId, aperta?.corso],
   )
 
+  // Il timer che la lezione aperta fa partire per primo (lo dice il timer, che
+  // ha la libreria), e la richiesta di farlo partire da qui.
+  const [pronto, setPronto] = useState<TimerPronto | null>(null)
+  const [avvia, setAvvia] = useState<{ id: string; volta: number } | null>(null)
+  const avviaPronto = () => {
+    if (!pronto) return
+    setScheda('timer')
+    setAvvia((a) => ({ id: pronto.id, volta: (a?.volta ?? 0) + 1 }))
+  }
+
   // --- La musica --------------------------------------------------------------
   // Una lista della sala, se se n'è scelta una; altrimenti quella delle
   // impostazioni del timer. La barra, il lettore e il timer suonano questa.
@@ -264,8 +274,10 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
       visibile: scheda === 'timer',
       onStato: setTimer,
       onSettings: setSettingsTimer,
+      onPronto: setPronto,
+      avvia,
     }),
-    [lezioneTimer, musicaSala, impostazioniTimer, scheda],
+    [lezioneTimer, musicaSala, impostazioniTimer, scheda, avvia],
   )
 
   // Chi se ne va a metà lascia il tablet com'era; l'area istruttore si chiude
@@ -337,6 +349,9 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
                   lezioni={lezioni}
                   guaio={guaio}
                   onSegna={(l) => setVista({ s: 'presenza', lezione: l, da: 'home' })}
+                  timer={aperta && lezioneTimer ? { lezioneId: aperta.id, pronto, inCorso: inCorso(timer) } : null}
+                  onAvviaTimer={avviaPronto}
+                  onVaiTimer={vaiTimer}
                   onRecupero={() => setVista({ s: 'recupero', corsoId: null })}
                   onPin={() => setVista({ s: 'pin' })}
                 />

@@ -1,7 +1,8 @@
 import type { LezioneSala } from '../../lib/tablet'
 import { fase, REGOLE } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Lucchetto, Recupero } from '../Icons'
+import { Cronometro, Lucchetto, Recupero } from '../Icons'
+import type { TimerPronto } from '../../../timer/src/lib/incorporato'
 import { Guaio, orario, Riquadro } from './comune'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
@@ -13,7 +14,9 @@ const ETICHETTA = { finita: 'FINITA', aperta: 'SI SEGNA ORA', dopo: 'PIÙ TARDI'
  * A sinistra la lezione in cui ci si segna adesso, con un tasto grande quanto
  * una mano; a destra la giornata della sala. Chi entra deve capire da lontano
  * se è il suo turno. Il timer e la musica stanno nella barra in basso, che è
- * del tablet e non di questa schermata.
+ * del tablet e non di questa schermata; sotto la lezione aperta c'è però il
+ * suo timer, pronto con AVVIA: quello scelto per la lezione in I MIEI TIMER,
+ * o se non c'è il primo del corso.
  */
 export function TabletHome({
   sala,
@@ -23,6 +26,9 @@ export function TabletHome({
   onSegna,
   onRecupero,
   onPin,
+  timer,
+  onAvviaTimer,
+  onVaiTimer,
 }: {
   sala: string
   adesso: Date
@@ -31,6 +37,10 @@ export function TabletHome({
   onSegna: (l: LezioneSala) => void
   onRecupero: () => void
   onPin: () => void
+  /** Il timer della lezione aperta: `pronto` nullo se né la lezione né il corso ne hanno uno. */
+  timer?: { lezioneId: string; pronto: TimerPronto | null; inCorso: boolean } | null
+  onAvviaTimer?: () => void
+  onVaiTimer?: () => void
 }) {
   const oggi = chiaveGiorno(adesso)
   const diOggi = (lezioni ?? []).filter((l) => chiaveGiorno(new Date(l.inizio)) === oggi && l.stato !== 'annullata')
@@ -74,6 +84,24 @@ export function TabletHome({
             <button type="button" className="ob tb-btn-segna" onClick={() => onSegna(l)}>
               SEGNA LA PRESENZA
             </button>
+            {timer?.lezioneId === l.id && timer.pronto && (
+              <div className="tb-pronto">
+                <Cronometro size={30} />
+                <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+                  <span className="num tb-pronto-da">{timer.pronto.da === 'lezione' ? 'IL TIMER DI QUESTA LEZIONE' : 'IL TIMER DEL CORSO'}</span>
+                  <span className="ob tb-pronto-nome">{timer.pronto.nome.toUpperCase()}</span>
+                </span>
+                {timer.inCorso ? (
+                  <button type="button" className="ob tb-btn-timer tb-btn-timer-linea" onClick={onVaiTimer}>
+                    IN CORSO · VEDI
+                  </button>
+                ) : (
+                  <button type="button" className="ob tb-btn-timer" onClick={onAvviaTimer}>
+                    ▶ AVVIA
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         ))}
 

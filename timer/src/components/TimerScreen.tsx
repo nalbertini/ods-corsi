@@ -30,6 +30,7 @@ export function TimerScreen({
   workout,
   settings,
   ripresa,
+  partiSubito = false,
   onExit,
   onFinish,
   onStato,
@@ -40,6 +41,8 @@ export function TimerScreen({
   settings: Settings
   /** Un allenamento interrotto da riprendere dal punto in cui era rimasto. */
   ripresa?: Interrotto | null
+  /** Parte appena aperto: dal tasto AVVIA della lezione, sul tablet di sala. */
+  partiSubito?: boolean
   onExit: () => void
   onFinish: (seconds: number, completed: boolean) => void
   /** Sul tablet di sala: lo stato dell'allenamento, per la testata. */
@@ -94,6 +97,16 @@ export function TimerScreen({
     ripreso.current = true
     riprendiDa(ripresa.elapsed)
   }, [ripresa, riprendiDa])
+
+  // Dal tablet si è già detto AVVIA sulla lezione: non serve un secondo tocco.
+  const partito = useRef(false)
+  useEffect(() => {
+    if (!partiSubito || partito.current || ripresa) return
+    partito.current = true
+    toggle()
+    // Una volta sola, all'apertura.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Dove si è arrivati, segnato ogni due secondi: se l'app muore qui in mezzo,
   // alla riapertura si può riprendere invece di ricominciare da capo.
