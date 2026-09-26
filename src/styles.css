@@ -195,3 +195,14 @@ input, textarea { font: inherit; color: inherit; }
   font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim);
 }
 .scheda[data-on='true'] { background: var(--surface-2); border-color: var(--text); color: var(--text); }
+
+/* Il listino: una scheda per corso, i tre prezzi in colonna sotto la testa. */
+.costo { padding: 14px; gap: 3px; }
+.costo-griglia {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 10px;
+  margin-top: 8px; padding-top: 10px; border-top: 2px solid var(--line-soft);
+}
+.costo-griglia[data-etichette='true'] { grid-template-columns: auto repeat(3, 1fr); }
+.costo-testa { font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); line-height: 1.2; }
+.costo-euro { font-size: 20px; font-weight: 700; }
+.costo-euro[data-vuoto='true'] { color: var(--faint); }

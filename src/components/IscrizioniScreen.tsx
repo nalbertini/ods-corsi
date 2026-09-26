@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { LINK_ISCRIZIONE, LISTINO, MODULI, PAGAMENTO, PASSI, type Passo } from '../lib/iscrizione'
+import { LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, type Passo } from '../lib/iscrizione'
+import { Costi } from './Costi'
 
 /**
  * Come ci si iscrive: sette passi, in ordine, con il tasto giusto accanto a
@@ -27,6 +28,8 @@ export function IscrizioniScreen() {
           </li>
         ))}
       </ol>
+
+      <Costi />
     </>
   )
 }
@@ -56,7 +59,7 @@ function Azione({ passo }: { passo: Passo }) {
   }
 }
 
-/** Quanto e dove: la quota, l'IBAN da copiare e il listino dei corsi. */
+/** Quanto e dove: la quota, l'IBAN da copiare e il rimando ai costi qui sotto. */
 function Pagamento() {
   const [copiato, setCopiato] = useState(false)
 
@@ -82,9 +85,12 @@ function Pagamento() {
         <button className="btn btn-ghost passo-btn" onClick={copia}>
           {copiato ? 'COPIATO' : 'COPIA IBAN'}
         </button>
-        <a className="btn btn-ghost passo-btn" href={LISTINO.file} target="_blank" rel="noopener noreferrer">
-          {LISTINO.etichetta}
-        </a>
+        <button
+          className="btn btn-ghost passo-btn"
+          onClick={() => document.getElementById('costi')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          VEDI I COSTI
+        </button>
       </span>
     </span>
   )
