@@ -59,8 +59,10 @@ istruttori e segreteria, e solo per una persona che non ha già un account. La
 prima persona di segreteria va comunque messa a mano, perché prima di lei
 nessuno può scrivere in `persone`.
 
-Chi ha il ruolo `staff` vede anche la scheda **SEGRETERIA**: la settimana, i
-corsi e gli iscritti, pensati per il computer della reception.
+Chi ha il ruolo `staff` entra anche nella **segreteria**, all'indirizzo
+`#segreteria`: la settimana, i corsi e gli iscritti, pensati per il computer
+della reception. Un istruttore che apre quell'indirizzo viene rimandato a
+`#istruttori`.
 
 Chi frequenta i corsi **non** ha bisogno di un account: in questa fase gli
 iscritti sono nomi in un elenco e basta.
@@ -230,8 +232,8 @@ select 'Tablet Lotta', (select id from sale where nome = 'Lotta'),
        (select id from auth.users where email = 'tablet-lotta@esempio.it');
 ```
 
-e sul tablet si apre l'app con `#tablet` in fondo all'indirizzo (per esempio
-`https://…/ods-corsi/#tablet`), si fa l'accesso una volta con quell'utente e
+e sul tablet si apre l'app con `#sala` in fondo all'indirizzo (per esempio
+`https://…/ods-corsi/#sala`), si fa l'accesso una volta con quell'utente e
 conviene installarla come app. Da lì il tablet riapre sempre il tablet e lo
 schermo non si spegne. Se il tablet si perde,
 `update postazioni set attiva = false where nome = 'Tablet Lotta'` lo spegne

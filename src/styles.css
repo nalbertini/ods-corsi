@@ -323,7 +323,13 @@ input, textarea { font: inherit; color: inherit; }
   .modulo-griglia, .modulo-corsi { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* Le due facce dell'app, sotto la testata. */
+/* La pagina senza indirizzo: le quattro aree, una scheda ciascuna. */
+.scelta-area { gap: 4px; padding: 16px; color: var(--text); text-decoration: none; }
+.scelta-area:hover { border-color: var(--dim); }
+.scelta-titolo { font-family: var(--cond); font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.16em; }
+a.btn { text-decoration: none; }
+
+/* Le due schede degli istruttori, sotto la testata. */
 .schede { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; flex-basis: 100%; }
 .scheda {
   min-height: 40px; background: var(--surface); border: 2px solid var(--line);

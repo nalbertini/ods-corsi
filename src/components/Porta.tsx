@@ -3,20 +3,11 @@ import { chiSei, entra, esci, quandoEsce, serveAccesso, type Personale } from '.
 import { scegliProva } from '../lib/dati'
 
 /**
- * La porta del calendario: con il database vero, prima di vedere lezioni e
- * iscritti si fa l'accesso. In prova non c'è, e i figli si vedono subito.
- *
- * Solo la scheda dei corsi sta dietro la porta: come ci si iscrive e quanto
- * costa sono cose per tutti. La segreteria si apre da qui, a chi ha il ruolo
- * `staff`, e `onChi` è come l'app lo sa.
+ * Chi ha fatto l'accesso: `undefined` finché non si sa, `null` se nessuno.
+ * In prova non serve saperlo, ed è `null` da subito.
  */
-export function Porta({ children, onChi }: { children: ReactNode; onChi?: (p: Personale | null) => void }) {
+export function useChi(): [Personale | null | undefined, (p: Personale | null) => void] {
   const [chi, setChi] = useState<Personale | null | undefined>(serveAccesso ? undefined : null)
-
-  // Chi c'è dietro la porta serve anche fuori: la segreteria si apre solo a lei.
-  useEffect(() => {
-    if (chi !== undefined) onChi?.(chi)
-  }, [chi, onChi])
 
   useEffect(() => {
     if (!serveAccesso) return
@@ -30,9 +21,22 @@ export function Porta({ children, onChi }: { children: ReactNode; onChi?: (p: Pe
     }
   }, [])
 
+  return [chi, setChi]
+}
+
+/**
+ * La porta del calendario: con il database vero, prima di vedere lezioni e
+ * iscritti si fa l'accesso. In prova non c'è, e i figli si vedono subito.
+ *
+ * Entrano istruttori e segreteria: anche la segreteria fa l'appello. La
+ * segreteria vera e propria ha il suo indirizzo e la sua porta (vedi `App`).
+ */
+export function Porta({ children }: { children: ReactNode }) {
+  const [chi, setChi] = useChi()
+
   if (!serveAccesso) return <>{children}</>
-  if (chi === undefined) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
-  if (!chi) return <Accesso onEntrato={setChi} />
+  if (chi === undefined) return <UnAttimo />
+  if (!chi) return <Accesso per="istruttori" onEntrato={setChi} />
 
   return (
     <>
@@ -49,7 +53,16 @@ export function Porta({ children, onChi }: { children: ReactNode; onChi?: (p: Pe
   )
 }
 
-function Accesso({ onEntrato }: { onEntrato: (p: Personale) => void }) {
+export function UnAttimo() {
+  return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
+}
+
+const SPIEGA = {
+  istruttori: 'Il calendario e l’appello sono per istruttori e segreteria.',
+  segreteria: 'La segreteria è per chi lavora alla reception.',
+}
+
+export function Accesso({ per, onEntrato }: { per: keyof typeof SPIEGA; onEntrato: (p: Personale) => void }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errore, setErrore] = useState<string | null>(null)
@@ -76,8 +89,7 @@ function Accesso({ onEntrato }: { onEntrato: (p: Personale) => void }) {
       </div>
       <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void accedi(e)}>
         <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-          Il calendario e l’appello sono per istruttori e segreteria. Entra con l’account che ti ha dato la palestra:
-          resti collegato finché non premi «Esci».
+          {SPIEGA[per]} Entra con l’account che ti ha dato la palestra: resti collegato finché non premi «Esci».
         </span>
         <input
           className="campo"
