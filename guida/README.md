@@ -11,6 +11,11 @@ Non si installa niente: è una pagina web, <https://nalbertini.github.io/ods-cor
 che si apre dal telefono, dal tablet o dal computer. Si può anche aggiungere alla schermata Home del telefono
 («Aggiungi alla schermata Home») e allora si apre come un'app.
 
+La guida si legge anche dentro l'app: il tasto **?** in alto, nella pagina
+iniziale e in quella degli istruttori, o **GUIDA** nel menu della segreteria,
+che apre la guida della voce in cui siete. L'indirizzo è
+<https://nalbertini.github.io/ods-corsi/#guida>.
+
 ## Le quattro porte
 
 L'app ha quattro indirizzi. Sono la stessa app, ma ognuno apre una parte

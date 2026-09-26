@@ -4,10 +4,12 @@ import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
 import { Accesso, AltreAree, Porta, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
+import { Guida } from './components/Guida'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { INDIRIZZI, TIMER, useArea } from './lib/aree'
 import { esci, serveAccesso } from './lib/accesso'
+import { INDIRIZZO_GUIDA } from './lib/guida'
 import { inProvaScelta, scegliProva } from './lib/dati'
 
 /**
@@ -33,10 +35,12 @@ export default function App() {
   if (area === 'iscrizioni') return <Iscrizioni />
   if (area === 'istruttori') return <Istruttori />
   if (area === 'sala') return <Tablet />
+  if (area === 'guida') return <AreaGuida />
   return <Scelta />
 }
 
-function Testata({ luogo, children }: { luogo: string; children?: ReactNode }) {
+/** `guida` è la pagina della guida da aprire col tasto «?», se c'è. */
+function Testata({ luogo, guida, children }: { luogo: string; guida?: string; children?: ReactNode }) {
   return (
     <header className="testata">
       <Logo />
@@ -44,6 +48,11 @@ function Testata({ luogo, children }: { luogo: string; children?: ReactNode }) {
         <span className="testata-nome">OFFICINE DELLO SPORT</span>
         <span className="testata-luogo">{luogo} · COLLEGNO</span>
       </div>
+      {guida && (
+        <a className="icon-btn tasto-guida" href={guida} title="La guida" aria-label="Apri la guida">
+          ?
+        </a>
+      )}
       <TastoTema />
       {children}
     </header>
@@ -60,7 +69,7 @@ function Scelta() {
   ]
   return (
     <div className="app">
-      <Testata luogo="CORSI" />
+      <Testata luogo="CORSI" guida={INDIRIZZO_GUIDA} />
       <main className="scroll">
         <div className="pad stack" style={{ gap: 10, paddingTop: 16, paddingBottom: 16 }}>
           {voci.map(([a, titolo, testo]) => (
@@ -69,6 +78,12 @@ function Scelta() {
               <span className="passo-dettaglio" style={{ fontSize: 15 }}>{testo}</span>
             </a>
           ))}
+          <a className="card stack scelta-area" href={INDIRIZZO_GUIDA}>
+            <span className="scelta-titolo">GUIDA</span>
+            <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+              Come funziona l’app: la guida generale, e una per ogni parte.
+            </span>
+          </a>
           <a className="card stack scelta-area" href={TIMER}>
             <span className="scelta-titolo">TIMER</span>
             <span className="passo-dettaglio" style={{ fontSize: 15 }}>
@@ -105,7 +120,7 @@ function Istruttori() {
   const [scheda, setScheda] = useState<'corsi' | 'iscrizioni'>('corsi')
   return (
     <div className="app">
-      <Testata luogo="ISTRUTTORI">
+      <Testata luogo="ISTRUTTORI" guida={INDIRIZZO_GUIDA}>
         {!serveAccesso && (
           <nav className="schede">
             <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
@@ -128,6 +143,16 @@ function Istruttori() {
         </div>
         {scheda === 'iscrizioni' && <IscrizioniScreen />}
       </main>
+    </div>
+  )
+}
+
+/** La guida, senza porta: non c'è niente di riservato, e serve anche a chi non è ancora entrato. */
+function AreaGuida() {
+  return (
+    <div className="app">
+      <Testata luogo="GUIDA" />
+      <Guida />
     </div>
   )
 }

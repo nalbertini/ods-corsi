@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { eUnTablet } from './tablet'
+import { eIndirizzoGuida } from './guida'
 
 /**
  * Le quattro facce dell'app, ognuna col suo indirizzo e la sua porta:
@@ -12,13 +13,16 @@ import { eUnTablet } from './tablet'
  * - `#sala`: il tablet appeso al muro (`#tablet`, il vecchio indirizzo, vale
  *   ancora).
  *
+ * E poi la guida, `#guida`, con un indirizzo per pagina (`#guida/sala`), che
+ * non ha porta: vedi `guida.ts`.
+ *
  * Senza niente in fondo all'indirizzo si apre una pagina con le quattro, a
  * meno che il dispositivo non sia un tablet di sala: quello riapre sempre il
  * tablet (vedi `eUnTablet`). Un indirizzo scritto vince sempre sul ricordo.
  */
-export type Area = 'segreteria' | 'iscrizioni' | 'istruttori' | 'sala' | 'scelta'
+export type Area = 'segreteria' | 'iscrizioni' | 'istruttori' | 'sala' | 'guida' | 'scelta'
 
-export const INDIRIZZI: Record<Exclude<Area, 'scelta'>, string> = {
+export const INDIRIZZI: Record<Exclude<Area, 'scelta' | 'guida'>, string> = {
   segreteria: '#segreteria',
   iscrizioni: '#iscrizioni',
   istruttori: '#istruttori',
@@ -35,6 +39,9 @@ export const TIMER = 'https://nalbertini.github.io/Timer-/'
 function areaAdesso(): Area {
   // Va chiamata comunque: con `#sala` o `#tablet` è lei a ricordarselo.
   const tablet = eUnTablet()
+  // La guida ha un indirizzo per pagina (`#guida/sala`): si riconosce dal
+  // principio, e vale anche su un tablet di sala.
+  if (eIndirizzoGuida(window.location.hash)) return 'guida'
   const scritta = Object.entries(INDIRIZZI).find(([, i]) => window.location.hash === i)?.[0] as Area | undefined
   return scritta ?? (tablet ? 'sala' : 'scelta')
 }

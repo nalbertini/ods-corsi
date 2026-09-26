@@ -11,6 +11,7 @@ import { Importa } from './Importa'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Richieste } from './Richieste'
+import { indirizzoPagina } from '../../lib/guida'
 
 export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'importa' | 'personale' | 'regole'
 
@@ -30,6 +31,18 @@ const VOCI: Array<[Voce, string]> = [
   ['personale', 'ISTRUTTORI E ACCESSI'],
   ['regole', 'REGOLE E PRIVACY'],
 ]
+
+/** La pagina della guida per ogni voce del menu: il tasto GUIDA apre quella della voce aperta. */
+const GUIDE: Record<Voce, string> = {
+  settimana: 'segreteria/settimana',
+  corsi: 'segreteria/corsi',
+  iscritti: 'segreteria/iscritti',
+  richieste: 'segreteria/richieste',
+  presenze: 'segreteria/presenze',
+  importa: 'segreteria/importa',
+  personale: 'segreteria/istruttori-e-accessi',
+  regole: 'segreteria/regole',
+}
 
 /** L'indirizzo della pagina pubblica per iscriversi, quello da mandare su WhatsApp. */
 const LINK_PUBBLICO = `${window.location.origin}${window.location.pathname}#iscrizioni`
@@ -99,6 +112,10 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
           ))}
         </div>
         <div className="grow" />
+        {/* In un'altra scheda: la segreteria resta dov'era, con quello che c'era aperto. */}
+        <a className="num sg-voce" href={indirizzoPagina(GUIDE[voce])} target="_blank" rel="noopener">
+          GUIDA ↗
+        </a>
         <CopiaLink />
         {onApp && (
           <button type="button" className="num sg-voce" onClick={onApp}>

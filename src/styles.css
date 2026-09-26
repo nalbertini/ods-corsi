@@ -896,3 +896,31 @@ a.btn { text-decoration: none; }
   .sg-ricorrenza > :nth-child(4) { display: none; }
   .sg-avviso { left: 16px; right: 16px; bottom: 16px; }
 }
+
+/* ---------------------------------------------------------------------------
+ * La guida: i file di `guida/` letti dentro l'app (vedi `Guida.tsx`).
+ * Una colonna da leggere, larga quanto un libro, con i caratteri del marchio.
+ * ------------------------------------------------------------------------- */
+.tasto-guida { font-family: var(--cond); font-size: 20px; font-weight: 700; text-decoration: none; }
+.guida { max-width: 760px; padding-top: 6px; padding-bottom: 40px; font-size: 16px; line-height: 1.55; color: var(--sec); }
+.guida h1 {
+  font-family: var(--cond); font-style: oblique 9deg; font-size: 32px; font-weight: 700; letter-spacing: 0.04em;
+  line-height: 1.05; color: var(--text); margin: 14px 0 10px; text-transform: uppercase;
+}
+.guida h2 {
+  font-family: var(--cond); font-size: 16px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--dim); margin: 30px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--line-soft);
+}
+.guida h3 { font-family: var(--cond); font-size: 19px; font-weight: 700; letter-spacing: 0.04em; color: var(--text); margin: 22px 0 6px; }
+.guida h4 { font-size: 16px; font-weight: 700; color: var(--text); margin: 18px 0 4px; }
+.guida p { margin: 0 0 12px; }
+.guida ul, .guida ol { margin: 0 0 12px; padding-left: 24px; }
+.guida li { margin: 4px 0; }
+.guida li > ul, .guida li > ol, .guida li > p { margin: 4px 0 0; }
+.guida strong { color: var(--text); font-weight: 700; }
+.guida a { color: var(--text); text-decoration: underline; text-decoration-color: var(--blu); text-underline-offset: 3px; overflow-wrap: anywhere; }
+.guida code { font-family: var(--cond); font-size: 0.95em; background: var(--surface-2); padding: 1px 5px; color: var(--text); }
+.guida-tabella { overflow-x: auto; margin: 0 0 14px; }
+.guida table { border-collapse: collapse; width: 100%; font-size: 15px; }
+.guida th, .guida td { border: 2px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+.guida th { font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); background: var(--surface); }

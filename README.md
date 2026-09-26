@@ -78,6 +78,14 @@ guida generale spiega come funziona a istruttori e segreteria; poi c'è una
 guida per ogni area (istruttori, tablet di sala, iscrizioni, segreteria) e una
 per ogni voce del menu della segreteria.
 
+Gli stessi file si leggono anche dentro l'app, all'indirizzo `#guida` (una
+pagina per file: `#guida/sala`, `#guida/segreteria/settimana`), dal tasto **?**
+in testata o da **GUIDA** nel menu della segreteria, che apre la pagina della
+voce aperta. Si scrivono una volta sola, in `guida/`: l'app li legge così come
+sono (`src/lib/guida.ts`, `src/components/Guida.tsx`), quindi una guida nuova
+compare da sé, purché usi il Markdown che il lettore conosce: titoli,
+paragrafi, elenchi, tabelle, grassetto, corsivo, codice e collegamenti.
+
 ## Provarla
 
 ```

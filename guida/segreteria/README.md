@@ -20,14 +20,14 @@ A sinistra il menu, a destra la voce scelta. Ogni voce ha la sua guida:
 
 | Voce | A cosa serve | Guida |
 |---|---|---|
-| **SETTIMANA** | La griglia della settimana, gli appelli mancanti, annullare, sostituti, lezioni straordinarie | [settimana.md](settimana.md) |
-| **CORSI** | I corsi: sala, istruttori, posti, colore, giorni e orari | [corsi.md](corsi.md) |
-| **ISCRITTI** | L'elenco delle persone, iscriverle e toglierle dai corsi | [iscritti.md](iscritti.md) |
-| **RICHIESTE ONLINE** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [richieste.md](richieste.md) |
-| **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, il CSV | [presenze.md](presenze.md) |
-| **IMPORTA DA EXCEL** | Corsi e iscritti dai fogli Excel o dalle risposte del modulo Google | [importa.md](importa.md) |
-| **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [istruttori-e-accessi.md](istruttori-e-accessi.md) |
-| **REGOLE E PRIVACY** | Per quanto si tengono le presenze, il calendario, le sale, la privacy | [regole.md](regole.md) |
+| **SETTIMANA** | La griglia della settimana, gli appelli mancanti, annullare, sostituti, lezioni straordinarie | [Apri](settimana.md) |
+| **CORSI** | I corsi: sala, istruttori, posti, colore, giorni e orari | [Apri](corsi.md) |
+| **ISCRITTI** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
+| **RICHIESTE ONLINE** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
+| **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, il CSV | [Apri](presenze.md) |
+| **IMPORTA DA EXCEL** | Corsi e iscritti dai fogli Excel o dalle risposte del modulo Google | [Apri](importa.md) |
+| **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
+| **REGOLE E PRIVACY** | Per quanto si tengono le presenze, il calendario, le sale, la privacy | [Apri](regole.md) |
 
 In fondo al menu:
 
