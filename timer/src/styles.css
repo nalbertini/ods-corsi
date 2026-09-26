@@ -745,6 +745,19 @@ a.navitem { text-decoration: none; }
    la coda dell'occhio, non si prende lo schermo. */
 .musica-bar { display: flex; align-items: center; gap: 6px; margin: 8px 20px 0; padding: 6px 6px 6px 8px; min-width: 0; }
 .musica-copertina { width: 40px; height: 40px; flex-shrink: 0; object-fit: cover; background: var(--surface-2); }
+.musica-comandi { display: flex; align-items: center; gap: 6px; flex-grow: 1; min-width: 0; }
+.musica-tasti { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+/* YouTube vuole il lettore visibile e non più piccolo di 200×200: il riquadro
+   sta a sinistra, titolo e tasti gli si impilano accanto. */
+.musica-bar[data-fonte='youtube'] { align-items: stretch; gap: 10px; padding: 6px; }
+.musica-video { width: 200px; height: 200px; flex-shrink: 0; background: #000; }
+.musica-video iframe { display: block; width: 100%; height: 100%; border: 0; }
+.musica-bar[data-fonte='youtube'] .musica-comandi {
+  flex-direction: column; align-items: stretch; justify-content: space-between; padding: 4px 0;
+}
+.musica-bar[data-fonte='youtube'] .musica-titolo { white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.musica-bar[data-fonte='youtube'] .musica-tasti { flex-wrap: wrap; }
+.musica-bar[data-fonte='youtube'] .musica-tasto { width: 48px; height: 48px; }
 .musica-titolo { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .musica-sotto { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .musica-tasto {
@@ -762,10 +775,20 @@ a.navitem { text-decoration: none; }
 }
 @media (max-height: 740px) and (orientation: portrait) {
   .musica-bar { margin-top: 6px; padding: 4px 4px 4px 6px; }
-  .musica-copertina, .musica-tasto { width: 36px; height: 36px; }
+  .musica-copertina, .musica-bar[data-fonte='spotify'] .musica-tasto { width: 36px; height: 36px; }
 }
 @media (orientation: landscape) and (max-height: 560px) {
   .musica-bar { margin-top: 4px; padding: 3px 3px 3px 5px; }
-  .musica-copertina, .musica-tasto { width: 32px; height: 32px; }
+  .musica-copertina, .musica-bar[data-fonte='spotify'] .musica-tasto { width: 32px; height: 32px; }
   .musica-sotto { display: none; }
+}
+@media (max-width: 480px) {
+  .musica-bar[data-fonte='youtube'] .musica-tasti { gap: 4px; }
+  .musica-bar[data-fonte='youtube'] .musica-tasto { width: 38px; height: 38px; }
+}
+/* I 200 pixel del lettore li paga il quadrante: in verticale l'anello si
+   stringe, altrimenti stato ed esercizio finiscono sotto la barra. */
+@media (orientation: portrait) {
+  .timer:has(.musica-bar[data-fonte='youtube']) { --anello: min(300px, 19vh, 50vw); }
+  .timer:has(.musica-bar[data-fonte='youtube']) .digits { font-size: min(30vw, 30vh); }
 }

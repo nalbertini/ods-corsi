@@ -1,7 +1,7 @@
 {
   "name": "ods-timer",
   "private": true,
-  "version": "1.7.0",
+  "version": "1.8.0",
   "type": "module",
   "description": "Interval timer per Officine Dello Sport - Collegno",
   "scripts": {
