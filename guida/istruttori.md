@@ -81,7 +81,7 @@ Non c'è niente da salvare: ogni tocco parte subito.
 ## Il timer della lezione
 
 Accanto al giorno e all'ora c'è **TIMER**: apre il timer con la lezione. In
-cima c'è **DI QUESTA LEZIONE**, se per quella lezione avete scelto un timer, e
+cima c'è **DI QUESTA LEZIONE**, se per quella lezione avete scelto dei timer, e
 poi **DEL CORSO**, i timer collegati al suo corso. Siccome siete entrati come
 istruttori, il timer vi riconosce da solo:
 
@@ -110,9 +110,11 @@ sceglie soltanto dove partono.
 - **PER CORSO**: i corsi delle vostre prossime lezioni. **+ Collega un timer**
   ne aggiunge uno, la **×** lo toglie. Vale per tutte le lezioni del corso.
 - **PER LEZIONE**: le vostre lezioni dei prossimi quattordici giorni. Per
-  ognuna si sceglie un timer suo, che per quella lezione viene **prima** di
-  quelli del corso, dall'appello e sul tablet di sala; il riquadro diventa
-  giallo. **Del corso** torna ai timer del corso.
+  ognuna **+ Aggiungi un timer** ne aggiunge uno suo, anche più d'uno
+  (riscaldamento, circuito, defaticamento), e la **×** lo toglie. Per quella
+  lezione vengono **prima** di quelli del corso, dall'appello e sul tablet di
+  sala; il riquadro diventa giallo. Tolti tutti, la lezione torna ai timer del
+  corso.
 
 Si scelgono i vostri timer e quelli della palestra. Il collegamento lo vedono
 anche il tablet e il collega che fa la lezione al posto vostro.

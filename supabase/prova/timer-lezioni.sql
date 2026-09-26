@@ -1,5 +1,5 @@
--- Il timer di una singola lezione (11-timer-lezioni.sql): chi lo lega, chi lo
--- toglie, e chi vede un timer personale perché è legato a una lezione.
+-- I timer di una singola lezione (11-timer-lezioni.sql), anche più d'uno: chi
+-- li lega, chi li toglie, e chi vede un timer personale perché è legato a una lezione.
 -- Si lancia dopo finto-supabase.sql, i file dello schema fino a
 -- 11-timer-lezioni.sql e timer.sql, di cui usa persone, lezione e timer.
 \set ON_ERROR_STOP on
@@ -9,8 +9,10 @@ reset role;
 -- Un timer personale di Federico, che nessun corso usa: senza la lezione,
 -- la segreteria e il tablet non lo vedrebbero. Maura non c'è più: timer.sql
 -- la cancella, per provare che lo storico resta.
+-- E uno della palestra, per il secondo timer della stessa lezione.
 insert into timer (id, persona_id, nome, schema) values
-  ('f0000000-0000-0000-0000-000000000009', 'aaaaaaaa-0000-0000-0000-000000000006', 'Gara di giovedì', '{"mode":"emom"}')
+  ('f0000000-0000-0000-0000-000000000009', 'aaaaaaaa-0000-0000-0000-000000000006', 'Gara di giovedì', '{"mode":"emom"}'),
+  ('f0000000-0000-0000-0000-00000000000a', null, 'Defaticamento', '{"mode":"interval"}')
   on conflict (id) do nothing;
 delete from sessioni_timer;
 
@@ -23,6 +25,13 @@ select atteso('lega il suo timer alla lezione',
 select atteso('il server scrive chi l''ha legato', (select p.nome from sessioni_timer s join persone p on p.id = s.collegato_da), 'Federico');
 select atteso('non lega un timer che non vede',
   tenta($$insert into sessioni_timer (sessione_id, timer_id) values ('eeeeeeee-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-00000000dead')$$), 'NEGATO: …');
+
+select atteso('ne lega un secondo alla stessa lezione',
+  tenta($$insert into sessioni_timer (sessione_id, timer_id) values ('eeeeeeee-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-00000000000a')$$), 'FATTO (1 righe)');
+select atteso('la lezione ha due timer', (select count(*)::text from sessioni_timer where sessione_id = 'eeeeeeee-0000-0000-0000-000000000001'), '2');
+select atteso('ne toglie uno solo',
+  tenta($$delete from sessioni_timer where sessione_id = 'eeeeeeee-0000-0000-0000-000000000001' and timer_id = 'f0000000-0000-0000-0000-00000000000a'$$), 'FATTO (1 righe)');
+select atteso('e l''altro resta', (select timer_id::text from sessioni_timer), 'f0000000-0000-0000-0000-000000000009');
 
 \echo ''
 \echo '--- 2. Anna, segreteria: vede il timer di un istruttore, perché è legato alla lezione ---'

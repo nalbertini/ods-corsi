@@ -476,14 +476,14 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   const pronto = useMemo(() => {
     const g = gruppi.find((x) => x.chiave === 'lezione' && x.timer.length) ?? gruppi.find((x) => x.chiave === 'corso' && x.timer.length)
     const w = g?.timer[0]
-    return w ? { id: w.id, nome: w.name, da: g!.chiave === 'lezione' ? ('lezione' as const) : ('corso' as const) } : null
+    return w ? { id: w.id, nome: w.name, da: g!.chiave === 'lezione' ? ('lezione' as const) : ('corso' as const), altri: g!.timer.length - 1 } : null
   }, [gruppi])
   const avvisaPronto = incorporato?.onPronto
   useEffect(() => {
     avvisaPronto?.(pronto)
     // Si avvisa quando cambia il timer, non quando cambia chi ascolta.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pronto?.id, pronto?.nome, pronto?.da])
+  }, [pronto?.id, pronto?.nome, pronto?.da, pronto?.altri])
   const richiesta = incorporato?.avvia
   const fatta = useRef(0)
   useEffect(() => {

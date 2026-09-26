@@ -112,8 +112,8 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
         </a>
       </div>
       <p className="pad passo-dettaglio" style={{ fontSize: 15, margin: '10px 0 0' }}>
-        I timer si fanno e si cambiano nel timer. Qui scegli quale parte con i tuoi corsi e con le singole lezioni: quello
-        di una lezione viene prima di quelli del corso, dall’appello e sul tablet di sala.
+        I timer si fanno e si cambiano nel timer. Qui scegli quali partono con i tuoi corsi e con le singole lezioni:
+        quelli di una lezione vengono prima di quelli del corso, dall’appello e sul tablet di sala.
       </p>
 
       {guaio && (
@@ -141,49 +141,21 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
           </div>
           <div className="pad stack" style={{ gap: 10 }}>
             {corsi.length === 0 && <p className="passo-dettaglio" style={{ margin: 0, fontSize: 15 }}>Nessun corso nelle prossime settimane.</p>}
-            {corsi.map((c) => {
-              const suoi = col.corsi[c.id] ?? []
-              const altri = sceglibili.filter((t) => !suoi.includes(t.id))
-              return (
-                <div key={c.id} className="card miei-timer-riga" style={{ ['--tinta' as string]: c.colore ?? 'var(--blu)' }}>
-                  <span className="ob lezione-nome">{c.nome.toUpperCase()}</span>
-                  <div className="miei-timer-scelti">
-                    {suoi.length === 0 && <span className="passo-dettaglio">Nessun timer</span>}
-                    {suoi.map((id) => (
-                      <span key={id} className="miei-timer-chip">
-                        {nome(id)}
-                        {perId.get(id)?.modo && <span className="miei-timer-modo">{NOMI_MODO[perId.get(id)!.modo] ?? ''}</span>}
-                        <button
-                          type="button"
-                          aria-label={`Togli ${nome(id)} da ${c.nome}`}
-                          onClick={() => void fai(() => d!.collegaCorso(c.id, id, false), 'Timer tolto dal corso')}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  {altri.length > 0 && (
-                    <select
-                      className="campo miei-timer-scelta"
-                      value=""
-                      aria-label={`Collega un timer a ${c.nome}`}
-                      onChange={(e) => {
-                        const id = e.target.value
-                        if (id) void fai(() => d!.collegaCorso(c.id, id, true), 'Timer collegato al corso')
-                      }}
-                    >
-                      <option value="">+ Collega un timer</option>
-                      {altri.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.nome}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-              )
-            })}
+            {corsi.map((c) => (
+              <div key={c.id} className="card miei-timer-riga" style={{ ['--tinta' as string]: c.colore ?? 'var(--blu)' }}>
+                <span className="ob lezione-nome">{c.nome.toUpperCase()}</span>
+                <Collegati
+                  suoi={col.corsi[c.id] ?? []}
+                  vuoto="Nessun timer"
+                  di={c.nome}
+                  scegli="+ Collega un timer"
+                  timer={timer}
+                  onCollega={(id, sì) =>
+                    void fai(() => d!.collegaCorso(c.id, id, sì), sì ? 'Timer collegato al corso' : 'Timer tolto dal corso')
+                  }
+                />
+              </div>
+            ))}
           </div>
 
           <div className="rule">
@@ -203,36 +175,34 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
               <div key={g} className="stack" style={{ gap: 8 }}>
                 <span className="sg-etichetta">{giornoPerEsteso(g).toUpperCase()}</span>
                 {ls.map((l) => {
-                  const suo = col.lezioni[l.id] ?? ''
+                  const suoi = col.lezioni[l.id] ?? []
                   const delCorso = (col.corsi[l.corsoId] ?? []).map(nome)
                   return (
-                    <div key={l.id} className="card miei-timer-riga" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}>
+                    <div
+                      key={l.id}
+                      className="card miei-timer-riga"
+                      data-suo={suoi.length > 0}
+                      style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
+                    >
                       <span className="lezione-ora num">{oraDi(l.inizio)}</span>
-                      <span className="stack grow" style={{ gap: 3, minWidth: 0 }}>
+                      <span className="stack grow" style={{ gap: 3, minWidth: 0, flexBasis: 160 }}>
                         <span className="ob lezione-nome">{l.corso.toUpperCase()}</span>
                         <span style={{ fontSize: 13, color: 'var(--dim)' }}>{[l.sala, l.istruttore].filter(Boolean).join(' · ')}</span>
                       </span>
-                      <select
-                        className="campo miei-timer-scelta"
-                        value={suo}
-                        data-suo={Boolean(suo)}
-                        disabled={!col.lezioniPronte || sceglibili.length === 0}
-                        aria-label={`Timer di ${l.corso}, ${giornoPerEsteso(g)} alle ${oraDi(l.inizio)}`}
-                        onChange={(e) =>
+                      <Collegati
+                        suoi={suoi}
+                        vuoto={delCorso.length ? `Quelli del corso: ${delCorso.join(', ')}` : 'Quelli del corso (nessuno)'}
+                        di={`${l.corso}, ${giornoPerEsteso(g)} alle ${oraDi(l.inizio)}`}
+                        scegli="+ Aggiungi un timer"
+                        timer={timer}
+                        disabilitato={!col.lezioniPronte}
+                        onCollega={(id, sì) =>
                           void fai(
-                            () => d!.scegliPerLezione(l.id, e.target.value || null),
-                            e.target.value ? 'Timer scelto per la lezione' : 'La lezione usa i timer del corso',
+                            () => d!.collegaLezione(l.id, id, sì),
+                            sì ? 'Timer aggiunto alla lezione' : suoi.length === 1 ? 'La lezione usa i timer del corso' : 'Timer tolto dalla lezione',
                           )
                         }
-                      >
-                        <option value="">{delCorso.length ? `Del corso: ${delCorso.join(', ')}` : 'Del corso (nessuno)'}</option>
-                        {suo && !perId.get(suo)?.sceglibile && <option value={suo}>{nome(suo)}</option>}
-                        {sceglibili.map((t) => (
-                          <option key={t.id} value={t.id}>
-                            {t.nome}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     </div>
                   )
                 })}
@@ -248,5 +218,68 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * I timer collegati a un corso o a una lezione, con la × per toglierli, e la
+ * scelta per aggiungerne un altro. Si aggiungono i propri e quelli della
+ * palestra; quelli di un collega già collegati si vedono e si tolgono.
+ */
+function Collegati({
+  suoi,
+  vuoto,
+  di,
+  scegli,
+  timer,
+  disabilitato = false,
+  onCollega,
+}: {
+  suoi: string[]
+  /** Cosa dire senza timer. */
+  vuoto: string
+  /** Di chi sono, per chi legge lo schermo: «Judo», «Judo, giovedì alle 18:00». */
+  di: string
+  scegli: string
+  timer: TimerDaScegliere[]
+  disabilitato?: boolean
+  onCollega: (timerId: string, collegato: boolean) => void
+}) {
+  const perId = new Map(timer.map((t) => [t.id, t]))
+  const nome = (id: string) => perId.get(id)?.nome ?? 'Timer di un collega'
+  const altri = timer.filter((t) => t.sceglibile && !suoi.includes(t.id))
+  return (
+    <>
+      <div className="miei-timer-scelti">
+        {suoi.length === 0 && <span className="passo-dettaglio">{vuoto}</span>}
+        {suoi.map((id) => (
+          <span key={id} className="miei-timer-chip">
+            {nome(id)}
+            {perId.get(id)?.modo && <span className="miei-timer-modo">{NOMI_MODO[perId.get(id)!.modo] ?? ''}</span>}
+            <button type="button" aria-label={`Togli ${nome(id)} da ${di}`} disabled={disabilitato} onClick={() => onCollega(id, false)}>
+              ×
+            </button>
+          </span>
+        ))}
+      </div>
+      {altri.length > 0 && (
+        <select
+          className="campo miei-timer-scelta"
+          value=""
+          disabled={disabilitato}
+          aria-label={`Aggiungi un timer a ${di}`}
+          onChange={(e) => {
+            if (e.target.value) onCollega(e.target.value, true)
+          }}
+        >
+          <option value="">{scegli}</option>
+          {altri.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.nome}
+            </option>
+          ))}
+        </select>
+      )}
+    </>
   )
 }

@@ -90,6 +90,11 @@ export function TabletHome({
                 <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
                   <span className="num tb-pronto-da">{timer.pronto.da === 'lezione' ? 'IL TIMER DI QUESTA LEZIONE' : 'IL TIMER DEL CORSO'}</span>
                   <span className="ob tb-pronto-nome">{timer.pronto.nome.toUpperCase()}</span>
+                  {timer.pronto.altri > 0 && (
+                    <span className="tb-pronto-altri">
+                      {timer.pronto.altri === 1 ? 'E UN ALTRO' : `E ALTRI ${timer.pronto.altri}`} NELLA SCHEDA TIMER
+                    </span>
+                  )}
                 </span>
                 {timer.inCorso ? (
                   <button type="button" className="ob tb-btn-timer tb-btn-timer-linea" onClick={onVaiTimer}>

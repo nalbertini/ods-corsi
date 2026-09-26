@@ -27,14 +27,16 @@ aprite l'appello completo e lo correggete.
 
 **TIMER**, nella barra in basso, apre il timer dentro il tablet: è lo stesso
 timer del telefono, con cronometro, conto alla rovescia e impostazioni. Se in
-quel momento ci si segna a una lezione, in cima c'è **DI QUESTA LEZIONE**, il
+quel momento ci si segna a una lezione, in cima c'è **DI QUESTA LEZIONE**, i
 timer che l'istruttore ha scelto per quella lezione sola, poi **DEL CORSO**, i
 timer collegati al corso, poi quelli della palestra. Li scelgono gli
 istruttori, in [I MIEI TIMER](istruttori.md#i-miei-timer).
 
 **Il timer pronto nella lezione.** Senza cercarlo nella scheda: sotto **SEGNA
 LA PRESENZA** della lezione aperta c'è il suo timer, **IL TIMER DI QUESTA
-LEZIONE** o, se non ce n'è uno, **IL TIMER DEL CORSO**, con **▶ AVVIA**. Un
+LEZIONE** o, se non ce n'è uno, **IL TIMER DEL CORSO**, con **▶ AVVIA**. Se
+ce n'è più d'uno, AVVIA fa partire quello cambiato più di recente, e sotto il
+nome c'è quanti altri ce ne sono: **E ALTRI 2 NELLA SCHEDA TIMER**. Un
 tocco, e il tablet passa al timer e lo fa partire. Mentre va, al posto di
 AVVIA c'è **IN CORSO · VEDI**, che riporta al timer. Se né la lezione né il
 corso hanno un timer, la riga non c'è.

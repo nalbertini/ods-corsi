@@ -42,6 +42,8 @@ export interface TimerPronto {
   id: string
   nome: string
   da: 'lezione' | 'corso'
+  /** Quanti altri della stessa sezione: stanno nella scheda TIMER. */
+  altri: number
 }
 
 /** L'allenamento aperto, per chi lo guarda da fuori. */

@@ -335,7 +335,7 @@ input, textarea { font: inherit; color: inherit; }
 .miei-timer-chip > button:hover { color: var(--rosso); }
 .miei-timer-modo { font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
 .miei-timer-scelta { min-height: 44px; font-size: 15px; flex: 1 1 220px; max-width: 100%; }
-.miei-timer-scelta[data-suo='true'] { border-color: var(--giallo); }
+.miei-timer-riga[data-suo='true'] { border-color: var(--giallo); border-left-color: var(--tinta); }
 .miei-timer-detto {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 30;
   padding: 10px 18px; background: var(--verde); color: var(--su-colore);
@@ -595,6 +595,7 @@ a.btn { text-decoration: none; }
 }
 .tb-pronto-da { font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); }
 .tb-pronto-nome { font-size: 24px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-pronto-altri { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
 .tb-btn-timer {
   min-width: 220px; min-height: 64px; padding: 0 22px;
   background: var(--rosso); color: var(--su-colore);
