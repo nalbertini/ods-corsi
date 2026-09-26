@@ -6,7 +6,7 @@ import { Accesso, AltreAree, Porta, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
-import { INDIRIZZI, useArea } from './lib/aree'
+import { INDIRIZZI, TIMER, useArea } from './lib/aree'
 import { esci, serveAccesso } from './lib/accesso'
 import { inProvaScelta, scegliProva } from './lib/dati'
 
@@ -69,6 +69,12 @@ function Scelta() {
               <span className="passo-dettaglio" style={{ fontSize: 15 }}>{testo}</span>
             </a>
           ))}
+          <a className="card stack scelta-area" href={TIMER}>
+            <span className="scelta-titolo">TIMER</span>
+            <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+              L’interval timer per la lezione. È un’app a sé: si apre al suo indirizzo.
+            </span>
+          </a>
         </div>
       </main>
     </div>

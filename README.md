@@ -20,7 +20,9 @@ L'app ha quattro indirizzi, ognuno con il suo accesso:
 | `#sala` | Il tablet di sala (va bene anche il vecchio `#tablet`). |
 
 Senza niente in fondo all'indirizzo si apre una pagina con le quattro, tranne
-su un tablet di sala, che riapre sempre il tablet.
+su un tablet di sala, che riapre sempre il tablet. In fondo alla pagina c'è
+anche il **timer**: è solo un collegamento all'app pubblicata
+(`nalbertini.github.io/Timer-/`), che resta nel suo repository.
 
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello
   scelto, in ordine di orario, con sala, istruttore e iscritti.
