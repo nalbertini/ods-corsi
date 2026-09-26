@@ -43,7 +43,7 @@ export function Sala() {
             type="button"
             style={{ textDecoration: 'underline', font: 'inherit', letterSpacing: 'inherit', color: 'inherit' }}
             onClick={() => {
-              window.location.hash = '#tablet'
+              window.location.hash = '#sala'
               window.location.reload()
             }}
           >

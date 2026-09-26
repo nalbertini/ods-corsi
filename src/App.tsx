@@ -1,12 +1,12 @@
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { Logo } from './components/Logo'
 import { Sala } from './components/Sala'
-import { Porta } from './components/Porta'
+import { Accesso, Porta, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
-import { eUnTablet } from './lib/tablet'
-import { esci, serveAccesso, type Personale } from './lib/accesso'
+import { INDIRIZZI, useArea } from './lib/aree'
+import { esci, serveAccesso } from './lib/accesso'
 import { inProvaScelta, scegliProva } from './lib/dati'
 
 /**
@@ -16,41 +16,67 @@ import { inProvaScelta, scegliProva } from './lib/dati'
  * riguarda la palestra, il timer una cosa che riguarda la lezione, e tenerle
  * nello stesso posto le legava più di quanto servisse.
  *
- * Con il database vero si entra dall'accesso (vedi `Porta`) e ognuno trova
- * solo il suo posto, senza schede: l'istruttore l'appello, chi ha il ruolo di
- * segreteria la sua area, a tutto schermo, per il computer della reception.
- * Chi vuole iscriversi non passa di qui: ha il suo link, qui sotto.
+ * Ha quattro facce, ognuna col suo indirizzo (vedi `aree.ts`) e la sua porta:
+ * la segreteria per il computer della reception, a tutto schermo e solo per
+ * chi ne ha il ruolo; le iscrizioni, la pagina pubblica del link da mandare a
+ * chi vuole iscriversi; gli istruttori, col calendario e l'appello; e la sala,
+ * il tablet appeso al muro.
  *
- * In prova invece le schede ci sono tutte — appello, iscrizioni, segreteria —
- * perché la prova serve a far vedere l'app intera; la sala resta montata anche
- * quando si guarda altro, così tornando si ritrova l'appello dov'era.
- *
- * Lo stesso codice fa anche da tablet di sala (`#tablet`): un'altra faccia,
- * a pieno schermo, per il tablet appeso al muro.
- *
- * Con `#iscrizioni` in fondo all'indirizzo si apre invece la pagina pubblica,
- * quella del link da mandare a chi vuole iscriversi: solo i passi, i costi e
- * il modulo, senza le schede del personale. Viene prima del tablet, così un
- * tablet di sala che apre il link non smette di essere un tablet.
+ * Col database vero ognuno entra dal suo indirizzo e trova solo il suo posto,
+ * senza schede. In prova le porte sono aperte a tutti e le schede ci sono,
+ * perché la prova serve a far vedere l'app intera.
  */
-const pubblica = window.location.hash === '#iscrizioni'
-const tablet = !pubblica && eUnTablet()
-
 export default function App() {
-  if (pubblica) return <Iscrizioni />
-  return tablet ? <Tablet /> : <AppCorsi />
+  const area = useArea()
+  if (area === 'segreteria') return <AreaSegreteria />
+  if (area === 'iscrizioni') return <Iscrizioni />
+  if (area === 'istruttori') return <Istruttori />
+  if (area === 'sala') return <Tablet />
+  return <Scelta />
+}
+
+function Testata({ luogo, children }: { luogo: string; children?: ReactNode }) {
+  return (
+    <header className="testata">
+      <Logo />
+      <div className="stack grow" style={{ gap: 1 }}>
+        <span className="testata-nome">OFFICINE DELLO SPORT</span>
+        <span className="testata-luogo">{luogo} · COLLEGNO</span>
+      </div>
+      {children}
+    </header>
+  )
+}
+
+/** Senza niente nell'indirizzo: dove si vuole andare. */
+function Scelta() {
+  const voci: [keyof typeof INDIRIZZI, string, string][] = [
+    ['istruttori', 'ISTRUTTORI', 'Il calendario e l’appello.'],
+    ['segreteria', 'SEGRETERIA', 'Corsi, iscritti, presenze e richieste, dal computer della reception.'],
+    ['iscrizioni', 'ISCRIZIONI', 'Come ci si iscrive, i costi e il modulo: la pagina da mandare a chi vuole iscriversi.'],
+    ['sala', 'SALA', 'Il tablet appeso al muro della sala. Da qui il dispositivo resta un tablet.'],
+  ]
+  return (
+    <div className="app">
+      <Testata luogo="CORSI" />
+      <main className="scroll">
+        <div className="pad stack" style={{ gap: 10, paddingTop: 16, paddingBottom: 16 }}>
+          {voci.map(([a, titolo, testo]) => (
+            <a key={a} className="card stack scelta-area" href={INDIRIZZI[a]}>
+              <span className="scelta-titolo">{titolo}</span>
+              <span className="passo-dettaglio" style={{ fontSize: 15 }}>{testo}</span>
+            </a>
+          ))}
+        </div>
+      </main>
+    </div>
+  )
 }
 
 function Iscrizioni() {
   return (
     <div className="app">
-      <header className="testata">
-        <Logo />
-        <div className="stack grow" style={{ gap: 1 }}>
-          <span className="testata-nome">OFFICINE DELLO SPORT</span>
-          <span className="testata-luogo">ISCRIZIONI · COLLEGNO</span>
-        </div>
-      </header>
+      <Testata luogo="ISCRIZIONI" />
       <main className="scroll">
         <IscrizioniScreen pubblica />
       </main>
@@ -58,13 +84,66 @@ function Iscrizioni() {
   )
 }
 
-function AppCorsi() {
-  const [scheda, setScheda] = useState<'corsi' | 'iscrizioni' | 'segreteria'>('corsi')
-  const [chi, setChi] = useState<Personale | null>(null)
+/**
+ * Il calendario e l'appello, dietro la porta. Entra anche chi è di
+ * segreteria, se apre questo indirizzo: anche lei fa l'appello.
+ *
+ * In prova ci sono le schede, per passare al resto dell'app: i passi per
+ * iscriversi come li vede il personale (con la lezione di prova) e la
+ * segreteria. La sala resta montata anche quando si guarda altro, così
+ * tornando si ritrova l'appello dov'era.
+ */
+function Istruttori() {
+  const [scheda, setScheda] = useState<'corsi' | 'iscrizioni'>('corsi')
+  return (
+    <div className="app">
+      <Testata luogo="ISTRUTTORI">
+        {!serveAccesso && (
+          <nav className="schede">
+            <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
+              APPELLO
+            </button>
+            <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
+              ISCRIZIONI
+            </button>
+            <button className="scheda" data-on={false} onClick={() => (window.location.hash = INDIRIZZI.segreteria)}>
+              SEGRETERIA
+            </button>
+          </nav>
+        )}
+      </Testata>
+      <main className="scroll">
+        <div className="faccia-corsi" hidden={scheda !== 'corsi'}>
+          <Porta>
+            <Sala />
+          </Porta>
+        </div>
+        {scheda === 'iscrizioni' && <IscrizioniScreen />}
+      </main>
+    </div>
+  )
+}
 
-  // Col database vero ognuno ha il suo posto e basta: chi è di segreteria sta
-  // nella segreteria, l'istruttore nell'appello.
-  if (serveAccesso && chi?.ruolo === 'staff') {
+/**
+ * La segreteria, con la sua porta: entra solo chi ne ha il ruolo, e ci resta
+ * (il ritorno agli istruttori c'è solo in prova). Un istruttore che arriva
+ * qui viene mandato al suo indirizzo.
+ */
+function AreaSegreteria() {
+  const [chi, setChi] = useChi()
+
+  if (!serveAccesso) {
+    return (
+      <Segreteria
+        nome="Segreteria di prova"
+        prova
+        onApp={() => (window.location.hash = INDIRIZZI.istruttori)}
+        onEsci={inProvaScelta ? () => scegliProva(false) : undefined}
+      />
+    )
+  }
+
+  if (chi && chi.ruolo === 'staff') {
     return (
       <Segreteria
         nome={`${chi.nome} ${chi.cognome}`}
@@ -74,46 +153,32 @@ function AppCorsi() {
     )
   }
 
-  if (!serveAccesso && scheda === 'segreteria') {
-    return (
-      <Segreteria
-        nome="Segreteria di prova"
-        prova
-        onApp={() => setScheda('corsi')}
-        onEsci={inProvaScelta ? () => scegliProva(false) : undefined}
-      />
-    )
-  }
-
   return (
     <div className="app">
-      <header className="testata">
-        <Logo />
-        <div className="stack grow" style={{ gap: 1 }}>
-          <span className="testata-nome">OFFICINE DELLO SPORT</span>
-          <span className="testata-luogo">CORSI · COLLEGNO</span>
-        </div>
-        {!serveAccesso && (
-          <nav className="schede">
-            <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
-              APPELLO
-            </button>
-            <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
-              ISCRIZIONI
-            </button>
-            <button className="scheda" data-on={false} onClick={() => setScheda('segreteria')}>
-              SEGRETERIA
-            </button>
-          </nav>
-        )}
-      </header>
+      <Testata luogo="SEGRETERIA" />
       <main className="scroll">
-        <div className="faccia-corsi" hidden={scheda !== 'corsi'}>
-          <Porta onChi={setChi}>
-            <Sala />
-          </Porta>
-        </div>
-        {scheda === 'iscrizioni' && <IscrizioniScreen />}
+        {chi === undefined && <UnAttimo />}
+        {chi === null && <Accesso per="segreteria" onEntrato={setChi} />}
+        {chi && (
+          <div className="accesso">
+            <div className="rule">
+              <span className="rule-label">SEGRETERIA</span>
+              <div className="rule-line" />
+            </div>
+            <div className="pad stack" style={{ gap: 12, paddingBottom: 16 }}>
+              <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+                {chi.nome}, il tuo account è da istruttore: la segreteria è solo per chi lavora alla reception. Il
+                calendario e l’appello sono all’indirizzo degli istruttori.
+              </span>
+              <a className="btn btn-go" href={INDIRIZZI.istruttori}>
+                VAI AGLI ISTRUTTORI
+              </a>
+              <button type="button" className="btn btn-ghost" onClick={() => void esci().then(() => setChi(null))}>
+                ESCI E CAMBIA ACCOUNT
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )
