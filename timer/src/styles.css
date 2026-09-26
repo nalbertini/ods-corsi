@@ -1,0 +1,740 @@
+/* I colori del marchio Officine Dello Sport, usati come stati del timer. */
+:root {
+  --bg: #121212;
+  --surface: #1c1c1c;
+  --surface-2: #242424;
+  --line: #333333;
+  --line-soft: #2a2a2a;
+  --text: #f2f2f0;
+  --dim: #8c8c88;
+  --faint: #5a5a56;
+
+  --blu: #1b8ac4;
+  --rosso: #e4292a;
+  --giallo: #f4c31b;
+  --verde: #16a54a;
+  /* Il giallo scritto: sul nero è quello del marchio, sul bianco si scurisce,
+     altrimenti non si legge. */
+  --giallo-testo: #f4c31b;
+  /* Le scritte sopra i colori del marchio restano scure in tutti e due i temi. */
+  --su-colore: #121212;
+  --tasto: #b8b8b2;
+  --tratteggio: #4a4a46;
+  /* Le barre, in basso e di lato: un filo diverse dal fondo. */
+  --menu: #171717;
+  --spento: #3a3a38;
+  /* Il fondo caldo della scheda di Maurizio. */
+  --caldo: #241f0d;
+
+  --prepare: var(--giallo);
+  --work: var(--rosso);
+  --rest: var(--verde);
+  --setRest: var(--blu);
+  --cooldown: var(--blu);
+
+  --cond: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif;
+  --body: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+
+  color-scheme: dark;
+}
+
+/* Il tema bianco, lo stesso di ODS Corsi: si sceglie da Impostazioni, o
+   dall'altra app, perché la scelta è una sola per tutte e due (vedi
+   `lib/tema.ts`). Finché nessuno sceglie, segue il dispositivo. */
+:root[data-tema='chiaro'] {
+  --bg: #f4f4f1;
+  --surface: #ffffff;
+  --surface-2: #e9e9e5;
+  --line: #d4d4ce;
+  --line-soft: #e2e2dd;
+  --text: #161616;
+  --dim: #6b6b67;
+  --faint: #a8a8a3;
+
+  --verde: #12913f;
+  --giallo-testo: #8f6a00;
+  --tasto: #4a4a46;
+  --tratteggio: #b0b0aa;
+  --menu: #ebebe7;
+  --spento: #c4c4be;
+  --caldo: #fbf1cf;
+
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+/* A pieno schermo la finestra cresce quando la barra del browser si ritrae, ma
+   `100%` misura il viewport di layout, che resta quello di prima: l'app restava
+   alta com'era e la barra delle schede finiva sospesa sopra una striscia di
+   fondo pagina. `dvh` segue la finestra vera, e dove non è supportata resta la
+   riga sopra, che vale quanto prima. */
+html, body, #root { height: 100%; }
+html, body, #root { height: 100dvh; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+input, textarea { font: inherit; color: inherit; }
+
+.cond { font-family: var(--cond); font-variant-numeric: tabular-nums; }
+/* Il taglio obliquo riprende il lettering del marchio. */
+.ob { font-family: var(--cond); font-style: oblique 9deg; }
+.num { font-family: var(--cond); font-variant-numeric: tabular-nums; }
+
+/* ---------- impalcatura ---------- */
+
+.app { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+/* L'area di una scheda che riempie invece di scorrere: cronometro e conto alla
+   rovescia vogliono l'altezza intera, come il timer di un allenamento. */
+.pieno { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+/* `hidden` deve vincere su `display: flex`, altrimenti non nasconde niente. */
+[hidden] { display: none !important; }
+.pad { padding: 0 20px; }
+.stack { display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; }
+.grow { flex-grow: 1; }
+
+.topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: calc(var(--safe-t) + 14px) 20px 14px;
+}
+
+.rule { display: flex; align-items: baseline; gap: 10px; padding: 22px 20px 10px; }
+.rule-label { font-family: var(--cond); font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); }
+.rule-line { flex-grow: 1; height: 2px; background: var(--line-soft); }
+
+/* ---------- controlli ---------- */
+
+.icon-btn {
+  width: 44px; height: 44px; flex-shrink: 0;
+  border: 2px solid var(--line); color: var(--tasto);
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 120ms, color 120ms;
+}
+.icon-btn:hover { border-color: var(--dim); color: var(--text); }
+/* Lo stesso tasto quando dentro c'è una parola invece di un segno: 44 px fissi
+   bastano a «RESET» e tagliano «AZZERA». */
+.icon-btn.testo { width: auto; min-width: 44px; padding: 0 11px; }
+
+.btn {
+  min-height: 56px; padding: 0 22px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: var(--cond); font-style: oblique 9deg;
+  font-size: 19px; font-weight: 700; letter-spacing: 0.16em;
+}
+.btn-primary { background: var(--rosso); color: var(--su-colore); }
+.btn-go { background: var(--verde); color: var(--su-colore); }
+.btn-ghost { border: 2px solid var(--line); color: var(--tasto); }
+.btn-ghost:hover { border-color: var(--dim); color: var(--text); }
+.btn-dashed { border: 2px dashed var(--tratteggio); color: var(--tasto); width: 100%; }
+.btn-dashed:hover { border-color: var(--dim); color: var(--text); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Le frecce per riordinare una riga: piccole ma con un'area di tocco vera,
+   e spente in cima e in fondo all'elenco invece di non fare niente. */
+.riordina {
+  width: 32px; height: 25px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--faint); background: var(--surface-2);
+}
+.riordina:hover:not(:disabled) { color: var(--text); }
+.riordina:disabled { opacity: 0.3; cursor: default; }
+
+.chip {
+  padding: 10px 16px; white-space: nowrap;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.14em;
+  border: 2px solid var(--line); background: var(--surface); color: var(--tasto);
+}
+.chip[data-on='true'] { background: var(--blu); border-color: var(--blu); color: var(--su-colore); font-weight: 700; }
+
+.badge {
+  padding: 3px 9px; color: var(--su-colore);
+  font-size: 10px; font-weight: 700; letter-spacing: 0.16em; white-space: nowrap;
+}
+
+.card { background: var(--surface); border: 2px solid var(--line); }
+
+.field {
+  width: 100%; background: var(--surface-2); border: 2px solid var(--line);
+  padding: 12px 14px; font-size: 17px; font-weight: 600;
+}
+.field:focus { outline: none; border-color: var(--blu); }
+
+.switch { width: 54px; height: 30px; flex-shrink: 0; padding: 3px; display: flex; align-items: center; }
+.switch > i { display: block; width: 24px; height: 24px; }
+.switch[data-on='true'] { background: var(--verde); justify-content: flex-end; }
+.switch[data-on='true'] > i { background: var(--su-colore); }
+.switch[data-on='false'] { background: var(--surface-2); justify-content: flex-start; }
+.switch[data-on='false'] > i { background: var(--faint); }
+
+.tabbar {
+  /* Colonne automatiche: le schede si dividono la barra qualunque sia il loro numero. */
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
+  border-top: 2px solid var(--line-soft); background: var(--menu);
+  /* La zona sicura è già lo spazio che il sistema chiede: sommarci altri 12 px
+     lo raddoppiava, e su un telefono con la navigazione a gesti la barra
+     diventava alta il doppio del necessario. Dove la zona sicura non c'è, i
+     12 px restano. */
+  padding: 10px 6px max(12px, var(--safe-b));
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 5px; min-height: 52px; padding: 0 1px; color: var(--dim);
+  font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+@media (max-width: 359px) { .tab { font-size: 8px; letter-spacing: 0; } }
+.tab[data-on='true'] { color: var(--blu); }
+a.tab { text-decoration: none; }
+
+/* Il ritorno alla sala: le misure dei tasti in fondo al tablet di ODS Corsi,
+   perché da lì si arriva e lì si torna. In alto solo da tablet, dove accanto
+   al marchio c'è posto; su telefono sta nella barra in basso. */
+.torna-sala {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 60px; padding: 0 22px; flex-shrink: 0;
+  border: 2px solid var(--line); color: var(--text); text-decoration: none;
+  font-family: var(--cond); font-style: oblique 9deg;
+  font-size: 18px; font-weight: 700; letter-spacing: 0.12em;
+}
+.torna-sala:hover { border-color: var(--dim); }
+.torna-sala-alto { display: none; }
+@media (min-width: 600px) and (max-width: 1023px) {
+  .torna-sala-alto { display: flex; }
+  .tab-sala { display: none; }
+}
+@media (min-width: 1024px) { .torna-sala-alto { display: none; } }
+
+/* ---------- lista allenamenti ---------- */
+
+.wcard { display: flex; align-items: center; gap: 14px; padding: 13px 15px; min-height: 86px; }
+/* Le azioni della scheda vanno a capo invece di uscirne.
+   Con l'arrivo di INVIA sono quattro, e quattro tasti affiancati chiedono
+   quasi cinquecento pixel: più di quanto una colonna della griglia ne offra,
+   e più della larghezza di un telefono. Non stringendosi, finivano sopra la
+   scheda accanto — e sul telefono il cestino spariva del tutto fuori bordo. */
+.wcard-azioni {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  padding: 0 15px 13px;
+}
+
+.wcard-name { font-family: var(--cond); font-style: oblique 9deg; font-size: 21px; font-weight: 700; line-height: 1.05; }
+.play-btn {
+  width: 52px; height: 52px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; border: 2px solid;
+}
+
+/* ---------- timer ---------- */
+
+/* `--anello` è la misura dell'anello, e quindi anche quella dell'illustrazione
+   che ne prende il posto: una manopola sola, che le media query girano
+   insieme invece di lasciare che le due misure si allontanino. */
+.timer {
+  position: relative; height: 100%; display: flex; flex-direction: column;
+  --anello: min(300px, 34vh, 58vw);
+  /* La cornice colorata è anche un ingombro: chi si appoggia ai bordi deve
+     sapere quanto è spessa, altrimenti ci finisce sotto. */
+  --bordo: 10px;
+}
+.timer::after {
+  content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  border: var(--bordo) solid var(--state);
+}
+.timer-main {
+  position: relative;
+  flex-grow: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px; padding: 0 20px; min-height: 0;
+}
+
+/* Un nome lungo non deve spingere l'intestazione su tre righe. */
+.titolo-timer {
+  font-size: 18px; font-weight: 700; line-height: 1.05;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.state-label {
+  font-family: var(--cond); font-style: oblique 9deg;
+  font-size: clamp(22px, 6vw, 44px); font-weight: 700;
+  letter-spacing: 0.26em; color: var(--state); line-height: 1;
+}
+.digits {
+  font-family: var(--cond); font-variant-numeric: tabular-nums;
+  font-weight: 700; line-height: 0.88; letter-spacing: -0.03em;
+  font-size: min(34vw, 42vh);
+}
+.exercise {
+  font-family: var(--cond); font-style: oblique 9deg;
+  font-size: clamp(20px, 5vw, 44px); font-weight: 600; letter-spacing: 0.04em;
+  text-align: center; text-wrap: balance;
+}
+/* Serie, ripetizioni e carico: un promemoria, non un protagonista. */
+.obiettivo {
+  font-family: var(--cond); font-variant-numeric: tabular-nums;
+  font-size: clamp(13px, 2.6vw, 22px); font-weight: 600; letter-spacing: 0.1em;
+  color: var(--dim); text-align: center;
+}
+/* Definita anche fuori dalla media query: in verticale senza `display: flex`
+   l'allineamento centrato non si applicava e stato ed esercizio restavano a
+   sinistra sotto le cifre. */
+.timer-col { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+
+.dots { display: flex; gap: 4px; }
+.dots > span { flex-grow: 1; height: 10px; border: 2px solid var(--line); }
+
+/* Il quadrante sta di fianco appena la finestra è più larga che alta: vale per
+   il tablet a muro come per un telefono ruotato, che altrimenti userebbe
+   l'impaginazione verticale dentro 375 px d'altezza. */
+@media (min-width: 640px) and (orientation: landscape) {
+  .timer-main { flex-direction: row; gap: 56px; padding: 0 60px; }
+  .digits { font-size: min(20vw, 34vh); }
+  .timer { --bordo: 14px; }
+}
+
+/* ---------- barra laterale su desktop ---------- */
+
+.shell { display: flex; height: 100%; overflow: hidden; }
+.sidebar { display: none; }
+.content { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
+
+@media (min-width: 1024px) {
+  .sidebar {
+    display: flex; flex-direction: column; width: 240px; flex-shrink: 0;
+    background: var(--menu); border-right: 2px solid var(--line-soft); padding: 26px 0;
+  }
+  .tabbar { display: none; }
+  .pad { padding: 0 32px; }
+  .topbar { padding: 26px 32px 20px; }
+  .rule { padding: 26px 32px 12px; }
+  .wlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+}
+
+.navitem {
+  display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 12px;
+  color: var(--tasto); font-size: 14px; font-weight: 600; letter-spacing: 0.1em;
+}
+a.navitem { text-decoration: none; }
+.navitem[data-on='true'] { background: var(--surface-2); color: var(--text); }
+.navitem > i { display: block; width: 8px; height: 8px; background: var(--spento); }
+.navitem[data-on='true'] > i { background: var(--blu); }
+
+/* Il marchio e il titolo non convivono: su telefono comanda la barra in basso,
+   su desktop la barra laterale. */
+.page-title { display: none; }
+
+@media (min-width: 1024px) {
+  .only-mobile { display: none !important; }
+  .page-title { display: block; }
+}
+
+
+/* ---------- illustrazioni della modalità Maurizio ---------- */
+
+/* Quando lo becchi a sbagliare, l'illustrazione e la frase che gli scappa
+   prendono il centro dello schermo. Lo sfondo si scurisce ma non si annulla:
+   dietro deve restare leggibile il numero che sta tornando indietro, che è
+   poi il senso della gag. */
+/* Maurizio prende il posto dell'anello, non quello dello schermo.
+   Copriva tutto per tre secondi, e con lui sparivano il numero — cioè proprio
+   la cosa che sta facendo ridere — e il nome dell'esercizio. Occupando la
+   stessa misura dell'anello, il blocco sotto non si sposta di un pixel. */
+.beccato {
+  flex-shrink: 0; width: var(--anello); height: var(--anello);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; pointer-events: none;
+  animation: entra 200ms ease-out;
+}
+
+.beccato > img {
+  /* Si stringe se la frase è lunga: il riquadro ha la misura dell'anello e non
+     cresce, quindi a cedere deve essere l'illustrazione, non il testo. */
+  height: 62%; min-height: 0; flex-shrink: 1;
+  width: auto; max-width: 100%; object-fit: contain;
+  filter: drop-shadow(0 10px 26px #000000cc);
+}
+
+.beccato-frase {
+  font-family: var(--cond); font-style: oblique 9deg; font-weight: 700;
+  font-size: clamp(15px, 4vw, 24px); letter-spacing: 0.04em; line-height: 1.08;
+  color: var(--giallo-testo); text-align: center; text-wrap: balance;
+  text-shadow: 0 2px 12px #000000cc;
+}
+
+/* Gli stati tranquilli: piccola e in un angolo, non deve rubare la scena ai
+   numeri né competere con l'illustrazione centrale di Maurizio. */
+.adesivo-stato {
+  /* In alto a destra dentro il blocco centrale, non dello schermo: è lo spazio
+     morto accanto all'anello, e ancorata qui non può invadere l'intestazione
+     quando il nome dell'allenamento va a capo. */
+  position: absolute; right: var(--bordo); top: 0; z-index: 3;
+  height: 15vh; max-height: 118px; width: auto; pointer-events: none;
+  opacity: 0.92;
+  filter: drop-shadow(0 4px 14px #000000aa);
+  animation: entra 260ms ease-out;
+}
+
+.adesivo-finale {
+  height: 34vh; max-height: 300px; width: auto;
+  animation: entra 320ms ease-out;
+}
+
+@keyframes entra {
+  from { opacity: 0; transform: translateY(14px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beccato,
+  .adesivo-stato,
+  .adesivo-finale {
+    animation: none;
+  }
+}
+
+@media (min-width: 900px) and (orientation: landscape) {
+  /* In orizzontale l'angolo in alto a destra è occupato dall'intestazione, e
+     più in basso c'è la riga «prossimo». Resta la fascia vuota sotto
+     l'anello. */
+  /* Il tetto era 130 px mentre il file ne ha trecento: su un 1920×1080
+     l'illustrazione occupava il 6% della larghezza e del judogi non si
+     leggeva niente. Il tetto ora è la misura vera del disegno, così cresce
+     invece di restare un francobollo. */
+  .adesivo-stato { left: var(--bordo); right: auto; top: auto; bottom: var(--bordo); height: 16vh; max-height: 300px; }
+}
+
+/* Sotto l'anello, su uno schermo grande, resta una fascia vuota alta fra i 250
+   e i 440 px: misurata, non stimata. Lì l'illustrazione può stare comoda senza
+   avvicinarsi né all'anello né alla colonna delle cifre. */
+@media (min-width: 1200px) and (min-height: 900px) and (orientation: landscape) {
+  .adesivo-stato { height: 22vh; }
+}
+
+/* Il QR sta su carta bianca anche dentro un'app nera: un lettore cerca moduli
+   scuri su chiaro, e invertirli è il modo più sicuro di non farsi leggere. */
+.qr-carta {
+  align-self: center; background: #ffffff; padding: 14px;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 180px; width: min(300px, 86vw);
+}
+
+/* ---------- modalità schermo grande ---------- */
+
+/* Il tablet appeso in sala si guarda da dieci metri, e chi lo guarda vuole
+   sapere due cose: quanto manca e cosa sta facendo. Tutto il resto si toglie
+   di mezzo — la riga «prossimo» sparisce, l'anello si stringe a fare da
+   contagiri e da posto per Maurizio, i margini laterali servono a chi tiene
+   il telefono in mano e non a un muro — e quello spazio va alle cifre. Le
+   regole stanno su un attributo e non in una media query perché è una scelta
+   di chi usa l'app, non una misura dello schermo.
+
+   Prima le misure di base, poi le condizioni per orientamento: hanno la
+   stessa specificità, quindi a decidere è l'ordine. */
+.timer[data-grande='true'] {
+  --anello: min(190px, 22vh, 24vw);
+}
+.timer[data-grande='true'] .timer-main { padding: 0 16px; gap: 24px; }
+.timer[data-grande='true'] .state-label { font-size: clamp(26px, 5vw, 64px); }
+.timer[data-grande='true'] .exercise { font-size: clamp(22px, 4.2vw, 54px); }
+.timer[data-grande='true'] .obiettivo { font-size: clamp(15px, 2.4vw, 30px); }
+.timer[data-grande='true'] .beccato-frase { font-size: clamp(13px, 2.6vw, 20px); }
+.timer[data-grande='true'] .btn-piu { min-width: 96px; font-size: 20px; min-height: 48px; }
+.timer[data-grande='true'] .timer-dots { padding-top: 10px; }
+.timer[data-grande='true'] .timer-controlli { gap: 10px; padding: 10px 20px calc(var(--safe-b) + 12px); }
+.timer[data-grande='true'] .tasto-salto { width: 56px; height: 56px; }
+.timer[data-grande='true'] .tasto-avvia { height: 56px; }
+.timer[data-grande='true'] .adesivo-stato { height: 11vh; max-height: 90px; }
+
+/* «00:45» è largo 2,53 volte il corpo del carattere — misurato, non stimato —
+   e se non ci sta va a capo su due righe e sfonda tutto quello che ha sotto,
+   compresi i comandi. Il limite vero non è quindi l'altezza ma la larghezza,
+   e cambia con l'orientamento, perché in orizzontale la colonna deve
+   dividersi lo schermo con l'anello. Da qui tetti diversi, ognuno con un
+   margine sopra il minimo calcolato per lo schermo più stretto della
+   sua categoria. */
+@media (orientation: portrait) {
+  .timer[data-grande='true'] .digits { font-size: min(35vw, 58vh); }
+}
+
+/* Schermo grande su un telefono tenuto in verticale. La modalità è tarata sul
+   tablet appeso in sala, dove 24vw sono trecento pixel di anello; su un
+   telefono da 412 sono novantanove, e un anello da novantanove non è più un
+   contagiri — è un bottone con dentro tre scritte che non ci stanno. Le cifre
+   restano larghe quanto lo schermo permette, quindi l'altezza che avanza può
+   andare solo all'anello e ai due testi, ed è lì che va. */
+@media (orientation: portrait) and (max-width: 560px) and (min-height: 560px) {
+  .timer[data-grande='true'] { --anello: min(190px, 22vh, 42vw); }
+  .timer[data-grande='true'] .state-label { font-size: clamp(26px, 7.5vw, 64px); }
+  .timer[data-grande='true'] .exercise { font-size: clamp(22px, 6vw, 54px); }
+}
+@media (orientation: landscape) {
+  .timer[data-grande='true'] .digits { font-size: min(29vw, 55vh); }
+}
+/* Un telefono girato di lato non ha spazio da regalare a nessuno: lì la
+   modalità schermo grande torna alle misure normali, invece di far
+   traboccare il nome dell'esercizio sotto la barra di avanzamento. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .timer[data-grande='true'] .digits { font-size: min(18vw, 30vh); }
+  .timer[data-grande='true'] .state-label { font-size: clamp(18px, 3.4vw, 30px); }
+  .timer[data-grande='true'] .exercise { font-size: clamp(16px, 3vw, 28px); }
+  .timer[data-grande='true'] .obiettivo { font-size: clamp(12px, 2vw, 18px); }
+  /* Anche i comandi: le misure da tablet sono più specifiche di quelle del
+     telefono ruotato e restavano in piedi, rubando alla colonna centrale i
+     pochi pixel che le mancavano per non finire sotto la barra. */
+  .timer[data-grande='true'] .timer-controlli { gap: 8px; padding: 8px 14px calc(var(--safe-b) + 8px); }
+  .timer[data-grande='true'] .tasto-salto { width: 50px; height: 50px; }
+  .timer[data-grande='true'] .tasto-avvia { height: 50px; }
+}
+
+/* ---------- gli attrezzi al volo: cronometro e conto alla rovescia ---------- */
+
+/* Sei durate in una griglia che si divide lo spazio invece di scorrere: sono
+   sei tasti che si premono senza guardare, e uno fuori schermo non esiste. */
+.al-volo-scelte {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px;
+}
+.al-volo-scelte .chip {
+  min-height: 46px; padding: 0 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cond); font-size: 17px; font-weight: 700; letter-spacing: 0.02em;
+}
+/* Dentro il conto alla rovescia la stessa fila serve a cambiare durata. */
+.timer .al-volo-scelte { margin: 0 20px; }
+
+/* Gli attrezzi hanno sotto di sé la barra delle schede: un centinaio di pixel
+   che il timer dell'allenamento non paga, perché da acceso è a schermo pieno e
+   la copre. Il conto deve però restare raggiungibile mentre gira — ci si va e
+   si torna mentre la sala lavora — quindi la barra resta, e quei pixel li
+   ridà l'anello, che qui è tarato sull'altezza vera della finestra.
+   Sotto una certa altezza cadono prima i due testi di contorno e poi
+   l'anello: quello che non si può perdere sono le cifre. */
+.timer[data-attrezzo='true'] { --anello: min(300px, 22vh, 46vw); }
+@media (max-height: 700px) {
+  .timer[data-attrezzo='true'] { --anello: min(300px, 16vh, 34vw); }
+  .timer[data-attrezzo='true'] .state-label,
+  .timer[data-attrezzo='true'] .exercise { display: none; }
+}
+@media (max-height: 600px) {
+  /* Anche i complimenti di Maurizio: occupano il posto dell'anello, quindi
+     dove l'anello non ci sta non ci stanno nemmeno loro. */
+  .timer[data-attrezzo='true'] .anello,
+  .timer[data-attrezzo='true'] .beccato { display: none; }
+}
+
+/* Telefono girato di lato: trecentosessanta pixel in tutto, un centinaio dei
+   quali se li prende la barra delle schede. Lì si stringe tutto — la barra per
+   prima, che senza etichette resta comunque riconoscibile — altrimenti i
+   comandi scivolano sopra le schede e non si preme più niente. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .tabbar { padding: 4px 6px max(6px, var(--safe-b)); }
+  .tab { min-height: 34px; gap: 2px; font-size: 8px; }
+  .timer[data-attrezzo='true'] .timer-top { padding-top: calc(var(--safe-t) + 2px); }
+  .timer[data-attrezzo='true'] .sottotitolo-timer { display: none; }
+  .timer[data-attrezzo='true'] .icon-btn { height: 36px; min-height: 36px; }
+  .timer[data-attrezzo='true'] .digits { font-size: min(11vw, 17vh); }
+  .timer[data-attrezzo='true'] .crono-centesimi { font-size: min(4.5vw, 8vh); }
+  .timer[data-attrezzo='true'] .timer-controlli { gap: 8px; padding: 4px 14px max(6px, var(--safe-b)); }
+  .timer[data-attrezzo='true'] .tasto-avvia,
+  .timer[data-attrezzo='true'] .tasto-giro { height: 40px; }
+  .timer[data-attrezzo='true'] .al-volo-scelte .chip { min-height: 30px; font-size: 15px; }
+  .timer[data-attrezzo='true'] .crono-giri { max-height: 10vh; }
+  .timer[data-attrezzo='true'] .titolo-timer { font-size: 15px; }
+}
+
+.crono-cifre { display: flex; align-items: baseline; justify-content: center; gap: 2px; min-width: 0; }
+/* «00:16.63» è molto più largo di «00:45»: i minuti restano grandi, i centesimi
+   scendono a un terzo. Da lontano si legge il minuto, in mano il centesimo. */
+.digits-crono { font-size: min(26vw, 32vh); }
+/* Di fianco all'anello la colonna è larga la metà, e «00:16» più i centesimi
+   ci andavano a capo: da lontano si leggeva «00:» sopra e «16» sotto. */
+@media (min-width: 640px) and (orientation: landscape) {
+  .digits-crono { font-size: min(16vw, 25vh); }
+}
+.crono-centesimi {
+  font-size: min(9vw, 11vh); font-weight: 700; color: var(--dim);
+  letter-spacing: -0.02em;
+}
+
+.crono-giri {
+  /* Fra le cifre e i comandi, dove il timer degli allenamenti tiene la riga
+     del prossimo intervallo: la stessa fascia, lo stesso posto. */
+  flex-shrink: 0; max-height: 26vh; overflow-y: auto;
+  margin: 0 20px; border-top: 2px solid var(--line-soft);
+}
+.crono-giro {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: baseline;
+  padding: 9px 2px; border-bottom: 1px solid var(--line-soft);
+}
+.crono-giro-n { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: var(--faint); }
+.crono-giro-scarto { font-size: 21px; font-weight: 700; text-align: right; }
+.crono-giro-tot { font-size: 14px; color: var(--dim); }
+.tasto-giro {
+  height: 68px; padding: 0 22px; flex-shrink: 0;
+  font-family: var(--cond); font-weight: 700; letter-spacing: 0.08em;
+}
+.tasto-giro:disabled { opacity: 0.35; }
+
+@media (max-height: 740px) and (orientation: portrait) {
+  .tasto-giro { height: 58px; }
+  .crono-giri { max-height: 20vh; }
+}
+
+/* ---------- la scheda di Maurizio, in cima alle impostazioni ---------- */
+
+/* È la cosa che dà carattere all'app ed è accesa di partenza: merita una
+   scheda, non una riga fra le altre. Il giallo è quello del distintivo che
+   compare nel timer, così il collegamento si vede. */
+.maurizio-card {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 16px 16px 18px;
+  border-color: var(--giallo);
+  background: linear-gradient(180deg, var(--caldo) 0%, var(--surface) 62%);
+}
+
+.maurizio-faccia {
+  width: 82px; height: auto; flex-shrink: 0;
+  filter: drop-shadow(0 4px 12px #000000aa);
+}
+
+.maurizio-livelli {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;
+}
+
+.livello {
+  min-height: 52px; padding: 0 10px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--line); background: var(--surface-2); color: var(--tasto);
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.livello:hover { border-color: var(--dim); color: var(--text); }
+.livello[data-on='true'] {
+  background: var(--giallo); border-color: var(--giallo); color: var(--su-colore);
+}
+
+@media (min-width: 560px) {
+  .maurizio-livelli { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .maurizio-faccia { width: 110px; }
+}
+
+/* Un interruttore a tre posizioni per i segnali acustici. Stessa forma dei
+   livelli di Maurizio, colore diverso: il giallo è suo, il blu è quello dei
+   segnali — lo stesso del volume, due righe più sotto. */
+.segmenti { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.segmento {
+  min-height: 52px; padding: 0 4px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  border: 2px solid var(--line); background: var(--surface-2); color: var(--tasto);
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.segmento:hover { border-color: var(--dim); color: var(--text); }
+.segmento[data-on='true'] { background: var(--blu); border-color: var(--blu); color: var(--su-colore); }
+
+/* ---------- misure del timer, elastiche ---------- */
+
+/* L'anello era fisso a 300px e non si stringeva: su uno schermo alto 667 px
+   mangiava tutto lo spazio e il nome dell'esercizio finiva tagliato dalla
+   barra di avanzamento. Ora la misura la decide la finestra. */
+.anello {
+  position: relative; flex-shrink: 0;
+  width: var(--anello); aspect-ratio: 1;
+  /* L'anello si misura da sé: sotto una certa taglia la terza riga non ci sta
+     comunque, e a deciderlo dev'essere il cerchio, non la finestra — la stessa
+     misura arriva da media query diverse. */
+  container-type: size;
+}
+@container (max-width: 96px) {
+  /* Il totale che resta si legge anche sulla barra in fondo; il giro no. */
+  .anello-resta { display: none; }
+}
+.anello > svg { width: 100%; height: 100%; }
+
+/* Dentro un cerchio la fascia scrivibile è circa sette decimi del diametro:
+   le tre scritte si danno il corpo in frazioni dell'anello. Le frazioni sono
+   scelte perché sull'anello del tablet in sala — 176 px in schermo grande —
+   ridiano esattamente i 15, 46 e 13 px di prima: quello era già il caso
+   giusto, ed è quello che non deve cambiare. */
+.anello-etichetta {
+  font-size: clamp(8px, calc(var(--anello) * 0.085), 15px);
+  font-weight: 700; letter-spacing: 0.2em; color: var(--dim); white-space: nowrap;
+}
+.anello-giro {
+  font-size: clamp(20px, calc(var(--anello) * 0.26), 46px);
+  font-weight: 700; line-height: 1;
+}
+.anello-resta {
+  font-size: clamp(8px, calc(var(--anello) * 0.074), 13px);
+  font-weight: 600; letter-spacing: 0.16em;
+}
+
+.timer-top { gap: 12px; padding: calc(var(--safe-t) + 14px) 20px 0; }
+.timer-dots { padding: 16px 20px 0; }
+.timer-azioni { gap: 8px; margin: 14px 20px 0; align-items: stretch; }
+.timer-prossimo { gap: 10px; flex-grow: 1; min-width: 0; padding: 10px 14px; }
+/* Il tasto che allunga l'intervallo in corso: piccolo, ma con un'area di tocco
+   vera, perché lo si preme guardando la sala e non lo schermo. */
+.btn-piu {
+  flex-shrink: 0; min-width: 66px; padding: 0 12px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--line); background: var(--surface); color: var(--tasto);
+  font-family: var(--cond); font-variant-numeric: tabular-nums;
+  font-size: 17px; font-weight: 700; letter-spacing: 0.06em;
+}
+/* Acceso col colore dello stato: sul telefono non c'è il passaggio del mouse a
+   far capire che si può premere, e questo tasto deve trovarsi con la coda
+   dell'occhio mentre si guarda la sala. */
+.btn-piu:not(:disabled) { border-color: var(--state); color: var(--text); }
+.btn-piu:active:not(:disabled) { background: var(--surface-2); }
+.btn-piu:disabled { opacity: 0.35; }
+/* Quando la riga del prossimo non c'è — schermo grande, o ultimo intervallo —
+   il tasto resterebbe un rettangolino spaesato in un angolo. Da solo si prende
+   tutta la riga: è anche l'unico gesto che si fa guardando la sala. */
+.timer-azioni > .btn-piu:only-child { flex-grow: 1; }
+.timer-controlli { gap: 12px; padding: 16px 20px calc(var(--safe-b) + 20px); }
+.tasto-salto { width: 68px; height: 68px; }
+.tasto-avvia { height: 68px; }
+
+/* Schermi bassi: si stringe tutto invece di lasciare che il contenuto
+   trabocchi dietro gli elementi sotto. */
+@media (max-height: 740px) and (orientation: portrait) {
+  .timer { --anello: min(300px, 24vh, 50vw); }
+  .timer-main { gap: 2px; }
+  .timer-top { padding-top: calc(var(--safe-t) + 8px); }
+  .timer-dots { padding-top: 8px; }
+  .timer-azioni { margin-top: 8px; }
+  .timer-prossimo { padding: 7px 12px; }
+  .timer-controlli { gap: 10px; padding: 10px 16px calc(var(--safe-b) + 12px); }
+  .tasto-salto { width: 58px; height: 58px; }
+  .tasto-avvia { height: 58px; }
+  .adesivo-stato { height: 12vh; max-height: 86px; }
+  .obiettivo { font-size: clamp(12px, 2.2vw, 18px); }
+}
+
+
+/* Orizzontale e basso: un telefono ruotato. Tutto si stringe e l'illustrazione
+   d'angolo sparisce, perché lì lo spazio semplicemente non c'è. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .timer-main { gap: 20px; padding: 0 16px; }
+  .timer { --anello: min(300px, 44vh, 27vw); }
+  .digits { font-size: min(18vw, 30vh); }
+  .state-label { font-size: clamp(18px, 3.4vw, 30px); letter-spacing: 0.2em; }
+  .exercise { font-size: clamp(16px, 3vw, 28px); }
+  .obiettivo { font-size: clamp(12px, 2vw, 18px); }
+  .timer-top { padding-top: calc(var(--safe-t) + 6px); }
+  .timer-dots { padding-top: 6px; }
+  .timer-azioni { margin-top: 6px; }
+  .timer-prossimo { padding: 5px 10px; }
+  .timer-controlli { gap: 8px; padding: 8px 14px calc(var(--safe-b) + 8px); }
+  .tasto-salto { width: 50px; height: 50px; }
+  .tasto-avvia { height: 50px; }
+  .adesivo-stato { display: none; }
+}

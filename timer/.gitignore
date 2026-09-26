@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.DS_Store
+*.local
+
+# Canvas generato dai file in design/ (2 MB, rigenerabile con la skill /design)
+ods-timer-app.html
+*.tsbuildinfo

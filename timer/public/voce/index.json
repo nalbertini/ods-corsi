@@ -1,0 +1,20 @@
+{
+  "ext": "mp3",
+  "clips": [
+    "stato/intro",
+    "stato/lavoro",
+    "stato/recupero",
+    "stato/riposo",
+    "stato/defaticamento",
+    "stato/completato",
+    "numeri/tre",
+    "numeri/due",
+    "numeri/uno",
+    "maurizio/1",
+    "maurizio/2",
+    "maurizio/3",
+    "maurizio/4",
+    "maurizio/5",
+    "maurizio/6"
+  ]
+}

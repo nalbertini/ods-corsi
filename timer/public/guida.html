@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121212">
+<title>Manuale ODS Timer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #121212;
+    --surface: #1c1c1c;
+    --surface-2: #242424;
+    --line: #333333;
+    --line-soft: #2a2a2a;
+    --text: #f2f2f0;
+    --dim: #8c8c88;
+    --faint: #5a5a56;
+    --blu: #1b8ac4;
+    --rosso: #e4292a;
+    --giallo: #f4c31b;
+    --verde: #16a54a;
+    --cond: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif;
+    --body: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .cond { font-family: var(--cond); font-variant-numeric: tabular-nums; }
+  .ob { font-family: var(--cond); font-style: oblique 9deg; }
+
+  /* ---------- impalcatura ---------- */
+
+  .guscio {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  .testata {
+    padding-block: 48px 36px;
+    border-bottom: 2px solid var(--line);
+  }
+
+  .bandiera {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 26px;
+  }
+  .bandiera > span { height: 7px; flex: 1 1 0; }
+
+  h1 {
+    font-family: var(--cond);
+    font-style: oblique 9deg;
+    font-weight: 700;
+    font-size: clamp(38px, 9vw, 74px);
+    line-height: 0.94;
+    letter-spacing: 0.01em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+
+  .sommario {
+    font-size: clamp(16px, 2.4vw, 19px);
+    color: var(--dim);
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  .riga-versione {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin-top: 26px;
+    font-family: var(--cond);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .corpo {
+    display: grid;
+    /* `minmax(0, …)` e non `1fr`: senza, la colonna si allarga fino alla
+       larghezza minima della tabella più larga — 520 px — e si porta dietro
+       tutta la pagina, indice compreso. Con questo le tabelle scorrono nel
+       loro riquadro e il resto resta dentro lo schermo. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
+    align-items: start;
+  }
+
+  @media (min-width: 1000px) {
+    .corpo { grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
+    .indice { position: sticky; top: 28px; }
+  }
+
+  /* ---------- indice ---------- */
+
+  .indice {
+    padding-top: 40px;
+  }
+  .indice-titolo {
+    font-family: var(--cond);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    margin-bottom: 14px;
+  }
+  .indice ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    counter-reset: voce;
+  }
+  .indice a {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    color: var(--dim);
+    text-decoration: none;
+    font-size: 14.5px;
+    line-height: 1.3;
+    border-bottom: 1px solid transparent;
+  }
+  .indice a::before {
+    counter-increment: voce;
+    content: counter(voce, decimal-leading-zero);
+    font-family: var(--cond);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--faint);
+    padding-top: 2px;
+  }
+  .indice a:hover { color: var(--text); }
+  .indice a:focus-visible { outline: 2px solid var(--blu); outline-offset: 3px; }
+
+  /* ---------- sezioni ---------- */
+
+  section { padding-top: 40px; scroll-margin-top: 20px; }
+
+  h2 {
+    font-family: var(--cond);
+    font-style: oblique 9deg;
+    font-weight: 700;
+    font-size: clamp(27px, 5vw, 38px);
+    line-height: 1;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+
+  .occhiello {
+    font-family: var(--cond);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    margin-bottom: 10px;
+  }
+
+  h3 {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    margin: 30px 0 8px;
+    text-wrap: balance;
+  }
+
+  p { max-width: 68ch; margin: 0 0 14px; }
+  p:last-child { margin-bottom: 0; }
+
+  .guida-intro { color: var(--dim); max-width: 68ch; margin-bottom: 22px; }
+
+  strong { font-weight: 600; color: var(--text); }
+  em { font-style: italic; color: var(--dim); }
+
+  code {
+    font-family: var(--cond);
+    font-size: 0.95em;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 0 5px;
+    white-space: nowrap;
+  }
+
+  ul { max-width: 68ch; margin: 0 0 14px; padding-left: 20px; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--faint); }
+
+  /* ---------- pezzi ricorrenti ---------- */
+
+  .scheda {
+    background: var(--surface);
+    border: 2px solid var(--line);
+    padding: 18px 20px;
+    margin: 20px 0;
+  }
+  .scheda h3 { margin-top: 0; }
+  .scheda p:last-child, .scheda ul:last-child { margin-bottom: 0; }
+
+  .primo-passo {
+    border-left: 6px solid var(--giallo);
+  }
+
+  .attenzione {
+    border-left: 6px solid var(--rosso);
+  }
+
+  .etichetta-scheda {
+    font-family: var(--cond);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--faint);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* stati del timer: gli stessi quattro colori del marchio */
+  .stati {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .stato {
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-top: 6px solid var(--tinta);
+    padding: 12px 14px;
+  }
+  .stato-nome {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.16em;
+    color: var(--tinta);
+  }
+  .stato-detto { font-size: 14px; color: var(--dim); margin-top: 3px; line-height: 1.4; }
+
+  .tabella-scorre { overflow-x: auto; margin: 20px 0; border: 2px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; background: var(--surface); }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 15px;
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--cond);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--faint);
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num, th.num { font-family: var(--cond); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .nome-schema { font-family: var(--cond); font-weight: 700; font-size: 16px; letter-spacing: 0.04em; white-space: nowrap; }
+
+  .tasto {
+    font-family: var(--cond);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border: 2px solid var(--line);
+    background: var(--surface-2);
+    padding: 1px 7px;
+    white-space: nowrap;
+  }
+
+  /* Le schermate: una colonna sul telefono, due su schermo largo. Il bordo è
+     quello delle schede dell'app, perché è un'immagine dell'app. */
+  .scatti {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+    margin: 24px 0;
+    max-width: 68ch;
+  }
+  .scatti.intera { grid-template-columns: 1fr; }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 9px; }
+  figure img {
+    width: 100%; height: auto; display: block;
+    border: 2px solid var(--line); background: var(--bg);
+  }
+  figcaption { font-size: 13.5px; line-height: 1.45; color: var(--dim); }
+
+  .chiusura {
+    margin-top: 64px;
+    padding-top: 26px;
+    border-top: 2px solid var(--line);
+    color: var(--faint);
+    font-size: 14px;
+  }
+
+  @media print {
+    :root { --bg: #ffffff; --surface: #ffffff; --surface-2: #f2f2f0; --text: #121212; --dim: #444440; --faint: #6a6a66; --line: #bdbdb8; --line-soft: #dcdcd8; }
+    body { font-size: 11.5pt; }
+    .indice, .bandiera { display: none; }
+    .corpo { display: block; }
+    section { break-inside: avoid-page; padding-top: 22px; }
+    .scheda, .tabella-scorre, figure { break-inside: avoid; }
+    figure img { border-color: #bdbdb8; }
+    .scatti { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+</head>
+<body>
+<style>
+  .ritorno {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px;
+    background: #171717; border-bottom: 2px solid #2a2a2a;
+    font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 15px; font-weight: 700; letter-spacing: 0.1em;
+    color: #f2f2f0; text-decoration: none;
+  }
+  .ritorno:hover { color: #1b8ac4; }
+  @media print { .ritorno { display: none; } }
+</style>
+<a class="ritorno" href="./">‹ TORNA ALL'APP</a>
+<div class="guscio">
+
+  <header class="testata">
+    <div class="bandiera" aria-hidden="true">
+      <span style="background: var(--giallo)"></span>
+      <span style="background: var(--rosso)"></span>
+      <span style="background: var(--verde)"></span>
+      <span style="background: var(--blu)"></span>
+    </div>
+    <h1>Manuale<br>ODS Timer</h1>
+    <p class="sommario">
+      Tutto quello che l'app sa fare, funzione per funzione: il cronometro e i minuti al volo, gli schemi
+      di allenamento, l'editor, la lezione dal vivo, Maurizio, la voce, il QR per il tablet e le copie di
+      sicurezza. Scritto per chi conduce la lezione, non per chi ha scritto il codice — e illustrato con
+      schermate prese dall'app vera.
+    </p>
+    <div class="riga-versione">
+      <span>Officine Dello Sport · Collegno</span>
+      <span>ODS Timer 1.6.1</span>
+      <span>nalbertini.github.io/Timer-</span>
+    </div>
+  </header>
+
+  <div class="corpo">
+
+    <nav class="indice" aria-label="Indice del manuale">
+      <div class="indice-titolo">INDICE</div>
+      <ol>
+        <li><a href="#cose">Cos'è e dove vive</a></li>
+        <li><a href="#schede">Le quattro schede</a></li>
+        <li><a href="#alvolo-tools">Cronometro e countdown</a></li>
+        <li><a href="#schemi">I cinque schemi</a></li>
+        <li><a href="#editor">Costruire un timer</a></li>
+        <li><a href="#esercizi">La libreria esercizi</a></li>
+        <li><a href="#lezione">Durante la lezione</a></li>
+        <li><a href="#maurizio">Modalità Maurizio</a></li>
+        <li><a href="#suoni">Suoni e voce</a></li>
+        <li><a href="#schermo">Schermo</a></li>
+        <li><a href="#invia">Mandare un timer</a></li>
+        <li><a href="#dati">Salvare e ripristinare</a></li>
+        <li><a href="#aggiornamenti">Aggiornamenti</a></li>
+        <li><a href="#limiti">Quello che non fa</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <section id="cose">
+        <div class="occhiello">PUNTO DI PARTENZA</div>
+        <h2>Cos'è e dove vive</h2>
+        <p class="guida-intro">
+          ODS Timer è una pagina web che si comporta come un'app. Si apre dal browser, si installa
+          sulla schermata iniziale e da lì in poi funziona anche senza rete.
+        </p>
+
+        <p>
+          Non c'è account, non c'è registrazione, non c'è un server che tenga i tuoi dati: <strong>i timer, il
+          catalogo degli esercizi, le impostazioni e lo storico stanno nella memoria del dispositivo</strong> che
+          li ha scritti. Questo ha un lato buono e uno da ricordare: nessuno può vedere gli allenamenti
+          della palestra, ma nemmeno tu li vedi da un secondo dispositivo finché non li mandi (§&thinsp;10)
+          o non li copi (§&thinsp;11).
+        </p>
+
+        <div class="scheda primo-passo">
+          <span class="etichetta-scheda">I PRIMI CINQUE MINUTI</span>
+          <h3>Installarla sul telefono o sul tablet</h3>
+          <ul>
+            <li><strong>Android / Chrome</strong> — apri l'indirizzo, menu <span class="tasto">⋮</span> → <em>Installa app</em> (o <em>Aggiungi a schermata Home</em>).</li>
+            <li><strong>iPhone / iPad · Safari</strong> — apri l'indirizzo, tasto Condividi → <em>Aggiungi alla schermata Home</em>.</li>
+            <li><strong>Computer</strong> — funziona nel browser così com'è; su Chrome compare l'icona di installazione nella barra dell'indirizzo.</li>
+          </ul>
+          <p>
+            Installata, parte a tutto schermo senza la barra del browser — che in sala è mezzo centimetro
+            di numeri in più — e la prima apertura mette in cache tutto il necessario: da lì funziona
+            anche con il telefono in modalità aereo.
+          </p>
+          <p>
+            <strong>Anche questa guida è dentro l'app</strong>, in fondo alle impostazioni: si apre senza rete
+            e vale per chiunque abbia l'indirizzo, senza dover mandare niente.
+          </p>
+        </div>
+
+        <p>
+          Al primo avvio l'app non è vuota: propone <strong>sei timer già pronti</strong> — Brucia grassi, EMOM 12 gambe,
+          AMRAP del sabato, Circuito sala attrezzi, Core express, Benchmark mensile — e un
+          <strong>catalogo di 52 esercizi</strong> diviso in sei categorie. Sono un punto di partenza da modificare,
+          non una dotazione fissa: si cambiano e si cancellano tutti.
+        </p>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/home.webp" alt="La scheda TIMER con gli attrezzi al volo in cima e i sei timer di partenza" width="820" height="1688">
+      <figcaption>La scheda TIMER appena installata, con i sei timer già pronti.</figcaption>
+    </figure>
+    <figure>
+      <img src="guida/scheda-aperta.webp" alt="Una scheda timer aperta con MODIFICA, DUPLICA, INVIA e il cestino" width="820" height="1688" loading="lazy">
+      <figcaption>Toccando una scheda compaiono le sue azioni: modifica, duplica, invia, elimina.</figcaption>
+    </figure>
+        </div>
+      </section>
+
+      <section id="schede">
+        <div class="occhiello">ORIENTARSI</div>
+        <h2>Le quattro schede</h2>
+        <p>
+          In fondo allo schermo (di lato, sul computer) ci sono quattro voci. Sono tutta la navigazione
+          che l'app ha, e sono quattro perché in una lezione si entra solo lì.
+        </p>
+
+        <div class="tabella-scorre">
+          <table>
+            <thead>
+              <tr><th>Scheda</th><th>A cosa serve</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="nome-schema">TIMER</td><td>I tuoi allenamenti. Da qui si avvia, si modifica, si duplica, si manda, si elimina.</td></tr>
+              <tr><td class="nome-schema">CRONOMETRO</td><td>Conta in salita, con i centesimi e i giri. Per un randori, una navetta, un test.</td></tr>
+              <tr><td class="nome-schema">COUNTDOWN</td><td>Un blocco di lavoro lungo quanto dici: scegli la durata, poi AVVIA.</td></tr>
+              <tr><td class="nome-schema">IMPOSTAZIONI</td><td>Maurizio, suoni, voce, schermo, libreria esercizi, copie di sicurezza, storico, versione, e questa guida.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Le tre cose che non sono schede</h3>
+        <p>
+          Tre parti dell'app non stanno nella barra, di proposito: sono cose che si fanno una volta ogni
+          tanto, non a lezione iniziata.
+        </p>
+        <ul>
+          <li><strong>Gli schemi</strong> (Tabata, HIIT, EMOM, AMRAP, For Time, Circuito) non sono una destinazione ma un punto di partenza: compaiono come prima schermata dopo <span class="tasto">+ NUOVO TIMER</span>, che è l'unico momento in cui servono — e nemmeno sempre, perché con un filtro di tipo attivo la scelta è già fatta (§&thinsp;5).</li>
+          <li><strong>La libreria esercizi</strong> è la prima voce delle impostazioni: il catalogo si cura ogni tanto, non a ogni lezione.</li>
+          <li><strong>Lo storico</strong> è in fondo alle impostazioni. Continua a registrare ogni allenamento portato a termine e a viaggiare nelle copie di sicurezza, ma non occupa un posto in barra.</li>
+        </ul>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/impostazioni-dati.webp" alt="Le voci in fondo alle impostazioni: guida, storico, copie di sicurezza" width="820" height="1688" loading="lazy">
+      <figcaption>In fondo alle impostazioni: le copie di sicurezza, questa guida e lo storico.</figcaption>
+    </figure>
+        </div>
+      </section>
+
+      <section id="alvolo-tools">
+        <div class="occhiello">SENZA SCRIVERE NIENTE</div>
+        <h2>Cronometro e countdown</h2>
+        <p class="guida-intro">
+          Due schede della barra, una per attrezzo. Non chiedono di costruire un allenamento: si usano a
+          lezione iniziata, con venti persone ferme che aspettano, e lì nessuno si mette a compilare un
+          editor.
+        </p>
+
+        <h3>Countdown</h3>
+        <p>
+          La scheda si apre <strong>già sul conto, fermo</strong>: niente schermata di mezzo da attraversare. Le sei
+          durate — <strong>30″, 45″, 1′, 1′30, 2′, 3′</strong> — sono la fila sotto le cifre. È
+          <strong>un solo blocco di lavoro</strong> della durata che scegli: non un recupero, ma il pezzo di lezione
+          che dura tanto quanto hai detto. La risposta a «novanta secondi di plank», che prima costringeva a
+          creare e salvare un timer apposta.
+        </p>
+        <ul>
+          <li><strong>Scegliere una durata non fa partire niente</strong>: la carica e basta, e il conto resta fermo su PRONTO. A dare il via è <span class="tasto">AVVIA</span>, quando guardi la sala e non lo schermo. Vale anche a conto già iniziato: toccare un'altra durata ricarica da capo e rimette in pronto.</li>
+          <li>C'è il <span class="tasto">+30″</span> del timer grande, e <span class="tasto">RIFAI</span> in alto a destra per ricominciare la stessa durata.</li>
+          <li>Mentre gira la cornice è <strong>rossa</strong>, come il lavoro del timer degli allenamenti, e la scritta dice LAVORO. Allo zero passa al <strong>verde</strong> — il verde con cui l'app dice «finito» — con la scritta TEMPO e la nota lunga dello scadere: si vede da tutta la sala anche senza sentire niente, e si sente da tutta la sala anche senza guardare.</li>
+          <li>Allo zero, se la <strong>modalità Maurizio</strong> è accesa, compare lui con una frase di complimenti: <em>«Bravi, così si fa»</em>, <em>«Questo sì che era un tempo»</em>. Prende il posto dell'anello e non quello delle cifre, che restano lì a dire 00:00. Con la modalità spenta non compare niente.</li>
+        </ul>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/countdown-pronto.webp" alt="La scheda COUNTDOWN appena aperta: conto fermo su PRONTO" width="820" height="1688" loading="lazy">
+      <figcaption>Appena aperta: il conto è già lì, fermo su PRONTO, con le sei durate sotto le cifre.</figcaption>
+    </figure>
+    <figure>
+      <img src="guida/countdown.webp" alt="Conto alla rovescia in corso, cornice rossa, stato LAVORO" width="820" height="1688" loading="lazy">
+      <figcaption>In corsa: cornice rossa perché è lavoro, e RIFAI per ricominciare.</figcaption>
+    </figure>
+    <figure>
+      <img src="guida/countdown-complimenti.webp" alt="Allo scadere: Maurizio con una frase di complimenti, cornice verde" width="820" height="1688" loading="lazy">
+      <figcaption>Allo scadere, con la modalità Maurizio accesa: i complimenti al posto dell’anello, e le cifre restano a dire 00:00.</figcaption>
+    </figure>
+        </div>
+
+        <h3>Il cronometro</h3>
+        <p>
+          Conta in salita con i centesimi e segna i giri. I minuti restano della misura delle cifre del timer
+          e i centesimi stanno accanto, un terzo: <strong>da lontano si legge il minuto, in mano il
+          centesimo</strong>.
+        </p>
+        <p>
+          <span class="tasto">GIRO</span> segna il tempo di adesso. Ogni riga mostra <strong>lo scarto di quel
+          giro e il totale</strong>, con il più veloce in verde — che è quello che serve quando si fanno le
+          navette o si cronometra un randori. <span class="tasto">AZZERA</span> cancella tempo e giri.
+        </p>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/cronometro.webp" alt="Il cronometro a zero, pronto a partire" width="820" height="1688" loading="lazy">
+      <figcaption>Il cronometro fermo: il tasto GIRO resta spento finché non parte.</figcaption>
+    </figure>
+        </div>
+
+        <div class="scheda primo-passo">
+          <span class="etichetta-scheda">CONTINUANO A CONTARE</span>
+          <p>
+            Tutti e due <strong>non si fermano quando guardi un'altra scheda</strong>. Avvii un minuto e mezzo,
+            passi ai timer per controllare il prossimo blocco, e il conto continua: quando scade suona anche se
+            in quel momento sei altrove. È il motivo per cui lo avvii.
+          </p>
+          <p>
+            E il tempo arriva sempre dall'orologio, mai da un contatore aumentato a ogni battito: la stessa
+            regola del timer degli allenamenti, perché un telefono che mette in pausa la pagina non faccia
+            restare indietro il conto.
+          </p>
+        </div>
+      </section>
+
+      <section id="schemi">
+        <div class="occhiello">IL MOTORE</div>
+        <h2>I cinque schemi</h2>
+        <p class="guida-intro">
+          Ogni timer segue uno dei cinque schemi. Lo schema decide quali parametri contano davvero:
+          l'editor mostra solo quelli, invece di farti compilare campi che il tuo allenamento ignora.
+        </p>
+
+        <div class="tabella-scorre">
+          <table>
+            <thead>
+              <tr><th>Schema</th><th>Come funziona</th><th>Cosa imposti</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="nome-schema">INTERVALLI</td>
+                <td>Lavoro e recupero che si alternano per il numero di round scelto. È il Tabata, è l'HIIT.</td>
+                <td>Preparazione, lavoro, recupero, round, serie, riposo serie, defaticamento</td>
+              </tr>
+              <tr>
+                <td class="nome-schema">CIRCUITO</td>
+                <td>Stazioni in sequenza, ripetute a giri. <strong>La durata la porta ogni stazione</strong>, non lo schema: il vogatore può durare 60″ e gli addominali 30″.</td>
+                <td>Preparazione, recupero (il cambio stazione), giri, serie, riposo serie, defaticamento</td>
+              </tr>
+              <tr>
+                <td class="nome-schema">EMOM</td>
+                <td>Blocchi di lavoro attaccati, senza recupero in mezzo: il recupero è quello che ti avanza dentro il blocco quando finisci prima. Metti <em>lavoro</em> a 60″ e hai l'EMOM classico.</td>
+                <td>Preparazione, lavoro, round, serie, riposo serie, defaticamento</td>
+              </tr>
+              <tr>
+                <td class="nome-schema">AMRAP</td>
+                <td>Un unico conto alla rovescia: più giri possibili nel tempo dato. Gli esercizi elencati compaiono insieme, come lista del giro.</td>
+                <td>Preparazione, durata, serie, riposo serie, defaticamento</td>
+              </tr>
+              <tr>
+                <td class="nome-schema">FOR TIME</td>
+                <td>Cronometro che <strong>sale</strong> invece di scendere, con un tempo limite oltre cui si ferma. Serve a misurare quanto ci metti, non a scandire.</td>
+                <td>Preparazione, durata (il limite), defaticamento</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Come viene srotolato l'allenamento</h3>
+        <p>
+          Qualunque schema, all'avvio l'app trasforma il tuo timer in una <strong>lista piatta di
+          intervalli</strong>, uno dopo l'altro: preparazione, poi i giri, l'eventuale riposo fra una serie e
+          l'altra, il defaticamento in fondo. Da lì in poi il timer non fa che scorrerla. È il motivo per
+          cui la barra di avanzamento e il tempo totale sono sempre esatti, anche quando Maurizio ci mette
+          del suo.
+        </p>
+        <p>
+          Gli intervalli senza un esercizio associato prendono un nome loro: <em>Mettiti in posizione</em> nella
+          preparazione, <em>Respira</em> nei recuperi a intervalli, <em>Cambio stazione</em> nei circuiti,
+          <em>Fine serie 1 di 3</em> nel riposo fra serie, <em>Allunga e respira</em> nel defaticamento.
+        </p>
+      </section>
+
+      <section id="editor">
+        <div class="occhiello">COSTRUIRE</div>
+        <h2>Costruire un timer</h2>
+        <p class="guida-intro">
+          Dalla scheda TIMER, <span class="tasto">+ NUOVO TIMER</span> apre prima la scelta dello schema — Tabata,
+          HIIT 40/20, EMOM, AMRAP, For Time, Circuito, ognuno con il suo disegnino — e poi l'editor con i valori
+          già dentro. <span class="tasto">MODIFICA</span> su una scheda apre direttamente l'editor.
+          Lo schema si sceglie lì e dentro l'editor si legge soltanto: era un bivio offerto due volte, e la
+          seconda volta non serviva a nessuno.
+        </p>
+
+        <div class="scheda primo-passo">
+          <span class="etichetta-scheda">IL FILTRO È GIÀ UNA SCELTA</span>
+          <p>
+            I filtri in cima alla libreria — <span class="tasto">TUTTI</span>, <span class="tasto">INTERVALLI</span>,
+            <span class="tasto">EMOM</span>, <span class="tasto">AMRAP</span>, <span class="tasto">CIRCUITO</span>,
+            <span class="tasto">FOR TIME</span> — non servono solo a cercare: se ne hai scelto uno,
+            <strong>il tipo l'hai già detto</strong>, e <span class="tasto">+ NUOVO TIMER</span> non te lo richiede.
+          </p>
+          <ul>
+            <li>Con <strong>EMOM, AMRAP, CIRCUITO o FOR TIME</strong> attivo si va <strong>dritti all'editor</strong>, con lo schema già impostato: di quel tipo c'è un solo schema, e una schermata con una sola carta da toccare è un passaggio a vuoto.</li>
+            <li>Con <strong>INTERVALLI</strong> la scelta compare ancora, ma <strong>ristretta a Tabata e HIIT 40/20</strong>: lì una decisione c'è davvero, ed è fra due, non fra sei.</li>
+            <li>Con <strong>TUTTI</strong> — o senza filtro — restano tutti e sei gli schemi, come prima.</li>
+          </ul>
+        </div>
+
+        <h3>I parametri, con i loro limiti</h3>
+        <p>
+          Ogni parametro si tocca con i due tasti <span class="tasto">−</span> e <span class="tasto">+</span>, a passi
+          fissi, e ha un tetto: sono gli stessi limiti che valgono per un timer ricevuto con un QR o
+          ripristinato da un file, così un allenamento assurdo non può esistere in nessun modo.
+        </p>
+
+        <div class="tabella-scorre">
+          <table>
+            <thead>
+              <tr><th>Parametro</th><th class="num">Da</th><th class="num">A</th><th class="num">Passo</th><th>Cosa comanda</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="nome-schema" style="color: var(--giallo)">PREPARAZIONE</td><td class="num">0 s</td><td class="num">120 s</td><td class="num">5 s</td><td>Il tempo per mettersi in posizione. Di partenza <strong>20 secondi</strong> per tutti gli schemi.</td></tr>
+              <tr><td class="nome-schema" style="color: var(--rosso)">LAVORO</td><td class="num">5 s</td><td class="num">600 s</td><td class="num">5 s</td><td>Quanto dura un intervallo di lavoro. Nel circuito lo sovrascrive la durata della singola stazione.</td></tr>
+              <tr><td class="nome-schema" style="color: var(--verde)">RECUPERO</td><td class="num">0 s</td><td class="num">600 s</td><td class="num">5 s</td><td>Fra un lavoro e il successivo. A zero sparisce del tutto.</td></tr>
+              <tr><td class="nome-schema">ROUND</td><td class="num">1</td><td class="num">99</td><td class="num">1</td><td>Quanti giri dentro una serie.</td></tr>
+              <tr><td class="nome-schema">SERIE</td><td class="num">1</td><td class="num">20</td><td class="num">1</td><td>Quante volte si ripete tutto il blocco dei round.</td></tr>
+              <tr><td class="nome-schema" style="color: var(--blu)">RIPOSO SERIE</td><td class="num">0 s</td><td class="num">600 s</td><td class="num">15 s</td><td>La pausa lunga fra una serie e l'altra.</td></tr>
+              <tr><td class="nome-schema" style="color: var(--blu)">DEFATICAMENTO</td><td class="num">0 s</td><td class="num">900 s</td><td class="num">15 s</td><td>Un blocco finale di scarico. A zero non compare.</td></tr>
+              <tr><td class="nome-schema" style="color: var(--giallo)">DURATA</td><td class="num">1 min</td><td class="num">90 min</td><td class="num">1 min</td><td>Solo AMRAP e For Time: il tempo del blocco unico.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Gli esercizi</h3>
+        <p>
+          Sotto i parametri c'è l'elenco degli esercizi. Si aggiungono scrivendoli a mano o pescandoli
+          dal catalogo con la ricerca — che ignora accenti e maiuscole, quindi <em>mobilita anche</em> trova
+          <em>Mobilità anche</em> — e si possono scegliere in blocco. Ogni riga ha due frecce per spostarla su e
+          giù: spente quando è già in cima o in fondo, invece di non fare niente.
+        </p>
+        <p>
+          Nel <strong>circuito</strong> ogni riga porta anche la sua durata (da 5″ a 600″): è così che una stazione
+          può durare più delle altre. Negli altri schemi gli esercizi si distribuiscono sui round in ordine,
+          ripartendo da capo quando finiscono.
+        </p>
+
+        <h3>L'obiettivo: serie, ripetizioni, carico</h3>
+        <p>
+          Aprendo una riga si possono scrivere <strong>serie (fino a 20), ripetizioni (fino a 200) e carico
+          (fino a 500 kg, a mezzi chili)</strong>. Durante il lavoro compaiono sotto il nome dell'esercizio in una
+          riga sola: <code>3×10 · 16 kg</code>. Le parti che mancano spariscono invece di comparire a zero, quindi
+          anche solo <code>10 rip.</code> o <code>16 kg</code> sono scritture valide.
+        </p>
+        <div class="scheda">
+          <p>
+            <strong>È un promemoria, non un parametro.</strong> A scandire il tempo restano durate e round: scrivere
+            <em>3×10</em> non allunga l'intervallo, non cambia la durata totale e la voce non lo legge. Serve a chi
+            guarda lo schermo per sapere cosa farci dentro, in quel minuto.
+          </p>
+        </div>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/schema.webp" alt="La scelta dello schema dopo NUOVO TIMER" width="820" height="1688" loading="lazy">
+      <figcaption>Dopo NUOVO TIMER: sei schemi, ognuno con il disegno di come scandisce il tempo.</figcaption>
+    </figure>
+    <figure>
+      <img src="guida/editor.webp" alt="L’editor di un circuito con i parametri" width="820" height="1688" loading="lazy">
+      <figcaption>L’editor mostra solo i parametri che quello schema usa davvero.</figcaption>
+    </figure>
+    <figure>
+      <img src="guida/editor-esercizi.webp" alt="L’elenco delle stazioni con durata, frecce per riordinare e obiettivo" width="820" height="1688" loading="lazy">
+      <figcaption>Le stazioni: durata propria, frecce per riordinare, e serie, ripetizioni e carico.</figcaption>
+    </figure>
+        </div>
+      </section>
+
+      <section id="esercizi">
+        <div class="occhiello">IL CATALOGO</div>
+        <h2>La libreria esercizi</h2>
+        <p class="guida-intro">
+          IMPOSTAZIONI → <strong>Libreria esercizi</strong>: l'elenco della palestra si cura lì, una volta,
+          invece di rincorrerlo mentre si scrive un timer.
+        </p>
+        <p>
+          Gli esercizi sono raggruppati in sei categorie — <strong>Judo, A corpo libero, Attrezzi, Core, Cardio,
+          Mobilità</strong> — con ricerca e filtro per categoria. Ogni riga dice due cose utili: in quanti timer
+          quell'esercizio è usato, e se ha già una clip di voce incisa.
+        </p>
+
+        <h3>Rinominare rinomina ovunque</h3>
+        <p>
+          Se cambi il nome di un esercizio, cambia anche <strong>dentro i timer che lo usano</strong>. Un esercizio è
+          una cosa sola, non una stringa copiata in giro. Il confronto ignora maiuscole e accenti, quindi
+          funziona anche dove il nome era stato scritto diversamente.
+        </p>
+
+        <h3>Sostituire il catalogo di prova con quello vero</h3>
+        <p>
+          I 52 esercizi di partenza sono scritti a occhio. Per mettere quelli veri della palestra:
+          <span class="tasto">SVUOTA</span>, poi <span class="tasto">INCOLLA UN ELENCO</span> e incolli i nomi — uno per riga
+          o separati da virgola. L'app toglie da sola trattini e numerazioni all'inizio delle righe e
+          <strong>salta i doppioni</strong>, dicendoti quanti ne ha aggiunti e quanti ne ha saltati.
+          <span class="tasto">RIPRISTINA</span> rimette l'elenco di partenza; un catalogo lasciato vuoto resta vuoto
+          anche dopo un ricarica, perché è una scelta e non un errore.
+        </p>
+
+        <div class="scheda">
+          <p>
+            <strong>Perché il catalogo esiste davvero.</strong> Non è per risparmiare digitazione: la clip della voce
+            di un esercizio si chiama come il suo nome. Con i nomi scritti a mano sarebbero infiniti e
+            impossibili da incidere; con un catalogo diventano un elenco finito, e il registratore li elenca
+            tutti.
+          </p>
+        </div>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/esercizi.webp" alt="Il catalogo esercizi diviso per categorie" width="820" height="1688" loading="lazy">
+      <figcaption>Il catalogo: sei categorie, ricerca che ignora accenti e maiuscole, e per ogni riga in quanti timer è usato.</figcaption>
+    </figure>
+        </div>
+      </section>
+
+      <section id="lezione">
+        <div class="occhiello">DAL VIVO</div>
+        <h2>Durante la lezione</h2>
+        <p class="guida-intro">
+          Toccando <span class="tasto">▶</span> su un timer si apre la schermata dell'allenamento. Da lì in poi
+          lo schermo dice una cosa per volta.
+        </p>
+
+        <h3>Il colore è l'informazione</h3>
+        <p>
+          Il bordo dello schermo prende il colore dello stato: da dieci metri si capisce a che punto è
+          l'allenamento senza leggere i numeri. Sono i cinque colori del marchio della palestra.
+        </p>
+
+        <div class="stati">
+          <div class="stato" style="--tinta: var(--giallo)">
+            <div class="stato-nome">PREPARATI</div>
+            <div class="stato-detto">Mettiti in posizione</div>
+          </div>
+          <div class="stato" style="--tinta: var(--rosso)">
+            <div class="stato-nome">LAVORO</div>
+            <div class="stato-detto">Il nome dell'esercizio, e sotto l'obiettivo</div>
+          </div>
+          <div class="stato" style="--tinta: var(--verde)">
+            <div class="stato-nome">RECUPERO</div>
+            <div class="stato-detto">Respira · Cambio stazione</div>
+          </div>
+          <div class="stato" style="--tinta: var(--blu)">
+            <div class="stato-nome">RIPOSO</div>
+            <div class="stato-detto">Fra una serie e l'altra</div>
+          </div>
+          <div class="stato" style="--tinta: var(--blu)">
+            <div class="stato-nome">DEFATICAMENTO</div>
+            <div class="stato-detto">Allunga e respira</div>
+          </div>
+        </div>
+
+        <h3>Cosa c'è sullo schermo</h3>
+        <ul>
+          <li><strong>In alto</strong>: il nome dell'allenamento, la struttura o la serie in corso, e i quadratini dei round — pieno quello attuale, spenti quelli passati.</li>
+          <li><strong>L'anello</strong>: il giro a cui sei (<em>2/8</em>) e quanto manca alla fine di tutto l'allenamento.</li>
+          <li><strong>Le cifre</strong>: il tempo dell'intervallo in corso. In For Time salgono invece di scendere.</li>
+          <li><strong>Sotto</strong>: il nome dell'esercizio e, se l'hai scritto, l'obiettivo.</li>
+          <li><strong>La riga PROSSIMO</strong>: cosa arriva dopo e quanto dura. Sparisce in modalità schermo grande.</li>
+        </ul>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/lavoro.webp" alt="Il timer in stato LAVORO, cornice rossa, Panca piana con obiettivo 3×10 e 60 kg" width="820" height="1688" loading="lazy">
+      <figcaption>Lavoro: cornice rossa, il nome della stazione e l’obiettivo sotto.</figcaption>
+    </figure>
+    <figure>
+      <img src="guida/recupero.webp" alt="Il timer in stato RECUPERO, cornice verde" width="820" height="1688" loading="lazy">
+      <figcaption>Recupero: cornice verde, e la riga PROSSIMO dice dove si va dopo.</figcaption>
+    </figure>
+        </div>
+
+        <h3>I comandi</h3>
+        <div class="tabella-scorre">
+          <table>
+            <thead><tr><th>Comando</th><th>Cosa fa</th></tr></thead>
+            <tbody>
+              <tr><td class="nome-schema">+30″</td><td>Allunga <strong>l'intervallo in corso</strong> di trenta secondi e sposta in avanti tutto il resto: barra e durata totale restano coerenti. Vale sul lavoro come sul recupero. Serve quando il gruppo è cotto, una postazione è occupata o arrivano due in ritardo.</td></tr>
+              <tr><td class="nome-schema">⏮ ⏭</td><td>Intervallo precedente e successivo, per saltare o rifare un blocco.</td></tr>
+              <tr><td class="nome-schema">AVVIA / PAUSA</td><td>La pausa ferma tutto, tempo totale compreso.</td></tr>
+              <tr><td class="nome-schema">RESET</td><td>Riporta l'allenamento all'inizio.</td></tr>
+              <tr><td class="nome-schema">✕</td><td>Esce e torna all'elenco.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Se l'app si chiude a metà</h3>
+        <p>
+          Una telefonata, uno swipe di troppo, il tablet che si addormenta, la batteria. Ogni due secondi
+          l'app segna dove sei arrivato: alla riapertura, in cima alla scheda TIMER, trovi
+          <strong>«allenamento interrotto — giro 4 di 8, 03:20 svolti»</strong> con <span class="tasto">RIPRENDI</span> e
+          <span class="tasto">SCARTA</span>.
+        </p>
+        <ul>
+          <li>Si riprende <strong>in pausa</strong>, non in corsa: chi riprende vuole prima dire «ci siamo?».</li>
+          <li>La ripresa vale <strong>sei ore</strong> e compare solo se avevi svolto almeno <strong>15 secondi</strong>.</li>
+          <li>Uscire dal timer, azzerarlo o finirlo la cancella: interrotto vuol dire interrotto, non chiuso.</li>
+        </ul>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/interrotto.webp" alt="L’avviso di allenamento interrotto in cima alla scheda TIMER" width="820" height="1688" loading="lazy">
+      <figcaption>L’avviso alla riapertura, con RIPRENDI e SCARTA.</figcaption>
+    </figure>
+        </div>
+
+        <div class="scheda">
+          <p>
+            <strong>Il cronometro non va indietro.</strong> Il tempo è sempre ricavato dall'orologio di sistema, mai
+            accumulato un pezzo alla volta: se il telefono mette in pausa la pagina — schermo spento, altra app
+            in primo piano — al ritorno il timer si riallinea da solo invece di restare indietro di quanto è
+            stato fermo.
+          </p>
+        </div>
+      </section>
+
+      <section id="maurizio">
+        <div class="occhiello">LA GAG</div>
+        <h2>Modalità Maurizio</h2>
+        <p class="guida-intro">
+          L'allenatore che «perde il conto» per farti lavorare qualche secondo in più. È accesa di
+          partenza al livello <em>classico</em>, e si regola dalla scheda in cima alle impostazioni.
+        </p>
+
+        <div class="tabella-scorre">
+          <table>
+            <thead>
+              <tr><th>Livello</th><th class="num">Intervalli toccati</th><th class="num">Esitazioni</th><th class="num">Secondi per esitazione</th><th class="num">Giro in più</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="nome-schema">SPENTA</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+              <tr><td class="nome-schema">DISTRATTO</td><td class="num">30 %</td><td class="num">1</td><td class="num">1–2 s</td><td class="num">12 %</td></tr>
+              <tr><td class="nome-schema">CLASSICO</td><td class="num">55 %</td><td class="num">1–2</td><td class="num">1–3 s</td><td class="num">25 %</td></tr>
+              <tr><td class="nome-schema">SPIETATO</td><td class="num">85 %</td><td class="num">1–3</td><td class="num">2–4 s</td><td class="num">50 %</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Come si accorge che sbaglia</h3>
+        <p>
+          Il numero sullo schermo si inceppa su una cifra, oppure torna indietro e riscende —
+          «dodici… tredici? dodici… undici» — mentre compare l'illustrazione di Maurizio con una delle sue
+          frasi: <em>«Ho perso il conto, ricominciamo»</em>, <em>«No aspetta, tre»</em>, <em>«Eh no, quello non
+          valeva»</em>. Il tempo in più è vero: l'intervallo dura davvero di più.
+        </p>
+        <p>
+          Due regole tengono lo scherzo dalla parte giusta del confine: lo stesso numero non resta fermo
+          più di due secondi — un numero bloccato a lungo sembra un'app rotta, non una gag — e i bip e la
+          voce seguono il numero <strong>mostrato</strong>, non quello vero, altrimenti si sentirebbe il trucco.
+        </p>
+
+        <h3>Il giro in più</h3>
+        <p>
+          Quando l'allenamento sarebbe finito, ogni tanto se ne inventa un altro: una copia dell'ultimo
+          intervallo di lavoro, annunciata con <strong>ANCORA UNO</strong> e una frase sua. Il contatore dei giri
+          <strong>non avanza</strong>, esattamente come chi sostiene che quello di prima non contava. E non compare
+          nella riga PROSSIMO: letto in anticipo non sarebbe più uno scherzo.
+        </p>
+
+        <div class="scheda attenzione">
+          <span class="etichetta-scheda">DOVE NON ARRIVA MAI</span>
+          <ul>
+            <li>Sul <strong>recupero</strong>: lì conta benissimo.</li>
+            <li>Sugli intervalli <strong>sotto i 10 secondi</strong>: troppo corti per reggere un ripensamento credibile.</li>
+            <li>Su <strong>AMRAP e For Time</strong>: sono un blocco unico lunghissimo, e raddoppiarlo non è uno scherzo, è un altro allenamento.</li>
+            <li>Il giro in più chiede anche un ultimo blocco fra i <strong>5 e i 180 secondi</strong>, e almeno due blocchi di lavoro.</li>
+          </ul>
+        </div>
+
+        <p>
+          <strong>Le illustrazioni</strong> sono diciotto, tutte di Maurizio. Al centro con la frase quando perde il
+          conto o si inventa un giro, una a fine allenamento, una con i complimenti quando scade il conto alla
+          rovescia, e piccole in un angolo sugli stati fermi —
+          preparazione, recupero, riposo, defaticamento. Durante il lavoro nessuna, di proposito: sotto
+          sforzo lo schermo deve dire solo il tempo.
+        </p>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/maurizio.webp" alt="Maurizio che perde il conto, con la frase «Ancora un attimo»" width="820" height="1688" loading="lazy">
+      <figcaption>Quando si tradisce: l’illustrazione prende il posto dell’anello, le cifre restano leggibili.</figcaption>
+    </figure>
+    <figure>
+      <img src="guida/impostazioni-maurizio.webp" alt="La scheda della modalità Maurizio con i quattro livelli" width="820" height="1688" loading="lazy">
+      <figcaption>La scheda in cima alle impostazioni: quattro livelli, e sotto cosa comporta quello scelto.</figcaption>
+    </figure>
+        </div>
+      </section>
+
+      <section id="suoni">
+        <div class="occhiello">AUDIO</div>
+        <h2>Suoni e voce</h2>
+
+        <h3>Un interruttore a tre posizioni</h3>
+        <p>
+          In IMPOSTAZIONI → AUDIO, <strong>Segnali acustici</strong> ha tre posizioni che si escludono:
+        </p>
+        <div class="tabella-scorre">
+          <table>
+            <thead><tr><th>Posizione</th><th>Cosa senti</th></tr></thead>
+            <tbody>
+              <tr><td class="nome-schema">MUTO</td><td>Niente. Restano il colore dello schermo, la barra e la vibrazione — in una sala con la musica alta è spesso l'unica cosa che si vede davvero.</td></tr>
+              <tr><td class="nome-schema">SOLO BIP</td><td>Cinque bip uguali sugli ultimi cinque secondi — l’ultimo, a un secondo dallo scadere, lungo il doppio — e poi uno diverso quando il tempo scade: acuto se comincia il lavoro, basso se comincia il recupero, e nel conto alla rovescia una nota lunga quasi due secondi.</td></tr>
+              <tr><td class="nome-schema">BIP + VOCE</td><td>I bip più la voce, che annuncia lo stato e il nome dell'esercizio.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Accanto ci sono il <strong>volume dei segnali</strong> (0–100 %, con un suono di prova mentre lo muovi), il
+          <strong>ticchettio</strong> e la <strong>vibrazione</strong>, che è indipendente dal suono e funziona solo
+          dove il dispositivo la supporta.
+        </p>
+
+        <h3>Cinque bip, e l’ultimo più lungo</h3>
+        <p>
+          Il conto alla rovescia sonoro comincia a <strong>cinque secondi</strong> dalla fine di ogni blocco, non
+          più a tre. Sono cinque colpi uguali, uno al secondo; quello a <strong>un secondo</strong> dura il
+          doppio degli altri, così la sequenza ha una fine riconoscibile e chi è sotto un bilanciere sa che
+          il prossimo suono è il cambio, senza contare.
+        </p>
+        <p>
+          I bip sono anche <strong>più forti e più lunghi</strong> di prima: due decimi di secondo invece
+          di uno, a tre quarti del volume invece che a metà. In sala, con la musica alta e il fiato corto, il
+          bip vecchio era un tic da scrivania. Il volume resta comunque il tuo: la manopola
+          <strong>Volume dei segnali</strong> in IMPOSTAZIONI → AUDIO li scala tutti insieme.
+        </p>
+        <p>
+          <strong>Nota.</strong> Il bip lungo a un secondo e il suono del cambio a zero si susseguono a distanza
+          ravvicinata: è voluto, ma se in sala risulta troppo, la durata dell’ultimo bip è una riga
+          sola da cambiare.
+        </p>
+
+        <h3>La nota dello scadere</h3>
+        <p>
+          Quando il conto alla rovescia arriva a zero parte <strong>una nota sola, lunga quasi due secondi</strong>,
+          più acuta dei bip. Non è un colpo secco di proposito: chi è sotto sforzo non conta i
+          millisecondi, e riconosce che è finito perché il suono <em>non smette</em>. Un bip corto, dopo
+          cinque bip corti, sarebbe il sesto bip; questa è un’altra cosa, e si sente che lo è.
+        </p>
+        <p>
+          La nota resta a <strong>volume pieno fin quasi alla fine</strong>, e solo l’ultimo quinto di secondo
+          sfuma. È il motivo per cui dura davvero quanto è scritto: una nota che scende per tutta la sua
+          durata, da lontano, finisce molto prima di quando finisce.
+        </p>
+
+        <h3>Il ticchettio</h3>
+        <p>
+          Un tic d'orologio a ogni secondo, mentre il timer conta. Tic e tac si alternano come in un orologio
+          vero, e stanno a circa un terzo del volume dei bip: accompagnano, non annunciano. Vale sia per il
+          timer degli allenamenti sia per il conto alla rovescia.
+        </p>
+        <p>
+          È <strong>spento di partenza</strong>: un tic al secondo per un'ora è una scelta, non un valore di
+          fabbrica. Accendendolo lo senti subito, così decidi con l'orecchio e non con l'immaginazione. Segue il
+          numero <em>mostrato</em>: se Maurizio si inceppa, l'orologio si inceppa con lui.
+        </p>
+
+        <div class="scheda">
+          <span class="etichetta-scheda">CASSA BLUETOOTH E MUSICA</span>
+          <p>
+            <strong>La musica non si comanda da qui.</strong> Nessuna app web può mettere in pausa Spotify o il
+            lettore del telefono: quell'interfaccia non esiste, su nessun browser. Quello che l'app dichiara è
+            di essere fatta di <em>suoni brevi che devono passare sopra</em>, e allora il sistema
+            <strong>abbassa la musica per la durata del bip</strong> e la rialza subito dopo. Su iPhone e iPad
+            funziona; altrove il bip si mescola alla musica come prima.
+          </p>
+          <p>
+            <strong>Il telefono in tasca.</strong> I suoni non vengono fatti suonare secondo per secondo dall'app:
+            vengono <strong>consegnati in anticipo all'orologio dell'audio</strong>, che è un pezzo separato e non si
+            ferma quando il resto dell'app si ferma. Due minuti di bip sono sempre già in coda davanti a te. È quello
+            che permette di avviare il timer, mettere via il telefono o bloccarlo, e sentire comunque i cinque bip e il
+            cambio al momento giusto — prima, con lo schermo spento, il bip non arrivava in ritardo: non arrivava.
+          </p>
+          <p>
+            <strong>Con una cassa bluetooth</strong>, mentre il timer gira l'app le manda un fruscìo inaudibile.
+            Non è un vezzo: una cassa che per qualche secondo non riceve niente va in standby, e al bip
+            successivo si sveglia mangiandosene l'inizio — e un bip dura due decimi di secondo, quindi
+            l'inizio è quasi tutto il bip. Tenendo la connessione sveglia arrivano tutti. Finito l'allenamento smette, e la
+            cassa torna libera.
+          </p>
+        </div>
+
+        <div class="scheda">
+          <span class="etichetta-scheda">COMANDI SULLA SCHERMATA DI BLOCCO</span>
+          <p>
+            Mentre un timer gira, l’app compare fra i <strong>comandi multimediali del telefono</strong>: sulla
+            schermata di blocco, nel centro di controllo, sulle cuffie e sullo smartwatch, come farebbe un lettore
+            musicale. La scheda mostra il nome dell’allenamento e il blocco in corso — <em>LAVORO</em>,
+            <em>RECUPERO</em>, <em>PREPARATI</em> — e si aggiorna a ogni cambio.
+          </p>
+          <div class="tabella-scorre">
+            <table>
+              <thead><tr><th>Comando</th><th>Cosa fa</th></tr></thead>
+              <tbody>
+                <tr><td class="nome-schema">▶ ⏸</td><td>Avvia e mette in pausa il timer, esattamente come il tasto grande.</td></tr>
+                <tr><td class="nome-schema">⏭</td><td>Salta al blocco successivo.</td></tr>
+                <tr><td class="nome-schema">⏮</td><td>Torna al blocco precedente, per rifarlo.</td></tr>
+                <tr><td class="nome-schema">⏹</td><td>Ferma l’allenamento.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Serve a chi tiene il telefono in tasca o la sala a uno schermo solo: si mette in pausa senza sbloccare
+            niente. Finito l’allenamento la scheda sparisce e i comandi tornano alla musica. Vale anche per il
+            conto alla rovescia, ma solo quando sta contando davvero: appena aperto, fermo sulla durata scelta,
+            non si prende i comandi.
+          </p>
+        </div>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/impostazioni-audio.webp" alt="Il controllo dei segnali acustici a tre posizioni" width="820" height="1688" loading="lazy">
+      <figcaption>Le tre posizioni si escludono: sotto, la riga spiega cosa si sentirà.</figcaption>
+    </figure>
+        </div>
+
+        <h3>«Prossimo: burpee»</h3>
+        <p>
+          Con la voce accesa compare anche <strong>Dice il prossimo esercizio</strong>: nel recupero la voce aggiunge
+          dove si va dopo — <em>«recupero. Prossimo: burpee»</em>. In un circuito a otto stazioni è l'unico momento
+          in cui ci si può preparare alla prossima. Senza la voce l'opzione sparisce, perché non avrebbe
+          niente da dire.
+        </p>
+
+        <h3>La voce incisa</h3>
+        <p>
+          Al posto della sintesi del telefono l'app può usare <strong>clip registrate con una voce vera</strong>.
+          Oggi ce ne sono <strong>12 incise su 23</strong>: ci sono il saluto d'apertura, i cinque stati e le sei
+          battute di Maurizio. Ne mancano undici — «prossimo», le tre frasi del giro in più, «Tempo» allo scadere
+          del conto alla rovescia e i sei complimenti — e dove la clip manca il timer torna da solo alla voce di
+          sistema, senza saltare l'annuncio.
+        </p>
+        <p>
+          I tre numeri del conto alla rovescia erano incisi e non ci sono più: gli ultimi secondi adesso
+          sono bip e basta (vedi sopra). Le registrazioni restano nel progetto, quindi tornare indietro è una
+          riga di codice, ma il registratore non le chiede più.
+        </p>
+        <p>
+          Per registrarle: IMPOSTAZIONI → VOCE INCISA → <span class="tasto">INCIDI LA VOCE</span>. Il registratore
+          elenca tutte le frasi, più <strong>un nome per ogni esercizio del catalogo</strong>; si incide un pezzo per
+          volta, si riascolta e si rifà. <span class="tasto">ESPORTA</span> scarica <code>voce-ods.zip</code>, da
+          scompattare dentro <code>public/voce/</code> del progetto perché le clip valgano per tutti i dispositivi e
+          non solo per quello su cui hai registrato.
+        </p>
+
+        <div class="scheda">
+          <p>
+            <strong>Un annuncio non aspetta mai.</strong> Se la clip non è già pronta in memoria, parla la sintesi
+            subito invece di aspettare il download: un annuncio che arriva a momento passato è peggio di un
+            annuncio meno bello. Per lo stesso motivo le clip si scaldano all'apertura dell'app, non del timer.
+          </p>
+          <p>
+            <strong>L'audio si sblocca al primo tocco.</strong> I browser non lasciano suonare niente finché non tocchi
+            lo schermo: l'app se ne approfitta al primo tocco ovunque, così il primo annuncio dell'allenamento
+            non si perde.
+          </p>
+        </div>
+      </section>
+
+      <section id="schermo">
+        <div class="occhiello">DISPLAY</div>
+        <h2>Schermo</h2>
+        <ul>
+          <li>
+            <strong>Schermo sempre acceso</strong> — durante l'allenamento impedisce al dispositivo di spegnersi,
+            finché la batteria lo consente.
+          </li>
+          <li>
+            <strong>Modalità schermo grande</strong> — pensata per il tablet appeso in sala, che si guarda da dieci
+            metri: la riga PROSSIMO sparisce, l'anello si stringe, i margini si riducono e tutto quello spazio
+            va alle cifre (su un 1280×800 crescono del 45 %). Su un telefono in verticale le proporzioni si
+            adattano da sole; su un telefono girato di lato la modalità torna alle misure normali, perché lì
+            spazio da regalare non ce n'è.
+          </li>
+        </ul>
+
+        <div class="scatti intera">
+    <figure>
+      <img src="guida/schermo-grande.webp" alt="Il timer in modalità schermo grande su un tablet" width="820" height="512" loading="lazy">
+      <figcaption>Schermo grande su un 1280×800: via la riga PROSSIMO, anello piccolo, tutto lo spazio alle cifre.</figcaption>
+    </figure>
+        </div>
+      </section>
+
+      <section id="invia">
+        <div class="occhiello">DA UN DISPOSITIVO ALL'ALTRO</div>
+        <h2>Mandare un timer</h2>
+        <p class="guida-intro">
+          Dalla scheda di un timer, <span class="tasto">INVIA</span> mostra un QR code. Il tablet lo inquadra con
+          la fotocamera di sistema — nessuna app da installare — e si apre con quell'allenamento pronto: da
+          avviare subito o da salvare fra i suoi. Sotto c'è anche il link, per chi preferisce WhatsApp.
+        </p>
+        <p>
+          <strong>L'allenamento sta dentro il link</strong>, non su un server: compresso, un timer normale occupa 258
+          caratteri e il caso peggiore — venti stazioni con nomi lunghi e obiettivi — poco più di 300, mentre
+          un QR ne regge quasi tremila. I dati stanno dopo il <code>#</code>, e quella parte dell'indirizzo il browser
+          non la manda mai a nessuno.
+        </p>
+        <p>
+          Due conseguenze pratiche: gli allenamenti della palestra non passano da nessuna parte, e il tablet
+          riceve il timer <strong>anche senza rete</strong>, purché abbia già l'app in cache.
+        </p>
+
+        <div class="scatti">
+    <figure>
+      <img src="guida/invia.webp" alt="La schermata INVIA con il QR code e il link" width="820" height="1688" loading="lazy">
+      <figcaption>INVIA: il QR si inquadra con la fotocamera di sistema, senza installare niente.</figcaption>
+    </figure>
+        </div>
+
+        <div class="scheda attenzione">
+          <p>
+            <strong>È una copia, non una sincronizzazione.</strong> Chi riceve si ritrova il timer com'era al momento
+            della scansione. Se dopo lo modifichi sul tuo telefono, sul tablet resta la versione vecchia: va
+            rimandato.
+          </p>
+        </div>
+      </section>
+
+      <section id="dati">
+        <div class="occhiello">COPIE</div>
+        <h2>Salvare e ripristinare</h2>
+        <p class="guida-intro">
+          IMPOSTAZIONI → DATI. <span class="tasto">SALVA TUTTO</span> produce un file
+          <code>ods-timer-2026-09-14.json</code> — una decina di kilobyte per una palestra avviata — con dentro
+          <strong>timer, catalogo esercizi, impostazioni e storico</strong>. <span class="tasto">RIPRISTINA</span> lo rilegge.
+        </p>
+        <p>
+          Serve per due cose. La prima è non perdere tutto: basta pulire i dati del sito, cambiare telefono o
+          romperlo, e sparisce anche il catalogo della palestra, che è la cosa che costa più tempo a mettere
+          insieme. La seconda è <strong>allineare un secondo dispositivo la prima volta</strong>: si salva dal telefono
+          e si ripristina sul tablet.
+        </p>
+        <div class="scheda attenzione">
+          <p>
+            <strong>Il ripristino sostituisce, non fonde.</strong> Due elenchi mescolati sono un terzo elenco che non è
+            né l'uno né l'altro. Prima di procedere l'app ti mostra cosa c'è nel file e cosa verrebbe
+            sostituito — «7 timer, 53 esercizi» contro «6 timer e 0 esercizi» — perché è l'unica operazione da
+            cui non si torna indietro.
+          </p>
+        </div>
+        <p>
+          Su un'app installata dal telefono il salvataggio passa dal foglio di condivisione, che è la strada
+          che porta davvero a «Salva su File»; sul computer resta un normale download.
+        </p>
+      </section>
+
+      <section id="aggiornamenti">
+        <div class="occhiello">MANUTENZIONE</div>
+        <h2>Aggiornamenti</h2>
+        <p>
+          L'app si aggiorna da sola: controlla quando torna in primo piano e una volta l'ora, e passa alla
+          versione nuova senza chiedere niente — <strong>tranne mentre un timer è aperto</strong>. Un aggiornamento a
+          metà lezione è peggio di un aggiornamento in ritardo, quindi aspetta che tu esca.
+        </p>
+        <p>
+          In fondo alle impostazioni, la sezione VERSIONE dice esattamente quale copia hai in mano: il
+          <strong>numero di versione</strong>, il <strong>codice della compilazione</strong> scritto
+          in piccolo di fianco, e la <strong>data</strong>. Servono quando una cosa si prova sul telefono e ci si
+          chiede se è già arrivata sul tablet: se i due numeri coincidono, è la stessa app. Sotto c'è
+          <span class="tasto">CONTROLLA AGGIORNAMENTI</span>, per quando serve una risposta subito — tipicamente sul
+          tablet in sala, che resta acceso per giorni.
+        </p>
+      </section>
+
+      <section id="limiti">
+        <div class="occhiello">ONESTÀ</div>
+        <h2>Quello che non fa</h2>
+        <ul>
+          <li>
+            <strong>Non sincronizza.</strong> Il QR manda un timer, il file di salvataggio porta tutto il resto, ma
+            restano copie. Per una libreria che si allinea da sola fra telefono e tablet servirebbe un
+            server, ed è l'unica cosa qui dentro che non si può fare senza.
+          </li>
+          <li>
+            <strong>Non conta le ripetizioni.</strong> Serie, ripetizioni e carico sono un promemoria scritto da te;
+            l'app non li verifica e non li somma.
+          </li>
+          <li>
+            <strong>Non conta i giri dell'AMRAP.</strong> Il cronometro scende e basta: quanti giri hai chiuso lo
+            sai tu.
+          </li>
+          <li>
+            <strong>Il catalogo di partenza è scritto a occhio</strong> e va sostituito con quello vero della
+            palestra (§&thinsp;5).
+          </li>
+          <li>
+            <strong>Mancano le clip dei nomi degli esercizi</strong>, più «prossimo» e le tre frasi del giro in più:
+            finché non ci sono, quelle parti le dice la voce di sistema.
+          </li>
+        </ul>
+      </section>
+
+      <div class="chiusura">
+        Manuale di ODS Timer · Officine Dello Sport, Collegno (TO).<br>
+        L'app è online su nalbertini.github.io/Timer- e si aggiorna a ogni modifica.
+      </div>
+
+    </main>
+  </div>
+</div>
+</body>
+</html>
