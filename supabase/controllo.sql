@@ -35,6 +35,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_trigger where tgname = 'sessioni_solo_stato' and not tgisinternal)),
   ('03-funzioni.sql', 'il calendario con la sala del giorno',
     exists (select 1 from dentro where nome = 'materializza_sessioni' and corpo like '%coalesce(r.sala_id, c.sala_id)%')),
+  ('03-funzioni.sql', 'il calendario che si allunga da sé',
+    exists (select 1 from dentro where nome = 'materializza_sessioni' and corpo like '%ods.allunga%')),
   ('04-tablet.sql', 'il tablet di sala',
     exists (select 1 from dentro where nome = 'lezioni_sala')),
   ('04-tablet.sql', 'il tablet con la sala del giorno',
@@ -79,6 +81,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'timer')),
   ('11-timer-lezioni.sql', 'il timer di una singola lezione',
-    to_regclass('public.sessioni_timer') is not null)
+    to_regclass('public.sessioni_timer') is not null),
+  ('12-calendario-da-se.sql', 'il calendario che si allunga da sé',
+    exists (select 1 from dentro where nome = 'allunga_calendario'))
 ) as x(file, cosa, c)
 order by file, cosa;

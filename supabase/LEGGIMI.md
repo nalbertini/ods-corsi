@@ -35,6 +35,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 9. `09-musica.sql` — la musica delle sale, che il tablet fa partire dalla sua barra
 10. `10-timer-sale.sql` — il timer dei tablet di sala, scelto dalla segreteria
 11. `11-timer-lezioni.sql` — il timer di una singola lezione, scelto dall'istruttore in I MIEI TIMER
+12. `12-calendario-da-se.sql` — il calendario che si allunga da sé, senza job
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -55,7 +56,10 @@ E per il timer delle sale con `10-timer-sale.sql`: finché non c'è, la
 segreteria dice che il timer delle sale non si legge e i tablet tengono le
 impostazioni che avevano. Per il timer delle singole lezioni con
 `11-timer-lezioni.sql`: finché non c'è, I MIEI TIMER dice che le lezioni non
-si leggono, e le lezioni aprono i timer del corso come prima.
+si leggono, e le lezioni aprono i timer del corso come prima. Per il
+calendario che si allunga da sé si rilanciano `03-funzioni.sql`, poi
+`06-iscrizioni.sql`, poi `12-calendario-da-se.sql`: finché non c'è, il
+calendario si allunga solo con RIGENERA o con il job settimanale.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -315,9 +319,15 @@ comprende.
 `materializza_sessioni` trasforma le ricorrenze in lezioni vere, ognuna nella
 sala del suo giorno (`ricorrenze.sala_id`) o, se il giorno non ne ha una, in
 quella del corso. L'import la
-chiama già per i due mesi successivi; poi va richiamata ogni tanto, con un job
-settimanale (**Database → Cron**). Quanti giorni avanti si decide in
-**SEGRETERIA → REGOLE E PRIVACY**, e il job lo legge da lì:
+chiama già per i due mesi successivi; poi il calendario si allunga da sé
+(`12-calendario-da-se.sql`): quando l'app legge il calendario — un
+istruttore, la segreteria o un tablet di sala — chiama `allunga_calendario`,
+che lo allunga se alla fine manca meno di metà del periodo. Quanti giorni
+avanti si decide in **SEGRETERIA → REGOLE E PRIVACY**.
+
+Se per settimane nessuno apre l'app, il calendario si ferma: lo riallunga il
+primo che la apre. Chi vuole comunque un job settimanale (**Database → Cron**)
+lo può aggiungere, e legge i giorni dallo stesso posto:
 
 ```sql
 select cron.schedule('calendario', '0 3 * * 1',
@@ -499,5 +509,7 @@ prova la musica delle sale: la cura la segreteria, e il tablet vede solo la
 sua; in fondo, che il timer delle sale lo cambi solo la segreteria e il
 tablet lo legga; `timer-lezioni.sql`, dopo `timer.sql`, prova il timer di
 una singola lezione: lo lega il personale, lo legge il tablet, e un timer
-personale legato a una lezione lo vedono anche gli altri. `finto-supabase.sql` rifà anche le due
+personale legato a una lezione lo vedono anche gli altri; `calendario-da-se.sql`
+prova il calendario che si allunga da sé: lo allunga anche un istruttore, ma
+solo quando serve e fin dove dicono le regole. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

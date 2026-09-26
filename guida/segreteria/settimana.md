@@ -58,6 +58,6 @@ premere **TOGLI QUESTA LEZIONE STRAORDINARIA**.
 
 ## RIGENERA
 
-Le lezioni nascono dagli orari dei corsi e il calendario si allunga da solo
-ogni lunedì. **RIGENERA** lo allunga subito, ad esempio dopo aver aggiunto un
+Le lezioni nascono dagli orari dei corsi e il calendario si allunga da sé
+quando si avvicina la fine. **RIGENERA** lo allunga subito, ad esempio dopo aver aggiunto un
 corso. Non duplica niente e non tocca le lezioni che hanno già un appello.

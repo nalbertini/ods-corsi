@@ -16,7 +16,8 @@ database, se è stato attivato, oppure subito con **CANCELLA ORA** (chiede confe
 ## Il calendario
 
 - **PRONTO FINO AL** — fino a che giorno le lezioni sono già in calendario.
-- **SI ALLUNGA** — **OGNI LUNEDÌ**, da solo.
+- **SI ALLUNGA** — **DA SÉ**: quando alla fine manca meno di metà del periodo,
+  il primo che apre il calendario lo allunga, istruttore, segreteria o tablet.
 - «Genera le lezioni per i prossimi **30 / 60 / 90 / 180 giorni**» — quanto
   avanti preparare il calendario. Vale dal prossimo rigenera.
 - **RIGENERA ADESSO** — lo allunga subito. Non duplica e non tocca le lezioni
