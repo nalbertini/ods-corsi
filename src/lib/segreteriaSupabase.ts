@@ -4,6 +4,7 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
+import { indirizzoDiRitorno } from './invito'
 
 /**
  * La segreteria col database vero.
@@ -47,6 +48,25 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
   return new Error(e?.message || 'Il server non risponde')
+}
+
+/**
+ * Un errore della funzione `invita` detto per la segreteria: quello che dice
+ * la funzione, se ha risposto; altrimenti perché non ha risposto.
+ */
+async function guaioInvito(e: { name?: string; message?: string; context?: unknown }): Promise<Error> {
+  const r = e.context instanceof Response ? e.context : null
+  if (r?.status === 404) return new Error('La funzione dell’invito non è pubblicata su Supabase: vedi supabase/LEGGIMI.md')
+  if (r) {
+    try {
+      const corpo = (await r.clone().json()) as { guaio?: string }
+      if (corpo.guaio) return new Error(corpo.guaio)
+    } catch {
+      // Non è la nostra risposta: sotto si dice il generico.
+    }
+  }
+  if (e.name === 'FunctionsFetchError') return new Error('La funzione dell’invito non risponde: è pubblicata su Supabase? C’è rete?')
+  return new Error(e.message || 'L’invito non è partito')
 }
 
 /** Un errore dello Storage detto per la segreteria. */
@@ -523,6 +543,15 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async impostaPin(personaId, pin) {
       ok(await db.rpc('imposta_pin', { persona: personaId, pin }))
+    },
+
+    async invita(personaId) {
+      // Il link porta a questa pagina, senza frammento: lì Supabase attacca
+      // il suo (`#access_token=…`), e `invito.ts` lo riconosce.
+      const ritorno = indirizzoDiRitorno()
+      const { data, error } = await db.functions.invoke('invita', { body: { persona: personaId, ritorno } })
+      if (error) throw await guaioInvito(error)
+      return (data as { come: 'invito' | 'password' }).come
     },
 
     async salvaSala(sala) {

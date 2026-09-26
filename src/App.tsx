@@ -2,7 +2,7 @@ import { type ReactNode, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
-import { Accesso, AltreAree, Porta, UnAttimo, useChi } from './components/Porta'
+import { Accesso, AltreAree, Porta, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Guida } from './components/Guida'
 import { Tablet } from './components/tablet/Tablet'
@@ -10,6 +10,7 @@ import { Segreteria } from './components/segreteria/Segreteria'
 import { INDIRIZZI, TIMER, useArea } from './lib/aree'
 import { esci, serveAccesso } from './lib/accesso'
 import { INDIRIZZO_GUIDA } from './lib/guida'
+import { ARRIVO } from './lib/invito'
 import { inProvaScelta, scegliProva } from './lib/dati'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
 
@@ -31,6 +32,29 @@ import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
  * perché la prova serve a far vedere l'app intera.
  */
 export default function App() {
+  // Da un'email di Supabase (l'invito, «password dimenticata») si sceglie
+  // prima la password, e poi si va nella propria area.
+  const [arrivo, setArrivo] = useState(serveAccesso ? ARRIVO : null)
+  if (arrivo) {
+    return (
+      <div className="app">
+        <Testata luogo="ACCESSO" />
+        <main className="scroll">
+          <ScegliPassword
+            arrivo={arrivo}
+            onFatto={(dove) => {
+              window.location.hash = dove
+              setArrivo(null)
+            }}
+          />
+        </main>
+      </div>
+    )
+  }
+  return <Aree />
+}
+
+function Aree() {
   const area = useArea()
   if (area === 'segreteria') return <AreaSegreteria />
   if (area === 'iscrizioni') return <Iscrizioni />

@@ -1,5 +1,6 @@
 import type { Ruolo } from './sala'
 import { haUnServer } from './dati'
+import { indirizzoDiRitorno } from './invito'
 
 /**
  * Chi sta usando l'app: con il database vero il calendario e l'appello sono
@@ -98,6 +99,55 @@ function perché(e: { message?: string; code?: string; status?: number }): strin
     return 'L’account non è ancora confermato: in Supabase, Authentication → Users'
   if (/fetch|network|load failed/i.test(testo)) return 'Il server non risponde: c’è rete?'
   return `Il server ha rifiutato l’accesso${testo ? `: ${testo}` : ''}`
+}
+
+/**
+ * Dopo un link di Supabase (l'invito o «password dimenticata»): l'email
+ * dell'account che il link ha aperto, o `null` se il link non ha portato una
+ * sessione. Il client la ricava dall'indirizzo quando nasce.
+ */
+export async function accountDalLink(): Promise<string | null> {
+  const c = await db()
+  const { data } = await c.auth.getSession()
+  return data.session?.user.email ?? null
+}
+
+/**
+ * La password scelta dopo il link. Poi si entra come dalla porta: al primo
+ * accesso l'account si lega alla scheda con la stessa email, e un account che
+ * non è del personale resta fuori.
+ */
+export async function scegliPassword(password: string): Promise<Personale> {
+  const c = await db()
+  const { error } = await c.auth.updateUser({ password })
+  if (error) throw new Error(perchéPassword(error))
+  const p = await chiSei()
+  if (!p) {
+    await c.auth.signOut()
+    throw new Error('La password è salvata, ma questo account non è di un istruttore né della segreteria: chiedi alla segreteria')
+  }
+  return p
+}
+
+/**
+ * «Password dimenticata»: Supabase manda il link per sceglierne una nuova.
+ * Non dice se l'email ha un account, e nemmeno qui lo si dice.
+ */
+export async function mandaLinkPassword(email: string): Promise<void> {
+  const c = await db()
+  const { error } = await c.auth.resetPasswordForEmail(email, { redirectTo: indirizzoDiRitorno() })
+  if (!error) return
+  if (error.status === 429 || /rate limit/i.test(error.message)) throw new Error('Troppe richieste: riprova fra un po’')
+  throw new Error(perché(error))
+}
+
+function perchéPassword(e: { message?: string; code?: string }): string {
+  const testo = e.message ?? ''
+  if (e.code === 'weak_password' || /at least|weak/i.test(testo)) return `La password è troppo debole${testo ? `: ${testo}` : ''}`
+  if (e.code === 'same_password') return 'È la stessa di prima: scegline una diversa'
+  if (e.code === 'session_not_found' || /session/i.test(testo)) return 'Il link non vale più: chiedine un altro'
+  if (/fetch|network|load failed/i.test(testo)) return 'Il server non risponde: c’è rete?'
+  return `La password non è stata salvata${testo ? `: ${testo}` : ''}`
 }
 
 export async function esci(): Promise<void> {

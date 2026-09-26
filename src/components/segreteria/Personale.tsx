@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg } from '../../lib/segreteria'
-import { Guaio, Riga, Testa, useAvviso, useCarica } from './comune'
+import { Guaio, Riga, Testa, messaggio, useAvviso, useCarica } from './comune'
 
 /** Quello che ciascun ruolo può fare: è il riassunto delle policy di `02-policy.sql`. */
 const PERMESSI: Array<[string, string]> = [
@@ -16,28 +16,59 @@ const PERMESSI: Array<[string, string]> = [
  * Chi entra nell'app e cosa può fare. Gli iscritti non sono qui: non hanno un
  * accesso.
  *
- * Una persona si aggiunge con la sua email; l'account lo crea poi chi ha le
- * chiavi di Supabase (**Authentication → Users**), con la stessa email: al
- * primo accesso i due si legano da soli. Dal browser un account non si può
- * creare, ed è giusto così: la chiave che sta nell'app è pubblica.
+ * Una persona si aggiunge con la sua email, e le si manda l'invito: la mail
+ * con il link per scegliere la password. L'account lo crea la funzione
+ * `invita` sul server di Supabase, perché dal browser non si può, ed è giusto
+ * così: la chiave che sta nell'app è pubblica. Al primo accesso l'account e la
+ * scheda si legano da soli, per email.
  */
 export function Personale({ d }: { d: DatiSegreteria }) {
   const lista = useCarica(() => d.personale(), [d])
-  const { avviso, fai } = useAvviso()
+  const { avviso, avvisa, fai } = useAvviso()
   const [bozza, setBozza] = useState({ nome: '', cognome: '', email: '', ruolo: 'istruttore' as 'istruttore' | 'staff' })
+  const [invitaSubito, setInvitaSubito] = useState(true)
   const [pin, setPin] = useState<{ id: string; valore: string } | null>(null)
 
   const persone = [...(lista.dato ?? [])].sort(
     (a, b) => Number(b.attiva) - Number(a.attiva) || a.ruolo.localeCompare(b.ruolo) || a.nome.localeCompare(b.nome, 'it'),
   )
 
+  /** Com'è andato l'invito, detto a chi l'ha mandato. */
+  const partito = (nome: string, come: 'invito' | 'password') =>
+    d.modo === 'prova'
+      ? `In prova nessuna email parte davvero: a ${nome} arriverebbe l’invito`
+      : come === 'invito'
+        ? `Invito mandato: ${nome} riceve la mail per scegliere la password`
+        : `${nome} aveva già un account: riceve la mail per scegliere la password`
+
   const aggiungi = (e: FormEvent) => {
     e.preventDefault()
-    void fai(() => d.salvaPersonale(bozza), `${bozza.nome} è nell'elenco`, async () => {
-      setBozza({ nome: '', cognome: '', email: '', ruolo: 'istruttore' })
-      await lista.ricarica()
-    })
+    const chi = bozza
+    const invita = invitaSubito
+    let esito = `${chi.nome} è nell'elenco`
+    let guaio = false
+    void fai(
+      async () => {
+        const id = await d.salvaPersonale(chi)
+        if (!invita) return
+        // La persona è salvata comunque: un invito non partito si rimanda dall'elenco.
+        try {
+          esito = `${chi.nome} è nell'elenco. ${partito(chi.nome, await d.invita(id))}`
+        } catch (x) {
+          esito = `${chi.nome} è nell'elenco, ma l’invito non è partito: ${messaggio(x)}`
+          guaio = true
+        }
+      },
+      undefined,
+      async () => {
+        setBozza({ nome: '', cognome: '', email: '', ruolo: 'istruttore' })
+        await lista.ricarica()
+        avvisa(esito, guaio)
+      },
+    )
   }
+
+  const invita = (p: PersonaleSeg) => void fai(async () => avvisa(partito(p.nome, await d.invita(p.id))))
 
   const cambiaRuolo = (p: PersonaleSeg, ruolo: 'istruttore' | 'staff') =>
     void fai(() => d.salvaPersonale({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, ruolo }), 'Ruolo cambiato', lista.ricarica)
@@ -79,8 +110,15 @@ export function Personale({ d }: { d: DatiSegreteria }) {
                     <option value="staff">Segreteria</option>
                   </select>
                 </span>
-                <span role="cell" className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde)' : 'var(--giallo-testo)' }}>
-                  {!p.attiva ? 'SENZA ACCESSO' : p.collegato ? 'HA FATTO L’ACCESSO' : 'NON ANCORA ENTRATO'}
+                <span role="cell" className="stack" style={{ gap: 4, alignItems: 'flex-start' }}>
+                  <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde)' : 'var(--giallo-testo)' }}>
+                    {!p.attiva ? 'SENZA ACCESSO' : p.collegato ? 'HA FATTO L’ACCESSO' : 'NON ANCORA ENTRATO'}
+                  </span>
+                  {p.attiva && !p.collegato && p.email && (
+                    <button type="button" className="sg-link" onClick={() => invita(p)} title={`Manda a ${p.email} la mail per scegliere la password`}>
+                      manda l’invito
+                    </button>
+                  )}
                 </span>
                 <span role="cell">
                   {pin?.id === p.id ? (
@@ -182,13 +220,17 @@ export function Personale({ d }: { d: DatiSegreteria }) {
               ))}
             </div>
           </div>
+          <label className="row" style={{ gap: 8, fontSize: 14, color: 'var(--sec)', cursor: 'pointer' }}>
+            <input type="checkbox" checked={invitaSubito} onChange={(e) => setInvitaSubito(e.target.checked)} />
+            Manda subito l’invito per email
+          </label>
           <button type="submit" className="sg-btn sg-btn-rosso">
             AGGIUNGI
           </button>
           <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
             {d.modo === 'prova'
-              ? 'In prova l’account non serve: la persona compare subito negli istruttori dei corsi.'
-              : 'Poi chi ha le chiavi di Supabase crea il suo account in Authentication → Users, con la stessa email e una password: al primo accesso si lega da solo. Se la persona è già in elenco come iscritta, diventa istruttore invece di un doppione.'}
+              ? 'In prova l’account non serve e nessuna email parte: la persona compare subito negli istruttori dei corsi.'
+              : 'Con l’invito le arriva una mail con un link: lo apre, sceglie la sua password ed entra. Il link scade dopo un’ora; se scade, «manda l’invito» nell’elenco ne manda un altro. Se la persona è già in elenco come iscritta, diventa istruttore invece di un doppione.'}
           </span>
         </form>
       </div>

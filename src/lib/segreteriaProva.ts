@@ -503,6 +503,16 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async invita(personaId) {
+      // Come la funzione `invita`, ma nessuna email parte: in prova non c'è un server.
+      const p = persona(personaId)
+      if (p.ruolo === 'iscritto') throw new Error('Si invitano solo istruttori e segreteria')
+      if (!p.attiva) throw new Error(`${p.nome} è senza accesso: prima va ridato`)
+      if (!p.email) throw new Error(`${p.nome} non ha un’email`)
+      if (p.id === 's-prova') throw new Error(`${p.nome} è già entrata: se ha perso la password, la chiede dalla porta con «password dimenticata»`)
+      return 'invito'
+    },
+
     async salvaSala(s) {
       const nome = s.nome.trim()
       if (!nome) throw new Error('La sala ha bisogno di un nome')

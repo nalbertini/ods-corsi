@@ -29,9 +29,20 @@ non possono avere lo stesso PIN. Il PIN lo cambia solo la segreteria.
 **AGGIUNGI UNA PERSONA** → nome, cognome, email, ruolo (**ISTRUTTORE** o
 **SEGRETERIA**) → **AGGIUNGI**.
 
-Poi l'account (email e password) lo crea chi gestisce il database, con **la
-stessa email**. Al primo accesso la persona e l'account si legano da soli.
-Dall'app un account non si può creare, di proposito.
+Con **Manda subito l'invito per email** spuntato (lo è già), alla persona
+arriva una mail con un link: lo apre, sceglie la sua password ed entra, nel
+calendario se è istruttore, nella segreteria se è di segreteria. Il link scade
+dopo un'ora.
+
+Se l'invito non è arrivato, è scaduto o non era spuntato: nell'elenco, sotto
+**NON ANCORA ENTRATO**, **manda l'invito** ne manda un altro. Chi è già entrato
+e ha perso la password la chiede da sé, dalla porta, con **PASSWORD
+DIMENTICATA?**.
+
+Perché le mail partano davvero, chi gestisce il database deve prima
+pubblicare la funzione dell'invito e impostare il server di posta: i passi
+sono in `supabase/LEGGIMI.md`, *L'invito per email*. In prova nessuna email
+parte.
 
 ## Togliere l'accesso
 
