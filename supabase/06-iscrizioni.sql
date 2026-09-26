@@ -80,7 +80,7 @@ grant select, update, delete on richieste_iscrizione to authenticated;
 create or replace function iscrizioni_regole() returns jsonb language sql immutable as $$
   select jsonb_build_object(
     'per_email_al_giorno', 3,    -- una famiglia con tre figli le manda tutte
-    'in_tutto_all_ora', 30,      -- più di così, a settembre, non se ne sono mai viste
+    'in_tutto_all_ora', 60,      -- il doppio di quante se ne sono mai viste a settembre
     'minuti_per_i_file', 60,     -- dopo aver mandato le risposte, per caricare i file
     'file_per_richiesta', 4      -- modulo, documento fronte e retro, ricevuta
   )
@@ -244,7 +244,10 @@ begin
      >= (regole->>'per_email_al_giorno')::int then
     raise exception 'Da questa email sono già arrivate % richieste oggi: se serve, scrivi alla segreteria', regole->>'per_email_al_giorno' using errcode = '54000';
   end if;
-  if (select count(*) from richieste_iscrizione where creata_il > now() - interval '1 hour')
+  -- Le rifiutate non contano, e le eliminate non ci sono più: chi riempie il
+  -- modulo di richieste finte per chiuderlo agli altri, la segreteria lo
+  -- sblocca togliendole.
+  if (select count(*) from richieste_iscrizione where creata_il > now() - interval '1 hour' and stato <> 'rifiutata')
      >= (regole->>'in_tutto_all_ora')::int then
     raise exception 'In questo momento arrivano troppe richieste: riprova fra un po''' using errcode = '54000';
   end if;

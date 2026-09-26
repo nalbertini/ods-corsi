@@ -326,15 +326,18 @@ begin
 end $$;
 
 /**
- * Il PIN si imposta dall'app o dal SQL Editor: la segreteria per chiunque,
- * un istruttore solo per sé. Quattro cifre, e diverso da quello di tutti gli
- * altri, perché è il PIN a dire chi sei.
+ * Il PIN lo imposta la segreteria, dall'app o dal SQL Editor. Quattro cifre, e
+ * diverso da quello di tutti gli altri, perché è il PIN a dire chi sei.
+ *
+ * Non l'istruttore per sé: il «già di un altro» gli permetterebbe di provare
+ * i numeri uno per uno e sapere quali sono in uso, e sul tablet ogni PIN
+ * trovato dice di chi è.
  */
 create or replace function imposta_pin(persona uuid, pin text)
   returns void language plpgsql security definer set search_path = public, extensions as $$
 begin
-  if auth.uid() is not null and not e_staff() and persona is distinct from persona_corrente() then
-    raise exception 'il PIN lo cambia la segreteria, o l''istruttore per sé' using errcode = '42501';
+  if auth.uid() is not null and not e_staff() then
+    raise exception 'il PIN lo cambia la segreteria' using errcode = '42501';
   end if;
   if pin !~ '^\d{4}$' then raise exception 'il PIN è di quattro cifre'; end if;
   if not exists (select 1 from persone where id = persona and ruolo in ('istruttore', 'staff')) then

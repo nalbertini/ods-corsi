@@ -122,12 +122,14 @@ create policy iscrizioni_cancella on iscrizioni for delete to authenticated usin
 -- dieci minuti prima, e un istruttore chiuso fuori dall'appello con venti
 -- persone in sala è un danno peggiore del rischio che copre. Chi ha segnato
 -- resta scritto in `segnata_da`, quindi la cosa è tracciata e non anonima.
--- Cancellare, quello no: si corregge cambiando stato.
+-- Togliere un segno («non segnato», AZZERA nell'appello) lo può fare chi fa
+-- l'appello, come cambiarlo: senza, per un istruttore il tocco sembrava
+-- andato e sul database restava il segno di prima.
 create policy presenze_legge on presenze for select to authenticated
   using (e_personale() or persona_id = persona_corrente());
 create policy presenze_scrive on presenze for insert to authenticated with check (e_personale());
 create policy presenze_aggiorna on presenze for update to authenticated using (e_personale()) with check (e_personale());
-create policy presenze_cancella on presenze for delete to authenticated using (e_staff());
+create policy presenze_cancella on presenze for delete to authenticated using (e_personale());
 
 -- --- postazioni ------------------------------------------------------------
 -- Le gestisce la segreteria. Un tablet vede la propria riga e basta: gli

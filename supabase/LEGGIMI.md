@@ -311,11 +311,14 @@ istruttore.
 ### Il PIN degli istruttori
 
 Dal tablet un istruttore può aprire l'appello completo con un PIN di 4 cifre.
-Lo imposta la segreteria (o l'istruttore per sé):
+Lo imposta solo la segreteria, dalla pagina Istruttori e accessi o così:
 
 ```sql
 select imposta_pin((select id from persone where nome = 'Maura' and ruolo = 'istruttore'), '4321');
 ```
+
+Un istruttore non se lo cambia da sé: dovendo essere diverso da quello di
+tutti, il «già di un altro» gli farebbe scoprire quali PIN sono in uso.
 
 Il PIN è salvato cifrato e due istruttori non possono avere lo stesso. Dopo 5
 PIN sbagliati in 5 minuti il tablet si blocca per qualche minuto: gli altri
