@@ -1,11 +1,32 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { execSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+
+// La versione dell'app: il numero di package.json e il commit da cui è
+// compilata, così chi segnala un problema dal tablet dice anche quale app ha.
+// Su GitHub Actions il commit c'è in GITHUB_SHA; in locale lo si chiede a git,
+// e fuori da un repository resta senza.
+const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }
+function commit(): string {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7)
+  try {
+    return execSync('git rev-parse --short=7 HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
+  } catch {
+    return ''
+  }
+}
 
 export default defineConfig({
   // Percorsi relativi: l'app funziona anche servita da una sottocartella,
   // non solo dalla radice del dominio.
   base: './',
+  define: {
+    __VERSIONE__: JSON.stringify(version),
+    __COMMIT__: JSON.stringify(commit()),
+    __COMPILATA__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [
     react(),
     VitePWA({

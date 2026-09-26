@@ -3,6 +3,7 @@ import { fase, REGOLE } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Cronometro, Lucchetto, Recupero } from '../Icons'
 import { Guaio, orario, Riquadro } from './comune'
+import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
 const ETICHETTA = { finita: 'FINITA', 'in corso': 'IN CORSO', aperta: 'SI SEGNA ORA', dopo: 'PIÙ TARDI' } as const
 
@@ -126,7 +127,9 @@ export function TabletHome({
           TIMER · IN ARRIVO
         </button>
         <span className="grow" />
-        <span className="tb-nota">Tablet di sala · {sala}</span>
+        <span className="tb-nota" title={VERSIONE_ESTESA}>
+          Tablet di sala · {sala} · {VERSIONE}
+        </span>
       </footer>
     </>
   )

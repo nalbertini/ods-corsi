@@ -11,6 +11,7 @@ import { Importa } from './Importa'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Richieste } from './Richieste'
+import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
 export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'importa' | 'personale' | 'regole'
 
@@ -132,6 +133,9 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
               Esci
             </button>
           )}
+          <span className="num versione" title={VERSIONE_ESTESA}>
+            {VERSIONE}
+          </span>
         </div>
       </nav>
 

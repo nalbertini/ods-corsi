@@ -71,6 +71,14 @@ anche il **timer**: è solo un collegamento all'app pubblicata
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa.
 
+## La versione
+
+L'app mostra la sua versione — il numero di `package.json` e il commit da cui
+è compilata, per esempio `v0.1.0 · 99db9d7` — in fondo alla pagina di scelta,
+nel piede del tablet di sala e nel menu della segreteria; passandoci sopra col
+mouse si vede anche quando è stata compilata. Per una versione nuova si alza
+`version` in `package.json`: il commit si aggiorna da sé a ogni pubblicazione.
+
 ## Le guide
 
 Per chi usa l'app, non per chi la sviluppa: [`guida/`](guida/README.md). La
