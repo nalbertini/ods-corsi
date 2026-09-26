@@ -30,14 +30,17 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 
 ## Il calendario
 
-- In cima c'è una **striscia di sette giorni** a partire da oggi. I puntini
-  sotto ogni giorno dicono quante lezioni ci sono. Oggi è evidenziato.
-- Le frecce **‹** e **›** spostano di una settimana.
-- Sotto ci sono **le vostre lezioni del giorno scelto**, in ordine di orario,
-  con sala e istruttore: quelle dei corsi che tenete e quelle in cui fate da
-  sostituti, non quelle in cui un collega sostituisce voi. Anche i puntini dei
-  giorni contano solo le vostre. Chi è di segreteria le vede tutte, perché fa
-  l'appello per chiunque.
+- In cima c'è la **settimana** che state guardando (es. `26 SET – 2 OTT`), a
+  partire da oggi. Le frecce **‹** e **›** spostano di una settimana.
+- Sotto c'è l'**elenco delle vostre lezioni della settimana**, diviso per
+  giorno e in ordine di orario, con sala e istruttore. Compaiono solo i giorni
+  in cui insegnate; quello di oggi è scritto `OGGI · …` in giallo. Sono le
+  lezioni dei corsi che tenete e quelle in cui fate da sostituti, non quelle in
+  cui un collega sostituisce voi.
+- Chi è di segreteria vede invece tutte le lezioni, perché fa l'appello per
+  chiunque, e al posto dell'elenco ha una **striscia di sette giorni**: si
+  sceglie un giorno e sotto compaiono le sue lezioni (i puntini sotto ogni
+  giorno dicono quante sono).
 - A destra di ogni lezione c'è un numero:
   - solo un numero (es. `16`) → quanti sono **iscritti**, l'appello non è
     ancora fatto;
