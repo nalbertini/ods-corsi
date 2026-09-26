@@ -102,7 +102,7 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
         <CopiaLink />
         {onApp && (
           <button type="button" className="num sg-voce" onClick={onApp}>
-            ← APPELLO
+            ← ISTRUTTORI
           </button>
         )}
         <div className="sg-chi">

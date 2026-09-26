@@ -110,21 +110,24 @@ export interface DatiTablet {
 // ---------------------------------------------------------------------------
 // Il dispositivo è un tablet di sala?
 //
-// Ci si entra aprendo l'app con `#tablet` in fondo all'indirizzo, e da lì il
-// dispositivo se lo ricorda: il tablet in sala riapre sempre il tablet, anche
-// installato come app, senza che nessuno debba ridigitare niente.
+// Ci si entra aprendo l'app con `#sala` (o `#tablet`, com'era prima) in fondo
+// all'indirizzo, e da lì il dispositivo se lo ricorda: il tablet in sala
+// riapre sempre il tablet, anche installato come app, senza che nessuno debba
+// ridigitare niente.
 // ---------------------------------------------------------------------------
 const DOVE_MODO = 'ods-corsi:modo'
 
+const eIndirizzoTablet = () => window.location.hash === '#sala' || window.location.hash === '#tablet'
+
 export function eUnTablet(): boolean {
   try {
-    if (window.location.hash === '#tablet') {
+    if (eIndirizzoTablet()) {
       localStorage.setItem(DOVE_MODO, 'tablet')
       return true
     }
     return localStorage.getItem(DOVE_MODO) === 'tablet'
   } catch {
-    return window.location.hash === '#tablet'
+    return eIndirizzoTablet()
   }
 }
 

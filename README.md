@@ -10,6 +10,18 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
 
 ## Cosa fa oggi
 
+L'app ha quattro indirizzi, ognuno con il suo accesso:
+
+| | |
+|---|---|
+| `#istruttori` | Il calendario e l'appello, per istruttori e segreteria. |
+| `#segreteria` | L'area della reception, solo per chi ha il ruolo di segreteria. |
+| `#iscrizioni` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
+| `#sala` | Il tablet di sala (va bene anche il vecchio `#tablet`). |
+
+Senza niente in fondo all'indirizzo si apre una pagina con le quattro, tranne
+su un tablet di sala, che riapre sempre il tablet.
+
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello
   scelto, in ordine di orario, con sala, istruttore e iscritti.
 - **L'appello**: l'elenco degli iscritti, un tocco per riga — presente, assente,
@@ -20,7 +32,7 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
   domande e con ANNULLA per chi sbaglia; chi si è dimenticato recupera le
   lezioni delle ultime due settimane partendo dal corso; l'istruttore, col suo
   PIN, apre l'appello completo e vede chi si è segnato da sé. Si apre con
-  `#tablet` in fondo all'indirizzo, e da lì il dispositivo resta un tablet.
+  `#sala` in fondo all'indirizzo, e da lì il dispositivo resta un tablet.
 - **La segreteria**: per il computer della reception, a chi ha il ruolo di
   segreteria. La **settimana** in una griglia, con gli appelli che mancano in
   rosso, e ogni lezione si apre per annullarla, dare un sostituto, spostarla di
@@ -43,9 +55,9 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
   accende quando l'informativa privacy (`public/informativa.html`, per ora una
   bozza da far approvare alla palestra) è approvata; fino ad allora resta il
   link a Google.
-- **L'accesso** col database: l'istruttore entra nel calendario e
-  nell'appello, la segreteria nella segreteria, e nessuno vede schede che non
-  gli servono; al primo accesso l'account si lega da sé alla persona con la
+- **L'accesso** col database: ogni area ha il suo indirizzo e la sua porta;
+  l'istruttore entra nel calendario e nell'appello, la segreteria nella
+  segreteria, e nessuno vede schede che non gli servono; al primo accesso l'account si lega da sé alla persona con la
   stessa email. Chi vuole iscriversi ha la pagina pubblica (`#iscrizioni`),
   che la segreteria copia con **COPIA LINK ISCRIZIONI**.
 - **Il tema bianco**, oltre al nero del marchio: il tasto col sole in
@@ -66,17 +78,18 @@ Senza configurazione parte in **modalità prova**, con l'orario vero della stagi
 2026/27, degli iscritti inventati e un nastro giallo che lo dichiara. Le presenze segnate in prova restano
 sul dispositivo e basta.
 
-In prova ci sono tutte e tre le schede, APPELLO, ISCRIZIONI e SEGRETERIA, per
-far vedere l'app intera; col database vero ognuno vede solo la sua parte. La
-**SEGRETERIA** in prova è aperta a tutti: i corsi, i giorni e gli
+In prova le porte sono aperte a tutti, e fra le aree si passa con le schede in
+cima, per far vedere l'app intera; col database vero ognuno entra dal suo
+indirizzo. La **segreteria** (`http://localhost:5173/#segreteria`) in prova è
+aperta a tutti: i corsi, i giorni e gli
 iscritti che si cambiano lì restano su questo dispositivo, e li vedono anche il
 calendario, l'appello e il tablet. «Riparti dall'orario vero», in fondo al menu
 della segreteria, rimette tutto com'era.
 
 Il tablet di sala si prova dal link nel nastro giallo, o aprendo
-`http://localhost:5173/#tablet`. In prova la sala si sceglie da un elenco, e
+`http://localhost:5173/#sala`. In prova la sala si sceglie da un elenco, e
 l'orologio si può spostare per vedere una lezione che si apre:
-`http://localhost:5173/?adesso=2026-09-24T17:55#tablet` è giovedì alle sei meno
+`http://localhost:5173/?adesso=2026-09-24T17:55#sala` è giovedì alle sei meno
 cinque, con il Judo agonisti in cui ci si segna. I PIN di prova sono 1234
 (Maurizio), 2468 (Maura) e 5678 (Fabio).
 
