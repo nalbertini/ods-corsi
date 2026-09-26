@@ -118,7 +118,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
   if (fase.tipo === 'file') {
     return (
       <div className="pad stack" style={{ gap: 14, padding: '20px 20px 28px' }}>
-        <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--giallo)' }}>MANCA QUALCHE FILE</span>
+        <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--giallo-testo)' }}>MANCA QUALCHE FILE</span>
         <span className="passo-dettaglio" style={{ fontSize: 16 }}>
           Le risposte sono arrivate. Non è partito: {fase.mancati.map((t) => FILE.find((f) => f.tipo === t)!.etichetta.toLowerCase()).join(', ')}.
         </span>
@@ -160,7 +160,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         <Campo id="m-cf" etichetta="CODICE FISCALE" largo>
           <input id="m-cf" className="campo num" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.codiceFiscale} onChange={metti('codiceFiscale')} style={{ letterSpacing: '0.08em' }} />
         </Campo>
-        {minore && <span className="passo-dettaglio modulo-largo" style={{ color: 'var(--giallo)' }}>È minorenne: servono i dati del genitore qui sotto, e il modulo per minori firmato da lui.</span>}
+        {minore && <span className="passo-dettaglio modulo-largo" style={{ color: 'var(--giallo-testo)' }}>È minorenne: servono i dati del genitore qui sotto, e il modulo per minori firmato da lui.</span>}
       </Sezione>
 
       {minore && (

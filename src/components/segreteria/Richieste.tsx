@@ -78,7 +78,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(x.creataIl)}</span>
-                <span role="cell" className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textAlign: 'right', color: x.stato === 'nuova' ? 'var(--giallo)' : x.stato === 'accolta' ? 'var(--verde)' : 'var(--dim)' }}>
+                <span role="cell" className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textAlign: 'right', color: x.stato === 'nuova' ? 'var(--giallo-testo)' : x.stato === 'accolta' ? 'var(--verde)' : 'var(--dim)' }}>
                   {STATI[x.stato]}
                 </span>
               </button>

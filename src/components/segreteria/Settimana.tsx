@@ -347,7 +347,7 @@ function Lezione({
             </select>
           </Campo>
         </div>
-        {l.sostitutoId && <span style={{ fontSize: 13, color: 'var(--giallo)' }}>Sostituzione solo per questa lezione: il corso resta com'è.</span>}
+        {l.sostitutoId && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Sostituzione solo per questa lezione: il corso resta com'è.</span>}
 
         <Appello key={l.id} l={l} onCambiato={onCambiato} />
 

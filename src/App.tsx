@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from 'react'
 import { Logo } from './components/Logo'
+import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
 import { Accesso, Porta, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
@@ -43,6 +44,7 @@ function Testata({ luogo, children }: { luogo: string; children?: ReactNode }) {
         <span className="testata-nome">OFFICINE DELLO SPORT</span>
         <span className="testata-luogo">{luogo} · COLLEGNO</span>
       </div>
+      <TastoTema />
       {children}
     </header>
   )

@@ -60,6 +60,10 @@ su un tablet di sala, che riapre sempre il tablet.
   segreteria, e nessuno vede schede che non gli servono; al primo accesso l'account si lega da sé alla persona con la
   stessa email. Chi vuole iscriversi ha la pagina pubblica (`#iscrizioni`),
   che la segreteria copia con **COPIA LINK ISCRIZIONI**.
+- **Il tema bianco**, oltre al nero del marchio: il tasto col sole in
+  testata (in segreteria «Tema bianco», nel riquadro in basso) lo sceglie per
+  quel dispositivo; finché nessuno sceglie, l'app segue il tema del
+  dispositivo. Il tablet di sala segue il dispositivo.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa.
 

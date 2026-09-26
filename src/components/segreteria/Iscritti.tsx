@@ -110,7 +110,7 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
                   <span role="cell" style={{ fontSize: 13, color: p.email || p.telefono ? 'var(--sec)' : 'var(--rosso)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {p.email ?? p.telefono ?? 'nessun contatto'}
                   </span>
-                  <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', color: vienePoco(f) ? 'var(--giallo)' : 'var(--text)' }}>
+                  <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', color: vienePoco(f) ? 'var(--giallo-testo)' : 'var(--text)' }}>
                     {f ? `${f.presenti}/${f.dovute}` : '—'}
                   </span>
                 </button>
