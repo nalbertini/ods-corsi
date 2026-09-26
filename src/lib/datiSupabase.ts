@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Dati } from './dati'
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
-import { perCognome } from './sala'
+import { giornoDi, perCognome, valeIl } from './sala'
 import { Coda } from './coda'
 
 /**
@@ -30,6 +30,29 @@ interface RigaSessione {
   sale: { nome: string } | null
   persone: { nome: string; cognome: string } | null
 }
+
+/**
+ * Un'iscrizione con la persona, per decidere chi sta nell'appello di una
+ * lezione: chi era iscritto quel giorno ed è ancora attivo, come nella
+ * versione di prova (`iscrittiIl`) e in segreteria.
+ */
+interface RigaIscrizione {
+  corso_id: string
+  dal: string
+  al: string | null
+  persone: (Persona & { attiva: boolean }) | null
+}
+
+const ISCRIZIONE = 'corso_id, dal, al, persone ( id, nome, cognome, ruolo, attiva )'
+
+/** Chi, fra queste iscrizioni, è nell'appello del corso quel giorno. */
+const iscrittiIl = (righe: RigaIscrizione[], corsoId: string, giorno: string): Persona[] =>
+  righe
+    .filter((r) => r.corso_id === corsoId && r.persone?.attiva && valeIl(r, giorno))
+    .map((r) => {
+      const { attiva: _, ...p } = r.persone!
+      return p
+    })
 
 const SELEZIONE = `
   id, corso_id, inizio, fine, stato, note,
@@ -69,11 +92,10 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
     const corsi = [...new Set(sessioni.map((s) => s.corso_id))]
     const ids = sessioni.map((s) => s.id)
     const [{ data: isc }, { data: pres }] = await Promise.all([
-      db.from('iscrizioni').select('corso_id').in('corso_id', corsi.length ? corsi : ['-']),
+      db.from('iscrizioni').select(ISCRIZIONE).in('corso_id', corsi.length ? corsi : ['-']),
       db.from('presenze').select('sessione_id, stato').in('sessione_id', ids.length ? ids : ['-']),
     ])
-    const periscritti = new Map<string, number>()
-    for (const r of isc ?? []) periscritti.set(r.corso_id, (periscritti.get(r.corso_id) ?? 0) + 1)
+    const iscrizioni = (isc ?? []) as unknown as RigaIscrizione[]
     const presenti = new Map<string, number>()
     for (const r of pres ?? [])
       if (r.stato === 'presente') presenti.set(r.sessione_id, (presenti.get(r.sessione_id) ?? 0) + 1)
@@ -88,7 +110,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       inizio: s.inizio,
       fine: s.fine,
       stato: s.stato,
-      iscritti: periscritti.get(s.corso_id) ?? 0,
+      iscritti: iscrittiIl(iscrizioni, s.corso_id, giornoDi(s.inizio)).length,
       presenti: presenti.get(s.id) ?? 0,
     }))
   }
@@ -116,13 +138,11 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       const [viste] = await conta([riga])
 
       const [{ data: iscritti }, { data: presenze }] = await Promise.all([
-        db.from('iscrizioni').select('persone ( id, nome, cognome, ruolo )').eq('corso_id', riga.corso_id),
+        db.from('iscrizioni').select(ISCRIZIONE).eq('corso_id', riga.corso_id),
         db.from('presenze').select('persona_id, stato').eq('sessione_id', sessioneId),
       ])
       const stati = new Map((presenze ?? []).map((p) => [p.persona_id, p.stato as StatoPresenza]))
-      const elenco = (iscritti ?? [])
-        .map((r) => (r as unknown as { persone: Persona }).persone)
-        .filter(Boolean)
+      const elenco = iscrittiIl((iscritti ?? []) as unknown as RigaIscrizione[], riga.corso_id, giornoDi(riga.inizio))
         .sort(perCognome)
         .map((p) => ({ ...p, stato: stati.get(p.id) ?? null }))
 
@@ -165,12 +185,16 @@ async function scriviPresenza(
 }
 
 async function scriviTutti(db: SupabaseClient, sessioneId: string, stato: StatoPresenza) {
-  const { data: sess } = await db.from('sessioni').select('corso_id').eq('id', sessioneId).single()
+  const { data: sess } = await db.from('sessioni').select('corso_id, inizio').eq('id', sessioneId).single()
   if (!sess) return
-  const { data: iscritti } = await db.from('iscrizioni').select('persona_id').eq('corso_id', sess.corso_id)
-  if (!iscritti?.length) return
+  // Solo chi è nell'appello di quel giorno: un ex iscritto o una persona
+  // disattivata non si segna presente, neanche con TUTTI PRESENTI.
+  const { data: righe, error: e } = await db.from('iscrizioni').select(ISCRIZIONE).eq('corso_id', sess.corso_id)
+  if (e) throw e
+  const iscritti = iscrittiIl((righe ?? []) as unknown as RigaIscrizione[], sess.corso_id, giornoDi(sess.inizio))
+  if (!iscritti.length) return
   const { error } = await db.from('presenze').upsert(
-    iscritti.map((i) => ({ sessione_id: sessioneId, persona_id: i.persona_id, stato })),
+    iscritti.map((p) => ({ sessione_id: sessioneId, persona_id: p.id, stato })),
     { onConflict: 'sessione_id,persona_id' },
   )
   if (error) throw error
