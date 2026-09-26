@@ -1,5 +1,6 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
 import { chiSei, entra, esci, quandoCambia, serveAccesso, type Personale } from '../lib/accesso'
+import { INDIRIZZO_AREE } from '../lib/aree'
 import { scegliProva } from '../lib/dati'
 
 /**
@@ -64,7 +65,7 @@ export function Porta({ children }: { children: ReactNode }) {
 /** Dalla porta di un'area si torna alla pagina con tutte e quattro (vedi `aree.ts`). */
 export function AltreAree() {
   return (
-    <a className="chi-esci" href="#">
+    <a className="chi-esci" href={INDIRIZZO_AREE}>
       ← TUTTE LE AREE
     </a>
   )

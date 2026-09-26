@@ -18,7 +18,10 @@ import { eIndirizzoGuida } from './guida'
  *
  * Senza niente in fondo all'indirizzo si apre una pagina con le quattro, a
  * meno che il dispositivo non sia un tablet di sala: quello riapre sempre il
- * tablet (vedi `eUnTablet`). Un indirizzo scritto vince sempre sul ricordo.
+ * tablet (vedi `eUnTablet`). Un indirizzo scritto vince sempre sul ricordo:
+ * per questo la pagina con le quattro ha anche il suo, `#aree`, ed è lì che
+ * portano i link «tutte le aree». Con `#` e basta, un dispositivo che una
+ * volta ha aperto `#sala` tornerebbe al tablet.
  */
 export type Area = 'segreteria' | 'iscrizioni' | 'istruttori' | 'sala' | 'guida' | 'scelta'
 
@@ -28,6 +31,9 @@ export const INDIRIZZI: Record<Exclude<Area, 'scelta' | 'guida'>, string> = {
   istruttori: '#istruttori',
   sala: '#sala',
 }
+
+/** La pagina con tutte le aree, anche su un dispositivo che si ricorda di essere un tablet. */
+export const INDIRIZZO_AREE = '#aree'
 
 /**
  * Il timer delle lezioni. Il codice sta in `timer/`, in questo repository, ma
@@ -54,6 +60,7 @@ function areaAdesso(): Area {
   // La guida ha un indirizzo per pagina (`#guida/sala`): si riconosce dal
   // principio, e vale anche su un tablet di sala.
   if (eIndirizzoGuida(window.location.hash)) return 'guida'
+  if (window.location.hash === INDIRIZZO_AREE) return 'scelta'
   const scritta = Object.entries(INDIRIZZI).find(([, i]) => window.location.hash === i)?.[0] as Area | undefined
   return scritta ?? (tablet ? 'sala' : 'scelta')
 }
