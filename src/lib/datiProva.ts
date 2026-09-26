@@ -96,7 +96,7 @@ const CORSI: Definizione[] = [
 
   { id: 'pesi-1', nome: 'Pesistica 1', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni(LMV, '17:00', 60), iscritti: elenco(11, 8) },
   { id: 'pesi-2', nome: 'Pesistica 2', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni(LMV, '18:00', 60), iscritti: elenco(12, 9) },
-  { id: 'body-functional', nome: 'Body functional', colore: PESI, sala: 'Pesi', istruttori: ['Tiziano'], orari: ogni([3], '18:00', 60), iscritti: elenco(13, 11) },
+  { id: 'body-functional', nome: 'Body functional', colore: PESI, sala: 'Motricità', istruttori: ['Tiziano'], orari: ogni([3], '18:00', 60), iscritti: elenco(13, 11) },
   { id: 'pesi-agonisti', nome: 'Pesi agonisti', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni(MG, '17:00', 60), iscritti: elenco(14, 7) },
 
   { id: 'aikido-2', nome: 'Aikido 2', colore: MOTRICITA, sala: 'Motricità', istruttori: ['Fabio'], orari: ogni([1, 4], '17:00', 60), iscritti: elenco(15, 8) },
