@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Informativa privacy · iscrizioni e corsi</title>
+<!--
+  L'informativa per chi si iscrive ai corsi e per chi usa l'app.
+
+  È una BOZZA preparata da chi ha scritto l'app, non un testo approvato: la
+  deve leggere e fare sua la palestra, che è titolare del trattamento, meglio
+  con qualcuno che se ne intende. I punti fra [QUADRE] sono scelte che l'app
+  non può fare per lei.
+
+  Quando è approvata:
+    1. si tolgono il riquadro BOZZA qui sotto e le [QUADRE];
+    2. in src/lib/iscrizione.ts si mette INFORMATIVA_BOZZA = false.
+  Da lì, col database vero, il modulo di iscrizione dell'app si accende e il
+  link si vede a tutti in fondo alla scheda ISCRIZIONI.
+
+  I fatti che il testo dà per certi vengono dall'app com'è oggi: se l'app
+  cambia (un dato in più nel modulo, un periodo di conservazione diverso in
+  REGOLE E PRIVACY, un altro posto dove pubblicarla), va cambiato anche qui.
+-->
+<style>
+  :root { --bg: #121212; --surface: #1c1c1c; --line: #333; --text: #f2f2f0; --sec: #c9c9c4; --dim: #8c8c88; --giallo: #f4c31b; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 6px; font-style: oblique 9deg; letter-spacing: 0.02em; }
+  h2 { font-size: 13px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); margin: 34px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #2a2a2a; }
+  p, li { color: var(--sec); }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; }
+  strong { color: var(--text); }
+  a { color: var(--text); }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px; border: 1px solid var(--line); color: var(--sec); }
+  th { color: var(--text); background: var(--surface); font-weight: 600; }
+  .sotto { color: var(--dim); font-size: 14px; margin: 0; }
+  .bozza { border: 2px solid var(--giallo); padding: 14px 16px; margin: 18px 0 8px; }
+  .bozza strong { color: var(--giallo); letter-spacing: 0.16em; }
+  .dafare { color: var(--giallo); }
+  @media print {
+    :root { --bg: #fff; --surface: #f2f2f2; --line: #bbb; --text: #000; --sec: #222; --dim: #555; --giallo: #8a6d00; color-scheme: light; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Informativa privacy: iscrizioni e corsi</h1>
+  <p class="sotto">Officine dello Sport, Collegno · ai sensi degli artt. 13 e 14 del Regolamento UE 2016/679 (GDPR) · <span class="dafare">[data di approvazione]</span></p>
+
+  <div class="bozza" role="note">
+    <strong>BOZZA</strong>
+    <p style="margin: 6px 0 0">Questo testo non è ancora approvato dalla palestra. I punti <span class="dafare">[fra quadre]</span> sono da decidere. Finché è una bozza il modulo di iscrizione online resta spento.</p>
+  </div>
+
+  <p>Questa informativa spiega come trattiamo i dati di chi si iscrive ai corsi, dei genitori di chi è minorenne e di chi li frequenta: cosa raccogliamo, perché, per quanto tempo, chi li vede e come si esercitano i propri diritti. Riguarda il modulo di iscrizione, l'app dei corsi e il registro delle presenze. Per la sola navigazione del sito vale la <a href="https://officinedellosport.framer.website/privacy-policy---ok-2">privacy policy del sito</a>.</p>
+
+  <h2>Chi è il titolare</h2>
+  <p><strong>ASD Il Centro Judo</strong>, Corso Francia 224, Cascine Vica, 10098 Rivoli (TO) · C.F. 95562500017 · P.IVA 10002760014<br />
+  Email <a href="mailto:asdilcentrojudo@gmail.com">asdilcentrojudo@gmail.com</a> · PEC <a href="mailto:asdilcentrojudo@legalmail.it">asdilcentrojudo@legalmail.it</a> · telefono 347 911 9064</p>
+  <p><span class="dafare">[Se l'associazione ha nominato un responsabile della protezione dei dati (DPO), i suoi contatti vanno qui; altrimenti questa riga si toglie.]</span></p>
+
+  <h2>Quali dati</h2>
+  <ul>
+    <li><strong>Di chi si iscrive:</strong> nome e cognome, data e luogo di nascita, codice fiscale, indirizzo di residenza, email e telefono, i corsi scelti e se paga l'annuale o il trimestre.</li>
+    <li><strong>Del genitore o tutore</strong>, se chi si iscrive è minorenne: nome, cognome e codice fiscale. Email e telefono, in quel caso, sono i suoi.</li>
+    <li><strong>I documenti caricati:</strong> il modulo di autorizzazioni firmato, il documento d'identità (per un minore, quello del genitore) e la ricevuta del pagamento.</li>
+    <li><strong>Le presenze:</strong> a quali lezioni si è stati, se presenti, assenti o giustificati, chi le ha segnate e come (dall'appello dell'istruttore o dal tablet della sala).</li>
+    <li><strong>Di istruttori e segreteria</strong>, che usano l'app con un account: nome, cognome, email, e i corsi che tengono.</li>
+  </ul>
+  <p><strong>Non chiediamo dati sulla salute</strong>, e chiediamo di non scriverli nemmeno nelle note del modulo: certificati medici e simili si consegnano in segreteria.</p>
+
+  <h2>Perché, e su che base</h2>
+  <table>
+    <tr><th>Per cosa</th><th>Base giuridica</th></tr>
+    <tr><td>Gestire l'iscrizione, il rapporto associativo e la partecipazione ai corsi</td><td>L'esecuzione del rapporto associativo e dei servizi richiesti (art. 6.1.b)</td></tr>
+    <tr><td>Tesserare l'atleta alla federazione (FIJLKAM e/o FIPE)</td><td>La richiesta fatta nel modulo di autorizzazioni firmato (art. 6.1.b)</td></tr>
+    <tr><td>Tenere il registro delle presenze e organizzare le lezioni</td><td>L'esecuzione del rapporto associativo (art. 6.1.b) e il legittimo interesse a sapere chi è in palestra (art. 6.1.f)</td></tr>
+    <tr><td>Conservare le ricevute e i documenti contabili</td><td>Gli obblighi di legge (art. 6.1.c)</td></tr>
+    <tr><td>Proteggere l'app e i dati da accessi non autorizzati</td><td>Il legittimo interesse (art. 6.1.f)</td></tr>
+  </table>
+  <p>Le foto e i video sui canali della palestra, e le comunicazioni sulle sue iniziative, si autorizzano a parte nel modulo firmato: l'app non li usa. Non facciamo profilazione.</p>
+  <p>I dati del modulo servono all'iscrizione: senza, non possiamo iscrivere né tesserare.</p>
+
+  <h2>Per quanto tempo</h2>
+  <table>
+    <tr><th>Cosa</th><th>Per quanto</th></tr>
+    <tr><td>Le presenze</td><td>24 mesi dalla lezione, poi si cancellano da sole <span class="dafare">[se si cambia il periodo in REGOLE E PRIVACY, va cambiato anche qui]</span></td></tr>
+    <tr><td>La richiesta di iscrizione e l'anagrafica</td><td><span class="dafare">[per esempio: per la durata dell'iscrizione e fino a 10 anni dopo, per gli obblighi dell'associazione]</span></td></tr>
+    <tr><td>Il documento d'identità</td><td><span class="dafare">[per esempio: fino al tesseramento, e comunque non oltre la fine della stagione]</span></td></tr>
+    <tr><td>Le ricevute di pagamento</td><td><span class="dafare">[per esempio: 10 anni, come le scritture contabili]</span></td></tr>
+    <tr><td>Una richiesta rifiutata, con i suoi file</td><td><span class="dafare">[per esempio: si cancella entro 30 giorni]</span></td></tr>
+  </table>
+
+  <h2>Chi li vede</h2>
+  <ul>
+    <li><strong>La segreteria</strong> vede tutto: le richieste, i documenti, l'anagrafica e le presenze.</li>
+    <li><strong>Gli istruttori</strong> vedono gli iscritti e le presenze, per fare l'appello; le richieste di iscrizione e i documenti no.</li>
+    <li><strong>Il tablet della sala</strong> mostra solo il nome e l'iniziale del cognome di chi è iscritto alle lezioni di quella sala.</li>
+    <li><strong>La federazione</strong> (FIJLKAM e/o FIPE) riceve i dati necessari al tesseramento.</li>
+    <li><strong>I fornitori tecnici</strong>, che trattano i dati per nostro conto come responsabili del trattamento (art. 28): Supabase, che conserva il database e i file su server a Francoforte, nell'Unione Europea; <span class="dafare">[chi pubblica l'app, per esempio GitHub Pages, da scegliere]</span>.</li>
+  </ul>
+  <p>I dati non si vendono e non si diffondono.</p>
+
+  <h2>Fuori dall'Unione Europea</h2>
+  <p>Il database e i file restano nell'Unione Europea. <span class="dafare">[Da verificare con il servizio scelto per pubblicare l'app: se è fuori dall'UE, come GitHub, qui va detto su che base avviene il trasferimento, per esempio il Data Privacy Framework UE-USA.]</span> L'app carica anche i caratteri da Google Fonts, che così riceve l'indirizzo IP di chi la apre. <span class="dafare">[Oppure si caricano dall'app stessa, e questa frase si toglie.]</span></p>
+
+  <h2>I diritti</h2>
+  <p>Chiunque, e per un minore chi ne ha la responsabilità, può chiedere di vedere i propri dati e averne una copia, correggerli, cancellarli, limitarne l'uso, opporsi al trattamento o riceverli in un formato leggibile da un computer (artt. 15-22 GDPR). Basta scrivere a <a href="mailto:asdilcentrojudo@gmail.com">asdilcentrojudo@gmail.com</a>: rispondiamo entro un mese.</p>
+  <p>Chi ritiene che i suoi dati siano trattati male può fare reclamo al <a href="https://www.garanteprivacy.it">Garante per la protezione dei dati personali</a>.</p>
+
+  <h2>Modifiche</h2>
+  <p>Se questa informativa cambia, la versione nuova è pubblicata qui, con la data in cima.</p>
+</main>
+</body>
+</html>

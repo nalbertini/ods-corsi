@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { DatiSegreteria, Sala } from '../../lib/segreteria'
-import { INFORMATIVA } from '../../lib/iscrizione'
+import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
 import { dataLunga, Testa, useAvviso, useCarica } from './comune'
 
@@ -164,16 +164,26 @@ export function Regole({ d }: { d: DatiSegreteria }) {
         <section aria-label="Privacy" className="sg-riquadro">
           <div className="row" style={{ gap: 10 }}>
             <span className="ob sg-riquadro-titolo grow">PRIVACY</span>
-            <span className="num sg-tag" data-tipo={INFORMATIVA ? undefined : 'manca'} style={{ fontSize: 11, padding: '2px 6px' }}>
-              {INFORMATIVA ? 'INFORMATIVA COLLEGATA' : 'DA FARE PRIMA DI PARTIRE'}
+            <span className="num sg-tag" data-tipo={INFORMATIVA && !INFORMATIVA_BOZZA ? undefined : 'manca'} style={{ fontSize: 11, padding: '2px 6px' }}>
+              {!INFORMATIVA ? 'DA FARE PRIMA DI PARTIRE' : INFORMATIVA_BOZZA ? 'BOZZA DA APPROVARE' : 'INFORMATIVA COLLEGATA'}
             </span>
           </div>
           <div className="stack" style={{ gap: 6 }}>
             <span className="sg-etichetta">L'INFORMATIVA</span>
             {INFORMATIVA ? (
-              <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ fontSize: 14, color: 'var(--sec)', wordBreak: 'break-all' }}>
-                {INFORMATIVA}
-              </a>
+              <>
+                <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ fontSize: 14, color: 'var(--sec)', wordBreak: 'break-all' }}>
+                  {INFORMATIVA_BOZZA ? 'Leggi la bozza' : "Apri l'informativa"}
+                </a>
+                {INFORMATIVA_BOZZA && (
+                  <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
+                    Scritta insieme all'app, non ancora approvata: la palestra, che è titolare del trattamento, la deve leggere e fare sua, e
+                    decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi si toglie il
+                    riquadro BOZZA dalla pagina e <code>INFORMATIVA_BOZZA</code> in <code>src/lib/iscrizione.ts</code>. Fino ad allora, col database
+                    vero, il pubblico non la vede e il modulo di iscrizione resta spento.
+                  </span>
+                )}
+              </>
             ) : (
               <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
                 Non c'è ancora. Il link va messo in <code>src/lib/iscrizione.ts</code>, accanto a quello del modulo di iscrizione: si vede in fondo alla scheda

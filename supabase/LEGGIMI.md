@@ -169,10 +169,12 @@ Cosa fa `06-iscrizioni.sql`:
   `materializza_sessioni` e `pulisci_presenze`, per esempio, lasciano passare
   chi non ha un utente, perché è così che le chiama un job.
 
-**Si accende con l'informativa.** Il modulo chiede codici fiscali e documenti
-d'identità, e col database vero l'app lo mostra solo quando `INFORMATIVA`, in
-`src/lib/iscrizione.ts`, ha il suo link. Fino ad allora il passo porta ancora
-al modulo Google (`LINK_ISCRIZIONE`). In prova il modulo è sempre acceso.
+**Si accende con l'informativa approvata.** Il modulo chiede codici fiscali
+e documenti d'identità, e col database vero l'app lo mostra solo quando
+l'informativa (`public/informativa.html`) è approvata, cioè quando in
+`src/lib/iscrizione.ts` `INFORMATIVA_BOZZA` è `false`. Fino ad allora il passo
+porta ancora al modulo Google (`LINK_ISCRIZIONE`). In prova il modulo è
+sempre acceso.
 
 **Le domande** sono ricavate dai moduli di autorizzazione e dai passi di
 prima, non copiate dal modulo Google, che senza accesso non si legge. Se
@@ -272,10 +274,14 @@ non è un segreto trapelato. A proteggere i dati sono le policy di
 ## Le cose da decidere prima di usarlo sul serio
 
 - **L'informativa privacy.** Nomi e presenze sono dati personali e la palestra
-  ne è titolare del trattamento. Il link va in `src/lib/iscrizione.ts`
-  (`INFORMATIVA`) e si vede in fondo alla scheda ISCRIZIONI, a tutti: non sta
-  nel database perché lo deve poter leggere anche chi non ha un accesso. Col
-  database vero è anche quello che accende il modulo di iscrizione dell'app.
+  ne è titolare del trattamento. Ce n'è una **bozza** in
+  `public/informativa.html`, scritta insieme all'app: quella del sito copre
+  solo la navigazione. La palestra la deve leggere e fare sua, e decidere i
+  punti fra quadre: per quanto si tengono richieste, documenti e ricevute, e
+  dove si pubblica l'app. Poi si toglie il riquadro BOZZA dalla pagina e si
+  mette `INFORMATIVA_BOZZA = false` in `src/lib/iscrizione.ts`: da lì si vede
+  in fondo alla scheda ISCRIZIONI, a tutti, e col database vero accende il
+  modulo di iscrizione dell'app.
 - **Per quanto si tengono le presenze.** `presenze_scadute` dice cosa è
   scaduto e `pulisci_presenze()` lo cancella; il periodo di partenza è
   ventiquattro mesi e si cambia in **REGOLE E PRIVACY**. È una scelta della
