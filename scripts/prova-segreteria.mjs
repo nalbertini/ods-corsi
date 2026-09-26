@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -232,7 +232,7 @@ console.log('\n9. sale e regole')
   await s.salvaImpostazioni({ mesiPresenze: 24 })
   ok('la pulizia la toglie', [await s.pulisci(), await s.scadute()], [1, 0])
   const dati = await s.esporta((await app.dettaglio((await lotta2([9, 2]))[0].id)).elenco[0].id)
-  ok('l\'esportazione ha anagrafica, iscrizioni, presenze e richieste', Object.keys(dati).sort(), ['esportato_il', 'iscrizioni', 'persona', 'presenze', 'richieste_di_iscrizione'])
+  ok('l\'esportazione ha anagrafica, iscrizioni, presenze, richieste, certificato e pagamento', Object.keys(dati).sort(), ['certificato_e_pagamento', 'esportato_il', 'iscrizioni', 'persona', 'presenze', 'richieste_di_iscrizione'])
 }
 
 console.log('\n10. l\'import dai fogli')
@@ -317,6 +317,42 @@ console.log('\n11. le risposte del modulo Google')
   ok('nome e cognome insieme, dell\'iscritto', c2, { nomeCompleto: 2, email: 4, telefono: 3 })
   ok('il cognome è l\'ultima parola', m.leggiRisposte(t2, c2, {}, []).iscritti.map((x) => [x.nome, x.cognome]), [['Maria Luisa', 'Verdi']])
   ok('Marco resta Marco', (await s.persone()).filter((x) => x.cognome === 'Neri').map((x) => x.nome).sort(), ['Giulia', 'Marco'])
+}
+
+console.log('\nil certificato medico e il pagamento')
+{
+  const tutti = await s.persone()
+  const oggi = '2026-09-26'
+  const quanti = (f) => tutti.filter(f).length
+  ok('in prova qualcuno è senza certificato, qualcuno scaduto, quasi tutti in regola',
+    [quanti((p) => m.comeCertificato(p.certificato, oggi) === 'manca') > 0, quanti((p) => m.comeCertificato(p.certificato, oggi) === 'scaduto') > 0, quanti((p) => m.inRegola(p, oggi)) > tutti.length / 2],
+    [true, true, true])
+  const [p] = tutti.filter((x) => x.attiva)
+  await s.togliCertificato(p.id)
+  const come = async () => {
+    const x = (await s.persone()).find((y) => y.id === p.id)
+    return [m.comeCertificato(x.certificato, oggi), m.comePaga(x.pagamento, oggi)]
+  }
+  ok('tolto: manca', (await come())[0], 'manca')
+  ok('una scadenza senza file non basta', await errore(() => s.salvaCertificato(p.id, '')), 'Serve la data di scadenza del certificato')
+  ok('un file che non è una foto né un PDF no', await errore(() => s.salvaCertificato(p.id, '2027-09-01', { type: 'application/zip', size: 10 })), 'Questo tipo di file non va: serve una foto o un PDF')
+  ok('uno troppo grande no', await errore(() => s.salvaCertificato(p.id, '2027-09-01', { type: 'application/pdf', size: 11 * 1024 * 1024 })), 'Il file è troppo grande: al massimo 10 MB')
+  await s.salvaCertificato(p.id, '2027-09-01', new Blob(['%PDF'], { type: 'application/pdf' }))
+  ok('caricato: valido', (await come())[0], 'valido')
+  await s.salvaCertificato(p.id, '2026-10-10')
+  ok('la scadenza fra due settimane: in scadenza, il file resta', (await come())[0], 'in_scadenza')
+  await s.salvaCertificato(p.id, '2026-09-25')
+  ok('ieri: scaduto', (await come())[0], 'scaduto')
+
+  await s.salvaPagamento(p.id, { stato: 'da_pagare' })
+  ok('da pagare', (await come())[1], 'da_pagare')
+  await s.salvaPagamento(p.id, { stato: 'pagato', fino: '2026-12-31', nota: '  trimestre  ' })
+  const x = (await s.persone()).find((y) => y.id === p.id)
+  ok('pagato il trimestre, con la nota pulita', [m.comePaga(x.pagamento, oggi), x.pagamento.nota], ['pagato', 'trimestre'])
+  ok('passato il trimestre torna da pagare', m.comePaga(x.pagamento, '2027-01-01'), 'scaduto')
+  ok('una nota lunghissima no', await errore(() => s.salvaPagamento(p.id, { stato: 'pagato', nota: 'x'.repeat(301) })), 'La nota del pagamento è troppo lunga: al massimo 300 caratteri')
+  const e = await s.esporta(p.id)
+  ok('nell\'esportazione dei dati', [e.certificato_e_pagamento.certificato_scade, e.certificato_e_pagamento.stato], ['2026-09-25', 'pagato'])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

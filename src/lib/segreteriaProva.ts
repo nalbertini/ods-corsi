@@ -1,4 +1,5 @@
-import type { CorsoSeg, DatiSegreteria, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StoricoSeg } from './segreteria'
+import type { CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StoricoSeg } from './segreteria'
+import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva } from './archivioProva'
 import { comeE, iscrittiIl, lezioniFra, nomeIstruttore, salaDelGiorno, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria } from './datiProva'
@@ -23,6 +24,13 @@ const GIORNO = 24 * 60 * 60_000
  * dieci persone nello stesso millisecondo, e con lo stesso id diventavano una.
  */
 const unico = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+
+/**
+ * I file dei certificati: come quelli delle richieste, restano solo finché la
+ * pagina è aperta, perché `localStorage` non li tiene. In archivio resta che
+ * il file c'era.
+ */
+const certificati = new Map<string, FileSeg>()
 
 export function creaSegreteriaProva(): DatiSegreteria {
   const a = () => archivio.dati
@@ -285,6 +293,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
             iscrizioni: a()
               .iscrizioni.filter((i) => i.personaId === p.id)
               .map((i) => ({ corsoId: i.corsoId, dal: i.dal, al: i.al })),
+            certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file },
+            pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
           }),
         )
     },
@@ -343,6 +353,46 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async attivaPersona(personaId, attiva) {
       persona(personaId)
       a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, attiva } : p))
+      salva()
+    },
+
+    async salvaCertificato(personaId, scade, file) {
+      persona(personaId)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(scade)) throw new Error('Serve la data di scadenza del certificato')
+      let nome: string | undefined
+      if (file) {
+        const est = ESTENSIONI[file.type]
+        if (!est) throw new Error('Questo tipo di file non va: serve una foto o un PDF')
+        if (file.size > MASSIMO_FILE) throw new Error('Il file è troppo grande: al massimo 10 MB')
+        nome = `certificato-${Date.now()}.${est}`
+        const vecchio = certificati.get(personaId)
+        if (vecchio && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(vecchio.url)
+        const url = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : ''
+        if (url) certificati.set(personaId, { url, pdf: est === 'pdf' })
+      }
+      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: { scade, file: nome ?? p.certificato?.file } } : p))
+      salva()
+    },
+
+    async togliCertificato(personaId) {
+      persona(personaId)
+      const vecchio = certificati.get(personaId)
+      if (vecchio && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(vecchio.url)
+      certificati.delete(personaId)
+      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: undefined } : p))
+      salva()
+    },
+
+    async apriCertificato(personaId) {
+      persona(personaId)
+      return certificati.get(personaId) ?? null
+    },
+
+    async salvaPagamento(personaId, dati) {
+      persona(personaId)
+      const nota = dati.nota?.trim() || undefined
+      if (nota && nota.length > 300) throw new Error('La nota del pagamento è troppo lunga: al massimo 300 caratteri')
+      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, pagamento: { stato: dati.stato, fino: dati.fino || undefined, nota } } : p))
       salva()
     },
 
@@ -508,6 +558,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         iscrizioni: a().iscrizioni.filter((i) => i.personaId === personaId).map((i) => ({ corso: corso(i.corsoId).nome, dal: i.dal, al: i.al ?? null })),
         presenze: presenze.sort((x, y) => x.inizio.localeCompare(y.inizio)),
         richieste_di_iscrizione: richiesteDi(personaId).map(({ id: _id, personaId: _p, ...r }) => r),
+        certificato_e_pagamento: { certificato_scade: p.certificato?.scade ?? null, certificato_file: p.certificato?.file ?? null, ...(p.pagamento ?? { stato: 'da_pagare' }) },
       }
     },
   }

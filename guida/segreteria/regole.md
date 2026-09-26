@@ -32,8 +32,10 @@ L'elenco delle sale con i loro posti: **CAMBIA** per il nome o i posti,
 - **L'informativa** — lo stato dell'informativa privacy che vede chi si
   iscrive. Finché è una **BOZZA DA APPROVARE**, va letta e fatta propria dalla
   palestra, che è titolare del trattamento.
-- **NIENTE DATI SANITARI** — certificati medici, patologie e simili non vanno
-  scritti da nessuna parte nell'app, nemmeno nelle note.
+- **DATI SANITARI: SOLO IL CERTIFICATO** — il certificato medico si carica
+  solo nella scheda dell'iscritto (vedi [Iscritti](iscritti.md)), dove lo vede
+  la segreteria e nessun altro. Patologie, allergie e simili non vanno scritte
+  da nessuna parte nell'app, nemmeno nelle note.
 - **ESPORTA I DATI DI UNA PERSONA** — si sceglie chi li ha chiesti e si preme
-  **ESPORTA**: un file con anagrafica, iscrizioni e presenze. È quello che una
+  **ESPORTA**: un file con anagrafica, iscrizioni, presenze, certificato e pagamento. È quello che una
   persona ha diritto di chiedere.

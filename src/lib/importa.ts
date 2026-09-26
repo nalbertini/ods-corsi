@@ -311,7 +311,7 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
       // modulo), entra senza, col telefono.
       const email = x.email && !persone.some((q) => q.email?.toLowerCase() === x.email) ? x.email : undefined
       const id = await d.salvaPersona({ nome: x.nome, cognome: x.cognome, email, telefono: x.telefono })
-      p = { id, nome: x.nome, cognome: x.cognome, email, attiva: true, creataIl: '', iscrizioni: [] }
+      p = { id, nome: x.nome, cognome: x.cognome, email, attiva: true, creataIl: '', iscrizioni: [], certificato: { conFile: false }, pagamento: { stato: 'da_pagare' } }
       persone.push(p)
     }
     for (const nome of x.corsi) {

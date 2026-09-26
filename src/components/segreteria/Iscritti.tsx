@@ -1,11 +1,28 @@
-import { useState } from 'react'
-import type { CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg } from '../../lib/segreteria'
-import { inCorso } from '../../lib/segreteria'
+import { useRef, useState } from 'react'
+import type { ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PagamentoSeg, PersonaSeg } from '../../lib/segreteria'
+import { comeCertificato, comePaga, inCorso, PAGAMENTI } from '../../lib/segreteria'
+import { ESTENSIONI, MASSIMO_FILE } from '../../lib/richieste'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Campo, dataLunga, Guaio, Riga, Testa, useAvviso, useCarica } from './comune'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
+
+/** Il certificato da sistemare: manca, è scaduto o scade entro un mese. */
+const certificatoDaSistemare = (p: PersonaSeg, oggi: string) => comeCertificato(p.certificato, oggi) !== 'valido'
+const daPagare = (p: PersonaSeg, oggi: string) => comePaga(p.pagamento, oggi) !== 'pagato'
+
+const TONO_CERTIFICATO: Record<ComeCertificato, 'rosso' | 'giallo' | 'verde'> = { manca: 'rosso', scaduto: 'rosso', in_scadenza: 'giallo', valido: 'verde' }
+const TONO_PAGA: Record<ComePaga, 'rosso' | 'giallo' | 'verde'> = { da_pagare: 'rosso', scaduto: 'rosso', in_parte: 'giallo', pagato: 'verde' }
+const PAROLA_PAGA: Record<ComePaga, string> = { da_pagare: 'DA PAGARE', in_parte: 'PAGATO IN PARTE', pagato: 'PAGATO', scaduto: 'PAGAMENTO SCADUTO' }
+
+function Bollino({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde'; children: string }) {
+  return (
+    <span className="num sg-segno-regola" data-tono={tono}>
+      {children}
+    </span>
+  )
+}
 
 /**
  * Gli iscritti: chi c'è, a cosa è iscritto, come si raggiunge, se viene.
@@ -21,6 +38,8 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
   const [corso, setCorso] = useState('')
   const [senzaEmail, setSenzaEmail] = useState(false)
   const [poco, setPoco] = useState(false)
+  const [certificato, setCertificato] = useState(false)
+  const [pagare, setPagare] = useState(false)
   const [scelta, setScelta] = useState<string | null>(personaIniziale ?? null)
   const [nuovo, setNuovo] = useState(false)
   const { avviso, fai } = useAvviso()
@@ -37,14 +56,22 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
       (!ago || `${p.cognome} ${p.nome} ${p.nome} ${p.cognome} ${p.email ?? ''}`.toLowerCase().includes(ago)) &&
       (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi))) &&
       (!senzaEmail || !p.email) &&
-      (!poco || vienePoco(freq.dato?.get(p.id))),
+      (!poco || vienePoco(freq.dato?.get(p.id))) &&
+      (!certificato || certificatoDaSistemare(p, oggi)) &&
+      (!pagare || daPagare(p, oggi)),
   )
+  const attiveOra = tutti.filter((p) => p.attiva)
+  const senzaCertificato = attiveOra.filter((p) => ['manca', 'scaduto'].includes(comeCertificato(p.certificato, oggi))).length
+  const nonPagato = attiveOra.filter((p) => daPagare(p, oggi)).length
   const persona = nuovo ? null : (tutti.find((p) => p.id === scelta) ?? null)
   const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica()])
 
   return (
     <>
-      <Testa titolo="ISCRITTI" sotto={`${tutti.filter((p) => p.attiva).length} persone attive. Un nome in elenco non ha bisogno di un accesso.`}>
+      <Testa
+        titolo="ISCRITTI"
+        sotto={`${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.`}
+      >
         <button type="button" className="sg-btn sg-btn-rosso" onClick={() => setNuovo(true)}>
           + NUOVO ISCRITTO
         </button>
@@ -72,6 +99,12 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
         <button type="button" className="num sg-chip" aria-pressed={poco} onClick={() => setPoco(!poco)}>
           VENGONO POCO
         </button>
+        <button type="button" className="num sg-chip" aria-pressed={certificato} onClick={() => setCertificato(!certificato)}>
+          CERTIFICATO DA SISTEMARE
+        </button>
+        <button type="button" className="num sg-chip" aria-pressed={pagare} onClick={() => setPagare(!pagare)}>
+          DA PAGARE
+        </button>
       </div>
 
       {persone.guaio && <Guaio testo={persone.guaio} />}
@@ -82,6 +115,7 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
             <span role="columnheader" className="sg-etichetta">NOME</span>
             <span role="columnheader" className="sg-etichetta">CORSI</span>
             <span role="columnheader" className="sg-etichetta">CONTATTO</span>
+            <span role="columnheader" className="sg-etichetta">IN REGOLA</span>
             <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>30 GIORNI</span>
           </div>
           <div className="sg-tabella-corpo">
@@ -90,6 +124,8 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
             {trovati.map((p) => {
               const f = freq.dato?.get(p.id)
               const suoi = p.iscrizioni.filter((i) => inCorso(i, oggi)).map((i) => perId.get(i.corsoId)?.nome).filter(Boolean)
+              const cert = comeCertificato(p.certificato, oggi)
+              const paga = comePaga(p.pagamento, oggi)
               return (
                 <button
                   key={p.id}
@@ -109,6 +145,20 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
                   <span role="cell" style={{ fontSize: 13, color: p.email || p.telefono ? 'var(--sec)' : 'var(--rosso)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {p.email ?? p.telefono ?? 'nessun contatto'}
+                  </span>
+                  <span role="cell" className="sg-in-regola">
+                    {cert === 'valido' && paga === 'pagato' ? (
+                      <Bollino tono="verde">IN REGOLA</Bollino>
+                    ) : (
+                      <>
+                        {cert !== 'valido' && (
+                          <Bollino tono={TONO_CERTIFICATO[cert]}>
+                            {cert === 'manca' ? 'NO CERTIFICATO' : cert === 'scaduto' ? 'CERT. SCADUTO' : `CERT. ${dataCorta(p.certificato.scade!)}`}
+                          </Bollino>
+                        )}
+                        {paga !== 'pagato' && <Bollino tono={TONO_PAGA[paga]}>{paga === 'in_parte' ? 'IN PARTE' : paga === 'scaduto' ? 'QUOTA SCADUTA' : 'DA PAGARE'}</Bollino>}
+                      </>
+                    )}
                   </span>
                   <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', color: vienePoco(f) ? 'var(--giallo-testo)' : 'var(--text)' }}>
                     {f ? `${f.presenti}/${f.dovute}` : '—'}
@@ -277,6 +327,9 @@ function Scheda({
         </div>
       )}
 
+      <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
+      <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${p.pagamento.nota ?? ''}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
+
       <div className="stack" style={{ gap: 8 }}>
         <span className="sg-etichetta" style={{ fontSize: 13, letterSpacing: '0.2em' }}>ISCRIZIONI</span>
         {correnti.length === 0 && <span className="sg-sotto">Nessuna iscrizione in corso.</span>}
@@ -400,5 +453,185 @@ function Scheda({
         )}
       </div>
     </>
+  )
+}
+
+/** «12/10», da una data `AAAA-MM-GG`: per il bollino in elenco. */
+const dataCorta = (g: string) => `${g.slice(8, 10)}/${g.slice(5, 7)}`
+
+/** Quanti giorni da oggi a una data `AAAA-MM-GG`. */
+const giorniA = (g: string, oggi: string) => Math.round((Date.parse(g) - Date.parse(oggi)) / 86_400_000)
+
+/**
+ * Il certificato medico: fino a quando vale e il file. Senza, in sala non si
+ * entra: in elenco si vede in rosso, e un mese prima della scadenza in giallo.
+ */
+function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void }) {
+  const oggi = chiaveGiorno(new Date())
+  const [bozza, setBozza] = useState<{ scade: string; file?: File } | null>(null)
+  const [guaioFile, setGuaioFile] = useState<string | null>(null)
+  const scegli = useRef<HTMLInputElement>(null)
+  const c = p.certificato
+  const come = comeCertificato(c, oggi)
+  const fra = c.scade ? giorniA(c.scade, oggi) : 0
+
+  const stato =
+    come === 'manca'
+      ? c.scade
+        ? `Manca il file. La scadenza scritta è il ${dataLunga(c.scade)}.`
+        : 'Nessun certificato: senza, in sala non si entra.'
+      : come === 'scaduto'
+        ? `Scaduto il ${dataLunga(c.scade!)}: va rinnovato prima di tornare in sala.`
+        : come === 'in_scadenza'
+          ? `Scade il ${dataLunga(c.scade!)}, ${fra === 0 ? 'oggi' : fra === 1 ? 'domani' : `fra ${fra} giorni`}.`
+          : `Valido fino al ${dataLunga(c.scade!)}.`
+
+  const apri = () => {
+    // La finestra si apre subito, col clic: dopo l'attesa del link il browser la bloccherebbe.
+    const w = window.open('', '_blank')
+    void fai(async () => {
+      const f = await d.apriCertificato(p.id)
+      if (!f) {
+        w?.close()
+        throw new Error(d.modo === 'prova' ? 'In prova il file resta solo finché la pagina è aperta: questo non c’è più' : 'Il file non si trova')
+      }
+      if (w) w.location.href = f.url
+      else window.location.href = f.url
+    })
+  }
+
+  const scelto = (f?: File) => {
+    setGuaioFile(null)
+    if (!f || !bozza) return
+    if (!ESTENSIONI[f.type]) return setGuaioFile('Questo tipo di file non va: serve una foto o un PDF')
+    if (f.size > MASSIMO_FILE) return setGuaioFile('Il file è troppo grande: al massimo 10 MB')
+    setBozza({ ...bozza, file: f })
+  }
+
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <Riga titolo="CERTIFICATO MEDICO">
+        <Bollino tono={TONO_CERTIFICATO[come]}>{come === 'manca' ? 'MANCA' : come === 'scaduto' ? 'SCADUTO' : come === 'in_scadenza' ? 'IN SCADENZA' : 'VALIDO'}</Bollino>
+      </Riga>
+      {!bozza && <span style={{ fontSize: 14, color: come === 'valido' ? 'var(--sec)' : come === 'in_scadenza' ? 'var(--giallo-testo)' : 'var(--rosso)' }}>{stato}</span>}
+
+      {bozza ? (
+        <>
+          <Campo id="c-scade" etichetta="VALIDO FINO AL">
+            <input id="c-scade" className="sg-campo" type="date" value={bozza.scade} onChange={(e) => setBozza({ ...bozza, scade: e.target.value })} />
+          </Campo>
+          <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+            <button type="button" className="num sg-chip" onClick={() => scegli.current?.click()}>
+              {bozza.file ? 'CAMBIA FILE' : c.conFile ? 'FILE NUOVO' : 'SCEGLI IL FILE'}
+            </button>
+            <span style={{ fontSize: 13, color: bozza.file ? 'var(--text)' : 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+              {bozza.file ? bozza.file.name : c.conFile ? 'resta il file di prima' : 'foto o PDF, fino a 10 MB'}
+            </span>
+            <input
+              ref={scegli}
+              className="vh"
+              type="file"
+              accept="image/*,application/pdf"
+              aria-label="File del certificato"
+              onChange={(e) => {
+                scelto(e.target.files?.[0])
+                e.target.value = ''
+              }}
+            />
+          </div>
+          {guaioFile && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>{guaioFile}</span>}
+          {bozza.scade && bozza.scade < oggi && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Questa data è già passata: il certificato risulterà scaduto.</span>}
+          <div className="row" style={{ gap: 8 }}>
+            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setBozza(null)}>
+              LASCIA STARE
+            </button>
+            <button
+              type="button"
+              className="sg-btn sg-btn-rosso grow"
+              disabled={!bozza.scade || (!bozza.file && !c.conFile)}
+              onClick={() =>
+                void fai(() => d.salvaCertificato(p.id, bozza.scade, bozza.file), bozza.file ? 'Certificato caricato' : 'Scadenza cambiata', () => {
+                  setBozza(null)
+                  onCambiato()
+                })
+              }
+            >
+              SALVA
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button type="button" className="num sg-chip sg-chip-pieno" onClick={() => setBozza({ scade: c.conFile && c.scade && c.scade >= oggi ? c.scade : '' })}>
+            {c.conFile ? 'RINNOVA O CORREGGI' : 'CARICA IL CERTIFICATO'}
+          </button>
+          {c.conFile && (
+            <button type="button" className="num sg-chip" onClick={apri}>
+              APRI IL FILE
+            </button>
+          )}
+          <div className="grow" />
+          {(c.conFile || c.scade) && (
+            <button
+              type="button"
+              className="sg-link"
+              onClick={() => {
+                if (window.confirm(`Togliere il certificato di ${p.nome} ${p.cognome}? Il file si cancella per sempre.`))
+                  void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
+              }}
+            >
+              Togli
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Il pagamento: da pagare, in parte o pagato, e per chi paga il trimestre fino
+ * a quando. Passata quella data torna da pagare da sé.
+ */
+function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void }) {
+  const oggi = chiaveGiorno(new Date())
+  const [b, setB] = useState<PagamentoSeg>({ stato: p.pagamento.stato, fino: p.pagamento.fino ?? '', nota: p.pagamento.nota ?? '' })
+  const come = comePaga(p.pagamento, oggi)
+  const cambiato = b.stato !== p.pagamento.stato || (b.fino || '') !== (p.pagamento.fino ?? '') || (b.nota ?? '').trim() !== (p.pagamento.nota ?? '')
+
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <Riga titolo="PAGAMENTO">
+        <Bollino tono={TONO_PAGA[come]}>{PAROLA_PAGA[come]}</Bollino>
+      </Riga>
+      {come === 'scaduto' && <span style={{ fontSize: 14, color: 'var(--rosso)' }}>Pagato fino al {dataLunga(p.pagamento.fino!)}: ora è da pagare di nuovo.</span>}
+      {come === 'pagato' && p.pagamento.fino && <span style={{ fontSize: 14, color: 'var(--sec)' }}>Pagato fino al {dataLunga(p.pagamento.fino)}.</span>}
+      <div role="radiogroup" aria-label="Stato del pagamento" className="sg-tre">
+        {PAGAMENTI.map(([s, testo]) => (
+          <button key={s} type="button" role="radio" aria-checked={b.stato === s} className="sg-btn sg-scelta" style={{ fontSize: 13, padding: '0 6px', whiteSpace: 'nowrap' }} onClick={() => setB({ ...b, stato: s })}>
+            {testo}
+          </button>
+        ))}
+      </div>
+      <div className="sg-due">
+        <Campo id="pg-fino" etichetta="FINO AL · FACOLTATIVO">
+          <input id="pg-fino" className="sg-campo" type="date" value={b.fino ?? ''} onChange={(e) => setB({ ...b, fino: e.target.value })} />
+        </Campo>
+        <Campo id="pg-nota" etichetta="NOTA">
+          <input id="pg-nota" className="sg-campo" maxLength={300} placeholder="Manca il saldo…" value={b.nota ?? ''} onChange={(e) => setB({ ...b, nota: e.target.value })} />
+        </Campo>
+      </div>
+      <span style={{ fontSize: 12, color: 'var(--dim)' }}>«Fino al» serve per il trimestre: passata la data, torna da pagare.</span>
+      {cambiato && (
+        <div className="row" style={{ gap: 8 }}>
+          <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setB({ stato: p.pagamento.stato, fino: p.pagamento.fino ?? '', nota: p.pagamento.nota ?? '' })}>
+            LASCIA STARE
+          </button>
+          <button type="button" className="sg-btn sg-btn-rosso grow" onClick={() => void fai(() => d.salvaPagamento(p.id, b), 'Pagamento segnato', onCambiato)}>
+            SALVA
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
