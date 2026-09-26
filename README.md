@@ -25,8 +25,8 @@ npm install
 npm run dev
 ```
 
-Senza configurazione parte in **modalità prova**, con un orario e degli iscritti
-inventati e un nastro giallo che lo dichiara. Le presenze segnate in prova restano
+Senza configurazione parte in **modalità prova**, con l'orario vero della stagione
+2026/27, degli iscritti inventati e un nastro giallo che lo dichiara. Le presenze segnate in prova restano
 sul dispositivo e basta.
 
 ## Il database

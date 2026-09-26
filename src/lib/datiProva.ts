@@ -3,7 +3,8 @@ import type { Persona, SessioneVista, StatoPresenza } from './sala'
 import { chiaveGiorno, perCognome } from './sala'
 
 /**
- * La sala corsi senza server: un orario e degli iscritti inventati.
+ * La sala corsi senza server: l'orario vero della stagione 2026/27, con degli
+ * iscritti inventati.
  *
  * Non è un ripiego per le prove. È anche il modo in cui si apre l'app e si
  * capisce cosa fa senza avere niente acceso, ed è quello che gira sul sito
@@ -11,64 +12,100 @@ import { chiaveGiorno, perCognome } from './sala'
  * restano in `localStorage`, così la prova si comporta come la cosa vera:
  * chiudi, riapri, e l'appello è come l'avevi lasciato.
  *
- * I nomi sono inventati. Se somigliano a qualcuno è un caso.
+ * I nomi degli iscritti sono inventati. Se somigliano a qualcuno è un caso.
  */
 
 const DOVE = 'ods-corsi:prova-presenze'   // vedi la nota in coda.ts
+
+/** Un orario del corso: lo stesso corso può avere durate diverse nei vari giorni. */
+interface Orario {
+  /** 0 = domenica, come `getDay()`. */
+  giorno: number
+  ora: string
+  durata: number
+  /** Quando quel giorno si fa altrove: la Lotta 3 del martedì è in sala pesi. */
+  sala?: string
+}
 
 interface Definizione {
   id: string
   nome: string
   colore: string
   sala: string
-  istruttore: string
-  /** 0 = domenica, come `getDay()`. */
-  giorno: number
-  ora: string
-  durata: number
+  /** Chi insegna. Vuoto quando non è ancora deciso. */
+  istruttori: string[]
+  orari: Orario[]
   iscritti: string[]
 }
 
-const nomi = (elenco: string): string[] => elenco.split(', ')
+// L'orario 2026/27 del volantino «Corsi e attività». Lunedì 1, venerdì 5.
+const LMV = [1, 3, 5]
+const MG = [2, 4]
+const ogni = (giorni: number[], ora: string, durata: number): Orario[] => giorni.map((giorno) => ({ giorno, ora, durata }))
 
+// I colori seguono la disciplina, non il corso: da lontano si vede se è judo o lotta.
+const JUDO = '#1b8ac4'
+const LOTTA = '#e4292a'
+const PESI = '#f4c31b'
+const MOTRICITA = '#16a54a'
 
+/**
+ * Gli iscritti sono inventati: ragazzi e ragazze con nomi comuni, messi
+ * insieme con un generatore che dà sempre lo stesso risultato, così l'elenco
+ * di un corso non cambia da un caricamento all'altro.
+ */
+const COGNOMI = ('Rossi Russo Ferrari Esposito Bianchi Romano Colombo Ricci Marino Greco Bruno Gallo Conti De Luca Mancini ' +
+  'Costa Giordano Rizzo Lombardi Moretti Barbieri Fontana Santoro Mariani Rinaldi Caruso Ferrara Galli Martini Leone ' +
+  'Longo Gentile Martinelli Vitale Lombardo Serra Coppola De Santis Cattaneo Bellini').split(' ').reduce<string[]>((a, x, i, t) => {
+  // «De Luca» e «De Santis» sono cognomi di due parole.
+  if (x === 'De') return a
+  a.push(t[i - 1] === 'De' ? `De ${x}` : x)
+  return a
+}, [])
+const NOMI = ('Leonardo Francesco Alessandro Lorenzo Mattia Tommaso Gabriele Andrea Riccardo Edoardo Matteo Giuseppe ' +
+  'Sofia Aurora Giulia Ginevra Alice Beatrice Emma Giorgia Vittoria Ludovica Anna Martina Chiara Nicolò Pietro Elena').split(' ')
+
+function elenco(seme: number, quanti: number): string[] {
+  let x = seme * 9301 + 49297
+  const caso = () => (x = (x * 9301 + 49297) % 233280) / 233280
+  const fatti = new Set<string>()
+  while (fatti.size < quanti) {
+    fatti.add(`${COGNOMI[Math.floor(caso() * COGNOMI.length)]} ${NOMI[Math.floor(caso() * NOMI.length)]}`)
+  }
+  return [...fatti]
+}
 
 const CORSI: Definizione[] = [
+  { id: 'judo-2', nome: 'Judo 2', colore: JUDO, sala: 'Tatami', istruttori: ['Maurizio'], orari: ogni(LMV, '17:00', 60), iscritti: elenco(1, 14) },
+  { id: 'judo-3', nome: 'Judo 3', colore: JUDO, sala: 'Tatami', istruttori: ['Maurizio'], orari: ogni(LMV, '18:00', 60), iscritti: elenco(2, 16) },
+  { id: 'judo-adulti', nome: 'Judo adulti', colore: JUDO, sala: 'Tatami', istruttori: ['Maurizio'], orari: ogni(LMV, '19:00', 90), iscritti: elenco(3, 12) },
+  { id: 'judo-principianti', nome: 'Judo principianti', colore: JUDO, sala: 'Tatami', istruttori: ['Maurizio'], orari: ogni(LMV, '19:00', 90), iscritti: elenco(4, 8) },
+  { id: 'judo-agonisti', nome: 'Judo agonisti', colore: JUDO, sala: 'Tatami', istruttori: ['Maurizio'], orari: ogni(MG, '18:00', 90), iscritti: elenco(5, 10) },
+
+  { id: 'psicomotricita', nome: 'Psicomotricità', colore: MOTRICITA, sala: 'Motricità', istruttori: [], orari: [...ogni([5], '17:00', 50), ...ogni([5], '18:00', 50)], iscritti: elenco(6, 9) },
+  { id: 'giocomotricita', nome: 'Giocomotricità', colore: MOTRICITA, sala: 'Motricità', istruttori: [], orari: ogni(MG, '17:00', 50), iscritti: elenco(7, 8) },
+  { id: 'avviamento', nome: 'Avviamento arti marziali', colore: MOTRICITA, sala: 'Tatami', istruttori: [], orari: ogni(MG, '17:00', 60), iscritti: elenco(8, 10) },
+
+  { id: 'lotta-2', nome: 'Lotta 2', colore: LOTTA, sala: 'Lotta', istruttori: ['Maura', 'Federico'], orari: ogni(LMV, '17:00', 60), iscritti: elenco(9, 12) },
   {
-    id: 'c-functional', nome: 'Functional', colore: '#e4292a', sala: 'Sala grande',
-    istruttore: 'Maurizio Innella', giorno: 1, ora: '19:00', durata: 50,
-    iscritti: nomi('Rossi Luca, Bianchi Sara, Ferrero Giulia, Conti Marco, Esposito Anna, Greco Paolo, Ricci Elena, Marino Davide, Costa Chiara, Gallo Simone, Rizzo Martina, Bruno Andrea'),
+    id: 'lotta-3', nome: 'Lotta 3', colore: LOTTA, sala: 'Lotta', istruttori: ['Maura', 'Federico'],
+    orari: [...ogni([1, 3], '18:00', 90), { giorno: 2, ora: '18:00', durata: 60, sala: 'Pesi' }, ...ogni([5], '18:00', 60)],
+    iscritti: elenco(10, 13),
   },
-  {
-    id: 'c-spinning', nome: 'Spinning', colore: '#f4c31b', sala: 'Sala spinning',
-    istruttore: 'Giulia Ferrero', giorno: 2, ora: '19:00', durata: 50,
-    iscritti: nomi('Colombo Federica, Moretti Stefano, Barbieri Laura, Fontana Alberto, Santoro Ilaria, Mariani Roberto, Rinaldi Silvia, Caruso Nicola, Leone Valentina, Longo Matteo, Martini Francesca, Vitale Giorgio, Serra Alice, Palumbo Enrico'),
-  },
-  {
-    id: 'c-judo-ragazzi', nome: 'Judo ragazzi', colore: '#1b8ac4', sala: 'Tatami',
-    istruttore: 'Maurizio Innella', giorno: 2, ora: '17:30', durata: 60,
-    iscritti: nomi('Ferrari Tommaso, Russo Matilde, Galli Riccardo, De Luca Sofia, Villa Edoardo, Testa Bianca, Amato Leonardo, Pellegrini Aurora'),
-  },
-  {
-    id: 'c-pilates', nome: 'Pilates', colore: '#16a54a', sala: 'Sala piccola',
-    istruttore: 'Giulia Ferrero', giorno: 3, ora: '10:00', durata: 55,
-    iscritti: nomi('Sartori Marta, Gentile Claudia, Lombardi Paola, Battaglia Rosa, Farina Lucia, Negri Antonella, Guerra Daniela, Bellini Monica, Poli Cristina'),
-  },
-  {
-    id: 'c-circuito', nome: 'Circuito sala attrezzi', colore: '#e4292a', sala: 'Sala attrezzi',
-    istruttore: 'Maurizio Innella', giorno: 4, ora: '18:30', durata: 45,
-    iscritti: nomi('Rossi Luca, Conti Marco, Marino Davide, Gallo Simone, Bruno Andrea, Fontana Alberto, Longo Matteo, Vitale Giorgio, Palumbo Enrico, Grassi Fabio'),
-  },
-  {
-    id: 'c-core', nome: 'Core express', colore: '#f4c31b', sala: 'Sala piccola',
-    istruttore: 'Giulia Ferrero', giorno: 5, ora: '13:00', durata: 30,
-    iscritti: nomi('Bianchi Sara, Esposito Anna, Ricci Elena, Costa Chiara, Rizzo Martina, Colombo Federica, Barbieri Laura, Santoro Ilaria'),
-  },
-  {
-    id: 'c-judo-adulti', nome: 'Judo adulti', colore: '#1b8ac4', sala: 'Tatami',
-    istruttore: 'Maurizio Innella', giorno: 6, ora: '10:30', durata: 90,
-    iscritti: nomi('Greco Paolo, Moretti Stefano, Mariani Roberto, Caruso Nicola, Grassi Fabio, Ferrari Tommaso, Amato Leonardo'),
-  },
+
+  { id: 'pesi-1', nome: 'Pesi 1', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni(LMV, '17:00', 60), iscritti: elenco(11, 8) },
+  { id: 'pesi-2', nome: 'Pesi 2', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni([1, 5], '18:00', 60), iscritti: elenco(12, 9) },
+  { id: 'body-functional', nome: 'Body functional', colore: PESI, sala: 'Pesi', istruttori: ['Tiziano'], orari: ogni([3], '18:00', 60), iscritti: elenco(13, 11) },
+  { id: 'pesi-agonisti', nome: 'Pesi agonisti', colore: PESI, sala: 'Pesi', istruttori: [], orari: ogni(MG, '17:00', 60), iscritti: elenco(14, 7) },
+
+  { id: 'aikido-2', nome: 'Aikido 2', colore: MOTRICITA, sala: 'Tatami', istruttori: ['Fabio'], orari: ogni([1, 4], '17:00', 60), iscritti: elenco(15, 8) },
+  { id: 'aikido-3', nome: 'Aikido 3', colore: MOTRICITA, sala: 'Tatami', istruttori: ['Fabio'], orari: ogni([1, 4], '18:00', 60), iscritti: elenco(16, 9) },
+
+  { id: 'pre-pugilistica', nome: 'Pre-pugilistica', colore: LOTTA, sala: 'Motricità', istruttori: [], orari: ogni([3], '19:00', 60), iscritti: elenco(17, 10) },
+  { id: 'mga', nome: 'MGA · metodo globale autodifesa', colore: LOTTA, sala: 'Motricità', istruttori: [], orari: ogni([5], '19:00', 60), iscritti: elenco(18, 9) },
+
+  { id: 'prep-atletica-1', nome: 'Preparazione atletica 1', colore: PESI, sala: 'Pesi', istruttori: ['Maurizio', 'Katia', 'Manuel'], orari: ogni(MG, '18:00', 60), iscritti: elenco(19, 12) },
+  { id: 'prep-atletica-2', nome: 'Preparazione atletica 2', colore: PESI, sala: 'Pesi', istruttori: ['Maurizio', 'Katia', 'Manuel'], orari: ogni(MG, '19:30', 60), iscritti: elenco(20, 11) },
 ]
 
 /** Una persona per ogni nome che compare in un elenco, con un id stabile. */
@@ -87,11 +124,11 @@ for (const c of CORSI) {
 }
 
 /**
- * L'id di una lezione è corso + giorno. Deve restare lo stesso fra un
- * ricaricamento e l'altro, altrimenti le presenze segnate si staccherebbero
- * dalla lezione a cui appartengono.
+ * L'id di una lezione è corso + giorno + ora: la Psicomotricità del venerdì ha
+ * due turni. Deve restare lo stesso fra un ricaricamento e l'altro, altrimenti
+ * le presenze segnate si staccherebbero dalla lezione a cui appartengono.
  */
-const idSessione = (corso: string, giorno: string) => `s-${corso}-${giorno}`
+const idSessione = (corso: string, giorno: string, ora: string) => `s@${corso}@${giorno}@${ora}`
 
 function istante(giorno: string, ora: string): Date {
   const [a, m, g] = giorno.split('-').map(Number)
@@ -121,17 +158,18 @@ export function creaDatiProva(): Dati {
     }
   }
 
-  const vista = (c: Definizione, giorno: string): SessioneVista => {
-    const inizio = istante(giorno, c.ora)
-    const fine = new Date(inizio.getTime() + c.durata * 60_000)
-    const mie = segnate[idSessione(c.id, giorno)] ?? {}
+  const vista = (c: Definizione, o: Orario, giorno: string): SessioneVista => {
+    const inizio = istante(giorno, o.ora)
+    const fine = new Date(inizio.getTime() + o.durata * 60_000)
+    const id = idSessione(c.id, giorno, o.ora)
+    const mie = segnate[id] ?? {}
     return {
-      id: idSessione(c.id, giorno),
+      id,
       corsoId: c.id,
       corso: c.nome,
       colore: c.colore,
-      sala: c.sala,
-      istruttore: c.istruttore,
+      sala: o.sala ?? c.sala,
+      istruttore: c.istruttori.length ? c.istruttori.join(', ') : undefined,
       inizio: inizio.toISOString(),
       fine: fine.toISOString(),
       stato: 'prevista',
@@ -141,11 +179,11 @@ export function creaDatiProva(): Dati {
   }
 
   const trova = (sessioneId: string) => {
-    for (const c of CORSI) {
-      if (!sessioneId.startsWith(`s-${c.id}-`)) continue
-      return { corso: c, giorno: sessioneId.slice(`s-${c.id}-`.length) }
-    }
-    return null
+    const [prefisso, corsoId, giorno, ora] = sessioneId.split('@')
+    if (prefisso !== 's') return null
+    const corso = CORSI.find((c) => c.id === corsoId)
+    const orario = corso?.orari.find((o) => o.ora === ora && o.giorno === istante(giorno, ora).getDay())
+    return corso && orario ? { corso, orario, giorno } : null
   }
 
   return {
@@ -157,7 +195,9 @@ export function creaDatiProva(): Dati {
       const lezioni: SessioneVista[] = []
       for (const d = new Date(da); d <= fuori; d.setDate(d.getDate() + 1)) {
         const giorno = chiaveGiorno(d)
-        for (const c of CORSI) if (c.giorno === d.getDay()) lezioni.push(vista(c, giorno))
+        for (const c of CORSI) {
+          for (const o of c.orari) if (o.giorno === d.getDay()) lezioni.push(vista(c, o, giorno))
+        }
       }
       return lezioni.sort((x, y) => x.inizio.localeCompare(y.inizio))
     },
@@ -171,7 +211,7 @@ export function creaDatiProva(): Dati {
         .sort(perCognome)
         .map((p) => ({ ...p, stato: mie[p.id] ?? null }))
       return {
-        sessione: vista(t.corso, t.giorno),
+        sessione: vista(t.corso, t.orario, t.giorno),
         elenco,
       }
     },

@@ -1,7 +1,7 @@
 # La sala corsi: mettere in piedi il database
 
 L'app funziona senza tutto questo: senza le due variabili d'ambiente parte in
-**modalità prova**, con un orario e degli iscritti inventati, e lo dice con un
+**modalità prova**, con l'orario vero e degli iscritti inventati, e lo dice con un
 nastro giallo in cima allo schermo. Questi passi servono quando si vuole il
 calendario vero della palestra.
 
@@ -55,11 +55,12 @@ bene così come sono.
 |---|---|
 | `nome` | Il nome del corso |
 | `sala` | Creata se non c'è |
-| `istruttore` | Nome e cognome; creato se non c'è |
+| `istruttore` | Nome e cognome; creato se non c'è. Più istruttori separati da virgola: ne entra solo il primo |
 | `giorno` | `lunedì`, `lun` o il numero (0 = domenica) |
 | `ora` | `19:00` o `19.00` |
 | `durata` | In minuti |
 | `capienza`, `colore` | Facoltativi |
+| `note` | Ignorata dall'import: serve a chi legge il foglio |
 
 | `iscritti.csv` | |
 |---|---|
@@ -70,6 +71,18 @@ bene così come sono.
 
 Le righe che non si capiscono vengono saltate e stampate: si correggono nel
 foglio e si rilancia.
+
+L'orario della stagione 2026/27, copiato dal volantino «Corsi e attività», è
+in [`dati/corsi-2026-27.csv`](../dati/corsi-2026-27.csv). Due cose che il foglio
+dice e l'import non sa ancora fare:
+
+- **gli istruttori hanno solo il nome.** Finché nel foglio non c'è il cognome i
+  corsi entrano senza istruttore, e lo script lo dice riga per riga;
+- **Lotta e Preparazione atletica hanno più istruttori**, ma un corso ne tiene
+  uno solo (`corsi.istruttore_id`). Entra il primo della lista.
+
+Il martedì la Lotta 3 si fa in sala Pesi: la sala di una singola lezione si
+cambia sulla lezione (`sessioni.sala_id`), non con l'import.
 
 ## 5. Il calendario
 
