@@ -6,8 +6,9 @@
  * Prepugilistica costa uguale a saldo e annuale, la Lotta 2 ha il trimestre a
  * 170 € e non a 180 €): se il foglio cambia, si cambia qui, e basta.
  *
- * Le età e gli orari sono quelli del foglio dei costi, non quelli del
- * calendario: dove non coincidono, è il foglio da correggere, non la tabella.
+ * Le età e gli orari fanno fede anche per il calendario: `dati/corsi-2026-27.csv`
+ * e `datiProva.ts` sono stati allineati a questo foglio, e se il foglio cambia
+ * vanno ricontrollati anche loro.
  */
 
 export interface Prezzi {
