@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { allungaCalendario } from './allunga'
 import type { CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
@@ -140,6 +141,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async settimana(da, a) {
+      await allungaCalendario(db)
       const fino = new Date(a)
       fino.setHours(23, 59, 59, 999)
       const sessioni = ok(

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { allungaCalendario } from './allunga'
 import type { Dati } from './dati'
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
 import { giornoDi, perCognome, valeIl } from './sala'
@@ -144,6 +145,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
     modo: 'supabase',
 
     async calendario(da, a) {
+      await allungaCalendario(db)
       const fino = new Date(a)
       fino.setHours(23, 59, 59, 999)
       const { data, error } = await db

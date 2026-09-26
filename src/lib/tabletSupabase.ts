@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { allungaCalendario } from './allunga'
 import type { DatiTablet, EsitoTocco, LezioneSala, NomeSala, Origine, RigaAppelloTablet } from './tablet'
 import { emailDellaSala } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
@@ -62,6 +63,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     },
 
     async lezioni(da, a) {
+      await allungaCalendario(db)
       const righe = await rpc<Array<{
         id: string; corso_id: string; corso: string; colore: string | null; descrizione: string | null
         istruttori: string | null; inizio: string; fine: string; stato: StatoSessione; iscritti: number; presenti: number

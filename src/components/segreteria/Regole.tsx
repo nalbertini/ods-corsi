@@ -101,7 +101,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             </div>
             <div className="sg-numero">
               <span className="sg-etichetta">SI ALLUNGA</span>
-              <span className="num" style={{ fontSize: 26, fontWeight: 700 }}>{d.modo === 'prova' ? 'DA SÉ' : 'OGNI LUNEDÌ'}</span>
+              <span className="num" style={{ fontSize: 26, fontWeight: 700 }}>DA SÉ</span>
             </div>
           </div>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>

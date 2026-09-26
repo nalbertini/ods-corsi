@@ -27,8 +27,11 @@ declare
   creati int;
 begin
   -- Gira con i privilegi del proprietario, quindi chi la chiama va controllato
-  -- a mano: o è la segreteria, o non è un utente del browser (un job, l'import).
-  if auth.uid() is not null and not e_staff() then
+  -- a mano: o è la segreteria, o non è un utente del browser (un job, l'import),
+  -- o è `allunga_calendario` (12-calendario-da-se.sql), che la chiama per
+  -- chiunque ma solo per allungare, e lo dice con `ods.allunga`. Dal browser
+  -- quella variabile non si scrive: l'API non dà `set_config`.
+  if auth.uid() is not null and not e_staff() and current_setting('ods.allunga', true) is distinct from 'si' then
     raise exception 'solo la segreteria può rigenerare il calendario';
   end if;
   if a_giorno < da_giorno then raise exception 'intervallo al contrario: % → %', da_giorno, a_giorno; end if;
