@@ -25,6 +25,13 @@ export const INDIRIZZI: Record<Exclude<Area, 'scelta'>, string> = {
   sala: '#sala',
 }
 
+/**
+ * Il timer delle lezioni, che è un'app a sé (nalbertini/Timer-): da qui c'è
+ * solo il collegamento. Sta sullo stesso dominio, quindi i timer salvati sul
+ * dispositivo sono quelli di sempre.
+ */
+export const TIMER = 'https://nalbertini.github.io/Timer-/'
+
 function areaAdesso(): Area {
   // Va chiamata comunque: con `#sala` o `#tablet` è lei a ricordarselo.
   const tablet = eUnTablet()
