@@ -82,9 +82,15 @@ let unico: Promise<Dati> | null = null
  */
 export function dati(): Promise<Dati> {
   if (!unico) {
-    unico = haUnServer
+    unico = (haUnServer
       ? Promise.all([import('./datiSupabase'), import('./supabase')]).then(([m, s]) => m.creaDatiSupabase(s.clientSupabase()))
-      : import('./datiProva').then((m) => m.creaDatiProva())
+      : import('./datiProva').then((m) => m.creaDatiProva()))
+      // Se il pezzo non arriva (rete, o un aggiornamento pubblicato nel
+      // frattempo), la volta dopo si riprova invece di restare rotti.
+      .catch((e) => {
+        unico = null
+        throw e
+      })
   }
   return unico
 }

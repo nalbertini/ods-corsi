@@ -30,7 +30,13 @@ export const indirizzoPagina = (nome: string) => (nome ? `${INDIRIZZO_GUIDA}/${n
 
 /** La pagina dell'indirizzo, `''` per la guida generale. */
 export function paginaDi(hash: string): string {
-  return decodeURIComponent(hash.slice(INDIRIZZO_GUIDA.length).replace(/^\//, '')).replace(/\/$/, '')
+  const x = hash.slice(INDIRIZZO_GUIDA.length).replace(/^\//, '')
+  try {
+    return decodeURIComponent(x).replace(/\/$/, '')
+  } catch {
+    // Un indirizzo storpiato (`%E0`) diventa «pagina non trovata», non uno schermo bianco.
+    return x.replace(/\/$/, '')
+  }
 }
 
 export const esistePagina = (nome: string) => PAGINE.has(nome)

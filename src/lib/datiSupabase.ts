@@ -81,20 +81,24 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
   /**
    * Un errore è definitivo quando riprovare darebbe di nuovo lo stesso esito:
    * permesso negato, dati non validi, riga che non esiste. Un errore di rete no
-   * — quello è proprio il caso per cui la coda esiste.
+   * — quello è proprio il caso per cui la coda esiste. Nemmeno i PGRST0xx
+   * (database irraggiungibile, riavvio) e PGRST3xx (accesso scaduto, si
+   * rinnova da solo): quelli passano, e buttarli perderebbe le presenze.
    */
   const definitivo = (e: unknown) => {
     const codice = (e as { code?: string })?.code ?? ''
-    return /^(42|23|PGRST)/.test(codice)
+    return /^(42|23|22)/.test(codice) || /^PGRST[12]/.test(codice)
   }
 
   const conta = async (sessioni: RigaSessione[]): Promise<SessioneVista[]> => {
     const corsi = [...new Set(sessioni.map((s) => s.corso_id))]
     const ids = sessioni.map((s) => s.id)
-    const [{ data: isc }, { data: pres }] = await Promise.all([
+    const [{ data: isc, error: e1 }, { data: pres, error: e2 }] = await Promise.all([
       db.from('iscrizioni').select(ISCRIZIONE).in('corso_id', corsi.length ? corsi : ['-']),
       db.from('presenze').select('sessione_id, stato').in('sessione_id', ids.length ? ids : ['-']),
     ])
+    if (e1) throw e1
+    if (e2) throw e2
     const iscrizioni = (isc ?? []) as unknown as RigaIscrizione[]
     const presenti = new Map<string, number>()
     for (const r of pres ?? [])
@@ -133,14 +137,19 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
 
     async dettaglio(sessioneId) {
       const { data, error } = await db.from('sessioni').select(SELEZIONE).eq('id', sessioneId).single()
-      if (error || !data) return null
+      // Solo «non c'è» vuol dire null: un errore di rete detto come «nessun
+      // iscritto» farebbe credere vuoto un corso che non lo è.
+      if (error && error.code !== 'PGRST116') throw error
+      if (!data) return null
       const riga = data as unknown as RigaSessione
       const [viste] = await conta([riga])
 
-      const [{ data: iscritti }, { data: presenze }] = await Promise.all([
+      const [{ data: iscritti, error: e1 }, { data: presenze, error: e2 }] = await Promise.all([
         db.from('iscrizioni').select(ISCRIZIONE).eq('corso_id', riga.corso_id),
         db.from('presenze').select('persona_id, stato').eq('sessione_id', sessioneId),
       ])
+      if (e1) throw e1
+      if (e2) throw e2
       const stati = new Map((presenze ?? []).map((p) => [p.persona_id, p.stato as StatoPresenza]))
       const elenco = iscrittiIl((iscritti ?? []) as unknown as RigaIscrizione[], riga.corso_id, giornoDi(riga.inizio))
         .sort(perCognome)
@@ -185,7 +194,10 @@ async function scriviPresenza(
 }
 
 async function scriviTutti(db: SupabaseClient, sessioneId: string, stato: StatoPresenza) {
-  const { data: sess } = await db.from('sessioni').select('corso_id, inizio').eq('id', sessioneId).single()
+  // Senza rete postgrest non solleva, restituisce l'errore: va rilanciato, se
+  // no la coda crede fatta un'operazione che non è mai arrivata.
+  const { data: sess, error: s } = await db.from('sessioni').select('corso_id, inizio').eq('id', sessioneId).single()
+  if (s) throw s
   if (!sess) return
   // Solo chi è nell'appello di quel giorno: un ex iscritto o una persona
   // disattivata non si segna presente, neanche con TUTTI PRESENTI.

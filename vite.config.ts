@@ -59,8 +59,9 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         // Le pagine a sé, come l'informativa, restano quelle: senza, il
-        // service worker a ogni indirizzo risponde con l'app.
-        navigateFallbackDenylist: [/informativa\.html$/],
+        // service worker a ogni indirizzo risponde con l'app. Lo stesso i
+        // moduli in PDF: aperti in una scheda, senza, si vedeva una pagina bianca.
+        navigateFallbackDenylist: [/informativa\.html$/, /\/moduli\//, /\.pdf$/],
       },
     }),
   ],
