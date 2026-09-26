@@ -214,5 +214,11 @@ export function creaTabletProva(): DatiTablet {
       scrivi(sessioneId, personaId, stato, null)
       return true
     },
+
+    async musica() {
+      return (archivio.dati.musica ?? [])
+        .filter((l) => l.sala === null || l.sala === sala)
+        .map((l) => ({ id: l.id, nome: l.nome, link: l.link, salaId: l.sala }))
+    },
   }
 }

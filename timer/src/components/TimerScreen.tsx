@@ -13,6 +13,7 @@ import { DentroAnello, Digits, Ring } from './Quadrante'
 import { Close, Next, Pause, Play, Prev } from './Icons'
 import { MusicaBar } from './MusicaBar'
 import { useMusica, useMusicaAlTimer } from '../lib/useMusica'
+import type { StatoTimer } from '../lib/incorporato'
 
 const STATE_COLOR = {
   prepare: 'var(--prepare)',
@@ -31,6 +32,9 @@ export function TimerScreen({
   ripresa,
   onExit,
   onFinish,
+  onStato,
+  tastiera = true,
+  conMusica = true,
 }: {
   workout: Workout
   settings: Settings
@@ -38,6 +42,12 @@ export function TimerScreen({
   ripresa?: Interrotto | null
   onExit: () => void
   onFinish: (seconds: number, completed: boolean) => void
+  /** Sul tablet di sala: lo stato dell'allenamento, per la testata. */
+  onStato?: (s: StatoTimer | null) => void
+  /** Falso quando il timer c'è ma non si vede: la tastiera comanda altro. */
+  tastiera?: boolean
+  /** Falso sul tablet di sala, dove la musica sta nella barra in basso. */
+  conMusica?: boolean
 }) {
   // I secondi regalati da Maurizio si estraggono a ogni avvio: due giri dello
   // stesso allenamento non cadono negli stessi punti. Riprendendo un
@@ -181,6 +191,23 @@ export function TimerScreen({
 
   useEffect(() => () => chiudiSessione(), [])
 
+  // Il tablet di sala mostra l'allenamento in corso anche quando si guardano
+  // le presenze: il colore dell'intervallo, i secondi, il giro.
+  const statoRef = useRef(onStato)
+  statoRef.current = onStato
+  const conto = view.segment && view.segment.rounds > 1 ? `GIRO ${view.segment.round || 1}/${view.segment.rounds}` : ''
+  useEffect(() => {
+    statoRef.current?.({
+      nome: workout.name,
+      status: view.status,
+      kind: view.segment?.kind ?? null,
+      etichetta: view.segment?.label ?? '',
+      secondi: view.display,
+      conto,
+    })
+  }, [workout.name, view.status, view.segment?.kind, view.segment?.label, view.display, conto])
+  useEffect(() => () => statoRef.current?.(null), [])
+
   // La barra e la tacca del browser prendono il colore dello stato.
   useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]')
@@ -208,10 +235,13 @@ export function TimerScreen({
   exitRef.current = exit
   const startOrToggleRef = useRef(startOrToggle)
   startOrToggleRef.current = startOrToggle
+  const tastieraRef = useRef(tastiera)
+  tastieraRef.current = tastiera
 
   // La barra spaziatrice mette in pausa: comoda sul tablet con tastiera e su desktop.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (!tastieraRef.current) return
       if (e.code === 'Space') {
         e.preventDefault()
         startOrToggleRef.current()
@@ -385,7 +415,7 @@ export function TimerScreen({
         )}
       </div>
 
-      <MusicaBar musica={musica} />
+      {conMusica && <MusicaBar musica={musica} />}
 
       <div className="row timer-controlli">
         <button className="icon-btn tasto-salto" onClick={() => skip(-1)} aria-label="Intervallo precedente">

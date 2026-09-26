@@ -1,11 +1,9 @@
 import type { LezioneSala } from '../../lib/tablet'
 import { fase, REGOLE } from '../../lib/tablet'
-import { TIMER, timerDellaLezione } from '../../lib/aree'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Cronometro, Lucchetto, Recupero } from '../Icons'
+import { Lucchetto, Recupero } from '../Icons'
 import { Guaio, orario, Riquadro } from './comune'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
-import { MusicaSala } from './MusicaSala'
 
 const ETICHETTA = { finita: 'FINITA', aperta: 'SI SEGNA ORA', dopo: 'PIÙ TARDI' } as const
 
@@ -14,7 +12,8 @@ const ETICHETTA = { finita: 'FINITA', aperta: 'SI SEGNA ORA', dopo: 'PIÙ TARDI'
  *
  * A sinistra la lezione in cui ci si segna adesso, con un tasto grande quanto
  * una mano; a destra la giornata della sala. Chi entra deve capire da lontano
- * se è il suo turno.
+ * se è il suo turno. Il timer e la musica stanno nella barra in basso, che è
+ * del tablet e non di questa schermata.
  */
 export function TabletHome({
   sala,
@@ -43,89 +42,76 @@ export function TabletHome({
   const titolo = aperte.length ? 'SI SEGNA ADESSO' : 'OGGI'
 
   return (
-    <>
-      <div className="tb-corpo tb-home">
-        <div className="tb-colonna">
-          <span className="tb-etichetta">{titolo}</span>
+    <div className="tb-corpo tb-home">
+      <div className="tb-colonna">
+        <span className="tb-etichetta">{titolo}</span>
 
-          {guaio && <Guaio titolo="CALENDARIO NON LETTO" testo={guaio} />}
-          {!guaio && lezioni === null && <p className="tb-nota">Sto leggendo il calendario…</p>}
+        {guaio && <Guaio titolo="CALENDARIO NON LETTO" testo={guaio} />}
+        {!guaio && lezioni === null && <p className="tb-nota">Sto leggendo il calendario…</p>}
 
-          {lezioni !== null && diOggi.length === 0 && (
-            <Riquadro titolo="OGGI QUI NON CI SONO CORSI">
-              {prossima
-                ? `La prossima lezione è ${giornoPerEsteso(chiaveGiorno(new Date(prossima.inizio)))} alle ${oraDi(prossima.inizio)}: ${prossima.corso}${prossima.istruttori ? `, con ${prossima.istruttori}` : ''}.`
-                : 'Nei prossimi giorni non ci sono lezioni in calendario.'}
-            </Riquadro>
-          )}
-          {finite && (
-            <Riquadro titolo="PER OGGI QUI È FINITO">
-              Le lezioni di questa sala sono tutte passate. Chi si è dimenticato di segnarsi lo fa qui sotto.
-            </Riquadro>
-          )}
+        {lezioni !== null && diOggi.length === 0 && (
+          <Riquadro titolo="OGGI QUI NON CI SONO CORSI">
+            {prossima
+              ? `La prossima lezione è ${giornoPerEsteso(chiaveGiorno(new Date(prossima.inizio)))} alle ${oraDi(prossima.inizio)}: ${prossima.corso}${prossima.istruttori ? `, con ${prossima.istruttori}` : ''}.`
+              : 'Nei prossimi giorni non ci sono lezioni in calendario.'}
+          </Riquadro>
+        )}
+        {finite && (
+          <Riquadro titolo="PER OGGI QUI È FINITO">
+            Le lezioni di questa sala sono tutte passate. Chi si è dimenticato di segnarsi lo fa qui sotto.
+          </Riquadro>
+        )}
 
-          {aperte.map(({ l }) => (
-            <div key={l.id} className="tb-aperta" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}>
-              <div className="tb-aperta-testo">
-                <span className="num tb-orario">{orario(l)}</span>
-                <span className="ob tb-aperta-nome">{l.corso.toUpperCase()}</span>
-                <span className="tb-sotto">
-                  {[l.istruttori, `${l.presenti} ${l.presenti === 1 ? 'segnato' : 'segnati'} su ${l.iscritti}`].filter(Boolean).join(' · ')}
-                </span>
-              </div>
-              <button type="button" className="ob tb-btn-segna" onClick={() => onSegna(l)}>
-                SEGNA LA PRESENZA
-              </button>
-            </div>
-          ))}
-
-          <div className="grow" />
-          <span className="tb-nota">
-            Si segna da {REGOLE.primaMin} minuti prima dell'inizio a {REGOLE.dopoMin} minuti dopo la fine. Qui compaiono solo nome e
-            iniziale del cognome.
-          </span>
-        </div>
-
-        <aside className="tb-colonna tb-giornata">
-          <span className="tb-etichetta">OGGI IN QUESTA SALA</span>
-          {conFase.map(({ l, f }) => (
-            <div key={l.id} className="tb-giornata-riga" data-fase={f}>
-              <span className="tb-tacca" style={{ background: l.colore ?? 'var(--blu)' }} />
-              <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-                <span className="ob" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.03em' }}>{l.corso.toUpperCase()}</span>
-                <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
+        {aperte.map(({ l }) => (
+          <div key={l.id} className="tb-aperta" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}>
+            <div className="tb-aperta-testo">
+              <span className="num tb-orario">{orario(l)}</span>
+              <span className="ob tb-aperta-nome">{l.corso.toUpperCase()}</span>
+              <span className="tb-sotto">
+                {[l.istruttori, `${l.presenti} ${l.presenti === 1 ? 'segnato' : 'segnati'} su ${l.iscritti}`].filter(Boolean).join(' · ')}
               </span>
-              <span className="num tb-fase">{ETICHETTA[f]}</span>
             </div>
-          ))}
-          {lezioni !== null && diOggi.length === 0 && <span className="tb-nota">Nessuna lezione.</span>}
-        </aside>
+            <button type="button" className="ob tb-btn-segna" onClick={() => onSegna(l)}>
+              SEGNA LA PRESENZA
+            </button>
+          </div>
+        ))}
+
+        <div className="grow" />
+        <div className="tb-barra" style={{ flexWrap: 'wrap', gap: 12 }}>
+          <button type="button" className="tb-btn tb-btn-linea" style={{ borderColor: 'var(--giallo)' }} onClick={onRecupero}>
+            <Recupero />
+            TI SEI DIMENTICATO DI SEGNARTI?
+          </button>
+          <button type="button" className="tb-btn tb-btn-linea" onClick={onPin}>
+            <Lucchetto />
+            AREA ISTRUTTORE
+          </button>
+        </div>
+        <span className="tb-nota">
+          Si segna da {REGOLE.primaMin} minuti prima dell'inizio a {REGOLE.dopoMin} minuti dopo la fine. Qui compaiono solo nome e
+          iniziale del cognome.
+        </span>
       </div>
 
-      <footer className="tb-piede">
-        <button type="button" className="tb-btn tb-btn-linea" style={{ borderColor: 'var(--giallo)' }} onClick={onRecupero}>
-          <Recupero />
-          TI SEI DIMENTICATO DI SEGNARTI?
-        </button>
-        <button type="button" className="tb-btn tb-btn-linea" onClick={onPin}>
-          <Lucchetto />
-          AREA ISTRUTTORE
-        </button>
-        {/* Il timer è un'app a sé, in timer/: il suo tasto SALA riporta
-            alla radice, che su un tablet riapre il tablet. Con una lezione
-            in corso si apre con quella, e i timer del corso stanno in cima. */}
-        <a className="tb-btn tb-btn-linea" href={aperte.length ? timerDellaLezione(aperte[0].l) : TIMER}>
-          <Cronometro />
-          TIMER
-        </a>
-        {/* La musica di Spotify, se collegata dal timer: si mette su quando
-            entra la gente, senza aprire niente. */}
-        <MusicaSala />
-        <span className="grow" />
+      <aside className="tb-colonna tb-giornata">
+        <span className="tb-etichetta">OGGI IN QUESTA SALA</span>
+        {conFase.map(({ l, f }) => (
+          <div key={l.id} className="tb-giornata-riga" data-fase={f}>
+            <span className="tb-tacca" style={{ background: l.colore ?? 'var(--blu)' }} />
+            <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+              <span className="ob" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.03em' }}>{l.corso.toUpperCase()}</span>
+              <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
+            </span>
+            <span className="num tb-fase">{ETICHETTA[f]}</span>
+          </div>
+        ))}
+        {lezioni !== null && diOggi.length === 0 && <span className="tb-nota">Nessuna lezione.</span>}
+        <div className="grow" />
         <span className="tb-nota" title={VERSIONE_ESTESA}>
           Tablet di sala · {sala} · {VERSIONE}
         </span>
-      </footer>
-    </>
+      </aside>
+    </div>
   )
 }

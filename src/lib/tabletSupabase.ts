@@ -112,5 +112,10 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
 
     correggi: (pin, sessioneId, personaId, stato) =>
       rpc<boolean>('segna_con_pin', { pin, sessione: sessioneId, persona: personaId, stato }),
+
+    async musica() {
+      const righe = await rpc<Array<{ id: string; nome: string; link: string; sala_id: string | null }>>('musica_sala', {})
+      return (righe ?? []).map((r) => ({ id: r.id, nome: r.nome, link: r.link, salaId: r.sala_id }))
+    },
   }
 }

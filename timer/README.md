@@ -38,8 +38,8 @@ altri i nomi si alternano a ogni round e vengono annunciati dalla voce.
   ferma a schermo spento, quindi è pensato per il tablet di sala.
 - La barra della musica sta in tutte le schede, non solo nell'allenamento, e
   il lettore di YouTube è uno solo per tutta l'app: cambiando schermata non si
-  interrompe. Il tablet di sala di ODS Corsi mostra i comandi di Spotify con lo
-  stesso collegamento.
+  interrompe. Sul tablet di sala la musica sta nella barra del tablet, con le
+  liste preparate dalla segreteria (vedi sotto).
 - Da tastiera: `spazio` pausa, `←` `→` intervallo precedente e successivo,
   `Esc` esce.
 - Il tempo è ricavato dall'orologio a ogni tick, non accumulato: un tab in
@@ -60,11 +60,28 @@ pubblica nella sottocartella `timer/` dello stesso sito
 repository a sé, [nalbertini/Timer-](https://github.com/nalbertini/Timer-): la
 storia è stata portata qui intera.
 
-Il tasto **SALA** riporta al tablet di sala di ODS Corsi, il calendario e
-l'appello: è un'app a sé, che sul tablet ha il tasto TIMER. È grosso come i
-tasti del tablet: in fondo alla barra laterale, in alto sui tablet in verticale,
-nella barra in basso sui telefoni. Apre `../`, la radice di ODS Corsi, che su un tablet
-di sala riapre il tablet della sua sala.
+## Dentro il tablet di sala
+
+Sul tablet di sala di ODS Corsi il timer non si apre in un'altra pagina: è la
+scheda **TIMER** del tablet, accanto a **PRESENZE**, compilata dentro ODS Corsi
+da questi stessi file (`App` con la prop `incorporato`, vedi
+`src/lib/incorporato.ts`). Lì:
+
+- resta montato anche quando si guardano le presenze, e dice al tablet a che
+  punto è (`onStato`): il tablet lo mostra in testata;
+- non ha il tasto SALA né il marchio (li ha il tablet), né la sua barra della
+  musica e il suo lettore di YouTube: la musica è del tablet, che la tiene
+  sempre allo stesso posto e la sceglie fra le liste della sala. Al timer
+  restano le automazioni — parte, si ferma, si abbassa nel recupero — sulla
+  fonte scelta dal tablet;
+- la tastiera lo comanda solo quando lo si guarda;
+- i suoi file (voce, illustrazioni, guida) stanno un piano sotto la pagina, in
+  `timer/`: lo dice `__TIMER_RADICE__` (`src/lib/radice.ts`), vuoto qui.
+
+Il tasto **SALA**, nel timer da solo, riporta a ODS Corsi: è grosso come i
+tasti del tablet, in fondo alla barra laterale, in alto sui tablet in
+verticale, nella barra in basso sui telefoni. Apre `../`, la radice di ODS
+Corsi, che su un tablet di sala riapre il tablet della sua sala.
 
 Il **tema** è nero o bianco, e lo stesso di ODS Corsi: le due app stanno sullo
 stesso dominio e usano la stessa chiave (`ods-tema`), quindi scelto in una vale

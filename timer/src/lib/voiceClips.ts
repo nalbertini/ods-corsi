@@ -1,3 +1,4 @@
+import { daRadice } from './radice'
 import type { SegmentKind } from '../types'
 
 /**
@@ -112,4 +113,4 @@ export function exerciseKey(name: string): string {
  */
 export const CLIP_EXTENSIONS = ['m4a', 'mp3', 'webm', 'ogg', 'wav'] as const
 
-export const CLIP_DIR = 'voce'
+export const CLIP_DIR = daRadice('voce')

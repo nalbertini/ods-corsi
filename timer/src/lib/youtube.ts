@@ -18,41 +18,8 @@
 
 import type { Lettore } from './spotify'
 
-/** Quel che si ricava da un link: il video da cui partire, la playlist, o tutti e due. */
-export interface Sorgente {
-  video?: string
-  lista?: string
-}
-
-const ID = /^[\w-]{11}$/
-const LISTA = /^[\w-]{10,}$/
-
-/**
- * Legge un link di YouTube, in tutte le forme in cui lo si copia: dall'app,
- * dal browser, dalla condivisione, da YouTube Music. Null se non è YouTube.
- */
-export function leggiLink(testo: string): Sorgente | null {
-  const t = testo.trim()
-  if (!t) return null
-  let u: URL
-  try {
-    u = new URL(/^https?:\/\//i.test(t) ? t : `https://${t}`)
-  } catch {
-    return null
-  }
-  const host = u.hostname.replace(/^(www|m|music)\./, '')
-  let video: string | undefined
-  if (host === 'youtu.be') video = u.pathname.slice(1).split('/')[0]
-  else if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
-    const [, primo, secondo] = u.pathname.split('/')
-    video = primo === 'watch' ? (u.searchParams.get('v') ?? undefined) : ['embed', 'shorts', 'live', 'v'].includes(primo) ? secondo : undefined
-  } else return null
-  const lista = u.searchParams.get('list') ?? undefined
-  const s: Sorgente = {}
-  if (video && ID.test(video)) s.video = video
-  if (lista && LISTA.test(lista)) s.lista = lista
-  return s.video || s.lista ? s : null
-}
+export { leggiLink, type Sorgente } from './link'
+import type { Sorgente } from './link'
 
 /* ---------- l'IFrame API, caricata una volta sola e solo se serve ---------- */
 
@@ -182,7 +149,7 @@ function leggiStato() {
  * lui. Tenerlo acceso altrove vorrebbe dire tenerlo visibile altrove, ed è la
  * regola di YouTube che lo impedisce.
  */
-export function monta(el: HTMLElement, sorgente: Sorgente): () => void {
+export function monta(el: HTMLElement, sorgente: Sorgente, parti = false): () => void {
   let vivo = true
   const posto = document.createElement('div')
   el.appendChild(posto)
@@ -205,6 +172,8 @@ export function monta(el: HTMLElement, sorgente: Sorgente): () => void {
           onReady: (e) => {
             if (!vivo) return
             e.target.setVolume(volumeScelto)
+            // Una lista appena scelta col dito parte da sola: il tocco c'è già stato.
+            if (parti) e.target.playVideo()
             aggiorna({ pronto: true })
             leggiStato()
           },

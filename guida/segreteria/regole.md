@@ -27,6 +27,21 @@ database, se è stato attivato, oppure subito con **CANCELLA ORA** (chiede confe
 L'elenco delle sale con i loro posti: **CAMBIA** per il nome o i posti,
 **AGGIUNGI UNA SALA** per una nuova.
 
+## La musica delle sale
+
+Le liste che il tablet di sala fa partire dalla sua barra in basso (vedi
+[Il tablet di sala](../sala.md#la-musica)). Ognuna ha:
+
+- **un nome**, quello che si legge sul tablet: «Riscaldamento», «Randori»;
+- **il link a una playlist** di YouTube o di Spotify: dall'app, **Condividi ›
+  Copia link**, e si incolla. Sotto il campo si legge se è YouTube o Spotify;
+  un link che non è né l'uno né l'altro non si salva;
+- **la sala**, o **Tutte le sale**.
+
+**CAMBIA** per correggerla, **TOGLI** per toglierla. Il tablet le rilegge ogni
+cinque minuti. Le liste di Spotify suonano solo se sul tablet è collegato un
+account Spotify Premium, dalle impostazioni del timer.
+
 ## Privacy
 
 - **L'informativa** — lo stato dell'informativa privacy che vede chi si

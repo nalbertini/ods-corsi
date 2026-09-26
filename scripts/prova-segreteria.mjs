@@ -355,5 +355,26 @@ console.log('\nil certificato medico e il pagamento')
   ok('nell\'esportazione dei dati', [e.certificato_e_pagamento.certificato_scade, e.certificato_e_pagamento.stato], ['2026-09-25', 'pagato'])
 }
 
+console.log('\nla musica delle sale')
+{
+  const yt = 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG'
+  const sp = 'https://open.spotify.com/intl-it/playlist/37i9dQZF1DX76Wlfdnj7AP?si=abc'
+  const randori = await s.salvaListaMusica({ nome: '  Randori  ', link: yt, salaId: 'Lotta' })
+  await s.salvaListaMusica({ nome: 'Riscaldamento', link: sp, salaId: null })
+  await s.salvaListaMusica({ nome: 'Bambini', link: 'https://youtu.be/dQw4w9WgXcQ', salaId: 'Tatami' })
+  ok('un link che non è musica no', await errore(() => s.salvaListaMusica({ nome: 'Altro', link: 'https://esempio.it/lista', salaId: null })), 'Il link non è una playlist di YouTube o di Spotify')
+  ok('un nome vuoto no', await errore(() => s.salvaListaMusica({ nome: '  ', link: yt, salaId: null })), 'La lista ha bisogno di un nome')
+  ok('una sala che non c\'è no', await errore(() => s.salvaListaMusica({ nome: 'X', link: yt, salaId: 'Piscina' })), 'Sala inesistente')
+  ok('la segreteria le vede tutte, col nome pulito', (await s.listeMusica()).map((l) => l.nome), ['Randori', 'Riscaldamento', 'Bambini'])
+  const t = m.creaTabletProva()
+  await t.scegliSala('Lotta')
+  ok('il tablet della Lotta: la sua e quella di tutte', (await t.musica()).map((l) => l.nome), ['Randori', 'Riscaldamento'])
+  await s.salvaSala({ id: 'Lotta', nome: 'Lotta libera' })
+  ok('la sala rinominata se la porta dietro', (await s.listeMusica()).find((l) => l.id === randori).salaId, 'Lotta libera')
+  await s.salvaSala({ id: 'Lotta libera', nome: 'Lotta' })
+  await s.togliListaMusica(randori)
+  ok('tolta, il tablet non la vede più', (await t.musica()).map((l) => l.nome), ['Riscaldamento'])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

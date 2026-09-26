@@ -87,6 +87,8 @@ export interface Archivio {
   /** I PIN del tablet cambiati dalla segreteria, per persona. */
   pin?: Record<string, string>
   impostazioni?: { mesiPresenze: number; giorniCalendario: number }
+  /** Le liste della musica delle sale; `sala` nulla vuol dire tutte. */
+  musica?: Array<{ id: string; nome: string; link: string; sala: string | null }>
 }
 
 // ---------------------------------------------------------------------------

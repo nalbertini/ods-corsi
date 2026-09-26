@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import type { DatiSegreteria, Sala } from '../../lib/segreteria'
+import type { DatiSegreteria, ListaMusica, Sala } from '../../lib/segreteria'
+import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
 import { dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
 
 /**
  * Le scelte che spettano alla palestra, non al codice: per quanto si tengono
- * le presenze, fin dove si prepara il calendario, le sale, la privacy.
+ * le presenze, fin dove si prepara il calendario, le sale e la loro musica,
+ * la privacy.
  */
 export function Regole({ d }: { d: DatiSegreteria }) {
   const imp = useCarica(() => d.impostazioni(), [d])
@@ -14,6 +16,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
   const pronto = useCarica(() => d.prontoFino(), [d])
   const sale = useCarica(() => d.sale(), [d])
   const persone = useCarica(() => d.persone(), [d])
+  const musica = useCarica(() => d.listeMusica(), [d])
   const { avviso, fai } = useAvviso()
   const [sala, setSala] = useState<{ id?: string; nome: string; capienza?: number } | null>(null)
   const [chi, setChi] = useState('')
@@ -164,6 +167,8 @@ export function Regole({ d }: { d: DatiSegreteria }) {
           )}
         </section>
 
+        <MusicaSale d={d} sale={sale.dato ?? []} liste={musica.dato} guaio={musica.guaio} ricarica={musica.ricarica} fai={fai} />
+
         <section aria-label="Privacy" className="sg-riquadro">
           <div className="row" style={{ gap: 10 }}>
             <span className="ob sg-riquadro-titolo grow">PRIVACY</span>
@@ -267,6 +272,164 @@ function FormSala({
       <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} aria-label="Salva la sala">
         <Spunta size={18} />
       </button>
+    </form>
+  )
+}
+
+type Fai = (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => Promise<unknown>
+type Bozza = { id?: string; nome: string; link: string; salaId: string | null }
+
+const FONTE = { youtube: 'YOUTUBE', spotify: 'SPOTIFY' } as const
+
+/**
+ * Le liste della musica che il tablet di ogni sala fa partire dalla sua barra
+ * in basso: un nome e il link a una playlist di YouTube o di Spotify.
+ */
+function MusicaSale({
+  d,
+  sale,
+  liste,
+  guaio,
+  ricarica,
+  fai,
+}: {
+  d: DatiSegreteria
+  sale: Sala[]
+  liste: ListaMusica[] | null
+  guaio: string | null
+  ricarica: () => Promise<unknown>
+  fai: Fai
+}) {
+  const [bozza, setBozza] = useState<Bozza | null>(null)
+  const nomeSala = (id: string | null) => (id ? (sale.find((s) => s.id === id)?.nome ?? 'sala tolta') : 'Tutte le sale')
+  const salva = () => {
+    if (!bozza) return
+    void fai(() => d.salvaListaMusica(bozza), bozza.id ? 'Lista salvata' : 'Lista aggiunta', async () => {
+      setBozza(null)
+      await ricarica()
+    })
+  }
+
+  return (
+    <section aria-label="La musica delle sale" className="sg-riquadro">
+      <span className="ob sg-riquadro-titolo">LA MUSICA DELLE SALE</span>
+      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
+        Le liste che il tablet di sala fa partire dalla sua barra in basso, sempre a portata di mano: un nome e il link a una playlist di YouTube o di
+        Spotify. Il tablet le sceglie e basta. Per Spotify serve che sul tablet sia collegato un account Premium, dalle impostazioni del timer.
+      </span>
+      {guaio && <Guaio testo={`Le liste non si leggono: ${guaio}`} />}
+      {(liste ?? []).map((l) =>
+        bozza?.id === l.id ? (
+          <FormLista key={l.id} bozza={bozza} sale={sale} setBozza={setBozza} onSalva={salva} />
+        ) : (
+          <div key={l.id} className="row sg-voce-elenco" style={{ gap: 12 }}>
+            <span className="stack grow" style={{ minWidth: 0 }}>
+              <span style={{ fontSize: 15, fontWeight: 600 }}>{l.nome}</span>
+              <span style={{ fontSize: 12, color: 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.link}</span>
+            </span>
+            <span className="num sg-tag" style={{ fontSize: 11, padding: '2px 6px' }}>
+              {FONTE[fonteDelLink(l.link) ?? 'youtube']}
+            </span>
+            <span className="num" style={{ fontSize: 14, color: 'var(--sec)', whiteSpace: 'nowrap' }}>{nomeSala(l.salaId)}</span>
+            <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => setBozza({ ...l })}>
+              CAMBIA
+            </button>
+            <button
+              type="button"
+              className="num sg-chip"
+              style={{ minHeight: 36 }}
+              onClick={() => {
+                if (window.confirm(`Togliere «${l.nome}» dalla musica ${l.salaId ? `della sala ${nomeSala(l.salaId)}` : 'di tutte le sale'}?`)) {
+                  void fai(() => d.togliListaMusica(l.id), 'Lista tolta', ricarica)
+                }
+              }}
+            >
+              TOGLI
+            </button>
+          </div>
+        ),
+      )}
+      {liste && liste.length === 0 && !bozza && <span className="sg-sotto">Nessuna lista: il tablet suona quella scelta nelle impostazioni del timer.</span>}
+      {bozza && !bozza.id ? (
+        <FormLista bozza={bozza} sale={sale} setBozza={setBozza} onSalva={salva} />
+      ) : (
+        <button type="button" className="sg-btn sg-btn-tratteggio" disabled={!liste} onClick={() => setBozza({ nome: '', link: '', salaId: null })}>
+          + AGGIUNGI UNA LISTA
+        </button>
+      )}
+    </section>
+  )
+}
+
+function FormLista({
+  bozza,
+  sale,
+  setBozza,
+  onSalva,
+}: {
+  bozza: Bozza
+  sale: Sala[]
+  setBozza: (b: Bozza | null) => void
+  onSalva: () => void
+}) {
+  const fonte = fonteDelLink(bozza.link)
+  const scritto = bozza.link.trim().length > 0
+  return (
+    <form
+      className="stack sg-voce-elenco"
+      style={{ gap: 8, borderColor: 'var(--text)', alignItems: 'stretch' }}
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (fonte) onSalva()
+      }}
+    >
+      <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+        <input
+          className="sg-campo grow"
+          aria-label="Nome della lista"
+          placeholder="nome, per esempio Riscaldamento"
+          required
+          autoFocus
+          maxLength={MAX_NOME_LISTA}
+          value={bozza.nome}
+          onChange={(e) => setBozza({ ...bozza, nome: e.target.value })}
+        />
+        <select className="sg-campo" aria-label="Sala" value={bozza.salaId ?? ''} onChange={(e) => setBozza({ ...bozza, salaId: e.target.value || null })}>
+          <option value="">Tutte le sale</option>
+          {sale.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.nome}
+            </option>
+          ))}
+        </select>
+      </div>
+      <input
+        className="sg-campo"
+        aria-label="Link alla playlist"
+        placeholder="link a una playlist di YouTube o di Spotify"
+        required
+        inputMode="url"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        value={bozza.link}
+        onChange={(e) => setBozza({ ...bozza, link: e.target.value })}
+      />
+      <div className="row" style={{ gap: 8 }}>
+        <span className="grow" style={{ fontSize: 13, color: scritto && !fonte ? 'var(--rosso)' : 'var(--dim)' }}>
+          {!scritto
+            ? 'Da YouTube o da Spotify: Condividi › Copia link.'
+            : fonte
+              ? `Una playlist di ${fonte === 'youtube' ? 'YouTube' : 'Spotify'}.`
+              : 'Questo link non è di YouTube né di Spotify.'}
+        </span>
+        <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setBozza(null)}>
+          LASCIA STARE
+        </button>
+        <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!fonte} aria-label="Salva la lista">
+          <Spunta size={18} />
+        </button>
+      </div>
     </form>
   )
 }

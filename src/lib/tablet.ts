@@ -1,5 +1,6 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { haUnServer } from './dati'
+import type { ListaMusica } from './musica'
 
 /**
  * Il tablet di sala.
@@ -105,6 +106,9 @@ export interface DatiTablet {
   appello(pin: string, sessioneId: string): Promise<RigaAppelloTablet[]>
   /** `null` toglie il segno, ma solo a una presenza arrivata dal tablet. */
   correggi(pin: string, sessioneId: string, personaId: string, stato: StatoPresenza | null): Promise<boolean>
+
+  /** Le liste della musica di questa sala e di tutte, preparate dalla segreteria. */
+  musica(): Promise<ListaMusica[]>
 }
 
 // ---------------------------------------------------------------------------

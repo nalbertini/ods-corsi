@@ -1,4 +1,5 @@
 import type { SegmentKind } from '../types'
+import { daRadice } from './radice'
 
 /**
  * Le illustrazioni di Maurizio.
@@ -7,7 +8,7 @@ import type { SegmentKind } from '../types'
  * la prima volta che servono, così chi non usa la modalità non se le porta
  * dietro. Da quel momento restano in cache e funzionano anche offline.
  */
-const url = (nome: string) => `adesivi/${nome}.webp`
+const url = (nome: string) => daRadice(`adesivi/${nome}.webp`)
 
 /** Quando lo becchi a sbagliare il conto: al centro, con la frase. */
 export const BECCATO = ['meno-pause', 'cronometro', 'indica', 'idea', 'carponi'].map(url)

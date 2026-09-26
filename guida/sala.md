@@ -18,19 +18,48 @@ aprite l'appello completo e lo correggete.
     è la prossima lezione, se sono finiti dice **PER OGGI QUI È FINITO**.
 - **A destra**, **OGGI IN QUESTA SALA**: tutte le lezioni del giorno, con
   FINITA, SI SEGNA ORA o PIÙ TARDI.
-- **In basso** tre tasti: **TI SEI DIMENTICATO DI SEGNARTI?**, **AREA
-  ISTRUTTORE** e **TIMER**, che apre il timer. Se in quel momento ci si segna
-  a una lezione, il timer si apre con quella: in cima, in **DEL CORSO**, ci
-  sono i timer che gli istruttori hanno collegato al corso, poi quelli della
-  palestra. Dal tablet i timer si fanno partire, non si cambiano: si creano e
-  si modificano dal proprio telefono, entrando come istruttore. Dal timer si
-  torna al tablet con **SALA**. Il tema bianco scelto qui vale anche nel
-  timer, e viceversa.
-- **La musica**: se Spotify è collegato dalle impostazioni del timer, accanto
-  ai tasti compaiono il brano in corso, il volume e ⏮ ▶ ⏭. Il collegamento è
-  lo stesso del timer, e passando dall'uno all'altro la musica non si ferma.
-  YouTube invece si comanda solo dentro il timer: suona nella pagina, e
-  toccando TIMER si interromperebbe.
+- Sotto la lezione, **TI SEI DIMENTICATO DI SEGNARTI?** e **AREA
+  ISTRUTTORE**.
+- **In fondo, la barra della sala**, che è la stessa su ogni schermata: le
+  due schede **PRESENZE** e **TIMER**, e la musica.
+
+## Il timer
+
+**TIMER**, nella barra in basso, apre il timer dentro il tablet: è lo stesso
+timer del telefono, con cronometro, conto alla rovescia e impostazioni. Se in
+quel momento ci si segna a una lezione, in cima, in **DEL CORSO**, ci sono i
+timer che gli istruttori hanno collegato al corso, poi quelli della palestra.
+Dal tablet i timer si fanno partire, non si cambiano: si creano e si
+modificano dal proprio telefono, entrando come istruttore. Il tema bianco
+scelto qui vale anche nel timer, e viceversa.
+
+**Il timer non si ferma cambiando scheda.** Con un allenamento in corso:
+
+- chi arriva tardi tocca **SI SEGNA ORA · … SEGNATI**, in alto, e si segna.
+  L'istruttore può aprire l'area istruttore e l'appello allo stesso modo;
+- guardando le presenze, in alto resta il timer: l'intervallo (**LAVORO**,
+  **RECUPERO**…), i secondi e il giro, e il bordo della testata prende il suo
+  colore. Toccandolo si torna al timer. Anche la scheda **TIMER** in basso
+  dice a che punto è.
+
+Lasciato sulla scheda **TIMER**, il tablet ci resta: con una lezione aperta, in
+alto c'è sempre **SI SEGNA ORA** per chi arriva.
+
+## La musica
+
+In fondo a destra c'è la musica: il brano, il volume e ⏮ ▶ ⏭, sotto le
+presenze come sotto il timer. È sempre nello stesso punto, quindi passando da
+una scheda all'altra non si ferma, nemmeno con YouTube. Con YouTube il lettore
+si vede a destra, sopra la barra: YouTube vuole che resti visibile.
+
+Il tasto **☰** accanto apre **LA MUSICA DELLA SALA**, le liste preparate dalla
+segreteria («Riscaldamento», «Randori»…): se ne tocca una e parte. **DALLE
+IMPOSTAZIONI DEL TIMER** torna a quella scelta nelle impostazioni del timer.
+Le liste di Spotify vogliono Spotify collegato sul tablet (Impostazioni del
+timer › Musica); senza, sono spente.
+
+Se il timer è impostato così, la musica parte e si ferma col timer e si
+abbassa nel recupero, qualunque lista suoni.
 
 ## Quando ci si segna
 

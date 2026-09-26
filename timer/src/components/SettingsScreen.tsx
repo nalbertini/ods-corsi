@@ -21,6 +21,7 @@ import { useMusica, useSpotify } from '../lib/useMusica'
 import { VOLUME_BLOCCATO, leggiLink } from '../lib/youtube'
 import { Chevron } from './Icons'
 import { Logo } from './Logo'
+import { daRadice } from '../lib/radice'
 
 const AUDIO_ETICHETTA: Record<ModoAudio, string> = {
   muto: 'MUTO',
@@ -123,7 +124,7 @@ export function SettingsScreen({
       <div className="pad" style={{ paddingTop: 16 }}>
         <div className="card maurizio-card">
           <div className="row" style={{ gap: 14, alignItems: 'flex-start' }}>
-            <img src="adesivi/indica.webp" alt="" className="maurizio-faccia" />
+            <img src={daRadice('adesivi/indica.webp')} alt="" className="maurizio-faccia" />
             <div className="stack grow" style={{ gap: 6, minWidth: 0 }}>
               <span className="ob" style={{ fontSize: 25, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
                 MODALITÀ MAURIZIO
@@ -559,7 +560,7 @@ export function SettingsScreen({
             chiunque abbia l'indirizzo dell'app. */}
         <a
           className="card row"
-          href="guida.html"
+          href={daRadice('guida.html')}
           target="_blank"
           rel="noopener"
           style={{ gap: 12, padding: '0 14px', minHeight: 60, textDecoration: 'none', color: 'inherit' }}
