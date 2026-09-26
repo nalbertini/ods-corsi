@@ -405,3 +405,17 @@ input, textarea { font: inherit; color: inherit; }
   .tb-pin { gap: 32px; }
   .tb-tastiera { grid-template-columns: repeat(3, 90px); }
 }
+
+/* ---------- accesso ---------- */
+
+.campo {
+  min-height: 52px; padding: 0 14px; font-size: 17px;
+  background: var(--surface); border: 2px solid var(--line); color: var(--text);
+}
+.campo:focus { outline: none; border-color: var(--text); }
+/* Chi è entrato, in piccolo: sul telefono durante l'appello ogni riga conta. */
+.chi-sei {
+  gap: 10px; padding-top: 10px;
+  font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim);
+}
+.chi-esci { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); text-decoration: underline; padding: 6px 0; }
