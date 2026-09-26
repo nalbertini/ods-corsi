@@ -73,13 +73,28 @@ export async function chiSei(): Promise<Personale | null> {
 export async function entra(email: string, password: string): Promise<Personale> {
   const c = await db()
   const { error } = await c.auth.signInWithPassword({ email, password })
-  if (error) throw new Error(/fetch|network/i.test(error.message) ? 'Il server non risponde: c’è rete?' : 'Email o password sbagliate')
+  if (error) throw new Error(perché(error))
   const p = await chiSei()
   if (!p) {
     await c.auth.signOut()
     throw new Error('Questo account non è di un istruttore né della segreteria: va legato in «persone»')
   }
   return p
+}
+
+/**
+ * Il motivo del rifiuto, detto per quello che è: «email o password
+ * sbagliate» per tutto faceva cercare una password giusta quando il guaio era
+ * altrove (un account non confermato, un indirizzo del server sbagliato).
+ */
+function perché(e: { message?: string; code?: string; status?: number }): string {
+  const codice = e.code ?? ''
+  const testo = e.message ?? ''
+  if (codice === 'invalid_credentials' || /invalid login credentials/i.test(testo)) return 'Email o password sbagliate'
+  if (codice === 'email_not_confirmed' || /not confirmed/i.test(testo))
+    return 'L’account non è ancora confermato: in Supabase, Authentication → Users'
+  if (/fetch|network|load failed/i.test(testo)) return 'Il server non risponde: c’è rete?'
+  return `Il server ha rifiutato l’accesso${testo ? `: ${testo}` : ''}`
 }
 
 export async function esci(): Promise<void> {
