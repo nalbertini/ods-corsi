@@ -3,6 +3,7 @@ import type { DatiTablet, LezioneSala, Postazione } from '../../lib/tablet'
 import { datiTablet, lasciaTablet, REGOLE } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Logo } from '../Logo'
+import { TastoTema } from '../TastoTema'
 import { giornoDopo, messaggio, useAdesso, useInattivo, useSchermoAcceso } from './comune'
 import { TabletHome } from './TabletHome'
 import { TabletPresenza } from './TabletPresenza'
@@ -132,6 +133,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
           <span className="num tb-bollino" style={{ background: 'var(--blu)' }}>AREA ISTRUTTORE · {vista.nome.toUpperCase()}</span>
         )}
         <span className="num tb-ora">{oraDi(adesso.toISOString())}</span>
+        <TastoTema />
       </header>
 
       {vista.s === 'home' && (

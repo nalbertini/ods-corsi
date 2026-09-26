@@ -63,7 +63,7 @@ su un tablet di sala, che riapre sempre il tablet.
 - **Il tema bianco**, oltre al nero del marchio: il tasto col sole in
   testata (in segreteria «Tema bianco», nel riquadro in basso) lo sceglie per
   quel dispositivo; finché nessuno sceglie, l'app segue il tema del
-  dispositivo. Il tablet di sala segue il dispositivo.
+  dispositivo. Sul tablet di sala il tasto sta accanto all'ora.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa.
 
