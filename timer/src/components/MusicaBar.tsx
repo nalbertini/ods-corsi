@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react'
 import type { Musica } from '../lib/useMusica'
-import { leggiLink, monta } from '../lib/youtube'
+import { PostoPlayer } from './PlayerYoutube'
 import { Minus, Next, Pause, Play, Plus, Prev } from './Icons'
 
 /**
@@ -8,19 +7,20 @@ import { Minus, Next, Pause, Play, Plus, Prev } from './Icons'
  *
  * C'è solo se c'è qualcosa da comandare. Con Spotify è una riga e non di più:
  * lo schermo è del tempo, e la musica si guarda con la coda dell'occhio fra un
- * giro e l'altro. Con YouTube accanto ai tasti c'è il lettore stesso, perché
- * YouTube vuole che si veda.
+ * giro e l'altro. Con YouTube accanto ai tasti c'è il posto del lettore,
+ * perché YouTube vuole che si veda: il lettore vero sta alla radice dell'app e
+ * ci si appoggia sopra (vedi PlayerYoutube).
  */
-export function MusicaBar({ musica, youtube }: { musica: Musica; youtube: string }) {
+export function MusicaBar({ musica, className = '' }: { musica: Musica; className?: string }) {
   if (!musica.attiva) return null
   const { lettore: l, errore, comandi } = musica
   const suonando = l?.inRiproduzione ?? false
   const yt = musica.fonte === 'youtube'
 
   return (
-    <div className="musica-bar card" data-fonte={musica.fonte}>
+    <div className={`musica-bar card ${className}`} data-fonte={musica.fonte}>
       {yt ? (
-        <RiquadroYoutube link={youtube} />
+        <PostoPlayer />
       ) : l?.copertina ? (
         <img className="musica-copertina" src={l.copertina} alt="" />
       ) : (
@@ -64,15 +64,4 @@ export function MusicaBar({ musica, youtube }: { musica: Musica; youtube: string
       </div>
     </div>
   )
-}
-
-/** Il lettore di YouTube: montato con il timer, smontato quando si esce. */
-function RiquadroYoutube({ link }: { link: string }) {
-  const el = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const s = leggiLink(link)
-    if (!el.current || !s) return
-    return monta(el.current, s)
-  }, [link])
-  return <div className="musica-video" ref={el} />
 }

@@ -642,7 +642,7 @@ function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: 
           <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--dim)' }}>
             {yt
               ? 'Suona dentro il timer, da un link a una playlist o a un video. Niente account. Il lettore resta visibile nel timer e si ferma con lo schermo spento: adatto al tablet di sala.'
-              : 'Il timer comanda Spotify ovunque stia già suonando: tablet, telefono, cassa. Serve un account Premium e un’app registrata una volta su developer.spotify.com.'}
+              : 'Il timer comanda Spotify ovunque stia già suonando: tablet, telefono, cassa. Collegato qui, lo comanda anche il tablet di sala. Serve un account Premium e un’app registrata una volta su developer.spotify.com.'}
           </span>
         </div>
 

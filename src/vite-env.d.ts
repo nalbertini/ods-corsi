@@ -8,6 +8,11 @@ interface ImportMetaEnv {
    * bundle: a proteggere i dati sono le policy RLS, non questa stringa.
    */
   readonly VITE_SUPABASE_ANON_KEY?: string
+  /**
+   * Il Client ID dell'app Spotify, lo stesso del timer: serve alla sala per
+   * rinnovare il collegamento fatto dal timer. Facoltativo.
+   */
+  readonly VITE_SPOTIFY_CLIENT_ID?: string
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv

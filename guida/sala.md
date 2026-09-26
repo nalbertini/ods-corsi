@@ -26,6 +26,11 @@ aprite l'appello completo e lo correggete.
   si modificano dal proprio telefono, entrando come istruttore. Dal timer si
   torna al tablet con **SALA**. Il tema bianco scelto qui vale anche nel
   timer, e viceversa.
+- **La musica**: se Spotify è collegato dalle impostazioni del timer, accanto
+  ai tasti compaiono il brano in corso, il volume e ⏮ ▶ ⏭. Il collegamento è
+  lo stesso del timer, e passando dall'uno all'altro la musica non si ferma.
+  YouTube invece si comanda solo dentro il timer: suona nella pagina, e
+  toccando TIMER si interromperebbe.
 
 ## Quando ci si segna
 

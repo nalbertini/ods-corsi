@@ -588,6 +588,20 @@ a.btn { text-decoration: none; }
 
 .tb-barra { display: flex; align-items: center; gap: 18px; }
 
+/* La musica della sala, nel piede: alta come i tasti accanto. */
+.tb-musica { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.tb-musica-testo { gap: 2px; min-width: 0; max-width: 260px; }
+.tb-musica-titolo { font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-musica-sotto { font-size: 13px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-musica-tasto {
+  width: 60px; height: 60px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--line); color: var(--text);
+  font-size: 26px; font-weight: 700;
+}
+.tb-musica-tasto:disabled { opacity: 0.35; cursor: default; }
+.tb-musica-volume { width: 34px; text-align: center; font-size: 17px; font-weight: 700; color: var(--dim); }
+
 /* I nomi da toccare: cinque per riga su un tablet, alti quanto un dito e mezzo. */
 .tb-tessere { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
 .tb-tessera {
@@ -675,6 +689,8 @@ a.btn { text-decoration: none; }
   .tb-ora { font-size: 40px; }
   .tb-corpo { padding: 16px; }
   .tb-piede { padding-left: 16px; padding-right: 16px; }
+  .tb-musica { width: 100%; }
+  .tb-musica-testo { flex-grow: 1; max-width: none; }
   .tb-home, .tb-istruttore { grid-template-columns: minmax(0, 1fr); }
   .tb-aperta { flex-direction: column; align-items: stretch; }
   .tb-btn-segna { min-width: 0; }

@@ -5,6 +5,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Cronometro, Lucchetto, Recupero } from '../Icons'
 import { Guaio, orario, Riquadro } from './comune'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
+import { MusicaSala } from './MusicaSala'
 
 const ETICHETTA = { finita: 'FINITA', aperta: 'SI SEGNA ORA', dopo: 'PIÙ TARDI' } as const
 
@@ -117,6 +118,9 @@ export function TabletHome({
           <Cronometro />
           TIMER
         </a>
+        {/* La musica di Spotify, se collegata dal timer: si mette su quando
+            entra la gente, senza aprire niente. */}
+        <MusicaSala />
         <span className="grow" />
         <span className="tb-nota" title={VERSIONE_ESTESA}>
           Tablet di sala · {sala} · {VERSIONE}
