@@ -1,13 +1,13 @@
 # Iscrizioni
 
-*Indirizzo: `#iscrizioni` · Per: chi vuole iscriversi · Senza accesso*
+*Indirizzo: `iscrizioni/` · Per: chi vuole iscriversi · Senza accesso*
 
 ← [Torna alla guida generale](README.md)
 
 È la pagina pubblica da mandare a chi chiede come ci si iscrive, al posto della
 lista di passi scritta ogni volta su WhatsApp. Non chiede nessun accesso.
 
-L'indirizzo è <https://nalbertini.github.io/ods-corsi/#iscrizioni>. In
+L'indirizzo è <https://nalbertini.github.io/ods-corsi/iscrizioni/>. In
 segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
 
 ## Cosa c'è nella pagina

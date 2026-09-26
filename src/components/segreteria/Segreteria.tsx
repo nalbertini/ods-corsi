@@ -13,6 +13,7 @@ import { Regole } from './Regole'
 import { Richieste } from './Richieste'
 import { Guaio } from './comune'
 import { indirizzoPagina } from '../../lib/guida'
+import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
 export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'importa' | 'personale' | 'regole'
@@ -47,7 +48,7 @@ const GUIDE: Record<Voce, string> = {
 }
 
 /** L'indirizzo della pagina pubblica per iscriversi, quello da mandare su WhatsApp. */
-const LINK_PUBBLICO = `${window.location.origin}${window.location.pathname}#iscrizioni`
+const LINK_PUBBLICO = indirizzo(INDIRIZZI.iscrizioni)
 
 function CopiaLink() {
   const [copiato, setCopiato] = useState(false)

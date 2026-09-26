@@ -7,7 +7,7 @@ import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Guida } from './components/Guida'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
-import { INDIRIZZI, TIMER, useArea } from './lib/aree'
+import { INDIRIZZI, TIMER, useArea, vaiA } from './lib/aree'
 import { esci, serveAccesso } from './lib/accesso'
 import { INDIRIZZO_GUIDA } from './lib/guida'
 import { ARRIVO } from './lib/invito'
@@ -157,7 +157,7 @@ function Istruttori() {
             <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
               ISCRIZIONI
             </button>
-            <button className="scheda" data-on={false} onClick={() => (window.location.hash = INDIRIZZI.segreteria)}>
+            <button className="scheda" data-on={false} onClick={() => vaiA('segreteria')}>
               SEGRETERIA
             </button>
           </nav>
@@ -198,7 +198,7 @@ function AreaSegreteria() {
       <Segreteria
         nome="Segreteria di prova"
         prova
-        onApp={() => (window.location.hash = INDIRIZZI.istruttori)}
+        onApp={() => vaiA('istruttori')}
         onEsci={inProvaScelta ? () => scegliProva(false) : undefined}
       />
     )

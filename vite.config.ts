@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'node:child_process'
@@ -18,6 +18,55 @@ function commit(): string {
     return execSync('git rev-parse --short=7 HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
   } catch {
     return ''
+  }
+}
+
+// Le aree con un indirizzo vero: vedi `src/lib/aree.ts`.
+const AREE = ['segreteria', 'iscrizioni', 'istruttori', 'sala']
+const BASE = '<base href="../">'
+const conBase = (html: string) => html.replace(/<head>/i, `<head>\n    ${BASE}`)
+
+/**
+ * Una pagina per area, `segreteria/index.html` e le altre: GitHub Pages serve
+ * solo file che ci sono, e senza quelle `…/ods-corsi/segreteria/` sarebbe un
+ * 404. Sono la stessa pagina della radice con `<base href="../">`, così i
+ * file relativi (`./assets/…`, le icone, i moduli, il timer) si prendono da
+ * lì e l'app è una sola, con un service worker solo che le precarica tutte.
+ *
+ * In sviluppo il server risponde già con la pagina a ogni indirizzo: qui gli
+ * si aggiunge la base, e la barra finale a chi la dimentica (senza, `../`
+ * uscirebbe dalla cartella del sito).
+ */
+function pagineDelleAree(): Plugin {
+  const dellArea = new RegExp(`^(.*/(?:${AREE.join('|')}))(/|/index\\.html)?(\\?.*)?$`)
+  return {
+    name: 'ods-pagine-delle-aree',
+    enforce: 'post',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const m = req.url ? dellArea.exec(req.url) : null
+        if (m && !m[2]) {
+          res.statusCode = 301
+          res.setHeader('Location', `${m[1]}/${m[3] ?? ''}`)
+          res.end()
+          return
+        }
+        next()
+      })
+    },
+    transformIndexHtml: {
+      order: 'post',
+      handler(html, ctx) {
+        return ctx.server && ctx.originalUrl && dellArea.test(ctx.originalUrl) ? conBase(html) : html
+      },
+    },
+    generateBundle(_, bundle) {
+      const radice = bundle['index.html']
+      if (!radice || radice.type !== 'asset') return
+      for (const area of AREE) {
+        this.emitFile({ type: 'asset', fileName: `${area}/index.html`, source: conBase(String(radice.source)) })
+      }
+    },
   }
 }
 
@@ -42,6 +91,7 @@ export default defineConfig({
   resolve: { dedupe: ['react', 'react-dom', '@supabase/supabase-js'] },
   plugins: [
     react(),
+    pagineDelleAree(),
     VitePWA({
       registerType: 'autoUpdate',
       // La registrazione la facciamo a mano in main.tsx, per poterla fallire in pace.

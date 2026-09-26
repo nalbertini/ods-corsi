@@ -50,7 +50,7 @@ export async function leggiPagina(nome: string): Promise<string | null> {
 /**
  * La guida pubblicata sta all'indirizzo dell'app: nei file i collegamenti
  * all'app sono scritti per intero, perché su GitHub funzionino. Nell'app
- * bastano l'indirizzo interno (`#istruttori`), che vale anche in prova e sul
+ * bastano l'indirizzo interno (`istruttori/`), che vale anche in prova e sul
  * computer di chi la sviluppa.
  */
 const APP_PUBBLICATA = 'https://nalbertini.github.io/ods-corsi/'

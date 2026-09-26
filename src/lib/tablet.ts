@@ -1,5 +1,6 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { haUnServer } from './dati'
+import { areaDelPercorso } from './percorso'
 import type { ListaMusica } from './musica'
 import type { ImpostazioniSala } from '../../timer/src/lib/impostazioniSala'
 
@@ -134,14 +135,14 @@ export function emailDellaSala(utente: string): string {
 // ---------------------------------------------------------------------------
 // Il dispositivo è un tablet di sala?
 //
-// Ci si entra aprendo l'app con `#sala` (o `#tablet`, com'era prima) in fondo
-// all'indirizzo, e da lì il dispositivo se lo ricorda: il tablet in sala
-// riapre sempre il tablet, anche installato come app, senza che nessuno debba
-// ridigitare niente.
+// Ci si entra aprendo l'app all'indirizzo `sala/` (i vecchi `#sala` e
+// `#tablet` ci portano da soli), e da lì il dispositivo se lo ricorda: il
+// tablet in sala riapre sempre il tablet, anche installato come app, senza
+// che nessuno debba ridigitare niente.
 // ---------------------------------------------------------------------------
 const DOVE_MODO = 'ods-corsi:modo'
 
-const eIndirizzoTablet = () => window.location.hash === '#sala' || window.location.hash === '#tablet'
+const eIndirizzoTablet = () => areaDelPercorso() === 'sala'
 
 export function eUnTablet(): boolean {
   try {
@@ -162,8 +163,8 @@ export function lasciaTablet() {
   } catch {
     /* pazienza */
   }
-  window.location.hash = ''
-  window.location.reload()
+  // La radice: nelle cartelle delle aree la base del documento è lei.
+  window.location.assign(new URL('./', document.baseURI).href)
 }
 
 let unico: Promise<DatiTablet> | null = null

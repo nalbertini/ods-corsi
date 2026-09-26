@@ -13,7 +13,7 @@ import { ModuloIscrizione } from './ModuloIscrizione'
  *
  * Sullo schermo largo i costi stanno accanto ai passi invece che sotto.
  *
- * `pubblica` è la pagina del link per chi vuole iscriversi (`#iscrizioni`):
+ * `pubblica` è la pagina del link per chi vuole iscriversi (`iscrizioni/`):
  * gli stessi passi, ma senza la prova, vedi `PASSI_PUBBLICI`.
  */
 export function IscrizioniScreen({ pubblica = false }: { pubblica?: boolean }) {

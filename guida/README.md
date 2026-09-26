@@ -24,17 +24,17 @@ all'indirizzo, oppure dalla pagina iniziale, che le elenca tutte e quattro.
 
 | Porta | Per chi | Cosa c'è | Guida |
 |---|---|---|---|
-| `#istruttori` | Voi istruttori (e la segreteria) | Il calendario e l'appello, dal telefono | [Istruttori](istruttori.md) |
-| `#sala` | Il tablet appeso al muro della sala | Gli allievi si segnano da soli; voi col PIN fate l'appello | [Tablet di sala](sala.md) |
-| `#iscrizioni` | Chi vuole iscriversi | I passi, i costi, il modulo | [Iscrizioni](iscrizioni.md) |
-| `#segreteria` | La reception | Corsi, iscritti, presenze, richieste | [Segreteria](segreteria/README.md) |
+| `istruttori/` | Voi istruttori (e la segreteria) | Il calendario e l'appello, dal telefono | [Istruttori](istruttori.md) |
+| `sala/` | Il tablet appeso al muro della sala | Gli allievi si segnano da soli; voi col PIN fate l'appello | [Tablet di sala](sala.md) |
+| `iscrizioni/` | Chi vuole iscriversi | I passi, i costi, il modulo | [Iscrizioni](iscrizioni.md) |
+| `segreteria/` | La reception | Corsi, iscritti, presenze, richieste | [Segreteria](segreteria/README.md) |
 
 ## Cosa serve a voi, in pratica
 
 Da istruttori avete **due modi** per segnare le presenze, e vanno bene tutti e
 due:
 
-1. **Dal telefono**, all'indirizzo `#istruttori`: entrate con la vostra email e
+1. **Dal telefono**, all'indirizzo `istruttori/`: entrate con la vostra email e
    la password che vi ha dato la palestra, toccate la lezione e fate l'appello.
 2. **Dal tablet della sala**: gli allievi toccano il loro nome quando
    arrivano; voi, con il vostro **PIN di quattro cifre**, aprite l'**AREA
