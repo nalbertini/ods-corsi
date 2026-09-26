@@ -27,6 +27,11 @@ altri i nomi si alternano a ogni round e vengono annunciati dalla voce.
 - Tre bip sugli ultimi 3 secondi, tono diverso all'inizio di lavoro e recupero,
   voce italiana che annuncia stato ed esercizio, vibrazione sul telefono.
 - Lo schermo resta acceso (Wake Lock) e si riaggancia da solo al rientro.
+- **Spotify**, se collegato dalle impostazioni: brano in corso e tasti ⏮ ▶ ⏭
+  nel timer, la musica che parte e si ferma col timer e che scende nel
+  recupero. Serve un account Premium e un'app registrata su
+  developer.spotify.com (il Client ID si incolla nelle impostazioni o si passa
+  in compilazione come `VITE_SPOTIFY_CLIENT_ID`).
 - Da tastiera: `spazio` pausa, `←` `→` intervallo precedente e successivo,
   `Esc` esce.
 - Il tempo è ricavato dall'orologio a ogni tick, non accumulato: un tab in

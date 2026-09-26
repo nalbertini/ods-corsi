@@ -738,3 +738,34 @@ a.navitem { text-decoration: none; }
   .tasto-avvia { height: 50px; }
   .adesivo-stato { display: none; }
 }
+
+/* ---------- musica (Spotify) ---------- */
+
+/* Una riga sola fra il «+30″» e i comandi del timer: la musica si guarda con
+   la coda dell'occhio, non si prende lo schermo. */
+.musica-bar { display: flex; align-items: center; gap: 6px; margin: 8px 20px 0; padding: 6px 6px 6px 8px; min-width: 0; }
+.musica-copertina { width: 40px; height: 40px; flex-shrink: 0; object-fit: cover; background: var(--surface-2); }
+.musica-titolo { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.musica-sotto { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.musica-tasto {
+  width: 40px; height: 40px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--line); color: var(--tasto);
+}
+.musica-tasto:hover:not(:disabled) { border-color: var(--dim); color: var(--text); }
+.musica-tasto:disabled { opacity: 0.35; }
+.musica-volume { width: 30px; text-align: center; font-size: 15px; font-weight: 700; color: var(--dim); flex-shrink: 0; }
+/* Il volume sta solo dove c'è posto: su un telefono in verticale i tasti di
+   brano bastano, e il volume ce l'ha già il telefono sul fianco. */
+@media (max-width: 480px) {
+  .musica-bar .solo-largo { display: none; }
+}
+@media (max-height: 740px) and (orientation: portrait) {
+  .musica-bar { margin-top: 6px; padding: 4px 4px 4px 6px; }
+  .musica-copertina, .musica-tasto { width: 36px; height: 36px; }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .musica-bar { margin-top: 4px; padding: 3px 3px 3px 5px; }
+  .musica-copertina, .musica-tasto { width: 32px; height: 32px; }
+  .musica-sotto { display: none; }
+}

@@ -16,6 +16,8 @@ import {
   salvataggioCorrente,
 } from '../lib/salvataggio'
 import { type Tema, useTema } from '../lib/tema'
+import { clientId, clientIdDaCompilazione, collega, impostaClientId, indirizzoRitorno, scollega } from '../lib/spotify'
+import { useMusica } from '../lib/useMusica'
 import { Chevron } from './Icons'
 import { Logo } from './Logo'
 
@@ -275,6 +277,8 @@ export function SettingsScreen({
           />
         </div>
       </div>
+
+      <Musica settings={settings} onChange={onChange} />
 
       <div className="rule">
         <span className="rule-label">VOCE INCISA</span>
@@ -583,6 +587,144 @@ export function SettingsScreen({
           </span>
           <div style={{ width: 8, height: 8, background: 'var(--verde)' }} />
         </div>
+      </div>
+    </>
+  )
+}
+
+/**
+ * Spotify: il collegamento e la musica che segue il timer.
+ *
+ * Tre passi, e la sezione mostra solo quello a cui si è arrivati: il Client ID
+ * (se non è già nel sito), il collegamento, poi le due automazioni.
+ */
+function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: Partial<Settings>) => void }) {
+  const m = useMusica()
+  const [id, setId] = useState(() => clientId())
+  const [copiato, setCopiato] = useState(false)
+  const ritorno = indirizzoRitorno()
+  const l = m.lettore
+
+  return (
+    <>
+      <div className="rule">
+        <span className="rule-label">MUSICA</span>
+        <div className="rule-line" />
+      </div>
+      <div className="pad stack" style={{ gap: 8 }}>
+        <p style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)', margin: 0 }}>
+          Nessuna app web può comandare il lettore del telefono. Spotify sì, se lo si collega: dal timer si mette in
+          pausa, si salta un brano e si abbassa il volume nel recupero, ovunque Spotify stia suonando. Serve un
+          account Premium.
+        </p>
+
+        {!clientIdDaCompilazione() && !m.collegato && (
+          <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
+            <span style={{ fontSize: 15, fontWeight: 600 }}>Client ID dell’app Spotify</span>
+            <span style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--dim)' }}>
+              Si ottiene una volta sola registrando un’app gratuita su developer.spotify.com, con questo indirizzo fra
+              i Redirect URI. I passi sono nella guida.
+            </span>
+            <button
+              className="field num"
+              style={{ fontSize: 13, textAlign: 'left', wordBreak: 'break-all', color: copiato ? 'var(--verde)' : undefined }}
+              onClick={() => {
+                void navigator.clipboard?.writeText(ritorno).then(() => setCopiato(true))
+              }}
+              aria-label="Copia l’indirizzo di ritorno"
+            >
+              {copiato ? 'Copiato: ' : ''}
+              {ritorno}
+            </button>
+            <input
+              className="field"
+              value={id}
+              placeholder="Incolla qui il Client ID"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              onChange={(e) => setId(e.target.value)}
+              onBlur={() => impostaClientId(id)}
+              style={{ fontSize: 15 }}
+            />
+          </div>
+        )}
+
+        {!m.collegato ? (
+          <button
+            className="btn btn-go"
+            style={{ minHeight: 52, fontSize: 16 }}
+            disabled={!id.trim()}
+            onClick={() => {
+              impostaClientId(id)
+              void collega()
+            }}
+          >
+            COLLEGA SPOTIFY
+          </button>
+        ) : (
+          <>
+            <div className="card row" style={{ gap: 12, padding: '10px 14px', minHeight: 58 }}>
+              <div style={{ width: 10, height: 10, flexShrink: 0, background: l ? 'var(--verde)' : 'var(--line)' }} />
+              <div className="stack grow" style={{ gap: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 15, fontWeight: 600 }}>Spotify collegato</span>
+                <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+                  {l
+                    ? `${l.inRiproduzione ? 'Suona' : 'In pausa'} su ${l.dispositivo}${l.volume == null ? ' · volume non regolabile da qui' : ''}`
+                    : 'Nessun dispositivo sta suonando adesso'}
+                </span>
+              </div>
+              <button
+                className="btn btn-ghost"
+                style={{ minHeight: 40, fontSize: 13, padding: '0 12px' }}
+                onClick={() => scollega()}
+              >
+                SCOLLEGA
+              </button>
+            </div>
+            <Toggle
+              label="La musica segue il timer"
+              hint="Parte con l’avvio, si ferma con la pausa e a fine allenamento"
+              on={settings.musicaSegue}
+              onChange={(v) => onChange({ musicaSegue: v })}
+            />
+            <Toggle
+              label="Più bassa nel recupero"
+              hint="Nel recupero e fra le serie scende, al lavoro torna dov’era"
+              on={settings.musicaAbbassa}
+              onChange={(v) => onChange({ musicaAbbassa: v })}
+            />
+            {settings.musicaAbbassa && (
+              <div className="card stack" style={{ gap: 10, padding: '12px 14px 16px' }}>
+                <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+                  <span className="grow" style={{ fontSize: 15, fontWeight: 600 }}>
+                    Volume nel recupero
+                  </span>
+                  <span className="num" style={{ fontSize: 20, fontWeight: 700, color: 'var(--verde)' }}>
+                    {settings.musicaRecupero}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={80}
+                  step={5}
+                  value={settings.musicaRecupero}
+                  onChange={(e) => onChange({ musicaRecupero: Number(e.target.value) })}
+                  style={{ width: '100%', accentColor: 'var(--verde)', height: 28 }}
+                  aria-label="Volume della musica nel recupero"
+                />
+                {l && l.volume == null && (
+                  <span style={{ fontSize: 12, lineHeight: 1.4, color: 'var(--giallo-testo)' }}>
+                    {l.dispositivo} non lascia cambiare il volume da fuori: qui la musica resta com’è.
+                  </span>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {m.errore && <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--rosso)' }}>{m.errore}</span>}
       </div>
     </>
   )

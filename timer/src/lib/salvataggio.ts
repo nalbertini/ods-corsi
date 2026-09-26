@@ -68,6 +68,9 @@ function impostazioniSane(v: unknown): Settings {
     volume: numeroSano(o.volume, 0, 1, DEFAULT_SETTINGS.volume),
     keepAwake: bool(o.keepAwake, DEFAULT_SETTINGS.keepAwake),
     bigScreen: bool(o.bigScreen, DEFAULT_SETTINGS.bigScreen),
+    musicaSegue: bool(o.musicaSegue, DEFAULT_SETTINGS.musicaSegue),
+    musicaAbbassa: bool(o.musicaAbbassa, DEFAULT_SETTINGS.musicaAbbassa),
+    musicaRecupero: Math.round(numeroSano(o.musicaRecupero, 0, 100, DEFAULT_SETTINGS.musicaRecupero)),
   }
 }
 

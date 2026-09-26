@@ -1004,8 +1004,9 @@
         <div class="scheda">
           <span class="etichetta-scheda">CASSA BLUETOOTH E MUSICA</span>
           <p>
-            <strong>La musica non si comanda da qui.</strong> Nessuna app web può mettere in pausa Spotify o il
-            lettore del telefono: quell'interfaccia non esiste, su nessun browser. Quello che l'app dichiara è
+            <strong>Il lettore del telefono non si comanda da qui</strong> — Spotify sì, se lo colleghi: vedi la
+            scheda qui sotto. Nessuna app web può mettere in pausa il lettore di un'altra app: quell'interfaccia
+            non esiste, su nessun browser. Quello che l'app dichiara è
             di essere fatta di <em>suoni brevi che devono passare sopra</em>, e allora il sistema
             <strong>abbassa la musica per la durata del bip</strong> e la rialza subito dopo. Su iPhone e iPad
             funziona; altrove il bip si mescola alla musica come prima.
@@ -1023,6 +1024,40 @@
             successivo si sveglia mangiandosene l'inizio — e un bip dura due decimi di secondo, quindi
             l'inizio è quasi tutto il bip. Tenendo la connessione sveglia arrivano tutti. Finito l'allenamento smette, e la
             cassa torna libera.
+          </p>
+        </div>
+
+        <div class="scheda">
+          <span class="etichetta-scheda">SPOTIFY</span>
+          <p>
+            Collegando Spotify da <em>Impostazioni › Musica</em>, nel timer compare una riga con il brano che
+            suona e i tasti <strong>⏮ ▶ ⏭</strong> (e il volume, dove c'è posto). Il timer non suona niente lui:
+            comanda Spotify <strong>ovunque stia già suonando</strong> — il tablet, il telefono, la cassa con
+            Spotify Connect.
+          </p>
+          <div class="tabella-scorre">
+            <table>
+              <thead><tr><th>Impostazione</th><th>Cosa fa</th></tr></thead>
+              <tbody>
+                <tr><td class="nome-schema">SEGUE IL TIMER</td><td>La musica parte con AVVIA e RIPRENDI, si ferma con PAUSA, RESET, a fine allenamento e chiudendo il timer.</td></tr>
+                <tr><td class="nome-schema">PIÙ BASSA NEL RECUPERO</td><td>Nel recupero e fra le serie il volume scende a quello scelto; al lavoro torna dov'era.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            <strong>Serve Spotify Premium</strong>: con l'account gratuito Spotify non accetta comandi da fuori.
+            E Spotify deve essere aperto su un dispositivo: se non suona da nessuna parte, ▶ prova a risvegliare
+            il primo che trova. Alcuni dispositivi — di solito iPhone e iPad — non lasciano cambiare il volume
+            da fuori: lì i tasti del volume non compaiono e la musica nel recupero resta com'è.
+          </p>
+          <p>
+            <strong>La prima volta</strong> qualcuno deve registrare l'app, gratis, una volta sola:
+            su <em>developer.spotify.com › Dashboard › Create app</em> si mette come <em>Redirect URI</em>
+            l'indirizzo mostrato nelle impostazioni (identico, barra finale compresa) e si spunta
+            <em>Web API</em>. Il <em>Client ID</em> che ne esce si incolla nelle impostazioni, oppure si mette
+            nel sito come segreto <code>VITE_SPOTIFY_CLIENT_ID</code> e vale per tutti. Finché l'app resta in
+            modalità sviluppo, gli account che possono collegarsi vanno aggiunti a mano nella dashboard
+            (<em>User Management</em>).
           </p>
         </div>
 

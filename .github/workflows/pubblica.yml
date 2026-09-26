@@ -59,7 +59,13 @@ jobs:
 
       # Il timer si compila dopo, dentro dist/timer: un'app a sé, con il suo
       # service worker, pubblicata nella sottocartella dello stesso sito.
+      #
+      # Il Client ID di Spotify è facoltativo anche lui: senza, lo si incolla
+      # nelle impostazioni del timer su ogni dispositivo. Non è un segreto vero
+      # (sta in chiaro nella pagina), ma sta qui per non legarlo al codice.
       - run: npm run build:timer
+        env:
+          VITE_SPOTIFY_CLIENT_ID: ${{ secrets.VITE_SPOTIFY_CLIENT_ID }}
 
       - uses: actions/upload-pages-artifact@v5
         with:

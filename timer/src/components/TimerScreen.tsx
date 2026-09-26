@@ -11,6 +11,8 @@ import { apriSessione, chiudiSessione } from '../lib/mediaSession'
 import { coloreFondo } from '../lib/tema'
 import { DentroAnello, Digits, Ring } from './Quadrante'
 import { Close, Next, Pause, Play, Prev } from './Icons'
+import { MusicaBar } from './MusicaBar'
+import { useMusica, useMusicaAlTimer } from '../lib/useMusica'
 
 const STATE_COLOR = {
   prepare: 'var(--prepare)',
@@ -139,6 +141,10 @@ export function TimerScreen({
   }
 
   useWakeLock(settings.keepAwake && view.status === 'running')
+
+  // Con Spotify collegato la musica può andare dietro al timer: vedi le impostazioni.
+  const musica = useMusica()
+  useMusicaAlTimer(view.status, view.segment?.kind, settings, musica.collegato)
 
   /* I comandi sulla schermata di blocco, finché l'allenamento è aperto: stato,
      nome, avanzamento e i tasti per mettere in pausa o saltare un intervallo
@@ -377,6 +383,8 @@ export function TimerScreen({
           </div>
         )}
       </div>
+
+      <MusicaBar />
 
       <div className="row timer-controlli">
         <button className="icon-btn tasto-salto" onClick={() => skip(-1)} aria-label="Intervallo precedente">
