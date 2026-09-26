@@ -174,3 +174,6 @@ create or replace view presenze_scadute with (security_invoker = true) as
   select p.* from presenze p
   join sessioni s on s.id = p.sessione_id
   where s.inizio < now() - interval '24 months';
+
+-- Che l'API veda subito funzioni e tabelle nuove, senza aspettare.
+notify pgrst, 'reload schema';

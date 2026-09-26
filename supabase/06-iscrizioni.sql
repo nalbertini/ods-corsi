@@ -329,3 +329,6 @@ grant execute on function accogli_iscrizione(uuid), rifiuta_iscrizione(uuid) to 
 -- le dà ad `anon`, e l'RLS da sola è una porta sola invece di due.
 revoke all on all tables in schema public from anon;
 alter default privileges in schema public revoke all on tables from anon;
+
+-- Che l'API veda subito funzioni e tabelle nuove, senza aspettare.
+notify pgrst, 'reload schema';

@@ -353,3 +353,6 @@ revoke all on function lezioni_sala(date, date), elenco_sala(uuid), segna_dal_ta
 grant execute on function lezioni_sala(date, date), elenco_sala(uuid), segna_dal_tablet(uuid, uuid),
   annulla_dal_tablet(uuid, uuid), entra_con_pin(text), appello_con_pin(text, uuid),
   segna_con_pin(text, uuid, uuid, stato_presenza), imposta_pin(uuid, text), tablet_regole() to authenticated;
+
+-- Che l'API veda subito funzioni e tabelle nuove, senza aspettare.
+notify pgrst, 'reload schema';

@@ -41,6 +41,9 @@ interface Riga {
 
 function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
+  // La funzione non c'è sul database: 06-iscrizioni.sql non è stato lanciato.
+  if (e?.code === 'PGRST202')
+    return new Error('Il modulo di iscrizione non è ancora attivo sul database: la segreteria deve lanciare 06-iscrizioni.sql')
   return new Error(e?.message || 'Il server non risponde')
 }
 

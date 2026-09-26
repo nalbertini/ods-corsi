@@ -29,6 +29,11 @@ Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
 funzioni, quindi dopo va rilanciato anche `06-iscrizioni.sql`.
 
+Se l'app dice *Could not find the function public.… in the schema cache*,
+il file che la crea non è stato lanciato su questo progetto (per
+`corsi_aperti` è `06-iscrizioni.sql`): lanciarlo basta, perché ogni file
+finisce con `notify pgrst, 'reload schema'` e l'API la vede subito.
+
 ## 3. Le persone
 
 Con il database vero l'app chiede l'accesso e non ha schede: l'istruttore
