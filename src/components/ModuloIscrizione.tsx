@@ -3,6 +3,7 @@ import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile }
 import { avvisi, controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA } from '../lib/iscrizione'
+import { Bollino, Campo, CaricaFile, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 
 /**
  * Il modulo di iscrizione: le domande che prima stavano su Google Form, e i
@@ -153,33 +154,31 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
 
   if (fase.tipo === 'fatto') {
     return (
-      <div className="pad stack" style={{ gap: 14, padding: '20px 20px 28px' }}>
-        <span className="ob" style={{ fontSize: 30, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--verde)' }}>RICHIESTA ARRIVATA</span>
-        <span className="passo-dettaglio" style={{ fontSize: 16 }}>
+      <div className="pad stack esito">
+        <TitoloEsito tono="fatto">RICHIESTA ARRIVATA</TitoloEsito>
+        <span className="esito-testo">
           Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
         </span>
-        <button type="button" className="btn btn-ghost passo-btn" onClick={onChiudi}>
-          TORNA ALLE ISCRIZIONI
-        </button>
+        <Tasto onClick={onChiudi}>TORNA ALLE ISCRIZIONI</Tasto>
       </div>
     )
   }
 
   if (fase.tipo === 'file') {
     return (
-      <div className="pad stack" style={{ gap: 14, padding: '20px 20px 28px' }}>
-        <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--giallo-testo)' }}>MANCA QUALCHE FILE</span>
-        <span className="passo-dettaglio" style={{ fontSize: 16 }}>
+      <div className="pad stack esito">
+        <TitoloEsito tono="avviso">MANCA QUALCHE FILE</TitoloEsito>
+        <span className="esito-testo">
           Le risposte sono arrivate. Non è partito: {fase.mancati.map((t) => FILE.find((f) => f.tipo === t)!.etichetta.toLowerCase()).join(', ')}.
         </span>
-        <span className="passo-dettaglio" style={{ color: 'var(--rosso)' }}>{fase.perche}</span>
+        <Dettaglio tono="guaio">{fase.perche}</Dettaglio>
         {fase.mancati.map((t) => (
           <SceltaFile key={t} tipo={t} file={file[t]} onFile={(f) => setFile((p) => ({ ...p, [t]: f }))} />
         ))}
-        <button type="button" className="btn btn-primary passo-btn" onClick={() => void carica(fase.id, fase.mancati)}>
+        <Tasto variante="principale" onClick={() => void carica(fase.id, fase.mancati)}>
           RIPROVA
-        </button>
-        <span className="passo-dettaglio">Si può riprovare per un'ora. Se non va, porta i fogli in segreteria.</span>
+        </Tasto>
+        <Dettaglio>Si può riprovare per un'ora. Se non va, porta i fogli in segreteria.</Dettaglio>
       </div>
     )
   }
@@ -187,11 +186,11 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
   const inVolo = fase.tipo === 'invio'
   return (
     <form className="stack modulo" onSubmit={(e) => void manda(e)} noValidate>
-      <div className="pad row" style={{ gap: 10, paddingTop: 14 }}>
-        <button type="button" className="btn btn-ghost passo-btn" onClick={onChiudi} disabled={inVolo}>
+      <div className="pad row modulo-testa">
+        <Tasto onClick={onChiudi} disabled={inVolo}>
           ← INDIETRO
-        </button>
-        {d?.modo === 'prova' && <span className="num sg-bollino">PROVA: RESTA SU QUESTO DISPOSITIVO</span>}
+        </Tasto>
+        {d?.modo === 'prova' && <Bollino>PROVA: RESTA SU QUESTO DISPOSITIVO</Bollino>}
       </div>
 
       <Sezione titolo="CHI SI ISCRIVE">
@@ -208,9 +207,13 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
           <input id="m-nato-a" {...segna('natoA')} className="campo" value={b.natoA} onChange={metti('natoA')} />
         </Campo>
         <Campo id="m-cf" nota={nota('codiceFiscale')} etichetta="CODICE FISCALE" largo>
-          <input id="m-cf" {...segna('codiceFiscale')} className="campo num" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.codiceFiscale} onChange={metti('codiceFiscale')} style={{ letterSpacing: '0.08em' }} />
+          <input id="m-cf" {...segna('codiceFiscale')} className="campo num campo-codice" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.codiceFiscale} onChange={metti('codiceFiscale')} />
         </Campo>
-        {minore && <span className="passo-dettaglio modulo-largo" style={{ color: 'var(--giallo-testo)' }}>È minorenne: servono i dati del genitore qui sotto, e il modulo per minori firmato da lui.</span>}
+        {minore && (
+          <span className="modulo-largo">
+            <Dettaglio tono="avviso">È minorenne: servono i dati del genitore qui sotto, e il modulo per minori firmato da lui.</Dettaglio>
+          </span>
+        )}
       </Sezione>
 
       {minore && (
@@ -222,7 +225,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
             <input id="m-g-cognome" {...segna('genitoreCognome')} className="campo" value={b.genitoreCognome} onChange={metti('genitoreCognome')} />
           </Campo>
           <Campo id="m-g-cf" nota={nota('genitoreCodiceFiscale')} etichetta="CODICE FISCALE DEL GENITORE" largo>
-            <input id="m-g-cf" {...segna('genitoreCodiceFiscale')} className="campo num" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.genitoreCodiceFiscale} onChange={metti('genitoreCodiceFiscale')} style={{ letterSpacing: '0.08em' }} />
+            <input id="m-g-cf" {...segna('genitoreCodiceFiscale')} className="campo num campo-codice" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.genitoreCodiceFiscale} onChange={metti('genitoreCodiceFiscale')} />
           </Campo>
         </Sezione>
       )}
@@ -249,29 +252,29 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
       </Sezione>
 
       <Sezione titolo="I CORSI">
-        <div className="modulo-largo stack" style={{ gap: 6 }}>
-          {guaioCorsi && <span className="passo-dettaglio" style={{ color: 'var(--rosso)' }}>I corsi non si leggono: {guaioCorsi}</span>}
-          {!corsi && !guaioCorsi && <span className="passo-dettaglio">Un attimo…</span>}
-          <div id="m-corsi" tabIndex={-1} className="modulo-corsi" role="group" aria-label="Corsi" aria-describedby={nota('corsi') ? 'm-corsi-nota' : undefined}>
-            {corsi?.map((c) => (
-              <button key={c.id} type="button" className="modulo-corso" aria-pressed={b.corsi.includes(c.id)} onClick={() => scegli(c.id)}>
-                <span className="modulo-spunta" aria-hidden>{b.corsi.includes(c.id) ? '✓' : ''}</span>
-                {c.nome}
-              </button>
-            ))}
-          </div>
-          <Nota id="m-corsi-nota" nota={nota('corsi')} />
+        <div className="modulo-campo modulo-largo">
+          {guaioCorsi && <Dettaglio tono="guaio">I corsi non si leggono: {guaioCorsi}</Dettaglio>}
+          {!corsi && !guaioCorsi && <Dettaglio>Un attimo…</Dettaglio>}
+          <SceltaCorsi
+            id="m-corsi"
+            etichetta="Corsi"
+            voci={(corsi ?? []).map((c) => ({ id: c.id, testo: c.nome }))}
+            scelti={b.corsi}
+            onScegli={scegli}
+            descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
+          />
+          <NotaCampo id="m-corsi-nota" nota={nota('corsi')} />
         </div>
-        <div className="modulo-largo stack" style={{ gap: 6 }}>
+        <div className="modulo-campo modulo-largo">
           <span className="modulo-etichetta">COME PAGHI</span>
-          <div id="m-formula" tabIndex={-1} className="row" style={{ gap: 8 }} role="radiogroup" aria-label="Come paghi">
-            {FORMULE.map(([f, testo]) => (
-              <button key={f} type="button" role="radio" aria-checked={b.formula === f} className="modulo-corso" style={{ flex: 1 }} onClick={() => setB({ ...b, formula: f })}>
-                <span className="modulo-spunta" aria-hidden>{b.formula === f ? '●' : ''}</span>
-                {testo}
-              </button>
-            ))}
-          </div>
+          <SceltaCorsi
+            id="m-formula"
+            etichetta="Come paghi"
+            una
+            voci={FORMULE.map(([f, testo]) => ({ id: f, testo }))}
+            scelti={[b.formula]}
+            onScegli={(f) => setB({ ...b, formula: f as DatiRichiesta['formula'] })}
+          />
         </div>
       </Sezione>
 
@@ -283,7 +286,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
 
       <Sezione titolo="ALTRO">
         <Campo id="m-note" etichetta="NOTE PER LA SEGRETERIA · FACOLTATIVE" largo>
-          <textarea id="m-note" className="campo" rows={3} maxLength={1000} placeholder="Niente dati sulla salute: quelli si portano in segreteria." value={b.note} onChange={metti('note')} style={{ paddingTop: 12, resize: 'vertical' }} />
+          <textarea id="m-note" className="campo campo-note" rows={3} maxLength={1000} placeholder="Niente dati sulla salute: quelli si portano in segreteria." value={b.note} onChange={metti('note')} />
         </Campo>
         <div className="vh" aria-hidden>
           <label htmlFor="m-sito">Non compilare</label>
@@ -294,7 +297,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
           <span>
             Ho letto{' '}
             {INFORMATIVA_PUBBLICA ? (
-              <a href={INFORMATIVA_PUBBLICA} target="_blank" rel="noreferrer" style={{ color: 'var(--sec)' }}>
+              <a href={INFORMATIVA_PUBBLICA} target="_blank" rel="noreferrer" className="link-sec">
                 l'informativa privacy
               </a>
             ) : (
@@ -305,15 +308,15 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         </label>
       </Sezione>
 
-      <div className="pad stack" style={{ gap: 10, paddingBottom: 28 }}>
+      <div className="pad stack modulo-piede">
         {guaio && (
-          <div role="alert" className="card" style={{ padding: 14, borderColor: 'var(--rosso)', color: 'var(--text)', fontSize: 15 }}>
-            {guaio}
+          <div role="alert">
+            <Riquadro tono="guaio">{guaio}</Riquadro>
           </div>
         )}
-        <button type="submit" className="btn btn-primary passo-btn" disabled={inVolo || !d}>
+        <Tasto variante="principale" type="submit" disabled={inVolo || !d}>
           {inVolo ? fase.passo.toUpperCase() : 'MANDA LA RICHIESTA'}
-        </button>
+        </Tasto>
       </div>
     </form>
   )
@@ -322,48 +325,17 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
 function Sezione({ titolo, children }: { titolo: string; children: ReactNode }) {
   return (
     <section>
-      <div className="rule">
-        <span className="rule-label">{titolo}</span>
-        <div className="rule-line" />
-      </div>
+      <Titoletto>{titolo}</Titoletto>
       <div className="pad modulo-griglia">{children}</div>
     </section>
   )
 }
 
-interface Nota {
-  testo: string
-  /** Un errore che ferma l'invio; altrimenti un avviso, da guardare. */
-  guaio: boolean
-}
-
-function Campo({ id, etichetta, children, largo, nota }: { id: string; etichetta: string; children: ReactNode; largo?: boolean; nota?: Nota }) {
-  return (
-    <div className={`stack${largo ? ' modulo-largo' : ''}`} style={{ gap: 6, minWidth: 0 }}>
-      <label htmlFor={id} className="modulo-etichetta">
-        {etichetta}
-      </label>
-      {children}
-      <Nota id={`${id}-nota`} nota={nota} />
-    </div>
-  )
-}
-
-function Nota({ id, nota }: { id: string; nota?: Nota }) {
-  if (!nota) return null
-  return (
-    <span id={id} className="modulo-nota" data-avviso={!nota.guaio || undefined}>
-      {nota.testo}
-    </span>
-  )
-}
-
-/** Un file da scegliere: dal telefono apre la fotocamera o la galleria. */
+/** Un file da scegliere: controlla il tipo, rimpicciolisce la foto, e la passa su. */
 function SceltaFile({ tipo, file, onFile }: { tipo: TipoFile; file?: File; onFile: (f: File | undefined) => void }) {
   const f = FILE.find((x) => x.tipo === tipo)!
   const [guaio, setGuaio] = useState<string | null>(null)
   const [lavoro, setLavoro] = useState(false)
-  const id = `m-file-${tipo}`
   const scelto = async (x: File | undefined) => {
     setGuaio(null)
     if (!x) return onFile(undefined)
@@ -375,30 +347,14 @@ function SceltaFile({ tipo, file, onFile }: { tipo: TipoFile; file?: File; onFil
     onFile(ridotto)
   }
   return (
-    <div className="modulo-largo card modulo-file" data-fatto={!!file}>
-      <span className="stack grow" style={{ gap: 3, minWidth: 0 }}>
-        <span className="modulo-etichetta" style={{ color: file ? 'var(--verde)' : undefined }}>
-          {f.etichetta}
-          {!f.obbligatorio && ' · FACOLTATIVO'}
-        </span>
-        <span className="passo-dettaglio" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {lavoro ? 'Preparo la foto…' : file ? `${file.name} · ${Math.max(1, Math.round(file.size / 1024))} KB` : f.dettaglio}
-        </span>
-        {guaio && <span className="passo-dettaglio" style={{ color: 'var(--rosso)' }}>{guaio}</span>}
-      </span>
-      <label htmlFor={id} className="btn btn-ghost passo-btn modulo-scegli">
-        {file ? 'CAMBIA' : 'SCEGLI'}
-      </label>
-      <input
-        id={id}
-        className="vh"
-        type="file"
-        accept="image/*,application/pdf"
-        onChange={(e) => {
-          void scelto(e.target.files?.[0])
-          e.target.value = ''
-        }}
-      />
-    </div>
+    <CaricaFile
+      id={`m-file-${tipo}`}
+      etichetta={f.etichetta}
+      facoltativo={!f.obbligatorio}
+      dettaglio={lavoro ? 'Preparo la foto…' : f.dettaglio}
+      file={file && !lavoro ? { nome: file.name, byte: file.size } : undefined}
+      errore={guaio}
+      onFile={(x) => void scelto(x)}
+    />
   )
 }

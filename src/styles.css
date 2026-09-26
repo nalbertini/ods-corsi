@@ -314,8 +314,38 @@ input, textarea { font: inherit; color: inherit; }
 /* ---------- iscrizioni ---------- */
 
 .passi { list-style: none; margin: 0; }
+/* I pezzi del design system per le iscrizioni (`components/ds.tsx`). */
+.rule-conto { font-size: 15px; font-weight: 600; color: var(--dim); }
+.rule-dentro { padding: 12px 0 0; }
+.riquadro { padding: 14px; gap: 8px; }
+.riquadro[data-stretto] { gap: 4px; }
 /* La prova sta prima dei passi e non è uno di loro: niente numero, il bordo giallo. */
-.prova { padding: 14px; gap: 6px; border-left: 4px solid var(--giallo); }
+.riquadro[data-tono='prova'] { gap: 6px; border-left: 4px solid var(--giallo); }
+.riquadro[data-tono='guaio'] { border-color: var(--rosso); color: var(--text); font-size: 15px; }
+.etichetta-riquadro { font-size: 12px; letter-spacing: 0.2em; }
+.cifra { font-size: 26px; font-weight: 700; }
+.riga-tasti { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.link-sec { color: var(--sec); }
+.testo-pieno { color: var(--text); }
+.una-riga { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.esito { gap: 14px; padding: 20px 20px 28px; }
+.esito-titolo { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; }
+.esito-titolo[data-tono='fatto'] { color: var(--verde); }
+.esito-titolo[data-tono='avviso'] { font-size: 26px; color: var(--giallo-testo); }
+.esito-testo { font-size: 16px; color: var(--dim); line-height: 1.4; }
+
+/* Le pagine delle iscrizioni. */
+.iscrizioni-prova { padding-bottom: 10px; }
+.iscrizioni-contatti { padding-bottom: 16px; }
+.prova-testa { gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.passi { gap: 10px; padding-bottom: 16px; }
+.passo-testo { gap: 8px; min-width: 0; }
+.pagamento { gap: 8px; }
+.iscrizioni-nota { font-size: 13px; color: var(--dim); padding-bottom: 20px; }
+.costi { gap: 10px; padding-bottom: 16px; }
+.costi > a.passo-btn:last-child { margin-top: 6px; }
+.offerta-titolo { font-size: 17px; font-weight: 700; letter-spacing: 0.06em; }
+.costo-etichetta { align-self: center; }
 .passo { display: flex; align-items: flex-start; gap: 14px; padding: 14px; }
 .passo-num {
   font-size: 26px; font-weight: 700; line-height: 1; color: var(--giallo-testo);
@@ -323,6 +353,9 @@ input, textarea { font: inherit; color: inherit; }
 }
 .passo-titolo { font-size: 17px; font-weight: 600; line-height: 1.3; }
 .passo-dettaglio { font-size: 14px; color: var(--dim); line-height: 1.4; }
+.passo-dettaglio[data-tono='testo'] { color: var(--text); }
+.passo-dettaglio[data-tono='guaio'] { color: var(--rosso); }
+.passo-dettaglio[data-tono='avviso'] { color: var(--giallo-testo); }
 .passo-btn { min-height: 48px; padding: 0 16px; font-size: 16px; text-decoration: none; align-self: flex-start; }
 /* L'IBAN in grande, a gruppi di quattro: se va a capo, va a capo fra un gruppo e l'altro. */
 .iban { background: var(--surface-2); border: 2px solid var(--line); padding: 8px 10px; font-size: 17px; font-weight: 600; letter-spacing: 0.02em; user-select: all; }
@@ -333,6 +366,13 @@ input, textarea { font: inherit; color: inherit; }
 .modulo-griglia { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-bottom: 4px; }
 .modulo-largo { grid-column: 1 / -1; }
 .modulo-etichetta { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
+.modulo-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.modulo-testa { gap: 10px; padding-top: 14px; }
+.modulo-piede { gap: 10px; padding-bottom: 28px; }
+.modulo-scelte-una { display: flex; gap: 8px; }
+.modulo-scelte-una > * { flex: 1; }
+.campo.campo-codice { letter-spacing: 0.08em; }
+.campo.campo-note { padding-top: 12px; resize: vertical; }
 .modulo .campo { width: 100%; }
 .modulo-corsi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .modulo-corso {
@@ -346,6 +386,8 @@ input, textarea { font: inherit; color: inherit; }
 }
 .modulo-file { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
 .modulo-file[data-fatto='true'] { border-color: var(--verde); }
+.modulo-file[data-fatto='true'] .modulo-etichetta { color: var(--verde); }
+.modulo-file-testo { gap: 3px; min-width: 0; }
 .modulo-scegli { align-self: center; flex-shrink: 0; }
 .modulo-privacy { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--sec); line-height: 1.4; cursor: pointer; }
 .modulo-privacy input { width: 22px; height: 22px; margin: 0; flex-shrink: 0; accent-color: var(--verde); }
@@ -354,6 +396,8 @@ input, textarea { font: inherit; color: inherit; }
 .modulo-nota { font-size: 14px; line-height: 1.35; color: var(--rosso); }
 .modulo-nota[data-avviso] { color: var(--giallo-testo); }
 .modulo-corsi:focus, .modulo [role='radiogroup']:focus { outline: none; }
+/* Il fuoco da tastiera: il contorno `text` di 2px, che su ogni fondo fa più di 3:1. */
+.btn:focus-visible, .modulo-corso:focus-visible, .costo-link:focus-visible, .modulo-file:focus-within .modulo-scegli { outline: 2px solid var(--text); outline-offset: 2px; }
 @media (max-width: 560px) {
   .modulo-griglia, .modulo-corsi { grid-template-columns: minmax(0, 1fr); }
 }

@@ -1,0 +1,307 @@
+import type { ReactNode } from 'react'
+
+/**
+ * I pezzi del design system ODS Corsi che servono alle iscrizioni: le stesse
+ * forme e gli stessi nomi del design system (Titoletto, Tasto, Campo,
+ * SceltaCorsi, CaricaFile, Costo), così una pagina si scrive con i pezzi e non
+ * ricopiando classi e misure a mano. Le misure stanno in `styles.css`, qui c'è
+ * solo quale pezzo e in che stato.
+ */
+
+/** L'etichetta spaziata con la riga che divide una pagina, e il conto a destra. */
+export function Titoletto({ children, conto, dentro }: { children: ReactNode; conto?: ReactNode; dentro?: boolean }) {
+  return (
+    <div className={dentro ? 'rule rule-dentro' : 'rule'}>
+      <span className="rule-label">{children}</span>
+      <div className="rule-line" />
+      {conto !== undefined && <span className="num rule-conto">{conto}</span>}
+    </div>
+  )
+}
+
+const VARIANTI = { principale: 'btn-primary', vai: 'btn-go', linea: 'btn-ghost' } as const
+type Variante = keyof typeof VARIANTI
+
+/** Le classi di un tasto, per quando il tasto è un `<label>` (vedi `CaricaFile`). */
+export const classiTasto = (variante: Variante = 'linea') => `btn ${VARIANTI[variante]} passo-btn`
+
+type PropTasto = {
+  variante?: Variante
+  children: ReactNode
+  /** Un link: si apre in un'altra scheda, tranne `scarica` (lo scarica) e `qui` (un `tel:`, un'ancora). */
+  href?: string
+  scarica?: boolean
+  qui?: boolean
+  onClick?: () => void
+  type?: 'button' | 'submit'
+  disabled?: boolean
+}
+
+/** Il tasto: MAIUSCOLO e obliquo; `principale` rosso, `vai` verde, `linea` col bordo. */
+export function Tasto({ variante = 'linea', children, href, scarica, qui, onClick, type = 'button', disabled }: PropTasto) {
+  if (href) {
+    const fuori = qui ? {} : scarica ? { download: true } : { target: '_blank', rel: 'noopener noreferrer' }
+    return (
+      <a className={classiTasto(variante)} href={href} {...fuori}>
+        {children}
+      </a>
+    )
+  }
+  return (
+    <button type={type} className={classiTasto(variante)} onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  )
+}
+
+/** Tasti uno accanto all'altro, che vanno a capo. */
+export function Tasti({ children }: { children: ReactNode }) {
+  return <span className="riga-tasti">{children}</span>
+}
+
+/**
+ * Una scheda `surface` col bordo `line`. `tono`: `prova` ha il bordo giallo a
+ * sinistra (sta prima dei passi e non è uno di loro), `guaio` il bordo rosso.
+ */
+export function Riquadro({ children, tono, stretto }: { children: ReactNode; tono?: 'prova' | 'guaio'; stretto?: boolean }) {
+  return (
+    <div className="card stack riquadro" data-tono={tono} data-stretto={stretto || undefined}>
+      {children}
+    </div>
+  )
+}
+
+/** L'etichetta in cima a un riquadro: QUOTA ASSOCIATIVA, PRIMA DI ISCRIVERTI. */
+export function Etichetta({ children }: { children: ReactNode }) {
+  return <span className="rule-label etichetta-riquadro">{children}</span>
+}
+
+/** Un numero grande: un prezzo, una quota. */
+export function Cifra({ children }: { children: ReactNode }) {
+  return <span className="num cifra">{children}</span>
+}
+
+/** La frase sotto un titolo, in `dim`. `tono` la colora quando dice un guaio o un avviso. */
+export function Dettaglio({ children, tono }: { children: ReactNode; tono?: 'testo' | 'guaio' | 'avviso' }) {
+  return (
+    <span className="passo-dettaglio" data-tono={tono}>
+      {children}
+    </span>
+  )
+}
+
+/** Un bollino giallo pieno: DATI DI PROVA. */
+export function Bollino({ children }: { children: ReactNode }) {
+  return <span className="num sg-bollino">{children}</span>
+}
+
+/** Il titolo di un esito, grande e obliquo: verde se è andata, giallo se manca qualcosa. */
+export function TitoloEsito({ children, tono }: { children: ReactNode; tono: 'fatto' | 'avviso' }) {
+  return (
+    <span className="ob esito-titolo" data-tono={tono}>
+      {children}
+    </span>
+  )
+}
+
+export interface Nota {
+  testo: string
+  /** Un errore che ferma l'invio; altrimenti un avviso, da guardare. */
+  guaio: boolean
+}
+
+/** Cosa non va, sotto un campo: rosso ferma l'invio, giallo è da guardare. */
+export function NotaCampo({ id, nota }: { id: string; nota?: Nota }) {
+  if (!nota) return null
+  return (
+    <span id={id} className="modulo-nota" data-avviso={!nota.guaio || undefined}>
+      {nota.testo}
+    </span>
+  )
+}
+
+/** Un campo: l'etichetta sopra, il controllo, e sotto la nota. `largo` prende tutta la riga. */
+export function Campo({ id, etichetta, children, largo, nota }: { id: string; etichetta: string; children: ReactNode; largo?: boolean; nota?: Nota }) {
+  return (
+    <div className={largo ? 'modulo-campo modulo-largo' : 'modulo-campo'}>
+      <label htmlFor={id} className="modulo-etichetta">
+        {etichetta}
+      </label>
+      {children}
+      <NotaCampo id={`${id}-nota`} nota={nota} />
+    </div>
+  )
+}
+
+/**
+ * Le scelte del modulo, col pollice: più di una (i corsi, due colonne, la
+ * spunta) o una sola (`una`: come paghi, affiancate, il pallino).
+ */
+export function SceltaCorsi({
+  id,
+  etichetta,
+  voci,
+  scelti,
+  onScegli,
+  una,
+  descritto,
+}: {
+  id: string
+  etichetta: string
+  voci: ReadonlyArray<{ id: string; testo: string }>
+  scelti: readonly string[]
+  onScegli: (id: string) => void
+  una?: boolean
+  descritto?: string
+}) {
+  return (
+    <div
+      id={id}
+      tabIndex={-1}
+      className={una ? 'modulo-scelte-una' : 'modulo-corsi'}
+      role={una ? 'radiogroup' : 'group'}
+      aria-label={etichetta}
+      aria-describedby={descritto}
+    >
+      {voci.map((v) => {
+        const on = scelti.includes(v.id)
+        const stato = una ? { role: 'radio', 'aria-checked': on } : { 'aria-pressed': on }
+        return (
+          <button key={v.id} type="button" className="modulo-corso" {...stato} onClick={() => onScegli(v.id)}>
+            <span className="modulo-spunta" aria-hidden>
+              {on ? (una ? '●' : '✓') : ''}
+            </span>
+            {v.testo}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/** Un file da caricare: da scegliere, caricato (verde) o con un errore sotto. Dal telefono apre la fotocamera o la galleria. */
+export function CaricaFile({
+  id,
+  etichetta,
+  dettaglio,
+  facoltativo,
+  file,
+  errore,
+  onFile,
+}: {
+  id: string
+  etichetta: string
+  /** Cosa caricare, o cosa sta succedendo («Preparo la foto…») */
+  dettaglio: string
+  facoltativo?: boolean
+  file?: { nome: string; byte: number }
+  errore?: string | null
+  onFile: (f: File | undefined) => void
+}) {
+  return (
+    <div className="modulo-largo card modulo-file" data-fatto={!!file}>
+      <span className="stack grow modulo-file-testo">
+        <span className="modulo-etichetta">
+          {etichetta}
+          {facoltativo && ' · FACOLTATIVO'}
+        </span>
+        <span className="passo-dettaglio una-riga">{file ? `${file.nome} · ${Math.max(1, Math.round(file.byte / 1024))} KB` : dettaglio}</span>
+        {errore && <Dettaglio tono="guaio">{errore}</Dettaglio>}
+      </span>
+      <label htmlFor={id} className={`${classiTasto()} modulo-scegli`}>
+        {file ? 'CAMBIA' : 'SCEGLI'}
+      </label>
+      <input
+        id={id}
+        className="vh"
+        type="file"
+        accept="image/*,application/pdf"
+        onChange={(e) => {
+          onFile(e.target.files?.[0])
+          e.target.value = ''
+        }}
+      />
+    </div>
+  )
+}
+
+export interface PrezziCosto {
+  etichetta?: string
+  saldo?: number
+  annuale?: number
+  trimestre?: number
+}
+
+const euro = (n?: number) => (n === undefined ? '—' : `${n} €`)
+
+/** Un corso nel listino: età, orari, i tre prezzi in colonna, la nota e il link al sito. */
+export function Costo({
+  corso,
+  frase,
+  eta,
+  orari,
+  prezzi,
+  notaTrimestre,
+  nota,
+  link,
+}: {
+  corso: string
+  frase?: string
+  eta: string
+  orari: readonly string[]
+  prezzi: readonly PrezziCosto[]
+  notaTrimestre?: string
+  nota?: string
+  link?: string
+}) {
+  const conEtichette = prezzi.some((p) => p.etichetta)
+  return (
+    <div className="card stack costo">
+      <span className="ob lezione-nome">{corso.toUpperCase()}</span>
+      {frase && <span className="costo-frase">{frase}</span>}
+      <Dettaglio tono="testo">{eta}</Dettaglio>
+      {orari.map((o) => (
+        <Dettaglio key={o}>{o}</Dettaglio>
+      ))}
+
+      <div className="costo-griglia" data-etichette={conEtichette}>
+        {conEtichette && <span />}
+        <span className="costo-testa">SALDO 31/8</span>
+        <span className="costo-testa">ANNUALE</span>
+        <span className="costo-testa">
+          TRIMESTRE
+          {notaTrimestre && (
+            <>
+              <br />
+              {notaTrimestre.toUpperCase()}
+            </>
+          )}
+        </span>
+        {prezzi.map((p, i) => (
+          <RigaPrezzi key={i} prezzi={p} conEtichette={conEtichette} />
+        ))}
+      </div>
+
+      {nota && <Dettaglio tono="avviso">{nota}</Dettaglio>}
+
+      {link && (
+        <a className="costo-link" href={link} target="_blank" rel="noopener noreferrer">
+          SCOPRI IL CORSO
+        </a>
+      )}
+    </div>
+  )
+}
+
+function RigaPrezzi({ prezzi, conEtichette }: { prezzi: PrezziCosto; conEtichette: boolean }) {
+  return (
+    <>
+      {conEtichette && <span className="costo-testa costo-etichetta">{prezzi.etichetta}</span>}
+      {[prezzi.saldo, prezzi.annuale, prezzi.trimestre].map((n, i) => (
+        <span key={i} className="num costo-euro" data-vuoto={n === undefined}>
+          {euro(n)}
+        </span>
+      ))}
+    </>
+  )
+}
