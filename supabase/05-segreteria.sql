@@ -23,7 +23,7 @@
 -- toccano mai: sono quello che è successo.
 -- ---------------------------------------------------------------------------
 create or replace function corso_cambiato() returns trigger
-  language plpgsql security definer set search_path = public as $$
+  language plpgsql security definer set search_path = public, extensions as $$
 begin
   if new.sala_id is distinct from old.sala_id then
     update sessioni set sala_id = new.sala_id
@@ -55,7 +55,7 @@ create trigger corsi_cambiati after update on corsi
 -- Le lezioni future senza appello se ne vanno con lei.
 -- ---------------------------------------------------------------------------
 create or replace function chiudi_ricorrenza(ricorrenza uuid)
-  returns void language plpgsql security definer set search_path = public as $$
+  returns void language plpgsql security definer set search_path = public, extensions as $$
 declare
   r record;
   oggi date := (now() at time zone 'Europe/Rome')::date;
@@ -81,7 +81,7 @@ end $$;
 -- Fin dove arriva il calendario: la lezione più lontana già generata.
 -- ---------------------------------------------------------------------------
 create or replace function calendario_pronto_fino() returns date
-  language sql stable set search_path = public as $$
+  language sql stable set search_path = public, extensions as $$
   select (max(inizio) at time zone 'Europe/Rome')::date from sessioni
 $$;
 
@@ -96,7 +96,7 @@ $$;
 -- ---------------------------------------------------------------------------
 create or replace function frequenze(giorni int default 30)
   returns table (persona_id uuid, presenti int, dovute int)
-  language sql stable security invoker set search_path = public as $$
+  language sql stable security invoker set search_path = public, extensions as $$
   select i.persona_id,
     count(*) filter (where p.stato = 'presente')::int,
     count(*) filter (where p.stato is distinct from 'giustificato')::int
@@ -119,7 +119,7 @@ $$;
 -- account: un'email scritta per sbaglio non ruba l'anagrafica di un altro.
 -- ---------------------------------------------------------------------------
 create or replace function collega_utente()
-  returns uuid language plpgsql security definer set search_path = public as $$
+  returns uuid language plpgsql security definer set search_path = public, extensions as $$
 declare
   chi uuid;
   mail citext;
@@ -169,7 +169,7 @@ create or replace view presenze_scadute with (security_invoker = true) as
 -- Chi ha il PIN del tablet. Il PIN no, quello non esce mai: solo il sì o il no.
 -- ---------------------------------------------------------------------------
 create or replace function pin_impostati()
-  returns table (persona_id uuid) language plpgsql stable security definer set search_path = public as $$
+  returns table (persona_id uuid) language plpgsql stable security definer set search_path = public, extensions as $$
 begin
   if not e_staff() then raise exception 'solo la segreteria' using errcode = '42501'; end if;
   return query select pi.persona_id from pin_istruttori pi;
