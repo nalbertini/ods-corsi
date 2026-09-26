@@ -21,8 +21,9 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 1. `01-schema.sql` — tabelle, indici, vincoli
 2. `02-policy.sql` — chi può vedere e fare cosa
 3. `03-funzioni.sql` — il calendario, il tracciamento di chi segna, la pulizia
+4. `04-tablet.sql` — il tablet di sala e i PIN degli istruttori
 
-Si possono rilanciare tutti e tre quante volte si vuole: non distruggono niente.
+Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 
 ## 3. Le persone
 
@@ -55,7 +56,7 @@ bene così come sono.
 |---|---|
 | `nome` | Il nome del corso |
 | `sala` | Creata se non c'è |
-| `istruttore` | Nome e cognome; creato se non c'è. Più istruttori separati da virgola: ne entra solo il primo |
+| `istruttore` | Nome e cognome; creato se non c'è. Più istruttori separati da virgola: entrano tutti |
 | `giorno` | `lunedì`, `lun` o il numero (0 = domenica) |
 | `ora` | `19:00` o `19.00` |
 | `durata` | In minuti |
@@ -74,12 +75,12 @@ foglio e si rilancia.
 
 L'orario della stagione 2026/27, copiato dal volantino «Corsi e attività», è
 in [`dati/corsi-2026-27.csv`](../dati/corsi-2026-27.csv). Due cose che il foglio
-dice e l'import non sa ancora fare:
+manca ancora: **gli istruttori hanno solo il nome.** Finché nel foglio non c'è
+il cognome i corsi entrano senza istruttore, e lo script lo dice riga per riga.
 
-- **gli istruttori hanno solo il nome.** Finché nel foglio non c'è il cognome i
-  corsi entrano senza istruttore, e lo script lo dice riga per riga;
-- **Lotta e Preparazione atletica hanno più istruttori**, ma un corso ne tiene
-  uno solo (`corsi.istruttore_id`). Entra il primo della lista.
+I corsi con più istruttori (Lotta, Preparazione atletica) li legano tutti in
+`corsi_istruttori`: ognuno può fare l'appello e aggiornare le lezioni del
+corso. `corsi.istruttore_id` resta il primo della lista, quello di riferimento.
 
 ## 5. Il calendario
 
@@ -92,7 +93,49 @@ select cron.schedule('calendario', '0 3 * * 1',
   $$select materializza_sessioni(current_date, current_date + 60)$$);
 ```
 
-## 6. L'app
+## 6. I tablet di sala
+
+Ogni sala ha un tablet appeso al muro con il calendario della sala: chi arriva
+tocca il suo nome e la presenza è segnata. Il tablet ha un **account suo**, che
+non è di nessuna persona e sa fare solo questo:
+
+- vede le lezioni della sua sala, e degli iscritti **il nome e l'iniziale** del
+  cognome — mai l'anagrafica, le email, i telefoni;
+- segna «presente» da 30 minuti prima dell'inizio a 10 minuti dopo; le lezioni
+  passate si recuperano fino a 14 giorni indietro;
+- un tocco sbagliato si annulla entro 2 minuti;
+- **non scavalca l'istruttore**: se l'istruttore ha già segnato qualcuno
+  assente, il tablet non lo cambia.
+
+I numeri stanno in `tablet_regole()`, in cima a `04-tablet.sql`.
+
+Per metterne uno in una sala: si crea un utente in **Authentication → Users**
+(per esempio `tablet-lotta@…`, con una password lunga), poi
+
+```sql
+insert into postazioni (nome, sala_id, utente_id)
+select 'Tablet Lotta', (select id from sale where nome = 'Lotta'),
+       (select id from auth.users where email = 'tablet-lotta@esempio.it');
+```
+
+e sul tablet si fa l'accesso una volta con quell'utente. Se il tablet si perde,
+`update postazioni set attiva = false where nome = 'Tablet Lotta'` lo spegne
+subito, e poi si cancella l'utente.
+
+### Il PIN degli istruttori
+
+Dal tablet un istruttore può aprire l'appello completo con un PIN di 4 cifre.
+Lo imposta la segreteria (o l'istruttore per sé):
+
+```sql
+select imposta_pin((select id from persone where nome = 'Maura' and ruolo = 'istruttore'), '4321');
+```
+
+Il PIN è salvato cifrato e due istruttori non possono avere lo stesso. Dopo 5
+PIN sbagliati in 5 minuti il tablet si blocca per qualche minuto: gli altri
+tablet no.
+
+## 7. L'app
 
 Le due variabili vanno messe dove si compila (in locale un file `.env`, su
 GitHub Actions dei *repository secrets*):
@@ -124,4 +167,6 @@ funzioni su un Postgres qualunque: `finto-supabase.sql` rifà il minimo che
 Supabase mette a disposizione (`auth.users`, `auth.uid()`, i ruoli),
 `calendario.sql` prova la generazione delle lezioni e il cambio dell'ora
 legale, `rls.sql` prova gli accessi dal punto di vista di un iscritto, di un
-istruttore, della segreteria e di chi non ha fatto l'accesso.
+istruttore, della segreteria e di chi non ha fatto l'accesso, `tablet.sql`
+prova il tablet di sala: le finestre di tempo, il recupero, l'annullo, il PIN
+e il blocco, e che il tablet non veda niente più di quel che deve.

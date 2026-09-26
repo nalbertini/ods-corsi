@@ -76,6 +76,12 @@ create or replace function imposta_segnata_da() returns trigger
 begin
   new.segnata_da := coalesce(persona_corrente(), new.segnata_da);
   new.segnata_il := now();
+  -- Una persona che scrive dall'app fa l'appello, qualunque cosa dica il
+  -- client: «tablet» e «recupero» li mettono solo le funzioni del tablet.
+  if persona_corrente() is not null then
+    new.origine := 'appello';
+    new.postazione_id := null;
+  end if;
   return new;
 end $$;
 

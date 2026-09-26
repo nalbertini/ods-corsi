@@ -42,12 +42,14 @@ alter table ricorrenze  enable row level security;
 alter table sessioni    enable row level security;
 alter table iscrizioni  enable row level security;
 alter table presenze    enable row level security;
+alter table corsi_istruttori enable row level security;
+alter table postazioni  enable row level security;
 
 -- Rilanciabile: si buttano giù e si rifanno.
 do $$
 declare t text;
 begin
-  foreach t in array array['persone','sale','corsi','ricorrenze','sessioni','iscrizioni','presenze'] loop
+  foreach t in array array['persone','sale','corsi','ricorrenze','sessioni','iscrizioni','presenze','corsi_istruttori','postazioni'] loop
     execute format('drop policy if exists %I_legge on %I', t, t);
     execute format('drop policy if exists %I_scrive on %I', t, t);
     execute format('drop policy if exists %I_aggiorna on %I', t, t);
@@ -67,12 +69,13 @@ create policy persone_aggiorna on persone for update to authenticated using (e_s
 create policy persone_cancella on persone for delete to authenticated using (e_staff());
 
 -- --- anagrafica dei corsi --------------------------------------------------
--- Sale, corsi e ricorrenze li legge chiunque abbia un accesso:
--- sono il calendario della palestra, non un segreto. Li scrive la segreteria.
+-- Sale, corsi, ricorrenze e chi insegna cosa li legge chiunque abbia un
+-- accesso, tablet compresi: sono il calendario della palestra, non un segreto.
+-- Li scrive la segreteria.
 do $$
 declare t text;
 begin
-  foreach t in array array['sale','corsi','ricorrenze'] loop
+  foreach t in array array['sale','corsi','ricorrenze','corsi_istruttori'] loop
     execute format('create policy %I_legge on %I for select to authenticated using (true)', t, t);
     execute format('create policy %I_scrive on %I for insert to authenticated with check (e_staff())', t, t);
     execute format('create policy %I_aggiorna on %I for update to authenticated using (e_staff()) with check (e_staff())', t, t);
@@ -82,13 +85,19 @@ end $$;
 
 -- --- sessioni --------------------------------------------------------------
 -- L'istruttore della lezione può aggiornarla: segnarla svolta, scrivere una
--- nota, annullarla. Crearle e cancellarle resta alla segreteria, perché il
--- calendario è una cosa sola per tutti.
+-- nota, annullarla. Vale per chi la fa quel giorno (`istruttore_id`, che può
+-- essere un sostituto) e per chi insegna il corso (`corsi_istruttori`).
+-- Crearle e cancellarle resta alla segreteria, perché il calendario è una cosa
+-- sola per tutti.
+create or replace function insegna(corso uuid) returns boolean
+  language sql stable security definer set search_path = public as $$
+  select exists (select 1 from corsi_istruttori where corso_id = corso and persona_id = persona_corrente())
+$$;
 create policy sessioni_legge on sessioni for select to authenticated using (true);
 create policy sessioni_scrive on sessioni for insert to authenticated with check (e_staff());
 create policy sessioni_aggiorna on sessioni for update to authenticated
-  using (e_staff() or istruttore_id = persona_corrente())
-  with check (e_staff() or istruttore_id = persona_corrente());
+  using (e_staff() or istruttore_id = persona_corrente() or insegna(corso_id))
+  with check (e_staff() or istruttore_id = persona_corrente() or insegna(corso_id));
 create policy sessioni_cancella on sessioni for delete to authenticated using (e_staff());
 
 -- --- iscrizioni ------------------------------------------------------------
@@ -110,6 +119,15 @@ create policy presenze_legge on presenze for select to authenticated
 create policy presenze_scrive on presenze for insert to authenticated with check (e_personale());
 create policy presenze_aggiorna on presenze for update to authenticated using (e_personale()) with check (e_personale());
 create policy presenze_cancella on presenze for delete to authenticated using (e_staff());
+
+-- --- postazioni ------------------------------------------------------------
+-- Le gestisce la segreteria. Un tablet vede la propria riga e basta: gli
+-- serve a sapere in che sala è appeso.
+create policy postazioni_legge on postazioni for select to authenticated
+  using (e_staff() or utente_id = auth.uid());
+create policy postazioni_scrive on postazioni for insert to authenticated with check (e_staff());
+create policy postazioni_aggiorna on postazioni for update to authenticated using (e_staff()) with check (e_staff());
+create policy postazioni_cancella on postazioni for delete to authenticated using (e_staff());
 
 -- ---------------------------------------------------------------------------
 -- Permessi di tabella
