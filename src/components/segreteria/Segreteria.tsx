@@ -121,16 +121,18 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
           ))}
         </div>
         <div className="grow" />
-        {/* In un'altra scheda: la segreteria resta dov'era, con quello che c'era aperto. */}
-        <a className="num sg-voce" href={indirizzoPagina(GUIDE[voce])} target="_blank" rel="noopener">
-          GUIDA ↗
-        </a>
-        <CopiaLink />
-        {onApp && (
-          <button type="button" className="num sg-voce" onClick={onApp}>
-            ← ISTRUTTORI
-          </button>
-        )}
+        <div className="sg-voci">
+          {/* In un'altra scheda: la segreteria resta dov'era, con quello che c'era aperto. */}
+          <a className="num sg-voce" href={indirizzoPagina(GUIDE[voce])} target="_blank" rel="noopener">
+            GUIDA ↗
+          </a>
+          <CopiaLink />
+          {onApp && (
+            <button type="button" className="num sg-voce" onClick={onApp}>
+              ← ISTRUTTORI
+            </button>
+          )}
+        </div>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
           <span style={{ fontSize: 12, color: 'var(--dim)' }}>Segreteria · accesso completo</span>
