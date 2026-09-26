@@ -53,6 +53,15 @@ export function Porta({ children }: { children: ReactNode }) {
   )
 }
 
+/** Dalla porta di un'area si torna alla pagina con tutte e quattro (vedi `aree.ts`). */
+export function AltreAree() {
+  return (
+    <a className="chi-esci" href="#">
+      ← TUTTE LE AREE
+    </a>
+  )
+}
+
 export function UnAttimo() {
   return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
 }
@@ -86,6 +95,7 @@ export function Accesso({ per, onEntrato }: { per: keyof typeof SPIEGA; onEntrat
       <div className="rule">
         <span className="rule-label">ACCESSO</span>
         <div className="rule-line" />
+        <AltreAree />
       </div>
       <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void accedi(e)}>
         <span className="passo-dettaglio" style={{ fontSize: 15 }}>

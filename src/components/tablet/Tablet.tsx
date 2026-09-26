@@ -273,7 +273,7 @@ function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | n
           </span>
         )}
         <button type="button" className="tb-scollega" style={{ alignSelf: 'flex-start' }} onClick={lasciaTablet}>
-          Non è un tablet di sala: torna all'app
+          ← Non è un tablet di sala: torna alla scelta delle aree
         </button>
       </div>
     </div>
