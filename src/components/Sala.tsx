@@ -5,7 +5,7 @@ import { CalendarioScreen } from './CalendarioScreen'
 import { AppelloScreen } from './AppelloScreen'
 import { Back } from './Icons'
 import { useLargo } from '../lib/largo'
-import { INDIRIZZI, TIMER, vaiA } from '../lib/aree'
+import { TIMER } from '../lib/aree'
 
 /**
  * Il calendario, e dentro una lezione l'appello.
@@ -55,14 +55,7 @@ export function Sala() {
     <>
       {d.modo === 'prova' && (
         <div className="nastro-prova">
-          DATI DI PROVA · ISCRITTI INVENTATI ·{' '}
-          <button
-            type="button"
-            style={{ textDecoration: 'underline', font: 'inherit', letterSpacing: 'inherit', color: 'inherit' }}
-            onClick={() => vaiA('sala')}
-          >
-            PROVA IL TABLET DI SALA
-          </button>
+          DATI DI PROVA · ISCRITTI INVENTATI
           {inProvaScelta && (
             <>
               {' · '}
@@ -129,9 +122,9 @@ export function Sala() {
 
 /**
  * Sul telefono, sotto le lezioni, quello che sul computer sta nel menu: il
- * tablet della sala e il timer. In fondo e non in testata, dove ogni riga in
- * più è una riga d'elenco in meno; in un'altra scheda, così il calendario
- * resta dov'era.
+ * timer. In fondo e non in testata, dove ogni riga in più è una riga d'elenco
+ * in meno; in un'altra scheda, così il calendario resta dov'era. Il tablet di
+ * sala no: è un'area a sé, e dagli istruttori non ci si va.
  */
 function Strumenti() {
   return (
@@ -141,9 +134,6 @@ function Strumenti() {
         <div className="rule-line" />
       </div>
       <div className="pad strumenti" style={{ paddingBottom: 20 }}>
-        <a className="btn btn-ghost" href={INDIRIZZI.sala} target="_blank" rel="noopener">
-          TABLET DI SALA ↗
-        </a>
         <a className="btn btn-ghost" href={TIMER} target="_blank" rel="noopener">
           TIMER ↗
         </a>
