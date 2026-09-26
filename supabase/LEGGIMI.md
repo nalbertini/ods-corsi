@@ -34,6 +34,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 8. `08-timer.sql` — il timer: la libreria della palestra, i timer personali e dei corsi, lo storico, le preferenze
 9. `09-musica.sql` — la musica delle sale, che il tablet fa partire dalla sua barra
 10. `10-timer-sale.sql` — il timer dei tablet di sala, scelto dalla segreteria
+11. `11-timer-lezioni.sql` — il timer di una singola lezione, scelto dall'istruttore in I MIEI TIMER
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -52,7 +53,9 @@ musica delle sale con `09-musica.sql`: finché non c'è, la segreteria dice che
 le liste non si leggono e il tablet suona quella delle impostazioni del timer.
 E per il timer delle sale con `10-timer-sale.sql`: finché non c'è, la
 segreteria dice che il timer delle sale non si legge e i tablet tengono le
-impostazioni che avevano.
+impostazioni che avevano. Per il timer delle singole lezioni con
+`11-timer-lezioni.sql`: finché non c'è, I MIEI TIMER dice che le lezioni non
+si leggono, e le lezioni aprono i timer del corso come prima.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -494,5 +497,7 @@ chi vede e cambia i timer della palestra, i propri e quelli dei colleghi, il
 tablet che li apre senza scriverli, lo storico e le preferenze; `musica.sql`
 prova la musica delle sale: la cura la segreteria, e il tablet vede solo la
 sua; in fondo, che il timer delle sale lo cambi solo la segreteria e il
-tablet lo legga. `finto-supabase.sql` rifà anche le due
+tablet lo legga; `timer-lezioni.sql`, dopo `timer.sql`, prova il timer di
+una singola lezione: lo lega il personale, lo legge il tablet, e un timer
+personale legato a una lezione lo vedono anche gli altri. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

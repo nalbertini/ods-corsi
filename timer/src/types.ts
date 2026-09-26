@@ -54,6 +54,11 @@ export interface Workout {
   dove?: Dove
   /** I corsi a cui è collegato: li apre il tablet di sala con la lezione. */
   corsi?: string[]
+  /**
+   * Le singole lezioni a cui è collegato: per quella lezione viene prima dei
+   * timer del corso. Si scelgono da ODS Corsi, in I MIEI TIMER.
+   */
+  lezioni?: string[]
 }
 
 export type Dove = 'palestra' | 'miei' | 'collega'

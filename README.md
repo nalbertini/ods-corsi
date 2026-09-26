@@ -34,6 +34,10 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
 
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello
   scelto, in ordine di orario, con sala, istruttore e iscritti.
+- **I miei timer**: nell'area istruttori, quale timer parte con ogni corso e
+  con ogni singola lezione delle prossime due settimane; quello di una lezione
+  viene prima di quelli del corso, dall'appello e sul tablet di sala
+  (`supabase/11-timer-lezioni.sql`).
 - **L'appello**: l'elenco degli iscritti, un tocco per riga — presente, assente,
   non segnato — e `TUTTI PRESENTI` in cima, perché in una classe di ventidue con
   venti presenti si segnano due assenze invece di venti presenze.

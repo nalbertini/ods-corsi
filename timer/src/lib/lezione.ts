@@ -17,6 +17,11 @@ export interface Lezione {
   corsoId: string
   /** La lezione del calendario, se si arriva da una: la scrive lo storico. */
   sessioneId: string | null
+  /**
+   * La lezione così come la chiama ODS Corsi, anche in prova, dove non è un
+   * identificativo del database: serve a trovare i timer legati a lei sola.
+   */
+  lezioneId: string | null
   nome: string
 }
 
@@ -27,7 +32,8 @@ export function lezioneDaIndirizzo(href = location.href): Lezione | null {
     if (!corsoId || !/^[\w~.:-]{1,80}$/.test(corsoId)) return null
     const sessione = q.get('lezione')
     const nome = (q.get('nome') ?? '').trim().slice(0, 80)
-    return { corsoId, sessioneId: eUnId(sessione) ? sessione : null, nome }
+    const lezioneId = sessione && /^[\w~.:@-]{1,120}$/.test(sessione) ? sessione : null
+    return { corsoId, sessioneId: eUnId(sessione) ? sessione : null, lezioneId, nome }
   } catch {
     return null
   }

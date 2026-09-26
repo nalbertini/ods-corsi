@@ -31,14 +31,14 @@ interface RigaTimer {
 /** Quello che il database custodisce di un timer: tutto tranne ciò che dice dove sta. */
 function schemaDi(w: Workout): Record<string, unknown> {
   const s: Record<string, unknown> = { ...w }
-  for (const k of ['id', 'name', 'builtin', 'updatedAt', 'dove', 'corsi']) delete s[k]
+  for (const k of ['id', 'name', 'builtin', 'updatedAt', 'dove', 'corsi', 'lezioni']) delete s[k]
   return s
 }
 
 const MODI = ['interval', 'circuit', 'emom', 'amrap', 'fortime']
 
 /** Il timer letto dal database, o niente se lo schema non è uno che il timer sa far partire. */
-function workoutDa(r: RigaTimer, io: string | null, corsi: string[]): Workout | null {
+function workoutDa(r: RigaTimer, io: string | null, corsi: string[], lezioni: string[]): Workout | null {
   const s = r.schema as Partial<Workout>
   if (!s || typeof s.mode !== 'string' || !MODI.includes(s.mode)) return null
   const dove: Dove = r.persona_id === null ? 'palestra' : r.persona_id === io ? 'miei' : 'collega'
@@ -51,6 +51,7 @@ function workoutDa(r: RigaTimer, io: string | null, corsi: string[]): Workout | 
     updatedAt: Date.parse(r.cambiato_il) || Date.now(),
     dove,
     corsi,
+    lezioni,
   }
 }
 
@@ -146,13 +147,21 @@ export function guardaCoda(f: (n: number) => void): () => void {
   return () => void via()
 }
 
+const inizioDiOggi = () => {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d.toISOString()
+}
+
 /** Tutto quello che il database ha per chi è collegato: timer, collegamenti ai corsi, corsi. */
 export async function scaricaLibreria(io: string | null): Promise<{ timer: Workout[]; corsi: Corso[] }> {
   const c = await db()
-  const [t, ct, co] = await Promise.all([
+  const [t, ct, co, st] = await Promise.all([
     c.from('timer').select('id, persona_id, nome, schema, cambiato_il').order('nome'),
     c.from('corsi_timer').select('corso_id, timer_id'),
     c.from('corsi').select('id, nome, colore').eq('attivo', true).order('nome'),
+    // Solo le lezioni da oggi in poi: quelle passate non si aprono più.
+    c.from('sessioni_timer').select('sessione_id, timer_id, sessioni!inner ( inizio )').gte('sessioni.inizio', inizioDiOggi()),
   ])
   const e = t.error ?? ct.error ?? co.error
   if (e) throw new Error(e.message)
@@ -160,8 +169,14 @@ export async function scaricaLibreria(io: string | null): Promise<{ timer: Worko
   for (const r of (ct.data ?? []) as Array<{ corso_id: string; timer_id: string }>) {
     corsiDi.set(r.timer_id, [...(corsiDi.get(r.timer_id) ?? []), r.corso_id])
   }
+  // Senza `11-timer-lezioni.sql` la tabella non c'è: le lezioni aprono i
+  // timer del corso, come prima, e il resto della libreria arriva lo stesso.
+  const lezioniDi = new Map<string, string[]>()
+  for (const r of (st.error ? [] : (st.data ?? [])) as Array<{ sessione_id: string; timer_id: string }>) {
+    lezioniDi.set(r.timer_id, [...(lezioniDi.get(r.timer_id) ?? []), r.sessione_id])
+  }
   const timer = ((t.data ?? []) as RigaTimer[])
-    .map((r) => workoutDa(r, io, corsiDi.get(r.id) ?? []))
+    .map((r) => workoutDa(r, io, corsiDi.get(r.id) ?? [], lezioniDi.get(r.id) ?? []))
     .filter((w): w is Workout => w !== null)
   const corsi = ((co.data ?? []) as Array<{ id: string; nome: string; colore: string | null }>).map((r) => ({
     id: r.id,
@@ -207,7 +222,7 @@ export function eliminaDalServer(w: Workout) {
 
 /** Un timer del dispositivo che va sul database: prende un identificativo vero. */
 export function versoIlServer(w: Workout, dove: 'palestra' | 'miei'): Workout {
-  return { ...w, id: nuovoId(), dove, builtin: false, updatedAt: Date.now(), corsi: w.corsi ?? [] }
+  return { ...w, id: nuovoId(), dove, builtin: false, updatedAt: Date.now(), corsi: w.corsi ?? [], lezioni: [] }
 }
 
 export function registraAllenamento(e: HistoryEntry, timer: Workout, lezioneId: string | null) {

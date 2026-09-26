@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
 import { Accesso, AltreAree, Porta, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Guida } from './components/Guida'
+import { MieiTimer } from './components/MieiTimer'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { INDIRIZZI, TIMER, useArea, vaiA } from './lib/aree'
@@ -147,6 +148,8 @@ function Iscrizioni() {
  */
 function Istruttori() {
   const largo = useLargo()
+  // Il calendario resta montato anche in I MIEI TIMER: tornando, l'appello è dov'era.
+  const [pagina, setPagina] = useState<Pagina>('calendario')
 
   // Di chi sono le lezioni da mostrare: dell'istruttore entrato, o di quello
   // di prova. La segreteria le vede tutte, perché fa l'appello per chiunque;
@@ -163,10 +166,11 @@ function Istruttori() {
           </div>
         )}
         dentro={(chi, onEsci) => (
-          <MenuIstruttori chi={chi} onEsci={onEsci}>
-            <div className="faccia-corsi">
+          <MenuIstruttori chi={chi} onEsci={onEsci} pagina={pagina} onPagina={setPagina}>
+            <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
               <Sala soloDi={soloDi(chi)} />
             </div>
+            {pagina === 'timer' && <MieiTimer soloDi={soloDi(chi)} />}
           </MenuIstruttori>
         )}
       />
@@ -178,7 +182,7 @@ function Istruttori() {
       <Testata luogo="ISTRUTTORI" guida={INDIRIZZO_GUIDA}>
         {!serveAccesso && (
           <nav className="schede">
-            <button className="scheda" data-on>
+            <button className="scheda" data-on={pagina === 'calendario'} onClick={() => setPagina('calendario')}>
               CALENDARIO
             </button>
             <button className="scheda" data-on={false} onClick={() => vaiA('segreteria')}>
@@ -189,7 +193,16 @@ function Istruttori() {
       </Testata>
       <main className="scroll">
         <div className="faccia-corsi">
-          <Porta>{(chi) => <Sala soloDi={soloDi(chi)} />}</Porta>
+          <Porta>
+            {(chi) => (
+              <>
+                <div hidden={pagina !== 'calendario'}>
+                  <Sala soloDi={soloDi(chi)} onMieiTimer={() => setPagina('timer')} />
+                </div>
+                {pagina === 'timer' && <MieiTimer soloDi={soloDi(chi)} onIndietro={() => setPagina('calendario')} />}
+              </>
+            )}
+          </Porta>
         </div>
       </main>
     </div>
@@ -202,7 +215,21 @@ function Istruttori() {
  * segreteria: col database vero le aree sono separate, ognuna con la sua
  * porta, e da qui non si va in segreteria nemmeno se si è di segreteria.
  */
-function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEsci?: () => void; children: ReactNode }) {
+type Pagina = 'calendario' | 'timer'
+
+function MenuIstruttori({
+  chi,
+  onEsci,
+  pagina,
+  onPagina,
+  children,
+}: {
+  chi: Personale | null
+  onEsci?: () => void
+  pagina: Pagina
+  onPagina: (p: Pagina) => void
+  children: ReactNode
+}) {
   const esci = onEsci ?? (inProvaScelta ? () => scegliProva(false) : undefined)
   return (
     <div className="sg">
@@ -218,9 +245,12 @@ function MenuIstruttori({ chi, onEsci, children }: { chi: Personale | null; onEs
             questa pagina, il tablet della sala e il timer in un'altra scheda,
             così l'appello resta dov'era. */}
         <div className="sg-voci">
-          <span className="num sg-voce" aria-current="page">
+          <button type="button" className="num sg-voce" aria-current={pagina === 'calendario' ? 'page' : undefined} onClick={() => onPagina('calendario')}>
             CALENDARIO
-          </span>
+          </button>
+          <button type="button" className="num sg-voce" aria-current={pagina === 'timer' ? 'page' : undefined} onClick={() => onPagina('timer')}>
+            I MIEI TIMER
+          </button>
           <a className="num sg-voce" href={INDIRIZZI.sala} target="_blank" rel="noopener">
             TABLET DI SALA ↗
           </a>

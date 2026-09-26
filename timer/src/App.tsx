@@ -410,7 +410,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
       // La copia è di chi la fa: fra i miei se c'è un accesso da istruttore,
       // altrimenti sul dispositivo. È il modo di cambiare un timer di un
       // collega, o di portarne uno della palestra fra i propri.
-      const base: Workout = { ...w, name: `${w.name} (copia)`, builtin: false, updatedAt: Date.now(), corsi: [] }
+      const base: Workout = { ...w, name: `${w.name} (copia)`, builtin: false, updatedAt: Date.now(), corsi: [], lezioni: [] }
       const copy: Workout = personaId ? { ...base, id: nuovoId(), dove: 'miei' } : { ...base, id: uid(), dove: undefined }
       upsert(copy)
       setView({ kind: 'editor', workout: copy })

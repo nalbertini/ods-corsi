@@ -225,7 +225,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   // La lezione in cui ci si segna adesso: il timer mette in cima i suoi timer.
   const aperta = (lezioni ?? []).find((l) => l.stato !== 'annullata' && fase(l, adesso) === 'aperta') ?? null
   const lezioneTimer = useMemo<Lezione | null>(
-    () => (aperta ? { corsoId: aperta.corsoId, sessioneId: eUnId(aperta.id) ? aperta.id : null, nome: aperta.corso } : null),
+    () => (aperta ? { corsoId: aperta.corsoId, sessioneId: eUnId(aperta.id) ? aperta.id : null, lezioneId: aperta.id, nome: aperta.corso } : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [aperta?.id, aperta?.corsoId, aperta?.corso],
   )

@@ -16,9 +16,10 @@ import { INDIRIZZI, TIMER, vaiA } from '../lib/aree'
  * scelta a destra, e il conto dei presenti a sinistra segue l'appello mentre
  * lo si fa.
  *
- * `soloDi` è l'istruttore di cui mostrare le lezioni (vedi `CalendarioScreen`).
+ * `soloDi` è l'istruttore di cui mostrare le lezioni (vedi `CalendarioScreen`);
+ * `onMieiTimer` apre I MIEI TIMER dal fondo del calendario del telefono.
  */
-export function Sala({ soloDi }: { soloDi?: string } = {}) {
+export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: () => void } = {}) {
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
@@ -122,7 +123,7 @@ export function Sala({ soloDi }: { soloDi?: string } = {}) {
       ) : (
         <>
           <CalendarioScreen dati={d} onApri={setAperta} soloDi={soloDi} />
-          <Strumenti />
+          <Strumenti onMieiTimer={onMieiTimer} />
         </>
       )}
     </>
@@ -135,7 +136,7 @@ export function Sala({ soloDi }: { soloDi?: string } = {}) {
  * più è una riga d'elenco in meno; in un'altra scheda, così il calendario
  * resta dov'era.
  */
-function Strumenti() {
+function Strumenti({ onMieiTimer }: { onMieiTimer?: () => void }) {
   return (
     <>
       <div className="rule">
@@ -143,6 +144,11 @@ function Strumenti() {
         <div className="rule-line" />
       </div>
       <div className="pad strumenti" style={{ paddingBottom: 20 }}>
+        {onMieiTimer && (
+          <button type="button" className="btn btn-ghost strumenti-largo" onClick={onMieiTimer}>
+            I MIEI TIMER
+          </button>
+        )}
         <a className="btn btn-ghost" href={INDIRIZZI.sala} target="_blank" rel="noopener">
           TABLET DI SALA ↗
         </a>

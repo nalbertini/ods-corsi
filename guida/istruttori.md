@@ -77,8 +77,9 @@ Non c'è niente da salvare: ogni tocco parte subito.
 
 ## Il timer della lezione
 
-Accanto al giorno e all'ora c'è **TIMER**: apre il timer con la lezione, e in
-cima ci sono i timer collegati al suo corso. Siccome siete entrati come
+Accanto al giorno e all'ora c'è **TIMER**: apre il timer con la lezione. In
+cima c'è **DI QUESTA LEZIONE**, se per quella lezione avete scelto un timer, e
+poi **DEL CORSO**, i timer collegati al suo corso. Siccome siete entrati come
 istruttori, il timer vi riconosce da solo:
 
 - **I MIEI** sono i vostri timer, e li ritrovate su ogni telefono o tablet in
@@ -95,6 +96,23 @@ istruttori, il timer vi riconosce da solo:
 
 Anche il timer funziona senza rete: quello che salvate aspetta sul telefono e
 parte da solo quando la rete torna.
+
+## I miei timer
+
+**I MIEI TIMER** (nel menu sul computer, in **STRUMENTI** sotto il calendario
+sul telefono) dice quale timer parte con i vostri corsi e con le singole
+lezioni. I timer si fanno e si cambiano nel timer (**APRI IL TIMER ↗**); qui si
+sceglie soltanto dove partono.
+
+- **PER CORSO**: i corsi delle vostre prossime lezioni. **+ Collega un timer**
+  ne aggiunge uno, la **×** lo toglie. Vale per tutte le lezioni del corso.
+- **PER LEZIONE**: le vostre lezioni dei prossimi quattordici giorni. Per
+  ognuna si sceglie un timer suo, che per quella lezione viene **prima** di
+  quelli del corso, dall'appello e sul tablet di sala; il riquadro diventa
+  giallo. **Del corso** torna ai timer del corso.
+
+Si scelgono i vostri timer e quelli della palestra. Il collegamento lo vedono
+anche il tablet e il collega che fa la lezione al posto vostro.
 
 ## Senza rete
 
