@@ -132,6 +132,9 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       if (!est) throw new Error('Questo tipo di file non va: serve una foto o un PDF')
       if (file.size > MASSIMO_FILE) throw new Error('Il file è troppo grande: al massimo 10 MB')
       const { error } = await db.storage.from(CONTENITORE).upload(`${richiestaId}/${tipo}.${est}`, file, { contentType: file.type, upsert: false })
+      // «C'è già» vuol dire che il file era arrivato e si era persa solo la
+      // risposta (una rete da telefono): per chi riprova è andata.
+      if (error && /exists|duplicate/i.test(error.message ?? '')) return
       if (error) throw guaioFile(error)
     },
 

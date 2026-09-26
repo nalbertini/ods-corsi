@@ -64,6 +64,14 @@ begin
       insert into auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
       values (gen_random_uuid(), uid, uid::text, 'email',
               jsonb_build_object('sub', uid::text, 'email', indirizzo, 'email_verified', true), now(), now(), now());
+    elsif exists (select 1 from postazioni po where po.utente_id = uid and not po.attiva) then
+      -- Un tablet spento è quasi sempre un tablet perso: riaccenderlo con la
+      -- password di prima rimetterebbe in funzione anche quello. Password
+      -- nuova, e fuori chi era dentro.
+      parola := (select string_agg(substr(lettere, 1 + get_byte(b, i) % length(lettere), 1), '')
+                 from (select gen_random_bytes(14) as b) x, generate_series(0, 13) as i);
+      update auth.users set encrypted_password = crypt(parola, gen_salt('bf')), updated_at = now() where id = uid;
+      delete from auth.sessions where user_id = uid;
     else
       parola := '(utente già presente: password invariata)';
     end if;

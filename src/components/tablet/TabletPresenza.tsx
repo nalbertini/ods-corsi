@@ -42,7 +42,7 @@ export function TabletPresenza({
   const timer = useRef<number>()
   // L'ultimo tocco ancora in viaggio: ANNULLA lo aspetta, altrimenti il server
   // riceverebbe l'annullo prima della presenza da annullare.
-  const inViaggio = useRef<Promise<unknown>>(Promise.resolve())
+  const inViaggio = useRef(new Map<string, Promise<boolean>>())
 
   useEffect(() => {
     let vivo = true
@@ -74,18 +74,23 @@ export function TabletPresenza({
         if (esito === 'istruttore') {
           segnato(p.personaId, false)
           mostra({ tipo: 'istruttore', p })
+          return false
         }
+        return true
       })
       .catch((e: unknown) => {
         segnato(p.personaId, false)
         mostra({ tipo: 'errore', testo: `${p.nome}: non segnato. ${messaggio(e, 'Il server non risponde')}` })
+        return false
       })
-    inViaggio.current = viaggio
+    inViaggio.current.set(p.personaId, viaggio)
   }
 
   const annulla = async (p: NomeSala) => {
     mostra(null)
-    await inViaggio.current
+    // Si aspetta il tocco di questa persona: se non era arrivato, non c'è
+    // niente da annullare (e l'avviso del perché è già in vista).
+    if ((await inViaggio.current.get(p.personaId)) === false) return
     try {
       if (await d.annulla(lezione.id, p.personaId)) segnato(p.personaId, false)
       else mostra({ tipo: 'errore', testo: `Non si può più annullare: dillo all'istruttore, lo corregge lui.` })

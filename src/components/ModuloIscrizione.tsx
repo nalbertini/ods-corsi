@@ -174,7 +174,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         </span>
         <span className="passo-dettaglio" style={{ color: 'var(--rosso)' }}>{fase.perche}</span>
         {fase.mancati.map((t) => (
-          <SceltaFile key={t} tipo={t} file={file[t]} onFile={(f) => setFile({ ...file, [t]: f })} />
+          <SceltaFile key={t} tipo={t} file={file[t]} onFile={(f) => setFile((p) => ({ ...p, [t]: f }))} />
         ))}
         <button type="button" className="btn btn-primary passo-btn" onClick={() => void carica(fase.id, fase.mancati)}>
           RIPROVA
@@ -277,7 +277,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
 
       <Sezione titolo="I FILE">
         {FILE.map((f) => (
-          <SceltaFile key={f.tipo} tipo={f.tipo} file={file[f.tipo]} onFile={(x) => setFile({ ...file, [f.tipo]: x })} />
+          <SceltaFile key={f.tipo} tipo={f.tipo} file={file[f.tipo]} onFile={(x) => setFile((p) => ({ ...p, [f.tipo]: x }))} />
         ))}
       </Sezione>
 

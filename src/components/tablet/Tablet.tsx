@@ -35,19 +35,54 @@ export function Tablet() {
     }
   }, [])
 
+  const [tentativo, setTentativo] = useState(0)
   useEffect(() => {
     let vivo = true
-    void datiTablet().then((x) => {
-      if (!vivo) return
-      setD(x)
-      void leggi(x)
-    })
+    datiTablet().then(
+      (x) => {
+        if (!vivo) return
+        setD(x)
+        void leggi(x)
+      },
+      (e) => vivo && setGuaio(messaggio(e, "Non riesco a caricare l'app")),
+    )
     return () => {
       vivo = false
     }
-  }, [leggi])
+  }, [leggi, tentativo])
 
-  if (!d || (postazione === undefined && !guaio)) return <div className="tb"><p className="tb-nota" style={{ padding: 32 }}>Un attimo…</p></div>
+  // Senza rete (dopo un black-out il tablet si accende prima del wifi) non si
+  // sa in che sala si è: non è un tablet da collegare, si riprova da soli.
+  const bloccato = postazione === undefined && !!guaio
+  useEffect(() => {
+    if (!bloccato) return
+    const riprova = () => (d ? void leggi(d) : setTentativo((t) => t + 1))
+    const i = window.setInterval(riprova, 30_000)
+    window.addEventListener('online', riprova)
+    return () => {
+      window.clearInterval(i)
+      window.removeEventListener('online', riprova)
+    }
+  }, [bloccato, d, leggi])
+
+  if (bloccato) {
+    return (
+      <div className="tb">
+        <div className="tb-corpo stack" style={{ gap: 18, padding: 32 }}>
+          <span className="ob tb-titolo" style={{ fontSize: 40 }}>TABLET DI SALA</span>
+          <span className="tb-sotto" style={{ fontSize: 18, lineHeight: 1.5 }}>
+            {guaio}
+          </span>
+          <span className="tb-nota">Riprovo da solo fra poco, e appena torna la rete.</span>
+          <button type="button" className="tb-btn tb-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => (d ? void leggi(d) : setTentativo((t) => t + 1))}>
+            RIPROVA ADESSO
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!d || postazione === undefined) return <div className="tb"><p className="tb-nota" style={{ padding: 32 }}>Un attimo…</p></div>
 
   if (!postazione) {
     return (

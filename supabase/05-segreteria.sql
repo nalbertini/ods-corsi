@@ -161,7 +161,10 @@ begin
   if auth.uid() is null then return null; end if;
   select id into chi from persone where utente_id = auth.uid();
   if chi is not null then return chi; end if;
-  select email into mail from auth.users where id = auth.uid();
+  -- Solo un'email confermata: se la conferma fosse spenta, chiunque potrebbe
+  -- registrarsi con l'indirizzo della segreteria e prenderne il ruolo.
+  select email into mail from auth.users where id = auth.uid() and email_confirmed_at is not null;
+  if mail is null then return null; end if;
   update persone set utente_id = auth.uid()
     where email = mail and utente_id is null and attiva and ruolo in ('istruttore', 'staff')
     returning id into chi;

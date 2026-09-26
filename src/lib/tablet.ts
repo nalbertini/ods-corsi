@@ -164,9 +164,15 @@ let unico: Promise<DatiTablet> | null = null
 /** Lo strato dati del tablet, caricato solo quando serve (vedi `dati()`). */
 export function datiTablet(): Promise<DatiTablet> {
   if (!unico) {
-    unico = haUnServer
+    unico = (haUnServer
       ? Promise.all([import('./tabletSupabase'), import('./supabase')]).then(([m, s]) => m.creaTabletSupabase(s.clientSupabase('sala')))
-      : import('./tabletProva').then((m) => m.creaTabletProva())
+      : import('./tabletProva').then((m) => m.creaTabletProva()))
+      // Se il pezzo non arriva (rete, o un aggiornamento pubblicato nel
+      // frattempo), la volta dopo si riprova invece di restare rotti.
+      .catch((e) => {
+        unico = null
+        throw e
+      })
   }
   return unico
 }
@@ -217,6 +223,7 @@ export function sigle<T extends { nome: string; cognome: string }>(persone: T[])
   for (const p of persone) quanti.set(chiave(p), (quanti.get(chiave(p)) ?? 0) + 1)
   return persone.map((p) => ({
     ...p,
-    sigla: ((quanti.get(chiave(p)) ?? 0) > 1 ? p.cognome.slice(0, 3) : iniziale(p.cognome)) + '.',
+    // Senza spazi: «De Luca» e «De Santis» sarebbero entrambi «De .».
+    sigla: ((quanti.get(chiave(p)) ?? 0) > 1 ? p.cognome.replace(/\s+/g, '').slice(0, 3) : iniziale(p.cognome)) + '.',
   }))
 }

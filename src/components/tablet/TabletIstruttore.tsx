@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { DatiTablet, LezioneSala, RigaAppelloTablet } from '../../lib/tablet'
 import { fase } from '../../lib/tablet'
 import type { StatoPresenza } from '../../lib/sala'
@@ -60,7 +60,14 @@ export function TabletIstruttore({
   const [righe, setRighe] = useState<RigaAppelloTablet[] | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
 
-  const carica = useCallback(() => {
+  // Perché una scrittura non è andata: resta in vista mentre l'appello si
+  // rilegge, e se ne va cambiando lezione.
+  const [nonAndato, setNonAndato] = useState<string | null>(null)
+  const [giro, setGiro] = useState(0)
+  useEffect(() => setNonAndato(null), [scelta])
+  // Rileggere passa da qui, così una lettura vecchia non finisce sotto
+  // un'altra lezione scelta nel frattempo.
+  useEffect(() => {
     if (!scelta) return
     let vivo = true
     setRighe(null)
@@ -71,11 +78,11 @@ export function TabletIstruttore({
     return () => {
       vivo = false
     }
-  }, [d, pin, scelta])
-  useEffect(carica, [carica])
+  }, [d, pin, scelta, giro])
 
   const metti = async (cambi: Array<{ personaId: string; stato: StatoPresenza }>) => {
     if (!scelta || !cambi.length) return
+    setNonAndato(null)
     const quali = new Map(cambi.map((c) => [c.personaId, c.stato]))
     setRighe((r) => r && r.map((x) => (quali.has(x.personaId) ? { ...x, stato: quali.get(x.personaId)!, origine: 'appello' } : x)))
     try {
@@ -84,8 +91,8 @@ export function TabletIstruttore({
       }
       onCambiato()
     } catch (e) {
-      setGuaio(messaggio(e, 'Il server non risponde'))
-      carica()
+      setNonAndato(messaggio(e, 'Il server non risponde'))
+      setGiro((g) => g + 1)
     }
   }
 
@@ -126,6 +133,8 @@ export function TabletIstruttore({
               CORSO
             </label>
             <select id="tb-corso" className="tb-select" value={corsoId ?? ''} onChange={(e) => scegliCorso(e.target.value)}>
+              {/* Senza, con nessun corso scelto il primo sembrerebbe scelto e non si potrebbe sceglierlo. */}
+              {!corsoId && <option value="">Scegli un corso</option>}
               {corsi.map(([id, nome]) => (
                 <option key={id} value={id}>
                   {nome}
@@ -210,6 +219,7 @@ export function TabletIstruttore({
         )}
 
         {guaio && <Guaio titolo="APPELLO" testo={guaio} />}
+        {nonAndato && !guaio && <Guaio titolo="NON SEGNATO" testo={nonAndato} />}
         {lezione && !guaio && righe === null && <p className="tb-nota">Sto leggendo l'appello…</p>}
 
         <div className="tb-righe tb-scorre">

@@ -401,7 +401,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
       corso(corsoId)
       const g = oggi()
       const c = a().iscrizioni.find((i) => i.personaId === personaId && i.corsoId === corsoId)
-      if (c && (!c.al || c.al >= g)) return
+      if (c && !c.al) return
+      // Terminata oggi o più avanti: si toglie solo la fine (vedi Supabase).
+      if (c && c.al && c.al >= g) {
+        a().iscrizioni = a().iscrizioni.map((i) => (i === c ? { ...i, al: undefined } : i))
+        salva()
+        return
+      }
       // Una sola iscrizione per corso, come nel database: chi torna riparte da oggi.
       a().iscrizioni = [...a().iscrizioni.filter((i) => i !== c), { corsoId, personaId, dal: g }]
       salva()

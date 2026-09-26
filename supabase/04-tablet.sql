@@ -159,7 +159,7 @@ begin
         and (i.al is null or i.al >= (l.inizio at time zone 'Europe/Rome')::date)
     )
     select e.id, e.nome,
-      case when count(*) over (partition by e.nome, e.iniziale) > 1 then left(e.cognome, 3) else e.iniziale end || '.',
+      case when count(*) over (partition by e.nome, e.iniziale) > 1 then left(regexp_replace(e.cognome, '\s+', '', 'g'), 3) else e.iniziale end || '.',
       exists (select 1 from presenze pr where pr.sessione_id = sessione and pr.persona_id = e.id and pr.stato = 'presente')
     from elenco e
     order by e.nome, e.cognome;
@@ -246,6 +246,9 @@ declare
 begin
   select * into r from tablet_regole();
   if p is null then raise exception 'solo un tablet di sala' using errcode = '42501'; end if;
+  -- Un tentativo per volta per tablet: senza, cento richieste insieme
+  -- vedrebbero tutte meno di cinque errori e passerebbero il blocco.
+  perform pg_advisory_xact_lock(hashtext('pin:' || p::text));
   select count(*) into sbagliati from tentativi_pin
     where postazione_id = p and not riuscito and quando > now() - r.pin_blocco;
   if sbagliati >= r.pin_tentativi then
@@ -337,6 +340,8 @@ begin
   if not exists (select 1 from persone where id = persona and ruolo in ('istruttore', 'staff')) then
     raise exception 'il PIN è solo per istruttori e segreteria';
   end if;
+  -- Uno per volta, se no due salvataggi insieme dello stesso PIN passano tutti e due.
+  perform pg_advisory_xact_lock(hashtext('imposta_pin'));
   if exists (select 1 from pin_istruttori where persona_id <> persona and hash = crypt(pin, hash)) then
     raise exception 'questo PIN è già di un altro: scegline un altro';
   end if;

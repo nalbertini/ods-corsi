@@ -22,16 +22,32 @@ export function Sala() {
   const [presenti, setPresenti] = useState<Record<string, number>>({})
   const largo = useLargo()
 
+  const [guaio, setGuaio] = useState(false)
+  const [tentativo, setTentativo] = useState(0)
+
   useEffect(() => {
     let vivo = true
-    void caricaDati().then((x) => vivo && setD(x))
+    setGuaio(false)
+    caricaDati().then(
+      (x) => vivo && setD(x),
+      () => vivo && setGuaio(true),
+    )
     return () => {
       vivo = false
     }
-  }, [])
+  }, [tentativo])
 
   useEffect(() => d?.guardaCoda?.(setInCoda), [d])
 
+  if (!d && guaio)
+    return (
+      <div className="pad stack" style={{ gap: 12, paddingTop: 20 }}>
+        <p style={{ color: 'var(--dim)', margin: 0 }}>L'app non si è caricata: controlla la connessione.</p>
+        <button type="button" className="btn btn-ghost" style={{ minHeight: 48, padding: '0 16px', alignSelf: 'flex-start' }} onClick={() => setTentativo((t) => t + 1)}>
+          RIPROVA
+        </button>
+      </div>
+    )
   if (!d) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
 
   return (

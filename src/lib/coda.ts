@@ -59,6 +59,14 @@ export class Coda {
    */
   constructor(private esegui: (op: Operazione) => Promise<void>) {
     window.addEventListener('online', () => void this.scarica())
+    // Quello rimasto dall'ultima volta (l'app chiusa senza rete, o ricaricata
+    // per un aggiornamento) parte appena si riapre, senza aspettare un tocco.
+    queueMicrotask(() => void this.scarica())
+    // Col wifi acceso ma il server irraggiungibile `online` non arriva mai:
+    // finché c'è qualcosa in coda si riprova ogni tanto.
+    window.setInterval?.(() => {
+      if (this.lista.length) void this.scarica()
+    }, 60_000)
   }
 
   /** Quante scritture non sono ancora arrivate. */

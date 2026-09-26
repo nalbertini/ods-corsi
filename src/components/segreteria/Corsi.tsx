@@ -162,9 +162,10 @@ function Scheda({
     colore: corso?.colore ?? COLORI[0].hex,
   }))
   // Un corso nuovo prende la prima sala, quando le sale arrivano.
+  // Solo un corso nuovo: su uno che esiste senza sala SALVA si accenderebbe da solo.
   useEffect(() => {
-    if (!bozza.salaId && sale.dato?.length) setBozza((b) => ({ ...b, salaId: sale.dato![0].id }))
-  }, [sale.dato, bozza.salaId])
+    if (!corso && !bozza.salaId && sale.dato?.length) setBozza((b) => ({ ...b, salaId: sale.dato![0].id }))
+  }, [corso, sale.dato, bozza.salaId])
 
   const [ric, setRic] = useState<{ giorno: number; ora: string; durata: number; salaId?: string } | null>(null)
   const salaDelCorso = (sale.dato ?? []).find((s) => s.id === corso?.salaId)?.nome ?? corso?.sala ?? 'nessuna'
@@ -230,7 +231,15 @@ function Scheda({
             let id = ''
             void fai(
               async () => {
-                id = await d.salvaCorso(bozza)
+                try {
+                  id = await d.salvaCorso(bozza)
+                } catch (e) {
+                  // Il corso nuovo è stato creato anche se il resto no: si apre,
+                  // così un secondo SALVA non ne crea un altro uguale.
+                  const creato = (e as { id?: string }).id
+                  if (!corso && creato) onSalvato(creato)
+                  throw e
+                }
               },
               corso ? 'Corso salvato' : 'Corso creato: ora aggiungi i giorni',
               () => onSalvato(id),

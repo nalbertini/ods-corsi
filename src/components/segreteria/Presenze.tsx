@@ -120,7 +120,12 @@ export function Presenze({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dov
         <label htmlFor="periodo" className="vh">
           Periodo
         </label>
-        <select id="periodo" className="sg-campo" value={periodo} onChange={(e) => setPeriodo(e.target.value)}>
+        <select id="periodo" className="sg-campo" value={periodo} onChange={(e) => {
+            // Un corso scelto che nel mese nuovo non c'è sparirebbe dal menu
+            // pur continuando a filtrare: si riparte da tutti.
+            setPeriodo(e.target.value)
+            setCorso('')
+          }}>
           {periodi.map((x) => (
             <option key={x.chiave} value={x.chiave}>
               {x.nome}

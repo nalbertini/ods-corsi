@@ -289,9 +289,15 @@ let unico: Promise<DatiSegreteria> | null = null
 
 export function datiSegreteria(): Promise<DatiSegreteria> {
   if (!unico) {
-    unico = haUnServer
+    unico = (haUnServer
       ? Promise.all([import('./segreteriaSupabase'), import('./supabase')]).then(([m, s]) => m.creaSegreteriaSupabase(s.clientSupabase()))
-      : import('./segreteriaProva').then((m) => m.creaSegreteriaProva())
+      : import('./segreteriaProva').then((m) => m.creaSegreteriaProva()))
+      // Se il pezzo non arriva (rete, o un aggiornamento pubblicato nel
+      // frattempo), la volta dopo si riprova invece di restare rotti.
+      .catch((e) => {
+        unico = null
+        throw e
+      })
   }
   return unico
 }

@@ -48,9 +48,16 @@ export function useAvviso() {
       {testo.t}
     </div>
   ) : null
+  // Un'operazione per volta: un doppio clic su SALVA, o un secondo mentre la
+  // rete è lenta, non deve creare due corsi o due iscritti uguali.
+  const inCorso = useRef(false)
+  const [lavora, setLavora] = useState(false)
   /** Esegue un'operazione, dice com'è andata, e ricarica se è andata. */
   const fai = useCallback(
     async (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => {
+      if (inCorso.current) return false
+      inCorso.current = true
+      setLavora(true)
       try {
         await op()
         if (riuscito) avvisa(riuscito)
@@ -59,11 +66,14 @@ export function useAvviso() {
       } catch (e) {
         avvisa(messaggio(e), true)
         return false
+      } finally {
+        inCorso.current = false
+        setLavora(false)
       }
     },
     [avvisa],
   )
-  return { avviso, avvisa, fai }
+  return { avviso, avvisa, fai, lavora }
 }
 
 export function Testa({ titolo, sotto, children }: { titolo: string; sotto: ReactNode; children?: ReactNode }) {
