@@ -40,13 +40,29 @@ export function useChi(): [Personale | null | undefined, (p: Personale | null) =
  *
  * Entrano istruttori e segreteria: anche la segreteria fa l'appello. La
  * segreteria vera e propria ha il suo indirizzo e la sua porta (vedi `App`).
+ *
+ * Sullo schermo largo chi è entrato si vede nel menu a sinistra, non in una
+ * riga sopra il calendario: lì si passa `dentro`, che riceve chi è entrato
+ * (`null` in prova) e come farlo uscire, e `cornice`, la pagina in cui stanno
+ * l'accesso e l'attesa finché non si è dentro.
  */
-export function Porta({ children }: { children: ReactNode }) {
+export function Porta({
+  children,
+  dentro,
+  cornice = (x) => x,
+}: {
+  children?: ReactNode
+  dentro?: (chi: Personale | null, onEsci?: () => void) => ReactNode
+  cornice?: (x: ReactNode) => ReactNode
+}) {
   const [chi, setChi] = useChi()
 
-  if (!serveAccesso) return <>{children}</>
-  if (chi === undefined) return <UnAttimo />
-  if (!chi) return <Accesso per="istruttori" onEntrato={setChi} />
+  if (!serveAccesso) return <>{dentro ? dentro(null) : children}</>
+  if (chi === undefined) return <>{cornice(<UnAttimo />)}</>
+  if (!chi) return <>{cornice(<Accesso per="istruttori" onEntrato={setChi} />)}</>
+
+  const onEsci = () => void esci().then(() => setChi(null))
+  if (dentro) return <>{dentro(chi, onEsci)}</>
 
   return (
     <>
@@ -54,7 +70,7 @@ export function Porta({ children }: { children: ReactNode }) {
         <span className="grow" style={{ minWidth: 0 }}>
           {chi.nome.toUpperCase()} {chi.cognome.toUpperCase()} · {chi.ruolo === 'staff' ? 'SEGRETERIA' : 'ISTRUTTORE'}
         </span>
-        <button type="button" className="chi-esci" onClick={() => void esci().then(() => setChi(null))}>
+        <button type="button" className="chi-esci" onClick={onEsci}>
           ESCI
         </button>
       </div>

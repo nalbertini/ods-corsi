@@ -458,7 +458,7 @@ a.btn { text-decoration: none; }
 }
 
 @media (min-width: 768px) {
-  .scroll > .iscrizioni {
+  .scroll > .iscrizioni, .sg-corpo > .iscrizioni {
     display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start;
     grid-template-areas: 'passi costi' 'nota costi';
     max-width: 1280px; margin: 0 auto;
@@ -480,7 +480,12 @@ a.btn { text-decoration: none; }
   }
   .sala-lato { overflow-y: auto; min-height: 0; }
   .sala-lato + .sala-lato { border-left: 2px solid var(--line-soft); }
-  .sala-vuota { display: flex; flex-direction: column; gap: 10px; padding: 28px 20px; }
+  .sala-vuota {
+    display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; text-align: center;
+    min-height: 240px; margin: 20px; padding: 28px 20px; border: 2px dashed var(--line-soft);
+  }
+  .sala-lato:has(> .sala-vuota) { display: flex; flex-direction: column; }
+  .sala-lato > .sala-vuota { flex: 1; }
   .lezione[aria-current='true'] { background: var(--surface-2); border-color: var(--text); border-left-color: var(--tinta); }
   .elenco-appello { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 
@@ -805,6 +810,7 @@ a.btn { text-decoration: none; }
   font-size: 16px; font-weight: 700; letter-spacing: 0.12em; text-align: left;
 }
 .sg-voce:hover { color: var(--text); }
+a.sg-voce { text-decoration: none; }
 .sg-voce[aria-current='page'] { border-left-color: var(--rosso); background: var(--surface); color: var(--text); }
 .sg-chi { display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid var(--line-soft); }
 .sg-bollino {
@@ -818,6 +824,12 @@ a.btn { text-decoration: none; }
   flex-grow: 1; min-width: 0; overflow-y: auto;
   display: flex; flex-direction: column; gap: 18px; padding: calc(var(--safe-t) + 28px) 36px 28px;
 }
+/* Gli istruttori sullo schermo largo, dentro lo stesso menu: calendario e
+   appello prendono tutto quello che resta, senza il margine della sezione. */
+.sg-corpo-sala { padding: 0; gap: 0; }
+.sg-corpo-sala > .faccia-corsi { flex: 1; height: auto; min-height: 0; }
+.sg-corpo-sala .sala-due { max-width: none; }
+.sg-corpo-sala > .iscrizioni { padding-top: calc(var(--safe-t) + 8px); }
 .sg-testa { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .sg-titolo { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }
 .sg-sotto { font-size: 14px; color: var(--dim); margin: 0; }
