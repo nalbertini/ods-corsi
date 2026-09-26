@@ -97,10 +97,11 @@ input, textarea { font: inherit; color: inherit; }
 .card { background: var(--surface); border: 2px solid var(--line); }
 
 /* La testata: il marchio a sinistra, e a destra niente — su un telefono in
-   mano durante l'appello ogni riga in alto è una riga d'elenco in meno. */
+   mano durante l'appello ogni riga in alto è una riga d'elenco in meno. Le
+   schede vanno a capo, sotto il marchio; sullo schermo largo gli stanno accanto. */
 .testata {
-  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
-  padding: calc(var(--safe-t) + 14px) 20px 10px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; flex-shrink: 0;
+  padding: calc(var(--safe-t) + 14px) 20px 4px;
 }
 .testata-nome { font-family: var(--cond); font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }
 .testata-luogo { font-size: 11px; font-weight: 600; letter-spacing: 0.22em; color: var(--dim); }
@@ -164,6 +165,7 @@ input, textarea { font: inherit; color: inherit; }
 .riga-appello[data-stato='assente'] { border-color: var(--rosso); }
 .riga-appello[data-stato='assente'] .segno { color: var(--rosso); }
 .riga-appello[data-stato='assente'] .nome-appello { color: var(--dim); text-decoration: line-through; }
+.elenco-appello { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
 
 /* La spia delle scritture non ancora arrivate al server. */
 .spia-coda {
@@ -190,7 +192,7 @@ input, textarea { font: inherit; color: inherit; }
 .iban { background: var(--surface-2); border: 2px solid var(--line); padding: 8px 10px; font-size: 17px; font-weight: 600; letter-spacing: 0.02em; user-select: all; }
 
 /* Le due facce dell'app, sotto la testata. */
-.schede { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 0 20px 4px; flex-shrink: 0; }
+.schede { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; flex-basis: 100%; }
 .scheda {
   min-height: 40px; background: var(--surface); border: 2px solid var(--line);
   font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim);
@@ -207,6 +209,46 @@ input, textarea { font: inherit; color: inherit; }
 .costo-testa { font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); line-height: 1.2; }
 .costo-euro { font-size: 20px; font-weight: 700; }
 .costo-euro[data-vuoto='true'] { color: var(--faint); }
+
+/* ---------------------------------------------------------------------------
+   Oltre il telefono.
+
+   Un tablet in verticale ha la stessa faccia del telefono, ma in una colonna
+   che non si allarga fino ai bordi. Da 960 px in su — un computer, un tablet
+   in orizzontale — calendario e appello stanno affiancati, ognuno col suo
+   scorrimento, e i costi accanto ai passi dell'iscrizione. La soglia è la
+   stessa di `LARGO` in `lib/largo.ts`.
+   --------------------------------------------------------------------------- */
+
+@media (min-width: 640px) and (max-width: 959px) {
+  .testata, .scroll > * { width: 100%; max-width: 720px; margin-inline: auto; }
+}
+
+@media (min-width: 960px) {
+  .testata { flex-wrap: nowrap; padding-bottom: 14px; border-bottom: 2px solid var(--line-soft); }
+  .schede { flex-basis: auto; grid-auto-columns: minmax(150px, auto); }
+  .scheda { padding: 0 18px; }
+
+  .faccia-corsi { height: 100%; display: flex; flex-direction: column; }
+  .sala-due {
+    flex: 1; min-height: 0; width: 100%; max-width: 1600px; margin: 0 auto;
+    display: grid; grid-template-columns: minmax(380px, 460px) minmax(0, 1fr);
+  }
+  .sala-lato { overflow-y: auto; min-height: 0; }
+  .sala-lato + .sala-lato { border-left: 2px solid var(--line-soft); }
+  .sala-vuota { display: flex; flex-direction: column; gap: 10px; padding: 28px 20px; }
+  .lezione[aria-current='true'] { background: var(--surface-2); border-color: var(--text); border-left-color: var(--tinta); }
+  .elenco-appello { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+  .iscrizioni {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start;
+    grid-template-areas: 'passi costi' 'nota costi';
+    max-width: 1280px; margin: 0 auto;
+  }
+  .iscrizioni-passi { grid-area: passi; }
+  .iscrizioni #costi { grid-area: costi; }
+  .iscrizioni-nota { grid-area: nota; }
+}
 
 /* ---------------------------------------------------------------------------
    Il tablet di sala.
