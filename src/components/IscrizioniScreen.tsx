@@ -1,13 +1,33 @@
 import { useState } from 'react'
 import { INFORMATIVA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, type Passo } from '../lib/iscrizione'
 import { Costi } from './Costi'
+import { ModuloIscrizione } from './ModuloIscrizione'
 
 /**
- * Come ci si iscrive: sette passi, in ordine, con il tasto giusto accanto a
+ * Come ci si iscrive: i passi, in ordine, con il tasto giusto accanto a
  * quelli che portano da qualche parte. È la stessa lista che la segreteria
- * manda per messaggio, ma qui non si perde in fondo a una chat.
+ * manda per messaggio, ma qui non si perde in fondo a una chat. L'ultimo apre
+ * il modulo di iscrizione, al posto dei passi.
  */
 export function IscrizioniScreen() {
+  const [modulo, setModulo] = useState(false)
+  const vai = (aperto: boolean) => {
+    setModulo(aperto)
+    document.querySelector('.scroll')?.scrollTo(0, 0)
+  }
+
+  if (modulo) {
+    return (
+      <>
+        <div className="rule">
+          <span className="rule-label">RICHIESTA DI ISCRIZIONE</span>
+          <div className="rule-line" />
+        </div>
+        <ModuloIscrizione onChiudi={() => vai(false)} />
+      </>
+    )
+  }
+
   return (
     <>
       <div className="rule">
@@ -23,7 +43,7 @@ export function IscrizioniScreen() {
             <span className="stack grow" style={{ gap: 8, minWidth: 0 }}>
               <span className="passo-titolo">{p.titolo}</span>
               {p.dettaglio && <span className="passo-dettaglio">{p.dettaglio}</span>}
-              <Azione passo={p} />
+              <Azione passo={p} onModulo={() => vai(true)} />
             </span>
           </li>
         ))}
@@ -44,8 +64,14 @@ export function IscrizioniScreen() {
   )
 }
 
-function Azione({ passo }: { passo: Passo }) {
+function Azione({ passo, onModulo }: { passo: Passo; onModulo: () => void }) {
   switch (passo.azione) {
+    case 'modulo':
+      return (
+        <button type="button" className="btn btn-primary passo-btn" onClick={onModulo}>
+          COMPILA LA RICHIESTA
+        </button>
+      )
     case 'link':
       return (
         <a className="btn btn-primary passo-btn" href={LINK_ISCRIZIONE} target="_blank" rel="noopener noreferrer">

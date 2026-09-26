@@ -187,7 +187,7 @@ console.log('\n9. sale e regole')
   await s.salvaImpostazioni({ mesiPresenze: 24 })
   ok('la pulizia la toglie', [await s.pulisci(), await s.scadute()], [1, 0])
   const dati = await s.esporta((await app.dettaglio((await lotta2([9, 2]))[0].id)).elenco[0].id)
-  ok('l\'esportazione ha anagrafica, iscrizioni e presenze', Object.keys(dati).sort(), ['esportato_il', 'iscrizioni', 'persona', 'presenze'])
+  ok('l\'esportazione ha anagrafica, iscrizioni, presenze e richieste', Object.keys(dati).sort(), ['esportato_il', 'iscrizioni', 'persona', 'presenze', 'richieste_di_iscrizione'])
 }
 
 console.log('\n10. l\'import dai fogli')

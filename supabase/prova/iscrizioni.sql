@@ -1,0 +1,183 @@
+-- Il modulo di iscrizione: cosa può fare chi non ha un accesso, e cosa
+-- succede quando la segreteria accoglie una richiesta.
+-- Si lancia dopo finto-supabase.sql e i sei file dello schema.
+\set ON_ERROR_STOP on
+set timezone = 'Europe/Rome';
+
+insert into auth.users (id, email) values
+  ('11111111-1111-1111-1111-111111111111', 'anna@ods.it'),
+  ('22222222-2222-2222-2222-222222222222', 'maura@ods.it');
+insert into persone (id, nome, cognome, ruolo, email, utente_id) values
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'Anna', 'Segreteria', 'staff', 'anna@ods.it', '11111111-1111-1111-1111-111111111111'),
+  ('aaaaaaaa-0000-0000-0000-000000000002', 'Maura', 'Uno', 'istruttore', 'maura@ods.it', '22222222-2222-2222-2222-222222222222'),
+  -- Già in elenco dall'anno scorso, senza email, e iscritta a un corso che ha lasciato.
+  ('aaaaaaaa-0000-0000-0000-000000000003', 'Sara', 'Bianchi', 'iscritto', null, null);
+insert into corsi (id, nome) values
+  ('cccccccc-0000-0000-0000-000000000001', 'Judo 2'),
+  ('cccccccc-0000-0000-0000-000000000002', 'Lotta 2');
+insert into corsi (id, nome, attivo) values ('cccccccc-0000-0000-0000-000000000003', 'Corso chiuso', false);
+insert into iscrizioni (corso_id, persona_id, dal, al) values
+  ('cccccccc-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000003', current_date - 400, current_date - 100);
+
+create or replace function chi(u text) returns void language plpgsql as $$
+begin perform set_config('prova.utente', u, false); end $$;
+create or replace function tenta(sql text) returns text language plpgsql as $$
+declare n int; esito text;
+begin
+  if sql ~* '^\s*select' then execute sql into esito; else execute sql; end if;
+  get diagnostics n = row_count;
+  return coalesce(esito, case when n = 0 then 'a vuoto (0 righe)' else 'FATTO (' || n || ' righe)' end);
+exception when others then return 'NEGATO: ' || sqlerrm;
+end $$;
+create or replace function atteso(cosa text, avuto text, voluto text) returns text language plpgsql as $$
+begin
+  if avuto is distinct from voluto and not (voluto like '%…' and avuto like replace(voluto, '…', '%')) then
+    raise exception '% · atteso «%», avuto «%»', cosa, voluto, avuto;
+  end if;
+  return 'ok  ' || cosa || ' → ' || avuto;
+end $$;
+-- Una richiesta valida di un adulto, da cambiare un campo alla volta.
+create or replace function adulto(cambi jsonb default '{}') returns jsonb language sql as $$
+  select jsonb_build_object(
+    'nome', 'Luca', 'cognome', 'Rossi', 'nato_il', (current_date - interval '30 years')::date,
+    'nato_a', 'Torino', 'codice_fiscale', 'rssLCU96a01 l219x', 'indirizzo', 'Via Roma 1',
+    'cap', '10093', 'comune', 'Collegno', 'email', 'Luca@Esempio.it', 'telefono', '347 111 2233',
+    'corsi', jsonb_build_array('cccccccc-0000-0000-0000-000000000001'), 'formula', 'annuale'
+  ) || cambi
+$$;
+grant execute on function tenta(text), atteso(text, text, text), adulto(jsonb), chi(text) to anon, authenticated;
+
+\echo ''
+\echo '--- 1. chi non ha un accesso: il minimo, e niente di più ---'
+select chi('');
+set role anon;
+select atteso('vede i corsi aperti, non quelli chiusi', (select string_agg(nome, ', ' order by nome) from corsi_aperti()), 'Judo 2, Lotta 2');
+select atteso('non legge le persone', tenta($$select count(*)::text from persone$$), 'NEGATO: …');
+select atteso('non legge i corsi', tenta($$select count(*)::text from corsi$$), 'NEGATO: …');
+select atteso('non legge le richieste', tenta($$select count(*)::text from richieste_iscrizione$$), 'NEGATO: …');
+select atteso('non scrive una richiesta a mano', tenta($$insert into richieste_iscrizione (nome) values ('x')$$), 'NEGATO: …');
+select atteso('non rigenera il calendario', tenta($$select materializza_sessioni(current_date, current_date + 7)::text$$), 'NEGATO: …');
+select atteso('non pulisce le presenze', tenta($$select pulisci_presenze()::text$$), 'NEGATO: …');
+select atteso('non accoglie richieste', tenta($$select accogli_iscrizione(gen_random_uuid())::text$$), 'NEGATO: …');
+
+\echo ''
+\echo '--- 2. la richiesta: cosa passa e cosa no ---'
+select atteso('una richiesta giusta passa', tenta($$select (invia_iscrizione(adulto()) is not null)::text$$), 'true');
+select atteso('manca il cognome', tenta($$select invia_iscrizione(adulto('{"cognome": " "}'))::text$$), 'NEGATO: Mancano: cognome');
+select atteso('CAP corto', tenta($$select invia_iscrizione(adulto('{"cap": "1009"}'))::text$$), 'NEGATO: Un campo non va: il CAP ha 5 cifre');
+select atteso('codice fiscale corto', tenta($$select invia_iscrizione(adulto('{"codice_fiscale": "RSSLCU"}'))::text$$), 'NEGATO: Un campo non va: il codice fiscale…');
+select atteso('data a caso', tenta($$select invia_iscrizione(adulto('{"nato_il": "ieri"}'))::text$$), 'NEGATO: La data di nascita non si capisce');
+select atteso('nato domani', tenta($$select invia_iscrizione(adulto(jsonb_build_object('nato_il', current_date + 1)))::text$$), 'NEGATO: La data di nascita non torna');
+select atteso('nessun corso', tenta($$select invia_iscrizione(adulto('{"corsi": []}'))::text$$), 'NEGATO: Scegli almeno un corso');
+select atteso('un corso chiuso', tenta($$select invia_iscrizione(adulto('{"corsi": ["cccccccc-0000-0000-0000-000000000003"]}'))::text$$), 'NEGATO: Uno dei corsi scelti non c''è più…');
+select atteso('una formula inventata', tenta($$select invia_iscrizione(adulto('{"formula": "gratis"}'))::text$$), 'NEGATO: Un campo non va: si paga…');
+select atteso('un minore senza genitore', tenta($$select invia_iscrizione(adulto(jsonb_build_object('nato_il', current_date - interval '9 years', 'email', 'mamma@esempio.it')))::text$$), 'NEGATO: Per un minore servono…');
+select atteso('un minore col genitore passa', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Giulia', 'codice_fiscale', 'RSSGLI17C41L219X', 'nato_il', current_date - interval '9 years', 'email', 'mamma@esempio.it',
+  'genitore_nome', 'Paola', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPLA80A41L219X',
+  'corsi', jsonb_build_array('cccccccc-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000002')))) is not null)::text$$), 'true');
+select atteso('il fratello, stessa email', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Marco', 'codice_fiscale', 'RSSMRC15E05L219X', 'nato_il', current_date - interval '11 years', 'email', 'MAMMA@esempio.it',
+  'genitore_nome', 'Paola', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPLA80A41L219X'))) is not null)::text$$), 'true');
+select atteso('la terza dalla stessa email passa', tenta($$select (invia_iscrizione(adulto('{"email": "mamma@esempio.it", "nome": "Terzo", "codice_fiscale": "RSSTRZ90A01L219X"}')) is not null)::text$$), 'true');
+select atteso('la quarta nello stesso giorno no', tenta($$select invia_iscrizione(adulto('{"email": "mamma@esempio.it", "nome": "Quarto"}'))::text$$), 'NEGATO: Da questa email sono già arrivate 3 richieste oggi…');
+reset role;
+select atteso('email e codice fiscale messi in ordine',
+  (select email || ' ' || codice_fiscale from richieste_iscrizione where nome = 'Luca'), 'luca@esempio.it RSSLCU96A01L219X');
+select atteso('il genitore di un adulto non si tiene',
+  (select coalesce(genitore_nome, '—') from richieste_iscrizione where nome = 'Luca'), '—');
+
+\echo ''
+\echo '--- 3. i file ---'
+insert into storage.buckets (id, name) values ('altro', 'altro') on conflict do nothing;
+create temp table la_richiesta as select id from richieste_iscrizione where nome = 'Luca';
+grant select on la_richiesta to anon, authenticated;
+set role anon;
+select atteso('il modulo firmato entra',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/modulo.jpg')$$, (select id from la_richiesta))), 'FATTO (1 righe)');
+select atteso('un nome inventato no',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/virus.exe')$$, (select id from la_richiesta))), 'NEGATO: …');
+select atteso('una cartella che non è una richiesta no',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/modulo.jpg')$$, gen_random_uuid())), 'NEGATO: …');
+select atteso('un altro contenitore no',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('altro', '%s/modulo.jpg')$$, (select id from la_richiesta))), 'NEGATO: …');
+select atteso('documento, retro e ricevuta entrano',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%1$s/documento.pdf'), ('iscrizioni', '%1$s/documento-retro.png'), ('iscrizioni', '%1$s/ricevuta.jpg')$$, (select id from la_richiesta))), 'FATTO (3 righe)');
+select atteso('il quinto file no',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/ricevuta.pdf')$$, (select id from la_richiesta))), 'NEGATO: …');
+select atteso('i file non si rileggono', (select count(*)::text from storage.objects), '0');
+select atteso('né si cancellano', tenta($$delete from storage.objects$$), 'a vuoto (0 righe)');
+reset role;
+update richieste_iscrizione set creata_il = now() - interval '2 hours' where nome = 'Giulia';
+create temp table vecchia as select id from richieste_iscrizione where nome = 'Giulia';
+grant select on vecchia to anon;
+set role anon;
+select atteso('dopo un''ora la cartella si chiude',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/modulo.jpg')$$, (select id from vecchia))), 'NEGATO: …');
+reset role;
+
+\echo ''
+\echo '--- 4. un istruttore: le richieste non sono affar suo ---'
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('non le vede', (select count(*)::text from richieste_iscrizione), '0');
+select atteso('non vede i file', (select count(*)::text from storage.objects), '0');
+select atteso('non le accoglie', tenta(format($$select accogli_iscrizione('%s')::text$$, (select id from la_richiesta))), 'NEGATO: solo la segreteria');
+select atteso('le sue funzioni le chiama ancora', tenta($$select count(*)::text from frequenze(30)$$), '0');
+reset role;
+
+\echo ''
+\echo '--- 5. la segreteria ---'
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('le vede tutte', (select count(*)::text from richieste_iscrizione), '4');
+select atteso('vede i file', (select count(*)::text from storage.objects where bucket_id = 'iscrizioni'), '4');
+select atteso('rigenera ancora il calendario', tenta($$select materializza_sessioni(current_date, current_date + 7)::text$$), '0');
+select atteso('Luca accolto: una persona nuova', tenta(format($$select (accogli_iscrizione('%s') is not null)::text$$, (select id from la_richiesta))), 'true');
+select atteso('con la sua email e il telefono', (select email || ' · ' || telefono from persone where nome = 'Luca'), 'luca@esempio.it · 347 111 2233');
+select atteso('iscritto al Judo da oggi',
+  (select string_agg(c.nome || ' dal ' || (i.dal = current_date), ', ') from iscrizioni i join corsi c on c.id = i.corso_id join persone p on p.id = i.persona_id where p.nome = 'Luca'), 'Judo 2 dal true');
+select atteso('la richiesta dice chi e quando',
+  (select stato || ' da ' || (select nome from persone where id = gestita_da) || ' · legata: ' || (persona_id is not null) from richieste_iscrizione where nome = 'Luca'), 'accolta da Anna · legata: true');
+select atteso('una seconda volta no', tenta(format($$select accogli_iscrizione('%s')::text$$, (select id from la_richiesta))), 'NEGATO: Questa richiesta è già stata accolta');
+select atteso('Giulia accolta, due corsi', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Giulia')) is not null)::text$$), 'true');
+select atteso('Marco, stessa email: entra senza', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Marco')) is not null)::text$$), 'true');
+select atteso('i due fratelli', (select string_agg(nome || ':' || coalesce(email::text, 'senza email'), ', ' order by nome) from persone where nome in ('Giulia', 'Marco')), 'Giulia:mamma@esempio.it, Marco:senza email');
+select atteso('Giulia ha i suoi due corsi', (select count(*)::text from iscrizioni i join persone p on p.id = i.persona_id where p.nome = 'Giulia'), '2');
+select atteso('il terzo si rifiuta', tenta($$select rifiuta_iscrizione((select id from richieste_iscrizione where nome = 'Terzo'))::text$$), '');
+select atteso('rifiutata', (select stato::text from richieste_iscrizione where nome = 'Terzo'), 'rifiutata');
+select atteso('e non si accoglie più', tenta($$select accogli_iscrizione((select id from richieste_iscrizione where nome = 'Terzo'))::text$$), 'NEGATO: Questa richiesta è già stata rifiutata');
+reset role;
+
+-- Sara torna dopo un anno: la richiesta la ritrova, non la raddoppia, e la
+-- rimette in Lotta da oggi.
+set role anon;
+select atteso('Sara manda la sua', tenta($$select (invia_iscrizione(adulto('{"nome": "sara", "cognome": "BIANCHI", "codice_fiscale": "BNCSRA90A41L219X", "email": "sara@esempio.it", "corsi": ["cccccccc-0000-0000-0000-000000000002"]}')) is not null)::text$$), 'true');
+reset role;
+set role authenticated;
+select atteso('accolta sulla scheda che c''era', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'sara@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000003')::text$$), 'true');
+select atteso('una Sara sola', (select count(*)::text from persone where cognome = 'Bianchi'), '1');
+select atteso('che ora ha l''email', (select email::text from persone where cognome = 'Bianchi'), 'sara@esempio.it');
+select atteso('ed è di nuovo in Lotta, da oggi', (select (dal = current_date and al is null)::text from iscrizioni where persona_id = 'aaaaaaaa-0000-0000-0000-000000000003'), 'true');
+-- Giulia smette di Lotta a fine mese e poi ci ripensa, e stavolta la manda il
+-- papà con la sua email: il codice fiscale la ritrova, e la fine sparisce.
+update iscrizioni set al = current_date + 5
+  where persona_id = (select id from persone where nome = 'Giulia') and corso_id = 'cccccccc-0000-0000-0000-000000000002';
+reset role;
+set role anon;
+select atteso('Giulia la rimanda', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Giulia', 'codice_fiscale', 'rssgli17c41l219x', 'nato_il', current_date - interval '9 years', 'email', 'papa@esempio.it',
+  'genitore_nome', 'Piero', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPRI80A01L219X',
+  'corsi', jsonb_build_array('cccccccc-0000-0000-0000-000000000002')))) is not null)::text$$), 'true');
+reset role;
+set role authenticated;
+select atteso('accolta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'papa@esempio.it')) is not null)::text$$), 'true');
+select atteso('una Giulia sola', (select count(*)::text from persone where nome = 'Giulia'), '1');
+select atteso('in Lotta dal giorno di prima, senza più una fine',
+  (select (dal = current_date)::text || ' ' || coalesce(al::text, 'senza fine') from iscrizioni
+   where persona_id = (select id from persone where nome = 'Giulia') and corso_id = 'cccccccc-0000-0000-0000-000000000002'), 'true senza fine');
+select atteso('la cancella la segreteria', tenta($$delete from richieste_iscrizione where nome = 'Terzo'$$), 'FATTO (1 righe)');
+reset role;
+
+\echo ''
+\echo 'TUTTO A POSTO'

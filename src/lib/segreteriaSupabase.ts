@@ -462,16 +462,19 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async esporta(personaId) {
-      const [persona, isc, pres] = await Promise.all([
+      const [persona, isc, pres, rich] = await Promise.all([
         db.from('persone').select('nome, cognome, email, telefono, ruolo, attiva, creata_il').eq('id', personaId).single(),
         db.from('iscrizioni').select('dal, al, corsi ( nome )').eq('persona_id', personaId),
         db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId),
+        // Le richieste dal modulo di iscrizione: i file restano nello Storage, qui c'è quali sono.
+        db.from('richieste_iscrizione').select('creata_il, stato, nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono, genitore_nome, genitore_cognome, genitore_codice_fiscale, corsi, formula, note, gestita_il').eq('persona_id', personaId),
       ])
       return {
         esportato_il: new Date().toISOString(),
         persona: ok(persona),
         iscrizioni: ok(isc),
         presenze: ok(pres),
+        richieste_di_iscrizione: ok(rich),
       }
     },
   }

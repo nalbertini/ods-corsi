@@ -23,8 +23,11 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 3. `03-funzioni.sql` — il calendario, il tracciamento di chi segna, la pulizia
 4. `04-tablet.sql` — il tablet di sala e i PIN degli istruttori
 5. `05-segreteria.sql` — le lezioni che seguono i cambi dei corsi, il primo accesso
+6. `06-iscrizioni.sql` — il modulo di iscrizione, i suoi file, e chi può chiamare cosa
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
+Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
+funzioni, quindi dopo va rilanciato anche `06-iscrizioni.sql`.
 
 ## 3. Le persone
 
@@ -113,7 +116,52 @@ I corsi con più istruttori (Lotta, Preparazione atletica) li legano tutti in
 `corsi_istruttori`: ognuno può fare l'appello e aggiornare le lezioni del
 corso. `corsi.istruttore_id` resta il primo della lista, quello di riferimento.
 
-## 5. Il calendario
+## 5. Il modulo di iscrizione
+
+Chi si iscrive lo compila dalla scheda **ISCRIZIONI**, senza un accesso: le
+domande di prima (i dati di chi si iscrive, del genitore se è minorenne, la
+residenza, i corsi, come paga) e tre file, cioè il modulo firmato, il
+documento e la ricevuta. La segreteria le trova in **SEGRETERIA → RICHIESTE
+ONLINE**, guarda i file e la accoglie o la rifiuta. Chi manda una richiesta
+rifiutata non viene avvisato dall'app: va chiamato o scritto a mano.
+
+Cosa fa `06-iscrizioni.sql`:
+
+- la tabella `richieste_iscrizione`, che legge e cambia solo la segreteria;
+- il contenitore **`iscrizioni`** nello Storage, privato: niente link
+  pubblici, la segreteria apre i file con un link che dura dieci minuti;
+- chi non ha un accesso può solo chiamare `corsi_aperti()` e
+  `invia_iscrizione()`, e caricare al massimo quattro file (foto o PDF, fino a
+  10 MB) nella cartella della richiesta appena mandata, entro un'ora. Non li
+  può rileggere né sostituire;
+- la porta non è spalancata: tre richieste al giorno dalla stessa email, trenta
+  all'ora in tutto. I numeri stanno in `iscrizioni_regole()`;
+- accogliere (`accogli_iscrizione`) mette la persona in elenco e la iscrive ai
+  corsi scelti. Se c'era già la ritrova: dal codice fiscale di una richiesta
+  accolta prima, oppure da nome e cognome con la stessa email o senza. Due
+  fratelli iscritti dalla stessa email entrano tutti e due, e il secondo resta
+  senza email, perché in `persone` un'email può essere di una persona sola;
+- `anon`, che finora non aveva nemmeno lo schema, ora lo vede per queste due
+  funzioni. Prima di aprirglielo il file gli toglie tutte le altre:
+  `materializza_sessioni` e `pulisci_presenze`, per esempio, lasciano passare
+  chi non ha un utente, perché è così che le chiama un job.
+
+**Si accende con l'informativa.** Il modulo chiede codici fiscali e documenti
+d'identità, e col database vero l'app lo mostra solo quando `INFORMATIVA`, in
+`src/lib/iscrizione.ts`, ha il suo link. Fino ad allora il passo porta ancora
+al modulo Google (`LINK_ISCRIZIONE`). In prova il modulo è sempre acceso.
+
+**Le domande** sono ricavate dai moduli di autorizzazione e dai passi di
+prima, non copiate dal modulo Google, che senza accesso non si legge. Se
+quello chiedeva altro, vanno allineati tre posti: `invia_iscrizione` qui,
+`controlla()` in `src/lib/richieste.ts` e `ModuloIscrizione.tsx`.
+
+**Per quanto si tengono.** Accolta o rifiutata, una richiesta resta con i suoi
+file finché la segreteria non la elimina («Elimina richiesta e file», nella
+richiesta). Il documento d'identità serve per il tesseramento, poi no: quanto
+tenerlo è una scelta della palestra da mettere nell'informativa.
+
+## 6. Il calendario
 
 `materializza_sessioni` trasforma le ricorrenze in lezioni vere. L'import la
 chiama già per i due mesi successivi; poi va richiamata ogni tanto, con un job
@@ -132,7 +180,7 @@ del periodo scelto nelle stesse regole:
 select cron.schedule('pulizia', '0 4 1 * *', $$select pulisci_presenze()$$);
 ```
 
-## 6. I tablet di sala
+## 7. I tablet di sala
 
 Ogni sala ha un tablet appeso al muro con il calendario della sala: chi arriva
 tocca il suo nome e la presenza è segnata. Il tablet ha un **account suo**, che
@@ -179,7 +227,7 @@ Il PIN è salvato cifrato e due istruttori non possono avere lo stesso. Dopo 5
 PIN sbagliati in 5 minuti il tablet si blocca per qualche minuto: gli altri
 tablet no.
 
-## 7. L'app
+## 8. L'app
 
 Le due variabili vanno messe dove si compila (in locale un file `.env`, su
 GitHub Actions dei *repository secrets*):
@@ -203,7 +251,8 @@ non è un segreto trapelato. A proteggere i dati sono le policy di
 - **L'informativa privacy.** Nomi e presenze sono dati personali e la palestra
   ne è titolare del trattamento. Il link va in `src/lib/iscrizione.ts`
   (`INFORMATIVA`) e si vede in fondo alla scheda ISCRIZIONI, a tutti: non sta
-  nel database perché lo deve poter leggere anche chi non ha un accesso.
+  nel database perché lo deve poter leggere anche chi non ha un accesso. Col
+  database vero è anche quello che accende il modulo di iscrizione dell'app.
 - **Per quanto si tengono le presenze.** `presenze_scadute` dice cosa è
   scaduto e `pulisci_presenze()` lo cancella; il periodo di partenza è
   ventiquattro mesi e si cambia in **REGOLE E PRIVACY**. È una scelta della
@@ -222,4 +271,7 @@ istruttore, della segreteria e di chi non ha fatto l'accesso, `tablet.sql`
 prova il tablet di sala: le finestre di tempo, il recupero, l'annullo, il PIN
 e il blocco, e che il tablet non veda niente più di quel che deve;
 `segreteria.sql` prova cosa succede alle lezioni quando un corso cambia sala,
-istruttore o giorni, o si archivia, e il primo accesso.
+istruttore o giorni, o si archivia, e il primo accesso; `iscrizioni.sql`
+prova il modulo di iscrizione: cosa può fare chi non ha un accesso, i limiti
+sui file, e chi accoglie le richieste. `finto-supabase.sql` rifà anche le due
+tabelle dello Storage che le policy dei file guardano.
