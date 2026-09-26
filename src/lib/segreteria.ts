@@ -31,12 +31,16 @@ export interface RicorrenzaSeg {
   durata: number
   dal: string
   al?: string
+  /** La sala di questo giorno, quando non è quella del corso. */
+  salaId?: string
+  sala?: string
 }
 
 export interface CorsoSeg {
   id: string
   nome: string
   colore?: string
+  /** La sala di partenza: quella dei giorni che non ne hanno una loro. */
   salaId?: string
   sala?: string
   /** Chi lo insegna; il primo è quello di riferimento. */
@@ -171,7 +175,9 @@ export interface DatiSegreteria {
   salvaCorso(c: DatiCorso): Promise<string>
   archiviaCorso(corsoId: string, attivo: boolean): Promise<void>
   /** `rigenera: false` quando se ne aggiungono tante e il calendario si allunga dopo, una volta sola. */
-  aggiungiRicorrenza(corsoId: string, r: { giorno: number; ora: string; durata: number }, opzioni?: { rigenera?: boolean }): Promise<void>
+  aggiungiRicorrenza(corsoId: string, r: { giorno: number; ora: string; durata: number; salaId?: string }, opzioni?: { rigenera?: boolean }): Promise<void>
+  /** Un giorno in un'altra sala; `null` lo rimette nella sala del corso. Le lezioni future lo seguono. */
+  salaRicorrenza(ricorrenzaId: string, salaId: string | null): Promise<void>
   togliRicorrenza(ricorrenzaId: string): Promise<void>
 
   persone(): Promise<PersonaSeg[]>

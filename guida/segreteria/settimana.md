@@ -35,7 +35,9 @@ Un clic su una lezione apre il riquadro a destra. Ogni cambio si salva subito;
 - **ISTRUTTORE**: «Come da corso» o un altro nome. Scegliere un altro nome mette
   un **sostituto** solo per quella lezione; il corso resta com'è. Il sostituto
   vede la lezione nel suo calendario e fa l'appello.
-- **SALA**: per spostare quella lezione in un'altra sala.
+- **SALA**: per spostare quella lezione in un'altra sala. Se un giorno del
+  corso si fa **sempre** in un'altra sala, si sceglie invece nei
+  [corsi](corsi.md), accanto a quel giorno.
 - **APPELLO**: lo stesso dell'app, per segnare al banco le presenze che
   l'istruttore ha preso su carta, o per correggere un errore.
   - Un clic: presente; due: assente; tre: non segnato.

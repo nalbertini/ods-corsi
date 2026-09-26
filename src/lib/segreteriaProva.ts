@@ -1,6 +1,6 @@
 import type { CorsoSeg, DatiSegreteria, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StoricoSeg } from './segreteria'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva } from './archivioProva'
-import { comeE, iscrittiIl, lezioniFra, nomeIstruttore, trovaLezione, type LezioneTrovata } from './datiProva'
+import { comeE, iscrittiIl, lezioniFra, nomeIstruttore, salaDelGiorno, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
@@ -9,10 +9,10 @@ import { richiesteDi } from './richiesteProva'
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
  *
- * Fa quello che fa il database, dove si può: un corso che cambia sala porta
- * con sé le lezioni che non erano state spostate a mano, togliere un giorno
- * lo chiude a ieri invece di cancellarlo, archiviare un corso lo toglie dal
- * calendario. Una differenza: qui le lezioni non sono salvate una per una, si
+ * Fa quello che fa il database, dove si può: un corso (o un suo giorno) che
+ * cambia sala porta con sé le lezioni che non erano state spostate a mano,
+ * togliere un giorno lo chiude a ieri invece di cancellarlo, archiviare un
+ * corso lo toglie dal calendario. Una differenza: qui le lezioni non sono salvate una per una, si
  * calcolano dalle ricorrenze, quindi «rigenera» non ha niente da fare.
  */
 
@@ -110,7 +110,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         if (cambi.stato) x.stato = cambi.stato === 'prevista' ? undefined : cambi.stato
         // «Come da corso» vuol dire nessuna decisione a mano.
         if (cambi.sostitutoId !== undefined) x.istruttore = cambi.sostitutoId && !l.corso.istruttori.includes(cambi.sostitutoId) ? cambi.sostitutoId : undefined
-        if (cambi.salaId !== undefined) x.sala = cambi.salaId && cambi.salaId !== l.corso.sala ? cambi.salaId : undefined
+        if (cambi.salaId !== undefined) x.sala = cambi.salaId && cambi.salaId !== salaDelGiorno(l) ? cambi.salaId : undefined
         for (const k of Object.keys(x) as Array<keyof LezioneProva>) if (x[k] === undefined) delete x[k]
         return x
       })
@@ -154,6 +154,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
           attivo: c.attivo,
           ricorrenze: c.ricorrenze
             .filter((r) => !r.al || r.al >= g)
+            .map(({ sala, ...r }) => ({ ...r, salaId: sala, sala }))
             .sort((x, y) => ((x.giorno + 6) % 7) - ((y.giorno + 6) % 7) || x.ora.localeCompare(y.ora)),
         }),
       )
@@ -174,15 +175,25 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const c = corso(dati.id)
       a().corsi = a().corsi.map((x) =>
         x.id === c.id
-          ? { ...x, nome: dati.nome.trim(), sala: dati.salaId ?? x.sala, istruttori: dati.istruttori, capienza: dati.capienza, colore: dati.colore ?? x.colore }
+          ? {
+              ...x,
+              nome: dati.nome.trim(),
+              sala: dati.salaId ?? x.sala,
+              istruttori: dati.istruttori,
+              capienza: dati.capienza,
+              colore: dati.colore ?? x.colore,
+              // Un giorno che ora sarebbe nella sala del corso torna a seguirlo, come nel database.
+              ricorrenze: x.ricorrenze.map(({ sala, ...r }) => (sala && sala !== (dati.salaId ?? x.sala) ? { ...r, sala } : r)),
+            }
           : x,
       )
-      // Le lezioni che erano state spostate proprio nella sala nuova, o date
-      // a chi ora insegna il corso, tornano «come da corso».
+      // Le lezioni che erano state spostate proprio nella sala in cui ora
+      // andrebbero da sé, o date a chi ora insegna il corso, tornano «come da corso».
       for (const [id, l] of Object.entries(a().lezioni)) {
         if (!id.startsWith(`s@${c.id}@`) && l.straordinaria?.corsoId !== c.id) continue
+        const t = trovaLezione(id)
         cambiaLezione(id, (x) => {
-          if (x.sala === dati.salaId) delete x.sala
+          if (t && x.sala === salaDelGiorno(t)) delete x.sala
           if (x.istruttore && dati.istruttori.includes(x.istruttore)) delete x.istruttore
           return x
         })
@@ -205,7 +216,39 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const base = idRicorrenza(c.id, r.giorno, r.ora)
       const id = c.ricorrenze.some((x) => x.id === base) ? `${base}~${unico()}` : base
       const dal = oggi() > STAGIONE.dal ? oggi() : STAGIONE.dal
-      a().corsi = a().corsi.map((x) => (x.id === c.id ? { ...x, ricorrenze: [...x.ricorrenze, { id, ...r, dal, al: STAGIONE.al }] } : x))
+      const nuova = { id, giorno: r.giorno, ora: r.ora, durata: r.durata, dal, al: STAGIONE.al, ...(r.salaId && r.salaId !== c.sala ? { sala: r.salaId } : {}) }
+      a().corsi = a().corsi.map((x) => (x.id === c.id ? { ...x, ricorrenze: [...x.ricorrenze, nuova] } : x))
+      salva()
+    },
+
+    async salaRicorrenza(ricorrenzaId, salaId) {
+      const c = a().corsi.find((x) => x.ricorrenze.some((r) => r.id === ricorrenzaId))
+      if (!c) throw new Error('Ricorrenza inesistente')
+      if (salaId && !a().sale.includes(salaId)) throw new Error('Sala inesistente')
+      // La sala del corso non si scrive sul giorno: così, se il corso cambia sala, il giorno lo segue.
+      const sala = salaId && salaId !== c.sala ? salaId : undefined
+      a().corsi = a().corsi.map((x) =>
+        x.id !== c.id
+          ? x
+          : {
+              ...x,
+              ricorrenze: x.ricorrenze.map((r) => {
+                if (r.id !== ricorrenzaId) return r
+                const { sala: _vecchia, ...resto } = r
+                return sala ? { ...resto, sala } : resto
+              }),
+            },
+      )
+      // Le lezioni future spostate a mano proprio nella sala nuova non sono più un'eccezione.
+      const adesso = Date.now()
+      for (const id of Object.keys(a().lezioni)) {
+        const t = id.startsWith(`s@${c.id}@`) ? trovaLezione(id) : null
+        if (!t || t.ricorrenza?.id !== ricorrenzaId || t.inizio.getTime() <= adesso) continue
+        cambiaLezione(id, (x) => {
+          if (x.sala === salaDelGiorno(t)) delete x.sala
+          return x
+        })
+      }
       salva()
     },
 
@@ -411,7 +454,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (s.id && s.id !== nome) {
         // Il nome è anche l'id, in prova: si rinomina ovunque.
         a().sale = a().sale.map((x) => (x === s.id ? nome : x))
-        a().corsi = a().corsi.map((c) => (c.sala === s.id ? { ...c, sala: nome } : c))
+        a().corsi = a().corsi.map((c) => ({
+          ...c,
+          sala: c.sala === s.id ? nome : c.sala,
+          ricorrenze: c.ricorrenze.map((r) => (r.sala === s.id ? { ...r, sala: nome } : r)),
+        }))
         a().lezioni = Object.fromEntries(Object.entries(a().lezioni).map(([k, l]) => [k, l.sala === s.id ? { ...l, sala: nome } : l]))
         delete cap[s.id]
       } else if (!s.id) a().sale = [...a().sale, nome]
