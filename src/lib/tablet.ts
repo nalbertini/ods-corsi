@@ -88,8 +88,8 @@ export interface DatiTablet {
   readonly sale?: string[]
   /** Prova: il tablet diventa quello di una sala. */
   scegliSala?(sala: string): Promise<void>
-  /** Supabase: l'accesso con l'account della sala, una volta sola. */
-  entra?(email: string, password: string): Promise<void>
+  /** Supabase: l'accesso con l'account della sala, una volta sola (vedi `emailDellaSala`). */
+  entra?(utente: string, password: string): Promise<void>
   /** Il tablet smette di essere il tablet di una sala. */
   scollega(): Promise<void>
 
@@ -105,6 +105,23 @@ export interface DatiTablet {
   appello(pin: string, sessioneId: string): Promise<RigaAppelloTablet[]>
   /** `null` toglie il segno, ma solo a una presenza arrivata dal tablet. */
   correggi(pin: string, sessioneId: string, personaId: string, stato: StatoPresenza | null): Promise<boolean>
+}
+
+// ---------------------------------------------------------------------------
+// L'account della sala.
+//
+// Una sala non ha un'email: ha un nome utente, «lotta», e una password.
+// Supabase però fa entrare solo con un'email, e allora il nome diventa
+// un'email interna, `lotta@sale.ods-corsi.it`, che è quella con cui la
+// segreteria crea l'utente. Non ci arriva mai niente: serve solo da nome.
+// Chi scrive un'email intera entra con quella, così valgono anche gli
+// account fatti prima.
+// ---------------------------------------------------------------------------
+export const DOMINIO_SALE = 'sale.ods-corsi.it'
+
+export function emailDellaSala(utente: string): string {
+  const u = utente.trim().toLowerCase()
+  return u.includes('@') ? u : `${u}@${DOMINIO_SALE}`
 }
 
 // ---------------------------------------------------------------------------
