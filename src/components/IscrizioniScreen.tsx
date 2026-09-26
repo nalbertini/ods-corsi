@@ -25,13 +25,13 @@ export function IscrizioniScreen({ pubblica = false }: { pubblica?: boolean }) {
 
   if (modulo) {
     return (
-      <>
+      <div className="iscrizioni-modulo">
         <div className="rule">
           <span className="rule-label">RICHIESTA DI ISCRIZIONE</span>
           <div className="rule-line" />
         </div>
         <ModuloIscrizione onChiudi={() => vai(false)} />
-      </>
+      </div>
     )
   }
 
