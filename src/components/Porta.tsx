@@ -1,5 +1,6 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
-import { chiSei, entra, esci, quandoCambia, serveAccesso, type Personale } from '../lib/accesso'
+import { accountDalLink, chiSei, entra, esci, mandaLinkPassword, quandoCambia, scegliPassword, serveAccesso, type Personale } from '../lib/accesso'
+import type { Arrivo } from '../lib/invito'
 import { INDIRIZZO_AREE } from '../lib/aree'
 import { scegliProva } from '../lib/dati'
 
@@ -84,12 +85,29 @@ export function Accesso({ per, onEntrato }: { per: keyof typeof SPIEGA; onEntrat
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errore, setErrore] = useState<string | null>(null)
+  const [detto, setDetto] = useState<string | null>(null)
   const [aspetta, setAspetta] = useState(false)
+
+  const dimenticata = async () => {
+    setErrore(null)
+    setDetto(null)
+    if (!email.trim()) return setErrore('Scrivi la tua email, e poi «password dimenticata»')
+    setAspetta(true)
+    try {
+      await mandaLinkPassword(email.trim())
+      setDetto(`Se ${email.trim()} ha un account, fra poco arriva una mail con il link per sceglierne una nuova.`)
+    } catch (x) {
+      setErrore(x instanceof Error ? x.message : 'La mail non è partita')
+    } finally {
+      setAspetta(false)
+    }
+  }
 
   const accedi = async (e: FormEvent) => {
     e.preventDefault()
     setAspetta(true)
     setErrore(null)
+    setDetto(null)
     try {
       onEntrato(await entra(email.trim(), password))
     } catch (x) {
@@ -131,9 +149,17 @@ export function Accesso({ per, onEntrato }: { per: keyof typeof SPIEGA; onEntrat
         <button type="submit" className="btn btn-go" disabled={aspetta}>
           {aspetta ? 'UN ATTIMO…' : 'ENTRA'}
         </button>
+        <button type="button" className="chi-esci" style={{ alignSelf: 'flex-start' }} disabled={aspetta} onClick={() => void dimenticata()}>
+          PASSWORD DIMENTICATA?
+        </button>
         {errore && (
           <span role="alert" style={{ fontSize: 15, fontWeight: 600, color: 'var(--rosso)', lineHeight: 1.4 }}>
             {errore}
+          </span>
+        )}
+        {detto && (
+          <span role="status" className="passo-dettaglio" style={{ fontSize: 15 }}>
+            {detto}
           </span>
         )}
       </form>
@@ -146,6 +172,105 @@ export function Accesso({ per, onEntrato }: { per: keyof typeof SPIEGA; onEntrat
           PROVA CON DATI INVENTATI
         </button>
       </div>
+    </div>
+  )
+}
+
+/**
+ * Dove porta il link di un'email di Supabase: l'invito della segreteria o
+ * «password dimenticata». Si sceglie la password e si entra nella propria
+ * area: la segreteria nella segreteria, un istruttore nel calendario.
+ */
+export function ScegliPassword({ arrivo, onFatto }: { arrivo: Arrivo; onFatto: (dove: string) => void }) {
+  const [account, setAccount] = useState<string | null | undefined>(arrivo.tipo === 'scaduto' ? null : undefined)
+  const [password, setPassword] = useState('')
+  const [ancora, setAncora] = useState('')
+  const [errore, setErrore] = useState<string | null>(null)
+  const [aspetta, setAspetta] = useState(false)
+
+  useEffect(() => {
+    if (arrivo.tipo === 'scaduto') return
+    let vivo = true
+    void accountDalLink().then(
+      (e) => vivo && setAccount(e),
+      () => vivo && setAccount(null),
+    )
+    return () => {
+      vivo = false
+    }
+  }, [arrivo.tipo])
+
+  const salva = async (e: FormEvent) => {
+    e.preventDefault()
+    setErrore(null)
+    if (password.length < 8) return setErrore('Almeno otto caratteri')
+    if (password !== ancora) return setErrore('Le due password non sono uguali')
+    setAspetta(true)
+    try {
+      const p = await scegliPassword(password)
+      onFatto(p.ruolo === 'staff' ? '#segreteria' : '#istruttori')
+    } catch (x) {
+      setErrore(x instanceof Error ? x.message : 'La password non è stata salvata')
+    } finally {
+      setAspetta(false)
+    }
+  }
+
+  return (
+    <div className="accesso">
+      <div className="rule">
+        <span className="rule-label">{{ invito: 'BENVENUTO', password: 'NUOVA PASSWORD', scaduto: 'LINK SCADUTO' }[arrivo.tipo]}</span>
+        <div className="rule-line" />
+      </div>
+      {account === undefined && <UnAttimo />}
+      {account === null && (
+        <div className="pad stack" style={{ gap: 12, paddingBottom: 16 }}>
+          <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+            {arrivo.tipo === 'scaduto' ? arrivo.testo : 'Il link non vale più.'} Se era un invito, chiedi alla segreteria di
+            mandarne un altro; se avevi già una password, dalla porta c’è «password dimenticata».
+          </span>
+          <button type="button" className="btn btn-go" onClick={() => onFatto('#istruttori')}>
+            VAI ALLA PORTA
+          </button>
+        </div>
+      )}
+      {account && (
+        <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void salva(e)}>
+          <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+            {arrivo.tipo === 'invito' ? 'La palestra ti ha dato un accesso. ' : ''}Scegli la password per {account}: è
+            quella con cui entrerai d’ora in poi.
+          </span>
+          {/* Il campo nascosto fa ricordare al browser email e password insieme. */}
+          <input type="email" autoComplete="username" value={account} readOnly hidden />
+          <input
+            className="campo"
+            type="password"
+            autoComplete="new-password"
+            placeholder="nuova password"
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <input
+            className="campo"
+            type="password"
+            autoComplete="new-password"
+            placeholder="ripetila"
+            value={ancora}
+            onChange={(e) => setAncora(e.target.value)}
+            required
+          />
+          <button type="submit" className="btn btn-go" disabled={aspetta}>
+            {aspetta ? 'UN ATTIMO…' : 'SALVA ED ENTRA'}
+          </button>
+          {errore && (
+            <span role="alert" style={{ fontSize: 15, fontWeight: 600, color: 'var(--rosso)', lineHeight: 1.4 }}>
+              {errore}
+            </span>
+          )}
+        </form>
+      )}
     </div>
   )
 }

@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -374,6 +374,23 @@ console.log('\nla musica delle sale')
   await s.salvaSala({ id: 'Lotta libera', nome: 'Lotta' })
   await s.togliListaMusica(randori)
   ok('tolta, il tablet non la vede più', (await t.musica()).map((l) => l.nome), ['Riscaldamento'])
+}
+
+console.log('\nl\'invito per email')
+{
+  const id = await s.salvaPersonale({ nome: 'Ilaria', cognome: 'Invitata', email: 'ilaria@esempio.it', ruolo: 'istruttore' })
+  ok('una persona con email si invita', await s.invita(id), 'invito')
+  const senza = await s.salvaPersonale({ nome: 'Nadia', cognome: 'Senzamail', ruolo: 'istruttore' })
+  ok('senza email no', await errore(() => s.invita(senza)), 'Nadia non ha un’email')
+  await s.attivaPersona(id, false)
+  ok('senza accesso no', await errore(() => s.invita(id)), 'Ilaria è senza accesso: prima va ridato')
+  await s.attivaPersona(id, true)
+
+  ok('il link dell\'invito', m.arrivoDalLink('#access_token=x&refresh_token=y&type=invite'), { tipo: 'invito' })
+  ok('il link di «password dimenticata»', m.arrivoDalLink('#access_token=x&type=recovery'), { tipo: 'password' })
+  ok('il link scaduto', m.arrivoDalLink('#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired').tipo, 'scaduto')
+  ok('un\'area non è un link', m.arrivoDalLink('#segreteria'), null)
+  ok('niente frammento', m.arrivoDalLink(''), null)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

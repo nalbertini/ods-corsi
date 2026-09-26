@@ -74,7 +74,9 @@ Chi vuole iscriversi non entra da qui: ha la pagina pubblica, `#iscrizioni` in
 fondo all'indirizzo, che la segreteria copia con **COPIA LINK ISCRIZIONI**.
 
 Ogni istruttore e chi sta in segreteria ha bisogno di due cose: un utente in
-**Authentication → Users** e una riga in `persone` che lo colleghi. Un account
+**Authentication → Users** e una riga in `persone` che lo colleghi. Con
+l'invito per email (sotto, *L'invito per email*) la segreteria fa tutte e due
+dall'app; senza, l'utente si crea a mano dal pannello. Un account
 che non ha la sua riga in `persone` (o ce l'ha con ruolo `iscritto`) non entra,
 e l'app lo dice.
 
@@ -96,6 +98,58 @@ stessa email (`collega_utente()`, in `05-segreteria.sql`). Vale solo per
 istruttori e segreteria, e solo per una persona che non ha già un account. La
 prima persona di segreteria va comunque messa a mano, perché prima di lei
 nessuno può scrivere in `persone`.
+
+### L'invito per email
+
+Da **ISTRUTTORI E ACCESSI** la segreteria aggiunge una persona e le manda
+l'invito: una mail con un link, che apre l'app su una pagina dove si sceglie
+la password. Aprire il link conferma l'email, e al primo accesso l'account si
+lega alla scheda da solo. Chi ha già un account ma non è mai entrato (un
+invito scaduto, un utente creato a mano) riceve invece il link per scegliere
+la password. Dalla porta c'è anche **password dimenticata?**, che manda lo
+stesso link a chi una password l'aveva.
+
+L'account lo crea la funzione **`invita`** (`functions/invita/index.ts`), che
+gira sul server di Supabase con la chiave `service_role`: dal browser non si
+può, perché la chiave dell'app è pubblica. Controlla che chi la chiama sia
+della segreteria e invita solo istruttori e segreteria già in `persone`, con
+un'email e l'accesso attivo. Per metterla in piedi, una volta:
+
+1. **La funzione.** Con la [CLI di Supabase](https://supabase.com/docs/guides/cli),
+   dalla cartella del repository:
+
+   ```sh
+   supabase login
+   supabase functions deploy invita --project-ref <id-del-progetto>
+   ```
+
+   L'id è quello di `https://<id>.supabase.co`. Le chiavi che usa
+   (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) Supabase
+   gliele dà da sé: non c'è niente da impostare. Senza la CLI, si crea dal
+   pannello in **Edge Functions → Deploy a new function**, col nome `invita`,
+   incollando il file.
+
+2. **Dove porta il link.** In **Authentication → URL Configuration**: in
+   **Site URL** l'indirizzo dell'app pubblicata, e fra i **Redirect URLs** lo
+   stesso (per esempio `https://corsi.esempio.it/**`). Un indirizzo che non è
+   in elenco Supabase non lo usa, e il link porta alla Site URL.
+
+3. **Chi manda le mail.** Il server di posta che Supabase ha di suo serve
+   solo a provare: poche mail all'ora, e solo agli indirizzi del team del
+   progetto. Per invitare davvero serve un SMTP (quello del dominio della
+   palestra, o un servizio come Brevo o Resend), in **Authentication → Emails
+   → SMTP Settings**. Finché non c'è, l'app dice che la mail non è partita.
+
+4. **Il testo della mail**, facoltativo: in **Authentication → Emails →
+   Templates**, *Invite user* e *Reset password*. Il link resta
+   `{{ .ConfirmationURL }}`; il nome della persona è `{{ .Data.nome }}`.
+
+Il link vale un'ora (**Authentication → Providers → Email → Email OTP
+Expiration**, fino a un giorno). Se scade, dall'elenco «manda l'invito» ne
+manda un altro.
+
+La registrazione resta spenta (**Allow new users to sign up**): l'invito non
+ne ha bisogno, e la funzione invita solo chi la segreteria ha messo in elenco.
 
 Chi ha il ruolo `staff` entra nella **segreteria**, all'indirizzo
 `#segreteria`: la settimana con gli appelli, i corsi e gli iscritti, pensati

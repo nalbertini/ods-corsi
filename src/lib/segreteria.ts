@@ -232,6 +232,12 @@ export interface DatiSegreteria {
   personale(): Promise<PersonaleSeg[]>
   salvaPersonale(p: DatiPersona & { ruolo: 'istruttore' | 'staff' }): Promise<string>
   impostaPin(personaId: string, pin: string): Promise<void>
+  /**
+   * Manda l'invito per email: a chi non ha un account, quello per crearlo; a
+   * chi ce l'ha ma non è mai entrato, il link per scegliere la password.
+   * Va chiesto dalla funzione `invita` (`supabase/functions/invita`).
+   */
+  invita(personaId: string): Promise<'invito' | 'password'>
 
   salvaSala(s: { id?: string; nome: string; capienza?: number }): Promise<string>
   /** La musica delle sale, per il tablet (vedi `musica.ts`). */
