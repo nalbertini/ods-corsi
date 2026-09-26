@@ -36,7 +36,9 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
     fatto (anche solo in parte, anche dal tablet).
 
 Toccate una lezione per aprire l'appello. Sul telefono il calendario lascia il
-posto all'appello; la freccia in alto a sinistra riporta al calendario. Su un
+posto all'appello; la freccia in alto a sinistra riporta al calendario. Sotto
+le lezioni, in **STRUMENTI**, ci sono **TABLET DI SALA ↗** e **TIMER ↗**, che
+si aprono in un'altra scheda. Su un
 tablet in orizzontale o un computer stanno affiancati: calendario a sinistra,
 appello a destra. Lì l'app ha la stessa faccia della segreteria: a sinistra il
 menu, con **APPELLO**, **TABLET DI SALA ↗** e **TIMER ↗** (questi due si aprono

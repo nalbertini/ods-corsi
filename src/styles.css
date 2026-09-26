@@ -317,6 +317,9 @@ input, textarea { font: inherit; color: inherit; }
 /* I pezzi del design system per le iscrizioni (`components/ds.tsx`). */
 .rule-conto { font-size: 15px; font-weight: 600; color: var(--dim); }
 .rule-dentro { padding: 12px 0 0; }
+/* Tablet di sala e timer, sotto il calendario del telefono. */
+.strumenti { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.strumenti > .btn { min-height: 52px; padding: 0 10px; font-size: 16px; letter-spacing: 0.08em; white-space: nowrap; text-decoration: none; }
 .riquadro { padding: 14px; gap: 8px; }
 .riquadro[data-stretto] { gap: 4px; }
 /* La prova sta prima dei passi e non è uno di loro: niente numero, il bordo giallo. */
