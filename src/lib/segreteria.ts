@@ -155,8 +155,6 @@ export interface DatiSegreteria {
 
   /** Le lezioni fra due giorni, estremi inclusi, anche annullate. */
   settimana(da: Date, a: Date): Promise<LezioneSeg[]>
-  /** I nomi degli iscritti di una lezione, per cognome. */
-  iscrittiLezione(sessioneId: string): Promise<string[]>
   aggiornaLezione(
     sessioneId: string,
     cambi: { stato?: StatoSessione; sostitutoId?: string | null; salaId?: string | null },
@@ -165,8 +163,6 @@ export interface DatiSegreteria {
   straordinaria(corsoId: string, inizio: Date, durata: number): Promise<void>
   /** Toglie una lezione straordinaria; quelle con un appello restano. */
   togliLezione(sessioneId: string): Promise<void>
-  /** Dalla segreteria, quando l'appello non l'ha fatto nessuno. */
-  tuttiPresenti(sessioneId: string): Promise<void>
   /** Fin dove è pronto il calendario, e lo allunga di due mesi da oggi. */
   prontoFino(): Promise<string | null>
   rigenera(): Promise<number>
