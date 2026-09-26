@@ -23,6 +23,7 @@ import { type Interrotto, leggiInterrotto, scordaInterrotto } from './lib/ripres
 import { Back, Clessidra, Crono, Gear, TimerIcon } from './components/Icons'
 import { Logo, Wordmark } from './components/Logo'
 import { completaAccesso } from './lib/spotify'
+import { VERSIONE } from './lib/aggiornamento'
 import { useMusica } from './lib/useMusica'
 import { MusicaBar } from './components/MusicaBar'
 import { PlayerYoutube } from './components/PlayerYoutube'
@@ -101,6 +102,9 @@ const PIENE: Tab[] = ['crono', 'countdown']
  * anche il telefono di chi lo tocca.
  */
 const SALA = '../'
+
+/** Il calendario e l'appello di ODS Corsi, per chi arriva al timer dal computer. */
+const ISTRUTTORI = '../istruttori/'
 
 /** Il ritorno alla sala, grosso come i tasti del tablet da cui si arriva. */
 function TornaSala({ className }: { className: string }) {
@@ -680,26 +684,35 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
 
   return con(
     <div className="shell">
-      <nav className="sidebar">
+      {/* Su desktop la stessa faccia della segreteria e degli istruttori di
+          ODS Corsi: il marchio piccolo con il nome dell'area, le voci con il
+          filo rosso a sinistra, e in fondo il ritorno e la versione. */}
+      <nav className="sidebar" aria-label="Timer">
         {/* Sul tablet il marchio c'è già, nella testata della sala. */}
         {!incorporato && (
-          <div className="stack" style={{ gap: 10, padding: '0 22px 26px' }}>
-            <Logo width={104} />
-            <Wordmark />
+          <div className="row" style={{ gap: 10, padding: '0 8px' }}>
+            <Logo width={46} />
+            <span className="stack" style={{ gap: 2 }}>
+              <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS TIMER</span>
+              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>COLLEGNO</span>
+            </span>
           </div>
         )}
-        <div className="stack" style={{ gap: 2, padding: '0 12px' }}>
+        <div className="stack" style={{ gap: 2 }}>
           {TABS.map((t) => (
-            <button key={t.key} className="navitem" data-on={tab === t.key} onClick={() => setTab(t.key)}>
-              <i />
+            <button key={t.key} className="navitem" aria-current={tab === t.key ? 'page' : undefined} onClick={() => setTab(t.key)}>
               {t.label}
             </button>
           ))}
         </div>
         <div className="grow" />
         {!incorporato && (
-          <div className="stack" style={{ padding: '0 12px' }}>
+          <div className="stack" style={{ gap: 12 }}>
+            <a className="navitem" href={ISTRUTTORI}>
+              ← ISTRUTTORI
+            </a>
             <TornaSala className="" />
+            <span className="num sidebar-versione">ODS TIMER {VERSIONE}</span>
           </div>
         )}
       </nav>
@@ -717,10 +730,8 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
               <Logo width={58} />
               <Wordmark />
             </div>
+            <h1 className="ob page-title">{TAB_TITLE[tab]}</h1>
             <div className="grow" />
-            <span className="ob page-title" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--dim)' }}>
-              {TAB_TITLE[tab]}
-            </span>
             {!incorporato && <TornaSala className="torna-sala-alto" />}
           </header>
         )}

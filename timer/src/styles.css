@@ -310,24 +310,27 @@ a.tab { text-decoration: none; }
 
 @media (min-width: 1024px) {
   .sidebar {
-    display: flex; flex-direction: column; width: 240px; flex-shrink: 0;
-    background: var(--menu); border-right: 2px solid var(--line-soft); padding: 26px 0;
+    display: flex; flex-direction: column; gap: 28px; width: 240px; flex-shrink: 0; overflow-y: auto;
+    background: var(--menu); border-right: 2px solid var(--line-soft); padding: calc(var(--safe-t) + 28px) 16px 24px;
   }
   .tabbar { display: none; }
-  .pad { padding: 0 32px; }
-  .topbar { padding: 26px 32px 20px; }
-  .rule { padding: 26px 32px 12px; }
+  .pad { padding: 0 36px; }
+  .topbar { padding: calc(var(--safe-t) + 28px) 36px 8px; }
+  .rule { padding: 26px 36px 12px; }
   .wlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
 }
 
+/* Le voci come quelle della segreteria di ODS Corsi: la scheda aperta ha il
+   filo rosso a sinistra e il fondo della carta. */
 .navitem {
-  display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 12px;
-  color: var(--tasto); font-size: 14px; font-weight: 600; letter-spacing: 0.1em;
+  display: flex; align-items: center; min-height: 44px; padding: 0 12px;
+  border-left: 4px solid transparent; color: var(--tasto); text-align: left;
+  font-family: var(--cond); font-size: 16px; font-weight: 700; letter-spacing: 0.12em;
 }
+.navitem:hover { color: var(--text); }
 a.navitem { text-decoration: none; }
-.navitem[data-on='true'] { background: var(--surface-2); color: var(--text); }
-.navitem > i { display: block; width: 8px; height: 8px; background: var(--spento); }
-.navitem[data-on='true'] > i { background: var(--blu); }
+.navitem[aria-current='page'] { border-left-color: var(--rosso); background: var(--surface); color: var(--text); }
+.sidebar-versione { padding: 0 12px; font-size: 12px; letter-spacing: 0.1em; color: var(--faint); }
 
 /* Il marchio e il titolo non convivono: su telefono comanda la barra in basso,
    su desktop la barra laterale. */
@@ -335,7 +338,7 @@ a.navitem { text-decoration: none; }
 
 @media (min-width: 1024px) {
   .only-mobile { display: none !important; }
-  .page-title { display: block; }
+  .page-title { display: block; margin: 0; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }
 }
 
 
