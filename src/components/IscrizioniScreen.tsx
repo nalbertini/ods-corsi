@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { INFORMATIVA_PUBBLICA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, PASSI_PUBBLICI, PROVA, type Passo } from '../lib/iscrizione'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
 import { Costi } from './Costi'
+import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 import { ModuloIscrizione } from './ModuloIscrizione'
 
 /**
@@ -26,10 +27,7 @@ export function IscrizioniScreen({ pubblica = false }: { pubblica?: boolean }) {
   if (modulo) {
     return (
       <div className="iscrizioni-modulo">
-        <div className="rule">
-          <span className="rule-label">RICHIESTA DI ISCRIZIONE</span>
-          <div className="rule-line" />
-        </div>
+        <Titoletto>RICHIESTA DI ISCRIZIONE</Titoletto>
         <ModuloIscrizione onChiudi={() => vai(false)} />
       </div>
     )
@@ -38,21 +36,17 @@ export function IscrizioniScreen({ pubblica = false }: { pubblica?: boolean }) {
   return (
     <div className="iscrizioni">
       <div className="iscrizioni-passi">
-        <div className="rule">
-          <span className="rule-label">ISCRIZIONI</span>
-          <div className="rule-line" />
-          <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{passi.length} PASSI</span>
-        </div>
+        <Titoletto conto={`${passi.length} PASSI`}>ISCRIZIONI</Titoletto>
 
         <Prova />
 
-        <ol className="pad stack passi" style={{ gap: 10, paddingBottom: 16 }}>
+        <ol className="pad stack passi">
           {passi.map((p, i) => (
             <li key={i} className="card passo">
               <span className="passo-num num">{i + 1}</span>
-              <span className="stack grow" style={{ gap: 8, minWidth: 0 }}>
+              <span className="stack grow passo-testo">
                 <span className="passo-titolo">{p.titolo}</span>
-                {p.dettaglio && <span className="passo-dettaglio">{p.dettaglio}</span>}
+                {p.dettaglio && <Dettaglio>{p.dettaglio}</Dettaglio>}
                 <Azione passo={p} onModulo={() => vai(true)} />
               </span>
             </li>
@@ -65,9 +59,9 @@ export function IscrizioniScreen({ pubblica = false }: { pubblica?: boolean }) {
       <Costi />
 
       {INFORMATIVA_PUBBLICA && (
-        <p className="pad iscrizioni-nota" style={{ fontSize: 13, color: 'var(--dim)', paddingBottom: 20 }}>
+        <p className="pad iscrizioni-nota">
           Come trattiamo i tuoi dati:{' '}
-          <a href={INFORMATIVA_PUBBLICA} target="_blank" rel="noreferrer" style={{ color: 'var(--sec)' }}>
+          <a href={INFORMATIVA_PUBBLICA} target="_blank" rel="noreferrer" className="link-sec">
             l'informativa privacy
           </a>
           .
@@ -80,18 +74,18 @@ export function IscrizioniScreen({ pubblica = false }: { pubblica?: boolean }) {
 /** Prima dei passi: chi non ha ancora deciso comincia da qui. */
 function Prova() {
   return (
-    <section className="pad" style={{ paddingBottom: 10 }}>
-      <div className="card stack prova">
-        <span className="rule-label" style={{ fontSize: 12, letterSpacing: '0.2em' }}>PRIMA DI ISCRIVERTI</span>
-        <span className="row" style={{ gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
+    <section className="pad iscrizioni-prova">
+      <Riquadro tono="prova">
+        <Etichetta>PRIMA DI ISCRIVERTI</Etichetta>
+        <span className="row prova-testa">
           <span className="passo-titolo">Settimana di prova</span>
-          <span className="num" style={{ fontSize: 26, fontWeight: 700 }}>{PROVA.costo}</span>
+          <Cifra>{PROVA.costo}</Cifra>
         </span>
-        <span className="passo-dettaglio">{PROVA.testo} Per cominciare, passa in palestra o chiamaci.</span>
-        <a className="btn btn-ghost passo-btn" href={chiama}>
+        <Dettaglio>{PROVA.testo} Per cominciare, passa in palestra o chiamaci.</Dettaglio>
+        <Tasto href={chiama} qui>
           CHIAMA
-        </a>
-      </div>
+        </Tasto>
+      </Riquadro>
     </section>
   )
 }
@@ -99,31 +93,22 @@ function Prova() {
 /** Per chi si blocca a metà: dove siamo e come ci si trova, dal piede del sito. */
 function Contatti() {
   return (
-    <section className="pad" style={{ paddingBottom: 16 }}>
-      <div className="card stack" style={{ padding: 14, gap: 8 }}>
+    <section className="pad iscrizioni-contatti">
+      <Riquadro>
         <span className="passo-titolo">Hai un dubbio? Chiamaci o passa in palestra.</span>
-        <span className="passo-dettaglio">
-          {CONTATTI.indirizzo}, a pochi metri dalla metro Fermi. Telefono{' '}
-          <span className="num" style={{ color: 'var(--text)' }}>{CONTATTI.telefono}</span>.
-        </span>
-        <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-          <a className="btn btn-ghost passo-btn" href={chiama}>
+        <Dettaglio>
+          {CONTATTI.indirizzo}, a pochi metri dalla metro Fermi. Telefono <span className="num testo-pieno">{CONTATTI.telefono}</span>.
+        </Dettaglio>
+        <Tasti>
+          <Tasto href={chiama} qui>
             CHIAMA
-          </a>
-          <a className="btn btn-ghost passo-btn" href={CONTATTI.mappa} target="_blank" rel="noopener noreferrer">
-            MAPPA
-          </a>
-          <a className="btn btn-ghost passo-btn" href={CONTATTI.instagram} target="_blank" rel="noopener noreferrer">
-            INSTAGRAM
-          </a>
-          <a className="btn btn-ghost passo-btn" href={CONTATTI.facebook} target="_blank" rel="noopener noreferrer">
-            FACEBOOK
-          </a>
-          <a className="btn btn-ghost passo-btn" href={SITO} target="_blank" rel="noopener noreferrer">
-            IL SITO
-          </a>
-        </span>
-      </div>
+          </Tasto>
+          <Tasto href={CONTATTI.mappa}>MAPPA</Tasto>
+          <Tasto href={CONTATTI.instagram}>INSTAGRAM</Tasto>
+          <Tasto href={CONTATTI.facebook}>FACEBOOK</Tasto>
+          <Tasto href={SITO}>IL SITO</Tasto>
+        </Tasti>
+      </Riquadro>
     </section>
   )
 }
@@ -132,25 +117,25 @@ function Azione({ passo, onModulo }: { passo: Passo; onModulo: () => void }) {
   switch (passo.azione) {
     case 'modulo':
       return (
-        <button type="button" className="btn btn-primary passo-btn" onClick={onModulo}>
+        <Tasto variante="principale" onClick={onModulo}>
           COMPILA LA RICHIESTA
-        </button>
+        </Tasto>
       )
     case 'link':
       return (
-        <a className="btn btn-primary passo-btn" href={LINK_ISCRIZIONE} target="_blank" rel="noopener noreferrer">
+        <Tasto variante="principale" href={LINK_ISCRIZIONE}>
           APRI IL MODULO
-        </a>
+        </Tasto>
       )
     case 'moduli':
       return (
-        <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+        <Tasti>
           {MODULI.map((m) => (
-            <a key={m.file} className="btn btn-ghost passo-btn" href={m.file} download>
+            <Tasto key={m.file} href={m.file} scarica>
               {m.etichetta}
-            </a>
+            </Tasto>
           ))}
-        </span>
+        </Tasti>
       )
     case 'pagamento':
       return <Pagamento />
@@ -175,23 +160,15 @@ function Pagamento() {
   }
 
   return (
-    <span className="stack" style={{ gap: 8 }}>
-      <span className="passo-dettaglio">
-        Quota associativa {PAGAMENTO.quotaAssociativa}, valida fino a {PAGAMENTO.validaFino}. Bonifico a{' '}
-        {PAGAMENTO.intestatario}:
-      </span>
+    <span className="stack pagamento">
+      <Dettaglio>
+        Quota associativa {PAGAMENTO.quotaAssociativa}, valida fino a {PAGAMENTO.validaFino}. Bonifico a {PAGAMENTO.intestatario}:
+      </Dettaglio>
       <span className="num iban">{PAGAMENTO.iban}</span>
-      <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-        <button className="btn btn-ghost passo-btn" onClick={copia}>
-          {copiato ? 'COPIATO' : 'COPIA IBAN'}
-        </button>
-        <button
-          className="btn btn-ghost passo-btn"
-          onClick={() => document.getElementById('costi')?.scrollIntoView({ behavior: 'smooth' })}
-        >
-          VEDI I COSTI
-        </button>
-      </span>
+      <Tasti>
+        <Tasto onClick={copia}>{copiato ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+        <Tasto onClick={() => document.getElementById('costi')?.scrollIntoView({ behavior: 'smooth' })}>VEDI I COSTI</Tasto>
+      </Tasti>
     </span>
   )
 }
