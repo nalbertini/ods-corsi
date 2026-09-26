@@ -8,11 +8,13 @@ import { COACH_HINT, COACH_LABEL } from '../../../timer/src/lib/engine'
 import { audioDa, modoAudio, type ModoAudio } from '../../../timer/src/lib/storage'
 import type { CoachLevel } from '../../../timer/src/types'
 import { dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { StoricoTimer, VoceSale } from './TimerPalestra'
 
 /**
- * Le scelte che spettano alla palestra, non al codice: per quanto si tengono
- * le presenze, fin dove si prepara il calendario, le sale con la loro musica
- * e il loro timer, la privacy.
+ * Le impostazioni: le scelte che spettano alla palestra, non al codice. Per
+ * quanto si tengono le presenze, fin dove si prepara il calendario, le sale
+ * con la loro musica e il loro timer (con la voce), lo storico
+ * dei timer, la privacy.
  */
 export function Regole({ d }: { d: DatiSegreteria }) {
   const imp = useCarica(() => d.impostazioni(), [d])
@@ -39,7 +41,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
 
   return (
     <>
-      <Testa titolo="REGOLE E PRIVACY" sotto="Le scelte che spettano alla palestra, non al codice." />
+      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al codice." />
 
       <div className="sg-regole">
         {imp.guaio && <Guaio testo={`Le impostazioni non si leggono: ${imp.guaio}`} />}
@@ -174,6 +176,10 @@ export function Regole({ d }: { d: DatiSegreteria }) {
         <MusicaSale d={d} sale={sale.dato ?? []} liste={musica.dato} guaio={musica.guaio} ricarica={musica.ricarica} fai={fai} />
 
         <TimerSale d={d} fai={fai} />
+
+        <VoceSale d={d} fai={fai} />
+
+        <StoricoTimer d={d} />
 
         <section aria-label="Privacy" className="sg-riquadro">
           <div className="row" style={{ gap: 10 }}>
@@ -454,8 +460,8 @@ const AUDIO: Array<[ModoAudio, string]> = [
  * Il timer dei tablet di sala: le impostazioni che sul telefono sceglie
  * ognuno per sé, qui una volta per tutti i tablet (vedi
  * `timer/src/lib/impostazioniSala.ts`). Sul tablet si vedono e non si
- * cambiano; restano del tablet la voce di sistema, le clip incise lì e
- * l'account Spotify collegato.
+ * cambiano; resta del tablet l'account Spotify collegato. La voce e gli
+ * esercizi sono in `TimerPalestra.tsx`.
  */
 function TimerSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
   const letto = useCarica(() => d.timerSale(), [d])
@@ -487,7 +493,7 @@ function TimerSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
       <span className="ob sg-riquadro-titolo">IL TIMER DELLE SALE</span>
       <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
         Come va il timer nella scheda TIMER dei tablet di sala, uguale per tutti: sul tablet si vede e non si cambia. Chi usa il timer dal suo
-        telefono, col suo accesso, tiene le sue.
+        telefono, col suo accesso, tiene le sue. La voce dei tablet è qui sotto, gli esercizi in ESERCIZI.
       </span>
       {letto.guaio && <Guaio testo={`Il timer delle sale non si legge: ${letto.guaio}`} />}
 

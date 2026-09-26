@@ -1,4 +1,4 @@
-# Segreteria · Regole e privacy
+# Segreteria · Impostazioni
 
 ← [Torna alla segreteria](README.md)
 
@@ -60,6 +60,31 @@ Ogni tocco si salva subito, e i tablet lo prendono al giro successivo (ogni
 cinque minuti, o quando tornano in rete). Sul tablet queste scelte si leggono
 e non si cambiano. Chi usa il timer dal suo telefono, col suo accesso, tiene
 le sue.
+
+## La voce dei tablet
+
+- **VOCE DI SISTEMA** — con che voce parla il timer dei tablet. Le voci le
+  mette il dispositivo, non l'app: qui ci sono quelle di questo computer, e
+  toccarne una la fa sentire e la sceglie. Il tablet usa la voce con lo
+  stesso nome, se ce l'ha, altrimenti la sua prima voce italiana (come con
+  **LA PRIMA ITALIANA DEL TABLET**). Se il tablet ha una voce che il computer
+  non ha, se ne scrive il nome nel campo sotto.
+- **VOCE INCISA** — le frasi del timer registrate con una voce vera: gli
+  stati («Lavoro», «Recupero»…), il conto alla rovescia, le battute di
+  Maurizio e i nomi degli esercizi della palestra. **REGISTRA** accende il
+  microfono del computer, **FERMA** salva la clip, che va sul server e arriva
+  a tutti i tablet; **ASCOLTA**, **RIFAI** e **TOGLI** per le altre. Dove
+  manca una clip, il tablet usa la voce di sistema. Il tablet le usa se in
+  **Il timer delle sale** è premuto **VOCE INCISA, SE C'È**. Conviene
+  registrare con lo stesso browser dei tablet: Safari e Chrome registrano in
+  formati diversi.
+
+## Lo storico dei timer
+
+Gli ultimi timer arrivati in fondo, o fermati prima, sui tablet di sala e sui
+telefoni degli istruttori collegati: quando, quale, chi (l'istruttore o il
+tablet di quale sala), in quale corso, quanto è durato. **ALTRI 50** per
+andare indietro.
 
 ## Privacy
 

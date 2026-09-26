@@ -5,7 +5,8 @@ import type { Settings } from '../../../timer/src/types'
 import type { Incorporato, StatoTimer, TimerPronto } from '../../../timer/src/lib/incorporato'
 import type { Lezione } from '../../../timer/src/lib/lezione'
 import { loadSettings } from '../../../timer/src/lib/storage'
-import type { ImpostazioniSala } from '../../../timer/src/lib/impostazioniSala'
+import type { TimerSala } from '../../../timer/src/lib/impostazioniSala'
+import type { FonteClip } from '../../../timer/src/lib/voice'
 import { eUnId } from '../../../timer/src/lib/palestra'
 import { clock } from '../../../timer/src/lib/format'
 import { useMusica, useSpotify } from '../../../timer/src/lib/useMusica'
@@ -176,17 +177,25 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   // si ricomincia: un intervallo solo, riletto ogni cinque minuti. Con loro le
   // liste della musica e il timer della sala, che la segreteria può aver cambiato.
   const [liste, setListe] = useState<ListaMusica[]>([])
-  const [impostazioniTimer, setImpostazioniTimer] = useState<ImpostazioniSala | null>(null)
+  const [timerSala, setTimerSala] = useState<TimerSala | null>(null)
+  const [clipSala, setClipSala] = useState<FonteClip | null>(null)
   const carica = useCallback(async () => {
     const oggi = d.adesso()
     d.musica().then(setListe, () => {
       // Senza rete restano quelle di prima.
     })
-    d.impostazioniTimer().then(
+    d.timerSala().then(
       // Lo stesso valore riletto non deve ridisegnare il timer.
-      (i) => setImpostazioniTimer((prima) => (JSON.stringify(prima) === JSON.stringify(i) ? prima : i)),
+      (i) => setTimerSala((prima) => (JSON.stringify(prima) === JSON.stringify(i) ? prima : i)),
       () => {
         // Senza rete il timer tiene quelle dell'ultima volta, che ha già salvato.
+      },
+    )
+    d.clipSala().then(
+      // Le stesse clip rilette non devono svuotare quelle già scaricate.
+      (f) => setClipSala((prima) => (prima?.versione === f.versione ? prima : f)),
+      () => {
+        // Senza rete restano quelle di prima; senza clip parla la voce di sistema.
       },
     )
     try {
@@ -269,14 +278,15 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
     () => ({
       lezione: lezioneTimer,
       musica: musicaSala,
-      impostazioni: impostazioniTimer,
+      sala: timerSala,
+      clip: clipSala,
       visibile: scheda === 'timer',
       onStato: setTimer,
       onSettings: setSettingsTimer,
       onPronto: setPronto,
       avvia,
     }),
-    [lezioneTimer, musicaSala, impostazioniTimer, scheda, avvia],
+    [lezioneTimer, musicaSala, timerSala, clipSala, scheda, avvia],
   )
 
   // Chi se ne va a metà lascia il tablet com'era; l'area istruttore si chiude

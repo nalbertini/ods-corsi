@@ -11,12 +11,13 @@ import { Importa } from './Importa'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Richieste } from './Richieste'
+import { EserciziPalestra } from './TimerPalestra'
 import { Guaio } from './comune'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
-export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'importa' | 'personale' | 'regole'
+export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'importa' | 'personale' | 'esercizi' | 'regole'
 
 /** Dove portare la segreteria da un'altra sezione: la scheda di qualcuno, una lezione da aprire. */
 export interface Destinazione {
@@ -32,7 +33,8 @@ const VOCI: Array<[Voce, string]> = [
   ['presenze', 'PRESENZE'],
   ['importa', 'IMPORTA DA EXCEL'],
   ['personale', 'ISTRUTTORI E ACCESSI'],
-  ['regole', 'REGOLE E PRIVACY'],
+  ['esercizi', 'ESERCIZI'],
+  ['regole', 'IMPOSTAZIONI'],
 ]
 
 /** La pagina della guida per ogni voce del menu: il tasto GUIDA apre quella della voce aperta. */
@@ -44,6 +46,7 @@ const GUIDE: Record<Voce, string> = {
   presenze: 'segreteria/presenze',
   importa: 'segreteria/importa',
   personale: 'segreteria/istruttori-e-accessi',
+  esercizi: 'segreteria/esercizi',
   regole: 'segreteria/regole',
 }
 
@@ -80,7 +83,7 @@ function CopiaLink() {
  * vogliono spazio. Su uno schermo stretto il menu va in cima e le colonne si
  * mettono una sotto l'altra, così si può comunque dare un'occhiata.
  */
-export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova: boolean; onApp?: () => void; onEsci?: () => void }) {
+export function Segreteria({ nome, prova, onEsci }: { nome: string; prova: boolean; onEsci?: () => void }) {
   const [d, setD] = useState<DatiSegreteria | null>(null)
   const [voce, setVoce] = useState<Voce>('settimana')
   const [dove, setDove] = useState<Destinazione>({})
@@ -127,11 +130,6 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
             GUIDA ↗
           </a>
           <CopiaLink />
-          {onApp && (
-            <button type="button" className="num sg-voce" onClick={onApp}>
-              ← ISTRUTTORI
-            </button>
-          )}
         </div>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
@@ -183,6 +181,7 @@ export function Segreteria({ nome, prova, onApp, onEsci }: { nome: string; prova
         {d && voce === 'presenze' && <Presenze d={d} onVai={vai} />}
         {d && voce === 'importa' && <Importa d={d} onVai={vai} />}
         {d && voce === 'personale' && <Personale d={d} />}
+        {d && voce === 'esercizi' && <EserciziPalestra d={d} />}
         {d && voce === 'regole' && <Regole d={d} />}
       </main>
     </div>

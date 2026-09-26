@@ -3,7 +3,7 @@
 --
 -- Il tablet di sala ha il timer in una scheda, ma nessuno ci entra a
 -- scegliere Maurizio, i bip o il volume: un tablet appeso al muro non ha un
--- padrone. Le sceglie la segreteria, da REGOLE E PRIVACY, accanto alla musica
+-- padrone. Le sceglie la segreteria, da IMPOSTAZIONI, accanto alla musica
 -- delle sale, e valgono per tutti i tablet. Sul tablet non si cambiano.
 --
 -- Stanno in una colonna della riga delle impostazioni, così come le scrive

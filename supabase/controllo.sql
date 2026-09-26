@@ -83,6 +83,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('11-timer-lezioni.sql', 'il timer di una singola lezione',
     to_regclass('public.sessioni_timer') is not null),
   ('12-calendario-da-se.sql', 'il calendario che si allunga da sé',
-    exists (select 1 from dentro where nome = 'allunga_calendario'))
+    exists (select 1 from dentro where nome = 'allunga_calendario')),
+  ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')
+    and exists (select 1 from storage.buckets where id = 'voce'))
 ) as x(file, cosa, c)
 order by file, cosa;

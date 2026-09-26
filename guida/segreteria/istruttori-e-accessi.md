@@ -59,4 +59,4 @@ l'accesso** lo rimette.
 | Annullare o chiudere le lezioni dei suoi corsi | sì | sì |
 | Cambiare corsi, orari e sale | no | sì |
 | Aggiungere e togliere iscritti | no | sì |
-| Vedere il resoconto delle presenze e le regole | no | sì |
+| Vedere il resoconto delle presenze e le impostazioni | no | sì |

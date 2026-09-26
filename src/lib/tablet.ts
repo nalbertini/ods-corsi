@@ -2,7 +2,8 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import { haUnServer } from './dati'
 import { areaDelPercorso } from './percorso'
 import type { ListaMusica } from './musica'
-import type { ImpostazioniSala } from '../../timer/src/lib/impostazioniSala'
+import type { TimerSala } from '../../timer/src/lib/impostazioniSala'
+import type { FonteClip } from '../../timer/src/lib/voice'
 
 /**
  * Il tablet di sala.
@@ -111,8 +112,10 @@ export interface DatiTablet {
 
   /** Le liste della musica di questa sala e di tutte, preparate dalla segreteria. */
   musica(): Promise<ListaMusica[]>
-  /** Come va il timer della sala: lo sceglie la segreteria, il tablet non lo cambia. */
-  impostazioniTimer(): Promise<ImpostazioniSala>
+  /** Come va il timer della sala, con la voce e gli esercizi: lo sceglie la segreteria, il tablet non lo cambia. */
+  timerSala(): Promise<TimerSala>
+  /** Le clip della voce incise dalla segreteria. */
+  clipSala(): Promise<FonteClip>
 }
 
 // ---------------------------------------------------------------------------

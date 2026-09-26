@@ -2,7 +2,9 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { HistoryEntry, Mode, Settings, Workout } from './types'
 import { DEFAULT_SETTINGS, loadHistory, loadSettings, loadWorkouts, pushHistory, saveSettings, saveWorkouts } from './lib/storage'
 import { type Esercizio, loadEsercizi, normalizza, saveEsercizi } from './lib/esercizi'
-import { preload, unlockVoice } from './lib/voice'
+import { type FonteClip, preload, unlockVoice, usaClipDellaSala } from './lib/voice'
+import { voceDiNome } from './lib/audio'
+import { fonteClipSupabase } from './lib/clipSala'
 import { COACH_LINES, EXTRA_LINES } from './lib/engine'
 import { INTRO_CLIP, PROSSIMO_CLIP, STATE_CLIP, exerciseKey, extraClip } from './lib/voiceClips'
 import { uid } from './lib/format'
@@ -28,7 +30,7 @@ import { useMusica } from './lib/useMusica'
 import { MusicaBar } from './components/MusicaBar'
 import { PlayerYoutube } from './components/PlayerYoutube'
 import { PalestraSezione } from './components/PalestraSezione'
-import { type Accesso, accessoRicordato, chiSei, eUnId, haUnServer, nuovoId, sessione } from './lib/palestra'
+import { type Accesso, accessoRicordato, chiSei, db, eUnId, haUnServer, nuovoId, sessione } from './lib/palestra'
 import {
   type Corso,
   eliminaDalServer,
@@ -38,7 +40,7 @@ import {
   salvaPreferenze,
   salvaSulServer,
   scaricaLibreria,
-  scaricaImpostazioniSala,
+  scaricaTimerSala,
   scaricaPreferenze,
   soloDelDispositivo,
   unisci,
@@ -47,7 +49,7 @@ import {
 import { type Lezione, lezioneDaIndirizzo } from './lib/lezione'
 import { type Gruppo, gruppiDi } from './lib/gruppi'
 import type { Incorporato, TimerPronto } from './lib/incorporato'
-import type { ImpostazioniSala } from './lib/impostazioniSala'
+import type { TimerSala } from './lib/impostazioniSala'
 
 /** I corsi dell'ultima volta, per il titolo della lezione e l'editor senza rete. */
 const DOVE_CORSI = 'ods-timer:corsi'
@@ -257,12 +259,20 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         return
       }
       if (a.chi === 'sala') {
-        scaricaImpostazioniSala().then(
+        scaricaTimerSala().then(
           (i) => setSalaDalServer((prima) => (JSON.stringify(prima) === JSON.stringify(i) ? prima : i)),
           () => {
             // Senza risposta restano quelle dell'ultima volta, già salvate qui.
           },
         )
+        void db()
+          .then(fonteClipSupabase)
+          .then(
+            (f) => setClipDalServer((prima) => (prima?.versione === f.versione ? prima : f)),
+            () => {
+              // Senza rete (o senza 13-voce-esercizi.sql) parla la voce di sistema.
+            },
+          )
       }
       const l = await scaricaLibreria(a.chi === 'personale' ? a.personaId : null)
       setWorkouts((attuali) => unisci(attuali, l.timer))
@@ -337,12 +347,40 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   // segreteria (vedi `impostazioniSala.ts`): si mettono sopra a quelle del
   // dispositivo, che se le salva e le ritrova anche senza rete. Dentro il
   // tablet le legge ODS Corsi; il timer aperto da solo le chiede lui.
-  const [salaDalServer, setSalaDalServer] = useState<ImpostazioniSala | null>(null)
-  const dellaSala = incorporato ? incorporato.impostazioni : salaDalServer
+  const [salaDalServer, setSalaDalServer] = useState<TimerSala | null>(null)
+  const [clipDalServer, setClipDalServer] = useState<FonteClip | null>(null)
+  const dellaSala = incorporato ? incorporato.sala : salaDalServer
   const decideLaSegreteria = !!incorporato || accesso.chi === 'sala'
   useEffect(() => {
-    if (dellaSala) setSettings((s) => ({ ...s, ...dellaSala }))
+    if (dellaSala) setSettings((s) => ({ ...s, ...dellaSala.impostazioni }))
   }, [dellaSala])
+  // Anche il catalogo degli esercizi, quando la segreteria ne ha fatto uno:
+  // sul tablet è quello della palestra, e si salva qui per quando manca la rete.
+  const eserciziSala = dellaSala?.esercizi ?? null
+  useEffect(() => {
+    if (eserciziSala) setCatalogo((c) => (JSON.stringify(c) === JSON.stringify(eserciziSala) ? c : eserciziSala))
+  }, [eserciziSala])
+  // E la voce di sistema, cercata per nome fra quelle di questo tablet: le
+  // voci arrivano dal sistema anche dopo l'apertura, e si riprova quando cambiano.
+  const voceSala = dellaSala ? dellaSala.voce : undefined
+  useEffect(() => {
+    if (voceSala === undefined) return
+    const scegli = () => setSettings((s) => {
+      const uri = voceDiNome(voceSala)
+      return s.voiceURI === uri ? s : { ...s, voiceURI: uri }
+    })
+    scegli()
+    if (!('speechSynthesis' in window)) return
+    window.speechSynthesis.addEventListener('voiceschanged', scegli)
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', scegli)
+  }, [voceSala])
+  // Le clip incise dalla segreteria, prima di quelle del dispositivo.
+  const clipSala = incorporato ? incorporato.clip : clipDalServer
+  useEffect(() => {
+    if (!decideLaSegreteria) return
+    usaClipDellaSala(clipSala)
+    return () => usaClipDellaSala(null)
+  }, [clipSala, decideLaSegreteria])
 
   const patchSettings = useCallback((patch: Partial<Settings>) => {
     setSettings((s) => ({ ...DEFAULT_SETTINGS, ...s, ...patch }))

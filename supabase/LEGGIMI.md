@@ -36,6 +36,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 10. `10-timer-sale.sql` — il timer dei tablet di sala, scelto dalla segreteria
 11. `11-timer-lezioni.sql` — il timer di una singola lezione, scelto dall'istruttore in I MIEI TIMER
 12. `12-calendario-da-se.sql` — il calendario che si allunga da sé, senza job
+13. `13-voce-esercizi.sql` — la voce, le clip incise e gli esercizi dei tablet di sala, scelti dalla segreteria
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -59,7 +60,11 @@ impostazioni che avevano. Per il timer delle singole lezioni con
 si leggono, e le lezioni aprono i timer del corso come prima. Per il
 calendario che si allunga da sé si rilanciano `03-funzioni.sql`, poi
 `06-iscrizioni.sql`, poi `12-calendario-da-se.sql`: finché non c'è, il
-calendario si allunga solo con RIGENERA o con il job settimanale.
+calendario si allunga solo con RIGENERA o con il job settimanale. Per la
+voce e gli esercizi dei tablet basta `13-voce-esercizi.sql`, che non chiede
+di rilanciare `06-iscrizioni.sql`: finché non c'è, la segreteria dice che
+voce ed esercizi non si leggono, e i tablet tengono la voce e il catalogo
+che avevano.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -311,7 +316,7 @@ Cosa fa `07-certificati-pagamenti.sql`:
   a mano anche lui.
 
 Il modulo online non chiede il certificato: si consegna in segreteria, che lo
-carica. L'esportazione dei dati di una persona (REGOLE E PRIVACY) lo
+carica. L'esportazione dei dati di una persona (IMPOSTAZIONI) lo
 comprende.
 
 ## 6. Il calendario
@@ -323,7 +328,7 @@ chiama già per i due mesi successivi; poi il calendario si allunga da sé
 (`12-calendario-da-se.sql`): quando l'app legge il calendario — un
 istruttore, la segreteria o un tablet di sala — chiama `allunga_calendario`,
 che lo allunga se alla fine manca meno di metà del periodo. Quanti giorni
-avanti si decide in **SEGRETERIA → REGOLE E PRIVACY**.
+avanti si decide in **SEGRETERIA → IMPOSTAZIONI**.
 
 Se per settimane nessuno apre l'app, il calendario si ferma: lo riallunga il
 primo che la apre. Chi vuole comunque un job settimanale (**Database → Cron**)
@@ -407,7 +412,7 @@ tablet no.
 ### La musica delle sale
 
 Il tablet ha la musica nella barra in basso, sotto le presenze e sotto il
-timer. Cosa far partire lo prepara la segreteria, da **Regole e privacy → La
+timer. Cosa far partire lo prepara la segreteria, da **Impostazioni → La
 musica delle sale**: qualche lista, ognuna un nome e il link a una playlist di
 YouTube o di Spotify, per una sala o per tutte (`09-musica.sql`, tabella
 `musica_sale`). La segreteria le cura, il resto del personale le vede, il
@@ -417,11 +422,19 @@ tutte — e non le cambia.
 ### Il timer delle sale
 
 Maurizio, i segnali, il volume, lo schermo e la musica durante il timer dei
-tablet li sceglie la segreteria, da **Regole e privacy → Il timer delle
+tablet li sceglie la segreteria, da **Impostazioni → Il timer delle
 sale**, per tutti i tablet. Stanno nella riga delle impostazioni, colonna
 `timer` (`10-timer-sale.sql`), così come le scrive l'app
 (`timer/src/lib/impostazioniSala.ts`): le legge chiunque abbia un accesso,
 tablet compresi, le cambia la segreteria. Sul tablet non si cambiano.
+
+Allo stesso modo, da **Impostazioni → La voce dei tablet** e da **Esercizi** (`13-voce-esercizi.sql`): la voce di sistema, per nome (il
+tablet usa quella con lo stesso nome, se ce l'ha, altrimenti la prima voce
+italiana), le clip della voce incisa, nel contenitore privato `voce` che
+legge chiunque abbia un accesso e scrive la segreteria, e il catalogo degli
+esercizi, colonna `esercizi`. Lo storico dei timer dei tablet e degli
+istruttori (`allenamenti`) la segreteria lo legge da **Impostazioni → Lo
+storico dei timer**.
 
 ## 8. Il timer
 
@@ -480,7 +493,7 @@ non è un segreto trapelato. A proteggere i dati sono le policy di
   modulo di iscrizione dell'app.
 - **Per quanto si tengono le presenze.** `presenze_scadute` dice cosa è
   scaduto e `pulisci_presenze()` lo cancella; il periodo di partenza è
-  ventiquattro mesi e si cambia in **REGOLE E PRIVACY**. È una scelta della
+  ventiquattro mesi e si cambia in **IMPOSTAZIONI**. È una scelta della
   palestra, non una regola che decide il codice.
 - **Il certificato medico è un dato sanitario.** È l'unico che l'app tiene,
   perché senza non si fa sport, e lo vede solo la segreteria. È un'altra

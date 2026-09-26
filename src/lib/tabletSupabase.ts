@@ -4,7 +4,8 @@ import type { DatiTablet, EsitoTocco, LezioneSala, NomeSala, Origine, RigaAppell
 import { emailDellaSala } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
-import { impostazioniSala } from '../../timer/src/lib/impostazioniSala'
+import { leggiTimerSala } from '../../timer/src/lib/impostazioniSala'
+import { fonteClipSupabase } from '../../timer/src/lib/clipSala'
 
 /**
  * Il tablet con il database vero: una chiamata per funzione di
@@ -121,11 +122,9 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
       return (righe ?? []).map((r) => ({ id: r.id, nome: r.nome, link: r.link, salaId: r.sala_id }))
     },
 
-    async impostazioniTimer() {
-      // La riga delle impostazioni la legge chiunque abbia un accesso (05-segreteria.sql).
-      const { data, error } = await db.from('impostazioni').select('timer').maybeSingle()
-      if (error) throw guaio(error)
-      return impostazioniSala((data as { timer: unknown } | null)?.timer)
-    },
+    // La riga delle impostazioni la legge chiunque abbia un accesso (05-segreteria.sql),
+    // e le clip pure (13-voce-esercizi.sql).
+    timerSala: () => leggiTimerSala(db),
+    clipSala: () => fonteClipSupabase(db),
   }
 }

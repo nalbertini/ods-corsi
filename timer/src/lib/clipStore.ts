@@ -7,12 +7,12 @@
 const DB = 'ods-timer-voce'
 const STORE = 'clip'
 
-function open(): Promise<IDBDatabase | null> {
+function open(nome = DB): Promise<IDBDatabase | null> {
   return new Promise((resolve) => {
     if (!('indexedDB' in window)) return resolve(null)
     let req: IDBOpenDBRequest
     try {
-      req = indexedDB.open(DB, 1)
+      req = indexedDB.open(nome, 1)
     } catch {
       return resolve(null)
     }
@@ -22,8 +22,8 @@ function open(): Promise<IDBDatabase | null> {
   })
 }
 
-function run<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<T>): Promise<T | null> {
-  return open().then(
+function run<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<T>, nome = DB): Promise<T | null> {
+  return open(nome).then(
     (db) =>
       new Promise<T | null>((resolve) => {
         if (!db) return resolve(null)
@@ -42,3 +42,17 @@ export const putClip = (key: string, blob: Blob) => run('readwrite', (s) => s.pu
 export const getClip = (key: string) => run<Blob>('readonly', (s) => s.get(key) as IDBRequest<Blob>)
 export const deleteClip = (key: string) => run('readwrite', (s) => s.delete(key))
 export const listClips = () => run<IDBValidKey[]>('readonly', (s) => s.getAllKeys()).then((k) => (k ?? []) as string[])
+
+/**
+ * Un altro archivio di clip, con lo stesso formato. Serve alla prova di ODS
+ * Corsi: senza server, le clip che la segreteria incide per i tablet stanno
+ * in un archivio loro, separato da quelle incise dal timer su questo dispositivo.
+ */
+export function archivioClip(nome: string) {
+  return {
+    put: (key: string, blob: Blob) => run('readwrite', (s) => s.put(blob, key), nome),
+    get: (key: string) => run<Blob>('readonly', (s) => s.get(key) as IDBRequest<Blob>, nome),
+    delete: (key: string) => run('readwrite', (s) => s.delete(key), nome),
+    list: () => run<IDBValidKey[]>('readonly', (s) => s.getAllKeys(), nome).then((k) => (k ?? []) as string[]),
+  }
+}

@@ -7,7 +7,10 @@ import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { richiesteDi } from './richiesteProva'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
-import { impostazioniSala } from '../../timer/src/lib/impostazioniSala'
+import { eserciziDellaPalestra, impostazioniSala, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
+import { chiaveValida } from '../../timer/src/lib/clipSala'
+import { loadHistory } from '../../timer/src/lib/storage'
+import { clipProva } from './voceProva'
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -568,6 +571,54 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async salvaTimerSale(i) {
       a().timerSale = impostazioniSala(i)
       salva()
+    },
+
+    async voceSale() {
+      return voceDellaSala(a().voceSale)
+    },
+
+    async salvaVoceSale(nome) {
+      a().voceSale = voceDellaSala(nome)
+      salva()
+    },
+
+    clipSale: () => clipProva.list(),
+
+    async salvaClip(chiave, clip) {
+      if (!chiaveValida(chiave)) throw new Error('Questa frase non si può incidere')
+      if ((await clipProva.put(chiave, clip)) === null) throw new Error('Questo browser non tiene le clip: in prova servono i dati del sito')
+    },
+
+    apriClip: (chiave) => clipProva.get(chiave),
+
+    async togliClip(chiave) {
+      await clipProva.delete(chiave)
+    },
+
+    async eserciziPalestra() {
+      return eserciziDellaPalestra(a().eserciziSale)
+    },
+
+    async salvaEserciziPalestra(l) {
+      a().eserciziSale = (eserciziDellaPalestra(l) ?? []).map(({ id, nome, categoria }) => ({ id, nome, categoria }))
+      salva()
+    },
+
+    // In prova lo storico è quello del timer su questo dispositivo: il tablet
+    // di prova non ha un server a cui mandarlo.
+    async allenamenti(quanti) {
+      return loadHistory()
+        .slice()
+        .sort((x, y) => y.finishedAt - x.finishedAt)
+        .slice(0, quanti)
+        .map((h) => ({
+          id: h.id,
+          nome: h.workoutName,
+          finitoIl: new Date(h.finishedAt).toISOString(),
+          secondi: h.seconds,
+          completato: h.completed,
+          chi: 'Questo dispositivo',
+        }))
     },
 
     async impostazioni() {

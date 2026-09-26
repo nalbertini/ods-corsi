@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 /**
  * Il calendario si allunga da sé (`supabase/12-calendario-da-se.sql`): prima
  * di leggerlo si chiede al database di allungarlo, e il database lo fa solo
- * se alla fine manca meno di metà del periodo di REGOLE E PRIVACY.
+ * se alla fine manca meno di metà del periodo di IMPOSTAZIONI.
  *
  * Una volta ogni qualche ora per client, non a ogni settimana sfogliata; e
  * non una volta sola, perché il tablet di sala resta aperto per settimane.

@@ -91,6 +91,10 @@ export interface Archivio {
   musica?: Array<{ id: string; nome: string; link: string; sala: string | null }>
   /** Il timer dei tablet di sala, come lo sceglie la segreteria. */
   timerSale?: Record<string, unknown>
+  /** La voce di sistema dei tablet, per nome. */
+  voceSale?: string | null
+  /** Il catalogo degli esercizi della palestra, se la segreteria ne ha fatto uno. */
+  eserciziSale?: unknown[]
 }
 
 // ---------------------------------------------------------------------------

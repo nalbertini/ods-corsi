@@ -2,7 +2,7 @@
 -- ODS Corsi · il calendario che si allunga da sé
 --
 -- Le lezioni sono righe vere (`sessioni`), create dalle ricorrenze per un
--- certo numero di giorni avanti: quanti, lo dice REGOLE E PRIVACY. Finora le
+-- certo numero di giorni avanti: quanti, lo dice IMPOSTAZIONI. Finora le
 -- allungavano l'import, RIGENERA e un job settimanale da attivare a mano su
 -- Supabase; senza il job, dopo due mesi il calendario restava vuoto, e con
 -- lui I MIEI TIMER e il tablet di sala.
@@ -10,7 +10,7 @@
 -- Qui una funzione che l'app chiama da sé quando legge il calendario, dal
 -- telefono di un istruttore, dalla segreteria o dal tablet: se alla fine del
 -- calendario manca meno di metà del periodo scelto, lo allunga fino ai giorni
--- di REGOLE E PRIVACY. Altrimenti non fa niente, e costa una lettura.
+-- di IMPOSTAZIONI. Altrimenti non fa niente, e costa una lettura.
 -- Il job settimanale, chi l'ha attivato, può restare: fanno la stessa cosa.
 --
 -- Su un database già in uso si rilanciano prima `03-funzioni.sql`, che lascia

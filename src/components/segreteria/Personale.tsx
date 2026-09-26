@@ -9,7 +9,7 @@ const PERMESSI: Array<[string, string]> = [
   ['Annullare o chiudere le lezioni dei suoi corsi', 'SÌ'],
   ['Cambiare corsi, orari e sale', 'NO'],
   ['Aggiungere e togliere iscritti', 'NO'],
-  ['Vedere il resoconto delle presenze e le regole', 'NO'],
+  ['Vedere il resoconto delle presenze e le impostazioni', 'NO'],
 ]
 
 /**

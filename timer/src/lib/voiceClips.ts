@@ -114,3 +114,15 @@ export function exerciseKey(name: string): string {
 export const CLIP_EXTENSIONS = ['m4a', 'mp3', 'webm', 'ogg', 'wav'] as const
 
 export const CLIP_DIR = daRadice('voce')
+
+/** Il primo formato che questo browser sa registrare. */
+export function formatoRegistrazione(): { mime: string; ext: string } | null {
+  if (typeof MediaRecorder === 'undefined') return null
+  const candidates: Array<{ mime: string; ext: string }> = [
+    { mime: 'audio/mp4', ext: 'm4a' },
+    { mime: 'audio/webm;codecs=opus', ext: 'webm' },
+    { mime: 'audio/webm', ext: 'webm' },
+    { mime: 'audio/ogg;codecs=opus', ext: 'ogg' },
+  ]
+  return candidates.find((c) => MediaRecorder.isTypeSupported(c.mime)) ?? null
+}

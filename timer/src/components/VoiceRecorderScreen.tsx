@@ -1,23 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Workout } from '../types'
 import type { Esercizio } from '../lib/esercizi'
-import { CLIPS, type ClipSpec, exerciseKey } from '../lib/voiceClips'
+import { CLIPS, type ClipSpec, exerciseKey, formatoRegistrazione as pickFormat } from '../lib/voiceClips'
 import { deleteClip, getClip, listClips, putClip } from '../lib/clipStore'
 import { forgetClips, say, unlockVoice } from '../lib/voice'
 import { zipStore } from '../lib/zip'
 import { Back, Play, Trash } from './Icons'
-
-/** Il primo formato che questo browser sa registrare. */
-function pickFormat(): { mime: string; ext: string } | null {
-  if (typeof MediaRecorder === 'undefined') return null
-  const candidates: Array<{ mime: string; ext: string }> = [
-    { mime: 'audio/mp4', ext: 'm4a' },
-    { mime: 'audio/webm;codecs=opus', ext: 'webm' },
-    { mime: 'audio/webm', ext: 'webm' },
-    { mime: 'audio/ogg;codecs=opus', ext: 'ogg' },
-  ]
-  return candidates.find((c) => MediaRecorder.isTypeSupported(c.mime)) ?? null
-}
 
 export function VoiceRecorderScreen({
   workouts,

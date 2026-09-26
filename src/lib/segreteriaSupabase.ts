@@ -1,12 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
+import type { AllenamentoSeg, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
-import { impostazioniSala } from '../../timer/src/lib/impostazioniSala'
+import { eserciziDellaPalestra, impostazioniSala, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
+import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 
 /**
  * La segreteria col database vero.
@@ -46,6 +47,7 @@ const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
   [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
+  [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
 ]
 
 /** Un errore del database detto in modo che la segreteria lo capisca. */
@@ -56,6 +58,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
     if (t) return new Error(t[1])
     return new Error(`Manca una tabella sul database: va lanciato il file che la crea (controllo.sql dice quale). ${e.message ?? ''}`.trim())
   }
+  // Una colonna che non c'è: voce ed esercizi dei tablet arrivano con 13-voce-esercizi.sql.
+  if (e?.code === '42703' && /voce|esercizi/.test(e.message ?? ''))
+    return new Error('La voce e gli esercizi dei tablet non sono ancora attivi sul database: va lanciato 13-voce-esercizi.sql')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
   return new Error(e?.message || 'Il server non risponde')
@@ -88,6 +93,16 @@ function guaioFile(e: { message?: string; statusCode?: string } | null): Error {
   if (/exceeded|too large|413/i.test(m + (e?.statusCode ?? ''))) return new Error('Il file è troppo grande: al massimo 10 MB')
   if (/mime|type/i.test(m)) return new Error('Questo tipo di file non va: serve una foto o un PDF')
   return new Error(m || 'Il file non è partito: riprova')
+}
+
+/** Un errore del contenitore della voce detto per la segreteria. */
+function guaioVoce(e: unknown): Error {
+  const m = e instanceof Error ? e.message : ((e as { message?: string } | null)?.message ?? '')
+  if (/bucket not found/i.test(m)) return new Error('Il contenitore della voce non c’è: va lanciato 13-voce-esercizi.sql')
+  if (/row-level security|unauthorized|403/i.test(m)) return new Error('Non hai il permesso: serve un accesso da segreteria')
+  if (/exceeded|too large|413/i.test(m)) return new Error('La clip è troppo lunga: una frase, non un discorso')
+  if (/mime|type/i.test(m)) return new Error('Questo browser registra in un formato che il server non accetta')
+  return new Error(m || 'La clip non è partita: riprova')
 }
 
 export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
@@ -607,6 +622,74 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async salvaTimerSale(i) {
       ok(await db.from('impostazioni').update({ timer: impostazioniSala(i) }).eq('id', true))
+    },
+
+    async voceSale() {
+      const r = ok(await db.from('impostazioni').select('voce').maybeSingle()) as { voce: unknown } | null
+      return voceDellaSala(r?.voce)
+    },
+
+    async salvaVoceSale(nome) {
+      ok(await db.from('impostazioni').update({ voce: voceDellaSala(nome) }).eq('id', true))
+    },
+
+    async clipSale() {
+      try {
+        return await chiaviSulServer(db)
+      } catch (e) {
+        throw guaioVoce(e)
+      }
+    },
+
+    async salvaClip(chiave, clip) {
+      if (!chiaveValida(chiave)) throw new Error('Questa frase non si può incidere')
+      const { error } = await db.storage.from(CONTENITORE_VOCE).upload(chiave, clip, { contentType: clip.type.split(';')[0] || 'audio/webm', upsert: true, cacheControl: '60' })
+      if (error) throw guaioVoce(error)
+    },
+
+    apriClip: (chiave) => scaricaClip(db, chiave),
+
+    async togliClip(chiave) {
+      const { error } = await db.storage.from(CONTENITORE_VOCE).remove([chiave])
+      if (error) throw guaioVoce(error)
+    },
+
+    async eserciziPalestra() {
+      const r = ok(await db.from('impostazioni').select('esercizi').maybeSingle()) as { esercizi: unknown } | null
+      return eserciziDellaPalestra(r?.esercizi)
+    },
+
+    async salvaEserciziPalestra(l) {
+      const lista = eserciziDellaPalestra(l) ?? []
+      ok(await db.from('impostazioni').update({ esercizi: lista.map(({ id, nome, categoria }) => ({ id, nome, categoria })) }).eq('id', true))
+    },
+
+    async allenamenti(quanti) {
+      const righe = ok(
+        await db
+          .from('allenamenti')
+          .select('id, nome, finito_il, secondi, completato, sessioni ( corsi ( nome ) ), persone ( nome, cognome ), postazioni ( nome, sale ( nome ) )')
+          .order('finito_il', { ascending: false })
+          .limit(quanti),
+      ) as unknown as Array<{
+        id: string
+        nome: string
+        finito_il: string
+        secondi: number
+        completato: boolean
+        sessioni: { corsi: { nome: string } | null } | null
+        persone: { nome: string; cognome: string } | null
+        postazioni: { nome: string; sale: { nome: string } | null } | null
+      }>
+      return righe.map((r): AllenamentoSeg => ({
+        id: r.id,
+        nome: r.nome,
+        finitoIl: r.finito_il,
+        secondi: r.secondi,
+        completato: r.completato,
+        corso: r.sessioni?.corsi?.nome,
+        chi: r.persone ? nome(r.persone) : r.postazioni ? `Tablet ${r.postazioni.sale?.nome ?? r.postazioni.nome}` : '—',
+      }))
     },
 
     impostazioni,
