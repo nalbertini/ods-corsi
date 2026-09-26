@@ -361,6 +361,7 @@ input, textarea { font: inherit; color: inherit; }
 /* La pagina senza indirizzo: le quattro aree, una scheda ciascuna. */
 .scelta-area { gap: 4px; padding: 16px; color: var(--text); text-decoration: none; }
 .scelta-area:hover { border-color: var(--dim); }
+.versione { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--dim); }
 .scelta-titolo { font-family: var(--cond); font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.16em; }
 a.btn { text-decoration: none; }
 
