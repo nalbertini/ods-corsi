@@ -24,7 +24,8 @@ stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
 - **La segreteria**: per il computer della reception, a chi ha il ruolo di
   segreteria. La **settimana** in una griglia, con gli appelli che mancano in
   rosso, e ogni lezione si apre per annullarla, dare un sostituto, spostarla di
-  sala o segnare tutti presenti; le lezioni straordinarie. I **corsi**, con sala,
+  sala o fare l'appello, un nome alla volta o tutti presenti, come dall'app;
+  le lezioni straordinarie. I **corsi**, con sala,
   istruttori, posti, colore e i giorni in cui si fanno. Gli **iscritti**, da
   cercare, iscrivere e togliere dai corsi, con quanto vengono negli ultimi
   trenta giorni. Le **presenze** del mese: medie per corso, chi si sta

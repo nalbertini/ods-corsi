@@ -619,6 +619,10 @@ input, textarea { font: inherit; color: inherit; }
 }
 .sg-appello { display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--bg); border: 2px solid var(--line); }
 .sg-appello[data-manca='true'] { border-color: var(--rosso); }
+.sg-elenco-appello { display: flex; flex-direction: column; gap: 6px; }
+.sg-elenco-appello .riga-appello { min-height: 44px; }
+.sg-elenco-appello .nome-appello { font-size: 15px; }
+.sg-elenco-appello .riga-appello:disabled { cursor: default; color: var(--sec); }
 .sg-nomi { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 16px; font-size: 14px; color: var(--sec); }
 
 /* Corsi e iscritti: la lista a sinistra, la scheda a destra. */
