@@ -34,7 +34,12 @@ altri i nomi si alternano a ogni round e vengono annunciati dalla voce.
   indietro.
 
 I timer, le impostazioni e lo storico stanno nel browser del dispositivo
-(`localStorage`), senza account e senza server.
+(`localStorage`). Col database di ODS Corsi e un accesso fatto lì, da
+istruttore o da tablet di sala, i timer si dividono fra la libreria della
+palestra, i propri e quelli dei corsi, e timer, storico e preferenze stanno
+anche sul database: il dispositivo resta la prima copia, e senza rete le
+modifiche aspettano in coda. Come funziona è nel
+[README di ODS Corsi](../README.md#il-timer-sul-database).
 
 Il timer sta dentro il repository di ODS Corsi, nella cartella `timer/`, e si
 pubblica nella sottocartella `timer/` dello stesso sito
@@ -228,6 +233,6 @@ Dal telefono, aperto l'indirizzo: **Aggiungi alla schermata Home**. Da lì in po
 - L'indirizzo della palestra in `src/components/SettingsScreen.tsx` è un
   segnaposto.
 - Mancano, facoltative, le clip dei nomi degli esercizi (`esercizi/<nome>.mp3`).
-- I timer sono locali al dispositivo. Per la libreria condivisa della palestra
-  (istruttori che creano, soci che avviano) e per mandare un allenamento al
-  tablet in sala serve un backend: non c'è ancora.
+- Il catalogo degli esercizi e la voce incisa stanno ancora solo sul
+  dispositivo: il database di ODS Corsi per ora tiene timer, storico e
+  preferenze.

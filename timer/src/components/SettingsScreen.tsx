@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import type { CoachLevel, Settings } from '../types'
 import { Cues, italianVoices, speak } from '../lib/audio'
 import { COACH_HINT, COACH_LABEL, COACH_LEVELS } from '../lib/engine'
@@ -64,6 +64,7 @@ export function SettingsScreen({
   onOpenRecorder,
   onOpenStorico,
   onOpenEsercizi,
+  palestra,
 }: {
   settings: Settings
   onChange: (patch: Partial<Settings>) => void
@@ -71,6 +72,8 @@ export function SettingsScreen({
   onOpenRecorder: () => void
   onOpenStorico: () => void
   onOpenEsercizi: () => void
+  /** Il collegamento con ODS Corsi, quando il timer ha un database. */
+  palestra?: ReactNode
 }) {
   const [tema, scegliTema] = useTema()
   const [incise, setIncise] = useState(0)
@@ -364,6 +367,8 @@ export function SettingsScreen({
           onChange={(v) => onChange({ bigScreen: v })}
         />
       </div>
+
+      {palestra}
 
       <div className="rule">
         <span className="rule-label">DATI</span>
