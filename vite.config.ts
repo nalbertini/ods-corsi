@@ -37,6 +37,9 @@ export default defineConfig({
         // le schede si chiudano: su un'app installata vuol dire mai.
         skipWaiting: true,
         clientsClaim: true,
+        // Le pagine a sé, come l'informativa, restano quelle: senza, il
+        // service worker a ogni indirizzo risponde con l'app.
+        navigateFallbackDenylist: [/informativa\.html$/],
         runtimeCaching: [
           {
             // Il nome della cache ha il prefisso dell'app: sullo stesso dominio
