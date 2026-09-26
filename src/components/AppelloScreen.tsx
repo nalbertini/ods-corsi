@@ -15,8 +15,19 @@ import { giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
  * 2. **Un tocco solo per riga**, e il giro è presente → assente → non segnato.
  *    Niente menù, niente conferme: le righe sono alte 56 px perché le si tocca
  *    con le mani sudate e senza guardare.
+ *
+ * `onPresenti` dice quanti sono i presenti ogni volta che cambiano, per il
+ * calendario che sullo schermo largo sta qui accanto.
  */
-export function AppelloScreen({ dati, sessioneId }: { dati: Dati; sessioneId: string }) {
+export function AppelloScreen({
+  dati,
+  sessioneId,
+  onPresenti,
+}: {
+  dati: Dati
+  sessioneId: string
+  onPresenti?: (n: number) => void
+}) {
   const [d, setD] = useState<DettaglioSessione | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
 
@@ -33,6 +44,12 @@ export function AppelloScreen({ dati, sessioneId }: { dati: Dati; sessioneId: st
 
   useEffect(ricarica, [ricarica])
 
+  const presenti = d?.elenco.filter((p) => p.stato === 'presente').length
+  useEffect(() => {
+    if (presenti !== undefined) onPresenti?.(presenti)
+    // Si avvisa quando cambia il conto, non quando cambia chi ascolta.
+  }, [presenti])
+
   if (guaio) {
     return (
       <div className="pad" style={{ paddingTop: 20 }}>
@@ -45,7 +62,6 @@ export function AppelloScreen({ dati, sessioneId }: { dati: Dati; sessioneId: st
   }
   if (!d) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Sto leggendo la lezione…</p>
 
-  const presenti = d.elenco.filter((p) => p.stato === 'presente').length
   const segnati = d.elenco.filter((p) => p.stato !== null).length
 
   // presente → assente → non segnato, e si ricomincia.
@@ -108,7 +124,7 @@ export function AppelloScreen({ dati, sessioneId }: { dati: Dati; sessioneId: st
         <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{d.elenco.length}</span>
       </div>
 
-      <div className="pad stack" style={{ gap: 8, paddingBottom: 20 }}>
+      <div className="pad elenco-appello">
         {d.elenco.map((p) => (
           <button
             key={p.id}

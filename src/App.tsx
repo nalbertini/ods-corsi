@@ -62,22 +62,22 @@ function AppCorsi() {
           <span className="testata-nome">OFFICINE DELLO SPORT</span>
           <span className="testata-luogo">CORSI · COLLEGNO</span>
         </div>
-      </header>
-      <nav className="schede">
-        <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
-          CORSI
-        </button>
-        <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
-          ISCRIZIONI
-        </button>
-        {segreteria && (
-          <button className="scheda" data-on={false} onClick={() => setScheda('segreteria')}>
-            SEGRETERIA
+        <nav className="schede">
+          <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
+            CORSI
           </button>
-        )}
-      </nav>
+          <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
+            ISCRIZIONI
+          </button>
+          {segreteria && (
+            <button className="scheda" data-on={false} onClick={() => setScheda('segreteria')}>
+              SEGRETERIA
+            </button>
+          )}
+        </nav>
+      </header>
       <main className="scroll">
-        <div hidden={scheda !== 'corsi'}>
+        <div className="faccia-corsi" hidden={scheda !== 'corsi'}>
           <Porta onChi={setChi}>
             <Sala />
           </Porta>

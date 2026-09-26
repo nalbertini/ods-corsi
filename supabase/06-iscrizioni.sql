@@ -91,7 +91,7 @@ $$;
 -- l'accesso.
 -- ---------------------------------------------------------------------------
 create or replace function corsi_aperti()
-  returns table (id uuid, nome text) language sql stable security definer set search_path = public as $$
+  returns table (id uuid, nome text) language sql stable security definer set search_path = public, extensions as $$
   select c.id, c.nome from corsi c where c.attivo order by c.nome
 $$;
 
@@ -103,7 +103,7 @@ $$;
 -- si iscrive è minorenne, e lo decide la data di nascita, non una casella.
 -- ---------------------------------------------------------------------------
 create or replace function invia_iscrizione(dati jsonb)
-  returns uuid language plpgsql security definer set search_path = public as $$
+  returns uuid language plpgsql security definer set search_path = public, extensions as $$
 declare
   regole jsonb := iscrizioni_regole();
   t text := '';
@@ -198,7 +198,7 @@ values ('iscrizioni', 'iscrizioni', false, 10485760,
 on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
 
 create or replace function puo_caricare(nome_file text)
-  returns boolean language plpgsql stable security definer set search_path = public as $$
+  returns boolean language plpgsql stable security definer set search_path = public, extensions as $$
 declare
   regole jsonb := iscrizioni_regole();
   cartella uuid;
@@ -236,7 +236,7 @@ create policy iscrizioni_cancella on storage.objects for delete to authenticated
 -- richiesta ricorda comunque come raggiungerlo.
 -- ---------------------------------------------------------------------------
 create or replace function accogli_iscrizione(richiesta uuid)
-  returns uuid language plpgsql security definer set search_path = public as $$
+  returns uuid language plpgsql security definer set search_path = public, extensions as $$
 declare
   r richieste_iscrizione;
   chi uuid;
@@ -289,7 +289,7 @@ begin
 end $$;
 
 create or replace function rifiuta_iscrizione(richiesta uuid)
-  returns void language plpgsql security definer set search_path = public as $$
+  returns void language plpgsql security definer set search_path = public, extensions as $$
 begin
   if not e_staff() then raise exception 'solo la segreteria' using errcode = '42501'; end if;
   update richieste_iscrizione

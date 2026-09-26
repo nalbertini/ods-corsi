@@ -4,17 +4,23 @@ import type { SessioneVista } from '../lib/sala'
 import { CalendarioScreen } from './CalendarioScreen'
 import { AppelloScreen } from './AppelloScreen'
 import { Back } from './Icons'
+import { useLargo } from '../lib/largo'
 
 /**
  * Il calendario, e dentro una lezione l'appello.
  *
  * Sono due facce della stessa cosa, quindi stanno insieme e tengono per sé in
- * quale delle due si è.
+ * quale delle due si è. Sul telefono se ne vede una per volta; su uno schermo
+ * largo stanno affiancate, il calendario a sinistra e l'appello della lezione
+ * scelta a destra, e il conto dei presenti a sinistra segue l'appello mentre
+ * lo si fa.
  */
 export function Sala() {
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
+  const [presenti, setPresenti] = useState<Record<string, number>>({})
+  const largo = useLargo()
 
   useEffect(() => {
     let vivo = true
@@ -46,7 +52,33 @@ export function Sala() {
         </div>
       )}
 
-      {aperta ? (
+      {largo ? (
+        <div className="sala-due">
+          <div className="sala-lato">
+            <CalendarioScreen dati={d} onApri={setAperta} apertaId={aperta?.id} presenti={presenti} />
+          </div>
+          <div className="sala-lato">
+            {aperta ? (
+              <>
+                <div className="row pad" style={{ gap: 10, paddingTop: 16, alignItems: 'center' }}>
+                  <span className="ob grow" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.06em', minWidth: 0 }}>
+                    {aperta.corso.toUpperCase()}
+                  </span>
+                  {inCoda > 0 && <span className="spia-coda">{inCoda} DA INVIARE</span>}
+                </div>
+                <AppelloScreen key={aperta.id} dati={d} sessioneId={aperta.id} onPresenti={(n) => setPresenti((p) => ({ ...p, [aperta.id]: n }))} />
+              </>
+            ) : (
+              <div className="sala-vuota">
+                <span className="rule-label">APPELLO</span>
+                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+                  Scegli una lezione dal calendario per fare l'appello.
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : aperta ? (
         <>
           <div className="row pad" style={{ gap: 10, paddingTop: 12, alignItems: 'center' }}>
             <button className="icon-btn" onClick={() => setAperta(null)} aria-label="Torna al calendario">
@@ -57,7 +89,7 @@ export function Sala() {
             </span>
             {inCoda > 0 && <span className="spia-coda">{inCoda} DA INVIARE</span>}
           </div>
-          <AppelloScreen dati={d} sessioneId={aperta.id} />
+          <AppelloScreen key={aperta.id} dati={d} sessioneId={aperta.id} />
         </>
       ) : (
         <CalendarioScreen dati={d} onApri={setAperta} />

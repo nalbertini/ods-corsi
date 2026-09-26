@@ -57,6 +57,15 @@ export const PAGAMENTO = {
   intestatario: 'ASD Il Centro Judo',
 }
 
+/**
+ * La settimana di prova, prima dei passi: la stessa che il sito dice nelle
+ * domande frequenti. Non è un passo dell'iscrizione, si fa prima di decidere.
+ */
+export const PROVA = {
+  costo: '5 €',
+  testo: 'Una settimana per provare tutti gli sport e scegliere quello giusto, prima di iscriversi.',
+}
+
 export interface Passo {
   titolo: string
   dettaglio?: string

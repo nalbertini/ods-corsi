@@ -55,14 +55,14 @@ $$;
 
 /** La postazione di chi chiama, se chi chiama è un tablet attivo. */
 create or replace function postazione_corrente() returns uuid
-  language sql stable security definer set search_path = public as $$
+  language sql stable security definer set search_path = public, extensions as $$
   select id from postazioni where utente_id = auth.uid() and attiva
 $$;
 
 /** Una lezione, con la sala in cui si fa davvero: la sua, o quella del corso. */
 create or replace function sessione_in_sala(sessione uuid)
   returns table (id uuid, corso_id uuid, inizio timestamptz, fine timestamptz, stato stato_sessione, sala_id uuid)
-  language sql stable security definer set search_path = public as $$
+  language sql stable security definer set search_path = public, extensions as $$
   select s.id, s.corso_id, s.inizio, s.fine, s.stato, coalesce(s.sala_id, c.sala_id)
   from sessioni s join corsi c on c.id = s.corso_id
   where s.id = sessione
@@ -74,7 +74,7 @@ $$;
  */
 create or replace function lezione_del_tablet(sessione uuid, out postazione uuid, out corso uuid,
                                               out inizio timestamptz, out stato stato_sessione)
-  language plpgsql stable security definer set search_path = public as $$
+  language plpgsql stable security definer set search_path = public, extensions as $$
 declare
   sala_tablet uuid;
   l record;
@@ -98,7 +98,7 @@ end $$;
 create or replace function lezioni_sala(da_giorno date, a_giorno date)
   returns table (id uuid, corso_id uuid, corso text, colore text, descrizione text, istruttori text,
                  inizio timestamptz, fine timestamptz, stato stato_sessione, iscritti int, presenti int)
-  language plpgsql stable security definer set search_path = public as $$
+  language plpgsql stable security definer set search_path = public, extensions as $$
 declare
   p uuid := postazione_corrente();
   sala uuid;
@@ -134,7 +134,7 @@ end $$;
 -- ---------------------------------------------------------------------------
 create or replace function elenco_sala(sessione uuid)
   returns table (persona_id uuid, nome text, sigla text, segnato boolean)
-  language plpgsql stable security definer set search_path = public as $$
+  language plpgsql stable security definer set search_path = public, extensions as $$
 declare
   l record;
   r record;
@@ -171,7 +171,7 @@ end $$;
 --   · 'istruttore' l'istruttore ha già deciso per questa persona: resta così
 -- ---------------------------------------------------------------------------
 create or replace function segna_dal_tablet(sessione uuid, persona uuid)
-  returns text language plpgsql security definer set search_path = public as $$
+  returns text language plpgsql security definer set search_path = public, extensions as $$
 declare
   l record;
   r record;
@@ -207,7 +207,7 @@ end $$;
 
 /** Il tasto ANNULLA: toglie un tocco dello stesso tablet, se è di pochi istanti fa. */
 create or replace function annulla_dal_tablet(sessione uuid, persona uuid)
-  returns boolean language plpgsql security definer set search_path = public as $$
+  returns boolean language plpgsql security definer set search_path = public, extensions as $$
 declare
   l record;
   r record;
@@ -231,7 +231,7 @@ end $$;
 -- memoria del browser. I tentativi si contano per tablet.
 -- ---------------------------------------------------------------------------
 create or replace function persona_da_pin(pin text)
-  returns uuid language plpgsql security definer set search_path = public as $$
+  returns uuid language plpgsql security definer set search_path = public, extensions as $$
 declare
   p uuid := postazione_corrente();
   r record;
@@ -255,7 +255,7 @@ end $$;
 /** Il PIN è giusto? Restituisce chi è, o niente. */
 create or replace function entra_con_pin(pin text)
   returns table (persona_id uuid, nome text)
-  language plpgsql security definer set search_path = public as $$
+  language plpgsql security definer set search_path = public, extensions as $$
 declare chi uuid := persona_da_pin(pin);
 begin
   return query select pe.id, pe.nome from persone pe where pe.id = chi;
@@ -267,7 +267,7 @@ end $$;
  */
 create or replace function appello_con_pin(pin text, sessione uuid)
   returns table (persona_id uuid, nome text, cognome text, stato stato_presenza, origine origine_presenza)
-  language plpgsql security definer set search_path = public as $$
+  language plpgsql security definer set search_path = public, extensions as $$
 declare
   chi uuid;
   l record;
@@ -294,7 +294,7 @@ end $$;
  */
 drop function if exists segna_con_pin(text, uuid, uuid, stato_presenza);
 create or replace function segna_con_pin(pin text, sessione uuid, persona uuid, stato stato_presenza)
-  returns boolean language plpgsql security definer set search_path = public as $$
+  returns boolean language plpgsql security definer set search_path = public, extensions as $$
 declare
   chi uuid;
   l record;
@@ -322,7 +322,7 @@ end $$;
  * altri, perché è il PIN a dire chi sei.
  */
 create or replace function imposta_pin(persona uuid, pin text)
-  returns void language plpgsql security definer set search_path = public as $$
+  returns void language plpgsql security definer set search_path = public, extensions as $$
 begin
   if auth.uid() is not null and not e_staff() and persona is distinct from persona_corrente() then
     raise exception 'il PIN lo cambia la segreteria, o l''istruttore per sé' using errcode = '42501';

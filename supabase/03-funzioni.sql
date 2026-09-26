@@ -22,7 +22,7 @@
 -- poter riapplicare il file senza pensarci.
 drop function if exists materializza_sessioni(date, date);
 create or replace function materializza_sessioni(da_giorno date, a_giorno date)
-  returns int language plpgsql security definer set search_path = public as $$
+  returns int language plpgsql security definer set search_path = public, extensions as $$
 declare
   creati int;
 begin
@@ -72,7 +72,7 @@ end $$;
 -- che è stato passato, così uno script può attribuire correttamente.
 -- ---------------------------------------------------------------------------
 create or replace function imposta_segnata_da() returns trigger
-  language plpgsql security definer set search_path = public as $$
+  language plpgsql security definer set search_path = public, extensions as $$
 begin
   new.segnata_da := coalesce(persona_corrente(), new.segnata_da);
   new.segnata_il := now();
@@ -97,7 +97,7 @@ create trigger presenze_chi_segna before insert or update on presenze
 -- un numero che decide il codice.
 -- ---------------------------------------------------------------------------
 create or replace function pulisci_presenze()
-  returns int language plpgsql security definer set search_path = public as $$
+  returns int language plpgsql security definer set search_path = public, extensions as $$
 declare tolte int;
 begin
   if auth.uid() is not null and not e_staff() then
