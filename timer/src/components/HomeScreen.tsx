@@ -5,7 +5,7 @@ import type { Corso } from '../lib/libreria'
 import { MODE_BADGE, MODE_TINT, describe, totalDuration } from '../lib/engine'
 import { clock, compact } from '../lib/format'
 import { type Interrotto, doveEraRimasto } from '../lib/ripresa'
-import { Close, Copy, Edit, Play, Plus, Share, Trash } from './Icons'
+import { Copy, Edit, Play, Plus, Share, Trash } from './Icons'
 
 const FILTERS: Array<{ key: Mode | 'all'; label: string }> = [
   { key: 'all', label: 'TUTTI' },
@@ -21,7 +21,6 @@ export function HomeScreen({
   modificabile,
   corsi,
   lezione,
-  onChiudiLezione,
   onStart,
   onEdit,
   onDuplicate,
@@ -39,7 +38,6 @@ export function HomeScreen({
   corsi: Corso[]
   /** Il nome del corso della lezione da cui si arriva, se si arriva da una. */
   lezione: string | null
-  onChiudiLezione: () => void
   onStart: (w: Workout) => void
   onEdit: (w: Workout) => void
   onDuplicate: (w: Workout) => void
@@ -61,8 +59,7 @@ export function HomeScreen({
     [gruppi, filter],
   )
   const nomeCorso = (id: string) => corsi.find((c) => c.id === id)?.nome
-  // Un timer può stare in due sezioni (fra i miei e in quella del corso): la
-  // chiave del riquadro aperto le tiene distinte.
+  // La chiave del riquadro aperto porta anche la sezione, per sicurezza.
   const card = (g: string, w: Workout) => {
     const tint = MODE_TINT[w.mode]
     const chiave = `${g}:${w.id}`
@@ -159,7 +156,8 @@ export function HomeScreen({
       )}
 
       {/* Si arriva dal tablet di sala o dall'appello con la lezione: i timer
-          del suo corso stanno nella prima sezione. */}
+          del suo corso stanno nella prima sezione. Non si chiude: dentro una
+          lezione lo storico deve sapere di quale, e sul tablet la cambia la sala. */}
       {lezione && (
         <div className="pad" style={{ paddingTop: 14 }}>
           <div className="card row" style={{ gap: 10, padding: '10px 10px 10px 14px', borderColor: 'var(--blu)' }}>
@@ -169,9 +167,6 @@ export function HomeScreen({
                 {lezione.toUpperCase()}
               </span>
             </div>
-            <button className="icon-btn" onClick={onChiudiLezione} aria-label="Chiudi la lezione">
-              <Close />
-            </button>
           </div>
         </div>
       )}
