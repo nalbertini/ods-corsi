@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
 import type { Mode, Workout } from '../types'
+import type { Gruppo } from '../lib/gruppi'
+import type { Corso } from '../lib/libreria'
 import { MODE_BADGE, MODE_TINT, describe, totalDuration } from '../lib/engine'
 import { clock, compact } from '../lib/format'
 import { type Interrotto, doveEraRimasto } from '../lib/ripresa'
-import { Copy, Edit, Play, Plus, Share, Trash } from './Icons'
+import { Close, Copy, Edit, Play, Plus, Share, Trash } from './Icons'
 
 const FILTERS: Array<{ key: Mode | 'all'; label: string }> = [
   { key: 'all', label: 'TUTTI' },
@@ -15,7 +17,11 @@ const FILTERS: Array<{ key: Mode | 'all'; label: string }> = [
 ]
 
 export function HomeScreen({
-  workouts,
+  gruppi,
+  modificabile,
+  corsi,
+  lezione,
+  onChiudiLezione,
   onStart,
   onEdit,
   onDuplicate,
@@ -26,7 +32,14 @@ export function HomeScreen({
   interrotto,
   onNew,
 }: {
-  workouts: Workout[]
+  /** Le sezioni della lista: una sola senza database, com'era. */
+  gruppi: Gruppo[]
+  /** I timer di un collega, e sul tablet quelli del database, si aprono ma non si cambiano. */
+  modificabile: (w: Workout) => boolean
+  corsi: Corso[]
+  /** Il nome del corso della lezione da cui si arriva, se si arriva da una. */
+  lezione: string | null
+  onChiudiLezione: () => void
   onStart: (w: Workout) => void
   onEdit: (w: Workout) => void
   onDuplicate: (w: Workout) => void
@@ -43,10 +56,77 @@ export function HomeScreen({
   const [filter, setFilter] = useState<Mode | 'all'>('all')
   const [open, setOpen] = useState<string | null>(null)
 
-  const shown = useMemo(
-    () => (filter === 'all' ? workouts : workouts.filter((w) => w.mode === filter)),
-    [workouts, filter],
+  const mostrati = useMemo(
+    () => gruppi.map((g) => ({ ...g, timer: filter === 'all' ? g.timer : g.timer.filter((w) => w.mode === filter) })),
+    [gruppi, filter],
   )
+  const nomeCorso = (id: string) => corsi.find((c) => c.id === id)?.nome
+  // Un timer può stare in due sezioni (fra i miei e in quella del corso): la
+  // chiave del riquadro aperto le tiene distinte.
+  const card = (g: string, w: Workout) => {
+    const tint = MODE_TINT[w.mode]
+    const chiave = `${g}:${w.id}`
+    const isOpen = open === chiave
+    const suo = modificabile(w)
+    const nomiCorsi = (w.corsi ?? []).map(nomeCorso).filter(Boolean)
+    return (
+      <div key={chiave} className="card stack">
+        <div className="wcard">
+          <div className="stack grow" style={{ gap: 6, minWidth: 0 }}>
+            <div className="row" style={{ gap: 8 }}>
+              <span className="badge" style={{ background: tint }}>
+                {MODE_BADGE[w.mode]}
+              </span>
+              <span className="num" style={{ fontSize: 14, fontWeight: 600, letterSpacing: '0.1em', color: 'var(--dim)' }}>
+                {compact(totalDuration(w))}
+              </span>
+            </div>
+            <button className="wcard-name" style={{ textAlign: 'left', padding: 0 }} onClick={() => setOpen(isOpen ? null : chiave)}>
+              {w.name.toUpperCase()}
+            </button>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--dim)' }}>{describe(w)}</span>
+            {nomiCorsi.length > 0 && (
+              <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: 'var(--faint)' }}>
+                {nomiCorsi.join(' · ').toUpperCase()}
+              </span>
+            )}
+          </div>
+          <button className="play-btn" style={{ borderColor: tint, color: tint }} onClick={() => onStart(w)} aria-label={`Avvia ${w.name}`}>
+            <Play />
+          </button>
+        </div>
+
+        {isOpen && (
+          <div className="wcard-azioni">
+            {suo && (
+              <button className="btn btn-ghost" style={{ minHeight: 44, padding: '0 12px', fontSize: 14 }} onClick={() => onEdit(w)}>
+                <Edit size={16} />
+                MODIFICA
+              </button>
+            )}
+            <button className="btn btn-ghost" style={{ minHeight: 44, padding: '0 12px', fontSize: 14 }} onClick={() => onDuplicate(w)}>
+              <Copy size={16} />
+              DUPLICA
+            </button>
+            <button className="btn btn-ghost" style={{ minHeight: 44, padding: '0 12px', fontSize: 14 }} onClick={() => onShare(w)}>
+              <Share size={16} />
+              INVIA
+            </button>
+            {suo && (
+              <button
+                className="icon-btn"
+                style={{ borderColor: 'var(--line)', color: 'var(--rosso)', marginLeft: 'auto' }}
+                onClick={() => onDelete(w)}
+                aria-label={`Elimina ${w.name}`}
+              >
+                <Trash size={17} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <>
@@ -78,6 +158,24 @@ export function HomeScreen({
         </div>
       )}
 
+      {/* Si arriva dal tablet di sala o dall'appello con la lezione: i timer
+          del suo corso stanno nella prima sezione. */}
+      {lezione && (
+        <div className="pad" style={{ paddingTop: 14 }}>
+          <div className="card row" style={{ gap: 10, padding: '10px 10px 10px 14px', borderColor: 'var(--blu)' }}>
+            <div className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--dim)' }}>LEZIONE</span>
+              <span className="ob" style={{ fontSize: 20, fontWeight: 700 }}>
+                {lezione.toUpperCase()}
+              </span>
+            </div>
+            <button className="icon-btn" onClick={onChiudiLezione} aria-label="Chiudi la lezione">
+              <Close />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="row pad" style={{ gap: 8, paddingTop: 14, paddingBottom: 14, overflowX: 'auto' }}>
         {FILTERS.map((f) => (
           <button key={f.key} className="chip" data-on={filter === f.key} onClick={() => setFilter(f.key)}>
@@ -86,91 +184,29 @@ export function HomeScreen({
         ))}
       </div>
 
-      <div className="rule">
-        <span className="rule-label">I TUOI TIMER</span>
-        <div className="rule-line" />
-        <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>
-          {shown.length}
-        </span>
-      </div>
-
-      <div className="pad wlist stack" style={{ gap: 10, paddingBottom: 16 }}>
-        {shown.length === 0 && (
-          <p style={{ color: 'var(--dim)', fontSize: 15, lineHeight: 1.5, margin: '4px 0 0' }}>
-            Nessun timer di questo tipo. Creane uno con il pulsante qui sotto.
-          </p>
-        )}
-
-        {shown.map((w) => {
-          const tint = MODE_TINT[w.mode]
-          const isOpen = open === w.id
-          return (
-            <div key={w.id} className="card stack">
-              <div className="wcard">
-                <div className="stack grow" style={{ gap: 6, minWidth: 0 }}>
-                  <div className="row" style={{ gap: 8 }}>
-                    <span className="badge" style={{ background: tint }}>
-                      {MODE_BADGE[w.mode]}
-                    </span>
-                    <span className="num" style={{ fontSize: 14, fontWeight: 600, letterSpacing: '0.1em', color: 'var(--dim)' }}>
-                      {compact(totalDuration(w))}
-                    </span>
-                  </div>
-                  <button
-                    className="wcard-name"
-                    style={{ textAlign: 'left', padding: 0 }}
-                    onClick={() => setOpen(isOpen ? null : w.id)}
-                  >
-                    {w.name.toUpperCase()}
-                  </button>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--dim)' }}>{describe(w)}</span>
-                </div>
-                <button
-                  className="play-btn"
-                  style={{ borderColor: tint, color: tint }}
-                  onClick={() => onStart(w)}
-                  aria-label={`Avvia ${w.name}`}
-                >
-                  <Play />
-                </button>
-              </div>
-
-              {isOpen && (
-                <div className="wcard-azioni">
-                  <button className="btn btn-ghost" style={{ minHeight: 44, padding: '0 12px', fontSize: 14 }} onClick={() => onEdit(w)}>
-                    <Edit size={16} />
-                    MODIFICA
-                  </button>
-                  <button
-                    className="btn btn-ghost"
-                    style={{ minHeight: 44, padding: '0 12px', fontSize: 14 }}
-                    onClick={() => onDuplicate(w)}
-                  >
-                    <Copy size={16} />
-                    DUPLICA
-                  </button>
-                  <button
-                    className="btn btn-ghost"
-                    style={{ minHeight: 44, padding: '0 12px', fontSize: 14 }}
-                    onClick={() => onShare(w)}
-                  >
-                    <Share size={16} />
-                    INVIA
-                  </button>
-                  <button
-                    className="icon-btn"
-                    style={{ borderColor: 'var(--line)', color: 'var(--rosso)', marginLeft: 'auto' }}
-                    onClick={() => onDelete(w)}
-                    aria-label={`Elimina ${w.name}`}
-                  >
-                    <Trash size={17} />
-                  </button>
-                </div>
-              )}
+      {mostrati
+        .filter((g) => g.timer.length > 0 || g.vuota)
+        .map((g) => (
+          <div key={g.chiave}>
+            <div className="rule">
+              <span className="rule-label">{g.titolo}</span>
+              <div className="rule-line" />
+              <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>
+                {g.timer.length}
+              </span>
             </div>
-          )
-        })}
+            <div className="pad wlist stack" style={{ gap: 10, paddingBottom: 16 }}>
+              {g.timer.length === 0 && (
+                <p style={{ color: 'var(--dim)', fontSize: 15, lineHeight: 1.5, margin: '4px 0 0' }}>
+                  {g.chiave === 'corso' || g.chiave === 'tutti' || filter === 'all' ? g.vuota : 'Nessun timer di questo tipo.'}
+                </p>
+              )}
+              {g.timer.map((w) => card(g.chiave, w))}
+            </div>
+          </div>
+        ))}
 
+      <div className="pad stack" style={{ paddingBottom: 16 }}>
         <button className="btn btn-dashed" onClick={() => onNew(filter)}>
           <Plus />
           NUOVO TIMER

@@ -38,6 +38,16 @@ export const INDIRIZZI: Record<Exclude<Area, 'scelta' | 'guida'>, string> = {
  */
 export const TIMER = 'timer/'
 
+/**
+ * Il timer aperto da una lezione: in cima ci sono i timer del suo corso, e lo
+ * storico si ricorda in che lezione sono partiti (vedi `timer/src/lib/lezione.ts`).
+ * Nella query e non nel frammento, che nel timer è dei timer mandati col QR.
+ */
+export function timerDellaLezione(l: { id: string; corsoId: string; corso: string }): string {
+  const q = new URLSearchParams({ corso: l.corsoId, lezione: l.id, nome: l.corso })
+  return `${TIMER}?${q.toString()}`
+}
+
 function areaAdesso(): Area {
   // Va chiamata comunque: con `#sala` o `#tablet` è lei a ricordarselo.
   const tablet = eUnTablet()

@@ -33,6 +33,12 @@ export default defineConfig({
   // Percorsi relativi: l'app funziona anche servita da una sottocartella,
   // non solo dalla radice del dominio.
   base: './',
+  // Il timer sta dentro ODS Corsi: legge la stessa `.env` (l'indirizzo e la
+  // chiave del database), e usa un paio di file di `../src/lib` — le chiavi
+  // della sessione e la coda offline — che il server di sviluppo altrimenti
+  // si rifiuterebbe di servire, perché stanno fuori da questa cartella.
+  envDir: '..',
+  server: { fs: { allow: ['..'] } },
   plugins: [
     react(),
     VitePWA({

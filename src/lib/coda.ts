@@ -23,12 +23,14 @@ export interface Operazione {
 // Prefisso `ods-corsi:` e non `ods-timer:`: le due app stanno sullo stesso
 // sito (il timer è pubblicato in `timer/`), e condividono un solo
 // `localStorage` — l'origine è la stessa, la cartella non
-// conta. Con lo stesso nome una si leggerebbe i dati dell'altra.
+// conta. Con lo stesso nome una si leggerebbe i dati dell'altra. Il timer usa
+// questa stessa coda, sotto la sua chiave: una coda che trovasse le
+// operazioni dell'altra app non saprebbe eseguirle, e si fermerebbe lì.
 const DOVE = 'ods-corsi:coda'
 
-const leggi = (): Operazione[] => {
+const leggi = (dove: string): Operazione[] => {
   try {
-    const grezzo = localStorage.getItem(DOVE)
+    const grezzo = localStorage.getItem(dove)
     const lista: unknown = grezzo ? JSON.parse(grezzo) : []
     if (!Array.isArray(lista)) return []
     return lista.filter(
@@ -40,24 +42,29 @@ const leggi = (): Operazione[] => {
   }
 }
 
-const scrivi = (lista: Operazione[]) => {
+const scrivi = (dove: string, lista: Operazione[]) => {
   try {
-    localStorage.setItem(DOVE, JSON.stringify(lista))
+    localStorage.setItem(dove, JSON.stringify(lista))
   } catch {
     /* Memoria piena o modalità privata: la coda vive comunque in memoria. */
   }
 }
 
 export class Coda {
-  private lista: Operazione[] = leggi()
+  private lista: Operazione[]
   private sta = false
   private ascoltatori = new Set<(n: number) => void>()
 
   /**
    * @param esegui Porta davvero a termine l'operazione. Se solleva, l'operazione
    *   resta in coda e si riprova più tardi.
+   * @param dove La chiave in `localStorage`: una per app.
    */
-  constructor(private esegui: (op: Operazione) => Promise<void>) {
+  constructor(
+    private esegui: (op: Operazione) => Promise<void>,
+    private dove = DOVE,
+  ) {
+    this.lista = leggi(dove)
     window.addEventListener('online', () => void this.scarica())
     // Quello rimasto dall'ultima volta (l'app chiusa senza rete, o ricaricata
     // per un aggiornamento) parte appena si riapre, senza aspettare un tocco.
@@ -72,6 +79,16 @@ export class Coda {
   /** Quante scritture non sono ancora arrivate. */
   get inAttesa() {
     return this.lista.length
+  }
+
+  /**
+   * Le operazioni ancora da mandare, in ordine. Serve a chi rilegge i dati dal
+   * server mentre la coda non è vuota: quello che il server manda non ha
+   * ancora le modifiche fatte senza rete, e senza rimetterle sopra
+   * sparirebbero dallo schermo finché non arrivano.
+   */
+  get operazioni(): readonly Operazione[] {
+    return this.lista
   }
 
   /** Avvisa quando la coda si allunga o si accorcia: serve alla spia in alto. */
@@ -89,7 +106,7 @@ export class Coda {
   accoda(chiave: string, tipo: string, args: unknown[]) {
     this.lista = this.lista.filter((o) => o.chiave !== chiave)
     this.lista.push({ chiave, tipo, args, quando: Date.now() })
-    scrivi(this.lista)
+    scrivi(this.dove, this.lista)
     this.avvisa()
     void this.scarica()
   }
@@ -114,7 +131,7 @@ export class Coda {
         // Può essere stata sostituita mentre il server rispondeva: si toglie
         // per identità, non per posizione.
         this.lista = this.lista.filter((o) => o !== op)
-        scrivi(this.lista)
+        scrivi(this.dove, this.lista)
         this.avvisa()
       }
     } finally {

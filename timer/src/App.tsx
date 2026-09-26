@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { HistoryEntry, Mode, Settings, Workout } from './types'
 import { DEFAULT_SETTINGS, loadHistory, loadSettings, loadWorkouts, pushHistory, saveSettings, saveWorkouts } from './lib/storage'
 import { type Esercizio, loadEsercizi, normalizza, saveEsercizi } from './lib/esercizi'
@@ -23,6 +23,35 @@ import { type Interrotto, leggiInterrotto, scordaInterrotto } from './lib/ripres
 import { Back, Clessidra, Crono, Gear, TimerIcon } from './components/Icons'
 import { Logo, Wordmark } from './components/Logo'
 import { completaAccesso } from './lib/spotify'
+import { PalestraSezione } from './components/PalestraSezione'
+import { type Accesso, accessoRicordato, chiSei, eUnId, haUnServer, nuovoId, sessione } from './lib/palestra'
+import {
+  type Corso,
+  eliminaDalServer,
+  guardaCoda,
+  preferenzeDi,
+  registraAllenamento,
+  salvaPreferenze,
+  salvaSulServer,
+  scaricaLibreria,
+  scaricaPreferenze,
+  soloDelDispositivo,
+  unisci,
+  versoIlServer,
+} from './lib/libreria'
+import { type Lezione, lezioneDaIndirizzo, scordaLezione } from './lib/lezione'
+import { type Gruppo, gruppiDi } from './lib/gruppi'
+
+/** I corsi dell'ultima volta, per il titolo della lezione e l'editor senza rete. */
+const DOVE_CORSI = 'ods-timer:corsi'
+function corsiRicordati(): Corso[] {
+  try {
+    const c = JSON.parse(localStorage.getItem(DOVE_CORSI) ?? '[]') as unknown
+    return Array.isArray(c) ? (c as Corso[]) : []
+  } catch {
+    return []
+  }
+}
 
 type Tab = 'timer' | 'crono' | 'countdown' | 'impostazioni'
 type View =
@@ -78,7 +107,17 @@ function TornaSala({ className }: { className: string }) {
 }
 
 export default function App() {
-  const [workouts, setWorkouts] = useState<Workout[]>(() => loadWorkouts())
+  // Senza un accesso le copie del database non si mostrano: non sarebbero né
+  // aggiornate né modificabili. Con l'accesso la lista parte dall'ultima copia
+  // vista, con sopra quello che è ancora in coda, e il database la aggiorna.
+  const [workouts, setWorkouts] = useState<Workout[]>(() =>
+    sessione ? unisci(loadWorkouts(), null) : soloDelDispositivo(loadWorkouts()),
+  )
+  const [accesso, setAccesso] = useState<Accesso>(() => accessoRicordato())
+  const [corsi, setCorsi] = useState<Corso[]>(() => corsiRicordati())
+  const [lezione, setLezione] = useState<Lezione | null>(() => lezioneDaIndirizzo())
+  const [inCoda, setInCoda] = useState(0)
+  const [sincronizzato, setSincronizzato] = useState<'no' | 'sì' | 'errore'>('no')
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory())
   // Il catalogo sta qui e non nell'editor: la sezione esercizi e la scelta
@@ -155,11 +194,86 @@ export default function App() {
   useEffect(() => saveSettings(settings), [settings])
   useEffect(() => saveEsercizi(catalogo), [catalogo])
 
+  // --- Il database di ODS Corsi ---------------------------------------------
+  // Chi è collegato, poi la libreria. Si rilegge quando l'app torna in primo
+  // piano: il tablet in sala resta aperto per settimane, e un timer preparato
+  // a casa la sera prima deve comparire senza che nessuno ricarichi.
+  const personaId = accesso.chi === 'personale' ? accesso.personaId : null
+  const ultimaLettura = useRef(0)
+  const leggiDalServer = useCallback(async () => {
+    if (!sessione) return
+    ultimaLettura.current = Date.now()
+    try {
+      const a = await chiSei()
+      setAccesso(a)
+      if (a.chi === 'nessuno') {
+        setWorkouts(soloDelDispositivo)
+        return
+      }
+      const l = await scaricaLibreria(a.chi === 'personale' ? a.personaId : null)
+      setWorkouts((attuali) => unisci(attuali, l.timer))
+      setCorsi(l.corsi)
+      try {
+        localStorage.setItem(DOVE_CORSI, JSON.stringify(l.corsi))
+      } catch {
+        // Senza localStorage si perde solo l'elenco senza rete.
+      }
+      setSincronizzato('sì')
+    } catch {
+      // Niente rete: resta l'ultima copia vista.
+      setSincronizzato('errore')
+    }
+  }, [])
+  useEffect(() => {
+    void leggiDalServer()
+    const torna = () => {
+      if (document.visibilityState === 'visible' && Date.now() - ultimaLettura.current > 60_000) void leggiDalServer()
+    }
+    document.addEventListener('visibilitychange', torna)
+    return () => document.removeEventListener('visibilitychange', torna)
+  }, [leggiDalServer])
+  useEffect(() => guardaCoda(setInCoda), [])
+
+  // Le preferenze seguono l'istruttore: si leggono una volta, e da lì ogni
+  // cambio parte verso il database (dopo un attimo, perché il cursore del
+  // volume ne manderebbe venti).
+  const preferenzeLette = useRef<string | null>(null)
+  useEffect(() => {
+    if (!personaId) return
+    let via = false
+    scaricaPreferenze()
+      .then((p) => {
+        if (via) return
+        if (p) setSettings((s) => ({ ...s, ...p }))
+        preferenzeLette.current = p ? JSON.stringify(preferenzeDi({ ...DEFAULT_SETTINGS, ...p })) : ''
+      })
+      .catch(() => {
+        // Senza rete restano quelle del dispositivo, e non si manda niente:
+        // si rischierebbe di coprire quelle vere con quelle di qui.
+      })
+    return () => {
+      via = true
+    }
+  }, [personaId])
+  useEffect(() => {
+    if (!personaId || preferenzeLette.current === null) return
+    const adesso = JSON.stringify(preferenzeDi(settings))
+    if (adesso === preferenzeLette.current) return
+    const t = window.setTimeout(() => {
+      preferenzeLette.current = adesso
+      salvaPreferenze(settings)
+    }, 1500)
+    return () => window.clearTimeout(t)
+  }, [settings, personaId])
+
   const patchSettings = useCallback((patch: Partial<Settings>) => {
     setSettings((s) => ({ ...DEFAULT_SETTINGS, ...s, ...patch }))
   }, [])
 
   const upsert = useCallback((w: Workout) => {
+    // Sul database va solo quello che si può scrivere: il tablet e i timer
+    // dei colleghi si aprono, non si cambiano (lo dicono anche le policy).
+    if (personaId && (w.dove === 'miei' || w.dove === 'palestra')) salvaSulServer(w, personaId)
     setWorkouts((list) => {
       const i = list.findIndex((x) => x.id === w.id)
       if (i === -1) return [w, ...list]
@@ -167,8 +281,22 @@ export default function App() {
       copy[i] = w
       return copy
     })
-  }, [])
+  }, [personaId])
 
+  /**
+   * Il salvataggio dall'editor. Un timer che va sul database e ha ancora
+   * l'identificativo corto del dispositivo ne prende uno vero: è un timer
+   * nuovo per il database, e quello vecchio sparisce dal dispositivo.
+   */
+  const salva = useCallback(
+    (w: Workout, vecchioId: string) => {
+      const pronto = w.dove && !eUnId(w.id) ? versoIlServer(w, w.dove === 'palestra' ? 'palestra' : 'miei') : w
+      if (pronto.id !== vecchioId) setWorkouts((list) => list.filter((x) => x.id !== vecchioId))
+      upsert(pronto)
+      return pronto
+    },
+    [upsert],
+  )
   const recordFinish = useCallback(
     (workout: Workout) => (seconds: number, completed: boolean) => {
       const entry: HistoryEntry = {
@@ -180,8 +308,9 @@ export default function App() {
         completed,
       }
       setHistory(pushHistory(entry))
+      if (accesso.chi !== 'nessuno') registraAllenamento(entry, workout, lezione?.sessioneId ?? null)
     },
-    [],
+    [accesso.chi, lezione],
   )
 
   // Quante volte ogni nome compare nei timer salvati: serve alla sezione
@@ -204,14 +333,19 @@ export default function App() {
     // nome è stato scritto con un'altra maiuscola o un altro accento, il conto
     // qui sopra lo considera lo stesso esercizio e la rinomina deve seguirlo.
     const stesso = (nome: string) => normalizza(nome) === normalizza(da)
-    setWorkouts((list) =>
-      list.map((w) =>
-        w.exercises.some((e) => stesso(e.name))
-          ? { ...w, exercises: w.exercises.map((e) => (stesso(e.name) ? { ...e, name: a } : e)) }
-          : w,
-      ),
-    )
-  }, [])
+    const rinomina = (w: Workout) =>
+      w.exercises.some((e) => stesso(e.name))
+        ? { ...w, exercises: w.exercises.map((e) => (stesso(e.name) ? { ...e, name: a } : e)) }
+        : w
+    // Sul database vanno quelli che si possono scrivere; quelli dei colleghi
+    // cambiano solo qui, e alla prossima lettura tornano come li ha lasciati
+    // chi li ha fatti.
+    if (personaId)
+      workouts
+        .filter((w) => (w.dove === 'miei' || w.dove === 'palestra') && rinomina(w) !== w)
+        .forEach((w) => salvaSulServer(rinomina(w), personaId))
+    setWorkouts((list) => list.map(rinomina))
+  }, [workouts, personaId])
 
   const startWorkout = useCallback((w: Workout) => {
     // Partendo con qualcos'altro, l'allenamento lasciato a metà è acqua passata.
@@ -222,24 +356,59 @@ export default function App() {
 
   const duplicate = useCallback(
     (w: Workout) => {
-      const copy: Workout = { ...w, id: uid(), name: `${w.name} (copia)`, builtin: false, updatedAt: Date.now() }
+      // La copia è di chi la fa: fra i miei se c'è un accesso da istruttore,
+      // altrimenti sul dispositivo. È il modo di cambiare un timer di un
+      // collega, o di portarne uno della palestra fra i propri.
+      const base: Workout = { ...w, name: `${w.name} (copia)`, builtin: false, updatedAt: Date.now(), corsi: [] }
+      const copy: Workout = personaId ? { ...base, id: nuovoId(), dove: 'miei' } : { ...base, id: uid(), dove: undefined }
       upsert(copy)
       setView({ kind: 'editor', workout: copy })
     },
-    [upsert],
+    [upsert, personaId],
   )
 
-  const remove = useCallback((w: Workout) => {
-    if (!window.confirm(`Eliminare “${w.name}”?`)) return
-    setWorkouts((list) => list.filter((x) => x.id !== w.id))
-  }, [])
+  const remove = useCallback(
+    (w: Workout) => {
+      const domanda =
+        w.dove === 'palestra'
+          ? `Eliminare “${w.name}” dalla libreria della palestra? Sparisce per tutti.`
+          : w.corsi?.length
+            ? `Eliminare “${w.name}”? È collegato a ${w.corsi.length === 1 ? 'un corso' : `${w.corsi.length} corsi`}, e sparisce anche da lì.`
+            : `Eliminare “${w.name}”?`
+      if (!window.confirm(domanda)) return
+      if (personaId && (w.dove === 'miei' || w.dove === 'palestra')) eliminaDalServer(w)
+      setWorkouts((list) => list.filter((x) => x.id !== w.id))
+    },
+    [personaId],
+  )
+
+  /** I timer di questo dispositivo che l'istruttore porta fra i suoi, sul database. */
+  const portaNeiMiei = useCallback(() => {
+    if (!personaId) return 0
+    const daPortare = workouts.filter((w) => !w.dove && !w.builtin)
+    const portati = daPortare.map((w) => versoIlServer(w, 'miei'))
+    portati.forEach((w) => salvaSulServer(w, personaId))
+    const via = new Set(daPortare.map((w) => w.id))
+    setWorkouts((list) => [...portati, ...list.filter((w) => !via.has(w.id))])
+    return portati.length
+  }, [workouts, personaId])
+
+  const gruppi: Gruppo[] = useMemo(() => gruppiDi(workouts, accesso, lezione), [workouts, accesso, lezione])
+  const nomeLezione = lezione ? lezione.nome || corsi.find((c) => c.id === lezione.corsoId)?.nome || 'la lezione' : null
 
   const body = useMemo(() => {
     switch (tab) {
       case 'timer':
         return (
           <HomeScreen
-            workouts={workouts}
+            gruppi={gruppi}
+            modificabile={(w) => !w.dove || (!!personaId && w.dove !== 'collega')}
+            corsi={corsi}
+            lezione={nomeLezione}
+            onChiudiLezione={() => {
+              scordaLezione()
+              setLezione(null)
+            }}
             onStart={startWorkout}
             onEdit={(w) => setView({ kind: 'editor', workout: w })}
             onDuplicate={duplicate}
@@ -278,12 +447,33 @@ export default function App() {
             onOpenRecorder={() => setView({ kind: 'voce' })}
             onOpenStorico={() => setView({ kind: 'storico' })}
             onOpenEsercizi={() => setView({ kind: 'esercizi' })}
+            palestra={
+              haUnServer ? (
+                <PalestraSezione
+                  accesso={accesso}
+                  inCoda={inCoda}
+                  sincronizzato={sincronizzato}
+                  daPortare={personaId ? workouts.filter((w) => !w.dove && !w.builtin).length : 0}
+                  onPorta={portaNeiMiei}
+                  onAggiorna={() => void leggiDalServer()}
+                />
+              ) : null
+            }
           />
         )
     }
   }, [
     tab,
     workouts,
+    gruppi,
+    corsi,
+    nomeLezione,
+    accesso,
+    personaId,
+    inCoda,
+    sincronizzato,
+    portaNeiMiei,
+    leggiDalServer,
     history,
     settings,
     interrotto,
@@ -336,7 +526,9 @@ export default function App() {
       <RicevutoScreen
         workout={ricevuto}
         onSalva={() => {
-          upsert(ricevuto)
+          // Un timer ricevuto col QR è di chi lo riceve: fra i miei se c'è un
+          // accesso da istruttore, altrimenti sul dispositivo.
+          upsert(personaId ? versoIlServer({ ...ricevuto, dove: undefined }, 'miei') : { ...ricevuto, dove: undefined, corsi: [] })
           setTab('timer')
           setView({ kind: 'tabs' })
         }}
@@ -396,17 +588,18 @@ export default function App() {
       <EditorScreen
         initial={view.workout}
         nuovo={view.nuovo}
+        destinazioni={personaId && !view.workout.dove ? ['miei', 'palestra', 'qui'] : null}
+        corsi={personaId ? corsi : []}
         catalogo={catalogo}
         onCatalogo={setCatalogo}
         onCancel={() => setView({ kind: 'tabs' })}
         onSave={(w) => {
-          upsert(w)
+          salva(w, view.workout.id)
           setTab('timer')
           setView({ kind: 'tabs' })
         }}
         onSaveAndStart={(w) => {
-          upsert(w)
-          setView({ kind: 'run', workout: w })
+          setView({ kind: 'run', workout: salva(w, view.workout.id) })
         }}
       />
     )
