@@ -88,7 +88,7 @@ function Scelta() {
           <a className="card stack scelta-area" href={TIMER}>
             <span className="scelta-titolo">TIMER</span>
             <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-              L’interval timer per la lezione. È un’app a sé: si apre al suo indirizzo.
+              L’interval timer per la lezione. È un’app a sé, nella cartella timer/.
             </span>
           </a>
           <span className="num versione" title={VERSIONE_ESTESA}>

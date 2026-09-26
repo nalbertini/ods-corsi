@@ -36,11 +36,16 @@ altri i nomi si alternano a ogni round e vengono annunciati dalla voce.
 I timer, le impostazioni e lo storico stanno nel browser del dispositivo
 (`localStorage`), senza account e senza server.
 
-Il tasto **SALA** riporta al tablet di sala di ODS Corsi
-([nalbertini/ods-corsi](https://github.com/nalbertini/ods-corsi)), il calendario
-e l'appello: è un'app a sé, che sul tablet ha il tasto TIMER. È grosso come i
+Il timer sta dentro il repository di ODS Corsi, nella cartella `timer/`, e si
+pubblica nella sottocartella `timer/` dello stesso sito
+(`nalbertini.github.io/ods-corsi/timer/`). Fino a settembre 2026 era un
+repository a sé, [nalbertini/Timer-](https://github.com/nalbertini/Timer-): la
+storia è stata portata qui intera.
+
+Il tasto **SALA** riporta al tablet di sala di ODS Corsi, il calendario e
+l'appello: è un'app a sé, che sul tablet ha il tasto TIMER. È grosso come i
 tasti del tablet: in fondo alla barra laterale, in alto sui tablet in verticale,
-nella barra in basso sui telefoni. Apre la radice di ODS Corsi, che su un tablet
+nella barra in basso sui telefoni. Apre `../`, la radice di ODS Corsi, che su un tablet
 di sala riapre il tablet della sua sala.
 
 Il **tema** è nero o bianco, e lo stesso di ODS Corsi: le due app stanno sullo
@@ -182,6 +187,9 @@ Il dettaglio di nomi, formati e conversioni sta in
 
 ## Sviluppo
 
+I comandi si danno dentro `timer/` (o dalla radice di ODS Corsi con
+`npm run dev:timer` e `npm run build:timer`).
+
 ```bash
 npm install
 npm run dev        # server di sviluppo
@@ -197,19 +205,13 @@ installazione funzionino.
 
 ## Pubblicazione
 
-`.github/workflows/pubblica.yml` compila e pubblica su **GitHub Pages** a ogni
-push. L'indirizzo è `https://<utente>.github.io/<repository>/`, quindi l'app
-vive in una sottocartella: per questo `vite.config.ts` usa `base: './'` e tutti
-i percorsi — icone, manifest, `start_url`, `scope` — sono relativi.
-
-Due condizioni. Il repository deve essere **pubblico**: su uno privato Pages
-richiede un piano a pagamento. E Pages va acceso a mano, una volta sola, da
-**Settings › Pages › Source: GitHub Actions** — non è automatizzabile, il token
-del workflow non può creare il sito (`Resource not accessible by integration`,
-sia da privato sia da pubblico).
-
-Finché non è acceso, il job di compilazione passa lo stesso: il controllo sul
-codice non dipende dalla configurazione di Pages.
+Lo pubblica il workflow di ODS Corsi (`.github/workflows/pubblica.yml`, nella
+radice del repository): compila ODS Corsi in `dist/` e poi il timer in
+`dist/timer/`, e pubblica tutto su **GitHub Pages** a ogni push su `main`.
+L'app vive in una sottocartella: per questo `vite.config.ts` usa `base: './'` e
+tutti i percorsi — icone, manifest, `start_url`, `scope` — sono relativi. Il
+service worker del timer ha per scope `timer/`, quello di ODS Corsi lo lascia
+stare, e ognuna delle due app si aggiorna per conto suo.
 
 `dist/` resta comunque una cartella statica: funziona su qualsiasi hosting con
 **HTTPS**, che non è opzionale — senza, service worker, Wake Lock e

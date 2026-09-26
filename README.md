@@ -3,10 +3,11 @@
 Il calendario dei corsi e il registro delle presenze di **Officine Dello Sport**,
 Collegno.
 
-È un progetto separato dal timer ([nalbertini/Timer-](https://github.com/nalbertini/Timer-))
-di proposito: la presenza riguarda la palestra, il timer riguarda la lezione, e
-tenerli nello stesso posto li legava più di quanto servisse. Le due app hanno lo
-stesso marchio e lo stesso modo di fare le cose, e nient'altro in comune.
+Nella cartella [`timer/`](timer/README.md) c'è anche l'interval timer delle
+lezioni, portato qui da [nalbertini/Timer-](https://github.com/nalbertini/Timer-)
+con tutta la sua storia, per integrare meglio le due app. Per ora resta un'app
+a sé — il suo `package.json`, il suo service worker, la sua installazione — ma
+si pubblica insieme a ODS Corsi, nella sottocartella `timer/` dello stesso sito.
 
 ## Cosa fa oggi
 
@@ -21,8 +22,7 @@ L'app ha quattro indirizzi, ognuno con il suo accesso:
 
 Senza niente in fondo all'indirizzo si apre una pagina con le quattro, tranne
 su un tablet di sala, che riapre sempre il tablet. In fondo alla pagina c'è
-anche il **timer**: è solo un collegamento all'app pubblicata
-(`nalbertini.github.io/Timer-/`), che resta nel suo repository.
+anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/timer/`).
 
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello
   scelto, in ordine di orario, con sala, istruttore e iscritti.
@@ -72,6 +72,35 @@ anche il **timer**: è solo un collegamento all'app pubblicata
   dispositivo. Sul tablet di sala il tasto sta accanto all'ora.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa.
+
+## Il timer
+
+Il codice sta in `timer/`, con le sue dipendenze, e si prova da solo:
+
+```
+npm install --prefix timer
+npm run dev:timer
+```
+
+Il tasto TIMER di ODS Corsi (pagina di scelta e tablet di sala) apre `timer/`,
+e il tasto SALA del timer torna a `../`, la radice, che su un tablet di sala
+riapre il tablet. Sono relativi, quindi valgono dovunque sia pubblicato il
+sito; in `npm run dev` il tasto TIMER non trova niente, perché il server di
+sviluppo serve una sola app. Per provarle insieme:
+
+```
+npm run build:tutto   # ODS Corsi in dist/, il timer in dist/timer/
+npm run preview
+```
+
+Le due app stanno sulla stessa origine e quindi condividono il
+`localStorage`: il tema (`ods-tema`) è lo stesso, e i dati di ognuna hanno il
+suo prefisso. Per chi aveva il timer al vecchio indirizzo
+(`nalbertini.github.io/Timer-/`) i timer salvati ci sono ancora, perché
+l'origine non cambia; l'app installata sul telefono o sul tablet, però, va
+aggiunta di nuovo alla schermata Home dal nuovo indirizzo. Il service worker di
+ODS Corsi lascia stare `timer/` (`navigateFallbackDenylist` e `globIgnores` in
+`vite.config.ts`): ognuna delle due app si aggiorna per conto suo.
 
 ## La versione
 

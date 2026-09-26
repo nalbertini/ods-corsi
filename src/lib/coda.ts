@@ -20,9 +20,9 @@ export interface Operazione {
   quando: number
 }
 
-// Prefisso `ods-corsi:` e non `ods-timer:`: le due app possono finire sullo
-// stesso dominio (nalbertini.github.io/Timer- e /ods-corsi), e allora
-// condividono un solo `localStorage` — l'origine è la stessa, la cartella non
+// Prefisso `ods-corsi:` e non `ods-timer:`: le due app stanno sullo stesso
+// sito (il timer è pubblicato in `timer/`), e condividono un solo
+// `localStorage` — l'origine è la stessa, la cartella non
 // conta. Con lo stesso nome una si leggerebbe i dati dell'altra.
 const DOVE = 'ods-corsi:coda'
 

@@ -57,13 +57,14 @@ const TAB_TITLE: Record<Tab, string> = {
 const PIENE: Tab[] = ['crono', 'countdown']
 
 /**
- * ODS Corsi, il calendario e l'appello, è un'app a sé (nalbertini/ods-corsi)
- * che ha il timer sul tablet di sala: questo è il ritorno. Si apre la radice,
+ * ODS Corsi, il calendario e l'appello, è l'app che contiene questa: il timer
+ * è pubblicato nella sua sottocartella `timer/`, e ha il tasto sul tablet di
+ * sala. Questo è il ritorno, relativo come tutto il resto. Si apre la radice,
  * che su un tablet di sala riapre il tablet della sua sala (e altrove la pagina
  * di scelta). Non `#sala`: quell'indirizzo farebbe diventare un tablet di sala
  * anche il telefono di chi lo tocca.
  */
-const SALA = 'https://nalbertini.github.io/ods-corsi/'
+const SALA = '../'
 
 /** Il ritorno alla sala, grosso come i tasti del tablet da cui si arriva. */
 function TornaSala({ className }: { className: string }) {
