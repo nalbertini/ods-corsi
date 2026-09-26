@@ -67,6 +67,13 @@ su un tablet di sala, che riapre sempre il tablet.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa.
 
+## Le guide
+
+Per chi usa l'app, non per chi la sviluppa: [`guida/`](guida/README.md). La
+guida generale spiega come funziona a istruttori e segreteria; poi c'è una
+guida per ogni area (istruttori, tablet di sala, iscrizioni, segreteria) e una
+per ogni voce del menu della segreteria.
+
 ## Provarla
 
 ```

@@ -1,0 +1,86 @@
+# Istruttori: il calendario e l'appello
+
+*Indirizzo: `#istruttori` · Per: istruttori e segreteria · Dal telefono*
+
+← [Torna alla guida generale](README.md)
+
+È la parte dell'app che usate dal telefono: il calendario delle lezioni e,
+dentro ogni lezione, l'appello.
+
+## Entrare
+
+1. Aprite <https://nalbertini.github.io/ods-corsi/#istruttori>.
+2. Scrivete **email** e **password** dell'account che vi ha dato la palestra e
+   premete **ENTRA**.
+3. Restate collegati finché non premete **ESCI** (in alto, accanto al vostro
+   nome). Non serve rientrare ogni volta.
+
+La prima volta che entrate, l'account si lega da solo alla vostra scheda di
+istruttore, purché l'email sia la stessa che ha in elenco la segreteria. Se
+all'accesso vi dice che qualcosa non va, chiedete alla segreteria di
+controllare l'email.
+
+In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
+
+## Il calendario
+
+- In cima c'è una **striscia di sette giorni** a partire da oggi. I puntini
+  sotto ogni giorno dicono quante lezioni ci sono. Oggi è evidenziato.
+- Le frecce **‹** e **›** spostano di una settimana.
+- Sotto ci sono le **lezioni del giorno scelto**, in ordine di orario, con
+  sala e istruttore.
+- A destra di ogni lezione c'è un numero:
+  - solo un numero (es. `16`) → quanti sono **iscritti**, l'appello non è
+    ancora fatto;
+  - due numeri (es. `14/16`) → **presenti su iscritti**, l'appello è stato
+    fatto (anche solo in parte, anche dal tablet).
+
+Toccate una lezione per aprire l'appello. Sul telefono il calendario lascia il
+posto all'appello; la freccia in alto a sinistra riporta al calendario. Su un
+tablet o un computer stanno affiancati: calendario a sinistra, appello a
+destra.
+
+## L'appello
+
+In cima: giorno, ora, sala e istruttore; poi il conto grande dei presenti
+(`18 / 20`) e quanti restano da segnare, o **APPELLO FATTO** quando tutti hanno
+un segno.
+
+Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è:
+
+| Tocco | Segno | Significa |
+|---|---|---|
+| primo | ✓ | presente |
+| secondo | ✕ | assente |
+| terzo | *(vuoto)* | non segnato |
+
+I due tasti in cima:
+
+- **TUTTI PRESENTI**: mette ✓ a tutti. È il modo più veloce: premetelo e poi
+  toccate due volte gli assenti.
+- **AZZERA**: toglie tutti i segni della lezione, per ricominciare.
+
+Non c'è niente da salvare: ogni tocco parte subito.
+
+## Senza rete
+
+L'appello funziona anche senza rete. I tocchi si vedono subito e aspettano sul
+telefono; accanto al nome del corso compare la spia gialla **N DA INVIARE**, che
+sparisce quando è tutto arrivato. Se toccate più volte la stessa persona
+mentre la rete non c'è, parte solo l'ultimo segno.
+
+## Se qualcosa non torna
+
+- **«Calendario non letto» / «Lezione non letta»**, in rosso: il server non
+  ha risposto. Riprovate fra poco o controllate la rete.
+- **Un allievo manca dall'elenco**: non è iscritto a quel corso. Lo iscrive la
+  segreteria.
+- **Una lezione non c'è o è nell'orario sbagliato**: orari, sale e sostituti li
+  cambia la segreteria dalla [Settimana](segreteria/settimana.md).
+
+## In prova
+
+Nella prova in alto ci sono tre schede — **APPELLO**, **ISCRIZIONI**,
+**SEGRETERIA** — per girare tutta l'app, e nel nastro giallo il link **PROVA IL
+TABLET DI SALA**. Con l'account vero le schede non ci sono: ognuno vede solo
+la sua parte.
