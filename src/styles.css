@@ -173,3 +173,22 @@ input, textarea { font: inherit; color: inherit; }
   font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
   color: var(--bg); background: var(--giallo); text-align: center; padding: 4px;
 }
+
+/* ---------- iscrizioni ---------- */
+
+.passi { list-style: none; margin: 0; }
+.passo { display: flex; align-items: flex-start; gap: 14px; padding: 14px; }
+.passo-num {
+  font-size: 26px; font-weight: 700; line-height: 1; color: var(--giallo);
+  min-width: 22px; text-align: center;
+}
+.passo-titolo { font-size: 17px; font-weight: 600; line-height: 1.3; }
+.passo-btn { min-height: 48px; font-size: 16px; text-decoration: none; align-self: flex-start; }
+
+/* Le due facce dell'app, sotto la testata. */
+.schede { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 0 20px 4px; flex-shrink: 0; }
+.scheda {
+  min-height: 40px; background: var(--surface); border: 2px solid var(--line);
+  font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim);
+}
+.scheda[data-on='true'] { background: var(--surface-2); border-color: var(--text); color: var(--text); }
