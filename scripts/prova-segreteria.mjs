@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -203,6 +203,62 @@ console.log('\n10. l\'import dai fogli')
   const a2 = await m.importa(s, m.leggiFogli(corsi, iscritti, (await s.corsi()).map((c) => c.nome)), () => {})
   ok('rifatto: niente di nuovo', [a2.saleNuove.length, a2.corsiNuovi.length, a2.ricorrenzeNuove, a2.iscrittiNuovi, a2.iscrizioniNuove], [0, 0, 0, 0, 0])
   ok('e nessun doppione', (await s.persone()).filter((p) => p.email === 'marta@esempio.it').length, 1)
+}
+
+console.log('\n11. le risposte del modulo Google')
+{
+  // Com'è il CSV che scarica Google: virgole, domande fra virgolette, più
+  // scelte in una cella, i link delle foto caricate.
+  const csv = [
+    '"Informazioni cronologiche","Indirizzo email","Nome dell\'atleta","Cognome dell\'atleta","Nome e cognome del genitore","Numero di telefono","A quali corsi vuoi iscriverti?","Carica il modulo firmato"',
+    '"20/09/2026 18.01.22","Mamma@Esempio.it","Giulia","Neri","Paola Neri","347 000 1111","Judo 2 (nati 2017-2019, lunedì, mercoledì e venerdì), Lotta 3","https://drive.google.com/open?id=1"',
+    '"20/09/2026 18.07.40","mamma@esempio.it","Marco","Neri","Paola Neri","347 000 1111","Psicomotricità","https://drive.google.com/open?id=2"',
+    '"21/09/2026 09.12.03","andrea@esempio.it","Andrea","Blu","","333 222 3333","Judo adulti, Zumba","https://drive.google.com/open?id=3"',
+    '"22/09/2026 10.00.00","andrea@esempio.it","Andrea","Blu","","333 999 9999","Judo adulti","https://drive.google.com/open?id=4"',
+    '"22/09/2026 11.00.00","x@esempio.it","","Senzanome","","","Judo 2 (nati 2017-2019, lunedì, mercoledì e venerdì)",""',
+  ].join('\n')
+  const t = m.leggiTabella(csv)
+  const col = m.indovinaColonne(t.testa)
+  ok('le colonne si riconoscono, il genitore no', col, { cognome: 3, nome: 2, email: 1, telefono: 5, corsi: 6 })
+  ok('la virgola dentro le parentesi non divide', m.divideScelte('Judo 2 (nati 2017-2019, lunedì), Lotta 3'), ['Judo 2 (nati 2017-2019, lunedì)', 'Lotta 3'])
+  ok('nemmeno quella prima di una minuscola', m.divideScelte('Judo 2 lunedì, mercoledì e venerdì, Lotta 3'), ['Judo 2 lunedì, mercoledì e venerdì', 'Lotta 3'])
+  const corsi = (await s.corsi()).filter((c) => c.attivo).map((c) => ({ id: c.id, nome: c.nome }))
+  const scelte = m.scelteCorsi(t, col.corsi)
+  ok('le scelte diverse, con quante volte', scelte.map((x) => `${x.testo.slice(0, 12)}·${x.quante}`), ['Judo 2 (nati·2', 'Judo adulti·2', 'Lotta 3·1', 'Psicomotrici·1', 'Zumba·1'])
+  const abbinamenti = Object.fromEntries(scelte.flatMap((x) => { const id = m.indovinaCorso(x.testo, corsi); return id ? [[x.testo, id]] : [] }))
+  ok('si abbinano da sole, tranne quella che non c\'è', scelte.filter((x) => !(x.testo in abbinamenti)).map((x) => x.testo), ['Zumba'])
+  ok('«Judo 2 (…)» è Judo 2', abbinamenti[scelte[0].testo], 'judo-2')
+  ok('Judo 22 non sarebbe Judo 2', m.indovinaCorso('Judo 22', [{ id: 'j2', nome: 'Judo 2' }]), undefined)
+
+  const r = m.leggiRisposte(t, col, abbinamenti, corsi)
+  ok('tre iscritti da cinque righe', r.iscritti.map((x) => `${x.nome} ${x.cognome}`), ['Giulia Neri', 'Marco Neri', 'Andrea Blu'])
+  ok('senza nome si salta', r.saltate.map((x) => [x.riga, x.motivo]), [[6, '«Senzanome»: servono nome e cognome']])
+  ok('Giulia, due corsi', r.iscritti[0].corsi, ['Judo 2', 'Lotta 3'])
+  ok('Marco, la stessa email della sorella: entra senza', [r.iscritti[1].email, r.iscritti[1].telefono], [undefined, '347 000 1111'])
+  ok('Andrea due volte: una persona, l\'ultimo telefono', [r.iscritti[2].corsi, r.iscritti[2].telefono], [['Judo adulti'], '333 999 9999'])
+  ok('le note dicono cosa è entrato a metà', r.note.map((x) => x.riga), [3, 4])
+
+  const f = { corsi: [], iscritti: r.iscritti, righe: { corsi: 0, iscritti: 0, risposte: r.righe }, saltate: r.saltate, note: r.note }
+  const prima = (await s.persone()).length
+  const a1 = await m.importa(s, f, () => {})
+  ok('entrano i tre, con le loro iscrizioni', [a1.iscrittiNuovi, a1.iscrizioniNuove], [3, 4])
+  // Nello stesso millisecondo, tre persone diverse: tre id diversi, ognuna coi suoi corsi.
+  const nuovi = (await s.persone()).filter((x) => ['Neri', 'Blu'].includes(x.cognome) && x.creataIl)
+  ok('tre id diversi', new Set(nuovi.map((x) => x.id)).size, nuovi.length)
+  ok('Andrea non ha i corsi di Marco', nuovi.find((x) => x.nome === 'Andrea' && x.email === 'andrea@esempio.it').iscrizioni.map((i) => i.corsoId), ['judo-adulti'])
+  const p = await s.persone()
+  const giulia = p.find((x) => x.nome === 'Giulia' && x.cognome === 'Neri')
+  ok('Giulia con l\'email, Marco senza', [giulia.email, p.find((x) => x.nome === 'Marco' && x.cognome === 'Neri').email], ['mamma@esempio.it', undefined])
+  // Il foglio cresce e si reimporta tutto: niente doppioni.
+  const a2 = await m.importa(s, f, () => {})
+  ok('reimportato: niente di nuovo', [a2.iscrittiNuovi, a2.iscrizioniNuove, (await s.persone()).length - prima], [0, 0, 3])
+  // Marco, che entrato senza email, non si confonde con la sorella al secondo giro.
+  // Un altro modulo: nome e cognome in una domanda sola, prima quella del genitore.
+  const t2 = m.leggiTabella('Timestamp,Nome e cognome del genitore,Nome e cognome dell\'iscritto,Cellulare,Email\n1,Paola Verdi,Maria Luisa Verdi,333,p@e.it\n')
+  const c2 = m.indovinaColonne(t2.testa)
+  ok('nome e cognome insieme, dell\'iscritto', c2, { nomeCompleto: 2, email: 4, telefono: 3 })
+  ok('il cognome è l\'ultima parola', m.leggiRisposte(t2, c2, {}, []).iscritti.map((x) => [x.nome, x.cognome]), [['Maria Luisa', 'Verdi']])
+  ok('Marco resta Marco', (await s.persone()).filter((x) => x.cognome === 'Neri').map((x) => x.nome).sort(), ['Giulia', 'Marco'])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

@@ -578,6 +578,9 @@ input, textarea { font: inherit; color: inherit; }
 .sg-colore[aria-pressed='true'] { border-color: var(--text); }
 .sg-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .sg-tre { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+/* Le colonne del modulo Google: la domanda a sinistra, cosa vuol dire a destra. */
+.sg-colonne { display: grid; grid-template-columns: minmax(120px, max-content) minmax(0, 1fr); gap: 10px 14px; align-items: center; }
+.sg-colonne .sg-campo { width: 100%; }
 
 /* La settimana */
 .sg-griglia-scorre { overflow-x: auto; }
