@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Logo } from './components/Logo'
 import { Sala } from './components/Sala'
 import { Porta } from './components/Porta'
@@ -7,6 +7,7 @@ import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { eUnTablet } from './lib/tablet'
 import { esci, serveAccesso, type Personale } from './lib/accesso'
+import { inProvaScelta, scegliProva } from './lib/dati'
 
 /**
  * ODS Corsi: il calendario delle sale e il registro delle presenze.
@@ -22,18 +23,55 @@ import { esci, serveAccesso, type Personale } from './lib/accesso'
  * Lo stesso codice fa anche da tablet di sala (`#tablet`): un'altra faccia,
  * a pieno schermo, per il tablet appeso al muro. E chi ha il ruolo di
  * segreteria ha la sua area, a tutto schermo, per il computer della reception;
- * in prova la segreteria è aperta a tutti.
+ * in prova la segreteria è aperta a tutti. Chi è di segreteria, appena entra,
+ * finisce lì: è il suo posto; l'appello resta a un tocco, da «← APPELLO».
+ *
+ * Con `#iscrizioni` in fondo all'indirizzo si apre invece la pagina pubblica,
+ * quella del link da mandare a chi vuole iscriversi: solo i passi, i costi e
+ * il modulo, senza le schede del personale. Viene prima del tablet, così un
+ * tablet di sala che apre il link non smette di essere un tablet.
  */
-const tablet = eUnTablet()
+const pubblica = window.location.hash === '#iscrizioni'
+const tablet = !pubblica && eUnTablet()
 
 export default function App() {
+  if (pubblica) return <Iscrizioni />
   return tablet ? <Tablet /> : <AppCorsi />
+}
+
+function Iscrizioni() {
+  return (
+    <div className="app">
+      <header className="testata">
+        <Logo />
+        <div className="stack grow" style={{ gap: 1 }}>
+          <span className="testata-nome">OFFICINE DELLO SPORT</span>
+          <span className="testata-luogo">ISCRIZIONI · COLLEGNO</span>
+        </div>
+      </header>
+      <main className="scroll">
+        <IscrizioniScreen pubblica />
+      </main>
+    </div>
+  )
 }
 
 function AppCorsi() {
   const [scheda, setScheda] = useState<'corsi' | 'iscrizioni' | 'segreteria'>('corsi')
   const [chi, setChi] = useState<Personale | null>(null)
   const segreteria = !serveAccesso || chi?.ruolo === 'staff'
+
+  // Una volta per accesso: tornando all'appello dalla segreteria la porta si
+  // rimonta e ridice chi c'è, e senza questo si rimbalzerebbe di nuovo là.
+  const portato = useRef(false)
+  const onChi = useCallback((p: Personale | null) => {
+    setChi(p)
+    if (!p) portato.current = false
+    else if (p.ruolo === 'staff' && !portato.current) {
+      portato.current = true
+      setScheda('segreteria')
+    }
+  }, [])
 
   if (scheda === 'segreteria' && segreteria) {
     return (
@@ -45,10 +83,12 @@ function AppCorsi() {
           serveAccesso
             ? () =>
                 void esci().then(() => {
-                  setChi(null)
+                  onChi(null)
                   setScheda('corsi')
                 })
-            : undefined
+            : inProvaScelta
+              ? () => scegliProva(false)
+              : undefined
         }
       />
     )
@@ -64,7 +104,7 @@ function AppCorsi() {
         </div>
         <nav className="schede">
           <button className="scheda" data-on={scheda === 'corsi'} onClick={() => setScheda('corsi')}>
-            CORSI
+            APPELLO
           </button>
           <button className="scheda" data-on={scheda === 'iscrizioni'} onClick={() => setScheda('iscrizioni')}>
             ISCRIZIONI
@@ -78,7 +118,7 @@ function AppCorsi() {
       </header>
       <main className="scroll">
         <div className="faccia-corsi" hidden={scheda !== 'corsi'}>
-          <Porta onChi={setChi}>
+          <Porta onChi={onChi}>
             <Sala />
           </Porta>
         </div>

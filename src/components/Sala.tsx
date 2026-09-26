@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { type Dati, dati as caricaDati } from '../lib/dati'
+import { type Dati, dati as caricaDati, inProvaScelta, scegliProva } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
 import { CalendarioScreen } from './CalendarioScreen'
 import { AppelloScreen } from './AppelloScreen'
@@ -49,6 +49,18 @@ export function Sala() {
           >
             PROVA IL TABLET DI SALA
           </button>
+          {inProvaScelta && (
+            <>
+              {' · '}
+              <button
+                type="button"
+                style={{ textDecoration: 'underline', font: 'inherit', letterSpacing: 'inherit', color: 'inherit' }}
+                onClick={() => scegliProva(false)}
+              >
+                ESCI DALLA PROVA
+              </button>
+            </>
+          )}
         </div>
       )}
 
