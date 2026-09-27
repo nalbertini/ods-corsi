@@ -8,23 +8,19 @@
 <!--
   L'informativa per chi si iscrive ai corsi e per chi usa l'app.
 
-  È una BOZZA preparata da chi ha scritto l'app, non un testo approvato: la
-  deve leggere e fare sua la palestra, che è titolare del trattamento, meglio
-  con qualcuno che se ne intende. I punti fra [QUADRE] sono scelte che l'app
-  non può fare per lei.
-
-  Quando è approvata:
-    1. si tolgono il riquadro BOZZA qui sotto e le [QUADRE];
-    2. in src/lib/iscrizione.ts si mette INFORMATIVA_BOZZA = false.
-  Da lì, col database vero, il modulo di iscrizione dell'app si accende e il
-  link si vede a tutti in fondo alla scheda ISCRIZIONI.
+  Approvata dalla palestra, che è titolare del trattamento, il 27 settembre
+  2026: per questo in src/lib/iscrizione.ts c'è INFORMATIVA_BOZZA = false, e
+  col database vero il modulo di iscrizione dell'app è acceso e il link si
+  vede a tutti in fondo alla scheda ISCRIZIONI. Una modifica al testo va
+  fatta approvare di nuovo, con la data nuova in cima.
 
   I fatti che il testo dà per certi vengono dall'app com'è oggi: se l'app
   cambia (un dato in più nel modulo, un periodo di conservazione diverso in
-  IMPOSTAZIONI, un altro posto dove pubblicarla), va cambiato anche qui.
+  IMPOSTAZIONI, un altro posto dove pubblicarla), va cambiato anche qui. Per
+  esempio i 24 mesi delle presenze sono quelli di IMPOSTAZIONI.
 -->
 <style>
-  :root { --bg: #121212; --surface: #1c1c1c; --line: #333; --text: #f2f2f0; --sec: #c9c9c4; --dim: #8c8c88; --giallo: #f4c31b; color-scheme: dark; }
+  :root { --bg: #121212; --surface: #1c1c1c; --line: #333; --text: #f2f2f0; --sec: #c9c9c4; --dim: #8c8c88; color-scheme: dark; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 'Helvetica Neue', Helvetica, Arial, sans-serif; }
   main { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
@@ -39,30 +35,21 @@
   th, td { text-align: left; vertical-align: top; padding: 8px 10px; border: 1px solid var(--line); color: var(--sec); }
   th { color: var(--text); background: var(--surface); font-weight: 600; }
   .sotto { color: var(--dim); font-size: 14px; margin: 0; }
-  .bozza { border: 2px solid var(--giallo); padding: 14px 16px; margin: 18px 0 8px; }
-  .bozza strong { color: var(--giallo); letter-spacing: 0.16em; }
-  .dafare { color: var(--giallo); }
   @media print {
-    :root { --bg: #fff; --surface: #f2f2f2; --line: #bbb; --text: #000; --sec: #222; --dim: #555; --giallo: #8a6d00; color-scheme: light; }
+    :root { --bg: #fff; --surface: #f2f2f2; --line: #bbb; --text: #000; --sec: #222; --dim: #555; color-scheme: light; }
   }
 </style>
 </head>
 <body>
 <main>
   <h1>Informativa privacy: iscrizioni e corsi</h1>
-  <p class="sotto">Officine dello Sport, Collegno · ai sensi degli artt. 13 e 14 del Regolamento UE 2016/679 (GDPR) · <span class="dafare">[data di approvazione]</span></p>
-
-  <div class="bozza" role="note">
-    <strong>BOZZA</strong>
-    <p style="margin: 6px 0 0">Questo testo non è ancora approvato dalla palestra. I punti <span class="dafare">[fra quadre]</span> sono da decidere. Finché è una bozza il modulo di iscrizione online resta spento.</p>
-  </div>
+  <p class="sotto">Officine dello Sport, Collegno · ai sensi degli artt. 13 e 14 del Regolamento UE 2016/679 (GDPR) · 27 settembre 2026</p>
 
   <p>Questa informativa spiega come trattiamo i dati di chi si iscrive ai corsi, dei genitori di chi è minorenne e di chi li frequenta: cosa raccogliamo, perché, per quanto tempo, chi li vede e come si esercitano i propri diritti. Riguarda il modulo di iscrizione, l'app dei corsi e il registro delle presenze. Per la sola navigazione del sito vale la <a href="https://officinedellosport.framer.website/privacy-policy---ok-2">privacy policy del sito</a>.</p>
 
   <h2>Chi è il titolare</h2>
   <p><strong>ASD Il Centro Judo</strong>, Corso Francia 224, Cascine Vica, 10098 Rivoli (TO) · C.F. 95562500017 · P.IVA 10002760014<br />
   Email <a href="mailto:asdilcentrojudo@gmail.com">asdilcentrojudo@gmail.com</a> · PEC <a href="mailto:asdilcentrojudo@legalmail.it">asdilcentrojudo@legalmail.it</a> · telefono 347 911 9064</p>
-  <p><span class="dafare">[Se l'associazione ha nominato un responsabile della protezione dei dati (DPO), i suoi contatti vanno qui; altrimenti questa riga si toglie.]</span></p>
 
   <h2>Quali dati</h2>
   <ul>
@@ -81,7 +68,7 @@
     <tr><th>Per cosa</th><th>Base giuridica</th></tr>
     <tr><td>Gestire l'iscrizione, il rapporto associativo e la partecipazione ai corsi</td><td>L'esecuzione del rapporto associativo e dei servizi richiesti (art. 6.1.b)</td></tr>
     <tr><td>Tesserare l'atleta alla federazione (FIJLKAM e/o FIPE)</td><td>La richiesta fatta nel modulo di autorizzazioni firmato (art. 6.1.b)</td></tr>
-    <tr><td>Conservare il certificato medico e sapere quando scade</td><td>L'obbligo di legge di avere il certificato per l'attività sportiva (art. 6.1.c e art. 9.2.b) <span class="dafare">[da verificare con chi segue la privacy dell'associazione]</span></td></tr>
+    <tr><td>Conservare il certificato medico e sapere quando scade</td><td>L'obbligo di legge di avere il certificato per l'attività sportiva (art. 6.1.c e art. 9.2.b)</td></tr>
     <tr><td>Tenere il registro delle presenze e organizzare le lezioni</td><td>L'esecuzione del rapporto associativo (art. 6.1.b) e il legittimo interesse a sapere chi è in palestra (art. 6.1.f)</td></tr>
     <tr><td>Conservare le ricevute e i documenti contabili</td><td>Gli obblighi di legge (art. 6.1.c)</td></tr>
     <tr><td>Proteggere l'app e i dati da accessi non autorizzati</td><td>Il legittimo interesse (art. 6.1.f)</td></tr>
@@ -92,12 +79,12 @@
   <h2>Per quanto tempo</h2>
   <table>
     <tr><th>Cosa</th><th>Per quanto</th></tr>
-    <tr><td>Le presenze</td><td>24 mesi dalla lezione, poi si cancellano da sole <span class="dafare">[se si cambia il periodo in IMPOSTAZIONI, va cambiato anche qui]</span></td></tr>
-    <tr><td>La richiesta di iscrizione e l'anagrafica</td><td><span class="dafare">[per esempio: per la durata dell'iscrizione e fino a 10 anni dopo, per gli obblighi dell'associazione]</span></td></tr>
-    <tr><td>Il certificato medico</td><td><span class="dafare">[per esempio: finché vale, e si cancella quando arriva quello nuovo o quando l'iscritto smette]</span></td></tr>
-    <tr><td>Il documento d'identità</td><td><span class="dafare">[per esempio: fino al tesseramento, e comunque non oltre la fine della stagione]</span></td></tr>
-    <tr><td>Le ricevute di pagamento</td><td><span class="dafare">[per esempio: 10 anni, come le scritture contabili]</span></td></tr>
-    <tr><td>Una richiesta rifiutata, con i suoi file</td><td><span class="dafare">[per esempio: si cancella entro 30 giorni]</span></td></tr>
+    <tr><td>Le presenze</td><td>24 mesi dalla lezione, poi si cancellano da sole</td></tr>
+    <tr><td>La richiesta di iscrizione e l'anagrafica</td><td>Per la durata dell'iscrizione e fino a 10 anni dopo, per gli obblighi dell'associazione</td></tr>
+    <tr><td>Il certificato medico</td><td>Finché vale: si cancella quando arriva quello nuovo o quando l'iscritto smette</td></tr>
+    <tr><td>Il documento d'identità</td><td>Fino al tesseramento, e comunque non oltre la fine della stagione</td></tr>
+    <tr><td>Le ricevute di pagamento</td><td>10 anni, come le scritture contabili</td></tr>
+    <tr><td>Una richiesta rifiutata, con i suoi file</td><td>Si cancella entro 30 giorni</td></tr>
   </table>
 
   <h2>Chi li vede</h2>
@@ -106,12 +93,12 @@
     <li><strong>Gli istruttori</strong> vedono gli iscritti e le presenze, per fare l'appello; le richieste di iscrizione, i documenti, il certificato medico e i pagamenti no.</li>
     <li><strong>Il tablet della sala</strong> mostra solo il nome e l'iniziale del cognome di chi è iscritto alle lezioni di quella sala.</li>
     <li><strong>La federazione</strong> (FIJLKAM e/o FIPE) riceve i dati necessari al tesseramento.</li>
-    <li><strong>I fornitori tecnici</strong>, che trattano i dati per nostro conto come responsabili del trattamento (art. 28): Supabase, che conserva il database e i file su server a Francoforte, nell'Unione Europea; <span class="dafare">[chi pubblica l'app, per esempio GitHub Pages, da scegliere]</span>.</li>
+    <li><strong>I fornitori tecnici</strong>, che trattano i dati per nostro conto come responsabili del trattamento (art. 28): Supabase, che conserva il database e i file su server a Francoforte, nell'Unione Europea; GitHub (GitHub Pages), che pubblica l'app, cioè le pagine che si aprono nel browser.</li>
   </ul>
   <p>I dati non si vendono e non si diffondono.</p>
 
   <h2>Fuori dall'Unione Europea</h2>
-  <p>Il database e i file restano nell'Unione Europea. <span class="dafare">[Da verificare con il servizio scelto per pubblicare l'app: se è fuori dall'UE, come GitHub, qui va detto su che base avviene il trasferimento, per esempio il Data Privacy Framework UE-USA.]</span></p>
+  <p>Il database e i file restano nell'Unione Europea. L'app si pubblica con GitHub Pages, un servizio di GitHub, Inc., che ha sede negli Stati Uniti: le pagine dell'app non contengono i dati degli iscritti, ma chi le apre passa dai suoi server, che vedono per esempio l'indirizzo IP. Il trasferimento avviene sulla base del Data Privacy Framework UE-USA, al quale GitHub aderisce (decisione di adeguatezza della Commissione Europea del 10 luglio 2023, art. 45 GDPR).</p>
 
   <h2>I diritti</h2>
   <p>Chiunque, e per un minore chi ne ha la responsabilità, può chiedere di vedere i propri dati e averne una copia, correggerli, cancellarli, limitarne l'uso, opporsi al trattamento o riceverli in un formato leggibile da un computer (artt. 15-22 GDPR). Basta scrivere a <a href="mailto:asdilcentrojudo@gmail.com">asdilcentrojudo@gmail.com</a>: rispondiamo entro un mese.</p>

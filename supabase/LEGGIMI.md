@@ -279,9 +279,9 @@ Cosa fa `06-iscrizioni.sql`:
 **Si accende con l'informativa approvata.** Il modulo chiede codici fiscali
 e documenti d'identità, e col database vero l'app lo mostra solo quando
 l'informativa (`public/informativa.html`) è approvata, cioè quando in
-`src/lib/iscrizione.ts` `INFORMATIVA_BOZZA` è `false`. Fino ad allora il passo
-porta ancora al modulo Google (`LINK_ISCRIZIONE`). In prova il modulo è
-sempre acceso.
+`src/lib/iscrizione.ts` `INFORMATIVA_BOZZA` è `false`: lo è dal 27 settembre
+2026. Se si rimette a `true` il passo torna al modulo Google
+(`LINK_ISCRIZIONE`). In prova il modulo è sempre acceso.
 
 **Le domande** sono ricavate dai moduli di autorizzazione e dai passi di
 prima, non copiate dal modulo Google, che senza accesso non si legge. Se
@@ -479,14 +479,15 @@ non è un segreto trapelato. A proteggere i dati sono le policy di
 ## Le cose da decidere prima di usarlo sul serio
 
 - **L'informativa privacy.** Nomi e presenze sono dati personali e la palestra
-  ne è titolare del trattamento. Ce n'è una **bozza** in
-  `public/informativa.html`, scritta insieme all'app: quella del sito copre
-  solo la navigazione. La palestra la deve leggere e fare sua, e decidere i
-  punti fra quadre: per quanto si tengono richieste, documenti e ricevute, e
-  dove si pubblica l'app. Poi si toglie il riquadro BOZZA dalla pagina e si
-  mette `INFORMATIVA_BOZZA = false` in `src/lib/iscrizione.ts`: da lì si vede
-  in fondo alla pagina delle iscrizioni, a tutti, e col database vero accende il
-  modulo di iscrizione dell'app.
+  ne è titolare del trattamento. L'informativa è in
+  `public/informativa.html` (quella del sito copre solo la navigazione), e la
+  palestra l'ha approvata il 27 settembre 2026: per quanto si tengono
+  richieste, documenti e ricevute, e che l'app si pubblica con GitHub Pages.
+  Si vede in fondo alla pagina delle iscrizioni, a tutti, e col database vero
+  accende il modulo di iscrizione dell'app. I tempi di conservazione che
+  promette (una richiesta rifiutata via entro 30 giorni, il documento
+  d'identità non oltre la fine della stagione) oggi li rispetta la segreteria
+  a mano, con «Elimina richiesta e file».
 - **Per quanto si tengono le presenze.** `presenze_scadute` dice cosa è
   scaduto e `pulisci_presenze()` lo cancella; il periodo di partenza è
   ventiquattro mesi e si cambia in **IMPOSTAZIONI**. È una scelta della
@@ -494,8 +495,8 @@ non è un segreto trapelato. A proteggere i dati sono le policy di
 - **Il certificato medico è un dato sanitario.** È l'unico che l'app tiene,
   perché senza non si fa sport, e lo vede solo la segreteria. È un'altra
   categoria di dati (art. 9 del GDPR), con altri obblighi: la palestra deve
-  dirlo nell'informativa (la bozza ne parla già) e decidere per quanto
-  tenerlo. Patologie e simili, invece, non ci vanno.
+  dirlo nell'informativa (lo dice) e decidere per quanto tenerlo (finché
+  vale, poi via quando arriva il nuovo o l'iscritto smette). Patologie e simili, invece, non ci vanno.
 
 ## Provare lo schema senza Supabase
 
