@@ -13,6 +13,16 @@
  */
 const SCADENZA = [1175, 1800, 0.9, 'square', true] as const
 
+/**
+ * La nota di fine esercizio, quando comincia il recupero.
+ *
+ * Era di 420 millisecondi e scendeva per tutta la durata: sotto sforzo e con
+ * la musica passava inosservata. Ora dura più di un secondo e resta piena
+ * fin quasi alla fine. Resta grave e morbida, per non confondersi con il
+ * via del lavoro, acuto e squadrato.
+ */
+const RECUPERO = [600, 1200, 0.8, 'sine', true] as const
+
 export class Cues {
   private ctx: AudioContext | null = null
   /** Il fruscìo che tiene sveglio l'altoparlante bluetooth. Vedi `tieniSveglio`. */
@@ -188,7 +198,7 @@ export class Cues {
   /** Il suono del segmento che comincia, fra `fra` secondi. */
   programmaCambio(fra: number, lavoro: boolean) {
     if (lavoro) this.programma(fra, 1320, 520, 0.85, 'square')
-    else this.programma(fra, 600, 420, 0.7, 'sine')
+    else this.programma(fra, ...RECUPERO)
   }
 
   /** La nota lunga dello scadere, fra `fra` secondi. */
@@ -323,9 +333,9 @@ export class Cues {
     this.tone(1320, 520, 0.85, 'square')
   }
 
-  /** Inizio di un recupero: più basso e corto. */
+  /** Inizio di un recupero: più basso, morbido e lungo. */
   rest() {
-    this.tone(600, 420, 0.7, 'sine')
+    this.tone(...RECUPERO)
   }
 
   /**
