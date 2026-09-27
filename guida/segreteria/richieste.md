@@ -19,7 +19,10 @@ Normalmente si vedono solo le nuove; **ANCHE QUELLE GIÀ GESTITE** mostra tutte.
 Un clic apre le risposte: nato il / a, codice fiscale, residenza, genitore (per
 un minore), email e telefono, corsi, come paga (trimestre o annuale), note.
 
-Sotto, **I FILE**: modulo firmato, carta d'identità, ricevuta. Se ne manca uno
+Sotto, **I FILE**: modulo firmato, carta d'identità, ricevuta. Il modulo è
+la foto del foglio firmato a mano, oppure il PDF firmato dal telefono: il
+foglio della palestra compilato in blu, con la firma e, in fondo, la data e
+l'ora in cui è stato firmato. Se ne manca uno
 c'è scritto in rosso. I link dei file valgono **dieci minuti**: se non si
 aprono più, riaprire la richiesta.
 

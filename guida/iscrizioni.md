@@ -15,14 +15,14 @@ segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
 - **Prima di iscriverti**: la **settimana di prova** (5 €), per chi non ha
   ancora deciso, con il tasto CHIAMA.
 - **I passi, in ordine**, ognuno col suo tasto:
-  1. **Scarica il modulo** — per maggiorenni, o per minori (firmato dal
-     genitore).
-  2. **Compilalo e firmalo dal telefono** — o stampalo e firmalo a mano.
-  3. **Il pagamento** — la quota associativa e il trimestre, oppure l'annuale,
+  1. **Leggi il modulo** — per maggiorenni, o per minori (firmato dal
+     genitore). Col modulo dell'app si firma col dito nell'ultimo passo; chi
+     preferisce lo stampa, lo firma a mano e ne carica la foto.
+  2. **Il pagamento** — la quota associativa e il trimestre, oppure l'annuale,
      con l'IBAN da copiare con un tocco.
-  4. **La richiesta** — con il modulo dell'app (**COMPILA LA RICHIESTA**)
+  3. **La richiesta** — con il modulo dell'app (**COMPILA LA RICHIESTA**)
      oppure, finché quello non è acceso, con il modulo Google (**APRI IL
-     MODULO**).
+     MODULO**), che ha i suoi passi: scaricare il modulo, firmarlo e caricarlo.
 - **I costi** della stagione, e il listino in PDF.
 - **I contatti**: CHIAMA, MAPPA, INSTAGRAM, FACEBOOK, IL SITO.
 
@@ -36,8 +36,16 @@ Chi si iscrive risponde alle domande dal telefono:
 - **Residenza**, e **come raggiungerti** (email e telefono; per un minore,
   quelli del genitore).
 - **I corsi** a cui iscriversi e **come paghi** (trimestre o annuale).
-- **I file**: la foto del modulo firmato, della carta d'identità e della
-  ricevuta del pagamento.
+- **Il modulo**: le autorizzazioni si firmano **qui, col dito** (o col mouse
+  dal computer). Si sceglie come sul foglio se si acconsente al
+  **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**; per
+  un minore si scrive anche dove è nato il genitore, e firma il genitore.
+  **GUARDA IL MODULO** mostra il PDF com'è venuto: il foglio della palestra
+  con i dati delle domande, le crocette, la data e la firma su ogni riga dove
+  serve, e in fondo, in piccolo, che è stato firmato dal telefono e quando.
+  È quello che parte come modulo firmato. Chi ha già il foglio firmato a mano
+  sceglie **Ho il foglio firmato** e ne carica la foto.
+- **I file**: la foto della carta d'identità e della ricevuta del pagamento.
 - **Altro**: le note per la segreteria (facoltative, e **mai dati sulla
   salute**: quelli si portano in segreteria) e la casella «Ho letto
   l'informativa privacy».

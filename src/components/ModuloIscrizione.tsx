@@ -2,8 +2,10 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
 import { avvisi, controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
-import { INFORMATIVA_PUBBLICA } from '../lib/iscrizione'
-import { Bollino, Campo, CaricaFile, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
+import { INFORMATIVA_PUBBLICA, MODULI, STAGIONE } from '../lib/iscrizione'
+import type { SceltaModulo } from '../lib/firma'
+import { Bollino, Campo, CaricaFile, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
+import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
 
 /**
  * Il modulo di iscrizione: le domande che prima stavano su Google Form, e i
@@ -16,6 +18,12 @@ import { Bollino, Campo, CaricaFile, Dettaglio, NotaCampo, Riquadro, SceltaCorsi
  *
  * Cosa non va si scrive sotto il campo: quando lo si lascia, se è scritto
  * male, e tutto insieme quando si prova a mandare, anche quello che manca.
+ *
+ * Il modulo delle autorizzazioni si firma qui col dito: si scelgono le
+ * caselle del foglio, si firma, e al momento di mandare se ne fa il PDF
+ * compilato coi dati delle domande (`src/lib/firma.ts`), che parte come
+ * MODULO FIRMATO al posto della foto. Chi ha già il foglio firmato a mano ne
+ * carica la foto come prima.
  */
 
 const VUOTO: DatiRichiesta = {
@@ -56,6 +64,9 @@ const ID: Record<CampoModulo, string> = {
   formula: 'm-formula',
 }
 
+/** Le caselle del foglio: finché non si sceglie, nessuna. */
+type Scelte = { [K in keyof SceltaModulo]?: boolean }
+
 type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'file'; id: string; mancati: TipoFile[]; perche: string } | { tipo: 'fatto' }
 
 export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
@@ -65,6 +76,13 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
   const [b, setB] = useState<DatiRichiesta>(VUOTO)
   const [file, setFile] = useState<Partial<Record<TipoFile, File>>>({})
   const [privacy, setPrivacy] = useState(false)
+  // Il modulo: firmato qui, o la foto del foglio firmato a mano.
+  const [come, setCome] = useState<'qui' | 'foto'>('qui')
+  const [scelte, setScelte] = useState<Scelte>({})
+  const [tratti, setTratti] = useState<Tratto[]>([])
+  const [genitoreNatoA, setGenitoreNatoA] = useState('')
+  const [genitoreProvincia, setGenitoreProvincia] = useState('')
+  const [guaioFirma, setGuaioFirma] = useState<string | null>(null)
   // Un campo che una persona non vede e un programma riempie.
   const [trappola, setTrappola] = useState('')
   const [guaio, setGuaio] = useState<string | null>(null)
@@ -94,6 +112,12 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
     genitoreCognome: minore ? b.genitoreCognome : '',
     genitoreCodiceFiscale: minore ? b.genitoreCodiceFiscale : '',
   }
+  // Se chi firma cambia (la data di nascita dice minore, o non più), la firma
+  // di prima non è la sua.
+  useEffect(() => setTratti([]), [minore])
+  const firmatario = minore ? `${(b.genitoreNome ?? '').trim()} ${(b.genitoreCognome ?? '').trim()}`.trim() : `${b.nome.trim()} ${b.cognome.trim()}`.trim()
+  const foglio = MODULI[minore ? 1 : 0]
+
   const errori = problemi(pronta)
   const attenzione = avvisi(pronta)
   /** Cosa scrivere sotto un campo: «Manca» solo dopo aver provato a mandare. */
@@ -114,11 +138,61 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
   const metti = (k: keyof DatiRichiesta) => (e: { target: { value: string } }) => setB({ ...b, [k]: e.target.value })
   const scegli = (id: string) => setB({ ...b, corsi: b.corsi.includes(id) ? b.corsi.filter((c) => c !== id) : [...b.corsi, id] })
 
-  const carica = async (id: string, quali: TipoFile[]) => {
+  /** Cosa manca per fare il modulo firmato; `null` se si può. */
+  const mancaPerFirmare = (): string | null => {
+    if (scelte.tesseramento === undefined) return 'Nel modulo: scegli se acconsenti al tesseramento alla FIJLKAM e/o FIPE'
+    if (scelte.foto === undefined) return 'Nel modulo: scegli se autorizzi le foto'
+    if (minore && !genitoreNatoA.trim()) return 'Nel modulo: manca dove è nato il genitore'
+    if (!firmaVera(tratti)) return tratti.length ? 'La firma è troppo piccola: firma per bene nel riquadro' : 'Manca la firma sul modulo'
+    return null
+  }
+
+  /** Il PDF del modulo, compilato coi dati di adesso e firmato. */
+  const faiModulo = async (): Promise<File> => {
+    const [{ moduloFirmato }, originale, firma] = await Promise.all([
+      import('../lib/firma'),
+      fetch(foglio.file).then((r) => {
+        if (!r.ok) throw new Error('Il modulo non si scarica')
+        return r.arrayBuffer()
+      }),
+      firmaPng(tratti),
+    ])
+    const pdf = await moduloFirmato({
+      dati: pronta,
+      minore,
+      scelte: { tesseramento: !!scelte.tesseramento, foto: !!scelte.foto },
+      genitoreNatoA,
+      genitoreProvincia,
+      firma,
+      originale,
+      stagione: STAGIONE,
+    })
+    return new File([new Uint8Array(pdf)], 'modulo-firmato.pdf', { type: 'application/pdf' })
+  }
+
+  /** Il modulo com'è venuto, in un'altra scheda, prima di mandarlo. */
+  const guarda = async () => {
+    const manca = mancaPerFirmare()
+    setGuaioFirma(manca)
+    if (manca) return
+    // La scheda si apre subito, al tocco: dopo un'attesa il telefono la bloccherebbe.
+    const scheda = window.open('', '_blank')
+    try {
+      const url = URL.createObjectURL(await faiModulo())
+      if (scheda) scheda.location.href = url
+      else window.location.assign(url)
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    } catch (e) {
+      scheda?.close()
+      setGuaioFirma(`Il modulo non si prepara: ${e instanceof Error ? e.message : 'riprova'}`)
+    }
+  }
+
+  const carica = async (id: string, quali: TipoFile[], tutti = file) => {
     const mancati: TipoFile[] = []
     let perche = ''
     for (const tipo of quali) {
-      const f = file[tipo]
+      const f = tutti[tipo]
       if (!f) continue
       setFase({ tipo: 'invio', passo: `Carico ${FILE.find((x) => x.tipo === tipo)!.etichetta.toLowerCase()}…` })
       try {
@@ -138,9 +212,25 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
     setProvato(true)
     const primo = (Object.keys(ID) as CampoModulo[]).find((k) => errori[k])
     if (primo) setTimeout(() => document.getElementById(ID[primo])?.focus(), 0)
-    const manca = controlla(pronta) ?? FILE.filter((f) => f.obbligatorio && !file[f.tipo]).map((f) => `Manca: ${f.etichetta.toLowerCase()}`)[0]
+    const manca =
+      controlla(pronta) ??
+      (come === 'qui' ? mancaPerFirmare() : null) ??
+      FILE.filter((f) => f.obbligatorio && !file[f.tipo] && !(f.tipo === 'modulo' && come === 'qui')).map((f) => `Manca: ${f.etichetta.toLowerCase()}`)[0]
     if (manca) return setGuaio(manca)
     if (!privacy) return setGuaio("Serve la conferma di aver letto l'informativa privacy")
+    // Il modulo firmato si fa prima di mandare le risposte: se non viene, non
+    // nasce una richiesta senza modulo.
+    let tutti = file
+    if (come === 'qui') {
+      setFase({ tipo: 'invio', passo: 'Preparo il modulo firmato…' })
+      try {
+        tutti = { ...file, modulo: await faiModulo() }
+      } catch (e) {
+        setFase({ tipo: 'compila' })
+        return setGuaio(`Il modulo firmato non si prepara (${e instanceof Error ? e.message : 'riprova'}): riprova, o caricane la foto`)
+      }
+      setFile(tutti)
+    }
     setFase({ tipo: 'invio', passo: 'Mando le risposte…' })
     let id: string
     try {
@@ -149,7 +239,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
       setFase({ tipo: 'compila' })
       return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')
     }
-    await carica(id, FILE.map((f) => f.tipo))
+    await carica(id, FILE.map((f) => f.tipo), tutti)
   }
 
   if (fase.tipo === 'fatto') {
@@ -278,8 +368,98 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         </div>
       </Sezione>
 
+      <Sezione titolo="IL MODULO">
+        <div className="modulo-campo modulo-largo">
+          <Dettaglio tono="testo">
+            Le autorizzazioni {minore ? 'per minori, che firma il genitore' : 'per maggiorenni'}: il tesseramento, le foto e la privacy.{' '}
+            <a href={foglio.file} target="_blank" rel="noreferrer" className="link-sec">
+              Leggi il modulo
+            </a>
+            .
+          </Dettaglio>
+          <SceltaCorsi
+            id="m-come"
+            etichetta="Come firmi il modulo"
+            una
+            voci={[
+              { id: 'qui', testo: 'Firmo qui' },
+              { id: 'foto', testo: 'Ho il foglio firmato' },
+            ]}
+            scelti={[come]}
+            onScegli={(c) => setCome(c as 'qui' | 'foto')}
+          />
+        </div>
+        {come === 'foto' ? (
+          <SceltaFile tipo="modulo" file={file.modulo} onFile={(x) => setFile((p) => ({ ...p, modulo: x }))} />
+        ) : (
+          <>
+            <Casella
+              id="m-tesseramento"
+              etichetta="IL TESSERAMENTO ALLA FIJLKAM E/O FIPE"
+              dettaglio={`Per la stagione ${STAGIONE}.`}
+              si={minore ? 'Autorizzo' : 'Acconsento'}
+              no={minore ? 'Non autorizzo' : 'Non acconsento'}
+              scelta={scelte.tesseramento}
+              onScegli={(x) => setScelte({ ...scelte, tesseramento: x })}
+            />
+            <Casella
+              id="m-foto"
+              etichetta={minore ? 'LE FOTO E I VIDEO DEL MINORE' : 'LE FOTO SUI SOCIAL'}
+              dettaglio={minore ? 'Sui canali social della palestra e nei volantini e manifesti dei suoi eventi.' : 'Le foto che ti ritraggono, sui social della palestra.'}
+              si="Autorizzo"
+              no="Non autorizzo"
+              scelta={scelte.foto}
+              onScegli={(x) => setScelte({ ...scelte, foto: x })}
+            />
+            {minore && (
+              <>
+                <Campo id="m-g-nato-a" etichetta="DOVE È NATO IL GENITORE">
+                  <input id="m-g-nato-a" className="campo" value={genitoreNatoA} onChange={(e) => setGenitoreNatoA(e.target.value)} />
+                </Campo>
+                <Campo id="m-g-prov" etichetta="PROVINCIA · SIGLA">
+                  <input
+                    id="m-g-prov"
+                    className="campo campo-codice"
+                    autoCapitalize="characters"
+                    maxLength={2}
+                    value={genitoreProvincia}
+                    onChange={(e) => setGenitoreProvincia(e.target.value.toUpperCase())}
+                  />
+                </Campo>
+              </>
+            )}
+            <div className="modulo-campo modulo-largo">
+              <label htmlFor="m-firma" className="modulo-etichetta">
+                {firmatario ? `LA FIRMA DI ${firmatario.toUpperCase()}` : minore ? 'LA FIRMA DEL GENITORE' : 'LA FIRMA'}
+              </label>
+              <TavolaFirma
+                id="m-firma"
+                tratti={tratti}
+                onTratti={(t) => {
+                  setTratti(t)
+                  setGuaioFirma(null)
+                }}
+                descritto="m-firma-nota"
+              />
+              <Dettaglio>
+                <span id="m-firma-nota">
+                  I dati delle domande, le caselle scelte, la data e la firma si scrivono sul modulo, e la firma va in ogni riga dove serve.
+                </span>
+              </Dettaglio>
+              {guaioFirma && <Dettaglio tono="guaio">{guaioFirma}</Dettaglio>}
+              <Tasti>
+                <Tasto onClick={() => setTratti([])} disabled={!tratti.length}>
+                  CANCELLA LA FIRMA
+                </Tasto>
+                <Tasto onClick={() => void guarda()}>GUARDA IL MODULO</Tasto>
+              </Tasti>
+            </div>
+          </>
+        )}
+      </Sezione>
+
       <Sezione titolo="I FILE">
-        {FILE.map((f) => (
+        {FILE.filter((f) => f.tipo !== 'modulo').map((f) => (
           <SceltaFile key={f.tipo} tipo={f.tipo} file={file[f.tipo]} onFile={(x) => setFile((p) => ({ ...p, [f.tipo]: x }))} />
         ))}
       </Sezione>
@@ -328,6 +508,43 @@ function Sezione({ titolo, children }: { titolo: string; children: ReactNode }) 
       <Titoletto>{titolo}</Titoletto>
       <div className="pad modulo-griglia">{children}</div>
     </section>
+  )
+}
+
+/** Una casella del modulo: sì o no, e finché non si sceglie nessuna delle due. */
+function Casella({
+  id,
+  etichetta,
+  dettaglio,
+  si,
+  no,
+  scelta,
+  onScegli,
+}: {
+  id: string
+  etichetta: string
+  dettaglio: string
+  si: string
+  no: string
+  scelta?: boolean
+  onScegli: (x: boolean) => void
+}) {
+  return (
+    <div className="modulo-campo modulo-largo">
+      <span className="modulo-etichetta">{etichetta}</span>
+      <Dettaglio>{dettaglio}</Dettaglio>
+      <SceltaCorsi
+        id={id}
+        etichetta={etichetta.toLowerCase()}
+        una
+        voci={[
+          { id: 'si', testo: si },
+          { id: 'no', testo: no },
+        ]}
+        scelti={scelta === undefined ? [] : [scelta ? 'si' : 'no']}
+        onScegli={(x) => onScegli(x === 'si')}
+      />
+    </div>
   )
 }
 

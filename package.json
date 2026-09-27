@@ -15,10 +15,12 @@
     "prova:coda": "node scripts/prova-coda.mjs",
     "prova:tablet": "node scripts/prova-tablet.mjs",
     "prova:segreteria": "node scripts/prova-segreteria.mjs",
-    "prova:richieste": "node scripts/prova-richieste.mjs"
+    "prova:richieste": "node scripts/prova-richieste.mjs",
+    "prova:firma": "node scripts/prova-firma.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.1",
+    "pdf-lib": "^1.17.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
