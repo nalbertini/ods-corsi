@@ -69,8 +69,11 @@ export const MODULI: Documento[] = [
   { etichetta: 'MINORI', file: 'moduli/autorizzazioni-minori.pdf' },
 ]
 
+/** La stagione: quella dei costi, e l'anno del tesseramento sul modulo firmato dall'app. */
+export const STAGIONE = '2026/27'
+
 /** I costi della stagione, corso per corso, con sconti e offerte. */
-export const LISTINO: Documento = { etichetta: 'COSTI 2026/27', file: 'moduli/costi-2026-27.pdf' }
+export const LISTINO: Documento = { etichetta: `COSTI ${STAGIONE}`, file: 'moduli/costi-2026-27.pdf' }
 
 /** Dove si paga, dal foglio dei costi. */
 export const PAGAMENTO = {
@@ -96,12 +99,17 @@ export interface Passo {
   azione?: 'moduli' | 'link' | 'pagamento' | 'modulo'
 }
 
-/** Col modulo dell'app: le domande e le foto stanno tutte nell'ultimo passo. */
+/**
+ * Col modulo dell'app: le domande, la firma e le foto stanno tutte
+ * nell'ultimo passo. Il modulo delle autorizzazioni si firma lì col dito
+ * (`src/lib/firma.ts`), e qui si scarica solo per leggerlo, o per chi
+ * preferisce stamparlo.
+ */
 const PASSI_APP: Passo[] = [
-  { titolo: 'Scarica il modulo', dettaglio: 'Quello per maggiorenni, o quello per minori che firma il genitore.', azione: 'moduli' },
   {
-    titolo: 'Compilalo e firmalo dal telefono',
-    dettaglio: 'Se non ci riesci, stampalo, firmalo a mano e fagli una foto.',
+    titolo: 'Leggi il modulo',
+    dettaglio: 'Quello per maggiorenni, o quello per minori che firma il genitore. Lo firmi col dito nell’ultimo passo, o lo stampi e ne fai una foto.',
+    azione: 'moduli',
   },
   {
     titolo: 'Fai il pagamento',
@@ -110,7 +118,7 @@ const PASSI_APP: Passo[] = [
   },
   {
     titolo: 'Manda la richiesta da qui',
-    dettaglio: "Le domande, poi le foto del modulo firmato, della carta d'identità e della ricevuta.",
+    dettaglio: "Le domande, la firma sul modulo, poi le foto della carta d'identità e della ricevuta.",
     azione: 'modulo',
   },
 ]

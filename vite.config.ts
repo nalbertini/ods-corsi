@@ -89,6 +89,13 @@ export default defineConfig({
   // prenderebbero da lì una seconda copia di React, e due React nella stessa
   // pagina non si parlano.
   resolve: { dedupe: ['react', 'react-dom', '@supabase/supabase-js'] },
+  // pdf-lib, per il modulo firmato dal telefono, in un pezzo col suo nome:
+  // serve solo a chi si iscrive, e non entra nella cache di tutti (vedi sotto).
+  build: {
+    rollupOptions: {
+      output: { manualChunks: (id) => (/node_modules\/(@pdf-lib|pdf-lib|pako|tslib)\//.test(id) ? 'pdf-lib' : undefined) },
+    },
+  },
   plugins: [
     react(),
     pagineDelleAree(),
@@ -128,7 +135,8 @@ export default defineConfig({
         // Il timer, in `timer/`, ha il suo service worker: questo non deve
         // rispondere con ODS Corsi alle sue pagine, né precaricarne i file.
         navigateFallbackDenylist: [/informativa\.html$/, /\/moduli\//, /\.pdf$/, /\/timer(\/|$)/],
-        globIgnores: ['timer/**'],
+        // Né pdf-lib: 180 KB che scarica solo chi firma il modulo, quando lo firma.
+        globIgnores: ['timer/**', 'assets/pdf-lib-*.js'],
         // La voce e le illustrazioni del timer, chieste dal tablet di sala che
         // lo contiene: come nel timer, entrano in cache alla prima richiesta.
         // Stessi nomi delle cache del timer: la cache è una per il sito, e
