@@ -189,7 +189,12 @@ input, textarea { font: inherit; color: inherit; }
 /* ---------- impalcatura ---------- */
 
 .app { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-.scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+/* `relative` tiene dentro lo scorrimento anche quello che è `absolute` senza
+   un contenitore suo, come i campi nascosti `.vh` del modulo: senza, stavano
+   dove li metteva la pagina e la allungavano oltre la finestra, e quando il
+   browser la faceva scorrere per portarli in vista (il tasto SCEGLI di un
+   file) l'app saliva e sotto restava una striscia di fondo vuota. */
+.scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; }
 /* `hidden` deve vincere su `display: flex`, altrimenti non nasconde niente. */
 [hidden] { display: none !important; }
 .pad { padding: 0 20px; }
