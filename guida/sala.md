@@ -44,8 +44,8 @@ modificano dal proprio telefono, entrando come istruttore. Il tema bianco
 scelto qui vale anche nel timer, e viceversa.
 
 Maurizio, i segnali, il volume, lo schermo e la musica durante il timer si
-scelgono nel timer, dalle sue **IMPOSTAZIONI**, come sul telefono: ogni
-tablet tiene le sue. La voce e gli esercizi invece li sceglie la segreteria
+scelgono nel timer, dalle sue **IMPOSTAZIONI**, e sono uguali su tutti i
+tablet: cambiati su uno, gli altri li prendono entro cinque minuti. La voce e gli esercizi invece li sceglie la segreteria
 per tutti i tablet (vedi [Impostazioni](segreteria/regole.md#la-voce-dei-tablet)
 ed [Esercizi](segreteria/esercizi.md)); dal tablet si sceglie solo se usare
 le clip incise. Lo storico dei timer si guarda dalla segreteria.

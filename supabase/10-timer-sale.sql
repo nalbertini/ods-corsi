@@ -1,16 +1,16 @@
 -- ---------------------------------------------------------------------------
 -- ODS Corsi · il timer dei tablet di sala
 --
--- Il tablet di sala ha il timer in una scheda, ma nessuno ci entra a
--- scegliere Maurizio, i bip o il volume: un tablet appeso al muro non ha un
--- padrone. Le sceglie la segreteria, da IMPOSTAZIONI, accanto alla musica
--- delle sale, e valgono per tutti i tablet. Sul tablet non si cambiano.
+-- Il tablet di sala ha il timer in una scheda: Maurizio, i bip, il volume
+-- e lo schermo sono uguali su tutti i tablet. Si scelgono nel timer, su un
+-- tablet qualunque, e li prendono tutti (14-timer-dal-tablet.sql).
 --
 -- Stanno in una colonna della riga delle impostazioni, così come le scrive
 -- l'app (`timer/src/lib/impostazioniSala.ts`): il database non le
 -- interpreta, le custodisce, come fa con i timer. Chi le legge e chi le
 -- cambia è già deciso da `05-segreteria.sql`: le legge chiunque abbia un
--- accesso, tablet compresi; le cambia la segreteria.
+-- accesso, tablet compresi; le cambia la segreteria, e il tablet dalla sua
+-- funzione in `14-timer-dal-tablet.sql`.
 --
 -- Si lancia dopo `09-musica.sql`. Non crea funzioni, quindi non chiede di
 -- rilanciare `06-iscrizioni.sql`.

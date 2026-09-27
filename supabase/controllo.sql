@@ -77,13 +77,15 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.preferenze_timer') is not null),
   ('09-musica.sql', 'la musica delle sale',
     exists (select 1 from dentro where nome = 'musica_sala')),
-  ('10-timer-sale.sql', 'il timer dei tablet, deciso dalla segreteria',
+  ('10-timer-sale.sql', 'il timer dei tablet, uguale per tutti',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'timer')),
   ('11-timer-lezioni.sql', 'il timer di una singola lezione',
     to_regclass('public.sessioni_timer') is not null),
   ('12-calendario-da-se.sql', 'il calendario che si allunga da sé',
     exists (select 1 from dentro where nome = 'allunga_calendario')),
+  ('14-timer-dal-tablet.sql', 'il timer delle sale cambiato da un tablet',
+    exists (select 1 from dentro where nome = 'salva_timer_sala')),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')

@@ -1,7 +1,8 @@
 -- La musica delle sale: la segreteria prepara le liste, il tablet vede solo
 -- quelle della sua sala e di tutte, e non le cambia.
 -- Si lancia dopo finto-supabase.sql e i dieci file dello schema.
--- In fondo, anche le impostazioni del timer dei tablet (10-timer-sale.sql).
+-- In fondo, anche le impostazioni del timer dei tablet (10-timer-sale.sql e
+-- 14-timer-dal-tablet.sql: uguali per tutti, le cambia anche un tablet).
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -101,7 +102,7 @@ delete from sale where id = 'bbbbbbbb-0000-0000-0000-000000000002';
 select atteso('resta quella di tutte e quella della Lotta', (select count(*)::text from musica_sale), '2');
 
 \echo ''
-\echo '--- 7. Il timer dei tablet: lo decide la segreteria, il tablet lo legge ---'
+\echo '--- 7. Il timer dei tablet: uguale per tutti, lo cambia un tablet o la segreteria ---'
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('la segreteria lo sceglie',
@@ -117,9 +118,25 @@ reset role;
 select chi('66666666-6666-6666-6666-666666666666');
 set role authenticated;
 select atteso('il tablet lo legge', tenta($$select timer->>'volume' from impostazioni$$), '0.6');
-select atteso('e non lo cambia', tenta($$update impostazioni set timer = '{}' where id$$), 'a vuoto (0 righe)');
+select atteso('la riga non la cambia', tenta($$update impostazioni set timer = '{}' where id$$), 'a vuoto (0 righe)');
+select atteso('il timer sì, dalla funzione',
+  tenta($$select salva_timer_sala('{"coach":"distratto","volume":0.4}')::text$$), '');
+select atteso('e lo trova cambiato', tenta($$select timer->>'coach' from impostazioni$$), 'distratto');
+select atteso('solo con un oggetto', tenta($$select salva_timer_sala('[1,2]')::text$$), 'NEGATO: …');
+select atteso('e non troppo grande',
+  tenta($$select salva_timer_sala(jsonb_build_object('x', repeat('a', 5000)))::text$$), 'NEGATO: …');
+reset role;
+select atteso('il resto della riga non si tocca', (select mesi_presenze::text from impostazioni), '24');
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('l''istruttrice dalla funzione no', tenta($$select salva_timer_sala('{}')::text$$), 'NEGATO: …');
+reset role;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria anche dalla funzione', tenta($$select salva_timer_sala('{"coach":"classico"}')::text$$), '');
 reset role;
 select chi('');
 set role anon;
 select atteso('chi non ha fatto l''accesso no', tenta($$select timer::text from impostazioni$$), 'NEGATO: …');
+select atteso('e dalla funzione nemmeno', tenta($$select salva_timer_sala('{}')::text$$), 'NEGATO: …');
 reset role;

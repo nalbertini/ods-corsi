@@ -1,7 +1,7 @@
 import type { SegmentKind, Settings } from '../types'
 import type { Lezione } from './lezione'
 import type { Status } from './useTimer'
-import type { TimerSala } from './impostazioniSala'
+import type { ImpostazioniSala, TimerSala } from './impostazioniSala'
 import type { FonteClip } from './voice'
 
 /**
@@ -13,8 +13,9 @@ import type { FonteClip } from './voice'
  * arriva tardi si segna, e il tablet ne mostra lo stato nella sua testata.
  * La musica sta nella barra del tablet, sempre allo stesso posto, e la sceglie
  * la sala: le impostazioni del timer valgono finché non se ne sceglie un'altra.
- * La voce e gli esercizi li sceglie la segreteria per tutti i tablet;
- * Maurizio, i segnali e lo schermo si scelgono nelle impostazioni del timer.
+ * Maurizio, i segnali e lo schermo si scelgono nelle impostazioni del timer,
+ * su un tablet qualunque, e valgono per tutti; la voce e gli esercizi li
+ * sceglie la segreteria.
  */
 export interface Incorporato {
   /** La lezione in cui ci si segna adesso: in cima i timer del suo corso. */
@@ -22,10 +23,16 @@ export interface Incorporato {
   /** Fonte e link della musica scelti in sala, al posto di quelli delle impostazioni. */
   musica: Pick<Settings, 'musicaFonte' | 'youtube'>
   /**
-   * La voce e il catalogo degli esercizi scelti dalla segreteria; nullo
-   * finché non si è letto (senza rete, quello dell'ultima volta).
+   * Il timer uguale per tutti i tablet, con la voce e il catalogo degli
+   * esercizi scelti dalla segreteria; nullo finché non si è letto (senza rete,
+   * quello dell'ultima volta).
    */
   sala: TimerSala | null
+  /**
+   * Il timer ha cambiato Maurizio, i segnali o lo schermo: il tablet li salva
+   * per tutti i tablet. Arriva quando si smette di toccare, non a ogni pixel.
+   */
+  onTimerSala?: (i: ImpostazioniSala) => void
   /** Le clip incise dalla segreteria; nullo se non se ne sono lette. */
   clip: FonteClip | null
   /** Si sta guardando la scheda del timer: senza, la tastiera non lo comanda. */

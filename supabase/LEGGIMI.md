@@ -33,10 +33,11 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 7. `07-certificati-pagamenti.sql` — il certificato medico e il pagamento degli iscritti
 8. `08-timer.sql` — il timer: la libreria della palestra, i timer personali e dei corsi, lo storico, le preferenze
 9. `09-musica.sql` — la musica delle sale, che il tablet fa partire dalla sua barra
-10. `10-timer-sale.sql` — il timer dei tablet di sala, scelto dalla segreteria
+10. `10-timer-sale.sql` — il timer dei tablet di sala, uguale per tutti
 11. `11-timer-lezioni.sql` — il timer di una singola lezione, scelto dall'istruttore in I MIEI TIMER
 12. `12-calendario-da-se.sql` — il calendario che si allunga da sé, senza job
 13. `13-voce-esercizi.sql` — la voce, le clip incise e gli esercizi dei tablet di sala, scelti dalla segreteria
+14. `14-timer-dal-tablet.sql` — il timer dei tablet di sala si cambia da un tablet qualunque
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -62,7 +63,10 @@ calendario si allunga solo con RIGENERA o con il job settimanale. Per la
 voce e gli esercizi dei tablet basta `13-voce-esercizi.sql`, che non chiede
 di rilanciare `06-iscrizioni.sql`: finché non c'è, la segreteria dice che
 voce ed esercizi non si leggono, e i tablet tengono la voce e il catalogo
-che avevano.
+che avevano. Per cambiare il timer delle sale da un tablet basta
+`14-timer-dal-tablet.sql` (dopo `10-timer-sale.sql`), che non chiede di
+rilanciare `06-iscrizioni.sql`: finché non c'è, quello che si sceglie su un
+tablet non si salva, e al giro dopo il tablet torna a quello del database.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -420,9 +424,14 @@ tutte — e non le cambia.
 ### Il timer delle sale
 
 Maurizio, i segnali, il volume, lo schermo e la musica durante il timer dei
-tablet si scelgono nelle impostazioni del timer, su ogni tablet. La colonna
-`timer` della riga delle impostazioni (`10-timer-sale.sql`), dove prima le
-sceglieva la segreteria, resta ma l'app non la legge più.
+tablet sono uguali su tutti i tablet, e si scelgono nelle impostazioni del
+timer, su un tablet qualunque. Stanno nella riga delle impostazioni, colonna
+`timer` (`10-timer-sale.sql`), così come le scrive l'app
+(`timer/src/lib/impostazioniSala.ts`), e le legge chiunque abbia un accesso,
+tablet compresi. La riga la cambia solo la segreteria: il tablet passa da
+`salva_timer_sala` (`14-timer-dal-tablet.sql`), che cambia il timer e
+nient'altro, e che chiama solo un tablet o la segreteria. Gli altri tablet le
+prendono al loro giro, ogni cinque minuti.
 
 La segreteria sceglie invece, da **Impostazioni → La voce dei tablet** e da **Esercizi** (`13-voce-esercizi.sql`): la voce di sistema, per nome (il
 tablet usa quella con lo stesso nome, se ce l'ha, altrimenti la prima voce
@@ -516,8 +525,8 @@ e pagamenti li veda e li cambi solo la segreteria; `timer.sql` prova il timer:
 chi vede e cambia i timer della palestra, i propri e quelli dei colleghi, il
 tablet che li apre senza scriverli, lo storico e le preferenze; `musica.sql`
 prova la musica delle sale: la cura la segreteria, e il tablet vede solo la
-sua; in fondo, che il timer delle sale lo cambi solo la segreteria e il
-tablet lo legga; `timer-lezioni.sql`, dopo `timer.sql`, prova il timer di
+sua; in fondo, che il timer delle sale lo legga il tablet e lo cambi, dalla
+sua funzione, solo lui o la segreteria, senza toccare il resto della riga; `timer-lezioni.sql`, dopo `timer.sql`, prova il timer di
 una singola lezione: lo lega il personale, lo legge il tablet, e un timer
 personale legato a una lezione lo vedono anche gli altri; `calendario-da-se.sql`
 prova il calendario che si allunga da sé: lo allunga anche un istruttore, ma
