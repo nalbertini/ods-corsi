@@ -72,10 +72,10 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
   controllo, la data di nascita, e per un minore che quello del genitore sia
   di un adulto) e cosa non va si scrive sotto il campo. Le richieste arrivano in segreteria, in **RICHIESTE ONLINE**,
   con i file da guardare: accolta, la persona entra in elenco iscritta ai
-  corsi che ha scelto, senza doppioni se c'era già. Col database vero si
-  accende quando l'informativa privacy (`public/informativa.html`, per ora una
-  bozza da far approvare alla palestra) è approvata; fino ad allora resta il
-  link a Google.
+  corsi che ha scelto, senza doppioni se c'era già. Col database vero è
+  acceso da quando la palestra ha approvato l'informativa privacy
+  (`public/informativa.html`, 27 settembre 2026), che si legge in fondo alla
+  pagina delle iscrizioni.
 - **L'accesso** col database: ogni area ha il suo indirizzo e la sua porta;
   l'istruttore entra nel calendario e nell'appello, la segreteria nella
   segreteria, e nessuno vede schede che non gli servono. Le aree sono

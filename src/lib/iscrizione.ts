@@ -9,8 +9,9 @@
 import { haUnServer } from './dati'
 
 /**
- * Il modulo Google dove si caricavano risposte, foto e pagamento. Resta finché
- * il modulo dell'app non si può usare col database vero: vedi `MODULO_IN_APP`.
+ * Il modulo Google dove si caricavano risposte, foto e pagamento. Resta solo
+ * per la pagina pubblica senza il database vero, vedi `MODULO_IN_APP_PUBBLICO`,
+ * e per rimettere il passo com'era se il modulo dell'app si dovesse spegnere.
  */
 export const LINK_ISCRIZIONE = 'https://forms.gle/eZyGvAD4h7cNNpXF7'
 
@@ -24,13 +25,12 @@ export const LINK_ISCRIZIONE = 'https://forms.gle/eZyGvAD4h7cNNpXF7'
 export const INFORMATIVA: string | undefined = 'informativa.html'
 
 /**
- * Vero finché la palestra non ha approvato il testo, che è stato scritto
- * insieme all'app. Da togliere insieme al riquadro BOZZA in
- * `public/informativa.html`, quando è approvato: prima, col database vero,
+ * Vero finché la palestra non ha approvato il testo: col database vero,
  * l'informativa non si mostra al pubblico e il modulo di iscrizione resta
- * spento.
+ * spento. Approvata il 27 settembre 2026. Se il testo cambia e va approvato di
+ * nuovo, si rimette a `true`, insieme a un riquadro BOZZA nella pagina.
  */
-export const INFORMATIVA_BOZZA = true
+export const INFORMATIVA_BOZZA = false
 
 /** L'informativa da far vedere a chi si iscrive: una bozza solo in prova. */
 export const INFORMATIVA_PUBBLICA = INFORMATIVA && (!INFORMATIVA_BOZZA || !haUnServer) ? INFORMATIVA : undefined
