@@ -19,6 +19,11 @@ export interface Exercise {
   reps?: number
   /** Carico in chili. Mezzi chili ammessi. */
   kg?: number
+  /**
+   * La serie in cui si fa, contando da 1. Senza, si fa in tutte: è il caso di
+   * sempre, e resta quello di un timer che le serie non le distingue.
+   */
+  serie?: number
 }
 
 export interface Workout {

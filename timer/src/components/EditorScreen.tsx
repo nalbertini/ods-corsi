@@ -162,6 +162,9 @@ export function EditorScreen({
   // L'obiettivo si apre una riga per volta: tre campi per ogni esercizio,
   // sempre aperti, trasformerebbero un circuito da otto stazioni in un modulo.
   const [obiettivoAperto, setObiettivoAperto] = useState<string | null>(null)
+  // La serie che si sta guardando: 0 vuol dire tutte. Gli esercizi aggiunti
+  // da qui finiscono in quella serie, e l'elenco mostra solo quelli che ci si fanno.
+  const [serieScelta, setSerieScelta] = useState(0)
   const set = (patch: Partial<Workout>) => setW((prev) => ({ ...prev, ...patch, builtin: false, updatedAt: Date.now() }))
 
   const fields = MODE_FIELDS[w.mode]
@@ -171,10 +174,18 @@ export function EditorScreen({
   // pensa a cosa fare, e scendere fino all'elenco per aggiungerli era un
   // secondo passaggio. Il circuito non ce l'ha: ogni stazione ha la sua durata.
   const cellaLavoro: Field | undefined = steppers.includes('work') ? 'work' : steppers.includes('duration') ? 'duration' : undefined
-  const nomiEsercizi = w.exercises.map((e) => e.name.trim()).filter(Boolean)
+  // Le serie si distinguono solo quando ce n'è più d'una: il FOR TIME non ne ha.
+  const conSerie = w.mode !== 'fortime' && w.sets > 1
+  const vista = conSerie && serieScelta <= w.sets ? serieScelta : 0
+  const inVista = (e: Exercise) => vista === 0 || !e.serie || e.serie === vista
+  const visibili = w.exercises.filter(inVista)
+  const nomiEsercizi = visibili.map((e) => e.name.trim()).filter(Boolean)
+  // L'anteprima di una serie parte dalla serie: guardando la terza, le prime
+  // dodici righe dell'allenamento non direbbero niente.
+  const anteprima = vista === 0 ? segments : segments.filter((s) => s.set === vista && s.kind !== 'prepare' && s.kind !== 'cooldown')
 
   const aggiungiDalCatalogo = (nomi: string[]) => {
-    set({ exercises: [...w.exercises, ...nomi.map((name) => ({ id: uid(), name }))] })
+    set({ exercises: [...w.exercises, ...nomi.map((name) => ({ id: uid(), name, ...(vista ? { serie: vista } : {}) }))] })
     setScegliendo(false)
   }
   const renameExercise = (id: string, name: string) =>
@@ -184,12 +195,20 @@ export function EditorScreen({
   const removeExercise = (id: string) => set({ exercises: w.exercises.filter((e) => e.id !== id) })
   const setObiettivo = (id: string, patch: Partial<Pick<Exercise, 'sets' | 'reps' | 'kg'>>) =>
     set({ exercises: w.exercises.map((e) => (e.id === id ? { ...e, ...patch } : e)) })
+  /** In quale serie si fa: il tocco passa a quella dopo, e dall'ultima torna a tutte. */
+  const cambiaSerie = (ex: Exercise) => {
+    const prossima = !ex.serie || ex.serie >= w.sets ? (ex.serie ? undefined : 1) : ex.serie + 1
+    set({ exercises: w.exercises.map((e) => (e.id === ex.id ? { ...e, serie: prossima } : e)) })
+  }
+  // Si sposta fra le righe che si vedono: dentro una serie, scambiarla con una
+  // riga di un'altra serie, nascosta, sembrerebbe un tocco andato a vuoto.
   const move = (index: number, step: -1 | 1) => {
     const to = index + step
-    if (to < 0 || to >= w.exercises.length) return
+    if (to < 0 || to >= visibili.length) return
+    const a = w.exercises.indexOf(visibili[index])
+    const b = w.exercises.indexOf(visibili[to])
     const list = [...w.exercises]
-    const [item] = list.splice(index, 1)
-    list.splice(to, 0, item)
+    ;[list[a], list[b]] = [list[b], list[a]]
     set({ exercises: list })
   }
 
@@ -288,20 +307,42 @@ export function EditorScreen({
           <span className="rule-label">{w.mode === 'circuit' ? 'STAZIONI' : 'ESERCIZI'}</span>
           <div className="rule-line" />
           <span className="num" style={{ fontSize: 14, fontWeight: 600, color: 'var(--dim)' }}>
-            {w.exercises.length}
+            {visibili.length}
           </span>
         </div>
+        {conSerie && (
+          <div className="pad row serie-schede" role="tablist" aria-label="Esercizi per serie">
+            {Array.from({ length: w.sets + 1 }, (_, n) => (
+              <button
+                key={n}
+                className="chip"
+                role="tab"
+                data-on={vista === n}
+                aria-selected={vista === n}
+                onClick={() => setSerieScelta(n)}
+              >
+                {n === 0 ? 'TUTTE' : `SERIE ${n}`}
+              </button>
+            ))}
+          </div>
+        )}
         <p className="pad" style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)', margin: '0 0 10px' }}>
-          {w.mode === 'circuit'
-            ? 'Ogni stazione è un intervallo di lavoro, con la sua durata.'
-            : 'I nomi si alternano a ogni round. Lascia vuoto per non annunciare nulla.'}{' '}
+          {vista > 0
+            ? `Nella serie ${vista} si fanno i suoi esercizi e quelli di tutte le serie. Quelli che aggiungi da qui vanno solo nella serie ${vista}.`
+            : w.mode === 'circuit'
+              ? 'Ogni stazione è un intervallo di lavoro, con la sua durata.'
+              : 'I nomi si alternano a ogni round. Lascia vuoto per non annunciare nulla.'}{' '}
+          {conSerie && vista === 0 && 'Tocca TUTTE LE SERIE sotto un esercizio per farlo solo in una. '}
           L’obiettivo — serie, ripetizioni, carico — si vede sotto il nome mentre lavori, e non cambia i tempi.
         </p>
 
         <div className="pad stack" style={{ gap: 8 }}>
-          {w.exercises.map((ex, i) => {
+          {visibili.map((ex, i) => {
             const obiettivo = descriviObiettivo(ex)
             const aperto = obiettivoAperto === ex.id
+            // Una serie che non c'è più, perché le serie sono scese: resta
+            // nell'elenco, ma il timer non la fa, e va detto.
+            const fuori = !!ex.serie && (w.mode === 'fortime' || ex.serie > w.sets)
             return (
               <div key={ex.id} className="card stack" style={{ gap: 6, padding: '8px 10px' }}>
                 <div className="row" style={{ gap: 8 }}>
@@ -320,7 +361,7 @@ export function EditorScreen({
                     <button
                       className="riordina"
                       onClick={() => move(i, 1)}
-                      disabled={i === w.exercises.length - 1}
+                      disabled={i === visibili.length - 1}
                       aria-label={`Sposta ${ex.name || `la riga ${i + 1}`} più in basso`}
                     >
                       <Caret verso="giu" />
@@ -358,22 +399,33 @@ export function EditorScreen({
                   </button>
                 </div>
 
-                <button
-                  className="row"
-                  style={{
-                    gap: 6,
-                    alignSelf: 'flex-start',
-                    padding: '2px 0 2px 60px',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    letterSpacing: '0.08em',
-                    color: obiettivo ? 'var(--giallo-testo)' : 'var(--faint)',
-                  }}
-                  onClick={() => setObiettivoAperto(aperto ? null : ex.id)}
-                  aria-expanded={aperto}
-                >
-                  {obiettivo || '+ OBIETTIVO'}
-                </button>
+                <div className="row" style={{ gap: 14, padding: '2px 0 2px 60px', flexWrap: 'wrap' }}>
+                  <button
+                    className="row"
+                    style={{
+                      gap: 6,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      letterSpacing: '0.08em',
+                      color: obiettivo ? 'var(--giallo-testo)' : 'var(--faint)',
+                    }}
+                    onClick={() => setObiettivoAperto(aperto ? null : ex.id)}
+                    aria-expanded={aperto}
+                  >
+                    {obiettivo || '+ OBIETTIVO'}
+                  </button>
+                  {(conSerie || ex.serie) && (
+                    <button
+                      className="serie-esercizio"
+                      data-una={!!ex.serie}
+                      data-fuori={fuori}
+                      onClick={() => cambiaSerie(ex)}
+                      aria-label={`${ex.name || `Riga ${i + 1}`}: ${ex.serie ? `solo nella serie ${ex.serie}` : 'in tutte le serie'}. Tocca per cambiare.`}
+                    >
+                      {ex.serie ? `SERIE ${ex.serie}${fuori ? ' · NON C’È' : ''}` : 'TUTTE LE SERIE'}
+                    </button>
+                  )}
+                </div>
 
                 {aperto && (
                   <div className="row" style={{ gap: 8, padding: '2px 0 6px' }}>
@@ -403,7 +455,9 @@ export function EditorScreen({
           })}
           <button className="btn btn-dashed" style={{ minHeight: 50, fontSize: 15 }} onClick={() => setScegliendo(true)}>
             <Plus size={16} />
-            AGGIUNGI {w.mode === 'circuit' ? 'STAZIONE' : 'ESERCIZIO'}
+            {/* Dentro una serie il tasto dice dove va, e non quel che è: sul
+                telefono le due cose insieme non stanno in una riga. */}
+            {vista > 0 ? `AGGIUNGI ALLA SERIE ${vista}` : `AGGIUNGI ${w.mode === 'circuit' ? 'STAZIONE' : 'ESERCIZIO'}`}
           </button>
         </div>
 
@@ -472,14 +526,14 @@ export function EditorScreen({
         )}
 
         <div className="rule">
-          <span className="rule-label">ANTEPRIMA</span>
+          <span className="rule-label">{vista > 0 ? `ANTEPRIMA · SERIE ${vista}` : 'ANTEPRIMA'}</span>
           <div className="rule-line" />
           <span className="num" style={{ fontSize: 14, fontWeight: 600, color: 'var(--dim)' }}>
-            {segments.length} intervalli
+            {anteprima.length} intervalli
           </span>
         </div>
         <div className="pad stack" style={{ gap: 4, paddingBottom: 20 }}>
-          {segments.slice(0, 12).map((s, i) => (
+          {anteprima.slice(0, 12).map((s, i) => (
             <div
               key={`${s.offset}-${i}`}
               className="row"
@@ -496,9 +550,9 @@ export function EditorScreen({
               </span>
             </div>
           ))}
-          {segments.length > 12 && (
+          {anteprima.length > 12 && (
             <span style={{ fontSize: 13, color: 'var(--dim)', padding: '4px 10px' }}>
-              … e altri {segments.length - 12} intervalli
+              … e altri {anteprima.length - 12} intervalli
             </span>
           )}
         </div>

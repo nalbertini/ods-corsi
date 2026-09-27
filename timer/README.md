@@ -18,6 +18,9 @@ senza rete, senza passare da App Store o Play Store.
 
 Ogni schema accetta una lista di esercizi: nei circuiti sono le stazioni, negli
 altri i nomi si alternano a ogni round e vengono annunciati dalla voce.
+Con più serie, ogni esercizio può stare in tutte o in una sola: nell'editor,
+sopra l'elenco, le linguette TUTTE · SERIE 1 · SERIE 2… mostrano cosa si fa in
+ciascuna, e quello che si aggiunge da una serie va solo lì.
 
 ## Durante l'allenamento
 

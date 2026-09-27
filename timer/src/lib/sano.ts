@@ -43,6 +43,7 @@ export function esercizioSano(v: unknown): Exercise | null {
   if (numeroSano(o.sets, 0, 20, 0) > 0) ex.sets = numeroSano(o.sets, 1, 20, 1)
   if (numeroSano(o.reps, 0, 200, 0) > 0) ex.reps = numeroSano(o.reps, 1, 200, 1)
   if (numeroSano(o.kg, 0, 500, 0) > 0) ex.kg = numeroSano(o.kg, 0.5, 500, 1)
+  if (numeroSano(o.serie, 0, 20, 0) >= 1) ex.serie = Math.round(numeroSano(o.serie, 1, 20, 1))
   return ex
 }
 

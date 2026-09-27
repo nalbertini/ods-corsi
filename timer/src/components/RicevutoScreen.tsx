@@ -70,6 +70,11 @@ export function RicevutoScreen({
                   <span className="grow" style={{ fontSize: 14, fontWeight: 600 }}>
                     {e.name}
                   </span>
+                  {e.serie && (
+                    <span className="num" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: 'var(--blu)' }}>
+                      SERIE {e.serie}
+                    </span>
+                  )}
                   <span className="num" style={{ fontSize: 12, color: 'var(--dim)' }}>
                     {e.duration ? `${e.duration}"` : ''}
                   </span>

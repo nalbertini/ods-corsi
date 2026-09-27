@@ -164,6 +164,19 @@ input, textarea { font: inherit; color: inherit; }
 }
 .scegli-esercizi:hover { border-color: var(--rosso); }
 
+/* Le serie sopra l'elenco degli esercizi: scorrono di lato se sono tante. */
+.serie-schede { gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+.serie-schede::-webkit-scrollbar { display: none; }
+.serie-schede .chip { padding: 8px 12px; flex-shrink: 0; }
+
+/* In quale serie si fa un esercizio: sottotono se in tutte, pieno se in una. */
+.serie-esercizio {
+  padding: 2px 8px; border: 2px solid var(--line-soft);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint);
+}
+.serie-esercizio[data-una='true'] { border-color: var(--blu); color: var(--blu); }
+.serie-esercizio[data-fuori='true'] { border-color: var(--rosso); color: var(--rosso); }
+
 .chip {
   padding: 10px 16px; white-space: nowrap;
   font-size: 12px; font-weight: 600; letter-spacing: 0.14em;
