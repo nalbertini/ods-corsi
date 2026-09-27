@@ -59,6 +59,20 @@ export function descriviObiettivo(ex: Pick<Exercise, 'sets' | 'reps' | 'kg'>): s
   return parti.join(' · ')
 }
 
+/**
+ * Gli esercizi di una serie: quelli assegnati proprio a lei e quelli che
+ * valgono per tutte, nell'ordine dell'elenco. Senza nome non contano: sono
+ * righe lasciate a metà nell'editor.
+ */
+export function eserciziDellaSerie(w: Pick<Workout, 'exercises'>, serie: number): Exercise[] {
+  return w.exercises.filter((e) => e.name.trim().length > 0 && (!e.serie || e.serie === serie))
+}
+
+/** Vero se almeno un esercizio sta in una serie sola: il timer le distingue. */
+export function perSerie(w: Pick<Workout, 'exercises'>): boolean {
+  return w.exercises.some((e) => !!e.serie)
+}
+
 const KIND_LABEL = {
   prepare: 'PREPARATI',
   work: 'LAVORO',
@@ -83,8 +97,6 @@ export function buildSegments(w: Workout): Segment[] {
 
   const sets = Math.max(1, w.sets)
   const rounds = Math.max(1, w.rounds)
-  const names = w.exercises.filter((e) => e.name.trim().length > 0)
-  const exAt = (i: number): Exercise | null => (names.length ? names[i % names.length] : null)
   const nota = (ex: Exercise | null) => {
     const testo = ex ? descriviObiettivo(ex) : ''
     return testo ? { nota: testo } : {}
@@ -104,6 +116,9 @@ export function buildSegments(w: Workout): Segment[] {
   }
 
   for (let set = 1; set <= sets; set++) {
+    // Ogni serie ha i suoi esercizi: quelli che valgono per tutte, più i suoi.
+    const names = eserciziDellaSerie(w, set)
+    const exAt = (i: number): Exercise | null => (names.length ? names[i % names.length] : null)
     if (w.mode === 'amrap' || w.mode === 'fortime') {
       push({
         kind: 'work',
@@ -220,8 +235,11 @@ export function describe(w: Workout): string {
     case 'interval':
       return `${w.rounds} × ${q(w.work)}/${q(w.rest)}${w.sets > 1 ? ` · ${w.sets} serie` : ''}`
     case 'circuit': {
-      const n = w.exercises.length || 1
-      return `${n} stazioni × ${w.rounds} giri${w.sets > 1 ? ` · ${w.sets} serie` : ''}`
+      // Con le stazioni divise per serie, il conto è quello della serie più lunga.
+      const serie = Array.from({ length: Math.max(1, w.sets) }, (_, i) => eserciziDellaSerie(w, i + 1).length)
+      const n = Math.max(1, ...serie)
+      const diverse = serie.some((x) => x !== serie[0])
+      return `${diverse ? 'fino a ' : ''}${n} stazioni × ${w.rounds} giri${w.sets > 1 ? ` · ${w.sets} serie` : ''}`
     }
     case 'emom':
       return `${w.rounds} slot da ${q(w.work)}${w.sets > 1 ? ` · ${w.sets} serie` : ''}`

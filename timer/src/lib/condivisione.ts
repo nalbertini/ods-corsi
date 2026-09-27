@@ -35,8 +35,12 @@ interface Magro {
   S: number
   c: number
   d: number
-  /** `[nome, durata?, serie?, ripetizioni?, carico?]`, con gli zeri al posto di quel che manca. */
-  e: Array<[string, number, number, number, number]>
+  /**
+   * `[nome, durata?, serie?, ripetizioni?, carico?, in quale serie?]`, con gli
+   * zeri al posto di quel che manca. L'ultimo arriva dopo: i link di prima ne
+   * hanno cinque, e vuol dire «in tutte le serie».
+   */
+  e: Array<[string, number, number, number, number, number?]>
 }
 
 function magro(w: Workout): Magro {
@@ -78,8 +82,8 @@ function grasso(m: Magro): Workout | null {
     cooldown: m.c,
     duration: m.d,
     exercises: e.map((x) => {
-      const [name, duration, sets, reps, kg] = Array.isArray(x) ? x : [x, 0, 0, 0, 0]
-      return { name, duration, sets, reps, kg }
+      const [name, duration, sets, reps, kg, serie] = Array.isArray(x) ? x : [x, 0, 0, 0, 0, 0]
+      return { name, duration, sets, reps, kg, serie }
     }),
   })
 }
