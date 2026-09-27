@@ -1,16 +1,74 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Settings } from '../types'
+import { DEFAULT_SETTINGS } from './storage'
 import { CATEGORIE, type Categoria, type Esercizio, normalizza } from './esercizi'
 
 /**
- * Quello che la segreteria sceglie per il timer dei tablet di sala: la voce di
- * sistema (per nome: vedi `voceDiNome`) e il catalogo degli esercizi della
- * palestra, in due colonne di `impostazioni` (`supabase/13-voce-esercizi.sql`),
- * più le clip della voce incisa (`clipSala.ts`).
+ * Le impostazioni del timer uguali su tutti i tablet di sala.
  *
- * Maurizio, i segnali, il volume, lo schermo e la musica durante il timer no:
- * si scelgono nel timer, dalle sue impostazioni, e ogni tablet tiene le sue.
+ * Maurizio, i segnali, il volume, lo schermo e la musica durante il timer si
+ * scelgono nel timer, dalle sue impostazioni, su un tablet qualunque: si
+ * salvano sul database e le prendono tutti i tablet. Restano del dispositivo
+ * le cose che solo il dispositivo sa: da dove viene la musica e l'account
+ * Spotify collegato.
+ *
+ * Sul database stanno in `impostazioni.timer` (`supabase/10-timer-sale.sql`),
+ * come le scrive questo file, e un tablet le cambia con `salva_timer_sala`
+ * (`supabase/14-timer-dal-tablet.sql`): il database le custodisce e basta.
+ */
+export const CHIAVI_SALA = [
+  'coach',
+  'countdownBeep',
+  'voice',
+  'announceNext',
+  'ticchettio',
+  'vibrate',
+  'volume',
+  'recordedVoice',
+  'keepAwake',
+  'bigScreen',
+  'musicaSegue',
+  'musicaAbbassa',
+  'musicaRecupero',
+] as const satisfies ReadonlyArray<keyof Settings>
+
+export type ImpostazioniSala = Pick<Settings, (typeof CHIAVI_SALA)[number]>
+
+/**
+ * Quelle che valgono, da quello che arriva dal database (o dalla prova): ogni
+ * chiave che manca o non ha il tipo giusto prende il valore di partenza del
+ * timer. Un database dove nessun tablet ha ancora toccato niente dà il timer
+ * di fabbrica, uguale su ogni tablet.
+ */
+export function impostazioniSala(grezze: unknown): ImpostazioniSala {
+  const g = grezze && typeof grezze === 'object' ? (grezze as Record<string, unknown>) : {}
+  const s = {} as Record<string, unknown>
+  for (const k of CHIAVI_SALA) {
+    const base = DEFAULT_SETTINGS[k]
+    s[k] = typeof g[k] === typeof base ? g[k] : base
+  }
+  const i = s as ImpostazioniSala
+  if (!(i.coach in COACH_VALIDI)) i.coach = DEFAULT_SETTINGS.coach
+  i.volume = Math.max(0, Math.min(1, i.volume))
+  i.musicaRecupero = Math.max(0, Math.min(80, Math.round(i.musicaRecupero)))
+  return i
+}
+
+const COACH_VALIDI: Record<Settings['coach'], true> = { off: true, distratto: true, classico: true, spietato: true }
+
+/** Tocca una delle impostazioni uguali per tutti i tablet? */
+export function toccaLaSala(patch: Partial<Settings>): boolean {
+  return CHIAVI_SALA.some((k) => k in patch)
+}
+
+/**
+ * Il timer dei tablet di sala: le impostazioni qui sopra, uguali per tutti, e
+ * quello che sceglie la segreteria, la voce di sistema (per nome: vedi
+ * `voceDiNome`) e il catalogo degli esercizi della palestra, in due colonne
+ * loro di `impostazioni` (`supabase/13-voce-esercizi.sql`).
  */
 export interface TimerSala {
+  impostazioni: ImpostazioniSala
   /** Il nome della voce; `null` vuol dire la prima voce italiana del tablet. */
   voce: string | null
   /** `null` finché la segreteria non l'ha mai toccato: il tablet tiene il suo. */
@@ -42,17 +100,26 @@ export function voceDellaSala(grezza: unknown): string | null {
   return typeof grezza === 'string' && grezza.trim() ? grezza.trim().slice(0, 200) : null
 }
 
-export function timerSala(riga: { voce?: unknown; esercizi?: unknown } | null): TimerSala {
+export function timerSala(riga: { timer?: unknown; voce?: unknown; esercizi?: unknown } | null): TimerSala {
   return {
+    impostazioni: impostazioniSala(riga?.timer),
     voce: voceDellaSala(riga?.voce),
     esercizi: eserciziDellaPalestra(riga?.esercizi),
   }
 }
 
-/** Voce e catalogo; niente di scelto se `13-voce-esercizi.sql` non c'è ancora. */
+/** La riga delle impostazioni, senza voce e catalogo se `13-voce-esercizi.sql` non c'è ancora. */
 export async function leggiTimerSala(c: SupabaseClient): Promise<TimerSala> {
-  const { data, error } = await c.from('impostazioni').select('voce, esercizi').maybeSingle()
-  if (error?.code === '42703') return timerSala(null)
+  const tutto = await c.from('impostazioni').select('timer, voce, esercizi').maybeSingle()
+  if (!tutto.error) return timerSala(tutto.data as Record<string, unknown> | null)
+  if (tutto.error.code !== '42703') throw new Error(tutto.error.message)
+  const { data, error } = await c.from('impostazioni').select('timer').maybeSingle()
   if (error) throw new Error(error.message)
   return timerSala(data as Record<string, unknown> | null)
+}
+
+/** Le salva per tutti i tablet: le può cambiare un tablet, o la segreteria. */
+export async function salvaTimerSala(c: SupabaseClient, i: ImpostazioniSala): Promise<void> {
+  const { error } = await c.rpc('salva_timer_sala', { timer: impostazioniSala(i) })
+  if (error) throw new Error(error.message)
 }

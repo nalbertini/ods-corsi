@@ -3,7 +3,7 @@ import { REGOLE, sigle } from './tablet'
 import { creaDatiProva, memoria } from './datiProva'
 import { archivio } from './archivioProva'
 import { perCognome } from './sala'
-import { timerSala } from '../../timer/src/lib/impostazioniSala'
+import { impostazioniSala, timerSala } from '../../timer/src/lib/impostazioniSala'
 import { fonteClipProva } from './voceProva'
 
 /**
@@ -225,7 +225,12 @@ export function creaTabletProva(): DatiTablet {
 
     async timerSala() {
       const a = archivio.dati
-      return timerSala({ voce: a.voceSale, esercizi: a.eserciziSale })
+      return timerSala({ timer: a.timerSale, voce: a.voceSale, esercizi: a.eserciziSale })
+    },
+
+    async salvaTimerSala(i) {
+      archivio.dati.timerSale = impostazioniSala(i)
+      archivio.salva()
     },
 
     clipSala: fonteClipProva,

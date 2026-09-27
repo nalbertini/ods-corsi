@@ -138,5 +138,19 @@ console.log('\n6. le sigle')
   ok('omonimi con la stessa iniziale', s, ['Fer.', 'Fon.', 'D.'])
 }
 
+console.log('\n7. il timer della sala, uguale per tutti i tablet')
+{
+  const lotta = await alle('2026-09-23T16:55')
+  const prima = (await lotta.timerSala()).impostazioni
+  ok('di fabbrica Maurizio è classico', prima.coach, 'classico')
+  await lotta.salvaTimerSala({ ...prima, coach: 'spietato', volume: 0.5 })
+  const tatami = await alle('2026-09-23T16:55', 'Tatami')
+  const dopo = (await tatami.timerSala()).impostazioni
+  ok('cambiato sulla Lotta, il Tatami lo vede', [dopo.coach, dopo.volume], ['spietato', 0.5])
+  await tatami.salvaTimerSala({ ...dopo, coach: 'boh', volume: 7 })
+  const pulito = (await lotta.timerSala()).impostazioni
+  ok('un valore strano torna quello di partenza', [pulito.coach, pulito.volume], ['classico', 1])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

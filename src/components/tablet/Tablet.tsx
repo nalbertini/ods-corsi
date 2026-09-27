@@ -5,7 +5,7 @@ import type { Settings } from '../../../timer/src/types'
 import type { Incorporato, StatoTimer, TimerPronto } from '../../../timer/src/lib/incorporato'
 import type { Lezione } from '../../../timer/src/lib/lezione'
 import { loadSettings } from '../../../timer/src/lib/storage'
-import type { TimerSala } from '../../../timer/src/lib/impostazioniSala'
+import type { ImpostazioniSala, TimerSala } from '../../../timer/src/lib/impostazioniSala'
 import type { FonteClip } from '../../../timer/src/lib/voice'
 import { eUnId } from '../../../timer/src/lib/palestra'
 import { clock } from '../../../timer/src/lib/format'
@@ -274,6 +274,19 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
     setParti(true)
   }
 
+  // Maurizio, i segnali e lo schermo scelti nel timer di questo tablet: si
+  // tengono subito, e vanno sul database per gli altri tablet, che li prendono
+  // al loro prossimo giro. Senza rete restano qui fino alla rilettura.
+  const salvaTimerSala = useCallback(
+    (i: ImpostazioniSala) => {
+      setTimerSala((prima) => (prima ? { ...prima, impostazioni: i } : prima))
+      d.salvaTimerSala(i).catch(() => {
+        // Il prossimo giro rilegge quelle del database, e il timer torna a quelle.
+      })
+    },
+    [d],
+  )
+
   const incorporato = useMemo<Incorporato>(
     () => ({
       lezione: lezioneTimer,
@@ -283,10 +296,11 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
       visibile: scheda === 'timer',
       onStato: setTimer,
       onSettings: setSettingsTimer,
+      onTimerSala: salvaTimerSala,
       onPronto: setPronto,
       avvia,
     }),
-    [lezioneTimer, musicaSala, timerSala, clipSala, scheda, avvia],
+    [lezioneTimer, musicaSala, timerSala, clipSala, scheda, avvia, salvaTimerSala],
   )
 
   // Chi se ne va a metà lascia il tablet com'era; l'area istruttore si chiude

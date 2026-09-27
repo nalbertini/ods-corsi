@@ -4,7 +4,7 @@ import type { DatiTablet, EsitoTocco, LezioneSala, NomeSala, Origine, RigaAppell
 import { emailDellaSala } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
-import { leggiTimerSala } from '../../timer/src/lib/impostazioniSala'
+import { leggiTimerSala, salvaTimerSala } from '../../timer/src/lib/impostazioniSala'
 import { fonteClipSupabase } from '../../timer/src/lib/clipSala'
 
 /**
@@ -125,6 +125,9 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     // La riga delle impostazioni la legge chiunque abbia un accesso (05-segreteria.sql),
     // e le clip pure (13-voce-esercizi.sql).
     timerSala: () => leggiTimerSala(db),
+    // La riga la cambia solo la segreteria: il tablet passa da `salva_timer_sala`
+    // (14-timer-dal-tablet.sql), che gli lascia toccare il timer e basta.
+    salvaTimerSala: (i) => salvaTimerSala(db, i),
     clipSala: () => fonteClipSupabase(db),
   }
 }

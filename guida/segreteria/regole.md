@@ -46,8 +46,8 @@ account Spotify Premium, dalle impostazioni del timer.
 ## La voce dei tablet
 
 Maurizio, i segnali, il volume, lo schermo e la musica durante il timer non
-si scelgono da qui: si scelgono nelle impostazioni del timer, su ogni tablet
-(vedi [Il tablet di sala](../sala.md#il-timer)).
+si scelgono da qui: si scelgono nelle impostazioni del timer, su un tablet
+qualunque, e valgono per tutti (vedi [Il tablet di sala](../sala.md#il-timer)).
 
 - **VOCE DI SISTEMA** — con che voce parla il timer dei tablet. Le voci le
   mette il dispositivo, non l'app: qui ci sono quelle di questo computer, e

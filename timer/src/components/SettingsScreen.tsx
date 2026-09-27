@@ -79,9 +79,9 @@ export function SettingsScreen({
   onOpenStorico: () => void
   onOpenEsercizi: () => void
   /**
-   * Un tablet di sala: la voce e gli esercizi li sceglie la segreteria
-   * (`impostazioniSala.ts`), e qui non ci sono. Maurizio, i segnali, lo
-   * schermo e la musica invece si scelgono qui, come altrove.
+   * Un tablet di sala: Maurizio, i segnali, lo schermo e la musica durante il
+   * timer si scelgono qui e valgono per tutti i tablet (`impostazioniSala.ts`);
+   * la voce e gli esercizi li sceglie la segreteria, e qui non ci sono.
    */
   sala?: boolean
   /**
@@ -135,6 +135,16 @@ export function SettingsScreen({
 
   return (
     <>
+      {sala && (
+        <div className="pad" style={{ paddingTop: 16 }}>
+          <p style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)', margin: 0 }}>
+            Maurizio, i segnali, lo schermo e la musica durante il timer valgono per tutti i tablet di sala: cambiati qui,
+            gli altri li prendono entro cinque minuti. La voce e gli esercizi li sceglie la segreteria, da ODS Corsi ›
+            Segreteria › Impostazioni.
+          </p>
+        </div>
+      )}
+
       <div className="pad" style={{ paddingTop: 16 }}>
         <div className="card maurizio-card">
           <div className="row" style={{ gap: 14, alignItems: 'flex-start' }}>
@@ -318,13 +328,6 @@ export function SettingsScreen({
       <Musica settings={settings} onChange={onChange} />
 
       {/* Sul tablet di sala la voce la sceglie e la incide la segreteria. */}
-      {sala && (
-        <div className="pad" style={{ paddingTop: 16 }}>
-          <p style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)', margin: 0 }}>
-            La voce e gli esercizi dei tablet li sceglie la segreteria, da ODS Corsi › Segreteria › Impostazioni.
-          </p>
-        </div>
-      )}
       {!sala && (
       <>
       <div className="rule">

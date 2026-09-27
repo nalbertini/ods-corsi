@@ -49,7 +49,7 @@ import {
 import { type Lezione, lezioneDaIndirizzo } from './lib/lezione'
 import { type Gruppo, gruppiDi } from './lib/gruppi'
 import type { Incorporato, TimerPronto } from './lib/incorporato'
-import type { TimerSala } from './lib/impostazioniSala'
+import { CHIAVI_SALA, type ImpostazioniSala, type TimerSala, salvaTimerSala, toccaLaSala } from './lib/impostazioniSala'
 
 /** I corsi dell'ultima volta, per il titolo della lezione e l'editor senza rete. */
 const DOVE_CORSI = 'ods-timer:corsi'
@@ -343,14 +343,41 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
     return () => window.clearTimeout(t)
   }, [settings, personaId])
 
-  // Su un tablet di sala la voce e gli esercizi li sceglie la segreteria (vedi
-  // `impostazioniSala.ts`); Maurizio, i segnali e lo schermo si scelgono qui,
-  // nelle impostazioni del timer, e ogni tablet tiene le sue. Dentro il
-  // tablet le legge ODS Corsi; il timer aperto da solo le chiede lui.
+  // Su un tablet di sala Maurizio, i segnali e lo schermo sono uguali su tutti
+  // i tablet (vedi `impostazioniSala.ts`): si mettono sopra a quelle del
+  // dispositivo, che se le salva e le ritrova anche senza rete, e cambiarle
+  // qui le cambia per tutti. La voce e gli esercizi li sceglie la segreteria.
+  // Dentro il tablet le legge e le salva ODS Corsi; il timer aperto da solo
+  // fa da sé.
   const [salaDalServer, setSalaDalServer] = useState<TimerSala | null>(null)
   const [clipDalServer, setClipDalServer] = useState<FonteClip | null>(null)
   const dellaSala = incorporato ? incorporato.sala : salaDalServer
-  const decideLaSegreteria = !!incorporato || accesso.chi === 'sala'
+  const timerDellaSala = !!incorporato || accesso.chi === 'sala'
+  useEffect(() => {
+    if (dellaSala) setSettings((s) => ({ ...s, ...dellaSala.impostazioni }))
+  }, [dellaSala])
+  // Toccate qui, vanno a tutti: quando si smette di toccare, perché i cursori
+  // cambiano a ogni pixel. Solo quelle toccate a mano: quelle arrivate dal
+  // database non si rimandano indietro.
+  const daMandare = useRef(false)
+  const mandaSala = incorporato?.onTimerSala
+  useEffect(() => {
+    if (!daMandare.current) return
+    const t = window.setTimeout(() => {
+      daMandare.current = false
+      const i = Object.fromEntries(CHIAVI_SALA.map((k) => [k, settings[k]])) as ImpostazioniSala
+      if (mandaSala) mandaSala(i)
+      else {
+        setSalaDalServer((prima) => (prima ? { ...prima, impostazioni: i } : prima))
+        void db()
+          .then((c) => salvaTimerSala(c, i))
+          .catch(() => {
+            // Senza rete restano qui fino alla prossima lettura.
+          })
+      }
+    }, 700)
+    return () => window.clearTimeout(t)
+  }, [settings, mandaSala])
   // Il catalogo degli esercizi, quando la segreteria ne ha fatto uno:
   // sul tablet è quello della palestra, e si salva qui per quando manca la rete.
   const eserciziSala = dellaSala?.esercizi ?? null
@@ -374,14 +401,18 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   // Le clip incise dalla segreteria, prima di quelle del dispositivo.
   const clipSala = incorporato ? incorporato.clip : clipDalServer
   useEffect(() => {
-    if (!decideLaSegreteria) return
+    if (!timerDellaSala) return
     usaClipDellaSala(clipSala)
     return () => usaClipDellaSala(null)
-  }, [clipSala, decideLaSegreteria])
+  }, [clipSala, timerDellaSala])
 
-  const patchSettings = useCallback((patch: Partial<Settings>) => {
-    setSettings((s) => ({ ...DEFAULT_SETTINGS, ...s, ...patch }))
-  }, [])
+  const patchSettings = useCallback(
+    (patch: Partial<Settings>) => {
+      if (timerDellaSala && toccaLaSala(patch)) daMandare.current = true
+      setSettings((s) => ({ ...DEFAULT_SETTINGS, ...s, ...patch }))
+    },
+    [timerDellaSala],
+  )
 
   const upsert = useCallback((w: Workout) => {
     // Sul database va solo quello che si può scrivere: il tablet e i timer
@@ -579,7 +610,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             onOpenRecorder={() => setView({ kind: 'voce' })}
             onOpenStorico={() => setView({ kind: 'storico' })}
             onOpenEsercizi={() => setView({ kind: 'esercizi' })}
-            sala={decideLaSegreteria}
+            sala={timerDellaSala}
             incorporato={!!incorporato}
             palestra={
               haUnServer && !incorporato ? (
@@ -598,7 +629,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
     }
   }, [
     tab,
-    decideLaSegreteria,
+    timerDellaSala,
     workouts,
     gruppi,
     corsi,

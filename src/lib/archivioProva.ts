@@ -89,6 +89,8 @@ export interface Archivio {
   impostazioni?: { mesiPresenze: number; giorniCalendario: number }
   /** Le liste della musica delle sale; `sala` nulla vuol dire tutte. */
   musica?: Array<{ id: string; nome: string; link: string; sala: string | null }>
+  /** Il timer dei tablet di sala, uguale per tutti: lo cambia un tablet qualunque. */
+  timerSale?: Record<string, unknown>
   /** La voce di sistema dei tablet, per nome. */
   voceSale?: string | null
   /** Il catalogo degli esercizi della palestra, se la segreteria ne ha fatto uno. */

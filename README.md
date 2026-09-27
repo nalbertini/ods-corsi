@@ -135,8 +135,9 @@ le clip della voce incisa e il catalogo degli esercizi, da **Impostazioni** ed
 **Esercizi** (`supabase/13-voce-esercizi.sql`,
 `timer/src/lib/impostazioniSala.ts`); in Impostazioni c'è anche lo storico dei
 timer. Maurizio, i segnali, il volume, lo schermo e la musica che segue il
-timer si scelgono nelle impostazioni del timer dentro il tablet, e ogni tablet
-tiene le sue. Lì non ci sono l'accesso, il tema, il salvataggio
+timer si scelgono nelle impostazioni del timer dentro il tablet, e valgono per
+tutti i tablet (`supabase/10-timer-sale.sql`, `supabase/14-timer-dal-tablet.sql`):
+cambiati su uno, gli altri li prendono al giro dopo. Lì non ci sono l'accesso, il tema, il salvataggio
 su file e la versione, che sono di ODS Corsi: resta la fonte della musica con
 Spotify.
 
@@ -260,7 +261,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `supabase/prova/timer.sql` | Il timer: la libreria della palestra, i timer personali e dei corsi, il tablet che li apre e non li scrive, lo storico, le preferenze. |
 | `supabase/prova/certificati.sql` | Certificati medici e pagamenti: li vede e li cambia solo la segreteria, e il file di una persona sta nella sua cartella. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
-| `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: lo cambia solo la segreteria, il tablet lo legge. |
+| `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`
 applicato prima: rifà il minimo che Supabase mette a disposizione.
