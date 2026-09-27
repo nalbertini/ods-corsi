@@ -225,7 +225,7 @@ export function creaTabletProva(): DatiTablet {
 
     async timerSala() {
       const a = archivio.dati
-      return timerSala({ timer: a.timerSale, voce: a.voceSale, esercizi: a.eserciziSale })
+      return timerSala({ voce: a.voceSale, esercizi: a.eserciziSale })
     },
 
     clipSala: fonteClipProva,

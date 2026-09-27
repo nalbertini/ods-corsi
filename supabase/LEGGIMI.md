@@ -53,9 +53,7 @@ rilanciare `06-iscrizioni.sql`: finché non c'è, il timer tiene tutto sul
 dispositivo come prima e dice che il database non risponde. Lo stesso per la
 musica delle sale con `09-musica.sql`: finché non c'è, la segreteria dice che
 le liste non si leggono e il tablet suona quella delle impostazioni del timer.
-E per il timer delle sale con `10-timer-sale.sql`: finché non c'è, la
-segreteria dice che il timer delle sale non si legge e i tablet tengono le
-impostazioni che avevano. Per il timer delle singole lezioni con
+Per il timer delle singole lezioni con
 `11-timer-lezioni.sql`: finché non c'è, I MIEI TIMER dice che le lezioni non
 si leggono, e le lezioni aprono i timer del corso come prima. Per il
 calendario che si allunga da sé si rilanciano `03-funzioni.sql`, poi
@@ -422,13 +420,11 @@ tutte — e non le cambia.
 ### Il timer delle sale
 
 Maurizio, i segnali, il volume, lo schermo e la musica durante il timer dei
-tablet li sceglie la segreteria, da **Impostazioni → Il timer delle
-sale**, per tutti i tablet. Stanno nella riga delle impostazioni, colonna
-`timer` (`10-timer-sale.sql`), così come le scrive l'app
-(`timer/src/lib/impostazioniSala.ts`): le legge chiunque abbia un accesso,
-tablet compresi, le cambia la segreteria. Sul tablet non si cambiano.
+tablet si scelgono nelle impostazioni del timer, su ogni tablet. La colonna
+`timer` della riga delle impostazioni (`10-timer-sale.sql`), dove prima le
+sceglieva la segreteria, resta ma l'app non la legge più.
 
-Allo stesso modo, da **Impostazioni → La voce dei tablet** e da **Esercizi** (`13-voce-esercizi.sql`): la voce di sistema, per nome (il
+La segreteria sceglie invece, da **Impostazioni → La voce dei tablet** e da **Esercizi** (`13-voce-esercizi.sql`): la voce di sistema, per nome (il
 tablet usa quella con lo stesso nome, se ce l'ha, altrimenti la prima voce
 italiana), le clip della voce incisa, nel contenitore privato `voce` che
 legge chiunque abbia un accesso e scrive la segreteria, e il catalogo degli

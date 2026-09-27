@@ -212,7 +212,7 @@ function VoceIncisa({
       </div>
       <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
         Frasi registrate con una voce vera al posto della sintesi, per tutti i tablet. Si può incidere un pezzo per volta: dove manca la
-        clip, il tablet torna da solo alla voce di sistema. Le usa se in IL TIMER DELLE SALE è premuto VOCE INCISA, SE C'È. Meglio
+        clip, il tablet torna da solo alla voce di sistema. Le usa se nelle impostazioni del timer del tablet è acceso «Usa le clip incise». Meglio
         registrare dal browser che usano i tablet: Safari e Chrome registrano in formati diversi.
       </span>
       {guaio && <Guaio testo={`Le clip non si leggono: ${guaio}`} />}

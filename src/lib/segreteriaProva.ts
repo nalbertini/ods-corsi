@@ -7,7 +7,7 @@ import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { richiesteDi } from './richiesteProva'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
-import { eserciziDellaPalestra, impostazioniSala, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
+import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
@@ -561,15 +561,6 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async togliListaMusica(id) {
       a().musica = (a().musica ?? []).filter((x) => x.id !== id)
-      salva()
-    },
-
-    async timerSale() {
-      return impostazioniSala(a().timerSale)
-    },
-
-    async salvaTimerSale(i) {
-      a().timerSale = impostazioniSala(i)
       salva()
     },
 

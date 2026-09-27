@@ -1,12 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { DatiSegreteria, ListaMusica, Sala } from '../../lib/segreteria'
 import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
-import type { ImpostazioniSala } from '../../../timer/src/lib/impostazioniSala'
-import { COACH_HINT, COACH_LABEL } from '../../../timer/src/lib/engine'
-import { audioDa, modoAudio, type ModoAudio } from '../../../timer/src/lib/storage'
-import type { CoachLevel } from '../../../timer/src/types'
 import { dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 
@@ -174,8 +170,6 @@ export function Regole({ d }: { d: DatiSegreteria }) {
         </section>
 
         <MusicaSale d={d} sale={sale.dato ?? []} liste={musica.dato} guaio={musica.guaio} ricarica={musica.ricarica} fai={fai} />
-
-        <TimerSale d={d} fai={fai} />
 
         <VoceSale d={d} fai={fai} />
 
@@ -443,139 +437,5 @@ function FormLista({
         </button>
       </div>
     </form>
-  )
-}
-
-/** Le impostazioni sì/no, che in segreteria sono un bottone che resta premuto. */
-type Sì = 'announceNext' | 'ticchettio' | 'vibrate' | 'recordedVoice' | 'keepAwake' | 'bigScreen' | 'musicaSegue' | 'musicaAbbassa'
-
-const COACH: CoachLevel[] = ['off', 'distratto', 'classico', 'spietato']
-const AUDIO: Array<[ModoAudio, string]> = [
-  ['muto', 'MUTO'],
-  ['bip', 'SOLO BIP'],
-  ['voce', 'BIP + VOCE'],
-]
-
-/**
- * Il timer dei tablet di sala: le impostazioni che sul telefono sceglie
- * ognuno per sé, qui una volta per tutti i tablet (vedi
- * `timer/src/lib/impostazioniSala.ts`). Sul tablet si vedono e non si
- * cambiano; resta del tablet l'account Spotify collegato. La voce e gli
- * esercizi sono in `TimerPalestra.tsx`.
- */
-function TimerSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
-  const letto = useCarica(() => d.timerSale(), [d])
-  const [t, setT] = useState<ImpostazioniSala | null>(null)
-  useEffect(() => {
-    if (letto.dato) setT(letto.dato)
-  }, [letto.dato])
-
-  // I cursori mandano un valore a ogni pixel: si salva quando ci si ferma.
-  const attesa = useRef<number | undefined>(undefined)
-  useEffect(() => () => window.clearTimeout(attesa.current), [])
-  const cambia = (patch: Partial<ImpostazioniSala>, subito = true) => {
-    if (!t) return
-    const nuove = { ...t, ...patch }
-    setT(nuove)
-    window.clearTimeout(attesa.current)
-    attesa.current = window.setTimeout(() => void fai(() => d.salvaTimerSale(nuove), 'Timer delle sale cambiato: i tablet lo prendono al prossimo giro'), subito ? 0 : 700)
-  }
-  const modo = t ? modoAudio(t) : 'voce'
-
-  const interruttore = (chiave: Sì, testo: string) => (
-    <button key={chiave} type="button" className="num sg-chip" aria-pressed={!!t?.[chiave]} disabled={!t} onClick={() => t && cambia({ [chiave]: !t[chiave] })}>
-      {testo}
-    </button>
-  )
-
-  return (
-    <section aria-label="Il timer delle sale" className="sg-riquadro">
-      <span className="ob sg-riquadro-titolo">IL TIMER DELLE SALE</span>
-      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-        Come va il timer nella scheda TIMER dei tablet di sala, uguale per tutti: sul tablet si vede e non si cambia. Chi usa il timer dal suo
-        telefono, col suo accesso, tiene le sue. La voce dei tablet è qui sotto, gli esercizi in ESERCIZI.
-      </span>
-      {letto.guaio && <Guaio testo={`Il timer delle sale non si legge: ${letto.guaio}`} />}
-
-      <div className="stack" style={{ gap: 6 }}>
-        <span className="sg-etichetta">MODALITÀ MAURIZIO</span>
-        <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
-          {COACH.map((c) => (
-            <button key={c} type="button" className="num sg-chip" aria-pressed={t?.coach === c} disabled={!t} onClick={() => cambia({ coach: c })}>
-              {COACH_LABEL[c].toUpperCase()}
-            </button>
-          ))}
-        </div>
-        <span style={{ fontSize: 13, color: 'var(--dim)' }}>{t ? COACH_HINT[t.coach] : '…'}</span>
-      </div>
-
-      <div className="stack" style={{ gap: 6 }}>
-        <span className="sg-etichetta">SEGNALI ACUSTICI</span>
-        <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
-          {AUDIO.map(([m, testo]) => (
-            <button key={m} type="button" className="num sg-chip" aria-pressed={!!t && modo === m} disabled={!t} onClick={() => cambia(audioDa(m))}>
-              {testo}
-            </button>
-          ))}
-        </div>
-        <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
-          {modo === 'voce' && interruttore('announceNext', 'DICE IL PROSSIMO ESERCIZIO')}
-          {interruttore('recordedVoice', "VOCE INCISA, SE C'È")}
-          {interruttore('ticchettio', 'TICCHETTIO')}
-          {interruttore('vibrate', 'VIBRAZIONE')}
-        </div>
-        <label className="row" style={{ gap: 12 }}>
-          <span style={{ fontSize: 14, color: 'var(--sec)', minWidth: 130 }}>Volume dei segnali</span>
-          <input
-            type="range"
-            className="grow"
-            style={{ accentColor: 'var(--text)' }}
-            min={0}
-            max={100}
-            step={5}
-            disabled={!t}
-            value={Math.round((t?.volume ?? 0.8) * 100)}
-            onChange={(e) => cambia({ volume: Number(e.target.value) / 100 }, false)}
-          />
-          <span className="num" style={{ fontSize: 16, fontWeight: 700, minWidth: 48, textAlign: 'right' }}>
-            {Math.round((t?.volume ?? 0.8) * 100)}%
-          </span>
-        </label>
-      </div>
-
-      <div className="stack" style={{ gap: 6 }}>
-        <span className="sg-etichetta">SCHERMO</span>
-        <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
-          {interruttore('keepAwake', 'SEMPRE ACCESO DURANTE IL TIMER')}
-          {interruttore('bigScreen', 'NUMERI GRANDI')}
-        </div>
-      </div>
-
-      <div className="stack" style={{ gap: 6 }}>
-        <span className="sg-etichetta">LA MUSICA DURANTE IL TIMER</span>
-        <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
-          {interruttore('musicaSegue', 'PARTE E SI FERMA COL TIMER')}
-          {interruttore('musicaAbbassa', 'PIÙ BASSA NEL RECUPERO')}
-        </div>
-        {t?.musicaAbbassa && (
-          <label className="row" style={{ gap: 12 }}>
-            <span style={{ fontSize: 14, color: 'var(--sec)', minWidth: 130 }}>Volume nel recupero</span>
-            <input
-              type="range"
-              className="grow"
-              style={{ accentColor: 'var(--text)' }}
-              min={0}
-              max={80}
-              step={5}
-              value={t.musicaRecupero}
-              onChange={(e) => cambia({ musicaRecupero: Number(e.target.value) }, false)}
-            />
-            <span className="num" style={{ fontSize: 16, fontWeight: 700, minWidth: 48, textAlign: 'right' }}>
-              {t.musicaRecupero}%
-            </span>
-          </label>
-        )}
-      </div>
-    </section>
   )
 }

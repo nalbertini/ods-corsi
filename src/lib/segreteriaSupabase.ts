@@ -6,7 +6,7 @@ import { chiaveGiorno, giornoDi, valeIl } from './sala'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
-import { eserciziDellaPalestra, impostazioniSala, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
+import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 
 /**
@@ -613,15 +613,6 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async togliListaMusica(id) {
       ok(await db.from('musica_sale').delete().eq('id', id))
-    },
-
-    async timerSale() {
-      const r = ok(await db.from('impostazioni').select('timer').maybeSingle()) as { timer: unknown } | null
-      return impostazioniSala(r?.timer)
-    },
-
-    async salvaTimerSale(i) {
-      ok(await db.from('impostazioni').update({ timer: impostazioniSala(i) }).eq('id', true))
     },
 
     async voceSale() {

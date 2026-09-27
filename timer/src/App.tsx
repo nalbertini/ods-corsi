@@ -343,18 +343,15 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
     return () => window.clearTimeout(t)
   }, [settings, personaId])
 
-  // Su un tablet di sala Maurizio, i segnali e lo schermo li sceglie la
-  // segreteria (vedi `impostazioniSala.ts`): si mettono sopra a quelle del
-  // dispositivo, che se le salva e le ritrova anche senza rete. Dentro il
+  // Su un tablet di sala la voce e gli esercizi li sceglie la segreteria (vedi
+  // `impostazioniSala.ts`); Maurizio, i segnali e lo schermo si scelgono qui,
+  // nelle impostazioni del timer, e ogni tablet tiene le sue. Dentro il
   // tablet le legge ODS Corsi; il timer aperto da solo le chiede lui.
   const [salaDalServer, setSalaDalServer] = useState<TimerSala | null>(null)
   const [clipDalServer, setClipDalServer] = useState<FonteClip | null>(null)
   const dellaSala = incorporato ? incorporato.sala : salaDalServer
   const decideLaSegreteria = !!incorporato || accesso.chi === 'sala'
-  useEffect(() => {
-    if (dellaSala) setSettings((s) => ({ ...s, ...dellaSala.impostazioni }))
-  }, [dellaSala])
-  // Anche il catalogo degli esercizi, quando la segreteria ne ha fatto uno:
+  // Il catalogo degli esercizi, quando la segreteria ne ha fatto uno:
   // sul tablet è quello della palestra, e si salva qui per quando manca la rete.
   const eserciziSala = dellaSala?.esercizi ?? null
   useEffect(() => {
