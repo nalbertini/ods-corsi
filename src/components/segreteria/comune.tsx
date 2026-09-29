@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { Back } from '../Icons'
 
 /** Il messaggio d'errore di un'operazione, detto in chiaro. */
 export const messaggio = (e: unknown, altrimenti = 'Il server non risponde') => (e instanceof Error && e.message ? e.message : altrimenti)
@@ -130,4 +131,32 @@ const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'lug
 export function dataLunga(g: string, anno = true) {
   const [a, m, d] = g.split('-').map(Number)
   return `${d} ${MESI[m - 1]}${anno ? ` ${a}` : ''}`
+}
+
+/**
+ * Una scheda a pieno schermo: prende tutta la sezione al posto dell'elenco,
+ * invece di stargli accanto. L'elenco sotto resta montato ma nascosto, con i
+ * filtri e la ricerca di prima; tornando, la pagina torna dov'era.
+ */
+export function SchedaPiena({ etichetta, torna, onTorna, tinta, children }: { etichetta: string; torna: string; onTorna: () => void; tinta?: string; children: ReactNode }) {
+  const cima = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const corpo = cima.current?.closest('.sg-corpo')
+    if (!corpo) return
+    const dovEra = corpo.scrollTop
+    corpo.scrollTop = 0
+    // Dopo il commit: prima l'elenco torna visibile, poi la pagina scende dov'era.
+    return () => queueMicrotask(() => void (corpo.scrollTop = dovEra))
+  }, [])
+  return (
+    <div ref={cima} className="stack" style={{ gap: 16 }}>
+      <button type="button" className="sg-btn sg-btn-linea sg-torna" onClick={onTorna}>
+        <Back size={18} />
+        {torna}
+      </button>
+      <section aria-label={etichetta} className="sg-scheda sg-scheda-piena" style={tinta ? { ['--tinta' as string]: tinta } : undefined}>
+        {children}
+      </section>
+    </div>
+  )
 }

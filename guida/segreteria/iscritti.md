@@ -39,7 +39,9 @@ accoglie la sua richiesta (vedi [Richieste online](richieste.md)).
 
 ## La scheda di una persona
 
-Un clic su un nome:
+Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
+**ISCRITTI** in alto torna all'elenco, con la ricerca e i filtri di prima.
+
 
 - **MODIFICA** — nome, cognome, email, telefono.
 - **CERTIFICATO MEDICO** — fino a quando vale. **CARICA IL CERTIFICATO** →

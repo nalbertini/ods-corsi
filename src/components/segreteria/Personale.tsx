@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg } from '../../lib/segreteria'
-import { Guaio, Riga, Testa, messaggio, useAvviso, useCarica } from './comune'
+import { Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica } from './comune'
 
 /** Quello che ciascun ruolo può fare: è il riassunto delle policy di `02-policy.sql`. */
 const PERMESSI: Array<[string, string]> = [
@@ -25,13 +25,17 @@ const PERMESSI: Array<[string, string]> = [
 export function Personale({ d }: { d: DatiSegreteria }) {
   const lista = useCarica(() => d.personale(), [d])
   const { avviso, avvisa, fai } = useAvviso()
-  const [bozza, setBozza] = useState({ nome: '', cognome: '', email: '', ruolo: 'istruttore' as 'istruttore' | 'staff' })
-  const [invitaSubito, setInvitaSubito] = useState(true)
-  const [pin, setPin] = useState<{ id: string; valore: string } | null>(null)
+  const [scelta, setScelta] = useState<string | null>(null)
+  const [nuovo, setNuovo] = useState(false)
 
   const persone = [...(lista.dato ?? [])].sort(
     (a, b) => Number(b.attiva) - Number(a.attiva) || a.ruolo.localeCompare(b.ruolo) || a.nome.localeCompare(b.nome, 'it'),
   )
+  const persona = nuovo ? null : (persone.find((p) => p.id === scelta) ?? null)
+  const chiudi = () => {
+    setNuovo(false)
+    setScelta(null)
+  }
 
   /** Com'è andato l'invito, detto a chi l'ha mandato. */
   const partito = (nome: string, come: 'invito' | 'password') =>
@@ -41,17 +45,155 @@ export function Personale({ d }: { d: DatiSegreteria }) {
         ? `Invito mandato: ${nome} riceve la mail per scegliere la password`
         : `${nome} aveva già un account: riceve la mail per scegliere la password`
 
+  return (
+    <>
+      {nuovo ? (
+        <SchedaPiena etichetta="Aggiungi una persona" torna="ISTRUTTORI E ACCESSI" onTorna={chiudi}>
+          <Aggiungi
+            d={d}
+            fai={fai}
+            avvisa={avvisa}
+            partito={partito}
+            onLasciaStare={() => setNuovo(false)}
+            onAggiunta={async (id) => {
+              await lista.ricarica()
+              setNuovo(false)
+              setScelta(id)
+            }}
+          />
+        </SchedaPiena>
+      ) : persona ? (
+        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`.trim()} torna="ISTRUTTORI E ACCESSI" onTorna={chiudi}>
+          <Scheda d={d} p={persona} fai={fai} avvisa={avvisa} partito={partito} onCambiato={lista.ricarica} />
+        </SchedaPiena>
+      ) : null}
+
+      {/* L'elenco resta montato sotto la scheda: tornando, è dov'era. */}
+      <div className="stack" style={{ gap: 18 }} hidden={!!(nuovo || persona)}>
+        <Testa titolo="ISTRUTTORI E ACCESSI" sotto="Chi entra nell'app e cosa può fare. Gli iscritti non sono qui: non hanno un accesso.">
+          <button type="button" className="sg-btn sg-btn-rosso" onClick={() => setNuovo(true)}>
+            + AGGIUNGI UNA PERSONA
+          </button>
+        </Testa>
+
+        <div role="table" aria-label="Personale" className="sg-tabella">
+          <div role="row" className="sg-lista-testa sg-riga-personale">
+            <span role="columnheader" className="sg-etichetta">NOME</span>
+            <span role="columnheader" className="sg-etichetta">EMAIL</span>
+            <span role="columnheader" className="sg-etichetta">RUOLO</span>
+            <span role="columnheader" className="sg-etichetta">ACCESSO</span>
+            <span role="columnheader" className="sg-etichetta">PIN TABLET</span>
+          </div>
+          {lista.dato === null && lista.guaio && <Guaio testo={lista.guaio} />}
+          {lista.dato === null && !lista.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo…</p>}
+          {persone.map((p) => (
+            <button key={p.id} type="button" role="row" className="sg-riga-personale sg-personale" data-spento={!p.attiva} onClick={() => setScelta(p.id)}>
+              <span role="cell" className="stack" style={{ minWidth: 0 }}>
+                <span style={{ fontSize: 15, fontWeight: 600 }}>{`${p.nome} ${p.cognome}`.trim()}</span>
+                <span className="sg-una-riga" style={{ fontSize: 12, color: 'var(--dim)' }} title={p.corsi.join(', ')}>
+                  {p.corsi.join(', ') || (p.ruolo === 'staff' ? 'segreteria' : 'nessun corso')}
+                </span>
+              </span>
+              <span role="cell" className="sg-una-riga" style={{ fontSize: 13, color: p.email ? 'var(--sec)' : 'var(--rosso)' }} title={p.email ?? 'Senza email non può entrare'}>
+                {p.email ?? 'nessuna email'}
+              </span>
+              <span role="cell" style={{ fontSize: 14, color: 'var(--sec)' }}>
+                {RUOLI[p.ruolo]}
+              </span>
+              <span role="cell">
+                <Accesso p={p} />
+              </span>
+              <span role="cell" className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
+                {p.haPin ? 'IMPOSTATO' : 'NESSUNO'}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <section aria-label="Cosa può fare ogni ruolo" className="sg-riquadro">
+          <Riga titolo="COSA PUÒ FARE OGNI RUOLO" />
+          <div role="table" className="sg-permessi">
+            <div role="row" className="contents">
+              <span role="columnheader" />
+              <span role="columnheader" className="sg-etichetta">ISTRUTTORE</span>
+              <span role="columnheader" className="sg-etichetta">SEGRETERIA</span>
+            </div>
+            {PERMESSI.map(([cosa, i]) => (
+              <div key={cosa} role="row" className="contents">
+                <span role="cell" style={{ fontSize: 14, color: 'var(--sec)' }}>{cosa}</span>
+                <span role="cell" className="num" style={{ fontWeight: 700, color: i === 'SÌ' ? 'var(--text)' : 'var(--dim)' }}>{i}</span>
+                <span role="cell" className="num" style={{ fontWeight: 700 }}>SÌ</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+      {avviso}
+    </>
+  )
+}
+
+const RUOLI = { istruttore: 'Istruttore', staff: 'Segreteria' } as const
+
+type Fai = ReturnType<typeof useAvviso>['fai']
+type Avvisa = ReturnType<typeof useAvviso>['avvisa']
+type Partito = (nome: string, come: 'invito' | 'password') => string
+
+function Accesso({ p }: { p: PersonaleSeg }) {
+  return (
+    <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde)' : 'var(--giallo-testo)' }}>
+      {!p.attiva ? 'SENZA ACCESSO' : p.collegato ? 'HA FATTO L’ACCESSO' : 'NON ANCORA ENTRATO'}
+    </span>
+  )
+}
+
+function SceltaRuolo({ ruolo, onScegli }: { ruolo: 'istruttore' | 'staff'; onScegli: (r: 'istruttore' | 'staff') => void }) {
+  return (
+    <div role="radiogroup" aria-label="Ruolo" className="sg-due">
+      {(
+        [
+          ['istruttore', 'ISTRUTTORE'],
+          ['staff', 'SEGRETERIA'],
+        ] as const
+      ).map(([r, testo]) => (
+        <button key={r} type="button" role="radio" aria-checked={ruolo === r} className="sg-btn sg-scelta" onClick={() => onScegli(r)}>
+          {testo}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function Aggiungi({
+  d,
+  fai,
+  avvisa,
+  partito,
+  onLasciaStare,
+  onAggiunta,
+}: {
+  d: DatiSegreteria
+  fai: Fai
+  avvisa: Avvisa
+  partito: Partito
+  onLasciaStare: () => void
+  onAggiunta: (id: string) => Promise<void>
+}) {
+  const [bozza, setBozza] = useState({ nome: '', cognome: '', email: '', ruolo: 'istruttore' as 'istruttore' | 'staff' })
+  const [invitaSubito, setInvitaSubito] = useState(true)
+
   const aggiungi = (e: FormEvent) => {
     e.preventDefault()
     const chi = bozza
     const invita = invitaSubito
+    let id = ''
     let esito = `${chi.nome} è nell'elenco`
     let guaio = false
     void fai(
       async () => {
-        const id = await d.salvaPersonale(chi)
+        id = await d.salvaPersonale(chi)
         if (!invita) return
-        // La persona è salvata comunque: un invito non partito si rimanda dall'elenco.
+        // La persona è salvata comunque: un invito non partito si rimanda dalla sua scheda.
         try {
           esito = `${chi.nome} è nell'elenco. ${partito(chi.nome, await d.invita(id))}`
         } catch (x) {
@@ -61,180 +203,236 @@ export function Personale({ d }: { d: DatiSegreteria }) {
       },
       undefined,
       async () => {
-        setBozza({ nome: '', cognome: '', email: '', ruolo: 'istruttore' })
-        await lista.ricarica()
+        await onAggiunta(id)
         avvisa(esito, guaio)
       },
     )
   }
 
-  const invita = (p: PersonaleSeg) => void fai(async () => avvisa(partito(p.nome, await d.invita(p.id))))
+  return (
+    <form aria-label="Aggiungi una persona" className="stack" style={{ gap: 16 }} onSubmit={aggiungi}>
+      <span className="ob" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '0.04em' }}>AGGIUNGI UNA PERSONA</span>
+      <div className="sg-due sg-scheda-campi">
+        <Campo id="inv-nome" etichetta="NOME">
+          <input id="inv-nome" className="sg-campo" required value={bozza.nome} onChange={(e) => setBozza({ ...bozza, nome: e.target.value })} />
+        </Campo>
+        <Campo id="inv-cognome" etichetta="COGNOME">
+          <input id="inv-cognome" className="sg-campo" required value={bozza.cognome} onChange={(e) => setBozza({ ...bozza, cognome: e.target.value })} />
+        </Campo>
+        <Campo id="inv-email" etichetta="EMAIL" largo>
+          <input id="inv-email" className="sg-campo" type="email" required placeholder="nome@esempio.it" value={bozza.email} onChange={(e) => setBozza({ ...bozza, email: e.target.value })} />
+        </Campo>
+        <div className="stack" style={{ gap: 6, gridColumn: 'span 2' }}>
+          <span className="sg-etichetta">RUOLO</span>
+          <SceltaRuolo ruolo={bozza.ruolo} onScegli={(ruolo) => setBozza({ ...bozza, ruolo })} />
+        </div>
+      </div>
+      <label className="row" style={{ gap: 8, fontSize: 14, color: 'var(--sec)', cursor: 'pointer' }}>
+        <input type="checkbox" checked={invitaSubito} onChange={(e) => setInvitaSubito(e.target.checked)} />
+        Manda subito l’invito per email
+      </label>
+      <span className="sg-scheda-campi" style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
+        {d.modo === 'prova'
+          ? 'In prova l’account non serve e nessuna email parte: la persona compare subito negli istruttori dei corsi.'
+          : 'Con l’invito le arriva una mail con un link: lo apre, sceglie la sua password ed entra. Il link scade dopo un’ora; se scade, «MANDA L’INVITO» nella sua scheda ne manda un altro. Se la persona è già in elenco come iscritta, diventa istruttore invece di un doppione.'}
+      </span>
+      <div className="sg-scheda-piede">
+        <button type="button" className="sg-btn sg-btn-linea" onClick={onLasciaStare}>
+          LASCIA STARE
+        </button>
+        <button type="submit" className="sg-btn sg-btn-rosso">
+          AGGIUNGI
+        </button>
+      </div>
+    </form>
+  )
+}
 
-  const cambiaRuolo = (p: PersonaleSeg, ruolo: 'istruttore' | 'staff') =>
-    void fai(() => d.salvaPersonale({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, ruolo }), 'Ruolo cambiato', lista.ricarica)
+/** La scheda di un istruttore o di chi fa segreteria: i dati, il ruolo, l'accesso e il PIN del tablet. */
+function Scheda({
+  d,
+  p,
+  fai,
+  avvisa,
+  partito,
+  onCambiato,
+}: {
+  d: DatiSegreteria
+  p: PersonaleSeg
+  fai: Fai
+  avvisa: Avvisa
+  partito: Partito
+  onCambiato: () => Promise<void>
+}) {
+  const [modifica, setModifica] = useState<{ nome: string; cognome: string; email: string } | null>(null)
+  const [pin, setPin] = useState<string | null>(null)
+  const dati = { id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, ruolo: p.ruolo }
+
+  const invita = () => void fai(async () => avvisa(partito(p.nome, await d.invita(p.id))))
 
   return (
     <>
-      <Testa titolo="ISTRUTTORI E ACCESSI" sotto="Chi entra nell'app e cosa può fare. Gli iscritti non sono qui: non hanno un accesso." />
+      <div className="stack" style={{ gap: 4 }}>
+        <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
+          {`${p.nome} ${p.cognome}`.trim().toUpperCase()}
+        </span>
+        <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso)' }}>
+          {p.attiva ? RUOLI[p.ruolo] : 'Accesso tolto: non entra nell’app né nell’area istruttore'}
+        </span>
+      </div>
 
-      <div className="sg-due-colonne">
-        <div className="stack grow" style={{ gap: 20, minWidth: 0 }}>
-          <div role="table" aria-label="Personale" className="sg-tabella">
-            <div role="row" className="sg-lista-testa sg-riga-personale">
-              <span role="columnheader" className="sg-etichetta">NOME</span>
-              <span role="columnheader" className="sg-etichetta">EMAIL</span>
-              <span role="columnheader" className="sg-etichetta">RUOLO</span>
-              <span role="columnheader" className="sg-etichetta">ACCESSO</span>
-              <span role="columnheader" className="sg-etichetta">PIN TABLET</span>
-              <span role="columnheader" />
-            </div>
-            {lista.dato === null && lista.guaio && <Guaio testo={lista.guaio} />}
-            {lista.dato === null && !lista.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo…</p>}
-            {persone.map((p) => (
-              <div key={p.id} role="row" className="sg-riga-personale sg-personale" data-spento={!p.attiva}>
-                <span role="cell" className="stack" style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: 15, fontWeight: 600 }}>{`${p.nome} ${p.cognome}`.trim()}</span>
-                  <span className="sg-una-riga" style={{ fontSize: 12, color: 'var(--dim)' }} title={p.corsi.join(', ')}>
-                    {p.corsi.join(', ') || (p.ruolo === 'staff' ? 'segreteria' : 'nessun corso')}
-                  </span>
-                </span>
-                <span role="cell" className="sg-una-riga" style={{ fontSize: 13, color: p.email ? 'var(--sec)' : 'var(--rosso)' }} title={p.email ?? 'Senza email non può entrare'}>
-                  {p.email ?? 'nessuna email'}
-                </span>
-                <span role="cell">
-                  <label className="vh" htmlFor={`ruolo-${p.id}`}>
-                    Ruolo di {p.nome}
-                  </label>
-                  <select id={`ruolo-${p.id}`} className="sg-campo" style={{ height: 36 }} value={p.ruolo} onChange={(e) => cambiaRuolo(p, e.target.value as 'istruttore' | 'staff')}>
-                    <option value="istruttore">Istruttore</option>
-                    <option value="staff">Segreteria</option>
-                  </select>
-                </span>
-                <span role="cell" className="stack" style={{ gap: 4, alignItems: 'flex-start' }}>
-                  <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde)' : 'var(--giallo-testo)' }}>
-                    {!p.attiva ? 'SENZA ACCESSO' : p.collegato ? 'HA FATTO L’ACCESSO' : 'NON ANCORA ENTRATO'}
-                  </span>
-                  {p.attiva && !p.collegato && p.email && (
-                    <button type="button" className="sg-link" onClick={() => invita(p)} title={`Manda a ${p.email} la mail per scegliere la password`}>
-                      manda l’invito
-                    </button>
-                  )}
-                </span>
-                <span role="cell">
-                  {pin?.id === p.id ? (
-                    <form
-                      className="row"
-                      style={{ gap: 4 }}
-                      onSubmit={(e) => {
-                        e.preventDefault()
-                        void fai(() => d.impostaPin(p.id, pin.valore), 'PIN impostato', async () => {
-                          setPin(null)
-                          await lista.ricarica()
-                        })
-                      }}
-                    >
-                      <input
-                        className="sg-campo num"
-                        style={{ height: 36, width: 70 }}
-                        inputMode="numeric"
-                        pattern="\d{4}"
-                        maxLength={4}
-                        aria-label={`Nuovo PIN di ${p.nome}`}
-                        autoFocus
-                        value={pin.valore}
-                        onChange={(e) => setPin({ id: p.id, valore: e.target.value.replace(/\D/g, '').slice(0, 4) })}
-                      />
-                      <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 36 }} disabled={pin.valore.length !== 4}>
-                        OK
-                      </button>
-                    </form>
-                  ) : (
-                    <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => setPin({ id: p.id, valore: '' })}>
-                      {p.haPin ? 'CAMBIA' : 'IMPOSTA'}
-                    </button>
-                  )}
-                </span>
-                <span role="cell" style={{ textAlign: 'right' }}>
-                  <button
-                    type="button"
-                    className="sg-link"
-                    onClick={() => {
-                      if (p.attiva && !window.confirm(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`)) return
-                      void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', lista.ricarica)
-                    }}
-                  >
-                    {p.attiva ? 'togli l’accesso' : 'ridai l’accesso'}
-                  </button>
-                </span>
+      <div className="sg-scheda-griglia">
+        <div className="stack" style={{ gap: 20, minWidth: 0 }}>
+          {modifica ? (
+            <div className="sg-due">
+              <Campo id="pe-nome" etichetta="NOME">
+                <input id="pe-nome" className="sg-campo" value={modifica.nome} onChange={(e) => setModifica({ ...modifica, nome: e.target.value })} />
+              </Campo>
+              <Campo id="pe-cognome" etichetta="COGNOME">
+                <input id="pe-cognome" className="sg-campo" value={modifica.cognome} onChange={(e) => setModifica({ ...modifica, cognome: e.target.value })} />
+              </Campo>
+              <Campo id="pe-email" etichetta={p.collegato ? 'EMAIL · È QUELLA CON CUI ENTRA' : 'EMAIL'} largo>
+                <input
+                  id="pe-email"
+                  className="sg-campo"
+                  type="email"
+                  disabled={p.collegato}
+                  placeholder="nome@esempio.it"
+                  value={modifica.email}
+                  onChange={(e) => setModifica({ ...modifica, email: e.target.value })}
+                />
+              </Campo>
+              <div className="sg-scheda-piede" style={{ gridColumn: 'span 2' }}>
+                <button type="button" className="sg-btn sg-btn-linea" onClick={() => setModifica(null)}>
+                  LASCIA STARE
+                </button>
+                <button
+                  type="button"
+                  className="sg-btn sg-btn-rosso"
+                  disabled={!modifica.nome.trim()}
+                  onClick={() =>
+                    void fai(() => d.salvaPersonale({ ...dati, ...modifica, email: p.collegato ? p.email : modifica.email }), 'Scheda salvata', async () => {
+                      setModifica(null)
+                      await onCambiato()
+                    })
+                  }
+                >
+                  SALVA
+                </button>
               </div>
-            ))}
+            </div>
+          ) : (
+            <div className="stack" style={{ gap: 12 }}>
+              <div className="sg-due">
+                <Campo etichetta="EMAIL">
+                  <span style={{ fontSize: 14, overflowWrap: 'anywhere', color: p.email ? 'var(--text)' : 'var(--rosso)' }}>{p.email ?? 'nessuna email: non può entrare'}</span>
+                </Campo>
+                <Campo etichetta="CORSI">
+                  <span style={{ fontSize: 14, color: p.corsi.length ? 'var(--text)' : 'var(--dim)' }}>{p.corsi.join(', ') || (p.ruolo === 'staff' ? 'segreteria' : 'nessun corso')}</span>
+                </Campo>
+              </div>
+              <div className="row">
+                <button type="button" className="num sg-chip" onClick={() => setModifica({ nome: p.nome, cognome: p.cognome, email: p.email ?? '' })}>
+                  MODIFICA
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="stack" style={{ gap: 8 }}>
+            <Riga titolo="RUOLO" />
+            <SceltaRuolo
+              ruolo={p.ruolo}
+              onScegli={(ruolo) => {
+                if (ruolo !== p.ruolo) void fai(() => d.salvaPersonale({ ...dati, ruolo }), 'Ruolo cambiato', onCambiato)
+              }}
+            />
           </div>
-
-          <section aria-label="Cosa può fare ogni ruolo" className="sg-riquadro">
-            <Riga titolo="COSA PUÒ FARE OGNI RUOLO" />
-            <div role="table" className="sg-permessi">
-              <div role="row" className="contents">
-                <span role="columnheader" />
-                <span role="columnheader" className="sg-etichetta">ISTRUTTORE</span>
-                <span role="columnheader" className="sg-etichetta">SEGRETERIA</span>
-              </div>
-              {PERMESSI.map(([cosa, i]) => (
-                <div key={cosa} role="row" className="contents">
-                  <span role="cell" style={{ fontSize: 14, color: 'var(--sec)' }}>{cosa}</span>
-                  <span role="cell" className="num" style={{ fontWeight: 700, color: i === 'SÌ' ? 'var(--text)' : 'var(--dim)' }}>{i}</span>
-                  <span role="cell" className="num" style={{ fontWeight: 700 }}>SÌ</span>
-                </div>
-              ))}
-            </div>
-          </section>
         </div>
 
-        <form aria-label="Aggiungi una persona" className="sg-scheda sg-scheda-stretta" onSubmit={aggiungi}>
-          <span className="ob" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '0.04em' }}>AGGIUNGI UNA PERSONA</span>
-          <div className="sg-due">
-            <div className="stack" style={{ gap: 6 }}>
-              <label htmlFor="inv-nome" className="sg-etichetta">NOME</label>
-              <input id="inv-nome" className="sg-campo" required value={bozza.nome} onChange={(e) => setBozza({ ...bozza, nome: e.target.value })} />
-            </div>
-            <div className="stack" style={{ gap: 6 }}>
-              <label htmlFor="inv-cognome" className="sg-etichetta">COGNOME</label>
-              <input id="inv-cognome" className="sg-campo" required value={bozza.cognome} onChange={(e) => setBozza({ ...bozza, cognome: e.target.value })} />
-            </div>
-          </div>
-          <div className="stack" style={{ gap: 6 }}>
-            <label htmlFor="inv-email" className="sg-etichetta">EMAIL</label>
-            <input id="inv-email" className="sg-campo" type="email" required placeholder="nome@esempio.it" value={bozza.email} onChange={(e) => setBozza({ ...bozza, email: e.target.value })} />
-          </div>
-          <div className="stack" style={{ gap: 6 }}>
-            <span className="sg-etichetta">RUOLO</span>
-            <div role="radiogroup" aria-label="Ruolo" className="sg-due">
-              {(
-                [
-                  ['istruttore', 'ISTRUTTORE'],
-                  ['staff', 'SEGRETERIA'],
-                ] as const
-              ).map(([r, testo]) => (
-                <button key={r} type="button" role="radio" aria-checked={bozza.ruolo === r} className="sg-btn sg-scelta" onClick={() => setBozza({ ...bozza, ruolo: r })}>
-                  {testo}
+        <div className="stack" style={{ gap: 20, minWidth: 0 }}>
+          <div className="stack" style={{ gap: 8 }}>
+            <Riga titolo="ACCESSO">
+              <Accesso p={p} />
+            </Riga>
+            <span style={{ fontSize: 14, color: 'var(--sec)' }}>
+              {!p.attiva
+                ? 'Non entra nell’app né nell’area istruttore del tablet. Le presenze che ha segnato restano nel registro.'
+                : p.collegato
+                  ? 'È entrata almeno una volta. Se perde la password la chiede da sé, dalla porta, con PASSWORD DIMENTICATA?'
+                  : p.email
+                    ? 'È in elenco ma non è mai entrata. Se l’invito non è arrivato o è scaduto, se ne manda un altro.'
+                    : 'Senza email non può entrare: va aggiunta con MODIFICA.'}
+            </span>
+            {p.attiva && !p.collegato && p.email && (
+              <div className="row">
+                <button type="button" className="num sg-chip sg-chip-pieno" onClick={invita} title={`Manda a ${p.email} la mail per scegliere la password`}>
+                  MANDA L’INVITO
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
-          <label className="row" style={{ gap: 8, fontSize: 14, color: 'var(--sec)', cursor: 'pointer' }}>
-            <input type="checkbox" checked={invitaSubito} onChange={(e) => setInvitaSubito(e.target.checked)} />
-            Manda subito l’invito per email
-          </label>
-          <button type="submit" className="sg-btn sg-btn-rosso">
-            AGGIUNGI
-          </button>
-          <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-            {d.modo === 'prova'
-              ? 'In prova l’account non serve e nessuna email parte: la persona compare subito negli istruttori dei corsi.'
-              : 'Con l’invito le arriva una mail con un link: lo apre, sceglie la sua password ed entra. Il link scade dopo un’ora; se scade, «manda l’invito» nell’elenco ne manda un altro. Se la persona è già in elenco come iscritta, diventa istruttore invece di un doppione.'}
-          </span>
-        </form>
+
+          <div className="stack" style={{ gap: 8 }}>
+            <Riga titolo="PIN TABLET">
+              <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
+                {p.haPin ? 'IMPOSTATO' : 'NESSUNO'}
+              </span>
+            </Riga>
+            <span style={{ fontSize: 14, color: 'var(--sec)' }}>Quattro cifre, per l’AREA ISTRUTTORE del tablet di sala. Due persone non possono avere lo stesso PIN.</span>
+            {pin !== null ? (
+              <form
+                className="row"
+                style={{ gap: 8 }}
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  void fai(() => d.impostaPin(p.id, pin), 'PIN impostato', async () => {
+                    setPin(null)
+                    await onCambiato()
+                  })
+                }}
+              >
+                <input
+                  className="sg-campo num"
+                  style={{ width: 100 }}
+                  inputMode="numeric"
+                  pattern="\d{4}"
+                  maxLength={4}
+                  aria-label={`Nuovo PIN di ${p.nome}`}
+                  autoFocus
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                />
+                <button type="submit" className="num sg-chip sg-chip-pieno" disabled={pin.length !== 4}>
+                  OK
+                </button>
+                <button type="button" className="sg-link" onClick={() => setPin(null)}>
+                  lascia stare
+                </button>
+              </form>
+            ) : (
+              <div className="row">
+                <button type="button" className="num sg-chip" onClick={() => setPin('')}>
+                  {p.haPin ? 'CAMBIA IL PIN' : 'IMPOSTA IL PIN'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-      {avviso}
+
+      <div className="sg-scheda-piede">
+        <button
+          type="button"
+          className="sg-btn sg-btn-linea"
+          onClick={() => {
+            if (p.attiva && !window.confirm(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`)) return
+            void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', onCambiato)
+          }}
+        >
+          {p.attiva ? 'TOGLI L’ACCESSO' : 'RIDAI L’ACCESSO'}
+        </button>
+      </div>
     </>
   )
 }
