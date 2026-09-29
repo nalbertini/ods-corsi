@@ -136,7 +136,8 @@ export default defineConfig({
         // rispondere con ODS Corsi alle sue pagine, né precaricarne i file.
         navigateFallbackDenylist: [/informativa\.html$/, /\/moduli\//, /\.pdf$/, /\/timer(\/|$)/],
         // Né pdf-lib: 180 KB che scarica solo chi firma il modulo, quando lo firma.
-        globIgnores: ['timer/**', 'assets/pdf-lib-*.js'],
+        // Né i luoghi di nascita, altri 175 KB che servono solo al modulo.
+        globIgnores: ['timer/**', 'assets/pdf-lib-*.js', 'assets/luoghi-*.js'],
         // La voce e le illustrazioni del timer, chieste dal tablet di sala che
         // lo contiene: come nel timer, entrano in cache alla prima richiesta.
         // Stessi nomi delle cache del timer: la cache è una per il sito, e

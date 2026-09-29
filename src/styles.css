@@ -437,6 +437,8 @@ input, textarea { font: inherit; color: inherit; }
 }
 /* Cosa non va, sotto il campo: rosso ferma l'invio, giallo è da guardare. */
 .modulo .campo[aria-invalid='true'] { border-color: var(--rosso); }
+/* Il luogo di nascita letto dal codice fiscale: si vede, non si scrive. */
+.modulo .campo[readonly] { background: transparent; border-style: dashed; color: var(--dim); }
 .modulo-nota { font-size: 14px; line-height: 1.35; color: var(--rosso); }
 .modulo-nota[data-avviso] { color: var(--giallo-testo); }
 .modulo-corsi:focus, .modulo [role='radiogroup']:focus { outline: none; }

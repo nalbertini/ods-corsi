@@ -8,9 +8,8 @@
  * del modulo o, per dire, del genitore messo nella casella sbagliata.
  *
  * Le stesse regole stanno in `supabase/06-iscrizioni.sql` (`cf_controllo`,
- * `cf_nato_il`), tranne cognome e nome: quelli qui danno solo un avviso,
- * perché con i doppi cognomi e i nomi stranieri le tre lettere non sempre
- * tornano, e il database non rifiuta niente per un avviso.
+ * `cf_nato_il`, `cf_lettere`). Cognome e nome tornano se sono scritti tutti,
+ * come sul documento: chi ne scrive uno solo di due viene fermato.
  */
 
 /**
@@ -91,3 +90,37 @@ export function lettereNome(nome: string): string {
 
 /** Le prime sei lettere tornano con cognome e nome. */
 export const cfTornaColNome = (cf: string, nome: string, cognome: string) => cf.slice(0, 6) === lettereCognome(cognome) + lettereNome(nome)
+
+/**
+ * Il luogo di nascita: nome, sigla della provincia (`EE` per l'estero) e,
+ * se quel nome ha smesso di valere, fino a quando. Da `scripts/luoghi.py`.
+ */
+export type Luoghi = Record<string, Array<[string, string, string?]>>
+
+let luoghi: Promise<Luoghi> | null = null
+/** L'elenco è grande: si carica solo col modulo, e se non arriva si riprova la volta dopo. */
+export const caricaLuoghi = () =>
+  (luoghi ??= import('./luoghi.json').then((m) => m.default as unknown as Luoghi).catch((e) => {
+    luoghi = null
+    throw e
+  }))
+
+/**
+ * Dove è nato chi ha questo codice: il nome che il luogo aveva quel giorno.
+ * Il giorno è `natoIl` se c'è, perché l'anno del codice ha due cifre (un
+ * 1920 si legge 2020); se no quello del codice.
+ * `null` se il codice non va o il luogo non è nell'elenco (uno stato che non
+ * c'è più, un comune nato dopo l'ultimo aggiornamento): allora lo si scrive.
+ * Le stesse regole di `luogo_da_cf` in `supabase/06-iscrizioni.sql`.
+ */
+export function luogoDaCf(elenco: Luoghi, cf: string, quando = ''): { nome: string; sigla: string } | null {
+  const natoIl = cfValido(cf) && (/^\d{4}-\d{2}-\d{2}$/.test(quando) ? quando : cfNatoIl(cf))
+  if (!natoIl) return null
+  const voci = elenco[cf[11] + cifre(cf.slice(12, 15)).toString().padStart(3, '0')]
+  if (!voci) return null
+  const [nome, sigla] = voci.find(([, , al]) => !al || al >= natoIl) ?? voci[voci.length - 1]
+  return { nome, sigla }
+}
+
+/** Come si scrive nel modulo: «TORINO (TO)», ma «ROMANIA». */
+export const scriviLuogo = (l: { nome: string; sigla: string }) => (l.sigla === 'EE' ? l.nome : `${l.nome} (${l.sigla})`)

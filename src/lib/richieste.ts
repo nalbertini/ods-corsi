@@ -137,6 +137,8 @@ interface Guaio {
 const OBBLIGATORI = ['nome', 'cognome', 'natoIl', 'natoA', 'codiceFiscale', 'indirizzo', 'cap', 'comune', 'email', 'telefono'] as const
 
 const CF_CORTO = 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e numeri'
+const CF_NOME = 'Il codice fiscale non torna con nome e cognome: scrivili tutti, come sul documento'
+const CF_NOME_GENITORE = 'Il codice fiscale del genitore non torna con il suo nome e cognome: scrivili tutti, come sul documento'
 
 /** Il codice fiscale di chi si iscrive o del genitore: scritto giusto, e di chi deve essere. */
 function guaiCf(campo: 'codiceFiscale' | 'genitoreCodiceFiscale', grezzo: string, di: string): Guaio | null {
@@ -182,6 +184,8 @@ function guai(d: DatiRichiesta, oggi: Date): Guaio[] {
       messaggio: 'Il codice fiscale e la data di nascita non dicono lo stesso giorno: controlla l’uno e l’altra',
       testo: 'Non torna con la data di nascita',
     })
+  if (cfValido(cf) && d.nome.trim() && d.cognome.trim() && !cfTornaColNome(cf, d.nome, d.cognome))
+    metti({ campo: 'codiceFiscale', messaggio: CF_NOME, testo: 'Non torna con nome e cognome' })
   if (minore) {
     const gen = pulisciCf(d.genitoreCodiceFiscale ?? '')
     metti(guaiCf('genitoreCodiceFiscale', gen, 'del genitore'))
@@ -190,6 +194,8 @@ function guai(d: DatiRichiesta, oggi: Date): Guaio[] {
       metti({ campo: 'genitoreCodiceFiscale', messaggio: 'Il codice fiscale del genitore è lo stesso di chi si iscrive', testo: 'È lo stesso di chi si iscrive' })
     else if (suo && minorenne(suo, oggi))
       metti({ campo: 'genitoreCodiceFiscale', messaggio: 'Il codice fiscale del genitore è di un minorenne', testo: 'È di un minorenne' })
+    else if (cfValido(gen) && d.genitoreNome?.trim() && d.genitoreCognome?.trim() && !cfTornaColNome(gen, d.genitoreNome, d.genitoreCognome))
+      metti({ campo: 'genitoreCodiceFiscale', messaggio: CF_NOME_GENITORE, testo: 'Non torna con nome e cognome del genitore' })
   }
 
   if (!d.corsi.length) metti({ campo: 'corsi', messaggio: 'Scegli almeno un corso', testo: 'Scegline almeno uno' })
@@ -222,21 +228,6 @@ export function controlla(d: DatiRichiesta, oggi = new Date()): string | null {
 /** Cosa non va campo per campo, da scrivere sotto ognuno. */
 export function problemi(d: DatiRichiesta, oggi = new Date()): Partial<Record<CampoModulo, string>> {
   return Object.fromEntries(guai(d, oggi).map((x) => [x.campo, x.testo]))
-}
-
-/**
- * Quello che non ferma l'invio ma vale la pena guardare: un codice fiscale
- * giusto che però non sembra della persona scritta accanto.
- */
-export function avvisi(d: DatiRichiesta, oggi = new Date()): Partial<Record<CampoModulo, string>> {
-  const a: Partial<Record<CampoModulo, string>> = {}
-  const cf = pulisciCf(d.codiceFiscale)
-  if (cfValido(cf) && d.nome.trim() && d.cognome.trim() && !cfTornaColNome(cf, d.nome, d.cognome))
-    a.codiceFiscale = `Non sembra di ${d.nome.trim()} ${d.cognome.trim()}: controlla che sia il suo`
-  const gen = pulisciCf(d.genitoreCodiceFiscale ?? '')
-  if (minorenne(d.natoIl, oggi) && cfValido(gen) && d.genitoreNome?.trim() && d.genitoreCognome?.trim() && !cfTornaColNome(gen, d.genitoreNome, d.genitoreCognome))
-    a.genitoreCodiceFiscale = `Non sembra di ${d.genitoreNome.trim()} ${d.genitoreCognome.trim()}: controlla che sia il suo`
-  return a
 }
 
 /** Il nome di un campo com'è scritto nel modulo, per «Mancano: …». */
