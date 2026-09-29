@@ -650,6 +650,8 @@ a.btn { text-decoration: none; }
 .tb-btn-grande { min-height: 64px; padding: 0 26px; font-size: 20px; }
 .tb-btn:disabled { cursor: default; }
 .tb-btn-verde:disabled { opacity: 0.5; }
+.tb-btn-rosso { background: var(--rosso); color: var(--su-colore); }
+.tb-btn-rosso:disabled { opacity: 0.5; }
 
 .tb-barra { display: flex; align-items: center; gap: 18px; }
 

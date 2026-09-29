@@ -129,6 +129,12 @@ export interface DatiTablet {
    * lezione gli segna anche la presenza (vedi `15-presenze-istruttori.sql`).
    */
   entraConPin(pin: string): Promise<EntratoConPin | null>
+  /**
+   * Di chi è questo PIN, senza segnare niente: per uscire dal tablet basta
+   * il PIN di un istruttore qualsiasi. Dopo troppi errori solleva, come
+   * `entraConPin`, e gli errori contano insieme.
+   */
+  verificaPin(pin: string): Promise<{ personaId: string; nome: string } | null>
   appello(pin: string, sessioneId: string): Promise<RigaAppelloTablet[]>
   /** `null` toglie il segno, ma solo a una presenza arrivata dal tablet. */
   correggi(pin: string, sessioneId: string, personaId: string, stato: StatoPresenza | null): Promise<boolean>

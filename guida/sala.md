@@ -155,11 +155,20 @@ all'area istruttore c'è scritto com'è andata:
 Rimettere il PIN nella stessa lezione non la segna due volte. Fuori dalle
 lezioni il PIN apre l'area istruttore e basta.
 
-### «Scollega il tablet»
+### Uscire dal tablet
 
-In fondo all'area istruttore c'è **Scollega il tablet**. Serve solo se il
-tablet va spostato in un'altra sala o tolto: per ricollegarlo serve di nuovo
-l'account della sala. Non premetelo per uscire: per uscire c'è **ESCI**.
+Serve solo se il tablet va spostato in un'altra sala o tolto: uscendo si
+scollega dalla sala, e per ricollegarlo serve di nuovo l'account della sala.
+Per chiudere l'area istruttore non serve: per quello c'è **ESCI**.
+
+Si esce in due modi, e tutti e due chiedono conferma prima di scollegare:
+
+- dalla schermata di sempre, con **Esci dal tablet** in basso a destra: il
+  tablet chiede il PIN di un istruttore, uno qualsiasi, e poi **USCIRE DAL
+  TABLET?** con **SÌ, ESCI** o **ANNULLA**. Questo PIN non segna la presenza
+  di nessuno, e gli errori contano come quelli dell'area istruttore;
+- dall'area istruttore, con **Scollega il tablet** in fondo: il PIN c'è già, e
+  arriva subito la conferma.
 
 ## Preparare un tablet (una volta sola)
 

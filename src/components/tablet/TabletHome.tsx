@@ -26,6 +26,7 @@ export function TabletHome({
   onSegna,
   onRecupero,
   onPin,
+  onEsci,
   timer,
   onAvviaTimer,
   onVaiTimer,
@@ -37,6 +38,8 @@ export function TabletHome({
   onSegna: (l: LezioneSala) => void
   onRecupero: () => void
   onPin: () => void
+  /** Esce dal tablet: col PIN di un istruttore e una conferma. */
+  onEsci: () => void
   /** I timer della lezione aperta: `pronto` nullo se né la lezione né il corso ne hanno. */
   timer?: { lezioneId: string; pronto: TimerPronto | null; inCorso: boolean } | null
   onAvviaTimer?: (id: string) => void
@@ -148,6 +151,9 @@ export function TabletHome({
         <span className="tb-nota" title={VERSIONE_ESTESA}>
           Tablet di sala · {sala} · {VERSIONE}
         </span>
+        <button type="button" className="tb-scollega" onClick={onEsci}>
+          Esci dal tablet
+        </button>
       </aside>
     </div>
   )
