@@ -32,6 +32,18 @@ export interface VoceCosto {
 
 export const STAGIONE = '2026/27'
 
+/** La quota associativa, in euro come i prezzi qui sotto. */
+export const QUOTA_ASSOCIATIVA = 50
+
+/**
+ * Da quando a quando valgono, sulle ricevute: la quota fino a fine luglio,
+ * l'annuale dei corsi fino a fine giugno (come le ricevute della segreteria).
+ */
+export const VALIDITA = {
+  quota: { dal: '2026-09-01', al: '2027-07-31' },
+  corsi: { dal: '2026-09-01', al: '2027-06-30' },
+}
+
 export const COSTI: VoceCosto[] = [
   {
     corso: 'Giocomotricità',

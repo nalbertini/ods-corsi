@@ -5,12 +5,13 @@ import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
 import { dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
+import { EnteRicevute } from './Ricevute'
 
 /**
  * Le impostazioni: le scelte che spettano alla palestra, non al codice. Per
  * quanto si tengono le presenze, fin dove si prepara il calendario, le sale
  * con la loro musica e il loro timer (con la voce), lo storico
- * dei timer, la privacy.
+ * dei timer, chi fa le ricevute, la privacy.
  */
 export function Regole({ d }: { d: DatiSegreteria }) {
   const imp = useCarica(() => d.impostazioni(), [d])
@@ -174,6 +175,8 @@ export function Regole({ d }: { d: DatiSegreteria }) {
         <VoceSale d={d} fai={fai} />
 
         <StoricoTimer d={d} />
+
+        <EnteRicevute d={d} />
 
         <section aria-label="Privacy" className="sg-riquadro">
           <div className="row" style={{ gap: 10 }}>

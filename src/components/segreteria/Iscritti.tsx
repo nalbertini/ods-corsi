@@ -4,6 +4,7 @@ import { comeCertificato, comePaga, inCorso, PAGAMENTI } from '../../lib/segrete
 import { ESTENSIONI, MASSIMO_FILE } from '../../lib/richieste'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica } from './comune'
+import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
@@ -300,6 +301,9 @@ function Scheda({
   const oggi = chiaveGiorno(new Date())
   const [modifica, setModifica] = useState<DatiPersona | null>(null)
   const [daAggiungere, setDaAggiungere] = useState('')
+  const [pagando, setPagando] = useState(false)
+  // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
+  const [giroRicevute, setGiroRicevute] = useState(0)
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
   const correnti = p.iscrizioni.filter((i) => inCorso(i, oggi))
   const liberi = attivi.filter((c) => !correnti.some((i) => i.corsoId === c.id))
@@ -316,6 +320,21 @@ function Scheda({
         </span>
       </div>
 
+      {pagando ? (
+        <NuovaRicevuta
+          d={d}
+          p={p}
+          corsi={correnti.map((i) => corsi.get(i.corsoId)?.nome ?? '').filter(Boolean)}
+          fai={fai}
+          onLasciaStare={() => setPagando(false)}
+          onFatta={() => {
+            setPagando(false)
+            setGiroRicevute((g) => g + 1)
+            onCambiato()
+          }}
+        />
+      ) : (
+      <>
       <div className="sg-scheda-griglia">
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
           {modifica ? (
@@ -346,6 +365,7 @@ function Scheda({
 
           <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${p.pagamento.nota ?? ''}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
+          <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} />
         </div>
 
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
@@ -472,6 +492,8 @@ function Scheda({
           </>
         )}
       </div>
+      </>
+      )}
     </>
   )
 }

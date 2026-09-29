@@ -1,3 +1,4 @@
+import type { PDFFont } from 'pdf-lib'
 import type { DatiRichiesta } from './richieste'
 import { cfNatoIl } from './codiceFiscale'
 
@@ -103,6 +104,29 @@ const CORPO = 10
 /** Le lettere che Helvetica non ha e che non si scompongono in lettera e accento. */
 const SENZA_SEGNI: Record<string, string> = { Ł: 'L', ł: 'l', Ø: 'O', ø: 'o', Đ: 'D', đ: 'd', ß: 'ss', Æ: 'AE', æ: 'ae', Œ: 'OE', œ: 'oe' }
 
+/**
+ * Quello che un font standard del PDF (Helvetica) sa scrivere: gli accenti
+ * italiani sì, gli altri li perde, il resto diventa «?». Lo usa anche la
+ * ricevuta (`ricevutaPdf.ts`).
+ */
+export const scrivibileCon = (font: PDFFont) => (s: string) =>
+  [...s.normalize('NFC')]
+    .map((c) => {
+      try {
+        font.encodeText(c)
+        return c
+      } catch {
+        const semplice = SENZA_SEGNI[c] ?? c.normalize('NFD').replace(/\p{M}/gu, '')
+        try {
+          font.encodeText(semplice)
+          return semplice
+        } catch {
+          return '?'
+        }
+      }
+    })
+    .join('')
+
 const due = (n: number) => String(n).padStart(2, '0')
 export const dataDelFoglio = (d: Date) => `${due(d.getDate())}/${due(d.getMonth() + 1)}/${d.getFullYear()}`
 
@@ -123,24 +147,7 @@ export async function moduloFirmato(f: DatiFirma): Promise<Uint8Array> {
   const font = await pdf.embedFont(StandardFonts.Helvetica)
   const penna = rgb(PENNA.r, PENNA.g, PENNA.b)
 
-  /** Quello che Helvetica sa scrivere: gli accenti italiani sì, gli altri li perde, il resto diventa «?». */
-  const scrivibile = (s: string) =>
-    [...s.normalize('NFC')]
-      .map((c) => {
-        try {
-          font.encodeText(c)
-          return c
-        } catch {
-          const semplice = SENZA_SEGNI[c] ?? c.normalize('NFD').replace(/\p{M}/gu, '')
-          try {
-            font.encodeText(semplice)
-            return semplice
-          } catch {
-            return '?'
-          }
-        }
-      })
-      .join('')
+  const scrivibile = scrivibileCon(font)
 
   const scrivi = (r: Riga, testo: string) => {
     const t = scrivibile(testo.trim())

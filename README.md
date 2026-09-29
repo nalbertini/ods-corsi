@@ -61,7 +61,12 @@ scegliere l'area: la sceglie l'account. Il **timer** si apre in `timer/`
   una sala diversa (il lunedì in Tatami, il giovedì in Lotta). Gli **iscritti**, da
   cercare, iscrivere e togliere dai corsi, con quanto vengono negli ultimi
   trenta giorni, il **certificato medico** (il file e fino a quando vale) e lo
-  stato del **pagamento**, con chi non è in regola in evidenza. Le **presenze** del mese: medie per corso, chi si sta
+  stato del **pagamento**, con chi non è in regola in evidenza. Quando
+  qualcuno paga, la **ricevuta**: la «ricevuta semplice» dell'associazione,
+  in PDF con le due copie affiancate, col numero che va avanti da sé, la
+  quota e i corsi dal foglio dei costi, i dati del socio dal modulo di
+  iscrizione; fatta non si cambia, si annulla (`supabase/16-ricevute.sql`,
+  `src/lib/ricevutaPdf.ts`). Le **presenze** del mese: medie per corso, chi si sta
   perdendo, gli appelli che mancano, e il CSV. Le **presenze degli istruttori** entrati col PIN
   in una lezione in cui non erano previsti, da confermare o rifiutare. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare.
@@ -277,6 +282,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
+| `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/calendario-da-se.sql` | Il calendario che si allunga da sé: anche per un istruttore, solo quando serve, fin dove dicono le regole. |
@@ -285,6 +291,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già. |
 | `supabase/prova/timer.sql` | Il timer: la libreria della palestra, i timer personali e dei corsi, il tablet che li apre e non li scrive, lo storico, le preferenze. |
 | `supabase/prova/certificati.sql` | Certificati medici e pagamenti: li vede e li cambia solo la segreteria, e il file di una persona sta nella sua cartella. |
+| `supabase/prova/ricevute.sql` | Le ricevute: le fa e le annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i conti li fa il server, e una ricevuta fatta non si cambia. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 | `supabase/prova/presenze-istruttori.sql` | La presenza degli istruttori dal PIN del tablet: da sola a chi era previsto, anche da sostituto, da confermare agli altri; la conferma solo la segreteria. |
 | `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
