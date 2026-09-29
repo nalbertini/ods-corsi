@@ -2,8 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Ruolo } from './sala'
 import { haUnServer } from './dati'
 import { indirizzoDiRitorno } from './invito'
-import { sessioneDellaPagina } from './percorso'
-import { chiaviSessione, indirizzoProgetto, PERSONA_VISTA, type Sessione } from './sessioni'
+import { PERSONA_VISTA } from './sessioni'
 import { indirizzo, INDIRIZZI } from './aree'
 import { areaDelPercorso } from './percorso'
 import { emailDellaSala, smettiTablet } from './tablet'
@@ -15,6 +14,11 @@ import { emailDellaSala, smettiTablet } from './tablet'
  * Il controllo vero sta nelle policy (`supabase/02-policy.sql`): chi non ha
  * fatto l'accesso non legge niente. Questo serve a mostrare una porta invece
  * di un calendario rotto, e a dire chiaramente perché un account non entra.
+ *
+ * La sessione è una sola per tutte le aree (vedi `sessioni.ts`), e l'account
+ * dice qual è la sua: la segreteria in segreteria, un istruttore nel
+ * calendario, il tablet di una sala in sala. Chi apre l'indirizzo di un'altra
+ * area torna nella sua (vedi `Account` e `passaA`).
  */
 
 export interface Personale {
@@ -25,79 +29,89 @@ export interface Personale {
   ruolo: Exclude<Ruolo, 'iscritto'>
 }
 
+/** Le aree con un accesso: dove porta ogni tipo di account. */
+export type AreaDiAccount = 'segreteria' | 'istruttori' | 'sala'
+
+/** L'account collegato: la sua area, e la persona se non è il tablet di una sala. */
+export interface Account {
+  area: AreaDiAccount
+  persona: Personale | null
+}
+
+const areaDi = (p: Personale): AreaDiAccount => (p.ruolo === 'staff' ? 'segreteria' : 'istruttori')
+
 /**
- * L'ultima persona vista, per l'apertura senza rete: la sessione di Supabase
+ * L'ultimo account visto, per l'apertura senza rete: la sessione di Supabase
  * sta già sul dispositivo, e chiedere al server chi è per aprire l'app vorrebbe
  * dire chiudere fuori un istruttore in fondo a una sala senza campo. È solo
- * un nome da mostrare: i dati li decidono comunque le policy.
+ * un nome da mostrare e un'area in cui andare: i dati li decidono comunque le
+ * policy.
  */
-const DOVE = () => PERSONA_VISTA[sessioneDellaPagina()]   // vedi la nota in coda.ts
-
-function ricordato(utente: string): Personale | null {
+function ricordato(utente: string): Account | null {
   try {
-    const r = JSON.parse(localStorage.getItem(DOVE()) ?? 'null') as ({ utente: string } & Personale) | null
-    return r && r.utente === utente ? { id: r.id, nome: r.nome, cognome: r.cognome, ruolo: r.ruolo } : null
+    const r = JSON.parse(localStorage.getItem(PERSONA_VISTA) ?? 'null') as
+      | ({ utente: string; area?: AreaDiAccount } & Partial<Personale>)
+      | null
+    if (!r || r.utente !== utente) return null
+    const persona = r.nome && r.ruolo ? { id: r.id, nome: r.nome, cognome: r.cognome ?? '', ruolo: r.ruolo } : null
+    const area = r.area ?? (persona ? areaDi(persona) : null)
+    return area ? { area, persona } : null
   } catch {
     return null
   }
 }
 
-function ricorda(utente: string, p: Personale | null) {
+function ricorda(utente: string, a: Account | null) {
   try {
-    if (p) localStorage.setItem(DOVE(), JSON.stringify({ utente, ...p }))
-    else localStorage.removeItem(DOVE())
+    if (a) localStorage.setItem(PERSONA_VISTA, JSON.stringify({ utente, area: a.area, ...a.persona }))
+    else localStorage.removeItem(PERSONA_VISTA)
   } catch {
     // Senza localStorage si perde solo l'apertura senza rete.
   }
 }
 
-/**
- * Il client della sessione di questa pagina: istruttori e segreteria hanno
- * ognuno la sua (vedi `sessioni.ts`), e l'accesso fatto in una non vale
- * nell'altra.
- */
 const db = () => import('./supabase').then((m) => m.clientSupabase())
 
-/** Le aree con un accesso: dove porta ogni tipo di account. */
-export type AreaDiAccount = 'segreteria' | 'istruttori' | 'sala'
-
-const SESSIONE_DELL_AREA: Record<AreaDiAccount, Sessione> = { segreteria: 'segreteria', istruttori: 'personale', sala: 'sala' }
-
 /**
- * La sessione in cui entra la porta di questa pagina: quella della pagina, e
- * sul tablet di sala quella della sala, che è il client del tablet.
+ * Va nell'area del proprio account. Una persona entrata dalla porta del
+ * tablet non è un tablet: il dispositivo smette di riaprirsi in sala.
  */
-const sessioneDiQui = (): Sessione => (areaDelPercorso() === 'sala' ? 'sala' : sessioneDellaPagina())
-
-/**
- * Va a un'altra area portandosi dietro l'accesso fatto qui: per chi è entrato
- * dalla porta dell'altra, o dalla porta unica della radice (vedi
- * `spostaSessione`). Qui non resta collegato.
- */
-export async function passaA(area: AreaDiAccount): Promise<void> {
-  const m = await import('./supabase')
-  m.spostaSessione(SESSIONE_DELL_AREA[area], sessioneDiQui())
-  // Una persona entrata dalla porta del tablet non è un tablet: il
-  // dispositivo smette di riaprirsi in sala.
+export function passaA(area: AreaDiAccount) {
   if (area !== 'sala') smettiTablet()
   window.location.assign(indirizzo(INDIRIZZI[area]))
 }
 
 /**
- * La persona dell'account collegato, se è di un istruttore o della segreteria.
- * `null` senza accesso, e anche per un account che non è del personale: il
- * tablet di una sala, o un utente creato e non ancora legato in `persone`.
+ * L'account collegato su questo dispositivo, o `null` senza accesso, e anche
+ * per un account che non è né del personale né di un tablet: un utente creato
+ * e non ancora legato in `persone`.
  */
-export async function chiSei(): Promise<Personale | null> {
+export async function account(): Promise<Account | null> {
   const c = await db()
   const { data: s } = await c.auth.getSession()
   const utente = s.session?.user.id
   if (!utente) return null
-  const letta = await personaDi(c, utente)
-  // Senza rete la risposta non c'è, non è un «no»: vale l'ultima vista.
-  if (letta === undefined) return ricordato(utente)
-  ricorda(utente, letta)
-  return letta
+  const letto = await accountDi(c, utente)
+  // Senza rete la risposta non c'è, non è un «no»: vale l'ultimo visto.
+  if (letto === undefined) return ricordato(utente)
+  ricorda(utente, letto)
+  return letto
+}
+
+/** La persona dell'account collegato, se è di un istruttore o della segreteria. */
+export async function chiSei(): Promise<Personale | null> {
+  return (await account())?.persona ?? null
+}
+
+/** L'account di un utente: `null` se non è di nessuno, `undefined` se il server non ha risposto. */
+async function accountDi(c: SupabaseClient, utente: string): Promise<Account | null | undefined> {
+  const persona = await personaDi(c, utente)
+  if (persona === undefined) return undefined
+  if (persona) return { area: areaDi(persona), persona }
+  // La policy lascia a un tablet la sua riga e basta (vedi `tabletSupabase.ts`).
+  const { data, error } = await c.from('postazioni').select('attiva').eq('utente_id', utente).maybeSingle()
+  if (error) return undefined
+  return (data as { attiva: boolean } | null)?.attiva ? { area: 'sala', persona: null } : null
 }
 
 /**
@@ -120,57 +134,34 @@ async function personaDi(c: SupabaseClient, utente: string): Promise<Personale |
 }
 
 /**
- * La porta unica: la stessa in ogni area, e alla radice. Si entra con
+ * La porta unica: la stessa alla radice e in ogni area. Si entra con
  * l'email, o col nome utente per l'account di una sala (vedi
  * `emailDellaSala`), e l'account dice dove andare: la segreteria in
  * segreteria, un istruttore nel calendario, il tablet di una sala in sala.
  *
  * Se l'area è questa pagina si resta, e torna la persona entrata (`null` per
- * una sala); se no l'accesso si porta nell'area giusta (vedi `passaA`) e la
- * pagina cambia, e la promessa non torna più.
+ * una sala); se no si va nell'area giusta (vedi `passaA`) e la pagina cambia,
+ * e la promessa non torna più.
  */
 export async function accedi(utente: string, password: string): Promise<Personale | null> {
-  const m = await import('./supabase')
-  const c = m.clientSupabase(sessioneDiQui())
+  const c = await db()
   const { error } = await c.auth.signInWithPassword({ email: emailDellaSala(utente), password })
   if (error) throw new Error(perché(error))
   const { data: s } = await c.auth.getSession()
   const id = s.session?.user.id
-  const persona = id ? await personaDi(c, id) : null
-  if (persona === undefined) {
+  const a = id ? await accountDi(c, id) : null
+  if (a === undefined) {
     await c.auth.signOut()
     throw new Error('Il server non risponde: c’è rete?')
   }
-  let area: AreaDiAccount | null = persona ? (persona.ruolo === 'staff' ? 'segreteria' : 'istruttori') : null
-  if (!area && id) {
-    // La policy lascia a un tablet la sua riga e basta (vedi `tabletSupabase.ts`).
-    const { data } = await c.from('postazioni').select('attiva').eq('utente_id', id).maybeSingle()
-    if ((data as { attiva: boolean } | null)?.attiva) area = 'sala'
-  }
-  if (!area) {
+  if (!a) {
     await c.auth.signOut()
     throw new Error('Questo account non è di un istruttore, della segreteria o del tablet di una sala: chiedi alla segreteria')
   }
-  if (area === areaDelPercorso()) return persona
-  await passaA(area)
+  if (id) ricorda(id, a)
+  if (a.area === areaDelPercorso()) return a.persona
+  passaA(a.area)
   return new Promise<never>(() => {})
-}
-
-/**
- * Dove è già entrato qualcuno su questo dispositivo, per la radice: chi apre
- * la porta unica ed è già collegato va dritto nella sua area. Guarda solo se
- * una sessione c'è, senza chiederlo al server: la porta dell'area, se la
- * sessione non vale più, lo dice da sé.
- */
-export function areaCollegata(): AreaDiAccount | null {
-  try {
-    const k = chiaviSessione(indirizzoProgetto(import.meta.env.VITE_SUPABASE_URL as string))
-    if (localStorage.getItem(k.segreteria)) return 'segreteria'
-    if (localStorage.getItem(k.personale)) return 'istruttori'
-  } catch {
-    // Senza localStorage non c'è nemmeno una sessione ricordata.
-  }
-  return null
 }
 
 /**
@@ -237,15 +228,18 @@ function perchéPassword(e: { message?: string; code?: string }): string {
   return `La password non è stata salvata${testo ? `: ${testo}` : ''}`
 }
 
+/** Esce, e torna alla porta: l'area la sceglie il prossimo account. */
 export async function esci(): Promise<void> {
   const c = await db()
   ricorda('', null)
   await c.auth.signOut()
+  smettiTablet()
+  window.location.assign(indirizzo('./'))
 }
 
 /**
  * Quando l'account cambia senza passare dalla porta: la sessione scaduta o
- * chiusa, un altro accesso in un'altra scheda della stessa area. `f` riceve
+ * chiusa, un altro accesso o un'uscita in un'altra scheda (la sessione è una sola). `f` riceve
  * se c'è ancora qualcuno collegato; il rinnovo del token, che non cambia
  * nessuno, non conta.
  */

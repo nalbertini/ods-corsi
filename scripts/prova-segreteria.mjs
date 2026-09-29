@@ -232,7 +232,36 @@ console.log('\n9. sale e regole')
   await s.salvaImpostazioni({ mesiPresenze: 24 })
   ok('la pulizia la toglie', [await s.pulisci(), await s.scadute()], [1, 0])
   const dati = await s.esporta((await app.dettaglio((await lotta2([9, 2]))[0].id)).elenco[0].id)
-  ok('l\'esportazione ha anagrafica, iscrizioni, presenze, richieste, certificato e pagamento', Object.keys(dati).sort(), ['certificato_e_pagamento', 'esportato_il', 'iscrizioni', 'persona', 'presenze', 'richieste_di_iscrizione'])
+  ok('l\'esportazione ha anagrafica, iscrizioni, presenze, richieste, certificato, pagamento e ricevute', Object.keys(dati).sort(), ['certificato_e_pagamento', 'esportato_il', 'iscrizioni', 'persona', 'presenze', 'ricevute', 'richieste_di_iscrizione'])
+}
+
+console.log('\n9b. le ricevute')
+{
+  const chi = (await s.persone())[0]
+  const voce = (prezzo, pagato) => ({ descrizione: 'Annuale Lotta 3', quantita: 1, prezzo, dal: '2026-09-01', al: '2027-06-30', pagamenti: pagato ? [{ data: '2026-09-01', importo: pagato, metodo: 'Bonifico' }] : [] })
+  const ente = await s.enteRicevute()
+  ok('l\'associazione di partenza', ente.nome, 'Asd Il Centro Judo')
+  const socio = await s.intestatarioDi(chi.id)
+  ok('il socio ha il suo nome', [socio.nome, socio.cognome], [chi.nome, chi.cognome])
+  const base = { data: '2026-09-01', personaId: chi.id, ente, intestatario: socio, anticipo: 0 }
+  const prima = await s.emettiRicevuta({ ...base, numero: 116, voci: [voce(36800, 36800)] })
+  ok('la prima col numero del programma di prima', [prima.numero, prima.anno, prima.totale, prima.pagato], [116, 2026, 36800, 36800])
+  ok('la seguente va avanti da sé', (await s.emettiRicevuta({ ...base, voci: [voce(36800, 18000)] })).numero, 117)
+  let no = ''
+  await s.emettiRicevuta({ ...base, numero: 116, voci: [voce(100, 0)] }).catch((e) => (no = e.message))
+  ok('un numero già preso no', no.startsWith('La ricevuta numero 116 del 2026 c’è già'), true)
+  no = ''
+  await s.emettiRicevuta({ ...base, voci: [voce(100, 200)] }).catch((e) => (no = e.message))
+  ok('pagato più del totale no', no, 'Si è pagato più del totale: controlla gli importi')
+  ok('a gennaio si riparte', (await s.emettiRicevuta({ ...base, data: '2027-01-10', voci: [voce(100, 100)] })).numero, 1)
+  await s.annullaRicevuta(prima.id)
+  const sue = await s.ricevute(chi.id)
+  ok('le sue, dalla più recente, anche l\'annullata', sue.map((r) => [r.numero, !!r.annullataIl]), [[1, false], [117, false], [116, true]])
+  ok('il prossimo numero salta l\'annullata', await s.prossimoNumero(2026), 118)
+  ok('i dati del socio ora vengono dall\'ultima ricevuta', (await s.intestatarioDi(chi.id)).cognome, chi.cognome)
+  await s.salvaEnteRicevute({ ...ente, nome: 'Asd Nuova' })
+  ok('l\'associazione cambiata', (await s.enteRicevute()).nome, 'Asd Nuova')
+  ok('le ricevute nell\'esportazione', (await s.esporta(chi.id)).ricevute.length, 3)
 }
 
 console.log('\n10. l\'import dai fogli')

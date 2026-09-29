@@ -54,12 +54,51 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
   AL**: per chi paga il trimestre, la data in cui scade. Passata quella, la
   scheda torna da sé a «pagamento scaduto». La **NOTA** è per quello che
   manca («manca il saldo»). **SALVA** compare quando si cambia qualcosa.
+- **RICEVUTE** — le ricevute dei pagamenti di questa persona (vedi sotto).
 - **ISCRIZIONI** — i corsi che fa. **TERMINA** la toglie da un corso: da
   domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
   **ISCRIVI** la aggiunge a un altro.
 - **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione.
 - **DISATTIVA** — sparisce da tutti gli appelli e dal tablet (chi smette del
   tutto). **RIATTIVA** la rimette.
+
+## Un pagamento e la sua ricevuta
+
+Quando qualcuno paga, nella sua scheda **+ REGISTRA UN PAGAMENTO** prepara la
+ricevuta, la stessa «ricevuta semplice» di prima: due copie uguali su un
+foglio A4 in orizzontale, una per il socio e una per l'associazione.
+
+- **DATA**, **NUMERO** e **PAGATO CON** (bonifico, contanti, POS, assegno). Il
+  numero si lascia vuoto: prende da solo il primo libero dell'anno, e a
+  gennaio si riparte da 1. Si scrive solo la prima volta, per continuare la
+  numerazione del programma di prima (se l'ultima era la 115, si scrive 116).
+- **VOCI** — quello che si paga. Si parte già con la **quota associativa**
+  (se in questa stagione non è ancora pagata) e l'**annuale** dei corsi che
+  fa, coi prezzi del foglio dei costi. Ogni voce ha la quantità, il prezzo, da
+  quando a quando vale e quanto si è **PAGATO ORA**: di solito tutto, ma chi
+  paga una parte scrive la parte. **Togli** toglie una voce; «Aggiungi una
+  voce…» ne aggiunge un'altra dal foglio dei costi (annuale, annuale a saldo,
+  trimestre) o una scritta a mano.
+- **DATI DEL SOCIO** — nome, indirizzo, codice fiscale, data di nascita e, per
+  un minore, il genitore. Vengono dall'ultima ricevuta o dal modulo di
+  iscrizione online; se mancano si aprono da soli, da scrivere. Si correggono
+  per la ricevuta, la scheda non cambia.
+- **ANTICIPO** — quello che si era già dato prima, fuori da queste voci.
+  **NOTE** — facoltative, vanno nel riquadro «Note».
+- Sotto si legge il **totale**, il **pagato** e il **netto a pagare**.
+- **Segna in scheda** — con la casella, la scheda passa da sola a **PAGATO**
+  (o **IN PARTE**, se resta qualcosa da pagare) fino all'ultima data delle
+  voci dei corsi.
+
+**FAI LA RICEVUTA** le dà il numero e scarica il PDF, da stampare o mandare.
+Nell'elenco **RICEVUTE** della scheda ogni ricevuta si riscarica con **PDF**,
+uguale a com'era.
+
+Una ricevuta fatta **non si cambia e non si cancella**: se è sbagliata,
+**Annulla** (chiede conferma) e se ne fa un'altra. L'annullata resta in elenco
+col suo numero, e il suo PDF dice ANNULLATA, così nella numerazione non ci
+sono buchi. I dati dell'associazione in testa alle ricevute si cambiano da
+[Impostazioni](regole.md#le-ricevute).
 
 Il certificato è un dato sulla salute: lo vede solo la segreteria, non gli
 istruttori, e non va scritto da nessun'altra parte (nemmeno nelle note). In

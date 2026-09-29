@@ -17,7 +17,7 @@ import { trattieniAggiornamento } from '../../lib/aggiornamento'
 import { Cronometro, Persone } from '../Icons'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Logo } from '../Logo'
-import { accedi } from '../../lib/accesso'
+import { accedi, account, passaA } from '../../lib/accesso'
 import { TastoTema } from '../TastoTema'
 import { giornoDopo, messaggio, useAdesso, useInattivo, useSchermoAcceso } from './comune'
 import { TabletHome } from './TabletHome'
@@ -81,6 +81,17 @@ export function Tablet() {
     }
   }, [bloccato, d, leggi])
 
+  // La sessione è una sola: con l'account di una persona il tablet non si
+  // prepara, si torna nell'area di quella persona.
+  useEffect(() => {
+    if (d?.modo !== 'supabase' || postazione !== null) return
+    let vivo = true
+    void account().then((a) => vivo && a && a.area !== 'sala' && passaA(a.area), () => {})
+    return () => {
+      vivo = false
+    }
+  }, [d, postazione])
+
   if (bloccato) {
     return (
       <div className="tb">
@@ -116,8 +127,9 @@ export function Tablet() {
         d={d}
         postazione={postazione}
         onScollega={async () => {
+          // Si esce, e si torna alla porta di tutta l'app.
           await d.scollega()
-          setPostazione(null)
+          lasciaTablet()
         }}
       />
     </div>
@@ -599,7 +611,7 @@ function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | n
           </span>
         )}
         <button type="button" className="tb-scollega" style={{ alignSelf: 'flex-start' }} onClick={lasciaTablet}>
-          ← Non è un tablet di sala: torna alla scelta delle aree
+          ← Non è un tablet di sala: torna all’accesso
         </button>
       </div>
     </div>

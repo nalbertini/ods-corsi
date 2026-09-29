@@ -1,0 +1,100 @@
+// ---------------------------------------------------------------------------
+// La ricevuta di un pagamento, senza browser.
+//
+//   node scripts/prova-ricevuta.mjs [cartella]
+//
+// Controlla i conti e i rifiuti di `src/lib/ricevute.ts` e fa i PDF di tre
+// ricevute: quella del programma di prima (quota e annuale), una con tante
+// voci che va a una seconda pagina, e una annullata. Con una cartella ci
+// lascia i PDF, da aprire per guardare che tutto stia nei riquadri.
+// ---------------------------------------------------------------------------
+import { build } from 'esbuild'
+import { writeFileSync } from 'node:fs'
+
+const { outputFiles } = await build({
+  stdin: {
+    contents:
+      "export * from './src/lib/ricevute'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
+    resolveDir: '.',
+    loader: 'ts',
+  },
+  bundle: true,
+  format: 'esm',
+  platform: 'node',
+  write: false,
+  logLevel: 'error',
+  define: { 'import.meta.env': '{}' },
+})
+const m = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+const cartella = process.argv[2]
+
+let guai = 0
+const ok = (cosa, avuto, voluto) => {
+  const va = JSON.stringify(avuto) === JSON.stringify(voluto)
+  console.log(va ? '  ✓' : '  ✗', cosa, va ? '' : `— atteso ${JSON.stringify(voluto)}, avuto ${JSON.stringify(avuto)}`)
+  if (!va) guai++
+}
+
+console.log('I conti')
+ok('418,5 €', m.centesimi('418,5'), 41850)
+ok('1.234,00 €', m.centesimi('1.234,00 €'), 123400)
+ok('«dieci» non è un importo', m.centesimi('dieci'), null)
+ok('i centesimi scritti', m.euro(41800), '418,00')
+ok('la data come sulla ricevuta', m.dataRicevuta('2026-09-01'), '01/09/2026')
+ok('Collegno è in provincia di Torino', m.provinciaDalCap('10093'), 'TO')
+ok('Milano no', m.provinciaDalCap('20121'), '')
+ok('il trimestre da ottobre', m.fineTrimestre('2026-10-01'), '2026-12-31')
+ok('il trimestre non va oltre la stagione', m.fineTrimestre('2027-05-10'), '2027-06-30')
+
+const pagato = (importo) => [{ data: '2026-09-01', importo, metodo: 'Bonifico' }]
+const quella = {
+  id: 'r1',
+  anno: 2026,
+  numero: 116,
+  data: '2026-09-01',
+  ente: m.ENTE_PREDEFINITO,
+  intestatario: {
+    nome: 'Manuela', cognome: 'Albertini', indirizzo: "Via San Francesco d'Assisi 16", cap: '10093', comune: 'Collegno', provincia: 'TO',
+    natoIl: '2014-06-13', codiceFiscale: 'LBRMNL14H53L219X', genitore: 'Albertini Nicola',
+  },
+  voci: [
+    { ...m.QUOTA.voce('2026-09-01'), pagamenti: pagato(5000) },
+    { descrizione: 'Annuale Lotta 3', quantita: 1, prezzo: 36800, dal: '2026-09-01', al: '2027-06-30', pagamenti: pagato(36800) },
+  ],
+  anticipo: 0,
+  totale: 41800,
+  pagato: 41800,
+  creataIl: '2026-09-01T10:00:00Z',
+}
+const c = m.conti(quella)
+ok('totale, pagato e netto', [c.totale, c.pagato, c.netto], [41800, 41800, 0])
+ok('va bene', m.cosaNonVa(quella), null)
+ok('senza voci no', m.cosaNonVa({ ...quella, voci: [] }), 'Serve almeno una voce')
+ok('pagato più del totale no', m.cosaNonVa({ ...quella, anticipo: 100 }), 'Si è pagato più del totale: controlla gli importi')
+ok('senza il nome del socio no', m.cosaNonVa({ ...quella, intestatario: { nome: '', cognome: 'Albertini' } }), 'Servono nome e cognome del socio')
+ok('la voce di Lotta 3 dal foglio dei costi', m.vociDelCorso('lotta 3').map((v) => v.voce('2026-09-01').prezzo), [48000, 46000, 18000])
+ok('la quota prima di tutto', m.vociPronte(['Judo 3'])[0].chiave, 'quota')
+ok('il nome del file', m.nomeFileRicevuta(quella), 'ricevuta-116-2026-albertini-manuela.pdf')
+
+console.log('I PDF')
+const tante = {
+  ...quella,
+  numero: 117,
+  voci: Array.from({ length: 7 }, (_, i) => ({ descrizione: `Trimestre Judo ${i + 1} con un nome anche lungo lungo`, quantita: 1, prezzo: 18000, dal: '2026-10-01', al: '2026-12-31', pagamenti: [...pagato(9000), ...pagato(9000)] })),
+  note: 'Pagato in due volte, con due bonifici: il secondo il giorno stesso.',
+}
+ok('sette voci da tre righe di pagamento: tre per pagina, senza perderne', [m.pagineDelleVoci(tante.voci).length, m.pagineDelleVoci(tante.voci).flat().length], [3, 7])
+for (const [nome, r] of [['ricevuta-116', quella], ['ricevuta-tante', tante], ['ricevuta-annullata', { ...quella, annullataIl: '2026-09-02T10:00:00Z' }]]) {
+  const byte = await m.ricevutaPdf(r)
+  const doc = await m.PDFDocument.load(byte)
+  const pagine = doc.getPageCount()
+  ok(`${nome}: A4 in orizzontale`, doc.getPage(0).getSize().width > doc.getPage(0).getSize().height, true)
+  ok(`${nome}: pagine`, pagine, m.pagineDelleVoci(r.voci).length)
+  if (cartella) writeFileSync(`${cartella}/${nome}.pdf`, byte)
+}
+
+if (guai) {
+  console.log(`\n${guai} cose non tornano`)
+  process.exit(1)
+}
+console.log('\nTutto a posto')

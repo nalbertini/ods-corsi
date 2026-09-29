@@ -11,6 +11,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
+import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, type Ricevuta } from './ricevute'
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -401,6 +402,63 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async ricevute(personaId) {
+      return (a().ricevute ?? [])
+        .filter((r) => !personaId || r.personaId === personaId)
+        .sort((x, y) => y.data.localeCompare(x.data) || y.anno - x.anno || y.numero - x.numero)
+    },
+
+    async prossimoNumero(anno) {
+      return Math.max(0, ...(a().ricevute ?? []).filter((r) => r.anno === anno).map((r) => r.numero)) + 1
+    },
+
+    async intestatarioDi(personaId) {
+      const p = persona(personaId)
+      const ultima = (a().ricevute ?? []).filter((r) => r.personaId === personaId).sort((x, y) => y.creataIl.localeCompare(x.creataIl))[0]
+      if (ultima) return { ...ultima.intestatario, nome: p.nome, cognome: p.cognome }
+      const richiesta = richiesteDi(personaId)
+        .filter((r) => r.stato === 'accolta')
+        .sort((x, y) => (y.gestitaIl ?? y.creataIl).localeCompare(x.gestitaIl ?? x.creataIl))[0]
+      return richiesta ? intestatarioDaRichiesta(richiesta) : { nome: p.nome, cognome: p.cognome }
+    },
+
+    async emettiRicevuta(dati) {
+      if (dati.personaId) persona(dati.personaId)
+      const r = { ...dati, intestatario: pulisciIntestatario(dati.intestatario), note: dati.note?.trim() || undefined }
+      const no = cosaNonVa(r)
+      if (no) throw new Error(no)
+      if (r.note && r.note.length > 500) throw new Error('La nota è troppo lunga: al massimo 500 caratteri')
+      const anno = Number(r.data.slice(0, 4))
+      const tutte = a().ricevute ?? []
+      // Come `emetti_ricevuta`: il numero dato, se è libero; se no il primo dopo l'ultimo.
+      if (r.numero && tutte.some((x) => x.anno === anno && x.numero === r.numero))
+        throw new Error(`La ricevuta numero ${r.numero} del ${anno} c’è già: lascia il numero vuoto per il primo libero`)
+      const numero = r.numero ?? Math.max(0, ...tutte.filter((x) => x.anno === anno).map((x) => x.numero)) + 1
+      const voci = r.voci.map((v) => ({ ...v, descrizione: v.descrizione.trim(), pagamenti: v.pagamenti.filter((p) => p.importo > 0) }))
+      const c = contiRicevuta({ voci, anticipo: r.anticipo })
+      const { numero: _n, ...resto } = r
+      const nuova: Ricevuta = { ...resto, voci, id: `r-${unico()}`, anno, numero, totale: c.totale, pagato: c.pagato, creataIl: new Date().toISOString() }
+      a().ricevute = [...tutte, nuova]
+      salva()
+      return nuova
+    },
+
+    async annullaRicevuta(id) {
+      const r = (a().ricevute ?? []).find((x) => x.id === id)
+      if (!r || r.annullataIl) throw new Error('Ricevuta inesistente o già annullata')
+      a().ricevute = (a().ricevute ?? []).map((x) => (x.id === id ? { ...x, annullataIl: new Date().toISOString() } : x))
+      salva()
+    },
+
+    async enteRicevute() {
+      return { ...ENTE_PREDEFINITO, ...(a().enteRicevute ?? {}) }
+    },
+
+    async salvaEnteRicevute(e) {
+      a().enteRicevute = e
+      salva()
+    },
+
     async iscrivi(personaId, corsoId) {
       persona(personaId)
       corso(corsoId)
@@ -693,6 +751,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         presenze: presenze.sort((x, y) => x.inizio.localeCompare(y.inizio)),
         richieste_di_iscrizione: richiesteDi(personaId).map(({ id: _id, personaId: _p, ...r }) => r),
         certificato_e_pagamento: { certificato_scade: p.certificato?.scade ?? null, certificato_file: p.certificato?.file ?? null, ...(p.pagamento ?? { stato: 'da_pagare' }) },
+        ricevute: (a().ricevute ?? []).filter((r) => r.personaId === personaId).map(({ id: _id, personaId: _p, ...r }) => r),
       }
     },
   }

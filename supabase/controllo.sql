@@ -90,6 +90,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.presenze_istruttori') is not null
     and exists (select 1 from dentro where nome = 'presenza_con_pin')
     and exists (select 1 from dentro where nome = 'gestisci_presenza_istruttore')),
+  ('16-ricevute.sql', 'le ricevute dei pagamenti',
+    to_regclass('public.ricevute') is not null
+    and exists (select 1 from dentro where nome = 'emetti_ricevuta')
+    and exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'ricevute')),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')

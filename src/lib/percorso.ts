@@ -1,5 +1,3 @@
-import type { Sessione } from './sessioni'
-
 /**
  * L'area scritta nel percorso dell'indirizzo (`…/segreteria/`), o `null`.
  *
@@ -11,12 +9,3 @@ export function areaDelPercorso(): 'segreteria' | 'iscrizioni' | 'istruttori' | 
   const m = /\/(segreteria|iscrizioni|istruttori|sala)(\/(index\.html)?)?$/.exec(window.location.pathname)
   return m ? (m[1] as 'segreteria' | 'iscrizioni' | 'istruttori' | 'sala') : null
 }
-
-/**
- * La sessione del personale per questa pagina: in `segreteria/` quella della
- * segreteria, altrove quella degli istruttori. Fra un'area e l'altra si cambia
- * pagina, quindi per una pagina è sempre la stessa: il calendario e l'appello
- * aperti dalla segreteria parlano col database a nome della segreteria, e
- * quelli di `istruttori/` a nome di chi è entrato lì.
- */
-export const sessioneDellaPagina = (): Exclude<Sessione, 'sala'> => (areaDelPercorso() === 'segreteria' ? 'segreteria' : 'personale')

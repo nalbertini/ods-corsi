@@ -72,6 +72,16 @@ telefoni degli istruttori collegati: quando, quale, chi (l'istruttore o il
 tablet di quale sala), in quale corso, quanto è durato. **ALTRI 50** per
 andare indietro.
 
+## Le ricevute
+
+I dati dell'associazione che vanno in testa a ogni ricevuta: nome, indirizzo,
+CAP, comune, codice fiscale e, se c'è, la partita IVA; e la **DICITURA IN
+FONDO**, quella dell'esenzione da IVA e bollo. Si parte con quelli di Asd Il
+Centro Judo. **SALVA** compare quando si cambia qualcosa, e vale per le
+ricevute che si fanno da lì in poi: quelle già fatte restano come erano. Le
+ricevute si fanno dalla scheda di un iscritto (vedi
+[Iscritti](iscritti.md#un-pagamento-e-la-sua-ricevuta)).
+
 ## Privacy
 
 - **L'informativa** — lo stato dell'informativa privacy che vede chi si
@@ -82,5 +92,5 @@ andare indietro.
   la segreteria e nessun altro. Patologie, allergie e simili non vanno scritte
   da nessuna parte nell'app, nemmeno nelle note.
 - **ESPORTA I DATI DI UNA PERSONA** — si sceglie chi li ha chiesti e si preme
-  **ESPORTA**: un file con anagrafica, iscrizioni, presenze, certificato e pagamento. È quello che una
+  **ESPORTA**: un file con anagrafica, iscrizioni, presenze, certificato, pagamento e ricevute. È quello che una
   persona ha diritto di chiedere.

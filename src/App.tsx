@@ -2,14 +2,14 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
-import { Accesso, AltreAree, Porta, ScegliPassword, UnAttimo, useChi } from './components/Porta'
+import { Accesso, Porta, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
-import { INDIRIZZI, INDIRIZZO_AREE, TIMER, useArea, vaiA } from './lib/aree'
-import { areaCollegata, esci, passaA, serveAccesso, type Personale } from './lib/accesso'
+import { INDIRIZZI, TIMER, useArea } from './lib/aree'
+import { account, esci, passaA, serveAccesso, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
@@ -29,8 +29,10 @@ import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
  * chi vuole iscriversi; gli istruttori, col calendario e l'appello; e la sala,
  * il tablet appeso al muro.
  *
- * Col database vero la porta è una sola (vedi `accedi`): ognuno finisce nel
- * suo indirizzo e trova solo il suo posto, senza schede. In prova le porte sono aperte a tutti e le schede ci sono,
+ * Col database vero la porta è una sola (vedi `accedi`), e anche la sessione:
+ * ognuno finisce nel suo indirizzo e trova solo il suo posto, senza schede, e
+ * dagli indirizzi delle altre aree torna nel suo. Uscendo si torna alla
+ * porta. In prova le porte sono aperte a tutti e le schede ci sono,
  * perché la prova serve a far vedere l'app intera.
  */
 export default function App() {
@@ -84,7 +86,7 @@ function Testata({ luogo, guida, children }: { luogo: string; guida?: string; ch
  * Senza niente nell'indirizzo. Col database è la porta unica: si entra, e
  * l'account porta nella sua area (vedi `accedi`); sotto, quel che non chiede
  * un accesso. Chi è già collegato su questo dispositivo va dritto nella sua
- * area, tranne con `#aree`, che è il rimando «tutte le aree» delle porte.
+ * area: una scelta dell'area non c'è, la fa l'account.
  *
  * In prova le porte sono aperte, e qui ci sono tutte e quattro le aree.
  */
@@ -94,15 +96,27 @@ function Scelta() {
 }
 
 function PortaUnica() {
-  const [collegata] = useState(() => (window.location.hash === INDIRIZZO_AREE ? null : areaCollegata()))
+  // `undefined` finché non si sa se qualcuno è già collegato.
+  const [fuori, setFuori] = useState<boolean | undefined>(undefined)
   useEffect(() => {
-    if (collegata) vaiA(collegata)
-  }, [collegata])
+    let vivo = true
+    void account().then(
+      (a) => {
+        if (!vivo) return
+        if (a) passaA(a.area)
+        else setFuori(true)
+      },
+      () => vivo && setFuori(true),
+    )
+    return () => {
+      vivo = false
+    }
+  }, [])
   return (
     <div className="app">
       <Testata luogo="ACCESSO" guida={INDIRIZZO_GUIDA} />
       <main className="scroll">
-        {collegata ? (
+        {!fuori ? (
           <UnAttimo />
         ) : (
           <>
@@ -118,12 +132,6 @@ function PortaUnica() {
                 <span className="scelta-titolo">GUIDA</span>
                 <span className="passo-dettaglio" style={{ fontSize: 15 }}>
                   Come funziona l’app: la guida generale, e una per ogni parte.
-                </span>
-              </a>
-              <a className="card stack scelta-area" href={TIMER}>
-                <span className="scelta-titolo">TIMER</span>
-                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-                  L’interval timer per la lezione. È un’app a sé, nella cartella timer/.
                 </span>
               </a>
               <span className="num versione" title={VERSIONE_ESTESA}>
@@ -161,12 +169,6 @@ function TutteLeAree() {
               Come funziona l’app: la guida generale, e una per ogni parte.
             </span>
           </a>
-          <a className="card stack scelta-area" href={TIMER}>
-            <span className="scelta-titolo">TIMER</span>
-            <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-              L’interval timer per la lezione. È un’app a sé, nella cartella timer/.
-            </span>
-          </a>
           <span className="num versione" title={VERSIONE_ESTESA}>
             {VERSIONE}
           </span>
@@ -189,10 +191,8 @@ function Iscrizioni() {
 
 /**
  * Il calendario e l'appello, dietro la porta. La porta è quella unica: chi è
- * di segreteria ed entra da qui finisce in segreteria, che ha anche l'appello.
- * La sessione è sua: l'accesso fatto in segreteria qui non vale, e
- * chi apre `istruttori/` sul computer della reception trova la porta, non
- * l'account della segreteria.
+ * di segreteria ed entra da qui finisce in segreteria, che ha anche l'appello;
+ * e chi è già collegato in segreteria, aprendo `istruttori/`, ci torna.
  *
  * Da qui non si va da nessun'altra parte, nemmeno in prova: segreteria,
  * sala e iscrizioni sono aree a sé, ognuna col suo indirizzo, e l'istruttore
@@ -209,8 +209,7 @@ function Istruttori() {
   const [pagina, setPagina] = useState<Pagina>('calendario')
 
   // Di chi sono le lezioni da mostrare: dell'istruttore entrato, o di quello
-  // di prova. La segreteria le vede tutte, perché fa l'appello per chiunque;
-  // e anche un account ricordato da una versione che l'id non lo teneva.
+  // di prova. Tutte per un account ricordato da una versione che l'id non lo teneva.
   const soloDi = (chi: Personale | null) => (chi ? (chi.ruolo === 'staff' ? undefined : chi.id) : ISTRUTTORE_PROVA.id)
 
   if (largo) {
@@ -339,9 +338,8 @@ function AreaGuida() {
 }
 
 /**
- * La segreteria, con la sua porta: entra solo chi ne ha il ruolo, e ci resta.
- * Un istruttore che arriva
- * qui viene mandato al suo indirizzo.
+ * La segreteria, con la sua porta: entra solo chi ne ha il ruolo. Un altro
+ * account che arriva qui torna nella sua area (vedi `useChi`).
  */
 function AreaSegreteria() {
   const [chi, setChi] = useChi()
@@ -356,44 +354,14 @@ function AreaSegreteria() {
     )
   }
 
-  if (chi && chi.ruolo === 'staff') {
-    return (
-      <Segreteria
-        nome={`${chi.nome} ${chi.cognome}`}
-        prova={false}
-        onEsci={() => void esci().then(() => setChi(null))}
-      />
-    )
-  }
+  if (chi) return <Segreteria nome={`${chi.nome} ${chi.cognome}`} prova={false} onEsci={() => void esci()} />
 
   return (
     <div className="app">
       <Testata luogo="SEGRETERIA" />
       <main className="scroll">
         {chi === undefined && <UnAttimo />}
-        {chi === null && <Accesso altreAree onEntrato={setChi} />}
-        {chi && (
-          <div className="accesso">
-            <div className="rule">
-              <span className="rule-label">SEGRETERIA</span>
-              <div className="rule-line" />
-              <AltreAree />
-            </div>
-            <div className="pad stack" style={{ gap: 12, paddingBottom: 16 }}>
-              <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-                {chi.nome}, il tuo account è da istruttore: la segreteria è solo per chi lavora alla reception. Il
-                calendario e l’appello sono all’indirizzo degli istruttori.
-              </span>
-              {/* L'accesso fatto qui passa agli istruttori, e qui non resta. */}
-              <button type="button" className="btn btn-go" onClick={() => void passaA('istruttori')}>
-                VAI AGLI ISTRUTTORI
-              </button>
-              <button type="button" className="btn btn-ghost" onClick={() => void esci().then(() => setChi(null))}>
-                ESCI E CAMBIA ACCOUNT
-              </button>
-            </div>
-          </div>
-        )}
+        {chi === null && <Accesso onEntrato={setChi} />}
       </main>
     </div>
   )
