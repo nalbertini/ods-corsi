@@ -364,7 +364,7 @@ export function datiSegreteria(): Promise<DatiSegreteria> {
   if (!unico) {
     unico = (haUnServer
       ? Promise.all([import('./segreteriaSupabase'), import('./supabase')]).then(([m, s]) => m.creaSegreteriaSupabase(s.clientSupabase()))
-      : import('./segreteriaProva').then((m) => m.creaSegreteriaProva()))
+      : Promise.all([import('./segreteriaProva'), import('./esempiProva')]).then(([m, e]) => (e.seminaEsempi(), m.creaSegreteriaProva())))
       // Se il pezzo non arriva (rete, o un aggiornamento pubblicato nel
       // frattempo), la volta dopo si riprova invece di restare rotti.
       .catch((e) => {

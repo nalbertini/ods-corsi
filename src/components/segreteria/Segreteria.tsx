@@ -165,10 +165,11 @@ export function Segreteria({ nome, prova, onEsci }: { nome: string; prova: boole
               className="sg-link"
               onClick={() => {
                 if (!window.confirm("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?")) return
-                void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva')]).then(([a, p, r]) => {
+                void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva')]).then(([a, p, r, e]) => {
                   a.archivio.azzera()
                   p.scordaProva()
                   r.scordaRichiesteProva()
+                  e.scordaEsempi()
                   window.location.reload()
                 })
               }}
