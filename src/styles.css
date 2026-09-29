@@ -1033,6 +1033,12 @@ a.sg-voce { text-decoration: none; }
 .sg-presenza-istr { min-height: 64px; padding: 8px 14px; border-bottom: 1px solid var(--surface-2); border-left: 6px solid var(--tinta, var(--line)); }
 .sg-presenza-istr[data-spento='true'] > :not(:last-child) { opacity: 0.5; }
 .sg-presenza-istr-fine { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; text-align: right; }
+.sg-riga-compenso { display: grid; grid-template-columns: 1fr 90px 90px; gap: 14px; align-items: center; }
+.sg-compenso { border-bottom: 1px solid var(--surface-2); }
+.sg-compenso[open] { padding-bottom: 6px; }
+.sg-compenso > summary { min-height: 48px; padding: 6px 14px; cursor: pointer; list-style: none; }
+.sg-compenso > summary::-webkit-details-marker { display: none; }
+.sg-compenso > summary:hover { background: var(--surface); }
 /* Una richiesta online: le risposte in due colonne, i file con l'anteprima. */
 .sg-dati { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; align-items: baseline; }
 .sg-file {
