@@ -1,0 +1,222 @@
+import { COSTI, QUOTA_ASSOCIATIVA, VALIDITA } from './costi'
+import type { DatiRichiesta } from './richieste'
+
+/**
+ * Le ricevute dei pagamenti: la «ricevuta semplice» dell'associazione, come
+ * quella che la segreteria faceva col programma di prima.
+ *
+ * Una ricevuta ha un numero (che riparte ogni anno), i dati
+ * dell'associazione e del socio copiati dentro quando la si fa, le voci
+ * pagate con da quando a quando valgono e come sono state pagate. Fatta, non
+ * si cambia: si annulla, e il numero resta preso (`supabase/16-ricevute.sql`).
+ * Il PDF lo fa `ricevutaPdf.ts`, sempre dalla ricevuta salvata.
+ *
+ * Gli importi sono in centesimi, perché 0,1 + 0,2 non fa 0,3.
+ */
+
+export interface EnteRicevuta {
+  nome: string
+  indirizzo: string
+  cap: string
+  comune: string
+  codiceFiscale: string
+  partitaIva?: string
+  /** Sotto i totali: perché la ricevuta non ha IVA né bollo. */
+  dicitura: string
+}
+
+/** I dati dell'associazione di oggi: la segreteria li cambia da IMPOSTAZIONI. */
+export const ENTE_PREDEFINITO: EnteRicevuta = {
+  nome: 'Asd Il Centro Judo',
+  indirizzo: 'Corso Francia 224',
+  cap: '10098',
+  comune: 'Rivoli',
+  codiceFiscale: '10002760014',
+  dicitura:
+    "Esente da imposta e tasse ai sensi dell'art. 11 e 11bis del D.P.R. 971/86 e art.4 e 10 D.P.R. 633/72. Esente da bollo in modo assoluto art.7 Tabella allegato B D.P.R. 642/72",
+}
+
+export interface IntestatarioRicevuta {
+  nome: string
+  cognome: string
+  indirizzo?: string
+  cap?: string
+  comune?: string
+  provincia?: string
+  /** `AAAA-MM-GG`. */
+  natoIl?: string
+  codiceFiscale?: string
+  partitaIva?: string
+  /** Per un minore: chi paga. */
+  genitore?: string
+  genitoreCodiceFiscale?: string
+}
+
+export type MetodoPagamento = 'Bonifico' | 'Contanti' | 'POS' | 'Assegno'
+export const METODI: MetodoPagamento[] = ['Bonifico', 'Contanti', 'POS', 'Assegno']
+
+export interface PagamentoVoce {
+  data: string
+  /** Centesimi. */
+  importo: number
+  metodo: string
+}
+
+export interface VoceRicevuta {
+  descrizione: string
+  quantita: number
+  /** Centesimi, per uno. */
+  prezzo: number
+  dal?: string
+  al?: string
+  pagamenti: PagamentoVoce[]
+}
+
+export interface DatiRicevuta {
+  data: string
+  personaId?: string
+  /** Vuoto: il primo libero dell'anno. */
+  numero?: number
+  ente: EnteRicevuta
+  intestatario: IntestatarioRicevuta
+  voci: VoceRicevuta[]
+  /** Centesimi già dati prima, che non sono in queste voci. */
+  anticipo: number
+  note?: string
+}
+
+export interface Ricevuta extends Omit<DatiRicevuta, 'numero'> {
+  id: string
+  anno: number
+  numero: number
+  totale: number
+  pagato: number
+  creataIl: string
+  annullataIl?: string
+}
+
+/** Come i conti del server: totale delle voci, pagato, e quello che resta. */
+export function conti(r: Pick<DatiRicevuta, 'voci' | 'anticipo'>) {
+  const totale = r.voci.reduce((s, v) => s + v.quantita * v.prezzo, 0)
+  const pagato = r.voci.reduce((s, v) => s + v.pagamenti.reduce((t, p) => t + p.importo, 0), 0)
+  return { totale, pagato, netto: Math.max(0, totale - pagato - r.anticipo) }
+}
+
+/** Gli stessi rifiuti di `emetti_ricevuta`, per dirli subito sotto al modulo. */
+export function cosaNonVa(r: DatiRicevuta): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(r.data)) return 'Serve la data della ricevuta'
+  if (!r.intestatario.nome.trim() || !r.intestatario.cognome.trim()) return 'Servono nome e cognome del socio'
+  if (!r.voci.length) return 'Serve almeno una voce'
+  if (r.voci.length > 20) return 'Al massimo venti voci'
+  for (const v of r.voci) {
+    if (!v.descrizione.trim()) return 'Ogni voce vuole una descrizione'
+    if (!Number.isInteger(v.quantita) || v.quantita < 1 || v.quantita > 99) return `La quantità di «${v.descrizione}» va da 1 a 99`
+    if (!Number.isInteger(v.prezzo) || v.prezzo < 0) return `Il prezzo di «${v.descrizione}» non va`
+    if (v.dal && v.al && v.al < v.dal) return `Le date di «${v.descrizione}» sono al contrario`
+    if (v.pagamenti.some((p) => !Number.isInteger(p.importo) || p.importo < 0)) return `Un pagamento di «${v.descrizione}» non va`
+  }
+  if (r.numero !== undefined && (!Number.isInteger(r.numero) || r.numero < 1)) return 'Il numero della ricevuta non va'
+  const c = conti(r)
+  if (c.pagato + r.anticipo > c.totale) return 'Si è pagato più del totale: controlla gli importi'
+  return null
+}
+
+/** «418,00»: centesimi scritti all'italiana. */
+export const euro = (cent: number) => (cent / 100).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: true })
+
+/** «418», «418,5», «418,50 €» → centesimi; `null` se non è un importo. */
+export function centesimi(testo: string): number | null {
+  const t = testo.replace(/[€\s]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')
+  if (!/^\d+(\.\d{1,2})?$/.test(t)) return null
+  return Math.round(Number(t) * 100)
+}
+
+/** `AAAA-MM-GG` → `GG/MM/AAAA`, come sulla ricevuta. */
+export const dataRicevuta = (g?: string) => (g ? g.split('-').reverse().join('/') : '')
+
+/** Tutto il CAP della provincia di Torino comincia per 10: gli altri si scrivono a mano. */
+export const provinciaDalCap = (cap?: string) => (cap && /^10\d{3}$/.test(cap) ? 'TO' : '')
+
+/** I dati del socio da una richiesta di iscrizione: per un minore, anche il genitore. */
+export function intestatarioDaRichiesta(r: Partial<DatiRichiesta> & Pick<DatiRichiesta, 'nome' | 'cognome'>): IntestatarioRicevuta {
+  const genitore = `${r.genitoreCognome ?? ''} ${r.genitoreNome ?? ''}`.trim()
+  return {
+    nome: r.nome,
+    cognome: r.cognome,
+    indirizzo: r.indirizzo || undefined,
+    cap: r.cap || undefined,
+    comune: r.comune || undefined,
+    provincia: provinciaDalCap(r.cap) || undefined,
+    natoIl: r.natoIl || undefined,
+    codiceFiscale: r.codiceFiscale || undefined,
+    genitore: genitore || undefined,
+    genitoreCodiceFiscale: genitore ? r.genitoreCodiceFiscale || undefined : undefined,
+  }
+}
+
+/** I campi vuoti tolti, gli spazi in più anche: così si salva. */
+export function pulisciIntestatario(i: IntestatarioRicevuta): IntestatarioRicevuta {
+  const x: Record<string, string> = {}
+  for (const [k, v] of Object.entries(i)) if (typeof v === 'string' && v.trim()) x[k] = v.trim().replace(/\s+/g, ' ')
+  if (x.codiceFiscale) x.codiceFiscale = x.codiceFiscale.toUpperCase().replace(/\s/g, '')
+  if (x.genitoreCodiceFiscale) x.genitoreCodiceFiscale = x.genitoreCodiceFiscale.toUpperCase().replace(/\s/g, '')
+  if (x.provincia) x.provincia = x.provincia.toUpperCase()
+  return { nome: '', cognome: '', ...x }
+}
+
+const pulito = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, ' ').trim()
+
+/** Una voce pronta da aggiungere: quello che c'è nel foglio dei costi. */
+export interface VocePronta {
+  chiave: string
+  etichetta: string
+  voce: (oggi: string) => Omit<VoceRicevuta, 'pagamenti'>
+}
+
+/** La fine di un trimestre che parte da `dal`: tre mesi meno un giorno, non oltre la stagione. */
+export function fineTrimestre(dal: string) {
+  const [a, m, g] = dal.split('-').map(Number)
+  const x = new Date(Date.UTC(a, m - 1 + 3, g - 1)).toISOString().slice(0, 10)
+  return x > VALIDITA.corsi.al ? VALIDITA.corsi.al : x
+}
+
+export const QUOTA: VocePronta = {
+  chiave: 'quota',
+  etichetta: `Quota associativa · ${euro(QUOTA_ASSOCIATIVA * 100)} €`,
+  voce: () => ({ descrizione: 'QUOTA ASSOCIATIVA', quantita: 1, prezzo: QUOTA_ASSOCIATIVA * 100, ...VALIDITA.quota }),
+}
+
+/** Le voci di un corso del foglio dei costi: annuale, a saldo, trimestre. */
+export function vociDelCorso(corso: string): VocePronta[] {
+  const c = COSTI.find((x) => pulito(x.corso) === pulito(corso))
+  if (!c) return []
+  return c.prezzi.flatMap((p, i) => {
+    const nome = p.etichetta ? `${c.corso} ${p.etichetta.toLowerCase()}` : c.corso
+    const x: VocePronta[] = []
+    if (p.annuale !== undefined)
+      x.push({ chiave: `${c.corso}~${i}~annuale`, etichetta: `${nome} · annuale · ${euro(p.annuale * 100)} €`, voce: () => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: p.annuale! * 100, ...VALIDITA.corsi }) })
+    if (p.saldo !== undefined && p.saldo !== p.annuale)
+      x.push({ chiave: `${c.corso}~${i}~saldo`, etichetta: `${nome} · annuale a saldo · ${euro(p.saldo * 100)} €`, voce: () => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: p.saldo! * 100, ...VALIDITA.corsi }) })
+    if (p.trimestre !== undefined)
+      x.push({
+        chiave: `${c.corso}~${i}~trimestre`,
+        etichetta: `${nome} · trimestre · ${euro(p.trimestre * 100)} €`,
+        voce: (oggi) => {
+          const dal = oggi < VALIDITA.corsi.dal ? VALIDITA.corsi.dal : oggi
+          return { descrizione: `Trimestre ${nome}`, quantita: 1, prezzo: p.trimestre! * 100, dal, al: fineTrimestre(dal) }
+        },
+      })
+    return x
+  })
+}
+
+/** Tutte le voci del foglio dei costi, prima quelle dei corsi dati. */
+export function vociPronte(primaQuesti: string[]): VocePronta[] {
+  const primi = primaQuesti.flatMap(vociDelCorso)
+  const gia = new Set(primi.map((v) => v.chiave))
+  return [QUOTA, ...primi, ...COSTI.flatMap((c) => vociDelCorso(c.corso)).filter((v) => !gia.has(v.chiave))]
+}
+
+/** Il nome del file del PDF: `ricevuta-116-2026-albertini-manuela.pdf`. */
+export const nomeFileRicevuta = (r: Pick<Ricevuta, 'numero' | 'anno' | 'intestatario'>) =>
+  `ricevuta-${r.numero}-${r.anno}-${pulito(`${r.intestatario.cognome} ${r.intestatario.nome}`).replace(/ /g, '-')}.pdf`

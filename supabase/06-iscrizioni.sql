@@ -156,7 +156,7 @@ create or replace function cf_lettere(nome text, cognome text)
 $$;
 
 -- Il luogo di nascita: nel codice fiscale c'è il codice catastale del comune,
--- o dello stato estero. I nomi li riempie `16-luoghi.sql`, generato dalle
+-- o dello stato estero. I nomi li riempie `17-luoghi.sql`, generato dalle
 -- tabelle dell'ANPR; un codice può averne più d'uno nel tempo, e `al` dice
 -- fino a quando è valso. Si legge solo da qui dentro.
 create table if not exists luoghi_nascita (
@@ -171,7 +171,7 @@ revoke all on luoghi_nascita from anon, authenticated;
 
 -- «TORINO (TO)», o «ROMANIA»: il nome che il luogo aveva il giorno della
 -- nascita, quello scritto nel modulo (l'anno del codice ha due cifre). Null se non è nell'elenco (uno stato che non c'è più, un comune
--- nuovo, o `16-luoghi.sql` non lanciato): allora vale quel che si è scritto.
+-- nuovo, o `17-luoghi.sql` non lanciato): allora vale quel che si è scritto.
 -- Le stesse regole di `luogoDaCf` in `src/lib/codiceFiscale.ts`.
 create or replace function luogo_da_cf(cf text, nato date)
   returns text language sql stable security definer set search_path = public as $$

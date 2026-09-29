@@ -18,10 +18,11 @@ dentro ogni lezione, l'appello.
 
 La porta è la stessa per tutti, e l'account decide dove si va: con l'account
 della segreteria si finisce in segreteria, che ha anche l'appello, anche se si
-è entrati da `istruttori/`. L'accesso vale solo nella propria parte: se sullo
-stesso computer qualcuno è entrato in segreteria, `istruttori/` chiede
-comunque il vostro. Da qui non si va nelle altre parti dell'app (segreteria,
-tablet di sala, iscrizioni).
+è entrati da `istruttori/`. L'accesso è uno solo per dispositivo: se sullo
+stesso computer qualcuno è entrato in segreteria, `istruttori/` riporta in
+segreteria, e per entrare col vostro account bisogna prima uscire. Uscendo si
+torna alla pagina di accesso. Da qui non si va nelle altre parti dell'app
+(segreteria, tablet di sala, iscrizioni).
 
 La prima volta che entrate, l'account si lega da solo alla vostra scheda di
 istruttore, purché l'email sia la stessa che ha in elenco la segreteria. Se

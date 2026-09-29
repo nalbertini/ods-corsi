@@ -7,7 +7,7 @@ I due file sono le tabelle di decodifica dell'ANPR
 (https://www.anagrafenazionale.interno.it/area-tecnica/tabelle-di-decodifica/):
 l'archivio dei comuni, anche quelli che non ci sono più, e gli stati esteri.
 Scrive `src/lib/luoghi.json`, che il modulo carica quando serve, e
-`supabase/16-luoghi.sql`, gli stessi dati per `invia_iscrizione`. Si rilancia
+`supabase/17-luoghi.sql`, gli stessi dati per `invia_iscrizione`. Si rilancia
 quando l'ANPR aggiorna le tabelle (un comune nuovo, una fusione).
 
 Un codice può avere più nomi nel tempo (ABANO, poi ABANO TERME): si tengono
@@ -61,7 +61,7 @@ valori = ',\n'.join(
     f"({q(codice)}, {q(nome)}, {q(sigla)}, {q(v[2]) if len(v) > 2 else 'null'})"
     for codice, vv in elenco.items() for v in vv for nome, sigla in [v[:2]]
 )
-(RADICE / 'supabase/16-luoghi.sql').write_text(f"""-- I luoghi di nascita del codice fiscale: generato da `scripts/luoghi.py`
+(RADICE / 'supabase/17-luoghi.sql').write_text(f"""-- I luoghi di nascita del codice fiscale: generato da `scripts/luoghi.py`
 -- dalle tabelle dell'ANPR, non si cambia a mano. Si rilancia quando serve:
 -- svuota la tabella e la riempie di nuovo. La tabella e chi la legge stanno
 -- in `06-iscrizioni.sql`.

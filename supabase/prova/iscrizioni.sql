@@ -12,7 +12,7 @@ insert into persone (id, nome, cognome, ruolo, email, utente_id) values
   ('aaaaaaaa-0000-0000-0000-000000000002', 'Maura', 'Uno', 'istruttore', 'maura@ods.it', '22222222-2222-2222-2222-222222222222'),
   -- Già in elenco dall'anno scorso, senza email, e iscritta a un corso che ha lasciato.
   ('aaaaaaaa-0000-0000-0000-000000000003', 'Sara', 'Bianchi', 'iscritto', null, null);
--- Due luoghi, come li mette `16-luoghi.sql`: Torino, e Abano che ha cambiato nome.
+-- Due luoghi, come li mette `17-luoghi.sql`: Torino, e Abano che ha cambiato nome.
 insert into luoghi_nascita (codice, nome, sigla, al) values
   ('L219', 'TORINO', 'TO', null), ('A001', 'ABANO', 'PD', '1924-11-13'), ('A001', 'ABANO TERME', 'PD', null);
 insert into corsi (id, nome) values

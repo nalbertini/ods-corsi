@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from 'react'
-import type { DatiSegreteria, PersonaleSeg } from '../../lib/segreteria'
+import { useMemo, useState, type FormEvent } from 'react'
+import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
+import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica } from './comune'
+import { Numero, mesi } from './Presenze'
 
 /** Quello che ciascun ruolo può fare: è il riassunto delle policy di `02-policy.sql`. */
 const PERMESSI: Array<[string, string]> = [
@@ -421,6 +423,8 @@ function Scheda({
         </div>
       </div>
 
+      <PresenzeDelMese d={d} p={p} />
+
       <div className="sg-scheda-piede">
         <button
           type="button"
@@ -434,5 +438,108 @@ function Scheda({
         </button>
       </div>
     </>
+  )
+}
+
+const minuti = (x: PresenzaIstruttoreSeg) => Math.round((Date.parse(x.fine) - Date.parse(x.inizio)) / 60_000)
+/** In ore coi decimali, all'italiana: «1,5», per moltiplicarle per la paga oraria. */
+const ore = (m: number) => (m / 60).toLocaleString('it-IT', { maximumFractionDigits: 2 })
+
+/** Le lezioni confermate del mese in un foglio da aprire con Excel, come il registro delle presenze. */
+function scaricaCsv(righe: PresenzaIstruttoreSeg[], chi: string, mese: string) {
+  const q = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
+  const testo = [
+    ['data', 'inizio', 'fine', 'ore', 'corso', 'sala', 'previsto'].join(';'),
+    ...righe.map((x) => [chiaveGiorno(new Date(x.inizio)), oraDi(x.inizio), oraDi(x.fine), ore(minuti(x)), x.corso, x.sala ?? '', x.prevista ? 'sì' : 'no'].map(q).join(';')),
+  ].join('\r\n')
+  const url = URL.createObjectURL(new Blob(['\ufeff' + testo], { type: 'text/csv;charset=utf-8' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `presenze-${chi}-${mese}.csv`.toLowerCase().replace(/\s+/g, '-')
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+/**
+ * Le lezioni fatte da un istruttore in un mese, per calcolargli il compenso.
+ * Contano solo le presenze confermate (dal PIN sul tablet, da sé o dalla
+ * segreteria); quelle ancora da confermare si dicono a parte, perché vanno
+ * decise prima di chiudere il mese.
+ */
+function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
+  const periodi = useMemo(mesi, [])
+  const [periodo, setPeriodo] = useState(periodi[0].chiave)
+  const m = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
+  // Le presenze si leggono per giorni all'indietro: fino al primo del mese scelto, e un giorno in più.
+  const giorni = Math.ceil((Date.now() - m.da.getTime()) / 86_400_000) + 1
+  const elenco = useCarica(() => d.presenzeIstruttori(giorni), [d, giorni])
+
+  const da = chiaveGiorno(m.da)
+  const a = chiaveGiorno(m.a)
+  const del = (elenco.dato ?? [])
+    .filter((x) => x.personaId === p.id && chiaveGiorno(new Date(x.inizio)) >= da && chiaveGiorno(new Date(x.inizio)) <= a)
+    .sort((x, y) => x.inizio.localeCompare(y.inizio))
+  const fatte = del.filter((x) => x.stato === 'confermata')
+  const daConfermare = del.filter((x) => x.stato === 'da_confermare').length
+  const totale = fatte.reduce((t, x) => t + minuti(x), 0)
+  const perCorso = [...new Set(fatte.map((x) => x.corso))]
+    .map((corso) => {
+      const xs = fatte.filter((x) => x.corso === corso)
+      return { corso, xs, lezioni: xs.length, minuti: xs.reduce((t, x) => t + minuti(x), 0) }
+    })
+    .sort((x, y) => x.corso.localeCompare(y.corso, 'it'))
+
+  return (
+    <div className="stack" style={{ gap: 12 }}>
+      <Riga titolo="PRESENZE">
+        <label htmlFor="mese-istr" className="vh">
+          Mese
+        </label>
+        <select id="mese-istr" className="sg-campo" value={periodo} onChange={(e) => setPeriodo(e.target.value)}>
+          {periodi.map((x) => (
+            <option key={x.chiave} value={x.chiave}>
+              {x.nome}
+            </option>
+          ))}
+        </select>
+        <button type="button" className="num sg-chip" disabled={!fatte.length} onClick={() => scaricaCsv(fatte, `${p.nome} ${p.cognome}`.trim(), m.nome)}>
+          SCARICA
+        </button>
+      </Riga>
+      <span style={{ fontSize: 14, color: 'var(--sec)' }}>
+        Le lezioni in cui ha messo il PIN sul tablet di sala, confermate: sono quelle da pagare.
+      </span>
+      {elenco.guaio && <Guaio testo={elenco.guaio} />}
+      <div className="sg-numeri">
+        <Numero titolo="LEZIONI" valore={fatte.length} sotto={m.nome} />
+        <Numero titolo="ORE" valore={ore(totale)} sotto="da orario delle lezioni" />
+        <Numero titolo="DA CONFERMARE" valore={daConfermare} sotto={daConfermare ? 'in PRESENZE ISTRUTTORI' : 'niente in sospeso'} allarme={daConfermare > 0} />
+      </div>
+      {perCorso.length > 0 && (
+        <div role="table" aria-label={`Lezioni di ${p.nome}, ${m.nome}`} className="sg-tabella">
+          <div role="row" className="sg-lista-testa sg-riga-compenso">
+            <span role="columnheader" className="sg-etichetta">CORSO</span>
+            <span role="columnheader" className="sg-etichetta">LEZIONI</span>
+            <span role="columnheader" className="sg-etichetta">ORE</span>
+          </div>
+          {perCorso.map((c) => (
+            <details key={c.corso} className="sg-compenso">
+              <summary role="row" className="sg-riga-compenso">
+                <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>{c.corso}</span>
+                <span role="cell" className="num">{c.lezioni}</span>
+                <span role="cell" className="num">{ore(c.minuti)}</span>
+              </summary>
+              {c.xs.map((x) => (
+                  <div key={x.id} style={{ fontSize: 13, color: 'var(--sec)', padding: '2px 14px 2px 28px' }}>
+                    {giornoPerEsteso(chiaveGiorno(new Date(x.inizio)))}, {oraDi(x.inizio)}–{oraDi(x.fine)}
+                    {x.prevista ? '' : ' · non era previsto'}
+                  </div>
+              ))}
+            </details>
+          ))}
+        </div>
+      )}
+      {elenco.dato !== null && !del.length && <span style={{ fontSize: 14, color: 'var(--dim)' }}>Nessuna presenza in {m.nome.toLowerCase()}.</span>}
+    </div>
   )
 }

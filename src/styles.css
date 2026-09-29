@@ -931,6 +931,8 @@ a.sg-voce { text-decoration: none; }
 .sg-colore[aria-pressed='true'] { border-color: var(--text); }
 .sg-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .sg-tre { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+/* Una voce della ricevuta: quantità stretta, poi prezzo, date e pagato. */
+.sg-ricevuta-voce { display: grid; grid-template-columns: 64px repeat(4, minmax(0, 1fr)); gap: 10px; }
 /* Le colonne del modulo Google: la domanda a sinistra, cosa vuol dire a destra. */
 .sg-colonne { display: grid; grid-template-columns: minmax(120px, max-content) minmax(0, 1fr); gap: 10px 14px; align-items: center; }
 .sg-colonne .sg-campo { width: 100%; }
@@ -1033,6 +1035,12 @@ a.sg-voce { text-decoration: none; }
 .sg-presenza-istr { min-height: 64px; padding: 8px 14px; border-bottom: 1px solid var(--surface-2); border-left: 6px solid var(--tinta, var(--line)); }
 .sg-presenza-istr[data-spento='true'] > :not(:last-child) { opacity: 0.5; }
 .sg-presenza-istr-fine { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; text-align: right; }
+.sg-riga-compenso { display: grid; grid-template-columns: 1fr 90px 90px; gap: 14px; align-items: center; }
+.sg-compenso { border-bottom: 1px solid var(--surface-2); }
+.sg-compenso[open] { padding-bottom: 6px; }
+.sg-compenso > summary { min-height: 48px; padding: 6px 14px; cursor: pointer; list-style: none; }
+.sg-compenso > summary::-webkit-details-marker { display: none; }
+.sg-compenso > summary:hover { background: var(--surface); }
 /* Una richiesta online: le risposte in due colonne, i file con l'anteprima. */
 .sg-dati { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; align-items: baseline; }
 .sg-file {
@@ -1139,6 +1147,7 @@ a.sg-voce { text-decoration: none; }
   .sg-scheda-griglia { grid-template-columns: minmax(0, 1fr); }
   .sg-scheda-piede > .sg-btn { flex: 1 1 0; min-width: 0; }
   .sg-tre { grid-template-columns: minmax(0, 1fr); }
+  .sg-ricevuta-voce { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sg-riga-iscritto { grid-template-columns: 1fr auto 70px; }
   .sg-riga-iscritto > :nth-child(2), .sg-riga-iscritto > :nth-child(3) { display: none; }
   .sg-riga-presenza-istr { grid-template-columns: 1fr 1fr; }

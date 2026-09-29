@@ -1,4 +1,5 @@
 import type { Ruolo, StatoSessione } from './sala'
+import type { EnteRicevuta, Ricevuta } from './ricevute'
 
 /**
  * L'archivio della modalità prova: corsi, orari, persone e iscrizioni.
@@ -97,6 +98,10 @@ export interface Archivio {
   eserciziSale?: unknown[]
   /** Gli istruttori entrati col PIN sul tablet durante una lezione. */
   presenzeIstruttori?: PresenzaIstruttoreProva[]
+  /** Le ricevute dei pagamenti, come le righe di `ricevute` (16-ricevute.sql). */
+  ricevute?: Ricevuta[]
+  /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */
+  enteRicevute?: EnteRicevuta
 }
 
 /** Come una riga di `presenze_istruttori` (15-presenze-istruttori.sql). */
