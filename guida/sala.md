@@ -170,6 +170,8 @@ Si esce in due modi, e tutti e due chiedono conferma prima di scollegare:
 - dall'area istruttore, con **Scollega il tablet** in fondo: il PIN c'è già, e
   arriva subito la conferma.
 
+Uscito, il tablet torna alla pagina di accesso di tutta l'app.
+
 ## Preparare un tablet (una volta sola)
 
 Lo fa la segreteria:
@@ -184,4 +186,4 @@ Lo fa la segreteria:
 3. Il tablet resta collegato e lo schermo resta acceso.
 
 Se il dispositivo non doveva diventare un tablet di sala, **Non è un tablet di
-sala: torna all'app** lo riporta alla pagina normale.
+sala: torna all’accesso** lo riporta alla pagina di accesso.

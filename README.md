@@ -30,8 +30,9 @@ una sola, e i file si prendono dalla radice come prima.
 
 Senza niente in fondo all'indirizzo si apre la porta unica dell'accesso, che
 porta ognuno nella sua area (in prova, una pagina con le quattro), tranne
-su un tablet di sala, che va sempre al tablet. In fondo alla pagina c'è
-anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/timer/`).
+su un tablet di sala, che va sempre al tablet. Non c'è una pagina per
+scegliere l'area: la sceglie l'account. Il **timer** si apre in `timer/`
+(`nalbertini.github.io/ods-corsi/timer/`), dal menu degli istruttori.
 
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello
   scelto, in ordine di orario, con sala, istruttore e iscritti.
@@ -90,10 +91,11 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
   nell'appello, il tablet nella sua sala (`accedi` in `src/lib/accesso.ts`),
   qualunque porta si sia aperta; nessuno vede schede che non gli servono. Chi
   apre la radice ed è già collegato su quel dispositivo va dritto nella sua
-  area. Le aree sono
-  separate anche sullo stesso browser: istruttori, segreteria e sala hanno
-  ognuna la sua sessione (`src/lib/sessioni.ts`), quindi l'accesso fatto in
-  segreteria non vale in `istruttori/`, e da lì non ci sono rimandi alle
+  area. La sessione è una sola per dispositivo, la stessa per istruttori,
+  segreteria e sala (`src/lib/sessioni.ts`): chi è entrato in un'area non
+  entra nelle altre, e aprendone l'indirizzo torna nella sua (`useChi` in
+  `src/components/Porta.tsx`); per cambiare area si esce, e **Esci** riporta
+  sempre alla porta. Dagli istruttori non ci sono rimandi alle
   altre aree (segreteria, sala, iscrizioni), nemmeno in prova; al primo accesso l'account si lega da sé alla persona con la
   stessa email. Chi vuole iscriversi ha la pagina pubblica (`iscrizioni/`),
   che la segreteria copia con **COPIA LINK ISCRIZIONI**.
@@ -113,7 +115,7 @@ npm install --prefix timer
 npm run dev:timer
 ```
 
-Il tasto TIMER della pagina di scelta e dell'appello apre `timer/`, e il
+Il tasto TIMER del menu degli istruttori e dell'appello apre `timer/`, e il
 tasto SALA del timer (solo su un tablet di sala) torna a `../`, la radice. Sono relativi, quindi valgono
 dovunque sia pubblicato il sito; in `npm run dev` il tasto TIMER non trova
 niente, perché il server di sviluppo serve una sola app. Per provarle insieme:
@@ -189,7 +191,7 @@ sala — e tiene sul database i timer, lo storico e le preferenze
   sale scelto dalla segreteria.
 
 Il timer riusa due file di qui: `src/lib/sessioni.ts`, per trovare la
-sessione con le stesse chiavi, e `src/lib/coda.ts`, la coda delle scritture
+sessione con la stessa chiave, e `src/lib/coda.ts`, la coda delle scritture
 offline. Senza database, in prova o senza un accesso, il timer fa quello che
 ha sempre fatto: tutto sul dispositivo.
 
