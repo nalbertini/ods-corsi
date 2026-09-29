@@ -259,7 +259,7 @@ export function datiRichieste(): Promise<DatiRichieste> {
   if (!unico) {
     unico = (haUnServer
       ? Promise.all([import('./richiesteSupabase'), import('./supabase')]).then(([m, s]) => m.creaRichiesteSupabase(s.clientSupabase()))
-      : import('./richiesteProva').then((m) => m.creaRichiesteProva()))
+      : Promise.all([import('./richiesteProva'), import('./esempiProva')]).then(([m, e]) => (e.seminaEsempi(), m.creaRichiesteProva())))
       // Se il pezzo non arriva (rete, o un aggiornamento pubblicato nel
       // frattempo), la volta dopo si riprova invece di restare rotti.
       .catch((e) => {

@@ -223,6 +223,17 @@ Senza configurazione parte in **modalità prova**, con l'orario vero della stagi
 2026/27, degli iscritti inventati e un nastro giallo che lo dichiara. Le presenze segnate in prova restano
 sul dispositivo e basta.
 
+Perché ogni area abbia qualcosa da far vedere, al primo avvio la prova mette
+anche degli esempi, contando da quel giorno (`src/lib/esempiProva.ts`): gli
+appelli delle ultime cinque settimane, con qualcuno che manca, qualcuno fatto
+solo dai tablet e qualche iscritto che si sta perdendo; le presenze col PIN
+degli istruttori, due da confermare; una lezione annullata, un sostituto e uno
+stage il sabato; quattro richieste online, una di un minore; e un telefono a
+ogni iscritto. Si aggiungono a quello che c'è senza cambiarlo, una volta per
+dispositivo. Restano senza esempi la musica delle sale (servirebbero playlist
+vere), lo storico dei timer e i timer degli istruttori, che sono quelli del
+timer sullo stesso dispositivo.
+
 In prova le porte sono aperte a tutti, e fra le aree si passa con le schede in
 cima, per far vedere l'app intera; col database vero ognuno entra dal suo
 indirizzo. La **segreteria** (`http://localhost:5173/segreteria/`) in prova è

@@ -204,7 +204,7 @@ export function datiTablet(): Promise<DatiTablet> {
   if (!unico) {
     unico = (haUnServer
       ? Promise.all([import('./tabletSupabase'), import('./supabase')]).then(([m, s]) => m.creaTabletSupabase(s.clientSupabase('sala')))
-      : import('./tabletProva').then((m) => m.creaTabletProva()))
+      : Promise.all([import('./tabletProva'), import('./esempiProva')]).then(([m, e]) => (e.seminaEsempi(), m.creaTabletProva())))
       // Se il pezzo non arriva (rete, o un aggiornamento pubblicato nel
       // frattempo), la volta dopo si riprova invece di restare rotti.
       .catch((e) => {

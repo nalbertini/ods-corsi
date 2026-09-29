@@ -32,6 +32,17 @@ export function richiesteDi(personaId: string): Richiesta[] {
   return leggi().filter((r) => r.personaId === personaId)
 }
 
+/** Gli esempi di `esempiProva`: si aggiungono, e una richiesta che c'è già resta com'è. */
+export function aggiungiRichiesteProva(nuove: Richiesta[]) {
+  const tutte = leggi()
+  const ci = new Set(tutte.map((r) => r.id))
+  try {
+    localStorage.setItem(DOVE, JSON.stringify([...tutte, ...nuove.filter((r) => !ci.has(r.id))]))
+  } catch {
+    /* niente esempi, pazienza */
+  }
+}
+
 export function scordaRichiesteProva() {
   try {
     localStorage.removeItem(DOVE)
