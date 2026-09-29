@@ -114,8 +114,6 @@ export interface DatiTablet {
   readonly sale?: string[]
   /** Prova: il tablet diventa quello di una sala. */
   scegliSala?(sala: string): Promise<void>
-  /** Supabase: l'accesso con l'account della sala, una volta sola (vedi `emailDellaSala`). */
-  entra?(utente: string, password: string): Promise<void>
   /** Il tablet smette di essere il tablet di una sala. */
   scollega(): Promise<void>
 
@@ -186,13 +184,18 @@ export function eUnTablet(): boolean {
   }
 }
 
-/** Torna all'app di sempre: il dispositivo smette di aprirsi come tablet. */
-export function lasciaTablet() {
+/** Il dispositivo smette di aprirsi come tablet, senza cambiare pagina. */
+export function smettiTablet() {
   try {
     localStorage.removeItem(DOVE_MODO)
   } catch {
     /* pazienza */
   }
+}
+
+/** Torna all'app di sempre: il dispositivo smette di aprirsi come tablet. */
+export function lasciaTablet() {
+  smettiTablet()
   // La radice: nelle cartelle delle aree la base del documento è lei.
   window.location.assign(new URL('./', document.baseURI).href)
 }

@@ -5,14 +5,15 @@
 ← [Torna alla guida generale](../README.md)
 
 La segreteria è la parte dell'app per il computer della reception. Entra solo
-chi ha il ruolo **Segreteria**: un istruttore che apre questo indirizzo viene
-rimandato al suo, con **VAI AGLI ISTRUTTORI**.
+chi ha il ruolo **Segreteria**: un istruttore che entra da questo indirizzo
+finisce nel calendario degli istruttori.
 
 ## Entrare
 
-1. Aprire <https://nalbertini.github.io/ods-corsi/segreteria/>.
-2. Email e password, **ENTRA**. Si resta collegati finché non si preme
-   **Esci**, in fondo al menu.
+1. Aprire <https://nalbertini.github.io/ods-corsi/> (va bene anche
+   `…/segreteria/`).
+2. Email e password, **ENTRA**: con l'account della segreteria si arriva
+   qui. Si resta collegati finché non si preme **Esci**, in fondo al menu.
 
 ## Il menu
 

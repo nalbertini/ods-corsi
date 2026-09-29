@@ -97,8 +97,7 @@ function separaSegreteria(chiavi: Record<Sessione, string>) {
  * rifare l'accesso. Si sposta, non si copia: il punto è che le due aree non
  * abbiano lo stesso account.
  */
-export function spostaSessione(verso: Sessione) {
-  const da = sessioneDellaPagina()
+export function spostaSessione(verso: Sessione, da: Sessione = sessioneDellaPagina()) {
   if (da === verso) return
   const k = chiavi()
   client[da]?.auth.stopAutoRefresh()

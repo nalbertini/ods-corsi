@@ -1,7 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { DatiTablet, EsitoTocco, LezioneSala, NomeSala, Origine, PresenzaIstruttore, RigaAppelloTablet, StatoPresenzaIstruttore } from './tablet'
-import { emailDellaSala } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
 import { leggiTimerSala, salvaTimerSala } from '../../timer/src/lib/impostazioniSala'
@@ -48,15 +47,6 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
       const riga = data as { nome: string; attiva: boolean; sale: { nome: string } | null } | null
       if (!riga || !riga.attiva) return null
       return { nome: riga.nome, sala: riga.sale?.nome ?? '' }
-    },
-
-    async entra(utente, password) {
-      const { error } = await db.auth.signInWithPassword({ email: emailDellaSala(utente), password })
-      if (error) throw new Error('Nome utente o password sbagliati')
-      if (!(await this.postazione())) {
-        await db.auth.signOut()
-        throw new Error('Questo account non è il tablet di una sala: la segreteria lo prepara in «postazioni»')
-      }
     },
 
     async scollega() {

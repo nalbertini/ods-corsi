@@ -1,9 +1,12 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Ruolo } from './sala'
 import { haUnServer } from './dati'
 import { indirizzoDiRitorno } from './invito'
 import { sessioneDellaPagina } from './percorso'
-import { PERSONA_VISTA } from './sessioni'
+import { chiaviSessione, indirizzoProgetto, PERSONA_VISTA, type Sessione } from './sessioni'
 import { indirizzo, INDIRIZZI } from './aree'
+import { areaDelPercorso } from './percorso'
+import { emailDellaSala, smettiTablet } from './tablet'
 
 /**
  * Chi sta usando l'app: con il database vero il calendario e l'appello sono
@@ -55,13 +58,28 @@ function ricorda(utente: string, p: Personale | null) {
  */
 const db = () => import('./supabase').then((m) => m.clientSupabase())
 
+/** Le aree con un accesso: dove porta ogni tipo di account. */
+export type AreaDiAccount = 'segreteria' | 'istruttori' | 'sala'
+
+const SESSIONE_DELL_AREA: Record<AreaDiAccount, Sessione> = { segreteria: 'segreteria', istruttori: 'personale', sala: 'sala' }
+
+/**
+ * La sessione in cui entra la porta di questa pagina: quella della pagina, e
+ * sul tablet di sala quella della sala, che è il client del tablet.
+ */
+const sessioneDiQui = (): Sessione => (areaDelPercorso() === 'sala' ? 'sala' : sessioneDellaPagina())
+
 /**
  * Va a un'altra area portandosi dietro l'accesso fatto qui: per chi è entrato
- * dalla porta dell'altra (vedi `spostaSessione`). Qui non resta collegato.
+ * dalla porta dell'altra, o dalla porta unica della radice (vedi
+ * `spostaSessione`). Qui non resta collegato.
  */
-export async function passaA(area: 'segreteria' | 'istruttori'): Promise<void> {
+export async function passaA(area: AreaDiAccount): Promise<void> {
   const m = await import('./supabase')
-  m.spostaSessione(area === 'segreteria' ? 'segreteria' : 'personale')
+  m.spostaSessione(SESSIONE_DELL_AREA[area], sessioneDiQui())
+  // Una persona entrata dalla porta del tablet non è un tablet: il
+  // dispositivo smette di riaprirsi in sala.
+  if (area !== 'sala') smettiTablet()
   window.location.assign(indirizzo(INDIRIZZI[area]))
 }
 
@@ -75,7 +93,18 @@ export async function chiSei(): Promise<Personale | null> {
   const { data: s } = await c.auth.getSession()
   const utente = s.session?.user.id
   if (!utente) return null
+  const letta = await personaDi(c, utente)
+  // Senza rete la risposta non c'è, non è un «no»: vale l'ultima vista.
+  if (letta === undefined) return ricordato(utente)
+  ricorda(utente, letta)
+  return letta
+}
 
+/**
+ * La persona del personale legata all'account: `null` se non c'è, `undefined`
+ * se il server non ha risposto.
+ */
+async function personaDi(c: SupabaseClient, utente: string): Promise<Personale | null | undefined> {
   const leggi = () => c.from('persone').select('id, nome, cognome, ruolo').eq('utente_id', utente).eq('attiva', true).maybeSingle()
   let { data, error } = await leggi()
   // Al primo accesso l'account non è ancora legato: se in anagrafica c'è un
@@ -85,25 +114,63 @@ export async function chiSei(): Promise<Personale | null> {
     const { data: legato } = await c.rpc('collega_utente')
     if (legato) ({ data, error } = await leggi())
   }
-  // Senza rete la risposta non c'è, non è un «no»: vale l'ultima vista.
-  if (error) return ricordato(utente)
-
+  if (error) return undefined
   const riga = data as { id: string; nome: string; cognome: string; ruolo: Ruolo } | null
-  const p = riga && riga.ruolo !== 'iscritto' ? { id: riga.id, nome: riga.nome, cognome: riga.cognome, ruolo: riga.ruolo } : null
-  ricorda(utente, p)
-  return p
+  return riga && riga.ruolo !== 'iscritto' ? { id: riga.id, nome: riga.nome, cognome: riga.cognome, ruolo: riga.ruolo } : null
 }
 
-export async function entra(email: string, password: string): Promise<Personale> {
-  const c = await db()
-  const { error } = await c.auth.signInWithPassword({ email, password })
+/**
+ * La porta unica: la stessa in ogni area, e alla radice. Si entra con
+ * l'email, o col nome utente per l'account di una sala (vedi
+ * `emailDellaSala`), e l'account dice dove andare: la segreteria in
+ * segreteria, un istruttore nel calendario, il tablet di una sala in sala.
+ *
+ * Se l'area è questa pagina si resta, e torna la persona entrata (`null` per
+ * una sala); se no l'accesso si porta nell'area giusta (vedi `passaA`) e la
+ * pagina cambia, e la promessa non torna più.
+ */
+export async function accedi(utente: string, password: string): Promise<Personale | null> {
+  const m = await import('./supabase')
+  const c = m.clientSupabase(sessioneDiQui())
+  const { error } = await c.auth.signInWithPassword({ email: emailDellaSala(utente), password })
   if (error) throw new Error(perché(error))
-  const p = await chiSei()
-  if (!p) {
+  const { data: s } = await c.auth.getSession()
+  const id = s.session?.user.id
+  const persona = id ? await personaDi(c, id) : null
+  if (persona === undefined) {
     await c.auth.signOut()
-    throw new Error('Questo account non è di un istruttore né della segreteria: va legato in «persone»')
+    throw new Error('Il server non risponde: c’è rete?')
   }
-  return p
+  let area: AreaDiAccount | null = persona ? (persona.ruolo === 'staff' ? 'segreteria' : 'istruttori') : null
+  if (!area && id) {
+    // La policy lascia a un tablet la sua riga e basta (vedi `tabletSupabase.ts`).
+    const { data } = await c.from('postazioni').select('attiva').eq('utente_id', id).maybeSingle()
+    if ((data as { attiva: boolean } | null)?.attiva) area = 'sala'
+  }
+  if (!area) {
+    await c.auth.signOut()
+    throw new Error('Questo account non è di un istruttore, della segreteria o del tablet di una sala: chiedi alla segreteria')
+  }
+  if (area === areaDelPercorso()) return persona
+  await passaA(area)
+  return new Promise<never>(() => {})
+}
+
+/**
+ * Dove è già entrato qualcuno su questo dispositivo, per la radice: chi apre
+ * la porta unica ed è già collegato va dritto nella sua area. Guarda solo se
+ * una sessione c'è, senza chiederlo al server: la porta dell'area, se la
+ * sessione non vale più, lo dice da sé.
+ */
+export function areaCollegata(): AreaDiAccount | null {
+  try {
+    const k = chiaviSessione(indirizzoProgetto(import.meta.env.VITE_SUPABASE_URL as string))
+    if (localStorage.getItem(k.segreteria)) return 'segreteria'
+    if (localStorage.getItem(k.personale)) return 'istruttori'
+  } catch {
+    // Senza localStorage non c'è nemmeno una sessione ricordata.
+  }
+  return null
 }
 
 /**
