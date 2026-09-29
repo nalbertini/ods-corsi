@@ -929,6 +929,8 @@ a.sg-voce { text-decoration: none; }
 .sg-colore[aria-pressed='true'] { border-color: var(--text); }
 .sg-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .sg-tre { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+/* Una voce della ricevuta: quantità stretta, poi prezzo, date e pagato. */
+.sg-ricevuta-voce { display: grid; grid-template-columns: 64px repeat(4, minmax(0, 1fr)); gap: 10px; }
 /* Le colonne del modulo Google: la domanda a sinistra, cosa vuol dire a destra. */
 .sg-colonne { display: grid; grid-template-columns: minmax(120px, max-content) minmax(0, 1fr); gap: 10px 14px; align-items: center; }
 .sg-colonne .sg-campo { width: 100%; }
@@ -1137,6 +1139,7 @@ a.sg-voce { text-decoration: none; }
   .sg-scheda-griglia { grid-template-columns: minmax(0, 1fr); }
   .sg-scheda-piede > .sg-btn { flex: 1 1 0; min-width: 0; }
   .sg-tre { grid-template-columns: minmax(0, 1fr); }
+  .sg-ricevuta-voce { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sg-riga-iscritto { grid-template-columns: 1fr auto 70px; }
   .sg-riga-iscritto > :nth-child(2), .sg-riga-iscritto > :nth-child(3) { display: none; }
   .sg-riga-presenza-istr { grid-template-columns: 1fr 1fr; }

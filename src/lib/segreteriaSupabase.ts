@@ -9,6 +9,7 @@ import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
+import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, type EnteRicevuta, type IntestatarioRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 
 /**
  * La segreteria col database vero.
@@ -36,6 +37,42 @@ interface RigaSessione {
 
 type Iscrizione = { corso_id: string; persona_id: string; dal: string; al: string | null }
 
+/** Una riga di `ricevute` (16-ricevute.sql): le voci sono il JSON che scrive `emetti_ricevuta`. */
+interface RigaRicevuta {
+  id: string
+  anno: number
+  numero: number
+  data: string
+  persona_id: string | null
+  ente: EnteRicevuta
+  intestatario: IntestatarioRicevuta
+  voci: Array<Omit<VoceRicevuta, 'dal' | 'al'> & { dal: string | null; al: string | null }>
+  totale: number
+  pagato: number
+  anticipo: number
+  note: string | null
+  creata_il: string
+  annullata_il: string | null
+}
+const CAMPI_RICEVUTA = 'id, anno, numero, data, persona_id, ente, intestatario, voci, totale, pagato, anticipo, note, creata_il, annullata_il'
+
+const ricevuta = (r: RigaRicevuta): Ricevuta => ({
+  id: r.id,
+  anno: r.anno,
+  numero: r.numero,
+  data: r.data,
+  personaId: r.persona_id ?? undefined,
+  ente: { ...ENTE_PREDEFINITO, ...r.ente },
+  intestatario: r.intestatario,
+  voci: r.voci.map((v) => ({ ...v, dal: v.dal ?? undefined, al: v.al ?? undefined })),
+  totale: r.totale,
+  pagato: r.pagato,
+  anticipo: r.anticipo,
+  note: r.note ?? undefined,
+  creataIl: r.creata_il,
+  annullataIl: r.annullata_il ?? undefined,
+})
+
 type Scheda = { certificato_scade: string | null; certificato_file: string | null; pagamento: StatoPagamento; pagato_fino: string | null; pagamento_nota: string | null }
 
 /** I certificati medici: un contenitore privato, che apre solo la segreteria (`07-certificati-pagamenti.sql`). */
@@ -49,6 +86,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
   [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
+  [/ricevute|emetti_ricevuta/, 'Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql'],
   [/presenze_istruttori/, 'Le presenze degli istruttori non sono ancora attive sul database: va lanciato 15-presenze-istruttori.sql'],
 ]
 
@@ -60,6 +98,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
     if (t) return new Error(t[1])
     return new Error(`Manca una tabella sul database: va lanciato il file che la crea (controllo.sql dice quale). ${e.message ?? ''}`.trim())
   }
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
+    return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
+  if (e?.code === '42703' && /ricevute/.test(e.message ?? '')) return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
   // Una colonna che non c'è: voce ed esercizi dei tablet arrivano con 13-voce-esercizi.sql.
   if (e?.code === '42703' && /voce|esercizi/.test(e.message ?? ''))
     return new Error('La voce e gli esercizi dei tablet non sono ancora attivi sul database: va lanciato 13-voce-esercizi.sql')
@@ -475,6 +516,84 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           .upsert({ persona_id: personaId, pagamento: p.stato, pagato_fino: p.fino || null, pagamento_nota: nota }, { onConflict: 'persona_id' }),
       )
     },
+    async ricevute(personaId) {
+      let q = db.from('ricevute').select(CAMPI_RICEVUTA)
+      if (personaId) q = q.eq('persona_id', personaId)
+      const righe = ok(await q.order('data', { ascending: false }).order('anno', { ascending: false }).order('numero', { ascending: false }).limit(500)) as unknown as RigaRicevuta[]
+      return righe.map(ricevuta)
+    },
+
+    async prossimoNumero(anno) {
+      const r = ok(await db.from('ricevute').select('numero').eq('anno', anno).order('numero', { ascending: false }).limit(1).maybeSingle()) as { numero: number } | null
+      return (r?.numero ?? 0) + 1
+    },
+
+    async intestatarioDi(personaId) {
+      const [p, ultima, richiesta] = await Promise.all([
+        db.from('persone').select('nome, cognome').eq('id', personaId).single(),
+        db.from('ricevute').select('intestatario').eq('persona_id', personaId).order('creata_il', { ascending: false }).limit(1).maybeSingle(),
+        db
+          .from('richieste_iscrizione')
+          .select('nome, cognome, nato_il, codice_fiscale, indirizzo, cap, comune, genitore_nome, genitore_cognome, genitore_codice_fiscale')
+          .eq('persona_id', personaId)
+          .eq('stato', 'accolta')
+          .order('gestita_il', { ascending: false, nullsFirst: false })
+          .limit(1)
+          .maybeSingle(),
+      ])
+      const chi = ok(p) as { nome: string; cognome: string }
+      // Senza 16-ricevute.sql la ricevuta di prima non c'è: si va avanti con la richiesta.
+      const u = ultima.error ? null : (ultima.data as { intestatario: IntestatarioRicevuta } | null)
+      if (u) return { ...u.intestatario, nome: chi.nome, cognome: chi.cognome }
+      const r = ok(richiesta) as {
+        nome: string; cognome: string; nato_il: string; codice_fiscale: string; indirizzo: string; cap: string; comune: string
+        genitore_nome: string | null; genitore_cognome: string | null; genitore_codice_fiscale: string | null
+      } | null
+      if (!r) return { nome: chi.nome, cognome: chi.cognome }
+      return {
+        ...intestatarioDaRichiesta({
+          nome: chi.nome, cognome: chi.cognome, natoIl: r.nato_il, codiceFiscale: r.codice_fiscale, indirizzo: r.indirizzo, cap: r.cap, comune: r.comune,
+          genitoreNome: r.genitore_nome ?? undefined, genitoreCognome: r.genitore_cognome ?? undefined, genitoreCodiceFiscale: r.genitore_codice_fiscale ?? undefined,
+        }),
+      }
+    },
+
+    async emettiRicevuta(r) {
+      const dati = { ...r, intestatario: pulisciIntestatario(r.intestatario) }
+      const no = cosaNonVa(dati)
+      if (no) throw new Error(no)
+      const riga = ok(
+        await db.rpc('emetti_ricevuta', {
+          dati: {
+            data: dati.data,
+            persona_id: dati.personaId ?? null,
+            numero: dati.numero ?? null,
+            ente: dati.ente,
+            intestatario: dati.intestatario,
+            voci: dati.voci,
+            anticipo: dati.anticipo,
+            note: dati.note?.trim() || null,
+          },
+        }),
+      ) as RigaRicevuta
+      return ricevuta(riga)
+    },
+
+    async annullaRicevuta(id) {
+      ok(await db.rpc('annulla_ricevuta', { ricevuta: id }))
+    },
+
+    async enteRicevute() {
+      const r = await db.from('impostazioni').select('ricevute').maybeSingle()
+      // Senza 16-ricevute.sql la colonna non c'è: valgono quelli scritti nell'app.
+      if (r.error?.code === '42703') return ENTE_PREDEFINITO
+      return { ...ENTE_PREDEFINITO, ...((ok(r) as { ricevute: Partial<EnteRicevuta> } | null)?.ricevute ?? {}) }
+    },
+
+    async salvaEnteRicevute(e) {
+      ok(await db.from('impostazioni').update({ ricevute: e }).eq('id', true))
+    },
+
     async registro(da, a) {
       const fino = new Date(a)
       fino.setHours(23, 59, 59, 999)
@@ -769,7 +888,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async esporta(personaId) {
-      const [persona, isc, pres, rich, scheda] = await Promise.all([
+      const [persona, isc, pres, rich, scheda, ric] = await Promise.all([
         db.from('persone').select('nome, cognome, email, telefono, ruolo, attiva, creata_il').eq('id', personaId).single(),
         db.from('iscrizioni').select('dal, al, corsi ( nome )').eq('persona_id', personaId),
         db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId),
@@ -777,6 +896,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         db.from('richieste_iscrizione').select('creata_il, stato, nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono, genitore_nome, genitore_cognome, genitore_codice_fiscale, corsi, formula, note, gestita_il').eq('persona_id', personaId),
         // Il certificato: la scadenza e il nome del file, che si scarica dalla scheda.
         db.from('schede_iscritti').select('certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota, cambiata_il').eq('persona_id', personaId).maybeSingle(),
+        // Le ricevute: col socio e le voci così come sono stampate.
+        db.from('ricevute').select('anno, numero, data, intestatario, voci, totale, pagato, anticipo, note, creata_il, annullata_il').eq('persona_id', personaId),
       ])
       return {
         esportato_il: new Date().toISOString(),
@@ -785,6 +906,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         presenze: ok(pres),
         richieste_di_iscrizione: ok(rich),
         certificato_e_pagamento: ok(scheda),
+        // Senza 16-ricevute.sql non ce ne sono.
+        ricevute: ric.error?.code === '42P01' || ric.error?.code === 'PGRST205' ? [] : ok(ric),
       }
     },
   }

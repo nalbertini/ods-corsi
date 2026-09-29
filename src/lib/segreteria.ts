@@ -3,6 +3,7 @@ import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
 import type { StatoPresenzaIstruttore } from './tablet'
+import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, Ricevuta } from './ricevute'
 
 export type { ListaMusica } from './musica'
 
@@ -264,6 +265,24 @@ export interface DatiSegreteria {
   /** Il file del certificato, o `null` se non c'è. */
   apriCertificato(personaId: string): Promise<FileSeg | null>
   salvaPagamento(personaId: string, p: PagamentoSeg): Promise<void>
+
+  /** Le ricevute di una persona, o tutte, dalla più recente; anche le annullate. */
+  ricevute(personaId?: string): Promise<Ricevuta[]>
+  /** Il numero che prenderà la prossima ricevuta di quell'anno. */
+  prossimoNumero(anno: number): Promise<number>
+  /**
+   * I dati del socio per una ricevuta nuova: quelli dell'ultima ricevuta,
+   * se c'è; se no quelli della richiesta di iscrizione accolta; se no nome e
+   * cognome.
+   */
+  intestatarioDi(personaId: string): Promise<IntestatarioRicevuta>
+  /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
+  emettiRicevuta(r: DatiRicevuta): Promise<Ricevuta>
+  /** La annulla: resta, col suo numero, e il PDF dice ANNULLATA. */
+  annullaRicevuta(id: string): Promise<void>
+  /** I dati dell'associazione in testa alle ricevute. */
+  enteRicevute(): Promise<EnteRicevuta>
+  salvaEnteRicevute(e: EnteRicevuta): Promise<void>
 
   /** Le lezioni già cominciate fra due giorni, con i loro appelli. */
   registro(da: Date, a: Date): Promise<RigaRegistro[]>
