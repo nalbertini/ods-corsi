@@ -1,12 +1,17 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
-import { accedi, accountDalLink, chiSei, esci, mandaLinkPassword, passaA, quandoCambia, scegliPassword, serveAccesso, type Personale } from '../lib/accesso'
+import { accedi, account, accountDalLink, esci, mandaLinkPassword, passaA, quandoCambia, scegliPassword, serveAccesso, type Personale } from '../lib/accesso'
 import type { Arrivo } from '../lib/invito'
-import { indirizzo, INDIRIZZO_AREE } from '../lib/aree'
+import { indirizzo } from '../lib/aree'
+import { areaDelPercorso } from '../lib/percorso'
 import { scegliProva } from '../lib/dati'
 
 /**
  * Chi ha fatto l'accesso: `undefined` finché non si sa, `null` se nessuno.
  * In prova non serve saperlo, ed è `null` da subito.
+ *
+ * La sessione è una per tutte le aree: se l'account è di un'altra (un
+ * istruttore che apre `segreteria/`, il tablet di una sala che apre
+ * `istruttori/`) si torna nella sua, e qui resta «un attimo».
  */
 export function useChi(): [Personale | null | undefined, (p: Personale | null) => void] {
   const [chi, setChi] = useState<Personale | null | undefined>(serveAccesso ? undefined : null)
@@ -15,7 +20,15 @@ export function useChi(): [Personale | null | undefined, (p: Personale | null) =
     if (!serveAccesso) return
     let vivo = true
     let smetti: (() => void) | undefined
-    const rileggi = () => void chiSei().then((p) => vivo && setChi(p), () => vivo && setChi(null))
+    const rileggi = () =>
+      void account().then(
+        (a) => {
+          if (!vivo) return
+          if (a && a.area !== areaDelPercorso()) return passaA(a.area)
+          setChi(a?.persona ?? null)
+        },
+        () => vivo && setChi(null),
+      )
     rileggi()
     // Un altro account entrato altrove va riletto, non tenuto col nome di
     // prima. Fuori dalla richiamata di Supabase: dentro, una chiamata al
@@ -62,7 +75,7 @@ export function Porta({
   if (chi === undefined) return <>{cornice(<UnAttimo />)}</>
   if (!chi) return <>{cornice(<Accesso onEntrato={setChi} />)}</>
 
-  const onEsci = () => void esci().then(() => setChi(null))
+  const onEsci = () => void esci()
   if (dentro) return <>{dentro(chi, onEsci)}</>
 
   return (
@@ -80,19 +93,6 @@ export function Porta({
   )
 }
 
-/**
- * Dalla porta di un'area si torna alla pagina con tutte e quattro (vedi
- * `aree.ts`). Non da quella degli istruttori: è un'area a sé, e da lì non si
- * va nelle altre.
- */
-export function AltreAree() {
-  return (
-    <a className="chi-esci" href={INDIRIZZO_AREE}>
-      ← TUTTE LE AREE
-    </a>
-  )
-}
-
 export function UnAttimo() {
   return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
 }
@@ -101,10 +101,9 @@ export function UnAttimo() {
  * La porta, una sola per tutti: la stessa alla radice, in `istruttori/` e in
  * `segreteria/`. Chi entra va nella sua area, qualunque porta abbia aperto
  * (vedi `accedi`): se è questa, `onEntrato` riceve la persona; se no la pagina
- * cambia. `altreAree` mette il rimando alla pagina iniziale, che dalla porta
- * degli istruttori non c'è.
+ * cambia. Non c'è una scelta dell'area: la sceglie l'account.
  */
-export function Accesso({ altreAree, onEntrato }: { altreAree?: boolean; onEntrato?: (p: Personale) => void }) {
+export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errore, setErrore] = useState<string | null>(null)
@@ -146,7 +145,6 @@ export function Accesso({ altreAree, onEntrato }: { altreAree?: boolean; onEntra
       <div className="rule">
         <span className="rule-label">ACCESSO</span>
         <div className="rule-line" />
-        {altreAree && <AltreAree />}
       </div>
       <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void invia(e)}>
         <span className="passo-dettaglio" style={{ fontSize: 15 }}>
@@ -212,7 +210,7 @@ export function Accesso({ altreAree, onEntrato }: { altreAree?: boolean; onEntra
  * area: la segreteria nella segreteria, un istruttore nel calendario. Il link
  * apre la pagina da cui è partito (l'invito la segreteria, «password
  * dimenticata» la porta dove lo si è chiesto), che può non essere la propria:
- * l'accesso si porta dietro, perché ogni area ha la sua sessione.
+ * la sessione è una sola, e l'accesso vale anche lì.
  */
 export function ScegliPassword({ arrivo }: { arrivo: Arrivo }) {
   const [account, setAccount] = useState<string | null | undefined>(arrivo.tipo === 'scaduto' ? null : undefined)
@@ -241,7 +239,7 @@ export function ScegliPassword({ arrivo }: { arrivo: Arrivo }) {
     setAspetta(true)
     try {
       const p = await scegliPassword(password)
-      await passaA(p.ruolo === 'staff' ? 'segreteria' : 'istruttori')
+      passaA(p.ruolo === 'staff' ? 'segreteria' : 'istruttori')
     } catch (x) {
       setErrore(x instanceof Error ? x.message : 'La password non è stata salvata')
       setAspetta(false)

@@ -26,6 +26,11 @@ sua sala. La porta è la stessa anche se aprite direttamente uno degli
 indirizzi qui sotto: se non è il vostro, dopo l'accesso finite nel vostro.
 Chi è già entrato su quel dispositivo, riaprendo la pagina, ci torna dritto.
 
+L'accesso è uno solo per dispositivo: chi è entrato in una parte non entra
+nelle altre, e aprendone l'indirizzo torna nella sua. Per cambiare parte si
+esce (**Esci**), e si torna alla pagina di accesso, dove si entra con l'altro
+account.
+
 ## Le quattro parti
 
 L'app ha quattro indirizzi. Sono la stessa app, ma ognuno apre una parte
