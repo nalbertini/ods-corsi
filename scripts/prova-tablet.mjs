@@ -5,7 +5,8 @@
 //
 // Il tablet di prova rifà in TypeScript le regole di `supabase/04-tablet.sql`:
 // le finestre di tempo, l'annullo, il PIN, il tablet che non scavalca
-// l'istruttore. Qui si controlla che le rifaccia uguali, spostando l'orologio
+// l'istruttore, la presenza dell'istruttore che entra col PIN (anche di
+// `15-presenze-istruttori.sql`). Qui si controlla che le rifaccia uguali, spostando l'orologio
 // come si fa dall'indirizzo con `?adesso=`. Le stesse cose, dal lato del
 // database, le prova `supabase/prova/tablet.sql`.
 // ---------------------------------------------------------------------------
@@ -13,7 +14,8 @@ import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export * from './src/lib/tabletProva'; export { sigle } from './src/lib/tablet'",
+    contents:
+      "export * from './src/lib/tabletProva'; export { sigle } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -119,7 +121,7 @@ console.log('\n4. il tablet non scavalca l\'istruttore')
 console.log('\n5. il PIN')
 {
   const t = await alle('2026-09-23T16:55')
-  ok('giusto', await t.entraConPin('1234'), { personaId: 'i-maurizio', nome: 'Maurizio' })
+  ok('giusto', (await t.entraConPin('1234')).nome, 'Maurizio')
   ok('sbagliato', await t.entraConPin('0000'), null)
   ok('sbagliato, l\'appello è vuoto', await t.appello('0000', LEZIONE), [])
   ok('sbagliato, niente correzioni', await t.correggi('0000', LEZIONE, 'x', 'presente'), false)
@@ -150,6 +152,38 @@ console.log('\n7. il timer della sala, uguale per tutti i tablet')
   await tatami.salvaTimerSala({ ...dopo, coach: 'boh', volume: 7 })
   const pulito = (await lotta.timerSala()).impostazioni
   ok('un valore strano torna quello di partenza', [pulito.coach, pulito.volume], ['classico', 1])
+}
+
+console.log('\n8. la presenza dell\'istruttore col PIN')
+{
+  const seg = m.creaSegreteriaProva()
+  const presenze = (x) => x.presenze.map((p) => `${p.corso} ${p.stato}`)
+  // Maura insegna Lotta 2 e Lotta 3. Lunedì 21 settembre in Lotta: la 2 alle 17, la 3 alle 18.
+  const lotta = await alle('2026-09-21T17:40')
+  ok('Maura, prevista: confermata da sé', presenze(await lotta.entraConPin('2468')), ['Lotta 2 confermata', 'Lotta 3 confermata'])
+  await lotta.entraConPin('2468')
+  ok('rimette il PIN: niente doppioni', (await seg.presenzeIstruttori(365)).filter((x) => x.nome === 'Maura' && x.inizio.startsWith('2026-09-21')).length, 2)
+  // Fabio insegna Aikido, in Motricità: in Lotta non è previsto.
+  const fabio = await lotta.entraConPin('5678')
+  ok('Fabio, non previsto: da confermare, nella lezione in corso', presenze(fabio), ['Lotta 2 da_confermare'])
+  ok('la segreteria lo vede da confermare', (await seg.presenzeIstruttori(0)).filter((x) => x.stato === 'da_confermare' && x.nome === 'Fabio').map((x) => x.previsti), ['Maura, Federico'])
+  const presto = await alle('2026-09-21T12:00')
+  ok('fuori dalle lezioni non segna niente', (await presto.entraConPin('5678')).presenze, [])
+  // La segreteria di prova col suo PIN (quello di partenza non ce l'ha): apre l'appello, non si segna.
+  await seg.impostaPin('s-prova', '9090')
+  ok('la segreteria non prevista non si segna', (await lotta.entraConPin('9090')).presenze, [])
+  const id = (await seg.presenzeIstruttori(0)).find((x) => x.stato === 'da_confermare' && x.nome === 'Fabio').id
+  await seg.gestisciPresenzaIstruttore(id, true)
+  const gestita = (await seg.presenzeIstruttori(365)).find((x) => x.id === id)
+  ok('confermata dalla segreteria', [gestita.stato, gestita.gestitaDa], ['confermata', 'Segreteria di prova'])
+  // Fabio sostituisce Maura nel Lotta 3 del mercoledì: al suo PIN è previsto.
+  await seg.aggiornaLezione('s@lotta-3@2026-09-23@18:00', { sostitutoId: 'i-fabio' })
+  const sost = await alle('2026-09-23T18:20')
+  ok('il sostituto è previsto', presenze(await sost.entraConPin('5678')), ['Lotta 3 confermata'])
+  ok('e Maura, sostituita, no', presenze(await sost.entraConPin('2468')), ['Lotta 3 da_confermare'])
+  const rifiuta = (await seg.presenzeIstruttori(0)).find((x) => x.stato === 'da_confermare' && x.nome === 'Maura').id
+  await seg.gestisciPresenzaIstruttore(rifiuta, false)
+  ok('rifiutata, al PIN dopo resta rifiutata', presenze(await sost.entraConPin('2468')), ['Lotta 3 rifiutata'])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

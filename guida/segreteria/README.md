@@ -25,6 +25,7 @@ A sinistra il menu, a destra la voce scelta. Ogni voce ha la sua guida:
 | **ISCRITTI** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
 | **RICHIESTE ONLINE** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
 | **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, il CSV | [Apri](presenze.md) |
+| **PRESENZE ISTRUTTORI** | Gli istruttori entrati col PIN in una lezione in cui non erano previsti, da confermare | [Apri](presenze-istruttori.md) |
 | **IMPORTA DA EXCEL** | Corsi e iscritti dai fogli Excel o dalle risposte del modulo Google | [Apri](importa.md) |
 | **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
 | **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
@@ -49,7 +50,10 @@ dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
    i file → **ACCOGLI**.
 3. **Quando un istruttore manca**: la lezione nella [Settimana](settimana.md) →
    **ISTRUTTORE** → il sostituto. Se la lezione salta: **ANNULLATA**.
-4. **A fine mese**: [Presenze](presenze.md) → chi si sta perdendo, e
+4. **Quando il menu dice PRESENZE ISTRUTTORI · 1**: un istruttore è entrato
+   col PIN in una lezione non sua → [Presenze istruttori](presenze-istruttori.md)
+   → **CONFERMA** o **RIFIUTA**.
+5. **A fine mese**: [Presenze](presenze.md) → chi si sta perdendo, e
    **SCARICA CSV** se serve un resoconto.
 
 Ogni cambio si salva subito: non c'è un tasto «salva» generale. In basso

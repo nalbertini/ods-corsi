@@ -45,7 +45,10 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
   della sala. Chi arriva tocca il suo nome e la presenza è segnata, senza
   domande e con ANNULLA per chi sbaglia; chi si è dimenticato recupera le
   lezioni delle ultime due settimane partendo dal corso; l'istruttore, col suo
-  PIN, apre l'appello completo e vede chi si è segnato da sé. Si apre con
+  PIN, apre l'appello completo e vede chi si è segnato da sé; durante una
+  lezione il PIN segna anche la sua presenza, da sola se era previsto su
+  quella lezione, se no da confermare in segreteria
+  (`supabase/15-presenze-istruttori.sql`). Si apre con
   `sala/` in fondo all'indirizzo, e da lì il dispositivo resta un tablet.
 - **La segreteria**: per il computer della reception, a chi ha il ruolo di
   segreteria. La **settimana** in una griglia, con gli appelli che mancano in
@@ -57,7 +60,8 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
   cercare, iscrivere e togliere dai corsi, con quanto vengono negli ultimi
   trenta giorni, il **certificato medico** (il file e fino a quando vale) e lo
   stato del **pagamento**, con chi non è in regola in evidenza. Le **presenze** del mese: medie per corso, chi si sta
-  perdendo, gli appelli che mancano, e il CSV. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
+  perdendo, gli appelli che mancano, e il CSV. Le **presenze degli istruttori** entrati col PIN
+  in una lezione in cui non erano previsti, da confermare o rifiutare. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare.
   **Istruttori e accessi**, coi PIN del tablet. Le **impostazioni**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale con la loro
@@ -254,7 +258,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
-| `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore. |
+| `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/calendario-da-se.sql` | Il calendario che si allunga da sé: anche per un istruttore, solo quando serve, fin dove dicono le regole. |
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
@@ -263,6 +267,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `supabase/prova/timer.sql` | Il timer: la libreria della palestra, i timer personali e dei corsi, il tablet che li apre e non li scrive, lo storico, le preferenze. |
 | `supabase/prova/certificati.sql` | Certificati medici e pagamenti: li vede e li cambia solo la segreteria, e il file di una persona sta nella sua cartella. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
+| `supabase/prova/presenze-istruttori.sql` | La presenza degli istruttori dal PIN del tablet: da sola a chi era previsto, anche da sostituto, da confermare agli altri; la conferma solo la segreteria. |
 | `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`

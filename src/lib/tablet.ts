@@ -77,6 +77,28 @@ export interface RigaAppelloTablet {
   origine: Origine | null
 }
 
+/**
+ * La presenza di un istruttore in una lezione, segnata dal suo PIN sul
+ * tablet: confermata da sola se era previsto, se no da confermare in
+ * segreteria, che la può anche rifiutare.
+ */
+export type StatoPresenzaIstruttore = 'confermata' | 'da_confermare' | 'rifiutata'
+
+/** Cosa ha segnato il PIN, per dirlo all'istruttore appena entra. */
+export interface PresenzaIstruttore {
+  sessioneId: string
+  corso: string
+  stato: StatoPresenzaIstruttore
+}
+
+/** Chi è entrato col PIN, e in quali lezioni gli è stata segnata la presenza. */
+export interface EntratoConPin {
+  personaId: string
+  nome: string
+  /** Vuoto fuori dalle lezioni, o col database senza `15-presenze-istruttori.sql`. */
+  presenze: PresenzaIstruttore[]
+}
+
 export interface Postazione {
   nome: string
   sala: string
@@ -104,8 +126,11 @@ export interface DatiTablet {
   /** Il tasto ANNULLA. `false` se il tocco non si può più togliere. */
   annulla(sessioneId: string, personaId: string): Promise<boolean>
 
-  /** Chi ha questo PIN, o `null`. Dopo troppi errori solleva. */
-  entraConPin(pin: string): Promise<{ personaId: string; nome: string } | null>
+  /**
+   * Chi ha questo PIN, o `null`. Dopo troppi errori solleva. Durante una
+   * lezione gli segna anche la presenza (vedi `15-presenze-istruttori.sql`).
+   */
+  entraConPin(pin: string): Promise<EntratoConPin | null>
   appello(pin: string, sessioneId: string): Promise<RigaAppelloTablet[]>
   /** `null` toglie il segno, ma solo a una presenza arrivata dal tablet. */
   correggi(pin: string, sessioneId: string, personaId: string, stato: StatoPresenza | null): Promise<boolean>

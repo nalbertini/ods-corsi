@@ -1,7 +1,7 @@
-import type { DatiTablet, EsitoTocco, LezioneSala, RigaAppelloTablet } from './tablet'
-import { REGOLE, sigle } from './tablet'
-import { creaDatiProva, memoria } from './datiProva'
-import { archivio } from './archivioProva'
+import type { DatiTablet, EsitoTocco, LezioneSala, PresenzaIstruttore, RigaAppelloTablet } from './tablet'
+import { fase, REGOLE, sigle } from './tablet'
+import { comeE, creaDatiProva, lezioniFra, memoria } from './datiProva'
+import { archivio, type PresenzaIstruttoreProva } from './archivioProva'
 import { perCognome } from './sala'
 import { impostazioniSala, timerSala } from '../../timer/src/lib/impostazioniSala'
 import { fonteClipProva } from './voceProva'
@@ -90,6 +90,53 @@ export function creaTabletProva(): DatiTablet {
     const chi = chiHaPin(pin)
     tentativi.push({ quando: t, riuscito: !!chi })
     return chi
+  }
+
+  /**
+   * Come `presenza_con_pin`: le lezioni della sala aperte adesso in cui chi
+   * entra è previsto si segnano confermate; se non è previsto in nessuna, la
+   * prima (quella in corso, o la più vicina) va da confermare. La segreteria
+   * che non è prevista non si segna.
+   */
+  const segnaIstruttore = (personaId: string): PresenzaIstruttore[] => {
+    const ora = adesso()
+    const t = ora.getTime()
+    const inCorso = (l: { inizio: Date; fine: Date }) => Number(l.inizio.getTime() <= t && t <= l.fine.getTime())
+    const ieri = new Date(t - 24 * 60 * MIN)
+    const aperte = lezioniFra(ieri, ora)
+      .filter((l) => {
+        const k = comeE(l)
+        return k.sala === sala && k.stato !== 'annullata' && fase({ inizio: l.inizio.toISOString(), fine: l.fine.toISOString() }, ora) === 'aperta'
+      })
+      .sort((x, y) => inCorso(y) - inCorso(x) || Math.abs(x.inizio.getTime() - t) - Math.abs(y.inizio.getTime() - t))
+    if (!aperte.length) return []
+    const previste = aperte.filter((l) => comeE(l).istruttori.includes(personaId))
+    const ruolo = archivio.dati.persone.find((p) => p.id === personaId)?.ruolo
+    if (!previste.length && ruolo === 'staff') return []
+    const segnate = previste.length ? previste : aperte.slice(0, 1)
+    const tutte = [...(archivio.dati.presenzeIstruttori ?? [])]
+    for (const l of segnate) {
+      const c = tutte.findIndex((x) => x.sessioneId === l.id && x.personaId === personaId)
+      if (c < 0) {
+        const nuova: PresenzaIstruttoreProva = {
+          id: `pi-${t.toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+          sessioneId: l.id,
+          personaId,
+          stato: previste.length ? 'confermata' : 'da_confermare',
+          prevista: previste.length > 0,
+          entratoIl: ora.toISOString(),
+          sala: sala ?? '',
+        }
+        tutte.push(nuova)
+      } else if (previste.length && tutte[c].stato === 'da_confermare') {
+        tutte[c] = { ...tutte[c], stato: 'confermata', prevista: true }
+      }
+    }
+    archivio.dati.presenzeIstruttori = tutte
+    archivio.salva()
+    return segnate
+      .sort((x, y) => x.inizio.getTime() - y.inizio.getTime())
+      .map((l) => ({ sessioneId: l.id, corso: l.corso.nome, stato: tutte.find((x) => x.sessioneId === l.id && x.personaId === personaId)!.stato }))
   }
 
   const scrivi = (sessioneId: string, personaId: string, stato: 'presente' | 'assente' | 'giustificato' | null, da: 'tablet' | 'recupero' | null) => {
@@ -188,7 +235,8 @@ export function creaTabletProva(): DatiTablet {
 
     async entraConPin(pin) {
       if (!sala) throw new Error('solo un tablet di sala')
-      return daPin(pin)
+      const chi = daPin(pin)
+      return chi ? { ...chi, presenze: segnaIstruttore(chi.personaId) } : null
     },
 
     async appello(pin, sessioneId) {

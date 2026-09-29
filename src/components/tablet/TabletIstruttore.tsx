@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { DatiTablet, LezioneSala, RigaAppelloTablet } from '../../lib/tablet'
+import type { DatiTablet, LezioneSala, PresenzaIstruttore, RigaAppelloTablet } from '../../lib/tablet'
 import { fase } from '../../lib/tablet'
 import type { StatoPresenza } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
@@ -16,10 +16,14 @@ import { Guaio, messaggio, orario } from './comune'
  *
  * Il giro del tocco è presente → assente → presente: un segno dell'istruttore
  * non si toglie, si cambia. È la stessa regola del database.
+ *
+ * In cima dice se il PIN gli ha segnato la presenza nella lezione in corso:
+ * segnata se era previsto, se no da confermare in segreteria.
  */
 export function TabletIstruttore({
   d,
   pin,
+  presenze,
   adesso,
   lezioni,
   onCambiato,
@@ -29,6 +33,8 @@ export function TabletIstruttore({
 }: {
   d: DatiTablet
   pin: string
+  /** Le presenze che il PIN gli ha appena segnato. */
+  presenze: PresenzaIstruttore[]
   adesso: Date
   lezioni: LezioneSala[]
   /** Qualcosa è cambiato: i conti nell'elenco delle lezioni vanno riletti. */
@@ -107,6 +113,7 @@ export function TabletIstruttore({
   return (
     <div className="tb-corpo tb-istruttore">
       <div className="tb-colonna" style={{ gap: 10 }}>
+        {presenze.length > 0 && <LaTuaPresenza presenze={presenze} />}
         <div role="tablist" aria-label="Quali lezioni" className="tb-schede">
           {(
             [
@@ -246,5 +253,42 @@ export function TabletIstruttore({
         </div>
       </div>
     </div>
+  )
+}
+
+const PRESENZA: Record<PresenzaIstruttore['stato'], { titolo: string; testo: string; colore: string }> = {
+  confermata: { titolo: 'LA TUA PRESENZA È SEGNATA', testo: 'Eri previsto su questa lezione.', colore: 'var(--verde)' },
+  da_confermare: {
+    titolo: 'PRESENZA DA CONFERMARE',
+    testo: 'Non eri previsto su questa lezione: la tua presenza la conferma la segreteria.',
+    colore: 'var(--giallo)',
+  },
+  rifiutata: { titolo: 'PRESENZA NON CONFERMATA', testo: 'La segreteria non l’ha confermata: se è un errore, parlane con lei.', colore: 'var(--rosso)' },
+}
+
+/** Cosa ha fatto il PIN alla presenza dell'istruttore, una riga per lezione. */
+function LaTuaPresenza({ presenze }: { presenze: PresenzaIstruttore[] }) {
+  // Due lezioni aperte insieme, tutte e due sue: lo stesso stato si dice una volta.
+  const stati = [...new Set(presenze.map((p) => p.stato))]
+  return (
+    <>
+      {stati.map((stato) => {
+        const x = PRESENZA[stato]
+        return (
+          <div key={stato} role="status" className="tb-riquadro" style={{ borderColor: x.colore }}>
+            <span className="tb-etichetta" style={{ color: stato === 'da_confermare' ? 'var(--giallo-testo)' : x.colore }}>
+              {x.titolo}
+            </span>
+            <span className="tb-riquadro-testo">
+              {presenze
+                .filter((p) => p.stato === stato)
+                .map((p) => p.corso)
+                .join(', ')}
+              . {x.testo}
+            </span>
+          </div>
+        )
+      })}
+    </>
   )
 }

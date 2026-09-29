@@ -141,6 +141,20 @@ iniziale.
 Dopo troppi PIN sbagliati il tablet si blocca per un po'. Il PIN lo dà e lo
 cambia la segreteria.
 
+### La vostra presenza
+
+Il PIN messo durante una lezione, da mezz'ora prima dell'inizio a dieci minuti
+dopo la fine, segna anche **la vostra presenza** in quella lezione. In cima
+all'area istruttore c'è scritto com'è andata:
+
+- **LA TUA PRESENZA È SEGNATA** — eravate previsti su quella lezione (è un
+  vostro corso, o siete il sostituto di quel giorno): è fatta, non serve altro;
+- **PRESENZA DA CONFERMARE** — non eravate previsti: la presenza resta in un
+  elenco della segreteria, che la conferma.
+
+Rimettere il PIN nella stessa lezione non la segna due volte. Fuori dalle
+lezioni il PIN apre l'area istruttore e basta.
+
 ### «Scollega il tablet»
 
 In fondo all'area istruttore c'è **Scollega il tablet**. Serve solo se il

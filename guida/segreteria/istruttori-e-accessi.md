@@ -24,6 +24,10 @@ Quattro cifre, per l'**AREA ISTRUTTORE** del [tablet di sala](../sala.md).
 **IMPOSTA** (o **CAMBIA** se c'è già) → le quattro cifre → **OK**. Due persone
 non possono avere lo stesso PIN. Il PIN lo cambia solo la segreteria.
 
+Messo sul tablet durante una lezione, il PIN segna anche la presenza
+dell'istruttore: da sola se era previsto, se no da confermare in
+[Presenze istruttori](presenze-istruttori.md).
+
 ## Aggiungere una persona
 
 **AGGIUNGI UNA PERSONA** → nome, cognome, email, ruolo (**ISTRUTTORE** o

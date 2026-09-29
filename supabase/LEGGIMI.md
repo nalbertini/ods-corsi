@@ -38,6 +38,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 12. `12-calendario-da-se.sql` — il calendario che si allunga da sé, senza job
 13. `13-voce-esercizi.sql` — la voce, le clip incise e gli esercizi dei tablet di sala, scelti dalla segreteria
 14. `14-timer-dal-tablet.sql` — il timer dei tablet di sala si cambia da un tablet qualunque
+15. `15-presenze-istruttori.sql` — la presenza degli istruttori dal PIN del tablet: da sola se erano previsti, se no da confermare in segreteria
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -67,6 +68,11 @@ che avevano. Per cambiare il timer delle sale da un tablet basta
 `14-timer-dal-tablet.sql` (dopo `10-timer-sale.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, quello che si sceglie su un
 tablet non si salva, e al giro dopo il tablet torna a quello del database.
+Per la presenza degli istruttori dal PIN del tablet basta
+`15-presenze-istruttori.sql` (dopo `04-tablet.sql`), che non chiede di
+rilanciare `06-iscrizioni.sql`: finché non c'è, il tablet apre l'area
+istruttore come prima senza segnare niente, e PRESENZE ISTRUTTORI in
+segreteria dice che va lanciato.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -530,5 +536,8 @@ sua funzione, solo lui o la segreteria, senza toccare il resto della riga; `time
 una singola lezione: lo lega il personale, lo legge il tablet, e un timer
 personale legato a una lezione lo vedono anche gli altri; `calendario-da-se.sql`
 prova il calendario che si allunga da sé: lo allunga anche un istruttore, ma
-solo quando serve e fin dove dicono le regole. `finto-supabase.sql` rifà anche le due
+solo quando serve e fin dove dicono le regole; `presenze-istruttori.sql`, dopo
+`tablet.sql`, prova la presenza degli istruttori dal PIN: confermata da sola a
+chi era previsto (anche da sostituto), da confermare agli altri, e confermata
+o rifiutata solo dalla segreteria. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

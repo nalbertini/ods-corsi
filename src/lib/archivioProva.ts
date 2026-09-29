@@ -95,6 +95,23 @@ export interface Archivio {
   voceSale?: string | null
   /** Il catalogo degli esercizi della palestra, se la segreteria ne ha fatto uno. */
   eserciziSale?: unknown[]
+  /** Gli istruttori entrati col PIN sul tablet durante una lezione. */
+  presenzeIstruttori?: PresenzaIstruttoreProva[]
+}
+
+/** Come una riga di `presenze_istruttori` (15-presenze-istruttori.sql). */
+export interface PresenzaIstruttoreProva {
+  id: string
+  sessioneId: string
+  personaId: string
+  stato: 'confermata' | 'da_confermare' | 'rifiutata'
+  /** Era previsto su quella lezione quando ha messo il PIN. */
+  prevista: boolean
+  entratoIl: string
+  /** La sala del tablet su cui ha messo il PIN. */
+  sala: string
+  gestitaDa?: string
+  gestitaIl?: string
 }
 
 // ---------------------------------------------------------------------------

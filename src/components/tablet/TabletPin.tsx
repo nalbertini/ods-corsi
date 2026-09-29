@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { DatiTablet } from '../../lib/tablet'
+import type { DatiTablet, EntratoConPin } from '../../lib/tablet'
 import { messaggio } from './comune'
 
 const TASTI = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'canc', '0', '']
@@ -16,7 +16,7 @@ export function TabletPin({
   onAnnulla,
 }: {
   d: DatiTablet
-  onEntrato: (pin: string, chi: { personaId: string; nome: string }) => void
+  onEntrato: (pin: string, chi: EntratoConPin) => void
   onAnnulla: () => void
 }) {
   const [pin, setPin] = useState('')
@@ -52,7 +52,7 @@ export function TabletPin({
       <div className="stack" style={{ gap: 16, maxWidth: 380 }}>
         <span className="ob tb-titolo" style={{ fontSize: 36 }}>AREA ISTRUTTORE</span>
         <span className="tb-sotto" style={{ fontSize: 18, lineHeight: 1.5 }}>
-          Il tuo PIN a quattro cifre. Da qui fai l'appello completo e correggi le presenze segnate sul tablet.
+          Il tuo PIN a quattro cifre. Da qui fai l'appello completo e correggi le presenze segnate sul tablet. Durante una lezione ti segna anche la tua presenza.
         </span>
         <div className="row" style={{ gap: 14, padding: '8px 0' }} aria-label={`${pin.length} cifre su 4`}>
           {[0, 1, 2, 3].map((i) => (

@@ -86,6 +86,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'allunga_calendario')),
   ('14-timer-dal-tablet.sql', 'il timer delle sale cambiato da un tablet',
     exists (select 1 from dentro where nome = 'salva_timer_sala')),
+  ('15-presenze-istruttori.sql', 'la presenza degli istruttori dal PIN del tablet',
+    to_regclass('public.presenze_istruttori') is not null
+    and exists (select 1 from dentro where nome = 'presenza_con_pin')
+    and exists (select 1 from dentro where nome = 'gestisci_presenza_istruttore')),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')
