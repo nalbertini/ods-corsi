@@ -239,6 +239,11 @@ export function creaTabletProva(): DatiTablet {
       return chi ? { ...chi, presenze: segnaIstruttore(chi.personaId) } : null
     },
 
+    async verificaPin(pin) {
+      if (!sala) throw new Error('solo un tablet di sala')
+      return daPin(pin)
+    },
+
     async appello(pin, sessioneId) {
       const d = await lezione(sessioneId)
       if (!daPin(pin)) return []

@@ -130,6 +130,8 @@ type Vista =
   | { s: 'recupero'; corsoId: string | null }
   | { s: 'pin' }
   | { s: 'istruttore'; pin: string; nome: string; presenze: PresenzaIstruttore[] }
+  | { s: 'esci-pin' }
+  | { s: 'esci'; nome: string }
 
 /** Il timer pesa quanto il resto dell'app: si scarica solo su un tablet di sala. */
 const TimerSala = lazy(() => import('./TimerSala').then((m) => ({ default: m.TimerSala })))
@@ -167,7 +169,7 @@ function ricordaLista(id: string | null) {
   }
 }
 
-function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: Postazione; onScollega: () => void }) {
+function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: Postazione; onScollega: () => Promise<void> }) {
   const adesso = useAdesso(d)
   const [vista, setVista] = useState<Vista>({ s: 'home' })
   const [scheda, setScheda] = useState<Scheda>('presenze')
@@ -378,6 +380,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
                   onVaiTimer={vaiTimer}
                   onRecupero={() => setVista({ s: 'recupero', corsoId: null })}
                   onPin={() => setVista({ s: 'pin' })}
+                  onEsci={() => setVista({ s: 'esci-pin' })}
                 />
               )}
               {vista.s === 'presenza' && (
@@ -415,9 +418,13 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
                   onCambiato={() => void carica()}
                   onEsci={aHome}
                   onPinScaduto={() => setVista({ s: 'pin' })}
-                  onScollega={onScollega}
+                  onScollega={() => setVista({ s: 'esci', nome: vista.nome })}
                 />
               )}
+              {vista.s === 'esci-pin' && (
+                <TabletPin d={d} perUscire onEntrato={(_, chi) => setVista({ s: 'esci', nome: chi.nome })} onAnnulla={aHome} />
+              )}
+              {vista.s === 'esci' && <ConfermaUscita nome={vista.nome} onEsci={onScollega} onAnnulla={aHome} />}
             </>
           )}
           <Suspense fallback={scheda === 'timer' ? <p className="tb-nota" style={{ padding: 32 }}>Un attimo…</p> : null}>
@@ -457,6 +464,51 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
           posto, a destra, e cambiando scheda non si ricarica. */}
       {conYoutube && <PlayerYoutube link={musicaSala.youtube} parti={parti} />}
     </>
+  )
+}
+
+/**
+ * L'ultima domanda prima di uscire, dopo il PIN: uscendo il tablet si
+ * scollega dalla sala, e senza l'account della sala non ci torna. Una
+ * schermata del tablet e non un `confirm()`, che a tutto schermo alcuni
+ * browser non mostrano. Senza tocchi si torna alla schermata di sempre.
+ */
+function ConfermaUscita({ nome, onEsci, onAnnulla }: { nome: string; onEsci: () => Promise<void> | void; onAnnulla: () => void }) {
+  const [aspetta, setAspetta] = useState(false)
+  const [guaio, setGuaio] = useState<string | null>(null)
+  const esci = async () => {
+    setAspetta(true)
+    setGuaio(null)
+    try {
+      await onEsci()
+    } catch (e) {
+      setGuaio(messaggio(e, 'Uscita non riuscita'))
+      setAspetta(false)
+    }
+  }
+  return (
+    <div className="tb-corpo tb-pin">
+      <div className="stack" style={{ gap: 16, maxWidth: 560 }}>
+        <span className="ob tb-titolo" style={{ fontSize: 36 }}>USCIRE DAL TABLET?</span>
+        <span className="tb-sotto" style={{ fontSize: 18, lineHeight: 1.5 }}>
+          {nome ? `${nome}, il` : 'Il'} tablet si scollega dalla sala: nessuno potrà più segnarsi qui finché la segreteria non lo
+          ricollega con l'account della sala.
+        </span>
+        {guaio && (
+          <span role="alert" style={{ fontSize: 17, fontWeight: 600, color: 'var(--rosso)' }}>
+            {guaio}
+          </span>
+        )}
+        <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+          <button type="button" className="tb-btn tb-btn-grande tb-btn-rosso" disabled={aspetta} onClick={() => void esci()}>
+            {aspetta ? 'UN ATTIMO…' : 'SÌ, ESCI'}
+          </button>
+          <button type="button" className="tb-btn tb-btn-grande tb-btn-linea" disabled={aspetta} onClick={onAnnulla}>
+            ANNULLA
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

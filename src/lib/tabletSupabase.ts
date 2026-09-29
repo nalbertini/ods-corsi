@@ -101,6 +101,12 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
       return { personaId: r.persona_id, nome: r.nome, presenze }
     },
 
+    async verificaPin(pin) {
+      const righe = await rpc<Array<{ persona_id: string; nome: string }>>('entra_con_pin', { pin })
+      const r = righe?.[0]
+      return r ? { personaId: r.persona_id, nome: r.nome } : null
+    },
+
     async appello(pin, sessioneId) {
       const righe = await rpc<Array<{
         persona_id: string; nome: string; cognome: string; stato: StatoPresenza | null; origine: Origine | null

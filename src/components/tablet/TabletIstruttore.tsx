@@ -183,13 +183,7 @@ export function TabletIstruttore({
         <span className="tb-nota" style={{ fontSize: 13 }}>
           Si esce da soli dopo 2 minuti senza tocchi: il tablet resta in sala.
         </span>
-        <button
-          type="button"
-          className="tb-scollega"
-          onClick={() => {
-            if (window.confirm('Scollegare il tablet dalla sala? Per ricollegarlo serve di nuovo l’account della sala.')) onScollega()
-          }}
-        >
+        <button type="button" className="tb-scollega" onClick={onScollega}>
           Scollega il tablet
         </button>
       </div>
