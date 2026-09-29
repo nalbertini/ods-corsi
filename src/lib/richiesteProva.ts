@@ -1,5 +1,6 @@
 import type { DatiRichieste, FileRichiesta, Richiesta, TipoFile } from './richieste'
 import { controlla, pulisciCf, minorenne } from './richieste'
+import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { archivio } from './archivioProva'
 import { chiaveGiorno } from './sala'
 
@@ -91,6 +92,8 @@ export function creaRichiesteProva(): DatiRichieste {
       if (tutte.filter((r) => r.email === email && new Date(r.creataIl).getTime() > ieri).length >= 3)
         throw new Error('Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria')
       const minore = minorenne(dati.natoIl)
+      // Come il database: il luogo di nascita, se l'elenco lo conosce, è quello del codice.
+      const luogo = luogoDaCf(await caricaLuoghi(), pulisciCf(dati.codiceFiscale), dati.natoIl)
       const r: Richiesta = {
         ...dati,
         id: `r-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
@@ -99,6 +102,7 @@ export function creaRichiesteProva(): DatiRichieste {
         nome: dati.nome.trim(),
         cognome: dati.cognome.trim(),
         email,
+        natoA: luogo ? scriviLuogo(luogo) : dati.natoA.trim(),
         codiceFiscale: pulisciCf(dati.codiceFiscale),
         corsi: [...new Set(dati.corsi)],
         genitoreNome: minore ? dati.genitoreNome?.trim() : undefined,

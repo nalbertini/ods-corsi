@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { avvisi, controlla, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { controlla, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -115,9 +115,19 @@ console.log('\n2b. il codice fiscale, letto')
   const p = m.problemi(adulto({ nome: '', cap: '100', codiceFiscale: 'RSSLCU96A01L219X', corsi: [] }))
   ok('sotto ogni campo la sua', p, { nome: 'Manca', codiceFiscale: 'Non torna: controlla lettere e numeri, uno per uno', corsi: 'Scegline almeno uno', cap: 'Sono 5 cifre' })
   ok('niente, se va tutto', m.problemi(adulto()), {})
-  ok('un codice giusto ma di un altro: avviso', m.avvisi(adulto({ nome: 'Marco' })), { codiceFiscale: 'Non sembra di Marco Rossi: controlla che sia il suo' })
-  ok('che non ferma l’invio', m.controlla(adulto({ nome: 'Marco' })), null)
-  ok('e non c’è, se è il suo', m.avvisi(adulto({ nome: 'lùca', cognome: 'ROSSI' })), {})
+  ok('un codice giusto ma di un altro: fermato', await errore(() => r.invia(adulto({ nome: 'Marco' }))), 'Il codice fiscale non torna con nome e cognome: scrivili tutti, come sul documento')
+  ok('detto sotto il campo', m.problemi(adulto({ nome: 'Marco' })), { codiceFiscale: 'Non torna con nome e cognome' })
+  ok('accenti e maiuscole non contano', m.controlla(adulto({ nome: 'lùca', cognome: 'ROSSI' })), null)
+  ok('un nome con quattro consonanti', m.controlla(adulto({ nome: 'Demetrio', codiceFiscale: 'RSSDTR80A01L219A', natoIl: '1980-01-01' })), null)
+  const luoghi = await m.caricaLuoghi()
+  const cf = (quindici) => quindici + m.carattereControllo(quindici)
+  ok('il luogo dal codice', m.luogoDaCf(luoghi, 'RSSLCU96A01L219K'), { nome: 'TORINO', sigla: 'TO' })
+  ok('col nome che aveva quando si è nati', m.luogoDaCf(luoghi, cf('RSSLCU20A01A001'), '1920-01-01'), { nome: 'ABANO', sigla: 'PD' })
+  ok('e dopo, col nome nuovo', m.luogoDaCf(luoghi, cf('RSSLCU30A01A001'), '1930-01-01'), { nome: 'ABANO TERME', sigla: 'PD' })
+  ok('l’omocodia anche nel luogo', m.luogoDaCf(luoghi, 'RSSMRA85T10A56NH'), { nome: 'SAN GIULIANO TERME', sigla: 'PI' })
+  ok('uno stato estero', m.luogoDaCf(luoghi, cf('RSSLCU96A01Z129')), { nome: 'ROMANIA', sigla: 'EE' })
+  ok('un codice che non c’è: si scrive a mano', m.luogoDaCf(luoghi, cf('RSSLCU96A01Z999')), null)
+  ok('il genitore di un altro nome', await errore(() => r.invia(minore({ genitoreNome: 'Marta' }))), 'Il codice fiscale del genitore non torna con il suo nome e cognome: scrivili tutti, come sul documento')
 }
 
 console.log('\n3. le richieste arrivano')
@@ -126,12 +136,13 @@ const giulia = await r.invia(adulto({ nome: 'Giulia', codiceFiscale: 'RSSGLI17C4
 const marco = await r.invia(adulto({ nome: 'Marco', codiceFiscale: 'RSSMRC15E05L219V', natoIl: '2015-05-05', email: 'MAMMA@esempio.it', corsi: ['judo-3'], ...genitore }))
 const terzo = await r.invia(adulto({ nome: 'Terzo', codiceFiscale: 'RSSTRZ96A01L219A', email: 'mamma@esempio.it' }))
 {
-  ok('la quarta dalla stessa email no', await errore(() => r.invia(adulto({ nome: 'Quarto', email: 'mamma@esempio.it' }))), 'Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria')
+  ok('la quarta dalla stessa email no', await errore(() => r.invia(adulto({ nome: 'Quarto', codiceFiscale: 'RSSQRT96A01L219R', email: 'mamma@esempio.it' }))), 'Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria')
   const tutte = await r.richieste()
   ok('sono quattro, nuove', tutte.map((x) => x.stato), ['nuova', 'nuova', 'nuova', 'nuova'])
   const l = tutte.find((x) => x.id === luca)
   ok('email e codice fiscale messi in ordine', `${l.email} ${l.codiceFiscale}`, 'luca@esempio.it RSSLCU96A01L219K')
   ok('il genitore di un adulto non si tiene', l.genitoreNome, undefined)
+  ok('il luogo di nascita è quello del codice', l.natoA, 'TORINO (TO)')
   await r.caricaFile(luca, 'modulo', new File(['x'], 'modulo.pdf', { type: 'application/pdf' }))
   ok('il file si ritrova, come PDF', (await r.file(luca)).map((f) => [f.tipo, f.pdf]), [['modulo', true]])
 }
@@ -168,7 +179,8 @@ console.log('\n5. chi torna non diventa un doppione')
   const corso = vecchia.iscrizioni[0].corsoId
   await s.termina(vecchia.id, corso)
   await s.attivaPersona(vecchia.id, false)
-  const id = await r.invia(adulto({ nome: vecchia.nome.toUpperCase(), cognome: vecchia.cognome.toLowerCase(), codiceFiscale: 'VCCTRN96A01L219T', email: 'torno@esempio.it', corsi: [corso] }))
+  const base = m.lettereCognome(vecchia.cognome) + m.lettereNome(vecchia.nome) + '96A01L219'
+  const id = await r.invia(adulto({ nome: vecchia.nome.toUpperCase(), cognome: vecchia.cognome.toLowerCase(), codiceFiscale: base + m.carattereControllo(base), email: 'torno@esempio.it', corsi: [corso] }))
   ok('accolta sulla scheda che c’era', await r.accogli(id), vecchia.id)
   const p = (await s.persone()).find((x) => x.id === vecchia.id)
   ok('di nuovo attiva, con l’email', [p.attiva, p.email], [true, 'torno@esempio.it'])

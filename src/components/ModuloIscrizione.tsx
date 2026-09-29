@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { avvisi, controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi } from '../lib/richieste'
+import { controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi, pulisciCf } from '../lib/richieste'
+import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, STAGIONE } from '../lib/iscrizione'
 import type { SceltaModulo } from '../lib/firma'
@@ -82,6 +83,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
   const [tratti, setTratti] = useState<Tratto[]>([])
   const [genitoreNatoA, setGenitoreNatoA] = useState('')
   const [genitoreProvincia, setGenitoreProvincia] = useState('')
+  const [luoghi, setLuoghi] = useState<Luoghi | null>(null)
   const [guaioFirma, setGuaioFirma] = useState<string | null>(null)
   // Un campo che una persona non vede e un programma riempie.
   const [trappola, setTrappola] = useState('')
@@ -105,9 +107,18 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
     }
   }, [])
 
+  // Se l'elenco non arriva, il luogo si scrive a mano come prima.
+  useEffect(() => void caricaLuoghi().then(setLuoghi, () => {}), [])
+  // Il luogo di nascita lo dice il codice fiscale: quando lo si trova, non si scrive.
+  const luogo = luoghi && luogoDaCf(luoghi, pulisciCf(b.codiceFiscale), b.natoIl)
+  const luogoGenitore = luoghi && luogoDaCf(luoghi, pulisciCf(b.genitoreCodiceFiscale ?? ''))
+  const natoAGenitore = luogoGenitore?.nome ?? genitoreNatoA
+  const provinciaGenitore = luogoGenitore?.sigla ?? genitoreProvincia
+
   const minore = !!b.natoIl && minorenne(b.natoIl)
   const pronta: DatiRichiesta = {
     ...b,
+    natoA: luogo ? scriviLuogo(luogo) : b.natoA,
     genitoreNome: minore ? b.genitoreNome : '',
     genitoreCognome: minore ? b.genitoreCognome : '',
     genitoreCodiceFiscale: minore ? b.genitoreCodiceFiscale : '',
@@ -119,12 +130,10 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
   const foglio = MODULI[minore ? 1 : 0]
 
   const errori = problemi(pronta)
-  const attenzione = avvisi(pronta)
   /** Cosa scrivere sotto un campo: «Manca» solo dopo aver provato a mandare. */
   const nota = (k: CampoModulo): Nota | undefined => {
     const e = errori[k]
     if (e && (provato || (visti.has(k) && e !== 'Manca'))) return { testo: e, guaio: true }
-    if (attenzione[k] && (provato || visti.has(k))) return { testo: attenzione[k]!, guaio: false }
   }
   /** Le proprietà che legano un campo alla sua nota. */
   const segna = (k: CampoModulo) => {
@@ -142,7 +151,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
   const mancaPerFirmare = (): string | null => {
     if (scelte.tesseramento === undefined) return 'Nel modulo: scegli se acconsenti al tesseramento alla FIJLKAM e/o FIPE'
     if (scelte.foto === undefined) return 'Nel modulo: scegli se autorizzi le foto'
-    if (minore && !genitoreNatoA.trim()) return 'Nel modulo: manca dove è nato il genitore'
+    if (minore && !natoAGenitore.trim()) return 'Nel modulo: manca dove è nato il genitore'
     if (!firmaVera(tratti)) return tratti.length ? 'La firma è troppo piccola: firma per bene nel riquadro' : 'Manca la firma sul modulo'
     return null
   }
@@ -161,8 +170,8 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
       dati: pronta,
       minore,
       scelte: { tesseramento: !!scelte.tesseramento, foto: !!scelte.foto },
-      genitoreNatoA,
-      genitoreProvincia,
+      genitoreNatoA: natoAGenitore,
+      genitoreProvincia: provinciaGenitore,
       firma,
       originale,
       stagione: STAGIONE,
@@ -293,11 +302,19 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         <Campo id="m-nato-il" nota={nota('natoIl')} etichetta="DATA DI NASCITA">
           <input id="m-nato-il" {...segna('natoIl')} className="campo" type="date" value={b.natoIl} onChange={metti('natoIl')} />
         </Campo>
-        <Campo id="m-nato-a" nota={nota('natoA')} etichetta="LUOGO DI NASCITA">
-          <input id="m-nato-a" {...segna('natoA')} className="campo" value={b.natoA} onChange={metti('natoA')} />
-        </Campo>
         <Campo id="m-cf" nota={nota('codiceFiscale')} etichetta="CODICE FISCALE" largo>
           <input id="m-cf" {...segna('codiceFiscale')} className="campo num campo-codice" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.codiceFiscale} onChange={metti('codiceFiscale')} />
+        </Campo>
+        <Campo id="m-nato-a" nota={nota('natoA')} etichetta="LUOGO DI NASCITA">
+          <input
+            id="m-nato-a"
+            {...segna('natoA')}
+            className="campo"
+            readOnly={!!luogo}
+            placeholder={luoghi ? 'Lo dice il codice fiscale' : undefined}
+            value={pronta.natoA}
+            onChange={metti('natoA')}
+          />
         </Campo>
         {minore && (
           <span className="modulo-largo">
@@ -414,7 +431,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
             {minore && (
               <>
                 <Campo id="m-g-nato-a" etichetta="DOVE È NATO IL GENITORE">
-                  <input id="m-g-nato-a" className="campo" value={genitoreNatoA} onChange={(e) => setGenitoreNatoA(e.target.value)} />
+                  <input id="m-g-nato-a" className="campo" readOnly={!!luogoGenitore} value={natoAGenitore} onChange={(e) => setGenitoreNatoA(e.target.value)} />
                 </Campo>
                 <Campo id="m-g-prov" etichetta="PROVINCIA · SIGLA">
                   <input
@@ -422,7 +439,8 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
                     className="campo campo-codice"
                     autoCapitalize="characters"
                     maxLength={2}
-                    value={genitoreProvincia}
+                    readOnly={!!luogoGenitore}
+                    value={provinciaGenitore}
                     onChange={(e) => setGenitoreProvincia(e.target.value.toUpperCase())}
                   />
                 </Campo>

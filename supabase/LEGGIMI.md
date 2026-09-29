@@ -40,6 +40,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 14. `14-timer-dal-tablet.sql` — il timer dei tablet di sala si cambia da un tablet qualunque
 15. `15-presenze-istruttori.sql` — la presenza degli istruttori dal PIN del tablet: da sola se erano previsti, se no da confermare in segreteria
 16. `16-ricevute.sql` — le ricevute dei pagamenti, col loro numero, e i dati dell'associazione che vanno in testa
+17. `17-luoghi.sql` — i comuni e gli stati esteri del codice fiscale, per il luogo di nascita del modulo. Lo genera `scripts/luoghi.py` dalle tabelle dell'ANPR; è grande (circa 600 KB), e se il SQL Editor non lo prende si lancia con `psql`. Finché non c'è, il luogo di nascita resta quello scritto nel modulo
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue

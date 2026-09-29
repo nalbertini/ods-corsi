@@ -12,6 +12,9 @@ insert into persone (id, nome, cognome, ruolo, email, utente_id) values
   ('aaaaaaaa-0000-0000-0000-000000000002', 'Maura', 'Uno', 'istruttore', 'maura@ods.it', '22222222-2222-2222-2222-222222222222'),
   -- Già in elenco dall'anno scorso, senza email, e iscritta a un corso che ha lasciato.
   ('aaaaaaaa-0000-0000-0000-000000000003', 'Sara', 'Bianchi', 'iscritto', null, null);
+-- Due luoghi, come li mette `17-luoghi.sql`: Torino, e Abano che ha cambiato nome.
+insert into luoghi_nascita (codice, nome, sigla, al) values
+  ('L219', 'TORINO', 'TO', null), ('A001', 'ABANO', 'PD', '1924-11-13'), ('A001', 'ABANO TERME', 'PD', null);
 insert into corsi (id, nome) values
   ('cccccccc-0000-0000-0000-000000000001', 'Judo 2'),
   ('cccccccc-0000-0000-0000-000000000002', 'Lotta 2');
@@ -97,6 +100,7 @@ select atteso('l''ultima lettera sbagliata', tenta($$select invia_iscrizione(adu
 select atteso('un altro giorno di nascita', tenta($$select invia_iscrizione(adulto(jsonb_build_object('nato_il', (current_date - interval '30 years' - interval '1 day')::date)))::text$$),
   'NEGATO: Il codice fiscale e la data di nascita non dicono lo stesso giorno…');
 select atteso('un numero nel nome', tenta($$select invia_iscrizione(adulto('{"nome": "Luca2"}'))::text$$), 'NEGATO: Un campo non va: nome e cognome non hanno numeri');
+select atteso('il codice di un altro nome', tenta($$select invia_iscrizione(adulto('{"nome": "Marco"}'))::text$$), 'NEGATO: Il codice fiscale non torna con nome e cognome…');
 select atteso('lettere nel telefono', tenta($$select invia_iscrizione(adulto('{"telefono": "347 abc 2233"}'))::text$$), 'NEGATO: Un campo non va: il telefono non sembra giusto');
 select atteso('sette corsi no', tenta($$select invia_iscrizione(adulto(jsonb_build_object('corsi', (select jsonb_agg(gen_random_uuid()) from generate_series(1, 7)))))::text$$),
   'NEGATO: Un campo non va: si possono scegliere al massimo sei corsi');
@@ -112,14 +116,27 @@ select atteso('il genitore minorenne', tenta($$select invia_iscrizione(adulto(js
   'nome', 'Anna', 'codice_fiscale', cf_prova('RSSNNA', (current_date - interval '9 years')::date, true), 'nato_il', current_date - interval '9 years',
   'genitore_nome', 'Marco', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', cf_prova('RSSMRC', (current_date - interval '11 years')::date))))::text$$),
   'NEGATO: Il codice fiscale del genitore è di un minorenne');
-select atteso('la quarta nello stesso giorno no', tenta($$select invia_iscrizione(adulto('{"email": "mamma@esempio.it", "nome": "Quarto"}'))::text$$), 'NEGATO: Da questa email sono già arrivate 3 richieste oggi…');
+select atteso('il genitore di un altro nome', tenta($$select invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Anna', 'codice_fiscale', cf_prova('RSSNNA', (current_date - interval '9 years')::date, true), 'nato_il', current_date - interval '9 years',
+  'genitore_nome', 'Marta', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPLA80A41L219P')))::text$$),
+  'NEGATO: Il codice fiscale del genitore non torna con il suo nome e cognome…');
+select atteso('la quarta nello stesso giorno no', tenta($$select invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Quarto', 'codice_fiscale', cf_prova('RSSQRT', (current_date - interval '30 years')::date))))::text$$), 'NEGATO: Da questa email sono già arrivate 3 richieste oggi…');
 reset role;
 select atteso('email e codice fiscale messi in ordine',
   (select email || ' ' || (codice_fiscale = cf_prova('RSSLCU', (current_date - interval '30 years')::date)) from richieste_iscrizione where nome = 'Luca'), 'luca@esempio.it true');
+select atteso('il luogo di nascita è quello del codice, non quello scritto',
+  (select nato_a from richieste_iscrizione where nome = 'Luca'), 'TORINO (TO)');
+select atteso('col nome che aveva quando si è nati', luogo_da_cf('RSSLCU20A01A001' || cf_controllo('RSSLCU20A01A001'), '1920-01-01'), 'ABANO (PD)');
+select atteso('e dopo, col nome nuovo', luogo_da_cf('RSSLCU30A01A001' || cf_controllo('RSSLCU30A01A001'), '1930-01-01'), 'ABANO TERME (PD)');
+select atteso('l''omocodia anche nel luogo', luogo_da_cf('RSSLCU96A01L2MV' || cf_controllo('RSSLCU96A01L2MV'), '1996-01-01'), 'TORINO (TO)');
+select atteso('un luogo che non c''è: vale quel che si è scritto', coalesce(luogo_da_cf('RSSLCU96A01Z999' || cf_controllo('RSSLCU96A01Z999'), '1996-01-01'), 'nessuno'), 'nessuno');
 select atteso('il genitore di un adulto non si tiene',
   (select coalesce(genitore_nome, '—') from richieste_iscrizione where nome = 'Luca'), '—');
 select atteso('l''omocodia: cifre scritte come lettere', (cf_nato_il('RSSMRA85T10A56NH') = '1985-12-10')::text, 'true');
 select atteso('una donna: il giorno più quaranta', cf_nato_il('RSSPLA80A41L219P')::text, '1980-01-01');
+select atteso('cognome e nome in sei lettere, senza accenti né apostrofi', cf_lettere('Luca', 'D''Àgostino'), 'DGSLCU');
+select atteso('un nome con quattro consonanti: la prima, la terza e la quarta', cf_lettere('Demetrio', 'Rossi'), 'RSSDTR');
+select atteso('corti: si finisce con la X', cf_lettere('Al', 'Fo'), 'FOXLAX');
 select atteso('il 30 febbraio non esiste', coalesce(cf_nato_il('RSSLCU01B30L219' || cf_controllo('RSSLCU01B30L219'))::text, 'nessuna'), 'nessuna');
 
 \echo ''

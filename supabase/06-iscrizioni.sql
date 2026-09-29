@@ -141,6 +141,48 @@ exception when others then
   return null;
 end $$;
 
+-- Le sei lettere di cognome e nome: le consonanti, poi le vocali, poi X; per
+-- un nome con quattro consonanti o più, la prima, la terza e la quarta. Senza
+-- accenti né apostrofi: «D'Agostino» → «DAGOSTINO».
+create or replace function cf_lettere(nome text, cognome text)
+  returns text language sql immutable as $$
+  with l as (
+    select regexp_replace(upper(regexp_replace(normalize(coalesce(x, ''), NFD), '[\u0300-\u036f]', '', 'g')), '[^A-Z]', '', 'g') as t, k
+    from (values (cognome, 1), (nome, 2)) v(x, k)
+  ), d as (select k, regexp_replace(t, '[AEIOU]', '', 'g') as c, regexp_replace(t, '[^AEIOU]', '', 'g') as v from l)
+  select string_agg(case when k = 2 and length(c) >= 4 then substr(c, 1, 1) || substr(c, 3, 2)
+                         else substr(c || v || 'XXX', 1, 3) end, '' order by k)
+  from d
+$$;
+
+-- Il luogo di nascita: nel codice fiscale c'è il codice catastale del comune,
+-- o dello stato estero. I nomi li riempie `17-luoghi.sql`, generato dalle
+-- tabelle dell'ANPR; un codice può averne più d'uno nel tempo, e `al` dice
+-- fino a quando è valso. Si legge solo da qui dentro.
+create table if not exists luoghi_nascita (
+  codice text not null,
+  nome   text not null,
+  sigla  text not null,
+  al     date
+);
+create index if not exists luoghi_nascita_codice on luoghi_nascita (codice);
+alter table luoghi_nascita enable row level security;
+revoke all on luoghi_nascita from anon, authenticated;
+
+-- «TORINO (TO)», o «ROMANIA»: il nome che il luogo aveva il giorno della
+-- nascita, quello scritto nel modulo (l'anno del codice ha due cifre). Null
+-- se non è nell'elenco (uno stato che non c'è più, un comune nuovo, o
+-- `17-luoghi.sql` non lanciato): allora vale quel che si è scritto.
+-- Le stesse regole di `luogoDaCf` in `src/lib/codiceFiscale.ts`.
+create or replace function luogo_da_cf(cf text, nato date)
+  returns text language sql stable security definer set search_path = public as $$
+  select case when l.sigla = 'EE' then l.nome else l.nome || ' (' || l.sigla || ')' end
+  from luoghi_nascita l, (select nato as n) q
+  where cf_valido(cf) and l.codice = substr(cf, 12, 1) || translate(substr(cf, 13, 3), 'LMNPQRSTUV', '0123456789')
+  order by l.al is not null and l.al < n, case when l.al is null or l.al >= n then coalesce(l.al, 'infinity') end, l.al desc
+  limit 1
+$$;
+
 -- ---------------------------------------------------------------------------
 -- La richiesta.
 --
@@ -196,6 +238,9 @@ begin
   if to_char(cf_nato_il(cf), 'YYMMDD') is distinct from to_char(nato, 'YYMMDD') then
     raise exception 'Il codice fiscale e la data di nascita non dicono lo stesso giorno: controlla l’uno e l’altra' using errcode = '22023';
   end if;
+  if substr(cf, 1, 6) <> cf_lettere(dati->>'nome', dati->>'cognome') then
+    raise exception 'Il codice fiscale non torna con nome e cognome: scrivili tutti, come sul documento' using errcode = '22023';
+  end if;
   if minore then
     if cf_gen !~ '^[A-Z0-9]{16}$' then
       raise exception 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e numeri' using errcode = '22023';
@@ -208,6 +253,9 @@ begin
     end if;
     if cf_nato_il(cf_gen) > current_date - interval '18 years' then
       raise exception 'Il codice fiscale del genitore è di un minorenne' using errcode = '22023';
+    end if;
+    if substr(cf_gen, 1, 6) <> cf_lettere(dati->>'genitore_nome', dati->>'genitore_cognome') then
+      raise exception 'Il codice fiscale del genitore non torna con il suo nome e cognome: scrivili tutti, come sul documento' using errcode = '22023';
     end if;
   end if;
 
@@ -256,7 +304,7 @@ begin
     nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono,
     genitore_nome, genitore_cognome, genitore_codice_fiscale, corsi, formula, note
   ) values (
-    trim(dati->>'nome'), trim(dati->>'cognome'), nato, trim(dati->>'nato_a'), cf,
+    trim(dati->>'nome'), trim(dati->>'cognome'), nato, coalesce(luogo_da_cf(cf, nato), trim(dati->>'nato_a')), cf,
     trim(dati->>'indirizzo'), trim(dati->>'cap'), trim(dati->>'comune'), mail, trim(dati->>'telefono'),
     case when minore then trim(dati->>'genitore_nome') end,
     case when minore then trim(dati->>'genitore_cognome') end,
