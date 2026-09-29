@@ -45,6 +45,20 @@ Messo sul tablet durante una lezione, il PIN segna anche la presenza
 dell'istruttore: da sola se era previsto, se no da confermare in
 [Presenze istruttori](presenze-istruttori.md).
 
+## Le presenze del mese, per i compensi
+
+In fondo alla scheda, **PRESENZE**: si sceglie il mese (gli ultimi dodici) e
+si vede quante **LEZIONI** ha fatto e quante **ORE** (dall'orario delle
+lezioni, coi decimali: 1,5 è un'ora e mezza), e il dettaglio per corso. Un
+corso si apre per vedere i giorni.
+
+Contano solo le presenze **confermate** — dal PIN sul tablet, da sole o dalla
+[segreteria](presenze-istruttori.md). Se **DA CONFERMARE** è rosso, prima di
+chiudere il mese vanno decise in **PRESENZE ISTRUTTORI**.
+
+**SCARICA** dà il foglio Excel del mese: una riga per lezione, con data,
+orario, ore, corso e sala.
+
 ## Aggiungere una persona
 
 **+ AGGIUNGI UNA PERSONA** → nome, cognome, email, ruolo (**ISTRUTTORE** o

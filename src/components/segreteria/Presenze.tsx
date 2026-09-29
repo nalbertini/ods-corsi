@@ -9,7 +9,7 @@ const MESI = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Lug
 const DI_FILA = 3
 
 /** I dodici mesi fino a questo, dal più recente. */
-function mesi() {
+export function mesi() {
   const oggi = new Date()
   return Array.from({ length: 12 }, (_, i) => {
     const d = new Date(oggi.getFullYear(), oggi.getMonth() - i, 1)
@@ -252,7 +252,7 @@ export function Presenze({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dov
   )
 }
 
-function Numero({ titolo, valore, sotto, allarme }: { titolo: string; valore: number | string; sotto: string; allarme?: boolean }) {
+export function Numero({ titolo, valore, sotto, allarme }: { titolo: string; valore: number | string; sotto: string; allarme?: boolean }) {
   return (
     <div className="sg-numero" data-allarme={!!allarme}>
       <span className="sg-etichetta" style={{ letterSpacing: '0.2em', color: allarme ? 'var(--rosso)' : undefined }}>{titolo}</span>
