@@ -11,13 +11,14 @@ import { Importa } from './Importa'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Richieste } from './Richieste'
+import { PresenzeIstruttori } from './PresenzeIstruttori'
 import { EserciziPalestra } from './TimerPalestra'
 import { Guaio } from './comune'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
-export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'importa' | 'personale' | 'esercizi' | 'regole'
+export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'istruttori' | 'importa' | 'personale' | 'esercizi' | 'regole'
 
 /** Dove portare la segreteria da un'altra sezione: la scheda di qualcuno, una lezione da aprire. */
 export interface Destinazione {
@@ -31,6 +32,7 @@ const VOCI: Array<[Voce, string]> = [
   ['iscritti', 'ISCRITTI'],
   ['richieste', 'RICHIESTE ONLINE'],
   ['presenze', 'PRESENZE'],
+  ['istruttori', 'PRESENZE ISTRUTTORI'],
   ['importa', 'IMPORTA DA EXCEL'],
   ['personale', 'ISTRUTTORI E ACCESSI'],
   ['esercizi', 'ESERCIZI'],
@@ -44,6 +46,7 @@ const GUIDE: Record<Voce, string> = {
   iscritti: 'segreteria/iscritti',
   richieste: 'segreteria/richieste',
   presenze: 'segreteria/presenze',
+  istruttori: 'segreteria/presenze-istruttori',
   importa: 'segreteria/importa',
   personale: 'segreteria/istruttori-e-accessi',
   esercizi: 'segreteria/esercizi',
@@ -92,6 +95,22 @@ export function Segreteria({ nome, prova, onEsci }: { nome: string; prova: boole
     setVoce(v)
   }
 
+  // Quante presenze di istruttori aspettano la segreteria: si vede dal menu,
+  // da qualunque voce. Si rilegge cambiando voce; senza, il menu non lo dice.
+  const [daConfermare, setDaConfermare] = useState(0)
+  const [giroConte, setGiroConte] = useState(0)
+  useEffect(() => {
+    if (!d) return
+    let vivo = true
+    d.presenzeIstruttori(0).then(
+      (l) => vivo && setDaConfermare(l.filter((x) => x.stato === 'da_confermare').length),
+      () => vivo && setDaConfermare(0),
+    )
+    return () => {
+      vivo = false
+    }
+  }, [d, voce, giroConte])
+
   const [guaio, setGuaio] = useState(false)
   const [tentativo, setTentativo] = useState(0)
   useEffect(() => {
@@ -120,6 +139,11 @@ export function Segreteria({ nome, prova, onEsci }: { nome: string; prova: boole
           {VOCI.map(([id, testo]) => (
             <button key={id} type="button" className="num sg-voce" aria-current={voce === id ? 'page' : undefined} onClick={() => vai(id)}>
               {testo}
+              {id === 'istruttori' && daConfermare > 0 && (
+                <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${daConfermare} da confermare`}>
+                  {daConfermare}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -179,6 +203,7 @@ export function Segreteria({ nome, prova, onEsci }: { nome: string; prova: boole
         {d && voce === 'iscritti' && <Iscritti key={dove.persona ?? ''} d={d} personaIniziale={dove.persona} />}
         {d && voce === 'richieste' && <Richieste d={d} onVai={vai} />}
         {d && voce === 'presenze' && <Presenze d={d} onVai={vai} />}
+        {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'importa' && <Importa d={d} onVai={vai} />}
         {d && voce === 'personale' && <Personale d={d} />}
         {d && voce === 'esercizi' && <EserciziPalestra d={d} />}

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { DatiTablet, EsitoTocco, LezioneSala, NomeSala, Origine, RigaAppelloTablet } from './tablet'
+import type { DatiTablet, EsitoTocco, LezioneSala, NomeSala, Origine, PresenzaIstruttore, RigaAppelloTablet, StatoPresenzaIstruttore } from './tablet'
 import { emailDellaSala } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
@@ -98,7 +98,17 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     async entraConPin(pin) {
       const righe = await rpc<Array<{ persona_id: string; nome: string }>>('entra_con_pin', { pin })
       const r = righe?.[0]
-      return r ? { personaId: r.persona_id, nome: r.nome } : null
+      if (!r) return null
+      // La presenza dell'istruttore: se non si segna (la rete, o il database
+      // senza 15-presenze-istruttori.sql) l'area istruttore si apre lo stesso.
+      let presenze: PresenzaIstruttore[] = []
+      try {
+        const segnate = await rpc<Array<{ sessione_id: string; corso: string; stato: StatoPresenzaIstruttore }>>('presenza_con_pin', { pin })
+        presenze = (segnate ?? []).map((x) => ({ sessioneId: x.sessione_id, corso: x.corso, stato: x.stato }))
+      } catch {
+        // Resta da segnare a mano in segreteria.
+      }
+      return { personaId: r.persona_id, nome: r.nome, presenze }
     },
 
     async appello(pin, sessioneId) {

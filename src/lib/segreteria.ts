@@ -2,6 +2,7 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
+import type { StatoPresenzaIstruttore } from './tablet'
 
 export type { ListaMusica } from './musica'
 
@@ -178,6 +179,31 @@ export interface AllenamentoSeg {
   chi: string
 }
 
+/**
+ * Un istruttore entrato col PIN sul tablet di una sala durante una lezione:
+ * confermata da sola se era previsto, se no da confermare qui.
+ */
+export interface PresenzaIstruttoreSeg {
+  id: string
+  sessioneId: string
+  corso: string
+  colore?: string
+  inizio: string
+  fine: string
+  personaId: string
+  nome: string
+  /** Chi doveva farla: il sostituto, o chi insegna il corso. */
+  previsti: string
+  /** La sala del tablet su cui ha messo il PIN. */
+  sala?: string
+  stato: StatoPresenzaIstruttore
+  /** Era previsto quando è entrato: la conferma è arrivata da sola. */
+  prevista: boolean
+  entratoIl: string
+  gestitaIl?: string
+  gestitaDa?: string
+}
+
 export interface Impostazioni {
   mesiPresenze: number
   giorniCalendario: number
@@ -268,6 +294,13 @@ export interface DatiSegreteria {
   /** Il catalogo degli esercizi dei tablet; `null` se non se n'è mai fatto uno. */
   eserciziPalestra(): Promise<Esercizio[] | null>
   salvaEserciziPalestra(l: Esercizio[]): Promise<void>
+  /**
+   * Le presenze degli istruttori dal PIN del tablet: tutte quelle da
+   * confermare, e le altre degli ultimi `giorni`, dalla più recente.
+   */
+  presenzeIstruttori(giorni: number): Promise<PresenzaIstruttoreSeg[]>
+  /** Conferma, o rifiuta, una presenza di un istruttore. */
+  gestisciPresenzaIstruttore(id: string, conferma: boolean): Promise<void>
   /** Gli ultimi timer fatti partire, dal più recente. */
   allenamenti(quanti: number): Promise<AllenamentoSeg[]>
   impostazioni(): Promise<Impostazioni>

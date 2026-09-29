@@ -1,4 +1,4 @@
-import type { CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StoricoSeg } from './segreteria'
+import type { CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StoricoSeg } from './segreteria'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva } from './archivioProva'
 import { comeE, iscrittiIl, lezioniFra, nomeIstruttore, salaDelGiorno, trovaLezione, type LezioneTrovata } from './datiProva'
@@ -597,6 +597,47 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     // In prova lo storico è quello del timer su questo dispositivo: il tablet
     // di prova non ha un server a cui mandarlo.
+    async presenzeIstruttori(giorni) {
+      const da = new Date(Date.now() - giorni * GIORNO).toISOString()
+      return (a().presenzeIstruttori ?? [])
+        .filter((x) => x.stato === 'da_confermare' || x.entratoIl >= da)
+        .flatMap((x): PresenzaIstruttoreSeg[] => {
+          const l = trovaLezione(x.sessioneId)
+          if (!l) return []
+          const chi = a().persone.find((p) => p.id === x.personaId)
+          return [
+            {
+              id: x.id,
+              sessioneId: x.sessioneId,
+              corso: l.corso.nome,
+              colore: l.corso.colore,
+              inizio: l.inizio.toISOString(),
+              fine: l.fine.toISOString(),
+              personaId: x.personaId,
+              nome: chi ? nomeDi(chi) : '—',
+              previsti: comeE(l).istruttori.map(nomeIstruttore).join(', '),
+              sala: x.sala,
+              stato: x.stato,
+              prevista: x.prevista,
+              entratoIl: x.entratoIl,
+              gestitaIl: x.gestitaIl,
+              gestitaDa: x.gestitaDa,
+            },
+          ]
+        })
+        .sort((x, y) => y.entratoIl.localeCompare(x.entratoIl))
+    },
+
+    async gestisciPresenzaIstruttore(id, conferma) {
+      const tutte = a().presenzeIstruttori ?? []
+      if (!tutte.some((x) => x.id === id)) throw new Error('presenza inesistente')
+      // In prova chi usa la segreteria è la segreteria di prova.
+      a().presenzeIstruttori = tutte.map((x) =>
+        x.id === id ? { ...x, stato: conferma ? 'confermata' : 'rifiutata', gestitaDa: 'Segreteria di prova', gestitaIl: new Date().toISOString() } : x,
+      )
+      salva()
+    },
+
     async allenamenti(quanti) {
       return loadHistory()
         .slice()

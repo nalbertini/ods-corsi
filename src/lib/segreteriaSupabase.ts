@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { AllenamentoSeg, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
+import type { AllenamentoSeg, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
+import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
@@ -48,6 +49,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
   [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
+  [/presenze_istruttori/, 'Le presenze degli istruttori non sono ancora attive sul database: va lanciato 15-presenze-istruttori.sql'],
 ]
 
 /** Un errore del database detto in modo che la segreteria lo capisca. */
@@ -653,6 +655,70 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async salvaEserciziPalestra(l) {
       const lista = eserciziDellaPalestra(l) ?? []
       ok(await db.from('impostazioni').update({ esercizi: lista.map(({ id, nome, categoria }) => ({ id, nome, categoria })) }).eq('id', true))
+    },
+
+    async presenzeIstruttori(giorni) {
+      const da = new Date(Date.now() - giorni * 24 * 60 * 60_000).toISOString()
+      const righe = ok(
+        await db
+          .from('presenze_istruttori')
+          .select(
+            'id, sessione_id, persona_id, stato, prevista, entrato_il, gestita_il, ' +
+              'sessioni ( corso_id, inizio, fine, istruttore_id, corsi ( nome, colore, istruttore_id ), persone ( nome, cognome ) ), ' +
+              'persona:persone!persona_id ( nome, cognome ), gestore:persone!gestita_da ( nome, cognome ), postazioni ( sale ( nome ) )',
+          )
+          .or(`stato.eq.da_confermare,entrato_il.gte.${da}`)
+          .order('entrato_il', { ascending: false }),
+      ) as unknown as Array<{
+        id: string
+        sessione_id: string
+        persona_id: string
+        stato: StatoPresenzaIstruttore
+        prevista: boolean
+        entrato_il: string
+        gestita_il: string | null
+        sessioni: {
+          corso_id: string
+          inizio: string
+          fine: string
+          istruttore_id: string | null
+          corsi: { nome: string; colore: string | null; istruttore_id: string | null } | null
+          persone: { nome: string; cognome: string } | null
+        } | null
+        persona: { nome: string; cognome: string } | null
+        gestore: { nome: string; cognome: string } | null
+        postazioni: { sale: { nome: string } | null } | null
+      }>
+      const chi = await insegnanti([...new Set(righe.flatMap((r) => (r.sessioni ? [r.sessioni.corso_id] : [])))])
+      return righe.flatMap((r): PresenzaIstruttoreSeg[] => {
+        const s = r.sessioni
+        if (!s) return []
+        // Chi doveva farla, come nella settimana: il sostituto, o chi insegna il corso.
+        const sostituto = s.istruttore_id && s.istruttore_id !== s.corsi?.istruttore_id
+        return [
+          {
+            id: r.id,
+            sessioneId: r.sessione_id,
+            corso: s.corsi?.nome ?? 'Corso',
+            colore: s.corsi?.colore ?? undefined,
+            inizio: s.inizio,
+            fine: s.fine,
+            personaId: r.persona_id,
+            nome: nome(r.persona) || '—',
+            previsti: sostituto ? nome(s.persone) : (chi.get(s.corso_id) ?? []).map((x) => x.nome).join(', ') || nome(s.persone),
+            sala: r.postazioni?.sale?.nome,
+            stato: r.stato,
+            prevista: r.prevista,
+            entratoIl: r.entrato_il,
+            gestitaIl: r.gestita_il ?? undefined,
+            gestitaDa: r.gestore ? nome(r.gestore) : undefined,
+          },
+        ]
+      })
+    },
+
+    async gestisciPresenzaIstruttore(id, conferma) {
+      ok(await db.rpc('gestisci_presenza_istruttore', { presenza: id, conferma }))
     },
 
     async allenamenti(quanti) {

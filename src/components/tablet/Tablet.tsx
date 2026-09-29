@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import type { DatiTablet, LezioneSala, Postazione } from '../../lib/tablet'
+import type { DatiTablet, LezioneSala, Postazione, PresenzaIstruttore } from '../../lib/tablet'
 import { datiTablet, fase, lasciaTablet, REGOLE } from '../../lib/tablet'
 import type { Settings } from '../../../timer/src/types'
 import type { Incorporato, StatoTimer, TimerPronto } from '../../../timer/src/lib/incorporato'
@@ -128,7 +128,7 @@ type Vista =
   | { s: 'presenza'; lezione: LezioneSala; da: 'home' | 'recupero'; corsoId?: string }
   | { s: 'recupero'; corsoId: string | null }
   | { s: 'pin' }
-  | { s: 'istruttore'; pin: string; nome: string }
+  | { s: 'istruttore'; pin: string; nome: string; presenze: PresenzaIstruttore[] }
 
 /** Il timer pesa quanto il resto dell'app: si scarica solo su un tablet di sala. */
 const TimerSala = lazy(() => import('./TimerSala').then((m) => ({ default: m.TimerSala })))
@@ -402,12 +402,13 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
                 />
               )}
               {vista.s === 'pin' && (
-                <TabletPin d={d} onEntrato={(pin, chi) => setVista({ s: 'istruttore', pin, nome: chi.nome })} onAnnulla={aHome} />
+                <TabletPin d={d} onEntrato={(pin, chi) => setVista({ s: 'istruttore', pin, nome: chi.nome, presenze: chi.presenze })} onAnnulla={aHome} />
               )}
               {vista.s === 'istruttore' && (
                 <TabletIstruttore
                   d={d}
                   pin={vista.pin}
+                  presenze={vista.presenze}
                   adesso={adesso}
                   lezioni={lezioni ?? []}
                   onCambiato={() => void carica()}
