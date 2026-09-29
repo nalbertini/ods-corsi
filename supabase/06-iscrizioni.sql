@@ -170,8 +170,9 @@ alter table luoghi_nascita enable row level security;
 revoke all on luoghi_nascita from anon, authenticated;
 
 -- «TORINO (TO)», o «ROMANIA»: il nome che il luogo aveva il giorno della
--- nascita, quello scritto nel modulo (l'anno del codice ha due cifre). Null se non è nell'elenco (uno stato che non c'è più, un comune
--- nuovo, o `17-luoghi.sql` non lanciato): allora vale quel che si è scritto.
+-- nascita, quello scritto nel modulo (l'anno del codice ha due cifre). Null
+-- se non è nell'elenco (uno stato che non c'è più, un comune nuovo, o
+-- `17-luoghi.sql` non lanciato): allora vale quel che si è scritto.
 -- Le stesse regole di `luogoDaCf` in `src/lib/codiceFiscale.ts`.
 create or replace function luogo_da_cf(cf text, nato date)
   returns text language sql stable security definer set search_path = public as $$
