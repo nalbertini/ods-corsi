@@ -9,17 +9,19 @@ dentro ogni lezione, l'appello.
 
 ## Entrare
 
-1. Aprite <https://nalbertini.github.io/ods-corsi/istruttori/>.
+1. Aprite <https://nalbertini.github.io/ods-corsi/> (va bene anche
+   `…/istruttori/`).
 2. Scrivete **email** e **password** dell'account che vi ha dato la palestra e
-   premete **ENTRA**.
+   premete **ENTRA**: l'app vi porta da sola nel calendario.
 3. Restate collegati finché non premete **ESCI** (in alto, accanto al vostro
    nome). Non serve rientrare ogni volta.
 
-L'accesso vale solo qui: se sullo stesso computer qualcuno è entrato in
-segreteria, `istruttori/` chiede comunque il vostro. Da qui non si va nelle
-altre parti dell'app (segreteria, tablet di sala, iscrizioni): ognuna ha il suo
-indirizzo. Vale anche al contrario: chi è di segreteria e vuole fare l'appello da
-qui entra con la sua email anche in questa porta.
+La porta è la stessa per tutti, e l'account decide dove si va: con l'account
+della segreteria si finisce in segreteria, che ha anche l'appello, anche se si
+è entrati da `istruttori/`. L'accesso vale solo nella propria parte: se sullo
+stesso computer qualcuno è entrato in segreteria, `istruttori/` chiede
+comunque il vostro. Da qui non si va nelle altre parti dell'app (segreteria,
+tablet di sala, iscrizioni).
 
 La prima volta che entrate, l'account si lega da solo alla vostra scheda di
 istruttore, purché l'email sia la stessa che ha in elenco la segreteria. Se

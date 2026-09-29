@@ -168,7 +168,10 @@ Lo fa la segreteria:
 1. Sul tablet aprire <https://nalbertini.github.io/ods-corsi/sala/>. Da quel
    momento il dispositivo si riapre sempre come tablet di sala.
 2. Scrivere il **nome utente della sala** (es. `lotta`) e la password, e
-   premere **COLLEGA IL TABLET**.
+   premere **COLLEGA IL TABLET**. È lo stesso accesso di tutta l'app: si può
+   fare anche dalla pagina iniziale, e l'account della sala porta qui. Con
+   l'account di una persona, invece, si va nella sua parte e il dispositivo
+   non resta un tablet.
 3. Il tablet resta collegato e lo schermo resta acceso.
 
 Se il dispositivo non doveva diventare un tablet di sala, **Non è un tablet di

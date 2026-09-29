@@ -16,13 +16,23 @@ iniziale e in quella degli istruttori, o **GUIDA** nel menu della segreteria,
 che apre la guida della voce in cui siete. L'indirizzo è
 <https://nalbertini.github.io/ods-corsi/#guida>.
 
-## Le quattro porte
+## Un accesso solo
+
+Si entra da <https://nalbertini.github.io/ods-corsi/>, con l'email e la
+password che vi ha dato la palestra, e l'app vi porta da sola nella vostra
+parte: la segreteria alla reception, voi istruttori al calendario e
+all'appello, il tablet di una sala (col suo nome utente, es. `lotta`) nella
+sua sala. La porta è la stessa anche se aprite direttamente uno degli
+indirizzi qui sotto: se non è il vostro, dopo l'accesso finite nel vostro.
+Chi è già entrato su quel dispositivo, riaprendo la pagina, ci torna dritto.
+
+## Le quattro parti
 
 L'app ha quattro indirizzi. Sono la stessa app, ma ognuno apre una parte
-diversa e chiede un accesso diverso. Si scelgono aggiungendo un pezzo in fondo
-all'indirizzo, oppure dalla pagina iniziale, che le elenca tutte e quattro.
+diversa. Le iscrizioni sono per chi non ha un account, e dalla pagina
+d'accesso ci si arriva senza entrare.
 
-| Porta | Per chi | Cosa c'è | Guida |
+| Parte | Per chi | Cosa c'è | Guida |
 |---|---|---|---|
 | `istruttori/` | Voi istruttori (e la segreteria) | Il calendario e l'appello, dal telefono | [Istruttori](istruttori.md) |
 | `sala/` | Il tablet appeso al muro della sala | Gli allievi si segnano da soli; voi col PIN fate l'appello | [Tablet di sala](sala.md) |
@@ -34,8 +44,8 @@ all'indirizzo, oppure dalla pagina iniziale, che le elenca tutte e quattro.
 Da istruttori avete **due modi** per segnare le presenze, e vanno bene tutti e
 due:
 
-1. **Dal telefono**, all'indirizzo `istruttori/`: entrate con la vostra email e
-   la password che vi ha dato la palestra, toccate la lezione e fate l'appello.
+1. **Dal telefono**: entrate con la vostra email e la password che vi ha dato
+   la palestra, l'app vi porta nel calendario, toccate la lezione e fate l'appello.
 2. **Dal tablet della sala**: gli allievi toccano il loro nome quando
    arrivano; voi, con il vostro **PIN di quattro cifre**, aprite l'**AREA
    ISTRUTTORE** e controllate o correggete l'appello.

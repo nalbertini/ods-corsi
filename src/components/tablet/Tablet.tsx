@@ -17,6 +17,7 @@ import { trattieniAggiornamento } from '../../lib/aggiornamento'
 import { Cronometro, Persone } from '../Icons'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Logo } from '../Logo'
+import { accedi } from '../../lib/accesso'
 import { TastoTema } from '../TastoTema'
 import { giornoDopo, messaggio, useAdesso, useInattivo, useSchermoAcceso } from './comune'
 import { TabletHome } from './TabletHome'
@@ -466,13 +467,14 @@ function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | n
   const [errore, setErrore] = useState<string | null>(guaio)
   const [aspetta, setAspetta] = useState(false)
 
-  const accedi = async (e: FormEvent) => {
+  const invia = async (e: FormEvent) => {
     e.preventDefault()
-    if (!d.entra) return
     setAspetta(true)
     setErrore(null)
     try {
-      await d.entra(utente, password)
+      // La porta è quella di tutte le aree: l'account di una sala resta qui,
+      // quello di una persona va nella sua area (vedi `accedi`).
+      await accedi(utente, password)
       onPronto()
     } catch (x) {
       setErrore(messaggio(x, 'Accesso non riuscito'))
@@ -507,9 +509,10 @@ function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | n
             </div>
           </>
         ) : (
-          <form className="stack" style={{ gap: 12 }} onSubmit={(e) => void accedi(e)}>
+          <form className="stack" style={{ gap: 12 }} onSubmit={(e) => void invia(e)}>
             <span className="tb-sotto" style={{ fontSize: 18, lineHeight: 1.5 }}>
               Si fa una volta sola, con l'account della sala che ha preparato la segreteria. Poi il tablet resta collegato.
+              È la stessa porta di tutta l'app: con l'account di un istruttore o della segreteria si va nella propria area.
             </span>
             <input
               className="tb-campo"

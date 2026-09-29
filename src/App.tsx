@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
@@ -8,8 +8,8 @@ import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
-import { INDIRIZZI, TIMER, useArea } from './lib/aree'
-import { esci, passaA, serveAccesso, type Personale } from './lib/accesso'
+import { INDIRIZZI, INDIRIZZO_AREE, TIMER, useArea, vaiA } from './lib/aree'
+import { areaCollegata, esci, passaA, serveAccesso, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
@@ -29,8 +29,8 @@ import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
  * chi vuole iscriversi; gli istruttori, col calendario e l'appello; e la sala,
  * il tablet appeso al muro.
  *
- * Col database vero ognuno entra dal suo indirizzo e trova solo il suo posto,
- * senza schede. In prova le porte sono aperte a tutti e le schede ci sono,
+ * Col database vero la porta è una sola (vedi `accedi`): ognuno finisce nel
+ * suo indirizzo e trova solo il suo posto, senza schede. In prova le porte sono aperte a tutti e le schede ci sono,
  * perché la prova serve a far vedere l'app intera.
  */
 export default function App() {
@@ -80,8 +80,64 @@ function Testata({ luogo, guida, children }: { luogo: string; guida?: string; ch
   )
 }
 
-/** Senza niente nell'indirizzo: dove si vuole andare. */
+/**
+ * Senza niente nell'indirizzo. Col database è la porta unica: si entra, e
+ * l'account porta nella sua area (vedi `accedi`); sotto, quel che non chiede
+ * un accesso. Chi è già collegato su questo dispositivo va dritto nella sua
+ * area, tranne con `#aree`, che è il rimando «tutte le aree» delle porte.
+ *
+ * In prova le porte sono aperte, e qui ci sono tutte e quattro le aree.
+ */
 function Scelta() {
+  if (serveAccesso) return <PortaUnica />
+  return <TutteLeAree />
+}
+
+function PortaUnica() {
+  const [collegata] = useState(() => (window.location.hash === INDIRIZZO_AREE ? null : areaCollegata()))
+  useEffect(() => {
+    if (collegata) vaiA(collegata)
+  }, [collegata])
+  return (
+    <div className="app">
+      <Testata luogo="ACCESSO" guida={INDIRIZZO_GUIDA} />
+      <main className="scroll">
+        {collegata ? (
+          <UnAttimo />
+        ) : (
+          <>
+            <Accesso />
+            <div className="pad stack scelta" style={{ gap: 10, paddingBottom: 16 }}>
+              <a className="card stack scelta-area" href={INDIRIZZI.iscrizioni}>
+                <span className="scelta-titolo">ISCRIZIONI</span>
+                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+                  Per chi vuole iscriversi, senza account: come ci si iscrive, i costi e il modulo.
+                </span>
+              </a>
+              <a className="card stack scelta-area" href={INDIRIZZO_GUIDA}>
+                <span className="scelta-titolo">GUIDA</span>
+                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+                  Come funziona l’app: la guida generale, e una per ogni parte.
+                </span>
+              </a>
+              <a className="card stack scelta-area" href={TIMER}>
+                <span className="scelta-titolo">TIMER</span>
+                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+                  L’interval timer per la lezione. È un’app a sé, nella cartella timer/.
+                </span>
+              </a>
+              <span className="num versione" title={VERSIONE_ESTESA}>
+                {VERSIONE}
+              </span>
+            </div>
+          </>
+        )}
+      </main>
+    </div>
+  )
+}
+
+function TutteLeAree() {
   const voci: [keyof typeof INDIRIZZI, string, string][] = [
     ['istruttori', 'ISTRUTTORI', 'Il calendario e l’appello.'],
     ['segreteria', 'SEGRETERIA', 'Corsi, iscritti, presenze e richieste, dal computer della reception.'],
@@ -132,9 +188,9 @@ function Iscrizioni() {
 }
 
 /**
- * Il calendario e l'appello, dietro la porta. Entra anche chi è di
- * segreteria, se apre questo indirizzo: anche lei fa l'appello. La porta è
- * sua, con la sua sessione: l'accesso fatto in segreteria qui non vale, e
+ * Il calendario e l'appello, dietro la porta. La porta è quella unica: chi è
+ * di segreteria ed entra da qui finisce in segreteria, che ha anche l'appello.
+ * La sessione è sua: l'accesso fatto in segreteria qui non vale, e
  * chi apre `istruttori/` sul computer della reception trova la porta, non
  * l'account della segreteria.
  *
@@ -315,7 +371,7 @@ function AreaSegreteria() {
       <Testata luogo="SEGRETERIA" />
       <main className="scroll">
         {chi === undefined && <UnAttimo />}
-        {chi === null && <Accesso per="segreteria" onEntrato={setChi} />}
+        {chi === null && <Accesso altreAree onEntrato={setChi} />}
         {chi && (
           <div className="accesso">
             <div className="rule">

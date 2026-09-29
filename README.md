@@ -28,7 +28,8 @@ compilazione mette in ogni cartella una copia della pagina con
 `<base href="../">` (vedi `pagineDelleAree` in `vite.config.ts`): l'app resta
 una sola, e i file si prendono dalla radice come prima.
 
-Senza niente in fondo all'indirizzo si apre una pagina con le quattro, tranne
+Senza niente in fondo all'indirizzo si apre la porta unica dell'accesso, che
+porta ognuno nella sua area (in prova, una pagina con le quattro), tranne
 su un tablet di sala, che va sempre al tablet. In fondo alla pagina c'è
 anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/timer/`).
 
@@ -82,9 +83,14 @@ anche il **timer**, che si apre in `timer/` (`nalbertini.github.io/ods-corsi/tim
   acceso da quando la palestra ha approvato l'informativa privacy
   (`public/informativa.html`, 27 settembre 2026), che si legge in fondo alla
   pagina delle iscrizioni.
-- **L'accesso** col database: ogni area ha il suo indirizzo e la sua porta;
-  l'istruttore entra nel calendario e nell'appello, la segreteria nella
-  segreteria, e nessuno vede schede che non gli servono. Le aree sono
+- **L'accesso** col database è uno solo: la radice è la porta unica, e la
+  stessa porta sta in `istruttori/`, `segreteria/` e `sala/`. Si entra con
+  l'email, o col nome utente per il tablet di una sala, e l'account dice dove
+  andare: la segreteria in segreteria, l'istruttore nel calendario e
+  nell'appello, il tablet nella sua sala (`accedi` in `src/lib/accesso.ts`),
+  qualunque porta si sia aperta; nessuno vede schede che non gli servono. Chi
+  apre la radice ed è già collegato su quel dispositivo va dritto nella sua
+  area. Le aree sono
   separate anche sullo stesso browser: istruttori, segreteria e sala hanno
   ognuna la sua sessione (`src/lib/sessioni.ts`), quindi l'accesso fatto in
   segreteria non vale in `istruttori/`, e da lì non ci sono rimandi alle
@@ -224,7 +230,7 @@ Senza configurazione parte in **modalità prova**, con l'orario vero della stagi
 sul dispositivo e basta.
 
 In prova le porte sono aperte a tutti, e fra le aree si passa con le schede in
-cima, per far vedere l'app intera; col database vero ognuno entra dal suo
+cima, per far vedere l'app intera; col database vero si entra dalla porta unica e si finisce nel proprio
 indirizzo. La **segreteria** (`http://localhost:5173/segreteria/`) in prova è
 aperta a tutti: i corsi, i giorni e gli
 iscritti che si cambiano lì restano su questo dispositivo, e li vedono anche il

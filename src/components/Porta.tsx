@@ -1,7 +1,7 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
-import { accountDalLink, chiSei, entra, esci, mandaLinkPassword, passaA, quandoCambia, scegliPassword, serveAccesso, type Personale } from '../lib/accesso'
+import { accedi, accountDalLink, chiSei, esci, mandaLinkPassword, passaA, quandoCambia, scegliPassword, serveAccesso, type Personale } from '../lib/accesso'
 import type { Arrivo } from '../lib/invito'
-import { INDIRIZZO_AREE, vaiA } from '../lib/aree'
+import { indirizzo, INDIRIZZO_AREE } from '../lib/aree'
 import { scegliProva } from '../lib/dati'
 
 /**
@@ -60,7 +60,7 @@ export function Porta({
   const figli = (c: Personale | null) => (typeof children === 'function' ? children(c) : children)
   if (!serveAccesso) return <>{dentro ? dentro(null) : figli(null)}</>
   if (chi === undefined) return <>{cornice(<UnAttimo />)}</>
-  if (!chi) return <>{cornice(<Accesso per="istruttori" onEntrato={setChi} />)}</>
+  if (!chi) return <>{cornice(<Accesso onEntrato={setChi} />)}</>
 
   const onEsci = () => void esci().then(() => setChi(null))
   if (dentro) return <>{dentro(chi, onEsci)}</>
@@ -97,12 +97,14 @@ export function UnAttimo() {
   return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
 }
 
-const SPIEGA = {
-  istruttori: 'Il calendario e l’appello sono per istruttori e segreteria.',
-  segreteria: 'La segreteria è per chi lavora alla reception.',
-}
-
-export function Accesso({ per, onEntrato }: { per: keyof typeof SPIEGA; onEntrato: (p: Personale) => void }) {
+/**
+ * La porta, una sola per tutti: la stessa alla radice, in `istruttori/` e in
+ * `segreteria/`. Chi entra va nella sua area, qualunque porta abbia aperto
+ * (vedi `accedi`): se è questa, `onEntrato` riceve la persona; se no la pagina
+ * cambia. `altreAree` mette il rimando alla pagina iniziale, che dalla porta
+ * degli istruttori non c'è.
+ */
+export function Accesso({ altreAree, onEntrato }: { altreAree?: boolean; onEntrato?: (p: Personale) => void }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errore, setErrore] = useState<string | null>(null)
@@ -124,13 +126,14 @@ export function Accesso({ per, onEntrato }: { per: keyof typeof SPIEGA; onEntrat
     }
   }
 
-  const accedi = async (e: FormEvent) => {
+  const invia = async (e: FormEvent) => {
     e.preventDefault()
     setAspetta(true)
     setErrore(null)
     setDetto(null)
     try {
-      onEntrato(await entra(email.trim(), password))
+      const p = await accedi(email.trim(), password)
+      if (p) onEntrato?.(p)
     } catch (x) {
       setErrore(x instanceof Error ? x.message : 'Accesso non riuscito')
     } finally {
@@ -143,17 +146,23 @@ export function Accesso({ per, onEntrato }: { per: keyof typeof SPIEGA; onEntrat
       <div className="rule">
         <span className="rule-label">ACCESSO</span>
         <div className="rule-line" />
-        {per !== 'istruttori' && <AltreAree />}
+        {altreAree && <AltreAree />}
       </div>
-      <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void accedi(e)}>
+      <form className="pad stack" style={{ gap: 12, paddingBottom: 16 }} onSubmit={(e) => void invia(e)}>
         <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-          {SPIEGA[per]} Entra con l’account che ti ha dato la palestra: resti collegato finché non premi «Esci».
+          Entra con l’account che ti ha dato la palestra, e l’app ti porta da sola nella tua area: la segreteria alla
+          reception, gli istruttori al calendario e all’appello, il tablet di una sala nella sua sala. Resti collegato
+          finché non premi «Esci».
         </span>
         <input
           className="campo"
-          type="email"
+          type="text"
+          inputMode="email"
           autoComplete="username"
-          placeholder="email"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="email (o nome utente della sala)"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -252,7 +261,7 @@ export function ScegliPassword({ arrivo }: { arrivo: Arrivo }) {
             {arrivo.tipo === 'scaduto' ? arrivo.testo : 'Il link non vale più.'} Se era un invito, chiedi alla segreteria di
             mandarne un altro; se avevi già una password, dalla porta c’è «password dimenticata».
           </span>
-          <button type="button" className="btn btn-go" onClick={() => vaiA('istruttori')}>
+          <button type="button" className="btn btn-go" onClick={() => window.location.assign(indirizzo('./'))}>
             VAI ALLA PORTA
           </button>
         </div>
