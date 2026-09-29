@@ -107,7 +107,7 @@ function PortaUnica() {
         ) : (
           <>
             <Accesso />
-            <div className="pad stack scelta" style={{ gap: 10, paddingBottom: 16 }}>
+            <div className="pad stack porta-altro" style={{ gap: 10, paddingBottom: 16 }}>
               <a className="card stack scelta-area" href={INDIRIZZI.iscrizioni}>
                 <span className="scelta-titolo">ISCRIZIONI</span>
                 <span className="passo-dettaglio" style={{ fontSize: 15 }}>
