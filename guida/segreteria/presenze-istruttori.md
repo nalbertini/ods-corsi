@@ -43,7 +43,8 @@ gli istruttori del corso ([Corsi](corsi.md)) o come sostituto
   confermare quella in corso.
 - Una presenza rifiutata resta rifiutata anche se l'istruttore rimette il PIN.
 - Chi ha il ruolo **Segreteria** e mette il PIN in una lezione non sua non si
-  segna: apre l'appello, non fa lezione.
+  segna: apre l'appello, non fa lezione. Chi ha tutti e due i ruoli
+  (segreteria e istruttore) invece si segna come un istruttore.
 - Col database, questa voce c'è dopo aver lanciato
   `supabase/15-presenze-istruttori.sql`. Prima dice che manca, e il tablet
   apre l'area istruttore come sempre, senza segnare niente.

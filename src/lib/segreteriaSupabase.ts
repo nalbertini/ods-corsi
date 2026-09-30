@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { AllenamentoSeg, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
+import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
@@ -90,6 +91,19 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/presenze_istruttori/, 'Le presenze degli istruttori non sono ancora attive sul database: va lanciato 15-presenze-istruttori.sql'],
 ]
 
+const MANCA_DOPPIO = 'Il ruolo doppio, segreteria e istruttore, non è ancora attivo sul database: va rilanciato 01-schema.sql'
+
+/**
+ * Il ruolo come va scritto in `persone`. `anche_istruttore` solo quando c'è in
+ * `p`: chi salva lo mette solo se il ruolo doppio c'era o ci sarà (vedi
+ * `Personale.tsx`), così un database che non ha ancora la colonna salva lo
+ * stesso istruttori e segreteria.
+ */
+function ruoloDaScrivere(p: RuoloPersonale): { ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean } {
+  if (p.ancheIstruttore === undefined) return { ruolo: p.ruolo }
+  return { ruolo: p.ruolo, anche_istruttore: p.ruolo === 'staff' && p.ancheIstruttore }
+}
+
 /** Un errore del database detto in modo che la segreteria lo capisca. */
 function guaio(e: { message?: string; code?: string } | null): Error {
   // La tabella non c'è sul database: il file che la crea non è stato lanciato.
@@ -104,6 +118,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // Una colonna che non c'è: voce ed esercizi dei tablet arrivano con 13-voce-esercizi.sql.
   if (e?.code === '42703' && /voce|esercizi/.test(e.message ?? ''))
     return new Error('La voce e gli esercizi dei tablet non sono ancora attivi sul database: va lanciato 13-voce-esercizi.sql')
+  // La colonna del ruolo doppio, che arriva con 01-schema.sql: 42703 leggendo, PGRST204 scrivendo.
+  if ((e?.code === '42703' || e?.code === 'PGRST204') && /anche_istruttore/.test(e.message ?? '')) return new Error(MANCA_DOPPIO)
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
   return new Error(e?.message || 'Il server non risponde')
@@ -192,10 +208,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async istruttori() {
-      const righe = ok(await db.from('persone').select('id, nome, cognome').eq('ruolo', 'istruttore').eq('attiva', true).order('nome')) as Array<{
-        id: string; nome: string; cognome: string
+      // Anche la segreteria che insegna. Con `*` e il filtro qui, non nella
+      // richiesta: su un database senza la colonna del ruolo doppio
+      // (`01-schema.sql` non rilanciato) l'elenco degli istruttori c'è lo stesso.
+      const righe = ok(await db.from('persone').select('*').in('ruolo', ['istruttore', 'staff']).eq('attiva', true).order('nome')) as Array<{
+        id: string; nome: string; cognome: string; ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean
       }>
-      return righe.map((r) => ({ id: r.id, nome: nome(r) }))
+      return righe.filter((r) => insegna({ ruolo: r.ruolo, ancheIstruttore: r.anche_istruttore })).map((r) => ({ id: r.id, nome: nome(r) }))
     },
 
     async settimana(da, a) {
@@ -639,11 +658,14 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async personale() {
       const [righe, legami, pin] = await Promise.all([
-        db.from('persone').select('id, nome, cognome, email, ruolo, attiva, utente_id').in('ruolo', ['istruttore', 'staff']).order('nome'),
+        // `*` e non l'elenco delle colonne: `anche_istruttore` può non esserci ancora (vedi `istruttori`).
+        db.from('persone').select('*').in('ruolo', ['istruttore', 'staff']).order('nome'),
         db.from('corsi_istruttori').select('persona_id, corsi ( nome, attivo )'),
         db.rpc('pin_impostati'),
       ])
-      const persone = ok(righe) as Array<{ id: string; nome: string; cognome: string; email: string | null; ruolo: 'istruttore' | 'staff'; attiva: boolean; utente_id: string | null }>
+      const persone = ok(righe) as Array<{
+        id: string; nome: string; cognome: string; email: string | null; ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean; attiva: boolean; utente_id: string | null
+      }>
       const corsi = ok(legami) as unknown as Array<{ persona_id: string; corsi: { nome: string; attivo: boolean } | null }>
       const conPin = new Set((ok(pin) as Array<{ persona_id: string }>).map((r) => r.persona_id))
       return persone.map(
@@ -653,6 +675,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           cognome: p.cognome,
           email: p.email ?? undefined,
           ruolo: p.ruolo,
+          ancheIstruttore: p.ruolo === 'staff' && !!p.anche_istruttore,
           attiva: p.attiva,
           collegato: !!p.utente_id,
           haPin: conPin.has(p.id),
@@ -664,7 +687,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async salvaPersonale(p) {
       if (!p.nome.trim()) throw new Error('Serve almeno il nome')
       const email = p.email?.trim() || null
-      const riga = { nome: p.nome.trim(), cognome: p.cognome.trim() || '—', email, ruolo: p.ruolo }
+      const ruolo = ruoloDaScrivere(p)
+      const riga = { nome: p.nome.trim(), cognome: p.cognome.trim() || '—', email, ...ruolo }
       if (p.id) {
         ok(await db.from('persone').update(riga).eq('id', p.id))
         return p.id
@@ -674,7 +698,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         const c = ok(await db.from('persone').select('id, ruolo').eq('email', email).maybeSingle()) as { id: string; ruolo: string } | null
         if (c && c.ruolo !== 'iscritto') throw new Error('Questa email è già di un istruttore o della segreteria')
         if (c) {
-          ok(await db.from('persone').update({ ruolo: p.ruolo, attiva: true }).eq('id', c.id))
+          ok(await db.from('persone').update({ ...ruolo, attiva: true }).eq('id', c.id))
           return c.id
         }
       }
@@ -683,7 +707,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         await db.from('persone').select('id').in('ruolo', ['istruttore', 'staff']).is('email', null).ilike('nome', riga.nome).ilike('cognome', riga.cognome).limit(1),
       ) as Array<{ id: string }>
       if (senza[0]) {
-        ok(await db.from('persone').update({ email, ruolo: p.ruolo, attiva: true }).eq('id', senza[0].id))
+        ok(await db.from('persone').update({ email, ...ruolo, attiva: true }).eq('id', senza[0].id))
         return senza[0].id
       }
       return (ok(await db.from('persone').insert(riga).select('id').single()) as { id: string }).id

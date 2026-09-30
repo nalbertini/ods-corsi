@@ -24,6 +24,11 @@ segreteria, e per entrare col vostro account bisogna prima uscire. Uscendo si
 torna alla pagina di accesso. Da qui non si va nelle altre parti dell'app
 (segreteria, tablet di sala, iscrizioni).
 
+Chi è della segreteria e insegna anche sceglie, dopo l'accesso, se andare in
+segreteria o qui; qui vede le sue lezioni, come un istruttore, e torna in
+segreteria da **SEGRETERIA →** nel menu (sul telefono, **SEGRETERIA** accanto
+al nome).
+
 La prima volta che entrate, l'account si lega da solo alla vostra scheda di
 istruttore, purché l'email sia la stessa che ha in elenco la segreteria. Se
 all'accesso vi dice che qualcosa non va, chiedete alla segreteria di

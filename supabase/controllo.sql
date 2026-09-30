@@ -25,6 +25,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.ricorrenze') is not null),
   ('01-schema.sql', 'la sala dei singoli giorni',
     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'ricorrenze' and column_name = 'sala_id')),
+  ('01-schema.sql', 'il ruolo doppio, segreteria e istruttore',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'anche_istruttore')),
   ('02-policy.sql', 'le policy',
     exists (select 1 from pg_policies where schemaname = 'public' and policyname = 'sessioni_legge')),
   ('02-policy.sql', 'gli istruttori tolgono un segno dall''appello',
@@ -92,6 +94,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.presenze_istruttori') is not null
     and exists (select 1 from dentro where nome = 'presenza_con_pin')
     and exists (select 1 from dentro where nome = 'gestisci_presenza_istruttore')),
+  ('15-presenze-istruttori.sql', 'la presenza di chi è di segreteria e insegna',
+    exists (select 1 from dentro where nome = 'presenza_con_pin' and corpo like '%anche_istruttore%')),
   ('16-ricevute.sql', 'le ricevute dei pagamenti',
     to_regclass('public.ricevute') is not null
     and exists (select 1 from dentro where nome = 'emetti_ricevuta')

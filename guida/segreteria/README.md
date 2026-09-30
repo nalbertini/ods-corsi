@@ -5,8 +5,8 @@
 ← [Torna alla guida generale](../README.md)
 
 La segreteria è la parte dell'app per il computer della reception. Entra solo
-chi ha il ruolo **Segreteria**: un istruttore che entra da questo indirizzo
-finisce nel calendario degli istruttori.
+chi ha il ruolo **Segreteria** (o **Segreteria e istruttore**): un istruttore
+che entra da questo indirizzo finisce nel calendario degli istruttori.
 
 ## Entrare
 
@@ -14,6 +14,10 @@ finisce nel calendario degli istruttori.
    `…/segreteria/`).
 2. Email e password, **ENTRA**: con l'account della segreteria si arriva
    qui. Si resta collegati finché non si preme **Esci**, in fondo al menu.
+
+Chi è della segreteria e insegna anche, dopo **ENTRA**, sceglie dove andare:
+**SEGRETERIA** o **ISTRUTTORI**. Dalla segreteria si va al proprio calendario
+con **ISTRUTTORI →** nel menu, senza uscire.
 
 ## Il menu
 

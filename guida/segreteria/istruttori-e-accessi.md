@@ -23,7 +23,8 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
 
 - **MODIFICA** — nome, cognome ed email. Chi è già entrato non cambia email da
   qui: è quella con cui fa l'accesso.
-- **RUOLO** — **ISTRUTTORE** o **SEGRETERIA**: si cambia con un tocco.
+- **RUOLO** — **ISTRUTTORE**, **SEGRETERIA** o **TUTTI E DUE**: si cambia con
+  un tocco. **TUTTI E DUE** è per chi sta in segreteria e insegna anche.
 - **ACCESSO** — com'è messa. Se non è mai entrata, **MANDA L'INVITO** le manda
   un'altra mail (l'invito non arrivato, scaduto o non spuntato). Chi è già
   entrato e ha perso la password la chiede da sé, dalla porta, con **PASSWORD
@@ -61,12 +62,13 @@ orario, ore, corso e sala.
 
 ## Aggiungere una persona
 
-**+ AGGIUNGI UNA PERSONA** → nome, cognome, email, ruolo (**ISTRUTTORE** o
-**SEGRETERIA**) → **AGGIUNGI**. Poi si apre la sua scheda.
+**+ AGGIUNGI UNA PERSONA** → nome, cognome, email, ruolo (**ISTRUTTORE**,
+**SEGRETERIA** o **TUTTI E DUE**) → **AGGIUNGI**. Poi si apre la sua scheda.
 
 Con **Manda subito l'invito per email** spuntato (lo è già), alla persona
 arriva una mail con un link: lo apre, sceglie la sua password ed entra, nel
-calendario se è istruttore, nella segreteria se è di segreteria. Il link scade
+calendario se è istruttore, nella segreteria se è di segreteria; con tutti e
+due i ruoli sceglie dove andare. Il link scade
 dopo un'ora: se scade, **MANDA L'INVITO** nella sua scheda ne manda un altro.
 
 Perché le mail partano davvero, chi gestisce il database deve prima
@@ -84,3 +86,10 @@ parte.
 | Cambiare corsi, orari e sale | no | sì |
 | Aggiungere e togliere iscritti | no | sì |
 | Vedere il resoconto delle presenze e le impostazioni | no | sì |
+
+Chi ha **TUTTI E DUE** i ruoli può quello che può la segreteria, e in più
+insegna: gli si danno dei corsi come a un istruttore, il PIN sul tablet gli
+segna la presenza come a un istruttore, e nel calendario vede le sue lezioni.
+All'accesso sceglie se andare in segreteria o nel calendario, e poi passa
+dall'uno all'altra dal menu. Col database, il ruolo doppio c'è dopo aver
+rilanciato `supabase/01-schema.sql`.

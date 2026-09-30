@@ -50,6 +50,8 @@ export interface PersonaProva {
   nome: string
   cognome: string
   ruolo: Ruolo
+  /** Di segreteria, e insegna anche (vedi `ruoli.ts`). */
+  ancheIstruttore?: boolean
   email?: string
   telefono?: string
   attiva: boolean
