@@ -1,4 +1,5 @@
 import type { StatoPresenza, StatoSessione } from './sala'
+import type { RuoloPersonale } from './ruoli'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
@@ -160,6 +161,8 @@ export interface PersonaleSeg {
   cognome: string
   email?: string
   ruolo: 'istruttore' | 'staff'
+  /** Di segreteria, e insegna anche: vedi `ruoli.ts`. */
+  ancheIstruttore: boolean
   attiva: boolean
   /** Ha già fatto l'accesso almeno una volta: il suo account è legato. */
   collegato: boolean
@@ -288,7 +291,7 @@ export interface DatiSegreteria {
   registro(da: Date, a: Date): Promise<RigaRegistro[]>
 
   personale(): Promise<PersonaleSeg[]>
-  salvaPersonale(p: DatiPersona & { ruolo: 'istruttore' | 'staff' }): Promise<string>
+  salvaPersonale(p: DatiPersona & RuoloPersonale): Promise<string>
   impostaPin(personaId: string, pin: string): Promise<void>
   /**
    * Manda l'invito per email: a chi non ha un account, quello per crearlo; a

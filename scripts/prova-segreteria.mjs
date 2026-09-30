@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -438,6 +438,26 @@ console.log('\nl\'invito per email')
   ok('il link scaduto', m.arrivoDalLink('#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired').tipo, 'scaduto')
   ok('un\'area non è un link', m.arrivoDalLink('#segreteria'), null)
   ok('niente frammento', m.arrivoDalLink(''), null)
+}
+
+console.log('\nil ruolo doppio, segreteria e istruttore')
+{
+  const id = await s.salvaPersonale({ nome: 'Dora', cognome: 'Doppia', email: 'dora@esempio.it', ...m.daRuoloScelto('entrambi') })
+  const dora = async () => (await s.personale()).find((p) => p.id === id)
+  ok('è segreteria e insegna', m.ruoloScelto(await dora()), 'entrambi')
+  ok('le si dà un corso', (await s.istruttori()).some((i) => i.id === id), true)
+  ok('entra in tutte e due le aree', m.areeDi(await dora()), ['segreteria', 'istruttori'])
+  ok('e lo si dice', m.nomeDelRuolo(await dora()), 'Segreteria e istruttore')
+  await s.salvaPersonale({ ...(await dora()), nome: 'Dorotea' })
+  ok('cambiando il nome resta doppia', m.ruoloScelto(await dora()), 'entrambi')
+  await s.salvaPersonale({ ...(await dora()), ...m.daRuoloScelto('staff') })
+  ok('solo segreteria', m.ruoloScelto(await dora()), 'staff')
+  ok('non le si dà più un corso', (await s.istruttori()).some((i) => i.id === id), false)
+  ok('entra solo in segreteria', m.areeDi(await dora()), ['segreteria'])
+  await s.salvaPersonale({ ...(await dora()), ...m.daRuoloScelto('entrambi') })
+  await s.salvaPersonale({ ...(await dora()), ...m.daRuoloScelto('istruttore') })
+  ok('istruttore e basta', [m.ruoloScelto(await dora()), (await dora()).ancheIstruttore], ['istruttore', false])
+  ok('entra solo nel calendario', m.areeDi(await dora()), ['istruttori'])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

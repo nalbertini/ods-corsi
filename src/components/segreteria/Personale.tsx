@@ -1,5 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
+import { daRuoloScelto, nomeDelRuolo, ruoloScelto, type RuoloScelto } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica } from './comune'
 import { Numero, mesi } from './Presenze'
@@ -93,14 +94,14 @@ export function Personale({ d }: { d: DatiSegreteria }) {
               <span role="cell" className="stack" style={{ minWidth: 0 }}>
                 <span style={{ fontSize: 15, fontWeight: 600 }}>{`${p.nome} ${p.cognome}`.trim()}</span>
                 <span className="sg-una-riga" style={{ fontSize: 12, color: 'var(--dim)' }} title={p.corsi.join(', ')}>
-                  {p.corsi.join(', ') || (p.ruolo === 'staff' ? 'segreteria' : 'nessun corso')}
+                  {p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}
                 </span>
               </span>
               <span role="cell" className="sg-una-riga" style={{ fontSize: 13, color: p.email ? 'var(--sec)' : 'var(--rosso)' }} title={p.email ?? 'Senza email non può entrare'}>
                 {p.email ?? 'nessuna email'}
               </span>
               <span role="cell" style={{ fontSize: 14, color: 'var(--sec)' }}>
-                {RUOLI[p.ruolo]}
+                {nomeDelRuolo(p)}
               </span>
               <span role="cell">
                 <Accesso p={p} />
@@ -128,14 +129,16 @@ export function Personale({ d }: { d: DatiSegreteria }) {
               </div>
             ))}
           </div>
+          <span style={{ fontSize: 14, color: 'var(--sec)' }}>
+            Chi ha tutti e due i ruoli può quello che può la segreteria, gli si danno dei corsi come a un istruttore, e il
+            PIN sul tablet gli segna la presenza. All’accesso sceglie dove andare: in segreteria o al calendario.
+          </span>
         </section>
       </div>
       {avviso}
     </>
   )
 }
-
-const RUOLI = { istruttore: 'Istruttore', staff: 'Segreteria' } as const
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 type Avvisa = ReturnType<typeof useAvviso>['avvisa']
@@ -149,13 +152,15 @@ function Accesso({ p }: { p: PersonaleSeg }) {
   )
 }
 
-function SceltaRuolo({ ruolo, onScegli }: { ruolo: 'istruttore' | 'staff'; onScegli: (r: 'istruttore' | 'staff') => void }) {
+/** Il ruolo, anche doppio: la segreteria che insegna anche. */
+function SceltaRuolo({ ruolo, onScegli }: { ruolo: RuoloScelto; onScegli: (r: RuoloScelto) => void }) {
   return (
-    <div role="radiogroup" aria-label="Ruolo" className="sg-due">
+    <div role="radiogroup" aria-label="Ruolo" className="sg-due" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
       {(
         [
           ['istruttore', 'ISTRUTTORE'],
           ['staff', 'SEGRETERIA'],
+          ['entrambi', 'TUTTI E DUE'],
         ] as const
       ).map(([r, testo]) => (
         <button key={r} type="button" role="radio" aria-checked={ruolo === r} className="sg-btn sg-scelta" onClick={() => onScegli(r)}>
@@ -181,7 +186,7 @@ function Aggiungi({
   onLasciaStare: () => void
   onAggiunta: (id: string) => Promise<void>
 }) {
-  const [bozza, setBozza] = useState({ nome: '', cognome: '', email: '', ruolo: 'istruttore' as 'istruttore' | 'staff' })
+  const [bozza, setBozza] = useState({ nome: '', cognome: '', email: '', ruolo: 'istruttore' as RuoloScelto })
   const [invitaSubito, setInvitaSubito] = useState(true)
 
   const aggiungi = (e: FormEvent) => {
@@ -193,7 +198,8 @@ function Aggiungi({
     let guaio = false
     void fai(
       async () => {
-        id = await d.salvaPersonale(chi)
+        const { ruolo, ancheIstruttore } = daRuoloScelto(chi.ruolo)
+        id = await d.salvaPersonale({ ...chi, ruolo, ...(ancheIstruttore ? { ancheIstruttore } : {}) })
         if (!invita) return
         // La persona è salvata comunque: un invito non partito si rimanda dalla sua scheda.
         try {
@@ -268,7 +274,15 @@ function Scheda({
 }) {
   const [modifica, setModifica] = useState<{ nome: string; cognome: string; email: string } | null>(null)
   const [pin, setPin] = useState<string | null>(null)
-  const dati = { id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, ruolo: p.ruolo }
+  // Il ruolo doppio si scrive solo se c'era o ci sarà: un database senza la
+  // sua colonna salva lo stesso tutti gli altri (vedi `ruoloDaScrivere`).
+  const dati = { id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, ruolo: p.ruolo, ...(p.ancheIstruttore ? { ancheIstruttore: true } : {}) }
+  const cambiaRuolo = (r: RuoloScelto) => {
+    if (r === ruoloScelto(p)) return
+    const nuovo = daRuoloScelto(r)
+    const ruolo = nuovo.ancheIstruttore || p.ancheIstruttore ? nuovo : { ruolo: nuovo.ruolo }
+    void fai(() => d.salvaPersonale({ ...dati, ...ruolo }), 'Ruolo cambiato', onCambiato)
+  }
 
   const invita = () => void fai(async () => avvisa(partito(p.nome, await d.invita(p.id))))
 
@@ -279,7 +293,7 @@ function Scheda({
           {`${p.nome} ${p.cognome}`.trim().toUpperCase()}
         </span>
         <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso)' }}>
-          {p.attiva ? RUOLI[p.ruolo] : 'Accesso tolto: non entra nell’app né nell’area istruttore'}
+          {p.attiva ? nomeDelRuolo(p) : 'Accesso tolto: non entra nell’app né nell’area istruttore'}
         </span>
       </div>
 
@@ -330,7 +344,7 @@ function Scheda({
                   <span style={{ fontSize: 14, overflowWrap: 'anywhere', color: p.email ? 'var(--text)' : 'var(--rosso)' }}>{p.email ?? 'nessuna email: non può entrare'}</span>
                 </Campo>
                 <Campo etichetta="CORSI">
-                  <span style={{ fontSize: 14, color: p.corsi.length ? 'var(--text)' : 'var(--dim)' }}>{p.corsi.join(', ') || (p.ruolo === 'staff' ? 'segreteria' : 'nessun corso')}</span>
+                  <span style={{ fontSize: 14, color: p.corsi.length ? 'var(--text)' : 'var(--dim)' }}>{p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}</span>
                 </Campo>
               </div>
               <div className="row">
@@ -343,12 +357,7 @@ function Scheda({
 
           <div className="stack" style={{ gap: 8 }}>
             <Riga titolo="RUOLO" />
-            <SceltaRuolo
-              ruolo={p.ruolo}
-              onScegli={(ruolo) => {
-                if (ruolo !== p.ruolo) void fai(() => d.salvaPersonale({ ...dati, ruolo }), 'Ruolo cambiato', onCambiato)
-              }}
-            />
+            <SceltaRuolo ruolo={ruoloScelto(p)} onScegli={cambiaRuolo} />
           </div>
         </div>
 

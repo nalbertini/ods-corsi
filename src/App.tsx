@@ -2,14 +2,14 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
-import { Accesso, Porta, ScegliPassword, UnAttimo, useChi } from './components/Porta'
+import { Accesso, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { INDIRIZZI, TIMER, useArea } from './lib/aree'
-import { account, esci, passaA, serveAccesso, type Personale } from './lib/accesso'
+import { account, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
@@ -86,7 +86,8 @@ function Testata({ luogo, guida, children }: { luogo: string; guida?: string; ch
  * Senza niente nell'indirizzo. Col database è la porta unica: si entra, e
  * l'account porta nella sua area (vedi `accedi`); sotto, quel che non chiede
  * un accesso. Chi è già collegato su questo dispositivo va dritto nella sua
- * area: una scelta dell'area non c'è, la fa l'account.
+ * area: una scelta dell'area non c'è, la fa l'account, tranne per chi ne ha
+ * due (la segreteria che insegna anche), che qui sceglie.
  *
  * In prova le porte sono aperte, e qui ci sono tutte e quattro le aree.
  */
@@ -98,12 +99,15 @@ function Scelta() {
 function PortaUnica() {
   // `undefined` finché non si sa se qualcuno è già collegato.
   const [fuori, setFuori] = useState<boolean | undefined>(undefined)
+  // Già collegato, con più di un'area: sceglie dove andare.
+  const [doppio, setDoppio] = useState<Account | null>(null)
   useEffect(() => {
     let vivo = true
     void account().then(
       (a) => {
         if (!vivo) return
-        if (a) passaA(a.area)
+        if (a?.persona && a.aree.length > 1) setDoppio(a)
+        else if (a) passaA(a.area)
         else setFuori(true)
       },
       () => vivo && setFuori(true),
@@ -116,7 +120,9 @@ function PortaUnica() {
     <div className="app">
       <Testata luogo="ACCESSO" guida={INDIRIZZO_GUIDA} />
       <main className="scroll">
-        {!fuori ? (
+        {doppio?.persona ? (
+          <SceltaArea persona={doppio.persona} aree={doppio.aree} onScelta={passaA} />
+        ) : !fuori ? (
           <UnAttimo />
         ) : (
           <>
@@ -192,7 +198,8 @@ function Iscrizioni() {
 /**
  * Il calendario e l'appello, dietro la porta. La porta è quella unica: chi è
  * di segreteria ed entra da qui finisce in segreteria, che ha anche l'appello;
- * e chi è già collegato in segreteria, aprendo `istruttori/`, ci torna.
+ * e chi è già collegato in segreteria, aprendo `istruttori/`, ci torna. Chi è
+ * di segreteria e insegna anche entra in tutte e due, e qui vede le sue lezioni.
  *
  * Da qui non si va da nessun'altra parte, nemmeno in prova: segreteria,
  * sala e iscrizioni sono aree a sé, ognuna col suo indirizzo, e l'istruttore
@@ -208,9 +215,10 @@ function Istruttori() {
   // Il calendario resta montato anche in I MIEI TIMER: tornando, l'appello è dov'era.
   const [pagina, setPagina] = useState<Pagina>('calendario')
 
-  // Di chi sono le lezioni da mostrare: dell'istruttore entrato, o di quello
-  // di prova. Tutte per un account ricordato da una versione che l'id non lo teneva.
-  const soloDi = (chi: Personale | null) => (chi ? (chi.ruolo === 'staff' ? undefined : chi.id) : ISTRUTTORE_PROVA.id)
+  // Di chi sono le lezioni da mostrare: dell'istruttore entrato (anche della
+  // segreteria che insegna), o di quello di prova. Tutte per la segreteria, e
+  // per un account ricordato da una versione che l'id non lo teneva.
+  const soloDi = (chi: Personale | null) => (chi ? (chi.ruolo === 'staff' && !chi.ancheIstruttore ? undefined : chi.id) : ISTRUTTORE_PROVA.id)
 
   if (largo) {
     return (
@@ -258,6 +266,8 @@ function Istruttori() {
  * Il menu degli istruttori sullo schermo largo, fatto come quello della
  * segreteria. Niente passaggi alle altre aree, nemmeno in prova: ognuna ha la
  * sua porta, e da qui non si va in segreteria nemmeno se si è di segreteria.
+ * Tranne chi è di segreteria e insegna anche: entra in tutte e due, e passa
+ * dall'una all'altra senza uscire.
  */
 type Pagina = 'calendario' | 'timer'
 
@@ -301,6 +311,11 @@ function MenuIstruttori({
         </div>
         <div className="grow" />
         <div className="sg-voci">
+          {chi?.ancheIstruttore && (
+            <button type="button" className="num sg-voce" onClick={() => passaA('segreteria')}>
+              SEGRETERIA →
+            </button>
+          )}
           <a className="num sg-voce" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener">
             GUIDA ↗
           </a>
@@ -308,7 +323,7 @@ function MenuIstruttori({
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : `${ISTRUTTORE_PROVA.nome} · di prova`}</span>
           <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-            {chi?.ruolo === 'staff' ? 'Segreteria · anche l’appello' : 'Istruttore · calendario e appello'}
+            {!chi || chi.ruolo === 'istruttore' ? 'Istruttore · calendario e appello' : chi.ancheIstruttore ? `${nomeDelRuolo(chi)} · le tue lezioni` : 'Segreteria · anche l’appello'}
           </span>
           {!chi && <span className="num sg-bollino">DATI DI PROVA</span>}
           <TastoTema link />
@@ -354,7 +369,16 @@ function AreaSegreteria() {
     )
   }
 
-  if (chi) return <Segreteria nome={`${chi.nome} ${chi.cognome}`} prova={false} onEsci={() => void esci()} />
+  if (chi)
+    return (
+      <Segreteria
+        nome={`${chi.nome} ${chi.cognome}`}
+        ruolo={nomeDelRuolo(chi)}
+        prova={false}
+        onEsci={() => void esci()}
+        onIstruttori={chi.ancheIstruttore ? () => passaA('istruttori') : undefined}
+      />
+    )
 
   return (
     <div className="app">

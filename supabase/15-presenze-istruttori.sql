@@ -13,7 +13,8 @@
 -- quella che comincia, si segnano tutte quelle in cui l'istruttore è previsto;
 -- se non è previsto in nessuna, una sola va da confermare: quella in corso, o
 -- la più vicina. La segreteria che entra col PIN senza essere prevista non si
--- segna: apre l'appello, non fa lezione.
+-- segna: apre l'appello, non fa lezione. Chi è di segreteria e insegna anche
+-- (`anche_istruttore`, in 01-schema.sql) si segna come un istruttore.
 --
 -- Il tablet la chiama subito dopo `entra_con_pin`, con lo stesso PIN. Finché
 -- questo file non c'è, il tablet apre l'area istruttore come prima e non
@@ -116,7 +117,7 @@ begin
         set stato = 'confermata', prevista = true
         where presenze_istruttori.stato = 'da_confermare';
     segnate := previste;
-  elsif (select pe.ruolo from persone pe where pe.id = chi) = 'staff' then
+  elsif exists (select 1 from persone pe where pe.id = chi and pe.ruolo = 'staff' and not pe.anche_istruttore) then
     return;
   else
     insert into presenze_istruttori (sessione_id, persona_id, stato, prevista, postazione_id)

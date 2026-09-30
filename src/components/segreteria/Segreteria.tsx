@@ -86,7 +86,20 @@ function CopiaLink() {
  * vogliono spazio. Su uno schermo stretto il menu va in cima e le colonne si
  * mettono una sotto l'altra, così si può comunque dare un'occhiata.
  */
-export function Segreteria({ nome, prova, onEsci }: { nome: string; prova: boolean; onEsci?: () => void }) {
+export function Segreteria({
+  nome,
+  ruolo = 'Segreteria',
+  prova,
+  onEsci,
+  onIstruttori,
+}: {
+  nome: string
+  ruolo?: string
+  prova: boolean
+  onEsci?: () => void
+  /** Per chi è di segreteria e insegna anche: il passaggio al calendario, senza uscire. */
+  onIstruttori?: () => void
+}) {
   const [d, setD] = useState<DatiSegreteria | null>(null)
   const [voce, setVoce] = useState<Voce>('settimana')
   const [dove, setDove] = useState<Destinazione>({})
@@ -149,6 +162,11 @@ export function Segreteria({ nome, prova, onEsci }: { nome: string; prova: boole
         </div>
         <div className="grow" />
         <div className="sg-voci">
+          {onIstruttori && (
+            <button type="button" className="num sg-voce" onClick={onIstruttori}>
+              ISTRUTTORI →
+            </button>
+          )}
           {/* In un'altra scheda: la segreteria resta dov'era, con quello che c'era aperto. */}
           <a className="num sg-voce" href={indirizzoPagina(GUIDE[voce])} target="_blank" rel="noopener">
             GUIDA ↗
@@ -157,7 +175,7 @@ export function Segreteria({ nome, prova, onEsci }: { nome: string; prova: boole
         </div>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
-          <span style={{ fontSize: 12, color: 'var(--dim)' }}>Segreteria · accesso completo</span>
+          <span style={{ fontSize: 12, color: 'var(--dim)' }}>{ruolo} · accesso completo</span>
           {prova && <span className="num sg-bollino">DATI DI PROVA</span>}
           {prova && (
             <button

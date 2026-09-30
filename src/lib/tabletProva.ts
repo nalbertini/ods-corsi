@@ -111,8 +111,9 @@ export function creaTabletProva(): DatiTablet {
       .sort((x, y) => inCorso(y) - inCorso(x) || Math.abs(x.inizio.getTime() - t) - Math.abs(y.inizio.getTime() - t))
     if (!aperte.length) return []
     const previste = aperte.filter((l) => comeE(l).istruttori.includes(personaId))
-    const ruolo = archivio.dati.persone.find((p) => p.id === personaId)?.ruolo
-    if (!previste.length && ruolo === 'staff') return []
+    // La segreteria non prevista non si segna, a meno che insegni anche.
+    const chi = archivio.dati.persone.find((p) => p.id === personaId)
+    if (!previste.length && chi?.ruolo === 'staff' && !chi.ancheIstruttore) return []
     const segnate = previste.length ? previste : aperte.slice(0, 1)
     const tutte = [...(archivio.dati.presenzeIstruttori ?? [])]
     for (const l of segnate) {

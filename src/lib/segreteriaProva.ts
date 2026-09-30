@@ -1,4 +1,5 @@
 import type { CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StoricoSeg } from './segreteria'
+import { insegna, type RuoloPersonale } from './ruoli'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva } from './archivioProva'
 import { comeE, iscrittiIl, lezioniFra, nomeIstruttore, salaDelGiorno, trovaLezione, type LezioneTrovata } from './datiProva'
@@ -29,6 +30,9 @@ const GIORNO = 24 * 60 * 60_000
  * Un pezzo di id che non si ripete. L'ora da sola non basta: un import crea
  * dieci persone nello stesso millisecondo, e con lo stesso id diventavano una.
  */
+/** Il ruolo da salvare, come `ruoloDaScrivere` di `segreteriaSupabase.ts`: il ruolo doppio solo se c'è in `r`. */
+const ruoloDi = (r: RuoloPersonale) =>
+  r.ancheIstruttore === undefined ? { ruolo: r.ruolo } : { ruolo: r.ruolo, ancheIstruttore: r.ruolo === 'staff' && r.ancheIstruttore }
 const unico = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
 
 /**
@@ -108,7 +112,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async istruttori() {
       return a()
-        .persone.filter((p) => p.ruolo === 'istruttore' && p.attiva)
+        .persone.filter((p) => insegna(p) && p.attiva)
         .map((p) => ({ id: p.id, nome: nomeDi(p) }))
         .sort((x, y) => x.nome.localeCompare(y.nome, 'it'))
     },
@@ -514,6 +518,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             cognome: p.cognome,
             email: p.email,
             ruolo: p.ruolo as 'istruttore' | 'staff',
+            ancheIstruttore: p.ruolo === 'staff' && !!p.ancheIstruttore,
             attiva: p.attiva,
             // In prova è entrata solo la segreteria di prova: gli altri aspettano l'invito.
             collegato: p.id === 's-prova',
@@ -532,25 +537,25 @@ export function creaSegreteriaProva(): DatiSegreteria {
       // Come nel database: un'iscritta con la stessa email diventa personale, non un doppione.
       if (altro && altro.ruolo !== 'iscritto') throw new Error(`Questa email è già di ${nomeDi(altro)}`)
       if (altro) {
-        a().persone = a().persone.map((p) => (p.id === altro.id ? { ...p, ruolo: dati.ruolo, attiva: true } : p))
+        a().persone = a().persone.map((p) => (p.id === altro.id ? { ...p, ...ruoloDi(dati), attiva: true } : p))
         salva()
         return altro.id
       }
       // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla.
       const senza = !dati.id && a().persone.find((p) => p.ruolo !== 'iscritto' && !p.email && p.nome.toLowerCase() === nome.toLowerCase() && p.cognome.toLowerCase() === cognome.toLowerCase())
       if (senza) {
-        a().persone = a().persone.map((p) => (p.id === senza.id ? { ...p, email, ruolo: dati.ruolo, attiva: true } : p))
+        a().persone = a().persone.map((p) => (p.id === senza.id ? { ...p, email, ...ruoloDi(dati), attiva: true } : p))
         salva()
         return senza.id
       }
       if (!dati.id) {
         const id = `i-${nome.toLowerCase().normalize('NFD').replace(/[^a-z]+/g, '')}-${unico()}`
-        a().persone = [...a().persone, { id, nome, cognome, email, ruolo: dati.ruolo, attiva: true, creataIl: oggi() }]
+        a().persone = [...a().persone, { id, nome, cognome, email, ...ruoloDi(dati), attiva: true, creataIl: oggi() }]
         salva()
         return id
       }
       persona(dati.id)
-      a().persone = a().persone.map((p) => (p.id === dati.id ? { ...p, nome, cognome, email, ruolo: dati.ruolo } : p))
+      a().persone = a().persone.map((p) => (p.id === dati.id ? { ...p, nome, cognome, email, ...ruoloDi(dati) } : p))
       salva()
       return dati.id
     },
