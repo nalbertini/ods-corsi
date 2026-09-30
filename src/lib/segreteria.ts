@@ -135,6 +135,12 @@ export interface Anagrafica {
   genitoreNato?: string
 }
 
+/** I dati anagrafici di una persona e da dove vengono: dal modulo dell'app o dall'import. */
+export interface AnagraficaDi {
+  dati: Anagrafica
+  da: 'modulo' | 'import'
+}
+
 /** Un file da aprire: il link vale poco, col database dieci minuti. */
 export interface FileSeg {
   url: string
@@ -304,6 +310,12 @@ export interface DatiSegreteria {
    * com'erano, così un'altra risposta del modulo aggiunge e non cancella.
    */
   salvaAnagrafica(personaId: string, a: Anagrafica): Promise<void>
+  /**
+   * Nascita, residenza e genitore da mostrare nella scheda: quelli della
+   * richiesta di iscrizione accolta, se c'è, se no quelli dell'import.
+   * `null` se non ce ne sono.
+   */
+  anagraficaDi(personaId: string): Promise<AnagraficaDi | null>
   /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
   emettiRicevuta(r: DatiRicevuta): Promise<Ricevuta>
   /** La annulla: resta, col suo numero, e il PDF dice ANNULLATA. */

@@ -44,6 +44,11 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
 
 
 - **MODIFICA** — nome, cognome, email, telefono.
+- **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,
+  il genitore. Vengono dal modulo di iscrizione dell'app o dall'import delle
+  risposte del modulo Google, e accanto al titolo c'è scritto da dove. Qui si
+  leggono soltanto: sono quelli che una ricevuta nuova prende da sola, e lì
+  si possono correggere.
 - **CERTIFICATO MEDICO** — fino a quando vale. **CARICA IL CERTIFICATO** →
   la data in **VALIDO FINO AL** e **SCEGLI IL FILE** (una foto o un PDF, fino a
   10 MB) → **SALVA**. Col certificato nuovo, **RINNOVA O CORREGGI**: con un
