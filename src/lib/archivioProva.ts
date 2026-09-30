@@ -170,7 +170,7 @@ const CORSI: Definizione[] = [
   { id: 'judo-principianti', nome: 'Judo principianti', colore: JUDO, sala: 'Motricità', istruttori: ['maurizio'], capienza: 12, orari: ogni(LMV, '19:00', 90), iscritti: [4, 8] },
   { id: 'judo-agonisti', nome: 'Judo agonisti', colore: JUDO, sala: 'Tatami', istruttori: ['maurizio'], capienza: 16, orari: ogni(MG, '18:00', 90), iscritti: [5, 10] },
 
-  { id: 'psicomotricita', nome: 'Psicomotricità', colore: MOTRICITA, sala: 'Motricità', istruttori: [], capienza: 12, orari: [...ogni([5], '17:00', 50), ...ogni([5], '18:00', 50)], iscritti: [6, 9] },
+  { id: 'psicomotricita', nome: 'Psicomotricità', colore: MOTRICITA, sala: 'Motricità', istruttori: [], capienza: 12, orari: [...ogni([5], '17:00', 50), ...ogni([5], '18:10', 50)], iscritti: [6, 9] },
   { id: 'giocomotricita', nome: 'Giocomotricità', colore: MOTRICITA, sala: 'Lotta', istruttori: [], capienza: 12, orari: ogni(MG, '17:00', 50), iscritti: [7, 8] },
   { id: 'avviamento', nome: 'Avviamento arti marziali 1', colore: MOTRICITA, sala: 'Tatami', istruttori: [], capienza: 14, orari: ogni(MG, '17:00', 60), iscritti: [8, 10] },
 

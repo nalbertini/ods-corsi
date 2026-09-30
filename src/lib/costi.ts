@@ -64,7 +64,7 @@ export const COSTI: VoceCosto[] = [
   {
     corso: 'Psicomotricità',
     eta: '3-4-5 anni',
-    orari: ['venerdì 17.00-17.50', 'venerdì 18.00-18.50'],
+    orari: ['venerdì 17.00-17.50', 'venerdì 18.10-19.00'],
     prezzi: [{ annuale: 300 }],
   },
   {
