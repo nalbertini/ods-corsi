@@ -14,7 +14,7 @@ import { writeFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/ricevute'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
+      "export * from './src/lib/ricevute'; export { listinoDa, cosaNonVaListino, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -58,7 +58,7 @@ const quella = {
     natoIl: '2014-06-13', codiceFiscale: 'LBRMNL14H53L219X', genitore: 'Albertini Nicola',
   },
   voci: [
-    { ...m.QUOTA.voce('2026-09-01'), pagamenti: pagato(5000) },
+    { ...m.voceQuota().voce('2026-09-01'), pagamenti: pagato(5000) },
     { descrizione: 'Annuale Lotta 3', quantita: 1, prezzo: 36800, dal: '2026-09-01', al: '2027-06-30', pagamenti: pagato(36800) },
   ],
   anticipo: 0,
@@ -75,6 +75,29 @@ ok('senza il nome del socio no', m.cosaNonVa({ ...quella, intestatario: { nome: 
 ok('la voce di Lotta 3 dal foglio dei costi', m.vociDelCorso('lotta 3', '2026-08-31').map((v) => v.voce('2026-09-01').prezzo), [48000, 46000, 18000])
 ok('dopo il 31 agosto niente saldo', m.vociDelCorso('lotta 3', '2026-09-01').map((v) => v.voce('2026-09-01').prezzo), [48000, 18000])
 ok('la quota prima di tutto', m.vociPronte(['Judo 3'], '2026-09-01')[0].chiave, 'quota')
+
+console.log('Il listino cambiato dalla segreteria')
+const nuovo = {
+  quota: 55,
+  saldoEntro: '2026-09-15',
+  corsi: [{ corso: 'Lotta 3', eta: 'nati 2016 e prima', orari: [], prezzi: [{ saldo: 470.5, annuale: 490, trimestre: 185 }] }],
+  offerte: [],
+}
+ok('va bene', m.cosaNonVaListino(nuovo), null)
+ok('la quota del listino', m.voceQuota(nuovo).voce('2026-09-01').prezzo, 5500)
+ok('i prezzi del listino, anche coi centesimi', m.vociDelCorso('Lotta 3', '2026-09-10', nuovo).map((v) => v.voce('2026-09-10').prezzo), [49000, 47050, 18500])
+ok('il saldo fino alla data del listino', m.vociDelCorso('Lotta 3', '2026-09-16', nuovo).map((v) => v.voce('2026-09-16').prezzo), [49000, 18500])
+ok('un corso che non è nel listino non ha voci', m.vociDelCorso('Judo 3', '2026-09-10', nuovo), [])
+ok('due corsi con lo stesso nome no', m.cosaNonVaListino({ ...nuovo, corsi: [...nuovo.corsi, { ...nuovo.corsi[0], corso: 'lotta  3' }] }), '«lotta  3» c’è due volte: le ricevute non saprebbero quale prendere')
+ok('una riga senza prezzi no', m.cosaNonVaListino({ ...nuovo, corsi: [{ ...nuovo.corsi[0], prezzi: [{}] }] }), 'Una riga di «Lotta 3» non ha nessun prezzo')
+ok('più righe senza nome no', m.cosaNonVaListino({ ...nuovo, corsi: [{ ...nuovo.corsi[0], prezzi: [{ annuale: 1 }, { annuale: 2 }] }] }).startsWith('«Lotta 3» ha più righe'), true)
+ok('vuoto vuol dire il foglio', m.listinoDa(null), null)
+ok('senza corsi vale il foglio', m.listinoDa({ quota: 10, corsi: [] }), null)
+ok('dal database, preso con le pinze', m.listinoDa({ quota: -3, saldoEntro: 'domani', corsi: [{ corso: ' MGA ', prezzi: [{ annuale: '340' }, { trimestre: 130, x: 1 }], orari: ['venerdì', 7] }, { eta: 'senza nome' }], offerte: [{ titolo: 'SOLO TITOLO' }] }), {
+  quota: 50, saldoEntro: '2026-08-31', corsi: [{ corso: 'MGA', eta: '', orari: ['venerdì'], prezzi: [{ trimestre: 130 }] }], offerte: [],
+})
+ok('il foglio va bene così com’è', m.cosaNonVaListino(m.LISTINO_PREDEFINITO), null)
+ok('il foglio riletto è uguale', m.listinoDa(JSON.parse(JSON.stringify(m.LISTINO_PREDEFINITO))), m.LISTINO_PREDEFINITO)
 ok('il nome del file', m.nomeFileRicevuta(quella), 'ricevuta-116-2026-albertini-manuela.pdf')
 
 console.log('I PDF')

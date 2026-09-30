@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { INFORMATIVA_PUBBLICA, LINK_ISCRIZIONE, MODULI, PAGAMENTO, PASSI, PASSI_PUBBLICI, PROVA, type Passo } from '../lib/iscrizione'
 import { CONTATTI, SITO, chiama } from '../lib/sito'
-import { Costi } from './Costi'
+import { Costi, inEuro, useListino } from './Costi'
 import { Cifra, Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto } from './ds'
 import { ModuloIscrizione } from './ModuloIscrizione'
 
@@ -149,6 +149,7 @@ function Azione({ passo, onModulo }: { passo: Passo; onModulo: () => void }) {
 /** Quanto e dove: la quota, l'IBAN da copiare, Satispay se c'è, e il rimando ai costi qui sotto. */
 function Pagamento() {
   const [copiato, setCopiato] = useState(false)
+  const letto = useListino()
 
   const copia = () => {
     // Senza spazi: è così che lo vogliono i campi delle app della banca.
@@ -164,7 +165,7 @@ function Pagamento() {
   return (
     <span className="stack pagamento">
       <Dettaglio>
-        Quota associativa {PAGAMENTO.quotaAssociativa}, valida fino a {PAGAMENTO.validaFino}. Bonifico a {PAGAMENTO.intestatario}:
+        Quota associativa {letto ? inEuro(letto.listino.quota) : PAGAMENTO.quotaAssociativa}, valida fino a {PAGAMENTO.validaFino}. Bonifico a {PAGAMENTO.intestatario}:
       </Dettaglio>
       <span className="num iban">{PAGAMENTO.iban}</span>
       {PAGAMENTO.satispay && <Dettaglio>Oppure con Satispay, dall'app.</Dettaglio>}

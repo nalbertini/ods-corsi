@@ -147,7 +147,7 @@ export function NuovaRicevuta({
   const [data, setData] = useState(oggi)
   const anno = Number(data.slice(0, 4)) || Number(oggi.slice(0, 4))
   const prossimo = useCarica(() => d.prossimoNumero(anno), [d, anno])
-  const partenza = useCarica(() => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id)]), [d, p.id])
+  const partenza = useCarica(() => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id), d.listino()]), [d, p.id])
   const [numero, setNumero] = useState('')
   const [metodo, setMetodo] = useState<string>(METODI[0])
   const [voci, setVoci] = useState<Bozza[] | null>(null)
@@ -158,18 +158,19 @@ export function NuovaRicevuta({
   const [segna, setSegna] = useState(true)
   const [aggiungi, setAggiungi] = useState('')
 
-  const pronte = vociPronte(corsi, data)
+  const listino = partenza.dato?.[3].listino
+  const pronte = listino ? vociPronte(corsi, data, listino) : []
 
   // La prima volta che arriva quello che si sa, si compila il modulo.
   useEffect(() => {
     if (!partenza.dato || voci) return
-    const [intestatario, e, fatte] = partenza.dato
+    const [intestatario, e, fatte, { listino: l }] = partenza.dato
     setSocio(intestatario)
     setEnte(e)
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
     setVoci([
       ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(oggi))]),
-      ...corsi.flatMap((c) => vociDelCorso(c, data).slice(0, 1)).map((v) => bozzaDa(v.voce(oggi))),
+      ...corsi.flatMap((c) => vociDelCorso(c, data, l).slice(0, 1)).map((v) => bozzaDa(v.voce(oggi))),
     ])
   }, [partenza.dato])
 

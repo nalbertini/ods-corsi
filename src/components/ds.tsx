@@ -232,12 +232,19 @@ export interface PrezziCosto {
   trimestre?: number
 }
 
-const euro = (n?: number) => (n === undefined ? '—' : `${n} €`)
+const euro = (n?: number) => (n === undefined ? '—' : `${n.toLocaleString('it-IT', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 })} €`)
+
+/** `2026-08-31` → «31/8», come sul foglio. */
+const giornoMese = (g: string) => {
+  const [, m, d] = g.split('-').map(Number)
+  return `${d}/${m}`
+}
 
 /** Un corso nel listino: età, orari, i prezzi in colonna (il saldo solo se `saldo`), la nota e il link al sito. */
 export function Costo({
   corso,
   saldo = true,
+  dataSaldo = '2026-08-31',
   frase,
   eta,
   orari,
@@ -248,6 +255,8 @@ export function Costo({
 }: {
   corso: string
   saldo?: boolean
+  /** Fino a quando vale il saldo: va nella testa della colonna. */
+  dataSaldo?: string
   frase?: string
   eta: string
   orari: readonly string[]
@@ -268,7 +277,7 @@ export function Costo({
 
       <div className="costo-griglia" data-etichette={conEtichette} data-saldo={saldo}>
         {conEtichette && <span />}
-        {saldo && <span className="costo-testa">SALDO 31/8</span>}
+        {saldo && <span className="costo-testa">SALDO {giornoMese(dataSaldo)}</span>}
         <span className="costo-testa">ANNUALE</span>
         <span className="costo-testa">
           TRIMESTRE

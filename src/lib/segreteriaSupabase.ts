@@ -12,6 +12,7 @@ import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, type EnteRicevuta, type IntestatarioRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 
 /**
  * La segreteria col database vero.
@@ -138,6 +139,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
     return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
   if (e?.code === '42703' && /ricevute/.test(e.message ?? '')) return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
+  // Il listino arriva con 19-listino.sql: 42703 leggendo, PGRST204 scrivendo.
+  if ((e?.code === '42703' || e?.code === 'PGRST204') && /listino/.test(e.message ?? ''))
+    return new Error('Il listino non si può ancora cambiare sul database: va lanciato 19-listino.sql')
   // Una colonna che non c'è: voce ed esercizi dei tablet arrivano con 13-voce-esercizi.sql.
   if (e?.code === '42703' && /voce|esercizi/.test(e.message ?? ''))
     return new Error('La voce e gli esercizi dei tablet non sono ancora attivi sul database: va lanciato 13-voce-esercizi.sql')
@@ -657,6 +661,21 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async salvaEnteRicevute(e) {
       ok(await db.from('impostazioni').update({ ricevute: e }).eq('id', true))
+    },
+
+    async listino() {
+      const r = await db.from('impostazioni').select('listino').maybeSingle()
+      // Senza 19-listino.sql la colonna non c'è: vale quello del foglio.
+      if (r.error?.code === '42703') return { listino: LISTINO_PREDEFINITO, cambiato: false }
+      const l = listinoDa((ok(r) as { listino: unknown } | null)?.listino)
+      return l ? { listino: l, cambiato: true } : { listino: LISTINO_PREDEFINITO, cambiato: false }
+    },
+
+    async salvaListino(l) {
+      const g = l && cosaNonVaListino(l)
+      if (g) throw new Error(g)
+      ok(await db.from('impostazioni').update({ listino: l }).eq('id', true))
+      scordaListino()
     },
 
     async registro(da, a) {

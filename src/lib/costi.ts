@@ -2,6 +2,10 @@
  * I costi della stagione 2026/27, ricopiati dal foglio della segreteria
  * (`public/moduli/costi-2026-27.pdf`).
  *
+ * Sono il listino di partenza: la segreteria lo cambia da LISTINO, e da lì
+ * vale quello (`listino.ts`). Questi restano finché non lo tocca, e tornano
+ * con RIMETTI IL FOGLIO.
+ *
  * Sono ricopiati così come sono, anche dove sembrano strani (la
  * Prepugilistica costa uguale a saldo e annuale, la Lotta 2 ha il trimestre a
  * 170 € e non a 180 €): se il foglio cambia, si cambia qui, e basta.
@@ -50,8 +54,8 @@ export const VALIDITA = {
  */
 export const SALDO_ENTRO = '2026-08-31'
 
-/** Se il prezzo a saldo vale ancora, da un giorno `AAAA-MM-GG`. */
-export const saldoAperto = (giorno: string) => giorno <= SALDO_ENTRO
+/** Se il prezzo a saldo vale ancora, da un giorno `AAAA-MM-GG`; `entro` è quello del listino. */
+export const saldoAperto = (giorno: string, entro = SALDO_ENTRO) => giorno <= entro
 
 export const COSTI: VoceCosto[] = [
   {

@@ -83,11 +83,11 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   numerazione del programma di prima (se l'ultima era la 115, si scrive 116).
 - **VOCI** — quello che si paga. Si parte già con la **quota associativa**
   (se in questa stagione non è ancora pagata) e l'**annuale** dei corsi che
-  fa, coi prezzi del foglio dei costi. Ogni voce ha la quantità, il prezzo, da
+  fa, coi prezzi del [listino](listino.md). Ogni voce ha la quantità, il prezzo, da
   quando a quando vale e quanto si è **PAGATO ORA**: di solito tutto, ma chi
   paga una parte scrive la parte. **Togli** toglie una voce; «Aggiungi una
-  voce…» ne aggiunge un'altra dal foglio dei costi (annuale, trimestre e,
-  per le ricevute con la data entro il 31 agosto, annuale a saldo) o una
+  voce…» ne aggiunge un'altra dal listino (annuale, trimestre e,
+  per le ricevute con la data entro quella del saldo, annuale a saldo) o una
   scritta a mano.
 - **DATI DEL SOCIO** — nome, indirizzo, codice fiscale, data di nascita e, per
   un minore, il genitore. Vengono dall'ultima ricevuta o dal modulo di

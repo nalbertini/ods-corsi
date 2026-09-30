@@ -67,13 +67,15 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   stato del **pagamento**, con chi non è in regola in evidenza. Quando
   qualcuno paga, la **ricevuta**: la «ricevuta semplice» dell'associazione,
   in PDF con le due copie affiancate, col numero che va avanti da sé, la
-  quota e i corsi dal foglio dei costi, i dati del socio dal modulo di
+  quota e i corsi dal listino, i dati del socio dal modulo di
   iscrizione; fatta non si cambia, si annulla (`supabase/16-ricevute.sql`,
   `src/lib/ricevutaPdf.ts`). Le **presenze** del mese: medie per corso, chi si sta
   perdendo, gli appelli che mancano, e il CSV. Le **presenze degli istruttori** entrati col PIN
   in una lezione in cui non erano previsti, da confermare o rifiutare. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`).
-  **Istruttori e accessi**, coi PIN del tablet. Le **impostazioni**: per quanto si
+  **Istruttori e accessi**, coi PIN del tablet. Il **listino** dei costi, che
+  la segreteria cambia da sé e che vale per la pagina di iscrizione e per le
+  voci delle ricevute (`supabase/19-listino.sql`). Le **impostazioni**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale con la loro
   musica e la **voce** del timer (la voce di sistema e le clip incise, uguali
   su tutti i tablet), lo storico dei timer e l'esportazione

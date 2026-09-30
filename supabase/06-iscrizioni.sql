@@ -482,6 +482,13 @@ alter default privileges in schema public revoke execute on functions from publi
 grant usage on schema public to anon;
 grant execute on function corsi_aperti(), invia_iscrizione(jsonb), puo_caricare(text), iscrizioni_regole() to anon, authenticated;
 grant execute on function accogli_iscrizione(uuid), rifiuta_iscrizione(uuid) to authenticated;
+-- Il listino della pagina di iscrizione, se 19-listino.sql è già stato lanciato.
+do $$
+begin
+  if to_regprocedure('public.listino()') is not null then
+    grant execute on function listino() to anon, authenticated;
+  end if;
+end $$;
 -- Le tabelle restano chiuse, anche quelle che verranno: Supabase per default
 -- le dà ad `anon`, e l'RLS da sola è una porta sola invece di due.
 revoke all on all tables in schema public from anon;

@@ -1108,6 +1108,19 @@ a.sg-voce { text-decoration: none; }
 .sg-personale:hover { background: var(--surface); }
 .sg-personale[data-spento='true'] { opacity: 0.5; }
 .sg-permessi { display: grid; grid-template-columns: 1fr 110px 110px; gap: 8px 12px; align-items: center; }
+/* Il listino: un corso aperto, i prezzi in fila, e la barra per salvare che resta in vista. */
+.sg-listino { max-width: 980px; }
+.sg-listino-corso { gap: 12px; padding: 14px; background: var(--bg); border: 2px solid var(--text); }
+.sg-listino-prezzi { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.sg-listino-prezzi[data-etichette='true'] { grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr)) auto; }
+.sg-listino-salva {
+  position: sticky; bottom: 0; z-index: 2;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px; background: var(--surface); border: 2px solid var(--giallo);
+}
+@media (max-width: 700px) {
+  .sg-listino-prezzi, .sg-listino-prezzi[data-etichette='true'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .sg-regole { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
 /* Le frasi da incidere: due colonne finché c'è spazio. */
 .sg-frasi { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 6px; }
