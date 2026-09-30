@@ -391,7 +391,11 @@ function Risposte({
           ))}
         </div>
         {r.colonne.nomeCompleto !== undefined && (
-          <span className="sg-sotto">Col nome e cognome insieme, il cognome è l'ultima parola: «Maria Luisa Rossi» → Maria Luisa, Rossi. Un cognome di due parole va corretto dopo, nella scheda.</span>
+          <span className="sg-sotto">
+            {r.colonne.codiceFiscale !== undefined
+              ? "Col nome e cognome insieme, il codice fiscale dice qual è il cognome, anche di due parole e anche scritto prima del nome; a chi ha scritto solo il cognome, il nome si cerca nell'email. Senza codice, il cognome è l'ultima parola."
+              : "Col nome e cognome insieme, il cognome è l'ultima parola: «Maria Luisa Rossi» → Maria Luisa, Rossi. Un cognome di due parole va corretto dopo, nella scheda; con la colonna del codice fiscale lo capisce da sé."}
+          </span>
         )}
       </section>
 

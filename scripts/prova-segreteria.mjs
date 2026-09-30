@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -346,6 +346,24 @@ console.log('\n11. le risposte del modulo Google')
   ok('nome e cognome insieme, dell\'iscritto', c2, { nomeCompleto: 2, email: 4, telefono: 3 })
   ok('il cognome è l\'ultima parola', m.leggiRisposte(t2, c2, {}, []).iscritti.map((x) => [x.nome, x.cognome]), [['Maria Luisa', 'Verdi']])
   ok('Marco resta Marco', (await s.persone()).filter((x) => x.cognome === 'Neri').map((x) => x.nome).sort(), ['Giulia', 'Marco'])
+
+  // Il modulo con le sezioni: «COGNOME NOME» in una casella, scritto un po'
+  // come capita, e le domande ripetute per i minorenni.
+  const t3 = m.leggiTabella([
+    'Informazioni cronologiche,Indirizzo email,COGNOME NOME ATLETA,CODICE FISCALE ATLETA,"NUMERO DI TELEFONO\n(per il gruppo)",Nome cognome genitore/tutore,CODICE FISCALE ATLETA,"NUMERO DI TELEFONO\n(per il gruppo)",CORSO (selezionare TUTTI i corsi)',
+    '1,mario.rossi@esempio.it,Rossi,RSSMRA80A01L219X,333 111,,,,Judo adulti',
+    '2,anna@esempio.it,Bianchi Anna,BNCNNA85C41L219Y,333 222,,,,Judo adulti',
+    '3,papa@esempio.it,Sara De Luca,,,Carlo De Luca,DLCSRA15D45L219Z,333 333,Judo 2',
+    '4,x@esempio.it,Verdi,,,,,,Judo 2',
+  ].join('\n'))
+  const c3 = m.indovinaColonne(t3.testa)
+  ok('il codice fiscale dell\'atleta, non del genitore', c3, { nomeCompleto: 2, codiceFiscale: 3, email: 1, telefono: 4, corsi: 8 })
+  const r3 = m.leggiRisposte(t3, c3, { 'Judo adulti': 'judo-adulti', 'Judo 2': 'judo-2' }, corsi)
+  ok('il codice dice cosa è il nome e cosa il cognome', r3.iscritti.map((x) => [x.nome, x.cognome]), [['Mario', 'Rossi'], ['Anna', 'Bianchi'], ['Sara', 'De Luca']])
+  ok('la colonna vuota prende quella con la stessa domanda', r3.iscritti[2].telefono, '333 333')
+  ok('il nome dall\'email si dice, senza codice si salta', [r3.note.map((x) => x.riga), r3.saltate.map((x) => x.riga)], [[2], [5]])
+  ok('senza codice, il cognome è l\'ultima parola', m.dividiNome('Rossi Mario'), { nome: 'Rossi', cognome: 'Mario' })
+  ok('e un nome dall\'email che non torna col codice non si prende', m.dividiNome('Rossi', 'RSSMRA80A01L219X', 'luigi.rossi@esempio.it'), null)
 }
 
 console.log('\nil certificato medico e il pagamento')

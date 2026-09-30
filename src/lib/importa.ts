@@ -1,5 +1,6 @@
 import type { CorsoSeg, DatiSegreteria, PersonaSeg, PersonaleSeg, Sala } from './segreteria'
 import { chiaveGiorno } from './sala'
+import { STRUTTURA_CF, lettereCognome, lettereNome } from './codiceFiscale'
 
 /**
  * L'import dei fogli Excel, dalla segreteria.
@@ -337,12 +338,13 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
 // rifarlo col foglio che è cresciuto non duplica chi era già entrato.
 // ---------------------------------------------------------------------------
 
-export type Ruolo = 'nome' | 'cognome' | 'nomeCompleto' | 'email' | 'telefono' | 'corsi'
+export type Ruolo = 'nome' | 'cognome' | 'nomeCompleto' | 'codiceFiscale' | 'email' | 'telefono' | 'corsi'
 
 export const RUOLI: Array<[Ruolo, string]> = [
   ['nome', 'NOME'],
   ['cognome', 'COGNOME'],
   ['nomeCompleto', 'NOME E COGNOME INSIEME'],
+  ['codiceFiscale', 'CODICE FISCALE'],
   ['email', 'EMAIL'],
   ['telefono', 'TELEFONO'],
   ['corsi', 'CORSI'],
@@ -367,6 +369,7 @@ export function indovinaColonne(testa: string[]): Colonne {
     c.cognome = trova((x) => persona(x) && x.includes('cognome'))
     c.nome = trova((x) => persona(x) && /\bnome\b/.test(x) && !x.includes('cognome'))
   }
+  c.codiceFiscale = trova((x) => persona(x) && /codice\s*fiscale|\bc\.?\s?f\.?(\s|$)/.test(x))
   c.email = trova((x) => /e-?mail|posta/.test(x))
   c.telefono = trova((x) => /telefono|cellulare|\bcell\b|recapito/.test(x))
   c.corsi = trova((x) => /corsi|corso|attivita|sport|disciplin/.test(x))
@@ -422,6 +425,43 @@ export function indovinaCorso(testo: string, corsi: Array<{ id: string; nome: st
     .sort((a, b) => b.nome.length - a.nome.length)[0]?.id
 }
 
+const cfDi = (s: string) => {
+  const cf = s.replace(/\s/g, '').toUpperCase()
+  return STRUTTURA_CF.test(cf) ? cf : undefined
+}
+
+const maiuscola = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+/**
+ * Nome e cognome da una casella sola. Il modulo dice «cognome nome» e c'è chi
+ * scrive «nome cognome», o chi scrive solo il cognome: il codice fiscale, che
+ * ha tre lettere per il cognome e tre per il nome, dice quali parole sono
+ * l'uno e quali l'altro, anche per un cognome di due parole («De Luca Mario»).
+ * A chi ha scritto una parola sola si cerca l'altra nell'email
+ * («nicola.albertini@…»), se torna col codice. Senza codice, o se non torna
+ * in nessun modo, il cognome è l'ultima parola.
+ */
+export function dividiNome(testo: string, cf?: string, email?: string): { nome: string; cognome: string; dallEmail?: boolean } | null {
+  const p = testo.trim().split(/\s+/).filter(Boolean)
+  const codice = cf ? cfDi(cf) : undefined
+  if (codice) {
+    const torna = (nome: string, cognome: string) => lettereCognome(cognome) === codice.slice(0, 3) && lettereNome(nome) === codice.slice(3, 6)
+    for (let k = 1; k < p.length; k++) {
+      const [a, b] = [p.slice(0, k).join(' '), p.slice(k).join(' ')]
+      if (torna(a, b)) return { nome: a, cognome: b }
+      if (torna(b, a)) return { nome: b, cognome: a }
+    }
+    if (p.length === 1 && email) {
+      const parole = email.split('@')[0].split(/[._\-\d]+/).filter((x) => x.length > 1)
+      const nome = parole.find((x) => torna(x, p[0]))
+      if (nome) return { nome: maiuscola(nome), cognome: p[0], dallEmail: true }
+      const cognome = parole.find((x) => torna(p[0], x))
+      if (cognome) return { nome: p[0], cognome: maiuscola(cognome), dallEmail: true }
+    }
+  }
+  return nomeCognome(testo)
+}
+
 /**
  * Dalle risposte agli iscritti. `abbinamenti` dice, per ogni scelta, il corso
  * (il suo id) o `''` per lasciarla stare; `corsi` dà i nomi dei corsi.
@@ -435,7 +475,14 @@ export function leggiRisposte(
   const saltate: Saltata[] = []
   const note: Saltata[] = []
   const nomeDi = new Map(corsi.map((c) => [c.id, c.nome]))
-  const cella = (r: string[], k: Ruolo) => (col[k] === undefined ? '' : (r[col[k]!] ?? '').trim())
+  // Un modulo con le sezioni (maggiorenni, minorenni) ripete le stesse domande:
+  // se la colonna scelta è vuota, vale quella con la stessa domanda che non lo è.
+  const gemelle = (i: number) => [i, ...t.testa.flatMap((h, j) => (j !== i && piatto(h) === piatto(t.testa[i] ?? '') ? [j] : []))]
+  const cella = (r: string[], k: Ruolo) => {
+    if (col[k] === undefined) return ''
+    for (const i of gemelle(col[k]!)) if ((r[i] ?? '').trim()) return r[i].trim()
+    return ''
+  }
   const iscritti = new Map<string, IscrittoFoglio>()
   const emailDi = new Map<string, string>()
   let righe = 0
@@ -447,9 +494,10 @@ export function leggiRisposte(
     let nome = cella(r, 'nome')
     let cognome = cella(r, 'cognome')
     if (col.nomeCompleto !== undefined) {
-      const nc = nomeCognome(cella(r, 'nomeCompleto'))
+      const nc = dividiNome(cella(r, 'nomeCompleto'), cella(r, 'codiceFiscale'), cella(r, 'email'))
       nome = nc?.nome ?? ''
       cognome = nc?.cognome ?? ''
+      if (nc?.dallEmail) note.push({ foglio: 'risposte', riga, motivo: `«${cella(r, 'nomeCompleto')}»: scritto solo in parte, ${nome} ${cognome} viene dall'email e dal codice fiscale` })
     }
     if (!nome || !cognome) {
       const scritto = cella(r, 'nomeCompleto') || nome || cognome
@@ -462,7 +510,7 @@ export function leggiRisposte(
       email = undefined
     }
     if (email && emailDi.has(email) && emailDi.get(email) !== chi) {
-      note.push({ foglio: 'risposte', riga, motivo: `${nome} ${cognome}: stessa email di un altro iscritto (un fratello?), entra senza email, col telefono` })
+      note.push({ foglio: 'risposte', riga, motivo: `${nome} ${cognome}: stessa email di un altro iscritto (della stessa famiglia?), entra senza email, col telefono` })
       email = undefined
     }
     if (email) emailDi.set(email, chi)
