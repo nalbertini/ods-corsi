@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -232,7 +232,7 @@ console.log('\n9. sale e regole')
   await s.salvaImpostazioni({ mesiPresenze: 24 })
   ok('la pulizia la toglie', [await s.pulisci(), await s.scadute()], [1, 0])
   const dati = await s.esporta((await app.dettaglio((await lotta2([9, 2]))[0].id)).elenco[0].id)
-  ok('l\'esportazione ha anagrafica, iscrizioni, presenze, richieste, certificato, pagamento e ricevute', Object.keys(dati).sort(), ['certificato_e_pagamento', 'esportato_il', 'iscrizioni', 'persona', 'presenze', 'ricevute', 'richieste_di_iscrizione'])
+  ok('l\'esportazione ha anagrafica, iscrizioni, presenze, richieste, certificato, pagamento e ricevute', Object.keys(dati).sort(), ['certificato_e_pagamento', 'dati_anagrafici', 'esportato_il', 'iscrizioni', 'persona', 'presenze', 'ricevute', 'richieste_di_iscrizione'])
 }
 
 console.log('\n9b. le ricevute')
@@ -306,7 +306,7 @@ console.log('\n11. le risposte del modulo Google')
   ].join('\n')
   const t = m.leggiTabella(csv)
   const col = m.indovinaColonne(t.testa)
-  ok('le colonne si riconoscono, il genitore no', col, { cognome: 3, nome: 2, email: 1, telefono: 5, corsi: 6 })
+  ok('le colonne si riconoscono, il genitore a parte', col, { cognome: 3, nome: 2, email: 1, telefono: 5, corsi: 6, genitore: 4 })
   ok('la virgola dentro le parentesi non divide', m.divideScelte('Judo 2 (nati 2017-2019, lunedì), Lotta 3'), ['Judo 2 (nati 2017-2019, lunedì)', 'Lotta 3'])
   ok('nemmeno quella prima di una minuscola', m.divideScelte('Judo 2 lunedì, mercoledì e venerdì, Lotta 3'), ['Judo 2 lunedì, mercoledì e venerdì', 'Lotta 3'])
   const corsi = (await s.corsi()).filter((c) => c.attivo).map((c) => ({ id: c.id, nome: c.nome }))
@@ -343,9 +343,58 @@ console.log('\n11. le risposte del modulo Google')
   // Un altro modulo: nome e cognome in una domanda sola, prima quella del genitore.
   const t2 = m.leggiTabella('Timestamp,Nome e cognome del genitore,Nome e cognome dell\'iscritto,Cellulare,Email\n1,Paola Verdi,Maria Luisa Verdi,333,p@e.it\n')
   const c2 = m.indovinaColonne(t2.testa)
-  ok('nome e cognome insieme, dell\'iscritto', c2, { nomeCompleto: 2, email: 4, telefono: 3 })
+  ok('nome e cognome insieme, dell\'iscritto', c2, { nomeCompleto: 2, email: 4, telefono: 3, genitore: 1 })
   ok('il cognome è l\'ultima parola', m.leggiRisposte(t2, c2, {}, []).iscritti.map((x) => [x.nome, x.cognome]), [['Maria Luisa', 'Verdi']])
   ok('Marco resta Marco', (await s.persone()).filter((x) => x.cognome === 'Neri').map((x) => x.nome).sort(), ['Giulia', 'Marco'])
+
+  // Il modulo con le sezioni: «COGNOME NOME» in una casella, scritto un po'
+  // come capita, e le domande ripetute per i minorenni.
+  const t3 = m.leggiTabella([
+    'Informazioni cronologiche,Indirizzo email,COGNOME NOME ATLETA,CODICE FISCALE ATLETA,"NUMERO DI TELEFONO\n(per il gruppo)",Nome cognome genitore/tutore,CODICE FISCALE ATLETA,"NUMERO DI TELEFONO\n(per il gruppo)",CORSO (selezionare TUTTI i corsi)',
+    '1,mario.rossi@esempio.it,Rossi,RSSMRA80A01L219X,333 111,,,,Judo adulti',
+    '2,anna@esempio.it,Bianchi Anna,BNCNNA85C41L219Y,333 222,,,,Judo adulti',
+    '3,papa@esempio.it,Sara De Luca,,,Carlo De Luca,DLCSRA15D45L219Z,333 333,Judo 2',
+    '4,x@esempio.it,Verdi,,,,,,Judo 2',
+  ].join('\n'))
+  const c3 = m.indovinaColonne(t3.testa)
+  ok('il codice fiscale dell\'atleta, non del genitore', c3, { nomeCompleto: 2, codiceFiscale: 3, email: 1, telefono: 4, corsi: 8, genitore: 5 })
+  const r3 = m.leggiRisposte(t3, c3, { 'Judo adulti': 'judo-adulti', 'Judo 2': 'judo-2' }, corsi)
+  ok('il codice dice cosa è il nome e cosa il cognome', r3.iscritti.map((x) => [x.nome, x.cognome]), [['Mario', 'Rossi'], ['Anna', 'Bianchi'], ['Sara', 'De Luca']])
+  ok('la colonna vuota prende quella con la stessa domanda', r3.iscritti[2].telefono, '333 333')
+  ok('il nome dall\'email si dice, senza codice si salta', [r3.note.filter((x) => /email/.test(x.motivo)).map((x) => x.riga), r3.saltate.map((x) => x.riga)], [[2], [5]])
+  ok('senza codice, il cognome è l\'ultima parola', m.dividiNome('Rossi Mario'), { nome: 'Rossi', cognome: 'Mario' })
+  ok('e un nome dall\'email che non torna col codice non si prende', m.dividiNome('Rossi', 'RSSMRA80A01L219X', 'luigi.rossi@esempio.it'), null)
+
+  // Nascita, residenza e genitore, com'erano nel modulo Google: il genitore
+  // che si è iscritto anche lui si riconosce, col suo codice fiscale.
+  ok('le date come si scrivono', ['13/06/2014', '3-6-14', '2014-06-13', '31/02/2014', '1/1/2090'].map((x) => m.leggiData(x, new Date(2026, 8, 30))), ['2014-06-13', '2014-06-03', '2014-06-13', null, null])
+  const t4 = m.leggiTabella([
+    'Informazioni cronologiche,Indirizzo email,COGNOME NOME ATLETA,LUOGO DI NASCITA ATLETA,DATA DI NASCITA ATLETA,CODICE FISCALE ATLETA,CITTÀ DI RESIDENZA,INDIRIZZO DI RESIDENZA,NUMERO DI TELEFONO,Nome cognome genitore/tutore,Luogo e data di nascita genitore,CORSO',
+    '1,luca.gialli@esempio.it,Gialli,Torino,15/03/1980,GLLLCU80C15L219D,Collegno,via Roma 1,333 1,,,Judo adulti',
+    '2,luca.gialli@esempio.it,Emma Gialli,Torino,04/05/2016,GLLMME16E44L219J,Collegno,via Roma 1,333 1,Luca Gialli,"Torino, 15/03/1980",Judo 2',
+    '3,z@esempio.it,Zeta Anna,Asti,32/13/1990,,Rivoli,,333 3,Mario Zeta,,Judo adulti',
+  ].join('\n'))
+  const c4 = m.indovinaColonne(t4.testa)
+  ok('nascita, residenza e genitore si riconoscono', [c4.natoA, c4.natoIl, c4.codiceFiscale, c4.comune, c4.indirizzo, c4.genitore, c4.genitoreNato], [3, 4, 5, 6, 7, 9, 10])
+  const r4 = m.leggiRisposte(t4, c4, { 'Judo adulti': 'judo-adulti', 'Judo 2': 'judo-2' }, corsi)
+  const [luca, emma, anna] = r4.iscritti
+  ok('Luca, dall\'email e dal codice', [luca.nome, luca.cognome, luca.anagrafica], ['Luca', 'Gialli', { natoIl: '1980-03-15', codiceFiscale: 'GLLLCU80C15L219D', natoA: 'Torino', comune: 'Collegno', indirizzo: 'via Roma 1' }])
+  ok('Emma: il genitore è Luca, col suo codice', [emma.anagrafica.genitoreNome, emma.anagrafica.genitoreCognome, emma.anagrafica.genitoreCodiceFiscale, emma.anagrafica.genitoreNato], ['Luca', 'Gialli', 'GLLLCU80C15L219D', 'Torino, 15/03/1980'])
+  ok('una data che non esiste resta fuori, e senza data il genitore resta: l\'età non si sa', [anna.anagrafica.natoIl, anna.anagrafica.genitoreCognome, anna.anagrafica.comune], [undefined, 'Zeta', 'Rivoli'])
+  ok('la data sbagliata si dice', r4.note.some((x) => x.riga === 4 && /data di nascita «32\/13\/1990»/.test(x.motivo)), true)
+  const t5 = m.leggiTabella('Email,Nome,Cognome,Data di nascita,Nome e cognome del genitore\nx@y.it,Carla,Neri,01/01/1990,Paola Neri\n')
+  const r5 = m.leggiRisposte(t5, m.indovinaColonne(t5.testa), {}, [])
+  ok('a una maggiorenne il genitore non si mette', [r5.iscritti[0].anagrafica, r5.note.map((x) => x.motivo)], [{ natoIl: '1990-01-01' }, ['Carla Neri: è maggiorenne, il genitore scritto nel modulo non entra']])
+
+  const a4 = await m.importa(s, { corsi: [], iscritti: r4.iscritti, righe: { corsi: 0, iscritti: 0, risposte: r4.righe }, saltate: [], note: r4.note }, () => {})
+  ok('tre con nascita o residenza', a4.anagrafiche, 3)
+  const emmaDentro = (await s.persone()).find((x) => x.nome === 'Emma' && x.cognome === 'Gialli')
+  const intest = await s.intestatarioDi(emmaDentro.id)
+  ok('la ricevuta di Emma ha i suoi dati e il genitore', [intest.natoIl, intest.codiceFiscale, intest.indirizzo, intest.comune, intest.genitore, intest.genitoreCodiceFiscale], ['2016-05-04', 'GLLMME16E44L219J', 'via Roma 1', 'Collegno', 'Gialli Luca', 'GLLLCU80C15L219D'])
+  ok('e l\'esportazione i dati anagrafici', (await s.esporta(emmaDentro.id)).dati_anagrafici.natoA, 'Torino')
+  // Reimportato con una risposta che dice meno: quello che c'era resta.
+  await s.salvaAnagrafica(emmaDentro.id, { comune: 'Rivoli', indirizzo: '' })
+  ok('una risposta nuova aggiunge e non cancella', [(await s.intestatarioDi(emmaDentro.id)).comune, (await s.intestatarioDi(emmaDentro.id)).indirizzo], ['Rivoli', 'via Roma 1'])
 }
 
 console.log('\nil certificato medico e il pagamento')

@@ -423,7 +423,17 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const richiesta = richiesteDi(personaId)
         .filter((r) => r.stato === 'accolta')
         .sort((x, y) => (y.gestitaIl ?? y.creataIl).localeCompare(x.gestitaIl ?? x.creataIl))[0]
-      return richiesta ? intestatarioDaRichiesta(richiesta) : { nome: p.nome, cognome: p.cognome }
+      if (richiesta) return intestatarioDaRichiesta(richiesta)
+      const an = a().anagrafiche?.[personaId]
+      return an ? intestatarioDaRichiesta({ ...an, nome: p.nome, cognome: p.cognome }) : { nome: p.nome, cognome: p.cognome }
+    },
+
+    async salvaAnagrafica(personaId, dati) {
+      persona(personaId)
+      const nuovi = Object.fromEntries(Object.entries(dati).flatMap(([k, v]) => (typeof v === 'string' && v.trim() ? [[k, v.trim()]] : [])))
+      if (Object.keys(nuovi).length === 0) return
+      a().anagrafiche = { ...a().anagrafiche, [personaId]: { ...a().anagrafiche?.[personaId], ...nuovi } }
+      salva()
     },
 
     async emettiRicevuta(dati) {
@@ -757,6 +767,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         richieste_di_iscrizione: richiesteDi(personaId).map(({ id: _id, personaId: _p, ...r }) => r),
         certificato_e_pagamento: { certificato_scade: p.certificato?.scade ?? null, certificato_file: p.certificato?.file ?? null, ...(p.pagamento ?? { stato: 'da_pagare' }) },
         ricevute: (a().ricevute ?? []).filter((r) => r.personaId === personaId).map(({ id: _id, personaId: _p, ...r }) => r),
+        dati_anagrafici: a().anagrafiche?.[personaId] ?? null,
       }
     },
   }

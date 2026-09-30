@@ -1,5 +1,6 @@
-import type { CorsoSeg, DatiSegreteria, PersonaSeg, PersonaleSeg, Sala } from './segreteria'
+import type { Anagrafica, CorsoSeg, DatiSegreteria, PersonaSeg, PersonaleSeg, Sala } from './segreteria'
 import { chiaveGiorno } from './sala'
+import { STRUTTURA_CF, cfTornaColNome, cfTornaConLaData, cfValido, lettereCognome, lettereNome } from './codiceFiscale'
 
 /**
  * L'import dei fogli Excel, dalla segreteria.
@@ -100,6 +101,8 @@ interface IscrittoFoglio {
    * quella del genitore, uguale per due fratelli. Serve anche lo stesso nome.
    */
   soloStessoNome?: boolean
+  /** Nascita, residenza e genitore: solo dalle risposte del modulo. */
+  anagrafica?: Anagrafica
 }
 
 export interface Fogli {
@@ -189,7 +192,11 @@ export interface Anteprima {
   ricorrenzeNuove: number
   iscrittiNuovi: number
   iscrizioniNuove: number
+  /** Gli iscritti con nascita, residenza o genitore da scrivere. */
+  anagrafiche: number
   avvisi: string[]
+  /** Dopo l'import: perché nascita, residenza e genitore non sono entrati. */
+  anagraficheFuori?: string
 }
 
 const nomeCognome = (s: string) => {
@@ -246,7 +253,8 @@ export function anteprima(f: Fogli, s: Situazione): Anteprima {
       if (!p || !c || !p.iscrizioni.some((i) => i.corsoId === c.id && (!i.al || i.al >= oggi))) iscrizioniNuove++
     }
   }
-  return { saleNuove, istruttoriNuovi, istruttoriTrovati, istruttori, corsiNuovi, ricorrenzeNuove, iscrittiNuovi, iscrizioniNuove, avvisi }
+  const anagrafiche = f.iscritti.filter((x) => x.anagrafica && Object.keys(x.anagrafica).length > 0).length
+  return { saleNuove, istruttoriNuovi, istruttoriTrovati, istruttori, corsiNuovi, ricorrenzeNuove, iscrittiNuovi, iscrizioniNuove, anagrafiche, avvisi }
 }
 
 function trovaPersona(x: IscrittoFoglio, persone: PersonaSeg[]) {
@@ -319,6 +327,16 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
       const c = corsi.get(piatto(nome))
       if (c) await d.iscrivi(p.id, c.id)
     }
+    if (x.anagrafica && Object.keys(x.anagrafica).length > 0 && !a.anagraficheFuori) {
+      try {
+        await d.salvaAnagrafica(p.id, x.anagrafica)
+      } catch (e) {
+        // Senza 18-anagrafiche.sql gli iscritti entrano lo stesso: si dice cosa è rimasto fuori.
+        const m = e instanceof Error ? e.message : String(e)
+        if (!/18-anagrafiche/.test(m)) throw e
+        a.anagraficheFuori = m
+      }
+    }
   }
 
   passo('Il calendario…')
@@ -337,15 +355,39 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
 // rifarlo col foglio che è cresciuto non duplica chi era già entrato.
 // ---------------------------------------------------------------------------
 
-export type Ruolo = 'nome' | 'cognome' | 'nomeCompleto' | 'email' | 'telefono' | 'corsi'
+export type Ruolo =
+  | 'nome'
+  | 'cognome'
+  | 'nomeCompleto'
+  | 'codiceFiscale'
+  | 'email'
+  | 'telefono'
+  | 'corsi'
+  | 'natoIl'
+  | 'natoA'
+  | 'comune'
+  | 'indirizzo'
+  | 'cap'
+  | 'genitore'
+  | 'genitoreCodiceFiscale'
+  | 'genitoreNato'
 
 export const RUOLI: Array<[Ruolo, string]> = [
   ['nome', 'NOME'],
   ['cognome', 'COGNOME'],
   ['nomeCompleto', 'NOME E COGNOME INSIEME'],
+  ['codiceFiscale', 'CODICE FISCALE'],
   ['email', 'EMAIL'],
   ['telefono', 'TELEFONO'],
   ['corsi', 'CORSI'],
+  ['natoIl', 'DATA DI NASCITA'],
+  ['natoA', 'LUOGO DI NASCITA'],
+  ['comune', 'COMUNE DI RESIDENZA'],
+  ['indirizzo', 'INDIRIZZO'],
+  ['cap', 'CAP'],
+  ['genitore', 'GENITORE (NOME E COGNOME)'],
+  ['genitoreCodiceFiscale', 'CODICE FISCALE DEL GENITORE'],
+  ['genitoreNato', 'NASCITA DEL GENITORE'],
 ]
 
 /** Ruolo → posizione della colonna. */
@@ -367,9 +409,19 @@ export function indovinaColonne(testa: string[]): Colonne {
     c.cognome = trova((x) => persona(x) && x.includes('cognome'))
     c.nome = trova((x) => persona(x) && /\bnome\b/.test(x) && !x.includes('cognome'))
   }
+  c.codiceFiscale = trova((x) => persona(x) && /codice\s*fiscale|\bc\.?\s?f\.?(\s|$)/.test(x))
   c.email = trova((x) => /e-?mail|posta/.test(x))
   c.telefono = trova((x) => /telefono|cellulare|\bcell\b|recapito/.test(x))
   c.corsi = trova((x) => /corsi|corso|attivita|sport|disciplin/.test(x))
+  c.natoIl = trova((x) => persona(x) && /data\s*(di\s*)?nascita|nat[oa]\s*il\b/.test(x))
+  c.natoA = trova((x) => persona(x) && /luogo\s*(di\s*)?nascita|comune\s*di\s*nascita|nat[oa]\s*a\b/.test(x))
+  c.comune = trova((x) => persona(x) && /citta|comune|localita/.test(x) && !/nascita/.test(x))
+  c.indirizzo = trova((x) => persona(x) && /indirizzo|residenza/.test(x) && !/e-?mail|posta|citta|comune|nascita/.test(x))
+  c.cap = trova((x) => persona(x) && /\bcap\b|codice\s*postale|c\.a\.p/.test(x))
+  const delGenitore = (x: string) => DEL_GENITORE.test(x)
+  c.genitoreCodiceFiscale = trova((x) => delGenitore(x) && /codice\s*fiscale|\bc\.?\s?f\.?(\s|$)/.test(x))
+  c.genitoreNato = trova((x) => delGenitore(x) && /nascita|nat[oa]\b/.test(x))
+  c.genitore = trova((x) => delGenitore(x) && /nome|cognome/.test(x) && !/nascita|fiscale|mail|telefono/.test(x))
   for (const k of Object.keys(c) as Ruolo[]) if (c[k] === undefined) delete c[k]
   return c
 }
@@ -422,6 +474,72 @@ export function indovinaCorso(testo: string, corsi: Array<{ id: string; nome: st
     .sort((a, b) => b.nome.length - a.nome.length)[0]?.id
 }
 
+const cfDi = (s: string) => {
+  const cf = s.replace(/\s/g, '').toUpperCase()
+  return STRUTTURA_CF.test(cf) ? cf : undefined
+}
+
+const maiuscola = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+/**
+ * Una data scritta a mano, com'è nel foglio Google: «13/06/2014», «3-6-14»,
+ * «13.06.2014» o già «2014-06-13». `AAAA-MM-GG`, o `null` se non è una data
+ * vera. Con l'anno di due cifre vale il secolo che non la mette nel futuro.
+ */
+export function leggiData(s: string, oggi = new Date()): string | null {
+  const t = s.trim()
+  let g: number, m: number, a: number
+  const iso = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  const it = t.match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{2}|\d{4})$/)
+  if (iso) [a, m, g] = [Number(iso[1]), Number(iso[2]), Number(iso[3])]
+  else if (it) {
+    ;[g, m, a] = [Number(it[1]), Number(it[2]), Number(it[3])]
+    if (it[3].length === 2) a = 2000 + a > oggi.getFullYear() ? 1900 + a : 2000 + a
+  } else return null
+  const d = new Date(a, m - 1, g)
+  if (d.getFullYear() !== a || d.getMonth() !== m - 1 || d.getDate() !== g || d > oggi) return null
+  return `${a}-${String(m).padStart(2, '0')}-${String(g).padStart(2, '0')}`
+}
+
+/** Quanti anni ha oggi chi è nato in quel giorno. */
+const anni = (natoIl: string, oggi = new Date()) => {
+  const [a, m, g] = natoIl.split('-').map(Number)
+  return oggi.getFullYear() - a - (oggi.getMonth() + 1 < m || (oggi.getMonth() + 1 === m && oggi.getDate() < g) ? 1 : 0)
+}
+
+/** Quanto può essere lungo un campo di `anagrafiche` (18-anagrafiche.sql). */
+const LUNGHI: Partial<Record<keyof Anagrafica, number>> = { natoA: 80, comune: 80, indirizzo: 160, genitoreNato: 120, genitoreNome: 80, genitoreCognome: 80 }
+
+/**
+ * Nome e cognome da una casella sola. Il modulo dice «cognome nome» e c'è chi
+ * scrive «nome cognome», o chi scrive solo il cognome: il codice fiscale, che
+ * ha tre lettere per il cognome e tre per il nome, dice quali parole sono
+ * l'uno e quali l'altro, anche per un cognome di due parole («De Luca Mario»).
+ * A chi ha scritto una parola sola si cerca l'altra nell'email
+ * («nicola.albertini@…»), se torna col codice. Senza codice, o se non torna
+ * in nessun modo, il cognome è l'ultima parola.
+ */
+export function dividiNome(testo: string, cf?: string, email?: string): { nome: string; cognome: string; dallEmail?: boolean } | null {
+  const p = testo.trim().split(/\s+/).filter(Boolean)
+  const codice = cf ? cfDi(cf) : undefined
+  if (codice) {
+    const torna = (nome: string, cognome: string) => lettereCognome(cognome) === codice.slice(0, 3) && lettereNome(nome) === codice.slice(3, 6)
+    for (let k = 1; k < p.length; k++) {
+      const [a, b] = [p.slice(0, k).join(' '), p.slice(k).join(' ')]
+      if (torna(a, b)) return { nome: a, cognome: b }
+      if (torna(b, a)) return { nome: b, cognome: a }
+    }
+    if (p.length === 1 && email) {
+      const parole = email.split('@')[0].split(/[._\-\d]+/).filter((x) => x.length > 1)
+      const nome = parole.find((x) => torna(x, p[0]))
+      if (nome) return { nome: maiuscola(nome), cognome: p[0], dallEmail: true }
+      const cognome = parole.find((x) => torna(p[0], x))
+      if (cognome) return { nome: p[0], cognome: maiuscola(cognome), dallEmail: true }
+    }
+  }
+  return nomeCognome(testo)
+}
+
 /**
  * Dalle risposte agli iscritti. `abbinamenti` dice, per ogni scelta, il corso
  * (il suo id) o `''` per lasciarla stare; `corsi` dà i nomi dei corsi.
@@ -435,9 +553,18 @@ export function leggiRisposte(
   const saltate: Saltata[] = []
   const note: Saltata[] = []
   const nomeDi = new Map(corsi.map((c) => [c.id, c.nome]))
-  const cella = (r: string[], k: Ruolo) => (col[k] === undefined ? '' : (r[col[k]!] ?? '').trim())
+  // Un modulo con le sezioni (maggiorenni, minorenni) ripete le stesse domande:
+  // se la colonna scelta è vuota, vale quella con la stessa domanda che non lo è.
+  const gemelle = (i: number) => [i, ...t.testa.flatMap((h, j) => (j !== i && piatto(h) === piatto(t.testa[i] ?? '') ? [j] : []))]
+  const cella = (r: string[], k: Ruolo) => {
+    if (col[k] === undefined) return ''
+    for (const i of gemelle(col[k]!)) if ((r[i] ?? '').trim()) return r[i].trim()
+    return ''
+  }
   const iscritti = new Map<string, IscrittoFoglio>()
   const emailDi = new Map<string, string>()
+  const genitoreDi = new Map<IscrittoFoglio, string>()
+  const rigaDi = new Map<IscrittoFoglio, number>()
   let righe = 0
 
   t.righe.forEach((r, i) => {
@@ -447,9 +574,10 @@ export function leggiRisposte(
     let nome = cella(r, 'nome')
     let cognome = cella(r, 'cognome')
     if (col.nomeCompleto !== undefined) {
-      const nc = nomeCognome(cella(r, 'nomeCompleto'))
+      const nc = dividiNome(cella(r, 'nomeCompleto'), cella(r, 'codiceFiscale'), cella(r, 'email'))
       nome = nc?.nome ?? ''
       cognome = nc?.cognome ?? ''
+      if (nc?.dallEmail) note.push({ foglio: 'risposte', riga, motivo: `«${cella(r, 'nomeCompleto')}»: scritto solo in parte, ${nome} ${cognome} viene dall'email e dal codice fiscale` })
     }
     if (!nome || !cognome) {
       const scritto = cella(r, 'nomeCompleto') || nome || cognome
@@ -462,7 +590,7 @@ export function leggiRisposte(
       email = undefined
     }
     if (email && emailDi.has(email) && emailDi.get(email) !== chi) {
-      note.push({ foglio: 'risposte', riga, motivo: `${nome} ${cognome}: stessa email di un altro iscritto (un fratello?), entra senza email, col telefono` })
+      note.push({ foglio: 'risposte', riga, motivo: `${nome} ${cognome}: stessa email di un altro iscritto (della stessa famiglia?), entra senza email, col telefono` })
       email = undefined
     }
     if (email) emailDi.set(email, chi)
@@ -481,7 +609,85 @@ export function leggiRisposte(
       }
       if (!x.corsi.includes(nomeCorso)) x.corsi.push(nomeCorso)
     }
+    // Nascita, residenza e genitore: chi ha mandato il modulo due volte aggiunge, e l'ultima risposta vale.
+    const an = anagrafica(r, riga, nome, cognome)
+    if (Object.keys(an).length) x.anagrafica = { ...x.anagrafica, ...an }
+    if (cella(r, 'genitore')) genitoreDi.set(x, cella(r, 'genitore'))
+    rigaDi.set(x, riga)
     iscritti.set(chi, x)
   })
+
+  // Il genitore dopo, quando ci sono tutti: se ha mandato il modulo anche lui
+  // («Nicola Albertini», che fa preparazione atletica), si prendono il suo
+  // nome e cognome giusti e il suo codice fiscale.
+  for (const [x, scritto] of genitoreDi) {
+    const parole = (s: string) => s.split(/\s+/).map(piatto).filter(Boolean).sort().join(' ')
+    const lui = [...iscritti.values()].find((y) => y !== x && parole(`${y.nome} ${y.cognome}`) === parole(scritto))
+    const an = { ...x.anagrafica }
+    if (lui) {
+      an.genitoreNome = lui.nome
+      an.genitoreCognome = lui.cognome
+      if (!an.genitoreCodiceFiscale && lui.anagrafica?.codiceFiscale) an.genitoreCodiceFiscale = lui.anagrafica.codiceFiscale
+    } else {
+      const nc = dividiNome(scritto, an.genitoreCodiceFiscale)
+      an.genitoreNome = nc?.nome
+      an.genitoreCognome = nc?.cognome ?? scritto.trim()
+      if (!an.genitoreNome) delete an.genitoreNome
+    }
+    for (const k of ['genitoreNome', 'genitoreCognome'] as const) if ((an[k]?.length ?? 0) > LUNGHI[k]!) delete an[k]
+    x.anagrafica = an
+  }
+  // Un maggiorenne non ha un genitore sulla ricevuta: la domanda era per i minori.
+  for (const x of iscritti.values()) {
+    const an = x.anagrafica
+    if (!an?.natoIl || anni(an.natoIl) < 18 || !(an.genitoreNome || an.genitoreCognome || an.genitoreCodiceFiscale || an.genitoreNato)) continue
+    note.push({ foglio: 'risposte', riga: rigaDi.get(x) ?? 0, motivo: `${x.nome} ${x.cognome}: è maggiorenne, il genitore scritto nel modulo non entra` })
+    delete an.genitoreNome
+    delete an.genitoreCognome
+    delete an.genitoreCodiceFiscale
+    delete an.genitoreNato
+  }
   return { iscritti: [...iscritti.values()], righe, saltate, note }
+
+  /** I dati anagrafici di una risposta, con una nota per quello che non si capisce e resta fuori. */
+  function anagrafica(r: string[], riga: number, nome: string, cognome: string): Anagrafica {
+    const chi = `${nome} ${cognome}`
+    const nota = (motivo: string) => note.push({ foglio: 'risposte', riga, motivo: `${chi}: ${motivo}` })
+    const a: Anagrafica = {}
+    const data = cella(r, 'natoIl')
+    if (data) {
+      const d = leggiData(data)
+      if (d) a.natoIl = d
+      else nota(`non capisco la data di nascita «${data}», entra senza`)
+    }
+    const cfScritto = cella(r, 'codiceFiscale')
+    if (cfScritto) {
+      const cf = cfDi(cfScritto)
+      if (!cf) nota(`il codice fiscale «${cfScritto}» non sembra giusto, entra senza`)
+      else {
+        a.codiceFiscale = cf
+        if (!cfValido(cf)) nota(`nel codice fiscale ${cf} l'ultimo carattere non torna: controllalo`)
+        else if (!cfTornaColNome(cf, nome, cognome)) nota(`il codice fiscale ${cf} non torna con nome e cognome (è di qualcun altro?)`)
+        else if (a.natoIl && !cfTornaConLaData(cf, a.natoIl)) nota(`la data di nascita ${data} e il codice fiscale non dicono lo stesso giorno: controllali`)
+      }
+    }
+    const cfGenitore = cella(r, 'genitoreCodiceFiscale')
+    if (cfGenitore) {
+      const cf = cfDi(cfGenitore)
+      if (cf) a.genitoreCodiceFiscale = cf
+      else nota(`il codice fiscale del genitore «${cfGenitore}» non sembra giusto, entra senza`)
+    }
+    for (const k of ['natoA', 'comune', 'indirizzo', 'genitoreNato'] as const) {
+      const v = cella(r, k).replace(/\s+/g, ' ')
+      if (!v) continue
+      if (v.length > LUNGHI[k]!) nota(`«${v.slice(0, 30)}…» è troppo lungo, entra senza`)
+      else a[k] = v
+    }
+    const cap = cella(r, 'cap').replace(/\s/g, '')
+    if (cap) {
+      if (/^\d{5}$/.test(cap)) a.cap = cap
+      else nota(`il CAP «${cap}» non sembra giusto, entra senza`)
+    }
+    return a
+  }
 }

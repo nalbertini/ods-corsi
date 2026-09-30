@@ -115,6 +115,26 @@ export interface PagamentoSeg {
   nota?: string
 }
 
+/**
+ * Nascita, residenza e genitore di chi è entrato dall'import del modulo
+ * Google, che una richiesta di iscrizione non ce l'ha (`18-anagrafiche.sql`).
+ * Ogni campo può mancare: il modulo di prima non chiedeva tutto.
+ */
+export interface Anagrafica {
+  /** `AAAA-MM-GG`. */
+  natoIl?: string
+  natoA?: string
+  codiceFiscale?: string
+  indirizzo?: string
+  cap?: string
+  comune?: string
+  genitoreNome?: string
+  genitoreCognome?: string
+  genitoreCodiceFiscale?: string
+  /** Luogo e data di nascita del genitore, come sono scritti nel modulo. */
+  genitoreNato?: string
+}
+
 /** Un file da aprire: il link vale poco, col database dieci minuti. */
 export interface FileSeg {
   url: string
@@ -275,10 +295,15 @@ export interface DatiSegreteria {
   prossimoNumero(anno: number): Promise<number>
   /**
    * I dati del socio per una ricevuta nuova: quelli dell'ultima ricevuta,
-   * se c'è; se no quelli della richiesta di iscrizione accolta; se no nome e
-   * cognome.
+   * se c'è; se no quelli della richiesta di iscrizione accolta; se no quelli
+   * venuti dall'import (`salvaAnagrafica`); se no nome e cognome.
    */
   intestatarioDi(personaId: string): Promise<IntestatarioRicevuta>
+  /**
+   * Scrive i dati anagrafici che ci sono in `a`; quelli che mancano restano
+   * com'erano, così un'altra risposta del modulo aggiunge e non cancella.
+   */
+  salvaAnagrafica(personaId: string, a: Anagrafica): Promise<void>
   /** Fa la ricevuta, col suo numero (`emetti_ricevuta` in `16-ricevute.sql`). */
   emettiRicevuta(r: DatiRicevuta): Promise<Ricevuta>
   /** La annulla: resta, col suo numero, e il PDF dice ANNULLATA. */
