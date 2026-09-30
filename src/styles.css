@@ -470,6 +470,8 @@ a.btn { text-decoration: none; }
   margin-top: 8px; padding-top: 10px; border-top: 2px solid var(--line-soft);
 }
 .costo-griglia[data-etichette='true'] { grid-template-columns: auto repeat(3, 1fr); }
+.costo-griglia[data-saldo='false'] { grid-template-columns: repeat(2, 1fr); }
+.costo-griglia[data-saldo='false'][data-etichette='true'] { grid-template-columns: auto repeat(2, 1fr); }
 .costo-testa { font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); line-height: 1.2; }
 .costo-euro { font-size: 20px; font-weight: 700; }
 .costo-euro[data-vuoto='true'] { color: var(--faint); }

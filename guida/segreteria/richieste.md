@@ -17,7 +17,7 @@ Normalmente si vedono solo le nuove; **ANCHE QUELLE GIÀ GESTITE** mostra tutte.
 ## Guardare una richiesta
 
 Un clic apre le risposte: nato il / a, codice fiscale, residenza, genitore (per
-un minore), email e telefono, corsi, come paga (trimestre o annuale), note.
+un minore), email, telefono e l'eventuale telefono 2, corsi, come paga (trimestre o annuale), note.
 
 Sotto, **I FILE**: modulo firmato, carta d'identità, ricevuta. Il modulo è
 la foto del foglio firmato a mano, oppure il PDF firmato dal telefono: il

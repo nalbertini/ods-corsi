@@ -3,7 +3,7 @@ import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile }
 import { controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi, pulisciCf } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { riduciFoto } from '../lib/foto'
-import { INFORMATIVA_PUBBLICA, MODULI, STAGIONE } from '../lib/iscrizione'
+import { INFORMATIVA_PUBBLICA, MODULI, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
 import type { SceltaModulo } from '../lib/firma'
 import { Bollino, Campo, CaricaFile, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
@@ -38,12 +38,14 @@ const VUOTO: DatiRichiesta = {
   comune: '',
   email: '',
   telefono: '',
+  telefono2: '',
   genitoreNome: '',
   genitoreCognome: '',
   genitoreCodiceFiscale: '',
   corsi: [],
   formula: 'trimestre',
   note: '',
+  regolamento: false,
 }
 
 /** Il campo da cui si comincia a correggere, nell'ordine in cui si compila. */
@@ -61,8 +63,10 @@ const ID: Record<CampoModulo, string> = {
   comune: 'm-comune',
   email: 'm-email',
   telefono: 'm-tel',
+  telefono2: 'm-tel2',
   corsi: 'm-corsi',
   formula: 'm-formula',
+  regolamento: 'm-regolamento',
 }
 
 /** Le caselle del foglio: finché non si sceglie, nessuna. */
@@ -356,6 +360,9 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         <Campo id="m-tel" nota={nota('telefono')} etichetta="TELEFONO">
           <input id="m-tel" {...segna('telefono')} className="campo" type="tel" autoComplete="tel" value={b.telefono} onChange={metti('telefono')} />
         </Campo>
+        <Campo id="m-tel2" nota={nota('telefono2')} etichetta="TELEFONO 2 · FACOLTATIVO">
+          <input id="m-tel2" {...segna('telefono2')} className="campo" type="tel" value={b.telefono2} onChange={metti('telefono2')} />
+        </Campo>
       </Sezione>
 
       <Sezione titolo="I CORSI">
@@ -489,6 +496,29 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         <div className="vh" aria-hidden>
           <label htmlFor="m-sito">Non compilare</label>
           <input id="m-sito" tabIndex={-1} autoComplete="off" value={trappola} onChange={(e) => setTrappola(e.target.value)} />
+        </div>
+        <div className="modulo-largo">
+          <label className="modulo-privacy">
+            <input
+              id="m-regolamento"
+              type="checkbox"
+              checked={!!b.regolamento}
+              onChange={(e) => setB({ ...b, regolamento: e.target.checked })}
+              aria-describedby={nota('regolamento') ? 'm-regolamento-nota' : undefined}
+            />
+            <span>
+              Accetto il{' '}
+              {REGOLAMENTO ? (
+                <a href={REGOLAMENTO} target="_blank" rel="noreferrer" className="link-sec">
+                  Regolamento Sociale
+                </a>
+              ) : (
+                'Regolamento Sociale'
+              )}{' '}
+              dell'associazione.
+            </span>
+          </label>
+          <NotaCampo id="m-regolamento-nota" nota={nota('regolamento')} />
         </div>
         <label className="modulo-largo modulo-privacy">
           <input type="checkbox" checked={privacy} onChange={(e) => setPrivacy(e.target.checked)} />

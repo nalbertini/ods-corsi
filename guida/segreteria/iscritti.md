@@ -77,8 +77,9 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   fa, coi prezzi del foglio dei costi. Ogni voce ha la quantità, il prezzo, da
   quando a quando vale e quanto si è **PAGATO ORA**: di solito tutto, ma chi
   paga una parte scrive la parte. **Togli** toglie una voce; «Aggiungi una
-  voce…» ne aggiunge un'altra dal foglio dei costi (annuale, annuale a saldo,
-  trimestre) o una scritta a mano.
+  voce…» ne aggiunge un'altra dal foglio dei costi (annuale, trimestre e,
+  per le ricevute con la data entro il 31 agosto, annuale a saldo) o una
+  scritta a mano.
 - **DATI DEL SOCIO** — nome, indirizzo, codice fiscale, data di nascita e, per
   un minore, il genitore. Vengono dall'ultima ricevuta o dal modulo di
   iscrizione online; se mancano si aprono da soli, da scrivere. Si correggono

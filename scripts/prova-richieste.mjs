@@ -66,7 +66,7 @@ const errore = async (f) => {
 const adulto = (cambi = {}) => ({
   nome: 'Luca', cognome: 'Rossi', natoIl: '1996-01-01', natoA: 'Torino', codiceFiscale: 'rsslcu96a01 l219k',
   indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'Luca@Esempio.it', telefono: '347 111 2233',
-  corsi: ['judo-adulti'], formula: 'annuale', ...cambi,
+  corsi: ['judo-adulti'], formula: 'annuale', regolamento: true, ...cambi,
 })
 const genitore = { genitoreNome: 'Paola', genitoreCognome: 'Rossi', genitoreCodiceFiscale: 'RSSPLA80A41L219P' }
 
@@ -111,6 +111,10 @@ console.log('\n2b. il codice fiscale, letto')
   ok('un numero nel nome', await errore(() => r.invia(adulto({ nome: 'Luca2' }))), 'Un campo non va: nome e cognome non hanno numeri')
   ok('lettere nel telefono', await errore(() => r.invia(adulto({ telefono: '347 abc 2233' }))), 'Un campo non va: il telefono non sembra giusto')
   ok('il telefono col prefisso', m.controlla(adulto({ telefono: '+39 347-111.2233' })), null)
+  ok('il secondo telefono si può lasciare vuoto', m.controlla(adulto({ telefono2: '' })), null)
+  ok('il secondo telefono, se c’è, va scritto giusto', await errore(() => r.invia(adulto({ telefono2: '011 abc' }))), 'Un campo non va: il secondo telefono non sembra giusto')
+  ok('senza il regolamento no', await errore(() => r.invia(adulto({ regolamento: false }))), 'Serve accettare il Regolamento Sociale')
+  ok('detto sotto la casella', m.problemi(adulto({ regolamento: undefined })), { regolamento: 'Serve accettarlo per iscriversi' })
 
   const p = m.problemi(adulto({ nome: '', cap: '100', codiceFiscale: 'RSSLCU96A01L219X', corsi: [] }))
   ok('sotto ogni campo la sua', p, { nome: 'Manca', codiceFiscale: 'Non torna: controlla lettere e numeri, uno per uno', corsi: 'Scegline almeno uno', cap: 'Sono 5 cifre' })

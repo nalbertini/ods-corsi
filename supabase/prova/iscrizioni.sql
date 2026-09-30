@@ -54,7 +54,7 @@ create or replace function adulto(cambi jsonb default '{}') returns jsonb langua
     'nome', 'Luca', 'cognome', 'Rossi', 'nato_il', (current_date - interval '30 years')::date,
     'nato_a', 'Torino', 'codice_fiscale', (select lower(substr(c, 1, 11)) || ' ' || substr(c, 12) from cf_prova('RSSLCU', (current_date - interval '30 years')::date) c), 'indirizzo', 'Via Roma 1',
     'cap', '10093', 'comune', 'Collegno', 'email', 'Luca@Esempio.it', 'telefono', '347 111 2233',
-    'corsi', jsonb_build_array('cccccccc-0000-0000-0000-000000000001'), 'formula', 'annuale'
+    'corsi', jsonb_build_array('cccccccc-0000-0000-0000-000000000001'), 'formula', 'annuale', 'regolamento', true
   ) || cambi
 $$;
 grant execute on function tenta(text), atteso(text, text, text), adulto(jsonb), chi(text), cf_prova(text, date, boolean) to anon, authenticated;
@@ -102,6 +102,8 @@ select atteso('un altro giorno di nascita', tenta($$select invia_iscrizione(adul
 select atteso('un numero nel nome', tenta($$select invia_iscrizione(adulto('{"nome": "Luca2"}'))::text$$), 'NEGATO: Un campo non va: nome e cognome non hanno numeri');
 select atteso('il codice di un altro nome', tenta($$select invia_iscrizione(adulto('{"nome": "Marco"}'))::text$$), 'NEGATO: Il codice fiscale non torna con nome e cognome…');
 select atteso('lettere nel telefono', tenta($$select invia_iscrizione(adulto('{"telefono": "347 abc 2233"}'))::text$$), 'NEGATO: Un campo non va: il telefono non sembra giusto');
+select atteso('lettere nel secondo telefono', tenta($$select invia_iscrizione(adulto('{"telefono_2": "011 abc"}'))::text$$), 'NEGATO: Un campo non va: il secondo telefono non sembra giusto');
+select atteso('senza il regolamento no', tenta($$select invia_iscrizione(adulto('{"regolamento": false}'))::text$$), 'NEGATO: Serve accettare il Regolamento Sociale');
 select atteso('sette corsi no', tenta($$select invia_iscrizione(adulto(jsonb_build_object('corsi', (select jsonb_agg(gen_random_uuid()) from generate_series(1, 7)))))::text$$),
   'NEGATO: Un campo non va: si possono scegliere al massimo sei corsi');
 select atteso('il genitore sbagliato di una lettera', tenta($$select invia_iscrizione(adulto(jsonb_build_object(

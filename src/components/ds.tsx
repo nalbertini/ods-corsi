@@ -234,9 +234,10 @@ export interface PrezziCosto {
 
 const euro = (n?: number) => (n === undefined ? '—' : `${n} €`)
 
-/** Un corso nel listino: età, orari, i tre prezzi in colonna, la nota e il link al sito. */
+/** Un corso nel listino: età, orari, i prezzi in colonna (il saldo solo se `saldo`), la nota e il link al sito. */
 export function Costo({
   corso,
+  saldo = true,
   frase,
   eta,
   orari,
@@ -246,6 +247,7 @@ export function Costo({
   link,
 }: {
   corso: string
+  saldo?: boolean
   frase?: string
   eta: string
   orari: readonly string[]
@@ -264,9 +266,9 @@ export function Costo({
         <Dettaglio key={o}>{o}</Dettaglio>
       ))}
 
-      <div className="costo-griglia" data-etichette={conEtichette}>
+      <div className="costo-griglia" data-etichette={conEtichette} data-saldo={saldo}>
         {conEtichette && <span />}
-        <span className="costo-testa">SALDO 31/8</span>
+        {saldo && <span className="costo-testa">SALDO 31/8</span>}
         <span className="costo-testa">ANNUALE</span>
         <span className="costo-testa">
           TRIMESTRE
@@ -278,7 +280,7 @@ export function Costo({
           )}
         </span>
         {prezzi.map((p, i) => (
-          <RigaPrezzi key={i} prezzi={p} conEtichette={conEtichette} />
+          <RigaPrezzi key={i} prezzi={p} conEtichette={conEtichette} saldo={saldo} />
         ))}
       </div>
 
@@ -293,11 +295,11 @@ export function Costo({
   )
 }
 
-function RigaPrezzi({ prezzi, conEtichette }: { prezzi: PrezziCosto; conEtichette: boolean }) {
+function RigaPrezzi({ prezzi, conEtichette, saldo }: { prezzi: PrezziCosto; conEtichette: boolean; saldo: boolean }) {
   return (
     <>
       {conEtichette && <span className="costo-testa costo-etichetta">{prezzi.etichetta}</span>}
-      {[prezzi.saldo, prezzi.annuale, prezzi.trimestre].map((n, i) => (
+      {(saldo ? [prezzi.saldo, prezzi.annuale, prezzi.trimestre] : [prezzi.annuale, prezzi.trimestre]).map((n, i) => (
         <span key={i} className="num costo-euro" data-vuoto={n === undefined}>
           {euro(n)}
         </span>
