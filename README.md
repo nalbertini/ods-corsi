@@ -72,7 +72,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   `src/lib/ricevutaPdf.ts`). Le **presenze** del mese: medie per corso, chi si sta
   perdendo, gli appelli che mancano, e il CSV. Le **presenze degli istruttori** entrati col PIN
   in una lezione in cui non erano previsti, da confermare o rifiutare. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
-  si scaricano, con le colonne e i corsi da abbinare.
+  si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`).
   **Istruttori e accessi**, coi PIN del tablet. Le **impostazioni**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale con la loro
   musica e la **voce** del timer (la voce di sistema e le clip incise, uguali

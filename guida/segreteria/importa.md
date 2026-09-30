@@ -42,6 +42,14 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
      col codice; fra le note si vede a chi è successo. Senza codice il
      cognome è l'ultima parola, e un cognome di due parole va corretto dopo,
      nella scheda.
+   - Dalle risposte entrano anche **nascita, residenza e genitore**: la data
+     e il luogo di nascita, il codice fiscale, il comune, l'indirizzo e il
+     CAP, e per un minore il genitore (nome e cognome, codice fiscale, luogo
+     e data di nascita). Servono alle **ricevute**, che li prendono da soli.
+     Se il genitore ha mandato il modulo anche lui, si riconosce e si prende
+     il suo codice fiscale; a un maggiorenne il genitore non si mette. Una
+     data che non si capisce, un codice fiscale sbagliato o che non torna con
+     la data restano fra le note, da controllare.
    - Un modulo con le sezioni (maggiorenni e minorenni) ripete le stesse
      domande: basta sceglierne una, se è vuota vale quella con la stessa
      domanda.

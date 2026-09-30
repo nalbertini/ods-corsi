@@ -41,6 +41,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 15. `15-presenze-istruttori.sql` — la presenza degli istruttori dal PIN del tablet: da sola se erano previsti, se no da confermare in segreteria
 16. `16-ricevute.sql` — le ricevute dei pagamenti, col loro numero, e i dati dell'associazione che vanno in testa
 17. `17-luoghi.sql` — i comuni e gli stati esteri del codice fiscale, per il luogo di nascita del modulo. Lo genera `scripts/luoghi.py` dalle tabelle dell'ANPR; è grande (circa 600 KB), e se il SQL Editor non lo prende si lancia con `psql`. Finché non c'è, il luogo di nascita resta quello scritto nel modulo
+18. `18-anagrafiche.sql` — nascita, residenza e genitore degli iscritti che arrivano dalle risposte del modulo Google
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -80,7 +81,11 @@ rilanciare `06-iscrizioni.sql`: finché non c'è, la scheda di un iscritto dice
 che le ricevute non sono attive, e il pagamento si segna come prima. Per il
 ruolo doppio, segreteria e istruttore, si rilanciano `01-schema.sql`, poi
 `15-presenze-istruttori.sql` e `06-iscrizioni.sql`: finché non c'è, si entra
-come prima, e scegliere **TUTTI E DUE** dice che va rilanciato `01-schema.sql`.
+come prima, e scegliere **TUTTI E DUE** dice che va rilanciato `01-schema.sql`. Per nascita,
+residenza e genitore degli iscritti importati basta `18-anagrafiche.sql`
+(dopo `07-certificati-pagamenti.sql`), che non chiede di rilanciare
+`06-iscrizioni.sql`: finché non c'è, l'import porta dentro gli iscritti come
+prima, e dice che quei dati sono rimasti fuori.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -554,5 +559,7 @@ solo quando serve e fin dove dicono le regole; `presenze-istruttori.sql`, dopo
 chi era previsto (anche da sostituto), da confermare agli altri, e confermata
 o rifiutata solo dalla segreteria; `ricevute.sql` prova le ricevute: le fa e le
 annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i
-conti li fa il server, e una fatta non si cambia. `finto-supabase.sql` rifà anche le due
+conti li fa il server, e una fatta non si cambia; `anagrafiche.sql` prova
+nascita, residenza e genitore degli iscritti importati: li vede e li cambia
+solo la segreteria, e se ne vanno con la persona. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

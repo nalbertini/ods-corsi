@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { AllenamentoSeg, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
+import type { AllenamentoSeg, Anagrafica, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
 import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
@@ -88,6 +88,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
   [/ricevute|emetti_ricevuta/, 'Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql'],
+  [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
   [/presenze_istruttori/, 'Le presenze degli istruttori non sono ancora attive sul database: va lanciato 15-presenze-istruttori.sql'],
 ]
 
@@ -102,6 +103,27 @@ const MANCA_DOPPIO = 'Il ruolo doppio, segreteria e istruttore, non è ancora at
 function ruoloDaScrivere(p: RuoloPersonale): { ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean } {
   if (p.ancheIstruttore === undefined) return { ruolo: p.ruolo }
   return { ruolo: p.ruolo, anche_istruttore: p.ruolo === 'staff' && p.ancheIstruttore }
+}
+
+/** `anagrafiche` (18-anagrafiche.sql): i nomi delle colonne e dei campi, nello stesso ordine. */
+const ANAGRAFICA: Array<[keyof Anagrafica, string]> = [
+  ['natoIl', 'nato_il'],
+  ['natoA', 'nato_a'],
+  ['codiceFiscale', 'codice_fiscale'],
+  ['indirizzo', 'indirizzo'],
+  ['cap', 'cap'],
+  ['comune', 'comune'],
+  ['genitoreNome', 'genitore_nome'],
+  ['genitoreCognome', 'genitore_cognome'],
+  ['genitoreCodiceFiscale', 'genitore_codice_fiscale'],
+  ['genitoreNato', 'genitore_nato'],
+]
+const CAMPI_ANAGRAFICA = ANAGRAFICA.map(([, c]) => c).join(', ')
+type RigaAnagrafica = Record<string, string | null>
+const aRigaAnagrafica = (a: Anagrafica) => Object.fromEntries(ANAGRAFICA.flatMap(([k, c]) => (a[k]?.trim() ? [[c, a[k]!.trim()]] : [])))
+function daRigaAnagrafica(r: RigaAnagrafica | null): Anagrafica | null {
+  if (!r) return null
+  return Object.fromEntries(ANAGRAFICA.flatMap(([k, c]) => (r[c] ? [[k, r[c]]] : []))) as Anagrafica
 }
 
 /** Un errore del database detto in modo che la segreteria lo capisca. */
@@ -568,13 +590,25 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         nome: string; cognome: string; nato_il: string; codice_fiscale: string; indirizzo: string; cap: string; comune: string
         genitore_nome: string | null; genitore_cognome: string | null; genitore_codice_fiscale: string | null
       } | null
-      if (!r) return { nome: chi.nome, cognome: chi.cognome }
+      if (!r) {
+        // Chi è entrato dall'import: senza 18-anagrafiche.sql non c'è, e bastano nome e cognome.
+        const an = await db.from('anagrafiche').select(CAMPI_ANAGRAFICA).eq('persona_id', personaId).maybeSingle()
+        const x = an.error ? null : daRigaAnagrafica(an.data as RigaAnagrafica | null)
+        return x ? intestatarioDaRichiesta({ ...x, nome: chi.nome, cognome: chi.cognome }) : { nome: chi.nome, cognome: chi.cognome }
+      }
       return {
         ...intestatarioDaRichiesta({
           nome: chi.nome, cognome: chi.cognome, natoIl: r.nato_il, codiceFiscale: r.codice_fiscale, indirizzo: r.indirizzo, cap: r.cap, comune: r.comune,
           genitoreNome: r.genitore_nome ?? undefined, genitoreCognome: r.genitore_cognome ?? undefined, genitoreCodiceFiscale: r.genitore_codice_fiscale ?? undefined,
         }),
       }
+    },
+
+    async salvaAnagrafica(personaId, a) {
+      const riga = aRigaAnagrafica(a)
+      if (Object.keys(riga).length === 0) return
+      // Le colonne che non ci sono nell'upsert restano com'erano.
+      ok(await db.from('anagrafiche').upsert({ persona_id: personaId, ...riga }, { onConflict: 'persona_id' }))
     },
 
     async emettiRicevuta(r) {
@@ -912,7 +946,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async esporta(personaId) {
-      const [persona, isc, pres, rich, scheda, ric] = await Promise.all([
+      const [persona, isc, pres, rich, scheda, ric, anag] = await Promise.all([
         db.from('persone').select('nome, cognome, email, telefono, ruolo, attiva, creata_il').eq('id', personaId).single(),
         db.from('iscrizioni').select('dal, al, corsi ( nome )').eq('persona_id', personaId),
         db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId),
@@ -922,6 +956,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         db.from('schede_iscritti').select('certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota, cambiata_il').eq('persona_id', personaId).maybeSingle(),
         // Le ricevute: col socio e le voci così come sono stampate.
         db.from('ricevute').select('anno, numero, data, intestatario, voci, totale, pagato, anticipo, note, creata_il, annullata_il').eq('persona_id', personaId),
+        // Nascita, residenza e genitore di chi è entrato dall'import.
+        db.from('anagrafiche').select(`${CAMPI_ANAGRAFICA}, cambiata_il`).eq('persona_id', personaId).maybeSingle(),
       ])
       return {
         esportato_il: new Date().toISOString(),
@@ -932,6 +968,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         certificato_e_pagamento: ok(scheda),
         // Senza 16-ricevute.sql non ce ne sono.
         ricevute: ric.error?.code === '42P01' || ric.error?.code === 'PGRST205' ? [] : ok(ric),
+        // Senza 18-anagrafiche.sql non ce n'è.
+        dati_anagrafici: anag.error?.code === '42P01' || anag.error?.code === 'PGRST205' ? null : ok(anag),
       }
     },
   }

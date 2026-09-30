@@ -236,6 +236,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
                 <Conto n={controllo.a.ricorrenzeNuove} testo="giorni di lezione nuovi" />
                 <Conto n={controllo.a.iscrittiNuovi} testo="iscritti nuovi" />
                 <Conto n={controllo.a.iscrizioniNuove} testo="iscrizioni ai corsi" />
+                {controllo.a.anagrafiche > 0 && <Conto n={controllo.a.anagrafiche} testo="con nascita, residenza o genitore" />}
               </div>
               <span className="sg-sotto">Quello che c'è già resta com'è: un corso esistente prende solo i giorni e gli istruttori che gli mancano. Poi il calendario si allunga.</span>
             </section>
@@ -299,6 +300,11 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
             {fatto.a.corsiNuovi.length} corsi nuovi, {fatto.a.ricorrenzeNuove} giorni di lezione, {fatto.a.iscrittiNuovi} iscritti nuovi e {fatto.a.iscrizioniNuove} iscrizioni.
             {fatto.pronto ? ` Il calendario è pronto fino al ${dataLunga(fatto.pronto)}.` : ''}
           </span>
+          {fatto.a.anagraficheFuori && (
+            <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--giallo-testo)' }}>
+              Nascita, residenza e genitore sono rimasti fuori: {fatto.a.anagraficheFuori}. Gli iscritti sono entrati lo stesso; lanciato il file, si reimporta e arrivano anche quelli.
+            </span>
+          )}
           <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--dim)' }}>
             Le righe saltate non sono entrate. Correggile nel foglio e reimporta: quello che c'è già non si duplica.
           </span>
@@ -365,7 +371,7 @@ function Risposte({
     <div className="sg-due" style={{ gap: 16, alignItems: 'flex-start' }}>
       <section aria-label="Le colonne del modulo" className="sg-riquadro">
         <Riga titolo="LE COLONNE DEL MODULO" />
-        <span className="sg-sotto">Quale domanda del modulo dice cosa. Le altre colonne (le foto caricate, i consensi) non entrano.</span>
+        <span className="sg-sotto">Quale domanda del modulo dice cosa. Nascita, residenza e genitore restano per le ricevute; le altre colonne (le foto caricate, i consensi) non entrano.</span>
         <div className="sg-colonne">
           {RUOLI.map(([k, etichetta]) => (
             <div key={k} className="contents">
