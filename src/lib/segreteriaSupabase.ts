@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { AllenamentoSeg, Anagrafica, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
+import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
 import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
@@ -196,6 +196,28 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
   const fileCertificato = async (personaId: string) =>
     (ok(await db.from('schede_iscritti').select('certificato_file').eq('persona_id', personaId).maybeSingle()) as { certificato_file: string | null } | null)?.certificato_file ?? null
   const oggi = () => chiaveGiorno(new Date())
+
+  /**
+   * Nascita, residenza e genitore: dalla richiesta accolta, se c'è, se no
+   * dall'import. `tollera`: senza 18-anagrafiche.sql si va avanti senza.
+   */
+  const anagrafica = async (personaId: string, tollera = false): Promise<AnagraficaDi | null> => {
+    const r = ok(
+      await db
+        .from('richieste_iscrizione')
+        .select('nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, genitore_nome, genitore_cognome, genitore_codice_fiscale')
+        .eq('persona_id', personaId)
+        .eq('stato', 'accolta')
+        .order('gestita_il', { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle(),
+    ) as RigaAnagrafica | null
+    if (r) return { dati: daRigaAnagrafica(r)!, da: 'modulo' }
+    const an = await db.from('anagrafiche').select(CAMPI_ANAGRAFICA).eq('persona_id', personaId).maybeSingle()
+    if (an.error && tollera) return null
+    const x = daRigaAnagrafica(ok(an) as RigaAnagrafica | null)
+    return x && Object.keys(x).length ? { dati: x, da: 'import' } : null
+  }
 
   /** Chi insegna ogni corso, per nome, col primo di riferimento davanti. */
   const insegnanti = async (corsi: string[]) => {
@@ -570,39 +592,19 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async intestatarioDi(personaId) {
-      const [p, ultima, richiesta] = await Promise.all([
+      const [p, ultima] = await Promise.all([
         db.from('persone').select('nome, cognome').eq('id', personaId).single(),
         db.from('ricevute').select('intestatario').eq('persona_id', personaId).order('creata_il', { ascending: false }).limit(1).maybeSingle(),
-        db
-          .from('richieste_iscrizione')
-          .select('nome, cognome, nato_il, codice_fiscale, indirizzo, cap, comune, genitore_nome, genitore_cognome, genitore_codice_fiscale')
-          .eq('persona_id', personaId)
-          .eq('stato', 'accolta')
-          .order('gestita_il', { ascending: false, nullsFirst: false })
-          .limit(1)
-          .maybeSingle(),
       ])
       const chi = ok(p) as { nome: string; cognome: string }
       // Senza 16-ricevute.sql la ricevuta di prima non c'è: si va avanti con la richiesta.
       const u = ultima.error ? null : (ultima.data as { intestatario: IntestatarioRicevuta } | null)
       if (u) return { ...u.intestatario, nome: chi.nome, cognome: chi.cognome }
-      const r = ok(richiesta) as {
-        nome: string; cognome: string; nato_il: string; codice_fiscale: string; indirizzo: string; cap: string; comune: string
-        genitore_nome: string | null; genitore_cognome: string | null; genitore_codice_fiscale: string | null
-      } | null
-      if (!r) {
-        // Chi è entrato dall'import: senza 18-anagrafiche.sql non c'è, e bastano nome e cognome.
-        const an = await db.from('anagrafiche').select(CAMPI_ANAGRAFICA).eq('persona_id', personaId).maybeSingle()
-        const x = an.error ? null : daRigaAnagrafica(an.data as RigaAnagrafica | null)
-        return x ? intestatarioDaRichiesta({ ...x, nome: chi.nome, cognome: chi.cognome }) : { nome: chi.nome, cognome: chi.cognome }
-      }
-      return {
-        ...intestatarioDaRichiesta({
-          nome: chi.nome, cognome: chi.cognome, natoIl: r.nato_il, codiceFiscale: r.codice_fiscale, indirizzo: r.indirizzo, cap: r.cap, comune: r.comune,
-          genitoreNome: r.genitore_nome ?? undefined, genitoreCognome: r.genitore_cognome ?? undefined, genitoreCodiceFiscale: r.genitore_codice_fiscale ?? undefined,
-        }),
-      }
+      const x = await anagrafica(personaId, true)
+      return x ? intestatarioDaRichiesta({ ...x.dati, nome: chi.nome, cognome: chi.cognome }) : { nome: chi.nome, cognome: chi.cognome }
     },
+
+    anagraficaDi: (personaId) => anagrafica(personaId),
 
     async salvaAnagrafica(personaId, a) {
       const riga = aRigaAnagrafica(a)

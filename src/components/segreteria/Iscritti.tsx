@@ -363,6 +363,7 @@ function Scheda({
             </div>
           )}
 
+          <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} />
           <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${p.pagamento.nota ?? ''}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} />
@@ -495,6 +496,48 @@ function Scheda({
       </>
       )}
     </>
+  )
+}
+
+/**
+ * Nascita, residenza e genitore: dal modulo di iscrizione dell'app o
+ * dall'import delle risposte del modulo Google. Si leggono soltanto: sono
+ * quelli che vanno sulle ricevute, e sulla ricevuta si possono correggere.
+ */
+function DatiAnagrafici({ d, p }: { d: DatiSegreteria; p: PersonaSeg }) {
+  // In una scatola: `null` vuol dire «ancora da leggere», `{ di: null }` «non ce ne sono».
+  const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
+  const x = an.dato?.di?.dati
+  const valore = (testo?: string) => <span style={{ fontSize: 14, color: testo ? 'var(--text)' : 'var(--dim)', overflowWrap: 'anywhere' }}>{testo || '—'}</span>
+  const residenza = x && [x.indirizzo, [x.cap, x.comune].filter(Boolean).join(' ')].filter(Boolean).join(', ')
+  const genitore = x && [x.genitoreCognome, x.genitoreNome].filter(Boolean).join(' ')
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <Riga titolo="DATI ANAGRAFICI">
+        {an.dato?.di && <span style={{ fontSize: 12, color: 'var(--dim)' }}>{an.dato.di.da === 'modulo' ? 'dal modulo di iscrizione' : 'dall’import del modulo Google'}</span>}
+      </Riga>
+      {an.guaio && <Guaio testo={an.guaio} />}
+      {an.dato && !an.dato.di && <span className="sg-sotto">Nessun dato: arrivano dal modulo di iscrizione o dall'import delle risposte del modulo Google.</span>}
+      {x && (
+        <div className="sg-due">
+          <Campo etichetta="NATO IL">{valore(x.natoIl && dataLunga(x.natoIl))}</Campo>
+          <Campo etichetta="A">{valore(x.natoA)}</Campo>
+          <Campo etichetta="CODICE FISCALE">
+            <span className="num" style={{ fontSize: 14, color: x.codiceFiscale ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em' }}>{x.codiceFiscale ?? '—'}</span>
+          </Campo>
+          <Campo etichetta="RESIDENZA">{valore(residenza)}</Campo>
+          {(genitore || x.genitoreCodiceFiscale || x.genitoreNato) && (
+            <>
+              <Campo etichetta="GENITORE">{valore(genitore)}</Campo>
+              <Campo etichetta="CODICE FISCALE DEL GENITORE">
+                <span className="num" style={{ fontSize: 14, color: x.genitoreCodiceFiscale ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em' }}>{x.genitoreCodiceFiscale ?? '—'}</span>
+              </Campo>
+              {x.genitoreNato && <Campo etichetta="IL GENITORE È NATO" largo>{valore(x.genitoreNato)}</Campo>}
+            </>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 

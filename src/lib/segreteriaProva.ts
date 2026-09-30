@@ -428,6 +428,22 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return an ? intestatarioDaRichiesta({ ...an, nome: p.nome, cognome: p.cognome }) : { nome: p.nome, cognome: p.cognome }
     },
 
+    async anagraficaDi(personaId) {
+      persona(personaId)
+      const richiesta = richiesteDi(personaId)
+        .filter((r) => r.stato === 'accolta')
+        .sort((x, y) => (y.gestitaIl ?? y.creataIl).localeCompare(x.gestitaIl ?? x.creataIl))[0]
+      if (richiesta) {
+        const { natoIl, natoA, codiceFiscale, indirizzo, cap, comune, genitoreNome, genitoreCognome, genitoreCodiceFiscale } = richiesta
+        const dati = Object.fromEntries(
+          Object.entries({ natoIl, natoA, codiceFiscale, indirizzo, cap, comune, genitoreNome, genitoreCognome, genitoreCodiceFiscale }).filter(([, v]) => v),
+        )
+        return { dati, da: 'modulo' }
+      }
+      const an = a().anagrafiche?.[personaId]
+      return an && Object.keys(an).length ? { dati: { ...an }, da: 'import' } : null
+    },
+
     async salvaAnagrafica(personaId, dati) {
       persona(personaId)
       const nuovi = Object.fromEntries(Object.entries(dati).flatMap(([k, v]) => (typeof v === 'string' && v.trim() ? [[k, v.trim()]] : [])))
