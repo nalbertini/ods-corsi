@@ -44,6 +44,15 @@ export const VALIDITA = {
   corsi: { dal: '2026-09-01', al: '2027-06-30' },
 }
 
+/**
+ * Fino a quando vale il prezzo a saldo, compreso. Dopo non si propone più:
+ * né nel listino della pagina di iscrizione né tra le voci delle ricevute.
+ */
+export const SALDO_ENTRO = '2026-08-31'
+
+/** Se il prezzo a saldo vale ancora, da un giorno `AAAA-MM-GG`. */
+export const saldoAperto = (giorno: string) => giorno <= SALDO_ENTRO
+
 export const COSTI: VoceCosto[] = [
   {
     corso: 'Giocomotricità',
@@ -97,13 +106,13 @@ export const COSTI: VoceCosto[] = [
   },
   {
     corso: 'Aikido 2',
-    eta: 'nati 2019-2018-2017',
+    eta: 'nati 2019-2018-2017-2016',
     orari: ['lunedì e giovedì 17.00-18.00'],
     prezzi: [{ saldo: 430, annuale: 450, trimestre: 170 }],
   },
   {
     corso: 'Aikido 3',
-    eta: 'nati 2016-2015-2014 e prima',
+    eta: 'nati 2015-2014-2013 e prima',
     orari: ['lunedì e giovedì 18.00-19.00'],
     prezzi: [{ saldo: 430, annuale: 450, trimestre: 170 }],
   },

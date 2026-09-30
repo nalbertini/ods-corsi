@@ -28,12 +28,14 @@ interface Riga {
   comune: string
   email: string
   telefono: string
+  telefono_2: string | null
   genitore_nome: string | null
   genitore_cognome: string | null
   genitore_codice_fiscale: string | null
   corsi: string[]
   formula: 'annuale' | 'trimestre'
   note: string | null
+  regolamento: boolean
   persona_id: string | null
   gestita_il: string | null
   gestore: { nome: string; cognome: string } | null
@@ -78,12 +80,14 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
     comune: r.comune,
     email: r.email,
     telefono: r.telefono,
+    telefono2: r.telefono_2 ?? undefined,
     genitoreNome: r.genitore_nome ?? undefined,
     genitoreCognome: r.genitore_cognome ?? undefined,
     genitoreCodiceFiscale: r.genitore_codice_fiscale ?? undefined,
     corsi: r.corsi,
     formula: r.formula,
     note: r.note ?? undefined,
+    regolamento: r.regolamento,
     personaId: r.persona_id ?? undefined,
     gestitaIl: r.gestita_il ?? undefined,
     gestitaDa: r.gestore ? `${r.gestore.nome} ${r.gestore.cognome}`.trim() : undefined,
@@ -116,12 +120,14 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
             comune: d.comune,
             email: d.email,
             telefono: d.telefono,
+            telefono_2: d.telefono2,
             genitore_nome: d.genitoreNome,
             genitore_cognome: d.genitoreCognome,
             genitore_codice_fiscale: d.genitoreCodiceFiscale,
             corsi: d.corsi,
             formula: d.formula,
             note: d.note,
+            regolamento: d.regolamento === true,
           },
         }),
       ) as string

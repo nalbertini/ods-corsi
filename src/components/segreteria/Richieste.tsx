@@ -164,9 +164,15 @@ function Scheda({
         <Dato etichetta="TELEFONO">
           <a href={`tel:${x.telefono.replace(/[^\d+]/g, '')}`} style={{ color: 'var(--sec)' }}>{x.telefono}</a>
         </Dato>
+        {x.telefono2 && (
+          <Dato etichetta="TELEFONO 2">
+            <a href={`tel:${x.telefono2.replace(/[^\d+]/g, '')}`} style={{ color: 'var(--sec)' }}>{x.telefono2}</a>
+          </Dato>
+        )}
         <Dato etichetta="CORSI">{x.corsi.map((c) => nomi.get(c) ?? 'un corso che non c’è più').join(', ')}</Dato>
         <Dato etichetta="PAGA">{x.formula === 'annuale' ? 'L’annuale' : 'Il trimestre'}</Dato>
         {x.note && <Dato etichetta="NOTE">{x.note}</Dato>}
+        <Dato etichetta="REGOLAMENTO">{x.regolamento ? 'Accettato' : 'Non accettato (richiesta di prima della casella)'}</Dato>
       </div>
 
       <Riga titolo="I FILE" />

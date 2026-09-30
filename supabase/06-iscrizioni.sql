@@ -55,6 +55,11 @@ create table if not exists richieste_iscrizione (
   gestita_da       uuid references persone on delete set null,
   gestita_il       timestamptz
 );
+-- Dopo: un secondo telefono facoltativo, e la casella del Regolamento Sociale.
+-- Le richieste arrivate prima restano senza, con `regolamento` a falso.
+alter table richieste_iscrizione add column if not exists telefono_2 text
+  check (length(regexp_replace(telefono_2, '\D', '', 'g')) between 6 and 15);
+alter table richieste_iscrizione add column if not exists regolamento boolean not null default false;
 create index if not exists richieste_quando on richieste_iscrizione (creata_il desc);
 create index if not exists richieste_email on richieste_iscrizione (email, creata_il);
 create index if not exists richieste_persona on richieste_iscrizione (persona_id);
@@ -202,6 +207,7 @@ declare
   nuova uuid;
   cf text := upper(regexp_replace(coalesce(dati->>'codice_fiscale', ''), '\s', '', 'g'));
   cf_gen text := nullif(upper(regexp_replace(coalesce(dati->>'genitore_codice_fiscale', ''), '\s', '', 'g')), '');
+  tel_2 text := nullif(trim(coalesce(dati->>'telefono_2', '')), '');
   testo text;
 begin
   -- I campi di testo obbligatori, detti per nome se mancano.
@@ -283,8 +289,14 @@ begin
   if trim(dati->>'telefono') !~ '^\+?[0-9 ./()-]+$' or length(regexp_replace(dati->>'telefono', '\D', '', 'g')) not between 6 and 15 then
     raise exception 'Un campo non va: il telefono non sembra giusto' using errcode = '22023';
   end if;
+  if tel_2 is not null and (tel_2 !~ '^\+?[0-9 ./()-]+$' or length(regexp_replace(tel_2, '\D', '', 'g')) not between 6 and 15) then
+    raise exception 'Un campo non va: il secondo telefono non sembra giusto' using errcode = '22023';
+  end if;
   if dati->>'formula' not in ('annuale', 'trimestre') then
     raise exception 'Un campo non va: si paga l''annuale o il trimestre' using errcode = '22023';
+  end if;
+  if coalesce(dati->>'regolamento', '') <> 'true' then
+    raise exception 'Serve accettare il Regolamento Sociale' using errcode = '22023';
   end if;
 
   -- La porta.
@@ -301,15 +313,15 @@ begin
   end if;
 
   insert into richieste_iscrizione (
-    nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono,
-    genitore_nome, genitore_cognome, genitore_codice_fiscale, corsi, formula, note
+    nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono, telefono_2,
+    genitore_nome, genitore_cognome, genitore_codice_fiscale, corsi, formula, note, regolamento
   ) values (
     trim(dati->>'nome'), trim(dati->>'cognome'), nato, coalesce(luogo_da_cf(cf, nato), trim(dati->>'nato_a')), cf,
-    trim(dati->>'indirizzo'), trim(dati->>'cap'), trim(dati->>'comune'), mail, trim(dati->>'telefono'),
+    trim(dati->>'indirizzo'), trim(dati->>'cap'), trim(dati->>'comune'), mail, trim(dati->>'telefono'), tel_2,
     case when minore then trim(dati->>'genitore_nome') end,
     case when minore then trim(dati->>'genitore_cognome') end,
     case when minore then cf_gen end,
-    scelti, dati->>'formula', nullif(trim(dati->>'note'), '')
+    scelti, dati->>'formula', nullif(trim(dati->>'note'), ''), true
   ) returning id into nuova;
   return nuova;
 exception
@@ -320,6 +332,7 @@ exception
       when sqlerrm like '%codice_fiscale%' then 'il codice fiscale ha 16 caratteri, lettere e numeri'
       when sqlerrm like '%cap%' then 'il CAP ha 5 cifre'
       when sqlerrm like '%email%' then 'l''email non sembra giusta'
+      when sqlerrm like '%telefono_2%' then 'il secondo telefono non sembra giusto'
       when sqlerrm like '%telefono%' then 'il telefono non sembra giusto'
       when sqlerrm like '%corsi%' then 'si possono scegliere al massimo sei corsi'
       when sqlerrm like '%formula%' then 'si paga l''annuale o il trimestre'

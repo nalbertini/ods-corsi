@@ -12,18 +12,21 @@ segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
 
 ## Cosa c'è nella pagina
 
-- **Prima di iscriverti**: la **settimana di prova** (5 €), per chi non ha
-  ancora deciso, con il tasto CHIAMA.
+- **Prima di iscriverti**: le **prove**, una lezione (3 €) o una settimana
+  (10 €), per chi non ha ancora deciso, con il tasto CHIAMA.
 - **I passi, in ordine**, ognuno col suo tasto:
   1. **Leggi il modulo** — per maggiorenni, o per minori (firmato dal
      genitore). Col modulo dell'app si firma col dito nell'ultimo passo; chi
      preferisce lo stampa, lo firma a mano e ne carica la foto.
   2. **Il pagamento** — la quota associativa e il trimestre, oppure l'annuale,
-     con l'IBAN da copiare con un tocco.
+     con l'IBAN da copiare con un tocco e, quando c'è il link
+     dell'associazione (`PAGAMENTO.satispay` in `src/lib/iscrizione.ts`),
+     il tasto **PAGA CON SATISPAY**.
   3. **La richiesta** — con il modulo dell'app (**COMPILA LA RICHIESTA**)
      oppure, finché quello non è acceso, con il modulo Google (**APRI IL
      MODULO**), che ha i suoi passi: scaricare il modulo, firmarlo e caricarlo.
-- **I costi** della stagione, e il listino in PDF.
+- **I costi** della stagione, e il listino in PDF. Dopo il 31 agosto la
+  colonna **SALDO 31/8** sparisce: quel prezzo non vale più.
 - **I contatti**: CHIAMA, MAPPA, INSTAGRAM, FACEBOOK, IL SITO.
 
 ## Il modulo di iscrizione dell'app
@@ -33,8 +36,8 @@ Chi si iscrive risponde alle domande dal telefono:
 - **Chi si iscrive**: nome, cognome, data e luogo di nascita, codice fiscale.
   Se dalla data di nascita risulta **minorenne**, il modulo chiede anche i dati
   del **genitore** e il modulo per minori firmato da lui.
-- **Residenza**, e **come raggiungerti** (email e telefono; per un minore,
-  quelli del genitore).
+- **Residenza**, e **come raggiungerti** (email, telefono e, se si vuole, un
+  **telefono 2**; per un minore, quelli del genitore).
 - **I corsi** a cui iscriversi e **come paghi** (trimestre o annuale).
 - **Il modulo**: le autorizzazioni si firmano **qui, col dito** (o col mouse
   dal computer). Si sceglie come sul foglio se si acconsente al
@@ -47,7 +50,9 @@ Chi si iscrive risponde alle domande dal telefono:
   sceglie **Ho il foglio firmato** e ne carica la foto.
 - **I file**: la foto della carta d'identità e della ricevuta del pagamento.
 - **Altro**: le note per la segreteria (facoltative, e **mai dati sulla
-  salute**: quelli si portano in segreteria) e la casella «Ho letto
+  salute**: quelli si portano in segreteria), la casella obbligatoria
+  «Accetto il Regolamento Sociale» (col link al regolamento, quando c'è:
+  `REGOLAMENTO` in `src/lib/iscrizione.ts`) e la casella «Ho letto
   l'informativa privacy».
 
 Premuto **MANDA LA RICHIESTA**, compare **RICHIESTA ARRIVATA**. Se un file non

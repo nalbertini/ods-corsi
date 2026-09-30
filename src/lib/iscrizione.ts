@@ -76,20 +76,41 @@ export const STAGIONE = '2026/27'
 export const LISTINO: Documento = { etichetta: `COSTI ${STAGIONE}`, file: 'moduli/costi-2026-27.pdf' }
 
 /** Dove si paga, dal foglio dei costi. */
-export const PAGAMENTO = {
+export const PAGAMENTO: {
+  quotaAssociativa: string
+  validaFino: string
+  iban: string
+  intestatario: string
+  /**
+   * Il link Satispay dell'associazione (quello di Satispay Business, che apre
+   * l'app già sul negozio). Finché manca, nella pagina resta solo il bonifico.
+   */
+  satispay?: string
+} = {
   quotaAssociativa: '50 €',
   validaFino: 'luglio 2027',
   iban: 'IT03 D076 0101 0000 0007 6350 339',
   intestatario: 'ASD Il Centro Judo',
+  satispay: undefined,
 }
 
 /**
- * La settimana di prova, prima dei passi: la stessa che il sito dice nelle
- * domande frequenti. Non è un passo dell'iscrizione, si fa prima di decidere.
+ * Il Regolamento Sociale, che chi si iscrive deve accettare con una casella
+ * del modulo. Relativo alla radice dell'app, come i moduli: il PDF va in
+ * `public/moduli/`. Finché manca, la casella c'è lo stesso, senza il link.
+ */
+export const REGOLAMENTO: string | undefined = undefined
+
+/**
+ * Le prove, prima dei passi: una lezione sola o una settimana intera. Non
+ * sono un passo dell'iscrizione, si fanno prima di decidere.
  */
 export const PROVA = {
-  costo: '5 €',
-  testo: 'Una settimana per provare tutti gli sport e scegliere quello giusto, prima di iscriversi.',
+  costi: [
+    { cosa: 'Una lezione', costo: '3 €' },
+    { cosa: 'Una settimana', costo: '10 €' },
+  ],
+  testo: 'Una lezione per provare un corso, o una settimana per provare tutti gli sport e scegliere quello giusto, prima di iscriversi.',
 }
 
 export interface Passo {

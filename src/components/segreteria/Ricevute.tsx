@@ -158,7 +158,7 @@ export function NuovaRicevuta({
   const [segna, setSegna] = useState(true)
   const [aggiungi, setAggiungi] = useState('')
 
-  const pronte = vociPronte(corsi)
+  const pronte = vociPronte(corsi, data)
 
   // La prima volta che arriva quello che si sa, si compila il modulo.
   useEffect(() => {
@@ -169,7 +169,7 @@ export function NuovaRicevuta({
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
     setVoci([
       ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(oggi))]),
-      ...corsi.flatMap((c) => vociDelCorso(c).slice(0, 1)).map((v) => bozzaDa(v.voce(oggi))),
+      ...corsi.flatMap((c) => vociDelCorso(c, data).slice(0, 1)).map((v) => bozzaDa(v.voce(oggi))),
     ])
   }, [partenza.dato])
 

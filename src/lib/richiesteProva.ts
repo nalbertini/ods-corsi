@@ -108,6 +108,7 @@ export function creaRichiesteProva(): DatiRichieste {
         genitoreNome: minore ? dati.genitoreNome?.trim() : undefined,
         genitoreCognome: minore ? dati.genitoreCognome?.trim() : undefined,
         genitoreCodiceFiscale: minore ? pulisciCf(dati.genitoreCodiceFiscale ?? '') : undefined,
+        telefono2: dati.telefono2?.trim() || undefined,
         note: dati.note?.trim() || undefined,
       }
       tutte = [r, ...tutte]

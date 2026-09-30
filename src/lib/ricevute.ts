@@ -1,4 +1,4 @@
-import { COSTI, QUOTA_ASSOCIATIVA, VALIDITA } from './costi'
+import { COSTI, QUOTA_ASSOCIATIVA, saldoAperto, VALIDITA } from './costi'
 import type { DatiRichiesta } from './richieste'
 
 /**
@@ -186,8 +186,11 @@ export const QUOTA: VocePronta = {
   voce: () => ({ descrizione: 'QUOTA ASSOCIATIVA', quantita: 1, prezzo: QUOTA_ASSOCIATIVA * 100, ...VALIDITA.quota }),
 }
 
-/** Le voci di un corso del foglio dei costi: annuale, a saldo, trimestre. */
-export function vociDelCorso(corso: string): VocePronta[] {
+/**
+ * Le voci di un corso del foglio dei costi: annuale, trimestre, e l'annuale a
+ * saldo solo se `giorno` (quello della ricevuta) è entro `SALDO_ENTRO`.
+ */
+export function vociDelCorso(corso: string, giorno: string): VocePronta[] {
   const c = COSTI.find((x) => pulito(x.corso) === pulito(corso))
   if (!c) return []
   return c.prezzi.flatMap((p, i) => {
@@ -195,7 +198,7 @@ export function vociDelCorso(corso: string): VocePronta[] {
     const x: VocePronta[] = []
     if (p.annuale !== undefined)
       x.push({ chiave: `${c.corso}~${i}~annuale`, etichetta: `${nome} · annuale · ${euro(p.annuale * 100)} €`, voce: () => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: p.annuale! * 100, ...VALIDITA.corsi }) })
-    if (p.saldo !== undefined && p.saldo !== p.annuale)
+    if (p.saldo !== undefined && p.saldo !== p.annuale && saldoAperto(giorno))
       x.push({ chiave: `${c.corso}~${i}~saldo`, etichetta: `${nome} · annuale a saldo · ${euro(p.saldo * 100)} €`, voce: () => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: p.saldo! * 100, ...VALIDITA.corsi }) })
     if (p.trimestre !== undefined)
       x.push({
@@ -211,10 +214,10 @@ export function vociDelCorso(corso: string): VocePronta[] {
 }
 
 /** Tutte le voci del foglio dei costi, prima quelle dei corsi dati. */
-export function vociPronte(primaQuesti: string[]): VocePronta[] {
-  const primi = primaQuesti.flatMap(vociDelCorso)
+export function vociPronte(primaQuesti: string[], giorno: string): VocePronta[] {
+  const primi = primaQuesti.flatMap((c) => vociDelCorso(c, giorno))
   const gia = new Set(primi.map((v) => v.chiave))
-  return [QUOTA, ...primi, ...COSTI.flatMap((c) => vociDelCorso(c.corso)).filter((v) => !gia.has(v.chiave))]
+  return [QUOTA, ...primi, ...COSTI.flatMap((c) => vociDelCorso(c.corso, giorno)).filter((v) => !gia.has(v.chiave))]
 }
 
 /** Il nome del file del PDF: `ricevuta-116-2026-albertini-manuela.pdf`. */

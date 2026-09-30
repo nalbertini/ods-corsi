@@ -77,10 +77,12 @@ function Prova() {
     <section className="pad iscrizioni-prova">
       <Riquadro tono="prova">
         <Etichetta>PRIMA DI ISCRIVERTI</Etichetta>
-        <span className="row prova-testa">
-          <span className="passo-titolo">Settimana di prova</span>
-          <Cifra>{PROVA.costo}</Cifra>
-        </span>
+        {PROVA.costi.map((c) => (
+          <span key={c.cosa} className="row prova-testa">
+            <span className="passo-titolo">{c.cosa} di prova</span>
+            <Cifra>{c.costo}</Cifra>
+          </span>
+        ))}
         <Dettaglio>{PROVA.testo} Per cominciare, passa in palestra o chiamaci.</Dettaglio>
         <Tasto href={chiama} qui>
           CHIAMA
@@ -144,7 +146,7 @@ function Azione({ passo, onModulo }: { passo: Passo; onModulo: () => void }) {
   }
 }
 
-/** Quanto e dove: la quota, l'IBAN da copiare e il rimando ai costi qui sotto. */
+/** Quanto e dove: la quota, l'IBAN da copiare, Satispay se c'è, e il rimando ai costi qui sotto. */
 function Pagamento() {
   const [copiato, setCopiato] = useState(false)
 
@@ -165,8 +167,10 @@ function Pagamento() {
         Quota associativa {PAGAMENTO.quotaAssociativa}, valida fino a {PAGAMENTO.validaFino}. Bonifico a {PAGAMENTO.intestatario}:
       </Dettaglio>
       <span className="num iban">{PAGAMENTO.iban}</span>
+      {PAGAMENTO.satispay && <Dettaglio>Oppure con Satispay, dall'app.</Dettaglio>}
       <Tasti>
         <Tasto onClick={copia}>{copiato ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+        {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
         <Tasto onClick={() => document.getElementById('costi')?.scrollIntoView({ behavior: 'smooth' })}>VEDI I COSTI</Tasto>
       </Tasti>
     </span>

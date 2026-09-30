@@ -33,12 +33,16 @@ export interface DatiRichiesta {
   /** Per un minore sono del genitore. */
   email: string
   telefono: string
+  /** Un secondo numero, facoltativo. */
+  telefono2?: string
   genitoreNome?: string
   genitoreCognome?: string
   genitoreCodiceFiscale?: string
   corsi: string[]
   formula: Formula
   note?: string
+  /** La casella «Accetto il Regolamento Sociale»: senza, la richiesta non parte. */
+  regolamento?: boolean
 }
 
 export interface Richiesta extends DatiRichiesta {
@@ -204,12 +208,19 @@ function guai(d: DatiRichiesta, oggi: Date): Guaio[] {
   if (d.cap.trim() && !/^\d{5}$/.test(d.cap.trim())) metti({ campo: 'cap', messaggio: 'Un campo non va: il CAP ha 5 cifre', testo: 'Sono 5 cifre' })
   if (d.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email.trim()))
     metti({ campo: 'email', messaggio: "Un campo non va: l'email non sembra giusta", testo: 'Non sembra giusta' })
-  const tel = d.telefono.trim()
-  const cifre = tel.replace(/\D/g, '').length
-  if (tel && (!/^\+?[0-9 ./()-]+$/.test(tel) || cifre < 6 || cifre > 15))
-    metti({ campo: 'telefono', messaggio: 'Un campo non va: il telefono non sembra giusto', testo: 'Non sembra giusto: solo cifre, spazi e il + davanti' })
+  for (const campo of ['telefono', 'telefono2'] as const) {
+    const tel = (d[campo] ?? '').trim()
+    const cifre = tel.replace(/\D/g, '').length
+    if (tel && (!/^\+?[0-9 ./()-]+$/.test(tel) || cifre < 6 || cifre > 15))
+      metti({
+        campo,
+        messaggio: `Un campo non va: il ${campo === 'telefono' ? 'telefono' : 'secondo telefono'} non sembra giusto`,
+        testo: 'Non sembra giusto: solo cifre, spazi e il + davanti',
+      })
+  }
   if (d.formula !== 'annuale' && d.formula !== 'trimestre')
     metti({ campo: 'formula', messaggio: "Un campo non va: si paga l'annuale o il trimestre", testo: 'Annuale o trimestre' })
+  if (!d.regolamento) metti({ campo: 'regolamento', messaggio: 'Serve accettare il Regolamento Sociale', testo: 'Serve accettarlo per iscriversi' })
   return g
 }
 
