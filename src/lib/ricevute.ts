@@ -1,4 +1,5 @@
-import { COSTI, QUOTA_ASSOCIATIVA, saldoAperto, VALIDITA } from './costi'
+import { saldoAperto, VALIDITA } from './costi'
+import { LISTINO_PREDEFINITO, nomeCorso, type Listino } from './listino'
 import type { DatiRichiesta } from './richieste'
 
 /**
@@ -164,9 +165,9 @@ export function pulisciIntestatario(i: IntestatarioRicevuta): IntestatarioRicevu
   return { nome: '', cognome: '', ...x }
 }
 
-const pulito = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, ' ').trim()
+const pulito = nomeCorso
 
-/** Una voce pronta da aggiungere: quello che c'è nel foglio dei costi. */
+/** Una voce pronta da aggiungere: quello che c'è nel listino. */
 export interface VocePronta {
   chiave: string
   etichetta: string
@@ -180,44 +181,51 @@ export function fineTrimestre(dal: string) {
   return x > VALIDITA.corsi.al ? VALIDITA.corsi.al : x
 }
 
-export const QUOTA: VocePronta = {
-  chiave: 'quota',
-  etichetta: `Quota associativa · ${euro(QUOTA_ASSOCIATIVA * 100)} €`,
-  voce: () => ({ descrizione: 'QUOTA ASSOCIATIVA', quantita: 1, prezzo: QUOTA_ASSOCIATIVA * 100, ...VALIDITA.quota }),
+/** Euro del listino → centesimi, senza i resti della virgola mobile. */
+const cent = (n: number) => Math.round(n * 100)
+
+/** La quota associativa del listino. */
+export function voceQuota(listino: Listino = LISTINO_PREDEFINITO): VocePronta {
+  const prezzo = cent(listino.quota)
+  return {
+    chiave: 'quota',
+    etichetta: `Quota associativa · ${euro(prezzo)} €`,
+    voce: () => ({ descrizione: 'QUOTA ASSOCIATIVA', quantita: 1, prezzo, ...VALIDITA.quota }),
+  }
 }
 
 /**
- * Le voci di un corso del foglio dei costi: annuale, trimestre, e l'annuale a
- * saldo solo se `giorno` (quello della ricevuta) è entro `SALDO_ENTRO`.
+ * Le voci di un corso del listino: annuale, trimestre, e l'annuale a saldo
+ * solo se `giorno` (quello della ricevuta) è entro la data del saldo.
  */
-export function vociDelCorso(corso: string, giorno: string): VocePronta[] {
-  const c = COSTI.find((x) => pulito(x.corso) === pulito(corso))
+export function vociDelCorso(corso: string, giorno: string, listino: Listino = LISTINO_PREDEFINITO): VocePronta[] {
+  const c = listino.corsi.find((x) => pulito(x.corso) === pulito(corso))
   if (!c) return []
   return c.prezzi.flatMap((p, i) => {
     const nome = p.etichetta ? `${c.corso} ${p.etichetta.toLowerCase()}` : c.corso
     const x: VocePronta[] = []
     if (p.annuale !== undefined)
-      x.push({ chiave: `${c.corso}~${i}~annuale`, etichetta: `${nome} · annuale · ${euro(p.annuale * 100)} €`, voce: () => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: p.annuale! * 100, ...VALIDITA.corsi }) })
-    if (p.saldo !== undefined && p.saldo !== p.annuale && saldoAperto(giorno))
-      x.push({ chiave: `${c.corso}~${i}~saldo`, etichetta: `${nome} · annuale a saldo · ${euro(p.saldo * 100)} €`, voce: () => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: p.saldo! * 100, ...VALIDITA.corsi }) })
+      x.push({ chiave: `${c.corso}~${i}~annuale`, etichetta: `${nome} · annuale · ${euro(cent(p.annuale))} €`, voce: () => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: cent(p.annuale!), ...VALIDITA.corsi }) })
+    if (p.saldo !== undefined && p.saldo !== p.annuale && saldoAperto(giorno, listino.saldoEntro))
+      x.push({ chiave: `${c.corso}~${i}~saldo`, etichetta: `${nome} · annuale a saldo · ${euro(cent(p.saldo))} €`, voce: () => ({ descrizione: `Annuale ${nome}`, quantita: 1, prezzo: cent(p.saldo!), ...VALIDITA.corsi }) })
     if (p.trimestre !== undefined)
       x.push({
         chiave: `${c.corso}~${i}~trimestre`,
-        etichetta: `${nome} · trimestre · ${euro(p.trimestre * 100)} €`,
+        etichetta: `${nome} · trimestre · ${euro(cent(p.trimestre))} €`,
         voce: (oggi) => {
           const dal = oggi < VALIDITA.corsi.dal ? VALIDITA.corsi.dal : oggi
-          return { descrizione: `Trimestre ${nome}`, quantita: 1, prezzo: p.trimestre! * 100, dal, al: fineTrimestre(dal) }
+          return { descrizione: `Trimestre ${nome}`, quantita: 1, prezzo: cent(p.trimestre!), dal, al: fineTrimestre(dal) }
         },
       })
     return x
   })
 }
 
-/** Tutte le voci del foglio dei costi, prima quelle dei corsi dati. */
-export function vociPronte(primaQuesti: string[], giorno: string): VocePronta[] {
-  const primi = primaQuesti.flatMap((c) => vociDelCorso(c, giorno))
+/** Tutte le voci del listino, la quota per prima e poi quelle dei corsi dati. */
+export function vociPronte(primaQuesti: string[], giorno: string, listino: Listino = LISTINO_PREDEFINITO): VocePronta[] {
+  const primi = primaQuesti.flatMap((c) => vociDelCorso(c, giorno, listino))
   const gia = new Set(primi.map((v) => v.chiave))
-  return [QUOTA, ...primi, ...COSTI.flatMap((c) => vociDelCorso(c.corso, giorno)).filter((v) => !gia.has(v.chiave))]
+  return [voceQuota(listino), ...primi, ...listino.corsi.flatMap((c) => vociDelCorso(c.corso, giorno, listino)).filter((v) => !gia.has(v.chiave))]
 }
 
 /** Il nome del file del PDF: `ricevuta-116-2026-albertini-manuela.pdf`. */

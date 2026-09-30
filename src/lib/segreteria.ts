@@ -5,6 +5,7 @@ import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, Ricevuta } from './ricevute'
+import type { Listino, ListinoLetto } from './listino'
 
 export type { ListaMusica } from './musica'
 
@@ -353,6 +354,10 @@ export interface DatiSegreteria {
   /** I dati dell'associazione in testa alle ricevute. */
   enteRicevute(): Promise<EnteRicevuta>
   salvaEnteRicevute(e: EnteRicevuta): Promise<void>
+  /** Il listino che vale: quello cambiato da LISTINO, o quello del foglio (`listino.ts`). */
+  listino(): Promise<ListinoLetto>
+  /** Lo salva per la pagina di iscrizione e le ricevute; `null` rimette quello del foglio. */
+  salvaListino(l: Listino | null): Promise<void>
 
   /** Le lezioni già cominciate fra due giorni, con i loro appelli. */
   registro(da: Date, a: Date): Promise<RigaRegistro[]>

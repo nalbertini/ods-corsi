@@ -13,6 +13,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
+import { cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, type Ricevuta } from './ricevute'
 
 /**
@@ -495,6 +496,17 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async salvaEnteRicevute(e) {
       a().enteRicevute = e
       salva()
+    },
+
+    async listino() {
+      const l = listinoDa(listinoProva())
+      return l ? { listino: l, cambiato: true } : { listino: LISTINO_PREDEFINITO, cambiato: false }
+    },
+
+    async salvaListino(l) {
+      const guaio = l && cosaNonVaListino(l)
+      if (guaio) throw new Error(guaio)
+      salvaListinoProva(l)
     },
 
     async iscrivi(personaId, corsoId) {

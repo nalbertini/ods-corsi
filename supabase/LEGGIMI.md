@@ -42,6 +42,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 16. `16-ricevute.sql` — le ricevute dei pagamenti, col loro numero, e i dati dell'associazione che vanno in testa
 17. `17-luoghi.sql` — i comuni e gli stati esteri del codice fiscale, per il luogo di nascita del modulo. Lo genera `scripts/luoghi.py` dalle tabelle dell'ANPR; è grande (circa 600 KB), e se il SQL Editor non lo prende si lancia con `psql`. Finché non c'è, il luogo di nascita resta quello scritto nel modulo
 18. `18-anagrafiche.sql` — nascita, residenza e genitore degli iscritti che arrivano dalle risposte del modulo Google
+19. `19-listino.sql` — il listino dei costi, cambiato dalla segreteria da LISTINO e letto dalla pagina di iscrizione
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -85,7 +86,12 @@ come prima, e scegliere **TUTTI E DUE** dice che va rilanciato `01-schema.sql`. 
 residenza e genitore degli iscritti importati basta `18-anagrafiche.sql`
 (dopo `07-certificati-pagamenti.sql`), che non chiede di rilanciare
 `06-iscrizioni.sql`: finché non c'è, l'import porta dentro gli iscritti come
-prima, e dice che quei dati sono rimasti fuori.
+prima, e dice che quei dati sono rimasti fuori. Per il listino cambiato dalla
+segreteria basta `19-listino.sql` (dopo `05-segreteria.sql`), che non chiede
+di rilanciare `06-iscrizioni.sql` (e se lo si rilancia dopo, `06` rimette lui
+il permesso ad `anon` su `listino()`): finché non c'è, la pagina di iscrizione
+e le ricevute usano il listino del foglio, e salvare da LISTINO dice che va
+lanciato.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA

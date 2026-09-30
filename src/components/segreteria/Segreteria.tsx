@@ -10,6 +10,7 @@ import { Presenze } from './Presenze'
 import { Importa } from './Importa'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
+import { Listino } from './Listino'
 import { Richieste } from './Richieste'
 import { PresenzeIstruttori } from './PresenzeIstruttori'
 import { EserciziPalestra } from './TimerPalestra'
@@ -18,7 +19,7 @@ import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
-export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'istruttori' | 'importa' | 'personale' | 'esercizi' | 'regole'
+export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'istruttori' | 'importa' | 'personale' | 'esercizi' | 'listino' | 'regole'
 
 /** Dove portare la segreteria da un'altra sezione: la scheda di qualcuno, una lezione da aprire. */
 export interface Destinazione {
@@ -36,6 +37,7 @@ const VOCI: Array<[Voce, string]> = [
   ['importa', 'IMPORTA DA EXCEL'],
   ['personale', 'ISTRUTTORI E ACCESSI'],
   ['esercizi', 'ESERCIZI'],
+  ['listino', 'LISTINO'],
   ['regole', 'IMPOSTAZIONI'],
 ]
 
@@ -50,6 +52,7 @@ const GUIDE: Record<Voce, string> = {
   importa: 'segreteria/importa',
   personale: 'segreteria/istruttori-e-accessi',
   esercizi: 'segreteria/esercizi',
+  listino: 'segreteria/listino',
   regole: 'segreteria/regole',
 }
 
@@ -183,8 +186,9 @@ export function Segreteria({
               className="sg-link"
               onClick={() => {
                 if (!window.confirm("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?")) return
-                void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva')]).then(([a, p, r, e]) => {
+                void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino')]).then(([a, p, r, e, l]) => {
                   a.archivio.azzera()
+                  l.scordaListinoProva()
                   p.scordaProva()
                   r.scordaRichiesteProva()
                   e.scordaEsempi()
@@ -226,6 +230,7 @@ export function Segreteria({
         {d && voce === 'importa' && <Importa d={d} onVai={vai} />}
         {d && voce === 'personale' && <Personale d={d} />}
         {d && voce === 'esercizi' && <EserciziPalestra d={d} />}
+        {d && voce === 'listino' && <Listino d={d} />}
         {d && voce === 'regole' && <Regole d={d} />}
       </main>
     </div>

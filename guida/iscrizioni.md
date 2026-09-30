@@ -25,8 +25,10 @@ segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
   3. **La richiesta** — con il modulo dell'app (**COMPILA LA RICHIESTA**)
      oppure, finché quello non è acceso, con il modulo Google (**APRI IL
      MODULO**), che ha i suoi passi: scaricare il modulo, firmarlo e caricarlo.
-- **I costi** della stagione, e il listino in PDF. Dopo il 31 agosto la
-  colonna **SALDO 31/8** sparisce: quel prezzo non vale più.
+- **I costi** della stagione, quelli del [listino](segreteria/listino.md)
+  della segreteria, e il foglio in PDF finché il listino non è stato
+  cambiato. Passata la data del saldo (il 31 agosto) la colonna **SALDO 31/8**
+  sparisce: quel prezzo non vale più.
 - **I contatti**: CHIAMA, MAPPA, INSTAGRAM, FACEBOOK, IL SITO.
 
 ## Il modulo di iscrizione dell'app
