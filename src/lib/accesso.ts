@@ -6,6 +6,9 @@ import { PERSONA_VISTA } from './sessioni'
 import { indirizzo, INDIRIZZI } from './aree'
 import { areaDelPercorso } from './percorso'
 import { emailDellaSala, smettiTablet } from './tablet'
+import { areeDi, type AreaDiAccount } from './ruoli'
+
+export { areeDi, nomeDelRuolo, type AreaDiAccount } from './ruoli'
 
 /**
  * Chi sta usando l'app: con il database vero il calendario e l'appello sono
@@ -19,6 +22,10 @@ import { emailDellaSala, smettiTablet } from './tablet'
  * dice qual è la sua: la segreteria in segreteria, un istruttore nel
  * calendario, il tablet di una sala in sala. Chi apre l'indirizzo di un'altra
  * area torna nella sua (vedi `Account` e `passaA`).
+ *
+ * Chi è di segreteria e insegna anche (il ruolo doppio, `anche_istruttore` in
+ * `01-schema.sql`) di aree ne ha due: all'accesso sceglie dove andare, e
+ * poi passa dall'una all'altra senza uscire.
  */
 
 export interface Personale {
@@ -27,18 +34,28 @@ export interface Personale {
   nome: string
   cognome: string
   ruolo: Exclude<Ruolo, 'iscritto'>
+  /** Di segreteria, e insegna anche: entra in tutte e due le aree. */
+  ancheIstruttore?: boolean
 }
 
-/** Le aree con un accesso: dove porta ogni tipo di account. */
-export type AreaDiAccount = 'segreteria' | 'istruttori' | 'sala'
-
-/** L'account collegato: la sua area, e la persona se non è il tablet di una sala. */
+/**
+ * L'account collegato: le aree in cui entra, quella in cui va (l'ultima
+ * scelta, per chi ne ha più d'una), e la persona se non è il tablet di una sala.
+ */
 export interface Account {
   area: AreaDiAccount
+  aree: AreaDiAccount[]
   persona: Personale | null
 }
 
-const areaDi = (p: Personale): AreaDiAccount => (p.ruolo === 'staff' ? 'segreteria' : 'istruttori')
+/** L'account di una persona, nell'area scelta se è una delle sue. */
+function accountDellaPersona(persona: Personale, scelta?: AreaDiAccount): Account {
+  const aree = areeDi(persona)
+  return { area: scelta && aree.includes(scelta) ? scelta : aree[0], aree, persona }
+}
+
+/** L'area di questa pagina è una di quelle dell'account? */
+export const eUnaSua = (a: Account, area: string | null) => a.aree.some((x) => x === area)
 
 /**
  * L'ultimo account visto, per l'apertura senza rete: la sessione di Supabase
@@ -53,11 +70,21 @@ function ricordato(utente: string): Account | null {
       | ({ utente: string; area?: AreaDiAccount } & Partial<Personale>)
       | null
     if (!r || r.utente !== utente) return null
-    const persona = r.nome && r.ruolo ? { id: r.id, nome: r.nome, cognome: r.cognome ?? '', ruolo: r.ruolo } : null
-    const area = r.area ?? (persona ? areaDi(persona) : null)
-    return area ? { area, persona } : null
+    const persona = r.nome && r.ruolo ? { id: r.id, nome: r.nome, cognome: r.cognome ?? '', ruolo: r.ruolo, ancheIstruttore: !!r.ancheIstruttore } : null
+    if (persona) return accountDellaPersona(persona, r.area)
+    return r.area === 'sala' ? { area: 'sala', aree: ['sala'], persona: null } : null
   } catch {
     return null
+  }
+}
+
+/** L'area scelta da chi ne ha più d'una, per la prossima volta. */
+function ricordaArea(area: AreaDiAccount) {
+  try {
+    const r = JSON.parse(localStorage.getItem(PERSONA_VISTA) ?? 'null') as { area?: AreaDiAccount } | null
+    if (r && r.area !== area) localStorage.setItem(PERSONA_VISTA, JSON.stringify({ ...r, area }))
+  } catch {
+    // Senza localStorage si riparte dalla prima area.
   }
 }
 
@@ -73,12 +100,27 @@ function ricorda(utente: string, a: Account | null) {
 const db = () => import('./supabase').then((m) => m.clientSupabase())
 
 /**
- * Va nell'area del proprio account. Una persona entrata dalla porta del
- * tablet non è un tablet: il dispositivo smette di riaprirsi in sala.
+ * Va nell'area del proprio account, e se ne ha più d'una se la ricorda. Una
+ * persona entrata dalla porta del tablet non è un tablet: il dispositivo
+ * smette di riaprirsi in sala.
  */
 export function passaA(area: AreaDiAccount) {
   if (area !== 'sala') smettiTablet()
+  ricordaArea(area)
   window.location.assign(indirizzo(INDIRIZZI[area]))
+}
+
+/**
+ * L'area scelta da chi ne ha più d'una, dopo la porta: `true` se è questa
+ * pagina e si resta, se no si va di là (vedi `passaA`) e la pagina cambia.
+ */
+export function scegliArea(area: AreaDiAccount): boolean {
+  if (area !== areaDelPercorso()) {
+    passaA(area)
+    return false
+  }
+  ricordaArea(area)
+  return true
 }
 
 /**
@@ -91,9 +133,10 @@ export async function account(): Promise<Account | null> {
   const { data: s } = await c.auth.getSession()
   const utente = s.session?.user.id
   if (!utente) return null
-  const letto = await accountDi(c, utente)
+  const visto = ricordato(utente)
+  const letto = await accountDi(c, utente, visto?.area)
   // Senza rete la risposta non c'è, non è un «no»: vale l'ultimo visto.
-  if (letto === undefined) return ricordato(utente)
+  if (letto === undefined) return visto
   ricorda(utente, letto)
   return letto
 }
@@ -103,15 +146,18 @@ export async function chiSei(): Promise<Personale | null> {
   return (await account())?.persona ?? null
 }
 
-/** L'account di un utente: `null` se non è di nessuno, `undefined` se il server non ha risposto. */
-async function accountDi(c: SupabaseClient, utente: string): Promise<Account | null | undefined> {
+/**
+ * L'account di un utente: `null` se non è di nessuno, `undefined` se il server
+ * non ha risposto. `scelta` è l'area scelta l'ultima volta, per chi ne ha più d'una.
+ */
+async function accountDi(c: SupabaseClient, utente: string, scelta?: AreaDiAccount): Promise<Account | null | undefined> {
   const persona = await personaDi(c, utente)
   if (persona === undefined) return undefined
-  if (persona) return { area: areaDi(persona), persona }
+  if (persona) return accountDellaPersona(persona, scelta)
   // La policy lascia a un tablet la sua riga e basta (vedi `tabletSupabase.ts`).
   const { data, error } = await c.from('postazioni').select('attiva').eq('utente_id', utente).maybeSingle()
   if (error) return undefined
-  return (data as { attiva: boolean } | null)?.attiva ? { area: 'sala', persona: null } : null
+  return (data as { attiva: boolean } | null)?.attiva ? { area: 'sala', aree: ['sala'], persona: null } : null
 }
 
 /**
@@ -119,7 +165,9 @@ async function accountDi(c: SupabaseClient, utente: string): Promise<Account | n
  * se il server non ha risposto.
  */
 async function personaDi(c: SupabaseClient, utente: string): Promise<Personale | null | undefined> {
-  const leggi = () => c.from('persone').select('id, nome, cognome, ruolo').eq('utente_id', utente).eq('attiva', true).maybeSingle()
+  // `*` e non l'elenco delle colonne: su un database che non ha ancora il
+  // ruolo doppio (`anche_istruttore`, in `01-schema.sql`) si entra lo stesso.
+  const leggi = () => c.from('persone').select('*').eq('utente_id', utente).eq('attiva', true).maybeSingle()
   let { data, error } = await leggi()
   // Al primo accesso l'account non è ancora legato: se in anagrafica c'è un
   // istruttore o una segreteria con la sua email, `collega_utente()` (in
@@ -129,9 +177,16 @@ async function personaDi(c: SupabaseClient, utente: string): Promise<Personale |
     if (legato) ({ data, error } = await leggi())
   }
   if (error) return undefined
-  const riga = data as { id: string; nome: string; cognome: string; ruolo: Ruolo } | null
-  return riga && riga.ruolo !== 'iscritto' ? { id: riga.id, nome: riga.nome, cognome: riga.cognome, ruolo: riga.ruolo } : null
+  const riga = data as { id: string; nome: string; cognome: string; ruolo: Ruolo; anche_istruttore?: boolean } | null
+  if (!riga || riga.ruolo === 'iscritto') return null
+  return { id: riga.id, nome: riga.nome, cognome: riga.cognome, ruolo: riga.ruolo, ancheIstruttore: riga.ruolo === 'staff' && !!riga.anche_istruttore }
 }
+
+/**
+ * Dopo la porta: si resta in questa pagina con chi è entrato (`null` per una
+ * sala), o chi ha più di un'area sceglie dove andare (vedi `scegliArea`).
+ */
+export type Entrato = { persona: Personale | null; scegli?: undefined } | { persona: Personale; scegli: AreaDiAccount[] }
 
 /**
  * La porta unica: la stessa alla radice e in ogni area. Si entra con
@@ -139,11 +194,12 @@ async function personaDi(c: SupabaseClient, utente: string): Promise<Personale |
  * `emailDellaSala`), e l'account dice dove andare: la segreteria in
  * segreteria, un istruttore nel calendario, il tablet di una sala in sala.
  *
- * Se l'area è questa pagina si resta, e torna la persona entrata (`null` per
- * una sala); se no si va nell'area giusta (vedi `passaA`) e la pagina cambia,
- * e la promessa non torna più.
+ * Chi ha più di un'area, la segreteria che insegna anche, sceglie: torna
+ * `scegli`, qualunque porta abbia aperto. Se no, se l'area è questa pagina si
+ * resta, e torna la persona entrata; se no si va nell'area giusta (vedi
+ * `passaA`) e la pagina cambia, e la promessa non torna più.
  */
-export async function accedi(utente: string, password: string): Promise<Personale | null> {
+export async function accedi(utente: string, password: string): Promise<Entrato> {
   const c = await db()
   const { error } = await c.auth.signInWithPassword({ email: emailDellaSala(utente), password })
   if (error) throw new Error(perché(error))
@@ -159,7 +215,8 @@ export async function accedi(utente: string, password: string): Promise<Personal
     throw new Error('Questo account non è di un istruttore, della segreteria o del tablet di una sala: chiedi alla segreteria')
   }
   if (id) ricorda(id, a)
-  if (a.area === areaDelPercorso()) return a.persona
+  if (a.persona && a.aree.length > 1) return { persona: a.persona, scegli: a.aree }
+  if (a.area === areaDelPercorso()) return { persona: a.persona }
   passaA(a.area)
   return new Promise<never>(() => {})
 }

@@ -1,5 +1,21 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
-import { accedi, account, accountDalLink, esci, mandaLinkPassword, passaA, quandoCambia, scegliPassword, serveAccesso, type Personale } from '../lib/accesso'
+import {
+  accedi,
+  account,
+  accountDalLink,
+  areeDi,
+  eUnaSua,
+  esci,
+  mandaLinkPassword,
+  nomeDelRuolo,
+  passaA,
+  quandoCambia,
+  scegliArea,
+  scegliPassword,
+  serveAccesso,
+  type AreaDiAccount,
+  type Personale,
+} from '../lib/accesso'
 import type { Arrivo } from '../lib/invito'
 import { indirizzo } from '../lib/aree'
 import { areaDelPercorso } from '../lib/percorso'
@@ -11,7 +27,8 @@ import { scegliProva } from '../lib/dati'
  *
  * La sessione è una per tutte le aree: se l'account è di un'altra (un
  * istruttore che apre `segreteria/`, il tablet di una sala che apre
- * `istruttori/`) si torna nella sua, e qui resta «un attimo».
+ * `istruttori/`) si torna nella sua, e qui resta «un attimo». Chi ne ha due,
+ * la segreteria che insegna anche, resta in tutte e due.
  */
 export function useChi(): [Personale | null | undefined, (p: Personale | null) => void] {
   const [chi, setChi] = useState<Personale | null | undefined>(serveAccesso ? undefined : null)
@@ -24,7 +41,7 @@ export function useChi(): [Personale | null | undefined, (p: Personale | null) =
       void account().then(
         (a) => {
           if (!vivo) return
-          if (a && a.area !== areaDelPercorso()) return passaA(a.area)
+          if (a && !eUnaSua(a, areaDelPercorso())) return passaA(a.area)
           setChi(a?.persona ?? null)
         },
         () => vivo && setChi(null),
@@ -82,14 +99,56 @@ export function Porta({
     <>
       <div className="row pad chi-sei">
         <span className="grow" style={{ minWidth: 0 }}>
-          {chi.nome.toUpperCase()} {chi.cognome.toUpperCase()} · {chi.ruolo === 'staff' ? 'SEGRETERIA' : 'ISTRUTTORE'}
+          {chi.nome.toUpperCase()} {chi.cognome.toUpperCase()} · {nomeDelRuolo(chi).toUpperCase()}
         </span>
+        {chi.ancheIstruttore && areaDelPercorso() === 'istruttori' && (
+          <button type="button" className="chi-esci" onClick={() => passaA('segreteria')}>
+            SEGRETERIA
+          </button>
+        )}
         <button type="button" className="chi-esci" onClick={onEsci}>
           ESCI
         </button>
       </div>
       {figli(chi)}
     </>
+  )
+}
+
+/** Cosa c'è in ogni area, per chi sceglie dove andare. */
+const AREE: Record<AreaDiAccount, [string, string]> = {
+  segreteria: ['SEGRETERIA', 'Corsi, iscritti, presenze e richieste, dal computer della reception.'],
+  istruttori: ['ISTRUTTORI', 'Il calendario delle tue lezioni e l’appello, i tuoi timer.'],
+  sala: ['SALA', 'Il tablet appeso al muro della sala.'],
+}
+
+/**
+ * Dove va chi ha più di un'area, la segreteria che insegna anche: lo sceglie
+ * a ogni accesso, e poi passa dall'una all'altra dal menu senza uscire.
+ */
+export function SceltaArea({ persona, aree, onScelta }: { persona: Personale; aree: AreaDiAccount[]; onScelta: (a: AreaDiAccount) => void }) {
+  return (
+    <div className="accesso">
+      <div className="rule">
+        <span className="rule-label">DOVE VAI?</span>
+        <div className="rule-line" />
+      </div>
+      <div className="pad stack" style={{ gap: 10, paddingBottom: 16 }}>
+        <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+          Ciao {persona.nome}: sei della segreteria e insegni anche. Scegli dove entrare; poi si cambia dal menu, senza
+          uscire.
+        </span>
+        {aree.map((a) => (
+          <button key={a} type="button" className="card stack scelta-area" style={{ textAlign: 'left' }} onClick={() => onScelta(a)}>
+            <span className="scelta-titolo">{AREE[a][0]}</span>
+            <span className="passo-dettaglio" style={{ fontSize: 15 }}>{AREE[a][1]}</span>
+          </button>
+        ))}
+        <button type="button" className="chi-esci" style={{ alignSelf: 'flex-start' }} onClick={() => void esci()}>
+          ESCI
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -101,9 +160,11 @@ export function UnAttimo() {
  * La porta, una sola per tutti: la stessa alla radice, in `istruttori/` e in
  * `segreteria/`. Chi entra va nella sua area, qualunque porta abbia aperto
  * (vedi `accedi`): se è questa, `onEntrato` riceve la persona; se no la pagina
- * cambia. Non c'è una scelta dell'area: la sceglie l'account.
+ * cambia. Una scelta dell'area c'è solo per chi ne ha più d'una (vedi
+ * `SceltaArea`): per gli altri la sceglie l'account.
  */
 export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
+  const [scelta, setScelta] = useState<{ persona: Personale; aree: AreaDiAccount[] } | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errore, setErrore] = useState<string | null>(null)
@@ -131,14 +192,17 @@ export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
     setErrore(null)
     setDetto(null)
     try {
-      const p = await accedi(email.trim(), password)
-      if (p) onEntrato?.(p)
+      const e = await accedi(email.trim(), password)
+      if (e.scegli) setScelta({ persona: e.persona, aree: e.scegli })
+      else if (e.persona) onEntrato?.(e.persona)
     } catch (x) {
       setErrore(x instanceof Error ? x.message : 'Accesso non riuscito')
     } finally {
       setAspetta(false)
     }
   }
+
+  if (scelta) return <SceltaArea {...scelta} onScelta={(a) => scegliArea(a) && onEntrato?.(scelta.persona)} />
 
   return (
     <div className="accesso">
@@ -214,6 +278,7 @@ export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
  */
 export function ScegliPassword({ arrivo }: { arrivo: Arrivo }) {
   const [account, setAccount] = useState<string | null | undefined>(arrivo.tipo === 'scaduto' ? null : undefined)
+  const [scelta, setScelta] = useState<Personale | null>(null)
   const [password, setPassword] = useState('')
   const [ancora, setAncora] = useState('')
   const [errore, setErrore] = useState<string | null>(null)
@@ -239,12 +304,16 @@ export function ScegliPassword({ arrivo }: { arrivo: Arrivo }) {
     setAspetta(true)
     try {
       const p = await scegliPassword(password)
-      passaA(p.ruolo === 'staff' ? 'segreteria' : 'istruttori')
+      const aree = areeDi(p)
+      if (aree.length > 1) setScelta(p)
+      else passaA(aree[0])
     } catch (x) {
       setErrore(x instanceof Error ? x.message : 'La password non è stata salvata')
       setAspetta(false)
     }
   }
+
+  if (scelta) return <SceltaArea persona={scelta} aree={areeDi(scelta)} onScelta={passaA} />
 
   return (
     <div className="accesso">

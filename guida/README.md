@@ -31,6 +31,11 @@ nelle altre, e aprendone l'indirizzo torna nella sua. Per cambiare parte si
 esce (**Esci**), e si torna alla pagina di accesso, dove si entra con l'altro
 account.
 
+Chi è della segreteria e insegna anche (il ruolo **Segreteria e istruttore**)
+entra in tutte e due le parti: dopo l'accesso l'app chiede dove andare,
+**SEGRETERIA** o **ISTRUTTORI**, e poi si passa dall'una all'altra dal menu
+(**ISTRUTTORI →**, **SEGRETERIA →**) senza uscire.
+
 ## Le quattro parti
 
 L'app ha quattro indirizzi. Sono la stessa app, ma ognuno apre una parte

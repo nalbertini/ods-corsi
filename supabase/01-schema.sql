@@ -170,6 +170,17 @@ alter table presenze add column if not exists postazione_id uuid references post
 alter table ricorrenze add column if not exists sala_id uuid references sale on delete set null;
 
 -- ---------------------------------------------------------------------------
+-- Il ruolo doppio.
+--
+-- C'è chi sta in segreteria e insegna anche. Il ruolo resta `staff`, che può
+-- già tutto quello che può un istruttore; `anche_istruttore` dice che insegna:
+-- si può dargli un corso, il PIN sul tablet gli segna la presenza come a un
+-- istruttore, e all'accesso l'app chiede in che area andare. Per gli altri
+-- ruoli non conta.
+-- ---------------------------------------------------------------------------
+alter table persone add column if not exists anche_istruttore boolean not null default false;
+
+-- ---------------------------------------------------------------------------
 -- Conservazione
 --
 -- Le presenze sono dati personali e non si tengono per sempre. Questa vista

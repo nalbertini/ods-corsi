@@ -77,7 +77,10 @@ istruttore come prima senza segnare niente, e PRESENZE ISTRUTTORI in
 segreteria dice che va lanciato. Per le ricevute dei pagamenti basta
 `16-ricevute.sql` (dopo `07-certificati-pagamenti.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, la scheda di un iscritto dice
-che le ricevute non sono attive, e il pagamento si segna come prima.
+che le ricevute non sono attive, e il pagamento si segna come prima. Per il
+ruolo doppio, segreteria e istruttore, si rilanciano `01-schema.sql`, poi
+`15-presenze-istruttori.sql` e `06-iscrizioni.sql`: finché non c'è, si entra
+come prima, e scegliere **TUTTI E DUE** dice che va rilanciato `01-schema.sql`.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -115,7 +118,12 @@ update persone set utente_id = (select id from auth.users where email = 'maurizi
 where nome = 'Maurizio' and cognome = 'Innella';
 ```
 
-Per la segreteria il ruolo è `staff`.
+Per la segreteria il ruolo è `staff`. Chi sta in segreteria e insegna anche
+ha `staff` e in più `anche_istruttore = true` (la colonna arriva con
+`01-schema.sql`): gli si danno dei corsi, il PIN del tablet gli segna la
+presenza come a un istruttore, e all'accesso l'app gli chiede se andare in
+segreteria o nel calendario. Dall'app lo si sceglie in **ISTRUTTORI E
+ACCESSI** → **RUOLO** → **TUTTI E DUE**.
 
 Se nella riga di `persone` c'è già la sua **email**, il secondo passo si può
 saltare: al primo accesso l'app lega da sé l'account alla persona con la

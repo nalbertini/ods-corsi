@@ -17,7 +17,7 @@ L'app ha quattro indirizzi veri, ognuno con il suo accesso
 | | |
 |---|---|
 | `istruttori/` | Il calendario e l'appello, per istruttori e segreteria. |
-| `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria. |
+| `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria (anche insieme a quello di istruttore). |
 | `iscrizioni/` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
 | `sala/` | Il tablet di sala. |
 
@@ -31,7 +31,10 @@ una sola, e i file si prendono dalla radice come prima.
 Senza niente in fondo all'indirizzo si apre la porta unica dell'accesso, che
 porta ognuno nella sua area (in prova, una pagina con le quattro), tranne
 su un tablet di sala, che va sempre al tablet. Non c'è una pagina per
-scegliere l'area: la sceglie l'account. Il **timer** si apre in `timer/`
+scegliere l'area: la sceglie l'account. Tranne per chi ha il ruolo doppio,
+segreteria e istruttore (`persone.anche_istruttore`, in
+`supabase/01-schema.sql`): dopo l'accesso sceglie se andare in segreteria o
+nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer** si apre in `timer/`
 (`nalbertini.github.io/ods-corsi/timer/`), dal menu degli istruttori.
 
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello

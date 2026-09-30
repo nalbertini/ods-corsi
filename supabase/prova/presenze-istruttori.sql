@@ -89,4 +89,15 @@ select atteso('senza accesso', tenta($$select count(*)::text from presenza_con_p
 reset role;
 
 \echo ''
+\echo '--- 5. la segreteria che insegna anche ---'
+-- Col ruolo doppio (`anche_istruttore`) il PIN segna la presenza come a un
+-- istruttore: nel Tatami Anna non è prevista, e va da confermare.
+update persone set anche_istruttore = true where id = 'aaaaaaaa-0000-0000-0000-000000000001';
+select chi('55555555-5555-5555-5555-555555555555');
+set role authenticated;
+select atteso('Anna, che insegna anche, nel Tatami', (select corso || ' ' || stato from presenza_con_pin('1357')), 'Judo 2 da_confermare');
+reset role;
+update persone set anche_istruttore = false where id = 'aaaaaaaa-0000-0000-0000-000000000001';
+
+\echo ''
 \echo 'TUTTO A POSTO'
