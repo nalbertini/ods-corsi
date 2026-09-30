@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
+import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
@@ -198,25 +199,31 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
   const oggi = () => chiaveGiorno(new Date())
 
   /**
-   * Nascita, residenza e genitore: dalla richiesta accolta, se c'è, se no
-   * dall'import. `tollera`: senza 18-anagrafiche.sql si va avanti senza.
+   * Nascita, residenza e genitore: i più recenti fra la richiesta accolta e
+   * quelli scritti in segreteria (import o scheda). Senza 18-anagrafiche.sql
+   * vale la richiesta; se non c'è nemmeno quella, `tollera` va avanti senza
+   * e se no si dice che manca il file.
    */
   const anagrafica = async (personaId: string, tollera = false): Promise<AnagraficaDi | null> => {
-    const r = ok(
-      await db
+    const [rich, an] = await Promise.all([
+      db
         .from('richieste_iscrizione')
-        .select('nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, genitore_nome, genitore_cognome, genitore_codice_fiscale')
+        .select('nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, genitore_nome, genitore_cognome, genitore_codice_fiscale, gestita_il, creata_il')
         .eq('persona_id', personaId)
         .eq('stato', 'accolta')
         .order('gestita_il', { ascending: false, nullsFirst: false })
         .limit(1)
         .maybeSingle(),
-    ) as RigaAnagrafica | null
-    if (r) return { dati: daRigaAnagrafica(r)!, da: 'modulo' }
-    const an = await db.from('anagrafiche').select(CAMPI_ANAGRAFICA).eq('persona_id', personaId).maybeSingle()
-    if (an.error && tollera) return null
-    const x = daRigaAnagrafica(ok(an) as RigaAnagrafica | null)
-    return x && Object.keys(x).length ? { dati: x, da: 'import' } : null
+      db.from('anagrafiche').select(`${CAMPI_ANAGRAFICA}, cambiata_il`).eq('persona_id', personaId).maybeSingle(),
+    ])
+    const r = ok(rich) as (RigaAnagrafica & { gestita_il: string | null; creata_il: string }) | null
+    if (an.error && !r && !tollera) ok(an)
+    const s = an.error ? null : (an.data as (RigaAnagrafica & { cambiata_il: string }) | null)
+    const daRichiesta = r ? { dati: daRigaAnagrafica(r)!, da: 'modulo' as const, quando: r.gestita_il ?? r.creata_il } : null
+    const x = s ? daRigaAnagrafica(s) : null
+    const daSegreteria = x && Object.keys(x).length ? { dati: x, da: 'segreteria' as const, quando: s!.cambiata_il } : null
+    const vince = daRichiesta && daSegreteria ? (daSegreteria.quando >= daRichiesta.quando ? daSegreteria : daRichiesta) : (daSegreteria ?? daRichiesta)
+    return vince && { dati: vince.dati, da: vince.da }
   }
 
   /** Chi insegna ogni corso, per nome, col primo di riferimento davanti. */
@@ -606,10 +613,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     anagraficaDi: (personaId) => anagrafica(personaId),
 
-    async salvaAnagrafica(personaId, a) {
-      const riga = aRigaAnagrafica(a)
+    async salvaAnagrafica(personaId, a, sostituisci) {
+      const x = pulisciAnagrafica(a)
+      const no = cosaNonVaAnagrafica(x)
+      if (no) throw new Error(no)
+      // Le colonne che non ci sono nell'upsert restano com'erano; per sostituire, le vuote vanno a null.
+      const riga = sostituisci ? Object.fromEntries(ANAGRAFICA.map(([k, c]) => [c, x[k] ?? null])) : aRigaAnagrafica(x)
       if (Object.keys(riga).length === 0) return
-      // Le colonne che non ci sono nell'upsert restano com'erano.
       ok(await db.from('anagrafiche').upsert({ persona_id: personaId, ...riga }, { onConflict: 'persona_id' }))
     },
 

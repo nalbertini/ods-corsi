@@ -1,4 +1,5 @@
-import type { CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StoricoSeg } from './segreteria'
+import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StoricoSeg } from './segreteria'
+import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { insegna, type RuoloPersonale } from './ruoli'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva } from './archivioProva'
@@ -58,6 +59,25 @@ export function creaSegreteriaProva(): DatiSegreteria {
     if (!p) throw new Error('Persona inesistente')
     return p
   }
+  /** Come `anagraficaDi` del database: i più recenti fra la richiesta accolta e quelli della segreteria. */
+  const anagraficaDi = (personaId: string): AnagraficaDi | null => {
+    const r = richiesteDi(personaId)
+      .filter((x) => x.stato === 'accolta')
+      .sort((x, y) => (y.gestitaIl ?? y.creataIl).localeCompare(x.gestitaIl ?? x.creataIl))[0]
+    const { cambiataIl, ...an } = a().anagrafiche?.[personaId] ?? {}
+    const daSegreteria = Object.keys(an).length ? { dati: an, da: 'segreteria' as const, quando: cambiataIl ?? '' } : null
+    let daRichiesta = null
+    if (r) {
+      const { natoIl, natoA, codiceFiscale, indirizzo, cap, comune, genitoreNome, genitoreCognome, genitoreCodiceFiscale } = r
+      const dati = Object.fromEntries(
+        Object.entries({ natoIl, natoA, codiceFiscale, indirizzo, cap, comune, genitoreNome, genitoreCognome, genitoreCodiceFiscale }).filter(([, v]) => v),
+      ) as Anagrafica
+      daRichiesta = { dati, da: 'modulo' as const, quando: r.gestitaIl ?? r.creataIl }
+    }
+    const vince = daRichiesta && daSegreteria ? (daSegreteria.quando >= daRichiesta.quando ? daSegreteria : daRichiesta) : (daSegreteria ?? daRichiesta)
+    return vince && { dati: vince.dati, da: vince.da }
+  }
+
   const cambiaLezione = (id: string, f: (l: LezioneProva) => LezioneProva | null) => {
     const nuova = f({ ...(a().lezioni[id] ?? {}) })
     const lezioni = { ...a().lezioni }
@@ -420,35 +440,23 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const p = persona(personaId)
       const ultima = (a().ricevute ?? []).filter((r) => r.personaId === personaId).sort((x, y) => y.creataIl.localeCompare(x.creataIl))[0]
       if (ultima) return { ...ultima.intestatario, nome: p.nome, cognome: p.cognome }
-      const richiesta = richiesteDi(personaId)
-        .filter((r) => r.stato === 'accolta')
-        .sort((x, y) => (y.gestitaIl ?? y.creataIl).localeCompare(x.gestitaIl ?? x.creataIl))[0]
-      if (richiesta) return intestatarioDaRichiesta(richiesta)
-      const an = a().anagrafiche?.[personaId]
-      return an ? intestatarioDaRichiesta({ ...an, nome: p.nome, cognome: p.cognome }) : { nome: p.nome, cognome: p.cognome }
+      const an = anagraficaDi(personaId)
+      return an ? intestatarioDaRichiesta({ ...an.dati, nome: p.nome, cognome: p.cognome }) : { nome: p.nome, cognome: p.cognome }
     },
 
     async anagraficaDi(personaId) {
       persona(personaId)
-      const richiesta = richiesteDi(personaId)
-        .filter((r) => r.stato === 'accolta')
-        .sort((x, y) => (y.gestitaIl ?? y.creataIl).localeCompare(x.gestitaIl ?? x.creataIl))[0]
-      if (richiesta) {
-        const { natoIl, natoA, codiceFiscale, indirizzo, cap, comune, genitoreNome, genitoreCognome, genitoreCodiceFiscale } = richiesta
-        const dati = Object.fromEntries(
-          Object.entries({ natoIl, natoA, codiceFiscale, indirizzo, cap, comune, genitoreNome, genitoreCognome, genitoreCodiceFiscale }).filter(([, v]) => v),
-        )
-        return { dati, da: 'modulo' }
-      }
-      const an = a().anagrafiche?.[personaId]
-      return an && Object.keys(an).length ? { dati: { ...an }, da: 'import' } : null
+      return anagraficaDi(personaId)
     },
 
-    async salvaAnagrafica(personaId, dati) {
+    async salvaAnagrafica(personaId, dati, sostituisci) {
       persona(personaId)
-      const nuovi = Object.fromEntries(Object.entries(dati).flatMap(([k, v]) => (typeof v === 'string' && v.trim() ? [[k, v.trim()]] : [])))
-      if (Object.keys(nuovi).length === 0) return
-      a().anagrafiche = { ...a().anagrafiche, [personaId]: { ...a().anagrafiche?.[personaId], ...nuovi } }
+      const nuovi = pulisciAnagrafica(dati)
+      const no = cosaNonVaAnagrafica(nuovi)
+      if (no) throw new Error(no)
+      if (!sostituisci && Object.keys(nuovi).length === 0) return
+      const prima = sostituisci ? {} : a().anagrafiche?.[personaId]
+      a().anagrafiche = { ...a().anagrafiche, [personaId]: { ...prima, ...nuovi, cambiataIl: new Date().toISOString() } }
       salva()
     },
 

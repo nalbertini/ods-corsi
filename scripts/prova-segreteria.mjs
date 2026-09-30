@@ -393,9 +393,18 @@ console.log('\n11. le risposte del modulo Google')
   ok('la ricevuta di Emma ha i suoi dati e il genitore', [intest.natoIl, intest.codiceFiscale, intest.indirizzo, intest.comune, intest.genitore, intest.genitoreCodiceFiscale], ['2016-05-04', 'GLLMME16E44L219J', 'via Roma 1', 'Collegno', 'Gialli Luca', 'GLLLCU80C15L219D'])
   ok('e l\'esportazione i dati anagrafici', (await s.esporta(emmaDentro.id)).dati_anagrafici.natoA, 'Torino')
   const perScheda = await s.anagraficaDi(emmaDentro.id)
-  ok('la scheda li mostra, dall\'import', [perScheda.da, perScheda.dati.natoIl, perScheda.dati.genitoreCognome], ['import', '2016-05-04', 'Gialli'])
+  ok('la scheda li mostra, dall\'import', [perScheda.da, perScheda.dati.natoIl, perScheda.dati.genitoreCognome], ['segreteria', '2016-05-04', 'Gialli'])
   const senza = (await s.persone()).find((x) => x.nome === 'Andrea' && x.cognome === 'Blu')
   ok('chi non ha niente non ha niente', await s.anagraficaDi(senza.id), null)
+  // La MODIFICA della scheda: tutto quello che si manda, e un campo vuoto si cancella.
+  await s.salvaAnagrafica(emmaDentro.id, { ...perScheda.dati, codiceFiscale: 'gllmme16e44l219j ', genitoreNato: '' }, true)
+  const corretta = (await s.anagraficaDi(emmaDentro.id)).dati
+  ok('la modifica: il codice in maiuscolo, il campo vuoto via, il resto resta', [corretta.codiceFiscale, corretta.genitoreNato, corretta.natoA], ['GLLMME16E44L219J', undefined, 'Torino'])
+  ok('e la ricevuta dopo prende i dati corretti', (await s.intestatarioDi(emmaDentro.id)).codiceFiscale, 'GLLMME16E44L219J')
+  let detto = ''
+  try { await s.salvaAnagrafica(emmaDentro.id, { cap: '100' }, true) } catch (e) { detto = e.message }
+  ok('un CAP di tre cifre no', detto, 'Il CAP ha cinque cifre')
+  ok('e non ha cancellato niente', (await s.anagraficaDi(emmaDentro.id)).dati.natoA, 'Torino')
   // Reimportato con una risposta che dice meno: quello che c'era resta.
   await s.salvaAnagrafica(emmaDentro.id, { comune: 'Rivoli', indirizzo: '' })
   ok('una risposta nuova aggiunge e non cancella', [(await s.intestatarioDi(emmaDentro.id)).comune, (await s.intestatarioDi(emmaDentro.id)).indirizzo], ['Rivoli', 'via Roma 1'])
