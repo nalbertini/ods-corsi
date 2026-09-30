@@ -138,7 +138,35 @@ export interface Anagrafica {
 /** I dati anagrafici di una persona e da dove vengono: dal modulo dell'app o dall'import. */
 export interface AnagraficaDi {
   dati: Anagrafica
-  da: 'modulo' | 'import'
+  /** `segreteria`: dall'import o corretti dalla scheda (`anagrafiche`). */
+  da: 'modulo' | 'segreteria'
+}
+
+/** I limiti di `anagrafiche` (18-anagrafiche.sql), detti prima di salvare. `null` se va bene. */
+export function cosaNonVaAnagrafica(a: Anagrafica, oggi = chiaveGiornoOggi()): string | null {
+  if (a.natoIl && (!/^\d{4}-\d{2}-\d{2}$/.test(a.natoIl) || Number.isNaN(Date.parse(a.natoIl)) || a.natoIl > oggi)) return 'La data di nascita non è giusta'
+  if (a.codiceFiscale && !/^[A-Z0-9]{16}$/.test(a.codiceFiscale)) return 'Il codice fiscale ha sedici lettere e cifre'
+  if (a.genitoreCodiceFiscale && !/^[A-Z0-9]{16}$/.test(a.genitoreCodiceFiscale)) return 'Il codice fiscale del genitore ha sedici lettere e cifre'
+  if (a.cap && !/^\d{5}$/.test(a.cap)) return 'Il CAP ha cinque cifre'
+  const lunghi: Array<[keyof Anagrafica, number, string]> = [
+    ['natoA', 80, 'Il luogo di nascita'], ['comune', 80, 'Il comune'], ['indirizzo', 160, "L'indirizzo"],
+    ['genitoreNome', 80, 'Il nome del genitore'], ['genitoreCognome', 80, 'Il cognome del genitore'], ['genitoreNato', 120, 'La nascita del genitore'],
+  ]
+  for (const [k, n, cosa] of lunghi) if ((a[k]?.length ?? 0) > n) return `${cosa} è troppo lungo: al massimo ${n} caratteri`
+  return null
+}
+
+/** Come si salva: spazi in più via, i codici fiscali in maiuscolo e senza spazi. */
+export function pulisciAnagrafica(a: Anagrafica): Anagrafica {
+  const x: Record<string, string> = {}
+  for (const [k, v] of Object.entries(a)) if (typeof v === 'string' && v.trim()) x[k] = v.trim().replace(/\s+/g, ' ')
+  for (const k of ['codiceFiscale', 'genitoreCodiceFiscale', 'cap']) if (x[k]) x[k] = x[k].toUpperCase().replace(/\s/g, '')
+  return x as Anagrafica
+}
+
+const chiaveGiornoOggi = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 /** Un file da aprire: il link vale poco, col database dieci minuti. */
@@ -301,18 +329,20 @@ export interface DatiSegreteria {
   prossimoNumero(anno: number): Promise<number>
   /**
    * I dati del socio per una ricevuta nuova: quelli dell'ultima ricevuta,
-   * se c'è; se no quelli della richiesta di iscrizione accolta; se no quelli
-   * venuti dall'import (`salvaAnagrafica`); se no nome e cognome.
+   * se c'è; se no quelli di `anagraficaDi`; se no nome e cognome.
    */
   intestatarioDi(personaId: string): Promise<IntestatarioRicevuta>
   /**
    * Scrive i dati anagrafici che ci sono in `a`; quelli che mancano restano
    * com'erano, così un'altra risposta del modulo aggiunge e non cancella.
+   * Con `sostituisci` (la MODIFICA della scheda) `a` è tutto: un campo vuoto
+   * si cancella.
    */
-  salvaAnagrafica(personaId: string, a: Anagrafica): Promise<void>
+  salvaAnagrafica(personaId: string, a: Anagrafica, sostituisci?: boolean): Promise<void>
   /**
-   * Nascita, residenza e genitore da mostrare nella scheda: quelli della
-   * richiesta di iscrizione accolta, se c'è, se no quelli dell'import.
+   * Nascita, residenza e genitore da mostrare nella scheda e da mettere
+   * sulle ricevute: i più recenti fra quelli della richiesta di iscrizione
+   * accolta e quelli scritti in segreteria (dall'import o dalla scheda).
    * `null` se non ce ne sono.
    */
   anagraficaDi(personaId: string): Promise<AnagraficaDi | null>

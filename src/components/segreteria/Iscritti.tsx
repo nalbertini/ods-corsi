@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
-import type { ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PagamentoSeg, PersonaSeg } from '../../lib/segreteria'
-import { comeCertificato, comePaga, inCorso, PAGAMENTI } from '../../lib/segreteria'
+import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PagamentoSeg, PersonaSeg } from '../../lib/segreteria'
+import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, PAGAMENTI, pulisciAnagrafica } from '../../lib/segreteria'
+import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { ESTENSIONI, MASSIMO_FILE } from '../../lib/richieste'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica } from './comune'
@@ -363,7 +364,7 @@ function Scheda({
             </div>
           )}
 
-          <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} />
+          <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} fai={fai} />
           <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${p.pagamento.nota ?? ''}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} />
@@ -501,20 +502,32 @@ function Scheda({
 
 /**
  * Nascita, residenza e genitore: dal modulo di iscrizione dell'app o
- * dall'import delle risposte del modulo Google. Si leggono soltanto: sono
- * quelli che vanno sulle ricevute, e sulla ricevuta si possono correggere.
+ * dall'import delle risposte del modulo Google. Sono quelli che vanno sulle
+ * ricevute: MODIFICA li corregge, e da lì valgono i nuovi.
  */
-function DatiAnagrafici({ d, p }: { d: DatiSegreteria; p: PersonaSeg }) {
+function DatiAnagrafici({ d, p, fai }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai }) {
   // In una scatola: `null` vuol dire «ancora da leggere», `{ di: null }` «non ce ne sono».
   const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
+  const [modifica, setModifica] = useState<Anagrafica | null>(null)
   const x = an.dato?.di?.dati
   const valore = (testo?: string) => <span style={{ fontSize: 14, color: testo ? 'var(--text)' : 'var(--dim)', overflowWrap: 'anywhere' }}>{testo || '—'}</span>
+  const codice = (testo?: string) => (
+    <span className="num" style={{ fontSize: 14, color: testo ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em' }}>{testo ?? '—'}</span>
+  )
   const residenza = x && [x.indirizzo, [x.cap, x.comune].filter(Boolean).join(' ')].filter(Boolean).join(', ')
   const genitore = x && [x.genitoreCognome, x.genitoreNome].filter(Boolean).join(' ')
+
+  if (modifica) return <ModificaAnagrafica d={d} p={p} fai={fai} dati={modifica} onCambia={setModifica} onFatto={() => { setModifica(null); void an.ricarica() }} />
+
   return (
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="DATI ANAGRAFICI">
-        {an.dato?.di && <span style={{ fontSize: 12, color: 'var(--dim)' }}>{an.dato.di.da === 'modulo' ? 'dal modulo di iscrizione' : 'dall’import del modulo Google'}</span>}
+        {an.dato?.di && <span style={{ fontSize: 12, color: 'var(--dim)' }}>{an.dato.di.da === 'modulo' ? 'dal modulo di iscrizione' : 'dall’import o dalla segreteria'}</span>}
+        {an.dato && (
+          <button type="button" className="num sg-chip" onClick={() => setModifica({ ...(an.dato?.di?.dati ?? {}) })}>
+            {an.dato.di ? 'MODIFICA' : 'AGGIUNGI'}
+          </button>
+        )}
       </Riga>
       {an.guaio && <Guaio testo={an.guaio} />}
       {an.dato && !an.dato.di && <span className="sg-sotto">Nessun dato: arrivano dal modulo di iscrizione o dall'import delle risposte del modulo Google.</span>}
@@ -522,21 +535,99 @@ function DatiAnagrafici({ d, p }: { d: DatiSegreteria; p: PersonaSeg }) {
         <div className="sg-due">
           <Campo etichetta="NATO IL">{valore(x.natoIl && dataLunga(x.natoIl))}</Campo>
           <Campo etichetta="A">{valore(x.natoA)}</Campo>
-          <Campo etichetta="CODICE FISCALE">
-            <span className="num" style={{ fontSize: 14, color: x.codiceFiscale ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em' }}>{x.codiceFiscale ?? '—'}</span>
-          </Campo>
+          <Campo etichetta="CODICE FISCALE">{codice(x.codiceFiscale)}</Campo>
           <Campo etichetta="RESIDENZA">{valore(residenza)}</Campo>
           {(genitore || x.genitoreCodiceFiscale || x.genitoreNato) && (
             <>
               <Campo etichetta="GENITORE">{valore(genitore)}</Campo>
-              <Campo etichetta="CODICE FISCALE DEL GENITORE">
-                <span className="num" style={{ fontSize: 14, color: x.genitoreCodiceFiscale ? 'var(--text)' : 'var(--dim)', letterSpacing: '0.04em' }}>{x.genitoreCodiceFiscale ?? '—'}</span>
-              </Campo>
+              <Campo etichetta="CODICE FISCALE DEL GENITORE">{codice(x.genitoreCodiceFiscale)}</Campo>
               {x.genitoreNato && <Campo etichetta="IL GENITORE È NATO" largo>{valore(x.genitoreNato)}</Campo>}
             </>
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+/** I campi della MODIFICA, nell'ordine in cui si scrivono. */
+const CAMPI_ANAGRAFICA: Array<{ k: keyof Anagrafica; etichetta: string; tipo?: 'date'; codice?: boolean; largo?: boolean; max: number }> = [
+  { k: 'natoIl', etichetta: 'NATO IL', tipo: 'date', max: 10 },
+  { k: 'natoA', etichetta: 'A', max: 80 },
+  { k: 'codiceFiscale', etichetta: 'CODICE FISCALE', codice: true, largo: true, max: 16 },
+  { k: 'indirizzo', etichetta: 'INDIRIZZO', largo: true, max: 160 },
+  { k: 'cap', etichetta: 'CAP', max: 5 },
+  { k: 'comune', etichetta: 'COMUNE', max: 80 },
+  { k: 'genitoreNome', etichetta: 'NOME DEL GENITORE', max: 80 },
+  { k: 'genitoreCognome', etichetta: 'COGNOME DEL GENITORE', max: 80 },
+  { k: 'genitoreCodiceFiscale', etichetta: 'CODICE FISCALE DEL GENITORE', codice: true, largo: true, max: 16 },
+  { k: 'genitoreNato', etichetta: 'LUOGO E DATA DI NASCITA DEL GENITORE', largo: true, max: 120 },
+]
+
+/**
+ * Correggere i dati anagrafici: si salvano in segreteria e da lì valgono,
+ * anche sulla ricevuta dopo. Un campo vuoto si cancella. Un codice fiscale
+ * scritto giusto ma che non torna con la persona si dice, e si salva lo
+ * stesso: a volte è il dato vecchio a essere sbagliato.
+ */
+function ModificaAnagrafica({
+  d,
+  p,
+  fai,
+  dati,
+  onCambia,
+  onFatto,
+}: {
+  d: DatiSegreteria
+  p: PersonaSeg
+  fai: Fai
+  dati: Anagrafica
+  onCambia: (a: Anagrafica) => void
+  onFatto: () => void
+}) {
+  const pulita = pulisciAnagrafica(dati)
+  const no = cosaNonVaAnagrafica(pulita)
+  const cf = pulita.codiceFiscale
+  const avviso =
+    cf && cf.length === 16 && !no
+      ? !cfValido(cf)
+        ? "L'ultimo carattere del codice fiscale non torna: forse c'è una lettera sbagliata."
+        : !cfTornaColNome(cf, p.nome, p.cognome)
+          ? `Il codice fiscale non torna con ${p.nome} ${p.cognome}: è il suo?`
+          : pulita.natoIl && !cfTornaConLaData(cf, pulita.natoIl)
+            ? 'Il codice fiscale e la data di nascita non dicono lo stesso giorno.'
+            : null
+      : null
+  return (
+    <div className="stack" style={{ gap: 12 }}>
+      <Riga titolo="DATI ANAGRAFICI" />
+      <div className="sg-due">
+        {CAMPI_ANAGRAFICA.map((c) => (
+          <Campo key={c.k} id={`an-${c.k}`} etichetta={c.etichetta} largo={c.largo}>
+            <input
+              id={`an-${c.k}`}
+              className={c.codice ? 'sg-campo num' : 'sg-campo'}
+              type={c.tipo ?? 'text'}
+              maxLength={c.tipo ? undefined : c.max}
+              inputMode={c.k === 'cap' ? 'numeric' : undefined}
+              autoCapitalize={c.codice ? 'characters' : undefined}
+              value={dati[c.k] ?? ''}
+              onChange={(e) => onCambia({ ...dati, [c.k]: c.codice ? e.target.value.toUpperCase() : e.target.value })}
+            />
+          </Campo>
+        ))}
+      </div>
+      {no && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>{no}.</span>}
+      {avviso && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>{avviso} Si può salvare lo stesso.</span>}
+      <span className="sg-sotto">Un campo lasciato vuoto si cancella. Le ricevute già fatte restano com'erano; le nuove prendono questi.</span>
+      <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+        <button type="button" className="sg-btn sg-btn-linea" onClick={onFatto}>
+          LASCIA STARE
+        </button>
+        <button type="button" className="sg-btn sg-btn-rosso" disabled={!!no} onClick={() => void fai(() => d.salvaAnagrafica(p.id, pulita, true), 'Dati anagrafici salvati', onFatto)}>
+          SALVA
+        </button>
+      </div>
     </div>
   )
 }

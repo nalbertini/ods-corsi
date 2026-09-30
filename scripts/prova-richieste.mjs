@@ -205,5 +205,17 @@ console.log('\n6. lo stesso codice fiscale, l’altro genitore')
   ok('con la mail di prima', (await s.persone()).find((x) => x.id === prima).email, 'mamma@esempio.it')
 }
 
+console.log('\n7. i dati anagrafici: dalla richiesta, e dalla scheda dopo')
+{
+  const lucaId = (await r.richieste()).find((x) => x.id === luca).personaId
+  const prima = await s.anagraficaDi(lucaId)
+  ok('dalla richiesta accolta', [prima.da, prima.dati.codiceFiscale], ['modulo', (await r.richieste()).find((x) => x.id === luca).codiceFiscale])
+  // Corretti dalla scheda dopo aver accolto: valgono i nuovi, anche sulla ricevuta.
+  await s.salvaAnagrafica(lucaId, { ...prima.dati, indirizzo: 'via Nuova 2' }, true)
+  const dopo = await s.anagraficaDi(lucaId)
+  ok('la correzione è più recente e vince', [dopo.da, dopo.dati.indirizzo], ['segreteria', 'via Nuova 2'])
+  ok('e la ricevuta la prende', (await s.intestatarioDi(lucaId)).indirizzo, 'via Nuova 2')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

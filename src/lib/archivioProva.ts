@@ -106,7 +106,7 @@ export interface Archivio {
   /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */
   enteRicevute?: EnteRicevuta
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */
-  anagrafiche?: Record<string, Anagrafica>
+  anagrafiche?: Record<string, Anagrafica & { cambiataIl?: string }>
 }
 
 /** Come una riga di `presenze_istruttori` (15-presenze-istruttori.sql). */
