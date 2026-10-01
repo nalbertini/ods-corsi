@@ -83,7 +83,7 @@ export const PAGAMENTO: {
   intestatario: string
   /**
    * Il link Satispay dell'associazione (quello di Satispay Business, che apre
-   * l'app già sul negozio). Finché manca, nella pagina resta solo il bonifico.
+   * l'app già sul negozio). Senza, nella pagina resta solo il bonifico.
    */
   satispay?: string
 } = {
@@ -91,7 +91,7 @@ export const PAGAMENTO: {
   validaFino: 'luglio 2027',
   iban: 'IT03 D076 0101 0000 0007 6350 339',
   intestatario: 'ASD Il Centro Judo',
-  satispay: undefined,
+  satispay: 'https://www.satispay.com/app/pay/shops/56907684-6da4-4bbd-8592-a0a00b4303bf',
 }
 
 /**
