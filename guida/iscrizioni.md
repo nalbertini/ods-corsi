@@ -19,9 +19,9 @@ segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
      genitore). Col modulo dell'app si firma col dito nell'ultimo passo; chi
      preferisce lo stampa, lo firma a mano e ne carica la foto.
   2. **Il pagamento** — la quota associativa e il trimestre, oppure l'annuale,
-     con l'IBAN da copiare con un tocco e, quando c'è il link
-     dell'associazione (`PAGAMENTO.satispay` in `src/lib/iscrizione.ts`),
-     il tasto **PAGA CON SATISPAY**.
+     con l'IBAN da copiare con un tocco e il tasto **PAGA CON SATISPAY**, che
+     apre l'app sul negozio dell'associazione (il link è
+     `PAGAMENTO.satispay` in `src/lib/iscrizione.ts`).
   3. **La richiesta** — con il modulo dell'app (**COMPILA LA RICHIESTA**)
      oppure, finché quello non è acceso, con il modulo Google (**APRI IL
      MODULO**), che ha i suoi passi: scaricare il modulo, firmarlo e caricarlo.
