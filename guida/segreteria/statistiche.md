@@ -49,6 +49,10 @@ medie: si conta a parte.
   tutti e due.
 - **IN REGOLA OGGI** — il certificato medico e il pagamento di chi è
   iscritto oggi. **CHI NON È IN REGOLA** apre [Iscritti](iscritti.md).
+- **PROVE MESE PER MESE** — quante persone sono venute a provare, ognuna
+  contata una volta, nel mese della sua prima prova (chi fa la settimana di
+  prova non conta tre volte). Col mouse sopra dice anche le lezioni di prova
+  del mese e quanti di loro oggi sono iscritti.
 - **INCASSI MESE PER MESE** — quanto è stato pagato con le
   [ricevute](iscritti.md) del mese, per la data della ricevuta, senza le
   annullate. È di tutti i corsi insieme: una ricevuta può averne più d'uno.
