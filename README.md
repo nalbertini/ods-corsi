@@ -79,8 +79,8 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   perdendo, gli appelli che mancano, e il CSV. Le **statistiche**, su più mesi: presenze e iscritti mese per mese, i giorni e le ore
   in cui si viene, i corsi che si riempiono (sugli iscritti e sui posti), le lezioni di ogni
   istruttore, le prove mese per mese, chi è in regola e gli incassi delle ricevute; i conti li fa il database
-  (`supabase/22-statistiche.sql`). Le **presenze degli istruttori** entrati col PIN
-  in una lezione in cui non erano previsti, da confermare o rifiutare. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
+  (`supabase/22-statistiche.sql`). Le **presenze degli istruttori** entrati col PIN,
+  in elenco per mese, corso, istruttore e stato: quelle in cui non erano previsti si confermano o si rifiutano. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`).
   **Istruttori e accessi**, coi PIN del tablet. Il **listino** dei costi, che
   la segreteria cambia da sé e che vale per la pagina di iscrizione e per le

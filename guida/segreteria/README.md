@@ -31,7 +31,7 @@ A sinistra il menu, a destra la voce scelta. Ogni voce ha la sua guida:
 | **RICHIESTE ONLINE** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
 | **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |
 | **STATISTICHE** | Come va la palestra mese per mese: presenze, iscritti, giorni e ore, corsi, istruttori, incassi | [Apri](statistiche.md) |
-| **PRESENZE ISTRUTTORI** | Gli istruttori entrati col PIN in una lezione in cui non erano previsti, da confermare | [Apri](presenze-istruttori.md) |
+| **PRESENZE ISTRUTTORI** | Le presenze degli istruttori dal PIN del tablet, confermate e da confermare, per mese, corso e istruttore | [Apri](presenze-istruttori.md) |
 | **IMPORTA DA EXCEL** | Corsi e iscritti dai fogli Excel o dalle risposte del modulo Google | [Apri](importa.md) |
 | **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
 | **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |

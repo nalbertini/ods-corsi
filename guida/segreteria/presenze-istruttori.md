@@ -18,9 +18,17 @@ Nel menu, accanto a **PRESENZE ISTRUTTORI**, c'è quante ne aspettano.
 Per ogni presenza: l'**ISTRUTTORE**, la **LEZIONE** (corso, giorno e orario),
 chi era **PREVISTO** su quella lezione, quando è **ENTRATO** e da quale tablet.
 
-Normalmente si vedono solo quelle da confermare; **ANCHE QUELLE GIÀ GESTITE**
-mostra anche le confermate e le rifiutate degli ultimi sessanta giorni, con
-chi le ha decise (o **da sé: era previsto**).
+Si vedono tutte, **confermate** e **da confermare** (e le rifiutate, in
+grigio), dalla lezione più recente, con chi le ha decise (o **da sé: era
+previsto**). In cima quattro filtri:
+
+- **Mese** — normalmente quello in corso; **Tutti i mesi** mostra l'ultimo anno.
+- **Corso** e **Istruttore** — solo quelli che nel mese scelto ci sono.
+- **Stato** — **Da confermare**, **Confermate** o **Rifiutate**.
+
+Sopra l'elenco si legge quante ce ne sono, confermate e da confermare. Se
+qualcuna da confermare è in un altro mese, lo dice, e **vedile tutte** le fa
+vedere, di tutti i mesi.
 
 ## Decidere
 
