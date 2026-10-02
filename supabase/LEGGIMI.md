@@ -50,7 +50,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 20. `20-nomi.sql` — nomi e cognomi scritti tutti allo stesso modo, «Maria Grazia De Luca», anche quelli già salvati
 21. `21-prove.sql` — le prove: chi viene a provare entra nell'appello, aggiunto da chi lo fa col tasto PROVE
 22. `22-statistiche.sql` — le statistiche della segreteria: i conti delle lezioni e degli incassi, fatti dal database
-23. `23-istruttori-dalle-lezioni.sql` — la presenza degli istruttori anche dall'appello che fanno, e le lezioni tenute senza l'istruttore segnato, proposte alla segreteria che sceglie chi c'era
+23. `23-istruttori-dalle-lezioni.sql` — la presenza degli istruttori anche dall'appello che fanno, e le lezioni tenute senza nessun istruttore segnato, proposte alla segreteria che sceglie chi c'era
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue

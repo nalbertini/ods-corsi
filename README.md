@@ -83,7 +83,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   istruttore, le prove mese per mese, chi è in regola e gli incassi delle ricevute; i conti li fa il database
   (`supabase/22-statistiche.sql`). Le **presenze degli istruttori** entrati col PIN,
   in elenco per mese, corso, istruttore e stato: quelle in cui non erano previsti si confermano o si rifiutano, e
-  le lezioni tenute in cui chi doveva farle non si è segnato si propongono, per scegliere chi c'era
+  le lezioni tenute in cui nessun istruttore si è segnato si propongono, per scegliere chi c'era
   (`supabase/23-istruttori-dalle-lezioni.sql`). Il CSV e il report PDF del mese o dell'anno, con le statistiche. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`).
   **Istruttori e accessi**, coi PIN del tablet. Il **listino** dei costi, che

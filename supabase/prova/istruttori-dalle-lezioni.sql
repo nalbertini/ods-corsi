@@ -52,18 +52,19 @@ select atteso('il tablet non segna nessun istruttore', (select count(*)::text fr
 \echo '--- 2. le lezioni tenute senza l''istruttore ---'
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
--- Ieri c'era Maura, manca Federico; tre settimane fa e quattro giorni fa mancano tutti e due.
--- Il Judo non ha istruttori previsti: non c'è nessuno da proporre.
-select atteso('tre lezioni', tenta($$select string_agg(corso || ' ' || presenti, ', ' order by inizio) from lezioni_senza_istruttore()$$), 'Lotta 2 1, Lotta 2 1, Lotta 2 1');
-select atteso('ieri: Federico da scegliere, Maura già confermata',
-  tenta($$select string_agg((x->>'nome') || ' ' || coalesce(x->>'stato', '-'), ', ') from lezioni_senza_istruttore() l, jsonb_array_elements(l.previsti) x where l.sessione_id = 'eeeeeeee-0000-0000-0000-000000000002'$$),
-  'Federico -, Maura confermata');
+-- Tre settimane fa e quattro giorni fa non si è segnato nessuno. Ieri c'era
+-- Maura: basta un istruttore segnato, e Federico non si chiede. Il Judo non ha
+-- istruttori previsti: non c'è nessuno da proporre.
+select atteso('due lezioni', tenta($$select string_agg(corso || ' ' || presenti, ', ' order by inizio) from lezioni_senza_istruttore()$$), 'Lotta 2 1, Lotta 2 1');
+select atteso('ieri, con Maura segnata, no', tenta($$select count(*)::text from lezioni_senza_istruttore() where sessione_id = 'eeeeeeee-0000-0000-0000-000000000002'$$), '0');
+select atteso('i previsti, senza stato',
+  tenta($$select string_agg((x->>'nome') || ' ' || coalesce(x->>'stato', '-'), ', ') from lezioni_senza_istruttore() l, jsonb_array_elements(l.previsti) x where l.sessione_id = 'eeeeeeee-0000-0000-0000-000000000003'$$),
+  'Federico -, Maura -');
 select atteso('con la sala', tenta($$select string_agg(distinct sala, ' ') from lezioni_senza_istruttore()$$), 'Lotta');
 
 \echo ''
 \echo '--- 3. la segreteria sceglie chi c''era ---'
 select atteso('tre settimane fa c''era Federico', tenta($$select segna_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000003', array['aaaaaaaa-0000-0000-0000-000000000006']::uuid[])::text$$), '');
-select atteso('ieri Federico non c''era', tenta($$select segna_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000002', '{}')::text$$), '');
 select atteso('non uno fuori dai previsti', tenta($$select segna_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000008', array['aaaaaaaa-0000-0000-0000-000000000001']::uuid[])::text$$), 'NEGATO: si sceglie fra gli istruttori previsti');
 select atteso('né una lezione che non c''è', tenta($$select segna_istruttori_lezione('00000000-0000-0000-0000-000000000000', '{}')::text$$), 'NEGATO: lezione inesistente');
 select atteso('resta quella di quattro giorni fa', tenta($$select count(*)::text from lezioni_senza_istruttore()$$), '1');
@@ -72,7 +73,7 @@ select atteso('Federico confermato dalla segreteria', di('eeeeeeee-0000-0000-000
 select atteso('Maura rifiutata', di('eeeeeeee-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000002'), 'rifiutata segreteria true');
 select atteso('deciso da Anna', (select string_agg(distinct p.nome, ' ') from presenze_istruttori pi join persone p on p.id = pi.gestita_da where pi.sessione_id = 'eeeeeeee-0000-0000-0000-000000000003'), 'Anna');
 select atteso('ieri Maura resta com''era', di('eeeeeeee-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000002'), 'confermata appello true');
-select atteso('e Federico rifiutato', di('eeeeeeee-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000006'), 'rifiutata segreteria true');
+select atteso('e per Federico niente', di('eeeeeeee-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000006'), 'nessuna');
 
 \echo ''
 \echo '--- 4. chi può ---'

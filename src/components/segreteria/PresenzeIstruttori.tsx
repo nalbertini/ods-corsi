@@ -370,11 +370,10 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
 }
 
 /**
- * Le lezioni tenute in cui qualcuno degli istruttori previsti non si è
- * segnato. Con uno solo da decidere: c'era o no. Con più d'uno si spunta chi
- * c'era; chi non è spuntato si segna che non c'era, e la lezione esce
- * dall'elenco. Chi si è già segnato (col PIN o con l'appello) si vede, ma qui
- * non si tocca.
+ * Le lezioni tenute in cui nessun istruttore si è segnato: ne basta uno, col
+ * PIN o con l'appello, e la lezione non arriva qui. Con un solo previsto: c'era
+ * o no. Con più d'uno si spunta chi c'era; chi non è spuntato si segna che non
+ * c'era, e la lezione esce dall'elenco.
  */
 function LezioniDaConfermare({ lezioni, lavora, onScegli }: { lezioni: LezioneSenzaIstruttore[]; lavora: boolean; onScegli: (l: LezioneSenzaIstruttore, presenti: string[]) => void }) {
   const [scelti, setScelti] = useState<Record<string, string[]>>({})
@@ -386,8 +385,7 @@ function LezioniDaConfermare({ lezioni, lavora, onScegli }: { lezioni: LezioneSe
       <div className="sg-tabella">
         <div className="sg-tabella-corpo">
           {lezioni.map((l) => {
-            const daDecidere = l.previsti.filter((x) => !x.stato)
-            const gia = l.previsti.filter((x) => x.stato)
+            const daDecidere = l.previsti
             const miei = scelti[l.sessioneId] ?? []
             const cambia = (id: string) => setScelti({ ...scelti, [l.sessioneId]: miei.includes(id) ? miei.filter((x) => x !== id) : [...miei, id] })
             return (
@@ -400,11 +398,6 @@ function LezioniDaConfermare({ lezioni, lavora, onScegli }: { lezioni: LezioneSe
                   </span>
                 </span>
                 <span className="stack" style={{ gap: 4 }}>
-                  {gia.map((x) => (
-                    <span key={x.id} style={{ fontSize: 13, color: 'var(--sec)' }}>
-                      {x.nome}: {x.stato === 'confermata' ? 'c’era' : x.stato === 'rifiutata' ? 'non c’era' : 'da confermare'}
-                    </span>
-                  ))}
                   {daDecidere.length > 1 &&
                     daDecidere.map((x) => (
                       <label key={x.id} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>

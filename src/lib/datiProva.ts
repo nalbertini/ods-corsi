@@ -167,7 +167,8 @@ export function lezioniSenzaIstruttoreProva(): LezioneSenzaIstruttore[] {
     .flatMap((l): LezioneSenzaIstruttore[] => {
       const presenti = Object.values(memoria.segnate[l.id] ?? {}).filter((s) => s === 'presente').length
       const previsti = comeE(l).istruttori.map((id) => ({ id, nome: nomeIstruttore(id), stato: presenze.find((x) => x.sessioneId === l.id && x.personaId === id)?.stato }))
-      if (!presenti || !previsti.some((x) => !x.stato)) return []
+      // Basta un istruttore segnato, anche non previsto, e la lezione è coperta.
+      if (!presenti || !previsti.length || presenze.some((x) => x.sessioneId === l.id)) return []
       return [{ sessioneId: l.id, corso: l.corso.nome, colore: l.corso.colore, inizio: l.inizio.toISOString(), fine: l.fine.toISOString(), sala: comeE(l).sala, presenti, previsti }]
     })
     .sort((a, b) => b.inizio.localeCompare(a.inizio))
