@@ -1,5 +1,6 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
+import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva } from './archivioProva'
@@ -361,8 +362,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async salvaPersona(dati) {
-      const nome = dati.nome.trim()
-      const cognome = dati.cognome.trim()
+      const nome = nomeProprio(dati.nome)
+      const cognome = nomeProprio(dati.cognome)
       if (!nome || !cognome) throw new Error('Servono nome e cognome')
       const email = dati.email?.trim() || undefined
       const telefono = dati.telefono?.trim() || undefined
@@ -575,8 +576,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async salvaPersonale(dati) {
-      const nome = dati.nome.trim()
-      const cognome = dati.cognome.trim()
+      const nome = nomeProprio(dati.nome)
+      const cognome = nomeProprio(dati.cognome)
       const email = dati.email?.trim() || undefined
       if (!nome) throw new Error('Serve almeno il nome')
       const altro = email && a().persone.find((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase())

@@ -111,6 +111,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('19-listino.sql', 'il listino letto dalla pagina di iscrizione',
     exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'listino'
             and has_function_privilege('anon', p.oid, 'execute'))),
+  ('20-nomi.sql', 'nomi e cognomi scritti tutti allo stesso modo',
+    exists (select 1 from dentro where nome = 'nome_proprio')
+    and exists (select 1 from pg_trigger where tgname = 'persone_nomi')
+    and exists (select 1 from pg_trigger where tgname = 'ricevute_nomi')),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')

@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
+import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
@@ -506,7 +507,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async salvaPersona(p) {
       if (!p.nome.trim() || !p.cognome.trim()) throw new Error('Servono nome e cognome')
-      const riga = { nome: p.nome.trim(), cognome: p.cognome.trim(), email: p.email?.trim() || null, telefono: p.telefono?.trim() || null }
+      const riga = { nome: nomeProprio(p.nome), cognome: nomeProprio(p.cognome), email: p.email?.trim() || null, telefono: p.telefono?.trim() || null }
       if (p.id) {
         ok(await db.from('persone').update(riga).eq('id', p.id))
         return p.id
@@ -753,7 +754,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       if (!p.nome.trim()) throw new Error('Serve almeno il nome')
       const email = p.email?.trim() || null
       const ruolo = ruoloDaScrivere(p)
-      const riga = { nome: p.nome.trim(), cognome: p.cognome.trim() || '—', email, ...ruolo }
+      const riga = { nome: nomeProprio(p.nome), cognome: nomeProprio(p.cognome) || '—', email, ...ruolo }
       if (p.id) {
         ok(await db.from('persone').update(riga).eq('id', p.id))
         return p.id

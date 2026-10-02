@@ -2,6 +2,7 @@ import type { DatiRichieste, FileRichiesta, Richiesta, TipoFile } from './richie
 import { controlla, pulisciCf, minorenne } from './richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { archivio } from './archivioProva'
+import { nomeProprio } from './nomi'
 import { chiaveGiorno } from './sala'
 
 /**
@@ -99,14 +100,14 @@ export function creaRichiesteProva(): DatiRichieste {
         id: `r-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
         creataIl: new Date().toISOString(),
         stato: 'nuova',
-        nome: dati.nome.trim(),
-        cognome: dati.cognome.trim(),
+        nome: nomeProprio(dati.nome),
+        cognome: nomeProprio(dati.cognome),
         email,
         natoA: luogo ? scriviLuogo(luogo) : dati.natoA.trim(),
         codiceFiscale: pulisciCf(dati.codiceFiscale),
         corsi: [...new Set(dati.corsi)],
-        genitoreNome: minore ? dati.genitoreNome?.trim() : undefined,
-        genitoreCognome: minore ? dati.genitoreCognome?.trim() : undefined,
+        genitoreNome: minore && dati.genitoreNome ? nomeProprio(dati.genitoreNome) : undefined,
+        genitoreCognome: minore && dati.genitoreCognome ? nomeProprio(dati.genitoreCognome) : undefined,
         genitoreCodiceFiscale: minore ? pulisciCf(dati.genitoreCodiceFiscale ?? '') : undefined,
         telefono2: dati.telefono2?.trim() || undefined,
         note: dati.note?.trim() || undefined,
