@@ -179,8 +179,9 @@ export function useOrdina<T, K extends string>(colonne: Record<K, (x: T) => Valo
   const [ordine, setOrdine] = useState<{ per: K; verso: 1 | -1 } | null>(null)
 
   const ordina = (righe: T[]): T[] => {
-    if (!ordine) return righe
-    const val = colonne[ordine.per]
+    // La colonna scelta può non esserci più: un'ora che nel periodo nuovo non ha lezioni.
+    const val = ordine && colonne[ordine.per]
+    if (!ordine || !val) return righe
     return righe
       .map((x) => [x, val(x)] as const)
       .sort(([, a], [, b]) => {
@@ -200,9 +201,14 @@ export function useOrdina<T, K extends string>(colonne: Record<K, (x: T) => Valo
    * L'intestazione di una colonna, da chiamare come funzione (non come
    * componente: rimontato a ogni giro, il tasto perderebbe il fuoco).
    * `numeri` la fa partire dal più grande; `th` la fa cella di una `<table>`;
-   * `destra` l'allinea a destra, come i numeri sotto.
+   * `destra` l'allinea a destra, come i numeri sotto; `riga` ne fa
+   * l'intestazione di una riga, che ordina le colonne di una griglia.
    */
-  const colonna = (per: K, etichetta: ReactNode, { numeri, th, destra, className = 'sg-etichetta' }: { numeri?: boolean; th?: boolean; destra?: boolean; className?: string } = {}) => {
+  const colonna = (
+    per: K,
+    etichetta: ReactNode,
+    { numeri, th, destra, riga, className = 'sg-etichetta' }: { numeri?: boolean; th?: boolean; destra?: boolean; riga?: boolean; className?: string } = {},
+  ) => {
     const verso = ordine?.per === per ? ordine.verso : 0
     const tasto = (
       <button type="button" className="sg-ordina" data-verso={verso || undefined} onClick={() => tocca(per, numeri ? -1 : 1)}>
@@ -214,7 +220,7 @@ export function useOrdina<T, K extends string>(colonne: Record<K, (x: T) => Valo
     )
     const ariaSort = verso === 1 ? 'ascending' : verso === -1 ? 'descending' : undefined
     return th ? (
-      <th key={per} scope="col" className={className} aria-sort={ariaSort}>
+      <th key={per} scope={riga ? 'row' : 'col'} className={className} aria-sort={ariaSort}>
         {tasto}
       </th>
     ) : (

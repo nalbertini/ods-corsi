@@ -39,7 +39,8 @@ medie: si conta a parte.
 - **QUANDO SI VIENE** — i giorni della settimana e le ore d'inizio delle
   lezioni: in ogni casella quanti vengono in media, più scura dove sono di
   più. Serve a vedere le ore piene e quelle vuote, prima di cambiare un
-  orario.
+  orario. Un tocco su un'ora mette in cima i giorni più pieni a quell'ora;
+  un tocco su un giorno mette a sinistra le sue ore più piene.
 - **CORSI** — per ogni corso le lezioni con l'appello, quanti vengono in
   media, la percentuale sugli iscritti e **sui posti** (quando il corso ha i
   posti scritti, in [Corsi](corsi.md)), le prove, le annullate e quelle senza
