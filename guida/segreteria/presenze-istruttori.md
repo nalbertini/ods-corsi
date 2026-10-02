@@ -22,7 +22,8 @@ Si vedono tutte, **confermate** e **da confermare** (e le rifiutate, in
 grigio), dalla lezione più recente, con chi le ha decise (o **da sé: era
 previsto**). In cima quattro filtri:
 
-- **Mese** — normalmente quello in corso; **Tutti i mesi** mostra l'ultimo anno.
+- **Periodo** — un mese (normalmente quello in corso), un **anno** intero
+  (quest'anno o quello prima), o gli **ultimi dodici mesi**.
 - **Corso** e **Istruttore** — solo quelli che nel mese scelto ci sono.
 - **Stato** — **Da confermare**, **Confermate** o **Rifiutate**.
 
@@ -33,6 +34,29 @@ vedere, di tutti i mesi.
 **SCARICA CSV** scarica l'elenco così come si vede, coi filtri, in un foglio
 da aprire con Excel: giorno, orario e ore della lezione, istruttore, corso, chi
 era previsto, sala, quando è entrato, stato e chi l'ha decisa.
+
+## Il report PDF
+
+**REPORT PDF** scarica il report del periodo scelto, da stampare o da tenere:
+un A4 con i numeri e il dettaglio, per capire com'è andato il mese o l'anno.
+Tiene conto del corso e dell'istruttore scelti, non dello stato: le
+statistiche contano sempre confermate, da confermare e rifiutate.
+
+- **I numeri**: lezioni e ore confermate (dall'orario delle lezioni: sono
+  quelle da pagare), quanti istruttori su quanti corsi, quante da confermare.
+  Sotto, la media di ore per istruttore e di minuti a lezione, quante lezioni
+  confermate erano **fuori programma** (l'istruttore non era previsto) e
+  quante presenze sono state rifiutate.
+- **Per istruttore**: lezioni, ore e la loro parte sul totale, corsi, fuori
+  programma, da confermare e rifiutate.
+- **Per corso**: lezioni, ore, la parte sul totale e chi li ha fatti.
+- **Mese per mese**, se il periodo è un anno o gli ultimi dodici mesi.
+- **Per giorno della settimana**: dove si concentrano le ore.
+- **Il dettaglio**: ogni lezione di ogni istruttore, con giorno, orario, ore,
+  corso, sala e stato.
+
+Prima di chiudere il mese conviene decidere quelle da confermare: il report
+le conta a parte, in rosso.
 
 ## Decidere
 
