@@ -137,23 +137,29 @@ export function creaRichiesteProva(): DatiRichieste {
       return [...(file.get(richiestaId)?.values() ?? [])]
     },
 
-    async accogli(richiestaId) {
+    async accogli(richiestaId, personaId) {
       const r = una(richiestaId)
       if (r.stato !== 'nuova') throw new Error(`Questa richiesta è già stata ${r.stato}`)
       const a = archivio.dati
       const oggi = chiaveGiorno(new Date())
       const stesso = (x: string, y: string) => x.toLowerCase() === y.toLowerCase()
       const emailLibera = !a.persone.some((p) => p.email?.toLowerCase() === r.email)
+      const cifre = (t?: string) => (t ?? '').replace(/\D/g, '').slice(-10)
+      const scelta = personaId ? a.persone.find((p) => p.id === personaId) : undefined
+      if (personaId && !scelta) throw new Error('Questa scheda non c’è più')
       // Come nel database: prima il codice fiscale di una richiesta già
-      // accolta, poi stesso nome e cognome, e la stessa email o nessuna.
+      // accolta, poi stesso nome e cognome, e la stessa email, nessuna o lo
+      // stesso telefono.
       const perCf = tutte
         .filter((x) => x.id !== r.id && x.codiceFiscale === r.codiceFiscale && x.personaId)
         .map((x) => a.persone.find((p) => p.id === x.personaId))
         .find(Boolean)
+      // O quello dei dati anagrafici, di chi è arrivato dalle risposte del modulo Google.
+      const perAnagrafica = a.persone.find((p) => a.anagrafiche?.[p.id]?.codiceFiscale === r.codiceFiscale)
       const perNome = a.persone
-        .filter((p) => stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome) && (!p.email || p.email.toLowerCase() === r.email))
+        .filter((p) => stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome) && (!p.email || p.email.toLowerCase() === r.email || (cifre(r.telefono).length >= 9 && cifre(p.telefono) === cifre(r.telefono))))
         .sort((x, y) => Number(!!y.email) - Number(!!x.email))[0]
-      const trovata = perCf ?? perNome
+      const trovata = scelta ?? perCf ?? perAnagrafica ?? perNome
       let id: string
       if (trovata) {
         id = trovata.id

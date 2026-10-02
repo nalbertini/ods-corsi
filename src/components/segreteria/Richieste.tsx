@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react'
-import type { DatiSegreteria } from '../../lib/segreteria'
+import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../../lib/richieste'
+import { piatto } from '../../lib/importa'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { dataLunga, Guaio, Riga, Testa, useAvviso, useCarica } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
@@ -20,6 +21,11 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * Una richiesta mandata dall'area degli iscritti per il nucleo familiare di
  * qualcuno lo dice (NUCLEO): accolta, la persona entra nel suo nucleo, e per
  * un minore il documento è quello del genitore, che la segreteria ha già.
+ *
+ * Se in elenco c'è già qualcuno con lo stesso nome e cognome la scheda lo
+ * mostra, e lo si sceglie con È LUI / È LEI: la richiesta mandata dalla mamma
+ * con la sua email non ha niente che la leghi all'iscritto che aveva dato la
+ * propria, e da sola diventerebbe un doppione.
  */
 export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?: Destinazione) => void }) {
   const [r, setR] = useState<DatiRichieste | null>(null)
@@ -101,6 +107,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
               x={richiesta}
               nomi={nomi}
               titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
+              omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
               fai={fai}
               onCambiato={() => void elenco.ricarica()}
               onEliminata={() => {
@@ -126,6 +133,7 @@ function Scheda({
   x,
   nomi,
   titolare,
+  omonimi,
   fai,
   onCambiato,
   onEliminata,
@@ -136,6 +144,8 @@ function Scheda({
   nomi: Map<string, string>
   /** Il titolare del nucleo da cui arriva, se arriva dall'area degli iscritti. */
   titolare?: string
+  /** Chi in elenco ha già lo stesso nome e cognome. */
+  omonimi: PersonaSeg[]
   fai: Fai
   onCambiato: () => void
   onEliminata: () => void
@@ -211,6 +221,46 @@ function Scheda({
           )}
           {file.dato.length > 0 && <span className="sg-sotto" style={{ fontSize: 12 }}>I link valgono dieci minuti: se non si aprono più, riapri la richiesta.</span>}
         </div>
+      )}
+
+      {x.stato === 'nuova' && omonimi.length > 0 && (
+        <>
+          <Riga titolo={omonimi.length === 1 ? 'IN ELENCO C’È GIÀ' : `IN ELENCO CE NE SONO GIÀ ${omonimi.length}`} />
+          <span className="sg-sotto">
+            Stesso nome e cognome. Se è {omonimi.length === 1 ? 'lui' : 'uno di loro'}, accogli la richiesta sulla sua scheda: se no ACCOGLI ne fa una nuova
+            quando email, telefono e codice fiscale non tornano.
+          </span>
+          <div className="stack" style={{ gap: 8 }}>
+            {omonimi.map((p) => {
+              const corsi = p.iscrizioni.filter((i) => !i.al || i.al >= chiaveGiorno(new Date())).map((i) => nomi.get(i.corsoId) ?? '?')
+              return (
+                <div key={p.id} className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span className="grow" style={{ fontSize: 14, minWidth: 0, overflowWrap: 'anywhere' }}>
+                    <button type="button" className="sg-link" onClick={() => onApri(p.id)}>
+                      {p.cognome} {p.nome}
+                    </button>
+                    <span style={{ color: 'var(--sec)' }}>
+                      {' · '}
+                      {[p.email, p.telefono].filter(Boolean).join(' · ') || 'nessun contatto'}
+                      {' · '}
+                      {corsi.length ? corsi.join(', ') : 'nessun corso'}
+                      {!p.attiva && ' · non attiva'}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    className="sg-btn sg-btn-linea"
+                    onClick={() => {
+                      void fai(() => r.accogli(x.id, p.id), `Accolta sulla scheda di ${p.nome} ${p.cognome}, iscritta ai suoi corsi`, onCambiato)
+                    }}
+                  >
+                    ACCOGLI SU QUESTA
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </>
       )}
 
       <div className="row" style={{ gap: 8, flexWrap: 'wrap', marginTop: 4 }}>

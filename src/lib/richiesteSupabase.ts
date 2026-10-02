@@ -166,8 +166,10 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       })
     },
 
-    async accogli(richiestaId) {
-      return ok(await db.rpc('accogli_iscrizione', { richiesta: richiestaId })) as string
+    async accogli(richiestaId, personaId) {
+      // `persona` solo quando la sceglie la segreteria: finché `06-iscrizioni.sql`
+      // non è rilanciato la funzione ha un argomento solo, e così accoglie lo stesso.
+      return ok(await db.rpc('accogli_iscrizione', personaId ? { richiesta: richiestaId, persona: personaId } : { richiesta: richiestaId })) as string
     },
 
     async rifiuta(richiestaId) {

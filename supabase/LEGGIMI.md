@@ -323,7 +323,11 @@ Cosa fa `06-iscrizioni.sql`:
   all'ora in tutto. I numeri stanno in `iscrizioni_regole()`;
 - accogliere (`accogli_iscrizione`) mette la persona in elenco e la iscrive ai
   corsi scelti. Se c'era già la ritrova: dal codice fiscale di una richiesta
-  accolta prima, oppure da nome e cognome con la stessa email o senza. Due
+  accolta prima o dei dati anagrafici importati, oppure da nome e cognome con
+  la stessa email, nessuna o lo stesso telefono. Se no, la scheda la sceglie
+  la segreteria: RICHIESTE ONLINE mostra chi in elenco ha lo stesso nome e
+  cognome (l'iscritto che aveva dato la sua email, e stavolta la richiesta
+  l'ha mandata la mamma con la sua), e la si accoglie su quella. Due
   fratelli iscritti dalla stessa email entrano tutti e due, e il secondo resta
   senza email, perché in `persone` un'email può essere di una persona sola;
 - `anon`, che finora non aveva nemmeno lo schema, ora lo vede per queste due

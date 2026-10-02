@@ -214,7 +214,27 @@ console.log('\n6. lo stesso codice fiscale, l’altro genitore')
   ok('con la mail di prima', (await s.persone()).find((x) => x.id === prima).email, 'mamma@esempio.it')
 }
 
-console.log('\n7. i dati anagrafici: dalla richiesta, e dalla scheda dopo')
+console.log('\n7. la mamma con la sua email: la scheda la sceglie la segreteria')
+{
+  // In elenco con la sua email; la richiesta arriva con quella della mamma.
+  const mario = await s.salvaPersona({ nome: 'Mario', cognome: 'Verdi', email: 'mario@esempio.it' })
+  const quanti = async () => (await s.persone()).filter((x) => x.nome === 'Mario' && x.cognome === 'Verdi').length
+  const base = m.lettereCognome('Verdi') + m.lettereNome('Mario') + '96A01L219'
+  const id = await r.invia(adulto({ nome: 'Mario', cognome: 'Verdi', codiceFiscale: base + m.carattereControllo(base), email: 'elisa@esempio.it', telefono: '347 999 0000' }))
+  ok('una scheda che non c’è non si sceglie', await errore(() => r.accogli(id, 'nessuno')), 'Questa scheda non c’è più')
+  ok('accolta sulla scheda scelta', await r.accogli(id, mario), mario)
+  const p = (await s.persone()).find((x) => x.id === mario)
+  ok('un Mario solo, con la sua email e ora il telefono', [await quanti(), p.email, p.telefono], [1, 'mario@esempio.it', '347 999 0000'])
+  ok('iscritto al Judo adulti', p.iscrizioni.map((i) => i.corsoId), ['judo-adulti'])
+
+  // Paolo ha lo stesso telefono, scritto in un altro modo: lo si ritrova da sé.
+  const paolo = await s.salvaPersona({ nome: 'Paolo', cognome: 'Neri', email: 'paolo@esempio.it', telefono: '+39 333 123 4567' })
+  const cf = m.lettereCognome('Neri') + m.lettereNome('Paolo') + '96A01L219'
+  const id2 = await r.invia(adulto({ nome: 'Paolo', cognome: 'Neri', codiceFiscale: cf + m.carattereControllo(cf), email: 'casa.neri@esempio.it', telefono: '3331234567' }))
+  ok('Paolo ritrovato dal telefono', await r.accogli(id2), paolo)
+}
+
+console.log('\n8. i dati anagrafici: dalla richiesta, e dalla scheda dopo')
 {
   const lucaId = (await r.richieste()).find((x) => x.id === luca).personaId
   const prima = await s.anagraficaDi(lucaId)
