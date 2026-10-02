@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { DatiSegreteria, LezioneStat, PersonaSeg } from '../../lib/segreteria'
+import type { DatiSegreteria, LezioneStat, PersonaSeg, ProvaSeg } from '../../lib/segreteria'
 import { comeCertificato, comePaga, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
@@ -272,6 +272,13 @@ export function Statistiche({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, 
             </section>
           </div>
 
+          <section aria-label="Prove mese per mese" className="sg-riquadro">
+            <Riga titolo="PROVE MESE PER MESE">
+              <span style={{ fontSize: 12, color: 'var(--dim)' }}>chi è venuto a provare, nel mese della prima prova, e quanti oggi sono iscritti</span>
+            </Riga>
+            {prove.guaio ? <Guaio testo={prove.guaio} /> : prove.dato && <ProveMese mesi={mesi} prove={provati} />}
+          </section>
+
           <section aria-label="Incassi mese per mese" className="sg-riquadro">
             <Riga titolo="INCASSI MESE PER MESE">
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>quanto è stato pagato con le ricevute, tutti i corsi insieme</span>
@@ -324,6 +331,8 @@ interface Colonna {
 /** Un numero più tondo sopra il massimo, per la scala: 0, metà, tutto. */
 function tetto(x: number) {
   if (x <= 0) return 1
+  // Con pochi (le prove, un corso piccolo) un numero pari: la metà resta una persona intera.
+  if (x <= 10) return Math.max(2, Math.ceil(x / 2) * 2)
   const p = 10 ** Math.floor(Math.log10(x))
   return ([1, 2, 2.5, 5, 10].map((k) => k * p).find((k) => k >= x) ?? 10 * p)
 }
@@ -646,6 +655,48 @@ function InRegola({ persone, oggi, onVai }: { persone: PersonaSeg[]; oggi: strin
         CHI NON È IN REGOLA
       </button>
     </div>
+  )
+}
+
+/**
+ * Le prove mese per mese: ognuno conta una volta, nel mese in cui è venuto
+ * la prima volta nel periodo, anche se poi ha provato altre lezioni (la
+ * settimana di prova). Oggi iscritto vuol dire iscritto a un corso qualunque.
+ */
+function ProveMese({ mesi, prove }: { mesi: string[]; prove: ProvaSeg[] }) {
+  const prima = new Map<string, ProvaSeg>()
+  for (const x of prove) {
+    const p = prima.get(x.personaId)
+    if (!p || x.inizio < p.inizio) prima.set(x.personaId, x)
+  }
+  const lezioni = new Map<string, number>()
+  for (const x of prove) lezioni.set(meseDi(x.inizio), (lezioni.get(meseDi(x.inizio)) ?? 0) + 1)
+  const per = new Map<string, { persone: number; iscritti: number }>()
+  for (const x of prima.values()) {
+    const m = per.get(meseDi(x.inizio)) ?? { persone: 0, iscritti: 0 }
+    m.persone++
+    if (x.iscritto) m.iscritti++
+    per.set(meseDi(x.inizio), m)
+  }
+  return (
+    <Colonne
+      nome="Prove"
+      colonne={mesi.map((m) => {
+        const x = per.get(m) ?? { persone: 0, iscritti: 0 }
+        const l = lezioni.get(m) ?? 0
+        return {
+          chiave: m,
+          etichetta: nomeMese(m),
+          valore: x.persone,
+          dettaglio: [
+            nomeMese(m, true),
+            `${plurale(x.persone, 'persona nuova', 'persone nuove')} a provare`,
+            ...(l ? [`${plurale(l, 'lezione', 'lezioni')} di prova nel mese`] : []),
+            ...(x.persone ? [`${x.iscritti} oggi ${x.iscritti === 1 ? 'iscritta' : 'iscritte'} · ${percento(x.iscritti, x.persone)}%`] : []),
+          ],
+        }
+      })}
+    />
   )
 }
 

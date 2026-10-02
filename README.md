@@ -78,7 +78,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   `src/lib/ricevutaPdf.ts`). Le **presenze** del mese: medie per corso, chi si sta
   perdendo, gli appelli che mancano, e il CSV. Le **statistiche**, su più mesi: presenze e iscritti mese per mese, i giorni e le ore
   in cui si viene, i corsi che si riempiono (sugli iscritti e sui posti), le lezioni di ogni
-  istruttore, chi è in regola e gli incassi delle ricevute; i conti li fa il database
+  istruttore, le prove mese per mese, chi è in regola e gli incassi delle ricevute; i conti li fa il database
   (`supabase/22-statistiche.sql`). Le **presenze degli istruttori** entrati col PIN
   in una lezione in cui non erano previsti, da confermare o rifiutare. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`).
