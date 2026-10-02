@@ -8,6 +8,45 @@ import { Guaio, Testa, useAvviso, useCarica } from './comune'
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 const perNome = (a: string, b: string) => a.localeCompare(b, 'it')
 
+const STATI: Record<StatoPresenzaIstruttore, string> = { confermata: 'confermata', da_confermare: 'da confermare', rifiutata: 'rifiutata' }
+const minuti = (x: PresenzaIstruttoreSeg) => Math.round((Date.parse(x.fine) - Date.parse(x.inizio)) / 60_000)
+
+/**
+ * L'elenco come si vede, coi filtri, in un foglio da aprire con Excel:
+ * punto e virgola e BOM, come il registro delle presenze. Le ore sono
+ * all'italiana, «1,5», per moltiplicarle per la paga oraria.
+ */
+function scaricaCsv(righe: PresenzaIstruttoreSeg[], nome: string) {
+  const q = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
+  const testo = [
+    ['data', 'inizio', 'fine', 'ore', 'istruttore', 'corso', 'previsto', 'sala', 'entrato', 'stato', 'gestita da', 'gestita il'].join(';'),
+    ...righe.map((x) =>
+      [
+        chiaveGiorno(new Date(x.inizio)),
+        oraDi(x.inizio),
+        oraDi(x.fine),
+        (minuti(x) / 60).toLocaleString('it-IT', { maximumFractionDigits: 2 }),
+        x.nome,
+        x.corso,
+        x.previsti,
+        x.sala ?? '',
+        oraDi(x.entratoIl),
+        STATI[x.stato],
+        x.gestitaIl ? (x.gestitaDa ?? '') : x.prevista ? 'da sé: era previsto' : '',
+        x.gestitaIl ? `${chiaveGiorno(new Date(x.gestitaIl))} ${oraDi(x.gestitaIl)}` : '',
+      ]
+        .map(q)
+        .join(';'),
+    ),
+  ].join('\r\n')
+  const url = URL.createObjectURL(new Blob(['\ufeff' + testo], { type: 'text/csv;charset=utf-8' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${nome}.csv`.toLowerCase().replace(/\s+/g, '-')
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 /**
  * Gli istruttori entrati col PIN sul tablet di una sala durante una lezione,
  * in elenco dalla lezione più recente, filtrati per mese, corso, istruttore e
@@ -19,7 +58,16 @@ const perNome = (a: string, b: string) => a.localeCompare(b, 'it')
  * o la rifiuta. Si può ripensarci anche dopo.
  */
 export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCambiato?: () => void }) {
-  const periodi = useMemo(mesi, [])
+  const elencoMesi = useMemo(mesi, [])
+  // Dopo i mesi, quest'anno e quello prima, per il report dell'anno.
+  const anni = useMemo(() => {
+    const oggi = new Date()
+    return [0, 1].map((i) => {
+      const anno = oggi.getFullYear() - i
+      return { chiave: `anno-${anno}`, da: new Date(anno, 0, 1), a: new Date(anno, 11, 31), nome: `Anno ${anno}` }
+    })
+  }, [])
+  const periodi = useMemo(() => [...elencoMesi, ...anni], [elencoMesi, anni])
   // '' è «tutti i mesi»: i dodici del menu.
   const [periodo, setPeriodo] = useState(periodi[0].chiave)
   const [corso, setCorso] = useState('')
@@ -28,7 +76,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
   const m = periodi.find((x) => x.chiave === periodo)
   // Si leggono per giorni all'indietro: fino al primo del mese scelto, e un giorno in più.
   // Quelle da confermare arrivano sempre, anche più vecchie.
-  const dal = m?.da ?? periodi[periodi.length - 1].da
+  const dal = m?.da ?? elencoMesi[elencoMesi.length - 1].da
   const giorni = Math.ceil((Date.now() - dal.getTime()) / 86_400_000) + 1
   const elenco = useCarica(() => d.presenzeIstruttori(giorni), [d, giorni])
   const { avviso, fai, lavora } = useAvviso()
@@ -46,6 +94,9 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
   const lista = nelMese
     .filter((x) => (!corso || x.corso === corso) && (!istruttore || x.personaId === istruttore) && (!stato || x.stato === stato))
     .sort((a, b) => b.inizio.localeCompare(a.inizio) || perNome(a.nome, b.nome))
+
+  // Il report conta tutti gli stati: lo stato scelto non lo filtra.
+  const report = nelMese.filter((x) => (!corso || x.corso === corso) && (!istruttore || x.personaId === istruttore))
 
   const daConfermare = tutte.filter((x) => x.stato === 'da_confermare').length
   const fuori = daConfermare - nelMese.filter((x) => x.stato === 'da_confermare').length
@@ -93,12 +144,17 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
             setIstruttore('')
           }}
         >
-          {periodi.map((x) => (
+          {elencoMesi.map((x) => (
             <option key={x.chiave} value={x.chiave}>
               {x.nome}
             </option>
           ))}
-          <option value="">Tutti i mesi</option>
+          {anni.map((x) => (
+            <option key={x.chiave} value={x.chiave}>
+              {x.nome}
+            </option>
+          ))}
+          <option value="">Ultimi dodici mesi</option>
         </select>
         <label htmlFor="corso-pi" className="vh">
           Corso
@@ -131,6 +187,45 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           <option value="confermata">Confermate</option>
           <option value="rifiutata">Rifiutate</option>
         </select>
+        <button
+          type="button"
+          className="sg-btn sg-btn-linea"
+          disabled={!lista.length}
+          onClick={() =>
+            scaricaCsv(
+              // Dalla più vecchia, come si legge un foglio.
+              [...lista].reverse(),
+              ['presenze istruttori', m ? m.nome : 'ultimi dodici mesi', corso, istruttori.find(([id]) => id === istruttore)?.[1] ?? '', stato ? STATI[stato] : '']
+                .filter(Boolean)
+                .join(' '),
+            )
+          }
+        >
+          SCARICA CSV
+        </button>
+        <button
+          type="button"
+          className="sg-btn sg-btn-linea"
+          disabled={!report.length || lavora}
+          onClick={() =>
+            void fai(
+              async () =>
+                (await import('../../lib/reportIstruttoriPdf')).scaricaReportIstruttori(
+                  report,
+                  {
+                    periodo: m ? m.nome : 'Ultimi dodici mesi',
+                    corso: corso || undefined,
+                    istruttore: istruttori.find(([id]) => id === istruttore)?.[1],
+                    piuMesi: !m || m.chiave.startsWith('anno-'),
+                  },
+                  'Officine Dello Sport',
+                ),
+              'Report scaricato',
+            )
+          }
+        >
+          REPORT PDF
+        </button>
       </div>
 
       <p className="sg-sotto" style={{ maxWidth: 760, margin: 0 }}>
@@ -145,7 +240,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           {fuori > 0 && (
             <>
               {' '}
-              {fuori === 1 ? 'Un’altra da confermare è' : `Altre ${fuori} da confermare sono`} in un altro mese:{' '}
+              {fuori === 1 ? 'Un’altra da confermare è' : `Altre ${fuori} da confermare sono`} in un altro periodo:{' '}
               <button
                 type="button"
                 className="sg-link"
@@ -176,7 +271,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le presenze…</p>}
           {elenco.dato !== null && lista.length === 0 && (
             <p className="sg-sotto" style={{ padding: '12px 14px' }}>
-              {nelMese.length ? 'Nessuna presenza con questi filtri.' : `Nessun istruttore è entrato col PIN durante una lezione ${m ? `in ${m.nome.toLowerCase()}` : 'nell’ultimo anno'}.`}
+              {nelMese.length ? 'Nessuna presenza con questi filtri.' : `Nessun istruttore è entrato col PIN durante una lezione ${m ? (m.chiave.startsWith('anno-') ? `nell’${m.nome.toLowerCase()}` : `in ${m.nome.toLowerCase()}`) : 'negli ultimi dodici mesi'}.`}
             </p>
           )}
           {lista.map((x) => (
