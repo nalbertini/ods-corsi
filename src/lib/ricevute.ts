@@ -1,6 +1,7 @@
 import { saldoAperto, VALIDITA } from './costi'
 import { LISTINO_PREDEFINITO, nomeCorso, type Listino } from './listino'
 import type { DatiRichiesta } from './richieste'
+import { nomeProprio } from './nomi'
 
 /**
  * Le ricevute dei pagamenti: la «ricevuta semplice» dell'associazione, come
@@ -162,6 +163,7 @@ export function pulisciIntestatario(i: IntestatarioRicevuta): IntestatarioRicevu
   if (x.codiceFiscale) x.codiceFiscale = x.codiceFiscale.toUpperCase().replace(/\s/g, '')
   if (x.genitoreCodiceFiscale) x.genitoreCodiceFiscale = x.genitoreCodiceFiscale.toUpperCase().replace(/\s/g, '')
   if (x.provincia) x.provincia = x.provincia.toUpperCase()
+  for (const k of ['nome', 'cognome', 'genitore']) if (x[k]) x[k] = nomeProprio(x[k])
   return { nome: '', cognome: '', ...x }
 }
 
