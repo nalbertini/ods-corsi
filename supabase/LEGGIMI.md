@@ -44,6 +44,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 18. `18-anagrafiche.sql` — nascita, residenza e genitore degli iscritti che arrivano dalle risposte del modulo Google
 19. `19-listino.sql` — il listino dei costi, cambiato dalla segreteria da LISTINO e letto dalla pagina di iscrizione
 20. `20-nomi.sql` — nomi e cognomi scritti tutti allo stesso modo, «Maria Grazia De Luca», anche quelli già salvati
+21. `21-prove.sql` — le prove: chi viene a provare entra nell'appello, aggiunto da chi lo fa col tasto PROVE
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -96,7 +97,11 @@ lanciato. Per nomi e cognomi scritti tutti allo stesso modo basta
 `20-nomi.sql` (dopo `18-anagrafiche.sql`), che non chiede di rilanciare
 `06-iscrizioni.sql` e sistema anche i nomi già salvati, tranne quelli delle
 ricevute già emesse: finché non c'è, l'app li scrive giusti lei, ma il
-modulo di iscrizione e l'import da SQL Editor li lasciano come arrivano.
+modulo di iscrizione e l'import da SQL Editor li lasciano come arrivano. Per
+le prove basta `21-prove.sql` (dopo `04-tablet.sql`), che non chiede di
+rilanciare `06-iscrizioni.sql`: finché non c'è, l'appello si fa come prima, il
+tasto PROVE dice che va lanciato, e in segreteria PRESENZE lo dice nel
+riquadro PROVE.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA

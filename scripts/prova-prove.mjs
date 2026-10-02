@@ -1,0 +1,151 @@
+// ---------------------------------------------------------------------------
+// Le prove, senza browser: chi viene a provare entra nell'appello.
+//
+//   node scripts/prova-prove.mjs
+//
+// La prova dell'app rifà in TypeScript le regole di `supabase/21-prove.sql`:
+// la prova aggiunta dall'appello, già presente; la stessa persona ritrovata
+// per un'altra lezione; il tablet col PIN; la prova tolta per sbaglio, con
+// la persona se è nata lì; l'elenco della segreteria. Le stesse cose, dal
+// lato del database, le prova `supabase/prova/prove.sql`.
+// ---------------------------------------------------------------------------
+import { build } from 'esbuild'
+
+const { outputFiles } = await build({
+  stdin: {
+    contents:
+      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { somiglianti, cosaNonVaProva } from './src/lib/prove'",
+    resolveDir: '.',
+    loader: 'ts',
+  },
+  bundle: true,
+  format: 'esm',
+  write: false,
+  logLevel: 'error',
+  // Senza Vite `import.meta.env` non c'è: vuoto vuol dire «modalità prova».
+  define: { 'import.meta.env': '{}' },
+})
+const modulo = 'data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64')
+
+const memoria = new Map()
+globalThis.localStorage = {
+  getItem: (k) => (memoria.has(k) ? memoria.get(k) : null),
+  setItem: (k, v) => memoria.set(k, String(v)),
+  removeItem: (k) => memoria.delete(k),
+}
+globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
+
+const m = await import(modulo)
+let guai = 0
+const ok = (cosa, avuto, voluto) => {
+  const va = JSON.stringify(avuto) === JSON.stringify(voluto)
+  console.log(va ? '  ✓' : '  ✗', cosa, va ? '' : `— atteso ${JSON.stringify(voluto)}, avuto ${JSON.stringify(avuto)}`)
+  if (!va) guai++
+}
+const errore = async (f) => {
+  try {
+    await f()
+    return 'nessun errore'
+  } catch (e) {
+    return e.message
+  }
+}
+
+// Lotta 2 è lunedì, mercoledì e venerdì alle 17 nella sala Lotta; il Judo
+// agonisti il giovedì alle 18 nel Tatami. Le lezioni sono di settimane
+// passate: le prove contano dagli ultimi novanta giorni, e l'orologio non si sposta.
+const oggi = new Date()
+const lunedi = new Date(oggi.getFullYear(), oggi.getMonth(), oggi.getDate() - ((oggi.getDay() + 6) % 7) - 7)
+const g = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const dopo = (n) => new Date(lunedi.getFullYear(), lunedi.getMonth(), lunedi.getDate() + n)
+const LOTTA = `s@lotta-2@${g(dopo(2))}@17:00`
+const LOTTA_VEN = `s@lotta-2@${g(dopo(4))}@17:00`
+
+const d = m.creaDatiProva()
+const persone = () => m.archivio.dati.persone.length
+
+console.log("\n1. l'istruttore aggiunge una prova dall'app")
+{
+  const esiste = await d.dettaglio(LOTTA)
+  ok('la lezione di Lotta 2 di mercoledì scorso esiste', esiste?.sessione.corso, 'Lotta 2')
+  const prima = persone()
+  const iscritti = esiste.elenco.length
+  const p = await d.aggiungiProva(LOTTA, { nome: '  Marco ', cognome: 'Nuovo', telefono: '333 1234567' })
+  ok('una persona nuova', persone() - prima, 1)
+  ok('nome pulito', `${p.nome}|${p.cognome}`, 'Marco|Nuovo')
+  const det = await d.dettaglio(LOTTA)
+  const lui = det.elenco.find((x) => x.id === p.id)
+  ok("in fondo all'appello, presente, in prova", [det.elenco.indexOf(lui) === iscritti, lui.stato, lui.prova], [true, 'presente', true])
+  ok('e conta fra i presenti della lezione', det.sessione.presenti, 1)
+  ok('senza nome no', await errore(() => d.aggiungiProva(LOTTA, { nome: ' ', cognome: 'Vuoto' })), 'Servono nome e cognome.')
+  ok('un telefono che non è un numero no', await errore(() => d.aggiungiProva(LOTTA, { nome: 'Ugo', cognome: 'Strano', telefono: 'chiamami' })), 'Il telefono non sembra un numero.')
+  const iscritto = det.elenco[0]
+  ok("chi è già iscritto è già nell'appello", await errore(() => d.aggiungiProva(LOTTA, iscritto)), "è già iscritto a questo corso: è nell'appello")
+  await d.segna(LOTTA, p.id, 'assente')
+  ok('si tocca come gli altri', (await d.dettaglio(LOTTA)).elenco.find((x) => x.id === p.id).stato, 'assente')
+  await d.segnaTutti(LOTTA, 'presente')
+  ok('TUTTI PRESENTI vale anche per lui', (await d.dettaglio(LOTTA)).elenco.find((x) => x.id === p.id).stato, 'presente')
+}
+
+console.log('\n2. il giorno dopo, un altro corso: si ritrova per nome')
+{
+  const venuti = await d.provati()
+  ok('fra chi ha provato, col telefono', venuti.map((x) => `${x.nome} ${x.telefono} ${x.corso}`), ['Marco 333 1234567 Lotta 2'])
+  ok('si trova scrivendo «mar nu»', m.somiglianti(venuti, 'mar nu').length, 1)
+  ok('e non scrivendo «luca»', m.somiglianti(venuti, 'luca').length, 0)
+  const prima = persone()
+  await d.aggiungiProva(LOTTA_VEN, venuti[0])
+  ok('la stessa persona, non una nuova', persone() - prima, 0)
+  const di = await d.provati()
+  ok('una volta sola, con l’ultima lezione', di.map((x) => x.inizio.slice(0, 10) === new Date(dopo(4).setHours(17)).toISOString().slice(0, 10)), [true])
+}
+
+console.log('\n3. dal tablet, col PIN')
+{
+  // Il tablet della Lotta, venerdì scorso a lezione appena cominciata.
+  window.location.search = `?adesso=${g(dopo(4))}T17:05`
+  const t = m.creaTabletProva()
+  await t.scegliSala('Lotta')
+  ok('PIN sbagliato: nessuno', await t.provati('0000'), [])
+  ok('chi ha provato, senza telefono', (await t.provati('1234')).map((x) => `${x.nome} ${x.telefono ?? '-'}`), ['Marco -'])
+  const app = await t.appello('1234', LOTTA_VEN)
+  ok("le prove in fondo all'appello", app.filter((r) => r.prova).map((r) => r.cognome), ['Nuovo'])
+  ok("l'elenco da toccare resta degli iscritti", (await t.elenco(LOTTA_VEN)).some((n) => n.nome === 'Marco'), false)
+  const marco = app.find((r) => r.prova)
+  ok('non si segna da sé', await errore(() => t.segna(LOTTA_VEN, marco.personaId)), 'non è iscritto a questo corso')
+  ok("l'istruttore lo segna assente", await t.correggi('1234', LOTTA_VEN, marco.personaId, 'assente', true), true)
+  ok('e una prova non si «smarca»', await errore(() => t.correggi('1234', LOTTA_VEN, marco.personaId, null, true)), 'una prova si segna presente o assente')
+  const prima = persone()
+  ok('una prova nuova dal tablet', await t.aggiungiProva('1234', LOTTA_VEN, { nome: 'Sara', cognome: 'Dalla Sala' }), true)
+  ok('PIN sbagliato: non aggiunge', await t.aggiungiProva('0000', LOTTA_VEN, { nome: 'Ugo', cognome: 'Pin' }), false)
+  ok('una persona in più', persone() - prima, 1)
+  const ora = await t.appello('1234', LOTTA_VEN)
+  ok('ora sono due, presente la nuova', ora.filter((r) => r.prova).map((r) => `${r.cognome}:${r.stato}`), ['Dalla Sala:presente', 'Nuovo:assente'])
+  const sara = ora.find((r) => r.cognome === 'Dalla Sala')
+  ok("aggiunta da Maurizio, dall'appello", [m.archivio.dati.prove.find((x) => x.personaId === sara.personaId).da, sara.origine], ['i-maurizio', 'appello'])
+  const tatami = m.creaTabletProva()
+  await tatami.scegliSala('Tatami')
+  ok("non nella lezione di un'altra sala", await errore(() => tatami.aggiungiProva('1234', LOTTA_VEN, { nome: 'Ugo', cognome: 'Judo' })), "lezione di un'altra sala")
+
+  console.log('\n4. togliere una prova messa per sbaglio')
+  const p = persone()
+  ok('dal tablet', await t.togliProva('1234', LOTTA_VEN, sara.personaId), true)
+  ok('la persona nata con la prova se ne va', p - persone(), 1)
+  await d.togliProva(LOTTA_VEN, marco.personaId)
+  ok('Marco resta: ha provato anche mercoledì', persone() - (p - 1), 0)
+  ok('ma non è più nell’appello di venerdì', (await d.dettaglio(LOTTA_VEN)).elenco.some((x) => x.id === marco.personaId), false)
+  ok('e mercoledì sì', (await d.dettaglio(LOTTA)).elenco.some((x) => x.id === marco.personaId), true)
+}
+
+console.log('\n5. la segreteria ritrova chi è venuto a provare')
+{
+  const s = m.creaSegreteriaProva()
+  const elenco = await s.prove(dopo(0), dopo(6))
+  ok('una prova, con telefono e corso', elenco.map((x) => `${x.cognome} ${x.telefono} ${x.corso} ${x.iscritto}`), ['Nuovo 333 1234567 Lotta 2 false'])
+  ok('e fra gli iscritti c’è la sua scheda', (await s.persone()).some((x) => x.id === elenco[0].personaId), true)
+  await s.iscrivi(elenco[0].personaId, 'lotta-2')
+  ok('si iscrive: lo dice', (await s.prove(dopo(0), dopo(6)))[0].iscritto, true)
+}
+
+console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
+process.exit(guai ? 1 : 0)

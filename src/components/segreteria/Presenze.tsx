@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { DatiSegreteria, RigaRegistro } from '../../lib/segreteria'
+import type { DatiSegreteria, ProvaSeg, RigaRegistro } from '../../lib/segreteria'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { Guaio, Riga, Testa, useCarica } from './comune'
@@ -70,6 +70,7 @@ export function Presenze({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dov
   const p = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
 
   const registro = useCarica(() => d.registro(p.da, p.a), [d, p])
+  const prove = useCarica(() => d.prove(p.da, p.a), [d, p])
   // Chi si sta perdendo guarda più indietro del mese: le assenze di fila non si fermano al primo.
   const recenti = useCarica(() => d.registro(new Date(Date.now() - 60 * 24 * 60 * 60_000), new Date()), [d])
 
@@ -246,9 +247,58 @@ export function Presenze({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dov
             ))}
             {mancanti.length > 30 && <span className="sg-sotto">…e altre {mancanti.length - 30}.</span>}
           </section>
+
+          <Prove prove={prove} corso={corso} onVai={onVai} />
         </div>
       </div>
     </>
+  )
+}
+
+/**
+ * Chi è venuto a provare nel mese: l'hanno aggiunto all'appello gli
+ * istruttori (o la segreteria), e da qui lo si richiama. Chi nel frattempo si
+ * è iscritto lo dice, e non serve richiamarlo.
+ */
+function Prove({ prove, corso, onVai }: { prove: { dato: ProvaSeg[] | null; guaio: string | null }; corso: string; onVai: (v: Voce, dove?: Destinazione) => void }) {
+  const tutte = prove.dato ?? []
+  const qui = corso ? tutte.filter((x) => x.corsoId === corso) : tutte
+  const persone = new Set(qui.map((x) => x.personaId)).size
+  return (
+    <section aria-label="Prove" className="sg-riquadro">
+      <Riga titolo="PROVE">
+        <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+          {prove.dato ? `${persone} ${persone === 1 ? 'persona' : 'persone'} in ${qui.length} ${qui.length === 1 ? 'lezione' : 'lezioni'}` : 'chi è venuto a provare'}
+        </span>
+      </Riga>
+      {prove.guaio && <Guaio testo={prove.guaio} />}
+      {prove.dato !== null && qui.length === 0 && <span className="sg-sotto">Nessuno è venuto a provare in questo periodo.</span>}
+      {qui.slice(0, 40).map((x) => (
+        <div key={`${x.sessioneId}:${x.personaId}`} className="sg-voce-elenco">
+          <span className="stack grow" style={{ minWidth: 0 }}>
+            <span style={{ fontSize: 15, fontWeight: 600 }}>
+              {x.cognome} {x.nome}
+            </span>
+            <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+              {x.corso} · {giornoPerEsteso(chiaveGiorno(new Date(x.inizio)))} · {oraDi(x.inizio)}
+              {x.da ? ` · aggiunta da ${x.da}` : ''}
+            </span>
+          </span>
+          {x.telefono ? (
+            <a className="num" style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }} href={`tel:${x.telefono.replace(/[^\d+]/g, '')}`}>
+              {x.telefono}
+            </a>
+          ) : (
+            <span style={{ fontSize: 12, color: 'var(--faint)' }}>senza telefono</span>
+          )}
+          {x.iscritto && <span className="num sg-chip" style={{ color: 'var(--verde)', borderColor: 'var(--verde)', display: 'inline-flex', alignItems: 'center' }}>ISCRITTO</span>}
+          <button type="button" className="num sg-chip" onClick={() => onVai('iscritti', { persona: x.personaId })}>
+            SCHEDA
+          </button>
+        </div>
+      ))}
+      {qui.length > 40 && <span className="sg-sotto">…e altre {qui.length - 40}.</span>}
+    </section>
   )
 }
 

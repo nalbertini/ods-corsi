@@ -1,4 +1,4 @@
-import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StoricoSeg } from './segreteria'
+import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
@@ -552,6 +552,33 @@ export function creaSegreteriaProva(): DatiSegreteria {
             appello: iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)).map((p) => ({ personaId: p.id, nome: p.nome, cognome: p.cognome, stato: segni[p.id] ?? null })),
           }
         })
+    },
+
+    async prove(da, fino) {
+      const dal = da.getTime()
+      const al = new Date(fino).setHours(23, 59, 59, 999)
+      const persone = new Map(a().persone.map((p) => [p.id, p]))
+      const g = oggi()
+      return (a().prove ?? [])
+        .map((x): ProvaSeg | null => {
+          const l = trovaLezione(x.sessioneId)
+          const p = persone.get(x.personaId)
+          if (!l || !p || l.inizio.getTime() < dal || l.inizio.getTime() > al) return null
+          return {
+            sessioneId: x.sessioneId,
+            personaId: p.id,
+            nome: p.nome,
+            cognome: p.cognome,
+            telefono: p.telefono,
+            corsoId: l.corso.id,
+            corso: l.corso.nome,
+            inizio: l.inizio.toISOString(),
+            da: x.da ? persone.get(x.da)?.nome : undefined,
+            iscritto: a().iscrizioni.some((i) => i.personaId === p.id && i.dal <= g && (!i.al || i.al >= g)),
+          }
+        })
+        .filter((x): x is ProvaSeg => !!x)
+        .sort((p, q) => q.inizio.localeCompare(p.inizio))
     },
 
     async personale() {

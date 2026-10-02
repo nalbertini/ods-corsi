@@ -115,6 +115,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'nome_proprio')
     and exists (select 1 from pg_trigger where tgname = 'persone_nomi')
     and exists (select 1 from pg_trigger where tgname = 'ricevute_nomi')),
+  ('21-prove.sql', 'le prove: chi viene a provare entra nell''appello',
+    to_regclass('public.prove') is not null
+    and exists (select 1 from dentro where nome = 'aggiungi_prova')
+    and exists (select 1 from dentro where nome = 'aggiungi_prova_con_pin')),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')

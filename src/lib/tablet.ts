@@ -4,6 +4,7 @@ import { areaDelPercorso } from './percorso'
 import type { ListaMusica } from './musica'
 import type { ImpostazioniSala, TimerSala } from '../../timer/src/lib/impostazioniSala'
 import type { FonteClip } from '../../timer/src/lib/voice'
+import type { ChiProva, GiaProvato } from './prove'
 
 /**
  * Il tablet di sala.
@@ -75,6 +76,8 @@ export interface RigaAppelloTablet {
   cognome: string
   stato: StatoPresenza | null
   origine: Origine | null
+  /** Venuto a provare: non è iscritto, l'ha aggiunto chi fa l'appello (`prove.ts`). */
+  prova?: boolean
 }
 
 /**
@@ -136,8 +139,20 @@ export interface DatiTablet {
    */
   verificaPin(pin: string): Promise<{ personaId: string; nome: string } | null>
   appello(pin: string, sessioneId: string): Promise<RigaAppelloTablet[]>
-  /** `null` toglie il segno, ma solo a una presenza arrivata dal tablet. */
-  correggi(pin: string, sessioneId: string, personaId: string, stato: StatoPresenza | null): Promise<boolean>
+  /**
+   * `null` toglie il segno, ma solo a una presenza arrivata dal tablet. Una
+   * prova (`prova`) si segna presente o assente, e basta.
+   */
+  correggi(pin: string, sessioneId: string, personaId: string, stato: StatoPresenza | null, prova?: boolean): Promise<boolean>
+  /**
+   * Chi è già venuto a provare, senza telefono. Con un PIN che non va più,
+   * nessuno: se ne accorge l'aggiunta, come col database.
+   */
+  provati(pin: string): Promise<GiaProvato[]>
+  /** Aggiunge chi viene a provare, già presente. `false` se il PIN non va più. */
+  aggiungiProva(pin: string, sessioneId: string, chi: ChiProva): Promise<boolean>
+  /** Toglie una prova messa per sbaglio. `false` se il PIN non va più. */
+  togliProva(pin: string, sessioneId: string, personaId: string): Promise<boolean>
 
   /** Le liste della musica di questa sala e di tutte, preparate dalla segreteria. */
   musica(): Promise<ListaMusica[]>

@@ -5,6 +5,8 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
 import { leggiTimerSala, salvaTimerSala } from '../../timer/src/lib/impostazioniSala'
 import { fonteClipSupabase } from '../../timer/src/lib/clipSala'
+import type { GiaProvato } from './prove'
+import { eGiaVenuto, nuovoId, pulisciProva } from './prove'
 
 /**
  * Il tablet con il database vero: una chiamata per funzione di
@@ -108,20 +110,58 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     },
 
     async appello(pin, sessioneId) {
-      const righe = await rpc<Array<{
-        persona_id: string; nome: string; cognome: string; stato: StatoPresenza | null; origine: Origine | null
-      }>>('appello_con_pin', { pin, sessione: sessioneId })
-      return (righe ?? []).map((r): RigaAppelloTablet => ({
+      type Riga = { persona_id: string; nome: string; cognome: string; stato: StatoPresenza | null; origine: Origine | null }
+      const righe = await rpc<Riga[]>('appello_con_pin', { pin, sessione: sessioneId })
+      // Le prove dopo gli iscritti. Senza 21-prove.sql non ce ne sono, e
+      // l'appello resta quello di prima.
+      let prove: Riga[] = []
+      try {
+        prove = (await rpc<Riga[]>('prove_con_pin', { pin, sessione: sessioneId })) ?? []
+      } catch {
+        // Niente prove: il tasto PROVE dice perché.
+      }
+      const iscritti = new Set((righe ?? []).map((r) => r.persona_id))
+      const riga = (prova: boolean) => (r: Riga): RigaAppelloTablet => ({
         personaId: r.persona_id,
         nome: r.nome,
         cognome: r.cognome,
         stato: r.stato,
         origine: r.origine,
-      }))
+        ...(prova ? { prova } : {}),
+      })
+      return [...(righe ?? []).map(riga(false)), ...prove.filter((r) => !iscritti.has(r.persona_id)).map(riga(true))]
     },
 
-    correggi: (pin, sessioneId, personaId, stato) =>
-      rpc<boolean>('segna_con_pin', { pin, sessione: sessioneId, persona: personaId, stato }),
+    correggi: (pin, sessioneId, personaId, stato, prova) =>
+      rpc<boolean>(prova ? 'segna_prova_con_pin' : 'segna_con_pin', { pin, sessione: sessioneId, persona: personaId, stato }),
+
+    async provati(pin) {
+      const { data, error } = await db.rpc('provati_con_pin', { pin })
+      if (error) {
+        throw new Error(error.code === 'PGRST202' ? 'Le prove non sono ancora attive: va lanciato supabase/21-prove.sql.' : error.message || 'Il server non risponde')
+      }
+      const righe = (data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; corso: string; inizio: string }>
+      // Un PIN che non va più non solleva e non restituisce nessuno: se ne
+      // accorge l'aggiunta, che dice `false`.
+      return righe
+        .map((r): GiaProvato => ({ id: r.persona_id, nome: r.nome, cognome: r.cognome, corso: r.corso, inizio: r.inizio }))
+        .sort((x, y) => y.inizio.localeCompare(x.inizio))
+    },
+
+    // Senza coda, come il resto del tablet: chi aggiunge deve sapere se è andata.
+    aggiungiProva(pin, sessioneId, chi) {
+      const n = eGiaVenuto(chi) ? null : pulisciProva(chi)
+      return rpc<boolean>('aggiungi_prova_con_pin', {
+        pin,
+        sessione: sessioneId,
+        persona: eGiaVenuto(chi) ? chi.id : nuovoId(),
+        nome: n?.nome ?? null,
+        cognome: n?.cognome ?? null,
+        telefono: n?.telefono ?? null,
+      })
+    },
+
+    togliProva: (pin, sessioneId, personaId) => rpc<boolean>('togli_prova_con_pin', { pin, sessione: sessioneId, persona: personaId }),
 
     async musica() {
       const righe = await rpc<Array<{ id: string; nome: string; link: string; sala_id: string | null }>>('musica_sala', {})

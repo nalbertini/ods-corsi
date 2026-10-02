@@ -212,6 +212,22 @@ export interface RigaRegistro {
   appello: Array<{ personaId: string; nome: string; cognome: string; stato: StatoPresenza | null }>
 }
 
+/** Chi è venuto a provare una lezione, per richiamarlo (21-prove.sql). */
+export interface ProvaSeg {
+  sessioneId: string
+  personaId: string
+  nome: string
+  cognome: string
+  telefono?: string
+  corsoId: string
+  corso: string
+  inizio: string
+  /** Chi l'ha aggiunta all'appello, quando si sa. */
+  da?: string
+  /** Da allora si è iscritto a un corso. */
+  iscritto: boolean
+}
+
 export interface PersonaleSeg {
   id: string
   nome: string
@@ -363,6 +379,8 @@ export interface DatiSegreteria {
 
   /** Le lezioni già cominciate fra due giorni, con i loro appelli. */
   registro(da: Date, a: Date): Promise<RigaRegistro[]>
+  /** Chi è venuto a provare nelle lezioni fra due giorni, dalla più recente (21-prove.sql). */
+  prove(da: Date, a: Date): Promise<ProvaSeg[]>
 
   personale(): Promise<PersonaleSeg[]>
   salvaPersonale(p: DatiPersona & RuoloPersonale): Promise<string>

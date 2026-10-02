@@ -58,8 +58,11 @@ export interface SessioneVista {
 export interface DettaglioSessione {
   sessione: SessioneVista
   note?: string
-  /** L'elenco dell'appello, già in ordine di cognome. */
-  elenco: Array<Persona & { stato: StatoPresenza | null }>
+  /**
+   * L'elenco dell'appello, già in ordine di cognome: gli iscritti, poi chi è
+   * venuto a provare (`prova`, vedi `prove.ts`).
+   */
+  elenco: Array<Persona & { stato: StatoPresenza | null; prova?: boolean }>
 }
 
 /** Il nome per esteso, nell'ordine in cui si legge un elenco. */

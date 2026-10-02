@@ -2,6 +2,8 @@ import type { Dati } from './dati'
 import type { Persona, SessioneVista, StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, perCognome } from './sala'
 import { archivio, nomeDi, type CorsoProva, type RicorrenzaProva } from './archivioProva'
+import type { ChiProva, GiaProvato } from './prove'
+import { cosaNonVaProva, eGiaVenuto, pulisciProva } from './prove'
 
 /**
  * La sala corsi senza server: l'orario vero della stagione 2026/27, con degli
@@ -117,6 +119,108 @@ export const nomeIstruttore = (id: string) => {
   return p ? nomeDi(p) : '—'
 }
 
+/** Chi è venuto a provare una lezione, in ordine di cognome: come `proveDi` del database. */
+export function proveDi(sessioneId: string): Persona[] {
+  const persone = new Map(archivio.dati.persone.map((p) => [p.id, p]))
+  return (archivio.dati.prove ?? [])
+    .filter((x) => x.sessioneId === sessioneId)
+    .map((x) => persone.get(x.personaId))
+    .filter((p): p is NonNullable<typeof p> => !!p && p.attiva)
+    .map((p) => ({ id: p.id, nome: p.nome, cognome: p.cognome, ruolo: p.ruolo }))
+    .sort(perCognome)
+}
+
+/** L'appello di una lezione: gli iscritti di quel giorno, poi le prove. */
+function appelloDi(t: LezioneTrovata): Array<Persona & { prova?: boolean }> {
+  const iscritti = iscrittiIl(t.corso.id, chiaveGiorno(t.inizio)).sort(perCognome)
+  const qui = new Set(iscritti.map((p) => p.id))
+  return [...iscritti, ...proveDi(t.id).filter((p) => !qui.has(p.id)).map((p) => ({ ...p, prova: true }))]
+}
+
+const GIORNO = 24 * 60 * 60_000
+
+/** Come `gia_provati`: chi ha provato negli ultimi novanta giorni, una volta sola, con l'ultima lezione. */
+export function provatiProva(conTelefono: boolean): GiaProvato[] {
+  const persone = new Map(archivio.dati.persone.map((p) => [p.id, p]))
+  const ultime = new Map<string, GiaProvato>()
+  for (const x of archivio.dati.prove ?? []) {
+    const p = persone.get(x.personaId)
+    const l = trovaLezione(x.sessioneId)
+    if (!p || !p.attiva || !l || l.inizio.getTime() < Date.now() - 90 * GIORNO) continue
+    const prima = ultime.get(p.id)
+    if (prima && prima.inizio >= l.inizio.toISOString()) continue
+    ultime.set(p.id, {
+      id: p.id,
+      nome: p.nome,
+      cognome: p.cognome,
+      telefono: conTelefono ? p.telefono : undefined,
+      corso: l.corso.nome,
+      inizio: l.inizio.toISOString(),
+    })
+  }
+  return [...ultime.values()].sort((a, b) => b.inizio.localeCompare(a.inizio))
+}
+
+/**
+ * Come `metti_prova`: aggiunge chi viene a provare, già presente, e la
+ * persona se è nuova. `da` è chi l'ha aggiunta, quando si sa.
+ */
+export function mettiProva(sessioneId: string, chi: ChiProva, da?: string): Persona {
+  const t = trovaLezione(sessioneId)
+  if (!t) throw new Error('lezione inesistente')
+  if (comeE(t).stato === 'annullata') throw new Error('lezione annullata')
+  let persona: Persona
+  let nuova = false
+  if (eGiaVenuto(chi)) {
+    const p = archivio.dati.persone.find((x) => x.id === chi.id)
+    if (!p) throw new Error('persona inesistente')
+    if (p.ruolo !== 'iscritto') throw new Error('una prova è per chi viene ad allenarsi')
+    if (!p.attiva) throw new Error('questa persona è disattivata: la riattiva la segreteria')
+    if (iscrittiIl(t.corso.id, chiaveGiorno(t.inizio)).some((x) => x.id === p.id)) throw new Error("è già iscritto a questo corso: è nell'appello")
+    persona = { id: p.id, nome: p.nome, cognome: p.cognome, ruolo: p.ruolo }
+  } else {
+    const no = cosaNonVaProva(chi)
+    if (no) throw new Error(no)
+    const n = pulisciProva(chi)
+    persona = { id: `p-prova-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`, nome: n.nome, cognome: n.cognome, ruolo: 'iscritto' }
+    archivio.dati.persone = [...archivio.dati.persone, { ...persona, telefono: n.telefono, attiva: true, creataIl: new Date().toISOString() }]
+    nuova = true
+  }
+  const prove = archivio.dati.prove ?? []
+  if (!prove.some((x) => x.sessioneId === sessioneId && x.personaId === persona.id)) {
+    archivio.dati.prove = [...prove, { sessioneId, personaId: persona.id, il: new Date().toISOString(), da, nuova }]
+  }
+  archivio.salva()
+  const mie = memoria.segnate[sessioneId] ?? {}
+  if (!mie[persona.id]) {
+    memoria.segnate = { ...memoria.segnate, [sessioneId]: { ...mie, [persona.id]: 'presente' } }
+    memoria.salva()
+  }
+  return persona
+}
+
+/** Come `togli_prova_da`: col suo segno, e con la persona se è nata qui e non ha nient'altro. */
+export function togliProvaDa(sessioneId: string, personaId: string) {
+  const prove = archivio.dati.prove ?? []
+  const x = prove.find((p) => p.sessioneId === sessioneId && p.personaId === personaId)
+  if (!x) return
+  archivio.dati.prove = prove.filter((p) => p !== x)
+  const t = trovaLezione(sessioneId)
+  if (!t || !iscrittiIl(t.corso.id, chiaveGiorno(t.inizio)).some((p) => p.id === personaId)) {
+    const mie = { ...(memoria.segnate[sessioneId] ?? {}) }
+    delete mie[personaId]
+    memoria.segnate = { ...memoria.segnate, [sessioneId]: mie }
+    memoria.salva()
+  }
+  const resta =
+    archivio.dati.prove.some((p) => p.personaId === personaId) ||
+    archivio.dati.iscrizioni.some((i) => i.personaId === personaId) ||
+    Object.values(memoria.segnate).some((m) => personaId in m) ||
+    (archivio.dati.ricevute ?? []).some((r) => r.personaId === personaId)
+  if (x.nuova && !resta) archivio.dati.persone = archivio.dati.persone.filter((p) => p.id !== personaId)
+  archivio.salva()
+}
+
 type Segnate = Record<string, Record<string, StatoPresenza>>
 /**
  * Da dove arriva una presenza segnata dal tablet, e quando. Chi non è qui è
@@ -195,9 +299,7 @@ export function creaDatiProva(): Dati {
       const t = trovaLezione(sessioneId)
       if (!t) return null
       const mie = memoria.segnate[sessioneId] ?? {}
-      const elenco = iscrittiIl(t.corso.id, chiaveGiorno(t.inizio))
-        .sort(perCognome)
-        .map((p) => ({ ...p, stato: mie[p.id] ?? null }))
+      const elenco = appelloDi(t).map((p) => ({ ...p, stato: mie[p.id] ?? null }))
       return {
         sessione: vista(t),
         elenco,
@@ -217,9 +319,26 @@ export function creaDatiProva(): Dati {
       const t = trovaLezione(sessioneId)
       if (!t) return
       const mie: Record<string, StatoPresenza> = {}
-      for (const p of iscrittiIl(t.corso.id, chiaveGiorno(t.inizio))) mie[p.id] = stato
+      for (const p of appelloDi(t)) mie[p.id] = stato
       memoria.segnate = { ...memoria.segnate, [sessioneId]: mie }
       daAppello(sessioneId)
+      salva()
+    },
+
+    async provati() {
+      return provatiProva(true)
+    },
+
+    async aggiungiProva(sessioneId, chi) {
+      const p = mettiProva(sessioneId, chi)
+      daAppello(sessioneId, p.id)
+      salva()
+      return p
+    },
+
+    async togliProva(sessioneId, personaId) {
+      togliProvaDa(sessioneId, personaId)
+      daAppello(sessioneId, personaId)
       salva()
     },
 

@@ -44,6 +44,9 @@ Un clic su una lezione apre il riquadro a destra. Ogni cambio si salva subito;
   - **TUTTI PRESENTI** e **AZZERA** (che chiede conferma).
   - Si apre solo quando la lezione è **cominciata**: prima c'è scritto «Si segna
     quando la lezione è cominciata».
+  - **PROVE**: per aggiungere chi è venuto a provare, come fanno gli istruttori
+    dall'app (vedi la [guida degli istruttori](../istruttori.md)). Entra in
+    fondo all'appello, presente, col bollino **PROVA**; **TOGLI** lo toglie.
 
 ## Lezione straordinaria
 

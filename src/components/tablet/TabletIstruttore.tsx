@@ -5,6 +5,8 @@ import type { StatoPresenza } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Croce, Spunta } from '../Icons'
 import { Guaio, messaggio, orario } from './comune'
+import type { ChiProva } from '../../lib/prove'
+import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
 
 /**
  * L'appello completo, dal tablet, per chi ha il PIN.
@@ -16,6 +18,9 @@ import { Guaio, messaggio, orario } from './comune'
  *
  * Il giro del tocco è presente → assente → presente: un segno dell'istruttore
  * non si toglie, si cambia. È la stessa regola del database.
+ *
+ * Col tasto PROVE aggiunge chi viene a provare: va in fondo all'appello, già
+ * presente, e si tocca come gli altri (vedi `Prove.tsx`).
  *
  * In cima dice se il PIN gli ha segnato la presenza nella lezione in corso:
  * segnata se era previsto, se no da confermare in segreteria.
@@ -70,7 +75,11 @@ export function TabletIstruttore({
   // rilegge, e se ne va cambiando lezione.
   const [nonAndato, setNonAndato] = useState<string | null>(null)
   const [giro, setGiro] = useState(0)
-  useEffect(() => setNonAndato(null), [scelta])
+  const [conProve, setConProve] = useState(false)
+  useEffect(() => {
+    setNonAndato(null)
+    setConProve(false)
+  }, [scelta])
   // Rileggere passa da qui, così una lettura vecchia non finisce sotto
   // un'altra lezione scelta nel frattempo.
   useEffect(() => {
@@ -86,15 +95,35 @@ export function TabletIstruttore({
     }
   }, [d, pin, scelta, giro])
 
-  const metti = async (cambi: Array<{ personaId: string; stato: StatoPresenza }>) => {
+  const metti = async (cambi: Array<{ personaId: string; stato: StatoPresenza; prova?: boolean }>) => {
     if (!scelta || !cambi.length) return
     setNonAndato(null)
     const quali = new Map(cambi.map((c) => [c.personaId, c.stato]))
     setRighe((r) => r && r.map((x) => (quali.has(x.personaId) ? { ...x, stato: quali.get(x.personaId)!, origine: 'appello' } : x)))
     try {
       for (const c of cambi) {
-        if (!(await d.correggi(pin, scelta, c.personaId, c.stato))) return onPinScaduto()
+        if (!(await d.correggi(pin, scelta, c.personaId, c.stato, c.prova))) return onPinScaduto()
       }
+      onCambiato()
+    } catch (e) {
+      setNonAndato(messaggio(e, 'Il server non risponde'))
+      setGiro((g) => g + 1)
+    }
+  }
+
+  // Senza coda, come il resto del tablet: si rilegge l'appello dal server.
+  const aggiungiProva = async (chi: ChiProva) => {
+    if (!scelta) return
+    if (!(await d.aggiungiProva(pin, scelta, chi))) return onPinScaduto()
+    onCambiato()
+    setGiro((g) => g + 1)
+  }
+  const togliProva = async (personaId: string) => {
+    if (!scelta) return
+    setNonAndato(null)
+    setRighe((r) => r && r.filter((x) => x.personaId !== personaId))
+    try {
+      if (!(await d.togliProva(pin, scelta, personaId))) return onPinScaduto()
       onCambiato()
     } catch (e) {
       setNonAndato(messaggio(e, 'Il server non risponde'))
@@ -203,16 +232,25 @@ export function TabletIstruttore({
             <button
               type="button"
               className="tb-btn tb-btn-verde"
-              onClick={() => void metti((righe ?? []).filter((r) => r.stato !== 'presente').map((r) => ({ personaId: r.personaId, stato: 'presente' })))}
+              onClick={() => void metti((righe ?? []).filter((r) => r.stato !== 'presente').map((r) => ({ personaId: r.personaId, stato: 'presente', prova: r.prova })))}
             >
               TUTTI PRESENTI
             </button>
             <button
               type="button"
               className="tb-btn tb-btn-linea"
-              onClick={() => void metti((righe ?? []).filter((r) => r.stato === null).map((r) => ({ personaId: r.personaId, stato: 'assente' })))}
+              onClick={() => void metti((righe ?? []).filter((r) => r.stato === null).map((r) => ({ personaId: r.personaId, stato: 'assente', prova: r.prova })))}
             >
               GLI ALTRI ASSENTI
+            </button>
+            <button
+              type="button"
+              className="tb-btn tb-btn-linea"
+              aria-expanded={conProve}
+              disabled={righe === null || lezione.stato === 'annullata'}
+              onClick={() => setConProve((x) => !x)}
+            >
+              PROVE
             </button>
           </div>
         ) : (
@@ -223,27 +261,48 @@ export function TabletIstruttore({
         {nonAndato && !guaio && <Guaio titolo="NON SEGNATO" testo={nonAndato} />}
         {lezione && !guaio && righe === null && <p className="tb-nota">Sto leggendo l'appello…</p>}
 
+        {conProve && righe && (
+          <PannelloProve
+            stile="tb"
+            cerca={() => d.provati(pin)}
+            giaQui={new Set(righe.map((r) => r.personaId))}
+            onAggiungi={aggiungiProva}
+            onChiudi={() => setConProve(false)}
+          />
+        )}
+
         <div className="tb-righe tb-scorre">
-          {righe?.map((r) => (
-            <button
-              key={r.personaId}
-              type="button"
-              className="tb-riga"
-              data-stato={r.stato ?? 'niente'}
-              onClick={() => void metti([{ personaId: r.personaId, stato: r.stato === 'presente' ? 'assente' : 'presente' }])}
-              aria-label={`${r.cognome} ${r.nome}: ${r.stato ?? 'non segnato'}`}
-            >
-              <span className="tb-riga-segno" aria-hidden="true">
-                {r.stato === 'presente' && <Spunta size={22} />}
-                {r.stato === 'assente' && <Croce />}
-              </span>
-              <span className="grow tb-riga-nome">
-                {r.cognome} {r.nome}
-              </span>
-              {r.stato === 'presente' && r.origine === 'recupero' && <span className="num tb-marchio" data-tipo="dopo">SEGNATO DOPO</span>}
-              {r.stato === 'presente' && r.origine === 'tablet' && <span className="num tb-marchio">DAL TABLET</span>}
-            </button>
-          ))}
+          {righe?.map((r) => {
+            const riga = (
+              <button
+                key={r.personaId}
+                type="button"
+                className="tb-riga"
+                data-stato={r.stato ?? 'niente'}
+                onClick={() => void metti([{ personaId: r.personaId, stato: r.stato === 'presente' ? 'assente' : 'presente', prova: r.prova }])}
+                aria-label={`${r.cognome} ${r.nome}${r.prova ? ', in prova' : ''}: ${r.stato ?? 'non segnato'}`}
+              >
+                <span className="tb-riga-segno" aria-hidden="true">
+                  {r.stato === 'presente' && <Spunta size={22} />}
+                  {r.stato === 'assente' && <Croce />}
+                </span>
+                <span className="grow tb-riga-nome">
+                  {r.cognome} {r.nome}
+                </span>
+                {r.stato === 'presente' && r.origine === 'recupero' && <span className="num tb-marchio" data-tipo="dopo">SEGNATO DOPO</span>}
+                {r.stato === 'presente' && r.origine === 'tablet' && <span className="num tb-marchio">DAL TABLET</span>}
+                {r.prova && <MarchioProva />}
+              </button>
+            )
+            return r.prova ? (
+              <div key={r.personaId} className="riga-prova">
+                {riga}
+                <TogliProva chi={`${r.cognome} ${r.nome}`} onTogli={() => void togliProva(r.personaId)} />
+              </div>
+            ) : (
+              riga
+            )
+          })}
         </div>
       </div>
     </div>

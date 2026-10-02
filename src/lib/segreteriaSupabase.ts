@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
+import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
@@ -720,6 +720,49 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             .map((i) => ({ personaId: i.persona_id, nome: i.persone!.nome, cognome: i.persone!.cognome, stato: segni.get(i.persona_id) ?? null })),
         }
       })
+    },
+
+    async prove(da, a) {
+      const fino = new Date(a)
+      fino.setHours(23, 59, 59, 999)
+      const r = await db
+        .from('prove')
+        // Due legami con `persone`, chi prova e chi l'ha aggiunta: si dice quale.
+        .select(
+          'sessione_id, persona_id, chi:persone!prove_persona_id_fkey ( nome, cognome, telefono ), da:persone!prove_aggiunta_da_fkey ( nome ), sessioni!inner ( inizio, corso_id, corsi ( nome ) )',
+        )
+        .gte('sessioni.inizio', da.toISOString())
+        .lte('sessioni.inizio', fino.toISOString())
+      if (r.error && (r.error.code === '42P01' || r.error.code === 'PGRST205' || r.error.code === 'PGRST200')) {
+        throw new Error('Le prove non sono ancora attive: va lanciato supabase/21-prove.sql.')
+      }
+      const righe = ok(r) as unknown as Array<{
+        sessione_id: string; persona_id: string
+        chi: { nome: string; cognome: string; telefono: string | null } | null
+        da: { nome: string } | null
+        sessioni: { inizio: string; corso_id: string; corsi: { nome: string } | null } | null
+      }>
+      const ids = [...new Set(righe.map((x) => x.persona_id))]
+      const isc = ok(
+        await db.from('iscrizioni').select('persona_id, dal, al').in('persona_id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000']),
+      ) as Array<Pick<Iscrizione, 'persona_id' | 'dal' | 'al'>>
+      const g = oggi()
+      const iscritti = new Set(isc.filter((i) => valeIl(i, g)).map((i) => i.persona_id))
+      return righe
+        .filter((x) => x.chi && x.sessioni)
+        .map((x): ProvaSeg => ({
+          sessioneId: x.sessione_id,
+          personaId: x.persona_id,
+          nome: x.chi!.nome,
+          cognome: x.chi!.cognome,
+          telefono: x.chi!.telefono ?? undefined,
+          corsoId: x.sessioni!.corso_id,
+          corso: x.sessioni!.corsi?.nome ?? 'Corso',
+          inizio: x.sessioni!.inizio,
+          da: x.da?.nome,
+          iscritto: iscritti.has(x.persona_id),
+        }))
+        .sort((p, q) => q.inizio.localeCompare(p.inizio))
     },
 
     async personale() {
