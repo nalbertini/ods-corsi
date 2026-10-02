@@ -122,6 +122,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.prove') is not null
     and exists (select 1 from dentro where nome = 'aggiungi_prova')
     and exists (select 1 from dentro where nome = 'aggiungi_prova_con_pin')),
+  ('22-statistiche.sql', 'le statistiche della segreteria',
+    exists (select 1 from dentro where nome = 'statistiche')),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')

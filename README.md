@@ -76,7 +76,10 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   quota e i corsi dal listino, i dati del socio dal modulo di
   iscrizione; fatta non si cambia, si annulla (`supabase/16-ricevute.sql`,
   `src/lib/ricevutaPdf.ts`). Le **presenze** del mese: medie per corso, chi si sta
-  perdendo, gli appelli che mancano, e il CSV. Le **presenze degli istruttori** entrati col PIN
+  perdendo, gli appelli che mancano, e il CSV. Le **statistiche**, su più mesi: presenze e iscritti mese per mese, i giorni e le ore
+  in cui si viene, i corsi che si riempiono (sugli iscritti e sui posti), le lezioni di ogni
+  istruttore, chi è in regola e gli incassi delle ricevute; i conti li fa il database
+  (`supabase/22-statistiche.sql`). Le **presenze degli istruttori** entrati col PIN
   in una lezione in cui non erano previsti, da confermare o rifiutare. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`).
   **Istruttori e accessi**, coi PIN del tablet. Il **listino** dei costi, che
@@ -329,6 +332,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 | `supabase/prova/presenze-istruttori.sql` | La presenza degli istruttori dal PIN del tablet: da sola a chi era previsto, anche da sostituto, da confermare agli altri; la conferma solo la segreteria. |
 | `supabase/prova/prove.sql` | Le prove: le aggiunge chi fa l'appello (dall'app o col PIN), già presenti; si ritrovano per nome; si tolgono con la persona se è nata lì; un iscritto e chi non ha accesso non le vedono. Dopo `tablet.sql`. |
+| `supabase/prova/statistiche.sql` | Le statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove, chi l'ha fatta, gli incassi del mese; le vede solo la segreteria. |
 | `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`

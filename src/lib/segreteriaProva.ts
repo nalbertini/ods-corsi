@@ -1,4 +1,4 @@
-import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, StoricoSeg } from './segreteria'
+import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
@@ -579,6 +579,54 @@ export function creaSegreteriaProva(): DatiSegreteria {
         })
         .filter((x): x is ProvaSeg => !!x)
         .sort((p, q) => q.inizio.localeCompare(p.inizio))
+    },
+
+    async statistiche(da, fino): Promise<Statistiche> {
+      const adesso = Date.now()
+      const al = new Date(fino)
+      al.setHours(23, 59, 59, 999)
+      const lezioni = lezioniFra(da, fino)
+        .filter((l) => l.inizio.getTime() < adesso)
+        .map((l) => {
+          const k = comeE(l)
+          const segni = memoria.segnate[l.id] ?? {}
+          const appello = iscrittiIl(l.corso.id, chiaveGiorno(l.inizio))
+          const g = chiaveGiorno(l.inizio)
+          const conta = (stato: string) => appello.filter((p) => segni[p.id] === stato).length
+          // Come il database: presenti senza essere iscritti quel giorno (anche da disattivati), che in sala c'erano.
+          const iscritto = (id: string) => a().iscrizioni.some((i) => i.corsoId === l.corso.id && i.personaId === id && i.dal <= g && (!i.al || i.al >= g))
+          const fuori = Object.entries(segni).filter(([id, s]) => s === 'presente' && !iscritto(id)).length
+          return {
+            sessioneId: l.id,
+            corsoId: l.corso.id,
+            corso: l.corso.nome,
+            colore: l.corso.colore,
+            capienza: l.corso.capienza,
+            sala: k.sala,
+            inizio: l.inizio.toISOString(),
+            stato: k.stato,
+            istruttori: k.istruttori.map(nomeIstruttore),
+            sostituto: !!k.sostituto && !l.corso.istruttori.includes(k.sostituto),
+            iscritti: appello.length,
+            presenti: conta('presente'),
+            assenti: conta('assente'),
+            giustificati: conta('giustificato'),
+            prove: fuori,
+          }
+        })
+      const mesi = new Map<string, { ricevute: number; totale: number; pagato: number }>()
+      const dal = chiaveGiorno(da)
+      const finoA = chiaveGiorno(al)
+      for (const r of a().ricevute ?? []) {
+        if (r.annullataIl || r.data < dal || r.data > finoA) continue
+        const m = mesi.get(r.data.slice(0, 7)) ?? { ricevute: 0, totale: 0, pagato: 0 }
+        m.ricevute++
+        m.totale += r.totale
+        m.pagato += r.pagato
+        mesi.set(r.data.slice(0, 7), m)
+      }
+      const incassi = [...mesi.entries()].sort((x, y) => x[0].localeCompare(y[0])).map(([mese, m]) => ({ mese, ...m }))
+      return { lezioni, incassi }
     },
 
     async personale() {
