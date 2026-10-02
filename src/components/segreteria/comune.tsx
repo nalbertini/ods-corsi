@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Back } from '../Icons'
 
+type Valore = string | number | null | undefined
+
 /** Il messaggio d'errore di un'operazione, detto in chiaro. */
 export const messaggio = (e: unknown, altrimenti = 'Il server non risponde') => (e instanceof Error && e.message ? e.message : altrimenti)
 
@@ -162,4 +164,66 @@ export function SchedaPiena({ etichetta, torna, onTorna, tinta, children }: { et
       </section>
     </div>
   )
+}
+
+/**
+ * Una tabella che si ordina toccando l'intestazione di una colonna. Il primo
+ * tocco mette le parole dalla A alla Z e i numeri dal più grande, il secondo
+ * rovescia, il terzo torna all'ordine di partenza della tabella. Chi non ha il
+ * valore (un «—») sta sempre in fondo, in qualunque verso.
+ *
+ * `colonne` dice, per ogni colonna ordinabile, il valore da confrontare: un
+ * numero o un testo, non quello che si vede («12/20», «3 febbraio»).
+ */
+export function useOrdina<T, K extends string>(colonne: Record<K, (x: T) => Valore>) {
+  const [ordine, setOrdine] = useState<{ per: K; verso: 1 | -1 } | null>(null)
+
+  const ordina = (righe: T[]): T[] => {
+    if (!ordine) return righe
+    const val = colonne[ordine.per]
+    return righe
+      .map((x) => [x, val(x)] as const)
+      .sort(([, a], [, b]) => {
+        const vuotoA = a === null || a === undefined || a === ''
+        const vuotoB = b === null || b === undefined || b === ''
+        if (vuotoA || vuotoB) return vuotoA === vuotoB ? 0 : vuotoA ? 1 : -1
+        const c = typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b), 'it', { numeric: true, sensitivity: 'base' })
+        return c * ordine.verso
+      })
+      .map(([x]) => x)
+  }
+
+  const tocca = (per: K, primo: 1 | -1) =>
+    setOrdine((o) => (!o || o.per !== per ? { per, verso: primo } : o.verso === primo ? { per, verso: -primo as 1 | -1 } : null))
+
+  /**
+   * L'intestazione di una colonna, da chiamare come funzione (non come
+   * componente: rimontato a ogni giro, il tasto perderebbe il fuoco).
+   * `numeri` la fa partire dal più grande; `th` la fa cella di una `<table>`;
+   * `destra` l'allinea a destra, come i numeri sotto.
+   */
+  const colonna = (per: K, etichetta: ReactNode, { numeri, th, destra, className = 'sg-etichetta' }: { numeri?: boolean; th?: boolean; destra?: boolean; className?: string } = {}) => {
+    const verso = ordine?.per === per ? ordine.verso : 0
+    const tasto = (
+      <button type="button" className="sg-ordina" data-verso={verso || undefined} onClick={() => tocca(per, numeri ? -1 : 1)}>
+        {etichetta}
+        <span className="sg-ordina-segno" aria-hidden="true">
+          {verso === 1 ? '▲' : verso === -1 ? '▼' : '↕'}
+        </span>
+      </button>
+    )
+    const ariaSort = verso === 1 ? 'ascending' : verso === -1 ? 'descending' : undefined
+    return th ? (
+      <th key={per} scope="col" className={className} aria-sort={ariaSort}>
+        {tasto}
+      </th>
+    ) : (
+      // In una colonna stretta il tasto sborda a sinistra, sopra lo spazio fra le colonne, e non va a capo.
+      <span key={per} role="columnheader" className={className} style={destra ? { display: 'flex', justifyContent: 'flex-end' } : undefined} aria-sort={ariaSort}>
+        {tasto}
+      </span>
+    )
+  }
+
+  return { ordina, colonna }
 }

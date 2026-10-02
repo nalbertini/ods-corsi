@@ -4,10 +4,12 @@ import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '..
 import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
-import { dataLunga, Guaio, Riga, Testa, useAvviso, useCarica } from './comune'
+import { dataLunga, Guaio, Riga, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 const STATI: Record<StatoRichiesta, string> = { nuova: 'NUOVA', accolta: 'ACCOLTA', rifiutata: 'RIFIUTATA' }
+/** Per ordinare per stato: prima quelle da guardare. */
+const ORDINE_STATI: Record<StatoRichiesta, number> = { nuova: 0, accolta: 1, rifiutata: 2 }
 const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 
 /**
@@ -55,6 +57,12 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
   const lista = (elenco.dato ?? []).filter((x) => (soloStampare ? doc.has(x.id) : tutte || x.stato === 'nuova'))
   const nuove = (elenco.dato ?? []).filter((x) => x.stato === 'nuova').length
   const richiesta = (elenco.dato ?? []).find((x) => x.id === scelta) ?? null
+  const { ordina, colonna } = useOrdina<Richiesta, 'nome' | 'corsi' | 'arrivata' | 'stato'>({
+    nome: (x) => `${x.cognome} ${x.nome}`,
+    corsi: (x) => x.corsi.map((c) => nomi.get(c) ?? '?').join(', '),
+    arrivata: (x) => x.creataIl,
+    stato: (x) => ORDINE_STATI[x.stato],
+  })
 
   return (
     <>
@@ -79,10 +87,10 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
       <div className="sg-due-colonne sg-iscritti">
         <div role="table" aria-label="Richieste" className="sg-tabella">
           <div role="row" className="sg-lista-testa sg-riga-iscritto">
-            <span role="columnheader" className="sg-etichetta">NOME</span>
-            <span role="columnheader" className="sg-etichetta">CORSI</span>
-            <span role="columnheader" className="sg-etichetta">ARRIVATA</span>
-            <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>STATO</span>
+            {colonna('nome', 'NOME')}
+            {colonna('corsi', 'CORSI')}
+            {colonna('arrivata', 'ARRIVATA', { numeri: true })}
+            {colonna('stato', 'STATO', { destra: true })}
           </div>
           <div className="sg-tabella-corpo">
             {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le richieste…</p>}
@@ -95,7 +103,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
                     : 'Nessuna richiesta nuova. Le altre si vedono con «anche quelle già gestite».'}
               </p>
             )}
-            {lista.map((x) => (
+            {ordina(lista).map((x) => (
               <button
                 key={x.id}
                 type="button"

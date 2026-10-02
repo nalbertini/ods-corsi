@@ -1099,6 +1099,11 @@ a.sg-voce { text-decoration: none; }
 .sg-due-colonne { display: flex; gap: 24px; align-items: flex-start; }
 .sg-lista { width: 470px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }
 .sg-lista-testa { display: grid; gap: 12px; padding: 0 14px 6px; border-bottom: 2px solid var(--line-soft); }
+/* Le intestazioni che ordinano la tabella: la freccia si accende sulla colonna scelta. */
+.sg-ordina { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font: inherit; letter-spacing: inherit; color: inherit; text-align: inherit; }
+.sg-ordina:hover, .sg-ordina[data-verso] { color: var(--text); }
+.sg-ordina-segno { font-size: 0.85em; letter-spacing: 0; opacity: 0.35; }
+.sg-ordina:hover .sg-ordina-segno, .sg-ordina[data-verso] .sg-ordina-segno { opacity: 1; }
 .sg-corso {
   width: 100%; display: grid; grid-template-columns: 1fr 130px 70px; gap: 12px; align-items: center; min-height: 60px; padding: 8px 14px;
   background: var(--surface); border: 2px solid var(--line); text-align: left;

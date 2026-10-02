@@ -49,6 +49,18 @@ In fondo al menu:
 In prova c'è anche **Riparti
 dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
 
+## Ordinare le tabelle
+
+Le tabelle (iscritti, richieste, presenze segnalate, presenze degli
+istruttori, istruttori e accessi, le lezioni del mese di un istruttore, i
+corsi e gli istruttori nelle statistiche) si ordinano toccando il nome di una
+colonna. Il primo tocco mette i nomi dalla A alla Z e i numeri dal più
+grande, il secondo rovescia, il terzo torna all'ordine di sempre: la freccia
+accanto al nome dice il verso (▲ crescente, ▼ decrescente). Chi non ha
+il dato, il «—», resta in fondo. In **IN REGOLA** vengono prima i guai più
+grossi, in **STATO** prima quelle da guardare. L'ordine resta finché non si
+cambia voce del menu, anche aprendo una scheda e tornando.
+
 ## Il giro di una settimana normale
 
 1. **Lunedì**: uno sguardo alla [Settimana](settimana.md). Le lezioni passate

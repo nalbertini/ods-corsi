@@ -2,9 +2,11 @@ import { useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { SegnalataVista } from '../../lib/segnalate'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Guaio, Testa, useAvviso, useCarica } from './comune'
+import { Guaio, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
+/** Per ordinare per stato: prima quelle da vedere. */
+const ORDINE_STATI: Record<SegnalataVista['stato'], number> = { da_vedere: 0, accolta: 1, rifiutata: 2 }
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 
 /**
@@ -20,6 +22,13 @@ export function PresenzeSegnalate({ d, onCambiato, onVai }: { d: DatiSegreteria;
 
   const daVedere = (elenco.dato ?? []).filter((x) => x.stato === 'da_vedere')
   const lista = tutte ? (elenco.dato ?? []) : daVedere
+  const { ordina, colonna } = useOrdina<SegnalataVista, 'iscritto' | 'lezione' | 'nota' | 'segnalata' | 'stato'>({
+    iscritto: (x) => `${x.cognome} ${x.nome}`,
+    lezione: (x) => x.inizio,
+    nota: (x) => x.nota,
+    segnalata: (x) => x.il,
+    stato: (x) => ORDINE_STATI[x.stato],
+  })
 
   const gestisci = (x: SegnalataVista, accogli: boolean) =>
     void fai(
@@ -51,11 +60,11 @@ export function PresenzeSegnalate({ d, onCambiato, onVai }: { d: DatiSegreteria;
 
       <div role="table" aria-label="Presenze segnalate" className="sg-tabella">
         <div role="row" className="sg-lista-testa sg-riga-presenza-istr">
-          <span role="columnheader" className="sg-etichetta">ISCRITTO</span>
-          <span role="columnheader" className="sg-etichetta">LEZIONE</span>
-          <span role="columnheader" className="sg-etichetta">NOTA</span>
-          <span role="columnheader" className="sg-etichetta">SEGNALATA</span>
-          <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>STATO</span>
+          {colonna('iscritto', 'ISCRITTO')}
+          {colonna('lezione', 'LEZIONE', { numeri: true })}
+          {colonna('nota', 'NOTA')}
+          {colonna('segnalata', 'SEGNALATA', { numeri: true })}
+          {colonna('stato', 'STATO', { destra: true })}
         </div>
         <div className="sg-tabella-corpo">
           {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le segnalazioni…</p>}
@@ -64,7 +73,7 @@ export function PresenzeSegnalate({ d, onCambiato, onVai }: { d: DatiSegreteria;
               {tutte ? 'Nessuna presenza segnalata.' : 'Niente da vedere. Le altre si vedono con «anche quelle già gestite».'}
             </p>
           )}
-          {lista.map((x) => (
+          {ordina(lista).map((x) => (
             <div key={x.id} role="row" className="sg-riga-presenza-istr sg-presenza-istr" data-spento={x.stato === 'rifiutata'} style={{ ['--tinta' as string]: x.colore ?? 'var(--line)' }}>
               <span role="cell">
                 <button type="button" className="sg-link" style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }} onClick={() => onVai('iscritti', { persona: x.personaId })}>
