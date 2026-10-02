@@ -529,6 +529,54 @@ La chiave `anon` **è pubblica** ed è fatta per finire nel codice del browser:
 non è un segreto trapelato. A proteggere i dati sono le policy di
 `02-policy.sql`, e sono quelle da guardare se qualcosa sembra troppo aperto.
 
+## 10. Il backup
+
+Il piano gratuito di Supabase fa i suoi backup ma non li lascia scaricare. La
+copia che resta alla palestra la fa GitHub Actions, con
+`.github/workflows/backup.yml`: ogni lunedì alle 3:17 UTC, o a mano da
+**Actions → Backup del database → Run workflow** (per esempio prima di
+lanciare un file SQL nuovo). Copia il database, non i file dello Storage
+(documenti d'identità, certificati, clip della voce).
+
+Servono due *repository secrets* in **Settings → Secrets → Actions**:
+
+- **`SUPABASE_DB_URL`**: in Supabase, **Connect → Session pooler**, la stringa
+  `postgresql://postgres.<id del progetto>:<password>@aws-0-eu-central-1.pooler.supabase.com:5432/postgres`
+  con la password del database al suo posto. Il *Session pooler* e non la
+  *Direct connection*: quella parla solo IPv6, e le macchine di GitHub no.
+- **`BACKUP_PASSWORD`**: una password lunga, inventata per questo, da tenere
+  anche fuori da GitHub (la segreteria, un gestore di password). Il
+  repository è pubblico e le copie le scarica chiunque abbia un account
+  GitHub: per questo escono cifrate, e senza questa password non le apre
+  nessuno, palestra compresa.
+
+Senza `SUPABASE_DB_URL` il workflow passa senza fare niente; con l'indirizzo e
+senza password si ferma rosso, invece di mettere fuori i dati in chiaro.
+
+Ogni copia è un artefatto `backup-AAAA-MM-GG`, nella pagina del suo lancio in
+**Actions**, e resta novanta giorni: ci sono sempre le ultime tredici
+settimane. GitHub spegne i workflow programmati di un repository pubblico
+dopo sessanta giorni senza commit, e lo dice per email: se succede, si
+riaccende dalla stessa pagina con **Enable workflow**.
+
+Per rimetterla a posto, in un progetto nuovo creato come al passo 1 (schema,
+persone e account arrivano con la copia: i file `NN-*.sql` non servono):
+
+```
+gpg -d backup-AAAA-MM-GG.tar.gz.gpg | tar xz
+cd backup-AAAA-MM-GG
+psql --single-transaction --variable ON_ERROR_STOP=1 \
+  --file ruoli.sql --file schema.sql \
+  --command 'SET session_replication_role = replica' \
+  --file dati.sql \
+  --dbname "postgresql://postgres.<id>:<password>@aws-0-eu-central-1.pooler.supabase.com:5432/postgres"
+```
+
+`session_replication_role = replica` tiene spenti i trigger mentre entrano i
+dati, che altrimenti ricalcolerebbero lezioni e numeri delle ricevute già
+fatti. Dopo, l'app va ripuntata sul progetto nuovo (passo 9) e i file dello
+Storage ricaricati a mano.
+
 ## Le cose da decidere prima di usarlo sul serio
 
 - **L'informativa privacy.** Nomi e presenze sono dati personali e la palestra

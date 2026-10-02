@@ -285,6 +285,10 @@ Supabase, con la sicurezza tutta nelle policy RLS. Come metterlo in piedi, come
 importare corsi e iscritti da un foglio Excel e cosa decidere prima di usarlo sul
 serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 
+Una copia cifrata del database si fa da sé ogni lunedì
+(`.github/workflows/backup.yml`); i segreti che vuole e come rimetterla a posto
+sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
+
 ## Le prove
 
 | | |
