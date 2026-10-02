@@ -57,10 +57,18 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
 
     async lezioni(da, a) {
       await allungaCalendario(db)
-      const righe = await rpc<Array<{
-        id: string; corso_id: string; corso: string; colore: string | null; descrizione: string | null
-        istruttori: string | null; inizio: string; fine: string; stato: StatoSessione; iscritti: number; presenti: number
-      }>>('lezioni_sala', { da_giorno: chiaveGiorno(da), a_giorno: chiaveGiorno(a) })
+      const giorni = { da_giorno: chiaveGiorno(da), a_giorno: chiaveGiorno(a) }
+      const [righe, segni] = await Promise.all([
+        rpc<Array<{
+          id: string; corso_id: string; corso: string; colore: string | null; descrizione: string | null
+          istruttori: string | null; inizio: string; fine: string; stato: StatoSessione; iscritti: number; presenti: number
+        }>>('lezioni_sala', giorni),
+        // I kanji arrivano con 24-kanji.sql: senza, o se non rispondono, il calendario c'è lo stesso.
+        db.rpc('kanji_sala', giorni).then(
+          (r) => new Map(((r.data ?? []) as Array<{ sessione_id: string; kanji: string }>).map((k) => [k.sessione_id, k.kanji])),
+          () => new Map<string, string>(),
+        ),
+      ])
       return (righe ?? []).map((r): LezioneSala => ({
         id: r.id,
         corsoId: r.corso_id,
@@ -68,6 +76,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
         colore: r.colore ?? undefined,
         descrizione: r.descrizione ?? undefined,
         istruttori: r.istruttori ?? undefined,
+        kanji: segni.get(r.id),
         inizio: r.inizio,
         fine: r.fine,
         stato: r.stato,

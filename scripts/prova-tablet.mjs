@@ -69,6 +69,7 @@ console.log('\n1. la sala e il calendario')
   const t = await alle('2026-09-23T16:40')
   const l = await t.lezioni(new Date(2026, 8, 23), new Date(2026, 8, 23))
   ok('le lezioni di mercoledì in Lotta', l.map((x) => x.corso), ['Lotta 2', 'Lotta 3'])
+  ok('coi kanji di chi le fa', l.map((x) => [...(x.kanji ?? '')].sort().join('')), ['山桜', '山桜'])
   const tatami = await alle('2026-09-23T16:40', 'Tatami')
   ok('una lezione di un\'altra sala', await errore(() => tatami.elenco(LEZIONE)), "lezione di un'altra sala")
 }

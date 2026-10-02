@@ -88,7 +88,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`).
   **Istruttori e accessi**, coi PIN del tablet e il **kanji** di ciascuno: un
   segno solo, come un timbro, che lo fa riconoscere a colpo d'occhio accanto al
-  nome nel calendario e nell'appello (`src/lib/kanji.ts`, `supabase/24-kanji.sql`). Il **listino** dei costi, che
+  nome nel calendario, nell'appello e sul tablet di sala (`src/lib/kanji.ts`, `supabase/24-kanji.sql`). Il **listino** dei costi, che
   la segreteria cambia da sé e che vale per la pagina di iscrizione e per le
   voci delle ricevute (`supabase/19-listino.sql`). Le **impostazioni**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale con la loro

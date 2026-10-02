@@ -51,7 +51,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 21. `21-prove.sql` — le prove: chi viene a provare entra nell'appello, aggiunto da chi lo fa col tasto PROVE
 22. `22-statistiche.sql` — le statistiche della segreteria: i conti delle lezioni e degli incassi, fatti dal database
 23. `23-istruttori-dalle-lezioni.sql` — la presenza degli istruttori anche dall'appello che fanno, e le lezioni tenute senza nessun istruttore segnato, proposte alla segreteria che sceglie chi c'era
-24. `24-kanji.sql` — il kanji degli istruttori: un segno solo, scelto dalla segreteria, che li fa riconoscere a colpo d'occhio nel calendario e nell'appello
+24. `24-kanji.sql` — il kanji degli istruttori: un segno solo, scelto dalla segreteria, che li fa riconoscere a colpo d'occhio nel calendario, nell'appello e sul tablet di sala
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue

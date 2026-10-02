@@ -44,6 +44,8 @@ export interface LezioneSala {
   descrizione?: string
   /** Chi la fa: il sostituto se c'è, altrimenti chi insegna il corso. */
   istruttori?: string
+  /** I loro kanji, nello stesso ordine (vedi `kanji.ts`). */
+  kanji?: string
   inizio: string
   fine: string
   stato: StatoSessione
