@@ -386,35 +386,58 @@ create policy iscrizioni_cancella on storage.objects for delete to authenticated
 -- Accogliere una richiesta: la persona in elenco, iscritta ai suoi corsi.
 --
 -- Se in elenco c'è già si usa quella, così chi torna dopo un anno non
--- diventa un doppione: la si riconosce dal codice fiscale di una richiesta
--- accolta prima, o da nome e cognome con la stessa email o nessuna. Due fratelli
+-- diventa un doppione. La segreteria la può indicare lei (`persona`): la
+-- pagina le mostra chi ha già lo stesso nome e cognome, e un iscritto che la
+-- prima volta ha dato la sua email e stavolta quella della mamma solo lei lo
+-- riconosce. Se non la indica, la si cerca: dal codice fiscale (di una
+-- richiesta accolta prima, o dei dati anagrafici importati), o da nome e
+-- cognome con la stessa email, nessuna, o lo stesso telefono. Due fratelli
 -- iscritti dallo stesso genitore hanno la stessa email, che in `persone` può
 -- essere di uno solo: il secondo entra senza email, col telefono, e la
 -- richiesta ricorda comunque come raggiungerlo.
 -- ---------------------------------------------------------------------------
-create or replace function accogli_iscrizione(richiesta uuid)
+-- Prima c'era con un argomento solo: le due si confonderebbero.
+drop function if exists accogli_iscrizione(uuid);
+create or replace function accogli_iscrizione(richiesta uuid, persona uuid default null)
   returns uuid language plpgsql security definer set search_path = public, extensions as $$
 declare
   r richieste_iscrizione;
   chi uuid;
   oggi date := (now() at time zone 'Europe/Rome')::date;
+  -- Le ultime dieci cifre: «+39 347 791 7462» e «3477917462» sono lo stesso numero.
+  tel text;
 begin
   if not e_staff() then raise exception 'solo la segreteria' using errcode = '42501'; end if;
   select * into r from richieste_iscrizione where id = richiesta for update;
   if r.id is null then raise exception 'richiesta inesistente' using errcode = 'P0002'; end if;
   if r.stato <> 'nuova' then raise exception 'Questa richiesta è già stata %', r.stato using errcode = '22023'; end if;
 
-  -- Prima il codice fiscale, che è l'unica cosa sicura: una richiesta già
-  -- accolta con lo stesso porta alla stessa persona, anche se stavolta l'ha
-  -- mandata l'altro genitore con la sua email.
-  select q.persona_id into chi from richieste_iscrizione q
-    join persone p on p.id = q.persona_id
-    where q.codice_fiscale = r.codice_fiscale and q.id <> r.id
-    order by q.gestita_il desc nulls last
-    limit 1;
+  if persona is not null then
+    select id into chi from persone where id = persona;
+    if chi is null then raise exception 'Questa scheda non c''è più' using errcode = 'P0002'; end if;
+  end if;
+
+  -- Il codice fiscale è l'unica cosa sicura: una richiesta già accolta con lo
+  -- stesso porta alla stessa persona, anche se stavolta l'ha mandata l'altro
+  -- genitore con la sua email.
   if chi is null then
+    select q.persona_id into chi from richieste_iscrizione q
+      join persone p on p.id = q.persona_id
+      where q.codice_fiscale = r.codice_fiscale and q.id <> r.id
+      order by q.gestita_il desc nulls last
+      limit 1;
+  end if;
+  -- O quello dei dati anagrafici, per chi è arrivato dalle risposte del
+  -- modulo Google (se `18-anagrafiche.sql` c'è già).
+  if chi is null and to_regclass('public.anagrafiche') is not null then
+    execute 'select persona_id from anagrafiche where codice_fiscale = $1 limit 1' into chi using r.codice_fiscale;
+  end if;
+  if chi is null then
+    tel := right(regexp_replace(coalesce(r.telefono, ''), '\D', '', 'g'), 10);
     select id into chi from persone
-      where lower(nome) = lower(r.nome) and lower(cognome) = lower(r.cognome) and (email is null or email = r.email)
+      where lower(nome) = lower(r.nome) and lower(cognome) = lower(r.cognome)
+        and (email is null or email = r.email
+             or (length(tel) >= 9 and right(regexp_replace(coalesce(telefono, ''), '\D', '', 'g'), 10) = tel))
       order by (email = r.email) desc nulls last, creata_il
       limit 1;
   end if;
@@ -481,7 +504,7 @@ alter default privileges in schema public revoke execute on functions from publi
 
 grant usage on schema public to anon;
 grant execute on function corsi_aperti(), invia_iscrizione(jsonb), puo_caricare(text), iscrizioni_regole() to anon, authenticated;
-grant execute on function accogli_iscrizione(uuid), rifiuta_iscrizione(uuid) to authenticated;
+grant execute on function accogli_iscrizione(uuid, uuid), rifiuta_iscrizione(uuid) to authenticated;
 -- Il listino della pagina di iscrizione, se 19-listino.sql è già stato lanciato.
 do $$
 begin

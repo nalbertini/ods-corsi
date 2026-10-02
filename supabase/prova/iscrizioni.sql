@@ -234,5 +234,30 @@ select atteso('in Lotta dal giorno di prima, senza più una fine',
 select atteso('la cancella la segreteria', tenta($$delete from richieste_iscrizione where nome = 'Terzo'$$), 'FATTO (1 righe)');
 reset role;
 
+-- Mario era già in elenco con la sua email; stavolta la richiesta la manda la
+-- mamma con la sua, e niente li lega: la scheda la sceglie la segreteria.
+-- Paolo invece ha lo stesso telefono, e lo si ritrova da sé. Un altro Paolo
+-- Neri, con email e telefono suoi, è un'altra persona.
+insert into persone (id, nome, cognome, ruolo, email, telefono) values
+  ('aaaaaaaa-0000-0000-0000-000000000004', 'Mario', 'Verdi', 'iscritto', 'mario@esempio.it', null),
+  ('aaaaaaaa-0000-0000-0000-000000000005', 'Paolo', 'Neri', 'iscritto', 'paolo@esempio.it', '+39 333 123 4567');
+set role anon;
+select atteso('la mamma di Mario la manda', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Mario', 'cognome', 'Verdi', 'codice_fiscale', cf_prova('VRDMRA', (current_date - interval '30 years')::date), 'email', 'elisa@esempio.it', 'telefono', '347 999 0000'))) is not null)::text$$), 'true');
+select atteso('Paolo la manda con un''altra email', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Paolo', 'cognome', 'Neri', 'codice_fiscale', cf_prova('NREPLA', (current_date - interval '30 years')::date), 'email', 'casa.neri@esempio.it', 'telefono', '3331234567'))) is not null)::text$$), 'true');
+select atteso('e l''altro Paolo Neri la sua', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Paolo', 'cognome', 'Neri', 'codice_fiscale', cf_prova('NREPLA', (current_date - interval '40 years')::date), 'nato_il', current_date - interval '40 years', 'email', 'altro.paolo@esempio.it', 'telefono', '320 000 0000'))) is not null)::text$$), 'true');
+reset role;
+set role authenticated;
+select atteso('Mario sulla scheda scelta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'elisa@esempio.it'), 'aaaaaaaa-0000-0000-0000-000000000004') = 'aaaaaaaa-0000-0000-0000-000000000004')::text$$), 'true');
+select atteso('un Mario solo, con la sua email e ora il telefono', (select count(*) || ' ' || max(email::text) || ' ' || max(telefono) from persone where cognome = 'Verdi'), '1 mario@esempio.it 347 999 0000');
+select atteso('iscritto al Judo', (select count(*)::text from iscrizioni where persona_id = 'aaaaaaaa-0000-0000-0000-000000000004'), '1');
+select atteso('Paolo ritrovato dal telefono', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'casa.neri@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000005')::text$$), 'true');
+select atteso('una scheda che non c''è non si sceglie', tenta($$select accogli_iscrizione((select id from richieste_iscrizione where email = 'altro.paolo@esempio.it'), gen_random_uuid())::text$$), 'NEGATO: Questa scheda non c''è più');
+select atteso('l''altro Paolo è un''altra persona', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'altro.paolo@esempio.it')) <> 'aaaaaaaa-0000-0000-0000-000000000005')::text$$), 'true');
+select atteso('due Paolo Neri', (select count(*)::text from persone where cognome = 'Neri'), '2');
+reset role;
+
 \echo ''
 \echo 'TUTTO A POSTO'

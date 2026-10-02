@@ -86,8 +86,12 @@ export interface DatiRichieste {
   // Per la segreteria.
   richieste(): Promise<Richiesta[]>
   file(richiestaId: string): Promise<FileRichiesta[]>
-  /** La persona in elenco, iscritta ai corsi scelti: torna il suo id. */
-  accogli(richiestaId: string): Promise<string>
+  /**
+   * La persona in elenco, iscritta ai corsi scelti: torna il suo id. Con
+   * `personaId` la scheda la sceglie la segreteria; senza, la si cerca (vedi
+   * `accogli_iscrizione` in `06-iscrizioni.sql`) e se non c'è se ne fa una.
+   */
+  accogli(richiestaId: string, personaId?: string): Promise<string>
   rifiuta(richiestaId: string): Promise<void>
   /** La richiesta e i suoi file, per sempre. */
   elimina(richiestaId: string): Promise<void>
