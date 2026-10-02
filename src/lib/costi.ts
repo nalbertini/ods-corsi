@@ -1,14 +1,12 @@
 /**
- * I costi della stagione 2026/27, ricopiati dal foglio della segreteria
- * (`public/moduli/costi-2026-27.pdf`).
+ * I costi della stagione 2026/27, partiti dal foglio della segreteria
+ * (`public/moduli/costi-2026-27.pdf`) e aggiornati con il LISTINO che la
+ * segreteria ha sistemato a ottobre: la Prepugilistica, ora solo il
+ * mercoledì, costa come un corso da un giorno.
  *
  * Sono il listino di partenza: la segreteria lo cambia da LISTINO, e da lì
  * vale quello (`listino.ts`). Questi restano finché non lo tocca, e tornano
  * con RIMETTI IL FOGLIO.
- *
- * Sono ricopiati così come sono, anche dove sembrano strani (la
- * Prepugilistica costa uguale a saldo e annuale, la Lotta 2 ha il trimestre a
- * 170 € e non a 180 €): se il foglio cambia, si cambia qui, e basta.
  *
  * I corsi sono quelli ufficiali della stagione, così come stanno nel
  * calendario della segreteria dopo la revisione di ottobre (orari, sale e
@@ -120,7 +118,7 @@ export const COSTI: VoceCosto[] = [
     corso: 'Lotta 2',
     eta: 'nati 2019-2018-2017',
     orari: ['lunedì, mercoledì e venerdì 17.00-18.00'],
-    prezzi: [{ saldo: 460, annuale: 480, trimestre: 170 }],
+    prezzi: [{ saldo: 460, annuale: 480, trimestre: 180 }],
   },
   {
     corso: 'Lotta 3',
@@ -153,7 +151,7 @@ export const COSTI: VoceCosto[] = [
     corso: 'Prepugilistica',
     eta: 'nati 2010-2009-2008 e prima',
     orari: ['mercoledì 19.00-20.30'],
-    prezzi: [{ saldo: 460, annuale: 460, trimestre: 180 }],
+    prezzi: [{ saldo: 320, annuale: 340, trimestre: 130 }],
   },
   {
     corso: 'Pesi agonisti',
