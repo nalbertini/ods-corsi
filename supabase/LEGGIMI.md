@@ -7,9 +7,13 @@ calendario vero della palestra.
 
 ## 1. Il progetto
 
-Su [supabase.com](https://supabase.com) si crea un progetto nella regione
-**Frankfurt (eu-central-1)**, che è la più vicina e tiene i dati in Europa — e
-i dati qui dentro sono nomi e presenze di persone, quindi non è un dettaglio.
+Su [supabase.com](https://supabase.com) si crea un progetto in una regione
+dell'Unione Europea — i dati qui dentro sono nomi e presenze di persone,
+quindi non è un dettaglio. Quello della palestra, **ODS-Sala**, sta a
+**Stockholm (eu-north-1)**; Frankfurt (eu-central-1) andrebbe bene uguale. La
+regione non si cambia dopo, e conta anche fuori da qui: l'informativa dice dove
+stanno i dati, e gli indirizzi del *pooler* (vedi «Il backup») ce l'hanno nel
+nome.
 
 Il piano gratuito basta per una palestra sola: 500 MB di database e 50.000
 utenti attivi al mese sono molto più di quel che serve.
@@ -541,8 +545,11 @@ sotto, o da **Actions → Backup del database → Run workflow**. Copia il datab
 Servono due *repository secrets* in **Settings → Secrets → Actions**:
 
 - **`SUPABASE_DB_URL`**: in Supabase, **Connect → Session pooler**, la stringa
-  `postgresql://postgres.<id del progetto>:<password>@aws-0-eu-central-1.pooler.supabase.com:5432/postgres`
-  con la password del database al suo posto. Il *Session pooler* e non la
+  così come la mostra, con la password del database al posto di
+  `[YOUR-PASSWORD]`. Ha questa forma:
+  `postgresql://postgres.<id del progetto>:<password>@aws-<n>-<regione>.pooler.supabase.com:5432/postgres`,
+  e per ODS-Sala la regione è `eu-north-1`. Il numero dopo `aws-` e la
+  regione non vanno indovinati: si copia quella del pannello. Il *Session pooler* e non la
   *Direct connection*: quella parla solo IPv6, e le macchine di GitHub no.
 - **`BACKUP_PASSWORD`**: una password lunga, inventata per questo, da tenere
   anche fuori da GitHub (la segreteria, un gestore di password). Il
@@ -604,7 +611,7 @@ psql --single-transaction --variable ON_ERROR_STOP=1 \
   --file ruoli.sql --file schema.sql \
   --command 'SET session_replication_role = replica' \
   --file dati.sql \
-  --dbname "postgresql://postgres.<id>:<password>@aws-0-eu-central-1.pooler.supabase.com:5432/postgres"
+  --dbname "<la stringa del Session pooler del progetto nuovo>"
 ```
 
 `session_replication_role = replica` tiene spenti i trigger mentre entrano i
