@@ -116,12 +116,33 @@ export const FORMULE: Array<[Formula, string]> = [
 /** Come la vuole il database: senza spazi, in maiuscolo. */
 export const pulisciCf = (s: string) => s.replace(/\s/g, '').toUpperCase()
 
+/** Se oggi ha compiuto `anni` anni, da una data `AAAA-MM-GG`; senza data, no. */
+export function compiuti(natoIl: string, anni: number, oggi = new Date()): boolean {
+  const [a, m, g] = natoIl.split('-').map(Number)
+  if (!a || !m || !g) return false
+  return new Date(a + anni, m - 1, g) <= oggi
+}
+
 /** Minorenne oggi, da una data `AAAA-MM-GG`. */
 export function minorenne(natoIl: string, oggi = new Date()): boolean {
   const [a, m, g] = natoIl.split('-').map(Number)
   if (!a || !m || !g) return false
   const diciotto = new Date(a + 18, m - 1, g)
   return diciotto > oggi
+}
+
+/** I corsi per cui dai 12 anni serve il certificato agonistico. */
+const AGONISTICI = /\b(judo|aikido|lotta)\b/i
+
+/**
+ * Quale certificato medico ricordare a chi si iscrive: nessuno sotto i 6
+ * anni (o finché non c'è la data di nascita), l'agonistico dai 12 per judo,
+ * aikido e lotta, se no quello normale. Si consegna in segreteria, non si
+ * carica online: è un dato sulla salute.
+ */
+export function certificatoDaPortare(natoIl: string, nomiCorsi: string[], oggi = new Date()): 'nessuno' | 'normale' | 'agonistico' {
+  if (!compiuti(natoIl, 6, oggi)) return 'nessuno'
+  return compiuti(natoIl, 12, oggi) && nomiCorsi.some((n) => AGONISTICI.test(n)) ? 'agonistico' : 'normale'
 }
 
 /** I campi del modulo che possono non andare, per segnarli uno per uno. */
