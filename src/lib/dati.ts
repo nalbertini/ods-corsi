@@ -1,5 +1,6 @@
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
 import type { ChiProva, GiaProvato } from './prove'
+import type { SegnalataVista } from './segnalate'
 
 /**
  * Da dove arrivano corsi, lezioni e presenze.
@@ -29,6 +30,14 @@ export interface Dati {
   togliProva(sessioneId: string, personaId: string): Promise<void>
   /** Chiude la lezione: da «prevista» a «svolta». */
   chiudi(sessioneId: string): Promise<void>
+  /**
+   * Le presenze segnalate dagli iscritti (vedi `segnalate.ts`): con `soloDi`
+   * solo quelle delle lezioni di quell'istruttore. Per ora solo in prova:
+   * col database non ci sono.
+   */
+  segnalate?(soloDi?: string): Promise<SegnalataVista[]>
+  /** Accoglie (l'iscritto è presente) o rifiuta; con `soloDi`, solo per le sue lezioni. */
+  gestisciSegnalata?(id: string, accogli: boolean, soloDi?: string): Promise<void>
   /** Quante scritture non sono ancora arrivate al server. Sempre 0 in prova. */
   guardaCoda?(f: (n: number) => void): () => void
 }

@@ -1,6 +1,7 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
+import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
@@ -428,6 +429,14 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (nota && nota.length > 300) throw new Error('La nota del pagamento è troppo lunga: al massimo 300 caratteri')
       a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, pagamento: { stato: dati.stato, fino: dati.fino || undefined, nota } } : p))
       salva()
+    },
+
+    async segnalate() {
+      return segnalateProva()
+    },
+
+    async gestisciSegnalata(id, accogli) {
+      gestisciSegnalataProva(id, accogli, 'Segreteria di prova')
     },
 
     async mettiNelNucleo(personaId, titolareId) {

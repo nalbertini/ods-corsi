@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { avvisi, contoPresenze } from './src/lib/iscritto'; export { creaDatiProva } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { ENTE_PREDEFINITO, vociDelCorso } from './src/lib/ricevute'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { stimaIscrizione, abbonamentiDalleRicevute, descrizioneScontata, scontoDellaVoce, doveVaLoSconto } from './src/lib/nucleo'; export { LISTINO_PREDEFINITO } from './src/lib/listino'; export { carattereControllo, lettereCognome, lettereNome, cfValido } from './src/lib/codiceFiscale'",
+      "export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { avvisi, contoPresenze } from './src/lib/iscritto'; export { creaDatiProva } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { ENTE_PREDEFINITO, vociDelCorso } from './src/lib/ricevute'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { stimaIscrizione, abbonamentiDalleRicevute, descrizioneScontata, scontoDellaVoce, doveVaLoSconto } from './src/lib/nucleo'; export { LISTINO_PREDEFINITO } from './src/lib/listino'; export { carattereControllo, lettereCognome, lettereNome, cfValido } from './src/lib/codiceFiscale'; export { GIORNI_SEGNALA } from './src/lib/segnalate'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -268,6 +268,60 @@ console.log('\n9. il nucleo dalla scheda della segreteria')
   ok('non si toglie chi non c’è', await err(() => s.togliDalNucleo(y.id)), 'Non è nel nucleo di nessuno')
   await s.attivaPersona(liberi[4].id, false)
   ok('una scheda disattivata no', await err(() => s.mettiNelNucleo(liberi[4].id, x.id)), 'Le schede disattivate non entrano in un nucleo')
+}
+
+console.log('\n10. le presenze segnalate')
+{
+  const a = m.archivio.dati
+  const err = async (f) => {
+    try {
+      await f()
+      return 'nessun errore'
+    } catch (e) {
+      return e.message
+    }
+  }
+  const esempi = (a.segnalate ?? []).filter((x) => x.id.startsWith('sg-esempio-'))
+  ok('gli esempi ne mettono due da vedere e una rifiutata', [esempi.filter((x) => x.stato === 'da_vedere').length, esempi.filter((x) => x.stato === 'rifiutata').length], [2, 1])
+  ok('nelle lezioni di Maurizio', (await d.segnalate('i-maurizio')).filter((x) => x.id.startsWith('sg-esempio-')).length, 3)
+
+  // Una lezione passata di chi, non segnata, e una dove è presente.
+  const passate = await io.presenze(chi, 30)
+  const libera = passate.find((p) => p.stato === null || p.stato === 'assente')
+  const presente = passate.find((p) => p.stato === 'presente')
+  ok('c’è una lezione da segnalare', !!libera, true)
+  await io.segnala(chi, libera.sessioneId, '  in ritardo  ')
+  const mia = (await io.segnalate(chi)).find((x) => x.sessioneId === libera.sessioneId)
+  ok('segnalata, da vedere, con la nota pulita', [mia.stato, mia.nota], ['da_vedere', 'in ritardo'])
+  ok('non due volte', await err(() => io.segnala(chi, libera.sessioneId)), 'L’hai già segnalata: la guarda l’istruttore o la segreteria')
+  ok('non dove risulta già presente', await err(() => io.segnala(chi, presente.sessioneId)), 'Risulti già presente')
+  const futura = (await io.lezioni(chi, fra(2), fra(9))).find((l) => l.stato !== 'annullata')
+  ok('non una lezione che deve ancora venire', await err(() => io.segnala(chi, futura.id)), 'La lezione non è ancora cominciata')
+  const diAltro = (await io.presenze(altro, 30))[0]
+  ok('non una lezione di un altro corso', await err(() => io.segnala(chi, diAltro.sessioneId)), 'Questa lezione non è di un tuo corso')
+
+  const vista = (await s.segnalate()).find((x) => x.id === mia.id)
+  ok('la segreteria la vede, con chi, che lezione e il segno di adesso', [vista.personaId, vista.corso, vista.segno], [chi, libera.corso, libera.stato])
+  const insegnanti = vista.insegnanti
+  const estraneo = ['i-maurizio', 'i-maura', 'i-fabio', 'i-tiziano'].find((x) => !insegnanti.includes(x))
+  ok('un istruttore non la vede se la lezione non è sua', (await d.segnalate(estraneo)).some((x) => x.id === mia.id), false)
+  ok('e non la gestisce', await err(() => d.gestisciSegnalata(mia.id, true, estraneo)), 'Non è una tua lezione: la vede la segreteria')
+  ok('l’istruttore della lezione sì', (await d.segnalate(insegnanti[0])).some((x) => x.id === mia.id), true)
+  await d.gestisciSegnalata(mia.id, true, insegnanti[0])
+  ok('accolta: nell’appello è presente', (await d.dettaglio(libera.sessioneId)).elenco.find((p) => p.id === chi).stato, 'presente')
+  ok('e nella sua pagina', [(await io.presenze(chi, 30)).find((p) => p.sessioneId === libera.sessioneId).stato, (await io.segnalate(chi)).find((x) => x.id === mia.id).stato], ['presente', 'accolta'])
+  ok('non si gestisce due volte', await err(() => s.gestisciSegnalata(mia.id, false)), 'È già stata accolta')
+
+  // Il rifiuto, con un altro iscritto che ha ancora una lezione da segnalare.
+  const altra = (await io.presenze(altro, 30)).find((p) => p.stato !== 'presente' && p.stato !== 'giustificato')
+  ok('l’altro ha una lezione da segnalare', !!altra, true)
+  ok('una nota lunghissima no', await err(() => io.segnala(altro, altra.sessioneId, 'x'.repeat(201))), 'La nota è troppo lunga: al massimo 200 caratteri')
+  await io.segnala(altro, altra.sessioneId)
+  const sua = (await io.segnalate(altro)).find((x) => x.sessioneId === altra.sessioneId)
+  await s.gestisciSegnalata(sua.id, false)
+  ok('rifiutata dalla segreteria: resta com’era', (await d.dettaglio(altra.sessioneId)).elenco.find((p) => p.id === altro).stato, altra.stato)
+  ok('e chi l’ha rifiutata', (await s.segnalate()).find((x) => x.id === sua.id).gestitaDa, 'Segreteria di prova')
+  ok('e non si rimanda', await err(() => io.segnala(altro, altra.sessioneId)), 'È già stata rifiutata: chiedi alla segreteria')
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

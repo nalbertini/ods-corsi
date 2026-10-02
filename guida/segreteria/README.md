@@ -30,6 +30,7 @@ A sinistra il menu, a destra la voce scelta. Ogni voce ha la sua guida:
 | **ISCRITTI** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
 | **RICHIESTE ONLINE** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
 | **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |
+| **PRESENZE SEGNALATE** | Gli iscritti che dicono di esserci stati e non risultano, da accogliere o rifiutare (solo in prova) | [Apri](presenze-segnalate.md) |
 | **STATISTICHE** | Come va la palestra mese per mese: presenze, iscritti, giorni e ore, corsi, istruttori, incassi | [Apri](statistiche.md) |
 | **PRESENZE ISTRUTTORI** | Le presenze degli istruttori dal PIN del tablet, confermate e da confermare, per mese, corso e istruttore | [Apri](presenze-istruttori.md) |
 | **IMPORTA DA EXCEL** | Corsi e iscritti dai fogli Excel o dalle risposte del modulo Google | [Apri](importa.md) |
@@ -60,7 +61,10 @@ dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
 4. **Quando il menu dice PRESENZE ISTRUTTORI · 1**: un istruttore è entrato
    col PIN in una lezione non sua → [Presenze istruttori](presenze-istruttori.md)
    → **CONFERMA** o **RIFIUTA**.
-5. **A fine mese**: [Presenze](presenze.md) → chi si sta perdendo, e
+5. **Quando il menu dice PRESENZE SEGNALATE · 1**: un iscritto dice di essere
+   stato a una lezione e non risulta → [Presenze segnalate](presenze-segnalate.md)
+   → **PRESENTE** o **RIFIUTA**.
+6. **A fine mese**: [Presenze](presenze.md) → chi si sta perdendo, e
    **SCARICA CSV** se serve un resoconto.
 
 Ogni cambio si salva subito: non c'è un tasto «salva» generale. In basso

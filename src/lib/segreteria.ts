@@ -7,6 +7,7 @@ import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, Ricevuta } from './ricevute'
 import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio } from './nomi'
+import type { SegnalataVista } from './segnalate'
 
 export type { ListaMusica } from './musica'
 
@@ -397,6 +398,10 @@ export interface DatiSegreteria {
    * un titolare, la toglie, o la fa titolare al posto di quello di prima.
    * Solo in prova, per ora: col database rispondono che non c'è ancora.
    */
+  /** Le presenze segnalate dagli iscritti (vedi `segnalate.ts`); per ora solo in prova, col database non ci sono. */
+  segnalate?(): Promise<SegnalataVista[]>
+  gestisciSegnalata?(id: string, accogli: boolean): Promise<void>
+
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>
   rendiTitolare(personaId: string): Promise<void>

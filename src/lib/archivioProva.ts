@@ -1,3 +1,4 @@
+import type { Segnalata } from './segnalate'
 import type { Ruolo, StatoSessione } from './sala'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
 import type { Anagrafica } from './segreteria'
@@ -111,6 +112,8 @@ export interface Archivio {
   anagrafiche?: Record<string, Anagrafica & { cambiataIl?: string }>
   /** Chi è venuto a provare una lezione, come le righe di `prove` (21-prove.sql). */
   prove?: ProvaLezione[]
+  /** Le presenze segnalate dagli iscritti, da accogliere o rifiutare (vedi `segnalate.ts`). */
+  segnalate?: Segnalata[]
 }
 
 /** Come una riga di `prove` (21-prove.sql). */

@@ -6,6 +6,8 @@ import { AppelloScreen } from './AppelloScreen'
 import { Back } from './Icons'
 import { useLargo } from '../lib/largo'
 import { TIMER } from '../lib/aree'
+import type { SegnalataVista } from '../lib/segnalate'
+import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 
 /**
  * Il calendario, e dentro una lezione l'appello.
@@ -24,6 +26,11 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
   const [presenti, setPresenti] = useState<Record<string, number>>({})
+  // Le presenze segnalate si rileggono quando se ne gestisce una dall'appello.
+  const [giroSegnalate, setGiroSegnalate] = useState(0)
+  const apri = (sessioneId: string) => void d?.dettaglio(sessioneId).then((x) => x && setAperta(x.sessione))
+  const segnalate = d && <Segnalate dati={d} soloDi={soloDi} giro={giroSegnalate} onApri={apri} />
+  const ricontaSegnalate = () => setGiroSegnalate((g) => g + 1)
   const largo = useLargo()
 
   const [guaio, setGuaio] = useState(false)
@@ -77,6 +84,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
       {largo ? (
         <div className="sala-due">
           <div className="sala-lato">
+            {segnalate}
             <CalendarioScreen dati={d} onApri={setAperta} apertaId={aperta?.id} presenti={presenti} soloDi={soloDi} />
           </div>
           <div className="sala-lato">
@@ -88,7 +96,14 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
                   </span>
                   {inCoda > 0 && <span className="spia-coda">{inCoda} DA INVIARE</span>}
                 </div>
-                <AppelloScreen key={aperta.id} dati={d} sessioneId={aperta.id} onPresenti={(n) => setPresenti((p) => ({ ...p, [aperta.id]: n }))} />
+                <AppelloScreen
+                  key={aperta.id}
+                  dati={d}
+                  sessioneId={aperta.id}
+                  soloDi={soloDi}
+                  onSegnalate={ricontaSegnalate}
+                  onPresenti={(n) => setPresenti((p) => ({ ...p, [aperta.id]: n }))}
+                />
               </>
             ) : (
               <div className="sala-vuota">
@@ -111,10 +126,11 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
             </span>
             {inCoda > 0 && <span className="spia-coda">{inCoda} DA INVIARE</span>}
           </div>
-          <AppelloScreen key={aperta.id} dati={d} sessioneId={aperta.id} />
+          <AppelloScreen key={aperta.id} dati={d} sessioneId={aperta.id} soloDi={soloDi} onSegnalate={ricontaSegnalate} />
         </>
       ) : (
         <>
+          {segnalate}
           <CalendarioScreen dati={d} onApri={setAperta} soloDi={soloDi} />
           <Strumenti onMieiTimer={onMieiTimer} />
         </>
@@ -147,5 +163,46 @@ function Strumenti({ onMieiTimer }: { onMieiTimer?: () => void }) {
         </a>
       </div>
     </>
+  )
+}
+
+/**
+ * Sopra il calendario, le presenze segnalate dagli iscritti nelle lezioni
+ * di questo istruttore (di tutte, per la segreteria) che aspettano qualcuno:
+ * toccandone una si apre l'appello di quella lezione, dove si accettano o si
+ * rifiutano. Senza niente da vedere non c'è.
+ */
+function Segnalate({ dati, soloDi, giro, onApri }: { dati: Dati; soloDi?: string; giro: number; onApri: (sessioneId: string) => void }) {
+  const [l, setL] = useState<SegnalataVista[]>([])
+  useEffect(() => {
+    let vivo = true
+    void dati.segnalate?.(soloDi).then(
+      (x) => vivo && setL(x.filter((s) => s.stato === 'da_vedere')),
+      () => {},
+    )
+    return () => {
+      vivo = false
+    }
+  }, [dati, soloDi, giro])
+  if (!l.length) return null
+  return (
+    <div className="pad" style={{ paddingTop: 14 }}>
+      <div className="card stack segnalate-avviso">
+        <span className="rule-label" style={{ color: 'var(--giallo-testo)' }}>
+          {l.length === 1 ? 'UNA PRESENZA SEGNALATA' : `${l.length} PRESENZE SEGNALATE`}
+        </span>
+        <span style={{ fontSize: 13, color: 'var(--dim)' }}>Iscritti che dicono di esserci stati e non risultano: apri la lezione per confermare.</span>
+        {l.map((s) => (
+          <button key={s.id} type="button" className="row segnalate-voce" onClick={() => onApri(s.sessioneId)}>
+            <span className="grow" style={{ fontWeight: 600, textAlign: 'left' }}>
+              {perEsteso(s)}
+            </span>
+            <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+              {s.corso} · {giornoPerEsteso(chiaveGiorno(new Date(s.inizio)))} {oraDi(s.inizio)}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }
