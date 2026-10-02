@@ -59,7 +59,10 @@ export interface PersonaProva {
   attiva: boolean
   creataIl: string
   /** Solo degli iscritti, e anche questi possono mancare in un archivio già salvato. */
+  /** `file`: caricato prima della carta, da stampare e cancellare. */
   certificato?: { scade?: string; file?: string }
+  /** La copia del documento d'identità è in segreteria. */
+  documento?: boolean
   pagamento?: { stato: 'da_pagare' | 'in_parte' | 'pagato'; fino?: string; nota?: string }
   /** Il titolare del nucleo familiare di cui fa parte, per id; il titolare non ce l'ha (vedi `nucleo.ts`). */
   nucleo?: string
@@ -251,7 +254,7 @@ export const idRicorrenza = (corsoId: string, giorno: number, ora: string) => `$
  * regola, e qualcuno no, per far vedere i filtri. Le date contano dall'inizio
  * della stagione, non da oggi, così una prova rifatta dice le stesse cose.
  */
-function inRegolaDiProva(id: string): Pick<PersonaProva, 'certificato' | 'pagamento'> {
+function inRegolaDiProva(id: string): Pick<PersonaProva, 'certificato' | 'documento' | 'pagamento'> {
   const h = [...id].reduce((s, c) => (s * 31 + c.charCodeAt(0)) % 9973, 7)
   const giorno = (n: number) => {
     const [a, m, d] = STAGIONE.dal.split('-').map(Number)
@@ -260,7 +263,9 @@ function inRegolaDiProva(id: string): Pick<PersonaProva, 'certificato' | 'pagame
   const cert = h % 12
   const paga = (h >> 4) % 12
   return {
-    certificato: cert === 0 ? undefined : { scade: giorno(cert === 1 ? -5 : cert === 2 ? 30 : 180 + cert * 20), file: 'certificato.pdf' },
+    // Qualcuno col file di prima della carta, da stampare.
+    certificato: cert === 0 ? undefined : { scade: giorno(cert === 1 ? -5 : cert === 2 ? 30 : 180 + cert * 20), file: cert === 3 ? 'certificato.pdf' : undefined },
+    documento: (h >> 8) % 6 !== 0,
     pagamento:
       paga === 0
         ? { stato: 'da_pagare' }

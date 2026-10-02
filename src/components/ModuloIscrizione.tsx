@@ -35,6 +35,9 @@ import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
  * ha già dato (cognome, residenza, contatti, e lui come genitore), dice
  * quanto costa con lo sconto famiglia e come pagarlo, e per un minore il
  * documento del genitore non serve: la segreteria ha già il suo.
+ *
+ * Il documento d'identità e il certificato medico non si caricano: il modulo
+ * ricorda di portarli in segreteria, che ne tiene la copia su carta.
  */
 
 /** Una persona in più nel nucleo: chi la aggiunge, cosa si sa già, e gli annuali che il nucleo paga. */
@@ -154,8 +157,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
   )
 
+  const obbligatorio = (t: TipoFile) => FILE.find((f) => f.tipo === t)!.obbligatorio
   /** Per un minore del nucleo il documento è quello del genitore, che la segreteria ha già. */
-  const obbligatorio = (t: TipoFile) => FILE.find((f) => f.tipo === t)!.obbligatorio && !(t === 'documento' && nucleo && minore)
+  const documento = !(nucleo && minore)
 
   const errori = problemi(pronta)
   /** Cosa scrivere sotto un campo: «Manca» solo dopo aver provato a mandare. */
@@ -284,11 +288,18 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       <div className="pad stack esito">
         <TitoloEsito tono="fatto">RICHIESTA ARRIVATA</TitoloEsito>
         <span className="esito-testo">
-          Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
+          Grazie. La segreteria controlla il modulo e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
         </span>
-        {certificato !== 'nessuno' && (
+        {(documento || certificato !== 'nessuno') && (
           <span className="esito-testo">
-            Ricorda di consegnare in segreteria il certificato medico{certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.
+            Ricorda di portare in segreteria{' '}
+            {[
+              documento && `il documento d'identità${minore ? ' del genitore' : ''}`,
+              certificato !== 'nessuno' && `il certificato medico${certificato === 'agonistico' ? ' agonistico' : ''}`,
+            ]
+              .filter(Boolean)
+              .join(' e ')}
+            {certificato !== 'nessuno' ? ': senza il certificato non si partecipa alle lezioni.' : '.'}
           </span>
         )}
         <Tasto onClick={onChiudi}>{torna}</Tasto>
@@ -534,6 +545,12 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       </Sezione>
 
       <Sezione titolo="I FILE">
+        {documento && (
+          <div className="modulo-campo modulo-largo">
+            <span className="modulo-etichetta">{minore ? "IL DOCUMENTO D'IDENTITÀ DEL GENITORE" : "IL DOCUMENTO D'IDENTITÀ"}</span>
+            <Dettaglio tono="avviso">Non si carica qui: va mostrato in segreteria, che ne tiene una copia su carta.</Dettaglio>
+          </div>
+        )}
         {certificato !== 'nessuno' && (
           <div className="modulo-campo modulo-largo">
             <span className="modulo-etichetta">{certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
@@ -541,7 +558,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
               {certificato === 'agonistico'
                 ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico.'
                 : 'Dai 6 anni il certificato medico è obbligatorio.'}{' '}
-              Non si carica qui: va consegnato in segreteria, e senza non si partecipa alle lezioni.
+              Non si carica qui: va consegnato in segreteria, che lo tiene su carta, e senza non si partecipa alle lezioni.
             </Dettaglio>
           </div>
         )}
@@ -552,7 +569,6 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             file={file[f.tipo]}
             onFile={(x) => setFile((p) => ({ ...p, [f.tipo]: x }))}
             facoltativo={!obbligatorio(f.tipo)}
-            dettaglio={f.tipo === 'documento' && !obbligatorio('documento') ? 'Non serve: il genitore è nel nucleo, e la segreteria ha già il suo.' : undefined}
           />
         ))}
       </Sezione>

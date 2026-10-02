@@ -13,17 +13,24 @@ quando è **ARRIVATA**, **STATO** (**NUOVA**, **ACCOLTA**, **RIFIUTATA**), e
 **MINORE** se chi si iscrive è minorenne, **NUCLEO** se l'ha aggiunta un
 iscritto per il suo nucleo familiare, dalla sua area: la scheda dice chi è
 (toccando il nome si apre la sua scheda), e accolta la persona entra nel
-suo nucleo. Per un minore del nucleo il documento non manca: è quello del
-genitore, già in segreteria.
+suo nucleo. **DOCUMENTO DA STAMPARE** se la richiesta ha ancora la carta
+d'identità caricata, di quando il modulo la chiedeva.
 
-Normalmente si vedono solo le nuove; **ANCHE QUELLE GIÀ GESTITE** mostra tutte.
+Normalmente si vedono solo le nuove; **ANCHE QUELLE GIÀ GESTITE** mostra tutte,
+e **DA STAMPARE** (finché ce ne sono) quelle col documento caricato.
 
 ## Guardare una richiesta
 
 Un clic apre le risposte: nato il / a, codice fiscale, residenza, genitore (per
 un minore), email, telefono e l'eventuale telefono 2, corsi, come paga (trimestre o annuale), note.
 
-Sotto, **I FILE**: modulo firmato, carta d'identità, ricevuta. Il modulo è
+Sotto, **I FILE**: modulo firmato e ricevuta. Il documento d'identità non si
+carica più: si mostra in segreteria, che ne tiene la copia su carta e lo
+segna nella scheda dell'iscritto (vedi [Iscritti](iscritti.md)). Una
+richiesta di prima che ce l'ha ancora lo mostra in un riquadro giallo: lo si
+apre, lo si stampa, lo si mette nella cartellina e **STAMPATO, CANCELLALO** lo
+cancella per sempre. Se la richiesta è già accolta, la scheda dell'iscritto
+dice che la copia è in segreteria. Il modulo è
 la foto del foglio firmato a mano, oppure il PDF firmato dal telefono: il
 foglio della palestra compilato in blu, con la firma e, in fondo, la data e
 l'ora in cui è stato firmato. Se ne manca uno

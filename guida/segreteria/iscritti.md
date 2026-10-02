@@ -16,6 +16,10 @@ elenco, che compaiono negli appelli e sul tablet.
   scaduto o gli scade entro un mese.
 - **DA PAGARE** — chi non ha pagato, ha pagato solo in parte o ha il pagamento
   scaduto.
+- **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
+  segreteria.
+- **CERTIFICATI DA STAMPARE** — solo finché ce ne sono: chi ha ancora il file
+  del certificato caricato nell'app, di prima della carta.
 
 La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
 **IN REGOLA** se certificato e pagamento sono a posto; altrimenti in rosso
@@ -57,12 +61,22 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
   lasciato vuoto si cancella. Se il codice fiscale non torna (l'ultimo
   carattere, il nome o la data) l'app lo dice in giallo, e si può salvare lo
   stesso.
-- **CERTIFICATO MEDICO** — fino a quando vale. **CARICA IL CERTIFICATO** →
-  la data in **VALIDO FINO AL** e **SCEGLI IL FILE** (una foto o un PDF, fino a
-  10 MB) → **SALVA**. Col certificato nuovo, **RINNOVA O CORREGGI**: con un
-  file nuovo il vecchio si cancella; senza, cambia solo la data. **APRI IL
-  FILE** lo mostra (il link vale dieci minuti), **Togli** lo cancella. Senza
-  file il certificato non conta: la data da sola non basta.
+- **CERTIFICATO MEDICO** — fino a quando vale. Il certificato sta **su
+  carta**, nella cartellina della segreteria: nell'app non si carica. Col
+  foglio in mano, **SEGNA IL CERTIFICATO** → la data in **VALIDO FINO AL** →
+  **SALVA**. Col certificato nuovo, **RINNOVA O CORREGGI** cambia la data, e il
+  foglio vecchio si distrugge. Se è arrivato per email o WhatsApp, si stampa e
+  si cancella da lì. **Togli** toglie la data.
+- **Un certificato caricato prima della carta** ha ancora il file nell'app:
+  la scheda lo dice in giallo, e in elenco c'è **DA STAMPARE** accanto al
+  nome (il filtro **CERTIFICATI DA STAMPARE** li mostra tutti, finché ce ne
+  sono). **APRI PER STAMPARE** lo apre (il link vale dieci minuti), si stampa,
+  si mette nella cartellina, e **STAMPATO, CANCELLALO** lo cancella per
+  sempre. La data resta.
+- **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
+  minore, quella del genitore). **LA COPIA È IN SEGRETERIA** lo segna, **Non
+  c'è più** lo toglie. **SENZA DOCUMENTO**, sopra l'elenco, mostra chi non ce
+  l'ha ancora.
 - **PAGAMENTO** — **DA PAGARE**, **IN PARTE** o **PAGATO**, e se serve **FINO
   AL**: per chi paga il trimestre, la data in cui scade. Passata quella, la
   scheda torna da sé a «pagamento scaduto». La **NOTA** è per quello che
@@ -126,7 +140,8 @@ sono buchi. I dati dell'associazione in testa alle ricevute si cambiano da
 
 Il certificato è un dato sulla salute: lo vede solo la segreteria, non gli
 istruttori, e non va scritto da nessun'altra parte (nemmeno nelle note). In
-prova il file resta solo finché la pagina è aperta.
+prova i file di prima della carta non si aprono: restano solo finché la
+pagina è aperta, e si possono cancellare lo stesso.
 
 ## Il nucleo familiare
 

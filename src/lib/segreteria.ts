@@ -100,14 +100,23 @@ export interface PersonaSeg {
   /** Anche quelle terminate: dicono da quando a quando. */
   iscrizioni: IscrizioneSeg[]
   certificato: CertificatoSeg
+  /** La copia del documento d'identità (per un minore, quello del genitore) è in segreteria, su carta. */
+  documento: boolean
   pagamento: PagamentoSeg
   /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`). Solo in prova, per ora. */
   nucleo?: string
 }
 
-/** Il certificato medico: fino a quando vale, e se il file c'è. */
+/**
+ * Il certificato medico: fino a quando vale. Il certificato vero sta su
+ * carta, in segreteria.
+ */
 export interface CertificatoSeg {
   scade?: string
+  /**
+   * C'è ancora il file caricato nell'app, di prima della carta: da stampare
+   * e cancellare.
+   */
   conFile: boolean
 }
 
@@ -403,15 +412,16 @@ export interface DatiSegreteria {
   attivaPersona(personaId: string, attiva: boolean): Promise<void>
   iscrivi(personaId: string, corsoId: string): Promise<void>
   termina(personaId: string, corsoId: string): Promise<void>
-  /**
-   * Il certificato medico: la scadenza e, se c'è, il file nuovo, che prende
-   * il posto del vecchio. Senza file cambia solo la scadenza.
-   */
-  salvaCertificato(personaId: string, scade: string, file?: File): Promise<void>
-  /** Toglie scadenza e file. */
+  /** Il certificato medico, che sta su carta in segreteria: fino a quando vale. */
+  salvaCertificato(personaId: string, scade: string): Promise<void>
+  /** Toglie la scadenza, e il file di prima se c'è ancora. */
   togliCertificato(personaId: string): Promise<void>
-  /** Il file del certificato, o `null` se non c'è. */
+  /** Il file del certificato di prima della carta, o `null` se non c'è: per stamparlo. */
   apriCertificato(personaId: string): Promise<FileSeg | null>
+  /** Il file di prima, stampato: si cancella per sempre, la scadenza resta. */
+  cancellaFileCertificato(personaId: string): Promise<void>
+  /** Se la copia del documento d'identità è in segreteria. */
+  salvaDocumento(personaId: string, inSegreteria: boolean): Promise<void>
   salvaPagamento(personaId: string, p: PagamentoSeg): Promise<void>
 
   /**
@@ -551,9 +561,12 @@ export const AVVISO_CERTIFICATO = 30
 
 export type ComeCertificato = 'manca' | 'scaduto' | 'in_scadenza' | 'valido'
 
-/** Senza file o senza data il certificato non c'è: in sala non si entra. */
-export function comeCertificato(c: CertificatoSeg, oggi: string): ComeCertificato {
-  if (!c.scade || !c.conFile) return 'manca'
+/**
+ * Senza data il certificato non c'è: in sala non si entra. La data la scrive
+ * la segreteria quando ha il foglio in mano, quindi basta quella.
+ */
+export function comeCertificato(c: Pick<CertificatoSeg, 'scade'>, oggi: string): ComeCertificato {
+  if (!c.scade) return 'manca'
   if (c.scade < oggi) return 'scaduto'
   return c.scade <= spostaGiorno(oggi, AVVISO_CERTIFICATO) ? 'in_scadenza' : 'valido'
 }

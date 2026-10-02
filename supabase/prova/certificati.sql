@@ -1,5 +1,6 @@
--- Il certificato medico e il pagamento: li vede e li cambia solo la
--- segreteria, e i file stanno nella cartella della persona.
+-- Il certificato medico, il documento e il pagamento: li vede e li cambia
+-- solo la segreteria. Certificato e documento stanno su carta: di file
+-- nuovi non ne entrano, e quelli di prima li legge e li cancella solo lei.
 -- Si lancia dopo finto-supabase.sql e i sette file dello schema.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
@@ -33,17 +34,23 @@ begin
 end $$;
 grant execute on function tenta(text), atteso(text, text, text), chi(text) to anon, authenticated;
 
+-- Un database di prima della carta: il contenitore c'è, con dentro il
+-- certificato di Luca caricato allora.
+insert into storage.buckets (id, name, public) values ('certificati', 'certificati', false);
+insert into storage.objects (bucket_id, name) values ('certificati', 'aaaaaaaa-0000-0000-0000-000000000003/certificato-1.pdf');
+
 \echo ''
 \echo '--- 1. la segreteria ---'
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
-select atteso('carica il certificato di Luca',
-  tenta($$insert into storage.objects (bucket_id, name) values ('certificati', 'aaaaaaaa-0000-0000-0000-000000000003/certificato-1.pdf')$$), 'FATTO (1 righe)');
-select atteso('un nome inventato no',
-  tenta($$insert into storage.objects (bucket_id, name) values ('certificati', 'aaaaaaaa-0000-0000-0000-000000000003/virus.exe')$$), 'NEGATO: …');
-select atteso('scrive la scadenza e il file',
+select atteso('il certificato non si carica più, nemmeno lei',
+  tenta($$insert into storage.objects (bucket_id, name) values ('certificati', 'aaaaaaaa-0000-0000-0000-000000000003/certificato-2.pdf')$$), 'NEGATO: …');
+select atteso('scrive la scadenza (e il file di prima, com''era)',
   tenta($$insert into schede_iscritti (persona_id, certificato_scade, certificato_file) values
     ('aaaaaaaa-0000-0000-0000-000000000003', current_date + 200, 'aaaaaaaa-0000-0000-0000-000000000003/certificato-1.pdf')$$), 'FATTO (1 righe)');
+select atteso('il documento non è ancora in segreteria', (select documento_in_segreteria::text from schede_iscritti), 'false');
+select atteso('segna il documento in segreteria',
+  tenta($$update schede_iscritti set documento_in_segreteria = true where persona_id = 'aaaaaaaa-0000-0000-0000-000000000003'$$), 'FATTO (1 righe)');
 select atteso('il server scrive chi è stato', (select p.nome from schede_iscritti s join persone p on p.id = s.cambiata_da), 'Anna');
 select atteso('chi non ha scritto niente del pagamento deve pagare', (select pagamento::text from schede_iscritti), 'da_pagare');
 select atteso('segna il pagamento del trimestre',
@@ -56,7 +63,7 @@ select atteso('il file di Luca non va sulla scheda di Sara',
 select atteso('Sara, pagato in parte, senza certificato',
   tenta($$insert into schede_iscritti (persona_id, pagamento, pagamento_nota) values
     ('aaaaaaaa-0000-0000-0000-000000000004', 'in_parte', 'mancano 50 €')$$), 'FATTO (1 righe)');
-select atteso('vede i file', (select count(*)::text from storage.objects where bucket_id = 'certificati'), '1');
+select atteso('vede il file di prima', (select count(*)::text from storage.objects where bucket_id = 'certificati'), '1');
 reset role;
 
 \echo ''
@@ -92,7 +99,17 @@ select atteso('non carica un certificato',
 reset role;
 
 \echo ''
-\echo '--- 5. la persona che se ne va si porta via la scheda ---'
+\echo '--- 5. la segreteria stampa il file di prima e lo cancella ---'
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('lo cancella', tenta($$delete from storage.objects where bucket_id = 'certificati'$$), 'FATTO (1 righe)');
+select atteso('e toglie il nome dalla scheda, la scadenza resta',
+  tenta($$update schede_iscritti set certificato_file = null where persona_id = 'aaaaaaaa-0000-0000-0000-000000000003'$$), 'FATTO (1 righe)');
+select atteso('la scadenza c''è ancora', (select (certificato_scade is not null and certificato_file is null)::text from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000003'), 'true');
+reset role;
+
+\echo ''
+\echo '--- 6. la persona che se ne va si porta via la scheda ---'
 delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000004';
 select atteso('resta solo quella di Luca', (select count(*)::text from schede_iscritti), '1');
 

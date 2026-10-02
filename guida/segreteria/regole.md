@@ -95,10 +95,13 @@ ricevute si fanno dalla scheda di un iscritto (vedi
 - **L'informativa** — lo stato dell'informativa privacy che vede chi si
   iscrive. Finché è una **BOZZA DA APPROVARE**, va letta e fatta propria dalla
   palestra, che è titolare del trattamento.
-- **DATI SANITARI: SOLO IL CERTIFICATO** — il certificato medico si carica
-  solo nella scheda dell'iscritto (vedi [Iscritti](iscritti.md)), dove lo vede
-  la segreteria e nessun altro. Patologie, allergie e simili non vanno scritte
-  da nessuna parte nell'app, nemmeno nelle note.
+- **DATI SANITARI: SOLO IL CERTIFICATO, SU CARTA** — il certificato medico si
+  tiene su carta, nella cartellina in un armadio chiuso; nell'app si scrive
+  solo fino a quando vale, nella scheda dell'iscritto (vedi
+  [Iscritti](iscritti.md)), dove lo vede la segreteria e nessun altro. Lo
+  stesso per la copia del documento d'identità. Se arrivano per email o
+  WhatsApp, si stampano e si cancellano da lì. Patologie, allergie e simili
+  non vanno scritte da nessuna parte nell'app, nemmeno nelle note.
 - **ESPORTA I DATI DI UNA PERSONA** — si sceglie chi li ha chiesti e si preme
   **ESPORTA**: un file con anagrafica, iscrizioni, presenze, certificato, pagamento e ricevute. È quello che una
   persona ha diritto di chiedere.

@@ -34,7 +34,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 4. `04-tablet.sql` — il tablet di sala e i PIN degli istruttori
 5. `05-segreteria.sql` — le lezioni che seguono i cambi dei corsi, il primo accesso
 6. `06-iscrizioni.sql` — il modulo di iscrizione, i suoi file, e chi può chiamare cosa
-7. `07-certificati-pagamenti.sql` — il certificato medico e il pagamento degli iscritti
+7. `07-certificati-pagamenti.sql` — il certificato medico (su carta: qui la scadenza), il documento d'identità e il pagamento degli iscritti
 8. `08-timer.sql` — il timer: la libreria della palestra, i timer personali e dei corsi, lo storico, le preferenze
 9. `09-musica.sql` — la musica delle sale, che il tablet fa partire dalla sua barra
 10. `10-timer-sale.sql` — il timer dei tablet di sala, uguale per tutti
@@ -59,7 +59,11 @@ funzioni, quindi dopo va rilanciato anche `06-iscrizioni.sql`.
 Su un database già in uso, dopo un aggiornamento dell'app si rilanciano i
 file cambiati e poi `06-iscrizioni.sql`. Per certificati e pagamenti basta
 lanciare `07-certificati-pagamenti.sql`: finché non c'è, l'elenco degli
-iscritti si vede lo stesso, e salvare un certificato dice che manca. Per la sala dei singoli giorni
+iscritti si vede lo stesso, e salvare un certificato dice che manca. Per il
+certificato e il documento su carta si rilanciano `06-iscrizioni.sql` e
+`07-certificati-pagamenti.sql`: dopo, il modulo non accetta più il documento
+e nel contenitore dei certificati non entra più niente (vedi «Certificato e
+documento su carta», più sotto). Per la sala dei singoli giorni
 (la colonna `ricorrenze.sala_id`) sono `01-schema.sql`, `03-funzioni.sql`,
 `04-tablet.sql` e `05-segreteria.sql`: le lezioni già generate restano dove
 sono. Per il timer basta lanciare `08-timer.sql`, che non chiede di
@@ -312,8 +316,9 @@ corso. `corsi.istruttore_id` resta il primo della lista, quello di riferimento.
 
 Chi si iscrive lo compila dalla pagina pubblica (`iscrizioni/`), senza un accesso: le
 domande di prima (i dati di chi si iscrive, del genitore se è minorenne, la
-residenza, i corsi, come paga) e tre file, cioè il modulo firmato, il
-documento e la ricevuta. La segreteria le trova in **SEGRETERIA → RICHIESTE
+residenza, i corsi, come paga) e due file, cioè il modulo firmato e la
+ricevuta. Il documento d'identità non si carica: si mostra in segreteria, che
+ne tiene la copia su carta. La segreteria le trova in **SEGRETERIA → RICHIESTE
 ONLINE**, guarda i file e la accoglie o la rifiuta. Chi manda una richiesta
 rifiutata non viene avvisato dall'app: va chiamato o scritto a mano.
 
@@ -323,9 +328,12 @@ Cosa fa `06-iscrizioni.sql`:
 - il contenitore **`iscrizioni`** nello Storage, privato: niente link
   pubblici, la segreteria apre i file con un link che dura dieci minuti;
 - chi non ha un accesso può solo chiamare `corsi_aperti()` e
-  `invia_iscrizione()`, e caricare al massimo quattro file (foto o PDF, fino a
-  10 MB) nella cartella della richiesta appena mandata, entro un'ora. Non li
-  può rileggere né sostituire;
+  `invia_iscrizione()`, e caricare al massimo due file, modulo e ricevuta
+  (foto o PDF, fino a 10 MB), nella cartella della richiesta appena mandata,
+  entro un'ora. Non li può rileggere né sostituire;
+- `richieste_con_documento()` dice alla segreteria quali richieste hanno
+  ancora il documento d'identità caricato, di quando il modulo lo chiedeva:
+  RICHIESTE ONLINE le segna **DOCUMENTO DA STAMPARE**;
 - la porta non è spalancata: tre richieste al giorno dalla stessa email, trenta
   all'ora in tutto. I numeri stanno in `iscrizioni_regole()`;
 - accogliere (`accogli_iscrizione`) mette la persona in elenco e la iscrive ai
@@ -343,7 +351,7 @@ Cosa fa `06-iscrizioni.sql`:
   chi non ha un utente, perché è così che le chiama un job.
 
 **Si accende con l'informativa approvata.** Il modulo chiede codici fiscali
-e documenti d'identità, e col database vero l'app lo mostra solo quando
+e dati dei genitori, e col database vero l'app lo mostra solo quando
 l'informativa (`public/informativa.html`) è approvata, cioè quando in
 `src/lib/iscrizione.ts` `INFORMATIVA_BOZZA` è `false`: lo è dal 27 settembre
 2026. Se si rimette a `true` il passo torna al modulo Google
@@ -356,32 +364,56 @@ quello chiedeva altro, vanno allineati tre posti: `invia_iscrizione` qui,
 
 **Per quanto si tengono.** Accolta o rifiutata, una richiesta resta con i suoi
 file finché la segreteria non la elimina («Elimina richiesta e file», nella
-richiesta). Il documento d'identità serve per il tesseramento, poi no: quanto
-tenerlo è una scelta della palestra da mettere nell'informativa.
+richiesta). Il documento d'identità non c'è più fra i file: la copia su carta
+serve per il tesseramento, e l'informativa dice fino a quando si tiene.
 
-### Il certificato medico e il pagamento
+### Il certificato medico, il documento e il pagamento
 
 Nella scheda di ogni iscritto (**SEGRETERIA → ISCRITTI**) la segreteria
-carica il certificato medico, con la data fino a cui vale, e segna se ha
-pagato: da pagare, in parte o pagato, e per il trimestre fino a quando.
-L'elenco dice chi non è in regola e si filtra.
+scrive fino a quando vale il certificato medico, segna se la copia del
+documento d'identità è in segreteria, e se ha pagato: da pagare, in parte o
+pagato, e per il trimestre fino a quando. L'elenco dice chi non è in regola
+e si filtra.
 
 Cosa fa `07-certificati-pagamenti.sql`:
 
 - la tabella `schede_iscritti`, una riga per persona, che legge e cambia solo
   la segreteria. Sta a parte da `persone` apposta: gli istruttori leggono
   `persone` per l'appello, e il certificato è un dato sulla salute. Chi l'ha
-  cambiata e quando lo scrive il server;
-- il contenitore **`certificati`** nello Storage, privato, solo per la
-  segreteria: il file sta in `<persona>/certificato-<n>.<est>`, si apre con un
-  link di dieci minuti, e quando ne arriva uno nuovo il vecchio si cancella;
-- la riga se ne va con la persona (`on delete cascade`). Il file, se la
-  persona si cancella dal database a mano, resta nel contenitore e va tolto
-  a mano anche lui.
+  cambiata e quando lo scrive il server. `documento_in_segreteria` dice se
+  la copia del documento è nella cartellina;
+- le policy del contenitore **`certificati`**, dove c'è ancora: la segreteria
+  legge e cancella i file di prima, e nessuno ne carica di nuovi;
+- la riga se ne va con la persona (`on delete cascade`). Un file di prima,
+  se la persona si cancella dal database a mano, resta nel contenitore e va
+  tolto a mano anche lui.
 
-Il modulo online non chiede il certificato: si consegna in segreteria, che lo
-carica. L'esportazione dei dati di una persona (IMPOSTAZIONI) lo
-comprende.
+Il modulo online non chiede né il certificato né il documento: si portano in
+segreteria. L'esportazione dei dati di una persona (IMPOSTAZIONI) comprende
+la scadenza e se il documento c'è.
+
+### Certificato e documento su carta
+
+Il certificato medico e la copia del documento d'identità si tengono **su
+carta**, in segreteria, in un armadio chiuso: nell'app restano solo la data
+fino a cui vale il certificato e se il documento c'è. Prima il certificato si
+caricava nella scheda e il documento nel modulo: quei file si stampano e si
+cancellano, e poi i contenitori non tengono più niente di sanitario.
+
+1. Si rilanciano `06-iscrizioni.sql` e `07-certificati-pagamenti.sql`. Da lì
+   il modulo non accetta più il documento, e nel contenitore `certificati` non
+   entra più niente.
+2. In **ISCRITTI**, **CERTIFICATI DA STAMPARE** mostra chi ha ancora il file:
+   dalla scheda **APRI PER STAMPARE**, si stampa, si mette nella cartellina, e
+   **STAMPATO, CANCELLALO**.
+3. In **RICHIESTE ONLINE**, **DA STAMPARE** mostra le richieste col
+   documento: lo stesso, dalla richiesta. Accolta, la scheda dell'iscritto
+   segna da sé che la copia è in segreteria.
+4. Quando i due filtri non compaiono più, nel pannello di Supabase,
+   **Storage**, il contenitore `certificati` è vuoto: si elimina (i tre
+   puntini → **Delete bucket**), dal pannello e non dall'SQL Editor: i file
+   dello Storage si cancellano dallo Storage. Il contenitore `iscrizioni`
+   resta, per moduli e ricevute.
 
 ## 6. Il calendario
 
@@ -554,7 +586,8 @@ copia che resta alla palestra la fa GitHub Actions, con
 `.github/workflows/backup.yml`: ogni lunedì alle 3:17 UTC, o quando serve
 (per esempio prima di lanciare un file SQL nuovo) dalla segreteria, più
 sotto, o da **Actions → Backup del database → Run workflow**. Copia il database, non i file dello Storage
-(documenti d'identità, certificati, clip della voce).
+(moduli firmati, ricevute, clip della voce). Certificati e documenti d'identità
+stanno su carta, in segreteria.
 
 Servono due *repository secrets* in **Settings → Secrets → Actions**:
 
@@ -651,11 +684,13 @@ Storage ricaricati a mano.
   scaduto e `pulisci_presenze()` lo cancella; il periodo di partenza è
   ventiquattro mesi e si cambia in **IMPOSTAZIONI**. È una scelta della
   palestra, non una regola che decide il codice.
-- **Il certificato medico è un dato sanitario.** È l'unico che l'app tiene,
-  perché senza non si fa sport, e lo vede solo la segreteria. È un'altra
-  categoria di dati (art. 9 del GDPR), con altri obblighi: la palestra deve
-  dirlo nell'informativa (lo dice) e decidere per quanto tenerlo (finché
-  vale, poi via quando arriva il nuovo o l'iscritto smette). Patologie e simili, invece, non ci vanno.
+- **Il certificato medico è un dato sanitario.** È l'unico che la palestra
+  tiene, perché senza non si fa sport. È un'altra categoria di dati (art. 9
+  del GDPR), con altri obblighi: per questo il foglio sta su carta, in un
+  armadio chiuso, e nell'app c'è solo fino a quando vale, che vede solo la
+  segreteria. La palestra deve dirlo nell'informativa (lo dice) e decidere
+  per quanto tenerlo (finché vale, poi via quando arriva il nuovo o
+  l'iscritto smette). Patologie e simili, invece, non ci vanno.
 
 ## Provare lo schema senza Supabase
 
@@ -670,8 +705,10 @@ e il blocco, e che il tablet non veda niente più di quel che deve;
 `segreteria.sql` prova cosa succede alle lezioni quando un corso, o uno dei
 suoi giorni, cambia sala, quando cambiano istruttore o giorni, o si archivia, e il primo accesso; `iscrizioni.sql`
 prova il modulo di iscrizione: cosa può fare chi non ha un accesso, i limiti
-sui file, e chi accoglie le richieste; `certificati.sql` prova che certificati
-e pagamenti li veda e li cambi solo la segreteria; `timer.sql` prova il timer:
+sui file (e che il documento non entri più), e chi accoglie le richieste;
+`certificati.sql` prova che certificati, documento e pagamenti li veda e li
+cambi solo la segreteria, e che di certificati nuovi nello Storage non ne
+entrino; `timer.sql` prova il timer:
 chi vede e cambia i timer della palestra, i propri e quelli dei colleghi, il
 tablet che li apre senza scriverli, lo storico e le preferenze; `musica.sql`
 prova la musica delle sale: la cura la segreteria, e il tablet vede solo la

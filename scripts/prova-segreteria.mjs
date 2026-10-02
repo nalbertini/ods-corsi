@@ -422,7 +422,7 @@ console.log('\n11. le risposte del modulo Google')
   ok('una risposta nuova aggiunge e non cancella', [(await s.intestatarioDi(emmaDentro.id)).comune, (await s.intestatarioDi(emmaDentro.id)).indirizzo], ['Rivoli', 'via Roma 1'])
 }
 
-console.log('\nil certificato medico e il pagamento')
+console.log('\nil certificato medico, il documento e il pagamento')
 {
   const tutti = await s.persone()
   const oggi = '2026-09-26'
@@ -437,13 +437,12 @@ console.log('\nil certificato medico e il pagamento')
     return [m.comeCertificato(x.certificato, oggi), m.comePaga(x.pagamento, oggi)]
   }
   ok('tolto: manca', (await come())[0], 'manca')
-  ok('una scadenza senza file non basta', await errore(() => s.salvaCertificato(p.id, '')), 'Serve la data di scadenza del certificato')
-  ok('un file che non è una foto né un PDF no', await errore(() => s.salvaCertificato(p.id, '2027-09-01', { type: 'application/zip', size: 10 })), 'Questo tipo di file non va: serve una foto o un PDF')
-  ok('uno troppo grande no', await errore(() => s.salvaCertificato(p.id, '2027-09-01', { type: 'application/pdf', size: 11 * 1024 * 1024 })), 'Il file è troppo grande: al massimo 10 MB')
-  await s.salvaCertificato(p.id, '2027-09-01', new Blob(['%PDF'], { type: 'application/pdf' }))
-  ok('caricato: valido', (await come())[0], 'valido')
+  ok('senza la data no', await errore(() => s.salvaCertificato(p.id, '')), 'Serve la data di scadenza del certificato')
+  await s.salvaCertificato(p.id, '2027-09-01')
+  ok('su carta, basta la scadenza: valido', (await come())[0], 'valido')
+  ok('nessun file nell\'app', (await s.persone()).find((y) => y.id === p.id).certificato.conFile, false)
   await s.salvaCertificato(p.id, '2026-10-10')
-  ok('la scadenza fra due settimane: in scadenza, il file resta', (await come())[0], 'in_scadenza')
+  ok('la scadenza fra due settimane: in scadenza', (await come())[0], 'in_scadenza')
   await s.salvaCertificato(p.id, '2026-09-25')
   ok('ieri: scaduto', (await come())[0], 'scaduto')
 
@@ -454,8 +453,20 @@ console.log('\nil certificato medico e il pagamento')
   ok('pagato il trimestre, con la nota pulita', [m.comePaga(x.pagamento, oggi), x.pagamento.nota], ['pagato', 'trimestre'])
   ok('passato il trimestre torna da pagare', m.comePaga(x.pagamento, '2027-01-01'), 'scaduto')
   ok('una nota lunghissima no', await errore(() => s.salvaPagamento(p.id, { stato: 'pagato', nota: 'x'.repeat(301) })), 'La nota del pagamento è troppo lunga: al massimo 300 caratteri')
+  await s.salvaDocumento(p.id, true)
+  ok('il documento è in segreteria', (await s.persone()).find((y) => y.id === p.id).documento, true)
   const e = await s.esporta(p.id)
-  ok('nell\'esportazione dei dati', [e.certificato_e_pagamento.certificato_scade, e.certificato_e_pagamento.stato], ['2026-09-25', 'pagato'])
+  ok('nell\'esportazione dei dati', [e.certificato_e_pagamento.certificato_scade, e.certificato_e_pagamento.stato, e.certificato_e_pagamento.documento_in_segreteria], ['2026-09-25', 'pagato', true])
+  await s.salvaDocumento(p.id, false)
+  ok('e non c\'è più', (await s.persone()).find((y) => y.id === p.id).documento, false)
+
+  // Chi aveva il file caricato prima della carta: si stampa e si cancella, la scadenza resta.
+  const vecchio = tutti.find((x) => x.certificato.conFile)
+  ok('in prova qualcuno ha ancora il file da stampare', !!vecchio, true)
+  await s.cancellaFileCertificato(vecchio.id)
+  const dopo = (await s.persone()).find((y) => y.id === vecchio.id)
+  ok('stampato e cancellato: la scadenza resta', [dopo.certificato.conFile, dopo.certificato.scade], [false, vecchio.certificato.scade])
+  ok('e il file non si apre più', await s.apriCertificato(vecchio.id), null)
 }
 
 console.log('\nla musica delle sale')
