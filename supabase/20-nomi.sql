@@ -17,9 +17,14 @@
 -- `06-iscrizioni.sql`.
 -- ---------------------------------------------------------------------------
 
+-- Non `initcap`: sul database di Supabase lascia minuscola la lettera dopo
+-- l'apostrofo, «D'amico». Qui, come nell'app, la maiuscola va dopo qualunque
+-- cosa non sia una lettera o una cifra.
 create or replace function nome_proprio(x text) returns text
   language sql immutable parallel safe set search_path = public as $$
-  select initcap(regexp_replace(btrim(x), '\s+', ' ', 'g'))
+  select coalesce(string_agg(case when i = 1 or substr(s, i - 1, 1) !~ '[[:alpha:][:digit:]]' then upper(substr(s, i, 1)) else substr(s, i, 1) end, '' order by i), s)
+  from (select lower(regexp_replace(btrim(x), '\s+', ' ', 'g')) as s) t left join generate_series(1, length(s)) i on true
+  group by s
 $$;
 
 create or replace function persona_nomi() returns trigger language plpgsql set search_path = public as $$
@@ -28,8 +33,7 @@ begin
   new.cognome := nome_proprio(new.cognome);
   return new;
 end $$;
-drop trigger if exists persone_nomi on persone;
-create trigger persone_nomi before insert or update of nome, cognome on persone
+create or replace trigger persone_nomi before insert or update of nome, cognome on persone
   for each row execute function persona_nomi();
 
 create or replace function richiesta_nomi() returns trigger language plpgsql set search_path = public as $$
@@ -40,8 +44,7 @@ begin
   new.genitore_cognome := nome_proprio(new.genitore_cognome);
   return new;
 end $$;
-drop trigger if exists richieste_nomi on richieste_iscrizione;
-create trigger richieste_nomi before insert or update of nome, cognome, genitore_nome, genitore_cognome on richieste_iscrizione
+create or replace trigger richieste_nomi before insert or update of nome, cognome, genitore_nome, genitore_cognome on richieste_iscrizione
   for each row execute function richiesta_nomi();
 
 create or replace function anagrafica_nomi() returns trigger language plpgsql set search_path = public as $$
@@ -50,8 +53,7 @@ begin
   new.genitore_cognome := nome_proprio(new.genitore_cognome);
   return new;
 end $$;
-drop trigger if exists anagrafiche_nomi on anagrafiche;
-create trigger anagrafiche_nomi before insert or update of genitore_nome, genitore_cognome on anagrafiche
+create or replace trigger anagrafiche_nomi before insert or update of genitore_nome, genitore_cognome on anagrafiche
   for each row execute function anagrafica_nomi();
 
 -- Solo all'emissione: dopo, la ricevuta è quella che ha il socio.
@@ -66,8 +68,7 @@ begin
   end loop;
   return new;
 end $$;
-drop trigger if exists ricevute_nomi on ricevute;
-create trigger ricevute_nomi before insert on ricevute
+create or replace trigger ricevute_nomi before insert on ricevute
   for each row execute function ricevuta_nomi();
 
 -- I nomi già salvati. Le anagrafiche senza toccare chi le ha cambiate e
