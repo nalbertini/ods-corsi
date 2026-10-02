@@ -100,6 +100,8 @@ export interface PersonaSeg {
   iscrizioni: IscrizioneSeg[]
   certificato: CertificatoSeg
   pagamento: PagamentoSeg
+  /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`). Solo in prova, per ora. */
+  nucleo?: string
 }
 
 /** Il certificato medico: fino a quando vale, e se il file c'è. */
@@ -349,6 +351,15 @@ export interface DatiSegreteria {
   /** Il file del certificato, o `null` se non c'è. */
   apriCertificato(personaId: string): Promise<FileSeg | null>
   salvaPagamento(personaId: string, p: PagamentoSeg): Promise<void>
+
+  /**
+   * Il nucleo familiare (vedi `nucleo.ts`): mette una persona nel nucleo di
+   * un titolare, la toglie, o la fa titolare al posto di quello di prima.
+   * Solo in prova, per ora: col database rispondono che non c'è ancora.
+   */
+  mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
+  togliDalNucleo(personaId: string): Promise<void>
+  rendiTitolare(personaId: string): Promise<void>
 
   /** Le ricevute di una persona, o tutte, dalla più recente; anche le annullate. */
   ricevute(personaId?: string): Promise<Ricevuta[]>

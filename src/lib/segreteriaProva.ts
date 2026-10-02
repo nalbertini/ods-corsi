@@ -1,5 +1,6 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
+import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
@@ -327,6 +328,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
               .map((i) => ({ corsoId: i.corsoId, dal: i.dal, al: i.al })),
             certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file },
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
+            nucleo: p.nucleo,
           }),
         )
     },
@@ -425,6 +427,27 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const nota = dati.nota?.trim() || undefined
       if (nota && nota.length > 300) throw new Error('La nota del pagamento è troppo lunga: al massimo 300 caratteri')
       a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, pagamento: { stato: dati.stato, fino: dati.fino || undefined, nota } } : p))
+      salva()
+    },
+
+    async mettiNelNucleo(personaId, titolareId) {
+      const iscritti = a().persone.filter((p) => p.ruolo === 'iscritto')
+      const no = cosaNonVaNucleo(iscritti, personaId, titolareId)
+      if (no) throw new Error(no)
+      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, nucleo: titolareId } : p))
+      salva()
+    },
+
+    async togliDalNucleo(personaId) {
+      if (!persona(personaId).nucleo) throw new Error('Non è nel nucleo di nessuno')
+      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, nucleo: undefined } : p))
+      salva()
+    },
+
+    async rendiTitolare(personaId) {
+      const m = nuovoTitolare(a().persone.filter((p) => p.ruolo === 'iscritto'), personaId)
+      if (typeof m === 'string') throw new Error(m)
+      a().persone = a().persone.map((p) => (m.has(p.id) ? { ...p, nucleo: m.get(p.id) ?? undefined } : p))
       salva()
     },
 

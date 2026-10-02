@@ -86,8 +86,8 @@ il titolare la trova nella sua pagina.
   password da ricordare. La segreteria non dovrebbe gestire niente di più.
 - **Il nucleo sul database**: chi è titolare di chi, e un genitore che non
   frequenta ma tiene il nucleo dei figli (in prova il titolare è sempre un
-  iscritto). La segreteria dovrebbe vedere e cambiare il nucleo dalla scheda
-  di un iscritto.
+  iscritto). In prova la segreteria lo cambia dalla scheda di un iscritto
+  ([NUCLEO FAMILIARE](segreteria/iscritti.md#il-nucleo-familiare)).
 - **Lo sconto famiglia sulle ricevute**: oggi la segreteria lo fa a mano; la
   ricevuta potrebbe proporlo da sé.
 - **Cosa può leggere un iscritto**: solo le sue righe, dal database, con

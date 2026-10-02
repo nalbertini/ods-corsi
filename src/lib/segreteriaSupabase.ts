@@ -81,6 +81,7 @@ type Scheda = { certificato_scade: string | null; certificato_file: string | nul
 
 /** I certificati medici: un contenitore privato, che apre solo la segreteria (`07-certificati-pagamenti.sql`). */
 const CERTIFICATI = 'certificati'
+const NUCLEO_SOLO_PROVA = 'Il nucleo familiare c’è solo in prova, per ora: il database non lo tiene ancora'
 const DURATA_LINK = 600
 
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
@@ -529,6 +530,17 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         return p.id
       }
       return (ok(await db.from('persone').insert({ ...riga, ruolo: 'iscritto' }).select('id').single()) as { id: string }).id
+    },
+
+    // Il nucleo familiare c'è solo in prova, per ora (vedi `nucleo.ts`).
+    async mettiNelNucleo() {
+      throw new Error(NUCLEO_SOLO_PROVA)
+    },
+    async togliDalNucleo() {
+      throw new Error(NUCLEO_SOLO_PROVA)
+    },
+    async rendiTitolare() {
+      throw new Error(NUCLEO_SOLO_PROVA)
     },
 
     async attivaPersona(personaId, attiva) {
