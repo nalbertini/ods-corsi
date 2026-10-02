@@ -30,6 +30,10 @@ Sopra l'elenco si legge quante ce ne sono, confermate e da confermare. Se
 qualcuna da confermare è in un altro mese, lo dice, e **vedile tutte** le fa
 vedere, di tutti i mesi.
 
+**SCARICA CSV** scarica l'elenco così come si vede, coi filtri, in un foglio
+da aprire con Excel: giorno, orario e ore della lezione, istruttore, corso, chi
+era previsto, sala, quando è entrato, stato e chi l'ha decisa.
+
 ## Decidere
 
 - **CONFERMA** — l'istruttore c'era davvero: ha fatto lezione, o ha aiutato.

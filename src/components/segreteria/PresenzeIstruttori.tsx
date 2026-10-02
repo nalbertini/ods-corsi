@@ -8,6 +8,45 @@ import { Guaio, Testa, useAvviso, useCarica } from './comune'
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 const perNome = (a: string, b: string) => a.localeCompare(b, 'it')
 
+const STATI: Record<StatoPresenzaIstruttore, string> = { confermata: 'confermata', da_confermare: 'da confermare', rifiutata: 'rifiutata' }
+const minuti = (x: PresenzaIstruttoreSeg) => Math.round((Date.parse(x.fine) - Date.parse(x.inizio)) / 60_000)
+
+/**
+ * L'elenco come si vede, coi filtri, in un foglio da aprire con Excel:
+ * punto e virgola e BOM, come il registro delle presenze. Le ore sono
+ * all'italiana, «1,5», per moltiplicarle per la paga oraria.
+ */
+function scaricaCsv(righe: PresenzaIstruttoreSeg[], nome: string) {
+  const q = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
+  const testo = [
+    ['data', 'inizio', 'fine', 'ore', 'istruttore', 'corso', 'previsto', 'sala', 'entrato', 'stato', 'gestita da', 'gestita il'].join(';'),
+    ...righe.map((x) =>
+      [
+        chiaveGiorno(new Date(x.inizio)),
+        oraDi(x.inizio),
+        oraDi(x.fine),
+        (minuti(x) / 60).toLocaleString('it-IT', { maximumFractionDigits: 2 }),
+        x.nome,
+        x.corso,
+        x.previsti,
+        x.sala ?? '',
+        oraDi(x.entratoIl),
+        STATI[x.stato],
+        x.gestitaIl ? (x.gestitaDa ?? '') : x.prevista ? 'da sé: era previsto' : '',
+        x.gestitaIl ? `${chiaveGiorno(new Date(x.gestitaIl))} ${oraDi(x.gestitaIl)}` : '',
+      ]
+        .map(q)
+        .join(';'),
+    ),
+  ].join('\r\n')
+  const url = URL.createObjectURL(new Blob(['\ufeff' + testo], { type: 'text/csv;charset=utf-8' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${nome}.csv`.toLowerCase().replace(/\s+/g, '-')
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 /**
  * Gli istruttori entrati col PIN sul tablet di una sala durante una lezione,
  * in elenco dalla lezione più recente, filtrati per mese, corso, istruttore e
@@ -131,6 +170,22 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           <option value="confermata">Confermate</option>
           <option value="rifiutata">Rifiutate</option>
         </select>
+        <button
+          type="button"
+          className="sg-btn sg-btn-linea"
+          disabled={!lista.length}
+          onClick={() =>
+            scaricaCsv(
+              // Dalla più vecchia, come si legge un foglio.
+              [...lista].reverse(),
+              ['presenze istruttori', m ? m.nome : 'ultimo anno', corso, istruttori.find(([id]) => id === istruttore)?.[1] ?? '', stato ? STATI[stato] : '']
+                .filter(Boolean)
+                .join(' '),
+            )
+          }
+        >
+          SCARICA CSV
+        </button>
       </div>
 
       <p className="sg-sotto" style={{ maxWidth: 760, margin: 0 }}>
