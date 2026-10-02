@@ -338,8 +338,8 @@ export interface PresenzaIstruttoreSeg {
 export type ComePresenzaIstruttore = 'pin' | 'appello' | 'segreteria'
 
 /**
- * Una lezione tenuta (passata, con qualcuno presente) in cui qualche
- * istruttore previsto non ha una presenza: la segreteria sceglie chi c'era
+ * Una lezione tenuta (passata, con qualcuno presente) in cui nessun
+ * istruttore ha una presenza: la segreteria sceglie chi c'era fra i previsti
  * (23-istruttori-dalle-lezioni.sql).
  */
 export interface LezioneSenzaIstruttore {
@@ -512,7 +512,7 @@ export interface DatiSegreteria {
   presenzeIstruttori(giorni: number): Promise<PresenzaIstruttoreSeg[]>
   /** Conferma, o rifiuta, una presenza di un istruttore. */
   gestisciPresenzaIstruttore(id: string, conferma: boolean): Promise<void>
-  /** Le lezioni tenute in cui manca la presenza di qualche istruttore previsto, dalla più recente. */
+  /** Le lezioni tenute in cui nessun istruttore ha una presenza, dalla più recente. */
   lezioniSenzaIstruttore(): Promise<LezioneSenzaIstruttore[]>
   /** Chi, fra i previsti senza presenza, ha fatto la lezione: confermati loro, rifiutati gli altri. */
   segnaIstruttoriLezione(sessioneId: string, presenti: string[]): Promise<void>

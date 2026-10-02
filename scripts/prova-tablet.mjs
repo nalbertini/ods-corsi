@@ -214,18 +214,22 @@ console.log('\n9. chi fa l\'appello c\'era, e le lezioni tenute senza istruttore
   await app.segna(lotta3, d3.elenco[0].id, 'presente')
   ok('dalla segreteria non si segna nessuno', (await seg.presenzeIstruttori(365)).filter((x) => x.sessioneId === lotta3 && x.come === 'appello').length, 0)
 
+  // Lunedì 28 la segreteria fa l'appello del Lotta 2 dal banco: nessun istruttore si è segnato.
+  const lunedi = 's@lotta-2@2026-09-28@17:00'
+  await app.segna(lunedi, (await app.dettaglio(lunedi)).elenco[0].id, 'presente')
+
   m.archivio.dati.proposteIstruttoriDal = '2026-09-01T00:00:00'
   const proposte = await seg.lezioniSenzaIstruttore()
   ok('Maurizio, segnato, non si propone', proposte.some((l) => l.sessioneId === maurizio.id), false)
-  const l3 = proposte.find((l) => l.sessioneId === lotta3)
-  ok('il Lotta 3 si propone, con chi lo insegna', l3 && l3.previsti.map((x) => `${x.nome} ${x.stato ?? '-'}`), ['Maura confermata', 'Federico -'])
-  const l2 = proposte.find((l) => l.sessioneId === venerdi)
-  ok('il Lotta 2 di Fabio si propone ancora: Maura e Federico non ci sono', l2 && l2.previsti.map((x) => x.stato ?? '-'), ['-', '-'])
-  ok('non uno fuori dai previsti', await errore(() => seg.segnaIstruttoriLezione(venerdi, ['i-fabio'])), 'si sceglie fra gli istruttori previsti')
-  await seg.segnaIstruttoriLezione(venerdi, ['i-federico'])
-  ok('scelto Federico: confermato', await di(venerdi, 'Federico'), 'confermata segreteria')
-  ok('e Maura rifiutata', await di(venerdi, 'Maura'), 'rifiutata segreteria')
-  ok('e la lezione esce dall\'elenco', (await seg.lezioniSenzaIstruttore()).some((l) => l.sessioneId === venerdi), false)
+  ok('il Lotta 3, con Maura segnata col PIN, nemmeno: ne basta uno', proposte.some((l) => l.sessioneId === lotta3), false)
+  ok('il Lotta 2 di Fabio nemmeno, anche se non era previsto', proposte.some((l) => l.sessioneId === venerdi), false)
+  const l2 = proposte.find((l) => l.sessioneId === lunedi)
+  ok('il Lotta 2 di lunedì si propone, coi previsti', l2 && l2.previsti.map((x) => `${x.nome} ${x.stato ?? '-'}`), ['Maura -', 'Federico -'])
+  ok('non uno fuori dai previsti', await errore(() => seg.segnaIstruttoriLezione(lunedi, ['i-fabio'])), 'si sceglie fra gli istruttori previsti')
+  await seg.segnaIstruttoriLezione(lunedi, ['i-federico'])
+  ok('scelto Federico: confermato', await di(lunedi, 'Federico'), 'confermata segreteria')
+  ok('e Maura rifiutata', await di(lunedi, 'Maura'), 'rifiutata segreteria')
+  ok('e la lezione esce dall\'elenco', (await seg.lezioniSenzaIstruttore()).some((l) => l.sessioneId === lunedi), false)
   m.archivio.dati.proposteIstruttoriDal = '2026-12-01T00:00:00'
   ok('quelle di prima non si propongono', (await seg.lezioniSenzaIstruttore()).length, 0)
 }

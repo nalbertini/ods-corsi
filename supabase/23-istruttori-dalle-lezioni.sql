@@ -11,8 +11,9 @@
 -- che insegni anche e sia prevista su quella lezione.
 --
 -- Le lezioni tenute. Una lezione passata, non annullata, con almeno un
--- presente, in cui qualcuno degli istruttori previsti non ha una presenza
--- (né col PIN né dall'appello) va proposta alla segreteria: con un istruttore
+-- presente, in cui nessun istruttore ha una presenza (né col PIN né
+-- dall'appello: ne basta uno, anche non previsto, e la lezione è coperta)
+-- va proposta alla segreteria: con un istruttore
 -- solo per confermarlo, con più d'uno per scegliere chi c'era. Chi non è
 -- scelto si segna rifiutato, e la lezione esce dall'elenco. Si propongono
 -- solo le lezioni da quando c'è questo file (`impostazioni.proposte_istruttori_dal`):
@@ -76,9 +77,9 @@ create or replace trigger presenze_istruttore_dall_appello after insert or updat
   for each row execute function istruttore_dall_appello();
 
 /**
- * Le lezioni tenute in cui qualcuno degli istruttori previsti non ha una
- * presenza, dalla più recente: per ognuna i previsti, con lo stato della loro
- * presenza se ce l'hanno. Solo la segreteria.
+ * Le lezioni tenute in cui nessun istruttore ha una presenza, dalla più
+ * recente: per ognuna i previsti (`stato` resta nel risultato, ed è sempre
+ * vuoto). Solo la segreteria.
  */
 create or replace function lezioni_senza_istruttore()
   returns table (sessione_id uuid, corso text, colore text, inizio timestamptz, fine timestamptz, sala text, presenti int, previsti jsonb)
@@ -101,7 +102,8 @@ begin
          from unnest(t.chi) x join persone pe on pe.id = x
          left join presenze_istruttori pi on pi.sessione_id = t.id and pi.persona_id = x)
     from tenute t
-    where exists (select 1 from unnest(t.chi) x where not exists (select 1 from presenze_istruttori pi where pi.sessione_id = t.id and pi.persona_id = x))
+    where cardinality(t.chi) > 0
+      and not exists (select 1 from presenze_istruttori pi where pi.sessione_id = t.id)
     order by t.inizio desc;
 end $$;
 

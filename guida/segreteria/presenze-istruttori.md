@@ -20,20 +20,21 @@ presenze da confermare e le lezioni tenute senza l'istruttore segnato.
 
 ## Le lezioni tenute senza l'istruttore segnato
 
-Una lezione finita, non annullata, con almeno un **presente**, in cui qualcuno
-di chi doveva farla non ha messo il PIN né fatto l'appello, arriva qui, in
-cima, sotto **LEZIONI TENUTE SENZA L'ISTRUTTORE SEGNATO**. Per ognuna: corso,
-giorno, orario, sala, quanti presenti, e chi doveva farla.
+Una lezione finita, non annullata, con almeno un **presente**, in cui nessun
+istruttore ha messo il PIN o fatto l'appello, arriva qui, in cima, sotto
+**LEZIONI TENUTE SENZA L'ISTRUTTORE SEGNATO**. Per ognuna: corso, giorno,
+orario, sala, quanti presenti, e chi doveva farla. Basta un istruttore
+segnato, anche uno non previsto, e la lezione non arriva qui: se la Lotta la
+tengono in due e uno si è segnato, l'altro non si chiede.
 
-- **Un istruttore solo da decidere**: **CONFERMA** se c'era, **NON C'ERA** se
+- **Un istruttore solo previsto**: **CONFERMA** se c'era, **NON C'ERA** se
   no.
 - **Più istruttori** (la Lotta in due, la Preparazione atletica in tre): si
   spuntano quelli che c'erano e si preme **CONFERMA I SCELTI**; senza
   spuntare nessuno il tasto dice **NESSUNO C'ERA**.
 
 Chi è scelto ha la presenza confermata, gli altri previsti rifiutata, e la
-lezione esce dall'elenco. Chi si era già segnato da sé si vede («Maura:
-c'era») e qui non si tocca. Ci si può ripensare dall'elenco qui sotto, con
+lezione esce dall'elenco. Ci si può ripensare dall'elenco qui sotto, con
 **Conferma** o **Rifiuta**.
 
 Si propongono solo le lezioni da quando c'è questa funzione, non quelle di
