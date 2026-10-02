@@ -262,6 +262,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         <span className="esito-testo">
           Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
         </span>
+        <span className="esito-testo">Ricorda di consegnare in segreteria il certificato medico: senza non si partecipa alle lezioni.</span>
         <Tasto onClick={onChiudi}>TORNA ALLE ISCRIZIONI</Tasto>
       </div>
     )
@@ -484,6 +485,13 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
       </Sezione>
 
       <Sezione titolo="I FILE">
+        <div className="modulo-campo modulo-largo">
+          <span className="modulo-etichetta">IL CERTIFICATO MEDICO</span>
+          <Dettaglio tono="avviso">
+            Dai 6 anni il certificato medico è obbligatorio. Per judo, aikido e lotta, dai 12 anni serve quello agonistico. Non si carica qui: va consegnato
+            in segreteria, e senza non si partecipa alle lezioni.
+          </Dettaglio>
+        </div>
         {FILE.filter((f) => f.tipo !== 'modulo').map((f) => (
           <SceltaFile key={f.tipo} tipo={f.tipo} file={file[f.tipo]} onFile={(x) => setFile((p) => ({ ...p, [f.tipo]: x }))} />
         ))}
