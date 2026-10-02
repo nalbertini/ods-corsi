@@ -158,6 +158,7 @@ all'area istruttore c'è scritto com'è andata:
 - **PRESENZA DA CONFERMARE** — non eravate previsti: la presenza resta in un
   elenco della segreteria, che la conferma.
 
+Anche fare l'appello col PIN, a lezione finita, segna la vostra presenza.
 Rimettere il PIN nella stessa lezione non la segna due volte. Fuori dalle
 lezioni il PIN apre l'area istruttore e basta.
 

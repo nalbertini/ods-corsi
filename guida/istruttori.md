@@ -86,6 +86,12 @@ I due tasti in cima:
 
 Non c'è niente da salvare: ogni tocco parte subito.
 
+Fare l'appello segna anche **la vostra presenza** in quella lezione: se è un
+vostro corso, o siete il sostituto di quel giorno, è confermata da sola; se
+no la conferma la segreteria. Una lezione con dei presenti in cui non vi siete
+segnati (né con l'appello né col PIN sul tablet) la segreteria la ritrova, e
+sceglie chi c'era.
+
 ## Le presenze segnalate
 
 *Per ora solo in prova.*

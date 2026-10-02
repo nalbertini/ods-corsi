@@ -6,7 +6,8 @@
 // Il tablet di prova rifà in TypeScript le regole di `supabase/04-tablet.sql`:
 // le finestre di tempo, l'annullo, il PIN, il tablet che non scavalca
 // l'istruttore, la presenza dell'istruttore che entra col PIN (anche di
-// `15-presenze-istruttori.sql`). Qui si controlla che le rifaccia uguali, spostando l'orologio
+// `15-presenze-istruttori.sql`), quella di chi fa l'appello e le lezioni
+// tenute da confermare (`23-istruttori-dalle-lezioni.sql`). Qui si controlla che le rifaccia uguali, spostando l'orologio
 // come si fa dall'indirizzo con `?adesso=`. Le stesse cose, dal lato del
 // database, le prova `supabase/prova/tablet.sql`.
 // ---------------------------------------------------------------------------
@@ -15,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/tabletProva'; export { sigle } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'",
+      "export * from './src/lib/tabletProva'; export { sigle } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -34,7 +35,7 @@ globalThis.localStorage = {
   setItem: (k, v) => memoria.set(k, String(v)),
   removeItem: (k) => memoria.delete(k),
 }
-globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
+globalThis.window = { location: { search: '', hash: '', pathname: '/' }, addEventListener() {} }
 /** Un tablet nuovo con l'orologio fermo a quest'ora. */
 const alle = async (quando, sala = 'Lotta') => {
   window.location.search = `?adesso=${quando}`
@@ -184,6 +185,49 @@ console.log('\n8. la presenza dell\'istruttore col PIN')
   const rifiuta = (await seg.presenzeIstruttori(0)).find((x) => x.stato === 'da_confermare' && x.nome === 'Maura').id
   await seg.gestisciPresenzaIstruttore(rifiuta, false)
   ok('rifiutata, al PIN dopo resta rifiutata', presenze(await sost.entraConPin('2468')), ['Lotta 3 rifiutata'])
+}
+
+console.log('\n9. chi fa l\'appello c\'era, e le lezioni tenute senza istruttore')
+{
+  const seg = m.creaSegreteriaProva()
+  const di = async (sessioneId, nome) => {
+    const x = (await seg.presenzeIstruttori(365)).find((p) => p.sessioneId === sessioneId && p.nome === nome)
+    return x ? `${x.stato} ${x.come}` : 'nessuna'
+  }
+  // Venerdì 25 settembre, Lotta 2 alle 17: Fabio, che non la insegna, fa l'appello col PIN.
+  const lotta = await alle('2026-09-25T17:30')
+  const venerdi = 's@lotta-2@2026-09-25@17:00'
+  const allievo = (await lotta.appello('5678', venerdi))[0].personaId
+  await lotta.correggi('5678', venerdi, allievo, 'presente')
+  ok('Fabio fa l\'appello col PIN: da confermare', await di(venerdi, 'Fabio'), 'da_confermare appello')
+  // Maura, che la insegna, fa l'appello del venerdì dopo dall'app.
+  window.location.pathname = '/istruttori/'
+  const app = m.creaDatiProva()
+  const maurizio = m.lezioniFra(new Date('2026-09-21'), new Date('2026-09-27')).find((l) => m.comeE(l).istruttori.includes('i-maurizio') && m.comeE(l).istruttori.length === 1)
+  const dettaglio = await app.dettaglio(maurizio.id)
+  await app.segna(maurizio.id, dettaglio.elenco[0].id, 'presente')
+  ok('Maurizio fa l\'appello dall\'app: confermato', await di(maurizio.id, 'Maurizio'), 'confermata appello')
+  // La segreteria fa l'appello dal banco: non si segna nessuno.
+  window.location.pathname = '/segreteria/'
+  const lotta3 = 's@lotta-3@2026-09-21@18:00'
+  const d3 = await app.dettaglio(lotta3)
+  await app.segna(lotta3, d3.elenco[0].id, 'presente')
+  ok('dalla segreteria non si segna nessuno', (await seg.presenzeIstruttori(365)).filter((x) => x.sessioneId === lotta3 && x.come === 'appello').length, 0)
+
+  m.archivio.dati.proposteIstruttoriDal = '2026-09-01T00:00:00'
+  const proposte = await seg.lezioniSenzaIstruttore()
+  ok('Maurizio, segnato, non si propone', proposte.some((l) => l.sessioneId === maurizio.id), false)
+  const l3 = proposte.find((l) => l.sessioneId === lotta3)
+  ok('il Lotta 3 si propone, con chi lo insegna', l3 && l3.previsti.map((x) => `${x.nome} ${x.stato ?? '-'}`), ['Maura confermata', 'Federico -'])
+  const l2 = proposte.find((l) => l.sessioneId === venerdi)
+  ok('il Lotta 2 di Fabio si propone ancora: Maura e Federico non ci sono', l2 && l2.previsti.map((x) => x.stato ?? '-'), ['-', '-'])
+  ok('non uno fuori dai previsti', await errore(() => seg.segnaIstruttoriLezione(venerdi, ['i-fabio'])), 'si sceglie fra gli istruttori previsti')
+  await seg.segnaIstruttoriLezione(venerdi, ['i-federico'])
+  ok('scelto Federico: confermato', await di(venerdi, 'Federico'), 'confermata segreteria')
+  ok('e Maura rifiutata', await di(venerdi, 'Maura'), 'rifiutata segreteria')
+  ok('e la lezione esce dall\'elenco', (await seg.lezioniSenzaIstruttore()).some((l) => l.sessioneId === venerdi), false)
+  m.archivio.dati.proposteIstruttoriDal = '2026-12-01T00:00:00'
+  ok('quelle di prima non si propongono', (await seg.lezioniSenzaIstruttore()).length, 0)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

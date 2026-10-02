@@ -45,6 +45,8 @@ export interface FiltriReport {
   istruttore?: string
   /** Più di un mese: c'è la tabella mese per mese. */
   piuMesi: boolean
+  /** Le lezioni tenute senza l'istruttore segnato, da decidere anche loro. */
+  lezioniDaConfermare?: number
 }
 
 const minuti = (x: PresenzaIstruttoreSeg) => Math.round((Date.parse(x.fine) - Date.parse(x.inizio)) / 60_000)
@@ -230,14 +232,14 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
     ['LEZIONI', intero(c.confermate.length), 'confermate'],
     ['ORE', ore(c.minutiTotali), 'dall’orario delle lezioni'],
     ['ISTRUTTORI', intero(c.istruttori), `su ${intero(c.corsi)} ${c.corsi === 1 ? 'corso' : 'corsi'}`],
-    ['DA CONFERMARE', intero(c.daConfermare), c.daConfermare ? 'da decidere prima di pagare' : 'niente in sospeso'],
+    ['DA CONFERMARE', intero(c.daConfermare + (f.lezioniDaConfermare ?? 0)), c.daConfermare + (f.lezioniDaConfermare ?? 0) ? 'da decidere prima di pagare' : 'niente in sospeso'],
   ]
   const wq = (LARGO - 3 * 8) / 4
   numeri.forEach(([n, v, s], i) => {
     const x = MARGINE + i * (wq + 8)
     p.drawRectangle({ x, y: y(t + 58), width: wq, height: 58, borderColor: linea, borderWidth: 0.8 })
     testo(n, x + 8, t + 14, { corpo: 7.5, f: grassetto, colore: grigio })
-    testo(v, x + 8, t + 38, { corpo: 20, f: grassetto, colore: n === 'DA CONFERMARE' && c.daConfermare ? rosso : nero })
+    testo(v, x + 8, t + 38, { corpo: 20, f: grassetto, colore: n === 'DA CONFERMARE' && v !== '0' ? rosso : nero })
     testo(s, x + 8, t + 50, { corpo: 7, colore: grigio, fino: wq - 16 })
   })
   t += 70
@@ -252,6 +254,9 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
       ? `${intero(c.fuoriProgramma)} ${c.fuoriProgramma === 1 ? 'lezione confermata è' : 'lezioni confermate sono'} fuori programma (${percento(c.fuoriProgramma, c.confermate.length)}): l’istruttore non era previsto, la segreteria l’ha confermato.`
       : 'Tutte le lezioni confermate erano di chi era previsto.',
     c.rifiutate ? `${intero(c.rifiutate)} ${c.rifiutate === 1 ? 'presenza rifiutata' : 'presenze rifiutate'}, che non contano.` : '',
+    f.lezioniDaConfermare
+      ? `${intero(f.lezioniDaConfermare)} ${f.lezioniDaConfermare === 1 ? 'lezione tenuta' : 'lezioni tenute'} senza l’istruttore segnato: chi c’era va scelto in PRESENZE ISTRUTTORI.`
+      : '',
   ].filter(Boolean)
   for (const s of frasi) {
     testo(s, MARGINE, t + 9, { corpo: 9, fino: LARGO })

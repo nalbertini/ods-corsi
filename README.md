@@ -59,7 +59,8 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   PIN, apre l'appello completo e vede chi si è segnato da sé; durante una
   lezione il PIN segna anche la sua presenza, da sola se era previsto su
   quella lezione, se no da confermare in segreteria
-  (`supabase/15-presenze-istruttori.sql`). Si apre con
+  (`supabase/15-presenze-istruttori.sql`); la segna anche fare l'appello,
+  dall'app o col PIN (`supabase/23-istruttori-dalle-lezioni.sql`). Si apre con
   `sala/` in fondo all'indirizzo, e da lì il dispositivo resta un tablet.
 - **La segreteria**: per il computer della reception, a chi ha il ruolo di
   segreteria. La **settimana** in una griglia, con gli appelli che mancano in
@@ -80,7 +81,9 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   in cui si viene, i corsi che si riempiono (sugli iscritti e sui posti), le lezioni di ogni
   istruttore, le prove mese per mese, chi è in regola e gli incassi delle ricevute; i conti li fa il database
   (`supabase/22-statistiche.sql`). Le **presenze degli istruttori** entrati col PIN,
-  in elenco per mese, corso, istruttore e stato: quelle in cui non erano previsti si confermano o si rifiutano. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
+  in elenco per mese, corso, istruttore e stato: quelle in cui non erano previsti si confermano o si rifiutano, e
+  le lezioni tenute in cui chi doveva farle non si è segnato si propongono, per scegliere chi c'era
+  (`supabase/23-istruttori-dalle-lezioni.sql`). Il CSV e il report PDF del mese o dell'anno, con le statistiche. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
   si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`).
   **Istruttori e accessi**, coi PIN del tablet. Il **listino** dei costi, che
   la segreteria cambia da sé e che vale per la pagina di iscrizione e per le
@@ -328,7 +331,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
 | `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia, e i cambi dalla scheda della segreteria. Le presenze segnalate: chi le manda, chi le vede e chi le accoglie. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome, tolte per sbaglio, e l'elenco della segreteria. |
-| `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN. |
+| `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN e dall'appello, le lezioni tenute da confermare. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/calendario-da-se.sql` | Il calendario che si allunga da sé: anche per un istruttore, solo quando serve, fin dove dicono le regole. |
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
@@ -339,6 +342,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/ricevute.sql` | Le ricevute: le fa e le annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i conti li fa il server, e una ricevuta fatta non si cambia. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 | `supabase/prova/presenze-istruttori.sql` | La presenza degli istruttori dal PIN del tablet: da sola a chi era previsto, anche da sostituto, da confermare agli altri; la conferma solo la segreteria. |
+| `supabase/prova/istruttori-dalle-lezioni.sql` | La presenza di chi fa l'appello (confermata se era previsto, da confermare se no, la segreteria al banco no) e le lezioni tenute senza l'istruttore segnato: le vede e le decide solo la segreteria, scegliendo fra i previsti. Dopo `tablet.sql` e `presenze-istruttori.sql`. |
 | `supabase/prova/prove.sql` | Le prove: le aggiunge chi fa l'appello (dall'app o col PIN), già presenti; si ritrovano per nome; si tolgono con la persona se è nata lì; un iscritto e chi non ha accesso non le vedono. Dopo `tablet.sql`. |
 | `supabase/prova/statistiche.sql` | Le statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove, chi l'ha fatta, gli incassi del mese; le vede solo la segreteria. |
 | `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |

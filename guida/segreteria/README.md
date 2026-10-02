@@ -32,7 +32,7 @@ A sinistra il menu, a destra la voce scelta. Ogni voce ha la sua guida:
 | **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |
 | **PRESENZE SEGNALATE** | Gli iscritti che dicono di esserci stati e non risultano, da accogliere o rifiutare (solo in prova) | [Apri](presenze-segnalate.md) |
 | **STATISTICHE** | Come va la palestra mese per mese: presenze, iscritti, giorni e ore, corsi, istruttori, incassi | [Apri](statistiche.md) |
-| **PRESENZE ISTRUTTORI** | Le presenze degli istruttori dal PIN del tablet, confermate e da confermare, per mese, corso e istruttore | [Apri](presenze-istruttori.md) |
+| **PRESENZE ISTRUTTORI** | Le presenze degli istruttori dal PIN e dall'appello, confermate e da confermare, le lezioni tenute in cui scegliere chi c'era, il CSV e il report PDF | [Apri](presenze-istruttori.md) |
 | **IMPORTA DA EXCEL** | Corsi e iscritti dai fogli Excel o dalle risposte del modulo Google | [Apri](importa.md) |
 | **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
 | **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
@@ -59,8 +59,9 @@ dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
 3. **Quando un istruttore manca**: la lezione nella [Settimana](settimana.md) →
    **ISTRUTTORE** → il sostituto. Se la lezione salta: **ANNULLATA**.
 4. **Quando il menu dice PRESENZE ISTRUTTORI · 1**: un istruttore è entrato
-   col PIN in una lezione non sua → [Presenze istruttori](presenze-istruttori.md)
-   → **CONFERMA** o **RIFIUTA**.
+   col PIN (o ha fatto l'appello) in una lezione non sua, o una lezione tenuta
+   non ha l'istruttore segnato → [Presenze istruttori](presenze-istruttori.md)
+   → **CONFERMA** o **RIFIUTA**, o si sceglie chi c'era.
 5. **Quando il menu dice PRESENZE SEGNALATE · 1**: un iscritto dice di essere
    stato a una lezione e non risulta → [Presenze segnalate](presenze-segnalate.md)
    → **PRESENTE** o **RIFIUTA**.

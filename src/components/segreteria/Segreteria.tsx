@@ -124,8 +124,10 @@ export function Segreteria({
   useEffect(() => {
     if (!d) return
     let vivo = true
-    d.presenzeIstruttori(0).then(
-      (l) => vivo && setDaConfermare(l.filter((x) => x.stato === 'da_confermare').length),
+    // Le lezioni tenute senza istruttore contano anche loro; se il database
+    // non le ha ancora (23-istruttori-dalle-lezioni.sql), solo le presenze.
+    Promise.all([d.presenzeIstruttori(0), d.lezioniSenzaIstruttore().catch(() => [])]).then(
+      ([l, lezioni]) => vivo && setDaConfermare(l.filter((x) => x.stato === 'da_confermare').length + lezioni.length),
       () => vivo && setDaConfermare(0),
     )
     return () => {

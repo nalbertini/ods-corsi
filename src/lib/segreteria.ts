@@ -322,6 +322,27 @@ export interface PresenzaIstruttoreSeg {
   entratoIl: string
   gestitaIl?: string
   gestitaDa?: string
+  /** Come è arrivata: dal PIN, dall'appello che ha fatto, o scelta dalla segreteria fra i previsti. */
+  come: ComePresenzaIstruttore
+}
+
+export type ComePresenzaIstruttore = 'pin' | 'appello' | 'segreteria'
+
+/**
+ * Una lezione tenuta (passata, con qualcuno presente) in cui qualche
+ * istruttore previsto non ha una presenza: la segreteria sceglie chi c'era
+ * (23-istruttori-dalle-lezioni.sql).
+ */
+export interface LezioneSenzaIstruttore {
+  sessioneId: string
+  corso: string
+  colore?: string
+  inizio: string
+  fine: string
+  sala?: string
+  presenti: number
+  /** Chi doveva farla; `stato` se ha già una presenza, col PIN o dall'appello. */
+  previsti: Array<{ id: string; nome: string; stato?: StatoPresenzaIstruttore }>
 }
 
 export interface Impostazioni {
@@ -481,6 +502,10 @@ export interface DatiSegreteria {
   presenzeIstruttori(giorni: number): Promise<PresenzaIstruttoreSeg[]>
   /** Conferma, o rifiuta, una presenza di un istruttore. */
   gestisciPresenzaIstruttore(id: string, conferma: boolean): Promise<void>
+  /** Le lezioni tenute in cui manca la presenza di qualche istruttore previsto, dalla più recente. */
+  lezioniSenzaIstruttore(): Promise<LezioneSenzaIstruttore[]>
+  /** Chi, fra i previsti senza presenza, ha fatto la lezione: confermati loro, rifiutati gli altri. */
+  segnaIstruttoriLezione(sessioneId: string, presenti: string[]): Promise<void>
   /** Gli ultimi timer fatti partire, dal più recente. */
   allenamenti(quanti: number): Promise<AllenamentoSeg[]>
   impostazioni(): Promise<Impostazioni>

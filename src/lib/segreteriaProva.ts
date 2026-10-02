@@ -6,7 +6,7 @@ import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva } from './archivioProva'
-import { comeE, iscrittiIl, lezioniFra, nomeIstruttore, salaDelGiorno, trovaLezione, type LezioneTrovata } from './datiProva'
+import { comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
@@ -839,6 +839,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
               entratoIl: x.entratoIl,
               gestitaIl: x.gestitaIl,
               gestitaDa: x.gestitaDa,
+              come: x.come ?? 'pin',
             },
           ]
         })
@@ -853,6 +854,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
         x.id === id ? { ...x, stato: conferma ? 'confermata' : 'rifiutata', gestitaDa: 'Segreteria di prova', gestitaIl: new Date().toISOString() } : x,
       )
       salva()
+    },
+
+    async lezioniSenzaIstruttore() {
+      return lezioniSenzaIstruttoreProva()
+    },
+
+    async segnaIstruttoriLezione(sessioneId, presenti) {
+      // In prova chi usa la segreteria è la segreteria di prova.
+      segnaIstruttoriLezioneProva(sessioneId, presenti, 'Segreteria di prova')
     },
 
     async allenamenti(quanti) {

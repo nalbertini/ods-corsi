@@ -1132,6 +1132,7 @@ a.sg-voce { text-decoration: none; }
 .sg-riga-presenza-istr { display: grid; grid-template-columns: 1fr 1.5fr 1fr 130px 240px; gap: 14px; align-items: center; }
 .sg-presenza-istr { min-height: 64px; padding: 8px 14px; border-bottom: 1px solid var(--surface-2); border-left: 6px solid var(--tinta, var(--line)); }
 .sg-presenza-istr[data-spento='true'] > :not(:last-child) { opacity: 0.5; }
+.sg-lezione-istr { display: grid; grid-template-columns: 2.5fr 2fr 240px; gap: 14px; align-items: center; }
 .sg-presenza-istr-fine { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; text-align: right; }
 .sg-riga-compenso { display: grid; grid-template-columns: 1fr 90px 90px; gap: 14px; align-items: center; }
 .sg-compenso { border-bottom: 1px solid var(--surface-2); }
@@ -1333,6 +1334,7 @@ a.sg-voce { text-decoration: none; }
   .sg-riga-presenza-istr { grid-template-columns: 1fr 1fr; }
   .sg-riga-presenza-istr > :nth-child(3), .sg-riga-presenza-istr > :nth-child(4) { display: none; }
   .sg-lista-testa.sg-riga-presenza-istr { display: none; }
+  .sg-lezione-istr { grid-template-columns: 1fr; gap: 8px; }
   .sg-presenza-istr-fine { grid-column: 1 / -1; justify-content: flex-start; text-align: left; }
   .sg-ricorrenza { grid-template-columns: 1fr auto auto 40px; }
   .sg-ricorrenza > :nth-child(4) { display: none; }
