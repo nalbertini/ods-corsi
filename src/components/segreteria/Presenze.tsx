@@ -56,7 +56,8 @@ function scaricaCsv(righe: RigaRegistro[], nome: string) {
 }
 
 /**
- * Le presenze: chi viene, chi si sta perdendo, quali appelli mancano.
+ * Le presenze: chi viene, chi si sta perdendo, quali appelli mancano, e
+ * il registro del mese lezione per lezione, con i nomi.
  *
  * Tutto si conta dagli appelli fatti: una lezione passata senza appello non
  * dice che non è venuto nessuno, dice che nessuno ha segnato, e sta nel suo
@@ -117,7 +118,7 @@ export function Presenze({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dov
 
   return (
     <>
-      <Testa titolo="PRESENZE" sotto="Chi viene, chi si sta perdendo, quali appelli mancano.">
+      <Testa titolo="PRESENZE" sotto="Chi viene, chi si sta perdendo, quali appelli mancano, chi c'era lezione per lezione.">
         <label htmlFor="periodo" className="vh">
           Periodo
         </label>
@@ -251,7 +252,83 @@ export function Presenze({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dov
           <Prove prove={prove} corso={corso} onVai={onVai} />
         </div>
       </div>
+
+      <Registro righe={fatte} caricato={registro.dato !== null} onVai={onVai} />
     </>
+  )
+}
+
+const PER_ORDINE = (a: { cognome: string; nome: string }, b: { cognome: string; nome: string }) =>
+  a.cognome.localeCompare(b.cognome, 'it') || a.nome.localeCompare(b.nome, 'it')
+
+/**
+ * Il registro del mese: le lezioni con l'appello, giorno per giorno dal più
+ * recente, e per ognuna chi c'era. Si apre una lezione per vedere i nomi;
+ * assenti e giustificati stanno sotto, più spenti. Per correggere un segno
+ * si va alla lezione in settimana, che ha l'appello vero.
+ */
+function Registro({ righe, caricato, onVai }: { righe: RigaRegistro[]; caricato: boolean; onVai: (v: Voce, dove?: Destinazione) => void }) {
+  const giorni = new Map<string, RigaRegistro[]>()
+  for (const r of [...righe].sort((a, b) => b.inizio.localeCompare(a.inizio))) {
+    const g = chiaveGiorno(new Date(r.inizio))
+    giorni.set(g, [...(giorni.get(g) ?? []), r])
+  }
+  return (
+    <section aria-label="Registro del mese" className="sg-riquadro" style={{ marginTop: 20 }}>
+      <Riga titolo="REGISTRO DEL MESE">
+        <span style={{ fontSize: 12, color: 'var(--dim)' }}>chi c'era, lezione per lezione</span>
+      </Riga>
+      {caricato && righe.length === 0 && <span className="sg-sotto">Nessun appello fatto in questo periodo.</span>}
+      {[...giorni.entries()].map(([g, lezioni]) => (
+        <div key={g} className="stack" style={{ gap: 6 }}>
+          <span className="sg-etichetta" style={{ letterSpacing: '0.16em' }}>{giornoPerEsteso(g).toUpperCase()}</span>
+          {lezioni.map((r) => {
+            const presenti = r.appello.filter((p) => p.stato === 'presente').sort(PER_ORDINE)
+            const altri = r.appello.filter((p) => p.stato !== 'presente').sort(PER_ORDINE)
+            const dovute = r.appello.filter((p) => p.stato !== 'giustificato').length
+            return (
+              <details key={r.sessioneId} className="sg-registro">
+                <summary className="sg-voce-elenco">
+                  <span className="stack grow" style={{ minWidth: 0 }}>
+                    <span className="ob" style={{ fontSize: 15, fontWeight: 700 }}>{r.corso.toUpperCase()}</span>
+                    <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+                      {oraDi(r.inizio)}
+                      {r.sala ? ` · ${r.sala}` : ''}
+                      {r.istruttori ? ` · ${r.istruttori}` : ''}
+                    </span>
+                  </span>
+                  <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--verde)', whiteSpace: 'nowrap' }}>
+                    {presenti.length}/{dovute}
+                  </span>
+                </summary>
+                <div className="sg-registro-nomi">
+                  {presenti.length === 0 && <span className="sg-sotto">Nessun presente.</span>}
+                  {presenti.map((p) => (
+                    <span key={p.personaId} style={{ fontSize: 15 }}>
+                      <span style={{ color: 'var(--verde)', fontWeight: 700 }}>✓</span> {p.cognome} {p.nome}
+                    </span>
+                  ))}
+                  {altri.map((p) => (
+                    <span key={p.personaId} style={{ fontSize: 14, color: 'var(--dim)' }}>
+                      {p.stato === 'assente' ? '✕' : p.stato === 'giustificato' ? 'G' : '·'} {p.cognome} {p.nome}
+                      {p.stato === 'giustificato' ? ' · giustificato' : p.stato === null ? ' · non segnato' : ''}
+                    </span>
+                  ))}
+                  <button
+                    type="button"
+                    className="num sg-chip"
+                    style={{ alignSelf: 'flex-start', marginTop: 6 }}
+                    onClick={() => onVai('settimana', { lezione: { id: r.sessioneId, inizio: r.inizio } })}
+                  >
+                    APRI LA LEZIONE
+                  </button>
+                </div>
+              </details>
+            )
+          })}
+        </div>
+      ))}
+    </section>
   )
 }
 

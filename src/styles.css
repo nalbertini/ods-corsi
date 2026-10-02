@@ -1154,6 +1154,10 @@ a.sg-voce { text-decoration: none; }
 .sg-numeri { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .sg-numero { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; background: var(--surface); border: 2px solid var(--line); }
 .sg-numero[data-allarme='true'] { border-color: var(--rosso); }
+.sg-registro > summary { cursor: pointer; list-style: none; }
+.sg-registro > summary::-webkit-details-marker { display: none; }
+.sg-registro[open] > summary { border-color: var(--text); }
+.sg-registro-nomi { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px 12px; border: 2px solid var(--line); border-top: 0; }
 .sg-presenze { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: start; }
 
 /* Un solo valore per corso, una tinta sola: la barra dice quanto, il numero accanto lo dice esatto. */
