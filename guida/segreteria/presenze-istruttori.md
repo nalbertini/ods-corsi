@@ -38,7 +38,7 @@ era previsto, sala, quando è entrato, stato e chi l'ha decisa.
 ## Il report PDF
 
 **REPORT PDF** scarica il report del periodo scelto, da stampare o da tenere:
-un A4 con i numeri e il dettaglio, per capire com'è andato il mese o l'anno.
+un A4 col logo, i numeri e il dettaglio, per capire com'è andato il mese o l'anno.
 Tiene conto del corso e dell'istruttore scelti, non dello stato: le
 statistiche contano sempre confermate, da confermare e rifiutate.
 
