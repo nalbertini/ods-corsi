@@ -117,3 +117,26 @@ sono buchi. I dati dell'associazione in testa alle ricevute si cambiano da
 Il certificato è un dato sulla salute: lo vede solo la segreteria, non gli
 istruttori, e non va scritto da nessun'altra parte (nemmeno nelle note). In
 prova il file resta solo finché la pagina è aperta.
+
+## Il nucleo familiare
+
+*Per ora solo in prova: col database vero la sezione non c'è.*
+
+In fondo alla scheda, **NUCLEO FAMILIARE**: le persone che stanno insieme in
+un nucleo, come un genitore coi figli. Il **titolare** vede tutto il nucleo
+nella sua pagina dell'[area iscritti](../iscritti.md#il-nucleo-familiare);
+gli altri vedono solo sé stessi. Toccando un nome si apre la sua scheda.
+
+- **Aggiungi al nucleo**, dalla scheda del titolare o di chi non è in un
+  nucleo: si sceglie la persona (prima chi ha lo stesso cognome) e
+  **AGGIUNGI**. Chi non era in un nucleo ne diventa titolare.
+- **TITOLARE**, accanto a una persona del nucleo: il nucleo passa a lei, e
+  il titolare di prima ci resta dentro.
+- **TOGLI**: la persona esce dal nucleo e resta iscritta.
+
+Il nucleo è uno solo: chi è già nel nucleo di un altro, o ne ha uno suo con
+altri dentro, va prima tolto. Le richieste aggiunte da un titolare dalla sua
+area entrano nel suo nucleo da sole, quando si accolgono.
+
+Sotto, lo **sconto famiglia**: dalle ricevute del nucleo, il 20% sull'annuale
+che costa meno, di chi e quanto. Sulla ricevuta va scritto a mano.

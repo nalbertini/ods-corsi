@@ -6,6 +6,8 @@ import { ESTENSIONI, MASSIMO_FILE } from '../../lib/richieste'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
+import { abbonamentiDalleRicevute, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
+import { euro } from '../../lib/ricevute'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
@@ -91,7 +93,20 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
         </SchedaPiena>
       ) : persona ? (
         <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna="ISCRITTI" onTorna={chiudi}>
-          <Scheda d={d} p={persona} corsi={perId} attivi={attivi} f={freq.dato?.get(persona.id)} fai={fai} onCambiato={() => void ricarica()} />
+          <Scheda
+            d={d}
+            p={persona}
+            tutti={tutti}
+            corsi={perId}
+            attivi={attivi}
+            f={freq.dato?.get(persona.id)}
+            fai={fai}
+            onCambiato={() => void ricarica()}
+            onApri={(id) => {
+              setNuovo(false)
+              setScelta(id)
+            }}
+          />
         </SchedaPiena>
       ) : null}
 
@@ -285,19 +300,25 @@ function Nuovo({
 function Scheda({
   d,
   p,
+  tutti,
   corsi,
   attivi,
   f,
   fai,
   onCambiato,
+  onApri,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
+  /** Tutti gli iscritti, per il nucleo familiare. */
+  tutti: PersonaSeg[]
   corsi: Map<string, CorsoSeg>
   attivi: CorsoSeg[]
   f?: Frequenza
   fai: Fai
   onCambiato: () => void
+  /** Apre la scheda di un'altra persona: una del nucleo. */
+  onApri: (personaId: string) => void
 }) {
   const oggi = chiaveGiorno(new Date())
   const [modifica, setModifica] = useState<DatiPersona | null>(null)
@@ -368,6 +389,7 @@ function Scheda({
           <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${p.pagamento.nota ?? ''}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} />
+          {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
         </div>
 
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
@@ -497,6 +519,132 @@ function Scheda({
       </>
       )}
     </>
+  )
+}
+
+/**
+ * Il nucleo familiare (vedi `nucleo.ts`): di chi è, chi c'è, e dove va lo
+ * sconto famiglia, dalle ricevute del nucleo. Dalla scheda del titolare (o di
+ * chi non è in un nucleo) si aggiunge una persona; da quella di un'altra la
+ * si toglie, o la si fa titolare. Per ora solo in prova: il database non lo
+ * tiene ancora, e la sezione non c'è.
+ */
+function NucleoFamiliare({
+  d,
+  p,
+  tutti,
+  fai,
+  onCambiato,
+  onApri,
+}: {
+  d: DatiSegreteria
+  p: PersonaSeg
+  tutti: PersonaSeg[]
+  fai: Fai
+  onCambiato: () => void
+  onApri: (personaId: string) => void
+}) {
+  const [daAggiungere, setDaAggiungere] = useState('')
+  const titolare = p.nucleo ? tutti.find((x) => x.id === p.nucleo) : p
+  const membri = titolare ? tutti.filter((x) => x.nucleo === titolare.id && x.attiva) : []
+  const nucleo = titolare ? [titolare, ...membri] : [p]
+  const ids = nucleo.map((x) => x.id).join()
+  const ricevute = useCarica(async () => (await Promise.all(nucleo.map((x) => d.ricevute(x.id)))).flat(), [d, ids])
+  const nomeDi = (id: string) => {
+    const x = tutti.find((y) => y.id === id)
+    return x ? `${x.nome} ${x.cognome}` : ''
+  }
+  const annuali = abbonamentiDalleRicevute(ricevute.dato ?? [], nomeDi)
+  const minimo = annuali.length >= 2 ? annuali.reduce((x, y) => (y.importo < x.importo ? y : x)) : null
+  // Chi si può aggiungere: chi può entrare secondo le regole, prima chi ha lo stesso cognome.
+  const candidati = p.nucleo
+    ? []
+    : tutti
+        .filter((x) => !cosaNonVaNucleo(tutti, x.id, p.id))
+        .sort((x, y) => Number(y.cognome === p.cognome) - Number(x.cognome === p.cognome) || x.cognome.localeCompare(y.cognome, 'it') || x.nome.localeCompare(y.nome, 'it'))
+  const persona = (x: PersonaSeg, ruolo: string) => (
+    <div key={x.id} className="sg-iscrizione">
+      <span className="stack grow" style={{ minWidth: 0 }}>
+        <button type="button" className="sg-link" style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }} onClick={() => onApri(x.id)} disabled={x.id === p.id}>
+          {x.nome} {x.cognome}
+        </button>
+        <span style={{ fontSize: 12, color: 'var(--dim)' }}>{x.id === p.id ? `${ruolo} · questa scheda` : ruolo}</span>
+      </span>
+      {x.nucleo && (
+        <>
+          <button type="button" className="num sg-chip" onClick={() => void fai(() => d.rendiTitolare(x.id), `${x.nome} è titolare del nucleo`, onCambiato)}>
+            TITOLARE
+          </button>
+          <button
+            type="button"
+            className="num sg-chip"
+            onClick={() => {
+              if (window.confirm(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`))
+                void fai(() => d.togliDalNucleo(x.id), 'Tolto dal nucleo', onCambiato)
+            }}
+          >
+            TOGLI
+          </button>
+        </>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <Riga titolo="NUCLEO FAMILIARE">
+        <span className="num sg-bollino">PROVA</span>
+      </Riga>
+      {!p.nucleo && membri.length === 0 ? (
+        <span className="sg-sotto">Non è in un nucleo. Aggiungi qualcuno qui sotto, e ne diventa titolare: vedrà nella sua pagina anche le persone del nucleo.</span>
+      ) : !titolare ? (
+        <span className="sg-sotto">Il titolare del nucleo non c’è più: toglilo dal nucleo.</span>
+      ) : (
+        <>
+          {persona(titolare, 'Titolare: vede tutto il nucleo nella sua pagina')}
+          {membri.map((x) => persona(x, 'Nel nucleo'))}
+        </>
+      )}
+      {!p.nucleo && (
+        <div className="row" style={{ gap: 8 }}>
+          <label htmlFor="n-agg" className="vh">
+            Persona da aggiungere al nucleo
+          </label>
+          <select id="n-agg" className="sg-campo grow" style={{ borderStyle: 'dashed', minWidth: 0 }} value={daAggiungere} onChange={(e) => setDaAggiungere(e.target.value)}>
+            <option value="">Aggiungi al nucleo…</option>
+            {candidati.map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.cognome} {x.nome}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="num sg-chip sg-chip-pieno"
+            disabled={!daAggiungere}
+            onClick={() =>
+              void fai(() => d.mettiNelNucleo(daAggiungere, p.id), 'Aggiunto al nucleo', () => {
+                setDaAggiungere('')
+                onCambiato()
+              })
+            }
+          >
+            AGGIUNGI
+          </button>
+        </div>
+      )}
+      {p.nucleo && titolare && <span className="sg-sotto">Per aggiungere qualcuno, apri la scheda del titolare.</span>}
+      {minimo ? (
+        <span style={{ fontSize: 12, color: 'var(--sec)' }}>
+          Sconto famiglia: il {Math.round(SCONTO_FAMIGLIA * 100)}% sull’annuale che costa meno, {minimo.corso} di {minimo.chi}, cioè {euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €. Sulla
+          ricevuta va scritto a mano.
+        </span>
+      ) : (
+        nucleo.length > 1 && (
+          <span style={{ fontSize: 12, color: 'var(--dim)' }}>Sconto famiglia: con due annuali nelle ricevute del nucleo, il {Math.round(SCONTO_FAMIGLIA * 100)}% su quello che costa meno.</span>
+        )
+      )}
+    </div>
   )
 }
 

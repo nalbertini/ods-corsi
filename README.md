@@ -115,7 +115,9 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   pagamenti di tutti con lo sconto famiglia, e aggiunge una persona col
   modulo di iscrizione già compilato coi suoi dati, che dice quanto costa e
   come pagarlo; la richiesta arriva in RICHIESTE ONLINE col segno NUCLEO
-  (`src/lib/nucleo.ts`). Cosa manca è in
+  (`src/lib/nucleo.ts`). La segreteria vede e cambia il nucleo dalla
+  scheda di un iscritto (NUCLEO FAMILIARE), con lo sconto famiglia dalle
+  ricevute; col database la sezione non c'è ancora. Cosa manca è in
   [`guida/iscritti.md`](guida/iscritti.md#cosa-manca-per-aprirla-davvero).
 - **L'accesso** col database è uno solo: la radice è la porta unica, e la
   stessa porta sta in `istruttori/`, `segreteria/` e `sala/`. Si entra con
@@ -318,7 +320,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
-| `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia. |
+| `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia, e i cambi dalla scheda della segreteria. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome, tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |

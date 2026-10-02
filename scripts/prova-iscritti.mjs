@@ -8,7 +8,8 @@
 // un sostituto, una sala cambiata, una presenza, una ricevuta — e che di un
 // altro iscritto non vede niente. In fondo gli avvisi in cima alla pagina e
 // le ricevute degli esempi; poi il nucleo familiare: chi lo vede, la
-// persona in più coi dati del titolare, e i conti con lo sconto famiglia.
+// persona in più coi dati del titolare, i conti con lo sconto famiglia, e il
+// nucleo cambiato dalla scheda della segreteria.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 
@@ -223,6 +224,41 @@ console.log('\n8. quanto costa una persona in più')
     { personaId: 'c', voci: [voce('Annuale Lotta 2', 1)], annullataIl: '2026-09-20' },
   ]
   ok('gli annuali del nucleo dalle ricevute, non le annullate', m.abbonamentiDalleRicevute(ric, (id) => id.toUpperCase()), [{ chi: 'A', corso: 'Judo 2', importo: judo }])
+}
+
+console.log('\n9. il nucleo dalla scheda della segreteria')
+{
+  const a = m.archivio.dati
+  const err = async (f) => {
+    try {
+      await f()
+      return 'nessun errore'
+    } catch (e) {
+      return e.message
+    }
+  }
+  const liberi = a.persone.filter((p) => p.ruolo === 'iscritto' && p.attiva && !p.nucleo && !a.persone.some((x) => x.nucleo === p.id))
+  const [t, x, y] = liberi
+  const nucleoDi = (id) => a.persone.find((p) => p.id === id).nucleo
+  await s.mettiNelNucleo(x.id, t.id)
+  await s.mettiNelNucleo(y.id, t.id)
+  ok('due persone nel nucleo di un titolare', [nucleoDi(x.id), nucleoDi(y.id)], [t.id, t.id])
+  ok('la segreteria lo legge nella scheda', (await s.persone()).find((p) => p.id === x.id).nucleo, t.id)
+  ok('e il titolare lo vede nella sua pagina', (await io.nucleo(t.id)).length, 3)
+  ok('non nel nucleo di chi è già in un nucleo', await err(() => s.mettiNelNucleo(liberi[3].id, x.id)), 'È già nel nucleo di un altro: scegli il titolare')
+  ok('non due volte', await err(() => s.mettiNelNucleo(x.id, t.id)), 'È già in questo nucleo')
+  ok('non in un altro nucleo', await err(() => s.mettiNelNucleo(x.id, liberi[3].id)), 'È già nel nucleo di un altro: prima toglilo da lì')
+  ok('un titolare con altri dentro non entra in un altro', await err(() => s.mettiNelNucleo(t.id, liberi[3].id)), 'Ha un nucleo suo, con altri dentro: prima toglili, o fai titolare un altro')
+  ok('non in sé stesso', await err(() => s.mettiNelNucleo(t.id, t.id)), 'Una persona non entra nel suo stesso nucleo')
+  await s.rendiTitolare(x.id)
+  ok('fatto titolare un altro, il nucleo passa a lui', [nucleoDi(x.id), nucleoDi(t.id), nucleoDi(y.id)], [undefined, x.id, x.id])
+  ok('e ora lo vede lui, non il titolare di prima', [(await io.nucleo(x.id)).length, (await io.nucleo(t.id)).length], [3, 1])
+  ok('chi non è in un nucleo non diventa titolare', await err(() => s.rendiTitolare(liberi[3].id)), 'Non è nel nucleo di nessuno')
+  await s.togliDalNucleo(y.id)
+  ok('tolto, resta iscritto e fuori dal nucleo', [nucleoDi(y.id), (await io.scheda(y.id)) !== null, (await io.nucleo(x.id)).length], [undefined, true, 2])
+  ok('non si toglie chi non c’è', await err(() => s.togliDalNucleo(y.id)), 'Non è nel nucleo di nessuno')
+  await s.attivaPersona(liberi[4].id, false)
+  ok('una scheda disattivata no', await err(() => s.mettiNelNucleo(liberi[4].id, x.id)), 'Le schede disattivate non entrano in un nucleo')
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
