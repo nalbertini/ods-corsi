@@ -45,12 +45,51 @@ dall'appello e dal tablet, il certificato e il pagamento dalla scheda di
 **ISCRITTI**, le ricevute da **RICEVUTE**. In prova si può provare: si annulla
 una lezione in segreteria, e l'iscritto la vede annullata.
 
+## Il nucleo familiare
+
+Chi iscrive anche figli, coniuge o fratelli li tiene in un **nucleo**: un
+accesso solo per tutti. Il nucleo è di chi lo tiene, il **titolare** (di
+solito un genitore), che vede tutte le persone del suo nucleo; ognuna delle
+altre vede solo sé stessa. In prova gli iscritti inventati con lo stesso
+cognome fanno famiglia, a gruppi di due o tre.
+
+- **Di chi è la pagina**: in cima, **TU** e il nome di ogni persona del
+  nucleo. Toccandone uno si vede la sua pagina: lezioni, presenze,
+  certificato, quota e ricevute.
+- **Il tuo nucleo**: le persone, ognuna con **IN REGOLA** o **DA SISTEMARE**,
+  e quelle aggiunte che la segreteria non ha ancora accolto (**LA GUARDA LA
+  SEGRETERIA**), o che ha rifiutato.
+- **Aggiungi una persona**: apre il modulo di iscrizione già compilato coi
+  dati che la segreteria ha del titolare: cognome, residenza, email e
+  telefono, e il titolare come genitore per un minore, col suo codice fiscale. Si
+  cambia tutto, prima di mandare. Per un minore il documento non serve: è
+  quello del genitore, che la segreteria ha già.
+- **Quanto costa**, nel modulo, scelti corsi e formula: la quota
+  associativa, il corso, e lo **sconto famiglia** del listino (il 20%
+  sull'annuale che costa meno nel nucleo; a pari prezzo va sulla persona
+  nuova). Gli annuali già pagati si leggono dalle ricevute del nucleo. Sotto,
+  l'IBAN e la **causale** col nome di chi si iscrive, da copiare, e Satispay.
+  La ricevuta del bonifico si carica fra i file, come sempre. È una stima:
+  le altre offerte e l'importo giusto li conferma la segreteria.
+- **Pagamenti del nucleo**: per ogni persona se è pagato, quanto risulta
+  dalle ricevute, il totale del nucleo, e su quale annuale va lo sconto
+  famiglia.
+
+La richiesta arriva in **SEGRETERIA → RICHIESTE ONLINE** come le altre, col
+segno **NUCLEO** e il nome di chi l'ha aggiunta (vedi [Richieste
+online](segreteria/richieste.md)). Accolta, la persona entra nel nucleo, e
+il titolare la trova nella sua pagina.
+
 ## Cosa manca per aprirla davvero
 
 - **L'accesso degli iscritti**: un codice o un link per email, senza
   password da ricordare. La segreteria non dovrebbe gestire niente di più.
-- **Le famiglie**: un genitore con due figli iscritti dovrebbe vederli tutti
-  e due con un accesso solo.
+- **Il nucleo sul database**: chi è titolare di chi, e un genitore che non
+  frequenta ma tiene il nucleo dei figli (in prova il titolare è sempre un
+  iscritto). La segreteria dovrebbe vedere e cambiare il nucleo dalla scheda
+  di un iscritto.
+- **Lo sconto famiglia sulle ricevute**: oggi la segreteria lo fa a mano; la
+  ricevuta potrebbe proporlo da sé.
 - **Cosa può leggere un iscritto**: solo le sue righe, dal database, con
   funzioni fatte apposta e senza toccare quello che vede la segreteria.
 - **L'informativa privacy**, che va aggiornata per l'area personale.

@@ -593,6 +593,18 @@ a.btn { text-decoration: none; }
 .mia-lezione-cosa { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: right; max-width: 40%; }
 .mia-lezione-cosa[data-tono='guaio'] { color: var(--rosso); }
 .mia-lezione-cosa[data-tono='avviso'] { color: var(--giallo-testo); }
+.mia-lezione-cosa[data-tono='fatto'] { color: var(--verde); }
+/* Il nucleo familiare: di chi si guarda la pagina, e le persone del nucleo. */
+.mio-nucleo-scelta { padding-top: 4px; padding-bottom: 6px; }
+.mia-chip-tasto { cursor: pointer; color: var(--dim); min-height: 36px; padding: 6px 12px; border-left-width: 2px; }
+.mia-chip-tasto[aria-pressed='true'] { color: var(--text); border-color: var(--text); background: var(--surface-2); }
+.mio-membro { gap: 12px; padding: 10px 14px; width: 100%; align-items: center; cursor: pointer; }
+.mio-membro[data-attesa] { cursor: default; border-style: dashed; }
+/* Quanto costa una persona in più: le righe della stima, e il totale. */
+.stima { list-style: none; margin: 0; padding: 0; gap: 4px; }
+.stima-riga { gap: 12px; font-size: 15px; }
+.stima-riga[data-sconto] { color: var(--verde); }
+.stima-totale { border-top: 2px solid var(--line); padding-top: 6px; font-weight: 700; font-size: 17px; }
 .mie-presenze { list-style: none; margin: 0; padding: 4px 14px; gap: 0; }
 .mia-presenza { gap: 12px; padding: 8px 0; align-items: center; }
 .mia-presenza + .mia-presenza { border-top: 1px solid var(--line-soft); }

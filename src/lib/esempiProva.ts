@@ -32,6 +32,8 @@ const VERSIONE = '1'
  * segno, così arrivano anche su un dispositivo che gli altri esempi li ha già.
  */
 const DOVE_RICEVUTE = 'ods-corsi:prova-esempi-ricevute'
+/** I nuclei familiari, venuti ancora dopo: anche loro col segno loro. */
+const DOVE_NUCLEI = 'ods-corsi:prova-esempi-nuclei'
 
 const MIN = 60_000
 const GIORNO = 24 * 60 * MIN
@@ -58,6 +60,7 @@ export function scordaEsempi() {
   try {
     localStorage.removeItem(DOVE)
     localStorage.removeItem(DOVE_RICEVUTE)
+    localStorage.removeItem(DOVE_NUCLEI)
   } catch {
     /* pazienza */
   }
@@ -65,6 +68,7 @@ export function scordaEsempi() {
 
 export function seminaEsempi(adesso = new Date()) {
   seminaRicevute(adesso)
+  seminaNuclei()
   if (fatti()) return
   const ora = adesso.getTime()
   const passate = lezioniFra(new Date(ora - 35 * GIORNO), adesso).filter((l) => l.fine.getTime() < ora)
@@ -342,5 +346,58 @@ function seminaRicevute(adesso: Date) {
     localStorage.setItem(DOVE_RICEVUTE, VERSIONE)
   } catch {
     /* si rifaranno, e saltano chi ne ha già una */
+  }
+}
+
+/**
+ * I nuclei familiari (vedi `nucleo.ts`): gli iscritti inventati con lo stesso
+ * cognome, a gruppi di due o tre, fanno famiglia, fino a otto famiglie. Il
+ * titolare è il primo per nome, e gli si danno nascita, codice fiscale e
+ * residenza, che il modulo di una persona in più riusa. Chi ha già un nucleo,
+ * o dei dati scritti dalla segreteria, resta com'è.
+ */
+function seminaNuclei() {
+  try {
+    if (localStorage.getItem(DOVE_NUCLEI) === VERSIONE) return
+  } catch {
+    return
+  }
+  const a = archivio.dati
+  const liberi = a.persone.filter((p) => p.ruolo === 'iscritto' && p.attiva && !p.nucleo && !a.persone.some((x) => x.nucleo === p.id))
+  const perCognome = new Map<string, typeof liberi>()
+  for (const p of liberi) perCognome.set(p.cognome, [...(perCognome.get(p.cognome) ?? []), p])
+  const famiglie = [...perCognome.values()]
+    .filter((g) => g.length >= 2 && g.length <= 3)
+    .sort((x, y) => x[0].cognome.localeCompare(y[0].cognome, 'it'))
+    .slice(0, 8)
+  const nel = new Map<string, string>()
+  const anagrafiche = { ...(a.anagrafiche ?? {}) }
+  for (const g of famiglie) {
+    const [titolare, ...altri] = [...g].sort((x, y) => x.nome.localeCompare(y.nome, 'it'))
+    for (const p of altri) nel.set(p.id, titolare.id)
+    if (anagrafiche[titolare.id]) continue
+    const anno = 1972 + Math.floor(numero(`anno|${titolare.id}`) * 18)
+    const mese = 1 + Math.floor(numero(`mese|${titolare.id}`) * 12)
+    const giorno = 1 + Math.floor(numero(`giorno|${titolare.id}`) * 28)
+    const natoIl = `${anno}-${String(mese).padStart(2, '0')}-${String(giorno).padStart(2, '0')}`
+    const donna = /a$/i.test(titolare.nome) && !/^(luca|andrea|nicola|mattia|elia)$/i.test(titolare.nome)
+    const civico = 1 + Math.floor(numero(`via|${titolare.id}`) * 120)
+    anagrafiche[titolare.id] = {
+      natoIl,
+      natoA: 'Torino',
+      codiceFiscale: codice(titolare.cognome, titolare.nome, natoIl, donna, 'L219'),
+      indirizzo: `${['Via Roma', 'Corso Francia', 'Via Torino', 'Via Martiri XXX Aprile', 'Viale Gramsci'][Math.floor(numero(`strada|${titolare.id}`) * 5)]} ${civico}`,
+      cap: '10093',
+      comune: 'Collegno',
+      cambiataIl: STAGIONE.dal,
+    }
+  }
+  a.persone = a.persone.map((p) => (nel.has(p.id) ? { ...p, nucleo: nel.get(p.id) } : p))
+  a.anagrafiche = anagrafiche
+  archivio.salva()
+  try {
+    localStorage.setItem(DOVE_NUCLEI, VERSIONE)
+  } catch {
+    /* si rifaranno, e saltano chi ha già un nucleo */
   }
 }

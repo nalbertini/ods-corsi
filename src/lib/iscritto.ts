@@ -2,6 +2,7 @@ import type { StatoPresenza, StatoSessione } from './sala'
 import type { CertificatoSeg, PagamentoSeg } from './segreteria'
 import { comeCertificato, comePaga } from './segreteria'
 import type { Ricevuta } from './ricevute'
+import type { DatiRichiesta, StatoRichiesta } from './richieste'
 
 /**
  * L'area degli iscritti: quello che di sé vede chi frequenta i corsi, dal
@@ -58,6 +59,16 @@ export interface MiaPresenza {
   stato: StatoPresenza | null
 }
 
+/** Una persona aggiunta al nucleo dall'area, finché la segreteria non l'ha accolta. */
+export interface AggiuntaNucleo {
+  id: string
+  nome: string
+  cognome: string
+  corsi: string[]
+  creataIl: string
+  stato: Exclude<StatoRichiesta, 'accolta'>
+}
+
 export interface DatiIscritto {
   readonly modo: 'prova'
   /** Gli iscritti fra cui scegliere chi essere, in ordine di cognome. */
@@ -69,6 +80,22 @@ export interface DatiIscritto {
   presenze(personaId: string, giorni: number): Promise<MiaPresenza[]>
   /** Le sue ricevute, dalla più recente; anche le annullate. */
   ricevute(personaId: string): Promise<Ricevuta[]>
+  /**
+   * Il nucleo familiare visto da questa persona (vedi `nucleo.ts`): il
+   * titolare vede sé stesso per primo e poi gli altri, in ordine di nome; chi
+   * è nel nucleo di un altro vede solo sé stesso.
+   */
+  nucleo(personaId: string): Promise<SchedaIscritto[]>
+  /** Può aggiungere persone al nucleo: è il titolare, o non è nel nucleo di nessuno. */
+  titolare(personaId: string): Promise<boolean>
+  /** Le persone aggiunte dal titolare che la segreteria non ha ancora accolto, e le rifiutate dell'ultimo mese. */
+  aggiunte(personaId: string): Promise<AggiuntaNucleo[]>
+  /**
+   * Quello che il modulo di una persona in più può già sapere dal titolare:
+   * cognome, residenza, email e telefono, e i suoi dati da genitore per un
+   * minore. Si cambia tutto, prima di mandare.
+   */
+  datiDelNucleo(personaId: string): Promise<Partial<DatiRichiesta>>
 }
 
 /** Quanto viene: le presenze sulle lezioni che contano (le giustificate no). */

@@ -60,6 +60,8 @@ export interface PersonaProva {
   /** Solo degli iscritti, e anche questi possono mancare in un archivio già salvato. */
   certificato?: { scade?: string; file?: string }
   pagamento?: { stato: 'da_pagare' | 'in_parte' | 'pagato'; fino?: string; nota?: string }
+  /** Il titolare del nucleo familiare di cui fa parte, per id; il titolare non ce l'ha (vedi `nucleo.ts`). */
+  nucleo?: string
 }
 
 export interface IscrizioneProva {

@@ -43,6 +43,12 @@ export interface DatiRichiesta {
   note?: string
   /** La casella «Accetto il Regolamento Sociale»: senza, la richiesta non parte. */
   regolamento?: boolean
+  /**
+   * Mandata dall'area degli iscritti per il nucleo di questa persona (il
+   * titolare, per id): accolta, chi si iscrive entra nel suo nucleo. Solo in
+   * prova, per ora (vedi `nucleo.ts`).
+   */
+  nucleoDi?: string
 }
 
 export interface Richiesta extends DatiRichiesta {
@@ -146,7 +152,7 @@ export function certificatoDaPortare(natoIl: string, nomiCorsi: string[], oggi =
 }
 
 /** I campi del modulo che possono non andare, per segnarli uno per uno. */
-export type CampoModulo = Exclude<keyof DatiRichiesta, 'note'>
+export type CampoModulo = Exclude<keyof DatiRichiesta, 'note' | 'nucleoDi'>
 
 /**
  * Una cosa che non va: `messaggio` è quello del server, `testo` quello corto

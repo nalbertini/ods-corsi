@@ -7,14 +7,15 @@
 // legge quello che fanno la segreteria e l'appello — una lezione annullata,
 // un sostituto, una sala cambiata, una presenza, una ricevuta — e che di un
 // altro iscritto non vede niente. In fondo gli avvisi in cima alla pagina e
-// le ricevute degli esempi.
+// le ricevute degli esempi; poi il nucleo familiare: chi lo vede, la
+// persona in più coi dati del titolare, e i conti con lo sconto famiglia.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { avvisi, contoPresenze } from './src/lib/iscritto'; export { creaDatiProva } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { ENTE_PREDEFINITO } from './src/lib/ricevute'",
+      "export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { avvisi, contoPresenze } from './src/lib/iscritto'; export { creaDatiProva } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { ENTE_PREDEFINITO, vociDelCorso } from './src/lib/ricevute'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { stimaIscrizione, abbonamentiDalleRicevute } from './src/lib/nucleo'; export { LISTINO_PREDEFINITO } from './src/lib/listino'; export { carattereControllo, lettereCognome, lettereNome, cfValido } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -149,6 +150,79 @@ console.log('\n6. le ricevute degli esempi')
   localStorage.removeItem('ods-corsi:prova-esempi-ricevute')
   m.seminaEsempi()
   ok('rifatti, non raddoppiano', m.archivio.dati.ricevute.length, prima + esempi.length)
+}
+
+console.log('\n7. il nucleo familiare')
+{
+  const a = m.archivio.dati
+  const membri = a.persone.filter((p) => p.nucleo)
+  ok('gli esempi fanno qualche famiglia', membri.length > 0, true)
+  const titolareId = membri[0].nucleo
+  const titolare = a.persone.find((p) => p.id === titolareId)
+  const suoi = a.persone.filter((p) => p.nucleo === titolareId)
+  ok('stesso cognome', suoi.every((p) => p.cognome === titolare.cognome), true)
+  const visto = await io.nucleo(titolareId)
+  ok('il titolare vede sé stesso per primo, e il suo nucleo', [visto[0].id, visto.length], [titolareId, suoi.length + 1])
+  ok('chi è nel nucleo vede solo sé stesso', (await io.nucleo(suoi[0].id)).map((p) => p.id), [suoi[0].id])
+  ok('e non aggiunge', [await io.titolare(titolareId), await io.titolare(suoi[0].id)], [true, false])
+  ok('chi non ha un nucleo è titolare del suo', await io.titolare(chi), true)
+  ok('gli altri non hanno nemmeno i dati del titolare', await io.datiDelNucleo(suoi[0].id), {})
+
+  const base = await io.datiDelNucleo(titolareId)
+  ok('il modulo parte col cognome, la residenza e il titolare da genitore', [base.cognome, base.comune, base.genitoreNome, base.nucleoDi], [titolare.cognome, 'Collegno', titolare.nome, titolareId])
+  ok('col suo codice fiscale vero', m.cfValido(base.genitoreCodiceFiscale), true)
+
+  // Un figlio di otto anni, con un codice fiscale giusto.
+  const nato = new Date()
+  nato.setFullYear(nato.getFullYear() - 8)
+  const natoIl = g(nato)
+  const pezzo = `${m.lettereCognome(titolare.cognome)}${m.lettereNome('Tommaso')}${natoIl.slice(2, 4)}${'ABCDEHLMPRST'[nato.getMonth()]}${String(nato.getDate()).padStart(2, '0')}L219`
+  // Chi non ha dato l'email alla segreteria la scrive nel modulo.
+  const figlio = { ...base, email: base.email || 'famiglia@esempio.it', nome: 'Tommaso', natoIl, natoA: 'Torino', codiceFiscale: pezzo + m.carattereControllo(pezzo), corsi: ['judo-2'], formula: 'annuale', regolamento: true, telefono2: '', note: '' }
+  const r = m.creaRichiesteProva()
+  const id = await r.invia(figlio)
+  ok('la richiesta parte, col nucleo', (await r.richieste()).find((x) => x.id === id).nucleoDi, titolareId)
+  ok('il titolare la vede in attesa', (await io.aggiunte(titolareId)).map((x) => [x.nome, x.stato, x.corsi]), [['Tommaso', 'nuova', ['Judo 2']]])
+  ok('per il nucleo di un altro no', (await io.aggiunte(suoi[0].id)).length, 0)
+  const nuovo = await r.accogli(id)
+  ok('accolta, entra nel nucleo', a.persone.find((p) => p.id === nuovo).nucleo, titolareId)
+  ok('il titolare lo vede, e non più in attesa', [(await io.nucleo(titolareId)).some((p) => p.id === nuovo), (await io.aggiunte(titolareId)).length], [true, 0])
+  ok('e vede le sue lezioni', (await io.lezioni(nuovo, fra(0), fra(14))).every((l) => l.corso === 'Judo 2'), true)
+  let rifiuto = 'nessun errore'
+  try {
+    await r.invia({ ...figlio, nucleoDi: suoi[0].id })
+  } catch (e) {
+    rifiuto = e.message
+  }
+  ok('chi non è titolare non fa da nucleo', rifiuto, 'Il nucleo per cui iscrivi non c’è più: ricarica la pagina')
+}
+
+console.log('\n8. quanto costa una persona in più')
+{
+  const L = m.LISTINO_PREDEFINITO
+  const giorno = '2026-10-02'
+  const annuale = (corso) => m.vociDelCorso(corso, giorno, L).find((v) => v.chiave.endsWith('~annuale')).voce(giorno).prezzo
+  const quota = L.quota * 100
+  const judo = annuale('Judo 2')
+  const solo = m.stimaIscrizione({ chi: 'Tommaso', corsi: ['Judo 2'], formula: 'annuale' }, [], giorno, L)
+  ok('da solo: quota e annuale, senza sconto', [solo.totale, solo.sconto], [quota + judo, undefined])
+  const caro = m.stimaIscrizione({ chi: 'Tommaso', corsi: ['Judo 2'], formula: 'annuale' }, [{ chi: 'Anna', corso: 'X', importo: judo + 10000 }], giorno, L)
+  ok('il suo annuale costa meno: lo sconto è suo', [caro.sconto.qui, caro.totale], [true, quota + judo - Math.round(judo * 0.2)])
+  const meno = m.stimaIscrizione({ chi: 'Tommaso', corsi: ['Judo 2'], formula: 'annuale' }, [{ chi: 'Anna', corso: 'X', importo: judo - 10000 }], giorno, L)
+  ok('costa meno quello di un altro: lo sconto è dell’altro', [meno.sconto.qui, meno.sconto.chi, meno.totale], [false, 'Anna', quota + judo])
+  const pari = m.stimaIscrizione({ chi: 'Tommaso', corsi: ['Judo 2'], formula: 'annuale' }, [{ chi: 'Anna', corso: 'X', importo: judo }], giorno, L)
+  ok('a pari prezzo lo sconto va sulla persona nuova', pari.sconto.qui, true)
+  const tri = m.stimaIscrizione({ chi: 'Tommaso', corsi: ['Judo 2'], formula: 'trimestre' }, [{ chi: 'Anna', corso: 'X', importo: 1 }], giorno, L)
+  ok('il trimestre non ha sconto', [tri.sconto, tri.righe.length], [undefined, 2])
+  const ignoto = m.stimaIscrizione({ chi: 'Tommaso', corsi: ['Corso che non c’è'], formula: 'annuale' }, [], giorno, L)
+  ok('un corso fuori listino si dice', [ignoto.senzaPrezzo, ignoto.totale], [['Corso che non c’è'], quota])
+  const voce = (descrizione, prezzo) => ({ descrizione, quantita: 1, prezzo, pagamenti: [] })
+  const ric = [
+    { personaId: 'a', voci: [voce('QUOTA ASSOCIATIVA', quota), voce('Annuale Judo 2', judo)] },
+    { personaId: 'b', voci: [voce('Trimestre Lotta 2', 9000)], annullataIl: undefined },
+    { personaId: 'c', voci: [voce('Annuale Lotta 2', 1)], annullataIl: '2026-09-20' },
+  ]
+  ok('gli annuali del nucleo dalle ricevute, non le annullate', m.abbonamentiDalleRicevute(ric, (id) => id.toUpperCase()), [{ chi: 'A', corso: 'Judo 2', importo: judo }])
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

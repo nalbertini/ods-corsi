@@ -1,5 +1,8 @@
-import type { DatiIscritto, MiaLezione, MiaPresenza } from './iscritto'
+import type { AggiuntaNucleo, DatiIscritto, MiaLezione, MiaPresenza, SchedaIscritto } from './iscritto'
 import { archivio } from './archivioProva'
+import { creaSegreteriaProva } from './segreteriaProva'
+import { creaRichiesteProva } from './richiesteProva'
+import { minorenne } from './richieste'
 import { comeE, iscrittiIl, lezioniFra, memoria, nomeIstruttore, salaDelGiorno } from './datiProva'
 import { chiaveGiorno, perCognome } from './sala'
 
@@ -9,7 +12,9 @@ import { chiaveGiorno, perCognome } from './sala'
  *
  * Fa vedere a un iscritto solo quello che è suo, come faranno le funzioni
  * del database: le lezioni dei corsi a cui era iscritto quel giorno, i suoi
- * segni nell'appello, le sue ricevute.
+ * segni nell'appello, le sue ricevute. Il titolare di un nucleo familiare
+ * vede anche le persone del suo nucleo (vedi `nucleo.ts`), una alla volta,
+ * con le stesse chiamate: l'area chiede per ognuna.
  */
 
 const GIORNO = 24 * 60 * 60_000
@@ -19,6 +24,25 @@ export function creaIscrittoProva(): DatiIscritto {
   const persona = (id: string) => a().persone.find((p) => p.id === id && p.ruolo === 'iscritto' && p.attiva)
   /** Era iscritto a quel corso quel giorno: l'elenco dell'appello lo dice. */
   const suo = (personaId: string, corsoId: string, giorno: string) => iscrittiIl(corsoId, giorno).some((p) => p.id === personaId)
+
+  const scheda = (personaId: string): SchedaIscritto | null => {
+    const p = persona(personaId)
+    if (!p) return null
+    const oggi = chiaveGiorno(new Date())
+    const corsi = a()
+      .corsi.filter((c) => c.attivo && suo(personaId, c.id, oggi))
+      .map((c) => ({ id: c.id, nome: c.nome, colore: c.colore }))
+    return {
+      id: p.id,
+      nome: p.nome,
+      cognome: p.cognome,
+      corsi,
+      certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file },
+      pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
+    }
+  }
+  const eTitolare = (personaId: string) => !!persona(personaId) && !persona(personaId)!.nucleo
+  const nomeCorso = (id: string) => a().corsi.find((c) => c.id === id)?.nome ?? id
 
   return {
     modo: 'prova',
@@ -32,20 +56,7 @@ export function creaIscrittoProva(): DatiIscritto {
     },
 
     async scheda(personaId) {
-      const p = persona(personaId)
-      if (!p) return null
-      const oggi = chiaveGiorno(new Date())
-      const corsi = a()
-        .corsi.filter((c) => c.attivo && suo(personaId, c.id, oggi))
-        .map((c) => ({ id: c.id, nome: c.nome, colore: c.colore }))
-      return {
-        id: p.id,
-        nome: p.nome,
-        cognome: p.cognome,
-        corsi,
-        certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file },
-        pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
-      }
+      return scheda(personaId)
     },
 
     async lezioni(personaId, da, fino) {
@@ -87,6 +98,57 @@ export function creaIscrittoProva(): DatiIscritto {
       return (a().ricevute ?? [])
         .filter((r) => r.personaId === personaId)
         .sort((x, y) => y.data.localeCompare(x.data) || y.anno - x.anno || y.numero - x.numero)
+    },
+
+    async nucleo(personaId) {
+      const io = scheda(personaId)
+      if (!io) return []
+      if (!eTitolare(personaId)) return [io]
+      const altri = a()
+        .persone.filter((p) => p.nucleo === personaId && p.ruolo === 'iscritto' && p.attiva)
+        .sort((x, y) => x.nome.localeCompare(y.nome, 'it'))
+        .map((p) => scheda(p.id))
+        .filter((x): x is SchedaIscritto => !!x)
+      return [io, ...altri]
+    },
+
+    async titolare(personaId) {
+      return eTitolare(personaId)
+    },
+
+    async aggiunte(personaId) {
+      if (!eTitolare(personaId)) return []
+      const mese = Date.now() - 30 * GIORNO
+      return (await creaRichiesteProva().richieste())
+        .filter((r) => r.nucleoDi === personaId && (r.stato === 'nuova' || (r.stato === 'rifiutata' && new Date(r.gestitaIl ?? r.creataIl).getTime() > mese)))
+        .map(
+          (r): AggiuntaNucleo => ({
+            id: r.id,
+            nome: r.nome,
+            cognome: r.cognome,
+            corsi: r.corsi.map(nomeCorso),
+            creataIl: r.creataIl,
+            stato: r.stato as AggiuntaNucleo['stato'],
+          }),
+        )
+    },
+
+    async datiDelNucleo(personaId) {
+      const p = persona(personaId)
+      if (!p || !eTitolare(personaId)) return {}
+      const an = (await creaSegreteriaProva().anagraficaDi(personaId))?.dati ?? {}
+      // Da genitore solo se è maggiorenne, o se non si sa quando è nato.
+      const adulto = !an.natoIl || !minorenne(an.natoIl)
+      return {
+        cognome: p.cognome,
+        indirizzo: an.indirizzo ?? '',
+        cap: an.cap ?? '',
+        comune: an.comune ?? '',
+        email: p.email ?? '',
+        telefono: p.telefono ?? '',
+        ...(adulto ? { genitoreNome: p.nome, genitoreCognome: p.cognome, genitoreCodiceFiscale: an.codiceFiscale ?? '' } : {}),
+        nucleoDi: personaId,
+      }
     },
   }
 }

@@ -5,6 +5,7 @@ import {
   datiIscritto,
   iscrittoScelto,
   scegliIscritto,
+  type AggiuntaNucleo,
   type DatiIscritto,
   type IscrittoDiProva,
   type MiaLezione,
@@ -15,7 +16,9 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 import { comeCertificato, comePaga } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { CONTATTI, chiama } from '../lib/sito'
+import { abbonamentiDalleRicevute, SCONTO_FAMIGLIA } from '../lib/nucleo'
 import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } from './ds'
+import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 
 /**
  * L'area degli iscritti, dal telefono: le prossime lezioni dei suoi corsi,
@@ -25,6 +28,11 @@ import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } 
  * È il pilota, e c'è solo in prova (vedi `iscritto.ts`): in cima si sceglie
  * quale iscritto inventato essere, per far vedere la pagina com'è per
  * ognuno. Col database vero, per ora, la pagina dice che non è ancora aperta.
+ *
+ * Il titolare di un nucleo familiare (vedi `nucleo.ts`) passa dalla sua
+ * pagina a quella di ogni persona del nucleo, vede i pagamenti di tutti e
+ * aggiunge una persona in più col modulo di iscrizione, che parte coi suoi
+ * dati e dice quanto costa con lo sconto famiglia.
  */
 
 /** Quanti giorni avanti si guardano le lezioni, e quanti indietro le presenze. */
@@ -78,14 +86,96 @@ export function AreaIscritti() {
             ))}
           </select>
         </div>
-        {chi ? <Pagina key={chi} dati={d} personaId={chi} /> : <p className="pad">Nessun iscritto in prova.</p>}
+        {chi ? <Account key={chi} dati={d} personaId={chi} /> : <p className="pad">Nessun iscritto in prova.</p>}
       </div>
     </>
   )
 }
 
-/** La pagina di un iscritto. */
-function Pagina({ dati, personaId }: { dati: DatiIscritto; personaId: string }) {
+const suSubito = () => document.querySelector('.scroll')?.scrollTo(0, 0)
+
+/**
+ * Chi è entrato: la sua pagina, o quella di una persona del suo nucleo, e
+ * sotto il nucleo coi pagamenti di tutti. Aggiungendo una persona la pagina
+ * lascia il posto al modulo.
+ */
+function Account({ dati, personaId }: { dati: DatiIscritto; personaId: string }) {
+  const [nucleo, setNucleo] = useState<SchedaIscritto[] | null>(null)
+  const [titolare, setTitolare] = useState(false)
+  const [aggiunte, setAggiunte] = useState<AggiuntaNucleo[]>([])
+  const [ricevute, setRicevute] = useState<Ricevuta[]>([])
+  const [di, setDi] = useState(personaId)
+  const [modulo, setModulo] = useState<PerIlNucleo | null>(null)
+  const [giro, setGiro] = useState(0)
+
+  useEffect(() => {
+    let vivo = true
+    void Promise.all([dati.nucleo(personaId), dati.titolare(personaId), dati.aggiunte(personaId)]).then(async ([n, t, ag]) => {
+      const r = (await Promise.all(n.map((p) => dati.ricevute(p.id)))).flat()
+      if (!vivo) return
+      setNucleo(n)
+      setTitolare(t)
+      setAggiunte(ag)
+      setRicevute(r)
+    })
+    return () => {
+      vivo = false
+    }
+  }, [dati, personaId, giro])
+
+  if (!nucleo) return <p className="pad" style={{ color: 'var(--dim)' }}>Un attimo…</p>
+  const io = nucleo[0]
+  if (!io) return <p className="pad">Questa persona non è più fra gli iscritti.</p>
+  const nomeDi = (id: string) => nucleo.find((p) => p.id === id)?.nome ?? ''
+
+  if (modulo)
+    return (
+      <div className="iscrizioni-modulo">
+        <Titoletto>UNA PERSONA IN PIÙ</Titoletto>
+        <ModuloIscrizione
+          nucleo={modulo}
+          torna="TORNA ALLA TUA PAGINA"
+          onChiudi={() => {
+            setModulo(null)
+            setGiro((g) => g + 1)
+            suSubito()
+          }}
+        />
+      </div>
+    )
+
+  const aggiungi = async () => {
+    const d = await dati.datiDelNucleo(personaId)
+    setModulo({ titolare: io.nome, dati: d, abbonamenti: abbonamentiDalleRicevute(ricevute, nomeDi) })
+    suSubito()
+  }
+  const apri = (id: string) => {
+    setDi(id)
+    suSubito()
+  }
+
+  return (
+    <>
+      {nucleo.length > 1 && (
+        <div className="pad row mie-chips mio-nucleo-scelta" role="group" aria-label="Di chi vedi la pagina">
+          {nucleo.map((p) => (
+            <button key={p.id} type="button" className="num mia-chip mia-chip-tasto" aria-pressed={p.id === di} onClick={() => apri(p.id)}>
+              {p.id === personaId ? 'TU' : p.nome.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
+      <Pagina key={di} dati={dati} personaId={di} tua={di === personaId} />
+      {titolare && <Nucleo io={personaId} membri={nucleo} aggiunte={aggiunte} ricevute={ricevute} onApri={apri} onAggiungi={() => void aggiungi()} />}
+      <div style={{ paddingBottom: 20 }}>
+        <Segreteria />
+      </div>
+    </>
+  )
+}
+
+/** La pagina di un iscritto: la propria, o (`tua` falso) di una persona del nucleo. */
+function Pagina({ dati, personaId, tua }: { dati: DatiIscritto; personaId: string; tua: boolean }) {
   const [scheda, setScheda] = useState<SchedaIscritto | null | undefined>(undefined)
   const [lezioni, setLezioni] = useState<MiaLezione[]>([])
   const [presenze, setPresenze] = useState<MiaPresenza[]>([])
@@ -115,23 +205,23 @@ function Pagina({ dati, personaId }: { dati: DatiIscritto; personaId: string }) 
   if (!scheda) return <p className="pad">Questa persona non è più fra gli iscritti.</p>
 
   return (
-    <div className="stack" style={{ paddingBottom: 20 }}>
-      <Saluto scheda={scheda} />
+    <div className="stack">
+      <Saluto scheda={scheda} tua={tua} />
       <Prossime lezioni={lezioni} />
       <Presenze presenze={presenze} />
       <InRegola scheda={scheda} />
       <Ricevute ricevute={ricevute} />
-      <Segreteria />
     </div>
   )
 }
 
-function Saluto({ scheda }: { scheda: SchedaIscritto }) {
+function Saluto({ scheda, tua }: { scheda: SchedaIscritto; tua: boolean }) {
   const oggi = chiaveGiorno(new Date())
   const x = avvisi(scheda, oggi)
   return (
     <section className="pad stack" style={{ gap: 10, paddingTop: 6 }}>
-      <span className="ob mio-nome">Ciao {scheda.nome}</span>
+      <span className="ob mio-nome">{tua ? `Ciao ${scheda.nome}` : `${scheda.nome} ${scheda.cognome}`}</span>
+      {!tua && <Dettaglio>Nel tuo nucleo familiare: vedi la sua pagina come la vede la segreteria.</Dettaglio>}
       {scheda.corsi.length > 0 ? (
         <span className="row mie-chips">
           {scheda.corsi.map((c) => (
@@ -336,6 +426,114 @@ function Ricevute({ ricevute }: { ricevute: Ricevuta[] }) {
         {guaio && <Dettaglio tono="guaio">{guaio}</Dettaglio>}
       </div>
     </section>
+  )
+}
+
+/**
+ * Il nucleo familiare, per il titolare: chi c'è, chi è in regola, chi
+ * aspetta la segreteria, e i pagamenti di tutti con lo sconto famiglia.
+ */
+function Nucleo({
+  io,
+  membri,
+  aggiunte,
+  ricevute,
+  onApri,
+  onAggiungi,
+}: {
+  io: string
+  membri: SchedaIscritto[]
+  aggiunte: AggiuntaNucleo[]
+  ricevute: Ricevuta[]
+  onApri: (id: string) => void
+  onAggiungi: () => void
+}) {
+  const oggi = chiaveGiorno(new Date())
+  const valide = ricevute.filter((r) => !r.annullataIl)
+  const pagatoDa = (id: string) => valide.filter((r) => r.personaId === id).reduce((s, r) => s + r.pagato, 0)
+  const nomeDi = (id: string) => membri.find((p) => p.id === id)?.nome ?? ''
+  const annuali = abbonamentiDalleRicevute(ricevute, nomeDi)
+  const minimo = annuali.length >= 2 ? annuali.reduce((x, y) => (y.importo < x.importo ? y : x)) : null
+  const PAGA: Record<string, string> = { pagato: 'PAGATO', in_parte: 'IN PARTE', da_pagare: 'DA PAGARE', scaduto: 'DA RINNOVARE' }
+  return (
+    <>
+      <section>
+        <Titoletto conto={membri.length}>IL TUO NUCLEO</Titoletto>
+        <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
+          {membri.map((p) => {
+            const guai = avvisi(p, oggi)
+            return (
+              <button key={p.id} type="button" className="card row mio-membro" onClick={() => onApri(p.id)}>
+                <span className="stack grow" style={{ gap: 2, minWidth: 0, textAlign: 'left' }}>
+                  <span style={{ fontWeight: 600 }}>
+                    {p.nome} {p.cognome}
+                    {p.id === io ? ' · tu' : ''}
+                  </span>
+                  <span style={{ fontSize: 13, color: 'var(--dim)' }}>{p.corsi.map((c) => c.nome).join(', ') || 'Nessun corso oggi'}</span>
+                </span>
+                <span className="num mia-lezione-cosa" data-tono={guai.some((g) => g.tono === 'guaio') ? 'guaio' : guai.length ? 'avviso' : 'fatto'}>
+                  {guai.length ? 'DA SISTEMARE' : 'IN REGOLA'}
+                </span>
+              </button>
+            )
+          })}
+          {aggiunte.map((x) => (
+            <div key={x.id} className="card row mio-membro" data-attesa>
+              <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+                <span style={{ fontWeight: 600 }}>
+                  {x.nome} {x.cognome}
+                </span>
+                <span style={{ fontSize: 13, color: 'var(--dim)' }}>{x.corsi.join(', ')}</span>
+              </span>
+              <span className="num mia-lezione-cosa" data-tono={x.stato === 'rifiutata' ? 'guaio' : 'avviso'}>
+                {x.stato === 'rifiutata' ? 'RIFIUTATA: CHIAMA LA SEGRETERIA' : 'LA GUARDA LA SEGRETERIA'}
+              </span>
+            </div>
+          ))}
+          <Dettaglio>Figli, coniuge, fratelli: il modulo parte coi tuoi dati, e la richiesta arriva in segreteria come le altre.</Dettaglio>
+          <Tasti>
+            <Tasto variante="principale" onClick={onAggiungi}>
+              AGGIUNGI UNA PERSONA
+            </Tasto>
+          </Tasti>
+        </div>
+      </section>
+      {membri.length > 1 && (
+        <section>
+          <Titoletto>PAGAMENTI DEL NUCLEO</Titoletto>
+          <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
+            <ul className="card stack mie-presenze">
+              {membri.map((p) => {
+                const come = comePaga(p.pagamento, oggi)
+                return (
+                  <li key={p.id} className="row mia-presenza" data-stato={come === 'pagato' ? 'presente' : come === 'in_parte' ? 'nessuno' : 'assente'}>
+                    <span className="stack grow" style={{ gap: 1, minWidth: 0 }}>
+                      <span style={{ fontWeight: 600 }}>{p.nome}</span>
+                      <span style={{ fontSize: 13, color: 'var(--dim)' }}>Pagati {euro(pagatoDa(p.id))} € nelle ricevute</span>
+                    </span>
+                    <span className="num mia-presenza-detto">{PAGA[come]}</span>
+                  </li>
+                )
+              })}
+              <li className="row mia-presenza">
+                <span className="grow" style={{ fontWeight: 700 }}>
+                  Tutto il nucleo
+                </span>
+                <span className="num mia-ricevuta-euro">{euro(valide.reduce((s, r) => s + r.pagato, 0))} €</span>
+              </li>
+            </ul>
+            {minimo ? (
+              <Dettaglio>
+                Sconto famiglia: il {Math.round(SCONTO_FAMIGLIA * 100)}% sull’annuale che costa meno, {minimo.corso} di {minimo.chi}, cioè{' '}
+                {euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €. Se non l’hai avuto, chiedilo in segreteria.
+              </Dettaglio>
+            ) : (
+              <Dettaglio>Con due annuali nel nucleo, quello che costa meno ha il {Math.round(SCONTO_FAMIGLIA * 100)}% di sconto (la quota associativa no).</Dettaglio>
+            )}
+          </div>
+        </section>
+      )}
+    </>
   )
 }
 

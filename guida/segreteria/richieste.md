@@ -10,7 +10,11 @@ qui si guardano i dati e i file, e poi la si accoglie o la si rifiuta.
 
 In cima c'è quante sono da guardare. Per ogni richiesta: nome, **CORSI**,
 quando è **ARRIVATA**, **STATO** (**NUOVA**, **ACCOLTA**, **RIFIUTATA**), e
-**MINORE** se chi si iscrive è minorenne.
+**MINORE** se chi si iscrive è minorenne, **NUCLEO** se l'ha aggiunta un
+iscritto per il suo nucleo familiare, dalla sua area: la scheda dice chi è
+(toccando il nome si apre la sua scheda), e accolta la persona entra nel
+suo nucleo. Per un minore del nucleo il documento non manca: è quello del
+genitore, già in segreteria.
 
 Normalmente si vedono solo le nuove; **ANCHE QUELLE GIÀ GESTITE** mostra tutte.
 

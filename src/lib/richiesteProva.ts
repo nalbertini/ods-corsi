@@ -88,6 +88,8 @@ export function creaRichiesteProva(): DatiRichieste {
       if (guaio) throw new Error(guaio)
       const aperti = new Set(archivio.dati.corsi.filter((c) => c.attivo).map((c) => c.id))
       if (dati.corsi.some((c) => !aperti.has(c))) throw new Error("Uno dei corsi scelti non c'è più: ricarica la pagina")
+      if (dati.nucleoDi && !archivio.dati.persone.some((p) => p.id === dati.nucleoDi && p.ruolo === 'iscritto' && p.attiva && !p.nucleo))
+        throw new Error('Il nucleo per cui iscrivi non c’è più: ricarica la pagina')
       const email = dati.email.trim().toLowerCase()
       const ieri = Date.now() - 24 * 60 * 60_000
       if (tutte.filter((r) => r.email === email && new Date(r.creataIl).getTime() > ieri).length >= 3)
@@ -111,6 +113,7 @@ export function creaRichiesteProva(): DatiRichieste {
         genitoreCodiceFiscale: minore ? pulisciCf(dati.genitoreCodiceFiscale ?? '') : undefined,
         telefono2: dati.telefono2?.trim() || undefined,
         note: dati.note?.trim() || undefined,
+        nucleoDi: dati.nucleoDi || undefined,
       }
       tutte = [r, ...tutte]
       salva()
@@ -164,6 +167,11 @@ export function creaRichiesteProva(): DatiRichieste {
           { id, nome: r.nome, cognome: r.cognome, ruolo: 'iscritto', email: emailLibera ? r.email : undefined, telefono: r.telefono, attiva: true, creataIl: oggi },
         ]
       }
+      // Dal nucleo di un iscritto: ci entra, a meno che non sia il titolare
+      // stesso o non abbia già un nucleo suo, con altri dentro.
+      const titolare = r.nucleoDi && a.persone.find((p) => p.id === r.nucleoDi && p.attiva && !p.nucleo)
+      const haIlSuo = a.persone.some((p) => p.nucleo === id)
+      if (titolare && titolare.id !== id && !haIlSuo) a.persone = a.persone.map((p) => (p.id === id ? { ...p, nucleo: titolare.id } : p))
       for (const corsoId of r.corsi) {
         if (!a.corsi.some((c) => c.id === corsoId && c.attivo)) continue
         const c = a.iscrizioni.find((i) => i.personaId === id && i.corsoId === corsoId)

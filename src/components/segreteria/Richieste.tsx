@@ -16,6 +16,10 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * firmato, il documento e la ricevuta, e poi la accoglie — la persona entra
  * in elenco, iscritta ai corsi che ha scelto — o la rifiuta. Accolta o
  * rifiutata resta qui con quello che diceva, finché non la si elimina.
+ *
+ * Una richiesta mandata dall'area degli iscritti per il nucleo familiare di
+ * qualcuno lo dice (NUCLEO): accolta, la persona entra nel suo nucleo, e per
+ * un minore il documento è quello del genitore, che la segreteria ha già.
  */
 export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?: Destinazione) => void }) {
   const [r, setR] = useState<DatiRichieste | null>(null)
@@ -25,11 +29,13 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
     return x.richieste()
   }, [])
   const corsi = useCarica(() => d.corsi(), [d])
+  const persone = useCarica(() => d.persone(), [d])
   const [tutte, setTutte] = useState(false)
   const [scelta, setScelta] = useState<string | null>(null)
   const { avviso, fai } = useAvviso()
 
   const nomi = new Map((corsi.dato ?? []).map((c) => [c.id, c.nome]))
+  const chi = new Map((persone.dato ?? []).map((p) => [p.id, `${p.nome} ${p.cognome}`]))
   const lista = (elenco.dato ?? []).filter((x) => tutte || x.stato === 'nuova')
   const nuove = (elenco.dato ?? []).filter((x) => x.stato === 'nuova').length
   const richiesta = (elenco.dato ?? []).find((x) => x.id === scelta) ?? null
@@ -75,6 +81,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
                 <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>
                   {x.cognome} {x.nome}
                   {minorenne(x.natoIl) && <span className="num sg-tag" style={{ marginLeft: 8 }}>MINORE</span>}
+                  {x.nucleoDi && <span className="num sg-tag" style={{ marginLeft: 8 }}>NUCLEO</span>}
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(x.creataIl)}</span>
@@ -93,6 +100,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
               r={r}
               x={richiesta}
               nomi={nomi}
+              titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
               fai={fai}
               onCambiato={() => void elenco.ricarica()}
               onEliminata={() => {
@@ -117,6 +125,7 @@ function Scheda({
   r,
   x,
   nomi,
+  titolare,
   fai,
   onCambiato,
   onEliminata,
@@ -125,6 +134,8 @@ function Scheda({
   r: DatiRichieste
   x: Richiesta
   nomi: Map<string, string>
+  /** Il titolare del nucleo da cui arriva, se arriva dall'area degli iscritti. */
+  titolare?: string
   fai: Fai
   onCambiato: () => void
   onEliminata: () => void
@@ -133,7 +144,7 @@ function Scheda({
   const file = useCarica(() => r.file(x.id), [r, x.id])
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
-  const mancanti = FILE.filter((f) => f.obbligatorio && !arrivati.has(f.tipo))
+  const mancanti = FILE.filter((f) => f.obbligatorio && !arrivati.has(f.tipo) && !(f.tipo === 'documento' && titolare && minore))
 
   return (
     <>
@@ -148,6 +159,15 @@ function Scheda({
       </div>
 
       <div className="sg-dati">
+        {titolare && x.nucleoDi && (
+          <Dato etichetta="NUCLEO">
+            Aggiunto da{' '}
+            <button type="button" className="sg-link" onClick={() => onApri(x.nucleoDi!)}>
+              {titolare}
+            </button>{' '}
+            dalla sua area: accolto, entra nel suo nucleo.{minore && ' Il documento è quello del genitore, già in segreteria.'}
+          </Dato>
+        )}
         <Dato etichetta="NATO IL">{dataLunga(x.natoIl)}{minore && ' · minorenne'}</Dato>
         <Dato etichetta="A">{x.natoA}</Dato>
         <Dato etichetta="CODICE FISCALE" num>{x.codiceFiscale}</Dato>
