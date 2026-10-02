@@ -529,6 +529,89 @@ La chiave `anon` **è pubblica** ed è fatta per finire nel codice del browser:
 non è un segreto trapelato. A proteggere i dati sono le policy di
 `02-policy.sql`, e sono quelle da guardare se qualcosa sembra troppo aperto.
 
+## 10. Il backup
+
+Il piano gratuito di Supabase fa i suoi backup ma non li lascia scaricare. La
+copia che resta alla palestra la fa GitHub Actions, con
+`.github/workflows/backup.yml`: ogni lunedì alle 3:17 UTC, o quando serve
+(per esempio prima di lanciare un file SQL nuovo) dalla segreteria, più
+sotto, o da **Actions → Backup del database → Run workflow**. Copia il database, non i file dello Storage
+(documenti d'identità, certificati, clip della voce).
+
+Servono due *repository secrets* in **Settings → Secrets → Actions**:
+
+- **`SUPABASE_DB_URL`**: in Supabase, **Connect → Session pooler**, la stringa
+  `postgresql://postgres.<id del progetto>:<password>@aws-0-eu-central-1.pooler.supabase.com:5432/postgres`
+  con la password del database al suo posto. Il *Session pooler* e non la
+  *Direct connection*: quella parla solo IPv6, e le macchine di GitHub no.
+- **`BACKUP_PASSWORD`**: una password lunga, inventata per questo, da tenere
+  anche fuori da GitHub (la segreteria, un gestore di password). Il
+  repository è pubblico e le copie le scarica chiunque abbia un account
+  GitHub: per questo escono cifrate, e senza questa password non le apre
+  nessuno, palestra compresa.
+
+Senza `SUPABASE_DB_URL` il workflow passa senza fare niente; con l'indirizzo e
+senza password si ferma rosso, invece di mettere fuori i dati in chiaro.
+
+Ogni copia è un artefatto `backup-AAAA-MM-GG`, nella pagina del suo lancio in
+**Actions**, e resta novanta giorni: ci sono sempre le ultime tredici
+settimane. GitHub spegne i workflow programmati di un repository pubblico
+dopo sessanta giorni senza commit, e lo dice per email: se succede, si
+riaccende dalla stessa pagina con **Enable workflow**.
+
+### Dalla segreteria, e su Drive
+
+In **IMPOSTAZIONI → IL BACKUP** la segreteria vede com'è andato l'ultimo
+backup e le copie che ci sono, ne fa partire una con **FAI UN BACKUP ORA**, e
+ognuna la scarica con **SCARICA**: è lo zip che GitHub dà per l'artefatto, con
+dentro il file cifrato, da mettere su Drive così com'è. Cifrato com'è, può
+stare anche in una cartella condivisa; la password no.
+
+Per chiedere le copie a GitHub serve un token, e nell'app non può stare: lo
+tiene la funzione **`backup`** (`functions/backup/index.ts`), che controlla
+che chi la chiama sia della segreteria. Per metterla in piedi, una volta:
+
+1. **Il token.** Su GitHub, **Settings → Developer settings → Personal access
+   tokens → Fine-grained tokens → Generate new token**: *Repository access*
+   solo questo repository, *Permissions → Actions: Read and write*, e
+   nient'altro. Scade al massimo dopo un anno: quando scade, la segreteria
+   legge «GitHub non accetta il token» e se ne fa uno nuovo.
+2. **I segreti della funzione.** In Supabase, **Edge Functions → Secrets**:
+   `GITHUB_TOKEN` col token. `GITHUB_REPO` serve solo se il repository non
+   è `nalbertini/ods-corsi`.
+3. **La funzione**, come `invita`:
+
+   ```sh
+   supabase functions deploy backup --project-ref <id-del-progetto>
+   ```
+
+   o dal pannello, **Edge Functions → Deploy a new function**, col nome
+   `backup`.
+
+Il pulsante fa partire il workflow su `main`: finché il workflow non è lì,
+GitHub dice che non lo trova.
+
+### Rimettere a posto una copia
+
+In un progetto nuovo creato come al passo 1 (schema, persone e account
+arrivano con la copia: i file `NN-*.sql` non servono). Lo zip scaricato
+dall'app o da GitHub si apre prima, con `unzip backup-AAAA-MM-GG.zip`; poi:
+
+```
+gpg -d backup-AAAA-MM-GG.tar.gz.gpg | tar xz
+cd backup-AAAA-MM-GG
+psql --single-transaction --variable ON_ERROR_STOP=1 \
+  --file ruoli.sql --file schema.sql \
+  --command 'SET session_replication_role = replica' \
+  --file dati.sql \
+  --dbname "postgresql://postgres.<id>:<password>@aws-0-eu-central-1.pooler.supabase.com:5432/postgres"
+```
+
+`session_replication_role = replica` tiene spenti i trigger mentre entrano i
+dati, che altrimenti ricalcolerebbero lezioni e numeri delle ricevute già
+fatti. Dopo, l'app va ripuntata sul progetto nuovo (passo 9) e i file dello
+Storage ricaricati a mano.
+
 ## Le cose da decidere prima di usarlo sul serio
 
 - **L'informativa privacy.** Nomi e presenze sono dati personali e la palestra

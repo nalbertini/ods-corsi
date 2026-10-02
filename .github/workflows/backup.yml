@@ -1,0 +1,103 @@
+name: Backup del database
+
+# Una copia del database Supabase una volta a settimana, il lunedì alle 3:17
+# UTC (di notte in Italia, a palestra chiusa), più il lancio a mano quando
+# serve una copia subito, per esempio prima di lanciare un file SQL nuovo: da
+# IMPOSTAZIONI → IL BACKUP in segreteria (la funzione `backup` di Supabase
+# chiama `workflow_dispatch`), o da Actions → Backup del database → Run workflow.
+#
+# Il piano gratuito di Supabase non lascia scaricare i suoi backup: questa è
+# l'unica copia che la palestra ha in mano. Come rimetterla a posto è in
+# supabase/LEGGIMI.md, «Il backup».
+on:
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Una copia per volta: due dump insieme non servono a niente.
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Copia e cifra
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      BACKUP_PASSWORD: ${{ secrets.BACKUP_PASSWORD }}
+    steps:
+      # Senza l'indirizzo del database non c'è niente da copiare: la palestra
+      # non ha ancora il suo, e una X rossa ogni lunedì non direbbe niente.
+      # Con l'indirizzo ma senza la password, invece, si ferma rosso: il dump
+      # non deve mai uscire di qui in chiaro.
+      - name: Controlla i segreti
+        id: segreti
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::notice::Manca il segreto SUPABASE_DB_URL: niente da copiare (vedi supabase/LEGGIMI.md, «Il backup»)."
+            echo "pronto=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$BACKUP_PASSWORD" ]; then
+            echo "::error::Manca il segreto BACKUP_PASSWORD: senza, la copia uscirebbe in chiaro e non la si fa."
+            exit 1
+          fi
+          echo "pronto=si" >> "$GITHUB_OUTPUT"
+
+      - uses: supabase/setup-cli@v1
+        if: steps.segreti.outputs.pronto == 'si'
+        with:
+          version: latest
+
+      # Il modo che Supabase consiglia: ruoli, schema e dati in tre file, senza
+      # gli schemi che Supabase gestisce da sé e rimette in ogni progetto. Lo
+      # `pg_dump` lo lancia la CLI in un container della stessa versione del
+      # server, quindi non c'è da inseguire la versione di Postgres.
+      - name: Copia il database
+        if: steps.segreti.outputs.pronto == 'si'
+        run: |
+          giorno=$(date -u +%F)
+          echo "GIORNO=$giorno" >> "$GITHUB_ENV"
+          mkdir -p "backup-$giorno"
+          cd "backup-$giorno"
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f ruoli.sql --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f schema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f dati.sql --use-copy --data-only
+          # Un dump vuoto vuol dire che qualcosa non è andato, anche se la CLI
+          # non l'ha detto: meglio rosso che una copia inutile.
+          for f in ruoli.sql schema.sql dati.sql; do
+            [ -s "$f" ] || { echo "::error::$f è vuoto"; exit 1; }
+          done
+          ls -l
+
+      # Il repository è pubblico, e gli artefatti di un repository pubblico li
+      # scarica chiunque abbia un account GitHub. Dentro ci sono nomi,
+      # contatti, presenze e certificati medici: si cifrano con AES-256 e la
+      # password sta solo nei segreti (e, a parte, alla segreteria).
+      - name: Cifra
+        if: steps.segreti.outputs.pronto == 'si'
+        run: |
+          tar czf "backup-$GIORNO.tar.gz" "backup-$GIORNO"
+          printf '%s' "$BACKUP_PASSWORD" | gpg --batch --yes --pinentry-mode loopback \
+            --passphrase-fd 0 --symmetric --cipher-algo AES256 \
+            -o "backup-$GIORNO.tar.gz.gpg" "backup-$GIORNO.tar.gz"
+          rm -rf "backup-$GIORNO" "backup-$GIORNO.tar.gz"
+          ls -l "backup-$GIORNO.tar.gz.gpg"
+
+      # Novanta giorni è il massimo che GitHub tiene per un repository
+      # pubblico: restano le ultime tredici settimane, e le più vecchie se ne
+      # vanno da sole.
+      - uses: actions/upload-artifact@v4
+        if: steps.segreti.outputs.pronto == 'si'
+        with:
+          name: backup-${{ env.GIORNO }}
+          path: backup-${{ env.GIORNO }}.tar.gz.gpg
+          retention-days: 90
+          if-no-files-found: error
+          # È già compresso e cifrato: ricomprimerlo non guadagna niente.
+          compression-level: 0

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, StatoPagamento, StoricoSeg } from './segreteria'
+import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
@@ -154,12 +154,12 @@ function guaio(e: { message?: string; code?: string } | null): Error {
 }
 
 /**
- * Un errore della funzione `invita` detto per la segreteria: quello che dice
- * la funzione, se ha risposto; altrimenti perché non ha risposto.
+ * Un errore di una funzione di Supabase (`invita`, `backup`) detto per la
+ * segreteria: quello che dice la funzione, se ha risposto; altrimenti perché
+ * non ha risposto. `di` è come la si chiama: «dell’invito», «del backup».
  */
-async function guaioInvito(e: { name?: string; message?: string; context?: unknown }): Promise<Error> {
+async function guaioFunzione(e: { name?: string; message?: string; context?: unknown }, di: string, altrimenti: string): Promise<Error> {
   const r = e.context instanceof Response ? e.context : null
-  if (r?.status === 404) return new Error('La funzione dell’invito non è pubblicata su Supabase: vedi supabase/LEGGIMI.md')
   if (r) {
     try {
       const corpo = (await r.clone().json()) as { guaio?: string }
@@ -168,8 +168,9 @@ async function guaioInvito(e: { name?: string; message?: string; context?: unkno
       // Non è la nostra risposta: sotto si dice il generico.
     }
   }
-  if (e.name === 'FunctionsFetchError') return new Error('La funzione dell’invito non risponde: è pubblicata su Supabase? C’è rete?')
-  return new Error(e.message || 'L’invito non è partito')
+  if (r?.status === 404) return new Error(`La funzione ${di} non è pubblicata su Supabase: vedi supabase/LEGGIMI.md`)
+  if (e.name === 'FunctionsFetchError') return new Error(`La funzione ${di} non risponde: è pubblicata su Supabase? C’è rete?`)
+  return new Error(e.message || altrimenti)
 }
 
 /** Un errore dello Storage detto per la segreteria. */
@@ -846,7 +847,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // il suo (`#access_token=…`), e `invito.ts` lo riconosce.
       const ritorno = indirizzoDiRitorno()
       const { data, error } = await db.functions.invoke('invita', { body: { persona: personaId, ritorno } })
-      if (error) throw await guaioInvito(error)
+      if (error) throw await guaioFunzione(error, 'dell’invito', 'L’invito non è partito')
       return (data as { come: 'invito' | 'password' }).come
     },
 
@@ -1063,6 +1064,22 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         // Senza 18-anagrafiche.sql non ce n'è.
         dati_anagrafici: anag.error?.code === '42P01' || anag.error?.code === 'PGRST205' ? null : ok(anag),
       }
+    },
+    async backup() {
+      const { data, error } = await db.functions.invoke('backup', { body: { azione: 'elenco' } })
+      if (error) throw await guaioFunzione(error, 'del backup', 'L’elenco delle copie non si legge')
+      return data as StatoBackup
+    },
+
+    async avviaBackup() {
+      const { error } = await db.functions.invoke('backup', { body: { azione: 'avvia' } })
+      if (error) throw await guaioFunzione(error, 'del backup', 'Il backup non è partito')
+    },
+
+    async scaricaBackup(id) {
+      const { data, error } = await db.functions.invoke('backup', { body: { azione: 'scarica', id } })
+      if (error) throw await guaioFunzione(error, 'del backup', 'La copia non si scarica')
+      return data as { link: string; nome: string }
     },
   }
 }

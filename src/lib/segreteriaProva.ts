@@ -834,5 +834,18 @@ export function creaSegreteriaProva(): DatiSegreteria {
         dati_anagrafici: a().anagrafiche?.[personaId] ?? null,
       }
     },
+
+    // In prova non c'è un database da copiare, né GitHub da chiamare.
+    async backup() {
+      return { copie: [], ultimo: null }
+    },
+
+    async avviaBackup() {
+      throw new Error('In prova non c’è un database da copiare: il backup si fa col database vero')
+    },
+
+    async scaricaBackup() {
+      throw new Error('In prova non ci sono copie')
+    },
   }
 }
