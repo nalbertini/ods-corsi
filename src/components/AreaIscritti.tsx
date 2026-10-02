@@ -16,7 +16,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 import { comeCertificato, comePaga } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { CONTATTI, chiama } from '../lib/sito'
-import { abbonamentiDalleRicevute, SCONTO_FAMIGLIA } from '../lib/nucleo'
+import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
 import { Dettaglio, Etichetta, Riquadro, Tasti, Tasto, Titoletto, TitoloEsito } from './ds'
 import { ModuloIscrizione, type PerIlNucleo } from './ModuloIscrizione'
 
@@ -453,7 +453,7 @@ function Nucleo({
   const pagatoDa = (id: string) => valide.filter((r) => r.personaId === id).reduce((s, r) => s + r.pagato, 0)
   const nomeDi = (id: string) => membri.find((p) => p.id === id)?.nome ?? ''
   const annuali = abbonamentiDalleRicevute(ricevute, nomeDi)
-  const minimo = annuali.length >= 2 ? annuali.reduce((x, y) => (y.importo < x.importo ? y : x)) : null
+  const minimo = doveVaLoSconto([], annuali)
   const PAGA: Record<string, string> = { pagato: 'PAGATO', in_parte: 'IN PARTE', da_pagare: 'DA PAGARE', scaduto: 'DA RINNOVARE' }
   return (
     <>
@@ -524,8 +524,9 @@ function Nucleo({
             </ul>
             {minimo ? (
               <Dettaglio>
-                Sconto famiglia: il {Math.round(SCONTO_FAMIGLIA * 100)}% sull’annuale che costa meno, {minimo.corso} di {minimo.chi}, cioè{' '}
-                {euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €. Se non l’hai avuto, chiedilo in segreteria.
+                {minimo.scontato
+                  ? `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% su ${minimo.corso} di ${minimo.chi}, cioè ${euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €: è già nella sua ricevuta.`
+                  : `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% sull’annuale che costa meno, ${minimo.corso} di ${minimo.chi}, cioè ${euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €. Se non l’hai avuto, chiedilo in segreteria.`}
               </Dettaglio>
             ) : (
               <Dettaglio>Con due annuali nel nucleo, quello che costa meno ha il {Math.round(SCONTO_FAMIGLIA * 100)}% di sconto (la quota associativa no).</Dettaglio>

@@ -93,6 +93,16 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   voce…» ne aggiunge un'altra dal listino (annuale, trimestre e,
   per le ricevute con la data entro quella del saldo, annuale a saldo) o una
   scritta a mano.
+- **Sconto famiglia** — se la persona è in un [nucleo
+  familiare](#il-nucleo-familiare), la ricevuta lo mette da sé: il 20%
+  sull'annuale che costa meno fra quelli di questa ricevuta e quelli già
+  pagati dal nucleo (a pari prezzo, su questa ricevuta). Il prezzo della voce
+  scende, e la descrizione dice su quanto: «Annuale Judo 2 · sconto famiglia
+  20% su 480,00 €». Sotto le voci si legge su quale voce è andato, con
+  **Togli lo sconto** (e poi **Metti lo sconto** per rimetterlo). Non lo mette
+  se l'ha già avuto un altro del nucleo, o se l'annuale che costa meno è uno
+  già pagato: lo dice, e quello si sistema a parte. Cambiato a mano il
+  prezzo della voce scontata, lo sconto è quello scritto.
 - **DATI DEL SOCIO** — nome, indirizzo, codice fiscale, data di nascita e, per
   un minore, il genitore. Vengono dall'ultima ricevuta o dal modulo di
   iscrizione online; se mancano si aprono da soli, da scrivere. Si correggono
@@ -139,4 +149,5 @@ altri dentro, va prima tolto. Le richieste aggiunte da un titolare dalla sua
 area entrano nel suo nucleo da sole, quando si accolgono.
 
 Sotto, lo **sconto famiglia**: dalle ricevute del nucleo, il 20% sull'annuale
-che costa meno, di chi e quanto. Sulla ricevuta va scritto a mano.
+che costa meno, di chi e quanto, o chi l'ha già avuto. Sulla ricevuta lo mette
+l'app ([Un pagamento e la sua ricevuta](#un-pagamento-e-la-sua-ricevuta)).

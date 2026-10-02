@@ -57,8 +57,10 @@ la riga. **+ AGGIUNGI UN CORSO** in fondo ne aggiunge uno nuovo.
 ## Le offerte
 
 Titolo e testo, sotto i corsi nella pagina di iscrizione: lo sconto famiglia,
-il prezzo per più corsi. Sono solo da leggere: la ricevuta non le calcola, lo
-sconto si scrive nel prezzo della voce.
+il prezzo per più corsi. Sono solo da leggere: cambiare il testo non cambia i
+conti. La ricevuta calcola da sé solo lo **sconto famiglia**, sempre del 20%
+(vedi [Iscritti](iscritti.md)); le altre offerte si scrivono nel prezzo della
+voce.
 
 ## Tornare al foglio
 

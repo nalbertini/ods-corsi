@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { avvisi, contoPresenze } from './src/lib/iscritto'; export { creaDatiProva } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { ENTE_PREDEFINITO, vociDelCorso } from './src/lib/ricevute'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { stimaIscrizione, abbonamentiDalleRicevute } from './src/lib/nucleo'; export { LISTINO_PREDEFINITO } from './src/lib/listino'; export { carattereControllo, lettereCognome, lettereNome, cfValido } from './src/lib/codiceFiscale'",
+      "export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { avvisi, contoPresenze } from './src/lib/iscritto'; export { creaDatiProva } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { ENTE_PREDEFINITO, vociDelCorso } from './src/lib/ricevute'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { stimaIscrizione, abbonamentiDalleRicevute, descrizioneScontata, scontoDellaVoce, doveVaLoSconto } from './src/lib/nucleo'; export { LISTINO_PREDEFINITO } from './src/lib/listino'; export { carattereControllo, lettereCognome, lettereNome, cfValido } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -224,6 +224,15 @@ console.log('\n8. quanto costa una persona in più')
     { personaId: 'c', voci: [voce('Annuale Lotta 2', 1)], annullataIl: '2026-09-20' },
   ]
   ok('gli annuali del nucleo dalle ricevute, non le annullate', m.abbonamentiDalleRicevute(ric, (id) => id.toUpperCase()), [{ chi: 'A', corso: 'Judo 2', importo: judo }])
+  const scontata = m.descrizioneScontata('Annuale Judo 2', judo)
+  ok('la voce scontata dice su quanto', scontata, `Annuale Judo 2 · sconto famiglia 20% su ${(judo / 100).toFixed(2).replace('.', ',')} €`)
+  ok('e si rilegge', m.scontoDellaVoce(scontata), { descrizione: 'Annuale Judo 2', pieno: judo })
+  ok('una voce qualunque non è scontata', m.scontoDellaVoce('Annuale Judo 2'), null)
+  const conSconto = [{ personaId: 'a', voci: [voce(scontata, judo - Math.round(judo * 0.2))] }]
+  ok('l’annuale scontato conta col prezzo pieno', m.abbonamentiDalleRicevute(conSconto, (id) => id), [{ chi: 'a', corso: 'Judo 2', importo: judo, scontato: true }])
+  const gia = m.stimaIscrizione({ chi: 'Tommaso', corsi: ['Judo 2'], formula: 'annuale' }, m.abbonamentiDalleRicevute(conSconto, () => 'Anna'), giorno, L)
+  ok('lo sconto già avuto da un altro non torna', [gia.sconto.qui, gia.sconto.chi, gia.totale], [false, 'Anna', quota + judo])
+  ok('un annuale solo: niente sconto', m.doveVaLoSconto([{ chi: 'T', corso: 'X', importo: 1 }], []), null)
 }
 
 console.log('\n9. il nucleo dalla scheda della segreteria')

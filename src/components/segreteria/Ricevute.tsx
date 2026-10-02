@@ -15,6 +15,7 @@ import {
   type Ricevuta,
   type VoceRicevuta,
 } from '../../lib/ricevute'
+import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { chiaveGiorno } from '../../lib/sala'
 import { Campo, dataLunga, Guaio, Riga, useAvviso, useCarica } from './comune'
 
@@ -85,6 +86,8 @@ interface Bozza {
   pagato: string
   /** Finché nessuno lo tocca, il pagato segue il prezzo. */
   pagatoAMano: boolean
+  /** Lo sconto famiglia messo dall'app: il prezzo pieno, in centesimi. */
+  pieno?: number
 }
 
 let prossimaChiave = 1
@@ -98,6 +101,52 @@ const bozzaDa = (v: Omit<VoceRicevuta, 'pagamenti'>): Bozza => ({
   pagato: euro(v.prezzo * v.quantita),
   pagatoAMano: false,
 })
+
+/** Il pagato di una voce dopo un cambio di prezzo: lo segue, se non è scritto a mano. */
+const seguePagato = (b: Bozza): Bozza => {
+  const pr = centesimi(b.prezzo)
+  const q = Number(b.quantita)
+  return !b.pagatoAMano && pr !== null && Number.isInteger(q) ? { ...b, pagato: euro(pr * q) } : b
+}
+
+/** Una voce senza lo sconto famiglia messo dall'app: descrizione e prezzo pieni. */
+const senzaScontoApp = (b: Bozza): Bozza => {
+  if (b.pieno === undefined) return b
+  const { pieno, ...x } = b
+  return seguePagato({ ...x, descrizione: scontoDellaVoce(b.descrizione)?.descrizione ?? b.descrizione, prezzo: euro(pieno) })
+}
+
+/** Un annuale della ricevuta, per il conto dello sconto; quello scontato a mano conta come già scontato. */
+type AnnualeQui = Abbonamento & { chiave: number }
+function annualiQui(voci: Bozza[], chi: string): AnnualeQui[] {
+  return voci.flatMap((b): AnnualeQui[] => {
+    const prezzo = centesimi(b.prezzo)
+    const q = Number(b.quantita)
+    if (!/^annuale /i.test(b.descrizione.trim()) || prezzo === null || q !== 1) return []
+    const s = scontoDellaVoce(b.descrizione.trim())
+    const corso = (s?.descrizione ?? b.descrizione.trim()).replace(/^annuale /i, '')
+    return [s ? { chiave: b.chiave, chi, corso, importo: s.pieno, scontato: true } : { chiave: b.chiave, chi, corso, importo: prezzo }]
+  })
+}
+
+/**
+ * Le voci con lo sconto famiglia dove va (vedi `doveVaLoSconto`): sull'annuale
+ * di questa ricevuta che costa meno nel nucleo, se non l'ha già avuto un altro.
+ * Il prezzo della voce scende del 20%, e la descrizione dice su quanto.
+ */
+function conSconto(voci: Bozza[], altri: Abbonamento[], chi: string, si: boolean): Bozza[] {
+  const pulite = voci.map(senzaScontoApp)
+  if (!si) return pulite
+  const qui = annualiQui(pulite, chi)
+  const dove = doveVaLoSconto(qui, altri)
+  const voce = qui.find((a) => a === dove)
+  if (!voce || voce.scontato) return pulite
+  return pulite.map((b) =>
+    b.chiave === voce.chiave
+      ? seguePagato({ ...b, pieno: voce.importo, descrizione: descrizioneScontata(b.descrizione.trim(), voce.importo), prezzo: euro(voce.importo - importoSconto(voce.importo)) })
+      : b,
+  )
+}
 
 /** Da quello che si vede a quello che si salva; `null` dove un importo non si capisce. */
 function daBozze(voci: Bozza[], data: string, metodo: string): VoceRicevuta[] | string {
@@ -124,12 +173,14 @@ function daBozze(voci: Bozza[], data: string, metodo: string): VoceRicevuta[] | 
 /**
  * Un pagamento nuovo, e la sua ricevuta. Si parte da quello che si sa: i dati
  * del socio dell'ultima ricevuta o del modulo di iscrizione, la quota se in
- * questa stagione non è ancora pagata, l'annuale dei corsi che fa. Tutto si
- * cambia prima di fare la ricevuta; dopo, la ricevuta non si cambia più.
+ * questa stagione non è ancora pagata, l'annuale dei corsi che fa, e lo
+ * sconto famiglia se tocca a uno di questi annuali (lo si può togliere). Tutto
+ * si cambia prima di fare la ricevuta; dopo, la ricevuta non si cambia più.
  */
 export function NuovaRicevuta({
   d,
   p,
+  nucleo = [],
   corsi,
   fai,
   onFatta,
@@ -137,6 +188,8 @@ export function NuovaRicevuta({
 }: {
   d: DatiSegreteria
   p: PersonaSeg
+  /** Gli altri del suo nucleo familiare: dalle loro ricevute, lo sconto famiglia. */
+  nucleo?: PersonaSeg[]
   /** I nomi dei corsi che fa adesso: le loro voci vengono prima. */
   corsi: string[]
   fai: Fai
@@ -147,7 +200,10 @@ export function NuovaRicevuta({
   const [data, setData] = useState(oggi)
   const anno = Number(data.slice(0, 4)) || Number(oggi.slice(0, 4))
   const prossimo = useCarica(() => d.prossimoNumero(anno), [d, anno])
-  const partenza = useCarica(() => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id), d.listino()]), [d, p.id])
+  const partenza = useCarica(
+    () => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id), d.listino(), Promise.all(nucleo.map((x) => d.ricevute(x.id)))]),
+    [d, p.id, nucleo.map((x) => x.id).join()],
+  )
   const [numero, setNumero] = useState('')
   const [metodo, setMetodo] = useState<string>(METODI[0])
   const [voci, setVoci] = useState<Bozza[] | null>(null)
@@ -157,9 +213,19 @@ export function NuovaRicevuta({
   const [note, setNote] = useState('')
   const [segna, setSegna] = useState(true)
   const [aggiungi, setAggiungi] = useState('')
+  const [scontoSi, setScontoSi] = useState(true)
 
   const listino = partenza.dato?.[3].listino
   const pronte = listino ? vociPronte(corsi, data, listino) : []
+
+  // Gli annuali che il nucleo ha già pagato, questa persona compresa.
+  const chi = `${p.nome} ${p.cognome}`
+  const nomeDi = (id: string) => {
+    const x = [p, ...nucleo].find((y) => y.id === id)
+    return x ? `${x.nome} ${x.cognome}` : ''
+  }
+  const altri = partenza.dato ? abbonamentiDalleRicevute([...partenza.dato[2], ...partenza.dato[4].flat()], nomeDi) : []
+  const metti = (v: Bozza[], si = scontoSi) => setVoci(conSconto(v, altri, chi, si))
 
   // La prima volta che arriva quello che si sa, si compila il modulo.
   useEffect(() => {
@@ -168,7 +234,7 @@ export function NuovaRicevuta({
     setSocio(intestatario)
     setEnte(e)
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
-    setVoci([
+    metti([
       ...(quotaPagata ? [] : [bozzaDa(pronte[0].voce(oggi))]),
       ...corsi.flatMap((c) => vociDelCorso(c, data, l).slice(0, 1)).map((v) => bozzaDa(v.voce(oggi))),
     ])
@@ -182,13 +248,10 @@ export function NuovaRicevuta({
       voci.map((b) => {
         if (b.chiave !== chiave) return b
         const x = { ...b, ...c }
+        // Cambiata a mano, lo sconto di questa voce è di chi l'ha cambiata.
+        if (c.prezzo !== undefined || c.quantita !== undefined || c.descrizione !== undefined) delete x.pieno
         // Il pagato segue prezzo e quantità, finché non lo si scrive a mano.
-        if (!x.pagatoAMano && (c.prezzo !== undefined || c.quantita !== undefined)) {
-          const pr = centesimi(x.prezzo)
-          const q = Number(x.quantita)
-          if (pr !== null && Number.isInteger(q)) x.pagato = euro(pr * q)
-        }
-        return x
+        return c.prezzo !== undefined || c.quantita !== undefined ? seguePagato(x) : x
       }),
     )
 
@@ -201,6 +264,11 @@ export function NuovaRicevuta({
       : { data, personaId: p.id, numero: n, ente, intestatario: socio, voci: fatte, anticipo: anticipoCent, note: note.trim() || undefined }
   const guaio = typeof fatte === 'string' ? fatte : anticipoCent === null ? 'L’anticipo non si capisce' : dati ? cosaNonVa(dati) : null
   const c = dati ? conti(dati) : null
+
+  // Lo sconto famiglia: dove è, o perché non è qui.
+  const scontata = voci.find((b) => b.pieno !== undefined)
+  const dove = doveVaLoSconto(annualiQui(voci.map(senzaScontoApp), chi), altri)
+  const percento = Math.round(SCONTO_FAMIGLIA * 100)
 
   // In scheda: pagato fino all'ultima voce dei corsi (la quota da sola non basta).
   const corsiPagati = (dati?.voci ?? []).filter((v) => v.descrizione.toUpperCase() !== QUOTA)
@@ -281,7 +349,7 @@ export function NuovaRicevuta({
                 Descrizione
               </label>
               <input id={`rv-d-${b.chiave}`} className="sg-campo grow" maxLength={120} value={b.descrizione} onChange={(e) => cambia(b.chiave, { descrizione: e.target.value })} style={{ minWidth: 0 }} />
-              <button type="button" className="sg-link" onClick={() => setVoci(voci.filter((x) => x.chiave !== b.chiave))}>
+              <button type="button" className="sg-link" onClick={() => metti(voci.filter((x) => x.chiave !== b.chiave))}>
                 Togli
               </button>
             </div>
@@ -329,13 +397,36 @@ export function NuovaRicevuta({
             disabled={!aggiungi || voci.length >= 20}
             onClick={() => {
               const v = aggiungi === 'mano' ? { descrizione: '', quantita: 1, prezzo: 0 } : pronte.find((x) => x.chiave === aggiungi)?.voce(data)
-              if (v) setVoci([...voci, bozzaDa(v)])
+              if (v) metti([...voci, bozzaDa(v)])
               setAggiungi('')
             }}
           >
             AGGIUNGI
           </button>
         </div>
+        {scontata ? (
+          <span className="row" style={{ gap: 8, fontSize: 12, color: 'var(--sec)', flexWrap: 'wrap' }}>
+            Sconto famiglia: {percento}% su {scontoDellaVoce(scontata.descrizione)?.descrizione ?? scontata.descrizione}, cioè −{euro(importoSconto(scontata.pieno!))} €.
+            <button type="button" className="sg-link" onClick={() => { setScontoSi(false); metti(voci, false) }}>
+              Togli lo sconto
+            </button>
+          </span>
+        ) : dove && 'chiave' in dove && !dove.scontato ? (
+          <span className="row" style={{ gap: 8, fontSize: 12, color: 'var(--dim)', flexWrap: 'wrap' }}>
+            Lo sconto famiglia ({percento}%) va su Annuale {dove.corso}.
+            <button type="button" className="sg-link" onClick={() => { setScontoSi(true); metti(voci, true) }}>
+              Metti lo sconto
+            </button>
+          </span>
+        ) : (
+          dove && (
+            <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+              {dove.scontato
+                ? `Sconto famiglia: l’ha già avuto ${dove.chi}, su ${dove.corso}.`
+                : `Sconto famiglia: va sull’annuale che costa meno nel nucleo, ${dove.corso} di ${dove.chi}, già pagato.`}
+            </span>
+          )
+        )}
       </div>
 
       <details open={!socio.codiceFiscale || !socio.indirizzo}>
