@@ -98,7 +98,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   con i file da guardare: accolta, la persona entra in elenco iscritta ai
   corsi che ha scelto, senza doppioni se c'era già. Col database vero è
   acceso da quando la palestra ha approvato l'informativa privacy
-  (`public/informativa.html`, 27 settembre 2026), che si legge in fondo alla
+  (`public/informativa.html`, 2 ottobre 2026), che si legge in fondo alla
   pagina delle iscrizioni.
 - **L'area degli iscritti**, il pilota: dal telefono, chi frequenta vede
   le prossime lezioni dei suoi corsi (con le annullate, i sostituti e i
