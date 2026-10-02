@@ -3,7 +3,7 @@
 ← [Torna alla segreteria](README.md)
 
 Il resoconto delle presenze: chi viene, chi si sta perdendo, quali appelli
-mancano.
+mancano, e chi c'era lezione per lezione.
 
 Tutto si conta **dagli appelli fatti**. Una lezione passata senza appello non
 vuol dire che non è venuto nessuno, vuol dire che nessuno ha segnato: per
@@ -40,3 +40,12 @@ questo sta in un riquadro a parte e non abbassa le medie.
   vuol dire che nel frattempo si è iscritto; **SCHEDA** apre la sua scheda in
   [Iscritti](iscritti.md), dove c'è già, e da lì lo si iscrive. Le prove
   non contano nelle medie, che sono sugli iscritti.
+
+## Il registro del mese
+
+In fondo, **REGISTRO DEL MESE**: le lezioni del mese con l'appello fatto,
+giorno per giorno dal più recente (con un corso scelto, solo quel corso).
+Ogni lezione dice ora, sala, istruttore e quanti presenti su iscritti; un
+tocco la apre e mostra **chi c'era**, in ordine di cognome, e sotto, più
+spenti, assenti, giustificati e non segnati. **APRI LA LEZIONE** la porta
+nella [Settimana](settimana.md), per correggere un segno.
