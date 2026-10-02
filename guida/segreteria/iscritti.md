@@ -25,7 +25,11 @@ cima alla pagina c'è quanti sono senza certificato valido e quanti da pagare.
 
 La colonna **30 GIORNI** dice quanto è venuto ognuno nell'ultimo mese:
 `6/8` sono sei presenze su otto lezioni avute (i giustificati non contano). In
-giallo chi viene poco. Se manca il contatto c'è scritto «nessun contatto».
+giallo chi viene poco.
+
+La colonna **CONTATTO** mostra il telefono, così in caso di emergenza si trova
+subito; l'email solo se il telefono manca. Se mancano tutti e due c'è scritto
+«nessun contatto».
 
 ## Nuovo iscritto
 
