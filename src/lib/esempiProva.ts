@@ -34,6 +34,8 @@ const VERSIONE = '1'
 const DOVE_RICEVUTE = 'ods-corsi:prova-esempi-ricevute'
 /** I nuclei familiari, venuti ancora dopo: anche loro col segno loro. */
 const DOVE_NUCLEI = 'ods-corsi:prova-esempi-nuclei'
+/** Le presenze segnalate dagli iscritti, venute dopo ancora. */
+const DOVE_SEGNALATE = 'ods-corsi:prova-esempi-segnalate'
 
 const MIN = 60_000
 const GIORNO = 24 * 60 * MIN
@@ -61,6 +63,7 @@ export function scordaEsempi() {
     localStorage.removeItem(DOVE)
     localStorage.removeItem(DOVE_RICEVUTE)
     localStorage.removeItem(DOVE_NUCLEI)
+    localStorage.removeItem(DOVE_SEGNALATE)
   } catch {
     /* pazienza */
   }
@@ -69,7 +72,8 @@ export function scordaEsempi() {
 export function seminaEsempi(adesso = new Date()) {
   seminaRicevute(adesso)
   seminaNuclei()
-  if (fatti()) return
+  // Le segnalate dopo gli appelli: chi risulta presente non segnala.
+  if (fatti()) return seminaSegnalate(adesso)
   const ora = adesso.getTime()
   const passate = lezioniFra(new Date(ora - 35 * GIORNO), adesso).filter((l) => l.fine.getTime() < ora)
   const prossime = lezioniFra(adesso, new Date(ora + 14 * GIORNO)).filter((l) => l.inizio.getTime() > ora)
@@ -87,6 +91,7 @@ export function seminaEsempi(adesso = new Date()) {
   } catch {
     /* si rifaranno, e non cambiano niente di quello che c'è */
   }
+  seminaSegnalate(adesso)
 }
 
 /** Una lezione annullata la settimana scorsa, un sostituto e uno stage nelle prossime. */
@@ -399,5 +404,51 @@ function seminaNuclei() {
     localStorage.setItem(DOVE_NUCLEI, VERSIONE)
   } catch {
     /* si rifaranno, e saltano chi ha già un nucleo */
+  }
+}
+
+/**
+ * Le presenze segnalate (vedi `segnalate.ts`): tre iscritti che dicono di
+ * esserci stati nelle lezioni di Maurizio della settimana passata, dove
+ * l'appello non li segna presenti. Due da vedere, una già rifiutata.
+ */
+function seminaSegnalate(adesso: Date) {
+  try {
+    if (localStorage.getItem(DOVE_SEGNALATE) === VERSIONE) return
+  } catch {
+    return
+  }
+  const a = archivio.dati
+  const ora = adesso.getTime()
+  const gia = new Set((a.segnalate ?? []).map((x) => `${x.sessioneId}|${x.personaId}`))
+  const lezioni = lezioniFra(new Date(ora - 8 * GIORNO), adesso)
+    .filter((l) => l.fine.getTime() < ora && comeE(l).stato !== 'annullata' && comeE(l).istruttori.includes('i-maurizio'))
+    .reverse()
+  const note = ['Ho fatto tardi e il tablet era già spento.', undefined, 'Ero in fondo alla sala, forse non mi hai visto.']
+  const nuove: NonNullable<typeof a.segnalate> = []
+  for (const l of lezioni) {
+    if (nuove.length >= 3) break
+    const segni = memoria.segnate[l.id] ?? {}
+    const p = iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)).find((x) => segni[x.id] !== 'presente' && segni[x.id] !== 'giustificato' && !gia.has(`${l.id}|${x.id}`))
+    if (!p) continue
+    const i = nuove.length
+    // Poco dopo la fine della lezione, e mai dopo adesso.
+    const il = new Date(Math.min(l.fine.getTime() + (20 + i * 35) * MIN, ora - MIN)).toISOString()
+    nuove.push({
+      id: `sg-esempio-${i}-${l.id.replace(/[^a-z0-9]+/gi, '-')}`,
+      sessioneId: l.id,
+      personaId: p.id,
+      il,
+      nota: note[i],
+      stato: i === 2 ? 'rifiutata' : 'da_vedere',
+      ...(i === 2 ? { gestitaIl: new Date(Math.min(new Date(il).getTime() + GIORNO, ora)).toISOString(), gestitaDa: 'Maurizio' } : {}),
+    })
+  }
+  a.segnalate = [...(a.segnalate ?? []), ...nuove]
+  archivio.salva()
+  try {
+    localStorage.setItem(DOVE_SEGNALATE, VERSIONE)
+  } catch {
+    /* si rifaranno, e saltano quelle che ci sono */
   }
 }

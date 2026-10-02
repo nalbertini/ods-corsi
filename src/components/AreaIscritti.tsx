@@ -12,6 +12,7 @@ import {
   type MiaPresenza,
   type SchedaIscritto,
 } from '../lib/iscritto'
+import type { Segnalata } from '../lib/segnalate'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 import { comeCertificato, comePaga } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
@@ -208,7 +209,7 @@ function Pagina({ dati, personaId, tua }: { dati: DatiIscritto; personaId: strin
     <div className="stack">
       <Saluto scheda={scheda} tua={tua} />
       <Prossime lezioni={lezioni} />
-      <Presenze presenze={presenze} />
+      <Presenze dati={dati} personaId={personaId} presenze={presenze} tua={tua} />
       <InRegola scheda={scheda} />
       <Ricevute ricevute={ricevute} />
     </div>
@@ -313,36 +314,111 @@ const SEGNI: Record<string, [string, string]> = {
   giustificato: ['–', 'GIUSTIFICATO'],
 }
 
-function Presenze({ presenze }: { presenze: MiaPresenza[] }) {
+/**
+ * Le presenze degli ultimi trenta giorni. Dove non risulta presente (non
+ * segnato, o assente) c'è SEGNALA: chi c'era lo dice, con una nota se vuole,
+ * e la presenza la conferma l'istruttore o la segreteria (vedi `segnalate.ts`).
+ */
+function Presenze({ dati, personaId, presenze, tua }: { dati: DatiIscritto; personaId: string; presenze: MiaPresenza[]; tua: boolean }) {
   const [tutte, setTutte] = useState(false)
+  const [segnalate, setSegnalate] = useState<Segnalata[]>([])
+  const [aperta, setAperta] = useState<string | null>(null)
+  const [nota, setNota] = useState('')
+  const [guaio, setGuaio] = useState<string | null>(null)
+  const [giro, setGiro] = useState(0)
+  useEffect(() => {
+    let vivo = true
+    void dati.segnalate(personaId).then((x) => vivo && setSegnalate(x))
+    return () => {
+      vivo = false
+    }
+  }, [dati, personaId, giro])
+
   const c = contoPresenze(presenze)
   const viste = tutte ? presenze : presenze.slice(0, 5)
+  const daVedere = segnalate.filter((x) => x.stato === 'da_vedere').length
+  const manda = async (sessioneId: string) => {
+    setGuaio(null)
+    try {
+      await dati.segnala(personaId, sessioneId, nota)
+      setAperta(null)
+      setNota('')
+      setGiro((g) => g + 1)
+    } catch (e) {
+      setGuaio(e instanceof Error ? e.message : 'La segnalazione non è partita')
+    }
+  }
   return (
     <section>
-      <Titoletto conto={c.dovute ? `${c.presenti}/${c.dovute}` : undefined}>LE TUE PRESENZE</Titoletto>
+      <Titoletto conto={c.dovute ? `${c.presenti}/${c.dovute}` : undefined}>{tua ? 'LE TUE PRESENZE' : 'PRESENZE'}</Titoletto>
       <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
         {presenze.length === 0 ? (
           <Dettaglio>Nessuna lezione negli ultimi {INDIETRO} giorni.</Dettaglio>
         ) : (
           <>
             <Dettaglio>
-              Negli ultimi {INDIETRO} giorni: presente a {c.presenti} {c.presenti === 1 ? 'lezione' : 'lezioni'} su {c.dovute}.
+              Negli ultimi {INDIETRO} giorni: presente a {c.presenti} {c.presenti === 1 ? 'lezione' : 'lezioni'} su {c.dovute}. Se c’eri e non risulta,
+              tocca SEGNALA: la conferma l’istruttore o la segreteria.
             </Dettaglio>
+            {daVedere > 0 && (
+              <Dettaglio tono="avviso">
+                {daVedere === 1 ? 'Una presenza segnalata aspetta' : `${daVedere} presenze segnalate aspettano`} l’istruttore o la segreteria.
+              </Dettaglio>
+            )}
             <ul className="card stack mie-presenze">
               {viste.map((p) => {
+                const s = segnalate.find((x) => x.sessioneId === p.sessioneId)
                 const [segno, detto] = p.stato ? SEGNI[p.stato] : ['·', 'NON SEGNATO']
+                const puo = !s && p.stato !== 'presente' && p.stato !== 'giustificato'
                 return (
-                  <li key={p.sessioneId} className="row mia-presenza" data-stato={p.stato ?? 'nessuno'}>
-                    <span className="num mia-presenza-segno" aria-hidden="true">
-                      {segno}
-                    </span>
-                    <span className="stack grow" style={{ gap: 1, minWidth: 0 }}>
-                      <span style={{ fontWeight: 600 }}>{p.corso}</span>
-                      <span style={{ fontSize: 13, color: 'var(--dim)' }}>
-                        {giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))} · {oraDi(p.inizio)}
+                  <li key={p.sessioneId} className="stack mia-presenza-voce">
+                    <span className="row mia-presenza" data-stato={p.stato ?? 'nessuno'}>
+                      <span className="num mia-presenza-segno" aria-hidden="true">
+                        {segno}
+                      </span>
+                      <span className="stack grow" style={{ gap: 1, minWidth: 0 }}>
+                        <span style={{ fontWeight: 600 }}>{p.corso}</span>
+                        <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+                          {giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))} · {oraDi(p.inizio)}
+                        </span>
+                      </span>
+                      <span className="stack" style={{ gap: 4, alignItems: 'flex-end' }}>
+                        <span className="num mia-presenza-detto">{detto}</span>
+                        {s && s.stato !== 'accolta' && (
+                          <span className="num mia-lezione-cosa mia-presenza-segnalata" data-tono={s.stato === 'rifiutata' ? 'guaio' : 'avviso'} title={s.stato === 'rifiutata' ? 'La segnalazione è stata rifiutata' : 'Segnalata: la conferma l’istruttore o la segreteria'}>
+                            {s.stato === 'rifiutata' ? 'RIFIUTATA' : 'DA CONFERMARE'}
+                          </span>
+                        )}
+                        {puo && aperta !== p.sessioneId && (
+                          <button type="button" className="num mia-segnala" onClick={() => (setAperta(p.sessioneId), setNota(''), setGuaio(null))}>
+                            SEGNALA
+                          </button>
+                        )}
                       </span>
                     </span>
-                    <span className="num mia-presenza-detto">{detto}</span>
+                    {aperta === p.sessioneId && (
+                      <span className="stack mia-segnala-modulo">
+                        <label htmlFor={`nota-${p.sessioneId}`} className="modulo-etichetta">
+                          C’ERI? UNA NOTA PER L’ISTRUTTORE · FACOLTATIVA
+                        </label>
+                        <textarea
+                          id={`nota-${p.sessioneId}`}
+                          className="campo campo-note"
+                          rows={2}
+                          maxLength={200}
+                          placeholder="In ritardo, il tablet non mi trovava…"
+                          value={nota}
+                          onChange={(e) => setNota(e.target.value)}
+                        />
+                        {guaio && <Dettaglio tono="guaio">{guaio}</Dettaglio>}
+                        <Tasti>
+                          <Tasto variante="principale" onClick={() => void manda(p.sessioneId)}>
+                            ERO PRESENTE
+                          </Tasto>
+                          <Tasto onClick={() => setAperta(null)}>LASCIA STARE</Tasto>
+                        </Tasti>
+                      </span>
+                    )}
                   </li>
                 )
               })}

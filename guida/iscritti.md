@@ -30,7 +30,11 @@ ognuno, e il dispositivo si ricorda la scelta.
   spostata, **IN PIÙ** per una lezione fuori dall'orario (uno stage).
 - **Le tue presenze**: negli ultimi trenta giorni, quante lezioni su quante
   (le giustificate non contano), e le ultime cinque, con **TUTTE** per
-  vederle tutte.
+  vederle tutte. Dove non risulta presente (non segnato, o assente) c'è
+  **SEGNALA**: chi c'era lo dice, con una nota se vuole, e **ERO PRESENTE**.
+  La presenza la conferma l'istruttore della lezione o la segreteria; fino
+  ad allora la riga dice **DA CONFERMARE**, e poi diventa presente, o dice
+  **RIFIUTATA**. Una volta sola per lezione.
 - **Certificato e quota**: fino a quando vale il certificato medico, e fino a
   quando è pagata la quota.
 - **Ricevute**: quelle fatte dalla segreteria (**SEGRETERIA → RICEVUTE**),

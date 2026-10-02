@@ -118,7 +118,11 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   (`src/lib/nucleo.ts`). La segreteria vede e cambia il nucleo dalla
   scheda di un iscritto (NUCLEO FAMILIARE), con lo sconto famiglia dalle
   ricevute, e la ricevuta nuova mette da sé lo sconto famiglia sull'annuale
-  giusto; col database la sezione non c'è ancora. Cosa manca è in
+  giusto; col database la sezione non c'è ancora. Le **presenze
+  segnalate**: dalla sua pagina un iscritto dice di esserci stato a una
+  lezione dove non risulta, e la conferma l'istruttore (in cima al
+  calendario e nell'appello) o la segreteria (PRESENZE SEGNALATE); vedi
+  `src/lib/segnalate.ts`. Cosa manca è in
   [`guida/iscritti.md`](guida/iscritti.md#cosa-manca-per-aprirla-davvero).
 - **L'accesso** col database è uno solo: la radice è la porta unica, e la
   stessa porta sta in `istruttori/`, `segreteria/` e `sala/`. Si entra con
@@ -273,7 +277,8 @@ appelli delle ultime cinque settimane, con qualcuno che manca, qualcuno fatto
 solo dai tablet e qualche iscritto che si sta perdendo; le presenze col PIN
 degli istruttori, due da confermare; una lezione annullata, un sostituto e uno
 stage il sabato; quattro richieste online, una di un minore; un telefono a
-ogni iscritto; una ricevuta a chi ha pagato; e qualche nucleo familiare fra
+ogni iscritto; una ricevuta a chi ha pagato; tre presenze segnalate nelle
+lezioni di Maurizio; e qualche nucleo familiare fra
 chi ha lo stesso cognome. Si aggiungono a quello che c'è senza cambiarlo, una volta per
 dispositivo. Restano senza esempi la musica delle sale (servirebbero playlist
 vere), lo storico dei timer e i timer degli istruttori, che sono quelli del
@@ -321,7 +326,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
-| `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia, e i cambi dalla scheda della segreteria. |
+| `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia, e i cambi dalla scheda della segreteria. Le presenze segnalate: chi le manda, chi le vede e chi le accoglie. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome, tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |

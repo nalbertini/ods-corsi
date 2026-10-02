@@ -3,12 +3,15 @@ import { archivio } from './archivioProva'
 import { creaSegreteriaProva } from './segreteriaProva'
 import { creaRichiesteProva } from './richiesteProva'
 import { minorenne } from './richieste'
+import { segnalaProva, segnalateDi } from './segnalateProva'
 import { comeE, iscrittiIl, lezioniFra, memoria, nomeIstruttore, salaDelGiorno } from './datiProva'
 import { chiaveGiorno, perCognome } from './sala'
 
 /**
  * L'area degli iscritti senza server: legge l'archivio di prova, lo stesso
- * che cambiano la segreteria, l'appello e il tablet. Non scrive niente.
+ * che cambiano la segreteria, l'appello e il tablet.
+ *
+ * Scrive solo le presenze segnalate (vedi `segnalateProva.ts`).
  *
  * Fa vedere a un iscritto solo quello che è suo, come faranno le funzioni
  * del database: le lezioni dei corsi a cui era iscritto quel giorno, i suoi
@@ -149,6 +152,15 @@ export function creaIscrittoProva(): DatiIscritto {
         ...(adulto ? { genitoreNome: p.nome, genitoreCognome: p.cognome, genitoreCodiceFiscale: an.codiceFiscale ?? '' } : {}),
         nucleoDi: personaId,
       }
+    },
+
+    async segnala(personaId, sessioneId, nota) {
+      if (!persona(personaId)) throw new Error('Questa persona non è più fra gli iscritti')
+      segnalaProva(personaId, sessioneId, nota)
+    },
+
+    async segnalate(personaId) {
+      return persona(personaId) ? segnalateDi(personaId) : []
     },
   }
 }

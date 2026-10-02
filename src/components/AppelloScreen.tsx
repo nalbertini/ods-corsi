@@ -6,6 +6,7 @@ import { timerDellaLezione } from '../lib/aree'
 import { Cronometro } from './Icons'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from './Prove'
+import type { SegnalataVista } from '../lib/segnalate'
 
 /**
  * L'appello.
@@ -25,17 +26,50 @@ import { MarchioProva, PannelloProve, TogliProva } from './Prove'
  *
  * `onPresenti` dice quanti sono i presenti ogni volta che cambiano, per il
  * calendario che sullo schermo largo sta qui accanto.
+ *
+ * In cima all'elenco, le presenze segnalate dagli iscritti per questa
+ * lezione (vedi `segnalate.ts`), da accettare o rifiutare: accettata, il nome
+ * diventa presente. `soloDi` è l'istruttore che fa l'appello, che le gestisce
+ * solo per le sue lezioni; `onSegnalate` avvisa quando ne ha gestita una.
  */
 export function AppelloScreen({
   dati,
   sessioneId,
   onPresenti,
+  soloDi,
+  onSegnalate,
 }: {
   dati: Dati
   sessioneId: string
   onPresenti?: (n: number) => void
+  soloDi?: string
+  onSegnalate?: () => void
 }) {
   const [d, setD] = useState<DettaglioSessione | null>(null)
+  const [segnalate, setSegnalate] = useState<SegnalataVista[]>([])
+  const [guaioSegnalata, setGuaioSegnalata] = useState<string | null>(null)
+  useEffect(() => {
+    let vivo = true
+    void dati.segnalate?.(soloDi).then(
+      (l) => vivo && setSegnalate(l.filter((x) => x.sessioneId === sessioneId && x.stato === 'da_vedere')),
+      () => {},
+    )
+    return () => {
+      vivo = false
+    }
+  }, [dati, sessioneId, soloDi])
+
+  const gestisci = async (x: SegnalataVista, accogli: boolean) => {
+    setGuaioSegnalata(null)
+    try {
+      await dati.gestisciSegnalata?.(x.id, accogli, soloDi)
+      setSegnalate((l) => l.filter((y) => y.id !== x.id))
+      if (accogli) setD((v) => v && { ...v, elenco: v.elenco.map((p) => (p.id === x.personaId ? { ...p, stato: 'presente' } : p)) })
+      onSegnalate?.()
+    } catch (e) {
+      setGuaioSegnalata(e instanceof Error ? e.message : 'Non è andata: riprova')
+    }
+  }
   const [guaio, setGuaio] = useState<string | null>(null)
   const [conProve, setConProve] = useState(false)
 
@@ -164,6 +198,37 @@ export function AppelloScreen({
             onChiudi={() => setConProve(false)}
           />
         </div>
+      )}
+
+      {segnalate.length > 0 && (
+        <>
+          <div className="rule">
+            <span className="rule-label" style={{ color: 'var(--giallo-testo)' }}>DICONO DI ESSERCI STATI</span>
+            <div className="rule-line" />
+            <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{segnalate.length}</span>
+          </div>
+          <div className="pad stack" style={{ gap: 8 }}>
+            {segnalate.map((x) => (
+              <div key={x.id} className="card stack segnalata">
+                <span className="stack" style={{ gap: 2 }}>
+                  <span style={{ fontSize: 16, fontWeight: 600 }}>{perEsteso(x)}</span>
+                  <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+                    {x.nota ? `«${x.nota}»` : 'Nessuna nota.'} Nell’appello: {x.segno === 'assente' ? 'assente' : 'non segnato'}.
+                  </span>
+                </span>
+                <span className="row" style={{ gap: 8 }}>
+                  <button type="button" className="btn btn-go grow" style={{ minHeight: 44, fontSize: 14 }} onClick={() => void gestisci(x, true)}>
+                    C’ERA: PRESENTE
+                  </button>
+                  <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px' }} onClick={() => void gestisci(x, false)}>
+                    RIFIUTA
+                  </button>
+                </span>
+              </div>
+            ))}
+            {guaioSegnalata && <span style={{ fontSize: 14, color: 'var(--rosso)' }}>{guaioSegnalata}</span>}
+          </div>
+        </>
       )}
 
       <div className="rule">

@@ -86,6 +86,23 @@ I due tasti in cima:
 
 Non c'è niente da salvare: ogni tocco parte subito.
 
+## Le presenze segnalate
+
+*Per ora solo in prova.*
+
+Un iscritto che c'era, e nel vostro appello non risulta, lo può segnalare
+dalla sua pagina. Quando succede, in cima al calendario compare un riquadro
+giallo, **PRESENZE SEGNALATE**, con chi e che lezione. Toccandone una si apre
+l'appello di quella lezione, dove sopra gli iscritti c'è **DICONO DI ESSERCI
+STATI**, con la nota se l'ha scritta:
+
+- **C'ERA: PRESENTE** lo segna presente;
+- **RIFIUTA** lascia l'appello com'era.
+
+Vedete solo quelle delle vostre lezioni. Le vede anche la segreteria, in
+[Presenze segnalate](segreteria/presenze-segnalate.md): le gestisce chi
+arriva prima.
+
 ## Chi viene a provare: PROVE
 
 Chi non è iscritto e viene a provare una lezione (o la settimana di prova) lo

@@ -3,6 +3,7 @@ import type { CertificatoSeg, PagamentoSeg } from './segreteria'
 import { comeCertificato, comePaga } from './segreteria'
 import type { Ricevuta } from './ricevute'
 import type { DatiRichiesta, StatoRichiesta } from './richieste'
+import type { Segnalata } from './segnalate'
 
 /**
  * L'area degli iscritti: quello che di sé vede chi frequenta i corsi, dal
@@ -96,6 +97,10 @@ export interface DatiIscritto {
    * minore. Si cambia tutto, prima di mandare.
    */
   datiDelNucleo(personaId: string): Promise<Partial<DatiRichiesta>>
+  /** Dice che era a lezione e non risulta: la presenza la conferma l'istruttore o la segreteria (vedi `segnalate.ts`). */
+  segnala(personaId: string, sessioneId: string, nota?: string): Promise<void>
+  /** Le sue presenze segnalate, per sapere a che punto sono. */
+  segnalate(personaId: string): Promise<Segnalata[]>
 }
 
 /** Quanto viene: le presenze sulle lezioni che contano (le giustificate no). */

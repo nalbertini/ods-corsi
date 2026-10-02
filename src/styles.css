@@ -284,6 +284,11 @@ input, textarea { font: inherit; color: inherit; }
 .lezione-conto { font-size: 20px; font-weight: 700; color: var(--dim); }
 .lezione-conto[data-fatto='true'] { color: var(--verde); }
 
+/* Le presenze segnalate dagli iscritti: in cima al calendario e nell'appello. */
+.segnalate-avviso { padding: 12px 14px; gap: 8px; border-left: 4px solid var(--giallo); }
+.segnalate-voce { gap: 10px; padding: 8px 0; border-top: 1px solid var(--line-soft); width: 100%; cursor: pointer; flex-wrap: wrap; }
+.segnalata { padding: 12px 14px; gap: 10px; border-left: 4px solid var(--giallo); }
+
 .conto-appello { font-size: 46px; font-weight: 700; line-height: 0.9; }
 
 /* Tre stati, tre colori, e il segno grande a sinistra: da lontano si vede se
@@ -607,7 +612,16 @@ a.btn { text-decoration: none; }
 .stima-totale { border-top: 2px solid var(--line); padding-top: 6px; font-weight: 700; font-size: 17px; }
 .mie-presenze { list-style: none; margin: 0; padding: 4px 14px; gap: 0; }
 .mia-presenza { gap: 12px; padding: 8px 0; align-items: center; }
-.mia-presenza + .mia-presenza { border-top: 1px solid var(--line-soft); }
+.mia-presenza + .mia-presenza, .mia-presenza-voce + .mia-presenza-voce { border-top: 1px solid var(--line-soft); }
+.mie-presenze { list-style: none; }
+/* Segnalare una presenza mancante: il tasto piccolo sulla riga, e sotto la nota. */
+.mia-segnala {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; padding: 6px 10px; min-height: 32px;
+  border: 2px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer;
+}
+.mia-segnala-modulo { gap: 8px; padding: 0 0 12px 34px; }
+.mia-presenza-segnalata { max-width: none; white-space: nowrap; }
+.mia-segnala-modulo .campo { width: 100%; }
 .mia-presenza-segno { font-size: 20px; font-weight: 700; width: 22px; text-align: center; color: var(--faint); }
 .mia-presenza-detto { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); }
 .mia-presenza[data-stato='presente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--verde); }

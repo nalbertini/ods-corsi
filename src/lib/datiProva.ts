@@ -291,6 +291,16 @@ export function creaDatiProva(): Dati {
   return {
     modo: 'prova',
 
+    async segnalate(soloDi) {
+      const { segnalateProva } = await import('./segnalateProva')
+      return segnalateProva({ soloDi })
+    },
+
+    async gestisciSegnalata(id, accogli, soloDi) {
+      const { gestisciSegnalataProva } = await import('./segnalateProva')
+      gestisciSegnalataProva(id, accogli, soloDi ? nomeIstruttore(soloDi) : 'Segreteria di prova', soloDi)
+    },
+
     async calendario(da, a) {
       return lezioniFra(da, a).map(vista)
     },
