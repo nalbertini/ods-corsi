@@ -1,6 +1,6 @@
 import type { DatiTablet, EsitoTocco, LezioneSala, PresenzaIstruttore, RigaAppelloTablet } from './tablet'
 import { fase, REGOLE, sigle } from './tablet'
-import { comeE, creaDatiProva, lezioniFra, memoria } from './datiProva'
+import { comeE, creaDatiProva, lezioniFra, memoria, mettiProva, provatiProva, togliProvaDa } from './datiProva'
 import { archivio, type PresenzaIstruttoreProva } from './archivioProva'
 import { perCognome } from './sala'
 import { impostazioniSala, timerSala } from '../../timer/src/lib/impostazioniSala'
@@ -204,7 +204,8 @@ export function creaTabletProva(): DatiTablet {
       if (inizio < t - REGOLE.recuperoGiorni * 24 * 60 * MIN || inizio > t + REGOLE.primaMin * MIN) {
         throw new Error('lezione fuori dalla finestra del tablet')
       }
-      const ordinati = [...d.elenco].sort((a, b) => a.nome.localeCompare(b.nome, 'it') || a.cognome.localeCompare(b.cognome, 'it'))
+      // Le prove no: le aggiunge chi fa l'appello, già presenti.
+      const ordinati = d.elenco.filter((p) => !p.prova).sort((a, b) => a.nome.localeCompare(b.nome, 'it') || a.cognome.localeCompare(b.cognome, 'it'))
       return sigle(ordinati).map((p) => ({ personaId: p.id, nome: p.nome, sigla: p.sigla, segnato: p.stato === 'presente' }))
     },
 
@@ -218,7 +219,7 @@ export function creaTabletProva(): DatiTablet {
       if (t >= inizio - REGOLE.primaMin * MIN && t <= fine + REGOLE.dopoMin * MIN) da = 'tablet'
       else if (inizio <= t && inizio >= t - REGOLE.recuperoGiorni * 24 * 60 * MIN) da = 'recupero'
       else throw new Error('fuori orario: la lezione non si può segnare adesso')
-      const p = d.elenco.find((x) => x.id === personaId)
+      const p = d.elenco.find((x) => x.id === personaId && !x.prova)
       if (!p) throw new Error('non è iscritto a questo corso')
       if (p.stato === 'presente') return 'gia'
       if (p.stato !== null && !memoria.origini[sessioneId]?.[personaId]) return 'istruttore'
@@ -249,25 +250,50 @@ export function creaTabletProva(): DatiTablet {
       const d = await lezione(sessioneId)
       if (!daPin(pin)) return []
       const origini = memoria.origini[sessioneId] ?? {}
-      return [...d.elenco].sort(perCognome).map((p): RigaAppelloTablet => ({
+      return [...d.elenco].sort((a, b) => Number(!!a.prova) - Number(!!b.prova) || perCognome(a, b)).map((p): RigaAppelloTablet => ({
         personaId: p.id,
         nome: p.nome,
         cognome: p.cognome,
         stato: p.stato,
         origine: p.stato === null ? null : (origini[p.id]?.da ?? 'appello'),
+        ...(p.prova ? { prova: true } : {}),
       }))
     },
 
-    async correggi(pin, sessioneId, personaId, stato) {
+    async correggi(pin, sessioneId, personaId, stato, prova) {
       const d = await lezione(sessioneId)
       if (!daPin(pin)) return false
-      if (!d.elenco.some((p) => p.id === personaId)) throw new Error('non è iscritto a questo corso')
+      const p = d.elenco.find((x) => x.id === personaId && !!x.prova === !!prova)
+      if (!p) throw new Error(prova ? 'non è fra le prove di questa lezione' : 'non è iscritto a questo corso')
+      if (prova && stato === null) throw new Error('una prova si segna presente o assente')
       if (stato === null) {
         // Come nel database: si toglie solo un segno arrivato dal tablet.
         if (memoria.origini[sessioneId]?.[personaId]) scrivi(sessioneId, personaId, null, null)
         return true
       }
       scrivi(sessioneId, personaId, stato, null)
+      return true
+    },
+
+    async provati(pin) {
+      if (!sala) throw new Error('solo un tablet di sala')
+      return daPin(pin) ? provatiProva(false) : []
+    },
+
+    async aggiungiProva(pin, sessioneId, chi) {
+      await lezione(sessioneId)
+      const da = daPin(pin)
+      if (!da) return false
+      const p = mettiProva(sessioneId, chi, da.personaId)
+      // Come dall'appello: la presenza non è «dal tablet».
+      scrivi(sessioneId, p.id, memoria.segnate[sessioneId]?.[p.id] ?? 'presente', null)
+      return true
+    },
+
+    async togliProva(pin, sessioneId, personaId) {
+      await lezione(sessioneId)
+      if (!daPin(pin)) return false
+      togliProvaDa(sessioneId, personaId)
       return true
     },
 

@@ -4,6 +4,8 @@ import type { DettaglioSessione, StatoPresenza } from '../lib/sala'
 import { giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { timerDellaLezione } from '../lib/aree'
 import { Cronometro } from './Icons'
+import type { ChiProva } from '../lib/prove'
+import { MarchioProva, PannelloProve, TogliProva } from './Prove'
 
 /**
  * L'appello.
@@ -17,6 +19,9 @@ import { Cronometro } from './Icons'
  * 2. **Un tocco solo per riga**, e il giro è presente → assente → non segnato.
  *    Niente menù, niente conferme: le righe sono alte 56 px perché le si tocca
  *    con le mani sudate e senza guardare.
+ *
+ * Chi viene a provare lo aggiunge l'istruttore da qui, col tasto PROVE: entra
+ * in fondo all'elenco, già presente (vedi `Prove.tsx`).
  *
  * `onPresenti` dice quanti sono i presenti ogni volta che cambiano, per il
  * calendario che sullo schermo largo sta qui accanto.
@@ -32,6 +37,7 @@ export function AppelloScreen({
 }) {
   const [d, setD] = useState<DettaglioSessione | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
+  const [conProve, setConProve] = useState(false)
 
   const ricarica = useCallback(() => {
     let vivo = true
@@ -65,6 +71,8 @@ export function AppelloScreen({
   if (!d) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Sto leggendo la lezione…</p>
 
   const segnati = d.elenco.filter((p) => p.stato !== null).length
+  const iscritti = d.elenco.filter((p) => !p.prova)
+  const prove = d.elenco.filter((p) => p.prova)
 
   // presente → assente → non segnato, e si ricomincia.
   const prossimo = (s: StatoPresenza | null): StatoPresenza | null =>
@@ -83,6 +91,16 @@ export function AppelloScreen({
     void dati.segnaTutti(sessioneId, stato)
   }
 
+  const aggiungiProva = async (chi: ChiProva) => {
+    const p = await dati.aggiungiProva(sessioneId, chi)
+    setD((v) => v && (v.elenco.some((x) => x.id === p.id) ? v : { ...v, elenco: [...v.elenco, { ...p, stato: 'presente', prova: true }] }))
+  }
+
+  const togliProva = (personaId: string) => {
+    setD((v) => v && { ...v, elenco: v.elenco.filter((p) => p.id !== personaId) })
+    void dati.togliProva(sessioneId, personaId)
+  }
+
   const azzera = () => {
     setD((v) => v && { ...v, elenco: v.elenco.map((p) => ({ ...p, stato: null })) })
     for (const p of d.elenco) if (p.stato !== null) void dati.segna(sessioneId, p.id, null)
@@ -99,6 +117,15 @@ export function AppelloScreen({
             {[d.sessione.sala, d.sessione.istruttore].filter(Boolean).join(' · ')}
           </span>
         </div>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          style={{ minHeight: 44, fontSize: 14, padding: '0 14px' }}
+          aria-expanded={conProve}
+          onClick={() => setConProve((x) => !x)}
+        >
+          PROVE
+        </button>
         {/* Il timer della lezione: si apre con i timer del corso in cima. */}
         <a className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px', gap: 8 }} href={timerDellaLezione(d.sessione)}>
           <Cronometro size={18} />
@@ -127,14 +154,26 @@ export function AppelloScreen({
         </div>
       </div>
 
+      {conProve && (
+        <div className="pad" style={{ paddingTop: 14 }}>
+          <PannelloProve
+            stile="app"
+            cerca={() => dati.provati()}
+            giaQui={new Set(d.elenco.map((p) => p.id))}
+            onAggiungi={aggiungiProva}
+            onChiudi={() => setConProve(false)}
+          />
+        </div>
+      )}
+
       <div className="rule">
         <span className="rule-label">ISCRITTI</span>
         <div className="rule-line" />
-        <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{d.elenco.length}</span>
+        <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{iscritti.length}</span>
       </div>
 
       <div className="pad elenco-appello">
-        {d.elenco.map((p) => (
+        {iscritti.map((p) => (
           <button
             key={p.id}
             className="riga-appello"
@@ -150,6 +189,34 @@ export function AppelloScreen({
         ))}
       </div>
 
+      {prove.length > 0 && (
+        <>
+          <div className="rule">
+            <span className="rule-label">PROVE</span>
+            <div className="rule-line" />
+            <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{prove.length}</span>
+          </div>
+          <div className="pad elenco-appello">
+            {prove.map((p) => (
+              <div key={p.id} className="riga-prova">
+                <button
+                  className="riga-appello"
+                  data-stato={p.stato ?? 'niente'}
+                  onClick={() => tocca(p.id, prossimo(p.stato))}
+                  aria-label={`${perEsteso(p)}, in prova: ${p.stato ?? 'non segnato'}`}
+                >
+                  <span className="segno" aria-hidden="true">
+                    {p.stato === 'presente' ? '✓' : p.stato === 'assente' ? '✕' : ''}
+                  </span>
+                  <span className="nome-appello grow">{perEsteso(p)}</span>
+                  <MarchioProva />
+                </button>
+                <TogliProva chi={perEsteso(p)} onTogli={() => togliProva(p.id)} />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </>
   )
 }

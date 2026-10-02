@@ -134,7 +134,13 @@ iniziale.
    - **TUTTI PRESENTI** — segna presenti tutti quelli che non lo sono;
    - **GLI ALTRI ASSENTI** — segna assenti quelli ancora senza segno. È il
      modo veloce di chiudere l'appello quando gli allievi si sono segnati da
-     soli.
+     soli;
+   - **PROVE** — aggiunge chi viene a provare: nome, cognome e telefono, o
+     toccate chi è già venuto a provare (qui senza telefono: lo schermo è in
+     sala). Entra in fondo all'appello già presente, col bollino **PROVA**, e
+     **TOGLI** lo toglie se è un errore. Chi viene a provare non si segna da
+     solo sul tablet: lo aggiungete voi. Come nell'app (vedi la
+     [guida degli istruttori](istruttori.md)).
 6. **ESCI** quando avete finito. Se ve ne dimenticate, dopo **2 minuti** senza
    tocchi l'area si chiude da sola: il PIN non resta aperto in sala.
 

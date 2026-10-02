@@ -46,6 +46,11 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
 - **L'appello**: l'elenco degli iscritti, un tocco per riga — presente, assente,
   non segnato — e `TUTTI PRESENTI` in cima, perché in una classe di ventidue con
   venti presenti si segnano due assenze invece di venti presenze.
+- **Le prove**: chi viene a provare lo aggiunge all'appello chi lo sta facendo,
+  col tasto `PROVE` (l'istruttore dall'app o dal tablet col PIN, la segreteria
+  dalla lezione aperta): nome, cognome e telefono, o chi è già venuto a
+  provare, ritrovato per nome. Entra già presente, e la segreteria lo ritrova in
+  PRESENZE per richiamarlo (`supabase/20-prove.sql`).
 - **Il tablet di sala**: un tablet appeso al muro di ogni sala con il calendario
   della sala. Chi arriva tocca il suo nome e la presenza è segnata, senza
   domande e con ANNULLA per chi sbaglia; chi si è dimenticato recupera le
@@ -288,6 +293,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
+| `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome, tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/calendario-da-se.sql` | Il calendario che si allunga da sé: anche per un istruttore, solo quando serve, fin dove dicono le regole. |
@@ -299,6 +305,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `supabase/prova/ricevute.sql` | Le ricevute: le fa e le annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i conti li fa il server, e una ricevuta fatta non si cambia. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 | `supabase/prova/presenze-istruttori.sql` | La presenza degli istruttori dal PIN del tablet: da sola a chi era previsto, anche da sostituto, da confermare agli altri; la conferma solo la segreteria. |
+| `supabase/prova/prove.sql` | Le prove: le aggiunge chi fa l'appello (dall'app o col PIN), già presenti; si ritrovano per nome; si tolgono con la persona se è nata lì; un iscritto e chi non ha accesso non le vedono. Dopo `tablet.sql`. |
 | `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`

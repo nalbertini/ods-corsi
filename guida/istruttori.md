@@ -86,6 +86,30 @@ I due tasti in cima:
 
 Non c'è niente da salvare: ogni tocco parte subito.
 
+## Chi viene a provare: PROVE
+
+Chi non è iscritto e viene a provare una lezione (o la settimana di prova) lo
+aggiungete voi, senza aspettare la segreteria: in alto, accanto a **TIMER**,
+c'è **PROVE**.
+
+1. Scrivete **nome**, **cognome** e, se ve lo dà, il **telefono**: serve alla
+   segreteria per richiamarlo.
+2. Mentre scrivete, sotto compare chi **è già venuto a provare** con quel
+   nome (con il corso e il giorno dell'ultima prova). Se è lui, toccatelo:
+   è la stessa persona, non un doppione. È il caso della settimana di prova,
+   un giorno judo e uno lotta.
+3. Se no, **AGGIUNGI NUOVO**.
+
+Chi aggiungete entra in fondo all'appello, sotto **PROVE**, già **presente**
+(✓) e col bollino **PROVA**; si tocca come gli altri. Potete aggiungerne
+quanti volete, uno dopo l'altro; **FATTO** chiude il riquadro. Se ne avete
+messo uno per sbaglio (un nome scritto male), **TOGLI** accanto al nome, e
+**SICURO? TOGLI** per confermare: se era nuovo sparisce del tutto.
+
+La segreteria ritrova tutte le prove in **PRESENZE**, con il telefono, e chi
+le ha aggiunte. Come i tocchi, anche una prova aggiunta senza rete aspetta sul
+telefono e parte appena torna.
+
 ## Il timer della lezione
 
 Accanto al giorno e all'ora c'è **TIMER**: apre il timer con la lezione. In

@@ -4,6 +4,8 @@ import type { Dati } from './dati'
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
 import { giornoDi, perCognome, valeIl } from './sala'
 import { Coda } from './coda'
+import type { GiaProvato, NuovaProva } from './prove'
+import { eGiaVenuto, nuovoId, pulisciProva } from './prove'
 
 /**
  * La sala corsi con il database vero.
@@ -93,6 +95,8 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       if (op.tipo === 'segna') await scriviPresenza(db, a, b, c)
       else if (op.tipo === 'segnaTutti') await scriviTutti(db, a, b as unknown as StatoPresenza)
       else if (op.tipo === 'chiudi') await chiudiSessione(db, a)
+      else if (op.tipo === 'prova') await scriviProva(db, a, b, op.args[2] as NuovaProva | null)
+      else if (op.tipo === 'togliProva') await togliProva(db, a, b)
     } catch (e) {
       if (definitivo(e)) return // scartata: riprovarla non cambierebbe niente
       throw e
@@ -174,9 +178,34 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       if (e1) throw e1
       if (e2) throw e2
       const stati = new Map((presenze ?? []).map((p) => [p.persona_id, p.stato as StatoPresenza]))
-      const elenco = iscrittiIl((iscritti ?? []) as unknown as RigaIscrizione[], riga.corso_id, giornoDi(riga.inizio))
-        .sort(perCognome)
-        .map((p) => ({ ...p, stato: stati.get(p.id) ?? null }))
+      const delCorso = iscrittiIl((iscritti ?? []) as unknown as RigaIscrizione[], riga.corso_id, giornoDi(riga.inizio)).sort(perCognome)
+      const prove = new Map((await proveDi(db, sessioneId)).map((p) => [p.id, p]))
+
+      // Quello che è ancora in coda: senza, una prova aggiunta senza rete
+      // sparirebbe dall'appello riaprendolo, finché non arriva al server.
+      for (const op of coda.operazioni) {
+        const [s, chi] = op.args as [string, string]
+        if (s !== sessioneId) continue
+        if (op.tipo === 'prova') {
+          const { nome, cognome } = op.args[3] as { nome: string; cognome: string }
+          prove.set(chi, { id: chi, nome, cognome, ruolo: 'iscritto' })
+          if (!stati.has(chi)) stati.set(chi, 'presente')
+        } else if (op.tipo === 'togliProva') prove.delete(chi)
+        else if (op.tipo === 'segna') {
+          const stato = op.args[2] as StatoPresenza | null
+          if (stato) stati.set(chi, stato)
+          else stati.delete(chi)
+        }
+      }
+
+      const iscrittiQui = new Set(delCorso.map((p) => p.id))
+      const elenco = [
+        ...delCorso.map((p) => ({ ...p, stato: stati.get(p.id) ?? null })),
+        ...[...prove.values()]
+          .filter((p) => !iscrittiQui.has(p.id))
+          .sort(perCognome)
+          .map((p) => ({ ...p, stato: stati.get(p.id) ?? null, prova: true })),
+      ]
 
       return { sessione: viste, note: riga.note ?? undefined, elenco } as DettaglioSessione
     },
@@ -191,6 +220,34 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
 
     async chiudi(sessioneId) {
       coda.accoda(`chiudi:${sessioneId}`, 'chiudi', [sessioneId])
+    },
+
+    // Le letture vanno dirette, come le altre: è anche il modo in cui il
+    // tasto PROVE scopre che manca 20-prove.sql, prima di mettere in coda una
+    // prova che il server butterebbe via.
+    async provati() {
+      const { data, error } = await db.rpc('prove_recenti')
+      if (error) throw manca20(error)
+      return (data ?? []).map(daRiga).sort((x: GiaProvato, y: GiaProvato) => y.inizio.localeCompare(x.inizio))
+    },
+
+    // Le scritture passano dalla coda, come le presenze: una prova aggiunta
+    // in fondo alla sala senza campo non si perde. L'id lo decide l'app, così
+    // un tocco sul nome dopo sa già a chi va.
+    async aggiungiProva(sessioneId, chi) {
+      const n = eGiaVenuto(chi) ? null : pulisciProva(chi)
+      const id = eGiaVenuto(chi) ? chi.id : nuovoId()
+      const nome = n?.nome ?? chi.nome
+      const cognome = n?.cognome ?? chi.cognome
+      coda.accoda(`prova:${sessioneId}:${id}`, 'prova', [sessioneId, id, n, { nome, cognome }])
+      return { id, nome, cognome, ruolo: 'iscritto' }
+    },
+
+    async togliProva(sessioneId, personaId) {
+      // Stessa chiave dell'aggiunta: una prova aggiunta e tolta senza rete non parte nemmeno.
+      coda.accoda(`prova:${sessioneId}:${personaId}`, 'togliProva', [sessioneId, personaId])
+      // Il segno in coda per lei non serve più: il server lo toglie con la prova.
+      coda.accoda(`segna:${sessioneId}:${personaId}`, 'segna', [sessioneId, personaId, null])
     },
 
     guardaCoda: (f) => coda.guarda(f),
@@ -226,12 +283,61 @@ async function scriviTutti(db: SupabaseClient, sessioneId: string, stato: StatoP
   // disattivata non si segna presente, neanche con TUTTI PRESENTI.
   const { data: righe, error: e } = await db.from('iscrizioni').select(ISCRIZIONE).eq('corso_id', sess.corso_id)
   if (e) throw e
-  const iscritti = iscrittiIl((righe ?? []) as unknown as RigaIscrizione[], sess.corso_id, giornoDi(sess.inizio))
+  const iscritti = [...iscrittiIl((righe ?? []) as unknown as RigaIscrizione[], sess.corso_id, giornoDi(sess.inizio)), ...(await proveDi(db, sessioneId))]
   if (!iscritti.length) return
   const { error } = await db.from('presenze').upsert(
     iscritti.map((p) => ({ sessione_id: sessioneId, persona_id: p.id, stato })),
     { onConflict: 'sessione_id,persona_id' },
   )
+  if (error) throw error
+}
+
+/** Chi è venuto a provare una lezione. Senza 20-prove.sql non c'è nessuno, e l'appello resta quello di prima. */
+async function proveDi(db: SupabaseClient, sessioneId: string): Promise<Persona[]> {
+  const { data, error } = await db
+    .from('prove')
+    // Due legami con `persone` (chi prova e chi l'ha aggiunta): si dice quale.
+    .select('persone!prove_persona_id_fkey ( id, nome, cognome, ruolo, attiva )')
+    .eq('sessione_id', sessioneId)
+  if (error) return []
+  return ((data ?? []) as unknown as Array<{ persone: (Persona & { attiva: boolean }) | null }>)
+    .filter((r) => r.persone?.attiva)
+    .map((r) => {
+      const { attiva: _, ...p } = r.persone!
+      return p
+    })
+}
+
+const daRiga = (r: { persona_id: string; nome: string; cognome: string; telefono: string | null; corso: string; inizio: string }): GiaProvato => ({
+  id: r.persona_id,
+  nome: r.nome,
+  cognome: r.cognome,
+  telefono: r.telefono ?? undefined,
+  corso: r.corso,
+  inizio: r.inizio,
+})
+
+/** Il file che crea le prove non è stato lanciato: lo si dice, invece del messaggio dell'API. */
+function manca20(e: { code?: string; message?: string }): Error {
+  if (e.code === 'PGRST202' || e.code === '42883' || e.code === '42P01') {
+    return new Error('Le prove non sono ancora attive: va lanciato supabase/20-prove.sql.')
+  }
+  return new Error(e.message || 'Il server non risponde')
+}
+
+async function scriviProva(db: SupabaseClient, sessioneId: string, personaId: string, n: NuovaProva | null) {
+  const { error } = await db.rpc('aggiungi_prova', {
+    sessione: sessioneId,
+    persona: personaId,
+    nome: n?.nome ?? null,
+    cognome: n?.cognome ?? null,
+    telefono: n?.telefono ?? null,
+  })
+  if (error) throw error
+}
+
+async function togliProva(db: SupabaseClient, sessioneId: string, personaId: string) {
+  const { error } = await db.rpc('togli_prova', { sessione: sessioneId, persona: personaId })
   if (error) throw error
 }
 

@@ -43,6 +43,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 17. `17-luoghi.sql` — i comuni e gli stati esteri del codice fiscale, per il luogo di nascita del modulo. Lo genera `scripts/luoghi.py` dalle tabelle dell'ANPR; è grande (circa 600 KB), e se il SQL Editor non lo prende si lancia con `psql`. Finché non c'è, il luogo di nascita resta quello scritto nel modulo
 18. `18-anagrafiche.sql` — nascita, residenza e genitore degli iscritti che arrivano dalle risposte del modulo Google
 19. `19-listino.sql` — il listino dei costi, cambiato dalla segreteria da LISTINO e letto dalla pagina di iscrizione
+20. `20-prove.sql` — le prove: chi viene a provare entra nell'appello, aggiunto da chi lo fa col tasto PROVE
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -91,7 +92,10 @@ segreteria basta `19-listino.sql` (dopo `05-segreteria.sql`), che non chiede
 di rilanciare `06-iscrizioni.sql` (e se lo si rilancia dopo, `06` rimette lui
 il permesso ad `anon` su `listino()`): finché non c'è, la pagina di iscrizione
 e le ricevute usano il listino del foglio, e salvare da LISTINO dice che va
-lanciato.
+lanciato. Per le prove basta `20-prove.sql` (dopo `04-tablet.sql`), che non
+chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, l'appello si fa come
+prima, il tasto PROVE dice che va lanciato, e in segreteria PRESENZE lo dice
+nel riquadro PROVE.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA

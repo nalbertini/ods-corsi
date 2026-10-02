@@ -34,3 +34,9 @@ questo sta in un riquadro a parte e non abbassa le medie.
 - **APPELLI MANCANTI** — le lezioni passate senza appello. **FALLO ORA** apre la
   lezione nella [Settimana](settimana.md), per segnarlo da lì o per metterla
   ANNULLATA se non si è fatta.
+- **PROVE** — chi è venuto a provare nel mese, dalla lezione più recente: il
+  corso, il giorno, chi l'ha aggiunto all'appello (di solito l'istruttore,
+  col tasto PROVE) e il **telefono**, che si tocca per chiamare. **ISCRITTO**
+  vuol dire che nel frattempo si è iscritto; **SCHEDA** apre la sua scheda in
+  [Iscritti](iscritti.md), dove c'è già, e da lì lo si iscrive. Le prove
+  non contano nelle medie, che sono sugli iscritti.

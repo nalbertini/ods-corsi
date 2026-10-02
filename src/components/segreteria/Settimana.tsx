@@ -4,6 +4,8 @@ import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/
 import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../../lib/sala'
 import { dati, type Dati } from '../../lib/dati'
 import { Back } from '../Icons'
+import type { ChiProva } from '../../lib/prove'
+import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
 import { Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
@@ -388,12 +390,14 @@ const prossimo = (s: StatoPresenza | null): StatoPresenza | null => (s === null 
  * quindi anche da qui senza rete non si perde niente.
  *
  * Si apre quando la lezione è cominciata: prima non c'è niente da segnare,
- * e una presenza messa in anticipo sporcherebbe le medie.
+ * e una presenza messa in anticipo sporcherebbe le medie. Da lì c'è anche il
+ * tasto PROVE, per chi è venuto a provare (vedi `Prove.tsx`).
  */
 function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
   const [strato, setStrato] = useState<Dati | null>(null)
   const [elenco, setElenco] = useState<DettaglioSessione['elenco'] | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
+  const [conProve, setConProve] = useState(false)
   const cominciata = Date.parse(l.inizio) <= Date.now()
   const annullata = l.stato === 'annullata'
   const aperto = cominciata && !annullata
@@ -432,6 +436,20 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
     setElenco((v) => v && v.map((p) => ({ ...p, stato: 'presente' })))
     scritto(strato.segnaTutti(l.id, 'presente'))
   }
+  const aggiungiProva = async (chi: ChiProva) => {
+    if (!strato) return
+    const p = await strato.aggiungiProva(l.id, chi)
+    setElenco((v) => v && (v.some((x) => x.id === p.id) ? v : [...v, { ...p, stato: 'presente', prova: true }]))
+    if (strato.modo === 'prova') onCambiato()
+  }
+  const togliProva = (personaId: string) => {
+    if (!strato) return
+    setElenco((v) => v && v.filter((p) => p.id !== personaId))
+    scritto(strato.togliProva(l.id, personaId))
+  }
+  const iscritti = elenco?.filter((p) => !p.prova)
+  const prove = elenco?.filter((p) => p.prova) ?? []
+
   const azzera = () => {
     if (!strato || !elenco) return
     if (segnati && !window.confirm(`Togliere i ${segnati} segni di questa lezione?`)) return
@@ -466,20 +484,35 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
             </button>
           </div>
         )}
+        {aperto && elenco && (
+          <button type="button" className="sg-btn sg-btn-tratteggio" aria-expanded={conProve} disabled={!strato} onClick={() => setConProve((x) => !x)}>
+            PROVE
+          </button>
+        )}
       </div>
+
+      {conProve && strato && elenco && (
+        <PannelloProve
+          stile="sg"
+          cerca={() => strato.provati()}
+          giaQui={new Set(elenco.map((p) => p.id))}
+          onAggiungi={aggiungiProva}
+          onChiudi={() => setConProve(false)}
+        />
+      )}
 
       <div className="stack" style={{ gap: 8 }}>
         <Riga titolo="ISCRITTI">
           <span className="num" style={{ fontSize: 14, fontWeight: 700 }}>
-            {l.capienza ? `${quanti}/${l.capienza}` : quanti}
+            {l.capienza ? `${iscritti?.length ?? quanti}/${l.capienza}` : (iscritti?.length ?? quanti)}
           </span>
         </Riga>
         {guaio && <Guaio testo={guaio} />}
         {!elenco && !guaio && <span className="sg-sotto">Sto leggendo l'appello…</span>}
-        {elenco && elenco.length === 0 && <span className="sg-sotto">Nessun iscritto.</span>}
-        {elenco && elenco.length > 0 && (
+        {iscritti && iscritti.length === 0 && <span className="sg-sotto">Nessun iscritto.</span>}
+        {iscritti && iscritti.length > 0 && (
           <div className="sg-elenco-appello">
-            {elenco.map((p) => (
+            {iscritti.map((p) => (
               <button
                 key={p.id}
                 type="button"
@@ -496,6 +529,36 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
               </button>
             ))}
           </div>
+        )}
+        {prove.length > 0 && (
+          <>
+            <Riga titolo="PROVE">
+              <span className="num" style={{ fontSize: 14, fontWeight: 700 }}>
+                {prove.length}
+              </span>
+            </Riga>
+            <div className="sg-elenco-appello">
+              {prove.map((p) => (
+                <div key={p.id} className="riga-prova">
+                  <button
+                    type="button"
+                    className="riga-appello"
+                    data-stato={p.stato ?? 'niente'}
+                    disabled={!aperto}
+                    onClick={() => tocca(p.id, prossimo(p.stato))}
+                    aria-label={`${perEsteso(p)}, in prova: ${p.stato ?? 'non segnato'}`}
+                  >
+                    <span className="segno" aria-hidden="true">
+                      {p.stato === 'presente' ? '✓' : p.stato === 'assente' ? '✕' : ''}
+                    </span>
+                    <span className="nome-appello grow">{perEsteso(p)}</span>
+                    <MarchioProva />
+                  </button>
+                  {aperto && <TogliProva chi={perEsteso(p)} onTogli={() => togliProva(p.id)} />}
+                </div>
+              ))}
+            </div>
+          </>
         )}
         {aperto && elenco && elenco.length > 0 && (
           <span style={{ fontSize: 12, color: 'var(--faint)' }}>Un tocco: presente, due: assente, tre: non segnato.</span>

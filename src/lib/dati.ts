@@ -1,4 +1,5 @@
-import type { DettaglioSessione, SessioneVista, StatoPresenza } from './sala'
+import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
+import type { ChiProva, GiaProvato } from './prove'
 
 /**
  * Da dove arrivano corsi, lezioni e presenze.
@@ -17,6 +18,15 @@ export interface Dati {
   /** `null` toglie il segno: serve a correggere un tocco sbagliato. */
   segna(sessioneId: string, personaId: string, stato: StatoPresenza | null): Promise<void>
   segnaTutti(sessioneId: string, stato: StatoPresenza): Promise<void>
+  /** Chi è già venuto a provare negli ultimi novanta giorni, dal più recente. */
+  provati(): Promise<GiaProvato[]>
+  /**
+   * Aggiunge all'appello chi viene a provare, già presente: uno già venuto o
+   * uno nuovo. Restituisce la persona, con l'id che avrà anche sul server.
+   */
+  aggiungiProva(sessioneId: string, chi: ChiProva): Promise<Persona>
+  /** Toglie una prova messa per sbaglio, col suo segno. */
+  togliProva(sessioneId: string, personaId: string): Promise<void>
   /** Chiude la lezione: da «prevista» a «svolta». */
   chiudi(sessioneId: string): Promise<void>
   /** Quante scritture non sono ancora arrivate al server. Sempre 0 in prova. */
