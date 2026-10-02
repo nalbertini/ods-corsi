@@ -4,6 +4,7 @@ import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
 import { Accesso, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
+import { AreaIscritti, IscrittiChiusa } from './components/AreaIscritti'
 import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
 import { Tablet } from './components/tablet/Tablet'
@@ -23,10 +24,11 @@ import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
  * riguarda la palestra, il timer una cosa che riguarda la lezione, e tenerle
  * nello stesso posto le legava più di quanto servisse.
  *
- * Ha quattro facce, ognuna col suo indirizzo (vedi `aree.ts`) e la sua porta:
+ * Ha cinque facce, ognuna col suo indirizzo (vedi `aree.ts`) e la sua porta:
  * la segreteria per il computer della reception, a tutto schermo e solo per
  * chi ne ha il ruolo; le iscrizioni, la pagina pubblica del link da mandare a
- * chi vuole iscriversi; gli istruttori, col calendario e l'appello; e la sala,
+ * chi vuole iscriversi; gli iscritti, la pagina di chi frequenta i corsi (per
+ * ora solo in prova); gli istruttori, col calendario e l'appello; e la sala,
  * il tablet appeso al muro.
  *
  * Col database vero la porta è una sola (vedi `accedi`), e anche la sessione:
@@ -56,6 +58,7 @@ function Aree() {
   const area = useArea()
   if (area === 'segreteria') return <AreaSegreteria />
   if (area === 'iscrizioni') return <Iscrizioni />
+  if (area === 'iscritti') return <Iscritti />
   if (area === 'istruttori') return <Istruttori />
   if (area === 'sala') return <Tablet />
   if (area === 'guida') return <AreaGuida />
@@ -89,7 +92,7 @@ function Testata({ luogo, guida, children }: { luogo: string; guida?: string; ch
  * area: una scelta dell'area non c'è, la fa l'account, tranne per chi ne ha
  * due (la segreteria che insegna anche), che qui sceglie.
  *
- * In prova le porte sono aperte, e qui ci sono tutte e quattro le aree.
+ * In prova le porte sono aperte, e qui ci sono tutte le aree.
  */
 function Scelta() {
   if (serveAccesso) return <PortaUnica />
@@ -156,6 +159,7 @@ function TutteLeAree() {
     ['istruttori', 'ISTRUTTORI', 'Il calendario e l’appello.'],
     ['segreteria', 'SEGRETERIA', 'Corsi, iscritti, presenze e richieste, dal computer della reception.'],
     ['iscrizioni', 'ISCRIZIONI', 'Come ci si iscrive, i costi e il modulo: la pagina da mandare a chi vuole iscriversi.'],
+    ['iscritti', 'ISCRITTI', 'La pagina di chi frequenta i corsi: le sue lezioni, le presenze, il certificato e le ricevute. Il pilota.'],
     ['sala', 'SALA', 'Il tablet appeso al muro della sala. Da qui il dispositivo resta un tablet.'],
   ]
   return (
@@ -191,6 +195,19 @@ function Iscrizioni() {
       <main className="scroll">
         <IscrizioniScreen pubblica />
       </main>
+    </div>
+  )
+}
+
+/**
+ * La pagina degli iscritti. Il pilota c'è solo in prova: col database vero
+ * un iscritto non ha ancora un accesso, e la pagina dice che arriva.
+ */
+function Iscritti() {
+  return (
+    <div className="app">
+      <Testata luogo="ISCRITTI" guida={indirizzoPagina('iscritti')} />
+      <main className="scroll">{serveAccesso ? <IscrittiChiusa /> : <AreaIscritti />}</main>
     </div>
   )
 }

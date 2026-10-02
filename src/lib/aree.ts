@@ -4,12 +4,15 @@ import { areaDelPercorso } from './percorso'
 import { eIndirizzoGuida } from './guida'
 
 /**
- * Le quattro facce dell'app, ognuna col suo indirizzo vero e la sua porta:
+ * Le facce dell'app, ognuna col suo indirizzo vero e la sua porta:
  *
  * - `segreteria/`: il computer della reception, solo per chi ha il ruolo di
  *   segreteria;
  * - `iscrizioni/`: la pagina pubblica, quella del link da mandare a chi vuole
  *   iscriversi, senza accesso;
+ * - `iscritti/`: la pagina di chi frequenta i corsi, col suo calendario, le
+ *   presenze, il certificato e le ricevute; per ora solo in prova (vedi
+ *   `iscritto.ts`);
  * - `istruttori/`: il calendario e l'appello, per istruttori e segreteria;
  * - `sala/`: il tablet appeso al muro.
  *
@@ -28,20 +31,21 @@ import { eIndirizzoGuida } from './guida'
  * E poi la guida, `#guida`, con un indirizzo per pagina (`#guida/sala`), che
  * non ha porta e sta sulla radice: vedi `guida.ts`.
  *
- * Senza niente in fondo all'indirizzo si apre una pagina con le quattro, a
+ * Senza niente in fondo all'indirizzo si apre una pagina con tutte, a
  * meno che il dispositivo non sia un tablet di sala: quello va sempre al
  * tablet (vedi `eUnTablet`). Un indirizzo scritto vince sempre sul ricordo:
- * per questo la pagina con le quattro ha anche il suo, `#aree`, ed è lì che
+ * per questo la pagina con tutte ha anche il suo, `#aree`, ed è lì che
  * portano i link «tutte le aree». Con la radice e basta, un dispositivo che
  * una volta ha aperto `sala/` tornerebbe al tablet.
  */
-export type Area = 'segreteria' | 'iscrizioni' | 'istruttori' | 'sala' | 'guida' | 'scelta'
+export type Area = 'segreteria' | 'iscrizioni' | 'iscritti' | 'istruttori' | 'sala' | 'guida' | 'scelta'
 
 export type AreaConIndirizzo = Exclude<Area, 'scelta' | 'guida'>
 
 export const INDIRIZZI: Record<AreaConIndirizzo, string> = {
   segreteria: 'segreteria/',
   iscrizioni: 'iscrizioni/',
+  iscritti: 'iscritti/',
   istruttori: 'istruttori/',
   sala: 'sala/',
 }

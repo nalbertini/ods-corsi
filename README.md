@@ -11,7 +11,7 @@ si pubblica insieme a ODS Corsi, nella sottocartella `timer/` dello stesso sito.
 
 ## Cosa fa oggi
 
-L'app ha quattro indirizzi veri, ognuno con il suo accesso
+L'app ha cinque indirizzi veri, ognuno con il suo accesso
 (`nalbertini.github.io/ods-corsi/segreteria/` e così via):
 
 | | |
@@ -19,6 +19,7 @@ L'app ha quattro indirizzi veri, ognuno con il suo accesso
 | `istruttori/` | Il calendario e l'appello, per istruttori e segreteria. |
 | `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria (anche insieme a quello di istruttore). |
 | `iscrizioni/` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
+| `iscritti/` | La pagina di chi frequenta i corsi. Il pilota, per ora solo in prova. |
 | `sala/` | Il tablet di sala. |
 
 I vecchi indirizzi col cancelletto (`#segreteria`, `#sala`, `#tablet`…)
@@ -29,7 +30,7 @@ compilazione mette in ogni cartella una copia della pagina con
 una sola, e i file si prendono dalla radice come prima.
 
 Senza niente in fondo all'indirizzo si apre la porta unica dell'accesso, che
-porta ognuno nella sua area (in prova, una pagina con le quattro), tranne
+porta ognuno nella sua area (in prova, una pagina con tutte), tranne
 su un tablet di sala, che va sempre al tablet. Non c'è una pagina per
 scegliere l'area: la sceglie l'account. Tranne per chi ha il ruolo doppio,
 segreteria e istruttore (`persone.anche_istruttore`, in
@@ -99,6 +100,15 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   acceso da quando la palestra ha approvato l'informativa privacy
   (`public/informativa.html`, 27 settembre 2026), che si legge in fondo alla
   pagina delle iscrizioni.
+- **L'area degli iscritti**, il pilota: dal telefono, chi frequenta vede
+  le prossime lezioni dei suoi corsi (con le annullate, i sostituti e i
+  cambi di sala), le sue presenze degli ultimi trenta giorni, il certificato
+  medico, la quota e le ricevute in PDF. Solo da leggere. Per ora c'è solo in
+  prova, dove in cima si sceglie quale iscritto inventato essere
+  (`src/lib/iscritto.ts`, `src/components/AreaIscritti.tsx`): col database
+  vero la pagina dice che arriva, perché un iscritto non ha ancora un accesso
+  e quello che può leggere di sé va deciso prima. Cosa manca è in
+  [`guida/iscritti.md`](guida/iscritti.md#cosa-manca-per-aprirla-davvero).
 - **L'accesso** col database è uno solo: la radice è la porta unica, e la
   stessa porta sta in `istruttori/`, `segreteria/` e `sala/`. Si entra con
   l'email, o col nome utente per il tablet di una sala, e l'account dice dove
@@ -251,8 +261,8 @@ anche degli esempi, contando da quel giorno (`src/lib/esempiProva.ts`): gli
 appelli delle ultime cinque settimane, con qualcuno che manca, qualcuno fatto
 solo dai tablet e qualche iscritto che si sta perdendo; le presenze col PIN
 degli istruttori, due da confermare; una lezione annullata, un sostituto e uno
-stage il sabato; quattro richieste online, una di un minore; e un telefono a
-ogni iscritto. Si aggiungono a quello che c'è senza cambiarlo, una volta per
+stage il sabato; quattro richieste online, una di un minore; un telefono a
+ogni iscritto; e una ricevuta a chi ha pagato. Si aggiungono a quello che c'è senza cambiarlo, una volta per
 dispositivo. Restano senza esempi la musica delle sale (servirebbero playlist
 vere), lo storico dei timer e i timer degli istruttori, che sono quelli del
 timer sullo stesso dispositivo.
@@ -293,6 +303,7 @@ serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
+| `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome, tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |

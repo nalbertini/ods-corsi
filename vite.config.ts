@@ -22,7 +22,7 @@ function commit(): string {
 }
 
 // Le aree con un indirizzo vero: vedi `src/lib/aree.ts`.
-const AREE = ['segreteria', 'iscrizioni', 'istruttori', 'sala']
+const AREE = ['segreteria', 'iscrizioni', 'iscritti', 'istruttori', 'sala']
 const BASE = '<base href="../">'
 const conBase = (html: string) => html.replace(/<head>/i, `<head>\n    ${BASE}`)
 
