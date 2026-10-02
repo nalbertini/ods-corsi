@@ -70,8 +70,9 @@ begin
   return null;
 end $$;
 
-drop trigger if exists presenze_istruttore_dall_appello on presenze;
-create trigger presenze_istruttore_dall_appello after insert or update of stato on presenze
+-- `create or replace`, non `drop` e poi `create`: si rilancia uguale, e non c'è
+-- un'istruzione distruttiva che lo strumento di Supabase si fermi a far confermare.
+create or replace trigger presenze_istruttore_dall_appello after insert or update of stato on presenze
   for each row execute function istruttore_dall_appello();
 
 /**
