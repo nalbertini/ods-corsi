@@ -3,12 +3,14 @@ import type { DatiSegreteria, LezioneSenzaIstruttore, PresenzaIstruttoreSeg } fr
 import type { StatoPresenzaIstruttore } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { mesi } from './Presenze'
-import { Guaio, Testa, useAvviso, useCarica } from './comune'
+import { Guaio, Testa, useAvviso, useCarica, useOrdina } from './comune'
 
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 const perNome = (a: string, b: string) => a.localeCompare(b, 'it')
 
 const STATI: Record<StatoPresenzaIstruttore, string> = { confermata: 'confermata', da_confermare: 'da confermare', rifiutata: 'rifiutata' }
+/** Per ordinare per stato: prima quelle da confermare. */
+const ORDINE_STATI: Record<StatoPresenzaIstruttore, number> = { da_confermare: 0, confermata: 1, rifiutata: 2 }
 const minuti = (x: PresenzaIstruttoreSeg) => Math.round((Date.parse(x.fine) - Date.parse(x.inizio)) / 60_000)
 
 /**
@@ -108,6 +110,13 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
   const lista = nelMese
     .filter((x) => (!corso || x.corso === corso) && (!istruttore || x.personaId === istruttore) && (!stato || x.stato === stato))
     .sort((a, b) => b.inizio.localeCompare(a.inizio) || perNome(a.nome, b.nome))
+  const { ordina, colonna } = useOrdina<PresenzaIstruttoreSeg, 'istruttore' | 'lezione' | 'previsto' | 'entrato' | 'stato'>({
+    istruttore: (x) => x.nome,
+    lezione: (x) => x.inizio,
+    previsto: (x) => x.previsti,
+    entrato: (x) => (x.come === 'segreteria' ? null : x.entratoIl),
+    stato: (x) => ORDINE_STATI[x.stato],
+  })
 
   // Il report conta tutti gli stati: lo stato scelto non lo filtra.
   const report = nelMese.filter((x) => (!corso || x.corso === corso) && (!istruttore || x.personaId === istruttore))
@@ -291,11 +300,11 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
 
       <div role="table" aria-label="Presenze degli istruttori" className="sg-tabella">
         <div role="row" className="sg-lista-testa sg-riga-presenza-istr">
-          <span role="columnheader" className="sg-etichetta">ISTRUTTORE</span>
-          <span role="columnheader" className="sg-etichetta">LEZIONE</span>
-          <span role="columnheader" className="sg-etichetta">PREVISTO</span>
-          <span role="columnheader" className="sg-etichetta">ENTRATO</span>
-          <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>STATO</span>
+          {colonna('istruttore', 'ISTRUTTORE')}
+          {colonna('lezione', 'LEZIONE', { numeri: true })}
+          {colonna('previsto', 'PREVISTO')}
+          {colonna('entrato', 'ENTRATO', { numeri: true })}
+          {colonna('stato', 'STATO', { destra: true })}
         </div>
         <div className="sg-tabella-corpo">
           {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le presenze…</p>}
@@ -304,7 +313,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
               {nelMese.length ? 'Nessuna presenza con questi filtri.' : `Nessun istruttore è entrato col PIN durante una lezione ${m ? (m.chiave.startsWith('anno-') ? `nell’${m.nome.toLowerCase()}` : `in ${m.nome.toLowerCase()}`) : 'negli ultimi dodici mesi'}.`}
             </p>
           )}
-          {lista.map((x) => (
+          {ordina(lista).map((x) => (
             <div
               key={x.id}
               role="row"

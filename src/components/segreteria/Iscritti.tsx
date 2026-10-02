@@ -3,7 +3,7 @@ import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, Dati
 import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, PAGAMENTI, pulisciAnagrafica } from '../../lib/segreteria'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica } from './comune'
+import { Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro } from '../../lib/ricevute'
@@ -17,6 +17,9 @@ const daPagare = (p: PersonaSeg, oggi: string) => comePaga(p.pagamento, oggi) !=
 
 const TONO_CERTIFICATO: Record<ComeCertificato, 'rosso' | 'giallo' | 'verde'> = { manca: 'rosso', scaduto: 'rosso', in_scadenza: 'giallo', valido: 'verde' }
 const TONO_PAGA: Record<ComePaga, 'rosso' | 'giallo' | 'verde'> = { da_pagare: 'rosso', scaduto: 'rosso', in_parte: 'giallo', pagato: 'verde' }
+/** Quanto non è in regola, per ordinare: i guai più grossi prima. */
+const GUAIO_CERTIFICATO: Record<ComeCertificato, number> = { manca: 2, scaduto: 2, in_scadenza: 1, valido: 0 }
+const GUAIO_PAGA: Record<ComePaga, number> = { da_pagare: 2, scaduto: 2, in_parte: 1, pagato: 0 }
 const PAROLA_PAGA: Record<ComePaga, string> = { da_pagare: 'DA PAGARE', in_parte: 'PAGATO IN PARTE', pagato: 'PAGATO', scaduto: 'PAGAMENTO SCADUTO' }
 
 function Bollino({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde'; children: string }) {
@@ -70,6 +73,17 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
       (!senzaDocumento || !p.documento) &&
       (!soloStampare || p.certificato.conFile),
   )
+  const suoiCorsi = (p: PersonaSeg) => p.iscrizioni.filter((i) => inCorso(i, oggi)).map((i) => perId.get(i.corsoId)?.nome).filter(Boolean)
+  const { ordina, colonna } = useOrdina<PersonaSeg, 'nome' | 'corsi' | 'contatto' | 'regola' | 'frequenza'>({
+    nome: (p) => `${p.cognome} ${p.nome}`,
+    corsi: (p) => suoiCorsi(p).join(', '),
+    contatto: (p) => p.telefono ?? p.email,
+    regola: (p) => GUAIO_CERTIFICATO[comeCertificato(p.certificato, oggi)] + GUAIO_PAGA[comePaga(p.pagamento, oggi)],
+    frequenza: (p) => {
+      const f = freq.dato?.get(p.id)
+      return f && f.dovute ? f.presenti / f.dovute : null
+    },
+  })
   const attiveOra = tutti.filter((p) => p.attiva)
   const senzaCertificato = attiveOra.filter((p) => ['manca', 'scaduto'].includes(comeCertificato(p.certificato, oggi))).length
   const nonPagato = attiveOra.filter((p) => daPagare(p, oggi)).length
@@ -171,18 +185,18 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
 
         <div role="table" aria-label="Iscritti" className="sg-tabella">
           <div role="row" className="sg-lista-testa sg-riga-iscritto">
-            <span role="columnheader" className="sg-etichetta">NOME</span>
-            <span role="columnheader" className="sg-etichetta">CORSI</span>
-            <span role="columnheader" className="sg-etichetta">CONTATTO</span>
-            <span role="columnheader" className="sg-etichetta">IN REGOLA</span>
-            <span role="columnheader" className="sg-etichetta" style={{ textAlign: 'right' }}>30 GIORNI</span>
+            {colonna('nome', 'NOME')}
+            {colonna('corsi', 'CORSI')}
+            {colonna('contatto', 'CONTATTO')}
+            {colonna('regola', 'IN REGOLA', { numeri: true })}
+            {colonna('frequenza', '30 GIORNI', { numeri: true, destra: true })}
           </div>
           <div className="sg-tabella-corpo">
             {persone.dato === null && !persone.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo gli iscritti…</p>}
             {persone.dato !== null && trovati.length === 0 && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Nessuno corrisponde alla ricerca.</p>}
-            {trovati.map((p) => {
+            {ordina(trovati).map((p) => {
               const f = freq.dato?.get(p.id)
-              const suoi = p.iscrizioni.filter((i) => inCorso(i, oggi)).map((i) => perId.get(i.corsoId)?.nome).filter(Boolean)
+              const suoi = suoiCorsi(p)
               const cert = comeCertificato(p.certificato, oggi)
               const paga = comePaga(p.pagamento, oggi)
               return (

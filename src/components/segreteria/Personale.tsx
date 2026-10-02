@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import { daRuoloScelto, nomeDelRuolo, ruoloScelto, type RuoloScelto } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica } from './comune'
+import { Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica, useOrdina } from './comune'
 import { Numero, mesi } from './Presenze'
 import { Kanji } from '../Kanji'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
@@ -37,6 +37,14 @@ export function Personale({ d }: { d: DatiSegreteria }) {
     (a, b) => Number(b.attiva) - Number(a.attiva) || a.ruolo.localeCompare(b.ruolo) || a.nome.localeCompare(b.nome, 'it'),
   )
   const persona = nuovo ? null : (persone.find((p) => p.id === scelta) ?? null)
+  const { ordina, colonna } = useOrdina<PersonaleSeg, 'nome' | 'email' | 'ruolo' | 'accesso' | 'pin'>({
+    nome: (p) => `${p.nome} ${p.cognome}`.trim(),
+    email: (p) => p.email,
+    ruolo: (p) => nomeDelRuolo(p),
+    // Come dice la colonna: chi è entrato, chi non ancora, chi non può.
+    accesso: (p) => (!p.attiva ? 2 : p.collegato ? 0 : 1),
+    pin: (p) => (p.haPin ? 0 : 1),
+  })
   const chiudi = () => {
     setNuovo(false)
     setScelta(null)
@@ -83,15 +91,15 @@ export function Personale({ d }: { d: DatiSegreteria }) {
 
         <div role="table" aria-label="Personale" className="sg-tabella">
           <div role="row" className="sg-lista-testa sg-riga-personale">
-            <span role="columnheader" className="sg-etichetta">NOME</span>
-            <span role="columnheader" className="sg-etichetta">EMAIL</span>
-            <span role="columnheader" className="sg-etichetta">RUOLO</span>
-            <span role="columnheader" className="sg-etichetta">ACCESSO</span>
-            <span role="columnheader" className="sg-etichetta">PIN TABLET</span>
+            {colonna('nome', 'NOME')}
+            {colonna('email', 'EMAIL')}
+            {colonna('ruolo', 'RUOLO')}
+            {colonna('accesso', 'ACCESSO')}
+            {colonna('pin', 'PIN TABLET')}
           </div>
           {lista.dato === null && lista.guaio && <Guaio testo={lista.guaio} />}
           {lista.dato === null && !lista.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo…</p>}
-          {persone.map((p) => (
+          {ordina(persone).map((p) => (
             <button key={p.id} type="button" role="row" className="sg-riga-personale sg-personale" data-spento={!p.attiva} onClick={() => setScelta(p.id)}>
               <span role="cell" className="stack" style={{ minWidth: 0 }}>
                 <span className="chi-kanji" style={{ fontSize: 15, fontWeight: 600 }}>
@@ -609,6 +617,11 @@ function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
       return { corso, xs, lezioni: xs.length, minuti: xs.reduce((t, x) => t + minuti(x), 0) }
     })
     .sort((x, y) => x.corso.localeCompare(y.corso, 'it'))
+  const { ordina, colonna } = useOrdina<(typeof perCorso)[number], 'corso' | 'lezioni' | 'ore'>({
+    corso: (c) => c.corso,
+    lezioni: (c) => c.lezioni,
+    ore: (c) => c.minuti,
+  })
 
   return (
     <div className="stack" style={{ gap: 12 }}>
@@ -639,11 +652,11 @@ function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
       {perCorso.length > 0 && (
         <div role="table" aria-label={`Lezioni di ${p.nome}, ${m.nome}`} className="sg-tabella">
           <div role="row" className="sg-lista-testa sg-riga-compenso">
-            <span role="columnheader" className="sg-etichetta">CORSO</span>
-            <span role="columnheader" className="sg-etichetta">LEZIONI</span>
-            <span role="columnheader" className="sg-etichetta">ORE</span>
+            {colonna('corso', 'CORSO')}
+            {colonna('lezioni', 'LEZIONI', { numeri: true })}
+            {colonna('ore', 'ORE', { numeri: true })}
           </div>
-          {perCorso.map((c) => (
+          {ordina(perCorso).map((c) => (
             <details key={c.corso} className="sg-compenso">
               <summary role="row" className="sg-riga-compenso">
                 <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>{c.corso}</span>

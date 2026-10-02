@@ -3,7 +3,7 @@ import type { DatiSegreteria, LezioneStat, PersonaSeg, ProvaSeg } from '../../li
 import { comeCertificato, comePaga, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
-import { Guaio, Riga, Testa, useCarica } from './comune'
+import { Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
 import { Numero } from './Presenze'
 
 const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic']
@@ -78,6 +78,8 @@ function conto(lezioni: LezioneStat[]) {
 }
 const percento = (su: number, di: number) => (di ? Math.round((100 * su) / di) : null)
 const media = (x: number, n: number) => (n ? (x / n).toLocaleString('it-IT', { maximumFractionDigits: 1 }) : '—')
+/** La media come numero, per ordinare: senza lezioni non c'è. */
+const mediaNum = (x: number, n: number) => (n ? x / n : null)
 const euro = (centesimi: number) => (centesimi / 100).toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
 const plurale = (n: number, uno: string, tanti: string) => `${n} ${n === 1 ? uno : tanti}`
 
@@ -496,24 +498,34 @@ function TabellaCorsi({ lezioni, scelto, onScegli, onVai }: { lezioni: LezioneSt
       }
     })
     .sort((a, b) => b.presenti + b.prove - (a.presenti + a.prove) || a.nome.localeCompare(b.nome, 'it'))
+  const { ordina, colonna } = useOrdina<(typeof righe)[number], 'corso' | 'lezioni' | 'media' | 'iscritti' | 'posti' | 'prove' | 'annullate' | 'senza'>({
+    corso: (r) => r.nome,
+    lezioni: (r) => r.fatte,
+    media: (r) => mediaNum(r.presenti + r.prove, r.fatte),
+    iscritti: (r) => r.pc,
+    posti: (r) => r.pieno,
+    prove: (r) => r.prove,
+    annullate: (r) => r.annullate,
+    senza: (r) => r.senza,
+  })
   if (!righe.length) return <span className="sg-sotto">Nessuna lezione in questo periodo.</span>
   return (
     <div className="sg-orari-scorre">
       <table className="sg-stat-tabella">
         <thead>
           <tr>
-            <th scope="col">CORSO</th>
-            <th scope="col" className="num-col">LEZIONI</th>
-            <th scope="col" className="num-col">A LEZIONE</th>
-            <th scope="col">SUGLI ISCRITTI</th>
-            <th scope="col">SUI POSTI</th>
-            <th scope="col" className="num-col">PROVE</th>
-            <th scope="col" className="num-col">ANNULLATE</th>
-            <th scope="col" className="num-col">SENZA APPELLO</th>
+            {colonna('corso', 'CORSO', { th: true, className: '' })}
+            {colonna('lezioni', 'LEZIONI', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('media', 'A LEZIONE', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('iscritti', 'SUGLI ISCRITTI', { th: true, numeri: true, className: '' })}
+            {colonna('posti', 'SUI POSTI', { th: true, numeri: true, className: '' })}
+            {colonna('prove', 'PROVE', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('annullate', 'ANNULLATE', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('senza', 'SENZA APPELLO', { th: true, numeri: true, className: 'num-col' })}
           </tr>
         </thead>
         <tbody>
-          {righe.map((r) => (
+          {ordina(righe).map((r) => (
             <tr key={r.id} data-spenta={!!scelto && scelto !== r.id}>
               <th scope="row">
                 <button type="button" className="sg-stat-corso ob" aria-pressed={scelto === r.id} style={{ ['--tinta' as string]: r.colore ?? 'var(--line)' }} onClick={() => onScegli(r.id)}>
@@ -562,21 +574,28 @@ function TabellaIstruttori({ lezioni }: { lezioni: LezioneStat[] }) {
       return { nome, lezioni: qui.length, sostituto: qui.filter((l) => l.sostituto).length, ...c, pc: percento(c.presenti, c.dovute) }
     })
     .sort((a, b) => b.lezioni - a.lezioni || a.nome.localeCompare(b.nome, 'it'))
+  const { ordina, colonna } = useOrdina<(typeof righe)[number], 'nome' | 'lezioni' | 'sostituto' | 'media' | 'iscritti'>({
+    nome: (r) => r.nome,
+    lezioni: (r) => r.lezioni,
+    sostituto: (r) => r.sostituto,
+    media: (r) => mediaNum(r.presenti + r.prove, r.fatte),
+    iscritti: (r) => r.pc,
+  })
   if (!righe.length) return <span className="sg-sotto">Nessuna lezione svolta in questo periodo.</span>
   return (
     <div className="sg-orari-scorre">
       <table className="sg-stat-tabella">
         <thead>
           <tr>
-            <th scope="col">ISTRUTTORE</th>
-            <th scope="col" className="num-col">LEZIONI</th>
-            <th scope="col" className="num-col">DA SOSTITUTO</th>
-            <th scope="col" className="num-col">A LEZIONE</th>
-            <th scope="col">SUGLI ISCRITTI</th>
+            {colonna('nome', 'ISTRUTTORE', { th: true, className: '' })}
+            {colonna('lezioni', 'LEZIONI', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('sostituto', 'DA SOSTITUTO', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('media', 'A LEZIONE', { th: true, numeri: true, className: 'num-col' })}
+            {colonna('iscritti', 'SUGLI ISCRITTI', { th: true, numeri: true, className: '' })}
           </tr>
         </thead>
         <tbody>
-          {righe.map((r) => (
+          {ordina(righe).map((r) => (
             <tr key={r.nome}>
               <th scope="row" style={{ fontWeight: 600 }}>
                 {r.nome}
