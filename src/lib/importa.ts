@@ -117,6 +117,7 @@ export interface Fogli {
 /** Dai due testi ai corsi e agli iscritti, con le righe che non si capiscono messe da parte. */
 export function leggiFogli(testoCorsi: string | null, testoIscritti: string | null, corsiGiaDentro: string[] = []): Fogli {
   const saltate: Saltata[] = []
+  const note: Saltata[] = []
   const corsi = new Map<string, CorsoFoglio>()
   const righeCorsi = testoCorsi ? leggiCsv(testoCorsi) : []
   righeCorsi.forEach((r, i) => {
@@ -145,7 +146,7 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
 
   const noti = new Set([...corsi.keys(), ...corsiGiaDentro.map(piatto)])
   const iscritti = new Map<string, IscrittoFoglio>()
-  const perEmail = new Map<string, { chi: string; riga: number }>()
+  const perEmail = new Map<string, { chi: string; nome: string; riga: number }>()
   const righeIscritti = testoIscritti ? leggiCsv(testoIscritti) : []
   righeIscritti.forEach((r, i) => {
     const riga = i + 2
@@ -153,11 +154,14 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
     if (!r.nome || !r.cognome) return saltate.push({ foglio: 'iscritti.csv', riga, motivo: `Manca ${r.nome ? 'il cognome' : 'il nome'}: «${r.nome || r.cognome}»${r.corso ? `, ${r.corso}` : ''}` })
     if (r.corso && !noti.has(piatto(r.corso))) return saltate.push({ foglio: 'iscritti.csv', riga, motivo: `Il corso «${r.corso}» non è fra i corsi` })
     const chi = `${piatto(r.nome)} ${piatto(r.cognome)}`
-    const email = r.email?.toLowerCase() || undefined
+    let email = r.email?.toLowerCase() || undefined
     if (email) {
       const prima = perEmail.get(email)
-      if (prima && prima.chi !== chi) return saltate.push({ foglio: 'iscritti.csv', riga, motivo: `Stessa email della riga ${prima.riga}, ma nome diverso: quale dei due?` })
-      perEmail.set(email, { chi, riga })
+      // Due fratelli con l'email del genitore: entrano tutti e due, il secondo senza.
+      if (prima && prima.chi !== chi) {
+        note.push({ foglio: 'iscritti.csv', riga, motivo: `${r.nome} ${r.cognome}: stessa email di ${prima.nome} (riga ${prima.riga}), entra senza email, col telefono` })
+        email = undefined
+      } else perEmail.set(email, { chi, nome: `${r.nome} ${r.cognome}`, riga })
     }
     // L'email, quando c'è, è l'unica cosa che distingue davvero due omonimi.
     const k = email ?? chi
@@ -171,6 +175,7 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
     iscritti: [...iscritti.values()],
     righe: { corsi: righeCorsi.length, iscritti: righeIscritti.length },
     saltate,
+    note,
   }
 }
 
@@ -195,6 +200,8 @@ export interface Anteprima {
   /** Gli iscritti con nascita, residenza o genitore da scrivere. */
   anagrafiche: number
   avvisi: string[]
+  /** Gli iscritti che entrano senza email, perché la loro è già di un altro. */
+  emailDiAltri: string[]
   /** Dopo l'import: perché nascita, residenza e genitore non sono entrati. */
   anagraficheFuori?: string
 }
@@ -244,24 +251,30 @@ export function anteprima(f: Fogli, s: Situazione): Anteprima {
 
   let iscrittiNuovi = 0
   let iscrizioniNuove = 0
+  const emailDiAltri: string[] = []
   const oggi = chiaveGiorno(new Date())
   for (const x of f.iscritti) {
     const p = trovaPersona(x, s.persone)
     if (!p) iscrittiNuovi++
+    const diChi = !p && x.email ? s.persone.find((q) => q.email?.toLowerCase() === x.email) : undefined
+    if (diChi) emailDiAltri.push(`${x.nome} ${x.cognome}: l'email ${x.email} è già di ${diChi.nome} ${diChi.cognome}, entra come persona a sé, senza email`)
     for (const nome of x.corsi) {
       const c = corsiDentro.get(piatto(nome))
       if (!p || !c || !p.iscrizioni.some((i) => i.corsoId === c.id && (!i.al || i.al >= oggi))) iscrizioniNuove++
     }
   }
   const anagrafiche = f.iscritti.filter((x) => x.anagrafica && Object.keys(x.anagrafica).length > 0).length
-  return { saleNuove, istruttoriNuovi, istruttoriTrovati, istruttori, corsiNuovi, ricorrenzeNuove, iscrittiNuovi, iscrizioniNuove, anagrafiche, avvisi }
+  return { saleNuove, istruttoriNuovi, istruttoriTrovati, istruttori, corsiNuovi, ricorrenzeNuove, iscrittiNuovi, iscrizioniNuove, anagrafiche, avvisi, emailDiAltri }
 }
 
 function trovaPersona(x: IscrittoFoglio, persone: PersonaSeg[]) {
   const stessoNome = (p: PersonaSeg) => piatto(p.nome) === piatto(x.nome) && piatto(p.cognome) === piatto(x.cognome)
   const perEmail = x.email ? persone.find((p) => p.email?.toLowerCase() === x.email) : undefined
-  if (perEmail && (!x.soloStessoNome || stessoNome(perEmail))) return perEmail
-  if (x.email && !x.soloStessoNome) return undefined
+  // L'email dice chi è solo se torna anche il nome: quella del genitore è
+  // uguale per due fratelli, e il secondo non deve finire sulla scheda del primo.
+  if (perEmail && stessoNome(perEmail)) return perEmail
+  // Dal foglio Excel un'email nuova è una persona nuova, anche se omonima.
+  if (x.email && !perEmail && !x.soloStessoNome) return undefined
   return persone.find((p) => !p.email && stessoNome(p)) ?? persone.find(stessoNome)
 }
 

@@ -269,14 +269,26 @@ console.log('\n10. l\'import dai fogli')
   const corsi = 'nome;sala;istruttore;giorno;ora;durata\r\nYoga;Sala nuova;Katia;sabato;10.00;60\r\nLotta 2;Lotta;Maura;sabato;11:00;60\r\nRotto;Pesi;;funedì;18:00;60\r\n'
   const iscritti = '\uFEFFnome;cognome;email;telefono;corso\nMarta;Nuova;marta@esempio.it;;Yoga\nGiorgia;;;;Yoga\nMarta;Nuova;marta@esempio.it;;Lotta 2\nPaolo;Verdi;marta@esempio.it;;Yoga\n'
   const f = m.leggiFogli(corsi, iscritti, (await s.corsi()).map((c) => c.nome))
-  ok('le righe che non vanno', f.saltate.map((x) => `${x.foglio}:${x.riga}`), ['corsi.csv:4', 'iscritti.csv:3', 'iscritti.csv:5'])
-  ok('Marta una volta sola, con due corsi', f.iscritti.map((x) => [x.nome, x.corsi]), [['Marta', ['Yoga', 'Lotta 2']]])
+  ok('le righe che non vanno', f.saltate.map((x) => `${x.foglio}:${x.riga}`), ['corsi.csv:4', 'iscritti.csv:3'])
+  ok('Marta una volta sola, con due corsi', f.iscritti.map((x) => [x.nome, x.corsi]), [['Marta', ['Yoga', 'Lotta 2']], ['Paolo', ['Yoga']]])
+  ok('Paolo, con la stessa email di Marta: entra senza', [f.iscritti[1].email, f.note.map((x) => `${x.foglio}:${x.riga}`)], [undefined, ['iscritti.csv:5']])
   const a1 = await m.importa(s, f, () => {})
   ok('entrano la sala, il corso, i giorni', [a1.saleNuove, a1.corsiNuovi, a1.ricorrenzeNuove], [['Sala nuova'], ['Yoga'], 2])
   ok('Katia si lega col solo nome', (await s.corsi()).find((c) => c.nome === 'Yoga').istruttori.map((i) => i.nome), ['Katia'])
   const a2 = await m.importa(s, m.leggiFogli(corsi, iscritti, (await s.corsi()).map((c) => c.nome)), () => {})
   ok('rifatto: niente di nuovo', [a2.saleNuove.length, a2.corsiNuovi.length, a2.ricorrenzeNuove, a2.iscrittiNuovi, a2.iscrizioniNuove], [0, 0, 0, 0, 0])
   ok('e nessun doppione', (await s.persone()).filter((p) => p.email === 'marta@esempio.it').length, 1)
+  ok('Paolo c\'è, una volta', (await s.persone()).filter((p) => p.nome === 'Paolo' && p.cognome === 'Verdi').map((p) => p.email ?? null), [null])
+
+  // Un altro foglio, dopo: il fratello con l'email di Marta non finisce sulla sua scheda.
+  const altro = 'nome;cognome;email;telefono;corso\nLuca;Nuova;MARTA@esempio.it;333;Lotta 2\n'
+  const f3 = m.leggiFogli(null, altro, (await s.corsi()).map((c) => c.nome))
+  const a3 = await m.importa(s, f3, () => {})
+  ok('Luca entra nuovo, e si dice perché senza email', [a3.iscrittiNuovi, a3.emailDiAltri.length], [1, 1])
+  const luca = (await s.persone()).filter((p) => p.nome === 'Luca' && p.cognome === 'Nuova')
+  ok('Luca a sé, senza email, con Lotta 2', luca.map((p) => [p.email ?? null, p.iscrizioni.length]), [[null, 1]])
+  const a4 = await m.importa(s, m.leggiFogli(null, altro, (await s.corsi()).map((c) => c.nome)), () => {})
+  ok('rifatto: Luca non si duplica', [a4.iscrittiNuovi, a4.iscrizioniNuove, (await s.persone()).filter((p) => p.nome === 'Luca' && p.cognome === 'Nuova').length], [0, 0, 1])
 }
 
 console.log('\n10b. l\'import con un giorno in un\'altra sala')

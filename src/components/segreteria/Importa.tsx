@@ -97,7 +97,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
         f.iscritti.push(...r.iscritti)
         f.righe.risposte = r.righe
         f.saltate.push(...r.saltate)
-        f.note = r.note
+        f.note = [...(f.note ?? []), ...r.note]
       }
       setControllo({ f, a: anteprima(f, { sale, personale, corsi, persone }) })
     } catch (e) {
@@ -241,7 +241,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
               <span className="sg-sotto">Quello che c'è già resta com'è: un corso esistente prende solo i giorni e gli istruttori che gli mancano. Poi il calendario si allunga.</span>
             </section>
 
-            {(controllo.f.saltate.length > 0 || controllo.a.avvisi.length > 0 || (controllo.f.note?.length ?? 0) > 0) && (
+            {(controllo.f.saltate.length > 0 || controllo.a.avvisi.length > 0 || (controllo.f.note?.length ?? 0) > 0 || controllo.a.emailDiAltri.length > 0) && (
               <section aria-label="Righe saltate" className="sg-riquadro">
                 <Riga titolo="DA SISTEMARE" />
                 <div className="sg-saltate">
@@ -259,6 +259,12 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
                         {s.foglio} · riga {s.riga} · entra
                       </span>
                       <span>{s.motivo}</span>
+                    </div>
+                  ))}
+                  {controllo.a.emailDiAltri.map((s, i) => (
+                    <div key={`e${i}`} className="contents">
+                      <span className="num" style={{ color: 'var(--dim)', fontWeight: 700 }}>iscritto · entra</span>
+                      <span>{s}</span>
                     </div>
                   ))}
                   {controllo.a.avvisi.map((s, i) => (
