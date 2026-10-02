@@ -1,8 +1,8 @@
--- Le prove (20-prove.sql): chi viene a provare entra nell'appello di una
+-- Le prove (21-prove.sql): chi viene a provare entra nell'appello di una
 -- lezione, presente, aggiunto dall'istruttore dall'app o dal tablet col PIN;
 -- si ritrova per nome per un'altra lezione; e si toglie se è un errore.
 -- Si lancia dopo tablet.sql, di cui usa persone, sale, tablet e lezioni, e
--- dopo i file dello schema fino a 20-prove.sql.
+-- dopo i file dello schema fino a 21-prove.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 reset role;

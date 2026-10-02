@@ -6,6 +6,7 @@ import type { Esercizio } from '../../timer/src/lib/esercizi'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, Ricevuta } from './ricevute'
 import type { Listino, ListinoLetto } from './listino'
+import { nomeProprio } from './nomi'
 
 export type { ListaMusica } from './musica'
 
@@ -157,11 +158,12 @@ export function cosaNonVaAnagrafica(a: Anagrafica, oggi = chiaveGiornoOggi()): s
   return null
 }
 
-/** Come si salva: spazi in più via, i codici fiscali in maiuscolo e senza spazi. */
+/** Come si salva: spazi in più via, il nome del genitore come un nome, i codici fiscali in maiuscolo e senza spazi. */
 export function pulisciAnagrafica(a: Anagrafica): Anagrafica {
   const x: Record<string, string> = {}
   for (const [k, v] of Object.entries(a)) if (typeof v === 'string' && v.trim()) x[k] = v.trim().replace(/\s+/g, ' ')
   for (const k of ['codiceFiscale', 'genitoreCodiceFiscale', 'cap']) if (x[k]) x[k] = x[k].toUpperCase().replace(/\s/g, '')
+  for (const k of ['genitoreNome', 'genitoreCognome']) if (x[k]) x[k] = nomeProprio(x[k])
   return x as Anagrafica
 }
 
@@ -210,7 +212,7 @@ export interface RigaRegistro {
   appello: Array<{ personaId: string; nome: string; cognome: string; stato: StatoPresenza | null }>
 }
 
-/** Chi è venuto a provare una lezione, per richiamarlo (20-prove.sql). */
+/** Chi è venuto a provare una lezione, per richiamarlo (21-prove.sql). */
 export interface ProvaSeg {
   sessioneId: string
   personaId: string
@@ -377,7 +379,7 @@ export interface DatiSegreteria {
 
   /** Le lezioni già cominciate fra due giorni, con i loro appelli. */
   registro(da: Date, a: Date): Promise<RigaRegistro[]>
-  /** Chi è venuto a provare nelle lezioni fra due giorni, dalla più recente (20-prove.sql). */
+  /** Chi è venuto a provare nelle lezioni fra due giorni, dalla più recente (21-prove.sql). */
   prove(da: Date, a: Date): Promise<ProvaSeg[]>
 
   personale(): Promise<PersonaleSeg[]>

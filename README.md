@@ -50,7 +50,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   col tasto `PROVE` (l'istruttore dall'app o dal tablet col PIN, la segreteria
   dalla lezione aperta): nome, cognome e telefono, o chi è già venuto a
   provare, ritrovato per nome. Entra già presente, e la segreteria lo ritrova in
-  PRESENZE per richiamarlo (`supabase/20-prove.sql`).
+  PRESENZE per richiamarlo (`supabase/21-prove.sql`).
 - **Il tablet di sala**: un tablet appeso al muro di ogni sala con il calendario
   della sala. Chi arriva tocca il suo nome e la presenza è segnata, senza
   domande e con ANNULLA per chi sbaglia; chi si è dimenticato recupera le

@@ -223,7 +223,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
     },
 
     // Le letture vanno dirette, come le altre: è anche il modo in cui il
-    // tasto PROVE scopre che manca 20-prove.sql, prima di mettere in coda una
+    // tasto PROVE scopre che manca 21-prove.sql, prima di mettere in coda una
     // prova che il server butterebbe via.
     async provati() {
       const { data, error } = await db.rpc('prove_recenti')
@@ -292,7 +292,7 @@ async function scriviTutti(db: SupabaseClient, sessioneId: string, stato: StatoP
   if (error) throw error
 }
 
-/** Chi è venuto a provare una lezione. Senza 20-prove.sql non c'è nessuno, e l'appello resta quello di prima. */
+/** Chi è venuto a provare una lezione. Senza 21-prove.sql non c'è nessuno, e l'appello resta quello di prima. */
 async function proveDi(db: SupabaseClient, sessioneId: string): Promise<Persona[]> {
   const { data, error } = await db
     .from('prove')
@@ -320,7 +320,7 @@ const daRiga = (r: { persona_id: string; nome: string; cognome: string; telefono
 /** Il file che crea le prove non è stato lanciato: lo si dice, invece del messaggio dell'API. */
 function manca20(e: { code?: string; message?: string }): Error {
   if (e.code === 'PGRST202' || e.code === '42883' || e.code === '42P01') {
-    return new Error('Le prove non sono ancora attive: va lanciato supabase/20-prove.sql.')
+    return new Error('Le prove non sono ancora attive: va lanciato supabase/21-prove.sql.')
   }
   return new Error(e.message || 'Il server non risponde')
 }

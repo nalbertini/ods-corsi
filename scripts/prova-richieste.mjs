@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { controlla, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { certificatoDaPortare, controlla, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -93,6 +93,15 @@ console.log('\n2. cosa passa e cosa no: gli stessi messaggi del database')
   ok('un minore senza genitore', await errore(() => r.invia(adulto({ natoIl: '2017-03-01' }))), 'Per un minore servono nome, cognome e codice fiscale del genitore')
   ok('diciotto anni compiuti ieri: adulto', m.minorenne('2008-09-25'), false)
   ok('diciotto anni domani: minore', m.minorenne('2008-09-27'), true)
+  const oggi = new Date(2026, 9, 2)
+  ok('certificato: senza data, nessuno', m.certificatoDaPortare('', ['Judo'], oggi), 'nessuno')
+  ok('certificato: 5 anni, nessuno', m.certificatoDaPortare('2021-01-01', ['Judo bambini'], oggi), 'nessuno')
+  ok('certificato: 6 anni oggi, normale', m.certificatoDaPortare('2020-10-02', ['Judo bambini'], oggi), 'normale')
+  ok('certificato: 11 anni a judo, normale', m.certificatoDaPortare('2015-01-01', ['Judo ragazzi'], oggi), 'normale')
+  ok('certificato: 12 anni a judo, agonistico', m.certificatoDaPortare('2014-10-02', ['Judo ragazzi'], oggi), 'agonistico')
+  ok('certificato: adulto ad aikido, agonistico', m.certificatoDaPortare('1990-05-05', ['Pilates', 'AIKIDO'], oggi), 'agonistico')
+  ok('certificato: adulto a lotta, agonistico', m.certificatoDaPortare('1990-05-05', ['Lotta libera'], oggi), 'agonistico')
+  ok('certificato: adulto a pilates, normale', m.certificatoDaPortare('1990-05-05', ['Pilates'], oggi), 'normale')
 }
 
 console.log('\n2b. il codice fiscale, letto')

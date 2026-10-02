@@ -107,11 +107,11 @@ export interface Archivio {
   enteRicevute?: EnteRicevuta
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */
   anagrafiche?: Record<string, Anagrafica & { cambiataIl?: string }>
-  /** Chi è venuto a provare una lezione, come le righe di `prove` (20-prove.sql). */
+  /** Chi è venuto a provare una lezione, come le righe di `prove` (21-prove.sql). */
   prove?: ProvaLezione[]
 }
 
-/** Come una riga di `prove` (20-prove.sql). */
+/** Come una riga di `prove` (21-prove.sql). */
 export interface ProvaLezione {
   sessioneId: string
   personaId: string

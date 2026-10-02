@@ -112,7 +112,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     async appello(pin, sessioneId) {
       type Riga = { persona_id: string; nome: string; cognome: string; stato: StatoPresenza | null; origine: Origine | null }
       const righe = await rpc<Riga[]>('appello_con_pin', { pin, sessione: sessioneId })
-      // Le prove dopo gli iscritti. Senza 20-prove.sql non ce ne sono, e
+      // Le prove dopo gli iscritti. Senza 21-prove.sql non ce ne sono, e
       // l'appello resta quello di prima.
       let prove: Riga[] = []
       try {
@@ -138,7 +138,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     async provati(pin) {
       const { data, error } = await db.rpc('provati_con_pin', { pin })
       if (error) {
-        throw new Error(error.code === 'PGRST202' ? 'Le prove non sono ancora attive: va lanciato supabase/20-prove.sql.' : error.message || 'Il server non risponde')
+        throw new Error(error.code === 'PGRST202' ? 'Le prove non sono ancora attive: va lanciato supabase/21-prove.sql.' : error.message || 'Il server non risponde')
       }
       const righe = (data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; corso: string; inizio: string }>
       // Un PIN che non va più non solleva e non restituisce nessuno: se ne

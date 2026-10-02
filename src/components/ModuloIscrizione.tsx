@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi, pulisciCf } from '../lib/richieste'
+import { certificatoDaPortare, controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi, pulisciCf } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
@@ -132,6 +132,10 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
   useEffect(() => setTratti([]), [minore])
   const firmatario = minore ? `${(b.genitoreNome ?? '').trim()} ${(b.genitoreCognome ?? '').trim()}`.trim() : `${b.nome.trim()} ${b.cognome.trim()}`.trim()
   const foglio = MODULI[minore ? 1 : 0]
+  const certificato = certificatoDaPortare(
+    b.natoIl,
+    (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
+  )
 
   const errori = problemi(pronta)
   /** Cosa scrivere sotto un campo: «Manca» solo dopo aver provato a mandare. */
@@ -262,6 +266,11 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         <span className="esito-testo">
           Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
         </span>
+        {certificato !== 'nessuno' && (
+          <span className="esito-testo">
+            Ricorda di consegnare in segreteria il certificato medico{certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.
+          </span>
+        )}
         <Tasto onClick={onChiudi}>TORNA ALLE ISCRIZIONI</Tasto>
       </div>
     )
@@ -484,6 +493,17 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
       </Sezione>
 
       <Sezione titolo="I FILE">
+        {certificato !== 'nessuno' && (
+          <div className="modulo-campo modulo-largo">
+            <span className="modulo-etichetta">{certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
+            <Dettaglio tono="avviso">
+              {certificato === 'agonistico'
+                ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico.'
+                : 'Dai 6 anni il certificato medico è obbligatorio.'}{' '}
+              Non si carica qui: va consegnato in segreteria, e senza non si partecipa alle lezioni.
+            </Dettaglio>
+          </div>
+        )}
         {FILE.filter((f) => f.tipo !== 'modulo').map((f) => (
           <SceltaFile key={f.tipo} tipo={f.tipo} file={file[f.tipo]} onFile={(x) => setFile((p) => ({ ...p, [f.tipo]: x }))} />
         ))}

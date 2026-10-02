@@ -5,9 +5,11 @@
  * e lo aggiunge chi fa l'appello: l'istruttore dall'app o dal tablet col
  * PIN, la segreteria dalla lezione aperta nella settimana. Chi è già venuto
  * a provare si ritrova per nome, ed è come si fa una settimana di prova.
- * Le regole vere sono in `supabase/20-prove.sql`; qui ci sono quelle che
+ * Le regole vere sono in `supabase/21-prove.sql`; qui ci sono quelle che
  * servono a dire subito cosa non va, prima di mandare.
  */
+
+import { nomeProprio } from './nomi'
 
 /** Chi è già venuto a provare, con l'ultima lezione provata. */
 export interface GiaProvato {
@@ -41,10 +43,13 @@ export function cosaNonVaProva(n: NuovaProva): string | null {
   return null
 }
 
-/** Nome, cognome e telefono come li salva il server: senza spazi in più, il telefono vuoto non c'è. */
+/**
+ * Nome, cognome e telefono come li salva il server: scritti come tutti gli
+ * altri nomi (`nomi.ts`, 20-nomi.sql), il telefono vuoto non c'è.
+ */
 export const pulisciProva = (n: NuovaProva): NuovaProva => ({
-  nome: n.nome.trim(),
-  cognome: n.cognome.trim(),
+  nome: nomeProprio(n.nome),
+  cognome: nomeProprio(n.cognome),
   telefono: n.telefono?.trim() || undefined,
 })
 

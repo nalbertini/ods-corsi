@@ -44,25 +44,22 @@ const PRESENTAZIONI: Record<string, Presentazione> = {
   'Judo 2': JUDO,
   'Judo 3': JUDO,
   'Judo adulti': JUDO,
-  'Judo principianti': JUDO,
   'Judo agonisti': JUDO,
   'Aikido 2': AIKIDO,
   'Aikido 3': AIKIDO,
   'Lotta 2': LOTTA,
   'Lotta 3': LOTTA,
-  'Body functional': PESI,
-  'Preparazione atletica': {
+  'Preparazione atletica, pesi e Mobility': {
     frase: 'Allenamenti mirati per migliorare forza, resistenza, velocità e coordinazione.',
     pagina: 'preparazione-atletica',
   },
-  'Pesistica 1': PESI,
-  'Pesistica 2': PESI,
+  'Pesistica e Mobility': PESI,
   'Prepugilistica': {
     frase: 'Il primo passo nella boxe: tecnica, disciplina e coordinazione, per muovere i primi colpi in sicurezza.',
     pagina: 'pre-pugilistica',
   },
   'Pesi agonisti': PESI,
-  'MGA': {
+  'MGA metodo globale autodifesa': {
     frase: 'Un sistema di autodifesa pratico e realistico, basato su situazioni reali.',
     pagina: 'mga---metodo-globale-di-autodifesa',
   },

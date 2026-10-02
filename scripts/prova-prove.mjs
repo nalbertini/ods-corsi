@@ -3,7 +3,7 @@
 //
 //   node scripts/prova-prove.mjs
 //
-// La prova dell'app rifà in TypeScript le regole di `supabase/20-prove.sql`:
+// La prova dell'app rifà in TypeScript le regole di `supabase/21-prove.sql`:
 // la prova aggiunta dall'appello, già presente; la stessa persona ritrovata
 // per un'altra lezione; il tablet col PIN; la prova tolta per sbaglio, con
 // la persona se è nata lì; l'elenco della segreteria. Le stesse cose, dal
