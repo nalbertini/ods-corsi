@@ -1,18 +1,18 @@
 /**
- * I costi della stagione 2026/27, ricopiati dal foglio della segreteria
- * (`public/moduli/costi-2026-27.pdf`).
+ * I costi della stagione 2026/27, partiti dal foglio della segreteria
+ * (`public/moduli/costi-2026-27.pdf`) e aggiornati con il LISTINO che la
+ * segreteria ha sistemato a ottobre: la Prepugilistica, ora solo il
+ * mercoledì, costa come un corso da un giorno.
  *
  * Sono il listino di partenza: la segreteria lo cambia da LISTINO, e da lì
  * vale quello (`listino.ts`). Questi restano finché non lo tocca, e tornano
  * con RIMETTI IL FOGLIO.
  *
- * Sono ricopiati così come sono, anche dove sembrano strani (la
- * Prepugilistica costa uguale a saldo e annuale, la Lotta 2 ha il trimestre a
- * 170 € e non a 180 €): se il foglio cambia, si cambia qui, e basta.
- *
- * Le età e gli orari fanno fede anche per il calendario: `dati/corsi-2026-27.csv`
- * e `datiProva.ts` sono stati allineati a questo foglio, e se il foglio cambia
- * vanno ricontrollati anche loro.
+ * I corsi sono quelli ufficiali della stagione, così come stanno nel
+ * calendario della segreteria dopo la revisione di ottobre (orari, sale e
+ * istruttori): stessi nomi dei corsi, così le ricevute trovano da sé i
+ * prezzi del corso dell'iscritto. Gli orari sono in `dati/corsi-2026-27.csv`:
+ * se cambia uno, va ricontrollato l'altro.
  */
 
 export interface Prezzi {
@@ -96,12 +96,6 @@ export const COSTI: VoceCosto[] = [
     prezzi: [{ saldo: 490, annuale: 500, trimestre: 190 }],
   },
   {
-    corso: 'Judo principianti',
-    eta: 'nati nel 2012 o prima',
-    orari: ['lunedì, mercoledì e venerdì 19.00-20.30'],
-    prezzi: [{ saldo: 490, annuale: 500, trimestre: 190 }],
-  },
-  {
     corso: 'Judo agonisti',
     eta: 'solo judoka agonisti (2015-2014 e prima)',
     orari: ['martedì e giovedì 18.00-19.30'],
@@ -124,24 +118,28 @@ export const COSTI: VoceCosto[] = [
     corso: 'Lotta 2',
     eta: 'nati 2019-2018-2017',
     orari: ['lunedì, mercoledì e venerdì 17.00-18.00'],
-    prezzi: [{ saldo: 460, annuale: 480, trimestre: 170 }],
+    prezzi: [{ saldo: 460, annuale: 480, trimestre: 180 }],
   },
   {
     corso: 'Lotta 3',
     eta: 'nati 2016-2015-2014 e prima',
-    orari: ['lunedì, martedì, mercoledì e venerdì 18.00-19.00'],
+    orari: ['lunedì e mercoledì 18.00-19.30', 'martedì e venerdì 18.00-19.00'],
     prezzi: [{ saldo: 460, annuale: 480, trimestre: 180 }],
   },
   {
-    corso: 'Body functional',
-    eta: 'nati nel 2012 o prima',
-    orari: ['mercoledì 18.00-19.00'],
-    prezzi: [{ saldo: 320, annuale: 340, trimestre: 130 }],
+    corso: 'Pesistica e Mobility',
+    eta: 'nati 2015-2014-2013',
+    orari: ['lunedì, mercoledì e venerdì 17.00-18.00'],
+    prezzi: [
+      { etichetta: '1 GIORNO', annuale: 340, trimestre: 130 },
+      { etichetta: '2 GIORNI', annuale: 450, trimestre: 170 },
+      { etichetta: '3 GIORNI', annuale: 480, trimestre: 180 },
+    ],
   },
   {
-    corso: 'Preparazione atletica',
+    corso: 'Preparazione atletica, pesi e Mobility',
     eta: 'nati nel 2012 o prima',
-    orari: ['martedì e giovedì 18.00-19.00 / 19.30-20.30', 'lunedì, mercoledì e venerdì 18.00-19.00'],
+    orari: ['lunedì, mercoledì e venerdì 18.00-19.00', 'martedì e giovedì 18.00-19.00 / 19.30-20.30'],
     prezzi: [
       { etichetta: '1 GIORNO', saldo: 320, annuale: 340, trimestre: 130 },
       { etichetta: '2 GIORNI', saldo: 430, annuale: 450, trimestre: 140 },
@@ -150,22 +148,10 @@ export const COSTI: VoceCosto[] = [
     ],
   },
   {
-    corso: 'Pesistica 1',
-    eta: 'nati 2015-2014-2013',
-    orari: ['lunedì, mercoledì e venerdì 17.00-18.00'],
-    prezzi: [{ saldo: 460, annuale: 480, trimestre: 180 }],
-  },
-  {
-    corso: 'Pesistica 2',
-    eta: 'nati nel 2012 o prima',
-    orari: ['lunedì, mercoledì e venerdì 18.00-19.00'],
-    prezzi: [{ saldo: 460, annuale: 480, trimestre: 180 }],
-  },
-  {
     corso: 'Prepugilistica',
     eta: 'nati 2010-2009-2008 e prima',
-    orari: ['lunedì, mercoledì e venerdì 19.00-20.30'],
-    prezzi: [{ saldo: 460, annuale: 460, trimestre: 180 }],
+    orari: ['mercoledì 19.00-20.30'],
+    prezzi: [{ saldo: 320, annuale: 340, trimestre: 130 }],
   },
   {
     corso: 'Pesi agonisti',
@@ -175,7 +161,7 @@ export const COSTI: VoceCosto[] = [
     nota: 'Specifico per judo e lotta.',
   },
   {
-    corso: 'MGA',
+    corso: 'MGA metodo globale autodifesa',
     eta: 'dal 2011',
     orari: ['venerdì 19.00-20.00'],
     prezzi: [{ saldo: 320, annuale: 340, trimestre: 130 }],

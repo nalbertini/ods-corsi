@@ -275,11 +275,12 @@ ha scritte chi l'ha fatto, quindi:
 Si può rifare col foglio che è cresciuto: chi era già entrato si riconosce
 (dall'email con lo stesso nome, o da nome e cognome) e non si duplica.
 
-L'orario della stagione 2026/27, copiato dal volantino «Corsi e attività» e
-corretto con il foglio dei costi dove i due non coincidono, è in
-[`dati/corsi-2026-27.csv`](../dati/corsi-2026-27.csv). Una cosa manca ancora:
-**gli istruttori hanno solo il nome.** Finché nel foglio non c'è il cognome i
-corsi entrano senza istruttore, e lo script lo dice riga per riga.
+L'orario della stagione 2026/27 è in
+[`dati/corsi-2026-27.csv`](../dati/corsi-2026-27.csv): sono i corsi ufficiali
+come li ha sistemati la segreteria a ottobre, con orari, sale di ogni giorno
+e istruttori, scritti come stanno in `persone` così un nuovo import li
+riconosce. I corsi archiviati (Body functional, Judo principianti,
+Pesistica 1 e 2, Preparazione atletica 1, 2 e 3) non ci sono più.
 
 I corsi con più istruttori (Lotta, Preparazione atletica) li legano tutti in
 `corsi_istruttori`: ognuno può fare l'appello e aggiornare le lezioni del

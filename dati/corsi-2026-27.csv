@@ -1,52 +1,43 @@
 ﻿nome;sala;istruttore;giorno;ora;durata;capienza;colore;note
-Judo 2;Tatami;Maurizio;lunedì;17:00;60;;#1b8ac4;nati 2019-2018-2017
-Judo 2;Tatami;Maurizio;mercoledì;17:00;60;;#1b8ac4;nati 2019-2018-2017
-Judo 2;Tatami;Maurizio;venerdì;17:00;60;;#1b8ac4;nati 2019-2018-2017
-Judo 3;Tatami;Maurizio;lunedì;18:00;60;;#1b8ac4;nati dal 2016 al 2013
-Judo 3;Tatami;Maurizio;mercoledì;18:00;60;;#1b8ac4;nati dal 2016 al 2013
-Judo 3;Tatami;Maurizio;venerdì;18:00;60;;#1b8ac4;nati dal 2016 al 2013
-Judo adulti;Tatami;Maurizio;lunedì;19:00;90;;#1b8ac4;nati dal 2012 in poi
-Judo adulti;Tatami;Maurizio;mercoledì;19:00;90;;#1b8ac4;nati dal 2012 in poi
-Judo adulti;Tatami;Maurizio;venerdì;19:00;90;;#1b8ac4;nati dal 2012 in poi
-Judo principianti;Motricità;Maurizio;lunedì;19:00;90;;#1b8ac4;nati dal 2012 in poi
-Judo principianti;Motricità;Maurizio;mercoledì;19:00;90;;#1b8ac4;nati dal 2012 in poi
-Judo principianti;Motricità;Maurizio;venerdì;19:00;90;;#1b8ac4;nati dal 2012 in poi
-Judo agonisti;Tatami;Maurizio;martedì;18:00;90;;#1b8ac4;Judo 3 e adulti
-Judo agonisti;Tatami;Maurizio;giovedì;18:00;90;;#1b8ac4;Judo 3 e adulti
+Giocomotricità;Motricità;ELENA MERIGO, FEDERICO VUILLERMIN;martedì;17:00;50;;#16a54a;nati 2023-2022
+Giocomotricità;Motricità;ELENA MERIGO, FEDERICO VUILLERMIN;giovedì;17:00;50;;#16a54a;nati 2023-2022
 Psicomotricità;Motricità;;venerdì;17:00;50;;#16a54a;3-4-5 anni, primo turno
 Psicomotricità;Motricità;;venerdì;18:10;50;;#16a54a;3-4-5 anni, secondo turno
-Giocomotricità;Lotta;;martedì;17:00;50;;#16a54a;nati 2023-2022
-Giocomotricità;Lotta;;giovedì;17:00;50;;#16a54a;nati 2023-2022
-Avviamento arti marziali 1;Tatami;;martedì;17:00;60;;#16a54a;nati 2021-2020
-Avviamento arti marziali 1;Tatami;;giovedì;17:00;60;;#16a54a;nati 2021-2020
-Lotta 2;Lotta;Maura, Federico;lunedì;17:00;60;;#e4292a;nati 2019-2018-2017
-Lotta 2;Lotta;Maura, Federico;mercoledì;17:00;60;;#e4292a;nati 2019-2018-2017
-Lotta 2;Lotta;Maura, Federico;venerdì;17:00;60;;#e4292a;nati 2019-2018-2017
-Lotta 3;Lotta;Maura, Federico;lunedì;18:00;60;;#e4292a;nati dal 2016 in poi
-Lotta 3;Lotta;Maura, Federico;mercoledì;18:00;60;;#e4292a;nati dal 2016 in poi
-Lotta 3;Lotta;Maura, Federico;martedì;18:00;60;;#e4292a;preparazione atletica e pesi
-Lotta 3;Lotta;Maura, Federico;venerdì;18:00;60;;#e4292a;
-Pesistica 1;Pesi;;lunedì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
-Pesistica 1;Pesi;;mercoledì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
-Pesistica 1;Pesi;;venerdì;17:00;60;;#f4c31b;nati 2015-2014-2013, introduzione alla tecnica
-Pesistica 2;Pesi;;lunedì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Preparazione atletica 3
-Pesistica 2;Pesi;;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Preparazione atletica 3
-Pesistica 2;Pesi;;venerdì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Preparazione atletica 3
-Body functional;Motricità;Tiziano;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi
-Pesi agonisti;Pesi;;martedì;17:00;60;;#f4c31b;solo agonisti di judo e lotta, nati dal 2011 in poi
-Pesi agonisti;Pesi;;giovedì;17:00;60;;#f4c31b;solo agonisti di judo e lotta, nati dal 2011 in poi
-Aikido 2;Motricità;Fabio;lunedì;17:00;60;;#16a54a;nati 2019-2018-2017-2016
-Aikido 2;Motricità;Fabio;giovedì;17:00;60;;#16a54a;nati 2019-2018-2017-2016
-Aikido 3;Motricità;Fabio;lunedì;18:00;60;;#16a54a;nati dal 2015 in poi
-Aikido 3;Motricità;Fabio;giovedì;18:00;60;;#16a54a;nati dal 2015 in poi
-Prepugilistica;Pesi;;lunedì;19:00;90;;#e4292a;nati dal 2008 in poi
-Prepugilistica;Pesi;;mercoledì;19:00;90;;#e4292a;nati dal 2008 in poi
-Prepugilistica;Pesi;;venerdì;19:00;90;;#e4292a;nati dal 2008 in poi
-MGA metodo globale autodifesa;Lotta;;venerdì;19:00;60;;#e4292a;nati dal 2011 in poi
-Preparazione atletica 1;Pesi;Maurizio, Katia, Manuel;martedì;18:00;60;;#f4c31b;nati dal 2012 in poi
-Preparazione atletica 1;Pesi;Maurizio, Katia, Manuel;giovedì;18:00;60;;#f4c31b;nati dal 2012 in poi
-Preparazione atletica 2;Pesi;Maurizio, Katia, Manuel;martedì;19:30;60;;#f4c31b;nati dal 2012 in poi
-Preparazione atletica 2;Pesi;Maurizio, Katia, Manuel;giovedì;19:30;60;;#f4c31b;nati dal 2012 in poi
-Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;lunedì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Pesistica 2
-Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Pesistica 2
-Preparazione atletica 3;Pesi;Maurizio, Katia, Manuel;venerdì;18:00;60;;#f4c31b;nati dal 2012 in poi, insieme a Pesistica 2
+Avviamento arti marziali 1;Lotta;Maura Fornetti, GIULIA DE CHIARA;martedì;17:00;60;;#e4292a;nati 2021-2020
+Avviamento arti marziali 1;Lotta;Maura Fornetti, GIULIA DE CHIARA;giovedì;17:00;60;;#e4292a;nati 2021-2020
+Judo 2;Tatami;KATIA BALLABIO, MAURIZIO INNELLA, FEDERICO VUILLERMIN;lunedì;17:00;60;;#1b8ac4;nati 2019-2018-2017
+Judo 2;Tatami;KATIA BALLABIO, MAURIZIO INNELLA, FEDERICO VUILLERMIN;mercoledì;17:00;60;;#1b8ac4;nati 2019-2018-2017
+Judo 2;Tatami;KATIA BALLABIO, MAURIZIO INNELLA, FEDERICO VUILLERMIN;venerdì;17:00;60;;#1b8ac4;nati 2019-2018-2017
+Judo 3;Tatami;MAURIZIO INNELLA, KATIA BALLABIO, FEDERICO VUILLERMIN;lunedì;18:00;60;;#1b8ac4;nati dal 2016 al 2013
+Judo 3;Tatami;MAURIZIO INNELLA, KATIA BALLABIO, FEDERICO VUILLERMIN;mercoledì;18:00;60;;#1b8ac4;nati dal 2016 al 2013
+Judo 3;Tatami;MAURIZIO INNELLA, KATIA BALLABIO, FEDERICO VUILLERMIN;venerdì;18:00;60;;#1b8ac4;nati dal 2016 al 2013
+Judo adulti;Tatami;MAURIZIO INNELLA, KATIA BALLABIO, SERENA BARAVALLE, VALERIO BUSA, Maura Fornetti, FEDERICO VUILLERMIN;lunedì;19:00;90;;#1b8ac4;nati dal 2012 in poi
+Judo adulti;Tatami;MAURIZIO INNELLA, KATIA BALLABIO, SERENA BARAVALLE, VALERIO BUSA, Maura Fornetti, FEDERICO VUILLERMIN;mercoledì;19:00;90;;#1b8ac4;nati dal 2012 in poi
+Judo adulti;Tatami;MAURIZIO INNELLA, KATIA BALLABIO, SERENA BARAVALLE, VALERIO BUSA, Maura Fornetti, FEDERICO VUILLERMIN;venerdì;19:00;90;;#1b8ac4;nati dal 2012 in poi
+Judo agonisti;Tatami;ALDO SCOLLO, MAURIZIO INNELLA, FEDERICO VUILLERMIN;martedì;18:00;90;;#1b8ac4;Judo 3 e adulti
+Judo agonisti;Tatami;ALDO SCOLLO, MAURIZIO INNELLA, FEDERICO VUILLERMIN;giovedì;18:00;90;;#1b8ac4;Judo 3 e adulti
+Aikido 2;Motricità;FABIO BERTA;lunedì;17:00;60;;#16a54a;nati 2019-2018-2017-2016
+Aikido 2;Tatami;FABIO BERTA;giovedì;17:00;60;;#16a54a;nati 2019-2018-2017-2016
+Aikido 3;Motricità;FABIO BERTA;lunedì;18:00;60;;#16a54a;nati dal 2015 in poi
+Aikido 3;Motricità;FABIO BERTA;giovedì;18:00;60;;#16a54a;nati dal 2015 in poi
+Lotta 2;Lotta;Coach John, Nicola Albertini, Maura Fornetti, FEDERICO VUILLERMIN;lunedì;17:00;60;;#e4292a;nati 2019-2018-2017
+Lotta 2;Lotta;Coach John, Nicola Albertini, Maura Fornetti, FEDERICO VUILLERMIN;mercoledì;17:00;60;;#e4292a;nati 2019-2018-2017
+Lotta 2;Lotta;Coach John, Nicola Albertini, Maura Fornetti, FEDERICO VUILLERMIN;venerdì;17:00;60;;#e4292a;nati 2019-2018-2017
+Lotta 3;Lotta;Coach John, Maura Fornetti, FEDERICO VUILLERMIN;lunedì;18:00;90;;#e4292a;nati dal 2016 in poi
+Lotta 3;Lotta;Coach John, Maura Fornetti, FEDERICO VUILLERMIN;martedì;18:00;60;;#e4292a;preparazione atletica e pesi
+Lotta 3;Lotta;Coach John, Maura Fornetti, FEDERICO VUILLERMIN;mercoledì;18:00;90;;#e4292a;nati dal 2016 in poi
+Lotta 3;Lotta;Coach John, Maura Fornetti, FEDERICO VUILLERMIN;venerdì;18:00;60;;#e4292a;
+Pesistica e Mobility;Pesi;MANUEL TAGINI, TIZIANO MOSCAT;lunedì;17:00;60;;#f4c31b;nati 2015-2014-2013
+Pesistica e Mobility;Pesi;MANUEL TAGINI, TIZIANO MOSCAT;mercoledì;17:00;60;;#f4c31b;nati 2015-2014-2013
+Pesistica e Mobility;Pesi;MANUEL TAGINI, TIZIANO MOSCAT;venerdì;17:00;60;;#f4c31b;nati 2015-2014-2013
+Preparazione atletica, pesi e Mobility;Pesi;MAURIZIO INNELLA, KATIA BALLABIO, Maura Fornetti, TIZIANO MOSCAT, MANUEL TAGINI;lunedì;18:00;60;;#f4c31b;nati dal 2012 in poi
+Preparazione atletica, pesi e Mobility;Pesi;MAURIZIO INNELLA, KATIA BALLABIO, Maura Fornetti, TIZIANO MOSCAT, MANUEL TAGINI;martedì;18:00;60;;#f4c31b;nati dal 2012 in poi
+Preparazione atletica, pesi e Mobility;Pesi;MAURIZIO INNELLA, KATIA BALLABIO, Maura Fornetti, TIZIANO MOSCAT, MANUEL TAGINI;martedì;19:30;60;;#f4c31b;nati dal 2012 in poi
+Preparazione atletica, pesi e Mobility;Pesi;MAURIZIO INNELLA, KATIA BALLABIO, Maura Fornetti, TIZIANO MOSCAT, MANUEL TAGINI;mercoledì;18:00;60;;#f4c31b;nati dal 2012 in poi
+Preparazione atletica, pesi e Mobility;Pesi;MAURIZIO INNELLA, KATIA BALLABIO, Maura Fornetti, TIZIANO MOSCAT, MANUEL TAGINI;giovedì;18:00;60;;#f4c31b;nati dal 2012 in poi
+Preparazione atletica, pesi e Mobility;Pesi;MAURIZIO INNELLA, KATIA BALLABIO, Maura Fornetti, TIZIANO MOSCAT, MANUEL TAGINI;giovedì;19:30;60;;#f4c31b;nati dal 2012 in poi
+Preparazione atletica, pesi e Mobility;Pesi;MAURIZIO INNELLA, KATIA BALLABIO, Maura Fornetti, TIZIANO MOSCAT, MANUEL TAGINI;venerdì;18:00;60;;#f4c31b;nati dal 2012 in poi
+Pesi agonisti;Pesi;Coach John, MAURIZIO INNELLA;martedì;17:00;60;;#f4c31b;solo agonisti di judo e lotta, nati dal 2011 in poi
+Pesi agonisti;Pesi;Coach John, MAURIZIO INNELLA;giovedì;17:00;60;;#f4c31b;solo agonisti di judo e lotta, nati dal 2011 in poi
+Prepugilistica;Motricità;TIZIANO MOSCAT;mercoledì;19:00;90;;#16a54a;nati dal 2008 in poi
+MGA metodo globale autodifesa;Motricità;DIANA BALLABIO;venerdì;19:00;60;;#16a54a;nati dal 2011 in poi
