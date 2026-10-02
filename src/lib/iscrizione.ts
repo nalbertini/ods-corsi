@@ -27,7 +27,7 @@ export const INFORMATIVA: string | undefined = 'informativa.html'
 /**
  * Vero finché la palestra non ha approvato il testo: col database vero,
  * l'informativa non si mostra al pubblico e il modulo di iscrizione resta
- * spento. Approvata il 27 settembre 2026. Se il testo cambia e va approvato di
+ * spento. Approvata il 27 settembre 2026, e di nuovo il 2 ottobre 2026. Se il testo cambia e va approvato di
  * nuovo, si rimette a `true`, insieme a un riquadro BOZZA nella pagina.
  */
 export const INFORMATIVA_BOZZA = false

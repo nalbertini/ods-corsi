@@ -626,6 +626,8 @@ Storage ricaricati a mano.
   `public/informativa.html` (quella del sito copre solo la navigazione), e la
   palestra l'ha approvata il 27 settembre 2026: per quanto si tengono
   richieste, documenti e ricevute, e che l'app si pubblica con GitHub Pages.
+  L'ha riapprovata il 2 ottobre 2026, quando si è corretto dove stanno i
+  dati (Stoccolma, non Francoforte).
   Si vede in fondo alla pagina delle iscrizioni, a tutti, e col database vero
   accende il modulo di iscrizione dell'app. I tempi di conservazione che
   promette (una richiesta rifiutata via entro 30 giorni, il documento
