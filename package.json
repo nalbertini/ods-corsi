@@ -18,7 +18,8 @@
     "prova:richieste": "node scripts/prova-richieste.mjs",
     "prova:firma": "node scripts/prova-firma.mjs",
     "prova:ricevuta": "node scripts/prova-ricevuta.mjs",
-    "prova:prove": "node scripts/prova-prove.mjs"
+    "prova:prove": "node scripts/prova-prove.mjs",
+    "prova:iscritti": "node scripts/prova-iscritti.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.1",

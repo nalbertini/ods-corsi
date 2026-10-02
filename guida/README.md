@@ -36,9 +36,9 @@ entra in tutte e due le parti: dopo l'accesso l'app chiede dove andare,
 **SEGRETERIA** o **ISTRUTTORI**, e poi si passa dall'una all'altra dal menu
 (**ISTRUTTORI →**, **SEGRETERIA →**) senza uscire.
 
-## Le quattro parti
+## Le parti
 
-L'app ha quattro indirizzi. Sono la stessa app, ma ognuno apre una parte
+L'app ha cinque indirizzi. Sono la stessa app, ma ognuno apre una parte
 diversa. Le iscrizioni sono per chi non ha un account, e dalla pagina
 d'accesso ci si arriva senza entrare.
 
@@ -47,6 +47,7 @@ d'accesso ci si arriva senza entrare.
 | `istruttori/` | Voi istruttori (e la segreteria) | Il calendario e l'appello, dal telefono | [Istruttori](istruttori.md) |
 | `sala/` | Il tablet appeso al muro della sala | Gli allievi si segnano da soli; voi col PIN fate l'appello | [Tablet di sala](sala.md) |
 | `iscrizioni/` | Chi vuole iscriversi | I passi, i costi, il modulo | [Iscrizioni](iscrizioni.md) |
+| `iscritti/` | Chi frequenta i corsi · per ora solo in prova | Le sue lezioni, le presenze, certificato, quota e ricevute | [Iscritti](iscritti.md) |
 | `segreteria/` | La reception | Corsi, iscritti, presenze, richieste | [Segreteria](segreteria/README.md) |
 
 ## Cosa serve a voi, in pratica

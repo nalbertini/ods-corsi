@@ -3,7 +3,11 @@ import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile }
 import { certificatoDaPortare, controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi, pulisciCf } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { riduciFoto } from '../lib/foto'
-import { INFORMATIVA_PUBBLICA, MODULI, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
+import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
+import { causale, stimaIscrizione, type Abbonamento } from '../lib/nucleo'
+import { euro } from '../lib/ricevute'
+import { chiaveGiorno } from '../lib/sala'
+import { useListino } from './Costi'
 import type { SceltaModulo } from '../lib/firma'
 import { Bollino, Campo, CaricaFile, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
@@ -25,7 +29,20 @@ import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
  * compilato coi dati delle domande (`src/lib/firma.ts`), che parte come
  * MODULO FIRMATO al posto della foto. Chi ha già il foglio firmato a mano ne
  * carica la foto come prima.
+ *
+ * Con `nucleo` è una persona in più nel nucleo familiare di un iscritto,
+ * dalla sua area (vedi `nucleo.ts`): il modulo parte coi dati che il titolare
+ * ha già dato (cognome, residenza, contatti, e lui come genitore), dice
+ * quanto costa con lo sconto famiglia e come pagarlo, e per un minore il
+ * documento del genitore non serve: la segreteria ha già il suo.
  */
+
+/** Una persona in più nel nucleo: chi la aggiunge, cosa si sa già, e gli annuali che il nucleo paga. */
+export interface PerIlNucleo {
+  titolare: string
+  dati: Partial<DatiRichiesta>
+  abbonamenti: Abbonamento[]
+}
 
 const VUOTO: DatiRichiesta = {
   nome: '',
@@ -74,11 +91,11 @@ type Scelte = { [K in keyof SceltaModulo]?: boolean }
 
 type Fase = { tipo: 'compila' } | { tipo: 'invio'; passo: string } | { tipo: 'file'; id: string; mancati: TipoFile[]; perche: string } | { tipo: 'fatto' }
 
-export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
+export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZIONI' }: { onChiudi: () => void; nucleo?: PerIlNucleo; torna?: string }) {
   const [d, setD] = useState<DatiRichieste | null>(null)
   const [corsi, setCorsi] = useState<CorsoAperto[] | null>(null)
   const [guaioCorsi, setGuaioCorsi] = useState<string | null>(null)
-  const [b, setB] = useState<DatiRichiesta>(VUOTO)
+  const [b, setB] = useState<DatiRichiesta>(() => ({ ...VUOTO, ...nucleo?.dati }))
   const [file, setFile] = useState<Partial<Record<TipoFile, File>>>({})
   const [privacy, setPrivacy] = useState(false)
   // Il modulo: firmato qui, o la foto del foglio firmato a mano.
@@ -136,6 +153,9 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
     b.natoIl,
     (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
   )
+
+  /** Per un minore del nucleo il documento è quello del genitore, che la segreteria ha già. */
+  const obbligatorio = (t: TipoFile) => FILE.find((f) => f.tipo === t)!.obbligatorio && !(t === 'documento' && nucleo && minore)
 
   const errori = problemi(pronta)
   /** Cosa scrivere sotto un campo: «Manca» solo dopo aver provato a mandare. */
@@ -232,7 +252,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
     const manca =
       controlla(pronta) ??
       (come === 'qui' ? mancaPerFirmare() : null) ??
-      FILE.filter((f) => f.obbligatorio && !file[f.tipo] && !(f.tipo === 'modulo' && come === 'qui')).map((f) => `Manca: ${f.etichetta.toLowerCase()}`)[0]
+      FILE.filter((f) => obbligatorio(f.tipo) && !file[f.tipo] && !(f.tipo === 'modulo' && come === 'qui')).map((f) => `Manca: ${f.etichetta.toLowerCase()}`)[0]
     if (manca) return setGuaio(manca)
     if (!privacy) return setGuaio("Serve la conferma di aver letto l'informativa privacy")
     // Il modulo firmato si fa prima di mandare le risposte: se non viene, non
@@ -271,7 +291,7 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
             Ricorda di consegnare in segreteria il certificato medico{certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.
           </span>
         )}
-        <Tasto onClick={onChiudi}>TORNA ALLE ISCRIZIONI</Tasto>
+        <Tasto onClick={onChiudi}>{torna}</Tasto>
       </div>
     )
   }
@@ -304,6 +324,18 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
         </Tasto>
         {d?.modo === 'prova' && <Bollino>PROVA: RESTA SU QUESTO DISPOSITIVO</Bollino>}
       </div>
+
+      {nucleo && (
+        <div className="pad">
+          <Riquadro tono="prova">
+            <span className="passo-titolo">Una persona in più nel nucleo di {nucleo.titolare}</span>
+            <Dettaglio>
+              Cognome, residenza e contatti sono quelli che la segreteria ha già, e per un minore il genitore sei tu: cambia quello che non va. La
+              richiesta arriva in segreteria come le altre, e accolta la trovi nella tua pagina.
+            </Dettaglio>
+          </Riquadro>
+        </div>
+      )}
 
       <Sezione titolo="CHI SI ISCRIVE">
         <Campo id="m-nome" nota={nota('nome')} etichetta="NOME">
@@ -399,6 +431,15 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
             onScegli={(f) => setB({ ...b, formula: f as DatiRichiesta['formula'] })}
           />
         </div>
+        {nucleo && (
+          <QuantoCosta
+            nome={b.nome.trim() || 'Chi si iscrive'}
+            cognome={b.cognome.trim()}
+            corsi={(corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)}
+            formula={b.formula}
+            abbonamenti={nucleo.abbonamenti}
+          />
+        )}
       </Sezione>
 
       <Sezione titolo="IL MODULO">
@@ -505,7 +546,14 @@ export function ModuloIscrizione({ onChiudi }: { onChiudi: () => void }) {
           </div>
         )}
         {FILE.filter((f) => f.tipo !== 'modulo').map((f) => (
-          <SceltaFile key={f.tipo} tipo={f.tipo} file={file[f.tipo]} onFile={(x) => setFile((p) => ({ ...p, [f.tipo]: x }))} />
+          <SceltaFile
+            key={f.tipo}
+            tipo={f.tipo}
+            file={file[f.tipo]}
+            onFile={(x) => setFile((p) => ({ ...p, [f.tipo]: x }))}
+            facoltativo={!obbligatorio(f.tipo)}
+            dettaglio={f.tipo === 'documento' && !obbligatorio('documento') ? 'Non serve: il genitore è nel nucleo, e la segreteria ha già il suo.' : undefined}
+          />
         ))}
       </Sezione>
 
@@ -617,7 +665,19 @@ function Casella({
 }
 
 /** Un file da scegliere: controlla il tipo, rimpicciolisce la foto, e la passa su. */
-function SceltaFile({ tipo, file, onFile }: { tipo: TipoFile; file?: File; onFile: (f: File | undefined) => void }) {
+function SceltaFile({
+  tipo,
+  file,
+  onFile,
+  facoltativo,
+  dettaglio,
+}: {
+  tipo: TipoFile
+  file?: File
+  onFile: (f: File | undefined) => void
+  facoltativo?: boolean
+  dettaglio?: string
+}) {
   const f = FILE.find((x) => x.tipo === tipo)!
   const [guaio, setGuaio] = useState<string | null>(null)
   const [lavoro, setLavoro] = useState(false)
@@ -635,11 +695,71 @@ function SceltaFile({ tipo, file, onFile }: { tipo: TipoFile; file?: File; onFil
     <CaricaFile
       id={`m-file-${tipo}`}
       etichetta={f.etichetta}
-      facoltativo={!f.obbligatorio}
-      dettaglio={lavoro ? 'Preparo la foto…' : f.dettaglio}
+      facoltativo={facoltativo ?? !f.obbligatorio}
+      dettaglio={lavoro ? 'Preparo la foto…' : (dettaglio ?? f.dettaglio)}
       file={file && !lavoro ? { nome: file.name, byte: file.size } : undefined}
       errore={guaio}
       onFile={(x) => void scelto(x)}
     />
+  )
+}
+
+/**
+ * Quanto costa una persona in più nel nucleo, con lo sconto famiglia, e come
+ * pagarlo: l'IBAN e la causale col suo nome, da copiare. La ricevuta del
+ * bonifico si carica qui sotto, fra i file.
+ */
+function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: string[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
+  const letto = useListino()
+  const [copiato, setCopiato] = useState<string | null>(null)
+  if (!letto) return null
+  const s = stimaIscrizione({ chi: nome, corsi, formula }, abbonamenti, chiaveGiorno(new Date()), letto.listino)
+  const testo = causale(nome, cognome, corsi)
+  const copia = (cosa: string, valore: string) =>
+    navigator.clipboard?.writeText(valore).then(
+      () => {
+        setCopiato(cosa)
+        setTimeout(() => setCopiato(null), 2000)
+      },
+      () => {},
+    )
+  return (
+    <div className="modulo-campo modulo-largo">
+      <span className="modulo-etichetta">QUANTO COSTA</span>
+      <Riquadro stretto>
+        {corsi.length === 0 && <Dettaglio>Scegli i corsi per vedere quanto costa.</Dettaglio>}
+        <ul className="stack stima">
+          {s.righe.map((r) => (
+            <li key={r.testo} className="row stima-riga" data-sconto={r.importo < 0 || undefined}>
+              <span className="grow">{r.testo}</span>
+              <span className="num">{r.importo < 0 ? '−' : ''}{euro(Math.abs(r.importo))} €</span>
+            </li>
+          ))}
+          <li className="row stima-riga stima-totale">
+            <span className="grow">Totale</span>
+            <span className="num">{euro(s.totale)} €</span>
+          </li>
+        </ul>
+        {s.sconto && !s.sconto.qui && (
+          <Dettaglio>
+            Lo sconto famiglia va sull’annuale che costa meno nel nucleo: {s.sconto.corso} di {s.sconto.chi}, che l’ha già avuto o lo avrà in segreteria.
+          </Dettaglio>
+        )}
+        {formula === 'trimestre' && abbonamenti.length > 0 && <Dettaglio>Lo sconto famiglia vale sugli annuali, non sul trimestre.</Dettaglio>}
+        {s.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">Senza prezzo nel listino: {s.senzaPrezzo.join(', ')}. Lo dice la segreteria.</Dettaglio>}
+        <Dettaglio>
+          È una stima dal listino: le altre offerte e l’importo giusto li conferma la segreteria. Bonifico a {PAGAMENTO.intestatario}:
+        </Dettaglio>
+        <span className="num iban">{PAGAMENTO.iban}</span>
+        <Dettaglio>
+          Causale: <span className="testo-pieno">{testo}</span>
+        </Dettaglio>
+        <Tasti>
+          <Tasto onClick={() => void copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+          <Tasto onClick={() => void copia('causale', testo)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>
+          {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
+        </Tasti>
+      </Riquadro>
+    </div>
   )
 }

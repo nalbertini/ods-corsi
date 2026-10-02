@@ -1,9 +1,10 @@
-import { archivio, type LezioneProva, type PresenzaIstruttoreProva } from './archivioProva'
+import { archivio, STAGIONE, type LezioneProva, type PresenzaIstruttoreProva } from './archivioProva'
 import { comeE, iscrittiIl, lezioniFra, memoria, type LezioneTrovata } from './datiProva'
 import { aggiungiRichiesteProva } from './richiesteProva'
 import type { Richiesta } from './richieste'
 import { carattereControllo, lettereCognome, lettereNome } from './codiceFiscale'
 import { chiaveGiorno, type StatoPresenza } from './sala'
+import { conti, ENTE_PREDEFINITO, voceQuota, vociDelCorso, type Ricevuta, type VoceRicevuta } from './ricevute'
 
 /**
  * Gli esempi della prova: quello che una palestra vera ha già dopo qualche
@@ -26,6 +27,13 @@ import { chiaveGiorno, type StatoPresenza } from './sala'
 
 const DOVE = 'ods-corsi:prova-esempi'   // vedi la nota in coda.ts
 const VERSIONE = '1'
+/**
+ * Le ricevute sono venute dopo, con l'area degli iscritti: hanno il loro
+ * segno, così arrivano anche su un dispositivo che gli altri esempi li ha già.
+ */
+const DOVE_RICEVUTE = 'ods-corsi:prova-esempi-ricevute'
+/** I nuclei familiari, venuti ancora dopo: anche loro col segno loro. */
+const DOVE_NUCLEI = 'ods-corsi:prova-esempi-nuclei'
 
 const MIN = 60_000
 const GIORNO = 24 * 60 * MIN
@@ -51,12 +59,16 @@ function fatti(): boolean {
 export function scordaEsempi() {
   try {
     localStorage.removeItem(DOVE)
+    localStorage.removeItem(DOVE_RICEVUTE)
+    localStorage.removeItem(DOVE_NUCLEI)
   } catch {
     /* pazienza */
   }
 }
 
 export function seminaEsempi(adesso = new Date()) {
+  seminaRicevute(adesso)
+  seminaNuclei()
   if (fatti()) return
   const ora = adesso.getTime()
   const passate = lezioniFra(new Date(ora - 35 * GIORNO), adesso).filter((l) => l.fine.getTime() < ora)
@@ -271,4 +283,121 @@ function richieste(adesso: Date): Richiesta[] {
       note: 'Mandata due volte per sbaglio.',
     },
   ].map((r) => soloAperti(r as Richiesta))
+}
+
+/**
+ * Le ricevute di chi ha pagato, tutto o in parte: la quota e il primo dei suoi
+ * corsi che è nel listino, fatte nei primi giorni della stagione (o oggi, se
+ * la stagione non è ancora cominciata). Chi ha pagato in parte ha dato metà
+ * del corso. Una sola per persona, e solo a chi non ne ha già una.
+ */
+function seminaRicevute(adesso: Date) {
+  try {
+    if (localStorage.getItem(DOVE_RICEVUTE) === VERSIONE) return
+  } catch {
+    return
+  }
+  const a = archivio.dati
+  const tutte = [...(a.ricevute ?? [])]
+  const conRicevuta = new Set(tutte.map((r) => r.personaId))
+  const oggi = chiaveGiorno(adesso)
+  const giornoDopo = (g: string, n: number) => {
+    const [y, m, d] = g.split('-').map(Number)
+    return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10)
+  }
+  for (const p of a.persone) {
+    const stato = p.pagamento?.stato
+    if (p.ruolo !== 'iscritto' || !p.attiva || conRicevuta.has(p.id) || (stato !== 'pagato' && stato !== 'in_parte')) continue
+    const corso = a.iscrizioni
+      .filter((i) => i.personaId === p.id)
+      .map((i) => a.corsi.find((c) => c.id === i.corsoId)?.nome)
+      .map((nome) => nome && vociDelCorso(nome, STAGIONE.dal)[0])
+      .find(Boolean)
+    const prima = giornoDopo(STAGIONE.dal, Math.floor(numero(`ric|${p.id}`) * 10))
+    const data = prima > oggi ? oggi : prima
+    const metodo = ['Bonifico', 'Contanti', 'POS'][Math.floor(numero(`met|${p.id}`) * 3)]
+    const paga = (v: Omit<VoceRicevuta, 'pagamenti'>, meta = false): VoceRicevuta => ({
+      ...v,
+      pagamenti: [{ data, importo: meta ? Math.round((v.prezzo * v.quantita) / 2) : v.prezzo * v.quantita, metodo }],
+    })
+    const voci = [paga(voceQuota().voce(data)), ...(corso ? [paga(corso.voce(data), stato === 'in_parte')] : [])]
+    const anno = Number(data.slice(0, 4))
+    const numeroRicevuta = Math.max(0, ...tutte.filter((r) => r.anno === anno).map((r) => r.numero)) + 1
+    const c = conti({ voci, anticipo: 0 })
+    const r: Ricevuta = {
+      id: `r-esempio-${p.id}`,
+      anno,
+      numero: numeroRicevuta,
+      data,
+      personaId: p.id,
+      ente: a.enteRicevute ?? ENTE_PREDEFINITO,
+      intestatario: { nome: p.nome, cognome: p.cognome },
+      voci,
+      anticipo: 0,
+      totale: c.totale,
+      pagato: c.pagato,
+      creataIl: new Date(`${data}T10:00:00`).toISOString(),
+    }
+    tutte.push(r)
+  }
+  a.ricevute = tutte
+  archivio.salva()
+  try {
+    localStorage.setItem(DOVE_RICEVUTE, VERSIONE)
+  } catch {
+    /* si rifaranno, e saltano chi ne ha già una */
+  }
+}
+
+/**
+ * I nuclei familiari (vedi `nucleo.ts`): gli iscritti inventati con lo stesso
+ * cognome, a gruppi di due o tre, fanno famiglia, fino a otto famiglie. Il
+ * titolare è il primo per nome, e gli si danno nascita, codice fiscale e
+ * residenza, che il modulo di una persona in più riusa. Chi ha già un nucleo,
+ * o dei dati scritti dalla segreteria, resta com'è.
+ */
+function seminaNuclei() {
+  try {
+    if (localStorage.getItem(DOVE_NUCLEI) === VERSIONE) return
+  } catch {
+    return
+  }
+  const a = archivio.dati
+  const liberi = a.persone.filter((p) => p.ruolo === 'iscritto' && p.attiva && !p.nucleo && !a.persone.some((x) => x.nucleo === p.id))
+  const perCognome = new Map<string, typeof liberi>()
+  for (const p of liberi) perCognome.set(p.cognome, [...(perCognome.get(p.cognome) ?? []), p])
+  const famiglie = [...perCognome.values()]
+    .filter((g) => g.length >= 2 && g.length <= 3)
+    .sort((x, y) => x[0].cognome.localeCompare(y[0].cognome, 'it'))
+    .slice(0, 8)
+  const nel = new Map<string, string>()
+  const anagrafiche = { ...(a.anagrafiche ?? {}) }
+  for (const g of famiglie) {
+    const [titolare, ...altri] = [...g].sort((x, y) => x.nome.localeCompare(y.nome, 'it'))
+    for (const p of altri) nel.set(p.id, titolare.id)
+    if (anagrafiche[titolare.id]) continue
+    const anno = 1972 + Math.floor(numero(`anno|${titolare.id}`) * 18)
+    const mese = 1 + Math.floor(numero(`mese|${titolare.id}`) * 12)
+    const giorno = 1 + Math.floor(numero(`giorno|${titolare.id}`) * 28)
+    const natoIl = `${anno}-${String(mese).padStart(2, '0')}-${String(giorno).padStart(2, '0')}`
+    const donna = /a$/i.test(titolare.nome) && !/^(luca|andrea|nicola|mattia|elia)$/i.test(titolare.nome)
+    const civico = 1 + Math.floor(numero(`via|${titolare.id}`) * 120)
+    anagrafiche[titolare.id] = {
+      natoIl,
+      natoA: 'Torino',
+      codiceFiscale: codice(titolare.cognome, titolare.nome, natoIl, donna, 'L219'),
+      indirizzo: `${['Via Roma', 'Corso Francia', 'Via Torino', 'Via Martiri XXX Aprile', 'Viale Gramsci'][Math.floor(numero(`strada|${titolare.id}`) * 5)]} ${civico}`,
+      cap: '10093',
+      comune: 'Collegno',
+      cambiataIl: STAGIONE.dal,
+    }
+  }
+  a.persone = a.persone.map((p) => (nel.has(p.id) ? { ...p, nucleo: nel.get(p.id) } : p))
+  a.anagrafiche = anagrafiche
+  archivio.salva()
+  try {
+    localStorage.setItem(DOVE_NUCLEI, VERSIONE)
+  } catch {
+    /* si rifaranno, e saltano chi ha già un nucleo */
+  }
 }
