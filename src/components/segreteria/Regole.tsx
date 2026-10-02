@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { DatiSegreteria, Impostazioni, ListaMusica, Sala } from '../../lib/segreteria'
 import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
@@ -11,7 +11,7 @@ import { EnteRicevute } from './Ricevute'
  * Le impostazioni: le scelte che spettano alla palestra, non al codice. Per
  * quanto si tengono le presenze, fin dove si prepara il calendario, le sale
  * con la loro musica e il loro timer (con la voce), lo storico
- * dei timer, chi fa le ricevute, la privacy.
+ * dei timer, chi fa le ricevute, il backup, la privacy.
  */
 export function Regole({ d }: { d: DatiSegreteria }) {
   const imp = useCarica(() => d.impostazioni(), [d])
@@ -189,6 +189,8 @@ export function Regole({ d }: { d: DatiSegreteria }) {
         <StoricoTimer d={d} />
 
         <EnteRicevute d={d} />
+
+        <Backup d={d} fai={fai} />
 
         <section aria-label="Privacy" className="sg-riquadro">
           <div className="row" style={{ gap: 10 }}>
@@ -516,5 +518,93 @@ function Stagione({ d, imp, avvisa, fai, poi }: {
         Prima dell'inizio non nascono lezioni. Le date sono facoltative, e le lezioni già in calendario restano.
       </span>
     </>
+  )
+}
+
+/** «lunedì 5 ottobre, 3:20» da un istante ISO. */
+const quando = (iso: string) =>
+  new Date(iso).toLocaleString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' })
+
+const STATO_BACKUP = { in_corso: 'IN CORSO', riuscito: 'RIUSCITO', fallito: 'NON RIUSCITO' } as const
+
+/**
+ * Il backup del database: lo fa GitHub ogni lunedì, e da qui quando serve.
+ * Ogni copia si scarica per metterla su Drive: uno zip con dentro il file
+ * cifrato, che si apre solo con la password del backup.
+ */
+function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
+  const stato = useCarica(() => d.backup(), [d])
+  const inCorso = stato.dato?.ultimo?.stato === 'in_corso'
+  // Mentre GitHub copia, l'elenco si rilegge da sé: la copia nuova arriva in un paio di minuti.
+  useEffect(() => {
+    if (!inCorso) return
+    const t = window.setInterval(() => void stato.ricarica(), 20_000)
+    return () => window.clearInterval(t)
+  }, [inCorso, stato.ricarica])
+
+  const scarica = async (id: number) => {
+    const { link, nome } = await d.scaricaBackup(id)
+    const a = document.createElement('a')
+    a.href = link
+    a.download = nome
+    a.click()
+  }
+
+  const ultimo = stato.dato?.ultimo
+  return (
+    <section aria-label="Il backup" className="sg-riquadro">
+      <div className="row" style={{ gap: 10 }}>
+        <span className="ob sg-riquadro-titolo grow">IL BACKUP</span>
+        {ultimo && (
+          <a href={ultimo.link} target="_blank" rel="noreferrer" className="num sg-tag" data-tipo={ultimo.stato === 'fallito' ? 'manca' : undefined} style={{ fontSize: 11, padding: '2px 6px' }}>
+            {STATO_BACKUP[ultimo.stato]}
+          </a>
+        )}
+      </div>
+      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
+        Una copia di tutto il database si fa da sé ogni lunedì notte, e da qui quando serve: prima di un cambiamento grosso, o per averne una da mettere su
+        Drive. GitHub tiene le copie novanta giorni.
+      </span>
+      {stato.guaio && <Guaio testo={`Le copie non si leggono: ${stato.guaio}`} />}
+      {ultimo && (
+        <span style={{ fontSize: 14, color: 'var(--sec)' }}>
+          Ultimo backup {ultimo.stato === 'in_corso' ? 'partito' : ultimo.stato === 'riuscito' ? 'riuscito' : 'non riuscito'} {quando(ultimo.quando)}
+          {ultimo.stato === 'in_corso' && ': fra un paio di minuti è qui sotto.'}
+        </span>
+      )}
+      {(stato.dato?.copie ?? []).map((c) => (
+        <div key={c.id} className="row sg-voce-elenco" style={{ gap: 12 }}>
+          <span className="grow" style={{ fontSize: 15, fontWeight: 600 }}>
+            {/^\d{4}-\d{2}-\d{2}$/.test(c.giorno) ? dataLunga(c.giorno) : c.giorno}
+          </span>
+          <span className="num" style={{ fontSize: 14, color: 'var(--sec)', whiteSpace: 'nowrap' }}>
+            {c.byte < 1_000_000 ? `${Math.max(1, Math.round(c.byte / 1000))} kB` : `${(c.byte / 1_000_000).toFixed(1).replace('.', ',')} MB`}
+          </span>
+          <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => void fai(() => scarica(c.id), 'Copia scaricata: si mette su Drive così com’è')}>
+            SCARICA
+          </button>
+        </div>
+      ))}
+      {stato.dato && stato.dato.copie.length === 0 && <span className="sg-sotto">Nessuna copia, per ora.</span>}
+      <button
+        type="button"
+        className="sg-btn sg-btn-linea"
+        style={{ alignSelf: 'flex-start' }}
+        disabled={!stato.dato || inCorso}
+        onClick={() =>
+          void fai(() => d.avviaBackup(), 'Backup partito: fra un paio di minuti è nell’elenco', async () => {
+            // GitHub mette in fila il lancio dopo qualche secondo.
+            await new Promise((r) => window.setTimeout(r, 4000))
+            await stato.ricarica()
+          })
+        }
+      >
+        {inCorso ? 'BACKUP IN CORSO…' : 'FAI UN BACKUP ORA'}
+      </button>
+      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
+        Il file è cifrato: senza la password del backup non lo apre nessuno, quindi su Drive può stare anche in una cartella condivisa. La password va
+        tenuta da parte, fuori da qui; come si rimette a posto una copia è in supabase/LEGGIMI.md.
+      </span>
+    </section>
   )
 }

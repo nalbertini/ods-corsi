@@ -83,7 +83,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   voci delle ricevute (`supabase/19-listino.sql`). Le **impostazioni**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale con la loro
   musica e la **voce** del timer (la voce di sistema e le clip incise, uguali
-  su tutti i tablet), lo storico dei timer e l'esportazione
+  su tutti i tablet), lo storico dei timer, il **backup** e l'esportazione
   dei dati di una persona. Gli **esercizi** della palestra, che i tablet
   propongono scrivendo un timer.
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
@@ -286,7 +286,9 @@ importare corsi e iscritti da un foglio Excel e cosa decidere prima di usarlo su
 serio: [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md).
 
 Una copia cifrata del database si fa da sé ogni lunedì
-(`.github/workflows/backup.yml`); i segreti che vuole e come rimetterla a posto
+(`.github/workflows/backup.yml`), e dalla segreteria quando serve: in
+IMPOSTAZIONI → IL BACKUP si fa partire e si scarica per metterla su Drive
+(`supabase/functions/backup`). I segreti che vuole e come rimetterla a posto
 sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 
 ## Le prove

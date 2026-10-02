@@ -1,9 +1,10 @@
 name: Backup del database
 
 # Una copia del database Supabase una volta a settimana, il lunedì alle 3:17
-# UTC (di notte in Italia, a palestra chiusa), più il lancio a mano (Actions →
-# Backup del database → Run workflow) quando serve una copia subito, per
-# esempio prima di lanciare un file SQL nuovo.
+# UTC (di notte in Italia, a palestra chiusa), più il lancio a mano quando
+# serve una copia subito, per esempio prima di lanciare un file SQL nuovo: da
+# IMPOSTAZIONI → IL BACKUP in segreteria (la funzione `backup` di Supabase
+# chiama `workflow_dispatch`), o da Actions → Backup del database → Run workflow.
 #
 # Il piano gratuito di Supabase non lascia scaricare i suoi backup: questa è
 # l'unica copia che la palestra ha in mano. Come rimetterla a posto è in

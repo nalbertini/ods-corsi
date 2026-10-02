@@ -533,9 +533,9 @@ non è un segreto trapelato. A proteggere i dati sono le policy di
 
 Il piano gratuito di Supabase fa i suoi backup ma non li lascia scaricare. La
 copia che resta alla palestra la fa GitHub Actions, con
-`.github/workflows/backup.yml`: ogni lunedì alle 3:17 UTC, o a mano da
-**Actions → Backup del database → Run workflow** (per esempio prima di
-lanciare un file SQL nuovo). Copia il database, non i file dello Storage
+`.github/workflows/backup.yml`: ogni lunedì alle 3:17 UTC, o quando serve
+(per esempio prima di lanciare un file SQL nuovo) dalla segreteria, più
+sotto, o da **Actions → Backup del database → Run workflow**. Copia il database, non i file dello Storage
 (documenti d'identità, certificati, clip della voce).
 
 Servono due *repository secrets* in **Settings → Secrets → Actions**:
@@ -559,8 +559,43 @@ settimane. GitHub spegne i workflow programmati di un repository pubblico
 dopo sessanta giorni senza commit, e lo dice per email: se succede, si
 riaccende dalla stessa pagina con **Enable workflow**.
 
-Per rimetterla a posto, in un progetto nuovo creato come al passo 1 (schema,
-persone e account arrivano con la copia: i file `NN-*.sql` non servono):
+### Dalla segreteria, e su Drive
+
+In **IMPOSTAZIONI → IL BACKUP** la segreteria vede com'è andato l'ultimo
+backup e le copie che ci sono, ne fa partire una con **FAI UN BACKUP ORA**, e
+ognuna la scarica con **SCARICA**: è lo zip che GitHub dà per l'artefatto, con
+dentro il file cifrato, da mettere su Drive così com'è. Cifrato com'è, può
+stare anche in una cartella condivisa; la password no.
+
+Per chiedere le copie a GitHub serve un token, e nell'app non può stare: lo
+tiene la funzione **`backup`** (`functions/backup/index.ts`), che controlla
+che chi la chiama sia della segreteria. Per metterla in piedi, una volta:
+
+1. **Il token.** Su GitHub, **Settings → Developer settings → Personal access
+   tokens → Fine-grained tokens → Generate new token**: *Repository access*
+   solo questo repository, *Permissions → Actions: Read and write*, e
+   nient'altro. Scade al massimo dopo un anno: quando scade, la segreteria
+   legge «GitHub non accetta il token» e se ne fa uno nuovo.
+2. **I segreti della funzione.** In Supabase, **Edge Functions → Secrets**:
+   `GITHUB_TOKEN` col token. `GITHUB_REPO` serve solo se il repository non
+   è `nalbertini/ods-corsi`.
+3. **La funzione**, come `invita`:
+
+   ```sh
+   supabase functions deploy backup --project-ref <id-del-progetto>
+   ```
+
+   o dal pannello, **Edge Functions → Deploy a new function**, col nome
+   `backup`.
+
+Il pulsante fa partire il workflow su `main`: finché il workflow non è lì,
+GitHub dice che non lo trova.
+
+### Rimettere a posto una copia
+
+In un progetto nuovo creato come al passo 1 (schema, persone e account
+arrivano con la copia: i file `NN-*.sql` non servono). Lo zip scaricato
+dall'app o da GitHub si apre prima, con `unzip backup-AAAA-MM-GG.zip`; poi:
 
 ```
 gpg -d backup-AAAA-MM-GG.tar.gz.gpg | tar xz

@@ -432,6 +432,32 @@ export interface DatiSegreteria {
   pulisci(): Promise<number>
   /** Tutto quello che si sa di una persona, per chi lo chiede (GDPR, art. 15). */
   esporta(personaId: string): Promise<unknown>
+  /**
+   * Le copie del database che fa GitHub (`.github/workflows/backup.yml`),
+   * dalla più recente, e com'è andato l'ultimo lancio. Passa dalla funzione
+   * `backup` (`supabase/functions/backup`), che ha il token di GitHub.
+   */
+  backup(): Promise<StatoBackup>
+  /** Fa partire una copia adesso. */
+  avviaBackup(): Promise<void>
+  /** Da dove il browser scarica una copia: un indirizzo che vale un minuto. */
+  scaricaBackup(id: number): Promise<{ link: string; nome: string }>
+}
+
+/** Una copia del database: uno zip con dentro il file cifrato. */
+export interface CopiaBackup {
+  id: number
+  /** Il giorno della copia, `AAAA-MM-GG`. */
+  giorno: string
+  byte: number
+  /** Quando GitHub la toglie: novanta giorni dopo. */
+  scade: string
+}
+
+export interface StatoBackup {
+  copie: CopiaBackup[]
+  /** L'ultimo lancio del backup, con il link alla sua pagina su GitHub; `null` se non è mai partito. */
+  ultimo: { stato: 'in_corso' | 'riuscito' | 'fallito'; quando: string; link: string } | null
 }
 
 /** Un'iscrizione vale oggi se è cominciata e non è finita. */
