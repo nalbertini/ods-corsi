@@ -86,6 +86,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.sessioni_timer') is not null),
   ('12-calendario-da-se.sql', 'il calendario che si allunga da sé',
     exists (select 1 from dentro where nome = 'allunga_calendario')),
+  ('12-calendario-da-se.sql', 'le date di inizio e fine dei corsi',
+    exists (select 1 from dentro where nome = 'allunga_calendario' and corpo like '%fine_corsi%')
+    and exists (select 1 from pg_trigger where tgname = 'sessioni_in_stagione')),
   ('14-timer-dal-tablet.sql', 'il timer delle sale cambiato da un tablet',
     exists (select 1 from dentro where nome = 'salva_timer_sala')),
   ('17-luoghi.sql', 'i luoghi di nascita del codice fiscale',

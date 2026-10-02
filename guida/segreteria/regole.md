@@ -16,10 +16,18 @@ database, se è stato attivato, oppure subito con **CANCELLA ORA** (chiede confe
 ## Il calendario
 
 - **PRONTO FINO AL** — fino a che giorno le lezioni sono già in calendario.
-- **SI ALLUNGA** — **DA SÉ**: quando alla fine manca meno di metà del periodo,
-  il primo che apre il calendario lo allunga, istruttore, segreteria o tablet.
-- «Genera le lezioni per i prossimi **30 / 60 / 90 / 180 giorni**» — quanto
-  avanti preparare il calendario. Vale dal prossimo rigenera.
+- **SI ALLUNGA** — **DA SÉ**: quando alla fine manca meno di metà del periodo
+  (o, con la fine dei corsi, quando non ci arriva), il primo che apre il
+  calendario lo allunga, istruttore, segreteria o tablet.
+- **INIZIO CORSI** e **FINE CORSI** — le date della stagione, facoltative. Con
+  la fine, le lezioni si preparano tutte e subito fino a quel giorno (per
+  esempio da settembre a fine giugno in un colpo solo), e dopo non ne nascono;
+  prima dell'inizio non ne nascono. **SALVA LE DATE** le salva e allunga
+  subito il calendario. Le lezioni già in calendario restano dove sono. Fra
+  inizio e fine ci sta al massimo un anno.
+- «Senza la fine dei corsi, genera le lezioni per i prossimi **30 / 60 / 90 /
+  180 giorni**» — quanto avanti preparare il calendario quando la fine dei
+  corsi non è scritta. Vale dal prossimo rigenera.
 - **RIGENERA ADESSO** — lo allunga subito. Non duplica e non tocca le lezioni
   che hanno già un appello, anche a cavallo del cambio d'ora.
 

@@ -90,7 +90,7 @@ export interface Archivio {
   capienzaSale?: Record<string, number>
   /** I PIN del tablet cambiati dalla segreteria, per persona. */
   pin?: Record<string, string>
-  impostazioni?: { mesiPresenze: number; giorniCalendario: number }
+  impostazioni?: { mesiPresenze: number; giorniCalendario: number; inizioCorsi?: string | null; fineCorsi?: string | null }
   /** Le liste della musica delle sale; `sala` nulla vuol dire tutte. */
   musica?: Array<{ id: string; nome: string; link: string; sala: string | null }>
   /** Il timer dei tablet di sala, uguale per tutti: lo cambia un tablet qualunque. */
