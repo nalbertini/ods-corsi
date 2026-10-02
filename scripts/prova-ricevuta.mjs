@@ -108,7 +108,14 @@ const tante = {
   note: 'Pagato in due volte, con due bonifici: il secondo il giorno stesso.',
 }
 ok('sette voci da tre righe di pagamento: tre per pagina, senza perderne', [m.pagineDelleVoci(tante.voci).length, m.pagineDelleVoci(tante.voci).flat().length], [3, 7])
-for (const [nome, r] of [['ricevuta-116', quella], ['ricevuta-tante', tante], ['ricevuta-annullata', { ...quella, annullataIl: '2026-09-02T10:00:00Z' }]]) {
+const scontata = {
+  ...quella,
+  numero: 118,
+  voci: [quella.voci[0], { ...quella.voci[1], descrizione: 'Annuale Lotta 3 · sconto famiglia 20% su 368,00 €', prezzo: 29440, pagamenti: pagato(29440) }],
+}
+ok('con lo sconto famiglia, il totale scontato', m.conti(scontata).totale, 34440)
+ok('va bene', m.cosaNonVa(scontata), null)
+for (const [nome, r] of [['ricevuta-116', quella], ['ricevuta-sconto-famiglia', scontata], ['ricevuta-tante', tante], ['ricevuta-annullata', { ...quella, annullataIl: '2026-09-02T10:00:00Z' }]]) {
   const byte = await m.ricevutaPdf(r)
   const doc = await m.PDFDocument.load(byte)
   const pagine = doc.getPageCount()

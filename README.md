@@ -117,7 +117,8 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   come pagarlo; la richiesta arriva in RICHIESTE ONLINE col segno NUCLEO
   (`src/lib/nucleo.ts`). La segreteria vede e cambia il nucleo dalla
   scheda di un iscritto (NUCLEO FAMILIARE), con lo sconto famiglia dalle
-  ricevute; col database la sezione non c'è ancora. Cosa manca è in
+  ricevute, e la ricevuta nuova mette da sé lo sconto famiglia sull'annuale
+  giusto; col database la sezione non c'è ancora. Cosa manca è in
   [`guida/iscritti.md`](guida/iscritti.md#cosa-manca-per-aprirla-davvero).
 - **L'accesso** col database è uno solo: la radice è la porta unica, e la
   stessa porta sta in `istruttori/`, `segreteria/` e `sala/`. Si entra con

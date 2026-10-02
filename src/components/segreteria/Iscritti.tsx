@@ -6,7 +6,7 @@ import { ESTENSIONI, MASSIMO_FILE } from '../../lib/richieste'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
-import { abbonamentiDalleRicevute, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
+import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro } from '../../lib/ricevute'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
@@ -330,6 +330,9 @@ function Scheda({
   const correnti = p.iscrizioni.filter((i) => inCorso(i, oggi))
   const liberi = attivi.filter((c) => !correnti.some((i) => i.corsoId === c.id))
   const venuto = storico.dato?.filter((x) => x.stato === 'presente').length ?? 0
+  // Gli altri del nucleo familiare, per lo sconto famiglia della ricevuta.
+  const titolare = p.nucleo ? tutti.find((x) => x.id === p.nucleo) : p
+  const nucleo = titolare ? [titolare, ...tutti.filter((x) => x.nucleo === titolare.id && x.attiva)].filter((x) => x.id !== p.id) : []
 
   return (
     <>
@@ -346,6 +349,7 @@ function Scheda({
         <NuovaRicevuta
           d={d}
           p={p}
+          nucleo={nucleo}
           corsi={correnti.map((i) => corsi.get(i.corsoId)?.nome ?? '').filter(Boolean)}
           fai={fai}
           onLasciaStare={() => setPagando(false)}
@@ -555,7 +559,7 @@ function NucleoFamiliare({
     return x ? `${x.nome} ${x.cognome}` : ''
   }
   const annuali = abbonamentiDalleRicevute(ricevute.dato ?? [], nomeDi)
-  const minimo = annuali.length >= 2 ? annuali.reduce((x, y) => (y.importo < x.importo ? y : x)) : null
+  const minimo = doveVaLoSconto([], annuali)
   // Chi si può aggiungere: chi può entrare secondo le regole, prima chi ha lo stesso cognome.
   const candidati = p.nucleo
     ? []
@@ -636,8 +640,9 @@ function NucleoFamiliare({
       {p.nucleo && titolare && <span className="sg-sotto">Per aggiungere qualcuno, apri la scheda del titolare.</span>}
       {minimo ? (
         <span style={{ fontSize: 12, color: 'var(--sec)' }}>
-          Sconto famiglia: il {Math.round(SCONTO_FAMIGLIA * 100)}% sull’annuale che costa meno, {minimo.corso} di {minimo.chi}, cioè {euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €. Sulla
-          ricevuta va scritto a mano.
+          {minimo.scontato
+            ? `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% su ${minimo.corso} di ${minimo.chi}, cioè ${euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €, già sulla sua ricevuta.`
+            : `Sconto famiglia: il ${Math.round(SCONTO_FAMIGLIA * 100)}% sull’annuale che costa meno, ${minimo.corso} di ${minimo.chi}, cioè ${euro(Math.round(minimo.importo * SCONTO_FAMIGLIA))} €. Se è già pagato senza, si rende a parte; se no lo mette la ricevuta.`}
         </span>
       ) : (
         nucleo.length > 1 && (

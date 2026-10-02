@@ -258,7 +258,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
 
           <section aria-label="Le offerte" className="sg-riquadro">
             <span className="ob sg-riquadro-titolo">LE OFFERTE</span>
-            <span className="sg-sotto">Sotto i corsi, nella pagina di iscrizione. Le ricevute non le calcolano: lo sconto si scrive a mano nel prezzo.</span>
+            <span className="sg-sotto">Sotto i corsi, nella pagina di iscrizione. Le ricevute calcolano da sé solo lo sconto famiglia (20%); le altre si scrivono a mano nel prezzo.</span>
             {b.offerte.map((o) => (
               <div key={o.chiave} className="stack" style={{ gap: 8, paddingBottom: 12, borderBottom: '2px solid var(--line-soft)' }}>
                 <div className="row" style={{ gap: 8 }}>

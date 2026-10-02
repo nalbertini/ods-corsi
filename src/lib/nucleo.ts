@@ -1,6 +1,6 @@
 import type { Formula } from './richieste'
 import type { Ricevuta } from './ricevute'
-import { voceQuota, vociDelCorso } from './ricevute'
+import { centesimi, euro, voceQuota, vociDelCorso } from './ricevute'
 import type { Listino } from './listino'
 
 /**
@@ -18,6 +18,8 @@ import type { Listino } from './listino'
  * sconto famiglia del listino: l'annuale col costo minore del nucleo ha il
  * 20% di sconto, la quota associativa no. Gli annuali già pagati si leggono
  * dalle ricevute; è una stima, e l'importo giusto lo conferma la segreteria.
+ * Sulla ricevuta lo sconto lo mette la segreteria da sé (vedi `NuovaRicevuta`):
+ * il prezzo della voce è già scontato, e la descrizione dice su quanto.
  */
 
 /** Lo sconto famiglia, sull'annuale col costo minore. */
@@ -27,12 +29,30 @@ export const SCONTO_FAMIGLIA = 0.2
 export interface Abbonamento {
   chi: string
   corso: string
+  /** Il prezzo pieno, anche se lo sconto c'è già stato. */
   importo: number
+  /** Lo sconto famiglia l'ha già avuto, sulla sua ricevuta. */
+  scontato?: true
 }
+
+/** La descrizione di un annuale scontato: «Annuale Judo 2 · sconto famiglia 20% su 340,00 €». */
+export const descrizioneScontata = (descrizione: string, pieno: number) =>
+  `${descrizione} · sconto famiglia ${Math.round(SCONTO_FAMIGLIA * 100)}% su ${euro(pieno)} €`
+
+/** Da una descrizione scontata, quella di prima e il prezzo pieno; `null` se non è scontata. */
+export function scontoDellaVoce(descrizione: string): { descrizione: string; pieno: number } | null {
+  const x = /^(.*) · sconto famiglia \d+% su ([\d.]+,\d{2}) €$/.exec(descrizione)
+  const pieno = x ? centesimi(x[2]) : null
+  return x && pieno !== null ? { descrizione: x[1], pieno } : null
+}
+
+/** Lo sconto di un annuale che costa `pieno` centesimi. */
+export const importoSconto = (pieno: number) => Math.round(pieno * SCONTO_FAMIGLIA)
 
 /**
  * Gli annuali già pagati dal nucleo, dalle ricevute non annullate: le voci
- * «Annuale …» (vedi `vociDelCorso` in `ricevute.ts`). `chi` è il nome da mostrare, per id.
+ * «Annuale …» (vedi `vociDelCorso` in `ricevute.ts`), col prezzo pieno anche
+ * quelle scontate. `chi` è il nome da mostrare, per id.
  */
 export function abbonamentiDalleRicevute(ricevute: Ricevuta[], chi: (personaId: string) => string): Abbonamento[] {
   return ricevute
@@ -40,8 +60,26 @@ export function abbonamentiDalleRicevute(ricevute: Ricevuta[], chi: (personaId: 
     .flatMap((r) =>
       r.voci
         .filter((v) => /^annuale /i.test(v.descrizione))
-        .map((v) => ({ chi: chi(r.personaId!), corso: v.descrizione.replace(/^annuale /i, ''), importo: v.prezzo * v.quantita })),
+        .map((v): Abbonamento => {
+          const s = scontoDellaVoce(v.descrizione)
+          const corso = (s?.descrizione ?? v.descrizione).replace(/^annuale /i, '')
+          return s ? { chi: chi(r.personaId!), corso, importo: s.pieno * v.quantita, scontato: true } : { chi: chi(r.personaId!), corso, importo: v.prezzo * v.quantita }
+        }),
     )
+}
+
+/**
+ * Su quale annuale va lo sconto famiglia: su quello che l'ha già avuto, se
+ * c'è; se no, con almeno due annuali, su quello che costa meno. A pari prezzo
+ * vince il primo dei `suoi`, quelli da pagare adesso: gli altri hanno già
+ * pagato. `null` se lo sconto non c'è.
+ */
+export function doveVaLoSconto<A extends Abbonamento>(suoi: A[], altri: Abbonamento[]): A | Abbonamento | null {
+  const tutti: Abbonamento[] = [...suoi, ...altri]
+  const gia = tutti.find((a) => a.scontato)
+  if (gia) return gia
+  if (tutti.length < 2) return null
+  return tutti.reduce((x, y) => (y.importo < x.importo ? y : x))
 }
 
 export interface RigaStima {
@@ -90,16 +128,14 @@ export function stimaIscrizione(
     righe.push({ testo: x.descrizione, importo: x.prezzo * x.quantita })
     if (nuovo.formula === 'annuale') suoi.push({ chi: nuovo.chi, corso, importo: x.prezzo * x.quantita })
   }
-  // Lo sconto è della famiglia: servono almeno due annuali nel nucleo. A
-  // pari prezzo va sulla persona nuova: gli altri hanno già pagato.
-  const tutti = [...suoi, ...altri]
+  // Lo sconto è della famiglia: servono almeno due annuali nel nucleo.
   let sconto: Stima['sconto']
-  if (tutti.length >= 2) {
-    const minimo = tutti.reduce((x, y) => (y.importo < x.importo ? y : x))
+  const minimo = doveVaLoSconto(suoi, altri)
+  if (minimo) {
     const qui = suoi.includes(minimo)
-    const importo = Math.round(minimo.importo * SCONTO_FAMIGLIA)
+    const importo = importoSconto(minimo.importo)
     sconto = { qui, chi: minimo.chi, corso: minimo.corso, importo }
-    if (qui) righe.push({ testo: `Sconto famiglia: 20% su annuale ${minimo.corso}`, importo: -importo })
+    if (qui) righe.push({ testo: `Sconto famiglia: ${Math.round(SCONTO_FAMIGLIA * 100)}% su annuale ${minimo.corso}`, importo: -importo })
   }
   return { righe, totale: righe.reduce((s, r) => s + r.importo, 0), sconto, senzaPrezzo }
 }

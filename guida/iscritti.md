@@ -88,8 +88,6 @@ il titolare la trova nella sua pagina.
   frequenta ma tiene il nucleo dei figli (in prova il titolare è sempre un
   iscritto). In prova la segreteria lo cambia dalla scheda di un iscritto
   ([NUCLEO FAMILIARE](segreteria/iscritti.md#il-nucleo-familiare)).
-- **Lo sconto famiglia sulle ricevute**: oggi la segreteria lo fa a mano; la
-  ricevuta potrebbe proporlo da sé.
 - **Cosa può leggere un iscritto**: solo le sue righe, dal database, con
   funzioni fatte apposta e senza toccare quello che vede la segreteria.
 - **L'informativa privacy**, che va aggiornata per l'area personale.
