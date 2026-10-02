@@ -4,6 +4,7 @@ import { fase } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Spunta } from '../Icons'
 import { Guaio, Indietro, messaggio, orario } from './comune'
+import { Kanji } from '../Kanji'
 
 type Fascia =
   | { tipo: 'fatto'; p: NomeSala }
@@ -109,8 +110,9 @@ export function TabletPresenza({
         <Indietro onClick={onIndietro} />
         <div className="stack grow" style={{ gap: 2, minWidth: 0 }}>
           <span className="ob tb-titolo">{lezione.corso.toUpperCase()}</span>
-          <span className="num tb-quando">
-            {[passata ? `${giorno.toUpperCase()} · ${orario(lezione)}` : orario(lezione), lezione.istruttori].filter(Boolean).join(' · ')}
+          <span className="num tb-quando chi-kanji" style={{ gap: 8 }}>
+            <Kanji segni={lezione.kanji} />
+            <span>{[passata ? `${giorno.toUpperCase()} · ${orario(lezione)}` : orario(lezione), lezione.istruttori].filter(Boolean).join(' · ')}</span>
           </span>
         </div>
         {passata && <span className="num tb-bollino" style={{ background: 'var(--giallo)' }}>LEZIONE PASSATA</span>}

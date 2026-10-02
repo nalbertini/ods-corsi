@@ -4,6 +4,7 @@ import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Cronometro, Lucchetto, Recupero } from '../Icons'
 import type { TimerPronto } from '../../../timer/src/lib/incorporato'
 import { Guaio, orario, Riquadro } from './comune'
+import { Kanji } from '../Kanji'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
 const ETICHETTA = { finita: 'FINITA', aperta: 'SI SEGNA ORA', dopo: 'PIÙ TARDI' } as const
@@ -80,8 +81,9 @@ export function TabletHome({
             <div className="tb-aperta-testo">
               <span className="num tb-orario">{orario(l)}</span>
               <span className="ob tb-aperta-nome">{l.corso.toUpperCase()}</span>
-              <span className="tb-sotto">
-                {[l.istruttori, `${l.presenti} ${l.presenti === 1 ? 'segnato' : 'segnati'} su ${l.iscritti}`].filter(Boolean).join(' · ')}
+              <span className="tb-sotto chi-kanji" style={{ gap: 10 }}>
+                <Kanji segni={l.kanji} medio />
+                <span>{[l.istruttori, `${l.presenti} ${l.presenti === 1 ? 'segnato' : 'segnati'} su ${l.iscritti}`].filter(Boolean).join(' · ')}</span>
               </span>
             </div>
             <button type="button" className="ob tb-btn-segna" onClick={() => onSegna(l)}>
@@ -143,6 +145,7 @@ export function TabletHome({
               <span className="ob" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.03em' }}>{l.corso.toUpperCase()}</span>
               <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
             </span>
+            <Kanji segni={l.kanji} />
             <span className="num tb-fase">{ETICHETTA[f]}</span>
           </div>
         ))}
