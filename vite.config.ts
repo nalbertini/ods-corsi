@@ -128,6 +128,13 @@ export default defineConfig({
         // le schede si chiudano: su un'app installata vuol dire mai.
         skipWaiting: true,
         clientsClaim: true,
+        // La query non cambia la pagina: `segreteria/?prova` è `segreteria/`.
+        // Senza, la pagina di un'area con `?prova` o `?adesso=…` non si
+        // trovava fra quelle salvate, e il service worker rispondeva con la
+        // radice, che non ha `<base href="../">` (vedi `pagineDelleAree`):
+        // lo stile e i moduli si cercavano in `segreteria/assets/`, e la
+        // pagina restava bianca.
+        ignoreURLParametersMatching: [/.*/],
         // Le pagine a sé, come l'informativa, restano quelle: senza, il
         // service worker a ogni indirizzo risponde con l'app. Lo stesso i
         // moduli in PDF: aperti in una scheda, senza, si vedeva una pagina bianca.
