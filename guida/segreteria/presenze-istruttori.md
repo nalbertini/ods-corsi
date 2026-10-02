@@ -2,21 +2,48 @@
 
 ← [Torna alla segreteria](README.md)
 
-Quando un istruttore mette il suo **PIN** sul [tablet di sala](../sala.md)
-durante una lezione, gli si segna la presenza in quella lezione. «Durante» è
-la stessa finestra in cui si segnano gli allievi: da mezz'ora prima
-dell'inizio a dieci minuti dopo la fine.
+Un istruttore c'era quando:
 
-- Se era **previsto** su quella lezione — insegna il corso, o è il sostituto
-  messo nella [Settimana](settimana.md) — la presenza è **confermata da sola**.
-- Se **non era previsto**, la presenza arriva qui, **da confermare**.
+- mette il suo **PIN** sul [tablet di sala](../sala.md) durante una lezione.
+  «Durante» è la stessa finestra in cui si segnano gli allievi: da mezz'ora
+  prima dell'inizio a dieci minuti dopo la fine;
+- oppure **fa l'appello** di una lezione, dall'app o dal tablet col PIN,
+  anche a lezione finita.
 
-Nel menu, accanto a **PRESENZE ISTRUTTORI**, c'è quante ne aspettano.
+Se era **previsto** su quella lezione — insegna il corso, o è il sostituto
+messo nella [Settimana](settimana.md) — la presenza è **confermata da sola**.
+Se **non era previsto**, la presenza arriva qui, **da confermare**. La
+segreteria che fa l'appello dal banco non si segna.
+
+Nel menu, accanto a **PRESENZE ISTRUTTORI**, c'è quante cose aspettano: le
+presenze da confermare e le lezioni tenute senza l'istruttore segnato.
+
+## Le lezioni tenute senza l'istruttore segnato
+
+Una lezione finita, non annullata, con almeno un **presente**, in cui qualcuno
+di chi doveva farla non ha messo il PIN né fatto l'appello, arriva qui, in
+cima, sotto **LEZIONI TENUTE SENZA L'ISTRUTTORE SEGNATO**. Per ognuna: corso,
+giorno, orario, sala, quanti presenti, e chi doveva farla.
+
+- **Un istruttore solo da decidere**: **CONFERMA** se c'era, **NON C'ERA** se
+  no.
+- **Più istruttori** (la Lotta in due, la Preparazione atletica in tre): si
+  spuntano quelli che c'erano e si preme **CONFERMA I SCELTI**; senza
+  spuntare nessuno il tasto dice **NESSUNO C'ERA**.
+
+Chi è scelto ha la presenza confermata, gli altri previsti rifiutata, e la
+lezione esce dall'elenco. Chi si era già segnato da sé si vede («Maura:
+c'era») e qui non si tocca. Ci si può ripensare dall'elenco qui sotto, con
+**Conferma** o **Rifiuta**.
+
+Si propongono solo le lezioni da quando c'è questa funzione, non quelle di
+prima.
 
 ## L'elenco
 
 Per ogni presenza: l'**ISTRUTTORE**, la **LEZIONE** (corso, giorno e orario),
-chi era **PREVISTO** su quella lezione, quando è **ENTRATO** e da quale tablet.
+chi era **PREVISTO** su quella lezione, e **ENTRATO**: quando e da quale
+tablet, «ha fatto l'appello», o «scelto in segreteria».
 
 Si vedono tutte, **confermate** e **da confermare** (e le rifiutate, in
 grigio), dalla lezione più recente, con chi le ha decise (o **da sé: era
@@ -38,7 +65,7 @@ era previsto, sala, quando è entrato, stato e chi l'ha decisa.
 ## Il report PDF
 
 **REPORT PDF** scarica il report del periodo scelto, da stampare o da tenere:
-un A4 con i numeri e il dettaglio, per capire com'è andato il mese o l'anno.
+un A4 col logo, i numeri e il dettaglio, per capire com'è andato il mese o l'anno.
 Tiene conto del corso e dell'istruttore scelti, non dello stato: le
 statistiche contano sempre confermate, da confermare e rifiutate.
 

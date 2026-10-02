@@ -1,7 +1,10 @@
 import type { Dati } from './dati'
 import type { Persona, SessioneVista, StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, perCognome } from './sala'
-import { archivio, nomeDi, type CorsoProva, type RicorrenzaProva } from './archivioProva'
+import { archivio, nomeDi, type CorsoProva, type PresenzaIstruttoreProva, type RicorrenzaProva } from './archivioProva'
+import { ISTRUTTORE_PROVA } from './dati'
+import { areaDelPercorso } from './percorso'
+import type { LezioneSenzaIstruttore } from './segreteria'
 import type { ChiProva, GiaProvato } from './prove'
 import { cosaNonVaProva, eGiaVenuto, pulisciProva } from './prove'
 
@@ -117,6 +120,85 @@ export const salaDelGiorno = (l: LezioneTrovata) => l.ricorrenza?.sala ?? l.cors
 export const nomeIstruttore = (id: string) => {
   const p = archivio.dati.persone.find((x) => x.id === id)
   return p ? nomeDi(p) : '—'
+}
+
+/**
+ * Chi ha fatto l'appello di una lezione c'era, come col trigger
+ * `istruttore_dall_appello` (23-istruttori-dalle-lezioni.sql): confermato se
+ * era previsto, da confermare se no. La segreteria si segna solo se insegna
+ * anche ed era prevista; una presenza rifiutata resta com'è.
+ */
+export function istruttoreDallAppello(sessioneId: string, personaId: string, sala?: string) {
+  const l = trovaLezione(sessioneId)
+  const chi = archivio.dati.persone.find((p) => p.id === personaId)
+  if (!l || !chi || chi.ruolo === 'iscritto' || comeE(l).stato === 'annullata') return
+  const previsto = comeE(l).istruttori.includes(personaId)
+  if (chi.ruolo === 'staff' && !(chi.ancheIstruttore && previsto)) return
+  const tutte = [...(archivio.dati.presenzeIstruttori ?? [])]
+  const c = tutte.findIndex((x) => x.sessioneId === sessioneId && x.personaId === personaId)
+  if (c < 0) {
+    tutte.push({
+      id: `pi-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      sessioneId,
+      personaId,
+      stato: previsto ? 'confermata' : 'da_confermare',
+      prevista: previsto,
+      entratoIl: new Date().toISOString(),
+      sala: sala ?? comeE(l).sala,
+      come: 'appello',
+    })
+  } else if (previsto && tutte[c].stato === 'da_confermare') {
+    tutte[c] = { ...tutte[c], stato: 'confermata', prevista: true }
+  } else return
+  archivio.dati.presenzeIstruttori = tutte
+  archivio.salva()
+}
+
+/** Chi fa l'appello dall'app, in prova: l'istruttore di prova nell'area istruttori, nessuno dalla segreteria. */
+const chiFaLAppello = () => (typeof window !== 'undefined' && areaDelPercorso() === 'istruttori' ? ISTRUTTORE_PROVA.id : null)
+
+/** Come `lezioni_senza_istruttore` del database. */
+export function lezioniSenzaIstruttoreProva(): LezioneSenzaIstruttore[] {
+  const ora = new Date()
+  const dal = new Date(archivio.dati.proposteIstruttoriDal ?? ora.getTime() - 7 * 24 * 60 * 60_000)
+  const presenze = archivio.dati.presenzeIstruttori ?? []
+  return lezioniFra(dal, ora)
+    .filter((l) => l.inizio >= dal && l.fine < ora && comeE(l).stato !== 'annullata')
+    .flatMap((l): LezioneSenzaIstruttore[] => {
+      const presenti = Object.values(memoria.segnate[l.id] ?? {}).filter((s) => s === 'presente').length
+      const previsti = comeE(l).istruttori.map((id) => ({ id, nome: nomeIstruttore(id), stato: presenze.find((x) => x.sessioneId === l.id && x.personaId === id)?.stato }))
+      if (!presenti || !previsti.some((x) => !x.stato)) return []
+      return [{ sessioneId: l.id, corso: l.corso.nome, colore: l.corso.colore, inizio: l.inizio.toISOString(), fine: l.fine.toISOString(), sala: comeE(l).sala, presenti, previsti }]
+    })
+    .sort((a, b) => b.inizio.localeCompare(a.inizio))
+}
+
+/** Come `segna_istruttori_lezione`: confermati i scelti, rifiutati gli altri previsti senza presenza. */
+export function segnaIstruttoriLezioneProva(sessioneId: string, presenti: string[], da: string) {
+  const l = trovaLezione(sessioneId)
+  if (!l) throw new Error('lezione inesistente')
+  const previsti = comeE(l).istruttori
+  if (presenti.some((x) => !previsti.includes(x))) throw new Error('si sceglie fra gli istruttori previsti')
+  const tutte = [...(archivio.dati.presenzeIstruttori ?? [])]
+  const adesso = new Date().toISOString()
+  for (const id of previsti) {
+    if (tutte.some((x) => x.sessioneId === sessioneId && x.personaId === id)) continue
+    const nuova: PresenzaIstruttoreProva = {
+      id: `pi-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      sessioneId,
+      personaId: id,
+      stato: presenti.includes(id) ? 'confermata' : 'rifiutata',
+      prevista: true,
+      entratoIl: adesso,
+      sala: comeE(l).sala,
+      gestitaDa: da,
+      gestitaIl: adesso,
+      come: 'segreteria',
+    }
+    tutte.push(nuova)
+  }
+  archivio.dati.presenzeIstruttori = tutte
+  archivio.salva()
 }
 
 /** Chi è venuto a provare una lezione, in ordine di cognome: come `proveDi` del database. */
@@ -323,6 +405,8 @@ export function creaDatiProva(): Dati {
       memoria.segnate = { ...memoria.segnate, [sessioneId]: mie }
       daAppello(sessioneId, personaId)
       salva()
+      const chi = chiFaLAppello()
+      if (chi && stato !== null) istruttoreDallAppello(sessioneId, chi)
     },
 
     async segnaTutti(sessioneId, stato) {
@@ -333,6 +417,8 @@ export function creaDatiProva(): Dati {
       memoria.segnate = { ...memoria.segnate, [sessioneId]: mie }
       daAppello(sessioneId)
       salva()
+      const chi = chiFaLAppello()
+      if (chi) istruttoreDallAppello(sessioneId, chi)
     },
 
     async provati() {

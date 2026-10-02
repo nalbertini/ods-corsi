@@ -1,6 +1,6 @@
 import type { DatiTablet, EsitoTocco, LezioneSala, PresenzaIstruttore, RigaAppelloTablet } from './tablet'
 import { fase, REGOLE, sigle } from './tablet'
-import { comeE, creaDatiProva, lezioniFra, memoria, mettiProva, provatiProva, togliProvaDa } from './datiProva'
+import { comeE, creaDatiProva, istruttoreDallAppello, lezioniFra, memoria, mettiProva, provatiProva, togliProvaDa } from './datiProva'
 import { archivio, type PresenzaIstruttoreProva } from './archivioProva'
 import { perCognome } from './sala'
 import { impostazioniSala, timerSala } from '../../timer/src/lib/impostazioniSala'
@@ -272,6 +272,8 @@ export function creaTabletProva(): DatiTablet {
         return true
       }
       scrivi(sessioneId, personaId, stato, null)
+      // Chi fa l'appello col PIN c'era, come dall'app.
+      istruttoreDallAppello(sessioneId, daPin(pin)!.personaId, sala ?? undefined)
       return true
     },
 

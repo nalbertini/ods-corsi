@@ -482,6 +482,8 @@ function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
   // Le presenze si leggono per giorni all'indietro: fino al primo del mese scelto, e un giorno in più.
   const giorni = Math.ceil((Date.now() - m.da.getTime()) / 86_400_000) + 1
   const elenco = useCarica(() => d.presenzeIstruttori(giorni), [d, giorni])
+  // Le lezioni tenute in cui era previsto e non si è segnato: da decidere anche quelle.
+  const proposte = useCarica(() => d.lezioniSenzaIstruttore().catch(() => []), [d])
 
   const da = chiaveGiorno(m.da)
   const a = chiaveGiorno(m.a)
@@ -489,7 +491,12 @@ function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
     .filter((x) => x.personaId === p.id && chiaveGiorno(new Date(x.inizio)) >= da && chiaveGiorno(new Date(x.inizio)) <= a)
     .sort((x, y) => x.inizio.localeCompare(y.inizio))
   const fatte = del.filter((x) => x.stato === 'confermata')
-  const daConfermare = del.filter((x) => x.stato === 'da_confermare').length
+  const daConfermare =
+    del.filter((x) => x.stato === 'da_confermare').length +
+    (proposte.dato ?? []).filter((l) => {
+      const g = chiaveGiorno(new Date(l.inizio))
+      return g >= da && g <= a && l.previsti.some((x) => x.id === p.id && !x.stato)
+    }).length
   const totale = fatte.reduce((t, x) => t + minuti(x), 0)
   const perCorso = [...new Set(fatte.map((x) => x.corso))]
     .map((corso) => {

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
+import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
@@ -93,6 +93,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
   [/ricevute|emetti_ricevuta/, 'Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql'],
   [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
+  [/lezioni_senza_istruttore|segna_istruttori_lezione/, 'Le lezioni tenute da confermare non sono ancora attive sul database: va lanciato 23-istruttori-dalle-lezioni.sql'],
   [/presenze_istruttori/, 'Le presenze degli istruttori non sono ancora attive sul database: va lanciato 15-presenze-istruttori.sql'],
 ]
 
@@ -980,7 +981,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         await db
           .from('presenze_istruttori')
           .select(
-            'id, sessione_id, persona_id, stato, prevista, entrato_il, gestita_il, ' +
+            // Con `*`: `come` c'è solo dopo 23-istruttori-dalle-lezioni.sql, e senza si legge lo stesso.
+            '*, ' +
               'sessioni ( corso_id, inizio, fine, istruttore_id, corsi ( nome, colore, istruttore_id ), persone ( nome, cognome ) ), ' +
               'persona:persone!persona_id ( nome, cognome ), gestore:persone!gestita_da ( nome, cognome ), postazioni ( sale ( nome ) )',
           )
@@ -994,6 +996,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         prevista: boolean
         entrato_il: string
         gestita_il: string | null
+        come?: ComePresenzaIstruttore
         sessioni: {
           corso_id: string
           inizio: string
@@ -1029,6 +1032,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             entratoIl: r.entrato_il,
             gestitaIl: r.gestita_il ?? undefined,
             gestitaDa: r.gestore ? nome(r.gestore) : undefined,
+            come: r.come ?? 'pin',
           },
         ]
       })
@@ -1036,6 +1040,33 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async gestisciPresenzaIstruttore(id, conferma) {
       ok(await db.rpc('gestisci_presenza_istruttore', { presenza: id, conferma }))
+    },
+
+    async lezioniSenzaIstruttore() {
+      const righe = ok(await db.rpc('lezioni_senza_istruttore')) as Array<{
+        sessione_id: string
+        corso: string
+        colore: string | null
+        inizio: string
+        fine: string
+        sala: string | null
+        presenti: number
+        previsti: Array<{ id: string; nome: string; cognome: string; stato: StatoPresenzaIstruttore | null }> | null
+      }>
+      return righe.map((r) => ({
+        sessioneId: r.sessione_id,
+        corso: r.corso,
+        colore: r.colore ?? undefined,
+        inizio: r.inizio,
+        fine: r.fine,
+        sala: r.sala ?? undefined,
+        presenti: r.presenti,
+        previsti: (r.previsti ?? []).map((x) => ({ id: x.id, nome: nome(x), stato: x.stato ?? undefined })),
+      }))
+    },
+
+    async segnaIstruttoriLezione(sessioneId, presenti) {
+      ok(await db.rpc('segna_istruttori_lezione', { sessione: sessioneId, presenti }))
     },
 
     async allenamenti(quanti) {

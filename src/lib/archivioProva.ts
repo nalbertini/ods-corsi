@@ -104,6 +104,11 @@ export interface Archivio {
   eserciziSale?: unknown[]
   /** Gli istruttori entrati col PIN sul tablet durante una lezione. */
   presenzeIstruttori?: PresenzaIstruttoreProva[]
+  /**
+   * Da quando si propongono le lezioni tenute senza l'istruttore segnato
+   * (`impostazioni.proposte_istruttori_dal`). Senza, l'ultima settimana.
+   */
+  proposteIstruttoriDal?: string
   /** Le ricevute dei pagamenti, come le righe di `ricevute` (16-ricevute.sql). */
   ricevute?: Ricevuta[]
   /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */
@@ -140,6 +145,8 @@ export interface PresenzaIstruttoreProva {
   sala: string
   gestitaDa?: string
   gestitaIl?: string
+  /** Come è arrivata; senza, dal PIN, come le righe di prima. */
+  come?: 'pin' | 'appello' | 'segreteria'
 }
 
 // ---------------------------------------------------------------------------

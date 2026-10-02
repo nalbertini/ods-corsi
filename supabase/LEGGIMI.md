@@ -50,6 +50,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 20. `20-nomi.sql` — nomi e cognomi scritti tutti allo stesso modo, «Maria Grazia De Luca», anche quelli già salvati
 21. `21-prove.sql` — le prove: chi viene a provare entra nell'appello, aggiunto da chi lo fa col tasto PROVE
 22. `22-statistiche.sql` — le statistiche della segreteria: i conti delle lezioni e degli incassi, fatti dal database
+23. `23-istruttori-dalle-lezioni.sql` — la presenza degli istruttori anche dall'appello che fanno, e le lezioni tenute senza l'istruttore segnato, proposte alla segreteria che sceglie chi c'era
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -111,7 +112,13 @@ rilanciare `06-iscrizioni.sql`: finché non c'è, l'appello si fa come prima, il
 tasto PROVE dice che va lanciato, e in segreteria PRESENZE lo dice nel
 riquadro PROVE. Per le statistiche basta `22-statistiche.sql` (dopo
 `05-segreteria.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
-finché non c'è, STATISTICHE in segreteria dice che va lanciato.
+finché non c'è, STATISTICHE in segreteria dice che va lanciato. Per la
+presenza degli istruttori dall'appello e le lezioni tenute da confermare basta
+`23-istruttori-dalle-lezioni.sql` (dopo `15-presenze-istruttori.sql`), che non
+chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, l'appello non segna
+l'istruttore e PRESENZE ISTRUTTORI dice che va lanciato, sopra l'elenco delle
+presenze dal PIN che resta com'è. Le lezioni si propongono da quando lo si
+lancia, non quelle di prima.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -676,7 +683,11 @@ prova il calendario che si allunga da sé: lo allunga anche un istruttore, ma
 solo quando serve e fin dove dicono le regole, e non fuori dalle date dei corsi; `presenze-istruttori.sql`, dopo
 `tablet.sql`, prova la presenza degli istruttori dal PIN: confermata da sola a
 chi era previsto (anche da sostituto), da confermare agli altri, e confermata
-o rifiutata solo dalla segreteria; `ricevute.sql` prova le ricevute: le fa e le
+o rifiutata solo dalla segreteria; `istruttori-dalle-lezioni.sql`, dopo
+`presenze-istruttori.sql`, prova chi fa l'appello (confermato se previsto, da
+confermare se no, la segreteria al banco no), le lezioni tenute senza
+l'istruttore segnato, la scelta di chi c'era fatta solo dalla segreteria e
+solo fra i previsti, e da quando si propongono; `ricevute.sql` prova le ricevute: le fa e le
 annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i
 conti li fa il server, e una fatta non si cambia; `anagrafiche.sql` prova
 nascita, residenza e genitore degli iscritti importati: li vede e li cambia

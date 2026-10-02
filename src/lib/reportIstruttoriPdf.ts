@@ -25,6 +25,19 @@ const RIGA = 15
 const GIORNI = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
 const MESI = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre']
 
+/**
+ * Il marchio a ingranaggi, lo stesso di `components/Logo.tsx` (viewBox
+ * 160×110): i denti sono un cerchio tratteggiato, l'anello uno pieno.
+ * L'ingranaggio bianco, sulla carta, è nero.
+ */
+const INGRANAGGI: Array<[number, number, [number, number, number]]> = [
+  [38, 40, [0x1b, 0x8a, 0xc4]],
+  [80, 40, [0x11, 0x11, 0x11]],
+  [122, 40, [0xe4, 0x29, 0x2a]],
+  [59, 74, [0xf4, 0xc3, 0x1b]],
+  [101, 74, [0x16, 0xa5, 0x4a]],
+]
+
 export interface FiltriReport {
   /** «Ottobre 2026», «Anno 2026». */
   periodo: string
@@ -32,6 +45,8 @@ export interface FiltriReport {
   istruttore?: string
   /** Più di un mese: c'è la tabella mese per mese. */
   piuMesi: boolean
+  /** Le lezioni tenute senza l'istruttore segnato, da decidere anche loro. */
+  lezioniDaConfermare?: number
 }
 
 const minuti = (x: PresenzaIstruttoreSeg) => Math.round((Date.parse(x.fine) - Date.parse(x.inizio)) / 60_000)
@@ -135,10 +150,23 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
     p.drawText(v, { x: o.destra && o.fino ? x + o.fino - w : x, y: y(alto), size: corpo, font: ff, color: o.colore ?? nero })
   }
 
+  /** Il logo largo `largo` punti, con l'angolo in alto a sinistra in (x, alto). */
+  const logo = (x: number, alto: number, largo: number) => {
+    const k = largo / 160
+    const colore = ([r, g, b]: [number, number, number]) => rgb(r / 255, g / 255, b / 255)
+    for (const [cx, cy, c] of INGRANAGGI) {
+      p.drawCircle({ x: x + cx * k, y: y(alto + cy * k), size: 22 * k, borderColor: colore(c), borderWidth: 9 * k, borderDashArray: [6 * k, 7.82 * k] })
+    }
+    for (const [cx, cy, c] of INGRANAGGI) {
+      p.drawCircle({ x: x + cx * k, y: y(alto + cy * k), size: 14 * k, borderColor: colore(c), borderWidth: 5 * k })
+    }
+  }
+
   const nuovaPagina = () => {
     p = pdf.addPage([PAGINA.w, PAGINA.h])
     t = MARGINE
     testo(`${ente} · Presenze istruttori · ${f.periodo}`, MARGINE, t + 8, { corpo: 8, colore: grigio })
+    logo(MARGINE + LARGO - 34, t - 8, 34)
     t += 24
   }
   /** C'è posto per `alto` punti? Se no, si va a capo pagina. */
@@ -183,7 +211,8 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
     t += 6
   }
 
-  // La testa.
+  // La testa, col logo a destra.
+  logo(MARGINE + LARGO - 96, t - 6, 96)
   testo(ente, MARGINE, t + 9, { corpo: 9, colore: grigio })
   testo('Report presenze istruttori', MARGINE, t + 32, { corpo: 20, f: grassetto })
   testo(f.periodo, MARGINE, t + 52, { corpo: 13 })
@@ -203,14 +232,14 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
     ['LEZIONI', intero(c.confermate.length), 'confermate'],
     ['ORE', ore(c.minutiTotali), 'dall’orario delle lezioni'],
     ['ISTRUTTORI', intero(c.istruttori), `su ${intero(c.corsi)} ${c.corsi === 1 ? 'corso' : 'corsi'}`],
-    ['DA CONFERMARE', intero(c.daConfermare), c.daConfermare ? 'da decidere prima di pagare' : 'niente in sospeso'],
+    ['DA CONFERMARE', intero(c.daConfermare + (f.lezioniDaConfermare ?? 0)), c.daConfermare + (f.lezioniDaConfermare ?? 0) ? 'da decidere prima di pagare' : 'niente in sospeso'],
   ]
   const wq = (LARGO - 3 * 8) / 4
   numeri.forEach(([n, v, s], i) => {
     const x = MARGINE + i * (wq + 8)
     p.drawRectangle({ x, y: y(t + 58), width: wq, height: 58, borderColor: linea, borderWidth: 0.8 })
     testo(n, x + 8, t + 14, { corpo: 7.5, f: grassetto, colore: grigio })
-    testo(v, x + 8, t + 38, { corpo: 20, f: grassetto, colore: n === 'DA CONFERMARE' && c.daConfermare ? rosso : nero })
+    testo(v, x + 8, t + 38, { corpo: 20, f: grassetto, colore: n === 'DA CONFERMARE' && v !== '0' ? rosso : nero })
     testo(s, x + 8, t + 50, { corpo: 7, colore: grigio, fino: wq - 16 })
   })
   t += 70
@@ -225,6 +254,9 @@ export async function reportIstruttoriPdf(righe: PresenzaIstruttoreSeg[], f: Fil
       ? `${intero(c.fuoriProgramma)} ${c.fuoriProgramma === 1 ? 'lezione confermata è' : 'lezioni confermate sono'} fuori programma (${percento(c.fuoriProgramma, c.confermate.length)}): l’istruttore non era previsto, la segreteria l’ha confermato.`
       : 'Tutte le lezioni confermate erano di chi era previsto.',
     c.rifiutate ? `${intero(c.rifiutate)} ${c.rifiutate === 1 ? 'presenza rifiutata' : 'presenze rifiutate'}, che non contano.` : '',
+    f.lezioniDaConfermare
+      ? `${intero(f.lezioniDaConfermare)} ${f.lezioniDaConfermare === 1 ? 'lezione tenuta' : 'lezioni tenute'} senza l’istruttore segnato: chi c’era va scelto in PRESENZE ISTRUTTORI.`
+      : '',
   ].filter(Boolean)
   for (const s of frasi) {
     testo(s, MARGINE, t + 9, { corpo: 9, fino: LARGO })
