@@ -172,7 +172,7 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
                   <span role="cell" style={{ fontSize: 13, color: p.email || p.telefono ? 'var(--sec)' : 'var(--rosso)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {p.email ?? p.telefono ?? 'nessun contatto'}
+                    {p.telefono ?? p.email ?? 'nessun contatto'}
                   </span>
                   <span role="cell" className="sg-in-regola">
                     {cert === 'valido' && paga === 'pagato' ? (
