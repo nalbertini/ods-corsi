@@ -527,5 +527,22 @@ console.log('\nil ruolo doppio, segreteria e istruttore')
   ok('entra solo nel calendario', m.areeDi(await dora()), ['istruttori'])
 }
 
+console.log('\nil kanji degli istruttori')
+{
+  const kanji = async (id) => (await s.personale()).find((p) => p.id === id).kanji
+  ok('Maurizio ha già il suo', await kanji('i-maurizio'), '龍')
+  ok('e Fabio no', await kanji('i-fabio'), undefined)
+  ok('quello di un altro no', await errore(() => s.salvaKanji('i-fabio', '龍')), '龍 è già di Maurizio: scegline un altro')
+  ok('due segni no', await errore(() => s.salvaKanji('i-fabio', '山火')), 'Il kanji è un segno solo')
+  ok('una lettera no', await errore(() => s.salvaKanji('i-fabio', 'F')), 'Il kanji è un segno solo')
+  await s.salvaKanji('i-fabio', ' 狼 ')
+  ok('il suo, ripulito', await kanji('i-fabio'), '狼')
+  const sue = (await app.calendario(...giorno([9, 1], [9, 7]))).filter((l) => l.insegnanti?.length === 1 && l.insegnanti[0] === 'i-fabio')
+  ok('il calendario lo mette accanto al nome', [sue.length > 0, sue.every((l) => l.kanji === '狼')], [true, true])
+  await s.salvaKanji('i-fabio', null)
+  ok('e lo si toglie', await kanji('i-fabio'), undefined)
+  ok('un iscritto non ce l\'ha', await errore(async () => s.salvaKanji((await s.persone())[0].id, '山')), 'Il kanji è solo per istruttori e segreteria')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -54,6 +54,8 @@ export interface PersonaProva {
   ruolo: Ruolo
   /** Di segreteria, e insegna anche (vedi `ruoli.ts`). */
   ancheIstruttore?: boolean
+  /** Il suo segno, per riconoscerlo (vedi `kanji.ts`). */
+  kanji?: string
   email?: string
   telefono?: string
   attiva: boolean
@@ -179,6 +181,16 @@ const ISTRUTTORI: Record<string, string> = {
   fabio: 'Fabio',
 }
 
+/** I kanji degli istruttori di prova: a Fabio manca, per vedere com'è senza. */
+const KANJI_ISTRUTTORI: Record<string, string> = {
+  maurizio: '龍',
+  maura: '桜',
+  federico: '山',
+  manuel: '拳',
+  tiziano: '雷',
+  katia: '鷹',
+}
+
 interface Definizione {
   id: string
   nome: string
@@ -280,7 +292,7 @@ function inRegolaDiProva(id: string): Pick<PersonaProva, 'certificato' | 'docume
 function iniziale(): Archivio {
   const persone = new Map<string, PersonaProva>()
   for (const [id, nome] of Object.entries(ISTRUTTORI)) {
-    persone.set(`i-${id}`, { id: `i-${id}`, nome, cognome: '', ruolo: 'istruttore', attiva: true, creataIl: STAGIONE.dal })
+    persone.set(`i-${id}`, { id: `i-${id}`, nome, cognome: '', ruolo: 'istruttore', kanji: KANJI_ISTRUTTORI[id], attiva: true, creataIl: STAGIONE.dal })
   }
   // Chi usa la prova: la segreteria che vede tutto.
   persone.set('s-prova', { id: 's-prova', nome: 'Segreteria', cognome: 'di prova', ruolo: 'staff', email: 'segreteria@esempio.it', attiva: true, creataIl: STAGIONE.dal })

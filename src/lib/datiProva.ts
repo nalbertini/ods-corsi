@@ -122,6 +122,8 @@ export const nomeIstruttore = (id: string) => {
   return p ? nomeDi(p) : '—'
 }
 
+const kanjiIstruttore = (id: string) => archivio.dati.persone.find((x) => x.id === id)?.kanji ?? ''
+
 /**
  * Chi ha fatto l'appello di una lezione c'era, come col trigger
  * `istruttore_dall_appello` (23-istruttori-dalle-lezioni.sql): confermato se
@@ -362,6 +364,7 @@ export function creaDatiProva(): Dati {
       colore: l.corso.colore,
       sala: k.sala,
       istruttore: k.istruttori.length ? k.istruttori.map(nomeIstruttore).join(', ') : undefined,
+      kanji: k.istruttori.map(kanjiIstruttore).join('') || undefined,
       insegnanti: k.istruttori,
       inizio: l.inizio.toISOString(),
       fine: l.fine.toISOString(),

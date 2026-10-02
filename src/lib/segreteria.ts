@@ -293,6 +293,8 @@ export interface PersonaleSeg {
   collegato: boolean
   haPin: boolean
   corsi: string[]
+  /** Il suo segno, per riconoscerlo a colpo d'occhio (vedi `kanji.ts`). */
+  kanji?: string
 }
 
 /** Un timer arrivato in fondo (o fermato prima), sul tablet o sul telefono di un istruttore. */
@@ -482,6 +484,8 @@ export interface DatiSegreteria {
   personale(): Promise<PersonaleSeg[]>
   salvaPersonale(p: DatiPersona & RuoloPersonale): Promise<string>
   impostaPin(personaId: string, pin: string): Promise<void>
+  /** Il kanji della persona; `null` lo toglie. Due persone non possono avere lo stesso. */
+  salvaKanji(personaId: string, kanji: string | null): Promise<void>
   /**
    * Manda l'invito per email: a chi non ha un account, quello per crearlo; a
    * chi ce l'ha ma non è mai entrato, il link per scegliere la password.

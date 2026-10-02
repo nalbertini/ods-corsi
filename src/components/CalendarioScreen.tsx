@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
+import { Kanji } from './Kanji'
 
 const GIORNI_CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
 
@@ -132,8 +133,9 @@ export function CalendarioScreen({
         <span className="lezione-ora num">{oraDi(l.inizio)}</span>
         <span className="stack grow" style={{ gap: 3, minWidth: 0, textAlign: 'left' }}>
           <span className="ob lezione-nome">{l.corso.toUpperCase()}</span>
-          <span style={{ fontSize: 13, color: 'var(--dim)' }}>
-            {[l.sala, l.istruttore].filter(Boolean).join(' · ')}
+          <span className="chi-kanji" style={{ fontSize: 13, color: 'var(--dim)' }}>
+            <Kanji segni={l.kanji} />
+            <span>{[l.sala, l.istruttore].filter(Boolean).join(' · ')}</span>
           </span>
         </span>
         <span className="stack" style={{ gap: 2, alignItems: 'flex-end' }}>

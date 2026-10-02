@@ -9,6 +9,7 @@ import { comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstrutt
 import { memoria } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
+import { kanjiScritto } from './kanji'
 import { richiesteDi } from './richiesteProva'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -684,6 +685,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             collegato: p.id === 's-prova',
             haPin: !!pin[p.id],
             corsi: a().corsi.filter((c) => c.attivo && c.istruttori.includes(p.id)).map((c) => c.nome),
+            kanji: p.kanji,
           }),
         )
     },
@@ -727,6 +729,18 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const usati = { ...Object.fromEntries(Object.entries(PIN_PROVA).map(([k, v]) => [v.personaId, k])), ...a().pin }
       if (Object.entries(usati).some(([chi, x]) => chi !== personaId && x === pin)) throw new Error('questo PIN è già di un altro: scegline un altro')
       a().pin = { ...a().pin, [personaId]: pin }
+      salva()
+    },
+
+    async salvaKanji(personaId, kanji) {
+      const segno = kanji === null ? undefined : kanjiScritto(kanji)
+      if (segno === null) throw new Error('Il kanji è un segno solo')
+      const p = persona(personaId)
+      if (p.ruolo === 'iscritto') throw new Error('Il kanji è solo per istruttori e segreteria')
+      const altro = segno && a().persone.find((x) => x.id !== personaId && x.kanji === segno)
+      // Come l'indice unico di 24-kanji.sql.
+      if (altro) throw new Error(`${segno} è già di ${nomeDi(altro)}: scegline un altro`)
+      a().persone = a().persone.map((x) => (x.id === personaId ? { ...x, kanji: segno } : x))
       salva()
     },
 

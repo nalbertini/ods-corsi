@@ -13,6 +13,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, type EnteRicevuta, type IntestatarioRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
+import { kanjiScritto } from './kanji'
 
 /**
  * La segreteria col database vero.
@@ -160,6 +161,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
     return new Error('La voce e gli esercizi dei tablet non sono ancora attivi sul database: va lanciato 13-voce-esercizi.sql')
   // La colonna del ruolo doppio, che arriva con 01-schema.sql: 42703 leggendo, PGRST204 scrivendo.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /anche_istruttore/.test(e.message ?? '')) return new Error(MANCA_DOPPIO)
+  // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
+  if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
+  if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
   return new Error(e?.message || 'Il server non risponde')
@@ -859,6 +863,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ])
       const persone = ok(righe) as Array<{
         id: string; nome: string; cognome: string; email: string | null; ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean; attiva: boolean; utente_id: string | null
+        kanji?: string | null
       }>
       const corsi = ok(legami) as unknown as Array<{ persona_id: string; corsi: { nome: string; attivo: boolean } | null }>
       const conPin = new Set((ok(pin) as Array<{ persona_id: string }>).map((r) => r.persona_id))
@@ -874,6 +879,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           collegato: !!p.utente_id,
           haPin: conPin.has(p.id),
           corsi: corsi.filter((c) => c.persona_id === p.id && c.corsi?.attivo).map((c) => c.corsi!.nome),
+          kanji: p.kanji ?? undefined,
         }),
       )
     },
@@ -909,6 +915,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async impostaPin(personaId, pin) {
       ok(await db.rpc('imposta_pin', { persona: personaId, pin }))
+    },
+
+    async salvaKanji(personaId, kanji) {
+      const segno = kanji === null ? null : kanjiScritto(kanji)
+      if (kanji !== null && !segno) throw new Error('Il kanji è un segno solo')
+      ok(await db.from('persone').update({ kanji: segno }).eq('id', personaId))
     },
 
     async invita(personaId) {
