@@ -35,7 +35,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 9. `09-musica.sql` — la musica delle sale, che il tablet fa partire dalla sua barra
 10. `10-timer-sale.sql` — il timer dei tablet di sala, uguale per tutti
 11. `11-timer-lezioni.sql` — il timer di una singola lezione, scelto dall'istruttore in I MIEI TIMER
-12. `12-calendario-da-se.sql` — il calendario che si allunga da sé, senza job
+12. `12-calendario-da-se.sql` — il calendario che si allunga da sé, senza job, e le date di inizio e fine dei corsi
 13. `13-voce-esercizi.sql` — la voce, le clip incise e gli esercizi dei tablet di sala, scelti dalla segreteria
 14. `14-timer-dal-tablet.sql` — il timer dei tablet di sala si cambia da un tablet qualunque
 15. `15-presenze-istruttori.sql` — la presenza degli istruttori dal PIN del tablet: da sola se erano previsti, se no da confermare in segreteria
@@ -66,7 +66,10 @@ Per il timer delle singole lezioni con
 si leggono, e le lezioni aprono i timer del corso come prima. Per il
 calendario che si allunga da sé si rilanciano `03-funzioni.sql`, poi
 `06-iscrizioni.sql`, poi `12-calendario-da-se.sql`: finché non c'è, il
-calendario si allunga solo con RIGENERA o con il job settimanale. Per la
+calendario si allunga solo con RIGENERA o con il job settimanale. Per le
+date di inizio e fine dei corsi in IMPOSTAZIONI basta rilanciare
+`12-calendario-da-se.sql`: finché non c'è, IMPOSTAZIONI dice che va
+rilanciato, e il calendario si prepara per i giorni scelti come prima. Per la
 voce e gli esercizi dei tablet basta `13-voce-esercizi.sql`, che non chiede
 di rilanciare `06-iscrizioni.sql`: finché non c'è, la segreteria dice che
 voce ed esercizi non si leggono, e i tablet tengono la voce e il catalogo
@@ -571,7 +574,7 @@ sua funzione, solo lui o la segreteria, senza toccare il resto della riga; `time
 una singola lezione: lo lega il personale, lo legge il tablet, e un timer
 personale legato a una lezione lo vedono anche gli altri; `calendario-da-se.sql`
 prova il calendario che si allunga da sé: lo allunga anche un istruttore, ma
-solo quando serve e fin dove dicono le regole; `presenze-istruttori.sql`, dopo
+solo quando serve e fin dove dicono le regole, e non fuori dalle date dei corsi; `presenze-istruttori.sql`, dopo
 `tablet.sql`, prova la presenza degli istruttori dal PIN: confermata da sola a
 chi era previsto (anche da sostituto), da confermare agli altri, e confermata
 o rifiutata solo dalla segreteria; `ricevute.sql` prova le ricevute: le fa e le

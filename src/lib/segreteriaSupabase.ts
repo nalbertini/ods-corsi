@@ -242,17 +242,32 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
   }
 
   const impostazioni = async (): Promise<Impostazioni> => {
-    const r = ok(await db.from('impostazioni').select('mesi_presenze, giorni_calendario').maybeSingle()) as {
-      mesi_presenze: number; giorni_calendario: number
+    // Con `*`: su un database senza le date dei corsi (`12-calendario-da-se.sql`
+    // non rilanciato) le impostazioni si leggono lo stesso.
+    const r = ok(await db.from('impostazioni').select('*').maybeSingle()) as {
+      mesi_presenze: number; giorni_calendario: number; inizio_corsi?: string | null; fine_corsi?: string | null
     } | null
-    return { mesiPresenze: r?.mesi_presenze ?? 24, giorniCalendario: r?.giorni_calendario ?? 60 }
+    return { mesiPresenze: r?.mesi_presenze ?? 24, giorniCalendario: r?.giorni_calendario ?? 60, inizioCorsi: r?.inizio_corsi, fineCorsi: r?.fine_corsi }
   }
 
-  /** Allunga il calendario fino ai giorni scelti in REGOLE, senza mai accorciarlo. */
+  /**
+   * Allunga il calendario fino alla fine dei corsi, o per i giorni scelti in
+   * IMPOSTAZIONI se la fine non c'è, senza mai accorciarlo. Come
+   * `allunga_calendario`, da oggi o dall'inizio dei corsi, e mai più di 400
+   * giorni (il limite di `materializza_sessioni`).
+   */
   const rigenera = async () => {
-    const [pronto, { giorniCalendario }] = await Promise.all([db.rpc('calendario_pronto_fino').then(ok) as Promise<string | null>, impostazioni()])
-    const fino = chiaveGiorno(new Date(Date.now() + giorniCalendario * 24 * 60 * 60_000))
-    return ok(await db.rpc('materializza_sessioni', { da_giorno: oggi(), a_giorno: pronto && pronto > fino ? pronto : fino })) as number
+    const [pronto, imp] = await Promise.all([db.rpc('calendario_pronto_fino').then(ok) as Promise<string | null>, impostazioni()])
+    const piu = (g: string, n: number) => {
+      const [a, m, d] = g.split('-').map(Number)
+      return chiaveGiorno(new Date(a, m - 1, d + n))
+    }
+    const da = imp.inizioCorsi && imp.inizioCorsi > oggi() ? imp.inizioCorsi : oggi()
+    const meta = imp.fineCorsi ?? piu(da, imp.giorniCalendario)
+    if (meta < da) return 0
+    const tetto = piu(da, 400)
+    const fino = pronto && pronto > meta ? pronto : meta
+    return ok(await db.rpc('materializza_sessioni', { da_giorno: da, a_giorno: fino > tetto ? tetto : fino })) as number
   }
 
   return {
@@ -1004,9 +1019,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     impostazioni,
 
     async salvaImpostazioni(i) {
-      const riga: Record<string, number> = {}
+      const riga: Record<string, number | string | null> = {}
       if (i.mesiPresenze !== undefined) riga.mesi_presenze = i.mesiPresenze
       if (i.giorniCalendario !== undefined) riga.giorni_calendario = i.giorniCalendario
+      if (i.inizioCorsi !== undefined) riga.inizio_corsi = i.inizioCorsi
+      if (i.fineCorsi !== undefined) riga.fine_corsi = i.fineCorsi
       ok(await db.from('impostazioni').update(riga).eq('id', true))
     },
 

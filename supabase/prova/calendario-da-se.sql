@@ -82,6 +82,69 @@ begin
   raise notice '5  con 180 giorni: fino al %', fino;
 end $$;
 
+\echo '--- 5b. con la fine dei corsi, tutto fino a lì, e niente oltre ---'
+reset role;
+update impostazioni set giorni_calendario = 60, fine_corsi = current_date + 250;
+set role authenticated;
+do $$
+declare fino date; n int;
+begin
+  select allunga_calendario() into fino;
+  if fino <> current_date + 250 then raise exception 'atteso fino a oggi + 250, avuto %', fino; end if;
+  raise notice '5b con la fine dei corsi: fino al %', fino;
+end $$;
+-- Il RIGENERA della segreteria chiede di più: il trigger non lo lascia uscire.
+select prova_come('11111111-1111-1111-1111-111111111111');
+do $$
+declare n int;
+begin
+  perform materializza_sessioni(current_date, current_date + 300);
+  select count(*) into n from sessioni where inizio >= current_date + 251;
+  if n <> 0 then raise exception 'lezioni dopo la fine dei corsi: %', n; end if;
+  raise notice '5b e la segreteria non va oltre';
+end $$;
+select prova_come('22222222-2222-2222-2222-222222222222');
+
+\echo '--- 5c. con l''inizio dei corsi, niente prima ---'
+reset role;
+delete from sessioni;
+update impostazioni set inizio_corsi = current_date + 10, fine_corsi = current_date + 40;
+set role authenticated;
+do $$
+declare fino date; n int; primo date;
+begin
+  select allunga_calendario() into fino;
+  select count(*), min((inizio at time zone 'Europe/Rome')::date) into n, primo from sessioni;
+  if primo <> current_date + 10 or fino <> current_date + 40 or n <> 31 then
+    raise exception 'attese 31 lezioni da oggi + 10 a oggi + 40: % dal % al %', n, primo, fino;
+  end if;
+  raise notice '5c dal % al %, % lezioni', primo, fino, n;
+end $$;
+
+\echo '--- 5d. a corsi finiti non allunga ---'
+reset role;
+delete from sessioni;
+update impostazioni set inizio_corsi = current_date - 100, fine_corsi = current_date - 1;
+set role authenticated;
+do $$
+declare fino date;
+begin
+  select allunga_calendario() into fino;
+  if fino is not null then raise exception 'a corsi finiti ha creato lezioni fino al %', fino; end if;
+  raise notice '5d corsi finiti: niente';
+end $$;
+
+\echo '--- 5e. la fine prima dell''inizio no ---'
+reset role;
+do $$
+begin
+  update impostazioni set inizio_corsi = current_date, fine_corsi = current_date - 1;
+  raise exception 'ha accettato la fine prima dell''inizio';
+exception when check_violation then
+  raise notice '5e negato: %', sqlerrm;
+end $$;
+update impostazioni set inizio_corsi = null, fine_corsi = null;
+
 \echo '--- 6. senza accesso no ---'
 reset role;
 select prova_come('');

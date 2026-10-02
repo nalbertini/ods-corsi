@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import type { DatiSegreteria, ListaMusica, Sala } from '../../lib/segreteria'
+import type { DatiSegreteria, Impostazioni, ListaMusica, Sala } from '../../lib/segreteria'
 import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
-import { dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { Campo, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 
@@ -20,7 +20,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
   const sale = useCarica(() => d.sale(), [d])
   const persone = useCarica(() => d.persone(), [d])
   const musica = useCarica(() => d.listeMusica(), [d])
-  const { avviso, fai } = useAvviso()
+  const { avviso, avvisa, fai } = useAvviso()
   const [sala, setSala] = useState<{ id?: string; nome: string; capienza?: number } | null>(null)
   const [chi, setChi] = useState('')
 
@@ -103,24 +103,36 @@ export function Regole({ d }: { d: DatiSegreteria }) {
               <span className="num" style={{ fontSize: 26, fontWeight: 700 }}>DA SÉ</span>
             </div>
           </div>
-          <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            <label htmlFor="avanti" style={{ fontSize: 14, color: 'var(--sec)' }}>
-              Genera le lezioni per i prossimi
-            </label>
-            <select
-              id="avanti"
-              className="sg-campo"
-              value={imp.dato?.giorniCalendario ?? 60}
-              disabled={!imp.dato}
-              onChange={(e) => void fai(() => d.salvaImpostazioni({ giorniCalendario: Number(e.target.value) }), 'Cambiato: vale dal prossimo RIGENERA', imp.ricarica)}
-            >
-              {[30, 60, 90, 180].map((g) => (
-                <option key={g} value={g}>
-                  {g} giorni
-                </option>
-              ))}
-            </select>
-          </div>
+          <Stagione
+            d={d}
+            imp={imp.dato}
+            avvisa={avvisa}
+            fai={fai}
+            poi={async () => {
+              await imp.ricarica()
+              await pronto.ricarica()
+            }}
+          />
+          {!imp.dato?.fineCorsi && (
+            <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+              <label htmlFor="avanti" style={{ fontSize: 14, color: 'var(--sec)' }}>
+                Senza la fine dei corsi, genera le lezioni per i prossimi
+              </label>
+              <select
+                id="avanti"
+                className="sg-campo"
+                value={imp.dato?.giorniCalendario ?? 60}
+                disabled={!imp.dato}
+                onChange={(e) => void fai(() => d.salvaImpostazioni({ giorniCalendario: Number(e.target.value) }), 'Cambiato: vale dal prossimo RIGENERA', imp.ricarica)}
+              >
+                {[30, 60, 90, 180].map((g) => (
+                  <option key={g} value={g}>
+                    {g} giorni
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <button
             type="button"
             className="sg-btn sg-btn-linea"
@@ -440,5 +452,69 @@ function FormLista({
         </button>
       </div>
     </form>
+  )
+}
+
+/**
+ * Il primo e l'ultimo giorno dei corsi. Con la fine, il calendario si prepara
+ * tutto fino a lì; salvate le date, si allunga subito.
+ */
+function Stagione({ d, imp, avvisa, fai, poi }: {
+  d: DatiSegreteria
+  imp: Impostazioni | null | undefined
+  avvisa: ReturnType<typeof useAvviso>['avvisa']
+  fai: ReturnType<typeof useAvviso>['fai']
+  poi: () => Promise<void>
+}) {
+  const [bozza, setBozza] = useState<{ inizio: string; fine: string } | null>(null)
+  const inizio = bozza?.inizio ?? imp?.inizioCorsi ?? ''
+  const fine = bozza?.fine ?? imp?.fineCorsi ?? ''
+  // Il database senza le colonne: si dice cosa manca invece di un errore al salvataggio.
+  if (imp && imp.inizioCorsi === undefined) {
+    return (
+      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
+        Per scrivere l'inizio e la fine dei corsi va rilanciato <code>12-calendario-da-se.sql</code>.
+      </span>
+    )
+  }
+  const cambiate = inizio !== (imp?.inizioCorsi ?? '') || fine !== (imp?.fineCorsi ?? '')
+  const salva = () => {
+    if (inizio && fine && fine < inizio) return avvisa('La fine dei corsi viene prima dell’inizio', true)
+    // Il database ne tiene al massimo 400 giorni: un anno, con margine.
+    if (inizio && fine && fine > `${Number(inizio.slice(0, 4)) + 1}${inizio.slice(4)}`) return avvisa('Fra inizio e fine dei corsi ci sta al massimo un anno', true)
+    void fai(
+      async () => {
+        await d.salvaImpostazioni({ inizioCorsi: inizio || null, fineCorsi: fine || null })
+        await d.rigenera()
+      },
+      d.modo === 'prova' ? 'Date salvate' : 'Date salvate, calendario allungato',
+      async () => {
+        setBozza(null)
+        await poi()
+      },
+    )
+  }
+  return (
+    <>
+      <div className="sg-due">
+        <Campo id="inizio-corsi" etichetta="INIZIO CORSI">
+          <input id="inizio-corsi" className="sg-campo" type="date" value={inizio} disabled={!imp} onChange={(e) => setBozza({ inizio: e.target.value, fine })} />
+        </Campo>
+        <Campo id="fine-corsi" etichetta="FINE CORSI">
+          <input id="fine-corsi" className="sg-campo" type="date" value={fine} min={inizio || undefined} disabled={!imp} onChange={(e) => setBozza({ inizio, fine: e.target.value })} />
+        </Campo>
+      </div>
+      {cambiate && (
+        <button type="button" className="sg-btn" style={{ alignSelf: 'flex-start' }} onClick={salva}>
+          SALVA LE DATE
+        </button>
+      )}
+      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
+        {fine
+          ? `Le lezioni si preparano tutte fino al ${/^\d{4}-\d{2}-\d{2}$/.test(fine) ? dataLunga(fine) : '…'}, e oltre non ne nascono.`
+          : 'Senza la fine, il calendario si prepara per i giorni scelti qui sotto e si allunga da sé.'}{' '}
+        Prima dell'inizio non nascono lezioni. Le date sono facoltative, e le lezioni già in calendario restano.
+      </span>
+    </>
   )
 }

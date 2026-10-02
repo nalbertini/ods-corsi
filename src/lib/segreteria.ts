@@ -284,6 +284,14 @@ export interface PresenzaIstruttoreSeg {
 export interface Impostazioni {
   mesiPresenze: number
   giorniCalendario: number
+  /**
+   * Il primo e l'ultimo giorno dei corsi, `AAAA-MM-GG`, o `null` se non
+   * scritti. Con la fine il calendario si prepara fino a lì invece che per
+   * `giorniCalendario`. `undefined` quando il database non li ha ancora
+   * (`12-calendario-da-se.sql` da rilanciare).
+   */
+  inizioCorsi?: string | null
+  fineCorsi?: string | null
 }
 
 export interface DatiPersona {
