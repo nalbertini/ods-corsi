@@ -388,7 +388,11 @@ function Colonne({ nome, colonne, formato = (n: number) => n.toLocaleString('it-
   )
 }
 
-/** Giorni e ore: in ogni casella quanti vengono in media, più scura dove sono di più. */
+/**
+ * Giorni e ore: in ogni casella quanti vengono in media, più scura dove sono
+ * di più. Un tocco su un'ora mette in cima i giorni più pieni a quell'ora; uno
+ * su un giorno mette a sinistra le sue ore più piene.
+ */
 function Orari({ lezioni }: { lezioni: LezioneStat[] }) {
   const [sopra, setSopra] = useState<string | null>(null)
   const caselle = new Map<string, { lezioni: number; presenti: number; corsi: Set<string> }>()
@@ -402,9 +406,18 @@ function Orari({ lezioni }: { lezioni: LezioneStat[] }) {
     c.corsi.add(l.corso)
     caselle.set(k, c)
   }
+  const tutteOre = [...new Set([...caselle.keys()].map((k) => Number(k.split(':')[1])))].sort((a, b) => a - b)
+  const tuttiGiorni = GIORNI.filter((gg) => tutteOre.some((o) => caselle.has(`${gg}:${o}`)))
+  const valore = (gg: number, o: number) => {
+    const c = caselle.get(`${gg}:${o}`)
+    return c ? c.presenti / c.lezioni : null
+  }
+  // I giorni si ordinano per un'ora, le ore per un giorno.
+  const perGiorni = useOrdina<number, string>(Object.fromEntries(tutteOre.map((o) => [String(o), (gg: number) => valore(gg, o)])))
+  const perOre = useOrdina<number, string>(Object.fromEntries(tuttiGiorni.map((gg) => [String(gg), (o: number) => valore(gg, o)])))
   if (!caselle.size) return <span className="sg-sotto">Nessun appello fatto in questo periodo.</span>
-  const ore = [...new Set([...caselle.keys()].map((k) => Number(k.split(':')[1])))].sort((a, b) => a - b)
-  const giorni = GIORNI.filter((gg) => ore.some((o) => caselle.has(`${gg}:${o}`)))
+  const ore = perOre.ordina(tutteOre)
+  const giorni = perGiorni.ordina(tuttiGiorni)
   const max = Math.max(...[...caselle.values()].map((c) => c.presenti / c.lezioni))
   return (
     <div className="sg-orari-scorre">
@@ -412,19 +425,13 @@ function Orari({ lezioni }: { lezioni: LezioneStat[] }) {
         <thead>
           <tr>
             <th />
-            {ore.map((o) => (
-              <th key={o} scope="col" className="num">
-                {String(o).padStart(2, '0')}
-              </th>
-            ))}
+            {ore.map((o) => perGiorni.colonna(String(o), String(o).padStart(2, '0'), { th: true, numeri: true, className: 'num' }))}
           </tr>
         </thead>
         <tbody>
           {giorni.map((gg) => (
             <tr key={gg}>
-              <th scope="row" className="num">
-                {GIORNI_CORTI[gg]}
-              </th>
+              {perOre.colonna(String(gg), GIORNI_CORTI[gg], { th: true, riga: true, numeri: true, className: 'num' })}
               {ore.map((o) => {
                 const k = `${gg}:${o}`
                 const c = caselle.get(k)
