@@ -14,6 +14,12 @@ Per ogni corso: nome, sala e istruttori, **QUANDO** («lun mer ven 17:00») e
 in un'altra sala lo si vede sotto il nome: «Motricità · gio Tatami». Un clic
 apre la scheda.
 
+I dati che mancano sono in **rosso**, perché vanno completati: un corso senza
+istruttore («istruttore da assegnare»), senza sala o senza giorni ha il bordo
+sinistro rosso, e sopra l'elenco si legge quanti sono. Nella scheda il campo da
+riempire ha l'etichetta rossa. Anche nella **SETTIMANA** una lezione senza
+istruttore o senza sala lo dice in rosso («istruttore?»).
+
 I corsi archiviati stanno in fondo: «N corsi archiviati · mostra», e
 **RIPRISTINA** li rimette in calendario.
 

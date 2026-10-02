@@ -89,15 +89,18 @@ export function Testa({ titolo, sotto, children }: { titolo: string; sotto: Reac
   )
 }
 
-export function Campo({ id, etichetta, children, largo }: { id?: string; etichetta: string; children: ReactNode; largo?: boolean }) {
+/** Un campo con la sua etichetta; `manca` la fa rossa: è un dato da completare. */
+export function Campo({ id, etichetta, children, largo, manca }: { id?: string; etichetta: string; children: ReactNode; largo?: boolean; manca?: boolean }) {
   return (
     <div className="stack" style={{ gap: 6, gridColumn: largo ? 'span 2' : undefined, minWidth: 0 }}>
       {id ? (
-        <label htmlFor={id} className="sg-etichetta">
+        <label htmlFor={id} className="sg-etichetta" data-manca={manca || undefined}>
           {etichetta}
         </label>
       ) : (
-        <span className="sg-etichetta">{etichetta}</span>
+        <span className="sg-etichetta" data-manca={manca || undefined}>
+          {etichetta}
+        </span>
       )}
       {children}
     </div>
