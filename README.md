@@ -69,7 +69,8 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   istruttori, posti, colore e i giorni in cui si fanno, ognuno anche in
   una sala diversa (il lunedì in Tatami, il giovedì in Lotta). Gli **iscritti**, da
   cercare, iscrivere e togliere dai corsi, con quanto vengono negli ultimi
-  trenta giorni, il **certificato medico** (il file e fino a quando vale) e lo
+  trenta giorni, il **certificato medico** (fino a quando vale: il foglio sta
+  su carta in segreteria, come la copia del documento d'identità) e lo
   stato del **pagamento**, con chi non è in regola in evidenza. Quando
   qualcuno paga, la **ricevuta**: la «ricevuta semplice» dell'associazione,
   in PDF con le due copie affiancate, col numero che va avanti da sé, la
@@ -93,8 +94,9 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
   iscrive risponde alle domande dal telefono, **firma col dito** il modulo
   delle autorizzazioni (il PDF della palestra, compilato coi suoi dati da
-  `src/lib/firma.ts`; o ne carica la foto firmata a mano), e carica il
-  documento e la ricevuta; per un minore la data di nascita fa chiedere i dati
+  `src/lib/firma.ts`; o ne carica la foto firmata a mano), e carica la
+  ricevuta (il documento d'identità e il certificato si portano in
+  segreteria, che li tiene su carta); per un minore la data di nascita fa chiedere i dati
   del genitore. Il codice fiscale si controlla davvero (il carattere di
   controllo, la data di nascita, e per un minore che quello del genitore sia
   di un adulto) e cosa non va si scrive sotto il campo. Le richieste arrivano in segreteria, in **RICHIESTE ONLINE**,
@@ -330,7 +332,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
 | `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già. |
 | `supabase/prova/timer.sql` | Il timer: la libreria della palestra, i timer personali e dei corsi, il tablet che li apre e non li scrive, lo storico, le preferenze. |
-| `supabase/prova/certificati.sql` | Certificati medici e pagamenti: li vede e li cambia solo la segreteria, e il file di una persona sta nella sua cartella. |
+| `supabase/prova/certificati.sql` | Certificati medici, documento e pagamenti: li vede e li cambia solo la segreteria; i certificati stanno su carta, di file nuovi non ne entrano, e quelli di prima li legge e li cancella solo lei. |
 | `supabase/prova/ricevute.sql` | Le ricevute: le fa e le annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i conti li fa il server, e una ricevuta fatta non si cambia. |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 | `supabase/prova/presenze-istruttori.sql` | La presenza degli istruttori dal PIN del tablet: da sola a chi era previsto, anche da sostituto, da confermare agli altri; la conferma solo la segreteria. |

@@ -1,5 +1,5 @@
-import type { DatiRichieste, FileRichiesta, Richiesta, TipoFile } from './richieste'
-import { controlla, pulisciCf, minorenne } from './richieste'
+import type { DatiRichieste, FileRichiesta, Richiesta, TipoArrivato } from './richieste'
+import { controlla, DA_STAMPARE, pulisciCf, minorenne } from './richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { archivio } from './archivioProva'
 import { nomeProprio } from './nomi'
@@ -27,7 +27,7 @@ function leggi(): Richiesta[] {
   }
 }
 
-const file = new Map<string, Map<TipoFile, FileRichiesta>>()
+const file = new Map<string, Map<TipoArrivato, FileRichiesta>>()
 
 /** Le richieste di prova, per l'esportazione dei dati di una persona. */
 export function richiesteDi(personaId: string): Richiesta[] {
@@ -122,7 +122,7 @@ export function creaRichiesteProva(): DatiRichieste {
 
     async caricaFile(richiestaId, tipo, f) {
       una(richiestaId)
-      const suoi = file.get(richiestaId) ?? new Map<TipoFile, FileRichiesta>()
+      const suoi = file.get(richiestaId) ?? new Map<TipoArrivato, FileRichiesta>()
       const url = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(f) : ''
       suoi.set(tipo, { tipo, url, pdf: f.type === 'application/pdf' })
       file.set(richiestaId, suoi)
@@ -135,6 +135,16 @@ export function creaRichiesteProva(): DatiRichieste {
 
     async file(richiestaId) {
       return [...(file.get(richiestaId)?.values() ?? [])]
+    },
+
+    async conDocumento() {
+      return new Set([...file].filter(([, suoi]) => DA_STAMPARE.some((t) => suoi.has(t))).map(([id]) => id))
+    },
+
+    async eliminaFile(richiestaId, tipo) {
+      const f = file.get(richiestaId)?.get(tipo)
+      if (f?.url) URL.revokeObjectURL(f.url)
+      file.get(richiestaId)?.delete(tipo)
     },
 
     async accogli(richiestaId, personaId) {

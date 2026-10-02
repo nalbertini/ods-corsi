@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
+import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoArrivato } from './richieste'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 
 /**
@@ -161,9 +161,25 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       if (error) throw guaioFile(error)
       return (data ?? []).flatMap((f): FileRichiesta[] => {
         const nome = f.path?.split('/')[1] ?? ''
-        const tipo = nome.replace(/\.[a-z]+$/, '') as TipoFile
+        const tipo = nome.replace(/\.[a-z]+$/, '') as TipoArrivato
         return f.signedUrl ? [{ tipo, url: f.signedUrl, pdf: nome.endsWith('.pdf') }] : []
       })
+    },
+
+    async conDocumento() {
+      const r = await db.rpc('richieste_con_documento')
+      // Senza 06-iscrizioni.sql rilanciato la funzione non c'è: niente da segnalare, l'elenco si vede lo stesso.
+      if (r.error?.code === 'PGRST202') return new Set<string>()
+      return new Set((ok(r) as string[] | null) ?? [])
+    },
+
+    async eliminaFile(richiestaId, tipo) {
+      const suoi = (await nomi(richiestaId)).filter((n) => n.split('/')[1]?.replace(/\.[a-z]+$/, '') === tipo)
+      if (!suoi.length) return
+      const { data, error } = await db.storage.from(CONTENITORE).remove(suoi)
+      if (error) throw guaioFile(error)
+      // Lo Storage non dice di no quando la policy non lascia cancellare: torna meno file.
+      if ((data ?? []).length < suoi.length) throw new Error('Il file non si è cancellato: serve un accesso da segreteria')
     },
 
     async accogli(richiestaId, personaId) {

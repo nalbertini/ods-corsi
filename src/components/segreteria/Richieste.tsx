@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
-import { datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../../lib/richieste'
+import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { dataLunga, Guaio, Riga, Testa, useAvviso, useCarica } from './comune'
@@ -14,9 +14,13 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * Le richieste arrivate dal modulo di iscrizione.
  *
  * Una richiesta non è ancora un iscritto: la segreteria guarda il modulo
- * firmato, il documento e la ricevuta, e poi la accoglie — la persona entra
- * in elenco, iscritta ai corsi che ha scelto — o la rifiuta. Accolta o
- * rifiutata resta qui con quello che diceva, finché non la si elimina.
+ * firmato e la ricevuta, e poi la accoglie — la persona entra in elenco,
+ * iscritta ai corsi che ha scelto — o la rifiuta. Accolta o rifiutata resta
+ * qui con quello che diceva, finché non la si elimina.
+ *
+ * Il documento d'identità si porta in segreteria e si tiene su carta. Le
+ * richieste di quando il modulo lo chiedeva ce l'hanno ancora caricato: DA
+ * STAMPARE le trova, e dalla scheda lo si stampa e lo si cancella.
  *
  * Una richiesta mandata dall'area degli iscritti per il nucleo familiare di
  * qualcuno lo dice (NUCLEO): accolta, la persona entra nel suo nucleo, e per
@@ -36,13 +40,19 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
   }, [])
   const corsi = useCarica(() => d.corsi(), [d])
   const persone = useCarica(() => d.persone(), [d])
+  const conDocumento = useCarica(async () => (await datiRichieste()).conDocumento(), [])
   const [tutte, setTutte] = useState(false)
+  const [daStampare, setDaStampare] = useState(false)
   const [scelta, setScelta] = useState<string | null>(null)
   const { avviso, fai } = useAvviso()
 
   const nomi = new Map((corsi.dato ?? []).map((c) => [c.id, c.nome]))
   const chi = new Map((persone.dato ?? []).map((p) => [p.id, `${p.nome} ${p.cognome}`]))
-  const lista = (elenco.dato ?? []).filter((x) => tutte || x.stato === 'nuova')
+  const doc = conDocumento.dato ?? new Set<string>()
+  const stampare = (elenco.dato ?? []).filter((x) => doc.has(x.id)).length
+  // Stampati tutti, si torna all'elenco di prima.
+  const soloStampare = daStampare && stampare > 0
+  const lista = (elenco.dato ?? []).filter((x) => (soloStampare ? doc.has(x.id) : tutte || x.stato === 'nuova'))
   const nuove = (elenco.dato ?? []).filter((x) => x.stato === 'nuova').length
   const richiesta = (elenco.dato ?? []).find((x) => x.id === scelta) ?? null
 
@@ -50,9 +60,16 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
     <>
       <Testa
         titolo="RICHIESTE ONLINE"
-        sotto={nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}
+        sotto={`${nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}${
+          stampare === 1 ? ' Un documento d’identità da stampare e cancellare.' : stampare ? ` ${stampare} documenti d’identità da stampare e cancellare.` : ''
+        }`}
       >
-        <button type="button" className="num sg-chip" aria-pressed={tutte} onClick={() => setTutte(!tutte)}>
+        {stampare > 0 && (
+          <button type="button" className="num sg-chip" aria-pressed={soloStampare} onClick={() => setDaStampare(!soloStampare)}>
+            DA STAMPARE
+          </button>
+        )}
+        <button type="button" className="num sg-chip" aria-pressed={tutte && !soloStampare} onClick={() => (setDaStampare(false), setTutte(!tutte))}>
           ANCHE QUELLE GIÀ GESTITE
         </button>
       </Testa>
@@ -71,7 +88,11 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
             {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le richieste…</p>}
             {elenco.dato !== null && lista.length === 0 && (
               <p className="sg-sotto" style={{ padding: '12px 14px' }}>
-                {tutte ? 'Non è ancora arrivata nessuna richiesta.' : 'Nessuna richiesta nuova. Le altre si vedono con «anche quelle già gestite».'}
+                {soloStampare
+                  ? 'Nessun documento da stampare.'
+                  : tutte
+                    ? 'Non è ancora arrivata nessuna richiesta.'
+                    : 'Nessuna richiesta nuova. Le altre si vedono con «anche quelle già gestite».'}
               </p>
             )}
             {lista.map((x) => (
@@ -88,6 +109,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
                   {x.cognome} {x.nome}
                   {minorenne(x.natoIl) && <span className="num sg-tag" style={{ marginLeft: 8 }}>MINORE</span>}
                   {x.nucleoDi && <span className="num sg-tag" style={{ marginLeft: 8 }}>NUCLEO</span>}
+                  {doc.has(x.id) && <span className="num sg-tag" style={{ marginLeft: 8 }}>DOCUMENTO DA STAMPARE</span>}
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(x.creataIl)}</span>
@@ -103,6 +125,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
           {richiesta && r ? (
             <Scheda
               key={richiesta.id}
+              d={d}
               r={r}
               x={richiesta}
               nomi={nomi}
@@ -110,6 +133,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
               omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
               fai={fai}
               onCambiato={() => void elenco.ricarica()}
+              onStampato={() => void conDocumento.ricarica()}
               onEliminata={() => {
                 setScelta(null)
                 void elenco.ricarica()
@@ -129,6 +153,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
 type Fai = ReturnType<typeof useAvviso>['fai']
 
 function Scheda({
+  d,
   r,
   x,
   nomi,
@@ -136,9 +161,11 @@ function Scheda({
   omonimi,
   fai,
   onCambiato,
+  onStampato,
   onEliminata,
   onApri,
 }: {
+  d: DatiSegreteria
   r: DatiRichieste
   x: Richiesta
   nomi: Map<string, string>
@@ -148,13 +175,32 @@ function Scheda({
   omonimi: PersonaSeg[]
   fai: Fai
   onCambiato: () => void
+  /** Il documento d'identità stampato e cancellato. */
+  onStampato: () => void
   onEliminata: () => void
   onApri: (personaId: string) => void
 }) {
   const file = useCarica(() => r.file(x.id), [r, x.id])
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
-  const mancanti = FILE.filter((f) => f.obbligatorio && !arrivati.has(f.tipo) && !(f.tipo === 'documento' && titolare && minore))
+  const mancanti = FILE.filter((f) => f.obbligatorio && !arrivati.has(f.tipo))
+  const documenti = DA_STAMPARE.filter((t) => arrivati.has(t))
+
+  const stampato = () => {
+    if (!window.confirm(`Il documento di ${x.nome} ${x.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`)) return
+    void fai(
+      async () => {
+        for (const t of documenti) await r.eliminaFile(x.id, t)
+        // Accolta, la sua scheda dice che la copia ora è in segreteria.
+        if (x.personaId) await d.salvaDocumento(x.personaId, true)
+      },
+      x.personaId ? 'Documento cancellato: la scheda dice che la copia è in segreteria' : 'Documento cancellato',
+      () => {
+        void file.ricarica()
+        onStampato()
+      },
+    )
+  }
 
   return (
     <>
@@ -216,6 +262,21 @@ function Scheda({
           {FILE.filter((f) => arrivati.has(f.tipo)).map((f) => (
             <Anteprima key={f.tipo} f={arrivati.get(f.tipo)!} />
           ))}
+          {documenti.length > 0 && (
+            <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
+              <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>
+                Il documento d’identità non si tiene più nell’app: aprilo, stampalo, mettilo nella cartellina e cancellalo da qui.
+              </span>
+              {documenti.map((t) => (
+                <Anteprima key={t} f={arrivati.get(t)!} />
+              ))}
+              <div className="row">
+                <button type="button" className="sg-btn sg-btn-rosso" onClick={stampato}>
+                  STAMPATO, CANCELLALO
+                </button>
+              </div>
+            </div>
+          )}
           {mancanti.length > 0 && file.dato.length > 0 && (
             <span className="sg-sotto" style={{ color: 'var(--rosso)' }}>Manca: {mancanti.map((f) => f.etichetta.toLowerCase()).join(', ')}.</span>
           )}
@@ -297,7 +358,7 @@ function Scheda({
           type="button"
           className="sg-link"
           onClick={() => {
-            if (window.confirm(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con il documento e gli altri file? La scheda in elenco, se c'è, resta.`))
+            if (window.confirm(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`))
               void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
           }}
         >

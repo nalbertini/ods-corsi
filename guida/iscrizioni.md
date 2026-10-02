@@ -50,13 +50,16 @@ Chi si iscrive risponde alle domande dal telefono:
   serve, e in fondo, in piccolo, che è stato firmato dal telefono e quando.
   È quello che parte come modulo firmato. Chi ha già il foglio firmato a mano
   sceglie **Ho il foglio firmato** e ne carica la foto.
-- **I file**: la foto della carta d'identità e della ricevuta del pagamento.
-  Sopra, solo quando serve, il promemoria del **certificato medico**: dai 6
-  anni quello normale, dai 12 quello agonistico se tra i corsi scelti c'è
-  judo, aikido o lotta (lo dice il nome del corso). Sotto i 6 anni, o finché
-  non c'è la data di nascita, non compare. Non si carica online: si consegna
-  in segreteria, e senza non si partecipa alle lezioni. Lo ricorda anche
-  **RICHIESTA ARRIVATA**.
+- **I file**: la foto della ricevuta del pagamento. Sopra, il promemoria del
+  **documento d'identità** (per un minore, quello del genitore; non compare
+  per un minore aggiunto dal nucleo, perché la segreteria ha già quello del
+  genitore) e, solo quando serve, del **certificato medico**: dai 6 anni
+  quello normale, dai 12 quello agonistico se tra i corsi scelti c'è judo,
+  aikido o lotta (lo dice il nome del corso). Sotto i 6 anni, o finché non
+  c'è la data di nascita, il certificato non compare. Nessuno dei due si
+  carica online: si portano in segreteria, che li tiene su carta, e senza
+  certificato non si partecipa alle lezioni. Lo ricorda anche **RICHIESTA
+  ARRIVATA**.
 - **Altro**: le note per la segreteria (facoltative, e **mai dati sulla
   salute**: quelli si portano in segreteria), la casella obbligatoria
   «Accetto il Regolamento Sociale» (col link al regolamento, quando c'è:

@@ -7,7 +7,6 @@ import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
-import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -77,9 +76,20 @@ const ricevuta = (r: RigaRicevuta): Ricevuta => ({
   annullataIl: r.annullata_il ?? undefined,
 })
 
-type Scheda = { certificato_scade: string | null; certificato_file: string | null; pagamento: StatoPagamento; pagato_fino: string | null; pagamento_nota: string | null }
+type Scheda = {
+  certificato_scade: string | null
+  certificato_file: string | null
+  documento_in_segreteria?: boolean
+  pagamento: StatoPagamento
+  pagato_fino: string | null
+  pagamento_nota: string | null
+}
 
-/** I certificati medici: un contenitore privato, che apre solo la segreteria (`07-certificati-pagamenti.sql`). */
+/**
+ * I certificati medici di prima della carta: un contenitore privato, che apre
+ * solo la segreteria (`07-certificati-pagamenti.sql`), per stamparli e
+ * cancellarli. Di nuovi non se ne caricano.
+ */
 const CERTIFICATI = 'certificati'
 const NUCLEO_SOLO_PROVA = 'Il nucleo familiare c’è solo in prova, per ora: il database non lo tiene ancora'
 const DURATA_LINK = 600
@@ -178,7 +188,7 @@ async function guaioFunzione(e: { name?: string; message?: string; context?: unk
 function guaioFile(e: { message?: string; statusCode?: string } | null): Error {
   const m = e?.message ?? ''
   if (/row-level security|unauthorized|403/i.test(m + (e?.statusCode ?? ''))) return new Error('Non hai il permesso: serve un accesso da segreteria')
-  if (/bucket not found/i.test(m)) return new Error('Il contenitore dei certificati non c’è: va lanciato 07-certificati-pagamenti.sql')
+  if (/bucket not found/i.test(m)) return new Error('Il contenitore dei certificati non c’è più: il file non si trova')
   if (/exceeded|too large|413/i.test(m + (e?.statusCode ?? ''))) return new Error('Il file è troppo grande: al massimo 10 MB')
   if (/mime|type/i.test(m)) return new Error('Questo tipo di file non va: serve una foto o un PDF')
   return new Error(m || 'Il file non è partito: riprova')
@@ -200,9 +210,27 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     return r.data
   }
 
-  /** Dove sta il certificato di una persona, se c'è. */
+  /** Dove sta il file del certificato di prima della carta, se c'è ancora. */
   const fileCertificato = async (personaId: string) =>
     (ok(await db.from('schede_iscritti').select('certificato_file').eq('persona_id', personaId).maybeSingle()) as { certificato_file: string | null } | null)?.certificato_file ?? null
+  /**
+   * Cancella il file di prima della carta, se c'è: dopo, nella scheda non
+   * deve restare un nome che porta a niente. Lo Storage non dice di no quando
+   * la policy non lascia cancellare, torna solo meno file: lo si controlla.
+   */
+  const cancellaFile = async (personaId: string) => {
+    const prima = await fileCertificato(personaId)
+    if (!prima) return
+    const via = await db.storage.from(CERTIFICATI).remove([prima])
+    // Un contenitore già eliminato vuol dire che il file non c'è più.
+    if (via.error && /bucket not found/i.test(via.error.message ?? '')) return
+    if (via.error) throw guaioFile(via.error)
+    if (via.data?.length) return
+    // Niente cancellato: o non c'era già più, o non si poteva.
+    const [cartella, nome] = prima.split('/')
+    const ancora = await db.storage.from(CERTIFICATI).list(cartella)
+    if ((ancora.data ?? []).some((f) => f.name === nome)) throw new Error('Il file non si è cancellato: serve un accesso da segreteria')
+  }
   const oggi = () => chiaveGiorno(new Date())
 
   /**
@@ -462,16 +490,19 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async persone() {
       const campi = 'id, nome, cognome, email, telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )'
-      const leggi = (schede: boolean) =>
+      const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'
+      const leggi = (schede: string | null) =>
         db
           .from('persone')
-          .select(schede ? `${campi}, schede_iscritti!persona_id ( certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota )` : campi)
+          .select(schede ? `${campi}, schede_iscritti!persona_id ( ${schede} )` : campi)
           .eq('ruolo', 'iscritto')
           .order('cognome')
       // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
-      let r0 = await leggi(true)
+      let r0 = await leggi(`${scheda}, documento_in_segreteria`)
+      // 07-certificati-pagamenti.sql di prima del documento su carta: senza la colonna nuova.
+      if (r0.error?.code === '42703') r0 = await leggi(scheda)
       // Un database dove 07-certificati-pagamenti.sql non è ancora passato: l'elenco si vede lo stesso.
-      if (r0.error?.code === 'PGRST200') r0 = await leggi(false)
+      if (r0.error?.code === 'PGRST200') r0 = await leggi(null)
       const righe = ok(r0) as unknown as Array<{
         id: string; nome: string; cognome: string; email: string | null; telefono: string | null; attiva: boolean; creata_il: string
         iscrizioni: Array<{ corso_id: string; dal: string; al: string | null }>
@@ -490,6 +521,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           creataIl: r.creata_il.slice(0, 10),
           iscrizioni: r.iscrizioni.map((i) => ({ corsoId: i.corso_id, dal: i.dal, al: i.al ?? undefined })),
           certificato: { scade: s?.certificato_scade ?? undefined, conFile: !!s?.certificato_file },
+          documento: !!s?.documento_in_segreteria,
           pagamento: { stato: s?.pagamento ?? 'da_pagare', fino: s?.pagato_fino ?? undefined, nota: s?.pagamento_nota ?? undefined },
         }
       })
@@ -567,39 +599,26 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.from('iscrizioni').update({ al: oggi() }).eq('persona_id', personaId).eq('corso_id', corsoId))
     },
 
-    async salvaCertificato(personaId, scade, file) {
+    async salvaCertificato(personaId, scade) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(scade)) throw new Error('Serve la data di scadenza del certificato')
-      if (!file) {
-        ok(await db.from('schede_iscritti').upsert({ persona_id: personaId, certificato_scade: scade }, { onConflict: 'persona_id' }))
-        return
-      }
-      const est = ESTENSIONI[file.type]
-      if (!est) throw new Error('Questo tipo di file non va: serve una foto o un PDF')
-      if (file.size > MASSIMO_FILE) throw new Error('Il file è troppo grande: al massimo 10 MB')
-      const prima = await fileCertificato(personaId)
-      // Un nome nuovo ogni volta: il vecchio resta finché il nuovo non è scritto in scheda.
-      const nome = `${personaId}/certificato-${Date.now()}.${est}`
-      const su = await db.storage.from(CERTIFICATI).upload(nome, file, { contentType: file.type, upsert: false })
-      if (su.error) throw guaioFile(su.error)
-      const { error } = await db.from('schede_iscritti').upsert({ persona_id: personaId, certificato_scade: scade, certificato_file: nome }, { onConflict: 'persona_id' })
-      if (error) {
-        await db.storage.from(CERTIFICATI).remove([nome])
-        throw guaio(error)
-      }
-      // Se il vecchio non si cancella resta un file in più, non un guaio: lo si dice e basta.
-      if (prima && prima !== nome) {
-        const via = await db.storage.from(CERTIFICATI).remove([prima])
-        if (via.error) console.warn('Il certificato vecchio non si è cancellato:', prima, via.error.message)
-      }
+      ok(await db.from('schede_iscritti').upsert({ persona_id: personaId, certificato_scade: scade }, { onConflict: 'persona_id' }))
     },
 
     async togliCertificato(personaId) {
-      const prima = await fileCertificato(personaId)
-      if (prima) {
-        const via = await db.storage.from(CERTIFICATI).remove([prima])
-        if (via.error) throw guaioFile(via.error)
-      }
+      await cancellaFile(personaId)
       ok(await db.from('schede_iscritti').update({ certificato_scade: null, certificato_file: null }).eq('persona_id', personaId))
+    },
+
+    async cancellaFileCertificato(personaId) {
+      await cancellaFile(personaId)
+      ok(await db.from('schede_iscritti').update({ certificato_file: null }).eq('persona_id', personaId))
+    },
+
+    async salvaDocumento(personaId, inSegreteria) {
+      const r = await db.from('schede_iscritti').upsert({ persona_id: personaId, documento_in_segreteria: inSegreteria }, { onConflict: 'persona_id' })
+      if (r.error?.code === 'PGRST204' || r.error?.code === '42703')
+        throw new Error('Il documento su carta non è ancora attivo sul database: va rilanciato 07-certificati-pagamenti.sql')
+      ok(r)
     },
 
     async apriCertificato(personaId) {
@@ -1094,8 +1113,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId),
         // Le richieste dal modulo di iscrizione: i file restano nello Storage, qui c'è quali sono.
         db.from('richieste_iscrizione').select('creata_il, stato, nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono, genitore_nome, genitore_cognome, genitore_codice_fiscale, corsi, formula, note, gestita_il').eq('persona_id', personaId),
-        // Il certificato: la scadenza e il nome del file, che si scarica dalla scheda.
-        db.from('schede_iscritti').select('certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota, cambiata_il').eq('persona_id', personaId).maybeSingle(),
+        // Il certificato (la scadenza; il foglio è su carta), il documento e il
+        // pagamento: tutta la riga, che c'è o no la colonna del documento.
+        db.from('schede_iscritti').select('*').eq('persona_id', personaId).maybeSingle(),
         // Le ricevute: col socio e le voci così come sono stampate.
         db.from('ricevute').select('anno, numero, data, intestatario, voci, totale, pagato, anticipo, note, creata_il, annullata_il').eq('persona_id', personaId),
         // Nascita, residenza e genitore di chi è entrato dall'import.

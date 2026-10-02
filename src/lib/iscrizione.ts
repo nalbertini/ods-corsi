@@ -37,7 +37,7 @@ export const INFORMATIVA_PUBBLICA = INFORMATIVA && (!INFORMATIVA_BOZZA || !haUnS
 
 /**
  * Il modulo di iscrizione dentro l'app (`ModuloIscrizione`), al posto di
- * quello Google. Raccoglie codici fiscali e documenti d'identità, e col
+ * quello Google. Raccoglie codici fiscali e dati dei genitori, e col
  * database vero si accende solo quando c'è un'informativa approvata da far
  * leggere prima: fino ad allora il passo porta ancora al modulo Google. In
  * prova è sempre acceso, perché lì i dati restano sul dispositivo.
@@ -121,8 +121,8 @@ export interface Passo {
 }
 
 /**
- * Col modulo dell'app: le domande, la firma e le foto stanno tutte
- * nell'ultimo passo. Il modulo delle autorizzazioni si firma lì col dito
+ * Col modulo dell'app: le domande, la firma e la ricevuta stanno tutte
+ * nell'ultimo passo; il documento d'identità si porta in segreteria. Il modulo delle autorizzazioni si firma lì col dito
  * (`src/lib/firma.ts`), e qui si scarica solo per leggerlo, o per chi
  * preferisce stamparlo.
  */
@@ -139,7 +139,7 @@ const PASSI_APP: Passo[] = [
   },
   {
     titolo: 'Manda la richiesta da qui',
-    dettaglio: "Le domande, la firma sul modulo, poi le foto della carta d'identità e della ricevuta.",
+    dettaglio: "Le domande, la firma sul modulo, poi la foto della ricevuta. Il documento d'identità e il certificato medico li porti in segreteria.",
     azione: 'modulo',
   },
 ]

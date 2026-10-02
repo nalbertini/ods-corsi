@@ -73,8 +73,14 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
         and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
         and has_function_privilege('anon', p.oid, 'execute')
         and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino'))),
+  ('06-iscrizioni.sql', 'il documento d''identità su carta',
+    to_regprocedure('public.richieste_con_documento()') is not null
+    and not exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%documento%')),
   ('07-certificati-pagamenti.sql', 'certificati e pagamenti',
     to_regclass('public.schede_iscritti') is not null),
+  ('07-certificati-pagamenti.sql', 'certificato e documento su carta',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'documento_in_segreteria')
+    and not exists (select 1 from pg_policies where schemaname = 'storage' and policyname = 'certificati_carica')),
   ('08-timer.sql', 'il timer: libreria, corsi, storico, preferenze',
     to_regclass('public.preferenze_timer') is not null),
   ('09-musica.sql', 'la musica delle sale',

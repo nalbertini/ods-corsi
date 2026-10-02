@@ -2,16 +2,20 @@
 -- ODS Corsi · il modulo di iscrizione
 --
 -- Il modulo che prima stava su Google Form, dentro l'app: chi si iscrive
--- risponde alle domande, carica il modulo firmato, il documento e la
--- ricevuta, e la segreteria trova la richiesta in RICHIESTE ONLINE. Da lì la
--- accoglie (diventa un iscritto, iscritto ai corsi che ha scelto) o la
--- rifiuta.
+-- risponde alle domande, carica il modulo firmato e la ricevuta, e la
+-- segreteria trova la richiesta in RICHIESTE ONLINE. Da lì la accoglie
+-- (diventa un iscritto, iscritto ai corsi che ha scelto) o la rifiuta.
+--
+-- Il documento d'identità non si carica: come il certificato medico, si
+-- porta in segreteria, che ne tiene la copia su carta. Quelli caricati prima
+-- restano nella cartella della richiesta finché la segreteria non li stampa
+-- e li cancella (`richieste_con_documento`, più sotto).
 --
 -- È la prima cosa dell'app che si fa **senza un accesso**, e per questo sta
 -- tutta dietro a due funzioni: `anon` non vede e non scrive nessuna tabella,
 -- nemmeno questa. Può solo chiamare `corsi_aperti()` (i nomi dei corsi, per
 -- scegliere) e `invia_iscrizione()` (una richiesta, controllata qui), e
--- caricare fino a quattro file nella cartella della richiesta appena fatta.
+-- caricare fino a due file nella cartella della richiesta appena fatta.
 --
 -- Si lancia dopo i cinque file prima. Rilanciarne uno di quelli rimette i
 -- permessi di default alle sue funzioni: dopo, va rilanciato anche questo.
@@ -87,7 +91,7 @@ create or replace function iscrizioni_regole() returns jsonb language sql immuta
     'per_email_al_giorno', 3,    -- una famiglia con tre figli le manda tutte
     'in_tutto_all_ora', 60,      -- il doppio di quante se ne sono mai viste a settembre
     'minuti_per_i_file', 60,     -- dopo aver mandato le risposte, per caricare i file
-    'file_per_richiesta', 4      -- modulo, documento fronte e retro, ricevuta
+    'file_per_richiesta', 2      -- modulo e ricevuta
   )
 $$;
 
@@ -341,13 +345,17 @@ exception
 end $$;
 
 -- ---------------------------------------------------------------------------
--- I file: modulo firmato, documento, ricevuta.
+-- I file: modulo firmato e ricevuta.
 --
 -- Stanno nello Storage di Supabase, in un contenitore privato: nessun link
 -- pubblico, li apre la segreteria con un link che scade. Ogni richiesta ha la
 -- sua cartella, `<id della richiesta>/`, e chi l'ha appena mandata ci può
--- mettere al massimo quattro file, dei tipi giusti, entro un'ora. Non li può
+-- mettere al massimo due file, dei tipi giusti, entro un'ora. Non li può
 -- rileggere né sostituire: caricato è caricato.
+--
+-- Il documento d'identità (`documento`, `documento-retro`) non entra più: si
+-- porta in segreteria. Quelli di prima la segreteria li legge e li cancella
+-- come gli altri file.
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('iscrizioni', 'iscrizioni', false, 10485760,
@@ -360,7 +368,7 @@ declare
   regole jsonb := iscrizioni_regole();
   cartella uuid;
 begin
-  if nome_file !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/(modulo|documento|documento-retro|ricevuta)\.(jpg|jpeg|png|webp|heic|heif|pdf)$' then
+  if nome_file !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/(modulo|ricevuta)\.(jpg|jpeg|png|webp|heic|heif|pdf)$' then
     return false;
   end if;
   cartella := split_part(nome_file, '/', 1)::uuid;
@@ -479,6 +487,22 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
+-- Le richieste che hanno ancora il documento d'identità caricato, di quando
+-- il modulo lo chiedeva: la segreteria le trova qui, lo stampa e lo
+-- cancella. Lo Storage non si legge dall'API delle tabelle, e guardare le
+-- cartelle una per una vorrebbe dire una chiamata per richiesta.
+-- ---------------------------------------------------------------------------
+create or replace function richieste_con_documento()
+  returns uuid[] language plpgsql stable security definer set search_path = public, extensions as $$
+begin
+  if not e_staff() then raise exception 'solo la segreteria' using errcode = '42501'; end if;
+  return coalesce((
+    select array_agg(distinct split_part(o.name, '/', 1)::uuid) from storage.objects o
+    where o.bucket_id = 'iscrizioni'
+      and o.name ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/documento(-retro)?\.[a-z]+$'), '{}');
+end $$;
+
+-- ---------------------------------------------------------------------------
 -- Chi può chiamare cosa.
 --
 -- Finora `anon` non aveva nemmeno lo schema, e questo copriva anche le
@@ -504,7 +528,7 @@ alter default privileges in schema public revoke execute on functions from publi
 
 grant usage on schema public to anon;
 grant execute on function corsi_aperti(), invia_iscrizione(jsonb), puo_caricare(text), iscrizioni_regole() to anon, authenticated;
-grant execute on function accogli_iscrizione(uuid, uuid), rifiuta_iscrizione(uuid) to authenticated;
+grant execute on function accogli_iscrizione(uuid, uuid), rifiuta_iscrizione(uuid), richieste_con_documento() to authenticated;
 -- Il listino della pagina di iscrizione, se 19-listino.sql è già stato lanciato.
 do $$
 begin
