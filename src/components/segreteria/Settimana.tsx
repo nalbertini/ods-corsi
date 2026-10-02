@@ -227,7 +227,14 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
       onClick={onApri}
     >
       <span className="ob sg-lezione-nome">{l.corso.toUpperCase()}</span>
-      <span className="sg-lezione-dove">{[l.sala, l.istruttori].filter(Boolean).join(' · ')}</span>
+      <span className="sg-lezione-dove">
+        {[l.sala ?? <span key="s" className="sg-manca">sala?</span>, l.istruttori || <span key="i" className="sg-manca">istruttore?</span>].map((x, i) => (
+          <span key={i}>
+            {i > 0 && ' · '}
+            {x}
+          </span>
+        ))}
+      </span>
       <span className="row" style={{ gap: 6, marginTop: 'auto', flexWrap: 'wrap' }}>
         <span className="num" style={{ fontSize: 14, fontWeight: 700, color: fatto ? 'var(--verde)' : 'var(--sec)' }}>
           {fatto ? `${l.presenti}/${l.iscritti}` : l.capienza ? `${l.iscritti}/${l.capienza}` : l.iscritti}

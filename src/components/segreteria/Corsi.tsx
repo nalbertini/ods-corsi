@@ -15,6 +15,11 @@ function quando(c: CorsoSeg) {
   return c.ricorrenze.map((r) => `${CORTI[r.giorno]} ${r.ora}`).join(', ')
 }
 
+/** Cosa manca a un corso per essere completo: va sistemato dalla scheda. */
+function mancano(c: CorsoSeg) {
+  return [!c.salaId && 'sala', !c.istruttori.length && 'istruttore', !c.ricorrenze.length && 'giorni'].filter((x): x is string => !!x)
+}
+
 /** «Tatami», o «Tatami · gio Lotta» quando qualche giorno si fa in un'altra sala. */
 function dove(c: CorsoSeg) {
   const altrove = new Map<string, string[]>()
@@ -42,6 +47,7 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
   const attivi = (corsi.dato ?? []).filter((c) => c.attivo).sort((a, b) => a.nome.localeCompare(b.nome, 'it'))
   const vecchi = (corsi.dato ?? []).filter((c) => !c.attivo)
   const corso = nuovo ? null : (attivi.find((c) => c.id === scelto) ?? attivi[0] ?? null)
+  const incompleti = attivi.filter((c) => mancano(c).length > 0).length
   const iscrittiA = (id: string) => (persone.dato ?? []).filter((p) => p.attiva && p.iscrizioni.some((i) => i.corsoId === id && inCorso(i, oggi)))
 
   return (
@@ -53,6 +59,11 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
       </Testa>
 
       {corsi.guaio && <Guaio testo={corsi.guaio} />}
+      {incompleti > 0 && (
+        <span className="sg-manca" style={{ fontSize: 14 }}>
+          {incompleti === 1 ? '1 corso ha dati mancanti' : `${incompleti} corsi hanno dati mancanti`}: sono segnati in rosso, aprili per completarli.
+        </span>
+      )}
 
       <div className="sg-due-colonne">
         <div className="sg-lista">
@@ -64,11 +75,14 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
           {corsi.dato === null && !corsi.guaio && <p className="sg-sotto">Sto leggendo i corsi…</p>}
           {attivi.map((c) => {
             const n = iscrittiA(c.id).length
+            const manca = mancano(c)
             return (
               <button
                 key={c.id}
                 type="button"
                 className="sg-corso"
+                data-manca={manca.length > 0}
+                title={manca.length ? `Manca: ${manca.join(', ')}` : undefined}
                 aria-pressed={!nuovo && corso?.id === c.id}
                 onClick={() => {
                   setNuovo(false)
@@ -80,11 +94,15 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
                   <span className="stack" style={{ gap: 2, minWidth: 0 }}>
                     <span className="ob" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.03em' }}>{c.nome.toUpperCase()}</span>
                     <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-                      {[dove(c), c.istruttori.map((i) => i.nome).join(', ') || 'istruttore da assegnare'].filter(Boolean).join(' · ')}
+                      {c.salaId ? dove(c) : <span className="sg-manca">sala da assegnare</span>}
+                      {' · '}
+                      {c.istruttori.length ? c.istruttori.map((i) => i.nome).join(', ') : <span className="sg-manca">istruttore da assegnare</span>}
                     </span>
                   </span>
                 </span>
-                <span style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(c)}</span>
+                <span className={c.ricorrenze.length ? undefined : 'sg-manca'} style={{ fontSize: 13, color: c.ricorrenze.length ? 'var(--sec)' : undefined }}>
+                  {quando(c)}
+                </span>
                 <span className="num" style={{ fontSize: 17, fontWeight: 700, textAlign: 'right', color: c.capienza && n >= c.capienza ? 'var(--giallo-testo)' : 'var(--text)' }}>
                   {c.capienza ? `${n}/${c.capienza}` : n}
                 </span>
@@ -254,8 +272,15 @@ function Scheda({
         <Campo id="k-nome" etichetta="NOME">
           <input id="k-nome" className="sg-campo" value={bozza.nome} onChange={(e) => setBozza({ ...bozza, nome: e.target.value })} />
         </Campo>
-        <Campo id="k-sala" etichetta="SALA">
-          <select id="k-sala" className="sg-campo" value={bozza.salaId ?? ''} onChange={(e) => setBozza({ ...bozza, salaId: e.target.value })}>
+        <Campo id="k-sala" etichetta="SALA" manca={!bozza.salaId}>
+          <select
+            id="k-sala"
+            className="sg-campo"
+            aria-invalid={!bozza.salaId}
+            value={bozza.salaId ?? ''}
+            onChange={(e) => setBozza({ ...bozza, salaId: e.target.value || undefined })}
+          >
+            {!bozza.salaId && <option value="">Da assegnare: scegli la sala</option>}
             {(sale.dato ?? []).map((s) => (
               <option key={s.id} value={s.id}>
                 {s.nome}
@@ -273,8 +298,8 @@ function Scheda({
             onChange={(e) => setBozza({ ...bozza, capienza: e.target.value ? Number(e.target.value) : undefined })}
           />
         </Campo>
-        <Campo etichetta="ISTRUTTORI · anche più d'uno" largo>
-          <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
+        <Campo etichetta={bozza.istruttori.length ? "ISTRUTTORI · anche più d'uno" : 'ISTRUTTORI · da assegnare'} largo manca={!bozza.istruttori.length}>
+          <div className={bozza.istruttori.length ? 'row' : 'row sg-scelte-mancano'} style={{ flexWrap: 'wrap', gap: 6 }}>
             {(istruttori.dato ?? []).map((i) => {
               const dentro = bozza.istruttori.includes(i.id)
               return (
@@ -316,7 +341,7 @@ function Scheda({
       {corso && (
         <div className="stack" style={{ gap: 8 }}>
           <Riga titolo="RICORRENZE" />
-          {corso.ricorrenze.length === 0 && <span className="sg-sotto">Nessun giorno: questo corso non genera lezioni.</span>}
+          {corso.ricorrenze.length === 0 && <span className="sg-manca" style={{ fontSize: 14 }}>Nessun giorno: questo corso non genera lezioni. Aggiungine almeno uno.</span>}
           {corso.ricorrenze.map((r) => (
             <div key={r.id} className="sg-ricorrenza">
               <span style={{ fontSize: 15, fontWeight: 600 }}>{GIORNI_LUNGHI[r.giorno]}</span>
