@@ -228,6 +228,46 @@ export interface ProvaSeg {
   iscritto: boolean
 }
 
+/**
+ * Una lezione già cominciata, coi suoi numeri: per STATISTICHE, che guarda
+ * mesi interi e non vuole l'appello nome per nome (22-statistiche.sql).
+ */
+export interface LezioneStat {
+  sessioneId: string
+  corsoId: string
+  corso: string
+  colore?: string
+  capienza?: number
+  sala?: string
+  inizio: string
+  stato: StatoSessione
+  /** Chi l'ha fatta: il sostituto, o chi insegna il corso. */
+  istruttori: string[]
+  sostituto: boolean
+  /** Gli iscritti di quel giorno, e i loro segni: zero segni vuol dire che l'appello non c'è. */
+  iscritti: number
+  presenti: number
+  assenti: number
+  giustificati: number
+  /** Presenti senza essere iscritti: chi è venuto a provare. */
+  prove: number
+}
+
+/** Le ricevute di un mese, senza le annullate. Importi in centesimi. */
+export interface IncassoMese {
+  /** `AAAA-MM`. */
+  mese: string
+  ricevute: number
+  totale: number
+  pagato: number
+}
+
+export interface Statistiche {
+  lezioni: LezioneStat[]
+  /** `null` dove le ricevute non ci sono (16-ricevute.sql). */
+  incassi: IncassoMese[] | null
+}
+
 export interface PersonaleSeg {
   id: string
   nome: string
@@ -389,6 +429,8 @@ export interface DatiSegreteria {
   registro(da: Date, a: Date): Promise<RigaRegistro[]>
   /** Chi è venuto a provare nelle lezioni fra due giorni, dalla più recente (21-prove.sql). */
   prove(da: Date, a: Date): Promise<ProvaSeg[]>
+  /** Le lezioni già cominciate fra due giorni in numeri, e gli incassi mese per mese. */
+  statistiche(da: Date, a: Date): Promise<Statistiche>
 
   personale(): Promise<PersonaleSeg[]>
   salvaPersonale(p: DatiPersona & RuoloPersonale): Promise<string>

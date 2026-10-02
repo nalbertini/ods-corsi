@@ -49,6 +49,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 19. `19-listino.sql` — il listino dei costi, cambiato dalla segreteria da LISTINO e letto dalla pagina di iscrizione
 20. `20-nomi.sql` — nomi e cognomi scritti tutti allo stesso modo, «Maria Grazia De Luca», anche quelli già salvati
 21. `21-prove.sql` — le prove: chi viene a provare entra nell'appello, aggiunto da chi lo fa col tasto PROVE
+22. `22-statistiche.sql` — le statistiche della segreteria: i conti delle lezioni e degli incassi, fatti dal database
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -108,7 +109,9 @@ modulo di iscrizione e l'import da SQL Editor li lasciano come arrivano. Per
 le prove basta `21-prove.sql` (dopo `04-tablet.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, l'appello si fa come prima, il
 tasto PROVE dice che va lanciato, e in segreteria PRESENZE lo dice nel
-riquadro PROVE.
+riquadro PROVE. Per le statistiche basta `22-statistiche.sql` (dopo
+`05-segreteria.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
+finché non c'è, STATISTICHE in segreteria dice che va lanciato.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -673,5 +676,7 @@ o rifiutata solo dalla segreteria; `ricevute.sql` prova le ricevute: le fa e le
 annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i
 conti li fa il server, e una fatta non si cambia; `anagrafiche.sql` prova
 nascita, residenza e genitore degli iscritti importati: li vede e li cambia
-solo la segreteria, e se ne vanno con la persona. `finto-supabase.sql` rifà anche le due
+solo la segreteria, e se ne vanno con la persona. `statistiche.sql` prova le
+statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove,
+chi l'ha fatta, gli incassi del mese, e che le veda solo la segreteria. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

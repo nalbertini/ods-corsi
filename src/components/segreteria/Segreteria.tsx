@@ -7,6 +7,7 @@ import { Settimana } from './Settimana'
 import { Corsi } from './Corsi'
 import { Iscritti } from './Iscritti'
 import { Presenze } from './Presenze'
+import { Statistiche } from './Statistiche'
 import { Importa } from './Importa'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
@@ -19,7 +20,7 @@ import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
-export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'istruttori' | 'importa' | 'personale' | 'esercizi' | 'listino' | 'regole'
+export type Voce = 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'statistiche' | 'istruttori' | 'importa' | 'personale' | 'esercizi' | 'listino' | 'regole'
 
 /** Dove portare la segreteria da un'altra sezione: la scheda di qualcuno, una lezione da aprire. */
 export interface Destinazione {
@@ -33,6 +34,7 @@ const VOCI: Array<[Voce, string]> = [
   ['iscritti', 'ISCRITTI'],
   ['richieste', 'RICHIESTE ONLINE'],
   ['presenze', 'PRESENZE'],
+  ['statistiche', 'STATISTICHE'],
   ['istruttori', 'PRESENZE ISTRUTTORI'],
   ['importa', 'IMPORTA DA EXCEL'],
   ['personale', 'ISTRUTTORI E ACCESSI'],
@@ -48,6 +50,7 @@ const GUIDE: Record<Voce, string> = {
   iscritti: 'segreteria/iscritti',
   richieste: 'segreteria/richieste',
   presenze: 'segreteria/presenze',
+  statistiche: 'segreteria/statistiche',
   istruttori: 'segreteria/presenze-istruttori',
   importa: 'segreteria/importa',
   personale: 'segreteria/istruttori-e-accessi',
@@ -226,6 +229,7 @@ export function Segreteria({
         {d && voce === 'iscritti' && <Iscritti key={dove.persona ?? ''} d={d} personaIniziale={dove.persona} />}
         {d && voce === 'richieste' && <Richieste d={d} onVai={vai} />}
         {d && voce === 'presenze' && <Presenze d={d} onVai={vai} />}
+        {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'importa' && <Importa d={d} onVai={vai} />}
         {d && voce === 'personale' && <Personale d={d} />}

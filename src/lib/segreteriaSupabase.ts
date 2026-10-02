@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
+import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
@@ -779,6 +779,43 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           iscritto: iscritti.has(x.persona_id),
         }))
         .sort((p, q) => q.inizio.localeCompare(p.inizio))
+    },
+
+    async statistiche(da, a) {
+      const fino = new Date(a)
+      fino.setHours(23, 59, 59, 999)
+      const r = await db.rpc('statistiche', { da: da.toISOString(), a: fino.toISOString() })
+      if (r.error && (r.error.code === 'PGRST202' || r.error.code === '42883')) {
+        throw new Error('Le statistiche non sono ancora attive: va lanciato supabase/22-statistiche.sql.')
+      }
+      const x = ok(r) as {
+        lezioni: Array<{
+          id: string; corso_id: string; corso: string; colore: string | null; capienza: number | null; sala: string | null; inizio: string
+          stato: StatoSessione; istruttori: string[]; sostituto: boolean
+          iscritti: number; presenti: number; assenti: number; giustificati: number; prove: number
+        }>
+        incassi: Statistiche['incassi']
+      }
+      return {
+        lezioni: x.lezioni.map((l) => ({
+          sessioneId: l.id,
+          corsoId: l.corso_id,
+          corso: l.corso,
+          colore: l.colore ?? undefined,
+          capienza: l.capienza ?? undefined,
+          sala: l.sala ?? undefined,
+          inizio: l.inizio,
+          stato: l.stato,
+          istruttori: l.istruttori,
+          sostituto: l.sostituto,
+          iscritti: l.iscritti,
+          presenti: l.presenti,
+          assenti: l.assenti,
+          giustificati: l.giustificati,
+          prove: l.prove,
+        })),
+        incassi: x.incassi,
+      }
     },
 
     async personale() {
