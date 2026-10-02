@@ -4,6 +4,8 @@ import { daRuoloScelto, nomeDelRuolo, ruoloScelto, type RuoloScelto } from '../.
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica } from './comune'
 import { Numero, mesi } from './Presenze'
+import { Kanji } from '../Kanji'
+import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
 
 /** Quello che ciascun ruolo può fare: è il riassunto delle policy di `02-policy.sql`. */
 const PERMESSI: Array<[string, string]> = [
@@ -67,7 +69,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
         </SchedaPiena>
       ) : persona ? (
         <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`.trim()} torna="ISTRUTTORI E ACCESSI" onTorna={chiudi}>
-          <Scheda d={d} p={persona} fai={fai} avvisa={avvisa} partito={partito} onCambiato={lista.ricarica} />
+          <Scheda d={d} p={persona} altri={persone.filter((x) => x.id !== persona.id)} fai={fai} avvisa={avvisa} partito={partito} onCambiato={lista.ricarica} />
         </SchedaPiena>
       ) : null}
 
@@ -92,7 +94,10 @@ export function Personale({ d }: { d: DatiSegreteria }) {
           {persone.map((p) => (
             <button key={p.id} type="button" role="row" className="sg-riga-personale sg-personale" data-spento={!p.attiva} onClick={() => setScelta(p.id)}>
               <span role="cell" className="stack" style={{ minWidth: 0 }}>
-                <span style={{ fontSize: 15, fontWeight: 600 }}>{`${p.nome} ${p.cognome}`.trim()}</span>
+                <span className="chi-kanji" style={{ fontSize: 15, fontWeight: 600 }}>
+                  <Kanji segni={p.kanji} />
+                  <span className="sg-una-riga">{`${p.nome} ${p.cognome}`.trim()}</span>
+                </span>
                 <span className="sg-una-riga" style={{ fontSize: 12, color: 'var(--dim)' }} title={p.corsi.join(', ')}>
                   {p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}
                 </span>
@@ -260,6 +265,7 @@ function Aggiungi({
 function Scheda({
   d,
   p,
+  altri,
   fai,
   avvisa,
   partito,
@@ -267,6 +273,8 @@ function Scheda({
 }: {
   d: DatiSegreteria
   p: PersonaleSeg
+  /** Gli altri del personale: un kanji già loro non si può scegliere. */
+  altri: PersonaleSeg[]
   fai: Fai
   avvisa: Avvisa
   partito: Partito
@@ -288,13 +296,16 @@ function Scheda({
 
   return (
     <>
-      <div className="stack" style={{ gap: 4 }}>
-        <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
-          {`${p.nome} ${p.cognome}`.trim().toUpperCase()}
-        </span>
-        <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso)' }}>
-          {p.attiva ? nomeDelRuolo(p) : 'Accesso tolto: non entra nell’app né nell’area istruttore'}
-        </span>
+      <div className="row" style={{ gap: 14 }}>
+        <Kanji segni={p.kanji} grande />
+        <div className="stack" style={{ gap: 4, minWidth: 0 }}>
+          <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
+            {`${p.nome} ${p.cognome}`.trim().toUpperCase()}
+          </span>
+          <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso)' }}>
+            {p.attiva ? nomeDelRuolo(p) : 'Accesso tolto: non entra nell’app né nell’area istruttore'}
+          </span>
+        </div>
       </div>
 
       <div className="sg-scheda-griglia">
@@ -359,6 +370,8 @@ function Scheda({
             <Riga titolo="RUOLO" />
             <SceltaRuolo ruolo={ruoloScelto(p)} onScegli={cambiaRuolo} />
           </div>
+
+          <SceltaKanji d={d} p={p} altri={altri} fai={fai} onCambiato={onCambiato} />
         </div>
 
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
@@ -447,6 +460,98 @@ function Scheda({
         </button>
       </div>
     </>
+  )
+}
+
+/**
+ * Il kanji della persona, che la fa riconoscere a colpo d'occhio nel
+ * calendario e nell'appello: uno della lista con un tocco, o un altro
+ * scritto a mano. Quelli già di qualcun altro non si possono scegliere.
+ */
+function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: PersonaleSeg; altri: PersonaleSeg[]; fai: Fai; onCambiato: () => Promise<void> }) {
+  const [aMano, setAMano] = useState<string | null>(null)
+  const di = new Map(altri.filter((x) => x.kanji).map((x) => [x.kanji!, `${x.nome} ${x.cognome}`.trim()]))
+  const scegli = (segno: string | null) => {
+    if (segno === (p.kanji ?? null)) return
+    void fai(() => d.salvaKanji(p.id, segno), segno ? `Il kanji di ${p.nome} è ${segno}` : 'Kanji tolto', async () => {
+      setAMano(null)
+      await onCambiato()
+    })
+  }
+  const scritto = aMano === null ? null : kanjiScritto(aMano)
+  const giaDi = scritto ? di.get(scritto) : undefined
+
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <Riga titolo="KANJI">
+        <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.kanji ? 'var(--text)' : 'var(--dim)' }}>
+          {p.kanji ? `${p.kanji}${significato(p.kanji) ? ` · ${significato(p.kanji)!.toUpperCase()}` : ''}` : 'NESSUNO'}
+        </span>
+      </Riga>
+      <span style={{ fontSize: 14, color: 'var(--sec)' }}>
+        Un segno solo, accanto al nome nel calendario e nell’appello, per riconoscerlo a colpo d’occhio. Due persone non possono avere lo stesso.
+      </span>
+      <div role="radiogroup" aria-label={`Kanji di ${p.nome}`} className="sg-kanji-scelta">
+        {KANJI.map((k) => {
+          const chi = di.get(k.segno)
+          return (
+            <button
+              key={k.segno}
+              type="button"
+              role="radio"
+              aria-checked={p.kanji === k.segno}
+              aria-label={`${k.segno}, ${k.vuol_dire}${chi ? `: già di ${chi}` : ''}`}
+              title={chi ? `Già di ${chi}` : k.vuol_dire}
+              disabled={!!chi}
+              onClick={() => scegli(k.segno)}
+            >
+              <span className="kanji-segno" lang="ja">{k.segno}</span>
+              <span className="kanji-dice">{k.vuol_dire}</span>
+            </button>
+          )
+        })}
+      </div>
+      {aMano !== null ? (
+        <form
+          className="row"
+          style={{ gap: 8, flexWrap: 'wrap' }}
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (scritto && !giaDi) scegli(scritto)
+          }}
+        >
+          <input
+            className="sg-campo"
+            style={{ width: 80, fontSize: 22, textAlign: 'center' }}
+            lang="ja"
+            aria-label={`Un altro kanji per ${p.nome}`}
+            autoFocus
+            value={aMano}
+            onChange={(e) => setAMano(e.target.value)}
+          />
+          <button type="submit" className="num sg-chip sg-chip-pieno" disabled={!scritto || !!giaDi}>
+            OK
+          </button>
+          <button type="button" className="sg-link" onClick={() => setAMano(null)}>
+            lascia stare
+          </button>
+          {aMano.trim() && (
+            <span style={{ fontSize: 13, color: 'var(--rosso)' }}>{!scritto ? 'Un kanji solo, senza altro' : giaDi ? `${scritto} è già di ${giaDi}` : ''}</span>
+          )}
+        </form>
+      ) : (
+        <div className="row" style={{ gap: 8 }}>
+          <button type="button" className="num sg-chip" onClick={() => setAMano('')}>
+            UN ALTRO KANJI
+          </button>
+          {p.kanji && (
+            <button type="button" className="num sg-chip" onClick={() => scegli(null)}>
+              TOGLI IL KANJI
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 

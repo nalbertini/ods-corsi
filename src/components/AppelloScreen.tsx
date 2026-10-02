@@ -4,6 +4,7 @@ import type { DettaglioSessione, StatoPresenza } from '../lib/sala'
 import { giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { timerDellaLezione } from '../lib/aree'
 import { Cronometro } from './Icons'
+import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from './Prove'
 import type { SegnalataVista } from '../lib/segnalate'
@@ -147,8 +148,9 @@ export function AppelloScreen({
           <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: 'var(--faint)' }}>
             {giornoPerEsteso(d.sessione.inizio).toUpperCase()} · {oraDi(d.sessione.inizio)}
           </span>
-          <span style={{ fontSize: 13, color: 'var(--dim)' }}>
-            {[d.sessione.sala, d.sessione.istruttore].filter(Boolean).join(' · ')}
+          <span className="chi-kanji" style={{ fontSize: 13, color: 'var(--dim)' }}>
+            <Kanji segni={d.sessione.kanji} />
+            <span>{[d.sessione.sala, d.sessione.istruttore].filter(Boolean).join(' · ')}</span>
           </span>
         </div>
         <button

@@ -38,7 +38,7 @@ interface RigaSessione {
     corsi_istruttori: Array<{ persona_id: string }> | null
   } | null
   sale: { nome: string } | null
-  persone: { nome: string; cognome: string } | null
+  persone: { nome: string; cognome: string; kanji?: string | null } | null
 }
 
 /**
@@ -77,14 +77,24 @@ const iscrittiIl = (righe: RigaIscrizione[], corsoId: string, giorno: string): P
       return p
     })
 
-const SELEZIONE = `
+const SELEZIONE_SENZA_KANJI = `
   id, corso_id, inizio, fine, stato, note, istruttore_id,
   corsi ( nome, colore, capienza, istruttore_id, corsi_istruttori ( persona_id ) ),
   sale ( nome ),
   persone ( nome, cognome )
 `
+/** Con il kanji dell'istruttore, che arriva con 24-kanji.sql. */
+const SELEZIONE = SELEZIONE_SENZA_KANJI.replace('persone ( nome, cognome )', 'persone ( nome, cognome, kanji )')
 
 export function creaDatiSupabase(db: SupabaseClient): Dati {
+  // Senza 24-kanji.sql la colonna non c'è: si legge come prima, senza kanji.
+  let selezione = SELEZIONE
+  const leggiSessioni = async <T,>(q: (sel: string) => PromiseLike<{ data: T; error: { code?: string; message?: string } | null }>) => {
+    const r = await q(selezione)
+    if (r.error?.code !== '42703' || !/kanji/.test(r.error.message ?? '') || selezione === SELEZIONE_SENZA_KANJI) return r
+    selezione = SELEZIONE_SENZA_KANJI
+    return q(selezione)
+  }
 
   // Le scritture in coda si eseguono qui. Se il server rifiuta per davvero —
   // non per mancanza di rete — l'operazione resterebbe in coda per sempre: per
@@ -136,6 +146,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       colore: s.corsi?.colore ?? undefined,
       sala: s.sale?.nome,
       istruttore: s.persone ? `${s.persone.nome} ${s.persone.cognome}` : undefined,
+      kanji: s.persone?.kanji ?? undefined,
       inizio: s.inizio,
       fine: s.fine,
       stato: s.stato,
@@ -152,18 +163,15 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       await allungaCalendario(db)
       const fino = new Date(a)
       fino.setHours(23, 59, 59, 999)
-      const { data, error } = await db
-        .from('sessioni')
-        .select(SELEZIONE)
-        .gte('inizio', da.toISOString())
-        .lte('inizio', fino.toISOString())
-        .order('inizio')
+      const { data, error } = await leggiSessioni((sel) =>
+        db.from('sessioni').select(sel).gte('inizio', da.toISOString()).lte('inizio', fino.toISOString()).order('inizio'),
+      )
       if (error) throw error
       return conta((data ?? []) as unknown as RigaSessione[])
     },
 
     async dettaglio(sessioneId) {
-      const { data, error } = await db.from('sessioni').select(SELEZIONE).eq('id', sessioneId).single()
+      const { data, error } = await leggiSessioni((sel) => db.from('sessioni').select(sel).eq('id', sessioneId).single())
       // Solo «non c'è» vuol dire null: un errore di rete detto come «nessun
       // iscritto» farebbe credere vuoto un corso che non lo è.
       if (error && error.code !== 'PGRST116') throw error

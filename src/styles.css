@@ -281,6 +281,29 @@ input, textarea { font: inherit; color: inherit; }
 }
 .lezione-ora { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; min-width: 62px; }
 .lezione-nome { font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; }
+
+/* Il kanji di un istruttore, come un timbro (vedi `Kanji.tsx`). I caratteri
+   giapponesi non sono nei font dell'app: li disegna il sistema. */
+.kanji-fila { display: inline-flex; gap: 3px; flex-shrink: 0; vertical-align: middle; }
+.kanji {
+  display: inline-grid; place-items: center;
+  width: 22px; height: 22px;
+  border: 1.5px solid var(--rosso); border-radius: 3px;
+  color: var(--rosso);
+  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif;
+  font-size: 15px; font-weight: 700; line-height: 1;
+}
+.kanji[data-grande] { width: 56px; height: 56px; border-width: 3px; border-radius: 6px; font-size: 38px; }
+.chi-kanji { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.sg-kanji-scelta { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; }
+.sg-kanji-scelta button {
+  display: grid; justify-items: center; gap: 2px; padding: 6px 2px;
+  border: 1px solid var(--line); background: none; color: var(--text); cursor: pointer;
+}
+.sg-kanji-scelta button[aria-checked='true'] { border-color: var(--rosso); background: var(--surface-2); }
+.sg-kanji-scelta button:disabled { opacity: 0.35; cursor: not-allowed; }
+.sg-kanji-scelta .kanji-segno { font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif; font-size: 24px; line-height: 1.1; }
+.sg-kanji-scelta .kanji-dice { max-width: 100%; font-size: 10px; letter-spacing: 0.02em; line-height: 1.15; text-align: center; overflow-wrap: anywhere; color: var(--dim); text-transform: uppercase; }
 .lezione-conto { font-size: 20px; font-weight: 700; color: var(--dim); }
 .lezione-conto[data-fatto='true'] { color: var(--verde); }
 
