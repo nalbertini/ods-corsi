@@ -58,8 +58,10 @@ modulo di un iscritto nuovo, e una scheda aperta
 resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
 In cima, tre timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
-grandi, con le parole dell'elenco (verde a posto, giallo da guardare, rosso
-manca; il certificato scaduto dice anche quando: **SCADUTO IL 25/09**), e
+grandi (verde a posto, giallo da guardare, rosso manca), con le parole
+dell'elenco ma la data intera: **SCADUTO IL 25/09/2026**, **VALIDO FINO
+AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
+(**SCADE IL 14/10/2026**, sotto **FRA 18 GIORNI**, o **DOMANI**). E
 **DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare. Un clic su
 un timbro porta alla sua parte della scheda. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con

@@ -678,24 +678,45 @@ export interface TimbriScheda {
 /** «12/10», da una data `AAAA-MM-GG`. */
 const dataCorta = (g: string) => `${g.slice(8, 10)}/${g.slice(5, 7)}`
 
+/** «12/10/2026»: nei timbri l'anno c'è, la scheda si legge anche fra un anno. */
+const dataTimbro = (g: string) => `${dataCorta(g)}/${g.slice(0, 4)}`
+
+/**
+ * «AL 31/07/2027», ma «ALL’11/07/2027»: l'1, l'8 e l'11 cominciano per
+ * vocale. Lì il giorno va senza zero, se no «ALL’08» non si legge.
+ */
+export function alGiorno(g: string): string {
+  const giorno = Number(g.slice(8, 10))
+  return [1, 8, 11].includes(giorno) ? `ALL’${giorno}${dataTimbro(g).slice(2)}` : `AL ${dataTimbro(g)}`
+}
+
 function timbroCertificato(c: CertificatoSeg, oggi: string): Timbro {
   const come = comeCertificato(c, oggi)
   // Il file di prima della carta è sempre un avviso, anche sotto un certificato valido.
   const righe: Timbro['righe'] = c.conFile ? [{ testo: 'DA STAMPARE', tono: 'giallo' }] : []
   if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...righe] }
-  const data = dataCorta(c.scade)
-  if (come === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${data}`, inElenco: 'CERT. SCADUTO', righe }
-  if (come === 'in_scadenza') return { tono: 'giallo', parola: c.scade === oggi ? 'SCADE OGGI' : `SCADE IL ${data}`, righe }
-  return { tono: 'verde', parola: `VALIDO FINO AL ${data}`, righe }
+  if (come === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'CERT. SCADUTO', righe }
+  if (come === 'in_scadenza') {
+    if (c.scade === oggi) return { tono: 'giallo', parola: 'SCADE OGGI', righe }
+    const fra = Math.round((Date.parse(c.scade) - Date.parse(oggi)) / 86_400_000)
+    return {
+      tono: 'giallo',
+      parola: `SCADE IL ${dataTimbro(c.scade)}`,
+      // In elenco la colonna è stretta: la data senza l'anno.
+      inElenco: `SCADE IL ${dataCorta(c.scade)}`,
+      righe: [{ testo: fra === 1 ? 'DOMANI' : `FRA ${fra} GIORNI` }, ...righe],
+    }
+  }
+  return { tono: 'verde', parola: `VALIDO FINO ${alGiorno(c.scade)}`, righe }
 }
 
 function timbroQuota(s: StatoPaga): Timbro {
-  const fino = s.fino ? [{ testo: `FINO AL ${dataCorta(s.fino)}` }] : []
+  const fino = s.fino ? [{ testo: `FINO ${alGiorno(s.fino)}` }] : []
   const da = s.fonte === 'fuori_app' ? [{ testo: 'FUORI APP' }] : s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : []
   if (s.come === 'pagato') return { tono: 'verde', parola: 'PAGATA', righe: [...da, ...fino] }
   if (s.come === 'in_parte')
     return { tono: 'giallo', parola: 'IN PARTE', righe: s.fonte === 'ricevuta' ? [{ testo: `MANCANO ${euro(s.mancano ?? 0)} €` }, ...da] : [...da, ...fino] }
-  if (s.come === 'scaduto') return { tono: 'rosso', parola: 'QUOTA SCADUTA', righe: s.fino ? [{ testo: `VALEVA FINO AL ${dataCorta(s.fino)}` }] : [] }
+  if (s.come === 'scaduto') return { tono: 'rosso', parola: 'QUOTA SCADUTA', righe: s.fino ? [{ testo: `VALEVA FINO ${alGiorno(s.fino)}` }] : [] }
   return { tono: 'rosso', parola: 'DA PAGARE', righe: [{ testo: 'NESSUNA RICEVUTA' }] }
 }
 

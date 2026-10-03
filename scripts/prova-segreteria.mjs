@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -957,6 +957,8 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
     return x.toISOString().slice(0, 10)
   }
   const corta = (g) => `${g.slice(8, 10)}/${g.slice(5, 7)}`
+  // Nei timbri la data intera, con l'anno: la scheda si legge anche fra un anno.
+  const lunga = (g) => `${corta(g)}/${g.slice(0, 4)}`
   const persona = (altro = {}) => ({
     id: 'p-t', nome: 'Anna', cognome: 'Timbri', attiva: true, creataIl: '2026-09-01', iscrizioni: [],
     certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, quote: [], ...altro,
@@ -971,11 +973,16 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
 
   // 1. Il certificato.
   ok('certificato che scade fra 10 giorni: giallo', cert(fra(10))?.tono, 'giallo')
-  ok('… con la data: SCADE IL gg/mm', testi(cert(fra(10))).includes(`SCADE IL ${corta(fra(10))}`), true)
+  ok('… con la data: SCADE IL gg/mm/aaaa', cert(fra(10))?.parola, `SCADE IL ${lunga(fra(10))}`)
+  ok('… e sotto quanto manca: FRA 10 GIORNI', testi(cert(fra(10)))[1], 'FRA 10 GIORNI')
+  ok('scade domani: sotto DOMANI, non FRA 1 GIORNI', testi(cert(fra(1)))[1], 'DOMANI')
+  ok('scade oggi: niente FRA sotto', testi(cert(oggi)).some((x) => x.startsWith('FRA ') || x === 'DOMANI'), false)
+  ok('in scadenza col file: prima FRA, poi DA STAMPARE', testi(cert(fra(10), true)).slice(1), ['FRA 10 GIORNI', 'DA STAMPARE'])
   ok('certificato che scade fra 31 giorni: verde', cert(fra(31))?.tono, 'verde')
-  ok('… VALIDO FINO AL gg/mm', testi(cert(fra(31))).includes(`VALIDO FINO AL ${corta(fra(31))}`), true)
+  ok('… VALIDO FINO AL gg/mm/aaaa', cert(fra(31))?.parola, `VALIDO FINO AL ${lunga(fra(31))}`)
+  ok('… VALIDO FINO ALL’11/07/2027, non AL 11', cert('2027-07-11')?.parola, 'VALIDO FINO ALL’11/07/2027')
   ok('certificato scaduto ieri: rosso', cert(fra(-1))?.tono, 'rosso')
-  ok('… SCADUTO IL gg/mm', cert(fra(-1))?.parola, `SCADUTO IL ${corta(fra(-1))}`)
+  ok('… SCADUTO IL gg/mm/aaaa', cert(fra(-1))?.parola, `SCADUTO IL ${lunga(fra(-1))}`)
   ok('nessuna data: rosso', cert(undefined)?.tono, 'rosso')
   ok('nessuna data: NO CERTIFICATO, come in elenco', cert(undefined)?.parola, 'NO CERTIFICATO')
   ok('scade oggi: giallo', cert(oggi)?.tono, 'giallo')
@@ -992,13 +999,15 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
   const q1 = quota({ quote: [pagata] })
   ok('ricevuta che vale oggi, tutta pagata: verde', q1?.tono, 'verde')
   ok('… con il numero della ricevuta', testi(q1).some((x) => x.includes('12/2026')), true)
-  ok('… e FINO AL gg/mm', testi(q1).some((x) => x.includes(`FINO AL ${corta(fra(200))}`)), true)
+  ok('… e FINO AL gg/mm/aaaa', testi(q1).includes(`FINO AL ${lunga(fra(200))}`), true)
+  ok('pagata fino all’8 agosto: FINO ALL’8/08/2027', testi(quota({ quote: [{ ...pagata, al: '2027-08-08' }] })).includes('FINO ALL’8/08/2027'), true)
   const q2 = quota({ quote: [{ ...pagata, mancano: 2000 }] })
   ok('ricevuta che vale oggi, mancano 20 €: giallo', q2?.tono, 'giallo')
   ok('… con quanto manca, 20,00 €', testi(q2).some((x) => x.includes('20,00 €')), true)
   const q3 = quota({ quote: [{ ...pagata, dal: '2025-09-01', al: fra(-1) }] })
   ok('ricevuta che valeva fino a ieri: rosso', q3?.tono, 'rosso')
   ok('… QUOTA SCADUTA, come in elenco', q3?.parola, 'QUOTA SCADUTA')
+  ok('… VALEVA FINO AL gg/mm/aaaa', testi(q3)[1], `VALEVA FINO AL ${lunga(fra(-1))}`)
   const q4 = quota({})
   ok('niente ricevute né eccezioni: rosso', q4?.tono, 'rosso')
   ok('… DA PAGARE, come in elenco', q4?.parola, 'DA PAGARE')
@@ -1052,6 +1061,13 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
   // Il certificato in scadenza: la parola in elenco è quella del timbro, qualunque sia.
   const inScadenza = persona({ certificato: { scade: fra(10), conFile: false }, quote: [pagata] })
   ok('certificato in scadenza: in elenco la parola del timbro', inElenco(inScadenza), [bollino(timbri(inScadenza)?.certificato)])
+  // In elenco la colonna è stretta: la data resta corta, senza l'anno.
+  ok('certificato in scadenza: in elenco SCADE IL gg/mm', inElenco(inScadenza), [{ tono: 'giallo', parola: `SCADE IL ${corta(fra(10))}` }])
+  ok('scade oggi: in elenco SCADE OGGI', inElenco(persona({ certificato: { scade: oggi, conFile: false }, quote: [pagata] })), [{ tono: 'giallo', parola: 'SCADE OGGI' }])
+
+  // «AL» o «ALL’»: come si legge il giorno. 1, 8 e 11 cominciano per vocale.
+  const al = [['2027-07-31', 'AL 31/07/2027'], ['2027-07-01', 'ALL’1/07/2027'], ['2027-08-08', 'ALL’8/08/2027'], ['2027-07-11', 'ALL’11/07/2027'], ['2027-07-18', 'AL 18/07/2027'], ['2027-07-05', 'AL 05/07/2027']]
+  for (const [g, voluto] of al) ok(`${g}: ${voluto}`, m.alGiorno?.(g), voluto)
 
   // E l'elenco non se le scrive da sé: Iscritti.tsx le prende da src/lib.
   const { readFileSync } = await import('node:fs')
