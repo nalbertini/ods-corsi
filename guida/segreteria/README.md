@@ -25,6 +25,7 @@ A sinistra il menu, a destra la voce scelta. Ogni voce ha la sua guida:
 
 | Voce | A cosa serve | Guida |
 |---|---|---|
+| **DA FARE** | La prima pagina: appelli mancanti, richieste nuove, presenze da confermare, certificati e pagamenti, contati, con il tasto per sistemarli | [Apri](da-fare.md) |
 | **SETTIMANA** | La griglia della settimana, gli appelli mancanti, annullare, sostituti, lezioni straordinarie | [Apri](settimana.md) |
 | **CORSI** | I corsi: sala, istruttori, posti, colore, giorni e orari | [Apri](corsi.md) |
 | **ISCRITTI** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |

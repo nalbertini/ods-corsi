@@ -1213,6 +1213,31 @@ a.sg-voce { text-decoration: none; }
 }
 .sg-avviso-chiudi:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
+/* DA FARE: una riga per cosa che aspetta, col numero grande; sotto, quello che è a posto. */
+.sg-dafare { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sg-dafare-riga {
+  display: flex; align-items: flex-start; gap: 20px; padding: 16px 18px;
+  background: var(--surface); border: 2px solid var(--line);
+}
+.sg-dafare-n { min-width: 64px; font-size: 44px; font-weight: 700; line-height: 0.9; color: var(--rosso); text-align: right; }
+.sg-dafare-titolo { font-family: var(--cond); font-size: 22px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.1; }
+.sg-dafare-tasto { flex-shrink: 0; align-self: center; }
+.sg-dafare-lezioni { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.sg-dafare-lezione {
+  display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; min-height: 44px; text-align: left;
+  background: var(--bg); border: 2px solid var(--line); border-top: 4px solid var(--tinta); font-size: 12px; color: var(--sec);
+}
+.sg-dafare-lezione:hover { border-color: var(--dim); border-top-color: var(--tinta); }
+.sg-dafare-lezione-nome { font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); }
+.sg-dafare-aposto { margin: 0; font-size: 14px; line-height: 1.5; color: var(--sec); }
+.sg-dafare-fatto { display: flex; flex-direction: column; gap: 6px; padding: 28px; border: 2px solid var(--verde); }
+.sg-dafare-fatto .ob { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: var(--verde); }
+@media (max-width: 700px) {
+  .sg-dafare-riga { flex-wrap: wrap; gap: 12px; }
+  .sg-dafare-n { min-width: 0; text-align: left; }
+  .sg-dafare-tasto { flex-basis: 100%; }
+}
+
 /* Presenze, import, personale, regole */
 .contents { display: contents; }
 .sg-mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { Destinazione } from './Segreteria'
 import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PagamentoSeg, PersonaSeg } from '../../lib/segreteria'
 import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, PAGAMENTI, pulisciAnagrafica } from '../../lib/segreteria'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
@@ -36,7 +37,7 @@ function Bollino({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde'; child
  * Un nome in elenco non ha bisogno di un accesso: gli iscritti non entrano
  * nell'app. Qui la segreteria li aggiunge, li iscrive e li toglie dai corsi.
  */
-export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIniziale?: string }) {
+export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegreteria; personaIniziale?: string; filtroIniziale?: Destinazione['filtro'] }) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
   const freq = useCarica(() => d.frequenze(), [d])
@@ -44,10 +45,10 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
   const [corso, setCorso] = useState('')
   const [senzaEmail, setSenzaEmail] = useState(false)
   const [poco, setPoco] = useState(false)
-  const [certificato, setCertificato] = useState(false)
-  const [pagare, setPagare] = useState(false)
+  const [certificato, setCertificato] = useState(filtroIniziale === 'certificato')
+  const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
-  const [daStampare, setDaStampare] = useState(false)
+  const [daStampare, setDaStampare] = useState(filtroIniziale === 'stampare')
   const [scelta, setScelta] = useState<string | null>(personaIniziale ?? null)
   const [nuovo, setNuovo] = useState(false)
   const { avviso, fai } = useAvviso()

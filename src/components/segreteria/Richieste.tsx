@@ -34,7 +34,7 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * con la sua email non ha niente che la leghi all'iscritto che aveva dato la
  * propria, e da sola diventerebbe un doppione.
  */
-export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?: Destinazione) => void }) {
+export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; onVai: (v: Voce, d?: Destinazione) => void; stampareIniziale?: boolean }) {
   const [r, setR] = useState<DatiRichieste | null>(null)
   const elenco = useCarica(async () => {
     const x = await datiRichieste()
@@ -45,7 +45,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
   const persone = useCarica(() => d.persone(), [d])
   const conDocumento = useCarica(async () => (await datiRichieste()).conDocumento(), [])
   const [tutte, setTutte] = useState(false)
-  const [daStampare, setDaStampare] = useState(false)
+  const [daStampare, setDaStampare] = useState(!!stampareIniziale)
   const [scelta, setScelta] = useState<string | null>(null)
   const { avviso, fai } = useAvviso()
 
