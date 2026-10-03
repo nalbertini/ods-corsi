@@ -13,7 +13,7 @@ import {
   normalizza,
 } from '../../../timer/src/lib/esercizi'
 import { uid } from '../../../timer/src/lib/format'
-import { chiedi, ComeFunziona, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, ComeFunziona, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 
 type Fai = (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => Promise<unknown>
 
@@ -56,6 +56,9 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
   const scelta = voce.dato?.nome ?? null
   const letta = !!voce.dato
   useEffect(() => setScritta(scelta ?? ''), [scelta])
+  // Un nome scritto e non salvato col tasto: uscendo si chiede. La stessa regola che accende il tasto.
+  const daSalvare = letta && scritta.trim() !== (scelta ?? '')
+  useBozza(daSalvare, 'La voce dei tablet')
   const salvaVoce = (nome: string | null) =>
     void fai(() => d.salvaVoceSale(nome), 'Voce cambiata: i tablet la prendono al prossimo giro', voce.ricarica)
   const prova = (nome: string) => speak('Lavoro. Burpee più salto', 1, voci.find((v) => v.name === nome)?.voiceURI ?? null)
@@ -109,7 +112,7 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
             disabled={!letta}
             onChange={(e) => setScritta(e.target.value)}
           />
-          <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!letta || scritta.trim() === (scelta ?? '')} aria-label="Salva la voce">
+          <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!daSalvare} aria-label="Salva la voce">
             <Spunta size={18} />
           </button>
         </form>
@@ -390,7 +393,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                           </option>
                         ))}
                       </select>
-                      {!libero(aperto.nome, e.id) && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>C'è già un esercizio con questo nome.</span>}
+                      {!libero(aperto.nome, e.id) && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>C'è già un esercizio con questo nome.</span>}
                       <button
                         type="button"
                         className="num sg-chip"
@@ -437,7 +440,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                 </option>
               ))}
             </select>
-            {nuovo.nome.trim() && !libero(nuovo.nome) && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>C'è già.</span>}
+            {nuovo.nome.trim() && !libero(nuovo.nome) && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>C'è già.</span>}
             <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!nuovo.nome.trim() || !libero(nuovo.nome)}>
               AGGIUNGI
             </button>

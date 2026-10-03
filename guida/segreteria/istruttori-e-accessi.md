@@ -19,7 +19,9 @@ TABLET**.
 ## La scheda di una persona
 
 Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
-**ISTRUTTORI E ACCESSI** in alto torna all'elenco.
+**ISTRUTTORI E ACCESSI** in alto torna all'elenco. Con una modifica, un PIN o
+un kanji scritti e non confermati chiede prima: **TORNA A FINIRE** o **ESCI
+SENZA SALVARE**.
 
 - **MODIFICA** — nome, cognome ed email. Chi è già entrato non cambia email da
   qui: è quella con cui fa l'accesso.

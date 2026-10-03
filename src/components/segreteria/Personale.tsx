@@ -1,8 +1,9 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
+import { personaCambiata } from '../../lib/segreteria'
 import { daRuoloScelto, nomeDelRuolo, ruoloScelto, type RuoloScelto } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { chiedi, Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 import { Numero, mesi } from './Presenze'
 import { Kanji } from '../Kanji'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
@@ -54,6 +55,10 @@ export function Personale({ d }: { d: DatiSegreteria }) {
     setNuovo(false)
     setScelta(null)
   }
+  // ← ISTRUTTORI E ACCESSI con qualcosa scritto e non salvato: prima si chiede.
+  const torna = async () => {
+    if (await lasciare()) chiudi()
+  }
 
   /** Com'è andato l'invito, detto a chi l'ha mandato. */
   const partito = (nome: string, come: 'invito' | 'password') =>
@@ -66,7 +71,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
   return (
     <>
       {nuovo ? (
-        <SchedaPiena etichetta="Aggiungi una persona" torna="ISTRUTTORI E ACCESSI" onTorna={chiudi}>
+        <SchedaPiena etichetta="Aggiungi una persona" torna="ISTRUTTORI E ACCESSI" onTorna={() => void torna()}>
           <Aggiungi
             d={d}
             fai={fai}
@@ -81,7 +86,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
           />
         </SchedaPiena>
       ) : persona ? (
-        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`.trim()} torna="ISTRUTTORI E ACCESSI" onTorna={chiudi}>
+        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`.trim()} torna="ISTRUTTORI E ACCESSI" onTorna={() => void torna()}>
           <Scheda
             d={d}
             p={persona}
@@ -129,7 +134,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
                   {p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}
                 </span>
               </span>
-              <span role="cell" className="sg-una-riga" style={{ fontSize: 13, color: p.email ? 'var(--sec)' : 'var(--rosso)' }} title={p.email ?? 'Senza email non può entrare'}>
+              <span role="cell" className="sg-una-riga" style={{ fontSize: 13, color: p.email ? 'var(--sec)' : 'var(--rosso-testo)' }} title={p.email ?? 'Senza email non può entrare'}>
                 {p.email ?? 'nessuna email'}
               </span>
               <span role="cell" style={{ fontSize: 14, color: 'var(--sec)' }}>
@@ -179,7 +184,7 @@ type Partito = (nome: string, come: 'invito' | 'password') => string
 
 function Accesso({ p }: { p: PersonaleSeg }) {
   return (
-    <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde)' : 'var(--giallo-testo)' }}>
+    <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde-testo)' : 'var(--giallo-testo)' }}>
       {!p.attiva ? 'SENZA ACCESSO' : p.collegato ? 'HA FATTO L’ACCESSO' : 'NON ANCORA ENTRATO'}
     </span>
   )
@@ -204,6 +209,9 @@ function SceltaRuolo({ ruolo, onScegli }: { ruolo: RuoloScelto; onScegli: (r: Ru
   )
 }
 
+/** Il modulo appena aperto: diverso da questo, c'è da perdere qualcosa. */
+const VUOTA = { nome: '', cognome: '', email: '', ruolo: 'istruttore' as RuoloScelto }
+
 function Aggiungi({
   d,
   fai,
@@ -219,8 +227,9 @@ function Aggiungi({
   onLasciaStare: () => void
   onAggiunta: (id: string) => Promise<void>
 }) {
-  const [bozza, setBozza] = useState({ nome: '', cognome: '', email: '', ruolo: 'istruttore' as RuoloScelto })
+  const [bozza, setBozza] = useState(VUOTA)
   const [invitaSubito, setInvitaSubito] = useState(true)
+  useBozza(!!(bozza.nome.trim() || bozza.cognome.trim() || bozza.email.trim()) || bozza.ruolo !== VUOTA.ruolo, `${bozza.nome.trim()} ${bozza.cognome.trim()}`.trim() || undefined)
 
   const aggiungi = (e: FormEvent) => {
     e.preventDefault()
@@ -312,6 +321,7 @@ function Scheda({
 }) {
   const [modifica, setModifica] = useState<{ nome: string; cognome: string; email: string } | null>(null)
   const [pin, setPin] = useState<string | null>(null)
+  useBozza((!!modifica && personaCambiata(p, modifica)) || !!pin, `${p.nome} ${p.cognome}`.trim())
   // Il ruolo doppio si scrive solo se c'era o ci sarà: un database senza la
   // sua colonna salva lo stesso tutti gli altri (vedi `ruoloDaScrivere`).
   const dati = { id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, ruolo: p.ruolo, ...(p.ancheIstruttore ? { ancheIstruttore: true } : {}) }
@@ -339,7 +349,7 @@ function Scheda({
           <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
             {`${p.nome} ${p.cognome}`.trim().toUpperCase()}
           </span>
-          <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso)' }}>
+          <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso-testo)' }}>
             {p.attiva ? nomeDelRuolo(p) : 'Accesso tolto: non entra nell’app né nell’area istruttore'}
           </span>
         </div>
@@ -389,7 +399,7 @@ function Scheda({
             <div className="stack" style={{ gap: 12 }}>
               <div className="sg-due">
                 <Campo etichetta="EMAIL">
-                  <span style={{ fontSize: 14, overflowWrap: 'anywhere', color: p.email ? 'var(--text)' : 'var(--rosso)' }}>{p.email ?? 'nessuna email: non può entrare'}</span>
+                  <span style={{ fontSize: 14, overflowWrap: 'anywhere', color: p.email ? 'var(--text)' : 'var(--rosso-testo)' }}>{p.email ?? 'nessuna email: non può entrare'}</span>
                 </Campo>
                 <Campo etichetta="CORSI">
                   <span style={{ fontSize: 14, color: p.corsi.length ? 'var(--text)' : 'var(--dim)' }}>{p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}</span>
@@ -518,6 +528,7 @@ function Scheda({
  */
 function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: PersonaleSeg; altri: PersonaleSeg[]; fai: Fai; onCambiato: () => Promise<void> }) {
   const [aMano, setAMano] = useState<string | null>(null)
+  useBozza(!!aMano?.trim(), `${p.nome} ${p.cognome}`.trim())
   const di = new Map(altri.filter((x) => x.kanji).map((x) => [x.kanji!, `${x.nome} ${x.cognome}`.trim()]))
   const scegli = (segno: string | null) => {
     if (segno === (p.kanji ?? null)) return
@@ -584,7 +595,7 @@ function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: P
             lascia stare
           </button>
           {aMano.trim() && (
-            <span style={{ fontSize: 13, color: 'var(--rosso)' }}>{!scritto ? 'Un kanji solo, senza altro' : giaDi ? `${scritto} è già di ${giaDi}` : ''}</span>
+            <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{!scritto ? 'Un kanji solo, senza altro' : giaDi ? `${scritto} è già di ${giaDi}` : ''}</span>
           )}
         </form>
       ) : (

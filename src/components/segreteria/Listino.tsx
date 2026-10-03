@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { Prezzi, VoceCosto } from '../../lib/costi'
 import { STAGIONE } from '../../lib/costi'
-import { annoScritto, cosaNonVaListino, LIMITI, type Listino as DatiListino } from '../../lib/listino'
+import { annoScritto, cosaNonVaListino, LIMITI, listinoCambiato, type Listino as DatiListino } from '../../lib/listino'
 import { centesimi } from '../../lib/ricevute'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
-import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 
 /*
  * Il listino si cambia in una bozza, tutto insieme, e si salva con un tasto
@@ -151,7 +151,6 @@ export function Listino({ d }: { d: DatiSegreteria }) {
   const { avviso, fai, lavora } = useAvviso()
   const [bozza, setBozza] = useState<Bozza | null>(null)
   const [aperto, setAperto] = useState<number | null>(null)
-
   // Le chiavi della bozza di partenza restano le stesse fra un giro e l'altro: CAMBIA apre quella giusta.
   const base = useMemo(() => (letto.dato ? bozzaDa(letto.dato.listino) : null), [letto.dato])
   const b = bozza ?? base
@@ -168,6 +167,9 @@ export function Listino({ d }: { d: DatiSegreteria }) {
 
   const pronto = bozza ? daBozza(bozza) : null
   const guaio = typeof pronto === 'string' ? pronto : null
+  // Una modifica rimessa com'era non è un cambio: niente barra «Ci sono cambi da salvare», niente domanda uscendo.
+  const cambiato = !!pronto && !!base && listinoCambiato(daBozza(base), pronto)
+  useBozza(cambiato, 'Listino')
 
   const salva = () => {
     if (!pronto || typeof pronto === 'string') return
@@ -219,7 +221,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               Fino al {/^\d{4}-\d{2}-\d{2}$/.test(b.saldoEntro) ? dataLunga(b.saldoEntro) : '…'} compreso la pagina mostra la colonna del saldo e le ricevute propongono
               l’annuale a saldo; dopo, sparisce.
             </span>
-            {letto.dato.cambiato && !bozza && (
+            {letto.dato.cambiato && !cambiato && (
               <button type="button" className="sg-link" style={{ alignSelf: 'flex-start' }} disabled={lavora} onClick={rimetti}>
                 Rimetti il listino del foglio originale
               </button>
@@ -317,9 +319,9 @@ export function Listino({ d }: { d: DatiSegreteria }) {
             </button>
           </section>
 
-          {bozza && (
+          {cambiato && (
             <div className="sg-listino-salva">
-              <span className="grow" style={{ fontSize: 14, color: guaio ? 'var(--rosso)' : 'var(--sec)' }}>
+              <span className="grow" style={{ fontSize: 14, color: guaio ? 'var(--rosso-testo)' : 'var(--sec)' }}>
                 {guaio ?? 'Ci sono cambi da salvare: fino ad allora la pagina di iscrizione mostra quello di prima.'}
               </span>
               <button

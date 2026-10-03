@@ -52,6 +52,19 @@ export function annoScritto(t: string): number | undefined | null {
 const giorno = (x: unknown) => (typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) && !Number.isNaN(Date.parse(x)) ? x : undefined)
 const senzaVuoti = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T
 
+// Lo stesso valore scritto sempre allo stesso modo: le chiavi in ordine.
+const inOrdine = (x: unknown): unknown =>
+  Array.isArray(x) ? x.map(inOrdine) : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => [k, inOrdine(v)])) : x
+
+/**
+ * C'è qualcosa da perdere nel LISTINO? Si confrontano i listini come si
+ * salverebbero (o quel che non va, se non si salverebbe): una modifica
+ * rimessa com'era non conta, l'ordine dei corsi sì.
+ */
+export function listinoCambiato(salvato: Listino | string, bozza: Listino | string): boolean {
+  return JSON.stringify(inOrdine(salvato)) !== JSON.stringify(inOrdine(bozza))
+}
+
 /**
  * Il listino da quello che arriva dal database o dal dispositivo, preso con
  * le pinze: quello che non si capisce resta fuori, e se non resta niente di
