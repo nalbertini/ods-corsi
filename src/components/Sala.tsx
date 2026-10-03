@@ -126,37 +126,19 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
         </div>
       )}
 
-      {largo ? (
-        <div className="sala-due">
-          <div className="sala-lato">
-            {esito}
-            <CalendarioScreen dati={d} onApri={apriLezione} apertaId={aperta?.id} conti={conti} soloDi={soloDi} arretrati={segnalate} />
-          </div>
-          <div className="sala-lato">
-            {aperta ? (
-              <AppelloScreen
-                key={aperta.id}
-                dati={d}
-                sessioneId={aperta.id}
-                soloDi={soloDi}
-                onSegnalate={ricontaSegnalate}
-                onConto={(c) => setConti((x) => ({ ...x, [aperta.id]: c }))}
-              inCoda={inCoda}
-                onChiudi={chiudi}
-              />
-            ) : (
-              <div className="sala-vuota">
-                <span className="rule-label">APPELLO</span>
-                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-                  Scegli una lezione dal calendario per fare l'appello.
-                </span>
-              </div>
-            )}
-          </div>
+      {/* Un albero solo per tutte e due le larghezze: girando il tablet
+          calendario e appello restano montati, con la settimana scelta, le
+          righe aperte e l'appello com'erano. Le classi contano solo sullo
+          schermo largo (vedi `styles.css`); sul telefono il calendario resta
+          montato, nascosto, sotto l'appello, e tornando si ritrova dov'era. */}
+      <div className="sala-due">
+        <div className="sala-lato" hidden={!largo && !!aperta}>
+          {esito}
+          <CalendarioScreen dati={d} onApri={apriLezione} apertaId={largo ? aperta?.id : undefined} conti={conti} soloDi={soloDi} arretrati={segnalate} />
+          {!largo && <Strumenti onMieiTimer={onMieiTimer} />}
         </div>
-      ) : (
-        <>
-          {aperta && (
+        <div className="sala-lato">
+          {aperta ? (
             <AppelloScreen
               key={aperta.id}
               dati={d}
@@ -165,19 +147,21 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
               onSegnalate={ricontaSegnalate}
               onConto={(c) => setConti((x) => ({ ...x, [aperta.id]: c }))}
               inCoda={inCoda}
-              onIndietro={() => apriLezione(null)}
+              onIndietro={largo ? undefined : () => apriLezione(null)}
               onChiudi={chiudi}
             />
+          ) : (
+            largo && (
+              <div className="sala-vuota">
+                <span className="rule-label">APPELLO</span>
+                <span className="passo-dettaglio" style={{ fontSize: 15 }}>
+                  Scegli una lezione dal calendario per fare l'appello.
+                </span>
+              </div>
+            )
           )}
-          {/* Il calendario resta montato sotto l'appello: tornando non si
-              rilegge, e si ritrova dov'era. */}
-          <div hidden={!!aperta}>
-            {esito}
-            <CalendarioScreen dati={d} onApri={apriLezione} conti={conti} soloDi={soloDi} arretrati={segnalate} />
-            <Strumenti onMieiTimer={onMieiTimer} />
-          </div>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   )
 }

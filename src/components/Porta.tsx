@@ -66,52 +66,47 @@ export function useChi(): [Personale | null | undefined, (p: Personale | null) =
 
 /**
  * La porta del calendario: con il database vero, prima di vedere lezioni e
- * iscritti si fa l'accesso. In prova non c'è, e i figli si vedono subito.
+ * iscritti si fa l'accesso. In prova non c'è, e si entra subito.
  *
  * Entrano istruttori e segreteria: anche la segreteria fa l'appello. La
  * segreteria vera e propria ha il suo indirizzo e la sua porta (vedi `App`).
  *
- * Sullo schermo largo chi è entrato si vede nel menu a sinistra, non in una
- * riga sopra il calendario: lì si passa `dentro`, che riceve chi è entrato
- * (`null` in prova) e come farlo uscire, e `cornice`, la pagina in cui stanno
- * l'accesso e l'attesa finché non si è dentro.
+ * `dentro` riceve chi è entrato (`null` in prova) e come farlo uscire;
+ * `cornice` è la pagina in cui stanno l'accesso e l'attesa finché non si è
+ * dentro. Chi è entrato lo mostra `dentro`: nel menu sullo schermo largo, in
+ * `ChiSei` sul telefono.
  */
 export function Porta({
-  children,
   dentro,
-  cornice = (x) => x,
+  cornice,
 }: {
-  children?: ReactNode | ((chi: Personale | null) => ReactNode)
-  dentro?: (chi: Personale | null, onEsci?: () => void) => ReactNode
-  cornice?: (x: ReactNode) => ReactNode
+  dentro: (chi: Personale | null, onEsci?: () => void) => ReactNode
+  cornice: (x: ReactNode) => ReactNode
 }) {
   const [chi, setChi] = useChi()
 
-  const figli = (c: Personale | null) => (typeof children === 'function' ? children(c) : children)
-  if (!serveAccesso) return <>{dentro ? dentro(null) : figli(null)}</>
+  if (!serveAccesso) return <>{dentro(null)}</>
   if (chi === undefined) return <>{cornice(<UnAttimo />)}</>
   if (!chi) return <>{cornice(<Accesso onEntrato={setChi} />)}</>
+  return <>{dentro(chi, () => void esci())}</>
+}
 
-  const onEsci = () => void esci()
-  if (dentro) return <>{dentro(chi, onEsci)}</>
-
+/** Chi è entrato, in una riga sopra il calendario del telefono. */
+export function ChiSei({ chi, onEsci }: { chi: Personale; onEsci?: () => void }) {
   return (
-    <>
-      <div className="row pad chi-sei">
-        <span className="grow" style={{ minWidth: 0 }}>
-          {chi.nome.toUpperCase()} {chi.cognome.toUpperCase()} · {nomeDelRuolo(chi).toUpperCase()}
-        </span>
-        {chi.ancheIstruttore && areaDelPercorso() === 'istruttori' && (
-          <button type="button" className="chi-esci" onClick={() => passaA('segreteria')}>
-            SEGRETERIA
-          </button>
-        )}
-        <button type="button" className="chi-esci" onClick={onEsci}>
-          ESCI
+    <div className="row pad chi-sei">
+      <span className="grow" style={{ minWidth: 0 }}>
+        {chi.nome.toUpperCase()} {chi.cognome.toUpperCase()} · {nomeDelRuolo(chi).toUpperCase()}
+      </span>
+      {chi.ancheIstruttore && areaDelPercorso() === 'istruttori' && (
+        <button type="button" className="chi-esci" onClick={() => passaA('segreteria')}>
+          SEGRETERIA
         </button>
-      </div>
-      {figli(chi)}
-    </>
+      )}
+      <button type="button" className="chi-esci" onClick={onEsci}>
+        ESCI
+      </button>
+    </div>
   )
 }
 
