@@ -1,7 +1,7 @@
 {
   "name": "ods-corsi",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "description": "Calendario dei corsi e registro delle presenze per Officine Dello Sport - Collegno",
   "scripts": {
