@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.18.0 — 3 ottobre 2026
+
+### Novità
+
+- In Iscritti, togliere un «non sono doppioni» segnato per sbaglio
+
 ## 0.17.2 — 3 ottobre 2026
 
 ### Modificato
