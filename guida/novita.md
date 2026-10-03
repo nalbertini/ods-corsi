@@ -10,6 +10,30 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.12.2 — 3 ottobre 2026
+
+### Risolto
+
+- Sul computer IMPOSTAZIONI è una voce del menu, con il suo nome
+
+## 0.12.1 — 3 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione INDIETRO chiede prima di perdere risposte e firma
+
+## 0.12.0 — 3 ottobre 2026
+
+### Novità
+
+- In cima alla scheda di un iscritto, certificato, quota e documento a colpo d'occhio
+
+## 0.11.1 — 3 ottobre 2026
+
+### Modificato
+
+- IMPOSTAZIONI in quattro gruppi, con le spiegazioni a richiesta
+
 ## 0.11.0 — 3 ottobre 2026
 
 ### Novità

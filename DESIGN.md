@@ -292,7 +292,7 @@ Quadrato 44px con bordo 2px `riga` e segno in `tasto`; quando contiene una parol
 
 ### Navigation
 - **Testata** (telefono/tablet verticale): marchio a ingranaggi e nome obliquo a sinistra, schede sotto; da 960px stessa riga e bordo inferiore `riga-tenue`.
-- **Menu di segreteria:** colonna di 240px su `menu`; voci Saira 16px 0.12em in `testo-secondario` (0.12em solo sul telefono, 0.1em da 768px; da 1001px nessuna va a capo); da 768px i tre tasti (?, tema, impostazioni) e il bollino DATI DI PROVA stanno in cima, sotto il marchio, in una riga alta 44px (sul tablet il bollino va sotto); COPIA LINK e chi è entrato in fondo, e scorrono con le voci; la voce corrente ha la barra sinistra 4px del colore `testo` e fondo `superficie` (mai rossa: il rosso è per ciò che manca); i numeri delle voci sono bollini gialli a destra.
+- **Menu di segreteria:** colonna di 240px su `menu`; voci Saira 16px 0.12em in `testo-secondario` (0.12em solo sul telefono, 0.1em da 768px; da 1001px nessuna va a capo); da 768px i due tasti (?, tema) e il bollino DATI DI PROVA stanno in cima, sotto il marchio, in una riga alta 44px; IMPOSTAZIONI è una voce di LA PALESTRA; COPIA LINK e chi è entrato in fondo, e scorrono con le voci; la voce corrente ha la barra sinistra 4px del colore `testo` e fondo `superficie` (mai rossa: il rosso è per ciò che manca); i numeri delle voci sono bollini gialli a destra.
 
 ### Riga dell'appello (firma del sistema)
 Riga piena larga 56px: segno grande a sinistra (Saira 22px), nome Barlow 17px. Tre stati senza leggere: presente = bordo e segno verdi; assente = bordo e segno rossi, nome barrato e spento; non segnato = bordo `riga`.
@@ -305,6 +305,9 @@ Nomi da toccare alti 84px, bordo 3px, Barlow 22px (sono nomi di persona: niente 
 
 ### Timbro kanji
 Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un serif giapponese di sistema; tre misure (22, 32, 56px).
+
+### Timbri della scheda
+In cima alla scheda di un iscritto (`.sg-timbro`), da non confondere col timbro kanji: rettangoli squadrati che sono tasti e portano alla loro sezione. Bordo 2px del tono dello stato con barra sinistra 4px, fondo `nero-palestra`; titoletto Label 12px in `testo-spento`, parola Title 22px nel `-testo` del tono (verde a posto, giallo da guardare, rosso manca), righe Saira 14px a 0.12em in `testo-secondario`; una riga che è un avviso a sé (DA STAMPARE) ha il suo riquadro giallo. Le parole sono quelle della colonna IN REGOLA, dalla stessa funzione (`timbriScheda`). **Piccolo** (il documento, che non serve per entrare): colonna più stretta, parola 19px, righe 12px spente. **Spento** (scheda disattivata): bordo `riga`, testo `testo-spento`, stesse parole; sopra, un avviso a bordo tratteggiato `testo` con DISATTIVATA in Saira e la frase in Barlow 15px, mai rosso perché si annulla. Al passaggio il bordo passa a `testo`. Sotto i 1000px si mettono uno sotto l'altro.
 
 ## Do's and Don'ts
 
