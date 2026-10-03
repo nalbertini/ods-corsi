@@ -186,16 +186,42 @@ export function dataLunga(g: string, anno = true) {
  * Una scheda a pieno schermo: prende tutta la sezione al posto dell'elenco,
  * invece di stargli accanto. L'elenco sotto resta montato ma nascosto, con i
  * filtri e la ricerca di prima; tornando, la pagina torna dov'era.
+ *
+ * `cornice={false}` per una scheda che ha già la sua (quella dei corsi).
  */
-export function SchedaPiena({ etichetta, torna, onTorna, tinta, children }: { etichetta: string; torna: string; onTorna: () => void; tinta?: string; children: ReactNode }) {
+export function SchedaPiena({
+  etichetta,
+  torna,
+  onTorna,
+  tinta,
+  cornice = true,
+  children,
+}: {
+  etichetta: string
+  torna: string
+  onTorna: () => void
+  tinta?: string
+  cornice?: boolean
+  children: ReactNode
+}) {
   const cima = useRef<HTMLDivElement>(null)
+  const dovEra = useRef<number | null>(null)
+  const montata = useRef(false)
   useLayoutEffect(() => {
     const corpo = cima.current?.closest('.sg-corpo')
     if (!corpo) return
-    const dovEra = corpo.scrollTop
+    // Lo StrictMode di sviluppo monta due volte: conta la prima posizione, e
+    // il ritorno parte solo se la scheda è chiusa davvero.
+    dovEra.current ??= corpo.scrollTop
+    montata.current = true
     corpo.scrollTop = 0
-    // Dopo il commit: prima l'elenco torna visibile, poi la pagina scende dov'era.
-    return () => queueMicrotask(() => void (corpo.scrollTop = dovEra))
+    return () => {
+      montata.current = false
+      // Dopo il commit: prima l'elenco torna visibile, poi la pagina scende dov'era.
+      queueMicrotask(() => {
+        if (!montata.current) corpo.scrollTop = dovEra.current ?? 0
+      })
+    }
   }, [])
   return (
     <div ref={cima} className="stack" style={{ gap: 16 }}>
@@ -203,9 +229,13 @@ export function SchedaPiena({ etichetta, torna, onTorna, tinta, children }: { et
         <Back size={18} />
         {torna}
       </button>
-      <section aria-label={etichetta} className="sg-scheda sg-scheda-piena" style={tinta ? { ['--tinta' as string]: tinta } : undefined}>
-        {children}
-      </section>
+      {cornice ? (
+        <section aria-label={etichetta} className="sg-scheda sg-scheda-piena" style={tinta ? { ['--tinta' as string]: tinta } : undefined}>
+          {children}
+        </section>
+      ) : (
+        children
+      )}
     </div>
   )
 }
