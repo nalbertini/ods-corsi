@@ -52,8 +52,8 @@ export function Iscritti({
   d: DatiSegreteria
   /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
   scelta?: string
-  /** `correggi`: al posto dell'indirizzo di adesso, senza un passo per Indietro. */
-  onScelta: (id: string | null, correggi?: boolean) => void
+  /** `push` è un passo per Indietro, `replace` corregge l'indirizzo di adesso. */
+  onScelta: (id: string | null, passo: 'push' | 'replace') => void
   filtroIniziale?: Destinazione['filtro']
 }) {
   const persone = useCarica(() => d.persone(), [d])
@@ -69,6 +69,14 @@ export function Iscritti({
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [daStampare, setDaStampare] = useState(filtroIniziale === 'stampare')
   const [nuovo, setNuovo] = useState(false)
+  // Il modulo del nuovo iscritto non sta nell'indirizzo: quando la scheda
+  // cambia da fuori (Indietro, Avanti) si chiude, se no resterebbe sopra la
+  // scheda che l'indirizzo dice.
+  const [sceltaDiPrima, setSceltaDiPrima] = useState(scelta)
+  if (scelta !== sceltaDiPrima) {
+    setSceltaDiPrima(scelta)
+    setNuovo(false)
+  }
   const { avviso, avvisa, fai } = useAvviso()
   const oggi = chiaveGiorno(new Date())
 
@@ -113,7 +121,7 @@ export function Iscritti({
 
   const chiudi = () => {
     setNuovo(false)
-    if (scelta) onScelta(null)
+    if (scelta) onScelta(null, 'push')
   }
 
   // Una scheda di qualcuno che non c'è più (un link vecchio, un'altra
@@ -122,8 +130,9 @@ export function Iscritti({
   useEffect(() => {
     if (!scelta || !persone.dato || persone.dato.some((p) => p.id === scelta)) return
     avvisa('Quell’iscritto non c’è più')
-    onScelta(null, true)
-  }, [persone.dato]) // eslint-disable-line react-hooks/exhaustive-deps
+    onScelta(null, 'replace')
+    // Solo all'arrivo dell'elenco: aprire una scheda non è un motivo per guardare.
+  }, [persone.dato])
 
   return (
     <>
@@ -137,7 +146,7 @@ export function Iscritti({
             onLasciaStare={() => setNuovo(false)}
             onSalvato={(id) => {
               setNuovo(false)
-              onScelta(id)
+              onScelta(id, 'push')
               void ricarica()
             }}
           />
@@ -156,7 +165,7 @@ export function Iscritti({
             onCambiato={() => void ricarica()}
             onApri={(id) => {
               setNuovo(false)
-              onScelta(id)
+              onScelta(id, 'push')
             }}
           />
         </SchedaPiena>
@@ -244,7 +253,7 @@ export function Iscritti({
                   data-spento={!p.attiva}
                   onClick={() => {
                     setNuovo(false)
-                    onScelta(p.id)
+                    onScelta(p.id, 'push')
                   }}
                 >
                   <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>

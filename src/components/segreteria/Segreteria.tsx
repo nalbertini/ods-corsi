@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
@@ -25,7 +25,7 @@ import { CercaIscritto } from './CercaIscritto'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
-import { leggiIndirizzo, scriviIndirizzo, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
+import { dopoIndietro, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 
 export type { Voce }
 
@@ -170,42 +170,49 @@ export function Segreteria({
   // Il posto di adesso per chi ascolta il browser, che non vede lo stato dell'ultimo giro.
   const ora = useRef(posto)
   /** Va in un posto: `push` è un passo per Indietro, `replace` corregge quello di adesso. */
-  const segna = useCallback((p: Posto, passo: 'push' | 'replace') => {
+  const segna = (p: Posto, passo: 'push' | 'replace') => {
     const prima = scriviIndirizzo(ora.current)
     ora.current = p
     setPosto(p)
     const h = scriviIndirizzo(p)
     if (h !== prima) scrivi(h, passo)
-  }, [])
+  }
   const vai = async (v: Voce, d: Destinazione = {}) => {
     // Un modulo scritto a metà (una ricevuta, un iscritto nuovo) non si perde con un clic sul menu.
     if (bozzaAperta() && !(await lasciare())) return
     setFiltro(d.filtro)
-    // La stessa voce ritoccata chiude la scheda o la lezione e tiene il resto: settimana e sala.
-    segna(v === ora.current.voce && !d.persona && !d.lezione ? { ...ora.current, persona: undefined, lezione: undefined } : { voce: v, persona: d.persona, lezione: d.lezione }, 'push')
+    segna(postoDelMenu(ora.current, v, d), 'push')
     setAperto(false)
   }
   useEffect(() => {
-    // Un indirizzo che non si capisce diventa quello di DA FARE; quello degli altri si lascia stare.
-    const corretto = (letto: Posto) => {
-      const h = scriviIndirizzo(letto)
-      if (window.location.hash.length > 1 && window.location.hash !== h) scrivi(h, 'replace')
+    // Un indirizzo che non si capisce diventa quello giusto; quello degli altri si lascia stare.
+    const correggi = () => {
+      const h = indirizzoCorretto(window.location.hash, { prova })
+      if (h) scrivi(h, 'replace')
     }
-    const letto = leggiIndirizzo(window.location.hash, { prova })
-    if (letto) corretto(letto)
+    correggi()
+    // Mentre si chiede della bozza, un altro Indietro non fa una seconda domanda:
+    // la prima resterebbe senza risposta.
+    let chiedendo = false
     const torna = async () => {
-      const letto = leggiIndirizzo(window.location.hash, { prova })
-      if (!letto) return
-      const prima = scriviIndirizzo(ora.current)
-      if (scriviIndirizzo(letto) === prima) return
+      if (chiedendo) return
+      if (!dopoIndietro(ora.current, window.location.hash, { prova })) return correggi()
       // Indietro con un modulo a metà: la stessa domanda del menu, e chi torna a
       // finire ritrova l'indirizzo del modulo.
-      if (bozzaAperta() && !(await lasciare())) return scrivi(prima, 'push')
+      if (bozzaAperta()) {
+        chiedendo = true
+        const lascia = await lasciare()
+        chiedendo = false
+        if (!lascia) return scrivi(scriviIndirizzo(ora.current), 'push')
+      }
+      // Durante la domanda si può essere andati ancora indietro: conta dove si è adesso.
+      const letto = dopoIndietro(ora.current, window.location.hash, { prova })
+      if (!letto) return correggi()
       if (letto.voce !== ora.current.voce) setFiltro(undefined)
       ora.current = letto
       setPosto(letto)
       setAperto(false)
-      corretto(letto)
+      correggi()
     }
     window.addEventListener('popstate', torna)
     return () => window.removeEventListener('popstate', torna)
@@ -410,7 +417,7 @@ export function Segreteria({
         {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} />}
         {d && voce === 'corsi' && <Corsi d={d} />}
         {d && voce === 'iscritti' && (
-          <Iscritti key={filtro ?? ''} d={d} scelta={posto.persona} onScelta={(id, correggi) => segna({ voce: 'iscritti', persona: id ?? undefined }, correggi ? 'replace' : 'push')} filtroIniziale={filtro} />
+          <Iscritti key={filtro ?? ''} d={d} scelta={posto.persona} onScelta={(id, passo) => segna({ voce: 'iscritti', ...(id && { persona: id }) }, passo)} filtroIniziale={filtro} />
         )}
         {d && voce === 'richieste' && <Richieste key={filtro ?? ''} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} />}
         {d && inPresenze && conSegnalate && (

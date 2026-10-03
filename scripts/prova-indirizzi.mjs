@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export { leggiIndirizzo, scriviIndirizzo } from './src/lib/indirizzoSegreteria'",
+    contents: "export { leggiIndirizzo, scriviIndirizzo, postoDelMenu, dopoIndietro, indirizzoCorretto, settimanaDi } from './src/lib/indirizzoSegreteria'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -100,6 +100,52 @@ ok('e nel testo non c\'è niente di quello che è stato tolto',
   /Mario|Rossi|esempio|allergico|Karate|Gino/.test(
     m.scriviIndirizzo(conTroppo) + m.scriviIndirizzo({ voce: 'settimana', lezione: lezioneConTroppo })),
   false)
+
+console.log('La settimana nell\'indirizzo è una data vera')
+ok('un mese che non c\'è non diventa una settimana', leggi('#settimana?dal=2026-13-45'), { voce: 'settimana' })
+ok('nemmeno il 30 febbraio', leggi('#settimana?dal=2026-02-30'), { voce: 'settimana' })
+ok('un giorno a metà settimana porta al suo lunedì', leggi('#settimana?dal=2026-09-30')?.settimana, '2026-09-28')
+ok('e l\'indirizzo si corregge sul lunedì', m.indirizzoCorretto('#settimana?dal=2026-09-30', { prova: false }), '#settimana?dal=2026-09-28')
+
+console.log('La barra in fondo')
+ok('#iscritti/ è l\'elenco ISCRITTI', leggi('#iscritti/'), { voce: 'iscritti' })
+ok('e l\'indirizzo si corregge in #iscritti', m.indirizzoCorretto('#iscritti/', { prova: false }), '#iscritti')
+
+console.log('Il menu')
+const inSettimana = { voce: 'settimana', settimana: '2026-09-28', sala: 'tatami', lezione }
+ok('la stessa voce ritoccata chiude la lezione e tiene settimana e sala',
+  piatto(m.postoDelMenu(inSettimana, 'settimana')),
+  { sala: 'tatami', settimana: '2026-09-28', voce: 'settimana' })
+ok('ISCRITTI ritoccato chiude la scheda',
+  m.postoDelMenu({ voce: 'iscritti', persona: 'X' }, 'iscritti'), { voce: 'iscritti' })
+ok('una voce diversa riparte da capo', m.postoDelMenu(inSettimana, 'corsi'), { voce: 'corsi' })
+ok('e torna alla settimana di oggi', m.postoDelMenu({ voce: 'corsi' }, 'settimana'), { voce: 'settimana' })
+ok('da un\'altra voce, la scheda di qualcuno', m.postoDelMenu({ voce: 'dafare' }, 'iscritti', { persona: 'X' }), { voce: 'iscritti', persona: 'X' })
+ok('la stessa voce con una scheda apre quella scheda',
+  m.postoDelMenu({ voce: 'iscritti', persona: 'X' }, 'iscritti', { persona: 'Y' }), { voce: 'iscritti', persona: 'Y' })
+ok('da un\'altra voce, una lezione', piatto(m.postoDelMenu({ voce: 'dafare' }, 'settimana', { lezione })), piatto({ voce: 'settimana', lezione }))
+
+console.log('Indietro e Avanti')
+const ind = (ora, hash, prova = false) => m.dopoIndietro(ora, hash, { prova })
+ok('torna alla voce di prima', ind({ voce: 'iscritti', persona: 'X' }, '#corsi'), { voce: 'corsi' })
+ok('torna alla scheda', ind({ voce: 'iscritti' }, '#iscritti/X'), { voce: 'iscritti', persona: 'X' })
+ok('il posto dove si è già: niente da fare', ind({ voce: 'iscritti', persona: 'X' }, '#iscritti/X'), null)
+ok('la guida non è della segreteria', ind({ voce: 'corsi' }, '#guida/segreteria'), null)
+ok('nemmeno un link di Supabase', ind({ voce: 'corsi' }, '#access_token=abc'), null)
+ok('un indirizzo sconosciuto porta a DA FARE', ind({ voce: 'corsi' }, '#pippo'), { voce: 'dafare' })
+ok('che si corregge in #dafare', m.indirizzoCorretto('#pippo', { prova: false }), '#dafare')
+ok('un indirizzo già giusto non si corregge', m.indirizzoCorretto('#iscritti/X', { prova: false }), null)
+ok('senza cancelletto non si scrive niente', m.indirizzoCorretto('', { prova: false }), null)
+ok('il cancelletto degli altri non si tocca', m.indirizzoCorretto('#aree', { prova: false }), null)
+
+console.log('Quale settimana si vede')
+const chiave = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const oggi = new Date('2026-10-01T10:00')
+ok('prima la settimana della lezione aperta',
+  chiave(m.settimanaDi({ voce: 'settimana', settimana: '2026-09-07', lezione: { id: 'l', inizio: '2026-09-23T18:30:00+02:00' } }, oggi)), '2026-09-21')
+ok('poi quella dell\'indirizzo', chiave(m.settimanaDi({ voce: 'settimana', settimana: '2026-09-07' }, oggi)), '2026-09-07')
+ok('se no quella di oggi', chiave(m.settimanaDi({ voce: 'settimana' }, oggi)), '2026-09-28')
+ok('dalla mezzanotte', m.settimanaDi({ voce: 'settimana' }, oggi).getHours(), 0)
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

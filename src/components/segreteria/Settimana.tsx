@@ -1,25 +1,18 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, LezioneSeg } from '../../lib/segreteria'
 import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/sala'
-import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../../lib/sala'
+import { chiaveGiorno, giornoPerEsteso, lunedi, oraDi, perEsteso } from '../../lib/sala'
 import { dati, type Dati } from '../../lib/dati'
 import { Back } from '../Icons'
 import { useSchermo } from '../../lib/largo'
 import type { ChiProva } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
-import type { Posto } from '../../lib/indirizzoSegreteria'
+import { settimanaDi, type Posto } from '../../lib/indirizzoSegreteria'
 import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
 const MESI_CORTI = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC']
 
-/** Il lunedì della settimana di una data. */
-function lunedi(d: Date): Date {
-  const x = new Date(d)
-  x.setHours(0, 0, 0, 0)
-  x.setDate(x.getDate() - ((x.getDay() + 6) % 7))
-  return x
-}
 const piu = (d: Date, giorni: number) => {
   const x = new Date(d)
   x.setDate(x.getDate() + giorni)
@@ -51,16 +44,14 @@ export function Settimana({
   onPosto: (p: Omit<Posto, 'voce'>, passo: 'push' | 'replace') => void
 }) {
   const { lezione: aperta, sala = '' } = posto
-  // Con una lezione aperta si legge la sua settimana.
-  const primo = useMemo(
-    () => lunedi(aperta ? new Date(aperta.inizio) : posto.settimana ? new Date(`${posto.settimana}T00:00`) : new Date()),
-    [aperta?.inizio, posto.settimana], // eslint-disable-line react-hooks/exhaustive-deps
-  )
+  // Una chiave e non la data: la stessa settimana a ogni giro non rilegge la griglia.
+  const chiave = chiaveGiorno(settimanaDi(posto, new Date()))
+  const primo = useMemo(() => new Date(`${chiave}T00:00`), [chiave])
   const vai = (cambi: Omit<Posto, 'voce'>, passo: 'push' | 'replace') =>
     onPosto({ settimana: chiaveGiorno(primo), sala: sala || undefined, lezione: aperta, ...cambi }, passo)
   // Sfogliare e cambiare sala non sono passi: Indietro torna alla voce di prima, non sei settimane fa.
-  const setPrimo = (x: Date) => vai({ settimana: chiaveGiorno(x) }, 'replace')
-  const setSala = (id: string) => vai({ sala: id || undefined }, 'replace')
+  const sfoglia = (x: Date) => vai({ settimana: chiaveGiorno(x) }, 'replace')
+  const scegliSala = (id: string) => vai({ sala: id || undefined }, 'replace')
   const [nuova, setNuova] = useState(false)
   const { avviso, avvisa, fai } = useAvviso()
 
@@ -76,7 +67,8 @@ export function Settimana({
     if (!aperta || !sett.dato || sett.dato.some((l) => l.id === aperta.id)) return
     avvisa('Quella lezione non c’è più')
     vai({ lezione: undefined }, 'replace')
-  }, [sett.dato]) // eslint-disable-line react-hooks/exhaustive-deps
+    // Solo all'arrivo della settimana: aprire una lezione non è un motivo per guardare.
+  }, [sett.dato])
 
   // Le presenze segnate dal cassetto viaggiano nella coda dell'appello: la
   // griglia si rilegge quando la coda si svuota, cioè quando sono arrivate.
@@ -125,21 +117,21 @@ export function Settimana({
       </Testa>
 
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-        <button type="button" className="icon-btn" aria-label="Settimana prima" onClick={() => setPrimo(piu(primo, -7))}>
+        <button type="button" className="icon-btn" aria-label="Settimana prima" onClick={() => sfoglia(piu(primo, -7))}>
           <Back />
         </button>
         <span className="ob sg-sett-titolo">{titolo(primo)}</span>
-        <button type="button" className="icon-btn" aria-label="Settimana dopo" onClick={() => setPrimo(piu(primo, 7))}>
+        <button type="button" className="icon-btn" aria-label="Settimana dopo" onClick={() => sfoglia(piu(primo, 7))}>
           <span style={{ transform: 'scaleX(-1)', display: 'flex' }}>
             <Back />
           </span>
         </button>
-        <button type="button" className="sg-chip" onClick={() => setPrimo(lunedi(new Date()))}>
+        <button type="button" className="sg-chip" onClick={() => sfoglia(lunedi(new Date()))}>
           OGGI
         </button>
         <div className="grow" />
         {[{ id: '', nome: 'TUTTE' }, ...(sale.dato ?? [])].map((s) => (
-          <button key={s.id} type="button" className="num sg-chip" aria-pressed={sala === s.id} onClick={() => setSala(s.id)}>
+          <button key={s.id} type="button" className="num sg-chip" aria-pressed={sala === s.id} onClick={() => scegliSala(s.id)}>
             {s.nome.toUpperCase()}
           </button>
         ))}
@@ -254,7 +246,7 @@ export function Settimana({
           fai={fai}
           onFatto={(inizio) => {
             setNuova(false)
-            setPrimo(lunedi(inizio))
+            sfoglia(lunedi(inizio))
             void sett.ricarica()
           }}
         />
