@@ -39,6 +39,11 @@ Se la migrazione serve a una funzione dell'app, la modalità prova
 - Funzioni: `revoke all on function … from public, anon` e `grant execute …
   to authenticated`. Chi tocca i file 01–05 deve rilanciare `06`, che rimette
   i permessi alle funzioni.
+- Un vincolo nuovo o più stretto su una tabella che ha già dati: prima
+  l'`update` che sistema le righe che non lo rispettano, poi il vincolo. Se
+  no il rilancio sul database vero fallisce (o, riga per riga, lascia la
+  tabella senza vincolo). Si prova lanciando la versione vecchia, inserendo
+  una riga sbagliata e rilanciando la nuova.
 - In fondo: `notify pgrst, 'reload schema';`.
 
 ## Provare
