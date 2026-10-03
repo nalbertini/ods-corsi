@@ -252,7 +252,7 @@ export function TabletPresenza({
                 </span>
                 <span className="tb-sotto">
                   {fascia.annulla
-                    ? "L'hai toccato per sbaglio? Annulla qui."
+                    ? 'Toccato per sbaglio? Annulla qui.'
                     : "Se non eri tu, dillo all'istruttore: lo corregge dall'area istruttore."}
                 </span>
               </span>
@@ -282,7 +282,7 @@ export function TabletPresenza({
             <span className="stack grow" style={{ gap: 2 }}>
               <span className="ob tb-fascia-titolo">ANNULLATO</span>
               <span className="tb-sotto">
-                {fascia.p.nome} {fascia.p.sigla} non è segnato. Chi c'è tocca il suo nome.
+                {fascia.p.nome} {fascia.p.sigla}: presenza tolta. Chi c'è tocca il suo nome.
               </span>
             </span>
           )}
