@@ -46,7 +46,9 @@ Chi si iscrive risponde alle domande dal telefono:
   corsi giusti per quell'anno vengono per primi; sotto **SENZA FASCIA D'ETÀ**
   quelli per cui il listino non dice gli anni, e sotto **ALTRI CORSI** quelli
   di un'altra età: si possono scegliere lo stesso, e un avviso giallo dice
-  quali sono e che la segreteria richiama.
+  quali sono e che la segreteria richiama. Un corso che il listino non ha
+  ancora (senza prezzo) si sceglie lo stesso, e sotto il nome c'è scritto
+  «prezzo da confermare».
 - **Il modulo**: le autorizzazioni si firmano **qui, col dito** (o col mouse
   dal computer). Si sceglie come sul foglio se si acconsente al
   **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**; per

@@ -422,7 +422,7 @@ function Scheda({
           d={d}
           p={p}
           nucleo={nucleo}
-          corsi={correnti.map((i) => corsi.get(i.corsoId)?.nome ?? '').filter(Boolean)}
+          corsi={correnti.flatMap((i) => { const c = corsi.get(i.corsoId); return c ? [{ id: c.id, nome: c.nome }] : [] })}
           fai={fai}
           onLasciaStare={() => setPagando(false)}
           onFatta={() => {

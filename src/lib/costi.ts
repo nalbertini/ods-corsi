@@ -26,6 +26,12 @@ export interface Prezzi {
 
 export interface VoceCosto {
   corso: string
+  /**
+   * Il corso di CORSI a cui la voce appartiene: così una rinomina non rompe il
+   * prezzo. Senza (listino vecchio, foglio) vale il nome, finché la segreteria
+   * non la aggancia da LISTINO.
+   */
+  corsoId?: string
   eta: string
   orari: string[]
   prezzi: Prezzi[]

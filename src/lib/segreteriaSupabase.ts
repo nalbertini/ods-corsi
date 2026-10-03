@@ -12,7 +12,7 @@ import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
-import { cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
+import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
 import { cosaNonVaSegnalazione, type Segnalazione } from './segnalazioni'
 
@@ -760,9 +760,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async salvaListino(l) {
-      const g = l && cosaNonVaListino(l)
+      const elenco = await this.corsi()
+      const pronto = l && agganciaPerNome(l, elenco)
+      const g = pronto && cosaNonVaListino(pronto, elenco)
       if (g) throw new Error(g)
-      ok(await db.from('impostazioni').update({ listino: l }).eq('id', true))
+      ok(await db.from('impostazioni').update({ listino: pronto }).eq('id', true))
       scordaListino()
     },
 
