@@ -8,6 +8,7 @@
 // `supabase/prova/segreteria.sql`): qui si controlla che i cambi arrivino
 // dove devono — al calendario dell'app, all'appello, al tablet.
 // ---------------------------------------------------------------------------
+import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({
@@ -1002,6 +1003,31 @@ console.log('\nunire due schede')
   ok('i campi che non tornano: cognome, email, telefono',
     m.campiDiversi(mario, tutte[2]).map((c) => [c.resta, c.via]),
     [["D'Amico", 'DAmico'], ['mario@esempio.it', 'mario.damico@esempio.it'], ['', '333 1234567']])
+}
+
+// Il testo spento del tema chiaro sul fondo del menu e sui riquadri alti: le
+// scritte piccole (titoli dei gruppi, ruolo, versione) devono arrivare a 4,5:1.
+// L'app e il timer hanno lo stesso token: si provano tutti e due.
+{
+  const luce = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  // Il rapporto fino a 4,5: oltre basta, sotto la prova rossa dice di quanto manca.
+  const contrasto = (a, b) => {
+    const [x, y] = [luce(a), luce(b)].sort((p, q) => q - p)
+    return Math.min(4.5, Math.floor(((x + 0.05) / (y + 0.05)) * 100) / 100)
+  }
+  for (const file of ['src/styles.css', 'timer/src/styles.css']) {
+    const css = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')
+    const tema = (sel) => {
+      const corpo = css.slice(css.indexOf(sel + ' {')).split('}')[0]
+      return Object.fromEntries([...corpo.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/gi)].map((m) => [m[1], m[2]]))
+    }
+    const chiaro = tema(":root[data-tema='chiaro']")
+    for (const fondo of ['menu', 'surface-2'].filter((f) => chiaro[f])) ok(`${file}, tema chiaro: testo spento su --${fondo}`, contrasto(chiaro.dim, chiaro[fondo]), 4.5)
+    ok(`${file}, tema scuro: il testo spento resta quello`, tema(':root').dim, '#8c8c88')
+  }
 }
 
 console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
