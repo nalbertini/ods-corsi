@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
+import { useSchermo } from '../../lib/largo'
 
 /** Senza maiuscole né accenti: «nicolò» trova «Nicolo». */
 const piano = (t: string) => t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
@@ -18,6 +19,7 @@ export function CercaIscritto({ d, onApri }: { d: DatiSegreteria; onApri: (perso
   const [aperto, setAperto] = useState(false)
   const campo = useRef<HTMLInputElement>(null)
   const id = useId()
+  const conTastiera = useSchermo('(pointer: fine)')
 
   // «/» da qualunque punto, tranne mentre si scrive in un altro campo.
   useEffect(() => {
@@ -64,7 +66,8 @@ export function CercaIscritto({ d, onApri }: { d: DatiSegreteria; onApri: (perso
         className="sg-campo"
         type="search"
         autoComplete="off"
-        placeholder="Cerca iscritto  /"
+        // «/» è una scorciatoia da tastiera: col dito non si dice.
+        placeholder={conTastiera ? 'Cerca iscritto  /' : 'Cerca iscritto'}
         role="combobox"
         aria-expanded={mostra}
         aria-controls={`${id}-elenco`}
