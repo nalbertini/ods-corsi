@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.9.1 — 3 ottobre 2026
+
+### Risolto
+
+- Una lezione straordinaria fissata lontano non ferma più il calendario delle lezioni normali
+- Sul tablet, chi è già nell'appello non torna fra chi viene a provare quando l'appello non si rilegge
+
 ## 0.9.0 — 3 ottobre 2026
 
 ### Novità
