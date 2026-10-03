@@ -359,7 +359,7 @@ export function TabletIstruttore({
         {conProve && (
           <PannelloProve
             stile="tb"
-            cerca={() => d.provati(pin)}
+            cerca={(scritto) => d.provati(pin, scritto)}
             giaQui={giaQui}
             onAggiungi={aggiungiProva}
             onChiudi={() => setConProve(false)}

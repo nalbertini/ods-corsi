@@ -999,6 +999,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async togliNonDoppioni(x, y) {
+      a().nonDoppioni = (a().nonDoppioni ?? []).filter(([p, q]) => !((p === x && q === y) || (p === y && q === x)))
+      salva()
+    },
+
     async salvaSala(s) {
       const nome = s.nome.trim()
       if (!nome) throw new Error('La sala ha bisogno di un nome')

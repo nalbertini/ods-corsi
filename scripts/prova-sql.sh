@@ -22,6 +22,7 @@ prima() {
   case $1 in
     presenze-istruttori | prove) echo tablet ;;
     istruttori-dalle-lezioni) echo tablet presenze-istruttori ;;
+    prove-per-nome) echo tablet prove ;;
     timer-lezioni) echo timer ;;
   esac
 }

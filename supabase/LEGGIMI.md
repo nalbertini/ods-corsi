@@ -61,6 +61,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 31. `31-informativa-mesi.sql` — per quanto si tengono le presenze, letto dall'informativa privacy anche da chi non ha un accesso
 32. `32-segnalazioni-allegati.sql` — i file nelle segnalazioni: fino a 3 foto o PDF per messaggio (10 MB), in un contenitore privato; li vede la segreteria, li toglie solo chi li ha mandati, e 30 giorni dopo la chiusura del filo si tolgono da soli
 33. `33-non-doppioni.sql` — le coppie di schede che la segreteria ha segnato «non sono doppioni» (due omonimi veri), così non compaiono più fra i possibili doppioni di ISCRITTI
+34. `34-prove-per-nome.sql` — sul tablet chi è già venuto a provare si cerca per nome, dalla terza lettera di una parola e al massimo venti, con cento ricerche in dieci minuti e trecento al giorno per tablet: il tablet non ha più l'elenco intero
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -178,6 +179,11 @@ Per segnare due schede «non sono doppioni» basta `33-non-doppioni.sql` (dopo
 `29-unisci-doppioni.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
 finché non c'è, i possibili doppioni si vedono lo stesso e NON SONO DOPPIONI
 dice che va lanciato.
+Per cercare per nome, sul tablet, chi è venuto a provare basta
+`34-prove-per-nome.sql` (dopo `21-prove.sql`), che non chiede di rilanciare
+`06-iscrizioni.sql`: finché non c'è, sul tablet i già venuti non compaiono, e
+chi ha un PIN può ancora leggere l'elenco intero. Chi rilancia `21-prove.sql`
+rilancia poi anche `34`.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -830,5 +836,8 @@ lezione, un'iscrizione per corso, le ricevute intatte, chi ha segnato le
 presenze) e che un errore a metà non cambi niente. `non-doppioni.sql` prova
 che le coppie «non sono doppioni» le veda, le segni e le tolga solo la
 segreteria, una riga per coppia a nome di chi scrive, e che unendo due schede
-le coppie passino senza fermare l'unione. `finto-supabase.sql` rifà anche le due
+le coppie passino senza fermare l'unione. `prove-per-nome.sql`,
+dopo `prove.sql`, prova che il tablet ritrovi chi è venuto a provare solo per
+nome: dalla terza lettera di una parola, al massimo venti, come la ricerca
+dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

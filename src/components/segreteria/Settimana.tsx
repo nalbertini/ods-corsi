@@ -6,6 +6,7 @@ import { dati, type Dati } from '../../lib/dati'
 import { Back } from '../Icons'
 import { useSchermo } from '../../lib/largo'
 import type { ChiProva } from '../../lib/prove'
+import { unaVolta } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
 import { settimanaDi, type Posto } from '../../lib/indirizzoSegreteria'
 import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
@@ -573,7 +574,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
       {conProve && strato && elenco && (
         <PannelloProve
           stile="sg"
-          cerca={() => strato.provati()}
+          cerca={unaVolta(() => strato.provati())}
           giaQui={new Set(elenco.map((p) => p.id))}
           onAggiungi={aggiungiProva}
           onChiudi={() => setConProve(false)}

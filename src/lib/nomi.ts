@@ -22,6 +22,14 @@ const STACCA = /['’‘ʼ´‐–—-]/g
 /** Un nome scritto attaccato, senza accenti, apostrofi e trattini: D'Amico, D’amico e Damico diventano «damico». */
 export const compatto = (s: string) => piano(s).replace(STACCA, '').replace(/\s+/g, '')
 
+/** Le parole di un nome, senza accenti, apostrofi, trattini e punti: «Maria-Chiara M.» → maria, chiara, m. */
+export const paroleDelNome = (s: string): string[] =>
+  piano(s)
+    .replace(STACCA, ' ')
+    .replace(/\./g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+
 /** Le parole di quel che si sta scrivendo per cercare qualcuno, senza apostrofi né trattini. */
 export const paroleCercate = (scritto: string): string[] =>
   piano(scritto)

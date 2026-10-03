@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { ChiProva, GiaProvato } from '../lib/prove'
-import { cosaNonVaProva, provaScritta, somiglianti } from '../lib/prove'
+import { bastaPerCercare, cosaNonVaProva, daMostrare, provaScritta } from '../lib/prove'
 import { chiaveGiorno, giornoPerEsteso } from '../lib/sala'
 
 /**
@@ -36,8 +36,11 @@ export function PannelloProve({
   onScritto,
 }: {
   stile: Stile
-  /** Chi è già venuto a provare, dal più recente. */
-  cerca: () => Promise<GiaProvato[]>
+  /**
+   * Chi è già venuto a provare, dal più recente, fra cui quelli che somigliano
+   * a `scritto`: il tablet chiede solo quelli, l'app legge tutti una volta (`unaVolta`).
+   */
+  cerca: (scritto: string) => Promise<GiaProvato[]>
   /** Chi è già nell'appello: non si propone. */
   giaQui: ReadonlySet<string>
   /** Aggiunge e segna presente. Se solleva, il messaggio resta nel pannello. */
@@ -47,8 +50,11 @@ export function PannelloProve({
   onScritto?: (chi: string | null) => void
 }) {
   const k = CLASSI[stile]
-  const [venuti, setVenuti] = useState<GiaProvato[] | null>(null)
-  const [nonVa, setNonVa] = useState(false)
+  // L'ultima risposta arrivata, per qualunque testo. Dentro un oggetto nuovo
+  // ogni volta: `unaVolta` dà sempre lo stesso elenco, e React non ridisegnerebbe.
+  const [ultimi, setUltimi] = useState<{ chi: GiaProvato[] }>({ chi: [] })
+  // L'errore dell'ultima ricerca: «senza rete» o il tetto delle ricerche.
+  const [nonVede, setNonVede] = useState<unknown>(null)
   const [nome, setNome] = useState('')
   const [cognome, setCognome] = useState('')
   const [telefono, setTelefono] = useState('')
@@ -57,23 +63,44 @@ export function PannelloProve({
   const [aspetta, setAspetta] = useState(false)
   const primo = useRef<HTMLInputElement>(null)
 
-  // Una volta, quando il pannello si apre: chi lo apre non deve ricordarsi di
-  // tenere ferma la funzione.
+  // La funzione di quando il pannello si apre: chi lo apre non deve ricordarsi
+  // di tenerla ferma.
   const leggi = useRef(cerca)
+  const testo = `${nome} ${cognome}`.trim()
+  // Si chiede a ogni testo nuovo, anche vuoto all'apertura: così l'app legge
+  // l'elenco subito, e il tablet sa subito se il server risponde. Le risposte
+  // si tengono per testo: tornare a «marco» non richiede.
+  const letti = useRef(new Map<string, GiaProvato[]>())
+  const aperto = useRef(true)
   useEffect(() => {
-    let vivo = true
-    leggi
-      .current()
-      .then((x) => vivo && setVenuti(x))
-      .catch(() => vivo && setNonVa(true))
-    return () => {
-      vivo = false
-    }
+    // Anche quando React rimonta il pannello (StrictMode, in sviluppo).
+    aperto.current = true
+    return () => void (aperto.current = false)
   }, [])
+  useEffect(() => {
+    // Già letto: la rete per questo testo c'è stata.
+    if (letti.current.has(testo)) return setNonVede(null)
+    // Senza una parola di tre lettere la risposta è vuota: sul tablet ogni chiamata passa
+    // dal PIN, e con un PIN tolto a pannello aperto conterebbe come sbagliato.
+    if (testo && !bastaPerCercare(testo)) return
+    // Un attimo dopo l'ultimo tasto: sul tablet ogni ricerca conta per il tetto.
+    const t = window.setTimeout(() => {
+      leggi
+        .current(testo)
+        .then((x) => {
+          letti.current.set(testo, x)
+          if (!aperto.current) return
+          setUltimi({ chi: x })
+          setNonVede(null)
+        })
+        .catch((e: unknown) => aperto.current && setNonVede(e))
+    }, testo ? 300 : 0)
+    return () => window.clearTimeout(t)
+  }, [testo])
 
   useEffect(() => primo.current?.focus(), [])
 
-  const proposti = somiglianti((venuti ?? []).filter((p) => !giaQui.has(p.id)), `${nome} ${cognome}`)
+  const { proposti, stato, avviso } = daMostrare({ testo, venuti: letti.current.get(testo), ultimi: ultimi.chi, giaQui, guaio: nonVede })
 
   // Sul tablet la colonna dell'appello scorre: quando compaiono i già venuti
   // il pannello si allunga, e AGGIUNGI finiva sotto lo schermo senza dirlo.
@@ -144,7 +171,7 @@ export function PannelloProve({
 
       {/* Senza i già venuti si aggiunge lo stesso: dall'app la prova va in
           coda come i segni dell'appello (il tablet, senza coda, lo dice se non va). */}
-      {nonVa && <span className="prove-sotto">Senza rete non vedo chi è già venuto: scrivi nome e cognome.</span>}
+      {avviso && <span className="prove-sotto">{avviso}</span>}
       <form className="stack" style={{ gap: 10 }} onSubmit={manda}>
         <div className="prove-campi">
           <label className="stack" style={{ gap: 4 }} htmlFor={id('nome')}>
@@ -159,7 +186,7 @@ export function PannelloProve({
               sul telefono con la tastiera aperta resta vicino al campo. Va
               su una riga intera; dove le colonne sono tre (il tablet) il
               telefono risale accanto al cognome (`grid-auto-flow: dense`). */}
-          {venuti === null && !nonVa && <span className="prove-sotto">Sto leggendo chi è già venuto…</span>}
+          {stato && <span className="prove-sotto">{stato}</span>}
           {proposti.length > 0 && (
             <div className="stack prove-proposti" style={{ gap: 6 }}>
               <span className={k.etichetta}>GIÀ VENUTI CON QUESTO NOME</span>
