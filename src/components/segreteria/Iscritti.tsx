@@ -1108,7 +1108,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
                   void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
               }}
             >
-              TOGLI LA DATA
+              TOGLI IL CERTIFICATO
             </button>
           )}
         </div>
