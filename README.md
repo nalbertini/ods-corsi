@@ -373,6 +373,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/timer.sql` | Il timer: la libreria della palestra, i timer personali e dei corsi, il tablet che li apre e non li scrive, lo storico, le preferenze. |
 | `supabase/prova/certificati.sql` | Certificati medici, documento e pagamenti: li vede e li cambia solo la segreteria; i certificati stanno su carta, di file nuovi non ne entrano, e quelli di prima li legge e li cancella solo lei. |
 | `supabase/prova/ricevute.sql` | Le ricevute: le fa e le annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i conti li fa il server, e una ricevuta fatta non si cambia. |
+| `supabase/prova/tablet-conto-prove.sql` | Sul tablet quanti dei presenti sono venuti a provare, cioè non iscritti quel giorno (chi ha provato e poi si è iscritto è un iscritto), solo per il tablet: «10 su 10 · +1 PROVA», non «11 su 10». |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 | `supabase/prova/presenze-istruttori.sql` | La presenza degli istruttori dal PIN del tablet: da sola a chi era previsto, anche da sostituto, da confermare agli altri; la conferma solo la segreteria. |
 | `supabase/prova/istruttori-dalle-lezioni.sql` | La presenza di chi fa l'appello (confermata se era previsto, da confermare se no, la segreteria al banco no) e le lezioni tenute senza l'istruttore segnato: le vede e le decide solo la segreteria, scegliendo fra i previsti. Dopo `tablet.sql` e `presenze-istruttori.sql`. |

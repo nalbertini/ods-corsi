@@ -63,6 +63,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 33. `33-non-doppioni.sql` — le coppie di schede che la segreteria ha segnato «non sono doppioni» (due omonimi veri), così non compaiono più fra i possibili doppioni di ISCRITTI
 34. `34-prove-per-nome.sql` — sul tablet chi è già venuto a provare si cerca per nome, dalla terza lettera di una parola e al massimo venti, con cento ricerche in dieci minuti e trecento al giorno per tablet: il tablet non ha più l'elenco intero
 35. `35-date-corsi.sql` — SALVA LE DATE toglie le lezioni da domani in poi rimaste fuori da inizio e fine dei corsi, tranne quelle con l'appello o una prova, e dice quante
+36. `36-tablet-conto-prove.sql` — sul tablet chi è venuto a provare si conta a parte: «10 presenti su 10 · +1 PROVA», non «11 su 10»
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -189,6 +190,9 @@ Perché SALVA LE DATE tolga le lezioni rimaste fuori dalle date dei corsi basta
 `35-date-corsi.sql` (dopo `21-prove.sql`), che non chiede di rilanciare
 `06-iscrizioni.sql`: finché non c'è, le date si salvano come prima, le lezioni
 fuori restano e l'app dice che va lanciato.
+Perché il tablet conti chi prova a parte basta `36-tablet-conto-prove.sql`
+(dopo `04-tablet.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
+finché non c'è, il tablet conta come prima, prove comprese («11 su 10»).
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -846,5 +850,8 @@ segreteria, una riga per coppia a nome di chi scrive, e che unendo due schede
 le coppie passino senza fermare l'unione. `prove-per-nome.sql`,
 dopo `prove.sql`, prova che il tablet ritrovi chi è venuto a provare solo per
 nome: dalla terza lettera di una parola, al massimo venti, come la ricerca
-dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno. `finto-supabase.sql` rifà anche le due
+dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno.
+`tablet-conto-prove.sql` prova che il tablet sappia quanti dei presenti sono
+prove, cioè non iscritti quel giorno (chi ha provato e poi si è iscritto no,
+chi ha l'iscrizione finita sì), e che nessun altro lo chieda. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

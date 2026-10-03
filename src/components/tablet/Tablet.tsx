@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import type { DatiTablet, LezioneSala, Postazione, PresenzaIstruttore } from '../../lib/tablet'
-import { codaDelTablet, datiTablet, lasciaTablet, lezioneDiAdesso, REGOLE } from '../../lib/tablet'
+import { codaDelTablet, contoSala, datiTablet, lasciaTablet, lezioneDiAdesso, REGOLE } from '../../lib/tablet'
 import type { Settings } from '../../../timer/src/types'
 import type { Incorporato, StatoTimer, TimerPronto } from '../../../timer/src/lib/incorporato'
 import type { Lezione } from '../../../timer/src/lib/lezione'
@@ -421,7 +421,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
                   {aperta.corso.toUpperCase()}
                 </span>
                 <span className="ob num" style={{ fontSize: 19, fontWeight: 700, whiteSpace: 'nowrap' }}>
-                  · {aperta.presenti}/{aperta.iscritti}
+                  · {contoSala(aperta).presenti}/{aperta.iscritti}
                 </span>
               </span>
             </span>
@@ -517,7 +517,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
           <Persone size={26} />
           <span className="stack" style={{ gap: 1 }}>
             <span className="ob tb-scheda-nome">PRESENZE</span>
-            <span className="num tb-scheda-sotto">{aperta ? `${aperta.presenti}/${aperta.iscritti} SEGNATI` : 'OGGI IN SALA'}</span>
+            <span className="num tb-scheda-sotto">{aperta ? `${contoSala(aperta).presenti}/${aperta.iscritti} SEGNATI` : 'OGGI IN SALA'}</span>
           </span>
         </button>
         <button type="button" className="tb-scheda-sala" aria-pressed={scheda === 'timer'} onClick={vaiTimer}>
