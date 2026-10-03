@@ -311,8 +311,11 @@ export function Segreteria({
             >
               <Cursori />
             </button>
+            {prova && <span className="num sg-bollino">DATI DI PROVA</span>}
           </div>
-          <div className="sg-chi">
+        </div>
+        {/* Chi è entrato scorre con le voci: fermo, il piede si mangerebbe un terzo della colonna. */}
+        <div className="sg-chi">
             <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
             <span style={{ fontSize: 12, color: 'var(--dim)' }}>{ruolo} · accesso completo</span>
             {prova && <span className="num sg-bollino">DATI DI PROVA</span>}
@@ -343,7 +346,6 @@ export function Segreteria({
             <span className="num versione" title={VERSIONE_ESTESA}>
               {VERSIONE}
             </span>
-          </div>
         </div>
       </nav>
 

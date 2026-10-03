@@ -289,7 +289,7 @@ Quadrato 44px con bordo 2px `riga` e segno in `tasto`; quando contiene una parol
 
 ### Navigation
 - **Testata** (telefono/tablet verticale): marchio a ingranaggi e nome obliquo a sinistra, schede sotto; da 960px stessa riga e bordo inferiore `riga-tenue`.
-- **Menu di segreteria:** colonna di 240px su `menu`; voci Saira 16px 0.12em in `testo-secondario` (0.12em solo sul telefono, 0.1em da 768px; da 1001px nessuna va a capo); il piede (COPIA LINK, i tre tasti, chi è entrato) resta fermo in fondo su `menu` con la riga `riga-tenue` sopra, da 768px e 560px di altezza; la voce corrente ha la barra sinistra 4px del colore `testo` e fondo `superficie` (mai rossa: il rosso è per ciò che manca); i numeri delle voci sono bollini gialli a destra.
+- **Menu di segreteria:** colonna di 240px su `menu`; voci Saira 16px 0.12em in `testo-secondario` (0.12em solo sul telefono, 0.1em da 768px; da 1001px nessuna va a capo); il piede (COPIA LINK, i tre tasti e il bollino DATI DI PROVA) resta fermo in fondo su `menu` con la riga `riga-tenue` sopra, da 768px e 560px di altezza; la voce corrente ha la barra sinistra 4px del colore `testo` e fondo `superficie` (mai rossa: il rosso è per ciò che manca); i numeri delle voci sono bollini gialli a destra.
 
 ### Riga dell'appello (firma del sistema)
 Riga piena larga 56px: segno grande a sinistra (Saira 22px), nome Barlow 17px. Tre stati senza leggere: presente = bordo e segno verdi; assente = bordo e segno rossi, nome barrato e spento; non segnato = bordo `riga`.

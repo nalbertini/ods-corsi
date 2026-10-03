@@ -59,9 +59,9 @@ In fondo al menu, sempre in vista anche quando il menu scorre (dal computer):
 - Tre tasti: **?**, la guida della voce aperta, in un'altra scheda; il
   **sole** (o la luna), il tema bianco per questo computer; i **cursori**, le
   IMPOSTAZIONI.
-- **Esci**.
+- In prova, il bollino **DATI DI PROVA**.
 
-In prova c'è anche **Riparti
+Sotto, dopo le voci, chi è entrato ed **Esci**. In prova c'è anche **Riparti
 dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
 
 Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
