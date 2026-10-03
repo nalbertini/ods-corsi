@@ -27,13 +27,18 @@ I corsi archiviati stanno in fondo: «N corsi archiviati · mostra», e
 
 **NUOVO CORSO**, o un clic su un corso esistente:
 
-- **NOME**, **SALA**, **POSTI** — la sala è quella di tutti i giorni che non
+- **NOME**, **SALA**, **POSTI** — il prezzo del corso sta in [LISTINO](listino.md) e
+  segue il corso se ne cambi il nome (vedi lì); la sala è quella di tutti i giorni che non
   ne hanno una loro (vedi sotto);
-- **ISTRUTTORI** — anche più d'uno;
+- **ISTRUTTORI** — anche più d'uno: il primo che scegli è quello di
+  riferimento;
 - **COLORE** — segue la disciplina (blu judo, rosso lotta, giallo pesi, verde
   motricità), così da lontano si capisce cos'è.
 
-**SALVA** per confermare, **LASCIA STARE** per non cambiare niente.
+**SALVA** per confermare, **LASCIA STARE** per non cambiare niente. Se hai
+cambiato qualcosa e non l'hai salvato (anche un giorno nuovo a metà, o qualcuno
+scelto in «Iscrivi qualcuno…»), aprendo un altro corso l'app chiede prima:
+**TORNA A FINIRE** o **ESCI SENZA SALVARE**.
 
 ## Le ricorrenze (i giorni)
 

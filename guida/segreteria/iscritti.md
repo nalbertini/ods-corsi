@@ -22,12 +22,20 @@ elenco, che compaiono negli appelli e sul tablet.
   segreteria.
 - **CERTIFICATI DA STAMPARE** — solo finché ce ne sono: chi ha ancora il file
   del certificato caricato nell'app, di prima della carta.
+- **POSSIBILI DOPPIONI** col numero — solo finché ce ne sono: le schede che
+  sembrano la stessa persona, a coppie. Lo stesso nome scritto in un altro
+  modo (D'Amico e Damico) o lo stesso codice fiscale; non due schede con
+  codici fiscali o date di nascita diverse, e non i fratelli. Per ogni coppia
+  si vedono nascita, codice fiscale, contatto e corsi: **UNISCI…** apre la
+  prima scheda con l'unione già pronta sull'altra; **NON SONO DOPPIONI** la
+  toglie dall'elenco (due omonimi veri).
 
 La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
 **IN REGOLA** se certificato e quota sono a posto (**FUORI APP**, in grigio,
 se la quota è pagata senza una ricevuta dell'app); altrimenti in rosso
 **NO CERTIFICATO**, **CERT. SCADUTO**, **DA PAGARE** o **QUOTA SCADUTA**, e in
-giallo **CERT. 14/10** (scade il 14 ottobre, entro un mese) o **IN PARTE**. In
+giallo **SCADE IL 14/10** (entro un mese; **SCADE OGGI** l'ultimo giorno) o
+**IN PARTE**. In
 cima alla pagina c'è quanti sono senza certificato valido e quanti da pagare.
 
 La colonna **30 GIORNI** dice quanto è venuto ognuno nell'ultimo mese:
@@ -52,25 +60,45 @@ accoglie la sua richiesta (vedi [Richieste online](richieste.md)).
 
 Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
 **ISCRITTI** in alto torna all'elenco, con la ricerca e i filtri di prima.
+Anche il tasto Indietro del browser torna all'elenco, dalla scheda come dal
+modulo di un iscritto nuovo, e una scheda aperta
+resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
+In cima, tre timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
+grandi (verde a posto, giallo da guardare, rosso manca), con le parole
+dell'elenco ma la data intera: **SCADUTO IL 25/09/2026**, **VALIDO FINO
+AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
+(**SCADE IL 14/10/2026**, sotto **FRA 18 GIORNI**, o **DOMANI**). E
+**DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare. Un clic su
+un timbro porta alla sua parte della scheda. Se la scheda è disattivata i
+timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
+**RIATTIVA**.
+
+In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
+**SEGNA IL CERTIFICATO** o **RINNOVA O CORREGGI** se il certificato manca o è
+scaduto, poi **+ REGISTRA UN PAGAMENTO** se la quota non è pagata tutta, poi il
+certificato in scadenza. Se è tutto a posto, **+ REGISTRA UN PAGAMENTO**. Se la
+scheda è disattivata, nessuno.
 
 - **MODIFICA** — nome, cognome, email, telefono.
 - **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,
   il genitore. Vengono dal modulo di iscrizione dell'app o dall'import delle
   risposte del modulo Google, e accanto al titolo c'è scritto da dove. Sono
   quelli che una ricevuta nuova prende da sola. **MODIFICA** (o **AGGIUNGI**,
-  se non ce ne sono) → si correggono → **SALVA**: da lì valgono i nuovi,
-  anche sulle ricevute dopo; quelle già fatte restano com'erano. Un campo
-  lasciato vuoto si cancella. Se il codice fiscale non torna (l'ultimo
+  se non ce ne sono) → si correggono → **SALVA**: da lì valgono i nuovi. Una
+  ricevuta nuova parte dai dati dell'ultima ricevuta, e quel che lì è vuoto
+  (per esempio il codice fiscale) lo prende da qui; quelle già fatte restano
+  com'erano. Un campo lasciato vuoto si cancella. Se il codice fiscale non torna (l'ultimo
   carattere, il nome o la data) l'app lo dice in giallo, e si può salvare lo
-  stesso.
+  stesso. Senza codice fiscale si salva, ma la ricevuta non si fa: vedi
+  [Un pagamento e la sua ricevuta](#un-pagamento-e-la-sua-ricevuta).
 - **CERTIFICATO MEDICO** — fino a quando vale. Il certificato sta **su
   carta**, nella cartellina della segreteria. Se è arrivato col modulo di
   iscrizione, si stampa dalla richiesta (vedi [Richieste online](richieste.md)).
   Col foglio in mano, **SEGNA IL CERTIFICATO** → la data in **VALIDO FINO AL** →
   **SALVA**. Col certificato nuovo, **RINNOVA O CORREGGI** cambia la data, e il
   foglio vecchio si distrugge. Se è arrivato per email o WhatsApp, si stampa e
-  si cancella da lì. **Togli** toglie la data.
+  si cancella da lì. **TOGLI IL CERTIFICATO** lo toglie.
 - **Un certificato caricato prima della carta** ha ancora il file nell'app:
   la scheda lo dice in giallo, e in elenco c'è **DA STAMPARE** accanto al
   nome (il filtro **CERTIFICATI DA STAMPARE** li mostra tutti, finché ce ne
@@ -78,18 +106,18 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
   si mette nella cartellina, e **STAMPATO, CANCELLALO** lo cancella per
   sempre. La data resta.
 - **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
-  minore, quella del genitore). **LA COPIA È IN SEGRETERIA** lo segna, **Non
-  c'è più** lo toglie. **SENZA DOCUMENTO**, sopra l'elenco, mostra chi non ce
+  minore, quella del genitore). **LA COPIA È IN SEGRETERIA** lo segna, **LA
+  COPIA NON C'È PIÙ** lo toglie. **SENZA DOCUMENTO**, sopra l'elenco, mostra chi non ce
   l'ha ancora.
 - **QUOTA** — se ha pagato lo dicono le ricevute: **PAGATA** se c'è una
   ricevuta non annullata con la **QUOTA ASSOCIATIVA** che vale oggi, con fin
-  quando e il numero della ricevuta; **PAGATA IN PARTE** se della quota manca
+  quando e il numero della ricevuta; **IN PARTE** se della quota manca
   qualcosa (e quanto); **QUOTA SCADUTA** quando è passata la sua data. Non si
   segna a mano: si fa la ricevuta. I corsi (l'annuale, il trimestre) si
   leggono sotto, con fin quando sono pagati, ma non contano per essere in
   regola.
   Per chi ha pagato la quota fuori dall'app (prima dell'app, con una ricevuta
-  di carta) c'è **Pagata senza ricevuta dell'app**: **VALE FINO AL** (di
+  di carta) c'è **PAGATA SENZA RICEVUTA DELL'APP**: **VALE FINO AL** (di
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
   PAGATA**. In elenco e nella scheda si vede **FUORI APP**; alla sua data
   scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
@@ -100,6 +128,22 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
 - **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione: ✓ presente, ✕ assente, G giustificato, vuoto non segnato.
 - **DISATTIVA** — sparisce da tutti gli appelli e dal tablet (chi smette del
   tutto). **RIATTIVA** la rimette.
+- **UNISCI…** — due schede della stessa persona diventano una: succede
+  quando all'appello qualcuno non ritrova chi è già venuto a provare e lo
+  aggiunge di nuovo. Scegliete l'altra scheda (in cima chi ha lo stesso
+  cognome, comunque scritto: D'Amico, Damico; già scelta se è l'unico
+  possibile doppione, vedi **POSSIBILI DOPPIONI**). Si vede quale resta, quale se
+  ne va, i campi che non tornano e quante presenze, prove, iscrizioni e
+  ricevute passano; **TIENI L'ALTRA** scambia le due. Della scheda che resta
+  vale quello che c'è scritto; dall'altra si prende solo quello che manca, e
+  di certificato e quota la scadenza più lontana; resta attiva se una delle
+  due lo era. Le ricevute passano così come sono. Una conferma, e non si
+  torna indietro.
+  Non si uniscono due schede con due codici fiscali diversi, anche solo
+  quello del modulo di iscrizione (sono due persone), né se quella che se ne va ha ancora il file di un certificato:
+  prima stampatelo e cancellatelo. Unite quando gli appelli del giorno sono
+  arrivati: un appello fatto senza rete che arriva dopo sulla scheda che se
+  ne va si perde.
 
 ## Un pagamento e la sua ricevuta
 
@@ -116,9 +160,10 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   fa, coi prezzi del [listino](listino.md). Ogni voce ha la quantità, il prezzo, da
   quando a quando vale e quanto si è **PAGATO ORA**: di solito tutto, ma chi
   paga una parte scrive la parte. **Togli** toglie una voce; «Aggiungi una
-  voce…» ne aggiunge un'altra dal listino (annuale, trimestre e,
-  per le ricevute con la data entro quella del saldo, annuale a saldo) o una
-  scritta a mano.
+  voce…» ne aggiunge un'altra. In cima ci sono quelle che servono a lui: la
+  quota, una voce scritta a mano e tutti i prezzi dei suoi corsi (annuale,
+  trimestre e, per le ricevute con la data entro quella del saldo, annuale a
+  saldo). Sotto, in **Il resto del listino…**, quelli degli altri corsi.
 - **Sconto famiglia** — se la persona è in un [nucleo
   familiare](#il-nucleo-familiare), la ricevuta lo mette da sé: il 20%
   sull'annuale che costa meno fra quelli di questa ricevuta e quelli già
@@ -130,22 +175,38 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   già pagato: lo dice, e quello si sistema a parte. Cambiato a mano il
   prezzo della voce scontata, lo sconto è quello scritto.
 - **DATI DEL SOCIO** — nome, indirizzo, codice fiscale, data di nascita e, per
-  un minore, il genitore. Vengono dall'ultima ricevuta o dal modulo di
-  iscrizione online; se mancano si aprono da soli, da scrivere. Si correggono
-  per la ricevuta, la scheda non cambia.
+  un minore, il genitore. Vengono dall'ultima ricevuta e, dove lì sono vuoti,
+  dai **DATI ANAGRAFICI** della scheda. Chiusi, dicono in una riga a chi va la
+  ricevuta: il socio col suo codice fiscale o, per un minore, il genitore col
+  suo (così si vede se oggi paga l'altro genitore); senza genitore dice
+  «RICEVUTA PER IL GENITORE · MANCA». Minore o no si conta alla data della
+  ricevuta; con **NATO IL** vuoto, dalla data scritta nel codice fiscale. Si
+  correggono per la ricevuta, la scheda non cambia.
+  - Il **codice fiscale** serve sempre: quello del socio e, per un minore,
+    anche nome e codice fiscale del genitore. Se manca, o è scritto ma non
+    è giusto («il codice fiscale non è giusto»), i dati si aprono da soli col
+    campo segnato in rosso, e **FAI LA RICEVUTA** resta spento finché non lo
+    si sistema. Aperti all'inizio restano aperti mentre si scrive: si
+    chiudono solo a mano.
+  - Senza l'**indirizzo** la ricevuta si fa lo stesso: il campo è segnato in
+    giallo, una riga gialla dice che resterà vuoto, e lo ripete la domanda
+    prima di farla.
 - **ANTICIPO** — quello che si era già dato prima, fuori da queste voci.
   **NOTE** — facoltative, vanno nel riquadro «Note».
-- Sotto si legge il **totale**, il **pagato** e il **netto a pagare**.
+- Sotto si legge il **totale**, il **pagato** e il **netto a pagare** (quel
+  che resta, se è un acconto).
 - Con la **QUOTA ASSOCIATIVA** fra le voci, fatta la ricevuta la quota è
   pagata da sola. Senza, la ricevuta non cambia se è in regola, e sotto lo
   dice.
 
-**FAI LA RICEVUTA** le dà il numero e scarica il PDF, da stampare o mandare.
+**FAI LA RICEVUTA** prima chiede di rileggere: a chi va (per un minore, il
+socio e il genitore), il totale e, con un acconto, quanto si paga ora e quanto
+resta. Confermato, le dà il numero e scarica il PDF, da stampare o mandare.
 Nell'elenco **RICEVUTE** della scheda ogni ricevuta si riscarica con **PDF**,
 uguale a com'era.
 
 Una ricevuta fatta **non si cambia e non si cancella**: se è sbagliata,
-**Annulla** (chiede conferma) e se ne fa un'altra. Se la ricevuta annullata
+**ANNULLA RICEVUTA**, sotto la ricevuta (chiede conferma), e se ne fa un'altra. Se la ricevuta annullata
 aveva la quota e nessun'altra la copre, la scheda chiede: **RESTA DA PAGARE**
 (di solito, perché se ne fa subito una giusta) o **ERA PAGATA FUORI
 DALL'APP**. L'annullata resta in elenco

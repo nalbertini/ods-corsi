@@ -1,7 +1,7 @@
 -- Chi è venuto a provare, dal tablet: il database dà solo chi somiglia a
 -- quel che si scrive, con almeno una parola di tre lettere, al massimo venti
 -- e al massimo cento ricerche in dieci minuti per tablet, così chi passa
--- davanti al tablet non scarica l'elenco intero (29-prove-per-nome.sql). Le
+-- davanti al tablet non scarica l'elenco intero (34-prove-per-nome.sql). Le
 -- regole di somiglianza sono quelle di `somiglianti` in src/lib/prove.ts.
 -- Si lancia dopo tablet.sql e prove.sql, di cui usa persone, tablet e PIN,
 -- Marco (provato al Judo, telefono 333), Vito (91 giorni fa) e Dora (disattivata).
@@ -71,6 +71,9 @@ select atteso('«d''am» trova i D''Amico, Damico e Damiani', trova('d''am'), 'G
 select atteso('«d’am» (apostrofo tipografico) trova lo stesso', trova('d’am'), 'Gina Paolo Sara Ugo');
 select atteso('«dʼam», «d‘am» e «d´am» trovano lo stesso', trova('dʼam') || '|' || trova('d‘am') || '|' || trova('d´am'),
   'Gina Paolo Sara Ugo|Gina Paolo Sara Ugo|Gina Paolo Sara Ugo');
+select atteso('i trattini lunghi ‐ – — staccano come quello corto (nomi.ts)', trova('d‐am') || '|' || trova('d–am') || '|' || trova('d—am'),
+  'Gina Paolo Sara Ugo|Gina Paolo Sara Ugo|Gina Paolo Sara Ugo');
+select atteso('un segno diacritico fuori dai soliti (U+1DC4) non conta, come \p{M} in nomi.ts', trova('dam' || chr(7620) || 'ico'), 'Gina Paolo Sara');
 select atteso('«damico» trova i D''Amico e Damico, non Damiani', trova('damico'), 'Gina Paolo Sara');
 select atteso('«amico» trova i due D''Amico', trova('amico'), 'Paolo Sara');
 select atteso('«de luca» trova De-Luca e Deluca', trova('de luca'), 'Anna Rita');

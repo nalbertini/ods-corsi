@@ -1,17 +1,23 @@
+import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
-import { pagamentoDi } from '../../lib/segreteria'
+import { pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
 import {
   centesimi,
   conti,
   cosaNonVa,
+  enteCambiato,
   euro,
   METODI,
   nomeFileRicevuta,
+  mancanoDatiSocio,
+  domandaRicevuta,
+  motivoBlocca,
+  ricevutaPer,
   QUOTA,
   quoteDi,
   vociDelCorso,
-  vociPronte,
+  vociInDueGruppi,
   type DatiRicevuta,
   type EnteRicevuta,
   type IntestatarioRicevuta,
@@ -19,9 +25,8 @@ import {
   type VoceRicevuta,
 } from '../../lib/ricevute'
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
-import { minorenne } from '../../lib/richieste'
 import { chiaveGiorno } from '../../lib/sala'
-import { chiedi, Campo, dataLunga, Guaio, Riga, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Riga, useAvviso, useBozza, useCarica } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 
@@ -37,7 +42,7 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
   // Annullata una ricevuta con la quota che nessun'altra copre: la quota torna da pagare, o era pagata fuori dall'app?
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
   const annulla = async (r: Ricevuta) => {
-    if (!(await chiedi(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA.`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
+    if (!(await chiedi(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
     const oggi = chiaveGiorno(new Date())
     const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
     const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
@@ -55,8 +60,9 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
       {ricevute.guaio && <Guaio testo={ricevute.guaio} />}
       {ricevute.dato?.length === 0 && <span className="sg-sotto">Ancora nessuna ricevuta.</span>}
       {ricevute.dato?.map((r) => (
-        <div key={r.id} className="sg-voce-elenco">
-          <span className="stack grow" style={{ minWidth: 0 }}>
+        <div key={r.id} className="sg-voce-elenco" style={{ flexWrap: 'wrap' }}>
+          {/* Base zero: il testo lungo di una annullata non deve mandare a capo il PDF. */}
+          <span className="stack grow" style={{ minWidth: 0, flexBasis: 0 }}>
             {/* Annullata è storia, non qualcosa che manca: barrata e in grigio, non in rosso. */}
             <span className="num" style={{ fontSize: 15, fontWeight: 700, textDecoration: r.annullataIl ? 'line-through' : undefined, color: r.annullataIl ? 'var(--dim)' : undefined }}>
               N. {r.numero}/{r.anno} · {euro(r.totale)} €
@@ -69,14 +75,13 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
           <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(r))}>
             PDF
           </button>
+          {/* Raro e senza ritorno: su una riga sua, a destra, e non più grande del PDF che si preme ogni giorno. */}
           {!r.annullataIl && (
-            <button
-              type="button"
-              className="sg-link"
-              onClick={() => annulla(r)}
-            >
-              Annulla
-            </button>
+            <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
+              <button type="button" className="num sg-chip" onClick={() => annulla(r)}>
+                ANNULLA RICEVUTA
+              </button>
+            </div>
           )}
         </div>
       ))}
@@ -111,7 +116,8 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
         </div>
       )}
       <div className="row">
-        <button type="button" className="num sg-chip sg-chip-pieno" onClick={onNuova}>
+        {/* Pieno se è la prima cosa da fare, o se è tutto a posto: la scheda si apre per incassare. */}
+        <button type="button" className={tastoPrincipale(p, chiaveGiorno(new Date())) === 'quota' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo onClick={onNuova}>
           + REGISTRA UN PAGAMENTO
         </button>
       </div>
@@ -234,8 +240,8 @@ export function NuovaRicevuta({
   p: PersonaSeg
   /** Gli altri del suo nucleo familiare: dalle loro ricevute, lo sconto famiglia. */
   nucleo?: PersonaSeg[]
-  /** I nomi dei corsi che fa adesso: le loro voci vengono prima. */
-  corsi: string[]
+  /** I corsi che fa adesso: le loro voci vengono prima. */
+  corsi: CorsoRef[]
   fai: Fai
   onFatta: () => void
   onLasciaStare: () => void
@@ -245,7 +251,7 @@ export function NuovaRicevuta({
   const anno = Number(data.slice(0, 4)) || Number(oggi.slice(0, 4))
   const prossimo = useCarica(() => d.prossimoNumero(anno), [d, anno])
   const partenza = useCarica(
-    () => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id), d.listino(), Promise.all(nucleo.map((x) => d.ricevute(x.id)))]),
+    () => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id), d.listino().then(async (x) => ({ ...x, listino: listinoUsabile(x.listino, await d.corsi()) })), Promise.all(nucleo.map((x) => d.ricevute(x.id)))]),
     [d, p.id, nucleo.map((x) => x.id).join()],
   )
   const [numero, setNumero] = useState('')
@@ -257,9 +263,14 @@ export function NuovaRicevuta({
   const [note, setNote] = useState('')
   const [aggiungi, setAggiungi] = useState('')
   const [scontoSi, setScontoSi] = useState(true)
+  // I DATI DEL SOCIO aperti o chiusi si decide una volta, quando arrivano: poi
+  // li apre e chiude chi scrive. Se si chiudessero da sé appena è tutto a
+  // posto, si chiuderebbero sotto le dita, col fuoco e le lettere dopo persi.
+  const [socioAperto, setSocioAperto] = useState(false)
 
   const listino = partenza.dato?.[3].listino
-  const pronte = listino ? vociPronte(corsi, data, listino) : []
+  const gruppi = listino ? vociInDueGruppi(corsi, data, listino) : { primi: [], altri: [] }
+  const pronte = [...gruppi.primi, ...gruppi.altri]
 
   // Gli annuali che il nucleo ha già pagato, questa persona compresa.
   const chi = `${p.nome} ${p.cognome}`
@@ -275,6 +286,8 @@ export function NuovaRicevuta({
     if (!partenza.dato || voci) return
     const [intestatario, e, fatte, { listino: l }] = partenza.dato
     setSocio(intestatario)
+    const prima = mancanoDatiSocio(intestatario, new Date(data || oggi))
+    setSocioAperto(prima.blocca.length + prima.avvisa.length > 0)
     setEnte(e)
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
     metti([
@@ -316,37 +329,37 @@ export function NuovaRicevuta({
   // Se ha pagato lo dice la quota nella ricevuta (`pagamentoDi`): la scheda non si segna più a mano.
   const conQuota = (dati?.voci ?? []).some((v) => v.descrizione.trim().toUpperCase() === QUOTA)
 
-  // Quello che sulla ricevuta resterebbe vuoto: si fa lo stesso, ma si vede in rosso prima.
-  const minore = !!socio.natoIl && minorenne(socio.natoIl)
-  const vuoti: Array<[keyof IntestatarioRicevuta, string]> = [
-    ['codiceFiscale', 'il codice fiscale'],
-    ['indirizzo', 'l’indirizzo'],
-    ...(minore ? ([['genitore', 'il genitore'], ['genitoreCodiceFiscale', 'il codice fiscale del genitore']] as Array<[keyof IntestatarioRicevuta, string]>) : []),
-  ]
-  const mancano = vuoti.filter(([k]) => !String(socio[k] ?? '').trim())
-  const manca = new Set(mancano.map(([k]) => k))
-  const campoSocio = (k: keyof IntestatarioRicevuta, etichetta: string, o: { tipo?: string; largo?: boolean; max?: number } = {}) => (
+  // Senza il codice fiscale di chi riceve la ricevuta non si fa; senza l'indirizzo sì, ma lo si dice.
+  // Minore o no alla data della ricevuta: una fatta oggi con la data di ieri vale per ieri.
+  const { minore, blocca, avvisa } = mancanoDatiSocio(socio, new Date(data || oggi))
+  const manca = new Set(blocca.map((x) => x.campo))
+  const attenzione = new Set(avvisa.map((x) => x.campo))
+  const elenco = (x: Array<{ testo: string }>) => x.map((y) => y.testo).join(', ').replace(/, ([^,]*)$/, ' e $1')
+  const bloccaTesto = motivoBlocca(blocca)
+  const avvisaTesto = `Sulla ricevuta ${avvisa.length > 1 ? 'mancano' : 'manca'} ${elenco(avvisa)}`
+  const campoSocio = (k: keyof IntestatarioRicevuta, etichetta: string, o: { tipo?: string; largo?: boolean; max?: number; num?: boolean } = {}) => (
     <Campo id={`rs-${k}`} etichetta={etichetta} largo={o.largo} manca={manca.has(k)}>
       <input
         id={`rs-${k}`}
-        className="sg-campo"
+        // Il carattere stretto: a metà riga sul telefono i sedici del codice fiscale ci stanno tutti.
+        className={o.num ? 'sg-campo num' : 'sg-campo'}
         type={o.tipo ?? 'text'}
         maxLength={o.max ?? 120}
         value={socio[k] ?? ''}
         aria-invalid={manca.has(k) || undefined}
+        data-acceso={attenzione.has(k) || undefined}
         onChange={(e) => setSocio({ ...socio, [k]: e.target.value })}
       />
     </Campo>
   )
-  const mancaTesto = mancano.map(([, t]) => t).join(', ').replace(/, ([^,]*)$/, ' e $1')
 
   const emetti = async () => {
     if (!dati || !c) return
     // La ricevuta ha un numero e non si cambia più: prima di farla, si rilegge.
     const quale = n ? `n. ${n}/${anno}` : prossimo.dato ? `n. ${prossimo.dato}/${anno}` : `col prossimo numero del ${anno}`
     const righe = [
-      `Fare la ricevuta ${quale} a ${socio.cognome} ${socio.nome}, ${euro(c.totale)} €?`,
-      mancano.length ? `\nSulla ricevuta mancano ${mancaTesto}.` : '',
+      domandaRicevuta(quale, socio, minore, c),
+      avvisa.length ? `\n${avvisaTesto}.` : '',
       '\nFatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.',
     ]
     if (!(await chiedi(righe.join('\n'), 'FAI LA RICEVUTA', { no: 'TORNA A CORREGGERE', pericolo: true }))) return
@@ -436,19 +449,27 @@ export function NuovaRicevuta({
           </label>
           <select id="rc-aggiungi" className="sg-campo grow" style={{ borderStyle: 'dashed', minWidth: 0 }} value={aggiungi} onChange={(e) => setAggiungi(e.target.value)}>
             <option value="">Aggiungi una voce…</option>
-            <option value="mano">Una voce scritta a mano</option>
-            {pronte.map((v) => (
+            {gruppi.primi.map((v) => (
               <option key={v.chiave} value={v.chiave}>
                 {v.etichetta}
               </option>
             ))}
+            {gruppi.altri.length > 0 && (
+              <optgroup label="Il resto del listino…">
+                {gruppi.altri.map((v) => (
+                  <option key={v.chiave} value={v.chiave}>
+                    {v.etichetta}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
           <button
             type="button"
             className="num sg-chip sg-chip-pieno"
             disabled={!aggiungi || voci.length >= 20}
             onClick={() => {
-              const v = aggiungi === 'mano' ? { descrizione: '', quantita: 1, prezzo: 0 } : pronte.find((x) => x.chiave === aggiungi)?.voce(data)
+              const v = pronte.find((x) => x.chiave === aggiungi)?.voce(data)
               if (v) metti([...voci, bozzaDa(v)])
               setAggiungi('')
             }}
@@ -481,12 +502,9 @@ export function NuovaRicevuta({
         )}
       </div>
 
-      <details open={mancano.length > 0}>
-        <summary className="sg-etichetta" style={{ cursor: 'pointer' }}>
-          DATI DEL SOCIO · {`${socio.cognome} ${socio.nome}`.toUpperCase()}
-          {socio.codiceFiscale && ` · ${socio.codiceFiscale}`}
-          {mancano.length > 0 && <span style={{ color: 'var(--rosso)' }}> · mancano {mancaTesto}</span>}
-        </summary>
+      <details open={socioAperto}>
+        {/* Chiusi, i dati del socio dicono a chi va la ricevuta: per un minore, al genitore che paga oggi. */}
+        <summary className="sg-etichetta sg-socio">DATI DEL SOCIO · {ricevutaPer(socio, minore)}</summary>
         <div className="sg-due" style={{ marginTop: 12 }}>
           {campoSocio('nome', 'NOME', { max: 80 })}
           {campoSocio('cognome', 'COGNOME', { max: 80 })}
@@ -495,13 +513,13 @@ export function NuovaRicevuta({
           {campoSocio('comune', 'COMUNE', { max: 80 })}
           {campoSocio('provincia', 'PROVINCIA', { max: 2 })}
           {campoSocio('natoIl', 'NATO IL', { tipo: 'date' })}
-          {campoSocio('codiceFiscale', 'CODICE FISCALE', { max: 16 })}
+          {campoSocio('codiceFiscale', 'CODICE FISCALE', { max: 16, num: true })}
           {campoSocio('partitaIva', 'PARTITA IVA · FACOLTATIVA', { max: 11 })}
           {campoSocio('genitore', 'GENITORE · PER UN MINORE', { max: 160 })}
-          {campoSocio('genitoreCodiceFiscale', 'C.F. DEL GENITORE', { max: 16 })}
+          {campoSocio('genitoreCodiceFiscale', 'C.F. DEL GENITORE', { max: 16, num: true })}
         </div>
         <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-          Vengono dall’ultima ricevuta o dal modulo di iscrizione. Qui si correggono per questa ricevuta; la scheda della persona non cambia.
+          Vengono dall’ultima ricevuta e, dove lì sono vuoti, dai DATI ANAGRAFICI della scheda. Qui si correggono per questa ricevuta; la scheda della persona non cambia.
         </span>
       </details>
 
@@ -524,7 +542,8 @@ export function NuovaRicevuta({
             <span className="sg-etichetta">PAGATO ORA</span>
             <span className="num">{euro(c.pagato)} €</span>
           </div>
-          <div className="row" style={{ justifyContent: 'space-between', color: c.netto > 0 ? 'var(--rosso)' : 'var(--sec)' }}>
+          {/* Quel che resta da pagare non è un errore: un acconto si fa apposta. */}
+          <div className="row" style={{ justifyContent: 'space-between', color: c.netto > 0 ? 'var(--text)' : 'var(--sec)' }}>
             <span className="sg-etichetta">NETTO A PAGARE</span>
             <span className="num">{euro(c.netto)} €</span>
           </div>
@@ -535,17 +554,24 @@ export function NuovaRicevuta({
         <span style={{ fontSize: 14, color: 'var(--sec)' }}>Senza la QUOTA ASSOCIATIVA questa ricevuta non cambia se è in regola: conta solo la quota.</span>
       )}
 
-      {guaio && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>{guaio}</span>}
-      {!guaio && mancano.length > 0 && (
-        <span style={{ fontSize: 15, color: 'var(--rosso)' }}>Sulla ricevuta mancano {mancaTesto}: si può fare lo stesso, ma resteranno vuoti.</span>
+      {guaio && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{guaio}</span>}
+      {avvisa.length > 0 && (
+        <span style={{ fontSize: 15, color: 'var(--giallo-testo)' }}>
+          {avvisaTesto}: si può fare lo stesso, ma {avvisa.length > 1 ? 'resteranno vuoti' : 'resterà vuoto'}.
+        </span>
       )}
-      {!guaio && <span style={{ fontSize: 15, color: 'var(--sec)' }}>Fatta la ricevuta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.</span>}
+      {bloccaTesto && (
+        <span id="rc-motivo" style={{ fontSize: 15, color: 'var(--rosso-testo)' }}>
+          {bloccaTesto}.
+        </span>
+      )}
+      {!guaio && !bloccaTesto && <span style={{ fontSize: 15, color: 'var(--sec)' }}>Fatta la ricevuta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.</span>}
 
       <div className="sg-scheda-piede">
         <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
           LASCIA STARE
         </button>
-        <button type="button" className="sg-btn sg-btn-rosso grow" disabled={!!guaio || !dati} onClick={emetti}>
+        <button type="button" className="sg-btn sg-btn-rosso grow" disabled={!!guaio || !dati || !!bloccaTesto} aria-describedby={bloccaTesto ? 'rc-motivo' : undefined} onClick={emetti}>
           FAI LA RICEVUTA
         </button>
       </div>
@@ -559,6 +585,7 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
   const { avviso, fai } = useAvviso()
   const [b, setB] = useState<EnteRicevuta | null>(null)
   const e = b ?? ente.dato
+  useBozza(!!b && !!ente.dato && enteCambiato(ente.dato, b), 'Chi fa le ricevute')
 
   const campo = (k: keyof EnteRicevuta, etichetta: string, max = 120, largo = false) => (
     <Campo id={`en-${k}`} etichetta={etichetta} largo={largo}>
@@ -567,9 +594,9 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
   )
 
   return (
-    <section aria-label="Le ricevute" className="sg-riquadro">
-      <span className="ob sg-riquadro-titolo">LE RICEVUTE</span>
-      <span className="sg-sotto">Chi fa le ricevute: va in testa a ognuna. Quelle già fatte restano come erano.</span>
+    <section aria-label="Chi fa le ricevute" className="sg-riquadro">
+      <span className="ob sg-riquadro-titolo">CHI FA LE RICEVUTE</span>
+      <span className="sg-sotto">Va in testa a ognuna. Quelle già fatte restano come erano.</span>
       {ente.guaio && <Guaio testo={ente.guaio} />}
       <div className="sg-due">
         {campo('nome', 'ASSOCIAZIONE', 120, true)}

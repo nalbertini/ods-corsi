@@ -23,12 +23,19 @@ In alto:
 
 - le frecce spostano di una settimana, **OGGI** riporta a quella corrente;
 - i tasti delle sale (**TUTTE**, **TATAMI**, …) fanno vedere una sala sola;
-- sotto il titolo c'è scritto fino a che giorno è pronto il calendario.
+- sotto il titolo c'è scritto fino a che giorno è pronto il calendario, cioè
+  fin dove ci sono le lezioni dell'orario (le straordinarie non contano).
+  Il calendario si allunga da sé, anche quando si aggiunge un orario a un
+  corso; per allungarlo subito c'è **RIGENERA ADESSO** in
+  [Impostazioni](regole.md#il-calendario), che non duplica niente e non tocca
+  le lezioni che hanno già un appello.
 
 ## Aprire una lezione
 
 Un clic su una lezione apre il riquadro a destra. Ogni cambio si salva subito;
-**FATTO** (o Esc) lo chiude.
+**FATTO** (o Esc) lo chiude, e così il tasto Indietro del browser: la griglia
+resta sulla stessa settimana e sala. Le settimane sfogliate con le frecce non
+contano: Indietro riporta alla voce di prima.
 
 - **STATO**: **PREVISTA**, **SVOLTA** o **ANNULLATA**. Una lezione saltata va
   messa ANNULLATA: così non risulta un appello mancante e non pesa sulle medie. Prima di annullarla l'app chiede conferma, perché gli iscritti non vengono
@@ -59,9 +66,3 @@ ricorrenze — un recupero, un evento, una prova aperta.
 
 Gli iscritti del corso sono già nell'appello. Se era un errore, aprirla e
 premere **TOGLI QUESTA LEZIONE STRAORDINARIA**.
-
-## RIGENERA
-
-Le lezioni nascono dagli orari dei corsi e il calendario si allunga da sé
-quando si avvicina la fine. **RIGENERA** lo allunga subito, ad esempio dopo aver aggiunto un
-corso. Non duplica niente e non tocca le lezioni che hanno già un appello.

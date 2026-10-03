@@ -167,7 +167,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
                   <span className="sg-mono" style={{ fontSize: 17, fontWeight: 700 }}>{f.titolo}</span>
                   <span style={{ fontSize: 13, color: 'var(--dim)' }}>{f.colonne}</span>
                   {c && (
-                    <span style={{ fontSize: 14, color: 'var(--verde)' }}>
+                    <span style={{ fontSize: 14, color: 'var(--verde-testo)' }}>
                       {c.nome}: {c.righe} {f.chiave === 'risposte' ? 'risposte lette.' : 'righe lette. Punto e virgola, BOM e accenti vanno bene così.'}
                     </span>
                   )}
@@ -219,7 +219,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
                     <span className="num" style={{ fontSize: 34, fontWeight: 700, lineHeight: 1 }}>
                       {controllo.f.righe[f.chiave] ?? 0} <span style={{ fontSize: 15, color: 'var(--dim)' }}>righe</span>
                     </span>
-                    <span style={{ fontSize: 13, color: saltate ? 'var(--giallo-testo)' : 'var(--verde)' }}>
+                    <span style={{ fontSize: 13, color: saltate ? 'var(--giallo-testo)' : 'var(--verde-testo)' }}>
                       {saltate ? `${saltate} saltate, da correggere nel foglio` : 'tutte lette'}
                     </span>
                   </div>

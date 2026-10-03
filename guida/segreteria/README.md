@@ -23,15 +23,14 @@ con **ISTRUTTORI →** nel menu, senza uscire.
 
 In cima al menu c'è **Cerca iscritto**: si scrive un pezzo del nome o del
 cognome, si sceglie con le frecce (o col mouse) e Invio apre la sua scheda, da
-qualunque voce. Il tasto **/** ci porta subito, senza mouse.
+qualunque voce. Apostrofi, trattini e spazi nel cognome non contano: «d'am»,
+«dam» e «amico» trovano D'Amico, «deluca» trova De Luca. Il tasto **/** ci porta subito, senza mouse.
 
 A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
 **PERSONE** (ISCRITTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
 E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, ESERCIZI, IMPORTA DA EXCEL,
-SEGNALAZIONI). Le **IMPOSTAZIONI** sono il tasto coi due cursori in fondo al
-menu. Ogni voce
-ha la sua guida:
+IMPOSTAZIONI, SEGNALAZIONI). Ogni voce ha la sua guida:
 
 | Voce | A cosa serve | Guida |
 |---|---|---|
@@ -48,27 +47,34 @@ ha la sua guida:
 | **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
 | **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
 | **LISTINO** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
-| **IMPOSTAZIONI** | Per quanto si tengono le presenze, il calendario, le sale, il timer dei tablet con la sua voce, lo storico dei timer, la privacy | [Apri](regole.md) |
-| **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo | [Apri](segnalazioni.md) |
+| **IMPOSTAZIONI** | In quattro gruppi: la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa) | [Apri](regole.md) |
+| **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
+
+In cima al menu, sotto il nome, si vedono subito senza scorrere due tasti:
+**?**, la guida della voce aperta, in un'altra scheda; il **sole** (o la
+luna), il tema bianco per questo computer. In prova, accanto, il bollino
+**DATI DI PROVA**.
 
 In fondo al menu:
 
 - **COPIA LINK ISCRIZIONI** — copia l'indirizzo della pagina pubblica, da
   incollare su WhatsApp.
-- Tre tasti: **?**, la guida della voce aperta, in un'altra scheda; il
-  **sole** (o la luna), il tema bianco per questo computer; i **cursori**, le
-  IMPOSTAZIONI.
-- **Esci**.
+- Chi è entrato ed **Esci**.
 
 In prova c'è anche **Riparti
 dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
 
+Il tasto Indietro del browser riporta dov'eri: alla voce di prima, all'elenco
+degli iscritti dalla scheda di uno, alla griglia da una lezione aperta. Avanti
+ci torna. Ricaricando la pagina si resta dove si era, e una scheda iscritto si
+apre anche in un'altra finestra, copiandone il link. Sul telefono, col MENU
+aperto, Indietro chiude solo il menu.
+
 Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
-numero rosso accanto dice quante cose aspettano (richieste nuove, presenze da
+numero giallo accanto dice quante cose aspettano (richieste nuove, presenze da
 confermare, segnalazioni da rispondere). Accanto ci sono **?** e il tema.
-Aperto, ha gli stessi gruppi del computer, con IMPOSTAZIONI fra le voci di
-**LA PALESTRA**; le voci di **LA PALESTRA** sono più piccole, perché si fanno meglio
-dal computer.
+Aperto, ha gli stessi gruppi del computer; le voci di **LA PALESTRA** sono più
+piccole, perché si fanno meglio dal computer.
 
 ## Ordinare le tabelle
 
@@ -112,6 +118,11 @@ finestra sua: il tasto di sinistra lascia stare, quello di destra dice cosa fa
 («SÌ, ANNULLA LA RICEVUTA»). È rosso quando non si torna indietro. ESC, o un
 clic fuori, lascia stare.
 
-Se si cambia voce del menu mentre una ricevuta, un iscritto nuovo o la modifica
-di una scheda sono scritti a metà, l'app chiede prima: **TORNA A FINIRE** o
-**LASCIALO A METÀ**. Chiudendo la pagina lo chiede il browser.
+Se si esce da qualcosa scritto e non salvato (una ricevuta, un iscritto nuovo,
+la modifica di una scheda, un corso, un istruttore, il listino, un riquadro
+delle impostazioni) l'app chiede prima: «Ci sono modifiche non salvate. Se esci
+si perdono.», con **TORNA A FINIRE** (il tasto in evidenza: INVIO resta) o
+**ESCI SENZA SALVARE**. Lo chiede cambiando voce del menu, aprendo un altro
+corso, tornando all'elenco da una scheda e col tasto Indietro o Avanti del
+browser: **TORNA A FINIRE** lascia tutto com'era. Una modifica rimessa
+com'era non conta. Chiudendo o ricaricando la pagina lo chiede il browser.

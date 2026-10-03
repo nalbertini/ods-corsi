@@ -17,7 +17,7 @@ export const LINK_ISCRIZIONE = 'https://forms.gle/eZyGvAD4h7cNNpXF7'
 
 /**
  * L'informativa privacy per iscrizioni e corsi, di cui la palestra è titolare
- * del trattamento. È una pagina dell'app (`public/informativa.html`) e non
+ * del trattamento. È una pagina dell'app (`informativa.html`) e non
  * sta nel database perché la deve poter leggere chiunque, anche chi non ha un
  * accesso. Quella del sito della palestra copre solo la navigazione e dice
  * che il sito non raccoglie dati con dei moduli: per l'iscrizione non basta.
@@ -135,12 +135,12 @@ const PASSI_APP: Passo[] = [
   },
   {
     titolo: 'Fai il pagamento',
-    dettaglio: 'La quota associativa e il trimestre, oppure l’annuale. Tieni la ricevuta.',
+    dettaglio: 'La quota associativa e il trimestre, oppure l’annuale. Tieni la ricevuta, o paga in segreteria.',
     azione: 'pagamento',
   },
   {
     titolo: 'Manda la richiesta da qui',
-    dettaglio: "Le domande, la firma sul modulo, poi le foto della carta d'identità, del certificato medico se ce l'hai e della ricevuta.",
+    dettaglio: "Le domande, la firma sul modulo, poi le foto della carta d'identità, e del certificato medico e della ricevuta se li hai.",
     azione: 'modulo',
   },
 ]

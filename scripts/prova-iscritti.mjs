@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { avvisi, contoPresenze } from './src/lib/iscritto'; export { creaDatiProva } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { ENTE_PREDEFINITO, vociDelCorso } from './src/lib/ricevute'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { stimaIscrizione, abbonamentiDalleRicevute, descrizioneScontata, scontoDellaVoce, doveVaLoSconto } from './src/lib/nucleo'; export { LISTINO_PREDEFINITO } from './src/lib/listino'; export { carattereControllo, lettereCognome, lettereNome, cfValido } from './src/lib/codiceFiscale'; export { GIORNI_SEGNALA } from './src/lib/segnalate'",
+      "export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { avvisi, contoPresenze } from './src/lib/iscritto'; export { creaDatiProva } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { ENTE_PREDEFINITO, vociDelCorso } from './src/lib/ricevute'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { stimaIscrizione, abbonamentiDalleRicevute, descrizioneScontata, scontoDellaVoce, doveVaLoSconto } from './src/lib/nucleo'; export { LISTINO_PREDEFINITO } from './src/lib/listino'; export { carattereControllo, lettereCognome, lettereNome, cfValido } from './src/lib/codiceFiscale'; export { GIORNI_SEGNALA } from './src/lib/segnalate'; export { paroleInRegola } from './src/lib/segreteria'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -136,8 +136,17 @@ console.log('\n5. gli avvisi in cima')
 
 console.log('\n6. le ricevute degli esempi')
 {
+  const DOVE = 'ods-corsi:prova-esempi-ricevute'
   const prima = (m.archivio.dati.ricevute ?? []).length
+  const aMano = m.archivio.dati.ricevute.map((r) => r.id)
+  // Un dispositivo con gli esempi della versione 1: il segno, e una ricevuta di esempio di allora.
+  const vecchio = m.archivio.dati.persone.find((p) => p.ruolo === 'iscritto' && p.attiva && p.id !== chi && p.pagamento?.stato === 'pagato')
+  m.archivio.dati.ricevute.push({ ...m.archivio.dati.ricevute[0], id: `r-esempio-${vecchio.id}`, personaId: vecchio.id, numero: 900, annullataIl: undefined })
+  localStorage.setItem(DOVE, '1')
   m.seminaEsempi()
+  ok('gli esempi nuovi arrivano anche dove c’erano quelli della versione 1', localStorage.getItem(DOVE) !== '1', true)
+  ok('la ricevuta di esempio di allora è rifatta', m.archivio.dati.ricevute.some((r) => r.numero === 900), false)
+  ok('le ricevute fatte a mano restano', aMano.every((id) => m.archivio.dati.ricevute.some((r) => r.id === id)), true)
   const tutte = m.archivio.dati.ricevute
   const esempi = tutte.filter((r) => r.id.startsWith('r-esempio-'))
   const paganti = m.archivio.dati.persone.filter((p) => p.ruolo === 'iscritto' && p.attiva && ['pagato', 'in_parte'].includes(p.pagamento?.stato))
@@ -151,6 +160,24 @@ console.log('\n6. le ricevute degli esempi')
   localStorage.removeItem('ods-corsi:prova-esempi-ricevute')
   m.seminaEsempi()
   ok('rifatti, non raddoppiano', m.archivio.dati.ricevute.length, prima + esempi.length)
+
+  // Gli esempi fanno vedere tutte le parole della colonna IN REGOLA.
+  const parole = async (giorno) => (await s.persone()).filter((p) => p.attiva).map((p) => m.paroleInRegola(p, giorno).map((b) => b.parola))
+  const oggiParole = (await parole(g(oggi))).flat()
+  for (const x of ['QUOTA SCADUTA', 'FUORI APP', 'IN PARTE']) ok(`gli esempi mostrano almeno un ${x}`, oggiParole.includes(x), true)
+
+  // Dopo il 13/12 (novanta giorni dalla stagione) non scade la quota di mezza palestra.
+  // Seminati da capo quel giorno, come su un dispositivo nuovo.
+  const senzaEsempi = () => (m.archivio.dati.ricevute = m.archivio.dati.ricevute.filter((r) => !r.id.startsWith('r-esempio-')))
+  senzaEsempi()
+  localStorage.removeItem(DOVE)
+  m.seminaEsempi(new Date('2026-12-20T12:00:00'))
+  const dopo = await parole('2026-12-20')
+  const scadute = dopo.filter((x) => x.includes('QUOTA SCADUTA')).length
+  ok('il 20/12/2026 le QUOTA SCADUTA sono poche (meno di una su dieci)', scadute > 0 && scadute < dopo.length / 10, true)
+  senzaEsempi()
+  localStorage.removeItem(DOVE)
+  m.seminaEsempi()
 }
 
 console.log('\n7. il nucleo familiare')

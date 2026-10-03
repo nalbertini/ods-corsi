@@ -43,7 +43,7 @@ Non è un gestionale per palestre generico: è fatto su misura per le abitudini 
 - Modalità di prova con dati inventati per ogni area.
 - **Solo italiano**: nessuna traduzione prevista; la terminologia è quella della palestra (appello, prove, sostituto, ricevuta, quota, nucleo).
 - **Iscritti minori**: molti corsi sono per bambini; per un minore si chiedono i dati del genitore e il codice fiscale del genitore deve essere di un adulto. La privacy di questi dati è più stretta.
-- Informativa privacy approvata dalla palestra il 2 ottobre 2026 (`public/informativa.html`); il modulo online con database vero è acceso da allora.
+- Informativa privacy approvata dalla palestra il 2 ottobre 2026 (`informativa.html`); il modulo online con database vero è acceso da allora.
 - Aperto: cosa può leggere di sé un iscritto e come accede (l'area iscritti esiste solo in prova).
 
 ## Brand Commitments

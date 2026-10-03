@@ -21,7 +21,8 @@ segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
   2. **Il pagamento** — la quota associativa e il trimestre, oppure l'annuale,
      con l'IBAN da copiare con un tocco e il tasto **PAGA CON SATISPAY**, che
      apre l'app sul negozio dell'associazione (il link è
-     `PAGAMENTO.satispay` in `src/lib/iscrizione.ts`).
+     `PAGAMENTO.satispay` in `src/lib/iscrizione.ts`). Oppure in contanti in
+     segreteria.
   3. **La richiesta** — con il modulo dell'app (**COMPILA LA RICHIESTA**)
      oppure, finché quello non è acceso, con il modulo Google (**APRI IL
      MODULO**), che ha i suoi passi: scaricare il modulo, firmarlo e caricarlo.
@@ -37,10 +38,17 @@ Chi si iscrive risponde alle domande dal telefono:
 
 - **Chi si iscrive**: nome, cognome, data e luogo di nascita, codice fiscale.
   Se dalla data di nascita risulta **minorenne**, il modulo chiede anche i dati
-  del **genitore** e il modulo per minori firmato da lui.
+  del **genitore** e il modulo per minori, che firma il genitore.
 - **Residenza**, e **come raggiungerti** (email, telefono e, se si vuole, un
   **telefono 2**; per un minore, quelli del genitore).
-- **I corsi** a cui iscriversi e **come paghi** (trimestre o annuale).
+- **I corsi** a cui iscriversi e **come paghi** (trimestre o annuale). Sotto
+  ogni corso ci sono età e orari del listino. Scritta la data di nascita, i
+  corsi giusti per quell'anno vengono per primi; sotto **SENZA FASCIA D'ETÀ**
+  quelli per cui il listino non dice gli anni, e sotto **ALTRI CORSI** quelli
+  di un'altra età: si possono scegliere lo stesso, e un avviso giallo dice
+  quali sono e che la segreteria richiama. Un corso che il listino non ha
+  ancora (senza prezzo) si sceglie lo stesso, e sotto il nome c'è scritto
+  «prezzo da confermare».
 - **Il modulo**: le autorizzazioni si firmano **qui, col dito** (o col mouse
   dal computer). Si sceglie come sul foglio se si acconsente al
   **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**; per
@@ -50,13 +58,19 @@ Chi si iscrive risponde alle domande dal telefono:
   serve, e in fondo, in piccolo, che è stato firmato dal telefono e quando.
   È quello che parte come modulo firmato. Chi ha già il foglio firmato a mano
   sceglie **Ho il foglio firmato** e ne carica la foto.
+  Se si cambia la data di nascita e chi si iscrive diventa minore (o non lo è
+  più), il foglio è un altro: firma, crocette e foto del foglio si azzerano, e
+  un avviso giallo dice «Firma e autorizzazioni vanno rifatte».
 - **I file**: la foto della **carta d'identità** (per un minore, quella del
   genitore; non si chiede per un minore aggiunto dal nucleo, perché la
   segreteria ha già quella del genitore), il retro se serve, il **certificato
-  medico** se ce l'ha già, e la ricevuta del pagamento. Il certificato si
+  medico** se ce l'ha già, e la **ricevuta del pagamento** se ha già pagato:
+  chi paga in contanti al banco la lascia vuota (accanto c'è **PUOI PAGARE IN
+  SEGRETERIA**). Il certificato si
   chiede solo quando serve: dai 6 anni quello normale, dai 12 quello
   agonistico se tra i corsi scelti c'è judo, aikido o lotta (lo dice il nome
-  del corso). Si può anche portare dopo in segreteria, ma senza non si
+  del corso). Si può anche portare dopo in segreteria (accanto al nome
+  c'è **PUOI PORTARLO DOPO**), ma senza non si
   partecipa alle lezioni: se non è stato caricato, lo ricorda **RICHIESTA
   ARRIVATA**. Documento e certificato la segreteria li stampa, li tiene su
   carta e li cancella dall'app.
@@ -65,6 +79,11 @@ Chi si iscrive risponde alle domande dal telefono:
   «Accetto il Regolamento Sociale» (col link al regolamento, quando c'è:
   `REGOLAMENTO` in `src/lib/iscrizione.ts`) e la casella «Ho letto
   l'informativa privacy».
+
+Nel modulo non resta niente sul telefono: chiuso, si riparte da capo. Per
+questo **← INDIETRO**, se c'è già qualcosa di scritto, firmato o scelto, al
+primo tocco chiede «LE RISPOSTE SI PERDONO · ESCI?» e esce solo al secondo;
+senza il secondo tocco, dopo qualche secondo torna com'era.
 
 Premuto **MANDA LA RICHIESTA**, compare **RICHIESTA ARRIVATA**. Se un file non
 è partito compare **MANCA QUALCHE FILE**, con il tasto per riprovare (per

@@ -7,7 +7,7 @@
 -- browser: chi aveva un PIN poteva leggere tutti i nomi, spesso di bambini.
 -- Ora il database restituisce solo chi somiglia a quel che si scrive, dalla
 -- terza lettera di una parola, al massimo venti e i più recenti: la stessa
--- regola di `somiglianti` (src/lib/prove.ts), carattere per carattere. E al
+-- regola di `somiglia` (src/lib/nomi.ts), carattere per carattere. E al
 -- massimo cento ricerche in dieci minuti e trecento in un giorno per tablet:
 -- chi prova le combinazioni di tre lettere per ricostruire l'elenco ci mette
 -- giorni.
@@ -25,15 +25,20 @@
 -- La versione che dava tutti: se restasse, il confine si aggirerebbe.
 drop function if exists provati_con_pin(text);
 
-/** Senza accenti e in minuscolo, come `piano` in src/lib/prove.ts: `unaccent` cambierebbe anche ø e ß. */
+/**
+ * Senza accenti e in minuscolo, come `piano` in src/lib/nomi.ts: `unaccent`
+ * cambierebbe anche ø e ß. Postgres non conosce `\p{M}`: qui i blocchi dei
+ * segni diacritici delle lingue latine; un segno di un'altra scrittura
+ * resterebbe, e il database troverebbe meno, mai di più.
+ */
 create or replace function testo_piano(t text) returns text
   language sql immutable set search_path = pg_catalog as $$
   -- Lo spazio indivisibile e quello invisibile, che per JS sono spazi e per Postgres no.
-  select lower(regexp_replace(regexp_replace(normalize(coalesce(t, ''), nfd), '[\u0300-\u036f]', '', 'g'), '[\u00a0\ufeff]', ' ', 'g'))
+  select lower(regexp_replace(regexp_replace(normalize(coalesce(t, ''), nfd), '[\u0300-\u036f\u1ab0-\u1aff\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]', '', 'g'), '[\u00a0\ufeff]', ' ', 'g'))
 $$;
 
 /**
- * `somiglianti` di src/lib/prove.ts per una persona: ogni parola scritta è
+ * `somiglia` di src/lib/nomi.ts per una persona: ogni parola scritta è
  * l'inizio di una parola del nome o del cognome (anche apostrofi e trattini
  * staccano), o del nome o del cognome attaccati; oppure tutto lo scritto
  * attaccato è l'inizio del nome o del cognome attaccati. Senza una parola di
@@ -44,7 +49,7 @@ $$;
 create or replace function somiglia(nome text, cognome text, scritto text) returns boolean
   language plpgsql immutable set search_path = pg_catalog, public as $$
 declare
-  stacca constant text := '[''’‘ʼ´-]';
+  stacca constant text := '[''’‘ʼ´‐–—-]';
   parole text[] := array(select w from regexp_split_to_table(regexp_replace(testo_piano(scritto), stacca, '', 'g'), '\s+') w where w <> '');
   nomi text[] := array[testo_piano(nome), testo_piano(cognome)];
   attaccati text[] := array(select regexp_replace(regexp_replace(n, stacca, '', 'g'), '\s', '', 'g') from unnest(nomi) n);

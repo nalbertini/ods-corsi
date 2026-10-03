@@ -49,8 +49,10 @@ scelto qui vale anche nel timer, e viceversa.
 Maurizio, i segnali, il volume, lo schermo e la musica durante il timer si
 scelgono nel timer, dalle sue **IMPOSTAZIONI**, e sono uguali su tutti i
 tablet: cambiati su uno, gli altri li prendono entro cinque minuti. Per questo
-sul tablet **IMPOSTAZIONI** compare solo con l'area istruttore aperta: entrate
-col PIN, poi **TIMER**. Chiusa l'area, la scheda sparisce di nuovo. La voce e gli esercizi invece li sceglie la segreteria
+sul tablet **IMPOSTAZIONI** si apre col PIN: entrate nell'area istruttore, poi
+toccate **TIMER**. L'area istruttore si chiude, in alto compare **IMPOSTAZIONI
+APERTE**, e la scheda resta finché state sul timer; tornando a **PRESENZE**, o
+dopo 2 minuti senza tocchi, sparisce di nuovo. La voce e gli esercizi invece li sceglie la segreteria
 per tutti i tablet (vedi [Impostazioni](segreteria/regole.md#la-voce-dei-tablet)
 ed [Esercizi](segreteria/esercizi.md)); dal tablet si sceglie solo se usare
 le clip incise. Lo storico dei timer si guarda dalla segreteria.
@@ -65,7 +67,9 @@ le clip incise. Lo storico dei timer si guarda dalla segreteria.
   dice a che punto è.
 
 Lasciato sulla scheda **TIMER**, il tablet ci resta: con una lezione aperta, in
-alto c'è sempre **SI SEGNA ORA** per chi arriva.
+alto c'è sempre **SI SEGNA ORA** per chi arriva. E se con un allenamento in
+corso qualcuno passa alle presenze e poi lascia il tablet, dopo un minuto e
+mezzo senza tocchi torna da solo al timer.
 
 ## La musica
 
@@ -139,7 +143,8 @@ iniziale.
 1. **AREA ISTRUTTORE** → digitate il vostro **PIN di quattro cifre**.
 2. A sinistra le lezioni: scheda **OGGI** (quelle di oggi in questa sala) o
    **PER CORSO** (scegliete il corso e vedete le lezioni passate, per
-   sistemare i buchi del registro).
+   sistemare i buchi del registro: una lezione passata senza nessun presente
+   è in rosso, con **✕ SENZA APPELLO**).
 3. A destra l'appello della lezione scelta, con cognome e nome. Accanto ai nomi:
    - **DAL TABLET** — si è segnato da solo;
    - **SEGNATO DOPO** — si è segnato col recupero.
@@ -164,7 +169,8 @@ iniziale.
      solo sul tablet: lo aggiungete voi. Come nell'app (vedi la
      [guida degli istruttori](istruttori.md)).
 6. **ESCI** quando avete finito. Se ve ne dimenticate, dopo **2 minuti** senza
-   tocchi l'area si chiude da sola: il PIN non resta aperto in sala.
+   tocchi l'area si chiude da sola: il PIN non resta aperto in sala. Si
+   chiude anche passando a **TIMER**.
 
 Dopo 5 PIN sbagliati il tablet si blocca per 5 minuti: dal secondo errore lo
 avvisa. Intanto l'appello si fa dall'app sul telefono. Il PIN lo dà e lo

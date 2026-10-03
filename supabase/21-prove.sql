@@ -213,7 +213,7 @@ begin
 end $$;
 
 -- Chi è già venuto a provare, sul tablet, si cerca per nome: `provati_con_pin`
--- sta in 29-prove-per-nome.sql.
+-- sta in 34-prove-per-nome.sql.
 
 /** `true` se è aggiunta, `false` se il PIN non va più. */
 create or replace function aggiungi_prova_con_pin(pin text, sessione uuid, persona uuid, nome text default null,

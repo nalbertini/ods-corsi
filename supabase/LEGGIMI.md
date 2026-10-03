@@ -56,7 +56,12 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 26. `26-colori-corsi.sql` — i corsi rossi passano al viola: in segreteria il rosso vuol dire solo che qualcosa manca
 27. `27-pagamento-dalle-ricevute.sql` — se ha pagato lo dicono le ricevute: in regola vuol dire la quota associativa pagata, e lo stato scritto a mano resta solo come eccezione per chi ha pagato fuori dall'app
 28. `28-elimina-istruttore.sql` — eliminare un istruttore che non ha mai insegnato, anche se è di segreteria col ruolo doppio, la scheda e l'account (con la funzione `elimina`, vedi «L'invito per email»); chi ha corsi, lezioni o presenze non si elimina, nemmeno cancellando la riga a mano
-29. `29-prove-per-nome.sql` — sul tablet chi è già venuto a provare si cerca per nome, dalla terza lettera di una parola e al massimo venti, con cento ricerche in dieci minuti e trecento al giorno per tablet: il tablet non ha più l'elenco intero
+29. `29-unisci-doppioni.sql` — unire due schede della stessa persona (un doppione fatto all'appello o dall'import): solo la segreteria, solo due iscritti senza accesso, mai con due codici fiscali diversi; tutto quello della scheda che se ne va passa a quella che resta
+30. `30-pronto-fino-dalle-ricorrenze.sql` — fin dove è pronto il calendario lo dicono le lezioni dell'orario: una straordinaria lontana non lo ferma più
+31. `31-informativa-mesi.sql` — per quanto si tengono le presenze, letto dall'informativa privacy anche da chi non ha un accesso
+32. `32-segnalazioni-allegati.sql` — i file nelle segnalazioni: fino a 3 foto o PDF per messaggio (10 MB), in un contenitore privato; li vede la segreteria, li toglie solo chi li ha mandati, e 30 giorni dopo la chiusura del filo si tolgono da soli
+33. `33-non-doppioni.sql` — le coppie di schede che la segreteria ha segnato «non sono doppioni» (due omonimi veri), così non compaiono più fra i possibili doppioni di ISCRITTI
+34. `34-prove-per-nome.sql` — sul tablet chi è già venuto a provare si cerca per nome, dalla terza lettera di una parola e al massimo venti, con cento ricerche in dieci minuti e trecento al giorno per tablet: il tablet non ha più l'elenco intero
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -138,6 +143,12 @@ Per le segnalazioni della segreteria basta `25-segnalazioni.sql` (dopo
 `02-policy.sql`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non
 c'è, SEGNALAZIONI dice che non si leggono. Chi l'aveva già lanciato lo
 rilancia: la prima versione lasciava entrare un filo senza titolo.
+Per i file nelle segnalazioni basta `32-segnalazioni-allegati.sql` (dopo
+`25-segnalazioni.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
+finché non c'è, le segnalazioni funzionano come prima e il tasto per allegare
+dice che va lanciato. La pulizia dopo 30 giorni gira ogni notte con pg_cron
+(Database → Extensions); se non è acceso, `select pulisci_allegati();` si
+lancia a mano di tanto in tanto.
 Per i corsi rossi che passano al viola basta `26-colori-corsi.sql` (dopo
 `01-schema.sql`), una volta sola, che non chiede di rilanciare
 `06-iscrizioni.sql`: finché non c'è, i corsi che erano rossi restano rossi.
@@ -150,11 +161,29 @@ Per eliminare un istruttore basta `28-elimina-istruttore.sql` (dopo
 finché non ci sono, ELIMINA nella scheda dell'istruttore dice cosa manca.
 Chi l'aveva già lanciato lo rilancia: la prima versione non eliminava la
 segreteria che insegna anche.
+Per unire due schede della stessa persona basta `29-unisci-doppioni.sql`
+(dopo `28-elimina-istruttore.sql`), che non chiede di rilanciare
+`06-iscrizioni.sql`: finché non c'è, UNISCI nella scheda dell'iscritto dice
+che va lanciato.
+Per il calendario che non si ferma a una straordinaria basta
+`30-pronto-fino-dalle-ricorrenze.sql` (dopo `05-segreteria.sql`), che non
+chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, una lezione
+straordinaria fissata oltre la fine del calendario lo ferma fino a lei.
+Per i mesi delle presenze scritti nell'informativa privacy basta
+`31-informativa-mesi.sql` (dopo `05-segreteria.sql`), che non chiede di
+rilanciare `06-iscrizioni.sql` (e se lo si rilancia dopo, `06` rimette lui il
+permesso ad `anon` su `mesi_presenze_pubblici()`): finché non c'è,
+l'informativa dice «per il periodo stabilito dalla palestra (oggi indicato in
+segreteria)», senza un numero.
+Per segnare due schede «non sono doppioni» basta `33-non-doppioni.sql` (dopo
+`29-unisci-doppioni.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
+finché non c'è, i possibili doppioni si vedono lo stesso e NON SONO DOPPIONI
+dice che va lanciato.
 Per cercare per nome, sul tablet, chi è venuto a provare basta
-`29-prove-per-nome.sql` (dopo `21-prove.sql`), che non chiede di rilanciare
+`34-prove-per-nome.sql` (dopo `21-prove.sql`), che non chiede di rilanciare
 `06-iscrizioni.sql`: finché non c'è, sul tablet i già venuti non compaiono, e
 chi ha un PIN può ancora leggere l'elenco intero. Chi rilancia `21-prove.sql`
-rilancia poi anche `29`.
+rilancia poi anche `34`.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -405,7 +434,7 @@ Cosa fa `06-iscrizioni.sql`:
 
 **Si accende con l'informativa approvata.** Il modulo chiede codici fiscali
 e dati dei genitori, e col database vero l'app lo mostra solo quando
-l'informativa (`public/informativa.html`) è approvata, cioè quando in
+l'informativa (`informativa.html`) è approvata, cioè quando in
 `src/lib/iscrizione.ts` `INFORMATIVA_BOZZA` è `false`: lo è dal 27 settembre
 2026. Se si rimette a `true` il passo torna al modulo Google
 (`LINK_ISCRIZIONE`). In prova il modulo è sempre acceso.
@@ -727,7 +756,7 @@ Storage ricaricati a mano.
 
 - **L'informativa privacy.** Nomi e presenze sono dati personali e la palestra
   ne è titolare del trattamento. L'informativa è in
-  `public/informativa.html` (quella del sito copre solo la navigazione), e la
+  `informativa.html` (quella del sito copre solo la navigazione), e la
   palestra l'ha approvata il 27 settembre 2026: per quanto si tengono
   richieste, documenti e ricevute, e che l'app si pubblica con GitHub Pages.
   L'ha riapprovata il 2 ottobre 2026, quando si è corretto dove stanno i
@@ -740,7 +769,9 @@ Storage ricaricati a mano.
 - **Per quanto si tengono le presenze.** `presenze_scadute` dice cosa è
   scaduto e `pulisci_presenze()` lo cancella; il periodo di partenza è
   ventiquattro mesi e si cambia in **IMPOSTAZIONI**. È una scelta della
-  palestra, non una regola che decide il codice.
+  palestra, non una regola che decide il codice. L'informativa la riporta da
+  sé, chiedendola a `mesi_presenze_pubblici()` (`31-informativa-mesi.sql`):
+  finché non c'è, dice «per il periodo stabilito dalla palestra».
 - **Il certificato medico è un dato sanitario.** È l'unico che la palestra
   tiene, perché senza non si fa sport. È un'altra categoria di dati (art. 9
   del GDPR), con altri obblighi: per questo il foglio sta su carta, in un
@@ -775,14 +806,19 @@ sua funzione, solo lui o la segreteria, senza toccare il resto della riga; `time
 una singola lezione: lo lega il personale, lo legge il tablet, e un timer
 personale legato a una lezione lo vedono anche gli altri; `calendario-da-se.sql`
 prova il calendario che si allunga da sé: lo allunga anche un istruttore, ma
-solo quando serve e fin dove dicono le regole, e non fuori dalle date dei corsi; `presenze-istruttori.sql`, dopo
+solo quando serve e fin dove dicono le regole, e non fuori dalle date dei corsi; `calendario-pronto-fino.sql` prova che
+fin dove è pronto il calendario lo dicano le lezioni dell'orario, e che una
+straordinaria lontana non lo fermi; `presenze-istruttori.sql`, dopo
 `tablet.sql`, prova la presenza degli istruttori dal PIN: confermata da sola a
 chi era previsto (anche da sostituto), da confermare agli altri, e confermata
 o rifiutata solo dalla segreteria; `istruttori-dalle-lezioni.sql`, dopo
 `presenze-istruttori.sql`, prova chi fa l'appello (confermato se previsto, da
 confermare se no, la segreteria al banco no), le lezioni tenute senza
 l'istruttore segnato, la scelta di chi c'era fatta solo dalla segreteria e
-solo fra i previsti, e da quando si propongono; `ricevute.sql` prova le ricevute: le fa e le
+solo fra i previsti, e da quando si propongono; `informativa-mesi.sql` prova
+che chi non ha un accesso legga i mesi delle presenze, quelli che la segreteria
+ha appena salvato, e nient'altro della tabella, anche dopo aver rilanciato
+`06-iscrizioni.sql`; `ricevute.sql` prova le ricevute: le fa e le
 annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i
 conti li fa il server, e una fatta non si cambia; `anagrafiche.sql` prova
 nascita, residenza e genitore degli iscritti importati: li vede e li cambia
@@ -791,9 +827,16 @@ statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove,
 chi l'ha fatta, gli incassi del mese, e che le veda solo la segreteria. `segnalazioni.sql` prova le
 segnalazioni: le legge e le scrive solo la segreteria, l'autore è sempre chi
 scrive, si risponde solo a un filo, un messaggio non si cambia, di un filo si
-cambia solo se è chiuso, e niente si cancella. `elimina-istruttore.sql` prova
+cambia solo se è chiuso, e niente si cancella; gli allegati li vede e li carica la segreteria (max 3, tipi e peso del contenitore), li toglie solo chi li ha mandati lasciando la traccia, e dopo 30 giorni dalla chiusura si tolgono. `elimina-istruttore.sql` prova
 che un istruttore lo elimini solo la segreteria, e solo se non ha corsi,
-lezioni o presenze, anche cancellando la riga a mano. `prove-per-nome.sql`,
+lezioni o presenze, anche cancellando la riga a mano. `unisci-doppioni.sql` prova
+che due schede le unisca solo la segreteria, solo fra iscritti senza accesso
+e mai con due codici fiscali diversi, che passi tutto (una presenza per
+lezione, un'iscrizione per corso, le ricevute intatte, chi ha segnato le
+presenze) e che un errore a metà non cambi niente. `non-doppioni.sql` prova
+che le coppie «non sono doppioni» le veda, le segni e le tolga solo la
+segreteria, una riga per coppia a nome di chi scrive, e che unendo due schede
+le coppie passino senza fermare l'unione. `prove-per-nome.sql`,
 dopo `prove.sql`, prova che il tablet ritrovi chi è venuto a provare solo per
 nome: dalla terza lettera di una parola, al massimo venti, come la ricerca
 dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno. `finto-supabase.sql` rifà anche le due

@@ -1,17 +1,44 @@
-import { useEffect, useState } from 'react'
-import type { DatiSegreteria, Impostazioni, ListaMusica, Sala } from '../../lib/segreteria'
+import { useEffect, useState, type ReactNode } from 'react'
+import { confermaMesiPresenze, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
 import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
-import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 
+/** I gruppi della pagina, da quello che si tocca a inizio stagione a quello che si tocca quasi mai. */
+const GRUPPI = {
+  'imp-stagione': 'LA STAGIONE',
+  'imp-sale': 'LE SALE E I TABLET',
+  'imp-ricevute': 'LE RICEVUTE',
+  'imp-dati': 'DATI E PRIVACY',
+} as const
+
+type IdGruppo = keyof typeof GRUPPI
+
+/** Dall'indice al gruppo: la pagina scorre e il fuoco va sul titolo, così la tastiera riparte da lì. */
+function vaiAlGruppo(id: IdGruppo) {
+  const titolo = document.getElementById(id)
+  titolo?.scrollIntoView({ block: 'start' })
+  titolo?.focus({ preventScroll: true })
+}
+
+function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
+  return (
+    <section aria-labelledby={id} className="sg-regole-gruppo">
+      <h2 id={id} tabIndex={-1} className="ob sg-regole-titolo">
+        {GRUPPI[id]}
+      </h2>
+      <div className="sg-regole">{children}</div>
+    </section>
+  )
+}
+
 /**
- * Le impostazioni: le scelte che spettano alla palestra, non al codice. Per
- * quanto si tengono le presenze, fin dove si prepara il calendario, le sale
- * con la loro musica e il loro timer (con la voce), lo storico
- * dei timer, chi fa le ricevute, il backup, la privacy.
+ * Le impostazioni: le scelte che spettano alla palestra, non al programma. La
+ * stagione; le sale con la loro musica, la voce e lo storico dei timer; chi
+ * fa le ricevute; per quanto si tengono le presenze, il backup, la privacy.
  */
 export function Regole({ d }: { d: DatiSegreteria }) {
   const imp = useCarica(() => d.impostazioni(), [d])
@@ -22,6 +49,20 @@ export function Regole({ d }: { d: DatiSegreteria }) {
   const musica = useCarica(() => d.listeMusica(), [d])
   const { avviso, avvisa, fai } = useAvviso()
   const [sala, setSala] = useState<{ id?: string; nome: string; capienza?: number } | null>(null)
+  // Una sala aperta e cambiata (o una nuova con qualcosa scritto) non si perde uscendo.
+  const salaPrima = sale.dato?.find((s) => s.id === sala?.id)
+  useBozza(!!sala && (sala.nome.trim() !== (salaPrima?.nome ?? '') || sala.capienza !== salaPrima?.capienza), salaPrima?.nome)
+  // I mesi scelti nella tendina mentre si aspetta il sì: lasciando stare, torna a quelli salvati.
+  const [mesiScelti, setMesiScelti] = useState<number | null>(null)
+  const cambiaMesi = async (dopo: number) => {
+    const prima = imp.dato?.mesiPresenze ?? 24
+    setMesiScelti(dopo)
+    const conto = dopo < prima ? await d.scadute(dopo).catch(() => null) : null
+    const domanda = confermaMesiPresenze({ prima, dopo, scadute: conto, modo: d.modo })
+    if (domanda && !(await chiedi(domanda.testo, domanda.tasto, { pericolo: true }))) return setMesiScelti(null)
+    await fai(() => d.salvaImpostazioni({ mesiPresenze: dopo }), 'Periodo cambiato', imp.ricarica)
+    setMesiScelti(null)
+  }
   const [chi, setChi] = useState('')
 
   const esporta = async () => {
@@ -38,59 +79,20 @@ export function Regole({ d }: { d: DatiSegreteria }) {
 
   return (
     <>
-      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al codice." />
+      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al programma." />
 
-      <div className="sg-regole">
-        {imp.guaio && <Guaio testo={`Le impostazioni non si leggono: ${imp.guaio}`} />}
-        <section aria-label="Per quanto si tengono le presenze" className="sg-riquadro">
-          <span className="ob sg-riquadro-titolo">PER QUANTO SI TENGONO LE PRESENZE</span>
-          <div className="row" style={{ gap: 12 }}>
-            <label htmlFor="mesi" className="vh">
-              Mesi
-            </label>
-            <select
-              id="mesi"
-              className="sg-campo"
-              value={imp.dato?.mesiPresenze ?? 24}
-              disabled={!imp.dato}
-              onChange={(e) => void fai(() => d.salvaImpostazioni({ mesiPresenze: Number(e.target.value) }), 'Periodo cambiato', imp.ricarica)}
-            >
-              {[12, 24, 36, 60].map((m) => (
-                <option key={m} value={m}>
-                  {m} mesi
-                </option>
-              ))}
-            </select>
-            <span className="sg-sotto">dopo, si cancellano</span>
-          </div>
-          <div className="row sg-voce-elenco" style={{ gap: 12 }}>
-            <span className="stack grow">
-              <span style={{ fontSize: 15, fontWeight: 600 }}>
-                {scadute.guaio ? 'Non si riesce a contarle' : scadute.dato === null ? '…' : scadute.dato === 0 ? 'Nessuna presenza scaduta' : `${scadute.dato} presenze scadute`}
-              </span>
-              <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-                {d.modo === 'prova' ? 'In prova si cancellano da qui.' : 'Si cancellano col job mensile (vedi supabase/LEGGIMI.md), o da qui.'}
-              </span>
-            </span>
-            <button
-              type="button"
-              className="num sg-chip"
-              disabled={!scadute.dato || !imp.dato}
-              onClick={async () => {
-                if ((await chiedi(`Cancellare ${scadute.dato} presenze più vecchie di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`, 'CANCELLA LE PRESENZE', { pericolo: true }))) {
-                  void fai(() => d.pulisci(), 'Presenze scadute cancellate', scadute.ricarica)
-                }
-              }}
-            >
-              CANCELLA ORA
-            </button>
-          </div>
-          <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-            Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è della palestra, titolare del trattamento, e va scritta
-            nell'informativa.
-          </span>
-        </section>
+      {/* Tasti e non link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
+      <nav aria-label="In questa pagina" className="row sg-indice">
+        {/* Object.keys dà string[]: le chiavi sono proprio quelle di GRUPPI, scritte qui sopra. */}
+        {(Object.keys(GRUPPI) as IdGruppo[]).map((id) => (
+          <button key={id} type="button" className="num sg-chip" onClick={() => vaiAlGruppo(id)}>
+            {GRUPPI[id]}
+          </button>
+        ))}
+      </nav>
+      {imp.guaio && <Guaio testo={`Le impostazioni non si leggono: ${imp.guaio}`} />}
 
+      <Gruppo id="imp-stagione">
         <section aria-label="Il calendario" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">IL CALENDARIO</span>
           <div className="sg-due">
@@ -147,11 +149,14 @@ export function Regole({ d }: { d: DatiSegreteria }) {
           >
             RIGENERA ADESSO
           </button>
-          <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-            Rigenerare non duplica e non tocca le lezioni che hanno già un appello, anche a cavallo del cambio d'ora.
-          </span>
+          <ComeFunziona>
+            Prima dell'inizio non nascono lezioni. Le date sono facoltative, e le lezioni già in calendario restano. Rigenerare non duplica e non
+            tocca le lezioni che hanno già un appello, anche a cavallo del cambio d'ora.
+          </ComeFunziona>
         </section>
+      </Gruppo>
 
+      <Gruppo id="imp-sale">
         <section aria-label="Le sale" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">LE SALE</span>
           {(sale.dato ?? []).map((s: Sala) =>
@@ -164,7 +169,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
               <div key={s.id} className="row sg-voce-elenco" style={{ gap: 12 }}>
                 <span className="grow" style={{ fontSize: 15, fontWeight: 600 }}>{s.nome}</span>
                 <span className="num" style={{ fontSize: 14, color: 'var(--sec)' }}>{s.capienza ? `${s.capienza} posti` : 'posti non detti'}</span>
-                <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => setSala({ id: s.id, nome: s.nome, capienza: s.capienza })}>
+                <button type="button" className="num sg-chip" onClick={() => setSala({ id: s.id, nome: s.nome, capienza: s.capienza })}>
                   CAMBIA
                 </button>
               </div>
@@ -187,8 +192,61 @@ export function Regole({ d }: { d: DatiSegreteria }) {
         <VoceSale d={d} fai={fai} />
 
         <StoricoTimer d={d} />
+      </Gruppo>
 
+      <Gruppo id="imp-ricevute">
         <EnteRicevute d={d} />
+      </Gruppo>
+
+      <Gruppo id="imp-dati">
+        <section aria-label="Per quanto si tengono le presenze" className="sg-riquadro">
+          <span className="ob sg-riquadro-titolo">PER QUANTO SI TENGONO LE PRESENZE</span>
+          <div className="row" style={{ gap: 12 }}>
+            <label htmlFor="mesi" className="vh">
+              Mesi
+            </label>
+            <select
+              id="mesi"
+              className="sg-campo"
+              value={mesiScelti ?? imp.dato?.mesiPresenze ?? 24}
+              disabled={!imp.dato || mesiScelti !== null}
+              onChange={(e) => void cambiaMesi(Number(e.target.value))}
+            >
+              {[12, 24, 36, 60].map((m) => (
+                <option key={m} value={m}>
+                  {m} mesi
+                </option>
+              ))}
+            </select>
+            <span className="sg-sotto">dopo, si cancellano</span>
+          </div>
+          <div className="row sg-voce-elenco" style={{ gap: 12 }}>
+            <span className="stack grow">
+              <span style={{ fontSize: 15, fontWeight: 600 }}>
+                {scadute.guaio ? 'Non si riesce a contarle' : scadute.dato === null ? '…' : scadute.dato === 0 ? 'Nessuna presenza scaduta' : scadute.dato === 1 ? '1 presenza scaduta' : `${scadute.dato} presenze scadute`}
+              </span>
+              <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+                {d.modo === 'prova' ? 'In prova si cancellano da qui.' : 'Si cancellano da sé il primo del mese, o da qui.'}
+              </span>
+            </span>
+            <button
+              type="button"
+              className="num sg-chip"
+              disabled={!scadute.dato || !imp.dato}
+              onClick={async () => {
+                if ((await chiedi(`Cancellare ${scadute.dato === 1 ? '1 presenza più vecchia' : `${scadute.dato} presenze più vecchie`} di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`, 'CANCELLA LE PRESENZE', { pericolo: true }))) {
+                  void fai(() => d.pulisci(), 'Presenze scadute cancellate', scadute.ricarica)
+                }
+              }}
+            >
+              CANCELLA ORA
+            </button>
+          </div>
+          <ComeFunziona>
+            Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è della palestra, titolare del trattamento, e
+            l'informativa la riporta da sé.
+          </ComeFunziona>
+        </section>
 
         <Backup d={d} fai={fai} />
 
@@ -203,33 +261,32 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             <span className="sg-etichetta">L'INFORMATIVA</span>
             {INFORMATIVA ? (
               <>
-                <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ fontSize: 14, color: 'var(--sec)', wordBreak: 'break-all' }}>
+                <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', minHeight: 44, fontSize: 14, color: 'var(--sec)', wordBreak: 'break-all' }}>
                   {INFORMATIVA_BOZZA ? 'Leggi la bozza' : "Apri l'informativa"}
                 </a>
                 {INFORMATIVA_BOZZA && (
                   <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
                     Scritta insieme all'app, non ancora approvata: la palestra, che è titolare del trattamento, la deve leggere e fare sua, e
-                    decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi si toglie il
-                    riquadro BOZZA dalla pagina e <code>INFORMATIVA_BOZZA</code> in <code>src/lib/iscrizione.ts</code>. Fino ad allora, col database
-                    vero, il pubblico non la vede e il modulo di iscrizione resta spento.
+                    decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi chi cura l'app la
+                    segna come approvata. Fino ad allora, col database vero, il pubblico non la vede e il modulo di iscrizione resta spento.
                   </span>
                 )}
               </>
             ) : (
               <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
-                Non c'è ancora. Il link va messo in <code>src/lib/iscrizione.ts</code>, accanto a quello del modulo di iscrizione: si vede in fondo alla scheda
-                ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google:
+                Non c'è ancora: va scritta e collegata all'app, e si vedrà in fondo alla scheda ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google:
                 chiede codici fiscali e documenti, e prima va detto come si trattano.
               </span>
             )}
           </div>
           <div className="stack" style={{ gap: 6 }}>
             <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>DATI SANITARI: SOLO IL CERTIFICATO, SU CARTA</span>
-            <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
+            <span style={{ fontSize: 14, color: 'var(--sec)' }}>Patologie e allergie: in nessun campo, nemmeno nelle note.</span>
+            <ComeFunziona>
               Il certificato medico è un dato sulla salute, con altri obblighi: si tiene su carta, nella cartellina in un armadio chiuso, e nell'app si
               scrive solo fino a quando vale, nella scheda dell'iscritto. Lo stesso per la copia del documento d'identità. Se arrivano col modulo
               si stampano e si cancellano dalla richiesta; per email o WhatsApp, da lì. Patologie, allergie e simili non vanno scritte in nessun campo, nemmeno nelle note.
-            </span>
+            </ComeFunziona>
           </div>
           <div className="stack" style={{ gap: 6 }}>
             <label htmlFor="esporta" className="sg-etichetta">
@@ -255,7 +312,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             </span>
           </div>
         </section>
-      </div>
+      </Gruppo>
       {avviso}
     </>
   )
@@ -325,6 +382,11 @@ function MusicaSale({
   fai: Fai
 }) {
   const [bozza, setBozza] = useState<Bozza | null>(null)
+  const prima = liste?.find((l) => l.id === bozza?.id)
+  useBozza(
+    !!bozza && (bozza.nome.trim() !== (prima?.nome ?? '') || bozza.link.trim() !== (prima?.link ?? '') || bozza.salaId !== (prima?.salaId ?? null)),
+    prima?.nome,
+  )
   const nomeSala = (id: string | null) => (id ? (sale.find((s) => s.id === id)?.nome ?? 'sala tolta') : 'Tutte le sale')
   const salva = () => {
     if (!bozza) return
@@ -337,16 +399,12 @@ function MusicaSale({
   return (
     <section aria-label="La musica delle sale" className="sg-riquadro">
       <span className="ob sg-riquadro-titolo">LA MUSICA DELLE SALE</span>
-      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-        Le liste che il tablet di sala fa partire dalla sua barra in basso, sempre a portata di mano: un nome e il link a una playlist di YouTube o di
-        Spotify. Il tablet le sceglie e basta. Per Spotify serve che sul tablet sia collegato un account Premium, dalle impostazioni del timer.
-      </span>
       {guaio && <Guaio testo={`Le liste non si leggono: ${guaio}`} />}
       {(liste ?? []).map((l) =>
         bozza?.id === l.id ? (
           <FormLista key={l.id} bozza={bozza} sale={sale} setBozza={setBozza} onSalva={salva} />
         ) : (
-          <div key={l.id} className="row sg-voce-elenco" style={{ gap: 12 }}>
+          <div key={l.id} className="row sg-voce-elenco" style={{ gap: 12, flexWrap: 'wrap' }}>
             <span className="stack grow" style={{ minWidth: 0 }}>
               <span style={{ fontSize: 15, fontWeight: 600 }}>{l.nome}</span>
               <span style={{ fontSize: 12, color: 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.link}</span>
@@ -355,13 +413,12 @@ function MusicaSale({
               {FONTE[fonteDelLink(l.link) ?? 'youtube']}
             </span>
             <span className="num" style={{ fontSize: 14, color: 'var(--sec)', whiteSpace: 'nowrap' }}>{nomeSala(l.salaId)}</span>
-            <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => setBozza({ ...l })}>
+            <button type="button" className="num sg-chip" onClick={() => setBozza({ ...l })}>
               CAMBIA
             </button>
             <button
               type="button"
               className="num sg-chip"
-              style={{ minHeight: 36 }}
               onClick={async () => {
                 if ((await chiedi(`Togliere «${l.nome}» dalla musica ${l.salaId ? `della sala ${nomeSala(l.salaId)}` : 'di tutte le sale'}?`, 'TOGLI LA LISTA'))) {
                   void fai(() => d.togliListaMusica(l.id), 'Lista tolta', ricarica)
@@ -381,6 +438,10 @@ function MusicaSale({
           + AGGIUNGI UNA LISTA
         </button>
       )}
+      <ComeFunziona>
+        Le liste che il tablet di sala fa partire dalla sua barra in basso, sempre a portata di mano: un nome e il link a una playlist di YouTube o di
+        Spotify. Il tablet le sceglie e basta. Per Spotify serve che sul tablet sia collegato un account Premium, dalle impostazioni del timer.
+      </ComeFunziona>
     </section>
   )
 }
@@ -440,7 +501,7 @@ function FormLista({
         onChange={(e) => setBozza({ ...bozza, link: e.target.value })}
       />
       <div className="row" style={{ gap: 8 }}>
-        <span className="grow" style={{ fontSize: 13, color: scritto && !fonte ? 'var(--rosso)' : 'var(--dim)' }}>
+        <span className="grow" style={{ fontSize: 13, color: scritto && !fonte ? 'var(--rosso-testo)' : 'var(--dim)' }}>
           {!scritto
             ? 'Da YouTube o da Spotify: Condividi › Copia link.'
             : fonte
@@ -472,6 +533,8 @@ function Stagione({ d, imp, avvisa, fai, poi }: {
   const [bozza, setBozza] = useState<{ inizio: string; fine: string } | null>(null)
   const inizio = bozza?.inizio ?? imp?.inizioCorsi ?? ''
   const fine = bozza?.fine ?? imp?.fineCorsi ?? ''
+  const cambiate = inizio !== (imp?.inizioCorsi ?? '') || fine !== (imp?.fineCorsi ?? '')
+  useBozza(cambiate, 'Inizio e fine dei corsi')
   // Il database senza le colonne: si dice cosa manca invece di un errore al salvataggio.
   if (imp && imp.inizioCorsi === undefined) {
     return (
@@ -480,7 +543,6 @@ function Stagione({ d, imp, avvisa, fai, poi }: {
       </span>
     )
   }
-  const cambiate = inizio !== (imp?.inizioCorsi ?? '') || fine !== (imp?.fineCorsi ?? '')
   const salva = () => {
     if (inizio && fine && fine < inizio) return avvisa('La fine dei corsi viene prima dell’inizio', true)
     // Il database ne tiene al massimo 400 giorni: un anno, con margine.
@@ -515,8 +577,7 @@ function Stagione({ d, imp, avvisa, fai, poi }: {
       <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
         {fine
           ? `Le lezioni si preparano tutte fino al ${/^\d{4}-\d{2}-\d{2}$/.test(fine) ? dataLunga(fine) : '…'}, e oltre non ne nascono.`
-          : 'Senza la fine, il calendario si prepara per i giorni scelti qui sotto e si allunga da sé.'}{' '}
-        Prima dell'inizio non nascono lezioni. Le date sono facoltative, e le lezioni già in calendario restano.
+          : 'Senza la fine, il calendario si prepara per i giorni scelti qui sotto e si allunga da sé.'}
       </span>
     </>
   )
@@ -562,10 +623,6 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
           </a>
         )}
       </div>
-      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-        Una copia di tutto il database si fa da sé ogni lunedì notte, e da qui quando serve: prima di un cambiamento grosso, o per averne una da mettere su
-        Drive. GitHub tiene le copie novanta giorni.
-      </span>
       {stato.guaio && <Guaio testo={`Le copie non si leggono: ${stato.guaio}`} />}
       {ultimo && (
         <span style={{ fontSize: 14, color: 'var(--sec)' }}>
@@ -581,7 +638,7 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
           <span className="num" style={{ fontSize: 14, color: 'var(--sec)', whiteSpace: 'nowrap' }}>
             {c.byte < 1_000_000 ? `${Math.max(1, Math.round(c.byte / 1000))} kB` : `${(c.byte / 1_000_000).toFixed(1).replace('.', ',')} MB`}
           </span>
-          <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => void fai(() => scarica(c.id), 'Copia scaricata: si mette su Drive così com’è')}>
+          <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(c.id), 'Copia scaricata: si mette su Drive così com’è')}>
             SCARICA
           </button>
         </div>
@@ -602,10 +659,11 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
       >
         {inCorso ? 'BACKUP IN CORSO…' : 'FAI UN BACKUP ORA'}
       </button>
-      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-        Il file è cifrato: senza la password del backup non lo apre nessuno, quindi su Drive può stare anche in una cartella condivisa. La password va
-        tenuta da parte, fuori da qui; come si rimette a posto una copia è in supabase/LEGGIMI.md.
-      </span>
+      <ComeFunziona>
+        Una copia di tutto il database si fa da sé ogni lunedì notte, e da qui quando serve: prima di un cambiamento grosso, o per averne una da mettere su
+        Drive. GitHub tiene le copie novanta giorni. Il file è cifrato: senza la password del backup non lo apre nessuno, quindi su Drive può stare anche
+        in una cartella condivisa. La password va tenuta da parte, fuori da qui: per rimettere a posto una copia serve, insieme al file.
+      </ComeFunziona>
     </section>
   )
 }

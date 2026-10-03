@@ -30,8 +30,11 @@ const VERSIONE = '1'
 /**
  * Le ricevute sono venute dopo, con l'area degli iscritti: hanno il loro
  * segno, così arrivano anche su un dispositivo che gli altri esempi li ha già.
+ * Il segno ha la sua versione: quando cambia, le ricevute di esempio si
+ * rifanno (la 2 fa vedere QUOTA SCADUTA e FUORI APP).
  */
 const DOVE_RICEVUTE = 'ods-corsi:prova-esempi-ricevute'
+const VERSIONE_RICEVUTE = '2'
 /** I nuclei familiari, venuti ancora dopo: anche loro col segno loro. */
 const DOVE_NUCLEI = 'ods-corsi:prova-esempi-nuclei'
 /** Le presenze segnalate dagli iscritti, venute dopo ancora. */
@@ -294,16 +297,20 @@ function richieste(adesso: Date): Richiesta[] {
  * Le ricevute di chi ha pagato, tutto o in parte: la quota e il primo dei suoi
  * corsi che è nel listino, fatte nei primi giorni della stagione (o oggi, se
  * la stagione non è ancora cominciata). Chi ha pagato in parte ha dato metà
- * del corso. Una sola per persona, e solo a chi non ne ha già una.
+ * della quota e del corso. Una sola per persona, e solo a chi non ne ha già una.
+ * Per far vedere QUOTA SCADUTA, chi aveva pagato fino a prima della stagione
+ * ha la quota della stagione prima; per FUORI APP, a qualcuno la ricevuta
+ * ha solo il corso. Quelle di esempio di una versione vecchia si tolgono e si
+ * rifanno; le ricevute fatte a mano restano.
  */
 function seminaRicevute(adesso: Date) {
   try {
-    if (localStorage.getItem(DOVE_RICEVUTE) === VERSIONE) return
+    if (localStorage.getItem(DOVE_RICEVUTE) === VERSIONE_RICEVUTE) return
   } catch {
     return
   }
   const a = archivio.dati
-  const tutte = [...(a.ricevute ?? [])]
+  const tutte = (a.ricevute ?? []).filter((r) => !r.id.startsWith('r-esempio-'))
   const conRicevuta = new Set(tutte.map((r) => r.personaId))
   const oggi = chiaveGiorno(adesso)
   const giornoDopo = (g: string, n: number) => {
@@ -319,13 +326,18 @@ function seminaRicevute(adesso: Date) {
       .map((nome) => nome && vociDelCorso(nome, STAGIONE.dal)[0])
       .find(Boolean)
     const prima = giornoDopo(STAGIONE.dal, Math.floor(numero(`ric|${p.id}`) * 10))
-    const data = prima > oggi ? oggi : prima
+    // Solo chi aveva pagato la stagione prima: a chi aveva pagato fino a dicembre va la quota di questa, o a metà dicembre scadrebbe mezza palestra.
+    const fino = p.pagamento?.fino
+    const finita = fino && fino < STAGIONE.dal && fino < oggi ? fino : undefined
+    const fuori = !finita && !!corso && stato === 'pagato' && numero(`fuori|${p.id}`) < 0.08
+    const data = finita ? giornoDopo(STAGIONE.dal, -365) : prima > oggi ? oggi : prima
     const metodo = ['Bonifico', 'Contanti', 'POS'][Math.floor(numero(`met|${p.id}`) * 3)]
     const paga = (v: Omit<VoceRicevuta, 'pagamenti'>, meta = false): VoceRicevuta => ({
       ...v,
       pagamenti: [{ data, importo: meta ? Math.round((v.prezzo * v.quantita) / 2) : v.prezzo * v.quantita, metodo }],
     })
-    const voci = [paga(voceQuota().voce(data)), ...(corso ? [paga(corso.voce(data), stato === 'in_parte')] : [])]
+    const quota = finita ? { ...voceQuota().voce(data), dal: data, al: finita } : voceQuota().voce(data)
+    const voci = [...(fuori ? [] : [paga(quota, stato === 'in_parte')]), ...(corso && !finita ? [paga(corso.voce(data), stato === 'in_parte')] : [])]
     const anno = Number(data.slice(0, 4))
     const numeroRicevuta = Math.max(0, ...tutte.filter((r) => r.anno === anno).map((r) => r.numero)) + 1
     const c = conti({ voci, anticipo: 0 })
@@ -348,7 +360,7 @@ function seminaRicevute(adesso: Date) {
   a.ricevute = tutte
   archivio.salva()
   try {
-    localStorage.setItem(DOVE_RICEVUTE, VERSIONE)
+    localStorage.setItem(DOVE_RICEVUTE, VERSIONE_RICEVUTE)
   } catch {
     /* si rifaranno, e saltano chi ne ha già una */
   }

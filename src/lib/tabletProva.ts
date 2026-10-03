@@ -71,7 +71,7 @@ export function creaTabletProva(): DatiTablet {
   const adesso = () => new Date(Date.now() + scarto)
   let sala = leggiSala()
   const tentativi: Array<{ quando: number; riuscito: boolean }> = []
-  /** Come `ricerche_prove` (29-prove-per-nome.sql): quando ha cercato chi è già venuto. */
+  /** Come `ricerche_prove` (34-prove-per-nome.sql): quando ha cercato chi è già venuto. */
   const ricerche: number[] = []
 
   /** La lezione, se è di questa sala: come `lezione_del_tablet`. */
@@ -296,11 +296,11 @@ export function creaTabletProva(): DatiTablet {
     async aggiungiProva(pin, sessioneId, chi) {
       await lezione(sessioneId)
       const da = daPin(pin)
-      if (!da) return false
+      if (!da) return null
       const p = mettiProva(sessioneId, chi, da.personaId)
       // Come dall'appello: la presenza non è «dal tablet».
       scrivi(sessioneId, p.id, memoria.segnate[sessioneId]?.[p.id] ?? 'presente', null)
-      return true
+      return p.id
     },
 
     async togliProva(pin, sessioneId, personaId) {

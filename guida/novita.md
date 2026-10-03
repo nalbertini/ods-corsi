@@ -10,6 +10,194 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.17.0 — 3 ottobre 2026
+
+### Novità
+
+- In Iscritti, i possibili doppioni da unire
+
+## 0.16.0 — 3 ottobre 2026
+
+### Novità
+
+- Ogni corso ha il suo prezzo nel listino, anche se cambia nome
+
+## 0.15.0 — 3 ottobre 2026
+
+### Novità
+
+- Allega un file alle segnalazioni della segreteria
+
+## 0.14.5 — 3 ottobre 2026
+
+### Modificato
+
+- In segreteria è in evidenza un solo tasto: quello di cosa c'è da fare
+
+## 0.14.4 — 3 ottobre 2026
+
+### Risolto
+
+- In Corsi, Istruttori e accessi, Listino e Impostazioni una modifica non salvata non si perde più
+
+### Modificato
+
+- In segreteria le scritte rosse e verdi si leggono meglio
+
+## 0.14.3 — 3 ottobre 2026
+
+### Modificato
+
+- La critica di design della pagina di iscrizione, per chi ci lavora dopo
+
+## 0.14.2 — 3 ottobre 2026
+
+### Modificato
+
+- L'informativa privacy riporta da sé per quanto si tengono le presenze, come scelto in IMPOSTAZIONI
+
+## 0.14.1 — 3 ottobre 2026
+
+### Risolto
+
+- Tasti più comodi in IMPOSTAZIONI e menu del telefono che si usa bene da tastiera
+
+## 0.14.0 — 3 ottobre 2026
+
+### Novità
+
+- Nel modulo di iscrizione i corsi giusti per l'età vengono per primi, con età e orari
+
+## 0.13.2 — 3 ottobre 2026
+
+### Risolto
+
+- In IMPOSTAZIONI errori e voci del timer si leggono senza parole da informatici
+
+## 0.13.1 — 3 ottobre 2026
+
+### Risolto
+
+- Accorciare per quanto si tengono le presenze chiede conferma, con quante si cancellano
+- Col tema chiaro le scritte piccole del menu si leggono meglio
+
+## 0.13.0 — 3 ottobre 2026
+
+### Novità
+
+- La richiesta di iscrizione si manda anche senza ricevuta, e si paga in segreteria
+
+## 0.12.2 — 3 ottobre 2026
+
+### Risolto
+
+- Sul computer IMPOSTAZIONI è una voce del menu, con il suo nome
+
+## 0.12.1 — 3 ottobre 2026
+
+### Risolto
+
+- Nel modulo di iscrizione INDIETRO chiede prima di perdere risposte e firma
+
+## 0.12.0 — 3 ottobre 2026
+
+### Novità
+
+- In cima alla scheda di un iscritto, certificato, quota e documento a colpo d'occhio
+
+## 0.11.1 — 3 ottobre 2026
+
+### Modificato
+
+- IMPOSTAZIONI in quattro gruppi, con le spiegazioni a richiesta
+
+## 0.11.0 — 3 ottobre 2026
+
+### Novità
+
+- Ricevuta più corta, con le voci della persona in cima e il codice fiscale obbligatorio
+
+## 0.10.0 — 3 ottobre 2026
+
+### Novità
+
+- In segreteria Indietro e Avanti del browser riportano dov'eri, e una scheda iscritto si apre in un'altra finestra
+
+### Risolto
+
+- Nel menu della segreteria la guida, il tema e le impostazioni stanno in cima
+
+### Modificato
+
+- Testi più chiari nel modulo di iscrizione: certificato, codice fiscale, minore
+
+## 0.9.6 — 3 ottobre 2026
+
+### Modificato
+
+- Il modulo di iscrizione e il listino usano i colori come il resto dell'app
+
+## 0.9.5 — 3 ottobre 2026
+
+### Risolto
+
+- Sul telefono il modulo di iscrizione mostra le spiegazioni intere e ha tasti più grandi
+- In segreteria le azioni che pesano sono tasti veri, e le presenze istruttori si leggono meglio
+
+## 0.9.4 — 3 ottobre 2026
+
+### Modificato
+
+- Settimana: il calendario si allunga da sé, e subito da Impostazioni
+
+## 0.9.3 — 3 ottobre 2026
+
+### Risolto
+
+- Tornando al calendario con un nome scritto in «Chi viene a provare» e non aggiunto, la freccia avvisa prima di perderlo
+
+## 0.9.2 — 3 ottobre 2026
+
+### Risolto
+
+- Un appello chiuso per sbaglio si recupera anche con chi prova, e in cima c'è la lezione da fare
+
+## 0.9.1 — 3 ottobre 2026
+
+### Risolto
+
+- Una lezione straordinaria fissata lontano non ferma più il calendario delle lezioni normali
+- Sul tablet, chi è già nell'appello non torna fra chi viene a provare quando l'appello non si rilegge
+
+## 0.9.0 — 3 ottobre 2026
+
+### Novità
+
+- La segreteria unisce due schede della stessa persona
+
+## 0.8.6 — 3 ottobre 2026
+
+### Risolto
+
+- Sul tablet di sala il timer torna in primo piano, e l'area istruttore funziona anche in verticale
+
+### Modificato
+
+- Segnalazioni: la chiusa resta in vista, le bozze non si perdono e i tasti spenti dicono cosa manca
+
+## 0.8.5 — 3 ottobre 2026
+
+### Risolto
+
+- Sul tablet, aggiungendo una persona in prova la conferma non sparisce più
+- Un conto solo di chi manca nell'appello, e un tocco di troppo non toglie più il segno
+- «Cerca iscritto» in segreteria trova anche con l'apostrofo o il cognome attaccato (d'am, deluca)
+- Girando il tablet l'appello aperto non si chiude più e il calendario resta sulla settimana scelta
+
+### Modificato
+
+- Le prove controllano che riaggiungere una prova non cambi il suo segno
+
 ## 0.8.4 — 3 ottobre 2026
 
 ### Risolto

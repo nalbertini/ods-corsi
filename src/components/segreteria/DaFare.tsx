@@ -309,7 +309,7 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
 
       {aPosto.length > 0 && daFare.length > 0 && (
         <p className="sg-dafare-aposto">
-          <span className="sg-etichetta" style={{ color: 'var(--verde)' }}>A POSTO</span> {aPosto.map((c) => c.aPosto).join(' · ')}
+          <span className="sg-etichetta" style={{ color: 'var(--verde-testo)' }}>A POSTO</span> {aPosto.map((c) => c.aPosto).join(' · ')}
         </p>
       )}
 
