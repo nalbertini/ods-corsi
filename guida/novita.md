@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.9.3 — 3 ottobre 2026
+
+### Risolto
+
+- Tornando al calendario con un nome scritto in «Chi viene a provare» e non aggiunto, la freccia avvisa prima di perderlo
+
 ## 0.9.2 — 3 ottobre 2026
 
 ### Risolto
