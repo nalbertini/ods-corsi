@@ -541,6 +541,14 @@ begin
     grant execute on function listino() to anon, authenticated;
   end if;
 end $$;
+-- Per quanto si tengono le presenze, per l'informativa privacy, se
+-- 31-informativa-mesi.sql è già stato lanciato.
+do $$
+begin
+  if to_regprocedure('public.mesi_presenze_pubblici()') is not null then
+    grant execute on function mesi_presenze_pubblici() to anon, authenticated;
+  end if;
+end $$;
 -- Le tabelle restano chiuse, anche quelle che verranno: Supabase per default
 -- le dà ad `anon`, e l'RLS da sola è una porta sola invece di due.
 revoke all on all tables in schema public from anon;

@@ -42,6 +42,13 @@ export const LIMITI = { corsi: 60, prezzi: 8, offerte: 10, orari: 6, prezzo: 100
 
 const testo = (x: unknown, max: number) => (typeof x === 'string' && x.trim() ? x.trim().slice(0, max) : undefined)
 const euro = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) && x >= 0 && x <= LIMITI.prezzo ? Math.round(x * 100) / 100 : undefined)
+const anno = (x: unknown) => (typeof x === 'number' && Number.isInteger(x) && x >= 1900 && x <= 2100 ? x : undefined)
+/** Un anno scritto in LISTINO: `undefined` se è vuoto, `null` se non si capisce. Gli stessi limiti di quando si legge. */
+export function annoScritto(t: string): number | undefined | null {
+  const s = t.trim()
+  if (!s) return undefined
+  return (/^\d{4}$/.test(s) && anno(Number(s))) || null
+}
 const giorno = (x: unknown) => (typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) && !Number.isNaN(Date.parse(x)) ? x : undefined)
 const senzaVuoti = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T
 
@@ -65,7 +72,7 @@ export function listinoDa(x: unknown): Listino | null {
       return r.saldo === undefined && r.annuale === undefined && r.trimestre === undefined ? [] : [r]
     })
     const orari = (Array.isArray(v.orari) ? v.orari : []).slice(0, LIMITI.orari).flatMap((s) => testo(s, 120) ?? [])
-    return [senzaVuoti({ corso, eta: testo(v.eta, 120) ?? '', orari, prezzi, notaTrimestre: testo(v.notaTrimestre, 60), nota: testo(v.nota, 300) })]
+    return [senzaVuoti({ corso, eta: testo(v.eta, 120) ?? '', natiDal: anno(v.natiDal), natiAl: anno(v.natiAl), orari, prezzi, notaTrimestre: testo(v.notaTrimestre, 60), nota: testo(v.nota, 300) })]
   })
   const offerte = (Array.isArray(o.offerte) ? o.offerte : []).slice(0, LIMITI.offerte).flatMap((f): Offerta[] => {
     if (!f || typeof f !== 'object') return []
@@ -86,6 +93,62 @@ export function listinoDa(x: unknown): Listino | null {
 /** Per confrontare i nomi dei corsi: le ricevute li trovano così. */
 export const nomeCorso = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, ' ').trim()
 
+/** L'anno di nascita, se la data è vera: a metà (vuota, «0002-…») non dice niente. */
+function annoDi(natoIl: string): number | undefined {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(natoIl)) return undefined
+  const a = Number(natoIl.slice(0, 4))
+  return a >= 1900 ? a : undefined
+}
+
+const fuori = (v: VoceCosto | undefined, a: number | undefined) =>
+  a !== undefined && !!v && ((v.natiDal !== undefined && a < v.natiDal) || (v.natiAl !== undefined && a > v.natiAl))
+
+const vocePer = (nome: string, voci: VoceCosto[]) => voci.find((v) => nomeCorso(v.corso) === nomeCorso(nome))
+
+/** Se un corso non è per l'anno di nascita di chi si iscrive: lo dice il listino, coi suoi anni. */
+export const fuoriEta = (nome: string, natoIl: string, voci: VoceCosto[]) => fuori(vocePer(nome, voci), annoDi(natoIl))
+
+export interface CorsoPerEta {
+  id: string
+  nome: string
+  /** Età e orari dal listino, da leggere sotto il nome. */
+  riga?: string
+}
+
+/**
+ * I corsi del modulo di iscrizione, divisi per l'anno di nascita: prima
+ * quelli che vanno bene, poi gli altri, che si possono scegliere lo stesso.
+ * Nessuno sparisce. Un corso va negli altri solo se il listino ha i suoi anni
+ * e l'anno è fuori; senza data vera vanno tutti bene, in un elenco solo. Con
+ * la data, i corsi che il listino non dice per che anni (o che non ha) stanno
+ * a parte (`senzaAnni`): in cima sembrerebbero della sua età.
+ * Per il resto l'ordine è quello del listino, poi i corsi che il listino non
+ * ha, in ordine di nome.
+ */
+export function corsiPerEta(
+  corsi: ReadonlyArray<{ id: string; nome: string }>,
+  voci: VoceCosto[],
+  natoIl: string,
+): { adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[] } {
+  const a = annoDi(natoIl)
+  const posto = (nome: string) => {
+    const i = voci.findIndex((v) => nomeCorso(v.corso) === nomeCorso(nome))
+    return i < 0 ? voci.length : i
+  }
+  const ordinati = [...corsi].sort((x, y) => posto(x.nome) - posto(y.nome) || x.nome.localeCompare(y.nome, 'it'))
+  const giusti: CorsoPerEta[] = []
+  const perTutti: CorsoPerEta[] = []
+  const altri: CorsoPerEta[] = []
+  for (const c of ordinati) {
+    const v = vocePer(c.nome, voci)
+    const riga = v ? [v.eta, ...v.orari].filter((t) => t.trim()).join(' · ') || undefined : undefined
+    const conAnni = a !== undefined && (v?.natiDal !== undefined || v?.natiAl !== undefined)
+    ;(fuori(v, a) ? altri : conAnni ? giusti : perTutti).push({ id: c.id, nome: c.nome, riga })
+  }
+  // Senza data non si sa niente: un elenco solo.
+  return a === undefined ? { adatti: perTutti, senzaAnni: [], altri } : { adatti: giusti, senzaAnni: perTutti, altri }
+}
+
 /** Quello che non va, detto prima di salvare; `null` se va bene. */
 export function cosaNonVaListino(l: Listino): string | null {
   if (!(l.quota >= 0 && l.quota <= LIMITI.prezzo)) return 'La quota associativa non va'
@@ -103,6 +166,7 @@ export function cosaNonVaListino(l: Listino): string | null {
     if (!c.prezzi.length) return `«${nome}» non ha prezzi`
     if (c.prezzi.length > LIMITI.prezzi) return `«${nome}» ha troppe righe di prezzi: al massimo ${LIMITI.prezzi}`
     if (c.orari.length > LIMITI.orari) return `«${nome}» ha troppi orari: al massimo ${LIMITI.orari}`
+    if (c.natiDal !== undefined && c.natiAl !== undefined && c.natiDal > c.natiAl) return `Gli anni di nascita di «${nome}» sono al contrario: in NATI DAL va l’anno più vecchio`
     for (const p of c.prezzi) {
       if (p.saldo === undefined && p.annuale === undefined && p.trimestre === undefined) return `Una riga di «${nome}» non ha nessun prezzo`
       for (const n of [p.saldo, p.annuale, p.trimestre]) if (n !== undefined && !(n >= 0 && n <= LIMITI.prezzo)) return `Un prezzo di «${nome}» non va`
