@@ -19,7 +19,8 @@ import { Segnalazioni } from './Segnalazioni'
 import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
-import { chiedi, Conferme, Guaio } from './comune'
+import { bozzaAperta, chiedi, Conferme, Guaio } from './comune'
+import { CercaIscritto } from './CercaIscritto'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
@@ -150,7 +151,10 @@ export function Segreteria({
   const [dove, setDove] = useState<Destinazione>({})
   // Il menu del telefono, aperto o chiuso; sul computer non conta.
   const [aperto, setAperto] = useState(false)
-  const vai = (v: Voce, d: Destinazione = {}) => {
+  const vai = async (v: Voce, d: Destinazione = {}) => {
+    // Un modulo scritto a metà (una ricevuta, un iscritto nuovo) non si perde con un clic sul menu.
+    if (bozzaAperta() && !(await chiedi('Lasciare a metà quello che stai scrivendo? Quello che non hai salvato si perde.', 'LASCIALO A METÀ', { no: 'TORNA A FINIRE' })))
+      return
     setDove(d)
     setVoce(v)
     setAperto(false)
@@ -212,6 +216,10 @@ export function Segreteria({
 
   return (
     <div className="sg">
+      {/* Un tasto e non un link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
+      <button type="button" className="sg-salta" onClick={() => document.getElementById('sg-contenuto')?.focus()}>
+        Vai al contenuto
+      </button>
       <header className="sg-barra-tel">
         <Logo width={36} />
         <span className="stack grow" style={{ gap: 2 }}>
@@ -242,6 +250,7 @@ export function Segreteria({
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
           </span>
         </div>
+        {d && <CercaIscritto d={d} onApri={(id) => void vai('iscritti', { persona: id })} />}
         <div className="sg-gruppi">
           {GRUPPI.map((g) => (
             <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo" data-secondario={g.secondario}>
@@ -316,7 +325,7 @@ export function Segreteria({
         </div>
       </nav>
 
-      <main className="sg-corpo">
+      <main className="sg-corpo" id="sg-contenuto" tabIndex={-1}>
         {!d && !guaio && <p className="sg-sotto">Un attimo…</p>}
         {!d && guaio && (
           <div className="stack" style={{ gap: 12, alignItems: 'flex-start' }}>

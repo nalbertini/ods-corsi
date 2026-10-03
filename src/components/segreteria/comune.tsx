@@ -49,6 +49,42 @@ export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
   return ref
 }
 
+// Quello che si sta scrivendo e non è ancora salvato (vedi `useBozza`).
+const bozze = new Set<object>()
+
+/**
+ * Finché `aperta`, c'è qualcosa scritto a metà: cambiando voce del menu la
+ * segreteria chiede prima di perderlo (`bozzaAperta`), e chiudendo la pagina
+ * lo chiede il browser. Al banco squilla il telefono, e un clic altrove non
+ * deve buttare una ricevuta compilata.
+ */
+export function useBozza(aperta: boolean) {
+  useEffect(() => {
+    if (!aperta) return
+    const io = {}
+    bozze.add(io)
+    const via = (e: BeforeUnloadEvent) => e.preventDefault()
+    window.addEventListener('beforeunload', via)
+    return () => {
+      bozze.delete(io)
+      window.removeEventListener('beforeunload', via)
+    }
+  }, [aperta])
+}
+
+export const bozzaAperta = () => bozze.size > 0
+
+/** Un modulo che diventa bozza al primo tasto battuto o alla prima scelta. */
+export function Bozza({ children }: { children: ReactNode }) {
+  const [toccata, setToccata] = useState(false)
+  useBozza(toccata)
+  return (
+    <div className="contents" onInputCapture={() => setToccata(true)}>
+      {children}
+    </div>
+  )
+}
+
 interface Domanda {
   testo: string
   si: string

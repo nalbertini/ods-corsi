@@ -5,7 +5,7 @@ import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, p
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
@@ -108,6 +108,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
     <>
       {nuovo ? (
         <SchedaPiena etichetta="Nuovo iscritto" torna="ISCRITTI" onTorna={chiudi}>
+          <Bozza>
           <Nuovo
             d={d}
             corsi={attivi}
@@ -119,6 +120,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
               void ricarica()
             }}
           />
+          </Bozza>
         </SchedaPiena>
       ) : persona ? (
         <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna="ISCRITTI" onTorna={chiudi}>
@@ -366,6 +368,8 @@ function Scheda({
 }) {
   const oggi = chiaveGiorno(new Date())
   const [modifica, setModifica] = useState<DatiPersona | null>(null)
+  // Aperta la modifica, uscire dal menu chiede prima di perderla.
+  useBozza(!!modifica)
   const [daAggiungere, setDaAggiungere] = useState('')
   const [pagando, setPagando] = useState(false)
   // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
@@ -390,6 +394,7 @@ function Scheda({
       </div>
 
       {pagando ? (
+        <Bozza>
         <NuovaRicevuta
           d={d}
           p={p}
@@ -403,6 +408,7 @@ function Scheda({
             onCambiato()
           }}
         />
+        </Bozza>
       ) : (
       <>
       <div className="sg-scheda-griglia">

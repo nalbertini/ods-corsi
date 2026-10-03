@@ -987,6 +987,26 @@ a.btn { text-decoration: none; }
   overflow-y: auto;
 }
 .sg-voci { display: flex; flex-direction: column; gap: 2px; }
+/* Il primo tasto TAB porta al contenuto, saltando il menu: si vede solo allora. */
+.sg-salta {
+  position: absolute; left: 12px; top: -60px; z-index: 50; padding: 10px 14px;
+  background: var(--text); color: var(--bg); font-family: var(--cond); font-size: 15px; font-weight: 700; letter-spacing: 0.12em; text-decoration: none;
+}
+.sg-salta:focus { top: calc(var(--safe-t) + 12px); outline: 2px solid var(--text); outline-offset: 2px; }
+.sg-corpo:focus { outline: none; }
+/* Cerca iscritto, in cima al menu. */
+.sg-cerca { position: relative; padding: 0 4px; }
+.sg-cerca .sg-campo { width: 100%; background: var(--surface); }
+.sg-campo::placeholder { color: var(--dim); opacity: 1; }
+.sg-cerca-elenco {
+  position: absolute; left: 4px; right: 4px; top: calc(100% + 4px); z-index: 25; margin: 0; padding: 4px; list-style: none;
+  background: var(--surface); border: 2px solid var(--text); box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
+}
+.sg-cerca-voce { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; padding: 0 10px; font-size: 15px; cursor: pointer; }
+.sg-cerca-voce[aria-selected='true'] { background: var(--surface-2); }
+.sg-cerca-voce[data-spento] { color: var(--dim); }
+.sg-cerca-nota { font-size: 12px; color: var(--dim); }
+.sg-cerca-vuoto { padding: 10px; font-size: 14px; color: var(--dim); }
 .sg-gruppi { display: flex; flex-direction: column; gap: 18px; }
 .sg-gruppo { display: flex; flex-direction: column; gap: 4px; }
 .sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
