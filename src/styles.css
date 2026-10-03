@@ -349,6 +349,13 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
   position: sticky; top: 0; z-index: 2;
   background: var(--bg); padding-bottom: 12px; border-bottom: 2px solid var(--line-soft);
 }
+/* Sul telefono la testa ferma si prende già un terzo dello schermo: giorno,
+   ora e sala su una riga sola, e il titolo e il conto un po' più bassi. */
+.appello-testa .chi-kanji > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+@media (max-width: 420px) {
+  .appello-testa .appello-titolo { font-size: 20px; }
+  .appello-testa .conto-appello { font-size: 40px; }
+}
 .appello-futura { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--giallo-testo); }
 .appello-titolo { font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05; }
 .appello-stato { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); }
@@ -376,7 +383,6 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
    così si vede che non è più lo stesso tasto. */
 .btn-primary[data-sicuro='true'] { background: transparent; border: 2px solid var(--rosso); color: var(--rosso); }
 .btn-go[data-sicuro='true'] { background: transparent; border: 2px solid var(--verde); color: var(--verde-testo); }
-.chiudi-su { font-size: 17px; padding: 0 10px; letter-spacing: 0.1em; }
 .appello-esito { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; }
 
 /* Tre stati, tre colori, e il segno grande a sinistra: da lontano si vede se
