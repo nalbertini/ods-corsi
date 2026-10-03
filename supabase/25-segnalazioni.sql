@@ -26,11 +26,15 @@ create table if not exists segnalazioni (
   testo      text not null check (char_length(btrim(testo)) between 1 and 4000),
   scritta_il timestamptz not null default now(),
   -- Solo per il filo: quando è stata chiusa.
-  chiusa_il  timestamptz,
-  -- Il titolo ce l'ha il filo, e solo lui; una risposta non si chiude.
-  check (padre_id is null and char_length(btrim(titolo)) between 1 and 120
-      or padre_id is not null and titolo is null and chiusa_il is null)
+  chiusa_il  timestamptz
 );
+
+-- Il titolo ce l'ha il filo, e solo lui; una risposta non si chiude. Si
+-- rimette ogni volta: la prima versione lasciava entrare un filo senza titolo.
+alter table segnalazioni drop constraint if exists segnalazioni_check;
+alter table segnalazioni add constraint segnalazioni_check
+  check (padre_id is null and titolo is not null and char_length(btrim(titolo)) between 1 and 120
+      or padre_id is not null and titolo is null and chiusa_il is null);
 
 create index if not exists segnalazioni_padre on segnalazioni (padre_id, scritta_il);
 
