@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { AllenamentoSeg, DatiSegreteria } from '../../lib/segreteria'
+import { nomeVoce, type AllenamentoSeg, type DatiSegreteria } from '../../lib/segreteria'
 import { Spunta } from '../Icons'
 import { italianVoices, speak } from '../../../timer/src/lib/audio'
 import { CLIPS, type ClipSpec, exerciseKey, formatoRegistrazione } from '../../../timer/src/lib/voiceClips'
@@ -87,7 +87,7 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
                 salvaVoce(v.name)
               }}
             >
-              {v.name.toUpperCase()}
+              {nomeVoce(v.name, voci.map((x) => x.name)).toUpperCase()}
             </button>
           ))}
         </div>

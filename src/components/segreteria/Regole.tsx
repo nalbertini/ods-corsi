@@ -36,7 +36,7 @@ function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
 }
 
 /**
- * Le impostazioni: le scelte che spettano alla palestra, non al codice. La
+ * Le impostazioni: le scelte che spettano alla palestra, non al programma. La
  * stagione; le sale con la loro musica, la voce e lo storico dei timer; chi
  * fa le ricevute; per quanto si tengono le presenze, il backup, la privacy.
  */
@@ -76,7 +76,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
 
   return (
     <>
-      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al codice." />
+      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al programma." />
 
       {/* Tasti e non link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
       <nav aria-label="In questa pagina" className="row sg-indice">
@@ -264,16 +264,14 @@ export function Regole({ d }: { d: DatiSegreteria }) {
                 {INFORMATIVA_BOZZA && (
                   <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
                     Scritta insieme all'app, non ancora approvata: la palestra, che è titolare del trattamento, la deve leggere e fare sua, e
-                    decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi si toglie il
-                    riquadro BOZZA dalla pagina e <code>INFORMATIVA_BOZZA</code> in <code>src/lib/iscrizione.ts</code>. Fino ad allora, col database
-                    vero, il pubblico non la vede e il modulo di iscrizione resta spento.
+                    decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi chi cura l'app la
+                    segna come approvata. Fino ad allora, col database vero, il pubblico non la vede e il modulo di iscrizione resta spento.
                   </span>
                 )}
               </>
             ) : (
               <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
-                Non c'è ancora. Il link va messo in <code>src/lib/iscrizione.ts</code>, accanto a quello del modulo di iscrizione: si vede in fondo alla scheda
-                ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google:
+                Non c'è ancora: va scritta e collegata all'app, e si vedrà in fondo alla scheda ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google:
                 chiede codici fiscali e documenti, e prima va detto come si trattano.
               </span>
             )}
@@ -656,7 +654,7 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
       <ComeFunziona>
         Una copia di tutto il database si fa da sé ogni lunedì notte, e da qui quando serve: prima di un cambiamento grosso, o per averne una da mettere su
         Drive. GitHub tiene le copie novanta giorni. Il file è cifrato: senza la password del backup non lo apre nessuno, quindi su Drive può stare anche
-        in una cartella condivisa. La password va tenuta da parte, fuori da qui; come si rimette a posto una copia è in supabase/LEGGIMI.md.
+        in una cartella condivisa. La password va tenuta da parte, fuori da qui: per rimettere a posto una copia serve, insieme al file.
       </ComeFunziona>
     </section>
   )
