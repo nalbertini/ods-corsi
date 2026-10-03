@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.20.5 — 3 ottobre 2026
+
+### Risolto
+
+- Su tablet e telefono Indietro chiude il corso aperto e torna all'elenco di CORSI, invece di uscire
+
 ## 0.20.4 — 3 ottobre 2026
 
 ### Risolto
