@@ -65,9 +65,10 @@ file cambiati e poi `06-iscrizioni.sql`. Per certificati e pagamenti basta
 lanciare `07-certificati-pagamenti.sql`: finché non c'è, l'elenco degli
 iscritti si vede lo stesso, e salvare un certificato dice che manca. Per il
 certificato e il documento su carta si rilanciano `06-iscrizioni.sql` e
-`07-certificati-pagamenti.sql`: dopo, il modulo non accetta più il documento
-e nel contenitore dei certificati non entra più niente (vedi «Certificato e
-documento su carta», più sotto). Per la sala dei singoli giorni
+`07-certificati-pagamenti.sql`: dopo, documento e certificato arrivano col
+modulo e la segreteria li stampa e li cancella, e nel contenitore dei
+certificati non entra più niente (vedi «Certificato e documento su carta»,
+più sotto). Per la sala dei singoli giorni
 (la colonna `ricorrenze.sala_id`) sono `01-schema.sql`, `03-funzioni.sql`,
 `04-tablet.sql` e `05-segreteria.sql`: le lezioni già generate restano dove
 sono. Per il timer basta lanciare `08-timer.sql`, che non chiede di
@@ -320,9 +321,10 @@ corso. `corsi.istruttore_id` resta il primo della lista, quello di riferimento.
 
 Chi si iscrive lo compila dalla pagina pubblica (`iscrizioni/`), senza un accesso: le
 domande di prima (i dati di chi si iscrive, del genitore se è minorenne, la
-residenza, i corsi, come paga) e due file, cioè il modulo firmato e la
-ricevuta. Il documento d'identità non si carica: si mostra in segreteria, che
-ne tiene la copia su carta. La segreteria le trova in **SEGRETERIA → RICHIESTE
+residenza, i corsi, come paga) e i file: il modulo firmato, il documento
+d'identità (fronte e, se serve, retro), il certificato medico se ce l'ha già,
+e la ricevuta. Documento e certificato la segreteria li stampa, li tiene su
+carta e li cancella dall'app. La segreteria le trova in **SEGRETERIA → RICHIESTE
 ONLINE**, guarda i file e la accoglie o la rifiuta. Chi manda una richiesta
 rifiutata non viene avvisato dall'app: va chiamato o scritto a mano.
 
@@ -332,12 +334,12 @@ Cosa fa `06-iscrizioni.sql`:
 - il contenitore **`iscrizioni`** nello Storage, privato: niente link
   pubblici, la segreteria apre i file con un link che dura dieci minuti;
 - chi non ha un accesso può solo chiamare `corsi_aperti()` e
-  `invia_iscrizione()`, e caricare al massimo due file, modulo e ricevuta
-  (foto o PDF, fino a 10 MB), nella cartella della richiesta appena mandata,
+  `invia_iscrizione()`, e caricare al massimo cinque file (modulo,
+  documento fronte e retro, certificato, ricevuta: foto o PDF, fino a 10 MB), nella cartella della richiesta appena mandata,
   entro un'ora. Non li può rileggere né sostituire;
 - `richieste_con_documento()` dice alla segreteria quali richieste hanno
-  ancora il documento d'identità caricato, di quando il modulo lo chiedeva:
-  RICHIESTE ONLINE le segna **DOCUMENTO DA STAMPARE**;
+  ancora il documento d'identità o il certificato caricato: RICHIESTE ONLINE
+  le segna **DA STAMPARE**;
 - la porta non è spalancata: tre richieste al giorno dalla stessa email, trenta
   all'ora in tutto. I numeri stanno in `iscrizioni_regole()`;
 - accogliere (`accogli_iscrizione`) mette la persona in elenco e la iscrive ai
@@ -368,8 +370,8 @@ quello chiedeva altro, vanno allineati tre posti: `invia_iscrizione` qui,
 
 **Per quanto si tengono.** Accolta o rifiutata, una richiesta resta con i suoi
 file finché la segreteria non la elimina («Elimina richiesta e file», nella
-richiesta). Il documento d'identità non c'è più fra i file: la copia su carta
-serve per il tesseramento, e l'informativa dice fino a quando si tiene.
+richiesta). Documento e certificato no: si stampano e si cancellano appena
+accolta la richiesta, e la copia su carta segue i tempi dell'informativa.
 
 ### Il certificato medico, il documento e il pagamento
 
@@ -392,32 +394,36 @@ Cosa fa `07-certificati-pagamenti.sql`:
   se la persona si cancella dal database a mano, resta nel contenitore e va
   tolto a mano anche lui.
 
-Il modulo online non chiede né il certificato né il documento: si portano in
-segreteria. L'esportazione dei dati di una persona (IMPOSTAZIONI) comprende
+Documento e certificato arrivano col modulo, nella cartella della richiesta
+(o si portano in segreteria): la scheda ne tiene solo la scadenza e se il
+documento c'è. L'esportazione dei dati di una persona (IMPOSTAZIONI) comprende
 la scadenza e se il documento c'è.
 
 ### Certificato e documento su carta
 
 Il certificato medico e la copia del documento d'identità si tengono **su
 carta**, in segreteria, in un armadio chiuso: nell'app restano solo la data
-fino a cui vale il certificato e se il documento c'è. Prima il certificato si
-caricava nella scheda e il documento nel modulo: quei file si stampano e si
-cancellano, e poi i contenitori non tengono più niente di sanitario.
+fino a cui vale il certificato e se il documento c'è. Col modulo si caricano,
+così raccoglierli è facile, ma restano nell'app solo finché la segreteria non
+li stampa: poi si cancellano. Prima il certificato si caricava nella scheda:
+quei file si stampano e si cancellano allo stesso modo.
 
 1. Si rilanciano `06-iscrizioni.sql` e `07-certificati-pagamenti.sql`. Da lì
-   il modulo non accetta più il documento, e nel contenitore `certificati` non
-   entra più niente.
+   il modulo accetta documento e certificato, e nel contenitore `certificati`
+   non entra più niente.
 2. In **ISCRITTI**, **CERTIFICATI DA STAMPARE** mostra chi ha ancora il file:
    dalla scheda **APRI PER STAMPARE**, si stampa, si mette nella cartellina, e
    **STAMPATO, CANCELLALO**.
-3. In **RICHIESTE ONLINE**, **DA STAMPARE** mostra le richieste col
-   documento: lo stesso, dalla richiesta. Accolta, la scheda dell'iscritto
-   segna da sé che la copia è in segreteria.
-4. Quando i due filtri non compaiono più, nel pannello di Supabase,
+3. In **RICHIESTE ONLINE**, **DA STAMPARE** mostra le richieste con
+   documento o certificato: accolta la richiesta, li si apre, si stampano e
+   **STAMPATO, CANCELLA**. La scheda dell'iscritto segna da sé che la copia
+   del documento è in segreteria; la scadenza del certificato la si scrive lì.
+4. Quando **CERTIFICATI DA STAMPARE** non compare più, nel pannello di Supabase,
    **Storage**, il contenitore `certificati` è vuoto: si elimina (i tre
    puntini → **Delete bucket**), dal pannello e non dall'SQL Editor: i file
    dello Storage si cancellano dallo Storage. Il contenitore `iscrizioni`
-   resta, per moduli e ricevute.
+   resta: per moduli e ricevute, e per documenti e certificati finché non
+   sono stampati.
 
 ## 6. Il calendario
 
@@ -709,7 +715,7 @@ e il blocco, e che il tablet non veda niente più di quel che deve;
 `segreteria.sql` prova cosa succede alle lezioni quando un corso, o uno dei
 suoi giorni, cambia sala, quando cambiano istruttore o giorni, o si archivia, e il primo accesso; `iscrizioni.sql`
 prova il modulo di iscrizione: cosa può fare chi non ha un accesso, i limiti
-sui file (e che il documento non entri più), e chi accoglie le richieste;
+sui file (anche documento e certificato, e che si trovino da stampare), e chi accoglie le richieste;
 `certificati.sql` prova che certificati, documento e pagamenti li veda e li
 cambi solo la segreteria, e che di certificati nuovi nello Storage non ne
 entrino; `timer.sql` prova il timer:

@@ -180,9 +180,9 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
     {
       chiave: 'documenti-stampa',
       n: conti.documentiDaStampare,
-      titolo: (n) => uno(n, 'documento d’identità da stampare', 'documenti d’identità da stampare'),
-      sotto: 'Arrivati con una richiesta di quando il modulo li chiedeva: si stampano e si cancellano.',
-      aPosto: 'documenti da stampare',
+      titolo: (n) => uno(n, 'richiesta con documenti da stampare', 'richieste con documenti da stampare'),
+      sotto: 'Documento d’identità e certificato arrivati col modulo: accolta la richiesta, si stampano e si cancellano.',
+      aPosto: 'richieste da stampare',
       tasto: 'VEDI QUALI',
       voce: 'richieste',
       dove: { filtro: 'stampare' },

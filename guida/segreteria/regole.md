@@ -99,7 +99,8 @@ ricevute si fanno dalla scheda di un iscritto (vedi
   tiene su carta, nella cartellina in un armadio chiuso; nell'app si scrive
   solo fino a quando vale, nella scheda dell'iscritto (vedi
   [Iscritti](iscritti.md)), dove lo vede la segreteria e nessun altro. Lo
-  stesso per la copia del documento d'identità. Se arrivano per email o
+  stesso per la copia del documento d'identità. Se arrivano col modulo di
+  iscrizione si stampano e si cancellano dalla richiesta; per email o
   WhatsApp, si stampano e si cancellano da lì. Patologie, allergie e simili
   non vanno scritte da nessuna parte nell'app, nemmeno nelle note.
 - **ESPORTA I DATI DI UNA PERSONA** — si sceglie chi li ha chiesti e si preme

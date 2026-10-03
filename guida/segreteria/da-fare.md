@@ -21,8 +21,10 @@ si sistema:
   segnalate](presenze-segnalate.md)).
 - **Iscritti senza certificato valido** e **iscritti da pagare**: **VEDI CHI**
   apre gli [iscritti](iscritti.md) col filtro già acceso.
-- **Certificati** e **documenti d'identità da stampare**: quelli caricati
-  nell'app, da stampare, mettere nella cartellina e cancellare.
+- **Certificati da stampare** (caricati nella scheda, di prima) e
+  **richieste con documenti da stampare** (documento d'identità e
+  certificato arrivati col modulo): da stampare, mettere nella cartellina e
+  cancellare.
 
 Sotto, in una riga, **A POSTO** dice quello in cui non c'è niente da fare.
 Quando non c'è niente in sospeso, la pagina lo dice in verde.

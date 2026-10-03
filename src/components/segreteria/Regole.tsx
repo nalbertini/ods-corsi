@@ -227,8 +227,8 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>DATI SANITARI: SOLO IL CERTIFICATO, SU CARTA</span>
             <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
               Il certificato medico è un dato sulla salute, con altri obblighi: si tiene su carta, nella cartellina in un armadio chiuso, e nell'app si
-              scrive solo fino a quando vale, nella scheda dell'iscritto. Lo stesso per la copia del documento d'identità. Se arrivano per email o
-              WhatsApp si stampano e si cancellano da lì. Patologie, allergie e simili non vanno scritte in nessun campo, nemmeno nelle note.
+              scrive solo fino a quando vale, nella scheda dell'iscritto. Lo stesso per la copia del documento d'identità. Se arrivano col modulo
+              si stampano e si cancellano dalla richiesta; per email o WhatsApp, da lì. Patologie, allergie e simili non vanno scritte in nessun campo, nemmeno nelle note.
             </span>
           </div>
           <div className="stack" style={{ gap: 6 }}>
