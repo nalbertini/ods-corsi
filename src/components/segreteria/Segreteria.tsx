@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
+import { Bollino } from '../ds'
 import { TastoTema } from '../TastoTema'
 import { Cursori } from '../Icons'
 import { Settimana } from './Settimana'
@@ -336,6 +337,23 @@ export function Segreteria({
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
           </span>
         </div>
+        {/* In cima, sempre in vista senza scorrere: in fondo, su uno schermo basso, si perdevano. Sul telefono stanno nella barra in cima. */}
+        <div className="row sg-icone">
+          {guida}
+          <TastoTema />
+          <button
+            type="button"
+            className="icon-btn"
+            aria-current={voce === 'regole' ? 'page' : undefined}
+            onClick={() => vai('regole')}
+            title="Impostazioni"
+            aria-label="Impostazioni"
+          >
+            <Cursori />
+          </button>
+          {/* Fra DATI e DI uno spazio che non va a capo: in 56px si spezza solo prima di PROVA. */}
+          {prova && <Bollino>DATI{'\u00a0'}DI PROVA</Bollino>}
+        </div>
         {d && <CercaIscritto d={d} onApri={(id) => void vai('iscritti', { persona: id })} />}
         <div className="sg-gruppi">
           {GRUPPI.map((g) => (
@@ -348,7 +366,7 @@ export function Segreteria({
                   <button
                     key={id}
                     type="button"
-                    // IMPOSTAZIONI sul computer è il tasto coi cursori in fondo al menu; sul telefono resta qui.
+                    // IMPOSTAZIONI sul computer è il tasto coi cursori in cima al menu; sul telefono resta qui.
                     className={id === 'regole' ? 'num sg-voce sg-voce-tel' : 'num sg-voce'}
                     aria-current={voce === id || (id === 'presenze' && inPresenze) ? 'page' : undefined}
                     onClick={() => vai(id)}
@@ -372,21 +390,6 @@ export function Segreteria({
             </button>
           )}
           <CopiaLink />
-        </div>
-        {/* Sul telefono stanno nella barra in cima. */}
-        <div className="row sg-icone">
-          {guida}
-          <TastoTema />
-          <button
-            type="button"
-            className="icon-btn"
-            aria-current={voce === 'regole' ? 'page' : undefined}
-            onClick={() => vai('regole')}
-            title="Impostazioni"
-            aria-label="Impostazioni"
-          >
-            <Cursori />
-          </button>
         </div>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>

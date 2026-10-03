@@ -30,7 +30,7 @@ A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
 **PERSONE** (ISCRITTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
 E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, ESERCIZI, IMPORTA DA EXCEL,
-SEGNALAZIONI). Le **IMPOSTAZIONI** sono il tasto coi due cursori in fondo al
+SEGNALAZIONI). Le **IMPOSTAZIONI** sono il tasto coi due cursori in cima al
 menu. Ogni voce
 ha la sua guida:
 
@@ -52,14 +52,16 @@ ha la sua guida:
 | **IMPOSTAZIONI** | Per quanto si tengono le presenze, il calendario, le sale, il timer dei tablet con la sua voce, lo storico dei timer, la privacy | [Apri](regole.md) |
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo | [Apri](segnalazioni.md) |
 
+In cima al menu, sotto il nome, si vedono subito senza scorrere tre tasti:
+**?**, la guida della voce aperta, in un'altra scheda; il **sole** (o la
+luna), il tema bianco per questo computer; i **cursori**, le IMPOSTAZIONI. In
+prova, accanto, il bollino **DATI DI PROVA**.
+
 In fondo al menu:
 
 - **COPIA LINK ISCRIZIONI** — copia l'indirizzo della pagina pubblica, da
   incollare su WhatsApp.
-- Tre tasti: **?**, la guida della voce aperta, in un'altra scheda; il
-  **sole** (o la luna), il tema bianco per questo computer; i **cursori**, le
-  IMPOSTAZIONI.
-- **Esci**.
+- Chi è entrato ed **Esci**.
 
 In prova c'è anche **Riparti
 dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
