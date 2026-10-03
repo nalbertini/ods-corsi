@@ -31,6 +31,14 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_policies where schemaname = 'public' and policyname = 'sessioni_legge')),
   ('02-policy.sql', 'gli istruttori tolgono un segno dall''appello',
     exists (select 1 from pg_policies where schemaname = 'public' and policyname = 'presenze_cancella' and qual like '%e_personale%')),
+  -- Una funzione senza search_path cerca le tabelle dove dice chi la chiama.
+  -- Erano in più file: se dice DA LANCIARE, li rilancia tutti, poi il 06.
+  ('02-policy.sql', 'ogni funzione dice dove cerca le tabelle (con 04, 06, 07, 08)',
+    not exists (
+      select 1 from pg_proc p
+      where p.pronamespace = 'public'::regnamespace
+        and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
+        and not exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%'))),
   ('03-funzioni.sql', 'il calendario',
     exists (select 1 from dentro where nome = 'materializza_sessioni')),
   ('03-funzioni.sql', 'di una lezione l''istruttore cambia solo stato e nota',
@@ -144,6 +152,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.quote_ricevute') is not null),
   ('26-colori-corsi.sql', 'nessun corso rosso',
     not exists (select 1 from corsi where lower(colore) = '#e4292a')),
+  ('28-elimina-istruttore.sql', 'eliminare un istruttore che non ha mai insegnato',
+    exists (select 1 from dentro where nome = 'elimina_istruttore')
+    and exists (select 1 from pg_trigger where tgname = 'persone_non_si_elimina')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

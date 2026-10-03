@@ -4,3 +4,6 @@ dist/
 *.local
 *.tsbuildinfo
 .env
+
+# La CLI di Supabase, dopo un deploy: il progetto collegato, non va nel repository.
+supabase/.temp/

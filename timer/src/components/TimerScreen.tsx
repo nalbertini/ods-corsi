@@ -272,6 +272,8 @@ export function TimerScreen({
   // A fine allenamento comanda il verde: bordo, barra e pulsante devono dire
   // la stessa cosa, non restare sul colore dell'ultimo intervallo.
   const tinta = done ? 'var(--verde)' : color
+  // Sul rosso del lavoro il testo è bianco, sugli altri colori scuro.
+  const suTinta = tinta === STATE_COLOR.work ? 'var(--su-rosso)' : 'var(--su-colore)'
 
   const rounds = seg?.rounds ?? workout.rounds
   const roundDots = Array.from({ length: Math.min(rounds, 16) }, (_, i) => i + 1)
@@ -436,7 +438,7 @@ export function TimerScreen({
         </button>
         <button
           className="btn grow tasto-avvia"
-          style={{ background: tinta, color: 'var(--su-colore)' }}
+          style={{ background: tinta, color: suTinta }}
           onClick={done ? exit : startOrToggle}
         >
           {view.status === 'running' ? <Pause size={22} /> : <Play size={22} />}

@@ -18,6 +18,8 @@
   --giallo-testo: #f4c31b;
   /* Le scritte sopra i colori del marchio restano scure in tutti e due i temi. */
   --su-colore: #121212;
+  /* Sul rosso il testo è bianco: il nero si ferma a 4,1:1. */
+  --su-rosso: #ffffff;
   --tasto: #b8b8b2;
   --tratteggio: #4a4a46;
   /* Le barre, in basso e di lato: un filo diverse dal fondo. */
@@ -134,7 +136,7 @@ input, textarea { font: inherit; color: inherit; }
   font-family: var(--cond); font-style: oblique 9deg;
   font-size: 19px; font-weight: 700; letter-spacing: 0.16em;
 }
-.btn-primary { background: var(--rosso); color: var(--su-colore); }
+.btn-primary { background: var(--rosso); color: var(--su-rosso); }
 .btn-go { background: var(--verde); color: var(--su-colore); }
 .btn-ghost { border: 2px solid var(--line); color: var(--tasto); }
 .btn-ghost:hover { border-color: var(--dim); color: var(--text); }
@@ -188,6 +190,9 @@ input, textarea { font: inherit; color: inherit; }
   padding: 3px 9px; color: var(--su-colore);
   font-size: 10px; font-weight: 700; letter-spacing: 0.16em; white-space: nowrap;
 }
+/* Il tipo di timer è un'etichetta, non un segnale: niente colori del marchio,
+   che hanno ognuno il suo significato (rosso manca, verde fatto, giallo avviso). */
+.badge-tipo { padding: 1px 7px; color: var(--dim); border: 2px solid var(--line); }
 
 .card { background: var(--surface); border: 2px solid var(--line); }
 

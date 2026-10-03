@@ -3,7 +3,7 @@ import type { Esercizio } from '../lib/esercizi'
 import { PickerEsercizi } from './PickerEsercizi'
 import type { Dove, Exercise, Segment, Workout } from '../types'
 import type { Corso } from '../lib/libreria'
-import { MODE_BADGE, MODE_FIELDS, MODE_HINT, MODE_LABEL, MODE_TINT, buildSegments, descriviObiettivo, totalDuration } from '../lib/engine'
+import { MODE_BADGE, MODE_FIELDS, MODE_HINT, MODE_LABEL, buildSegments, descriviObiettivo, totalDuration } from '../lib/engine'
 import { clock, uid } from '../lib/format'
 import { Back, Caret, Minus, Play, Plus, Trash } from './Icons'
 
@@ -258,7 +258,7 @@ export function EditorScreen({
           <div className="rule-line" />
         </div>
         <div className="pad row" style={{ gap: 10, alignItems: 'flex-start', paddingTop: 2 }}>
-          <span className="badge" style={{ background: MODE_TINT[w.mode], flexShrink: 0, marginTop: 2 }}>
+          <span className="badge badge-tipo" style={{ flexShrink: 0, marginTop: 2 }}>
             {MODE_BADGE[w.mode]}
           </span>
           <span style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)' }}>{MODE_HINT[w.mode]}</span>

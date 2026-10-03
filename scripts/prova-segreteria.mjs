@@ -635,5 +635,22 @@ console.log('\nle segnalazioni della segreteria')
   ok('di 4001 si dice, invece di tagliarlo', m.testoTroppoLungo('a'.repeat(4001)), 'Il testo è troppo lungo: al massimo 4000 caratteri')
 }
 
+console.log('\neliminare un istruttore')
+{
+  const id = await s.salvaPersonale({ nome: 'Pino', cognome: 'Sbagliato', email: 'pino@esempio.it', ruolo: 'istruttore' })
+  await s.impostaPin(id, '8642')
+  await s.eliminaIstruttore(id)
+  ok('chi non ha mai insegnato se ne va', (await s.personale()).some((p) => p.id === id), false)
+  const altro = await s.salvaPersonale({ nome: 'Pina', cognome: 'Giusta', email: 'pina@esempio.it', ruolo: 'istruttore' })
+  ok('e il suo PIN torna libero', await errore(() => s.impostaPin(altro, '8642')), 'nessun errore')
+  const fabio = await errore(() => s.eliminaIstruttore('i-fabio'))
+  ok('chi tiene un corso no, e dice quale', fabio.startsWith('Fabio insegna ancora in '), true)
+  ok('e resta', (await s.personale()).some((p) => p.id === 'i-fabio'), true)
+  ok('la segreteria no', await errore(() => s.eliminaIstruttore('s-prova')), 'Si eliminano solo gli istruttori: a Segreteria si toglie l\'accesso')
+  await s.iscrivi(altro, 'lotta-2')
+  ok('chi è anche allievo no', await errore(() => s.eliminaIstruttore(altro)), "Pina Giusta è anche allievo: non si elimina, gli si toglie l'accesso")
+  ok('un iscritto nemmeno', (await errore(async () => s.eliminaIstruttore((await s.persone())[0].id))).startsWith('Si eliminano solo gli istruttori'), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

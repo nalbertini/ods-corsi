@@ -160,6 +160,9 @@ const COLORE_TIMER: Record<string, string> = {
   cooldown: 'var(--blu)',
 }
 const coloreDi = (t: StatoTimer) => (t.status === 'done' ? 'var(--verde)' : t.kind ? COLORE_TIMER[t.kind] : 'var(--line)')
+/** Lo stesso colore quando è scritto: giallo e verde puri sul tema chiaro non si leggono. */
+const testoDi = (t: StatoTimer) =>
+  coloreDi(t).replace('var(--giallo)', 'var(--giallo-testo)').replace('var(--verde)', 'var(--verde-testo)').replace('var(--line)', 'var(--dim)')
 /** Un allenamento che conta: avviato e non finito. */
 const inCorso = (t: StatoTimer | null): t is StatoTimer => !!t && (t.status === 'running' || t.status === 'paused')
 
@@ -353,12 +356,20 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
           <span className="num tb-data">{giornoPerEsteso(chiaveGiorno(adesso)).toUpperCase()} · OFFICINE DELLO SPORT</span>
         </div>
         {vista.s === 'istruttore' && scheda === 'presenze' && (
-          <span className="num tb-bollino" style={{ background: 'var(--blu)' }}>AREA ISTRUTTORE · {vista.nome.toUpperCase()}</span>
+          <span className="num tb-bollino" style={{ background: 'var(--blu)' }}>
+            AREA ISTRUTTORE · <span style={{ letterSpacing: 0 }}>{vista.nome}</span>
+          </span>
         )}
         {/* Col timer in corso e le presenze davanti: il timer resta qui, col
             suo colore, e un tocco ci riporta. */}
         {scheda === 'presenze' && inCorso(timer) && (
-          <button type="button" className="tb-chip" style={{ ['--tinta' as string]: coloreDi(timer) }} onClick={vaiTimer} aria-label="Torna al timer">
+          <button
+            type="button"
+            className="tb-chip"
+            style={{ ['--tinta' as string]: coloreDi(timer), ['--tinta-testo' as string]: testoDi(timer) }}
+            onClick={vaiTimer}
+            aria-label="Torna al timer"
+          >
             <span className="ob tb-chip-fase">{timer.status === 'paused' ? 'IN PAUSA' : timer.etichetta}</span>
             <span className="num tb-chip-tempo">{clock(timer.secondi)}</span>
             <span className="stack tb-chip-testo">
@@ -371,7 +382,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
         {scheda === 'timer' && aperta && (
           <button type="button" className="tb-chip tb-chip-segna" onClick={segnaAperta}>
             <span className="stack tb-chip-testo">
-              <span className="tb-chip-sotto" style={{ color: 'var(--verde)', fontWeight: 700, letterSpacing: '0.16em' }}>SI SEGNA ORA</span>
+              <span className="tb-chip-sotto" style={{ color: 'var(--verde-testo)', fontWeight: 700, letterSpacing: '0.16em' }}>SI SEGNA ORA</span>
               {/* Un nome lungo si accorcia, il conto no: è quello che serve. */}
               <span className="row" style={{ gap: 6, minWidth: 0 }}>
                 <span className="ob tb-chip-nome" style={{ fontSize: 19 }}>
@@ -418,6 +429,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
                   d={d}
                   lezione={vista.lezione}
                   adesso={adesso}
+                  onCambiato={() => void carica()}
                   onIndietro={() => {
                     if (vista.da === 'recupero') {
                       setVista({ s: 'recupero', corsoId: vista.corsoId ?? null })
@@ -480,7 +492,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
           <Cronometro size={26} />
           <span className="stack" style={{ gap: 1 }}>
             <span className="ob tb-scheda-nome">TIMER</span>
-            <span className="num tb-scheda-sotto" style={inCorso(timer) ? { color: coloreDi(timer) } : undefined}>
+            <span className="num tb-scheda-sotto" style={inCorso(timer) ? { color: testoDi(timer) } : undefined}>
               {inCorso(timer)
                 ? `${timer.status === 'paused' ? 'IN PAUSA' : timer.etichetta} ${clock(timer.secondi)}`
                 : aperta
@@ -528,7 +540,7 @@ function ConfermaUscita({ nome, onEsci, onAnnulla }: { nome: string; onEsci: () 
           ricollega con l'account della sala.
         </span>
         {guaio && (
-          <span role="alert" style={{ fontSize: 17, fontWeight: 600, color: 'var(--rosso)' }}>
+          <span role="alert" style={{ fontSize: 19, fontWeight: 700, color: 'var(--rosso)' }}>
             {guaio}
           </span>
         )}
@@ -627,7 +639,7 @@ function Preparazione({ d, guaio, onPronto }: { d: DatiTablet; guaio: string | n
         )}
 
         {errore && (
-          <span role="alert" style={{ fontSize: 17, fontWeight: 600, color: 'var(--rosso)' }}>
+          <span role="alert" style={{ fontSize: 19, fontWeight: 700, color: 'var(--rosso)' }}>
             {errore}
           </span>
         )}

@@ -124,8 +124,10 @@
   /* Lo stesso per il verde scritto: sul bianco quello del marchio non arriva
      al contrasto che serve a un testo piccolo. */
   --verde-testo: #16a54a;
-  /* Le scritte sopra i colori del marchio restano scure in tutti e due i temi. */
+  /* Le scritte sopra i colori del marchio restano scure in tutti e due i temi;
+     sul rosso invece bianche: il nero si ferma a 4,1:1, il bianco arriva a 4,5:1. */
   --su-colore: #121212;
+  --su-rosso: #ffffff;
   --tasto: #b8b8b2;
   --tratteggio: #4a4a46;
   --menu: #161616;
@@ -232,7 +234,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
   font-family: var(--cond); font-style: oblique 9deg;
   font-size: 19px; font-weight: 700; letter-spacing: 0.16em;
 }
-.btn-primary { background: var(--rosso); color: var(--su-colore); }
+.btn-primary { background: var(--rosso); color: var(--su-rosso); }
 .btn-go { background: var(--verde); color: var(--su-colore); }
 .btn-ghost { border: 2px solid var(--line); color: var(--tasto); }
 .btn-ghost:hover { border-color: var(--dim); color: var(--text); }
@@ -398,7 +400,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .prove-gia-tb { min-height: 60px; }
 .prove-gia-nome { font-size: 16px; font-weight: 600; }
 .prove-gia-tb .prove-gia-nome { font-size: 18px; }
-.prove-gia-tasto { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--verde); white-space: nowrap; }
+.prove-gia-tasto { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--verde-testo); white-space: nowrap; }
 .prova-marchio {
   font-size: 11px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap;
   color: var(--giallo-testo); border: 2px solid var(--giallo); padding: 1px 6px;
@@ -743,7 +745,7 @@ a.btn { text-decoration: none; }
 .tb-preparazione { display: flex; align-items: center; justify-content: center; }
 .tb-scorre { overflow-y: auto; min-height: 0; }
 /* Due lezioni almeno sempre in vista, anche sotto LA TUA PRESENZA: al cambio lezione sono due. */
-.tb-lezioni-istr { min-height: 212px; }
+.tb-lezioni-istr { min-height: 232px; }
 
 .tb-etichetta { font-family: var(--cond); font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); text-wrap: balance; }
 /* Il tablet si legge da due metri: niente sotto i 15px, le note a 17. */
@@ -769,7 +771,8 @@ a.btn { text-decoration: none; }
   display: flex; align-items: center; gap: 22px; padding: 22px 24px;
   background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--tinta);
 }
-.tb-aperta-testo { display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0; }
+/* Il nome va a capo nella sua colonna: il tasto resta a destra anche con un corso dal nome lungo. */
+.tb-aperta-testo { display: flex; flex-direction: column; gap: 6px; flex: 1 1 280px; min-width: 0; }
 .tb-aperta-nome { font-size: 38px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
 .tb-btn-segna {
   min-width: 300px; min-height: 88px; padding: 0 24px;
@@ -794,7 +797,7 @@ a.btn { text-decoration: none; }
 .tb-pronto[data-seguito] { padding-top: 12px; border-top-style: dashed; }
 .tb-btn-timer {
   min-width: 220px; min-height: 64px; padding: 0 22px;
-  background: var(--rosso); color: var(--su-colore);
+  background: var(--rosso); color: var(--su-rosso);
   font-size: 22px; font-weight: 700; letter-spacing: 0.12em;
 }
 .tb-btn-timer-linea { background: none; border: 2px solid var(--line); color: var(--text); font-size: 18px; }
@@ -808,10 +811,12 @@ a.btn { text-decoration: none; }
   background: var(--surface); border: 2px solid var(--line);
 }
 .tb-giornata-riga[data-fase='aperta'] { border-color: var(--verde); }
-.tb-giornata-riga[data-fase='finita'] { opacity: 0.5; }
+/* Passata: si spengono barra e bordo, non le scritte, che devono ancora leggersi. */
+.tb-giornata-riga[data-fase='finita'] { border-color: var(--line-soft); }
+.tb-giornata-riga[data-fase='finita'] .tb-tacca { opacity: 0.4; }
 .tb-tacca { width: 10px; height: 36px; flex-shrink: 0; }
 .tb-fase { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); white-space: nowrap; }
-.tb-giornata-riga[data-fase='aperta'] .tb-fase { color: var(--verde); }
+.tb-giornata-riga[data-fase='aperta'] .tb-fase { color: var(--verde-testo); }
 
 .tb-piede {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex-shrink: 0;
@@ -830,7 +835,7 @@ a.btn { text-decoration: none; }
 .tb-btn-grande { min-height: 64px; padding: 0 26px; font-size: 20px; }
 .tb-btn:disabled { cursor: default; }
 .tb-btn-verde:disabled { opacity: 0.5; }
-.tb-btn-rosso { background: var(--rosso); color: var(--su-colore); }
+.tb-btn-rosso { background: var(--rosso); color: var(--su-rosso); }
 .tb-btn-rosso:disabled { opacity: 0.5; }
 
 .tb-barra { display: flex; align-items: center; gap: 18px; }
@@ -853,7 +858,7 @@ a.btn { text-decoration: none; }
   display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 18px; flex-shrink: 0;
   background: var(--surface); border: 3px solid var(--tinta, var(--line)); text-align: left;
 }
-.tb-chip-fase { font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: var(--tinta); white-space: nowrap; }
+.tb-chip-fase { font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: var(--tinta-testo, var(--tinta)); white-space: nowrap; }
 .tb-chip-tempo { font-size: 38px; font-weight: 700; line-height: 1; }
 .tb-chip-testo { gap: 2px; min-width: 0; }
 .tb-chip-nome { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
@@ -904,7 +909,7 @@ a.btn { text-decoration: none; }
 .tb-musica-volume { width: 34px; text-align: center; font-size: 17px; font-weight: 700; color: var(--dim); }
 
 /* I nomi da toccare: cinque per riga su un tablet, alti quanto un dito e mezzo. */
-.tb-tessere { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.tb-tessere { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 .tb-tessera {
   display: flex; align-items: center; gap: 10px; min-height: 84px; padding: 0 16px;
   background: var(--surface); border: 3px solid var(--line); color: var(--text);
@@ -913,7 +918,7 @@ a.btn { text-decoration: none; }
 .tb-tessera[data-fatto='true'] { background: var(--surface-2); border-color: var(--verde); color: var(--verde); }
 /* Segnato qui, non ancora sul server: giallo come la spia della coda. */
 .tb-tessera[data-attesa] { border-color: var(--giallo); border-style: dashed; color: var(--text); }
-.tb-tessera[data-attesa] svg { color: var(--giallo); }
+.tb-tessera[data-attesa] svg { color: var(--giallo-testo); }
 .tb-tessera-attesa { font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: var(--giallo-testo); }
 
 /* In fondo all'elenco, non sopra: occupa il suo posto, così l'ultima riga di
@@ -927,6 +932,14 @@ a.btn { text-decoration: none; }
 .tb-fascia[data-tipo='fatto'] { border-color: var(--verde); }
 .tb-fascia[data-tipo='errore'] { border-color: var(--rosso); }
 .tb-fascia[data-attesa] { border-color: var(--giallo); }
+/* Sul tema chiaro un'ombra così scura diventa una fascia grigia. */
+:root[data-tema='chiaro'] .tb-fascia { box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.16); }
+/* Un tasto che apre un pannello si accende finché è aperto (PROVE). */
+.tb-btn-linea[aria-expanded='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
+/* Le prove sono dell'app e della segreteria: sul tablet il loro testo sale al minimo della sala. */
+.prove-pannello[data-stile='tb'] :is(.prove-sotto, .prove-guaio, .prove-fatto) { font-size: 16px; }
+.prove-gia-tb .prove-gia-tasto { font-size: 15px; }
+.tb-righe :is(.prova-marchio, .prova-togli) { font-size: 15px; }
 .tb-fascia-titolo { font-size: 30px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
 
 .tb-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
@@ -1132,7 +1145,7 @@ a.sg-voce { text-decoration: none; }
    che fa non si annulla (una ricevuta, un file cancellato, un import). Sul
    rosso il testo è bianco: il nero arriva a 4,1:1, il bianco a 4,5:1. */
 .sg-btn-pieno { background: var(--text); color: var(--bg); }
-.sg-btn-rosso { background: var(--rosso); color: #ffffff; }
+.sg-btn-rosso { background: var(--rosso); color: var(--su-rosso); }
 .sg-btn-verde { background: var(--verde); color: var(--su-colore); }
 .sg-btn-linea { border: 2px solid var(--line); color: var(--sec); }
 .sg-btn-linea:hover { border-color: var(--dim); color: var(--text); }
@@ -1205,7 +1218,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-lezione-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-lezione-dove { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; white-space: nowrap; }
-.sg-tag[data-tipo='manca'] { background: var(--rosso); color: #ffffff; }
+.sg-tag[data-tipo='manca'] { background: var(--rosso); color: var(--su-rosso); }
 .sg-tag[data-tipo='aspetta'] { background: var(--giallo); color: var(--su-colore); }
 /* Un filo delle segnalazioni: la testata si tocca tutta; giallo se aspetta te. */
 .sg-filo[data-tocca='true'] { border-left: 4px solid var(--giallo); }
@@ -1380,7 +1393,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   display: flex; align-items: center; gap: 14px;
   background: var(--text); color: var(--bg); font-size: 15px; font-weight: 600; line-height: 1.4;
 }
-.sg-avviso[data-guaio='true'] { background: var(--rosso); color: #f2f2f0; }
+.sg-avviso[data-guaio='true'] { background: var(--rosso); color: var(--su-rosso); }
 .sg-avviso-chiudi {
   flex-shrink: 0; align-self: stretch; min-height: 44px; padding: 0 12px; border: 2px solid currentColor;
   font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em;

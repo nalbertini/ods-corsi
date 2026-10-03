@@ -35,12 +35,12 @@ $$;
  * ma in un `if not e_staff() then raise` farebbe passare chiunque.
  */
 create or replace function e_personale() returns boolean
-  language sql stable as $$
+  language sql stable set search_path = public as $$
   select coalesce(ruolo_corrente() in ('istruttore', 'staff'), false)
 $$;
 
 create or replace function e_staff() returns boolean
-  language sql stable as $$
+  language sql stable set search_path = public as $$
   select coalesce(ruolo_corrente() = 'staff', false)
 $$;
 

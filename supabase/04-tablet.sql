@@ -50,7 +50,7 @@ revoke all on pin_istruttori, tentativi_pin from authenticated, anon;
 -- ---------------------------------------------------------------------------
 create or replace function tablet_regole(out prima interval, out dopo interval, out recupero interval,
                                          out annulla interval, out pin_tentativi int, out pin_blocco interval)
-  language sql immutable as $$
+  language sql immutable set search_path = public as $$
   select interval '30 minutes', interval '10 minutes', interval '14 days', interval '2 minutes', 5, interval '5 minutes'
 $$;
 
