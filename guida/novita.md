@@ -10,6 +10,17 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.7.1 — 3 ottobre 2026
+
+### Risolto
+
+- Sul tablet di sala il recupero propone solo i corsi già cominciati, e qualche parola più chiara
+
+### Modificato
+
+- Il testo sui tasti rossi diventa bianco, e i tipi di timer non usano più i colori dei segnali
+- Le funzioni del database dicono dove cercano le tabelle
+
 ## 0.7.0 — 3 ottobre 2026
 
 ### Novità
