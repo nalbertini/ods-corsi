@@ -55,7 +55,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 25. `25-segnalazioni.sql` — le segnalazioni della segreteria: cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, invece di un documento a parte
 26. `26-colori-corsi.sql` — i corsi rossi passano al viola: in segreteria il rosso vuol dire solo che qualcosa manca
 27. `27-pagamento-dalle-ricevute.sql` — se ha pagato lo dicono le ricevute: in regola vuol dire la quota associativa pagata, e lo stato scritto a mano resta solo come eccezione per chi ha pagato fuori dall'app
-28. `28-elimina-istruttore.sql` — eliminare un istruttore che non ha mai insegnato, la scheda e l'account (con la funzione `elimina`, vedi «L'invito per email»); chi ha corsi, lezioni o presenze non si elimina, nemmeno cancellando la riga a mano
+28. `28-elimina-istruttore.sql` — eliminare un istruttore che non ha mai insegnato, anche se è di segreteria col ruolo doppio, la scheda e l'account (con la funzione `elimina`, vedi «L'invito per email»); chi ha corsi, lezioni o presenze non si elimina, nemmeno cancellando la riga a mano
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -147,6 +147,8 @@ Per eliminare un istruttore basta `28-elimina-istruttore.sql` (dopo
 `15-presenze-istruttori.sql`), che non chiede di rilanciare
 `06-iscrizioni.sql`, e la funzione `elimina` pubblicata come `invita`:
 finché non ci sono, ELIMINA nella scheda dell'istruttore dice cosa manca.
+Chi l'aveva già lanciato lo rilancia: la prima versione non eliminava la
+segreteria che insegna anche.
 Le funzioni dei trigger di `07`, `08`, `12` e `20`, e `nome_proprio`,
 restavano chiamabili da chi non ha un accesso (senza far uscire niente): basta
 rilanciare `06-iscrizioni.sql`, che le chiude.

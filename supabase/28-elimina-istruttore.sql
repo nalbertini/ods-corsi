@@ -16,8 +16,11 @@
 --   · ha una lezione in calendario a suo nome, passata o futura;
 --   · ha una presenza da istruttore, di qualunque stato.
 --
--- `elimina_istruttore()` la chiama solo la segreteria, e solo per chi ha il
--- ruolo `istruttore`: chi è anche di segreteria non si elimina da qui. Non
+-- `elimina_istruttore()` la chiama solo la segreteria, e solo per chi
+-- insegna: il ruolo `istruttore`, o la segreteria col ruolo doppio
+-- (`anche_istruttore`, 01-schema.sql). Chi è solo di segreteria non si
+-- elimina da qui, e nessuno elimina se stesso da qui: si evita di togliersi
+-- l'accesso per sbaglio. Non
 -- elimina chi è anche allievo (iscrizioni, presenze, ricevute: se ne
 -- andrebbero con lui), né una scheda legata all'account di un tablet. Ruolo e
 -- account di una scheda li cambia la segreteria (`persone_aggiorna`), quindi
@@ -25,7 +28,9 @@
 -- segreteria amministra gli account. La funzione `elimina` controlla in più
 -- che l'account abbia l'email della scheda.
 --
--- Si lancia dopo `15-presenze-istruttori.sql`. Chiude da sé le sue funzioni:
+-- Si lancia dopo `15-presenze-istruttori.sql`, con `01-schema.sql` che ha il
+-- ruolo doppio. Chi l'aveva già lanciato lo rilancia: la prima versione
+-- eliminava solo il ruolo `istruttore`. Chiude da sé le sue funzioni:
 -- non chiede di rilanciare `06-iscrizioni.sql`. Finché non c'è, ELIMINA nella
 -- scheda dell'istruttore dice che va lanciato.
 -- ---------------------------------------------------------------------------
@@ -73,7 +78,10 @@ begin
   if not found then
     raise exception 'Questa persona non c''è più';
   end if;
-  if p.ruolo <> 'istruttore' then
+  if p.id = persona_corrente() then
+    raise exception 'Non ci si elimina da soli: lo fa un''altra persona di segreteria';
+  end if;
+  if p.ruolo <> 'istruttore' and not (p.ruolo = 'staff' and p.anche_istruttore) then
     raise exception 'Si eliminano solo gli istruttori: a % si toglie l''accesso', p.nome;
   end if;
   -- Qui e non nel trigger: un iscritto la segreteria lo cancella come prima.
