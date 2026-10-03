@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.4.2 — 3 ottobre 2026
+
+### Risolto
+
+- La pubblicazione non si blocca più quando due modifiche arrivano insieme
+
+### Modificato
+
+- Segreteria: il giro delle schermate dal telefono
+
 ## 0.4.1 — 3 ottobre 2026
 
 ### Modificato
