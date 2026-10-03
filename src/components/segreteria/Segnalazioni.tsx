@@ -2,9 +2,17 @@ import { useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { MAX_TESTO, MAX_TITOLO, ordinaSegnalazioni, tocca, ultimo, type Segnalazione } from '../../lib/segnalazioni'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
+import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { Campo, Guaio, Testa, useAvviso, useCarica } from './comune'
 
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
+
+/**
+ * WhatsApp con l'avviso già scritto: senza numero, a chi mandarlo si sceglie
+ * lì. La segreteria non ha un indirizzo per voce: si dice dove guardare.
+ */
+const avvisoWhatsApp = (s: Segnalazione) =>
+  `https://wa.me/?text=${encodeURIComponent(`Ti ho scritto sulla segnalazione «${s.titolo}»: la trovi in Segreteria, alla voce SEGNALAZIONI. ${indirizzo(INDIRIZZI.segreteria)}`)}`
 
 /**
  * Le segnalazioni della segreteria (vedi `segnalazioni.ts`): cosa non va o
@@ -171,6 +179,9 @@ function Filo({
                 <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => chiudi(true)}>
                   CHIUDI
                 </button>
+                <a className="sg-btn sg-btn-linea" href={avvisoWhatsApp(s)} target="_blank" rel="noreferrer">
+                  AVVISA SU WHATSAPP
+                </a>
               </div>
             </form>
           )}
