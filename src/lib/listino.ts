@@ -71,7 +71,52 @@ const inOrdine = (x: unknown): unknown =>
  * rimessa com'era non conta, l'ordine dei corsi sì.
  */
 export function listinoCambiato(salvato: Listino | string, bozza: Listino | string): boolean {
-  return JSON.stringify(inOrdine(salvato)) !== JSON.stringify(inOrdine(bozza))
+  // I corsi senza prezzo sono un elenco, non una fila: tolto e rimesso, è lo stesso.
+  const scritto = (l: Listino | string) => JSON.stringify(inOrdine(typeof l === 'string' ? l : { ...l, senzaPrezzoVaBene: [...(l.senzaPrezzoVaBene ?? [])].sort() }))
+  return scritto(salvato) !== scritto(bozza)
+}
+
+/** La bozza del LISTINO com'è scritta: i corsi si riconoscono dalla chiave, anche coi prezzi che non si capiscono. */
+export interface BozzaDaConfrontare {
+  quota: string
+  saldoEntro: string
+  corsi: ReadonlyArray<{ chiave: number; corso: string }>
+  offerte: ReadonlyArray<{ chiave: number }>
+  senzaPrezzoVaBene: ReadonlyArray<string>
+}
+
+const senzaChiave = ({ chiave: _, ...resto }: { chiave: number }) => JSON.stringify(inOrdine(resto))
+
+/**
+ * Cosa si perde buttando la bozza, in parole: chi butta dopo una telefonata
+ * non ricorda se ha cambiato un prezzo o cinque corsi.
+ */
+export function cambiNellaBozza(salvata: BozzaDaConfrontare, bozza: BozzaDaConfrontare): string[] {
+  const nome = (c: { corso: string }) => `«${c.corso.trim() || 'un corso senza nome'}»`
+  const prima = new Map(salvata.corsi.map((c) => [c.chiave, c]))
+  const dopo = new Set(bozza.corsi.map((c) => c.chiave))
+  const cambi: string[] = []
+  // Prima quel che vale per tutto il listino: in coda, tagliato da «e altri…», si perderebbe.
+  if (salvata.quota.trim() !== bozza.quota.trim()) cambi.push('la quota')
+  if (salvata.saldoEntro !== bozza.saldoEntro) cambi.push('la data del saldo')
+  const comuni = (l: BozzaDaConfrontare['corsi']) => l.filter((c) => prima.has(c.chiave) && dopo.has(c.chiave)).map((c) => c.chiave).join()
+  if (comuni(salvata.corsi) !== comuni(bozza.corsi)) cambi.push('l’ordine dei corsi')
+  if (salvata.offerte.map(senzaChiave).join() !== bozza.offerte.map(senzaChiave).join()) cambi.push('le offerte')
+  if ([...salvata.senzaPrezzoVaBene].sort().join() !== [...bozza.senzaPrezzoVaBene].sort().join()) cambi.push('i corsi senza prezzo')
+  for (const c of bozza.corsi) {
+    const p = prima.get(c.chiave)
+    if (!p) cambi.push(`${nome(c)} (nuovo)`)
+    else if (senzaChiave(p) !== senzaChiave(c)) cambi.push(nome(c))
+  }
+  for (const c of salvata.corsi) if (!dopo.has(c.chiave)) cambi.push(`${nome(c)} (tolto)`)
+  return cambi
+}
+
+/** La domanda di BUTTA I CAMBI: cosa si perde, i primi sei e quanti altri, e a cosa si torna. */
+export function domandaButta(cambi: ReadonlyArray<string>): string {
+  const altri = cambi.length - 6
+  const detto = altri > 0 ? `${cambi.slice(0, 6).join(', ')} e ${altri === 1 ? 'un altro cambio' : `altri ${altri} cambi`}` : cambi.join(', ')
+  return `Buttare i cambi al listino? ${detto ? `Hai cambiato: ${detto}. ` : ''}Il listino torna com’è salvato, quello che vede la pagina di iscrizione.`
 }
 
 /**
