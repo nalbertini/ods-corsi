@@ -58,6 +58,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 28. `28-elimina-istruttore.sql` — eliminare un istruttore che non ha mai insegnato, anche se è di segreteria col ruolo doppio, la scheda e l'account (con la funzione `elimina`, vedi «L'invito per email»); chi ha corsi, lezioni o presenze non si elimina, nemmeno cancellando la riga a mano
 29. `29-unisci-doppioni.sql` — unire due schede della stessa persona (un doppione fatto all'appello o dall'import): solo la segreteria, solo due iscritti senza accesso, mai con due codici fiscali diversi; tutto quello della scheda che se ne va passa a quella che resta
 30. `30-pronto-fino-dalle-ricorrenze.sql` — fin dove è pronto il calendario lo dicono le lezioni dell'orario: una straordinaria lontana non lo ferma più
+31. `31-informativa-mesi.sql` — per quanto si tengono le presenze, letto dall'informativa privacy anche da chi non ha un accesso
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -159,6 +160,12 @@ Per il calendario che non si ferma a una straordinaria basta
 `30-pronto-fino-dalle-ricorrenze.sql` (dopo `05-segreteria.sql`), che non
 chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, una lezione
 straordinaria fissata oltre la fine del calendario lo ferma fino a lei.
+Per i mesi delle presenze scritti nell'informativa privacy basta
+`31-informativa-mesi.sql` (dopo `05-segreteria.sql`), che non chiede di
+rilanciare `06-iscrizioni.sql` (e se lo si rilancia dopo, `06` rimette lui il
+permesso ad `anon` su `mesi_presenze_pubblici()`): finché non c'è,
+l'informativa dice «per il periodo stabilito dalla palestra (oggi indicato in
+segreteria)», senza un numero.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -409,7 +416,7 @@ Cosa fa `06-iscrizioni.sql`:
 
 **Si accende con l'informativa approvata.** Il modulo chiede codici fiscali
 e dati dei genitori, e col database vero l'app lo mostra solo quando
-l'informativa (`public/informativa.html`) è approvata, cioè quando in
+l'informativa (`informativa.html`) è approvata, cioè quando in
 `src/lib/iscrizione.ts` `INFORMATIVA_BOZZA` è `false`: lo è dal 27 settembre
 2026. Se si rimette a `true` il passo torna al modulo Google
 (`LINK_ISCRIZIONE`). In prova il modulo è sempre acceso.
@@ -731,7 +738,7 @@ Storage ricaricati a mano.
 
 - **L'informativa privacy.** Nomi e presenze sono dati personali e la palestra
   ne è titolare del trattamento. L'informativa è in
-  `public/informativa.html` (quella del sito copre solo la navigazione), e la
+  `informativa.html` (quella del sito copre solo la navigazione), e la
   palestra l'ha approvata il 27 settembre 2026: per quanto si tengono
   richieste, documenti e ricevute, e che l'app si pubblica con GitHub Pages.
   L'ha riapprovata il 2 ottobre 2026, quando si è corretto dove stanno i
@@ -744,7 +751,9 @@ Storage ricaricati a mano.
 - **Per quanto si tengono le presenze.** `presenze_scadute` dice cosa è
   scaduto e `pulisci_presenze()` lo cancella; il periodo di partenza è
   ventiquattro mesi e si cambia in **IMPOSTAZIONI**. È una scelta della
-  palestra, non una regola che decide il codice.
+  palestra, non una regola che decide il codice. L'informativa la riporta da
+  sé, chiedendola a `mesi_presenze_pubblici()` (`31-informativa-mesi.sql`):
+  finché non c'è, dice «per il periodo stabilito dalla palestra».
 - **Il certificato medico è un dato sanitario.** È l'unico che la palestra
   tiene, perché senza non si fa sport. È un'altra categoria di dati (art. 9
   del GDPR), con altri obblighi: per questo il foglio sta su carta, in un
@@ -788,7 +797,10 @@ o rifiutata solo dalla segreteria; `istruttori-dalle-lezioni.sql`, dopo
 `presenze-istruttori.sql`, prova chi fa l'appello (confermato se previsto, da
 confermare se no, la segreteria al banco no), le lezioni tenute senza
 l'istruttore segnato, la scelta di chi c'era fatta solo dalla segreteria e
-solo fra i previsti, e da quando si propongono; `ricevute.sql` prova le ricevute: le fa e le
+solo fra i previsti, e da quando si propongono; `informativa-mesi.sql` prova
+che chi non ha un accesso legga i mesi delle presenze, quelli che la segreteria
+ha appena salvato, e nient'altro della tabella, anche dopo aver rilanciato
+`06-iscrizioni.sql`; `ricevute.sql` prova le ricevute: le fa e le
 annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i
 conti li fa il server, e una fatta non si cambia; `anagrafiche.sql` prova
 nascita, residenza e genitore degli iscritti importati: li vede e li cambia

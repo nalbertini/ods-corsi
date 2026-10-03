@@ -93,6 +93,9 @@ export default defineConfig({
   // serve solo a chi si iscrive, e non entra nella cache di tutti (vedi sotto).
   build: {
     rollupOptions: {
+      // L'informativa privacy è una pagina sua, non l'app: chiede al database
+      // per quanto si tengono le presenze (`src/lib/informativa.ts`).
+      input: { index: 'index.html', informativa: 'informativa.html' },
       output: { manualChunks: (id) => (/node_modules\/(@pdf-lib|pdf-lib|pako|tslib)\//.test(id) ? 'pdf-lib' : undefined) },
     },
   },

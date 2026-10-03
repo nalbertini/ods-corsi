@@ -117,7 +117,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   con i file da guardare: accolta, la persona entra in elenco iscritta ai
   corsi che ha scelto, senza doppioni se c'era già. Col database vero è
   acceso da quando la palestra ha approvato l'informativa privacy
-  (`public/informativa.html`, 2 ottobre 2026), che si legge in fondo alla
+  (`informativa.html`, 2 ottobre 2026), che si legge in fondo alla
   pagina delle iscrizioni.
 - **L'area degli iscritti**, il pilota: dal telefono, chi frequenta vede
   le prossime lezioni dei suoi corsi (con le annullate, i sostituti e i
@@ -360,6 +360,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia, e i cambi dalla scheda della segreteria. Le presenze segnalate: chi le manda, chi le vede e chi le accoglie. |
 | `npm run prova:indirizzi` | Gli indirizzi della segreteria: voce, scheda iscritto, lezione, settimana e sala che si rileggono uguali; gli indirizzi sbagliati che portano a DA FARE; quelli di Supabase, della guida e delle aree che non sono della segreteria. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome, tolte per sbaglio, e l'elenco della segreteria. |
+| `npm run prova:informativa` | Per quanto si tengono le presenze nell'informativa: solo un numero di mesi valido dal database cambia il testo; un errore, il tempo scaduto o l'app senza database lasciano quello della pagina, che non dice un numero. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN e dall'appello, le lezioni tenute da confermare. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/calendario-da-se.sql` | Il calendario che si allunga da sé: anche per un istruttore, solo quando serve, fin dove dicono le regole. |
@@ -378,6 +379,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/elimina-istruttore.sql` | Eliminare un istruttore: solo la segreteria, solo un istruttore, e solo se non ha corsi non archiviati, lezioni in calendario o presenze da istruttore, anche cancellando la riga a mano. Un iscritto si cancella come prima. |
 | `supabase/prova/unisci-doppioni.sql` | Unire due schede della stessa persona: solo la segreteria, solo due iscritti senza accesso, mai con due codici fiscali diversi o un certificato da stampare; vince chi resta, il doppione riempie i vuoti, presenze, prove e iscrizioni una per lezione e per corso, le ricevute passano intatte, e tutto o niente. |
 | `supabase/prova/segnalazioni.sql` | Le segnalazioni: le legge e le scrive solo la segreteria, a nome suo; si risponde a un filo e non a una risposta; un messaggio scritto non si cambia, di un filo si cambia solo se è chiuso, e niente si cancella. Istruttore, iscritto, tablet e chi non ha accesso non vedono niente. |
+| `supabase/prova/informativa-mesi.sql` | Per quanto si tengono le presenze, per l'informativa: chi non ha un accesso legge i mesi scelti dalla segreteria e nient'altro delle impostazioni, anche dopo aver rilanciato `06-iscrizioni.sql`. |
 | `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`

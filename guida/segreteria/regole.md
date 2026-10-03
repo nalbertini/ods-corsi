@@ -64,7 +64,8 @@ qualunque, e valgono per tutti (vedi [Il tablet di sala](../sala.md#il-timer)).
   toccarne una la fa sentire e la sceglie. Il tablet usa la voce con lo
   stesso nome, se ce l'ha, altrimenti la sua prima voce italiana (come con
   **LA PRIMA ITALIANA DEL TABLET**). Se il tablet ha una voce che il computer
-  non ha, se ne scrive il nome nel campo sotto.
+  non ha, se ne scrive il nome nel campo sotto. Sui tasti i nomi si leggono senza la
+  lingua («GRANDMA», non «GRANDMA (ITALIANO (ITALIA))»): sono tutte italiane.
 - **VOCE INCISA** — le frasi del timer registrate con una voce vera: gli
   stati («Lavoro», «Recupero»…), il conto alla rovescia, le battute di
   Maurizio e i nomi degli esercizi della palestra. **REGISTRA** accende il
@@ -98,7 +99,8 @@ ricevute si fanno dalla scheda di un iscritto (vedi
 
 Si sceglie fra **12, 24, 36 o 60 mesi**: dopo, le presenze si cancellano.
 Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è
-della palestra.
+della palestra, titolare del trattamento, e l'informativa privacy la riporta da
+sé.
 
 Scegliendo più mesi si salva subito. Scegliendo meno mesi, l'app conta prima
 quante presenze sono più vecchie del periodo nuovo e, se ce ne sono, chiede

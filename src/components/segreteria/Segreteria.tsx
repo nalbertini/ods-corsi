@@ -20,7 +20,8 @@ import { Segnalazioni } from './Segnalazioni'
 import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
-import { bozzaAperta, chiedi, Conferme, Guaio, lasciare, scordaBozze } from './comune'
+import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio, lasciare, scordaBozze } from './comune'
+import { TELEFONO, useSchermo } from '../../lib/largo'
 import { CercaIscritto } from './CercaIscritto'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
@@ -173,7 +174,7 @@ export function Segreteria({
   // indirizzo: Indietro lo chiude senza spostarsi, come fanno le app.
   const apriMenu = () => {
     setAperto(true)
-    if (window.matchMedia('(max-width: 767px)').matches && !nelMenu()) window.history.pushState({ menu: true }, '')
+    if (window.matchMedia(TELEFONO).matches && !nelMenu()) window.history.pushState({ menu: true }, '')
   }
   /** Chiuso da un tasto: si toglie il passo del menu, se c'è, se no Avanti lo riaprirebbe. */
   const chiudiMenu = () => {
@@ -191,6 +192,7 @@ export function Segreteria({
     if (h !== prima) scrivi(h, passo)
   }
   const vai = async (v: Voce, d: Destinazione = {}) => {
+    const dalMenu = aperto
     // Un modulo scritto a metà (una ricevuta, un iscritto nuovo) non si perde con
     // un clic sul menu. Chi resta torna al modulo: sul telefono il menu lo coprirebbe.
     if (!(await lasciare())) return chiudiMenu()
@@ -200,6 +202,16 @@ export function Segreteria({
     segna(postoDelMenu(ora.current, v, d), nelMenu() ? 'replace' : 'push')
     // Stessa voce, stesso indirizzo: il passo del menu è ancora lì.
     chiudiMenu()
+    // Dal menu del telefono il tasto premuto sparisce: la tastiera riparte dalla voce aperta.
+    if (dalMenu) vaiAlContenuto()
+  }
+  /** Il fuoco sul contenuto, anche dal menu del telefono aperto: il menu si chiude. */
+  function vaiAlContenuto() {
+    if (aperto) chiudiMenu()
+    // `inert` lo toglie un effetto, ma solo al giro dopo: un elemento inert il fuoco non lo prende.
+    const corpo = document.getElementById('sg-contenuto')
+    corpo?.removeAttribute('inert')
+    corpo?.focus({ preventScroll: true })
   }
   useEffect(() => {
     // Un indirizzo che non si capisce diventa quello giusto; quello degli altri si lascia stare.
@@ -237,10 +249,25 @@ export function Segreteria({
   }, [prova])
   useEffect(() => {
     if (!aperto) return
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && chiudiMenu()
+    const esc = (e: KeyboardEvent) => {
+      // Con una domanda aperta («Lasciare a metà…») l'Esc risponde a lei, e il menu resta com'è.
+      if (e.key !== 'Escape' || dialogoAperto()) return
+      chiudiMenu()
+      // Il fuoco torna sul tasto che l'ha aperto, non si perde sulla pagina.
+      document.querySelector<HTMLElement>('.sg-tasto-menu')?.focus()
+    }
     window.addEventListener('keydown', esc)
     return () => window.removeEventListener('keydown', esc)
   }, [aperto])
+  // Col menu del telefono aperto la pagina sotto non si raggiunge col Tab. Solo
+  // sotto i 768px: più largo il menu sta di fianco, e la pagina va usata.
+  // `inert` si scrive a mano: i tipi di React 18 non lo conoscono.
+  const telefono = useSchermo(TELEFONO)
+  useEffect(() => {
+    const corpo = document.getElementById('sg-contenuto')
+    corpo?.toggleAttribute('inert', aperto && telefono)
+    return () => corpo?.removeAttribute('inert')
+  }, [aperto, telefono])
 
   // Quello che aspetta la segreteria: il menu dice quante richieste, presenze
   // di istruttori e segnalate, da qualunque voce; DA FARE conta tutto. Si
@@ -307,7 +334,7 @@ export function Segreteria({
   return (
     <div className="sg">
       {/* Un tasto e non un link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
-      <button type="button" className="sg-salta" onClick={() => document.getElementById('sg-contenuto')?.focus()}>
+      <button type="button" className="sg-salta" onClick={vaiAlContenuto}>
         Vai al contenuto
       </button>
       <header className="sg-barra-tel">

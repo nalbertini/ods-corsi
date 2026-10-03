@@ -36,7 +36,7 @@ function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
 }
 
 /**
- * Le impostazioni: le scelte che spettano alla palestra, non al codice. La
+ * Le impostazioni: le scelte che spettano alla palestra, non al programma. La
  * stagione; le sale con la loro musica, la voce e lo storico dei timer; chi
  * fa le ricevute; per quanto si tengono le presenze, il backup, la privacy.
  */
@@ -79,7 +79,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
 
   return (
     <>
-      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al codice." />
+      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al programma." />
 
       {/* Tasti e non link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
       <nav aria-label="In questa pagina" className="row sg-indice">
@@ -169,7 +169,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
               <div key={s.id} className="row sg-voce-elenco" style={{ gap: 12 }}>
                 <span className="grow" style={{ fontSize: 15, fontWeight: 600 }}>{s.nome}</span>
                 <span className="num" style={{ fontSize: 14, color: 'var(--sec)' }}>{s.capienza ? `${s.capienza} posti` : 'posti non detti'}</span>
-                <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => setSala({ id: s.id, nome: s.nome, capienza: s.capienza })}>
+                <button type="button" className="num sg-chip" onClick={() => setSala({ id: s.id, nome: s.nome, capienza: s.capienza })}>
                   CAMBIA
                 </button>
               </div>
@@ -243,8 +243,8 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             </button>
           </div>
           <ComeFunziona>
-            Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è della palestra, titolare del trattamento, e va scritta
-            nell'informativa.
+            Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è della palestra, titolare del trattamento, e
+            l'informativa la riporta da sé.
           </ComeFunziona>
         </section>
 
@@ -261,22 +261,20 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             <span className="sg-etichetta">L'INFORMATIVA</span>
             {INFORMATIVA ? (
               <>
-                <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ fontSize: 14, color: 'var(--sec)', wordBreak: 'break-all' }}>
+                <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', minHeight: 44, fontSize: 14, color: 'var(--sec)', wordBreak: 'break-all' }}>
                   {INFORMATIVA_BOZZA ? 'Leggi la bozza' : "Apri l'informativa"}
                 </a>
                 {INFORMATIVA_BOZZA && (
                   <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
                     Scritta insieme all'app, non ancora approvata: la palestra, che è titolare del trattamento, la deve leggere e fare sua, e
-                    decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi si toglie il
-                    riquadro BOZZA dalla pagina e <code>INFORMATIVA_BOZZA</code> in <code>src/lib/iscrizione.ts</code>. Fino ad allora, col database
-                    vero, il pubblico non la vede e il modulo di iscrizione resta spento.
+                    decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi chi cura l'app la
+                    segna come approvata. Fino ad allora, col database vero, il pubblico non la vede e il modulo di iscrizione resta spento.
                   </span>
                 )}
               </>
             ) : (
               <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
-                Non c'è ancora. Il link va messo in <code>src/lib/iscrizione.ts</code>, accanto a quello del modulo di iscrizione: si vede in fondo alla scheda
-                ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google:
+                Non c'è ancora: va scritta e collegata all'app, e si vedrà in fondo alla scheda ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google:
                 chiede codici fiscali e documenti, e prima va detto come si trattano.
               </span>
             )}
@@ -406,7 +404,7 @@ function MusicaSale({
         bozza?.id === l.id ? (
           <FormLista key={l.id} bozza={bozza} sale={sale} setBozza={setBozza} onSalva={salva} />
         ) : (
-          <div key={l.id} className="row sg-voce-elenco" style={{ gap: 12 }}>
+          <div key={l.id} className="row sg-voce-elenco" style={{ gap: 12, flexWrap: 'wrap' }}>
             <span className="stack grow" style={{ minWidth: 0 }}>
               <span style={{ fontSize: 15, fontWeight: 600 }}>{l.nome}</span>
               <span style={{ fontSize: 12, color: 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.link}</span>
@@ -415,13 +413,12 @@ function MusicaSale({
               {FONTE[fonteDelLink(l.link) ?? 'youtube']}
             </span>
             <span className="num" style={{ fontSize: 14, color: 'var(--sec)', whiteSpace: 'nowrap' }}>{nomeSala(l.salaId)}</span>
-            <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => setBozza({ ...l })}>
+            <button type="button" className="num sg-chip" onClick={() => setBozza({ ...l })}>
               CAMBIA
             </button>
             <button
               type="button"
               className="num sg-chip"
-              style={{ minHeight: 36 }}
               onClick={async () => {
                 if ((await chiedi(`Togliere «${l.nome}» dalla musica ${l.salaId ? `della sala ${nomeSala(l.salaId)}` : 'di tutte le sale'}?`, 'TOGLI LA LISTA'))) {
                   void fai(() => d.togliListaMusica(l.id), 'Lista tolta', ricarica)
@@ -641,7 +638,7 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
           <span className="num" style={{ fontSize: 14, color: 'var(--sec)', whiteSpace: 'nowrap' }}>
             {c.byte < 1_000_000 ? `${Math.max(1, Math.round(c.byte / 1000))} kB` : `${(c.byte / 1_000_000).toFixed(1).replace('.', ',')} MB`}
           </span>
-          <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => void fai(() => scarica(c.id), 'Copia scaricata: si mette su Drive così com’è')}>
+          <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(c.id), 'Copia scaricata: si mette su Drive così com’è')}>
             SCARICA
           </button>
         </div>
@@ -665,7 +662,7 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
       <ComeFunziona>
         Una copia di tutto il database si fa da sé ogni lunedì notte, e da qui quando serve: prima di un cambiamento grosso, o per averne una da mettere su
         Drive. GitHub tiene le copie novanta giorni. Il file è cifrato: senza la password del backup non lo apre nessuno, quindi su Drive può stare anche
-        in una cartella condivisa. La password va tenuta da parte, fuori da qui; come si rimette a posto una copia è in supabase/LEGGIMI.md.
+        in una cartella condivisa. La password va tenuta da parte, fuori da qui: per rimettere a posto una copia serve, insieme al file.
       </ComeFunziona>
     </section>
   )
