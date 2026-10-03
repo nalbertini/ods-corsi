@@ -20,7 +20,8 @@ aprite l'appello completo e lo correggete.
   - **OGGI** — oggi non ci sono più lezioni: se oggi non ci sono corsi dice
     quando è la prossima lezione, se sono finiti dice **PER OGGI QUI È FINITO**.
 - **A destra**, **OGGI IN QUESTA SALA**: tutte le lezioni del giorno, con
-  FINITA, SI SEGNA ORA o PIÙ TARDI.
+  FINITA, SI SEGNA ORA o PIÙ TARDI. Col tablet in verticale sta sotto la
+  lezione: se non ci sta tutto, la pagina scorre.
 - Sotto la lezione, **TI SEI DIMENTICATO DI SEGNARTI?** e **AREA
   ISTRUTTORE**.
 - **In fondo, la barra della sala**, che è la stessa su ogni schermata: le
