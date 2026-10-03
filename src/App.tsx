@@ -2,7 +2,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
-import { Accesso, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
+import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { AreaIscritti, IscrittiChiusa } from './components/AreaIscritti'
 import { Guida } from './components/Guida'
@@ -237,45 +237,33 @@ function Istruttori() {
   // per un account ricordato da una versione che l'id non lo teneva.
   const soloDi = (chi: Personale | null) => (chi ? (chi.ruolo === 'staff' && !chi.ancheIstruttore ? undefined : chi.id) : ISTRUTTORE_PROVA.id)
 
-  if (largo) {
-    return (
-      <Porta
-        cornice={(x) => (
-          <div className="app">
-            <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
-            <main className="scroll">{x}</main>
-          </div>
-        )}
-        dentro={(chi, onEsci) => (
-          <MenuIstruttori chi={chi} onEsci={onEsci} pagina={pagina} onPagina={setPagina}>
-            <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
-              <Sala soloDi={soloDi(chi)} />
-            </div>
-            {pagina === 'timer' && <MieiTimer soloDi={soloDi(chi)} />}
-          </MenuIstruttori>
-        )}
-      />
-    )
-  }
-
+  // Un albero solo, con la cornice che cambia: girando il tablet Sala non si
+  // smonta, e l'appello aperto, la settimana scelta e l'esito restano.
   return (
-    <div className="app">
-      <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
-      <main className="scroll">
-        <div className="faccia-corsi">
-          <Porta>
-            {(chi) => (
-              <>
-                <div hidden={pagina !== 'calendario'}>
-                  <Sala soloDi={soloDi(chi)} onMieiTimer={() => setPagina('timer')} />
-                </div>
-                {pagina === 'timer' && <MieiTimer soloDi={soloDi(chi)} onIndietro={() => setPagina('calendario')} />}
-              </>
-            )}
-          </Porta>
+    <Porta
+      cornice={(x) => (
+        <div className="app">
+          <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
+          <main className="scroll">{x}</main>
         </div>
-      </main>
-    </div>
+      )}
+      dentro={(chi, onEsci) => (
+        <div className={largo ? 'sg' : 'app'}>
+          {largo ? (
+            <MenuIstruttori chi={chi} onEsci={onEsci} pagina={pagina} onPagina={setPagina} />
+          ) : (
+            <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
+          )}
+          <main className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
+            {!largo && chi && <ChiSei chi={chi} onEsci={onEsci} />}
+            <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
+              <Sala soloDi={soloDi(chi)} onMieiTimer={largo ? undefined : () => setPagina('timer')} />
+            </div>
+            {pagina === 'timer' && <MieiTimer soloDi={soloDi(chi)} onIndietro={largo ? undefined : () => setPagina('calendario')} />}
+          </main>
+        </div>
+      )}
+    />
   )
 }
 
@@ -293,71 +281,66 @@ function MenuIstruttori({
   onEsci,
   pagina,
   onPagina,
-  children,
 }: {
   chi: Personale | null
   onEsci?: () => void
   pagina: Pagina
   onPagina: (p: Pagina) => void
-  children: ReactNode
 }) {
   const esci = onEsci ?? (inProvaScelta ? () => scegliProva(false) : undefined)
   return (
-    <div className="sg">
-      <nav className="sg-menu" aria-label="Istruttori">
-        <div className="row" style={{ gap: 10, padding: '0 8px' }}>
-          <Logo width={46} />
-          <span className="stack" style={{ gap: 2 }}>
-            <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
-            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.2em', color: 'var(--dim)' }}>ISTRUTTORI</span>
-          </span>
-        </div>
-        {/* Quello che l'istruttore fa, tutto qui: il calendario con l'appello e
-            I MIEI TIMER in questa pagina, il timer in un'altra scheda, così
-            l'appello resta dov'era. */}
-        <div className="sg-voci">
-          <button type="button" className="num sg-voce" aria-current={pagina === 'calendario' ? 'page' : undefined} onClick={() => onPagina('calendario')}>
-            CALENDARIO
+    <nav className="sg-menu" aria-label="Istruttori">
+      <div className="row" style={{ gap: 10, padding: '0 8px' }}>
+        <Logo width={46} />
+        <span className="stack" style={{ gap: 2 }}>
+          <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
+          <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.2em', color: 'var(--dim)' }}>ISTRUTTORI</span>
+        </span>
+      </div>
+      {/* Quello che l'istruttore fa, tutto qui: il calendario con l'appello e
+          I MIEI TIMER in questa pagina, il timer in un'altra scheda, così
+          l'appello resta dov'era. */}
+      <div className="sg-voci">
+        <button type="button" className="num sg-voce" aria-current={pagina === 'calendario' ? 'page' : undefined} onClick={() => onPagina('calendario')}>
+          CALENDARIO
+        </button>
+        <button type="button" className="num sg-voce" aria-current={pagina === 'timer' ? 'page' : undefined} onClick={() => onPagina('timer')}>
+          I MIEI TIMER
+        </button>
+        <a className="num sg-voce" href={TIMER} target="_blank" rel="noopener">
+          TIMER ↗
+        </a>
+      </div>
+      <div className="grow" />
+      <div className="sg-voci">
+        {chi?.ancheIstruttore && (
+          <button type="button" className="num sg-voce" onClick={() => passaA('segreteria')}>
+            SEGRETERIA →
           </button>
-          <button type="button" className="num sg-voce" aria-current={pagina === 'timer' ? 'page' : undefined} onClick={() => onPagina('timer')}>
-            I MIEI TIMER
+        )}
+      </div>
+      <div className="row sg-icone">
+        <a className="icon-btn tasto-guida" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida">
+          ?
+        </a>
+        <TastoTema />
+      </div>
+      <div className="sg-chi">
+        <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : `${ISTRUTTORE_PROVA.nome} · di prova`}</span>
+        <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+          {!chi || chi.ruolo === 'istruttore' ? 'Istruttore · calendario e appello' : chi.ancheIstruttore ? `${nomeDelRuolo(chi)} · le tue lezioni` : 'Segreteria · anche l’appello'}
+        </span>
+        {!chi && <span className="num sg-bollino">DATI DI PROVA</span>}
+        {esci && (
+          <button type="button" className="sg-link" onClick={esci}>
+            Esci
           </button>
-          <a className="num sg-voce" href={TIMER} target="_blank" rel="noopener">
-            TIMER ↗
-          </a>
-        </div>
-        <div className="grow" />
-        <div className="sg-voci">
-          {chi?.ancheIstruttore && (
-            <button type="button" className="num sg-voce" onClick={() => passaA('segreteria')}>
-              SEGRETERIA →
-            </button>
-          )}
-        </div>
-        <div className="row sg-icone">
-          <a className="icon-btn tasto-guida" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida">
-            ?
-          </a>
-          <TastoTema />
-        </div>
-        <div className="sg-chi">
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : `${ISTRUTTORE_PROVA.nome} · di prova`}</span>
-          <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-            {!chi || chi.ruolo === 'istruttore' ? 'Istruttore · calendario e appello' : chi.ancheIstruttore ? `${nomeDelRuolo(chi)} · le tue lezioni` : 'Segreteria · anche l’appello'}
-          </span>
-          {!chi && <span className="num sg-bollino">DATI DI PROVA</span>}
-          {esci && (
-            <button type="button" className="sg-link" onClick={esci}>
-              Esci
-            </button>
-          )}
-          <span className="num versione" title={VERSIONE_ESTESA}>
-            {VERSIONE}
-          </span>
-        </div>
-      </nav>
-      <main className="sg-corpo sg-corpo-sala">{children}</main>
-    </div>
+        )}
+        <span className="num versione" title={VERSIONE_ESTESA}>
+          {VERSIONE}
+        </span>
+      </div>
+    </nav>
   )
 }
 
