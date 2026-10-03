@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.20.1 — 3 ottobre 2026
+
+### Risolto
+
+- In segreteria, una scheda aperta da un'altra si apre in cima, e tornando all'elenco si ritrova il punto di prima
+- Aggiungendo chi prova, chi è già venuto compare sotto il cognome e AGGIUNGI resta in vista sul tablet
+
 ## 0.20.0 — 3 ottobre 2026
 
 ### Novità

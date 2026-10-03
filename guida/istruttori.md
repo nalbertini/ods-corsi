@@ -184,8 +184,8 @@ aggiungete voi, senza aspettare la segreteria: in fondo all'elenco c'è
 
 1. Scrivete **nome**, **cognome** e, se ve lo dà, il **telefono**: serve alla
    segreteria per richiamarlo.
-2. Dalla terza lettera, sotto compare chi **è già venuto a provare** con quel
-   nome, comunque lo scriviate: «d'am», «damico» e «amico» trovano D'Amico,
+2. Dalla terza lettera, subito sotto il cognome (prima del telefono) compare
+   chi **è già venuto a provare** con quel nome, comunque lo scriviate: «d'am», «damico» e «amico» trovano D'Amico,
    «de luca» e «deluca» trovano De Luca e De-Luca (con il corso e il giorno
    dell'ultima prova; il telefono lo vede solo
    la segreteria). Se è lui, toccatelo:
