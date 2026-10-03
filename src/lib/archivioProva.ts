@@ -115,6 +115,11 @@ export interface Archivio {
    * (`impostazioni.proposte_istruttori_dal`). Senza, l'ultima settimana.
    */
   proposteIstruttoriDal?: string
+  /**
+   * Il giorno in cui si sono scritte le date dei corsi: le lezioni di prima
+   * il database le aveva già create, e il trigger non le toglie.
+   */
+  dateCorsiDal?: string
   /** Le ricevute dei pagamenti, come le righe di `ricevute` (16-ricevute.sql). */
   ricevute?: Ricevuta[]
   /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */

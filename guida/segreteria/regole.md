@@ -24,7 +24,10 @@ FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista
   esempio da settembre a fine giugno in un colpo solo), e dopo non ne nascono;
   prima dell'inizio non ne nascono. **SALVA LE DATE** le salva e allunga
   subito il calendario. Le lezioni già in calendario restano dove sono. Fra
-  inizio e fine ci sta al massimo un anno.
+  inizio e fine ci sta al massimo un anno. In prova le lezioni non si
+  preparano prima: restano quelle passate e quelle già toccate (appello,
+  annullata, sostituto, sala, prova), le altre fuori dalle date spariscono, e
+  togliendo le date tornano.
 - «Senza la fine dei corsi, genera le lezioni per i prossimi **30 / 60 / 90 /
   180 giorni**» — quanto avanti preparare il calendario quando la fine dei
   corsi non è scritta. Vale dal prossimo rigenera.

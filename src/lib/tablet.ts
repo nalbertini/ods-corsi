@@ -153,10 +153,11 @@ export interface DatiTablet {
    */
   correggi(pin: string, sessioneId: string, personaId: string, stato: StatoPresenza | null, prova?: boolean): Promise<boolean>
   /**
-   * Chi è già venuto a provare, senza telefono. Con un PIN che non va più,
-   * nessuno: se ne accorge l'aggiunta, come col database.
+   * Chi è già venuto a provare e somiglia a `scritto` (`somiglianti`), senza
+   * telefono: al massimo venti, mai l'elenco intero. Con un PIN che non va
+   * più, nessuno: se ne accorge l'aggiunta, come col database.
    */
-  provati(pin: string): Promise<GiaProvato[]>
+  provati(pin: string, scritto: string): Promise<GiaProvato[]>
   /**
    * Aggiunge chi viene a provare, già presente, e dice chi è: anche il nuovo
    * va tenuto fra chi è già nell'appello. `null` se il PIN non va più.
