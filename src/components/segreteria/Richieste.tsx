@@ -296,7 +296,7 @@ function Scheda({
                 {i > 0 && ', '}
                 {nome ?? 'un corso che non c’è più'}
                 {/* Chi si iscrive l'ha scelto lo stesso, avvisato che lo si richiama. */}
-                {nome && voci && fuoriEta(nome, x.natoIl, voci) && <span style={{ color: 'var(--giallo-testo)' }}> (fuori età: richiama)</span>}
+                {nome && voci && fuoriEta({ id: c, nome }, x.natoIl, voci) && <span style={{ color: 'var(--giallo-testo)' }}> (fuori età: richiama)</span>}
               </span>
             )
           })}

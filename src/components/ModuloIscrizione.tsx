@@ -4,7 +4,7 @@ import { certificatoDaPortare, chiFirma, controlla, datiRichieste, domandaUscita
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
-import { corsiPerEta, type CorsoPerEta } from '../lib/listino'
+import { corsiPerEta, type CorsoPerEta, type CorsoRef } from '../lib/listino'
 import { causale, stimaIscrizione, type Abbonamento } from '../lib/nucleo'
 import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
@@ -170,10 +170,10 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const firmatario = minore ? `${(b.genitoreNome ?? '').trim()} ${(b.genitoreCognome ?? '').trim()}`.trim() : `${b.nome.trim()} ${b.cognome.trim()}`.trim()
   const foglio = MODULI[minore ? 1 : 0]
   // I corsi giusti per l'anno di nascita prima, gli altri dopo: si sceglie senza tornare al listino.
-  const voci = useListino()?.listino.corsi
-  const perEta = corsiPerEta(corsi ?? [], voci ?? [], b.natoIl)
+  const listino = useListino()?.listino
+  const perEta = corsiPerEta(corsi ?? [], listino?.corsi ?? [], b.natoIl, listino?.senzaPrezzoVaBene)
   const fuoriEta = perEta.altri.filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)
-  const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: c.riga })
+  const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined })
   const certificato = certificatoDaPortare(
     b.natoIl,
     (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
@@ -515,7 +515,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           <QuantoCosta
             nome={b.nome.trim() || 'Chi si iscrive'}
             cognome={b.cognome.trim()}
-            corsi={(corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)}
+            corsi={(corsi ?? []).filter((c) => b.corsi.includes(c.id))}
             formula={b.formula}
             abbonamenti={nucleo.abbonamenti}
           />
@@ -808,12 +808,12 @@ function SceltaFile({
  * pagarlo: l'IBAN e la causale col suo nome, da copiare. La ricevuta del
  * bonifico si carica qui sotto, fra i file, se si paga prima.
  */
-function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: string[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
+function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: CorsoRef[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
   const letto = useListino()
   const [copiato, setCopiato] = useState<string | null>(null)
   if (!letto) return null
   const s = stimaIscrizione({ chi: nome, corsi, formula }, abbonamenti, chiaveGiorno(new Date()), letto.listino)
-  const testo = causale(nome, cognome, corsi)
+  const testo = causale(nome, cognome, corsi.map((c) => c.nome))
   const copia = (cosa: string, valore: string) =>
     navigator.clipboard?.writeText(valore).then(
       () => {

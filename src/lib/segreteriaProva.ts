@@ -17,7 +17,7 @@ import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impost
 import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
-import { cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
+import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 
 /**
@@ -639,9 +639,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async salvaListino(l) {
-      const guaio = l && cosaNonVaListino(l)
+      const elenco = await this.corsi()
+      const pronto = l && agganciaPerNome(l, elenco)
+      const guaio = pronto && cosaNonVaListino(pronto, elenco)
       if (guaio) throw new Error(guaio)
-      salvaListinoProva(l)
+      salvaListinoProva(pronto)
     },
 
     async iscrivi(personaId, corsoId) {

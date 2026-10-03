@@ -1,3 +1,4 @@
+import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
@@ -239,8 +240,8 @@ export function NuovaRicevuta({
   p: PersonaSeg
   /** Gli altri del suo nucleo familiare: dalle loro ricevute, lo sconto famiglia. */
   nucleo?: PersonaSeg[]
-  /** I nomi dei corsi che fa adesso: le loro voci vengono prima. */
-  corsi: string[]
+  /** I corsi che fa adesso: le loro voci vengono prima. */
+  corsi: CorsoRef[]
   fai: Fai
   onFatta: () => void
   onLasciaStare: () => void
@@ -250,7 +251,7 @@ export function NuovaRicevuta({
   const anno = Number(data.slice(0, 4)) || Number(oggi.slice(0, 4))
   const prossimo = useCarica(() => d.prossimoNumero(anno), [d, anno])
   const partenza = useCarica(
-    () => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id), d.listino(), Promise.all(nucleo.map((x) => d.ricevute(x.id)))]),
+    () => Promise.all([d.intestatarioDi(p.id), d.enteRicevute(), d.ricevute(p.id), d.listino().then(async (x) => ({ ...x, listino: listinoUsabile(x.listino, await d.corsi()) })), Promise.all(nucleo.map((x) => d.ricevute(x.id)))]),
     [d, p.id, nucleo.map((x) => x.id).join()],
   )
   const [numero, setNumero] = useState('')

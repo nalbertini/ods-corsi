@@ -37,10 +37,14 @@ controllare com'è venuta.
 
 Ogni corso è una riga col nome e i prezzi; **CAMBIA** la apre:
 
-- **NOME DEL CORSO** — lo stesso di **CORSI**. È così che la ricevuta trova i
-  prezzi dei corsi che fa l'iscritto: se il nome qui è diverso, la ricevuta
-  non propone quel corso da solo (si trova comunque in «Aggiungi una voce…»
-  se il nome c'è, o si scrive a mano).
+- **CORSO** — si sceglie da un elenco dei corsi di **CORSI**, non si scrive.
+  Ogni corso ha una voce sola (le righe di prezzo stanno dentro la voce), e
+  un corso già usato da un'altra voce non si può scegliere. Il legame è col
+  corso, non col nome: se in **CORSI** il corso cambia nome, il prezzo lo
+  segue e la ricevuta lo trova ancora.
+  Vale dal primo salvataggio del listino: finché è quello del foglio mai
+  toccato il legame è ancora col nome, quindi **salva il listino una volta**
+  (anche senza cambiare niente) prima di rinominare un corso in **CORSI**.
 - **ETÀ** e **ORARI**, un orario per riga: sono solo testo per la pagina di
   iscrizione, il calendario non li guarda.
 - **NATI DAL** e **NATI AL** (facoltativi) — gli anni di nascita del corso,
@@ -60,8 +64,27 @@ Ogni corso è una riga col nome e i prezzi; **CAMBIA** la apre:
 - **NOTA** — in rosso sotto i prezzi: «Solo in aggiunta a Judo 3».
 
 **↑ SU** e **↓ GIÙ** cambiano l'ordine della pagina di iscrizione, **Togli dal
-listino** toglie il corso (dal listino, non da **CORSI**), **CHIUDI** richiude
+listino** toglie la voce (dal listino, non da **CORSI**), **CHIUDI** richiude
 la riga. **+ AGGIUNGI UN CORSO** in fondo ne aggiunge uno nuovo.
+
+### Quello che manca, in rosso
+
+Sopra l'elenco dei corsi, a parole:
+
+- **«… senza prezzo nel listino»** — un corso attivo di **CORSI** che non ha la
+  sua voce. Nel modulo di iscrizione si può scegliere lo stesso, con scritto
+  «prezzo da confermare»: lo confermi tu. Se il corso non ha davvero un prezzo
+  (una prova gratuita, un corso interno) premi **Va bene senza prezzo**: il
+  rosso si spegne, e **Rimetti il rosso** lo riaccende.
+- **«senza corso: scegli il suo corso da CAMBIA»** — una voce di un listino
+  salvato prima di questo legame, il cui nome non è lo stesso di nessun corso
+  (o è di due). Le voci col nome uguale a un corso si agganciano da sole al
+  primo salvataggio. Le altre si agganciano a mano, scegliendo il corso.
+- **«il corso non c'è più in CORSI»** — la voce di un corso tolto: non propone
+  prezzi sulle ricevute. Si toglie dal listino.
+
+Un corso archiviato tiene la sua voce, senza rosso: se lo riattivi ritrovi il
+prezzo.
 
 ## Le offerte
 

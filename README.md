@@ -96,7 +96,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   mai insegnato si **elimina**, scheda e account (`supabase/28-elimina-istruttore.sql`, `supabase/functions/elimina`). Due schede della stessa
   persona si **uniscono** dalla scheda: tutto quello del doppione passa a quella che resta (`src/lib/doppioni.ts`, `supabase/29-unisci-doppioni.sql`). Il **listino** dei costi, che
   la segreteria cambia da sé e che vale per la pagina di iscrizione e per le
-  voci delle ricevute (`supabase/19-listino.sql`). Le **segnalazioni**: cosa non va o cosa servirebbe
+  voci delle ricevute (`supabase/19-listino.sql`); ogni voce è di un corso solo, per id, e il prezzo segue il corso se cambia nome (`src/lib/listino.ts`). Le **segnalazioni**: cosa non va o cosa servirebbe
   nell'app, scritto lì invece che in un documento, con le risposte nello stesso
   filo e il menu che dice quante aspettano una risposta (`supabase/25-segnalazioni.sql`). Si può allegare fino a 3 foto o PDF per messaggio (`supabase/32-segnalazioni-allegati.sql`). Le **impostazioni**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale con la loro
@@ -357,6 +357,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
+| `npm run prova:listino` | Il legame fra corsi e voci del listino per id: rinomina, voci doppie, corsi senza prezzo o voci senza corso, aggancio dei listini vecchi per nome. |
 | `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia, e i cambi dalla scheda della segreteria. Le presenze segnalate: chi le manda, chi le vede e chi le accoglie. |
 | `npm run prova:indirizzi` | Gli indirizzi della segreteria: voce, scheda iscritto, lezione, settimana e sala che si rileggono uguali; gli indirizzi sbagliati che portano a DA FARE; quelli di Supabase, della guida e delle aree che non sono della segreteria. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome, tolte per sbaglio, e l'elenco della segreteria. |

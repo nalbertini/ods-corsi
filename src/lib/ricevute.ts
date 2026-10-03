@@ -1,5 +1,5 @@
-import { saldoAperto, VALIDITA } from './costi'
-import { LISTINO_PREDEFINITO, nomeCorso, type Listino } from './listino'
+import { saldoAperto, VALIDITA, type VoceCosto } from './costi'
+import { LISTINO_PREDEFINITO, nomeCorso as pulito, voceDelCorso, type CorsoRef, type Listino } from './listino'
 import { minorenne, type DatiRichiesta } from './richieste'
 import { nomeProprio } from './nomi'
 import { cfNatoIl, cfValido } from './codiceFiscale'
@@ -213,8 +213,6 @@ export function pulisciIntestatario(i: IntestatarioRicevuta): IntestatarioRicevu
   return { nome: '', cognome: '', ...x }
 }
 
-const pulito = nomeCorso
-
 /** Una voce pronta da aggiungere: quello che c'è nel listino. */
 export interface VocePronta {
   chiave: string
@@ -246,9 +244,12 @@ export function voceQuota(listino: Listino = LISTINO_PREDEFINITO): VocePronta {
  * Le voci di un corso del listino: annuale, trimestre, e l'annuale a saldo
  * solo se `giorno` (quello della ricevuta) è entro la data del saldo.
  */
-export function vociDelCorso(corso: string, giorno: string, listino: Listino = LISTINO_PREDEFINITO): VocePronta[] {
-  const c = listino.corsi.find((x) => pulito(x.corso) === pulito(corso))
-  if (!c) return []
+export function vociDelCorso(corso: string | CorsoRef, giorno: string, listino: Listino = LISTINO_PREDEFINITO): VocePronta[] {
+  const c = voceDelCorso(listino.corsi, corso)
+  return c ? vociDellaVoce(c, giorno, listino) : []
+}
+
+function vociDellaVoce(c: VoceCosto, giorno: string, listino: Listino): VocePronta[] {
   return c.prezzi.flatMap((p, i) => {
     const nome = p.etichetta ? `${c.corso} ${p.etichetta.toLowerCase()}` : c.corso
     const x: VocePronta[] = []
@@ -270,10 +271,10 @@ export function vociDelCorso(corso: string, giorno: string, listino: Listino = L
 }
 
 /** Tutte le voci del listino, la quota per prima e poi quelle dei corsi dati. */
-export function vociPronte(primaQuesti: string[], giorno: string, listino: Listino = LISTINO_PREDEFINITO): VocePronta[] {
+export function vociPronte(primaQuesti: Array<string | CorsoRef>, giorno: string, listino: Listino = LISTINO_PREDEFINITO): VocePronta[] {
   const primi = primaQuesti.flatMap((c) => vociDelCorso(c, giorno, listino))
   const gia = new Set(primi.map((v) => v.chiave))
-  return [voceQuota(listino), ...primi, ...listino.corsi.flatMap((c) => vociDelCorso(c.corso, giorno, listino)).filter((v) => !gia.has(v.chiave))]
+  return [voceQuota(listino), ...primi, ...listino.corsi.flatMap((c) => vociDellaVoce(c, giorno, listino)).filter((v) => !gia.has(v.chiave))]
 }
 
 /** La voce da scrivere a mano: nell'elenco «Aggiungi una voce…» sta con quelle del listino. */
@@ -284,7 +285,7 @@ const VOCE_A_MANO: VocePronta = { chiave: 'mano', etichetta: 'Una voce scritta a
  * persona (la quota, la voce a mano, tutte le righe di prezzo dei suoi corsi),
  * poi il resto del listino nel suo ordine. Così non si cercano fra trenta.
  */
-export function vociInDueGruppi(corsi: string[], giorno: string, listino: Listino = LISTINO_PREDEFINITO) {
+export function vociInDueGruppi(corsi: Array<string | CorsoRef>, giorno: string, listino: Listino = LISTINO_PREDEFINITO) {
   const tutte = vociPronte(corsi, giorno, listino)
   const suoi = new Set(corsi.flatMap((c) => vociDelCorso(c, giorno, listino)).map((v) => v.chiave))
   return {
