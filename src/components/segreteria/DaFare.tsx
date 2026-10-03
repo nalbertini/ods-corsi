@@ -106,6 +106,27 @@ interface Cosa {
   dove?: Destinazione
 }
 
+/**
+ * Quanto preme. `blocca`: è già un guaio (una lezione senza appello, chi entra
+ * in sala senza certificato o senza quota), in rosso. `presto`: aspetta una
+ * risposta o scade fra poco, in giallo. `faccenda`: da fare quando c'è un
+ * momento (le stampe), in una riga sola in fondo. Il rosso resta raro, e
+ * quindi si vede.
+ */
+type Livello = 'blocca' | 'presto' | 'faccenda'
+const LIVELLO: Record<string, Livello> = {
+  appelli: 'blocca',
+  certificati: 'blocca',
+  pagare: 'blocca',
+  richieste: 'presto',
+  istruttori: 'presto',
+  segnalate: 'presto',
+  scadenza: 'presto',
+  'certificati-stampa': 'faccenda',
+  'documenti-stampa': 'faccenda',
+}
+const ORDINE: Record<Livello, number> = { blocca: 0, presto: 1, faccenda: 2 }
+
 // Il numero è già grande accanto: il titolo dice solo di cosa.
 const uno = (n: number, singolare: string, plurale: string) => (n === 1 ? singolare : plurale)
 
@@ -209,7 +230,11 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       dove: { filtro: 'stampare' },
     },
   ]
-  const daFare = cose.filter((c) => c.n !== null && c.n > 0)
+  const aperte = cose
+    .filter((c) => c.n !== null && c.n > 0)
+    .sort((a, b) => ORDINE[LIVELLO[a.chiave]] - ORDINE[LIVELLO[b.chiave]])
+  const daFare = aperte.filter((c) => LIVELLO[c.chiave] !== 'faccenda')
+  const faccende = aperte.filter((c) => LIVELLO[c.chiave] === 'faccenda')
   const aPosto = cose.filter((c) => c.n === 0)
   const nonSo = cose.filter((c) => c.n === null)
   const tuttoContato = nonSo.length === 0
@@ -226,14 +251,16 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       {conti.contato && tuttoContato && daFare.length === 0 && (
         <div className="sg-dafare-fatto">
           <span className="ob">NIENTE IN SOSPESO</span>
-          <span className="sg-sotto">Appelli fatti, richieste e presenze guardate, certificati e pagamenti in regola.</span>
+          <span className="sg-sotto">
+            Appelli fatti, richieste e presenze guardate, certificati e pagamenti in regola{faccende.length ? '; in fondo, solo qualcosa da stampare' : ''}.
+          </span>
         </div>
       )}
 
       {daFare.length > 0 && (
         <ul className="sg-dafare" aria-label="Da fare">
           {daFare.map((c) => (
-            <li key={c.chiave} className="sg-dafare-riga">
+            <li key={c.chiave} className="sg-dafare-riga" data-livello={LIVELLO[c.chiave]}>
               <span className="num sg-dafare-n">{c.n}</span>
               <div className="stack grow" style={{ gap: 4, minWidth: 0 }}>
                 <span className="sg-dafare-titolo">{c.titolo(c.n!)}</span>
@@ -264,6 +291,20 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
             </li>
           ))}
         </ul>
+      )}
+
+      {faccende.length > 0 && (
+        <p className="sg-dafare-faccende">
+          <span className="sg-etichetta">QUANDO C’È UN MOMENTO</span>{' '}
+          {faccende.map((c, i) => (
+            <span key={c.chiave}>
+              {i > 0 && ' · '}
+              <button type="button" className="sg-link" onClick={() => onVai(c.voce, c.dove)}>
+                {c.n} {c.titolo(c.n!)}
+              </button>
+            </span>
+          ))}
+        </p>
       )}
 
       {aPosto.length > 0 && daFare.length > 0 && (

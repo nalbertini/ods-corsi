@@ -29,6 +29,13 @@ si sistema:
   certificato arrivati col modulo): da stampare, mettere nella cartellina e
   cancellare.
 
+Le righe sono in ordine di quanto premono. Prima, col numero **rosso**,
+quello che è già un guaio: lezioni senza appello, chi entra in sala senza
+certificato valido o senza la quota. Poi, col numero **giallo**, quello che
+aspetta una risposta o scade fra poco: richieste, presenze da confermare,
+certificati in scadenza. Le stampe stanno in una riga sola, **QUANDO C'È UN
+MOMENTO**. I numeri del menu sono gialli per la stessa ragione.
+
 Sotto, in una riga, **A POSTO** dice quello in cui non c'è niente da fare.
 Quando non c'è niente in sospeso, la pagina lo dice in verde.
 

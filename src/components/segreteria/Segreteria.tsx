@@ -175,7 +175,7 @@ export function Segreteria({
   const inPresenze = voce === 'presenze' || voce === 'segnalate'
   const segno = (n: number, detto: string) =>
     n > 0 && (
-      <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${n} ${detto}`}>
+      <span className="num sg-tag" data-tipo="presto" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${n} ${detto}`}>
         {n}
       </span>
     )
@@ -192,7 +192,8 @@ export function Segreteria({
       vivo = false
     }
   }, [d, voce, giroConte])
-  // Il numero sul tasto MENU del telefono: la somma dei segni del menu.
+  // Il numero sul tasto MENU del telefono: la somma dei segni del menu. Giallo,
+  // come in DA FARE: sono cose che aspettano una risposta, non guai.
   const daFare = richiesteNuove + daConfermare + daRispondere + (conSegnalate ? segnalateDaVedere : 0)
 
   const [guaio, setGuaio] = useState(false)
@@ -227,7 +228,7 @@ export function Segreteria({
         >
           {aperto ? 'CHIUDI' : 'MENU'}
           {!aperto && daFare > 0 && (
-            <span className="num sg-tag" data-tipo="manca" aria-hidden="true">
+            <span className="num sg-tag" data-tipo="presto" aria-hidden="true">
               {daFare}
             </span>
           )}
