@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.7.0 — 3 ottobre 2026
+
+### Novità
+
+- Eliminare un istruttore che non ha mai insegnato
+
 ## 0.6.0 — 3 ottobre 2026
 
 ### Novità
