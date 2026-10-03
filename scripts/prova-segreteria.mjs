@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export { apriScheda, scorre } from './src/lib/scorri'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export { apriScheda, scorre } from './src/lib/scorri'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1385,6 +1385,74 @@ console.log('\nuna modifica non salvata: CHI FA LE RICEVUTE e il LISTINO chiedon
   ok('listino con i campi in un altro ordine: non è una modifica', lc({ offerte: listino.offerte, corsi: listino.corsi.map((c) => ({ prezzi: c.prezzi, orari: c.orari, eta: c.eta, corso: c.corso })), saldoEntro: listino.saldoEntro, quota: 30 }), false)
   ok('listino con i corsi scambiati di posto: è una modifica', lc({ ...listino, corsi: [listino.corsi[1], listino.corsi[0]] }), true)
   ok('listino con un prezzo che non si capisce: è una modifica', lc('Un prezzo di «Judo» non si capisce: «4x»'), true)
+  ok('listino con i corsi senza prezzo in un altro ordine: non è una modifica', m.listinoCambiato?.({ ...listino, senzaPrezzoVaBene: ['a', 'b'] }, { ...listino, senzaPrezzoVaBene: ['b', 'a'] }), false)
+}
+
+console.log('\nil LISTINO, BUTTA I CAMBI: la domanda dice cosa si butta')
+{
+  // La bozza com'è scritta nel LISTINO: testo, anche quando non si capisce.
+  const corso = (chiave, nome, prezzo = '320') => ({ chiave, corso: nome, corsoId: `c${chiave}`, eta: '', natiDal: '', natiAl: '', orari: 'lun 17:00', notaTrimestre: '', nota: '', prezzi: [{ etichetta: '', saldo: prezzo, annuale: '400', trimestre: '' }] })
+  const salvata = {
+    quota: '20',
+    saldoEntro: '2026-10-31',
+    corsi: [corso(1, 'Judo 1'), corso(2, 'Judo 2'), corso(3, 'Aikido')],
+    offerte: [{ chiave: 1, titolo: 'FAMIGLIA', testo: 'sconto' }],
+    senzaPrezzoVaBene: ['a', 'b'],
+  }
+  const conCorso = (chiave, x) => ({ ...salvata, corsi: salvata.corsi.map((c) => (c.chiave === chiave ? { ...c, ...x } : c)) })
+  const cambi = (b) => m.cambiNellaBozza(salvata, b)
+  ok('bozza uguale: niente da buttare', cambi(structuredClone(salvata)), [])
+  ok('quota 20 → 25: la quota', cambi({ ...salvata, quota: '25' }), ['la quota'])
+  ok('quota 20 → « 20 »: niente da buttare', cambi({ ...salvata, quota: ' 20 ' }), [])
+  ok('data del saldo cambiata: la data del saldo', cambi({ ...salvata, saldoEntro: '2026-11-30' }), ['la data del saldo'])
+  ok('un prezzo cambiato in «Judo 2»: «Judo 2»', cambi(conCorso(2, { prezzi: [{ etichetta: '', saldo: '330', annuale: '400', trimestre: '' }] })), ['«Judo 2»'])
+  ok('un prezzo che non si capisce in «Judo 2»: «Judo 2»', cambi(conCorso(2, { prezzi: [{ etichetta: '', saldo: '32o', annuale: '400', trimestre: '' }] })), ['«Judo 2»'])
+  ok('un corso nuovo senza nome: «un corso senza nome» (nuovo)', cambi({ ...salvata, corsi: [...salvata.corsi, corso(4, '')] }), ['«un corso senza nome» (nuovo)'])
+  ok('un corso nuovo «Lotta 5»: «Lotta 5» (nuovo)', cambi({ ...salvata, corsi: [...salvata.corsi, corso(4, 'Lotta 5')] }), ['«Lotta 5» (nuovo)'])
+  ok('«Aikido» tolto: «Aikido» (tolto)', cambi({ ...salvata, corsi: salvata.corsi.slice(0, 2) }), ['«Aikido» (tolto)'])
+  ok('due corsi scambiati di posto: l’ordine dei corsi', cambi({ ...salvata, corsi: [salvata.corsi[1], salvata.corsi[0], salvata.corsi[2]] }), ['l’ordine dei corsi'])
+  ok('un’offerta col testo cambiato: le offerte', cambi({ ...salvata, offerte: [{ chiave: 1, titolo: 'FAMIGLIA', testo: 'sconto del 10%' }] }), ['le offerte'])
+  ok('corsi senza prezzo a,b → b,a: niente da buttare', cambi({ ...salvata, senzaPrezzoVaBene: ['b', 'a'] }), [])
+  ok('corsi senza prezzo a → a,c: i corsi senza prezzo', m.cambiNellaBozza({ ...salvata, senzaPrezzoVaBene: ['a'] }, { ...salvata, senzaPrezzoVaBene: ['a', 'c'] }), ['i corsi senza prezzo'])
+  ok(
+    'quota, «Judo 2» cambiato e «Aikido» tolto: in quest’ordine',
+    cambi({ ...salvata, quota: '25', corsi: [salvata.corsi[0], { ...salvata.corsi[1], nota: 'solo il sabato' }] }),
+    ['la quota', '«Judo 2»', '«Aikido» (tolto)'],
+  )
+  // Prima quel che vale per tutto il listino, poi i corsi.
+  ok(
+    'quota, offerte e «Judo 2» cambiato: prima il listino, poi i corsi',
+    cambi({ ...conCorso(2, { nota: 'solo il sabato' }), quota: '25', offerte: [{ chiave: 1, titolo: 'FAMIGLIA', testo: 'sconto del 10%' }] }),
+    ['la quota', 'le offerte', '«Judo 2»'],
+  )
+  ok(
+    'tutto cambiato: quota, data del saldo, ordine, offerte, senza prezzo, poi i corsi',
+    cambi({
+      quota: '25',
+      saldoEntro: '2026-11-30',
+      corsi: [salvata.corsi[1], { ...salvata.corsi[0], nota: 'nuova' }, corso(4, 'Lotta 5')],
+      offerte: [],
+      senzaPrezzoVaBene: ['a'],
+    }),
+    ['la quota', 'la data del saldo', 'l’ordine dei corsi', 'le offerte', 'i corsi senza prezzo', '«Judo 1»', '«Lotta 5» (nuovo)', '«Aikido» (tolto)'],
+  )
+
+  // La domanda di BUTTA I CAMBI: le prime sei voci, il resto contato.
+  const domanda = (c) => m.domandaButta(c)
+  const coda = 'Il listino torna com’è salvato, quello che vede la pagina di iscrizione.'
+  ok('domanda senza cambi elencati', domanda([]), `Buttare i cambi al listino? ${coda}`)
+  ok('domanda con la quota', domanda(['la quota']), `Buttare i cambi al listino? Hai cambiato: la quota. ${coda}`)
+  ok('domanda con 7 cambi: le prime sei e un altro cambio', domanda(['a', 'b', 'c', 'd', 'e', 'f', 'g']), `Buttare i cambi al listino? Hai cambiato: a, b, c, d, e, f e un altro cambio. ${coda}`)
+  ok('domanda con 8 cambi: le prime sei e altri 2 cambi', domanda(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']), `Buttare i cambi al listino? Hai cambiato: a, b, c, d, e, f e altri 2 cambi. ${coda}`)
+
+  const { readFileSync } = await import('node:fs')
+  const tsx = readFileSync('src/components/segreteria/Listino.tsx', 'utf8')
+  ok('LISTINO: il tasto LASCIA STARE non c’è più', tsx.includes('LASCIA STARE'), false)
+  ok('LISTINO: il tasto si chiama BUTTA I CAMBI', tsx.includes('BUTTA I CAMBI'), true)
+  ok('LISTINO: BUTTA I CAMBI è un tasto di pericolo, come RIMETTI', tsx.includes("'BUTTA I CAMBI', { pericolo: true }"), true)
+  ok('LISTINO: la domanda la compone domandaButta', tsx.includes('domandaButta'), true)
+  ok('LISTINO: dopo, dice «Listino tornato com’è salvato»', tsx.includes('Listino tornato com’è salvato'), true)
+  ok('LISTINO: la domanda dice cosa si butta con cambiNellaBozza', tsx.includes('cambiNellaBozza'), true)
 }
 
 console.log('\npossibili doppioni')

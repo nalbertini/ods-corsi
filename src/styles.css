@@ -1263,6 +1263,8 @@ a.sg-voce { text-decoration: none; }
 .sg-corpo-sala .sala-due { max-width: none; }
 .sg-testa { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .sg-titolo { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }
+/* Il titolo prende il fuoco solo per non perderlo (BUTTA I CAMBI): non si preme, niente contorno. */
+.sg-titolo:focus { outline: none; }
 .sg-sotto { font-size: 14px; color: var(--dim); margin: 0; }
 .sg-etichetta { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
 .sg-riga-titolo { display: flex; align-items: baseline; gap: 10px; }

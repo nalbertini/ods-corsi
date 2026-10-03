@@ -304,7 +304,10 @@ export function Testa({ titolo, sotto, children }: { titolo: string; sotto: Reac
   return (
     <div className="sg-testa">
       <div className="stack grow" style={{ gap: 4, minWidth: 0 }}>
-        <h1 className="ob sg-titolo">{titolo}</h1>
+        {/* -1: il fuoco ci torna quando il tasto che lo aveva sparisce (BUTTA I CAMBI). */}
+        <h1 className="ob sg-titolo" tabIndex={-1}>
+          {titolo}
+        </h1>
         <span className="sg-sotto">{sotto}</span>
       </div>
       {children}
