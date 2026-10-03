@@ -165,6 +165,22 @@ ok('sedici caratteri con l’ultimo sbagliato: non è giusto', prova(() => m.man
 ok('un codice giusto scritto in minuscolo e con gli spazi: va', prova(() => m.mancanoDatiSocio({ ...minore, codiceFiscale: 'lbrmnl 14h53 l219x', genitoreCodiceFiscale: ' lbrncl80c02l219f ' }, OGGI_SOCIO).blocca), [])
 ok('un codice con l’omocodia (lettere al posto delle cifre): va', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: 'LBRNCL80C02L21VU' }, OGGI_SOCIO).blocca), [])
 
+// Senza NATO IL la data di nascita sta nel codice fiscale: un bambino del 2018
+// non diventa adulto perché il campo è vuoto.
+const bimbo = { ...adulto, natoIl: '', codiceFiscale: 'GRDLRD18A01L219E' }
+ok('senza NATO IL, il codice fiscale di un nato nel 2018: è minore', prova(() => m.mancanoDatiSocio(bimbo, OGGI_SOCIO)), { minore: true, blocca: [manca('genitore', 'il genitore'), manca('genitoreCodiceFiscale', 'il codice fiscale del genitore')], avvisa: [] })
+ok('senza NATO IL, il codice fiscale di un nato nel 1980: è adulto', prova(() => m.mancanoDatiSocio({ ...adulto, natoIl: '' }, OGGI_SOCIO)), { minore: false, blocca: [], avvisa: [] })
+ok('senza NATO IL, il codice in minuscolo con gli spazi: è minore lo stesso', prova(() => m.mancanoDatiSocio({ ...bimbo, codiceFiscale: 'grdlrd 18a01 l219e' }, OGGI_SOCIO).minore), true)
+ok('NATO IL scritto vince sul codice fiscale', prova(() => m.mancanoDatiSocio({ ...bimbo, natoIl: '1980-03-02' }, OGGI_SOCIO).minore), false)
+
+console.log('La domanda prima di fare la ricevuta')
+const tutto = { totale: 53000, pagato: 53000, netto: 0 }
+const leone = { ...adulto, nome: 'Alessandro', cognome: 'Leone' }
+const leonardo = { ...adulto, nome: 'Leonardo', cognome: 'Giordano', genitore: 'Mario Rossi' }
+ok('pagata tutta: il totale e basta', prova(() => m.domandaRicevuta('n. 5/2026', leone, false, tutto)), 'Fare la ricevuta n. 5/2026 a Leone Alessandro, 530,00 €?')
+ok('con un acconto: quanto si paga ora e quanto resta', prova(() => m.domandaRicevuta('n. 5/2026', leone, false, { totale: 53000, pagato: 25000, netto: 28000 })), 'Fare la ricevuta n. 5/2026 a Leone Alessandro, 530,00 € · pagati ora 250,00 € · restano 280,00 €?')
+ok('per un minore: il socio e il genitore', prova(() => m.domandaRicevuta('n. 5/2026', leonardo, true, tutto)), 'Fare la ricevuta n. 5/2026 per Giordano Leonardo, al genitore Mario Rossi, 530,00 €?')
+
 console.log('Perché la ricevuta non si fa')
 ok('manca uno', prova(() => m.motivoBlocca([manca('codiceFiscale', 'il codice fiscale')])), 'Manca il codice fiscale: scrivilo nei DATI DEL SOCIO')
 ok('mancano due', prova(() => m.motivoBlocca([manca('genitore', 'il genitore'), manca('genitoreCodiceFiscale', 'il codice fiscale del genitore')])), 'Mancano il genitore e il codice fiscale del genitore: scrivili nei DATI DEL SOCIO')

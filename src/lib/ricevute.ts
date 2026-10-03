@@ -2,7 +2,7 @@ import { saldoAperto, VALIDITA } from './costi'
 import { LISTINO_PREDEFINITO, nomeCorso, type Listino } from './listino'
 import { minorenne, type DatiRichiesta } from './richieste'
 import { nomeProprio } from './nomi'
-import { cfValido } from './codiceFiscale'
+import { cfNatoIl, cfValido } from './codiceFiscale'
 
 /**
  * Le ricevute dei pagamenti: la «ricevuta semplice» dell'associazione, come
@@ -296,12 +296,15 @@ export interface CampoCheManca {
  * al genitore, anche nome e codice fiscale del genitore. Senza, la ricevuta
  * non si fa, e nemmeno con un codice scritto sbagliato, che sulla ricevuta
  * varrebbe quanto uno vuoto. L'indirizzo si può lasciare vuoto: lo si dice e
- * basta. Minore o no si decide al `giorno` della ricevuta, non a oggi. Solo
- * l'app lo chiede, il database no.
+ * basta. Minore o no si decide al `giorno` della ricevuta, non a oggi. Senza
+ * NATO IL la data si legge dal codice fiscale, se è giusto: un bambino col
+ * campo vuoto non diventa adulto. Solo l'app lo chiede, il database no.
  */
 export function mancanoDatiSocio(i: IntestatarioRicevuta, giorno = new Date()) {
   const vuoto = (k: keyof IntestatarioRicevuta) => !String(i[k] ?? '').trim()
-  const minore = !!i.natoIl && minorenne(i.natoIl, giorno)
+  // L'anno del codice ha due cifre: `cfNatoIl` prende il secolo che non mette la nascita dopo il giorno della ricevuta.
+  const natoIl = i.natoIl || cfNatoIl(String(i.codiceFiscale ?? '').toUpperCase().replace(/\s/g, ''), giorno)
+  const minore = !!natoIl && minorenne(natoIl, giorno)
   const chiesti: Array<CampoCheManca & { blocca: boolean }> = [
     { campo: 'codiceFiscale', testo: minore ? 'il codice fiscale del socio' : 'il codice fiscale', blocca: true },
     { campo: 'indirizzo', testo: 'l’indirizzo', blocca: false },
@@ -356,3 +359,15 @@ export function intestatarioDa(
 /** Il nome del file del PDF: `ricevuta-116-2026-albertini-manuela.pdf`. */
 export const nomeFileRicevuta = (r: Pick<Ricevuta, 'numero' | 'anno' | 'intestatario'>) =>
   `ricevuta-${r.numero}-${r.anno}-${pulito(`${r.intestatario.cognome} ${r.intestatario.nome}`).replace(/ /g, '-')}.pdf`
+
+/**
+ * La domanda prima di fare la ricevuta: a chi va (per un minore, il socio e
+ * il genitore che paga) e quanto. Con un acconto anche quanto si paga ora e
+ * quanto resta, perché la ricevuta fatta non si cambia più.
+ */
+export function domandaRicevuta(quale: string, i: IntestatarioRicevuta, minore: boolean, c: ReturnType<typeof conti>): string {
+  const socio = `${i.cognome} ${i.nome}`.trim()
+  const chi = minore && i.genitore?.trim() ? `per ${socio}, al genitore ${i.genitore.trim()}` : `a ${socio}`
+  const quanto = c.pagato === c.totale ? `${euro(c.totale)} €` : `${euro(c.totale)} € · pagati ora ${euro(c.pagato)} € · restano ${euro(c.netto)} €`
+  return `Fare la ricevuta ${quale} ${chi}, ${quanto}?`
+}

@@ -9,6 +9,7 @@ import {
   METODI,
   nomeFileRicevuta,
   mancanoDatiSocio,
+  domandaRicevuta,
   motivoBlocca,
   ricevutaPer,
   QUOTA,
@@ -354,7 +355,7 @@ export function NuovaRicevuta({
     // La ricevuta ha un numero e non si cambia più: prima di farla, si rilegge.
     const quale = n ? `n. ${n}/${anno}` : prossimo.dato ? `n. ${prossimo.dato}/${anno}` : `col prossimo numero del ${anno}`
     const righe = [
-      `Fare la ricevuta ${quale} a ${socio.cognome} ${socio.nome}, ${euro(c.totale)} €?`,
+      domandaRicevuta(quale, socio, minore, c),
       avvisa.length ? `\n${avvisaTesto}.` : '',
       '\nFatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.',
     ]

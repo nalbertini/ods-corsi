@@ -156,7 +156,8 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   ricevuta: il socio col suo codice fiscale o, per un minore, il genitore col
   suo (così si vede se oggi paga l'altro genitore); senza genitore dice
   «RICEVUTA PER IL GENITORE · MANCA». Minore o no si conta alla data della
-  ricevuta. Si correggono per la ricevuta, la scheda non cambia.
+  ricevuta; con **NATO IL** vuoto, dalla data scritta nel codice fiscale. Si
+  correggono per la ricevuta, la scheda non cambia.
   - Il **codice fiscale** serve sempre: quello del socio e, per un minore,
     anche nome e codice fiscale del genitore. Se manca, o è scritto ma non
     è giusto («il codice fiscale non è giusto»), i dati si aprono da soli col
@@ -174,7 +175,9 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   pagata da sola. Senza, la ricevuta non cambia se è in regola, e sotto lo
   dice.
 
-**FAI LA RICEVUTA** le dà il numero e scarica il PDF, da stampare o mandare.
+**FAI LA RICEVUTA** prima chiede di rileggere: a chi va (per un minore, il
+socio e il genitore), il totale e, con un acconto, quanto si paga ora e quanto
+resta. Confermato, le dà il numero e scarica il PDF, da stampare o mandare.
 Nell'elenco **RICEVUTE** della scheda ogni ricevuta si riscarica con **PDF**,
 uguale a com'era.
 
