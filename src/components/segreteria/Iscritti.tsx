@@ -9,7 +9,7 @@ import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, 
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
-import { altraDellaCoppia, campiDiversi, coppieDoppioni, possibiliDoppioni, segnateCon, stessoCognome, type IndiziDoppioni } from '../../lib/doppioni'
+import { altraDellaCoppia, campiDiversi, coppieDoppioni, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
@@ -785,10 +785,14 @@ function CoppieDoppioni({
   )
   return (
     <div className="stack" style={{ gap: 12 }}>
-      <span className="sg-sotto">Schede che sembrano la stessa persona: lo stesso nome scritto in un altro modo, o lo stesso codice fiscale.</span>
+      <span className="sg-sotto">Schede che sembrano la stessa persona, dalle più sicure.</span>
       {coppie.length === 0 && <p className="sg-sotto">Nessuna coppia corrisponde alla ricerca.</p>}
       {coppie.map(([a, b]) => (
         <div key={`${a.id}-${b.id}`} className="card stack" style={{ padding: 14, gap: 10 }}>
+          {(() => {
+            const m = motivoDoppione(a, b, indizi)
+            return m && <span className="sg-etichetta">{MOTIVI[m].toUpperCase()}</span>
+          })()}
           {riga(a)}
           <div style={{ borderTop: '2px solid var(--line)', paddingTop: 10 }}>{riga(b)}</div>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
@@ -868,8 +872,8 @@ function UnisciDoppione({
           }}>
           <option value="">Scegli…</option>
           {[
-            ['STESSO COGNOME', candidati.filter((x) => stessoCognome(x, p))],
-            ['TUTTI GLI ALTRI', candidati.filter((x) => !stessoCognome(x, p))],
+            ['STESSO COGNOME O SCAMBIATI', candidati.filter((x) => vicina(x, p))],
+            ['TUTTI GLI ALTRI', candidati.filter((x) => !vicina(x, p))],
           ].map(([gruppo, chi]) =>
             typeof gruppo === 'string' && Array.isArray(chi) && chi.length > 0 ? (
               <optgroup key={gruppo} label={gruppo}>
@@ -894,6 +898,11 @@ function UnisciDoppione({
           <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => setScambiate((v) => !v)}>
             TIENI L’ALTRA
           </button>
+          {scambiati(resta, via) && (
+            <span style={{ fontSize: 14 }}>
+              Nome e cognome sono scambiati. Se resta il nome sbagliato, TIENI L’ALTRA.
+            </span>
+          )}
           {campiDiversi(resta, via).map((c) => (
             <span key={c.campo} style={{ fontSize: 14 }}>
               {c.campo}: <b>{c.resta || c.via}</b>
