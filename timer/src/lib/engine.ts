@@ -17,14 +17,6 @@ export const MODE_BADGE: Record<Mode, string> = {
 }
 
 /** Il colore con cui uno schema si riconosce nelle liste e nell'editor. */
-export const MODE_TINT: Record<Mode, string> = {
-  interval: 'var(--rosso)',
-  circuit: 'var(--blu)',
-  emom: 'var(--verde)',
-  amrap: 'var(--giallo)',
-  fortime: 'var(--blu)',
-}
-
 export const MODE_HINT: Record<Mode, string> = {
   interval: 'Lavoro e recupero che si alternano, per il numero di round che scegli.',
   circuit: 'Stazioni in sequenza, ognuna con la sua durata, ripetute a giri.',

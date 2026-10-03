@@ -572,6 +572,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             modificabile={(w) => !w.dove || (!!personaId && w.dove !== 'collega')}
             corsi={corsi}
             lezione={nomeLezione}
+            conFiltri={!incorporato}
             onStart={startWorkout}
             onEdit={(w) => setView({ kind: 'editor', workout: w })}
             onDuplicate={duplicate}
