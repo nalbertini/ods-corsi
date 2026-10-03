@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.9.6 — 3 ottobre 2026
+
+### Modificato
+
+- Il modulo di iscrizione e il listino usano i colori come il resto dell'app
+
 ## 0.9.5 — 3 ottobre 2026
 
 ### Risolto
