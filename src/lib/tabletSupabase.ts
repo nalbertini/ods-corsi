@@ -14,15 +14,17 @@ import { eGiaVenuto, nuovoId, pulisciProva } from './prove'
  *
  * Il tablet non legge le tabelle: iscrizioni, presenze e anagrafica gli sono
  * chiuse dalle policy, e quello che gli serve lo danno le funzioni già
- * ritagliato (il nome e l'iniziale, mai il cognome). Qui non c'è la coda delle
- * scritture offline dell'appello: chi tocca il suo nome deve sapere subito se
- * è andata, e l'esito («già segnato», «l'ha già segnato l'istruttore») lo sa
- * solo il server.
+ * ritagliato (il nome e l'iniziale, mai il cognome). La coda dei tocchi senza
+ * rete non sta qui ma sopra, in `codaDelTablet`: qui si prova e basta, e
+ * l'esito («già segnato», «l'ha già segnato l'istruttore») lo sa solo il server.
  */
 
-/** Il messaggio del server, che è già in italiano e dice cosa non va. */
-function guaio(e: { message?: string } | null): Error {
-  return new Error(e?.message || 'Il server non risponde')
+/**
+ * Il messaggio del server, che è già in italiano e dice cosa non va. Col
+ * codice, che dice se è un no del server o la rete che manca (vedi `rifiutato`).
+ */
+function guaio(e: { message?: string; code?: string } | null): Error {
+  return Object.assign(new Error(e?.message || 'Il server non risponde'), { code: e?.code ?? '' })
 }
 
 export function creaTabletSupabase(db: SupabaseClient): DatiTablet {

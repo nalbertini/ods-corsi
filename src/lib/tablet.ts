@@ -5,6 +5,7 @@ import type { ListaMusica } from './musica'
 import type { ImpostazioniSala, TimerSala } from '../../timer/src/lib/impostazioniSala'
 import type { FonteClip } from '../../timer/src/lib/voice'
 import type { ChiProva, GiaProvato } from './prove'
+import { Coda } from './coda'
 
 /**
  * Il tablet di sala.
@@ -31,6 +32,11 @@ export const REGOLE = {
   recuperoGiorni: 14,
   /** L'area istruttore si chiude da sola dopo due minuti senza tocchi. */
   istruttoreInattivoMin: 2,
+  /** Un tocco di questo tablet si annulla per due minuti. */
+  annullaMin: 2,
+  /** Dopo cinque PIN sbagliati il tablet non ne prova altri per cinque minuti. */
+  pinTentativi: 5,
+  pinBloccoMin: 5,
 } as const
 
 export type Origine = 'appello' | 'tablet' | 'recupero'
@@ -304,3 +310,57 @@ export function sigle<T extends { nome: string; cognome: string }>(persone: T[])
     sigla: ((quanti.get(chiave(p)) ?? 0) > 1 ? p.cognome.replace(/\s+/g, '').slice(0, 3) : iniziale(p.cognome)) + '.',
   }))
 }
+
+// ---------------------------------------------------------------------------
+// I tocchi senza rete.
+//
+// In palestra il segnale va e viene. Un tocco che non arriva al server non si
+// perde: resta sul tablet, nella sua coda, e parte appena la rete torna. Senza
+// rete l'esito («già segnato», «l'ha già segnato l'istruttore») non si sa: il
+// nome resta segnato, e la tessera dice che è in attesa.
+// ---------------------------------------------------------------------------
+
+/**
+ * Il server ha detto di no, e riprovare non cambierebbe niente: fuori orario,
+ * non iscritto, permesso negato. Il resto (la rete, il database che si
+ * riavvia) è il caso per cui c'è la coda. In prova la rete non c'è, e ogni
+ * errore è un no.
+ */
+export function rifiutato(e: unknown, modo: DatiTablet['modo']): boolean {
+  if (modo === 'prova') return true
+  const codice = (e as { code?: string })?.code ?? ''
+  return /^(42|23|22|P0)/.test(codice) || /^PGRST[12]/.test(codice)
+}
+
+/** Stessa persona, stessa lezione: un ANNULLA sostituisce il tocco ancora in coda. */
+export const chiaveTocco = (sessioneId: string, personaId: string) => `tocco:${sessioneId}:${personaId}`
+
+let coda: Coda | null = null
+/** La coda dei tocchi di questo tablet, sotto una chiave sua: resta anche se il tablet si ricarica. */
+export function codaDelTablet(d: DatiTablet): Coda {
+  return (coda ??= new Coda(async (op) => {
+    const [sessioneId, personaId] = op.args as [string, string]
+    try {
+      if (op.tipo === 'segna') await d.segna(sessioneId, personaId)
+      else if (op.tipo === 'annulla') await d.annulla(sessioneId, personaId)
+    } catch (e) {
+      if (rifiutato(e, d.modo)) return // scartato: il server non lo vuole, e non lo vorrà
+      throw e
+    }
+  }, 'ods-corsi:coda-sala'))
+}
+
+/** Chi è in coda per questa lezione, cioè segnato sul tablet ma non ancora sul server. */
+export const inAttesa = (c: Coda, sessioneId: string) =>
+  new Set(c.operazioni.filter((o) => o.tipo === 'segna' && o.args[0] === sessioneId).map((o) => o.args[1] as string))
+
+/**
+ * Quando questo tablet ha segnato chi: chi ritocca il suo nome nei due minuti
+ * dell'annullo ritrova ANNULLA. In memoria e basta: dopo un ricaricamento si
+ * corregge dall'area istruttore, come sempre.
+ */
+const toccati = new Map<string, number>()
+export const ricordaTocco = (sessioneId: string, personaId: string) => toccati.set(chiaveTocco(sessioneId, personaId), Date.now())
+export const dimenticaTocco = (sessioneId: string, personaId: string) => toccati.delete(chiaveTocco(sessioneId, personaId))
+export const siAnnulla = (sessioneId: string, personaId: string) =>
+  (toccati.get(chiaveTocco(sessioneId, personaId)) ?? 0) > Date.now() - REGOLE.annullaMin * MIN

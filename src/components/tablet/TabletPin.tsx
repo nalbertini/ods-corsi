@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { DatiTablet, EntratoConPin } from '../../lib/tablet'
+import { REGOLE } from '../../lib/tablet'
 import { messaggio } from './comune'
 
 const TASTI = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'canc', '0', '']
@@ -27,6 +28,9 @@ export function TabletPin({
   const [pin, setPin] = useState('')
   const [guaio, setGuaio] = useState<string | null>(null)
   const [aspetta, setAspetta] = useState(false)
+  // I PIN sbagliati da quando si è aperta la tastiera: dal secondo si dice
+  // che c'è un limite. Quanti ne restano lo sa solo il server.
+  const [sbagliati, setSbagliati] = useState(0)
 
   const premi = async (c: string) => {
     if (aspetta) return
@@ -43,9 +47,19 @@ export function TabletPin({
     try {
       const chi = perUscire ? await d.verificaPin(nuovo).then((x) => x && { ...x, presenze: [] }) : await d.entraConPin(nuovo)
       if (chi) return onEntrato(nuovo, chi)
-      setGuaio('PIN sbagliato. Riprova.')
+      setSbagliati((n) => n + 1)
+      setGuaio(
+        sbagliati + 1 >= 2
+          ? `PIN sbagliato. Attenzione: dopo ${REGOLE.pinTentativi} PIN sbagliati il tablet si blocca per ${REGOLE.pinBloccoMin} minuti.`
+          : 'PIN sbagliato. Riprova.',
+      )
     } catch (e) {
-      setGuaio(messaggio(e, 'Il server non risponde'))
+      const m = messaggio(e, 'Il server non risponde')
+      setGuaio(
+        m.startsWith('troppi PIN')
+          ? `Troppi PIN sbagliati: il tablet si è bloccato. Riprova fra ${REGOLE.pinBloccoMin} minuti; l'appello intanto si fa dall'app sul telefono.`
+          : m,
+      )
     } finally {
       setAspetta(false)
     }

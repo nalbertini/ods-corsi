@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'",
+      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -244,6 +244,53 @@ console.log('\n10. la lezione di adesso, al cambio')
   ok('alle 17:20 c\'è solo quella in corso', m.lezioneDiAdesso(l, new Date(2026, 8, 23, 17, 20))?.corso, 'Lotta 2')
   ok('annullata non conta', m.lezioneDiAdesso(l.map((x) => (x.corso === 'Lotta 3' ? { ...x, stato: 'annullata' } : x)), adesso)?.corso, 'Lotta 2')
   ok('alle 15 nessuna', m.lezioneDiAdesso(l, new Date(2026, 8, 23, 15, 0)), null)
+}
+
+console.log('\n11. i tocchi senza rete')
+{
+  ok('la rete che manca non è un no', m.rifiutato(Object.assign(new Error('Failed to fetch'), { code: '' }), 'supabase'), false)
+  ok('il database che si riavvia nemmeno', m.rifiutato({ code: 'PGRST001' }, 'supabase'), false)
+  ok('fuori orario è un no', m.rifiutato({ code: '42501' }, 'supabase'), true)
+  ok('un raise senza codice è un no', m.rifiutato({ code: 'P0001' }, 'supabase'), true)
+  ok('in prova ogni errore è un no', m.rifiutato(new Error('x'), 'prova'), true)
+
+  let rete = false
+  const fatte = []
+  const finto = {
+    modo: 'supabase',
+    async segna(s, p) {
+      if (!rete) throw Object.assign(new Error('Failed to fetch'), { code: '' })
+      if (p === 'nessuno') throw Object.assign(new Error('non è iscritto a questo corso'), { code: '42501' })
+      fatte.push(`segna ${p}`)
+      return 'segnata'
+    },
+    async annulla(s, p) {
+      if (!rete) throw Object.assign(new Error('Failed to fetch'), { code: '' })
+      fatte.push(`annulla ${p}`)
+      return true
+    },
+  }
+  const coda = m.codaDelTablet(finto)
+  coda.accoda(m.chiaveTocco('L', 'elena'), 'segna', ['L', 'elena'])
+  coda.accoda(m.chiaveTocco('L', 'giulia'), 'segna', ['L', 'giulia'])
+  await coda.scarica()
+  ok('senza rete restano in coda', [...m.inAttesa(coda, 'L')], ['elena', 'giulia'])
+  ok('di un\'altra lezione nessuno', m.inAttesa(coda, 'X').size, 0)
+  coda.accoda(m.chiaveTocco('L', 'giulia'), 'annulla', ['L', 'giulia'])
+  ok('ANNULLA prende il posto del tocco in coda', [...m.inAttesa(coda, 'L')], ['elena'])
+  coda.accoda(m.chiaveTocco('L', 'nessuno'), 'segna', ['L', 'nessuno'])
+  rete = true
+  // Un giro può essere ancora in corso (quello partito dall'ultimo accoda): si aspetta che finisca.
+  for (let i = 0; i < 5 && coda.inAttesa; i++) {
+    await new Promise((r) => setTimeout(r, 0))
+    await coda.scarica()
+  }
+  ok('torna la rete: partono in ordine', fatte, ['segna elena', 'annulla giulia'])
+  ok('e il no del server si butta, non blocca la coda', coda.inAttesa, 0)
+
+  m.ricordaTocco('L', 'elena')
+  ok('appena toccato si annulla', m.siAnnulla('L', 'elena'), true)
+  ok('chi non è stato toccato qui no', m.siAnnulla('L', 'giulia'), false)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

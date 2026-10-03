@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import type { DatiTablet, LezioneSala, Postazione, PresenzaIstruttore } from '../../lib/tablet'
-import { datiTablet, lasciaTablet, lezioneDiAdesso, REGOLE } from '../../lib/tablet'
+import { codaDelTablet, datiTablet, lasciaTablet, lezioneDiAdesso, REGOLE } from '../../lib/tablet'
 import type { Settings } from '../../../timer/src/types'
 import type { Incorporato, StatoTimer, TimerPronto } from '../../../timer/src/lib/incorporato'
 import type { Lezione } from '../../../timer/src/lib/lezione'
@@ -183,6 +183,12 @@ function ricordaLista(id: string | null) {
 
 function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: Postazione; onScollega: () => Promise<void> }) {
   const adesso = useAdesso(d)
+  // I tocchi segnati senza rete, che aspettano di partire: la spia in testata.
+  const [inCoda, setInCoda] = useState(0)
+  useEffect(() => {
+    const smetti = codaDelTablet(d).guarda(setInCoda)
+    return () => void smetti()
+  }, [d])
   const [vista, setVista] = useState<Vista>({ s: 'home' })
   const [scheda, setScheda] = useState<Scheda>('presenze')
   const [lezioni, setLezioni] = useState<LezioneSala[] | null>(null)
@@ -372,6 +378,11 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
             </span>
             <span className="ob tb-chip-azione">SEGNATI</span>
           </button>
+        )}
+        {inCoda > 0 && (
+          <span role="status" className="num tb-bollino tb-spia-rete">
+            IN ATTESA DI RETE · {inCoda}
+          </span>
         )}
         <span className="num tb-ora">{oraDi(adesso.toISOString())}</span>
         <TastoTema />
