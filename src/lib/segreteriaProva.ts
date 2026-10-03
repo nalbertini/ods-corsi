@@ -4,14 +4,14 @@ import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
-import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva } from './archivioProva'
+import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
 import { comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 import { cosaNonVaSegnalazione, type Segnalazione } from './segnalazioni'
-import { richiesteDi } from './richiesteProva'
+import { richiesteDi, spostaRichieste } from './richiesteProva'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { chiaveValida } from '../../timer/src/lib/clipSala'
@@ -69,6 +69,24 @@ export function creaSegreteriaProva(): DatiSegreteria {
     const p = a().persone.find((x) => x.id === id)
     if (!p) throw new Error('Persona inesistente')
     return p
+  }
+  /** I controlli di `unione_possibile` (29-unisci-doppioni.sql); in prova anche il nucleo, che col database non c'è. */
+  const unionePossibile = (resta: string, via: string) => {
+    if (resta === via) throw new Error('Scegli due schede diverse')
+    const r = persona(resta)
+    const v = persona(via)
+    if (r.ruolo !== 'iscritto' || v.ruolo !== 'iscritto') throw new Error('Si uniscono solo le schede degli iscritti, non quelle del personale')
+    // Il codice fiscale scritto in segreteria, se no quello del modulo accolto.
+    const cf = (id: string) =>
+      a().anagrafiche?.[id]?.codiceFiscale ??
+      richiesteDi(id)
+        .filter((x) => x.stato === 'accolta')
+        .sort((x, y) => (y.gestitaIl ?? '').localeCompare(x.gestitaIl ?? ''))[0]?.codiceFiscale
+    if (cf(resta) && cf(via) && cf(resta) !== cf(via))
+      throw new Error('Hanno due codici fiscali diversi: non sono la stessa persona. Se uno è sbagliato, correggilo nella scheda e riprova')
+    if (v.certificato?.file) throw new Error(`La scheda di ${nomeDi(v)} ha ancora il file del certificato: stampalo, cancellalo dalla scheda e riprova`)
+    if (v.nucleo) throw new Error(`${nomeDi(v)} è nel nucleo familiare di un'altra persona: prima toglila dal nucleo`)
+    if (a().persone.some((x) => x.nucleo === via)) throw new Error(`${nomeDi(v)} è titolare di un nucleo familiare: prima rendi titolare qualcun altro o togli gli altri dal nucleo`)
   }
   /** Come `anagraficaDi` del database: i più recenti fra la richiesta accolta e quelli della segreteria. */
   const anagraficaDi = (personaId: string): AnagraficaDi | null => {
@@ -460,6 +478,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const s: Segnalazione = { id, titolo: titolo.trim(), messaggi: [{ id, autore: 'Segreteria di prova', mio: true, testo: testo.trim(), il: new Date().toISOString() }] }
       a().segnalazioni = [...(a().segnalazioni ?? []), s]
       salva()
+      return id
     },
 
     async rispondiSegnalazione(id, testo) {
@@ -808,6 +827,88 @@ export function creaSegreteriaProva(): DatiSegreteria {
         const { [personaId]: _, ...altri } = a().pin!
         a().pin = altri
       }
+      salva()
+    },
+
+    async anteprimaUnione(resta, via) {
+      unionePossibile(resta, via)
+      return {
+        presenze: Object.values(memoria.segnate).filter((x) => via in x).length,
+        prove: (a().prove ?? []).filter((x) => x.personaId === via).length,
+        iscrizioni: a().iscrizioni.filter((x) => x.personaId === via).length,
+        ricevute: (a().ricevute ?? []).filter((x) => x.personaId === via).length,
+      }
+    },
+
+    async unisciPersone(resta, via) {
+      // Le stesse regole di `29-unisci-doppioni.sql`.
+      unionePossibile(resta, via)
+      const r = persona(resta)
+      const v = persona(via)
+      const fino = (x?: string, y?: string) => (!x ? y : !y ? x : x > y ? x : y)
+      // Il pagamento che arriva più lontano si tiene intero, stato e data:
+      // «pagato» senza data vuol dire senza scadenza.
+      const finoA = (q?: PersonaProva['pagamento']) => (!q ? '' : q.stato === 'pagato' && !q.fino ? '9999' : (q.fino ?? ''))
+      const vinceSuo = !!v.pagamento && (!r.pagamento || r.pagamento.stato === 'da_pagare' || finoA(v.pagamento) > finoA(r.pagamento))
+      const scelto = vinceSuo ? v.pagamento : r.pagamento
+      const pagamento = scelto && { ...scelto, nota: r.pagamento?.nota ?? v.pagamento?.nota }
+      const unita: PersonaProva = {
+        ...r,
+        email: r.email ?? v.email,
+        telefono: r.telefono ?? v.telefono,
+        // Attiva se una delle due lo era: chi trova un doppione spesso l'ha già disattivato.
+        attiva: r.attiva || v.attiva,
+        certificato: r.certificato || v.certificato ? { ...r.certificato, scade: fino(r.certificato?.scade, v.certificato?.scade) } : undefined,
+        documento: r.documento || v.documento,
+        pagamento,
+      }
+      a().persone = a().persone.filter((x) => x.id !== via).map((x) => (x.id === resta ? unita : x))
+
+      // Una presenza per lezione: vince presente, poi giustificato, poi assente;
+      // con lei, da dove è stata segnata (`origini`: il tablet o il recupero).
+      const peso = { presente: 0, giustificato: 1, assente: 2 } as const
+      const segnate = { ...memoria.segnate }
+      const origini = { ...memoria.origini }
+      for (const [sessione, segni] of Object.entries(segnate)) {
+        if (!(via in segni)) continue
+        const { [via]: suo, ...altri } = segni
+        const mio = altri[resta]
+        const vinceSuo = !mio || peso[suo] < peso[mio]
+        segnate[sessione] = vinceSuo ? { ...altri, [resta]: suo } : altri
+        const { [via]: suaO, [resta]: miaO, ...altreO } = origini[sessione] ?? {}
+        const o = vinceSuo ? suaO : miaO
+        origini[sessione] = o ? { ...altreO, [resta]: o } : altreO
+      }
+      memoria.segnate = segnate
+      memoria.origini = origini
+      memoria.salva()
+
+      const prove = a().prove ?? []
+      a().prove = prove
+        .filter((x) => !(x.personaId === via && prove.some((y) => y.personaId === resta && y.sessioneId === x.sessioneId)))
+        .map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+
+      // Un'iscrizione per corso: dalla più vecchia alla fine più lontana, nessuna se uno non ce l'ha.
+      const sue = a().iscrizioni.filter((x) => x.personaId === via)
+      a().iscrizioni = a().iscrizioni
+        .filter((x) => x.personaId !== via)
+        .map((x) => {
+          const s = x.personaId === resta && sue.find((y) => y.corsoId === x.corsoId)
+          return s ? { ...x, dal: x.dal < s.dal ? x.dal : s.dal, al: x.al && s.al ? (x.al > s.al ? x.al : s.al) : undefined } : x
+        })
+      a().iscrizioni = [...a().iscrizioni, ...sue.filter((y) => !a().iscrizioni.some((x) => x.personaId === resta && x.corsoId === y.corsoId)).map((y) => ({ ...y, personaId: resta }))]
+
+      a().ricevute = (a().ricevute ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      const an = a().anagrafiche ?? {}
+      if (an[via]) {
+        const { [via]: suaA, ...altre } = an
+        const mia = altre[resta] ?? {}
+        const piena = (x: unknown) => x !== undefined && x !== null && x !== ''
+        // Come il trigger `anagrafiche_cambiata`: quella unita è la più recente.
+        a().anagrafiche = { ...altre, [resta]: { ...suaA, ...Object.fromEntries(Object.entries(mia).filter(([, x]) => piena(x))), cambiataIl: new Date().toISOString() } }
+      }
+      spostaRichieste(via, resta)
+      a().segnalate = (a().segnalate ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
       salva()
     },
 

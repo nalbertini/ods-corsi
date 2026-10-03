@@ -265,9 +265,14 @@ export function TabletIstruttore({
         <div className="stack grow tb-scorre tb-lezioni-istr" style={{ gap: 8 }}>
           {elenco.map((l) => {
             const g = chiaveGiorno(new Date(l.inizio))
+            // Passata, non annullata e nessuno presente: l'appello quasi
+            // certamente non è stato fatto. In rosso, come SENZA APPELLO in
+            // segreteria: è il buco che l'istruttore viene a chiudere.
+            const senzaAppello = l.stato !== 'annullata' && l.presenti === 0 && fase(l, adesso) === 'finita'
             return (
               <button
                 key={l.id}
+                data-guaio={senzaAppello || undefined}
                 ref={l.id === scelta ? scelto : undefined}
                 type="button"
                 aria-pressed={l.id === scelta}
@@ -279,10 +284,14 @@ export function TabletIstruttore({
                 <span className="ob" style={{ fontSize: 20, fontWeight: 700 }}>
                   {scheda === 'corso' ? (g === oggi ? 'OGGI' : giornoPerEsteso(g).toUpperCase()) : l.corso.toUpperCase()}
                 </span>
-                <span style={{ fontSize: 15, color: 'var(--sec)' }}>
-                  {l.presenti} {l.presenti === 1 ? 'presente' : 'presenti'} su {l.iscritti}
-                  {l.stato === 'annullata' ? ' · annullata' : ''}
-                </span>
+                {senzaAppello ? (
+                  <span className="num tb-senza-appello">✕ SENZA APPELLO</span>
+                ) : (
+                  <span style={{ fontSize: 15, color: 'var(--sec)' }}>
+                    {l.presenti} {l.presenti === 1 ? 'presente' : 'presenti'} su {l.iscritti}
+                    {l.stato === 'annullata' ? ' · annullata' : ''}
+                  </span>
+                )}
               </button>
             )
           })}
@@ -315,26 +324,29 @@ export function TabletIstruttore({
             </div>
             <span className="num" style={{ fontSize: 46, fontWeight: 700, lineHeight: 1 }}>{presenti}</span>
             <span className="num" style={{ fontSize: 22, color: 'var(--dim)' }}>/ {righe?.length ?? lezione.iscritti}</span>
-            <button type="button" className="tb-btn tb-btn-verde" disabled={!daSegnarePresenti.length} onClick={() => tutti('tutti')}>
-              {daConfermare === 'tutti' ? `CONFERMA: ${daSegnarePresenti.length} PRESENTI` : 'TUTTI PRESENTI'}
-            </button>
-            <button type="button" className="tb-btn tb-btn-linea" disabled={!daSegnareAssenti.length} onClick={() => tutti('altri')}>
-              {daConfermare === 'altri' ? `CONFERMA: ${daSegnareAssenti.length} ASSENTI` : 'GLI ALTRI ASSENTI'}
-            </button>
+            {/* I tre tasti insieme, sempre sulla stessa riga e nello stesso ordine. */}
+            <div className="tb-azioni-appello">
+              <button type="button" className="tb-btn tb-btn-verde" disabled={!daSegnarePresenti.length} onClick={() => tutti('tutti')}>
+                {daConfermare === 'tutti' ? `CONFERMA: ${daSegnarePresenti.length} PRESENTI` : 'TUTTI PRESENTI'}
+              </button>
+              <button type="button" className="tb-btn tb-btn-linea" disabled={!daSegnareAssenti.length} onClick={() => tutti('altri')}>
+                {daConfermare === 'altri' ? `CONFERMA: ${daSegnareAssenti.length} ASSENTI` : 'GLI ALTRI ASSENTI'}
+              </button>
+              <button
+                type="button"
+                className="tb-btn tb-btn-linea"
+                aria-expanded={conProve}
+                disabled={righe === null || lezione.stato === 'annullata'}
+                onClick={() => setConProve((x) => !x)}
+              >
+                PROVE
+              </button>
+            </div>
             {daConfermare && (
               <span role="status" className="tb-nota" style={{ flexBasis: '100%', color: 'var(--giallo-testo)', fontWeight: 600 }}>
                 Lezione passata: tocca ancora per confermare, o lascia stare e non cambia niente.
               </span>
             )}
-            <button
-              type="button"
-              className="tb-btn tb-btn-linea"
-              aria-expanded={conProve}
-              disabled={righe === null || lezione.stato === 'annullata'}
-              onClick={() => setConProve((x) => !x)}
-            >
-              PROVE
-            </button>
           </div>
         ) : (
           <span className="tb-nota">Scegli una lezione.</span>

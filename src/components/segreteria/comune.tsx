@@ -221,6 +221,9 @@ export function useAvviso() {
     if (testo && !testo.guaio) timer.current = window.setTimeout(() => setTesto(null), durata.current)
   }
   const avviso = testo ? (
+    <>
+    {/* L'avviso sta fisso in basso: sotto il contenuto lascia il suo posto, così l'ultima riga di tasti si raggiunge. */}
+    <div className="sg-avviso-posto" aria-hidden="true" />
     <div
       role={testo.guaio ? 'alert' : 'status'}
       className="sg-avviso"
@@ -249,6 +252,7 @@ export function useAvviso() {
         </button>
       )}
     </div>
+    </>
   ) : null
   // Un'operazione per volta: un doppio clic su SALVA, o un secondo mentre la
   // rete è lenta, non deve creare due corsi o due iscritti uguali.

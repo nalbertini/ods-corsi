@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, testoTroppoLungo } from './src/lib/segnalazioni'; export { comeCertificato, comePaga, inRegola, pagamentoDi } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, inRegola, pagamentoDi, trovaIscritti } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -595,7 +595,7 @@ console.log('\nle segnalazioni della segreteria')
   ok('ma chiusa', !!(await filo(r3)).chiusaIl, true)
 
   const r4 = await apri('Risposta troppo lunga')
-  ok('una risposta troppo lunga non chiude', await errore(() => m.chiudiConRisposta(s, r4, 'a'.repeat(4001))), 'Il testo è troppo lungo: al massimo 4000 caratteri')
+  ok('una risposta troppo lunga non chiude', await errore(() => m.chiudiConRisposta(s, r4, 'a'.repeat(4001))), 'Testo troppo lungo: togli 1 carattere (massimo 4000)')
   ok('nessun messaggio in più', (await filo(r4)).messaggi.length, 1)
   ok('e il filo resta aperto', (await filo(r4)).chiusaIl, undefined)
 
@@ -630,9 +630,89 @@ console.log('\nle segnalazioni della segreteria')
   ok('senza da rispondere, aperte per recenza poi chiuse', m.ordinaSegnalazioni([E, D, A]).map((y) => y.id), ['A', 'D', 'E'])
 
   ok('il titolo di 120 caratteri va', m.cosaNonVaSegnalazione('x', 'a'.repeat(120)), null)
-  ok('di 121 no', m.cosaNonVaSegnalazione('x', 'a'.repeat(121)), 'Il titolo è troppo lungo: al massimo 120 caratteri')
-  ok('un testo di 4000 caratteri va', m.testoTroppoLungo('a'.repeat(4000)), null)
-  ok('di 4001 si dice, invece di tagliarlo', m.testoTroppoLungo('a'.repeat(4001)), 'Il testo è troppo lungo: al massimo 4000 caratteri')
+  ok('di 121 no', m.cosaNonVaSegnalazione('x', 'a'.repeat(121)), 'Titolo troppo lungo: togli 1 carattere (massimo 120)')
+  ok('un testo di 4000 caratteri va', m.cosaNonVaSegnalazione('a'.repeat(4000)), null)
+  ok('di 4001 si dice, con quanto togliere', m.cosaNonVaSegnalazione('a'.repeat(4002)), 'Testo troppo lungo: togli 2 caratteri (massimo 4000)')
+
+  // Le chiuse si nascondono, tranne quelle appena chiuse da chi guarda (tenute).
+  const G = f('G', false, '2026-09-25T10:00', '2026-09-25T10:00')
+  ok('si vedono solo le aperte', m.visibili([C, A, G, B], false, new Set()).map((y) => y.id), ['B', 'A'])
+  ok('con «anche le chiuse» ci sono tutte, chiuse in fondo', m.visibili([C, A, G, B], true, new Set()).map((y) => y.id), ['B', 'A', 'C', 'G'])
+  ok('una chiusa appena chiusa resta lì', m.visibili([C, A, G, B], false, new Set(['C'])).map((y) => y.id), ['B', 'A', 'C'])
+
+  // Troppo lungo: si dice quanto togliere.
+  ok('il titolo giusto va', m.troppoLungo('Titolo', 'a'.repeat(120), 120), null)
+  ok('il titolo lungo dice quanto togliere', m.troppoLungo('Titolo', 'a'.repeat(125), 120), 'Titolo troppo lungo: togli 5 caratteri (massimo 120)')
+  ok('un carattere solo, al singolare', m.troppoLungo('Testo', '  ' + 'a'.repeat(4001) + '  ', 4000), 'Testo troppo lungo: togli 1 carattere (massimo 4000)')
+
+  // Dopo la chiusura, un avviso che dice cosa è successo.
+  ok('mandata e chiusa', m.avvisoChiusura({ mandata: true, chiusa: true }), 'Risposta mandata. Segnalazione chiusa.')
+  ok('solo chiusa', m.avvisoChiusura({ mandata: false, chiusa: true }), 'Segnalazione chiusa.')
+  ok('mandata ma non chiusa, dice cosa fare', m.avvisoChiusura({ mandata: true, chiusa: false }), 'La risposta è andata, la segnalazione è ancora aperta: tocca di nuovo È FATTA, CHIUDILA.')
+
+  // La riga sotto il titolo: sempre il nome di chi scrive, mai «Tu» (al banco l'accesso è in comune).
+  const quando = (iso) => `${m.giornoPerEsteso(m.chiaveGiorno(new Date(iso)))}, ${m.oraDi(iso)}`
+  const msg = (autore, il, mio = false) => ({ id: autore + il, autore, mio, testo: 't', il })
+  const solo = { id: 'S', titolo: 'S', messaggi: [msg('Luca', '2026-09-25T09:30:00.000Z', true)] }
+  ok('senza risposte: chi e quando', m.rigaFilo(solo), `Luca · ${quando('2026-09-25T09:30:00.000Z')}`)
+  ok('senza risposte nessun «ultimo»', m.rigaFilo(solo).includes('ultimo'), false)
+  const una = { ...solo, messaggi: [...solo.messaggi, msg('Marta', '2026-09-26T08:15:00.000Z')] }
+  ok('con una risposta', m.rigaFilo(una), `Luca · una risposta · ultimo di Marta, ${quando('2026-09-26T08:15:00.000Z')}`)
+  const due = { ...solo, messaggi: [...solo.messaggi, msg('Gino', '2026-09-25T10:00:00.000Z', true), msg('Marta', '2026-09-26T08:15:00.000Z')] }
+  ok('con due risposte, chi ha scritto per ultimo', m.rigaFilo(due).includes('2 risposte · ultimo di Marta'), true)
+  const mie = { ...solo, messaggi: [...solo.messaggi, msg('Luca', '2026-09-26T08:15:00.000Z', true)] }
+  ok('niente «tuo» né «Tu» anche se è mio', /\btuo\b|\bTu\b|\bTua\b/i.test(m.rigaFilo(mie) + m.rigaFilo(solo)), false)
+  ok('anche se è mio, il nome', m.rigaFilo(mie), `Luca · una risposta · ultimo di Luca, ${quando('2026-09-26T08:15:00.000Z')}`)
+
+  // Il tasto spento dice perché.
+  ok('mentre lavora non dice niente', m.motivoSpento({ titolo: '', testo: '', lavora: true }), null)
+  ok('risposta vuota', m.motivoSpento({ testo: '  ', lavora: false, risposta: true }), 'Scrivi la risposta')
+  ok('risposta scritta', m.motivoSpento({ testo: 'ok', lavora: false, risposta: true }), null)
+  ok('nuova senza titolo', m.motivoSpento({ titolo: ' ', testo: 'x', lavora: false }), 'Scrivi il titolo')
+  ok('nuova senza testo', m.motivoSpento({ titolo: 'Appello', testo: ' ', lavora: false }), 'Scrivi cosa non va')
+  ok('troppo lunga: lo dice già la nota sotto il campo', m.motivoSpento({ titolo: 'a'.repeat(121), testo: 'x', lavora: false }), null)
+  ok('tutto a posto', m.motivoSpento({ titolo: 'Appello', testo: 'lento', lavora: false }), null)
+
+  // Le bozze stanno nello Storage passato, e non lanciano mai.
+  const deposito = () => {
+    const d = new Map()
+    return {
+      get length() { return d.size },
+      key: (i) => [...d.keys()][i] ?? null,
+      getItem: (k) => (d.has(k) ? d.get(k) : null),
+      setItem: (k, v) => d.set(k, String(v)),
+      removeItem: (k) => d.delete(k),
+      clear: () => d.clear(),
+    }
+  }
+  const st = deposito()
+  ok('la chiave dice modo e campo', m.chiaveBozza('prova', 'nuova-testo'), 'ods-corsi:bozza:prova:nuova-testo')
+  m.scriviBozza(st, m.chiaveBozza('prova', 'titolo'), 'Appello lento')
+  ok('la bozza si rilegge', m.leggiBozza(st, m.chiaveBozza('prova', 'titolo')), 'Appello lento')
+  ok('quella della prova non si legge dal vero', m.leggiBozza(st, m.chiaveBozza('supabase', 'titolo')), '')
+  m.scriviBozza(st, m.chiaveBozza('prova', 'titolo'), '   ')
+  ok('scritta vuota si toglie', st.getItem(m.chiaveBozza('prova', 'titolo')), null)
+  m.scriviBozza(st, m.chiaveBozza('prova', 'a'), 'uno')
+  m.scriviBozza(st, m.chiaveBozza('supabase', 'b'), 'due')
+  st.setItem('ods-corsi:modo', 'prova')
+  m.svuotaBozze(st)
+  ok('svuotare toglie le bozze e lascia il resto', [st.getItem(m.chiaveBozza('prova', 'a')), st.getItem(m.chiaveBozza('supabase', 'b')), st.getItem('ods-corsi:modo')], [null, null, 'prova'])
+  {
+    const st2 = new Map()
+    const finto = { getItem: (k) => st2.get(k) ?? null, setItem: (k, v) => st2.set(k, v), removeItem: (k) => st2.delete(k), get length() { return st2.size }, key: (i) => [...st2.keys()][i] ?? null }
+    m.scriviBozza(finto, m.chiaveBozza('prova', 'risposta-f1'), 'mezza risposta')
+    m.scriviBozza(finto, m.chiaveBozza('supabase', 'risposta-f2'), 'del vero')
+    ok('i fili con una risposta a metà si sanno', [...m.conBozza(finto, 'prova', ['f1', 'f2', 'f3'])], ['f1'])
+    ok('senza Storage nessuno', [...m.conBozza(undefined, 'prova', ['f1'])], [])
+  }
+  const rotto = new Proxy({}, { get() { throw new Error('Storage giù') } })
+  ok('senza Storage si legge vuoto', m.leggiBozza(undefined, 'k'), '')
+  ok('con lo Storage rotto si legge vuoto', m.leggiBozza(rotto, 'k'), '')
+  ok('e scrivere o svuotare non lancia', [await errore(() => m.scriviBozza(undefined, 'k', 'x')), await errore(() => m.scriviBozza(rotto, 'k', 'x')), await errore(() => m.svuotaBozze(undefined)), await errore(() => m.svuotaBozze(rotto))], ['nessun errore', 'nessun errore', 'nessun errore', 'nessun errore'])
+
+  // Aprire dà l'id della nuova, così la si può mostrare subito.
+  const nuovaId = await s.apriSegnalazione('Con id', 'Da vedere')
+  ok('aprire dà l\'id della nuova', [typeof nuovaId, (await s.segnalazioni()).at(-1).id === nuovaId], ['string', true])
 }
 
 console.log('\neliminare un istruttore')
@@ -655,6 +735,211 @@ console.log('\neliminare un istruttore')
   await s.iscrivi(altro, 'lotta-2')
   ok('chi è anche allievo no', await errore(() => s.eliminaIstruttore(altro)), "Pina Giusta è anche allievo: non si elimina, gli si toglie l'accesso")
   ok('un iscritto nemmeno', (await errore(async () => s.eliminaIstruttore((await s.persone())[0].id))).startsWith('Si eliminano solo gli istruttori'), true)
+}
+
+console.log("\ncerca iscritto: D'Amico, De Luca, Rossi-Bianchi")
+{
+  const trova = m.trovaIscritti
+  // Le stesse persone e gli stessi casi in `prova-prove.mjs` (somiglianti) e
+  // `prova-segreteria.mjs` (trovaIscritti): l'apostrofo, di qualunque forma, e
+  // il trattino non separano soltanto, si possono anche saltare; un cognome di
+  // due parole si scrive anche attaccato.
+  const p = (id, nome, cognome, attiva = true) => ({ id, nome, cognome, attiva, corso: 'Lotta 2', inizio: '' })
+  const gente = [
+    p('a', 'Anna', "D'Amico"),
+    p('b', 'Bruno', 'D\u2019Amico'),
+    p('c', 'Nicolò', 'De Luca'),
+    p('d', 'Sara', 'Rossi-Bianchi'),
+    p('e', 'Marco', 'Nuovo'),
+    p('f', 'Marco', 'Rossi'),
+  ]
+  const chi = (scritto) => trova(gente, scritto).map((x) => x.nome).sort()
+  for (const s of ["d'am", 'd\u2019am', 'd\u2018am', 'd\u02BCam', 'd\u00B4am', 'dam', 'damico', 'amico', "D'AM"])
+    ok(`«${s}» trova D'Amico, scritto con l'apostrofo dritto e con quello tipografico`, chi(s), ['Anna', 'Bruno'])
+  ok("«mico» non trova D'Amico: si comincia dall'inizio di una parola", chi('mico'), [])
+  ok("«d'a»: senza contare l'apostrofo, la segreteria cerca già da due lettere", chi("d'a"), ['Anna', 'Bruno'])
+  ok('«NICOLO deluca» trova Nicolò De Luca', chi('NICOLO deluca'), ['Nicolò'])
+  for (const s of ['de lu', 'luca', 'del']) ok(`«${s}» trova De Luca`, chi(s), ['Nicolò'])
+  ok('«eluca» non trova De Luca', chi('eluca'), [])
+  for (const s of ['bianchi', 'rossibi', 'rossi-bi']) ok(`«${s}» trova Rossi-Bianchi`, chi(s), ['Sara'])
+  // Il trattino lungo e quello tipografico escono da un tasto lungo o dal correttore.
+  for (const s of ['rossi\u2013bi', 'rossi\u2014bi', 'rossi\u2010bi']) ok(`«${s}» trova Rossi-Bianchi`, chi(s), ['Sara'])
+  ok('«mar nu» trova solo Marco Nuovo', trova(gente, 'mar nu').map((x) => x.id), ['e'])
+  ok('«marconu» nessuno: nome e cognome non si attaccano fra loro', chi('marconu'), [])
+  ok("«'», «-» e due spazi: nessuno", ["'", '-', '  '].map((s) => chi(s)), [[], [], []])
+  const dieci = ["D'Amico", 'Damiani', "D'Amato", 'Dameri', 'D\u2019Ambrosio', 'Damasio', "D'Amelio", 'Damonte', "D'Amore", 'Damigella'].map((c, i) =>
+    p(`x${i}`, 'Ugo', c, ![1, 2, 3].includes(i)),
+  )
+  const perCognome = (a, b) => a.cognome.localeCompare(b.cognome, 'it')
+  const voluti = [...dieci.filter((x) => x.attiva).sort(perCognome), ...dieci.filter((x) => !x.attiva).sort(perCognome)].slice(0, 8)
+  ok('con dieci che cominciano per «dam», otto: prima chi è attivo, poi per cognome', trova(dieci, 'dam').map((x) => x.cognome), voluti.map((x) => x.cognome))
+}
+
+console.log('\nunire due schede')
+{
+  const oggi = '2026-09-26'
+  const di = async (id) => (await s.persone()).find((p) => p.id === id)
+  const nuova = (nome, cognome, altro = {}) => s.salvaPersona({ nome, cognome, ...altro })
+  const resta = await nuova('Mario', "D'Amico")
+  const via = await nuova('Mario', 'Damico', { email: 'mario.damico@esempio.it', telefono: '333 1234567' })
+
+  // Le tre lezioni passate di Lotta 2: nella prima tutti e due, nella seconda
+  // tutti e due, nella terza solo il doppione.
+  const [l1, l2, l3] = await lotta2([8, 14], [8, 25])
+  m.memoria.segnate = {
+    ...m.memoria.segnate,
+    [l1.id]: { ...m.memoria.segnate[l1.id], [resta]: 'assente', [via]: 'presente' },
+    [l2.id]: { ...m.memoria.segnate[l2.id], [resta]: 'giustificato', [via]: 'assente' },
+    [l3.id]: { ...m.memoria.segnate[l3.id], [via]: 'presente' },
+  }
+  m.archivio.dati.prove = [...(m.archivio.dati.prove ?? []), { sessioneId: l3.id, personaId: via, il: l3.inizio }]
+  m.archivio.dati.iscrizioni = [
+    ...m.archivio.dati.iscrizioni,
+    { corsoId: 'lotta-2', personaId: resta, dal: '2026-01-10', al: '2026-06-30' },
+    { corsoId: 'lotta-2', personaId: via, dal: '2025-09-01' },
+    { corsoId: 'judo-2', personaId: via, dal: '2026-09-14', al: '2027-06-30' },
+    { corsoId: 'pesi-1', personaId: resta, dal: '2026-02-01', al: '2026-03-31' },
+    { corsoId: 'pesi-1', personaId: via, dal: '2026-03-01', al: '2026-12-31' },
+  ]
+  await s.salvaCertificato(resta, '2026-12-31')
+  await s.salvaCertificato(via, '2027-05-31')
+  await s.salvaAnagrafica(resta, { comune: 'Collegno' })
+  await s.salvaAnagrafica(via, { comune: 'Rivoli', codiceFiscale: 'DMCMRA10A01L219X', cap: '10098', genitoreNome: 'Anna' })
+  const quota = { descrizione: 'QUOTA ASSOCIATIVA', quantita: 1, prezzo: 5000, dal: '2026-09-01', al: '2027-07-31', pagamenti: [{ data: '2026-09-10', importo: 5000, metodo: 'Contanti' }] }
+  const ricevuta = await s.emettiRicevuta({ data: '2026-09-10', personaId: via, ente: await s.enteRicevute(), intestatario: await s.intestatarioDi(via), anticipo: 0, voci: [quota] })
+  ok('prima, chi resta deve ancora pagare la quota', m.pagamentoDi(await di(resta), oggi).come, 'da_pagare')
+
+  // Chi non si unisce.
+  ok('una scheda con se stessa no', await errore(() => s.unisciPersone(resta, resta)), 'Scegli due schede diverse')
+  ok('un istruttore no', await errore(() => s.unisciPersone(resta, 'i-fabio')), 'Si uniscono solo le schede degli iscritti, non quelle del personale')
+  const sara1 = await nuova('Sara', 'Bianchi')
+  const sara2 = await nuova('Sara', 'Bianchi')
+  await s.salvaAnagrafica(sara1, { codiceFiscale: 'BNCSRA10A41L219X' })
+  await s.salvaAnagrafica(sara2, { codiceFiscale: 'BNCSRA12B41L219Y' })
+  ok('due codici fiscali diversi no', await errore(() => s.unisciPersone(sara1, sara2)), 'Hanno due codici fiscali diversi: non sono la stessa persona. Se uno è sbagliato, correggilo nella scheda e riprova')
+  ok('e restano tutte e due', [!!(await di(sara1)), !!(await di(sara2))], [true, true])
+  const colFile = await nuova('Mario', 'Damico')
+  m.archivio.dati.persone = m.archivio.dati.persone.map((p) => (p.id === colFile ? { ...p, certificato: { scade: '2027-01-31', file: `${colFile}/certificato-1.pdf` } } : p))
+  const file = await errore(() => s.unisciPersone(resta, colFile))
+  ok('chi ha ancora il file del certificato no, e dice di stamparlo prima', /certificato/.test(file) && /stampa/i.test(file) ? 'dice di stamparlo' : file, 'dice di stamparlo')
+  ok('e il file resta', (await di(colFile)).certificato.conFile, true)
+  const titolare = await nuova('Gina', 'Damico')
+  const figlio = await nuova('Mario', 'Damico')
+  await s.mettiNelNucleo(figlio, titolare)
+  const nelNucleo = await errore(() => s.unisciPersone(resta, figlio))
+  ok('chi è in un nucleo no: prima toglila dal nucleo', nelNucleo, "Mario Damico è nel nucleo familiare di un'altra persona: prima toglila dal nucleo")
+  const ilTitolare = await errore(() => s.unisciPersone(resta, titolare))
+  ok('nemmeno chi ne è titolare', ilTitolare, "Gina Damico è titolare di un nucleo familiare: prima rendi titolare qualcun altro o togli gli altri dal nucleo")
+
+  ok('l\'anteprima dice cosa passa', await s.anteprimaUnione(resta, via), { presenze: 3, prove: 1, iscrizioni: 3, ricevute: 1 })
+  ok('e non cambia niente', !!(await di(via)), true)
+
+  await s.unisciPersone(resta, via)
+  const r = await di(resta)
+  ok('il doppione non c\'è più', !!(await di(via)), false)
+  ok('il nome resta quello di chi resta, email e telefono vuoti si riempiono', [r.nome, r.cognome, r.email, r.telefono], ['Mario', "D'Amico", 'mario.damico@esempio.it', '333 1234567'])
+  ok('presente vince su assente, giustificato su assente, la terza passa',
+    [m.memoria.segnate[l1.id][resta], m.memoria.segnate[l2.id][resta], m.memoria.segnate[l3.id][resta]], ['presente', 'giustificato', 'presente'])
+  ok('del doppione nessuna presenza', Object.values(m.memoria.segnate).some((x) => via in x), false)
+  ok('la prova passa', (m.archivio.dati.prove ?? []).filter((x) => x.sessioneId === l3.id).map((x) => x.personaId), [resta])
+  ok('le iscrizioni: una per corso, dalla più vecchia alla fine più lontana',
+    r.iscrizioni.map((i) => [i.corsoId, i.dal, i.al ?? null]).sort((x, y) => x[0].localeCompare(y[0])),
+    [['judo-2', '2026-09-14', '2027-06-30'], ['lotta-2', '2025-09-01', null], ['pesi-1', '2026-02-01', '2026-12-31']])
+  const sue = await s.ricevute(resta)
+  ok('la ricevuta passa, con lo stesso numero e lo stesso intestatario', sue.map((x) => [x.numero, x.intestatario.cognome]), [[ricevuta.numero, 'Damico']])
+  ok('e chi resta ha pagato la quota', m.pagamentoDi(r, oggi).come, 'pagato')
+  ok('il certificato: la scadenza più lontana', r.certificato.scade, '2027-05-31')
+  ok('l\'anagrafica: vince chi resta, i vuoti dal doppione', (({ comune, codiceFiscale, cap, genitoreNome }) => ({ comune, codiceFiscale, cap, genitoreNome }))((await s.anagraficaDi(resta)).dati),
+    { comune: 'Collegno', codiceFiscale: 'DMCMRA10A01L219X', cap: '10098', genitoreNome: 'Anna' })
+
+  const elena = await nuova('Elena', 'Verdi', { email: 'elena@esempio.it' })
+  const elena2 = await nuova('Elena', 'Verdi', { email: 'elena.verdi@esempio.it' })
+  await s.salvaPagamento(elena, { stato: 'pagato', fino: '2026-10-31' })
+  await s.salvaPagamento(elena2, { stato: 'pagato', fino: '2027-01-31', nota: 'carta n. 12' })
+  await s.unisciPersone(elena, elena2)
+  const e = await di(elena)
+  ok('due email diverse: resta quella di chi resta', e.email, 'elena@esempio.it')
+  ok('pagata fuori dall\'app: la scadenza più lontana, e la nota vuota si riempie', [e.pagamento.fino, e.pagamento.nota], ['2027-01-31', 'carta n. 12'])
+
+  // «Pagato» senza «fino»: pagato senza scadenza, come l'`al` vuoto delle iscrizioni.
+  const ugo = await nuova('Ugo', 'Gialli')
+  const ugo2 = await nuova('Ugo', 'Gialli')
+  await s.salvaPagamento(ugo, { stato: 'pagato' })
+  await s.salvaPagamento(ugo2, { stato: 'pagato', fino: '2026-08-27' })
+  await s.unisciPersone(ugo, ugo2)
+  const u = (await di(ugo)).pagamento
+  ok('pagato senza scadenza e un doppione pagato fino a un mese fa: resta pagato senza scadenza', [u.stato, u.fino ?? null], ['pagato', null])
+  const ivo = await nuova('Ivo', 'Blu')
+  const ivo2 = await nuova('Ivo', 'Blu')
+  await s.salvaPagamento(ivo2, { stato: 'pagato' })
+  await s.unisciPersone(ivo, ivo2)
+  const iv = (await di(ivo)).pagamento
+  ok('da pagare e un doppione pagato senza scadenza: diventa pagato senza scadenza', [iv.stato, iv.fino ?? null], ['pagato', null])
+
+  // Le richieste di iscrizione di prova stanno in localStorage, accanto all'archivio.
+  const RICHIESTE = 'ods-corsi:prova-richieste'
+  const richiesta = (personaId, codiceFiscale, gestitaIl) => ({
+    id: `r-${personaId}`, creataIl: '2026-09-01T10:00:00.000Z', gestitaIl, stato: 'accolta', personaId,
+    nome: 'Luca', cognome: 'Verdi', natoIl: '2012-02-01', natoA: 'Torino', codiceFiscale, indirizzo: 'via Po 2', cap: '10093', comune: 'Collegno',
+    email: 'luca.verdi@esempio.it', telefono: '3337654321', corsi: ['judo-2'], formula: 'annuale',
+  })
+  const aggiungiRichiesta = (r) => localStorage.setItem(RICHIESTE, JSON.stringify([...JSON.parse(localStorage.getItem(RICHIESTE) ?? '[]'), r]))
+  const diRichieste = (id) => JSON.parse(localStorage.getItem(RICHIESTE) ?? '[]').filter((r) => r.personaId === id).map((r) => r.id)
+
+  // Il codice fiscale della richiesta accolta conta come quello della scheda.
+  const luca = await nuova('Luca', 'Verdi')
+  const luca2 = await nuova('Luca', 'Verdi')
+  await s.salvaAnagrafica(luca, { codiceFiscale: 'VRDLCU10A01L219X' })
+  aggiungiRichiesta(richiesta(luca2, 'VRDLCU12B01L219Y', '2026-09-02T10:00:00.000Z'))
+  ok('un codice fiscale nella scheda e un altro solo nella richiesta accolta: no', await errore(() => s.unisciPersone(luca, luca2)),
+    'Hanno due codici fiscali diversi: non sono la stessa persona. Se uno è sbagliato, correggilo nella scheda e riprova')
+  ok('e restano tutti e due', [!!(await di(luca)), !!(await di(luca2))], [true, true])
+
+  // Dopo l'unione l'anagrafica unita è la più recente, come col trigger
+  // `anagrafiche_cambiata` del database; la richiesta e le segnalate del doppione passano.
+  const gino = await nuova('Gino', 'Rosa')
+  const gino2 = await nuova('Gino', 'Rosa')
+  await s.salvaAnagrafica(gino, { comune: 'Collegno' })
+  await s.salvaAnagrafica(gino2, { cap: '10098' })
+  m.archivio.dati.anagrafiche[gino] = { ...m.archivio.dati.anagrafiche[gino], cambiataIl: '2026-09-01T10:00:00.000Z' }
+  aggiungiRichiesta({ ...richiesta(gino2, 'RSOGNI12B01L219Y', '2026-09-20T10:00:00.000Z'), nome: 'Gino', cognome: 'Rosa', comune: 'Rivoli' })
+  m.archivio.dati.segnalate = [...(m.archivio.dati.segnalate ?? []),
+    { id: 'sg-gino2', sessioneId: l3.id, personaId: gino2, il: '2026-09-25T10:00:00.000Z', stato: 'da_vedere' }]
+  await s.unisciPersone(gino, gino2)
+  const ag = await s.anagraficaDi(gino)
+  ok('dopo l\'unione vince l\'anagrafica unita, anche su una richiesta accolta più recente', [ag?.da, ag?.dati.comune, ag?.dati.cap], ['segreteria', 'Collegno', '10098'])
+  ok('la richiesta di iscrizione del doppione passa', [diRichieste(gino), diRichieste(gino2)], [[`r-${gino2}`], []])
+  ok('le presenze segnalate del doppione passano', (m.archivio.dati.segnalate ?? []).filter((x) => x.id === 'sg-gino2').map((x) => x.personaId), [gino])
+
+  // Chi trova un doppione spesso l'ha disattivato: se l'altra era attiva, la scheda unita lo è.
+  const spenta = await nuova('Marco', "D'Amico")
+  const accesa = await nuova('Marco', 'Damico')
+  await s.attivaPersona(spenta, false)
+  await s.unisciPersone(spenta, accesa)
+  ok('resta disattivata, se ne va attiva: la scheda unita è attiva', (await di(spenta)).attiva, true)
+
+  // Col database senza 29-unisci-doppioni.sql: la funzione non c'è.
+  const senza = m.creaSegreteriaSupabase({
+    rpc: async (f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f}(resta, via) in the schema cache` } }),
+  })
+  const manca = await errore(() => senza.unisciPersone(resta, via))
+  ok('senza il file sul database dice quale lanciare', manca.includes('29-unisci-doppioni.sql') ? '29-unisci-doppioni.sql' : manca, '29-unisci-doppioni.sql')
+
+  // I possibili doppioni, aperta una scheda: lo stesso cognome scritto in un altro modo, prima.
+  const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: oggi, iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })
+  const mario = scheda('1', 'Mario', "D'Amico", { email: 'mario@esempio.it' })
+  const tutte = [
+    scheda('0', 'Anna', 'Rossi'),
+    mario,
+    scheda('2', 'Mario', 'DAmico', { email: 'mario.damico@esempio.it', telefono: '333 1234567' }),
+    scheda('3', 'Luca', 'D’amico'),
+  ]
+  const proposti = m.possibiliDoppioni(mario, tutte)
+  ok('aperto Mario D\'Amico: Mario DAmico e Luca D’amico, prima', proposti.slice(0, 2).map((p) => p.id).sort(), ['2', '3'])
+  ok('non sé stesso', proposti.some((p) => p.id === '1'), false)
+  ok('i campi che non tornano: cognome, email, telefono',
+    m.campiDiversi(mario, tutte[2]).map((c) => [c.resta, c.via]),
+    [["D'Amico", 'DAmico'], ['mario@esempio.it', 'mario.damico@esempio.it'], ['', '333 1234567']])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

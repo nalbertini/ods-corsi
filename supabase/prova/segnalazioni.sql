@@ -45,9 +45,11 @@ grant execute on function tenta(text), atteso(text, text, text), chi(text) to an
 \echo '--- 1. la segreteria apre un filo e risponde ---'
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
-select atteso('apre un filo',
+-- Con `returning`, come fa l'app (`.select('id').single()`): chi apre deve
+-- poter rileggere la riga, se no il filo nuovo non si apre e chi riprova lo duplica.
+select atteso('apre un filo e ne rilegge l''id',
   tenta($$insert into segnalazioni (id, titolo, testo)
-    values ('eeeeeeee-0000-0000-0000-000000000001', 'La stampa delle ricevute', 'Esce tagliata a destra')$$), 'FATTO (1 righe)');
+    values ('eeeeeeee-0000-0000-0000-000000000001', 'La stampa delle ricevute', 'Esce tagliata a destra') returning id$$), 'FATTO (1 righe)');
 select atteso('l''autore è lei',
   (select p.nome from segnalazioni s join persone p on p.id = s.autore_id where s.id = 'eeeeeeee-0000-0000-0000-000000000001'), 'Anna');
 select atteso('a nome di un altro no',
