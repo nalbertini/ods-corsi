@@ -146,6 +146,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     not exists (select 1 from corsi where lower(colore) = '#e4292a')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
+  ('25-segnalazioni.sql', 'un filo senza titolo non entra',
+    exists (select 1 from pg_constraint where conname = 'segnalazioni_check'
+            and pg_get_constraintdef(oid) like '%titolo IS NOT NULL%')),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')
