@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Destinazione } from './Segreteria'
 import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Timbro, Tono } from '../../lib/segreteria'
-import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, paroleInRegola, pulisciAnagrafica, timbriScheda } from '../../lib/segreteria'
+import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, paroleInRegola, pulisciAnagrafica, tastoPrincipale, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -1103,7 +1103,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             </button>
             <button
               type="button"
-              className="num sg-chip sg-chip-pieno"
+              className="num sg-chip"
               onClick={async () => {
                 if ((await chiedi(`Il certificato di ${p.nome} ${p.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`, 'SÌ, CANCELLA IL FILE', { pericolo: true })))
                   void fai(() => d.cancellaFileCertificato(p.id), 'File cancellato: il certificato ora è solo su carta', onCambiato)
@@ -1146,7 +1146,8 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
       ) : (
         <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           {/* Col file da stampare, il timbro porta prima lì (APRI PER STAMPARE). */}
-          <button type="button" className="num sg-chip sg-chip-pieno" data-primo={c.conFile ? undefined : true} onClick={() => setBozza({ scade: c.scade && c.scade >= oggi ? c.scade : '' })}>
+          {/* Pieno solo se è la prima cosa da fare (`tastoPrincipale`): in scheda un tasto pieno alla volta. */}
+          <button type="button" className={tastoPrincipale(p, oggi) === 'certificato' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo={c.conFile ? undefined : true} onClick={() => setBozza({ scade: c.scade && c.scade >= oggi ? c.scade : '' })}>
             {c.scade ? 'RINNOVA O CORREGGI' : 'SEGNA IL CERTIFICATO'}
           </button>
           <div className="grow" />
@@ -1185,7 +1186,7 @@ function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
       <div className="row">
         <button
           type="button"
-          className={p.documento ? 'num sg-chip' : 'num sg-chip sg-chip-pieno'}
+          className="num sg-chip"
           data-primo={p.documento ? undefined : true}
           onClick={() =>
             void fai(() => d.salvaDocumento(p.id, !p.documento), p.documento ? 'Documento tolto: ora è DA PORTARE. Se era uno sbaglio, LA COPIA È IN SEGRETERIA lo rimette' : 'Documento segnato in segreteria', onCambiato)

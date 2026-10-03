@@ -745,6 +745,21 @@ export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'doc
 }
 
 /**
+ * Il tasto pieno della scheda, a riposo: uno solo, quello di quel che c'è da
+ * fare per primo. Prima ciò che tiene fuori di sala o è da incassare, poi
+ * l'avviso. Con tutto a posto resta la quota: la scheda si apre soprattutto
+ * per incassare. Il documento non conta, come per «in regola».
+ */
+export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote'>, oggi: string): 'certificato' | 'quota' | null {
+  if (!p.attiva) return null
+  const cert = comeCertificato(p.certificato, oggi)
+  const quota = pagamentoDi(p, oggi).come
+  if (cert === 'manca' || cert === 'scaduto') return 'certificato'
+  if (quota !== 'pagato') return 'quota'
+  return cert === 'in_scadenza' ? 'certificato' : 'quota'
+}
+
+/**
  * La colonna IN REGOLA dell'elenco: le parole dei timbri che non vanno, o
  * IN REGOLA; poi FUORI APP, perché prima o poi va una ricevuta. Il
  * certificato in scadenza si vede, anche se è ancora in regola.

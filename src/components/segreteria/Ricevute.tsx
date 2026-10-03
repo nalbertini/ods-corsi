@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
-import { pagamentoDi } from '../../lib/segreteria'
+import { pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
 import {
   centesimi,
   conti,
@@ -114,7 +114,8 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
         </div>
       )}
       <div className="row">
-        <button type="button" className="num sg-chip sg-chip-pieno" data-primo onClick={onNuova}>
+        {/* Pieno se è la prima cosa da fare, o se è tutto a posto: la scheda si apre per incassare. */}
+        <button type="button" className={tastoPrincipale(p, chiaveGiorno(new Date())) === 'quota' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo onClick={onNuova}>
           + REGISTRA UN PAGAMENTO
         </button>
       </div>
