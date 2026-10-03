@@ -31,9 +31,12 @@ export const paroleCercate = (scritto: string): string[] =>
  * una parola del nome o del cognome, o del nome o del cognome scritti
  * attaccati, ciascuno per conto suo. Così «d'am», «damico» e «amico» trovano
  * D'Amico e «deluca» De Luca, comunque li abbia scritti chi li ha salvati.
+ * Va bene anche tutto lo scritto attaccato, se è l'inizio del nome o del
+ * cognome attaccati: «de luca» trova Deluca.
  */
 export function somiglia(p: { nome: string; cognome: string }, parole: string[]): boolean {
   const nomi = [p.nome, p.cognome].map(piano)
-  const sue = [...nomi.flatMap((n) => n.replace(STACCA, ' ').split(/\s+/)), ...nomi.map((n) => n.replace(STACCA, '').replace(/\s+/g, ''))]
-  return parole.every((w) => sue.some((s) => s.startsWith(w)))
+  const attaccati = nomi.map((n) => n.replace(STACCA, '').replace(/\s+/g, ''))
+  const sue = [...nomi.flatMap((n) => n.replace(STACCA, ' ').split(/\s+/)), ...attaccati]
+  return parole.every((w) => sue.some((s) => s.startsWith(w))) || attaccati.some((s) => s.startsWith(parole.join('')))
 }

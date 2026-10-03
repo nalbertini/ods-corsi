@@ -40,7 +40,8 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 
 - Guardando la settimana di oggi, in cima c'è la **lezione di adesso**
   (**ADESSO**), o la prossima di oggi (**LA PROSSIMA, OGGI**, con **TRA 20
-  MIN** nell'ultima ora): un tocco e siete nell'appello. Le lezioni di oggi hanno la stessa scritta anche nell'elenco.
+  MIN** nell'ultima ora): un tocco e siete nell'appello. Nell'elenco sotto
+  non si ripetono; le altre lezioni di oggi hanno la stessa scritta.
 - Sotto, quello che è rimasto indietro, in una riga che si apre col **+**:
   - **PRESENZE SEGNALATE**, in giallo (vedi sotto);
   - **APPELLI DA CHIUDERE**, in rosso: le vostre lezioni degli ultimi sette
@@ -97,7 +98,9 @@ I due tasti in cima:
 - **TUTTI PRESENTI**: mette ✓ a tutti. È il modo più veloce: premetelo e poi
   toccate una volta gli assenti. Se qualcuno è già segnato diventa **GLI ALTRI
   PRESENTI**, e mette ✓ solo a chi non ha ancora un segno: le assenze già
-  messe restano.
+  messe restano. Quando tutti hanno un segno diventa **✓ TUTTI SEGNATI**, e
+  non si tocca. Se invece sono tutti assenti (un appello chiuso per sbaglio,
+  riaperto) torna **TUTTI PRESENTI**, e mette ✓ a tutti.
 - **AZZERA**: toglie tutti i segni della lezione, per ricominciare. Chiede
   **SICURO?**: toccatelo di nuovo entro qualche secondo.
 
@@ -107,8 +110,7 @@ Non c'è niente da salvare: ogni tocco parte subito.
 
 In fondo all'elenco c'è il tasto per chiudere:
 
-- **CHIUDI L'APPELLO ✓**, in verde, quando tutti hanno un segno: allora
-  compare anche in cima, al posto di **GLI ALTRI PRESENTI**;
+- **CHIUDI L'APPELLO ✓**, in verde, quando tutti hanno un segno;
 - **CHIUDI · 3 ASSENTI**, in rosso, quando qualcuno è ancora da segnare:
   chiudendo, chi non ha un segno risulta **assente**.
 
@@ -130,6 +132,8 @@ presenti e quanti assenti:
   presenza: avvisate la segreteria.
 
 **RIAPRI** riapre l'appello, per chi arriva tardi o per un segno sbagliato.
+Riaprendo una lezione passata, chi era ancora da segnare sta in cima
+all'elenco, così non va cercato fra gli altri.
 Così la segreteria vede la lezione come fatta, e non lasciata a metà.
 
 Fare l'appello segna anche **la vostra presenza** in quella lezione: se è un
@@ -168,16 +172,20 @@ aggiungete voi, senza aspettare la segreteria: in fondo all'elenco c'è
 1. Scrivete **nome**, **cognome** e, se ve lo dà, il **telefono**: serve alla
    segreteria per richiamarlo.
 2. Dalla terza lettera, sotto compare chi **è già venuto a provare** con quel
-   nome (con il corso e il giorno dell'ultima prova; il telefono lo vede solo
+   nome, comunque lo scriviate: «d'am», «damico» e «amico» trovano D'Amico,
+   «de luca» e «deluca» trovano De Luca e De-Luca (con il corso e il giorno
+   dell'ultima prova; il telefono lo vede solo
    la segreteria). Se è lui, toccatelo:
    è la stessa persona, non un doppione. È il caso della settimana di prova,
    un giorno judo e uno lotta. Senza rete l'elenco dei già venuti non c'è:
    scrivete nome e cognome come al solito.
-3. Se no, **AGGIUNGI NUOVO**.
+3. Se no, **AGGIUNGI**.
 
 Chi aggiungete entra in fondo all'appello, sotto **PROVE**, già **presente**
 (✓) e col bollino **PROVA**; si tocca come gli altri. Potete aggiungerne
-quanti volete, uno dopo l'altro; **FATTO** chiude il riquadro. Se ne avete
+quanti volete, uno dopo l'altro; **CHIUDI** chiude il riquadro. Se avete
+scritto un nome e non l'avete ancora aggiunto, il tasto diventa **AGGIUNGI E
+CHIUDI**: niente si perde chiudendo. Se ne avete
 messo uno per sbaglio (un nome scritto male), **TOGLI** accanto al nome, e
 **SICURO? TOGLI** per confermare: se era nuovo sparisce del tutto.
 

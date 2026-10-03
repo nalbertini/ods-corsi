@@ -51,7 +51,7 @@ export function AppelloScreen({
   /** Sul telefono: torna al calendario. */
   onIndietro?: () => void
   /** Dopo CHIUDI L'APPELLO, con la lezione chiusa e com'è finita. */
-  onChiudi?: (s: SessioneVista, c: { presenti: number; assenti: number }) => void
+  onChiudi?: (s: SessioneVista, c: { presenti: number; assenti: number; prove: number }) => void
   /** Le scritture che aspettano la rete: si dicono nella testa, che non cambia altezza. */
   inCoda?: number
 }) {
@@ -98,6 +98,10 @@ export function AppelloScreen({
   }, [conProve])
 
   const [giro, setGiro] = useState(0)
+  // Per una lezione passata, i non segnati di quando la si apre vanno in cima:
+  // si recupera un appello senza cercarli fra gli altri. L'ordine si decide una
+  // volta sola, così non cambia sotto il dito mentre li si segna.
+  const primi = useRef<Set<string> | null>(null)
   const ricarica = useCallback(() => {
     let vivo = true
     setGuaio(null)
@@ -138,6 +142,13 @@ export function AppelloScreen({
   const segnati = d.elenco.filter((p) => p.stato !== null).length
   const iscritti = d.elenco.filter((p) => !p.prova)
   const inProva = d.elenco.filter((p) => p.prova)
+  if (!primi.current) {
+    const vuoti = iscritti.filter((p) => p.stato === null)
+    const passata = new Date(d.sessione.fine).getTime() < Date.now()
+    primi.current = new Set(passata && vuoti.length < iscritti.length ? vuoti.map((p) => p.id) : [])
+  }
+  const prima = primi.current
+  const inOrdine = prima.size ? [...iscritti.filter((p) => prima.has(p.id)), ...iscritti.filter((p) => !prima.has(p.id))] : iscritti
 
   // presente → assente → non segnato, e si ricomincia.
   const prossimo = (s: StatoPresenza | null): StatoPresenza | null =>
@@ -151,9 +162,12 @@ export function AppelloScreen({
     void dati.segna(sessioneId, personaId, stato)
   }
 
-  // Solo chi non è ancora segnato: le assenze già messe restano.
+  // Solo chi non è ancora segnato: le assenze già messe restano. Tranne
+  // quando sono tutti assenti: allora le ✕ sono di una chiusura sbagliata.
+  const tuttiAssenti = d.elenco.length > 0 && d.elenco.every((p) => p.stato === 'assente')
+  const segnatiIscritti = iscritti.filter((p) => p.stato !== null).length
   const tuttiGliAltri = () => {
-    if (segnati === 0) {
+    if (segnati === 0 || tuttiAssenti) {
       setD((v) => v && { ...v, elenco: v.elenco.map((p) => ({ ...p, stato: 'presente' })) })
       void dati.segnaTutti(sessioneId, 'presente')
     } else for (const p of d.elenco) if (p.stato === null) tocca(p.id, 'presente')
@@ -180,7 +194,7 @@ export function AppelloScreen({
     for (const p of d.elenco) if (p.stato === null) tocca(p.id, 'assente')
     // Prima di sparire: l'effetto che lo direbbe non arriva a girare.
     onConto?.({ presenti: presenti ?? 0, prove: presentiProve, daSegnare: 0 })
-    onChiudi?.(d.sessione, { presenti: presenti ?? 0, assenti: d.elenco.length - (presenti ?? 0) })
+    onChiudi?.(d.sessione, { presenti: presentiIscritti, assenti: iscritti.length - presentiIscritti, prove: presentiProve })
   }
 
   // Chiudendo diventano assenti tutti i non segnati, anche chi prova; la
@@ -248,17 +262,18 @@ export function AppelloScreen({
           </span>
         </div>
         <div className="row pad" style={{ gap: 8, paddingTop: 10 }}>
-          {/* Con tutti segnati il gesto dopo è chiudere: qui, sotto il pollice,
-              invece di un tasto spento. */}
-          {daSegnare === 0 && onChiudi ? (
-            <DueTocchi className="btn btn-go grow chiudi-su" chiede={domanda} onFai={chiudi}>
-              CHIUDI L’APPELLO ✓
-            </DueTocchi>
-          ) : (
-            <button className="btn btn-go grow" style={{ fontSize: 17, padding: '0 10px', letterSpacing: '0.1em' }} disabled={daSegnare === 0} onClick={tuttiGliAltri}>
-              {segnati === 0 ? 'TUTTI PRESENTI' : 'GLI ALTRI PRESENTI'}
-            </button>
-          )}
+          {/* Sempre lo stesso tasto: un altro comparso al suo posto (CHIUDI)
+              prendeva il secondo tocco di chi ritocca «per sicurezza». Con
+              tutti assenti torna TUTTI PRESENTI anche se tutti hanno un
+              segno: è l'appello chiuso per sbaglio, riaperto. */}
+          <button
+            className="btn btn-go grow"
+            style={{ fontSize: 17, padding: '0 10px', letterSpacing: '0.1em' }}
+            disabled={!d.elenco.length || (daSegnare === 0 && !tuttiAssenti)}
+            onClick={tuttiGliAltri}
+          >
+            {segnatiIscritti === 0 || tuttiAssenti ? 'TUTTI PRESENTI' : daSegnare === 0 ? '✓ TUTTI SEGNATI' : 'GLI ALTRI PRESENTI'}
+          </button>
           <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO?" onFai={azzera}>
             AZZERA
           </DueTocchi>
@@ -312,7 +327,7 @@ export function AppelloScreen({
           salirebbero sotto il dito e il tocco dopo andrebbe a un altro. */}
       <p className="pad appello-aiuto">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>
       <div className="pad elenco-appello">
-        {iscritti.map((p) => (
+        {inOrdine.map((p) => (
           <button
             key={p.id}
             className="riga-appello"

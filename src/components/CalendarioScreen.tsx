@@ -209,6 +209,7 @@ export function CalendarioScreen({
   const restano = elenco ? (perGiorno.get(chiaveGiorno(new Date())) ?? []).filter((l) => l.stato !== 'annullata' && new Date(l.fine).getTime() > adesso) : []
   const ora = restano[0]
   const ore = restano.filter((l) => ora && l.inizio === ora.inizio)
+  const inCima = new Set(ore.map((l) => l.id))
 
   const carta = (v: SessioneVista) => {
     const l = conLConto(v)
@@ -305,7 +306,10 @@ export function CalendarioScreen({
             </div>
           )}
           {giorniConLezioni.map((g) => {
-            const del = perGiorno.get(g) ?? []
+            // Le lezioni già in cima (ADESSO) non si ripetono: sul telefono
+            // erano quattro schede quasi uguali nel primo schermo.
+            const del = (perGiorno.get(g) ?? []).filter((l) => !inCima.has(l.id))
+            if (!del.length) return null
             return (
               <section key={g}>
                 <div className="rule">
