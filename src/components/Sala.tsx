@@ -211,7 +211,13 @@ function Esito({
   // o se non c'era nessuno (forse TUTTI PRESENTI dimenticato); verde se no.
   const tono = rifiutate > 0 ? 'guaio' : inCoda > 0 || presenti === 0 ? 'attesa' : 'arrivato'
   const titolo =
-    rifiutate > 0 ? 'APPELLO NON ARRIVATO TUTTO' : inCoda > 0 ? 'APPELLO SALVATO SUL TELEFONO' : 'APPELLO ARRIVATO IN SEGRETERIA'
+    rifiutate > 0
+      ? 'APPELLO NON ARRIVATO TUTTO'
+      : presenti === 0
+        ? 'APPELLO CHIUSO · NESSUN PRESENTE'
+        : inCoda > 0
+          ? 'APPELLO SALVATO SUL TELEFONO'
+          : 'APPELLO ARRIVATO IN SEGRETERIA'
   const quando = `${lezione.corso}, ${giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))} ${oraDi(lezione.inizio)}`
   return (
     <div className="pad" style={{ paddingTop: 12 }}>
@@ -238,10 +244,10 @@ function Esito({
         </span>
         {/* Chiuso per sbaglio, o qualcuno arriva tardi: si riapre da qui. */}
         <span className="row" style={{ gap: 8, justifyContent: 'flex-end' }}>
-          <button type="button" className="icon-btn testo" onClick={onRiapri}>
+          <button type="button" className="btn btn-ghost esito-tasto" onClick={onRiapri}>
             RIAPRI
           </button>
-          <button type="button" className="icon-btn testo" onClick={onVa}>
+          <button type="button" className="btn btn-ghost esito-tasto" onClick={onVa}>
             OK
           </button>
         </span>

@@ -333,6 +333,8 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .lezione-stato.lezione-prove { color: var(--giallo-testo); }
 .lezione-stato[data-fatto='true'] { color: var(--verde-testo); }
 .lezione-stato[data-manca] { color: var(--rosso-testo); }
+/* Chiuso senza nessun presente: forse un errore, si fa notare. */
+.lezione-stato[data-vuoto] { color: var(--giallo-testo); }
 
 /* Le presenze segnalate dagli iscritti: in cima al calendario e nell'appello. */
 .arretrato { padding: 0 14px; gap: 8px; }
@@ -365,6 +367,11 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .appello-stato { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); }
 .appello-stato[data-fatto='true'] { color: var(--verde-testo); }
 .appello-stato[data-manca] { color: var(--rosso-testo); }
+/* CHIUDI IN FONDO si tocca: porta al tasto per chiudere. Il bersaglio è più
+   grande della scritta, ma la scritta non cambia altezza alla testa. */
+.appello-vai { position: relative; text-decoration: underline; text-underline-offset: 4px; }
+.appello-vai::after { content: ''; position: absolute; inset: -14px -10px; }
+.esito-tasto { min-height: 48px; padding: 0 18px; font-size: 15px; }
 .appello-prove { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: var(--giallo-testo); white-space: nowrap; }
 .appello-coda { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--giallo-testo); min-height: 1.3em; }
 .segnalata-esito { min-height: 44px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
