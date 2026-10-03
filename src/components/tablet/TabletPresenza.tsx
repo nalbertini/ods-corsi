@@ -12,10 +12,12 @@ type Fascia =
   /** `annulla`: l'ha segnato questo tablet da meno di due minuti, e si può ancora togliere. */
   | { tipo: 'gia'; p: NomeSala; annulla: boolean }
   | { tipo: 'istruttore'; p: NomeSala }
+  /** ANNULLA è andato: lo si dice, il segno che sparisce da solo non basta. */
+  | { tipo: 'annullato'; p: NomeSala }
   | { tipo: 'errore'; testo: string }
 
 /** Quanto resta in basso la fascia, in millisecondi. */
-const DURATA: Record<Fascia['tipo'], number> = { fatto: 10_000, gia: 6000, istruttore: 6000, errore: 10_000 }
+const DURATA: Record<Fascia['tipo'], number> = { fatto: 10_000, gia: 6000, istruttore: 6000, annullato: 3000, errore: 10_000 }
 
 /**
  * I nomi da toccare.
@@ -139,17 +141,20 @@ export function TabletPresenza({
     // Ancora in coda: l'annullo prende il suo posto, e il tocco non parte più.
     if (inAttesa(coda, lezione.id).has(p.personaId)) {
       coda.accoda(chiave, 'annulla', [lezione.id, p.personaId])
-      return segnato(p.personaId, false)
+      segnato(p.personaId, false)
+      return mostra({ tipo: 'annullato', p })
     }
     try {
       if (await d.annulla(lezione.id, p.personaId)) {
         segnato(p.personaId, false)
+        mostra({ tipo: 'annullato', p })
         onCambiato?.()
       } else mostra({ tipo: 'errore', testo: `Non si può più annullare: dillo all'istruttore, lo corregge lui.` })
     } catch (e) {
       if (rifiutato(e, d.modo)) return mostra({ tipo: 'errore', testo: messaggio(e, 'Il server non risponde') })
       coda.accoda(chiave, 'annulla', [lezione.id, p.personaId])
       segnato(p.personaId, false)
+      mostra({ tipo: 'annullato', p })
     }
   }
 
@@ -268,6 +273,14 @@ export function TabletPresenza({
                 VA BENE
               </button>
             </>
+          )}
+          {fascia.tipo === 'annullato' && (
+            <span className="stack grow" style={{ gap: 2 }}>
+              <span className="ob tb-fascia-titolo">ANNULLATO</span>
+              <span className="tb-sotto">
+                {fascia.p.nome} {fascia.p.sigla} non è segnato. Chi c'è tocca il suo nome.
+              </span>
+            </span>
           )}
           {fascia.tipo === 'errore' && (
             <>

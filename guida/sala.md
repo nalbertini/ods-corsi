@@ -98,7 +98,7 @@ SEGNARTI?**.
 3. In basso compare **BUON ALLENAMENTO, GIULIA!**. Chi ha toccato il nome
    sbagliato preme **ANNULLA** nella fascia in basso, che resta dieci secondi.
    L'annullo vale per due minuti: in quel tempo, toccando di nuovo il nome,
-   **ANNULLA** ricompare.
+   **ANNULLA** ricompare. Annullato, la fascia lo dice: **ANNULLATO**.
 
 Altri messaggi possibili:
 
@@ -166,8 +166,8 @@ cambia la segreteria.
 ### La vostra presenza
 
 Il PIN messo durante una lezione, da mezz'ora prima dell'inizio a dieci minuti
-dopo la fine, segna anche **la vostra presenza** in quella lezione. In cima
-all'area istruttore c'è scritto com'è andata:
+dopo la fine, segna anche **la vostra presenza** in quella lezione. Sotto l'elenco delle
+lezioni, nell'area istruttore, c'è scritto com'è andata:
 
 - **LA TUA PRESENZA È SEGNATA** — eravate previsti su quella lezione (è un
   vostro corso, o siete il sostituto di quel giorno): è fatta, non serve altro;

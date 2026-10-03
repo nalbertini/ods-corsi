@@ -963,8 +963,8 @@ a.btn { text-decoration: none; }
 
 .tb-schede { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .tb-scheda {
-  min-height: 48px; border: 2px solid var(--line); color: var(--sec);
-  font-size: 15px; font-weight: 700; letter-spacing: 0.14em;
+  min-height: 60px; border: 2px solid var(--line); color: var(--sec);
+  font-size: 18px; font-weight: 700; letter-spacing: 0.14em;
 }
 .tb-scheda[aria-selected='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 .tb-select, .tb-campo {
@@ -1003,6 +1003,16 @@ a.btn { text-decoration: none; }
   color: var(--dim); border: 2px solid var(--line); padding: 2px 7px;
 }
 .tb-marchio[data-tipo='dopo'] { color: var(--giallo-testo); border-color: var(--giallo); }
+
+/* In orizzontale le due colonne dell'area istruttore scorrono ognuna per sé:
+   TUTTI PRESENTI e l'intestazione dell'appello restano in vista mentre si
+   scorrono i nomi, ESCI resta in fondo alle lezioni. */
+@media (min-width: 901px) {
+  .tb-istruttore { overflow: hidden; grid-template-rows: minmax(0, 1fr); }
+  .tb-istruttore > .tb-colonna { overflow-y: auto; }
+  /* Con PROVE aperto la colonna scorre anche lei: i nomi però non spariscono mai. */
+  .tb-istruttore .tb-righe { flex: 1 1 auto; min-height: 180px; overflow-y: auto; }
+}
 
 /* In verticale, o su uno schermo piccolo: una colonna sola. */
 @media (max-width: 900px) {
