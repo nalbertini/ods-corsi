@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.20.4 — 3 ottobre 2026
+
+### Risolto
+
+- Sul tablet chi viene a provare si conta a parte, «10 presenti su 10 · +1 PROVA» e non «11 su 10»
+
 ## 0.20.3 — 3 ottobre 2026
 
 ### Risolto
