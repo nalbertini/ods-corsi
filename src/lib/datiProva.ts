@@ -49,10 +49,33 @@ export interface LezioneTrovata {
 
 const dentro = (giorno: string, r: { dal: string; al?: string }) => r.dal <= giorno && (!r.al || r.al >= giorno)
 
+/**
+ * Una lezione che sul database esisterebbe già, e che quindi le date dei corsi
+ * non tolgono: il trigger `sessione_in_stagione` scarta solo quelle da creare.
+ * In prova le lezioni si calcolano, e «già creata» vuol dire toccata, o
+ * passata o di oggi quando si sono scritte le date.
+ */
+function giaCreata(id: string, giorno: string): boolean {
+  const d = archivio.dati
+  return (
+    // Senza il giorno (date scritte prima che si tenesse) vale oggi, finché
+    // la segreteria non risalva le date.
+    giorno <= (d.dateCorsiDal ?? chiaveGiorno(new Date())) ||
+    // Anche toccata e rimessa com'era: la riga sul database resta. Per questo
+    // contano le voci vuote, che l'appello e `cambiaLezione` lasciano.
+    id in memoria.segnate ||
+    id in d.lezioni ||
+    !!d.presenzeIstruttori?.some((p) => p.sessioneId === id) ||
+    !!d.prove?.some((p) => p.sessioneId === id)
+  )
+}
+
 /** Le lezioni fra due istanti, generate dalle ricorrenze più le straordinarie. */
 export function lezioniFra(da: Date, a: Date): LezioneTrovata[] {
   const fuori = new Date(a)
   fuori.setHours(23, 59, 59, 999)
+  const { inizioCorsi, fineCorsi } = archivio.dati.impostazioni ?? {}
+  const corsi = { dal: inizioCorsi || '', al: fineCorsi || undefined }
   const x: LezioneTrovata[] = []
   for (const d = new Date(da); d <= fuori; d.setDate(d.getDate() + 1)) {
     const giorno = chiaveGiorno(d)
@@ -60,8 +83,10 @@ export function lezioniFra(da: Date, a: Date): LezioneTrovata[] {
       if (!c.attivo) continue
       for (const r of c.ricorrenze) {
         if (r.giorno !== d.getDay() || !dentro(giorno, r)) continue
+        const id = idSessione(c.id, giorno, r.ora)
+        if (!dentro(giorno, corsi) && !giaCreata(id, giorno)) continue
         const inizio = istante(giorno, r.ora)
-        x.push({ id: idSessione(c.id, giorno, r.ora), corso: c, inizio, fine: new Date(inizio.getTime() + r.durata * 60_000), ricorrenza: r, straordinaria: false })
+        x.push({ id, corso: c, inizio, fine: new Date(inizio.getTime() + r.durata * 60_000), ricorrenza: r, straordinaria: false })
       }
     }
   }
