@@ -129,10 +129,9 @@ il tasto col sole in alto la fa diventare bianca. Vale per quel dispositivo.
   [Iscritti](segreteria/iscritti.md) ·
   [Richieste online](segreteria/richieste.md) ·
   [Presenze](segreteria/presenze.md) ·
-  [Importa da Excel](segreteria/importa.md) ·
   [Istruttori e accessi](segreteria/istruttori-e-accessi.md) ·
   [Esercizi](segreteria/esercizi.md) ·
-  [Impostazioni](segreteria/regole.md)
+  [Impostazioni](segreteria/regole.md), con l'[import da Excel](segreteria/importa.md)
 
 ## Domande che capitano
 

@@ -1233,7 +1233,8 @@ a.sg-voce { text-decoration: none; }
   padding: 2px 6px; align-self: flex-start; margin-top: 4px;
 }
 .sg-icone { gap: 8px; padding: 0 4px; }
-/* DATI DI PROVA sta accanto ai due tasti, in cima e sempre in vista; in chi è
+.icon-btn[aria-current='page'] { border-color: var(--text); color: var(--text); }
+/* DATI DI PROVA sta accanto ai tre tasti, in cima e sempre in vista; in chi è
    entrato resta solo sul telefono, dove i tasti sono nella barra in cima. */
 /* Senza il margine ci sta, dal computer, su due righe accanto ai tasti: la
    riga resta alta 44. Sul tablet, più stretto, va sotto. */
@@ -1785,6 +1786,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 @media (min-width: 768px) and (max-width: 1000px) {
   .sg-menu { width: 200px; padding-left: 12px; padding-right: 12px; }
   .sg-voce { font-size: 15px; letter-spacing: 0.1em; padding: 0 10px; }
+  /* Accanto ai tasti non ci sta: sotto, su una riga sola. */
+  #sg-menu .sg-icone > .sg-bollino { flex-basis: auto; }
   .sg-corpo { padding: calc(var(--safe-t) + 20px) 20px 20px; }
 }
 

@@ -29,8 +29,9 @@ qualunque voce. Apostrofi, trattini e spazi nel cognome non contano: «d'am»,
 A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
 **PERSONE** (ISCRITTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
-E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, ESERCIZI, IMPORTA DA EXCEL,
-IMPOSTAZIONI, SEGNALAZIONI). Ogni voce ha la sua guida:
+E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, ESERCIZI, SEGNALAZIONI). Le
+**IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
+sua guida:
 
 | Voce | A cosa serve | Guida |
 |---|---|---|
@@ -43,17 +44,16 @@ IMPOSTAZIONI, SEGNALAZIONI). Ogni voce ha la sua guida:
 | **PRESENZE · SEGNALATE** | Una scheda di PRESENZE: gli iscritti che dicono di esserci stati e non risultano, da accogliere o rifiutare (solo in prova) | [Apri](presenze-segnalate.md) |
 | **STATISTICHE** | Come va la palestra mese per mese: presenze, iscritti, giorni e ore, corsi, istruttori, incassi | [Apri](statistiche.md) |
 | **PRESENZE ISTRUTTORI** | Le presenze degli istruttori dal PIN e dall'appello, confermate e da confermare, le lezioni tenute in cui scegliere chi c'era, il CSV e il report PDF | [Apri](presenze-istruttori.md) |
-| **IMPORTA DA EXCEL** | Corsi e iscritti dai fogli Excel o dalle risposte del modulo Google | [Apri](importa.md) |
 | **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
 | **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
 | **LISTINO** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
-| **IMPOSTAZIONI** | In quattro gruppi: la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa) | [Apri](regole.md) |
+| **IMPOSTAZIONI** | In quattro gruppi: la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa); in mezzo, **IMPORTA DA EXCEL**: corsi e iscritti dai fogli o dalle risposte del modulo Google | [Apri](regole.md) · [Importa](importa.md) |
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
 
-In cima al menu, sotto il nome, si vedono subito senza scorrere due tasti:
+In cima al menu, sotto il nome, si vedono subito senza scorrere tre tasti:
 **?**, la guida della voce aperta, in un'altra scheda; il **sole** (o la
-luna), il tema bianco per questo computer. In prova, accanto, il bollino
-**DATI DI PROVA**.
+luna), il tema bianco per questo computer; i **cursori**, le IMPOSTAZIONI. In
+prova, accanto, il bollino **DATI DI PROVA**.
 
 In fondo al menu:
 
@@ -73,7 +73,7 @@ aperto, Indietro chiude solo il menu.
 
 Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
 numero giallo accanto dice quante cose aspettano (richieste nuove, presenze da
-confermare, segnalazioni da rispondere). Accanto ci sono **?** e il tema.
+confermare, segnalazioni da rispondere). Accanto ci sono **?**, il tema e le impostazioni.
 Aperto, ha gli stessi gruppi del computer; le voci di **LA PALESTRA** sono più
 piccole, perché si fanno meglio dal computer.
 

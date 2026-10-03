@@ -15,7 +15,7 @@
 import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
 import { chiaveGiorno, lunedi } from './sala'
 
-export const VOCI = ['dafare', 'settimana', 'corsi', 'iscritti', 'richieste', 'presenze', 'segnalate', 'statistiche', 'istruttori', 'importa', 'personale', 'esercizi', 'listino', 'regole', 'segnalazioni'] as const
+export const VOCI = ['dafare', 'settimana', 'corsi', 'iscritti', 'richieste', 'presenze', 'segnalate', 'statistiche', 'istruttori', 'personale', 'esercizi', 'listino', 'regole', 'segnalazioni'] as const
 export type Voce = (typeof VOCI)[number]
 
 export interface Posto {

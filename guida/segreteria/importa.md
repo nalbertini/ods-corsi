@@ -2,7 +2,7 @@
 
 ← [Torna alla segreteria](README.md)
 
-Per caricare in un colpo solo corsi e iscritti da fogli Excel, o gli iscritti
+Sta in IMPOSTAZIONI, nel gruppo **IMPORTA DA EXCEL**. Per caricare in un colpo solo corsi e iscritti da fogli Excel, o gli iscritti
 dalle risposte del vecchio modulo Google. Si può rifare quante volte si vuole:
 **non duplica niente**.
 
