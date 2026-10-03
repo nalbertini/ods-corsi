@@ -263,7 +263,7 @@ function VoceIncisa({
                   <button
                     type="button"
                     className={`num sg-chip${inCorso ? ' sg-chip-pieno' : ''}`}
-                    style={{ minHeight: 36, ...(inCorso ? { background: 'var(--rosso)', borderColor: 'var(--rosso)', color: 'var(--su-colore)' } : {}) }}
+                    style={{ minHeight: 36, ...(inCorso ? { background: 'var(--rosso)', borderColor: 'var(--rosso)', color: 'var(--su-rosso)' } : {}) }}
                     disabled={!formato || !chiavi || (attiva !== null && !inCorso)}
                     onClick={() => (inCorso ? registratore.current?.stop() : void registra(c.key))}
                   >

@@ -121,8 +121,10 @@
   /* Il giallo scritto: sul nero è quello del marchio, sul bianco si scurisce,
      altrimenti non si legge. */
   --giallo-testo: #f4c31b;
-  /* Le scritte sopra i colori del marchio restano scure in tutti e due i temi. */
+  /* Le scritte sopra i colori del marchio restano scure in tutti e due i temi;
+     sul rosso invece bianche: il nero si ferma a 4,1:1, il bianco arriva a 4,5:1. */
   --su-colore: #121212;
+  --su-rosso: #ffffff;
   --tasto: #b8b8b2;
   --tratteggio: #4a4a46;
   --menu: #161616;
@@ -225,7 +227,7 @@ input, textarea { font: inherit; color: inherit; }
   font-family: var(--cond); font-style: oblique 9deg;
   font-size: 19px; font-weight: 700; letter-spacing: 0.16em;
 }
-.btn-primary { background: var(--rosso); color: var(--su-colore); }
+.btn-primary { background: var(--rosso); color: var(--su-rosso); }
 .btn-go { background: var(--verde); color: var(--su-colore); }
 .btn-ghost { border: 2px solid var(--line); color: var(--tasto); }
 .btn-ghost:hover { border-color: var(--dim); color: var(--text); }
@@ -745,7 +747,7 @@ a.btn { text-decoration: none; }
 .tb-pronto[data-seguito] { padding-top: 12px; border-top-style: dashed; }
 .tb-btn-timer {
   min-width: 220px; min-height: 64px; padding: 0 22px;
-  background: var(--rosso); color: var(--su-colore);
+  background: var(--rosso); color: var(--su-rosso);
   font-size: 22px; font-weight: 700; letter-spacing: 0.12em;
 }
 .tb-btn-timer-linea { background: none; border: 2px solid var(--line); color: var(--text); font-size: 18px; }
@@ -781,7 +783,7 @@ a.btn { text-decoration: none; }
 .tb-btn-grande { min-height: 64px; padding: 0 26px; font-size: 20px; }
 .tb-btn:disabled { cursor: default; }
 .tb-btn-verde:disabled { opacity: 0.5; }
-.tb-btn-rosso { background: var(--rosso); color: var(--su-colore); }
+.tb-btn-rosso { background: var(--rosso); color: var(--su-rosso); }
 .tb-btn-rosso:disabled { opacity: 0.5; }
 
 .tb-barra { display: flex; align-items: center; gap: 18px; }
@@ -1060,7 +1062,7 @@ a.sg-voce { text-decoration: none; }
    che fa non si annulla (una ricevuta, un file cancellato, un import). Sul
    rosso il testo è bianco: il nero arriva a 4,1:1, il bianco a 4,5:1. */
 .sg-btn-pieno { background: var(--text); color: var(--bg); }
-.sg-btn-rosso { background: var(--rosso); color: #ffffff; }
+.sg-btn-rosso { background: var(--rosso); color: var(--su-rosso); }
 .sg-btn-verde { background: var(--verde); color: var(--su-colore); }
 .sg-btn-linea { border: 2px solid var(--line); color: var(--sec); }
 .sg-btn-linea:hover { border-color: var(--dim); color: var(--text); }
@@ -1130,7 +1132,7 @@ a.sg-btn { text-decoration: none; }
 .sg-lezione-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-lezione-dove { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; white-space: nowrap; }
-.sg-tag[data-tipo='manca'] { background: var(--rosso); color: #ffffff; }
+.sg-tag[data-tipo='manca'] { background: var(--rosso); color: var(--su-rosso); }
 .sg-tag[data-tipo='sostituto'] { background: var(--giallo); color: var(--su-colore); }
 .sg-legenda { gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--dim); }
 
@@ -1278,7 +1280,7 @@ a.sg-btn { text-decoration: none; }
   display: flex; align-items: center; gap: 14px;
   background: var(--text); color: var(--bg); font-size: 15px; font-weight: 600; line-height: 1.4;
 }
-.sg-avviso[data-guaio='true'] { background: var(--rosso); color: #f2f2f0; }
+.sg-avviso[data-guaio='true'] { background: var(--rosso); color: var(--su-rosso); }
 .sg-avviso-chiudi {
   flex-shrink: 0; align-self: stretch; min-height: 44px; padding: 0 12px; border: 2px solid currentColor;
   font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em;
