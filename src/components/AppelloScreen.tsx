@@ -72,7 +72,12 @@ export function AppelloScreen({
     }
   }, [dati, sessioneId, soloDi])
 
+  // Una segnalata alla volta: un doppio tocco mandava la seconda richiesta
+  // prima che finisse la prima, e tornava «è già stata accolta».
+  const inViaggio = useRef(new Set<string>())
   const gestisci = async (x: SegnalataVista, accogli: boolean) => {
+    if (inViaggio.current.has(x.id)) return
+    inViaggio.current.add(x.id)
     setGuaioSegnalata(null)
     try {
       await dati.gestisciSegnalata?.(x.id, accogli, soloDi)
@@ -81,6 +86,8 @@ export function AppelloScreen({
       onSegnalate?.()
     } catch (e) {
       setGuaioSegnalata(e instanceof Error ? e.message : 'Non è andata: riprova')
+    } finally {
+      inViaggio.current.delete(x.id)
     }
   }
   const [guaio, setGuaio] = useState<string | null>(null)
@@ -185,7 +192,7 @@ export function AppelloScreen({
   // Quando chiudere vuole un secondo tocco, e cosa chiede: prima di tutto
   // quanti diventerebbero assenti, che è il fatto che conta.
   const domanda =
-    segnati === 0
+    segnati === 0 && daSegnare > 0
       ? `${futura ? 'NON È COMINCIATA' : 'NESSUNO SEGNATO'} · ${daSegnare} ASSENTI?`
       : futura
         ? daSegnare
@@ -422,11 +429,19 @@ function DueTocchi({
   // Il tocco che conferma vale solo se arriva dopo aver letto la domanda: un
   // doppio tocco veloce (le mani sudate, «l'ha preso?») altrimenti la salta.
   const chiestoIl = useRef(0)
+  // Lo stesso per un tasto appena comparso al posto di un altro (CHIUDI ✓ al
+  // posto di TUTTI PRESENTI): il secondo tocco del doppio tocco non è per lui.
+  const natoIl = useRef(Date.now())
   useEffect(() => {
     if (!sicuro) return
     const t = window.setTimeout(() => setSicuro(false), 6000)
     return () => window.clearTimeout(t)
   }, [sicuro])
+  // Se intanto non c'è più niente da chiedere, il tasto torna com'era: se no
+  // restava vuoto, e il tocco dopo faceva senza domanda.
+  useEffect(() => {
+    if (!chiede) setSicuro(false)
+  }, [chiede])
   return (
     <button
       type="button"
@@ -438,12 +453,13 @@ function DueTocchi({
           chiestoIl.current = Date.now()
           return setSicuro(true)
         }
+        if (Date.now() - natoIl.current < 500) return
         if (chiede && Date.now() - chiestoIl.current < 500) return
         setSicuro(false)
         onFai()
       }}
     >
-      {sicuro ? chiede : children}
+      {sicuro && chiede ? chiede : children}
     </button>
   )
 }

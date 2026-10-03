@@ -38,9 +38,9 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 
 ## Il calendario
 
-- In cima c'è la **lezione di adesso** (**ADESSO**), o la prossima di oggi
-  (**LA PROSSIMA, OGGI**, con **TRA 20 MIN** nell'ultima ora): un tocco e siete
-  nell'appello. Le lezioni di oggi hanno la stessa scritta anche nell'elenco.
+- Guardando la settimana di oggi, in cima c'è la **lezione di adesso**
+  (**ADESSO**), o la prossima di oggi (**LA PROSSIMA, OGGI**, con **TRA 20
+  MIN** nell'ultima ora): un tocco e siete nell'appello. Le lezioni di oggi hanno la stessa scritta anche nell'elenco.
 - Sotto, quello che è rimasto indietro, in una riga che si apre col **+**:
   - **PRESENZE SEGNALATE**, in giallo (vedi sotto);
   - **APPELLI DA CHIUDERE**, in rosso: le vostre lezioni degli ultimi sette
@@ -62,6 +62,7 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
   - **IN CORSO** (es. `9/16`) → iscritti presenti su iscritti, qualcuno è
     ancora da segnare;
   - **✓ FATTO**, in verde → tutti gli iscritti hanno un segno;
+  - **NESSUN PRESENTE**, in grigio → tutti segnati, ma nessuno c'era;
   - **DA CHIUDERE**, in rosso → la lezione è finita e qualcuno è ancora da
     segnare;
   - **+1 PROVA**, in giallo → chi è venuto a provare, contato a parte.
