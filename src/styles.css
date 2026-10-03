@@ -723,6 +723,12 @@ a.btn { text-decoration: none; }
 /* Il timer della lezione aperta, sotto il tasto delle presenze: una riga sola,
    da far partire con un tocco quando si comincia. */
 .tb-aperta { flex-wrap: wrap; }
+/* Al posto del tasto, quando la lezione non è ancora aperta: l'ora da cui ci si segna. */
+.tb-dalle {
+  min-width: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  min-height: 88px; padding: 10px 24px; border: 2px solid var(--line);
+}
+.tb-dalle-ora { font-size: 56px; font-weight: 700; line-height: 1; }
 .tb-pronto {
   flex-basis: 100%; display: flex; align-items: center; gap: 16px;
   padding-top: 16px; border-top: 2px solid var(--line-soft); color: var(--dim);
@@ -932,7 +938,7 @@ a.btn { text-decoration: none; }
   .tb-musica-testo { flex-grow: 1; max-width: none; }
   .tb-home, .tb-istruttore { grid-template-columns: minmax(0, 1fr); }
   .tb-aperta { flex-direction: column; align-items: stretch; }
-  .tb-btn-segna { min-width: 0; }
+  .tb-btn-segna, .tb-dalle { min-width: 0; }
   .tb-righe { grid-template-columns: minmax(0, 1fr); }
   .tb-fascia { left: 16px; right: 16px; flex-wrap: wrap; }
   .tb-pin { gap: 32px; }

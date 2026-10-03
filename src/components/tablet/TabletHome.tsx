@@ -52,8 +52,11 @@ export function TabletHome({
   const aperte = conFase.filter((x) => x.f === 'aperta')
   const finite = diOggi.length > 0 && conFase.every((x) => x.f === 'finita')
   const prossima = (lezioni ?? []).find((l) => chiaveGiorno(new Date(l.inizio)) > oggi && l.stato !== 'annullata')
+  // Nessuna aperta ma una più tardi: la mattina, o fra due lezioni. Chi passa
+  // deve sapere che la sala non è chiusa, e da che ora ci si segna.
+  const piuTardi = aperte.length ? null : (conFase.find((x) => x.f === 'dopo')?.l ?? null)
 
-  const titolo = aperte.length ? 'SI SEGNA ADESSO' : 'OGGI'
+  const titolo = aperte.length ? 'SI SEGNA ADESSO' : piuTardi ? 'PROSSIMA LEZIONE' : 'OGGI'
 
   return (
     <div className="tb-corpo tb-home">
@@ -74,6 +77,25 @@ export function TabletHome({
           <Riquadro titolo="PER OGGI QUI È FINITO">
             Le lezioni di questa sala sono tutte passate. Chi si è dimenticato di segnarsi lo fa qui sotto.
           </Riquadro>
+        )}
+
+        {piuTardi && (
+          <div className="tb-aperta" style={{ ['--tinta' as string]: piuTardi.colore ?? 'var(--blu)' }}>
+            <div className="tb-aperta-testo">
+              <span className="num tb-orario">{orario(piuTardi)}</span>
+              <span className="ob tb-aperta-nome">{piuTardi.corso.toUpperCase()}</span>
+              {piuTardi.istruttori && (
+                <span className="tb-sotto chi-kanji" style={{ gap: 10 }}>
+                  <Kanji segni={piuTardi.kanji} medio />
+                  <span>{piuTardi.istruttori}</span>
+                </span>
+              )}
+            </div>
+            <div className="tb-dalle">
+              <span className="tb-etichetta">SI SEGNA DALLE</span>
+              <span className="num tb-dalle-ora">{oraDi(new Date(Date.parse(piuTardi.inizio) - REGOLE.primaMin * 60_000).toISOString())}</span>
+            </div>
+          </div>
         )}
 
         {aperte.map(({ l }) => (
