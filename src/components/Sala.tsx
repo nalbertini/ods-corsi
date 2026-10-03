@@ -32,7 +32,8 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
   const ricontaSegnalate = () => setGiroSegnalate((g) => g + 1)
   const largo = useLargo()
   // L'ultimo appello chiuso, per dire se è arrivato in segreteria.
-  const [chiuso, setChiuso] = useState<SessioneVista | null>(null)
+  const [chiuso, setChiuso] = useState<{ lezione: SessioneVista; presenti: number; assenti: number; scartatePrima: number } | null>(null)
+  const [scartate, setScartate] = useState(0)
 
   // Sul telefono calendario e appello scorrono nello stesso posto: l'appello
   // si apre in cima, e tornando il calendario è dove lo si era lasciato.
@@ -49,9 +50,9 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
     if (scorre && !largo) scorre.scrollTop = aperta ? 0 : eraA.current
   }, [aperta?.id, largo])
   // Dopo la chiusura il calendario riparte dall'alto, dove c'è l'esito.
-  const chiudi = (s: SessioneVista) => {
+  const chiudi = (s: SessioneVista, c: { presenti: number; assenti: number }) => {
     eraA.current = 0
-    setChiuso(s)
+    setChiuso({ lezione: s, ...c, scartatePrima: scartate })
     apriLezione(null)
   }
 
@@ -71,6 +72,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
   }, [tentativo])
 
   useEffect(() => d?.guardaCoda?.(setInCoda), [d])
+  useEffect(() => d?.guardaScartate?.(setScartate), [d])
 
   if (!d && guaio)
     return (
@@ -83,7 +85,15 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
     )
   if (!d) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
 
-  const esito = chiuso && <Esito lezione={chiuso} inCoda={inCoda} onVa={() => setChiuso(null)} onRiapri={() => apriLezione(chiuso)} />
+  const esito = chiuso && (
+    <Esito
+      {...chiuso}
+      inCoda={inCoda}
+      rifiutate={scartate - chiuso.scartatePrima}
+      onVa={() => setChiuso(null)}
+      onRiapri={() => apriLezione(chiuso.lezione)}
+    />
+  )
 
   return (
     <div ref={qui} style={{ display: 'contents' }}>
@@ -107,6 +117,14 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
       {/* Con un appello aperto la coda la dice la sua testa: qui sopra,
           comparendo, farebbe scendere i nomi sotto il dito. */}
       {inCoda > 0 && !chiuso && !aperta && <SpiaCoda n={inCoda} />}
+      {scartate > 0 && !chiuso && !aperta && (
+        <div className="pad" style={{ paddingTop: 12 }}>
+          <div className="spia-coda" data-tono="guaio" role="alert">
+            <span className="num spia-coda-quante">{scartate === 1 ? 'UNA PRESENZA RIFIUTATA' : `${scartate} PRESENZE RIFIUTATE`}</span>
+            <span>Il server non le ha accettate e non le riprova: avvisa la segreteria.</span>
+          </div>
+        </div>
+      )}
 
       {largo ? (
         <div className="sala-due">
@@ -184,18 +202,49 @@ function SpiaCoda({ n }: { n: number }) {
  * Dopo CHIUDI L'APPELLO: arrivato in segreteria, o salvato sul telefono in
  * attesa della rete. Cambia da solo quando la coda si svuota.
  */
-function Esito({ lezione, inCoda, onVa, onRiapri }: { lezione: SessioneVista; inCoda: number; onVa: () => void; onRiapri: () => void }) {
-  const arrivato = inCoda === 0
+function Esito({
+  lezione,
+  presenti,
+  assenti,
+  inCoda,
+  rifiutate,
+  onVa,
+  onRiapri,
+}: {
+  lezione: SessioneVista
+  presenti: number
+  assenti: number
+  inCoda: number
+  /** Scritture che il server ha rifiutato da quando l'appello è chiuso. */
+  rifiutate: number
+  onVa: () => void
+  onRiapri: () => void
+}) {
+  // Rosso se il server ne ha rifiutata qualcuna; giallo finché aspetta la rete,
+  // o se non c'era nessuno (forse TUTTI PRESENTI dimenticato); verde se no.
+  const tono = rifiutate > 0 ? 'guaio' : inCoda > 0 || presenti === 0 ? 'attesa' : 'arrivato'
+  const titolo =
+    rifiutate > 0 ? 'APPELLO NON ARRIVATO TUTTO' : inCoda > 0 ? 'APPELLO SALVATO SUL TELEFONO' : 'APPELLO ARRIVATO IN SEGRETERIA'
+  const quando = `${lezione.corso}, ${giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))} ${oraDi(lezione.inizio)}`
   return (
     <div className="pad" style={{ paddingTop: 12 }}>
-      <div className="card stack esito-appello" data-arrivato={arrivato}>
+      <div className="card stack esito-appello" data-tono={tono}>
         <span className="row" style={{ gap: 12 }} role="status">
-          <span className="appello-segno" aria-hidden="true">{arrivato ? '✓' : '…'}</span>
+          <span className="appello-segno" aria-hidden="true">{tono === 'guaio' ? '!' : tono === 'arrivato' ? '✓' : inCoda > 0 ? '…' : '0'}</span>
           <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-            <span className="num appello-esito">{arrivato ? 'APPELLO ARRIVATO IN SEGRETERIA' : 'APPELLO SALVATO SUL TELEFONO'}</span>
+            <span className="num appello-esito">{titolo}</span>
+            <span className="num appello-esito-conto">
+              {presenti === 1 ? 'UN PRESENTE' : `${presenti} PRESENTI`} · {assenti === 1 ? 'UN ASSENTE' : `${assenti} ASSENTI`}
+            </span>
             <span style={{ fontSize: 14, color: 'var(--dim)' }}>
-              {lezione.corso}, {giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))} {oraDi(lezione.inizio)}
-              {arrivato ? '.' : `: ${inCoda === 1 ? 'una presenza aspetta' : `${inCoda} presenze aspettano`} la rete, e partono da sole.`}
+              {quando}
+              {rifiutate > 0
+                ? `: il server ha rifiutato ${rifiutate === 1 ? 'una presenza' : `${rifiutate} presenze`}. Avvisa la segreteria.`
+                : inCoda > 0
+                  ? `: ${inCoda === 1 ? 'una presenza aspetta' : `${inCoda} presenze aspettano`} la rete, e partono da sole.`
+                  : presenti === 0
+                    ? '. Nessun presente: se è un errore, RIAPRI.'
+                    : '.'}
             </span>
           </span>
         </span>

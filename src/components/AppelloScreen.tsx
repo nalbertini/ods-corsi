@@ -50,8 +50,8 @@ export function AppelloScreen({
   onSegnalate?: () => void
   /** Sul telefono: torna al calendario. */
   onIndietro?: () => void
-  /** Dopo CHIUDI L'APPELLO, con la lezione chiusa. */
-  onChiudi?: (s: SessioneVista) => void
+  /** Dopo CHIUDI L'APPELLO, con la lezione chiusa e com'è finita. */
+  onChiudi?: (s: SessioneVista, c: { presenti: number; assenti: number }) => void
   /** Le scritture che aspettano la rete: si dicono nella testa, che non cambia altezza. */
   inCoda?: number
 }) {
@@ -173,12 +173,27 @@ export function AppelloScreen({
     for (const p of d.elenco) if (p.stato === null) tocca(p.id, 'assente')
     // Prima di sparire: l'effetto che lo direbbe non arriva a girare.
     onConto?.({ presenti: presenti ?? 0, prove: presentiProve, daSegnare: 0 })
-    onChiudi?.(d.sessione)
+    onChiudi?.(d.sessione, { presenti: presenti ?? 0, assenti: d.elenco.length - (presenti ?? 0) })
   }
 
+  // Chiudendo diventano assenti tutti i non segnati, anche chi prova; la
+  // testa conta invece solo gli iscritti, come il conto dei presenti.
   const daSegnare = d.elenco.length - segnati
+  const iscrittiDaSegnareQui = iscritti.filter((p) => p.stato === null).length
   const presentiIscritti = iscritti.filter((p) => p.stato === 'presente').length
   const futura = new Date(d.sessione.inizio).getTime() > Date.now()
+  // Quando chiudere vuole un secondo tocco, e cosa chiede: prima di tutto
+  // quanti diventerebbero assenti, che è il fatto che conta.
+  const domanda =
+    segnati === 0
+      ? `${futura ? 'NON È COMINCIATA' : 'NESSUNO SEGNATO'} · ${daSegnare} ASSENTI?`
+      : futura
+        ? daSegnare
+          ? `NON È COMINCIATA · ${daSegnare} ASSENTI?`
+          : 'NON È COMINCIATA: CHIUDI?'
+        : daSegnare * 2 > d.elenco.length
+          ? `SICURO? ${daSegnare} ASSENTI`
+          : undefined
 
   return (
     <>
@@ -217,7 +232,7 @@ export function AppelloScreen({
           <span className="grow" />
           <span className="stack" style={{ alignItems: 'flex-end', gap: 2, alignSelf: 'center' }}>
             <span className="num appello-stato" data-fatto={daSegnare === 0}>
-              {daSegnare === 0 ? '✓ TUTTI SEGNATI' : `${daSegnare} DA SEGNARE`}
+              {daSegnare === 0 ? '✓ TUTTI SEGNATI' : `${iscrittiDaSegnareQui || daSegnare} DA SEGNARE`}
             </span>
             {/* Sempre al suo posto, anche vuota: la testa non cambia altezza. */}
             <span className="num appello-coda" role="status">
@@ -226,9 +241,17 @@ export function AppelloScreen({
           </span>
         </div>
         <div className="row pad" style={{ gap: 8, paddingTop: 10 }}>
-          <button className="btn btn-go grow" style={{ fontSize: 17, padding: '0 10px', letterSpacing: '0.1em' }} disabled={daSegnare === 0} onClick={tuttiGliAltri}>
-            {segnati === 0 ? 'TUTTI PRESENTI' : 'GLI ALTRI PRESENTI'}
-          </button>
+          {/* Con tutti segnati il gesto dopo è chiudere: qui, sotto il pollice,
+              invece di un tasto spento. */}
+          {daSegnare === 0 && onChiudi ? (
+            <DueTocchi className="btn btn-go grow chiudi-su" chiede={domanda} onFai={chiudi}>
+              CHIUDI L’APPELLO ✓
+            </DueTocchi>
+          ) : (
+            <button className="btn btn-go grow" style={{ fontSize: 17, padding: '0 10px', letterSpacing: '0.1em' }} disabled={daSegnare === 0} onClick={tuttiGliAltri}>
+              {segnati === 0 ? 'TUTTI PRESENTI' : 'GLI ALTRI PRESENTI'}
+            </button>
+          )}
           <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO?" onFai={azzera}>
             AZZERA
           </DueTocchi>
@@ -354,15 +377,7 @@ export function AppelloScreen({
               dimenticato, e la segreteria riceverebbe assenze finte. */}
           <DueTocchi
             className={`btn ${daSegnare === 0 ? 'btn-go' : 'btn-primary'}`}
-            chiede={
-              futura
-                ? 'NON È ANCORA COMINCIATA: CHIUDI?'
-                : segnati === 0
-                  ? `NESSUNO SEGNATO: ${daSegnare} ASSENTI?`
-                  : daSegnare * 2 > d.elenco.length
-                    ? `SICURO? ${daSegnare} ASSENTI`
-                    : undefined
-            }
+            chiede={domanda}
             onFai={chiudi}
           >
             {daSegnare === 0 ? 'CHIUDI L’APPELLO ✓' : `CHIUDI · ${daSegnare === 1 ? 'UN ASSENTE' : `${daSegnare} ASSENTI`}`}
@@ -404,9 +419,12 @@ function DueTocchi({
   children: ReactNode
 }) {
   const [sicuro, setSicuro] = useState(false)
+  // Il tocco che conferma vale solo se arriva dopo aver letto la domanda: un
+  // doppio tocco veloce (le mani sudate, «l'ha preso?») altrimenti la salta.
+  const chiestoIl = useRef(0)
   useEffect(() => {
     if (!sicuro) return
-    const t = window.setTimeout(() => setSicuro(false), 4000)
+    const t = window.setTimeout(() => setSicuro(false), 6000)
     return () => window.clearTimeout(t)
   }, [sicuro])
   return (
@@ -416,7 +434,11 @@ function DueTocchi({
       data-sicuro={sicuro}
       disabled={disabled}
       onClick={() => {
-        if (chiede && !sicuro) return setSicuro(true)
+        if (chiede && !sicuro) {
+          chiestoIl.current = Date.now()
+          return setSicuro(true)
+        }
+        if (chiede && Date.now() - chiestoIl.current < 500) return
         setSicuro(false)
         onFai()
       }}

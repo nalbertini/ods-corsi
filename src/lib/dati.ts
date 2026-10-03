@@ -40,6 +40,12 @@ export interface Dati {
   gestisciSegnalata?(id: string, accogli: boolean, soloDi?: string): Promise<void>
   /** Quante scritture non sono ancora arrivate al server. Sempre 0 in prova. */
   guardaCoda?(f: (n: number) => void): () => void
+  /**
+   * Avvisa quante scritture il server ha rifiutato per sempre (un permesso,
+   * un dato che non va) da quando l'app è aperta: sono uscite dalla coda, ma
+   * non sono arrivate.
+   */
+  guardaScartate?(f: (n: number) => void): () => void
 }
 
 const URL_SUPABASE = import.meta.env.VITE_SUPABASE_URL as string | undefined
