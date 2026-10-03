@@ -1011,6 +1011,11 @@ a.btn { text-decoration: none; }
   color: var(--text); text-align: left;
 }
 .tb-lezione-istr[aria-pressed='true'] { background: var(--surface-2); border-color: var(--text); border-left-color: var(--tinta); }
+/* Una lezione passata senza appello: bordo e scritta rossi, come in segreteria. */
+.tb-lezione-istr[data-guaio] { border-color: var(--rosso); border-left-color: var(--tinta); }
+.tb-senza-appello { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; color: var(--rosso); }
+/* Nell'intestazione dell'appello: titolo e conto sopra, i tre tasti insieme sotto. */
+.tb-azioni-appello { display: flex; flex-wrap: wrap; gap: 10px; flex-basis: 100%; }
 /* Piccolo perché si usa di rado, ma alto quanto un dito. */
 .tb-scollega { min-height: 44px; font-size: 16px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; padding: 0; text-align: left; }
 
@@ -1059,6 +1064,16 @@ a.btn { text-decoration: none; }
   .tb-musica { width: 100%; }
   .tb-musica-testo { flex-grow: 1; max-width: none; }
   .tb-home, .tb-istruttore { grid-template-columns: minmax(0, 1fr); }
+  /* Area istruttore in verticale: righe alte quanto il contenuto, l'appello
+     intero (scorre la pagina, non una scatola da 320px), ed ESCI con
+     LA TUA PRESENZA in fondo, sotto l'appello. */
+  .tb-istruttore { grid-auto-rows: auto; align-content: start; }
+  .tb-istruttore > .tb-colonna:first-child { display: contents; }
+  .tb-istruttore > .tb-colonna:last-child { order: 1; }
+  .tb-istruttore > .tb-colonna:first-child > :is(.tb-riquadro, .tb-btn, .tb-nota, .tb-scollega) { order: 2; }
+  /* Le colonne non si restringono sotto il loro contenuto: scorre la pagina. */
+  .tb-istruttore > .tb-colonna { min-height: auto; }
+  .tb-istruttore .tb-righe { overflow: visible; flex: none; }
   .tb-aperta { flex-direction: column; align-items: stretch; }
   /* In colonna la base da 280px diventerebbe un'altezza: il testo prende solo quello che gli serve. */
   .tb-aperta-testo { flex: 0 0 auto; }

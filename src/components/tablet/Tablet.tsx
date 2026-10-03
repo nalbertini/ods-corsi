@@ -250,6 +250,8 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   // Sta sempre montato, anche sotto le presenze: un allenamento avviato va
   // avanti, e qui in testata se ne vede lo stato.
   const [timer, setTimer] = useState<StatoTimer | null>(null)
+  // Le IMPOSTAZIONI del timer aperte col PIN: vedi più sotto, vicino all'inattività.
+  const [sbloccato, setSbloccato] = useState(false)
   const [settingsTimer, setSettingsTimer] = useState<Settings>(() => loadSettings())
   useEffect(() => {
     trattieniAggiornamento(inCorso(timer))
@@ -319,29 +321,48 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
       sala: timerSala,
       clip: clipSala,
       visibile: scheda === 'timer',
-      conImpostazioni: vista.s === 'istruttore',
+      conImpostazioni: sbloccato,
       onStato: setTimer,
       onSettings: setSettingsTimer,
       onTimerSala: salvaTimerSala,
       onPronto: setPronto,
       avvia,
     }),
-    [lezioneTimer, musicaSala, timerSala, clipSala, scheda, vista.s, avvia, salvaTimerSala],
+    [lezioneTimer, musicaSala, timerSala, clipSala, scheda, sbloccato, avvia, salvaTimerSala],
   )
 
   // Chi se ne va a metà lascia il tablet com'era; l'area istruttore si chiude
   // da sola, perché dentro c'è il PIN di qualcuno. La scheda TIMER invece
   // resta: un conto alla rovescia avviato non lo dice a nessuno, e chi arriva
   // si segna comunque dal tasto in testata.
-  const inattivo = vista.s === 'istruttore' ? REGOLE.istruttoreInattivoMin * 60_000 : 90_000
+  //
+  // L'area istruttore non resta aperta dietro al timer: passando a TIMER si
+  // chiude, e le IMPOSTAZIONI del timer restano aperte (sbloccate) solo finché
+  // si sta sul timer e lo si tocca. Chi torna alle presenze trova l'attesa.
+  //
+  // Con un allenamento in corso, allo scadere dell'inattività il muro torna
+  // al timer: è quello che la sala sta guardando.
+  const inattivo = vista.s === 'istruttore' || sbloccato ? REGOLE.istruttoreInattivoMin * 60_000 : 90_000
   useInattivo(inattivo, () => {
+    setSbloccato(false)
     if (vista.s !== 'home') aHome()
+    if (inCorso(timer)) setScheda('timer')
   })
 
-  const vaiPresenze = () => setScheda('presenze')
-  const vaiTimer = () => setScheda('timer')
+  const vaiPresenze = () => {
+    setSbloccato(false)
+    setScheda('presenze')
+  }
+  const vaiTimer = () => {
+    if (vista.s === 'istruttore') {
+      setSbloccato(true)
+      aHome()
+    }
+    setScheda('timer')
+  }
   const segnaAperta = () => {
     if (!aperta) return
+    setSbloccato(false)
     setScheda('presenze')
     setVista({ s: 'presenza', lezione: aperta, da: 'home' })
   }
@@ -361,6 +382,11 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
           <span className="ob tb-sala">SALA {postazione.sala.toUpperCase()}</span>
           <span className="num tb-data">{giornoPerEsteso(chiaveGiorno(adesso)).toUpperCase()} · OFFICINE DELLO SPORT</span>
         </div>
+        {sbloccato && scheda === 'timer' && (
+          <span className="num tb-bollino" style={{ background: 'var(--blu)' }}>
+            IMPOSTAZIONI APERTE
+          </span>
+        )}
         {vista.s === 'istruttore' && scheda === 'presenze' && (
           <span className="num tb-bollino" style={{ background: 'var(--blu)' }}>
             AREA ISTRUTTORE · <span style={{ letterSpacing: 0 }}>{vista.nome}</span>
