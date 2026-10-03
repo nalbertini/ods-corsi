@@ -118,7 +118,11 @@ finestra sua: il tasto di sinistra lascia stare, quello di destra dice cosa fa
 («SÌ, ANNULLA LA RICEVUTA»). È rosso quando non si torna indietro. ESC, o un
 clic fuori, lascia stare.
 
-Se si cambia voce del menu mentre una ricevuta, un iscritto nuovo o la modifica
-di una scheda sono scritti a metà, l'app chiede prima: **TORNA A FINIRE** o
-**LASCIALO A METÀ**. Lo stesso col tasto Indietro o Avanti del browser:
-**TORNA A FINIRE** lascia tutto com'era. Chiudendo la pagina lo chiede il browser.
+Se si esce da qualcosa scritto e non salvato (una ricevuta, un iscritto nuovo,
+la modifica di una scheda, un corso, un istruttore, il listino, un riquadro
+delle impostazioni) l'app chiede prima: «Ci sono modifiche non salvate. Se esci
+si perdono.», con **TORNA A FINIRE** (il tasto in evidenza: INVIO resta) o
+**ESCI SENZA SALVARE**. Lo chiede cambiando voce del menu, aprendo un altro
+corso, tornando all'elenco da una scheda e col tasto Indietro o Avanti del
+browser: **TORNA A FINIRE** lascia tutto com'era. Una modifica rimessa
+com'era non conta. Chiudendo o ricaricando la pagina lo chiede il browser.

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { Destinazione } from './Segreteria'
 import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Timbro, Tono } from '../../lib/segreteria'
-import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, paroleInRegola, pulisciAnagrafica, timbriScheda } from '../../lib/segreteria'
+import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, paroleInRegola, pulisciAnagrafica, tastoPrincipale, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
@@ -112,6 +112,10 @@ export function Iscritti({
   const chiudi = () => {
     if (scelta || nuovo) onScelta(null, 'push')
   }
+  // ← ISCRITTI con un iscritto nuovo o una ricevuta a metà: la stessa domanda del menu e di Indietro.
+  const torna = async () => {
+    if (await lasciare()) chiudi()
+  }
 
   // Una scheda di qualcuno che non c'è più (un link vecchio, un'altra
   // finestra): si torna all'elenco e lo si dice. Solo quando l'elenco arriva:
@@ -126,7 +130,7 @@ export function Iscritti({
   return (
     <>
       {nuovo ? (
-        <SchedaPiena etichetta="Nuovo iscritto" torna="ISCRITTI" onTorna={chiudi}>
+        <SchedaPiena etichetta="Nuovo iscritto" torna="ISCRITTI" onTorna={torna}>
           <Bozza>
           <Nuovo
             d={d}
@@ -142,7 +146,7 @@ export function Iscritti({
           </Bozza>
         </SchedaPiena>
       ) : persona ? (
-        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna="ISCRITTI" onTorna={chiudi}>
+        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna="ISCRITTI" onTorna={torna}>
           <Scheda
             d={d}
             p={persona}
@@ -246,7 +250,7 @@ export function Iscritti({
                     {p.certificato.conFile && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
-                  <span role="cell" style={{ fontSize: 13, color: p.email || p.telefono ? 'var(--sec)' : 'var(--rosso)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span role="cell" style={{ fontSize: 13, color: p.email || p.telefono ? 'var(--sec)' : 'var(--rosso-testo)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {p.telefono ?? p.email ?? 'nessun contatto'}
                   </span>
                   <span role="cell" className="sg-in-regola">
@@ -745,7 +749,7 @@ function UnisciDoppione({
             </span>
           ))}
           {passa.guaio ? (
-            <span style={{ fontSize: 14, color: 'var(--rosso)' }}>{passa.guaio}</span>
+            <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{passa.guaio}</span>
           ) : !passa.dato ? (
             <span className="sg-sotto">Conto cosa passa…</span>
           ) : (
@@ -1024,7 +1028,7 @@ function ModificaAnagrafica({
           </Campo>
         ))}
       </div>
-      {no && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>{no}.</span>}
+      {no && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{no}.</span>}
       {avviso && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>{avviso} Si può salvare lo stesso.</span>}
       <span className="sg-sotto">Un campo lasciato vuoto si cancella. Le ricevute già fatte restano com'erano; le nuove prendono questi.</span>
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
@@ -1090,7 +1094,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
       <Riga titolo="CERTIFICATO MEDICO">
         <Bollino tono={t.tono}>{t.parola}</Bollino>
       </Riga>
-      {!bozza && <span style={{ fontSize: 14, color: come === 'valido' ? 'var(--sec)' : come === 'in_scadenza' ? 'var(--giallo-testo)' : 'var(--rosso)' }}>{stato}</span>}
+      {!bozza && <span style={{ fontSize: 14, color: come === 'valido' ? 'var(--sec)' : come === 'in_scadenza' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{stato}</span>}
 
       {c.conFile && (
         <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
@@ -1103,7 +1107,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             </button>
             <button
               type="button"
-              className="num sg-chip sg-chip-pieno"
+              className="num sg-chip"
               onClick={async () => {
                 if ((await chiedi(`Il certificato di ${p.nome} ${p.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`, 'SÌ, CANCELLA IL FILE', { pericolo: true })))
                   void fai(() => d.cancellaFileCertificato(p.id), 'File cancellato: il certificato ora è solo su carta', onCambiato)
@@ -1146,7 +1150,8 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
       ) : (
         <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           {/* Col file da stampare, il timbro porta prima lì (APRI PER STAMPARE). */}
-          <button type="button" className="num sg-chip sg-chip-pieno" data-primo={c.conFile ? undefined : true} onClick={() => setBozza({ scade: c.scade && c.scade >= oggi ? c.scade : '' })}>
+          {/* Pieno solo se è la prima cosa da fare (`tastoPrincipale`): in scheda un tasto pieno alla volta. */}
+          <button type="button" className={tastoPrincipale(p, oggi) === 'certificato' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo={c.conFile ? undefined : true} onClick={() => setBozza({ scade: c.scade && c.scade >= oggi ? c.scade : '' })}>
             {c.scade ? 'RINNOVA O CORREGGI' : 'SEGNA IL CERTIFICATO'}
           </button>
           <div className="grow" />
@@ -1185,7 +1190,7 @@ function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
       <div className="row">
         <button
           type="button"
-          className={p.documento ? 'num sg-chip' : 'num sg-chip sg-chip-pieno'}
+          className="num sg-chip"
           data-primo={p.documento ? undefined : true}
           onClick={() =>
             void fai(() => d.salvaDocumento(p.id, !p.documento), p.documento ? 'Documento tolto: ora è DA PORTARE. Se era uno sbaglio, LA COPIA È IN SEGRETERIA lo rimette' : 'Documento segnato in segreteria', onCambiato)
@@ -1242,7 +1247,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
         <Bollino tono={t.tono}>{t.parola}</Bollino>
         {s.fonte === 'fuori_app' && <Bollino tono="spento">FUORI APP</Bollino>}
       </Riga>
-      <span style={{ fontSize: 14, color: s.come === 'pagato' ? 'var(--sec)' : s.come === 'in_parte' ? 'var(--giallo-testo)' : 'var(--rosso)' }}>{detto}</span>
+      <span style={{ fontSize: 14, color: s.come === 'pagato' ? 'var(--sec)' : s.come === 'in_parte' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{detto}</span>
       {s.fonte === 'fuori_app' && s.nota && <span style={{ fontSize: 14, color: 'var(--sec)' }}>{s.nota}</span>}
       {corsi.size > 0 && (
         <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 2, fontSize: 13, color: 'var(--sec)' }}>

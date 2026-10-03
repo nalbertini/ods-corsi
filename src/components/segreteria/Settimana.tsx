@@ -120,7 +120,7 @@ export function Settimana({
         titolo="SETTIMANA"
         sotto={`Le lezioni dell’orario dei corsi: aprine una per l’appello, il sostituto o per annullarla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato)}: si allunga da sé, e subito da IMPOSTAZIONI → IL CALENDARIO.` : ''}`}
       >
-        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuova(true)}>
+        <button type="button" className="sg-btn sg-btn-linea" onClick={() => setNuova(true)}>
           + LEZIONE STRAORDINARIA
         </button>
       </Testa>
@@ -221,7 +221,7 @@ export function Settimana({
 
       <div className="row sg-legenda">
         <span className="row" style={{ gap: 6 }}>
-          <span className="num" style={{ fontWeight: 700, color: 'var(--verde)' }}>8/9</span>presenti su iscritti, appello fatto
+          <span className="num" style={{ fontWeight: 700, color: 'var(--verde-testo)' }}>8/9</span>presenti su iscritti, appello fatto
         </span>
         <span className="row" style={{ gap: 6 }}>
           <span className="num" style={{ fontWeight: 700, color: 'var(--sec)' }}>14/16</span>iscritti su posti
@@ -301,7 +301,7 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
         ))}
       </span>
       <span className="row" style={{ gap: 6, marginTop: 'auto', flexWrap: 'wrap' }}>
-        <span className="num" style={{ fontSize: 14, fontWeight: 700, color: fatto ? 'var(--verde)' : 'var(--sec)' }}>
+        <span className="num" style={{ fontSize: 14, fontWeight: 700, color: fatto ? 'var(--verde-testo)' : 'var(--sec)' }}>
           {fatto ? `${l.presenti}/${l.iscritti}` : l.capienza ? `${l.iscritti}/${l.capienza}` : l.iscritti}
         </span>
         {annullata && <span className="num sg-tag">ANNULLATA</span>}
@@ -543,7 +543,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
           <span className="sg-etichetta grow">APPELLO</span>
           <span
             className="num"
-            style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', color: segnati ? 'var(--verde)' : manca ? 'var(--rosso)' : 'var(--dim)' }}
+            style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', color: segnati ? 'var(--verde-testo)' : manca ? 'var(--rosso-testo)' : 'var(--dim)' }}
           >
             {annullata ? 'ANNULLATA' : !cominciata ? 'NON ANCORA' : segnati === quanti && quanti ? 'FATTO' : segnati ? `${quanti - segnati} DA SEGNARE` : 'NON FATTO'}
           </span>

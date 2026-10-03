@@ -20,7 +20,7 @@ import { Segnalazioni } from './Segnalazioni'
 import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
-import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio } from './comune'
+import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio, lasciare, scordaBozze } from './comune'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { CercaIscritto } from './CercaIscritto'
 import { indirizzoPagina } from '../../lib/guida'
@@ -100,8 +100,6 @@ const GUIDE: Record<Voce, string> = {
   regole: 'segreteria/regole',
   segnalazioni: 'segreteria/segnalazioni',
 }
-
-const lasciare = () => chiedi('Lasciare a metà quello che stai scrivendo? Quello che non hai salvato si perde.', 'LASCIALO A METÀ', { no: 'TORNA A FINIRE' })
 
 /** Scrive l'indirizzo della segreteria nella cronologia, senza ricaricare. */
 function scrivi(hash: string, passo: 'push' | 'replace') {
@@ -195,8 +193,9 @@ export function Segreteria({
   }
   const vai = async (v: Voce, d: Destinazione = {}) => {
     const dalMenu = aperto
-    // Un modulo scritto a metà (una ricevuta, un iscritto nuovo) non si perde con un clic sul menu.
-    if (bozzaAperta() && !(await lasciare())) return
+    // Un modulo scritto a metà (una ricevuta, un iscritto nuovo) non si perde con
+    // un clic sul menu. Chi resta torna al modulo: sul telefono il menu lo coprirebbe.
+    if (!(await lasciare())) return chiudiMenu()
     setFiltro(d.filtro)
     // Dal menu del telefono la voce scelta prende il posto del passo del
     // menu: Indietro poi torna alla voce di prima, non al menu aperto.
@@ -422,6 +421,8 @@ export function Segreteria({
               type="button"
               className="sg-link"
               onClick={async () => {
+                // Prima la bozza aperta, con la domanda di sempre; poi quella dei dati di prova.
+                if (!(await lasciare())) return
                 if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?", 'RIPARTI DALL’ORARIO VERO', { pericolo: true }))) return
                 void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino')]).then(([a, p, r, e, l]) => {
                   a.archivio.azzera()
@@ -429,6 +430,8 @@ export function Segreteria({
                   p.scordaProva()
                   r.scordaRichiesteProva()
                   e.scordaEsempi()
+                  // La bozza è già stata lasciata: il browser non deve chiederlo di nuovo.
+                  scordaBozze()
                   window.location.reload()
                 })
               }}
