@@ -251,8 +251,22 @@ Restano sul dispositivo, per ora, il catalogo degli esercizi e la voce incisa.
 L'app mostra la sua versione — il numero di `package.json` e il commit da cui
 è compilata, per esempio `v0.1.0 · 99db9d7` — in fondo alla pagina di scelta,
 nel piede del tablet di sala e nel menu della segreteria; passandoci sopra col
-mouse si vede anche quando è stata compilata. Per una versione nuova si alza
-`version` in `package.json`: il commit si aggiorna da sé a ogni pubblicazione.
+mouse si vede anche quando è stata compilata.
+
+La versione sale da sola a ogni pubblicazione da `main` (`scripts/versione.mjs`,
+lanciato da `pubblica.yml`): per le PR unite dall'ultimo tag `v*` alza
+`version` in `package.json`, scrive cosa è cambiato in cima a
+[`guida/novita.md`](guida/novita.md) (la pagina **Novità** della guida), e
+crea il tag e la Release su GitHub. Lo decide il prefisso del titolo della PR:
+
+| Titolo della PR | Sezione | Versione |
+|---|---|---|
+| `Nuovo: …` (o `Novità: …`) | Novità | minor, `0.1.3` → `0.2.0` |
+| `Risolto: …` (o `Corretto:`, `Fix:`) | Risolto | patch, `0.1.3` → `0.1.4` |
+| tutto il resto | Modificato | patch |
+
+Il titolo, senza prefisso, è la riga che si legge nelle novità: va scritto per
+chi usa l'app. Una PR che fa due cose prende il prefisso di quella più grossa.
 
 ## Le guide
 

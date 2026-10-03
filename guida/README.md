@@ -16,6 +16,9 @@ iniziale e in quella degli istruttori, o **GUIDA** nel menu della segreteria,
 che apre la guida della voce in cui siete. L'indirizzo è
 <https://nalbertini.github.io/ods-corsi/#guida>.
 
+Cosa cambia a ogni versione, le novità e i problemi risolti, è nelle
+[Novità](novita.md).
+
 ## Un accesso solo
 
 Si entra da <https://nalbertini.github.io/ods-corsi/>, con l'email e la
