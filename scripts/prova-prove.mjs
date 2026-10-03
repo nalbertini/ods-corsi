@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { somiglianti, cosaNonVaProva } from './src/lib/prove'; export { sigleDeiProvati } from './src/lib/tablet'",
+      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export * from './src/lib/prove'; export { sigleDeiProvati } from './src/lib/tablet'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -106,7 +106,9 @@ console.log('\n2. il giorno dopo, un altro corso: si ritrova per nome')
   ok("nell'app il cognome intero, senza sigla", venuti.map((x) => `${x.cognome} ${x.sigla ?? '-'}`), ['Nuovo -'])
   ok('con meno di tre lettere, nessuno: «ma»', m.somiglianti(venuti, 'ma').length, 0)
   ok('due lettere fra nome e cognome non bastano: «m n»', m.somiglianti(venuti, 'm n').length, 0)
-  ok('tre lettere fra nome e cognome sì: «ma n»', m.somiglianti(venuti, 'ma n').length, 1)
+  // Serve almeno una parola di tre lettere: tante parole corte non bastano.
+  ok('tre lettere fra nome e cognome no: «ma n»', m.somiglianti(venuti, 'ma n').length, 0)
+  ok('una parola di tre sì: «mar n»', m.somiglianti(venuti, 'mar n').length, 1)
   ok('«mar» lo trova col corso e il giorno', m.somiglianti(venuti, 'mar').map((x) => `${x.nome} ${x.corso} ${x.inizio.slice(0, 10)}`), [
     `Marco Lotta 2 ${new Date(dopo(2).setHours(17)).toISOString().slice(0, 10)}`,
   ])
@@ -133,6 +135,10 @@ console.log('\n2. il giorno dopo, un altro corso: si ritrova per nome')
   ok("«d'amico giu» trova solo Damico Giulia", chi("d'amico giu"), ['Damico Giulia'])
   ok('«mar nu» trova solo Nuzzo Marco', chi('mar nu'), ['Nuzzo Marco'])
   ok("apostrofi e trattini non sono lettere: «d'a» e «d-'» nessuno", [chi("d'a"), chi("d-'")], [[], []])
+  ok('«d d d», «a a a», «de l», «de lu», «m n o»: nessuna parola di tre, nessuno', ['d d d', 'a a a', 'de l', 'de lu', 'm n o'].map(chi), [[], [], [], [], []])
+  ok('«de luc» trova i due De Luca', chi('de luc'), ['De Luca Marco', 'De-Luca Anna'])
+  // Lo spazio indivisibile e quello invisibile, da un copia e incolla, sono spazi come nel database.
+  ok('«mar nu» con lo spazio indivisibile o invisibile', [chi('mar\u00a0nu'), chi('mar\ufeffnu')], [['Nuzzo Marco'], ['Nuzzo Marco']])
   // Al contrario: salvato attaccato, scritto staccato.
   const attaccati = [{ id: 'a1', nome: 'Rita', cognome: 'Deluca', corso: 'Lotta', inizio: '2026-01-01T17:00:00Z' }, { id: 'a2', nome: 'Giulia', cognome: 'Damico', corso: 'Lotta', inizio: '2026-01-01T17:00:00Z' }]
   ok('«de luca» e «d amico» trovano Deluca e Damico', [m.somiglianti(attaccati, 'de luca'), m.somiglianti(attaccati, 'd amico')].map((x) => x.map((p) => p.cognome)), [['Deluca'], ['Damico']])
@@ -149,12 +155,19 @@ console.log('\n3. dal tablet, col PIN')
   window.location.search = `?adesso=${g(dopo(4))}T17:05`
   const t = m.creaTabletProva()
   await t.scegliSala('Lotta')
-  ok('PIN sbagliato: nessuno', await t.provati('0000'), [])
-  const sulTablet = await t.provati('1234')
-  ok("chi ha provato, senza telefono e col cognome all'iniziale", sulTablet.map((x) => `${x.nome} ${x.sigla} ${x.telefono ?? '-'}`), ['Marco N. -'])
-  ok('sul tablet «mar» lo trova', m.somiglianti(sulTablet, 'mar').map((x) => `${x.nome} ${x.sigla}`), ['Marco N.'])
-  ok('e anche «nuo», dal cognome che non si vede', m.somiglianti(sulTablet, 'nuo').length, 1)
-  ok('sul tablet «ma» non trova nessuno', m.somiglianti(sulTablet, 'ma').length, 0)
+  // Il tablet chiede solo chi somiglia a quel che si scrive: l'elenco intero non lo scarica.
+  ok('PIN sbagliato: nessuno', await t.provati('0000', 'mar'), [])
+  const sulTablet = await t.provati('1234', 'mar')
+  ok("«mar»: chi ha provato, senza telefono e col cognome all'iniziale", sulTablet.map((x) => `${x.nome} ${x.sigla} ${x.telefono ?? '-'}`), ['Marco N. -'])
+  ok('e anche «nuo», dal cognome che non si vede', (await t.provati('1234', 'nuo')).length, 1)
+  ok('sul tablet «ma» non arriva nessuno', await t.provati('1234', 'ma'), [])
+  ok('né con niente scritto, o «m n»', [await t.provati('1234', ''), await t.provati('1234', 'm n')], [[], []])
+  ok('«luca» non trova Marco', await t.provati('1234', 'luca'), [])
+  ok('«m n o» no, «mar n» sì', [(await t.provati('1234', 'm n o')).length, (await t.provati('1234', 'mar n')).length], [0, 1])
+  ok('«mar nuo» con lo spazio indivisibile', (await t.provati('1234', 'mar\u00a0nuo')).length, 1)
+  // Più di cento caratteri non è un nome: niente, e nessun errore.
+  ok('cento caratteri si cercano', (await t.provati('1234', 'mar' + ' '.repeat(94) + 'nuo')).length, 1)
+  ok('centouno no, né mille', [await t.provati('1234', 'mar' + ' '.repeat(95) + 'nuo'), await t.provati('1234', 'mar' + ' '.repeat(994) + 'nuo')], [[], []])
   // Su novanta giorni di prove due sigle uguali capitano: allora il cognome intero.
   const omonimi = m.sigleDeiProvati([
     { nome: 'Marco', cognome: 'Neri' },
@@ -217,7 +230,101 @@ console.log('\n6. chi non si cerca più')
   window.location.pathname = '/'
   const t = m.creaTabletProva()
   await t.scegliSala('Lotta')
-  ok('neanche sul tablet', (await t.provati('1234')).map((x) => x.nome), ['Marco'])
+  ok('neanche sul tablet, cercandoli per nome', [await t.provati('1234', 'vito'), await t.provati('1234', 'dora')], [[], []])
+  ok('e Marco sì', (await t.provati('1234', 'marco')).length, 1)
+}
+
+console.log('\n7. sul tablet, al massimo venti: i più recenti')
+{
+  // Venticinque Zeno, ognuno a una lezione di Lotta 2 di 1, 2, … 25 giorni fa.
+  for (let n = 1; n <= 25; n++) {
+    m.archivio.dati.lezioni[`x@zeno-${n}`] = { straordinaria: { corsoId: 'lotta-2', inizio: new Date(Date.now() - n * 24 * 60 * 60_000).toISOString(), durata: 60 } }
+    m.archivio.dati.persone.push({ id: `zeno-${n}`, nome: 'Zeno', cognome: `Numero ${n}`, ruolo: 'iscritto', attiva: true })
+    m.archivio.dati.prove.push({ sessioneId: `x@zeno-${n}`, personaId: `zeno-${n}` })
+  }
+  const t = m.creaTabletProva()
+  await t.scegliSala('Lotta')
+  const zeni = await t.provati('1234', 'zen')
+  ok('«zen» ne dà venti', zeni.length, 20)
+  ok('i più recenti, dal più recente: giorni fa', zeni.map((x) => Math.round((Date.now() - Date.parse(x.inizio)) / (24 * 60 * 60_000))), Array.from({ length: 20 }, (_, i) => i + 1))
+}
+
+console.log("\n8. app e segreteria leggono l'elenco una volta sola")
+{
+  ok('unaVolta c’è', typeof m.unaVolta, 'function')
+  let letture = 0
+  const cerca = m.unaVolta(async () => {
+    letture++
+    return ['Marco']
+  })
+  const [a, b] = await Promise.all([cerca('mar'), cerca('marc')])
+  ok('due ricerche insieme, una lettura sola', [letture, a, b], [1, ['Marco'], ['Marco']])
+  ok('e dopo non rilegge', [await cerca('nuo'), letture], [['Marco'], 1])
+  let volte = 0
+  const zoppa = m.unaVolta(async () => {
+    if (++volte === 1) throw new Error('senza rete')
+    return ['Marco']
+  })
+  ok('se la prima lettura fallisce, lo dice', await errore(() => zoppa('mar')), 'senza rete')
+  ok('e la volta dopo riprova', [await zoppa('mar'), volte], [['Marco'], 2])
+}
+
+console.log('\n9. al massimo cento ricerche in dieci minuti per tablet')
+{
+  // Il tablet del Tatami, che finora non ha cercato niente.
+  const tatami = m.creaTabletProva()
+  await tatami.scegliSala('Tatami')
+  let risposte = 0
+  for (let i = 0; i < 100; i++) if ((await errore(() => tatami.provati('1234', 'mar'))) === 'nessun errore') risposte++
+  ok('cento ricerche rispondono', risposte, 100)
+  ok('la centounesima no', await errore(() => tatami.provati('1234', 'mar')), 'troppe ricerche: riprova fra qualche minuto')
+  const lotta = m.creaTabletProva()
+  await lotta.scegliSala('Lotta')
+  ok('un altro tablet cerca ancora', (await lotta.provati('1234', 'mar')).map((x) => x.nome), ['Marco'])
+}
+
+console.log('\n10. e al massimo trecento in un giorno')
+{
+  // Cento ogni undici minuti: il tetto dei dieci minuti non scatta mai.
+  const vero = Date.now
+  const giudo = m.creaTabletProva()
+  await giudo.scegliSala('Lotta')
+  let risposte = 0
+  try {
+    for (let giro = 0; giro < 3; giro++) {
+      Date.now = () => vero() + giro * 11 * 60_000
+      for (let i = 0; i < 100; i++) if ((await errore(() => giudo.provati('1234', 'mar'))) === 'nessun errore') risposte++
+    }
+    ok('trecento in mezz’ora rispondono', risposte, 300)
+    Date.now = () => vero() + 33 * 60_000
+    ok('la trecentounesima no', await errore(() => giudo.provati('1234', 'mar')), 'troppe ricerche: riprova fra qualche minuto')
+    Date.now = () => vero() + 25 * 60 * 60_000
+    ok('il giorno dopo sì', (await giudo.provati('1234', 'mar')).map((x) => x.nome), ['Marco'])
+  } finally {
+    Date.now = vero
+  }
+}
+
+console.log('\n11. cosa mostra il pannello')
+{
+  const marco = { id: 'm', nome: 'Marco', cognome: 'Neri', corso: 'Lotta', inizio: '2026-09-01T17:00:00Z' }
+  const mario = { id: 'r', nome: 'Mario', cognome: 'Rossi', corso: 'Lotta', inizio: '2026-09-01T17:00:00Z' }
+  const nessuno = new Set()
+  const vedi = (o) => m.daMostrare({ ultimi: [], giaQui: nessuno, guaio: null, ...o })
+  ok('daMostrare c’è', typeof m.daMostrare, 'function')
+  if (typeof m.daMostrare === 'function') {
+    ok('letto e nessuno somiglia: lo dice', vedi({ testo: 'xyz', venuti: [] }).stato, 'Nessuno è già venuto con questo nome.')
+    ok('non ancora letto: cerca', vedi({ testo: 'xyz' }).stato, 'Cerco chi è già venuto…')
+    ok('intanto, la risposta di prima filtrata con questo testo', vedi({ testo: 'marc', ultimi: [marco, mario] }).proposti.map((x) => x.id), ['m'])
+    ok('e se c’è qualcuno, niente riga', vedi({ testo: 'marc', ultimi: [marco, mario] }).stato, null)
+    ok('chi è già nell’appello no', vedi({ testo: 'mar', venuti: [marco, mario], giaQui: new Set(['m']) }).proposti.map((x) => x.id), ['r'])
+    ok('sotto le tre lettere niente', [vedi({ testo: 'ma', venuti: [marco] }).proposti, vedi({ testo: 'ma', venuti: [marco] }).stato], [[], null])
+    ok('senza rete lo dice', vedi({ testo: 'mar', guaio: new Error('Failed to fetch') }).avviso, 'Senza rete non vedo chi è già venuto: scrivi nome e cognome.')
+    const troppe = vedi({ testo: 'mar', guaio: new Error('troppe ricerche: riprova fra qualche minuto') })
+    ok('il tetto delle ricerche non è «senza rete»', troppe.avviso, 'Troppe ricerche da questo tablet: per qualche minuto scrivete nome e cognome.')
+    ok('e allora niente «Cerco…»', troppe.stato, null)
+    ok('tutto bene: nessun avviso', vedi({ testo: 'mar', venuti: [marco] }).avviso, null)
+  }
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

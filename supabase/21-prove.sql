@@ -212,15 +212,8 @@ begin
     order by pe.cognome, pe.nome;
 end $$;
 
-/** Chi è già venuto a provare, per l'istruttore sul tablet: il telefono no, lo schermo è in sala. */
-create or replace function provati_con_pin(pin text)
-  returns table (persona_id uuid, nome text, cognome text, telefono text, corso text, inizio timestamptz)
-  language plpgsql security definer set search_path = public, extensions as $$
-begin
-  if postazione_corrente() is null then raise exception 'solo un tablet di sala' using errcode = '42501'; end if;
-  if persona_da_pin(pin) is null then return; end if;
-  return query select * from gia_provati(false);
-end $$;
+-- Chi è già venuto a provare, sul tablet, si cerca per nome: `provati_con_pin`
+-- sta in 29-prove-per-nome.sql.
 
 /** `true` se è aggiunta, `false` se il PIN non va più. */
 create or replace function aggiungi_prova_con_pin(pin text, sessione uuid, persona uuid, nome text default null,
@@ -280,10 +273,10 @@ end $$;
 revoke all on function metti_prova(uuid, uuid, text, text, text, uuid, uuid), togli_prova_da(uuid, uuid),
   gia_provati(boolean) from public, anon, authenticated;
 revoke all on function aggiungi_prova(uuid, uuid, text, text, text), togli_prova(uuid, uuid), prove_recenti(),
-  prove_con_pin(text, uuid), provati_con_pin(text), aggiungi_prova_con_pin(text, uuid, uuid, text, text, text),
+  prove_con_pin(text, uuid), aggiungi_prova_con_pin(text, uuid, uuid, text, text, text),
   togli_prova_con_pin(text, uuid, uuid), segna_prova_con_pin(text, uuid, uuid, stato_presenza) from public, anon;
 grant execute on function aggiungi_prova(uuid, uuid, text, text, text), togli_prova(uuid, uuid), prove_recenti(),
-  prove_con_pin(text, uuid), provati_con_pin(text), aggiungi_prova_con_pin(text, uuid, uuid, text, text, text),
+  prove_con_pin(text, uuid), aggiungi_prova_con_pin(text, uuid, uuid, text, text, text),
   togli_prova_con_pin(text, uuid, uuid), segna_prova_con_pin(text, uuid, uuid, stato_presenza) to authenticated;
 
 -- Che l'API veda subito tabella e funzioni nuove, senza aspettare.

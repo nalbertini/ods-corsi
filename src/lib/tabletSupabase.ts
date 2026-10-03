@@ -147,10 +147,10 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     correggi: (pin, sessioneId, personaId, stato, prova) =>
       rpc<boolean>(prova ? 'segna_prova_con_pin' : 'segna_con_pin', { pin, sessione: sessioneId, persona: personaId, stato }),
 
-    async provati(pin) {
-      const { data, error } = await db.rpc('provati_con_pin', { pin })
+    async provati(pin, scritto) {
+      const { data, error } = await db.rpc('provati_con_pin', { pin, scritto })
       if (error) {
-        throw new Error(error.code === 'PGRST202' ? 'Le prove non sono ancora attive: va lanciato supabase/21-prove.sql.' : error.message || 'Il server non risponde')
+        throw new Error(error.code === 'PGRST202' ? 'Le prove non sono ancora attive: va lanciato supabase/29-prove-per-nome.sql.' : error.message || 'Il server non risponde')
       }
       const righe = (data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; corso: string; inizio: string }>
       // Un PIN che non va più non solleva e non restituisce nessuno: se ne

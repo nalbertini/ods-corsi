@@ -5,6 +5,7 @@ import { archivio, type PresenzaIstruttoreProva } from './archivioProva'
 import { perCognome } from './sala'
 import { impostazioniSala, timerSala } from '../../timer/src/lib/impostazioniSala'
 import { fonteClipProva } from './voceProva'
+import { somiglianti, TROPPE_RICERCHE } from './prove'
 
 /**
  * Il tablet senza server: l'orario vero, gli iscritti inventati, e le stesse
@@ -70,6 +71,8 @@ export function creaTabletProva(): DatiTablet {
   const adesso = () => new Date(Date.now() + scarto)
   let sala = leggiSala()
   const tentativi: Array<{ quando: number; riuscito: boolean }> = []
+  /** Come `ricerche_prove` (29-prove-per-nome.sql): quando ha cercato chi è già venuto. */
+  const ricerche: number[] = []
 
   /** La lezione, se è di questa sala: come `lezione_del_tablet`. */
   const lezione = async (sessioneId: string) => {
@@ -276,9 +279,18 @@ export function creaTabletProva(): DatiTablet {
       return true
     },
 
-    async provati(pin) {
+    async provati(pin, scritto) {
       if (!sala) throw new Error('solo un tablet di sala')
-      return daPin(pin) ? sigleDeiProvati(provatiProva(false)) : []
+      if (!daPin(pin)) return []
+      // Come `provati_con_pin`: al massimo cento ricerche in dieci minuti e
+      // trecento in un giorno, e un testo lungo non si cerca.
+      const t = adesso().getTime()
+      if (ricerche.filter((q) => q > t - 10 * MIN).length >= 100 || ricerche.filter((q) => q > t - 24 * 60 * MIN).length >= 300) {
+        throw new Error(TROPPE_RICERCHE)
+      }
+      ricerche.push(t)
+      if (scritto.length > 100) return []
+      return sigleDeiProvati(somiglianti(provatiProva(false), scritto, 20))
     },
 
     async aggiungiProva(pin, sessioneId, chi) {

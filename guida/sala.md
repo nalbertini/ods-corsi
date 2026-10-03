@@ -156,8 +156,11 @@ iniziale.
    - **PROVE** — aggiunge chi viene a provare: nome, cognome e telefono, o
      toccate chi è già venuto a provare, che compare dalla terza lettera (qui
      senza telefono e col cognome all'iniziale, «Marco N.»: lo schermo è in
-     sala). Entra in fondo all'appello già presente, col bollino **PROVA**, e
-     **TOGLI** lo toglie se è un errore. Chi viene a provare non si segna da
+     sala). Il tablet li chiede mentre scrivete: l'elenco intero non lo
+     tiene, e senza rete non li vede. Dopo moltissime ricerche di fila si
+     ferma per qualche minuto, e lo dice: scrivete nome e cognome. Chi
+     aggiungete entra in fondo all'appello già presente, col bollino
+     **PROVA**, e **TOGLI** lo toglie se è un errore. Chi viene a provare non si segna da
      solo sul tablet: lo aggiungete voi. Come nell'app (vedi la
      [guida degli istruttori](istruttori.md)).
 6. **ESCI** quando avete finito. Se ve ne dimenticate, dopo **2 minuti** senza

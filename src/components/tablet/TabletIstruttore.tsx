@@ -301,7 +301,7 @@ export function TabletIstruttore({
         {conProve && righe && (
           <PannelloProve
             stile="tb"
-            cerca={() => d.provati(pin)}
+            cerca={(scritto) => d.provati(pin, scritto)}
             giaQui={new Set(righe.map((r) => r.personaId))}
             onAggiungi={aggiungiProva}
             onChiudi={() => setConProve(false)}

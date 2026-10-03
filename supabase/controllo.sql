@@ -159,6 +159,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from pg_trigger where tgname = 'persone_non_si_elimina')),
   ('28-elimina-istruttore.sql', 'eliminare anche la segreteria che insegna, ma non se stessi',
     exists (select 1 from dentro where nome = 'elimina_istruttore' and corpo like '%anche_istruttore%')),
+  ('29-prove-per-nome.sql', 'sul tablet chi è venuto a provare si cerca per nome, mai tutto l''elenco',
+    to_regprocedure('public.provati_con_pin(text, text)') is not null
+    and to_regprocedure('public.provati_con_pin(text)') is null
+    and to_regclass('public.ricerche_prove') is not null),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

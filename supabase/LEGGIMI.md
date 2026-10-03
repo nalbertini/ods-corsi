@@ -56,6 +56,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 26. `26-colori-corsi.sql` — i corsi rossi passano al viola: in segreteria il rosso vuol dire solo che qualcosa manca
 27. `27-pagamento-dalle-ricevute.sql` — se ha pagato lo dicono le ricevute: in regola vuol dire la quota associativa pagata, e lo stato scritto a mano resta solo come eccezione per chi ha pagato fuori dall'app
 28. `28-elimina-istruttore.sql` — eliminare un istruttore che non ha mai insegnato, anche se è di segreteria col ruolo doppio, la scheda e l'account (con la funzione `elimina`, vedi «L'invito per email»); chi ha corsi, lezioni o presenze non si elimina, nemmeno cancellando la riga a mano
+29. `29-prove-per-nome.sql` — sul tablet chi è già venuto a provare si cerca per nome, dalla terza lettera di una parola e al massimo venti, con cento ricerche in dieci minuti e trecento al giorno per tablet: il tablet non ha più l'elenco intero
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -149,6 +150,11 @@ Per eliminare un istruttore basta `28-elimina-istruttore.sql` (dopo
 finché non ci sono, ELIMINA nella scheda dell'istruttore dice cosa manca.
 Chi l'aveva già lanciato lo rilancia: la prima versione non eliminava la
 segreteria che insegna anche.
+Per cercare per nome, sul tablet, chi è venuto a provare basta
+`29-prove-per-nome.sql` (dopo `21-prove.sql`), che non chiede di rilanciare
+`06-iscrizioni.sql`: finché non c'è, sul tablet i già venuti non compaiono, e
+chi ha un PIN può ancora leggere l'elenco intero. Chi rilancia `21-prove.sql`
+rilancia poi anche `29`.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -787,5 +793,8 @@ segnalazioni: le legge e le scrive solo la segreteria, l'autore è sempre chi
 scrive, si risponde solo a un filo, un messaggio non si cambia, di un filo si
 cambia solo se è chiuso, e niente si cancella. `elimina-istruttore.sql` prova
 che un istruttore lo elimini solo la segreteria, e solo se non ha corsi,
-lezioni o presenze, anche cancellando la riga a mano. `finto-supabase.sql` rifà anche le due
+lezioni o presenze, anche cancellando la riga a mano. `prove-per-nome.sql`,
+dopo `prove.sql`, prova che il tablet ritrovi chi è venuto a provare solo per
+nome: dalla terza lettera di una parola, al massimo venti, come la ricerca
+dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.
