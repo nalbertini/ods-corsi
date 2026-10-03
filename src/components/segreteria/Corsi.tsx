@@ -3,7 +3,8 @@ import type { CorsoSeg, DatiCorso, DatiSegreteria, PersonaSeg } from '../../lib/
 import { COLORI, GIORNI_LUNGHI, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno } from '../../lib/sala'
 import { Croce } from '../Icons'
-import { Campo, dataLunga, Guaio, Riga, Testa, useAvviso, useCarica } from './comune'
+import { STRETTO, useSchermo } from '../../lib/largo'
+import { Campo, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica } from './comune'
 
 const CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
 
@@ -46,102 +47,120 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
 
   const attivi = (corsi.dato ?? []).filter((c) => c.attivo).sort((a, b) => a.nome.localeCompare(b.nome, 'it'))
   const vecchi = (corsi.dato ?? []).filter((c) => !c.attivo)
-  const corso = nuovo ? null : (attivi.find((c) => c.id === scelto) ?? attivi[0] ?? null)
+  // Sullo schermo stretto la scheda non sta accanto all'elenco: si apre al
+  // suo posto quando si tocca un corso, e nessuno è aperto da sé.
+  const stretto = useSchermo(STRETTO)
+  const corso = nuovo ? null : (attivi.find((c) => c.id === scelto) ?? (stretto ? null : attivi[0]) ?? null)
+  const piena = stretto && (nuovo || !!corso)
+  const chiudi = () => {
+    setNuovo(false)
+    setScelto(null)
+  }
   const incompleti = attivi.filter((c) => mancano(c).length > 0).length
   const iscrittiA = (id: string) => (persone.dato ?? []).filter((p) => p.attiva && p.iscrizioni.some((i) => i.corsoId === id && inCorso(i, oggi)))
 
+  const scheda = (nuovo || corso) && (
+    <Scheda
+      key={nuovo ? 'nuovo' : corso!.id}
+      d={d}
+      corso={corso}
+      iscritti={corso ? iscrittiA(corso.id) : []}
+      persone={persone.dato ?? []}
+      fai={fai}
+      onSalvato={(id) => {
+        setNuovo(false)
+        setScelto(id)
+        void corsi.ricarica()
+      }}
+      onCambiato={() => void Promise.all([corsi.ricarica(), persone.ricarica()])}
+      onLasciaStare={() => setNuovo(false)}
+    />
+  )
+
   return (
     <>
-      <Testa titolo="CORSI" sotto="Un corso è cosa si fa; le ricorrenze dicono quando. Le lezioni si generano da quelle.">
-        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
-          + NUOVO CORSO
-        </button>
-      </Testa>
-
-      {corsi.guaio && <Guaio testo={corsi.guaio} />}
-      {incompleti > 0 && (
-        <span className="sg-manca" style={{ fontSize: 14 }}>
-          {incompleti === 1 ? '1 corso ha dati mancanti' : `${incompleti} corsi hanno dati mancanti`}: sono segnati in rosso, aprili per completarli.
-        </span>
+      {piena && (
+        <SchedaPiena key={nuovo ? 'nuovo' : corso!.id} etichetta={corso?.nome ?? 'Nuovo corso'} torna="CORSI" onTorna={chiudi} cornice={false}>
+          {scheda}
+        </SchedaPiena>
       )}
+      {/* L'elenco resta montato sotto la scheda, come negli iscritti. */}
+      <div className="stack" style={{ gap: 18 }} hidden={piena}>
+        <Testa titolo="CORSI" sotto="Un corso è cosa si fa; le ricorrenze dicono quando. Le lezioni si generano da quelle.">
+          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
+            + NUOVO CORSO
+          </button>
+        </Testa>
 
-      <div className="sg-due-colonne">
-        <div className="sg-lista">
-          <div className="sg-lista-testa" style={{ gridTemplateColumns: '1fr 130px 70px' }}>
-            <span className="sg-etichetta">CORSO</span>
-            <span className="sg-etichetta">QUANDO</span>
-            <span className="sg-etichetta" style={{ textAlign: 'right' }}>ISCRITTI</span>
-          </div>
-          {corsi.dato === null && !corsi.guaio && <p className="sg-sotto">Sto leggendo i corsi…</p>}
-          {attivi.map((c) => {
-            const n = iscrittiA(c.id).length
-            const manca = mancano(c)
-            return (
-              <button
-                key={c.id}
-                type="button"
-                className="sg-corso"
-                data-manca={manca.length > 0}
-                title={manca.length ? `Manca: ${manca.join(', ')}` : undefined}
-                aria-pressed={!nuovo && corso?.id === c.id}
-                onClick={() => {
-                  setNuovo(false)
-                  setScelto(c.id)
-                }}
-              >
-                <span className="row" style={{ gap: 10, minWidth: 0 }}>
-                  <span style={{ width: 12, height: 12, flexShrink: 0, background: c.colore ?? 'var(--line)' }} />
-                  <span className="stack" style={{ gap: 2, minWidth: 0 }}>
-                    <span className="ob" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.03em' }}>{c.nome.toUpperCase()}</span>
-                    <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-                      {c.salaId ? dove(c) : <span className="sg-manca">sala da assegnare</span>}
-                      {' · '}
-                      {c.istruttori.length ? c.istruttori.map((i) => i.nome).join(', ') : <span className="sg-manca">istruttore da assegnare</span>}
+        {corsi.guaio && <Guaio testo={corsi.guaio} />}
+        {incompleti > 0 && (
+          <span className="sg-manca" style={{ fontSize: 14 }}>
+            {incompleti === 1 ? '1 corso ha dati mancanti' : `${incompleti} corsi hanno dati mancanti`}: sono segnati in rosso, aprili per completarli.
+          </span>
+        )}
+
+        <div className="sg-due-colonne">
+          <div className="sg-lista">
+            <div className="sg-lista-testa sg-corsi-testa">
+              <span className="sg-etichetta">CORSO</span>
+              <span className="sg-etichetta sg-corso-quando">QUANDO</span>
+              <span className="sg-etichetta" style={{ textAlign: 'right' }}>ISCRITTI</span>
+            </div>
+            {corsi.dato === null && !corsi.guaio && <p className="sg-sotto">Sto leggendo i corsi…</p>}
+            {attivi.map((c) => {
+              const n = iscrittiA(c.id).length
+              const manca = mancano(c)
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  className="sg-corso"
+                  data-manca={manca.length > 0}
+                  title={manca.length ? `Manca: ${manca.join(', ')}` : undefined}
+                  aria-pressed={!nuovo && corso?.id === c.id}
+                  onClick={() => {
+                    setNuovo(false)
+                    setScelto(c.id)
+                  }}
+                >
+                  <span className="row sg-corso-nome" style={{ gap: 10, minWidth: 0 }}>
+                    <span style={{ width: 12, height: 12, flexShrink: 0, background: c.colore ?? 'var(--line)' }} />
+                    <span className="stack" style={{ gap: 2, minWidth: 0 }}>
+                      <span className="ob" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.03em' }}>{c.nome.toUpperCase()}</span>
+                      <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+                        {c.salaId ? dove(c) : <span className="sg-manca">sala da assegnare</span>}
+                        {' · '}
+                        {c.istruttori.length ? c.istruttori.map((i) => i.nome).join(', ') : <span className="sg-manca">istruttore da assegnare</span>}
+                      </span>
                     </span>
                   </span>
-                </span>
-                <span className={c.ricorrenze.length ? undefined : 'sg-manca'} style={{ fontSize: 13, color: c.ricorrenze.length ? 'var(--sec)' : undefined }}>
-                  {quando(c)}
-                </span>
-                <span className="num" style={{ fontSize: 17, fontWeight: 700, textAlign: 'right', color: c.capienza && n >= c.capienza ? 'var(--giallo-testo)' : 'var(--text)' }}>
-                  {c.capienza ? `${n}/${c.capienza}` : n}
-                </span>
-              </button>
-            )
-          })}
-          {vecchi.length > 0 && (
-            <button type="button" className="sg-link" style={{ alignSelf: 'flex-start', padding: '8px 14px' }} onClick={() => setArchiviati(!archiviati)}>
-              {archiviati ? 'nascondi gli archiviati' : `${vecchi.length} ${vecchi.length === 1 ? 'corso archiviato' : 'corsi archiviati'} · mostra`}
-            </button>
-          )}
-          {archiviati &&
-            vecchi.map((c) => (
-              <div key={c.id} className="sg-archiviato">
-                <span className="ob grow" style={{ fontSize: 16, fontWeight: 700 }}>{c.nome.toUpperCase()}</span>
-                <button type="button" className="num sg-chip" onClick={() => void fai(() => d.archiviaCorso(c.id, true), `${c.nome} di nuovo in calendario`, corsi.ricarica)}>
-                  RIPRISTINA
+                  <span className={c.ricorrenze.length ? 'sg-corso-quando' : 'sg-corso-quando sg-manca'} style={{ fontSize: 13, color: c.ricorrenze.length ? 'var(--sec)' : undefined }}>
+                    {quando(c)}
+                  </span>
+                  <span className="num sg-corso-n" style={{ fontSize: 17, fontWeight: 700, textAlign: 'right', color: c.capienza && n >= c.capienza ? 'var(--giallo-testo)' : 'var(--text)' }}>
+                    {c.capienza ? `${n}/${c.capienza}` : n}
+                  </span>
                 </button>
-              </div>
-            ))}
-        </div>
+              )
+            })}
+            {vecchi.length > 0 && (
+              <button type="button" className="sg-link" style={{ alignSelf: 'flex-start', padding: '8px 14px' }} onClick={() => setArchiviati(!archiviati)}>
+                {archiviati ? 'nascondi gli archiviati' : `${vecchi.length} ${vecchi.length === 1 ? 'corso archiviato' : 'corsi archiviati'} · mostra`}
+              </button>
+            )}
+            {archiviati &&
+              vecchi.map((c) => (
+                <div key={c.id} className="sg-archiviato">
+                  <span className="ob grow" style={{ fontSize: 16, fontWeight: 700 }}>{c.nome.toUpperCase()}</span>
+                  <button type="button" className="num sg-chip" onClick={() => void fai(() => d.archiviaCorso(c.id, true), `${c.nome} di nuovo in calendario`, corsi.ricarica)}>
+                    RIPRISTINA
+                  </button>
+                </div>
+              ))}
+          </div>
 
-        {(nuovo || corso) && (
-          <Scheda
-            key={nuovo ? 'nuovo' : corso!.id}
-            d={d}
-            corso={corso}
-            iscritti={corso ? iscrittiA(corso.id) : []}
-            persone={persone.dato ?? []}
-            fai={fai}
-            onSalvato={(id) => {
-              setNuovo(false)
-              setScelto(id)
-              void corsi.ricarica()
-            }}
-            onCambiato={() => void Promise.all([corsi.ricarica(), persone.ricarica()])}
-            onLasciaStare={() => setNuovo(false)}
-          />
-        )}
+          {!stretto && scheda}
+        </div>
       </div>
       {avviso}
     </>
@@ -222,7 +241,7 @@ function Scheda({
 
   return (
     <section aria-label={corso?.nome ?? 'Nuovo corso'} className="sg-scheda" style={{ ['--tinta' as string]: bozza.colore ?? 'var(--line)' }}>
-      <div className="row" style={{ gap: 12 }}>
+      <div className="row sg-corso-testa" style={{ gap: 12 }}>
         <span className="ob grow" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '0.04em' }}>{(bozza.nome || 'NUOVO CORSO').toUpperCase()}</span>
         {corso ? (
           <button

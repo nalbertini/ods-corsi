@@ -1054,7 +1054,7 @@ a.sg-btn { text-decoration: none; }
 }
 .sg-campo:focus { outline: none; border-color: var(--text); }
 .sg-campo[data-acceso='true'] { border-color: var(--giallo); }
-.sg-colore { width: 34px; height: 34px; border: 3px solid transparent; }
+.sg-colore { width: 44px; height: 44px; border: 3px solid transparent; }
 .sg-colore[aria-pressed='true'] { border-color: var(--text); }
 .sg-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .sg-tre { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -1121,12 +1121,26 @@ a.sg-btn { text-decoration: none; }
 .sg-ordina:hover, .sg-ordina[data-verso] { color: var(--text); }
 .sg-ordina-segno { font-size: 0.85em; letter-spacing: 0; opacity: 0.35; }
 .sg-ordina:hover .sg-ordina-segno, .sg-ordina[data-verso] .sg-ordina-segno { opacity: 1; }
+.sg-corsi-testa { grid-template-columns: 1fr 130px 70px; }
 .sg-corso {
   width: 100%; display: grid; grid-template-columns: 1fr 130px 70px; gap: 12px; align-items: center; min-height: 60px; padding: 8px 14px;
   background: var(--surface); border: 2px solid var(--line); text-align: left;
 }
 .sg-corso[aria-pressed='true'] { background: var(--surface-2); border-color: var(--text); }
 .sg-corso[data-manca='true'] { border-left: 6px solid var(--rosso); }
+/* Sul telefono il nome prende la riga intera e i giorni gli vanno sotto. */
+@media (max-width: 560px) {
+  .sg-corsi-testa { grid-template-columns: 1fr auto; }
+  .sg-corsi-testa .sg-corso-quando { display: none; }
+  .sg-corso { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'nome n' 'quando n'; row-gap: 4px; }
+  .sg-corso-nome { grid-area: nome; }
+  .sg-corso .sg-corso-quando { grid-area: quando; padding-left: 22px; }
+  .sg-corso-n { grid-area: n; }
+  /* Nella scheda il nome prende la sua riga, e i due tasti si dividono quella sotto. */
+  .sg-corso-testa { flex-wrap: wrap; }
+  .sg-corso-testa > .ob { flex-basis: 100%; }
+  .sg-corso-testa > .sg-btn { flex: 1 1 0; }
+}
 /* Un dato che manca e va completato: si vede rosso, ovunque. */
 .sg-manca { color: var(--rosso); font-weight: 600; }
 .sg-forse { color: var(--dim); font-weight: 600; }
