@@ -37,7 +37,7 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
   // Annullata una ricevuta con la quota che nessun'altra copre: la quota torna da pagare, o era pagata fuori dall'app?
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
   const annulla = async (r: Ricevuta) => {
-    if (!(await chiedi(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA.`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
+    if (!(await chiedi(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
     const oggi = chiaveGiorno(new Date())
     const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
     const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
