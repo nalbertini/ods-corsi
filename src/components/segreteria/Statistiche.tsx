@@ -551,7 +551,7 @@ function TabellaCorsi({ lezioni, scelto, onScegli, onVai }: { lezioni: LezioneSt
               <td className="num num-col">{r.annullate || '—'}</td>
               <td className="num num-col">
                 {r.senza ? (
-                  <button type="button" className="sg-link" style={{ color: 'var(--rosso)' }} onClick={() => onVai('presenze')} title="Le trovi in PRESENZE, mese per mese">
+                  <button type="button" className="sg-link" style={{ color: 'var(--rosso-testo)' }} onClick={() => onVai('presenze')} title="Le trovi in PRESENZE, mese per mese">
                     {r.senza}
                   </button>
                 ) : (

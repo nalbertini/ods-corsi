@@ -1,15 +1,16 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { certificatoDaPortare, controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi, pulisciCf } from '../lib/richieste'
+import { certificatoDaPortare, chiFirma, controlla, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
+import { corsiPerEta, type CorsoPerEta, type CorsoRef } from '../lib/listino'
 import { causale, stimaIscrizione, type Abbonamento } from '../lib/nucleo'
 import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import { useListino } from './Costi'
 import type { SceltaModulo } from '../lib/firma'
-import { Bollino, Campo, CaricaFile, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
+import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
 
 /**
@@ -99,7 +100,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const [d, setD] = useState<DatiRichieste | null>(null)
   const [corsi, setCorsi] = useState<CorsoAperto[] | null>(null)
   const [guaioCorsi, setGuaioCorsi] = useState<string | null>(null)
-  const [b, setB] = useState<DatiRichiesta>(() => ({ ...VUOTO, ...nucleo?.dati }))
+  // Com'era all'apertura: INDIETRO chiede solo se c'è qualcosa di nuovo.
+  const [inizio] = useState<DatiRichiesta>(() => ({ ...VUOTO, ...nucleo?.dati }))
+  const [b, setB] = useState<DatiRichiesta>(inizio)
   const [file, setFile] = useState<Partial<Record<TipoFile, File>>>({})
   const [privacy, setPrivacy] = useState(false)
   // Il modulo: firmato qui, o la foto del foglio firmato a mano.
@@ -110,6 +113,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const [genitoreProvincia, setGenitoreProvincia] = useState('')
   const [luoghi, setLuoghi] = useState<Luoghi | null>(null)
   const [guaioFirma, setGuaioFirma] = useState<string | null>(null)
+  // Perché firma e caselle sono sparite, finché non si firma di nuovo.
+  const [daRifare, setDaRifare] = useState<string>()
   // Un campo che una persona non vede e un programma riempie.
   const [trappola, setTrappola] = useState('')
   const [guaio, setGuaio] = useState<string | null>(null)
@@ -140,7 +145,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const natoAGenitore = luogoGenitore?.nome ?? genitoreNatoA
   const provinciaGenitore = luogoGenitore?.sigla ?? genitoreProvincia
 
-  const minore = !!b.natoIl && minorenne(b.natoIl)
+  // Chi firmava fino a ora: una data a metà non lo cambia (`chiFirma`).
+  const minorePrima = useRef<boolean>()
+  const minore = chiFirma(b.natoIl, minorePrima.current)
   const pronta: DatiRichiesta = {
     ...b,
     natoA: luogo ? scriviLuogo(luogo) : b.natoA,
@@ -148,11 +155,25 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     genitoreCognome: minore ? b.genitoreCognome : '',
     genitoreCodiceFiscale: minore ? b.genitoreCodiceFiscale : '',
   }
-  // Se chi firma cambia (la data di nascita dice minore, o non più), la firma
-  // di prima non è la sua.
-  useEffect(() => setTratti([]), [minore])
+  // Se chi firma cambia (la data di nascita dice minore, o non più), il foglio
+  // è un altro: firma, caselle e foto del foglio di prima non sono le sue.
+  useEffect(() => {
+    const prima = minorePrima.current
+    minorePrima.current = minore
+    if (prima === undefined || prima === minore) return
+    setDaRifare((avviso) => firmaDaRifare(minore, { tratti: tratti.length, scelte: Object.keys(scelte).length, foto: !!file.modulo, avvisato: !!avviso }))
+    setTratti([])
+    setScelte({})
+    setFile((p) => ({ ...p, modulo: undefined }))
+    // Solo quando cambia chi firma: tratti, scelte e file si leggono com'erano in quel momento.
+  }, [minore])
   const firmatario = minore ? `${(b.genitoreNome ?? '').trim()} ${(b.genitoreCognome ?? '').trim()}`.trim() : `${b.nome.trim()} ${b.cognome.trim()}`.trim()
   const foglio = MODULI[minore ? 1 : 0]
+  // I corsi giusti per l'anno di nascita prima, gli altri dopo: si sceglie senza tornare al listino.
+  const listino = useListino()?.listino
+  const perEta = corsiPerEta(corsi ?? [], listino?.corsi ?? [], b.natoIl, listino?.senzaPrezzoVaBene)
+  const fuoriEta = perEta.altri.filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)
+  const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined })
   const certificato = certificatoDaPortare(
     b.natoIl,
     (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
@@ -298,6 +319,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             Ricorda di consegnare in segreteria il certificato medico{certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.
           </span>
         )}
+        {!file.ricevuta && <span className="esito-testo">Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato.</span>}
         <Tasto onClick={onChiudi}>{torna}</Tasto>
       </div>
     )
@@ -326,9 +348,22 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   return (
     <form className="stack modulo" onSubmit={(e) => void manda(e)} noValidate>
       <div className="pad row modulo-testa">
-        <Tasto onClick={onChiudi} disabled={inVolo}>
+        <DueTocchi
+          className={classiTasto()}
+          disabled={inVolo}
+          chiede={domandaUscita({
+            risposte: b,
+            inizio,
+            file: Object.values(file).filter(Boolean).length,
+            scelte: Object.keys(scelte).length,
+            tratti: tratti.length,
+            privacy,
+            luogoGenitore: genitoreNatoA + genitoreProvincia,
+          })}
+          onFai={onChiudi}
+        >
           ← INDIETRO
-        </Tasto>
+        </DueTocchi>
         {d?.modo === 'prova' && <Bollino>PROVA: RESTA SU QUESTO DISPOSITIVO</Bollino>}
       </div>
 
@@ -370,7 +405,12 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         </Campo>
         {minore && (
           <span className="modulo-largo">
-            <Dettaglio tono="avviso">È minorenne: servono i dati del genitore qui sotto, e il modulo per minori firmato da lui.</Dettaglio>
+            <Dettaglio tono="avviso">È minorenne: servono i dati del genitore qui sotto, e il modulo per minori, che firma il genitore.</Dettaglio>
+          </span>
+        )}
+        {daRifare && (
+          <span className="modulo-largo">
+            <Dettaglio tono="avviso">{daRifare}</Dettaglio>
           </span>
         )}
       </Sezione>
@@ -414,18 +454,51 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       </Sezione>
 
       <Sezione titolo="I CORSI">
-        <div className="modulo-campo modulo-largo">
+        {/* Un errore sui corsi porta qui, dove la nota si legge prima dei due gruppi, che possono essere lunghi. */}
+        <div id="m-corsi" tabIndex={-1} className="modulo-campo modulo-largo modulo-corsi-tutti">
+          <NotaCampo id="m-corsi-nota" nota={nota('corsi')} />
           {guaioCorsi && <Dettaglio tono="guaio">I corsi non si leggono: {guaioCorsi}</Dettaglio>}
           {!corsi && !guaioCorsi && <Dettaglio>Un attimo…</Dettaglio>}
           <SceltaCorsi
-            id="m-corsi"
+            id="m-corsi-adatti"
             etichetta="Corsi"
-            voci={(corsi ?? []).map((c) => ({ id: c.id, testo: c.nome }))}
+            voci={perEta.adatti.map(tasto)}
             scelti={b.corsi}
             onScegli={scegli}
             descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
           />
-          <NotaCampo id="m-corsi-nota" nota={nota('corsi')} />
+          {perEta.senzaAnni.length > 0 && (
+            <>
+              <span className="modulo-etichetta modulo-altri">SENZA FASCIA D’ETÀ</span>
+              <SceltaCorsi
+                id="m-corsi-senza-anni"
+                etichetta="Corsi senza fascia d’età"
+                voci={perEta.senzaAnni.map(tasto)}
+                scelti={b.corsi}
+                onScegli={scegli}
+                descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
+              />
+            </>
+          )}
+          {perEta.altri.length > 0 && (
+            <>
+              <span className="modulo-etichetta modulo-altri">ALTRI CORSI</span>
+              <SceltaCorsi
+                id="m-corsi-altri"
+                etichetta="Altri corsi"
+                voci={perEta.altri.map(tasto)}
+                scelti={b.corsi}
+                onScegli={scegli}
+                descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
+              />
+            </>
+          )}
+          {/* Sotto il gruppo da cui nasce, così il tasto appena toccato non scende sotto il dito; letto da chi usa un lettore di schermo. */}
+          <div aria-live="polite">{fuoriEta.length > 0 && (
+              <Dettaglio tono="avviso">
+                {fuoriEta.join(', ')} {fuoriEta.length > 1 ? 'non sono' : 'non è'} della sua età: la segreteria ti richiama.
+              </Dettaglio>
+            )}</div>
         </div>
         <div className="modulo-campo modulo-largo">
           <span className="modulo-etichetta">COME PAGHI</span>
@@ -442,7 +515,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           <QuantoCosta
             nome={b.nome.trim() || 'Chi si iscrive'}
             cognome={b.cognome.trim()}
-            corsi={(corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)}
+            corsi={(corsi ?? []).filter((c) => b.corsi.includes(c.id))}
             formula={b.formula}
             abbonamenti={nucleo.abbonamenti}
           />
@@ -471,7 +544,16 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           />
         </div>
         {come === 'foto' ? (
-          <SceltaFile tipo="modulo" file={file.modulo} onFile={(x) => setFile((p) => ({ ...p, modulo: x }))} />
+          <SceltaFile
+            tipo="modulo"
+            file={file.modulo}
+            onFile={(x) => {
+              // Una foto ancora in preparazione quando cambia chi firma è del foglio di prima.
+              if (minorePrima.current !== minore) return
+              setFile((p) => ({ ...p, modulo: x }))
+              if (x) setDaRifare(undefined)
+            }}
+          />
         ) : (
           <>
             <Casella
@@ -512,14 +594,25 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             )}
             <div className="modulo-campo modulo-largo">
               <label htmlFor="m-firma" className="modulo-etichetta">
-                {firmatario ? `LA FIRMA DI ${firmatario.toUpperCase()}` : minore ? 'LA FIRMA DEL GENITORE' : 'LA FIRMA'}
+                {firmatario ? (
+                  <>
+                    LA FIRMA DI <span className="modulo-firmatario">{firmatario}</span>
+                  </>
+                ) : minore ? (
+                  'LA FIRMA DEL GENITORE'
+                ) : (
+                  'LA FIRMA'
+                )}
               </label>
+              {/* Prima del riquadro vuoto: si legge perché è vuoto. */}
+              {daRifare && <Dettaglio tono="avviso">{daRifare}</Dettaglio>}
               <TavolaFirma
                 id="m-firma"
                 tratti={tratti}
                 onTratti={(t) => {
                   setTratti(t)
                   setGuaioFirma(null)
+                  if (t.length) setDaRifare(undefined)
                 }}
                 descritto="m-firma-nota"
               />
@@ -701,7 +794,7 @@ function SceltaFile({
     <CaricaFile
       id={`m-file-${tipo}`}
       etichetta={f.etichetta}
-      facoltativo={facoltativo ?? !f.obbligatorio}
+      seManca={(facoltativo ?? !f.obbligatorio) ? (f.seManca ?? 'FACOLTATIVO') : undefined}
       dettaglio={lavoro ? 'Preparo la foto…' : (dettaglio ?? f.dettaglio)}
       file={file && !lavoro ? { nome: file.name, byte: file.size } : undefined}
       errore={guaio}
@@ -713,14 +806,14 @@ function SceltaFile({
 /**
  * Quanto costa una persona in più nel nucleo, con lo sconto famiglia, e come
  * pagarlo: l'IBAN e la causale col suo nome, da copiare. La ricevuta del
- * bonifico si carica qui sotto, fra i file.
+ * bonifico si carica qui sotto, fra i file, se si paga prima.
  */
-function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: string[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
+function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: CorsoRef[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
   const letto = useListino()
   const [copiato, setCopiato] = useState<string | null>(null)
   if (!letto) return null
   const s = stimaIscrizione({ chi: nome, corsi, formula }, abbonamenti, chiaveGiorno(new Date()), letto.listino)
-  const testo = causale(nome, cognome, corsi)
+  const testo = causale(nome, cognome, corsi.map((c) => c.nome))
   const copia = (cosa: string, valore: string) =>
     navigator.clipboard?.writeText(valore).then(
       () => {

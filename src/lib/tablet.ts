@@ -157,8 +157,11 @@ export interface DatiTablet {
    * nessuno: se ne accorge l'aggiunta, come col database.
    */
   provati(pin: string): Promise<GiaProvato[]>
-  /** Aggiunge chi viene a provare, già presente. `false` se il PIN non va più. */
-  aggiungiProva(pin: string, sessioneId: string, chi: ChiProva): Promise<boolean>
+  /**
+   * Aggiunge chi viene a provare, già presente, e dice chi è: anche il nuovo
+   * va tenuto fra chi è già nell'appello. `null` se il PIN non va più.
+   */
+  aggiungiProva(pin: string, sessioneId: string, chi: ChiProva): Promise<string | null>
   /** Toglie una prova messa per sbaglio. `false` se il PIN non va più. */
   togliProva(pin: string, sessioneId: string, personaId: string): Promise<boolean>
 
@@ -377,3 +380,39 @@ export const ricordaTocco = (sessioneId: string, personaId: string) => toccati.s
 export const dimenticaTocco = (sessioneId: string, personaId: string) => toccati.delete(chiaveTocco(sessioneId, personaId))
 export const siAnnulla = (sessioneId: string, personaId: string) =>
   (toccati.get(chiaveTocco(sessioneId, personaId)) ?? 0) > Date.now() - REGOLE.annullaMin * MIN
+
+/**
+ * L'appello dell'istruttore si rilegge senza svuotarlo, quindi una lettura
+ * partita prima di un tocco può tornare dopo e rimettere lo stato vecchio.
+ * Una lettura che torna mentre si scrive si mette da parte, e si rilegge
+ * una volta sola quando l'ultima scrittura finisce (TUTTI PRESENTI ne fa una
+ * per persona); una che ha incrociato una scrittura già finita si rilegge.
+ */
+export function sorvegliaScritture() {
+  // Cresce all'inizio e alla fine di ogni scrittura: così anche una lettura
+  // partita a scrittura in corso e tornata dopo risulta incrociata.
+  let versione = 0
+  let inCorso = 0
+  let daParte = false
+  return {
+    inizia() {
+      versione++
+      inCorso++
+    },
+    fine(): boolean {
+      versione++
+      inCorso--
+      if (inCorso > 0 || !daParte) return false
+      daParte = false
+      return true
+    },
+    fotografa: () => versione,
+    lettura(foto: number): 'mostra' | 'rileggi' | 'aspetta' {
+      if (inCorso > 0) {
+        daParte = true
+        return 'aspetta'
+      }
+      return foto === versione ? 'mostra' : 'rileggi'
+    },
+  }
+}

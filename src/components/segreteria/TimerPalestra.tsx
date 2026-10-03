@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { AllenamentoSeg, DatiSegreteria } from '../../lib/segreteria'
+import { nomeVoce, type AllenamentoSeg, type DatiSegreteria } from '../../lib/segreteria'
 import { Spunta } from '../Icons'
 import { italianVoices, speak } from '../../../timer/src/lib/audio'
 import { CLIPS, type ClipSpec, exerciseKey, formatoRegistrazione } from '../../../timer/src/lib/voiceClips'
@@ -13,7 +13,7 @@ import {
   normalizza,
 } from '../../../timer/src/lib/esercizi'
 import { uid } from '../../../timer/src/lib/format'
-import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, ComeFunziona, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 
 type Fai = (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => Promise<unknown>
 
@@ -56,6 +56,9 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
   const scelta = voce.dato?.nome ?? null
   const letta = !!voce.dato
   useEffect(() => setScritta(scelta ?? ''), [scelta])
+  // Un nome scritto e non salvato col tasto: uscendo si chiede. La stessa regola che accende il tasto.
+  const daSalvare = letta && scritta.trim() !== (scelta ?? '')
+  useBozza(daSalvare, 'La voce dei tablet')
   const salvaVoce = (nome: string | null) =>
     void fai(() => d.salvaVoceSale(nome), 'Voce cambiata: i tablet la prendono al prossimo giro', voce.ricarica)
   const prova = (nome: string) => speak('Lavoro. Burpee più salto', 1, voci.find((v) => v.name === nome)?.voiceURI ?? null)
@@ -70,11 +73,6 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
       <div className="stack" style={{ gap: 6 }}>
         <span className="sg-etichetta">VOCE DI SISTEMA</span>
         {voce.guaio && <Guaio testo={`La voce non si legge: ${voce.guaio}`} />}
-        <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-          Le voci le mette il dispositivo, non l'app: qui ci sono quelle di questo computer, e il tablet usa quella con lo stesso nome se
-          ce l'ha, altrimenti la sua prima voce italiana. Se il tablet ne ha una che qui non c'è, se ne scrive il nome. Quelle marcate
-          «enhanced» o «premium» suonano molto meno metalliche.
-        </span>
         <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
           <button type="button" className="num sg-chip" aria-pressed={letta && scelta === null} disabled={!letta} onClick={() => salvaVoce(null)}>
             LA PRIMA ITALIANA DEL TABLET
@@ -92,7 +90,7 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
                 salvaVoce(v.name)
               }}
             >
-              {v.name.toUpperCase()}
+              {nomeVoce(v.name, voci.map((x) => x.name)).toUpperCase()}
             </button>
           ))}
         </div>
@@ -114,10 +112,15 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
             disabled={!letta}
             onChange={(e) => setScritta(e.target.value)}
           />
-          <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!letta || scritta.trim() === (scelta ?? '')} aria-label="Salva la voce">
+          <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!daSalvare} aria-label="Salva la voce">
             <Spunta size={18} />
           </button>
         </form>
+        <ComeFunziona>
+          Le voci le mette il dispositivo, non l'app: qui ci sono quelle di questo computer, e il tablet usa quella con lo stesso nome se
+          ce l'ha, altrimenti la sua prima voce italiana. Se il tablet ne ha una che qui non c'è, se ne scrive il nome. Quelle marcate
+          «enhanced» o «premium» suonano molto meno metalliche.
+        </ComeFunziona>
       </div>
 
       <VoceIncisa d={d} fai={fai} chiavi={clip.dato} guaio={clip.guaio} ricarica={clip.ricarica} esercizi={esercizi} />
@@ -210,11 +213,12 @@ function VoceIncisa({
           {chiavi ? `${fatte}/${tutte.length}` : '…'}
         </span>
       </div>
-      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-        Frasi registrate con una voce vera al posto della sintesi, per tutti i tablet. Si può incidere un pezzo per volta: dove manca la
-        clip, il tablet torna da solo alla voce di sistema. Le usa se nelle impostazioni del timer del tablet è acceso «Usa le clip incise». Meglio
-        registrare dal browser che usano i tablet: Safari e Chrome registrano in formati diversi.
-      </span>
+      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>Frasi registrate con una voce vera al posto della sintesi, per tutti i tablet.</span>
+      <ComeFunziona>
+        Si può incidere un pezzo per volta: dove manca la clip, il tablet torna da solo alla voce di sistema. Le usa se nelle impostazioni del
+        timer del tablet è acceso «Usa le clip incise». Meglio registrare dal browser che usano i tablet: Safari e Chrome registrano in formati
+        diversi.
+      </ComeFunziona>
       {guaio && <Guaio testo={`Le clip non si leggono: ${guaio}`} />}
       {!formato && <Guaio testo="Questo browser non permette di registrare audio: si incide da un altro." />}
       {problema && <Guaio testo={problema} />}
@@ -245,13 +249,12 @@ function VoceIncisa({
                   </span>
                   {incisa && !inCorso && (
                     <>
-                      <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => void ascolta(c.key)}>
+                      <button type="button" className="num sg-chip" onClick={() => void ascolta(c.key)}>
                         ASCOLTA
                       </button>
                       <button
                         type="button"
                         className="num sg-chip"
-                        style={{ minHeight: 36 }}
                         onClick={async () => {
                           if ((await chiedi(`Togliere la clip «${c.text}»? I tablet torneranno alla voce di sistema.`, 'TOGLI LA CLIP'))) void fai(() => d.togliClip(c.key), 'Clip tolta', ricarica)
                         }}
@@ -263,7 +266,7 @@ function VoceIncisa({
                   <button
                     type="button"
                     className={`num sg-chip${inCorso ? ' sg-chip-pieno' : ''}`}
-                    style={{ minHeight: 36, ...(inCorso ? { background: 'var(--rosso)', borderColor: 'var(--rosso)', color: 'var(--su-rosso)' } : {}) }}
+                    style={{ ...(inCorso ? { background: 'var(--rosso)', borderColor: 'var(--rosso)', color: 'var(--su-rosso)' } : {}) }}
                     disabled={!formato || !chiavi || (attiva !== null && !inCorso)}
                     onClick={() => (inCorso ? registratore.current?.stop() : void registra(c.key))}
                   >
@@ -390,7 +393,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                           </option>
                         ))}
                       </select>
-                      {!libero(aperto.nome, e.id) && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>C'è già un esercizio con questo nome.</span>}
+                      {!libero(aperto.nome, e.id) && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>C'è già un esercizio con questo nome.</span>}
                       <button
                         type="button"
                         className="num sg-chip"
@@ -410,7 +413,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                       </button>
                     </form>
                   ) : (
-                    <button key={e.id} type="button" className="num sg-chip" style={{ minHeight: 36, letterSpacing: '0.04em' }} onClick={() => setAperto({ id: e.id, nome: e.nome, categoria: e.categoria })}>
+                    <button key={e.id} type="button" className="num sg-chip" style={{ letterSpacing: '0.04em' }} onClick={() => setAperto({ id: e.id, nome: e.nome, categoria: e.categoria })}>
                       {e.nome}
                     </button>
                   ),
@@ -437,7 +440,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                 </option>
               ))}
             </select>
-            {nuovo.nome.trim() && !libero(nuovo.nome) && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>C'è già.</span>}
+            {nuovo.nome.trim() && !libero(nuovo.nome) && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>C'è già.</span>}
             <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!nuovo.nome.trim() || !libero(nuovo.nome)}>
               AGGIUNGI
             </button>

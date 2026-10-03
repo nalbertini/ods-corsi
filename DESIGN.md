@@ -21,12 +21,14 @@ colors:
   viola-corso: "#8b5cc4"
   su-colore: "#121212"
   su-rosso: "#ffffff"
+  rosso-testo: "#ff5a52"
+  rosso-testo-chiaro: "#b81d1d"
   carta-chiara: "#f4f4f1"
   superficie-chiara: "#ffffff"
   superficie-alta-chiara: "#e9e9e5"
   riga-chiara: "#d4d4ce"
   testo-chiaro: "#161616"
-  testo-spento-chiaro: "#6b6b67"
+  testo-spento-chiaro: "#656561"
   verde-chiaro: "#12913f"
   verde-testo-chiaro: "#0b7a33"
   giallo-testo-chiaro: "#8f6a00"
@@ -139,7 +141,7 @@ components:
     textColor: "{colors.testo-secondario}"
     rounded: "{rounded.none}"
     padding: "0 12px"
-    height: "40px"
+    height: "44px"
   tablet-tessera:
     backgroundColor: "{colors.superficie}"
     textColor: "{colors.testo}"
@@ -173,7 +175,7 @@ Il sistema rifiuta l'aspetto da SaaS generico: niente card morbide con ombra, ni
 Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i neutri sono grigi caldi, appena verso il giallo.
 
 ### Primary
-- **Rosso Ingranaggio** (#e4292a): ciò che manca o non va — l'assenza nell'appello, il SENZA APPELLO, i dati mancanti, gli errori — e, in segreteria, solo i tasti di ciò che non si annulla (FAI LA RICEVUTA, STAMPATO CANCELLALO, IMPORTA). Fuori dalla segreteria resta anche l'azione principale (`btn-primary`, avvio del timer) e il timbro kanji. Non è un colore dei corsi. Uguale nei due temi.
+- **Rosso Ingranaggio** (#e4292a): ciò che manca o non va — l'assenza nell'appello, il SENZA APPELLO, i dati mancanti, gli errori — e, in segreteria, solo i tasti di ciò che non si annulla (FAI LA RICEVUTA, STAMPATO CANCELLALO, IMPORTA). Fuori dalla segreteria resta anche l'azione principale (`btn-primary`, avvio del timer) e il timbro kanji. Non è un colore dei corsi. Uguale nei due temi per bordi e fondi; come testo piccolo diventa **Rosso Testo** (`--rosso-testo`: #ff5a52 sul tema scuro, #b81d1d sul chiaro), perché il rosso del marchio si ferma a 3,8:1.
 
 ### Secondary
 - **Verde Ingranaggio** (#16a54a; #12913f sul tema chiaro): conferma e presenza. Come testo piccolo sul tema chiaro diventa **Verde Testo** (#0b7a33, `--verde-testo`), come il giallo. Tasto `btn-go`, "SEGNA LA PRESENZA" del tablet, riga presente, conteggio completo, toast di conferma.
@@ -190,7 +192,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 - **Riga** (#333333 / chiaro #d4d4ce): i bordi da 2px di ogni contenitore e tasto.
 - **Riga Tenue** (#2a2a2a / chiaro #e2e2dd): divisori, linea dei titoletti, separatori tra colonne.
 - **Tratteggio** (#4a4a46 / chiaro #b0b0aa): bordi tratteggiati di "aggiungi" e del riquadro firma.
-- **Testo** (#f2f2f0 / chiaro #161616), **Testo Secondario** (#c9c9c4 / #3d3d3a), **Testo Spento** (#8c8c88 / #6b6b67), **Testo Flebile** (#5a5a56 / #a8a8a3): quattro gradini di testo, dal nome al segnaposto.
+- **Testo** (#f2f2f0 / chiaro #161616), **Testo Secondario** (#c9c9c4 / #3d3d3a), **Testo Spento** (#8c8c88 / #656561), **Testo Flebile** (#5a5a56 / #a8a8a3): quattro gradini di testo, dal nome al segnaposto. Il segnaposto dei campi della segreteria (Cerca iscritto) usa lo Spento, non il Flebile: è l’unica indicazione di cosa scrivere e deve leggersi.
 - **Tasto** (#b8b8b2 / chiaro #4a4a46): il testo dei tasti a linea a riposo, che si accende in `testo` al passaggio.
 
 ### Named Rules
@@ -212,6 +214,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 ### Hierarchy
 - **Display** (700, 56px, 1): l'ora del tablet di sala; il conteggio dell'appello a 46px. Numeri tabellari.
 - **Headline** (700, 34–40px, 1): titolo di sezione della segreteria, nome della sala sul tablet, lezione aperta (38px).
+- **Titolo di gruppo** (700, 26px, 1, riga 2px `riga` sopra): un gruppo di riquadri dentro una sezione lunga (i gruppi di IMPOSTAZIONI), la scheda di un iscritto.
 - **Title** (700, 19–22px, 1.05): nome della lezione, ora, nome sul tablet (22px), tasti.
 - **Body** (Barlow 500, 17px, 1.4): nomi nell'appello, campi, testo dei moduli.
 - **Body small** (Barlow 400, 13–15px, 1.35–1.5): note, dettagli, frasi sotto i titoli, in `testo-spento`.
@@ -222,7 +225,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 
 **La Regola dei Numeri Tabellari.** Orari, conteggi e prezzi usano `.num`/`.cond` con `tabular-nums`: le cifre non ballano quando cambiano.
 
-**La Regola del Maiuscolo Spaziato.** Le etichette sono maiuscole e spaziate largo (0.12–0.24em); i nomi delle persone mai.
+**La Regola del Maiuscolo Spaziato.** Le etichette sono maiuscole e spaziate largo (0.12–0.24em); i nomi delle persone mai. Eccezione: le voci del menu di segreteria stanno a 0.1em da 768px, perché nessuna vada a capo accanto al suo numero.
 
 ## Layout
 
@@ -261,31 +264,35 @@ Decisi e da palestra: maiuscolo, obliquo, spaziato largo.
 - **Vai:** fondo Verde Ingranaggio, per confermare una presenza o un invio.
 - **Linea / Ghost:** bordo 2px `riga`, testo `tasto`; al passaggio bordo `testo-spento` e testo `testo` (120ms).
 - **Tratteggiato:** bordo 2px tratteggiato `tratteggio`, largo quanto la colonna, per "aggiungi".
-- **Disabilitato:** opacità 0.4, `not-allowed`.
+- **Disabilitato** (in segreteria): blocco `superficie-alta` senza bordo, testo `testo-spento`, `not-allowed` — non somiglia né al tasto pieno né a quello a linea; accanto, il motivo («Scrivi il titolo»). Altrove opacità 0.4.
 - **Fuoco:** contorno 2px `testo` con 2px di distanza.
 
 ### Icon Button
 Quadrato 44px con bordo 2px `riga` e segno in `tasto`; quando contiene una parola si allarga (`.icon-btn.testo`).
 
 ### Chips & Schede
-- **Chip** (`.sg-chip`): 40px, bordo 2px, Saira 13px 0.12em; premuto: bordo `testo` e fondo `superficie-alta`. Variante piena: fondo `testo`, testo `nero-palestra`.
+- **Chip** (`.sg-chip`): 44px, bordo 2px, Saira 13px 0.12em; premuto: bordo `testo` e fondo `superficie-alta`. Variante piena: fondo `testo`, testo `nero-palestra`.
 - **Schede** (`.scheda`): righe di tasti uguali con gap 4px; attiva: fondo `superficie-alta`, bordo e testo `testo`.
-- **Bollini** (`.prova-marchio`, `.spia-coda`, `.sg-tag`): 11px maiuscolo spaziato, bordo 2px giallo o fondo pieno.
+- **Scelte del modulo di iscrizione** (`.modulo-corso`): bordo 2px `riga`, quadratino da 22px a sinistra; scelta = bordo `testo`, fondo `superficie-alta`, quadratino con ✓ (più risposte) o ● (una sola) in `testo`. Non è verde: scegliere non è fatto. È verde solo il file caricato. Sotto il nome di un corso, età e orari del listino in Barlow 13px `testo-spento` (`testo-secondario` sul tasto scelto, per il contrasto); con la data di nascita, sotto i corsi della sua età vengono i gruppi SENZA FASCIA D'ETÀ e ALTRI CORSI, ciascuno dopo la sua etichetta; se si sceglie un corso fuori età, sotto l'ultimo gruppo un avviso in `giallo-testo` lo nomina.
+- **Bollini** (`.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola`): 12px maiuscolo spaziato (11px `.prova-marchio` e `.sg-bollino`, DATI DI PROVA: devono stare nei 56px del menu), bordo 2px giallo o fondo pieno; 13px nella testata di un filo delle segnalazioni.
 
 ### Cards / Containers
 - **Corner Style:** 0px.
 - **Background:** `superficie`, su fondo `nero-palestra`.
 - **Border:** 2px `riga`; i toni cambiano il bordo (giallo per prova, rosso per guaio) o aggiungono una barra sinistra di 4px.
+- **Fatto e messo da parte** (lezione passata, segnalazione chiusa): fondo trasparente, bordo `riga-tenue`, titolo `testo-secondario`.
+- **Messaggi di un filo:** quelli degli altri hanno una barra sinistra di 4px `testo-spento` e un rientro; quelli della segreteria no.
 - **Internal Padding:** 14px (telefono), 20–28px (segreteria e tablet).
+- **Spiegazione a richiesta (`.sg-spiega`):** la spiegazione lunga di un riquadro, chiusa in un `<details>`. Il tasto «COME FUNZIONA?» è un'etichetta Saira 700 13px, 0.12em, in `testo-secondario`, alta 44px, con `+` / `−` davanti che dice se è aperta; aperta passa a `testo`. Fuoco: contorno 2px `testo`. Numeri, stati e avvisi non ci vanno mai dentro.
 
 ### Inputs / Fields
 - **Style:** bordo 2px `riga`, fondo `superficie` (in segreteria `nero-palestra`), alto 52px (44px in segreteria, 56px sul tablet), Barlow 17px.
 - **Focus:** il bordo passa a `testo`, nessun alone.
-- **Errore:** bordo rosso, nota rossa sotto; avviso in `giallo-testo`. **Sola lettura:** bordo tratteggiato, testo spento, fondo trasparente.
+- **Errore:** bordo ed etichetta rossi, nota sotto in `testo` (il rosso sullo scuro non arriva a 4,5:1), che dice cosa fare («togli 5 caratteri»); avviso in `giallo-testo`. **Sola lettura:** bordo tratteggiato, testo spento, fondo trasparente.
 
 ### Navigation
 - **Testata** (telefono/tablet verticale): marchio a ingranaggi e nome obliquo a sinistra, schede sotto; da 960px stessa riga e bordo inferiore `riga-tenue`.
-- **Menu di segreteria:** colonna di 240px su `menu`; voci Saira 16px 0.12em in `testo-secondario`; la voce corrente ha la barra sinistra 4px del colore `testo` e fondo `superficie` (mai rossa: il rosso è per ciò che manca); i numeri delle voci sono bollini gialli a destra.
+- **Menu di segreteria:** colonna di 240px su `menu`; voci Saira 16px 0.12em in `testo-secondario` (0.12em solo sul telefono, 0.1em da 768px; da 1001px nessuna va a capo); da 768px i due tasti (?, tema) e il bollino DATI DI PROVA stanno in cima, sotto il marchio, in una riga alta 44px; IMPOSTAZIONI è una voce di LA PALESTRA; COPIA LINK e chi è entrato in fondo, e scorrono con le voci; la voce corrente ha la barra sinistra 4px del colore `testo` e fondo `superficie` (mai rossa: il rosso è per ciò che manca); i numeri delle voci sono bollini gialli a destra.
 
 ### Riga dell'appello (firma del sistema)
 Riga piena larga 56px: segno grande a sinistra (Saira 22px), nome Barlow 17px. Tre stati senza leggere: presente = bordo e segno verdi; assente = bordo e segno rossi, nome barrato e spento; non segnato = bordo `riga`.
@@ -299,6 +306,9 @@ Nomi da toccare alti 84px, bordo 3px, Barlow 22px (sono nomi di persona: niente 
 ### Timbro kanji
 Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un serif giapponese di sistema; tre misure (22, 32, 56px).
 
+### Timbri della scheda
+In cima alla scheda di un iscritto (`.sg-timbro`), da non confondere col timbro kanji: rettangoli squadrati che sono tasti e portano alla loro sezione. Bordo 2px del tono dello stato con barra sinistra 4px, fondo `nero-palestra`; titoletto Label 12px in `testo-spento`, parola Title 22px nel `-testo` del tono (verde a posto, giallo da guardare, rosso manca), righe Saira 14px a 0.12em in `testo-secondario`; una riga che è un avviso a sé (DA STAMPARE) ha il suo riquadro giallo. Le parole sono quelle della colonna IN REGOLA, dalla stessa funzione (`timbriScheda`). **Piccolo** (il documento, che non serve per entrare): colonna più stretta, parola 19px, righe 12px spente. **Spento** (scheda disattivata): bordo `riga`, testo `testo-spento`, stesse parole; sopra, un avviso a bordo tratteggiato `testo` con DISATTIVATA in Saira e la frase in Barlow 15px, mai rosso perché si annulla. Al passaggio il bordo passa a `testo`. Sotto i 1000px si mettono uno sotto l'altro.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -307,7 +317,7 @@ Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un 
 - **Do** tenere i bersagli ad almeno 44px, 56px per le righe che si toccano in piedi, 60px+ sul tablet.
 - **Do** scrivere tasti ed etichette in maiuscolo Saira Condensed, tasti obliqui 9°.
 - **Do** usare `su-colore` (#121212) per il testo sopra verde, giallo e blu pieno; `su-rosso` (bianco) sopra il rosso.
-- **Do** usare `--giallo-testo` e `--verde-testo` per giallo e verde scritti, mai `--giallo` o `--verde` puri come testo sul tema chiaro.
+- **Do** usare `--giallo-testo`, `--verde-testo` e `--rosso-testo` per giallo, verde e rosso scritti, mai `--giallo`, `--verde` o `--rosso` puri come testo piccolo.
 
 ### Don't:
 - **Don't** arrotondare angoli: raggio 0 ovunque, salvo il timbro kanji.

@@ -34,6 +34,15 @@ export function richiesteDi(personaId: string): Richiesta[] {
   return leggi().filter((r) => r.personaId === personaId)
 }
 
+/** Le richieste di una persona passano a un'altra: due schede unite (`unisciPersone`). */
+export function spostaRichieste(da: string, a: string) {
+  try {
+    localStorage.setItem(DOVE, JSON.stringify(leggi().map((r) => (r.personaId === da ? { ...r, personaId: a } : r))))
+  } catch {
+    /* come gli esempi: senza spazio, restano dov'erano */
+  }
+}
+
 /** Gli esempi di `esempiProva`: si aggiungono, e una richiesta che c'è già resta com'è. */
 export function aggiungiRichiesteProva(nuove: Richiesta[]) {
   const tutte = leggi()

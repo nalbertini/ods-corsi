@@ -125,7 +125,7 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
       {guaio && (
         <div className="pad" style={{ paddingTop: 14 }}>
           <div className="card stack" style={{ padding: 14, gap: 6, borderColor: 'var(--rosso)' }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso)' }}>NON È ANDATA</span>
+            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso-testo)' }}>NON È ANDATA</span>
             <span style={{ fontSize: 14, color: 'var(--dim)' }}>{guaio}</span>
           </div>
         </div>

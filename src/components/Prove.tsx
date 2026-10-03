@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { ChiProva, GiaProvato } from '../lib/prove'
-import { cosaNonVaProva, somiglianti } from '../lib/prove'
+import { cosaNonVaProva, provaScritta, somiglianti } from '../lib/prove'
 import { chiaveGiorno, giornoPerEsteso } from '../lib/sala'
 
 /**
@@ -33,6 +33,7 @@ export function PannelloProve({
   giaQui,
   onAggiungi,
   onChiudi,
+  onScritto,
 }: {
   stile: Stile
   /** Chi è già venuto a provare, dal più recente. */
@@ -42,6 +43,8 @@ export function PannelloProve({
   /** Aggiunge e segna presente. Se solleva, il messaggio resta nel pannello. */
   onAggiungi: (chi: ChiProva) => Promise<void>
   onChiudi: () => void
+  /** Chi è scritto e non ancora aggiunto (`provaScritta`), a ogni cambio; `null` chiudendo. */
+  onScritto?: (chi: string | null) => void
 }) {
   const k = CLASSI[stile]
   const [venuti, setVenuti] = useState<GiaProvato[] | null>(null)
@@ -109,7 +112,14 @@ export function PannelloProve({
   }
   // Con un nome scritto, chiudere senza aggiungerlo lo buttava via senza dirlo:
   // la prova non arrivava in segreteria, e il telefono si perdeva.
-  const scrittoQualcosa = !!(nome.trim() || cognome.trim())
+  const scritta = provaScritta({ nome, cognome })
+  const scrittoQualcosa = scritta !== null
+  // Chi contiene il pannello avvisa prima di andarsene con un nome ancora
+  // qui; chiuso il pannello, non c'è più niente da perdere.
+  const avvisa = useRef(onScritto)
+  avvisa.current = onScritto
+  useEffect(() => avvisa.current?.(scritta), [scritta])
+  useEffect(() => () => avvisa.current?.(null), [])
   const chiudi = async () => {
     if (!scrittoQualcosa || (await prova())) onChiudi()
   }
@@ -174,12 +184,14 @@ export function PannelloProve({
           </span>
         )}
 
-        <div className="row" style={{ gap: 8 }}>
+        {/* «NASCONDI» e non «CHIUDI»: sotto, nell'appello, CHIUDI vuol dire
+            un'altra cosa. Su un telefono stretto i due tasti vanno a capo. */}
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
           <button type="submit" className={`${k.si} grow`} disabled={aspetta}>
             {aspetta ? 'AGGIUNGO…' : 'AGGIUNGI'}
           </button>
           <button type="button" className={k.no} disabled={aspetta} onClick={() => void chiudi()}>
-            {scrittoQualcosa ? 'AGGIUNGI E CHIUDI' : 'CHIUDI'}
+            {scrittoQualcosa ? 'AGGIUNGI E NASCONDI' : 'NASCONDI'}
           </button>
         </div>
       </form>

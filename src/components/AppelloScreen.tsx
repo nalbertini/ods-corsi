@@ -1,12 +1,13 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
-import { giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
+import { domandaIndietro, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { timerDellaLezione } from '../lib/aree'
 import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from './Prove'
+import { DueTocchi } from './ds'
 import type { SegnalataVista } from '../lib/segnalate'
 
 /**
@@ -92,6 +93,9 @@ export function AppelloScreen({
   }
   const [guaio, setGuaio] = useState<string | null>(null)
   const [conProve, setConProve] = useState(false)
+  // Chi è scritto in PROVE e non aggiunto: tornando al calendario si
+  // perderebbe, e la freccia lo chiede prima (`domandaIndietro`).
+  const [scritta, setScritta] = useState<string | null>(null)
   const prove = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (conProve) prove.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
@@ -102,6 +106,12 @@ export function AppelloScreen({
   // si recupera un appello senza cercarli fra gli altri. L'ordine si decide una
   // volta sola, così non cambia sotto il dito mentre li si segna.
   const primi = useRef<Set<string> | null>(null)
+  const toccataIl = useRef(new Map<string, number>())
+  const fine = useRef<HTMLDivElement>(null)
+  const vaiAChiudere = () => {
+    fine.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    fine.current?.querySelector('button')?.focus({ preventScroll: true })
+  }
   const ricarica = useCallback(() => {
     let vivo = true
     setGuaio(null)
@@ -128,7 +138,7 @@ export function AppelloScreen({
     return (
       <div className="pad" style={{ paddingTop: 20 }}>
         <div className="card stack" style={{ padding: 14, gap: 6, borderColor: 'var(--rosso)' }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso)' }}>LEZIONE NON LETTA</span>
+          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso-testo)' }}>LEZIONE NON LETTA</span>
           <span style={{ fontSize: 14, color: 'var(--dim)' }}>{guaio}</span>
           <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px', alignSelf: 'flex-start' }} onClick={() => setGiro((g) => g + 1)}>
             RIPROVA
@@ -154,6 +164,15 @@ export function AppelloScreen({
   const prossimo = (s: StatoPresenza | null): StatoPresenza | null =>
     s === null ? 'presente' : s === 'presente' ? 'assente' : null
 
+  // Il secondo tocco veloce sulla stessa riga non conta: con tre stati, un
+  // presente toccato due volte «per sicurezza» finiva non segnato.
+  const toccaRiga = (personaId: string, stato: StatoPresenza | null) => {
+    const ora = Date.now()
+    if (ora - (toccataIl.current.get(personaId) ?? 0) < 400) return
+    toccataIl.current.set(personaId, ora)
+    tocca(personaId, prossimo(stato))
+  }
+
   const tocca = (personaId: string, stato: StatoPresenza | null) => {
     // Si aggiorna subito quello che si vede: la scrittura viaggia per conto suo
     // e, senza rete, aspetta in coda. Chi fa l'appello non deve aspettare un
@@ -163,8 +182,10 @@ export function AppelloScreen({
   }
 
   // Solo chi non è ancora segnato: le assenze già messe restano. Tranne
-  // quando sono tutti assenti: allora le ✕ sono di una chiusura sbagliata.
-  const tuttiAssenti = d.elenco.length > 0 && d.elenco.every((p) => p.stato === 'assente')
+  // quando nessun iscritto c'è e sono tutti segnati assenti: allora le ✕ sono
+  // di una chiusura sbagliata. Solo gli iscritti: chi prova entra presente, e
+  // contandolo il recupero spariva proprio dopo aver aggiunto una prova.
+  const tuttiAssenti = iscritti.length > 0 && iscritti.every((p) => p.stato === 'assente')
   const segnatiIscritti = iscritti.filter((p) => p.stato !== null).length
   const tuttiGliAltri = () => {
     if (segnati === 0 || tuttiAssenti) {
@@ -197,23 +218,26 @@ export function AppelloScreen({
     onChiudi?.(d.sessione, { presenti: presentiIscritti, assenti: iscritti.length - presentiIscritti, prove: presentiProve })
   }
 
-  // Chiudendo diventano assenti tutti i non segnati, anche chi prova; la
-  // testa conta invece solo gli iscritti, come il conto dei presenti.
-  const daSegnare = d.elenco.length - segnati
-  const iscrittiDaSegnareQui = iscritti.filter((p) => p.stato === null).length
+  // Un conto solo, dappertutto: gli iscritti, e chi prova detto a parte,
+  // come sulla scheda del calendario e nell'esito. Chiudendo diventano
+  // assenti tutti i non segnati, anche chi prova.
+  const tuttiSegnati = segnati === d.elenco.length
+  const mancano = iscritti.filter((p) => p.stato === null).length
+  const proveMancano = inProva.filter((p) => p.stato === null).length
   const presentiIscritti = iscritti.filter((p) => p.stato === 'presente').length
   const futura = new Date(d.sessione.inizio).getTime() > Date.now()
+  const assentiDetti = `${mancano === 1 ? 'UN ASSENTE' : `${mancano} ASSENTI`}${proveMancano ? ` · +${proveMancano} PROVA` : ''}`
   // Quando chiudere vuole un secondo tocco, e cosa chiede: prima di tutto
   // quanti diventerebbero assenti, che è il fatto che conta.
   const domanda =
-    segnati === 0 && daSegnare > 0
-      ? `${futura ? 'NON È COMINCIATA' : 'NESSUNO SEGNATO'} · ${daSegnare} ASSENTI?`
+    segnati === 0 && !tuttiSegnati
+      ? `${futura ? 'NON È COMINCIATA' : 'NESSUNO SEGNATO'} · ${assentiDetti}?`
       : futura
-        ? daSegnare
-          ? `NON È COMINCIATA · ${daSegnare} ASSENTI?`
-          : 'NON È COMINCIATA: CHIUDI?'
-        : daSegnare * 2 > d.elenco.length
-          ? `SICURO? ${daSegnare} ASSENTI`
+        ? tuttiSegnati
+          ? 'NON È COMINCIATA: CHIUDI?'
+          : `NON È COMINCIATA · ${assentiDetti}?`
+        : mancano * 2 > iscritti.length
+          ? `SICURO? ${assentiDetti}`
           : undefined
 
   return (
@@ -223,9 +247,9 @@ export function AppelloScreen({
       <div className="appello-testa">
         <div className="row pad" style={{ gap: 10, paddingTop: 12 }}>
           {onIndietro && (
-            <button className="icon-btn" onClick={onIndietro} aria-label="Torna al calendario">
+            <DueTocchi className="icon-btn" chiede={domandaIndietro(scritta)} etichetta="Torna al calendario" onFai={onIndietro}>
               <Back />
-            </button>
+            </DueTocchi>
           )}
           <span className="stack grow" style={{ gap: 3, minWidth: 0 }}>
             <span className="ob appello-titolo">{d.sessione.corso.toUpperCase()}</span>
@@ -241,7 +265,8 @@ export function AppelloScreen({
             {futura && <span className="num appello-futura">NON ANCORA COMINCIATA</span>}
           </span>
           {/* Il timer della lezione: si apre con i timer del corso in cima. */}
-          <a className="icon-btn" href={timerDellaLezione(d.sessione)} aria-label="Apri il timer della lezione" title="Il timer della lezione">
+          {/* In un'altra scheda, come dal menu: tornando l'appello è dov'era. */}
+          <a className="icon-btn" href={timerDellaLezione(d.sessione)} target="_blank" rel="noopener" aria-label="Apri il timer della lezione (in un'altra scheda)" title="Il timer della lezione">
             <Cronometro size={20} />
           </a>
         </div>
@@ -252,9 +277,17 @@ export function AppelloScreen({
           {presentiProve > 0 && <span className="num appello-prove">+{presentiProve} PROVA</span>}
           <span className="grow" />
           <span className="stack" style={{ alignItems: 'flex-end', gap: 2, alignSelf: 'center' }}>
-            <span className="num appello-stato" data-fatto={daSegnare === 0}>
-              {daSegnare === 0 ? '✓ TUTTI SEGNATI' : `${iscrittiDaSegnareQui || daSegnare} DA SEGNARE`}
-            </span>
+            {/* Con tutti segnati il tasto qui sotto lo dice già: qui il passo dopo. */}
+            {tuttiSegnati && !tuttiAssenti && onChiudi && !conProve ? (
+              // Si legge come un invito, e allora si tocca: porta al tasto in fondo.
+              <button type="button" className="num appello-stato appello-vai" data-fatto="true" onClick={vaiAChiudere}>
+                CHIUDI IN FONDO ↓
+              </button>
+            ) : (
+              <span className="num appello-stato" data-fatto={tuttiSegnati && !tuttiAssenti} data-manca={tuttiAssenti || undefined}>
+                {tuttiAssenti ? 'TUTTI ASSENTI' : tuttiSegnati ? '✓ TUTTI SEGNATI' : mancano ? `${mancano} DA SEGNARE` : `${proveMancano} PROVA DA SEGNARE`}
+              </span>
+            )}
             {/* Sempre al suo posto, anche vuota: la testa non cambia altezza. */}
             <span className="num appello-coda" role="status">
               {inCoda > 0 ? `${inCoda} DA INVIARE` : ''}
@@ -269,10 +302,10 @@ export function AppelloScreen({
           <button
             className="btn btn-go grow"
             style={{ fontSize: 17, padding: '0 10px', letterSpacing: '0.1em' }}
-            disabled={!d.elenco.length || (daSegnare === 0 && !tuttiAssenti)}
+            disabled={!d.elenco.length || (tuttiSegnati && !tuttiAssenti)}
             onClick={tuttiGliAltri}
           >
-            {segnatiIscritti === 0 || tuttiAssenti ? 'TUTTI PRESENTI' : daSegnare === 0 ? '✓ TUTTI SEGNATI' : 'GLI ALTRI PRESENTI'}
+            {segnatiIscritti === 0 || tuttiAssenti ? 'TUTTI PRESENTI' : tuttiSegnati ? '✓ TUTTI SEGNATI' : 'GLI ALTRI PRESENTI'}
           </button>
           <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO?" onFai={azzera}>
             AZZERA
@@ -312,7 +345,7 @@ export function AppelloScreen({
                 )}
               </div>
             ))}
-            {guaioSegnalata && <span style={{ fontSize: 14, color: 'var(--rosso)' }}>{guaioSegnalata}</span>}
+            {guaioSegnalata && <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaioSegnalata}</span>}
           </div>
         </>
       )}
@@ -332,7 +365,7 @@ export function AppelloScreen({
             key={p.id}
             className="riga-appello"
             data-stato={p.stato ?? 'niente'}
-            onClick={() => tocca(p.id, prossimo(p.stato))}
+            onClick={() => toccaRiga(p.id, p.stato)}
             aria-label={`${perEsteso(p)}: ${p.stato ?? 'non segnato'}`}
           >
             <span className="segno" aria-hidden="true">
@@ -356,7 +389,7 @@ export function AppelloScreen({
                 <button
                   className="riga-appello"
                   data-stato={p.stato ?? 'niente'}
-                  onClick={() => tocca(p.id, prossimo(p.stato))}
+                  onClick={() => toccaRiga(p.id, p.stato)}
                   aria-label={`${perEsteso(p)}, in prova: ${p.stato ?? 'non segnato'}`}
                 >
                   <span className="segno" aria-hidden="true">
@@ -382,6 +415,7 @@ export function AppelloScreen({
             giaQui={new Set(d.elenco.map((p) => p.id))}
             onAggiungi={aggiungiProva}
             onChiudi={() => setConProve(false)}
+            onScritto={setScritta}
           />
         ) : (
           <button type="button" className="btn btn-dashed" style={{ minHeight: 52, fontSize: 16 }} onClick={() => setConProve(true)}>
@@ -390,24 +424,26 @@ export function AppelloScreen({
         )}
       </div>
 
-      {onChiudi && (
-        <div className="pad stack appello-fine">
+      {/* Col pannello delle prove aperto il suo tasto per chiudere stava sopra
+          questo, e si chiamavano uguali: prima si finisce con le prove. */}
+      {onChiudi && !conProve && (
+        <div className="pad stack appello-fine" ref={fine}>
           {/* Verde quando è tutto segnato; rosso quando chiudere vuol dire
               segnare assenti, e il tasto lo dice. Chiede un secondo tocco una
               lezione non ancora cominciata, e una dove nessuno è segnato o
               più di metà diventerebbe assente: di solito è TUTTI PRESENTI
               dimenticato, e la segreteria riceverebbe assenze finte. */}
           <DueTocchi
-            className={`btn ${daSegnare === 0 ? 'btn-go' : 'btn-primary'}`}
+            className={`btn ${tuttiSegnati ? 'btn-go' : 'btn-primary'}`}
             chiede={domanda}
             onFai={chiudi}
           >
-            {daSegnare === 0 ? 'CHIUDI L’APPELLO ✓' : `CHIUDI · ${daSegnare === 1 ? 'UN ASSENTE' : `${daSegnare} ASSENTI`}`}
+            {tuttiSegnati ? 'CHIUDI L’APPELLO ✓' : `CHIUDI · ${assentiDetti}`}
           </DueTocchi>
           <span className="appello-aiuto">
-            {daSegnare === 0
+            {tuttiSegnati
               ? 'Torna al calendario. Se c’è rete parte subito, se no appena torna.'
-              : `${daSegnare === 1 ? 'Chi non è segnato risulta assente' : `I ${daSegnare} non segnati risultano assenti`}. Si può sempre riaprire e correggere.`}
+              : `${d.elenco.length - segnati === 1 ? 'Chi non è segnato risulta assente' : `I ${d.elenco.length - segnati} non segnati risultano assenti`}. Si può sempre riaprire e correggere.`}
           </span>
         </div>
       )}
@@ -421,60 +457,3 @@ export interface Conto {
   daSegnare: number
 }
 
-/**
- * Un tasto che, quando `chiede` c'è, vuole due tocchi: il primo mostra la
- * domanda, il secondo fa. Senza il secondo, dopo qualche secondo torna
- * com'era. Come TOGLI nelle prove: AZZERA accanto a TUTTI PRESENTI, con le
- * mani sudate, un tocco solo è troppo poco.
- */
-function DueTocchi({
-  className,
-  chiede,
-  disabled,
-  onFai,
-  children,
-}: {
-  className: string
-  chiede?: string
-  disabled?: boolean
-  onFai: () => void
-  children: ReactNode
-}) {
-  const [sicuro, setSicuro] = useState(false)
-  // Il tocco che conferma vale solo se arriva dopo aver letto la domanda: un
-  // doppio tocco veloce (le mani sudate, «l'ha preso?») altrimenti la salta.
-  const chiestoIl = useRef(0)
-  // Lo stesso per un tasto appena comparso al posto di un altro (CHIUDI ✓ al
-  // posto di TUTTI PRESENTI): il secondo tocco del doppio tocco non è per lui.
-  const natoIl = useRef(Date.now())
-  useEffect(() => {
-    if (!sicuro) return
-    const t = window.setTimeout(() => setSicuro(false), 6000)
-    return () => window.clearTimeout(t)
-  }, [sicuro])
-  // Se intanto non c'è più niente da chiedere, il tasto torna com'era: se no
-  // restava vuoto, e il tocco dopo faceva senza domanda.
-  useEffect(() => {
-    if (!chiede) setSicuro(false)
-  }, [chiede])
-  return (
-    <button
-      type="button"
-      className={className}
-      data-sicuro={sicuro}
-      disabled={disabled}
-      onClick={() => {
-        if (chiede && !sicuro) {
-          chiestoIl.current = Date.now()
-          return setSicuro(true)
-        }
-        if (Date.now() - natoIl.current < 500) return
-        if (chiede && Date.now() - chiestoIl.current < 500) return
-        setSicuro(false)
-        onFai()
-      }}
-    >
-      {sicuro && chiede ? chiede : children}
-    </button>
-  )
-}

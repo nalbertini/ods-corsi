@@ -11,6 +11,8 @@ type Valore = string | number | null | undefined
 // I dialoghi aperti, dall'ultimo: ESC e TAB sono di quello in cima (una
 // conferma sopra il cassetto della lezione chiude la conferma, non il cassetto).
 const pila: object[] = []
+/** Se c'è una finestra aperta: il suo Esc è suo, non di chi sta sotto. */
+export const dialogoAperto = () => pila.length > 0
 
 export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
   const ref = useRef<T>(null)
@@ -49,30 +51,44 @@ export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
   return ref
 }
 
-// Quello che si sta scrivendo e non è ancora salvato (vedi `useBozza`).
-const bozze = new Set<object>()
+// Quello che si sta scrivendo e non è ancora salvato (vedi `useBozza`), con cosa è.
+const bozze = new Map<object, string | undefined>()
+// Chiudendo o ricaricando la pagina con una bozza aperta chiede il browser.
+window.addEventListener('beforeunload', (e) => {
+  if (bozze.size) e.preventDefault()
+})
 
 /**
- * Finché `aperta`, c'è qualcosa scritto a metà: cambiando voce del menu la
- * segreteria chiede prima di perderlo (`bozzaAperta`), e chiudendo la pagina
- * lo chiede il browser. Al banco squilla il telefono, e un clic altrove non
- * deve buttare una ricevuta compilata.
+ * Finché `aperta`, c'è qualcosa scritto a metà: cambiando voce del menu, o
+ * scheda dentro una voce, la segreteria chiede prima di perderlo (`lasciare`),
+ * e chiudendo o ricaricando la pagina lo chiede il browser. Al banco squilla
+ * il telefono, e un clic altrove non deve buttare una ricevuta compilata.
+ * `cosa` («Judo 2») entra nella domanda, per dire quale modifica si perde.
  */
-export function useBozza(aperta: boolean) {
+export function useBozza(aperta: boolean, cosa?: string) {
   useEffect(() => {
     if (!aperta) return
     const io = {}
-    bozze.add(io)
-    const via = (e: BeforeUnloadEvent) => e.preventDefault()
-    window.addEventListener('beforeunload', via)
-    return () => {
-      bozze.delete(io)
-      window.removeEventListener('beforeunload', via)
-    }
-  }, [aperta])
+    bozze.set(io, cosa)
+    return () => void bozze.delete(io)
+  }, [aperta, cosa])
 }
 
 export const bozzaAperta = () => bozze.size > 0
+
+/** Le bozze lasciate apposta (si è già risposto ESCI): ricaricando, il browser non chiede più. */
+export const scordaBozze = () => bozze.clear()
+
+/**
+ * Prima di uscire da una bozza: `true` se non c'è niente da perdere o si esce
+ * lo stesso. Il tasto in evidenza, e col fuoco, è restare: un INVIO di
+ * troppo non deve buttare il lavoro.
+ */
+export function lasciare(): Promise<boolean> {
+  if (!bozzaAperta()) return Promise.resolve(true)
+  const cosa = [...bozze.values()].filter(Boolean).pop()
+  return chiedi(`${cosa ? `${cosa}: modifiche` : 'Ci sono modifiche'} non salvate. Se esci si perdono.`, 'ESCI SENZA SALVARE', { no: 'TORNA A FINIRE', restare: true })
+}
 
 /** Un modulo che diventa bozza al primo tasto battuto o alla prima scelta. */
 export function Bozza({ children }: { children: ReactNode }) {
@@ -90,6 +106,8 @@ interface Domanda {
   si: string
   no: string
   pericolo: boolean
+  /** Il no è il tasto in evidenza: si sta uscendo da qualcosa non salvato. */
+  restare: boolean
   risposta: (si: boolean) => void
 }
 let mostra: ((d: Domanda) => void) | null = null
@@ -101,10 +119,10 @@ let mostra: ((d: Domanda) => void) | null = null
  * `pericolo`: quello che non si annulla, col tasto rosso. Serve `<Conferme />`
  * nella pagina (la segreteria lo mette); senza, si chiede al browser.
  */
-export function chiedi(testo: string, si: string, o: { no?: string; pericolo?: boolean } = {}): Promise<boolean> {
+export function chiedi(testo: string, si: string, o: { no?: string; pericolo?: boolean; restare?: boolean } = {}): Promise<boolean> {
   return new Promise((risposta) => {
     if (!mostra) return risposta(window.confirm(testo))
-    mostra({ testo, si, no: o.no ?? 'NO, LASCIA STARE', pericolo: !!o.pericolo, risposta })
+    mostra({ testo, si, no: o.no ?? 'NO, LASCIA STARE', pericolo: !!o.pericolo, restare: !!o.restare, risposta })
   })
 }
 
@@ -146,10 +164,10 @@ function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean) => void }) {
           </p>
         )}
         <div className="sg-conferma-tasti">
-          <button ref={no} type="button" className="sg-btn sg-btn-linea" onClick={() => fine(false)}>
+          <button ref={no} type="button" className={d.restare ? 'sg-btn sg-btn-pieno' : 'sg-btn sg-btn-linea'} onClick={() => fine(false)}>
             {d.no}
           </button>
-          <button type="button" className={d.pericolo ? 'sg-btn sg-btn-rosso' : 'sg-btn sg-btn-pieno'} onClick={() => fine(true)}>
+          <button type="button" className={d.pericolo ? 'sg-btn sg-btn-rosso' : d.restare ? 'sg-btn sg-btn-linea' : 'sg-btn sg-btn-pieno'} onClick={() => fine(true)}>
             {d.si}
           </button>
         </div>
@@ -221,6 +239,9 @@ export function useAvviso() {
     if (testo && !testo.guaio) timer.current = window.setTimeout(() => setTesto(null), durata.current)
   }
   const avviso = testo ? (
+    <>
+    {/* L'avviso sta fisso in basso: sotto il contenuto lascia il suo posto, così l'ultima riga di tasti si raggiunge. */}
+    <div className="sg-avviso-posto" aria-hidden="true" />
     <div
       role={testo.guaio ? 'alert' : 'status'}
       className="sg-avviso"
@@ -249,6 +270,7 @@ export function useAvviso() {
         </button>
       )}
     </div>
+    </>
   ) : null
   // Un'operazione per volta: un doppio clic su SALVA, o un secondo mentre la
   // rete è lenta, non deve creare due corsi o due iscritti uguali.
@@ -323,9 +345,22 @@ export function Riga({ titolo, children }: { titolo: string; children?: ReactNod
 export function Guaio({ testo }: { testo: string }) {
   return (
     <div className="card stack" style={{ padding: 14, gap: 6, borderColor: 'var(--rosso)' }}>
-      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso)' }}>NON LETTO</span>
+      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso-testo)' }}>NON LETTO</span>
       <span style={{ fontSize: 14, color: 'var(--dim)' }}>{testo}</span>
     </div>
+  )
+}
+
+/**
+ * La spiegazione lunga di un riquadro, chiusa: si legge una volta, mentre i
+ * numeri e gli avvisi servono ogni volta e restano fuori.
+ */
+export function ComeFunziona({ children }: { children: ReactNode }) {
+  return (
+    <details className="sg-spiega">
+      <summary>COME FUNZIONA?</summary>
+      <div className="sg-spiega-testo">{children}</div>
+    </details>
   )
 }
 

@@ -40,7 +40,9 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 
 - Guardando la settimana di oggi, in cima c'è la **lezione di adesso**
   (**ADESSO**), o la prossima di oggi (**LA PROSSIMA, OGGI**, con **TRA 20
-  MIN** nell'ultima ora): un tocco e siete nell'appello. Nell'elenco sotto
+  MIN** nell'ultima ora): un tocco e siete nell'appello. Se quella in corso ha
+  già l'appello fatto, in cima va la prossima. L'ora va avanti da sola, anche
+  con l'app aperta. Nell'elenco sotto
   non si ripetono; le altre lezioni di oggi hanno la stessa scritta.
 - Sotto, quello che è rimasto indietro, in una riga che si apre col **+**:
   - **PRESENZE SEGNALATE**, in giallo (vedi sotto);
@@ -82,7 +84,9 @@ del tema e, sotto il vostro nome, **Esci**.
 
 In cima, ferma mentre scorrete l'elenco: il nome del corso, giorno, ora e sala,
 il conto grande degli iscritti presenti (`18 / 20`, con **+1 PROVA** a parte) e
-quanti restano da segnare, o **✓ TUTTI SEGNATI**. Se la lezione non è ancora
+quanti iscritti restano da segnare; quando hanno tutti un segno, **CHIUDI IN
+FONDO ↓**, che si tocca e porta al tasto per chiudere. Tutti i conti sono degli iscritti: chi prova è sempre detto a
+parte. Se la lezione non è ancora
 cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare lo stesso.
 
 Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è:
@@ -93,14 +97,18 @@ Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è:
 | secondo | ✕ | assente |
 | terzo | *(vuoto)* | non segnato |
 
+Due tocchi veloci sullo stesso nome contano come uno: un presente toccato
+due volte «per sicurezza» resta presente.
+
 I due tasti in cima:
 
 - **TUTTI PRESENTI**: mette ✓ a tutti. È il modo più veloce: premetelo e poi
   toccate una volta gli assenti. Se qualcuno è già segnato diventa **GLI ALTRI
   PRESENTI**, e mette ✓ solo a chi non ha ancora un segno: le assenze già
   messe restano. Quando tutti hanno un segno diventa **✓ TUTTI SEGNATI**, e
-  non si tocca. Se invece sono tutti assenti (un appello chiuso per sbaglio,
-  riaperto) torna **TUTTI PRESENTI**, e mette ✓ a tutti.
+  non si tocca. Se invece gli iscritti sono tutti assenti (un appello chiuso per
+  sbaglio, riaperto; chi prova non conta) torna **TUTTI PRESENTI**, e mette ✓
+  a tutti.
 - **AZZERA**: toglie tutti i segni della lezione, per ricominciare. Chiede
   **SICURO?**: toccatelo di nuovo entro qualche secondo.
 
@@ -112,7 +120,11 @@ In fondo all'elenco c'è il tasto per chiudere:
 
 - **CHIUDI L'APPELLO ✓**, in verde, quando tutti hanno un segno;
 - **CHIUDI · 3 ASSENTI**, in rosso, quando qualcuno è ancora da segnare:
-  chiudendo, chi non ha un segno risulta **assente**.
+  chiudendo, chi non ha un segno risulta **assente** (se è uno in prova, il
+  tasto aggiunge **+1 PROVA**).
+
+Mentre il riquadro delle prove è aperto il tasto per chiudere non c'è: prima
+si finisce con le prove.
 
 Chiede un secondo tocco, con quanti diventerebbero assenti, se nessuno è
 segnato (**NESSUNO SEGNATO · 14 ASSENTI?**: di solito vuol dire che manca
@@ -126,8 +138,9 @@ presenti e quanti assenti:
 
 - **APPELLO ARRIVATO IN SEGRETERIA**, in verde;
 - **APPELLO SALVATO SUL TELEFONO**, in giallo, finché manca la rete: diventa
-  verde da solo quando le presenze arrivano. Giallo anche se non c'era nessun
-  presente, nel caso fosse un errore;
+  verde da solo quando le presenze arrivano;
+- **APPELLO CHIUSO · NESSUN PRESENTE**, in giallo, se nessun iscritto c'era:
+  forse è un errore, e **RIAPRI** è lì accanto;
 - **APPELLO NON ARRIVATO TUTTO**, in rosso, se il server ha rifiutato qualche
   presenza: avvisate la segreteria.
 
@@ -176,16 +189,19 @@ aggiungete voi, senza aspettare la segreteria: in fondo all'elenco c'è
    «de luca» e «deluca» trovano De Luca e De-Luca (con il corso e il giorno
    dell'ultima prova; il telefono lo vede solo
    la segreteria). Se è lui, toccatelo:
-   è la stessa persona, non un doppione. È il caso della settimana di prova,
+   è la stessa persona, non un doppione (se capita, la segreteria lo unisce).
+   È il caso della settimana di prova,
    un giorno judo e uno lotta. Senza rete l'elenco dei già venuti non c'è:
    scrivete nome e cognome come al solito.
 3. Se no, **AGGIUNGI**.
 
 Chi aggiungete entra in fondo all'appello, sotto **PROVE**, già **presente**
 (✓) e col bollino **PROVA**; si tocca come gli altri. Potete aggiungerne
-quanti volete, uno dopo l'altro; **CHIUDI** chiude il riquadro. Se avete
+quanti volete, uno dopo l'altro; **NASCONDI** chiude il riquadro. Se avete
 scritto un nome e non l'avete ancora aggiunto, il tasto diventa **AGGIUNGI E
-CHIUDI**: niente si perde chiudendo. Se ne avete
+NASCONDI**: niente si perde. Anche la freccia per tornare al calendario, sul
+telefono, prima lo chiede (**Marco R. NON AGGIUNTO · ESCI?**): toccatela di
+nuovo per lasciarlo perdere, o **AGGIUNGI** per tenerlo. Se ne avete
 messo uno per sbaglio (un nome scritto male), **TOGLI** accanto al nome, e
 **SICURO? TOGLI** per confermare: se era nuovo sparisce del tutto.
 
@@ -196,7 +212,7 @@ telefono e parte appena torna.
 ## Il timer della lezione
 
 In cima all'appello, a destra, c'è il tasto col cronometro: apre il timer con
-la lezione. In
+la lezione in un'altra scheda, così l'appello resta dov'era. In
 cima c'è **DI QUESTA LEZIONE**, se per quella lezione avete scelto dei timer, e
 poi **DEL CORSO**, i timer collegati al suo corso. Siccome siete entrati come
 istruttori, il timer vi riconosce da solo:

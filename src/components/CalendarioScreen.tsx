@@ -27,7 +27,7 @@ function intervallo(da: Date, a: Date): string {
 function Guaio({ testo, onRiprova }: { testo: string; onRiprova: () => void }) {
   return (
     <div className="card stack" style={{ padding: 14, gap: 6, borderColor: 'var(--rosso)' }}>
-      <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso)' }}>CALENDARIO NON LETTO</span>
+      <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso-testo)' }}>CALENDARIO NON LETTO</span>
       <span style={{ fontSize: 14, color: 'var(--dim)' }}>{testo}</span>
       <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px', alignSelf: 'flex-start' }} onClick={onRiprova}>
         RIPROVA
@@ -198,6 +198,13 @@ export function CalendarioScreen({
   }
 
   const conLConto = (v: SessioneVista) => (conti?.[v.id] ? { ...v, ...conti[v.id] } : v)
+  // L'ora va avanti anche con l'app aperta: ADESSO e TRA N MIN si rileggono
+  // ogni minuto.
+  const [, setMinuto] = useState(0)
+  useEffect(() => {
+    const t = window.setInterval(() => setMinuto((m) => m + 1), 60_000)
+    return () => window.clearInterval(t)
+  }, [])
   const adesso = Date.now()
   const daChiudere = (l: SessioneVista) => l.stato !== 'annullata' && new Date(l.fine).getTime() < adesso && l.iscritti > 0 && (l.daSegnare ?? 0) > 0
   // Quelle della settimana che si guarda hanno già la loro carta, lì.
@@ -207,7 +214,9 @@ export function CalendarioScreen({
   // La lezione di adesso, o la prossima di oggi, in cima a un tocco: con
   // quelle che cominciano alla stessa ora, se l'istruttore ne ha due.
   const restano = elenco ? (perGiorno.get(chiaveGiorno(new Date())) ?? []).filter((l) => l.stato !== 'annullata' && new Date(l.fine).getTime() > adesso) : []
-  const ora = restano[0]
+  // Quella che ha ancora l'appello da fare: una che finisce con l'appello già
+  // fatto non deve stare sopra quella che comincia fra due minuti.
+  const ora = restano.find((l) => conLConto(l).daSegnare !== 0) ?? restano[0]
   const ore = restano.filter((l) => ora && l.inizio === ora.inizio)
   const inCima = new Set(ore.map((l) => l.id))
 
@@ -242,7 +251,7 @@ export function CalendarioScreen({
           <span className="num lezione-conto" data-fatto={fatto && presentiIscritti > 0}>
             {iniziato ? `${presentiIscritti}/${l.iscritti}` : l.iscritti}
           </span>
-          <span className="num lezione-stato" data-fatto={fatto && presentiIscritti > 0} data-manca={manca || undefined}>
+          <span className="num lezione-stato" data-fatto={fatto && presentiIscritti > 0} data-vuoto={(fatto && presentiIscritti === 0) || undefined} data-manca={manca || undefined}>
             {manca ? 'DA CHIUDERE' : !iniziato ? 'ISCRITTI' : fatto ? (presentiIscritti > 0 ? '✓ FATTO' : 'NESSUN PRESENTE') : 'IN CORSO'}
           </span>
           {(l.prove ?? 0) > 0 && <span className="num lezione-stato lezione-prove">+{l.prove} PROVA</span>}

@@ -112,11 +112,14 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- Fin dove arriva il calendario: la lezione più lontana già generata.
+-- Fin dove arriva il calendario: la lezione dell'orario più lontana già
+-- generata. Le straordinarie no: una lontana fermerebbe allunga_calendario
+-- (vedi 30-pronto-fino-dalle-ricorrenze.sql, che porta questo sui database
+-- già in uso).
 -- ---------------------------------------------------------------------------
 create or replace function calendario_pronto_fino() returns date
   language sql stable set search_path = public, extensions as $$
-  select (max(inizio) at time zone 'Europe/Rome')::date from sessioni
+  select (max(inizio) at time zone 'Europe/Rome')::date from sessioni where ricorrenza_id is not null
 $$;
 
 -- ---------------------------------------------------------------------------
