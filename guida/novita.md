@@ -10,6 +10,20 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.10.0 — 3 ottobre 2026
+
+### Novità
+
+- In segreteria Indietro e Avanti del browser riportano dov'eri, e una scheda iscritto si apre in un'altra finestra
+
+### Risolto
+
+- Nel menu della segreteria la guida, il tema e le impostazioni stanno in cima
+
+### Modificato
+
+- Testi più chiari nel modulo di iscrizione: certificato, codice fiscale, minore
+
 ## 0.9.6 — 3 ottobre 2026
 
 ### Modificato
