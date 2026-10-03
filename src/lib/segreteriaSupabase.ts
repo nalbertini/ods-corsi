@@ -172,7 +172,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
 }
 
 /**
- * Un errore di una funzione di Supabase (`invita`, `backup`) detto per la
+ * Un errore di una funzione di Supabase (`invita`, `elimina`, `backup`) detto per la
  * segreteria: quello che dice la funzione, se ha risposto; altrimenti perché
  * non ha risposto. `di` è come la si chiama: «dell’invito», «del backup».
  */
@@ -952,6 +952,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const { data, error } = await db.functions.invoke('invita', { body: { persona: personaId, ritorno } })
       if (error) throw await guaioFunzione(error, 'dell’invito', 'L’invito non è partito')
       return (data as { come: 'invito' | 'password' }).come
+    },
+
+    async eliminaIstruttore(personaId) {
+      const { error } = await db.functions.invoke('elimina', { body: { persona: personaId } })
+      if (error) throw await guaioFunzione(error, 'per eliminare', 'L’istruttore non è stato eliminato')
     },
 
     async salvaSala(sala) {

@@ -508,6 +508,12 @@ export interface DatiSegreteria {
    * Va chiesto dalla funzione `invita` (`supabase/functions/invita`).
    */
   invita(personaId: string): Promise<'invito' | 'password'>
+  /**
+   * Elimina un istruttore che non ha mai insegnato: la scheda e l'account. Chi
+   * ha corsi, lezioni in calendario o presenze da istruttore non si elimina
+   * (`28-elimina-istruttore.sql`). Va chiesto dalla funzione `elimina`.
+   */
+  eliminaIstruttore(personaId: string): Promise<void>
 
   salvaSala(s: { id?: string; nome: string; capienza?: number }): Promise<string>
   /** La musica delle sale, per il tablet (vedi `musica.ts`). */

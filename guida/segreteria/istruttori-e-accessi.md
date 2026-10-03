@@ -33,6 +33,13 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
 - **TOGLI L'ACCESSO** — la persona non entra più nell'app né nell'area
   istruttore del tablet; le presenze che ha segnato restano nel registro.
   **RIDAI L'ACCESSO** lo rimette.
+- **ELIMINA** — solo per un istruttore che non ha mai insegnato, per esempio
+  aggiunto per sbaglio: dopo la conferma spariscono la scheda e l'account, e
+  non si torna indietro. Chi ha ancora dei corsi va prima tolto dai corsi;
+  chi ha già delle lezioni in calendario o delle presenze non si elimina, gli
+  si toglie l'accesso, così le sue ore restano. Lo stesso per chi si allena
+  anche come allievo: iscrizioni, presenze e ricevute restano sue. Chi è di segreteria non ha
+  **ELIMINA**.
 
 ## Il PIN del tablet
 

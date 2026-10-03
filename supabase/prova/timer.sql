@@ -183,6 +183,12 @@ select atteso('lo storico resta, senza il timer', (select coalesce(timer_id::tex
 select atteso('e il collegamento se ne va con lui', (select count(*)::text from corsi_timer), '1');
 select atteso('toglie una riga dello storico', tenta($$delete from allenamenti where nome = 'Futuro'$$), 'FATTO (1 righe)');
 reset role;
+-- Chi ha insegnato non si elimina (28-elimina-istruttore.sql): prima la si
+-- toglie dai corsi e dalle lezioni.
+update corsi set istruttore_id = null where istruttore_id = 'aaaaaaaa-0000-0000-0000-000000000002';
+delete from corsi_istruttori where persona_id = 'aaaaaaaa-0000-0000-0000-000000000002';
+update sessioni set istruttore_id = null where istruttore_id = 'aaaaaaaa-0000-0000-0000-000000000002';
+delete from presenze_istruttori where persona_id = 'aaaaaaaa-0000-0000-0000-000000000002';
 delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000002';
 select atteso('i timer di Maura se ne vanno con lei', (select count(*)::text from timer), '0');
 select atteso('lo storico resta', (select count(*)::text from allenamenti), '3');

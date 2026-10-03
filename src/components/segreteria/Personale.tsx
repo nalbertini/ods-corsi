@@ -82,7 +82,19 @@ export function Personale({ d }: { d: DatiSegreteria }) {
         </SchedaPiena>
       ) : persona ? (
         <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`.trim()} torna="ISTRUTTORI E ACCESSI" onTorna={chiudi}>
-          <Scheda d={d} p={persona} altri={persone.filter((x) => x.id !== persona.id)} fai={fai} avvisa={avvisa} partito={partito} onCambiato={lista.ricarica} />
+          <Scheda
+            d={d}
+            p={persona}
+            altri={persone.filter((x) => x.id !== persona.id)}
+            fai={fai}
+            avvisa={avvisa}
+            partito={partito}
+            onCambiato={lista.ricarica}
+            onEliminata={async () => {
+              chiudi()
+              await lista.ricarica()
+            }}
+          />
         </SchedaPiena>
       ) : null}
 
@@ -284,6 +296,7 @@ function Scheda({
   avvisa,
   partito,
   onCambiato,
+  onEliminata,
 }: {
   d: DatiSegreteria
   p: PersonaleSeg
@@ -293,6 +306,7 @@ function Scheda({
   avvisa: Avvisa
   partito: Partito
   onCambiato: () => Promise<void>
+  onEliminata: () => Promise<void>
 }) {
   const [modifica, setModifica] = useState<{ nome: string; cognome: string; email: string } | null>(null)
   const [pin, setPin] = useState<string | null>(null)
@@ -307,6 +321,13 @@ function Scheda({
   }
 
   const invita = () => void fai(async () => avvisa(partito(p.nome, await d.invita(p.id))))
+
+  const elimina = async () => {
+    if (!window.confirm(`Eliminare ${`${p.nome} ${p.cognome}`.trim()}? Spariscono la scheda e l'account, e non si torna indietro.`)) return
+    const fatto = await fai(() => d.eliminaIstruttore(p.id), `${p.nome} è eliminato`, onEliminata)
+    // Anche andata male la scheda può non esserci più: è l'account a non essersene andato.
+    if (!fatto) await onCambiato()
+  }
 
   return (
     <>
@@ -472,6 +493,17 @@ function Scheda({
         >
           {p.attiva ? 'TOGLI L’ACCESSO' : 'RIDAI L’ACCESSO'}
         </button>
+        {/* Solo gli istruttori: a chi è di segreteria si toglie l'accesso. Se ha corsi, lezioni o presenze il database dice di no, e perché. */}
+        {p.ruolo === 'istruttore' && (
+          <button
+            type="button"
+            className="sg-btn sg-btn-linea"
+            title="Solo per chi non ha mai insegnato: senza corsi, lezioni o presenze"
+            onClick={() => void elimina()}
+          >
+            ELIMINA
+          </button>
+        )}
       </div>
     </>
   )

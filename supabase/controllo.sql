@@ -144,6 +144,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.quote_ricevute') is not null),
   ('26-colori-corsi.sql', 'nessun corso rosso',
     not exists (select 1 from corsi where lower(colore) = '#e4292a')),
+  ('28-elimina-istruttore.sql', 'eliminare un istruttore che non ha mai insegnato',
+    exists (select 1 from dentro where nome = 'elimina_istruttore')
+    and exists (select 1 from pg_trigger where tgname = 'persone_non_si_elimina')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',
