@@ -10,6 +10,17 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.4.0 — 3 ottobre 2026
+
+### Novità
+
+- Documento d'identità e certificato medico si caricano col modulo, da stampare e cancellare
+
+### Modificato
+
+- Segreteria: sul telefono il menu si apre da MENU
+- Corsi: sul telefono la scheda si apre al posto dell'elenco
+
 ## 0.3.0 — 3 ottobre 2026
 
 ### Novità
