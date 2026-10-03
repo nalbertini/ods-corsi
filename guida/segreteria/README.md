@@ -67,7 +67,8 @@ dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
 Il tasto Indietro del browser riporta dov'eri: alla voce di prima, all'elenco
 degli iscritti dalla scheda di uno, alla griglia da una lezione aperta. Avanti
 ci torna. Ricaricando la pagina si resta dove si era, e una scheda iscritto si
-apre anche in un'altra finestra, copiandone il link.
+apre anche in un'altra finestra, copiandone il link. Sul telefono, col MENU
+aperto, Indietro chiude solo il menu.
 
 Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
 numero rosso accanto dice quante cose aspettano (richieste nuove, presenze da
