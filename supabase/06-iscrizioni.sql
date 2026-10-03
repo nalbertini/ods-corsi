@@ -87,7 +87,7 @@ grant select, update, delete on richieste_iscrizione to authenticated;
 -- programma: questi numeri tengono il danno piccolo senza dar fastidio a chi
 -- si iscrive davvero.
 -- ---------------------------------------------------------------------------
-create or replace function iscrizioni_regole() returns jsonb language sql immutable as $$
+create or replace function iscrizioni_regole() returns jsonb language sql immutable set search_path = public as $$
   select jsonb_build_object(
     'per_email_al_giorno', 3,    -- una famiglia con tre figli le manda tutte
     'in_tutto_all_ora', 60,      -- il doppio di quante se ne sono mai viste a settembre
@@ -113,7 +113,7 @@ $$;
 -- l'omocodia, per chi altrimenti avrebbe lo stesso codice di un altro.
 -- ---------------------------------------------------------------------------
 create or replace function cf_controllo(cf text)
-  returns text language sql immutable as $$
+  returns text language sql immutable set search_path = public as $$
   select chr(65 + (sum(case when i % 2 = 1
                             then (array[1,0,5,7,9,13,15,17,19,21,2,4,18,20,11,3,6,8,12,14,16,10,22,25,24,23])[v + 1]
                             else v end) % 26)::int)
@@ -123,7 +123,7 @@ $$;
 
 -- Scritto giusto: la forma e il carattere di controllo.
 create or replace function cf_valido(cf text)
-  returns boolean language sql immutable as $$
+  returns boolean language sql immutable set search_path = public as $$
   select coalesce(cf ~ '^[A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z]$'
                   and cf_controllo(cf) = substr(cf, 16, 1), false)
 $$;
@@ -132,7 +132,7 @@ $$;
 -- recente che non la metta nel futuro. Null se il codice non va o se la data
 -- non esiste.
 create or replace function cf_nato_il(cf text)
-  returns date language plpgsql stable as $$
+  returns date language plpgsql stable set search_path = public as $$
 declare
   aa int;
   mese int;
@@ -155,7 +155,7 @@ end $$;
 -- un nome con quattro consonanti o più, la prima, la terza e la quarta. Senza
 -- accenti né apostrofi: «D'Agostino» → «DAGOSTINO».
 create or replace function cf_lettere(nome text, cognome text)
-  returns text language sql immutable as $$
+  returns text language sql immutable set search_path = public as $$
   with l as (
     select regexp_replace(upper(regexp_replace(normalize(coalesce(x, ''), NFD), '[\u0300-\u036f]', '', 'g')), '[^A-Z]', '', 'g') as t, k
     from (values (cognome, 1), (nome, 2)) v(x, k)

@@ -51,7 +51,7 @@ create index if not exists schede_certificato on schede_iscritti (certificato_sc
 alter table schede_iscritti add column if not exists documento_in_segreteria boolean not null default false;
 
 -- Chi l'ha cambiata e quando, scritto dal server e non dal browser.
-create or replace function scheda_cambiata() returns trigger language plpgsql as $$
+create or replace function scheda_cambiata() returns trigger language plpgsql set search_path = public as $$
 begin
   new.cambiata_il := now();
   new.cambiata_da := persona_corrente();
