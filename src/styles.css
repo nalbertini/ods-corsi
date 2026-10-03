@@ -349,6 +349,13 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
   position: sticky; top: 0; z-index: 2;
   background: var(--bg); padding-bottom: 12px; border-bottom: 2px solid var(--line-soft);
 }
+/* Sul telefono la testa ferma si prende già un terzo dello schermo: giorno,
+   ora e sala su una riga sola, e il titolo e il conto un po' più bassi. */
+.appello-testa .chi-kanji > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+@media (max-width: 420px) {
+  .appello-testa .appello-titolo { font-size: 20px; }
+  .appello-testa .conto-appello { font-size: 40px; }
+}
 .appello-futura { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--giallo-testo); }
 .appello-titolo { font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05; }
 .appello-stato { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); }
@@ -376,7 +383,6 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
    così si vede che non è più lo stesso tasto. */
 .btn-primary[data-sicuro='true'] { background: transparent; border: 2px solid var(--rosso); color: var(--rosso); }
 .btn-go[data-sicuro='true'] { background: transparent; border: 2px solid var(--verde); color: var(--verde-testo); }
-.chiudi-su { font-size: 17px; padding: 0 10px; letter-spacing: 0.1em; }
 .appello-esito { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; }
 
 /* Tre stati, tre colori, e il segno grande a sinistra: da lontano si vede se
@@ -771,7 +777,8 @@ a.btn { text-decoration: none; }
 .tb-orario { font-size: 20px; font-weight: 700; letter-spacing: 0.06em; color: var(--dim); }
 .tb-titolo { font-size: 32px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
 .tb-quando { font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: var(--dim); }
-.tb-invito { font-size: 30px; font-weight: 700; letter-spacing: 0.06em; color: var(--verde); }
+/* Un'istruzione, non un «fatto»: il verde resta per chi è segnato. */
+.tb-invito { font-size: 30px; font-weight: 700; letter-spacing: 0.06em; color: var(--text); }
 
 .tb-riquadro {
   display: flex; flex-direction: column; gap: 10px; padding: 28px;
@@ -790,7 +797,7 @@ a.btn { text-decoration: none; }
 }
 /* Il nome va a capo nella sua colonna: il tasto resta a destra anche con un corso dal nome lungo. */
 .tb-aperta-testo { display: flex; flex-direction: column; gap: 6px; flex: 1 1 280px; min-width: 0; }
-.tb-aperta-nome { font-size: 38px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
+.tb-aperta-nome { font-size: 38px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; text-wrap: balance; }
 .tb-btn-segna {
   min-width: 300px; min-height: 88px; padding: 0 24px;
   background: var(--verde); color: var(--su-colore);
@@ -932,7 +939,7 @@ a.btn { text-decoration: none; }
   background: var(--surface); border: 3px solid var(--line); color: var(--text);
   font-size: 22px; font-weight: 700; text-align: left;
 }
-.tb-tessera[data-fatto='true'] { background: var(--surface-2); border-color: var(--verde); color: var(--verde); }
+.tb-tessera[data-fatto='true'] { background: var(--surface-2); border-color: var(--verde); color: var(--verde-testo); }
 /* Segnato qui, non ancora sul server: giallo come la spia della coda. */
 .tb-tessera[data-attesa] { border-color: var(--giallo); border-style: dashed; color: var(--text); }
 .tb-tessera[data-attesa] svg { color: var(--giallo-testo); }
@@ -988,6 +995,14 @@ a.btn { text-decoration: none; }
   height: 56px; padding: 0 14px;
   background: var(--surface); border: 2px solid var(--line); color: var(--text); font-size: 18px;
 }
+/* La tendina del browser ignora l'altezza: la si disegna, con la freccia a destra. */
+.tb-select {
+  appearance: none; -webkit-appearance: none; padding-right: 48px;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--text) 50%) right 26px center / 8px 8px no-repeat,
+    linear-gradient(135deg, var(--text) 50%, transparent 50%) right 18px center / 8px 8px no-repeat,
+    var(--surface);
+}
 .tb-campo:focus, .tb-select:focus { outline: none; border-color: var(--text); }
 .tb-campo { user-select: text; -webkit-user-select: text; }
 .tb-lezione-istr {
@@ -1027,6 +1042,9 @@ a.btn { text-decoration: none; }
 @media (min-width: 901px) {
   .tb-istruttore { overflow: hidden; grid-template-rows: minmax(0, 1fr); }
   .tb-istruttore > .tb-colonna { overflow-y: auto; }
+  /* Nella colonna che scorre si accorcia solo l'elenco delle lezioni: tendina,
+     schede e tasti restano alti quanto devono (la tendina finiva a 26px). */
+  .tb-istruttore > .tb-colonna > :not(.tb-lezioni-istr) { flex-shrink: 0; }
   /* Con PROVE aperto la colonna scorre anche lei: i nomi però non spariscono mai. */
   .tb-istruttore .tb-righe { flex: 1 1 auto; min-height: 180px; overflow-y: auto; }
 }
@@ -1273,7 +1291,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-cassetto:focus, .sg-dialogo:focus { outline: none; }
 /* La conferma sta sopra tutto, anche sopra il cassetto della lezione. */
 .sg-conferma-velo { z-index: 40; }
-.sg-conferma { z-index: 41; gap: 12px; }
+/* Due classi: .sg-dialogo viene dopo nel foglio e col suo z-index 11 metteva il velo sopra la conferma. */
+.sg-dialogo.sg-conferma { z-index: 41; gap: 12px; }
 .sg-conferma-domanda { margin: 0; font-family: var(--cond); font-size: 24px; font-weight: 700; letter-spacing: 0.02em; line-height: 1.15; }
 .sg-conferma-resto { margin: 0; font-size: 16px; line-height: 1.5; color: var(--sec); white-space: pre-line; }
 .sg-conferma-tasti { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 8px; }

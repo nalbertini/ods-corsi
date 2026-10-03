@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { somiglianti, cosaNonVaProva } from './src/lib/prove'",
+      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { somiglianti, cosaNonVaProva } from './src/lib/prove'; export { sigleDeiProvati } from './src/lib/tablet'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -102,6 +102,14 @@ console.log('\n2. il giorno dopo, un altro corso: si ritrova per nome')
   ok('la segreteria lo vede col telefono', (await d.provati()).map((x) => `${x.nome} ${x.telefono ?? '-'} ${x.corso}`), ['Marco 333 1234567 Lotta 2'])
   window.location.pathname = '/'
   ok('si trova scrivendo «mar nu»', m.somiglianti(venuti, 'mar nu').length, 1)
+  ok('con niente scritto, nessuno', [m.somiglianti(venuti, '').length, m.somiglianti(venuti, ' ').length], [0, 0])
+  ok("nell'app il cognome intero, senza sigla", venuti.map((x) => `${x.cognome} ${x.sigla ?? '-'}`), ['Nuovo -'])
+  ok('con meno di tre lettere, nessuno: «ma»', m.somiglianti(venuti, 'ma').length, 0)
+  ok('due lettere fra nome e cognome non bastano: «m n»', m.somiglianti(venuti, 'm n').length, 0)
+  ok('tre lettere fra nome e cognome sì: «ma n»', m.somiglianti(venuti, 'ma n').length, 1)
+  ok('«mar» lo trova col corso e il giorno', m.somiglianti(venuti, 'mar').map((x) => `${x.nome} ${x.corso} ${x.inizio.slice(0, 10)}`), [
+    `Marco Lotta 2 ${new Date(dopo(2).setHours(17)).toISOString().slice(0, 10)}`,
+  ])
   ok('e non scrivendo «luca»', m.somiglianti(venuti, 'luca').length, 0)
   // Apostrofi e trattini: chi scrive «d'am» o «deluca» deve ritrovare
   // D'Amico e De-Luca, comunque siano stati salvati.
@@ -124,6 +132,7 @@ console.log('\n2. il giorno dopo, un altro corso: si ritrova per nome')
   ok('«deluca» trova i due De Luca', chi('deluca'), ['De Luca Marco', 'De-Luca Anna'])
   ok("«d'amico giu» trova solo Damico Giulia", chi("d'amico giu"), ['Damico Giulia'])
   ok('«mar nu» trova solo Nuzzo Marco', chi('mar nu'), ['Nuzzo Marco'])
+  ok("apostrofi e trattini non sono lettere: «d'a» e «d-'» nessuno", [chi("d'a"), chi("d-'")], [[], []])
   // Al contrario: salvato attaccato, scritto staccato.
   const attaccati = [{ id: 'a1', nome: 'Rita', cognome: 'Deluca', corso: 'Lotta', inizio: '2026-01-01T17:00:00Z' }, { id: 'a2', nome: 'Giulia', cognome: 'Damico', corso: 'Lotta', inizio: '2026-01-01T17:00:00Z' }]
   ok('«de luca» e «d amico» trovano Deluca e Damico', [m.somiglianti(attaccati, 'de luca'), m.somiglianti(attaccati, 'd amico')].map((x) => x.map((p) => p.cognome)), [['Deluca'], ['Damico']])
@@ -141,7 +150,19 @@ console.log('\n3. dal tablet, col PIN')
   const t = m.creaTabletProva()
   await t.scegliSala('Lotta')
   ok('PIN sbagliato: nessuno', await t.provati('0000'), [])
-  ok('chi ha provato, senza telefono', (await t.provati('1234')).map((x) => `${x.nome} ${x.telefono ?? '-'}`), ['Marco -'])
+  const sulTablet = await t.provati('1234')
+  ok("chi ha provato, senza telefono e col cognome all'iniziale", sulTablet.map((x) => `${x.nome} ${x.sigla} ${x.telefono ?? '-'}`), ['Marco N. -'])
+  ok('sul tablet «mar» lo trova', m.somiglianti(sulTablet, 'mar').map((x) => `${x.nome} ${x.sigla}`), ['Marco N.'])
+  ok('e anche «nuo», dal cognome che non si vede', m.somiglianti(sulTablet, 'nuo').length, 1)
+  ok('sul tablet «ma» non trova nessuno', m.somiglianti(sulTablet, 'ma').length, 0)
+  // Su novanta giorni di prove due sigle uguali capitano: allora il cognome intero.
+  const omonimi = m.sigleDeiProvati([
+    { nome: 'Marco', cognome: 'Neri' },
+    { nome: 'Marco', cognome: 'Nervi' },
+    { nome: 'Marco', cognome: 'Nuovo' },
+    { nome: 'Luca', cognome: 'Neri' },
+  ])
+  ok('due che si leggerebbero uguali, col cognome intero', omonimi.map((x) => `${x.nome} ${x.sigla}`), ['Marco Neri', 'Marco Nervi', 'Marco Nuo.', 'Luca N.'])
   const app = await t.appello('1234', LOTTA_VEN)
   ok("le prove in fondo all'appello", app.filter((r) => r.prova).map((r) => r.cognome), ['Nuovo'])
   ok("l'elenco da toccare resta degli iscritti", (await t.elenco(LOTTA_VEN)).some((n) => n.nome === 'Marco'), false)

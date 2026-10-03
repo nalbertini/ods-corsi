@@ -72,30 +72,46 @@ export function PannelloProve({
 
   const proposti = somiglianti((venuti ?? []).filter((p) => !giaQui.has(p.id)), `${nome} ${cognome}`)
 
-  const aggiungi = async (chi: ChiProva) => {
+  const aggiungi = async (chi: ChiProva): Promise<boolean> => {
     setAspetta(true)
     setGuaio(null)
     setFatto(null)
     try {
       await onAggiungi(chi)
-      setFatto(`${chi.cognome.trim()} ${chi.nome.trim()}: aggiunto, e segnato presente.`)
+      // Sul tablet il già venuto ha la sigla: il cognome intero non resta sullo schermo.
+      const sigla = 'sigla' in chi && typeof chi.sigla === 'string' ? chi.sigla : null
+      setFatto(`${sigla ? `${chi.nome} ${sigla}` : `${chi.cognome.trim()} ${chi.nome.trim()}`}: aggiunto, e segnato presente.`)
       setNome('')
       setCognome('')
       setTelefono('')
       primo.current?.focus()
+      return true
     } catch (e) {
       setGuaio(scritto(e, 'Non aggiunto: il server non risponde'))
+      return false
     } finally {
       setAspetta(false)
     }
   }
 
-  const manda = (e: FormEvent) => {
-    e.preventDefault()
+  const prova = async () => {
     const n = { nome, cognome, telefono }
     const no = cosaNonVaProva(n)
-    if (no) return setGuaio(no)
-    void aggiungi(n)
+    if (no) {
+      setGuaio(no)
+      return false
+    }
+    return aggiungi(n)
+  }
+  const manda = (e: FormEvent) => {
+    e.preventDefault()
+    void prova()
+  }
+  // Con un nome scritto, chiudere senza aggiungerlo lo buttava via senza dirlo:
+  // la prova non arrivava in segreteria, e il telefono si perdeva.
+  const scrittoQualcosa = !!(nome.trim() || cognome.trim())
+  const chiudi = async () => {
+    if (!scrittoQualcosa || (await prova())) onChiudi()
   }
 
   const id = (x: string) => `prova-${stile}-${x}`
@@ -105,7 +121,7 @@ export function PannelloProve({
       <div className="row" style={{ gap: 10, alignItems: 'baseline' }}>
         <span className={`${k.etichetta} grow`}>CHI VIENE A PROVARE</span>
       </div>
-      <span className="prove-sotto">Entra nell'appello di questa lezione, già presente. Chi è già venuto si ritrova scrivendo il nome.</span>
+      <span className="prove-sotto">Entra nell'appello di questa lezione, già presente. Chi è già venuto compare dalla terza lettera.</span>
 
       {/* Senza i già venuti si aggiunge lo stesso: dall'app la prova va in
           coda come i segni dell'appello (il tablet, senza coda, lo dice se non va). */}
@@ -114,11 +130,11 @@ export function PannelloProve({
         <div className="prove-campi">
           <label className="stack" style={{ gap: 4 }} htmlFor={id('nome')}>
             <span className={k.etichetta}>NOME</span>
-            <input ref={primo} id={id('nome')} className={k.campo} autoComplete="off" value={nome} onChange={(e) => setNome(e.target.value)} />
+            <input ref={primo} id={id('nome')} className={k.campo} autoComplete="off" value={nome} onChange={(e) => { setNome(e.target.value); setFatto(null); setGuaio(null) }} />
           </label>
           <label className="stack" style={{ gap: 4 }} htmlFor={id('cognome')}>
             <span className={k.etichetta}>COGNOME</span>
-            <input id={id('cognome')} className={k.campo} autoComplete="off" value={cognome} onChange={(e) => setCognome(e.target.value)} />
+            <input id={id('cognome')} className={k.campo} autoComplete="off" value={cognome} onChange={(e) => { setCognome(e.target.value); setFatto(null); setGuaio(null) }} />
           </label>
           <label className="stack" style={{ gap: 4 }} htmlFor={id('telefono')}>
             <span className={k.etichetta}>TELEFONO, SE LO DÀ</span>
@@ -129,12 +145,12 @@ export function PannelloProve({
         {venuti === null && !nonVa && <span className="prove-sotto">Sto leggendo chi è già venuto…</span>}
         {proposti.length > 0 && (
           <div className="stack" style={{ gap: 6 }}>
-            <span className={k.etichetta}>{nome || cognome ? 'GIÀ VENUTI CON QUESTO NOME' : 'GLI ULTIMI VENUTI A PROVARE'}</span>
+            <span className={k.etichetta}>GIÀ VENUTI CON QUESTO NOME</span>
             {proposti.map((p) => (
               <button key={p.id} type="button" className={k.voce} disabled={aspetta} onClick={() => void aggiungi(p)}>
                 <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
                   <span className="prove-gia-nome">
-                    {p.cognome} {p.nome}
+                    {p.sigla ? `${p.nome} ${p.sigla}` : `${p.cognome} ${p.nome}`}
                   </span>
                   <span className="prove-sotto">
                     {p.corso}, {giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))}
@@ -160,10 +176,10 @@ export function PannelloProve({
 
         <div className="row" style={{ gap: 8 }}>
           <button type="submit" className={`${k.si} grow`} disabled={aspetta}>
-            {aspetta ? 'AGGIUNGO…' : 'AGGIUNGI NUOVO'}
+            {aspetta ? 'AGGIUNGO…' : 'AGGIUNGI'}
           </button>
-          <button type="button" className={k.no} onClick={onChiudi}>
-            FATTO
+          <button type="button" className={k.no} disabled={aspetta} onClick={() => void chiudi()}>
+            {scrittoQualcosa ? 'AGGIUNGI E CHIUDI' : 'CHIUDI'}
           </button>
         </div>
       </form>
@@ -183,6 +199,8 @@ export function MarchioProva() {
  */
 export function TogliProva({ chi, onTogli, disabled }: { chi: string; onTogli: () => void; disabled?: boolean }) {
   const [sicuro, setSicuro] = useState(false)
+  // Come le conferme dell'appello: il secondo tocco di un doppio tocco veloce non conferma.
+  const chiestoIl = useRef(0)
   useEffect(() => {
     if (!sicuro) return
     const t = window.setTimeout(() => setSicuro(false), 4000)
@@ -195,7 +213,13 @@ export function TogliProva({ chi, onTogli, disabled }: { chi: string; onTogli: (
       data-sicuro={sicuro}
       disabled={disabled}
       aria-label={sicuro ? `Conferma: togli ${chi} dalle prove` : `Togli ${chi} dalle prove`}
-      onClick={() => (sicuro ? onTogli() : setSicuro(true))}
+      onClick={() => {
+        if (!sicuro) {
+          chiestoIl.current = Date.now()
+          return setSicuro(true)
+        }
+        if (Date.now() - chiestoIl.current >= 500) onTogli()
+      }}
     >
       {sicuro ? 'SICURO? TOGLI' : 'TOGLI'}
     </button>

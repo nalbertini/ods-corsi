@@ -311,6 +311,19 @@ export function sigle<T extends { nome: string; cognome: string }>(persone: T[])
   }))
 }
 
+/**
+ * Le sigle dei già venuti a provare, sul tablet: il cognome intero lo portano
+ * per cercarlo, sullo schermo in sala va la sigla. Su novanta giorni di prove
+ * due «Marco Ner.» capitano, e toccare quello sbagliato unisce due persone:
+ * allora al posto della sigla il cognome intero, nello stesso ordine.
+ */
+export function sigleDeiProvati<T extends { nome: string; cognome: string }>(persone: T[]): Array<T & { sigla: string }> {
+  const fatte = sigle(persone)
+  const quanti = new Map<string, number>()
+  for (const p of fatte) quanti.set(`${p.nome}|${p.sigla}`, (quanti.get(`${p.nome}|${p.sigla}`) ?? 0) + 1)
+  return fatte.map((p) => ((quanti.get(`${p.nome}|${p.sigla}`) ?? 0) > 1 ? { ...p, sigla: p.cognome } : p))
+}
+
 // ---------------------------------------------------------------------------
 // I tocchi senza rete.
 //

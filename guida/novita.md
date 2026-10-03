@@ -10,6 +10,30 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.8.3 — 3 ottobre 2026
+
+### Risolto
+
+- L'appello non si chiude più con un tocco di troppo, e chi viene a provare non si perde
+
+## 0.8.2 — 3 ottobre 2026
+
+### Risolto
+
+- Sul tablet di sala i nomi segnati si leggono col tema chiaro, e su una lezione passata TUTTI PRESENTI chiede conferma
+
+## 0.8.1 — 3 ottobre 2026
+
+### Risolto
+
+- In segreteria le conferme si possono di nuovo cliccare
+
+## 0.8.0 — 3 ottobre 2026
+
+### Novità
+
+- Chi è già venuto a provare compare solo mentre si scrive il nome
+
 ## 0.7.6 — 3 ottobre 2026
 
 ### Modificato

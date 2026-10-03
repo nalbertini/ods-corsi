@@ -1,5 +1,5 @@
 import type { DatiTablet, EsitoTocco, LezioneSala, PresenzaIstruttore, RigaAppelloTablet } from './tablet'
-import { fase, REGOLE, sigle } from './tablet'
+import { fase, REGOLE, sigle, sigleDeiProvati } from './tablet'
 import { comeE, creaDatiProva, istruttoreDallAppello, lezioniFra, memoria, mettiProva, provatiProva, togliProvaDa } from './datiProva'
 import { archivio, type PresenzaIstruttoreProva } from './archivioProva'
 import { perCognome } from './sala'
@@ -278,7 +278,7 @@ export function creaTabletProva(): DatiTablet {
 
     async provati(pin) {
       if (!sala) throw new Error('solo un tablet di sala')
-      return daPin(pin) ? provatiProva(false) : []
+      return daPin(pin) ? sigleDeiProvati(provatiProva(false)) : []
     },
 
     async aggiungiProva(pin, sessioneId, chi) {

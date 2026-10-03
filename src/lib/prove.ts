@@ -18,6 +18,8 @@ export interface GiaProvato {
   cognome: string
   /** Non sul tablet: lo schermo è in sala. */
   telefono?: string
+  /** Solo sul tablet: «Marco N.», il cognome intero non si mostra in sala (`sigleDeiProvati`). */
+  sigla?: string
   corso: string
   inizio: string
 }
@@ -69,11 +71,13 @@ const STACCA = /['’‘ʼ´-]/g
  * trattini: «d'am», «damico» e «amico» trovano D'Amico, chiunque l'abbia
  * scritto la prima volta. Anche tutto lo scritto attaccato va bene, se è
  * l'inizio del nome o del cognome attaccati: «de luca» trova Deluca.
- * Con niente scritto, i più recenti.
+ * Sotto le tre lettere (apostrofi e trattini non contano), nessuno: un
+ * elenco già pronto mostrerebbe a chi passa i nomi di chi è venuto, spesso
+ * bambini.
  */
 export function somiglianti(tutti: GiaProvato[], scritto: string, quanti = 6): GiaProvato[] {
   const parole = piano(scritto).split(/\s+/).map((w) => w.replace(STACCA, '')).filter(Boolean)
-  if (!parole.length) return tutti.slice(0, quanti)
+  if (parole.join('').length < 3) return []
   return tutti
     .filter((p) => {
       const nomi = [p.nome, p.cognome].map(piano)
