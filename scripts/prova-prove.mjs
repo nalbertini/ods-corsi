@@ -170,6 +170,11 @@ console.log('\n3. dal tablet, col PIN')
   ok('non si segna da sé', await errore(() => t.segna(LOTTA_VEN, marco.personaId)), 'non è iscritto a questo corso')
   ok("l'istruttore lo segna assente", await t.correggi('1234', LOTTA_VEN, marco.personaId, 'assente', true), true)
   ok('e una prova non si «smarca»', await errore(() => t.correggi('1234', LOTTA_VEN, marco.personaId, null, true)), 'una prova si segna presente o assente')
+  // Dal pannello si può toccare chi è già in prova: resta col segno che ha.
+  ok('riaggiunto, chi è assente resta assente', [
+    await t.aggiungiProva('1234', LOTTA_VEN, { id: marco.personaId, nome: marco.nome, cognome: marco.cognome }),
+    (await t.appello('1234', LOTTA_VEN)).filter((r) => r.prova).map((r) => `${r.cognome}:${r.stato}`),
+  ], [true, ['Nuovo:assente']])
   const prima = persone()
   ok('una prova nuova dal tablet', await t.aggiungiProva('1234', LOTTA_VEN, { nome: 'Sara', cognome: 'Dalla Sala' }), true)
   ok('PIN sbagliato: non aggiunge', await t.aggiungiProva('0000', LOTTA_VEN, { nome: 'Ugo', cognome: 'Pin' }), false)
