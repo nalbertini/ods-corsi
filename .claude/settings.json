@@ -1,7 +1,34 @@
 {
   "permissions": {
     "allow": [
-      "mcp__Supabase"
+      "mcp__Supabase",
+      "Bash(gh pr merge *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/protegge.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/tipi.mjs\"",
+            "timeout": 120,
+            "statusMessage": "Controllo dei tipi…"
+          }
+        ]
+      }
     ]
   }
 }
