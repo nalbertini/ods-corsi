@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export { apriScheda, scorre } from './src/lib/scorri'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1385,6 +1385,74 @@ console.log('\nuna modifica non salvata: CHI FA LE RICEVUTE e il LISTINO chiedon
   ok('listino con i campi in un altro ordine: non è una modifica', lc({ offerte: listino.offerte, corsi: listino.corsi.map((c) => ({ prezzi: c.prezzi, orari: c.orari, eta: c.eta, corso: c.corso })), saldoEntro: listino.saldoEntro, quota: 30 }), false)
   ok('listino con i corsi scambiati di posto: è una modifica', lc({ ...listino, corsi: [listino.corsi[1], listino.corsi[0]] }), true)
   ok('listino con un prezzo che non si capisce: è una modifica', lc('Un prezzo di «Judo» non si capisce: «4x»'), true)
+  ok('listino con i corsi senza prezzo in un altro ordine: non è una modifica', m.listinoCambiato?.({ ...listino, senzaPrezzoVaBene: ['a', 'b'] }, { ...listino, senzaPrezzoVaBene: ['b', 'a'] }), false)
+}
+
+console.log('\nil LISTINO, BUTTA I CAMBI: la domanda dice cosa si butta')
+{
+  // La bozza com'è scritta nel LISTINO: testo, anche quando non si capisce.
+  const corso = (chiave, nome, prezzo = '320') => ({ chiave, corso: nome, corsoId: `c${chiave}`, eta: '', natiDal: '', natiAl: '', orari: 'lun 17:00', notaTrimestre: '', nota: '', prezzi: [{ etichetta: '', saldo: prezzo, annuale: '400', trimestre: '' }] })
+  const salvata = {
+    quota: '20',
+    saldoEntro: '2026-10-31',
+    corsi: [corso(1, 'Judo 1'), corso(2, 'Judo 2'), corso(3, 'Aikido')],
+    offerte: [{ chiave: 1, titolo: 'FAMIGLIA', testo: 'sconto' }],
+    senzaPrezzoVaBene: ['a', 'b'],
+  }
+  const conCorso = (chiave, x) => ({ ...salvata, corsi: salvata.corsi.map((c) => (c.chiave === chiave ? { ...c, ...x } : c)) })
+  const cambi = (b) => m.cambiNellaBozza(salvata, b)
+  ok('bozza uguale: niente da buttare', cambi(structuredClone(salvata)), [])
+  ok('quota 20 → 25: la quota', cambi({ ...salvata, quota: '25' }), ['la quota'])
+  ok('quota 20 → « 20 »: niente da buttare', cambi({ ...salvata, quota: ' 20 ' }), [])
+  ok('data del saldo cambiata: la data del saldo', cambi({ ...salvata, saldoEntro: '2026-11-30' }), ['la data del saldo'])
+  ok('un prezzo cambiato in «Judo 2»: «Judo 2»', cambi(conCorso(2, { prezzi: [{ etichetta: '', saldo: '330', annuale: '400', trimestre: '' }] })), ['«Judo 2»'])
+  ok('un prezzo che non si capisce in «Judo 2»: «Judo 2»', cambi(conCorso(2, { prezzi: [{ etichetta: '', saldo: '32o', annuale: '400', trimestre: '' }] })), ['«Judo 2»'])
+  ok('un corso nuovo senza nome: «un corso senza nome» (nuovo)', cambi({ ...salvata, corsi: [...salvata.corsi, corso(4, '')] }), ['«un corso senza nome» (nuovo)'])
+  ok('un corso nuovo «Lotta 5»: «Lotta 5» (nuovo)', cambi({ ...salvata, corsi: [...salvata.corsi, corso(4, 'Lotta 5')] }), ['«Lotta 5» (nuovo)'])
+  ok('«Aikido» tolto: «Aikido» (tolto)', cambi({ ...salvata, corsi: salvata.corsi.slice(0, 2) }), ['«Aikido» (tolto)'])
+  ok('due corsi scambiati di posto: l’ordine dei corsi', cambi({ ...salvata, corsi: [salvata.corsi[1], salvata.corsi[0], salvata.corsi[2]] }), ['l’ordine dei corsi'])
+  ok('un’offerta col testo cambiato: le offerte', cambi({ ...salvata, offerte: [{ chiave: 1, titolo: 'FAMIGLIA', testo: 'sconto del 10%' }] }), ['le offerte'])
+  ok('corsi senza prezzo a,b → b,a: niente da buttare', cambi({ ...salvata, senzaPrezzoVaBene: ['b', 'a'] }), [])
+  ok('corsi senza prezzo a → a,c: i corsi senza prezzo', m.cambiNellaBozza({ ...salvata, senzaPrezzoVaBene: ['a'] }, { ...salvata, senzaPrezzoVaBene: ['a', 'c'] }), ['i corsi senza prezzo'])
+  ok(
+    'quota, «Judo 2» cambiato e «Aikido» tolto: in quest’ordine',
+    cambi({ ...salvata, quota: '25', corsi: [salvata.corsi[0], { ...salvata.corsi[1], nota: 'solo il sabato' }] }),
+    ['la quota', '«Judo 2»', '«Aikido» (tolto)'],
+  )
+  // Prima quel che vale per tutto il listino, poi i corsi.
+  ok(
+    'quota, offerte e «Judo 2» cambiato: prima il listino, poi i corsi',
+    cambi({ ...conCorso(2, { nota: 'solo il sabato' }), quota: '25', offerte: [{ chiave: 1, titolo: 'FAMIGLIA', testo: 'sconto del 10%' }] }),
+    ['la quota', 'le offerte', '«Judo 2»'],
+  )
+  ok(
+    'tutto cambiato: quota, data del saldo, ordine, offerte, senza prezzo, poi i corsi',
+    cambi({
+      quota: '25',
+      saldoEntro: '2026-11-30',
+      corsi: [salvata.corsi[1], { ...salvata.corsi[0], nota: 'nuova' }, corso(4, 'Lotta 5')],
+      offerte: [],
+      senzaPrezzoVaBene: ['a'],
+    }),
+    ['la quota', 'la data del saldo', 'l’ordine dei corsi', 'le offerte', 'i corsi senza prezzo', '«Judo 1»', '«Lotta 5» (nuovo)', '«Aikido» (tolto)'],
+  )
+
+  // La domanda di BUTTA I CAMBI: le prime sei voci, il resto contato.
+  const domanda = (c) => m.domandaButta(c)
+  const coda = 'Il listino torna com’è salvato, quello che vede la pagina di iscrizione.'
+  ok('domanda senza cambi elencati', domanda([]), `Buttare i cambi al listino? ${coda}`)
+  ok('domanda con la quota', domanda(['la quota']), `Buttare i cambi al listino? Hai cambiato: la quota. ${coda}`)
+  ok('domanda con 7 cambi: le prime sei e un altro cambio', domanda(['a', 'b', 'c', 'd', 'e', 'f', 'g']), `Buttare i cambi al listino? Hai cambiato: a, b, c, d, e, f e un altro cambio. ${coda}`)
+  ok('domanda con 8 cambi: le prime sei e altri 2 cambi', domanda(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']), `Buttare i cambi al listino? Hai cambiato: a, b, c, d, e, f e altri 2 cambi. ${coda}`)
+
+  const { readFileSync } = await import('node:fs')
+  const tsx = readFileSync('src/components/segreteria/Listino.tsx', 'utf8')
+  ok('LISTINO: il tasto LASCIA STARE non c’è più', tsx.includes('LASCIA STARE'), false)
+  ok('LISTINO: il tasto si chiama BUTTA I CAMBI', tsx.includes('BUTTA I CAMBI'), true)
+  ok('LISTINO: BUTTA I CAMBI è un tasto di pericolo, come RIMETTI', tsx.includes("'BUTTA I CAMBI', { pericolo: true }"), true)
+  ok('LISTINO: la domanda la compone domandaButta', tsx.includes('domandaButta'), true)
+  ok('LISTINO: dopo, dice «Listino tornato com’è salvato»', tsx.includes('Listino tornato com’è salvato'), true)
+  ok('LISTINO: la domanda dice cosa si butta con cambiNellaBozza', tsx.includes('cambiNellaBozza'), true)
 }
 
 console.log('\npossibili doppioni')
@@ -1636,6 +1704,121 @@ console.log('\nuna lezione toccata e rimessa com\'era resta, e quelle di oggi pu
   OGGI = new Date(2026, 8, 26, 12, 0).getTime()
 }
 
+console.log('\nla scheda a pieno schermo parte dalla cima, e chiusa la pagina torna dov\'era')
+{
+  // Il corpo che scorre è un oggetto finto: conta solo `scrollTop`. Lo
+  // smontaggio rimette la posizione dopo un microtask, come in React.
+  const dopo = () => new Promise((r) => setTimeout(r))
+  {
+    const corpo = { scrollTop: 800 }
+    const chiudi = m.apriScheda(corpo)
+    ok('aperta una scheda dall\'elenco a 800, la pagina va in cima', corpo.scrollTop, 0)
+    chiudi()
+    await dopo()
+  }
+  {
+    const corpo = { scrollTop: 800 }
+    const chiudiA = m.apriScheda(corpo)
+    corpo.scrollTop = 500
+    chiudiA()
+    const chiudiB = m.apriScheda(corpo)
+    await dopo()
+    ok('da una scheda all\'altra, la nuova parte dalla cima', corpo.scrollTop, 0)
+    chiudiB()
+    await dopo()
+    ok('chiusa la seconda, si torna dove si era nell\'elenco', corpo.scrollTop, 800)
+  }
+  {
+    const corpo = { scrollTop: 800 }
+    const chiudiA = m.apriScheda(corpo)
+    corpo.scrollTop = 500
+    chiudiA()
+    const chiudiB = m.apriScheda(corpo)
+    corpo.scrollTop = 400
+    chiudiB()
+    const chiudiC = m.apriScheda(corpo)
+    corpo.scrollTop = 600
+    chiudiC()
+    await dopo()
+    ok('tre schede di fila, chiusa l\'ultima: si torna dove si era nell\'elenco', corpo.scrollTop, 800)
+    corpo.scrollTop = 300
+    const chiudiD = m.apriScheda(corpo)
+    corpo.scrollTop = 50
+    chiudiD()
+    await dopo()
+    ok('aperta di nuovo dall\'elenco a 300: si torna a 300, non alla posizione di prima', corpo.scrollTop, 300)
+  }
+  {
+    // Lo StrictMode di sviluppo monta, smonta e rimonta nello stesso giro.
+    const corpo = { scrollTop: 800 }
+    m.apriScheda(corpo)()
+    const chiudi = m.apriScheda(corpo)
+    await dopo()
+    ok('montata due volte di fila, la scheda resta in cima', corpo.scrollTop, 0)
+    corpo.scrollTop = 250
+    chiudi()
+    await dopo()
+    ok('e chiusa si torna a 800', corpo.scrollTop, 800)
+  }
+  {
+    const uno = { scrollTop: 100 }
+    const due = { scrollTop: 200 }
+    const chiudiUno = m.apriScheda(uno)
+    const chiudiDue = m.apriScheda(due)
+    uno.scrollTop = 30
+    due.scrollTop = 40
+    chiudiUno()
+    chiudiDue()
+    await dopo()
+    ok('due corpi diversi tornano ognuno al suo posto', [uno.scrollTop, due.scrollTop], [100, 200])
+  }
+  // Nello stesso commit React nasconde l'elenco e monta la scheda: quando
+  // apriScheda legge scrollTop il browser l'ha già tagliato all'altezza della
+  // scheda. Conta l'ultima posizione segnata da `scorre` (onScroll del corpo).
+  {
+    const corpo = { scrollTop: 1500 }
+    m.scorre(corpo)
+    corpo.scrollTop = 594
+    const chiudi = m.apriScheda(corpo)
+    chiudi()
+    await dopo()
+    ok('elenco scorso a 1500 e tagliato dal browser a 594: chiusa la scheda si torna a 1500', corpo.scrollTop, 1500)
+  }
+  {
+    const corpo = { scrollTop: 1500 }
+    m.scorre(corpo)
+    corpo.scrollTop = 594
+    const chiudi = m.apriScheda(corpo)
+    corpo.scrollTop = 594
+    m.scorre(corpo)
+    corpo.scrollTop = 200
+    m.scorre(corpo)
+    chiudi()
+    await dopo()
+    ok('gli scroll dentro la scheda aperta non spostano la posizione segnata: si torna a 1500', corpo.scrollTop, 1500)
+  }
+  {
+    const corpo = { scrollTop: 1500 }
+    m.scorre(corpo)
+    corpo.scrollTop = 594
+    m.apriScheda(corpo)()
+    await dopo()
+    corpo.scrollTop = 700
+    m.scorre(corpo)
+    corpo.scrollTop = 300
+    const chiudi = m.apriScheda(corpo)
+    chiudi()
+    await dopo()
+    ok('tornati all\'elenco e scorsi a 700, tagliato a 300: chiusa la scheda si torna a 700', corpo.scrollTop, 700)
+  }
+  {
+    const corpo = { scrollTop: 400 }
+    const chiudi = m.apriScheda(corpo)
+    chiudi()
+    await dopo()
+    ok('un elenco mai scorso a 400: chiusa la scheda si torna a 400', corpo.scrollTop, 400)
+  }
+}
 console.log('\ntogliere un «non sono doppioni»')
 {
   const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: '2026-09-26', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })
