@@ -1015,6 +1015,8 @@ a.btn { text-decoration: none; }
   .tb-musica-testo { flex-grow: 1; max-width: none; }
   .tb-home, .tb-istruttore { grid-template-columns: minmax(0, 1fr); }
   .tb-aperta { flex-direction: column; align-items: stretch; }
+  /* In colonna la base da 280px diventerebbe un'altezza: il testo prende solo quello che gli serve. */
+  .tb-aperta-testo { flex: 0 0 auto; }
   .tb-btn-segna, .tb-dalle { min-width: 0; }
   .tb-righe { grid-template-columns: minmax(0, 1fr); }
   .tb-fascia { flex-wrap: wrap; }
