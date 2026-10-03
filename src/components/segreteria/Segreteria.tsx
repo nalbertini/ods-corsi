@@ -266,7 +266,7 @@ export function Segreteria({
                     aria-current={voce === id || (id === 'presenze' && inPresenze) ? 'page' : undefined}
                     onClick={() => vai(id)}
                   >
-                    {testo}
+                    <span className="sg-voce-testo">{testo}</span>
                     {id === 'richieste' && segno(richiesteNuove, 'nuove')}
                     {id === 'presenze' && conSegnalate && segno(segnalateDaVedere, 'segnalate da vedere')}
                     {id === 'istruttori' && segno(daConfermare, 'da confermare')}

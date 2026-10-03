@@ -92,6 +92,9 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
         titolo="SETTIMANA"
         sotto={`Le lezioni generate dalle ricorrenze: aprine una per l’appello, il sostituto o per annullarla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato)}.` : ''}`}
       >
+        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuova(true)}>
+          + LEZIONE STRAORDINARIA
+        </button>
         <button
           type="button"
           className="sg-btn sg-btn-linea"
@@ -104,9 +107,6 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
           }
         >
           RIGENERA
-        </button>
-        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuova(true)}>
-          + LEZIONE STRAORDINARIA
         </button>
       </Testa>
 

@@ -57,10 +57,11 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
       {ricevute.dato?.map((r) => (
         <div key={r.id} className="sg-voce-elenco">
           <span className="stack grow" style={{ minWidth: 0 }}>
-            <span className="num" style={{ fontSize: 15, fontWeight: 700, textDecoration: r.annullataIl ? 'line-through' : undefined }}>
+            {/* Annullata è storia, non qualcosa che manca: barrata e in grigio, non in rosso. */}
+            <span className="num" style={{ fontSize: 15, fontWeight: 700, textDecoration: r.annullataIl ? 'line-through' : undefined, color: r.annullataIl ? 'var(--dim)' : undefined }}>
               N. {r.numero}/{r.anno} · {euro(r.totale)} €
             </span>
-            <span style={{ fontSize: 12, color: r.annullataIl ? 'var(--rosso)' : 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 12, color: 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {r.annullataIl ? `Annullata il ${dataLunga(r.annullataIl.slice(0, 10))} · ` : ''}
               {dataLunga(r.data)} · {r.voci.map((v) => v.descrizione).join(', ')}
             </span>

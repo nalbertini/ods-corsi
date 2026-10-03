@@ -1019,6 +1019,8 @@ a.btn { text-decoration: none; }
   font-size: 16px; font-weight: 700; letter-spacing: 0.12em; text-align: left;
 }
 .sg-voce:hover { color: var(--text); }
+/* Il testo prende lo spazio, il numero sta a destra: una voce lunga che va a capo non lo lascia storto. */
+.sg-voce-testo { flex: 1; min-width: 0; }
 a.sg-voce { text-decoration: none; }
 .sg-voce[aria-current='page'] { border-left-color: var(--text); background: var(--surface); color: var(--text); }
 .sg-chi { display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid var(--line-soft); }
