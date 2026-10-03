@@ -12,7 +12,9 @@ generano da quelle.
 Per ogni corso: nome, sala e istruttori, **QUANDO** («lun mer ven 17:00») e
 **ISCRITTI** (`14/20` su posti; in giallo quando è pieno). Se un giorno si fa
 in un'altra sala lo si vede sotto il nome: «Motricità · gio Tatami». Un clic
-apre la scheda.
+apre la scheda: sul computer accanto all'elenco, sul tablet e sul telefono al
+suo posto. Indietro torna all'elenco, anche dal nuovo corso; un corso
+archiviato, aperto da un link vecchio, non si apre e lo si dice.
 
 I dati che mancano sono in **rosso**, perché vanno completati: un corso senza
 istruttore («istruttore da assegnare»), senza sala o senza giorni ha il bordo

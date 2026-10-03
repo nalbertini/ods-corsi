@@ -36,13 +36,26 @@ function dove(c: CorsoSeg) {
  * quindi cambiare un giorno qui cambia la settimana, ma solo da oggi in
  * avanti: il passato è già nel registro.
  */
-export function Corsi({ d }: { d: DatiSegreteria }) {
+export function Corsi({
+  d,
+  scelto,
+  nuovo = false,
+  onScelta,
+  onNuovo,
+}: {
+  d: DatiSegreteria
+  /** Il corso aperto: sta nell'indirizzo, così Indietro lo chiude anche quando prende tutta la pagina. */
+  scelto?: string
+  /** Il modulo del nuovo corso: sta nell'indirizzo anche lui. */
+  nuovo?: boolean
+  /** `push` è un passo per Indietro, `replace` corregge l'indirizzo di adesso. */
+  onScelta: (id: string | null, passo: 'push' | 'replace') => void
+  onNuovo: () => void
+}) {
   const corsi = useCarica(() => d.corsi(), [d])
   const persone = useCarica(() => d.persone(), [d])
-  const [scelto, setScelto] = useState<string | null>(null)
-  const [nuovo, setNuovo] = useState(false)
   const [archiviati, setArchiviati] = useState(false)
-  const { avviso, fai } = useAvviso()
+  const { avviso, avvisa, fai } = useAvviso()
   const oggi = chiaveGiorno(new Date())
 
   const attivi = (corsi.dato ?? []).filter((c) => c.attivo).sort((a, b) => a.nome.localeCompare(b.nome, 'it'))
@@ -56,11 +69,20 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
   const apri = async (id: string | null, comeNuovo = false) => {
     if (comeNuovo === nuovo && (comeNuovo || id === corso?.id)) return
     if (!(await lasciare())) return
-    setNuovo(comeNuovo)
-    setScelto(id)
+    if (comeNuovo) onNuovo()
+    else onScelta(id, 'push')
   }
   const chiudi = () => void apri(null)
   const incompleti = attivi.filter((c) => mancano(c).length > 0).length
+  // Un corso dell'indirizzo che non è in calendario (archiviato, un link
+  // vecchio, un'altra finestra): si torna all'elenco e lo si dice. Solo
+  // quando l'elenco arriva: un corso appena creato non è in quello di prima.
+  useEffect(() => {
+    if (!scelto || !corsi.dato || corsi.dato.some((c) => c.attivo && c.id === scelto)) return
+    avvisa('Quel corso non è più in calendario')
+    onScelta(null, 'replace')
+    // Solo all'arrivo dell'elenco: aprire un corso non è un motivo per guardare.
+  }, [corsi.dato])
   const iscrittiA = (id: string) => (persone.dato ?? []).filter((p) => p.attiva && p.iscrizioni.some((i) => i.corsoId === id && inCorso(i, oggi)))
 
   const scheda = (nuovo || corso) && (
@@ -72,12 +94,14 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
       persone={persone.dato ?? []}
       fai={fai}
       onSalvato={(id) => {
-        setNuovo(false)
-        setScelto(id)
+        // Al posto del modulo: Indietro dal corso nuovo torna all'elenco, non a un modulo vuoto.
+        onScelta(id, 'replace')
         void corsi.ricarica()
       }}
       onCambiato={() => void Promise.all([corsi.ricarica(), persone.ricarica()])}
-      onLasciaStare={() => setNuovo(false)}
+      // Archiviato non è più fra i corsi: si torna all'elenco senza un passo per Indietro.
+      onArchiviato={() => onScelta(null, 'replace')}
+      onLasciaStare={() => onScelta(null, 'push')}
     />
   )
 
@@ -178,6 +202,7 @@ function Scheda({
   fai,
   onSalvato,
   onCambiato,
+  onArchiviato,
   onLasciaStare,
 }: {
   d: DatiSegreteria
@@ -187,6 +212,7 @@ function Scheda({
   fai: Fai
   onSalvato: (id: string) => void
   onCambiato: () => void
+  onArchiviato: () => void
   onLasciaStare: () => void
 }) {
   const sale = useCarica(() => d.sale(), [d])
@@ -249,7 +275,10 @@ function Scheda({
             className="sg-btn sg-btn-linea"
             onClick={async () => {
               if ((await chiedi(`Archiviare ${corso.nome}? Le lezioni future senza appello spariscono dal calendario; il registro resta.`, 'ARCHIVIA IL CORSO'))) {
-                void fai(() => d.archiviaCorso(corso.id, false), `${corso.nome} archiviato`, onCambiato)
+                void fai(() => d.archiviaCorso(corso.id, false), `${corso.nome} archiviato`, () => {
+                  onArchiviato()
+                  onCambiato()
+                })
               }
             }}
           >

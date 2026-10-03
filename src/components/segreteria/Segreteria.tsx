@@ -464,7 +464,15 @@ export function Segreteria({
         )}
         {d && voce === 'dafare' && <DaFare conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} />}
-        {d && voce === 'corsi' && <Corsi d={d} />}
+        {d && voce === 'corsi' && (
+          <Corsi
+            d={d}
+            scelto={posto.corso}
+            nuovo={posto.nuovo}
+            onScelta={(id, passo) => segna({ voce: 'corsi', ...(id && { corso: id }) }, passo)}
+            onNuovo={() => segna({ voce: 'corsi', nuovo: true }, 'push')}
+          />
+        )}
         {d && voce === 'iscritti' && (
           <Iscritti
             key={filtro ?? ''}
