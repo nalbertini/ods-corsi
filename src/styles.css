@@ -364,9 +364,19 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 
 /* Dopo CHIUDI L'APPELLO: verde quando è arrivato, giallo finché aspetta la rete. */
 .esito-appello { gap: 8px; padding: 12px 10px 10px 14px; border-color: var(--giallo); }
-.esito-appello[data-arrivato='true'] { border-color: var(--verde); }
+.esito-appello[data-tono='arrivato'] { border-color: var(--verde); }
+.esito-appello[data-tono='guaio'] { border-color: var(--rosso); }
 .appello-segno { font-family: var(--cond); font-size: 28px; font-weight: 700; width: 24px; text-align: center; color: var(--giallo-testo); }
-.esito-appello[data-arrivato="true"] .appello-segno { color: var(--verde-testo); }
+.esito-appello[data-tono='arrivato'] .appello-segno { color: var(--verde-testo); }
+.esito-appello[data-tono='guaio'] .appello-segno { color: var(--rosso); }
+.appello-esito-conto { font-size: 15px; font-weight: 700; letter-spacing: 0.06em; color: var(--sec); }
+.spia-coda[data-tono='guaio'] { border-color: var(--rosso); }
+.spia-coda[data-tono='guaio'] .spia-coda-quante { color: var(--rosso); }
+/* Un tasto pieno che sta chiedendo conferma: vuoto, col bordo del suo colore,
+   così si vede che non è più lo stesso tasto. */
+.btn-primary[data-sicuro='true'] { background: transparent; border: 2px solid var(--rosso); color: var(--rosso); }
+.btn-go[data-sicuro='true'] { background: transparent; border: 2px solid var(--verde); color: var(--verde-testo); }
+.chiudi-su { font-size: 17px; padding: 0 10px; letter-spacing: 0.1em; }
 .appello-esito { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; }
 
 /* Tre stati, tre colori, e il segno grande a sinistra: da lontano si vede se

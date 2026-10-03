@@ -241,8 +241,8 @@ export function CalendarioScreen({
           <span className="num lezione-conto" data-fatto={fatto && presentiIscritti > 0}>
             {iniziato ? `${presentiIscritti}/${l.iscritti}` : l.iscritti}
           </span>
-          <span className="num lezione-stato" data-fatto={fatto} data-manca={manca || undefined}>
-            {manca ? 'DA CHIUDERE' : !iniziato ? 'ISCRITTI' : fatto ? '✓ FATTO' : 'IN CORSO'}
+          <span className="num lezione-stato" data-fatto={fatto && presentiIscritti > 0} data-manca={manca || undefined}>
+            {manca ? 'DA CHIUDERE' : !iniziato ? 'ISCRITTI' : fatto ? (presentiIscritti > 0 ? '✓ FATTO' : 'NESSUN PRESENTE') : 'IN CORSO'}
           </span>
           {(l.prove ?? 0) > 0 && <span className="num lezione-stato lezione-prove">+{l.prove} PROVA</span>}
         </span>

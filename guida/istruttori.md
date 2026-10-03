@@ -94,7 +94,7 @@ Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è:
 I due tasti in cima:
 
 - **TUTTI PRESENTI**: mette ✓ a tutti. È il modo più veloce: premetelo e poi
-  toccate due volte gli assenti. Se qualcuno è già segnato diventa **GLI ALTRI
+  toccate una volta gli assenti. Se qualcuno è già segnato diventa **GLI ALTRI
   PRESENTI**, e mette ✓ solo a chi non ha ancora un segno: le assenze già
   messe restano.
 - **AZZERA**: toglie tutti i segni della lezione, per ricominciare. Chiede
@@ -106,17 +106,28 @@ Non c'è niente da salvare: ogni tocco parte subito.
 
 In fondo all'elenco c'è il tasto per chiudere:
 
-- **CHIUDI L'APPELLO ✓**, in verde, quando tutti hanno un segno;
+- **CHIUDI L'APPELLO ✓**, in verde, quando tutti hanno un segno: allora
+  compare anche in cima, al posto di **GLI ALTRI PRESENTI**;
 - **CHIUDI · 3 ASSENTI**, in rosso, quando qualcuno è ancora da segnare:
   chiudendo, chi non ha un segno risulta **assente**.
 
-Chiede un secondo tocco se la lezione non è ancora cominciata, se nessuno è
-segnato (**NESSUNO SEGNATO: 14 ASSENTI?**: di solito vuol dire che manca
-**TUTTI PRESENTI**) o se più di metà diventerebbe assente.
+Chiede un secondo tocco, con quanti diventerebbero assenti, se nessuno è
+segnato (**NESSUNO SEGNATO · 14 ASSENTI?**: di solito vuol dire che manca
+**TUTTI PRESENTI**), se la lezione non è ancora cominciata (**NON È
+COMINCIATA · …**) o se più di metà diventerebbe assente. Il tasto si svuota
+mentre chiede: leggete, e toccatelo di nuovo. Un doppio tocco veloce non
+basta.
 
-Chiuso, si torna al calendario e in cima compare **APPELLO ARRIVATO IN
-SEGRETERIA**, in verde. Senza rete compare invece **APPELLO SALVATO SUL
-TELEFONO**, in giallo, che diventa verde da solo quando le presenze arrivano.
+Chiuso, si torna al calendario e in cima compare com'è andata, con quanti
+presenti e quanti assenti:
+
+- **APPELLO ARRIVATO IN SEGRETERIA**, in verde;
+- **APPELLO SALVATO SUL TELEFONO**, in giallo, finché manca la rete: diventa
+  verde da solo quando le presenze arrivano. Giallo anche se non c'era nessun
+  presente, nel caso fosse un errore;
+- **APPELLO NON ARRIVATO TUTTO**, in rosso, se il server ha rifiutato qualche
+  presenza: avvisate la segreteria.
+
 **RIAPRI** riapre l'appello, per chi arriva tardi o per un segno sbagliato.
 Così la segreteria vede la lezione come fatta, e non lasciata a metà.
 
@@ -225,6 +236,8 @@ mentre la rete non c'è, parte solo l'ultimo segno.
 
 ## Se qualcosa non torna
 
+- **PRESENZE RIFIUTATE**, in rosso sopra il calendario: il server non ha
+  accettato alcune presenze e non le riprova. Avvisate la segreteria.
 - **CALENDARIO NON LETTO** / **LEZIONE NON LETTA**, in rosso: il server non
   ha risposto. Controllate la rete e premete **RIPROVA**.
 - **Un allievo manca dall'elenco**: non è iscritto a quel corso. Lo iscrive la
