@@ -56,6 +56,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 26. `26-colori-corsi.sql` — i corsi rossi passano al viola: in segreteria il rosso vuol dire solo che qualcosa manca
 27. `27-pagamento-dalle-ricevute.sql` — se ha pagato lo dicono le ricevute: in regola vuol dire la quota associativa pagata, e lo stato scritto a mano resta solo come eccezione per chi ha pagato fuori dall'app
 28. `28-elimina-istruttore.sql` — eliminare un istruttore che non ha mai insegnato, anche se è di segreteria col ruolo doppio, la scheda e l'account (con la funzione `elimina`, vedi «L'invito per email»); chi ha corsi, lezioni o presenze non si elimina, nemmeno cancellando la riga a mano
+29. `29-pronto-fino-dalle-ricorrenze.sql` — fin dove è pronto il calendario lo dicono le lezioni dell'orario: una straordinaria lontana non lo ferma più
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -149,6 +150,10 @@ Per eliminare un istruttore basta `28-elimina-istruttore.sql` (dopo
 finché non ci sono, ELIMINA nella scheda dell'istruttore dice cosa manca.
 Chi l'aveva già lanciato lo rilancia: la prima versione non eliminava la
 segreteria che insegna anche.
+Per il calendario che non si ferma a una straordinaria basta
+`29-pronto-fino-dalle-ricorrenze.sql` (dopo `05-segreteria.sql`), che non
+chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, una lezione
+straordinaria fissata oltre la fine del calendario lo ferma fino a lei.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -769,7 +774,9 @@ sua funzione, solo lui o la segreteria, senza toccare il resto della riga; `time
 una singola lezione: lo lega il personale, lo legge il tablet, e un timer
 personale legato a una lezione lo vedono anche gli altri; `calendario-da-se.sql`
 prova il calendario che si allunga da sé: lo allunga anche un istruttore, ma
-solo quando serve e fin dove dicono le regole, e non fuori dalle date dei corsi; `presenze-istruttori.sql`, dopo
+solo quando serve e fin dove dicono le regole, e non fuori dalle date dei corsi; `calendario-pronto-fino.sql` prova che
+fin dove è pronto il calendario lo dicano le lezioni dell'orario, e che una
+straordinaria lontana non lo fermi; `presenze-istruttori.sql`, dopo
 `tablet.sql`, prova la presenza degli istruttori dal PIN: confermata da sola a
 chi era previsto (anche da sostituto), da confermare agli altri, e confermata
 o rifiutata solo dalla segreteria; `istruttori-dalle-lezioni.sql`, dopo
