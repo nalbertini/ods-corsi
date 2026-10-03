@@ -972,6 +972,7 @@ console.log('\nunire due schede')
     for (const fondo of ['menu', 'surface-2'].filter((f) => chiaro[f])) ok(`${file}, tema chiaro: testo spento su --${fondo}`, contrasto(chiaro.dim, chiaro[fondo]), 4.5)
     ok(`${file}, tema scuro: il testo spento resta quello`, tema(':root').dim, '#8c8c88')
   }
+}
 
 console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
 {
