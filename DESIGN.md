@@ -272,6 +272,7 @@ Quadrato 44px con bordo 2px `riga` e segno in `tasto`; quando contiene una parol
 ### Chips & Schede
 - **Chip** (`.sg-chip`): 44px, bordo 2px, Saira 13px 0.12em; premuto: bordo `testo` e fondo `superficie-alta`. Variante piena: fondo `testo`, testo `nero-palestra`.
 - **Schede** (`.scheda`): righe di tasti uguali con gap 4px; attiva: fondo `superficie-alta`, bordo e testo `testo`.
+- **Scelte del modulo di iscrizione** (`.modulo-corso`): bordo 2px `riga`, quadratino da 22px a sinistra; scelta = bordo `testo`, fondo `superficie-alta`, quadratino con ✓ (più risposte) o ● (una sola) in `testo`. Non è verde: scegliere non è fatto. È verde solo il file caricato.
 - **Bollini** (`.prova-marchio`, `.spia-coda`, `.sg-tag`): 11px maiuscolo spaziato, bordo 2px giallo o fondo pieno; 13px nella testata di un filo delle segnalazioni.
 
 ### Cards / Containers
