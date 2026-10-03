@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.14.4 — 3 ottobre 2026
+
+### Risolto
+
+- In Corsi, Istruttori e accessi, Listino e Impostazioni una modifica non salvata non si perde più
+
+### Modificato
+
+- In segreteria le scritte rosse e verdi si leggono meglio
+
 ## 0.14.3 — 3 ottobre 2026
 
 ### Modificato
