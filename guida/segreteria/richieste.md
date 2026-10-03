@@ -23,7 +23,9 @@ stampare.
 ## Guardare una richiesta
 
 Un clic apre le risposte: nato il / a, codice fiscale, residenza, genitore (per
-un minore), email, telefono e l'eventuale telefono 2, corsi, come paga (trimestre o annuale), note.
+un minore), email, telefono e l'eventuale telefono 2, corsi (con «fuori età:
+richiama» accanto a un corso che non è per il suo anno di nascita, secondo
+**NATI DAL / AL** del [listino](listino.md)), come paga (trimestre o annuale), note.
 
 Sotto, **I FILE**: modulo firmato e ricevuta. Carta d'identità e certificato
 medico stanno in un riquadro giallo, perché nell'app non restano: accolta la

@@ -40,7 +40,12 @@ Chi si iscrive risponde alle domande dal telefono:
   del **genitore** e il modulo per minori, che firma il genitore.
 - **Residenza**, e **come raggiungerti** (email, telefono e, se si vuole, un
   **telefono 2**; per un minore, quelli del genitore).
-- **I corsi** a cui iscriversi e **come paghi** (trimestre o annuale).
+- **I corsi** a cui iscriversi e **come paghi** (trimestre o annuale). Sotto
+  ogni corso ci sono età e orari del listino. Scritta la data di nascita, i
+  corsi giusti per quell'anno vengono per primi; sotto **SENZA FASCIA D'ETÀ**
+  quelli per cui il listino non dice gli anni, e sotto **ALTRI CORSI** quelli
+  di un'altra età: si possono scegliere lo stesso, e un avviso giallo dice
+  quali sono e che la segreteria richiama.
 - **Il modulo**: le autorizzazioni si firmano **qui, col dito** (o col mouse
   dal computer). Si sceglie come sul foglio se si acconsente al
   **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**; per

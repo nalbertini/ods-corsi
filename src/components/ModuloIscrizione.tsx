@@ -4,6 +4,7 @@ import { certificatoDaPortare, chiFirma, controlla, datiRichieste, domandaUscita
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
+import { corsiPerEta, type CorsoPerEta } from '../lib/listino'
 import { causale, stimaIscrizione, type Abbonamento } from '../lib/nucleo'
 import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
@@ -168,6 +169,11 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   }, [minore])
   const firmatario = minore ? `${(b.genitoreNome ?? '').trim()} ${(b.genitoreCognome ?? '').trim()}`.trim() : `${b.nome.trim()} ${b.cognome.trim()}`.trim()
   const foglio = MODULI[minore ? 1 : 0]
+  // I corsi giusti per l'anno di nascita prima, gli altri dopo: si sceglie senza tornare al listino.
+  const voci = useListino()?.listino.corsi
+  const perEta = corsiPerEta(corsi ?? [], voci ?? [], b.natoIl)
+  const fuoriEta = perEta.altri.filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)
+  const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: c.riga })
   const certificato = certificatoDaPortare(
     b.natoIl,
     (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
@@ -447,18 +453,51 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       </Sezione>
 
       <Sezione titolo="I CORSI">
-        <div className="modulo-campo modulo-largo">
+        {/* Un errore sui corsi porta qui, dove la nota si legge prima dei due gruppi, che possono essere lunghi. */}
+        <div id="m-corsi" tabIndex={-1} className="modulo-campo modulo-largo modulo-corsi-tutti">
+          <NotaCampo id="m-corsi-nota" nota={nota('corsi')} />
           {guaioCorsi && <Dettaglio tono="guaio">I corsi non si leggono: {guaioCorsi}</Dettaglio>}
           {!corsi && !guaioCorsi && <Dettaglio>Un attimo…</Dettaglio>}
           <SceltaCorsi
-            id="m-corsi"
+            id="m-corsi-adatti"
             etichetta="Corsi"
-            voci={(corsi ?? []).map((c) => ({ id: c.id, testo: c.nome }))}
+            voci={perEta.adatti.map(tasto)}
             scelti={b.corsi}
             onScegli={scegli}
             descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
           />
-          <NotaCampo id="m-corsi-nota" nota={nota('corsi')} />
+          {perEta.senzaAnni.length > 0 && (
+            <>
+              <span className="modulo-etichetta modulo-altri">SENZA FASCIA D’ETÀ</span>
+              <SceltaCorsi
+                id="m-corsi-senza-anni"
+                etichetta="Corsi senza fascia d’età"
+                voci={perEta.senzaAnni.map(tasto)}
+                scelti={b.corsi}
+                onScegli={scegli}
+                descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
+              />
+            </>
+          )}
+          {perEta.altri.length > 0 && (
+            <>
+              <span className="modulo-etichetta modulo-altri">ALTRI CORSI</span>
+              <SceltaCorsi
+                id="m-corsi-altri"
+                etichetta="Altri corsi"
+                voci={perEta.altri.map(tasto)}
+                scelti={b.corsi}
+                onScegli={scegli}
+                descritto={nota('corsi') ? 'm-corsi-nota' : undefined}
+              />
+            </>
+          )}
+          {/* Sotto il gruppo da cui nasce, così il tasto appena toccato non scende sotto il dito; letto da chi usa un lettore di schermo. */}
+          <div aria-live="polite">{fuoriEta.length > 0 && (
+              <Dettaglio tono="avviso">
+                {fuoriEta.join(', ')} {fuoriEta.length > 1 ? 'non sono' : 'non è'} della sua età: la segreteria ti richiama.
+              </Dettaglio>
+            )}</div>
         </div>
         <div className="modulo-campo modulo-largo">
           <span className="modulo-etichetta">COME PAGHI</span>

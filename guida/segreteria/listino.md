@@ -41,6 +41,13 @@ Ogni corso è una riga col nome e i prezzi; **CAMBIA** la apre:
   se il nome c'è, o si scrive a mano).
 - **ETÀ** e **ORARI**, un orario per riga: sono solo testo per la pagina di
   iscrizione, il calendario non li guarda.
+- **NATI DAL** e **NATI AL** (facoltativi) — gli anni di nascita del corso,
+  compresi. Nel modulo di iscrizione mettono il corso in cima per chi è nato
+  in quegli anni, e sotto **ALTRI CORSI** per gli altri. Vuoti, il corso sta
+  a parte, sotto **SENZA FASCIA D'ETÀ** (il corso chiuso lo dice: «senza anni
+  di nascita»); uno solo, è aperto dall'altro lato («nati nel 2012 o prima»
+  è solo **NATI AL** 2012). Il foglio li ha già dove l'età è chiara; se il listino
+  l'hai già cambiato e salvato, vanno scritti qui corso per corso.
 - **PREZZI** — **A SALDO**, **ANNUALE** e **TRIMESTRE**, in euro, anche coi
   centesimi (`12,50`). Un prezzo lasciato vuoto non c'è: la pagina scrive un
   trattino e la ricevuta non lo propone. Un corso con più prezzi (la

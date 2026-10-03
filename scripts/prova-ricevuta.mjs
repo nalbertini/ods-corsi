@@ -14,7 +14,7 @@ import { writeFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/ricevute'; export { listinoDa, cosaNonVaListino, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
+      "export * from './src/lib/ricevute'; export { annoScritto, corsiPerEta, cosaNonVaListino, fuoriEta, listinoDa, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -137,6 +137,74 @@ const fineAgosto = gruppi(['Lotta 3'], '2026-08-31')
 const settembre = gruppi(['Lotta 3'], '2026-09-01')
 ok('il 31 agosto il saldo di Lotta 3 c’è, fra i primi', Array.isArray(fineAgosto.primi) && fineAgosto.primi.includes('Lotta 3~0~saldo'), true)
 ok('il 1° settembre il saldo di Lotta 3 non c’è più, da nessuna parte', Array.isArray(settembre.primi) && Array.isArray(settembre.altri) ? [...settembre.primi, ...settembre.altri].includes('Lotta 3~0~saldo') : settembre.primi, false)
+
+console.log('I corsi per anno di nascita')
+const judo2 = { corso: 'Judo 2', eta: 'nati 2019-2018-2017', orari: ['lunedì, mercoledì e venerdì 17.00-18.00'], prezzi: [{ annuale: 400 }], natiDal: 2017, natiAl: 2019 }
+const judoAdulti = { corso: 'Judo adulti', eta: 'nati 2012 e prima', orari: ['martedì 20.00-21.30', 'giovedì 20.00-21.30'], prezzi: [{ annuale: 450 }], natiAl: 2012 }
+const judoAgonisti = { corso: 'Judo agonisti', eta: '', orari: [], prezzi: [{ annuale: 500 }] }
+const voci = [judo2, judoAdulti, judoAgonisti]
+const aperti = [
+  { id: 'a', nome: 'Judo adulti' },
+  { id: 'b', nome: 'JUDO 2' },
+  { id: 'c', nome: 'Judo agonisti' },
+  { id: 'd', nome: 'Body functional' },
+]
+const conAnni = { ...nuovo, corsi: [{ ...nuovo.corsi[0], natiDal: 2010, natiAl: 2016 }] }
+// Gli stessi campi, in un altro ordine: si confrontano per nome.
+const perNome = (o) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b)))
+ok('gli anni di nascita si tengono', prova(() => perNome(m.listinoDa(conAnni).corsi[0])), perNome(conAnni.corsi[0]))
+// L'anno scritto in LISTINO: quattro cifre, negli stessi limiti di quello che si legge.
+ok('anno scritto: 2017', prova(() => m.annoScritto(' 2017 ')), 2017)
+ok('anno scritto: vuoto non c’è', prova(() => m.annoScritto('  ')), undefined)
+ok('anno scritto: 17 non si capisce', prova(() => m.annoScritto('17')), null)
+ok('anno scritto: 1800 non si capisce', prova(() => m.annoScritto('1800')), null)
+ok('anno scritto: 2101 non si capisce', prova(() => m.annoScritto('2101')), null)
+ok('un anno solo si tiene', prova(() => m.listinoDa({ ...nuovo, corsi: [{ ...nuovo.corsi[0], natiAl: 2012 }] }).corsi[0].natiAl), 2012)
+for (const [cosa, x] of [['una stringa', '2017'], ['il 1800', 1800], ['il 2101', 2101], ['un anno con la virgola', 2.5]])
+  ok(`gli anni di nascita: ${cosa} si butta`, prova(() => { const c = m.listinoDa({ ...nuovo, corsi: [{ ...nuovo.corsi[0], natiDal: x, natiAl: x }] }).corsi[0]; return [c.natiDal, c.natiAl] }), [undefined, undefined])
+ok('gli anni al contrario no', m.cosaNonVaListino({ ...nuovo, corsi: [{ ...judo2, natiDal: 2019, natiAl: 2017 }] }), 'Gli anni di nascita di «Judo 2» sono al contrario: in NATI DAL va l’anno più vecchio')
+ok('lo stesso anno va', m.cosaNonVaListino({ ...nuovo, corsi: [{ ...judo2, natiDal: 2018, natiAl: 2018 }] }), null)
+ok('gli anni giusti vanno', m.cosaNonVaListino({ ...nuovo, corsi: voci }), null)
+
+const per = (natoIl) => prova(() => {
+  const r = m.corsiPerEta(aperti, voci, natoIl)
+  return { adatti: r.adatti.map((c) => c.nome), senzaAnni: r.senzaAnni.map((c) => c.nome), altri: r.altri.map((c) => c.nome) }
+})
+ok('nato nel 2018: prima Judo 2, Judo adulti negli altri', per('2018-05-10'), { adatti: ['JUDO 2'], senzaAnni: ['Judo agonisti', 'Body functional'], altri: ['Judo adulti'] })
+ok('nato nel 1985: Judo 2 negli altri', per('1985-01-01'), { adatti: ['Judo adulti'], senzaAnni: ['Judo agonisti', 'Body functional'], altri: ['JUDO 2'] })
+ok('nato nel 2012, l’ultimo anno compreso', per('2012-12-31'), { adatti: ['Judo adulti'], senzaAnni: ['Judo agonisti', 'Body functional'], altri: ['JUDO 2'] })
+ok('nato nel 2017, il primo anno compreso', per('2017-01-01'), { adatti: ['JUDO 2'], senzaAnni: ['Judo agonisti', 'Body functional'], altri: ['Judo adulti'] })
+for (const [cosa, d] of [['vuota', ''], ['dell’anno 2', '0002-03-01'], ['prima del 1900', '1899-12-31'], ['che non è una data', 'ieri']])
+  ok(`data ${cosa}: tutti adatti, nell’ordine del listino`, per(d), { adatti: ['JUDO 2', 'Judo adulti', 'Judo agonisti', 'Body functional'], senzaAnni: [], altri: [] })
+ok('i corsi senza voce in ordine alfabetico', prova(() => m.corsiPerEta([{ id: 'z', nome: 'Zumba' }, { id: 'e', nome: 'Ènergy' }, { id: 'b', nome: 'Body functional' }, { id: 'j', nome: 'Judo 2' }], voci, '').adatti.map((c) => c.nome)), ['Judo 2', 'Body functional', 'Ènergy', 'Zumba'])
+// Con la data, in cima solo i corsi coi suoi anni, anche se nel listino vengono dopo uno senza anni.
+ok('nato nel 2018: in cima quelli coi suoi anni', prova(() => m.corsiPerEta(aperti, [judoAgonisti, judo2, judoAdulti], '2018-05-10').adatti.map((c) => c.nome)), ['JUDO 2'])
+ok('senza data: l’ordine del listino', prova(() => m.corsiPerEta(aperti, [judoAgonisti, judo2, judoAdulti], '').adatti.map((c) => c.nome)), ['Judo agonisti', 'JUDO 2', 'Judo adulti', 'Body functional'])
+// Con la data, quelli senza anni stanno in un gruppo loro (SENZA FASCIA D’ETÀ): in cima sembrerebbero della sua età.
+ok('nato nel 2018: i corsi senza anni a parte', prova(() => m.corsiPerEta(aperti, voci, '2018-05-10').senzaAnni.map((c) => c.nome)), ['Judo agonisti', 'Body functional'])
+ok('senza data: nessun gruppo a parte', prova(() => m.corsiPerEta(aperti, voci, '').senzaAnni), [])
+ok('nessun corso sparisce', prova(() => { const r = m.corsiPerEta(aperti, voci, '2018-05-10'); return r.adatti.length + r.senzaAnni.length + r.altri.length }), aperti.length)
+ok('il corso resta quello che era, id compreso', prova(() => m.corsiPerEta(aperti, voci, '1985-01-01').altri.map((c) => c.id)), ['b'])
+const righe = (natoIl) => prova(() => {
+  const r = m.corsiPerEta(aperti, voci, natoIl)
+  return Object.fromEntries([...r.adatti, ...r.senzaAnni, ...r.altri].map((c) => [c.nome, c.riga ?? null]))
+})
+ok('su ogni tasto età e orari; senza voce o senza niente da dire, niente', righe('2018-05-10'), {
+  'JUDO 2': 'nati 2019-2018-2017 · lunedì, mercoledì e venerdì 17.00-18.00',
+  'Judo agonisti': null,
+  'Body functional': null,
+  'Judo adulti': 'nati 2012 e prima · martedì 20.00-21.30 · giovedì 20.00-21.30',
+})
+ok('la riga senza età ha solo gli orari', prova(() => m.corsiPerEta([{ id: 'c', nome: 'Judo agonisti' }], [{ ...judoAgonisti, orari: ['sabato 10.00'] }], '').adatti[0].riga), 'sabato 10.00')
+ok('un corso senza voce non ha la riga', prova(() => m.corsiPerEta([{ id: 'd', nome: 'Body functional' }], voci, '').adatti[0].riga === undefined), true)
+
+const fuori = (nome, natoIl) => prova(() => m.fuoriEta(nome, natoIl, voci))
+ok('Judo adulti a chi è nato nel 2018 è fuori età', fuori('Judo adulti', '2018-05-10'), true)
+ok('Judo 2 a chi è nato nel 2018 va', fuori('judo  2', '2018-05-10'), false)
+ok('un corso senza anni non è mai fuori età', fuori('Judo agonisti', '2018-05-10'), false)
+ok('un corso senza voce non è mai fuori età', fuori('Body functional', '2018-05-10'), false)
+ok('senza data non si dice fuori età', fuori('Judo adulti', ''), false)
+ok('con una data dell’anno 2 non si dice fuori età', fuori('Judo adulti', '0002-03-01'), false)
 
 console.log('I dati del socio')
 const adulto = { nome: 'Nicola', cognome: 'Albertini', natoIl: '1980-03-02', codiceFiscale: 'LBRNCL80C02L219F', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno' }
