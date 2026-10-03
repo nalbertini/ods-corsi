@@ -72,7 +72,7 @@ export function PannelloProve({
 
   const proposti = somiglianti((venuti ?? []).filter((p) => !giaQui.has(p.id)), `${nome} ${cognome}`)
 
-  const aggiungi = async (chi: ChiProva) => {
+  const aggiungi = async (chi: ChiProva): Promise<boolean> => {
     setAspetta(true)
     setGuaio(null)
     setFatto(null)
@@ -83,19 +83,33 @@ export function PannelloProve({
       setCognome('')
       setTelefono('')
       primo.current?.focus()
+      return true
     } catch (e) {
       setGuaio(scritto(e, 'Non aggiunto: il server non risponde'))
+      return false
     } finally {
       setAspetta(false)
     }
   }
 
-  const manda = (e: FormEvent) => {
-    e.preventDefault()
+  const prova = async () => {
     const n = { nome, cognome, telefono }
     const no = cosaNonVaProva(n)
-    if (no) return setGuaio(no)
-    void aggiungi(n)
+    if (no) {
+      setGuaio(no)
+      return false
+    }
+    return aggiungi(n)
+  }
+  const manda = (e: FormEvent) => {
+    e.preventDefault()
+    void prova()
+  }
+  // Con un nome scritto, chiudere senza aggiungerlo lo buttava via senza dirlo:
+  // la prova non arrivava in segreteria, e il telefono si perdeva.
+  const scrittoQualcosa = !!(nome.trim() || cognome.trim())
+  const chiudi = async () => {
+    if (!scrittoQualcosa || (await prova())) onChiudi()
   }
 
   const id = (x: string) => `prova-${stile}-${x}`
@@ -160,10 +174,10 @@ export function PannelloProve({
 
         <div className="row" style={{ gap: 8 }}>
           <button type="submit" className={`${k.si} grow`} disabled={aspetta}>
-            {aspetta ? 'AGGIUNGO…' : 'AGGIUNGI NUOVO'}
+            {aspetta ? 'AGGIUNGO…' : 'AGGIUNGI'}
           </button>
-          <button type="button" className={k.no} onClick={onChiudi}>
-            FATTO
+          <button type="button" className={k.no} disabled={aspetta} onClick={() => void chiudi()}>
+            {scrittoQualcosa ? 'AGGIUNGI E CHIUDI' : 'CHIUDI'}
           </button>
         </div>
       </form>
@@ -183,6 +197,8 @@ export function MarchioProva() {
  */
 export function TogliProva({ chi, onTogli, disabled }: { chi: string; onTogli: () => void; disabled?: boolean }) {
   const [sicuro, setSicuro] = useState(false)
+  // Come le conferme dell'appello: il secondo tocco di un doppio tocco veloce non conferma.
+  const chiestoIl = useRef(0)
   useEffect(() => {
     if (!sicuro) return
     const t = window.setTimeout(() => setSicuro(false), 4000)
@@ -195,7 +211,13 @@ export function TogliProva({ chi, onTogli, disabled }: { chi: string; onTogli: (
       data-sicuro={sicuro}
       disabled={disabled}
       aria-label={sicuro ? `Conferma: togli ${chi} dalle prove` : `Togli ${chi} dalle prove`}
-      onClick={() => (sicuro ? onTogli() : setSicuro(true))}
+      onClick={() => {
+        if (!sicuro) {
+          chiestoIl.current = Date.now()
+          return setSicuro(true)
+        }
+        if (Date.now() - chiestoIl.current >= 500) onTogli()
+      }}
     >
       {sicuro ? 'SICURO? TOGLI' : 'TOGLI'}
     </button>

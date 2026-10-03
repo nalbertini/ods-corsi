@@ -32,7 +32,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
   const ricontaSegnalate = () => setGiroSegnalate((g) => g + 1)
   const largo = useLargo()
   // L'ultimo appello chiuso, per dire se è arrivato in segreteria.
-  const [chiuso, setChiuso] = useState<{ lezione: SessioneVista; presenti: number; assenti: number; scartatePrima: number } | null>(null)
+  const [chiuso, setChiuso] = useState<{ lezione: SessioneVista; presenti: number; assenti: number; prove: number; scartatePrima: number } | null>(null)
   const [scartate, setScartate] = useState(0)
 
   // Sul telefono calendario e appello scorrono nello stesso posto: l'appello
@@ -50,7 +50,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
     if (scorre && !largo) scorre.scrollTop = aperta ? 0 : eraA.current
   }, [aperta?.id, largo])
   // Dopo la chiusura il calendario riparte dall'alto, dove c'è l'esito.
-  const chiudi = (s: SessioneVista, c: { presenti: number; assenti: number }) => {
+  const chiudi = (s: SessioneVista, c: { presenti: number; assenti: number; prove: number }) => {
     eraA.current = 0
     setChiuso({ lezione: s, ...c, scartatePrima: scartate })
     apriLezione(null)
@@ -206,14 +206,17 @@ function Esito({
   lezione,
   presenti,
   assenti,
+  prove,
   inCoda,
   rifiutate,
   onVa,
   onRiapri,
 }: {
   lezione: SessioneVista
+  /** Iscritti presenti e assenti; chi è venuto a provare a parte, come sulla scheda. */
   presenti: number
   assenti: number
+  prove: number
   inCoda: number
   /** Scritture che il server ha rifiutato da quando l'appello è chiuso. */
   rifiutate: number
@@ -235,6 +238,7 @@ function Esito({
             <span className="num appello-esito">{titolo}</span>
             <span className="num appello-esito-conto">
               {presenti === 1 ? 'UN PRESENTE' : `${presenti} PRESENTI`} · {assenti === 1 ? 'UN ASSENTE' : `${assenti} ASSENTI`}
+              {prove > 0 && ` · +${prove} PROVA`}
             </span>
             <span style={{ fontSize: 14, color: 'var(--dim)' }}>
               {quando}
