@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.7.5 — 3 ottobre 2026
+
+### Risolto
+
+- Nell'area istruttore del tablet l'appello viene prima, e dopo ANNULLA il tablet lo dice
+
 ## 0.7.4 — 3 ottobre 2026
 
 ### Risolto
