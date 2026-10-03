@@ -61,7 +61,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     async lezioni(da, a) {
       await allungaCalendario(db)
       const giorni = { da_giorno: chiaveGiorno(da), a_giorno: chiaveGiorno(a) }
-      const [righe, segni] = await Promise.all([
+      const [righe, segni, prove] = await Promise.all([
         rpc<Array<{
           id: string; corso_id: string; corso: string; colore: string | null; descrizione: string | null
           istruttori: string | null; inizio: string; fine: string; stato: StatoSessione; iscritti: number; presenti: number
@@ -70,6 +70,11 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
         db.rpc('kanji_sala', giorni).then(
           (r) => new Map(((r.data ?? []) as Array<{ sessione_id: string; kanji: string }>).map((k) => [k.sessione_id, k.kanji])),
           () => new Map<string, string>(),
+        ),
+        // Le prove presenti arrivano con 36-tablet-conto-prove.sql: senza, il conto è quello di prima.
+        db.rpc('prove_sala', giorni).then(
+          (r) => new Map(((r.data ?? []) as Array<{ sessione_id: string; prove: number }>).map((p) => [p.sessione_id, p.prove])),
+          () => new Map<string, number>(),
         ),
       ])
       return (righe ?? []).map((r): LezioneSala => ({
@@ -85,6 +90,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
         stato: r.stato,
         iscritti: r.iscritti,
         presenti: r.presenti,
+        prove: prove.get(r.id) ?? 0,
       }))
     },
 

@@ -196,6 +196,7 @@ export function creaTabletProva(): DatiTablet {
           stato: l.stato,
           iscritti: l.iscritti,
           presenti: l.presenti,
+          prove: l.prove,
         }))
     },
 

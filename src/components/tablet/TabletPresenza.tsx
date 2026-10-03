@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { DatiTablet, LezioneSala, NomeSala } from '../../lib/tablet'
-import { chiaveTocco, codaDelTablet, dimenticaTocco, fase, inAttesa, ricordaTocco, rifiutato, siAnnulla } from '../../lib/tablet'
+import { chiaveTocco, codaDelTablet, contoSala, dimenticaTocco, fase, inAttesa, ricordaTocco, rifiutato, siAnnulla } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Spunta } from '../Icons'
 import { Guaio, Indietro, messaggio, orario } from './comune'
@@ -159,7 +159,7 @@ export function TabletPresenza({
   }
 
   const passata = fase(lezione, adesso) !== 'aperta'
-  const presenti = nomi?.filter((p) => p.segnato || attesa.has(p.personaId)).length ?? lezione.presenti
+  const presenti = nomi?.filter((p) => p.segnato || attesa.has(p.personaId)).length ?? contoSala(lezione).presenti
   const giorno = giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))
 
   return (

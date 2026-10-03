@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { LezioneSala } from '../../lib/tablet'
-import { recuperabile, REGOLE } from '../../lib/tablet'
+import { contoSala, recuperabile, REGOLE } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Indietro, orario } from './comune'
 
@@ -92,7 +92,7 @@ export function TabletRecupero({
                   <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
                 </span>
                 <span className="num" style={{ fontSize: 15, fontWeight: 700, color: 'var(--sec)', whiteSpace: 'nowrap' }}>
-                  {l.presenti} su {l.iscritti}
+                  {contoSala(l).presenti} su {l.iscritti}
                 </span>
               </button>
             )

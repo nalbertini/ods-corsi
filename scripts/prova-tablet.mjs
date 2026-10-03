@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla, sorvegliaScritture } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'",
+      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla, sorvegliaScritture } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'; export * as tablet from './src/lib/tablet'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -330,6 +330,38 @@ console.log('\n12. una lettura dell\'appello non copre un tocco fatto mentre si 
   s.inizia()
   for (let i = 0; i < 5; i++) ok(`durante TUTTI PRESENTI la lettura ${i + 1} aspetta`, s.lettura(s.fotografa()), 'aspetta')
   ok('a scrittura finita una lettura sola', [s.fine(), s.fine()], [true, false])
+}
+
+console.log('\n13. il conto della lezione: gli iscritti presenti, chi prova a parte')
+{
+  // Come `lezioni_sala` (36-tablet-conto-prove.sql): `presenti` tutti, prove comprese; `prove` quelle presenti.
+  const t = await alle('2026-09-23T17:10')
+  const di = async () => (await t.lezioni(new Date(2026, 8, 23), new Date(2026, 8, 23))).find((l) => l.id === LEZIONE)
+  const prima = await di()
+  await t.aggiungiProva('2468', LEZIONE, { nome: 'Marco', cognome: 'Conto' })
+  const dopo = await di()
+  ok('una prova presente: i presenti sono uno in più', dopo.presenti, prima.presenti + 1)
+  ok('e le prove una', dopo.prove, 1)
+  const assente = await t.aggiungiProva('2468', LEZIONE, { nome: 'Sara', cognome: 'Conto' })
+  await t.correggi('2468', LEZIONE, assente, 'assente', true)
+  ok('una prova assente non conta', [(await di()).presenti, (await di()).prove], [prima.presenti + 1, 1])
+
+  ok('11 presenti di cui 1 prova: 10 iscritti presenti e +1 prova', m.tablet.contoSala({ presenti: 11, prove: 1 }), { presenti: 10, prove: 1 })
+  ok('col database di prima, senza prove: i presenti come sono', m.tablet.contoSala({ presenti: 10 }), { presenti: 10, prove: 0 })
+  ok('solo prove presenti: nessun iscritto', m.tablet.contoSala({ presenti: 2, prove: 2 }), { presenti: 0, prove: 2 })
+
+  // La testa dell'appello: gli iscritti presenti su iscritti, chi prova a parte.
+  // Qui Marco (prova) è presente e Sara (prova) assente; si segna presente un iscritto.
+  const primo = (await t.appello('2468', LEZIONE)).find((r) => !r.prova)
+  await t.correggi('2468', LEZIONE, primo.personaId, 'presente')
+  const righe = await t.appello('2468', LEZIONE)
+  const iscritti = righe.filter((r) => !r.prova)
+  ok('almeno un iscritto presente, perché il conto dica qualcosa', iscritti.some((r) => r.stato === 'presente'), true)
+  ok(
+    'l\'appello con una prova presente e una assente: presenti solo iscritti, prove 1, iscritti senza le prove',
+    typeof m.tablet.contoAppello === 'function' ? m.tablet.contoAppello(righe) : 'contoAppello non c\'è',
+    { presenti: iscritti.filter((r) => r.stato === 'presente').length, prove: 1, iscritti: iscritti.length },
+  )
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

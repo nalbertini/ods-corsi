@@ -56,7 +56,27 @@ export interface LezioneSala {
   fine: string
   stato: StatoSessione
   iscritti: number
+  /** Tutti i presenti, chi prova compreso; di questi, `prove` sono venuti a provare. */
   presenti: number
+  /** Senza `36-tablet-conto-prove.sql` non si sa: zero. */
+  prove?: number
+}
+
+/**
+ * Il conto da mostrare: gli iscritti presenti, su `iscritti`, e chi prova a
+ * parte (+N PROVA), come nell'app degli istruttori. Con le prove dentro il
+ * tablet scriveva «11 presenti su 10».
+ */
+export const contoSala = (l: { presenti: number; prove?: number }) => ({ presenti: l.presenti - (l.prove ?? 0), prove: l.prove ?? 0 })
+
+/** Lo stesso conto nella testa dell'appello del tablet, dalle sue righe. */
+export function contoAppello(righe: readonly RigaAppelloTablet[]) {
+  const iscritti = righe.filter((r) => !r.prova)
+  return {
+    presenti: iscritti.filter((r) => r.stato === 'presente').length,
+    prove: righe.filter((r) => r.prova && r.stato === 'presente').length,
+    iscritti: iscritti.length,
+  }
 }
 
 /** Un nome da toccare: il nome e l'iniziale del cognome, niente di più. */
