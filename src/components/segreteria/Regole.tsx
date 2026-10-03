@@ -155,7 +155,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
               <div key={s.id} className="row sg-voce-elenco" style={{ gap: 12 }}>
                 <span className="grow" style={{ fontSize: 15, fontWeight: 600 }}>{s.nome}</span>
                 <span className="num" style={{ fontSize: 14, color: 'var(--sec)' }}>{s.capienza ? `${s.capienza} posti` : 'posti non detti'}</span>
-                <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => setSala({ id: s.id, nome: s.nome, capienza: s.capienza })}>
+                <button type="button" className="num sg-chip" onClick={() => setSala({ id: s.id, nome: s.nome, capienza: s.capienza })}>
                   CAMBIA
                 </button>
               </div>
@@ -247,7 +247,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             <span className="sg-etichetta">L'INFORMATIVA</span>
             {INFORMATIVA ? (
               <>
-                <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ fontSize: 14, color: 'var(--sec)', wordBreak: 'break-all' }}>
+                <a href={INFORMATIVA} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start', minHeight: 44, fontSize: 14, color: 'var(--sec)', wordBreak: 'break-all' }}>
                   {INFORMATIVA_BOZZA ? 'Leggi la bozza' : "Apri l'informativa"}
                 </a>
                 {INFORMATIVA_BOZZA && (
@@ -387,7 +387,7 @@ function MusicaSale({
         bozza?.id === l.id ? (
           <FormLista key={l.id} bozza={bozza} sale={sale} setBozza={setBozza} onSalva={salva} />
         ) : (
-          <div key={l.id} className="row sg-voce-elenco" style={{ gap: 12 }}>
+          <div key={l.id} className="row sg-voce-elenco" style={{ gap: 12, flexWrap: 'wrap' }}>
             <span className="stack grow" style={{ minWidth: 0 }}>
               <span style={{ fontSize: 15, fontWeight: 600 }}>{l.nome}</span>
               <span style={{ fontSize: 12, color: 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.link}</span>
@@ -396,13 +396,12 @@ function MusicaSale({
               {FONTE[fonteDelLink(l.link) ?? 'youtube']}
             </span>
             <span className="num" style={{ fontSize: 14, color: 'var(--sec)', whiteSpace: 'nowrap' }}>{nomeSala(l.salaId)}</span>
-            <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => setBozza({ ...l })}>
+            <button type="button" className="num sg-chip" onClick={() => setBozza({ ...l })}>
               CAMBIA
             </button>
             <button
               type="button"
               className="num sg-chip"
-              style={{ minHeight: 36 }}
               onClick={async () => {
                 if ((await chiedi(`Togliere «${l.nome}» dalla musica ${l.salaId ? `della sala ${nomeSala(l.salaId)}` : 'di tutte le sale'}?`, 'TOGLI LA LISTA'))) {
                   void fai(() => d.togliListaMusica(l.id), 'Lista tolta', ricarica)
@@ -621,7 +620,7 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
           <span className="num" style={{ fontSize: 14, color: 'var(--sec)', whiteSpace: 'nowrap' }}>
             {c.byte < 1_000_000 ? `${Math.max(1, Math.round(c.byte / 1000))} kB` : `${(c.byte / 1_000_000).toFixed(1).replace('.', ',')} MB`}
           </span>
-          <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => void fai(() => scarica(c.id), 'Copia scaricata: si mette su Drive così com’è')}>
+          <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(c.id), 'Copia scaricata: si mette su Drive così com’è')}>
             SCARICA
           </button>
         </div>

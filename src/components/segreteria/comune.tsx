@@ -11,6 +11,8 @@ type Valore = string | number | null | undefined
 // I dialoghi aperti, dall'ultimo: ESC e TAB sono di quello in cima (una
 // conferma sopra il cassetto della lezione chiude la conferma, non il cassetto).
 const pila: object[] = []
+/** Se c'è una finestra aperta: il suo Esc è suo, non di chi sta sotto. */
+export const dialogoAperto = () => pila.length > 0
 
 export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
   const ref = useRef<T>(null)

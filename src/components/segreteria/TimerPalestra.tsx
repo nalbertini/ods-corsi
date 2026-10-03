@@ -246,13 +246,12 @@ function VoceIncisa({
                   </span>
                   {incisa && !inCorso && (
                     <>
-                      <button type="button" className="num sg-chip" style={{ minHeight: 36 }} onClick={() => void ascolta(c.key)}>
+                      <button type="button" className="num sg-chip" onClick={() => void ascolta(c.key)}>
                         ASCOLTA
                       </button>
                       <button
                         type="button"
                         className="num sg-chip"
-                        style={{ minHeight: 36 }}
                         onClick={async () => {
                           if ((await chiedi(`Togliere la clip «${c.text}»? I tablet torneranno alla voce di sistema.`, 'TOGLI LA CLIP'))) void fai(() => d.togliClip(c.key), 'Clip tolta', ricarica)
                         }}
@@ -264,7 +263,7 @@ function VoceIncisa({
                   <button
                     type="button"
                     className={`num sg-chip${inCorso ? ' sg-chip-pieno' : ''}`}
-                    style={{ minHeight: 36, ...(inCorso ? { background: 'var(--rosso)', borderColor: 'var(--rosso)', color: 'var(--su-rosso)' } : {}) }}
+                    style={{ ...(inCorso ? { background: 'var(--rosso)', borderColor: 'var(--rosso)', color: 'var(--su-rosso)' } : {}) }}
                     disabled={!formato || !chiavi || (attiva !== null && !inCorso)}
                     onClick={() => (inCorso ? registratore.current?.stop() : void registra(c.key))}
                   >
@@ -411,7 +410,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                       </button>
                     </form>
                   ) : (
-                    <button key={e.id} type="button" className="num sg-chip" style={{ minHeight: 36, letterSpacing: '0.04em' }} onClick={() => setAperto({ id: e.id, nome: e.nome, categoria: e.categoria })}>
+                    <button key={e.id} type="button" className="num sg-chip" style={{ letterSpacing: '0.04em' }} onClick={() => setAperto({ id: e.id, nome: e.nome, categoria: e.categoria })}>
                       {e.nome}
                     </button>
                   ),
