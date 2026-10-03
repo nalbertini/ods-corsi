@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { Prezzi, VoceCosto } from '../../lib/costi'
 import { STAGIONE } from '../../lib/costi'
-import { cosaNonVaListino, LIMITI, type Listino as DatiListino } from '../../lib/listino'
+import { agganciaPerNome, annoScritto, corsiScegliibili, cosaNonVaListino, LIMITI, listinoCambiato, corsiSenzaPrezzo, segnalazioniListino, type CorsoRef, type Listino as DatiListino } from '../../lib/listino'
 import { centesimi } from '../../lib/ricevute'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
-import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 
 /*
  * Il listino si cambia in una bozza, tutto insieme, e si salva con un tasto
@@ -24,7 +24,12 @@ interface BozzaPrezzi {
 interface BozzaCorso {
   chiave: number
   corso: string
+  /** Il corso di CORSI a cui appartiene; vuoto se ancora da agganciare. */
+  corsoId: string
   eta: string
+  /** Gli anni di nascita, scritti: vuoti vuol dire per tutti. */
+  natiDal: string
+  natiAl: string
   /** Uno per riga. */
   orari: string
   notaTrimestre: string
@@ -43,6 +48,7 @@ interface Bozza {
   saldoEntro: string
   corsi: BozzaCorso[]
   offerte: BozzaOfferta[]
+  senzaPrezzoVaBene: string[]
 }
 
 let contatore = 0
@@ -55,7 +61,10 @@ const bozzaPrezzi = (p: Prezzi): BozzaPrezzi => ({ etichetta: p.etichetta ?? '',
 const bozzaCorso = (c: VoceCosto): BozzaCorso => ({
   chiave: nuovaChiave(),
   corso: c.corso,
+  corsoId: c.corsoId ?? '',
   eta: c.eta,
+  natiDal: c.natiDal === undefined ? '' : String(c.natiDal),
+  natiAl: c.natiAl === undefined ? '' : String(c.natiAl),
   orari: c.orari.join('\n'),
   notaTrimestre: c.notaTrimestre ?? '',
   nota: c.nota ?? '',
@@ -67,6 +76,7 @@ const bozzaDa = (l: DatiListino): Bozza => ({
   saldoEntro: l.saldoEntro,
   corsi: l.corsi.map(bozzaCorso),
   offerte: l.offerte.map((o) => ({ chiave: nuovaChiave(), ...o })),
+  senzaPrezzoVaBene: l.senzaPrezzoVaBene ?? [],
 })
 
 const PREZZI_VUOTI: BozzaPrezzi = { etichetta: '', saldo: '', annuale: '', trimestre: '' }
@@ -79,10 +89,10 @@ function inEuro(t: string): number | undefined | null {
 }
 
 /** Dalla bozza al listino da salvare, o quello che non va. */
-function daBozza(b: Bozza): DatiListino | string {
+function daBozza(b: Bozza, corsi: ReadonlyArray<CorsoRef>): DatiListino | string {
   const quota = inEuro(b.quota)
   if (quota === undefined || quota === null) return 'La quota associativa non si capisce'
-  const corsi: VoceCosto[] = []
+  const voci: VoceCosto[] = []
   for (const c of b.corsi) {
     const nome = c.corso.trim() || 'un corso senza nome'
     const prezzi: Prezzi[] = []
@@ -96,33 +106,47 @@ function daBozza(b: Bozza): DatiListino | string {
       if (p.etichetta.trim()) x.etichetta = p.etichetta.trim().toUpperCase()
       prezzi.push(x)
     }
+    const anni: Pick<VoceCosto, 'natiDal' | 'natiAl'> = {}
+    for (const k of ['natiDal', 'natiAl'] as const) {
+      const n = annoScritto(c[k])
+      if (n === null) return `${k === 'natiDal' ? 'NATI DAL' : 'NATI AL'} di «${nome}» non va: «${c[k].trim()}». Scrivi un anno a quattro cifre, dal 1900 al 2100`
+      if (n !== undefined) anni[k] = n
+    }
     const v: VoceCosto = {
-      corso: c.corso.trim(),
+      ...anni,
+      // Il nome è quello di CORSI: se il corso è stato rinominato, lo segue.
+      corso: (c.corsoId && corsi.find((x) => x.id === c.corsoId)?.nome) || c.corso.trim(),
+      ...(c.corsoId && { corsoId: c.corsoId }),
       eta: c.eta.trim(),
       orari: c.orari.split('\n').map((o) => o.trim()).filter(Boolean),
       prezzi,
     }
     if (c.notaTrimestre.trim()) v.notaTrimestre = c.notaTrimestre.trim()
     if (c.nota.trim()) v.nota = c.nota.trim()
-    corsi.push(v)
+    voci.push(v)
   }
   const l: DatiListino = {
     quota,
     saldoEntro: b.saldoEntro,
-    corsi,
+    corsi: voci,
     offerte: b.offerte.map((o) => ({ titolo: o.titolo.trim().toUpperCase(), testo: o.testo.trim() })),
+    ...(b.senzaPrezzoVaBene.length && { senzaPrezzoVaBene: b.senzaPrezzoVaBene }),
   }
-  return cosaNonVaListino(l) ?? l
+  return cosaNonVaListino(l, corsi) ?? l
 }
 
-/** Come si legge un corso chiuso: i prezzi in fila. */
+/** Come si legge un corso chiuso: gli anni di nascita, poi i prezzi in fila. */
 function riassunto(c: BozzaCorso) {
-  return c.prezzi
+  // Senza anni il corso va bene per tutti: si vede senza aprirlo, se è una dimenticanza.
+  const dal = c.natiDal.trim()
+  const al = c.natiAl.trim()
+  const anni = dal && al ? `nati ${dal}–${al}` : dal ? `nati dal ${dal}` : al ? `nati fino al ${al}` : 'senza anni di nascita'
+  return `${anni} — ${c.prezzi
     .map((p) => {
       const pezzi = [p.saldo && `saldo ${p.saldo} €`, p.annuale && `annuale ${p.annuale} €`, p.trimestre && `trimestre ${p.trimestre} €`].filter(Boolean).join(' · ')
       return p.etichetta ? `${p.etichetta.toLowerCase()}: ${pezzi}` : pezzi
     })
-    .join(' — ')
+    .join(' — ')}`
 }
 
 /**
@@ -132,14 +156,19 @@ function riassunto(c: BozzaCorso) {
  */
 export function Listino({ d }: { d: DatiSegreteria }) {
   const letto = useCarica(() => d.listino(), [d])
+  const elenco = useCarica(() => d.corsi(), [d])
+  const corsiDi = useMemo(() => (elenco.dato ?? []).map((c) => ({ id: c.id, nome: c.nome, attivo: c.attivo })), [elenco.dato])
   const { avviso, fai, lavora } = useAvviso()
   const [bozza, setBozza] = useState<Bozza | null>(null)
   const [aperto, setAperto] = useState<number | null>(null)
-
   // Le chiavi della bozza di partenza restano le stesse fra un giro e l'altro: CAMBIA apre quella giusta.
-  const base = useMemo(() => (letto.dato ? bozzaDa(letto.dato.listino) : null), [letto.dato])
+  // Le voci vecchie si agganciano da sole per nome, come fa il salvataggio: così si vede subito quali restano da scegliere.
+  const base = useMemo(() => (letto.dato && elenco.dato ? bozzaDa(agganciaPerNome(letto.dato.listino, corsiDi)) : null), [letto.dato, elenco.dato, corsiDi])
   const b = bozza ?? base
   const cambia = (x: Partial<Bozza>) => b && setBozza({ ...b, ...x })
+  // Quel che non quadra, calcolato in src/lib sul listino com'è nella bozza (se si capisce).
+  const voci = b ? daBozza(b, corsiDi) : null
+  const senza = typeof voci === 'object' && voci ? segnalazioniListino(voci, corsiDi) : { senzaPrezzo: [], senzaCorso: [], tolti: [] }
   const cambiaCorso = (chiave: number, x: Partial<BozzaCorso>) => b && cambia({ corsi: b.corsi.map((c) => (c.chiave === chiave ? { ...c, ...x } : c)) })
   const sposta = (i: number, verso: -1 | 1) => {
     if (!b) return
@@ -150,8 +179,11 @@ export function Listino({ d }: { d: DatiSegreteria }) {
     cambia({ corsi })
   }
 
-  const pronto = bozza ? daBozza(bozza) : null
+  const pronto = bozza ? daBozza(bozza, corsiDi) : null
   const guaio = typeof pronto === 'string' ? pronto : null
+  // Una modifica rimessa com'era non è un cambio: niente barra «Ci sono cambi da salvare», niente domanda uscendo.
+  const cambiato = !!pronto && !!base && listinoCambiato(daBozza(base, corsiDi), pronto)
+  useBozza(cambiato, 'Listino')
 
   const salva = () => {
     if (!pronto || typeof pronto === 'string') return
@@ -180,7 +212,8 @@ export function Listino({ d }: { d: DatiSegreteria }) {
       </Testa>
 
       {letto.guaio && <Guaio testo={`Il listino non si legge: ${letto.guaio}`} />}
-      {!b && !letto.guaio && <p className="sg-sotto">Un attimo…</p>}
+      {elenco.guaio && <Guaio testo={`I corsi non si leggono: ${elenco.guaio}`} />}
+      {!b && !letto.guaio && !elenco.guaio && <p className="sg-sotto">Un attimo…</p>}
 
       {b && letto.dato && (
         <div className="stack sg-listino" style={{ gap: 20 }}>
@@ -203,7 +236,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               Fino al {/^\d{4}-\d{2}-\d{2}$/.test(b.saldoEntro) ? dataLunga(b.saldoEntro) : '…'} compreso la pagina mostra la colonna del saldo e le ricevute propongono
               l’annuale a saldo; dopo, sparisce.
             </span>
-            {letto.dato.cambiato && !bozza && (
+            {letto.dato.cambiato && !cambiato && (
               <button type="button" className="sg-link" style={{ alignSelf: 'flex-start' }} disabled={lavora} onClick={rimetti}>
                 Rimetti il listino del foglio originale
               </button>
@@ -213,14 +246,15 @@ export function Listino({ d }: { d: DatiSegreteria }) {
           <section aria-label="I corsi" className="sg-riquadro">
             <span className="ob sg-riquadro-titolo">I CORSI · {b.corsi.length}</span>
             <span className="sg-sotto">
-              In quest’ordine sulla pagina di iscrizione. Il nome è quello che le ricevute cercano fra i corsi dell’iscritto: se cambia qui, va cambiato anche in
-              CORSI.
+              In quest’ordine sulla pagina di iscrizione. Ogni voce è di un corso di CORSI, uno solo: se il corso cambia nome, il prezzo lo segue.
             </span>
+            {typeof voci === 'object' && voci && <Segnalazioni l={voci} vaBene={b.senzaPrezzoVaBene} corsi={corsiDi} onCambia={(senzaPrezzoVaBene) => cambia({ senzaPrezzoVaBene })} />}
             {b.corsi.map((c, i) =>
               aperto === c.chiave ? (
                 <SchedaCorso
                   key={c.chiave}
                   c={c}
+                  scelta={corsiScegliibili(corsiDi.filter((x) => x.attivo || x.id === c.corsoId), b.corsi, c.corsoId)}
                   primo={i === 0}
                   ultimo={i === b.corsi.length - 1}
                   onCambia={(x) => cambiaCorso(c.chiave, x)}
@@ -233,7 +267,8 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               ) : (
                 <div key={c.chiave} className="sg-voce-elenco">
                   <span className="stack grow" style={{ minWidth: 0 }}>
-                    <span style={{ fontSize: 15, fontWeight: 700 }}>{c.corso || 'Senza nome'}</span>
+                    <span style={{ fontSize: 15, fontWeight: 700 }}>{(c.corsoId && corsiDi.find((x) => x.id === c.corsoId)?.nome) || c.corso || 'Senza nome'}</span>
+                    {!c.corsoId && senza.senzaCorso.includes(c.corso) && <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>Senza corso: scegli il corso da CAMBIA</span>}
                     <span style={{ fontSize: 12, color: 'var(--dim)' }}>{riassunto(c) || 'Nessun prezzo'}</span>
                   </span>
                   <button type="button" className="num sg-chip" onClick={() => setAperto(c.chiave)}>
@@ -247,7 +282,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               className="sg-btn sg-btn-tratteggio"
               disabled={b.corsi.length >= LIMITI.corsi}
               onClick={() => {
-                const nuovo: BozzaCorso = { chiave: nuovaChiave(), corso: '', eta: '', orari: '', notaTrimestre: '', nota: '', prezzi: [{ ...PREZZI_VUOTI }] }
+                const nuovo: BozzaCorso = { chiave: nuovaChiave(), corso: '', corsoId: '', eta: '', natiDal: '', natiAl: '', orari: '', notaTrimestre: '', nota: '', prezzi: [{ ...PREZZI_VUOTI }] }
                 cambia({ corsi: [...b.corsi, nuovo] })
                 setAperto(nuovo.chiave)
               }}
@@ -301,9 +336,9 @@ export function Listino({ d }: { d: DatiSegreteria }) {
             </button>
           </section>
 
-          {bozza && (
+          {cambiato && (
             <div className="sg-listino-salva">
-              <span className="grow" style={{ fontSize: 14, color: guaio ? 'var(--rosso)' : 'var(--sec)' }}>
+              <span className="grow" style={{ fontSize: 14, color: guaio ? 'var(--rosso-testo)' : 'var(--sec)' }}>
                 {guaio ?? 'Ci sono cambi da salvare: fino ad allora la pagina di iscrizione mostra quello di prima.'}
               </span>
               <button
@@ -328,8 +363,42 @@ export function Listino({ d }: { d: DatiSegreteria }) {
   )
 }
 
+/** Cosa non quadra fra CORSI e listino, in rosso e a parole. */
+function Segnalazioni({ l, vaBene, corsi, onCambia }: { l: DatiListino; vaBene: string[]; corsi: Array<CorsoRef & { attivo: boolean }>; onCambia: (vaBene: string[]) => void }) {
+  const mancano = corsiSenzaPrezzo(l, corsi)
+  const tolti = segnalazioniListino(l, corsi).tolti
+  const scelti = corsi.filter((c) => vaBene.includes(c.id))
+  if (!mancano.length && !tolti.length && !scelti.length) return null
+  return (
+    <div className="stack" style={{ gap: 0 }}>
+      {mancano.map((c) => (
+        <span key={c.id} className="row" style={{ gap: 8, color: 'var(--rosso-testo)', fontSize: 14, minHeight: 44, alignItems: 'center' }}>
+          <span className="grow">{c.nome}: senza prezzo nel listino</span>
+          <button type="button" className="sg-link" onClick={() => onCambia([...vaBene, c.id])}>
+            Va bene senza prezzo
+          </button>
+        </span>
+      ))}
+      {tolti.map((nome) => (
+        <span key={nome} style={{ color: 'var(--rosso-testo)', fontSize: 14, minHeight: 44, display: 'flex', alignItems: 'center' }}>
+          {nome}: il corso non c’è più in CORSI. Toglila da CAMBIA.
+        </span>
+      ))}
+      {scelti.map((c) => (
+        <span key={c.id} className="row" style={{ gap: 8, fontSize: 14, color: 'var(--sec)', minHeight: 44, alignItems: 'center' }}>
+          <span className="grow">{c.nome}: senza prezzo, va bene così</span>
+          <button type="button" className="sg-link" onClick={() => onCambia(vaBene.filter((i) => i !== c.id))}>
+            Rimetti il rosso
+          </button>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 function SchedaCorso({
   c,
+  scelta,
   primo,
   ultimo,
   onCambia,
@@ -338,6 +407,7 @@ function SchedaCorso({
   onChiudi,
 }: {
   c: BozzaCorso
+  scelta: CorsoRef[]
   primo: boolean
   ultimo: boolean
   onCambia: (x: Partial<BozzaCorso>) => void
@@ -346,9 +416,18 @@ function SchedaCorso({
   onChiudi: () => void
 }) {
   const id = (k: string) => `lc-${c.chiave}-${k}`
-  const testoCampo = (k: 'corso' | 'eta' | 'notaTrimestre' | 'nota', etichetta: string, max: number, largo = false, segnaposto = '') => (
+  const testoCampo = (k: 'eta' | 'natiDal' | 'natiAl' | 'notaTrimestre' | 'nota', etichetta: string, max: number, largo = false, segnaposto = '', anno = false) => (
     <Campo id={id(k)} etichetta={etichetta} largo={largo}>
-      <input id={id(k)} className="sg-campo" maxLength={max} placeholder={segnaposto} value={c[k]} onChange={(e) => onCambia({ [k]: e.target.value })} />
+      <input
+        id={id(k)}
+        className={anno ? 'sg-campo num' : 'sg-campo'}
+        inputMode={anno ? 'numeric' : undefined}
+        aria-describedby={anno ? id('anni') : undefined}
+        maxLength={max}
+        placeholder={segnaposto}
+        value={c[k]}
+        onChange={(e) => onCambia({ [k]: e.target.value })}
+      />
     </Campo>
   )
   const cambiaPrezzi = (i: number, x: Partial<BozzaPrezzi>) => onCambia({ prezzi: c.prezzi.map((p, j) => (j === i ? { ...p, ...x } : p)) })
@@ -357,8 +436,28 @@ function SchedaCorso({
   return (
     <div className="stack sg-listino-corso">
       <div className="sg-due">
-        {testoCampo('corso', 'NOME DEL CORSO', 80, true)}
+        <Campo id={id('corso')} etichetta="CORSO" largo>
+          <select
+            id={id('corso')}
+            className="sg-campo"
+            aria-invalid={!c.corsoId}
+            value={c.corsoId}
+            onChange={(e) => onCambia({ corsoId: e.target.value, corso: scelta.find((x) => x.id === e.target.value)?.nome ?? c.corso })}
+          >
+            <option value="">Scegli il corso</option>
+            {scelta.map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.nome}
+              </option>
+            ))}
+          </select>
+        </Campo>
         {testoCampo('eta', 'ETÀ', 120, true, 'nati 2019-2018-2017')}
+        {testoCampo('natiDal', 'NATI DAL', 4, false, '', true)}
+        {testoCampo('natiAl', 'NATI AL', 4, false, '', true)}
+        <span id={id('anni')} className="sg-sotto" style={{ gridColumn: '1 / -1', marginBottom: 6 }}>
+          Il corso va in cima per chi è nato in questi anni. Vuoti: sta a parte, «senza fascia d’età». Solo NATI AL: quell’anno e prima.
+        </span>
         <Campo id={id('orari')} etichetta="ORARI · UNO PER RIGA" largo>
           <textarea
             id={id('orari')}

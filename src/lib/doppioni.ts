@@ -37,7 +37,7 @@ export function campiDiversi(resta: PersonaSeg, via: PersonaSeg): { campo: strin
 /**
  * Quello che serve per dire se due schede sono la stessa persona e che
  * `PersonaSeg` non ha: codice fiscale e nascita (dalla segreteria, se no dal
- * modulo accolto), e le coppie segnate «non sono doppioni» (30-non-doppioni.sql).
+ * modulo accolto), e le coppie segnate «non sono doppioni» (33-non-doppioni.sql).
  */
 export interface IndiziDoppioni {
   codiciFiscali: Record<string, string>

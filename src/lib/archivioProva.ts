@@ -123,7 +123,7 @@ export interface Archivio {
   anagrafiche?: Record<string, Anagrafica & { cambiataIl?: string }>
   /** Chi è venuto a provare una lezione, come le righe di `prove` (21-prove.sql). */
   prove?: ProvaLezione[]
-  /** Le coppie di schede segnate «non sono doppioni» (30-non-doppioni.sql), con la più piccola prima. */
+  /** Le coppie di schede segnate «non sono doppioni» (33-non-doppioni.sql), con la più piccola prima. */
   nonDoppioni?: [string, string][]
   /** Le presenze segnalate dagli iscritti, da accogliere o rifiutare (vedi `segnalate.ts`). */
   segnalate?: Segnalata[]

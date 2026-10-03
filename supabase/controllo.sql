@@ -80,7 +80,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
       where p.pronamespace = 'public'::regnamespace
         and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
         and has_function_privilege('anon', p.oid, 'execute')
-        and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino'))),
+        and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino', 'mesi_presenze_pubblici'))),
   ('06-iscrizioni.sql', 'documento e certificato col modulo, da stampare',
     exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%certificato%')
     and exists (select 1 from dentro where nome = 'richieste_con_documento' and corpo like '%certificato%')),
@@ -161,13 +161,24 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'elimina_istruttore' and corpo like '%anche_istruttore%')),
   ('29-unisci-doppioni.sql', 'unire due schede della stessa persona',
     exists (select 1 from dentro where nome = 'unisci_persone')),
-  ('30-non-doppioni.sql', 'due schede che non sono doppioni',
+  ('30-pronto-fino-dalle-ricorrenze.sql', 'le straordinarie non fermano il calendario',
+    exists (select 1 from dentro where nome = 'calendario_pronto_fino' and corpo like '%ricorrenza_id is not null%')),
+  ('31-informativa-mesi.sql', 'i mesi delle presenze letti dall''informativa',
+    exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'mesi_presenze_pubblici'
+            and has_function_privilege('anon', p.oid, 'execute'))),
+  ('33-non-doppioni.sql', 'due schede che non sono doppioni',
     to_regclass('public.non_doppioni') is not null),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',
     exists (select 1 from pg_constraint where conname = 'segnalazioni_check'
             and pg_get_constraintdef(oid) like '%titolo IS NOT NULL%')),
+  ('32-segnalazioni-allegati.sql', 'i file nelle segnalazioni, in un contenitore privato',
+    exists (select 1 from storage.buckets where id = 'segnalazioni' and not public)
+    and to_regclass('public.segnalazioni_allegati') is not null),
+  ('32-segnalazioni-allegati.sql', 'un allegato lo toglie solo chi l''ha mandato',
+    exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'togli_allegato')
+    and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'pulisci_allegati')),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')

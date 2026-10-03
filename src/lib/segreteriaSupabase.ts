@@ -12,10 +12,10 @@ import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
-import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
-import { cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
+import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
-import { cosaNonVaSegnalazione, type Segnalazione } from './segnalazioni'
+import { AllegatiNonPartiti, cosaNonVaSegnalazione, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 
 /**
  * La segreteria col database vero.
@@ -96,12 +96,16 @@ type Scheda = {
 const CERTIFICATI = 'certificati'
 const NUCLEO_SOLO_PROVA = 'Il nucleo familiare c’è solo in prova, per ora: il database non lo tiene ancora'
 const DURATA_LINK = 600
+const ALLEGATI = 'segnalazioni'
+const MANCANO_ALLEGATI = 'Gli allegati non sono ancora attivi sul database: va lanciato 32-segnalazioni-allegati.sql'
 
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
 
 /** Le tabelle che arrivano dopo lo schema, col file che le crea. */
 const TABELLE_DOPO: Array<[RegExp, string]> = [
-  [/non_doppioni/, 'Segnare due schede «non sono doppioni» non è ancora attivo sul database: va lanciato 30-non-doppioni.sql'],
+  // Prima di `segnalazioni`, che le somiglia.
+  [/segnalazioni_allegati/, MANCANO_ALLEGATI],
+  [/non_doppioni/, 'Segnare due schede «non sono doppioni» non è ancora attivo sul database: va lanciato 33-non-doppioni.sql'],
   [/segnalazioni/, 'Le segnalazioni non sono ancora attive sul database: va lanciato 25-segnalazioni.sql'],
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
   [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
@@ -146,6 +150,15 @@ function daRigaAnagrafica(r: RigaAnagrafica | null): Anagrafica | null {
   return Object.fromEntries(ANAGRAFICA.flatMap(([k, c]) => (r[c] ? [[k, r[c]]] : []))) as Anagrafica
 }
 
+/**
+ * Un errore che non conosciamo: alla segreteria si dice cosa fare, il testo
+ * del server (in inglese, per chi sviluppa) va solo nella console.
+ */
+function sconosciuto(testo: string | undefined, altrimenti = 'Non è andata: riprova fra poco'): string {
+  if (testo) console.error(testo)
+  return /failed to fetch|networkerror|load failed/i.test(testo ?? '') ? 'Non c’è rete: riprova quando torna' : altrimenti
+}
+
 /** Un errore del database detto in modo che la segreteria lo capisca. */
 function guaio(e: { message?: string; code?: string } | null): Error {
   // La tabella non c'è sul database: il file che la crea non è stato lanciato.
@@ -169,10 +182,17 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /unisci_persone|anteprima_unione/.test(e.message ?? ''))
     return new Error('Unire due schede non è ancora attivo sul database: va lanciato 29-unisci-doppioni.sql')
+  // Togliere un allegato: `togli_allegato` dice di no a chi non l'ha mandato.
+  if (e?.code === 'P0002' && /allegato/.test(e.message ?? '')) return new Error('Questo allegato non c’è più')
+  if (e?.code === '42501' && /allegato/.test(e.message ?? '')) return new Error('Un allegato lo toglie solo chi l’ha mandato')
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /allegato/.test(e.message ?? '')) return new Error(MANCANO_ALLEGATI)
   if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
-  return new Error(e?.message || 'Il server non risponde')
+  // I nostri `raise exception` (P0001 quando non hanno un codice; P0002 «non c'è più»; 22023 e 54000)
+  // sono già scritti per la segreteria: passano così come sono.
+  if (e?.message && ['P0001', 'P0002', '22023', '54000'].includes(e.code ?? '')) return new Error(e.message)
+  return new Error(sconosciuto(e?.message))
 }
 
 /**
@@ -190,9 +210,9 @@ async function guaioFunzione(e: { name?: string; message?: string; context?: unk
       // Non è la nostra risposta: sotto si dice il generico.
     }
   }
-  if (r?.status === 404) return new Error(`La funzione ${di} non è pubblicata su Supabase: vedi supabase/LEGGIMI.md`)
+  if (r?.status === 404) return new Error(`La funzione ${di} non è ancora pubblicata su Supabase`)
   if (e.name === 'FunctionsFetchError') return new Error(`La funzione ${di} non risponde: è pubblicata su Supabase? C’è rete?`)
-  return new Error(e.message || altrimenti)
+  return new Error(sconosciuto(e.message, altrimenti))
 }
 
 /** Un errore dello Storage detto per la segreteria. */
@@ -202,7 +222,7 @@ function guaioFile(e: { message?: string; statusCode?: string } | null): Error {
   if (/bucket not found/i.test(m)) return new Error('Il contenitore dei certificati non c’è più: il file non si trova')
   if (/exceeded|too large|413/i.test(m + (e?.statusCode ?? ''))) return new Error('Il file è troppo grande: al massimo 10 MB')
   if (/mime|type/i.test(m)) return new Error('Questo tipo di file non va: serve una foto o un PDF')
-  return new Error(m || 'Il file non è partito: riprova')
+  return new Error(sconosciuto(m, 'Il file non è partito: riprova'))
 }
 
 /** Un errore del contenitore della voce detto per la segreteria. */
@@ -212,13 +232,37 @@ function guaioVoce(e: unknown): Error {
   if (/row-level security|unauthorized|403/i.test(m)) return new Error('Non hai il permesso: serve un accesso da segreteria')
   if (/exceeded|too large|413/i.test(m)) return new Error('La clip è troppo lunga: una frase, non un discorso')
   if (/mime|type/i.test(m)) return new Error('Questo browser registra in un formato che il server non accetta')
-  return new Error(m || 'La clip non è partita: riprova')
+  return new Error(sconosciuto(m, 'La clip non è partita: riprova'))
 }
 
 export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
   const ok = <T>(r: { data: T; error: { message?: string; code?: string } | null }): T => {
     if (r.error) throw guaio(r.error)
     return r.data
+  }
+
+  /**
+   * Carica i file di un messaggio appena scritto. Quelli che non partono non
+   * annullano il messaggio (rimandarlo lo duplicherebbe): si dice quali. Se il
+   * database non ha il file 32, invece, è quello da dire, e basta.
+   */
+  const allega = async (messaggio: string, files: File[]) => {
+    const nomi = nomiAllegati(files, new Date())
+    const falliti = await mandaAllegati(
+      files.map((file, i) => ({ name: nomi[i], file })),
+      async ({ name, file }) => {
+        const su = await db.storage.from(ALLEGATI).upload(`${messaggio}/${name}`, file, { contentType: file.type, upsert: false })
+        if (su.error && /bucket not found/i.test(su.error.message ?? '')) throw new Error(MANCANO_ALLEGATI)
+        if (su.error) return false
+        const riga = await db.from('segnalazioni_allegati').insert({ messaggio_id: messaggio, nome: name, tipo: file.type, peso: file.size })
+        if (!riga.error) return true
+        // Il file è andato ma la riga no: si toglie, se no resta lì senza che nessuno lo veda.
+        await db.storage.from(ALLEGATI).remove([`${messaggio}/${name}`])
+        if (riga.error.code === 'PGRST205' || riga.error.code === '42P01') throw new Error(MANCANO_ALLEGATI)
+        return false
+      },
+    )
+    if (falliti.length) throw new AllegatiNonPartiti(messaggio, falliti)
   }
 
   /** Dove sta il file del certificato di prima della carta, se c'è ancora. */
@@ -689,9 +733,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const chi = ok(p) as { nome: string; cognome: string }
       // Senza 16-ricevute.sql la ricevuta di prima non c'è: si va avanti con la richiesta.
       const u = ultima.error ? null : (ultima.data as { intestatario: IntestatarioRicevuta } | null)
-      if (u) return { ...u.intestatario, nome: chi.nome, cognome: chi.cognome }
       const x = await anagrafica(personaId, true)
-      return x ? intestatarioDaRichiesta({ ...x.dati, nome: chi.nome, cognome: chi.cognome }) : { nome: chi.nome, cognome: chi.cognome }
+      return intestatarioDa(u?.intestatario ?? null, x?.dati ?? null, chi)
     },
 
     anagraficaDi: (personaId) => anagrafica(personaId),
@@ -751,9 +794,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async salvaListino(l) {
-      const g = l && cosaNonVaListino(l)
+      const elenco = await this.corsi()
+      const pronto = l && agganciaPerNome(l, elenco)
+      const g = pronto && cosaNonVaListino(pronto, elenco)
       if (g) throw new Error(g)
-      ok(await db.from('impostazioni').update({ listino: l }).eq('id', true))
+      ok(await db.from('impostazioni').update({ listino: pronto }).eq('id', true))
       scordaListino()
     },
 
@@ -1152,26 +1197,66 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         chiusa_il: string | null
         autore: { nome: string; cognome: string; utente_id: string | null } | null
       }>
+      // Gli allegati sono di 32-segnalazioni-allegati.sql: finché non c'è, i fili si leggono lo stesso, senza.
+      // Ogni altro guaio (rete, permessi) si dice: non deve sembrare che non ci siano allegati.
+      const [allegati, tolti] = await Promise.all([
+        db.from('segnalazioni_allegati').select('id, messaggio_id, nome, tipo, peso, autore:persone!autore_id ( utente_id )').order('caricato_il'),
+        db.from('segnalazioni_allegati_tolti').select('messaggio_id, tolto_il, tolto:persone!tolto_da ( nome, cognome )').order('tolto_il'),
+      ])
+      const manca = (e: { code?: string } | null) => e?.code === 'PGRST205' || e?.code === '42P01' || e?.code === 'PGRST200'
+      for (const r of [allegati, tolti]) if (r.error && !manca(r.error)) throw guaio(r.error)
+      const per = new Map<string, { allegati: Allegato[]; tolti: { da: string; il: string }[] }>()
+      const di = (id: string) => {
+        if (!per.has(id)) per.set(id, { allegati: [], tolti: [] })
+        return per.get(id) as { allegati: Allegato[]; tolti: { da: string; il: string }[] }
+      }
+      // Come sopra: il tipo dell'incorporato (`autore`, `tolto`) per Supabase è un array o un oggetto, qui è un oggetto.
+      for (const x of (allegati.data ?? []) as unknown as Array<{ id: string; messaggio_id: string; nome: string; tipo: string; peso: number; autore: { utente_id: string | null } | null }>)
+        di(x.messaggio_id).allegati.push({ id: x.id, nome: x.nome, tipo: x.tipo, peso: x.peso, mio: !!io && x.autore?.utente_id === io })
+      for (const x of (tolti.data ?? []) as unknown as Array<{ messaggio_id: string; tolto_il: string; tolto: { nome: string; cognome: string } | null }>)
+        di(x.messaggio_id).tolti.push({ da: nome(x.tolto) || '—', il: x.tolto_il })
       const fili = new Map<string, Segnalazione>()
       for (const r of righe) {
-        const m = { id: r.id, autore: nome(r.autore) || '—', mio: !!io && r.autore?.utente_id === io, testo: r.testo, il: r.scritta_il }
+        const m = { id: r.id, autore: nome(r.autore) || '—', mio: !!io && r.autore?.utente_id === io, testo: r.testo, il: r.scritta_il, ...per.get(r.id) }
         if (!r.padre_id) fili.set(r.id, { id: r.id, titolo: r.titolo ?? '', messaggi: [m], chiusaIl: r.chiusa_il ?? undefined })
         else fili.get(r.padre_id)?.messaggi.push(m)
       }
       return [...fili.values()]
     },
 
-    async apriSegnalazione(titolo, testo) {
-      const no = cosaNonVaSegnalazione(testo, titolo)
+    async apriSegnalazione(titolo, testo, allegati = []) {
+      const no = cosaNonVaSegnalazione(testo, titolo) ?? guaioAllegati(allegati)
       if (no) throw new Error(no)
       // Come per corsi e persone: `.single()` dà `data` nullo nel tipo, ma `ok` ha già lanciato se non c'è.
-      return (ok(await db.from('segnalazioni').insert({ titolo: titolo.trim(), testo: testo.trim() }).select('id').single()) as { id: string }).id
+      const id = (ok(await db.from('segnalazioni').insert({ titolo: titolo.trim(), testo: testo.trim() }).select('id').single()) as { id: string }).id
+      await allega(id, allegati)
+      return id
     },
 
-    async rispondiSegnalazione(id, testo) {
-      const no = cosaNonVaSegnalazione(testo)
+    async rispondiSegnalazione(id, testo, allegati = []) {
+      const no = cosaNonVaSegnalazione(testo) ?? guaioAllegati(allegati)
       if (no) throw new Error(no)
-      ok(await db.from('segnalazioni').insert({ padre_id: id, testo: testo.trim() }))
+      const nuovo = ok(await db.from('segnalazioni').insert({ padre_id: id, testo: testo.trim() }).select('id').single()) as { id: string }
+      await allega(nuovo.id, allegati)
+    },
+
+    async togliAllegato(id) {
+      // Il file prima, poi la riga: una riga senza file è innocua, un file senza riga resta lì e nessuno lo ritrova.
+      // Se il file non si toglie ci si ferma, e la riga resta per riprovare.
+      const a = ok(await db.from('segnalazioni_allegati').select('messaggio_id, nome').eq('id', id).maybeSingle()) as { messaggio_id: string; nome: string } | null
+      if (a) {
+        const { error } = await db.storage.from(ALLEGATI).remove([`${a.messaggio_id}/${a.nome}`])
+        if (error) throw guaioFile(error)
+      }
+      ok(await db.rpc('togli_allegato', { allegato: id }))
+    },
+
+    async linkAllegato(id) {
+      const a = ok(await db.from('segnalazioni_allegati').select('messaggio_id, nome').eq('id', id).maybeSingle()) as { messaggio_id: string; nome: string } | null
+      if (!a) throw new Error('Questo allegato non c’è più')
+      const { data, error } = await db.storage.from(ALLEGATI).createSignedUrl(`${a.messaggio_id}/${a.nome}`, DURATA_LINK)
+      if (error || !data) throw new Error('Il file non si apre: riprova tra poco')
+      return data.signedUrl
     },
 
     async chiudiSegnalazione(id, chiusa) {
@@ -1248,8 +1333,17 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.from('impostazioni').update(riga).eq('id', true))
     },
 
-    async scadute() {
-      const { count, error } = await db.from('presenze_scadute').select('id', { count: 'exact', head: true })
+    async scadute(mesi) {
+      // Coi mesi salvati conta la vista, la stessa che usa la pulizia; con
+      // altri mesi si conta da qui, senza salvarli. Il limite viene
+      // dall'orologio del dispositivo: al più un giorno di scarto dal server,
+      // e CANCELLA ORA riconta comunque.
+      const limite = new Date()
+      if (mesi !== undefined) limite.setMonth(limite.getMonth() - mesi)
+      const { count, error } =
+        mesi === undefined
+          ? await db.from('presenze_scadute').select('id', { count: 'exact', head: true })
+          : await db.from('presenze').select('id, sessioni!inner ( inizio )', { count: 'exact', head: true }).lt('sessioni.inizio', limite.toISOString())
       if (error) throw guaio(error)
       return count ?? 0
     },

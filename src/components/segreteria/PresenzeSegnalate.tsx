@@ -102,7 +102,7 @@ export function PresenzeSegnalate({ d, onCambiato, onVai }: { d: DatiSegreteria;
                   </>
                 ) : (
                   <span className="stack" style={{ gap: 2 }}>
-                    <span className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', color: x.stato === 'accolta' ? 'var(--verde)' : 'var(--rosso)' }}>
+                    <span className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', color: x.stato === 'accolta' ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}>
                       {x.stato === 'accolta' ? 'ACCOLTA' : 'RIFIUTATA'}
                     </span>
                     {x.gestitaIl && (

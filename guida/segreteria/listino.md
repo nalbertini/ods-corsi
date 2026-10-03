@@ -15,7 +15,9 @@ non si cambia qualcosa.
 1. **LISTINO** nel menu.
 2. Si cambia quello che serve. I cambi restano in una bozza: in fondo compare
    una barra gialla con **LASCIA STARE** e **SALVA**, e fino a **SALVA** la
-   pagina di iscrizione mostra ancora quello di prima.
+   pagina di iscrizione mostra ancora quello di prima. Uscendo dal listino con
+   la barra aperta l'app chiede: **TORNA A FINIRE** o **ESCI SENZA SALVARE**.
+   Rimesso tutto com'era, la barra sparisce e non chiede più niente.
 3. **SALVA**. Se qualcosa non va (un prezzo che non si capisce, due corsi con lo
    stesso nome), la barra lo dice in rosso e **SALVA** resta spento.
 
@@ -35,12 +37,23 @@ controllare com'è venuta.
 
 Ogni corso è una riga col nome e i prezzi; **CAMBIA** la apre:
 
-- **NOME DEL CORSO** — lo stesso di **CORSI**. È così che la ricevuta trova i
-  prezzi dei corsi che fa l'iscritto: se il nome qui è diverso, la ricevuta
-  non propone quel corso da solo (si trova comunque in «Aggiungi una voce…»
-  se il nome c'è, o si scrive a mano).
+- **CORSO** — si sceglie da un elenco dei corsi di **CORSI**, non si scrive.
+  Ogni corso ha una voce sola (le righe di prezzo stanno dentro la voce), e
+  un corso già usato da un'altra voce non si può scegliere. Il legame è col
+  corso, non col nome: se in **CORSI** il corso cambia nome, il prezzo lo
+  segue e la ricevuta lo trova ancora.
+  Vale dal primo salvataggio del listino: finché è quello del foglio mai
+  toccato il legame è ancora col nome, quindi **salva il listino una volta**
+  (anche senza cambiare niente) prima di rinominare un corso in **CORSI**.
 - **ETÀ** e **ORARI**, un orario per riga: sono solo testo per la pagina di
   iscrizione, il calendario non li guarda.
+- **NATI DAL** e **NATI AL** (facoltativi) — gli anni di nascita del corso,
+  compresi. Nel modulo di iscrizione mettono il corso in cima per chi è nato
+  in quegli anni, e sotto **ALTRI CORSI** per gli altri. Vuoti, il corso sta
+  a parte, sotto **SENZA FASCIA D'ETÀ** (il corso chiuso lo dice: «senza anni
+  di nascita»); uno solo, è aperto dall'altro lato («nati nel 2012 o prima»
+  è solo **NATI AL** 2012). Il foglio li ha già dove l'età è chiara; se il listino
+  l'hai già cambiato e salvato, vanno scritti qui corso per corso.
 - **PREZZI** — **A SALDO**, **ANNUALE** e **TRIMESTRE**, in euro, anche coi
   centesimi (`12,50`). Un prezzo lasciato vuoto non c'è: la pagina scrive un
   trattino e la ricevuta non lo propone. Un corso con più prezzi (la
@@ -51,8 +64,27 @@ Ogni corso è una riga col nome e i prezzi; **CAMBIA** la apre:
 - **NOTA** — in rosso sotto i prezzi: «Solo in aggiunta a Judo 3».
 
 **↑ SU** e **↓ GIÙ** cambiano l'ordine della pagina di iscrizione, **Togli dal
-listino** toglie il corso (dal listino, non da **CORSI**), **CHIUDI** richiude
+listino** toglie la voce (dal listino, non da **CORSI**), **CHIUDI** richiude
 la riga. **+ AGGIUNGI UN CORSO** in fondo ne aggiunge uno nuovo.
+
+### Quello che manca, in rosso
+
+Sopra l'elenco dei corsi, a parole:
+
+- **«… senza prezzo nel listino»** — un corso attivo di **CORSI** che non ha la
+  sua voce. Nel modulo di iscrizione si può scegliere lo stesso, con scritto
+  «prezzo da confermare»: lo confermi tu. Se il corso non ha davvero un prezzo
+  (una prova gratuita, un corso interno) premi **Va bene senza prezzo**: il
+  rosso si spegne, e **Rimetti il rosso** lo riaccende.
+- **«senza corso: scegli il suo corso da CAMBIA»** — una voce di un listino
+  salvato prima di questo legame, il cui nome non è lo stesso di nessun corso
+  (o è di due). Le voci col nome uguale a un corso si agganciano da sole al
+  primo salvataggio. Le altre si agganciano a mano, scegliendo il corso.
+- **«il corso non c'è più in CORSI»** — la voce di un corso tolto: non propone
+  prezzi sulle ricevute. Si toglie dal listino.
+
+Un corso archiviato tiene la sua voce, senza rosso: se lo riattivi ritrovi il
+prezzo.
 
 ## Le offerte
 

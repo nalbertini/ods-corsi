@@ -155,7 +155,7 @@
   --line-soft: #e2e2dd;
   --text: #161616;
   --sec: #3d3d3a;
-  --dim: #6b6b67;
+  --dim: #656561;
   --faint: #a8a8a3;
 
   --verde: #12913f;
@@ -192,7 +192,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 input, textarea, select { font: inherit; color: inherit; }
 /* Il fuoco da tastiera su ogni tasto e link, non solo su `.btn`: chi non usa
    il dito deve vedere dove si trova. */
-button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
 .cond { font-family: var(--cond); font-variant-numeric: tabular-nums; }
 /* Il taglio obliquo riprende il lettering del marchio. */
@@ -333,6 +333,8 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .lezione-stato.lezione-prove { color: var(--giallo-testo); }
 .lezione-stato[data-fatto='true'] { color: var(--verde-testo); }
 .lezione-stato[data-manca] { color: var(--rosso-testo); }
+/* Chiuso senza nessun presente: forse un errore, si fa notare. */
+.lezione-stato[data-vuoto] { color: var(--giallo-testo); }
 
 /* Le presenze segnalate dagli iscritti: in cima al calendario e nell'appello. */
 .arretrato { padding: 0 14px; gap: 8px; }
@@ -353,6 +355,17 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
   position: sticky; top: 0; z-index: 2;
   background: var(--bg); padding-bottom: 12px; border-bottom: 2px solid var(--line-soft);
 }
+/* La freccia indietro che chiede (DueTocchi): la domanda copre il titolo
+   invece di allargare la riga, che così non cambia né larghezza né altezza,
+   e il timer resta dov'è. 74 px a destra = il margine, il timer e lo spazio. */
+.appello-testa > .row:first-child { position: relative; }
+.appello-testa .icon-btn[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso-testo); transition: none; }
+.appello-testa .icon-btn[data-sicuro='true'] > .due-tocchi-chiede {
+  position: absolute; left: 20px; right: 74px; top: 12px; bottom: 0; z-index: 1;
+  display: flex; align-items: center; padding: 0 12px; text-align: left;
+  background: var(--bg); border: 2px solid var(--rosso);
+  font-family: var(--cond); font-style: oblique 9deg; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.15;
+}
 /* Sul telefono la testa ferma si prende già un terzo dello schermo: giorno,
    ora e sala su una riga sola, e il titolo e il conto un po' più bassi. */
 .appello-testa .chi-kanji > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
@@ -365,6 +378,11 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .appello-stato { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); }
 .appello-stato[data-fatto='true'] { color: var(--verde-testo); }
 .appello-stato[data-manca] { color: var(--rosso-testo); }
+/* CHIUDI IN FONDO si tocca: porta al tasto per chiudere. Il bersaglio è più
+   grande della scritta, ma la scritta non cambia altezza alla testa. */
+.appello-vai { position: relative; text-decoration: underline; text-underline-offset: 4px; }
+.appello-vai::after { content: ''; position: absolute; inset: -14px -10px; }
+.esito-tasto { min-height: 48px; padding: 0 18px; font-size: 15px; }
 .appello-prove { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: var(--giallo-testo); white-space: nowrap; }
 .appello-coda { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--giallo-testo); min-height: 1.3em; }
 .segnalata-esito { min-height: 44px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
@@ -520,7 +538,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .costo-etichetta { align-self: center; }
 .passo { display: flex; align-items: flex-start; gap: 14px; padding: 14px; }
 .passo-num {
-  font-size: 26px; font-weight: 700; line-height: 1; color: var(--giallo-testo);
+  font-size: 26px; font-weight: 700; line-height: 1; color: var(--text);
   min-width: 22px; text-align: center;
 }
 .passo-titolo { font-size: 17px; font-weight: 600; line-height: 1.3; }
@@ -539,30 +557,49 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .modulo-largo { grid-column: 1 / -1; }
 .modulo-etichetta { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
 .modulo-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.modulo-testa { gap: 10px; padding-top: 14px; }
+.modulo-testa { gap: 10px; padding-top: 14px; flex-wrap: wrap; }
+/* INDIETRO su una riga, anche quando chiede: se non c'è posto scende il bollino PROVA. */
+.modulo-testa .btn { white-space: nowrap; }
+/* Sotto i 360px la domanda va a capo invece di uscire dal margine. */
+.modulo-testa .btn > .due-tocchi-chiede { white-space: normal; }
+/* INDIETRO che chiede (DueTocchi): in rosso, perché le risposte non tornano. */
+.modulo-testa .btn[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso-testo); }
 .modulo-piede { gap: 10px; padding-bottom: 28px; }
+/* L'invio è il tasto che chiude tutto: alto come `.btn`, non come gli altri passi. */
+.modulo-piede .passo-btn { min-height: 56px; }
 .modulo-scelte-una { display: flex; gap: 8px; }
 .modulo-scelte-una > * { flex: 1; }
 .campo.campo-codice { letter-spacing: 0.08em; }
 .campo.campo-note { padding-top: 12px; resize: vertical; }
 .modulo .campo { width: 100%; }
 .modulo-corsi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+/* Età e orari sotto il nome del corso: per scegliere senza tornare al listino. */
+.modulo-corso-testo { gap: 2px; min-width: 0; }
+.modulo-corso-riga { font-size: 13px; font-weight: 400; color: var(--dim); line-height: 1.35; }
+/* Sul fondo del tasto scelto il testo spento non arriva a 4,5:1 nel tema chiaro. */
+.modulo-corso[aria-pressed='true'] .modulo-corso-riga { color: var(--sec); }
+.modulo-altri { margin-top: 10px; }
 .modulo-corso {
   display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;
   background: var(--surface); border: 2px solid var(--line); text-align: left; font-size: 15px; font-weight: 600;
 }
-.modulo-corso[aria-pressed='true'], .modulo-corso[aria-checked='true'] { border-color: var(--verde); }
+/* Scelto non è «fatto»: bordo e fondo come le schede, non verde. Il segno dice la scelta anche senza colore. */
+.modulo-corso[aria-pressed='true'], .modulo-corso[aria-checked='true'] { border-color: var(--text); background: var(--surface-2); }
+.modulo-corso[aria-pressed='true'] .modulo-spunta, .modulo-corso[aria-checked='true'] .modulo-spunta { border-color: var(--text); }
 .modulo-spunta {
   width: 22px; height: 22px; flex-shrink: 0; border: 2px solid var(--line);
-  display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--verde);
+  display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text);
 }
 .modulo-file { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
 .modulo-file[data-fatto='true'] { border-color: var(--verde); }
-.modulo-file[data-fatto='true'] .modulo-etichetta { color: var(--verde); }
+.modulo-file[data-fatto='true'] .modulo-etichetta { color: var(--verde-testo); }
 .modulo-file-testo { gap: 3px; min-width: 0; }
+/* Il nome di chi firma è un nome di persona: niente maiuscolo spaziato. */
+.modulo-firmatario { font-family: var(--body); font-size: 15px; font-weight: 600; letter-spacing: 0; color: var(--text); }
 .modulo-scegli { align-self: center; flex-shrink: 0; }
-.modulo-privacy { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--sec); line-height: 1.4; cursor: pointer; }
-.modulo-privacy input { width: 22px; height: 22px; margin: 0; flex-shrink: 0; accent-color: var(--verde); }
+/* Tutta la riga segna la casella: almeno 44px, anche quando il testo sta su una riga. */
+.modulo-privacy { display: flex; align-items: flex-start; padding: 11px 0; gap: 12px; font-size: 15px; color: var(--sec); line-height: 1.4; cursor: pointer; }
+.modulo-privacy input { width: 22px; height: 22px; margin: 0; flex-shrink: 0; accent-color: var(--text); }
 /* Il riquadro della firma: largo quanto il modulo, basso come una riga di
    firma vera, con la riga su cui poggiare. Non scorre la pagina mentre si
    firma: il dito disegna e basta. */
@@ -580,7 +617,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .modulo .campo[readonly] { background: transparent; border-style: dashed; color: var(--dim); }
 .modulo-nota { font-size: 14px; line-height: 1.35; color: var(--rosso-testo); }
 .modulo-nota[data-avviso] { color: var(--giallo-testo); }
-.modulo-corsi:focus, .modulo [role='radiogroup']:focus { outline: none; }
+.modulo-corsi:focus, .modulo-corsi-tutti:focus, .modulo [role='radiogroup']:focus { outline: none; }
 /* Il fuoco da tastiera: il contorno `text` di 2px, che su ogni fondo fa più di 3:1. */
 .btn:focus-visible, .modulo-corso:focus-visible, .costo-link:focus-visible, .modulo-file:focus-within .modulo-scegli { outline: 2px solid var(--text); outline-offset: 2px; }
 @media (max-width: 560px) {
@@ -611,15 +648,15 @@ a.btn { text-decoration: none; }
 .costo-griglia[data-etichette='true'] { grid-template-columns: auto repeat(3, 1fr); }
 .costo-griglia[data-saldo='false'] { grid-template-columns: repeat(2, 1fr); }
 .costo-griglia[data-saldo='false'][data-etichette='true'] { grid-template-columns: auto repeat(2, 1fr); }
-.costo-testa { font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); line-height: 1.2; }
+.costo-testa { font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); line-height: 1.2; }
 .costo-euro { font-size: 20px; font-weight: 700; }
 .costo-euro[data-vuoto='true'] { color: var(--faint); }
 /* La frase e il link vengono dal sito: la frase sotto il nome, il link in fondo. */
 .costo-frase { font-size: 14px; color: var(--sec); line-height: 1.35; margin-bottom: 4px; }
 .costo-link {
-  align-self: flex-start; margin-top: 10px; min-height: 40px; display: inline-flex; align-items: center;
+  align-self: flex-start; margin-top: 10px; min-height: 44px; display: inline-flex; align-items: center;
   font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.16em;
-  color: var(--text); text-decoration: none; border-bottom: 2px solid var(--giallo);
+  color: var(--text); text-decoration: none; border-bottom: 2px solid var(--dim);
 }
 
 /* ---------------------------------------------------------------------------
@@ -1130,12 +1167,16 @@ a.btn { text-decoration: none; }
    l'altra e il menu si stringe; sul telefono va in cima.
    --------------------------------------------------------------------------- */
 
-.sg { display: flex; height: 100%; overflow: hidden; background: var(--bg); position: relative; }
+/* clip e non hidden: un guscio «hidden» si lascia comunque far scorrere da scrollIntoView, e il menu scappava in su. */
+.sg { display: flex; height: 100%; overflow: clip; background: var(--bg); position: relative; }
 .sg-menu {
   width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 28px;
   padding: calc(var(--safe-t) + 28px) 16px 24px; background: var(--menu); border-right: 2px solid var(--line-soft);
   overflow-y: auto;
 }
+/* Il margine del menu di segreteria è più stretto: le voci col numero devono
+   starci su una riga. */
+@media (min-width: 768px) { #sg-menu { padding-left: 12px; padding-right: 12px; } }
 .sg-voci { display: flex; flex-direction: column; gap: 2px; }
 /* Il primo tasto TAB porta al contenuto, saltando il menu: si vede solo allora. */
 .sg-salta {
@@ -1159,7 +1200,7 @@ a.btn { text-decoration: none; }
 .sg-cerca-vuoto { padding: 10px; font-size: 14px; color: var(--dim); }
 .sg-gruppi { display: flex; flex-direction: column; gap: 18px; }
 .sg-gruppo { display: flex; flex-direction: column; gap: 4px; }
-.sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
+.sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
 /* Le schede di PRESENZE: larghe quanto serve, non quanto la sezione. */
 .sg-schede { flex-basis: auto; align-self: flex-start; grid-auto-columns: minmax(150px, auto); }
 .sg-schede .scheda { padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
@@ -1168,6 +1209,9 @@ a.btn { text-decoration: none; }
   border-left: 4px solid transparent; color: var(--sec);
   font-size: 16px; font-weight: 700; letter-spacing: 0.12em; text-align: left;
 }
+/* Sul computer nessuna voce va a capo, col suo numero accanto: PRESENZE
+   ISTRUTTORI con due cifre vuole 188 px. */
+@media (min-width: 1001px) { #sg-menu .sg-voce { letter-spacing: 0.1em; padding-right: 8px; } }
 .sg-voce:hover { color: var(--text); }
 /* Il testo prende lo spazio, il numero sta a destra: una voce lunga che va a capo non lo lascia storto. */
 .sg-voce-testo { flex: 1; min-width: 0; }
@@ -1179,15 +1223,25 @@ a.sg-voce { text-decoration: none; }
   padding: 2px 6px; align-self: flex-start; margin-top: 4px;
 }
 .sg-icone { gap: 8px; padding: 0 4px; }
-.icon-btn[aria-current='page'] { border-color: var(--text); color: var(--text); }
-.sg-voce-tel { display: none; }
+/* DATI DI PROVA sta accanto ai due tasti, in cima e sempre in vista; in chi è
+   entrato resta solo sul telefono, dove i tasti sono nella barra in cima. */
+/* Senza il margine ci sta, dal computer, su due righe accanto ai tasti: la
+   riga resta alta 44. Sul tablet, più stretto, va sotto. */
+#sg-menu .sg-icone { padding: 0; flex-wrap: wrap; }
+/* 56 px: «DATI DI» su una riga e «PROVA» sotto. */
+#sg-menu .sg-icone > .sg-bollino { margin-top: 0; align-self: center; flex: 0 0 56px; }
+@media (min-width: 768px) { #sg-menu .sg-chi > .sg-bollino { display: none; } }
 .sg-link { font-size: 13px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 .sg-link:hover { color: var(--text); }
+/* In fondo al menu i link (Riparti dall'orario vero, Esci) sono bersagli veri
+   da 44, uno sotto l'altro: allargati a mano, col dito, si sovrapponevano. */
+.sg-chi > .sg-link { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; }
 /* Col dito i link piccoli e le intestazioni che ordinano sono bersagli da
    18-21 px: l'area che si tocca si allarga a 44 senza spostare niente. */
 @media (pointer: coarse) {
   .sg-link, .sg-ordina { position: relative; }
   .sg-link::after, .sg-ordina::after { content: ''; position: absolute; inset: -13px -6px; }
+  .sg-chi > .sg-link::after { content: none; }
   .sg-ordina::after { inset: -13px 0; }
 }
 
@@ -1291,7 +1345,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-lezione[data-annullata='true'] .sg-lezione-nome { text-decoration: line-through; }
 .sg-lezione-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-lezione-dove { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sg-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; white-space: nowrap; }
+.sg-tag { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; white-space: nowrap; }
 .sg-tag[data-tipo='manca'] { background: var(--rosso); color: var(--su-rosso); }
 .sg-tag[data-tipo='aspetta'] { background: var(--giallo); color: var(--su-colore); }
 /* Un filo delle segnalazioni: la testata si tocca tutta; giallo se aspetta te. */
@@ -1420,12 +1474,42 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-in-regola { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 0; }
 .sg-segno-regola {
   display: inline-block; padding: 2px 6px; border: 1.5px solid currentColor;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; line-height: 1.3; white-space: nowrap;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; line-height: 1.3; white-space: nowrap;
 }
 .sg-segno-regola[data-tono='rosso'] { color: var(--rosso-testo); }
 .sg-segno-regola[data-tono='giallo'] { color: var(--giallo-testo); }
-.sg-segno-regola[data-tono='verde'] { color: var(--verde); }
+.sg-segno-regola[data-tono='verde'] { color: var(--verde-testo); }
 .sg-segno-regola[data-tono='spento'] { color: var(--dim); }
+/* I timbri in cima alla scheda: bordo e parola del colore dello stato, il resto si legge sul fondo. */
+.sg-timbri { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.75fr); gap: 12px; align-items: stretch; }
+.sg-timbro {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 44px; min-width: 0;
+  padding: 12px 14px; text-align: left; background: var(--bg); border: 2px solid var(--tono, var(--line)); border-left-width: 4px;
+  font-family: var(--cond); font-weight: 700; color: var(--sec);
+}
+/* Solo col mouse: sul telefono il tocco lascerebbe il bordo nero al posto del colore. */
+@media (hover: hover) { .sg-timbro:hover { border-color: var(--text); } }
+/* Il clic porta alla sezione: il titolo non resta sotto il bordo in alto. */
+[id^='sez-'] { scroll-margin-top: 12px; }
+.sg-timbro:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.sg-timbro[data-tono='rosso'] { --tono: var(--rosso); --tono-testo: var(--rosso-testo); }
+.sg-timbro[data-tono='giallo'] { --tono: var(--giallo); --tono-testo: var(--giallo-testo); }
+.sg-timbro[data-tono='verde'] { --tono: var(--verde); --tono-testo: var(--verde-testo); }
+.sg-timbro[data-tono='spento'] { --tono: var(--line); --tono-testo: var(--dim); color: var(--dim); }
+.sg-timbro-titolo { font-size: 12px; letter-spacing: 0.2em; color: var(--dim); }
+.sg-timbro-parola { font-size: 22px; line-height: 1.05; letter-spacing: 0.04em; color: var(--tono-testo, var(--text)); overflow-wrap: anywhere; }
+.sg-timbro-riga { font-size: 14px; letter-spacing: 0.12em; }
+.sg-timbro-riga[data-tono='giallo'] { color: var(--giallo-testo); border: 2px solid var(--giallo); padding: 0 6px; }
+.sg-timbro[data-piccolo='true'] { padding: 10px 12px; align-self: start; }
+.sg-timbro[data-piccolo='true'] .sg-timbro-parola { font-size: 19px; }
+.sg-timbro[data-piccolo='true'] .sg-timbro-riga { font-size: 12px; color: var(--dim); }
+/* Disattivata non è un guaio (si annulla con RIATTIVA): bordo `testo`, niente rosso. */
+.sg-timbri-spenta { margin: 0; padding: 10px 14px; border: 2px dashed var(--text); font-size: 15px; line-height: 1.4; color: var(--sec); }
+.sg-timbri-spenta strong { margin-right: 8px; font-family: var(--cond); font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--text); }
+/* Sotto i 1000px la scheda è una colonna stretta: tre timbri in fila andrebbero a capo parola per parola. */
+@media (max-width: 1000px) {
+  .sg-timbri { grid-template-columns: minmax(0, 1fr); }
+}
 .sg-iscritto {
   width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid var(--surface-2); text-align: left;
 }
@@ -1442,12 +1526,19 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-presenza-istr[data-spento='true'] > :not(:last-child) { opacity: 0.5; }
 .sg-lezione-istr { display: grid; grid-template-columns: 2.5fr 2fr 240px; gap: 14px; align-items: center; }
 .sg-presenza-istr-fine { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; text-align: right; }
+/* Si legge riga per riga a fine mese, per pagare: intestazioni e freccia
+   più grandi delle altre tabelle, e il ripensamento resta link ma a 15px. */
+.sg-lista-testa.sg-riga-presenza-istr .sg-etichetta, .sg-testa-istr { font-size: 13px; }
+.sg-lista-testa.sg-riga-presenza-istr .sg-ordina-segno { font-size: 12px; }
+.sg-presenza-istr .sg-link { font-size: 15px; min-height: 44px; display: inline-flex; align-items: center; padding: 0 6px; }
 .sg-riga-compenso { display: grid; grid-template-columns: 1fr 90px 90px; gap: 14px; align-items: center; }
 .sg-compenso { border-bottom: 1px solid var(--surface-2); }
 .sg-compenso[open] { padding-bottom: 6px; }
 .sg-compenso > summary { min-height: 48px; padding: 6px 14px; cursor: pointer; list-style: none; }
 .sg-compenso > summary::-webkit-details-marker { display: none; }
 .sg-compenso > summary:hover { background: var(--surface); }
+/* DATI DEL SOCIO nella ricevuta: tutta la riga si tocca, alta quanto un dito. */
+.sg-socio { box-sizing: border-box; min-height: 44px; padding: 13px 0; cursor: pointer; }
 /* Una richiesta online: le risposte in due colonne, i file con l'anteprima. */
 .sg-dati { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; align-items: baseline; }
 .sg-file {
@@ -1513,7 +1604,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-dafare-lezione-nome { font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); }
 .sg-dafare-aposto { margin: 0; font-size: 14px; line-height: 1.5; color: var(--sec); }
 .sg-dafare-fatto { display: flex; flex-direction: column; gap: 6px; padding: 28px; border: 2px solid var(--verde); }
-.sg-dafare-fatto .ob { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: var(--verde); }
+.sg-dafare-fatto .ob { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: var(--verde-testo); }
 @media (max-width: 700px) {
   .sg-dafare-riga { flex-wrap: wrap; gap: 12px; }
   .sg-dafare-n { min-width: 0; text-align: left; }
@@ -1617,7 +1708,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-passi { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
 .sg-passi li { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: 2px solid var(--line-soft); color: var(--dim); }
 .sg-passi li[aria-current='step'] { border-color: var(--text); color: var(--text); }
-.sg-passi li[data-fatto='true'] { color: var(--verde); }
+.sg-passi li[data-fatto='true'] { color: var(--verde-testo); }
 .sg-passo-num { font-size: 20px; font-weight: 700; }
 .sg-importa { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 .sg-cosa-entra { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
@@ -1651,6 +1742,19 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-listino-prezzi, .sg-listino-prezzi[data-etichette='true'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .sg-regole { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+/* L'ultimo riquadro dispari di un gruppo prende tutta la riga, invece di lasciarne mezza vuota. */
+.sg-regole > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+.sg-regole-gruppo { display: flex; flex-direction: column; gap: 14px; margin-top: 36px; }
+.sg-regole-titolo { margin: 0; padding-top: 14px; border-top: 2px solid var(--line); font-size: 26px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; scroll-margin-top: 16px; }
+.sg-regole-titolo:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; }
+.sg-indice { gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+/* La spiegazione chiusa: un'etichetta che si tocca, alta quanto un tasto; + e − dicono se è aperta senza contare sul colore. */
+.sg-spiega > summary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); cursor: pointer; list-style: none; }
+.sg-spiega > summary::-webkit-details-marker { display: none; }
+.sg-spiega > summary::before { content: '+'; width: 10px; font-size: 17px; }
+.sg-spiega[open] > summary::before { content: '−'; }
+.sg-spiega > summary:hover, .sg-spiega[open] > summary { color: var(--text); }
+.sg-spiega-testo { font-size: 13px; line-height: 1.5; color: var(--dim); max-width: 72ch; }
 /* Le frasi da incidere: due colonne finché c'è spazio. */
 .sg-frasi { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 6px; }
 
@@ -1677,6 +1781,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
    computer; LA PALESTRA, roba da computer, più piccola. */
 .sg-barra-tel { display: none; }
 @media (max-width: 767px) {
+  .sg-regole-gruppo { margin-top: 28px; }
   .sg { flex-direction: column; }
   .sg-barra-tel {
     display: flex; align-items: center; gap: 12px; flex-shrink: 0;
@@ -1686,7 +1791,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-barra-tel > svg { flex-shrink: 0; }
   .sg-barra-tel > .icon-btn { border: none; }
   .sg-icone { display: none; }
-  .sg-voce-tel { display: flex; }
   .sg-tasto-menu {
     display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;
     border: 2px solid var(--line); color: var(--text);
@@ -1701,8 +1805,10 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   }
   .sg-menu[data-aperto='true'] { display: flex; }
   .sg-marchio, .sg-menu > .grow { display: none; }
-  .sg-gruppo[data-secondario='true'] .sg-voce { min-height: 40px; font-size: 14px; }
+  /* Più piccole di carattere, non di bersaglio: si toccano col dito come le altre. */
+  .sg-gruppo[data-secondario='true'] .sg-voce { font-size: 14px; }
   .sg-chi { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+  .sg-chi > .sg-link { align-self: center; }
   .sg-chi > .sg-bollino { margin-top: 0; }
   .sg-corpo { padding: 16px; }
 }
@@ -1765,3 +1871,5 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .guida table { border-collapse: collapse; width: 100%; font-size: 15px; }
 .guida th, .guida td { border: 2px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
 .guida th { font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); background: var(--surface); }
+/* Il titolo di una sezione raggiunto da un timbro: lo stesso contorno dei tasti. */
+[id^='sez-'] :focus-visible, [id^='sez-']:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }

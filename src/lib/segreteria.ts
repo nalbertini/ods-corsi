@@ -5,6 +5,7 @@ import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
+import { euro } from './ricevute'
 import { VALIDITA } from './costi'
 import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio, paroleCercate, somiglia } from './nomi'
@@ -448,8 +449,13 @@ export interface DatiSegreteria {
   /** Le segnalazioni della segreteria, coi loro messaggi (vedi `segnalazioni.ts`). */
   segnalazioni(): Promise<Segnalazione[]>
   /** Apre una segnalazione e dice il suo id, così il filo nuovo si apre da sé. */
-  apriSegnalazione(titolo: string, testo: string): Promise<string>
-  rispondiSegnalazione(id: string, testo: string): Promise<void>
+  apriSegnalazione(titolo: string, testo: string, allegati?: File[]): Promise<string>
+  /** Con `allegati`, se qualche file non parte il messaggio c'è lo stesso: lancia `AllegatiNonPartiti`. */
+  rispondiSegnalazione(id: string, testo: string, allegati?: File[]): Promise<void>
+  /** Toglie un allegato (solo chi l'ha mandato): file e riga, e nel filo resta la traccia. */
+  togliAllegato(id: string): Promise<void>
+  /** Un link per aprire un allegato: scade presto, se ne chiede uno nuovo ogni volta. */
+  linkAllegato(id: string): Promise<string>
   /** La chiude, o con `false` la riapre. */
   chiudiSegnalazione(id: string, chiusa: boolean): Promise<void>
 
@@ -525,7 +531,7 @@ export interface DatiSegreteria {
   unisciPersone(resta: string, via: string): Promise<void>
   /** Codici fiscali, nascite e coppie «non sono doppioni», per i possibili doppioni di ISCRITTI (`doppioni.ts`). */
   indiziDoppioni(): Promise<IndiziDoppioni>
-  /** Due schede che non sono la stessa persona: non compaiono più fra i possibili doppioni (`30-non-doppioni.sql`). */
+  /** Due schede che non sono la stessa persona: non compaiono più fra i possibili doppioni (`33-non-doppioni.sql`). */
   segnaNonDoppioni(a: string, b: string): Promise<void>
 
   salvaSala(s: { id?: string; nome: string; capienza?: number }): Promise<string>
@@ -559,8 +565,11 @@ export interface DatiSegreteria {
   allenamenti(quanti: number): Promise<AllenamentoSeg[]>
   impostazioni(): Promise<Impostazioni>
   salvaImpostazioni(i: Partial<Impostazioni>): Promise<void>
-  /** Quante presenze sono più vecchie del periodo, e la pulizia. */
-  scadute(): Promise<number>
+  /**
+   * Quante presenze sono più vecchie del periodo, e la pulizia. Con `mesi`,
+   * quante lo sarebbero con quel periodo: si conta e basta, non si salva.
+   */
+  scadute(mesi?: number): Promise<number>
   pulisci(): Promise<number>
   /** Tutto quello che si sa di una persona, per chi lo chiede (GDPR, art. 15). */
   esporta(personaId: string): Promise<unknown>
@@ -656,6 +665,125 @@ export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: strin
 export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string) =>
   ['valido', 'in_scadenza'].includes(comeCertificato(p.certificato, oggi)) && comePaga(p, oggi) === 'pagato'
 
+export type Tono = 'rosso' | 'giallo' | 'verde' | 'spento'
+
+/** Una parola grande col suo colore: un bollino in elenco, un timbro nella scheda. */
+export interface ParolaStato {
+  tono: Tono
+  parola: string
+}
+
+/** Un timbro in cima alla scheda; una riga senza tono prende quello del testo. */
+export interface Timbro extends ParolaStato {
+  righe: Array<{ testo: string; tono?: Tono }>
+  /** La parola in elenco, quando quella del timbro è troppo lunga per la colonna. */
+  inElenco?: string
+}
+
+export interface TimbriScheda {
+  certificato: Timbro
+  quota: Timbro
+  documento: Timbro
+  /** Disattivata: i timbri sono spenti, le parole restano. */
+  disattivata?: boolean
+}
+
+/** «12/10», da una data `AAAA-MM-GG`. */
+const dataCorta = (g: string) => `${g.slice(8, 10)}/${g.slice(5, 7)}`
+
+/** «12/10/2026»: nei timbri l'anno c'è, la scheda si legge anche fra un anno. */
+const dataTimbro = (g: string) => `${dataCorta(g)}/${g.slice(0, 4)}`
+
+/**
+ * «AL 31/07/2027», ma «ALL’11/07/2027»: l'1, l'8 e l'11 cominciano per
+ * vocale. Lì il giorno va senza zero, se no «ALL’08» non si legge.
+ */
+export function alGiorno(g: string): string {
+  const giorno = Number(g.slice(8, 10))
+  return [1, 8, 11].includes(giorno) ? `ALL’${giorno}${dataTimbro(g).slice(2)}` : `AL ${dataTimbro(g)}`
+}
+
+function timbroCertificato(c: CertificatoSeg, oggi: string): Timbro {
+  const come = comeCertificato(c, oggi)
+  // Il file di prima della carta è sempre un avviso, anche sotto un certificato valido.
+  const righe: Timbro['righe'] = c.conFile ? [{ testo: 'DA STAMPARE', tono: 'giallo' }] : []
+  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...righe] }
+  if (come === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'CERT. SCADUTO', righe }
+  if (come === 'in_scadenza') {
+    if (c.scade === oggi) return { tono: 'giallo', parola: 'SCADE OGGI', righe }
+    const fra = Math.round((Date.parse(c.scade) - Date.parse(oggi)) / 86_400_000)
+    return {
+      tono: 'giallo',
+      parola: `SCADE IL ${dataTimbro(c.scade)}`,
+      // In elenco la colonna è stretta: la data senza l'anno.
+      inElenco: `SCADE IL ${dataCorta(c.scade)}`,
+      righe: [{ testo: fra === 1 ? 'DOMANI' : `FRA ${fra} GIORNI` }, ...righe],
+    }
+  }
+  return { tono: 'verde', parola: `VALIDO FINO ${alGiorno(c.scade)}`, righe }
+}
+
+function timbroQuota(s: StatoPaga): Timbro {
+  const fino = s.fino ? [{ testo: `FINO ${alGiorno(s.fino)}` }] : []
+  const da = s.fonte === 'fuori_app' ? [{ testo: 'FUORI APP' }] : s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : []
+  if (s.come === 'pagato') return { tono: 'verde', parola: 'PAGATA', righe: [...da, ...fino] }
+  if (s.come === 'in_parte')
+    return { tono: 'giallo', parola: 'IN PARTE', righe: s.fonte === 'ricevuta' ? [{ testo: `MANCANO ${euro(s.mancano ?? 0)} €` }, ...da] : [...da, ...fino] }
+  if (s.come === 'scaduto') return { tono: 'rosso', parola: 'QUOTA SCADUTA', righe: s.fino ? [{ testo: `VALEVA FINO ${alGiorno(s.fino)}` }] : [] }
+  return { tono: 'rosso', parola: 'DA PAGARE', righe: [{ testo: 'NESSUNA RICEVUTA' }] }
+}
+
+/**
+ * I tre timbri in cima alla scheda: certificato, quota, documento. Il
+ * documento si vede ma non conta per «in regola» (vedi `inRegola`). Chi è
+ * disattivato li ha spenti, con le stesse parole.
+ */
+export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote'>, oggi: string): TimbriScheda {
+  const t = {
+    certificato: timbroCertificato(p.certificato, oggi),
+    quota: timbroQuota(pagamentoDi(p, oggi)),
+    documento: {
+      tono: p.documento ? 'verde' : 'giallo',
+      parola: p.documento ? 'IN SEGRETERIA' : 'DA PORTARE',
+      // Del genitore, per un minore: la scheda non sa l'età, lo dice la sezione DOCUMENTO.
+      righe: [{ testo: 'NON SERVE PER ENTRARE' }],
+    } satisfies Timbro,
+  }
+  if (p.attiva) return t
+  const spegni = (x: Timbro): Timbro => ({ ...x, tono: 'spento', righe: x.righe.map(({ testo }) => ({ testo })) })
+  return { certificato: spegni(t.certificato), quota: spegni(t.quota), documento: spegni(t.documento), disattivata: true }
+}
+
+/**
+ * Il tasto pieno della scheda, a riposo: uno solo, quello di quel che c'è da
+ * fare per primo. Prima ciò che tiene fuori di sala o è da incassare, poi
+ * l'avviso. Con tutto a posto resta la quota: la scheda si apre soprattutto
+ * per incassare. Il documento non conta, come per «in regola».
+ */
+export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote'>, oggi: string): 'certificato' | 'quota' | null {
+  if (!p.attiva) return null
+  const cert = comeCertificato(p.certificato, oggi)
+  const quota = pagamentoDi(p, oggi).come
+  if (cert === 'manca' || cert === 'scaduto') return 'certificato'
+  if (quota !== 'pagato') return 'quota'
+  return cert === 'in_scadenza' ? 'certificato' : 'quota'
+}
+
+/**
+ * La colonna IN REGOLA dell'elenco: le parole dei timbri che non vanno, o
+ * IN REGOLA; poi FUORI APP, perché prima o poi va una ricevuta. Il
+ * certificato in scadenza si vede, anche se è ancora in regola.
+ */
+export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string): ParolaStato[] {
+  const s = pagamentoDi(p, oggi)
+  const cert = timbroCertificato(p.certificato, oggi)
+  const quota = timbroQuota(s)
+  const fuori: ParolaStato[] = s.fonte === 'fuori_app' ? [{ tono: 'spento', parola: 'FUORI APP' }] : []
+  const guai = [cert, quota].filter((t) => t.tono !== 'verde').map((t): ParolaStato => ({ tono: t.tono, parola: t.inElenco ?? t.parola }))
+  const inRegola: ParolaStato = { tono: 'verde', parola: 'IN REGOLA' }
+  return [...(guai.length ? guai : [inRegola]), ...fuori]
+}
+
 /** Un giorno `AAAA-MM-GG` spostato di tanti giorni, senza passare dai fusi. */
 function spostaGiorno(g: string, giorni: number) {
   const [a, m, d] = g.split('-').map(Number)
@@ -701,4 +829,101 @@ export function trovaIscritti(persone: PersonaSeg[], scritto: string): PersonaSe
     .filter((p) => somiglia(p, parole))
     .sort((a, b) => Number(b.attiva) - Number(a.attiva) || a.cognome.localeCompare(b.cognome, 'it'))
     .slice(0, 8)
+}
+
+/**
+ * Il nome di una voce di sistema senza la lingua: «Grandma», non «Grandma
+ * (Italiano (Italia))». Le voci della tendina sono già tutte italiane. Le
+ * marcature di qualità («Enhanced», «Premium») restano, perché si scelgono per
+ * quelle; se due voci dopo il taglio si chiamerebbero uguali, restano intere.
+ * Si mostra e basta: si salva il nome intero, che il tablet cerca così.
+ */
+export function nomeVoce(nome: string, tutte: string[]): string {
+  const corto = (n: string) =>
+    n
+      .replace(/\s*\([^()]*\([^()]*\)\)$/, '')
+      .replace(/\s+-\s+[^-()]*\([^()]*\)$/, '')
+      .trim() || n
+  const mio = corto(nome)
+  return tutte.some((v) => v !== nome && corto(v) === mio) ? nome : mio
+}
+
+/**
+ * Prima di accorciare per quanto si tengono le presenze: quante se ne vanno.
+ * Allungare non toglie niente e si salva subito; accorciare senza presenze da
+ * togliere pure. Altrimenti si chiede, e si dice quando si cancellano: col
+ * database vero il primo del mese (il lavoro `pulizia`), in prova solo con
+ * CANCELLA ORA. Senza il conteggio (`null`) si chiede lo stesso, senza numero.
+ */
+export function confermaMesiPresenze({
+  prima,
+  dopo,
+  scadute,
+  modo,
+}: {
+  prima: number
+  dopo: number
+  scadute: number | null
+  modo: 'prova' | 'supabase'
+}): { testo: string; tasto: string } | null {
+  if (dopo >= prima || scadute === 0) return null
+  const una = scadute === 1
+  const quante = `${scadute === null ? 'le presenze' : una ? '1 presenza' : `${scadute} presenze`} più ${una ? 'vecchia' : 'vecchie'} di ${dopo} mesi`
+  const dopoCosa =
+    modo === 'supabase'
+      ? `Il primo del mese si ${una ? 'cancella' : 'cancellano'} ${quante}`
+      : `${quante[0].toUpperCase()}${quante.slice(1)} si ${una ? 'potrà' : 'potranno'} cancellare con CANCELLA ORA`
+  const testo = `Accorciare a ${dopo} mesi? ${dopoCosa}: non si recuperano.`
+  return { testo, tasto: `SÌ, ACCORCIA A ${dopo} MESI` }
+}
+
+const istruttoriDetti = ([primo, ...altri]: string[]) => [primo, ...altri.sort()].join()
+
+/**
+ * C'è qualcosa da perdere uscendo dalla scheda di un corso? La bozza si
+ * confronta con quel che è salvato; per un corso nuovo (`corso` null) con come
+ * si apre: vuoto, la prima sala (`salaIniziale`) e il primo colore. Degli
+ * istruttori conta chi è il primo, quello di riferimento; l'ordine degli altri
+ * no: il database non lo tiene, e dopo SALVA tornano in un altro ordine.
+ */
+export function corsoCambiato(corso: CorsoSeg | null, bozza: DatiCorso, salaIniziale?: string): boolean {
+  const salvato = {
+    nome: corso?.nome ?? '',
+    salaId: corso ? corso.salaId : salaIniziale,
+    istruttori: corso?.istruttori.map((i) => i.id) ?? [],
+    capienza: corso?.capienza,
+    colore: corso?.colore ?? COLORI[0].hex,
+  }
+  return (
+    bozza.nome.trim() !== salvato.nome.trim() ||
+    (bozza.salaId ?? '') !== (salvato.salaId ?? '') ||
+    istruttoriDetti(bozza.istruttori) !== istruttoriDetti(salvato.istruttori) ||
+    bozza.capienza !== salvato.capienza ||
+    (bozza.colore ?? COLORI[0].hex) !== salvato.colore
+  )
+}
+
+export type RicorrenzaNuova = { giorno: number; ora: string; durata: number; salaId?: string }
+
+/** Il giorno nuovo (+ AGGIUNGI UN GIORNO) si apre con l'ora e i minuti del primo giorno del corso. */
+export function ricorrenzaIniziale(corso: CorsoSeg): RicorrenzaNuova {
+  return { giorno: 1, ora: corso.ricorrenze[0]?.ora ?? '17:00', durata: corso.ricorrenze[0]?.durata ?? 60 }
+}
+
+/** C'è da perdere qualcosa nel giorno nuovo? Sì se è diverso da come si è aperto. */
+export function ricorrenzaCambiata(corso: CorsoSeg, ric: RicorrenzaNuova): boolean {
+  const i = ricorrenzaIniziale(corso)
+  return ric.giorno !== i.giorno || ric.ora !== i.ora || ric.durata !== i.durata || !!ric.salaId
+}
+
+/** C'è qualcosa da perdere uscendo da MODIFICA nella scheda di un istruttore? */
+export function personaCambiata(
+  salvata: Pick<PersonaleSeg, 'nome' | 'cognome' | 'email'>,
+  modifica: { nome: string; cognome: string; email: string },
+): boolean {
+  return (
+    modifica.nome.trim() !== salvata.nome.trim() ||
+    modifica.cognome.trim() !== salvata.cognome.trim() ||
+    modifica.email.trim() !== (salvata.email ?? '').trim()
+  )
 }

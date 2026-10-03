@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 /**
  * I pezzi del design system ODS Corsi che servono alle iscrizioni: le stesse
@@ -148,7 +148,8 @@ export function SceltaCorsi({
 }: {
   id: string
   etichetta: string
-  voci: ReadonlyArray<{ id: string; testo: string }>
+  /** `riga`: età e orari, sotto il nome. */
+  voci: ReadonlyArray<{ id: string; testo: string; riga?: string }>
   scelti: readonly string[]
   onScegli: (id: string) => void
   una?: boolean
@@ -171,7 +172,14 @@ export function SceltaCorsi({
             <span className="modulo-spunta" aria-hidden>
               {on ? (una ? '●' : '✓') : ''}
             </span>
-            {v.testo}
+            {v.riga ? (
+              <span className="stack modulo-corso-testo">
+                {v.testo}
+                <span className="modulo-corso-riga">{v.riga}</span>
+              </span>
+            ) : (
+              v.testo
+            )}
           </button>
         )
       })}
@@ -184,7 +192,7 @@ export function CaricaFile({
   id,
   etichetta,
   dettaglio,
-  facoltativo,
+  seManca,
   file,
   errore,
   onFile,
@@ -193,7 +201,8 @@ export function CaricaFile({
   etichetta: string
   /** Cosa caricare, o cosa sta succedendo («Preparo la foto…») */
   dettaglio: string
-  facoltativo?: boolean
+  /** Cosa dire accanto all'etichetta quando si può mandare senza («FACOLTATIVO») */
+  seManca?: string
   file?: { nome: string; byte: number }
   errore?: string | null
   onFile: (f: File | undefined) => void
@@ -203,9 +212,11 @@ export function CaricaFile({
       <span className="stack grow modulo-file-testo">
         <span className="modulo-etichetta">
           {etichetta}
-          {facoltativo && ' · FACOLTATIVO'}
+          {/* Si va a capo solo dopo il «·»: «PUOI PORTARLO DOPO» resta intero. */}
+          {seManca && ` · ${seManca.replaceAll(' ', '\u00a0')}`}
         </span>
-        <span className="passo-dettaglio una-riga">{file ? `${file.nome} · ${Math.max(1, Math.round(file.byte / 1024))} KB` : dettaglio}</span>
+        {/* Il nome del file sta su una riga; la spiegazione no: a 65 anni serve intera. */}
+        <span className={file ? 'passo-dettaglio una-riga' : 'passo-dettaglio'}>{file ? `${file.nome} · ${Math.max(1, Math.round(file.byte / 1024))} KB` : dettaglio}</span>
         {errore && <Dettaglio tono="guaio">{errore}</Dettaglio>}
       </span>
       <label htmlFor={id} className={`${classiTasto()} modulo-scegli`}>
@@ -314,5 +325,67 @@ function RigaPrezzi({ prezzi, conEtichette, saldo }: { prezzi: PrezziCosto; conE
         </span>
       ))}
     </>
+  )
+}
+
+/**
+ * Un tasto che, quando `chiede` c'è, vuole due tocchi: il primo mostra la
+ * domanda, il secondo fa. Senza il secondo, dopo qualche secondo torna
+ * com'era. Come TOGLI nelle prove: AZZERA accanto a TUTTI PRESENTI, con le
+ * mani sudate, un tocco solo è troppo poco.
+ */
+export function DueTocchi({
+  className,
+  chiede,
+  disabled,
+  etichetta,
+  onFai,
+  children,
+}: {
+  className: string
+  chiede?: string
+  disabled?: boolean
+  /** Per un tasto con un'icona: il nome da leggere finché non chiede. */
+  etichetta?: string
+  onFai: () => void
+  children: ReactNode
+}) {
+  const [sicuro, setSicuro] = useState(false)
+  // Il tocco che conferma vale solo se arriva dopo aver letto la domanda: un
+  // doppio tocco veloce (le mani sudate, «l'ha preso?») altrimenti la salta.
+  const chiestoIl = useRef(0)
+  // Lo stesso per un tasto appena comparso al posto di un altro (CHIUDI ✓ al
+  // posto di TUTTI PRESENTI): il secondo tocco del doppio tocco non è per lui.
+  const natoIl = useRef(Date.now())
+  useEffect(() => {
+    if (!sicuro) return
+    const t = window.setTimeout(() => setSicuro(false), 6000)
+    return () => window.clearTimeout(t)
+  }, [sicuro])
+  // Se intanto non c'è più niente da chiedere, il tasto torna com'era: se no
+  // restava vuoto, e il tocco dopo faceva senza domanda.
+  useEffect(() => {
+    if (!chiede) setSicuro(false)
+  }, [chiede])
+  return (
+    <button
+      type="button"
+      className={className}
+      data-sicuro={sicuro}
+      disabled={disabled}
+      aria-label={sicuro && chiede ? undefined : etichetta}
+      onClick={() => {
+        if (chiede && !sicuro) {
+          chiestoIl.current = Date.now()
+          return setSicuro(true)
+        }
+        if (Date.now() - natoIl.current < 500) return
+        if (chiede && Date.now() - chiestoIl.current < 500) return
+        setSicuro(false)
+        onFai()
+      }}
+    >
+      {sicuro && chiede ? <span className="due-tocchi-chiede">{chiede}</span> : children}
+    </button>
   )
 }

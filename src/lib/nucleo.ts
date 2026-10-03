@@ -1,7 +1,7 @@
 import type { Formula } from './richieste'
 import type { Ricevuta } from './ricevute'
 import { centesimi, euro, voceQuota, vociDelCorso } from './ricevute'
-import type { Listino } from './listino'
+import type { CorsoRef, Listino } from './listino'
 
 /**
  * Il nucleo familiare: chi iscrive anche figli, coniuge o fratelli li vede
@@ -107,7 +107,7 @@ export interface Stima {
  * costa meno fra tutti: se è uno di questa persona si toglie dal totale.
  */
 export function stimaIscrizione(
-  nuovo: { chi: string; corsi: string[]; formula: Formula },
+  nuovo: { chi: string; corsi: Array<string | CorsoRef>; formula: Formula },
   altri: Abbonamento[],
   giorno: string,
   listino: Listino,
@@ -120,13 +120,14 @@ export function stimaIscrizione(
     const voci = vociDelCorso(corso, giorno, listino)
     const vuole = nuovo.formula === 'annuale' ? ['~saldo', '~annuale'] : ['~trimestre']
     const v = vuole.map((s) => voci.find((x) => x.chiave.endsWith(s))).find(Boolean)
+    const nome = typeof corso === 'string' ? corso : corso.nome
     if (!v) {
-      senzaPrezzo.push(corso)
+      senzaPrezzo.push(nome)
       continue
     }
     const x = v.voce(giorno)
     righe.push({ testo: x.descrizione, importo: x.prezzo * x.quantita })
-    if (nuovo.formula === 'annuale') suoi.push({ chi: nuovo.chi, corso, importo: x.prezzo * x.quantita })
+    if (nuovo.formula === 'annuale') suoi.push({ chi: nuovo.chi, corso: nome, importo: x.prezzo * x.quantita })
   }
   // Lo sconto è della famiglia: servono almeno due annuali nel nucleo.
   let sconto: Stima['sconto']

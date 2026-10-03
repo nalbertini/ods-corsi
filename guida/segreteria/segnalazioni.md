@@ -44,5 +44,40 @@ l'ultimo messaggio di un altro: **SEGNALAZIONI · 2**, e nell'elenco sono segnat
 sono quelle che aspettano la segreteria, poi le altre aperte, ognuna dalla più mossa
 di recente; **ANCHE LE CHIUSE** mostra in fondo anche le chiuse.
 
+## Allegare un file
+
+In breve: **incolla lo screenshot** nel campo del testo (Ctrl+V o Cmd+V) e
+**copri i nomi** di iscritti e bambini prima di mandare.
+
+Uno screenshot o una foto dice dove succede meglio delle parole. Sia nel
+modulo nuovo sia nella risposta, **ALLEGA UN FILE** sceglie una foto
+(JPEG, PNG, WebP, HEIC) o un PDF, fino a 3 per messaggio e al massimo 10 MB
+l'uno. Per uno screenshot basta farlo e **incollarlo** nel campo del testo
+(Ctrl+V o Cmd+V): si allega da solo. **TOGLI**, accanto al file scelto, lo
+leva prima di mandare. Il testo resta obbligatorio: il file da solo non basta.
+Un file che non va (troppo pesante, di un altro tipo, il quarto) lo dice col
+suo nome e cosa fare.
+
+**Niente certificati medici né documenti d'identità**: restano su carta. Negli
+screenshot, copri i nomi di iscritti e bambini prima di mandarli; li vede
+solo la segreteria, ma meno dati ci sono meglio è.
+
+Nel filo ogni messaggio mostra i suoi file: **APRI** li apre (il link dura
+dieci minuti, se ne chiede uno nuovo ogni volta) e le immagini hanno
+un'anteprima, che sparisce se il filo resta aperto a lungo: richiudi e riapri
+il filo. Nell'elenco i fili con un file sono segnati **ALLEGATO**.
+**TOGLI** accanto a un file lo cancella per sempre, dopo una conferma, ma
+solo se l'hai mandato tu: nel filo resta la riga «Allegato tolto da …», senza
+dire cosa c'era. Se c'è un dato di troppo e chi l'ha mandato non c'è, un altro della
+segreteria non lo può togliere: va chiesto a chi gestisce l'app, che lo toglie
+dal database.
+
+Trenta giorni dopo la chiusura di una segnalazione i file si tolgono da
+soli; i messaggi restano. Il file scelto non resta se cambi voce: quello che
+hai scritto sì, il file va rimesso. Senza rete non parte, accanto a **MANDA**
+c'è scritto. Se il messaggio parte e un file no, un avviso dice quale: il
+messaggio non si rimanda, il file si allega a una nuova risposta. In prova i
+file restano solo finché la pagina è aperta, poi spariscono.
+
 Le vede e ci scrive solo chi ha un accesso da segreteria. Un messaggio
 mandato non si cambia e non si cancella.

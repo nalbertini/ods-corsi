@@ -27,7 +27,16 @@ export interface Listino {
   saldoEntro: string
   corsi: VoceCosto[]
   offerte: Offerta[]
+  /** Gli id dei corsi che non hanno un prezzo e va bene così (prova gratuita, corso interno). */
+  senzaPrezzoVaBene?: string[]
 }
+
+/** Un corso di CORSI, quanto basta per trovare la sua voce. */
+export interface CorsoRef {
+  id: string
+  nome: string
+}
+type CorsoDi = CorsoRef & { attivo: boolean }
 
 export const LISTINO_PREDEFINITO: Listino = { quota: QUOTA_ASSOCIATIVA, saldoEntro: SALDO_ENTRO, corsi: COSTI, offerte: OFFERTE }
 
@@ -42,8 +51,28 @@ export const LIMITI = { corsi: 60, prezzi: 8, offerte: 10, orari: 6, prezzo: 100
 
 const testo = (x: unknown, max: number) => (typeof x === 'string' && x.trim() ? x.trim().slice(0, max) : undefined)
 const euro = (x: unknown) => (typeof x === 'number' && Number.isFinite(x) && x >= 0 && x <= LIMITI.prezzo ? Math.round(x * 100) / 100 : undefined)
+const anno = (x: unknown) => (typeof x === 'number' && Number.isInteger(x) && x >= 1900 && x <= 2100 ? x : undefined)
+/** Un anno scritto in LISTINO: `undefined` se è vuoto, `null` se non si capisce. Gli stessi limiti di quando si legge. */
+export function annoScritto(t: string): number | undefined | null {
+  const s = t.trim()
+  if (!s) return undefined
+  return (/^\d{4}$/.test(s) && anno(Number(s))) || null
+}
 const giorno = (x: unknown) => (typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) && !Number.isNaN(Date.parse(x)) ? x : undefined)
 const senzaVuoti = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T
+
+// Lo stesso valore scritto sempre allo stesso modo: le chiavi in ordine.
+const inOrdine = (x: unknown): unknown =>
+  Array.isArray(x) ? x.map(inOrdine) : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => [k, inOrdine(v)])) : x
+
+/**
+ * C'è qualcosa da perdere nel LISTINO? Si confrontano i listini come si
+ * salverebbero (o quel che non va, se non si salverebbe): una modifica
+ * rimessa com'era non conta, l'ordine dei corsi sì.
+ */
+export function listinoCambiato(salvato: Listino | string, bozza: Listino | string): boolean {
+  return JSON.stringify(inOrdine(salvato)) !== JSON.stringify(inOrdine(bozza))
+}
 
 /**
  * Il listino da quello che arriva dal database o dal dispositivo, preso con
@@ -65,7 +94,7 @@ export function listinoDa(x: unknown): Listino | null {
       return r.saldo === undefined && r.annuale === undefined && r.trimestre === undefined ? [] : [r]
     })
     const orari = (Array.isArray(v.orari) ? v.orari : []).slice(0, LIMITI.orari).flatMap((s) => testo(s, 120) ?? [])
-    return [senzaVuoti({ corso, eta: testo(v.eta, 120) ?? '', orari, prezzi, notaTrimestre: testo(v.notaTrimestre, 60), nota: testo(v.nota, 300) })]
+    return [senzaVuoti({ corso, corsoId: testo(v.corsoId, 80), eta: testo(v.eta, 120) ?? '', natiDal: anno(v.natiDal), natiAl: anno(v.natiAl), orari, prezzi, notaTrimestre: testo(v.notaTrimestre, 60), nota: testo(v.nota, 300) })]
   })
   const offerte = (Array.isArray(o.offerte) ? o.offerte : []).slice(0, LIMITI.offerte).flatMap((f): Offerta[] => {
     if (!f || typeof f !== 'object') return []
@@ -75,27 +104,163 @@ export function listinoDa(x: unknown): Listino | null {
     return titolo && detto ? [{ titolo, testo: detto }] : []
   })
   if (!corsi.length) return null
-  return {
+  const vaBene = (Array.isArray(o.senzaPrezzoVaBene) ? o.senzaPrezzoVaBene : []).flatMap((i) => testo(i, 80) ?? [])
+  return senzaVuoti({
     quota: euro(o.quota) ?? LISTINO_PREDEFINITO.quota,
     saldoEntro: giorno(o.saldoEntro) ?? LISTINO_PREDEFINITO.saldoEntro,
     corsi,
     offerte,
-  }
+    senzaPrezzoVaBene: vaBene.length ? vaBene : undefined,
+  })
 }
 
 /** Per confrontare i nomi dei corsi: le ricevute li trovano così. */
 export const nomeCorso = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, ' ').trim()
 
+/** L'anno di nascita, se la data è vera: a metà (vuota, «0002-…») non dice niente. */
+function annoDi(natoIl: string): number | undefined {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(natoIl)) return undefined
+  const a = Number(natoIl.slice(0, 4))
+  return a >= 1900 ? a : undefined
+}
+
+const fuori = (v: VoceCosto | undefined, a: number | undefined) =>
+  a !== undefined && !!v && ((v.natiDal !== undefined && a < v.natiDal) || (v.natiAl !== undefined && a > v.natiAl))
+
+const comeCorso = (c: string | CorsoRef): CorsoRef => (typeof c === 'string' ? { id: '', nome: c } : c)
+
+/**
+ * La voce di un corso: l'unica ricerca, per tutti. Prima l'id; il nome conta
+ * solo per le voci che non hanno ancora un id (listino vecchio, foglio), o se
+ * di id non se ne ha (un nome scritto e basta).
+ */
+export function voceDelCorso(voci: VoceCosto[], corso: string | CorsoRef): VoceCosto | undefined {
+  const c = comeCorso(corso)
+  return (c.id ? voci.find((v) => v.corsoId === c.id) : undefined) ?? voci.find((v) => (!v.corsoId || !c.id) && nomeCorso(v.corso) === nomeCorso(c.nome))
+}
+
+/** Se un corso non è per l'anno di nascita di chi si iscrive: lo dice il listino, coi suoi anni. */
+export const fuoriEta = (corso: string | CorsoRef, natoIl: string, voci: VoceCosto[]) => fuori(voceDelCorso(voci, corso), annoDi(natoIl))
+
+export interface CorsoPerEta {
+  id: string
+  nome: string
+  /** Età e orari dal listino, da leggere sotto il nome. */
+  riga?: string
+  /** Il listino non ha il suo prezzo: chi si iscrive lo sa, la segreteria lo conferma. */
+  prezzoDaConfermare?: true
+}
+
+/**
+ * I corsi del modulo di iscrizione, divisi per l'anno di nascita: prima
+ * quelli che vanno bene, poi gli altri, che si possono scegliere lo stesso.
+ * Nessuno sparisce. Un corso va negli altri solo se il listino ha i suoi anni
+ * e l'anno è fuori; senza data vera vanno tutti bene, in un elenco solo. Con
+ * la data, i corsi che il listino non dice per che anni (o che non ha) stanno
+ * a parte (`senzaAnni`): in cima sembrerebbero della sua età.
+ * Per il resto l'ordine è quello del listino, poi i corsi che il listino non
+ * ha, in ordine di nome.
+ */
+export function corsiPerEta(
+  corsi: ReadonlyArray<{ id: string; nome: string }>,
+  voci: VoceCosto[],
+  natoIl: string,
+  senzaPrezzoVaBene: readonly string[] = [],
+): { adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[] } {
+  const a = annoDi(natoIl)
+  const posto = (c: CorsoRef) => {
+    const v = voceDelCorso(voci, c)
+    return v ? voci.indexOf(v) : voci.length
+  }
+  const ordinati = [...corsi].sort((x, y) => posto(x) - posto(y) || x.nome.localeCompare(y.nome, 'it'))
+  const giusti: CorsoPerEta[] = []
+  const perTutti: CorsoPerEta[] = []
+  const altri: CorsoPerEta[] = []
+  for (const c of ordinati) {
+    const v = voceDelCorso(voci, c)
+    const riga = v ? [v.eta, ...v.orari].filter((t) => t.trim()).join(' · ') || undefined : undefined
+    const conAnni = a !== undefined && (v?.natiDal !== undefined || v?.natiAl !== undefined)
+    const daConfermare = !v && !senzaPrezzoVaBene.includes(c.id)
+    ;(fuori(v, a) ? altri : conAnni ? giusti : perTutti).push({ id: c.id, nome: c.nome, riga, ...(daConfermare && { prezzoDaConfermare: true as const }) })
+  }
+  // Senza data non si sa niente: un elenco solo.
+  return a === undefined ? { adatti: perTutti, senzaAnni: [], altri } : { adatti: giusti, senzaAnni: perTutti, altri }
+}
+
+/**
+ * Le voci senza id che coincidono con un solo corso (e lo coincidono da sole)
+ * prendono il suo id. Quelle dubbie (nomi doppi, corsi omonimi, corso già
+ * preso) restano senza corso: le aggancia la segreteria da LISTINO.
+ */
+export function agganciaPerNome(l: Listino, corsi: ReadonlyArray<CorsoRef>): Listino {
+  const presi = new Set(l.corsi.flatMap((v) => v.corsoId ?? []))
+  const nomi = (v: VoceCosto) => nomeCorso(v.corso)
+  return {
+    ...l,
+    corsi: l.corsi.map((v) => {
+      if (v.corsoId) return v
+      const candidati = corsi.filter((c) => nomeCorso(c.nome) === nomi(v))
+      const doppie = l.corsi.filter((x) => !x.corsoId && nomi(x) === nomi(v)).length > 1
+      return candidati.length === 1 && !doppie && !presi.has(candidati[0].id) ? { ...v, corsoId: candidati[0].id } : v
+    }),
+  }
+}
+
+/** I corsi che si possono scegliere per una voce: quelli che non ne hanno già una (e quello della voce che si sta cambiando). */
+export const corsiScegliibili = <T extends { id: string }>(corsi: readonly T[], voci: ReadonlyArray<{ corsoId?: string }>, corsoIdAttuale?: string): T[] =>
+  corsi.filter((c) => c.id === corsoIdAttuale || !voci.some((v) => v.corsoId === c.id))
+
+/**
+ * Cosa non quadra fra CORSI e listino, coi nomi da mostrare alla segreteria:
+ * i corsi attivi senza prezzo, le voci senza corso (da agganciare) e le voci
+ * di un corso tolto. Un corso archiviato tiene la sua voce, senza rosso.
+ */
+export const corsiSenzaPrezzo = (l: Listino, corsi: ReadonlyArray<CorsoDi>): CorsoDi[] =>
+  corsi.filter((c) => c.attivo && !voceDelCorso(l.corsi, c) && !l.senzaPrezzoVaBene?.includes(c.id))
+
+export function segnalazioniListino(l: Listino, corsi: ReadonlyArray<CorsoDi>) {
+  const ids = new Set(corsi.map((c) => c.id))
+  return {
+    senzaPrezzo: corsiSenzaPrezzo(l, corsi).map((c) => c.nome),
+    senzaCorso: l.corsi.filter((v) => !v.corsoId && !corsi.some((c) => nomeCorso(c.nome) === nomeCorso(v.corso))).map((v) => v.corso),
+    tolti: l.corsi.filter((v) => v.corsoId && !ids.has(v.corsoId)).map((v) => v.corso),
+  }
+}
+
+/**
+ * Il listino per le ricevute: senza le voci di un corso che non c'è più (non
+ * propongono prezzi) e col nome che il corso ha ora in CORSI, anche se dopo la
+ * rinomina il listino non è stato risalvato.
+ */
+export const listinoUsabile = (l: Listino, corsi: ReadonlyArray<CorsoRef>): Listino => ({
+  ...conNomiDi(l, corsi),
+  corsi: conNomiDi(l, corsi).corsi.filter((v) => !v.corsoId || corsi.some((c) => c.id === v.corsoId)),
+})
+
+/** Le voci col nome che il corso ha ora in CORSI; quelle di un corso che non si vede restano come sono. */
+export const conNomiDi = (l: Listino, corsi: ReadonlyArray<CorsoRef>): Listino => ({
+  ...l,
+  corsi: l.corsi.map((v) => {
+    const c = v.corsoId ? corsi.find((x) => x.id === v.corsoId) : undefined
+    return c ? { ...v, corso: c.nome } : v
+  }),
+})
+
 /** Quello che non va, detto prima di salvare; `null` se va bene. */
-export function cosaNonVaListino(l: Listino): string | null {
+export function cosaNonVaListino(l: Listino, corsi: ReadonlyArray<CorsoRef> = []): string | null {
   if (!(l.quota >= 0 && l.quota <= LIMITI.prezzo)) return 'La quota associativa non va'
   if (!giorno(l.saldoEntro)) return 'La data del saldo non va'
   if (!l.corsi.length) return 'Serve almeno un corso'
   if (l.corsi.length > LIMITI.corsi) return `Al massimo ${LIMITI.corsi} corsi`
   if (l.offerte.length > LIMITI.offerte) return `Al massimo ${LIMITI.offerte} offerte`
   const visti = new Set<string>()
+  const dei = new Set<string>()
   for (const c of l.corsi) {
     const nome = c.corso.trim()
+    if (c.corsoId) {
+      if (dei.has(c.corsoId)) return `Due voci sono dello stesso corso («${corsi.find((x) => x.id === c.corsoId)?.nome ?? nome}»): tieni una voce sola e metti le righe di prezzo là dentro`
+      dei.add(c.corsoId)
+    }
     if (!nome) return 'Ogni corso vuole un nome'
     if (nome.length > 80) return `Il nome di «${nome.slice(0, 20)}…» è troppo lungo`
     if (visti.has(nomeCorso(nome))) return `«${nome}» c’è due volte: le ricevute non saprebbero quale prendere`
@@ -103,6 +268,7 @@ export function cosaNonVaListino(l: Listino): string | null {
     if (!c.prezzi.length) return `«${nome}» non ha prezzi`
     if (c.prezzi.length > LIMITI.prezzi) return `«${nome}» ha troppe righe di prezzi: al massimo ${LIMITI.prezzi}`
     if (c.orari.length > LIMITI.orari) return `«${nome}» ha troppi orari: al massimo ${LIMITI.orari}`
+    if (c.natiDal !== undefined && c.natiAl !== undefined && c.natiDal > c.natiAl) return `Gli anni di nascita di «${nome}» sono al contrario: in NATI DAL va l’anno più vecchio`
     for (const p of c.prezzi) {
       if (p.saldo === undefined && p.annuale === undefined && p.trimestre === undefined) return `Una riga di «${nome}» non ha nessun prezzo`
       for (const n of [p.saldo, p.annuale, p.trimestre]) if (n !== undefined && !(n >= 0 && n <= LIMITI.prezzo)) return `Un prezzo di «${nome}» non va`
@@ -158,7 +324,15 @@ export function caricaListino(): Promise<ListinoLetto> {
     inArrivo = leggi.then(
       (x) => {
         const l = listinoDa(x)
-        return l ? { listino: l, cambiato: true } : { listino: LISTINO_PREDEFINITO, cambiato: false }
+        if (!l) return { listino: LISTINO_PREDEFINITO, cambiato: false }
+        // Dopo una rinomina in CORSI la voce ha ancora il nome di quando è stata salvata: chi legge vede quello nuovo.
+        return l.corsi.some((v) => v.corsoId)
+          ? import('./richieste')
+              .then((r) => r.datiRichieste())
+              .then((d) => d.corsiAperti())
+              .then((corsi) => ({ listino: conNomiDi(l, corsi), cambiato: true }))
+              .catch(() => ({ listino: l, cambiato: true }))
+          : { listino: l, cambiato: true }
       },
       (e) => {
         // PGRST202: la funzione non c'è, il file 19 non è ancora stato lanciato.

@@ -1,12 +1,13 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
-import { giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
+import { domandaIndietro, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { timerDellaLezione } from '../lib/aree'
 import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from './Prove'
+import { DueTocchi } from './ds'
 import type { SegnalataVista } from '../lib/segnalate'
 
 /**
@@ -92,6 +93,9 @@ export function AppelloScreen({
   }
   const [guaio, setGuaio] = useState<string | null>(null)
   const [conProve, setConProve] = useState(false)
+  // Chi è scritto in PROVE e non aggiunto: tornando al calendario si
+  // perderebbe, e la freccia lo chiede prima (`domandaIndietro`).
+  const [scritta, setScritta] = useState<string | null>(null)
   const prove = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (conProve) prove.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
@@ -103,6 +107,11 @@ export function AppelloScreen({
   // volta sola, così non cambia sotto il dito mentre li si segna.
   const primi = useRef<Set<string> | null>(null)
   const toccataIl = useRef(new Map<string, number>())
+  const fine = useRef<HTMLDivElement>(null)
+  const vaiAChiudere = () => {
+    fine.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    fine.current?.querySelector('button')?.focus({ preventScroll: true })
+  }
   const ricarica = useCallback(() => {
     let vivo = true
     setGuaio(null)
@@ -173,8 +182,10 @@ export function AppelloScreen({
   }
 
   // Solo chi non è ancora segnato: le assenze già messe restano. Tranne
-  // quando sono tutti assenti: allora le ✕ sono di una chiusura sbagliata.
-  const tuttiAssenti = d.elenco.length > 0 && d.elenco.every((p) => p.stato === 'assente')
+  // quando nessun iscritto c'è e sono tutti segnati assenti: allora le ✕ sono
+  // di una chiusura sbagliata. Solo gli iscritti: chi prova entra presente, e
+  // contandolo il recupero spariva proprio dopo aver aggiunto una prova.
+  const tuttiAssenti = iscritti.length > 0 && iscritti.every((p) => p.stato === 'assente')
   const segnatiIscritti = iscritti.filter((p) => p.stato !== null).length
   const tuttiGliAltri = () => {
     if (segnati === 0 || tuttiAssenti) {
@@ -236,9 +247,9 @@ export function AppelloScreen({
       <div className="appello-testa">
         <div className="row pad" style={{ gap: 10, paddingTop: 12 }}>
           {onIndietro && (
-            <button className="icon-btn" onClick={onIndietro} aria-label="Torna al calendario">
+            <DueTocchi className="icon-btn" chiede={domandaIndietro(scritta)} etichetta="Torna al calendario" onFai={onIndietro}>
               <Back />
-            </button>
+            </DueTocchi>
           )}
           <span className="stack grow" style={{ gap: 3, minWidth: 0 }}>
             <span className="ob appello-titolo">{d.sessione.corso.toUpperCase()}</span>
@@ -254,7 +265,8 @@ export function AppelloScreen({
             {futura && <span className="num appello-futura">NON ANCORA COMINCIATA</span>}
           </span>
           {/* Il timer della lezione: si apre con i timer del corso in cima. */}
-          <a className="icon-btn" href={timerDellaLezione(d.sessione)} aria-label="Apri il timer della lezione" title="Il timer della lezione">
+          {/* In un'altra scheda, come dal menu: tornando l'appello è dov'era. */}
+          <a className="icon-btn" href={timerDellaLezione(d.sessione)} target="_blank" rel="noopener" aria-label="Apri il timer della lezione (in un'altra scheda)" title="Il timer della lezione">
             <Cronometro size={20} />
           </a>
         </div>
@@ -266,9 +278,16 @@ export function AppelloScreen({
           <span className="grow" />
           <span className="stack" style={{ alignItems: 'flex-end', gap: 2, alignSelf: 'center' }}>
             {/* Con tutti segnati il tasto qui sotto lo dice già: qui il passo dopo. */}
-            <span className="num appello-stato" data-fatto={tuttiSegnati && !tuttiAssenti} data-manca={tuttiAssenti || undefined}>
-              {tuttiAssenti ? 'TUTTI ASSENTI' : tuttiSegnati ? 'CHIUDI IN FONDO ↓' : mancano ? `${mancano} DA SEGNARE` : `${proveMancano} PROVA DA SEGNARE`}
-            </span>
+            {tuttiSegnati && !tuttiAssenti && onChiudi && !conProve ? (
+              // Si legge come un invito, e allora si tocca: porta al tasto in fondo.
+              <button type="button" className="num appello-stato appello-vai" data-fatto="true" onClick={vaiAChiudere}>
+                CHIUDI IN FONDO ↓
+              </button>
+            ) : (
+              <span className="num appello-stato" data-fatto={tuttiSegnati && !tuttiAssenti} data-manca={tuttiAssenti || undefined}>
+                {tuttiAssenti ? 'TUTTI ASSENTI' : tuttiSegnati ? '✓ TUTTI SEGNATI' : mancano ? `${mancano} DA SEGNARE` : `${proveMancano} PROVA DA SEGNARE`}
+              </span>
+            )}
             {/* Sempre al suo posto, anche vuota: la testa non cambia altezza. */}
             <span className="num appello-coda" role="status">
               {inCoda > 0 ? `${inCoda} DA INVIARE` : ''}
@@ -396,6 +415,7 @@ export function AppelloScreen({
             giaQui={new Set(d.elenco.map((p) => p.id))}
             onAggiungi={aggiungiProva}
             onChiudi={() => setConProve(false)}
+            onScritto={setScritta}
           />
         ) : (
           <button type="button" className="btn btn-dashed" style={{ minHeight: 52, fontSize: 16 }} onClick={() => setConProve(true)}>
@@ -407,7 +427,7 @@ export function AppelloScreen({
       {/* Col pannello delle prove aperto il suo tasto per chiudere stava sopra
           questo, e si chiamavano uguali: prima si finisce con le prove. */}
       {onChiudi && !conProve && (
-        <div className="pad stack appello-fine">
+        <div className="pad stack appello-fine" ref={fine}>
           {/* Verde quando è tutto segnato; rosso quando chiudere vuol dire
               segnare assenti, e il tasto lo dice. Chiede un secondo tocco una
               lezione non ancora cominciata, e una dove nessuno è segnato o
@@ -437,60 +457,3 @@ export interface Conto {
   daSegnare: number
 }
 
-/**
- * Un tasto che, quando `chiede` c'è, vuole due tocchi: il primo mostra la
- * domanda, il secondo fa. Senza il secondo, dopo qualche secondo torna
- * com'era. Come TOGLI nelle prove: AZZERA accanto a TUTTI PRESENTI, con le
- * mani sudate, un tocco solo è troppo poco.
- */
-function DueTocchi({
-  className,
-  chiede,
-  disabled,
-  onFai,
-  children,
-}: {
-  className: string
-  chiede?: string
-  disabled?: boolean
-  onFai: () => void
-  children: ReactNode
-}) {
-  const [sicuro, setSicuro] = useState(false)
-  // Il tocco che conferma vale solo se arriva dopo aver letto la domanda: un
-  // doppio tocco veloce (le mani sudate, «l'ha preso?») altrimenti la salta.
-  const chiestoIl = useRef(0)
-  // Lo stesso per un tasto appena comparso al posto di un altro (CHIUDI ✓ al
-  // posto di TUTTI PRESENTI): il secondo tocco del doppio tocco non è per lui.
-  const natoIl = useRef(Date.now())
-  useEffect(() => {
-    if (!sicuro) return
-    const t = window.setTimeout(() => setSicuro(false), 6000)
-    return () => window.clearTimeout(t)
-  }, [sicuro])
-  // Se intanto non c'è più niente da chiedere, il tasto torna com'era: se no
-  // restava vuoto, e il tocco dopo faceva senza domanda.
-  useEffect(() => {
-    if (!chiede) setSicuro(false)
-  }, [chiede])
-  return (
-    <button
-      type="button"
-      className={className}
-      data-sicuro={sicuro}
-      disabled={disabled}
-      onClick={() => {
-        if (chiede && !sicuro) {
-          chiestoIl.current = Date.now()
-          return setSicuro(true)
-        }
-        if (Date.now() - natoIl.current < 500) return
-        if (chiede && Date.now() - chiestoIl.current < 500) return
-        setSicuro(false)
-        onFai()
-      }}
-    >
-      {sicuro && chiede ? chiede : children}
-    </button>
-  )
-}

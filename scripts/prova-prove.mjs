@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { somiglianti, cosaNonVaProva } from './src/lib/prove'; export { sigleDeiProvati } from './src/lib/tablet'",
+      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { somiglianti, cosaNonVaProva, giaNellAppello, provaScritta } from './src/lib/prove'; export { domandaIndietro } from './src/lib/sala'; export { sigleDeiProvati } from './src/lib/tablet'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -174,14 +174,17 @@ console.log('\n3. dal tablet, col PIN')
   ok('riaggiunto, chi è assente resta assente', [
     await t.aggiungiProva('1234', LOTTA_VEN, { id: marco.personaId, nome: marco.nome, cognome: marco.cognome }),
     (await t.appello('1234', LOTTA_VEN)).filter((r) => r.prova).map((r) => `${r.cognome}:${r.stato}`),
-  ], [true, ['Nuovo:assente']])
+  ], [marco.personaId, ['Nuovo:assente']])
   const prima = persone()
-  ok('una prova nuova dal tablet', await t.aggiungiProva('1234', LOTTA_VEN, { nome: 'Sara', cognome: 'Dalla Sala' }), true)
-  ok('PIN sbagliato: non aggiunge', await t.aggiungiProva('0000', LOTTA_VEN, { nome: 'Ugo', cognome: 'Pin' }), false)
+  // Il tablet riceve chi ha aggiunto, anche se nuovo: per non riproporlo fra i già venuti.
+  const idSara = await t.aggiungiProva('1234', LOTTA_VEN, { nome: 'Sara', cognome: 'Dalla Sala' })
+  ok('una prova nuova dal tablet', typeof idSara, 'string')
+  ok('PIN sbagliato: non aggiunge', await t.aggiungiProva('0000', LOTTA_VEN, { nome: 'Ugo', cognome: 'Pin' }), null)
   ok('una persona in più', persone() - prima, 1)
   const ora = await t.appello('1234', LOTTA_VEN)
   ok('ora sono due, presente la nuova', ora.filter((r) => r.prova).map((r) => `${r.cognome}:${r.stato}`), ['Dalla Sala:presente', 'Nuovo:assente'])
   const sara = ora.find((r) => r.cognome === 'Dalla Sala')
+  ok('chi ha aggiunto è proprio lei', sara.personaId, idSara)
   ok("aggiunta da Maurizio, dall'appello", [m.archivio.dati.prove.find((x) => x.personaId === sara.personaId).da, sara.origine], ['i-maurizio', 'appello'])
   const tatami = m.creaTabletProva()
   await tatami.scegliSala('Tatami')
@@ -254,6 +257,34 @@ console.log("\n7. D'Amico, De Luca, Rossi-Bianchi: apostrofi, spazi e trattini")
   ok("«'», «-» e due spazi: nessuno", ["'", '-', '  '].map((s) => chi(s)), [[], [], []])
   const dieci = ["D'Amico", 'Damiani', "D'Amato", 'Dameri', 'D\u2019Ambrosio', 'Damasio', "D'Amelio", 'Damonte', "D'Amore", 'Damigella'].map((c, i) => p(`x${i}`, 'Ugo', c))
   ok('con dieci che cominciano per «dam», se ne mostrano sei', m.somiglianti(dieci, 'dam').length, 6)
+}
+
+console.log("\n8. chi è già nell'appello, anche se la rilettura non arriva")
+{
+  const elenco = (s) => [...s].sort()
+  const prima = new Set(['a'])
+  ok("l'appello riletto sostituisce l'elenco", elenco(m.giaNellAppello(prima, { letti: ['b'] })), ['b'])
+  ok("chi si aggiunge entra nell'elenco", elenco(m.giaNellAppello(prima, { aggiunto: 'c' })), ['a', 'c'])
+  ok("chi si toglie esce dall'elenco", elenco(m.giaNellAppello(new Set(['a', 'c']), { tolto: 'c' })), ['a'])
+  ok("l'elenco di prima non cambia", elenco(prima), ['a'])
+  ok("un appello riletto vuoto svuota l'elenco", elenco(m.giaNellAppello(prima, { letti: [] })), [])
+}
+
+console.log("\n9. tornando al calendario, un nome scritto in «Chi viene a provare» e non aggiunto non si perde")
+{
+  const P = (nome, cognome) => m.provaScritta({ nome, cognome })
+  ok('niente scritto: nessun avviso', P('', ''), null)
+  ok('solo spazi: nessun avviso', P('   ', ' '), null)
+  ok('nome e cognome: nome e iniziale maiuscola col punto, il nome com\'è scritto', P('Marco', 'rossi'), 'Marco R.')
+  ok('spazi ai lati tolti', P('  Marco ', '  rossi '), 'Marco R.')
+  ok('solo il nome', P('Marco', ''), 'Marco')
+  ok('solo il cognome', P('  ', 'Rossi'), 'Rossi')
+  ok('un nome di 14 caratteri resta intero', P('Massimilianone', ''), 'Massimilianone')
+  ok('un nome più lungo si taglia a 13 più «…»', P('Mariagiovannina', ''), 'Mariagiovanni…')
+
+  ok('indietro senza nome scritto: si esce e basta', m.domandaIndietro(), undefined)
+  ok('indietro con provaScritta null: si esce e basta', m.domandaIndietro(null), undefined)
+  ok('indietro con un nome scritto: avvisa', m.domandaIndietro('Marco R.'), 'Marco R. NON AGGIUNTO · ESCI?')
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

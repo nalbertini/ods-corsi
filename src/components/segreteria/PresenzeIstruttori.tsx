@@ -307,9 +307,9 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
           {colonna('stato', 'STATO', { destra: true })}
         </div>
         <div className="sg-tabella-corpo">
-          {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le presenze…</p>}
+          {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px', fontSize: 15 }}>Sto leggendo le presenze…</p>}
           {elenco.dato !== null && lista.length === 0 && (
-            <p className="sg-sotto" style={{ padding: '12px 14px' }}>
+            <p className="sg-sotto" style={{ padding: '12px 14px', fontSize: 15 }}>
               {nelMese.length ? 'Nessuna presenza con questi filtri.' : `Nessun istruttore è entrato col PIN durante una lezione ${m ? (m.chiave.startsWith('anno-') ? `nell’${m.nome.toLowerCase()}` : `in ${m.nome.toLowerCase()}`) : 'negli ultimi dodici mesi'}.`}
             </p>
           )}
@@ -321,21 +321,21 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
               data-spento={x.stato === 'rifiutata'}
               style={{ ['--tinta' as string]: x.colore ?? 'var(--line)' }}
             >
-              <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>{x.nome}</span>
+              <span role="cell" style={{ fontSize: 16, fontWeight: 600 }}>{x.nome}</span>
               <span role="cell" className="stack" style={{ gap: 2 }}>
-                <span style={{ fontSize: 15, fontWeight: 600 }}>{x.corso}</span>
-                <span style={{ fontSize: 13, color: 'var(--sec)' }}>
+                <span style={{ fontSize: 16, fontWeight: 600 }}>{x.corso}</span>
+                <span style={{ fontSize: 15, color: 'var(--sec)' }}>
                   {giornoPerEsteso(chiaveGiorno(new Date(x.inizio)))}, {oraDi(x.inizio)}–{oraDi(x.fine)}
                 </span>
               </span>
-              <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.previsti || 'nessuno'}</span>
+              <span role="cell" style={{ fontSize: 15, color: 'var(--sec)' }}>{x.previsti || 'nessuno'}</span>
               <span role="cell" className="stack" style={{ gap: 2 }}>
                 {x.come === 'segreteria' ? (
-                  <span style={{ fontSize: 13, color: 'var(--sec)' }}>scelto in segreteria</span>
+                  <span style={{ fontSize: 15, color: 'var(--sec)' }}>scelto in segreteria</span>
                 ) : (
                   <>
-                    <span className="num" style={{ fontSize: 14 }}>{oraDi(x.entratoIl)}</span>
-                    <span style={{ fontSize: 12, color: 'var(--dim)' }}>{x.come === 'appello' ? 'ha fatto l’appello' : x.sala ? `tablet ${x.sala}` : 'col PIN'}</span>
+                    <span className="num" style={{ fontSize: 15 }}>{oraDi(x.entratoIl)}</span>
+                    <span style={{ fontSize: 15, color: 'var(--dim)' }}>{x.come === 'appello' ? 'ha fatto l’appello' : x.sala ? `tablet ${x.sala}` : 'col PIN'}</span>
                   </>
                 )}
               </span>
@@ -354,11 +354,11 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
                     <span className="stack" style={{ gap: 2 }}>
                       <span
                         className="num"
-                        style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', color: x.stato === 'confermata' ? 'var(--verde)' : 'var(--rosso)' }}
+                        style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.12em', color: x.stato === 'confermata' ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}
                       >
                         {x.stato === 'confermata' ? 'CONFERMATA' : 'RIFIUTATA'}
                       </span>
-                      <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+                      <span style={{ fontSize: 15, color: 'var(--dim)' }}>
                         {x.gestitaIl ? `${x.gestitaDa ? `da ${x.gestitaDa}, ` : ''}${quando(x.gestitaIl)}` : x.prevista ? (x.come === 'appello' ? 'da sé: appello, era previsto' : 'da sé: era previsto') : ''}
                       </span>
                     </span>
@@ -388,7 +388,7 @@ function LezioniDaConfermare({ lezioni, lavora, onScegli }: { lezioni: LezioneSe
   const [scelti, setScelti] = useState<Record<string, string[]>>({})
   return (
     <section className="stack" style={{ gap: 8 }} aria-label="Lezioni tenute senza l'istruttore segnato">
-      <h2 className="sg-etichetta" style={{ margin: 0 }}>
+      <h2 className="sg-etichetta sg-testa-istr" style={{ margin: 0 }}>
         LEZIONI TENUTE SENZA L’ISTRUTTORE SEGNATO · {lezioni.length}
       </h2>
       <div className="sg-tabella">
@@ -400,8 +400,8 @@ function LezioniDaConfermare({ lezioni, lavora, onScegli }: { lezioni: LezioneSe
             return (
               <div key={l.sessioneId} className="sg-lezione-istr sg-presenza-istr" style={{ ['--tinta' as string]: l.colore ?? 'var(--line)' }}>
                 <span className="stack" style={{ gap: 2 }}>
-                  <span style={{ fontSize: 15, fontWeight: 600 }}>{l.corso}</span>
-                  <span style={{ fontSize: 13, color: 'var(--sec)' }}>
+                  <span style={{ fontSize: 16, fontWeight: 600 }}>{l.corso}</span>
+                  <span style={{ fontSize: 15, color: 'var(--sec)' }}>
                     {giornoPerEsteso(chiaveGiorno(new Date(l.inizio)))}, {oraDi(l.inizio)}–{oraDi(l.fine)}
                     {l.sala ? ` · ${l.sala}` : ''} · {l.presenti === 1 ? 'un presente' : `${l.presenti} presenti`}
                   </span>
@@ -409,15 +409,15 @@ function LezioniDaConfermare({ lezioni, lavora, onScegli }: { lezioni: LezioneSe
                 <span className="stack" style={{ gap: 4 }}>
                   {daDecidere.length > 1 &&
                     daDecidere.map((x) => (
-                      <label key={x.id} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
+                      <label key={x.id} style={{ display: 'flex', gap: 8, alignItems: 'center', minHeight: 44, fontSize: 16, fontWeight: 600, cursor: 'pointer' }}>
                         <input type="checkbox" checked={miei.includes(x.id)} onChange={() => cambia(x.id)} disabled={lavora} />
                         {x.nome}
                       </label>
                     ))}
                   {daDecidere.length === 1 && (
-                    <span style={{ fontSize: 15, fontWeight: 600 }}>
+                    <span style={{ fontSize: 16, fontWeight: 600 }}>
                       {daDecidere[0].nome}
-                      <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--sec)' }}> · era previsto</span>
+                      <span style={{ fontSize: 15, fontWeight: 400, color: 'var(--sec)' }}> · era previsto</span>
                     </span>
                   )}
                 </span>

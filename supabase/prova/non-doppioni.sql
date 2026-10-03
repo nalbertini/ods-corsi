@@ -4,7 +4,7 @@
 -- chi l'ha segnata lo scrive il database, e se una delle due schede se ne va
 -- la coppia se ne va con lei.
 -- Si lancia dopo finto-supabase.sql, i file dello schema e
--- 30-non-doppioni.sql.
+-- 33-non-doppioni.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 

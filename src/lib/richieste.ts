@@ -106,12 +106,20 @@ export interface DatiRichieste {
 }
 
 /** I file da caricare, nell'ordine in cui si chiedono. */
-export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string; obbligatorio: boolean }> = [
+export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string; obbligatorio: boolean; seManca?: string }> = [
   { tipo: 'modulo', etichetta: 'MODULO FIRMATO', dettaglio: 'Una foto, o il PDF firmato dal telefono.', obbligatorio: true },
   { tipo: 'documento', etichetta: "CARTA D'IDENTITÀ", dettaglio: 'Il fronte. Per un minore, quella del genitore.', obbligatorio: true },
   { tipo: 'documento-retro', etichetta: 'RETRO DEL DOCUMENTO', dettaglio: 'Se il fronte non basta.', obbligatorio: false },
-  { tipo: 'certificato', etichetta: 'CERTIFICATO MEDICO', dettaglio: 'Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria.', obbligatorio: false },
-  { tipo: 'ricevuta', etichetta: 'RICEVUTA DEL PAGAMENTO', dettaglio: 'La quota associativa e il trimestre, oppure l’annuale.', obbligatorio: true },
+  // Si chiede dai 6 anni ma non ferma la richiesta: «facoltativo» direbbe che non serve.
+  { tipo: 'certificato', etichetta: 'CERTIFICATO MEDICO', dettaglio: 'Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria.', obbligatorio: false, seManca: 'PUOI PORTARLO DOPO' },
+  // Non ferma la richiesta: chi vuole paga in contanti al banco.
+  {
+    tipo: 'ricevuta',
+    etichetta: 'RICEVUTA DEL PAGAMENTO',
+    dettaglio: 'Se hai già pagato la quota associativa e il trimestre, oppure l’annuale.',
+    obbligatorio: false,
+    seManca: 'PUOI PAGARE IN SEGRETERIA',
+  },
 ]
 
 /** I file che non restano nell'app: la segreteria li stampa, li tiene su carta e li cancella. */
@@ -153,8 +161,51 @@ export function minorenne(natoIl: string, oggi = new Date()): boolean {
   return diciotto > oggi
 }
 
+/**
+ * Se firma il genitore (true) o chi si iscrive. Mentre si corregge la data
+ * dalla tastiera il campo passa per vuoto o per anni come 0002: lì chi firma
+ * resta quello di `prima`, se no firma e caselle sparirebbero per niente.
+ */
+export function chiFirma(natoIl: string, prima?: boolean, oggi = new Date()): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(natoIl) || Number(natoIl.slice(0, 4)) < 1900) return prima ?? false
+  return minorenne(natoIl, oggi)
+}
+
 /** I corsi per cui dai 12 anni serve il certificato agonistico. */
 const AGONISTICI = /\b(judo|aikido|lotta)\b/i
+
+/**
+ * INDIETRO dal modulo lo chiude, e quello che c'è scritto si perde: nessuna
+ * bozza resta sul telefono, per i dati dei minori. Se c'è qualcosa di nuovo
+ * rispetto a quando si è aperto (per il nucleo, i dati già scritti), lo chiede
+ * prima, come la freccia dell'appello (`domandaIndietro`).
+ */
+export function domandaUscita(m: {
+  risposte: DatiRichiesta
+  inizio: DatiRichiesta
+  file: number
+  scelte: number
+  tratti: number
+  privacy: boolean
+  luogoGenitore: string
+}): string | undefined {
+  // Object.keys dà string[]: le chiavi sono quelle di due DatiRichiesta.
+  const chiavi = new Set([...Object.keys(m.risposte), ...Object.keys(m.inizio)]) as Set<keyof DatiRichiesta>
+  const cambiate = [...chiavi].some((k) => JSON.stringify(m.risposte[k]) !== JSON.stringify(m.inizio[k]))
+  const nuovo = cambiate || m.file > 0 || m.scelte > 0 || m.tratti > 0 || m.privacy || !!m.luogoGenitore.trim()
+  return nuovo ? 'LE RISPOSTE SI PERDONO · ESCI?' : undefined
+}
+
+/**
+ * Se cambia chi firma (la data di nascita dice minore, o non più), cambia il
+ * foglio: firma, caselle e foto del foglio di prima non valgono, e si dice
+ * perché sono sparite. Se non c'era niente, non c'è niente da dire; se
+ * l'avviso c'era già (la data cambiata due volte), resta e dice chi firma ora.
+ */
+export function firmaDaRifare(minore: boolean, prima: { tratti: number; scelte: number; foto: boolean; avvisato: boolean }): string | undefined {
+  if (!prima.tratti && !prima.scelte && !prima.foto && !prima.avvisato) return undefined
+  return `Firma e autorizzazioni vanno rifatte: ora firma ${minore ? 'il genitore' : 'chi si iscrive'}.`
+}
 
 /**
  * Quale certificato medico ricordare a chi si iscrive: nessuno sotto i 6
@@ -187,11 +238,19 @@ const CF_CORTO = 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e 
 const CF_NOME = 'Il codice fiscale non torna con nome e cognome: scrivili tutti, come sul documento'
 const CF_NOME_GENITORE = 'Il codice fiscale del genitore non torna con il suo nome e cognome: scrivili tutti, come sul documento'
 
+/** Sotto il campo, cosa fare con un codice che non ha 16 lettere e numeri: quanti ne mancano o quanti toglierne. */
+function quantiCaratteri(cf: string): string {
+  if (/[^A-Z0-9]/.test(cf)) return 'Solo lettere e numeri'
+  const n = Math.abs(16 - cf.length)
+  const caratteri = n === 1 ? '1 carattere' : `${n} caratteri`
+  return cf.length < 16 ? `${n === 1 ? 'Manca' : 'Mancano'} ${caratteri}` : `Togli ${caratteri}`
+}
+
 /** Il codice fiscale di chi si iscrive o del genitore: scritto giusto, e di chi deve essere. */
 function guaiCf(campo: 'codiceFiscale' | 'genitoreCodiceFiscale', grezzo: string, di: string): Guaio | null {
   const cf = pulisciCf(grezzo)
   if (!cf) return null
-  if (!/^[A-Z0-9]{16}$/.test(cf)) return { campo, messaggio: CF_CORTO, testo: 'Sono 16 caratteri, lettere e numeri' }
+  if (!/^[A-Z0-9]{16}$/.test(cf)) return { campo, messaggio: CF_CORTO, testo: quantiCaratteri(cf) }
   if (!cfValido(cf))
     return { campo, messaggio: `Il codice fiscale${di && ' ' + di} non torna: controlla di averlo copiato giusto`, testo: 'Non torna: controlla lettere e numeri, uno per uno' }
   return null

@@ -3,6 +3,8 @@ import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
+import { fuoriEta } from '../../lib/listino'
+import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { STRETTO, useSchermo } from '../../lib/largo'
 import { chiedi, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
@@ -11,14 +13,14 @@ import type { Destinazione, Voce } from './Segreteria'
 const STATI: Record<StatoRichiesta, string> = { nuova: 'NUOVA', accolta: 'ACCOLTA', rifiutata: 'RIFIUTATA' }
 /** Per ordinare per stato: prima quelle da guardare. */
 const ORDINE_STATI: Record<StatoRichiesta, number> = { nuova: 0, accolta: 1, rifiutata: 2 }
-const CON_ARTICOLO: Partial<Record<string, string>> = { modulo: 'il modulo firmato', ricevuta: 'la ricevuta del pagamento' }
+const CON_ARTICOLO: Partial<Record<string, string>> = { modulo: 'il modulo firmato' }
 const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 
 /**
  * Le richieste arrivate dal modulo di iscrizione.
  *
  * Una richiesta non è ancora un iscritto: la segreteria guarda il modulo
- * firmato e la ricevuta, e poi la accoglie — la persona entra in elenco,
+ * firmato e la ricevuta, se c'è, e poi la accoglie — la persona entra in elenco,
  * iscritta ai corsi che ha scelto — o la rifiuta. Accolta o rifiutata resta
  * qui con quello che diceva, finché non la si elimina.
  *
@@ -153,7 +155,7 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(x.creataIl)}</span>
-                  <span role="cell" className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textAlign: 'right', color: x.stato === 'nuova' ? 'var(--giallo-testo)' : x.stato === 'accolta' ? 'var(--verde)' : 'var(--dim)' }}>
+                  <span role="cell" className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textAlign: 'right', color: x.stato === 'nuova' ? 'var(--giallo-testo)' : x.stato === 'accolta' ? 'var(--verde-testo)' : 'var(--dim)' }}>
                     {STATI[x.stato]}
                   </span>
                 </div>
@@ -204,6 +206,7 @@ function Scheda({
   onApri: (personaId: string) => void
 }) {
   const file = useCarica(() => r.file(x.id), [r, x.id])
+  const voci = useListino()?.listino.corsi
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
   // Documento e certificato, stampati, si cancellano: non mancano, sono su carta.
@@ -215,7 +218,7 @@ function Scheda({
   // indietro: quello che manca si dice prima, non dopo.
   const problemi = [
     !x.regolamento && 'Il regolamento non è accettato.',
-    file.guaio && 'I file non si sono aperti: non si sa se il modulo firmato e la ricevuta ci sono.',
+    file.guaio && 'I file non si sono aperti: non si sa se il modulo firmato c’è.',
     ...(file.dato ? mancanti.map((f) => `Manca ${CON_ARTICOLO[f.tipo] ?? f.etichetta.toLowerCase()}.`) : []),
   ].filter((t): t is string => !!t)
   // Finché i file non si sono caricati non si sa cosa manca.
@@ -285,7 +288,19 @@ function Scheda({
             <a href={`tel:${x.telefono2.replace(/[^\d+]/g, '')}`} style={{ color: 'var(--sec)' }}>{x.telefono2}</a>
           </Dato>
         )}
-        <Dato etichetta="CORSI">{x.corsi.map((c) => nomi.get(c) ?? 'un corso che non c’è più').join(', ')}</Dato>
+        <Dato etichetta="CORSI">
+          {x.corsi.map((c, i) => {
+            const nome = nomi.get(c)
+            return (
+              <span key={c}>
+                {i > 0 && ', '}
+                {nome ?? 'un corso che non c’è più'}
+                {/* Chi si iscrive l'ha scelto lo stesso, avvisato che lo si richiama. */}
+                {nome && voci && fuoriEta({ id: c, nome }, x.natoIl, voci) && <span style={{ color: 'var(--giallo-testo)' }}> (fuori età: richiama)</span>}
+              </span>
+            )
+          })}
+        </Dato>
         <Dato etichetta="PAGA">{x.formula === 'annuale' ? 'L’annuale' : 'Il trimestre'}</Dato>
         {x.note && <Dato etichetta="NOTE">{x.note}</Dato>}
         <Dato etichetta="REGOLAMENTO">{x.regolamento ? 'Accettato' : 'Non accettato (richiesta di prima della casella)'}</Dato>
@@ -302,6 +317,8 @@ function Scheda({
           {FILE.filter((f) => arrivati.has(f.tipo) && !DA_STAMPARE.includes(f.tipo)).map((f) => (
             <Anteprima key={f.tipo} f={arrivati.get(f.tipo)!} />
           ))}
+          {/* Non è un guaio: la ricevuta non è obbligatoria, si paga anche al banco. */}
+          {file.dato.length > 0 && !arrivati.has('ricevuta') && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>}
           {documenti.length > 0 && (
             <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
               <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>
@@ -322,7 +339,7 @@ function Scheda({
             </div>
           )}
           {x.stato !== 'nuova' && mancanti.length > 0 && file.dato.length > 0 && (
-            <span className="sg-sotto" style={{ color: 'var(--rosso)' }}>Manca: {mancanti.map((f) => f.etichetta.toLowerCase()).join(', ')}.</span>
+            <span className="sg-sotto" style={{ color: 'var(--rosso-testo)' }}>Manca: {mancanti.map((f) => f.etichetta.toLowerCase()).join(', ')}.</span>
           )}
           {file.dato.length > 0 && <span className="sg-sotto" style={{ fontSize: 12 }}>I link valgono dieci minuti: se non si aprono più, riapri la richiesta.</span>}
         </div>
@@ -410,16 +427,19 @@ function Scheda({
             APRI LA SCHEDA
           </button>
         )}
-        <div className="grow" />
+      </div>
+
+      {/* Lontano da ACCOGLI e RIFIUTA: cancella i file per sempre e si usa di rado. */}
+      <div className="row" style={{ justifyContent: 'flex-end', marginTop: 24 }}>
         <button
           type="button"
-          className="sg-link"
+          className="sg-btn sg-btn-linea"
           onClick={async () => {
             if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`, 'ELIMINA PER SEMPRE', { pericolo: true })))
               void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
           }}
         >
-          Elimina richiesta e file
+          ELIMINA RICHIESTA E FILE
         </button>
       </div>
     </>

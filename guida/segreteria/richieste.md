@@ -23,9 +23,13 @@ stampare.
 ## Guardare una richiesta
 
 Un clic apre le risposte: nato il / a, codice fiscale, residenza, genitore (per
-un minore), email, telefono e l'eventuale telefono 2, corsi, come paga (trimestre o annuale), note.
+un minore), email, telefono e l'eventuale telefono 2, corsi (con «fuori età:
+richiama» accanto a un corso che non è per il suo anno di nascita, secondo
+**NATI DAL / AL** del [listino](listino.md)), come paga (trimestre o annuale), note.
 
-Sotto, **I FILE**: modulo firmato e ricevuta. Carta d'identità e certificato
+Sotto, **I FILE**: modulo firmato e ricevuta. La ricevuta non è obbligatoria:
+se non c'è, una riga dice «Nessuna ricevuta: il pagamento si fa in
+segreteria», e la richiesta si accoglie lo stesso. Carta d'identità e certificato
 medico stanno in un riquadro giallo, perché nell'app non restano: accolta la
 richiesta, li si apre, si stampano, si mettono nella cartellina e
 **STAMPATO, CANCELLA** li cancella per sempre. La scheda dell'iscritto segna
@@ -44,7 +48,7 @@ aprono più, riaprire la richiesta.
   alla sua scheda in [Iscritti](iscritti.md).
 - **RIFIUTA** — chi l'ha mandata **non viene avvisato**: va chiamato o scritto
   a mano.
-- **Elimina richiesta e file** — cancella per sempre la richiesta con i suoi file. La scheda in
+- **ELIMINA RICHIESTA E FILE**, in fondo — cancella per sempre la richiesta con i suoi file. La scheda in
   elenco, se c'è, resta.
 
 Una richiesta accolta o rifiutata resta qui, con quello che diceva, finché non
