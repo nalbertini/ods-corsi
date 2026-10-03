@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, testoTroppoLungo } from './src/lib/segnalazioni'; export { comeCertificato, comePaga, inRegola, pagamentoDi } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, testoTroppoLungo } from './src/lib/segnalazioni'; export { comeCertificato, comePaga, inRegola, pagamentoDi } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -655,6 +655,173 @@ console.log('\neliminare un istruttore')
   await s.iscrivi(altro, 'lotta-2')
   ok('chi è anche allievo no', await errore(() => s.eliminaIstruttore(altro)), "Pina Giusta è anche allievo: non si elimina, gli si toglie l'accesso")
   ok('un iscritto nemmeno', (await errore(async () => s.eliminaIstruttore((await s.persone())[0].id))).startsWith('Si eliminano solo gli istruttori'), true)
+}
+
+console.log('\nunire due schede')
+{
+  const oggi = '2026-09-26'
+  const di = async (id) => (await s.persone()).find((p) => p.id === id)
+  const nuova = (nome, cognome, altro = {}) => s.salvaPersona({ nome, cognome, ...altro })
+  const resta = await nuova('Mario', "D'Amico")
+  const via = await nuova('Mario', 'Damico', { email: 'mario.damico@esempio.it', telefono: '333 1234567' })
+
+  // Le tre lezioni passate di Lotta 2: nella prima tutti e due, nella seconda
+  // tutti e due, nella terza solo il doppione.
+  const [l1, l2, l3] = await lotta2([8, 14], [8, 25])
+  m.memoria.segnate = {
+    ...m.memoria.segnate,
+    [l1.id]: { ...m.memoria.segnate[l1.id], [resta]: 'assente', [via]: 'presente' },
+    [l2.id]: { ...m.memoria.segnate[l2.id], [resta]: 'giustificato', [via]: 'assente' },
+    [l3.id]: { ...m.memoria.segnate[l3.id], [via]: 'presente' },
+  }
+  m.archivio.dati.prove = [...(m.archivio.dati.prove ?? []), { sessioneId: l3.id, personaId: via, il: l3.inizio }]
+  m.archivio.dati.iscrizioni = [
+    ...m.archivio.dati.iscrizioni,
+    { corsoId: 'lotta-2', personaId: resta, dal: '2026-01-10', al: '2026-06-30' },
+    { corsoId: 'lotta-2', personaId: via, dal: '2025-09-01' },
+    { corsoId: 'judo-2', personaId: via, dal: '2026-09-14', al: '2027-06-30' },
+    { corsoId: 'pesi-1', personaId: resta, dal: '2026-02-01', al: '2026-03-31' },
+    { corsoId: 'pesi-1', personaId: via, dal: '2026-03-01', al: '2026-12-31' },
+  ]
+  await s.salvaCertificato(resta, '2026-12-31')
+  await s.salvaCertificato(via, '2027-05-31')
+  await s.salvaAnagrafica(resta, { comune: 'Collegno' })
+  await s.salvaAnagrafica(via, { comune: 'Rivoli', codiceFiscale: 'DMCMRA10A01L219X', cap: '10098', genitoreNome: 'Anna' })
+  const quota = { descrizione: 'QUOTA ASSOCIATIVA', quantita: 1, prezzo: 5000, dal: '2026-09-01', al: '2027-07-31', pagamenti: [{ data: '2026-09-10', importo: 5000, metodo: 'Contanti' }] }
+  const ricevuta = await s.emettiRicevuta({ data: '2026-09-10', personaId: via, ente: await s.enteRicevute(), intestatario: await s.intestatarioDi(via), anticipo: 0, voci: [quota] })
+  ok('prima, chi resta deve ancora pagare la quota', m.pagamentoDi(await di(resta), oggi).come, 'da_pagare')
+
+  // Chi non si unisce.
+  ok('una scheda con se stessa no', await errore(() => s.unisciPersone(resta, resta)), 'Scegli due schede diverse')
+  ok('un istruttore no', await errore(() => s.unisciPersone(resta, 'i-fabio')), 'Si uniscono solo le schede degli iscritti, non quelle del personale')
+  const sara1 = await nuova('Sara', 'Bianchi')
+  const sara2 = await nuova('Sara', 'Bianchi')
+  await s.salvaAnagrafica(sara1, { codiceFiscale: 'BNCSRA10A41L219X' })
+  await s.salvaAnagrafica(sara2, { codiceFiscale: 'BNCSRA12B41L219Y' })
+  ok('due codici fiscali diversi no', await errore(() => s.unisciPersone(sara1, sara2)), 'Hanno due codici fiscali diversi: non sono la stessa persona. Se uno è sbagliato, correggilo nella scheda e riprova')
+  ok('e restano tutte e due', [!!(await di(sara1)), !!(await di(sara2))], [true, true])
+  const colFile = await nuova('Mario', 'Damico')
+  m.archivio.dati.persone = m.archivio.dati.persone.map((p) => (p.id === colFile ? { ...p, certificato: { scade: '2027-01-31', file: `${colFile}/certificato-1.pdf` } } : p))
+  const file = await errore(() => s.unisciPersone(resta, colFile))
+  ok('chi ha ancora il file del certificato no, e dice di stamparlo prima', /certificato/.test(file) && /stampa/i.test(file) ? 'dice di stamparlo' : file, 'dice di stamparlo')
+  ok('e il file resta', (await di(colFile)).certificato.conFile, true)
+  const titolare = await nuova('Gina', 'Damico')
+  const figlio = await nuova('Mario', 'Damico')
+  await s.mettiNelNucleo(figlio, titolare)
+  const nelNucleo = await errore(() => s.unisciPersone(resta, figlio))
+  ok('chi è in un nucleo no: prima toglila dal nucleo', nelNucleo, "Mario Damico è nel nucleo familiare di un'altra persona: prima toglila dal nucleo")
+  const ilTitolare = await errore(() => s.unisciPersone(resta, titolare))
+  ok('nemmeno chi ne è titolare', ilTitolare, "Gina Damico è titolare di un nucleo familiare: prima rendi titolare qualcun altro o togli gli altri dal nucleo")
+
+  ok('l\'anteprima dice cosa passa', await s.anteprimaUnione(resta, via), { presenze: 3, prove: 1, iscrizioni: 3, ricevute: 1 })
+  ok('e non cambia niente', !!(await di(via)), true)
+
+  await s.unisciPersone(resta, via)
+  const r = await di(resta)
+  ok('il doppione non c\'è più', !!(await di(via)), false)
+  ok('il nome resta quello di chi resta, email e telefono vuoti si riempiono', [r.nome, r.cognome, r.email, r.telefono], ['Mario', "D'Amico", 'mario.damico@esempio.it', '333 1234567'])
+  ok('presente vince su assente, giustificato su assente, la terza passa',
+    [m.memoria.segnate[l1.id][resta], m.memoria.segnate[l2.id][resta], m.memoria.segnate[l3.id][resta]], ['presente', 'giustificato', 'presente'])
+  ok('del doppione nessuna presenza', Object.values(m.memoria.segnate).some((x) => via in x), false)
+  ok('la prova passa', (m.archivio.dati.prove ?? []).filter((x) => x.sessioneId === l3.id).map((x) => x.personaId), [resta])
+  ok('le iscrizioni: una per corso, dalla più vecchia alla fine più lontana',
+    r.iscrizioni.map((i) => [i.corsoId, i.dal, i.al ?? null]).sort((x, y) => x[0].localeCompare(y[0])),
+    [['judo-2', '2026-09-14', '2027-06-30'], ['lotta-2', '2025-09-01', null], ['pesi-1', '2026-02-01', '2026-12-31']])
+  const sue = await s.ricevute(resta)
+  ok('la ricevuta passa, con lo stesso numero e lo stesso intestatario', sue.map((x) => [x.numero, x.intestatario.cognome]), [[ricevuta.numero, 'Damico']])
+  ok('e chi resta ha pagato la quota', m.pagamentoDi(r, oggi).come, 'pagato')
+  ok('il certificato: la scadenza più lontana', r.certificato.scade, '2027-05-31')
+  ok('l\'anagrafica: vince chi resta, i vuoti dal doppione', (({ comune, codiceFiscale, cap, genitoreNome }) => ({ comune, codiceFiscale, cap, genitoreNome }))((await s.anagraficaDi(resta)).dati),
+    { comune: 'Collegno', codiceFiscale: 'DMCMRA10A01L219X', cap: '10098', genitoreNome: 'Anna' })
+
+  const elena = await nuova('Elena', 'Verdi', { email: 'elena@esempio.it' })
+  const elena2 = await nuova('Elena', 'Verdi', { email: 'elena.verdi@esempio.it' })
+  await s.salvaPagamento(elena, { stato: 'pagato', fino: '2026-10-31' })
+  await s.salvaPagamento(elena2, { stato: 'pagato', fino: '2027-01-31', nota: 'carta n. 12' })
+  await s.unisciPersone(elena, elena2)
+  const e = await di(elena)
+  ok('due email diverse: resta quella di chi resta', e.email, 'elena@esempio.it')
+  ok('pagata fuori dall\'app: la scadenza più lontana, e la nota vuota si riempie', [e.pagamento.fino, e.pagamento.nota], ['2027-01-31', 'carta n. 12'])
+
+  // «Pagato» senza «fino»: pagato senza scadenza, come l'`al` vuoto delle iscrizioni.
+  const ugo = await nuova('Ugo', 'Gialli')
+  const ugo2 = await nuova('Ugo', 'Gialli')
+  await s.salvaPagamento(ugo, { stato: 'pagato' })
+  await s.salvaPagamento(ugo2, { stato: 'pagato', fino: '2026-08-27' })
+  await s.unisciPersone(ugo, ugo2)
+  const u = (await di(ugo)).pagamento
+  ok('pagato senza scadenza e un doppione pagato fino a un mese fa: resta pagato senza scadenza', [u.stato, u.fino ?? null], ['pagato', null])
+  const ivo = await nuova('Ivo', 'Blu')
+  const ivo2 = await nuova('Ivo', 'Blu')
+  await s.salvaPagamento(ivo2, { stato: 'pagato' })
+  await s.unisciPersone(ivo, ivo2)
+  const iv = (await di(ivo)).pagamento
+  ok('da pagare e un doppione pagato senza scadenza: diventa pagato senza scadenza', [iv.stato, iv.fino ?? null], ['pagato', null])
+
+  // Le richieste di iscrizione di prova stanno in localStorage, accanto all'archivio.
+  const RICHIESTE = 'ods-corsi:prova-richieste'
+  const richiesta = (personaId, codiceFiscale, gestitaIl) => ({
+    id: `r-${personaId}`, creataIl: '2026-09-01T10:00:00.000Z', gestitaIl, stato: 'accolta', personaId,
+    nome: 'Luca', cognome: 'Verdi', natoIl: '2012-02-01', natoA: 'Torino', codiceFiscale, indirizzo: 'via Po 2', cap: '10093', comune: 'Collegno',
+    email: 'luca.verdi@esempio.it', telefono: '3337654321', corsi: ['judo-2'], formula: 'annuale',
+  })
+  const aggiungiRichiesta = (r) => localStorage.setItem(RICHIESTE, JSON.stringify([...JSON.parse(localStorage.getItem(RICHIESTE) ?? '[]'), r]))
+  const diRichieste = (id) => JSON.parse(localStorage.getItem(RICHIESTE) ?? '[]').filter((r) => r.personaId === id).map((r) => r.id)
+
+  // Il codice fiscale della richiesta accolta conta come quello della scheda.
+  const luca = await nuova('Luca', 'Verdi')
+  const luca2 = await nuova('Luca', 'Verdi')
+  await s.salvaAnagrafica(luca, { codiceFiscale: 'VRDLCU10A01L219X' })
+  aggiungiRichiesta(richiesta(luca2, 'VRDLCU12B01L219Y', '2026-09-02T10:00:00.000Z'))
+  ok('un codice fiscale nella scheda e un altro solo nella richiesta accolta: no', await errore(() => s.unisciPersone(luca, luca2)),
+    'Hanno due codici fiscali diversi: non sono la stessa persona. Se uno è sbagliato, correggilo nella scheda e riprova')
+  ok('e restano tutti e due', [!!(await di(luca)), !!(await di(luca2))], [true, true])
+
+  // Dopo l'unione l'anagrafica unita è la più recente, come col trigger
+  // `anagrafiche_cambiata` del database; la richiesta e le segnalate del doppione passano.
+  const gino = await nuova('Gino', 'Rosa')
+  const gino2 = await nuova('Gino', 'Rosa')
+  await s.salvaAnagrafica(gino, { comune: 'Collegno' })
+  await s.salvaAnagrafica(gino2, { cap: '10098' })
+  m.archivio.dati.anagrafiche[gino] = { ...m.archivio.dati.anagrafiche[gino], cambiataIl: '2026-09-01T10:00:00.000Z' }
+  aggiungiRichiesta({ ...richiesta(gino2, 'RSOGNI12B01L219Y', '2026-09-20T10:00:00.000Z'), nome: 'Gino', cognome: 'Rosa', comune: 'Rivoli' })
+  m.archivio.dati.segnalate = [...(m.archivio.dati.segnalate ?? []),
+    { id: 'sg-gino2', sessioneId: l3.id, personaId: gino2, il: '2026-09-25T10:00:00.000Z', stato: 'da_vedere' }]
+  await s.unisciPersone(gino, gino2)
+  const ag = await s.anagraficaDi(gino)
+  ok('dopo l\'unione vince l\'anagrafica unita, anche su una richiesta accolta più recente', [ag?.da, ag?.dati.comune, ag?.dati.cap], ['segreteria', 'Collegno', '10098'])
+  ok('la richiesta di iscrizione del doppione passa', [diRichieste(gino), diRichieste(gino2)], [[`r-${gino2}`], []])
+  ok('le presenze segnalate del doppione passano', (m.archivio.dati.segnalate ?? []).filter((x) => x.id === 'sg-gino2').map((x) => x.personaId), [gino])
+
+  // Chi trova un doppione spesso l'ha disattivato: se l'altra era attiva, la scheda unita lo è.
+  const spenta = await nuova('Marco', "D'Amico")
+  const accesa = await nuova('Marco', 'Damico')
+  await s.attivaPersona(spenta, false)
+  await s.unisciPersone(spenta, accesa)
+  ok('resta disattivata, se ne va attiva: la scheda unita è attiva', (await di(spenta)).attiva, true)
+
+  // Col database senza 29-unisci-doppioni.sql: la funzione non c'è.
+  const senza = m.creaSegreteriaSupabase({
+    rpc: async (f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f}(resta, via) in the schema cache` } }),
+  })
+  const manca = await errore(() => senza.unisciPersone(resta, via))
+  ok('senza il file sul database dice quale lanciare', manca.includes('29-unisci-doppioni.sql') ? '29-unisci-doppioni.sql' : manca, '29-unisci-doppioni.sql')
+
+  // I possibili doppioni, aperta una scheda: lo stesso cognome scritto in un altro modo, prima.
+  const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: oggi, iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })
+  const mario = scheda('1', 'Mario', "D'Amico", { email: 'mario@esempio.it' })
+  const tutte = [
+    scheda('0', 'Anna', 'Rossi'),
+    mario,
+    scheda('2', 'Mario', 'DAmico', { email: 'mario.damico@esempio.it', telefono: '333 1234567' }),
+    scheda('3', 'Luca', 'D’amico'),
+  ]
+  const proposti = m.possibiliDoppioni(mario, tutte)
+  ok('aperto Mario D\'Amico: Mario DAmico e Luca D’amico, prima', proposti.slice(0, 2).map((p) => p.id).sort(), ['2', '3'])
+  ok('non sé stesso', proposti.some((p) => p.id === '1'), false)
+  ok('i campi che non tornano: cognome, email, telefono',
+    m.campiDiversi(mario, tutte[2]).map((c) => [c.resta, c.via]),
+    [["D'Amico", 'DAmico'], ['mario@esempio.it', 'mario.damico@esempio.it'], ['', '333 1234567']])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

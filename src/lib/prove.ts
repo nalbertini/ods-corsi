@@ -64,6 +64,9 @@ const piano = (s: string) =>
 /** Apostrofi di ogni tastiera e trattini: D'Amico, D’Amico e De-Luca si scrivono in tanti modi. */
 const STACCA = /['’‘ʼ´-]/g
 
+/** Un nome scritto attaccato, senza accenti, apostrofi e trattini: D'Amico, D’amico e Damico diventano «damico». */
+export const compatto = (s: string) => piano(s).replace(STACCA, '').replace(/\s+/g, '')
+
 /**
  * Chi, fra quelli già venuti, somiglia a quello che si sta scrivendo: ogni
  * parola scritta è l'inizio di una parola del nome o del cognome, o del nome
@@ -81,7 +84,7 @@ export function somiglianti(tutti: GiaProvato[], scritto: string, quanti = 6): G
   return tutti
     .filter((p) => {
       const nomi = [p.nome, p.cognome].map(piano)
-      const attaccati = nomi.map((n) => n.replace(STACCA, '').replace(/\s+/g, ''))
+      const attaccati = [p.nome, p.cognome].map(compatto)
       const sue = [...nomi.flatMap((n) => n.replace(STACCA, ' ').split(/\s+/)), ...attaccati]
       return parole.every((w) => sue.some((s) => s.startsWith(w))) || attaccati.some((s) => s.startsWith(parole.join('')))
     })
