@@ -1120,8 +1120,11 @@ a.btn { text-decoration: none; }
   .tb-istruttore > .tb-colonna:first-child { display: contents; }
   .tb-istruttore > .tb-colonna:last-child { order: 1; }
   .tb-istruttore > .tb-colonna:first-child > :is(.tb-riquadro, .tb-btn, .tb-nota, .tb-scollega) { order: 2; }
-  /* Le colonne non si restringono sotto il loro contenuto: scorre la pagina. */
-  .tb-istruttore > .tb-colonna { min-height: auto; }
+  /* Le colonne non si restringono sotto il loro contenuto: scorre la pagina.
+     Nella home, schiacciata, la lezione finiva sotto OGGI IN QUESTA SALA, che
+     copriva AREA ISTRUTTORE. */
+  .tb-home { align-content: start; }
+  .tb-home > .tb-colonna, .tb-istruttore > .tb-colonna { min-height: auto; }
   .tb-istruttore .tb-righe { overflow: visible; flex: none; }
   .tb-aperta { flex-direction: column; align-items: stretch; }
   /* In colonna la base da 280px diventerebbe un'altezza: il testo prende solo quello che gli serve. */
@@ -1263,6 +1266,8 @@ a.sg-voce { text-decoration: none; }
 .sg-corpo-sala .sala-due { max-width: none; }
 .sg-testa { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .sg-titolo { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }
+/* Il titolo prende il fuoco solo per non perderlo (BUTTA I CAMBI): non si preme, niente contorno. */
+.sg-titolo:focus { outline: none; }
 .sg-sotto { font-size: 14px; color: var(--dim); margin: 0; }
 .sg-etichetta { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
 .sg-riga-titolo { display: flex; align-items: baseline; gap: 10px; }

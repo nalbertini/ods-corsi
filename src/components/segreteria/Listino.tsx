@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { Prezzi, VoceCosto } from '../../lib/costi'
 import { STAGIONE } from '../../lib/costi'
-import { agganciaPerNome, annoScritto, corsiScegliibili, cosaNonVaListino, LIMITI, listinoCambiato, corsiSenzaPrezzo, segnalazioniListino, type CorsoRef, type Listino as DatiListino } from '../../lib/listino'
+import { agganciaPerNome, annoScritto, cambiNellaBozza, corsiScegliibili, domandaButta, cosaNonVaListino, LIMITI, listinoCambiato, corsiSenzaPrezzo, segnalazioniListino, type CorsoRef, type Listino as DatiListino } from '../../lib/listino'
 import { centesimi } from '../../lib/ricevute'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -158,7 +158,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
   const letto = useCarica(() => d.listino(), [d])
   const elenco = useCarica(() => d.corsi(), [d])
   const corsiDi = useMemo(() => (elenco.dato ?? []).map((c) => ({ id: c.id, nome: c.nome, attivo: c.attivo })), [elenco.dato])
-  const { avviso, fai, lavora } = useAvviso()
+  const { avviso, avvisa, fai, lavora } = useAvviso()
   const [bozza, setBozza] = useState<Bozza | null>(null)
   const [aperto, setAperto] = useState<number | null>(null)
   // Le chiavi della bozza di partenza restano le stesse fra un giro e l'altro: CAMBIA apre quella giusta.
@@ -192,6 +192,17 @@ export function Listino({ d }: { d: DatiSegreteria }) {
       setBozza(null)
       setAperto(null)
     })
+  }
+
+  const butta = async () => {
+    if (!b || !base) return
+    if (!(await chiedi(domandaButta(cambiNellaBozza(base, b)), 'BUTTA I CAMBI', { pericolo: true }))) return
+    setBozza(null)
+    setAperto(null)
+    avvisa('Listino tornato com’è salvato')
+    // La barra col tasto sparisce: il fuoco va sul titolo, non si perde sulla pagina.
+    // Al giro dopo: chiudendosi, il dialogo lo rimette sul tasto che l'ha aperto.
+    requestAnimationFrame(() => document.querySelector<HTMLElement>('.sg-titolo')?.focus())
   }
 
   const rimetti = async () => {
@@ -341,15 +352,8 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               <span className="grow" style={{ fontSize: 14, color: guaio ? 'var(--rosso-testo)' : 'var(--sec)' }}>
                 {guaio ?? 'Ci sono cambi da salvare: fino ad allora la pagina di iscrizione mostra quello di prima.'}
               </span>
-              <button
-                type="button"
-                className="sg-btn sg-btn-linea"
-                onClick={() => {
-                  setBozza(null)
-                  setAperto(null)
-                }}
-              >
-                LASCIA STARE
+              <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
+                BUTTA I CAMBI
               </button>
               <button type="button" className="sg-btn sg-btn-pieno" disabled={!!guaio || lavora} onClick={salva}>
                 SALVA
