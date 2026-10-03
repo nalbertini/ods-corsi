@@ -70,7 +70,7 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
   Col foglio in mano, **SEGNA IL CERTIFICATO** → la data in **VALIDO FINO AL** →
   **SALVA**. Col certificato nuovo, **RINNOVA O CORREGGI** cambia la data, e il
   foglio vecchio si distrugge. Se è arrivato per email o WhatsApp, si stampa e
-  si cancella da lì. **Togli** toglie la data.
+  si cancella da lì. **TOGLI IL CERTIFICATO** lo toglie.
 - **Un certificato caricato prima della carta** ha ancora il file nell'app:
   la scheda lo dice in giallo, e in elenco c'è **DA STAMPARE** accanto al
   nome (il filtro **CERTIFICATI DA STAMPARE** li mostra tutti, finché ce ne
@@ -78,8 +78,8 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
   si mette nella cartellina, e **STAMPATO, CANCELLALO** lo cancella per
   sempre. La data resta.
 - **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
-  minore, quella del genitore). **LA COPIA È IN SEGRETERIA** lo segna, **Non
-  c'è più** lo toglie. **SENZA DOCUMENTO**, sopra l'elenco, mostra chi non ce
+  minore, quella del genitore). **LA COPIA È IN SEGRETERIA** lo segna, **LA
+  COPIA NON C'È PIÙ** lo toglie. **SENZA DOCUMENTO**, sopra l'elenco, mostra chi non ce
   l'ha ancora.
 - **QUOTA** — se ha pagato lo dicono le ricevute: **PAGATA** se c'è una
   ricevuta non annullata con la **QUOTA ASSOCIATIVA** che vale oggi, con fin
@@ -89,7 +89,7 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
   leggono sotto, con fin quando sono pagati, ma non contano per essere in
   regola.
   Per chi ha pagato la quota fuori dall'app (prima dell'app, con una ricevuta
-  di carta) c'è **Pagata senza ricevuta dell'app**: **VALE FINO AL** (di
+  di carta) c'è **PAGATA SENZA RICEVUTA DELL'APP**: **VALE FINO AL** (di
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
   PAGATA**. In elenco e nella scheda si vede **FUORI APP**; alla sua data
   scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
@@ -160,7 +160,7 @@ Nell'elenco **RICEVUTE** della scheda ogni ricevuta si riscarica con **PDF**,
 uguale a com'era.
 
 Una ricevuta fatta **non si cambia e non si cancella**: se è sbagliata,
-**Annulla** (chiede conferma) e se ne fa un'altra. Se la ricevuta annullata
+**ANNULLA RICEVUTA**, sotto la ricevuta (chiede conferma), e se ne fa un'altra. Se la ricevuta annullata
 aveva la quota e nessun'altra la copre, la scheda chiede: **RESTA DA PAGARE**
 (di solito, perché se ne fa subito una giusta) o **ERA PAGATA FUORI
 DALL'APP**. L'annullata resta in elenco

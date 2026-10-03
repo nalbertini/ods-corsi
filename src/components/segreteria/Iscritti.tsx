@@ -1102,13 +1102,13 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
           {(c.conFile || c.scade) && (
             <button
               type="button"
-              className="sg-link"
+              className="sg-btn sg-btn-linea"
               onClick={async () => {
-                if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file caricato nell’app si cancella per sempre.' : ''} Il foglio in segreteria va distrutto a mano.`, 'TOGLI IL CERTIFICATO', { pericolo: true })))
+                if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file caricato nell’app si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne segna uno nuovo. Il foglio in segreteria va distrutto a mano.`, 'TOGLI IL CERTIFICATO', { pericolo: true })))
                   void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
               }}
             >
-              Togli
+              TOGLI IL CERTIFICATO
             </button>
           )}
         </div>
@@ -1133,12 +1133,12 @@ function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
       <div className="row">
         <button
           type="button"
-          className={p.documento ? 'sg-link' : 'num sg-chip sg-chip-pieno'}
+          className={p.documento ? 'num sg-chip' : 'num sg-chip sg-chip-pieno'}
           onClick={() =>
-            void fai(() => d.salvaDocumento(p.id, !p.documento), p.documento ? 'Documento tolto' : 'Documento segnato in segreteria', onCambiato)
+            void fai(() => d.salvaDocumento(p.id, !p.documento), p.documento ? 'Documento tolto: ora è DA PORTARE. Se era uno sbaglio, LA COPIA È IN SEGRETERIA lo rimette' : 'Documento segnato in segreteria', onCambiato)
           }
         >
-          {p.documento ? 'Non c’è più' : 'LA COPIA È IN SEGRETERIA'}
+          {p.documento ? 'LA COPIA NON C’È PIÙ' : 'LA COPIA È IN SEGRETERIA'}
         </button>
       </div>
     </div>
@@ -1244,8 +1244,8 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
         </button>
       ) : (
         s.come !== 'pagato' && (
-          <button type="button" className="sg-link" style={{ alignSelf: 'flex-start' }} onClick={() => setScrivi(true)}>
-            Pagata senza ricevuta dell’app
+          <button type="button" className="num sg-chip" style={{ alignSelf: 'flex-start' }} onClick={() => setScrivi(true)}>
+            PAGATA SENZA RICEVUTA DELL’APP
           </button>
         )
       )}

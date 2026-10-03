@@ -410,16 +410,19 @@ function Scheda({
             APRI LA SCHEDA
           </button>
         )}
-        <div className="grow" />
+      </div>
+
+      {/* Lontano da ACCOGLI e RIFIUTA: cancella i file per sempre e si usa di rado. */}
+      <div className="row" style={{ justifyContent: 'flex-end', marginTop: 24 }}>
         <button
           type="button"
-          className="sg-link"
+          className="sg-btn sg-btn-linea"
           onClick={async () => {
             if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`, 'ELIMINA PER SEMPRE', { pericolo: true })))
               void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
           }}
         >
-          Elimina richiesta e file
+          ELIMINA RICHIESTA E FILE
         </button>
       </div>
     </>
