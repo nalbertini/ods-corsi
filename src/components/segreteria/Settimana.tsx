@@ -95,7 +95,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
         >
           RIGENERA
         </button>
-        <button type="button" className="sg-btn sg-btn-rosso" onClick={() => setNuova(true)}>
+        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuova(true)}>
           + LEZIONE STRAORDINARIA
         </button>
       </Testa>
@@ -217,6 +217,9 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
   const annullata = l.stato === 'annullata'
   const fatto = l.segnati > 0
   const manca = passata && !annullata && !fatto
+  // Un buco nel corso, su una lezione che deve ancora venire, è da sapere ma
+  // non è un guaio: rosso solo quando la lezione è passata.
+  const buco = passata && !annullata ? 'sg-manca' : 'sg-forse'
   return (
     <button
       type="button"
@@ -228,7 +231,7 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
     >
       <span className="ob sg-lezione-nome">{l.corso.toUpperCase()}</span>
       <span className="sg-lezione-dove">
-        {[l.sala ?? <span key="s" className="sg-manca">sala?</span>, l.istruttori || <span key="i" className="sg-manca">istruttore?</span>].map((x, i) => (
+        {[l.sala ?? <span key="s" className={buco}>sala?</span>, l.istruttori || <span key="i" className={buco}>istruttore?</span>].map((x, i) => (
           <span key={i}>
             {i > 0 && ' · '}
             {x}
@@ -374,7 +377,7 @@ function Lezione({
             TOGLI QUESTA LEZIONE STRAORDINARIA
           </button>
         )}
-        <button type="button" className="sg-btn sg-btn-rosso" onClick={onChiudi}>
+        <button type="button" className="sg-btn sg-btn-pieno" onClick={onChiudi}>
           FATTO
         </button>
       </section>
@@ -642,7 +645,7 @@ function Straordinaria({
           <button type="button" className="sg-btn sg-btn-linea grow" onClick={onChiudi}>
             LASCIA STARE
           </button>
-          <button type="submit" className="sg-btn sg-btn-rosso grow" disabled={!scelto}>
+          <button type="submit" className="sg-btn sg-btn-pieno grow" disabled={!scelto}>
             AGGIUNGI
           </button>
         </div>

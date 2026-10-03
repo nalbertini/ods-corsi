@@ -994,7 +994,7 @@ a.btn { text-decoration: none; }
 }
 .sg-voce:hover { color: var(--text); }
 a.sg-voce { text-decoration: none; }
-.sg-voce[aria-current='page'] { border-left-color: var(--rosso); background: var(--surface); color: var(--text); }
+.sg-voce[aria-current='page'] { border-left-color: var(--text); background: var(--surface); color: var(--text); }
 .sg-chi { display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid var(--line-soft); }
 .sg-bollino {
   font-size: 11px; font-weight: 700; letter-spacing: 0.18em; color: var(--su-colore); background: var(--giallo);
@@ -1023,7 +1023,11 @@ a.sg-voce { text-decoration: none; }
   min-height: 48px; padding: 0 18px;
   font-family: var(--cond); font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em;
 }
-.sg-btn-rosso { background: var(--rosso); color: var(--su-colore); }
+/* Il tasto principale è pieno del colore del testo; rosso solo quando quello
+   che fa non si annulla (una ricevuta, un file cancellato, un import). Sul
+   rosso il testo è bianco: il nero arriva a 4,1:1, il bianco a 4,5:1. */
+.sg-btn-pieno { background: var(--text); color: var(--bg); }
+.sg-btn-rosso { background: var(--rosso); color: #ffffff; }
 .sg-btn-verde { background: var(--verde); color: var(--su-colore); }
 .sg-btn-linea { border: 2px solid var(--line); color: var(--sec); }
 .sg-btn-linea:hover { border-color: var(--dim); color: var(--text); }
@@ -1072,8 +1076,8 @@ a.sg-voce { text-decoration: none; }
 .sg-lezione[data-annullata='true'] .sg-lezione-nome { text-decoration: line-through; }
 .sg-lezione-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-lezione-dove { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sg-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; }
-.sg-tag[data-tipo='manca'] { background: var(--rosso); color: var(--su-colore); }
+.sg-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; }
+.sg-tag[data-tipo='manca'] { background: var(--rosso); color: #ffffff; }
 .sg-tag[data-tipo='sostituto'] { background: var(--giallo); color: var(--su-colore); }
 .sg-legenda { gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--dim); }
 
@@ -1114,6 +1118,7 @@ a.sg-voce { text-decoration: none; }
 .sg-corso[data-manca='true'] { border-left: 6px solid var(--rosso); }
 /* Un dato che manca e va completato: si vede rosso, ovunque. */
 .sg-manca { color: var(--rosso); font-weight: 600; }
+.sg-forse { color: var(--dim); font-weight: 600; }
 .sg-etichetta[data-manca] { color: var(--rosso); }
 .sg-campo[aria-invalid='true'] { border-color: var(--rosso); }
 .sg-scelte-mancano { padding: 6px; border: 2px dashed var(--rosso); }
@@ -1271,8 +1276,8 @@ a.sg-voce { text-decoration: none; }
 }
 .sg-orario[data-gradino='1'] { background: color-mix(in srgb, var(--blu) 30%, var(--surface)); }
 .sg-orario[data-gradino='2'] { background: color-mix(in srgb, var(--blu) 55%, var(--surface)); }
-.sg-orario[data-gradino='3'] { background: color-mix(in srgb, var(--blu) 78%, var(--surface)); color: #fff; }
-.sg-orario[data-gradino='4'] { background: var(--blu); color: #fff; }
+.sg-orario[data-gradino='3'] { background: color-mix(in srgb, var(--blu) 78%, var(--surface)); color: var(--text); }
+.sg-orario[data-gradino='4'] { background: var(--blu); color: var(--su-colore); }
 .sg-orario:hover, .sg-orario:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
 .sg-stat-tabella { width: 100%; border-collapse: collapse; font-size: 14px; }
 .sg-stat-tabella th, .sg-stat-tabella td { padding: 8px 10px; border-bottom: 1px solid var(--surface-2); text-align: left; white-space: nowrap; }
@@ -1354,7 +1359,7 @@ a.sg-voce { text-decoration: none; }
   .sg-menu > .grow, .sg-chi > span:not(.sg-bollino) { display: none; }
   .sg-voci { flex-direction: row; flex-wrap: wrap; }
   .sg-voce { border-left: none; border-bottom: 4px solid transparent; }
-  .sg-voce[aria-current='page'] { border-bottom-color: var(--rosso); }
+  .sg-voce[aria-current='page'] { border-bottom-color: var(--text); }
   .sg-chi { flex-direction: row; align-items: center; padding: 6px 10px; }
   .sg-corpo { padding: 16px; }
 }

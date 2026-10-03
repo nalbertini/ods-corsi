@@ -53,7 +53,7 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
   return (
     <>
       <Testa titolo="CORSI" sotto="Un corso è cosa si fa; le ricorrenze dicono quando. Le lezioni si generano da quelle.">
-        <button type="button" className="sg-btn sg-btn-rosso" onClick={() => setNuovo(true)}>
+        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
           + NUOVO CORSO
         </button>
       </Testa>
@@ -243,7 +243,7 @@ function Scheda({
         )}
         <button
           type="button"
-          className="sg-btn sg-btn-rosso"
+          className="sg-btn sg-btn-pieno"
           disabled={!cambiato || !bozza.nome.trim()}
           onClick={() => {
             let id = ''

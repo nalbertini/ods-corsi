@@ -171,7 +171,7 @@ export function Segreteria({
           <Logo width={46} />
           <span className="stack" style={{ gap: 2 }}>
             <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
-            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
+            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
           </span>
         </div>
         <div className="sg-voci">

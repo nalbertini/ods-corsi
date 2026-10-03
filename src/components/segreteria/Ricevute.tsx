@@ -561,7 +561,7 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
           </button>
           <button
             type="button"
-            className="sg-btn sg-btn-rosso grow"
+            className="sg-btn sg-btn-pieno grow"
             disabled={!b.nome.trim() || !b.codiceFiscale.trim()}
             onClick={() =>
               void fai(

@@ -197,7 +197,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
           )}
           <button
             type="button"
-            className="sg-btn sg-btn-rosso"
+            className="sg-btn sg-btn-pieno"
             style={{ alignSelf: 'flex-start' }}
             disabled={(!fogli.corsi && !fogli.iscritti && !fogli.risposte) || (!!fogli.risposte && !nomeChiaro)}
             onClick={() => void controlla()}
@@ -315,7 +315,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
             Le righe saltate non sono entrate. Correggile nel foglio e reimporta: quello che c'è già non si duplica.
           </span>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-            <button type="button" className="sg-btn sg-btn-rosso" onClick={() => onVai('settimana')}>
+            <button type="button" className="sg-btn sg-btn-pieno" onClick={() => onVai('settimana')}>
               VAI ALLA SETTIMANA
             </button>
             <button type="button" className="sg-btn sg-btn-linea" onClick={daCapo}>

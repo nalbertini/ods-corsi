@@ -138,7 +138,7 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
             stampare === 1 ? ' Un certificato caricato nell’app da stampare e cancellare.' : stampare ? ` ${stampare} certificati caricati nell’app da stampare e cancellare.` : ''
           }`}
         >
-          <button type="button" className="sg-btn sg-btn-rosso" onClick={() => setNuovo(true)}>
+          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
             + NUOVO ISCRITTO
           </button>
         </Testa>
@@ -320,7 +320,7 @@ function Nuovo({
         <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
           LASCIA STARE
         </button>
-        <button type="button" className="sg-btn sg-btn-rosso grow" disabled={!b.nome.trim() || !b.cognome.trim()} onClick={salva}>
+        <button type="button" className="sg-btn sg-btn-pieno grow" disabled={!b.nome.trim() || !b.cognome.trim()} onClick={salva}>
           SALVA
         </button>
       </div>
@@ -522,7 +522,7 @@ function Scheda({
             </button>
             <button
               type="button"
-              className="sg-btn sg-btn-rosso grow"
+              className="sg-btn sg-btn-pieno grow"
               disabled={!modifica.nome.trim() || !modifica.cognome.trim()}
               onClick={() =>
                 void fai(() => d.salvaPersona(modifica), 'Scheda salvata', () => {
@@ -809,7 +809,7 @@ function ModificaAnagrafica({
         <button type="button" className="sg-btn sg-btn-linea" onClick={onFatto}>
           LASCIA STARE
         </button>
-        <button type="button" className="sg-btn sg-btn-rosso" disabled={!!no} onClick={() => void fai(() => d.salvaAnagrafica(p.id, pulita, true), 'Dati anagrafici salvati', onFatto)}>
+        <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void fai(() => d.salvaAnagrafica(p.id, pulita, true), 'Dati anagrafici salvati', onFatto)}>
           SALVA
         </button>
       </div>
@@ -910,7 +910,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             </button>
             <button
               type="button"
-              className="sg-btn sg-btn-rosso grow"
+              className="sg-btn sg-btn-pieno grow"
               disabled={!bozza.scade}
               onClick={() =>
                 void fai(() => d.salvaCertificato(p.id, bozza.scade), c.scade ? 'Scadenza cambiata' : 'Certificato segnato', () => {
@@ -1013,7 +1013,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
           <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setB({ stato: p.pagamento.stato, fino: p.pagamento.fino ?? '', nota: p.pagamento.nota ?? '' })}>
             LASCIA STARE
           </button>
-          <button type="button" className="sg-btn sg-btn-rosso grow" onClick={() => void fai(() => d.salvaPagamento(p.id, b), 'Pagamento segnato', onCambiato)}>
+          <button type="button" className="sg-btn sg-btn-pieno grow" onClick={() => void fai(() => d.salvaPagamento(p.id, b), 'Pagamento segnato', onCambiato)}>
             SALVA
           </button>
         </div>

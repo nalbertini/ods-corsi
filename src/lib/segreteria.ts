@@ -597,9 +597,10 @@ function spostaGiorno(g: string, giorni: number) {
   return x.toISOString().slice(0, 10)
 }
 
+// Niente rosso: in segreteria vuol dire che qualcosa manca (supabase/25-colori-corsi.sql).
 export const COLORI = [
   { nome: 'Blu', hex: '#1b8ac4' },
-  { nome: 'Rosso', hex: '#e4292a' },
+  { nome: 'Viola', hex: '#8b5cc4' },
   { nome: 'Giallo', hex: '#f4c31b' },
   { nome: 'Verde', hex: '#16a54a' },
 ]

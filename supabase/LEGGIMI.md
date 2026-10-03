@@ -52,6 +52,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 22. `22-statistiche.sql` — le statistiche della segreteria: i conti delle lezioni e degli incassi, fatti dal database
 23. `23-istruttori-dalle-lezioni.sql` — la presenza degli istruttori anche dall'appello che fanno, e le lezioni tenute senza nessun istruttore segnato, proposte alla segreteria che sceglie chi c'era
 24. `24-kanji.sql` — il kanji degli istruttori: un segno solo, scelto dalla segreteria, che li fa riconoscere a colpo d'occhio nel calendario, nell'appello e sul tablet di sala
+25. `25-colori-corsi.sql` — i corsi rossi passano al viola: in segreteria il rosso vuol dire solo che qualcosa manca
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue

@@ -166,7 +166,7 @@ const ogni = (giorni: number[], ora: string, durata: number): Orario[] => giorni
 
 // I colori seguono la disciplina, non il corso: da lontano si vede se è judo o lotta.
 const JUDO = '#1b8ac4'
-const LOTTA = '#e4292a'
+const LOTTA = '#8b5cc4'
 const PESI = '#f4c31b'
 const MOTRICITA = '#16a54a'
 
