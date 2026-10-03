@@ -573,6 +573,12 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .campo.campo-note { padding-top: 12px; resize: vertical; }
 .modulo .campo { width: 100%; }
 .modulo-corsi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+/* Età e orari sotto il nome del corso: per scegliere senza tornare al listino. */
+.modulo-corso-testo { gap: 2px; min-width: 0; }
+.modulo-corso-riga { font-size: 13px; font-weight: 400; color: var(--dim); line-height: 1.35; }
+/* Sul fondo del tasto scelto il testo spento non arriva a 4,5:1 nel tema chiaro. */
+.modulo-corso[aria-pressed='true'] .modulo-corso-riga { color: var(--sec); }
+.modulo-altri { margin-top: 10px; }
 .modulo-corso {
   display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;
   background: var(--surface); border: 2px solid var(--line); text-align: left; font-size: 15px; font-weight: 600;
@@ -611,7 +617,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .modulo .campo[readonly] { background: transparent; border-style: dashed; color: var(--dim); }
 .modulo-nota { font-size: 14px; line-height: 1.35; color: var(--rosso-testo); }
 .modulo-nota[data-avviso] { color: var(--giallo-testo); }
-.modulo-corsi:focus, .modulo [role='radiogroup']:focus { outline: none; }
+.modulo-corsi:focus, .modulo-corsi-tutti:focus, .modulo [role='radiogroup']:focus { outline: none; }
 /* Il fuoco da tastiera: il contorno `text` di 2px, che su ogni fondo fa più di 3:1. */
 .btn:focus-visible, .modulo-corso:focus-visible, .costo-link:focus-visible, .modulo-file:focus-within .modulo-scegli { outline: 2px solid var(--text); outline-offset: 2px; }
 @media (max-width: 560px) {
