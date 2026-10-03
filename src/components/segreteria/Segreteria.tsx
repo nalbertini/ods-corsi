@@ -4,12 +4,12 @@ import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
 import { Bollino } from '../ds'
 import { TastoTema } from '../TastoTema'
+import { Cursori } from '../Icons'
 import { Settimana } from './Settimana'
 import { Corsi } from './Corsi'
 import { Iscritti } from './Iscritti'
 import { Presenze } from './Presenze'
 import { Statistiche } from './Statistiche'
-import { Importa } from './Importa'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Listino } from './Listino'
@@ -76,8 +76,6 @@ const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: 
       ['statistiche', 'STATISTICHE'],
       ['listino', 'LISTINO'],
       ['esercizi', 'ESERCIZI'],
-      ['importa', 'IMPORTA DA EXCEL'],
-      ['regole', 'IMPOSTAZIONI'],
       ['segnalazioni', 'SEGNALAZIONI'],
     ],
   },
@@ -94,7 +92,6 @@ const GUIDE: Record<Voce, string> = {
   segnalate: 'segreteria/presenze-segnalate',
   statistiche: 'segreteria/statistiche',
   istruttori: 'segreteria/presenze-istruttori',
-  importa: 'segreteria/importa',
   personale: 'segreteria/istruttori-e-accessi',
   esercizi: 'segreteria/esercizi',
   listino: 'segreteria/listino',
@@ -333,6 +330,20 @@ export function Segreteria({
     </a>
   )
 
+  // Il tasto IMPOSTAZIONI sta con ? e il tema, in cima, sul computer e sul telefono.
+  const impostazioni = (
+    <button
+      type="button"
+      className="icon-btn"
+      aria-current={voce === 'regole' ? 'page' : undefined}
+      onClick={() => vai('regole')}
+      title="Impostazioni"
+      aria-label="Impostazioni"
+    >
+      <Cursori />
+    </button>
+  )
+
   return (
     <div className="sg">
       {/* Un tasto e non un link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
@@ -347,6 +358,7 @@ export function Segreteria({
         </span>
         {guida}
         <TastoTema />
+        {impostazioni}
         <button
           type="button"
           className="num sg-tasto-menu"
@@ -375,6 +387,7 @@ export function Segreteria({
         <div className="row sg-icone">
           {guida}
           <TastoTema />
+          {impostazioni}
           {/* Fra DATI e DI uno spazio che non va a capo: in 56px si spezza solo prima di PROVA. */}
           {prova && <Bollino>DATI{'\u00a0'}DI PROVA</Bollino>}
         </div>
@@ -499,11 +512,10 @@ export function Segreteria({
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
-        {d && voce === 'importa' && <Importa d={d} onVai={vai} />}
         {d && voce === 'personale' && <Personale d={d} />}
         {d && voce === 'esercizi' && <EserciziPalestra d={d} />}
         {d && voce === 'listino' && <Listino d={d} />}
-        {d && voce === 'regole' && <Regole d={d} />}
+        {d && voce === 'regole' && <Regole d={d} onVai={vai} />}
         {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
       </main>
       <Conferme />

@@ -4,8 +4,8 @@
 
 Le scelte che spettano alla palestra, non al programma.
 
-La pagina ha quattro gruppi: **LA STAGIONE**, **LE SALE E I TABLET**, **LE
-RICEVUTE**, **DATI E PRIVACY**. In cima, un tasto per ognuno porta dritto al
+La pagina ha cinque gruppi: **LA STAGIONE**, **LE SALE E I TABLET**, **LE
+RICEVUTE**, **IMPORTA DA EXCEL** (la [guida](importa.md)), **DATI E PRIVACY**. In cima, un tasto per ognuno porta dritto al
 gruppo. Le spiegazioni lunghe di un riquadro stanno dietro **COME
 FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista.
 
@@ -98,6 +98,12 @@ Centro Judo. **SALVA** compare quando si cambia qualcosa, e vale per le
 ricevute che si fanno da lì in poi: quelle già fatte restano come erano. Le
 ricevute si fanno dalla scheda di un iscritto (vedi
 [Iscritti](iscritti.md#un-pagamento-e-la-sua-ricevuta)).
+
+## Importa da Excel
+
+Corsi e iscritti dai fogli CSV, o gli iscritti dalle risposte del modulo Google,
+in tre passi: i fogli, il controllo, il database. Si può rifare quante volte si
+vuole, non duplica niente. Tutto è spiegato in [Importa da Excel](importa.md).
 
 ## Dati e privacy
 

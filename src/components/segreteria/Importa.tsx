@@ -17,7 +17,7 @@ import {
   type Tabella,
 } from '../../lib/importa'
 import type { Destinazione, Voce } from './Segreteria'
-import { dataLunga, messaggio, Riga, Testa } from './comune'
+import { dataLunga, messaggio, Riga } from './comune'
 
 type Foglio = { nome: string; testo: string; righe: number }
 
@@ -135,11 +135,11 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
   const buone = controllo ? controllo.f.righe.corsi + controllo.f.righe.iscritti + (controllo.f.righe.risposte ?? 0) - controllo.f.saltate.length : 0
 
   return (
-    <>
-      <Testa
-        titolo="IMPORTA DA EXCEL"
-        sotto="Corsi e iscritti da due fogli, o gli iscritti dalle risposte del modulo Google. Si può rifare quante volte si vuole: non duplica niente."
-      />
+    // Occupa tutta la riga della griglia di IMPOSTAZIONI: i passi e i tre fogli vogliono la larghezza intera.
+    <div className="stack" style={{ gap: 16, gridColumn: '1 / -1' }}>
+      <span className="sg-sotto">
+        Corsi e iscritti da due fogli, o gli iscritti dalle risposte del modulo Google. Si può rifare quante volte si vuole: non duplica niente.
+      </span>
 
       <ol className="sg-passi">
         {['I FOGLI', 'IL CONTROLLO', 'NEL DATABASE'].map((nome, i) => (
@@ -324,7 +324,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
 

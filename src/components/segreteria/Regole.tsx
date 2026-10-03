@@ -6,12 +6,15 @@ import { Spunta } from '../Icons'
 import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
+import { Importa } from './Importa'
+import type { Destinazione, Voce } from './Segreteria'
 
 /** I gruppi della pagina, da quello che si tocca a inizio stagione a quello che si tocca quasi mai. */
 const GRUPPI = {
   'imp-stagione': 'LA STAGIONE',
   'imp-sale': 'LE SALE E I TABLET',
   'imp-ricevute': 'LE RICEVUTE',
+  'imp-importa': 'IMPORTA DA EXCEL',
   'imp-dati': 'DATI E PRIVACY',
 } as const
 
@@ -40,7 +43,7 @@ function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
  * stagione; le sale con la loro musica, la voce e lo storico dei timer; chi
  * fa le ricevute; per quanto si tengono le presenze, il backup, la privacy.
  */
-export function Regole({ d }: { d: DatiSegreteria }) {
+export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void }) {
   const imp = useCarica(() => d.impostazioni(), [d])
   const scadute = useCarica(() => d.scadute(), [d, imp.dato?.mesiPresenze])
   const pronto = useCarica(() => d.prontoFino(), [d])
@@ -196,6 +199,10 @@ export function Regole({ d }: { d: DatiSegreteria }) {
 
       <Gruppo id="imp-ricevute">
         <EnteRicevute d={d} />
+      </Gruppo>
+
+      <Gruppo id="imp-importa">
+        <Importa d={d} onVai={onVai} />
       </Gruppo>
 
       <Gruppo id="imp-dati">
