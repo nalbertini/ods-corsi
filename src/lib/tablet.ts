@@ -263,6 +263,19 @@ export function fase(l: Pick<LezioneSala, 'inizio' | 'fine'>, adesso: Date): Fas
   return t < inizio ? 'dopo' : 'finita'
 }
 
+/**
+ * La lezione in cui ci si segna adesso. Al cambio lezione se ne aprono due
+ * insieme, quella che finisce e quella che comincia: chi arriva adesso viene
+ * per quella che comincia, e conta quella.
+ */
+export function lezioneDiAdesso<T extends Pick<LezioneSala, 'inizio' | 'fine' | 'stato'>>(lezioni: T[], adesso: Date): T | null {
+  return (
+    lezioni
+      .filter((l) => l.stato !== 'annullata' && fase(l, adesso) === 'aperta')
+      .sort((a, b) => b.inizio.localeCompare(a.inizio))[0] ?? null
+  )
+}
+
 /** Si recupera una lezione cominciata da non più di due settimane e non più aperta. */
 export function recuperabile(l: Pick<LezioneSala, 'inizio' | 'fine' | 'stato'>, adesso: Date): boolean {
   const t = adesso.getTime()

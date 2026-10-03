@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/tabletProva'; export { sigle } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'",
+      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -233,6 +233,17 @@ console.log('\n9. chi fa l\'appello c\'era, e le lezioni tenute senza istruttore
   ok('e la lezione esce dall\'elenco', (await seg.lezioniSenzaIstruttore()).some((l) => l.sessioneId === lunedi), false)
   m.archivio.dati.proposteIstruttoriDal = '2026-12-01T00:00:00'
   ok('quelle di prima non si propongono', (await seg.lezioniSenzaIstruttore()).length, 0)
+}
+
+console.log('\n10. la lezione di adesso, al cambio')
+{
+  // Lotta 2 alle 17 e Lotta 3 alle 18: alle 17:55 sono aperte tutte e due.
+  const l = await (await alle('2026-09-23T17:55')).lezioni(new Date(2026, 8, 23), new Date(2026, 8, 23))
+  const adesso = new Date(2026, 8, 23, 17, 55)
+  ok('alle 17:55 conta quella che comincia', m.lezioneDiAdesso(l, adesso)?.corso, 'Lotta 3')
+  ok('alle 17:20 c\'è solo quella in corso', m.lezioneDiAdesso(l, new Date(2026, 8, 23, 17, 20))?.corso, 'Lotta 2')
+  ok('annullata non conta', m.lezioneDiAdesso(l.map((x) => (x.corso === 'Lotta 3' ? { ...x, stato: 'annullata' } : x)), adesso)?.corso, 'Lotta 2')
+  ok('alle 15 nessuna', m.lezioneDiAdesso(l, new Date(2026, 8, 23, 15, 0)), null)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
