@@ -194,7 +194,9 @@ Chi aggiungete entra in fondo all'appello, sotto **PROVE**, già **presente**
 (✓) e col bollino **PROVA**; si tocca come gli altri. Potete aggiungerne
 quanti volete, uno dopo l'altro; **NASCONDI** chiude il riquadro. Se avete
 scritto un nome e non l'avete ancora aggiunto, il tasto diventa **AGGIUNGI E
-NASCONDI**: niente si perde. Se ne avete
+NASCONDI**: niente si perde. Anche la freccia per tornare al calendario, sul
+telefono, prima lo chiede (**Marco R. NON AGGIUNTO · ESCI?**): toccatela di
+nuovo per lasciarlo perdere, o **AGGIUNGI** per tenerlo. Se ne avete
 messo uno per sbaglio (un nome scritto male), **TOGLI** accanto al nome, e
 **SICURO? TOGLI** per confermare: se era nuovo sparisce del tutto.
 

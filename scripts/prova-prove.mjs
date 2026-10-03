@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { somiglianti, cosaNonVaProva } from './src/lib/prove'; export { sigleDeiProvati } from './src/lib/tablet'",
+      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { somiglianti, cosaNonVaProva, provaScritta } from './src/lib/prove'; export { domandaIndietro } from './src/lib/sala'; export { sigleDeiProvati } from './src/lib/tablet'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -254,6 +254,23 @@ console.log("\n7. D'Amico, De Luca, Rossi-Bianchi: apostrofi, spazi e trattini")
   ok("«'», «-» e due spazi: nessuno", ["'", '-', '  '].map((s) => chi(s)), [[], [], []])
   const dieci = ["D'Amico", 'Damiani', "D'Amato", 'Dameri', 'D\u2019Ambrosio', 'Damasio', "D'Amelio", 'Damonte', "D'Amore", 'Damigella'].map((c, i) => p(`x${i}`, 'Ugo', c))
   ok('con dieci che cominciano per «dam», se ne mostrano sei', m.somiglianti(dieci, 'dam').length, 6)
+}
+
+console.log("\n8. tornando al calendario, un nome scritto in «Chi viene a provare» e non aggiunto non si perde")
+{
+  const P = (nome, cognome) => m.provaScritta({ nome, cognome })
+  ok('niente scritto: nessun avviso', P('', ''), null)
+  ok('solo spazi: nessun avviso', P('   ', ' '), null)
+  ok('nome e cognome: nome e iniziale maiuscola col punto, il nome com\'è scritto', P('Marco', 'rossi'), 'Marco R.')
+  ok('spazi ai lati tolti', P('  Marco ', '  rossi '), 'Marco R.')
+  ok('solo il nome', P('Marco', ''), 'Marco')
+  ok('solo il cognome', P('  ', 'Rossi'), 'Rossi')
+  ok('un nome di 14 caratteri resta intero', P('Massimilianone', ''), 'Massimilianone')
+  ok('un nome più lungo si taglia a 13 più «…»', P('Mariagiovannina', ''), 'Mariagiovanni…')
+
+  ok('indietro senza nome scritto: si esce e basta', m.domandaIndietro(), undefined)
+  ok('indietro con provaScritta null: si esce e basta', m.domandaIndietro(null), undefined)
+  ok('indietro con un nome scritto: avvisa', m.domandaIndietro('Marco R.'), 'Marco R. NON AGGIUNTO · ESCI?')
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

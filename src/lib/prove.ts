@@ -36,6 +36,22 @@ export type ChiProva = { id: string; nome: string; cognome: string } | NuovaProv
 
 export const eGiaVenuto = (c: ChiProva): c is { id: string; nome: string; cognome: string } => 'id' in c
 
+/**
+ * Chi è scritto nel pannello e non ancora aggiunto, come lo dice il tasto
+ * che avvisa prima di perderlo: «Marco R.», non in maiuscolo come il resto del
+ * tasto perché è il nome di una persona (DESIGN.md). `null` se non c'è scritto
+ * niente; il telefono da solo non conta, senza nome non si sa chi sia.
+ */
+export function provaScritta(n: { nome: string; cognome: string }): string | null {
+  const nome = n.nome.trim()
+  const cognome = n.cognome.trim()
+  const primo = nome || cognome
+  if (!primo) return null
+  // Il tasto sta accanto al titolo del corso: un nome lungo lo spingerebbe fuori.
+  const corto = primo.length > 14 ? `${primo.slice(0, 13)}…` : primo
+  return nome && cognome ? `${corto} ${cognome[0].toUpperCase()}.` : corto
+}
+
 /** Come i controlli di `metti_prova`. */
 export function cosaNonVaProva(n: NuovaProva): string | null {
   if (!n.nome.trim() || !n.cognome.trim()) return 'Servono nome e cognome.'

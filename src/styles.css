@@ -353,6 +353,17 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
   position: sticky; top: 0; z-index: 2;
   background: var(--bg); padding-bottom: 12px; border-bottom: 2px solid var(--line-soft);
 }
+/* La freccia indietro che chiede (DueTocchi): la domanda copre il titolo
+   invece di allargare la riga, che così non cambia né larghezza né altezza,
+   e il timer resta dov'è. 74 px a destra = il margine, il timer e lo spazio. */
+.appello-testa > .row:first-child { position: relative; }
+.appello-testa .icon-btn[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso-testo); transition: none; }
+.appello-testa .icon-btn[data-sicuro='true'] > .due-tocchi-chiede {
+  position: absolute; left: 20px; right: 74px; top: 12px; bottom: 0; z-index: 1;
+  display: flex; align-items: center; padding: 0 12px; text-align: left;
+  background: var(--bg); border: 2px solid var(--rosso);
+  font-family: var(--cond); font-style: oblique 9deg; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.15;
+}
 /* Sul telefono la testa ferma si prende già un terzo dello schermo: giorno,
    ora e sala su una riga sola, e il titolo e il conto un po' più bassi. */
 .appello-testa .chi-kanji > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
