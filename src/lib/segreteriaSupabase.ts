@@ -14,6 +14,7 @@ import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '..
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, type EnteRicevuta, type IntestatarioRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
+import { cosaNonVaSegnalazione, type Segnalazione } from './segnalazioni'
 
 /**
  * La segreteria col database vero.
@@ -99,6 +100,7 @@ const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `
 
 /** Le tabelle che arrivano dopo lo schema, col file che le crea. */
 const TABELLE_DOPO: Array<[RegExp, string]> = [
+  [/segnalazioni/, 'Le segnalazioni non sono ancora attive sul database: va lanciato 25-segnalazioni.sql'],
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
   [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
@@ -1067,6 +1069,44 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           },
         ]
       })
+    },
+
+    async segnalazioni() {
+      const io = (await db.auth.getSession()).data.session?.user.id
+      const righe = ok(
+        await db.from('segnalazioni').select('id, padre_id, titolo, testo, scritta_il, chiusa_il, autore:persone!autore_id ( nome, cognome, utente_id )').order('scritta_il'),
+      ) as unknown as Array<{
+        id: string
+        padre_id: string | null
+        titolo: string | null
+        testo: string
+        scritta_il: string
+        chiusa_il: string | null
+        autore: { nome: string; cognome: string; utente_id: string | null } | null
+      }>
+      const fili = new Map<string, Segnalazione>()
+      for (const r of righe) {
+        const m = { id: r.id, autore: nome(r.autore) || '—', mio: !!io && r.autore?.utente_id === io, testo: r.testo, il: r.scritta_il }
+        if (!r.padre_id) fili.set(r.id, { id: r.id, titolo: r.titolo ?? '', messaggi: [m], chiusaIl: r.chiusa_il ?? undefined })
+        else fili.get(r.padre_id)?.messaggi.push(m)
+      }
+      return [...fili.values()]
+    },
+
+    async apriSegnalazione(titolo, testo) {
+      const no = cosaNonVaSegnalazione(testo, titolo)
+      if (no) throw new Error(no)
+      ok(await db.from('segnalazioni').insert({ titolo: titolo.trim(), testo: testo.trim() }))
+    },
+
+    async rispondiSegnalazione(id, testo) {
+      const no = cosaNonVaSegnalazione(testo)
+      if (no) throw new Error(no)
+      ok(await db.from('segnalazioni').insert({ padre_id: id, testo: testo.trim() }))
+    },
+
+    async chiudiSegnalazione(id, chiusa) {
+      ok(await db.from('segnalazioni').update({ chiusa_il: chiusa ? new Date().toISOString() : null }).eq('id', id))
     },
 
     async gestisciPresenzaIstruttore(id, conferma) {

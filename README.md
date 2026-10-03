@@ -90,7 +90,9 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   segno solo, come un timbro, che lo fa riconoscere a colpo d'occhio accanto al
   nome nel calendario, nell'appello e sul tablet di sala (`src/lib/kanji.ts`, `supabase/24-kanji.sql`). Il **listino** dei costi, che
   la segreteria cambia da sé e che vale per la pagina di iscrizione e per le
-  voci delle ricevute (`supabase/19-listino.sql`). Le **impostazioni**: per quanto si
+  voci delle ricevute (`supabase/19-listino.sql`). Le **segnalazioni**: cosa non va o cosa servirebbe
+  nell'app, scritto lì invece che in un documento, con le risposte nello stesso
+  filo e il menu che dice quante aspettano una risposta (`supabase/25-segnalazioni.sql`). Le **impostazioni**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale con la loro
   musica e la **voce** del timer (la voce di sistema e le clip incise, uguali
   su tutti i tablet), lo storico dei timer, il **backup** e l'esportazione

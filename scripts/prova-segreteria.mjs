@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca } from './src/lib/segnalazioni'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -542,6 +542,24 @@ console.log('\nil kanji degli istruttori')
   await s.salvaKanji('i-fabio', null)
   ok('e lo si toglie', await kanji('i-fabio'), undefined)
   ok('un iscritto non ce l\'ha', await errore(async () => s.salvaKanji((await s.persone())[0].id, '山')), 'Il kanji è solo per istruttori e segreteria')
+}
+
+console.log('\nle segnalazioni della segreteria')
+{
+  ok('senza titolo no', await errore(() => s.apriSegnalazione('  ', 'qualcosa')), 'Manca il titolo')
+  ok('senza testo no', await errore(() => s.apriSegnalazione('Appello', ' ')), 'Manca il testo')
+  await s.apriSegnalazione(' Appello lento ', ' Ci mette tanto ')
+  const [x] = await s.segnalazioni()
+  ok('aperta, ripulita', [x.titolo, x.messaggi[0].testo, x.chiusaIl], ['Appello lento', 'Ci mette tanto', undefined])
+  ok('scritta da me non aspetta me', m.tocca(x), false)
+  await s.rispondiSegnalazione(x.id, 'Sistemato')
+  ok('la risposta sotto', (await s.segnalazioni())[0].messaggi.map((y) => y.testo), ['Ci mette tanto', 'Sistemato'])
+  ok('una risposta vuota no', await errore(() => s.rispondiSegnalazione(x.id, '')), 'Manca il testo')
+  await s.chiudiSegnalazione(x.id, true)
+  ok('chiusa', !!(await s.segnalazioni())[0].chiusaIl, true)
+  await s.chiudiSegnalazione(x.id, false)
+  ok('e riaperta', (await s.segnalazioni())[0].chiusaIl, undefined)
+  ok('un messaggio altrui da aperta aspetta me', m.tocca({ messaggi: [{ mio: false }] }), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

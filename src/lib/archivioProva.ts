@@ -1,4 +1,5 @@
 import type { Segnalata } from './segnalate'
+import type { Segnalazione } from './segnalazioni'
 import type { Ruolo, StatoSessione } from './sala'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
 import type { Anagrafica } from './segreteria'
@@ -124,6 +125,8 @@ export interface Archivio {
   prove?: ProvaLezione[]
   /** Le presenze segnalate dagli iscritti, da accogliere o rifiutare (vedi `segnalate.ts`). */
   segnalate?: Segnalata[]
+  /** Le segnalazioni della segreteria, coi loro messaggi (vedi `segnalazioni.ts`). */
+  segnalazioni?: Segnalazione[]
 }
 
 /** Come una riga di `prove` (21-prove.sql). */
