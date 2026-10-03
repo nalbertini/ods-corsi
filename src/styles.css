@@ -683,6 +683,7 @@ a.btn { text-decoration: none; }
   font-size: 14px; font-weight: 700; letter-spacing: 0.16em; color: var(--su-colore);
   padding: 6px 12px; white-space: nowrap;
 }
+.tb-spia-rete { color: var(--giallo-testo); border: 2px solid var(--giallo); }
 
 .tb-corpo { flex: 1; min-height: 0; padding: 22px 32px 24px; overflow-y: auto; }
 .tb-pila { display: flex; flex-direction: column; gap: 18px; }
@@ -849,6 +850,10 @@ a.btn { text-decoration: none; }
   font-size: 22px; font-weight: 700; text-align: left;
 }
 .tb-tessera[data-fatto='true'] { background: var(--surface-2); border-color: var(--verde); color: var(--verde); }
+/* Segnato qui, non ancora sul server: giallo come la spia della coda. */
+.tb-tessera[data-attesa] { border-color: var(--giallo); border-style: dashed; color: var(--text); }
+.tb-tessera[data-attesa] svg { color: var(--giallo); }
+.tb-tessera-attesa { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: var(--giallo-testo); }
 
 .tb-fascia {
   position: absolute; left: 32px; right: 32px; bottom: calc(var(--safe-b) + 24px);
@@ -858,6 +863,7 @@ a.btn { text-decoration: none; }
 }
 .tb-fascia[data-tipo='fatto'] { border-color: var(--verde); }
 .tb-fascia[data-tipo='errore'] { border-color: var(--rosso); }
+.tb-fascia[data-attesa] { border-color: var(--giallo); }
 .tb-fascia-titolo { font-size: 30px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
 
 .tb-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }

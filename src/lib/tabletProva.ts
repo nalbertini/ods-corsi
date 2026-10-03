@@ -30,9 +30,7 @@ export const PIN_PROVA: Record<string, { personaId: string; nome: string }> = {
 }
 
 const MIN = 60_000
-const PIN_TENTATIVI = 5
-const PIN_BLOCCO_MIN = 5
-const ANNULLA_MIN = 2
+const { pinTentativi: PIN_TENTATIVI, pinBloccoMin: PIN_BLOCCO_MIN, annullaMin: ANNULLA_MIN } = REGOLE
 
 /** Di quanto è spostato l'orologio della prova, letto una volta dall'indirizzo. */
 function spostamento(): number {
