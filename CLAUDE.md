@@ -16,8 +16,31 @@ Tutto è in italiano: codice, commenti, commit, guida. I commenti dicono perché
 
 Le stesse girano su ogni PR (`.github/workflows/controlla.yml`).
 
+## Il codice
+
+- **Prima la prova.** Una regola nuova o un problema da correggere comincia
+  da una prova che fallisce per il motivo giusto, poi il codice che la fa
+  passare. Lato app in `scripts/prova-<area>.mjs` (`ok(cosa, avuto,
+  voluto)`), lato database in `supabase/prova/*.sql` (`atteso`). Una prova
+  non si ammorbidisce per farla passare.
+- **La logica sta in `src/lib`**, in funzioni che si provano senza browser.
+  I componenti mostrano e chiamano. Una regola dentro un `.tsx` non si prova.
+- **Si usa quel che c'è**: i componenti di `ds.tsx` e `comune.tsx`, le
+  funzioni di `src/lib`, la piattaforma. Nessuna dipendenza nuova senza un sì
+  dell'utente.
+- TypeScript `strict`: niente `any`, né `as` o `@ts-ignore` senza un commento
+  che dice perché.
+- Nomi in italiano con le parole della palestra (appello, prove, sostituto,
+  quota), gli stessi in SQL, TypeScript e guida.
+- I messaggi d'errore sono per chi usa l'app: dicono cosa fare, mai il testo
+  grezzo dell'API.
+- Una cosa per PR, il diff più corto che la fa. Niente riscritture non
+  chieste, niente codice «per dopo».
+
 ## Le regole
 
+- Una funzione nuova, un cambio di comportamento o un problema da correggere
+  segue la skill `nuova-funzione`, col team di agenti di `.claude/agents/`.
 - La sicurezza sta nel database (RLS, grant, funzioni), non nell'app: la
   chiave anon è pubblica. Un file SQL nuovo o cambiato segue la skill
   `nuova-migrazione` e passa dall'agente `rls-reviewer`.
