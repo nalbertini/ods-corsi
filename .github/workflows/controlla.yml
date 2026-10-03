@@ -1,0 +1,89 @@
+name: Controlla
+
+# Le prove su ogni PR, prima di unirla: che compili, e che tutte le prove del
+# README («Le prove») tornino. Senza, le prove si lanciavano solo a mano e un
+# guaio si scopriva dopo l'unione, su main, con la versione già alzata.
+#
+# Le prove nuove entrano da sé: gli script `prova:*` di package.json e i file
+# di supabase/prova (vedi scripts/prova-sql.sh).
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Un push nuovo sulla stessa PR rende inutile il controllo di prima.
+concurrency:
+  group: controlla-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compila:
+    name: Compila
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            timer/package-lock.json
+
+      - run: npm ci
+      - run: npm ci --prefix timer
+
+      # Come in pubblica.yml, senza segreti: l'app in modalità prova. Dentro
+      # c'è anche il controllo dei tipi (tsc -b).
+      - run: npm run build:tutto
+
+  prove:
+    name: Prove dell'app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Tutte, anche se una cade, per vedere in un giro solo cosa non torna.
+      - name: npm run prova:*
+        run: |
+          guai=0
+          for s in $(node -p "Object.keys(require('./package.json').scripts).filter((s) => s.startsWith('prova:') && s !== 'prova:sql').join(' ')"); do
+            echo "::group::$s"
+            npm run -s "$s" || { echo "::error::$s non torna"; guai=1; }
+            echo '::endgroup::'
+          done
+          exit $guai
+
+  database:
+    name: Prove del database
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: prova
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: prova
+    steps:
+      - uses: actions/checkout@v5
+      # `psql` c'è già sul runner: niente Node, niente npm.
+      - run: bash scripts/prova-sql.sh
