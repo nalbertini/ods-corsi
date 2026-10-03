@@ -52,7 +52,7 @@ ha la sua guida:
 | **IMPOSTAZIONI** | Per quanto si tengono le presenze, il calendario, le sale, il timer dei tablet con la sua voce, lo storico dei timer, la privacy | [Apri](regole.md) |
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo | [Apri](segnalazioni.md) |
 
-In fondo al menu:
+In fondo al menu, sempre in vista anche quando il menu scorre (dal computer):
 
 - **COPIA LINK ISCRIZIONI** — copia l'indirizzo della pagina pubblica, da
   incollare su WhatsApp.

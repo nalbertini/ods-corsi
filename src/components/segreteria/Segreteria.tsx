@@ -289,60 +289,61 @@ export function Segreteria({
           ))}
         </div>
         <div className="grow" />
-        <div className="sg-voci">
-          {onIstruttori && (
-            <button type="button" className="num sg-voce" onClick={onIstruttori}>
-              ISTRUTTORI →
-            </button>
-          )}
-          <CopiaLink />
-        </div>
-        {/* Sul telefono stanno nella barra in cima. */}
-        <div className="row sg-icone">
-          {guida}
-          <TastoTema />
-          <button
-            type="button"
-            className="icon-btn"
-            aria-current={voce === 'regole' ? 'page' : undefined}
-            onClick={() => vai('regole')}
-            title="Impostazioni"
-            aria-label="Impostazioni"
-          >
-            <Cursori />
+        {onIstruttori && (
+          <button type="button" className="num sg-voce" onClick={onIstruttori}>
+            ISTRUTTORI →
           </button>
-        </div>
-        <div className="sg-chi">
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
-          <span style={{ fontSize: 12, color: 'var(--dim)' }}>{ruolo} · accesso completo</span>
-          {prova && <span className="num sg-bollino">DATI DI PROVA</span>}
-          {prova && (
+        )}
+        {/* Sul computer resta fermo in fondo anche quando il menu scorre: il link si copia più volte al giorno. */}
+        <div className="sg-piede">
+          <CopiaLink />
+          {/* Sul telefono stanno nella barra in cima. */}
+          <div className="row sg-icone">
+            {guida}
+            <TastoTema />
             <button
               type="button"
-              className="sg-link"
-              onClick={async () => {
-                if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?", 'RIPARTI DALL’ORARIO VERO', { pericolo: true }))) return
-                void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino')]).then(([a, p, r, e, l]) => {
-                  a.archivio.azzera()
-                  l.scordaListinoProva()
-                  p.scordaProva()
-                  r.scordaRichiesteProva()
-                  e.scordaEsempi()
-                  window.location.reload()
-                })
-              }}
+              className="icon-btn"
+              aria-current={voce === 'regole' ? 'page' : undefined}
+              onClick={() => vai('regole')}
+              title="Impostazioni"
+              aria-label="Impostazioni"
             >
-              Riparti dall'orario vero
+              <Cursori />
             </button>
-          )}
-          {onEsci && (
-            <button type="button" className="sg-link" onClick={onEsci}>
-              Esci
-            </button>
-          )}
-          <span className="num versione" title={VERSIONE_ESTESA}>
-            {VERSIONE}
-          </span>
+          </div>
+          <div className="sg-chi">
+            <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
+            <span style={{ fontSize: 12, color: 'var(--dim)' }}>{ruolo} · accesso completo</span>
+            {prova && <span className="num sg-bollino">DATI DI PROVA</span>}
+            {prova && (
+              <button
+                type="button"
+                className="sg-link"
+                onClick={async () => {
+                  if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?", 'RIPARTI DALL’ORARIO VERO', { pericolo: true }))) return
+                  void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino')]).then(([a, p, r, e, l]) => {
+                    a.archivio.azzera()
+                    l.scordaListinoProva()
+                    p.scordaProva()
+                    r.scordaRichiesteProva()
+                    e.scordaEsempi()
+                    window.location.reload()
+                  })
+                }}
+              >
+                Riparti dall'orario vero
+              </button>
+            )}
+            {onEsci && (
+              <button type="button" className="sg-link" onClick={onEsci}>
+                Esci
+              </button>
+            )}
+            <span className="num versione" title={VERSIONE_ESTESA}>
+              {VERSIONE}
+            </span>
+          </div>
         </div>
       </nav>
 

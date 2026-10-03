@@ -1154,8 +1154,23 @@ a.btn { text-decoration: none; }
 .sg { display: flex; height: 100%; overflow: hidden; background: var(--bg); position: relative; }
 .sg-menu {
   width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 28px;
-  padding: calc(var(--safe-t) + 28px) 16px 24px; background: var(--menu); border-right: 2px solid var(--line-soft);
+  padding: calc(var(--safe-t) + 28px) 12px 24px; background: var(--menu); border-right: 2px solid var(--line-soft);
   overflow-y: auto;
+}
+/* COPIA LINK ISCRIZIONI, i tre tasti e chi è entrato. Dove non sta fermo
+   scorre col menu come le voci, staccato da ISTRUTTORI → come una voce dall'altra. */
+.sg-piede { display: flex; flex-direction: column; gap: inherit; }
+.sg-menu > .sg-voce + .sg-piede { margin-top: -26px; }
+/* Fermo in fondo alla colonna anche quando il menu non ci sta: la segreteria
+   copia il link più volte al giorno. Su una finestra bassa coprirebbe le voci. */
+@media (min-width: 768px) and (min-height: 560px) {
+  /* Una voce raggiunta col TAB si ferma sopra il piede, non sotto. */
+  .sg-menu { padding-bottom: 0; scroll-padding-bottom: 320px; }
+  .sg-piede {
+    position: sticky; bottom: 0; gap: 12px; margin: 0 -12px; padding: 12px 12px 24px;
+    background: var(--menu); border-top: 2px solid var(--line-soft);
+  }
+  .sg-menu > .sg-voce + .sg-piede { margin-top: 0; }
 }
 .sg-voci { display: flex; flex-direction: column; gap: 2px; }
 /* Il primo tasto TAB porta al contenuto, saltando il menu: si vede solo allora. */
@@ -1189,6 +1204,9 @@ a.btn { text-decoration: none; }
   border-left: 4px solid transparent; color: var(--sec);
   font-size: 16px; font-weight: 700; letter-spacing: 0.12em; text-align: left;
 }
+/* Sul computer nessuna voce va a capo, col suo numero accanto: PRESENZE
+   ISTRUTTORI con due cifre vuole 188 px. */
+@media (min-width: 1001px) { .sg-voce { letter-spacing: 0.1em; padding-right: 8px; } }
 .sg-voce:hover { color: var(--text); }
 /* Il testo prende lo spazio, il numero sta a destra: una voce lunga che va a capo non lo lascia storto. */
 .sg-voce-testo { flex: 1; min-width: 0; }
@@ -1693,7 +1711,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
    più stretto: in cima occupava tre righe prima di arrivare alla sezione. Va
    in cima solo sul telefono, dove accanto non ci starebbe niente. */
 @media (min-width: 768px) and (max-width: 1000px) {
-  .sg-menu { width: 200px; padding-left: 12px; padding-right: 12px; }
+  .sg-menu { width: 200px; }
   .sg-voce { font-size: 15px; letter-spacing: 0.1em; padding: 0 10px; }
   .sg-corpo { padding: calc(var(--safe-t) + 20px) 20px 20px; }
 }
@@ -1727,6 +1745,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   }
   .sg-menu[data-aperto='true'] { display: flex; }
   .sg-marchio, .sg-menu > .grow { display: none; }
+  .sg-menu > .sg-voce + .sg-piede { margin-top: -18px; }
   .sg-gruppo[data-secondario='true'] .sg-voce { min-height: 40px; font-size: 14px; }
   .sg-chi { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
   .sg-chi > .sg-bollino { margin-top: 0; }
