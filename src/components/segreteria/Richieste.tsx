@@ -4,7 +4,8 @@ import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '..
 import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
-import { dataLunga, Guaio, Riga, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { STRETTO, useSchermo } from '../../lib/largo'
+import { dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 const STATI: Record<StatoRichiesta, string> = { nuova: 'NUOVA', accolta: 'ACCOLTA', rifiutata: 'RIFIUTATA' }
@@ -58,6 +59,9 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
   const lista = (elenco.dato ?? []).filter((x) => (soloStampare ? doc.has(x.id) : tutte || x.stato === 'nuova'))
   const nuove = (elenco.dato ?? []).filter((x) => x.stato === 'nuova').length
   const richiesta = (elenco.dato ?? []).find((x) => x.id === scelta) ?? null
+  // Sullo schermo stretto la richiesta si apre al posto dell'elenco, non sotto.
+  const stretto = useSchermo(STRETTO)
+  const piena = stretto && !!richiesta
   const { ordina, colonna } = useOrdina<Richiesta, 'nome' | 'corsi' | 'arrivata' | 'stato'>({
     nome: (x) => `${x.cognome} ${x.nome}`,
     corsi: (x) => x.corsi.map((c) => nomi.get(c) ?? '?').join(', '),
@@ -65,94 +69,103 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
     stato: (x) => ORDINE_STATI[x.stato],
   })
 
+  const scheda = richiesta && r && (
+    <Scheda
+      key={richiesta.id}
+      d={d}
+      r={r}
+      x={richiesta}
+      nomi={nomi}
+      titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
+      omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
+      fai={fai}
+      onCambiato={() => void elenco.ricarica()}
+      onStampato={() => void conDocumento.ricarica()}
+      onEliminata={() => {
+        setScelta(null)
+        void elenco.ricarica()
+      }}
+      onApri={(persona) => onVai('iscritti', { persona })}
+    />
+  )
+
   return (
     <>
-      <Testa
-        titolo="RICHIESTE ONLINE"
-        sotto={`${nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}${
-          stampare === 1 ? ' Una con documento o certificato da stampare e cancellare.' : stampare ? ` ${stampare} con documento o certificato da stampare e cancellare.` : ''
-        }`}
-      >
-        {stampare > 0 && (
-          <button type="button" className="num sg-chip" aria-pressed={soloStampare} onClick={() => setDaStampare(!soloStampare)}>
-            DA STAMPARE
-          </button>
-        )}
-        <button type="button" className="num sg-chip" aria-pressed={tutte && !soloStampare} onClick={() => (setDaStampare(false), setTutte(!tutte))}>
-          ANCHE QUELLE GIÀ GESTITE
-        </button>
-      </Testa>
-
-      {elenco.guaio && <Guaio testo={elenco.guaio} />}
-
-      <div className="sg-due-colonne sg-iscritti">
-        <div role="table" aria-label="Richieste" className="sg-tabella">
-          <div role="row" className="sg-lista-testa sg-riga-iscritto">
-            {colonna('nome', 'NOME')}
-            {colonna('corsi', 'CORSI')}
-            {colonna('arrivata', 'ARRIVATA', { numeri: true })}
-            {colonna('stato', 'STATO', { destra: true })}
-          </div>
-          <div className="sg-tabella-corpo">
-            {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le richieste…</p>}
-            {elenco.dato !== null && lista.length === 0 && (
-              <p className="sg-sotto" style={{ padding: '12px 14px' }}>
-                {soloStampare
-                  ? 'Niente da stampare.'
-                  : tutte
-                    ? 'Non è ancora arrivata nessuna richiesta.'
-                    : 'Nessuna richiesta nuova. Le altre si vedono con «anche quelle già gestite».'}
-              </p>
-            )}
-            {ordina(lista).map((x) => (
-              <button
-                key={x.id}
-                type="button"
-                role="row"
-                className="sg-riga-iscritto sg-iscritto"
-                aria-pressed={scelta === x.id}
-                data-spento={x.stato === 'rifiutata'}
-                onClick={() => setScelta(x.id)}
-              >
-                <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>
-                  {x.cognome} {x.nome}
-                  {minorenne(x.natoIl) && <span className="num sg-tag" style={{ marginLeft: 8 }}>MINORE</span>}
-                  {x.nucleoDi && <span className="num sg-tag" style={{ marginLeft: 8 }}>NUCLEO</span>}
-                  {doc.has(x.id) && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
-                </span>
-                <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
-                <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(x.creataIl)}</span>
-                <span role="cell" className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textAlign: 'right', color: x.stato === 'nuova' ? 'var(--giallo-testo)' : x.stato === 'accolta' ? 'var(--verde)' : 'var(--dim)' }}>
-                  {STATI[x.stato]}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <section aria-label="Richiesta" className="sg-scheda" style={{ maxWidth: 560 }}>
-          {richiesta && r ? (
-            <Scheda
-              key={richiesta.id}
-              d={d}
-              r={r}
-              x={richiesta}
-              nomi={nomi}
-              titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
-              omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
-              fai={fai}
-              onCambiato={() => void elenco.ricarica()}
-              onStampato={() => void conDocumento.ricarica()}
-              onEliminata={() => {
-                setScelta(null)
-                void elenco.ricarica()
-              }}
-              onApri={(persona) => onVai('iscritti', { persona })}
-            />
-          ) : (
-            <span className="sg-sotto">Apri una richiesta per vedere le risposte e i file.</span>
+      {piena && (
+        <SchedaPiena key={richiesta.id} etichetta={`Richiesta di ${richiesta.nome} ${richiesta.cognome}`} torna="RICHIESTE" onTorna={() => setScelta(null)}>
+          {scheda}
+        </SchedaPiena>
+      )}
+      <div className="stack" style={{ gap: 18 }} hidden={piena}>
+        <Testa
+          titolo="RICHIESTE ONLINE"
+          sotto={`${nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}${
+            stampare === 1 ? ' Una con documento o certificato da stampare e cancellare.' : stampare ? ` ${stampare} con documento o certificato da stampare e cancellare.` : ''
+          }`}
+        >
+          {stampare > 0 && (
+            <button type="button" className="num sg-chip" aria-pressed={soloStampare} onClick={() => setDaStampare(!soloStampare)}>
+              DA STAMPARE
+            </button>
           )}
-        </section>
+          <button type="button" className="num sg-chip" aria-pressed={tutte && !soloStampare} onClick={() => (setDaStampare(false), setTutte(!tutte))}>
+            ANCHE QUELLE GIÀ GESTITE
+          </button>
+        </Testa>
+
+        {elenco.guaio && <Guaio testo={elenco.guaio} />}
+
+        <div className="sg-due-colonne sg-iscritti">
+          <div role="table" aria-label="Richieste" className="sg-tabella">
+            <div role="row" className="sg-lista-testa sg-riga-iscritto">
+              {colonna('nome', 'NOME')}
+              {colonna('corsi', 'CORSI')}
+              {colonna('arrivata', 'ARRIVATA', { numeri: true })}
+              {colonna('stato', 'STATO', { destra: true })}
+            </div>
+            <div className="sg-tabella-corpo">
+              {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le richieste…</p>}
+              {elenco.dato !== null && lista.length === 0 && (
+                <p className="sg-sotto" style={{ padding: '12px 14px' }}>
+                  {soloStampare
+                    ? 'Niente da stampare.'
+                    : tutte
+                      ? 'Non è ancora arrivata nessuna richiesta.'
+                      : 'Nessuna richiesta nuova. Le altre si vedono con «anche quelle già gestite».'}
+                </p>
+              )}
+              {ordina(lista).map((x) => (
+                <button
+                  key={x.id}
+                  type="button"
+                  role="row"
+                  className="sg-riga-iscritto sg-iscritto"
+                  aria-pressed={scelta === x.id}
+                  data-spento={x.stato === 'rifiutata'}
+                  onClick={() => setScelta(x.id)}
+                >
+                  <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>
+                    {x.cognome} {x.nome}
+                    {minorenne(x.natoIl) && <span className="num sg-tag" style={{ marginLeft: 8 }}>MINORE</span>}
+                    {x.nucleoDi && <span className="num sg-tag" style={{ marginLeft: 8 }}>NUCLEO</span>}
+                    {doc.has(x.id) && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
+                  </span>
+                  <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
+                  <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(x.creataIl)}</span>
+                  <span role="cell" className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textAlign: 'right', color: x.stato === 'nuova' ? 'var(--giallo-testo)' : x.stato === 'accolta' ? 'var(--verde)' : 'var(--dim)' }}>
+                    {STATI[x.stato]}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {!stretto && (
+            <section aria-label="Richiesta" className="sg-scheda" style={{ maxWidth: 560 }}>
+              {scheda || <span className="sg-sotto">Apri una richiesta per vedere le risposte e i file.</span>}
+            </section>
+          )}
+        </div>
       </div>
       {avviso}
     </>
