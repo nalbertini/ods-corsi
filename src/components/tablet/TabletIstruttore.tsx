@@ -144,6 +144,30 @@ export function TabletIstruttore({
     if (visibile) scelto.current?.scrollIntoView({ block: 'nearest' })
   }, [scelta, scheda, visibile])
 
+  // TUTTI PRESENTI e GLI ALTRI ASSENTI cambiano mezzo appello in un tocco. A
+  // lezione aperta è il gesto più veloce e resta un tocco; su una lezione
+  // passata, che è già storia, il primo tocco chiede conferma. Un vero annullo
+  // non c'è: un segno dell'appello si cambia, non si toglie (segna_con_pin).
+  const [daConfermare, setDaConfermare] = useState<'tutti' | 'altri' | null>(null)
+  useEffect(() => {
+    if (!daConfermare) return
+    const t = window.setTimeout(() => setDaConfermare(null), 5000)
+    return () => window.clearTimeout(t)
+  }, [daConfermare])
+  useEffect(() => setDaConfermare(null), [scelta])
+  const conConferma = !!lezione && fase(lezione, adesso) !== 'aperta'
+  const daSegnarePresenti = (righe ?? []).filter((r) => r.stato !== 'presente')
+  const daSegnareAssenti = (righe ?? []).filter((r) => r.stato === null)
+  const tutti = (quale: 'tutti' | 'altri') => {
+    if (conConferma && daConfermare !== quale) return setDaConfermare(quale)
+    setDaConfermare(null)
+    void metti(
+      quale === 'tutti'
+        ? daSegnarePresenti.map((r) => ({ personaId: r.personaId, stato: 'presente', prova: r.prova }))
+        : daSegnareAssenti.map((r) => ({ personaId: r.personaId, stato: 'assente', prova: r.prova })),
+    )
+  }
+
   const presenti = righe?.filter((r) => r.stato === 'presente').length ?? 0
   const daSe = righe?.filter((r) => r.origine === 'tablet' || r.origine === 'recupero').length ?? 0
 
@@ -245,20 +269,17 @@ export function TabletIstruttore({
             </div>
             <span className="num" style={{ fontSize: 46, fontWeight: 700, lineHeight: 1 }}>{presenti}</span>
             <span className="num" style={{ fontSize: 22, color: 'var(--dim)' }}>/ {righe?.length ?? lezione.iscritti}</span>
-            <button
-              type="button"
-              className="tb-btn tb-btn-verde"
-              onClick={() => void metti((righe ?? []).filter((r) => r.stato !== 'presente').map((r) => ({ personaId: r.personaId, stato: 'presente', prova: r.prova })))}
-            >
-              TUTTI PRESENTI
+            <button type="button" className="tb-btn tb-btn-verde" disabled={!daSegnarePresenti.length} onClick={() => tutti('tutti')}>
+              {daConfermare === 'tutti' ? `CONFERMA: ${daSegnarePresenti.length} PRESENTI` : 'TUTTI PRESENTI'}
             </button>
-            <button
-              type="button"
-              className="tb-btn tb-btn-linea"
-              onClick={() => void metti((righe ?? []).filter((r) => r.stato === null).map((r) => ({ personaId: r.personaId, stato: 'assente', prova: r.prova })))}
-            >
-              GLI ALTRI ASSENTI
+            <button type="button" className="tb-btn tb-btn-linea" disabled={!daSegnareAssenti.length} onClick={() => tutti('altri')}>
+              {daConfermare === 'altri' ? `CONFERMA: ${daSegnareAssenti.length} ASSENTI` : 'GLI ALTRI ASSENTI'}
             </button>
+            {daConfermare && (
+              <span role="status" className="tb-nota" style={{ flexBasis: '100%', color: 'var(--giallo-testo)', fontWeight: 600 }}>
+                Lezione passata: tocca ancora per confermare, o lascia stare e non cambia niente.
+              </span>
+            )}
             <button
               type="button"
               className="tb-btn tb-btn-linea"

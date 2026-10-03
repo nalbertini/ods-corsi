@@ -350,7 +350,12 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
     <>
       {/* Col timer in corso e le presenze davanti, il bordo della testata
           prende il colore dell'intervallo: si legge da tutta la sala. */}
-      <header className="tb-testata" style={scheda === 'presenze' && inCorso(timer) ? { borderBottom: `8px solid ${coloreDi(timer)}` } : undefined}>
+      {/* Il recupero non tinge la testata: sopra le presenze il verde vuol dire
+          «presente», e una testata verde lo confonderebbe. */}
+      <header
+        className="tb-testata"
+        style={scheda === 'presenze' && inCorso(timer) && timer.kind !== 'rest' ? { borderBottom: `8px solid ${coloreDi(timer)}` } : undefined}
+      >
         <Logo width={70} />
         <div className="stack grow" style={{ gap: 2, minWidth: 0 }}>
           <span className="ob tb-sala">SALA {postazione.sala.toUpperCase()}</span>
