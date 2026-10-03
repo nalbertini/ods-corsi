@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
+import { Bollino } from '../ds'
 import { TastoTema } from '../TastoTema'
 import { Cursori } from '../Icons'
 import { Settimana } from './Settimana'
@@ -274,7 +275,8 @@ export function Segreteria({
           >
             <Cursori />
           </button>
-          {prova && <span className="num sg-bollino">DATI DI PROVA</span>}
+          {/* Fra DATI e DI uno spazio che non va a capo: in 56px si spezza solo prima di PROVA. */}
+          {prova && <Bollino>DATI{'\u00a0'}DI PROVA</Bollino>}
         </div>
         {d && <CercaIscritto d={d} onApri={(id) => void vai('iscritti', { persona: id })} />}
         <div className="sg-gruppi">
