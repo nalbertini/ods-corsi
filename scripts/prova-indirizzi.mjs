@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export { leggiIndirizzo, scriviIndirizzo, postoDelMenu, dopoIndietro, indirizzoCorretto, settimanaDi } from './src/lib/indirizzoSegreteria'",
+    contents: "export * from './src/lib/indirizzoSegreteria'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -158,6 +158,19 @@ ok('prima la settimana della lezione aperta',
 ok('poi quella dell\'indirizzo', chiave(m.settimanaDi({ voce: 'settimana', settimana: '2026-09-07' }, oggi)), '2026-09-07')
 ok('se no quella di oggi', chiave(m.settimanaDi({ voce: 'settimana' }, oggi)), '2026-09-28')
 ok('dalla mezzanotte', m.settimanaDi({ voce: 'settimana' }, oggi).getHours(), 0)
+
+console.log('Il filtro dopo un clic')
+const { filtroDopo } = m
+ok('da DA FARE a ISCRITTI col filtro chiesto si apre quello', filtroDopo('dafare', 'iscritti', undefined, 'certificato'), 'certificato')
+ok('da DA FARE a RICHIESTE col filtro chiesto si apre quello', filtroDopo('dafare', 'richieste', undefined, 'stampare'), 'stampare')
+ok('da DA FARE a PRESENZE col filtro chiesto si apre quello', filtroDopo('dafare', 'presenze', undefined, 'senza-appello'), 'senza-appello')
+ok('ISCRITTI ritoccato senza filtro chiesto tiene il filtro acceso', filtroDopo('iscritti', 'iscritti', 'certificato', undefined), 'certificato')
+ok('RICHIESTE ritoccato senza filtro chiesto tiene il filtro acceso', filtroDopo('richieste', 'richieste', 'stampare', undefined), 'stampare')
+ok('PRESENZE ritoccato senza filtro chiesto tiene il filtro acceso', filtroDopo('presenze', 'presenze', 'senza-appello', undefined), 'senza-appello')
+ok('una voce diversa senza filtro chiesto riparte senza filtro', filtroDopo('iscritti', 'corsi', 'certificato', undefined), undefined)
+ok('una voce diversa col filtro chiesto apre quello, non l\'acceso', filtroDopo('iscritti', 'richieste', 'certificato', 'stampare'), 'stampare')
+ok('la stessa voce con un altro filtro chiesto passa a quello', filtroDopo('iscritti', 'iscritti', 'certificato', 'pagare'), 'pagare')
+ok('la stessa voce senza filtri resta senza filtro', filtroDopo('iscritti', 'iscritti', undefined, undefined), undefined)
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
