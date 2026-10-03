@@ -45,6 +45,11 @@ export function Personale({ d }: { d: DatiSegreteria }) {
     accesso: (p) => (!p.attiva ? 2 : p.collegato ? 0 : 1),
     pin: (p) => (p.haPin ? 0 : 1),
   })
+  // La segreteria può tutto: la sua colonna, tutta SÌ, non ha niente da ordinare.
+  const permessi = useOrdina<(typeof PERMESSI)[number], 'cosa' | 'istruttore'>({
+    cosa: ([cosa]) => cosa,
+    istruttore: ([, i]) => (i === 'SÌ' ? 0 : 1),
+  })
   const chiudi = () => {
     setNuovo(false)
     setScelta(null)
@@ -130,11 +135,11 @@ export function Personale({ d }: { d: DatiSegreteria }) {
           <Riga titolo="COSA PUÒ FARE OGNI RUOLO" />
           <div role="table" className="sg-permessi">
             <div role="row" className="contents">
-              <span role="columnheader" />
-              <span role="columnheader" className="sg-etichetta">ISTRUTTORE</span>
+              {permessi.colonna('cosa', 'PERMESSO')}
+              {permessi.colonna('istruttore', 'ISTRUTTORE')}
               <span role="columnheader" className="sg-etichetta">SEGRETERIA</span>
             </div>
-            {PERMESSI.map(([cosa, i]) => (
+            {permessi.ordina(PERMESSI).map(([cosa, i]) => (
               <div key={cosa} role="row" className="contents">
                 <span role="cell" style={{ fontSize: 14, color: 'var(--sec)' }}>{cosa}</span>
                 <span role="cell" className="num" style={{ fontWeight: 700, color: i === 'SÌ' ? 'var(--text)' : 'var(--dim)' }}>{i}</span>
