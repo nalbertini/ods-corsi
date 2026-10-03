@@ -323,14 +323,21 @@ export function TabletIstruttore({
   )
 }
 
-const PRESENZA: Record<PresenzaIstruttore['stato'], { titolo: string; testo: string; colore: string }> = {
-  confermata: { titolo: 'LA TUA PRESENZA È SEGNATA', testo: 'Eri previsto su questa lezione.', colore: 'var(--verde)' },
+/** `colore` per il bordo, `scritto` per l'etichetta: giallo e verde puri sul tema chiaro non si leggono. */
+const PRESENZA: Record<PresenzaIstruttore['stato'], { titolo: string; testo: string; colore: string; scritto: string }> = {
+  confermata: { titolo: 'LA TUA PRESENZA È SEGNATA', testo: 'Eri previsto su questa lezione.', colore: 'var(--verde)', scritto: 'var(--verde-testo)' },
   da_confermare: {
     titolo: 'PRESENZA DA CONFERMARE',
     testo: 'Non eri previsto su questa lezione: la tua presenza la conferma la segreteria.',
     colore: 'var(--giallo)',
+    scritto: 'var(--giallo-testo)',
   },
-  rifiutata: { titolo: 'PRESENZA NON CONFERMATA', testo: 'La segreteria non l’ha confermata: se è un errore, parlane con lei.', colore: 'var(--rosso)' },
+  rifiutata: {
+    titolo: 'PRESENZA NON CONFERMATA',
+    testo: 'La segreteria non l’ha confermata: se è un errore, parlane con lei.',
+    colore: 'var(--rosso)',
+    scritto: 'var(--rosso)',
+  },
 }
 
 /** Cosa ha fatto il PIN alla presenza dell'istruttore, una riga per lezione. */
@@ -343,7 +350,7 @@ function LaTuaPresenza({ presenze }: { presenze: PresenzaIstruttore[] }) {
         const x = PRESENZA[stato]
         return (
           <div key={stato} role="status" className="tb-riquadro" style={{ borderColor: x.colore }}>
-            <span className="tb-etichetta" style={{ color: stato === 'da_confermare' ? 'var(--giallo-testo)' : x.colore }}>
+            <span className="tb-etichetta" style={{ color: x.scritto }}>
               {x.titolo}
             </span>
             <span className="tb-riquadro-testo">

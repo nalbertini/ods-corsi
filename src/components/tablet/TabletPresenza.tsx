@@ -36,11 +36,14 @@ export function TabletPresenza({
   lezione,
   adesso,
   onIndietro,
+  onCambiato,
 }: {
   d: DatiTablet
   lezione: LezioneSala
   adesso: Date
   onIndietro: () => void
+  /** Un tocco o un annullo è arrivato al server: il conto nella barra in basso va riletto. */
+  onCambiato?: () => void
 }) {
   const [nomi, setNomi] = useState<NomeSala[] | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
@@ -109,6 +112,7 @@ export function TabletPresenza({
           aggiorna(p, () => ({ tipo: 'gia', p, annulla: false }))
           return false
         }
+        onCambiato?.()
         return true
       })
       .catch((e: unknown) => {
@@ -138,8 +142,10 @@ export function TabletPresenza({
       return segnato(p.personaId, false)
     }
     try {
-      if (await d.annulla(lezione.id, p.personaId)) segnato(p.personaId, false)
-      else mostra({ tipo: 'errore', testo: `Non si può più annullare: dillo all'istruttore, lo corregge lui.` })
+      if (await d.annulla(lezione.id, p.personaId)) {
+        segnato(p.personaId, false)
+        onCambiato?.()
+      } else mostra({ tipo: 'errore', testo: `Non si può più annullare: dillo all'istruttore, lo corregge lui.` })
     } catch (e) {
       if (rifiutato(e, d.modo)) return mostra({ tipo: 'errore', testo: messaggio(e, 'Il server non risponde') })
       coda.accoda(chiave, 'annulla', [lezione.id, p.personaId])
@@ -208,7 +214,7 @@ export function TabletPresenza({
         <div role="status" className="tb-fascia" data-tipo={fascia.tipo} data-attesa={(fascia.tipo === 'fatto' && fascia.attesa) || undefined}>
           {fascia.tipo === 'fatto' && (
             <>
-              <span style={{ color: fascia.attesa ? 'var(--giallo)' : 'var(--verde)' }}>
+              <span style={{ color: fascia.attesa ? 'var(--giallo-testo)' : 'var(--verde-testo)' }}>
                 <Spunta size={40} />
               </span>
               <span className="stack grow" style={{ gap: 2 }}>

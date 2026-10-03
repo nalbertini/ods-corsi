@@ -81,7 +81,7 @@ export function TabletPin({
           ))}
         </div>
         {guaio && (
-          <span role="alert" style={{ fontSize: 17, fontWeight: 600, color: 'var(--rosso)' }}>
+          <span role="alert" style={{ fontSize: 19, fontWeight: 700, color: 'var(--rosso)' }}>
             {guaio}
           </span>
         )}
