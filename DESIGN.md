@@ -192,7 +192,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 - **Tasto** (#b8b8b2 / chiaro #4a4a46): il testo dei tasti a linea a riposo, che si accende in `testo` al passaggio.
 
 ### Named Rules
-**La Regola del Segnale Unico.** Ogni colore del marchio ha un significato e uno solo. Il rosso non decora, il verde non è "brand": se un elemento è verde, qualcosa è fatto o presente. In segreteria il rosso dice solo «manca» o «non si torna indietro»: un buco su una lezione futura (istruttore?, sala?) è grigio, rosso solo a lezione passata.
+**La Regola del Segnale Unico.** Ogni colore del marchio ha un significato e uno solo. Il rosso non decora, il verde non è "brand": se un elemento è verde, qualcosa è fatto o presente. In segreteria il rosso dice solo «manca» o «non si torna indietro». Nella settimana è rosso solo il SENZA APPELLO; istruttore? e sala? sono grigi, perché sono buchi del corso e il rosso lo hanno in CORSI. Le lezioni passate con l'appello fatto si fanno da parte (fondo trasparente, bordo tenue).
 
 **La Regola dei Colori dei Corsi.** Un corso si colora fra Blu, Viola (#8b5cc4, fuori dal marchio, scelto apposta per non essere un segnale), Giallo e Verde. Mai Rosso (`supabase/25-colori-corsi.sql`).
 

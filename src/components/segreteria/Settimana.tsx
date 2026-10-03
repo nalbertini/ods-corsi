@@ -174,6 +174,9 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
         <span className="row" style={{ gap: 6 }}>
           <span className="num sg-tag" data-tipo="sostituto">SOSTITUTO</span>un altro istruttore, solo per quel giorno
         </span>
+        <span className="row" style={{ gap: 6 }}>
+          <span className="sg-forse">istruttore?</span>il corso non ne ha uno: si assegna in CORSI
+        </span>
       </div>
 
       {lezione && (
@@ -217,21 +220,22 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
   const annullata = l.stato === 'annullata'
   const fatto = l.segnati > 0
   const manca = passata && !annullata && !fatto
-  // Un buco nel corso, su una lezione che deve ancora venire, è da sapere ma
-  // non è un guaio: rosso solo quando la lezione è passata.
-  const buco = passata && !annullata ? 'sg-manca' : 'sg-forse'
+  // Passata e con l'appello fatto non chiede più niente: si fa da parte, e
+  // nella settimana resta in vista solo quello che manca.
+  const chiusa = passata && !annullata && fatto
   return (
     <button
       type="button"
       className="sg-lezione"
       data-annullata={annullata}
       data-manca={manca}
+      data-chiusa={chiusa}
       style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
       onClick={onApri}
     >
       <span className="ob sg-lezione-nome">{l.corso.toUpperCase()}</span>
       <span className="sg-lezione-dove">
-        {[l.sala ?? <span key="s" className={buco}>sala?</span>, l.istruttori || <span key="i" className={buco}>istruttore?</span>].map((x, i) => (
+        {[l.sala ?? <span key="s" className="sg-forse">sala?</span>, l.istruttori || <span key="i" className="sg-forse">istruttore?</span>].map((x, i) => (
           <span key={i}>
             {i > 0 && ' · '}
             {x}

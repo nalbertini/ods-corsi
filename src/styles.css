@@ -1073,6 +1073,10 @@ a.sg-voce { text-decoration: none; }
 .sg-lezione:hover { border-color: var(--dim); border-top-color: var(--tinta); }
 .sg-lezione[data-manca='true'] { border-color: var(--rosso); border-top-color: var(--tinta); }
 .sg-lezione[data-annullata='true'] { opacity: 0.5; }
+/* Passata e fatta: si fa da parte, perché in vista resti quello che manca. */
+.sg-lezione[data-chiusa='true'] { background: transparent; border-color: var(--line-soft); border-top-color: color-mix(in srgb, var(--tinta) 55%, var(--bg)); }
+.sg-lezione[data-chiusa='true'] .sg-lezione-nome { color: var(--sec); }
+.sg-lezione[data-chiusa='true']:hover { border-color: var(--dim); border-top-color: var(--tinta); }
 .sg-lezione[data-annullata='true'] .sg-lezione-nome { text-decoration: line-through; }
 .sg-lezione-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-lezione-dove { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
