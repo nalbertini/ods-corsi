@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale, testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1700,6 +1700,55 @@ console.log('\ntogliere un «non sono doppioni»')
   })
   const manca = await errore(() => (typeof senza.togliNonDoppioni === 'function' ? senza.togliNonDoppioni(eva1, eva2) : Promise.reject(new Error('togliNonDoppioni non c\'è'))))
   ok('senza il file sul database, togliere dice quale file lanciare', manca.includes('33-non-doppioni.sql') ? '33-non-doppioni.sql' : manca, '33-non-doppioni.sql')
+}
+
+console.log('\npossibili doppioni: nomi scambiati e un secondo nome')
+{
+  const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: '2026-09-26', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })
+  const vuoti = { codiciFiscali: {}, nascite: {}, nonDoppioni: [] }
+  const motivo = (a, b, indizi = {}) =>
+    typeof m.motivoDoppione !== 'function' ? 'motivoDoppione non c\'è' : m.motivoDoppione(a, b, { ...vuoti, ...indizi })
+  const chiara = scheda('1', 'Chiara', 'Rossi')
+
+  ok('«Chiara Rossi» e una scheda Rossi Chiara: nome e cognome scambiati', motivo(chiara, scheda('2', 'Rossi', 'Chiara')), 'scambiati')
+  ok('«Chiara Rossi» e «Maria Chiara Rossi»: un secondo nome', motivo(chiara, scheda('2', 'Maria Chiara', 'Rossi')), 'secondo nome')
+  ok('«Chiara Rossi» e «Maria Chiara Anna Rossi»: due nomi in più, no', motivo(chiara, scheda('2', 'Maria Chiara Anna', 'Rossi')), null)
+  ok('«A. Rossi» e «Anna Rossi»: un\'iniziale sola, no', motivo(scheda('1', 'A.', 'Rossi'), scheda('2', 'Anna', 'Rossi')), null)
+  ok('«M. Chiara Rossi» e «Maria Chiara Rossi»: no', motivo(scheda('1', 'M. Chiara', 'Rossi'), scheda('2', 'Maria Chiara', 'Rossi')), null)
+  ok('«Chiara Rossi» e «Chiara M. Rossi»: un secondo nome', motivo(chiara, scheda('2', 'Chiara M.', 'Rossi')), 'secondo nome')
+
+  const anna = scheda('1', 'Anna', 'Rossi', { telefono: '333 1234567' })
+  const annaMaria = scheda('2', 'Anna Maria', 'Rossi', { telefono: '333 1234567' })
+  ok('un secondo nome, due nascite diverse: no', motivo(anna, annaMaria, { nascite: { 1: '2010-01-01', 2: '2012-02-01' } }), null)
+  ok('un secondo nome, due codici fiscali diversi: no', motivo(anna, annaMaria, { codiciFiscali: { 1: 'RSSNNA10A41L219X', 2: 'RSSNNM12B41L219Y' } }), null)
+  ok('un secondo nome, segnate «non sono doppioni»: no', motivo(anna, annaMaria, { nonDoppioni: [['1', '2']] }), null)
+  ok('anche segnate nell\'altro ordine', motivo(anna, annaMaria, { nonDoppioni: [['2', '1']] }), null)
+  ok('un secondo nome e lo stesso telefono, nient\'altro: un secondo nome', motivo(anna, annaMaria), 'secondo nome')
+
+  ok('scambiati e un secondo nome insieme: no', motivo(chiara, scheda('2', 'Rossi', 'Maria Chiara')), null)
+  ok('«Luca De Luca» e «Luca Luca»: no', motivo(scheda('1', 'Luca', 'De Luca'), scheda('2', 'Luca', 'Luca')), null)
+  ok('«Marco Rossi Bianchi» e «Marco Rossi»: no', motivo(scheda('1', 'Marco', 'Rossi Bianchi'), scheda('2', 'Marco', 'Rossi')), null)
+  ok('stesso codice fiscale e nomi scambiati: il codice fiscale',
+    motivo(chiara, scheda('2', 'Rossi', 'Chiara'), { codiciFiscali: { 1: 'RSSCHR10A41L219X', 2: 'rsschr10a41l219x' } }), 'codice fiscale')
+  ok("«Luca D'Amico» e «luca damico»: lo stesso nome", motivo(scheda('1', 'Luca', "D'Amico"), scheda('2', 'luca', 'damico')), 'nome')
+
+  // Una coppia per motivo, seminate in disordine: prima il codice fiscale, poi il nome, gli scambiati, il secondo nome.
+  const miste = [
+    scheda('7', 'Anna', 'Abate'), scheda('8', 'Anna Maria', 'Abate'),
+    scheda('5', 'Bice', 'Conti'), scheda('6', 'Conti', 'Bice'),
+    scheda('3', 'Dino', 'Esposito'), scheda('4', 'dino', 'esposito'),
+    scheda('1', 'Ugo', 'Zanetti'), scheda('2', 'Ugolino', 'Zanetti'),
+  ]
+  ok('le coppie in ordine di motivo: codice fiscale, nome, scambiati, secondo nome',
+    typeof m.coppieDoppioni !== 'function' ? 'coppieDoppioni non c\'è'
+      : m.coppieDoppioni(miste, { ...vuoti, codiciFiscali: { 1: 'ZNTGUO10A01L219X', 2: 'ZNTGUO10A01L219X' } }).map((c) => c.map((p) => p.id).sort().join('-')),
+    ['1-2', '3-4', '5-6', '7-8'])
+
+  const proposti = m.possibiliDoppioni(chiara, [scheda('9', 'Anna', 'Bianchi'), scheda('2', 'Rossi', 'Chiara'), scheda('8', 'Zeno', 'Verdi')])
+  ok('aperta «Chiara Rossi»: la scheda scambiata prima di Anna Bianchi', proposti.map((p) => p.id), ['2', '9', '8'])
+
+  ok('le etichette dei motivi', m.MOTIVI ?? 'MOTIVI non c\'è',
+    { 'codice fiscale': 'stesso codice fiscale', nome: 'stesso nome', scambiati: 'nome e cognome scambiati', 'secondo nome': 'un secondo nome' })
 }
 
 console.log('\nSALVA LE DATE toglie le lezioni fuori dalle date dei corsi, tranne quelle con appello o prova')
