@@ -21,7 +21,20 @@ select atteso('una persona nuova', (select aggiungi_prova('eeeeeeee-0000-0000-00
 select atteso('rimandata dalla coda: niente doppioni', (select aggiungi_prova('eeeeeeee-0000-0000-0000-000000000006', 'ffffffff-0000-0000-0000-000000000001',
   'Marco', 'Nuovo', '333 1234567')::text), 'ffffffff-0000-0000-0000-000000000001');
 select atteso('la vede nell''elenco delle prove', (select count(*)::text from prove where sessione_id = 'eeeeeeee-0000-0000-0000-000000000006'), '1');
-select atteso('e fra chi ha già provato, col telefono', (select nome || ' ' || cognome || ' ' || telefono || ' ' || corso from prove_recenti()), 'Marco Nuovo 333 1234567 Lotta 2');
+select atteso('e fra chi ha già provato, senza telefono per l''istruttore', (select nome || ' ' || cognome || ' ' || coalesce(telefono, '-') || ' ' || corso from prove_recenti()), 'Marco Nuovo - Lotta 2');
+-- Il telefono lo vede la segreteria, anche quando insegna.
+reset role;
+select chi('11111111-1111-1111-1111-111111111111');  -- Anna, segreteria
+set role authenticated;
+select atteso('la segreteria lo vede col telefono', (select nome || ' ' || coalesce(telefono, '-') from prove_recenti()), 'Marco 333 1234567');
+reset role;
+update persone set anche_istruttore = true where id = 'aaaaaaaa-0000-0000-0000-000000000001';
+set role authenticated;
+select atteso('anche chi è segreteria e istruttore', (select nome || ' ' || coalesce(telefono, '-') from prove_recenti()), 'Marco 333 1234567');
+reset role;
+update persone set anche_istruttore = false where id = 'aaaaaaaa-0000-0000-0000-000000000001';
+select chi('22222222-2222-2222-2222-222222222222');  -- di nuovo Maura
+set role authenticated;
 select atteso('senza nome no', tenta($$select aggiungi_prova('eeeeeeee-0000-0000-0000-000000000006', gen_random_uuid(), ' ', 'Vuoto')$$), 'NEGATO: servono nome e cognome');
 select atteso('un telefono che non è un numero no', tenta($$select aggiungi_prova('eeeeeeee-0000-0000-0000-000000000006', gen_random_uuid(), 'Ugo', 'Strano', 'chiamami')$$), 'NEGATO: il telefono non sembra un numero');
 select atteso('chi è già iscritto è già nell''appello', tenta($$select aggiungi_prova('eeeeeeee-0000-0000-0000-000000000006', 'aaaaaaaa-0000-0000-0000-000000000003')$$), 'NEGATO: è già iscritto a questo corso: è nell''appello');
@@ -64,6 +77,10 @@ set role anon;
 select atteso('senza accesso', tenta($$select aggiungi_prova('eeeeeeee-0000-0000-0000-000000000006', gen_random_uuid(), 'Ugo', 'Anonimo')$$), 'NEGATO: permission denied for function aggiungi_prova');
 select atteso('le funzioni di dentro no', tenta($$select metti_prova('eeeeeeee-0000-0000-0000-000000000006', gen_random_uuid(), 'Ugo', 'Dentro', null, null, null)$$), 'NEGATO: permission denied for function metti_prova');
 reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('neanche col suo accesso: gia_provati non si chiama da fuori', tenta($$select count(*)::text from gia_provati(true)$$), 'NEGATO: permission denied for function gia_provati');
+reset role;
 
 \echo ''
 \echo '--- 4. dal tablet, col PIN ---'
@@ -72,6 +89,7 @@ set role authenticated;
 select atteso('il tablet non legge la tabella', tenta($$select count(*)::text from prove$$), '0');
 select atteso('PIN sbagliato: nessuno', (select count(*)::text from provati_con_pin('0000')), '0');
 select atteso('chi ha provato, senza telefono', (select nome || ' ' || coalesce(telefono, '-') from provati_con_pin('4321')), 'Marco -');
+select atteso('il tablet non chiama prove_recenti', tenta($$select count(*)::text from prove_recenti()$$), 'NEGATO: le prove le vede chi fa l''appello');
 select atteso('le prove della lezione', (select cognome || ' ' || stato || ' ' || origine from prove_con_pin('4321', 'eeeeeeee-0000-0000-0000-000000000006')), 'Nuovo assente appello');
 select atteso('PIN sbagliato: niente prove', (select count(*)::text from prove_con_pin('0000', 'eeeeeeee-0000-0000-0000-000000000006')), '0');
 select atteso('Maura la segna presente', (select segna_prova_con_pin('4321', 'eeeeeeee-0000-0000-0000-000000000006', 'ffffffff-0000-0000-0000-000000000001', 'presente')::text), 'true');
@@ -114,6 +132,27 @@ insert into prove (sessione_id, persona_id) values ('eeeeeeee-0000-0000-0000-000
 insert into presenze (sessione_id, persona_id, stato) values ('eeeeeeee-0000-0000-0000-000000000002', 'ffffffff-0000-0000-0000-000000000001', 'presente');
 select togli_prova_da('eeeeeeee-0000-0000-0000-000000000002', 'ffffffff-0000-0000-0000-000000000001');
 select atteso('il segno da iscritto resta', (select stato::text from presenze where persona_id = 'ffffffff-0000-0000-0000-000000000001' and sessione_id = 'eeeeeeee-0000-0000-0000-000000000002'), 'presente');
+
+\echo ''
+\echo '--- 6. chi non si cerca più ---'
+reset role;
+-- Vito ha provato 91 giorni fa; Dora ieri, ma è disattivata.
+insert into sessioni (id, corso_id, inizio, fine) values
+  ('eeeeeeee-0000-0000-0000-000000000091', 'cccccccc-0000-0000-0000-000000000001', now() - interval '91 days', now() - interval '91 days' + interval '1 hour');
+insert into persone (id, nome, cognome, ruolo, attiva) values
+  ('ffffffff-0000-0000-0000-000000000091', 'Vito', 'Lontano', 'iscritto', true),
+  ('ffffffff-0000-0000-0000-000000000092', 'Dora', 'Spenta', 'iscritto', false);
+insert into prove (sessione_id, persona_id) values
+  ('eeeeeeee-0000-0000-0000-000000000091', 'ffffffff-0000-0000-0000-000000000091'),
+  ('eeeeeeee-0000-0000-0000-000000000002', 'ffffffff-0000-0000-0000-000000000092');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('una prova di 91 giorni fa e una persona disattivata non ci sono', (select string_agg(nome, ' ') from prove_recenti()), 'Marco');
+reset role;
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('neanche sul tablet', (select string_agg(nome, ' ') from provati_con_pin('4321')), 'Marco');
+reset role;
 
 \echo ''
 \echo 'Le prove: tutto come previsto.'
