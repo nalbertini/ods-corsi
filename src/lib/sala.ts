@@ -125,3 +125,10 @@ export function chiaveGiorno(d: Date): string {
   const p = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
 }
+
+/**
+ * Tornando al calendario l'appello si chiude, e un nome scritto in PROVE e
+ * non aggiunto (`provaScritta`) si perderebbe: la freccia lo chiede prima.
+ */
+export const domandaIndietro = (provaScritta?: string | null): string | undefined =>
+  provaScritta ? `${provaScritta} NON AGGIUNTO · ESCI?` : undefined

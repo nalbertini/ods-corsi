@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { somiglianti, cosaNonVaProva, giaNellAppello } from './src/lib/prove'; export { sigleDeiProvati } from './src/lib/tablet'",
+      "export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { somiglianti, cosaNonVaProva, giaNellAppello, provaScritta } from './src/lib/prove'; export { domandaIndietro } from './src/lib/sala'; export { sigleDeiProvati } from './src/lib/tablet'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -268,6 +268,23 @@ console.log("\n8. chi è già nell'appello, anche se la rilettura non arriva")
   ok("chi si toglie esce dall'elenco", elenco(m.giaNellAppello(new Set(['a', 'c']), { tolto: 'c' })), ['a'])
   ok("l'elenco di prima non cambia", elenco(prima), ['a'])
   ok("un appello riletto vuoto svuota l'elenco", elenco(m.giaNellAppello(prima, { letti: [] })), [])
+}
+
+console.log("\n9. tornando al calendario, un nome scritto in «Chi viene a provare» e non aggiunto non si perde")
+{
+  const P = (nome, cognome) => m.provaScritta({ nome, cognome })
+  ok('niente scritto: nessun avviso', P('', ''), null)
+  ok('solo spazi: nessun avviso', P('   ', ' '), null)
+  ok('nome e cognome: nome e iniziale maiuscola col punto, il nome com\'è scritto', P('Marco', 'rossi'), 'Marco R.')
+  ok('spazi ai lati tolti', P('  Marco ', '  rossi '), 'Marco R.')
+  ok('solo il nome', P('Marco', ''), 'Marco')
+  ok('solo il cognome', P('  ', 'Rossi'), 'Rossi')
+  ok('un nome di 14 caratteri resta intero', P('Massimilianone', ''), 'Massimilianone')
+  ok('un nome più lungo si taglia a 13 più «…»', P('Mariagiovannina', ''), 'Mariagiovanni…')
+
+  ok('indietro senza nome scritto: si esce e basta', m.domandaIndietro(), undefined)
+  ok('indietro con provaScritta null: si esce e basta', m.domandaIndietro(null), undefined)
+  ok('indietro con un nome scritto: avvisa', m.domandaIndietro('Marco R.'), 'Marco R. NON AGGIUNTO · ESCI?')
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

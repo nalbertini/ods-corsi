@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
-import { giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
+import { domandaIndietro, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { timerDellaLezione } from '../lib/aree'
 import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
@@ -92,6 +92,9 @@ export function AppelloScreen({
   }
   const [guaio, setGuaio] = useState<string | null>(null)
   const [conProve, setConProve] = useState(false)
+  // Chi è scritto in PROVE e non aggiunto: tornando al calendario si
+  // perderebbe, e la freccia lo chiede prima (`domandaIndietro`).
+  const [scritta, setScritta] = useState<string | null>(null)
   const prove = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (conProve) prove.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
@@ -243,9 +246,9 @@ export function AppelloScreen({
       <div className="appello-testa">
         <div className="row pad" style={{ gap: 10, paddingTop: 12 }}>
           {onIndietro && (
-            <button className="icon-btn" onClick={onIndietro} aria-label="Torna al calendario">
+            <DueTocchi className="icon-btn" chiede={domandaIndietro(scritta)} etichetta="Torna al calendario" onFai={onIndietro}>
               <Back />
-            </button>
+            </DueTocchi>
           )}
           <span className="stack grow" style={{ gap: 3, minWidth: 0 }}>
             <span className="ob appello-titolo">{d.sessione.corso.toUpperCase()}</span>
@@ -411,6 +414,7 @@ export function AppelloScreen({
             giaQui={new Set(d.elenco.map((p) => p.id))}
             onAggiungi={aggiungiProva}
             onChiudi={() => setConProve(false)}
+            onScritto={setScritta}
           />
         ) : (
           <button type="button" className="btn btn-dashed" style={{ minHeight: 52, fontSize: 16 }} onClick={() => setConProve(true)}>
@@ -462,12 +466,15 @@ function DueTocchi({
   className,
   chiede,
   disabled,
+  etichetta,
   onFai,
   children,
 }: {
   className: string
   chiede?: string
   disabled?: boolean
+  /** Per un tasto con un'icona: il nome da leggere finché non chiede. */
+  etichetta?: string
   onFai: () => void
   children: ReactNode
 }) {
@@ -494,6 +501,7 @@ function DueTocchi({
       className={className}
       data-sicuro={sicuro}
       disabled={disabled}
+      aria-label={sicuro && chiede ? undefined : etichetta}
       onClick={() => {
         if (chiede && !sicuro) {
           chiestoIl.current = Date.now()
@@ -505,7 +513,7 @@ function DueTocchi({
         onFai()
       }}
     >
-      {sicuro && chiede ? chiede : children}
+      {sicuro && chiede ? <span className="due-tocchi-chiede">{chiede}</span> : children}
     </button>
   )
 }
