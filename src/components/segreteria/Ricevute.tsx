@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
+import { pagamentoDi } from '../../lib/segreteria'
 import {
   centesimi,
   conti,
@@ -7,6 +8,8 @@ import {
   euro,
   METODI,
   nomeFileRicevuta,
+  QUOTA,
+  quoteDi,
   vociDelCorso,
   vociPronte,
   type DatiRicevuta,
@@ -16,6 +19,7 @@ import {
   type VoceRicevuta,
 } from '../../lib/ricevute'
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
+import { minorenne } from '../../lib/richieste'
 import { chiaveGiorno } from '../../lib/sala'
 import { Campo, dataLunga, Guaio, Riga, useAvviso, useCarica } from './comune'
 
@@ -24,14 +28,26 @@ type Fai = ReturnType<typeof useAvviso>['fai']
 /** Il PDF si fa solo quando serve: pdf-lib pesa, e l'elenco non ne ha bisogno. */
 const scarica = async (r: Ricevuta) => (await import('../../lib/ricevutaPdf')).scaricaRicevuta(r, nomeFileRicevuta(r))
 
-const QUOTA = 'QUOTA ASSOCIATIVA'
-
 /**
  * Le ricevute di un iscritto, nella sua scheda: quelle fatte, da riscaricare
  * o annullare, e il tasto per registrare un pagamento nuovo.
  */
-export function RicevuteIscritto({ d, p, fai, onNuova }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onNuova: () => void }) {
+export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onNuova: () => void; onCambiato: () => void }) {
   const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
+  // Annullata una ricevuta con la quota che nessun'altra copre: la quota torna da pagare, o era pagata fuori dall'app?
+  const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
+  const annulla = (r: Ricevuta) => {
+    if (!window.confirm(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA.`)) return
+    const oggi = chiaveGiorno(new Date())
+    const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
+    const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
+    const dopo = pagamentoDi({ pagamento: p.pagamento, quote: quoteDi(altre) }, oggi)
+    void fai(() => d.annullaRicevuta(r.id), 'Ricevuta annullata', async () => {
+      await ricevute.ricarica()
+      onCambiato()
+      if (quota && dopo.come !== 'pagato') setScoperta({ numero: `${r.numero}/${r.anno}`, al: quota.al })
+    })
+  }
 
   return (
     <div className="stack" style={{ gap: 8 }}>
@@ -56,16 +72,43 @@ export function RicevuteIscritto({ d, p, fai, onNuova }: { d: DatiSegreteria; p:
             <button
               type="button"
               className="sg-link"
-              onClick={() => {
-                if (window.confirm(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA.`))
-                  void fai(() => d.annullaRicevuta(r.id), 'Ricevuta annullata', ricevute.ricarica)
-              }}
+              onClick={() => annulla(r)}
             >
               Annulla
             </button>
           )}
         </div>
       ))}
+      {scoperta && (
+        <div className="sg-prima">
+          <span className="sg-etichetta" data-manca>LA QUOTA NON È PIÙ PAGATA</span>
+          <span style={{ fontSize: 15, lineHeight: 1.4 }}>
+            La ricevuta {scoperta.numero} aveva la quota associativa, e nessun’altra ricevuta la copre: per l’app {p.nome} torna da pagare.
+          </span>
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" className="sg-btn sg-btn-linea" onClick={() => setScoperta(null)}>
+              RESTA DA PAGARE
+            </button>
+            <button
+              type="button"
+              className="sg-btn sg-btn-linea"
+              onClick={() =>
+                void fai(
+                  () => d.salvaPagamento(p.id, { stato: 'pagato', fino: scoperta.al, nota: `Pagata: la ricevuta ${scoperta.numero} è stata annullata` }),
+                  'Quota segnata pagata fuori dall’app',
+                  () => {
+                    setScoperta(null)
+                    onCambiato()
+                  },
+                )
+              }
+            >
+              ERA PAGATA FUORI DALL’APP
+            </button>
+          </div>
+          <span className="sg-sotto">Se ne fai subito un’altra giusta, scegli RESTA DA PAGARE: la nuova ricevuta la rimette pagata.</span>
+        </div>
+      )}
       <div className="row">
         <button type="button" className="num sg-chip sg-chip-pieno" onClick={onNuova}>
           + REGISTRA UN PAGAMENTO
@@ -211,7 +254,6 @@ export function NuovaRicevuta({
   const [ente, setEnte] = useState<EnteRicevuta | null>(null)
   const [anticipo, setAnticipo] = useState('')
   const [note, setNote] = useState('')
-  const [segna, setSegna] = useState(true)
   const [aggiungi, setAggiungi] = useState('')
   const [scontoSi, setScontoSi] = useState(true)
 
@@ -270,37 +312,46 @@ export function NuovaRicevuta({
   const dove = doveVaLoSconto(annualiQui(voci.map(senzaScontoApp), chi), altri)
   const percento = Math.round(SCONTO_FAMIGLIA * 100)
 
-  // In scheda: pagato fino all'ultima voce dei corsi (la quota da sola non basta).
-  const corsiPagati = (dati?.voci ?? []).filter((v) => v.descrizione.toUpperCase() !== QUOTA)
-  const fino = corsiPagati.map((v) => v.al ?? '').filter(Boolean).sort().pop()
-  const statoScheda = c && c.netto > 0 ? 'in_parte' : 'pagato'
-  const puoSegnare = corsiPagati.length > 0
+  // Se ha pagato lo dice la quota nella ricevuta (`pagamentoDi`): la scheda non si segna più a mano.
+  const conQuota = (dati?.voci ?? []).some((v) => v.descrizione.trim().toUpperCase() === QUOTA)
 
+  // Quello che sulla ricevuta resterebbe vuoto: si fa lo stesso, ma si vede in rosso prima.
+  const minore = !!socio.natoIl && minorenne(socio.natoIl)
+  const vuoti: Array<[keyof IntestatarioRicevuta, string]> = [
+    ['codiceFiscale', 'il codice fiscale'],
+    ['indirizzo', 'l’indirizzo'],
+    ...(minore ? ([['genitore', 'il genitore'], ['genitoreCodiceFiscale', 'il codice fiscale del genitore']] as Array<[keyof IntestatarioRicevuta, string]>) : []),
+  ]
+  const mancano = vuoti.filter(([k]) => !String(socio[k] ?? '').trim())
+  const manca = new Set(mancano.map(([k]) => k))
   const campoSocio = (k: keyof IntestatarioRicevuta, etichetta: string, o: { tipo?: string; largo?: boolean; max?: number } = {}) => (
-    <Campo id={`rs-${k}`} etichetta={etichetta} largo={o.largo}>
+    <Campo id={`rs-${k}`} etichetta={etichetta} largo={o.largo} manca={manca.has(k)}>
       <input
         id={`rs-${k}`}
         className="sg-campo"
         type={o.tipo ?? 'text'}
         maxLength={o.max ?? 120}
         value={socio[k] ?? ''}
+        aria-invalid={manca.has(k) || undefined}
         onChange={(e) => setSocio({ ...socio, [k]: e.target.value })}
       />
     </Campo>
   )
+  const mancaTesto = mancano.map(([, t]) => t).join(', ').replace(/, ([^,]*)$/, ' e $1')
 
   const emetti = () => {
-    if (!dati) return
+    if (!dati || !c) return
+    // La ricevuta ha un numero e non si cambia più: prima di farla, si rilegge.
+    const quale = n ? `n. ${n}/${anno}` : prossimo.dato ? `n. ${prossimo.dato}/${anno}` : `col prossimo numero del ${anno}`
+    const righe = [
+      `Fare la ricevuta ${quale} a ${socio.cognome} ${socio.nome}, ${euro(c.totale)} €?`,
+      mancano.length ? `\nSulla ricevuta mancano ${mancaTesto}.` : '',
+      '\nFatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.',
+    ]
+    if (!window.confirm(righe.join('\n'))) return
     void fai(
       async () => {
         const r = await d.emettiRicevuta(dati)
-        if (segna && puoSegnare && c) {
-          await d.salvaPagamento(p.id, {
-            stato: statoScheda,
-            fino,
-            nota: c.netto > 0 ? `Mancano ${euro(c.netto)} € (ricevuta ${r.numero}/${r.anno})` : undefined,
-          })
-        }
         await scarica(r)
         return r
       },
@@ -429,10 +480,11 @@ export function NuovaRicevuta({
         )}
       </div>
 
-      <details open={!socio.codiceFiscale || !socio.indirizzo}>
+      <details open={mancano.length > 0}>
         <summary className="sg-etichetta" style={{ cursor: 'pointer' }}>
           DATI DEL SOCIO · {`${socio.cognome} ${socio.nome}`.toUpperCase()}
-          {socio.codiceFiscale ? ` · ${socio.codiceFiscale}` : ' · manca il codice fiscale'}
+          {socio.codiceFiscale && ` · ${socio.codiceFiscale}`}
+          {mancano.length > 0 && <span style={{ color: 'var(--rosso)' }}> · mancano {mancaTesto}</span>}
         </summary>
         <div className="sg-due" style={{ marginTop: 12 }}>
           {campoSocio('nome', 'NOME', { max: 80 })}
@@ -478,16 +530,15 @@ export function NuovaRicevuta({
         </div>
       )}
 
-      {puoSegnare && (
-        <label className="row" style={{ gap: 8, fontSize: 14, color: 'var(--sec)', cursor: 'pointer' }}>
-          <input type="checkbox" checked={segna} onChange={(e) => setSegna(e.target.checked)} />
-          Segna in scheda: {statoScheda === 'pagato' ? 'PAGATO' : 'PAGATO IN PARTE'}
-          {fino ? ` fino al ${dataLunga(fino)}` : ''}
-        </label>
+      {!conQuota && (
+        <span style={{ fontSize: 14, color: 'var(--sec)' }}>Senza la QUOTA ASSOCIATIVA questa ricevuta non cambia se è in regola: conta solo la quota.</span>
       )}
 
       {guaio && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>{guaio}</span>}
-      {!guaio && <span style={{ fontSize: 12, color: 'var(--dim)' }}>Fatta la ricevuta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.</span>}
+      {!guaio && mancano.length > 0 && (
+        <span style={{ fontSize: 15, color: 'var(--rosso)' }}>Sulla ricevuta mancano {mancaTesto}: si può fare lo stesso, ma resteranno vuoti.</span>
+      )}
+      {!guaio && <span style={{ fontSize: 15, color: 'var(--sec)' }}>Fatta la ricevuta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.</span>}
 
       <div className="sg-scheda-piede">
         <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
@@ -537,7 +588,7 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
           </button>
           <button
             type="button"
-            className="sg-btn sg-btn-rosso grow"
+            className="sg-btn sg-btn-pieno grow"
             disabled={!b.nome.trim() || !b.codiceFiscale.trim()}
             onClick={() =>
               void fai(

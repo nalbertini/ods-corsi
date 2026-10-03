@@ -86,7 +86,7 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
               className="num sg-chip"
               aria-pressed={letta && scelta === v.name}
               disabled={!letta}
-              title="Tocca per sceglierla e sentirla"
+              title="Sceglila e ascoltala"
               onClick={() => {
                 prova(v.name)
                 salvaVoce(v.name)

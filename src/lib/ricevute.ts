@@ -97,6 +97,42 @@ export interface Ricevuta extends Omit<DatiRicevuta, 'numero'> {
   annullataIl?: string
 }
 
+/** La voce che dice se un socio è in regola coi pagamenti. */
+export const QUOTA = 'QUOTA ASSOCIATIVA'
+
+/**
+ * La quota associativa di una ricevuta non annullata: da quando a quando
+ * vale, e quanto ne manca (0: pagata). Le stesse righe della vista
+ * `quote_ricevute` (supabase/27-pagamento-dalle-ricevute.sql).
+ */
+export interface QuotaRicevuta {
+  anno: number
+  numero: number
+  dal?: string
+  al?: string
+  /** Centesimi. */
+  mancano: number
+}
+
+/**
+ * Le quote delle ricevute di una persona. Di una voce manca quello che non è
+ * stato pagato su di lei, ma mai più di quanto resta della ricevuta: un
+ * anticipo dato prima la può aver già coperta.
+ */
+export function quoteDi(ricevute: Ricevuta[]): QuotaRicevuta[] {
+  return ricevute
+    .filter((r) => !r.annullataIl)
+    .flatMap((r) => {
+      const resta = conti(r).netto
+      return r.voci
+        .filter((v) => v.descrizione.trim().toUpperCase() === QUOTA)
+        .map((v) => {
+          const pagata = v.pagamenti.reduce((s, p) => s + p.importo, 0)
+          return { anno: r.anno, numero: r.numero, dal: v.dal, al: v.al, mancano: Math.min(Math.max(0, v.quantita * v.prezzo - pagata), resta) }
+        })
+    })
+}
+
 /** Come i conti del server: totale delle voci, pagato, e quello che resta. */
 export function conti(r: Pick<DatiRicevuta, 'voci' | 'anticipo'>) {
   const totale = r.voci.reduce((s, v) => s + v.quantita * v.prezzo, 0)

@@ -8,7 +8,7 @@ vero la voce non c'è.*
 Un iscritto che era a lezione, e nell'appello non risulta (non segnato, o
 segnato assente per sbaglio), lo dice dalla sua pagina dell'area iscritti
 col tasto **SEGNALA**, con una nota se vuole. La segnalazione arriva qui, e
-il menu dice quante ce ne sono da vedere: **PRESENZE SEGNALATE · 2**.
+il menu dice quante ce ne sono da vedere accanto a **PRESENZE**, e si aprono dalla scheda **SEGNALATE** in cima a PRESENZE.
 
 Per ognuna: chi (toccando il nome si apre la sua scheda), la lezione
 (toccandola si apre nella settimana), cosa dice l'appello adesso, la nota e
