@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.3.0 — 3 ottobre 2026
+
+### Novità
+
+- La segreteria si apre su DA FARE, e se la quota è pagata lo dicono le ricevute
+
 ## 0.2.0 — 3 ottobre 2026
 
 ### Novità
