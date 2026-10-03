@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.9.4 — 3 ottobre 2026
+
+### Modificato
+
+- Settimana: il calendario si allunga da sé, e subito da Impostazioni
+
 ## 0.9.3 — 3 ottobre 2026
 
 ### Risolto
