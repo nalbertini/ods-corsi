@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.15.0 — 3 ottobre 2026
+
+### Novità
+
+- Allega un file alle segnalazioni della segreteria
+
 ## 0.14.5 — 3 ottobre 2026
 
 ### Modificato
