@@ -682,6 +682,8 @@ console.log("\ncerca iscritto: D'Amico, De Luca, Rossi-Bianchi")
   for (const s of ['de lu', 'luca', 'del']) ok(`«${s}» trova De Luca`, chi(s), ['Nicolò'])
   ok('«eluca» non trova De Luca', chi('eluca'), [])
   for (const s of ['bianchi', 'rossibi', 'rossi-bi']) ok(`«${s}» trova Rossi-Bianchi`, chi(s), ['Sara'])
+  // Il trattino lungo e quello tipografico escono da un tasto lungo o dal correttore.
+  for (const s of ['rossi\u2013bi', 'rossi\u2014bi', 'rossi\u2010bi']) ok(`«${s}» trova Rossi-Bianchi`, chi(s), ['Sara'])
   ok('«mar nu» trova solo Marco Nuovo', trova(gente, 'mar nu').map((x) => x.id), ['e'])
   ok('«marconu» nessuno: nome e cognome non si attaccano fra loro', chi('marconu'), [])
   ok("«'», «-» e due spazi: nessuno", ["'", '-', '  '].map((s) => chi(s)), [[], [], []])

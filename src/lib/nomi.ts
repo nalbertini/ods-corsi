@@ -16,8 +16,8 @@ export function nomeProprio(s: string): string {
 /** Senza maiuscole né accenti: «nicolò» trova «Nicolo». */
 const piano = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
 
-/** Apostrofi di ogni tastiera e trattini: D'Amico, D’Amico e De-Luca si scrivono in tanti modi. */
-const STACCA = /['’‘ʼ´-]/g
+/** Apostrofi e trattini (anche lunghi) di ogni tastiera: D'Amico, D’Amico e De-Luca si scrivono in tanti modi. */
+const STACCA = /['’‘ʼ´‐–—-]/g
 
 /** Le parole di quel che si sta scrivendo per cercare qualcuno, senza apostrofi né trattini. */
 export const paroleCercate = (scritto: string): string[] =>
