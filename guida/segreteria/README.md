@@ -25,7 +25,7 @@ A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
 **PERSONE** (ISCRITTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
 E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, ESERCIZI, IMPORTA DA EXCEL,
-IMPOSTAZIONI, SEGNALAZIONI). Sul telefono i gruppi stanno in fila, senza titolo. Ogni voce
+IMPOSTAZIONI, SEGNALAZIONI). Ogni voce
 ha la sua guida:
 
 | Voce | A cosa serve | Guida |
@@ -55,6 +55,12 @@ In fondo al menu:
 
 In prova c'è anche **Riparti
 dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
+
+Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
+numero rosso accanto dice quante cose aspettano (richieste nuove, presenze da
+confermare, segnalazioni da rispondere). Aperto, ha gli stessi gruppi del
+computer; le voci di **LA PALESTRA** sono più piccole, perché si fanno meglio
+dal computer.
 
 ## Ordinare le tabelle
 

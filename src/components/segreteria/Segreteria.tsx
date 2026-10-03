@@ -39,7 +39,7 @@ export interface Destinazione {
  * si tocca una volta a stagione: tredici voci in fila non si leggevano. Le
  * presenze segnalate sono una scheda di PRESENZE, non una voce.
  */
-const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]> }> = [
+const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: boolean }> = [
   {
     titolo: 'OGNI GIORNO',
     voci: [
@@ -65,6 +65,8 @@ const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]> }> = [
   },
   {
     titolo: 'LA PALESTRA',
+    // Sul telefono più piccolo: sono cose da computer.
+    secondario: true,
     voci: [
       ['statistiche', 'STATISTICHE'],
       ['listino', 'LISTINO'],
@@ -125,8 +127,9 @@ function CopiaLink() {
  * La segreteria: il menu a sinistra e la sezione scelta a destra.
  *
  * È pensata per il computer della reception, non per il telefono: le tabelle
- * vogliono spazio. Su uno schermo stretto il menu va in cima e le colonne si
- * mettono una sotto l'altra, così si può comunque dare un'occhiata.
+ * vogliono spazio. Sul telefono il menu si chiude dietro una barra in cima,
+ * col tasto MENU, e le colonne si mettono una sotto l'altra, così si può
+ * comunque dare un'occhiata.
  */
 export function Segreteria({
   nome,
@@ -145,10 +148,19 @@ export function Segreteria({
   const [d, setD] = useState<DatiSegreteria | null>(null)
   const [voce, setVoce] = useState<Voce>('dafare')
   const [dove, setDove] = useState<Destinazione>({})
+  // Il menu del telefono, aperto o chiuso; sul computer non conta.
+  const [aperto, setAperto] = useState(false)
   const vai = (v: Voce, d: Destinazione = {}) => {
     setDove(d)
     setVoce(v)
+    setAperto(false)
   }
+  useEffect(() => {
+    if (!aperto) return
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setAperto(false)
+    window.addEventListener('keydown', esc)
+    return () => window.removeEventListener('keydown', esc)
+  }, [aperto])
 
   // Quello che aspetta la segreteria: il menu dice quante richieste, presenze
   // di istruttori e segnalate, da qualunque voce; DA FARE conta tutto. Si
@@ -180,6 +192,8 @@ export function Segreteria({
       vivo = false
     }
   }, [d, voce, giroConte])
+  // Il numero sul tasto MENU del telefono: la somma dei segni del menu.
+  const daFare = richiesteNuove + daConfermare + daRispondere + (conSegnalate ? segnalateDaVedere : 0)
 
   const [guaio, setGuaio] = useState(false)
   const [tentativo, setTentativo] = useState(0)
@@ -197,8 +211,30 @@ export function Segreteria({
 
   return (
     <div className="sg">
-      <nav className="sg-menu" aria-label="Segreteria">
-        <div className="row" style={{ gap: 10, padding: '0 8px' }}>
+      <header className="sg-barra-tel">
+        <Logo width={36} />
+        <span className="stack grow" style={{ gap: 2 }}>
+          <span className="ob" style={{ fontSize: 18, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
+        </span>
+        <button
+          type="button"
+          className="num sg-tasto-menu"
+          aria-expanded={aperto}
+          aria-controls="sg-menu"
+          aria-label={!aperto && daFare > 0 ? `Menu, ${daFare} da guardare` : undefined}
+          onClick={() => setAperto((a) => !a)}
+        >
+          {aperto ? 'CHIUDI' : 'MENU'}
+          {!aperto && daFare > 0 && (
+            <span className="num sg-tag" data-tipo="manca" aria-hidden="true">
+              {daFare}
+            </span>
+          )}
+        </button>
+      </header>
+      <nav className="sg-menu" id="sg-menu" aria-label="Segreteria" data-aperto={aperto}>
+        <div className="row sg-marchio" style={{ gap: 10, padding: '0 8px' }}>
           <Logo width={46} />
           <span className="stack" style={{ gap: 2 }}>
             <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
@@ -207,7 +243,7 @@ export function Segreteria({
         </div>
         <div className="sg-gruppi">
           {GRUPPI.map((g) => (
-            <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo">
+            <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo" data-secondario={g.secondario}>
               <span className="sg-gruppo-titolo" aria-hidden="true">
                 {g.titolo}
               </span>
