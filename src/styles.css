@@ -1473,7 +1473,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   padding: 12px 14px; text-align: left; background: var(--bg); border: 2px solid var(--tono, var(--line)); border-left-width: 4px;
   font-family: var(--cond); font-weight: 700; color: var(--sec);
 }
-.sg-timbro:hover { border-color: var(--text); }
+/* Solo col mouse: sul telefono il tocco lascerebbe il bordo nero al posto del colore. */
+@media (hover: hover) { .sg-timbro:hover { border-color: var(--text); } }
 /* Il clic porta alla sezione: il titolo non resta sotto il bordo in alto. */
 [id^='sez-'] { scroll-margin-top: 12px; }
 .sg-timbro:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
@@ -1485,7 +1486,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-timbro-parola { font-size: 22px; line-height: 1.05; letter-spacing: 0.04em; color: var(--tono-testo, var(--text)); overflow-wrap: anywhere; }
 .sg-timbro-riga { font-size: 14px; letter-spacing: 0.12em; }
 .sg-timbro-riga[data-tono='giallo'] { color: var(--giallo-testo); border: 2px solid var(--giallo); padding: 0 6px; }
-.sg-timbro[data-piccolo='true'] { padding: 10px 12px; }
+.sg-timbro[data-piccolo='true'] { padding: 10px 12px; align-self: start; }
 .sg-timbro[data-piccolo='true'] .sg-timbro-parola { font-size: 19px; }
 .sg-timbro[data-piccolo='true'] .sg-timbro-riga { font-size: 12px; color: var(--dim); }
 /* Disattivata non è un guaio (si annulla con RIATTIVA): bordo `testo`, niente rosso. */
@@ -1857,3 +1858,5 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .guida table { border-collapse: collapse; width: 100%; font-size: 15px; }
 .guida th, .guida td { border: 2px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
 .guida th { font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); background: var(--surface); }
+/* Il titolo di una sezione raggiunto da un timbro: lo stesso contorno dei tasti. */
+[id^='sez-'] :focus-visible, [id^='sez-']:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
