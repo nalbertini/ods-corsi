@@ -100,6 +100,54 @@ ok('il foglio va bene così com’è', m.cosaNonVaListino(m.LISTINO_PREDEFINITO)
 ok('il foglio riletto è uguale', m.listinoDa(JSON.parse(JSON.stringify(m.LISTINO_PREDEFINITO))), m.LISTINO_PREDEFINITO)
 ok('il nome del file', m.nomeFileRicevuta(quella), 'ricevuta-116-2026-albertini-manuela.pdf')
 
+console.log('Le voci in due gruppi')
+// Finché la funzione non c'è, ogni caso dice ✗ invece di fermare tutto.
+const prova = (f) => {
+  try {
+    return f()
+  } catch (e) {
+    return `errore: ${e.message}`
+  }
+}
+const chiavi = (vv) => (Array.isArray(vv) ? vv.map((v) => v.chiave) : vv)
+const gruppi = (...a) => {
+  const x = prova(() => m.vociInDueGruppi(...a))
+  return typeof x === 'string' ? { primi: x, altri: x } : { primi: chiavi(x.primi), altri: chiavi(x.altri) }
+}
+const senzaFissi = (vv) => (Array.isArray(vv) ? vv.filter((k) => k !== 'quota' && k !== 'mano') : vv)
+const delCorso = (k, ...corsi) => corsi.some((c) => k.startsWith(`${c}~`))
+const tutteDel = (corsi, giorno, listino) => corsi.flatMap((c) => m.vociDelCorso(c, giorno, listino)).map((v) => v.chiave)
+const listinoChiavi = (giorno, listino = m.LISTINO_PREDEFINITO) => ['quota', ...tutteDel(listino.corsi.map((c) => c.corso), giorno, listino)]
+const { primi, altri } = gruppi(['Judo 3', 'Lotta 3'], '2026-09-10')
+const sonoListe = Array.isArray(primi) && Array.isArray(altri)
+ok('Judo 3 e Lotta 3: la quota per prima', sonoListe && primi[0], 'quota')
+ok('Judo 3 e Lotta 3: fra i primi anche la voce scritta a mano', sonoListe && primi.includes('mano'), true)
+ok('Judo 3 e Lotta 3: fra i primi tutte le loro righe di prezzo, e nient’altro', senzaFissi(primi), tutteDel(['Judo 3', 'Lotta 3'], '2026-09-10'))
+ok('Judo 3 e Lotta 3: fra i primi anche il trimestre, non solo l’annuale', sonoListe && primi.includes('Lotta 3~0~trimestre') && primi.includes('Judo 3~0~trimestre'), true)
+ok('Judo 3 e Lotta 3: negli altri nessuna loro voce', sonoListe && altri.filter((k) => delCorso(k, 'Judo 3', 'Lotta 3')), [])
+ok('negli altri il resto del listino, nel suo ordine', altri, listinoChiavi('2026-09-10').filter((k) => k !== 'quota' && !delCorso(k, 'Judo 3', 'Lotta 3')))
+ok('primi e altri insieme: il listino e la quota, più la voce a mano', sonoListe && [...primi, ...altri].filter((k) => k !== 'mano').sort(), listinoChiavi('2026-09-10').sort())
+ok('nessuna voce due volte', sonoListe && new Set([...primi, ...altri]).size === primi.length + altri.length, true)
+ok('un corso a righe (1 giorno, 2 giorni…): fra i primi tutte le righe', senzaFissi(gruppi(['Pesistica e Mobility'], '2026-09-10').primi), tutteDel(['Pesistica e Mobility'], '2026-09-10'))
+const minuscolo = { ...nuovo, corsi: [{ ...nuovo.corsi[0], corso: 'lotta  3' }] }
+ok('il corso «Lotta 3» trova la voce «lotta  3» del listino', senzaFissi(gruppi(['Lotta 3'], '2026-09-10', minuscolo).primi), tutteDel(['lotta  3'], '2026-09-10', minuscolo))
+ok('un corso che non è nel listino: fra i primi solo quota e voce a mano', gruppi(['Judo 3'], '2026-09-10', nuovo).primi, ['quota', 'mano'])
+ok('chi non fa corsi: fra i primi solo quota e voce a mano', gruppi([], '2026-09-10').primi, ['quota', 'mano'])
+const fineAgosto = gruppi(['Lotta 3'], '2026-08-31')
+const settembre = gruppi(['Lotta 3'], '2026-09-01')
+ok('il 31 agosto il saldo di Lotta 3 c’è, fra i primi', Array.isArray(fineAgosto.primi) && fineAgosto.primi.includes('Lotta 3~0~saldo'), true)
+ok('il 1° settembre il saldo di Lotta 3 non c’è più, da nessuna parte', Array.isArray(settembre.primi) && Array.isArray(settembre.altri) ? [...settembre.primi, ...settembre.altri].includes('Lotta 3~0~saldo') : settembre.primi, false)
+
+console.log('I dati del socio')
+const adulto = { nome: 'Nicola', cognome: 'Albertini', natoIl: '1980-03-02', codiceFiscale: 'LBRNCL80C02L219X', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno' }
+const minore = { ...quella.intestatario, genitoreCodiceFiscale: 'LBRNCL80C02L219X' }
+ok('un adulto senza codice fiscale: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: '' })), { blocca: ['il codice fiscale'], avvisa: [] })
+ok('un adulto senza indirizzo: si fa, ma lo dice', prova(() => m.mancanoDatiSocio({ ...adulto, indirizzo: '  ' })), { blocca: [], avvisa: ['l’indirizzo'] })
+ok('un minore senza il codice fiscale del genitore: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, genitoreCodiceFiscale: undefined })), { blocca: ['il codice fiscale del genitore'], avvisa: [] })
+ok('un minore senza il genitore: servono nome e codice fiscale', prova(() => m.mancanoDatiSocio({ ...minore, genitore: undefined, genitoreCodiceFiscale: undefined }).blocca), ['il genitore', 'il codice fiscale del genitore'])
+ok('un adulto con tutto: completo', prova(() => m.mancanoDatiSocio(adulto)), { blocca: [], avvisa: [] })
+ok('un minore con tutto: completo', prova(() => m.mancanoDatiSocio(minore)), { blocca: [], avvisa: [] })
+
 console.log('I PDF')
 const tante = {
   ...quella,

@@ -1,6 +1,6 @@
 import { saldoAperto, VALIDITA } from './costi'
 import { LISTINO_PREDEFINITO, nomeCorso, type Listino } from './listino'
-import type { DatiRichiesta } from './richieste'
+import { minorenne, type DatiRichiesta } from './richieste'
 import { nomeProprio } from './nomi'
 
 /**
@@ -264,6 +264,50 @@ export function vociPronte(primaQuesti: string[], giorno: string, listino: Listi
   const primi = primaQuesti.flatMap((c) => vociDelCorso(c, giorno, listino))
   const gia = new Set(primi.map((v) => v.chiave))
   return [voceQuota(listino), ...primi, ...listino.corsi.flatMap((c) => vociDelCorso(c.corso, giorno, listino)).filter((v) => !gia.has(v.chiave))]
+}
+
+/** La voce da scrivere a mano: nell'elenco «Aggiungi una voce…» sta con quelle del listino. */
+const VOCE_A_MANO: VocePronta = { chiave: 'mano', etichetta: 'Una voce scritta a mano', voce: () => ({ descrizione: '', quantita: 1, prezzo: 0 }) }
+
+/**
+ * Le voci da aggiungere in due gruppi: prima quelle che servono a questa
+ * persona (la quota, la voce a mano, tutte le righe di prezzo dei suoi corsi),
+ * poi il resto del listino nel suo ordine. Così non si cercano fra trenta.
+ */
+export function vociInDueGruppi(corsi: string[], giorno: string, listino: Listino = LISTINO_PREDEFINITO) {
+  const tutte = vociPronte(corsi, giorno, listino)
+  const suoi = new Set(corsi.flatMap((c) => vociDelCorso(c, giorno, listino)).map((v) => v.chiave))
+  return {
+    primi: [tutte[0], VOCE_A_MANO, ...tutte.filter((v) => suoi.has(v.chiave))],
+    altri: tutte.slice(1).filter((v) => !suoi.has(v.chiave)),
+  }
+}
+
+/** Il campo dei dati del socio per ognuna delle cose che possono mancare. */
+export const CAMPO_CHE_MANCA: Record<string, keyof IntestatarioRicevuta> = {
+  'il codice fiscale': 'codiceFiscale',
+  'l’indirizzo': 'indirizzo',
+  'il genitore': 'genitore',
+  'il codice fiscale del genitore': 'genitoreCodiceFiscale',
+}
+
+/**
+ * Cosa manca nei dati del socio. Il codice fiscale di chi riceve la ricevuta
+ * la palestra lo vuole sempre (per un minore è il genitore, nome e codice
+ * fiscale): senza, la ricevuta non si fa. L'indirizzo, e il codice fiscale del
+ * minore, si possono lasciare vuoti: lo si dice e basta. Solo l'app lo chiede,
+ * il database no.
+ */
+export function mancanoDatiSocio(i: IntestatarioRicevuta, oggi = new Date()) {
+  const vuoto = (k: keyof IntestatarioRicevuta) => !String(i[k] ?? '').trim()
+  const minore = !!i.natoIl && minorenne(i.natoIl, oggi)
+  const chiesti: Array<[keyof IntestatarioRicevuta, string, boolean]> = [
+    ['codiceFiscale', 'il codice fiscale', !minore],
+    ['indirizzo', 'l’indirizzo', false],
+    ...(minore ? ([['genitore', 'il genitore', true], ['genitoreCodiceFiscale', 'il codice fiscale del genitore', true]] as Array<[keyof IntestatarioRicevuta, string, boolean]>) : []),
+  ]
+  const mancano = chiesti.filter(([k]) => vuoto(k))
+  return { blocca: mancano.filter(([, , b]) => b).map(([, t]) => t), avvisa: mancano.filter(([, , b]) => !b).map(([, t]) => t) }
 }
 
 /** Il nome del file del PDF: `ricevuta-116-2026-albertini-manuela.pdf`. */
