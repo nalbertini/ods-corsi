@@ -58,7 +58,9 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
-funzioni, quindi dopo va rilanciato anche `06-iscrizioni.sql`.
+funzioni, quindi dopo va rilanciato anche `06-iscrizioni.sql`. Gli altri
+chiudono da sé le funzioni che creano: Postgres le fa nascere eseguibili da
+tutti, `anon` compreso, e `06` non può cambiarlo per quelle che verranno.
 
 Su un database già in uso, dopo un aggiornamento dell'app si rilanciano i
 file cambiati e poi `06-iscrizioni.sql`. Per certificati e pagamenti basta
@@ -140,6 +142,9 @@ Per i corsi rossi che passano al viola basta `26-colori-corsi.sql` (dopo
 Per il pagamento ricavato dalle ricevute basta `27-pagamento-dalle-ricevute.sql`
 (dopo `16-ricevute.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
 finché non c'è, l'app ricava le stesse righe dalle ricevute da sola.
+Le funzioni dei trigger di `07`, `08`, `12` e `20`, e `nome_proprio`,
+restavano chiamabili da chi non ha un accesso (senza far uscire niente): basta
+rilanciare `06-iscrizioni.sql`, che le chiude.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -720,7 +725,8 @@ Nella cartella `prova/` ci sono i file usati per verificare schema, policy e
 funzioni su un Postgres qualunque: `finto-supabase.sql` rifà il minimo che
 Supabase mette a disposizione (`auth.users`, `auth.uid()`, i ruoli),
 `calendario.sql` prova la generazione delle lezioni e il cambio dell'ora
-legale, `rls.sql` prova gli accessi dal punto di vista di un iscritto, di un
+legale, `rls.sql` prova che chi non ha fatto l'accesso chiami solo le funzioni del
+modulo di iscrizione, poi gli accessi dal punto di vista di un iscritto, di un
 istruttore, della segreteria e di chi non ha fatto l'accesso, `tablet.sql`
 prova il tablet di sala: le finestre di tempo, il recupero, l'annullo, il PIN
 e il blocco, e che il tablet non veda niente più di quel che deve;

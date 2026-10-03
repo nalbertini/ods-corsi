@@ -216,5 +216,9 @@ revoke all on timer, corsi_timer, allenamenti, preferenze_timer from anon, authe
 grant select, insert, update, delete on timer, preferenze_timer to authenticated;
 grant select, insert, delete on corsi_timer, allenamenti to authenticated;
 
+-- Le funzioni nascono eseguibili da tutti, `anon` compreso: si chiudono qui.
+revoke all on function timer_cambiato(), allenamento_arrivato(), preferenze_cambiate() from public, anon;
+grant execute on function timer_cambiato(), allenamento_arrivato(), preferenze_cambiate() to authenticated;
+
 -- Che l'API veda subito funzioni e tabelle nuove, senza aspettare.
 notify pgrst, 'reload schema';
