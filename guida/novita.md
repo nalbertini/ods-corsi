@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.14.2 — 3 ottobre 2026
+
+### Modificato
+
+- L'informativa privacy riporta da sé per quanto si tengono le presenze, come scelto in IMPOSTAZIONI
+
 ## 0.14.1 — 3 ottobre 2026
 
 ### Risolto
