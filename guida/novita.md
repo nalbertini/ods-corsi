@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.8.3 — 3 ottobre 2026
+
+### Risolto
+
+- L'appello non si chiude più con un tocco di troppo, e chi viene a provare non si perde
+
 ## 0.8.2 — 3 ottobre 2026
 
 ### Risolto
