@@ -167,7 +167,7 @@ export function TabletHome({
           <div key={l.id} className="tb-giornata-riga" data-fase={f}>
             <span className="tb-tacca" style={{ background: l.colore ?? 'var(--blu)' }} />
             <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-              <span className="ob" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.03em' }}>{l.corso.toUpperCase()}</span>
+              <span className="ob" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.03em', textWrap: 'balance' }}>{l.corso.toUpperCase()}</span>
               <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
             </span>
             <Kanji segni={l.kanji} />

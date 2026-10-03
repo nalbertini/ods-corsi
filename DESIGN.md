@@ -28,6 +28,7 @@ colors:
   testo-chiaro: "#161616"
   testo-spento-chiaro: "#6b6b67"
   verde-chiaro: "#12913f"
+  verde-testo-chiaro: "#0b7a33"
   giallo-testo-chiaro: "#8f6a00"
 typography:
   display:
@@ -175,7 +176,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 - **Rosso Ingranaggio** (#e4292a): ciò che manca o non va — l'assenza nell'appello, il SENZA APPELLO, i dati mancanti, gli errori — e, in segreteria, solo i tasti di ciò che non si annulla (FAI LA RICEVUTA, STAMPATO CANCELLALO, IMPORTA). Fuori dalla segreteria resta anche l'azione principale (`btn-primary`, avvio del timer) e il timbro kanji. Non è un colore dei corsi. Uguale nei due temi.
 
 ### Secondary
-- **Verde Ingranaggio** (#16a54a; #12913f sul tema chiaro): conferma e presenza. Tasto `btn-go`, "SEGNA LA PRESENZA" del tablet, riga presente, conteggio completo, toast di conferma.
+- **Verde Ingranaggio** (#16a54a; #12913f sul tema chiaro): conferma e presenza. Come testo piccolo sul tema chiaro diventa **Verde Testo** (#0b7a33, `--verde-testo`), come il giallo. Tasto `btn-go`, "SEGNA LA PRESENZA" del tablet, riga presente, conteggio completo, toast di conferma.
 
 ### Tertiary
 - **Giallo Ingranaggio** (#f4c31b): avviso e attenzione. Bordi delle prove, spia della coda offline, giorno di oggi, bollino PROVA. Come testo sul tema chiaro diventa **Giallo Testo** (#8f6a00), perché il giallo puro sul bianco non si legge.
@@ -293,7 +294,7 @@ Riga piena larga 56px: segno grande a sinistra (Saira 22px), nome Barlow 17px. T
 La lezione è una riga con barra sinistra 6px nella tinta del corso, ora e nome in Saira, conteggio a destra che diventa verde a appello fatto. La striscia dei giorni è una griglia di 7 caselle alte 62px: oggi ha il numero giallo, il giorno scelto bordo `testo` e fondo `superficie-alta`, i puntini blu contano le lezioni.
 
 ### Tessere del tablet
-Nomi da toccare alti 84px, bordo 3px, Saira 22px; segnato = bordo e testo verdi su `superficie-alta`. La lezione aperta ha il tasto più grande dello schermo (88px, verde).
+Nomi da toccare alti 84px, bordo 3px, Barlow 22px (sono nomi di persona: niente Saira maiuscola); segnato = bordo e testo verdi su `superficie-alta`. La lezione aperta ha il tasto più grande dello schermo (88px, verde).
 
 ### Timbro kanji
 Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un serif giapponese di sistema; tre misure (22, 32, 56px).
@@ -306,7 +307,7 @@ Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un 
 - **Do** tenere i bersagli ad almeno 44px, 56px per le righe che si toccano in piedi, 60px+ sul tablet.
 - **Do** scrivere tasti ed etichette in maiuscolo Saira Condensed, tasti obliqui 9°.
 - **Do** usare `su-colore` (#121212) per il testo sopra verde, giallo e blu pieno; `su-rosso` (bianco) sopra il rosso.
-- **Do** usare `--giallo-testo` per il giallo scritto, mai `--giallo` sul tema chiaro.
+- **Do** usare `--giallo-testo` e `--verde-testo` per giallo e verde scritti, mai `--giallo` o `--verde` puri come testo sul tema chiaro.
 
 ### Don't:
 - **Don't** arrotondare angoli: raggio 0 ovunque, salvo il timbro kanji.

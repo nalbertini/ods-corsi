@@ -400,7 +400,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .prove-gia-tb { min-height: 60px; }
 .prove-gia-nome { font-size: 16px; font-weight: 600; }
 .prove-gia-tb .prove-gia-nome { font-size: 18px; }
-.prove-gia-tasto { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--verde); white-space: nowrap; }
+.prove-gia-tasto { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--verde-testo); white-space: nowrap; }
 .prova-marchio {
   font-size: 11px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap;
   color: var(--giallo-testo); border: 2px solid var(--giallo); padding: 1px 6px;
@@ -745,7 +745,7 @@ a.btn { text-decoration: none; }
 .tb-preparazione { display: flex; align-items: center; justify-content: center; }
 .tb-scorre { overflow-y: auto; min-height: 0; }
 /* Due lezioni almeno sempre in vista, anche sotto LA TUA PRESENZA: al cambio lezione sono due. */
-.tb-lezioni-istr { min-height: 212px; }
+.tb-lezioni-istr { min-height: 232px; }
 
 .tb-etichetta { font-family: var(--cond); font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); text-wrap: balance; }
 /* Il tablet si legge da due metri: niente sotto i 15px, le note a 17. */
@@ -771,7 +771,8 @@ a.btn { text-decoration: none; }
   display: flex; align-items: center; gap: 22px; padding: 22px 24px;
   background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--tinta);
 }
-.tb-aperta-testo { display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0; }
+/* Il nome va a capo nella sua colonna: il tasto resta a destra anche con un corso dal nome lungo. */
+.tb-aperta-testo { display: flex; flex-direction: column; gap: 6px; flex: 1 1 280px; min-width: 0; }
 .tb-aperta-nome { font-size: 38px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
 .tb-btn-segna {
   min-width: 300px; min-height: 88px; padding: 0 24px;
@@ -810,10 +811,12 @@ a.btn { text-decoration: none; }
   background: var(--surface); border: 2px solid var(--line);
 }
 .tb-giornata-riga[data-fase='aperta'] { border-color: var(--verde); }
-.tb-giornata-riga[data-fase='finita'] { opacity: 0.5; }
+/* Passata: si spengono barra e bordo, non le scritte, che devono ancora leggersi. */
+.tb-giornata-riga[data-fase='finita'] { border-color: var(--line-soft); }
+.tb-giornata-riga[data-fase='finita'] .tb-tacca { opacity: 0.4; }
 .tb-tacca { width: 10px; height: 36px; flex-shrink: 0; }
 .tb-fase { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); white-space: nowrap; }
-.tb-giornata-riga[data-fase='aperta'] .tb-fase { color: var(--verde); }
+.tb-giornata-riga[data-fase='aperta'] .tb-fase { color: var(--verde-testo); }
 
 .tb-piede {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex-shrink: 0;
@@ -855,7 +858,7 @@ a.btn { text-decoration: none; }
   display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 18px; flex-shrink: 0;
   background: var(--surface); border: 3px solid var(--tinta, var(--line)); text-align: left;
 }
-.tb-chip-fase { font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: var(--tinta); white-space: nowrap; }
+.tb-chip-fase { font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: var(--tinta-testo, var(--tinta)); white-space: nowrap; }
 .tb-chip-tempo { font-size: 38px; font-weight: 700; line-height: 1; }
 .tb-chip-testo { gap: 2px; min-width: 0; }
 .tb-chip-nome { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
@@ -906,7 +909,7 @@ a.btn { text-decoration: none; }
 .tb-musica-volume { width: 34px; text-align: center; font-size: 17px; font-weight: 700; color: var(--dim); }
 
 /* I nomi da toccare: cinque per riga su un tablet, alti quanto un dito e mezzo. */
-.tb-tessere { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.tb-tessere { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 .tb-tessera {
   display: flex; align-items: center; gap: 10px; min-height: 84px; padding: 0 16px;
   background: var(--surface); border: 3px solid var(--line); color: var(--text);
@@ -915,7 +918,7 @@ a.btn { text-decoration: none; }
 .tb-tessera[data-fatto='true'] { background: var(--surface-2); border-color: var(--verde); color: var(--verde); }
 /* Segnato qui, non ancora sul server: giallo come la spia della coda. */
 .tb-tessera[data-attesa] { border-color: var(--giallo); border-style: dashed; color: var(--text); }
-.tb-tessera[data-attesa] svg { color: var(--giallo); }
+.tb-tessera[data-attesa] svg { color: var(--giallo-testo); }
 .tb-tessera-attesa { font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: var(--giallo-testo); }
 
 /* In fondo all'elenco, non sopra: occupa il suo posto, così l'ultima riga di
@@ -929,6 +932,14 @@ a.btn { text-decoration: none; }
 .tb-fascia[data-tipo='fatto'] { border-color: var(--verde); }
 .tb-fascia[data-tipo='errore'] { border-color: var(--rosso); }
 .tb-fascia[data-attesa] { border-color: var(--giallo); }
+/* Sul tema chiaro un'ombra così scura diventa una fascia grigia. */
+:root[data-tema='chiaro'] .tb-fascia { box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.16); }
+/* Un tasto che apre un pannello si accende finché è aperto (PROVE). */
+.tb-btn-linea[aria-expanded='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
+/* Le prove sono dell'app e della segreteria: sul tablet il loro testo sale al minimo della sala. */
+.prove-pannello[data-stile='tb'] :is(.prove-sotto, .prove-guaio, .prove-fatto) { font-size: 16px; }
+.prove-gia-tb .prove-gia-tasto { font-size: 15px; }
+.tb-righe :is(.prova-marchio, .prova-togli) { font-size: 15px; }
 .tb-fascia-titolo { font-size: 30px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
 
 .tb-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
