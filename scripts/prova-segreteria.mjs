@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export { apriScheda, scorre } from './src/lib/scorri'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1817,6 +1817,77 @@ console.log('\nla scheda a pieno schermo parte dalla cima, e chiusa la pagina to
     chiudi()
     await dopo()
     ok('un elenco mai scorso a 400: chiusa la scheda si torna a 400', corpo.scrollTop, 400)
+  }
+}
+
+console.log('\ncambiata voce, la pagina parte dalla cima e una scheda chiusa dopo non riporta giù')
+{
+  // Il corpo che scorre è uno per tutte le voci: CORSI scorso a 900, «Cerca
+  // iscritto» apre una scheda, ISCRITTI deve partire dalla cima, non da 900.
+  const dopo = () => new Promise((r) => setTimeout(r))
+  const { cambiaVoce } = m
+  {
+    const corpo = { scrollTop: 900 }
+    m.scorre(corpo)
+    cambiaVoce(corpo)
+    ok('elenco a 900, cambiata voce: la pagina va in cima', corpo.scrollTop, 0)
+    corpo.scrollTop = 0
+    const chiudi = m.apriScheda(corpo)
+    chiudi()
+    await dopo()
+    ok('nella voce nuova, aperta e chiusa una scheda: si torna in cima, non a 900', corpo.scrollTop, 0)
+  }
+  {
+    const corpo = { scrollTop: 900 }
+    m.scorre(corpo)
+    const chiudi = m.apriScheda(corpo)
+    cambiaVoce(corpo)
+    chiudi()
+    await dopo()
+    ok('scheda aperta dall\'elenco a 900, cambiata voce, chiusa la scheda: in cima', corpo.scrollTop, 0)
+  }
+  {
+    const corpo = { scrollTop: 900 }
+    m.scorre(corpo)
+    const chiudi = m.apriScheda(corpo)
+    cambiaVoce(corpo)
+    corpo.scrollTop = 300
+    chiudi()
+    await dopo()
+    ok('cambiata voce con la scheda aperta e scorsa a 300, chiusa la scheda: in cima', corpo.scrollTop, 0)
+  }
+  {
+    const corpo = { scrollTop: 900 }
+    m.scorre(corpo)
+    const chiudiA = m.apriScheda(corpo)
+    chiudiA()
+    const chiudiB = m.apriScheda(corpo)
+    cambiaVoce(corpo)
+    await dopo()
+    ok('da una scheda all\'altra, cambiata voce: in cima', corpo.scrollTop, 0)
+    chiudiB()
+    await dopo()
+    ok('…e chiusa la seconda resta in cima, non a 900', corpo.scrollTop, 0)
+  }
+  {
+    const corpo = { scrollTop: 900 }
+    m.scorre(corpo)
+    const chiudiA = m.apriScheda(corpo)
+    chiudiA()
+    await dopo()
+    cambiaVoce(corpo)
+    ok('chiusa la scheda e tornati a 900, cambiata voce: in cima', corpo.scrollTop, 0)
+  }
+  {
+    const corpo = { scrollTop: 700 }
+    m.scorre(corpo)
+    const chiudiA = m.apriScheda(corpo)
+    chiudiA()
+    const chiudiB = m.apriScheda(corpo)
+    await dopo()
+    chiudiB()
+    await dopo()
+    ok('senza cambiare voce, da una scheda all\'altra: si torna a 700', corpo.scrollTop, 700)
   }
 }
 console.log('\ntogliere un «non sono doppioni»')

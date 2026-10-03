@@ -27,7 +27,7 @@ import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
-import { scorre } from '../../lib/scorri'
+import { cambiaVoce, scorre } from '../../lib/scorri'
 
 export type { Voce }
 
@@ -286,7 +286,8 @@ export function Segreteria({
   // dall'alto, non da dove era scesa quella di prima.
   useEffect(() => {
     document.querySelector('#sg-menu .sg-voce[aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
-    document.getElementById('sg-contenuto')?.scrollTo(0, 0)
+    const corpo = document.getElementById('sg-contenuto')
+    if (corpo) cambiaVoce(corpo)
   }, [voce])
   const segno = (n: number, detto: string) =>
     n > 0 && (
