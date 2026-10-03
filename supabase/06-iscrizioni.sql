@@ -523,12 +523,13 @@ begin
     execute format('grant execute on function %s to authenticated', f);
   end loop;
 end $$;
--- Le funzioni che verranno, invece, nascono ancora eseguibili da tutti: un
--- `alter default privileges in schema public` non toglie il permesso di
--- default di Postgres, ci si aggiunge. E su Supabase farlo per tutto il ruolo
--- lo toglierebbe anche ad `authenticated`. Così ogni file toglie i permessi
--- alle funzioni sue, `controllo.sql` e `prova/rls.sql` guardano che `anon`
--- chiami solo quelle qui sotto, e rilanciare questo file rimette a posto.
+-- Le funzioni che verranno, invece, nascono ancora eseguibili da `anon`: per
+-- il permesso di default di Postgres, a tutti, che un `alter default
+-- privileges in schema public` non toglie (ci si aggiunge), e su Supabase
+-- anche per il default di `postgres` in `public`, che le dà ad `anon` e ad
+-- `authenticated` per nome. Così ogni file toglie i permessi alle funzioni
+-- sue, `controllo.sql` e `prova/rls.sql` guardano che `anon` chiami solo
+-- quelle qui sotto, e rilanciare questo file rimette a posto.
 
 grant usage on schema public to anon;
 grant execute on function corsi_aperti(), invia_iscrizione(jsonb), puo_caricare(text), iscrizioni_regole() to anon, authenticated;
