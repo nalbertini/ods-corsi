@@ -512,7 +512,15 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             )}
             <div className="modulo-campo modulo-largo">
               <label htmlFor="m-firma" className="modulo-etichetta">
-                {firmatario ? `LA FIRMA DI ${firmatario.toUpperCase()}` : minore ? 'LA FIRMA DEL GENITORE' : 'LA FIRMA'}
+                {firmatario ? (
+                  <>
+                    LA FIRMA DI <span className="modulo-firmatario">{firmatario}</span>
+                  </>
+                ) : minore ? (
+                  'LA FIRMA DEL GENITORE'
+                ) : (
+                  'LA FIRMA'
+                )}
               </label>
               <TavolaFirma
                 id="m-firma"
