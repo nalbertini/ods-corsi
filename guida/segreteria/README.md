@@ -47,7 +47,7 @@ IMPOSTAZIONI, SEGNALAZIONI). Ogni voce ha la sua guida:
 | **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
 | **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
 | **LISTINO** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
-| **IMPOSTAZIONI** | Per quanto si tengono le presenze, il calendario, le sale, il timer dei tablet con la sua voce, lo storico dei timer, la privacy | [Apri](regole.md) |
+| **IMPOSTAZIONI** | In quattro gruppi: la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa) | [Apri](regole.md) |
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo | [Apri](segnalazioni.md) |
 
 In cima al menu, sotto il nome, si vedono subito senza scorrere due tasti:

@@ -192,7 +192,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 input, textarea, select { font: inherit; color: inherit; }
 /* Il fuoco da tastiera su ogni tasto e link, non solo su `.btn`: chi non usa
    il dito deve vedere dove si trova. */
-button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
 .cond { font-family: var(--cond); font-variant-numeric: tabular-nums; }
 /* Il taglio obliquo riprende il lettering del marchio. */
@@ -1155,7 +1155,8 @@ a.btn { text-decoration: none; }
    l'altra e il menu si stringe; sul telefono va in cima.
    --------------------------------------------------------------------------- */
 
-.sg { display: flex; height: 100%; overflow: hidden; background: var(--bg); position: relative; }
+/* clip e non hidden: un guscio «hidden» si lascia comunque far scorrere da scrollIntoView, e il menu scappava in su. */
+.sg { display: flex; height: 100%; overflow: clip; background: var(--bg); position: relative; }
 .sg-menu {
   width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 28px;
   padding: calc(var(--safe-t) + 28px) 16px 24px; background: var(--menu); border-right: 2px solid var(--line-soft);
@@ -1695,6 +1696,19 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-listino-prezzi, .sg-listino-prezzi[data-etichette='true'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .sg-regole { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+/* L'ultimo riquadro dispari di un gruppo prende tutta la riga, invece di lasciarne mezza vuota. */
+.sg-regole > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+.sg-regole-gruppo { display: flex; flex-direction: column; gap: 14px; margin-top: 36px; }
+.sg-regole-titolo { margin: 0; padding-top: 14px; border-top: 2px solid var(--line); font-size: 26px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; scroll-margin-top: 16px; }
+.sg-regole-titolo:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; }
+.sg-indice { gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+/* La spiegazione chiusa: un'etichetta che si tocca, alta quanto un tasto; + e − dicono se è aperta senza contare sul colore. */
+.sg-spiega > summary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); cursor: pointer; list-style: none; }
+.sg-spiega > summary::-webkit-details-marker { display: none; }
+.sg-spiega > summary::before { content: '+'; width: 10px; font-size: 17px; }
+.sg-spiega[open] > summary::before { content: '−'; }
+.sg-spiega > summary:hover, .sg-spiega[open] > summary { color: var(--text); }
+.sg-spiega-testo { font-size: 13px; line-height: 1.5; color: var(--dim); max-width: 72ch; }
 /* Le frasi da incidere: due colonne finché c'è spazio. */
 .sg-frasi { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 6px; }
 
@@ -1721,6 +1735,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
    computer; LA PALESTRA, roba da computer, più piccola. */
 .sg-barra-tel { display: none; }
 @media (max-width: 767px) {
+  .sg-regole-gruppo { margin-top: 28px; }
   .sg { flex-direction: column; }
   .sg-barra-tel {
     display: flex; align-items: center; gap: 12px; flex-shrink: 0;
