@@ -191,31 +191,68 @@ export function useCarica<T>(leggi: () => Promise<T>, dipende: unknown[]) {
   return { dato, guaio, ricarica }
 }
 
+/** Un tasto sul fatto appena avvisato, per esempio RIAPRI dopo una chiusura. */
+export interface AzioneAvviso {
+  etichetta: string
+  fa: () => unknown
+}
+
 /** Un avviso in basso a destra, che se ne va da solo: «Salvato», «Non si può». */
 export function useAvviso() {
-  const [testo, setTesto] = useState<{ t: string; guaio: boolean } | null>(null)
+  const [testo, setTesto] = useState<{ t: string; guaio: boolean; azione?: AzioneAvviso } | null>(null)
+  const [lavora, setLavora] = useState(false)
   const timer = useRef<number>()
+  const durata = useRef(8000)
   useEffect(() => () => window.clearTimeout(timer.current), [])
-  const avvisa = useCallback((t: string, guaio = false) => {
+  const avvisa = useCallback((t: string, guaio = false, azione?: AzioneAvviso) => {
     window.clearTimeout(timer.current)
-    setTesto({ t, guaio })
+    setTesto({ t, guaio, azione })
     // Un guaio resta finché non lo si chiude: al banco si risponde al
     // telefono e un errore sparito da solo è un errore mai letto. Il fatto
-    // resta abbastanza da ritrovarlo, girati gli occhi.
-    if (!guaio) timer.current = window.setTimeout(() => setTesto(null), 8000)
+    // resta abbastanza da ritrovarlo, girati gli occhi; con un tasto da
+    // toccare (RIAPRI) resta di più, perché serve proprio a chi si è distratto.
+    durata.current = azione ? 15000 : 8000
+    if (!guaio) timer.current = window.setTimeout(() => setTesto(null), durata.current)
   }, [])
+  // Col mouse o il fuoco sopra un avviso con un tasto, non se ne va mentre lo si sta per toccare.
+  const ferma = () => window.clearTimeout(timer.current)
+  const riparti = () => {
+    window.clearTimeout(timer.current)
+    if (testo && !testo.guaio) timer.current = window.setTimeout(() => setTesto(null), durata.current)
+  }
   const avviso = testo ? (
-    <div role={testo.guaio ? 'alert' : 'status'} className="sg-avviso" data-guaio={testo.guaio}>
+    <div
+      role={testo.guaio ? 'alert' : 'status'}
+      className="sg-avviso"
+      data-guaio={testo.guaio}
+      onMouseEnter={testo.azione ? ferma : undefined}
+      onMouseLeave={testo.azione ? riparti : undefined}
+      onFocus={testo.azione ? ferma : undefined}
+      onBlur={testo.azione ? riparti : undefined}
+    >
       <span className="grow">{testo.t}</span>
-      <button type="button" className="sg-avviso-chiudi" onClick={() => setTesto(null)}>
-        CHIUDI
-      </button>
+      {testo.azione ? (
+        <>
+          <button type="button" className="sg-avviso-chiudi" disabled={lavora} onClick={testo.azione.fa}>
+            {testo.azione.etichetta}
+          </button>
+          {/* Accanto a RIAPRI una parola come CHIUDI si confonde: qui basta il segno. */}
+          <button type="button" className="sg-avviso-x" aria-label="Chiudi l’avviso" onClick={() => setTesto(null)}>
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+              <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" />
+            </svg>
+          </button>
+        </>
+      ) : (
+        <button type="button" className="sg-avviso-chiudi" onClick={() => setTesto(null)}>
+          CHIUDI
+        </button>
+      )}
     </div>
   ) : null
   // Un'operazione per volta: un doppio clic su SALVA, o un secondo mentre la
   // rete è lenta, non deve creare due corsi o due iscritti uguali.
   const inCorso = useRef(false)
-  const [lavora, setLavora] = useState(false)
   /** Esegue un'operazione, dice com'è andata, e ricarica se è andata. */
   const fai = useCallback(
     async (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => {

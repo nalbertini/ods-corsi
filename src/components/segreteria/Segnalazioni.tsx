@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
-import { MAX_TESTO, MAX_TITOLO, ordinaSegnalazioni, tocca, ultimo, type Segnalazione } from '../../lib/segnalazioni'
+import { MAX_TITOLO, chiudiConRisposta, etichettaChiudi, ordinaSegnalazioni, testoTroppoLungo, titoloTroppoLungo, tocca, ultimo, type Segnalazione } from '../../lib/segnalazioni'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { Campo, Guaio, Testa, useAvviso, useCarica } from './comune'
@@ -26,7 +26,7 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
   const [nuova, setNuova] = useState(false)
   const [titolo, setTitolo] = useState('')
   const [testo, setTesto] = useState('')
-  const { avviso, fai, lavora } = useAvviso()
+  const { avviso, avvisa, fai, lavora } = useAvviso()
 
   const tutte = elenco.dato ?? []
   const lista = ordinaSegnalazioni(chiuse ? tutte : tutte.filter((x) => !x.chiusaIl))
@@ -37,8 +37,11 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
     onCambiato?.()
   }
 
+  // Il titolo non si taglia in silenzio: si conta, e oltre il massimo lo dice.
+  const lungo = titoloTroppoLungo(titolo)
+  const testoLungo = testoTroppoLungo(testo)
   const apri = () =>
-    void fai(() => d.apriSegnalazione(titolo, testo), 'Segnalazione aperta', async () => {
+    void fai(() => d.apriSegnalazione(titolo, testo), 'Segnalazione mandata', async () => {
       setTitolo('')
       setTesto('')
       setNuova(false)
@@ -49,12 +52,12 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
     <>
       <Testa
         titolo="SEGNALAZIONI"
-        sotto={`${aperte === 1 ? 'Una aperta' : `${aperte || 'Nessuna'} aperte`}${daRispondere ? `, ${daRispondere === 1 ? 'una aspetta' : `${daRispondere} aspettano`} una tua risposta` : ''}.`}
+        sotto={`${aperte === 1 ? 'Una aperta' : aperte ? `${aperte} aperte` : 'Nessuna aperta'}${daRispondere ? `, ${daRispondere === 1 ? 'una aspetta' : `${daRispondere} aspettano`} una tua risposta` : ''}.`}
       >
         <button type="button" className="num sg-chip" aria-pressed={chiuse} onClick={() => setChiuse(!chiuse)}>
           ANCHE LE CHIUSE
         </button>
-        <button type="button" className="sg-btn" onClick={() => setNuova(!nuova)} aria-expanded={nuova}>
+        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuova(!nuova)} aria-expanded={nuova}>
           NUOVA SEGNALAZIONE
         </button>
       </Testa>
@@ -72,14 +75,36 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
             apri()
           }}
         >
-          <Campo id="sz-titolo" etichetta="TITOLO">
-            <input id="sz-titolo" className="sg-campo" value={titolo} maxLength={MAX_TITOLO} onChange={(e) => setTitolo(e.target.value)} placeholder="In due parole: cosa succede" autoFocus />
+          <Campo id="sz-titolo" etichetta="TITOLO" manca={!!lungo}>
+            <input
+              id="sz-titolo"
+              className="sg-campo"
+              value={titolo}
+              onChange={(e) => setTitolo(e.target.value)}
+              placeholder="In due parole: cosa succede"
+              aria-invalid={!!lungo || undefined}
+              aria-describedby="sz-titolo-conto"
+              autoFocus
+            />
+            <span id="sz-titolo-conto" className="num" style={{ fontSize: 13, color: lungo ? 'var(--text)' : 'var(--dim)' }}>
+              {lungo ? `${lungo} (ora ${titolo.trim().length})` : `${titolo.trim().length}/${MAX_TITOLO}`}
+            </span>
           </Campo>
           <Campo id="sz-testo" etichetta="COSA">
-            <textarea id="sz-testo" className="sg-campo" rows={5} value={testo} maxLength={MAX_TESTO} onChange={(e) => setTesto(e.target.value)} placeholder="Dove, cosa hai fatto, cosa ti aspettavi" />
+            <textarea
+              id="sz-testo"
+              className="sg-campo"
+              rows={5}
+              value={testo}
+              onChange={(e) => setTesto(e.target.value)}
+              placeholder="Dove, cosa hai fatto, cosa ti aspettavi"
+              aria-invalid={!!testoLungo || undefined}
+              aria-describedby={testoLungo ? 'sz-testo-nota' : undefined}
+            />
+            {testoLungo && <Troppo id="sz-testo-nota" testo={testoLungo} quanti={testo.trim().length} />}
           </Campo>
-          <div className="row" style={{ gap: 8 }}>
-            <button type="submit" className="sg-btn sg-btn-verde" disabled={lavora || !titolo.trim() || !testo.trim()}>
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <button type="submit" className="sg-btn sg-btn-verde" disabled={lavora || !!lungo || !!testoLungo || !titolo.trim() || !testo.trim()}>
               APRI
             </button>
             <button type="button" className="sg-btn sg-btn-linea" onClick={() => setNuova(false)}>
@@ -97,7 +122,7 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
 
       <div className="stack" style={{ gap: 10, maxWidth: 760 }}>
         {lista.map((s) => (
-          <Filo key={s.id} s={s} aperto={aperta === s.id} onApri={() => setAperta(aperta === s.id ? null : s.id)} d={d} fai={fai} lavora={lavora} poi={poi} />
+          <Filo key={s.id} s={s} aperto={aperta === s.id} onApri={() => setAperta(aperta === s.id ? null : s.id)} d={d} fai={fai} avvisa={avvisa} lavora={lavora} poi={poi} />
         ))}
       </div>
       {avviso}
@@ -111,6 +136,7 @@ function Filo({
   onApri,
   d,
   fai,
+  avvisa,
   lavora,
   poi,
 }: {
@@ -119,20 +145,39 @@ function Filo({
   onApri: () => void
   d: DatiSegreteria
   fai: ReturnType<typeof useAvviso>['fai']
+  avvisa: ReturnType<typeof useAvviso>['avvisa']
   lavora: boolean
   poi: () => Promise<void>
 }) {
   const [risposta, setRisposta] = useState('')
+  const rispostaLunga = testoTroppoLungo(risposta)
   const u = ultimo(s)
   const risposte = s.messaggi.length - 1
   const rispondi = () => void fai(() => d.rispondiSegnalazione(s.id, risposta), 'Risposta mandata', async () => (setRisposta(''), await poi()))
-  const chiudi = (chiusa: boolean) => void fai(() => d.chiudiSegnalazione(s.id, chiusa), chiusa ? 'Segnalazione chiusa' : 'Segnalazione riaperta', poi)
+  const riapri = () => void fai(() => d.chiudiSegnalazione(s.id, false), 'Segnalazione riaperta', poi)
+  // Chiude senza buttare la risposta scritta (vedi `chiudiConRisposta`), e
+  // nell'avviso lascia RIAPRI: il filo sparisce dall'elenco, il tasto no.
+  const chiudi = () => {
+    let esito = { mandata: false, chiusa: false }
+    void fai(
+      async () => {
+        esito = await chiudiConRisposta(d, s.id, risposta)
+      },
+      undefined,
+      async () => {
+        if (esito.mandata) setRisposta('')
+        if (!esito.chiusa) avvisa(`La risposta è andata, la segnalazione è ancora aperta: tocca di nuovo ${etichettaChiudi('')}.`, true)
+        else avvisa(esito.mandata ? 'Risposta mandata e segnalazione chiusa' : 'Segnalazione chiusa', false, { etichetta: 'RIAPRI', fa: riapri })
+        await poi()
+      },
+    )
+  }
 
   return (
-    <div className="card stack" style={{ padding: 0, gap: 0, opacity: s.chiusaIl ? 0.7 : 1 }}>
-      <button type="button" className="row" onClick={onApri} aria-expanded={aperto} style={{ all: 'unset', cursor: 'pointer', display: 'flex', gap: 12, padding: '12px 14px', alignItems: 'center' }}>
+    <div className="card stack sg-filo" data-tocca={tocca(s) || undefined} style={{ padding: 0, gap: 0 }}>
+      <button type="button" className="sg-filo-testa" onClick={onApri} aria-expanded={aperto}>
         <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-          <span style={{ fontSize: 15, fontWeight: 600 }}>{s.titolo}</span>
+          <span className="sg-filo-titolo" style={{ color: s.chiusaIl ? 'var(--dim)' : undefined }}>{s.titolo}</span>
           <span style={{ fontSize: 13, color: 'var(--sec)' }}>
             {s.messaggi[0].autore} · {risposte === 0 ? 'nessuna risposta' : risposte === 1 ? 'una risposta' : `${risposte} risposte`} · ultimo {u.mio ? 'tuo' : `di ${u.autore}`}, {quando(u.il)}
           </span>
@@ -141,7 +186,7 @@ function Filo({
           <span className="num sg-tag">CHIUSA</span>
         ) : (
           tocca(s) && (
-            <span className="num sg-tag" data-tipo="manca">
+            <span className="num sg-tag" data-tipo="aspetta">
               DA RISPONDERE
             </span>
           )
@@ -171,13 +216,30 @@ function Filo({
               <label htmlFor={`sz-r-${s.id}`} className="vh">
                 Risposta
               </label>
-              <textarea id={`sz-r-${s.id}`} className="sg-campo" rows={3} value={risposta} maxLength={MAX_TESTO} onChange={(e) => setRisposta(e.target.value)} placeholder="Rispondi…" />
-              <div className="row" style={{ gap: 8 }}>
-                <button type="submit" className="sg-btn sg-btn-verde" disabled={lavora || !risposta.trim()}>
+              <textarea
+                id={`sz-r-${s.id}`}
+                className="sg-campo"
+                rows={3}
+                value={risposta}
+                onChange={(e) => setRisposta(e.target.value)}
+                placeholder="Rispondi…"
+                aria-invalid={!!rispostaLunga || undefined}
+                aria-describedby={rispostaLunga ? `sz-r-${s.id}-nota` : undefined}
+              />
+              {rispostaLunga && <Troppo id={`sz-r-${s.id}-nota`} testo={rispostaLunga} quanti={risposta.trim().length} />}
+              <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+                <button type="submit" className="sg-btn sg-btn-verde" disabled={lavora || !risposta.trim() || !!rispostaLunga}>
                   RISPONDI
                 </button>
-                <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => chiudi(true)}>
-                  CHIUDI
+                <button type="button" className="sg-btn sg-btn-linea" disabled={lavora || !!rispostaLunga} onClick={chiudi}>
+                  {/* I due nomi occupano lo stesso posto: cambiando non spostano il tasto accanto. */}
+                  <span className="sg-due-nomi">
+                    {[etichettaChiudi(''), etichettaChiudi('x')].map((n) => (
+                      <span key={n} data-spento={n !== etichettaChiudi(risposta) || undefined}>
+                        {n}
+                      </span>
+                    ))}
+                  </span>
                 </button>
                 <a className="sg-btn sg-btn-linea" href={avvisoWhatsApp(s)} target="_blank" rel="noreferrer">
                   AVVISA SU WHATSAPP
@@ -187,7 +249,7 @@ function Filo({
           )}
           {s.chiusaIl && (
             <div>
-              <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => chiudi(false)}>
+              <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={riapri}>
                 RIAPRI
               </button>
             </div>
@@ -195,5 +257,14 @@ function Filo({
         </div>
       )}
     </div>
+  )
+}
+
+/** Un testo oltre il massimo: lo si dice sotto il campo, con quanti caratteri ci sono ora. */
+function Troppo({ id, testo, quanti }: { id: string; testo: string; quanti: number }) {
+  return (
+    <span id={id} className="num" style={{ fontSize: 13 }}>
+      {testo} (ora {quanti})
+    </span>
   )
 }

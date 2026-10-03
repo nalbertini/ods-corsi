@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca } from './src/lib/segnalazioni'; export { comeCertificato, comePaga, inRegola, pagamentoDi } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, testoTroppoLungo } from './src/lib/segnalazioni'; export { comeCertificato, comePaga, inRegola, pagamentoDi } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -577,6 +577,62 @@ console.log('\nle segnalazioni della segreteria')
   await s.chiudiSegnalazione(x.id, false)
   ok('e riaperta', (await s.segnalazioni())[0].chiusaIl, undefined)
   ok('un messaggio altrui da aperta aspetta me', m.tocca({ messaggi: [{ mio: false }] }), true)
+
+  // Chiudere con una risposta scritta: la risposta va, poi il filo si chiude.
+  const filo = async (id) => (await s.segnalazioni()).find((y) => y.id === id)
+  const apri = async (titolo) => {
+    await s.apriSegnalazione(titolo, 'Da sistemare')
+    return (await s.segnalazioni()).at(-1).id
+  }
+  const r2 = await apri('Chiusa con risposta')
+  ok('chiudere con «Fatto» manda e chiude', await m.chiudiConRisposta(s, r2, 'Fatto'), { mandata: true, chiusa: true })
+  ok('la risposta resta nel filo', (await filo(r2)).messaggi.map((y) => y.testo), ['Da sistemare', 'Fatto'])
+  ok('e il filo è chiuso', !!(await filo(r2)).chiusaIl, true)
+
+  const r3 = await apri('Chiusa senza risposta')
+  ok('con la bozza di soli spazi chiude e basta', await m.chiudiConRisposta(s, r3, '   '), { mandata: false, chiusa: true })
+  ok('senza messaggi in più', (await filo(r3)).messaggi.length, 1)
+  ok('ma chiusa', !!(await filo(r3)).chiusaIl, true)
+
+  const r4 = await apri('Risposta troppo lunga')
+  ok('una risposta troppo lunga non chiude', await errore(() => m.chiudiConRisposta(s, r4, 'a'.repeat(4001))), 'Il testo è troppo lungo: al massimo 4000 caratteri')
+  ok('nessun messaggio in più', (await filo(r4)).messaggi.length, 1)
+  ok('e il filo resta aperto', (await filo(r4)).chiusaIl, undefined)
+
+  const chiamate = []
+  const guasto = {
+    async rispondiSegnalazione(id, testo) {
+      chiamate.push([id, testo])
+    },
+    async chiudiSegnalazione() {
+      throw new Error('Rete giù')
+    },
+  }
+  ok('se la chiusura salta dopo la risposta, non lancia', await m.chiudiConRisposta(guasto, 'f', 'Fatto'), { mandata: true, chiusa: false })
+  ok('e la risposta è partita', chiamate, [['f', 'Fatto']])
+  ok('se salta la sola chiusura, l\'errore arriva', await errore(() => m.chiudiConRisposta(guasto, 'f', '')), 'Rete giù')
+
+  await s.chiudiSegnalazione(r2, false)
+  ok('riaperta dopo la risposta', (await filo(r2)).chiusaIl, undefined)
+  ok('la risposta c\'è ancora', (await filo(r2)).messaggi.map((y) => y.testo), ['Da sistemare', 'Fatto'])
+
+  ok('senza bozza il bottone chiude e basta', [m.etichettaChiudi(''), m.etichettaChiudi('  ')], ['È FATTA, CHIUDILA', 'È FATTA, CHIUDILA'])
+  ok('con la bozza il bottone manda e chiude', m.etichettaChiudi(' ok '), 'MANDA E CHIUDI')
+
+  // In cima i fili che aspettano una mia risposta, poi le altre aperte, poi le chiuse.
+  const f = (id, mio, il, chiusaIl) => ({ id, titolo: id, messaggi: [{ id, autore: 'x', mio, testo: 't', il }], chiusaIl })
+  const A = f('A', true, '2026-09-26T10:00')
+  const B = f('B', false, '2026-09-20T10:00')
+  const C = f('C', false, '2026-09-26T11:00', '2026-09-26T11:00')
+  ok('prima quelle che aspettano me', m.ordinaSegnalazioni([A, C, B]).map((y) => y.id), ['B', 'A', 'C'])
+  const D = f('D', true, '2026-09-20T10:00')
+  const E = f('E', true, '2026-09-26T11:00', '2026-09-26T11:00')
+  ok('senza da rispondere, aperte per recenza poi chiuse', m.ordinaSegnalazioni([E, D, A]).map((y) => y.id), ['A', 'D', 'E'])
+
+  ok('il titolo di 120 caratteri va', m.cosaNonVaSegnalazione('x', 'a'.repeat(120)), null)
+  ok('di 121 no', m.cosaNonVaSegnalazione('x', 'a'.repeat(121)), 'Il titolo è troppo lungo: al massimo 120 caratteri')
+  ok('un testo di 4000 caratteri va', m.testoTroppoLungo('a'.repeat(4000)), null)
+  ok('di 4001 si dice, invece di tagliarlo', m.testoTroppoLungo('a'.repeat(4001)), 'Il testo è troppo lungo: al massimo 4000 caratteri')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

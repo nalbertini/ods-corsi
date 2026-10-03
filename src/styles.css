@@ -1152,6 +1152,9 @@ a.sg-btn { text-decoration: none; }
   background: var(--bg); border: 2px solid var(--line); color: var(--text); font-size: 15px;
 }
 .sg-campo:focus { outline: none; border-color: var(--text); }
+/* Un'area di testo è alta quanto le righe che chiede: 44px la riducono a una. */
+textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: vertical; }
+.sg-campo[aria-invalid='true'] { border-color: var(--rosso); }
 .sg-campo[data-acceso='true'] { border-color: var(--giallo); }
 .sg-colore { width: 44px; height: 44px; border: 3px solid transparent; }
 .sg-colore[aria-pressed='true'] { border-color: var(--text); }
@@ -1203,6 +1206,15 @@ a.sg-btn { text-decoration: none; }
 .sg-lezione-dove { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; white-space: nowrap; }
 .sg-tag[data-tipo='manca'] { background: var(--rosso); color: #ffffff; }
+.sg-tag[data-tipo='aspetta'] { background: var(--giallo); color: var(--su-colore); }
+/* Un filo delle segnalazioni: la testata si tocca tutta; giallo se aspetta te. */
+.sg-filo[data-tocca='true'] { border-left: 4px solid var(--giallo); }
+.sg-filo-testa { display: flex; gap: 12px; align-items: center; width: 100%; padding: 12px 14px; text-align: left; cursor: pointer; }
+/* Due nomi nello stesso posto: il tasto è largo quanto il più lungo, e si vede solo quello giusto. */
+.sg-due-nomi { display: inline-grid; }
+.sg-due-nomi > span { grid-area: 1 / 1; }
+.sg-due-nomi > span[data-spento] { visibility: hidden; }
+.sg-filo-titolo { font-size: 17px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
 .sg-tag[data-tipo='sostituto'] { background: var(--giallo); color: var(--su-colore); }
 .sg-tag[data-tipo='presto'] { background: var(--giallo); color: var(--su-colore); }
 .sg-legenda { gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--dim); }
@@ -1358,7 +1370,7 @@ a.sg-btn { text-decoration: none; }
 .sg-quadretto[data-stato='giustificato'] { border-color: var(--giallo); color: var(--giallo-testo); }
 /* Il fuoco da tastiera della segreteria: il bordo che si accende, disegnato e non quello del browser. */
 .sg-btn:focus-visible, .sg-voce:focus-visible, .sg-chip:focus-visible, .sg-link:focus-visible, .sg-scelta:focus-visible,
-.sg-ordina:focus-visible, .sg-lezione:focus-visible, .sg-dafare-lezione:focus-visible, .scheda:focus-visible {
+.sg-ordina:focus-visible, .sg-filo-testa:focus-visible, .sg-lezione:focus-visible, .sg-dafare-lezione:focus-visible, .scheda:focus-visible {
   outline: 2px solid var(--text); outline-offset: 2px;
 }
 .sg-campo:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
@@ -1373,7 +1385,9 @@ a.sg-btn { text-decoration: none; }
   flex-shrink: 0; align-self: stretch; min-height: 44px; padding: 0 12px; border: 2px solid currentColor;
   font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em;
 }
-.sg-avviso-chiudi:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.sg-avviso-chiudi:disabled { opacity: 0.5; }
+.sg-avviso-x { flex-shrink: 0; align-self: stretch; min-width: 44px; min-height: 44px; display: grid; place-items: center; border: 2px solid currentColor; }
+.sg-avviso-chiudi:focus-visible, .sg-avviso-x:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
 /* DA FARE: una riga per cosa che aspetta, col numero grande; sotto, quello che è a posto. */
 .sg-dafare { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
