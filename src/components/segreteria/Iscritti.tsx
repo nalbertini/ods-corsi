@@ -9,7 +9,7 @@ import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, 
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
-import { campiDiversi, possibiliDoppioni, stessoCognome } from '../../lib/doppioni'
+import { altraDellaCoppia, campiDiversi, coppieDoppioni, possibiliDoppioni, stessoCognome, type IndiziDoppioni } from '../../lib/doppioni'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
@@ -58,6 +58,7 @@ export function Iscritti({
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
   const freq = useCarica(() => d.frequenze(), [d])
+  const indizi = useCarica(() => d.indiziDoppioni(), [d])
   const [cerca, setCerca] = useState('')
   const [corso, setCorso] = useState('')
   const [senzaEmail, setSenzaEmail] = useState(false)
@@ -67,6 +68,9 @@ export function Iscritti({
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [daStampare, setDaStampare] = useState(filtroIniziale === 'stampare')
+  const [doppi, setDoppi] = useState(false)
+  // Da una coppia di possibili doppioni: la scheda si apre con UNISCI già sull'altra.
+  const [unisciCon, setUnisciCon] = useState<string | null>(null)
   const { avviso, avvisa, fai } = useAvviso()
   const oggi = chiaveGiorno(new Date())
 
@@ -79,6 +83,9 @@ export function Iscritti({
   const stampare = tutti.filter((p) => p.certificato.conFile).length
   // Stampati tutti, il filtro si spegne da sé.
   const soloStampare = daStampare && stampare > 0
+  const coppie = indizi.dato ? coppieDoppioni(tutti, indizi.dato) : []
+  // Unite o segnate tutte, il filtro si spegne da sé.
+  const soloDoppi = doppi && coppie.length > 0
   const trovati = tutti.filter(
     (p) =>
       (!ago || `${p.cognome} ${p.nome} ${p.nome} ${p.cognome} ${p.email ?? ''}`.toLowerCase().includes(ago)) &&
@@ -107,9 +114,10 @@ export function Iscritti({
   const inScadenza = attiveOra.filter((p) => certificatoInScadenza(p, oggi)).length
   const nonPagato = attiveOra.filter((p) => daPagare(p, oggi)).length
   const persona = nuovo ? null : (tutti.find((p) => p.id === scelta) ?? null)
-  const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica()])
+  const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica(), indizi.ricarica()])
 
   const chiudi = () => {
+    setUnisciCon(null)
     if (scelta || nuovo) onScelta(null, 'push')
   }
   // ← ISCRITTI con un iscritto nuovo o una ricevuta a metà: la stessa domanda del menu e di Indietro.
@@ -156,7 +164,12 @@ export function Iscritti({
             f={freq.dato?.get(persona.id)}
             fai={fai}
             onCambiato={() => void ricarica()}
-            onApri={(id) => onScelta(id, 'push')}
+            onApri={(id) => {
+              setUnisciCon(null)
+              onScelta(id, 'push')
+            }}
+            unisciCon={unisciCon ?? undefined}
+            doppio={altraDellaCoppia(coppie, persona.id)}
           />
         </SchedaPiena>
       ) : null}
@@ -213,10 +226,35 @@ export function Iscritti({
               CERTIFICATI DA STAMPARE
             </button>
           )}
+          {coppie.length > 0 && (
+            <button type="button" className="num sg-chip" aria-pressed={soloDoppi} onClick={() => setDoppi(!soloDoppi)}>
+              POSSIBILI DOPPIONI {coppie.length}
+            </button>
+          )}
         </div>
 
         {persone.guaio && <Guaio testo={persone.guaio} />}
 
+        {soloDoppi && indizi.dato ? (
+          <CoppieDoppioni
+            // Ricerca e filtri valgono anche qui: resta una coppia se una delle due passa.
+            coppie={coppie.filter((c) => c.some((x) => trovati.includes(x)))}
+            indizi={indizi.dato}
+            suoiCorsi={suoiCorsi}
+            onUnisci={(a, b) => {
+              setUnisciCon(b)
+              onScelta(a, 'push')
+            }}
+            onNonDoppioni={async (a, b) => {
+              const nome = (id: string) => {
+                const x = tutti.find((y) => y.id === id)
+                return x ? `${x.cognome} ${x.nome}` : ''
+              }
+              if (!(await chiedi(`${nome(a)} e ${nome(b)} non sono la stessa persona? La coppia non compare più fra i possibili doppioni.`, 'SÌ, NON SONO DOPPIONI'))) return
+              void fai(() => d.segnaNonDoppioni(a, b), 'Non sono doppioni: non compaiono più qui', () => void indizi.ricarica())
+            }}
+          />
+        ) : (
         <div role="table" aria-label="Iscritti" className="sg-tabella">
           <div role="row" className="sg-lista-testa sg-riga-iscritto">
             {colonna('nome', 'NOME')}
@@ -240,6 +278,7 @@ export function Iscritti({
                   data-scelto={!nuovo && scelta === p.id}
                   data-spento={!p.attiva}
                   onClick={() => {
+                    setUnisciCon(null)
                     onScelta(p.id, 'push')
                   }}
                 >
@@ -271,6 +310,7 @@ export function Iscritti({
             30 GIORNI: presenze su lezioni avute, senza i giustificati
           </span>
         </div>
+        )}
 
       </div>
       {avviso}
@@ -362,6 +402,8 @@ function Scheda({
   fai,
   onCambiato,
   onApri,
+  unisciCon,
+  doppio,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
@@ -374,6 +416,10 @@ function Scheda({
   onCambiato: () => void
   /** Apre la scheda di un'altra persona: una del nucleo. */
   onApri: (personaId: string) => void
+  /** Aperta da una coppia di possibili doppioni: UNISCI già aperto su quest'altra. */
+  unisciCon?: string
+  /** L'altra scheda, se questa è in una sola coppia di possibili doppioni. */
+  doppio?: string
 }) {
   const oggi = chiaveGiorno(new Date())
   const [modifica, setModifica] = useState<DatiPersona | null>(null)
@@ -381,7 +427,7 @@ function Scheda({
   useBozza(!!modifica)
   const [daAggiungere, setDaAggiungere] = useState('')
   const [pagando, setPagando] = useState(false)
-  const [unendo, setUnendo] = useState(false)
+  const [unendo, setUnendo] = useState(!!unisciCon)
   // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
   const [giroRicevute, setGiroRicevute] = useState(0)
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
@@ -408,6 +454,7 @@ function Scheda({
           d={d}
           p={p}
           tutti={tutti}
+          altraIniziale={unisciCon ?? doppio}
           fai={fai}
           onLasciaStare={() => setUnendo(false)}
           onUnite={(resta) => {
@@ -462,7 +509,7 @@ function Scheda({
             </div>
           )}
 
-          <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} fai={fai} />
+          <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           <div id="sez-certificato">
             <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           </div>
@@ -656,6 +703,63 @@ function Timbri({ p, oggi }: { p: PersonaSeg; oggi: string }) {
 }
 
 /**
+ * I possibili doppioni (`coppieDoppioni`): ogni coppia con quello che serve
+ * per decidere senza aprire le schede, UNISCI… e NON SONO DOPPIONI.
+ */
+function CoppieDoppioni({
+  coppie,
+  indizi,
+  suoiCorsi,
+  onUnisci,
+  onNonDoppioni,
+}: {
+  coppie: [PersonaSeg, PersonaSeg][]
+  indizi: IndiziDoppioni
+  suoiCorsi: (p: PersonaSeg) => (string | undefined)[]
+  onUnisci: (a: string, b: string) => void
+  onNonDoppioni: (a: string, b: string) => void
+}) {
+  const riga = (x: PersonaSeg) => (
+    <div className="stack" style={{ gap: 2, minWidth: 0 }}>
+      <span style={{ fontSize: 15, fontWeight: 600 }}>
+        {x.cognome} {x.nome}
+        {!x.attiva && <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--dim)' }}> · disattivata</span>}
+      </span>
+      <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+        {[
+          indizi.nascite[x.id] && `nascita ${dataLunga(indizi.nascite[x.id])}`,
+          indizi.codiciFiscali[x.id],
+          x.telefono ?? x.email,
+          suoiCorsi(x).join(', '),
+        ]
+          .filter(Boolean)
+          .join(' · ') || 'nessun altro dato'}
+      </span>
+    </div>
+  )
+  return (
+    <div className="stack" style={{ gap: 12 }}>
+      <span className="sg-sotto">Schede che sembrano la stessa persona: lo stesso nome scritto in un altro modo, o lo stesso codice fiscale.</span>
+      {coppie.length === 0 && <p className="sg-sotto">Nessuna coppia corrisponde alla ricerca.</p>}
+      {coppie.map(([a, b]) => (
+        <div key={`${a.id}-${b.id}`} className="card stack" style={{ padding: 14, gap: 10 }}>
+          {riga(a)}
+          <div style={{ borderTop: '2px solid var(--line)', paddingTop: 10 }}>{riga(b)}</div>
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" className="sg-btn sg-btn-pieno" onClick={() => onUnisci(a.id, b.id)}>
+              UNISCI…
+            </button>
+            <button type="button" className="sg-btn sg-btn-linea" onClick={() => onNonDoppioni(a.id, b.id)}>
+              NON SONO DOPPIONI
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/**
  * Unire un doppione (`doppioni.ts`, `29-unisci-doppioni.sql`): si sceglie
  * l'altra scheda, si vede cosa passa e cosa non torna, si sceglie quale
  * resta, e una conferma. Non si torna indietro.
@@ -664,6 +768,7 @@ function UnisciDoppione({
   d,
   p,
   tutti,
+  altraIniziale,
   fai,
   onLasciaStare,
   onUnite,
@@ -671,11 +776,13 @@ function UnisciDoppione({
   d: DatiSegreteria
   p: PersonaSeg
   tutti: PersonaSeg[]
+  /** L'altra già scelta: un possibile doppione. */
+  altraIniziale?: string
   fai: Fai
   onLasciaStare: () => void
   onUnite: (resta: string) => void
 }) {
-  const [altra, setAltra] = useState('')
+  const [altra, setAltra] = useState(altraIniziale ?? '')
   const [scambiate, setScambiate] = useState(false)
   const candidati = possibiliDoppioni(p, tutti)
   const lei = tutti.find((x) => x.id === altra)
@@ -916,7 +1023,8 @@ function NucleoFamiliare({
  * dall'import delle risposte del modulo Google. Sono quelli che vanno sulle
  * ricevute: MODIFICA li corregge, e da lì valgono i nuovi.
  */
-function DatiAnagrafici({ d, p, fai }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai }) {
+/** `onCambiato`: codice fiscale e nascita decidono i possibili doppioni dell'elenco. */
+function DatiAnagrafici({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void }) {
   // In una scatola: `null` vuol dire «ancora da leggere», `{ di: null }` «non ce ne sono».
   const an = useCarica(async () => ({ di: await d.anagraficaDi(p.id) }), [d, p.id])
   const [modifica, setModifica] = useState<Anagrafica | null>(null)
@@ -928,7 +1036,7 @@ function DatiAnagrafici({ d, p, fai }: { d: DatiSegreteria; p: PersonaSeg; fai: 
   const residenza = x && [x.indirizzo, [x.cap, x.comune].filter(Boolean).join(' ')].filter(Boolean).join(', ')
   const genitore = x && [x.genitoreCognome, x.genitoreNome].filter(Boolean).join(' ')
 
-  if (modifica) return <ModificaAnagrafica d={d} p={p} fai={fai} dati={modifica} onCambia={setModifica} onFatto={() => { setModifica(null); void an.ricarica() }} />
+  if (modifica) return <ModificaAnagrafica d={d} p={p} fai={fai} dati={modifica} onCambia={setModifica} onFatto={() => { setModifica(null); void an.ricarica(); onCambiato() }} />
 
   return (
     <div className="stack" style={{ gap: 8 }}>
