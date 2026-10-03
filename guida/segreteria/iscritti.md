@@ -27,7 +27,8 @@ La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
 **IN REGOLA** se certificato e quota sono a posto (**FUORI APP**, in grigio,
 se la quota è pagata senza una ricevuta dell'app); altrimenti in rosso
 **NO CERTIFICATO**, **CERT. SCADUTO**, **DA PAGARE** o **QUOTA SCADUTA**, e in
-giallo **CERT. 14/10** (scade il 14 ottobre, entro un mese) o **IN PARTE**. In
+giallo **SCADE IL 14/10** (entro un mese; **SCADE OGGI** l'ultimo giorno) o
+**IN PARTE**. In
 cima alla pagina c'è quanti sono senza certificato valido e quanti da pagare.
 
 La colonna **30 GIORNI** dice quanto è venuto ognuno nell'ultimo mese:
@@ -56,6 +57,11 @@ Anche il tasto Indietro del browser torna all'elenco, dalla scheda come dal
 modulo di un iscritto nuovo, e una scheda aperta
 resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
+In cima, tre timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
+grandi, con le parole dell'elenco (verde a posto, giallo da guardare, rosso
+manca), e **DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare.
+Un clic su un timbro porta alla sua parte della scheda. Se la scheda è
+disattivata i timbri sono grigi, e sopra c'è scritto **DISATTIVATA**.
 
 - **MODIFICA** — nome, cognome, email, telefono.
 - **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,
@@ -88,7 +94,7 @@ resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
   l'ha ancora.
 - **QUOTA** — se ha pagato lo dicono le ricevute: **PAGATA** se c'è una
   ricevuta non annullata con la **QUOTA ASSOCIATIVA** che vale oggi, con fin
-  quando e il numero della ricevuta; **PAGATA IN PARTE** se della quota manca
+  quando e il numero della ricevuta; **IN PARTE** se della quota manca
   qualcosa (e quanto); **QUOTA SCADUTA** quando è passata la sua data. Non si
   segna a mano: si fa la ricevuta. I corsi (l'annuale, il trimestre) si
   leggono sotto, con fin quando sono pagati, ma non contano per essere in

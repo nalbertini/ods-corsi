@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, inRegola, pagamentoDi, trovaIscritti } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, inRegola, pagamentoDi, trovaIscritti } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'; export * as seg from './src/lib/segreteria'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -946,6 +946,115 @@ console.log('\nunire due schede')
   ok('i campi che non tornano: cognome, email, telefono',
     m.campiDiversi(mario, tutte[2]).map((c) => [c.resta, c.via]),
     [["D'Amico", 'DAmico'], ['mario@esempio.it', 'mario.damico@esempio.it'], ['', '333 1234567']])
+}
+
+console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
+{
+  // Oggi è il 26 settembre 2026. `seg` è tutto `segreteria.ts`: una funzione che manca è un ✗, non un errore di build.
+  const oggi = '2026-09-26'
+  const fra = (n) => {
+    const x = new DateVera(Date.UTC(2026, 8, 26 + n))
+    return x.toISOString().slice(0, 10)
+  }
+  const corta = (g) => `${g.slice(8, 10)}/${g.slice(5, 7)}`
+  const persona = (altro = {}) => ({
+    id: 'p-t', nome: 'Anna', cognome: 'Timbri', attiva: true, creataIl: '2026-09-01', iscrizioni: [],
+    certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, quote: [], ...altro,
+  })
+  const timbri = (p) => (m.seg.timbriScheda ? m.seg.timbriScheda(p, oggi) : null)
+  const inElenco = (p) => (m.seg.paroleInRegola ? m.seg.paroleInRegola(p, oggi) : null)
+  const testi = (t) => (t ? [t.parola, ...t.righe.map((r) => (typeof r === 'string' ? r : r.testo))] : [])
+  const riga = (t, testo) => t?.righe.find((r) => r.testo === testo) ?? null
+  const cert = (scade, conFile = false) => timbri(persona({ certificato: { scade, conFile } }))?.certificato
+  const pagata = { anno: 2026, numero: 12, dal: '2026-09-01', al: fra(200), mancano: 0 }
+  const quota = (altro) => timbri(persona(altro))?.quota
+
+  // 1. Il certificato.
+  ok('certificato che scade fra 10 giorni: giallo', cert(fra(10))?.tono, 'giallo')
+  ok('… con la data: SCADE IL gg/mm', testi(cert(fra(10))).includes(`SCADE IL ${corta(fra(10))}`), true)
+  ok('certificato che scade fra 31 giorni: verde', cert(fra(31))?.tono, 'verde')
+  ok('… VALIDO FINO AL gg/mm', testi(cert(fra(31))).includes(`VALIDO FINO AL ${corta(fra(31))}`), true)
+  ok('certificato scaduto ieri: rosso', cert(fra(-1))?.tono, 'rosso')
+  ok('… con IL gg/mm', testi(cert(fra(-1))).some((x) => x.includes(`IL ${corta(fra(-1))}`)), true)
+  ok('nessuna data: rosso', cert(undefined)?.tono, 'rosso')
+  ok('nessuna data: NO CERTIFICATO, come in elenco', cert(undefined)?.parola, 'NO CERTIFICATO')
+  ok('scade oggi: giallo', cert(oggi)?.tono, 'giallo')
+  ok('scade oggi: SCADE OGGI, non SCADE IL', [testi(cert(oggi)).includes('SCADE OGGI'), testi(cert(oggi)).some((x) => x.startsWith('SCADE IL'))], [true, false])
+
+  // 2. Il file ancora da stampare: sempre giallo, anche sotto un timbro verde.
+  ok('con il file e valido fino a fra 100 giorni: verde', cert(fra(100), true)?.tono, 'verde')
+  ok('… e la riga DA STAMPARE gialla', riga(cert(fra(100), true), 'DA STAMPARE')?.tono, 'giallo')
+  ok('con il file e senza data: rosso', cert(undefined, true)?.tono, 'rosso')
+  ok('… e la riga DA STAMPARE gialla', riga(cert(undefined, true), 'DA STAMPARE')?.tono, 'giallo')
+  ok('senza file, niente DA STAMPARE', cert(fra(100)) ? riga(cert(fra(100)), 'DA STAMPARE') : 'nessun timbro', null)
+
+  // 3. La quota.
+  const q1 = quota({ quote: [pagata] })
+  ok('ricevuta che vale oggi, tutta pagata: verde', q1?.tono, 'verde')
+  ok('… con il numero della ricevuta', testi(q1).some((x) => x.includes('12/2026')), true)
+  ok('… e FINO AL gg/mm', testi(q1).some((x) => x.includes(`FINO AL ${corta(fra(200))}`)), true)
+  const q2 = quota({ quote: [{ ...pagata, mancano: 2000 }] })
+  ok('ricevuta che vale oggi, mancano 20 €: giallo', q2?.tono, 'giallo')
+  ok('… con quanto manca, 20,00 €', testi(q2).some((x) => x.includes('20,00 €')), true)
+  const q3 = quota({ quote: [{ ...pagata, dal: '2025-09-01', al: fra(-1) }] })
+  ok('ricevuta che valeva fino a ieri: rosso', q3?.tono, 'rosso')
+  ok('… QUOTA SCADUTA, come in elenco', q3?.parola, 'QUOTA SCADUTA')
+  const q4 = quota({})
+  ok('niente ricevute né eccezioni: rosso', q4?.tono, 'rosso')
+  ok('… DA PAGARE, come in elenco', q4?.parola, 'DA PAGARE')
+  const q5 = quota({ pagamento: { stato: 'pagato', fino: fra(100) } })
+  ok('pagata fuori dall’app, che vale oggi: verde', q5?.tono, 'verde')
+  ok('… con la riga FUORI APP', !!riga(q5, 'FUORI APP'), true)
+  ok('con la ricevuta, niente FUORI APP', q1 ? riga(q1, 'FUORI APP') : 'nessun timbro', null)
+
+  // 4. Il documento: si vede, ma non conta per «in regola».
+  const doc = (documento) => timbri(persona({ documento }))?.documento
+  ok('documento in segreteria: verde IN SEGRETERIA', [doc(true)?.tono, doc(true)?.parola], ['verde', 'IN SEGRETERIA'])
+  ok('documento da portare: giallo DA PORTARE', [doc(false)?.tono, doc(false)?.parola], ['giallo', 'DA PORTARE'])
+  const senzaDoc = persona({ certificato: { scade: fra(100), conFile: false }, quote: [pagata], documento: false })
+  ok('senza documento è in regola lo stesso', m.inRegola(senzaDoc, oggi), true)
+  ok('… e in elenco resta IN REGOLA', inElenco(senzaDoc), [{ tono: 'verde', parola: 'IN REGOLA' }])
+
+  // 5. Chi è disattivato: tutto spento, le parole restano.
+  const guai5 = { certificato: { scade: fra(-1), conFile: false }, pagamento: { stato: 'da_pagare' }, quote: [] }
+  const attiva = timbri(persona(guai5))
+  const spenta = timbri(persona({ ...guai5, attiva: false }))
+  const tre = (r) => (r ? [r.certificato, r.quota, r.documento] : [])
+  ok('disattivata: i tre timbri spenti', tre(spenta).map((t) => t.tono), ['spento', 'spento', 'spento'])
+  ok('… con le stesse parole di quando è attiva', spenta ? tre(spenta).map(testi) : 'nessun timbro', attiva ? tre(attiva).map(testi) : 'i timbri di quando è attiva')
+  ok('… e lo dice: disattivata', spenta?.disattivata, true)
+  ok('attiva: non disattivata', attiva ? !!attiva.disattivata : 'nessun timbro', false)
+  ok('attiva con certificato scaduto e quota da pagare: rosso e rosso', tre(attiva).slice(0, 2).map((t) => t.tono), ['rosso', 'rosso'])
+
+  // Parole mai vuote, in tutti i casi visti.
+  const visti = [cert(fra(10)), cert(fra(31)), cert(fra(-1)), cert(undefined), cert(oggi), cert(fra(100), true), q1, q2, q3, q4, q5, doc(true), doc(false), ...tre(spenta)]
+  ok('nessun timbro senza parola', visti.length > 0 && visti.every((t) => t && typeof t.parola === 'string' && t.parola.trim() !== ''), true)
+
+  // 6. La colonna IN REGOLA e i timbri dicono le stesse parole, prese dallo stesso posto.
+  const casi = [
+    ['niente certificato, niente quota', persona(), [{ tono: 'rosso', parola: 'NO CERTIFICATO' }, { tono: 'rosso', parola: 'DA PAGARE' }]],
+    ['certificato scaduto, quota scaduta', persona({ certificato: { scade: fra(-1), conFile: false }, quote: [{ ...pagata, dal: '2025-09-01', al: fra(-1) }] }), [{ tono: 'rosso', parola: 'CERT. SCADUTO' }, { tono: 'rosso', parola: 'QUOTA SCADUTA' }]],
+    ['certificato valido, quota in parte', persona({ certificato: { scade: fra(100), conFile: false }, quote: [{ ...pagata, mancano: 2000 }] }), [{ tono: 'giallo', parola: 'IN PARTE' }]],
+    ['in regola', persona({ certificato: { scade: fra(100), conFile: false }, quote: [pagata] }), [{ tono: 'verde', parola: 'IN REGOLA' }]],
+    ['in regola fuori dall’app', persona({ certificato: { scade: fra(100), conFile: false }, pagamento: { stato: 'pagato', fino: fra(100) } }), [{ tono: 'spento', parola: 'FUORI APP' }, { tono: 'verde', parola: 'IN REGOLA' }]],
+  ]
+  for (const [cosa, p, voluto] of casi) ok(`in elenco, ${cosa}: le parole di oggi`, inElenco(p), voluto)
+  const bollino = (t) => (t ? { tono: t.tono, parola: t.parola } : null)
+  for (const [cosa, p] of casi.slice(0, 3)) {
+    const t = timbri(p)
+    const fuori = (inElenco(p) ?? []).filter((b) => !['IN REGOLA', 'FUORI APP'].includes(b.parola))
+    const daiTimbri = [t?.certificato, t?.quota].filter((x) => x && x.tono !== 'verde').map(bollino)
+    ok(`${cosa}: in elenco le stesse parole dei timbri`, inElenco(p) && t ? fuori : 'manca l’elenco o i timbri', daiTimbri)
+  }
+  // Il certificato in scadenza: la parola in elenco è quella del timbro, qualunque sia.
+  const inScadenza = persona({ certificato: { scade: fra(10), conFile: false }, quote: [pagata] })
+  ok('certificato in scadenza: in elenco la parola del timbro', inElenco(inScadenza), [bollino(timbri(inScadenza)?.certificato)])
+
+  // E l'elenco non se le scrive da sé: Iscritti.tsx le prende da src/lib.
+  const { readFileSync } = await import('node:fs')
+  const tsx = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
+  const ricopiate = ["'NO CERTIFICATO'", "'CERT. SCADUTO'", "'QUOTA SCADUTA'", 'const TONO_CERTIFICATO', 'const TONO_PAGA', 'const PAROLA_PAGA'].filter((x) => tsx.includes(x))
+  ok('Iscritti.tsx non ha parole né toni suoi per IN REGOLA', ricopiate, [])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

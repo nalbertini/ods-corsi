@@ -294,7 +294,10 @@ function richieste(adesso: Date): Richiesta[] {
  * Le ricevute di chi ha pagato, tutto o in parte: la quota e il primo dei suoi
  * corsi che è nel listino, fatte nei primi giorni della stagione (o oggi, se
  * la stagione non è ancora cominciata). Chi ha pagato in parte ha dato metà
- * del corso. Una sola per persona, e solo a chi non ne ha già una.
+ * della quota e del corso. Una sola per persona, e solo a chi non ne ha già una.
+ * Per far vedere QUOTA SCADUTA, chi aveva pagato fino a una data già passata
+ * ha la quota della stagione prima; per FUORI APP, a qualcuno la ricevuta
+ * ha solo il corso.
  */
 function seminaRicevute(adesso: Date) {
   try {
@@ -319,13 +322,16 @@ function seminaRicevute(adesso: Date) {
       .map((nome) => nome && vociDelCorso(nome, STAGIONE.dal)[0])
       .find(Boolean)
     const prima = giornoDopo(STAGIONE.dal, Math.floor(numero(`ric|${p.id}`) * 10))
-    const data = prima > oggi ? oggi : prima
+    const finita = p.pagamento?.fino && p.pagamento.fino < oggi ? p.pagamento.fino : undefined
+    const fuori = !finita && !!corso && stato === 'pagato' && numero(`fuori|${p.id}`) < 0.08
+    const data = finita ? giornoDopo(STAGIONE.dal, -365) : prima > oggi ? oggi : prima
     const metodo = ['Bonifico', 'Contanti', 'POS'][Math.floor(numero(`met|${p.id}`) * 3)]
     const paga = (v: Omit<VoceRicevuta, 'pagamenti'>, meta = false): VoceRicevuta => ({
       ...v,
       pagamenti: [{ data, importo: meta ? Math.round((v.prezzo * v.quantita) / 2) : v.prezzo * v.quantita, metodo }],
     })
-    const voci = [paga(voceQuota().voce(data)), ...(corso ? [paga(corso.voce(data), stato === 'in_parte')] : [])]
+    const quota = finita ? { ...voceQuota().voce(data), dal: data, al: finita } : voceQuota().voce(data)
+    const voci = [...(fuori ? [] : [paga(quota, stato === 'in_parte')]), ...(corso && !finita ? [paga(corso.voce(data), stato === 'in_parte')] : [])]
     const anno = Number(data.slice(0, 4))
     const numeroRicevuta = Math.max(0, ...tutte.filter((r) => r.anno === anno).map((r) => r.numero)) + 1
     const c = conti({ voci, anticipo: 0 })
