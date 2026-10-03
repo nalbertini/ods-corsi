@@ -46,14 +46,19 @@ function Bollino({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde' | 'spe
 export function Iscritti({
   d,
   scelta,
+  nuovo = false,
   onScelta,
+  onNuovo,
   filtroIniziale,
 }: {
   d: DatiSegreteria
   /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
   scelta?: string
+  /** Il modulo del nuovo iscritto: sta nell'indirizzo anche lui, così Indietro lo chiude. */
+  nuovo?: boolean
   /** `push` è un passo per Indietro, `replace` corregge l'indirizzo di adesso. */
   onScelta: (id: string | null, passo: 'push' | 'replace') => void
+  onNuovo: () => void
   filtroIniziale?: Destinazione['filtro']
 }) {
   const persone = useCarica(() => d.persone(), [d])
@@ -68,15 +73,6 @@ export function Iscritti({
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [daStampare, setDaStampare] = useState(filtroIniziale === 'stampare')
-  const [nuovo, setNuovo] = useState(false)
-  // Il modulo del nuovo iscritto non sta nell'indirizzo: quando la scheda
-  // cambia da fuori (Indietro, Avanti) si chiude, se no resterebbe sopra la
-  // scheda che l'indirizzo dice.
-  const [sceltaDiPrima, setSceltaDiPrima] = useState(scelta)
-  if (scelta !== sceltaDiPrima) {
-    setSceltaDiPrima(scelta)
-    setNuovo(false)
-  }
   const { avviso, avvisa, fai } = useAvviso()
   const oggi = chiaveGiorno(new Date())
 
@@ -120,8 +116,7 @@ export function Iscritti({
   const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica()])
 
   const chiudi = () => {
-    setNuovo(false)
-    if (scelta) onScelta(null, 'push')
+    if (scelta || nuovo) onScelta(null, 'push')
   }
 
   // Una scheda di qualcuno che non c'è più (un link vecchio, un'altra
@@ -143,10 +138,10 @@ export function Iscritti({
             d={d}
             corsi={attivi}
             fai={fai}
-            onLasciaStare={() => setNuovo(false)}
+            onLasciaStare={chiudi}
             onSalvato={(id) => {
-              setNuovo(false)
-              onScelta(id, 'push')
+              // Al posto del modulo: Indietro dalla scheda nuova torna all'elenco, non a un modulo vuoto.
+              onScelta(id, 'replace')
               void ricarica()
             }}
           />
@@ -163,10 +158,7 @@ export function Iscritti({
             f={freq.dato?.get(persona.id)}
             fai={fai}
             onCambiato={() => void ricarica()}
-            onApri={(id) => {
-              setNuovo(false)
-              onScelta(id, 'push')
-            }}
+            onApri={(id) => onScelta(id, 'push')}
           />
         </SchedaPiena>
       ) : null}
@@ -179,7 +171,7 @@ export function Iscritti({
             stampare === 1 ? ' Un certificato caricato nell’app da stampare e cancellare.' : stampare ? ` ${stampare} certificati caricati nell’app da stampare e cancellare.` : ''
           }`}
         >
-          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
+          <button type="button" className="sg-btn sg-btn-pieno" onClick={onNuovo}>
             + NUOVO ISCRITTO
           </button>
         </Testa>
@@ -252,7 +244,6 @@ export function Iscritti({
                   data-scelto={!nuovo && scelta === p.id}
                   data-spento={!p.attiva}
                   onClick={() => {
-                    setNuovo(false)
                     onScelta(p.id, 'push')
                   }}
                 >

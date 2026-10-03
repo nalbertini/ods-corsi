@@ -70,6 +70,15 @@ export function Settimana({
     // Solo all'arrivo della settimana: aprire una lezione non è un motivo per guardare.
   }, [sett.dato])
 
+  // Una sala che non c'è più (rinominata o tolta, in un link vecchio): la
+  // griglia la filtrerebbe vuota. Si tolgono sala e filtro e lo si dice.
+  useEffect(() => {
+    if (!sala || !sale.dato || sale.dato.some((s) => s.id === sala)) return
+    avvisa('Quella sala non c’è più')
+    vai({ sala: undefined }, 'replace')
+    // Solo all'arrivo delle sale, come per la lezione.
+  }, [sale.dato])
+
   // Le presenze segnate dal cassetto viaggiano nella coda dell'appello: la
   // griglia si rilegge quando la coda si svuota, cioè quando sono arrivate.
   const rileggi = sett.ricarica

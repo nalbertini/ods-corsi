@@ -110,6 +110,10 @@ function scrivi(hash: string, passo: 'push' | 'replace') {
   else window.history.replaceState(null, '', url)
 }
 
+/** Se il passo di adesso è quello del menu aperto sul telefono (vedi `apriMenu`). */
+// `history.state` è `any`: qui ci scrive solo la segreteria, `{ menu: true }` o niente.
+const nelMenu = () => (window.history.state as { menu?: boolean } | null)?.menu === true
+
 /** L'indirizzo della pagina pubblica per iscriversi, quello da mandare su WhatsApp. */
 const LINK_PUBBLICO = indirizzo(INDIRIZZI.iscrizioni)
 
@@ -167,6 +171,17 @@ export function Segreteria({
   const [filtro, setFiltro] = useState<Destinazione['filtro']>()
   // Il menu del telefono, aperto o chiuso; sul computer non conta.
   const [aperto, setAperto] = useState(false)
+  // Sul telefono il menu aperto è un passo della cronologia, sullo stesso
+  // indirizzo: Indietro lo chiude senza spostarsi, come fanno le app.
+  const apriMenu = () => {
+    setAperto(true)
+    if (window.matchMedia('(max-width: 767px)').matches && !nelMenu()) window.history.pushState({ menu: true }, '')
+  }
+  /** Chiuso da un tasto: si toglie il passo del menu, se c'è, se no Avanti lo riaprirebbe. */
+  const chiudiMenu = () => {
+    setAperto(false)
+    if (nelMenu()) window.history.back()
+  }
   // Il posto di adesso per chi ascolta il browser, che non vede lo stato dell'ultimo giro.
   const ora = useRef(posto)
   /** Va in un posto: `push` è un passo per Indietro, `replace` corregge quello di adesso. */
@@ -181,8 +196,11 @@ export function Segreteria({
     // Un modulo scritto a metà (una ricevuta, un iscritto nuovo) non si perde con un clic sul menu.
     if (bozzaAperta() && !(await lasciare())) return
     setFiltro(d.filtro)
-    segna(postoDelMenu(ora.current, v, d), 'push')
-    setAperto(false)
+    // Dal menu del telefono la voce scelta prende il posto del passo del
+    // menu: Indietro poi torna alla voce di prima, non al menu aperto.
+    segna(postoDelMenu(ora.current, v, d), nelMenu() ? 'replace' : 'push')
+    // Stessa voce, stesso indirizzo: il passo del menu è ancora lì.
+    chiudiMenu()
   }
   useEffect(() => {
     // Un indirizzo che non si capisce diventa quello giusto; quello degli altri si lascia stare.
@@ -195,6 +213,8 @@ export function Segreteria({
     // la prima resterebbe senza risposta.
     let chiedendo = false
     const torna = async () => {
+      // Il menu del telefono segue la cronologia: aperto solo sul suo passo.
+      setAperto(nelMenu())
       if (chiedendo) return
       if (!dopoIndietro(ora.current, window.location.hash, { prova })) return correggi()
       // Indietro con un modulo a metà: la stessa domanda del menu, e chi torna a
@@ -211,7 +231,6 @@ export function Segreteria({
       if (letto.voce !== ora.current.voce) setFiltro(undefined)
       ora.current = letto
       setPosto(letto)
-      setAperto(false)
       correggi()
     }
     window.addEventListener('popstate', torna)
@@ -219,7 +238,7 @@ export function Segreteria({
   }, [prova])
   useEffect(() => {
     if (!aperto) return
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setAperto(false)
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && chiudiMenu()
     window.addEventListener('keydown', esc)
     return () => window.removeEventListener('keydown', esc)
   }, [aperto])
@@ -299,7 +318,7 @@ export function Segreteria({
           aria-expanded={aperto}
           aria-controls="sg-menu"
           aria-label={!aperto && daFare > 0 ? `Menu, ${daFare} da guardare` : undefined}
-          onClick={() => setAperto((a) => !a)}
+          onClick={() => (aperto ? chiudiMenu() : apriMenu())}
         >
           {aperto ? 'CHIUDI' : 'MENU'}
           {!aperto && daFare > 0 && (
@@ -417,7 +436,15 @@ export function Segreteria({
         {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} />}
         {d && voce === 'corsi' && <Corsi d={d} />}
         {d && voce === 'iscritti' && (
-          <Iscritti key={filtro ?? ''} d={d} scelta={posto.persona} onScelta={(id, passo) => segna({ voce: 'iscritti', ...(id && { persona: id }) }, passo)} filtroIniziale={filtro} />
+          <Iscritti
+            key={filtro ?? ''}
+            d={d}
+            scelta={posto.persona}
+            nuovo={posto.nuovo}
+            onScelta={(id, passo) => segna({ voce: 'iscritti', ...(id && { persona: id }) }, passo)}
+            onNuovo={() => segna({ voce: 'iscritti', nuovo: true }, 'push')}
+            filtroIniziale={filtro}
+          />
         )}
         {d && voce === 'richieste' && <Richieste key={filtro ?? ''} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} />}
         {d && inPresenze && conSegnalate && (

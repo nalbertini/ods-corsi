@@ -6,6 +6,7 @@
  * nella cronologia e nei link incollati.
  *
  *   #iscritti/<id>
+ *   #iscritti/nuovo           il modulo del nuovo iscritto
  *   #settimana?dal=2026-09-28&sala=<id>&lezione=<id>&inizio=<ora>
  */
 
@@ -18,6 +19,8 @@ export type Voce = (typeof VOCI)[number]
 export interface Posto {
   voce: Voce
   persona?: string
+  /** Il modulo del nuovo iscritto aperto: Indietro lo chiude come una scheda. */
+  nuovo?: true
   lezione?: { id: string; inizio: string }
   /** Il lunedì della settimana in griglia, `AAAA-MM-GG`. */
   settimana?: string
@@ -45,6 +48,8 @@ export function leggiIndirizzo(hash: string, { prova }: { prova: boolean }): Pos
   // Le segnalate ci sono solo in prova (vedi `Segreteria`).
   if (!eVoce(voce) || (voce === 'segnalate' && !prova)) return dafare
   if (voce === 'iscritti' && resto.length === 1 && resto[0]) {
+    // Gli id veri sono uuid (in prova `p-…`): «nuovo» non è mai una persona.
+    if (resto[0] === 'nuovo') return { voce, nuovo: true }
     try {
       return { voce, persona: decodeURIComponent(resto[0]) }
     } catch {
@@ -69,6 +74,7 @@ export function leggiIndirizzo(hash: string, { prova }: { prova: boolean }): Pos
 
 /** L'indirizzo di un posto, col cancelletto: solo i campi del posto, il resto resta fuori. */
 export function scriviIndirizzo(p: Posto): string {
+  if (p.voce === 'iscritti' && p.nuovo) return '#iscritti/nuovo'
   if (p.voce === 'iscritti' && p.persona) return `#iscritti/${encodeURIComponent(p.persona)}`
   if (p.voce !== 'settimana') return `#${p.voce}`
   const q = new URLSearchParams()
@@ -84,12 +90,12 @@ export function scriviIndirizzo(p: Posto): string {
 
 /**
  * Dove porta un clic sul menu, o un «vai» da un'altra voce. La stessa voce
- * ritoccata chiude la scheda o la lezione e tiene il resto (settimana e
+ * ritoccata chiude la scheda, il modulo nuovo o la lezione e tiene il resto (settimana e
  * sala); una voce diversa riparte da capo.
  */
 export function postoDelMenu(ora: Posto, voce: Voce, dest: Pick<Posto, 'persona' | 'lezione'> = {}): Posto {
   if (voce === ora.voce && !dest.persona && !dest.lezione) {
-    const { persona: _p, lezione: _l, ...resto } = ora
+    const { persona: _p, lezione: _l, nuovo: _n, ...resto } = ora
     return resto
   }
   return { voce, ...(dest.persona && { persona: dest.persona }), ...(dest.lezione && { lezione: dest.lezione }) }

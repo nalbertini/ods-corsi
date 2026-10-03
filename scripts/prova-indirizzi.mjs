@@ -55,6 +55,18 @@ ok('un id con lettere accentate, barre e spazi torna uguale',
   andataRitorno({ voce: 'iscritti', persona: 'p-prova-à/1 x' }),
   { persona: 'p-prova-à/1 x', voce: 'iscritti' })
 
+console.log('Il modulo del nuovo iscritto')
+ok('il modulo nuovo è #iscritti/nuovo', m.scriviIndirizzo({ voce: 'iscritti', nuovo: true }), '#iscritti/nuovo')
+ok('#iscritti/nuovo riapre il modulo, senza scheda', piatto(leggi('#iscritti/nuovo')), { nuovo: true, voce: 'iscritti' })
+ok('un id vero (uuid) resta una scheda',
+  piatto(leggi('#iscritti/0b6c2f3e-8a1d-4f5e-9c7b-2d4e6f8a0b1c')), { persona: '0b6c2f3e-8a1d-4f5e-9c7b-2d4e6f8a0b1c', voce: 'iscritti' })
+ok('anche un id di prova', piatto(leggi('#iscritti/p-nuovo')), { persona: 'p-nuovo', voce: 'iscritti' })
+ok('Indietro dal modulo torna all\'elenco', m.dopoIndietro({ voce: 'iscritti', nuovo: true }, '#iscritti', { prova: false }), { voce: 'iscritti' })
+ok('Avanti riapre il modulo', piatto(m.dopoIndietro({ voce: 'iscritti' }, '#iscritti/nuovo', { prova: false })), { nuovo: true, voce: 'iscritti' })
+ok('ISCRITTI ritoccato chiude il modulo', m.postoDelMenu({ voce: 'iscritti', nuovo: true }, 'iscritti'), { voce: 'iscritti' })
+ok('un\'altra voce lo chiude', m.postoDelMenu({ voce: 'iscritti', nuovo: true }, 'corsi'), { voce: 'corsi' })
+ok('il modulo nuovo non è di altre voci', leggi('#corsi/nuovo')?.voce, 'dafare')
+
 console.log('La lezione aperta')
 const lezione = { id: 'l-prova-12/3 à', inizio: '2026-09-28T18:30:00+02:00' }
 const riletta = leggi(m.scriviIndirizzo({ voce: 'settimana', lezione }))
