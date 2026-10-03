@@ -141,12 +141,14 @@ ok('il 1° settembre il saldo di Lotta 3 non c’è più, da nessuna parte', Arr
 console.log('I dati del socio')
 const adulto = { nome: 'Nicola', cognome: 'Albertini', natoIl: '1980-03-02', codiceFiscale: 'LBRNCL80C02L219X', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno' }
 const minore = { ...quella.intestatario, genitoreCodiceFiscale: 'LBRNCL80C02L219X' }
-ok('un adulto senza codice fiscale: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: '' })), { blocca: ['il codice fiscale'], avvisa: [] })
-ok('un adulto senza indirizzo: si fa, ma lo dice', prova(() => m.mancanoDatiSocio({ ...adulto, indirizzo: '  ' })), { blocca: [], avvisa: ['l’indirizzo'] })
-ok('un minore senza il codice fiscale del genitore: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, genitoreCodiceFiscale: undefined })), { blocca: ['il codice fiscale del genitore'], avvisa: [] })
-ok('un minore senza il genitore: servono nome e codice fiscale', prova(() => m.mancanoDatiSocio({ ...minore, genitore: undefined, genitoreCodiceFiscale: undefined }).blocca), ['il genitore', 'il codice fiscale del genitore'])
-ok('un adulto con tutto: completo', prova(() => m.mancanoDatiSocio(adulto)), { blocca: [], avvisa: [] })
-ok('un minore con tutto: completo', prova(() => m.mancanoDatiSocio(minore)), { blocca: [], avvisa: [] })
+// Un giorno fisso: il minore della prova non deve diventare maggiorenne col calendario.
+const OGGI_SOCIO = new Date('2026-09-10')
+ok('un adulto senza codice fiscale: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: '' }, OGGI_SOCIO)), { blocca: ['il codice fiscale'], avvisa: [] })
+ok('un adulto senza indirizzo: si fa, ma lo dice', prova(() => m.mancanoDatiSocio({ ...adulto, indirizzo: '  ' }, OGGI_SOCIO)), { blocca: [], avvisa: ['l’indirizzo'] })
+ok('un minore senza il codice fiscale del genitore: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, genitoreCodiceFiscale: undefined }, OGGI_SOCIO)), { blocca: ['il codice fiscale del genitore'], avvisa: [] })
+ok('un minore senza il genitore: servono nome e codice fiscale', prova(() => m.mancanoDatiSocio({ ...minore, genitore: undefined, genitoreCodiceFiscale: undefined }, OGGI_SOCIO).blocca), ['il genitore', 'il codice fiscale del genitore'])
+ok('un adulto con tutto: completo', prova(() => m.mancanoDatiSocio(adulto, OGGI_SOCIO)), { blocca: [], avvisa: [] })
+ok('un minore con tutto: completo', prova(() => m.mancanoDatiSocio(minore, OGGI_SOCIO)), { blocca: [], avvisa: [] })
 
 console.log('I PDF')
 const tante = {
