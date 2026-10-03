@@ -55,7 +55,7 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
       {ricevute.guaio && <Guaio testo={ricevute.guaio} />}
       {ricevute.dato?.length === 0 && <span className="sg-sotto">Ancora nessuna ricevuta.</span>}
       {ricevute.dato?.map((r) => (
-        <div key={r.id} className="sg-voce-elenco">
+        <div key={r.id} className="sg-voce-elenco" style={{ flexWrap: 'wrap' }}>
           <span className="stack grow" style={{ minWidth: 0 }}>
             {/* Annullata è storia, non qualcosa che manca: barrata e in grigio, non in rosso. */}
             <span className="num" style={{ fontSize: 15, fontWeight: 700, textDecoration: r.annullataIl ? 'line-through' : undefined, color: r.annullataIl ? 'var(--dim)' : undefined }}>
@@ -69,14 +69,13 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
           <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(r))}>
             PDF
           </button>
+          {/* Raro e senza ritorno: su una riga sua, dal lato opposto al PDF che si preme ogni giorno. */}
           {!r.annullataIl && (
-            <button
-              type="button"
-              className="sg-link"
-              onClick={() => annulla(r)}
-            >
-              Annulla
-            </button>
+            <div className="row" style={{ flexBasis: '100%' }}>
+              <button type="button" className="sg-btn sg-btn-linea" onClick={() => annulla(r)}>
+                ANNULLA RICEVUTA
+              </button>
+            </div>
           )}
         </div>
       ))}
