@@ -5,7 +5,7 @@
  * quello che le serve per scegliere l'altra e vedere cosa non torna.
  */
 
-import { compatto } from './prove'
+import { compatto } from './nomi'
 import type { PersonaSeg } from './segreteria'
 
 /**

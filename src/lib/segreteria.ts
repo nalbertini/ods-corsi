@@ -7,7 +7,7 @@ import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
 import { VALIDITA } from './costi'
 import type { Listino, ListinoLetto } from './listino'
-import { nomeProprio } from './nomi'
+import { nomeProprio, paroleCercate, somiglia } from './nomi'
 import type { SegnalataVista } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 
@@ -446,7 +446,8 @@ export interface DatiSegreteria {
   gestisciSegnalata?(id: string, accogli: boolean): Promise<void>
   /** Le segnalazioni della segreteria, coi loro messaggi (vedi `segnalazioni.ts`). */
   segnalazioni(): Promise<Segnalazione[]>
-  apriSegnalazione(titolo: string, testo: string): Promise<void>
+  /** Apre una segnalazione e dice il suo id, così il filo nuovo si apre da sé. */
+  apriSegnalazione(titolo: string, testo: string): Promise<string>
   rispondiSegnalazione(id: string, testo: string): Promise<void>
   /** La chiude, o con `false` la riapre. */
   chiudiSegnalazione(id: string, chiusa: boolean): Promise<void>
@@ -682,4 +683,17 @@ export function datiSegreteria(): Promise<DatiSegreteria> {
       })
   }
   return unico
+}
+
+/**
+ * Chi esce scrivendo in «Cerca iscritto»: chi somiglia allo scritto
+ * (`somiglia`), prima chi è attivo e poi per cognome, al massimo otto.
+ */
+export function trovaIscritti(persone: PersonaSeg[], scritto: string): PersonaSeg[] {
+  const parole = paroleCercate(scritto)
+  if (!parole.length) return []
+  return persone
+    .filter((p) => somiglia(p, parole))
+    .sort((a, b) => Number(b.attiva) - Number(a.attiva) || a.cognome.localeCompare(b.cognome, 'it'))
+    .slice(0, 8)
 }

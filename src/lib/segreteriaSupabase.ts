@@ -1131,7 +1131,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async apriSegnalazione(titolo, testo) {
       const no = cosaNonVaSegnalazione(testo, titolo)
       if (no) throw new Error(no)
-      ok(await db.from('segnalazioni').insert({ titolo: titolo.trim(), testo: testo.trim() }))
+      // Come per corsi e persone: `.single()` dà `data` nullo nel tipo, ma `ok` ha già lanciato se non c'è.
+      return (ok(await db.from('segnalazioni').insert({ titolo: titolo.trim(), testo: testo.trim() }).select('id').single()) as { id: string }).id
     },
 
     async rispondiSegnalazione(id, testo) {

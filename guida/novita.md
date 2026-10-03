@@ -10,6 +10,35 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.8.6 — 3 ottobre 2026
+
+### Risolto
+
+- Sul tablet di sala il timer torna in primo piano, e l'area istruttore funziona anche in verticale
+
+### Modificato
+
+- Segnalazioni: la chiusa resta in vista, le bozze non si perdono e i tasti spenti dicono cosa manca
+
+## 0.8.5 — 3 ottobre 2026
+
+### Risolto
+
+- Sul tablet, aggiungendo una persona in prova la conferma non sparisce più
+- Un conto solo di chi manca nell'appello, e un tocco di troppo non toglie più il segno
+- «Cerca iscritto» in segreteria trova anche con l'apostrofo o il cognome attaccato (d'am, deluca)
+- Girando il tablet l'appello aperto non si chiude più e il calendario resta sulla settimana scelta
+
+### Modificato
+
+- Le prove controllano che riaggiungere una prova non cambi il suo segno
+
+## 0.8.4 — 3 ottobre 2026
+
+### Risolto
+
+- Chi ha l'apostrofo o il trattino nel cognome si ritrova fra chi è già venuto a provare
+
 ## 0.8.3 — 3 ottobre 2026
 
 ### Risolto
