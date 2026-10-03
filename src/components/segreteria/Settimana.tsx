@@ -90,7 +90,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
     <>
       <Testa
         titolo="SETTIMANA"
-        sotto={`Le lezioni dell’orario dei corsi: aprine una per l’appello, il sostituto o per annullarla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato)}: si allunga da sé, e subito da IMPOSTAZIONI → Il calendario.` : ''}`}
+        sotto={`Le lezioni dell’orario dei corsi: aprine una per l’appello, il sostituto o per annullarla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato)}: si allunga da sé, e subito da IMPOSTAZIONI → IL CALENDARIO.` : ''}`}
       >
         <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuova(true)}>
           + LEZIONE STRAORDINARIA
