@@ -4,16 +4,14 @@
 
 Le scelte che spettano alla palestra, non al programma.
 
-## Per quanto si tengono le presenze
+La pagina ha quattro gruppi: **LA STAGIONE**, **LE SALE E I TABLET**, **LE
+RICEVUTE**, **DATI E PRIVACY**. In cima, un tasto per ognuno porta dritto al
+gruppo. Le spiegazioni lunghe di un riquadro stanno dietro **COME
+FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista.
 
-Si sceglie fra **12, 24, 36 o 60 mesi**: dopo, le presenze si cancellano.
-Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è
-della palestra.
+## La stagione
 
-Sotto c'è quante presenze sono già scadute. Si cancellano col lavoro mensile del
-database, se è stato attivato, oppure subito con **CANCELLA ORA** (chiede conferma: non si recuperano).
-
-## Il calendario
+### Il calendario
 
 - **PRONTO FINO AL** — fino a che giorno le lezioni dell'orario sono già in
   calendario. Le lezioni straordinarie non contano: una fissata lontano resta
@@ -33,12 +31,14 @@ database, se è stato attivato, oppure subito con **CANCELLA ORA** (chiede confe
 - **RIGENERA ADESSO** — lo allunga subito. Non duplica e non tocca le lezioni
   che hanno già un appello, anche a cavallo del cambio d'ora.
 
-## Le sale
+## Le sale e i tablet
+
+### Le sale
 
 L'elenco delle sale con i loro posti: **CAMBIA** per il nome o i posti,
 **AGGIUNGI UNA SALA** per una nuova.
 
-## La musica delle sale
+### La musica delle sale
 
 Le liste che il tablet di sala fa partire dalla sua barra in basso (vedi
 [Il tablet di sala](../sala.md#la-musica)). Ognuna ha:
@@ -53,7 +53,7 @@ Le liste che il tablet di sala fa partire dalla sua barra in basso (vedi
 cinque minuti. Le liste di Spotify suonano solo se sul tablet è collegato un
 account Spotify Premium, dalle impostazioni del timer.
 
-## La voce dei tablet
+### La voce dei tablet
 
 Maurizio, i segnali, il volume, lo schermo e la musica durante il timer non
 si scelgono da qui: si scelgono nelle impostazioni del timer, su un tablet
@@ -75,7 +75,7 @@ qualunque, e valgono per tutti (vedi [Il tablet di sala](../sala.md#il-timer)).
   registrare con lo stesso browser dei tablet: Safari e Chrome registrano in
   formati diversi.
 
-## Lo storico dei timer
+### Lo storico dei timer
 
 Gli ultimi timer arrivati in fondo, o fermati prima, sui tablet di sala e sui
 telefoni degli istruttori collegati: quando, quale, chi (l'istruttore o il
@@ -84,7 +84,7 @@ andare indietro.
 
 ## Le ricevute
 
-I dati dell'associazione che vanno in testa a ogni ricevuta: nome, indirizzo,
+**CHI FA LE RICEVUTE**: i dati dell'associazione che vanno in testa a ogni ricevuta: nome, indirizzo,
 CAP, comune, codice fiscale e, se c'è, la partita IVA; e la **DICITURA IN
 FONDO**, quella dell'esenzione da IVA e bollo. Si parte con quelli di Asd Il
 Centro Judo. **SALVA** compare quando si cambia qualcosa, e vale per le
@@ -92,7 +92,25 @@ ricevute che si fanno da lì in poi: quelle già fatte restano come erano. Le
 ricevute si fanno dalla scheda di un iscritto (vedi
 [Iscritti](iscritti.md#un-pagamento-e-la-sua-ricevuta)).
 
-## Privacy
+## Dati e privacy
+
+### Per quanto si tengono le presenze
+
+Si sceglie fra **12, 24, 36 o 60 mesi**: dopo, le presenze si cancellano.
+Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è
+della palestra.
+
+Sotto c'è quante presenze sono già scadute. Si cancellano col lavoro mensile del
+database, se è stato attivato, oppure subito con **CANCELLA ORA** (chiede conferma: non si recuperano).
+
+### Il backup
+
+Una copia di tutto il database si fa da sé ogni lunedì notte; **FAI UN BACKUP
+ORA** ne fa una subito, prima di un cambiamento grosso. **SCARICA** prende una
+copia per metterla su Drive: è cifrata, si apre solo con la password del
+backup.
+
+### Privacy
 
 - **L'informativa** — lo stato dell'informativa privacy che vede chi si
   iscrive. Finché è una **BOZZA DA APPROVARE**, va letta e fatta propria dalla

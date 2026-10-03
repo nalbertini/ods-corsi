@@ -333,6 +333,19 @@ export function Guaio({ testo }: { testo: string }) {
   )
 }
 
+/**
+ * La spiegazione lunga di un riquadro, chiusa: si legge una volta, mentre i
+ * numeri e gli avvisi servono ogni volta e restano fuori.
+ */
+export function ComeFunziona({ children }: { children: ReactNode }) {
+  return (
+    <details className="sg-spiega">
+      <summary>COME FUNZIONA?</summary>
+      <div className="sg-spiega-testo">{children}</div>
+    </details>
+  )
+}
+
 const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
 
 /** «12 gennaio 2026», da una data `AAAA-MM-GG`. */
