@@ -184,7 +184,7 @@ export function CaricaFile({
   id,
   etichetta,
   dettaglio,
-  facoltativo,
+  seManca,
   file,
   errore,
   onFile,
@@ -193,7 +193,8 @@ export function CaricaFile({
   etichetta: string
   /** Cosa caricare, o cosa sta succedendo («Preparo la foto…») */
   dettaglio: string
-  facoltativo?: boolean
+  /** Cosa dire accanto all'etichetta quando si può mandare senza («FACOLTATIVO») */
+  seManca?: string
   file?: { nome: string; byte: number }
   errore?: string | null
   onFile: (f: File | undefined) => void
@@ -203,7 +204,8 @@ export function CaricaFile({
       <span className="stack grow modulo-file-testo">
         <span className="modulo-etichetta">
           {etichetta}
-          {facoltativo && ' · FACOLTATIVO'}
+          {/* Si va a capo solo dopo il «·»: «PUOI PORTARLO DOPO» resta intero. */}
+          {seManca && ` · ${seManca.replaceAll(' ', '\u00a0')}`}
         </span>
         <span className="passo-dettaglio una-riga">{file ? `${file.nome} · ${Math.max(1, Math.round(file.byte / 1024))} KB` : dettaglio}</span>
         {errore && <Dettaglio tono="guaio">{errore}</Dettaglio>}

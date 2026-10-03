@@ -370,7 +370,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         </Campo>
         {minore && (
           <span className="modulo-largo">
-            <Dettaglio tono="avviso">È minorenne: servono i dati del genitore qui sotto, e il modulo per minori firmato da lui.</Dettaglio>
+            <Dettaglio tono="avviso">È minorenne: servono i dati del genitore qui sotto, e il modulo per minori, che firma il genitore.</Dettaglio>
           </span>
         )}
       </Sezione>
@@ -701,7 +701,7 @@ function SceltaFile({
     <CaricaFile
       id={`m-file-${tipo}`}
       etichetta={f.etichetta}
-      facoltativo={facoltativo ?? !f.obbligatorio}
+      seManca={(facoltativo ?? !f.obbligatorio) ? (f.seManca ?? 'FACOLTATIVO') : undefined}
       dettaglio={lavoro ? 'Preparo la foto…' : (dettaglio ?? f.dettaglio)}
       file={file && !lavoro ? { nome: file.name, byte: file.size } : undefined}
       errore={guaio}
