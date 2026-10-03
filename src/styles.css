@@ -1168,9 +1168,10 @@ a.btn { text-decoration: none; }
 /* Fermo in fondo alla colonna anche quando il menu non ci sta: la segreteria
    copia il link più volte al giorno. Su una finestra bassa coprirebbe le voci. */
 @media (min-width: 768px) and (min-height: 560px) {
-  /* Una voce raggiunta col TAB si ferma sopra il piede, non sotto: 160px è il
-     piede misurato (COPIA LINK e i tre tasti, ~140px), con un po' di margine. */
-  #sg-menu { scroll-padding-bottom: 160px; }
+  /* Il piede arriva al fondo (niente striscia di voci sotto). Una voce
+     raggiunta col TAB si ferma sopra il piede: 220px è il piede più alto
+     misurato (COPIA LINK, i tre tasti e DATI DI PROVA a capo, ~195px) più margine. */
+  #sg-menu { padding-bottom: 0; scroll-padding-bottom: 220px; }
   .sg-piede {
     position: sticky; bottom: 0; gap: 12px; margin: 0 -12px; padding: 12px 12px 24px;
     background: var(--menu); border-top: 2px solid var(--line-soft);
@@ -1222,10 +1223,11 @@ a.sg-voce { text-decoration: none; }
   font-size: 11px; font-weight: 700; letter-spacing: 0.18em; color: var(--su-colore); background: var(--giallo);
   padding: 2px 6px; align-self: flex-start; margin-top: 4px;
 }
-.sg-icone { gap: 8px; padding: 0 4px; flex-wrap: wrap; align-items: center; }
+.sg-icone { gap: 8px; padding: 0 4px; }
 /* DATI DI PROVA sta accanto ai tre tasti, sempre in vista; sotto, in chi è
    entrato, solo sul telefono, dove i tasti sono nella barra in cima. */
-@media (min-width: 768px) { .sg-chi > .sg-bollino { display: none; } }
+#sg-menu .sg-icone { flex-wrap: wrap; align-items: center; }
+@media (min-width: 768px) { #sg-menu .sg-chi > .sg-bollino { display: none; } }
 .icon-btn[aria-current='page'] { border-color: var(--text); color: var(--text); }
 .sg-voce-tel { display: none; }
 .sg-link { font-size: 13px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
