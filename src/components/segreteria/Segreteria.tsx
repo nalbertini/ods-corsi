@@ -254,6 +254,13 @@ export function Segreteria({
   // Le segnalate ci sono solo in prova: lì PRESENZE ha due schede.
   const conSegnalate = d?.modo === 'prova' && !!d.segnalate
   const inPresenze = voce === 'presenze' || voce === 'segnalate'
+  // Il menu è più alto di uno schermo da reception: la voce aperta (anche dopo
+  // una ricarica, o con Indietro) si porta in vista. E una voce nuova si legge
+  // dall'alto, non da dove era scesa quella di prima.
+  useEffect(() => {
+    document.querySelector('#sg-menu .sg-voce[aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
+    document.getElementById('sg-contenuto')?.scrollTo(0, 0)
+  }, [voce])
   const segno = (n: number, detto: string) =>
     n > 0 && (
       <span className="num sg-tag" data-tipo="presto" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${n} ${detto}`}>
