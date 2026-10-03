@@ -8,12 +8,13 @@
 // `supabase/prova/segreteria.sql`): qui si controlla che i cambi arrivino
 // dove devono — al calendario dell'app, all'appello, al tablet.
 // ---------------------------------------------------------------------------
+import { readFileSync } from 'node:fs'
 import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -222,15 +223,71 @@ console.log('\n9. sale e regole')
   await s.salvaSala({ id: 'Pesi', nome: 'Sala pesi', capienza: 12 })
   ok('la sala cambia nome ovunque', [(await s.corsi()).find((c) => c.id === 'pesi-1').sala, (await s.sale()).find((x) => x.nome === 'Sala pesi').capienza], ['Sala pesi', 12])
   ok('due sale con lo stesso nome no', await errore(() => s.salvaSala({ nome: 'lotta' })), 'C’è già una sala con questo nome')
+  // Le date contano da oggi: una data fissa, col tempo, passerebbe il limite da sola.
+  const mesiFa = (n) => {
+    const g = new Date()
+    g.setMonth(g.getMonth() - n, 15)
+    return new Date(g.getFullYear(), g.getMonth(), 15)
+  }
   // Una presenza di tre anni fa, messa a mano nella memoria della prova.
-  await s.straordinaria('judo-2', new Date(2023, 8, 1, 17), 60)
-  const vecchia = (await s.settimana(new Date(2023, 8, 1), new Date(2023, 8, 1)))[0]
+  await s.straordinaria('judo-2', new Date(mesiFa(37).setHours(17)), 60)
+  const vecchia = (await s.settimana(mesiFa(37), mesiFa(37)))[0]
   m.memoria.segnate = { ...m.memoria.segnate, [vecchia.id]: { 'p-qualcuno': 'presente' } }
   ok('scaduta con ventiquattro mesi', await s.scadute(), 1)
   await s.salvaImpostazioni({ mesiPresenze: 48 })
   ok('non con quarantotto', await s.scadute(), 0)
   await s.salvaImpostazioni({ mesiPresenze: 24 })
   ok('la pulizia la toglie', [await s.pulisci(), await s.scadute()], [1, 0])
+  // Prima di accorciare i mesi si chiede quante presenze se ne andrebbero:
+  // `scadute(mesi)` conta con quei mesi, senza salvarli.
+  await s.straordinaria('judo-2', new Date(mesiFa(30).setHours(17)), 60)
+  const di30 = (await s.settimana(mesiFa(30), mesiFa(30)))[0]
+  m.memoria.segnate = { ...m.memoria.segnate, [di30.id]: { 'p-qualcuno': 'presente' } }
+  ok('con dodici mesi la presenza di trenta mesi fa scadrebbe', await s.scadute(12), 1)
+  ok('con trentasei no', await s.scadute(36), 0)
+  ok('contare non salva i mesi', (await s.impostazioni()).mesiPresenze, 24)
+  ok('senza mesi conta con quelli salvati', await s.scadute(), 1)
+  await s.pulisci()
+
+  const conferma = (prima, dopo, scadute, modo = 'supabase') => m.confermaMesiPresenze({ prima, dopo, scadute, modo })
+  ok('più mesi: si salva senza chiedere', conferma(24, 36, 5), null)
+  ok('meno mesi ma nessuna presenza da cancellare: si salva senza chiedere', conferma(24, 12, 0), null)
+  const cinque = conferma(24, 12, 5)
+  ok('meno mesi con cinque presenze: si chiede, col numero, i mesi e il primo del mese',
+    [cinque?.testo.includes('5 presenze'), cinque?.testo.includes('12 mesi'), cinque?.testo.includes('primo del mese')], [true, true, true])
+  ok('il tasto dice i mesi', cinque?.tasto.includes('12 MESI'), true)
+  const nonSo = conferma(24, 12, null)
+  ok('conteggio non riuscito: si chiede lo stesso, senza un numero di presenze',
+    [nonSo !== null, nonSo?.testo.includes('le presenze'), /\d+ presenz/.test(nonSo?.testo ?? ''), nonSo?.tasto.includes('12 MESI')], [true, true, false, true])
+  const una = conferma(24, 12, 1)?.testo ?? ''
+  const unaProva = conferma(24, 12, 1, 'prova')?.testo ?? ''
+  ok('una sola: «1 presenza più vecchia», col database e in prova',
+    [una.includes('1 presenza più vecchia'), una.includes('1 presenze'), unaProva.includes('1 presenza più vecchia'), unaProva.includes('vecchie')], [true, false, true, false])
+  const inProva = conferma(24, 12, 5, 'prova')?.testo ?? ''
+  ok('in prova si parla di CANCELLA ORA, non del primo del mese', [inProva.includes('CANCELLA ORA'), inProva.includes('primo del mese')], [true, false])
+  ok('è una domanda: comincia con «Accorciare a 12 mesi?»', [cinque?.testo.startsWith('Accorciare a 12 mesi?'), inProva.startsWith('Accorciare a 12 mesi?')], [true, true])
+
+  // Col database vero: senza mesi conta la vista della pulizia; con altri mesi
+  // le presenze delle lezioni iniziate prima del limite, senza salvare niente.
+  const chiesto = []
+  const conta = m.creaSegreteriaSupabase({
+    from: (tabella) => {
+      const q = { tabella, filtri: [] }
+      chiesto.push(q)
+      const passo = {
+        select: (colonne, o) => ((q.colonne = colonne), (q.conta = o?.count), passo),
+        lt: (colonna, valore) => (q.filtri.push([colonna, valore.slice(0, 10)]), passo),
+        then: (fatto) => fatto({ count: 3, error: null }),
+      }
+      return passo
+    },
+  })
+  const dodiciFa = new Date()
+  dodiciFa.setMonth(dodiciFa.getMonth() - 12)
+  ok('database, coi mesi salvati: la vista della pulizia', [await conta.scadute(), chiesto[0].tabella, chiesto[0].conta], [3, 'presenze_scadute', 'exact'])
+  ok('database, con dodici mesi: presenze delle lezioni di prima di dodici mesi fa',
+    [await conta.scadute(12), chiesto[1].tabella, chiesto[1].colonne.includes('sessioni!inner'), chiesto[1].filtri],
+    [3, 'presenze', true, [['sessioni.inizio', dodiciFa.toISOString().slice(0, 10)]]])
   const dati = await s.esporta((await app.dettaglio((await lotta2([9, 2]))[0].id)).elenco[0].id)
   ok('l\'esportazione ha anagrafica, iscrizioni, presenze, richieste, certificato, pagamento e ricevute', Object.keys(dati).sort(), ['certificato_e_pagamento', 'dati_anagrafici', 'esportato_il', 'iscrizioni', 'persona', 'presenze', 'ricevute', 'richieste_di_iscrizione'])
 }
@@ -979,6 +1036,31 @@ console.log('\ngli errori del server e le voci dei tablet, detti per la segreter
   ok('un nome semplice resta', m.nomeVoce('Federica', tutte), 'Federica')
   const doppie = ['Luca (Italiano (Italia))', 'Luca (Italiano (Svizzera))']
   ok('due che diventerebbero uguali restano intere', doppie.map((v) => m.nomeVoce(v, doppie)), doppie)
+}
+
+// Il testo spento del tema chiaro sul fondo del menu e sui riquadri alti: le
+// scritte piccole (titoli dei gruppi, ruolo, versione) devono arrivare a 4,5:1.
+// L'app e il timer hanno lo stesso token: si provano tutti e due.
+{
+  const luce = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  // Il rapporto fino a 4,5: oltre basta, sotto la prova rossa dice di quanto manca.
+  const contrasto = (a, b) => {
+    const [x, y] = [luce(a), luce(b)].sort((p, q) => q - p)
+    return Math.min(4.5, Math.floor(((x + 0.05) / (y + 0.05)) * 100) / 100)
+  }
+  for (const file of ['src/styles.css', 'timer/src/styles.css']) {
+    const css = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')
+    const tema = (sel) => {
+      const corpo = css.slice(css.indexOf(sel + ' {')).split('}')[0]
+      return Object.fromEntries([...corpo.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/gi)].map((m) => [m[1], m[2]]))
+    }
+    const chiaro = tema(":root[data-tema='chiaro']")
+    for (const fondo of ['menu', 'surface-2'].filter((f) => chiaro[f])) ok(`${file}, tema chiaro: testo spento su --${fondo}`, contrasto(chiaro.dim, chiaro[fondo]), 4.5)
+    ok(`${file}, tema scuro: il testo spento resta quello`, tema(':root').dim, '#8c8c88')
+  }
 }
 
 console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
