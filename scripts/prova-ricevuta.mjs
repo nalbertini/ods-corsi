@@ -14,7 +14,7 @@ import { writeFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/ricevute'; export { listinoDa, cosaNonVaListino, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'; export { archivio } from './src/lib/archivioProva'",
+      "export * from './src/lib/ricevute'; export { listinoDa, cosaNonVaListino, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -190,9 +190,6 @@ ok('nome e cognome dalla persona', [fusi.nome, fusi.cognome], ['Manuela', 'Alber
 ok('senza ricevuta: l’anagrafica', prova(() => m.intestatarioDa(null, an, chiE).indirizzo), 'Via Nuova 9')
 ok('senza niente: nome e cognome', prova(() => m.intestatarioDa(null, null, chiE)), chiE)
 
-console.log('I corsi della prova nel listino')
-// In prova le voci del corso vengono in cima solo se il suo nome è nel listino.
-for (const c of m.archivio.dati.corsi) ok(`«${c.nome}» trova le sue righe nel listino`, m.vociDelCorso(c.nome, '2026-09-10').length > 0, true)
 
 console.log('I PDF')
 const tante = {

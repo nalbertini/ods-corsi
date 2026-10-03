@@ -18,7 +18,7 @@ import type { Anagrafica } from './segreteria'
  */
 
 const DOVE = 'ods-corsi:prova-archivio'   // vedi la nota in coda.ts
-const VERSIONE = 2
+const VERSIONE = 1
 
 /** Quando cominciano e finiscono i corsi della stagione. */
 export const STAGIONE = { dal: '2026-09-14', al: '2027-06-30' }
@@ -206,12 +206,11 @@ interface Definizione {
   iscritti: [seme: number, quanti: number]
 }
 
-// I corsi della stagione coi nomi del listino (`costi.ts`): le ricevute cercano lì
-// le voci di chi li fa.
 const CORSI: Definizione[] = [
   { id: 'judo-2', nome: 'Judo 2', colore: JUDO, sala: 'Tatami', istruttori: ['maurizio'], capienza: 20, orari: ogni(LMV, '17:00', 60), iscritti: [1, 14] },
   { id: 'judo-3', nome: 'Judo 3', colore: JUDO, sala: 'Tatami', istruttori: ['maurizio'], capienza: 20, orari: ogni(LMV, '18:00', 60), iscritti: [2, 16] },
   { id: 'judo-adulti', nome: 'Judo adulti', colore: JUDO, sala: 'Tatami', istruttori: ['maurizio'], capienza: 20, orari: ogni(LMV, '19:00', 90), iscritti: [3, 12] },
+  { id: 'judo-principianti', nome: 'Judo principianti', colore: JUDO, sala: 'Motricità', istruttori: ['maurizio'], capienza: 12, orari: ogni(LMV, '19:00', 90), iscritti: [4, 8] },
   { id: 'judo-agonisti', nome: 'Judo agonisti', colore: JUDO, sala: 'Tatami', istruttori: ['maurizio'], capienza: 16, orari: ogni(MG, '18:00', 90), iscritti: [5, 10] },
 
   { id: 'psicomotricita', nome: 'Psicomotricità', colore: MOTRICITA, sala: 'Motricità', istruttori: [], capienza: 12, orari: [...ogni([5], '17:00', 50), ...ogni([5], '18:10', 50)], iscritti: [6, 9] },
@@ -221,7 +220,9 @@ const CORSI: Definizione[] = [
   { id: 'lotta-2', nome: 'Lotta 2', colore: LOTTA, sala: 'Lotta', istruttori: ['maura', 'federico'], capienza: 16, orari: ogni(LMV, '17:00', 60), iscritti: [9, 12] },
   { id: 'lotta-3', nome: 'Lotta 3', colore: LOTTA, sala: 'Lotta', istruttori: ['maura', 'federico'], capienza: 16, orari: ogni([1, 2, 3, 5], '18:00', 60), iscritti: [10, 13] },
 
-  { id: 'pesi-1', nome: 'Pesistica e Mobility', colore: PESI, sala: 'Pesi', istruttori: [], capienza: 10, orari: ogni(LMV, '17:00', 60), iscritti: [11, 8] },
+  { id: 'pesi-1', nome: 'Pesistica 1', colore: PESI, sala: 'Pesi', istruttori: [], capienza: 10, orari: ogni(LMV, '17:00', 60), iscritti: [11, 8] },
+  { id: 'pesi-2', nome: 'Pesistica 2', colore: PESI, sala: 'Pesi', istruttori: [], capienza: 10, orari: ogni(LMV, '18:00', 60), iscritti: [12, 9] },
+  { id: 'body-functional', nome: 'Body functional', colore: PESI, sala: 'Motricità', istruttori: ['tiziano'], capienza: 14, orari: ogni([3], '18:00', 60), iscritti: [13, 11] },
   { id: 'pesi-agonisti', nome: 'Pesi agonisti', colore: PESI, sala: 'Pesi', istruttori: [], capienza: 10, orari: ogni(MG, '17:00', 60), iscritti: [14, 7] },
 
   { id: 'aikido-2', nome: 'Aikido 2', colore: MOTRICITA, sala: 'Motricità', istruttori: ['fabio'], capienza: 14, orari: ogni([1, 4], '17:00', 60), iscritti: [15, 8] },
@@ -230,7 +231,11 @@ const CORSI: Definizione[] = [
   { id: 'pre-pugilistica', nome: 'Prepugilistica', colore: LOTTA, sala: 'Pesi', istruttori: [], capienza: 14, orari: ogni(LMV, '19:00', 90), iscritti: [17, 10] },
   { id: 'mga', nome: 'MGA · metodo globale autodifesa', colore: LOTTA, sala: 'Lotta', istruttori: [], capienza: 14, orari: ogni([5], '19:00', 60), iscritti: [18, 9] },
 
-  { id: 'prep-atletica-1', nome: 'Preparazione atletica, pesi e Mobility', colore: PESI, sala: 'Pesi', istruttori: ['maurizio', 'katia', 'manuel'], capienza: 14, orari: ogni(MG, '18:00', 60), iscritti: [19, 12] },
+  { id: 'prep-atletica-1', nome: 'Preparazione atletica 1', colore: PESI, sala: 'Pesi', istruttori: ['maurizio', 'katia', 'manuel'], capienza: 14, orari: ogni(MG, '18:00', 60), iscritti: [19, 12] },
+  { id: 'prep-atletica-2', nome: 'Preparazione atletica 2', colore: PESI, sala: 'Pesi', istruttori: ['maurizio', 'katia', 'manuel'], capienza: 14, orari: ogni(MG, '19:30', 60), iscritti: [20, 11] },
+  // Si allena insieme alla Pesistica 2, stessa sala e stessa ora: due corsi
+  // perché iscritti e prezzi sono diversi, e ognuno ha il suo appello.
+  { id: 'prep-atletica-3', nome: 'Preparazione atletica 3', colore: PESI, sala: 'Pesi', istruttori: ['maurizio', 'katia', 'manuel'], capienza: 14, orari: ogni(LMV, '18:00', 60), iscritti: [21, 10] },
 ]
 
 /**

@@ -181,7 +181,7 @@ function pinIstruttori(recenti: LezioneTrovata[]) {
   const ultima = (corsoId: string, prima = 0) => recenti.filter((l) => l.corso.id === corsoId).at(-1 - prima)
   const gestita = (l: LezioneTrovata | undefined) => ({ gestitaDa: 'Segreteria di prova', gestitaIl: new Date((l?.fine.getTime() ?? Date.now()) + GIORNO).toISOString() })
   entra(ultima('pesi-1'), 'i-maurizio', { stato: 'da_confermare', prevista: false })
-  entra(ultima('pesi-agonisti'), 'i-fabio', { stato: 'da_confermare', prevista: false })
+  entra(ultima('body-functional'), 'i-fabio', { stato: 'da_confermare', prevista: false })
   const pugilistica = ultima('pre-pugilistica', 3)
   entra(pugilistica, 'i-maurizio', { stato: 'confermata', prevista: false, ...gestita(pugilistica) })
   const gioco = ultima('giocomotricita', 1)
@@ -283,7 +283,7 @@ function richieste(adesso: Date): Richiesta[] {
       ...collegno,
       email: 'elisa.chiado@esempio.it',
       telefono: '335 662 0931',
-      corsi: ['pre-pugilistica'],
+      corsi: ['body-functional'],
       formula: 'trimestre',
       note: 'Mandata due volte per sbaglio.',
     },
