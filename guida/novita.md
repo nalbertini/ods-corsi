@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.14.5 — 3 ottobre 2026
+
+### Modificato
+
+- In segreteria è in evidenza un solo tasto: quello di cosa c'è da fare
+
 ## 0.14.4 — 3 ottobre 2026
 
 ### Risolto
