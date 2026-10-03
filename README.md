@@ -154,7 +154,8 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   quel dispositivo; finché nessuno sceglie, l'app segue il tema del
   dispositivo. Sul tablet di sala il tasto sta accanto all'ora.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
-  prima di partire e resta in coda finché il server non l'ha presa.
+  prima di partire e resta in coda finché il server non l'ha presa. Anche sul
+  tablet di sala, dove il nome toccato resta segnato con IN ATTESA DI RETE.
 
 ## Il timer
 
