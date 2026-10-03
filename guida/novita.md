@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.4.3 — 3 ottobre 2026
+
+### Risolto
+
+- In CORSI e RICHIESTE la scheda non è più schiacciata sui portatili
+
 ## 0.4.2 — 3 ottobre 2026
 
 ### Risolto
