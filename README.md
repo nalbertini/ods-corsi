@@ -98,7 +98,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   la segreteria cambia da sé e che vale per la pagina di iscrizione e per le
   voci delle ricevute (`supabase/19-listino.sql`). Le **segnalazioni**: cosa non va o cosa servirebbe
   nell'app, scritto lì invece che in un documento, con le risposte nello stesso
-  filo e il menu che dice quante aspettano una risposta (`supabase/25-segnalazioni.sql`). Le **impostazioni**: per quanto si
+  filo e il menu che dice quante aspettano una risposta (`supabase/25-segnalazioni.sql`). Si può allegare fino a 3 foto o PDF per messaggio (`supabase/32-segnalazioni-allegati.sql`). Le **impostazioni**: per quanto si
   tengono le presenze, fin dove si prepara il calendario, le sale con la loro
   musica e la **voce** del timer (la voce di sistema e le clip incise, uguali
   su tutti i tablet), lo storico dei timer, il **backup** e l'esportazione
@@ -378,7 +378,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/statistiche.sql` | Le statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove, chi l'ha fatta, gli incassi del mese; le vede solo la segreteria. |
 | `supabase/prova/elimina-istruttore.sql` | Eliminare un istruttore: solo la segreteria, solo un istruttore, e solo se non ha corsi non archiviati, lezioni in calendario o presenze da istruttore, anche cancellando la riga a mano. Un iscritto si cancella come prima. |
 | `supabase/prova/unisci-doppioni.sql` | Unire due schede della stessa persona: solo la segreteria, solo due iscritti senza accesso, mai con due codici fiscali diversi o un certificato da stampare; vince chi resta, il doppione riempie i vuoti, presenze, prove e iscrizioni una per lezione e per corso, le ricevute passano intatte, e tutto o niente. |
-| `supabase/prova/segnalazioni.sql` | Le segnalazioni: le legge e le scrive solo la segreteria, a nome suo; si risponde a un filo e non a una risposta; un messaggio scritto non si cambia, di un filo si cambia solo se è chiuso, e niente si cancella. Istruttore, iscritto, tablet e chi non ha accesso non vedono niente. |
+| `supabase/prova/segnalazioni.sql` | Le segnalazioni: le legge e le scrive solo la segreteria, a nome suo; si risponde a un filo e non a una risposta; un messaggio scritto non si cambia, di un filo si cambia solo se è chiuso, e niente si cancella. Istruttore, iscritto, tablet e chi non ha accesso non vedono niente. Gli allegati: bucket privato, max 3 per messaggio, tipi e 10 MB, li toglie solo chi li ha mandati (resta la traccia), si tolgono da soli 30 giorni dopo la chiusura. |
 | `supabase/prova/informativa-mesi.sql` | Per quanto si tengono le presenze, per l'informativa: chi non ha un accesso legge i mesi scelti dalla segreteria e nient'altro delle impostazioni, anche dopo aver rilanciato `06-iscrizioni.sql`. |
 | `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
 

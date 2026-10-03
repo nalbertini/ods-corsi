@@ -7,6 +7,7 @@
  *
  * Da non confondere con le presenze segnalate dagli iscritti (`segnalate.ts`).
  */
+import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from './sala'
 
 export interface Messaggio {
@@ -16,6 +17,9 @@ export interface Messaggio {
   mio: boolean
   testo: string
   il: string
+  allegati?: Allegato[]
+  /** Chi ha tolto un allegato e quando, non cosa: nel filo si vede che mancava un pezzo. */
+  tolti?: { da: string; il: string }[]
 }
 
 export interface Segnalazione {
@@ -187,3 +191,104 @@ export const chiaveRisposta = (modo: string, id: string) => chiaveBozza(modo, `r
  */
 export const conBozza = (st: Storage | undefined, modo: string, ids: string[]): Set<string> =>
   new Set(ids.filter((id) => leggiBozza(st, chiaveRisposta(modo, id)).trim()))
+
+/*
+ * I file: foto, screenshot e PDF, fino a 3 per messaggio, in un contenitore
+ * privato (`supabase/32-segnalazioni-allegati.sql`). Stessi tipi e peso
+ * dell'iscrizione (`richieste.ts`); il database li controlla di nuovo.
+ */
+export const MAX_ALLEGATI = 3
+const MAX_NOME = 200
+
+export interface Allegato {
+  id: string
+  nome: string
+  tipo: string
+  peso: number
+  /** Mandato da chi sta guardando: solo lui lo può togliere. */
+  mio: boolean
+}
+
+/** Un file allegato che non è partito: il messaggio c'è, i file detti qui no. */
+export class AllegatiNonPartiti extends Error {
+  constructor(
+    readonly id: string,
+    readonly nomi: string[],
+  ) {
+    super(`Il messaggio è partito, ma non ${nomi.length === 1 ? 'questo file' : 'questi file'}: ${nomi.join(', ')}`)
+  }
+}
+
+/** Perché un file non si può allegare, o `null`. `gia` sono quelli già scelti per lo stesso messaggio. */
+export function cosaNonVaAllegato(f: { name: string; type: string; size: number }, gia: number): string | null {
+  if (gia >= MAX_ALLEGATI) return `Si allegano al massimo ${MAX_ALLEGATI} file per messaggio: togline uno prima di aggiungere «${f.name}»`
+  if (!ESTENSIONI[f.type]) return `«${f.name}» non si può allegare: vanno bene foto (JPEG, PNG, WebP, HEIC) e PDF. Mandane un altro`
+  if (!f.size) return `«${f.name}» è vuoto. Mandane un altro`
+  if (f.size > MASSIMO_FILE) return `«${f.name}» pesa ${Math.ceil(f.size / 1024 / 1024)} MB: il massimo è ${MASSIMO_FILE / 1024 / 1024}. Rimpiccioliscilo o mandane un altro`
+  if (f.name.length > MAX_NOME) return `Il nome di questo file è troppo lungo (massimo ${MAX_NOME} caratteri): rinominalo o mandane un altro`
+  return null
+}
+
+/** Un file senza nome vero (lo screenshot incollato arriva come «image.png») prende quello dell'ora. */
+export function nomeAllegato(f: { name: string; type: string }, adesso: Date): string {
+  if (f.name && !/^image\.\w+$/i.test(f.name)) return f.name
+  const due = (n: number) => String(n).padStart(2, '0')
+  const giorno = `${adesso.getFullYear()}-${due(adesso.getMonth() + 1)}-${due(adesso.getDate())}-${due(adesso.getHours())}${due(adesso.getMinutes())}`
+  return `schermata-${giorno}.${ESTENSIONI[f.type] ?? 'png'}`
+}
+
+/** Due file con lo stesso nome nello stesso messaggio si sovrascriverebbero: il secondo diventa «nome (2).png». */
+export function nomeUnico(nome: string, presenti: string[]): string {
+  if (!presenti.includes(nome)) return nome
+  const punto = nome.lastIndexOf('.')
+  const [base, est] = punto > 0 ? [nome.slice(0, punto), nome.slice(punto)] : [nome, '']
+  let n = 2
+  while (presenti.includes(`${base} (${n})${est}`)) n++
+  return `${base} (${n})${est}`
+}
+
+/**
+ * I file scelti per un messaggio, con quelli nuovi: entrano quelli che vanno.
+ * Del resto si dice il primo guaio, e quanti altri sono (se no a un file
+ * scartato dopo l'altro se ne leggerebbe uno solo).
+ */
+export function scegliAllegati<F extends { name: string; type: string; size: number }>(gia: F[], nuovi: F[]): { dentro: F[]; guaio: string } {
+  const dentro = [...gia]
+  const guai: string[] = []
+  for (const f of nuovi) {
+    const no = cosaNonVaAllegato(f, dentro.length)
+    if (no) guai.push(no)
+    else dentro.push(f)
+  }
+  const altri = guai.length - 1
+  return { dentro, guaio: guai.length ? guai[0] + (altri > 0 ? ` (e altri ${altri} file)` : '') : '' }
+}
+
+/** Il primo guaio di un elenco di file scelti, ognuno guardato con quelli che lo precedono. */
+export const guaioAllegati = (files: { name: string; type: string; size: number }[]) => files.map((f, i) => cosaNonVaAllegato(f, i)).find(Boolean) ?? null
+
+/** I nomi con cui i file vanno nel contenitore: quelli senza nome vero prendono l'ora, e due uguali non si sovrascrivono. */
+export function nomiAllegati(files: { name: string; type: string }[], adesso: Date): string[] {
+  const nomi: string[] = []
+  for (const f of files) nomi.push(nomeUnico(nomeAllegato(f, adesso), nomi))
+  return nomi
+}
+
+/** Il disegno dell'anteprima: HEIC e HEIF il browser quasi mai li mostra, i PDF non sono immagini. */
+export const haAnteprima = (tipo: string) => /^image\/(jpeg|png|webp)$/.test(tipo)
+
+/** Carica i file di un messaggio già partito, uno per uno, e dice i nomi di quelli che non sono partiti: il messaggio non si rimanda. */
+export async function mandaAllegati<F extends { name: string }>(files: F[], carica: (f: F) => Promise<boolean>): Promise<string[]> {
+  const falliti: string[] = []
+  for (const f of files) if (!(await carica(f))) falliti.push(f.name)
+  return falliti
+}
+
+export const avvisoNonPartiti = (nomi: string[]) => `Messaggio mandato, ma non è partito: ${nomi.join(', ')}. Allegalo a una nuova risposta.`
+
+/** Trenta giorni dopo la chiusura del filo gli allegati si tolgono (il testo resta). */
+export const allegatiScaduti = (chiusaIl: string | undefined, adesso: string): boolean =>
+  !!chiusaIl && new Date(adesso).getTime() - new Date(chiusaIl).getTime() >= 30 * 24 * 3600 * 1000
+
+/** Accanto a MANDA: un file senza rete non parte, e il testo lo stesso. */
+export const motivoSenzaRete = (online: boolean, nFile: number): string | null => (!online && nFile ? 'Niente rete: il file non parte' : null)
