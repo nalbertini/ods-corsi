@@ -71,7 +71,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
             : prima.appelli,
           // Contati come i filtri di ISCRITTI che apre VEDI CHI: il numero è quello delle righe che si vedono.
           certificati: tutto ? (pers ? pers.filter((p) => comeCertificato(p.certificato, oggi) !== 'valido').length : null) : prima.certificati,
-          pagare: tutto ? (pers ? pers.filter((p) => comePaga(p.pagamento, oggi) !== 'pagato').length : null) : prima.pagare,
+          pagare: tutto ? (pers ? pers.filter((p) => comePaga(p, oggi) !== 'pagato').length : null) : prima.pagare,
           certificatiDaStampare: tutto ? (pers ? pers.filter((p) => p.certificato.conFile).length : null) : prima.certificatiDaStampare,
           documentiDaStampare: tutto ? (ric?.conDocumento ? ric.conDocumento.size : null) : prima.documentiDaStampare,
         }))

@@ -11,7 +11,7 @@ import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
-import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, type EnteRicevuta, type IntestatarioRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
 
@@ -494,6 +494,24 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async persone() {
+      // Se ha pagato lo dicono le quote delle ricevute (26-pagamento-dalle-ricevute.sql);
+      // finché quel file non è passato, le stesse righe si ricavano dalle ricevute qui.
+      const quote = (async (): Promise<Map<string, QuotaRicevuta[]>> => {
+        const perPersona = new Map<string, QuotaRicevuta[]>()
+        const metti = (id: string, q: QuotaRicevuta) => perPersona.set(id, [...(perPersona.get(id) ?? []), q])
+        const vista = await db.from('quote_ricevute').select('persona_id, anno, numero, dal, al, mancano')
+        if (!vista.error) {
+          for (const q of vista.data as Array<{ persona_id: string; anno: number; numero: number; dal: string | null; al: string | null; mancano: number }>)
+            metti(q.persona_id, { anno: q.anno, numero: q.numero, dal: q.dal ?? undefined, al: q.al ?? undefined, mancano: q.mancano })
+          return perPersona
+        }
+        const r = await db.from('ricevute').select('persona_id, anno, numero, voci, anticipo').is('annullata_il', null).not('persona_id', 'is', null)
+        // Senza ricevute sul database (16-ricevute.sql) resta l'eccezione scritta a mano.
+        if (r.error) return perPersona
+        for (const x of r.data as Array<{ persona_id: string; anno: number; numero: number; voci: VoceRicevuta[]; anticipo: number }>)
+          for (const q of quoteDi([{ ...x, voci: x.voci } as unknown as Ricevuta])) metti(x.persona_id, q)
+        return perPersona
+      })()
       const campi = 'id, nome, cognome, email, telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )'
       const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'
       const leggi = (schede: string | null) =>
@@ -513,6 +531,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         iscrizioni: Array<{ corso_id: string; dal: string; al: string | null }>
         schede_iscritti?: Scheda | Scheda[] | null
       }>
+      const pagate = await quote
       return righe.map((r): PersonaSeg => {
         // Una a una con la persona: PostgREST la dà come oggetto, ma meglio non contarci.
         const s = Array.isArray(r.schede_iscritti) ? r.schede_iscritti[0] : r.schede_iscritti
@@ -528,6 +547,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           certificato: { scade: s?.certificato_scade ?? undefined, conFile: !!s?.certificato_file },
           documento: !!s?.documento_in_segreteria,
           pagamento: { stato: s?.pagamento ?? 'da_pagare', fino: s?.pagato_fino ?? undefined, nota: s?.pagamento_nota ?? undefined },
+          quote: pagate.get(r.id) ?? [],
         }
       })
     },

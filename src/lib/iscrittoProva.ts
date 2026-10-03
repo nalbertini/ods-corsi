@@ -3,6 +3,7 @@ import { archivio } from './archivioProva'
 import { creaSegreteriaProva } from './segreteriaProva'
 import { creaRichiesteProva } from './richiesteProva'
 import { minorenne } from './richieste'
+import { quoteDi } from './ricevute'
 import { segnalaProva, segnalateDi } from './segnalateProva'
 import { comeE, iscrittiIl, lezioniFra, memoria, nomeIstruttore, salaDelGiorno } from './datiProva'
 import { chiaveGiorno, perCognome } from './sala'
@@ -42,6 +43,7 @@ export function creaIscrittoProva(): DatiIscritto {
       corsi,
       certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file },
       pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
+      quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
     }
   }
   const eTitolare = (personaId: string) => !!persona(personaId) && !persona(personaId)!.nucleo

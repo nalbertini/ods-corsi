@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola } from './src/lib/segreteria'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { comeCertificato, comePaga, inRegola, pagamentoDi } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -430,11 +430,12 @@ console.log('\nil certificato medico, il documento e il pagamento')
   ok('in prova qualcuno è senza certificato, qualcuno scaduto, quasi tutti in regola',
     [quanti((p) => m.comeCertificato(p.certificato, oggi) === 'manca') > 0, quanti((p) => m.comeCertificato(p.certificato, oggi) === 'scaduto') > 0, quanti((p) => m.inRegola(p, oggi)) > tutti.length / 2],
     [true, true, true])
-  const [p] = tutti.filter((x) => x.attiva)
+  // Uno senza ricevute: il suo pagamento è solo l'eccezione scritta a mano.
+  const p = tutti.find((x) => x.attiva && !(x.quote ?? []).length)
   await s.togliCertificato(p.id)
   const come = async () => {
     const x = (await s.persone()).find((y) => y.id === p.id)
-    return [m.comeCertificato(x.certificato, oggi), m.comePaga(x.pagamento, oggi)]
+    return [m.comeCertificato(x.certificato, oggi), m.comePaga(x, oggi)]
   }
   ok('tolto: manca', (await come())[0], 'manca')
   ok('senza la data no', await errore(() => s.salvaCertificato(p.id, '')), 'Serve la data di scadenza del certificato')
@@ -448,10 +449,26 @@ console.log('\nil certificato medico, il documento e il pagamento')
 
   await s.salvaPagamento(p.id, { stato: 'da_pagare' })
   ok('da pagare', (await come())[1], 'da_pagare')
-  await s.salvaPagamento(p.id, { stato: 'pagato', fino: '2026-12-31', nota: '  trimestre  ' })
+  await s.salvaPagamento(p.id, { stato: 'pagato', fino: '2026-12-31', nota: '  carta n. 12  ' })
   const x = (await s.persone()).find((y) => y.id === p.id)
-  ok('pagato il trimestre, con la nota pulita', [m.comePaga(x.pagamento, oggi), x.pagamento.nota], ['pagato', 'trimestre'])
-  ok('passato il trimestre torna da pagare', m.comePaga(x.pagamento, '2027-01-01'), 'scaduto')
+  ok('pagata fuori dall\'app, con la nota pulita', [m.pagamentoDi(x, oggi).come, m.pagamentoDi(x, oggi).fonte, x.pagamento.nota], ['pagato', 'fuori_app', 'carta n. 12'])
+  ok('passata la sua data è scaduta', [m.comePaga(x, '2027-01-01'), m.pagamentoDi(x, '2027-01-01').fino], ['scaduto', '2026-12-31'])
+  ok('senza data vale fino alla fine della stagione', [m.comePaga({ pagamento: { stato: 'pagato' } }, '2027-07-31'), m.comePaga({ pagamento: { stato: 'pagato' } }, '2027-08-01')], ['pagato', 'da_pagare'])
+
+  // Se ha pagato lo dicono le ricevute: la QUOTA ASSOCIATIVA che vale oggi.
+  const ric = (voci, extra = {}) => ({ id: 'r', anno: 2026, numero: 7, data: '2026-09-10', voci, anticipo: 0, ...extra })
+  const voce = (descrizione, prezzo, pagato, dal = '2026-09-01', al = '2027-07-31') => ({ descrizione, quantita: 1, prezzo, dal, al, pagamenti: pagato ? [{ data: '2026-09-10', importo: pagato, metodo: 'Contanti' }] : [] })
+  const di = (quote, pagamento = { stato: 'da_pagare' }) => m.pagamentoDi({ pagamento, quote }, oggi)
+  const pagata = m.quoteDi([ric([voce('Quota associativa', 5000, 5000), voce('Annuale Judo 2', 48000, 24000)])])
+  ok('la quota pagata e il corso a metà: in regola, conta la quota', [di(pagata).come, di(pagata).fonte, di(pagata).ricevuta], ['pagato', 'ricevuta', '7/2026'])
+  const meta = m.quoteDi([ric([voce('QUOTA ASSOCIATIVA', 5000, 2000)])])
+  ok('la quota pagata in parte: in parte, con quanto manca', [di(meta).come, di(meta).mancano], ['in_parte', 3000])
+  ok('un anticipo dato prima la copre', di(m.quoteDi([ric([voce('QUOTA ASSOCIATIVA', 5000, 0)], { anticipo: 5000 })])).come, 'pagato')
+  ok('annullata non conta', di(m.quoteDi([ric([voce('QUOTA ASSOCIATIVA', 5000, 5000)], { annullataIl: '2026-09-20T10:00:00Z' })])).come, 'da_pagare')
+  ok('senza la quota, un annuale da solo non basta', di(m.quoteDi([ric([voce('Annuale Judo 2', 48000, 48000)])])).come, 'da_pagare')
+  const vecchia = m.quoteDi([ric([voce('QUOTA ASSOCIATIVA', 5000, 5000, '2025-09-01', '2026-07-31')])])
+  ok('la quota della stagione passata è scaduta', [di(vecchia).come, di(vecchia).fino], ['scaduto', '2026-07-31'])
+  ok('pagata fuori dall\'app vince su una ricevuta a metà', di(meta, { stato: 'pagato', fino: '2027-07-31' }).fonte, 'fuori_app')
   ok('una nota lunghissima no', await errore(() => s.salvaPagamento(p.id, { stato: 'pagato', nota: 'x'.repeat(301) })), 'La nota del pagamento è troppo lunga: al massimo 300 caratteri')
   await s.salvaDocumento(p.id, true)
   ok('il documento è in segreteria', (await s.persone()).find((y) => y.id === p.id).documento, true)

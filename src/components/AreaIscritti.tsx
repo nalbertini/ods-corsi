@@ -14,7 +14,7 @@ import {
 } from '../lib/iscritto'
 import type { Segnalata } from '../lib/segnalate'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
-import { comeCertificato, comePaga } from '../lib/segreteria'
+import { comeCertificato, comePaga, pagamentoDi } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { CONTATTI, chiama } from '../lib/sito'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
@@ -440,7 +440,8 @@ const data = (g: string) => g.split('-').reverse().join('/')
 function InRegola({ scheda }: { scheda: SchedaIscritto }) {
   const oggi = chiaveGiorno(new Date())
   const cert = comeCertificato(scheda.certificato, oggi)
-  const paga = comePaga(scheda.pagamento, oggi)
+  const stato = pagamentoDi(scheda, oggi)
+  const paga = stato.come
   const certTesto = {
     manca: 'Non risulta: senza, in sala non si entra.',
     scaduto: `Scaduto il ${data(scheda.certificato.scade ?? '')}.`,
@@ -449,9 +450,9 @@ function InRegola({ scheda }: { scheda: SchedaIscritto }) {
   }[cert]
   const pagaTesto = {
     da_pagare: 'Non risulta pagata.',
-    in_parte: `Pagata in parte${scheda.pagamento.nota ? `: ${scheda.pagamento.nota.toLowerCase()}` : ''}.`,
-    pagato: scheda.pagamento.fino ? `Pagata fino al ${data(scheda.pagamento.fino)}.` : 'Pagata.',
-    scaduto: `Valeva fino al ${data(scheda.pagamento.fino ?? '')}: è da rinnovare.`,
+    in_parte: `Pagata in parte${stato.mancano ? `: mancano ${euro(stato.mancano)} €` : stato.nota ? `: ${stato.nota.toLowerCase()}` : ''}.`,
+    pagato: stato.fino ? `Pagata fino al ${data(stato.fino)}.` : 'Pagata.',
+    scaduto: `Valeva fino al ${data(stato.fino ?? '')}: è da rinnovare.`,
   }[paga]
   const tono = (bene: boolean, quasi: boolean) => (bene ? undefined : quasi ? 'avviso' : 'guaio')
   return (
@@ -580,7 +581,7 @@ function Nucleo({
           <div className="pad stack" style={{ gap: 8, paddingBottom: 12 }}>
             <ul className="card stack mie-presenze">
               {membri.map((p) => {
-                const come = comePaga(p.pagamento, oggi)
+                const come = comePaga(p, oggi)
                 return (
                   <li key={p.id} className="row mia-presenza" data-stato={come === 'pagato' ? 'presente' : come === 'in_parte' ? 'nessuno' : 'assente'}>
                     <span className="stack grow" style={{ gap: 1, minWidth: 0 }}>

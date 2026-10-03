@@ -1167,6 +1167,7 @@ a.sg-voce { text-decoration: none; }
 .sg-segno-regola[data-tono='rosso'] { color: var(--rosso); }
 .sg-segno-regola[data-tono='giallo'] { color: var(--giallo-testo); }
 .sg-segno-regola[data-tono='verde'] { color: var(--verde); }
+.sg-segno-regola[data-tono='spento'] { color: var(--dim); }
 .sg-iscritto {
   width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid var(--surface-2); text-align: left;
 }

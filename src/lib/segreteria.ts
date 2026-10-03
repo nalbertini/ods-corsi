@@ -4,7 +4,8 @@ import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
 import type { StatoPresenzaIstruttore } from './tablet'
-import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, Ricevuta } from './ricevute'
+import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
+import { VALIDITA } from './costi'
 import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio } from './nomi'
 import type { SegnalataVista } from './segnalate'
@@ -102,7 +103,10 @@ export interface PersonaSeg {
   certificato: CertificatoSeg
   /** La copia del documento d'identità (per un minore, quello del genitore) è in segreteria, su carta. */
   documento: boolean
+  /** Pagato fuori dall'app: l'eccezione scritta a mano (vedi `pagamentoDi`). */
   pagamento: PagamentoSeg
+  /** Le quote associative delle sue ricevute non annullate: da qui si sa se ha pagato. */
+  quote?: QuotaRicevuta[]
   /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`). Solo in prova, per ora. */
   nucleo?: string
 }
@@ -122,9 +126,14 @@ export interface CertificatoSeg {
 
 export type StatoPagamento = 'da_pagare' | 'in_parte' | 'pagato'
 
+/**
+ * Il pagamento scritto a mano: da quando lo stato si ricava dalle ricevute,
+ * è l'eccezione per chi ha pagato la quota fuori dall'app (prima dell'app,
+ * con una ricevuta di carta). `da_pagare` vuol dire nessuna eccezione.
+ */
 export interface PagamentoSeg {
   stato: StatoPagamento
-  /** Per chi paga il trimestre: passata la data, torna da pagare. */
+  /** Fin quando vale l'eccezione; senza, fino alla fine della stagione (`VALIDITA.quota.al`). */
   fino?: string
   nota?: string
 }
@@ -577,12 +586,49 @@ export function comeCertificato(c: Pick<CertificatoSeg, 'scade'>, oggi: string):
 
 export type ComePaga = StatoPagamento | 'scaduto'
 
-/** Pagato fino a una data passata vuol dire da pagare di nuovo. */
-export const comePaga = (p: PagamentoSeg, oggi: string): ComePaga => (p.stato === 'pagato' && p.fino && p.fino < oggi ? 'scaduto' : p.stato)
+/** Com'è messo coi pagamenti, e perché: la ricevuta, o l'eccezione fuori dall'app. */
+export interface StatoPaga {
+  come: ComePaga
+  fonte?: 'ricevuta' | 'fuori_app'
+  /** Fin quando è pagato; per `scaduto`, fin quando lo era. */
+  fino?: string
+  /** Centesimi che mancano, per `in_parte` da una ricevuta. */
+  mancano?: number
+  /** «12/2026», la ricevuta da cui viene. */
+  ricevuta?: string
+  nota?: string
+}
 
-/** In regola: certificato valido (anche se in scadenza) e pagato. */
-export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento'>, oggi: string) =>
-  ['valido', 'in_scadenza'].includes(comeCertificato(p.certificato, oggi)) && comePaga(p.pagamento, oggi) === 'pagato'
+/**
+ * In regola coi pagamenti vuol dire la quota associativa pagata: una
+ * ricevuta non annullata con la QUOTA ASSOCIATIVA che vale oggi. I corsi si
+ * guardano a parte. Senza ricevuta conta l'eccezione scritta a mano, fino
+ * alla sua data. Una quota scaduta, o un'eccezione scaduta, è `scaduto`.
+ */
+export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: string): StatoPaga {
+  const quote = p.quote ?? []
+  const valgono = quote.filter((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
+  const numero = (q: QuotaRicevuta) => `${q.numero}/${q.anno}`
+  const pagata = valgono.filter((q) => q.mancano === 0).sort((a, b) => (b.al ?? '9999').localeCompare(a.al ?? '9999'))[0]
+  if (pagata) return { come: 'pagato', fonte: 'ricevuta', fino: pagata.al, ricevuta: numero(pagata) }
+
+  const m = p.pagamento
+  const fino = m.fino || VALIDITA.quota.al
+  const eccezione = m.stato !== 'da_pagare' && fino >= oggi
+  if (eccezione && m.stato === 'pagato') return { come: 'pagato', fonte: 'fuori_app', fino, nota: m.nota }
+  const parte = [...valgono].sort((a, b) => a.mancano - b.mancano)[0]
+  if (parte) return { come: 'in_parte', fonte: 'ricevuta', fino: parte.al, mancano: parte.mancano, ricevuta: numero(parte) }
+  if (eccezione) return { come: 'in_parte', fonte: 'fuori_app', fino, nota: m.nota }
+
+  const finite = [...quote.map((q) => q.al).filter((x): x is string => !!x && x < oggi), ...(m.stato !== 'da_pagare' && m.fino && m.fino < oggi ? [m.fino] : [])].sort()
+  return finite.length ? { come: 'scaduto', fino: finite[finite.length - 1] } : { come: 'da_pagare' }
+}
+
+export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: string): ComePaga => pagamentoDi(p, oggi).come
+
+/** In regola: certificato valido (anche se in scadenza) e quota pagata. */
+export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string) =>
+  ['valido', 'in_scadenza'].includes(comeCertificato(p.certificato, oggi)) && comePaga(p, oggi) === 'pagato'
 
 export const PAGAMENTI: Array<[StatoPagamento, string]> = [
   ['da_pagare', 'DA PAGARE'],
