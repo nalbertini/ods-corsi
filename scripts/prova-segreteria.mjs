@@ -1704,5 +1704,120 @@ console.log('\nuna lezione toccata e rimessa com\'era resta, e quelle di oggi pu
   OGGI = new Date(2026, 8, 26, 12, 0).getTime()
 }
 
+console.log('\ntogliere un «non sono doppioni»')
+{
+  const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: '2026-09-26', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })
+  const segnate = (indizi, id, tutte) =>
+    typeof m.segnateCon !== 'function'
+      ? 'segnateCon non c\'è'
+      : m.segnateCon({ codiciFiscali: {}, nascite: {}, nonDoppioni: [], ...indizi }, id, tutte).map((p) => p.id)
+
+  // Funzioni pure: le altre schede segnate con una, per cognome e nome.
+  const ivo = [scheda('i1', 'Ivo', 'Gallo'), scheda('i2', 'Ivo', 'Gallo'), scheda('i3', 'Ivo', 'Gallo')]
+  const coppiaIvo = { nonDoppioni: [['i1', 'i2']] }
+  ok('segnate Ivo1 e Ivo2: da Ivo1 si vede Ivo2', segnate(coppiaIvo, 'i1', ivo), ['i2'])
+  ok('e da Ivo2 si vede Ivo1', segnate(coppiaIvo, 'i2', ivo), ['i1'])
+  ok('una scheda senza coppie: nessuna', segnate(coppiaIvo, 'i3', ivo), [])
+  ok('più coppie, per cognome e nome',
+    segnate({ nonDoppioni: [['z', 'k'], ['a', 'k']] }, 'k', [scheda('k', 'Ivo', 'Gallo'), scheda('z', 'Zoe', 'Gallo'), scheda('a', 'Ada', 'Gallo')]), ['a', 'z'])
+  ok('una coppia con una scheda che non c\'è fra le persone: no', segnate({ nonDoppioni: [['i1', 'sparita']] }, 'i1', ivo), [])
+  ok('una delle due disattivata: c\'è lo stesso',
+    segnate(coppiaIvo, 'i1', [ivo[0], { ...ivo[1], attiva: false }]), ['i2'])
+
+  // La segreteria di prova.
+  const togli = (a, b) => (typeof s.togliNonDoppioni === 'function' ? s.togliNonDoppioni(a, b) : Promise.reject(new Error('togliNonDoppioni non c\'è')))
+  const nonDoppioni = async () => (await s.indiziDoppioni()).nonDoppioni.map((c) => [...c].sort().join())
+  const inCoppia = async (a, b) => m.coppieDoppioni(await s.persone(), await s.indiziDoppioni()).some((c) => c.map((p) => p.id).sort().join() === [a, b].sort().join())
+
+  const [eva1, eva2] = [await s.salvaPersona({ nome: 'Eva', cognome: 'Marchetti' }), await s.salvaPersona({ nome: 'Eva', cognome: 'Marchetti' })]
+  await s.segnaNonDoppioni(eva1, eva2)
+  ok('tolto «non sono doppioni», nell\'altro ordine', await errore(() => togli(eva2, eva1)), 'nessun errore')
+  ok('la coppia non è più fra le «non sono doppioni»', (await nonDoppioni()).includes([eva1, eva2].sort().join()), false)
+  ok('e torna fra i possibili doppioni', await inCoppia(eva1, eva2), true)
+  ok('tolto di nuovo: nessun errore', await errore(() => togli(eva1, eva2)), 'nessun errore')
+
+  const [rio1, rio2, rio3] = [await s.salvaPersona({ nome: 'Rio', cognome: 'Bassi' }), await s.salvaPersona({ nome: 'Rio', cognome: 'Bassi' }), await s.salvaPersona({ nome: 'Rio', cognome: 'Bassi' })]
+  await s.segnaNonDoppioni(rio1, rio3)
+  await s.segnaNonDoppioni(rio2, rio3)
+  await errore(() => togli(rio1, rio3))
+  ok('tolta Rio1–Rio3, resta Rio2–Rio3',
+    (await nonDoppioni()).filter((c) => [rio1, rio2, rio3].some((id) => c.includes(id))), [[rio2, rio3].sort().join()])
+
+  const [ada1, ada2] = [await s.salvaPersona({ nome: 'Ada', cognome: 'Conti' }), await s.salvaPersona({ nome: 'Ada', cognome: 'Conti' })]
+  await s.salvaAnagrafica(ada1, { codiceFiscale: 'CNTDAA10A41L219X' })
+  await s.salvaAnagrafica(ada2, { codiceFiscale: 'CNTDAA12B41L219Y' })
+  await s.segnaNonDoppioni(ada1, ada2)
+  await errore(() => togli(ada1, ada2))
+  ok('due codici fiscali diversi: tolta la coppia, non torna fra i possibili doppioni', await inCoppia(ada1, ada2), false)
+
+  // Col database senza 33-non-doppioni.sql: la tabella non c'è.
+  const risposta = (t) =>
+    t === 'non_doppioni'
+      ? { data: null, error: { code: 'PGRST205', message: "Could not find the table 'public.non_doppioni' in the schema cache" } }
+      : { data: [], error: null }
+  const richiestaFinta = (t) => {
+    const q = new Proxy(() => q, {
+      get: (_, k) => (k === 'then' ? (ok, ko) => Promise.resolve(risposta(t)).then(ok, ko) : () => q),
+      apply: () => q,
+    })
+    return q
+  }
+  const senza = m.creaSegreteriaSupabase({
+    from: (t) => richiestaFinta(t),
+    rpc: async (f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f} in the schema cache` } }),
+  })
+  const manca = await errore(() => (typeof senza.togliNonDoppioni === 'function' ? senza.togliNonDoppioni(eva1, eva2) : Promise.reject(new Error('togliNonDoppioni non c\'è'))))
+  ok('senza il file sul database, togliere dice quale file lanciare', manca.includes('33-non-doppioni.sql') ? '33-non-doppioni.sql' : manca, '33-non-doppioni.sql')
+}
+
+console.log('\npossibili doppioni: nomi scambiati e un secondo nome')
+{
+  const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: '2026-09-26', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })
+  const vuoti = { codiciFiscali: {}, nascite: {}, nonDoppioni: [] }
+  const motivo = (a, b, indizi = {}) =>
+    typeof m.motivoDoppione !== 'function' ? 'motivoDoppione non c\'è' : m.motivoDoppione(a, b, { ...vuoti, ...indizi })
+  const chiara = scheda('1', 'Chiara', 'Rossi')
+
+  ok('«Chiara Rossi» e una scheda Rossi Chiara: nome e cognome scambiati', motivo(chiara, scheda('2', 'Rossi', 'Chiara')), 'scambiati')
+  ok('«Chiara Rossi» e «Maria Chiara Rossi»: un secondo nome', motivo(chiara, scheda('2', 'Maria Chiara', 'Rossi')), 'secondo nome')
+  ok('«Chiara Rossi» e «Maria Chiara Anna Rossi»: due nomi in più, no', motivo(chiara, scheda('2', 'Maria Chiara Anna', 'Rossi')), null)
+  ok('«A. Rossi» e «Anna Rossi»: un\'iniziale sola, no', motivo(scheda('1', 'A.', 'Rossi'), scheda('2', 'Anna', 'Rossi')), null)
+  ok('«M. Chiara Rossi» e «Maria Chiara Rossi»: no', motivo(scheda('1', 'M. Chiara', 'Rossi'), scheda('2', 'Maria Chiara', 'Rossi')), null)
+  ok('«Chiara Rossi» e «Chiara M. Rossi»: un secondo nome', motivo(chiara, scheda('2', 'Chiara M.', 'Rossi')), 'secondo nome')
+
+  const anna = scheda('1', 'Anna', 'Rossi', { telefono: '333 1234567' })
+  const annaMaria = scheda('2', 'Anna Maria', 'Rossi', { telefono: '333 1234567' })
+  ok('un secondo nome, due nascite diverse: no', motivo(anna, annaMaria, { nascite: { 1: '2010-01-01', 2: '2012-02-01' } }), null)
+  ok('un secondo nome, due codici fiscali diversi: no', motivo(anna, annaMaria, { codiciFiscali: { 1: 'RSSNNA10A41L219X', 2: 'RSSNNM12B41L219Y' } }), null)
+  ok('un secondo nome, segnate «non sono doppioni»: no', motivo(anna, annaMaria, { nonDoppioni: [['1', '2']] }), null)
+  ok('anche segnate nell\'altro ordine', motivo(anna, annaMaria, { nonDoppioni: [['2', '1']] }), null)
+  ok('un secondo nome e lo stesso telefono, nient\'altro: un secondo nome', motivo(anna, annaMaria), 'secondo nome')
+
+  ok('scambiati e un secondo nome insieme: no', motivo(chiara, scheda('2', 'Rossi', 'Maria Chiara')), null)
+  ok('«Luca De Luca» e «Luca Luca»: no', motivo(scheda('1', 'Luca', 'De Luca'), scheda('2', 'Luca', 'Luca')), null)
+  ok('«Marco Rossi Bianchi» e «Marco Rossi»: no', motivo(scheda('1', 'Marco', 'Rossi Bianchi'), scheda('2', 'Marco', 'Rossi')), null)
+  ok('stesso codice fiscale e nomi scambiati: il codice fiscale',
+    motivo(chiara, scheda('2', 'Rossi', 'Chiara'), { codiciFiscali: { 1: 'RSSCHR10A41L219X', 2: 'rsschr10a41l219x' } }), 'codice fiscale')
+  ok("«Luca D'Amico» e «luca damico»: lo stesso nome", motivo(scheda('1', 'Luca', "D'Amico"), scheda('2', 'luca', 'damico')), 'nome')
+
+  // Una coppia per motivo, seminate in disordine: prima il codice fiscale, poi il nome, gli scambiati, il secondo nome.
+  const miste = [
+    scheda('7', 'Anna', 'Abate'), scheda('8', 'Anna Maria', 'Abate'),
+    scheda('5', 'Bice', 'Conti'), scheda('6', 'Conti', 'Bice'),
+    scheda('3', 'Dino', 'Esposito'), scheda('4', 'dino', 'esposito'),
+    scheda('1', 'Ugo', 'Zanetti'), scheda('2', 'Ugolino', 'Zanetti'),
+  ]
+  ok('le coppie in ordine di motivo: codice fiscale, nome, scambiati, secondo nome',
+    typeof m.coppieDoppioni !== 'function' ? 'coppieDoppioni non c\'è'
+      : m.coppieDoppioni(miste, { ...vuoti, codiciFiscali: { 1: 'ZNTGUO10A01L219X', 2: 'ZNTGUO10A01L219X' } }).map((c) => c.map((p) => p.id).sort().join('-')),
+    ['1-2', '3-4', '5-6', '7-8'])
+
+  const proposti = m.possibiliDoppioni(chiara, [scheda('9', 'Anna', 'Bianchi'), scheda('2', 'Rossi', 'Chiara'), scheda('8', 'Zeno', 'Verdi')])
+  ok('aperta «Chiara Rossi»: la scheda scambiata prima di Anna Bianchi', proposti.map((p) => p.id), ['2', '9', '8'])
+
+  ok('le etichette dei motivi', m.MOTIVI ?? 'MOTIVI non c\'è',
+    { 'codice fiscale': 'stesso codice fiscale', nome: 'stesso nome', scambiati: 'nome e cognome scambiati', 'secondo nome': 'un secondo nome' })
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -1042,6 +1042,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return i
     },
 
+    async togliNonDoppioni(a, b) {
+      // In qualunque ordine: con `check (a < b)` (33-non-doppioni.sql) le righe che vanno bene sono solo quella coppia.
+      ok(await db.from('non_doppioni').delete().in('a', [a, b]).in('b', [a, b]))
+    },
+
     async segnaNonDoppioni(a, b) {
       if (a === b) throw new Error('Scegli due schede diverse')
       ok(await db.from('non_doppioni').upsert({ a, b }, { onConflict: 'a,b', ignoreDuplicates: true }))
