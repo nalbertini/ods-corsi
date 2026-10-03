@@ -21,7 +21,8 @@ segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
   2. **Il pagamento** — la quota associativa e il trimestre, oppure l'annuale,
      con l'IBAN da copiare con un tocco e il tasto **PAGA CON SATISPAY**, che
      apre l'app sul negozio dell'associazione (il link è
-     `PAGAMENTO.satispay` in `src/lib/iscrizione.ts`).
+     `PAGAMENTO.satispay` in `src/lib/iscrizione.ts`). Oppure in contanti in
+     segreteria.
   3. **La richiesta** — con il modulo dell'app (**COMPILA LA RICHIESTA**)
      oppure, finché quello non è acceso, con il modulo Google (**APRI IL
      MODULO**), che ha i suoi passi: scaricare il modulo, firmarlo e caricarlo.
@@ -53,7 +54,9 @@ Chi si iscrive risponde alle domande dal telefono:
 - **I file**: la foto della **carta d'identità** (per un minore, quella del
   genitore; non si chiede per un minore aggiunto dal nucleo, perché la
   segreteria ha già quella del genitore), il retro se serve, il **certificato
-  medico** se ce l'ha già, e la ricevuta del pagamento. Il certificato si
+  medico** se ce l'ha già, e la **ricevuta del pagamento** se ha già pagato:
+  chi paga in contanti al banco la lascia vuota (accanto c'è **PUOI PAGARE IN
+  SEGRETERIA**). Il certificato si
   chiede solo quando serve: dai 6 anni quello normale, dai 12 quello
   agonistico se tra i corsi scelti c'è judo, aikido o lotta (lo dice il nome
   del corso). Si può anche portare dopo in segreteria (accanto al nome
