@@ -48,7 +48,9 @@ scelto qui vale anche nel timer, e viceversa.
 
 Maurizio, i segnali, il volume, lo schermo e la musica durante il timer si
 scelgono nel timer, dalle sue **IMPOSTAZIONI**, e sono uguali su tutti i
-tablet: cambiati su uno, gli altri li prendono entro cinque minuti. La voce e gli esercizi invece li sceglie la segreteria
+tablet: cambiati su uno, gli altri li prendono entro cinque minuti. Per questo
+sul tablet **IMPOSTAZIONI** compare solo con l'area istruttore aperta: entrate
+col PIN, poi **TIMER**. Chiusa l'area, la scheda sparisce di nuovo. La voce e gli esercizi invece li sceglie la segreteria
 per tutti i tablet (vedi [Impostazioni](segreteria/regole.md#la-voce-dei-tablet)
 ed [Esercizi](segreteria/esercizi.md)); dal tablet si sceglie solo se usare
 le clip incise. Lo storico dei timer si guarda dalla segreteria.
@@ -76,7 +78,7 @@ Il tasto **☰** accanto apre **LA MUSICA DELLA SALA**, le liste preparate dalla
 segreteria («Riscaldamento», «Randori»…): se ne tocca una e parte. **DALLE
 IMPOSTAZIONI DEL TIMER** torna a quella scelta nelle impostazioni del timer.
 Le liste di Spotify vogliono Spotify collegato sul tablet (Impostazioni del
-timer › Musica); senza, sono spente.
+timer › Musica, con l'area istruttore aperta); senza, sono spente.
 
 Se nelle impostazioni del timer sono accese, la musica parte e si ferma col
 timer e si abbassa nel recupero, qualunque lista suoni.

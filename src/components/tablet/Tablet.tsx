@@ -319,13 +319,14 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
       sala: timerSala,
       clip: clipSala,
       visibile: scheda === 'timer',
+      conImpostazioni: vista.s === 'istruttore',
       onStato: setTimer,
       onSettings: setSettingsTimer,
       onTimerSala: salvaTimerSala,
       onPronto: setPronto,
       avvia,
     }),
-    [lezioneTimer, musicaSala, timerSala, clipSala, scheda, avvia, salvaTimerSala],
+    [lezioneTimer, musicaSala, timerSala, clipSala, scheda, vista.s, avvia, salvaTimerSala],
   )
 
   // Chi se ne va a metà lascia il tablet com'era; l'area istruttore si chiude
