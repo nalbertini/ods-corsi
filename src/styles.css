@@ -698,7 +698,8 @@ a.btn { text-decoration: none; }
 .tb-lezioni-istr { min-height: 212px; }
 
 .tb-etichetta { font-family: var(--cond); font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); text-wrap: balance; }
-.tb-nota { font-size: 15px; line-height: 1.5; color: var(--dim); margin: 0; }
+/* Il tablet si legge da due metri: niente sotto i 15px, le note a 17. */
+.tb-nota { font-size: 17px; line-height: 1.5; color: var(--dim); margin: 0; }
 .tb-sotto { font-size: 17px; color: var(--sec); }
 .tb-orario { font-size: 20px; font-weight: 700; letter-spacing: 0.06em; color: var(--dim); }
 .tb-titolo { font-size: 32px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; }
@@ -740,7 +741,7 @@ a.btn { text-decoration: none; }
   flex-basis: 100%; display: flex; align-items: center; gap: 16px;
   padding-top: 16px; border-top: 2px solid var(--line-soft); color: var(--dim);
 }
-.tb-pronto-da { font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); }
+.tb-pronto-da { font-size: 15px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); }
 .tb-pronto-nome { font-size: 24px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tb-pronto[data-seguito] { padding-top: 12px; border-top-style: dashed; }
 .tb-btn-timer {
@@ -761,7 +762,7 @@ a.btn { text-decoration: none; }
 .tb-giornata-riga[data-fase='aperta'] { border-color: var(--verde); }
 .tb-giornata-riga[data-fase='finita'] { opacity: 0.5; }
 .tb-tacca { width: 10px; height: 36px; flex-shrink: 0; }
-.tb-fase { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); white-space: nowrap; }
+.tb-fase { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); white-space: nowrap; }
 .tb-giornata-riga[data-fase='aperta'] .tb-fase { color: var(--verde); }
 
 .tb-piede {
@@ -808,7 +809,7 @@ a.btn { text-decoration: none; }
 .tb-chip-tempo { font-size: 38px; font-weight: 700; line-height: 1; }
 .tb-chip-testo { gap: 2px; min-width: 0; }
 .tb-chip-nome { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
-.tb-chip-sotto { font-size: 13px; color: var(--dim); white-space: nowrap; }
+.tb-chip-sotto { font-size: 15px; color: var(--dim); white-space: nowrap; }
 .tb-chip-segna { padding: 0 8px 0 18px; border-width: 2px; border-color: var(--verde); }
 .tb-chip-azione {
   display: flex; align-items: center; min-height: 48px; padding: 0 16px;
@@ -822,7 +823,7 @@ a.btn { text-decoration: none; }
 }
 .tb-scheda-sala[aria-pressed='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 .tb-scheda-nome { font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: var(--text); }
-.tb-scheda-sotto { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.tb-scheda-sotto { font-size: 15px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 
 /* La musica della sala, nel piede: alta come i tasti accanto. */
 .tb-piede { position: relative; }
@@ -844,7 +845,7 @@ a.btn { text-decoration: none; }
 .tb-lista-nome { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 .tb-musica-testo { gap: 2px; min-width: 0; max-width: 260px; }
 .tb-musica-titolo { font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tb-musica-sotto { font-size: 13px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-musica-sotto { font-size: 15px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tb-musica-tasto {
   width: 60px; height: 60px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -865,7 +866,7 @@ a.btn { text-decoration: none; }
 /* Segnato qui, non ancora sul server: giallo come la spia della coda. */
 .tb-tessera[data-attesa] { border-color: var(--giallo); border-style: dashed; color: var(--text); }
 .tb-tessera[data-attesa] svg { color: var(--giallo); }
-.tb-tessera-attesa { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: var(--giallo-testo); }
+.tb-tessera-attesa { font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: var(--giallo-testo); }
 
 /* In fondo all'elenco, non sopra: occupa il suo posto, così l'ultima riga di
    nomi resta da toccare; con tanti nomi resta attaccata in basso mentre si scorre. */
@@ -917,7 +918,8 @@ a.btn { text-decoration: none; }
   color: var(--text); text-align: left;
 }
 .tb-lezione-istr[aria-pressed='true'] { background: var(--surface-2); border-color: var(--text); border-left-color: var(--tinta); }
-.tb-scollega { font-size: 14px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; padding: 6px 0; text-align: left; }
+/* Piccolo perché si usa di rado, ma alto quanto un dito. */
+.tb-scollega { min-height: 44px; font-size: 16px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; padding: 0; text-align: left; }
 
 .tb-testa-appello {
   display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 18px;
@@ -936,8 +938,8 @@ a.btn { text-decoration: none; }
 .tb-riga[data-stato='assente'] .tb-riga-segno { color: var(--rosso); }
 .tb-riga[data-stato='assente'] .tb-riga-nome { color: var(--dim); text-decoration: line-through; }
 .tb-marchio {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap;
-  color: var(--dim); border: 2px solid var(--line); padding: 1px 6px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap;
+  color: var(--dim); border: 2px solid var(--line); padding: 2px 7px;
 }
 .tb-marchio[data-tipo='dopo'] { color: var(--giallo-testo); border-color: var(--giallo); }
 
