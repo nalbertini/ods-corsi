@@ -14,8 +14,11 @@ aprite l'appello completo e lo correggete.
 - **A sinistra**, la lezione in cui ci si segna adesso, con il grande tasto
   **SEGNA LA PRESENZA**. Il titolo cambia:
   - **SI SEGNA ADESSO** — c'è una lezione aperta, anche se è già cominciata;
-  - **OGGI** — non c'è niente di aperto; se oggi non ci sono corsi dice quando
-    è la prossima lezione, se sono finiti dice **PER OGGI QUI È FINITO**.
+  - **PROSSIMA LEZIONE** — non c'è niente di aperto, ma più tardi c'è una
+    lezione (la mattina, o fra due lezioni): dice quale e **SI SEGNA DALLE …**,
+    l'ora da cui ci si segna. A quell'ora diventa **SEGNA LA PRESENZA**;
+  - **OGGI** — oggi non ci sono più lezioni: se oggi non ci sono corsi dice
+    quando è la prossima lezione, se sono finiti dice **PER OGGI QUI È FINITO**.
 - **A destra**, **OGGI IN QUESTA SALA**: tutte le lezioni del giorno, con
   FINITA, SI SEGNA ORA o PIÙ TARDI.
 - Sotto la lezione, **TI SEI DIMENTICATO DI SEGNARTI?** e **AREA

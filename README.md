@@ -54,7 +54,8 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   PRESENZE per richiamarlo (`supabase/21-prove.sql`).
 - **Il tablet di sala**: un tablet appeso al muro di ogni sala con il calendario
   della sala. Chi arriva tocca il suo nome e la presenza è segnata, senza
-  domande e con ANNULLA per chi sbaglia; chi si è dimenticato recupera le
+  domande e con ANNULLA per chi sbaglia; quando non si segna ancora, dice qual
+  è la prossima lezione e da che ora ci si segna; chi si è dimenticato recupera le
   lezioni delle ultime due settimane partendo dal corso; l'istruttore, col suo
   PIN, apre l'appello completo e vede chi si è segnato da sé; durante una
   lezione il PIN segna anche la sua presenza, da sola se era previsto su
