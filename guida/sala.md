@@ -144,7 +144,9 @@ iniziale.
 2. A sinistra le lezioni: scheda **OGGI** (quelle di oggi in questa sala) o
    **PER CORSO** (scegliete il corso e vedete le lezioni passate, per
    sistemare i buchi del registro: una lezione passata senza nessun presente
-   è in rosso, con **✕ SENZA APPELLO**).
+   è in rosso, con **✕ SENZA APPELLO**). Il conto di ogni lezione è degli
+   iscritti: «10 presenti su 10», e chi è venuto a provare a parte
+   (**+1 PROVA**), come nell'app. Lo stesso in cima all'appello.
 3. A destra l'appello della lezione scelta, con cognome e nome. Accanto ai nomi:
    - **DAL TABLET** — si è segnato da solo;
    - **SEGNATO DOPO** — si è segnato col recupero.
