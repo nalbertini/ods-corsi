@@ -19,7 +19,8 @@ import { Segnalazioni } from './Segnalazioni'
 import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
-import { Guaio } from './comune'
+import { bozzaAperta, chiedi, Conferme, Guaio } from './comune'
+import { CercaIscritto } from './CercaIscritto'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
@@ -31,7 +32,7 @@ export interface Destinazione {
   persona?: string
   lezione?: { id: string; inizio: string }
   /** Un filtro già acceso: chi ha il certificato da sistemare, chi deve pagare, cosa c'è da stampare. */
-  filtro?: 'certificato' | 'pagare' | 'stampare'
+  filtro?: 'certificato' | 'scadenza' | 'pagare' | 'stampare' | 'senza-appello'
 }
 
 /**
@@ -150,7 +151,10 @@ export function Segreteria({
   const [dove, setDove] = useState<Destinazione>({})
   // Il menu del telefono, aperto o chiuso; sul computer non conta.
   const [aperto, setAperto] = useState(false)
-  const vai = (v: Voce, d: Destinazione = {}) => {
+  const vai = async (v: Voce, d: Destinazione = {}) => {
+    // Un modulo scritto a metà (una ricevuta, un iscritto nuovo) non si perde con un clic sul menu.
+    if (bozzaAperta() && !(await chiedi('Lasciare a metà quello che stai scrivendo? Quello che non hai salvato si perde.', 'LASCIALO A METÀ', { no: 'TORNA A FINIRE' })))
+      return
     setDove(d)
     setVoce(v)
     setAperto(false)
@@ -175,7 +179,7 @@ export function Segreteria({
   const inPresenze = voce === 'presenze' || voce === 'segnalate'
   const segno = (n: number, detto: string) =>
     n > 0 && (
-      <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${n} ${detto}`}>
+      <span className="num sg-tag" data-tipo="presto" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${n} ${detto}`}>
         {n}
       </span>
     )
@@ -192,7 +196,8 @@ export function Segreteria({
       vivo = false
     }
   }, [d, voce, giroConte])
-  // Il numero sul tasto MENU del telefono: la somma dei segni del menu.
+  // Il numero sul tasto MENU del telefono: la somma dei segni del menu. Giallo,
+  // come in DA FARE: sono cose che aspettano una risposta, non guai.
   const daFare = richiesteNuove + daConfermare + daRispondere + (conSegnalate ? segnalateDaVedere : 0)
 
   const [guaio, setGuaio] = useState(false)
@@ -211,6 +216,10 @@ export function Segreteria({
 
   return (
     <div className="sg">
+      {/* Un tasto e non un link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
+      <button type="button" className="sg-salta" onClick={() => document.getElementById('sg-contenuto')?.focus()}>
+        Vai al contenuto
+      </button>
       <header className="sg-barra-tel">
         <Logo width={36} />
         <span className="stack grow" style={{ gap: 2 }}>
@@ -227,7 +236,7 @@ export function Segreteria({
         >
           {aperto ? 'CHIUDI' : 'MENU'}
           {!aperto && daFare > 0 && (
-            <span className="num sg-tag" data-tipo="manca" aria-hidden="true">
+            <span className="num sg-tag" data-tipo="presto" aria-hidden="true">
               {daFare}
             </span>
           )}
@@ -241,6 +250,7 @@ export function Segreteria({
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
           </span>
         </div>
+        {d && <CercaIscritto d={d} onApri={(id) => void vai('iscritti', { persona: id })} />}
         <div className="sg-gruppi">
           {GRUPPI.map((g) => (
             <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo" data-secondario={g.secondario}>
@@ -256,7 +266,7 @@ export function Segreteria({
                     aria-current={voce === id || (id === 'presenze' && inPresenze) ? 'page' : undefined}
                     onClick={() => vai(id)}
                   >
-                    {testo}
+                    <span className="sg-voce-testo">{testo}</span>
                     {id === 'richieste' && segno(richiesteNuove, 'nuove')}
                     {id === 'presenze' && conSegnalate && segno(segnalateDaVedere, 'segnalate da vedere')}
                     {id === 'istruttori' && segno(daConfermare, 'da confermare')}
@@ -288,8 +298,8 @@ export function Segreteria({
             <button
               type="button"
               className="sg-link"
-              onClick={() => {
-                if (!window.confirm("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?")) return
+              onClick={async () => {
+                if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?", 'RIPARTI DALL’ORARIO VERO', { pericolo: true }))) return
                 void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino')]).then(([a, p, r, e, l]) => {
                   a.archivio.azzera()
                   l.scordaListinoProva()
@@ -315,7 +325,7 @@ export function Segreteria({
         </div>
       </nav>
 
-      <main className="sg-corpo">
+      <main className="sg-corpo" id="sg-contenuto" tabIndex={-1}>
         {!d && !guaio && <p className="sg-sotto">Un attimo…</p>}
         {!d && guaio && (
           <div className="stack" style={{ gap: 12, alignItems: 'flex-start' }}>
@@ -340,7 +350,7 @@ export function Segreteria({
             </button>
           </div>
         )}
-        {d && voce === 'presenze' && <Presenze d={d} onVai={vai} />}
+        {d && voce === 'presenze' && <Presenze key={dove.filtro ?? ''} d={d} onVai={vai} senzaAppello={dove.filtro === 'senza-appello'} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
@@ -351,6 +361,7 @@ export function Segreteria({
         {d && voce === 'regole' && <Regole d={d} />}
         {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
       </main>
+      <Conferme />
     </div>
   )
 }
