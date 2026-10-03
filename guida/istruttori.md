@@ -82,7 +82,9 @@ del tema e, sotto il vostro nome, **Esci**.
 
 In cima, ferma mentre scorrete l'elenco: il nome del corso, giorno, ora e sala,
 il conto grande degli iscritti presenti (`18 / 20`, con **+1 PROVA** a parte) e
-quanti restano da segnare, o **✓ TUTTI SEGNATI**. Se la lezione non è ancora
+quanti iscritti restano da segnare; quando hanno tutti un segno, **CHIUDI IN
+FONDO ↓**. Tutti i conti sono degli iscritti: chi prova è sempre detto a
+parte. Se la lezione non è ancora
 cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare lo stesso.
 
 Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è:
@@ -92,6 +94,9 @@ Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è:
 | primo | ✓ | presente |
 | secondo | ✕ | assente |
 | terzo | *(vuoto)* | non segnato |
+
+Due tocchi veloci sullo stesso nome contano come uno: un presente toccato
+due volte «per sicurezza» resta presente.
 
 I due tasti in cima:
 
@@ -112,7 +117,11 @@ In fondo all'elenco c'è il tasto per chiudere:
 
 - **CHIUDI L'APPELLO ✓**, in verde, quando tutti hanno un segno;
 - **CHIUDI · 3 ASSENTI**, in rosso, quando qualcuno è ancora da segnare:
-  chiudendo, chi non ha un segno risulta **assente**.
+  chiudendo, chi non ha un segno risulta **assente** (se è uno in prova, il
+  tasto aggiunge **+1 PROVA**).
+
+Mentre il riquadro delle prove è aperto il tasto per chiudere non c'è: prima
+si finisce con le prove.
 
 Chiede un secondo tocco, con quanti diventerebbero assenti, se nessuno è
 segnato (**NESSUNO SEGNATO · 14 ASSENTI?**: di solito vuol dire che manca
@@ -183,9 +192,9 @@ aggiungete voi, senza aspettare la segreteria: in fondo all'elenco c'è
 
 Chi aggiungete entra in fondo all'appello, sotto **PROVE**, già **presente**
 (✓) e col bollino **PROVA**; si tocca come gli altri. Potete aggiungerne
-quanti volete, uno dopo l'altro; **CHIUDI** chiude il riquadro. Se avete
+quanti volete, uno dopo l'altro; **NASCONDI** chiude il riquadro. Se avete
 scritto un nome e non l'avete ancora aggiunto, il tasto diventa **AGGIUNGI E
-CHIUDI**: niente si perde chiudendo. Se ne avete
+NASCONDI**: niente si perde. Se ne avete
 messo uno per sbaglio (un nome scritto male), **TOGLI** accanto al nome, e
 **SICURO? TOGLI** per confermare: se era nuovo sparisce del tutto.
 

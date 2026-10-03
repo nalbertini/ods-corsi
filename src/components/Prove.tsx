@@ -174,12 +174,14 @@ export function PannelloProve({
           </span>
         )}
 
-        <div className="row" style={{ gap: 8 }}>
+        {/* «NASCONDI» e non «CHIUDI»: sotto, nell'appello, CHIUDI vuol dire
+            un'altra cosa. Su un telefono stretto i due tasti vanno a capo. */}
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
           <button type="submit" className={`${k.si} grow`} disabled={aspetta}>
             {aspetta ? 'AGGIUNGO…' : 'AGGIUNGI'}
           </button>
           <button type="button" className={k.no} disabled={aspetta} onClick={() => void chiudi()}>
-            {scrittoQualcosa ? 'AGGIUNGI E CHIUDI' : 'CHIUDI'}
+            {scrittoQualcosa ? 'AGGIUNGI E NASCONDI' : 'NASCONDI'}
           </button>
         </div>
       </form>

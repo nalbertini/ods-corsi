@@ -21,6 +21,8 @@ colors:
   viola-corso: "#8b5cc4"
   su-colore: "#121212"
   su-rosso: "#ffffff"
+  rosso-testo: "#ff5a52"
+  rosso-testo-chiaro: "#b81d1d"
   carta-chiara: "#f4f4f1"
   superficie-chiara: "#ffffff"
   superficie-alta-chiara: "#e9e9e5"
@@ -173,7 +175,7 @@ Il sistema rifiuta l'aspetto da SaaS generico: niente card morbide con ombra, ni
 Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i neutri sono grigi caldi, appena verso il giallo.
 
 ### Primary
-- **Rosso Ingranaggio** (#e4292a): ciò che manca o non va — l'assenza nell'appello, il SENZA APPELLO, i dati mancanti, gli errori — e, in segreteria, solo i tasti di ciò che non si annulla (FAI LA RICEVUTA, STAMPATO CANCELLALO, IMPORTA). Fuori dalla segreteria resta anche l'azione principale (`btn-primary`, avvio del timer) e il timbro kanji. Non è un colore dei corsi. Uguale nei due temi.
+- **Rosso Ingranaggio** (#e4292a): ciò che manca o non va — l'assenza nell'appello, il SENZA APPELLO, i dati mancanti, gli errori — e, in segreteria, solo i tasti di ciò che non si annulla (FAI LA RICEVUTA, STAMPATO CANCELLALO, IMPORTA). Fuori dalla segreteria resta anche l'azione principale (`btn-primary`, avvio del timer) e il timbro kanji. Non è un colore dei corsi. Uguale nei due temi per bordi e fondi; come testo piccolo diventa **Rosso Testo** (`--rosso-testo`: #ff5a52 sul tema scuro, #b81d1d sul chiaro), perché il rosso del marchio si ferma a 3,8:1.
 
 ### Secondary
 - **Verde Ingranaggio** (#16a54a; #12913f sul tema chiaro): conferma e presenza. Come testo piccolo sul tema chiaro diventa **Verde Testo** (#0b7a33, `--verde-testo`), come il giallo. Tasto `btn-go`, "SEGNA LA PRESENZA" del tablet, riga presente, conteggio completo, toast di conferma.
@@ -307,7 +309,7 @@ Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un 
 - **Do** tenere i bersagli ad almeno 44px, 56px per le righe che si toccano in piedi, 60px+ sul tablet.
 - **Do** scrivere tasti ed etichette in maiuscolo Saira Condensed, tasti obliqui 9°.
 - **Do** usare `su-colore` (#121212) per il testo sopra verde, giallo e blu pieno; `su-rosso` (bianco) sopra il rosso.
-- **Do** usare `--giallo-testo` e `--verde-testo` per giallo e verde scritti, mai `--giallo` o `--verde` puri come testo sul tema chiaro.
+- **Do** usare `--giallo-testo`, `--verde-testo` e `--rosso-testo` per giallo, verde e rosso scritti, mai `--giallo`, `--verde` o `--rosso` puri come testo piccolo.
 
 ### Don't:
 - **Don't** arrotondare angoli: raggio 0 ovunque, salvo il timbro kanji.

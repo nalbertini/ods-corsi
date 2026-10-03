@@ -249,7 +249,7 @@ export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
           PASSWORD DIMENTICATA?
         </button>
         {errore && (
-          <span role="alert" style={{ fontSize: 15, fontWeight: 600, color: 'var(--rosso)', lineHeight: 1.4 }}>
+          <span role="alert" style={{ fontSize: 15, fontWeight: 600, color: 'var(--rosso-testo)', lineHeight: 1.4 }}>
             {errore}
           </span>
         )}
@@ -372,7 +372,7 @@ export function ScegliPassword({ arrivo }: { arrivo: Arrivo }) {
             {aspetta ? 'UN ATTIMO…' : 'SALVA ED ENTRA'}
           </button>
           {errore && (
-            <span role="alert" style={{ fontSize: 15, fontWeight: 600, color: 'var(--rosso)', lineHeight: 1.4 }}>
+            <span role="alert" style={{ fontSize: 15, fontWeight: 600, color: 'var(--rosso-testo)', lineHeight: 1.4 }}>
               {errore}
             </span>
           )}
