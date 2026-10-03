@@ -4,7 +4,7 @@ import { COLORI, GIORNI_LUNGHI, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno } from '../../lib/sala'
 import { Croce } from '../Icons'
 import { STRETTO, useSchermo } from '../../lib/largo'
-import { Campo, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica } from './comune'
 
 const CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
 
@@ -247,8 +247,8 @@ function Scheda({
           <button
             type="button"
             className="sg-btn sg-btn-linea"
-            onClick={() => {
-              if (window.confirm(`Archiviare ${corso.nome}? Le lezioni future senza appello spariscono dal calendario; il registro resta.`)) {
+            onClick={async () => {
+              if ((await chiedi(`Archiviare ${corso.nome}? Le lezioni future senza appello spariscono dal calendario; il registro resta.`, 'ARCHIVIA IL CORSO'))) {
                 void fai(() => d.archiviaCorso(corso.id, false), `${corso.nome} archiviato`, onCambiato)
               }
             }}
@@ -390,8 +390,8 @@ function Scheda({
                 type="button"
                 className="sg-togli"
                 aria-label={`Togli ${GIORNI_LUNGHI[r.giorno]} alle ${r.ora}`}
-                onClick={() => {
-                  if (window.confirm(`Togliere ${GIORNI_LUNGHI[r.giorno].toLowerCase()} alle ${r.ora}? Le lezioni future senza appello spariscono; quelle già fatte restano.`)) {
+                onClick={async () => {
+                  if ((await chiedi(`Togliere ${GIORNI_LUNGHI[r.giorno].toLowerCase()} alle ${r.ora}? Le lezioni future senza appello spariscono; quelle già fatte restano.`, 'TOGLI IL GIORNO'))) {
                     void fai(() => d.togliRicorrenza(r.id), 'Giorno tolto', onCambiato)
                   }
                 }}

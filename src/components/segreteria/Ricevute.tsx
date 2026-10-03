@@ -21,7 +21,7 @@ import {
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { minorenne } from '../../lib/richieste'
 import { chiaveGiorno } from '../../lib/sala'
-import { Campo, dataLunga, Guaio, Riga, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Riga, useAvviso, useCarica } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 
@@ -36,8 +36,8 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
   const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
   // Annullata una ricevuta con la quota che nessun'altra copre: la quota torna da pagare, o era pagata fuori dall'app?
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
-  const annulla = (r: Ricevuta) => {
-    if (!window.confirm(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA.`)) return
+  const annulla = async (r: Ricevuta) => {
+    if (!(await chiedi(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA.`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
     const oggi = chiaveGiorno(new Date())
     const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
     const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
@@ -339,7 +339,7 @@ export function NuovaRicevuta({
   )
   const mancaTesto = mancano.map(([, t]) => t).join(', ').replace(/, ([^,]*)$/, ' e $1')
 
-  const emetti = () => {
+  const emetti = async () => {
     if (!dati || !c) return
     // La ricevuta ha un numero e non si cambia più: prima di farla, si rilegge.
     const quale = n ? `n. ${n}/${anno}` : prossimo.dato ? `n. ${prossimo.dato}/${anno}` : `col prossimo numero del ${anno}`
@@ -348,7 +348,7 @@ export function NuovaRicevuta({
       mancano.length ? `\nSulla ricevuta mancano ${mancaTesto}.` : '',
       '\nFatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.',
     ]
-    if (!window.confirm(righe.join('\n'))) return
+    if (!(await chiedi(righe.join('\n'), 'FAI LA RICEVUTA', { no: 'TORNA A CORREGGERE', pericolo: true }))) return
     void fai(
       async () => {
         const r = await d.emettiRicevuta(dati)

@@ -1122,6 +1122,13 @@ a.sg-btn { text-decoration: none; }
   background: var(--surface); border-left: 2px solid var(--text); border-top: 6px solid var(--tinta); overflow-y: auto;
 }
 .sg-cassetto:focus, .sg-dialogo:focus { outline: none; }
+/* La conferma sta sopra tutto, anche sopra il cassetto della lezione. */
+.sg-conferma-velo { z-index: 40; }
+.sg-conferma { z-index: 41; gap: 12px; }
+.sg-conferma-domanda { margin: 0; font-family: var(--cond); font-size: 24px; font-weight: 700; letter-spacing: 0.02em; line-height: 1.15; }
+.sg-conferma-resto { margin: 0; font-size: 16px; line-height: 1.5; color: var(--sec); white-space: pre-line; }
+.sg-conferma-tasti { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+@media (max-width: 767px) { .sg-conferma-tasti > .sg-btn { flex: 1 1 100%; } }
 .sg-dialogo {
   position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 11;
   width: min(520px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 16px; padding: 28px;

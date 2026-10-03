@@ -5,7 +5,7 @@ import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../
 import { piatto } from '../../lib/importa'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { STRETTO, useSchermo } from '../../lib/largo'
-import { dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 const STATI: Record<StatoRichiesta, string> = { nuova: 'NUOVA', accolta: 'ACCOLTA', rifiutata: 'RIFIUTATA' }
@@ -219,15 +219,15 @@ function Scheda({
   ].filter((t): t is string => !!t)
   // Finché i file non si sono caricati non si sa cosa manca.
   const inAttesa = file.dato === null && !file.guaio
-  const accogli = (op: () => Promise<unknown>, riuscito: string) => {
+  const accogli = async (op: () => Promise<unknown>, riuscito: string) => {
     const chi = `${x.nome} ${x.cognome}${minore ? ' (minorenne)' : ''}`
-    if (problemi.length && !window.confirm(`Accogliere lo stesso la richiesta di ${chi}?\n\n${problemi.join('\n')}\n\nEntra in elenco iscritta ai suoi corsi, e non si torna indietro.`)) return
+    if (problemi.length && !(await chiedi(`Accogliere lo stesso la richiesta di ${chi}?\n\n${problemi.join('\n')}\n\nEntra in elenco iscritta ai suoi corsi, e non si torna indietro.`, 'ACCOGLI LO STESSO', { pericolo: true }))) return
     void fai(op, riuscito, onCambiato)
   }
 
   // Solo da accolta: così la scheda dell'iscritto segna che la copia è in segreteria.
-  const stampato = (personaId: string) => {
-    if (!window.confirm(`${documenti.map((t) => ETICHETTA_FILE[t].toLowerCase()).join(', ')} di ${x.nome} ${x.cognome}: stampati e nella cartellina? Dall'app si cancellano per sempre.`)) return
+  const stampato = async (personaId: string) => {
+    if (!(await chiedi(`${documenti.map((t) => ETICHETTA_FILE[t].toLowerCase()).join(', ')} di ${x.nome} ${x.cognome}: stampati e nella cartellina? Dall'app si cancellano per sempre.`, 'SÌ, CANCELLALI DALL’APP', { pericolo: true }))) return
     void fai(
       async () => {
         for (const t of documenti) await r.eliminaFile(x.id, t)
@@ -395,8 +395,8 @@ function Scheda({
             <button
               type="button"
               className="sg-btn sg-btn-linea"
-              onClick={() => {
-                if (window.confirm(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.`))
+              onClick={async () => {
+                if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.`, 'RIFIUTA LA RICHIESTA', { pericolo: true })))
                   void fai(() => r.rifiuta(x.id), 'Richiesta rifiutata', onCambiato)
               }}
             >
@@ -413,8 +413,8 @@ function Scheda({
         <button
           type="button"
           className="sg-link"
-          onClick={() => {
-            if (window.confirm(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`))
+          onClick={async () => {
+            if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`, 'ELIMINA PER SEMPRE', { pericolo: true })))
               void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
           }}
         >

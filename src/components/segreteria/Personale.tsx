@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import { daRuoloScelto, nomeDelRuolo, ruoloScelto, type RuoloScelto } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica, useOrdina } from './comune'
 import { Numero, mesi } from './Presenze'
 import { Kanji } from '../Kanji'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
@@ -465,8 +465,8 @@ function Scheda({
         <button
           type="button"
           className="sg-btn sg-btn-linea"
-          onClick={() => {
-            if (p.attiva && !window.confirm(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`)) return
+          onClick={async () => {
+            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`, 'TOGLI L’ACCESSO'))) return
             void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', onCambiato)
           }}
         >

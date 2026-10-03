@@ -19,7 +19,7 @@ import { Segnalazioni } from './Segnalazioni'
 import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
-import { Guaio } from './comune'
+import { chiedi, Conferme, Guaio } from './comune'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
@@ -289,8 +289,8 @@ export function Segreteria({
             <button
               type="button"
               className="sg-link"
-              onClick={() => {
-                if (!window.confirm("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?")) return
+              onClick={async () => {
+                if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?", 'RIPARTI DALL’ORARIO VERO', { pericolo: true }))) return
                 void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino')]).then(([a, p, r, e, l]) => {
                   a.archivio.azzera()
                   l.scordaListinoProva()
@@ -352,6 +352,7 @@ export function Segreteria({
         {d && voce === 'regole' && <Regole d={d} />}
         {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
       </main>
+      <Conferme />
     </div>
   )
 }

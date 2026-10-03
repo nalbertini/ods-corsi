@@ -8,14 +8,21 @@ type Valore = string | number | null | undefined
  * scappa dietro il velo con TAB; ESC lo chiude; chiuso, il fuoco torna dove
  * era. Va su un elemento con `role="dialog"` e `tabIndex={-1}`.
  */
+// I dialoghi aperti, dall'ultimo: ESC e TAB sono di quello in cima (una
+// conferma sopra il cassetto della lezione chiude la conferma, non il cassetto).
+const pila: object[] = []
+
 export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
   const ref = useRef<T>(null)
   const chiudi = useRef(onChiudi)
   chiudi.current = onChiudi
   useEffect(() => {
+    const io = {}
+    pila.push(io)
     const prima = document.activeElement as HTMLElement | null
     ref.current?.focus()
     const tasto = (e: KeyboardEvent) => {
+      if (pila[pila.length - 1] !== io) return
       if (e.key === 'Escape') return chiudi.current()
       if (e.key !== 'Tab' || !ref.current) return
       const dentro = [...ref.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter(
@@ -35,10 +42,84 @@ export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
     window.addEventListener('keydown', tasto)
     return () => {
       window.removeEventListener('keydown', tasto)
+      pila.splice(pila.indexOf(io), 1)
       prima?.focus()
     }
   }, [])
   return ref
+}
+
+interface Domanda {
+  testo: string
+  si: string
+  no: string
+  pericolo: boolean
+  risposta: (si: boolean) => void
+}
+let mostra: ((d: Domanda) => void) | null = null
+
+/**
+ * Chiede conferma prima di un'azione, col verbo sui tasti: «SÌ, ANNULLA LA
+ * RICEVUTA» e «NO, LASCIA STARE», non OK e Annulla, che su «Annullare la
+ * ricevuta?» dicevano il contrario. Il fuoco parte dal no; ESC è no.
+ * `pericolo`: quello che non si annulla, col tasto rosso. Serve `<Conferme />`
+ * nella pagina (la segreteria lo mette); senza, si chiede al browser.
+ */
+export function chiedi(testo: string, si: string, o: { no?: string; pericolo?: boolean } = {}): Promise<boolean> {
+  return new Promise((risposta) => {
+    if (!mostra) return risposta(window.confirm(testo))
+    mostra({ testo, si, no: o.no ?? 'NO, LASCIA STARE', pericolo: !!o.pericolo, risposta })
+  })
+}
+
+/** Dove compaiono le domande di `chiedi`: una volta, nella pagina. */
+export function Conferme() {
+  const [d, setD] = useState<Domanda | null>(null)
+  useEffect(() => {
+    mostra = setD
+    return () => {
+      mostra = null
+    }
+  }, [])
+  if (!d) return null
+  const fine = (si: boolean) => {
+    setD(null)
+    d.risposta(si)
+  }
+  return <Conferma d={d} fine={fine} />
+}
+
+function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean) => void }) {
+  const ref = useDialogo<HTMLDivElement>(() => fine(false))
+  const no = useRef<HTMLButtonElement>(null)
+  // Dopo `useDialogo`, che mette il fuoco sul dialogo: si parte dalla risposta sicura.
+  useEffect(() => no.current?.focus(), [])
+  // La domanda è la prima frase che finisce col punto di domanda; il resto la spiega.
+  const fino = d.testo.indexOf('?') + 1
+  const [domanda, resto] = fino > 0 ? [d.testo.slice(0, fino), d.testo.slice(fino).trim()] : [d.testo, '']
+  return (
+    <>
+      <button type="button" className="sg-velo sg-conferma-velo" tabIndex={-1} aria-label={d.no} onClick={() => fine(false)} />
+      <div ref={ref} role="alertdialog" aria-modal="true" aria-labelledby="conferma-domanda" aria-describedby={resto ? 'conferma-resto' : undefined} tabIndex={-1} className="sg-dialogo sg-conferma">
+        <p id="conferma-domanda" className="sg-conferma-domanda">
+          {domanda}
+        </p>
+        {resto && (
+          <p id="conferma-resto" className="sg-conferma-resto">
+            {resto}
+          </p>
+        )}
+        <div className="sg-conferma-tasti">
+          <button ref={no} type="button" className="sg-btn sg-btn-linea" onClick={() => fine(false)}>
+            {d.no}
+          </button>
+          <button type="button" className={d.pericolo ? 'sg-btn sg-btn-rosso' : 'sg-btn sg-btn-pieno'} onClick={() => fine(true)}>
+            {d.si}
+          </button>
+        </div>
+      </div>
+    </>
+  )
 }
 
 /** Il messaggio d'errore di un'operazione, detto in chiaro. */

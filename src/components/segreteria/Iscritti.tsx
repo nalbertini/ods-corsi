@@ -5,7 +5,7 @@ import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, p
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
@@ -461,8 +461,8 @@ function Scheda({
                     <button
                       type="button"
                       className="num sg-chip"
-                      onClick={() => {
-                        if (window.confirm(`${p.nome} smette di venire a ${c?.nome}? Da domani non è più nell'appello; il registro resta.`)) {
+                      onClick={async () => {
+                        if ((await chiedi(`${p.nome} smette di venire a ${c?.nome}? Da domani non è più nell'appello; il registro resta.`, 'TERMINA L’ISCRIZIONE'))) {
                           void fai(() => d.termina(p.id, i.corsoId), 'Iscrizione terminata', onCambiato)
                         }
                       }}
@@ -555,8 +555,8 @@ function Scheda({
             <button
               type="button"
               className="sg-btn sg-btn-linea grow"
-              onClick={() => {
-                if (p.attiva && !window.confirm(`Disattivare ${p.nome} ${p.cognome}? Sparisce dagli appelli e dal tablet; si può riattivare.`)) return
+              onClick={async () => {
+                if (p.attiva && !(await chiedi(`Disattivare ${p.nome} ${p.cognome}? Sparisce dagli appelli e dal tablet; si può riattivare.`, 'DISATTIVA LA SCHEDA'))) return
                 void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Scheda disattivata' : 'Scheda riattivata', onCambiato)
               }}
             >
@@ -627,8 +627,8 @@ function NucleoFamiliare({
           <button
             type="button"
             className="num sg-chip"
-            onClick={() => {
-              if (window.confirm(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`))
+            onClick={async () => {
+              if ((await chiedi(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`, 'TOGLI DAL NUCLEO')))
                 void fai(() => d.togliDalNucleo(x.id), 'Tolto dal nucleo', onCambiato)
             }}
           >
@@ -897,8 +897,8 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             <button
               type="button"
               className="num sg-chip sg-chip-pieno"
-              onClick={() => {
-                if (window.confirm(`Il certificato di ${p.nome} ${p.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`))
+              onClick={async () => {
+                if ((await chiedi(`Il certificato di ${p.nome} ${p.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`, 'SÌ, CANCELLA IL FILE', { pericolo: true })))
                   void fai(() => d.cancellaFileCertificato(p.id), 'File cancellato: il certificato ora è solo su carta', onCambiato)
               }}
             >
@@ -946,8 +946,8 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             <button
               type="button"
               className="sg-link"
-              onClick={() => {
-                if (window.confirm(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file caricato nell’app si cancella per sempre.' : ''} Il foglio in segreteria va distrutto a mano.`))
+              onClick={async () => {
+                if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file caricato nell’app si cancella per sempre.' : ''} Il foglio in segreteria va distrutto a mano.`, 'TOGLI IL CERTIFICATO', { pericolo: true })))
                   void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
               }}
             >
@@ -1078,8 +1078,8 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
           type="button"
           className="sg-link"
           style={{ alignSelf: 'flex-start' }}
-          onClick={() => {
-            if (window.confirm(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`))
+          onClick={async () => {
+            if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'TOGLI L’ECCEZIONE')))
               void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
           }}
         >

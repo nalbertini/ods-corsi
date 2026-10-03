@@ -95,3 +95,11 @@ cambia voce del menu, anche aprendo una scheda e tornando.
 
 Ogni cambio si salva subito: non c'è un tasto «salva» generale. In basso
 compare un avviso che dice cosa è stato fatto.
+
+## Le conferme
+
+Prima di un'azione che pesa (annullare una ricevuta o una lezione, accogliere o
+rifiutare una richiesta, cancellare un file) l'app chiede conferma con una
+finestra sua: il tasto di sinistra lascia stare, quello di destra dice cosa fa
+(«SÌ, ANNULLA LA RICEVUTA»). È rosso quando non si torna indietro. ESC, o un
+clic fuori, lascia stare.
