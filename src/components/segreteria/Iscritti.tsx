@@ -5,7 +5,7 @@ import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, p
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
@@ -14,8 +14,10 @@ import { euro, QUOTA } from '../../lib/ricevute'
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
 
 /** Il certificato da sistemare: manca, è scaduto o scade entro un mese. */
-const certificatoDaSistemare = (p: PersonaSeg, oggi: string) => comeCertificato(p.certificato, oggi) !== 'valido'
-const daPagare = (p: PersonaSeg, oggi: string) => comePaga(p, oggi) !== 'pagato'
+// Certificato e quota si cercano fra chi è attivo: chi ha smesso non li deve portare. Gli stessi conti di DA FARE.
+const senzaCertificatoValido = (p: PersonaSeg, oggi: string) => p.attiva && ['manca', 'scaduto'].includes(comeCertificato(p.certificato, oggi))
+const certificatoInScadenza = (p: PersonaSeg, oggi: string) => p.attiva && comeCertificato(p.certificato, oggi) === 'in_scadenza'
+const daPagare = (p: PersonaSeg, oggi: string) => p.attiva && comePaga(p, oggi) !== 'pagato'
 /** La quota pagata fuori dall'app: si vede in elenco, perché prima o poi va una ricevuta. */
 const fuoriApp = (p: PersonaSeg) => pagamentoDi(p, chiaveGiorno(new Date())).fonte === 'fuori_app'
 
@@ -49,6 +51,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
   const [senzaEmail, setSenzaEmail] = useState(false)
   const [poco, setPoco] = useState(false)
   const [certificato, setCertificato] = useState(filtroIniziale === 'certificato')
+  const [scadenza, setScadenza] = useState(filtroIniziale === 'scadenza')
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [daStampare, setDaStampare] = useState(filtroIniziale === 'stampare')
@@ -72,7 +75,8 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
       (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi))) &&
       (!senzaEmail || !p.email) &&
       (!poco || vienePoco(freq.dato?.get(p.id))) &&
-      (!certificato || certificatoDaSistemare(p, oggi)) &&
+      (!certificato || senzaCertificatoValido(p, oggi)) &&
+      (!scadenza || certificatoInScadenza(p, oggi)) &&
       (!pagare || daPagare(p, oggi)) &&
       (!senzaDocumento || !p.documento) &&
       (!soloStampare || p.certificato.conFile),
@@ -89,7 +93,8 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
     },
   })
   const attiveOra = tutti.filter((p) => p.attiva)
-  const senzaCertificato = attiveOra.filter((p) => ['manca', 'scaduto'].includes(comeCertificato(p.certificato, oggi))).length
+  const senzaCertificato = attiveOra.filter((p) => senzaCertificatoValido(p, oggi)).length
+  const inScadenza = attiveOra.filter((p) => certificatoInScadenza(p, oggi)).length
   const nonPagato = attiveOra.filter((p) => daPagare(p, oggi)).length
   const persona = nuovo ? null : (tutti.find((p) => p.id === scelta) ?? null)
   const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica()])
@@ -103,6 +108,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
     <>
       {nuovo ? (
         <SchedaPiena etichetta="Nuovo iscritto" torna="ISCRITTI" onTorna={chiudi}>
+          <Bozza>
           <Nuovo
             d={d}
             corsi={attivi}
@@ -114,6 +120,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
               void ricarica()
             }}
           />
+          </Bozza>
         </SchedaPiena>
       ) : persona ? (
         <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna="ISCRITTI" onTorna={chiudi}>
@@ -138,7 +145,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
       <div className="stack" style={{ gap: 18 }} hidden={!!(nuovo || persona)}>
         <Testa
           titolo="ISCRITTI"
-          sotto={`${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.${
+          sotto={`${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'}${inScadenza ? ` · ${inScadenza} in scadenza` : ''} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.${
             stampare === 1 ? ' Un certificato caricato nell’app da stampare e cancellare.' : stampare ? ` ${stampare} certificati caricati nell’app da stampare e cancellare.` : ''
           }`}
         >
@@ -170,7 +177,10 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
             VENGONO POCO
           </button>
           <button type="button" className="num sg-chip" aria-pressed={certificato} onClick={() => setCertificato(!certificato)}>
-            CERTIFICATO DA SISTEMARE
+            SENZA CERTIFICATO VALIDO
+          </button>
+          <button type="button" className="num sg-chip" aria-pressed={scadenza} onClick={() => setScadenza(!scadenza)}>
+            CERTIFICATO IN SCADENZA
           </button>
           <button type="button" className="num sg-chip" aria-pressed={pagare} onClick={() => setPagare(!pagare)}>
             DA PAGARE
@@ -204,12 +214,12 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
               const cert = comeCertificato(p.certificato, oggi)
               const paga = comePaga(p, oggi)
               return (
-                <button
+                // Una riga vera della tabella, che si clicca tutta; dalla tastiera e per chi legge lo schermo c'è il tasto sul nome.
+                <div
                   key={p.id}
-                  type="button"
                   role="row"
                   className="sg-riga-iscritto sg-iscritto"
-                  aria-pressed={!nuovo && scelta === p.id}
+                  data-scelto={!nuovo && scelta === p.id}
                   data-spento={!p.attiva}
                   onClick={() => {
                     setNuovo(false)
@@ -217,7 +227,9 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
                   }}
                 >
                   <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>
-                    {p.cognome} {p.nome}
+                    <button type="button" className="sg-riga-apri" aria-current={!nuovo && scelta === p.id ? 'true' : undefined}>
+                      {p.cognome} {p.nome}
+                    </button>
                     {p.certificato.conFile && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
@@ -242,7 +254,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
                   <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', color: vienePoco(f) ? 'var(--giallo-testo)' : 'var(--text)' }}>
                     {f ? `${f.presenti}/${f.dovute}` : '—'}
                   </span>
-                </button>
+                </div>
               )
             })}
           </div>
@@ -358,6 +370,8 @@ function Scheda({
 }) {
   const oggi = chiaveGiorno(new Date())
   const [modifica, setModifica] = useState<DatiPersona | null>(null)
+  // Aperta la modifica, uscire dal menu chiede prima di perderla.
+  useBozza(!!modifica)
   const [daAggiungere, setDaAggiungere] = useState('')
   const [pagando, setPagando] = useState(false)
   // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
@@ -373,15 +387,16 @@ function Scheda({
   return (
     <>
       <div className="stack" style={{ gap: 4 }}>
-        <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
+        <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
           {`${p.cognome} ${p.nome}`.toUpperCase()}
-        </span>
+        </h2>
         <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso)' }}>
           {p.attiva ? `In elenco dal ${dataLunga(p.creataIl)} · nessun accesso` : 'Scheda disattivata: non compare negli appelli'}
         </span>
       </div>
 
       {pagando ? (
+        <Bozza>
         <NuovaRicevuta
           d={d}
           p={p}
@@ -395,6 +410,7 @@ function Scheda({
             onCambiato()
           }}
         />
+        </Bozza>
       ) : (
       <>
       <div className="sg-scheda-griglia">
@@ -453,8 +469,8 @@ function Scheda({
                     <button
                       type="button"
                       className="num sg-chip"
-                      onClick={() => {
-                        if (window.confirm(`${p.nome} smette di venire a ${c?.nome}? Da domani non è più nell'appello; il registro resta.`)) {
+                      onClick={async () => {
+                        if ((await chiedi(`${p.nome} smette di venire a ${c?.nome}? Da domani non è più nell'appello; il registro resta.`, 'TERMINA L’ISCRIZIONE'))) {
                           void fai(() => d.termina(p.id, i.corsoId), 'Iscrizione terminata', onCambiato)
                         }
                       }}
@@ -500,16 +516,18 @@ function Scheda({
               </span>
             </Riga>
             {storico.dato?.length === 0 && <span className="sg-sotto">Ancora nessuna lezione.</span>}
-            <div className="sg-storico">
-              {storico.dato?.map((x) => (
-                <div
-                  key={x.sessioneId}
-                  className="sg-quadretto"
-                  data-stato={x.stato ?? 'niente'}
-                  title={`${x.corso} · ${giornoPerEsteso(chiaveGiorno(new Date(x.inizio)))} ${oraDi(x.inizio)} · ${x.stato ?? 'non segnato'}`}
-                />
-              ))}
-            </div>
+            {/* Il segno dentro, non solo il colore: ✓ presente, ✕ assente, G giustificato. Per chi legge lo schermo, la frase intera. */}
+            <ul className="sg-storico" aria-label="Ultime 12 lezioni">
+              {storico.dato?.map((x) => {
+                const detto = `${x.corso} · ${giornoPerEsteso(chiaveGiorno(new Date(x.inizio)))} ${oraDi(x.inizio)} · ${x.stato ?? 'non segnato'}`
+                return (
+                  <li key={x.sessioneId} className="sg-quadretto" data-stato={x.stato ?? 'niente'} title={detto}>
+                    <span aria-hidden="true">{x.stato === 'presente' ? '✓' : x.stato === 'assente' ? '✕' : x.stato === 'giustificato' ? 'G' : ''}</span>
+                    <span className="vh">{detto}</span>
+                  </li>
+                )
+              })}
+            </ul>
             {f && (
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>
                 Negli ultimi 30 giorni: {f.presenti} su {f.dovute}.
@@ -547,8 +565,8 @@ function Scheda({
             <button
               type="button"
               className="sg-btn sg-btn-linea grow"
-              onClick={() => {
-                if (p.attiva && !window.confirm(`Disattivare ${p.nome} ${p.cognome}? Sparisce dagli appelli e dal tablet; si può riattivare.`)) return
+              onClick={async () => {
+                if (p.attiva && !(await chiedi(`Disattivare ${p.nome} ${p.cognome}? Sparisce dagli appelli e dal tablet; si può riattivare.`, 'DISATTIVA LA SCHEDA'))) return
                 void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Scheda disattivata' : 'Scheda riattivata', onCambiato)
               }}
             >
@@ -619,8 +637,8 @@ function NucleoFamiliare({
           <button
             type="button"
             className="num sg-chip"
-            onClick={() => {
-              if (window.confirm(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`))
+            onClick={async () => {
+              if ((await chiedi(`Togliere ${x.nome} ${x.cognome} dal nucleo? Resta iscritto, ma il titolare non lo vede più nella sua pagina.`, 'TOGLI DAL NUCLEO')))
                 void fai(() => d.togliDalNucleo(x.id), 'Tolto dal nucleo', onCambiato)
             }}
           >
@@ -889,8 +907,8 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             <button
               type="button"
               className="num sg-chip sg-chip-pieno"
-              onClick={() => {
-                if (window.confirm(`Il certificato di ${p.nome} ${p.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`))
+              onClick={async () => {
+                if ((await chiedi(`Il certificato di ${p.nome} ${p.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`, 'SÌ, CANCELLA IL FILE', { pericolo: true })))
                   void fai(() => d.cancellaFileCertificato(p.id), 'File cancellato: il certificato ora è solo su carta', onCambiato)
               }}
             >
@@ -938,8 +956,8 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             <button
               type="button"
               className="sg-link"
-              onClick={() => {
-                if (window.confirm(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file caricato nell’app si cancella per sempre.' : ''} Il foglio in segreteria va distrutto a mano.`))
+              onClick={async () => {
+                if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file caricato nell’app si cancella per sempre.' : ''} Il foglio in segreteria va distrutto a mano.`, 'TOGLI IL CERTIFICATO', { pericolo: true })))
                   void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
               }}
             >
@@ -1070,12 +1088,12 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
           type="button"
           className="sg-link"
           style={{ alignSelf: 'flex-start' }}
-          onClick={() => {
-            if (window.confirm(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`))
+          onClick={async () => {
+            if ((await chiedi(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`, 'TOGLI L’ECCEZIONE')))
               void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
           }}
         >
-          Togli «pagata fuori dall’app»
+          {s.fonte === 'ricevuta' ? 'C’è anche «pagata fuori dall’app»: non serve più, toglila' : 'Togli «pagata fuori dall’app»'}
         </button>
       ) : (
         s.come !== 'pagato' && (

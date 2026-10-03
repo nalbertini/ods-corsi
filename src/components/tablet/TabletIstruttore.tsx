@@ -178,7 +178,7 @@ export function TabletIstruttore({
 
         {scheda === 'corso' && (
           <>
-            <label htmlFor="tb-corso" className="tb-etichetta" style={{ fontSize: 13 }}>
+            <label htmlFor="tb-corso" className="tb-etichetta" style={{ fontSize: 15 }}>
               CORSO
             </label>
             <select id="tb-corso" className="tb-select" value={corsoId ?? ''} onChange={(e) => scegliCorso(e.target.value)}>
@@ -206,11 +206,11 @@ export function TabletIstruttore({
                 style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
                 onClick={() => setScelta(l.id)}
               >
-                <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
+                <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
                 <span className="ob" style={{ fontSize: 20, fontWeight: 700 }}>
                   {scheda === 'corso' ? (g === oggi ? 'OGGI' : giornoPerEsteso(g).toUpperCase()) : l.corso.toUpperCase()}
                 </span>
-                <span style={{ fontSize: 13, color: 'var(--sec)' }}>
+                <span style={{ fontSize: 15, color: 'var(--sec)' }}>
                   {l.presenti} presenti su {l.iscritti}
                   {l.stato === 'annullata' ? ' · annullata' : ''}
                 </span>
@@ -223,7 +223,7 @@ export function TabletIstruttore({
         <button type="button" className="tb-btn tb-btn-linea" onClick={onEsci}>
           ESCI
         </button>
-        <span className="tb-nota" style={{ fontSize: 13 }}>
+        <span className="tb-nota" style={{ fontSize: 15 }}>
           Si esce da soli dopo 2 minuti senza tocchi: il tablet resta in sala.
         </span>
         <button type="button" className="tb-scollega" onClick={onScollega}>
@@ -236,7 +236,7 @@ export function TabletIstruttore({
           <div className="tb-testa-appello">
             <div className="stack grow" style={{ gap: 2, minWidth: 0 }}>
               <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.03em' }}>{lezione.corso.toUpperCase()}</span>
-              <span style={{ fontSize: 14, color: 'var(--sec)' }}>
+              <span style={{ fontSize: 16, color: 'var(--sec)' }}>
                 {chiaveGiorno(new Date(lezione.inizio)) === oggi ? 'oggi' : giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))},{' '}
                 {orario(lezione)} · {daSe} {daSe === 1 ? 'segnato' : 'segnati'} da sé sul tablet · tocca un nome per cambiarlo
               </span>

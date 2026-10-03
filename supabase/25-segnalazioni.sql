@@ -31,6 +31,10 @@ create table if not exists segnalazioni (
 
 -- Il titolo ce l'ha il filo, e solo lui; una risposta non si chiude. Si
 -- rimette ogni volta: la prima versione lasciava entrare un filo senza titolo.
+-- Quelli entrati (solo scrivendo all'API: l'app il titolo lo chiede sempre)
+-- prendono un titolo prima, se no il vincolo nuovo non si mette. Le risposte
+-- la prima versione le teneva già in riga.
+update segnalazioni set titolo = 'Senza titolo' where padre_id is null and titolo is null;
 alter table segnalazioni drop constraint if exists segnalazioni_check;
 alter table segnalazioni add constraint segnalazioni_check
   check (padre_id is null and titolo is not null and char_length(btrim(titolo)) between 1 and 120

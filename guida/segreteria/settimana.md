@@ -31,7 +31,8 @@ Un clic su una lezione apre il riquadro a destra. Ogni cambio si salva subito;
 **FATTO** (o Esc) lo chiude.
 
 - **STATO**: **PREVISTA**, **SVOLTA** o **ANNULLATA**. Una lezione saltata va
-  messa ANNULLATA: così non risulta un appello mancante e non pesa sulle medie.
+  messa ANNULLATA: così non risulta un appello mancante e non pesa sulle medie. Prima di annullarla l'app chiede conferma, perché gli iscritti non vengono
+  avvisati: vanno chiamati o scritti. Si rimette con PREVISTA.
 - **ISTRUTTORE**: «Come da corso» o un altro nome. Scegliere un altro nome mette
   un **sostituto** solo per quella lezione; il corso resta com'è. Il sostituto
   vede la lezione nel suo calendario e fa l'appello.

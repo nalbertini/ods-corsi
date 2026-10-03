@@ -3,7 +3,7 @@ import type { DatiSegreteria, Impostazioni, ListaMusica, Sala } from '../../lib/
 import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
-import { Campo, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 
@@ -76,8 +76,8 @@ export function Regole({ d }: { d: DatiSegreteria }) {
               type="button"
               className="num sg-chip"
               disabled={!scadute.dato || !imp.dato}
-              onClick={() => {
-                if (window.confirm(`Cancellare ${scadute.dato} presenze più vecchie di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`)) {
+              onClick={async () => {
+                if ((await chiedi(`Cancellare ${scadute.dato} presenze più vecchie di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`, 'CANCELLA LE PRESENZE', { pericolo: true }))) {
                   void fai(() => d.pulisci(), 'Presenze scadute cancellate', scadute.ricarica)
                 }
               }}
@@ -362,8 +362,8 @@ function MusicaSale({
               type="button"
               className="num sg-chip"
               style={{ minHeight: 36 }}
-              onClick={() => {
-                if (window.confirm(`Togliere «${l.nome}» dalla musica ${l.salaId ? `della sala ${nomeSala(l.salaId)}` : 'di tutte le sale'}?`)) {
+              onClick={async () => {
+                if ((await chiedi(`Togliere «${l.nome}» dalla musica ${l.salaId ? `della sala ${nomeSala(l.salaId)}` : 'di tutte le sale'}?`, 'TOGLI LA LISTA'))) {
                   void fai(() => d.togliListaMusica(l.id), 'Lista tolta', ricarica)
                 }
               }}

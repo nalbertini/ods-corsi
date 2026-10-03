@@ -10,6 +10,22 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.6.0 — 3 ottobre 2026
+
+### Novità
+
+- Cerca iscritto da ogni pagina, DA FARE per livelli, e conferme che dicono cosa fanno
+- L'appello si chiude, e dice se è arrivato in segreteria
+
+### Risolto
+
+- Aggiornare il database delle segnalazioni non si blocca più su una segnalazione senza titolo
+- Sul tablet di sala i testi piccoli si leggono anche da lontano
+
+### Modificato
+
+- Ogni modifica passa da un team: analisi, cliente, prove, revisione, design e collaudo
+
 ## 0.5.0 — 3 ottobre 2026
 
 ### Novità

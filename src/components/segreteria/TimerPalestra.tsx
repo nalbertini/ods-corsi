@@ -13,7 +13,7 @@ import {
   normalizza,
 } from '../../../timer/src/lib/esercizi'
 import { uid } from '../../../timer/src/lib/format'
-import { Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
 
 type Fai = (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => Promise<unknown>
 
@@ -252,8 +252,8 @@ function VoceIncisa({
                         type="button"
                         className="num sg-chip"
                         style={{ minHeight: 36 }}
-                        onClick={() => {
-                          if (window.confirm(`Togliere la clip «${c.text}»? I tablet torneranno alla voce di sistema.`)) void fai(() => d.togliClip(c.key), 'Clip tolta', ricarica)
+                        onClick={async () => {
+                          if ((await chiedi(`Togliere la clip «${c.text}»? I tablet torneranno alla voce di sistema.`, 'TOGLI LA CLIP'))) void fai(() => d.togliClip(c.key), 'Clip tolta', ricarica)
                         }}
                       >
                         TOGLI
@@ -395,8 +395,8 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                         type="button"
                         className="num sg-chip"
                         style={{ minHeight: 44 }}
-                        onClick={() => {
-                          if (window.confirm(`Togliere «${e.nome}» dal catalogo? I timer che lo usano restano come sono.`))
+                        onClick={async () => {
+                          if ((await chiedi(`Togliere «${e.nome}» dal catalogo? I timer che lo usano restano come sono.`, 'TOGLI L’ESERCIZIO')))
                             salva(lista.filter((x) => x.id !== e.id), 'Esercizio tolto', () => setAperto(null))
                         }}
                       >

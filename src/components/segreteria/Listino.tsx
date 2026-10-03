@@ -5,7 +5,7 @@ import { STAGIONE } from '../../lib/costi'
 import { cosaNonVaListino, LIMITI, type Listino as DatiListino } from '../../lib/listino'
 import { centesimi } from '../../lib/ricevute'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
-import { Campo, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
 
 /*
  * Il listino si cambia in una bozza, tutto insieme, e si salva con un tasto
@@ -162,8 +162,8 @@ export function Listino({ d }: { d: DatiSegreteria }) {
     })
   }
 
-  const rimetti = () => {
-    if (!window.confirm('Rimettere il listino del foglio originale? I cambi fatti qui si perdono.')) return
+  const rimetti = async () => {
+    if (!(await chiedi('Rimettere il listino del foglio originale? I cambi fatti qui si perdono.', 'RIMETTI IL LISTINO DEL FOGLIO', { pericolo: true }))) return
     void fai(() => d.salvaListino(null), 'Rimesso il listino del foglio', async () => {
       await letto.ricarica()
       setBozza(null)
@@ -225,8 +225,8 @@ export function Listino({ d }: { d: DatiSegreteria }) {
                   ultimo={i === b.corsi.length - 1}
                   onCambia={(x) => cambiaCorso(c.chiave, x)}
                   onSposta={(v) => sposta(i, v)}
-                  onTogli={() => {
-                    if (window.confirm(`Togliere «${c.corso || 'questo corso'}» dal listino?`)) cambia({ corsi: b.corsi.filter((x) => x.chiave !== c.chiave) })
+                  onTogli={async () => {
+                    if ((await chiedi(`Togliere «${c.corso || 'questo corso'}» dal listino?`, 'TOGLI DAL LISTINO'))) cambia({ corsi: b.corsi.filter((x) => x.chiave !== c.chiave) })
                   }}
                   onChiudi={() => setAperto(null)}
                 />

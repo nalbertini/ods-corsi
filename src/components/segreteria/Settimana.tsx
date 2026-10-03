@@ -7,7 +7,7 @@ import { Back } from '../Icons'
 import { useSchermo } from '../../lib/largo'
 import type { ChiProva } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
-import { Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
 const MESI_CORTI = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC']
@@ -92,6 +92,9 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
         titolo="SETTIMANA"
         sotto={`Le lezioni generate dalle ricorrenze: aprine una per l’appello, il sostituto o per annullarla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato)}.` : ''}`}
       >
+        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuova(true)}>
+          + LEZIONE STRAORDINARIA
+        </button>
         <button
           type="button"
           className="sg-btn sg-btn-linea"
@@ -104,9 +107,6 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
           }
         >
           RIGENERA
-        </button>
-        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuova(true)}>
-          + LEZIONE STRAORDINARIA
         </button>
       </Testa>
 
@@ -361,7 +361,19 @@ function Lezione({
                 role="radio"
                 aria-checked={l.stato === s}
                 className="sg-btn sg-scelta"
-                onClick={() => l.stato !== s && cambia({ stato: s }, s === 'annullata' ? 'Lezione annullata: calendario e tablet la mostrano così, ma gli iscritti non vengono avvisati. Vanno chiamati o scritti.' : s === 'svolta' ? 'Lezione segnata come svolta' : 'Lezione di nuovo prevista')}
+                onClick={async () => {
+                  if (l.stato === s) return
+                  // Annullarla tocca chi deve venire, che dall'app non viene avvisato: lo si dice prima, non dopo.
+                  if (
+                    s === 'annullata' &&
+                    !(await chiedi(
+                      `Annullare ${l.corso} di ${giornoPerEsteso(chiaveGiorno(new Date(l.inizio))).toLowerCase()} alle ${oraDi(l.inizio)}? Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con PREVISTA.`,
+                      'ANNULLA LA LEZIONE',
+                    ))
+                  )
+                    return
+                  cambia({ stato: s }, s === 'annullata' ? 'Lezione annullata: ricordati di avvisare gli iscritti.' : s === 'svolta' ? 'Lezione segnata come svolta' : 'Lezione di nuovo prevista')
+                }}
               >
                 {testo}
               </button>
@@ -502,9 +514,9 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
   const iscritti = elenco?.filter((p) => !p.prova)
   const prove = elenco?.filter((p) => p.prova) ?? []
 
-  const azzera = () => {
+  const azzera = async () => {
     if (!strato || !elenco) return
-    if (segnati && !window.confirm(`Togliere i ${segnati} segni di questa lezione?`)) return
+    if (segnati && !(await chiedi(`Togliere i ${segnati} segni di questa lezione?`, 'TOGLI I SEGNI', { pericolo: true }))) return
     setElenco(elenco.map((p) => ({ ...p, stato: null })))
     scritto(Promise.all(elenco.filter((p) => p.stato !== null).map((p) => strato.segna(l.id, p.id, null))).then(() => undefined))
   }

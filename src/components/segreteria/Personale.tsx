@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import { daRuoloScelto, nomeDelRuolo, ruoloScelto, type RuoloScelto } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica, useOrdina } from './comune'
 import { Numero, mesi } from './Presenze'
 import { Kanji } from '../Kanji'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
@@ -105,11 +105,13 @@ export function Personale({ d }: { d: DatiSegreteria }) {
           {lista.dato === null && lista.guaio && <Guaio testo={lista.guaio} />}
           {lista.dato === null && !lista.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo…</p>}
           {ordina(persone).map((p) => (
-            <button key={p.id} type="button" role="row" className="sg-riga-personale sg-personale" data-spento={!p.attiva} onClick={() => setScelta(p.id)}>
+            <div key={p.id} role="row" className="sg-riga-personale sg-personale" data-spento={!p.attiva} onClick={() => setScelta(p.id)}>
               <span role="cell" className="stack" style={{ minWidth: 0 }}>
                 <span className="chi-kanji" style={{ fontSize: 15, fontWeight: 600 }}>
                   <Kanji segni={p.kanji} />
-                  <span className="sg-una-riga">{`${p.nome} ${p.cognome}`.trim()}</span>
+                  <button type="button" className="sg-riga-apri sg-una-riga">
+                    {`${p.nome} ${p.cognome}`.trim()}
+                  </button>
                 </span>
                 <span className="sg-una-riga" style={{ fontSize: 12, color: 'var(--dim)' }} title={p.corsi.join(', ')}>
                   {p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}
@@ -128,7 +130,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
                 <span className="sg-solo-stretto" style={{ color: 'var(--dim)' }}>PIN TABLET </span>
                 {p.haPin ? 'IMPOSTATO' : 'NESSUNO'}
               </span>
-            </button>
+            </div>
           ))}
         </div>
 
@@ -465,8 +467,8 @@ function Scheda({
         <button
           type="button"
           className="sg-btn sg-btn-linea"
-          onClick={() => {
-            if (p.attiva && !window.confirm(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`)) return
+          onClick={async () => {
+            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`, 'TOGLI L’ACCESSO'))) return
             void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', onCambiato)
           }}
         >

@@ -1,6 +1,6 @@
 import type { Dati } from './dati'
 import type { Persona, SessioneVista, StatoPresenza, StatoSessione } from './sala'
-import { chiaveGiorno, perCognome } from './sala'
+import { chiaveGiorno, contiDellAppello, perCognome } from './sala'
 import { archivio, nomeDi, type CorsoProva, type PresenzaIstruttoreProva, type RicorrenzaProva } from './archivioProva'
 import { ISTRUTTORE_PROVA } from './dati'
 import { areaDelPercorso } from './percorso'
@@ -371,6 +371,7 @@ export function creaDatiProva(): Dati {
       stato: k.stato,
       iscritti: iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)).length,
       presenti: Object.values(mie).filter((s) => s === 'presente').length,
+      ...contiDellAppello(iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)), mie),
     }
   }
 
