@@ -1233,11 +1233,15 @@ a.sg-voce { text-decoration: none; }
 @media (min-width: 768px) { #sg-menu .sg-chi > .sg-bollino { display: none; } }
 .sg-link { font-size: 13px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 .sg-link:hover { color: var(--text); }
+/* In fondo al menu i link (Riparti dall'orario vero, Esci) sono bersagli veri
+   da 44, uno sotto l'altro: allargati a mano, col dito, si sovrapponevano. */
+.sg-chi > .sg-link { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; }
 /* Col dito i link piccoli e le intestazioni che ordinano sono bersagli da
    18-21 px: l'area che si tocca si allarga a 44 senza spostare niente. */
 @media (pointer: coarse) {
   .sg-link, .sg-ordina { position: relative; }
   .sg-link::after, .sg-ordina::after { content: ''; position: absolute; inset: -13px -6px; }
+  .sg-chi > .sg-link::after { content: none; }
   .sg-ordina::after { inset: -13px 0; }
 }
 
@@ -1804,6 +1808,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   /* Più piccole di carattere, non di bersaglio: si toccano col dito come le altre. */
   .sg-gruppo[data-secondario='true'] .sg-voce { font-size: 14px; }
   .sg-chi { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+  .sg-chi > .sg-link { align-self: center; }
   .sg-chi > .sg-bollino { margin-top: 0; }
   .sg-corpo { padding: 16px; }
 }
