@@ -1161,7 +1161,7 @@ a.btn { text-decoration: none; }
    scorre col menu come le voci, staccato da ISTRUTTORI → come una voce dall'altra. */
 /* Il margine del menu di segreteria è più stretto: le voci col numero devono
    starci su una riga, e il piede arriva da bordo a bordo (margin -12px). */
-#sg-menu { padding-left: 12px; padding-right: 12px; }
+@media (min-width: 768px) { #sg-menu { padding-left: 12px; padding-right: 12px; } }
 .sg-piede { display: flex; flex-direction: column; gap: inherit; }
 /* 2px da ISTRUTTORI →, come fra due voci: il gap del menu è 28px. */
 .sg-menu > .sg-voce + .sg-piede { margin-top: calc(2px - 28px); }
