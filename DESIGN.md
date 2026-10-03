@@ -306,6 +306,9 @@ Nomi da toccare alti 84px, bordo 3px, Barlow 22px (sono nomi di persona: niente 
 ### Timbro kanji
 Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un serif giapponese di sistema; tre misure (22, 32, 56px).
 
+### Timbri della scheda
+In cima alla scheda di un iscritto (`.sg-timbro`), da non confondere col timbro kanji: rettangoli squadrati che sono tasti e portano alla loro sezione. Bordo 2px del tono dello stato con barra sinistra 4px, fondo `nero-palestra`; titoletto Label 12px in `testo-spento`, parola Title 22px nel `-testo` del tono (verde a posto, giallo da guardare, rosso manca), righe Saira 14px a 0.12em in `testo-secondario`; una riga che è un avviso a sé (DA STAMPARE) ha il suo riquadro giallo. Le parole sono quelle della colonna IN REGOLA, dalla stessa funzione (`timbriScheda`). **Piccolo** (il documento, che non serve per entrare): colonna più stretta, parola 19px, righe 12px spente. **Spento** (scheda disattivata): bordo `riga`, testo `testo-spento`, stesse parole; sopra, un avviso a bordo tratteggiato `testo` con DISATTIVATA in Saira e la frase in Barlow 15px, mai rosso perché si annulla. Al passaggio il bordo passa a `testo`. Sotto i 1000px si mettono uno sotto l'altro.
+
 ## Do's and Don'ts
 
 ### Do:

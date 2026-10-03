@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Destinazione } from './Segreteria'
-import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg } from '../../lib/segreteria'
-import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, pulisciAnagrafica } from '../../lib/segreteria'
+import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Timbro, Tono } from '../../lib/segreteria'
+import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, paroleInRegola, pulisciAnagrafica, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -19,17 +19,11 @@ const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovu
 const senzaCertificatoValido = (p: PersonaSeg, oggi: string) => p.attiva && ['manca', 'scaduto'].includes(comeCertificato(p.certificato, oggi))
 const certificatoInScadenza = (p: PersonaSeg, oggi: string) => p.attiva && comeCertificato(p.certificato, oggi) === 'in_scadenza'
 const daPagare = (p: PersonaSeg, oggi: string) => p.attiva && comePaga(p, oggi) !== 'pagato'
-/** La quota pagata fuori dall'app: si vede in elenco, perché prima o poi va una ricevuta. */
-const fuoriApp = (p: PersonaSeg) => pagamentoDi(p, chiaveGiorno(new Date())).fonte === 'fuori_app'
-
-const TONO_CERTIFICATO: Record<ComeCertificato, 'rosso' | 'giallo' | 'verde'> = { manca: 'rosso', scaduto: 'rosso', in_scadenza: 'giallo', valido: 'verde' }
-const TONO_PAGA: Record<ComePaga, 'rosso' | 'giallo' | 'verde'> = { da_pagare: 'rosso', scaduto: 'rosso', in_parte: 'giallo', pagato: 'verde' }
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
 const GUAIO_CERTIFICATO: Record<ComeCertificato, number> = { manca: 2, scaduto: 2, in_scadenza: 1, valido: 0 }
 const GUAIO_PAGA: Record<ComePaga, number> = { da_pagare: 2, scaduto: 2, in_parte: 1, pagato: 0 }
-const PAROLA_PAGA: Record<ComePaga, string> = { da_pagare: 'DA PAGARE', in_parte: 'PAGATA IN PARTE', pagato: 'PAGATA', scaduto: 'QUOTA SCADUTA' }
 
-function Bollino({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde' | 'spento'; children: string }) {
+function Bollino({ tono, children }: { tono: Tono; children: string }) {
   return (
     <span className="num sg-segno-regola" data-tono={tono}>
       {children}
@@ -233,8 +227,6 @@ export function Iscritti({
             {ordina(trovati).map((p) => {
               const f = freq.dato?.get(p.id)
               const suoi = suoiCorsi(p)
-              const cert = comeCertificato(p.certificato, oggi)
-              const paga = comePaga(p, oggi)
               return (
                 // Una riga vera della tabella, che si clicca tutta; dalla tastiera e per chi legge lo schermo c'è il tasto sul nome.
                 <div
@@ -258,19 +250,9 @@ export function Iscritti({
                     {p.telefono ?? p.email ?? 'nessun contatto'}
                   </span>
                   <span role="cell" className="sg-in-regola">
-                    {fuoriApp(p) && <Bollino tono="spento">FUORI APP</Bollino>}
-                    {cert === 'valido' && paga === 'pagato' ? (
-                      <Bollino tono="verde">IN REGOLA</Bollino>
-                    ) : (
-                      <>
-                        {cert !== 'valido' && (
-                          <Bollino tono={TONO_CERTIFICATO[cert]}>
-                            {cert === 'manca' ? 'NO CERTIFICATO' : cert === 'scaduto' ? 'CERT. SCADUTO' : `CERT. ${dataCorta(p.certificato.scade!)}`}
-                          </Bollino>
-                        )}
-                        {paga !== 'pagato' && <Bollino tono={TONO_PAGA[paga]}>{paga === 'in_parte' ? 'IN PARTE' : paga === 'scaduto' ? 'QUOTA SCADUTA' : 'DA PAGARE'}</Bollino>}
-                      </>
-                    )}
+                    {paroleInRegola(p, oggi).map((b) => (
+                      <Bollino key={b.parola} tono={b.tono}>{b.parola}</Bollino>
+                    ))}
                   </span>
                   <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', color: vienePoco(f) ? 'var(--giallo-testo)' : 'var(--text)' }}>
                     {f ? `${f.presenti}/${f.dovute}` : '—'}
@@ -412,10 +394,10 @@ function Scheda({
         <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
           {`${p.cognome} ${p.nome}`.toUpperCase()}
         </h2>
-        <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso)' }}>
-          {p.attiva ? `In elenco dal ${dataLunga(p.creataIl)} · nessun accesso` : 'Scheda disattivata: non compare negli appelli'}
-        </span>
+        <span style={{ fontSize: 13, color: 'var(--dim)' }}>{`In elenco dal ${dataLunga(p.creataIl)} · nessun accesso`}</span>
       </div>
+      {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
+      {!unendo && !pagando && <Timbri p={p} oggi={oggi} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -477,10 +459,16 @@ function Scheda({
           )}
 
           <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} fai={fai} />
-          <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
-          <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
-          <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
-          <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
+          <div id="sez-certificato">
+            <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
+          </div>
+          <div id="sez-documento">
+            <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
+          </div>
+          <div id="sez-quota" className="stack" style={{ gap: 20 }}>
+            <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
+            <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
+          </div>
           {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
         </div>
 
@@ -616,6 +604,50 @@ function Scheda({
       </>
       )}
     </>
+  )
+}
+
+/** Va alla sua sezione e mette il fuoco sul tasto che serve, o sul titolo. */
+function vaiA(id: string) {
+  const sez = document.getElementById(id)
+  if (!sez) return
+  const h = sez.querySelector<HTMLElement>('h3')
+  h?.setAttribute('tabindex', '-1')
+  const dove = sez.querySelector<HTMLElement>('[data-primo]:not(:disabled)') ?? h
+  sez.scrollIntoView({ block: 'start' })
+  dove?.focus({ preventScroll: true })
+}
+
+/**
+ * In cima alla scheda: certificato, quota e documento in un colpo d'occhio,
+ * con le parole dell'elenco (`timbriScheda`). Ognuno porta alla sua sezione.
+ */
+function Timbri({ p, oggi }: { p: PersonaSeg; oggi: string }) {
+  const t = timbriScheda(p, oggi)
+  const uno = (titolo: string, x: Timbro, id: string, piccolo?: boolean) => (
+    <button type="button" className="sg-timbro" data-tono={x.tono} data-piccolo={piccolo} onClick={() => vaiA(id)}>
+      <span className="sg-timbro-titolo">{titolo}</span>
+      <span className="sg-timbro-parola">{x.parola}</span>
+      {x.righe.map((r) => (
+        <span key={r.testo} className="sg-timbro-riga" data-tono={r.tono}>
+          {r.testo}
+        </span>
+      ))}
+    </button>
+  )
+  return (
+    <div className="stack" style={{ gap: 12 }}>
+      {t.disattivata && (
+        <p className="sg-timbri-spenta">
+          <strong>DISATTIVATA</strong> Non è negli appelli né sul tablet. Per rimetterla: RIATTIVA, in fondo alla scheda.
+        </p>
+      )}
+      <div className="sg-timbri">
+        {uno('CERTIFICATO MEDICO', t.certificato, 'sez-certificato')}
+        {uno('QUOTA', t.quota, 'sez-quota')}
+        {uno('DOCUMENTO D’IDENTITÀ', t.documento, 'sez-documento', true)}
+      </div>
+    </div>
   )
 }
 
@@ -1007,9 +1039,6 @@ function ModificaAnagrafica({
   )
 }
 
-/** «12/10», da una data `AAAA-MM-GG`: per il bollino in elenco. */
-const dataCorta = (g: string) => `${g.slice(8, 10)}/${g.slice(5, 7)}`
-
 /** Quanti giorni da oggi a una data `AAAA-MM-GG`. */
 const giorniA = (g: string, oggi: string) => Math.round((Date.parse(g) - Date.parse(oggi)) / 86_400_000)
 
@@ -1027,6 +1056,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   const [bozza, setBozza] = useState<{ scade: string } | null>(null)
   const c = p.certificato
   const come = comeCertificato(c, oggi)
+  const t = timbriScheda(p, oggi).certificato
   const fra = c.scade ? giorniA(c.scade, oggi) : 0
 
   const stato =
@@ -1058,7 +1088,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   return (
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="CERTIFICATO MEDICO">
-        <Bollino tono={TONO_CERTIFICATO[come]}>{come === 'manca' ? 'MANCA' : come === 'scaduto' ? 'SCADUTO' : come === 'in_scadenza' ? 'IN SCADENZA' : 'VALIDO'}</Bollino>
+        <Bollino tono={t.tono}>{t.parola}</Bollino>
       </Riga>
       {!bozza && <span style={{ fontSize: 14, color: come === 'valido' ? 'var(--sec)' : come === 'in_scadenza' ? 'var(--giallo-testo)' : 'var(--rosso)' }}>{stato}</span>}
 
@@ -1068,7 +1098,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             Questo certificato è ancora caricato nell’app: aprilo, stampalo, mettilo nella cartellina e cancellalo da qui. La scadenza resta.
           </span>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-            <button type="button" className="num sg-chip" onClick={apri}>
+            <button type="button" className="num sg-chip" data-primo onClick={apri}>
               APRI PER STAMPARE
             </button>
             <button
@@ -1115,7 +1145,8 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
         </>
       ) : (
         <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <button type="button" className="num sg-chip sg-chip-pieno" onClick={() => setBozza({ scade: c.scade && c.scade >= oggi ? c.scade : '' })}>
+          {/* Col file da stampare, il timbro porta prima lì (APRI PER STAMPARE). */}
+          <button type="button" className="num sg-chip sg-chip-pieno" data-primo={c.conFile ? undefined : true} onClick={() => setBozza({ scade: c.scade && c.scade >= oggi ? c.scade : '' })}>
             {c.scade ? 'RINNOVA O CORREGGI' : 'SEGNA IL CERTIFICATO'}
           </button>
           <div className="grow" />
@@ -1142,10 +1173,11 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
  * segna solo che c'è. Per un minore è quello del genitore.
  */
 function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void }) {
+  const t = timbriScheda(p, chiaveGiorno(new Date())).documento
   return (
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="DOCUMENTO D’IDENTITÀ">
-        <Bollino tono={p.documento ? 'verde' : 'giallo'}>{p.documento ? 'IN SEGRETERIA' : 'DA PORTARE'}</Bollino>
+        <Bollino tono={t.tono}>{t.parola}</Bollino>
       </Riga>
       <span style={{ fontSize: 14, color: p.documento ? 'var(--sec)' : 'var(--giallo-testo)' }}>
         {p.documento ? 'La copia è nella cartellina.' : 'Manca la copia: va mostrato in segreteria (per un minore, quello del genitore).'}
@@ -1154,6 +1186,7 @@ function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
         <button
           type="button"
           className={p.documento ? 'num sg-chip' : 'num sg-chip sg-chip-pieno'}
+          data-primo={p.documento ? undefined : true}
           onClick={() =>
             void fai(() => d.salvaDocumento(p.id, !p.documento), p.documento ? 'Documento tolto: ora è DA PORTARE. Se era uno sbaglio, LA COPIA È IN SEGRETERIA lo rimette' : 'Documento segnato in segreteria', onCambiato)
           }
@@ -1174,6 +1207,7 @@ function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
 function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void }) {
   const oggi = chiaveGiorno(new Date())
   const s = pagamentoDi(p, oggi)
+  const t = timbriScheda(p, oggi).quota
   const eccezione = p.pagamento.stato !== 'da_pagare'
   const [scrivi, setScrivi] = useState(false)
   const [b, setB] = useState({ fino: VALIDITA.quota.al, nota: '' })
@@ -1205,7 +1239,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
   return (
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="QUOTA">
-        <Bollino tono={TONO_PAGA[s.come]}>{PAROLA_PAGA[s.come]}</Bollino>
+        <Bollino tono={t.tono}>{t.parola}</Bollino>
         {s.fonte === 'fuori_app' && <Bollino tono="spento">FUORI APP</Bollino>}
       </Riga>
       <span style={{ fontSize: 14, color: s.come === 'pagato' ? 'var(--sec)' : s.come === 'in_parte' ? 'var(--giallo-testo)' : 'var(--rosso)' }}>{detto}</span>

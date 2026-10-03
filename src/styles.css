@@ -1466,6 +1466,36 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-segno-regola[data-tono='giallo'] { color: var(--giallo-testo); }
 .sg-segno-regola[data-tono='verde'] { color: var(--verde); }
 .sg-segno-regola[data-tono='spento'] { color: var(--dim); }
+/* I timbri in cima alla scheda: bordo e parola del colore dello stato, il resto si legge sul fondo. */
+.sg-timbri { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.75fr); gap: 12px; align-items: stretch; }
+.sg-timbro {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 44px; min-width: 0;
+  padding: 12px 14px; text-align: left; background: var(--bg); border: 2px solid var(--tono, var(--line)); border-left-width: 4px;
+  font-family: var(--cond); font-weight: 700; color: var(--sec);
+}
+/* Solo col mouse: sul telefono il tocco lascerebbe il bordo nero al posto del colore. */
+@media (hover: hover) { .sg-timbro:hover { border-color: var(--text); } }
+/* Il clic porta alla sezione: il titolo non resta sotto il bordo in alto. */
+[id^='sez-'] { scroll-margin-top: 12px; }
+.sg-timbro:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.sg-timbro[data-tono='rosso'] { --tono: var(--rosso); --tono-testo: var(--rosso-testo); }
+.sg-timbro[data-tono='giallo'] { --tono: var(--giallo); --tono-testo: var(--giallo-testo); }
+.sg-timbro[data-tono='verde'] { --tono: var(--verde); --tono-testo: var(--verde-testo); }
+.sg-timbro[data-tono='spento'] { --tono: var(--line); --tono-testo: var(--dim); color: var(--dim); }
+.sg-timbro-titolo { font-size: 12px; letter-spacing: 0.2em; color: var(--dim); }
+.sg-timbro-parola { font-size: 22px; line-height: 1.05; letter-spacing: 0.04em; color: var(--tono-testo, var(--text)); overflow-wrap: anywhere; }
+.sg-timbro-riga { font-size: 14px; letter-spacing: 0.12em; }
+.sg-timbro-riga[data-tono='giallo'] { color: var(--giallo-testo); border: 2px solid var(--giallo); padding: 0 6px; }
+.sg-timbro[data-piccolo='true'] { padding: 10px 12px; align-self: start; }
+.sg-timbro[data-piccolo='true'] .sg-timbro-parola { font-size: 19px; }
+.sg-timbro[data-piccolo='true'] .sg-timbro-riga { font-size: 12px; color: var(--dim); }
+/* Disattivata non è un guaio (si annulla con RIATTIVA): bordo `testo`, niente rosso. */
+.sg-timbri-spenta { margin: 0; padding: 10px 14px; border: 2px dashed var(--text); font-size: 15px; line-height: 1.4; color: var(--sec); }
+.sg-timbri-spenta strong { margin-right: 8px; font-family: var(--cond); font-size: 19px; font-weight: 700; letter-spacing: 0.12em; color: var(--text); }
+/* Sotto i 1000px la scheda è una colonna stretta: tre timbri in fila andrebbero a capo parola per parola. */
+@media (max-width: 1000px) {
+  .sg-timbri { grid-template-columns: minmax(0, 1fr); }
+}
 .sg-iscritto {
   width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid var(--surface-2); text-align: left;
 }
@@ -1828,3 +1858,5 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .guida table { border-collapse: collapse; width: 100%; font-size: 15px; }
 .guida th, .guida td { border: 2px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
 .guida th { font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); background: var(--surface); }
+/* Il titolo di una sezione raggiunto da un timbro: lo stesso contorno dei tasti. */
+[id^='sez-'] :focus-visible, [id^='sez-']:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
