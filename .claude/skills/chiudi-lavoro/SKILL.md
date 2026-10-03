@@ -61,5 +61,7 @@ La descrizione: cosa cambia e per chi; **Sul database**, se c'è, i file da
 lanciare dopo l'unione e se va rilanciato `06-iscrizioni.sql`; **Prove**,
 quelle lanciate e il loro esito; **Guida**, le pagine toccate.
 
-Dopo la PR: legarla alla sessione e proporre l'Auto-fix. Unirla è una
-decisione dell'utente.
+Dopo la PR: legarla alla sessione e accendere l'Auto-fix. Appena le prove su
+GitHub sono verdi e non ci sono conflitti, unirla con `gh pr merge --merge`
+(l'auto-merge di GitHub è spento nel repo). Se la PR cambia `supabase/`, si
+unisce solo dopo che l'utente ha detto di aver lanciato i file sul database.
