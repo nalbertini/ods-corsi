@@ -36,8 +36,9 @@ import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
  * quanto costa con lo sconto famiglia e come pagarlo, e per un minore il
  * documento del genitore non serve: la segreteria ha già il suo.
  *
- * Il documento d'identità e il certificato medico non si caricano: il modulo
- * ricorda di portarli in segreteria, che ne tiene la copia su carta.
+ * Il documento d'identità e il certificato medico si caricano qui, per
+ * comodità: la segreteria li stampa, li tiene su carta e li cancella
+ * dall'app. Il certificato, se non c'è ancora, si può anche portare dopo.
  */
 
 /** Una persona in più nel nucleo: chi la aggiunge, cosa si sa già, e gli annuali che il nucleo paga. */
@@ -157,9 +158,11 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
   )
 
-  const obbligatorio = (t: TipoFile) => FILE.find((f) => f.tipo === t)!.obbligatorio
   /** Per un minore del nucleo il documento è quello del genitore, che la segreteria ha già. */
   const documento = !(nucleo && minore)
+  /** I file da chiedere: il documento solo se serve, il certificato solo dai 6 anni. */
+  const daChiedere = FILE.filter((f) => (documento || !f.tipo.startsWith('documento')) && (certificato !== 'nessuno' || f.tipo !== 'certificato'))
+  const obbligatorio = (t: TipoFile) => daChiedere.some((f) => f.tipo === t && f.obbligatorio)
 
   const errori = problemi(pronta)
   /** Cosa scrivere sotto un campo: «Manca» solo dopo aver provato a mandare. */
@@ -280,7 +283,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       setFase({ tipo: 'compila' })
       return setGuaio(e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco')
     }
-    await carica(id, FILE.map((f) => f.tipo), tutti)
+    await carica(id, daChiedere.map((f) => f.tipo), tutti)
   }
 
   if (fase.tipo === 'fatto') {
@@ -288,18 +291,11 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       <div className="pad stack esito">
         <TitoloEsito tono="fatto">RICHIESTA ARRIVATA</TitoloEsito>
         <span className="esito-testo">
-          Grazie. La segreteria controlla il modulo e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
+          Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a {b.email.trim() || 'la tua email'} se manca qualcosa.
         </span>
-        {(documento || certificato !== 'nessuno') && (
+        {certificato !== 'nessuno' && !file.certificato && (
           <span className="esito-testo">
-            Ricorda di portare in segreteria{' '}
-            {[
-              documento && `il documento d'identità${minore ? ' del genitore' : ''}`,
-              certificato !== 'nessuno' && `il certificato medico${certificato === 'agonistico' ? ' agonistico' : ''}`,
-            ]
-              .filter(Boolean)
-              .join(' e ')}
-            {certificato !== 'nessuno' ? ': senza il certificato non si partecipa alle lezioni.' : '.'}
+            Ricorda di consegnare in segreteria il certificato medico{certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.
           </span>
         )}
         <Tasto onClick={onChiudi}>{torna}</Tasto>
@@ -545,12 +541,6 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       </Sezione>
 
       <Sezione titolo="I FILE">
-        {documento && (
-          <div className="modulo-campo modulo-largo">
-            <span className="modulo-etichetta">{minore ? "IL DOCUMENTO D'IDENTITÀ DEL GENITORE" : "IL DOCUMENTO D'IDENTITÀ"}</span>
-            <Dettaglio tono="avviso">Non si carica qui: va mostrato in segreteria, che ne tiene una copia su carta.</Dettaglio>
-          </div>
-        )}
         {certificato !== 'nessuno' && (
           <div className="modulo-campo modulo-largo">
             <span className="modulo-etichetta">{certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
@@ -558,11 +548,11 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
               {certificato === 'agonistico'
                 ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico.'
                 : 'Dai 6 anni il certificato medico è obbligatorio.'}{' '}
-              Non si carica qui: va consegnato in segreteria, che lo tiene su carta, e senza non si partecipa alle lezioni.
+              Caricalo qui sotto, o consegnalo in segreteria: senza non si partecipa alle lezioni.
             </Dettaglio>
           </div>
         )}
-        {FILE.filter((f) => f.tipo !== 'modulo').map((f) => (
+        {daChiedere.filter((f) => f.tipo !== 'modulo').map((f) => (
           <SceltaFile
             key={f.tipo}
             tipo={f.tipo}

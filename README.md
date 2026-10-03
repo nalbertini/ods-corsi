@@ -101,9 +101,10 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
   iscrive risponde alle domande dal telefono, **firma col dito** il modulo
   delle autorizzazioni (il PDF della palestra, compilato coi suoi dati da
-  `src/lib/firma.ts`; o ne carica la foto firmata a mano), e carica la
-  ricevuta (il documento d'identità e il certificato si portano in
-  segreteria, che li tiene su carta); per un minore la data di nascita fa chiedere i dati
+  `src/lib/firma.ts`; o ne carica la foto firmata a mano), e carica il
+  documento d'identità, il certificato medico se c'è già, e la ricevuta
+  (documento e certificato la segreteria li stampa, li tiene su carta e li
+  cancella dall'app); per un minore la data di nascita fa chiedere i dati
   del genitore. Il codice fiscale si controlla davvero (il carattere di
   controllo, la data di nascita, e per un minore che quello del genitore sia
   di un adulto) e cosa non va si scrive sotto il campo. Le richieste arrivano in segreteria, in **RICHIESTE ONLINE**,

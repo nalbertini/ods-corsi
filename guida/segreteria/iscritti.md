@@ -62,8 +62,9 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
   carattere, il nome o la data) l'app lo dice in giallo, e si può salvare lo
   stesso.
 - **CERTIFICATO MEDICO** — fino a quando vale. Il certificato sta **su
-  carta**, nella cartellina della segreteria: nell'app non si carica. Col
-  foglio in mano, **SEGNA IL CERTIFICATO** → la data in **VALIDO FINO AL** →
+  carta**, nella cartellina della segreteria. Se è arrivato col modulo di
+  iscrizione, si stampa dalla richiesta (vedi [Richieste online](richieste.md)).
+  Col foglio in mano, **SEGNA IL CERTIFICATO** → la data in **VALIDO FINO AL** →
   **SALVA**. Col certificato nuovo, **RINNOVA O CORREGGI** cambia la data, e il
   foglio vecchio si distrugge. Se è arrivato per email o WhatsApp, si stampa e
   si cancella da lì. **Togli** toglie la data.

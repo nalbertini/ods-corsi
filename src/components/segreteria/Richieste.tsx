@@ -20,9 +20,9 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * iscritta ai corsi che ha scelto — o la rifiuta. Accolta o rifiutata resta
  * qui con quello che diceva, finché non la si elimina.
  *
- * Il documento d'identità si porta in segreteria e si tiene su carta. Le
- * richieste di quando il modulo lo chiedeva ce l'hanno ancora caricato: DA
- * STAMPARE le trova, e dalla scheda lo si stampa e lo si cancella.
+ * Il documento d'identità e il certificato medico arrivano col modulo, ma si
+ * tengono su carta: DA STAMPARE trova le richieste che li hanno ancora, e
+ * dalla scheda, accolta la richiesta, li si stampa e li si cancella.
  *
  * Una richiesta mandata dall'area degli iscritti per il nucleo familiare di
  * qualcuno lo dice (NUCLEO): accolta, la persona entra nel suo nucleo, e per
@@ -69,7 +69,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
       <Testa
         titolo="RICHIESTE ONLINE"
         sotto={`${nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}${
-          stampare === 1 ? ' Un documento d’identità da stampare e cancellare.' : stampare ? ` ${stampare} documenti d’identità da stampare e cancellare.` : ''
+          stampare === 1 ? ' Una con documento o certificato da stampare e cancellare.' : stampare ? ` ${stampare} con documento o certificato da stampare e cancellare.` : ''
         }`}
       >
         {stampare > 0 && (
@@ -97,7 +97,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
             {elenco.dato !== null && lista.length === 0 && (
               <p className="sg-sotto" style={{ padding: '12px 14px' }}>
                 {soloStampare
-                  ? 'Nessun documento da stampare.'
+                  ? 'Niente da stampare.'
                   : tutte
                     ? 'Non è ancora arrivata nessuna richiesta.'
                     : 'Nessuna richiesta nuova. Le altre si vedono con «anche quelle già gestite».'}
@@ -117,7 +117,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
                   {x.cognome} {x.nome}
                   {minorenne(x.natoIl) && <span className="num sg-tag" style={{ marginLeft: 8 }}>MINORE</span>}
                   {x.nucleoDi && <span className="num sg-tag" style={{ marginLeft: 8 }}>NUCLEO</span>}
-                  {doc.has(x.id) && <span className="num sg-tag" style={{ marginLeft: 8 }}>DOCUMENTO DA STAMPARE</span>}
+                  {doc.has(x.id) && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(x.creataIl)}</span>
@@ -183,7 +183,7 @@ function Scheda({
   omonimi: PersonaSeg[]
   fai: Fai
   onCambiato: () => void
-  /** Il documento d'identità stampato e cancellato. */
+  /** Il documento o il certificato stampato e cancellato. */
   onStampato: () => void
   onEliminata: () => void
   onApri: (personaId: string) => void
@@ -191,18 +191,21 @@ function Scheda({
   const file = useCarica(() => r.file(x.id), [r, x.id])
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
-  const mancanti = FILE.filter((f) => f.obbligatorio && !arrivati.has(f.tipo))
+  // Documento e certificato, stampati, si cancellano: non mancano, sono su carta.
+  const mancanti = FILE.filter((f) => f.obbligatorio && !DA_STAMPARE.includes(f.tipo) && !arrivati.has(f.tipo))
   const documenti = DA_STAMPARE.filter((t) => arrivati.has(t))
+  const certificato = documenti.includes('certificato')
+  const conDocumento = documenti.some((t) => t !== 'certificato')
 
-  const stampato = () => {
-    if (!window.confirm(`Il documento di ${x.nome} ${x.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`)) return
+  // Solo da accolta: così la scheda dell'iscritto segna che la copia è in segreteria.
+  const stampato = (personaId: string) => {
+    if (!window.confirm(`${documenti.map((t) => ETICHETTA_FILE[t].toLowerCase()).join(', ')} di ${x.nome} ${x.cognome}: stampati e nella cartellina? Dall'app si cancellano per sempre.`)) return
     void fai(
       async () => {
         for (const t of documenti) await r.eliminaFile(x.id, t)
-        // Accolta, la sua scheda dice che la copia ora è in segreteria.
-        if (x.personaId) await d.salvaDocumento(x.personaId, true)
+        if (conDocumento) await d.salvaDocumento(personaId, true)
       },
-      x.personaId ? 'Documento cancellato: la scheda dice che la copia è in segreteria' : 'Documento cancellato',
+      certificato ? 'Cancellati: ora segna nella sua scheda fino a quando vale il certificato' : 'Cancellato: la scheda dice che la copia è in segreteria',
       () => {
         void file.ricarica()
         onStampato()
@@ -267,22 +270,26 @@ function Scheda({
           {file.dato.length === 0 && (
             <span className="sg-sotto">{r.modo === 'prova' ? 'Nessun file: in prova restano solo finché la pagina è aperta.' : 'Nessun file arrivato.'}</span>
           )}
-          {FILE.filter((f) => arrivati.has(f.tipo)).map((f) => (
+          {FILE.filter((f) => arrivati.has(f.tipo) && !DA_STAMPARE.includes(f.tipo)).map((f) => (
             <Anteprima key={f.tipo} f={arrivati.get(f.tipo)!} />
           ))}
           {documenti.length > 0 && (
             <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
               <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>
-                Il documento d’identità non si tiene più nell’app: aprilo, stampalo, mettilo nella cartellina e cancellalo da qui.
+                {conDocumento && certificato ? 'Documento e certificato non restano' : certificato ? 'Il certificato medico non resta' : 'Il documento d’identità non resta'}{' '}
+                nell’app: aprili, stampali, mettili nella cartellina e cancellali da qui.
+                {!x.personaId && ' Prima accogli la richiesta, così la scheda dell’iscritto lo segna.'}
               </span>
               {documenti.map((t) => (
                 <Anteprima key={t} f={arrivati.get(t)!} />
               ))}
-              <div className="row">
-                <button type="button" className="sg-btn sg-btn-rosso" onClick={stampato}>
-                  STAMPATO, CANCELLALO
-                </button>
-              </div>
+              {x.personaId && (
+                <div className="row">
+                  <button type="button" className="sg-btn sg-btn-rosso" onClick={() => stampato(x.personaId!)}>
+                    STAMPATO, CANCELLA
+                  </button>
+                </div>
+              )}
             </div>
           )}
           {mancanti.length > 0 && file.dato.length > 0 && (
