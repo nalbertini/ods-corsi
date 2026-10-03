@@ -135,17 +135,18 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
                 </p>
               )}
               {ordina(lista).map((x) => (
-                <button
+                <div
                   key={x.id}
-                  type="button"
                   role="row"
                   className="sg-riga-iscritto sg-iscritto"
-                  aria-pressed={scelta === x.id}
+                  data-scelto={scelta === x.id}
                   data-spento={x.stato === 'rifiutata'}
                   onClick={() => setScelta(x.id)}
                 >
                   <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>
-                    {x.cognome} {x.nome}
+                    <button type="button" className="sg-riga-apri" aria-current={scelta === x.id ? 'true' : undefined}>
+                      {x.cognome} {x.nome}
+                    </button>
                     {minorenne(x.natoIl) && <span className="num sg-tag" style={{ marginLeft: 8 }}>MINORE</span>}
                     {x.nucleoDi && <span className="num sg-tag" style={{ marginLeft: 8 }}>NUCLEO</span>}
                     {doc.has(x.id) && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
@@ -155,7 +156,7 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
                   <span role="cell" className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textAlign: 'right', color: x.stato === 'nuova' ? 'var(--giallo-testo)' : x.stato === 'accolta' ? 'var(--verde)' : 'var(--dim)' }}>
                     {STATI[x.stato]}
                   </span>
-                </button>
+                </div>
               ))}
             </div>
           </div>

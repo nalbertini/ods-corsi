@@ -214,12 +214,12 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
               const cert = comeCertificato(p.certificato, oggi)
               const paga = comePaga(p, oggi)
               return (
-                <button
+                // Una riga vera della tabella, che si clicca tutta; dalla tastiera e per chi legge lo schermo c'è il tasto sul nome.
+                <div
                   key={p.id}
-                  type="button"
                   role="row"
                   className="sg-riga-iscritto sg-iscritto"
-                  aria-pressed={!nuovo && scelta === p.id}
+                  data-scelto={!nuovo && scelta === p.id}
                   data-spento={!p.attiva}
                   onClick={() => {
                     setNuovo(false)
@@ -227,7 +227,9 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
                   }}
                 >
                   <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>
-                    {p.cognome} {p.nome}
+                    <button type="button" className="sg-riga-apri" aria-current={!nuovo && scelta === p.id ? 'true' : undefined}>
+                      {p.cognome} {p.nome}
+                    </button>
                     {p.certificato.conFile && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
@@ -252,7 +254,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
                   <span role="cell" className="num" style={{ fontSize: 16, fontWeight: 700, textAlign: 'right', color: vienePoco(f) ? 'var(--giallo-testo)' : 'var(--text)' }}>
                     {f ? `${f.presenti}/${f.dovute}` : '—'}
                   </span>
-                </button>
+                </div>
               )
             })}
           </div>
@@ -385,9 +387,9 @@ function Scheda({
   return (
     <>
       <div className="stack" style={{ gap: 4 }}>
-        <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
+        <h2 className="ob" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
           {`${p.cognome} ${p.nome}`.toUpperCase()}
-        </span>
+        </h2>
         <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso)' }}>
           {p.attiva ? `In elenco dal ${dataLunga(p.creataIl)} · nessun accesso` : 'Scheda disattivata: non compare negli appelli'}
         </span>
@@ -514,16 +516,18 @@ function Scheda({
               </span>
             </Riga>
             {storico.dato?.length === 0 && <span className="sg-sotto">Ancora nessuna lezione.</span>}
-            <div className="sg-storico">
-              {storico.dato?.map((x) => (
-                <div
-                  key={x.sessioneId}
-                  className="sg-quadretto"
-                  data-stato={x.stato ?? 'niente'}
-                  title={`${x.corso} · ${giornoPerEsteso(chiaveGiorno(new Date(x.inizio)))} ${oraDi(x.inizio)} · ${x.stato ?? 'non segnato'}`}
-                />
-              ))}
-            </div>
+            {/* Il segno dentro, non solo il colore: ✓ presente, ✕ assente, G giustificato. Per chi legge lo schermo, la frase intera. */}
+            <ul className="sg-storico" aria-label="Ultime 12 lezioni">
+              {storico.dato?.map((x) => {
+                const detto = `${x.corso} · ${giornoPerEsteso(chiaveGiorno(new Date(x.inizio)))} ${oraDi(x.inizio)} · ${x.stato ?? 'non segnato'}`
+                return (
+                  <li key={x.sessioneId} className="sg-quadretto" data-stato={x.stato ?? 'niente'} title={detto}>
+                    <span aria-hidden="true">{x.stato === 'presente' ? '✓' : x.stato === 'assente' ? '✕' : x.stato === 'giustificato' ? 'G' : ''}</span>
+                    <span className="vh">{detto}</span>
+                  </li>
+                )
+              })}
+            </ul>
             {f && (
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>
                 Negli ultimi 30 giorni: {f.presenti} su {f.dovute}.
@@ -1089,7 +1093,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
               void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
           }}
         >
-          Togli «pagata fuori dall’app»
+          {s.fonte === 'ricevuta' ? 'C’è anche «pagata fuori dall’app»: non serve più, toglila' : 'Togli «pagata fuori dall’app»'}
         </button>
       ) : (
         s.come !== 'pagato' && (

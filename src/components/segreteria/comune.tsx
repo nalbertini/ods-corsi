@@ -273,9 +273,10 @@ export function Campo({ id, etichetta, children, largo, manca }: { id?: string; 
 export function Riga({ titolo, children }: { titolo: string; children?: ReactNode }) {
   return (
     <div className="sg-riga-titolo">
-      <span className="sg-etichetta" style={{ fontSize: 14, letterSpacing: '0.22em' }}>
+      {/* Un titolo vero: chi legge lo schermo salta da una parte all'altra della scheda. */}
+      <h3 className="sg-etichetta" style={{ margin: 0, fontSize: 14, letterSpacing: '0.22em' }}>
         {titolo}
-      </span>
+      </h3>
       <div className="rule-line" />
       {children}
     </div>
