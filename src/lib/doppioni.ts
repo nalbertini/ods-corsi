@@ -5,7 +5,7 @@
  * quello che le serve per scegliere l'altra e vedere cosa non torna.
  */
 
-import { compatto } from './nomi'
+import { compatto, paroleDelNome } from './nomi'
 import type { PersonaSeg } from './segreteria'
 
 /**
@@ -15,8 +15,14 @@ import type { PersonaSeg } from './segreteria'
 /** Lo stesso cognome, comunque scritto. */
 export const stessoCognome = (a: PersonaSeg, b: PersonaSeg) => compatto(a.cognome) === compatto(b.cognome)
 
+/** Nome e cognome scambiati: «Chiara Rossi» salvata come nome Rossi e cognome Chiara (succede dal modulo). */
+export const scambiati = (a: PersonaSeg, b: PersonaSeg) => compatto(a.nome) === compatto(b.cognome) && compatto(a.cognome) === compatto(b.nome)
+
+/** Le schede da proporre per prime in UNISCI…: lo stesso cognome, o nome e cognome scambiati. */
+export const vicina = (a: PersonaSeg, b: PersonaSeg) => stessoCognome(a, b) || scambiati(a, b)
+
 export function possibiliDoppioni(persona: PersonaSeg, tutte: PersonaSeg[]): PersonaSeg[] {
-  const stesso = (p: PersonaSeg) => (stessoCognome(p, persona) ? 0 : 1)
+  const stesso = (p: PersonaSeg) => (vicina(p, persona) ? 0 : 1)
   return tutte
     .filter((p) => p.id !== persona.id)
     .sort((a, b) => stesso(a) - stesso(b) || `${a.cognome} ${a.nome}`.localeCompare(`${b.cognome} ${b.nome}`, 'it'))
@@ -47,29 +53,83 @@ export interface IndiziDoppioni {
 
 const cfPiano = (cf?: string) => cf?.replace(/\s+/g, '').toUpperCase() || undefined
 
+/** Perché due schede sembrano la stessa persona, dal più sicuro. */
+export type MotivoDoppione = 'codice fiscale' | 'nome' | 'scambiati' | 'secondo nome'
+
+export const MOTIVI: Record<MotivoDoppione, string> = {
+  'codice fiscale': 'stesso codice fiscale',
+  nome: 'stesso nome',
+  scambiati: 'nome e cognome scambiati',
+  'secondo nome': 'un secondo nome',
+}
+const ORDINE: MotivoDoppione[] = ['codice fiscale', 'nome', 'scambiati', 'secondo nome']
+
+/** Quello che serve per confrontare una scheda, calcolato una volta: gira a ogni tasto della ricerca in ISCRITTI. */
+interface Confronto {
+  p: PersonaSeg
+  nome: string
+  cognome: string
+  parole: string[]
+  cf?: string
+  nato?: string
+}
+const confronto = (p: PersonaSeg, i: IndiziDoppioni): Confronto => ({
+  p,
+  nome: compatto(p.nome),
+  cognome: compatto(p.cognome),
+  parole: paroleDelNome(p.nome),
+  cf: cfPiano(i.codiciFiscali[p.id]),
+  nato: i.nascite[p.id],
+})
+
 /**
- * I possibili doppioni da unire: lo stesso nome e cognome comunque scritti, o
- * lo stesso codice fiscale. Non lo sono due schede con due codici fiscali o
- * due nascite diverse (sono due persone), né una coppia segnata «non sono
- * doppioni». Il telefono non conta: è spesso quello del genitore, uguale per
- * i fratelli. Ogni coppia una volta, per cognome e nome.
+ * Un nome in più, stesso cognome: «Chiara» e «Maria Chiara», «Chiara» e
+ * «Chiara M.». Uno solo in più, e il più corto non è solo un'iniziale («A.»
+ * e «Anna» no): se no l'elenco si riempie di persone diverse.
  */
+function secondoNome(a: string[], b: string[]): boolean {
+  const [corto, lungo] = a.length < b.length ? [a, b] : [b, a]
+  return lungo.length === corto.length + 1 && corto.some((w) => w.length > 1) && corto.every((w) => lungo.includes(w))
+}
+
+function motivo(a: Confronto, b: Confronto, no: Set<string>): MotivoDoppione | null {
+  if (a.cf && b.cf && a.cf !== b.cf) return null
+  if (a.nato && b.nato && a.nato !== b.nato) return null
+  if (no.has([a.p.id, b.p.id].sort().join())) return null
+  if (a.cf && a.cf === b.cf) return 'codice fiscale'
+  if (a.cognome === b.cognome && a.nome === b.nome) return 'nome'
+  // Come `scambiati`, ma sui nomi già compattati: gira per ogni coppia.
+  if (a.nome === b.cognome && a.cognome === b.nome) return 'scambiati'
+  if (a.cognome === b.cognome && secondoNome(a.parole, b.parole)) return 'secondo nome'
+  return null
+}
+
+const nonDoppioni = (i: IndiziDoppioni) => new Set(i.nonDoppioni.map(([a, b]) => [a, b].sort().join()))
+
+/**
+ * Perché due schede sono possibili doppioni, o `null`: stesso codice fiscale,
+ * stesso nome comunque scritto, nome e cognome scambiati, un secondo nome. Non
+ * lo sono due schede con due codici fiscali o due nascite diverse (sono due
+ * persone), né una coppia segnata «non sono doppioni». Il telefono non conta:
+ * è spesso quello del genitore, uguale per i fratelli.
+ */
+export function motivoDoppione(a: PersonaSeg, b: PersonaSeg, i: IndiziDoppioni): MotivoDoppione | null {
+  return motivo(confronto(a, i), confronto(b, i), nonDoppioni(i))
+}
+
+/** I possibili doppioni da unire, ogni coppia una volta: prima i più sicuri, poi per cognome e nome. */
 export function coppieDoppioni(tutte: PersonaSeg[], i: IndiziDoppioni): [PersonaSeg, PersonaSeg][] {
-  const no = new Set(i.nonDoppioni.map(([a, b]) => [a, b].sort().join()))
-  // Una volta per persona: gira a ogni tasto della ricerca in ISCRITTI.
-  const schede = [...tutte]
-    .sort((a, b) => `${a.cognome} ${a.nome}`.localeCompare(`${b.cognome} ${b.nome}`, 'it'))
-    .map((p) => ({ p, nome: `${compatto(p.cognome)} ${compatto(p.nome)}`, cf: cfPiano(i.codiciFiscali[p.id]), nato: i.nascite[p.id] }))
-  const coppie: [PersonaSeg, PersonaSeg][] = []
-  schede.forEach((a, k) => {
-    for (const b of schede.slice(k + 1)) {
-      if (a.cf && b.cf && a.cf !== b.cf) continue
-      if (a.nato && b.nato && a.nato !== b.nato) continue
-      if (no.has([a.p.id, b.p.id].sort().join())) continue
-      if (a.nome === b.nome || (a.cf && a.cf === b.cf)) coppie.push([a.p, b.p])
+  const no = nonDoppioni(i)
+  const schede = [...tutte].sort((a, b) => `${a.cognome} ${a.nome}`.localeCompare(`${b.cognome} ${b.nome}`, 'it')).map((p) => confronto(p, i))
+  const coppie: { c: [PersonaSeg, PersonaSeg]; m: MotivoDoppione }[] = []
+  for (let k = 0; k < schede.length; k++) {
+    for (let j = k + 1; j < schede.length; j++) {
+      const m = motivo(schede[k], schede[j], no)
+      if (m) coppie.push({ c: [schede[k].p, schede[j].p], m })
     }
-  })
-  return coppie
+  }
+  // `sort` tiene l'ordine di prima a parità di motivo: per cognome e nome.
+  return coppie.sort((x, y) => ORDINE.indexOf(x.m) - ORDINE.indexOf(y.m)).map((x) => x.c)
 }
 
 /** L'altra scheda, se `id` è in una coppia sola: UNISCI la trova già scelta. */
