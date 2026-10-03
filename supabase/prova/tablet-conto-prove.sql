@@ -18,8 +18,10 @@ insert into postazioni (id, nome, sala_id, utente_id) values
 insert into corsi (id, nome, sala_id, istruttore_id) values
   ('cccccccc-0000-0000-0000-000000000001', 'Lotta 2', 'bbbbbbbb-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000002');
 insert into sessioni (id, corso_id, inizio, fine) values
-  ('eeeeeeee-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000001', now() - interval '20 minutes', now() + interval '40 minutes');
+  ('eeeeeeee-0000-0000-0000-000000000001', 'cccccccc-0000-0000-0000-000000000001', current_date + interval '12 hours', current_date + interval '13 hours');
 -- Dieci iscritti, tutti presenti.
+-- (La lezione sta a mezzogiorno di oggi, non a `now()` meno qualcosa: fra
+-- mezzanotte e le 00:20 sarebbe finita ieri e `current_date` non la troverebbe.)
 insert into persone (id, nome, cognome, ruolo)
   select ('aaaaaaaa-0000-0000-0000-0000000001' || lpad(i::text, 2, '0'))::uuid, 'Iscritto', 'N' || i, 'iscritto' from generate_series(1, 10) i;
 insert into iscrizioni (corso_id, persona_id, dal)
