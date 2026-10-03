@@ -12,6 +12,7 @@ import type { SegnalataVista } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 
 export type { ListaMusica } from './musica'
+import type { IndiziDoppioni } from './doppioni'
 
 /**
  * La segreteria: il calendario della settimana, i corsi con i loro orari, gli
@@ -522,6 +523,10 @@ export interface DatiSegreteria {
   anteprimaUnione(resta: string, via: string): Promise<{ presenze: number; prove: number; iscrizioni: number; ricevute: number }>
   /** Unisce due schede della stessa persona: `via` se ne va, tutto il suo passa a `resta` (`29-unisci-doppioni.sql`). */
   unisciPersone(resta: string, via: string): Promise<void>
+  /** Codici fiscali, nascite e coppie «non sono doppioni», per i possibili doppioni di ISCRITTI (`doppioni.ts`). */
+  indiziDoppioni(): Promise<IndiziDoppioni>
+  /** Due schede che non sono la stessa persona: non compaiono più fra i possibili doppioni (`30-non-doppioni.sql`). */
+  segnaNonDoppioni(a: string, b: string): Promise<void>
 
   salvaSala(s: { id?: string; nome: string; capienza?: number }): Promise<string>
   /** La musica delle sale, per il tablet (vedi `musica.ts`). */
