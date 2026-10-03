@@ -122,7 +122,10 @@ export function daMostrare(o: {
   giaQui: ReadonlySet<string>
   guaio: unknown
 }): { proposti: GiaProvato[]; stato: string | null; avviso: string | null } {
-  const proposti = somiglianti((o.venuti ?? o.ultimi).filter((p) => !o.giaQui.has(p.id)), o.testo)
+  const letti = o.venuti ?? o.ultimi
+  const proposti = somiglianti(letti.filter((p) => !o.giaQui.has(p.id)), o.testo)
+  // «Nessuno» sarebbe falso se chi somiglia è già qui: farebbe aggiungere un doppione.
+  const giaQuiDentro = somiglianti(letti.filter((p) => o.giaQui.has(p.id)), o.testo).length > 0
   const avviso = !o.guaio
     ? null
     : o.guaio instanceof Error && o.guaio.message === TROPPE_RICERCHE
@@ -130,9 +133,11 @@ export function daMostrare(o: {
       : 'Senza rete non vedo chi è già venuto: scrivi nome e cognome.'
   const stato =
     !avviso && bastaPerCercare(o.testo) && proposti.length === 0
-      ? o.venuti
-        ? 'Nessuno è già venuto con questo nome.'
-        : 'Cerco chi è già venuto…'
+      ? giaQuiDentro
+        ? 'È già in questo appello.'
+        : o.venuti
+          ? 'Nessuno è già venuto con questo nome.'
+          : 'Cerco chi è già venuto…'
       : null
   return { proposti, stato, avviso }
 }
