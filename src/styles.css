@@ -1594,7 +1594,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-dafare-lezione-nome { font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); }
 .sg-dafare-aposto { margin: 0; font-size: 14px; line-height: 1.5; color: var(--sec); }
 .sg-dafare-fatto { display: flex; flex-direction: column; gap: 6px; padding: 28px; border: 2px solid var(--verde); }
-.sg-dafare-fatto .ob { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: var(--verde); }
+.sg-dafare-fatto .ob { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: var(--verde-testo); }
 @media (max-width: 700px) {
   .sg-dafare-riga { flex-wrap: wrap; gap: 12px; }
   .sg-dafare-n { min-width: 0; text-align: left; }
