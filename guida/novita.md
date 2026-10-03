@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.11.0 — 3 ottobre 2026
+
+### Novità
+
+- Ricevuta più corta, con le voci della persona in cima e il codice fiscale obbligatorio
+
 ## 0.10.0 — 3 ottobre 2026
 
 ### Novità
