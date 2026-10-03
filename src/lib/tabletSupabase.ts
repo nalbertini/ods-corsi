@@ -163,16 +163,18 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     },
 
     // Senza coda, come il resto del tablet: chi aggiunge deve sapere se è andata.
-    aggiungiProva(pin, sessioneId, chi) {
+    async aggiungiProva(pin, sessioneId, chi) {
       const n = eGiaVenuto(chi) ? null : pulisciProva(chi)
-      return rpc<boolean>('aggiungi_prova_con_pin', {
+      const persona = eGiaVenuto(chi) ? chi.id : nuovoId()
+      const fatto = await rpc<boolean>('aggiungi_prova_con_pin', {
         pin,
         sessione: sessioneId,
-        persona: eGiaVenuto(chi) ? chi.id : nuovoId(),
+        persona,
         nome: n?.nome ?? null,
         cognome: n?.cognome ?? null,
         telefono: n?.telefono ?? null,
       })
+      return fatto ? persona : null
     },
 
     togliProva: (pin, sessioneId, personaId) => rpc<boolean>('togli_prova_con_pin', { pin, sessione: sessioneId, persona: personaId }),
