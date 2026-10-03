@@ -3,6 +3,44 @@ import { Back } from '../Icons'
 
 type Valore = string | number | null | undefined
 
+/**
+ * Un cassetto o un dialogo sopra la pagina: aperto, il fuoco ci entra e non
+ * scappa dietro il velo con TAB; ESC lo chiude; chiuso, il fuoco torna dove
+ * era. Va su un elemento con `role="dialog"` e `tabIndex={-1}`.
+ */
+export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
+  const ref = useRef<T>(null)
+  const chiudi = useRef(onChiudi)
+  chiudi.current = onChiudi
+  useEffect(() => {
+    const prima = document.activeElement as HTMLElement | null
+    ref.current?.focus()
+    const tasto = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') return chiudi.current()
+      if (e.key !== 'Tab' || !ref.current) return
+      const dentro = [...ref.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter(
+        (x) => !x.hasAttribute('disabled') && x.offsetParent !== null,
+      )
+      if (!dentro.length) return
+      const [primo, ultimo] = [dentro[0], dentro[dentro.length - 1]]
+      const qui = document.activeElement
+      if (e.shiftKey && (qui === primo || qui === ref.current)) {
+        e.preventDefault()
+        ultimo.focus()
+      } else if (!e.shiftKey && (qui === ultimo || !ref.current.contains(qui))) {
+        e.preventDefault()
+        primo.focus()
+      }
+    }
+    window.addEventListener('keydown', tasto)
+    return () => {
+      window.removeEventListener('keydown', tasto)
+      prima?.focus()
+    }
+  }, [])
+  return ref
+}
+
 /** Il messaggio d'errore di un'operazione, detto in chiaro. */
 export const messaggio = (e: unknown, altrimenti = 'Il server non risponde') => (e instanceof Error && e.message ? e.message : altrimenti)
 

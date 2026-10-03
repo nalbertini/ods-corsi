@@ -16,6 +16,7 @@ import {
   type VoceRicevuta,
 } from '../../lib/ricevute'
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
+import { minorenne } from '../../lib/richieste'
 import { chiaveGiorno } from '../../lib/sala'
 import { Campo, dataLunga, Guaio, Riga, useAvviso, useCarica } from './comune'
 
@@ -276,21 +277,40 @@ export function NuovaRicevuta({
   const statoScheda = c && c.netto > 0 ? 'in_parte' : 'pagato'
   const puoSegnare = corsiPagati.length > 0
 
+  // Quello che sulla ricevuta resterebbe vuoto: si fa lo stesso, ma si vede in rosso prima.
+  const minore = !!socio.natoIl && minorenne(socio.natoIl)
+  const vuoti: Array<[keyof IntestatarioRicevuta, string]> = [
+    ['codiceFiscale', 'il codice fiscale'],
+    ['indirizzo', 'l’indirizzo'],
+    ...(minore ? ([['genitore', 'il genitore'], ['genitoreCodiceFiscale', 'il codice fiscale del genitore']] as Array<[keyof IntestatarioRicevuta, string]>) : []),
+  ]
+  const mancano = vuoti.filter(([k]) => !String(socio[k] ?? '').trim())
+  const manca = new Set(mancano.map(([k]) => k))
   const campoSocio = (k: keyof IntestatarioRicevuta, etichetta: string, o: { tipo?: string; largo?: boolean; max?: number } = {}) => (
-    <Campo id={`rs-${k}`} etichetta={etichetta} largo={o.largo}>
+    <Campo id={`rs-${k}`} etichetta={etichetta} largo={o.largo} manca={manca.has(k)}>
       <input
         id={`rs-${k}`}
         className="sg-campo"
         type={o.tipo ?? 'text'}
         maxLength={o.max ?? 120}
         value={socio[k] ?? ''}
+        aria-invalid={manca.has(k) || undefined}
         onChange={(e) => setSocio({ ...socio, [k]: e.target.value })}
       />
     </Campo>
   )
+  const mancaTesto = mancano.map(([, t]) => t).join(', ').replace(/, ([^,]*)$/, ' e $1')
 
   const emetti = () => {
-    if (!dati) return
+    if (!dati || !c) return
+    // La ricevuta ha un numero e non si cambia più: prima di farla, si rilegge.
+    const quale = n ? `n. ${n}/${anno}` : prossimo.dato ? `n. ${prossimo.dato}/${anno}` : `col prossimo numero del ${anno}`
+    const righe = [
+      `Fare la ricevuta ${quale} a ${socio.cognome} ${socio.nome}, ${euro(c.totale)} €?`,
+      mancano.length ? `\nSulla ricevuta mancano ${mancaTesto}.` : '',
+      '\nFatta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.',
+    ]
+    if (!window.confirm(righe.join('\n'))) return
     void fai(
       async () => {
         const r = await d.emettiRicevuta(dati)
@@ -429,10 +449,11 @@ export function NuovaRicevuta({
         )}
       </div>
 
-      <details open={!socio.codiceFiscale || !socio.indirizzo}>
+      <details open={mancano.length > 0}>
         <summary className="sg-etichetta" style={{ cursor: 'pointer' }}>
           DATI DEL SOCIO · {`${socio.cognome} ${socio.nome}`.toUpperCase()}
-          {socio.codiceFiscale ? ` · ${socio.codiceFiscale}` : ' · manca il codice fiscale'}
+          {socio.codiceFiscale && ` · ${socio.codiceFiscale}`}
+          {mancano.length > 0 && <span style={{ color: 'var(--rosso)' }}> · mancano {mancaTesto}</span>}
         </summary>
         <div className="sg-due" style={{ marginTop: 12 }}>
           {campoSocio('nome', 'NOME', { max: 80 })}
@@ -487,7 +508,10 @@ export function NuovaRicevuta({
       )}
 
       {guaio && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>{guaio}</span>}
-      {!guaio && <span style={{ fontSize: 12, color: 'var(--dim)' }}>Fatta la ricevuta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.</span>}
+      {!guaio && mancano.length > 0 && (
+        <span style={{ fontSize: 15, color: 'var(--rosso)' }}>Sulla ricevuta mancano {mancaTesto}: si può fare lo stesso, ma resteranno vuoti.</span>
+      )}
+      {!guaio && <span style={{ fontSize: 15, color: 'var(--sec)' }}>Fatta la ricevuta, non si cambia più: se è sbagliata si annulla e se ne fa un’altra.</span>}
 
       <div className="sg-scheda-piede">
         <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>

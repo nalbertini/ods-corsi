@@ -1083,6 +1083,7 @@ a.sg-voce { text-decoration: none; }
   display: flex; flex-direction: column; gap: 18px; padding: calc(var(--safe-t) + 28px) 28px 28px;
   background: var(--surface); border-left: 2px solid var(--text); border-top: 6px solid var(--tinta); overflow-y: auto;
 }
+.sg-cassetto:focus, .sg-dialogo:focus { outline: none; }
 .sg-dialogo {
   position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 11;
   width: min(520px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 16px; padding: 28px;
@@ -1181,6 +1182,9 @@ a.sg-voce { text-decoration: none; }
   width: 64px; height: 44px; display: flex; align-items: center; justify-content: center;
   font-size: 14px; font-weight: 700; letter-spacing: 0.12em; background: var(--surface-2); color: var(--sec);
 }
+/* Prima di un'azione che non si annulla: cosa manca, in rosso, sopra il tasto. */
+.sg-prima { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 2px solid var(--rosso); }
+.sg-prima ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 1.4; }
 .sg-iscrizione { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; background: var(--bg); border: 2px solid var(--line); }
 .sg-storico { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; }
 .sg-quadretto { height: 22px; border: 2px solid var(--line); }

@@ -10,6 +10,7 @@ import type { Destinazione, Voce } from './Segreteria'
 const STATI: Record<StatoRichiesta, string> = { nuova: 'NUOVA', accolta: 'ACCOLTA', rifiutata: 'RIFIUTATA' }
 /** Per ordinare per stato: prima quelle da guardare. */
 const ORDINE_STATI: Record<StatoRichiesta, number> = { nuova: 0, accolta: 1, rifiutata: 2 }
+const CON_ARTICOLO: Partial<Record<string, string>> = { modulo: 'il modulo firmato', ricevuta: 'la ricevuta del pagamento' }
 const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 
 /**
@@ -193,6 +194,20 @@ function Scheda({
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
   const mancanti = FILE.filter((f) => f.obbligatorio && !arrivati.has(f.tipo))
   const documenti = DA_STAMPARE.filter((t) => arrivati.has(t))
+  // Accolta, la richiesta crea una persona iscritta ai corsi e non si torna
+  // indietro: quello che manca si dice prima, non dopo.
+  const problemi = [
+    !x.regolamento && 'Il regolamento non è accettato.',
+    file.guaio && 'I file non si sono aperti: non si sa se il modulo firmato e la ricevuta ci sono.',
+    ...(file.dato ? mancanti.map((f) => `Manca ${CON_ARTICOLO[f.tipo] ?? f.etichetta.toLowerCase()}.`) : []),
+  ].filter((t): t is string => !!t)
+  // Finché i file non si sono caricati non si sa cosa manca.
+  const inAttesa = file.dato === null && !file.guaio
+  const accogli = (op: () => Promise<unknown>, riuscito: string) => {
+    const chi = `${x.nome} ${x.cognome}${minore ? ' (minorenne)' : ''}`
+    if (problemi.length && !window.confirm(`Accogliere lo stesso la richiesta di ${chi}?\n\n${problemi.join('\n')}\n\nEntra in elenco iscritta ai suoi corsi, e non si torna indietro.`)) return
+    void fai(op, riuscito, onCambiato)
+  }
 
   const stampato = () => {
     if (!window.confirm(`Il documento di ${x.nome} ${x.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`)) return
@@ -285,7 +300,7 @@ function Scheda({
               </div>
             </div>
           )}
-          {mancanti.length > 0 && file.dato.length > 0 && (
+          {x.stato !== 'nuova' && mancanti.length > 0 && file.dato.length > 0 && (
             <span className="sg-sotto" style={{ color: 'var(--rosso)' }}>Manca: {mancanti.map((f) => f.etichetta.toLowerCase()).join(', ')}.</span>
           )}
           {file.dato.length > 0 && <span className="sg-sotto" style={{ fontSize: 12 }}>I link valgono dieci minuti: se non si aprono più, riapri la richiesta.</span>}
@@ -319,9 +334,8 @@ function Scheda({
                   <button
                     type="button"
                     className="sg-btn sg-btn-linea"
-                    onClick={() => {
-                      void fai(() => r.accogli(x.id, p.id), `Accolta sulla scheda di ${p.nome} ${p.cognome}, iscritta ai suoi corsi`, onCambiato)
-                    }}
+                    disabled={inAttesa}
+                    onClick={() => accogli(() => r.accogli(x.id, p.id), `Accolta sulla scheda di ${p.nome} ${p.cognome}, iscritta ai suoi corsi`)}
                   >
                     ACCOGLI SU QUESTA
                   </button>
@@ -332,17 +346,31 @@ function Scheda({
         </>
       )}
 
+      {x.stato === 'nuova' && problemi.length > 0 && (
+        <div className="sg-prima">
+          <span className="sg-etichetta" data-manca>PRIMA DI ACCOGLIERE</span>
+          <ul>
+            {problemi.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+          <span className="sg-sotto">
+            {minore && file.dato && !arrivati.has('modulo') ? 'È minorenne: senza il modulo firmato dal genitore non c’è il suo consenso. ' : ''}
+            Chiedi quello che manca prima, o accogli lo stesso se l’hai già in segreteria su carta.
+          </span>
+        </div>
+      )}
+
       <div className="row" style={{ gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
         {x.stato === 'nuova' && (
           <>
             <button
               type="button"
-              className="sg-btn sg-btn-verde"
-              onClick={() => {
-                void fai(() => r.accogli(x.id), 'Accolta: ora è in elenco e iscritta ai suoi corsi', onCambiato)
-              }}
+              className={problemi.length ? 'sg-btn sg-btn-linea' : 'sg-btn sg-btn-verde'}
+              disabled={inAttesa}
+              onClick={() => accogli(() => r.accogli(x.id), 'Accolta: ora è in elenco e iscritta ai suoi corsi')}
             >
-              ACCOGLI
+              {problemi.length ? 'ACCOGLI LO STESSO' : 'ACCOGLI'}
             </button>
             <button
               type="button"
