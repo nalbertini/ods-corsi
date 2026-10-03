@@ -372,8 +372,14 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
           <button type="button" className="tb-chip tb-chip-segna" onClick={segnaAperta}>
             <span className="stack tb-chip-testo">
               <span className="tb-chip-sotto" style={{ color: 'var(--verde)', fontWeight: 700, letterSpacing: '0.16em' }}>SI SEGNA ORA</span>
-              <span className="ob tb-chip-nome" style={{ fontSize: 19 }}>
-                {aperta.corso.toUpperCase()} · <span className="num">{aperta.presenti}/{aperta.iscritti}</span>
+              {/* Un nome lungo si accorcia, il conto no: è quello che serve. */}
+              <span className="row" style={{ gap: 6, minWidth: 0 }}>
+                <span className="ob tb-chip-nome" style={{ fontSize: 19 }}>
+                  {aperta.corso.toUpperCase()}
+                </span>
+                <span className="ob num" style={{ fontSize: 19, fontWeight: 700, whiteSpace: 'nowrap' }}>
+                  · {aperta.presenti}/{aperta.iscritti}
+                </span>
               </span>
             </span>
             <span className="ob tb-chip-azione">SEGNATI</span>
