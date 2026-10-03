@@ -155,7 +155,6 @@ export function TabletIstruttore({
   return (
     <div className="tb-corpo tb-istruttore" hidden={!visibile}>
       <div className="tb-colonna" style={{ gap: 10 }}>
-        {presenze.length > 0 && <LaTuaPresenza presenze={presenze} />}
         <div role="tablist" aria-label="Quali lezioni" className="tb-schede">
           {(
             [
@@ -220,6 +219,9 @@ export function TabletIstruttore({
           {elenco.length === 0 && <span className="tb-nota">Nessuna lezione.</span>}
         </div>
 
+        {/* Sotto le lezioni, non sopra: l'istruttore entra per l'appello, e
+            com'è andata la sua presenza è un'informazione in più. */}
+        {presenze.length > 0 && <LaTuaPresenza presenze={presenze} />}
         <button type="button" className="tb-btn tb-btn-linea" onClick={onEsci}>
           ESCI
         </button>

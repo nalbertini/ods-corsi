@@ -149,6 +149,10 @@ Per eliminare un istruttore basta `28-elimina-istruttore.sql` (dopo
 finché non ci sono, ELIMINA nella scheda dell'istruttore dice cosa manca.
 Chi l'aveva già lanciato lo rilancia: la prima versione non eliminava la
 segreteria che insegna anche.
+Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
+rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
+venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
+c'è, l'istruttore continua a vederlo.
 Le funzioni dei trigger di `07`, `08`, `12` e `20`, e `nome_proprio`,
 restavano chiamabili da chi non ha un accesso (senza far uscire niente): basta
 rilanciare `06-iscrizioni.sql`, che le chiude.

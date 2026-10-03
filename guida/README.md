@@ -12,8 +12,8 @@ che si apre dal telefono, dal tablet o dal computer. Si può anche aggiungere al
 («Aggiungi alla schermata Home») e allora si apre come un'app.
 
 La guida si legge anche dentro l'app: il tasto **?** in alto, nella pagina
-iniziale e in quella degli istruttori, o **GUIDA** nel menu della segreteria,
-che apre la guida della voce in cui siete. L'indirizzo è
+iniziale, in fondo al menu degli istruttori e della segreteria (dal telefono
+nella barra in alto): in segreteria apre la guida della voce in cui siete. L'indirizzo è
 <https://nalbertini.github.io/ods-corsi/#guida>.
 
 Cosa cambia a ogni versione, le novità e i problemi risolti, è nelle

@@ -22,6 +22,13 @@
 -- Il tablet le chiama col PIN, come l'appello (04-tablet.sql): l'elenco da
 -- toccare per segnarsi da sé resta degli iscritti.
 --
+-- Il telefono di chi è venuto a provare serve a chi lo richiama, la
+-- segreteria: all'istruttore per ritrovarlo bastano corso e giorno, e il suo
+-- telefono personale gira fra i bambini. È lo schermo, non ancora il confine:
+-- `persone_legge` (02-policy.sql) lascia al personale tutta l'anagrafica,
+-- telefono compreso. Chi l'aveva già lanciato lo rilancia:
+-- la prima versione dava il telefono a tutto il personale.
+--
 -- Si lancia dopo `04-tablet.sql`. Crea funzioni, ma dice lei a chi: non
 -- chiede di rilanciare `06-iscrizioni.sql`. Finché non c'è, l'appello si fa
 -- come prima, e il tasto PROVE dice che va lanciato.
@@ -179,7 +186,8 @@ create or replace function prove_recenti()
   language plpgsql stable security definer set search_path = public, extensions as $$
 begin
   if not e_personale() then raise exception 'le prove le vede chi fa l''appello' using errcode = '42501'; end if;
-  return query select * from gia_provati(true);
+  -- Il telefono solo alla segreteria, anche quando insegna: è lei che richiama.
+  return query select * from gia_provati(e_staff());
 end $$;
 
 -- --- dal tablet, col PIN: come l'appello di 04-tablet.sql -------------------
