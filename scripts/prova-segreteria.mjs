@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, testoTroppoLungo } from './src/lib/segnalazioni'; export { comeCertificato, comePaga, inRegola, pagamentoDi } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, inRegola, pagamentoDi } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -595,7 +595,7 @@ console.log('\nle segnalazioni della segreteria')
   ok('ma chiusa', !!(await filo(r3)).chiusaIl, true)
 
   const r4 = await apri('Risposta troppo lunga')
-  ok('una risposta troppo lunga non chiude', await errore(() => m.chiudiConRisposta(s, r4, 'a'.repeat(4001))), 'Il testo è troppo lungo: al massimo 4000 caratteri')
+  ok('una risposta troppo lunga non chiude', await errore(() => m.chiudiConRisposta(s, r4, 'a'.repeat(4001))), 'Testo troppo lungo: togli 1 carattere (massimo 4000)')
   ok('nessun messaggio in più', (await filo(r4)).messaggi.length, 1)
   ok('e il filo resta aperto', (await filo(r4)).chiusaIl, undefined)
 
@@ -630,9 +630,89 @@ console.log('\nle segnalazioni della segreteria')
   ok('senza da rispondere, aperte per recenza poi chiuse', m.ordinaSegnalazioni([E, D, A]).map((y) => y.id), ['A', 'D', 'E'])
 
   ok('il titolo di 120 caratteri va', m.cosaNonVaSegnalazione('x', 'a'.repeat(120)), null)
-  ok('di 121 no', m.cosaNonVaSegnalazione('x', 'a'.repeat(121)), 'Il titolo è troppo lungo: al massimo 120 caratteri')
-  ok('un testo di 4000 caratteri va', m.testoTroppoLungo('a'.repeat(4000)), null)
-  ok('di 4001 si dice, invece di tagliarlo', m.testoTroppoLungo('a'.repeat(4001)), 'Il testo è troppo lungo: al massimo 4000 caratteri')
+  ok('di 121 no', m.cosaNonVaSegnalazione('x', 'a'.repeat(121)), 'Titolo troppo lungo: togli 1 carattere (massimo 120)')
+  ok('un testo di 4000 caratteri va', m.cosaNonVaSegnalazione('a'.repeat(4000)), null)
+  ok('di 4001 si dice, con quanto togliere', m.cosaNonVaSegnalazione('a'.repeat(4002)), 'Testo troppo lungo: togli 2 caratteri (massimo 4000)')
+
+  // Le chiuse si nascondono, tranne quelle appena chiuse da chi guarda (tenute).
+  const G = f('G', false, '2026-09-25T10:00', '2026-09-25T10:00')
+  ok('si vedono solo le aperte', m.visibili([C, A, G, B], false, new Set()).map((y) => y.id), ['B', 'A'])
+  ok('con «anche le chiuse» ci sono tutte, chiuse in fondo', m.visibili([C, A, G, B], true, new Set()).map((y) => y.id), ['B', 'A', 'C', 'G'])
+  ok('una chiusa appena chiusa resta lì', m.visibili([C, A, G, B], false, new Set(['C'])).map((y) => y.id), ['B', 'A', 'C'])
+
+  // Troppo lungo: si dice quanto togliere.
+  ok('il titolo giusto va', m.troppoLungo('Titolo', 'a'.repeat(120), 120), null)
+  ok('il titolo lungo dice quanto togliere', m.troppoLungo('Titolo', 'a'.repeat(125), 120), 'Titolo troppo lungo: togli 5 caratteri (massimo 120)')
+  ok('un carattere solo, al singolare', m.troppoLungo('Testo', '  ' + 'a'.repeat(4001) + '  ', 4000), 'Testo troppo lungo: togli 1 carattere (massimo 4000)')
+
+  // Dopo la chiusura, un avviso che dice cosa è successo.
+  ok('mandata e chiusa', m.avvisoChiusura({ mandata: true, chiusa: true }), 'Risposta mandata. Segnalazione chiusa.')
+  ok('solo chiusa', m.avvisoChiusura({ mandata: false, chiusa: true }), 'Segnalazione chiusa.')
+  ok('mandata ma non chiusa, dice cosa fare', m.avvisoChiusura({ mandata: true, chiusa: false }), 'La risposta è andata, la segnalazione è ancora aperta: tocca di nuovo È FATTA, CHIUDILA.')
+
+  // La riga sotto il titolo: sempre il nome di chi scrive, mai «Tu» (al banco l'accesso è in comune).
+  const quando = (iso) => `${m.giornoPerEsteso(m.chiaveGiorno(new Date(iso)))}, ${m.oraDi(iso)}`
+  const msg = (autore, il, mio = false) => ({ id: autore + il, autore, mio, testo: 't', il })
+  const solo = { id: 'S', titolo: 'S', messaggi: [msg('Luca', '2026-09-25T09:30:00.000Z', true)] }
+  ok('senza risposte: chi e quando', m.rigaFilo(solo), `Luca · ${quando('2026-09-25T09:30:00.000Z')}`)
+  ok('senza risposte nessun «ultimo»', m.rigaFilo(solo).includes('ultimo'), false)
+  const una = { ...solo, messaggi: [...solo.messaggi, msg('Marta', '2026-09-26T08:15:00.000Z')] }
+  ok('con una risposta', m.rigaFilo(una), `Luca · una risposta · ultimo di Marta, ${quando('2026-09-26T08:15:00.000Z')}`)
+  const due = { ...solo, messaggi: [...solo.messaggi, msg('Gino', '2026-09-25T10:00:00.000Z', true), msg('Marta', '2026-09-26T08:15:00.000Z')] }
+  ok('con due risposte, chi ha scritto per ultimo', m.rigaFilo(due).includes('2 risposte · ultimo di Marta'), true)
+  const mie = { ...solo, messaggi: [...solo.messaggi, msg('Luca', '2026-09-26T08:15:00.000Z', true)] }
+  ok('niente «tuo» né «Tu» anche se è mio', /\btuo\b|\bTu\b|\bTua\b/i.test(m.rigaFilo(mie) + m.rigaFilo(solo)), false)
+  ok('anche se è mio, il nome', m.rigaFilo(mie), `Luca · una risposta · ultimo di Luca, ${quando('2026-09-26T08:15:00.000Z')}`)
+
+  // Il tasto spento dice perché.
+  ok('mentre lavora non dice niente', m.motivoSpento({ titolo: '', testo: '', lavora: true }), null)
+  ok('risposta vuota', m.motivoSpento({ testo: '  ', lavora: false, risposta: true }), 'Scrivi la risposta')
+  ok('risposta scritta', m.motivoSpento({ testo: 'ok', lavora: false, risposta: true }), null)
+  ok('nuova senza titolo', m.motivoSpento({ titolo: ' ', testo: 'x', lavora: false }), 'Scrivi il titolo')
+  ok('nuova senza testo', m.motivoSpento({ titolo: 'Appello', testo: ' ', lavora: false }), 'Scrivi cosa non va')
+  ok('troppo lunga: lo dice già la nota sotto il campo', m.motivoSpento({ titolo: 'a'.repeat(121), testo: 'x', lavora: false }), null)
+  ok('tutto a posto', m.motivoSpento({ titolo: 'Appello', testo: 'lento', lavora: false }), null)
+
+  // Le bozze stanno nello Storage passato, e non lanciano mai.
+  const deposito = () => {
+    const d = new Map()
+    return {
+      get length() { return d.size },
+      key: (i) => [...d.keys()][i] ?? null,
+      getItem: (k) => (d.has(k) ? d.get(k) : null),
+      setItem: (k, v) => d.set(k, String(v)),
+      removeItem: (k) => d.delete(k),
+      clear: () => d.clear(),
+    }
+  }
+  const st = deposito()
+  ok('la chiave dice modo e campo', m.chiaveBozza('prova', 'nuova-testo'), 'ods-corsi:bozza:prova:nuova-testo')
+  m.scriviBozza(st, m.chiaveBozza('prova', 'titolo'), 'Appello lento')
+  ok('la bozza si rilegge', m.leggiBozza(st, m.chiaveBozza('prova', 'titolo')), 'Appello lento')
+  ok('quella della prova non si legge dal vero', m.leggiBozza(st, m.chiaveBozza('supabase', 'titolo')), '')
+  m.scriviBozza(st, m.chiaveBozza('prova', 'titolo'), '   ')
+  ok('scritta vuota si toglie', st.getItem(m.chiaveBozza('prova', 'titolo')), null)
+  m.scriviBozza(st, m.chiaveBozza('prova', 'a'), 'uno')
+  m.scriviBozza(st, m.chiaveBozza('supabase', 'b'), 'due')
+  st.setItem('ods-corsi:modo', 'prova')
+  m.svuotaBozze(st)
+  ok('svuotare toglie le bozze e lascia il resto', [st.getItem(m.chiaveBozza('prova', 'a')), st.getItem(m.chiaveBozza('supabase', 'b')), st.getItem('ods-corsi:modo')], [null, null, 'prova'])
+  {
+    const st2 = new Map()
+    const finto = { getItem: (k) => st2.get(k) ?? null, setItem: (k, v) => st2.set(k, v), removeItem: (k) => st2.delete(k), get length() { return st2.size }, key: (i) => [...st2.keys()][i] ?? null }
+    m.scriviBozza(finto, m.chiaveBozza('prova', 'risposta-f1'), 'mezza risposta')
+    m.scriviBozza(finto, m.chiaveBozza('supabase', 'risposta-f2'), 'del vero')
+    ok('i fili con una risposta a metà si sanno', [...m.conBozza(finto, 'prova', ['f1', 'f2', 'f3'])], ['f1'])
+    ok('senza Storage nessuno', [...m.conBozza(undefined, 'prova', ['f1'])], [])
+  }
+  const rotto = new Proxy({}, { get() { throw new Error('Storage giù') } })
+  ok('senza Storage si legge vuoto', m.leggiBozza(undefined, 'k'), '')
+  ok('con lo Storage rotto si legge vuoto', m.leggiBozza(rotto, 'k'), '')
+  ok('e scrivere o svuotare non lancia', [await errore(() => m.scriviBozza(undefined, 'k', 'x')), await errore(() => m.scriviBozza(rotto, 'k', 'x')), await errore(() => m.svuotaBozze(undefined)), await errore(() => m.svuotaBozze(rotto))], ['nessun errore', 'nessun errore', 'nessun errore', 'nessun errore'])
+
+  // Aprire dà l'id della nuova, così la si può mostrare subito.
+  const nuovaId = await s.apriSegnalazione('Con id', 'Da vedere')
+  ok('aprire dà l\'id della nuova', [typeof nuovaId, (await s.segnalazioni()).at(-1).id === nuovaId], ['string', true])
 }
 
 console.log('\neliminare un istruttore')
