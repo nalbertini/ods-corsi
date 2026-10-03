@@ -33,7 +33,7 @@ globalThis.localStorage = {
   setItem: (k, v) => memoria.set(k, String(v)),
   removeItem: (k) => memoria.delete(k),
 }
-globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
+globalThis.window = { location: { search: '', hash: '', pathname: '/' }, addEventListener() {} }
 
 const m = await import(modulo)
 let guai = 0
@@ -89,8 +89,13 @@ console.log("\n1. l'istruttore aggiunge una prova dall'app")
 
 console.log('\n2. il giorno dopo, un altro corso: si ritrova per nome')
 {
+  // Chi è collegato lo dice l'indirizzo, come in prova: istruttori o segreteria.
+  window.location.pathname = '/istruttori/'
   const venuti = await d.provati()
-  ok('fra chi ha provato, col telefono', venuti.map((x) => `${x.nome} ${x.telefono} ${x.corso}`), ['Marco 333 1234567 Lotta 2'])
+  ok("fra chi ha provato, senza telefono per l'istruttore", venuti.map((x) => `${x.nome} ${x.telefono ?? '-'} ${x.corso}`), ['Marco - Lotta 2'])
+  window.location.pathname = '/segreteria/'
+  ok('la segreteria lo vede col telefono', (await d.provati()).map((x) => `${x.nome} ${x.telefono ?? '-'} ${x.corso}`), ['Marco 333 1234567 Lotta 2'])
+  window.location.pathname = '/'
   ok('si trova scrivendo «mar nu»', m.somiglianti(venuti, 'mar nu').length, 1)
   ok('e non scrivendo «luca»', m.somiglianti(venuti, 'luca').length, 0)
   const prima = persone()
@@ -145,6 +150,24 @@ console.log('\n5. la segreteria ritrova chi è venuto a provare')
   ok('e fra gli iscritti c’è la sua scheda', (await s.persone()).some((x) => x.id === elenco[0].personaId), true)
   await s.iscrivi(elenco[0].personaId, 'lotta-2')
   ok('si iscrive: lo dice', (await s.prove(dopo(0), dopo(6)))[0].iscritto, true)
+}
+
+console.log('\n6. chi non si cerca più')
+{
+  // Una lezione di Lotta 2 di 91 giorni fa, fuori dai novanta: straordinaria,
+  // perché la stagione di prova comincia dopo.
+  const LOTTA_VECCHIA = 'x@lotta-vecchia'
+  m.archivio.dati.lezioni[LOTTA_VECCHIA] = { straordinaria: { corsoId: 'lotta-2', inizio: new Date(Date.now() - 91 * 24 * 60 * 60_000).toISOString(), durata: 60 } }
+  ok('la lezione di 91 giorni fa esiste', (await d.dettaglio(LOTTA_VECCHIA))?.sessione.corso, 'Lotta 2')
+  await d.aggiungiProva(LOTTA_VECCHIA, { nome: 'Vito', cognome: 'Lontano' })
+  const dora = await d.aggiungiProva(LOTTA, { nome: 'Dora', cognome: 'Spenta' })
+  m.archivio.dati.persone.find((x) => x.id === dora.id).attiva = false
+  window.location.pathname = '/segreteria/'
+  ok('una prova di 91 giorni fa e una persona disattivata non ci sono', (await d.provati()).map((x) => x.nome), ['Marco'])
+  window.location.pathname = '/'
+  const t = m.creaTabletProva()
+  await t.scegliSala('Lotta')
+  ok('neanche sul tablet', (await t.provati('1234')).map((x) => x.nome), ['Marco'])
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

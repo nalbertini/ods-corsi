@@ -136,6 +136,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.prove') is not null
     and exists (select 1 from dentro where nome = 'aggiungi_prova')
     and exists (select 1 from dentro where nome = 'aggiungi_prova_con_pin')),
+  ('21-prove.sql', 'il telefono di chi ha provato solo alla segreteria',
+    exists (select 1 from dentro where nome = 'prove_recenti' and corpo like '%gia_provati(e_staff())%')),
   ('22-statistiche.sql', 'le statistiche della segreteria',
     exists (select 1 from dentro where nome = 'statistiche')),
   ('23-istruttori-dalle-lezioni.sql', 'la presenza degli istruttori dall''appello e le lezioni tenute da confermare',

@@ -119,7 +119,8 @@ c'è **PROVE**.
 1. Scrivete **nome**, **cognome** e, se ve lo dà, il **telefono**: serve alla
    segreteria per richiamarlo.
 2. Mentre scrivete, sotto compare chi **è già venuto a provare** con quel
-   nome (con il corso e il giorno dell'ultima prova). Se è lui, toccatelo:
+   nome (con il corso e il giorno dell'ultima prova; il telefono lo vede solo
+   la segreteria). Se è lui, toccatelo:
    è la stessa persona, non un doppione. È il caso della settimana di prova,
    un giorno judo e uno lotta.
 3. Se no, **AGGIUNGI NUOVO**.

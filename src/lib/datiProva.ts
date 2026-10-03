@@ -427,7 +427,9 @@ export function creaDatiProva(): Dati {
     },
 
     async provati() {
-      return provatiProva(true)
+      // Come `prove_recenti`: il telefono solo alla segreteria. In prova chi è
+      // collegato lo dice l'area, quindi chi è segreteria e insegna qui non c'è.
+      return provatiProva(typeof window !== 'undefined' && areaDelPercorso() === 'segreteria')
     },
 
     async aggiungiProva(sessioneId, chi) {
