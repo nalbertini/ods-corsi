@@ -6,6 +6,7 @@ import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Croce, Spunta } from '../Icons'
 import { Guaio, messaggio, orario } from './comune'
 import type { ChiProva } from '../../lib/prove'
+import { giaNellAppello } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
 
 /**
@@ -83,12 +84,18 @@ export function TabletIstruttore({
   const [nonAndato, setNonAndato] = useState<string | null>(null)
   const [giro, setGiro] = useState(0)
   const [conProve, setConProve] = useState(false)
+  const [giaQui, setGiaQui] = useState<ReadonlySet<string>>(new Set())
+  // La lezione in vista adesso: una scrittura che risponde dopo un cambio di
+  // lezione non deve toccare l'elenco di quella nuova.
+  const inVista = useRef(scelta)
+  inVista.current = scelta
   // L'elenco si svuota solo cambiando lezione: rileggendo la stessa resta in
   // vista, se no il pannello prove si smonta e perde il suo messaggio.
   useEffect(() => {
     setNonAndato(null)
     setConProve(false)
     setRighe(null)
+    setGiaQui(new Set())
   }, [scelta])
   // Uno per lezione: la lettura di quella nuova non aspetta le scritture
   // ancora in corso su quella di prima.
@@ -112,14 +119,18 @@ export function TabletIstruttore({
       .then((r) => {
         if (!vivo) return
         const esito = scritture.lettura(foto)
-        if (esito === 'mostra') setRighe(r)
+        if (esito === 'mostra') {
+          setRighe(r)
+          setGiaQui((g) => giaNellAppello(g, { letti: r.map((x) => x.personaId) }))
+        }
         else if (esito === 'rileggi') setGiro((g) => g + 1)
       })
       .catch((e: unknown) => {
         if (!vivo) return
         // L'elenco vecchio può avere un tocco che il server non ha: sotto
         // l'avviso mostrerebbe presente chi non lo è. Il pannello prove resta,
-        // con la conferma dell'aggiunta appena fatta.
+        // con la conferma dell'aggiunta appena fatta, e chi è già nell'appello
+        // resta quello di prima.
         setRighe(null)
         setGuaio(messaggio(e, "Non riesco a leggere l'appello"))
       })
@@ -149,17 +160,22 @@ export function TabletIstruttore({
   // Senza coda, come il resto del tablet: si rilegge l'appello dal server.
   const aggiungiProva = async (chi: ChiProva) => {
     if (!scelta) return
-    if (!(await d.aggiungiProva(pin, scelta, chi))) return onPinScaduto()
+    const sessione = scelta
+    const id = await d.aggiungiProva(pin, sessione, chi)
+    if (!id) return onPinScaduto()
+    if (inVista.current === sessione) setGiaQui((g) => giaNellAppello(g, { aggiunto: id }))
     onCambiato()
     setGiro((g) => g + 1)
   }
   const togliProva = async (personaId: string) => {
     if (!scelta) return
+    const sessione = scelta
     setNonAndato(null)
     setRighe((r) => r && r.filter((x) => x.personaId !== personaId))
     await scrivendo(async () => {
       try {
-        if (!(await d.togliProva(pin, scelta, personaId))) return onPinScaduto()
+        if (!(await d.togliProva(pin, sessione, personaId))) return onPinScaduto()
+        if (inVista.current === sessione) setGiaQui((g) => giaNellAppello(g, { tolto: personaId }))
         onCambiato()
       } catch (e) {
         setNonAndato(messaggio(e, 'Il server non risponde'))
@@ -332,7 +348,7 @@ export function TabletIstruttore({
           <PannelloProve
             stile="tb"
             cerca={() => d.provati(pin)}
-            giaQui={new Set((righe ?? []).map((r) => r.personaId))}
+            giaQui={giaQui}
             onAggiungi={aggiungiProva}
             onChiudi={() => setConProve(false)}
           />

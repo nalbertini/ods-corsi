@@ -157,8 +157,11 @@ export interface DatiTablet {
    * nessuno: se ne accorge l'aggiunta, come col database.
    */
   provati(pin: string): Promise<GiaProvato[]>
-  /** Aggiunge chi viene a provare, già presente. `false` se il PIN non va più. */
-  aggiungiProva(pin: string, sessioneId: string, chi: ChiProva): Promise<boolean>
+  /**
+   * Aggiunge chi viene a provare, già presente, e dice chi è: anche il nuovo
+   * va tenuto fra chi è già nell'appello. `null` se il PIN non va più.
+   */
+  aggiungiProva(pin: string, sessioneId: string, chi: ChiProva): Promise<string | null>
   /** Toglie una prova messa per sbaglio. `false` se il PIN non va più. */
   togliProva(pin: string, sessioneId: string, personaId: string): Promise<boolean>
 

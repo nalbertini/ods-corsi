@@ -284,11 +284,11 @@ export function creaTabletProva(): DatiTablet {
     async aggiungiProva(pin, sessioneId, chi) {
       await lezione(sessioneId)
       const da = daPin(pin)
-      if (!da) return false
+      if (!da) return null
       const p = mettiProva(sessioneId, chi, da.personaId)
       // Come dall'appello: la presenza non è «dal tablet».
       scrivi(sessioneId, p.id, memoria.segnate[sessioneId]?.[p.id] ?? 'presente', null)
-      return true
+      return p.id
     },
 
     async togliProva(pin, sessioneId, personaId) {
