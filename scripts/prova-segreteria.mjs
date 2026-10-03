@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -35,7 +35,8 @@ globalThis.localStorage = {
 globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
 
 // Oggi, per la prova, è sabato 26 settembre 2026 a mezzogiorno.
-const OGGI = new Date(2026, 8, 26, 12, 0).getTime()
+// `let`: una prova manda avanti l'orologio, e poi lo rimette.
+let OGGI = new Date(2026, 8, 26, 12, 0).getTime()
 const DateVera = Date
 globalThis.Date = class extends DateVera {
   constructor(...a) {
@@ -1485,6 +1486,154 @@ console.log('\npossibili doppioni')
   }), 'nessun errore')
   const manca = await errore(() => senza.segnaNonDoppioni(lia1, lia2))
   ok('ma «non sono doppioni» dice quale file lanciare', manca.includes('33-non-doppioni.sql') ? '33-non-doppioni.sql' : manca, '33-non-doppioni.sql')
+}
+
+console.log('\ninizio e fine dei corsi: le lezioni da ricorrenza stanno dentro')
+{
+  // Come il trigger `sessione_in_stagione` (12-calendario-da-se.sql): fuori
+  // dalle date dei corsi una lezione da ricorrenza non nasce; le straordinarie
+  // sì, e quelle già toccate (appello, cambi, istruttori, prove) restano.
+  const fra = (da, a = da) => m.lezioniFra(new Date(2026, da[0], da[1]), new Date(2026, a[0], a[1]))
+  const ordinarie = (da, a) => fra(da, a).filter((l) => !l.straordinaria)
+  const passate = fra([8, 14], [8, 25]).length
+  const ottobre15 = ordinarie([9, 15])
+  const [lun20] = ordinarie([9, 20])
+  await s.straordinaria('judo-2', new Date(2026, 9, 20, 20, 0), 60)
+  const [extra20] = fra([9, 20]).filter((l) => l.straordinaria)
+
+  // Le lezioni del 15 ottobre toccate prima di chiudere i corsi il 10.
+  // Quella con la presenza dell'istruttore deve avere un istruttore previsto.
+  const coninsegnante = ottobre15.find((l) => l.corso.istruttori.length)
+  const [segnata, annullata, sostituita, spostata, conprova, ...intatte] = ottobre15.filter((l) => l !== coninsegnante)
+  m.memoria.segnate = { ...m.memoria.segnate, [segnata.id]: { 'p-qualcuno': 'presente' } }
+  await s.aggiornaLezione(annullata.id, { stato: 'annullata' })
+  await s.aggiornaLezione(sostituita.id, { sostitutoId: 'i-fabio' })
+  await s.aggiornaLezione(spostata.id, { salaId: spostata.corso.sala === 'Tatami' ? 'Pesi' : 'Tatami' })
+  m.segnaIstruttoriLezioneProva(coninsegnante.id, coninsegnante.corso.istruttori.slice(0, 1), 's-prova')
+  // La prova segna anche presente: si toglie il segno, così conta la sola prova.
+  await app.aggiungiProva(conprova.id, { nome: 'Pia', cognome: 'Provetta', telefono: '333 000 1111' })
+  m.memoria.segnate = { ...m.memoria.segnate, [conprova.id]: {} }
+
+  await s.salvaImpostazioni({ fineCorsi: '2026-10-10' })
+  ok('con la fine il 10 ottobre, dopo il 10 nessuna lezione da ricorrenza non toccata', ordinarie([9, 11], [9, 31]).filter((l) => ![segnata, annullata, sostituita, spostata, coninsegnante, conprova].some((x) => x.id === l.id)).length, 0)
+  ok('fino al 10 ottobre le lezioni ci sono', ordinarie([9, 1], [9, 10]).length > 0, true)
+  ok('la straordinaria del 20 ottobre resta', fra([9, 20]).some((l) => l.id === extra20.id), true)
+  ok('una lezione del 20 ottobre si trova ancora per id', m.trovaLezione(lun20.id) !== null, true)
+  const resta = (l) => fra([9, 15]).some((x) => x.id === l.id)
+  ok('il 15 ottobre resta quella con l\'appello', resta(segnata), true)
+  ok('resta quella annullata', resta(annullata), true)
+  ok('resta quella col sostituto', resta(sostituita), true)
+  ok('resta quella spostata di sala', resta(spostata), true)
+  ok('resta quella con la presenza dell\'istruttore', resta(coninsegnante), true)
+  ok('resta quella con una prova', resta(conprova), true)
+  ok('le altre del 15 ottobre no', [intatte.length > 0, intatte.filter(resta).length], [true, 0])
+  ok('con la fine il 20 dicembre il calendario è pronto fino al 20 dicembre', (await s.salvaImpostazioni({ fineCorsi: '2026-12-20' }), await s.prontoFino()), '2026-12-20')
+
+  await s.salvaImpostazioni({ fineCorsi: null })
+  ok('senza fine il calendario è pronto fino a fine stagione', await s.prontoFino(), '2027-06-30')
+  ok('tolta la fine, a novembre le lezioni tornano', ordinarie([10, 1], [10, 7]).length > 0, true)
+
+  await s.salvaImpostazioni({ inizioCorsi: '2026-10-05' })
+  // Le prove di prima hanno già toccato qualche lezione di questa settimana: quelle restano.
+  const a = m.archivio.dati
+  const toccata = (l) => Object.keys(m.memoria.segnate[l.id] ?? {}).length > 0 || !!a.lezioni[l.id] || (a.presenzeIstruttori ?? []).some((x) => x.sessioneId === l.id) || (a.prove ?? []).some((x) => x.sessioneId === l.id)
+  ok('con l\'inizio il 5 ottobre, la settimana prima niente lezioni da ricorrenza non toccate', ordinarie([8, 28], [9, 4]).filter((l) => !toccata(l)).length, 0)
+  ok('dal 5 ottobre sì', ordinarie([9, 5], [9, 11]).length > 0, true)
+  ok('il passato prima di oggi non cambia', fra([8, 14], [8, 25]).length, passate)
+
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+}
+
+console.log('\nle date dei corsi valgono da quando si scrivono, non da oggi')
+{
+  // Sul database una lezione scartata dal trigger non nasce più: passato il
+  // giorno, non torna perché è diventata «passata».
+  const a = m.archivio.dati
+  const toccata = (l) => Object.keys(m.memoria.segnate[l.id] ?? {}).length > 0 || !!a.lezioni[l.id] || (a.presenzeIstruttori ?? []).some((x) => x.sessioneId === l.id) || (a.prove ?? []).some((x) => x.sessioneId === l.id)
+  const fra = (da, b = da) => m.lezioniFra(new Date(2026, da[0], da[1]), new Date(2026, b[0], b[1]))
+  const nonToccate = (da, b) => fra(da, b).filter((l) => !l.straordinaria && !toccata(l))
+  ok('di partenza il 15 ottobre ha lezioni non toccate', nonToccate([9, 15]).length > 0, true)
+  await s.salvaImpostazioni({ fineCorsi: '2026-10-10' })
+  ok('scritta la fine il 26 settembre, il 15 ottobre non ne ha', nonToccate([9, 15]).length, 0)
+  OGGI = new Date(2026, 9, 20, 12, 0).getTime()
+  ok('arrivati al 20 ottobre, le lezioni del 15 non ricompaiono', nonToccate([9, 15]).length, 0)
+  OGGI = new Date(2026, 8, 26, 12, 0).getTime()
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+
+  // Il giorno è quello della prima volta: riscrivere la fine non lo sposta.
+  await s.salvaImpostazioni({ fineCorsi: '2026-10-10' })
+  OGGI = new Date(2026, 9, 20, 12, 0).getTime()
+  await s.salvaImpostazioni({ fineCorsi: '2026-10-12' })
+  ok('riscritta la fine il 20 ottobre, le lezioni del 15 non tornano', nonToccate([9, 15]).length, 0)
+  OGGI = new Date(2026, 8, 26, 12, 0).getTime()
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+
+  // Tolte entrambe, si riparte: riscritte il 20 ottobre, il 15 era già passato.
+  await s.salvaImpostazioni({ fineCorsi: '2026-10-10' })
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+  OGGI = new Date(2026, 9, 20, 12, 0).getTime()
+  await s.salvaImpostazioni({ fineCorsi: '2026-10-10' })
+  ok('tolte le date e riscritte il 20 ottobre, le lezioni del 15 ci sono', nonToccate([9, 15]).length > 0, true)
+  OGGI = new Date(2026, 8, 26, 12, 0).getTime()
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+
+  // Una straordinaria prima dell'inizio dei corsi è decisa a mano: resta.
+  await s.straordinaria('judo-2', new Date(2026, 9, 2, 20, 0), 60)
+  const [extra] = fra([9, 2]).filter((l) => l.straordinaria && l.corso.id === 'judo-2')
+  await s.salvaImpostazioni({ inizioCorsi: '2026-10-05' })
+  ok('la straordinaria prima dell\'inizio dei corsi resta', fra([9, 2]).some((l) => l.id === extra.id), true)
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+}
+
+console.log('\nuna lezione toccata e rimessa com\'era resta, e quelle di oggi pure')
+{
+  // Sul database la lezione toccata è una riga: rimessa com'era, la riga resta.
+  const a = m.archivio.dati
+  const toccata = (l) => Object.keys(m.memoria.segnate[l.id] ?? {}).length > 0 || !!a.lezioni[l.id] || (a.presenzeIstruttori ?? []).some((x) => x.sessioneId === l.id) || (a.prove ?? []).some((x) => x.sessioneId === l.id)
+  const fra = (da, b = da) => m.lezioniFra(new Date(2026, da[0], da[1]), new Date(2026, b[0], b[1]))
+  const pulite = (g) => fra(g).filter((l) => !l.straordinaria && !toccata(l))
+  const c = pulite([9, 22])
+  const istruttori = await s.istruttori()
+  const [annullata, sostituita, segnata, provata] = [c[0], c.find((l) => istruttori.some((i) => !l.corso.istruttori.includes(i.id)) && l !== c[0]), c[2], c[3]]
+  const [rimessaDopo] = pulite([9, 29])
+  ok('il 22 ottobre ha quattro lezioni intatte, diverse', new Set([annullata, sostituita, segnata, provata].map((l) => l?.id)).size, 4)
+
+  const prese = []
+  await s.aggiornaLezione(annullata.id, { stato: 'annullata' })
+  prese.push(toccata(annullata))
+  await s.aggiornaLezione(annullata.id, { stato: 'prevista' })
+  // Come la settimana della segreteria: «Come da corso» manda null.
+  await s.aggiornaLezione(sostituita.id, { sostitutoId: istruttori.find((i) => !sostituita.corso.istruttori.includes(i.id)).id })
+  prese.push(toccata(sostituita))
+  await s.aggiornaLezione(sostituita.id, { sostitutoId: null })
+  const chi = (await app.dettaglio(segnata.id)).elenco[0].id
+  await app.segna(segnata.id, chi, 'presente')
+  prese.push(toccata(segnata))
+  await app.segna(segnata.id, chi, null)
+  const rita = await app.aggiungiProva(provata.id, { nome: 'Rita', cognome: 'Ripensata', telefono: '333 000 2222' })
+  prese.push(toccata(provata))
+  await app.togliProva(provata.id, rita.id)
+  ok('ogni cambio aveva preso, prima di essere tolto', prese, [true, true, true, true])
+  // Annullata prima della fine, rimessa prevista dopo.
+  await s.aggiornaLezione(rimessaDopo.id, { stato: 'annullata' })
+
+  await s.salvaImpostazioni({ fineCorsi: '2026-10-10' })
+  await s.aggiornaLezione(rimessaDopo.id, { stato: 'prevista' })
+  const resta = (l, g) => fra(g).some((x) => x.id === l.id)
+  ok('annullata e poi rimessa prevista, resta', resta(annullata, [9, 22]), true)
+  ok('col sostituto e poi «come da corso», resta', resta(sostituita, [9, 22]), true)
+  ok('una presenza segnata e poi tolta, resta', resta(segnata, [9, 22]), true)
+  ok('una prova aggiunta e poi tolta, resta', resta(provata, [9, 22]), true)
+  ok('rimessa prevista dopo aver scritto la fine, resta', resta(rimessaDopo, [9, 29]), true)
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+
+  // Le lezioni di oggi sul database ci sono già: le date scritte oggi non le tolgono.
+  OGGI = new Date(2026, 8, 28, 12, 0).getTime()
+  const oggi = pulite([8, 28]).length
+  await s.salvaImpostazioni({ inizioCorsi: '2026-09-29' })
+  ok('con l\'inizio domani, le lezioni di oggi restano', [oggi > 0, pulite([8, 28]).length], [true, oggi])
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+  OGGI = new Date(2026, 8, 26, 12, 0).getTime()
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

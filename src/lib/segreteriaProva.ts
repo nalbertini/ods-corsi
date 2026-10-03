@@ -129,7 +129,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
   const cambiaLezione = (id: string, f: (l: LezioneProva) => LezioneProva | null) => {
     const nuova = f({ ...(a().lezioni[id] ?? {}) })
     const lezioni = { ...a().lezioni }
-    if (nuova && Object.keys(nuova).length) lezioni[id] = nuova
+    // Una voce vuota resta: dice che la lezione è stata toccata (vedi `giaCreata`).
+    if (nuova) lezioni[id] = nuova
     else delete lezioni[id]
     a().lezioni = lezioni
   }
@@ -218,7 +219,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async prontoFino() {
       const fini = a().corsi.filter((c) => c.attivo).flatMap((c) => c.ricorrenze.map((r) => r.al ?? STAGIONE.al))
-      return fini.length ? fini.sort().at(-1)! : null
+      const ultima = fini.sort().at(-1)
+      if (!ultima) return null
+      // Oltre la fine dei corsi il database non crea lezioni.
+      const fine = a().impostazioni?.fineCorsi
+      return fine && fine < ultima ? fine : ultima
     },
 
     async rigenera() {
@@ -1146,6 +1151,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async salvaImpostazioni(i) {
       a().impostazioni = { ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }), ...i }
+      // Conta la prima volta: riscrivendo le date il passato non torna a nascere.
+      const { inizioCorsi, fineCorsi } = a().impostazioni ?? {}
+      if (!inizioCorsi && !fineCorsi) delete a().dateCorsiDal
+      else a().dateCorsiDal ??= oggi()
       salva()
     },
 
