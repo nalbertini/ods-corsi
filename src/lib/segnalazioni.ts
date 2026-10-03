@@ -28,15 +28,23 @@ export interface Segnalazione {
 export const MAX_TITOLO = 120
 export const MAX_TESTO = 4000
 
+/** Il titolo oltre il massimo, detto com'è, o `null`: il modulo lo conta mentre si scrive. */
+export const titoloTroppoLungo = (titolo: string) =>
+  titolo.trim().length > MAX_TITOLO ? `Il titolo è troppo lungo: al massimo ${MAX_TITOLO} caratteri` : null
+
+/** Il testo oltre il massimo, o `null`: si dice invece di tagliarlo mentre si incolla. */
+export const testoTroppoLungo = (testo: string) =>
+  testo.trim().length > MAX_TESTO ? `Il testo è troppo lungo: al massimo ${MAX_TESTO} caratteri` : null
+
 /** Perché non si può scrivere, o `null` se si può. Senza titolo è una risposta. */
 export function cosaNonVaSegnalazione(testo: string, titolo?: string): string | null {
   if (titolo !== undefined) {
     if (!titolo.trim()) return 'Manca il titolo'
-    if (titolo.trim().length > MAX_TITOLO) return `Il titolo è troppo lungo: al massimo ${MAX_TITOLO} caratteri`
+    const lungo = titoloTroppoLungo(titolo)
+    if (lungo) return lungo
   }
   if (!testo.trim()) return 'Manca il testo'
-  if (testo.trim().length > MAX_TESTO) return `Il testo è troppo lungo: al massimo ${MAX_TESTO} caratteri`
-  return null
+  return testoTroppoLungo(testo)
 }
 
 /** L'ultimo messaggio di un filo. */
@@ -45,6 +53,35 @@ export const ultimo = (s: Segnalazione) => s.messaggi[s.messaggi.length - 1]
 /** Aperta, e l'ultimo a scrivere è un altro: tocca a chi guarda rispondere. */
 export const tocca = (s: Segnalazione) => !s.chiusaIl && !ultimo(s).mio
 
-/** Le aperte prima, poi dalla più mossa di recente. */
+/** Prima quelle che aspettano una tua risposta, poi le altre aperte, poi le chiuse; in ognuna dalla più mossa di recente. */
+const gruppo = (s: Segnalazione) => (tocca(s) ? 0 : s.chiusaIl ? 2 : 1)
 export const ordinaSegnalazioni = (l: Segnalazione[]) =>
-  [...l].sort((x, y) => Number(!!x.chiusaIl) - Number(!!y.chiusaIl) || ultimo(y).il.localeCompare(ultimo(x).il))
+  [...l].sort((x, y) => gruppo(x) - gruppo(y) || ultimo(y).il.localeCompare(ultimo(x).il))
+
+/**
+ * Il tasto che chiude dice prima di toccarlo se manda anche la risposta
+ * scritta: un messaggio mandato non si cambia più.
+ */
+export const etichettaChiudi = (bozza: string) => (bozza.trim() ? 'MANDA E CHIUDI' : 'È FATTA, CHIUDILA')
+
+/**
+ * Chiude un filo senza buttare la risposta scritta: se c'è, la manda prima.
+ * Se l'invio non va il filo resta aperto (e la bozza nel campo). Se la
+ * risposta parte ma la chiusura no, non è un errore da ripetere per intero:
+ * lo dice `chiusa: false`, così non si manda la stessa risposta due volte.
+ */
+export async function chiudiConRisposta(
+  d: { rispondiSegnalazione(id: string, testo: string): Promise<unknown>; chiudiSegnalazione(id: string, chiusa: boolean): Promise<unknown> },
+  id: string,
+  bozza: string,
+): Promise<{ mandata: boolean; chiusa: boolean }> {
+  const mandata = !!bozza.trim()
+  if (mandata) await d.rispondiSegnalazione(id, bozza)
+  try {
+    await d.chiudiSegnalazione(id, true)
+  } catch (e) {
+    if (!mandata) throw e
+    return { mandata, chiusa: false }
+  }
+  return { mandata, chiusa: true }
+}

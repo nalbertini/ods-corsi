@@ -4,7 +4,8 @@ import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '..
 import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
-import { dataLunga, Guaio, Riga, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { STRETTO, useSchermo } from '../../lib/largo'
+import { chiedi, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 const STATI: Record<StatoRichiesta, string> = { nuova: 'NUOVA', accolta: 'ACCOLTA', rifiutata: 'RIFIUTATA' }
@@ -21,9 +22,9 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * iscritta ai corsi che ha scelto — o la rifiuta. Accolta o rifiutata resta
  * qui con quello che diceva, finché non la si elimina.
  *
- * Il documento d'identità si porta in segreteria e si tiene su carta. Le
- * richieste di quando il modulo lo chiedeva ce l'hanno ancora caricato: DA
- * STAMPARE le trova, e dalla scheda lo si stampa e lo si cancella.
+ * Il documento d'identità e il certificato medico arrivano col modulo, ma si
+ * tengono su carta: DA STAMPARE trova le richieste che li hanno ancora, e
+ * dalla scheda, accolta la richiesta, li si stampa e li si cancella.
  *
  * Una richiesta mandata dall'area degli iscritti per il nucleo familiare di
  * qualcuno lo dice (NUCLEO): accolta, la persona entra nel suo nucleo, e per
@@ -58,6 +59,9 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
   const lista = (elenco.dato ?? []).filter((x) => (soloStampare ? doc.has(x.id) : tutte || x.stato === 'nuova'))
   const nuove = (elenco.dato ?? []).filter((x) => x.stato === 'nuova').length
   const richiesta = (elenco.dato ?? []).find((x) => x.id === scelta) ?? null
+  // Sullo schermo stretto la richiesta si apre al posto dell'elenco, non sotto.
+  const stretto = useSchermo(STRETTO)
+  const piena = stretto && !!richiesta
   const { ordina, colonna } = useOrdina<Richiesta, 'nome' | 'corsi' | 'arrivata' | 'stato'>({
     nome: (x) => `${x.cognome} ${x.nome}`,
     corsi: (x) => x.corsi.map((c) => nomi.get(c) ?? '?').join(', '),
@@ -65,94 +69,104 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
     stato: (x) => ORDINE_STATI[x.stato],
   })
 
+  const scheda = richiesta && r && (
+    <Scheda
+      key={richiesta.id}
+      d={d}
+      r={r}
+      x={richiesta}
+      nomi={nomi}
+      titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
+      omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
+      fai={fai}
+      onCambiato={() => void elenco.ricarica()}
+      onStampato={() => void conDocumento.ricarica()}
+      onEliminata={() => {
+        setScelta(null)
+        void elenco.ricarica()
+      }}
+      onApri={(persona) => onVai('iscritti', { persona })}
+    />
+  )
+
   return (
     <>
-      <Testa
-        titolo="RICHIESTE ONLINE"
-        sotto={`${nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}${
-          stampare === 1 ? ' Un documento d’identità da stampare e cancellare.' : stampare ? ` ${stampare} documenti d’identità da stampare e cancellare.` : ''
-        }`}
-      >
-        {stampare > 0 && (
-          <button type="button" className="num sg-chip" aria-pressed={soloStampare} onClick={() => setDaStampare(!soloStampare)}>
-            DA STAMPARE
-          </button>
-        )}
-        <button type="button" className="num sg-chip" aria-pressed={tutte && !soloStampare} onClick={() => (setDaStampare(false), setTutte(!tutte))}>
-          ANCHE QUELLE GIÀ GESTITE
-        </button>
-      </Testa>
-
-      {elenco.guaio && <Guaio testo={elenco.guaio} />}
-
-      <div className="sg-due-colonne sg-iscritti">
-        <div role="table" aria-label="Richieste" className="sg-tabella">
-          <div role="row" className="sg-lista-testa sg-riga-iscritto">
-            {colonna('nome', 'NOME')}
-            {colonna('corsi', 'CORSI')}
-            {colonna('arrivata', 'ARRIVATA', { numeri: true })}
-            {colonna('stato', 'STATO', { destra: true })}
-          </div>
-          <div className="sg-tabella-corpo">
-            {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le richieste…</p>}
-            {elenco.dato !== null && lista.length === 0 && (
-              <p className="sg-sotto" style={{ padding: '12px 14px' }}>
-                {soloStampare
-                  ? 'Nessun documento da stampare.'
-                  : tutte
-                    ? 'Non è ancora arrivata nessuna richiesta.'
-                    : 'Nessuna richiesta nuova. Le altre si vedono con «anche quelle già gestite».'}
-              </p>
-            )}
-            {ordina(lista).map((x) => (
-              <button
-                key={x.id}
-                type="button"
-                role="row"
-                className="sg-riga-iscritto sg-iscritto"
-                aria-pressed={scelta === x.id}
-                data-spento={x.stato === 'rifiutata'}
-                onClick={() => setScelta(x.id)}
-              >
-                <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>
-                  {x.cognome} {x.nome}
-                  {minorenne(x.natoIl) && <span className="num sg-tag" style={{ marginLeft: 8 }}>MINORE</span>}
-                  {x.nucleoDi && <span className="num sg-tag" style={{ marginLeft: 8 }}>NUCLEO</span>}
-                  {doc.has(x.id) && <span className="num sg-tag" style={{ marginLeft: 8 }}>DOCUMENTO DA STAMPARE</span>}
-                </span>
-                <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
-                <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(x.creataIl)}</span>
-                <span role="cell" className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textAlign: 'right', color: x.stato === 'nuova' ? 'var(--giallo-testo)' : x.stato === 'accolta' ? 'var(--verde)' : 'var(--dim)' }}>
-                  {STATI[x.stato]}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <section aria-label="Richiesta" className="sg-scheda" style={{ maxWidth: 560 }}>
-          {richiesta && r ? (
-            <Scheda
-              key={richiesta.id}
-              d={d}
-              r={r}
-              x={richiesta}
-              nomi={nomi}
-              titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
-              omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
-              fai={fai}
-              onCambiato={() => void elenco.ricarica()}
-              onStampato={() => void conDocumento.ricarica()}
-              onEliminata={() => {
-                setScelta(null)
-                void elenco.ricarica()
-              }}
-              onApri={(persona) => onVai('iscritti', { persona })}
-            />
-          ) : (
-            <span className="sg-sotto">Apri una richiesta per vedere le risposte e i file.</span>
+      {piena && (
+        <SchedaPiena key={richiesta.id} etichetta={`Richiesta di ${richiesta.nome} ${richiesta.cognome}`} torna="RICHIESTE" onTorna={() => setScelta(null)}>
+          {scheda}
+        </SchedaPiena>
+      )}
+      <div className="stack" style={{ gap: 18 }} hidden={piena}>
+        <Testa
+          titolo="RICHIESTE ONLINE"
+          sotto={`${nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}${
+            stampare === 1 ? ' Una con documento o certificato da stampare e cancellare.' : stampare ? ` ${stampare} con documento o certificato da stampare e cancellare.` : ''
+          }`}
+        >
+          {stampare > 0 && (
+            <button type="button" className="num sg-chip" aria-pressed={soloStampare} onClick={() => setDaStampare(!soloStampare)}>
+              DA STAMPARE
+            </button>
           )}
-        </section>
+          <button type="button" className="num sg-chip" aria-pressed={tutte && !soloStampare} onClick={() => (setDaStampare(false), setTutte(!tutte))}>
+            ANCHE QUELLE GIÀ GESTITE
+          </button>
+        </Testa>
+
+        {elenco.guaio && <Guaio testo={elenco.guaio} />}
+
+        <div className="sg-due-colonne sg-iscritti">
+          <div role="table" aria-label="Richieste" className="sg-tabella">
+            <div role="row" className="sg-lista-testa sg-riga-iscritto">
+              {colonna('nome', 'NOME')}
+              {colonna('corsi', 'CORSI')}
+              {colonna('arrivata', 'ARRIVATA', { numeri: true })}
+              {colonna('stato', 'STATO', { destra: true })}
+            </div>
+            <div className="sg-tabella-corpo">
+              {elenco.dato === null && !elenco.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo le richieste…</p>}
+              {elenco.dato !== null && lista.length === 0 && (
+                <p className="sg-sotto" style={{ padding: '12px 14px' }}>
+                  {soloStampare
+                    ? 'Niente da stampare.'
+                    : tutte
+                      ? 'Non è ancora arrivata nessuna richiesta.'
+                      : 'Nessuna richiesta nuova. Le altre si vedono con «anche quelle già gestite».'}
+                </p>
+              )}
+              {ordina(lista).map((x) => (
+                <div
+                  key={x.id}
+                  role="row"
+                  className="sg-riga-iscritto sg-iscritto"
+                  data-scelto={scelta === x.id}
+                  data-spento={x.stato === 'rifiutata'}
+                  onClick={() => setScelta(x.id)}
+                >
+                  <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>
+                    <button type="button" className="sg-riga-apri" aria-current={scelta === x.id ? 'true' : undefined}>
+                      {x.cognome} {x.nome}
+                    </button>
+                    {minorenne(x.natoIl) && <span className="num sg-tag" style={{ marginLeft: 8 }}>MINORE</span>}
+                    {x.nucleoDi && <span className="num sg-tag" style={{ marginLeft: 8 }}>NUCLEO</span>}
+                    {doc.has(x.id) && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
+                  </span>
+                  <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
+                  <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(x.creataIl)}</span>
+                  <span role="cell" className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textAlign: 'right', color: x.stato === 'nuova' ? 'var(--giallo-testo)' : x.stato === 'accolta' ? 'var(--verde)' : 'var(--dim)' }}>
+                    {STATI[x.stato]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {!stretto && (
+            <section aria-label="Richiesta" className="sg-scheda" style={{ maxWidth: 560 }}>
+              {scheda || <span className="sg-sotto">Apri una richiesta per vedere le risposte e i file.</span>}
+            </section>
+          )}
+        </div>
       </div>
       {avviso}
     </>
@@ -184,7 +198,7 @@ function Scheda({
   omonimi: PersonaSeg[]
   fai: Fai
   onCambiato: () => void
-  /** Il documento d'identità stampato e cancellato. */
+  /** Il documento o il certificato stampato e cancellato. */
   onStampato: () => void
   onEliminata: () => void
   onApri: (personaId: string) => void
@@ -192,8 +206,11 @@ function Scheda({
   const file = useCarica(() => r.file(x.id), [r, x.id])
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
-  const mancanti = FILE.filter((f) => f.obbligatorio && !arrivati.has(f.tipo))
+  // Documento e certificato, stampati, si cancellano: non mancano, sono su carta.
+  const mancanti = FILE.filter((f) => f.obbligatorio && !DA_STAMPARE.includes(f.tipo) && !arrivati.has(f.tipo))
   const documenti = DA_STAMPARE.filter((t) => arrivati.has(t))
+  const certificato = documenti.includes('certificato')
+  const conDocumento = documenti.some((t) => t !== 'certificato')
   // Accolta, la richiesta crea una persona iscritta ai corsi e non si torna
   // indietro: quello che manca si dice prima, non dopo.
   const problemi = [
@@ -203,21 +220,21 @@ function Scheda({
   ].filter((t): t is string => !!t)
   // Finché i file non si sono caricati non si sa cosa manca.
   const inAttesa = file.dato === null && !file.guaio
-  const accogli = (op: () => Promise<unknown>, riuscito: string) => {
+  const accogli = async (op: () => Promise<unknown>, riuscito: string) => {
     const chi = `${x.nome} ${x.cognome}${minore ? ' (minorenne)' : ''}`
-    if (problemi.length && !window.confirm(`Accogliere lo stesso la richiesta di ${chi}?\n\n${problemi.join('\n')}\n\nEntra in elenco iscritta ai suoi corsi, e non si torna indietro.`)) return
+    if (problemi.length && !(await chiedi(`Accogliere lo stesso la richiesta di ${chi}?\n\n${problemi.join('\n')}\n\nEntra in elenco iscritta ai suoi corsi, e non si torna indietro.`, 'ACCOGLI LO STESSO', { pericolo: true }))) return
     void fai(op, riuscito, onCambiato)
   }
 
-  const stampato = () => {
-    if (!window.confirm(`Il documento di ${x.nome} ${x.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`)) return
+  // Solo da accolta: così la scheda dell'iscritto segna che la copia è in segreteria.
+  const stampato = async (personaId: string) => {
+    if (!(await chiedi(`${documenti.map((t) => ETICHETTA_FILE[t].toLowerCase()).join(', ')} di ${x.nome} ${x.cognome}: stampati e nella cartellina? Dall'app si cancellano per sempre.`, 'SÌ, CANCELLALI DALL’APP', { pericolo: true }))) return
     void fai(
       async () => {
         for (const t of documenti) await r.eliminaFile(x.id, t)
-        // Accolta, la sua scheda dice che la copia ora è in segreteria.
-        if (x.personaId) await d.salvaDocumento(x.personaId, true)
+        if (conDocumento) await d.salvaDocumento(personaId, true)
       },
-      x.personaId ? 'Documento cancellato: la scheda dice che la copia è in segreteria' : 'Documento cancellato',
+      certificato ? 'Cancellati: ora segna nella sua scheda fino a quando vale il certificato' : 'Cancellato: la scheda dice che la copia è in segreteria',
       () => {
         void file.ricarica()
         onStampato()
@@ -282,22 +299,26 @@ function Scheda({
           {file.dato.length === 0 && (
             <span className="sg-sotto">{r.modo === 'prova' ? 'Nessun file: in prova restano solo finché la pagina è aperta.' : 'Nessun file arrivato.'}</span>
           )}
-          {FILE.filter((f) => arrivati.has(f.tipo)).map((f) => (
+          {FILE.filter((f) => arrivati.has(f.tipo) && !DA_STAMPARE.includes(f.tipo)).map((f) => (
             <Anteprima key={f.tipo} f={arrivati.get(f.tipo)!} />
           ))}
           {documenti.length > 0 && (
             <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
               <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>
-                Il documento d’identità non si tiene più nell’app: aprilo, stampalo, mettilo nella cartellina e cancellalo da qui.
+                {conDocumento && certificato ? 'Documento e certificato non restano' : certificato ? 'Il certificato medico non resta' : 'Il documento d’identità non resta'}{' '}
+                nell’app: aprili, stampali, mettili nella cartellina e cancellali da qui.
+                {!x.personaId && ' Prima accogli la richiesta, così la scheda dell’iscritto lo segna.'}
               </span>
               {documenti.map((t) => (
                 <Anteprima key={t} f={arrivati.get(t)!} />
               ))}
-              <div className="row">
-                <button type="button" className="sg-btn sg-btn-rosso" onClick={stampato}>
-                  STAMPATO, CANCELLALO
-                </button>
-              </div>
+              {x.personaId && (
+                <div className="row">
+                  <button type="button" className="sg-btn sg-btn-rosso" onClick={() => stampato(x.personaId!)}>
+                    STAMPATO, CANCELLA
+                  </button>
+                </div>
+              )}
             </div>
           )}
           {x.stato !== 'nuova' && mancanti.length > 0 && file.dato.length > 0 && (
@@ -375,8 +396,8 @@ function Scheda({
             <button
               type="button"
               className="sg-btn sg-btn-linea"
-              onClick={() => {
-                if (window.confirm(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.`))
+              onClick={async () => {
+                if ((await chiedi(`Rifiutare la richiesta di ${x.nome} ${x.cognome}? Chi l'ha mandata non viene avvisato: va chiamato o scritto a mano.`, 'RIFIUTA LA RICHIESTA', { pericolo: true })))
                   void fai(() => r.rifiuta(x.id), 'Richiesta rifiutata', onCambiato)
               }}
             >
@@ -393,8 +414,8 @@ function Scheda({
         <button
           type="button"
           className="sg-link"
-          onClick={() => {
-            if (window.confirm(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`))
+          onClick={async () => {
+            if ((await chiedi(`Eliminare per sempre la richiesta di ${x.nome} ${x.cognome}, con i suoi file? La scheda in elenco, se c'è, resta.`, 'ELIMINA PER SEMPRE', { pericolo: true })))
               void fai(() => r.elimina(x.id), 'Richiesta eliminata', onEliminata)
           }}
         >

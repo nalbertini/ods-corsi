@@ -309,7 +309,7 @@ function MenuIstruttori({
           <Logo width={46} />
           <span className="stack" style={{ gap: 2 }}>
             <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
-            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>ISTRUTTORI</span>
+            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.2em', color: 'var(--dim)' }}>ISTRUTTORI</span>
           </span>
         </div>
         {/* Quello che l'istruttore fa, tutto qui: il calendario con l'appello e

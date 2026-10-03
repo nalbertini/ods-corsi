@@ -85,4 +85,8 @@ update anagrafiche set genitore_nome = genitore_nome
   where genitore_nome is distinct from nome_proprio(genitore_nome) or genitore_cognome is distinct from nome_proprio(genitore_cognome);
 alter table anagrafiche enable trigger anagrafiche_cambiata;
 
+-- Le funzioni nascono eseguibili da tutti, `anon` compreso: si chiudono qui.
+revoke all on function nome_proprio(text), persona_nomi(), richiesta_nomi(), anagrafica_nomi(), ricevuta_nomi() from public, anon;
+grant execute on function nome_proprio(text), persona_nomi(), richiesta_nomi(), anagrafica_nomi(), ricevuta_nomi() to authenticated;
+
 notify pgrst, 'reload schema';

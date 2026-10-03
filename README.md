@@ -47,6 +47,9 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
 - **L'appello**: l'elenco degli iscritti, un tocco per riga — presente, assente,
   non segnato — e `TUTTI PRESENTI` in cima, perché in una classe di ventidue con
   venti presenti si segnano due assenze invece di venti presenze.
+  `CHIUDI L'APPELLO` in fondo segna assenti i non segnati e dice se è arrivato
+  in segreteria; il calendario degli istruttori apre con la lezione di adesso e
+  tiene in rosso gli appelli da chiudere degli ultimi sette giorni.
 - **Le prove**: chi viene a provare lo aggiunge all'appello chi lo sta facendo,
   col tasto `PROVE` (l'istruttore dall'app o dal tablet col PIN, la segreteria
   dalla lezione aperta): nome, cognome e telefono, o chi è già venuto a
@@ -54,7 +57,8 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   PRESENZE per richiamarlo (`supabase/21-prove.sql`).
 - **Il tablet di sala**: un tablet appeso al muro di ogni sala con il calendario
   della sala. Chi arriva tocca il suo nome e la presenza è segnata, senza
-  domande e con ANNULLA per chi sbaglia; chi si è dimenticato recupera le
+  domande e con ANNULLA per chi sbaglia; quando non si segna ancora, dice qual
+  è la prossima lezione e da che ora ci si segna; chi si è dimenticato recupera le
   lezioni delle ultime due settimane partendo dal corso; l'istruttore, col suo
   PIN, apre l'appello completo e vede chi si è segnato da sé; durante una
   lezione il PIN segna anche la sua presenza, da sola se era previsto su
@@ -88,7 +92,8 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`).
   **Istruttori e accessi**, coi PIN del tablet e il **kanji** di ciascuno: un
   segno solo, come un timbro, che lo fa riconoscere a colpo d'occhio accanto al
-  nome nel calendario, nell'appello e sul tablet di sala (`src/lib/kanji.ts`, `supabase/24-kanji.sql`). Il **listino** dei costi, che
+  nome nel calendario, nell'appello e sul tablet di sala (`src/lib/kanji.ts`, `supabase/24-kanji.sql`). Un istruttore che non ha
+  mai insegnato si **elimina**, scheda e account (`supabase/28-elimina-istruttore.sql`, `supabase/functions/elimina`). Il **listino** dei costi, che
   la segreteria cambia da sé e che vale per la pagina di iscrizione e per le
   voci delle ricevute (`supabase/19-listino.sql`). Le **segnalazioni**: cosa non va o cosa servirebbe
   nell'app, scritto lì invece che in un documento, con le risposte nello stesso
@@ -101,9 +106,10 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
   iscrive risponde alle domande dal telefono, **firma col dito** il modulo
   delle autorizzazioni (il PDF della palestra, compilato coi suoi dati da
-  `src/lib/firma.ts`; o ne carica la foto firmata a mano), e carica la
-  ricevuta (il documento d'identità e il certificato si portano in
-  segreteria, che li tiene su carta); per un minore la data di nascita fa chiedere i dati
+  `src/lib/firma.ts`; o ne carica la foto firmata a mano), e carica il
+  documento d'identità, il certificato medico se c'è già, e la ricevuta
+  (documento e certificato la segreteria li stampa, li tiene su carta e li
+  cancella dall'app); per un minore la data di nascita fa chiedere i dati
   del genitore. Il codice fiscale si controlla davvero (il carattere di
   controllo, la data di nascita, e per un minore che quello del genitore sia
   di un adulto) e cosa non va si scrive sotto il campo. Le richieste arrivano in segreteria, in **RICHIESTE ONLINE**,
@@ -153,7 +159,8 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   quel dispositivo; finché nessuno sceglie, l'app segue il tema del
   dispositivo. Sul tablet di sala il tasto sta accanto all'ora.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
-  prima di partire e resta in coda finché il server non l'ha presa.
+  prima di partire e resta in coda finché il server non l'ha presa. Anche sul
+  tablet di sala, dove il nome toccato resta segnato con IN ATTESA DI RETE.
 
 ## Il timer
 
@@ -365,10 +372,18 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/istruttori-dalle-lezioni.sql` | La presenza di chi fa l'appello (confermata se era previsto, da confermare se no, la segreteria al banco no) e le lezioni tenute senza l'istruttore segnato: le vede e le decide solo la segreteria, scegliendo fra i previsti. Dopo `tablet.sql` e `presenze-istruttori.sql`. |
 | `supabase/prova/prove.sql` | Le prove: le aggiunge chi fa l'appello (dall'app o col PIN), già presenti; si ritrovano per nome; si tolgono con la persona se è nata lì; un iscritto e chi non ha accesso non le vedono. Dopo `tablet.sql`. |
 | `supabase/prova/statistiche.sql` | Le statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove, chi l'ha fatta, gli incassi del mese; le vede solo la segreteria. |
+| `supabase/prova/elimina-istruttore.sql` | Eliminare un istruttore: solo la segreteria, solo un istruttore, e solo se non ha corsi non archiviati, lezioni in calendario o presenze da istruttore, anche cancellando la riga a mano. Un iscritto si cancella come prima. |
+| `supabase/prova/segnalazioni.sql` | Le segnalazioni: le legge e le scrive solo la segreteria, a nome suo; si risponde a un filo e non a una risposta; un messaggio scritto non si cambia, di un filo si cambia solo se è chiuso, e niente si cancella. Istruttore, iscritto, tablet e chi non ha accesso non vedono niente. |
 | `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`
 applicato prima: rifà il minimo che Supabase mette a disposizione.
+`npm run prova:sql` li lancia tutti, ognuno su un database suo, con le
+variabili `PG*` del Postgres da usare (`scripts/prova-sql.sh`).
+
+Su ogni PR le prove girano da sole (`.github/workflows/controlla.yml`): la
+compilazione dell'app e del timer, tutti gli `npm run prova:*` e tutti i file
+di `supabase/prova`. Una prova nuova entra da sé.
 
 ## Da dove viene
 

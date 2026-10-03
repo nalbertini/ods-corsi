@@ -49,16 +49,22 @@ export function TabletHome({
   const oggi = chiaveGiorno(adesso)
   const diOggi = (lezioni ?? []).filter((l) => chiaveGiorno(new Date(l.inizio)) === oggi && l.stato !== 'annullata')
   const conFase = diOggi.map((l) => ({ l, f: fase(l, adesso) }))
-  const aperte = conFase.filter((x) => x.f === 'aperta')
+  // Al cambio lezione, in cima quella che comincia: chi arriva adesso viene per lei.
+  const aperte = conFase.filter((x) => x.f === 'aperta').sort((a, b) => b.l.inizio.localeCompare(a.l.inizio))
   const finite = diOggi.length > 0 && conFase.every((x) => x.f === 'finita')
   const prossima = (lezioni ?? []).find((l) => chiaveGiorno(new Date(l.inizio)) > oggi && l.stato !== 'annullata')
+  // Nessuna aperta ma una più tardi: la mattina, o fra due lezioni. Chi passa
+  // deve sapere che la sala non è chiusa, e da che ora ci si segna.
+  const piuTardi = aperte.length ? null : (conFase.find((x) => x.f === 'dopo')?.l ?? null)
 
-  const titolo = aperte.length ? 'SI SEGNA ADESSO' : 'OGGI'
+  // Senza lezioni da qui a stasera il riquadro sotto dice già tutto, e a
+  // destra c'è OGGI IN QUESTA SALA: un altro OGGI sarebbe di troppo.
+  const titolo = aperte.length ? 'SI SEGNA ADESSO' : piuTardi ? 'PROSSIMA LEZIONE' : null
 
   return (
     <div className="tb-corpo tb-home">
       <div className="tb-colonna">
-        <span className="tb-etichetta">{titolo}</span>
+        {titolo && <span className="tb-etichetta">{titolo}</span>}
 
         {guaio && <Guaio titolo="CALENDARIO NON LETTO" testo={guaio} />}
         {!guaio && lezioni === null && <p className="tb-nota">Sto leggendo il calendario…</p>}
@@ -74,6 +80,25 @@ export function TabletHome({
           <Riquadro titolo="PER OGGI QUI È FINITO">
             Le lezioni di questa sala sono tutte passate. Chi si è dimenticato di segnarsi lo fa qui sotto.
           </Riquadro>
+        )}
+
+        {piuTardi && (
+          <div className="tb-aperta" style={{ ['--tinta' as string]: piuTardi.colore ?? 'var(--blu)' }}>
+            <div className="tb-aperta-testo">
+              <span className="num tb-orario">{orario(piuTardi)}</span>
+              <span className="ob tb-aperta-nome">{piuTardi.corso.toUpperCase()}</span>
+              {piuTardi.istruttori && (
+                <span className="tb-sotto chi-kanji" style={{ gap: 10 }}>
+                  <Kanji segni={piuTardi.kanji} medio />
+                  <span>{piuTardi.istruttori}</span>
+                </span>
+              )}
+            </div>
+            <div className="tb-dalle">
+              <span className="tb-etichetta">SI SEGNA DALLE</span>
+              <span className="num tb-dalle-ora">{oraDi(new Date(Date.parse(piuTardi.inizio) - REGOLE.primaMin * 60_000).toISOString())}</span>
+            </div>
+          </div>
         )}
 
         {aperte.map(({ l }) => (
@@ -142,8 +167,8 @@ export function TabletHome({
           <div key={l.id} className="tb-giornata-riga" data-fase={f}>
             <span className="tb-tacca" style={{ background: l.colore ?? 'var(--blu)' }} />
             <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-              <span className="ob" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.03em' }}>{l.corso.toUpperCase()}</span>
-              <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
+              <span className="ob" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.03em', textWrap: 'balance' }}>{l.corso.toUpperCase()}</span>
+              <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
             </span>
             <Kanji segni={l.kanji} />
             <span className="num tb-fase">{ETICHETTA[f]}</span>

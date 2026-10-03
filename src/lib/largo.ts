@@ -10,12 +10,27 @@ import { useEffect, useState } from 'react'
 export const LARGO = '(min-width: 960px)'
 
 export function useLargo(): boolean {
-  const [largo, setLargo] = useState(() => window.matchMedia(LARGO).matches)
+  return useSchermo(LARGO)
+}
+
+/**
+ * Sotto questa soglia CORSI e RICHIESTE non mettono la scheda accanto
+ * all'elenco: la aprono al posto suo. Il menu (240 px), l'elenco (470) e una
+ * scheda che si legga (almeno 420) vogliono 1240 px: a 1024, il portatile
+ * della reception, la scheda restava larga 210 e i campi uscivano. È la
+ * stessa di `@media (max-width: 1240px)` in `styles.css`.
+ */
+export const STRETTO = '(max-width: 1240px)'
+
+/** Se lo schermo risponde a una media query, e si aggiorna quando cambia. */
+export function useSchermo(query: string): boolean {
+  const [si, setSi] = useState(() => window.matchMedia(query).matches)
   useEffect(() => {
-    const m = window.matchMedia(LARGO)
-    const cambia = () => setLargo(m.matches)
+    const m = window.matchMedia(query)
+    const cambia = () => setSi(m.matches)
+    cambia()
     m.addEventListener('change', cambia)
     return () => m.removeEventListener('change', cambia)
-  }, [])
-  return largo
+  }, [query])
+  return si
 }

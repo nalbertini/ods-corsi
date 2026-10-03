@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { type Dati, dati as caricaDati, inProvaScelta, scegliProva } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
-import { CalendarioScreen } from './CalendarioScreen'
-import { AppelloScreen } from './AppelloScreen'
-import { Back } from './Icons'
+import { Arretrato, CalendarioScreen } from './CalendarioScreen'
+import { AppelloScreen, type Conto } from './AppelloScreen'
 import { useLargo } from '../lib/largo'
 import { TIMER } from '../lib/aree'
 import type { SegnalataVista } from '../lib/segnalate'
@@ -25,13 +24,37 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
-  const [presenti, setPresenti] = useState<Record<string, number>>({})
+  const [conti, setConti] = useState<Record<string, Conto>>({})
   // Le presenze segnalate si rileggono quando se ne gestisce una dall'appello.
   const [giroSegnalate, setGiroSegnalate] = useState(0)
-  const apri = (sessioneId: string) => void d?.dettaglio(sessioneId).then((x) => x && setAperta(x.sessione))
+  const apri = (sessioneId: string) => void d?.dettaglio(sessioneId).then((x) => x && apriLezione(x.sessione))
   const segnalate = d && <Segnalate dati={d} soloDi={soloDi} giro={giroSegnalate} onApri={apri} />
   const ricontaSegnalate = () => setGiroSegnalate((g) => g + 1)
   const largo = useLargo()
+  // L'ultimo appello chiuso, per dire se è arrivato in segreteria.
+  const [chiuso, setChiuso] = useState<{ lezione: SessioneVista; presenti: number; assenti: number; scartatePrima: number } | null>(null)
+  const [scartate, setScartate] = useState(0)
+
+  // Sul telefono calendario e appello scorrono nello stesso posto: l'appello
+  // si apre in cima, e tornando il calendario è dove lo si era lasciato.
+  const qui = useRef<HTMLDivElement>(null)
+  const eraA = useRef(0)
+  const apriLezione = (s: SessioneVista | null) => {
+    const scorre = qui.current?.closest('.scroll')
+    if (s && !aperta && scorre) eraA.current = scorre.scrollTop
+    setAperta(s)
+    if (s) setChiuso(null)
+  }
+  useLayoutEffect(() => {
+    const scorre = qui.current?.closest('.scroll')
+    if (scorre && !largo) scorre.scrollTop = aperta ? 0 : eraA.current
+  }, [aperta?.id, largo])
+  // Dopo la chiusura il calendario riparte dall'alto, dove c'è l'esito.
+  const chiudi = (s: SessioneVista, c: { presenti: number; assenti: number }) => {
+    eraA.current = 0
+    setChiuso({ lezione: s, ...c, scartatePrima: scartate })
+    apriLezione(null)
+  }
 
   const [guaio, setGuaio] = useState(false)
   const [tentativo, setTentativo] = useState(0)
@@ -49,6 +72,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
   }, [tentativo])
 
   useEffect(() => d?.guardaCoda?.(setInCoda), [d])
+  useEffect(() => d?.guardaScartate?.(setScartate), [d])
 
   if (!d && guaio)
     return (
@@ -61,8 +85,18 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
     )
   if (!d) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
 
+  const esito = chiuso && (
+    <Esito
+      {...chiuso}
+      inCoda={inCoda}
+      rifiutate={scartate - chiuso.scartatePrima}
+      onVa={() => setChiuso(null)}
+      onRiapri={() => apriLezione(chiuso.lezione)}
+    />
+  )
+
   return (
-    <>
+    <div ref={qui} style={{ display: 'contents' }}>
       {d.modo === 'prova' && (
         <div className="nastro-prova">
           DATI DI PROVA · ISCRITTI INVENTATI
@@ -80,31 +114,36 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
           )}
         </div>
       )}
+      {/* Con un appello aperto la coda la dice la sua testa: qui sopra,
+          comparendo, farebbe scendere i nomi sotto il dito. */}
+      {inCoda > 0 && !chiuso && !aperta && <SpiaCoda n={inCoda} />}
+      {scartate > 0 && !chiuso && !aperta && (
+        <div className="pad" style={{ paddingTop: 12 }}>
+          <div className="spia-coda" data-tono="guaio" role="alert">
+            <span className="num spia-coda-quante">{scartate === 1 ? 'UNA PRESENZA RIFIUTATA' : `${scartate} PRESENZE RIFIUTATE`}</span>
+            <span>Il server non le ha accettate e non le riprova: avvisa la segreteria.</span>
+          </div>
+        </div>
+      )}
 
       {largo ? (
         <div className="sala-due">
           <div className="sala-lato">
-            {segnalate}
-            <CalendarioScreen dati={d} onApri={setAperta} apertaId={aperta?.id} presenti={presenti} soloDi={soloDi} />
+            {esito}
+            <CalendarioScreen dati={d} onApri={apriLezione} apertaId={aperta?.id} conti={conti} soloDi={soloDi} arretrati={segnalate} />
           </div>
           <div className="sala-lato">
             {aperta ? (
-              <>
-                <div className="row pad" style={{ gap: 10, paddingTop: 16, alignItems: 'center' }}>
-                  <span className="ob grow" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.06em', minWidth: 0 }}>
-                    {aperta.corso.toUpperCase()}
-                  </span>
-                  {inCoda > 0 && <span className="spia-coda">{inCoda} DA INVIARE</span>}
-                </div>
-                <AppelloScreen
-                  key={aperta.id}
-                  dati={d}
-                  sessioneId={aperta.id}
-                  soloDi={soloDi}
-                  onSegnalate={ricontaSegnalate}
-                  onPresenti={(n) => setPresenti((p) => ({ ...p, [aperta.id]: n }))}
-                />
-              </>
+              <AppelloScreen
+                key={aperta.id}
+                dati={d}
+                sessioneId={aperta.id}
+                soloDi={soloDi}
+                onSegnalate={ricontaSegnalate}
+                onConto={(c) => setConti((x) => ({ ...x, [aperta.id]: c }))}
+              inCoda={inCoda}
+                onChiudi={chiudi}
+              />
             ) : (
               <div className="sala-vuota">
                 <span className="rule-label">APPELLO</span>
@@ -115,27 +154,111 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
             )}
           </div>
         </div>
-      ) : aperta ? (
-        <>
-          <div className="row pad" style={{ gap: 10, paddingTop: 12, alignItems: 'center' }}>
-            <button className="icon-btn" onClick={() => setAperta(null)} aria-label="Torna al calendario">
-              <Back />
-            </button>
-            <span className="ob grow" style={{ fontSize: 22, fontWeight: 700, letterSpacing: '0.06em', minWidth: 0 }}>
-              {aperta.corso.toUpperCase()}
-            </span>
-            {inCoda > 0 && <span className="spia-coda">{inCoda} DA INVIARE</span>}
-          </div>
-          <AppelloScreen key={aperta.id} dati={d} sessioneId={aperta.id} soloDi={soloDi} onSegnalate={ricontaSegnalate} />
-        </>
       ) : (
         <>
-          {segnalate}
-          <CalendarioScreen dati={d} onApri={setAperta} soloDi={soloDi} />
-          <Strumenti onMieiTimer={onMieiTimer} />
+          {aperta && (
+            <AppelloScreen
+              key={aperta.id}
+              dati={d}
+              sessioneId={aperta.id}
+              soloDi={soloDi}
+              onSegnalate={ricontaSegnalate}
+              onConto={(c) => setConti((x) => ({ ...x, [aperta.id]: c }))}
+              inCoda={inCoda}
+              onIndietro={() => apriLezione(null)}
+              onChiudi={chiudi}
+            />
+          )}
+          {/* Il calendario resta montato sotto l'appello: tornando non si
+              rilegge, e si ritrova dov'era. */}
+          <div hidden={!!aperta}>
+            {esito}
+            <CalendarioScreen dati={d} onApri={apriLezione} conti={conti} soloDi={soloDi} arretrati={segnalate} />
+            <Strumenti onMieiTimer={onMieiTimer} />
+          </div>
         </>
       )}
-    </>
+    </div>
+  )
+}
+
+/**
+ * Le scritture che non sono ancora arrivate al server, in ogni faccia e non
+ * solo dentro la lezione: chi esce dall'appello senza rete deve sapere che
+ * aspettano, e che partono da sole.
+ */
+function SpiaCoda({ n }: { n: number }) {
+  return (
+    <div className="pad" style={{ paddingTop: 12 }}>
+      <div className="spia-coda" role="status">
+        <span className="num spia-coda-quante">{n === 1 ? 'UNA PRESENZA DA INVIARE' : `${n} PRESENZE DA INVIARE`}</span>
+        <span>Sono salvati sul telefono: partono da soli appena c’è rete.</span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Dopo CHIUDI L'APPELLO: arrivato in segreteria, o salvato sul telefono in
+ * attesa della rete. Cambia da solo quando la coda si svuota.
+ */
+function Esito({
+  lezione,
+  presenti,
+  assenti,
+  inCoda,
+  rifiutate,
+  onVa,
+  onRiapri,
+}: {
+  lezione: SessioneVista
+  presenti: number
+  assenti: number
+  inCoda: number
+  /** Scritture che il server ha rifiutato da quando l'appello è chiuso. */
+  rifiutate: number
+  onVa: () => void
+  onRiapri: () => void
+}) {
+  // Rosso se il server ne ha rifiutata qualcuna; giallo finché aspetta la rete,
+  // o se non c'era nessuno (forse TUTTI PRESENTI dimenticato); verde se no.
+  const tono = rifiutate > 0 ? 'guaio' : inCoda > 0 || presenti === 0 ? 'attesa' : 'arrivato'
+  const titolo =
+    rifiutate > 0 ? 'APPELLO NON ARRIVATO TUTTO' : inCoda > 0 ? 'APPELLO SALVATO SUL TELEFONO' : 'APPELLO ARRIVATO IN SEGRETERIA'
+  const quando = `${lezione.corso}, ${giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))} ${oraDi(lezione.inizio)}`
+  return (
+    <div className="pad" style={{ paddingTop: 12 }}>
+      <div className="card stack esito-appello" data-tono={tono}>
+        <span className="row" style={{ gap: 12 }} role="status">
+          <span className="appello-segno" aria-hidden="true">{tono === 'guaio' ? '!' : tono === 'arrivato' ? '✓' : inCoda > 0 ? '…' : '0'}</span>
+          <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+            <span className="num appello-esito">{titolo}</span>
+            <span className="num appello-esito-conto">
+              {presenti === 1 ? 'UN PRESENTE' : `${presenti} PRESENTI`} · {assenti === 1 ? 'UN ASSENTE' : `${assenti} ASSENTI`}
+            </span>
+            <span style={{ fontSize: 14, color: 'var(--dim)' }}>
+              {quando}
+              {rifiutate > 0
+                ? `: il server ha rifiutato ${rifiutate === 1 ? 'una presenza' : `${rifiutate} presenze`}. Avvisa la segreteria.`
+                : inCoda > 0
+                  ? `: ${inCoda === 1 ? 'una presenza aspetta' : `${inCoda} presenze aspettano`} la rete, e partono da sole.`
+                  : presenti === 0
+                    ? '. Nessun presente: se è un errore, RIAPRI.'
+                    : '.'}
+            </span>
+          </span>
+        </span>
+        {/* Chiuso per sbaglio, o qualcuno arriva tardi: si riapre da qui. */}
+        <span className="row" style={{ gap: 8, justifyContent: 'flex-end' }}>
+          <button type="button" className="icon-btn testo" onClick={onRiapri}>
+            RIAPRI
+          </button>
+          <button type="button" className="icon-btn testo" onClick={onVa}>
+            OK
+          </button>
+        </span>
+      </div>
+    </div>
   )
 }
 
@@ -186,23 +309,16 @@ function Segnalate({ dati, soloDi, giro, onApri }: { dati: Dati; soloDi?: string
   }, [dati, soloDi, giro])
   if (!l.length) return null
   return (
-    <div className="pad" style={{ paddingTop: 14 }}>
-      <div className="card stack segnalate-avviso">
-        <span className="rule-label" style={{ color: 'var(--giallo-testo)' }}>
-          {l.length === 1 ? 'UNA PRESENZA SEGNALATA' : `${l.length} PRESENZE SEGNALATE`}
-        </span>
-        <span style={{ fontSize: 13, color: 'var(--dim)' }}>Iscritti che dicono di esserci stati e non risultano: apri la lezione per confermare.</span>
-        {l.map((s) => (
-          <button key={s.id} type="button" className="row segnalate-voce" onClick={() => onApri(s.sessioneId)}>
-            <span className="grow" style={{ fontWeight: 600, textAlign: 'left' }}>
-              {perEsteso(s)}
-            </span>
-            <span style={{ fontSize: 13, color: 'var(--dim)' }}>
-              {s.corso} · {giornoPerEsteso(chiaveGiorno(new Date(s.inizio)))} {oraDi(s.inizio)}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
+    <Arretrato
+      tono="giallo"
+      titolo={l.length === 1 ? 'UNA PRESENZA SEGNALATA' : `${l.length} PRESENZE SEGNALATE`}
+      sotto="Iscritti che dicono di esserci stati e non risultano: tocca la lezione per confermare."
+      righe={l.map((s) => ({
+        chiave: s.id,
+        primo: perEsteso(s),
+        secondo: `${s.corso} · ${giornoPerEsteso(chiaveGiorno(new Date(s.inizio)))} ${oraDi(s.inizio)}`,
+        onApri: () => onApri(s.sessioneId),
+      }))}
+    />
   )
 }

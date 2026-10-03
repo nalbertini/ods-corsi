@@ -8,14 +8,21 @@ type Valore = string | number | null | undefined
  * scappa dietro il velo con TAB; ESC lo chiude; chiuso, il fuoco torna dove
  * era. Va su un elemento con `role="dialog"` e `tabIndex={-1}`.
  */
+// I dialoghi aperti, dall'ultimo: ESC e TAB sono di quello in cima (una
+// conferma sopra il cassetto della lezione chiude la conferma, non il cassetto).
+const pila: object[] = []
+
 export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
   const ref = useRef<T>(null)
   const chiudi = useRef(onChiudi)
   chiudi.current = onChiudi
   useEffect(() => {
+    const io = {}
+    pila.push(io)
     const prima = document.activeElement as HTMLElement | null
     ref.current?.focus()
     const tasto = (e: KeyboardEvent) => {
+      if (pila[pila.length - 1] !== io) return
       if (e.key === 'Escape') return chiudi.current()
       if (e.key !== 'Tab' || !ref.current) return
       const dentro = [...ref.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter(
@@ -35,10 +42,120 @@ export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
     window.addEventListener('keydown', tasto)
     return () => {
       window.removeEventListener('keydown', tasto)
+      pila.splice(pila.indexOf(io), 1)
       prima?.focus()
     }
   }, [])
   return ref
+}
+
+// Quello che si sta scrivendo e non è ancora salvato (vedi `useBozza`).
+const bozze = new Set<object>()
+
+/**
+ * Finché `aperta`, c'è qualcosa scritto a metà: cambiando voce del menu la
+ * segreteria chiede prima di perderlo (`bozzaAperta`), e chiudendo la pagina
+ * lo chiede il browser. Al banco squilla il telefono, e un clic altrove non
+ * deve buttare una ricevuta compilata.
+ */
+export function useBozza(aperta: boolean) {
+  useEffect(() => {
+    if (!aperta) return
+    const io = {}
+    bozze.add(io)
+    const via = (e: BeforeUnloadEvent) => e.preventDefault()
+    window.addEventListener('beforeunload', via)
+    return () => {
+      bozze.delete(io)
+      window.removeEventListener('beforeunload', via)
+    }
+  }, [aperta])
+}
+
+export const bozzaAperta = () => bozze.size > 0
+
+/** Un modulo che diventa bozza al primo tasto battuto o alla prima scelta. */
+export function Bozza({ children }: { children: ReactNode }) {
+  const [toccata, setToccata] = useState(false)
+  useBozza(toccata)
+  return (
+    <div className="contents" onInputCapture={() => setToccata(true)}>
+      {children}
+    </div>
+  )
+}
+
+interface Domanda {
+  testo: string
+  si: string
+  no: string
+  pericolo: boolean
+  risposta: (si: boolean) => void
+}
+let mostra: ((d: Domanda) => void) | null = null
+
+/**
+ * Chiede conferma prima di un'azione, col verbo sui tasti: «SÌ, ANNULLA LA
+ * RICEVUTA» e «NO, LASCIA STARE», non OK e Annulla, che su «Annullare la
+ * ricevuta?» dicevano il contrario. Il fuoco parte dal no; ESC è no.
+ * `pericolo`: quello che non si annulla, col tasto rosso. Serve `<Conferme />`
+ * nella pagina (la segreteria lo mette); senza, si chiede al browser.
+ */
+export function chiedi(testo: string, si: string, o: { no?: string; pericolo?: boolean } = {}): Promise<boolean> {
+  return new Promise((risposta) => {
+    if (!mostra) return risposta(window.confirm(testo))
+    mostra({ testo, si, no: o.no ?? 'NO, LASCIA STARE', pericolo: !!o.pericolo, risposta })
+  })
+}
+
+/** Dove compaiono le domande di `chiedi`: una volta, nella pagina. */
+export function Conferme() {
+  const [d, setD] = useState<Domanda | null>(null)
+  useEffect(() => {
+    mostra = setD
+    return () => {
+      mostra = null
+    }
+  }, [])
+  if (!d) return null
+  const fine = (si: boolean) => {
+    setD(null)
+    d.risposta(si)
+  }
+  return <Conferma d={d} fine={fine} />
+}
+
+function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean) => void }) {
+  const ref = useDialogo<HTMLDivElement>(() => fine(false))
+  const no = useRef<HTMLButtonElement>(null)
+  // Dopo `useDialogo`, che mette il fuoco sul dialogo: si parte dalla risposta sicura.
+  useEffect(() => no.current?.focus(), [])
+  // La domanda è la prima frase che finisce col punto di domanda; il resto la spiega.
+  const fino = d.testo.indexOf('?') + 1
+  const [domanda, resto] = fino > 0 ? [d.testo.slice(0, fino), d.testo.slice(fino).trim()] : [d.testo, '']
+  return (
+    <>
+      <button type="button" className="sg-velo sg-conferma-velo" tabIndex={-1} aria-label={d.no} onClick={() => fine(false)} />
+      <div ref={ref} role="alertdialog" aria-modal="true" aria-labelledby="conferma-domanda" aria-describedby={resto ? 'conferma-resto' : undefined} tabIndex={-1} className="sg-dialogo sg-conferma">
+        <p id="conferma-domanda" className="sg-conferma-domanda">
+          {domanda}
+        </p>
+        {resto && (
+          <p id="conferma-resto" className="sg-conferma-resto">
+            {resto}
+          </p>
+        )}
+        <div className="sg-conferma-tasti">
+          <button ref={no} type="button" className="sg-btn sg-btn-linea" onClick={() => fine(false)}>
+            {d.no}
+          </button>
+          <button type="button" className={d.pericolo ? 'sg-btn sg-btn-rosso' : 'sg-btn sg-btn-pieno'} onClick={() => fine(true)}>
+            {d.si}
+          </button>
+        </div>
+      </div>
+    </>
+  )
 }
 
 /** Il messaggio d'errore di un'operazione, detto in chiaro. */
@@ -74,31 +191,68 @@ export function useCarica<T>(leggi: () => Promise<T>, dipende: unknown[]) {
   return { dato, guaio, ricarica }
 }
 
+/** Un tasto sul fatto appena avvisato, per esempio RIAPRI dopo una chiusura. */
+export interface AzioneAvviso {
+  etichetta: string
+  fa: () => unknown
+}
+
 /** Un avviso in basso a destra, che se ne va da solo: «Salvato», «Non si può». */
 export function useAvviso() {
-  const [testo, setTesto] = useState<{ t: string; guaio: boolean } | null>(null)
+  const [testo, setTesto] = useState<{ t: string; guaio: boolean; azione?: AzioneAvviso } | null>(null)
+  const [lavora, setLavora] = useState(false)
   const timer = useRef<number>()
+  const durata = useRef(8000)
   useEffect(() => () => window.clearTimeout(timer.current), [])
-  const avvisa = useCallback((t: string, guaio = false) => {
+  const avvisa = useCallback((t: string, guaio = false, azione?: AzioneAvviso) => {
     window.clearTimeout(timer.current)
-    setTesto({ t, guaio })
+    setTesto({ t, guaio, azione })
     // Un guaio resta finché non lo si chiude: al banco si risponde al
     // telefono e un errore sparito da solo è un errore mai letto. Il fatto
-    // resta abbastanza da ritrovarlo, girati gli occhi.
-    if (!guaio) timer.current = window.setTimeout(() => setTesto(null), 8000)
+    // resta abbastanza da ritrovarlo, girati gli occhi; con un tasto da
+    // toccare (RIAPRI) resta di più, perché serve proprio a chi si è distratto.
+    durata.current = azione ? 15000 : 8000
+    if (!guaio) timer.current = window.setTimeout(() => setTesto(null), durata.current)
   }, [])
+  // Col mouse o il fuoco sopra un avviso con un tasto, non se ne va mentre lo si sta per toccare.
+  const ferma = () => window.clearTimeout(timer.current)
+  const riparti = () => {
+    window.clearTimeout(timer.current)
+    if (testo && !testo.guaio) timer.current = window.setTimeout(() => setTesto(null), durata.current)
+  }
   const avviso = testo ? (
-    <div role={testo.guaio ? 'alert' : 'status'} className="sg-avviso" data-guaio={testo.guaio}>
+    <div
+      role={testo.guaio ? 'alert' : 'status'}
+      className="sg-avviso"
+      data-guaio={testo.guaio}
+      onMouseEnter={testo.azione ? ferma : undefined}
+      onMouseLeave={testo.azione ? riparti : undefined}
+      onFocus={testo.azione ? ferma : undefined}
+      onBlur={testo.azione ? riparti : undefined}
+    >
       <span className="grow">{testo.t}</span>
-      <button type="button" className="sg-avviso-chiudi" onClick={() => setTesto(null)}>
-        CHIUDI
-      </button>
+      {testo.azione ? (
+        <>
+          <button type="button" className="sg-avviso-chiudi" disabled={lavora} onClick={testo.azione.fa}>
+            {testo.azione.etichetta}
+          </button>
+          {/* Accanto a RIAPRI una parola come CHIUDI si confonde: qui basta il segno. */}
+          <button type="button" className="sg-avviso-x" aria-label="Chiudi l’avviso" onClick={() => setTesto(null)}>
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+              <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" />
+            </svg>
+          </button>
+        </>
+      ) : (
+        <button type="button" className="sg-avviso-chiudi" onClick={() => setTesto(null)}>
+          CHIUDI
+        </button>
+      )}
     </div>
   ) : null
   // Un'operazione per volta: un doppio clic su SALVA, o un secondo mentre la
   // rete è lenta, non deve creare due corsi o due iscritti uguali.
   const inCorso = useRef(false)
-  const [lavora, setLavora] = useState(false)
   /** Esegue un'operazione, dice com'è andata, e ricarica se è andata. */
   const fai = useCallback(
     async (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => {
@@ -156,9 +310,10 @@ export function Campo({ id, etichetta, children, largo, manca }: { id?: string; 
 export function Riga({ titolo, children }: { titolo: string; children?: ReactNode }) {
   return (
     <div className="sg-riga-titolo">
-      <span className="sg-etichetta" style={{ fontSize: 14, letterSpacing: '0.22em' }}>
+      {/* Un titolo vero: chi legge lo schermo salta da una parte all'altra della scheda. */}
+      <h3 className="sg-etichetta" style={{ margin: 0, fontSize: 14, letterSpacing: '0.22em' }}>
         {titolo}
-      </span>
+      </h3>
       <div className="rule-line" />
       {children}
     </div>
@@ -186,16 +341,42 @@ export function dataLunga(g: string, anno = true) {
  * Una scheda a pieno schermo: prende tutta la sezione al posto dell'elenco,
  * invece di stargli accanto. L'elenco sotto resta montato ma nascosto, con i
  * filtri e la ricerca di prima; tornando, la pagina torna dov'era.
+ *
+ * `cornice={false}` per una scheda che ha già la sua (quella dei corsi).
  */
-export function SchedaPiena({ etichetta, torna, onTorna, tinta, children }: { etichetta: string; torna: string; onTorna: () => void; tinta?: string; children: ReactNode }) {
+export function SchedaPiena({
+  etichetta,
+  torna,
+  onTorna,
+  tinta,
+  cornice = true,
+  children,
+}: {
+  etichetta: string
+  torna: string
+  onTorna: () => void
+  tinta?: string
+  cornice?: boolean
+  children: ReactNode
+}) {
   const cima = useRef<HTMLDivElement>(null)
+  const dovEra = useRef<number | null>(null)
+  const montata = useRef(false)
   useLayoutEffect(() => {
     const corpo = cima.current?.closest('.sg-corpo')
     if (!corpo) return
-    const dovEra = corpo.scrollTop
+    // Lo StrictMode di sviluppo monta due volte: conta la prima posizione, e
+    // il ritorno parte solo se la scheda è chiusa davvero.
+    dovEra.current ??= corpo.scrollTop
+    montata.current = true
     corpo.scrollTop = 0
-    // Dopo il commit: prima l'elenco torna visibile, poi la pagina scende dov'era.
-    return () => queueMicrotask(() => void (corpo.scrollTop = dovEra))
+    return () => {
+      montata.current = false
+      // Dopo il commit: prima l'elenco torna visibile, poi la pagina scende dov'era.
+      queueMicrotask(() => {
+        if (!montata.current) corpo.scrollTop = dovEra.current ?? 0
+      })
+    }
   }, [])
   return (
     <div ref={cima} className="stack" style={{ gap: 16 }}>
@@ -203,9 +384,13 @@ export function SchedaPiena({ etichetta, torna, onTorna, tinta, children }: { et
         <Back size={18} />
         {torna}
       </button>
-      <section aria-label={etichetta} className="sg-scheda sg-scheda-piena" style={tinta ? { ['--tinta' as string]: tinta } : undefined}>
-        {children}
-      </section>
+      {cornice ? (
+        <section aria-label={etichetta} className="sg-scheda sg-scheda-piena" style={tinta ? { ['--tinta' as string]: tinta } : undefined}>
+          {children}
+        </section>
+      ) : (
+        children
+      )}
     </div>
   )
 }

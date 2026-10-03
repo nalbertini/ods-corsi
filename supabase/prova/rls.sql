@@ -1,6 +1,30 @@
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
+-- Chi non ha un accesso chiama solo le funzioni del modulo di iscrizione.
+-- Si guarda prima di creare gli aiuti della prova, che stanno in `public`;
+-- `atteso` per questo sta in `pg_temp`. Contano anche le funzioni dei
+-- trigger: ogni file toglie i permessi alle sue, e una dimenticata è qui.
+create function pg_temp.atteso(cosa text, avuto text, voluto text) returns text language plpgsql as $$
+begin
+  if avuto is distinct from voluto then
+    raise exception '% · atteso «%», avuto «%»', cosa, voluto, avuto;
+  end if;
+  return 'ok  ' || cosa || ' → ' || avuto;
+end $$;
+select pg_temp.atteso('le funzioni che chiama anon',
+  (select string_agg(p.proname, ', ' order by p.proname) from pg_proc p
+    where p.pronamespace = 'public'::regnamespace and has_function_privilege('anon', p.oid, 'execute')),
+  'corsi_aperti, invia_iscrizione, iscrizioni_regole, listino, puo_caricare');
+-- Ogni funzione dice dove cerca le tabelle: se no le cerca nel search_path di
+-- chi la chiama, che se lo può cambiare (l'avviso di Supabase).
+select pg_temp.atteso('le funzioni senza search_path',
+  (select coalesce(string_agg(p.proname, ', ' order by p.proname), 'nessuna') from pg_proc p
+    where p.pronamespace = 'public'::regnamespace
+      and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
+      and not exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')),
+  'nessuna');
+
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'staff@ods.it'),
   ('22222222-2222-2222-2222-222222222222', 'istruttore@ods.it'),

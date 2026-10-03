@@ -12,9 +12,11 @@ elenco, che compaiono negli appelli e sul tablet.
 - **Tutti i corsi** → uno solo, per vedere chi fa quel corso.
 - **SOLO SENZA EMAIL** — chi non ha l'email in scheda.
 - **VENGONO POCO** — chi è venuto a meno di metà delle lezioni, su almeno tre.
-- **CERTIFICATO DA SISTEMARE** — chi non ha il certificato medico, ce l'ha
-  scaduto o gli scade entro un mese.
-- **DA PAGARE** — chi non ha la quota associativa pagata: nessuna ricevuta
+- **SENZA CERTIFICATO VALIDO** — chi è attivo e non ha il certificato medico,
+  o ce l'ha scaduto.
+- **CERTIFICATO IN SCADENZA** — chi è attivo e ha il certificato che scade
+  entro un mese.
+- **DA PAGARE** — chi è attivo e non ha la quota associativa pagata: nessuna ricevuta
   con la quota, pagata solo in parte, o scaduta.
 - **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
   segreteria.
@@ -63,8 +65,9 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
   carattere, il nome o la data) l'app lo dice in giallo, e si può salvare lo
   stesso.
 - **CERTIFICATO MEDICO** — fino a quando vale. Il certificato sta **su
-  carta**, nella cartellina della segreteria: nell'app non si carica. Col
-  foglio in mano, **SEGNA IL CERTIFICATO** → la data in **VALIDO FINO AL** →
+  carta**, nella cartellina della segreteria. Se è arrivato col modulo di
+  iscrizione, si stampa dalla richiesta (vedi [Richieste online](richieste.md)).
+  Col foglio in mano, **SEGNA IL CERTIFICATO** → la data in **VALIDO FINO AL** →
   **SALVA**. Col certificato nuovo, **RINNOVA O CORREGGI** cambia la data, e il
   foglio vecchio si distrugge. Se è arrivato per email o WhatsApp, si stampa e
   si cancella da lì. **Togli** toglie la data.
@@ -94,7 +97,7 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
 - **ISCRIZIONI** — i corsi che fa. **TERMINA** la toglie da un corso: da
   domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
   **ISCRIVI** la aggiunge a un altro.
-- **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione.
+- **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione: ✓ presente, ✕ assente, G giustificato, vuoto non segnato.
 - **DISATTIVA** — sparisce da tutti gli appelli e dal tablet (chi smette del
   tutto). **RIATTIVA** la rimette.
 

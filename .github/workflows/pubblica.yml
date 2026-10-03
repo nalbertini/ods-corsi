@@ -92,7 +92,18 @@ jobs:
       # Solo se la compilazione è andata: il commit della versione, il tag e
       # la Release. Un push fatto col token del workflow non lancia un altro
       # workflow, quindi niente giri a vuoto.
+      #
+      # `--atomic`: o passano main e il tag insieme, o nessuno dei due. Senza,
+      # un main rifiutato lasciava comunque il tag su un commit fuori da main
+      # (è successo con v0.3.1, due PR unite a un minuto l'una dall'altra).
+      #
+      # Se main è andato avanti dopo il checkout, la versione non si salva e
+      # questo giro non pubblica: il push che l'ha fatto avanzare ha già messo
+      # in coda un altro giro (concurrency qui sopra), che parte da main nuovo
+      # e conta anche le PR di questo. Rifare il conto qui sarebbe solo un
+      # doppione. Se invece main è fermo, il rifiuto è un altro guaio: rosso.
       - name: Salva la versione
+        id: salva
         if: steps.versione.outputs.versione
         env:
           GH_TOKEN: ${{ github.token }}
@@ -102,16 +113,27 @@ jobs:
           git config user.email '41898283+github-actions[bot]@users.noreply.github.com'
           git commit -am "Versione $V"
           git tag "v$V"
-          git push origin HEAD:main "v$V"
-          gh release create "v$V" --title "$V" --notes-file "$RUNNER_TEMP/note.md"
+          if git push --atomic origin HEAD:main "v$V"; then
+            gh release create "v$V" --title "$V" --notes-file "$RUNNER_TEMP/note.md"
+          else
+            git fetch origin main
+            test "$(git rev-parse origin/main)" != "$(git rev-parse HEAD^)"
+            echo "::notice::main è andato avanti: la versione e la pubblicazione le fa il giro dopo."
+            echo superata=true >> "$GITHUB_OUTPUT"
+          fi
 
-      - uses: actions/upload-pages-artifact@v5
+      - if: steps.salva.outputs.superata != 'true'
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist
+    outputs:
+      superata: ${{ steps.salva.outputs.superata }}
 
   deploy:
     name: Pubblica
     needs: build
+    # Niente artefatto se main è andato avanti (vedi «Salva la versione»).
+    if: needs.build.outputs.superata != 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

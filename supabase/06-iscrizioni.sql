@@ -2,20 +2,21 @@
 -- ODS Corsi · il modulo di iscrizione
 --
 -- Il modulo che prima stava su Google Form, dentro l'app: chi si iscrive
--- risponde alle domande, carica il modulo firmato e la ricevuta, e la
--- segreteria trova la richiesta in RICHIESTE ONLINE. Da lì la accoglie
--- (diventa un iscritto, iscritto ai corsi che ha scelto) o la rifiuta.
+-- risponde alle domande, carica il modulo firmato, il documento, il
+-- certificato medico e la ricevuta, e la segreteria trova la richiesta in
+-- RICHIESTE ONLINE. Da lì la accoglie (diventa un iscritto, iscritto ai
+-- corsi che ha scelto) o la rifiuta.
 --
--- Il documento d'identità non si carica: come il certificato medico, si
--- porta in segreteria, che ne tiene la copia su carta. Quelli caricati prima
--- restano nella cartella della richiesta finché la segreteria non li stampa
--- e li cancella (`richieste_con_documento`, più sotto).
+-- Documento d'identità e certificato medico si caricano per comodità, ma si
+-- tengono su carta: restano nella cartella della richiesta finché la
+-- segreteria non li stampa e li cancella (`richieste_con_documento`, più
+-- sotto).
 --
 -- È la prima cosa dell'app che si fa **senza un accesso**, e per questo sta
 -- tutta dietro a due funzioni: `anon` non vede e non scrive nessuna tabella,
 -- nemmeno questa. Può solo chiamare `corsi_aperti()` (i nomi dei corsi, per
 -- scegliere) e `invia_iscrizione()` (una richiesta, controllata qui), e
--- caricare fino a due file nella cartella della richiesta appena fatta.
+-- caricare fino a cinque file nella cartella della richiesta appena fatta.
 --
 -- Si lancia dopo i cinque file prima. Rilanciarne uno di quelli rimette i
 -- permessi di default alle sue funzioni: dopo, va rilanciato anche questo.
@@ -86,12 +87,12 @@ grant select, update, delete on richieste_iscrizione to authenticated;
 -- programma: questi numeri tengono il danno piccolo senza dar fastidio a chi
 -- si iscrive davvero.
 -- ---------------------------------------------------------------------------
-create or replace function iscrizioni_regole() returns jsonb language sql immutable as $$
+create or replace function iscrizioni_regole() returns jsonb language sql immutable set search_path = public as $$
   select jsonb_build_object(
     'per_email_al_giorno', 3,    -- una famiglia con tre figli le manda tutte
     'in_tutto_all_ora', 60,      -- il doppio di quante se ne sono mai viste a settembre
     'minuti_per_i_file', 60,     -- dopo aver mandato le risposte, per caricare i file
-    'file_per_richiesta', 2      -- modulo e ricevuta
+    'file_per_richiesta', 5      -- modulo, documento fronte e retro, certificato, ricevuta
   )
 $$;
 
@@ -112,7 +113,7 @@ $$;
 -- l'omocodia, per chi altrimenti avrebbe lo stesso codice di un altro.
 -- ---------------------------------------------------------------------------
 create or replace function cf_controllo(cf text)
-  returns text language sql immutable as $$
+  returns text language sql immutable set search_path = public as $$
   select chr(65 + (sum(case when i % 2 = 1
                             then (array[1,0,5,7,9,13,15,17,19,21,2,4,18,20,11,3,6,8,12,14,16,10,22,25,24,23])[v + 1]
                             else v end) % 26)::int)
@@ -122,7 +123,7 @@ $$;
 
 -- Scritto giusto: la forma e il carattere di controllo.
 create or replace function cf_valido(cf text)
-  returns boolean language sql immutable as $$
+  returns boolean language sql immutable set search_path = public as $$
   select coalesce(cf ~ '^[A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z]$'
                   and cf_controllo(cf) = substr(cf, 16, 1), false)
 $$;
@@ -131,7 +132,7 @@ $$;
 -- recente che non la metta nel futuro. Null se il codice non va o se la data
 -- non esiste.
 create or replace function cf_nato_il(cf text)
-  returns date language plpgsql stable as $$
+  returns date language plpgsql stable set search_path = public as $$
 declare
   aa int;
   mese int;
@@ -154,7 +155,7 @@ end $$;
 -- un nome con quattro consonanti o più, la prima, la terza e la quarta. Senza
 -- accenti né apostrofi: «D'Agostino» → «DAGOSTINO».
 create or replace function cf_lettere(nome text, cognome text)
-  returns text language sql immutable as $$
+  returns text language sql immutable set search_path = public as $$
   with l as (
     select regexp_replace(upper(regexp_replace(normalize(coalesce(x, ''), NFD), '[\u0300-\u036f]', '', 'g')), '[^A-Z]', '', 'g') as t, k
     from (values (cognome, 1), (nome, 2)) v(x, k)
@@ -345,17 +346,16 @@ exception
 end $$;
 
 -- ---------------------------------------------------------------------------
--- I file: modulo firmato e ricevuta.
+-- I file: modulo firmato, documento, certificato, ricevuta.
 --
 -- Stanno nello Storage di Supabase, in un contenitore privato: nessun link
 -- pubblico, li apre la segreteria con un link che scade. Ogni richiesta ha la
 -- sua cartella, `<id della richiesta>/`, e chi l'ha appena mandata ci può
--- mettere al massimo due file, dei tipi giusti, entro un'ora. Non li può
+-- mettere al massimo cinque file, dei tipi giusti, entro un'ora. Non li può
 -- rileggere né sostituire: caricato è caricato.
 --
--- Il documento d'identità (`documento`, `documento-retro`) non entra più: si
--- porta in segreteria. Quelli di prima la segreteria li legge e li cancella
--- come gli altri file.
+-- Il documento d'identità (`documento`, `documento-retro`) e il certificato
+-- medico (`certificato`) la segreteria li stampa e li cancella.
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('iscrizioni', 'iscrizioni', false, 10485760,
@@ -368,7 +368,7 @@ declare
   regole jsonb := iscrizioni_regole();
   cartella uuid;
 begin
-  if nome_file !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/(modulo|ricevuta)\.(jpg|jpeg|png|webp|heic|heif|pdf)$' then
+  if nome_file !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/(modulo|documento|documento-retro|certificato|ricevuta)\.(jpg|jpeg|png|webp|heic|heif|pdf)$' then
     return false;
   end if;
   cartella := split_part(nome_file, '/', 1)::uuid;
@@ -487,10 +487,10 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- Le richieste che hanno ancora il documento d'identità caricato, di quando
--- il modulo lo chiedeva: la segreteria le trova qui, lo stampa e lo
--- cancella. Lo Storage non si legge dall'API delle tabelle, e guardare le
--- cartelle una per una vorrebbe dire una chiamata per richiesta.
+-- Le richieste che hanno ancora il documento d'identità o il certificato
+-- medico caricato: la segreteria le trova qui, li stampa e li cancella. Lo
+-- Storage non si legge dall'API delle tabelle, e guardare le cartelle una
+-- per una vorrebbe dire una chiamata per richiesta.
 -- ---------------------------------------------------------------------------
 create or replace function richieste_con_documento()
   returns uuid[] language plpgsql stable security definer set search_path = public, extensions as $$
@@ -499,7 +499,7 @@ begin
   return coalesce((
     select array_agg(distinct split_part(o.name, '/', 1)::uuid) from storage.objects o
     where o.bucket_id = 'iscrizioni'
-      and o.name ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/documento(-retro)?\.[a-z]+$'), '{}');
+      and o.name ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/(documento|documento-retro|certificato)\.[a-z]+$'), '{}');
 end $$;
 
 -- ---------------------------------------------------------------------------
@@ -523,8 +523,12 @@ begin
     execute format('grant execute on function %s to authenticated', f);
   end loop;
 end $$;
--- E le funzioni che verranno: niente a tutti per default.
-alter default privileges in schema public revoke execute on functions from public;
+-- Le funzioni che verranno, invece, nascono ancora eseguibili da tutti: un
+-- `alter default privileges in schema public` non toglie il permesso di
+-- default di Postgres, ci si aggiunge. E su Supabase farlo per tutto il ruolo
+-- lo toglierebbe anche ad `authenticated`. Così ogni file toglie i permessi
+-- alle funzioni sue, `controllo.sql` e `prova/rls.sql` guardano che `anon`
+-- chiami solo quelle qui sotto, e rilanciare questo file rimette a posto.
 
 grant usage on schema public to anon;
 grant execute on function corsi_aperti(), invia_iscrizione(jsonb), puo_caricare(text), iscrizioni_regole() to anon, authenticated;

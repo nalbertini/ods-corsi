@@ -155,13 +155,9 @@ select atteso('una cartella che non è una richiesta no',
   tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/modulo.jpg')$$, gen_random_uuid())), 'NEGATO: …');
 select atteso('un altro contenitore no',
   tenta(format($$insert into storage.objects (bucket_id, name) values ('altro', '%s/modulo.jpg')$$, (select id from la_richiesta))), 'NEGATO: …');
-select atteso('il documento d''identità non entra: si porta in segreteria',
-  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/documento.pdf')$$, (select id from la_richiesta))), 'NEGATO: …');
-select atteso('né il suo retro',
-  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/documento-retro.png')$$, (select id from la_richiesta))), 'NEGATO: …');
-select atteso('la ricevuta entra',
-  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/ricevuta.jpg')$$, (select id from la_richiesta))), 'FATTO (1 righe)');
-select atteso('il terzo file no',
+select atteso('documento, retro, certificato e ricevuta entrano',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%1$s/documento.pdf'), ('iscrizioni', '%1$s/documento-retro.png'), ('iscrizioni', '%1$s/certificato.pdf'), ('iscrizioni', '%1$s/ricevuta.jpg')$$, (select id from la_richiesta))), 'FATTO (4 righe)');
+select atteso('il sesto file no',
   tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/ricevuta.pdf')$$, (select id from la_richiesta))), 'NEGATO: …');
 select atteso('i file non si rileggono', (select count(*)::text from storage.objects), '0');
 select atteso('né si cancellano', tenta($$delete from storage.objects$$), 'a vuoto (0 righe)');
@@ -173,8 +169,8 @@ set role anon;
 select atteso('dopo un''ora la cartella si chiude',
   tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/modulo.jpg')$$, (select id from vecchia))), 'NEGATO: …');
 reset role;
--- Giulia aveva caricato il documento quando il modulo lo chiedeva.
-insert into storage.objects (bucket_id, name) select 'iscrizioni', id || '/documento.jpg' from vecchia;
+-- Giulia aveva caricato il certificato.
+insert into storage.objects (bucket_id, name) select 'iscrizioni', id || '/certificato.jpg' from vecchia;
 
 \echo ''
 \echo '--- 4. un istruttore: le richieste non sono affar suo ---'
@@ -192,10 +188,11 @@ reset role;
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('le vede tutte', (select count(*)::text from richieste_iscrizione), '4');
-select atteso('vede i file', (select count(*)::text from storage.objects where bucket_id = 'iscrizioni'), '3');
-select atteso('trova il documento di prima, da stampare', (select string_agg(r.nome, ', ') from unnest(richieste_con_documento()) d join richieste_iscrizione r on r.id = d), 'Giulia');
-select atteso('stampato, lo cancella', tenta($$delete from storage.objects where bucket_id = 'iscrizioni' and name like '%/documento.jpg'$$), 'FATTO (1 righe)');
+select atteso('vede i file', (select count(*)::text from storage.objects where bucket_id = 'iscrizioni'), '6');
+select atteso('trova documenti e certificati da stampare', (select string_agg(r.nome, ', ' order by r.nome) from unnest(richieste_con_documento()) d join richieste_iscrizione r on r.id = d), 'Giulia, Luca');
+select atteso('stampati, li cancella', tenta($$delete from storage.objects where bucket_id = 'iscrizioni' and name ~ '/(documento|documento-retro|certificato)\.'$$), 'FATTO (4 righe)');
 select atteso('e non c''è più niente da stampare', (select cardinality(richieste_con_documento())::text), '0');
+select atteso('modulo e ricevuta restano', (select count(*)::text from storage.objects where bucket_id = 'iscrizioni'), '2');
 select atteso('rigenera ancora il calendario', tenta($$select materializza_sessioni(current_date, current_date + 7)::text$$), '0');
 select atteso('Luca accolto: una persona nuova', tenta(format($$select (accogli_iscrizione('%s') is not null)::text$$, (select id from la_richiesta))), 'true');
 select atteso('con la sua email e il telefono', (select email || ' · ' || telefono from persone where nome = 'Luca'), 'luca@esempio.it · 347 111 2233');

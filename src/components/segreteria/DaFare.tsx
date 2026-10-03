@@ -18,17 +18,24 @@ export interface ContiDaFare {
   richieste: number | null
   istruttori: number | null
   segnalate?: number | null
+  /** Fra chi è attivo, come la testata e i filtri di ISCRITTI: certificato mancante o scaduto. */
   certificati: number | null
+  /** …e in scadenza entro un mese. */
+  scadenza: number | null
   pagare: number | null
   certificatiDaStampare: number | null
   documentiDaStampare: number | null
+  /** Contato tutto almeno una volta: da qui un `null` vuol dire che non si è riusciti, non che si aspetta. */
+  contato: boolean
 }
 
 const VUOTI: ContiDaFare = {
+  contato: false,
   appelli: null,
   richieste: null,
   istruttori: null,
   certificati: null,
+  scadenza: null,
   pagare: null,
   certificatiDaStampare: null,
   documentiDaStampare: null,
@@ -59,7 +66,9 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
     void Promise.all([oppure(istruttori), oppure(richieste), oppure(persone), oppure(lezioni), d.segnalate ? oppure(d.segnalate()) : null]).then(
       ([istr, ric, pers, lez, segn]) => {
         if (!vivo) return
+        const attive = pers?.filter((p) => p.attiva) ?? null
         setConti((prima) => ({
+          contato: prima.contato || tutto,
           istruttori: istr,
           richieste: ric ? ric.tutte.filter((x) => x.stato === 'nuova').length : null,
           segnalate: d.segnalate ? (segn ? segn.filter((x) => x.stato === 'da_vedere').length : null) : undefined,
@@ -70,8 +79,9 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
               : null
             : prima.appelli,
           // Contati come i filtri di ISCRITTI che apre VEDI CHI: il numero è quello delle righe che si vedono.
-          certificati: tutto ? (pers ? pers.filter((p) => comeCertificato(p.certificato, oggi) !== 'valido').length : null) : prima.certificati,
-          pagare: tutto ? (pers ? pers.filter((p) => comePaga(p, oggi) !== 'pagato').length : null) : prima.pagare,
+          certificati: tutto ? (attive ? attive.filter((p) => ['manca', 'scaduto'].includes(comeCertificato(p.certificato, oggi))).length : null) : prima.certificati,
+          scadenza: tutto ? (attive ? attive.filter((p) => comeCertificato(p.certificato, oggi) === 'in_scadenza').length : null) : prima.scadenza,
+          pagare: tutto ? (attive ? attive.filter((p) => comePaga(p, oggi) !== 'pagato').length : null) : prima.pagare,
           certificatiDaStampare: tutto ? (pers ? pers.filter((p) => p.certificato.conFile).length : null) : prima.certificatiDaStampare,
           documentiDaStampare: tutto ? (ric?.conDocumento ? ric.conDocumento.size : null) : prima.documentiDaStampare,
         }))
@@ -96,6 +106,27 @@ interface Cosa {
   dove?: Destinazione
 }
 
+/**
+ * Quanto preme. `blocca`: è già un guaio (una lezione senza appello, chi entra
+ * in sala senza certificato o senza quota), in rosso. `presto`: aspetta una
+ * risposta o scade fra poco, in giallo. `faccenda`: da fare quando c'è un
+ * momento (le stampe), in una riga sola in fondo. Il rosso resta raro, e
+ * quindi si vede.
+ */
+type Livello = 'blocca' | 'presto' | 'faccenda'
+const LIVELLO: Record<string, Livello> = {
+  appelli: 'blocca',
+  certificati: 'blocca',
+  pagare: 'blocca',
+  richieste: 'presto',
+  istruttori: 'presto',
+  segnalate: 'presto',
+  scadenza: 'presto',
+  'certificati-stampa': 'faccenda',
+  'documenti-stampa': 'faccenda',
+}
+const ORDINE: Record<Livello, number> = { blocca: 0, presto: 1, faccenda: 2 }
+
 // Il numero è già grande accanto: il titolo dice solo di cosa.
 const uno = (n: number, singolare: string, plurale: string) => (n === 1 ? singolare : plurale)
 
@@ -115,6 +146,7 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       aPosto: 'appelli',
       tasto: 'TUTTE IN PRESENZE',
       voce: 'presenze',
+      dove: { filtro: 'senza-appello' },
     },
     {
       chiave: 'richieste',
@@ -150,12 +182,22 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
     {
       chiave: 'certificati',
       n: conti.certificati,
-      titolo: (n) => uno(n, 'certificato da sistemare', 'certificati da sistemare'),
-      sotto: 'Il certificato medico manca, è scaduto o scade entro un mese: senza, in sala non si entra.',
+      titolo: (n) => uno(n, 'iscritto senza certificato valido', 'iscritti senza certificato valido'),
+      sotto: 'Il certificato medico manca o è scaduto: senza, in sala non si entra.',
       aPosto: 'certificati',
       tasto: 'VEDI CHI',
       voce: 'iscritti',
       dove: { filtro: 'certificato' },
+    },
+    {
+      chiave: 'scadenza',
+      n: conti.scadenza,
+      titolo: (n) => uno(n, 'certificato in scadenza', 'certificati in scadenza'),
+      sotto: 'Scadono entro un mese: da ricordare prima che scadano.',
+      aPosto: 'certificati in scadenza',
+      tasto: 'VEDI CHI',
+      voce: 'iscritti',
+      dove: { filtro: 'scadenza' },
     },
     {
       chiave: 'pagare',
@@ -180,15 +222,19 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
     {
       chiave: 'documenti-stampa',
       n: conti.documentiDaStampare,
-      titolo: (n) => uno(n, 'documento d’identità da stampare', 'documenti d’identità da stampare'),
-      sotto: 'Arrivati con una richiesta di quando il modulo li chiedeva: si stampano e si cancellano.',
-      aPosto: 'documenti da stampare',
+      titolo: (n) => uno(n, 'richiesta con documenti da stampare', 'richieste con documenti da stampare'),
+      sotto: 'Documento d’identità e certificato arrivati col modulo: accolta la richiesta, si stampano e si cancellano.',
+      aPosto: 'richieste da stampare',
       tasto: 'VEDI QUALI',
       voce: 'richieste',
       dove: { filtro: 'stampare' },
     },
   ]
-  const daFare = cose.filter((c) => c.n !== null && c.n > 0)
+  const aperte = cose
+    .filter((c) => c.n !== null && c.n > 0)
+    .sort((a, b) => ORDINE[LIVELLO[a.chiave]] - ORDINE[LIVELLO[b.chiave]])
+  const daFare = aperte.filter((c) => LIVELLO[c.chiave] !== 'faccenda')
+  const faccende = aperte.filter((c) => LIVELLO[c.chiave] === 'faccenda')
   const aPosto = cose.filter((c) => c.n === 0)
   const nonSo = cose.filter((c) => c.n === null)
   const tuttoContato = nonSo.length === 0
@@ -200,19 +246,21 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
         sotto={`${giornoPerEsteso(chiaveGiorno(new Date()))} ${new Date().getFullYear()}. Quello che aspetta la segreteria: si riconta ogni volta che torni qui.`}
       />
 
-      {!tuttoContato && daFare.length === 0 && aPosto.length === 0 && <span className="sg-sotto">Sto contando…</span>}
+      {!conti.contato && <span className="sg-sotto">Sto contando…</span>}
 
-      {tuttoContato && daFare.length === 0 && (
+      {conti.contato && tuttoContato && daFare.length === 0 && (
         <div className="sg-dafare-fatto">
           <span className="ob">NIENTE IN SOSPESO</span>
-          <span className="sg-sotto">Appelli fatti, richieste e presenze guardate, certificati e pagamenti in regola.</span>
+          <span className="sg-sotto">
+            Appelli fatti, richieste e presenze guardate, certificati e pagamenti in regola{faccende.length ? '; in fondo, solo qualcosa da stampare' : ''}.
+          </span>
         </div>
       )}
 
       {daFare.length > 0 && (
         <ul className="sg-dafare" aria-label="Da fare">
           {daFare.map((c) => (
-            <li key={c.chiave} className="sg-dafare-riga">
+            <li key={c.chiave} className="sg-dafare-riga" data-livello={LIVELLO[c.chiave]}>
               <span className="num sg-dafare-n">{c.n}</span>
               <div className="stack grow" style={{ gap: 4, minWidth: 0 }}>
                 <span className="sg-dafare-titolo">{c.titolo(c.n!)}</span>
@@ -245,19 +293,33 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
         </ul>
       )}
 
+      {faccende.length > 0 && (
+        <p className="sg-dafare-faccende">
+          <span className="sg-etichetta">QUANDO C’È UN MOMENTO</span>{' '}
+          {faccende.map((c, i) => (
+            <span key={c.chiave}>
+              {i > 0 && ' · '}
+              <button type="button" className="sg-link" onClick={() => onVai(c.voce, c.dove)}>
+                {c.n} {c.titolo(c.n!)}
+              </button>
+            </span>
+          ))}
+        </p>
+      )}
+
       {aPosto.length > 0 && daFare.length > 0 && (
         <p className="sg-dafare-aposto">
           <span className="sg-etichetta" style={{ color: 'var(--verde)' }}>A POSTO</span> {aPosto.map((c) => c.aPosto).join(' · ')}
         </p>
       )}
 
-      {tuttoContato || nonSo.length === cose.length ? null : (
-        <span className="sg-sotto">Sto contando: {nonSo.map((c) => c.aPosto).join(', ')}…</span>
-      )}
-      {tuttoContato || (
-        <button type="button" className="sg-link" style={{ alignSelf: 'flex-start' }} onClick={onRiprova}>
-          Non arriva? Riconta
-        </button>
+      {conti.contato && !tuttoContato && (
+        <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+          <span className="sg-sotto">Non si è riusciti a contare: {nonSo.map((c) => c.aPosto).join(', ')}.</span>
+          <button type="button" className="sg-link" onClick={onRiprova}>
+            Riconta
+          </button>
+        </div>
       )}
     </div>
   )

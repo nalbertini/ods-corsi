@@ -2,7 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import { daRuoloScelto, nomeDelRuolo, ruoloScelto, type RuoloScelto } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica, useOrdina } from './comune'
 import { Numero, mesi } from './Presenze'
 import { Kanji } from '../Kanji'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
@@ -82,7 +82,19 @@ export function Personale({ d }: { d: DatiSegreteria }) {
         </SchedaPiena>
       ) : persona ? (
         <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`.trim()} torna="ISTRUTTORI E ACCESSI" onTorna={chiudi}>
-          <Scheda d={d} p={persona} altri={persone.filter((x) => x.id !== persona.id)} fai={fai} avvisa={avvisa} partito={partito} onCambiato={lista.ricarica} />
+          <Scheda
+            d={d}
+            p={persona}
+            altri={persone.filter((x) => x.id !== persona.id)}
+            fai={fai}
+            avvisa={avvisa}
+            partito={partito}
+            onCambiato={lista.ricarica}
+            onEliminata={async () => {
+              chiudi()
+              await lista.ricarica()
+            }}
+          />
         </SchedaPiena>
       ) : null}
 
@@ -105,11 +117,13 @@ export function Personale({ d }: { d: DatiSegreteria }) {
           {lista.dato === null && lista.guaio && <Guaio testo={lista.guaio} />}
           {lista.dato === null && !lista.guaio && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Sto leggendo…</p>}
           {ordina(persone).map((p) => (
-            <button key={p.id} type="button" role="row" className="sg-riga-personale sg-personale" data-spento={!p.attiva} onClick={() => setScelta(p.id)}>
+            <div key={p.id} role="row" className="sg-riga-personale sg-personale" data-spento={!p.attiva} onClick={() => setScelta(p.id)}>
               <span role="cell" className="stack" style={{ minWidth: 0 }}>
                 <span className="chi-kanji" style={{ fontSize: 15, fontWeight: 600 }}>
                   <Kanji segni={p.kanji} />
-                  <span className="sg-una-riga">{`${p.nome} ${p.cognome}`.trim()}</span>
+                  <button type="button" className="sg-riga-apri sg-una-riga">
+                    {`${p.nome} ${p.cognome}`.trim()}
+                  </button>
                 </span>
                 <span className="sg-una-riga" style={{ fontSize: 12, color: 'var(--dim)' }} title={p.corsi.join(', ')}>
                   {p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}
@@ -125,9 +139,10 @@ export function Personale({ d }: { d: DatiSegreteria }) {
                 <Accesso p={p} />
               </span>
               <span role="cell" className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
+                <span className="sg-solo-stretto" style={{ color: 'var(--dim)' }}>PIN TABLET </span>
                 {p.haPin ? 'IMPOSTATO' : 'NESSUNO'}
               </span>
-            </button>
+            </div>
           ))}
         </div>
 
@@ -283,6 +298,7 @@ function Scheda({
   avvisa,
   partito,
   onCambiato,
+  onEliminata,
 }: {
   d: DatiSegreteria
   p: PersonaleSeg
@@ -292,6 +308,7 @@ function Scheda({
   avvisa: Avvisa
   partito: Partito
   onCambiato: () => Promise<void>
+  onEliminata: () => Promise<void>
 }) {
   const [modifica, setModifica] = useState<{ nome: string; cognome: string; email: string } | null>(null)
   const [pin, setPin] = useState<string | null>(null)
@@ -306,6 +323,13 @@ function Scheda({
   }
 
   const invita = () => void fai(async () => avvisa(partito(p.nome, await d.invita(p.id))))
+
+  const elimina = async () => {
+    if (!window.confirm(`Eliminare ${`${p.nome} ${p.cognome}`.trim()}? Spariscono la scheda e l'account, e non si torna indietro.`)) return
+    const fatto = await fai(() => d.eliminaIstruttore(p.id), `${p.nome} è eliminato`, onEliminata)
+    // Anche andata male la scheda può non esserci più: è l'account a non essersene andato.
+    if (!fatto) await onCambiato()
+  }
 
   return (
     <>
@@ -464,13 +488,24 @@ function Scheda({
         <button
           type="button"
           className="sg-btn sg-btn-linea"
-          onClick={() => {
-            if (p.attiva && !window.confirm(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`)) return
+          onClick={async () => {
+            if (p.attiva && !(await chiedi(`Togliere l'accesso a ${p.nome}? Non entra più nell'app né nell'area istruttore; il registro resta.`, 'TOGLI L’ACCESSO'))) return
             void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Accesso tolto' : 'Accesso ridato', onCambiato)
           }}
         >
           {p.attiva ? 'TOGLI L’ACCESSO' : 'RIDAI L’ACCESSO'}
         </button>
+        {/* Solo chi insegna, anche col ruolo doppio: a chi è solo di segreteria si toglie l'accesso. Se ha corsi, lezioni o presenze il database dice di no, e perché. */}
+        {ruoloScelto(p) !== 'staff' && (
+          <button
+            type="button"
+            className="sg-btn sg-btn-linea"
+            title="Solo per chi non ha mai insegnato: senza corsi, lezioni o presenze"
+            onClick={() => void elimina()}
+          >
+            ELIMINA
+          </button>
+        )}
       </div>
     </>
   )

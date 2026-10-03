@@ -158,11 +158,14 @@ const terzo = await r.invia(adulto({ nome: 'Terzo', codiceFiscale: 'RSSTRZ96A01L
   ok('il luogo di nascita è quello del codice', l.natoA, 'TORINO (TO)')
   await r.caricaFile(luca, 'modulo', new File(['x'], 'modulo.pdf', { type: 'application/pdf' }))
   ok('il file si ritrova, come PDF', (await r.file(luca)).map((f) => [f.tipo, f.pdf]), [['modulo', true]])
-  // Un documento d'identità di quando il modulo lo chiedeva: si stampa e si cancella, il resto resta.
+  // Documento e certificato arrivano col modulo: si stampano e si cancellano, il resto resta.
   await r.caricaFile(luca, 'documento', new File(['x'], 'documento.jpg', { type: 'image/jpeg' }))
-  ok('il documento di prima si trova fra quelli da stampare', [...(await r.conDocumento())], [luca])
+  await r.caricaFile(luca, 'certificato', new File(['x'], 'certificato.pdf', { type: 'application/pdf' }))
+  ok('documento e certificato si trovano fra quelli da stampare', [...(await r.conDocumento())], [luca])
   await r.eliminaFile(luca, 'documento')
-  ok('stampato e cancellato: non c\'è più niente da stampare', (await r.conDocumento()).size, 0)
+  ok('col certificato ancora lì, c\'è ancora da stampare', [...(await r.conDocumento())], [luca])
+  await r.eliminaFile(luca, 'certificato')
+  ok('stampati e cancellati: non c\'è più niente da stampare', (await r.conDocumento()).size, 0)
   ok('e il modulo resta', (await r.file(luca)).map((f) => f.tipo), ['modulo'])
 }
 

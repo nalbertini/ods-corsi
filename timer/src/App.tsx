@@ -80,7 +80,7 @@ type View =
 const TABS: Array<{ key: Tab; label: string; icon: typeof TimerIcon }> = [
   { key: 'timer', label: 'TIMER', icon: TimerIcon },
   { key: 'crono', label: 'CRONOMETRO', icon: Crono },
-  { key: 'countdown', label: 'COUNTDOWN', icon: Clessidra },
+  { key: 'countdown', label: 'ALLA ROVESCIA', icon: Clessidra },
   { key: 'impostazioni', label: 'IMPOSTAZIONI', icon: Gear },
 ]
 
@@ -164,6 +164,13 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   // dentro un timer devono vedere la stessa lista, non due copie.
   const [catalogo, setCatalogo] = useState<Esercizio[]>(() => loadEsercizi())
   const [tab, setTab] = useState<Tab>('timer')
+  // Sul tablet le impostazioni si aprono solo con l'area istruttore: chiusa
+  // quella, la scheda sparisce e chi c'era dentro torna ai timer.
+  const conImpostazioni = incorporato?.conImpostazioni ?? true
+  const schede = conImpostazioni ? TABS : TABS.filter((t) => t.key !== 'impostazioni')
+  useEffect(() => {
+    if (!conImpostazioni) setTab((t) => (t === 'impostazioni' ? 'timer' : t))
+  }, [conImpostazioni])
   // Letto una volta all'apertura: è la fotografia di com'era quando l'app è morta.
   const [interrotto, setInterrotto] = useState<Interrotto | null>(() => leggiInterrotto())
   const [view, setView] = useState<View>({ kind: 'tabs' })
@@ -572,6 +579,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             modificabile={(w) => !w.dove || (!!personaId && w.dove !== 'collega')}
             corsi={corsi}
             lezione={nomeLezione}
+            conFiltri={!incorporato}
             onStart={startWorkout}
             onEdit={(w) => setView({ kind: 'editor', workout: w })}
             onDuplicate={duplicate}
@@ -812,7 +820,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
           </div>
         )}
         <div className="stack" style={{ gap: 2 }}>
-          {TABS.map((t) => (
+          {schede.map((t) => (
             <button key={t.key} className="navitem" aria-current={tab === t.key ? 'page' : undefined} onClick={() => setTab(t.key)}>
               {t.label}
             </button>
@@ -840,7 +848,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
               <Logo width={58} />
               <Wordmark />
             </div>
-            <h1 className="ob page-title">{TAB_TITLE[tab]}</h1>
+            <h1 className="ob page-title">{tab === 'timer' && incorporato ? 'I TIMER DELLA SALA' : TAB_TITLE[tab]}</h1>
             <div className="grow" />
             {!incorporato && SU_TABLET_DI_SALA && <TornaSala className="torna-sala-alto" />}
           </header>
@@ -863,7 +871,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         {!incorporato && <MusicaBar musica={musica} className="musica-schede" />}
 
         <nav className="tabbar">
-          {TABS.map((t) => {
+          {schede.map((t) => {
             const Icon = t.icon
             return (
               <button key={t.key} className="tab" data-on={tab === t.key} onClick={() => setTab(t.key)}>

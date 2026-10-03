@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoArrivato } from './richieste'
+import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 
 /**
@@ -161,7 +161,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       if (error) throw guaioFile(error)
       return (data ?? []).flatMap((f): FileRichiesta[] => {
         const nome = f.path?.split('/')[1] ?? ''
-        const tipo = nome.replace(/\.[a-z]+$/, '') as TipoArrivato
+        const tipo = nome.replace(/\.[a-z]+$/, '') as TipoFile
         return f.signedUrl ? [{ tipo, url: f.signedUrl, pdf: nome.endsWith('.pdf') }] : []
       })
     },

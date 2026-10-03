@@ -24,6 +24,9 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
   const [lezioni, setLezioni] = useState<SessioneVista[] | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
   const [detto, setDetto] = useState<string | null>(null)
+  // Le singole lezioni sono l'eccezione: si vedono quelle che hanno già un
+  // timer loro, e le altre solo a chi le chiede.
+  const [tutte, setTutte] = useState(false)
 
   const leggi = useCallback(async (x: DatiMieiTimer) => {
     const [t, c] = await Promise.all([x.timer(), x.collegamenti()])
@@ -95,6 +98,9 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
   }, [lezioni])
 
   const pronto = timer && col && lezioni
+  const conSuoi = (l: SessioneVista) => (col?.lezioni[l.id]?.length ?? 0) > 0
+  const visibili = tutte ? perGiorno : perGiorno.map(([g, ls]) => [g, ls.filter(conSuoi)] as const).filter(([, ls]) => ls.length > 0)
+  const quanteAltre = perGiorno.reduce((n, [, ls]) => n + ls.filter((l) => !conSuoi(l)).length, 0)
 
   return (
     <div className="miei-timer">
@@ -104,7 +110,7 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
             <Back />
           </button>
         )}
-        <span className="ob grow" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.06em' }}>
+        <span className="ob grow appello-titolo" style={{ whiteSpace: 'nowrap' }}>
           I MIEI TIMER
         </span>
         <a className="btn btn-ghost miei-timer-apri" href={TIMER} target="_blank" rel="noopener">
@@ -112,8 +118,8 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
         </a>
       </div>
       <p className="pad passo-dettaglio" style={{ fontSize: 15, margin: '10px 0 0' }}>
-        I timer si fanno e si cambiano nel timer. Qui scegli quali partono con i tuoi corsi e con le singole lezioni:
-        quelli di una lezione vengono prima di quelli del corso, dall’appello e sul tablet di sala.
+        Scegli quale timer parte con ogni tuo corso, dall’appello e sul tablet di sala. Se una lezione ne vuole uno diverso,
+        lo scegli più sotto. I timer si creano e si cambiano nel timer.
       </p>
 
       {guaio && (
@@ -165,13 +171,15 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
           </div>
           {!col.lezioniPronte && (
             <p className="pad passo-dettaglio" data-tono="avviso" style={{ fontSize: 15, marginTop: 0 }}>
-              Il database non ha ancora i timer delle singole lezioni (`11-timer-lezioni.sql`): per ora valgono quelli
-              del corso.
+              Per ora le singole lezioni usano i timer del corso: la scelta per lezione arriva con un prossimo aggiornamento.
             </p>
           )}
           <div className="pad stack" style={{ gap: 16, paddingBottom: 24 }}>
             {perGiorno.length === 0 && <p className="passo-dettaglio" style={{ margin: 0, fontSize: 15 }}>Nessuna lezione nei prossimi giorni.</p>}
-            {perGiorno.map(([g, ls]) => (
+            {visibili.length === 0 && perGiorno.length > 0 && (
+              <p className="passo-dettaglio" style={{ margin: 0, fontSize: 15 }}>Tutte le lezioni usano i timer del loro corso.</p>
+            )}
+            {visibili.map(([g, ls]) => (
               <div key={g} className="stack" style={{ gap: 8 }}>
                 <span className="sg-etichetta">{giornoPerEsteso(g).toUpperCase()}</span>
                 {ls.map((l) => {
@@ -208,6 +216,11 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
                 })}
               </div>
             ))}
+            {col.lezioniPronte && quanteAltre > 0 && (
+              <button type="button" className="btn btn-dashed" style={{ minHeight: 52, fontSize: 16 }} aria-expanded={tutte} onClick={() => setTutte((x) => !x)}>
+                {tutte ? 'MOSTRA SOLO QUELLE DIVERSE' : `SCEGLI PER UNA LEZIONE (${quanteAltre})`}
+              </button>
+            )}
           </div>
         </>
       )}

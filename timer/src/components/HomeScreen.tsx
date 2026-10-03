@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Mode, Workout } from '../types'
 import type { Gruppo } from '../lib/gruppi'
 import type { Corso } from '../lib/libreria'
-import { MODE_BADGE, MODE_TINT, describe, totalDuration } from '../lib/engine'
+import { MODE_BADGE, describe, totalDuration } from '../lib/engine'
 import { clock, compact } from '../lib/format'
 import { type Interrotto, doveEraRimasto } from '../lib/ripresa'
 import { Copy, Edit, Play, Plus, Share, Trash } from './Icons'
@@ -30,6 +30,7 @@ export function HomeScreen({
   onScarta,
   interrotto,
   onNew,
+  conFiltri = true,
 }: {
   /** Le sezioni della lista: una sola senza database, com'era. */
   gruppi: Gruppo[]
@@ -50,6 +51,8 @@ export function HomeScreen({
   /** Il filtro attivo viaggia con la richiesta: chi ha già detto «intervalli»
       non deve ridirlo nella schermata dopo. */
   onNew: (filtro: Mode | 'all') => void
+  /** Sul tablet di sala no: lì in cima ci sono già i timer della lezione, e sei filtri sono troppi da lontano. */
+  conFiltri?: boolean
 }) {
   const [filter, setFilter] = useState<Mode | 'all'>('all')
   const [open, setOpen] = useState<string | null>(null)
@@ -61,7 +64,6 @@ export function HomeScreen({
   const nomeCorso = (id: string) => corsi.find((c) => c.id === id)?.nome
   // La chiave del riquadro aperto porta anche la sezione, per sicurezza.
   const card = (g: string, w: Workout) => {
-    const tint = MODE_TINT[w.mode]
     const chiave = `${g}:${w.id}`
     const isOpen = open === chiave
     const suo = modificabile(w)
@@ -71,7 +73,7 @@ export function HomeScreen({
         <div className="wcard">
           <div className="stack grow" style={{ gap: 6, minWidth: 0 }}>
             <div className="row" style={{ gap: 8 }}>
-              <span className="badge" style={{ background: tint }}>
+              <span className="badge badge-tipo">
                 {MODE_BADGE[w.mode]}
               </span>
               <span className="num" style={{ fontSize: 14, fontWeight: 600, letterSpacing: '0.1em', color: 'var(--dim)' }}>
@@ -88,7 +90,7 @@ export function HomeScreen({
               </span>
             )}
           </div>
-          <button className="play-btn" style={{ borderColor: tint, color: tint }} onClick={() => onStart(w)} aria-label={`Avvia ${w.name}`}>
+          <button className="play-btn" style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)' }} onClick={() => onStart(w)} aria-label={`Avvia ${w.name}`}>
             <Play />
           </button>
         </div>
@@ -171,13 +173,15 @@ export function HomeScreen({
         </div>
       )}
 
-      <div className="row pad" style={{ gap: 8, paddingTop: 14, paddingBottom: 14, overflowX: 'auto' }}>
-        {FILTERS.map((f) => (
-          <button key={f.key} className="chip" data-on={filter === f.key} onClick={() => setFilter(f.key)}>
-            {f.label}
-          </button>
-        ))}
-      </div>
+      {conFiltri && (
+        <div className="row pad" style={{ gap: 8, paddingTop: 14, paddingBottom: 14, overflowX: 'auto' }}>
+          {FILTERS.map((f) => (
+            <button key={f.key} className="chip" data-on={filter === f.key} onClick={() => setFilter(f.key)}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {mostrati
         .filter((g) => g.timer.length > 0 || g.vuota)

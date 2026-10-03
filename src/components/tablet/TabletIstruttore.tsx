@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { DatiTablet, LezioneSala, PresenzaIstruttore, RigaAppelloTablet } from '../../lib/tablet'
-import { fase } from '../../lib/tablet'
+import { fase, lezioneDiAdesso } from '../../lib/tablet'
 import type { StatoPresenza } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Croce, Spunta } from '../Icons'
@@ -31,6 +31,7 @@ export function TabletIstruttore({
   presenze,
   adesso,
   lezioni,
+  visibile = true,
   onCambiato,
   onEsci,
   onPinScaduto,
@@ -42,6 +43,8 @@ export function TabletIstruttore({
   presenze: PresenzaIstruttore[]
   adesso: Date
   lezioni: LezioneSala[]
+  /** Sotto il timer resta montata ma nascosta, e tiene la lezione scelta. */
+  visibile?: boolean
   /** Qualcosa è cambiato: i conti nell'elenco delle lezioni vanno riletti. */
   onCambiato: () => void
   onEsci: () => void
@@ -55,7 +58,11 @@ export function TabletIstruttore({
   const diOggi = utili.filter((l) => chiaveGiorno(new Date(l.inizio)) === oggi)
   const corsi = [...new Map(utili.map((l) => [l.corsoId, l.corso])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'it'))
 
-  const primaDiOggi = diOggi.find((l) => fase(l, adesso) === 'aperta') ?? diOggi[0]
+  // Si parte dalla lezione che tiene chi è entrato col PIN: al cambio lezione
+  // ce ne sono due aperte, e la sua è quella che comincia. Senza una sua,
+  // quella in cui ci si segna adesso.
+  const sue = diOggi.filter((l) => presenze.some((p) => p.sessioneId === l.id))
+  const primaDiOggi = lezioneDiAdesso(sue, adesso) ?? sue[0] ?? lezioneDiAdesso(diOggi, adesso) ?? diOggi[0]
   const [scheda, setScheda] = useState<'oggi' | 'corso'>(diOggi.length ? 'oggi' : 'corso')
   const [corsoId, setCorsoId] = useState<string | null>(primaDiOggi?.corsoId ?? corsi[0]?.[0] ?? null)
   const [scelta, setScelta] = useState<string | null>(
@@ -131,6 +138,12 @@ export function TabletIstruttore({
     }
   }
 
+  // La lezione scelta resta in vista anche quando l'elenco è più lungo dello spazio.
+  const scelto = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (visibile) scelto.current?.scrollIntoView({ block: 'nearest' })
+  }, [scelta, scheda, visibile])
+
   const presenti = righe?.filter((r) => r.stato === 'presente').length ?? 0
   const daSe = righe?.filter((r) => r.origine === 'tablet' || r.origine === 'recupero').length ?? 0
 
@@ -140,9 +153,8 @@ export function TabletIstruttore({
   }
 
   return (
-    <div className="tb-corpo tb-istruttore">
+    <div className="tb-corpo tb-istruttore" hidden={!visibile}>
       <div className="tb-colonna" style={{ gap: 10 }}>
-        {presenze.length > 0 && <LaTuaPresenza presenze={presenze} />}
         <div role="tablist" aria-label="Quali lezioni" className="tb-schede">
           {(
             [
@@ -165,7 +177,7 @@ export function TabletIstruttore({
 
         {scheda === 'corso' && (
           <>
-            <label htmlFor="tb-corso" className="tb-etichetta" style={{ fontSize: 13 }}>
+            <label htmlFor="tb-corso" className="tb-etichetta" style={{ fontSize: 15 }}>
               CORSO
             </label>
             <select id="tb-corso" className="tb-select" value={corsoId ?? ''} onChange={(e) => scegliCorso(e.target.value)}>
@@ -180,24 +192,25 @@ export function TabletIstruttore({
           </>
         )}
 
-        <div className="stack grow tb-scorre" style={{ gap: 8 }}>
+        <div className="stack grow tb-scorre tb-lezioni-istr" style={{ gap: 8 }}>
           {elenco.map((l) => {
             const g = chiaveGiorno(new Date(l.inizio))
             return (
               <button
                 key={l.id}
+                ref={l.id === scelta ? scelto : undefined}
                 type="button"
                 aria-pressed={l.id === scelta}
                 className="tb-lezione-istr"
                 style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
                 onClick={() => setScelta(l.id)}
               >
-                <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
+                <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
                 <span className="ob" style={{ fontSize: 20, fontWeight: 700 }}>
                   {scheda === 'corso' ? (g === oggi ? 'OGGI' : giornoPerEsteso(g).toUpperCase()) : l.corso.toUpperCase()}
                 </span>
-                <span style={{ fontSize: 13, color: 'var(--sec)' }}>
-                  {l.presenti} presenti su {l.iscritti}
+                <span style={{ fontSize: 15, color: 'var(--sec)' }}>
+                  {l.presenti} {l.presenti === 1 ? 'presente' : 'presenti'} su {l.iscritti}
                   {l.stato === 'annullata' ? ' · annullata' : ''}
                 </span>
               </button>
@@ -206,10 +219,13 @@ export function TabletIstruttore({
           {elenco.length === 0 && <span className="tb-nota">Nessuna lezione.</span>}
         </div>
 
+        {/* Sotto le lezioni, non sopra: l'istruttore entra per l'appello, e
+            com'è andata la sua presenza è un'informazione in più. */}
+        {presenze.length > 0 && <LaTuaPresenza presenze={presenze} />}
         <button type="button" className="tb-btn tb-btn-linea" onClick={onEsci}>
           ESCI
         </button>
-        <span className="tb-nota" style={{ fontSize: 13 }}>
+        <span className="tb-nota" style={{ fontSize: 15 }}>
           Si esce da soli dopo 2 minuti senza tocchi: il tablet resta in sala.
         </span>
         <button type="button" className="tb-scollega" onClick={onScollega}>
@@ -222,7 +238,7 @@ export function TabletIstruttore({
           <div className="tb-testa-appello">
             <div className="stack grow" style={{ gap: 2, minWidth: 0 }}>
               <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.03em' }}>{lezione.corso.toUpperCase()}</span>
-              <span style={{ fontSize: 14, color: 'var(--sec)' }}>
+              <span style={{ fontSize: 16, color: 'var(--sec)' }}>
                 {chiaveGiorno(new Date(lezione.inizio)) === oggi ? 'oggi' : giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))},{' '}
                 {orario(lezione)} · {daSe} {daSe === 1 ? 'segnato' : 'segnati'} da sé sul tablet · tocca un nome per cambiarlo
               </span>
@@ -309,14 +325,21 @@ export function TabletIstruttore({
   )
 }
 
-const PRESENZA: Record<PresenzaIstruttore['stato'], { titolo: string; testo: string; colore: string }> = {
-  confermata: { titolo: 'LA TUA PRESENZA È SEGNATA', testo: 'Eri previsto su questa lezione.', colore: 'var(--verde)' },
+/** `colore` per il bordo, `scritto` per l'etichetta: giallo e verde puri sul tema chiaro non si leggono. */
+const PRESENZA: Record<PresenzaIstruttore['stato'], { titolo: string; testo: string; colore: string; scritto: string }> = {
+  confermata: { titolo: 'LA TUA PRESENZA È SEGNATA', testo: 'Eri previsto su questa lezione.', colore: 'var(--verde)', scritto: 'var(--verde-testo)' },
   da_confermare: {
     titolo: 'PRESENZA DA CONFERMARE',
     testo: 'Non eri previsto su questa lezione: la tua presenza la conferma la segreteria.',
     colore: 'var(--giallo)',
+    scritto: 'var(--giallo-testo)',
   },
-  rifiutata: { titolo: 'PRESENZA NON CONFERMATA', testo: 'La segreteria non l’ha confermata: se è un errore, parlane con lei.', colore: 'var(--rosso)' },
+  rifiutata: {
+    titolo: 'PRESENZA NON CONFERMATA',
+    testo: 'La segreteria non l’ha confermata: se è un errore, parlane con lei.',
+    colore: 'var(--rosso)',
+    scritto: 'var(--rosso)',
+  },
 }
 
 /** Cosa ha fatto il PIN alla presenza dell'istruttore, una riga per lezione. */
@@ -329,7 +352,7 @@ function LaTuaPresenza({ presenze }: { presenze: PresenzaIstruttore[] }) {
         const x = PRESENZA[stato]
         return (
           <div key={stato} role="status" className="tb-riquadro" style={{ borderColor: x.colore }}>
-            <span className="tb-etichetta" style={{ color: stato === 'da_confermare' ? 'var(--giallo-testo)' : x.colore }}>
+            <span className="tb-etichetta" style={{ color: x.scritto }}>
               {x.titolo}
             </span>
             <span className="tb-riquadro-testo">

@@ -14,8 +14,11 @@ aprite l'appello completo e lo correggete.
 - **A sinistra**, la lezione in cui ci si segna adesso, con il grande tasto
   **SEGNA LA PRESENZA**. Il titolo cambia:
   - **SI SEGNA ADESSO** — c'è una lezione aperta, anche se è già cominciata;
-  - **OGGI** — non c'è niente di aperto; se oggi non ci sono corsi dice quando
-    è la prossima lezione, se sono finiti dice **PER OGGI QUI È FINITO**.
+  - **PROSSIMA LEZIONE** — non c'è niente di aperto, ma più tardi c'è una
+    lezione (la mattina, o fra due lezioni): dice quale e **SI SEGNA DALLE …**,
+    l'ora da cui ci si segna. A quell'ora diventa **SEGNA LA PRESENZA**;
+  - **OGGI** — oggi non ci sono più lezioni: se oggi non ci sono corsi dice
+    quando è la prossima lezione, se sono finiti dice **PER OGGI QUI È FINITO**.
 - **A destra**, **OGGI IN QUESTA SALA**: tutte le lezioni del giorno, con
   FINITA, SI SEGNA ORA o PIÙ TARDI.
 - Sotto la lezione, **TI SEI DIMENTICATO DI SEGNARTI?** e **AREA
@@ -45,7 +48,9 @@ scelto qui vale anche nel timer, e viceversa.
 
 Maurizio, i segnali, il volume, lo schermo e la musica durante il timer si
 scelgono nel timer, dalle sue **IMPOSTAZIONI**, e sono uguali su tutti i
-tablet: cambiati su uno, gli altri li prendono entro cinque minuti. La voce e gli esercizi invece li sceglie la segreteria
+tablet: cambiati su uno, gli altri li prendono entro cinque minuti. Per questo
+sul tablet **IMPOSTAZIONI** compare solo con l'area istruttore aperta: entrate
+col PIN, poi **TIMER**. Chiusa l'area, la scheda sparisce di nuovo. La voce e gli esercizi invece li sceglie la segreteria
 per tutti i tablet (vedi [Impostazioni](segreteria/regole.md#la-voce-dei-tablet)
 ed [Esercizi](segreteria/esercizi.md)); dal tablet si sceglie solo se usare
 le clip incise. Lo storico dei timer si guarda dalla segreteria.
@@ -73,7 +78,7 @@ Il tasto **☰** accanto apre **LA MUSICA DELLA SALA**, le liste preparate dalla
 segreteria («Riscaldamento», «Randori»…): se ne tocca una e parte. **DALLE
 IMPOSTAZIONI DEL TIMER** torna a quella scelta nelle impostazioni del timer.
 Le liste di Spotify vogliono Spotify collegato sul tablet (Impostazioni del
-timer › Musica); senza, sono spente.
+timer › Musica, con l'area istruttore aperta); senza, sono spente.
 
 Se nelle impostazioni del timer sono accese, la musica parte e si ferma col
 timer e si abbassa nel recupero, qualunque lista suoni.
@@ -91,16 +96,26 @@ SEGNARTI?**.
 2. Toccare **il proprio nome** (nome e iniziale del cognome: «Giulia F.»; se
    ci sono due «Giulia F.» compare «Giulia Fon.»).
 3. In basso compare **BUON ALLENAMENTO, GIULIA!**. Chi ha toccato il nome
-   sbagliato preme **ANNULLA** nella fascia in basso (resta qualche secondo;
-   l'annullo vale per due minuti).
+   sbagliato preme **ANNULLA** nella fascia in basso, che resta dieci secondi.
+   L'annullo vale per due minuti: in quel tempo, toccando di nuovo il nome,
+   **ANNULLA** ricompare. Annullato, la fascia lo dice: **ANNULLATO**.
 
 Altri messaggi possibili:
 
-- **… È GIÀ TRA I PRESENTI** — il nome era già segnato. Se non era lui, va detto
+- **… È GIÀ TRA I PRESENTI** — il nome era già segnato. Se l'ha segnato questo
+  tablet da meno di due minuti c'è **ANNULLA**; se no, e non era lui, va detto
   all'istruttore.
 - **L'ISTRUTTORE HA GIÀ SEGNATO …** — l'avete già segnato voi (di solito
   assente): il tablet non scavalca l'istruttore. Se c'era, lo correggete voi.
-- **NON È ANDATA** — la rete o il server non hanno risposto: riprovare.
+- **NON È ANDATA** — il server ha detto di no (per esempio la lezione non si
+  può più segnare): la fascia dice perché.
+
+**Senza rete** la presenza non si perde: il nome resta segnato, con il bordo
+giallo e **IN ATTESA DI RETE**, e la fascia dice che la presenza è salvata sul
+tablet. Parte da sola appena la rete torna, anche se intanto il tablet si
+riavvia; in alto la spia **IN ATTESA DI RETE · …** dice quante ne aspettano.
+Non serve ritoccare il nome. Una presenza che arriva dopo la fine della
+lezione risulta **SEGNATO DOPO**.
 
 Chi non trova il suo nome non è iscritto a quel corso: va detto alla segreteria.
 
@@ -144,14 +159,15 @@ iniziale.
 6. **ESCI** quando avete finito. Se ve ne dimenticate, dopo **2 minuti** senza
    tocchi l'area si chiude da sola: il PIN non resta aperto in sala.
 
-Dopo troppi PIN sbagliati il tablet si blocca per un po'. Il PIN lo dà e lo
+Dopo 5 PIN sbagliati il tablet si blocca per 5 minuti: dal secondo errore lo
+avvisa. Intanto l'appello si fa dall'app sul telefono. Il PIN lo dà e lo
 cambia la segreteria.
 
 ### La vostra presenza
 
 Il PIN messo durante una lezione, da mezz'ora prima dell'inizio a dieci minuti
-dopo la fine, segna anche **la vostra presenza** in quella lezione. In cima
-all'area istruttore c'è scritto com'è andata:
+dopo la fine, segna anche **la vostra presenza** in quella lezione. Sotto l'elenco delle
+lezioni, nell'area istruttore, c'è scritto com'è andata:
 
 - **LA TUA PRESENZA È SEGNATA** — eravate previsti su quella lezione (è un
   vostro corso, o siete il sostituto di quel giorno): è fatta, non serve altro;

@@ -100,8 +100,8 @@ begin
   return calendario_pronto_fino();
 end $$;
 
-revoke all on function allunga_calendario() from public, anon;
-grant execute on function allunga_calendario() to authenticated;
+revoke all on function allunga_calendario(), sessione_in_stagione() from public, anon;
+grant execute on function allunga_calendario(), sessione_in_stagione() to authenticated;
 
 -- Che l'API veda subito la funzione nuova, senza aspettare.
 notify pgrst, 'reload schema';

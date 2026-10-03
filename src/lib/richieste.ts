@@ -4,30 +4,24 @@ import { cfNatoIl, cfTornaColNome, cfTornaConLaData, cfValido } from './codiceFi
 /**
  * Il modulo di iscrizione, quello che prima stava su Google Form.
  *
- * Chi si iscrive risponde alle domande e carica i file (il modulo firmato e
- * la ricevuta); la segreteria trova la richiesta in RICHIESTE
+ * Chi si iscrive risponde alle domande e carica i file (il modulo firmato,
+ * il documento d'identità, il certificato medico e la ricevuta); la segreteria trova la richiesta in RICHIESTE
  * ONLINE e la accoglie o la rifiuta. Come il resto dell'app, due
  * implementazioni dietro la stessa interfaccia: `richiesteProva` le tiene sul
  * dispositivo, `richiesteSupabase` le manda al database
  * (`supabase/06-iscrizioni.sql`), dove chi non ha un accesso può solo
  * mandarle e la segreteria è l'unica a leggerle.
  *
- * Il documento d'identità e il certificato medico non si caricano: si
- * portano in segreteria, che ne tiene la copia su carta.
+ * Il documento d'identità e il certificato medico si caricano per comodità,
+ * ma non restano online: la segreteria li stampa, li tiene su carta e li
+ * cancella dall'app (`DA_STAMPARE`).
  *
  * I controlli qui sotto sono gli stessi della funzione `invia_iscrizione`:
  * nel browser servono a dire subito cosa manca, ma a decidere è il server.
  */
 
 export type Formula = 'annuale' | 'trimestre'
-/** I file che chi si iscrive carica. */
-export type TipoFile = 'modulo' | 'ricevuta'
-/**
- * I file che una richiesta può avere: anche il documento d'identità, fronte
- * e retro, di quando il modulo lo chiedeva. Quelli la segreteria li stampa e
- * li cancella.
- */
-export type TipoArrivato = TipoFile | 'documento' | 'documento-retro'
+export type TipoFile = 'modulo' | 'documento' | 'documento-retro' | 'certificato' | 'ricevuta'
 export type StatoRichiesta = 'nuova' | 'accolta' | 'rifiutata'
 
 export interface DatiRichiesta {
@@ -72,7 +66,7 @@ export interface Richiesta extends DatiRichiesta {
 }
 
 export interface FileRichiesta {
-  tipo: TipoArrivato
+  tipo: TipoFile
   /** Un link che scade: si apre subito, non si salva. */
   url: string
   pdf: boolean
@@ -96,10 +90,10 @@ export interface DatiRichieste {
   // Per la segreteria.
   richieste(): Promise<Richiesta[]>
   file(richiestaId: string): Promise<FileRichiesta[]>
-  /** Le richieste che hanno ancora il documento d'identità caricato, per id. */
+  /** Le richieste che hanno ancora un file `DA_STAMPARE` caricato, per id. */
   conDocumento(): Promise<Set<string>>
-  /** Un file solo, per sempre: il documento, dopo averlo stampato. */
-  eliminaFile(richiestaId: string, tipo: TipoArrivato): Promise<void>
+  /** Un file solo, per sempre: il documento o il certificato, dopo averlo stampato. */
+  eliminaFile(richiestaId: string, tipo: TipoFile): Promise<void>
   /**
    * La persona in elenco, iscritta ai corsi scelti: torna il suo id. Con
    * `personaId` la scheda la sceglie la segreteria; senza, la si cerca (vedi
@@ -114,17 +108,16 @@ export interface DatiRichieste {
 /** I file da caricare, nell'ordine in cui si chiedono. */
 export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string; obbligatorio: boolean }> = [
   { tipo: 'modulo', etichetta: 'MODULO FIRMATO', dettaglio: 'Una foto, o il PDF firmato dal telefono.', obbligatorio: true },
+  { tipo: 'documento', etichetta: "CARTA D'IDENTITÀ", dettaglio: 'Il fronte. Per un minore, quella del genitore.', obbligatorio: true },
+  { tipo: 'documento-retro', etichetta: 'RETRO DEL DOCUMENTO', dettaglio: 'Se il fronte non basta.', obbligatorio: false },
+  { tipo: 'certificato', etichetta: 'CERTIFICATO MEDICO', dettaglio: 'Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria.', obbligatorio: false },
   { tipo: 'ricevuta', etichetta: 'RICEVUTA DEL PAGAMENTO', dettaglio: 'La quota associativa e il trimestre, oppure l’annuale.', obbligatorio: true },
 ]
 
-/** Il documento d'identità di prima: da stampare e cancellare. */
-export const DA_STAMPARE: TipoArrivato[] = ['documento', 'documento-retro']
+/** I file che non restano nell'app: la segreteria li stampa, li tiene su carta e li cancella. */
+export const DA_STAMPARE: TipoFile[] = ['documento', 'documento-retro', 'certificato']
 
-export const ETICHETTA_FILE: Record<TipoArrivato, string> = {
-  ...(Object.fromEntries(FILE.map((f) => [f.tipo, f.etichetta])) as Record<TipoFile, string>),
-  documento: "CARTA D'IDENTITÀ",
-  'documento-retro': 'RETRO DEL DOCUMENTO',
-}
+export const ETICHETTA_FILE = Object.fromEntries(FILE.map((f) => [f.tipo, f.etichetta])) as Record<TipoFile, string>
 
 /** I tipi che il contenitore accetta, con l'estensione che il nome del file deve avere. */
 export const ESTENSIONI: Record<string, string> = {
@@ -166,8 +159,8 @@ const AGONISTICI = /\b(judo|aikido|lotta)\b/i
 /**
  * Quale certificato medico ricordare a chi si iscrive: nessuno sotto i 6
  * anni (o finché non c'è la data di nascita), l'agonistico dai 12 per judo,
- * aikido e lotta, se no quello normale. Si consegna in segreteria, non si
- * carica online: è un dato sulla salute, e si tiene su carta.
+ * aikido e lotta, se no quello normale. Si può caricare col modulo o portare
+ * in segreteria: è un dato sulla salute, e si tiene su carta.
  */
 export function certificatoDaPortare(natoIl: string, nomiCorsi: string[], oggi = new Date()): 'nessuno' | 'normale' | 'agonistico' {
   if (!compiuti(natoIl, 6, oggi)) return 'nessuno'

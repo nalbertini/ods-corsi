@@ -8,6 +8,7 @@ p1_count: 3
 target_identity: "file:/Users/nicola/Automation/ods-corsi/.claude/worktrees/upbeat-ptolemy-e6c8dc/src/components/segreteria"
 timestamp: 2026-10-03T04-36-12Z
 slug: src-components-segreteria
+closed: true
 ---
 Method: dual-agent (A: design review · B: detector + browser)
 

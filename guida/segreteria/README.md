@@ -21,6 +21,10 @@ con **ISTRUTTORI →** nel menu, senza uscire.
 
 ## Il menu
 
+In cima al menu c'è **Cerca iscritto**: si scrive un pezzo del nome o del
+cognome, si sceglie con le frecce (o col mouse) e Invio apre la sua scheda, da
+qualunque voce. Il tasto **/** ci porta subito, senza mouse.
+
 A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
 **PERSONE** (ISCRITTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
@@ -99,3 +103,15 @@ cambia voce del menu, anche aprendo una scheda e tornando.
 
 Ogni cambio si salva subito: non c'è un tasto «salva» generale. In basso
 compare un avviso che dice cosa è stato fatto.
+
+## Le conferme
+
+Prima di un'azione che pesa (annullare una ricevuta o una lezione, accogliere o
+rifiutare una richiesta, cancellare un file) l'app chiede conferma con una
+finestra sua: il tasto di sinistra lascia stare, quello di destra dice cosa fa
+(«SÌ, ANNULLA LA RICEVUTA»). È rosso quando non si torna indietro. ESC, o un
+clic fuori, lascia stare.
+
+Se si cambia voce del menu mentre una ricevuta, un iscritto nuovo o la modifica
+di una scheda sono scritti a metà, l'app chiede prima: **TORNA A FINIRE** o
+**LASCIALO A METÀ**. Chiudendo la pagina lo chiede il browser.

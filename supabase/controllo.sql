@@ -31,6 +31,14 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_policies where schemaname = 'public' and policyname = 'sessioni_legge')),
   ('02-policy.sql', 'gli istruttori tolgono un segno dall''appello',
     exists (select 1 from pg_policies where schemaname = 'public' and policyname = 'presenze_cancella' and qual like '%e_personale%')),
+  -- Una funzione senza search_path cerca le tabelle dove dice chi la chiama.
+  -- Erano in più file: se dice DA LANCIARE, li rilancia tutti, poi il 06.
+  ('02-policy.sql', 'ogni funzione dice dove cerca le tabelle (con 04, 06, 07, 08)',
+    not exists (
+      select 1 from pg_proc p
+      where p.pronamespace = 'public'::regnamespace
+        and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
+        and not exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%'))),
   ('03-funzioni.sql', 'il calendario',
     exists (select 1 from dentro where nome = 'materializza_sessioni')),
   ('03-funzioni.sql', 'di una lezione l''istruttore cambia solo stato e nota',
@@ -60,22 +68,22 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('06-iscrizioni.sql', 'il codice fiscale controllato',
     exists (select 1 from dentro where nome = 'cf_controllo')),
   -- Chi non ha un accesso chiama solo le funzioni del modulo. Se ce n'è
-  -- un'altra, è stato rilanciato uno dei primi cinque file senza il 06 dopo.
-  -- Non contano le funzioni dei trigger, che non si possono chiamare da
-  -- fuori, e quelle delle estensioni: su Supabase `citext` sta in `public`,
+  -- un'altra, è stato rilanciato uno dei primi cinque file senza il 06 dopo,
+  -- o un file dopo il 06 ha lasciato aperta una funzione sua: rilanciare il
+  -- 06 la chiude. Contano anche quelle dei trigger, come in `prova/rls.sql`.
+  -- Non contano quelle delle estensioni: su Supabase `citext` sta in `public`,
   -- è di `supabase_admin` e il SQL Editor non può toglierle i permessi, ma
   -- sono le funzioni del tipo delle email e non toccano nessuna tabella.
   ('06-iscrizioni.sql', 'i permessi, dopo gli altri file',
     not exists (
       select 1 from pg_proc p
       where p.pronamespace = 'public'::regnamespace
-        and p.prorettype <> 'trigger'::regtype
         and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
         and has_function_privilege('anon', p.oid, 'execute')
         and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino'))),
-  ('06-iscrizioni.sql', 'il documento d''identità su carta',
-    to_regprocedure('public.richieste_con_documento()') is not null
-    and not exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%documento%')),
+  ('06-iscrizioni.sql', 'documento e certificato col modulo, da stampare',
+    exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%certificato%')
+    and exists (select 1 from dentro where nome = 'richieste_con_documento' and corpo like '%certificato%')),
   ('07-certificati-pagamenti.sql', 'certificati e pagamenti',
     to_regclass('public.schede_iscritti') is not null),
   ('07-certificati-pagamenti.sql', 'certificato e documento su carta',
@@ -144,8 +152,16 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.quote_ricevute') is not null),
   ('26-colori-corsi.sql', 'nessun corso rosso',
     not exists (select 1 from corsi where lower(colore) = '#e4292a')),
+  ('28-elimina-istruttore.sql', 'eliminare un istruttore che non ha mai insegnato',
+    exists (select 1 from dentro where nome = 'elimina_istruttore')
+    and exists (select 1 from pg_trigger where tgname = 'persone_non_si_elimina')),
+  ('28-elimina-istruttore.sql', 'eliminare anche la segreteria che insegna, ma non se stessi',
+    exists (select 1 from dentro where nome = 'elimina_istruttore' and corpo like '%anche_istruttore%')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
+  ('25-segnalazioni.sql', 'un filo senza titolo non entra',
+    exists (select 1 from pg_constraint where conname = 'segnalazioni_check'
+            and pg_get_constraintdef(oid) like '%titolo IS NOT NULL%')),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')

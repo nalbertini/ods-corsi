@@ -508,6 +508,12 @@ export interface DatiSegreteria {
    * Va chiesto dalla funzione `invita` (`supabase/functions/invita`).
    */
   invita(personaId: string): Promise<'invito' | 'password'>
+  /**
+   * Elimina un istruttore che non ha mai insegnato: la scheda e l'account. Chi
+   * ha corsi, lezioni in calendario o presenze da istruttore non si elimina
+   * (`28-elimina-istruttore.sql`). Va chiesto dalla funzione `elimina`.
+   */
+  eliminaIstruttore(personaId: string): Promise<void>
 
   salvaSala(s: { id?: string; nome: string; capienza?: number }): Promise<string>
   /** La musica delle sale, per il tablet (vedi `musica.ts`). */
@@ -636,12 +642,6 @@ export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: strin
 /** In regola: certificato valido (anche se in scadenza) e quota pagata. */
 export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string) =>
   ['valido', 'in_scadenza'].includes(comeCertificato(p.certificato, oggi)) && comePaga(p, oggi) === 'pagato'
-
-export const PAGAMENTI: Array<[StatoPagamento, string]> = [
-  ['da_pagare', 'DA PAGARE'],
-  ['in_parte', 'IN PARTE'],
-  ['pagato', 'PAGATO'],
-]
 
 /** Un giorno `AAAA-MM-GG` spostato di tanti giorni, senza passare dai fusi. */
 function spostaGiorno(g: string, giorni: number) {
