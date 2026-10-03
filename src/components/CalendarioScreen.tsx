@@ -142,7 +142,7 @@ export function CalendarioScreen({
           <span className="num lezione-conto" data-fatto={l.presenti > 0}>
             {l.presenti > 0 ? `${l.presenti}/${l.iscritti}` : l.iscritti}
           </span>
-          <span style={{ fontSize: 11, letterSpacing: '0.14em', color: 'var(--faint)' }}>
+          <span style={{ fontSize: 12, letterSpacing: '0.14em', color: 'var(--dim)' }}>
             {l.presenti > 0 ? 'PRESENTI' : 'ISCRITTI'}
           </span>
         </span>
@@ -153,13 +153,13 @@ export function CalendarioScreen({
   return (
     <>
       <div className="row pad" style={{ gap: 8, paddingTop: 14, alignItems: 'center' }}>
-        <button className="btn btn-ghost" style={{ minHeight: 40, padding: '0 12px', fontSize: 14 }} onClick={() => scorri(-1)}>
+        <button className="btn btn-ghost" style={{ minHeight: 44, minWidth: 44, padding: 0, fontSize: 22 }} aria-label="Settimana prima" onClick={() => scorri(-1)}>
           ‹
         </button>
         <span className="ob grow" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '0.06em', textAlign: 'center' }}>
           {elenco ? intervallo(giorni[0], giorni[6]) : giornoPerEsteso(scelto).toUpperCase()}
         </span>
-        <button className="btn btn-ghost" style={{ minHeight: 40, padding: '0 12px', fontSize: 14 }} onClick={() => scorri(1)}>
+        <button className="btn btn-ghost" style={{ minHeight: 44, minWidth: 44, padding: 0, fontSize: 22 }} aria-label="Settimana dopo" onClick={() => scorri(1)}>
           ›
         </button>
       </div>

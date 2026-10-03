@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { DettaglioSessione, StatoPresenza } from '../lib/sala'
 import { giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { timerDellaLezione } from '../lib/aree'
-import { Cronometro } from './Icons'
+import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from './Prove'
@@ -39,12 +39,18 @@ export function AppelloScreen({
   onPresenti,
   soloDi,
   onSegnalate,
+  onIndietro,
+  onChiudi,
 }: {
   dati: Dati
   sessioneId: string
   onPresenti?: (n: number) => void
   soloDi?: string
   onSegnalate?: () => void
+  /** Sul telefono: torna al calendario. */
+  onIndietro?: () => void
+  /** Dopo CHIUDI L'APPELLO, col nome del corso. */
+  onChiudi?: (corso: string) => void
 }) {
   const [d, setD] = useState<DettaglioSessione | null>(null)
   const [segnalate, setSegnalate] = useState<SegnalataVista[]>([])
@@ -73,6 +79,10 @@ export function AppelloScreen({
   }
   const [guaio, setGuaio] = useState<string | null>(null)
   const [conProve, setConProve] = useState(false)
+  const prove = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (conProve) prove.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [conProve])
 
   const ricarica = useCallback(() => {
     let vivo = true
@@ -107,7 +117,7 @@ export function AppelloScreen({
 
   const segnati = d.elenco.filter((p) => p.stato !== null).length
   const iscritti = d.elenco.filter((p) => !p.prova)
-  const prove = d.elenco.filter((p) => p.prova)
+  const inProva = d.elenco.filter((p) => p.prova)
 
   // presente → assente → non segnato, e si ricomincia.
   const prossimo = (s: StatoPresenza | null): StatoPresenza | null =>
@@ -121,9 +131,12 @@ export function AppelloScreen({
     void dati.segna(sessioneId, personaId, stato)
   }
 
-  const tutti = (stato: StatoPresenza) => {
-    setD((v) => v && { ...v, elenco: v.elenco.map((p) => ({ ...p, stato })) })
-    void dati.segnaTutti(sessioneId, stato)
+  // Solo chi non è ancora segnato: le assenze già messe restano.
+  const tuttiGliAltri = () => {
+    if (segnati === 0) {
+      setD((v) => v && { ...v, elenco: v.elenco.map((p) => ({ ...p, stato: 'presente' })) })
+      void dati.segnaTutti(sessioneId, 'presente')
+    } else for (const p of d.elenco) if (p.stato === null) tocca(p.id, 'presente')
   }
 
   const aggiungiProva = async (chi: ChiProva) => {
@@ -141,66 +154,58 @@ export function AppelloScreen({
     for (const p of d.elenco) if (p.stato !== null) void dati.segna(sessioneId, p.id, null)
   }
 
+  // Chiudere vuol dire che chi non è segnato non c'era: così in segreteria
+  // l'appello risulta FATTO, e non lasciato a metà.
+  const chiudi = () => {
+    for (const p of d.elenco) if (p.stato === null) tocca(p.id, 'assente')
+    onChiudi?.(d.sessione.corso)
+  }
+
+  const daSegnare = d.elenco.length - segnati
+
   return (
     <>
-      <div className="pad row" style={{ gap: 10, paddingTop: 14 }}>
-        <div className="stack grow" style={{ gap: 4, minWidth: 0 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', color: 'var(--faint)' }}>
-            {giornoPerEsteso(d.sessione.inizio).toUpperCase()} · {oraDi(d.sessione.inizio)}
-          </span>
-          <span className="chi-kanji" style={{ fontSize: 13, color: 'var(--dim)' }}>
-            <Kanji segni={d.sessione.kanji} />
-            <span>{[d.sessione.sala, d.sessione.istruttore].filter(Boolean).join(' · ')}</span>
-          </span>
-        </div>
-        <button
-          type="button"
-          className="btn btn-ghost"
-          style={{ minHeight: 44, fontSize: 14, padding: '0 14px' }}
-          aria-expanded={conProve}
-          onClick={() => setConProve((x) => !x)}
-        >
-          PROVE
-        </button>
-        {/* Il timer della lezione: si apre con i timer del corso in cima. */}
-        <a className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px', gap: 8 }} href={timerDellaLezione(d.sessione)}>
-          <Cronometro size={18} />
-          TIMER
-        </a>
-      </div>
-
-      <div className="pad" style={{ paddingTop: 14 }}>
-        <div className="card stack" style={{ gap: 12, padding: 14 }}>
-          <div className="row" style={{ alignItems: 'baseline', gap: 10 }}>
-            <span className="num conto-appello">{presenti}</span>
-            <span className="num" style={{ fontSize: 22, color: 'var(--dim)' }}>/ {d.elenco.length}</span>
-            <span className="grow" />
-            <span style={{ fontSize: 12, letterSpacing: '0.16em', color: 'var(--faint)' }}>
-              {segnati === d.elenco.length ? 'APPELLO FATTO' : `${d.elenco.length - segnati} DA SEGNARE`}
+      {/* In cima e ferma mentre si scorre l'elenco: quale lezione, quanti
+          sono, e il gesto più frequente, sempre sotto il pollice. */}
+      <div className="appello-testa">
+        <div className="row pad" style={{ gap: 10, paddingTop: 12 }}>
+          {onIndietro && (
+            <button className="icon-btn" onClick={onIndietro} aria-label="Torna al calendario">
+              <Back />
+            </button>
+          )}
+          <span className="stack grow" style={{ gap: 3, minWidth: 0 }}>
+            <span className="ob appello-titolo">{d.sessione.corso.toUpperCase()}</span>
+            <span className="chi-kanji" style={{ fontSize: 13, color: 'var(--dim)' }}>
+              <Kanji segni={d.sessione.kanji} />
+              <span>
+                {[`${giornoPerEsteso(d.sessione.inizio)} ${oraDi(d.sessione.inizio)}`, d.sessione.sala, soloDi ? undefined : d.sessione.istruttore]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </span>
             </span>
-          </div>
-          <div className="row" style={{ gap: 8 }}>
-            <button className="btn btn-go grow" style={{ minHeight: 48, fontSize: 15 }} onClick={() => tutti('presente')}>
-              TUTTI PRESENTI
-            </button>
-            <button className="btn btn-ghost" style={{ minHeight: 48, fontSize: 15, padding: '0 16px' }} onClick={azzera}>
-              AZZERA
-            </button>
-          </div>
+          </span>
+          {/* Il timer della lezione: si apre con i timer del corso in cima. */}
+          <a className="icon-btn" href={timerDellaLezione(d.sessione)} aria-label="Apri il timer della lezione" title="Il timer della lezione">
+            <Cronometro size={20} />
+          </a>
+        </div>
+
+        <div className="row pad" style={{ gap: 10, paddingTop: 12, alignItems: 'baseline' }}>
+          <span className="num conto-appello">{presenti}</span>
+          <span className="num" style={{ fontSize: 22, color: 'var(--dim)' }}>/ {d.elenco.length}</span>
+          <span className="grow" />
+          <span className="num appello-stato" data-fatto={daSegnare === 0}>
+            {daSegnare === 0 ? '✓ TUTTI SEGNATI' : `${daSegnare} DA SEGNARE`}
+          </span>
+        </div>
+        <div className="row pad" style={{ gap: 8, paddingTop: 10 }}>
+          <button className="btn btn-go grow" style={{ minHeight: 48, fontSize: 15, padding: '0 12px' }} disabled={daSegnare === 0} onClick={tuttiGliAltri}>
+            {segnati === 0 ? 'TUTTI PRESENTI' : 'GLI ALTRI PRESENTI'}
+          </button>
+          <Azzera disabled={segnati === 0} onAzzera={azzera} />
         </div>
       </div>
-
-      {conProve && (
-        <div className="pad" style={{ paddingTop: 14 }}>
-          <PannelloProve
-            stile="app"
-            cerca={() => dati.provati()}
-            giaQui={new Set(d.elenco.map((p) => p.id))}
-            onAggiungi={aggiungiProva}
-            onChiudi={() => setConProve(false)}
-          />
-        </div>
-      )}
 
       {segnalate.length > 0 && (
         <>
@@ -239,6 +244,7 @@ export function AppelloScreen({
         <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{iscritti.length}</span>
       </div>
 
+      {segnati === 0 && <p className="pad appello-aiuto">Tocca un nome: presente, poi assente, poi di nuovo da segnare.</p>}
       <div className="pad elenco-appello">
         {iscritti.map((p) => (
           <button
@@ -256,15 +262,15 @@ export function AppelloScreen({
         ))}
       </div>
 
-      {prove.length > 0 && (
+      {inProva.length > 0 && (
         <>
           <div className="rule">
             <span className="rule-label">PROVE</span>
             <div className="rule-line" />
-            <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{prove.length}</span>
+            <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{inProva.length}</span>
           </div>
           <div className="pad elenco-appello">
-            {prove.map((p) => (
+            {inProva.map((p) => (
               <div key={p.id} className="riga-prova">
                 <button
                   className="riga-appello"
@@ -284,6 +290,66 @@ export function AppelloScreen({
           </div>
         </>
       )}
+
+      {/* Chi viene a provare si aggiunge in fondo, dove entra: l'elenco resta
+          dov'è, e la tastiera non lo copre. */}
+      <div className="pad" ref={prove} style={{ paddingTop: 4 }}>
+        {conProve ? (
+          <PannelloProve
+            stile="app"
+            cerca={() => dati.provati()}
+            giaQui={new Set(d.elenco.map((p) => p.id))}
+            onAggiungi={aggiungiProva}
+            onChiudi={() => setConProve(false)}
+          />
+        ) : (
+          <button type="button" className="btn btn-dashed" style={{ minHeight: 52, fontSize: 16 }} onClick={() => setConProve(true)}>
+            + AGGIUNGI CHI PROVA
+          </button>
+        )}
+      </div>
+
+      {onChiudi && (
+        <div className="pad stack appello-fine">
+          <button type="button" className="btn btn-primary" onClick={chiudi}>
+            CHIUDI L’APPELLO
+          </button>
+          <span className="appello-aiuto">
+            {daSegnare === 0
+              ? 'Torna al calendario. Se c’è rete parte subito, se no appena torna.'
+              : `${daSegnare === 1 ? 'Chi non è segnato risulta assente' : `I ${daSegnare} non segnati risultano assenti`}. Si può sempre riaprire e correggere.`}
+          </span>
+        </div>
+      )}
     </>
+  )
+}
+
+/**
+ * AZZERA toglie tutti i segni: due tocchi, come TOGLI nelle prove. Il primo
+ * chiede, il secondo azzera, e senza il secondo dopo qualche secondo torna
+ * com'era. Accanto a TUTTI PRESENTI, con le mani sudate, uno solo è troppo poco.
+ */
+function Azzera({ disabled, onAzzera }: { disabled: boolean; onAzzera: () => void }) {
+  const [sicuro, setSicuro] = useState(false)
+  useEffect(() => {
+    if (!sicuro) return
+    const t = window.setTimeout(() => setSicuro(false), 4000)
+    return () => window.clearTimeout(t)
+  }, [sicuro])
+  return (
+    <button
+      type="button"
+      className="btn btn-ghost azzera"
+      data-sicuro={sicuro}
+      disabled={disabled}
+      onClick={() => {
+        if (!sicuro) return setSicuro(true)
+        setSicuro(false)
+        onAzzera()
+      }}
+    >
+      {sicuro ? 'SICURO? AZZERA' : 'AZZERA'}
+    </button>
   )
 }

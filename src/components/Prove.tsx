@@ -123,7 +123,7 @@ export function PannelloProve({
               <input id={id('cognome')} className={k.campo} autoComplete="off" value={cognome} onChange={(e) => setCognome(e.target.value)} />
             </label>
             <label className="stack" style={{ gap: 4 }} htmlFor={id('telefono')}>
-              <span className={k.etichetta}>TELEFONO</span>
+              <span className={k.etichetta}>TELEFONO, SE LO DÀ</span>
               <input id={id('telefono')} className={`${k.campo} num`} type="tel" inputMode="tel" autoComplete="off" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
             </label>
           </div>

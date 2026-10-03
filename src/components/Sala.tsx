@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { type Dati, dati as caricaDati, inProvaScelta, scegliProva } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
 import { CalendarioScreen } from './CalendarioScreen'
 import { AppelloScreen } from './AppelloScreen'
-import { Back } from './Icons'
 import { useLargo } from '../lib/largo'
 import { TIMER } from '../lib/aree'
 import type { SegnalataVista } from '../lib/segnalate'
@@ -28,10 +27,33 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
   const [presenti, setPresenti] = useState<Record<string, number>>({})
   // Le presenze segnalate si rileggono quando se ne gestisce una dall'appello.
   const [giroSegnalate, setGiroSegnalate] = useState(0)
-  const apri = (sessioneId: string) => void d?.dettaglio(sessioneId).then((x) => x && setAperta(x.sessione))
+  const apri = (sessioneId: string) => void d?.dettaglio(sessioneId).then((x) => x && apriLezione(x.sessione))
   const segnalate = d && <Segnalate dati={d} soloDi={soloDi} giro={giroSegnalate} onApri={apri} />
   const ricontaSegnalate = () => setGiroSegnalate((g) => g + 1)
   const largo = useLargo()
+  // L'ultimo appello chiuso, per dire se è arrivato in segreteria.
+  const [chiuso, setChiuso] = useState<string | null>(null)
+
+  // Sul telefono calendario e appello scorrono nello stesso posto: l'appello
+  // si apre in cima, e tornando il calendario è dove lo si era lasciato.
+  const qui = useRef<HTMLDivElement>(null)
+  const eraA = useRef(0)
+  const apriLezione = (s: SessioneVista | null) => {
+    const scorre = qui.current?.closest('.scroll')
+    if (s && !aperta && scorre) eraA.current = scorre.scrollTop
+    setAperta(s)
+    if (s) setChiuso(null)
+  }
+  useLayoutEffect(() => {
+    const scorre = qui.current?.closest('.scroll')
+    if (scorre && !largo) scorre.scrollTop = aperta ? 0 : eraA.current
+  }, [aperta?.id, largo])
+  // Dopo la chiusura il calendario riparte dall'alto, dove c'è l'esito.
+  const chiudi = (corso: string) => {
+    eraA.current = 0
+    setChiuso(corso)
+    apriLezione(null)
+  }
 
   const [guaio, setGuaio] = useState(false)
   const [tentativo, setTentativo] = useState(0)
@@ -61,8 +83,10 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
     )
   if (!d) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
 
+  const esito = chiuso && <Esito corso={chiuso} inCoda={inCoda} onVa={() => setChiuso(null)} />
+
   return (
-    <>
+    <div ref={qui} style={{ display: 'contents' }}>
       {d.modo === 'prova' && (
         <div className="nastro-prova">
           DATI DI PROVA · ISCRITTI INVENTATI
@@ -80,31 +104,26 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
           )}
         </div>
       )}
+      {inCoda > 0 && !chiuso && <SpiaCoda n={inCoda} />}
 
       {largo ? (
         <div className="sala-due">
           <div className="sala-lato">
+            {esito}
             {segnalate}
-            <CalendarioScreen dati={d} onApri={setAperta} apertaId={aperta?.id} presenti={presenti} soloDi={soloDi} />
+            <CalendarioScreen dati={d} onApri={apriLezione} apertaId={aperta?.id} presenti={presenti} soloDi={soloDi} />
           </div>
           <div className="sala-lato">
             {aperta ? (
-              <>
-                <div className="row pad" style={{ gap: 10, paddingTop: 16, alignItems: 'center' }}>
-                  <span className="ob grow" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.06em', minWidth: 0 }}>
-                    {aperta.corso.toUpperCase()}
-                  </span>
-                  {inCoda > 0 && <span className="spia-coda">{inCoda} DA INVIARE</span>}
-                </div>
-                <AppelloScreen
-                  key={aperta.id}
-                  dati={d}
-                  sessioneId={aperta.id}
-                  soloDi={soloDi}
-                  onSegnalate={ricontaSegnalate}
-                  onPresenti={(n) => setPresenti((p) => ({ ...p, [aperta.id]: n }))}
-                />
-              </>
+              <AppelloScreen
+                key={aperta.id}
+                dati={d}
+                sessioneId={aperta.id}
+                soloDi={soloDi}
+                onSegnalate={ricontaSegnalate}
+                onPresenti={(n) => setPresenti((p) => ({ ...p, [aperta.id]: n }))}
+                onChiudi={chiudi}
+              />
             ) : (
               <div className="sala-vuota">
                 <span className="rule-label">APPELLO</span>
@@ -115,27 +134,72 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
             )}
           </div>
         </div>
-      ) : aperta ? (
-        <>
-          <div className="row pad" style={{ gap: 10, paddingTop: 12, alignItems: 'center' }}>
-            <button className="icon-btn" onClick={() => setAperta(null)} aria-label="Torna al calendario">
-              <Back />
-            </button>
-            <span className="ob grow" style={{ fontSize: 22, fontWeight: 700, letterSpacing: '0.06em', minWidth: 0 }}>
-              {aperta.corso.toUpperCase()}
-            </span>
-            {inCoda > 0 && <span className="spia-coda">{inCoda} DA INVIARE</span>}
-          </div>
-          <AppelloScreen key={aperta.id} dati={d} sessioneId={aperta.id} soloDi={soloDi} onSegnalate={ricontaSegnalate} />
-        </>
       ) : (
         <>
-          {segnalate}
-          <CalendarioScreen dati={d} onApri={setAperta} soloDi={soloDi} />
-          <Strumenti onMieiTimer={onMieiTimer} />
+          {aperta && (
+            <AppelloScreen
+              key={aperta.id}
+              dati={d}
+              sessioneId={aperta.id}
+              soloDi={soloDi}
+              onSegnalate={ricontaSegnalate}
+              onPresenti={(n) => setPresenti((p) => ({ ...p, [aperta.id]: n }))}
+              onIndietro={() => apriLezione(null)}
+              onChiudi={chiudi}
+            />
+          )}
+          {/* Il calendario resta montato sotto l'appello: tornando non si
+              rilegge, e si ritrova dov'era. */}
+          <div hidden={!!aperta}>
+            {esito}
+            {segnalate}
+            <CalendarioScreen dati={d} onApri={apriLezione} presenti={presenti} soloDi={soloDi} />
+            <Strumenti onMieiTimer={onMieiTimer} />
+          </div>
         </>
       )}
-    </>
+    </div>
+  )
+}
+
+/**
+ * Le scritture che non sono ancora arrivate al server, in ogni faccia e non
+ * solo dentro la lezione: chi esce dall'appello senza rete deve sapere che
+ * aspettano, e che partono da sole.
+ */
+function SpiaCoda({ n }: { n: number }) {
+  return (
+    <div className="pad" style={{ paddingTop: 12 }}>
+      <div className="spia-coda" role="status">
+        <span className="num spia-coda-quante">{n === 1 ? 'UN SEGNO DA INVIARE' : `${n} SEGNI DA INVIARE`}</span>
+        <span>Sono salvati sul telefono: partono da soli appena c’è rete.</span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Dopo CHIUDI L'APPELLO: arrivato in segreteria, o salvato sul telefono in
+ * attesa della rete. Cambia da solo quando la coda si svuota.
+ */
+function Esito({ corso, inCoda, onVa }: { corso: string; inCoda: number; onVa: () => void }) {
+  const arrivato = inCoda === 0
+  return (
+    <div className="pad" style={{ paddingTop: 12 }}>
+      <div className="card row esito-appello" data-arrivato={arrivato} role="status">
+        <span className="appello-segno" aria-hidden="true">{arrivato ? '✓' : '…'}</span>
+        <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+          <span className="num appello-esito">{arrivato ? 'APPELLO ARRIVATO IN SEGRETERIA' : 'APPELLO SALVATO SUL TELEFONO'}</span>
+          <span style={{ fontSize: 14, color: 'var(--dim)' }}>
+            {corso}
+            {arrivato ? '.' : `: ${inCoda === 1 ? 'un segno aspetta' : `${inCoda} segni aspettano`} la rete, e partono da soli.`}
+          </span>
+        </span>
+        <button type="button" className="icon-btn testo" onClick={onVa}>
+          OK
+        </button>
+      </div>
+    </div>
   )
 }
 
