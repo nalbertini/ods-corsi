@@ -10,6 +10,7 @@ import { memoria } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
+import { cosaNonVaSegnalazione, type Segnalazione } from './segnalazioni'
 import { richiesteDi } from './richiesteProva'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -444,6 +445,35 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async gestisciSegnalata(id, accogli) {
       gestisciSegnalataProva(id, accogli, 'Segreteria di prova')
+    },
+
+    // In prova chi usa la segreteria è la segreteria di prova: ogni messaggio è suo.
+    async segnalazioni() {
+      return a().segnalazioni ?? []
+    },
+
+    async apriSegnalazione(titolo, testo) {
+      const no = cosaNonVaSegnalazione(testo, titolo)
+      if (no) throw new Error(no)
+      const id = `sz-${unico()}`
+      const s: Segnalazione = { id, titolo: titolo.trim(), messaggi: [{ id, autore: 'Segreteria di prova', mio: true, testo: testo.trim(), il: new Date().toISOString() }] }
+      a().segnalazioni = [...(a().segnalazioni ?? []), s]
+      salva()
+    },
+
+    async rispondiSegnalazione(id, testo) {
+      const no = cosaNonVaSegnalazione(testo)
+      if (no) throw new Error(no)
+      const tutte = a().segnalazioni ?? []
+      if (!tutte.some((x) => x.id === id)) throw new Error('Segnalazione inesistente')
+      const m = { id: `sz-${unico()}`, autore: 'Segreteria di prova', mio: true, testo: testo.trim(), il: new Date().toISOString() }
+      a().segnalazioni = tutte.map((x) => (x.id === id ? { ...x, messaggi: [...x.messaggi, m] } : x))
+      salva()
+    },
+
+    async chiudiSegnalazione(id, chiusa) {
+      a().segnalazioni = (a().segnalazioni ?? []).map((x) => (x.id === id ? { ...x, chiusaIl: chiusa ? new Date().toISOString() : undefined } : x))
+      salva()
     },
 
     async mettiNelNucleo(personaId, titolareId) {
