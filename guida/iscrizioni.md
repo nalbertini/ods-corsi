@@ -50,6 +50,9 @@ Chi si iscrive risponde alle domande dal telefono:
   serve, e in fondo, in piccolo, che è stato firmato dal telefono e quando.
   È quello che parte come modulo firmato. Chi ha già il foglio firmato a mano
   sceglie **Ho il foglio firmato** e ne carica la foto.
+  Se si cambia la data di nascita e chi si iscrive diventa minore (o non lo è
+  più), il foglio è un altro: firma, crocette e foto del foglio si azzerano, e
+  un avviso giallo dice «Firma e autorizzazioni vanno rifatte».
 - **I file**: la foto della **carta d'identità** (per un minore, quella del
   genitore; non si chiede per un minore aggiunto dal nucleo, perché la
   segreteria ha già quella del genitore), il retro se serve, il **certificato
@@ -66,6 +69,11 @@ Chi si iscrive risponde alle domande dal telefono:
   «Accetto il Regolamento Sociale» (col link al regolamento, quando c'è:
   `REGOLAMENTO` in `src/lib/iscrizione.ts`) e la casella «Ho letto
   l'informativa privacy».
+
+Nel modulo non resta niente sul telefono: chiuso, si riparte da capo. Per
+questo **← INDIETRO**, se c'è già qualcosa di scritto, firmato o scelto, al
+primo tocco chiede «LE RISPOSTE SI PERDONO · ESCI?» e esce solo al secondo;
+senza il secondo tocco, dopo qualche secondo torna com'era.
 
 Premuto **MANDA LA RICHIESTA**, compare **RICHIESTA ARRIVATA**. Se un file non
 è partito compare **MANCA QUALCHE FILE**, con il tasto per riprovare (per

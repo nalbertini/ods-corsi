@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { certificatoDaPortare, controlla, FILE, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { certificatoDaPortare, chiFirma, controlla, domandaUscita, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -270,6 +270,47 @@ console.log('\n8. i dati anagrafici: dalla richiesta, e dalla scheda dopo')
   const dopo = await s.anagraficaDi(lucaId)
   ok('la correzione è più recente e vince', [dopo.da, dopo.dati.indirizzo], ['segreteria', 'via Nuova 2'])
   ok('e la ricevuta la prende', (await s.intestatarioDi(lucaId)).indirizzo, 'via Nuova 2')
+}
+
+console.log('\n9. INDIETRO dal modulo, e chi firma che cambia')
+{
+  const VUOTO = {
+    nome: '', cognome: '', natoIl: '', natoA: '', codiceFiscale: '', indirizzo: '', cap: '', comune: '', email: '',
+    telefono: '', telefono2: '', genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '', corsi: [],
+    formula: 'trimestre', note: '', regolamento: false,
+  }
+  const DOMANDA = 'LE RISPOSTE SI PERDONO · ESCI?'
+  const modulo = (cambi = {}) => ({ risposte: { ...VUOTO, corsi: [] }, inizio: VUOTO, file: 0, scelte: 0, tratti: 0, privacy: false, luogoGenitore: '', ...cambi })
+  ok('appena aperto: si esce senza domanda', m.domandaUscita(modulo()), undefined)
+  ok('il nome scritto: chiede', m.domandaUscita(modulo({ risposte: { ...VUOTO, nome: 'Luca' } })), DOMANDA)
+  ok('solo un tratto di firma: chiede', m.domandaUscita(modulo({ tratti: 1 })), DOMANDA)
+  ok('solo un file scelto: chiede', m.domandaUscita(modulo({ file: 1 })), DOMANDA)
+  ok('solo la privacy spuntata: chiede', m.domandaUscita(modulo({ privacy: true })), DOMANDA)
+  ok('solo il regolamento spuntato: chiede', m.domandaUscita(modulo({ risposte: { ...VUOTO, regolamento: true } })), DOMANDA)
+  ok('un corso scelto: chiede', m.domandaUscita(modulo({ risposte: { ...VUOTO, corsi: ['judo-adulti'] } })), DOMANDA)
+  const delNucleo = { ...VUOTO, nome: 'Giulia', cognome: 'Rossi' }
+  ok('dal nucleo, coi dati già scritti e nient’altro: senza domanda', m.domandaUscita(modulo({ risposte: { ...delNucleo }, inizio: delNucleo })), undefined)
+  ok('il luogo del genitore solo spazi: senza domanda', m.domandaUscita(modulo({ luogoGenitore: '  ' })), undefined)
+
+  const GENITORE = 'Firma e autorizzazioni vanno rifatte: ora firma il genitore.'
+  const ISCRITTO = 'Firma e autorizzazioni vanno rifatte: ora firma chi si iscrive.'
+  const niente = { tratti: 0, scelte: 0, foto: false, avvisato: false }
+  ok('niente da rifare, minore: nessun avviso', m.firmaDaRifare(true, niente), undefined)
+  ok('niente da rifare, maggiorenne: nessun avviso', m.firmaDaRifare(false, niente), undefined)
+  ok('firmato, ora minore: firma il genitore', m.firmaDaRifare(true, { ...niente, tratti: 3 }), GENITORE)
+  ok('caselle scelte, ora maggiorenne: firma chi si iscrive', m.firmaDaRifare(false, { ...niente, scelte: 2 }), ISCRITTO)
+  ok('solo la foto del foglio: avvisa', m.firmaDaRifare(false, { ...niente, foto: true }), ISCRITTO)
+  // Mentre si corregge la data dalla tastiera, il campo passa per vuoto o per anni come 0002:
+  // chi firma resta quello di prima, se no firma e caselle sparirebbero per niente.
+  ok('data vuota: chi firma resta il genitore', m.chiFirma('', true), true)
+  ok('data vuota: chi firma resta chi si iscrive', m.chiFirma('', false), false)
+  ok('anno a metà (0002): resta il genitore', m.chiFirma('0002-03-01', true), true)
+  ok('anno a metà (0201): resta il genitore', m.chiFirma('0201-03-01', true), true)
+  ok('data vera di un minore: il genitore', m.chiFirma('2015-03-01', false), true)
+  ok('data vera di un adulto: chi si iscrive', m.chiFirma('1990-03-01', true), false)
+  ok('appena aperto, senza data: chi si iscrive', m.chiFirma('', undefined), false)
+  // La data cambia due volte: la firma è già sparita al primo, l'avviso resta e dice chi firma ora.
+  ok('di nuovo maggiorenne, già avvisato: avvisa ancora', m.firmaDaRifare(false, { ...niente, avvisato: true }), ISCRITTO)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
