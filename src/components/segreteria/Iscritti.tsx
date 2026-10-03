@@ -5,7 +5,7 @@ import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, p
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
@@ -112,6 +112,10 @@ export function Iscritti({
   const chiudi = () => {
     if (scelta || nuovo) onScelta(null, 'push')
   }
+  // ← ISCRITTI con un iscritto nuovo o una ricevuta a metà: la stessa domanda del menu e di Indietro.
+  const torna = async () => {
+    if (await lasciare()) chiudi()
+  }
 
   // Una scheda di qualcuno che non c'è più (un link vecchio, un'altra
   // finestra): si torna all'elenco e lo si dice. Solo quando l'elenco arriva:
@@ -126,7 +130,7 @@ export function Iscritti({
   return (
     <>
       {nuovo ? (
-        <SchedaPiena etichetta="Nuovo iscritto" torna="ISCRITTI" onTorna={chiudi}>
+        <SchedaPiena etichetta="Nuovo iscritto" torna="ISCRITTI" onTorna={torna}>
           <Bozza>
           <Nuovo
             d={d}
@@ -142,7 +146,7 @@ export function Iscritti({
           </Bozza>
         </SchedaPiena>
       ) : persona ? (
-        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna="ISCRITTI" onTorna={chiudi}>
+        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`} torna="ISCRITTI" onTorna={torna}>
           <Scheda
             d={d}
             p={persona}

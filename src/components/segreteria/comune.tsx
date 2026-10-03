@@ -51,6 +51,10 @@ export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
 
 // Quello che si sta scrivendo e non è ancora salvato (vedi `useBozza`), con cosa è.
 const bozze = new Map<object, string | undefined>()
+// Chiudendo o ricaricando la pagina con una bozza aperta chiede il browser.
+window.addEventListener('beforeunload', (e) => {
+  if (bozze.size) e.preventDefault()
+})
 
 /**
  * Finché `aperta`, c'è qualcosa scritto a metà: cambiando voce del menu, o
@@ -64,16 +68,14 @@ export function useBozza(aperta: boolean, cosa?: string) {
     if (!aperta) return
     const io = {}
     bozze.set(io, cosa)
-    const via = (e: BeforeUnloadEvent) => e.preventDefault()
-    window.addEventListener('beforeunload', via)
-    return () => {
-      bozze.delete(io)
-      window.removeEventListener('beforeunload', via)
-    }
+    return () => void bozze.delete(io)
   }, [aperta, cosa])
 }
 
 export const bozzaAperta = () => bozze.size > 0
+
+/** Le bozze lasciate apposta (si è già risposto ESCI): ricaricando, il browser non chiede più. */
+export const scordaBozze = () => bozze.clear()
 
 /**
  * Prima di uscire da una bozza: `true` se non c'è niente da perdere o si esce

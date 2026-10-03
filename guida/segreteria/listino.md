@@ -17,6 +17,7 @@ non si cambia qualcosa.
    una barra gialla con **LASCIA STARE** e **SALVA**, e fino a **SALVA** la
    pagina di iscrizione mostra ancora quello di prima. Uscendo dal listino con
    la barra aperta l'app chiede: **TORNA A FINIRE** o **ESCI SENZA SALVARE**.
+   Rimesso tutto com'era, la barra sparisce e non chiede più niente.
 3. **SALVA**. Se qualcosa non va (un prezzo che non si capisce, due corsi con lo
    stesso nome), la barra lo dice in rosso e **SALVA** resta spento.
 

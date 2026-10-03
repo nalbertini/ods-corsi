@@ -39,6 +39,15 @@ export const ENTE_PREDEFINITO: EnteRicevuta = {
     "Esente da imposta e tasse ai sensi dell'art. 11 e 11bis del D.P.R. 971/86 e art.4 e 10 D.P.R. 633/72. Esente da bollo in modo assoluto art.7 Tabella allegato B D.P.R. 642/72",
 }
 
+/**
+ * C'è qualcosa da perdere in CHI FA LE RICEVUTE? Si salva tutto senza spazi
+ * ai lati, e un campo vuoto vale uno che non c'è (la partita IVA).
+ */
+export function enteCambiato(salvato: EnteRicevuta, bozza: EnteRicevuta): boolean {
+  const chiavi = new Set([...Object.keys(salvato), ...Object.keys(bozza)] as (keyof EnteRicevuta)[])
+  return [...chiavi].some((k) => (salvato[k] ?? '').trim() !== (bozza[k] ?? '').trim())
+}
+
 export interface IntestatarioRicevuta {
   nome: string
   cognome: string

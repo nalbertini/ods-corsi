@@ -229,7 +229,7 @@ function Aggiungi({
 }) {
   const [bozza, setBozza] = useState(VUOTA)
   const [invitaSubito, setInvitaSubito] = useState(true)
-  useBozza(!!(bozza.nome.trim() || bozza.cognome.trim() || bozza.email.trim()) || bozza.ruolo !== VUOTA.ruolo, bozza.nome.trim() || undefined)
+  useBozza(!!(bozza.nome.trim() || bozza.cognome.trim() || bozza.email.trim()) || bozza.ruolo !== VUOTA.ruolo, `${bozza.nome.trim()} ${bozza.cognome.trim()}`.trim() || undefined)
 
   const aggiungi = (e: FormEvent) => {
     e.preventDefault()

@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1226,6 +1226,28 @@ console.log('\nuna modifica non salvata: CORSI e ISTRUTTORI E ACCESSI chiedono p
   ok('lasciare: il tasto in evidenza è restare', corpo.includes('restare: true'), true)
   ok('lasciare: dice che uscendo si perde', corpo.includes('Se esci si perdono'), true)
   ok('lasciare: il tasto per uscire è ESCI SENZA SALVARE', corpo.includes('ESCI SENZA SALVARE'), true)
+}
+
+console.log('\nuna modifica non salvata: CHI FA LE RICEVUTE e il LISTINO chiedono solo se è cambiato qualcosa')
+{
+  const ente = { nome: 'Asd Il Centro Judo', indirizzo: 'Corso Francia 224', cap: '10098', comune: 'Rivoli', codiceFiscale: '10002760014', dicitura: 'Esente da bollo' }
+  const cambiato = (b) => m.enteCambiato?.(ente, b)
+  ok('chi fa le ricevute, non toccato: non è una modifica', cambiato({ ...ente }), false)
+  ok('chi fa le ricevute, il comune cambiato: è una modifica', cambiato({ ...ente, comune: 'Torino' }), true)
+  ok('chi fa le ricevute, rimesso com’era: non è una modifica', cambiato({ ...ente, comune: 'Rivoli' }), false)
+  ok('chi fa le ricevute, rimesso com’era con spazi in più: non è una modifica', cambiato({ ...ente, nome: ' Asd Il Centro Judo ', dicitura: 'Esente da bollo\n' }), false)
+  ok('chi fa le ricevute, la partita IVA scritta: è una modifica', cambiato({ ...ente, partitaIva: '01234567890' }), true)
+  ok('chi fa le ricevute, la partita IVA vuota dove non c’era: non è una modifica', cambiato({ ...ente, partitaIva: ' ' }), false)
+  ok('chi fa le ricevute, la partita IVA tolta: è una modifica', m.enteCambiato?.({ ...ente, partitaIva: '01234567890' }, { ...ente, partitaIva: '' }), true)
+
+  const voce = { corso: 'Judo', eta: '6-10', orari: ['lun 17:00'], prezzi: [{ saldo: 400, annuale: 480 }] }
+  const listino = { quota: 30, saldoEntro: '2026-10-31', corsi: [voce, { ...voce, corso: 'Karate' }], offerte: [{ titolo: 'FAMIGLIA', testo: 'sconto' }] }
+  const lc = (b) => m.listinoCambiato?.(listino, b)
+  ok('listino non toccato: non è una modifica', lc(structuredClone(listino)), false)
+  ok('listino con la quota cambiata: è una modifica', lc({ ...listino, quota: 35 }), true)
+  ok('listino con i campi in un altro ordine: non è una modifica', lc({ offerte: listino.offerte, corsi: listino.corsi.map((c) => ({ prezzi: c.prezzi, orari: c.orari, eta: c.eta, corso: c.corso })), saldoEntro: listino.saldoEntro, quota: 30 }), false)
+  ok('listino con i corsi scambiati di posto: è una modifica', lc({ ...listino, corsi: [listino.corsi[1], listino.corsi[0]] }), true)
+  ok('listino con un prezzo che non si capisce: è una modifica', lc('Un prezzo di «Judo» non si capisce: «4x»'), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
