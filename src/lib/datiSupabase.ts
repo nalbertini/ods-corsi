@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { Dati } from './dati'
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
-import { giornoDi, perCognome, valeIl } from './sala'
+import { contiDellAppello, giornoDi, perCognome, valeIl } from './sala'
 import { Coda } from './coda'
 import type { GiaProvato, NuovaProva } from './prove'
 import { eGiaVenuto, nuovoId, pulisciProva } from './prove'
@@ -130,30 +130,38 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
     const ids = sessioni.map((s) => s.id)
     const [{ data: isc, error: e1 }, { data: pres, error: e2 }] = await Promise.all([
       db.from('iscrizioni').select(ISCRIZIONE).in('corso_id', corsi.length ? corsi : ['-']),
-      db.from('presenze').select('sessione_id, stato').in('sessione_id', ids.length ? ids : ['-']),
+      db.from('presenze').select('sessione_id, persona_id, stato').in('sessione_id', ids.length ? ids : ['-']),
     ])
     if (e1) throw e1
     if (e2) throw e2
     const iscrizioni = (isc ?? []) as unknown as RigaIscrizione[]
     const presenti = new Map<string, number>()
-    for (const r of pres ?? [])
+    const segnate = new Map<string, Map<string, string>>()
+    for (const r of pres ?? []) {
       if (r.stato === 'presente') presenti.set(r.sessione_id, (presenti.get(r.sessione_id) ?? 0) + 1)
+      if (!segnate.has(r.sessione_id)) segnate.set(r.sessione_id, new Map())
+      segnate.get(r.sessione_id)!.set(r.persona_id, r.stato)
+    }
 
-    return sessioni.map((s) => ({
-      id: s.id,
-      corsoId: s.corso_id,
-      corso: s.corsi?.nome ?? 'Corso',
-      colore: s.corsi?.colore ?? undefined,
-      sala: s.sale?.nome,
-      istruttore: s.persone ? `${s.persone.nome} ${s.persone.cognome}` : undefined,
-      kanji: s.persone?.kanji ?? undefined,
-      inizio: s.inizio,
-      fine: s.fine,
-      stato: s.stato,
-      iscritti: iscrittiIl(iscrizioni, s.corso_id, giornoDi(s.inizio)).length,
-      presenti: presenti.get(s.id) ?? 0,
-      insegnanti: insegnantiDi(s),
-    }))
+    return sessioni.map((s) => {
+      const delCorso = iscrittiIl(iscrizioni, s.corso_id, giornoDi(s.inizio))
+      return {
+        id: s.id,
+        corsoId: s.corso_id,
+        corso: s.corsi?.nome ?? 'Corso',
+        colore: s.corsi?.colore ?? undefined,
+        sala: s.sale?.nome,
+        istruttore: s.persone ? `${s.persone.nome} ${s.persone.cognome}` : undefined,
+        kanji: s.persone?.kanji ?? undefined,
+        inizio: s.inizio,
+        fine: s.fine,
+        stato: s.stato,
+        iscritti: delCorso.length,
+        presenti: presenti.get(s.id) ?? 0,
+        insegnanti: insegnantiDi(s),
+        ...contiDellAppello(delCorso, segnate.get(s.id)),
+      }
+    })
   }
 
   return {

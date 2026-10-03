@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import type { Dati } from '../lib/dati'
-import type { DettaglioSessione, StatoPresenza } from '../lib/sala'
+import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
 import { giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { timerDellaLezione } from '../lib/aree'
 import { Back, Cronometro } from './Icons'
@@ -36,24 +36,30 @@ import type { SegnalataVista } from '../lib/segnalate'
 export function AppelloScreen({
   dati,
   sessioneId,
-  onPresenti,
+  onConto,
   soloDi,
   onSegnalate,
   onIndietro,
   onChiudi,
+  inCoda = 0,
 }: {
   dati: Dati
   sessioneId: string
-  onPresenti?: (n: number) => void
+  onConto?: (c: Conto) => void
   soloDi?: string
   onSegnalate?: () => void
   /** Sul telefono: torna al calendario. */
   onIndietro?: () => void
-  /** Dopo CHIUDI L'APPELLO, col nome del corso. */
-  onChiudi?: (corso: string) => void
+  /** Dopo CHIUDI L'APPELLO, con la lezione chiusa. */
+  onChiudi?: (s: SessioneVista) => void
+  /** Le scritture che aspettano la rete: si dicono nella testa, che non cambia altezza. */
+  inCoda?: number
 }) {
   const [d, setD] = useState<DettaglioSessione | null>(null)
   const [segnalate, setSegnalate] = useState<SegnalataVista[]>([])
+  // Quelle gestite restano al loro posto, con l'esito al posto dei tasti: se
+  // sparissero, l'elenco sotto salirebbe mentre lo si tocca.
+  const [gestite, setGestite] = useState<Record<string, boolean>>({})
   const [guaioSegnalata, setGuaioSegnalata] = useState<string | null>(null)
   useEffect(() => {
     let vivo = true
@@ -70,7 +76,7 @@ export function AppelloScreen({
     setGuaioSegnalata(null)
     try {
       await dati.gestisciSegnalata?.(x.id, accogli, soloDi)
-      setSegnalate((l) => l.filter((y) => y.id !== x.id))
+      setGestite((g) => ({ ...g, [x.id]: accogli }))
       if (accogli) setD((v) => v && { ...v, elenco: v.elenco.map((p) => (p.id === x.personaId ? { ...p, stato: 'presente' } : p)) })
       onSegnalate?.()
     } catch (e) {
@@ -84,24 +90,28 @@ export function AppelloScreen({
     if (conProve) prove.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [conProve])
 
+  const [giro, setGiro] = useState(0)
   const ricarica = useCallback(() => {
     let vivo = true
+    setGuaio(null)
     dati
       .dettaglio(sessioneId)
       .then((x) => vivo && (x ? setD(x) : setGuaio('Questa lezione non esiste più')))
-      .catch((e: unknown) => vivo && setGuaio(e instanceof Error ? e.message : 'Non riesco a leggere la lezione'))
+      .catch(() => vivo && setGuaio('Non riesco a leggerla: controlla la connessione e riprova.'))
     return () => {
       vivo = false
     }
-  }, [dati, sessioneId])
+  }, [dati, sessioneId, giro])
 
   useEffect(ricarica, [ricarica])
 
   const presenti = d?.elenco.filter((p) => p.stato === 'presente').length
+  const presentiProve = d?.elenco.filter((p) => p.prova && p.stato === 'presente').length ?? 0
+  const iscrittiDaSegnare = d?.elenco.filter((p) => !p.prova && p.stato === null).length ?? 0
   useEffect(() => {
-    if (presenti !== undefined) onPresenti?.(presenti)
+    if (presenti !== undefined) onConto?.({ presenti, prove: presentiProve, daSegnare: iscrittiDaSegnare })
     // Si avvisa quando cambia il conto, non quando cambia chi ascolta.
-  }, [presenti])
+  }, [presenti, presentiProve, iscrittiDaSegnare])
 
   if (guaio) {
     return (
@@ -109,6 +119,9 @@ export function AppelloScreen({
         <div className="card stack" style={{ padding: 14, gap: 6, borderColor: 'var(--rosso)' }}>
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso)' }}>LEZIONE NON LETTA</span>
           <span style={{ fontSize: 14, color: 'var(--dim)' }}>{guaio}</span>
+          <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px', alignSelf: 'flex-start' }} onClick={() => setGiro((g) => g + 1)}>
+            RIPROVA
+          </button>
         </div>
       </div>
     )
@@ -158,10 +171,14 @@ export function AppelloScreen({
   // l'appello risulta FATTO, e non lasciato a metà.
   const chiudi = () => {
     for (const p of d.elenco) if (p.stato === null) tocca(p.id, 'assente')
-    onChiudi?.(d.sessione.corso)
+    // Prima di sparire: l'effetto che lo direbbe non arriva a girare.
+    onConto?.({ presenti: presenti ?? 0, prove: presentiProve, daSegnare: 0 })
+    onChiudi?.(d.sessione)
   }
 
   const daSegnare = d.elenco.length - segnati
+  const presentiIscritti = iscritti.filter((p) => p.stato === 'presente').length
+  const futura = new Date(d.sessione.inizio).getTime() > Date.now()
 
   return (
     <>
@@ -192,18 +209,27 @@ export function AppelloScreen({
         </div>
 
         <div className="row pad" style={{ gap: 10, paddingTop: 12, alignItems: 'baseline' }}>
-          <span className="num conto-appello">{presenti}</span>
-          <span className="num" style={{ fontSize: 22, color: 'var(--dim)' }}>/ {d.elenco.length}</span>
+          <span className="num conto-appello">{presentiIscritti}</span>
+          <span className="num" style={{ fontSize: 22, color: 'var(--dim)' }}>/ {iscritti.length}</span>
+          {presentiProve > 0 && <span className="num appello-prove">+{presentiProve} PROVA</span>}
           <span className="grow" />
-          <span className="num appello-stato" data-fatto={daSegnare === 0}>
-            {daSegnare === 0 ? '✓ TUTTI SEGNATI' : `${daSegnare} DA SEGNARE`}
+          <span className="stack" style={{ alignItems: 'flex-end', gap: 2, alignSelf: 'center' }}>
+            <span className="num appello-stato" data-fatto={daSegnare === 0}>
+              {daSegnare === 0 ? '✓ TUTTI SEGNATI' : `${daSegnare} DA SEGNARE`}
+            </span>
+            {/* Sempre al suo posto, anche vuota: la testa non cambia altezza. */}
+            <span className="num appello-coda" role="status">
+              {inCoda > 0 ? `${inCoda} DA INVIARE` : ''}
+            </span>
           </span>
         </div>
         <div className="row pad" style={{ gap: 8, paddingTop: 10 }}>
           <button className="btn btn-go grow" style={{ minHeight: 48, fontSize: 15, padding: '0 12px' }} disabled={daSegnare === 0} onClick={tuttiGliAltri}>
             {segnati === 0 ? 'TUTTI PRESENTI' : 'GLI ALTRI PRESENTI'}
           </button>
-          <Azzera disabled={segnati === 0} onAzzera={azzera} />
+          <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO? AZZERA" onFai={azzera}>
+            AZZERA
+          </DueTocchi>
         </div>
       </div>
 
@@ -223,14 +249,20 @@ export function AppelloScreen({
                     {x.nota ? `«${x.nota}»` : 'Nessuna nota.'} Nell’appello: {x.segno === 'assente' ? 'assente' : 'non segnato'}.
                   </span>
                 </span>
-                <span className="row" style={{ gap: 8 }}>
-                  <button type="button" className="btn btn-go grow" style={{ minHeight: 44, fontSize: 14 }} onClick={() => void gestisci(x, true)}>
-                    C’ERA: PRESENTE
-                  </button>
-                  <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px' }} onClick={() => void gestisci(x, false)}>
-                    RIFIUTA
-                  </button>
-                </span>
+                {x.id in gestite ? (
+                  <span className="row num segnalata-esito" data-accolta={gestite[x.id]}>
+                    {gestite[x.id] ? '✓ SEGNATO PRESENTE' : 'RIFIUTATA: RESTA COM’ERA'}
+                  </span>
+                ) : (
+                  <span className="row" style={{ gap: 8 }}>
+                    <button type="button" className="btn btn-go grow" style={{ minHeight: 44, fontSize: 14 }} onClick={() => void gestisci(x, true)}>
+                      C’ERA: PRESENTE
+                    </button>
+                    <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px' }} onClick={() => void gestisci(x, false)}>
+                      RIFIUTA
+                    </button>
+                  </span>
+                )}
               </div>
             ))}
             {guaioSegnalata && <span style={{ fontSize: 14, color: 'var(--rosso)' }}>{guaioSegnalata}</span>}
@@ -244,7 +276,9 @@ export function AppelloScreen({
         <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{iscritti.length}</span>
       </div>
 
-      {segnati === 0 && <p className="pad appello-aiuto">Tocca un nome: presente, poi assente, poi di nuovo da segnare.</p>}
+      {/* Sempre uguale, anche dopo il primo segno: se sparisse, i nomi
+          salirebbero sotto il dito e il tocco dopo andrebbe a un altro. */}
+      <p className="pad appello-aiuto">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>
       <div className="pad elenco-appello">
         {iscritti.map((p) => (
           <button
@@ -311,9 +345,16 @@ export function AppelloScreen({
 
       {onChiudi && (
         <div className="pad stack appello-fine">
-          <button type="button" className="btn btn-primary" onClick={chiudi}>
-            CHIUDI L’APPELLO
-          </button>
+          {/* Verde quando è tutto segnato; rosso quando chiudere vuol dire
+              segnare assenti, e il tasto lo dice. Una lezione non ancora
+              cominciata chiede un secondo tocco. */}
+          <DueTocchi
+            className={`btn ${daSegnare === 0 ? 'btn-go' : 'btn-primary'}`}
+            chiede={futura ? 'NON È ANCORA COMINCIATA: CHIUDI?' : undefined}
+            onFai={chiudi}
+          >
+            {daSegnare === 0 ? 'CHIUDI L’APPELLO ✓' : `CHIUDI · ${daSegnare === 1 ? 'UN ASSENTE' : `${daSegnare} ASSENTI`}`}
+          </DueTocchi>
           <span className="appello-aiuto">
             {daSegnare === 0
               ? 'Torna al calendario. Se c’è rete parte subito, se no appena torna.'
@@ -325,12 +366,31 @@ export function AppelloScreen({
   )
 }
 
+export interface Conto {
+  presenti: number
+  prove: number
+  daSegnare: number
+}
+
 /**
- * AZZERA toglie tutti i segni: due tocchi, come TOGLI nelle prove. Il primo
- * chiede, il secondo azzera, e senza il secondo dopo qualche secondo torna
- * com'era. Accanto a TUTTI PRESENTI, con le mani sudate, uno solo è troppo poco.
+ * Un tasto che, quando `chiede` c'è, vuole due tocchi: il primo mostra la
+ * domanda, il secondo fa. Senza il secondo, dopo qualche secondo torna
+ * com'era. Come TOGLI nelle prove: AZZERA accanto a TUTTI PRESENTI, con le
+ * mani sudate, un tocco solo è troppo poco.
  */
-function Azzera({ disabled, onAzzera }: { disabled: boolean; onAzzera: () => void }) {
+function DueTocchi({
+  className,
+  chiede,
+  disabled,
+  onFai,
+  children,
+}: {
+  className: string
+  chiede?: string
+  disabled?: boolean
+  onFai: () => void
+  children: ReactNode
+}) {
   const [sicuro, setSicuro] = useState(false)
   useEffect(() => {
     if (!sicuro) return
@@ -340,16 +400,16 @@ function Azzera({ disabled, onAzzera }: { disabled: boolean; onAzzera: () => voi
   return (
     <button
       type="button"
-      className="btn btn-ghost azzera"
+      className={className}
       data-sicuro={sicuro}
       disabled={disabled}
       onClick={() => {
-        if (!sicuro) return setSicuro(true)
+        if (chiede && !sicuro) return setSicuro(true)
         setSicuro(false)
-        onAzzera()
+        onFai()
       }}
     >
-      {sicuro ? 'SICURO? AZZERA' : 'AZZERA'}
+      {sicuro ? chiede : children}
     </button>
   )
 }

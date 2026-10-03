@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { type Dati, dati as caricaDati, inProvaScelta, scegliProva } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
 import { CalendarioScreen } from './CalendarioScreen'
-import { AppelloScreen } from './AppelloScreen'
+import { AppelloScreen, type Conto } from './AppelloScreen'
 import { useLargo } from '../lib/largo'
 import { TIMER } from '../lib/aree'
 import type { SegnalataVista } from '../lib/segnalate'
@@ -24,7 +24,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
-  const [presenti, setPresenti] = useState<Record<string, number>>({})
+  const [conti, setConti] = useState<Record<string, Conto>>({})
   // Le presenze segnalate si rileggono quando se ne gestisce una dall'appello.
   const [giroSegnalate, setGiroSegnalate] = useState(0)
   const apri = (sessioneId: string) => void d?.dettaglio(sessioneId).then((x) => x && apriLezione(x.sessione))
@@ -32,7 +32,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
   const ricontaSegnalate = () => setGiroSegnalate((g) => g + 1)
   const largo = useLargo()
   // L'ultimo appello chiuso, per dire se è arrivato in segreteria.
-  const [chiuso, setChiuso] = useState<string | null>(null)
+  const [chiuso, setChiuso] = useState<SessioneVista | null>(null)
 
   // Sul telefono calendario e appello scorrono nello stesso posto: l'appello
   // si apre in cima, e tornando il calendario è dove lo si era lasciato.
@@ -49,9 +49,9 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
     if (scorre && !largo) scorre.scrollTop = aperta ? 0 : eraA.current
   }, [aperta?.id, largo])
   // Dopo la chiusura il calendario riparte dall'alto, dove c'è l'esito.
-  const chiudi = (corso: string) => {
+  const chiudi = (s: SessioneVista) => {
     eraA.current = 0
-    setChiuso(corso)
+    setChiuso(s)
     apriLezione(null)
   }
 
@@ -83,7 +83,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
     )
   if (!d) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
 
-  const esito = chiuso && <Esito corso={chiuso} inCoda={inCoda} onVa={() => setChiuso(null)} />
+  const esito = chiuso && <Esito lezione={chiuso} inCoda={inCoda} onVa={() => setChiuso(null)} />
 
   return (
     <div ref={qui} style={{ display: 'contents' }}>
@@ -104,14 +104,16 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
           )}
         </div>
       )}
-      {inCoda > 0 && !chiuso && <SpiaCoda n={inCoda} />}
+      {/* Con un appello aperto la coda la dice la sua testa: qui sopra,
+          comparendo, farebbe scendere i nomi sotto il dito. */}
+      {inCoda > 0 && !chiuso && !aperta && <SpiaCoda n={inCoda} />}
 
       {largo ? (
         <div className="sala-due">
           <div className="sala-lato">
             {esito}
             {segnalate}
-            <CalendarioScreen dati={d} onApri={apriLezione} apertaId={aperta?.id} presenti={presenti} soloDi={soloDi} />
+            <CalendarioScreen dati={d} onApri={apriLezione} apertaId={aperta?.id} conti={conti} soloDi={soloDi} />
           </div>
           <div className="sala-lato">
             {aperta ? (
@@ -121,7 +123,8 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
                 sessioneId={aperta.id}
                 soloDi={soloDi}
                 onSegnalate={ricontaSegnalate}
-                onPresenti={(n) => setPresenti((p) => ({ ...p, [aperta.id]: n }))}
+                onConto={(c) => setConti((x) => ({ ...x, [aperta.id]: c }))}
+              inCoda={inCoda}
                 onChiudi={chiudi}
               />
             ) : (
@@ -143,7 +146,8 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
               sessioneId={aperta.id}
               soloDi={soloDi}
               onSegnalate={ricontaSegnalate}
-              onPresenti={(n) => setPresenti((p) => ({ ...p, [aperta.id]: n }))}
+              onConto={(c) => setConti((x) => ({ ...x, [aperta.id]: c }))}
+              inCoda={inCoda}
               onIndietro={() => apriLezione(null)}
               onChiudi={chiudi}
             />
@@ -153,7 +157,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
           <div hidden={!!aperta}>
             {esito}
             {segnalate}
-            <CalendarioScreen dati={d} onApri={apriLezione} presenti={presenti} soloDi={soloDi} />
+            <CalendarioScreen dati={d} onApri={apriLezione} conti={conti} soloDi={soloDi} />
             <Strumenti onMieiTimer={onMieiTimer} />
           </div>
         </>
@@ -182,7 +186,7 @@ function SpiaCoda({ n }: { n: number }) {
  * Dopo CHIUDI L'APPELLO: arrivato in segreteria, o salvato sul telefono in
  * attesa della rete. Cambia da solo quando la coda si svuota.
  */
-function Esito({ corso, inCoda, onVa }: { corso: string; inCoda: number; onVa: () => void }) {
+function Esito({ lezione, inCoda, onVa }: { lezione: SessioneVista; inCoda: number; onVa: () => void }) {
   const arrivato = inCoda === 0
   return (
     <div className="pad" style={{ paddingTop: 12 }}>
@@ -191,7 +195,7 @@ function Esito({ corso, inCoda, onVa }: { corso: string; inCoda: number; onVa: (
         <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
           <span className="num appello-esito">{arrivato ? 'APPELLO ARRIVATO IN SEGRETERIA' : 'APPELLO SALVATO SUL TELEFONO'}</span>
           <span style={{ fontSize: 14, color: 'var(--dim)' }}>
-            {corso}
+            {lezione.corso}, {giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))} {oraDi(lezione.inizio)}
             {arrivato ? '.' : `: ${inCoda === 1 ? 'un segno aspetta' : `${inCoda} segni aspettano`} la rete, e partono da soli.`}
           </span>
         </span>

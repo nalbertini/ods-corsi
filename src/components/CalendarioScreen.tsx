@@ -3,6 +3,7 @@ import type { Dati } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 import { Kanji } from './Kanji'
+import type { Conto } from './AppelloScreen'
 
 const GIORNI_CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
 
@@ -23,14 +24,28 @@ function intervallo(da: Date, a: Date): string {
   return `${da.getDate()} ${MESI_CORTI[da.getMonth()]} – ${a.getDate()} ${MESI_CORTI[a.getMonth()]}`
 }
 
-function Guaio({ testo }: { testo: string }) {
+function Guaio({ testo, onRiprova }: { testo: string; onRiprova: () => void }) {
   return (
     <div className="card stack" style={{ padding: 14, gap: 6, borderColor: 'var(--rosso)' }}>
-      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso)' }}>CALENDARIO NON LETTO</span>
+      <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso)' }}>CALENDARIO NON LETTO</span>
       <span style={{ fontSize: 14, color: 'var(--dim)' }}>{testo}</span>
+      <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px', alignSelf: 'flex-start' }} onClick={onRiprova}>
+        RIPROVA
+      </button>
     </div>
   )
 }
+
+/** Quanto manca a una lezione di oggi: «ADESSO» mentre si fa, «TRA 20 MIN» nell'ora prima. */
+function quando(l: SessioneVista, adesso: number): string | null {
+  const inizio = new Date(l.inizio).getTime()
+  if (l.stato === 'annullata') return null
+  if (adesso >= inizio && adesso < new Date(l.fine).getTime()) return 'ADESSO'
+  const tra = Math.round((inizio - adesso) / 60000)
+  return tra > 0 && tra <= 60 ? `TRA ${tra} MIN` : null
+}
+
+const UN_GIORNO = 24 * 60 * 60 * 1000
 
 function Attesa() {
   return <p style={{ color: 'var(--dim)', fontSize: 15, margin: '4px 0 0' }}>Sto leggendo il calendario…</p>
@@ -61,13 +76,13 @@ export function CalendarioScreen({
   dati,
   onApri,
   apertaId,
-  presenti,
+  conti,
   soloDi,
 }: {
   dati: Dati
   onApri: (s: SessioneVista) => void
   apertaId?: string
-  presenti?: Record<string, number>
+  conti?: Record<string, Conto>
   soloDi?: string
 }) {
   const [primo, setPrimo] = useState(() => {
@@ -78,6 +93,9 @@ export function CalendarioScreen({
   const [scelto, setScelto] = useState(() => chiaveGiorno(new Date()))
   const [lezioni, setLezioni] = useState<SessioneVista[] | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
+  const [giro, setGiro] = useState(0)
+  // Le lezioni passate dell'istruttore rimaste senza appello: ultimi sette giorni.
+  const [passate, setPassate] = useState<SessioneVista[]>([])
 
   const giorni = useMemo(() => settimana(primo), [primo])
   const oggi = chiaveGiorno(new Date())
@@ -89,11 +107,24 @@ export function CalendarioScreen({
     dati
       .calendario(giorni[0], giorni[6])
       .then((l) => vivo && setLezioni(l))
-      .catch((e: unknown) => vivo && setGuaio(e instanceof Error ? e.message : 'Non riesco a leggere il calendario'))
+      .catch(() => vivo && setGuaio('Non riesco a leggerlo: controlla la connessione e riprova.'))
     return () => {
       vivo = false
     }
-  }, [dati, giorni])
+  }, [dati, giorni, giro])
+
+  useEffect(() => {
+    if (!soloDi) return
+    let vivo = true
+    const oggi = new Date()
+    oggi.setHours(0, 0, 0, 0)
+    dati
+      .calendario(new Date(oggi.getTime() - 7 * UN_GIORNO), new Date())
+      .then((l) => vivo && setPassate(l), () => {})
+    return () => {
+      vivo = false
+    }
+  }, [dati, soloDi, giro])
 
   const perGiorno = useMemo(() => {
     const m = new Map<string, SessioneVista[]>()
@@ -120,8 +151,21 @@ export function CalendarioScreen({
     setScelto(chiaveGiorno(d))
   }
 
+  const conLConto = (v: SessioneVista) => (conti?.[v.id] ? { ...v, ...conti[v.id] } : v)
+  const adesso = Date.now()
+  const daChiudere = (l: SessioneVista) => l.stato !== 'annullata' && new Date(l.fine).getTime() < adesso && l.iscritti > 0 && (l.daSegnare ?? 0) > 0
+  // Quelle della settimana che si guarda hanno già la loro carta, lì.
+  const inVista = new Set((lezioni ?? []).map((l) => l.id))
+  const senzaAppello = passate.map(conLConto).filter((l) => !inVista.has(l.id) && l.insegnanti?.includes(soloDi ?? '') && daChiudere(l))
+
   const carta = (v: SessioneVista) => {
-    const l = presenti?.[v.id] === undefined ? v : { ...v, presenti: presenti[v.id] }
+    const l = conLConto(v)
+    // Gli iscritti presenti, senza chi prova: il conto torna con quello dell'appello.
+    const presentiIscritti = l.presenti - (l.prove ?? 0)
+    const fatto = l.daSegnare === 0 && l.iscritti > 0
+    const iniziato = presentiIscritti > 0 || (l.prove ?? 0) > 0 || (l.daSegnare !== undefined && l.daSegnare < l.iscritti)
+    const tra = quando(l, adesso)
+    const manca = daChiudere(l)
     return (
       <button
         key={l.id}
@@ -130,7 +174,10 @@ export function CalendarioScreen({
         style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
         onClick={() => onApri(l)}
       >
-        <span className="lezione-ora num">{oraDi(l.inizio)}</span>
+        <span className="stack" style={{ gap: 2 }}>
+          <span className="lezione-ora num">{oraDi(l.inizio)}</span>
+          {tra && <span className="num lezione-quando">{tra}</span>}
+        </span>
         <span className="stack grow" style={{ gap: 3, minWidth: 0, textAlign: 'left' }}>
           <span className="ob lezione-nome">{l.corso.toUpperCase()}</span>
           <span className="chi-kanji" style={{ fontSize: 13, color: 'var(--dim)' }}>
@@ -139,11 +186,12 @@ export function CalendarioScreen({
           </span>
         </span>
         <span className="stack" style={{ gap: 2, alignItems: 'flex-end' }}>
-          <span className="num lezione-conto" data-fatto={l.presenti > 0}>
-            {l.presenti > 0 ? `${l.presenti}/${l.iscritti}` : l.iscritti}
+          <span className="num lezione-conto" data-fatto={fatto}>
+            {iniziato ? `${presentiIscritti}/${l.iscritti}` : l.iscritti}
           </span>
-          <span style={{ fontSize: 12, letterSpacing: '0.14em', color: 'var(--dim)' }}>
-            {l.presenti > 0 ? 'PRESENTI' : 'ISCRITTI'}
+          <span className="num lezione-stato" data-fatto={fatto} data-manca={manca || undefined}>
+            {manca ? 'DA CHIUDERE' : !iniziato ? 'ISCRITTI' : fatto ? '✓ FATTO' : 'IN CORSO'}
+            {(l.prove ?? 0) > 0 && ` · +${l.prove} PROVA`}
           </span>
         </span>
       </button>
@@ -152,6 +200,29 @@ export function CalendarioScreen({
 
   return (
     <>
+      {/* Come le presenze segnalate: un riquadro solo, una riga per lezione,
+          così i giorni da fare restano in vista. */}
+      {elenco && senzaAppello.length > 0 && (
+        <div className="pad" style={{ paddingTop: 14 }}>
+          <div className="card stack segnalate-avviso da-chiudere">
+            <span className="rule-label" style={{ color: 'var(--rosso)' }}>
+              {senzaAppello.length === 1 ? 'UN APPELLO DA CHIUDERE' : `${senzaAppello.length} APPELLI DA CHIUDERE`}
+            </span>
+            <span style={{ fontSize: 13, color: 'var(--dim)' }}>Lezioni passate con qualcuno ancora da segnare: aprile e chiudi l’appello.</span>
+            {senzaAppello.map((l) => (
+              <button key={l.id} type="button" className="row segnalate-voce" onClick={() => onApri(l)}>
+                <span className="grow" style={{ fontWeight: 600, textAlign: 'left' }}>
+                  {l.corso}
+                </span>
+                <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+                  {giornoPerEsteso(chiaveGiorno(new Date(l.inizio)))} {oraDi(l.inizio)} · {l.daSegnare} da segnare
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="row pad" style={{ gap: 8, paddingTop: 14, alignItems: 'center' }}>
         <button className="btn btn-ghost" style={{ minHeight: 44, minWidth: 44, padding: 0, fontSize: 22 }} aria-label="Settimana prima" onClick={() => scorri(-1)}>
           ‹
@@ -168,7 +239,7 @@ export function CalendarioScreen({
         <div className="stack" style={{ paddingBottom: 16 }}>
           {(guaio || lezioni === null || quanteInSettimana === 0) && (
             <div className="pad stack" style={{ paddingTop: 16 }}>
-              {guaio && <Guaio testo={guaio} />}
+              {guaio && <Guaio testo={guaio} onRiprova={() => setGiro((g) => g + 1)} />}
               {!guaio && lezioni === null && <Attesa />}
               {!guaio && lezioni !== null && (
                 <p style={{ color: 'var(--dim)', fontSize: 15, lineHeight: 1.5, margin: '4px 0 0' }}>
@@ -218,7 +289,7 @@ export function CalendarioScreen({
           </div>
 
           <div className="pad stack" style={{ gap: 10, paddingBottom: 16 }}>
-            {guaio && <Guaio testo={guaio} />}
+            {guaio && <Guaio testo={guaio} onRiprova={() => setGiro((g) => g + 1)} />}
             {!guaio && lezioni === null && <Attesa />}
             {!guaio && lezioni !== null && delGiorno.length === 0 && (
               <p style={{ color: 'var(--dim)', fontSize: 15, lineHeight: 1.5, margin: '4px 0 0' }}>
