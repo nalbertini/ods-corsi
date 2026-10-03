@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { eUnTablet } from './tablet'
 import { areaDelPercorso } from './percorso'
-import { eIndirizzoGuida } from './guida'
+import { eIndirizzoGuida, INDIRIZZO_AREE } from './cancelletti'
 
 /**
  * Le facce dell'app, ognuna col suo indirizzo vero e la sua porta:
@@ -51,7 +51,7 @@ export const INDIRIZZI: Record<AreaConIndirizzo, string> = {
 }
 
 /** La pagina con tutte le aree, anche su un dispositivo che si ricorda di essere un tablet. */
-export const INDIRIZZO_AREE = '#aree'
+export { INDIRIZZO_AREE }
 
 /**
  * Un indirizzo di questa pagina, intero. Relativo alla base del documento,

@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { certificatoDaPortare, controlla, domandaUscita, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { certificatoDaPortare, controlla, domandaUscita, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -130,6 +130,23 @@ console.log('\n2b. il codice fiscale, letto')
   ok('niente, se va tutto', m.problemi(adulto()), {})
   ok('un codice giusto ma di un altro: fermato', await errore(() => r.invia(adulto({ nome: 'Marco' }))), 'Il codice fiscale non torna con nome e cognome: scrivili tutti, come sul documento')
   ok('detto sotto il campo', m.problemi(adulto({ nome: 'Marco' })), { codiceFiscale: 'Non torna con nome e cognome' })
+  const notaCf = (cf) => m.problemi(adulto({ codiceFiscale: cf })).codiceFiscale
+  const notaGen = (cf) => m.problemi(minore({ genitoreCodiceFiscale: cf })).genitoreCodiceFiscale
+  ok('il codice corto: dice quanti ne mancano', notaCf('RSSMRA80A01'), 'Mancano 5 caratteri')
+  ok('ne manca uno solo', notaCf('RSSLCU96A01L219'), 'Manca 1 carattere')
+  ok('gli spazi non contano', notaCf('rss lcu 96a01 l219'), 'Manca 1 carattere')
+  ok('il codice lungo: dice quanti toglierne', notaCf('RSSLCU96A01L219KABCDE'), 'Togli 5 caratteri')
+  ok('uno di troppo', notaCf('RSSLCU96A01L219KA'), 'Togli 1 carattere')
+  ok('un segno nel codice', notaCf('RSSMRA80A01-123Z'), 'Solo lettere e numeri')
+  ok('un segno nel codice corto', notaCf('RSS-MRA'), 'Solo lettere e numeri')
+  ok('il genitore: quanti ne mancano', notaGen('RSSPLA80A41'), 'Mancano 5 caratteri')
+  ok('il genitore: uno solo', notaGen('RSSPLA80A41L219'), 'Manca 1 carattere')
+  ok('il genitore: quanti toglierne', notaGen('RSSPLA80A41L219PABCDE'), 'Togli 5 caratteri')
+  ok('il genitore: uno di troppo', notaGen('RSSPLA80A41L219PA'), 'Togli 1 carattere')
+  ok('il genitore: un segno', notaGen('RSSPLA80A41-219P'), 'Solo lettere e numeri')
+  ok('il certificato si può portare dopo', m.FILE.find((f) => f.tipo === 'certificato').seManca, 'PUOI PORTARLO DOPO')
+  ok('il messaggio d’insieme non cambia, lungo', await errore(() => r.invia(adulto({ codiceFiscale: 'RSSLCU96A01L219KABCDE' }))), 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e numeri')
+  ok('il messaggio d’insieme non cambia, col segno', await errore(() => r.invia(adulto({ codiceFiscale: 'RSSMRA80A01-123Z' }))), 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e numeri')
   ok('accenti e maiuscole non contano', m.controlla(adulto({ nome: 'lùca', cognome: 'ROSSI' })), null)
   ok('un nome con quattro consonanti', m.controlla(adulto({ nome: 'Demetrio', codiceFiscale: 'RSSDTR80A01L219A', natoIl: '1980-01-01' })), null)
   const luoghi = await m.caricaLuoghi()

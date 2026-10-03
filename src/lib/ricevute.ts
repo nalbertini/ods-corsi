@@ -1,7 +1,8 @@
 import { saldoAperto, VALIDITA } from './costi'
 import { LISTINO_PREDEFINITO, nomeCorso, type Listino } from './listino'
-import type { DatiRichiesta } from './richieste'
+import { minorenne, type DatiRichiesta } from './richieste'
 import { nomeProprio } from './nomi'
+import { cfNatoIl, cfValido } from './codiceFiscale'
 
 /**
  * Le ricevute dei pagamenti: la «ricevuta semplice» dell'associazione, come
@@ -266,6 +267,107 @@ export function vociPronte(primaQuesti: string[], giorno: string, listino: Listi
   return [voceQuota(listino), ...primi, ...listino.corsi.flatMap((c) => vociDelCorso(c.corso, giorno, listino)).filter((v) => !gia.has(v.chiave))]
 }
 
+/** La voce da scrivere a mano: nell'elenco «Aggiungi una voce…» sta con quelle del listino. */
+const VOCE_A_MANO: VocePronta = { chiave: 'mano', etichetta: 'Una voce scritta a mano', voce: () => ({ descrizione: '', quantita: 1, prezzo: 0 }) }
+
+/**
+ * Le voci da aggiungere in due gruppi: prima quelle che servono a questa
+ * persona (la quota, la voce a mano, tutte le righe di prezzo dei suoi corsi),
+ * poi il resto del listino nel suo ordine. Così non si cercano fra trenta.
+ */
+export function vociInDueGruppi(corsi: string[], giorno: string, listino: Listino = LISTINO_PREDEFINITO) {
+  const tutte = vociPronte(corsi, giorno, listino)
+  const suoi = new Set(corsi.flatMap((c) => vociDelCorso(c, giorno, listino)).map((v) => v.chiave))
+  return {
+    primi: [tutte[0], VOCE_A_MANO, ...tutte.filter((v) => suoi.has(v.chiave))],
+    altri: tutte.slice(1).filter((v) => !suoi.has(v.chiave)),
+  }
+}
+
+/** Una cosa che manca nei dati del socio: il campo da segnare e come si dice. */
+export interface CampoCheManca {
+  campo: keyof IntestatarioRicevuta
+  testo: string
+}
+
+/**
+ * Cosa manca nei dati del socio. Il codice fiscale la palestra lo vuole
+ * sempre: per un adulto il suo; per un minore il suo e, siccome la ricevuta va
+ * al genitore, anche nome e codice fiscale del genitore. Senza, la ricevuta
+ * non si fa, e nemmeno con un codice scritto sbagliato, che sulla ricevuta
+ * varrebbe quanto uno vuoto. L'indirizzo si può lasciare vuoto: lo si dice e
+ * basta. Minore o no si decide al `giorno` della ricevuta, non a oggi. Senza
+ * NATO IL la data si legge dal codice fiscale, se è giusto: un bambino col
+ * campo vuoto non diventa adulto. Solo l'app lo chiede, il database no.
+ */
+export function mancanoDatiSocio(i: IntestatarioRicevuta, giorno = new Date()) {
+  const vuoto = (k: keyof IntestatarioRicevuta) => !String(i[k] ?? '').trim()
+  // L'anno del codice ha due cifre: `cfNatoIl` prende il secolo che non mette la nascita dopo il giorno della ricevuta.
+  const natoIl = i.natoIl || cfNatoIl(String(i.codiceFiscale ?? '').toUpperCase().replace(/\s/g, ''), giorno)
+  const minore = !!natoIl && minorenne(natoIl, giorno)
+  const chiesti: Array<CampoCheManca & { blocca: boolean }> = [
+    { campo: 'codiceFiscale', testo: minore ? 'il codice fiscale del socio' : 'il codice fiscale', blocca: true },
+    { campo: 'indirizzo', testo: 'l’indirizzo', blocca: false },
+    ...(minore
+      ? [
+          { campo: 'genitore' as const, testo: 'il genitore', blocca: true },
+          { campo: 'genitoreCodiceFiscale' as const, testo: 'il codice fiscale del genitore', blocca: true },
+        ]
+      : []),
+  ]
+  // Minuscole e spazi no: quando la si salva il codice diventa maiuscolo e attaccato.
+  const sbagliato = (k: keyof IntestatarioRicevuta) => (k === 'codiceFiscale' || k === 'genitoreCodiceFiscale') && !cfValido(String(i[k]).toUpperCase().replace(/\s/g, ''))
+  const mancano = chiesti.flatMap((x) => (vuoto(x.campo) ? [x] : sbagliato(x.campo) ? [{ ...x, testo: `${x.testo}${NON_GIUSTO}` }] : []))
+  const solo = ({ campo, testo }: CampoCheManca): CampoCheManca => ({ campo, testo })
+  return { minore, blocca: mancano.filter((x) => x.blocca).map(solo), avvisa: mancano.filter((x) => !x.blocca).map(solo) }
+}
+
+const NON_GIUSTO = ' non è giusto'
+const elenco = (x: string[]) => x.join(', ').replace(/, ([^,]*)$/, ' e $1')
+
+/** Perché la ricevuta non si fa, da `mancanoDatiSocio(…).blocca`; vuoto se si fa. */
+export function motivoBlocca(blocca: CampoCheManca[]): string {
+  if (!blocca.length) return ''
+  const sbagliati = blocca.filter((x) => x.testo.endsWith(NON_GIUSTO)).map((x) => x.testo)
+  const vuoti = blocca.filter((x) => !x.testo.endsWith(NON_GIUSTO)).map((x) => x.testo)
+  const frase = elenco([...(vuoti.length ? [`${vuoti.length > 1 ? 'mancano' : 'manca'} ${elenco(vuoti)}`] : []), ...sbagliati])
+  const fai = sbagliati.length ? 'correggil' : 'scrivil'
+  return `${frase[0].toUpperCase()}${frase.slice(1)}: ${fai}${blocca.length > 1 ? 'i' : 'o'} nei DATI DEL SOCIO`
+}
+
+/** La riga dei dati del socio chiusi: a chi va la ricevuta, per un minore il genitore che paga. */
+export function ricevutaPer(i: IntestatarioRicevuta, minore: boolean): string {
+  const [chi, cf] = minore ? [i.genitore?.trim(), i.genitoreCodiceFiscale?.trim()] : [`${i.cognome} ${i.nome}`.trim(), i.codiceFiscale?.trim()]
+  if (minore && !chi) return 'RICEVUTA PER IL GENITORE · MANCA'
+  return `RICEVUTA PER ${(chi || '…').toUpperCase()}${minore ? ' (GENITORE)' : ''}${cf ? ` · ${cf.toUpperCase()}` : ''}`
+}
+
+/**
+ * I dati del socio per una ricevuta nuova: quelli dell'ultima ricevuta, e
+ * dove sono vuoti quelli della scheda (DATI ANAGRAFICI), così un codice
+ * fiscale scritto dopo ci va. Nome e cognome sempre quelli della persona.
+ */
+export function intestatarioDa(
+  ultima: IntestatarioRicevuta | null,
+  anagrafica: Partial<DatiRichiesta> | null,
+  chi: Pick<IntestatarioRicevuta, 'nome' | 'cognome'>,
+): IntestatarioRicevuta {
+  const pieni = Object.fromEntries(Object.entries(ultima ?? {}).filter(([, v]) => typeof v === 'string' && v.trim()))
+  return { ...(anagrafica ? intestatarioDaRichiesta({ ...anagrafica, nome: chi.nome, cognome: chi.cognome }) : {}), ...pieni, nome: chi.nome, cognome: chi.cognome }
+}
+
 /** Il nome del file del PDF: `ricevuta-116-2026-albertini-manuela.pdf`. */
 export const nomeFileRicevuta = (r: Pick<Ricevuta, 'numero' | 'anno' | 'intestatario'>) =>
   `ricevuta-${r.numero}-${r.anno}-${pulito(`${r.intestatario.cognome} ${r.intestatario.nome}`).replace(/ /g, '-')}.pdf`
+
+/**
+ * La domanda prima di fare la ricevuta: a chi va (per un minore, il socio e
+ * il genitore che paga) e quanto. Con un acconto anche quanto si paga ora e
+ * quanto resta, perché la ricevuta fatta non si cambia più.
+ */
+export function domandaRicevuta(quale: string, i: IntestatarioRicevuta, minore: boolean, c: ReturnType<typeof conti>): string {
+  const socio = `${i.cognome} ${i.nome}`.trim()
+  const chi = minore && i.genitore?.trim() ? `per ${socio}, al genitore ${i.genitore.trim()}` : `a ${socio}`
+  const quanto = c.pagato === c.totale ? `${euro(c.totale)} €` : `${euro(c.totale)} € · pagati ora ${euro(c.pagato)} € · restano ${euro(c.netto)} €`
+  return `Fare la ricevuta ${quale} ${chi}, ${quanto}?`
+}
