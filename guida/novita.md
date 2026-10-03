@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.20.2 — 3 ottobre 2026
+
+### Risolto
+
+- Nel LISTINO il tasto per buttare i cambi si chiama BUTTA I CAMBI e chiede prima, dicendo cosa si perde
+- Sul tablet di sala in verticale AREA ISTRUTTORE si tocca di nuovo
+
 ## 0.20.1 — 3 ottobre 2026
 
 ### Risolto
