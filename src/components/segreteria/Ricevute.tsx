@@ -37,7 +37,7 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
   // Annullata una ricevuta con la quota che nessun'altra copre: la quota torna da pagare, o era pagata fuori dall'app?
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
   const annulla = async (r: Ricevuta) => {
-    if (!(await chiedi(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA.`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
+    if (!(await chiedi(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
     const oggi = chiaveGiorno(new Date())
     const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
     const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
@@ -55,8 +55,9 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
       {ricevute.guaio && <Guaio testo={ricevute.guaio} />}
       {ricevute.dato?.length === 0 && <span className="sg-sotto">Ancora nessuna ricevuta.</span>}
       {ricevute.dato?.map((r) => (
-        <div key={r.id} className="sg-voce-elenco">
-          <span className="stack grow" style={{ minWidth: 0 }}>
+        <div key={r.id} className="sg-voce-elenco" style={{ flexWrap: 'wrap' }}>
+          {/* Base zero: il testo lungo di una annullata non deve mandare a capo il PDF. */}
+          <span className="stack grow" style={{ minWidth: 0, flexBasis: 0 }}>
             {/* Annullata è storia, non qualcosa che manca: barrata e in grigio, non in rosso. */}
             <span className="num" style={{ fontSize: 15, fontWeight: 700, textDecoration: r.annullataIl ? 'line-through' : undefined, color: r.annullataIl ? 'var(--dim)' : undefined }}>
               N. {r.numero}/{r.anno} · {euro(r.totale)} €
@@ -69,14 +70,13 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
           <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(r))}>
             PDF
           </button>
+          {/* Raro e senza ritorno: su una riga sua, a destra, e non più grande del PDF che si preme ogni giorno. */}
           {!r.annullataIl && (
-            <button
-              type="button"
-              className="sg-link"
-              onClick={() => annulla(r)}
-            >
-              Annulla
-            </button>
+            <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
+              <button type="button" className="num sg-chip" onClick={() => annulla(r)}>
+                ANNULLA RICEVUTA
+              </button>
+            </div>
           )}
         </div>
       ))}

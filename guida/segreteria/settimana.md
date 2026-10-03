@@ -25,6 +25,10 @@ In alto:
 - i tasti delle sale (**TUTTE**, **TATAMI**, …) fanno vedere una sala sola;
 - sotto il titolo c'è scritto fino a che giorno è pronto il calendario, cioè
   fin dove ci sono le lezioni dell'orario (le straordinarie non contano).
+  Il calendario si allunga da sé, anche quando si aggiunge un orario a un
+  corso; per allungarlo subito c'è **RIGENERA ADESSO** in
+  [Impostazioni](regole.md#il-calendario), che non duplica niente e non tocca
+  le lezioni che hanno già un appello.
 
 ## Aprire una lezione
 
@@ -60,9 +64,3 @@ ricorrenze — un recupero, un evento, una prova aperta.
 
 Gli iscritti del corso sono già nell'appello. Se era un errore, aprirla e
 premere **TOGLI QUESTA LEZIONE STRAORDINARIA**.
-
-## RIGENERA
-
-Le lezioni nascono dagli orari dei corsi e il calendario si allunga da sé
-quando si avvicina la fine. **RIGENERA** lo allunga subito, ad esempio dopo aver aggiunto un
-corso. Non duplica niente e non tocca le lezioni che hanno già un appello.
