@@ -125,6 +125,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
                 <Accesso p={p} />
               </span>
               <span role="cell" className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: p.haPin ? 'var(--text)' : 'var(--dim)' }}>
+                <span className="sg-solo-stretto" style={{ color: 'var(--dim)' }}>PIN TABLET </span>
                 {p.haPin ? 'IMPOSTATO' : 'NESSUNO'}
               </span>
             </button>
