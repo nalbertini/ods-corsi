@@ -74,8 +74,8 @@ e **TIMER ↗** (che si apre in un'altra scheda). Su un tablet in orizzontale o
 un computer stanno affiancati: calendario a sinistra, appello a destra. Lì
 l'app ha la stessa faccia della segreteria: a sinistra il menu, con
 **CALENDARIO**, **I MIEI TIMER** e **TIMER ↗** (si apre in un'altra scheda,
-così l'appello resta dov'era), la guida, e in fondo, sotto il vostro nome, il
-tema ed **Esci**.
+così l'appello resta dov'era), e in fondo il tasto **?** della guida, quello
+del tema e, sotto il vostro nome, **Esci**.
 
 ## L'appello
 
