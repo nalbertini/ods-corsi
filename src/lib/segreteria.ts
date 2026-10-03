@@ -7,7 +7,7 @@ import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
 import { VALIDITA } from './costi'
 import type { Listino, ListinoLetto } from './listino'
-import { nomeProprio } from './nomi'
+import { nomeProprio, paroleCercate, somiglia } from './nomi'
 import type { SegnalataVista } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 
@@ -675,4 +675,17 @@ export function datiSegreteria(): Promise<DatiSegreteria> {
       })
   }
   return unico
+}
+
+/**
+ * Chi esce scrivendo in «Cerca iscritto»: chi somiglia allo scritto
+ * (`somiglia`), prima chi è attivo e poi per cognome, al massimo otto.
+ */
+export function trovaIscritti(persone: PersonaSeg[], scritto: string): PersonaSeg[] {
+  const parole = paroleCercate(scritto)
+  if (!parole.length) return []
+  return persone
+    .filter((p) => somiglia(p, parole))
+    .sort((a, b) => Number(b.attiva) - Number(a.attiva) || a.cognome.localeCompare(b.cognome, 'it'))
+    .slice(0, 8)
 }
