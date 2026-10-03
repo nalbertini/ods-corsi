@@ -75,6 +75,15 @@ export function PannelloProve({
 
   const proposti = somiglianti((venuti ?? []).filter((p) => !giaQui.has(p.id)), `${nome} ${cognome}`)
 
+  // Sul tablet la colonna dell'appello scorre: quando compaiono i già venuti
+  // il pannello si allunga, e AGGIUNGI finiva sotto lo schermo senza dirlo.
+  // Sul telefono no: la testata fissa coprirebbe il campo.
+  const sezione = useRef<HTMLElement>(null)
+  const ciSonoProposti = proposti.length > 0
+  useEffect(() => {
+    if (stile === 'tb' && ciSonoProposti) sezione.current?.scrollIntoView({ block: 'nearest' })
+  }, [stile, ciSonoProposti])
+
   const aggiungi = async (chi: ChiProva): Promise<boolean> => {
     setAspetta(true)
     setGuaio(null)
@@ -127,7 +136,7 @@ export function PannelloProve({
   const id = (x: string) => `prova-${stile}-${x}`
 
   return (
-    <section className={k.riquadro} aria-label="Aggiungi chi viene a provare" data-stile={stile}>
+    <section ref={sezione} className={k.riquadro} aria-label="Aggiungi chi viene a provare" data-stile={stile}>
       <div className="row" style={{ gap: 10, alignItems: 'baseline' }}>
         <span className={`${k.etichetta} grow`}>CHI VIENE A PROVARE</span>
       </div>
@@ -146,32 +155,35 @@ export function PannelloProve({
             <span className={k.etichetta}>COGNOME</span>
             <input id={id('cognome')} className={k.campo} autoComplete="off" value={cognome} onChange={(e) => { setCognome(e.target.value); setFatto(null); setGuaio(null) }} />
           </label>
+          {/* Chi è già venuto subito sotto nome e cognome, prima del telefono:
+              sul telefono con la tastiera aperta resta vicino al campo. Va
+              su una riga intera; dove le colonne sono tre (il tablet) il
+              telefono risale accanto al cognome (`grid-auto-flow: dense`). */}
+          {venuti === null && !nonVa && <span className="prove-sotto">Sto leggendo chi è già venuto…</span>}
+          {proposti.length > 0 && (
+            <div className="stack prove-proposti" style={{ gap: 6 }}>
+              <span className={k.etichetta}>GIÀ VENUTI CON QUESTO NOME</span>
+              {proposti.map((p) => (
+                <button key={p.id} type="button" className={k.voce} disabled={aspetta} onClick={() => void aggiungi(p)}>
+                  <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+                    <span className="prove-gia-nome">
+                      {p.sigla ? `${p.nome} ${p.sigla}` : `${p.cognome} ${p.nome}`}
+                    </span>
+                    <span className="prove-sotto">
+                      {p.corso}, {giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))}
+                      {p.telefono ? ` · ${p.telefono}` : ''}
+                    </span>
+                  </span>
+                  <span className="num prove-gia-tasto">AGGIUNGI</span>
+                </button>
+              ))}
+            </div>
+          )}
           <label className="stack" style={{ gap: 4 }} htmlFor={id('telefono')}>
             <span className={k.etichetta}>TELEFONO, SE LO DÀ</span>
             <input id={id('telefono')} className={`${k.campo} num`} type="tel" inputMode="tel" autoComplete="off" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
           </label>
         </div>
-
-        {venuti === null && !nonVa && <span className="prove-sotto">Sto leggendo chi è già venuto…</span>}
-        {proposti.length > 0 && (
-          <div className="stack" style={{ gap: 6 }}>
-            <span className={k.etichetta}>GIÀ VENUTI CON QUESTO NOME</span>
-            {proposti.map((p) => (
-              <button key={p.id} type="button" className={k.voce} disabled={aspetta} onClick={() => void aggiungi(p)}>
-                <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-                  <span className="prove-gia-nome">
-                    {p.sigla ? `${p.nome} ${p.sigla}` : `${p.cognome} ${p.nome}`}
-                  </span>
-                  <span className="prove-sotto">
-                    {p.corso}, {giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))}
-                    {p.telefono ? ` · ${p.telefono}` : ''}
-                  </span>
-                </span>
-                <span className="num prove-gia-tasto">AGGIUNGI</span>
-              </button>
-            ))}
-          </div>
-        )}
 
         {guaio && (
           <span className="prove-guaio" role="alert">
