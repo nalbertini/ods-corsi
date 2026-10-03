@@ -60,16 +60,16 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('06-iscrizioni.sql', 'il codice fiscale controllato',
     exists (select 1 from dentro where nome = 'cf_controllo')),
   -- Chi non ha un accesso chiama solo le funzioni del modulo. Se ce n'è
-  -- un'altra, è stato rilanciato uno dei primi cinque file senza il 06 dopo.
-  -- Non contano le funzioni dei trigger, che non si possono chiamare da
-  -- fuori, e quelle delle estensioni: su Supabase `citext` sta in `public`,
+  -- un'altra, è stato rilanciato uno dei primi cinque file senza il 06 dopo,
+  -- o un file dopo il 06 ha lasciato aperta una funzione sua: rilanciare il
+  -- 06 la chiude. Contano anche quelle dei trigger, come in `prova/rls.sql`.
+  -- Non contano quelle delle estensioni: su Supabase `citext` sta in `public`,
   -- è di `supabase_admin` e il SQL Editor non può toglierle i permessi, ma
   -- sono le funzioni del tipo delle email e non toccano nessuna tabella.
   ('06-iscrizioni.sql', 'i permessi, dopo gli altri file',
     not exists (
       select 1 from pg_proc p
       where p.pronamespace = 'public'::regnamespace
-        and p.prorettype <> 'trigger'::regtype
         and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
         and has_function_privilege('anon', p.oid, 'execute')
         and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino'))),

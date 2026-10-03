@@ -10,6 +10,25 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.4.7 — 3 ottobre 2026
+
+### Risolto
+
+- Al cambio lezione il tablet di sala guarda la lezione che comincia
+
+## 0.4.6 — 3 ottobre 2026
+
+### Modificato
+
+- Chi non ha un accesso può chiamare solo le funzioni del modulo di iscrizione
+
+## 0.4.5 — 3 ottobre 2026
+
+### Modificato
+
+- Ogni modifica è provata prima di arrivare nell'app
+- Le modifiche al database arrivano complete, provate e controllate
+
 ## 0.4.4 — 3 ottobre 2026
 
 ### Modificato

@@ -693,6 +693,8 @@ a.btn { text-decoration: none; }
 .tb-pin { display: flex; align-items: center; justify-content: center; gap: 72px; flex-wrap: wrap; }
 .tb-preparazione { display: flex; align-items: center; justify-content: center; }
 .tb-scorre { overflow-y: auto; min-height: 0; }
+/* Due lezioni almeno sempre in vista, anche sotto LA TUA PRESENZA: al cambio lezione sono due. */
+.tb-lezioni-istr { min-height: 212px; }
 
 .tb-etichetta { font-family: var(--cond); font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); }
 .tb-nota { font-size: 15px; line-height: 1.5; color: var(--dim); margin: 0; }

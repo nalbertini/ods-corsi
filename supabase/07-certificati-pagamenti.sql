@@ -89,4 +89,8 @@ create policy certificati_legge on storage.objects for select to authenticated
 create policy certificati_cancella on storage.objects for delete to authenticated
   using (bucket_id = 'certificati' and public.e_staff());
 
+-- Le funzioni nascono eseguibili da tutti, `anon` compreso: si chiudono qui.
+revoke all on function scheda_cambiata() from public, anon;
+grant execute on function scheda_cambiata() to authenticated;
+
 notify pgrst, 'reload schema';

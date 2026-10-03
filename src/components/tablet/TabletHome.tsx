@@ -49,7 +49,8 @@ export function TabletHome({
   const oggi = chiaveGiorno(adesso)
   const diOggi = (lezioni ?? []).filter((l) => chiaveGiorno(new Date(l.inizio)) === oggi && l.stato !== 'annullata')
   const conFase = diOggi.map((l) => ({ l, f: fase(l, adesso) }))
-  const aperte = conFase.filter((x) => x.f === 'aperta')
+  // Al cambio lezione, in cima quella che comincia: chi arriva adesso viene per lei.
+  const aperte = conFase.filter((x) => x.f === 'aperta').sort((a, b) => b.l.inizio.localeCompare(a.l.inizio))
   const finite = diOggi.length > 0 && conFase.every((x) => x.f === 'finita')
   const prossima = (lezioni ?? []).find((l) => chiaveGiorno(new Date(l.inizio)) > oggi && l.stato !== 'annullata')
 

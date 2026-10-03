@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/tabletProva'; export { sigle, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'",
+      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -235,7 +235,18 @@ console.log('\n9. chi fa l\'appello c\'era, e le lezioni tenute senza istruttore
   ok('quelle di prima non si propongono', (await seg.lezioniSenzaIstruttore()).length, 0)
 }
 
-console.log('\n10. i tocchi senza rete')
+console.log('\n10. la lezione di adesso, al cambio')
+{
+  // Lotta 2 alle 17 e Lotta 3 alle 18: alle 17:55 sono aperte tutte e due.
+  const l = await (await alle('2026-09-23T17:55')).lezioni(new Date(2026, 8, 23), new Date(2026, 8, 23))
+  const adesso = new Date(2026, 8, 23, 17, 55)
+  ok('alle 17:55 conta quella che comincia', m.lezioneDiAdesso(l, adesso)?.corso, 'Lotta 3')
+  ok('alle 17:20 c\'è solo quella in corso', m.lezioneDiAdesso(l, new Date(2026, 8, 23, 17, 20))?.corso, 'Lotta 2')
+  ok('annullata non conta', m.lezioneDiAdesso(l.map((x) => (x.corso === 'Lotta 3' ? { ...x, stato: 'annullata' } : x)), adesso)?.corso, 'Lotta 2')
+  ok('alle 15 nessuna', m.lezioneDiAdesso(l, new Date(2026, 8, 23, 15, 0)), null)
+}
+
+console.log('\n11. i tocchi senza rete')
 {
   ok('la rete che manca non è un no', m.rifiutato(Object.assign(new Error('Failed to fetch'), { code: '' }), 'supabase'), false)
   ok('il database che si riavvia nemmeno', m.rifiutato({ code: 'PGRST001' }, 'supabase'), false)
