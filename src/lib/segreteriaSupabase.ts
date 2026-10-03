@@ -1,3 +1,4 @@
+import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
@@ -104,6 +105,7 @@ const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
+  [/non_doppioni/, 'Segnare due schede «non sono doppioni» non è ancora attivo sul database: va lanciato 33-non-doppioni.sql'],
   [/segnalazioni/, 'Le segnalazioni non sono ancora attive sul database: va lanciato 25-segnalazioni.sql'],
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
   [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
@@ -1012,6 +1014,37 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async unisciPersone(resta, via) {
       ok(await db.rpc('unisci_persone', { resta, via }))
+    },
+
+    async indiziDoppioni() {
+      // Sono indizi: una tabella che manca (18, 06 o 30 non lanciati) vuol dire nessun indizio, non un errore.
+      const oVuoto = <T>(r: { data: T[] | null; error: { code?: string; message?: string } | null }): T[] => {
+        if (r.error && ['PGRST205', '42P01'].includes(r.error.code ?? '')) return []
+        return ok(r) ?? []
+      }
+      const [anagrafiche, richieste, coppie] = await Promise.all([
+        db.from('anagrafiche').select('persona_id, codice_fiscale, nato_il').then(oVuoto<{ persona_id: string; codice_fiscale: string | null; nato_il: string | null }>),
+        db
+          .from('richieste_iscrizione')
+          .select('persona_id, codice_fiscale, nato_il')
+          .eq('stato', 'accolta')
+          .not('persona_id', 'is', null)
+          .order('gestita_il', { ascending: true, nullsFirst: true })
+          .then(oVuoto<{ persona_id: string; codice_fiscale: string; nato_il: string }>),
+        db.from('non_doppioni').select('a, b').then(oVuoto<{ a: string; b: string }>),
+      ])
+      const i: IndiziDoppioni = { codiciFiscali: {}, nascite: {}, nonDoppioni: coppie.map((c) => [c.a, c.b]) }
+      // Prima il modulo, dal più vecchio; poi la segreteria, che vince.
+      for (const r of [...richieste, ...anagrafiche]) {
+        if (r.codice_fiscale) i.codiciFiscali[r.persona_id] = r.codice_fiscale
+        if (r.nato_il) i.nascite[r.persona_id] = r.nato_il
+      }
+      return i
+    },
+
+    async segnaNonDoppioni(a, b) {
+      if (a === b) throw new Error('Scegli due schede diverse')
+      ok(await db.from('non_doppioni').upsert({ a, b }, { onConflict: 'a,b', ignoreDuplicates: true }))
     },
 
     async salvaSala(sala) {

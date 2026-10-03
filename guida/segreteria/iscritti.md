@@ -22,6 +22,13 @@ elenco, che compaiono negli appelli e sul tablet.
   segreteria.
 - **CERTIFICATI DA STAMPARE** — solo finché ce ne sono: chi ha ancora il file
   del certificato caricato nell'app, di prima della carta.
+- **POSSIBILI DOPPIONI** col numero — solo finché ce ne sono: le schede che
+  sembrano la stessa persona, a coppie. Lo stesso nome scritto in un altro
+  modo (D'Amico e Damico) o lo stesso codice fiscale; non due schede con
+  codici fiscali o date di nascita diverse, e non i fratelli. Per ogni coppia
+  si vedono nascita, codice fiscale, contatto e corsi: **UNISCI…** apre la
+  prima scheda con l'unione già pronta sull'altra; **NON SONO DOPPIONI** la
+  toglie dall'elenco (due omonimi veri).
 
 La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
 **IN REGOLA** se certificato e quota sono a posto (**FUORI APP**, in grigio,
@@ -124,7 +131,8 @@ scheda è disattivata, nessuno.
 - **UNISCI…** — due schede della stessa persona diventano una: succede
   quando all'appello qualcuno non ritrova chi è già venuto a provare e lo
   aggiunge di nuovo. Scegliete l'altra scheda (in cima chi ha lo stesso
-  cognome, comunque scritto: D'Amico, Damico). Si vede quale resta, quale se
+  cognome, comunque scritto: D'Amico, Damico; già scelta se è l'unico
+  possibile doppione, vedi **POSSIBILI DOPPIONI**). Si vede quale resta, quale se
   ne va, i campi che non tornano e quante presenze, prove, iscrizioni e
   ricevute passano; **TIENI L'ALTRA** scambia le due. Della scheda che resta
   vale quello che c'è scritto; dall'altra si prende solo quello che manca, e

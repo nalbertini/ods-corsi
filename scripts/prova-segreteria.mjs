@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1384,6 +1384,107 @@ console.log('\nuna modifica non salvata: CHI FA LE RICEVUTE e il LISTINO chiedon
   ok('listino con i campi in un altro ordine: non è una modifica', lc({ offerte: listino.offerte, corsi: listino.corsi.map((c) => ({ prezzi: c.prezzi, orari: c.orari, eta: c.eta, corso: c.corso })), saldoEntro: listino.saldoEntro, quota: 30 }), false)
   ok('listino con i corsi scambiati di posto: è una modifica', lc({ ...listino, corsi: [listino.corsi[1], listino.corsi[0]] }), true)
   ok('listino con un prezzo che non si capisce: è una modifica', lc('Un prezzo di «Judo» non si capisce: «4x»'), true)
+}
+
+console.log('\npossibili doppioni')
+{
+  const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: '2026-09-26', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })
+  // Le coppie come «id-id», ognuna con gli id in ordine: chi viene prima nella coppia non conta, l'ordine delle coppie sì.
+  const coppie = (tutte, indizi = {}) =>
+    typeof m.coppieDoppioni !== 'function'
+      ? 'coppieDoppioni non c\'è'
+      : m.coppieDoppioni(tutte, { codiciFiscali: {}, nascite: {}, nonDoppioni: [], ...indizi }).map((c) => c.map((p) => p.id).sort().join('-'))
+
+  ok("«Luca D'Amico» e «luca damico»: in coppia", coppie([scheda('1', 'Luca', "D'Amico"), scheda('2', 'luca', 'damico')]), ['1-2'])
+  ok('nomi diversi e lo stesso codice fiscale, scritto in un altro modo: in coppia',
+    coppie([scheda('1', 'Anna', 'Rossi'), scheda('2', 'Anna Maria', 'Rossi')], { codiciFiscali: { 1: 'RSSNNA80A41L219X', 2: 'rssnna 80a41 l219x' } }), ['1-2'])
+  const due = [scheda('1', 'Sara', 'Bianchi'), scheda('2', 'Sara', 'Bianchi')]
+  ok('stesso nome, due codici fiscali diversi: no', coppie(due, { codiciFiscali: { 1: 'BNCSRA10A41L219X', 2: 'BNCSRA12B41L219Y' } }), [])
+  ok('stesso nome, un codice fiscale solo: in coppia', coppie(due, { codiciFiscali: { 1: 'BNCSRA10A41L219X' } }), ['1-2'])
+  ok('stesso nome, due nascite diverse: no', coppie(due, { nascite: { 1: '2010-01-01', 2: '2012-02-01' } }), [])
+  ok('stesso nome, una nascita sola: in coppia', coppie(due, { nascite: { 2: '2012-02-01' } }), ['1-2'])
+  ok('stesso codice fiscale ma due nascite diverse: no',
+    coppie(due, { codiciFiscali: { 1: 'BNCSRA10A41L219X', 2: 'BNCSRA10A41L219X' }, nascite: { 1: '2010-01-01', 2: '2012-02-01' } }), [])
+  ok('fratelli, stesso telefono e nomi diversi: no',
+    coppie([scheda('1', 'Luca', 'Neri', { telefono: '333 1234567' }), scheda('2', 'Marco', 'Neri', { telefono: '333 1234567' })]), [])
+  ok('una scheda disattivata conta', coppie([scheda('1', 'Ugo', 'Blu'), scheda('2', 'Ugo', 'Blu', { attiva: false })]), ['1-2'])
+  ok('una coppia segnata «non sono doppioni»: no', coppie(due, { nonDoppioni: [['1', '2']] }), [])
+  ok('anche segnata nell\'altro ordine', coppie(due, { nonDoppioni: [['2', '1']] }), [])
+  ok('tre schede uguali: tre coppie',
+    coppie([scheda('1', 'Teo', 'Neri'), scheda('2', 'Teo', 'Neri'), scheda('3', 'Teo', 'Neri')]).toSorted?.() ?? 'coppieDoppioni non c\'è', ['1-2', '1-3', '2-3'])
+  const tre = [scheda('1', 'Teo', 'Neri'), scheda('2', 'Teo', 'Neri'), scheda('3', 'Teo', 'Neri'), scheda('4', 'Ada', 'Neri'), scheda('5', 'ada', 'neri')]
+  const leCoppie = typeof m.coppieDoppioni === 'function' ? m.coppieDoppioni(tre, { codiciFiscali: {}, nascite: {}, nonDoppioni: [] }) : []
+  ok('l\'altra della coppia, se è una sola', typeof m.altraDellaCoppia === 'function' ? [m.altraDellaCoppia(leCoppie, '4'), m.altraDellaCoppia(leCoppie, '1'), m.altraDellaCoppia(leCoppie, '9')] : 'altraDellaCoppia non c\'è', ['5', undefined, undefined])
+  ok('ogni coppia una volta, per cognome e nome',
+    coppie([scheda('1', 'Sara', 'Bianchi'), scheda('2', 'Zeno', 'Abate'), scheda('3', 'Sara', 'Bianchi'), scheda('4', 'zeno', 'abate'), scheda('5', 'Aldo', 'Bianchi'), scheda('6', 'Aldo', 'Bianchi')]),
+    ['2-4', '5-6', '1-3'])
+
+  // La segreteria di prova: codice fiscale e nascita dall'anagrafica, se no dalla richiesta accolta più recente.
+  const RICHIESTE = 'ods-corsi:prova-richieste'
+  const aggiungiRichiesta = (r) => localStorage.setItem(RICHIESTE, JSON.stringify([...JSON.parse(localStorage.getItem(RICHIESTE) ?? '[]'), r]))
+  const richiesta = (id, personaId, codiceFiscale, natoIl, gestitaIl) => ({
+    id, creataIl: '2026-08-01T10:00:00.000Z', gestitaIl, stato: 'accolta', personaId,
+    nome: 'Pia', cognome: 'Fumagalli', natoIl, natoA: 'Torino', codiceFiscale, indirizzo: 'via Po 2', cap: '10093', comune: 'Collegno',
+    email: 'pia@esempio.it', telefono: '3337654321', corsi: ['judo-2'], formula: 'annuale',
+  })
+  const pia1 = await s.salvaPersona({ nome: 'Pia', cognome: 'Fumagalli' })
+  const pia2 = await s.salvaPersona({ nome: 'Pia', cognome: 'Fumagalli' })
+  await s.salvaAnagrafica(pia1, { codiceFiscale: 'FMGPIA10A41L219X' })
+  aggiungiRichiesta(richiesta('r-pia1', pia1, 'FMGPIA99A41L219Z', '2010-01-01', '2026-08-02T10:00:00.000Z'))
+  aggiungiRichiesta(richiesta('r-pia2-vecchia', pia2, 'FMGPIA11A41L219X', '2011-01-01', '2026-08-02T10:00:00.000Z'))
+  aggiungiRichiesta(richiesta('r-pia2', pia2, 'FMGPIA12B41L219Y', '2012-02-01', '2026-09-02T10:00:00.000Z'))
+  const indizi = typeof s.indiziDoppioni === 'function' ? await s.indiziDoppioni() : null
+  ok('il codice fiscale dall\'anagrafica della segreteria', indizi?.codiciFiscali?.[pia1], 'FMGPIA10A41L219X')
+  ok('la nascita, che l\'anagrafica non ha, dalla richiesta accolta', indizi?.nascite?.[pia1], '2010-01-01')
+  ok('senza anagrafica, dalla richiesta accolta più recente', [indizi?.codiciFiscali?.[pia2], indizi?.nascite?.[pia2]], ['FMGPIA12B41L219Y', '2012-02-01'])
+
+  const lia1 = await s.salvaPersona({ nome: 'Lia', cognome: 'Fumagalli' })
+  const lia2 = await s.salvaPersona({ nome: 'Lia', cognome: 'Fumagalli' })
+  const stessa = ([x, y]) => [x, y].sort().join() === [lia1, lia2].sort().join()
+  const prima = typeof s.indiziDoppioni === 'function' && typeof m.coppieDoppioni === 'function'
+    ? m.coppieDoppioni(await s.persone(), await s.indiziDoppioni()).filter((c) => stessa(c.map((p) => p.id))).length : 'non c\'è'
+  ok('prima di segnarle, le due Lia sono una coppia', prima, 1)
+  ok('«non sono doppioni»', await errore(() => s.segnaNonDoppioni(lia2, lia1)), 'nessun errore')
+  ok('segnate due volte', await errore(() => s.segnaNonDoppioni(lia1, lia2)), 'nessun errore')
+  const dopo = typeof s.indiziDoppioni === 'function' ? await s.indiziDoppioni() : null
+  ok('la coppia è fra le «non sono doppioni», una volta', (dopo?.nonDoppioni ?? []).filter(stessa).length, 1)
+  ok('e non è più una coppia',
+    typeof m.coppieDoppioni === 'function' && dopo ? m.coppieDoppioni(await s.persone(), dopo).filter((c) => stessa(c.map((p) => p.id))).length : 'non c\'è', 0)
+  ok('una scheda con sé stessa no', await errore(() => s.segnaNonDoppioni(lia1, lia1)), 'Scegli due schede diverse')
+
+  // Unendo due schede le coppie passano a chi resta, come in 33-non-doppioni.sql:
+  // una con sé stessa, o una che c'è già, se ne va con la scheda.
+  const [u1, u2, u3] = [await s.salvaPersona({ nome: 'Ugo', cognome: 'Verdi' }), await s.salvaPersona({ nome: 'Ugo', cognome: 'Verdi' }), await s.salvaPersona({ nome: 'Ugo', cognome: 'Verdi' })]
+  await errore(() => s.segnaNonDoppioni(u1, u3))
+  await errore(() => s.segnaNonDoppioni(u2, u3))
+  await errore(() => s.segnaNonDoppioni(u1, u2))
+  ok('unite due schede con coppie «non sono doppioni»', await errore(() => s.unisciPersone(u1, u2)), 'nessun errore')
+  const diUgo = typeof s.indiziDoppioni === 'function' ? (await s.indiziDoppioni()).nonDoppioni.filter((c) => c.includes(u1) || c.includes(u2)) : 'non c\'è'
+  ok('resta una coppia: chi resta e l\'omonimo', Array.isArray(diUgo) ? diUgo.map((c) => [...c].sort().join()) : diUgo, [[u1, u3].sort().join()])
+
+  // Col database senza 33-non-doppioni.sql: la tabella non c'è.
+  const risposta = (t) =>
+    t === 'non_doppioni'
+      ? { data: null, error: { code: 'PGRST205', message: "Could not find the table 'public.non_doppioni' in the schema cache" } }
+      : { data: [], error: null }
+  // Una richiesta finta: ogni metodo la rilancia, e attesa dà la risposta della tabella.
+  const richiestaFinta = (t) => {
+    const q = new Proxy(() => q, {
+      get: (_, k) => (k === 'then' ? (ok, ko) => Promise.resolve(risposta(t)).then(ok, ko) : () => q),
+      apply: () => q,
+    })
+    return q
+  }
+  const senza = m.creaSegreteriaSupabase({
+    from: (t) => richiestaFinta(t),
+    rpc: async (f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f} in the schema cache` } }),
+  })
+  ok('senza il file sul database, i possibili doppioni si vedono lo stesso', await errore(async () => {
+    const i = await senza.indiziDoppioni()
+    if (i.nonDoppioni.length) throw new Error(`nonDoppioni: ${JSON.stringify(i.nonDoppioni)}`)
+  }), 'nessun errore')
+  const manca = await errore(() => senza.segnaNonDoppioni(lia1, lia2))
+  ok('ma «non sono doppioni» dice quale file lanciare', manca.includes('33-non-doppioni.sql') ? '33-non-doppioni.sql' : manca, '33-non-doppioni.sql')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

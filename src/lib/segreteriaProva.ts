@@ -4,6 +4,7 @@ import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
+import type { IndiziDoppioni } from './doppioni'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
 import { comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria } from './datiProva'
@@ -956,6 +957,40 @@ export function creaSegreteriaProva(): DatiSegreteria {
       }
       spostaRichieste(via, resta)
       a().segnalate = (a().segnalate ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      // Le coppie «non sono doppioni» passano a chi resta; una con sé stessa, o che c'è già, se ne va.
+      const coppie: [string, string][] = []
+      for (const [p, q] of a().nonDoppioni ?? []) {
+        const [x, y] = [p === via ? resta : p, q === via ? resta : q].sort()
+        if (x !== y && !coppie.some(([c, d]) => c === x && d === y)) coppie.push([x, y])
+      }
+      a().nonDoppioni = coppie
+      salva()
+    },
+
+    async indiziDoppioni() {
+      const i: IndiziDoppioni = { codiciFiscali: {}, nascite: {}, nonDoppioni: [...(a().nonDoppioni ?? [])] }
+      for (const p of a().persone) {
+        // Campo per campo: la segreteria, se no la richiesta accolta più recente.
+        const r = richiesteDi(p.id)
+          .filter((x) => x.stato === 'accolta')
+          .sort((x, y) => (y.gestitaIl ?? '').localeCompare(x.gestitaIl ?? ''))[0]
+        const an = a().anagrafiche?.[p.id]
+        const cf = an?.codiceFiscale ?? r?.codiceFiscale
+        const nato = an?.natoIl ?? r?.natoIl
+        if (cf) i.codiciFiscali[p.id] = cf
+        if (nato) i.nascite[p.id] = nato
+      }
+      return i
+    },
+
+    async segnaNonDoppioni(x, y) {
+      // Come 33-non-doppioni.sql: una riga per coppia, la scheda più piccola prima.
+      if (x === y) throw new Error('Scegli due schede diverse')
+      persona(x)
+      persona(y)
+      const coppia: [string, string] = x < y ? [x, y] : [y, x]
+      const tutte = a().nonDoppioni ?? []
+      if (!tutte.some(([p, q]) => p === coppia[0] && q === coppia[1])) a().nonDoppioni = [...tutte, coppia]
       salva()
     },
 

@@ -166,6 +166,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('31-informativa-mesi.sql', 'i mesi delle presenze letti dall''informativa',
     exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'mesi_presenze_pubblici'
             and has_function_privilege('anon', p.oid, 'execute'))),
+  ('33-non-doppioni.sql', 'due schede che non sono doppioni',
+    to_regclass('public.non_doppioni') is not null),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',
