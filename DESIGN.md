@@ -141,7 +141,7 @@ components:
     textColor: "{colors.testo-secondario}"
     rounded: "{rounded.none}"
     padding: "0 12px"
-    height: "40px"
+    height: "44px"
   tablet-tessera:
     backgroundColor: "{colors.superficie}"
     textColor: "{colors.testo}"
@@ -263,27 +263,29 @@ Decisi e da palestra: maiuscolo, obliquo, spaziato largo.
 - **Vai:** fondo Verde Ingranaggio, per confermare una presenza o un invio.
 - **Linea / Ghost:** bordo 2px `riga`, testo `tasto`; al passaggio bordo `testo-spento` e testo `testo` (120ms).
 - **Tratteggiato:** bordo 2px tratteggiato `tratteggio`, largo quanto la colonna, per "aggiungi".
-- **Disabilitato:** opacità 0.4, `not-allowed`.
+- **Disabilitato** (in segreteria): blocco `superficie-alta` senza bordo, testo `testo-spento`, `not-allowed` — non somiglia né al tasto pieno né a quello a linea; accanto, il motivo («Scrivi il titolo»). Altrove opacità 0.4.
 - **Fuoco:** contorno 2px `testo` con 2px di distanza.
 
 ### Icon Button
 Quadrato 44px con bordo 2px `riga` e segno in `tasto`; quando contiene una parola si allarga (`.icon-btn.testo`).
 
 ### Chips & Schede
-- **Chip** (`.sg-chip`): 40px, bordo 2px, Saira 13px 0.12em; premuto: bordo `testo` e fondo `superficie-alta`. Variante piena: fondo `testo`, testo `nero-palestra`.
+- **Chip** (`.sg-chip`): 44px, bordo 2px, Saira 13px 0.12em; premuto: bordo `testo` e fondo `superficie-alta`. Variante piena: fondo `testo`, testo `nero-palestra`.
 - **Schede** (`.scheda`): righe di tasti uguali con gap 4px; attiva: fondo `superficie-alta`, bordo e testo `testo`.
-- **Bollini** (`.prova-marchio`, `.spia-coda`, `.sg-tag`): 11px maiuscolo spaziato, bordo 2px giallo o fondo pieno.
+- **Bollini** (`.prova-marchio`, `.spia-coda`, `.sg-tag`): 11px maiuscolo spaziato, bordo 2px giallo o fondo pieno; 13px nella testata di un filo delle segnalazioni.
 
 ### Cards / Containers
 - **Corner Style:** 0px.
 - **Background:** `superficie`, su fondo `nero-palestra`.
 - **Border:** 2px `riga`; i toni cambiano il bordo (giallo per prova, rosso per guaio) o aggiungono una barra sinistra di 4px.
+- **Fatto e messo da parte** (lezione passata, segnalazione chiusa): fondo trasparente, bordo `riga-tenue`, titolo `testo-secondario`.
+- **Messaggi di un filo:** quelli degli altri hanno una barra sinistra di 4px `testo-spento` e un rientro; quelli della segreteria no.
 - **Internal Padding:** 14px (telefono), 20–28px (segreteria e tablet).
 
 ### Inputs / Fields
 - **Style:** bordo 2px `riga`, fondo `superficie` (in segreteria `nero-palestra`), alto 52px (44px in segreteria, 56px sul tablet), Barlow 17px.
 - **Focus:** il bordo passa a `testo`, nessun alone.
-- **Errore:** bordo rosso, nota rossa sotto; avviso in `giallo-testo`. **Sola lettura:** bordo tratteggiato, testo spento, fondo trasparente.
+- **Errore:** bordo ed etichetta rossi, nota sotto in `testo` (il rosso sullo scuro non arriva a 4,5:1), che dice cosa fare («togli 5 caratteri»); avviso in `giallo-testo`. **Sola lettura:** bordo tratteggiato, testo spento, fondo trasparente.
 
 ### Navigation
 - **Testata** (telefono/tablet verticale): marchio a ingranaggi e nome obliquo a sinistra, schede sotto; da 960px stessa riga e bordo inferiore `riga-tenue`.

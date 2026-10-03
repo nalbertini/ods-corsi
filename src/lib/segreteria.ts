@@ -446,7 +446,8 @@ export interface DatiSegreteria {
   gestisciSegnalata?(id: string, accogli: boolean): Promise<void>
   /** Le segnalazioni della segreteria, coi loro messaggi (vedi `segnalazioni.ts`). */
   segnalazioni(): Promise<Segnalazione[]>
-  apriSegnalazione(titolo: string, testo: string): Promise<void>
+  /** Apre una segnalazione e dice il suo id, così il filo nuovo si apre da sé. */
+  apriSegnalazione(titolo: string, testo: string): Promise<string>
   rispondiSegnalazione(id: string, testo: string): Promise<void>
   /** La chiude, o con `false` la riapre. */
   chiudiSegnalazione(id: string, chiusa: boolean): Promise<void>

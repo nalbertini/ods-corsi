@@ -1206,9 +1206,13 @@ a.sg-voce { text-decoration: none; }
 .sg-btn-linea:hover { border-color: var(--dim); color: var(--text); }
 a.sg-btn { text-decoration: none; }
 .sg-btn-tratteggio { border: 2px dashed var(--tratteggio); color: var(--sec); }
-.sg-btn:disabled, .sg-chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.sg-chip:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Un tasto spento è un blocco grigio senza bordo: un verde solo più
+   trasparente sembrava ancora da toccare, e un contorno lo faceva sembrare
+   un tasto a linea acceso. */
+.sg-btn:disabled, .sg-btn:disabled:hover { background: var(--surface-2); color: var(--dim); border-color: transparent; cursor: not-allowed; }
 .sg-chip {
-  min-height: 40px; padding: 0 12px; border: 2px solid var(--line); color: var(--sec);
+  min-height: 44px; padding: 0 12px; border: 2px solid var(--line); color: var(--sec);
   font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap;
 }
 .sg-chip[aria-pressed='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
@@ -1277,6 +1281,19 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-tag[data-tipo='aspetta'] { background: var(--giallo); color: var(--su-colore); }
 /* Un filo delle segnalazioni: la testata si tocca tutta; giallo se aspetta te. */
 .sg-filo[data-tocca='true'] { border-left: 4px solid var(--giallo); }
+/* Chiusa: si fa da parte come una lezione passata in SETTIMANA, ma resta leggibile. */
+.sg-filo[data-chiusa='true'] { background: transparent; border-color: var(--line-soft); }
+.sg-filo[data-chiusa='true'] .sg-filo-titolo { color: var(--sec); }
+.sg-filo-testa .sg-tag { font-size: 13px; padding: 1px 6px; }
+.sg-filo-riga { font-size: 13px; color: var(--sec); }
+.sg-messaggio { gap: 4px; padding-top: 12px; }
+.sg-messaggio[data-altro='true'] { border-left: 4px solid var(--dim); padding-left: 12px; margin-left: 4px; }
+/* Le note sotto i campi e accanto ai tasti: in testo pieno, il rosso lo dicono bordo ed etichetta. */
+.sg-nota { font-size: 13px; color: var(--text); }
+.sg-bozza { border: 2px dashed var(--line); color: var(--dim); padding: 8px 12px; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sg-avviso-posto { height: 96px; flex-shrink: 0; }
+/* Sul telefono il tasto principale viene prima del filtro. */
+@media (max-width: 767px) { .sg-chip-dopo { order: 1; } }
 .sg-filo-testa { display: flex; gap: 12px; align-items: center; width: 100%; padding: 12px 14px; text-align: left; cursor: pointer; }
 /* Due nomi nello stesso posto: il tasto è largo quanto il più lungo, e si vede solo quello giusto. */
 .sg-due-nomi { display: inline-grid; }

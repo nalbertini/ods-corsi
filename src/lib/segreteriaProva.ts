@@ -460,6 +460,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const s: Segnalazione = { id, titolo: titolo.trim(), messaggi: [{ id, autore: 'Segreteria di prova', mio: true, testo: testo.trim(), il: new Date().toISOString() }] }
       a().segnalazioni = [...(a().segnalazioni ?? []), s]
       salva()
+      return id
     },
 
     async rispondiSegnalazione(id, testo) {
