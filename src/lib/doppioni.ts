@@ -77,3 +77,9 @@ export function altraDellaCoppia(coppie: [PersonaSeg, PersonaSeg][], id: string)
   const sue = coppie.filter((c) => c.some((x) => x.id === id))
   return sue.length === 1 ? sue[0].find((x) => x.id !== id)?.id : undefined
 }
+
+/** Le altre schede segnate «non sono doppioni» con `id`, per cognome e nome: la scheda le mostra, per toglierle. */
+export function segnateCon(i: IndiziDoppioni, id: string, tutte: PersonaSeg[]): PersonaSeg[] {
+  const altre = new Set(i.nonDoppioni.filter((c) => c.includes(id)).map(([a, b]) => (a === id ? b : a)))
+  return tutte.filter((p) => altre.has(p.id)).sort((a, b) => `${a.cognome} ${a.nome}`.localeCompare(`${b.cognome} ${b.nome}`, 'it'))
+}

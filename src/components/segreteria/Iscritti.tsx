@@ -9,7 +9,7 @@ import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, 
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
-import { altraDellaCoppia, campiDiversi, coppieDoppioni, possibiliDoppioni, stessoCognome, type IndiziDoppioni } from '../../lib/doppioni'
+import { altraDellaCoppia, campiDiversi, coppieDoppioni, possibiliDoppioni, segnateCon, stessoCognome, type IndiziDoppioni } from '../../lib/doppioni'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
@@ -170,6 +170,7 @@ export function Iscritti({
             }}
             unisciCon={unisciCon ?? undefined}
             doppio={altraDellaCoppia(coppie, persona.id)}
+            nonDoppioni={indizi.dato ? segnateCon(indizi.dato, persona.id, tutti) : []}
           />
         </SchedaPiena>
       ) : null}
@@ -251,7 +252,18 @@ export function Iscritti({
                 return x ? `${x.cognome} ${x.nome}` : ''
               }
               if (!(await chiedi(`${nome(a)} e ${nome(b)} non sono la stessa persona? La coppia non compare più fra i possibili doppioni.`, 'SÌ, NON SONO DOPPIONI'))) return
-              void fai(() => d.segnaNonDoppioni(a, b), 'Non sono doppioni: non compaiono più qui', () => void indizi.ricarica())
+              // Toccato per sbaglio ce se ne accorge subito: ANNULLA nell'avviso, senza aprire la scheda.
+              void fai(
+                () => d.segnaNonDoppioni(a, b),
+                undefined,
+                async () => {
+                  await indizi.ricarica()
+                  avvisa('Segnati: non sono doppioni', false, {
+                    etichetta: 'ANNULLA',
+                    fa: () => void fai(() => d.togliNonDoppioni(a, b), 'Tornati fra i possibili doppioni', () => indizi.ricarica()),
+                  })
+                },
+              )
             }}
           />
         ) : (
@@ -404,6 +416,7 @@ function Scheda({
   onApri,
   unisciCon,
   doppio,
+  nonDoppioni,
 }: {
   d: DatiSegreteria
   p: PersonaSeg
@@ -420,6 +433,8 @@ function Scheda({
   unisciCon?: string
   /** L'altra scheda, se questa è in una sola coppia di possibili doppioni. */
   doppio?: string
+  /** Le schede segnate «non sono doppioni» con questa: si tolgono da qui, se segnate per sbaglio. */
+  nonDoppioni: PersonaSeg[]
 }) {
   const oggi = chiaveGiorno(new Date())
   const [modifica, setModifica] = useState<DatiPersona | null>(null)
@@ -428,6 +443,7 @@ function Scheda({
   const [daAggiungere, setDaAggiungere] = useState('')
   const [pagando, setPagando] = useState(false)
   const [unendo, setUnendo] = useState(!!unisciCon)
+  const [togliendo, setTogliendo] = useState(false)
   // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
   const [giroRicevute, setGiroRicevute] = useState(0)
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
@@ -521,6 +537,36 @@ function Scheda({
             <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
           </div>
           {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
+          {nonDoppioni.length > 0 && (
+            <div className="stack" style={{ gap: 8 }}>
+              <Riga titolo="NON SONO DOPPIONI" />
+              <span className="sg-sotto">Non è la stessa persona di queste schede. Segnato per sbaglio? TOGLI, e se sembrano la stessa persona tornano fra i possibili doppioni.</span>
+              {nonDoppioni.map((x) => (
+                <div key={x.id} className="sg-iscrizione">
+                  <span className="stack grow" style={{ minWidth: 0 }}>
+                    <button type="button" className="sg-link" style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', textAlign: 'left' }} onClick={() => onApri(x.id)}>
+                      {x.cognome} {x.nome}
+                    </button>
+                    <span style={{ fontSize: 12, color: 'var(--dim)' }}>{[x.telefono ?? x.email, x.attiva ? '' : 'disattivata'].filter(Boolean).join(' · ') || 'nessun contatto'}</span>
+                  </span>
+                  <button
+                    type="button"
+                    className="sg-btn sg-btn-linea"
+                    aria-label={`Togli il segno «non sono doppioni» con ${x.cognome} ${x.nome}`}
+                    disabled={togliendo}
+                    onClick={async () => {
+                      // Fermo finché la scheda non si rilegge: tolta la riga, il secondo clic di un doppio clic finirebbe su MODIFICA.
+                      setTogliendo(true)
+                      await fai(() => d.togliNonDoppioni(p.id, x.id), 'Tolto: se sembrano la stessa persona tornano fra i possibili doppioni', onCambiato)
+                      setTimeout(() => setTogliendo(false), 400)
+                    }}
+                  >
+                    TOGLI
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="stack" style={{ gap: 20, minWidth: 0 }}>
