@@ -195,5 +195,36 @@ console.log('\n6. chi non si cerca più')
   ok('neanche sul tablet', (await t.provati('1234')).map((x) => x.nome), ['Marco'])
 }
 
+console.log("\n7. D'Amico, De Luca, Rossi-Bianchi: apostrofi, spazi e trattini")
+{
+  // Le stesse persone e gli stessi casi in `prova-prove.mjs` (somiglianti) e
+  // `prova-segreteria.mjs` (trovaIscritti): l'apostrofo, di qualunque forma, e
+  // il trattino non separano soltanto, si possono anche saltare; un cognome di
+  // due parole si scrive anche attaccato.
+  const p = (id, nome, cognome, attiva = true) => ({ id, nome, cognome, attiva, corso: 'Lotta 2', inizio: '' })
+  const gente = [
+    p('a', 'Anna', "D'Amico"),
+    p('b', 'Bruno', 'D\u2019Amico'),
+    p('c', 'Nicolò', 'De Luca'),
+    p('d', 'Sara', 'Rossi-Bianchi'),
+    p('e', 'Marco', 'Nuovo'),
+    p('f', 'Marco', 'Rossi'),
+  ]
+  const chi = (scritto) => m.somiglianti(gente, scritto).map((x) => x.nome).sort()
+  for (const s of ["d'am", 'd\u2019am', 'd\u2018am', 'd\u02BCam', 'd\u00B4am', 'dam', 'damico', 'amico', "D'AM"])
+    ok(`«${s}» trova D'Amico, scritto con l'apostrofo dritto e con quello tipografico`, chi(s), ['Anna', 'Bruno'])
+  ok("«mico» non trova D'Amico: si comincia dall'inizio di una parola", chi('mico'), [])
+  ok("«d'a»: le lettere si contano senza l'apostrofo, e due non bastano", chi("d'a"), [])
+  ok('«NICOLO deluca» trova Nicolò De Luca', chi('NICOLO deluca'), ['Nicolò'])
+  for (const s of ['de lu', 'luca', 'del']) ok(`«${s}» trova De Luca`, chi(s), ['Nicolò'])
+  ok('«eluca» non trova De Luca', chi('eluca'), [])
+  for (const s of ['bianchi', 'rossibi', 'rossi-bi']) ok(`«${s}» trova Rossi-Bianchi`, chi(s), ['Sara'])
+  ok('«mar nu» trova solo Marco Nuovo', m.somiglianti(gente, 'mar nu').map((x) => x.id), ['e'])
+  ok('«marconu» nessuno: nome e cognome non si attaccano fra loro', chi('marconu'), [])
+  ok("«'», «-» e due spazi: nessuno", ["'", '-', '  '].map((s) => chi(s)), [[], [], []])
+  const dieci = ["D'Amico", 'Damiani', "D'Amato", 'Dameri', 'D\u2019Ambrosio', 'Damasio', "D'Amelio", 'Damonte', "D'Amore", 'Damigella'].map((c, i) => p(`x${i}`, 'Ugo', c))
+  ok('con dieci che cominciano per «dam», se ne mostrano sei', m.somiglianti(dieci, 'dam').length, 6)
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
