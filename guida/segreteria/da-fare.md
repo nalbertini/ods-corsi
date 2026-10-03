@@ -23,7 +23,9 @@ si sistema:
 - **Iscritti senza certificato valido**, **certificati in scadenza** (entro un
   mese) e **iscritti da pagare**, contati fra chi è attivo: **VEDI CHI** apre
   gli [iscritti](iscritti.md) col filtro già acceso, e le righe sono quelle
-  contate qui. Gli stessi numeri li dice la testata di ISCRITTI.
+  contate qui. Gli stessi numeri li dice la testata di ISCRITTI. Il filtro, e
+  la ricerca scritta sopra, restano finché si resta negli iscritti, anche
+  aprendo una scheda e tornando dal menu.
 - **Certificati da stampare** (caricati nella scheda, di prima) e
   **richieste con documenti da stampare** (documento d'identità e
   certificato arrivati col modulo): da stampare, mettere nella cartellina e

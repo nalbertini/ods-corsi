@@ -102,6 +102,15 @@ export function postoDelMenu(ora: Posto, voce: Voce, dest: Pick<Posto, 'persona'
 }
 
 /**
+ * Il filtro acceso da DA FARE dopo un clic: quello chiesto, se c'è; se no
+ * resta finché si resta nella voce, come fanno Indietro e Avanti. Spento,
+ * l'elenco si rimonterebbe da capo, perdendo anche la ricerca.
+ */
+export function filtroDopo<F>(ora: Voce, voce: Voce, acceso: F | undefined, chiesto: F | undefined): F | undefined {
+  return chiesto ?? (voce === ora ? acceso : undefined)
+}
+
+/**
  * Il posto a cui portano Indietro e Avanti (o un indirizzo scritto a mano).
  * `null` quando non c'è niente da fare: il cancelletto è degli altri, o è il
  * posto dove si è già.

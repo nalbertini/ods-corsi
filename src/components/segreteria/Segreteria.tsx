@@ -26,7 +26,7 @@ import { CercaIscritto } from './CercaIscritto'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
-import { dopoIndietro, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
+import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 import { cambiaVoce, scorre } from '../../lib/scorri'
 
 export type { Voce }
@@ -197,7 +197,7 @@ export function Segreteria({
     // Un modulo scritto a metà (una ricevuta, un iscritto nuovo) non si perde con
     // un clic sul menu. Chi resta torna al modulo: sul telefono il menu lo coprirebbe.
     if (!(await lasciare())) return chiudiMenu()
-    setFiltro(d.filtro)
+    setFiltro(filtroDopo(ora.current.voce, v, filtro, d.filtro))
     // Dal menu del telefono la voce scelta prende il posto del passo del
     // menu: Indietro poi torna alla voce di prima, non al menu aperto.
     segna(postoDelMenu(ora.current, v, d), nelMenu() ? 'replace' : 'push')
