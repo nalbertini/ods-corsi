@@ -851,3 +851,54 @@ export function confermaMesiPresenze({
   const testo = `Accorciare a ${dopo} mesi? ${dopoCosa}: non si recuperano.`
   return { testo, tasto: `SÌ, ACCORCIA A ${dopo} MESI` }
 }
+
+const istruttoriDetti = ([primo, ...altri]: string[]) => [primo, ...altri.sort()].join()
+
+/**
+ * C'è qualcosa da perdere uscendo dalla scheda di un corso? La bozza si
+ * confronta con quel che è salvato; per un corso nuovo (`corso` null) con come
+ * si apre: vuoto, la prima sala (`salaIniziale`) e il primo colore. Degli
+ * istruttori conta chi è il primo, quello di riferimento; l'ordine degli altri
+ * no: il database non lo tiene, e dopo SALVA tornano in un altro ordine.
+ */
+export function corsoCambiato(corso: CorsoSeg | null, bozza: DatiCorso, salaIniziale?: string): boolean {
+  const salvato = {
+    nome: corso?.nome ?? '',
+    salaId: corso ? corso.salaId : salaIniziale,
+    istruttori: corso?.istruttori.map((i) => i.id) ?? [],
+    capienza: corso?.capienza,
+    colore: corso?.colore ?? COLORI[0].hex,
+  }
+  return (
+    bozza.nome.trim() !== salvato.nome.trim() ||
+    (bozza.salaId ?? '') !== (salvato.salaId ?? '') ||
+    istruttoriDetti(bozza.istruttori) !== istruttoriDetti(salvato.istruttori) ||
+    bozza.capienza !== salvato.capienza ||
+    (bozza.colore ?? COLORI[0].hex) !== salvato.colore
+  )
+}
+
+export type RicorrenzaNuova = { giorno: number; ora: string; durata: number; salaId?: string }
+
+/** Il giorno nuovo (+ AGGIUNGI UN GIORNO) si apre con l'ora e i minuti del primo giorno del corso. */
+export function ricorrenzaIniziale(corso: CorsoSeg): RicorrenzaNuova {
+  return { giorno: 1, ora: corso.ricorrenze[0]?.ora ?? '17:00', durata: corso.ricorrenze[0]?.durata ?? 60 }
+}
+
+/** C'è da perdere qualcosa nel giorno nuovo? Sì se è diverso da come si è aperto. */
+export function ricorrenzaCambiata(corso: CorsoSeg, ric: RicorrenzaNuova): boolean {
+  const i = ricorrenzaIniziale(corso)
+  return ric.giorno !== i.giorno || ric.ora !== i.ora || ric.durata !== i.durata || !!ric.salaId
+}
+
+/** C'è qualcosa da perdere uscendo da MODIFICA nella scheda di un istruttore? */
+export function personaCambiata(
+  salvata: Pick<PersonaleSeg, 'nome' | 'cognome' | 'email'>,
+  modifica: { nome: string; cognome: string; email: string },
+): boolean {
+  return (
+    modifica.nome.trim() !== salvata.nome.trim() ||
+    modifica.cognome.trim() !== salvata.cognome.trim() ||
+    modifica.email.trim() !== (salvata.email ?? '').trim()
+  )
+}

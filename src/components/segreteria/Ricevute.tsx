@@ -5,6 +5,7 @@ import {
   centesimi,
   conti,
   cosaNonVa,
+  enteCambiato,
   euro,
   METODI,
   nomeFileRicevuta,
@@ -24,7 +25,7 @@ import {
 } from '../../lib/ricevute'
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
 import { chiaveGiorno } from '../../lib/sala'
-import { chiedi, Campo, dataLunga, Guaio, Riga, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Riga, useAvviso, useBozza, useCarica } from './comune'
 
 type Fai = ReturnType<typeof useAvviso>['fai']
 
@@ -582,6 +583,7 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
   const { avviso, fai } = useAvviso()
   const [b, setB] = useState<EnteRicevuta | null>(null)
   const e = b ?? ente.dato
+  useBozza(!!b && !!ente.dato && enteCambiato(ente.dato, b), 'Chi fa le ricevute')
 
   const campo = (k: keyof EnteRicevuta, etichetta: string, max = 120, largo = false) => (
     <Campo id={`en-${k}`} etichetta={etichetta} largo={largo}>

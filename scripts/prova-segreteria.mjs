@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1189,6 +1189,98 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
   const tsx = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
   const ricopiate = ["'NO CERTIFICATO'", "'CERT. SCADUTO'", "'QUOTA SCADUTA'", 'const TONO_CERTIFICATO', 'const TONO_PAGA', 'const PAROLA_PAGA'].filter((x) => tsx.includes(x))
   ok('Iscritti.tsx non ha parole né toni suoi per IN REGOLA', ricopiate, [])
+}
+
+console.log('\nuna modifica non salvata: CORSI e ISTRUTTORI E ACCESSI chiedono prima di lasciarla')
+{
+  const cambiato = (corso, bozza, sala) => m.corsoCambiato?.(corso, bozza, sala)
+  const persona = (salvata, modifica) => m.personaCambiata?.(salvata, modifica)
+  const primo = m.COLORI[0].hex
+  const X = { id: 'x', nome: 'Anna' }
+  const Y = { id: 'y', nome: 'Bruno' }
+  const corso = { id: 'c1', nome: 'Karate', colore: m.COLORI[1].hex, salaId: 's1', sala: 'Sala 1', istruttori: [X, Y], capienza: 20, attivo: true, ricorrenze: [] }
+  // Come la costruisce Corsi.tsx: un corso salvato senza colore prende il primo.
+  const bozzaDi = (c) => ({ id: c?.id, nome: c?.nome ?? '', salaId: c?.salaId, istruttori: c?.istruttori.map((i) => i.id) ?? [], capienza: c?.capienza, colore: c?.colore ?? primo })
+  const b = bozzaDi(corso)
+
+  ok('la bozza uguale al corso salvato non è una modifica', cambiato(corso, b), false)
+  ok('il nome cambiato è una modifica', cambiato(corso, { ...b, nome: 'Karate bambini' }), true)
+  ok('il nome con uno spazio in più non è una modifica', cambiato(corso, { ...b, nome: 'Karate ' }), false)
+  ok('la sala cambiata è una modifica', cambiato(corso, { ...b, salaId: 's2' }), true)
+  ok('i posti cambiati sono una modifica', cambiato(corso, { ...b, capienza: 25 }), true)
+  ok('i posti tolti sono una modifica', cambiato(corso, { ...b, capienza: undefined }), true)
+  ok('il colore cambiato è una modifica', cambiato(corso, { ...b, colore: m.COLORI[2].hex }), true)
+  ok('gli istruttori scambiati di posto sono una modifica: il primo è quello di riferimento', cambiato(corso, { ...b, istruttori: ['y', 'x'] }), true)
+  ok('gli stessi istruttori nello stesso ordine non sono una modifica', cambiato(corso, { ...b, istruttori: ['x', 'y'] }), false)
+  const Z = { id: 'z', nome: 'Carla' }
+  ok('gli altri istruttori in un altro ordine non sono una modifica: il database tiene solo il primo', cambiato({ ...corso, istruttori: [X, Y, Z] }, { ...b, istruttori: ['x', 'z', 'y'] }), false)
+  ok('un istruttore tolto è una modifica', cambiato(corso, { ...b, istruttori: ['x'] }), true)
+  const senzaColore = { ...corso, colore: undefined }
+  ok('un corso salvato senza colore, aperto col primo colore, non è una modifica', cambiato(senzaColore, bozzaDi(senzaColore)), false)
+
+  const nuovo = { ...bozzaDi(null), salaId: 's1' }
+  ok('un corso nuovo appena aperto, con la prima sala, non è una modifica', cambiato(null, nuovo, 's1'), false)
+  ok('un corso nuovo con un nome è una modifica', cambiato(null, { ...nuovo, nome: 'Judo' }, 's1'), true)
+  ok('un corso nuovo con un istruttore è una modifica', cambiato(null, { ...nuovo, istruttori: ['x'] }, 's1'), true)
+  ok('un corso nuovo con i posti è una modifica', cambiato(null, { ...nuovo, capienza: 10 }, 's1'), true)
+  ok('un corso nuovo con un altro colore è una modifica', cambiato(null, { ...nuovo, colore: m.COLORI[3].hex }, 's1'), true)
+  ok('un corso nuovo con un’altra sala è una modifica', cambiato(null, { ...nuovo, salaId: 's2' }, 's1'), true)
+
+  const salvata = { nome: 'Anna', cognome: 'Neri', email: 'anna@esempio.it' }
+  const mod = { nome: 'Anna', cognome: 'Neri', email: 'anna@esempio.it' }
+  ok('la scheda aperta e non toccata non è una modifica', persona(salvata, mod), false)
+  ok('l’email cambiata è una modifica', persona(salvata, { ...mod, email: 'anna.neri@esempio.it' }), true)
+  ok('l’email con uno spazio in più non è una modifica', persona(salvata, { ...mod, email: ' anna@esempio.it ' }), false)
+  ok('senza email salvata, il campo vuoto non è una modifica', persona({ nome: 'Anna', cognome: 'Neri' }, { ...mod, email: '' }), false)
+  ok('senza email salvata, un’email scritta è una modifica', persona({ nome: 'Anna', cognome: 'Neri' }, mod), true)
+  ok('il nome cambiato è una modifica', persona(salvata, { ...mod, nome: 'Annalisa' }), true)
+  ok('il cognome cambiato è una modifica', persona(salvata, { ...mod, cognome: 'Bianchi' }), true)
+
+  // Il giorno nuovo (+ AGGIUNGI UN GIORNO) si apre coi valori del primo giorno del corso.
+  const ricCorso = { ...corso, ricorrenze: [{ id: 'r1', giorno: 3, ora: '18:30', durata: 90 }] }
+  const ric = m.ricorrenzaIniziale?.(ricCorso)
+  ok('il giorno nuovo parte dall’ora e dai minuti del primo giorno', ric, { giorno: 1, ora: '18:30', durata: 90 })
+  ok('senza giorni, il giorno nuovo parte da lunedì alle 17:00 per un’ora', m.ricorrenzaIniziale?.(corso), { giorno: 1, ora: '17:00', durata: 60 })
+  const ricCambiata = (r) => m.ricorrenzaCambiata?.(ricCorso, r)
+  ok('il giorno nuovo appena aperto non è una modifica', ricCambiata(ric), false)
+  ok('il giorno nuovo con un altro giorno è una modifica', ricCambiata({ ...ric, giorno: 2 }), true)
+  ok('il giorno nuovo con un’altra ora è una modifica', ricCambiata({ ...ric, ora: '19:00' }), true)
+  ok('il giorno nuovo con altri minuti è una modifica', ricCambiata({ ...ric, durata: 60 }), true)
+  ok('il giorno nuovo con una sala scelta è una modifica', ricCambiata({ ...ric, salaId: 's2' }), true)
+
+  // La domanda la fa `lasciare` in comune.tsx; la vecchia «LASCIALO A METÀ» non c'è più.
+  const { readFileSync, readdirSync } = await import('node:fs')
+  const vecchie = readdirSync('src', { recursive: true })
+    .filter((f) => /\.(tsx?|css)$/.test(f))
+    .filter((f) => readFileSync(`src/${f}`, 'utf8').includes('LASCIALO A METÀ'))
+  ok('«LASCIALO A METÀ» non compare più in src/', vecchie, [])
+  const comune = readFileSync('src/components/segreteria/comune.tsx', 'utf8')
+  const corpo = comune.slice(comune.indexOf('export function lasciare'), comune.indexOf('\n}\n', comune.indexOf('export function lasciare')))
+  ok('lasciare: il tasto in evidenza è restare', corpo.includes('restare: true'), true)
+  ok('lasciare: dice che uscendo si perde', corpo.includes('Se esci si perdono'), true)
+  ok('lasciare: il tasto per uscire è ESCI SENZA SALVARE', corpo.includes('ESCI SENZA SALVARE'), true)
+}
+
+console.log('\nuna modifica non salvata: CHI FA LE RICEVUTE e il LISTINO chiedono solo se è cambiato qualcosa')
+{
+  const ente = { nome: 'Asd Il Centro Judo', indirizzo: 'Corso Francia 224', cap: '10098', comune: 'Rivoli', codiceFiscale: '10002760014', dicitura: 'Esente da bollo' }
+  const cambiato = (b) => m.enteCambiato?.(ente, b)
+  ok('chi fa le ricevute, non toccato: non è una modifica', cambiato({ ...ente }), false)
+  ok('chi fa le ricevute, il comune cambiato: è una modifica', cambiato({ ...ente, comune: 'Torino' }), true)
+  ok('chi fa le ricevute, rimesso com’era: non è una modifica', cambiato({ ...ente, comune: 'Rivoli' }), false)
+  ok('chi fa le ricevute, rimesso com’era con spazi in più: non è una modifica', cambiato({ ...ente, nome: ' Asd Il Centro Judo ', dicitura: 'Esente da bollo\n' }), false)
+  ok('chi fa le ricevute, la partita IVA scritta: è una modifica', cambiato({ ...ente, partitaIva: '01234567890' }), true)
+  ok('chi fa le ricevute, la partita IVA vuota dove non c’era: non è una modifica', cambiato({ ...ente, partitaIva: ' ' }), false)
+  ok('chi fa le ricevute, la partita IVA tolta: è una modifica', m.enteCambiato?.({ ...ente, partitaIva: '01234567890' }, { ...ente, partitaIva: '' }), true)
+
+  const voce = { corso: 'Judo', eta: '6-10', orari: ['lun 17:00'], prezzi: [{ saldo: 400, annuale: 480 }] }
+  const listino = { quota: 30, saldoEntro: '2026-10-31', corsi: [voce, { ...voce, corso: 'Karate' }], offerte: [{ titolo: 'FAMIGLIA', testo: 'sconto' }] }
+  const lc = (b) => m.listinoCambiato?.(listino, b)
+  ok('listino non toccato: non è una modifica', lc(structuredClone(listino)), false)
+  ok('listino con la quota cambiata: è una modifica', lc({ ...listino, quota: 35 }), true)
+  ok('listino con i campi in un altro ordine: non è una modifica', lc({ offerte: listino.offerte, corsi: listino.corsi.map((c) => ({ prezzi: c.prezzi, orari: c.orari, eta: c.eta, corso: c.corso })), saldoEntro: listino.saldoEntro, quota: 30 }), false)
+  ok('listino con i corsi scambiati di posto: è una modifica', lc({ ...listino, corsi: [listino.corsi[1], listino.corsi[0]] }), true)
+  ok('listino con un prezzo che non si capisce: è una modifica', lc('Un prezzo di «Judo» non si capisce: «4x»'), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
