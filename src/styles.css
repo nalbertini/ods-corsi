@@ -1027,6 +1027,7 @@ a.sg-voce { text-decoration: none; }
 .sg-btn-verde { background: var(--verde); color: var(--su-colore); }
 .sg-btn-linea { border: 2px solid var(--line); color: var(--sec); }
 .sg-btn-linea:hover { border-color: var(--dim); color: var(--text); }
+a.sg-btn { text-decoration: none; }
 .sg-btn-tratteggio { border: 2px dashed var(--tratteggio); color: var(--sec); }
 .sg-btn:disabled, .sg-chip:disabled { opacity: 0.4; cursor: not-allowed; }
 .sg-chip {

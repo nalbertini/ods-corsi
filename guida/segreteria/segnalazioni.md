@@ -12,6 +12,10 @@ Toccando una segnalazione si apre il filo, con tutti i messaggi in ordine,
 chi li ha scritti e quando. Sotto si scrive la risposta e **RISPONDI** la
 aggiunge. Quando è fatta, **CHIUDI**; una chiusa si riapre con **RIAPRI**.
 
+Per dire a qualcuno che gli hai scritto, **AVVISA SU WHATSAPP** apre
+WhatsApp con il messaggio già pronto, il titolo e il link della segreteria:
+scegli a chi mandarlo e lo mandi tu.
+
 Il menu dice quante aspettano una tua risposta, aperte e con l'ultimo
 messaggio di un altro: **SEGNALAZIONI · 2**, e nell'elenco sono segnate
 **DA RISPONDERE**. In cima ci sono le aperte, dalla più mossa di recente;
