@@ -369,6 +369,12 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`
 applicato prima: rifà il minimo che Supabase mette a disposizione.
+`npm run prova:sql` li lancia tutti, ognuno su un database suo, con le
+variabili `PG*` del Postgres da usare (`scripts/prova-sql.sh`).
+
+Su ogni PR le prove girano da sole (`.github/workflows/controlla.yml`): la
+compilazione dell'app e del timer, tutti gli `npm run prova:*` e tutti i file
+di `supabase/prova`. Una prova nuova entra da sé.
 
 ## Da dove viene
 
