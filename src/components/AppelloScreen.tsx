@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
 import { domandaIndietro, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
@@ -7,6 +7,7 @@ import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from './Prove'
+import { DueTocchi } from './ds'
 import type { SegnalataVista } from '../lib/segnalate'
 
 /**
@@ -456,64 +457,3 @@ export interface Conto {
   daSegnare: number
 }
 
-/**
- * Un tasto che, quando `chiede` c'è, vuole due tocchi: il primo mostra la
- * domanda, il secondo fa. Senza il secondo, dopo qualche secondo torna
- * com'era. Come TOGLI nelle prove: AZZERA accanto a TUTTI PRESENTI, con le
- * mani sudate, un tocco solo è troppo poco.
- */
-function DueTocchi({
-  className,
-  chiede,
-  disabled,
-  etichetta,
-  onFai,
-  children,
-}: {
-  className: string
-  chiede?: string
-  disabled?: boolean
-  /** Per un tasto con un'icona: il nome da leggere finché non chiede. */
-  etichetta?: string
-  onFai: () => void
-  children: ReactNode
-}) {
-  const [sicuro, setSicuro] = useState(false)
-  // Il tocco che conferma vale solo se arriva dopo aver letto la domanda: un
-  // doppio tocco veloce (le mani sudate, «l'ha preso?») altrimenti la salta.
-  const chiestoIl = useRef(0)
-  // Lo stesso per un tasto appena comparso al posto di un altro (CHIUDI ✓ al
-  // posto di TUTTI PRESENTI): il secondo tocco del doppio tocco non è per lui.
-  const natoIl = useRef(Date.now())
-  useEffect(() => {
-    if (!sicuro) return
-    const t = window.setTimeout(() => setSicuro(false), 6000)
-    return () => window.clearTimeout(t)
-  }, [sicuro])
-  // Se intanto non c'è più niente da chiedere, il tasto torna com'era: se no
-  // restava vuoto, e il tocco dopo faceva senza domanda.
-  useEffect(() => {
-    if (!chiede) setSicuro(false)
-  }, [chiede])
-  return (
-    <button
-      type="button"
-      className={className}
-      data-sicuro={sicuro}
-      disabled={disabled}
-      aria-label={sicuro && chiede ? undefined : etichetta}
-      onClick={() => {
-        if (chiede && !sicuro) {
-          chiestoIl.current = Date.now()
-          return setSicuro(true)
-        }
-        if (Date.now() - natoIl.current < 500) return
-        if (chiede && Date.now() - chiestoIl.current < 500) return
-        setSicuro(false)
-        onFai()
-      }}
-    >
-      {sicuro && chiede ? <span className="due-tocchi-chiede">{chiede}</span> : children}
-    </button>
-  )
-}

@@ -1,6 +1,6 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { certificatoDaPortare, controlla, datiRichieste, ESTENSIONI, FILE, FORMULE, MASSIMO_FILE, minorenne, problemi, pulisciCf } from '../lib/richieste'
+import { certificatoDaPortare, chiFirma, controlla, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
@@ -9,7 +9,7 @@ import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import { useListino } from './Costi'
 import type { SceltaModulo } from '../lib/firma'
-import { Bollino, Campo, CaricaFile, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
+import { Bollino, Campo, CaricaFile, classiTasto, DueTocchi, Dettaglio, NotaCampo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota } from './ds'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
 
 /**
@@ -99,7 +99,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const [d, setD] = useState<DatiRichieste | null>(null)
   const [corsi, setCorsi] = useState<CorsoAperto[] | null>(null)
   const [guaioCorsi, setGuaioCorsi] = useState<string | null>(null)
-  const [b, setB] = useState<DatiRichiesta>(() => ({ ...VUOTO, ...nucleo?.dati }))
+  // Com'era all'apertura: INDIETRO chiede solo se c'è qualcosa di nuovo.
+  const [inizio] = useState<DatiRichiesta>(() => ({ ...VUOTO, ...nucleo?.dati }))
+  const [b, setB] = useState<DatiRichiesta>(inizio)
   const [file, setFile] = useState<Partial<Record<TipoFile, File>>>({})
   const [privacy, setPrivacy] = useState(false)
   // Il modulo: firmato qui, o la foto del foglio firmato a mano.
@@ -110,6 +112,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const [genitoreProvincia, setGenitoreProvincia] = useState('')
   const [luoghi, setLuoghi] = useState<Luoghi | null>(null)
   const [guaioFirma, setGuaioFirma] = useState<string | null>(null)
+  // Perché firma e caselle sono sparite, finché non si firma di nuovo.
+  const [daRifare, setDaRifare] = useState<string>()
   // Un campo che una persona non vede e un programma riempie.
   const [trappola, setTrappola] = useState('')
   const [guaio, setGuaio] = useState<string | null>(null)
@@ -140,7 +144,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const natoAGenitore = luogoGenitore?.nome ?? genitoreNatoA
   const provinciaGenitore = luogoGenitore?.sigla ?? genitoreProvincia
 
-  const minore = !!b.natoIl && minorenne(b.natoIl)
+  // Chi firmava fino a ora: una data a metà non lo cambia (`chiFirma`).
+  const minorePrima = useRef<boolean>()
+  const minore = chiFirma(b.natoIl, minorePrima.current)
   const pronta: DatiRichiesta = {
     ...b,
     natoA: luogo ? scriviLuogo(luogo) : b.natoA,
@@ -148,9 +154,18 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     genitoreCognome: minore ? b.genitoreCognome : '',
     genitoreCodiceFiscale: minore ? b.genitoreCodiceFiscale : '',
   }
-  // Se chi firma cambia (la data di nascita dice minore, o non più), la firma
-  // di prima non è la sua.
-  useEffect(() => setTratti([]), [minore])
+  // Se chi firma cambia (la data di nascita dice minore, o non più), il foglio
+  // è un altro: firma, caselle e foto del foglio di prima non sono le sue.
+  useEffect(() => {
+    const prima = minorePrima.current
+    minorePrima.current = minore
+    if (prima === undefined || prima === minore) return
+    setDaRifare((avviso) => firmaDaRifare(minore, { tratti: tratti.length, scelte: Object.keys(scelte).length, foto: !!file.modulo, avvisato: !!avviso }))
+    setTratti([])
+    setScelte({})
+    setFile((p) => ({ ...p, modulo: undefined }))
+    // Solo quando cambia chi firma: tratti, scelte e file si leggono com'erano in quel momento.
+  }, [minore])
   const firmatario = minore ? `${(b.genitoreNome ?? '').trim()} ${(b.genitoreCognome ?? '').trim()}`.trim() : `${b.nome.trim()} ${b.cognome.trim()}`.trim()
   const foglio = MODULI[minore ? 1 : 0]
   const certificato = certificatoDaPortare(
@@ -326,9 +341,22 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   return (
     <form className="stack modulo" onSubmit={(e) => void manda(e)} noValidate>
       <div className="pad row modulo-testa">
-        <Tasto onClick={onChiudi} disabled={inVolo}>
+        <DueTocchi
+          className={classiTasto()}
+          disabled={inVolo}
+          chiede={domandaUscita({
+            risposte: b,
+            inizio,
+            file: Object.values(file).filter(Boolean).length,
+            scelte: Object.keys(scelte).length,
+            tratti: tratti.length,
+            privacy,
+            luogoGenitore: genitoreNatoA + genitoreProvincia,
+          })}
+          onFai={onChiudi}
+        >
           ← INDIETRO
-        </Tasto>
+        </DueTocchi>
         {d?.modo === 'prova' && <Bollino>PROVA: RESTA SU QUESTO DISPOSITIVO</Bollino>}
       </div>
 
@@ -371,6 +399,11 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         {minore && (
           <span className="modulo-largo">
             <Dettaglio tono="avviso">È minorenne: servono i dati del genitore qui sotto, e il modulo per minori, che firma il genitore.</Dettaglio>
+          </span>
+        )}
+        {daRifare && (
+          <span className="modulo-largo">
+            <Dettaglio tono="avviso">{daRifare}</Dettaglio>
           </span>
         )}
       </Sezione>
@@ -471,7 +504,16 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           />
         </div>
         {come === 'foto' ? (
-          <SceltaFile tipo="modulo" file={file.modulo} onFile={(x) => setFile((p) => ({ ...p, modulo: x }))} />
+          <SceltaFile
+            tipo="modulo"
+            file={file.modulo}
+            onFile={(x) => {
+              // Una foto ancora in preparazione quando cambia chi firma è del foglio di prima.
+              if (minorePrima.current !== minore) return
+              setFile((p) => ({ ...p, modulo: x }))
+              if (x) setDaRifare(undefined)
+            }}
+          />
         ) : (
           <>
             <Casella
@@ -522,12 +564,15 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
                   'LA FIRMA'
                 )}
               </label>
+              {/* Prima del riquadro vuoto: si legge perché è vuoto. */}
+              {daRifare && <Dettaglio tono="avviso">{daRifare}</Dettaglio>}
               <TavolaFirma
                 id="m-firma"
                 tratti={tratti}
                 onTratti={(t) => {
                   setTratti(t)
                   setGuaioFirma(null)
+                  if (t.length) setDaRifare(undefined)
                 }}
                 descritto="m-firma-nota"
               />
