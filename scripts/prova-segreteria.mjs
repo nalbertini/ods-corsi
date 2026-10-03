@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export { apriScheda, scorre } from './src/lib/scorri'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1704,6 +1704,121 @@ console.log('\nuna lezione toccata e rimessa com\'era resta, e quelle di oggi pu
   OGGI = new Date(2026, 8, 26, 12, 0).getTime()
 }
 
+console.log('\nla scheda a pieno schermo parte dalla cima, e chiusa la pagina torna dov\'era')
+{
+  // Il corpo che scorre è un oggetto finto: conta solo `scrollTop`. Lo
+  // smontaggio rimette la posizione dopo un microtask, come in React.
+  const dopo = () => new Promise((r) => setTimeout(r))
+  {
+    const corpo = { scrollTop: 800 }
+    const chiudi = m.apriScheda(corpo)
+    ok('aperta una scheda dall\'elenco a 800, la pagina va in cima', corpo.scrollTop, 0)
+    chiudi()
+    await dopo()
+  }
+  {
+    const corpo = { scrollTop: 800 }
+    const chiudiA = m.apriScheda(corpo)
+    corpo.scrollTop = 500
+    chiudiA()
+    const chiudiB = m.apriScheda(corpo)
+    await dopo()
+    ok('da una scheda all\'altra, la nuova parte dalla cima', corpo.scrollTop, 0)
+    chiudiB()
+    await dopo()
+    ok('chiusa la seconda, si torna dove si era nell\'elenco', corpo.scrollTop, 800)
+  }
+  {
+    const corpo = { scrollTop: 800 }
+    const chiudiA = m.apriScheda(corpo)
+    corpo.scrollTop = 500
+    chiudiA()
+    const chiudiB = m.apriScheda(corpo)
+    corpo.scrollTop = 400
+    chiudiB()
+    const chiudiC = m.apriScheda(corpo)
+    corpo.scrollTop = 600
+    chiudiC()
+    await dopo()
+    ok('tre schede di fila, chiusa l\'ultima: si torna dove si era nell\'elenco', corpo.scrollTop, 800)
+    corpo.scrollTop = 300
+    const chiudiD = m.apriScheda(corpo)
+    corpo.scrollTop = 50
+    chiudiD()
+    await dopo()
+    ok('aperta di nuovo dall\'elenco a 300: si torna a 300, non alla posizione di prima', corpo.scrollTop, 300)
+  }
+  {
+    // Lo StrictMode di sviluppo monta, smonta e rimonta nello stesso giro.
+    const corpo = { scrollTop: 800 }
+    m.apriScheda(corpo)()
+    const chiudi = m.apriScheda(corpo)
+    await dopo()
+    ok('montata due volte di fila, la scheda resta in cima', corpo.scrollTop, 0)
+    corpo.scrollTop = 250
+    chiudi()
+    await dopo()
+    ok('e chiusa si torna a 800', corpo.scrollTop, 800)
+  }
+  {
+    const uno = { scrollTop: 100 }
+    const due = { scrollTop: 200 }
+    const chiudiUno = m.apriScheda(uno)
+    const chiudiDue = m.apriScheda(due)
+    uno.scrollTop = 30
+    due.scrollTop = 40
+    chiudiUno()
+    chiudiDue()
+    await dopo()
+    ok('due corpi diversi tornano ognuno al suo posto', [uno.scrollTop, due.scrollTop], [100, 200])
+  }
+  // Nello stesso commit React nasconde l'elenco e monta la scheda: quando
+  // apriScheda legge scrollTop il browser l'ha già tagliato all'altezza della
+  // scheda. Conta l'ultima posizione segnata da `scorre` (onScroll del corpo).
+  {
+    const corpo = { scrollTop: 1500 }
+    m.scorre(corpo)
+    corpo.scrollTop = 594
+    const chiudi = m.apriScheda(corpo)
+    chiudi()
+    await dopo()
+    ok('elenco scorso a 1500 e tagliato dal browser a 594: chiusa la scheda si torna a 1500', corpo.scrollTop, 1500)
+  }
+  {
+    const corpo = { scrollTop: 1500 }
+    m.scorre(corpo)
+    corpo.scrollTop = 594
+    const chiudi = m.apriScheda(corpo)
+    corpo.scrollTop = 594
+    m.scorre(corpo)
+    corpo.scrollTop = 200
+    m.scorre(corpo)
+    chiudi()
+    await dopo()
+    ok('gli scroll dentro la scheda aperta non spostano la posizione segnata: si torna a 1500', corpo.scrollTop, 1500)
+  }
+  {
+    const corpo = { scrollTop: 1500 }
+    m.scorre(corpo)
+    corpo.scrollTop = 594
+    m.apriScheda(corpo)()
+    await dopo()
+    corpo.scrollTop = 700
+    m.scorre(corpo)
+    corpo.scrollTop = 300
+    const chiudi = m.apriScheda(corpo)
+    chiudi()
+    await dopo()
+    ok('tornati all\'elenco e scorsi a 700, tagliato a 300: chiusa la scheda si torna a 700', corpo.scrollTop, 700)
+  }
+  {
+    const corpo = { scrollTop: 400 }
+    const chiudi = m.apriScheda(corpo)
+    chiudi()
+    await dopo()
+    ok('un elenco mai scorso a 400: chiusa la scheda si torna a 400', corpo.scrollTop, 400)
+  }
+}
 console.log('\ntogliere un «non sono doppioni»')
 {
   const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: '2026-09-26', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Back } from '../Icons'
+import { apriScheda } from '../../lib/scorri'
 
 type Valore = string | number | null | undefined
 
@@ -398,23 +399,9 @@ export function SchedaPiena({
   children: ReactNode
 }) {
   const cima = useRef<HTMLDivElement>(null)
-  const dovEra = useRef<number | null>(null)
-  const montata = useRef(false)
   useLayoutEffect(() => {
     const corpo = cima.current?.closest('.sg-corpo')
-    if (!corpo) return
-    // Lo StrictMode di sviluppo monta due volte: conta la prima posizione, e
-    // il ritorno parte solo se la scheda è chiusa davvero.
-    dovEra.current ??= corpo.scrollTop
-    montata.current = true
-    corpo.scrollTop = 0
-    return () => {
-      montata.current = false
-      // Dopo il commit: prima l'elenco torna visibile, poi la pagina scende dov'era.
-      queueMicrotask(() => {
-        if (!montata.current) corpo.scrollTop = dovEra.current ?? 0
-      })
-    }
+    if (corpo) return apriScheda(corpo)
   }, [])
   return (
     <div ref={cima} className="stack" style={{ gap: 16 }}>

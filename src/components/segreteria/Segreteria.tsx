@@ -27,6 +27,7 @@ import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { dopoIndietro, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
+import { scorre } from '../../lib/scorri'
 
 export type { Voce }
 
@@ -450,7 +451,7 @@ export function Segreteria({
         </div>
       </nav>
 
-      <main className="sg-corpo" id="sg-contenuto" tabIndex={-1}>
+      <main className="sg-corpo" id="sg-contenuto" tabIndex={-1} onScroll={(e) => scorre(e.currentTarget)}>
         {!d && !guaio && <p className="sg-sotto">Un attimo…</p>}
         {!d && guaio && (
           <div className="stack" style={{ gap: 12, alignItems: 'flex-start' }}>
