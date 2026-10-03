@@ -1,5 +1,5 @@
 -- Fin dove è pronto il calendario (calendario_pronto_fino, 05-segreteria.sql
--- e 29-pronto-fino-dalle-ricorrenze.sql): conta solo le lezioni dell'orario,
+-- e 30-pronto-fino-dalle-ricorrenze.sql): conta solo le lezioni dell'orario,
 -- non le straordinarie, che se cadono lontano fermerebbero
 -- allunga_calendario (12-calendario-da-se.sql).
 -- Si lancia dopo finto-supabase.sql e i file dello schema, su un database vuoto.

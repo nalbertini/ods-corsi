@@ -93,7 +93,8 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   **Istruttori e accessi**, coi PIN del tablet e il **kanji** di ciascuno: un
   segno solo, come un timbro, che lo fa riconoscere a colpo d'occhio accanto al
   nome nel calendario, nell'appello e sul tablet di sala (`src/lib/kanji.ts`, `supabase/24-kanji.sql`). Un istruttore che non ha
-  mai insegnato si **elimina**, scheda e account (`supabase/28-elimina-istruttore.sql`, `supabase/functions/elimina`). Il **listino** dei costi, che
+  mai insegnato si **elimina**, scheda e account (`supabase/28-elimina-istruttore.sql`, `supabase/functions/elimina`). Due schede della stessa
+  persona si **uniscono** dalla scheda: tutto quello del doppione passa a quella che resta (`src/lib/doppioni.ts`, `supabase/29-unisci-doppioni.sql`). Il **listino** dei costi, che
   la segreteria cambia da sé e che vale per la pagina di iscrizione e per le
   voci delle ricevute (`supabase/19-listino.sql`). Le **segnalazioni**: cosa non va o cosa servirebbe
   nell'app, scritto lì invece che in un documento, con le risposte nello stesso
@@ -353,7 +354,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | | |
 |---|---|
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
-| `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. |
+| `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
 | `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia, e i cambi dalla scheda della segreteria. Le presenze segnalate: chi le manda, chi le vede e chi le accoglie. |
@@ -374,6 +375,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/prove.sql` | Le prove: le aggiunge chi fa l'appello (dall'app o col PIN), già presenti; si ritrovano per nome, col telefono solo per la segreteria; si tolgono con la persona se è nata lì; un iscritto e chi non ha accesso non le vedono. Dopo `tablet.sql`. |
 | `supabase/prova/statistiche.sql` | Le statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove, chi l'ha fatta, gli incassi del mese; le vede solo la segreteria. |
 | `supabase/prova/elimina-istruttore.sql` | Eliminare un istruttore: solo la segreteria, solo un istruttore, e solo se non ha corsi non archiviati, lezioni in calendario o presenze da istruttore, anche cancellando la riga a mano. Un iscritto si cancella come prima. |
+| `supabase/prova/unisci-doppioni.sql` | Unire due schede della stessa persona: solo la segreteria, solo due iscritti senza accesso, mai con due codici fiscali diversi o un certificato da stampare; vince chi resta, il doppione riempie i vuoti, presenze, prove e iscrizioni una per lezione e per corso, le ricevute passano intatte, e tutto o niente. |
 | `supabase/prova/segnalazioni.sql` | Le segnalazioni: le legge e le scrive solo la segreteria, a nome suo; si risponde a un filo e non a una risposta; un messaggio scritto non si cambia, di un filo si cambia solo se è chiuso, e niente si cancella. Istruttore, iscritto, tablet e chi non ha accesso non vedono niente. |
 | `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
 

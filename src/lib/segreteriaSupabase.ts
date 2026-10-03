@@ -165,6 +165,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /anche_istruttore/.test(e.message ?? '')) return new Error(MANCA_DOPPIO)
   // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /unisci_persone|anteprima_unione/.test(e.message ?? ''))
+    return new Error('Unire due schede non è ancora attivo sul database: va lanciato 29-unisci-doppioni.sql')
   if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
@@ -959,6 +961,14 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       if (error) throw await guaioFunzione(error, 'per eliminare', 'L’istruttore non è stato eliminato')
     },
 
+    async anteprimaUnione(resta, via) {
+      return ok(await db.rpc('anteprima_unione', { resta, via })) as { presenze: number; prove: number; iscrizioni: number; ricevute: number }
+    },
+
+    async unisciPersone(resta, via) {
+      ok(await db.rpc('unisci_persone', { resta, via }))
+    },
+
     async salvaSala(sala) {
       if (!sala.nome.trim()) throw new Error('La sala ha bisogno di un nome')
       const riga = { nome: sala.nome.trim(), capienza: sala.capienza ?? null }
@@ -1121,7 +1131,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async apriSegnalazione(titolo, testo) {
       const no = cosaNonVaSegnalazione(testo, titolo)
       if (no) throw new Error(no)
-      ok(await db.from('segnalazioni').insert({ titolo: titolo.trim(), testo: testo.trim() }))
+      // Come per corsi e persone: `.single()` dà `data` nullo nel tipo, ma `ok` ha già lanciato se non c'è.
+      return (ok(await db.from('segnalazioni').insert({ titolo: titolo.trim(), testo: testo.trim() }).select('id').single()) as { id: string }).id
     },
 
     async rispondiSegnalazione(id, testo) {

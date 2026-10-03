@@ -23,7 +23,8 @@ con **ISTRUTTORI →** nel menu, senza uscire.
 
 In cima al menu c'è **Cerca iscritto**: si scrive un pezzo del nome o del
 cognome, si sceglie con le frecce (o col mouse) e Invio apre la sua scheda, da
-qualunque voce. Il tasto **/** ci porta subito, senza mouse.
+qualunque voce. Apostrofi, trattini e spazi nel cognome non contano: «d'am»,
+«dam» e «amico» trovano D'Amico, «deluca» trova De Luca. Il tasto **/** ci porta subito, senza mouse.
 
 A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),

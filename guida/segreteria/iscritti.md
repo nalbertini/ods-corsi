@@ -100,6 +100,21 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
 - **ULTIME 12 LEZIONI** — presente o assente, lezione per lezione: ✓ presente, ✕ assente, G giustificato, vuoto non segnato.
 - **DISATTIVA** — sparisce da tutti gli appelli e dal tablet (chi smette del
   tutto). **RIATTIVA** la rimette.
+- **UNISCI…** — due schede della stessa persona diventano una: succede
+  quando all'appello qualcuno non ritrova chi è già venuto a provare e lo
+  aggiunge di nuovo. Scegliete l'altra scheda (in cima chi ha lo stesso
+  cognome, comunque scritto: D'Amico, Damico). Si vede quale resta, quale se
+  ne va, i campi che non tornano e quante presenze, prove, iscrizioni e
+  ricevute passano; **TIENI L'ALTRA** scambia le due. Della scheda che resta
+  vale quello che c'è scritto; dall'altra si prende solo quello che manca, e
+  di certificato e quota la scadenza più lontana; resta attiva se una delle
+  due lo era. Le ricevute passano così come sono. Una conferma, e non si
+  torna indietro.
+  Non si uniscono due schede con due codici fiscali diversi, anche solo
+  quello del modulo di iscrizione (sono due persone), né se quella che se ne va ha ancora il file di un certificato:
+  prima stampatelo e cancellatelo. Unite quando gli appelli del giorno sono
+  arrivati: un appello fatto senza rete che arriva dopo sulla scheda che se
+  ne va si perde.
 
 ## Un pagamento e la sua ricevuta
 

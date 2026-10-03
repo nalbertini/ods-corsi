@@ -114,7 +114,7 @@ end $$;
 -- ---------------------------------------------------------------------------
 -- Fin dove arriva il calendario: la lezione dell'orario più lontana già
 -- generata. Le straordinarie no: una lontana fermerebbe allunga_calendario
--- (vedi 29-pronto-fino-dalle-ricorrenze.sql, che porta questo sui database
+-- (vedi 30-pronto-fino-dalle-ricorrenze.sql, che porta questo sui database
 -- già in uso).
 -- ---------------------------------------------------------------------------
 create or replace function calendario_pronto_fino() returns date

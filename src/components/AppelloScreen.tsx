@@ -102,6 +102,7 @@ export function AppelloScreen({
   // si recupera un appello senza cercarli fra gli altri. L'ordine si decide una
   // volta sola, così non cambia sotto il dito mentre li si segna.
   const primi = useRef<Set<string> | null>(null)
+  const toccataIl = useRef(new Map<string, number>())
   const ricarica = useCallback(() => {
     let vivo = true
     setGuaio(null)
@@ -128,7 +129,7 @@ export function AppelloScreen({
     return (
       <div className="pad" style={{ paddingTop: 20 }}>
         <div className="card stack" style={{ padding: 14, gap: 6, borderColor: 'var(--rosso)' }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso)' }}>LEZIONE NON LETTA</span>
+          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso-testo)' }}>LEZIONE NON LETTA</span>
           <span style={{ fontSize: 14, color: 'var(--dim)' }}>{guaio}</span>
           <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px', alignSelf: 'flex-start' }} onClick={() => setGiro((g) => g + 1)}>
             RIPROVA
@@ -153,6 +154,15 @@ export function AppelloScreen({
   // presente → assente → non segnato, e si ricomincia.
   const prossimo = (s: StatoPresenza | null): StatoPresenza | null =>
     s === null ? 'presente' : s === 'presente' ? 'assente' : null
+
+  // Il secondo tocco veloce sulla stessa riga non conta: con tre stati, un
+  // presente toccato due volte «per sicurezza» finiva non segnato.
+  const toccaRiga = (personaId: string, stato: StatoPresenza | null) => {
+    const ora = Date.now()
+    if (ora - (toccataIl.current.get(personaId) ?? 0) < 400) return
+    toccataIl.current.set(personaId, ora)
+    tocca(personaId, prossimo(stato))
+  }
 
   const tocca = (personaId: string, stato: StatoPresenza | null) => {
     // Si aggiorna subito quello che si vede: la scrittura viaggia per conto suo
@@ -197,23 +207,26 @@ export function AppelloScreen({
     onChiudi?.(d.sessione, { presenti: presentiIscritti, assenti: iscritti.length - presentiIscritti, prove: presentiProve })
   }
 
-  // Chiudendo diventano assenti tutti i non segnati, anche chi prova; la
-  // testa conta invece solo gli iscritti, come il conto dei presenti.
-  const daSegnare = d.elenco.length - segnati
-  const iscrittiDaSegnareQui = iscritti.filter((p) => p.stato === null).length
+  // Un conto solo, dappertutto: gli iscritti, e chi prova detto a parte,
+  // come sulla scheda del calendario e nell'esito. Chiudendo diventano
+  // assenti tutti i non segnati, anche chi prova.
+  const tuttiSegnati = segnati === d.elenco.length
+  const mancano = iscritti.filter((p) => p.stato === null).length
+  const proveMancano = inProva.filter((p) => p.stato === null).length
   const presentiIscritti = iscritti.filter((p) => p.stato === 'presente').length
   const futura = new Date(d.sessione.inizio).getTime() > Date.now()
+  const assentiDetti = `${mancano === 1 ? 'UN ASSENTE' : `${mancano} ASSENTI`}${proveMancano ? ` · +${proveMancano} PROVA` : ''}`
   // Quando chiudere vuole un secondo tocco, e cosa chiede: prima di tutto
   // quanti diventerebbero assenti, che è il fatto che conta.
   const domanda =
-    segnati === 0 && daSegnare > 0
-      ? `${futura ? 'NON È COMINCIATA' : 'NESSUNO SEGNATO'} · ${daSegnare} ASSENTI?`
+    segnati === 0 && !tuttiSegnati
+      ? `${futura ? 'NON È COMINCIATA' : 'NESSUNO SEGNATO'} · ${assentiDetti}?`
       : futura
-        ? daSegnare
-          ? `NON È COMINCIATA · ${daSegnare} ASSENTI?`
-          : 'NON È COMINCIATA: CHIUDI?'
-        : daSegnare * 2 > d.elenco.length
-          ? `SICURO? ${daSegnare} ASSENTI`
+        ? tuttiSegnati
+          ? 'NON È COMINCIATA: CHIUDI?'
+          : `NON È COMINCIATA · ${assentiDetti}?`
+        : mancano * 2 > iscritti.length
+          ? `SICURO? ${assentiDetti}`
           : undefined
 
   return (
@@ -252,8 +265,9 @@ export function AppelloScreen({
           {presentiProve > 0 && <span className="num appello-prove">+{presentiProve} PROVA</span>}
           <span className="grow" />
           <span className="stack" style={{ alignItems: 'flex-end', gap: 2, alignSelf: 'center' }}>
-            <span className="num appello-stato" data-fatto={daSegnare === 0}>
-              {daSegnare === 0 ? '✓ TUTTI SEGNATI' : `${iscrittiDaSegnareQui || daSegnare} DA SEGNARE`}
+            {/* Con tutti segnati il tasto qui sotto lo dice già: qui il passo dopo. */}
+            <span className="num appello-stato" data-fatto={tuttiSegnati && !tuttiAssenti} data-manca={tuttiAssenti || undefined}>
+              {tuttiAssenti ? 'TUTTI ASSENTI' : tuttiSegnati ? 'CHIUDI IN FONDO ↓' : mancano ? `${mancano} DA SEGNARE` : `${proveMancano} PROVA DA SEGNARE`}
             </span>
             {/* Sempre al suo posto, anche vuota: la testa non cambia altezza. */}
             <span className="num appello-coda" role="status">
@@ -269,10 +283,10 @@ export function AppelloScreen({
           <button
             className="btn btn-go grow"
             style={{ fontSize: 17, padding: '0 10px', letterSpacing: '0.1em' }}
-            disabled={!d.elenco.length || (daSegnare === 0 && !tuttiAssenti)}
+            disabled={!d.elenco.length || (tuttiSegnati && !tuttiAssenti)}
             onClick={tuttiGliAltri}
           >
-            {segnatiIscritti === 0 || tuttiAssenti ? 'TUTTI PRESENTI' : daSegnare === 0 ? '✓ TUTTI SEGNATI' : 'GLI ALTRI PRESENTI'}
+            {segnatiIscritti === 0 || tuttiAssenti ? 'TUTTI PRESENTI' : tuttiSegnati ? '✓ TUTTI SEGNATI' : 'GLI ALTRI PRESENTI'}
           </button>
           <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO?" onFai={azzera}>
             AZZERA
@@ -312,7 +326,7 @@ export function AppelloScreen({
                 )}
               </div>
             ))}
-            {guaioSegnalata && <span style={{ fontSize: 14, color: 'var(--rosso)' }}>{guaioSegnalata}</span>}
+            {guaioSegnalata && <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaioSegnalata}</span>}
           </div>
         </>
       )}
@@ -332,7 +346,7 @@ export function AppelloScreen({
             key={p.id}
             className="riga-appello"
             data-stato={p.stato ?? 'niente'}
-            onClick={() => tocca(p.id, prossimo(p.stato))}
+            onClick={() => toccaRiga(p.id, p.stato)}
             aria-label={`${perEsteso(p)}: ${p.stato ?? 'non segnato'}`}
           >
             <span className="segno" aria-hidden="true">
@@ -356,7 +370,7 @@ export function AppelloScreen({
                 <button
                   className="riga-appello"
                   data-stato={p.stato ?? 'niente'}
-                  onClick={() => tocca(p.id, prossimo(p.stato))}
+                  onClick={() => toccaRiga(p.id, p.stato)}
                   aria-label={`${perEsteso(p)}, in prova: ${p.stato ?? 'non segnato'}`}
                 >
                   <span className="segno" aria-hidden="true">
@@ -390,7 +404,9 @@ export function AppelloScreen({
         )}
       </div>
 
-      {onChiudi && (
+      {/* Col pannello delle prove aperto il suo tasto per chiudere stava sopra
+          questo, e si chiamavano uguali: prima si finisce con le prove. */}
+      {onChiudi && !conProve && (
         <div className="pad stack appello-fine">
           {/* Verde quando è tutto segnato; rosso quando chiudere vuol dire
               segnare assenti, e il tasto lo dice. Chiede un secondo tocco una
@@ -398,16 +414,16 @@ export function AppelloScreen({
               più di metà diventerebbe assente: di solito è TUTTI PRESENTI
               dimenticato, e la segreteria riceverebbe assenze finte. */}
           <DueTocchi
-            className={`btn ${daSegnare === 0 ? 'btn-go' : 'btn-primary'}`}
+            className={`btn ${tuttiSegnati ? 'btn-go' : 'btn-primary'}`}
             chiede={domanda}
             onFai={chiudi}
           >
-            {daSegnare === 0 ? 'CHIUDI L’APPELLO ✓' : `CHIUDI · ${daSegnare === 1 ? 'UN ASSENTE' : `${daSegnare} ASSENTI`}`}
+            {tuttiSegnati ? 'CHIUDI L’APPELLO ✓' : `CHIUDI · ${assentiDetti}`}
           </DueTocchi>
           <span className="appello-aiuto">
-            {daSegnare === 0
+            {tuttiSegnati
               ? 'Torna al calendario. Se c’è rete parte subito, se no appena torna.'
-              : `${daSegnare === 1 ? 'Chi non è segnato risulta assente' : `I ${daSegnare} non segnati risultano assenti`}. Si può sempre riaprire e correggere.`}
+              : `${d.elenco.length - segnati === 1 ? 'Chi non è segnato risulta assente' : `I ${d.elenco.length - segnati} non segnati risultano assenti`}. Si può sempre riaprire e correggere.`}
           </span>
         </div>
       )}
