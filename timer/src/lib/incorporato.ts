@@ -37,6 +37,12 @@ export interface Incorporato {
   clip: FonteClip | null
   /** Si sta guardando la scheda del timer: senza, la tastiera non lo comanda. */
   visibile: boolean
+  /**
+   * Si vede la scheda IMPOSTAZIONI. Sul tablet solo con l'area istruttore
+   * aperta: da lì Maurizio, segnali e schermo cambiano per tutti i tablet, e
+   * al muro può toccarle chiunque. Senza, vale come aperta.
+   */
+  conImpostazioni?: boolean
   onStato: (s: StatoTimer | null) => void
   onSettings: (s: Settings) => void
   /**
