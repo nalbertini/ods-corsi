@@ -55,6 +55,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 25. `25-segnalazioni.sql` — le segnalazioni della segreteria: cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, invece di un documento a parte
 26. `26-colori-corsi.sql` — i corsi rossi passano al viola: in segreteria il rosso vuol dire solo che qualcosa manca
 27. `27-pagamento-dalle-ricevute.sql` — se ha pagato lo dicono le ricevute: in regola vuol dire la quota associativa pagata, e lo stato scritto a mano resta solo come eccezione per chi ha pagato fuori dall'app
+28. `28-elimina-istruttore.sql` — eliminare un istruttore che non ha mai insegnato, la scheda e l'account (con la funzione `elimina`, vedi «L'invito per email»); chi ha corsi, lezioni o presenze non si elimina, nemmeno cancellando la riga a mano
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -142,6 +143,10 @@ Per i corsi rossi che passano al viola basta `26-colori-corsi.sql` (dopo
 Per il pagamento ricavato dalle ricevute basta `27-pagamento-dalle-ricevute.sql`
 (dopo `16-ricevute.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
 finché non c'è, l'app ricava le stesse righe dalle ricevute da sola.
+Per eliminare un istruttore basta `28-elimina-istruttore.sql` (dopo
+`15-presenze-istruttori.sql`), che non chiede di rilanciare
+`06-iscrizioni.sql`, e la funzione `elimina` pubblicata come `invita`:
+finché non ci sono, ELIMINA nella scheda dell'istruttore dice cosa manca.
 Le funzioni dei trigger di `07`, `08`, `12` e `20`, e `nome_proprio`,
 restavano chiamabili da chi non ha un accesso (senza far uscire niente): basta
 rilanciare `06-iscrizioni.sql`, che le chiude.
@@ -250,6 +255,16 @@ manda un altro.
 
 La registrazione resta spenta (**Allow new users to sign up**): l'invito non
 ne ha bisogno, e la funzione invita solo chi la segreteria ha messo in elenco.
+
+Allo stesso modo, **ELIMINA** nella scheda di un istruttore chiama la funzione
+**`elimina`** (`functions/elimina/index.ts`): la scheda la cancella il
+database con `elimina_istruttore()` (`28-elimina-istruttore.sql`), col token
+di chi chiama, e solo dopo la funzione toglie l'account da **Authentication →
+Users**. Si pubblica come `invita`:
+
+```sh
+supabase functions deploy elimina --project-ref <id-del-progetto>
+```
 
 Chi ha il ruolo `staff` entra nella **segreteria**, all'indirizzo
 `segreteria/`: la settimana con gli appelli, i corsi e gli iscritti, pensati
@@ -761,5 +776,7 @@ statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove,
 chi l'ha fatta, gli incassi del mese, e che le veda solo la segreteria. `segnalazioni.sql` prova le
 segnalazioni: le legge e le scrive solo la segreteria, l'autore è sempre chi
 scrive, si risponde solo a un filo, un messaggio non si cambia, di un filo si
-cambia solo se è chiuso, e niente si cancella. `finto-supabase.sql` rifà anche le due
+cambia solo se è chiuso, e niente si cancella. `elimina-istruttore.sql` prova
+che un istruttore lo elimini solo la segreteria, e solo se non ha corsi,
+lezioni o presenze, anche cancellando la riga a mano. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

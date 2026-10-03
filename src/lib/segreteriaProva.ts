@@ -785,6 +785,29 @@ export function creaSegreteriaProva(): DatiSegreteria {
       return 'invito'
     },
 
+    async eliminaIstruttore(personaId) {
+      // Le stesse regole di `28-elimina-istruttore.sql`. In prova un corso
+      // archiviato conta come le sue lezioni passate: col database, ha
+      // insegnato.
+      const p = persona(personaId)
+      if (p.ruolo !== 'istruttore') throw new Error(`Si eliminano solo gli istruttori: a ${p.nome} si toglie l'accesso`)
+      const nome = nomeDi(p)
+      const tiene = a().corsi.filter((c) => c.attivo && c.istruttori.includes(personaId)).map((c) => c.nome).sort((x, y) => x.localeCompare(y, 'it'))
+      if (tiene.length) throw new Error(`${nome} insegna ancora in ${tiene.join(', ')}: prima va tolto dai corsi`)
+      if (a().corsi.some((c) => c.istruttori.includes(personaId)) || Object.values(a().lezioni).some((l) => l.istruttore === personaId))
+        throw new Error(`${nome} ha delle lezioni in calendario: non si elimina, gli si toglie l'accesso`)
+      if ((a().presenzeIstruttori ?? []).some((x) => x.personaId === personaId))
+        throw new Error(`${nome} ha delle presenze da istruttore: non si elimina, gli si toglie l'accesso`)
+      if (a().iscrizioni.some((x) => x.personaId === personaId) || (a().ricevute ?? []).some((x) => x.personaId === personaId))
+        throw new Error(`${nome} è anche allievo: non si elimina, gli si toglie l'accesso`)
+      a().persone = a().persone.filter((x) => x.id !== personaId)
+      if (a().pin) {
+        const { [personaId]: _, ...altri } = a().pin!
+        a().pin = altri
+      }
+      salva()
+    },
+
     async salvaSala(s) {
       const nome = s.nome.trim()
       if (!nome) throw new Error('La sala ha bisogno di un nome')
