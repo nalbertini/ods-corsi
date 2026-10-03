@@ -262,6 +262,12 @@ console.log('\n9b. le ricevute')
   await s.salvaEnteRicevute({ ...ente, nome: 'Asd Nuova' })
   ok('l\'associazione cambiata', (await s.enteRicevute()).nome, 'Asd Nuova')
   ok('le ricevute nell\'esportazione', (await s.esporta(chi.id)).ricevute.length, 3)
+  // Una ricevuta vecchia senza codice fiscale: quello scritto dopo in DATI ANAGRAFICI ci va lo stesso.
+  await s.emettiRicevuta({ ...base, data: '2027-01-11', intestatario: { nome: chi.nome, cognome: chi.cognome, indirizzo: 'via Vecchia 3' }, voci: [voce(100, 100)] })
+  await s.salvaAnagrafica(chi.id, { codiceFiscale: 'RSSMRA80A01L219X', indirizzo: 'via Altra 9' })
+  const dopo = await s.intestatarioDi(chi.id)
+  ok('il codice fiscale scritto dopo la ricevuta vecchia: c\'è', dopo.codiceFiscale, 'RSSMRA80A01L219X')
+  ok('e quel che la ricevuta dice già resta', dopo.indirizzo, 'via Vecchia 3')
 }
 
 console.log('\n10. l\'import dai fogli')

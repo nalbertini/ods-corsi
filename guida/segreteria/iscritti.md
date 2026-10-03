@@ -62,11 +62,13 @@ resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
   il genitore. Vengono dal modulo di iscrizione dell'app o dall'import delle
   risposte del modulo Google, e accanto al titolo c'è scritto da dove. Sono
   quelli che una ricevuta nuova prende da sola. **MODIFICA** (o **AGGIUNGI**,
-  se non ce ne sono) → si correggono → **SALVA**: da lì valgono i nuovi,
-  anche sulle ricevute dopo; quelle già fatte restano com'erano. Un campo
-  lasciato vuoto si cancella. Se il codice fiscale non torna (l'ultimo
+  se non ce ne sono) → si correggono → **SALVA**: da lì valgono i nuovi. Una
+  ricevuta nuova parte dai dati dell'ultima ricevuta, e quel che lì è vuoto
+  (per esempio il codice fiscale) lo prende da qui; quelle già fatte restano
+  com'erano. Un campo lasciato vuoto si cancella. Se il codice fiscale non torna (l'ultimo
   carattere, il nome o la data) l'app lo dice in giallo, e si può salvare lo
-  stesso.
+  stesso. Senza codice fiscale si salva, ma la ricevuta non si fa: vedi
+  [Un pagamento e la sua ricevuta](#un-pagamento-e-la-sua-ricevuta).
 - **CERTIFICATO MEDICO** — fino a quando vale. Il certificato sta **su
   carta**, nella cartellina della segreteria. Se è arrivato col modulo di
   iscrizione, si stampa dalla richiesta (vedi [Richieste online](richieste.md)).
@@ -134,9 +136,10 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   fa, coi prezzi del [listino](listino.md). Ogni voce ha la quantità, il prezzo, da
   quando a quando vale e quanto si è **PAGATO ORA**: di solito tutto, ma chi
   paga una parte scrive la parte. **Togli** toglie una voce; «Aggiungi una
-  voce…» ne aggiunge un'altra dal listino (annuale, trimestre e,
-  per le ricevute con la data entro quella del saldo, annuale a saldo) o una
-  scritta a mano.
+  voce…» ne aggiunge un'altra. In cima ci sono quelle che servono a lui: la
+  quota, una voce scritta a mano e tutti i prezzi dei suoi corsi (annuale,
+  trimestre e, per le ricevute con la data entro quella del saldo, annuale a
+  saldo). Sotto, in **Il resto del listino…**, quelli degli altri corsi.
 - **Sconto famiglia** — se la persona è in un [nucleo
   familiare](#il-nucleo-familiare), la ricevuta lo mette da sé: il 20%
   sull'annuale che costa meno fra quelli di questa ricevuta e quelli già
@@ -148,17 +151,33 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   già pagato: lo dice, e quello si sistema a parte. Cambiato a mano il
   prezzo della voce scontata, lo sconto è quello scritto.
 - **DATI DEL SOCIO** — nome, indirizzo, codice fiscale, data di nascita e, per
-  un minore, il genitore. Vengono dall'ultima ricevuta o dal modulo di
-  iscrizione online; se mancano si aprono da soli, da scrivere. Si correggono
-  per la ricevuta, la scheda non cambia.
+  un minore, il genitore. Vengono dall'ultima ricevuta e, dove lì sono vuoti,
+  dai **DATI ANAGRAFICI** della scheda. Chiusi, dicono in una riga a chi va la
+  ricevuta: il socio col suo codice fiscale o, per un minore, il genitore col
+  suo (così si vede se oggi paga l'altro genitore); senza genitore dice
+  «RICEVUTA PER IL GENITORE · MANCA». Minore o no si conta alla data della
+  ricevuta; con **NATO IL** vuoto, dalla data scritta nel codice fiscale. Si
+  correggono per la ricevuta, la scheda non cambia.
+  - Il **codice fiscale** serve sempre: quello del socio e, per un minore,
+    anche nome e codice fiscale del genitore. Se manca, o è scritto ma non
+    è giusto («il codice fiscale non è giusto»), i dati si aprono da soli col
+    campo segnato in rosso, e **FAI LA RICEVUTA** resta spento finché non lo
+    si sistema. Aperti all'inizio restano aperti mentre si scrive: si
+    chiudono solo a mano.
+  - Senza l'**indirizzo** la ricevuta si fa lo stesso: il campo è segnato in
+    giallo, una riga gialla dice che resterà vuoto, e lo ripete la domanda
+    prima di farla.
 - **ANTICIPO** — quello che si era già dato prima, fuori da queste voci.
   **NOTE** — facoltative, vanno nel riquadro «Note».
-- Sotto si legge il **totale**, il **pagato** e il **netto a pagare**.
+- Sotto si legge il **totale**, il **pagato** e il **netto a pagare** (quel
+  che resta, se è un acconto).
 - Con la **QUOTA ASSOCIATIVA** fra le voci, fatta la ricevuta la quota è
   pagata da sola. Senza, la ricevuta non cambia se è in regola, e sotto lo
   dice.
 
-**FAI LA RICEVUTA** le dà il numero e scarica il PDF, da stampare o mandare.
+**FAI LA RICEVUTA** prima chiede di rileggere: a chi va (per un minore, il
+socio e il genitore), il totale e, con un acconto, quanto si paga ora e quanto
+resta. Confermato, le dà il numero e scarica il PDF, da stampare o mandare.
 Nell'elenco **RICEVUTE** della scheda ogni ricevuta si riscarica con **PDF**,
 uguale a com'era.
 
