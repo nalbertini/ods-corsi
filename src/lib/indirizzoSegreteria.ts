@@ -7,6 +7,8 @@
  *
  *   #iscritti/<id>
  *   #iscritti/nuovo           il modulo del nuovo iscritto
+ *   #corsi/<id>
+ *   #corsi/nuovo              il modulo del nuovo corso
  *   #settimana?dal=2026-09-28&sala=<id>&lezione=<id>&inizio=<ora>
  */
 
@@ -19,7 +21,8 @@ export type Voce = (typeof VOCI)[number]
 export interface Posto {
   voce: Voce
   persona?: string
-  /** Il modulo del nuovo iscritto aperto: Indietro lo chiude come una scheda. */
+  corso?: string
+  /** Il modulo del nuovo iscritto o del nuovo corso aperto: Indietro lo chiude come una scheda. */
   nuovo?: true
   lezione?: { id: string; inizio: string }
   /** Il lunedì della settimana in griglia, `AAAA-MM-GG`. */
@@ -47,11 +50,12 @@ export function leggiIndirizzo(hash: string, { prova }: { prova: boolean }): Pos
   if (!voce) return dafare
   // Le segnalate ci sono solo in prova (vedi `Segreteria`).
   if (!eVoce(voce) || (voce === 'segnalate' && !prova)) return dafare
-  if (voce === 'iscritti' && resto.length === 1 && resto[0]) {
-    // Gli id veri sono uuid (in prova `p-…`): «nuovo» non è mai una persona.
+  if ((voce === 'iscritti' || voce === 'corsi') && resto.length === 1 && resto[0]) {
+    // Gli id veri sono uuid (in prova `p-…`, `c-…`): «nuovo» non è mai una persona né un corso.
     if (resto[0] === 'nuovo') return { voce, nuovo: true }
     try {
-      return { voce, persona: decodeURIComponent(resto[0]) }
+      const id = decodeURIComponent(resto[0])
+      return voce === 'iscritti' ? { voce, persona: id } : { voce, corso: id }
     } catch {
       // Un indirizzo storpiato (`%E0`): meglio DA FARE che uno schermo bianco.
       return dafare
@@ -76,6 +80,8 @@ export function leggiIndirizzo(hash: string, { prova }: { prova: boolean }): Pos
 export function scriviIndirizzo(p: Posto): string {
   if (p.voce === 'iscritti' && p.nuovo) return '#iscritti/nuovo'
   if (p.voce === 'iscritti' && p.persona) return `#iscritti/${encodeURIComponent(p.persona)}`
+  if (p.voce === 'corsi' && p.nuovo) return '#corsi/nuovo'
+  if (p.voce === 'corsi' && p.corso) return `#corsi/${encodeURIComponent(p.corso)}`
   if (p.voce !== 'settimana') return `#${p.voce}`
   const q = new URLSearchParams()
   if (p.settimana) q.set('dal', p.settimana)
@@ -95,7 +101,7 @@ export function scriviIndirizzo(p: Posto): string {
  */
 export function postoDelMenu(ora: Posto, voce: Voce, dest: Pick<Posto, 'persona' | 'lezione'> = {}): Posto {
   if (voce === ora.voce && !dest.persona && !dest.lezione) {
-    const { persona: _p, lezione: _l, nuovo: _n, ...resto } = ora
+    const { persona: _p, corso: _c, lezione: _l, nuovo: _n, ...resto } = ora
     return resto
   }
   return { voce, ...(dest.persona && { persona: dest.persona }), ...(dest.lezione && { lezione: dest.lezione }) }

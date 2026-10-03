@@ -65,7 +65,27 @@ ok('Indietro dal modulo torna all\'elenco', m.dopoIndietro({ voce: 'iscritti', n
 ok('Avanti riapre il modulo', piatto(m.dopoIndietro({ voce: 'iscritti' }, '#iscritti/nuovo', { prova: false })), { nuovo: true, voce: 'iscritti' })
 ok('ISCRITTI ritoccato chiude il modulo', m.postoDelMenu({ voce: 'iscritti', nuovo: true }, 'iscritti'), { voce: 'iscritti' })
 ok('un\'altra voce lo chiude', m.postoDelMenu({ voce: 'iscritti', nuovo: true }, 'corsi'), { voce: 'corsi' })
-ok('il modulo nuovo non è di altre voci', leggi('#corsi/nuovo')?.voce, 'dafare')
+ok('il modulo nuovo non è di altre voci', leggi('#presenze/nuovo')?.voce, 'dafare')
+
+console.log('Il corso aperto')
+ok('il corso X è #corsi/X', m.scriviIndirizzo({ voce: 'corsi', corso: 'X' }), '#corsi/X')
+ok('#corsi/X riapre il corso X', piatto(leggi('#corsi/X')), { corso: 'X', voce: 'corsi' })
+ok('un id di corso con lettere accentate, barre e spazi torna uguale',
+  andataRitorno({ voce: 'corsi', corso: 'p-prova-à/1 x' }),
+  { corso: 'p-prova-à/1 x', voce: 'corsi' })
+ok('il corso nuovo è #corsi/nuovo', m.scriviIndirizzo({ voce: 'corsi', nuovo: true }), '#corsi/nuovo')
+ok('#corsi/nuovo riapre il corso nuovo, senza corso', piatto(leggi('#corsi/nuovo')), { nuovo: true, voce: 'corsi' })
+ok('un id di prova resta un corso', piatto(leggi('#corsi/c-nuovo')), { corso: 'c-nuovo', voce: 'corsi' })
+ok('Indietro dal corso torna all\'elenco CORSI', m.dopoIndietro({ voce: 'corsi', corso: 'X' }, '#corsi', { prova: false }), { voce: 'corsi' })
+ok('Avanti riapre il corso', piatto(m.dopoIndietro({ voce: 'corsi' }, '#corsi/X', { prova: false })), { corso: 'X', voce: 'corsi' })
+ok('Indietro dal corso nuovo torna all\'elenco CORSI', m.dopoIndietro({ voce: 'corsi', nuovo: true }, '#corsi', { prova: false }), { voce: 'corsi' })
+ok('CORSI ritoccato chiude il corso', m.postoDelMenu({ voce: 'corsi', corso: 'X' }, 'corsi'), { voce: 'corsi' })
+ok('un\'altra voce chiude il corso', m.postoDelMenu({ voce: 'corsi', corso: 'X' }, 'iscritti'), { voce: 'iscritti' })
+ok('il corso non va nell\'indirizzo di ISCRITTI', m.scriviIndirizzo({ voce: 'iscritti', corso: 'X' }), '#iscritti')
+ok('la persona non va nell\'indirizzo di CORSI', m.scriviIndirizzo({ voce: 'corsi', persona: 'X' }), '#corsi')
+ok('un corso con un pezzo in più porta a DA FARE', leggi('#corsi/X/altro')?.voce, 'dafare')
+ok('un corso storpiato porta a DA FARE', leggi('#corsi/%E0')?.voce, 'dafare')
+ok('#corsi/ si corregge in #corsi', m.indirizzoCorretto('#corsi/', { prova: false }), '#corsi')
 
 console.log('La lezione aperta')
 const lezione = { id: 'l-prova-12/3 à', inizio: '2026-09-28T18:30:00+02:00' }
