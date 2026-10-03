@@ -13,7 +13,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  # write: il commit della versione nuova, il suo tag e la Release.
+  contents: write
   pages: write
   id-token: write
   # Preteso da `deploy-pages` dalla v4 in poi: senza, il job di pubblicazione
@@ -30,7 +31,13 @@ jobs:
     name: Compila
     runs-on: ubuntu-latest
     steps:
+      # Tutta la storia e i tag, per trovare le PR unite dall'ultima versione.
+      # `main` e non il commit del push: se nel frattempo è stata unita
+      # un'altra PR, il commit della versione si deve poter spingere sopra.
       - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
 
       - uses: actions/setup-node@v5
         with:
@@ -39,6 +46,13 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             timer/package-lock.json
+
+      # La versione nuova dalle PR unite dopo l'ultimo tag (vedi lo script):
+      # package.json, la pagina Novità della guida e le note della Release.
+      # Prima della compilazione, così l'app mostra già il numero nuovo.
+      - id: versione
+        if: github.event_name == 'push'
+        run: node scripts/versione.mjs "$RUNNER_TEMP/note.md"
 
       - run: npm ci
 
@@ -74,6 +88,22 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SPOTIFY_CLIENT_ID: ${{ secrets.VITE_SPOTIFY_CLIENT_ID }}
+
+      # Solo se la compilazione è andata: il commit della versione, il tag e
+      # la Release. Un push fatto col token del workflow non lancia un altro
+      # workflow, quindi niente giri a vuoto.
+      - name: Salva la versione
+        if: steps.versione.outputs.versione
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ steps.versione.outputs.versione }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898283+github-actions[bot]@users.noreply.github.com'
+          git commit -am "Versione $V"
+          git tag "v$V"
+          git push origin HEAD:main "v$V"
+          gh release create "v$V" --title "$V" --notes-file "$RUNNER_TEMP/note.md"
 
       - uses: actions/upload-pages-artifact@v5
         with:
