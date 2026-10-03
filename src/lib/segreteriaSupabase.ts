@@ -1,7 +1,7 @@
 import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
+import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
@@ -239,6 +239,19 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
   const ok = <T>(r: { data: T; error: { message?: string; code?: string } | null }): T => {
     if (r.error) throw guaio(r.error)
     return r.data
+  }
+
+  /** `salva_date_corsi`: conta soltanto, o salva e toglie. */
+  const dateCorsi = async (inizio: string | null, fine: string | null, soloContare: boolean): Promise<EsitoDate> => {
+    const r = await db.rpc('salva_date_corsi', { inizio, fine, solo_contare: soloContare })
+    if (r.error?.code === 'PGRST202' || r.error?.code === '42883') {
+      // Senza 35-date-corsi.sql le date si salvano come prima e le lezioni fuori restano.
+      // Non è un errore: il calendario va allungato lo stesso.
+      if (!soloContare) ok(await db.from('impostazioni').update({ inizio_corsi: inizio, fine_corsi: fine }).eq('id', true))
+      return { tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 35-date-corsi.sql' }
+    }
+    // Il json che costruisce `salva_date_corsi`, con questi nomi.
+    return ok(r) as EsitoDate
   }
 
   /**
@@ -1042,6 +1055,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return i
     },
 
+    async togliNonDoppioni(a, b) {
+      // In qualunque ordine: con `check (a < b)` (33-non-doppioni.sql) le righe che vanno bene sono solo quella coppia.
+      ok(await db.from('non_doppioni').delete().in('a', [a, b]).in('b', [a, b]))
+    },
+
     async segnaNonDoppioni(a, b) {
       if (a === b) throw new Error('Scegli due schede diverse')
       ok(await db.from('non_doppioni').upsert({ a, b }, { onConflict: 'a,b', ignoreDuplicates: true }))
@@ -1331,6 +1349,14 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       if (i.inizioCorsi !== undefined) riga.inizio_corsi = i.inizioCorsi
       if (i.fineCorsi !== undefined) riga.fine_corsi = i.fineCorsi
       ok(await db.from('impostazioni').update(riga).eq('id', true))
+    },
+
+    async contaDateCorsi(inizio, fine) {
+      return dateCorsi(inizio, fine, true)
+    },
+
+    async salvaDateCorsi(inizio, fine) {
+      return dateCorsi(inizio, fine, false)
     },
 
     async scadute(mesi) {

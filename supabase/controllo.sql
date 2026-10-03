@@ -172,6 +172,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regprocedure('public.provati_con_pin(text, text)') is not null
     and to_regprocedure('public.provati_con_pin(text)') is null
     and to_regclass('public.ricerche_prove') is not null),
+  ('35-date-corsi.sql', 'SALVA LE DATE toglie le lezioni fuori dai corsi',
+    exists (select 1 from dentro where nome = 'salva_date_corsi')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

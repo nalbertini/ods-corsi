@@ -1,4 +1,4 @@
-import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
+import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
@@ -136,6 +136,52 @@ export function creaSegreteriaProva(): DatiSegreteria {
   }
 
   /** Le presenze più vecchie del periodo scelto in REGOLE: coppie lezione, persona. */
+  const scriviImpostazioni = (i: Partial<Impostazioni>) => {
+    a().impostazioni = { ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }), ...i }
+    // Conta la prima volta: riscrivendo le date il passato non torna a nascere.
+    const { inizioCorsi, fineCorsi } = a().impostazioni ?? {}
+    if (!inizioCorsi && !fineCorsi) delete a().dateCorsiDal
+    else a().dateCorsiDal ??= oggi()
+    salva()
+  }
+
+  /**
+   * Come `salva_date_corsi`: da domani, le lezioni da ricorrenza fuori dalle
+   * date se ne vanno con quel che hanno sopra, tranne appello e prove. Con
+   * `soloContare` si dice soltanto cosa succederebbe.
+   */
+  const dateCorsi = (inizio: string | null, fine: string | null, soloContare: boolean): EsitoDate => {
+    const domani = new Date()
+    domani.setHours(0, 0, 0, 0)
+    domani.setDate(domani.getDate() + 1)
+    const ultimo = a().corsi.flatMap((c) => c.ricorrenze.map((r) => r.al ?? STAGIONE.al)).sort().at(-1) ?? STAGIONE.al
+    const fuori = lezioniFra(domani, new Date(`${ultimo}T12:00:00`)).filter((l) => {
+      const g = chiaveGiorno(l.inizio)
+      return !l.straordinaria && ((!!inizio && g < inizio) || (!!fine && g > fine))
+    })
+    const tiene = (id: string) => Object.keys(memoria.segnate[id] ?? {}).length > 0 || !!a().prove?.some((p) => p.sessioneId === id)
+    const tenute = fuori.filter((l) => tiene(l.id))
+    if (!soloContare) {
+      scriviImpostazioni({ inizioCorsi: inizio, fineCorsi: fine })
+      const via = new Set(fuori.filter((l) => !tiene(l.id)).map((l) => l.id))
+      const resta = <T,>(x: Record<string, T>) => Object.fromEntries(Object.entries(x).filter(([id]) => !via.has(id)))
+      a().lezioni = resta(a().lezioni)
+      a().presenzeIstruttori = (a().presenzeIstruttori ?? []).filter((p) => !via.has(p.sessioneId))
+      memoria.segnate = resta(memoria.segnate)
+      memoria.origini = resta(memoria.origini)
+      salva()
+      memoria.salva()
+    }
+    const giorni = tenute.map((l) => chiaveGiorno(l.inizio))
+    return {
+      tolte: fuori.length - tenute.length,
+      restano: tenute.length,
+      prima: giorni[0] ?? null,
+      ultima: giorni.at(-1) ?? null,
+      rimaste: tenute.slice(0, 3).map((l) => ({ corso: l.corso.nome, inizio: l.inizio.toISOString() })),
+    }
+  }
+
   const scadute = (mesi = a().impostazioni?.mesiPresenze ?? 24) => {
     const limite = new Date()
     limite.setMonth(limite.getMonth() - mesi)
@@ -999,6 +1045,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async togliNonDoppioni(x, y) {
+      a().nonDoppioni = (a().nonDoppioni ?? []).filter(([p, q]) => !((p === x && q === y) || (p === y && q === x)))
+      salva()
+    },
+
     async salvaSala(s) {
       const nome = s.nome.trim()
       if (!nome) throw new Error('La sala ha bisogno di un nome')
@@ -1150,12 +1201,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async salvaImpostazioni(i) {
-      a().impostazioni = { ...(a().impostazioni ?? { mesiPresenze: 24, giorniCalendario: 60 }), ...i }
-      // Conta la prima volta: riscrivendo le date il passato non torna a nascere.
-      const { inizioCorsi, fineCorsi } = a().impostazioni ?? {}
-      if (!inizioCorsi && !fineCorsi) delete a().dateCorsiDal
-      else a().dateCorsiDal ??= oggi()
-      salva()
+      scriviImpostazioni(i)
+    },
+
+    async contaDateCorsi(inizio, fine) {
+      return dateCorsi(inizio, fine, true)
+    },
+
+    async salvaDateCorsi(inizio, fine) {
+      return dateCorsi(inizio, fine, false)
     },
 
     async scadute(mesi) {

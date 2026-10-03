@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { apriScheda, scorre } from './src/lib/scorri'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export { apriScheda, scorre } from './src/lib/scorri'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1750,6 +1750,276 @@ console.log('\nla scheda a pieno schermo parte dalla cima, e chiusa la pagina to
     await dopo()
     ok('un elenco mai scorso a 400: chiusa la scheda si torna a 400', corpo.scrollTop, 400)
   }
+}
+console.log('\ntogliere un «non sono doppioni»')
+{
+  const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: '2026-09-26', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })
+  const segnate = (indizi, id, tutte) =>
+    typeof m.segnateCon !== 'function'
+      ? 'segnateCon non c\'è'
+      : m.segnateCon({ codiciFiscali: {}, nascite: {}, nonDoppioni: [], ...indizi }, id, tutte).map((p) => p.id)
+
+  // Funzioni pure: le altre schede segnate con una, per cognome e nome.
+  const ivo = [scheda('i1', 'Ivo', 'Gallo'), scheda('i2', 'Ivo', 'Gallo'), scheda('i3', 'Ivo', 'Gallo')]
+  const coppiaIvo = { nonDoppioni: [['i1', 'i2']] }
+  ok('segnate Ivo1 e Ivo2: da Ivo1 si vede Ivo2', segnate(coppiaIvo, 'i1', ivo), ['i2'])
+  ok('e da Ivo2 si vede Ivo1', segnate(coppiaIvo, 'i2', ivo), ['i1'])
+  ok('una scheda senza coppie: nessuna', segnate(coppiaIvo, 'i3', ivo), [])
+  ok('più coppie, per cognome e nome',
+    segnate({ nonDoppioni: [['z', 'k'], ['a', 'k']] }, 'k', [scheda('k', 'Ivo', 'Gallo'), scheda('z', 'Zoe', 'Gallo'), scheda('a', 'Ada', 'Gallo')]), ['a', 'z'])
+  ok('una coppia con una scheda che non c\'è fra le persone: no', segnate({ nonDoppioni: [['i1', 'sparita']] }, 'i1', ivo), [])
+  ok('una delle due disattivata: c\'è lo stesso',
+    segnate(coppiaIvo, 'i1', [ivo[0], { ...ivo[1], attiva: false }]), ['i2'])
+
+  // La segreteria di prova.
+  const togli = (a, b) => (typeof s.togliNonDoppioni === 'function' ? s.togliNonDoppioni(a, b) : Promise.reject(new Error('togliNonDoppioni non c\'è')))
+  const nonDoppioni = async () => (await s.indiziDoppioni()).nonDoppioni.map((c) => [...c].sort().join())
+  const inCoppia = async (a, b) => m.coppieDoppioni(await s.persone(), await s.indiziDoppioni()).some((c) => c.map((p) => p.id).sort().join() === [a, b].sort().join())
+
+  const [eva1, eva2] = [await s.salvaPersona({ nome: 'Eva', cognome: 'Marchetti' }), await s.salvaPersona({ nome: 'Eva', cognome: 'Marchetti' })]
+  await s.segnaNonDoppioni(eva1, eva2)
+  ok('tolto «non sono doppioni», nell\'altro ordine', await errore(() => togli(eva2, eva1)), 'nessun errore')
+  ok('la coppia non è più fra le «non sono doppioni»', (await nonDoppioni()).includes([eva1, eva2].sort().join()), false)
+  ok('e torna fra i possibili doppioni', await inCoppia(eva1, eva2), true)
+  ok('tolto di nuovo: nessun errore', await errore(() => togli(eva1, eva2)), 'nessun errore')
+
+  const [rio1, rio2, rio3] = [await s.salvaPersona({ nome: 'Rio', cognome: 'Bassi' }), await s.salvaPersona({ nome: 'Rio', cognome: 'Bassi' }), await s.salvaPersona({ nome: 'Rio', cognome: 'Bassi' })]
+  await s.segnaNonDoppioni(rio1, rio3)
+  await s.segnaNonDoppioni(rio2, rio3)
+  await errore(() => togli(rio1, rio3))
+  ok('tolta Rio1–Rio3, resta Rio2–Rio3',
+    (await nonDoppioni()).filter((c) => [rio1, rio2, rio3].some((id) => c.includes(id))), [[rio2, rio3].sort().join()])
+
+  const [ada1, ada2] = [await s.salvaPersona({ nome: 'Ada', cognome: 'Conti' }), await s.salvaPersona({ nome: 'Ada', cognome: 'Conti' })]
+  await s.salvaAnagrafica(ada1, { codiceFiscale: 'CNTDAA10A41L219X' })
+  await s.salvaAnagrafica(ada2, { codiceFiscale: 'CNTDAA12B41L219Y' })
+  await s.segnaNonDoppioni(ada1, ada2)
+  await errore(() => togli(ada1, ada2))
+  ok('due codici fiscali diversi: tolta la coppia, non torna fra i possibili doppioni', await inCoppia(ada1, ada2), false)
+
+  // Col database senza 33-non-doppioni.sql: la tabella non c'è.
+  const risposta = (t) =>
+    t === 'non_doppioni'
+      ? { data: null, error: { code: 'PGRST205', message: "Could not find the table 'public.non_doppioni' in the schema cache" } }
+      : { data: [], error: null }
+  const richiestaFinta = (t) => {
+    const q = new Proxy(() => q, {
+      get: (_, k) => (k === 'then' ? (ok, ko) => Promise.resolve(risposta(t)).then(ok, ko) : () => q),
+      apply: () => q,
+    })
+    return q
+  }
+  const senza = m.creaSegreteriaSupabase({
+    from: (t) => richiestaFinta(t),
+    rpc: async (f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f} in the schema cache` } }),
+  })
+  const manca = await errore(() => (typeof senza.togliNonDoppioni === 'function' ? senza.togliNonDoppioni(eva1, eva2) : Promise.reject(new Error('togliNonDoppioni non c\'è'))))
+  ok('senza il file sul database, togliere dice quale file lanciare', manca.includes('33-non-doppioni.sql') ? '33-non-doppioni.sql' : manca, '33-non-doppioni.sql')
+}
+
+console.log('\npossibili doppioni: nomi scambiati e un secondo nome')
+{
+  const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: '2026-09-26', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })
+  const vuoti = { codiciFiscali: {}, nascite: {}, nonDoppioni: [] }
+  const motivo = (a, b, indizi = {}) =>
+    typeof m.motivoDoppione !== 'function' ? 'motivoDoppione non c\'è' : m.motivoDoppione(a, b, { ...vuoti, ...indizi })
+  const chiara = scheda('1', 'Chiara', 'Rossi')
+
+  ok('«Chiara Rossi» e una scheda Rossi Chiara: nome e cognome scambiati', motivo(chiara, scheda('2', 'Rossi', 'Chiara')), 'scambiati')
+  ok('«Chiara Rossi» e «Maria Chiara Rossi»: un secondo nome', motivo(chiara, scheda('2', 'Maria Chiara', 'Rossi')), 'secondo nome')
+  ok('«Chiara Rossi» e «Maria Chiara Anna Rossi»: due nomi in più, no', motivo(chiara, scheda('2', 'Maria Chiara Anna', 'Rossi')), null)
+  ok('«A. Rossi» e «Anna Rossi»: un\'iniziale sola, no', motivo(scheda('1', 'A.', 'Rossi'), scheda('2', 'Anna', 'Rossi')), null)
+  ok('«M. Chiara Rossi» e «Maria Chiara Rossi»: no', motivo(scheda('1', 'M. Chiara', 'Rossi'), scheda('2', 'Maria Chiara', 'Rossi')), null)
+  ok('«Chiara Rossi» e «Chiara M. Rossi»: un secondo nome', motivo(chiara, scheda('2', 'Chiara M.', 'Rossi')), 'secondo nome')
+
+  const anna = scheda('1', 'Anna', 'Rossi', { telefono: '333 1234567' })
+  const annaMaria = scheda('2', 'Anna Maria', 'Rossi', { telefono: '333 1234567' })
+  ok('un secondo nome, due nascite diverse: no', motivo(anna, annaMaria, { nascite: { 1: '2010-01-01', 2: '2012-02-01' } }), null)
+  ok('un secondo nome, due codici fiscali diversi: no', motivo(anna, annaMaria, { codiciFiscali: { 1: 'RSSNNA10A41L219X', 2: 'RSSNNM12B41L219Y' } }), null)
+  ok('un secondo nome, segnate «non sono doppioni»: no', motivo(anna, annaMaria, { nonDoppioni: [['1', '2']] }), null)
+  ok('anche segnate nell\'altro ordine', motivo(anna, annaMaria, { nonDoppioni: [['2', '1']] }), null)
+  ok('un secondo nome e lo stesso telefono, nient\'altro: un secondo nome', motivo(anna, annaMaria), 'secondo nome')
+
+  ok('scambiati e un secondo nome insieme: no', motivo(chiara, scheda('2', 'Rossi', 'Maria Chiara')), null)
+  ok('«Luca De Luca» e «Luca Luca»: no', motivo(scheda('1', 'Luca', 'De Luca'), scheda('2', 'Luca', 'Luca')), null)
+  ok('«Marco Rossi Bianchi» e «Marco Rossi»: no', motivo(scheda('1', 'Marco', 'Rossi Bianchi'), scheda('2', 'Marco', 'Rossi')), null)
+  ok('stesso codice fiscale e nomi scambiati: il codice fiscale',
+    motivo(chiara, scheda('2', 'Rossi', 'Chiara'), { codiciFiscali: { 1: 'RSSCHR10A41L219X', 2: 'rsschr10a41l219x' } }), 'codice fiscale')
+  ok("«Luca D'Amico» e «luca damico»: lo stesso nome", motivo(scheda('1', 'Luca', "D'Amico"), scheda('2', 'luca', 'damico')), 'nome')
+
+  // Una coppia per motivo, seminate in disordine: prima il codice fiscale, poi il nome, gli scambiati, il secondo nome.
+  const miste = [
+    scheda('7', 'Anna', 'Abate'), scheda('8', 'Anna Maria', 'Abate'),
+    scheda('5', 'Bice', 'Conti'), scheda('6', 'Conti', 'Bice'),
+    scheda('3', 'Dino', 'Esposito'), scheda('4', 'dino', 'esposito'),
+    scheda('1', 'Ugo', 'Zanetti'), scheda('2', 'Ugolino', 'Zanetti'),
+  ]
+  ok('le coppie in ordine di motivo: codice fiscale, nome, scambiati, secondo nome',
+    typeof m.coppieDoppioni !== 'function' ? 'coppieDoppioni non c\'è'
+      : m.coppieDoppioni(miste, { ...vuoti, codiciFiscali: { 1: 'ZNTGUO10A01L219X', 2: 'ZNTGUO10A01L219X' } }).map((c) => c.map((p) => p.id).sort().join('-')),
+    ['1-2', '3-4', '5-6', '7-8'])
+
+  const proposti = m.possibiliDoppioni(chiara, [scheda('9', 'Anna', 'Bianchi'), scheda('2', 'Rossi', 'Chiara'), scheda('8', 'Zeno', 'Verdi')])
+  ok('aperta «Chiara Rossi»: la scheda scambiata prima di Anna Bianchi', proposti.map((p) => p.id), ['2', '9', '8'])
+
+  ok('le etichette dei motivi', m.MOTIVI ?? 'MOTIVI non c\'è',
+    { 'codice fiscale': 'stesso codice fiscale', nome: 'stesso nome', scambiati: 'nome e cognome scambiati', 'secondo nome': 'un secondo nome' })
+}
+
+console.log('\nSALVA LE DATE toglie le lezioni fuori dalle date dei corsi, tranne quelle con appello o prova')
+{
+  // Come `salva_date_corsi` (35-date-corsi.sql): da domani in poi, le lezioni
+  // da ricorrenza fuori dalle date se ne vanno anche se toccate (annullate,
+  // col sostituto, spostate); restano quelle con l'appello o una prova.
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+  const a = m.archivio.dati
+  const fra = (da, b = da) => m.lezioniFra(new Date(2026, da[0], da[1]), new Date(2026, b[0], b[1]))
+  const ordinarie = (da, b) => fra(da, b).filter((l) => !l.straordinaria)
+  const g = (l) => m.chiaveGiorno(l.inizio)
+  const conAppelloOProva = (l) => Object.keys(m.memoria.segnate[l.id] ?? {}).length > 0 || (a.prove ?? []).some((x) => x.sessioneId === l.id)
+  // Da domani a fine stagione, quelle fuori da [inizio, fine].
+  const fuori = (inizio, fine) => ordinarie([8, 27], [17, 30]).filter((l) => (inizio && g(l) < inizio) || (fine && g(l) > fine))
+  const salvaDate = (inizio, fine) => s.salvaDateCorsi(inizio, fine)
+  const esito = (e) => [e.tolte, e.restano, e.prima, e.ultima]
+  const rimaste = (...l) => l.map((x) => ({ corso: x.corso.nome, inizio: x.inizio.toISOString() }))
+  // Le prove di prima hanno lasciato appelli e prove nel futuro: si partono senza.
+  m.memoria.segnate = Object.fromEntries(Object.entries(m.memoria.segnate).map(([id, v]) => [id, (m.trovaLezione(id)?.inizio ?? 0) > new Date() ? {} : v]))
+  a.prove = (a.prove ?? []).filter((x) => !((m.trovaLezione(x.sessioneId)?.inizio ?? 0) > new Date()))
+
+  // Dopo il 10 ottobre: lunedì 19 una annullata, una col sostituto, una con
+  // l'appello, una con l'appello segnato e poi tolto, una con la sola
+  // presenza dell'istruttore; mercoledì 21 una con una prova.
+  const lun19 = ordinarie([9, 19])
+  const coninsegnante = lun19.find((l) => l.corso.istruttori.length)
+  const [annullata, sostituita, segnata, rimessa] = lun19.filter((l) => l !== coninsegnante)
+  const [conprova] = ordinarie([9, 21])
+  await s.aggiornaLezione(annullata.id, { stato: 'annullata' })
+  await s.aggiornaLezione(sostituita.id, { sostitutoId: 'i-fabio' })
+  await app.segna(segnata.id, (await app.dettaglio(segnata.id)).elenco[0].id, 'presente')
+  const chi = (await app.dettaglio(rimessa.id)).elenco[0].id
+  await app.segna(rimessa.id, chi, 'presente')
+  await app.segna(rimessa.id, chi, null)
+  m.segnaIstruttoriLezioneProva(coninsegnante.id, coninsegnante.corso.istruttori.slice(0, 1), 's-prova')
+  await app.aggiungiProva(conprova.id, { nome: 'Dora', cognome: 'Datata', telefono: '333 000 3333' })
+  m.memoria.segnate = { ...m.memoria.segnate, [conprova.id]: {} }
+  await s.straordinaria('judo-2', new Date(2026, 9, 20, 20, 0), 60)
+  const [extra] = fra([9, 20]).filter((l) => l.straordinaria && l.corso.id === 'judo-2')
+  ok('le sei lezioni del 19 e 21 ottobre sono diverse', new Set([annullata, sostituita, segnata, rimessa, coninsegnante, conprova].map((l) => l?.id)).size, 6)
+
+  const primaFine = fuori(null, '2026-10-10')
+  // Prima di salvare, il conto per la conferma: non scrive niente.
+  const c1 = await s.contaDateCorsi(null, '2026-10-10')
+  ok('contare non scrive le date', (await s.impostazioni()).fineCorsi ?? null, null)
+  ok('contare non toglie lezioni', [fuori(null, '2026-10-10').length, annullata.id in a.lezioni, sostituita.id in a.lezioni], [primaFine.length, true, true])
+  const e1 = await salvaDate(null, '2026-10-10')
+  ok('il conto dice gli stessi numeri del salvataggio', [esito(c1), c1.rimaste], [esito(e1), e1.rimaste])
+  ok('rimaste: corso e inizio di quella con l\'appello e di quella con la prova', e1.rimaste, rimaste(segnata, conprova))
+  ok('fine il 10 ottobre: tolte le settimanali dopo il 10, tranne le due con appello o prova', [e1.tolte > 0, e1.tolte], [true, primaFine.length - 2])
+  ok('restano due, dal giorno dell\'appello a quello della prova', [e1.restano, e1.prima, e1.ultima], [2, '2026-10-19', '2026-10-21'])
+  const visti = (v) => (v.length > 3 ? `${v.length} lezioni` : v.map((l) => l.id))
+  ok('dopo il 10 ottobre si vedono solo quella con l\'appello e quella con la prova', visti(fuori(null, '2026-10-10')), [segnata.id, conprova.id])
+  ok('la fine è scritta', [(await s.impostazioni()).inizioCorsi ?? null, (await s.impostazioni()).fineCorsi], [null, '2026-10-10'])
+  const via = (l) => [fra([9, 19], [9, 21]).some((x) => x.id === l.id), l.id in a.lezioni]
+  ok('l\'annullata non c\'è più, nemmeno nell\'archivio', via(annullata), [false, false])
+  ok('quella col sostituto non c\'è più, nemmeno nell\'archivio', via(sostituita), [false, false])
+  ok('quella con l\'appello segnato e tolto non c\'è più, e nemmeno l\'appello vuoto', [via(rimessa)[0], rimessa.id in m.memoria.segnate], [false, false])
+  ok('quella con la sola presenza dell\'istruttore non c\'è più, e nemmeno la presenza', [via(coninsegnante)[0], (a.presenzeIstruttori ?? []).some((x) => x.sessioneId === coninsegnante.id)], [false, false])
+  ok('l\'appello resta', m.memoria.segnate[segnata.id] && Object.keys(m.memoria.segnate[segnata.id]).length, 1)
+  ok('la prova resta', (a.prove ?? []).some((x) => x.sessioneId === conprova.id), true)
+  ok('la straordinaria del 20 ottobre resta, e non è contata', fra([9, 20]).some((l) => l.id === extra.id), true)
+  ok('fino al 10 ottobre le lezioni ci sono', ordinarie([9, 1], [9, 10]).length > 0, true)
+
+  const e2 = await salvaDate(null, '2026-10-10')
+  ok('risalvate le stesse date: niente tolto, le due restano', [esito(e2), e2.rimaste], [[0, 2, '2026-10-19', '2026-10-21'], rimaste(segnata, conprova)])
+
+  // L'inizio spostato avanti: da domani al 4 ottobre. Oggi e il passato no.
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+  const passate = fra([8, 14], [8, 25]).length
+  const oggi = ordinarie([8, 26])
+  const [oggiAnnullata] = oggi
+  await s.aggiornaLezione(oggiAnnullata.id, { stato: 'annullata' })
+  let gio1
+  for (const l of ordinarie([9, 1])) if (!gio1 && (await app.dettaglio(l.id)).elenco.length) gio1 = l
+  await app.segna(gio1.id, (await app.dettaglio(gio1.id)).elenco[0].id, 'presente')
+  const primaInizio = fuori('2026-10-05', null)
+  ok('prima, dal 27 settembre al 4 ottobre ci sono lezioni', primaInizio.length > 1, true)
+  const c3 = await s.contaDateCorsi('2026-10-05', null)
+  ok('contare l\'inizio non toglie niente', [fuori('2026-10-05', null).length, (await s.impostazioni()).inizioCorsi ?? null], [primaInizio.length, null])
+  const e3 = await salvaDate('2026-10-05', null)
+  ok('inizio il 5 ottobre: tolte quelle da domani al 4 ottobre, tranne quella con l\'appello', esito(e3), [primaInizio.length - 1, 1, '2026-10-01', '2026-10-01'])
+  ok('…come diceva il conto, con la lezione rimasta', [esito(c3), c3.rimaste, e3.rimaste], [esito(e3), rimaste(gio1), rimaste(gio1)])
+  ok('dal 27 settembre al 4 ottobre si vede solo quella con l\'appello', visti(ordinarie([8, 27], [9, 4])), [gio1.id])
+  ok('le lezioni di oggi restano tutte', [oggi.length > 0, ordinarie([8, 26]).map((l) => l.id)], [true, oggi.map((l) => l.id)])
+  ok('quella di oggi annullata resta annullata', a.lezioni[oggiAnnullata.id]?.stato, 'annullata')
+  ok('il passato non cambia', fra([8, 14], [8, 25]).length, passate)
+  ok('dal 5 ottobre le lezioni ci sono', ordinarie([9, 5], [9, 11]).length > 0, true)
+
+  // Col database vero: la funzione del database, e il risultato com'è.
+  const chiamate = []
+  const scritte = []
+  const richiesta = () => {
+    const q = new Proxy(() => q, {
+      get: (_, k) => (k === 'then' ? (fatto) => fatto({ data: null, error: null }) : k === 'update' ? (riga) => (scritte.push(riga), q) : () => q),
+      apply: () => q,
+    })
+    return q
+  }
+  const db = (risposta) => m.creaSegreteriaSupabase({ from: () => richiesta(), rpc: async (f, x) => (chiamate.push([f, x]), risposta(f)) })
+  const giudo = [{ corso: 'Judo 2', inizio: '2026-10-14T15:00:00+00:00' }]
+  const vero = db(() => ({ data: { tolte: 3, restano: 1, prima: '2026-10-14', ultima: '2026-10-14', rimaste: giudo }, error: null }))
+  const ev = await vero.salvaDateCorsi('2026-10-05', '2026-10-10')
+  ok('database: chiede salva_date_corsi con le due date', [esito(ev), ev.rimaste], [[3, 1, '2026-10-14', '2026-10-14'], giudo])
+  const cv = await vero.contaDateCorsi('2026-10-05', '2026-10-10')
+  ok('…e per contare la stessa, con solo_contare', [esito(cv), cv.rimaste], [[3, 1, '2026-10-14', '2026-10-14'], giudo])
+  ok('…con i nomi del database', chiamate, [
+    ['salva_date_corsi', { inizio: '2026-10-05', fine: '2026-10-10', solo_contare: false }],
+    ['salva_date_corsi', { inizio: '2026-10-05', fine: '2026-10-10', solo_contare: true }],
+  ])
+  // Senza 35-date-corsi.sql: le date si salvano lo stesso, e si dice cosa lanciare.
+  const senza = db((f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f}(fine, inizio) in the schema cache` } }))
+  // Non si ferma: Regole rigenera e chiude la bozza, e l'avviso dice cosa lanciare.
+  const e = await senza.salvaDateCorsi('2026-10-05', '2026-10-10').catch((x) => ({ lanciato: x.message }))
+  ok('senza il file sul database non toglie niente, e dice quale lanciare', [esito(e), /35-date-corsi\.sql/.test(e.manca ?? '')], [[0, 0, null, null], true])
+  ok('…ma le date le salva', scritte.some((r) => r.inizio_corsi === '2026-10-05' && r.fine_corsi === '2026-10-10'), true)
+  const quante = scritte.length
+  const cs = await senza.contaDateCorsi('2026-10-05', '2026-10-10').catch((x) => ({ lanciato: x.message }))
+  ok('contare senza il file: esito vuoto, dice quale lanciare, non scrive niente', [esito(cs), /35-date-corsi\.sql/.test(cs.manca ?? ''), scritte.length], [[0, 0, null, null], true, quante])
+
+  // Le parole dell'avviso.
+  const testo = (tolte, restano = 0, prima = null, ultima = prima) => m.testoDateSalvate({ tolte, restano, prima, ultima })
+  const t12 = 'Date salvate: tolte 12 lezioni. '
+  ok('niente tolto né rimasto', testo(0), 'Date salvate')
+  ok('una tolta', testo(1), 'Date salvate: tolta 1 lezione')
+  ok('dodici tolte', testo(12), 'Date salvate: tolte 12 lezioni')
+  ok('tolte, e una resta', testo(12, 1, '2026-10-14'), t12 + 'Resta la lezione del 14 ottobre: ha l’appello o una prova')
+  ok('tolte, e due restano in due giorni dello stesso mese', testo(12, 2, '2026-10-14', '2026-10-21'), t12 + 'Restano le lezioni del 14 e del 21 ottobre: hanno l’appello o una prova')
+  ok('tolte, e due restano in due mesi', testo(12, 2, '2026-09-28', '2026-10-03'), t12 + 'Restano le lezioni del 28 settembre e del 3 ottobre: hanno l’appello o una prova')
+  ok('tolte, e due restano lo stesso giorno', testo(12, 2, '2026-10-14'), t12 + 'Restano 2 lezioni del 14 ottobre: hanno l’appello o una prova')
+  ok('tolte, e tre restano', testo(12, 3, '2026-10-14', '2026-11-03'), t12 + 'Restano 3 lezioni fra il 14 ottobre e il 3 novembre: hanno l’appello o una prova')
+  ok('niente tolto, una resta', testo(0, 1, '2026-10-14'), 'Date salvate. Resta la lezione del 14 ottobre: ha l’appello o una prova')
+  // Con corso e ora delle rimaste, fino a tre. Gli inizi da date locali: l'ora non dipende dal fuso.
+  const il = (corso, mese, giorno, ora) => ({ corso, inizio: new Date(2026, mese, giorno, ora, 0).toISOString() })
+  const conRimaste = (tolte, restano, rimaste) => m.testoDateSalvate({ tolte, restano, prima: rimaste[0].inizio.slice(0, 10), ultima: rimaste.at(-1).inizio.slice(0, 10), rimaste })
+  const hanno = ': hanno l’appello o una prova'
+  ok('una rimasta, col corso e l\'ora', conRimaste(12, 1, [il('Judo 2', 9, 19, 17)]), t12 + 'Resta Judo 2 del 19 ottobre alle 17:00: ha l’appello o una prova')
+  ok('niente tolto, una rimasta', conRimaste(0, 1, [il('Judo 2', 9, 19, 17)]), 'Date salvate. Resta Judo 2 del 19 ottobre alle 17:00: ha l’appello o una prova')
+  ok('due rimaste lo stesso giorno: il giorno una volta, in fondo', conRimaste(12, 2, [il('Judo 2', 9, 19, 17), il('Judo 3', 9, 19, 18)]), t12 + 'Restano Judo 2 alle 17:00 e Judo 3 alle 18:00 del 19 ottobre' + hanno)
+  ok('due rimaste in giorni diversi', conRimaste(12, 2, [il('Judo 2', 9, 14, 17), il('Judo 3', 9, 21, 18)]), t12 + 'Restano Judo 2 del 14 ottobre alle 17:00 e Judo 3 del 21 ottobre alle 18:00' + hanno)
+  ok('tre rimaste lo stesso giorno', conRimaste(12, 3, [il('Judo 2', 9, 19, 17), il('Judo 3', 9, 19, 18), il('Lotta 2', 9, 19, 19)]), t12 + 'Restano Judo 2 alle 17:00, Judo 3 alle 18:00 e Lotta 2 alle 19:00 del 19 ottobre' + hanno)
+  ok('tre rimaste in giorni diversi', conRimaste(12, 3, [il('Judo 2', 9, 14, 17), il('Judo 3', 9, 21, 18), il('Lotta 2', 10, 3, 19)]), t12 + 'Restano Judo 2 del 14 ottobre alle 17:00, Judo 3 del 21 ottobre alle 18:00 e Lotta 2 del 3 novembre alle 19:00' + hanno)
+  ok('più di tre: le frasi senza corso', conRimaste(12, 4, [il('Judo 2', 9, 14, 17), il('Judo 3', 9, 21, 18), il('Lotta 2', 10, 3, 19)]), t12 + 'Restano 4 lezioni fra il 14 ottobre e il 3 novembre' + hanno)
+
+  // La conferma prima di togliere, come per i mesi delle presenze.
+  ok('conferma: il conto non è riuscito, si chiede lo stesso', m.confermaDateCorsi(null), { testo: 'Salvare le date? Da domani le lezioni fuori dalle date se ne vanno, tranne quelle con l’appello o una prova.', tasto: 'SALVA LE DATE' })
+  ok('conferma: senza il file non si chiede', m.confermaDateCorsi({ tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 35-date-corsi.sql' }), null)
+  ok('conferma: niente da togliere, non si chiede', m.confermaDateCorsi({ tolte: 0, restano: 2, prima: '2026-10-19', ultima: '2026-10-21' }), null)
+  ok('conferma: tante da togliere, due restano', m.confermaDateCorsi({ tolte: 1877, restano: 2, prima: '2026-10-19', ultima: '2026-10-21' }), { testo: 'Togliere 1877 lezioni fuori dalle date? Restano 2 lezioni con l’appello o una prova.', tasto: 'SÌ, TOGLI 1877 LEZIONI' })
+  ok('conferma: una da togliere', m.confermaDateCorsi({ tolte: 1, restano: 0, prima: null, ultima: null }), { testo: 'Togliere 1 lezione fuori dalle date?', tasto: 'SÌ, TOGLI 1 LEZIONE' })
+  ok('conferma: cinque da togliere, una resta', m.confermaDateCorsi({ tolte: 5, restano: 1, prima: '2026-10-19', ultima: '2026-10-19' }), { testo: 'Togliere 5 lezioni fuori dalle date? Resta 1 lezione con l’appello o una prova.', tasto: 'SÌ, TOGLI 5 LEZIONI' })
+  ok('senza 35-date-corsi.sql', m.testoDateSalvate({ tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 35-date-corsi.sql' }), 'Date salvate, ma per togliere le lezioni fuori dalle date va lanciato 35-date-corsi.sql')
+
+  await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
+  OGGI = new Date(2026, 8, 26, 12, 0).getTime()
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

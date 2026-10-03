@@ -23,12 +23,19 @@ elenco, che compaiono negli appelli e sul tablet.
 - **CERTIFICATI DA STAMPARE** — solo finché ce ne sono: chi ha ancora il file
   del certificato caricato nell'app, di prima della carta.
 - **POSSIBILI DOPPIONI** col numero — solo finché ce ne sono: le schede che
-  sembrano la stessa persona, a coppie. Lo stesso nome scritto in un altro
-  modo (D'Amico e Damico) o lo stesso codice fiscale; non due schede con
-  codici fiscali o date di nascita diverse, e non i fratelli. Per ogni coppia
-  si vedono nascita, codice fiscale, contatto e corsi: **UNISCI…** apre la
+  sembrano la stessa persona, a coppie, dalle più sicure: lo stesso codice
+  fiscale, lo stesso nome scritto in un altro modo (D'Amico e Damico), nome e
+  cognome scambiati (dal modulo arriva «Rossi Chiara»), un secondo nome
+  (Chiara e Maria Chiara, con lo stesso cognome). Non due schede con codici
+  fiscali o date di nascita diverse, non i fratelli, e non un cognome con una
+  parola in più (Rossi e Rossi Bianchi). Ogni coppia dice perché c'è, e si
+  vedono nascita, codice fiscale, contatto e corsi. Con nome e cognome
+  scambiati, in UNISCI… guardate quale nome resta (**TIENI L'ALTRA** se è
+  quello al contrario): **UNISCI…** apre la
   prima scheda con l'unione già pronta sull'altra; **NON SONO DOPPIONI** la
-  toglie dall'elenco (due omonimi veri).
+  toglie dall'elenco (due omonimi veri). Toccato per sbaglio: **ANNULLA**
+  nell'avviso, subito dopo; o, più tardi, nella scheda di una delle due,
+  sezione **NON SONO DOPPIONI** → **TOGLI** accanto all'altra.
 
 La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
 **IN REGOLA** se certificato e quota sono a posto (**FUORI APP**, in grigio,
