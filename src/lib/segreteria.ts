@@ -1,4 +1,5 @@
 import type { StatoPresenza, StatoSessione } from './sala'
+import { chiaveGiorno, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
@@ -566,6 +567,14 @@ export interface DatiSegreteria {
   impostazioni(): Promise<Impostazioni>
   salvaImpostazioni(i: Partial<Impostazioni>): Promise<void>
   /**
+   * Scrive inizio e fine dei corsi e toglie le lezioni da ricorrenza da domani
+   * in poi fuori dalle date, tranne quelle con l'appello o una prova
+   * (`34-date-corsi.sql`).
+   */
+  salvaDateCorsi(inizio: string | null, fine: string | null): Promise<EsitoDate>
+  /** Quello che farebbe `salvaDateCorsi`, senza cambiare niente: per chiedere prima. */
+  contaDateCorsi(inizio: string | null, fine: string | null): Promise<EsitoDate>
+  /**
    * Quante presenze sono più vecchie del periodo, e la pulizia. Con `mesi`,
    * quante lo sarebbero con quel periodo: si conta e basta, non si salva.
    */
@@ -846,6 +855,63 @@ export function nomeVoce(nome: string, tutte: string[]): string {
       .trim() || n
   const mio = corto(nome)
   return tutte.some((v) => v !== nome && corto(v) === mio) ? nome : mio
+}
+
+/** Cosa ha fatto SALVA LE DATE: le lezioni tolte, e quelle rimaste fuori dalle date coi loro giorni. */
+export interface EsitoDate {
+  tolte: number
+  restano: number
+  prima: string | null
+  ultima: string | null
+  /** Le prime tre rimaste fuori, col nome del corso e l'inizio. */
+  rimaste?: Array<{ corso: string; inizio: string }>
+  /** Il database senza `34-date-corsi.sql`: le date sono salvate, niente è tolto, e cosa fare. */
+  manca?: string
+}
+
+/**
+ * Prima di SALVA LE DATE: quante lezioni se ne andrebbero. Niente da togliere
+ * (o il database che non toglie) si salva subito; senza il conto (`null`) si
+ * chiede lo stesso, senza numero.
+ */
+export function confermaDateCorsi(e: EsitoDate | null): { testo: string; tasto: string } | null {
+  if (!e) return { testo: 'Salvare le date? Da domani le lezioni fuori dalle date se ne vanno, tranne quelle con l’appello o una prova.', tasto: 'SALVA LE DATE' }
+  if (e.manca || !e.tolte) return null
+  const quante = e.tolte === 1 ? '1 lezione' : `${e.tolte} lezioni`
+  const restano = !e.restano ? '' : e.restano === 1 ? ' Resta 1 lezione con l’appello o una prova.' : ` Restano ${e.restano} lezioni con l’appello o una prova.`
+  return { testo: `Togliere ${quante} fuori dalle date?${restano}`, tasto: `SÌ, TOGLI ${quante.toUpperCase()}` }
+}
+
+/**
+ * Quello che si dice dopo SALVA LE DATE: quante lezioni sono sparite, e perché
+ * qualcuna è rimasta, così una lezione isolata dopo la fine non sembra un
+ * errore. Corto: l'avviso dura otto secondi.
+ */
+export function testoDateSalvate({ tolte, restano, prima, ultima, rimaste, manca }: EsitoDate): string {
+  if (manca) return `Date salvate, ma per togliere le lezioni fuori dalle date ${manca}`
+  const fatto = `Date salvate${tolte ? `: ${tolte === 1 ? 'tolta 1 lezione' : `tolte ${tolte} lezioni`}` : ''}`
+  if (!restano || !prima) return fatto
+  const fine = ultima ?? prima
+  const giorno = (g: string, mese = true) => new Date(`${g}T12:00:00`).toLocaleDateString('it-IT', mese ? { day: 'numeric', month: 'long' } : { day: 'numeric' })
+  const chiave = (iso: string) => chiaveGiorno(new Date(iso))
+  // Poche: si dice quali, col corso e l'ora, così si sa chi chiamare.
+  const elenco = (x: string[]) => (x.length > 1 ? `${x.slice(0, -1).join(', ')} e ${x.at(-1)}` : x[0])
+  const stessoGiorno = !!rimaste && rimaste.length > 1 && rimaste.every((r) => chiave(r.inizio) === chiave(rimaste[0].inizio))
+  const quali =
+    rimaste?.length && rimaste.length === restano
+      ? `${restano === 1 ? 'Resta' : 'Restano'} ${
+          stessoGiorno
+            ? `${elenco(rimaste.map((r) => `${r.corso} alle ${oraDi(r.inizio)}`))} del ${giorno(chiave(rimaste[0].inizio))}`
+            : elenco(rimaste.map((r) => `${r.corso} del ${giorno(chiave(r.inizio))} alle ${oraDi(r.inizio)}`))
+        }`
+      : restano === 1
+      ? `Resta la lezione del ${giorno(prima)}`
+      : prima === fine
+        ? `Restano ${restano} lezioni del ${giorno(prima)}`
+        : restano === 2
+          ? `Restano le lezioni del ${giorno(prima, prima.slice(0, 7) !== fine.slice(0, 7))} e del ${giorno(fine)}`
+          : `Restano ${restano} lezioni fra il ${giorno(prima)} e il ${giorno(fine)}`
+  return `${fatto}. ${quali}: ${restano === 1 ? 'ha' : 'hanno'} l’appello o una prova`
 }
 
 /**

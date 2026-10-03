@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { confermaMesiPresenze, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
+import { confermaDateCorsi, confermaMesiPresenze, testoDateSalvate, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
 import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
@@ -150,7 +150,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             RIGENERA ADESSO
           </button>
           <ComeFunziona>
-            Prima dell'inizio non nascono lezioni. Le date sono facoltative, e le lezioni già in calendario restano. Rigenerare non duplica e non
+            Prima dell'inizio non nascono lezioni. Le date sono facoltative. SALVA LE DATE toglie le lezioni da domani in poi fuori dalle date, tranne quelle con l’appello o una prova. Rigenerare non duplica e non
             tocca le lezioni che hanno già un appello, anche a cavallo del cambio d'ora.
           </ComeFunziona>
         </section>
@@ -543,16 +543,20 @@ function Stagione({ d, imp, avvisa, fai, poi }: {
       </span>
     )
   }
-  const salva = () => {
+  const salva = async () => {
     if (inizio && fine && fine < inizio) return avvisa('La fine dei corsi viene prima dell’inizio', true)
     // Il database ne tiene al massimo 400 giorni: un anno, con margine.
     if (inizio && fine && fine > `${Number(inizio.slice(0, 4)) + 1}${inizio.slice(4)}`) return avvisa('Fra inizio e fine dei corsi ci sta al massimo un anno', true)
-    void fai(
+    // Prima si dice quante lezioni se ne vanno: una data sbagliata ne toglierebbe mesi.
+    const domanda = confermaDateCorsi(await d.contaDateCorsi(inizio || null, fine || null).catch(() => null))
+    if (domanda && !(await chiedi(domanda.testo, domanda.tasto, { pericolo: true }))) return
+    await fai(
       async () => {
-        await d.salvaImpostazioni({ inizioCorsi: inizio || null, fineCorsi: fine || null })
+        const esito = await d.salvaDateCorsi(inizio || null, fine || null)
         await d.rigenera()
+        avvisa(testoDateSalvate(esito))
       },
-      d.modo === 'prova' ? 'Date salvate' : 'Date salvate, calendario allungato',
+      undefined,
       async () => {
         setBozza(null)
         await poi()
@@ -570,7 +574,7 @@ function Stagione({ d, imp, avvisa, fai, poi }: {
         </Campo>
       </div>
       {cambiate && (
-        <button type="button" className="sg-btn" style={{ alignSelf: 'flex-start' }} onClick={salva}>
+        <button type="button" className="sg-btn" style={{ alignSelf: 'flex-start' }} onClick={() => void salva()}>
           SALVA LE DATE
         </button>
       )}

@@ -22,12 +22,15 @@ FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista
 - **INIZIO CORSI** e **FINE CORSI** — le date della stagione, facoltative. Con
   la fine, le lezioni si preparano tutte e subito fino a quel giorno (per
   esempio da settembre a fine giugno in un colpo solo), e dopo non ne nascono;
-  prima dell'inizio non ne nascono. **SALVA LE DATE** le salva e allunga
-  subito il calendario. Le lezioni già in calendario restano dove sono. Fra
-  inizio e fine ci sta al massimo un anno. In prova le lezioni non si
-  preparano prima: restano quelle passate e quelle già toccate (appello,
-  annullata, sostituto, sala, prova), le altre fuori dalle date spariscono, e
-  togliendo le date tornano.
+  prima dell'inizio non ne nascono. **SALVA LE DATE** le salva, toglie le
+  lezioni da domani in poi rimaste fuori dalle date, anche annullate o col
+  sostituto, e allunga subito il calendario. Restano solo quelle con l'appello
+  (almeno una persona segnata) o qualcuno venuto a provare: l'avviso dice quante ne
+  ha tolte e quali restano. Oggi, il passato e le lezioni straordinarie non si
+  toccano. Allargando di nuovo le date le lezioni tornano, ma come da corso:
+  annullate e sostituti non si ricordano. Fra inizio e fine ci sta al massimo
+  un anno. In prova le lezioni non si preparano prima: fuori dalle date
+  restano solo quelle passate e quelle già toccate.
 - «Senza la fine dei corsi, genera le lezioni per i prossimi **30 / 60 / 90 /
   180 giorni**» — quanto avanti preparare il calendario quando la fine dei
   corsi non è scritta. Vale dal prossimo rigenera.

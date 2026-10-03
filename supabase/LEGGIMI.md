@@ -61,6 +61,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 31. `31-informativa-mesi.sql` — per quanto si tengono le presenze, letto dall'informativa privacy anche da chi non ha un accesso
 32. `32-segnalazioni-allegati.sql` — i file nelle segnalazioni: fino a 3 foto o PDF per messaggio (10 MB), in un contenitore privato; li vede la segreteria, li toglie solo chi li ha mandati, e 30 giorni dopo la chiusura del filo si tolgono da soli
 33. `33-non-doppioni.sql` — le coppie di schede che la segreteria ha segnato «non sono doppioni» (due omonimi veri), così non compaiono più fra i possibili doppioni di ISCRITTI
+34. `34-date-corsi.sql` — SALVA LE DATE toglie le lezioni da domani in poi rimaste fuori da inizio e fine dei corsi, tranne quelle con l'appello o una prova, e dice quante
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -178,6 +179,10 @@ Per segnare due schede «non sono doppioni» basta `33-non-doppioni.sql` (dopo
 `29-unisci-doppioni.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
 finché non c'è, i possibili doppioni si vedono lo stesso e NON SONO DOPPIONI
 dice che va lanciato.
+Perché SALVA LE DATE tolga le lezioni rimaste fuori dalle date dei corsi basta
+`34-date-corsi.sql` (dopo `21-prove.sql`), che non chiede di rilanciare
+`06-iscrizioni.sql`: finché non c'è, le date si salvano come prima, le lezioni
+fuori restano e l'app dice che va lanciato.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -802,7 +807,9 @@ personale legato a una lezione lo vedono anche gli altri; `calendario-da-se.sql`
 prova il calendario che si allunga da sé: lo allunga anche un istruttore, ma
 solo quando serve e fin dove dicono le regole, e non fuori dalle date dei corsi; `calendario-pronto-fino.sql` prova che
 fin dove è pronto il calendario lo dicano le lezioni dell'orario, e che una
-straordinaria lontana non lo fermi; `presenze-istruttori.sql`, dopo
+straordinaria lontana non lo fermi; `date-corsi.sql` prova SALVA LE DATE: la
+segreteria toglie le lezioni da domani in poi rimaste fuori dalle date, tranne
+quelle con l'appello o una prova, e gli altri no; `presenze-istruttori.sql`, dopo
 `tablet.sql`, prova la presenza degli istruttori dal PIN: confermata da sola a
 chi era previsto (anche da sostituto), da confermare agli altri, e confermata
 o rifiutata solo dalla segreteria; `istruttori-dalle-lezioni.sql`, dopo

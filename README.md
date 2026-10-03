@@ -354,7 +354,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | | |
 |---|---|
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
-| `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. |
+| `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. SALVA LE DATE che toglie le lezioni fuori dalle date dei corsi, tranne quelle con l'appello o una prova: la conferma prima, col conto, e l'avviso dopo, con corso e ora di quelle rimaste. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
 | `npm run prova:listino` | Il legame fra corsi e voci del listino per id: rinomina, voci doppie, corsi senza prezzo o voci senza corso, aggancio dei listini vecchi per nome. |
@@ -366,6 +366,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/calendario-da-se.sql` | Il calendario che si allunga da sé: anche per un istruttore, solo quando serve, fin dove dicono le regole. |
 | `supabase/prova/calendario-pronto-fino.sql` | Fin dove è pronto il calendario: contano le lezioni dell'orario, e una straordinaria lontana non ferma le altre. |
+| `supabase/prova/date-corsi.sql` | SALVA LE DATE: solo la segreteria; toglie le lezioni da ricorrenza di domani in poi fuori dalle date, tranne quelle con l'appello o una prova (annullate, sostituti e presenze degli istruttori se ne vanno con loro), e dice quante ne ha tolte e quante restano, con corso e ora delle prime tre; contare prima, per la conferma, non cambia niente; straordinarie, oggi e passato intatti; date sbagliate o infinite non tolgono niente. |
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
 | `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
 | `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già. |

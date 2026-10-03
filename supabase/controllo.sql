@@ -168,6 +168,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
             and has_function_privilege('anon', p.oid, 'execute'))),
   ('33-non-doppioni.sql', 'due schede che non sono doppioni',
     to_regclass('public.non_doppioni') is not null),
+  ('34-date-corsi.sql', 'SALVA LE DATE toglie le lezioni fuori dai corsi',
+    exists (select 1 from dentro where nome = 'salva_date_corsi')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',
