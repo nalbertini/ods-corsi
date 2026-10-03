@@ -82,11 +82,17 @@ export function useAvviso() {
   const avvisa = useCallback((t: string, guaio = false) => {
     window.clearTimeout(timer.current)
     setTesto({ t, guaio })
-    timer.current = window.setTimeout(() => setTesto(null), guaio ? 6000 : 3000)
+    // Un guaio resta finché non lo si chiude: al banco si risponde al
+    // telefono e un errore sparito da solo è un errore mai letto. Il fatto
+    // resta abbastanza da ritrovarlo, girati gli occhi.
+    if (!guaio) timer.current = window.setTimeout(() => setTesto(null), 8000)
   }, [])
   const avviso = testo ? (
-    <div role="status" className="sg-avviso" data-guaio={testo.guaio}>
-      {testo.t}
+    <div role={testo.guaio ? 'alert' : 'status'} className="sg-avviso" data-guaio={testo.guaio}>
+      <span className="grow">{testo.t}</span>
+      <button type="button" className="sg-avviso-chiudi" onClick={() => setTesto(null)}>
+        CHIUDI
+      </button>
     </div>
   ) : null
   // Un'operazione per volta: un doppio clic su SALVA, o un secondo mentre la

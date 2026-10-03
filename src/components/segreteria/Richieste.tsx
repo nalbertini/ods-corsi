@@ -150,7 +150,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
               onApri={(persona) => onVai('iscritti', { persona })}
             />
           ) : (
-            <span className="sg-sotto">Tocca una richiesta per vedere le risposte e i file.</span>
+            <span className="sg-sotto">Apri una richiesta per vedere le risposte e i file.</span>
           )}
         </section>
       </div>

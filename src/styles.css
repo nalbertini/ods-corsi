@@ -1193,10 +1193,16 @@ a.sg-voce { text-decoration: none; }
 .sg-quadretto[data-stato='giustificato'] { border-color: var(--giallo); }
 
 .sg-avviso {
-  position: fixed; right: 36px; bottom: 28px; z-index: 20; max-width: 460px; padding: 14px 18px;
+  position: fixed; right: 36px; bottom: 28px; z-index: 20; max-width: 460px; padding: 10px 10px 10px 18px;
+  display: flex; align-items: center; gap: 14px;
   background: var(--text); color: var(--bg); font-size: 15px; font-weight: 600; line-height: 1.4;
 }
 .sg-avviso[data-guaio='true'] { background: var(--rosso); color: #f2f2f0; }
+.sg-avviso-chiudi {
+  flex-shrink: 0; align-self: stretch; min-height: 44px; padding: 0 12px; border: 2px solid currentColor;
+  font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em;
+}
+.sg-avviso-chiudi:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
 /* Presenze, import, personale, regole */
 .contents { display: contents; }

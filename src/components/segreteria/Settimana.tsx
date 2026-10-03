@@ -80,7 +80,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
     <>
       <Testa
         titolo="SETTIMANA"
-        sotto={`Le lezioni generate dalle ricorrenze. Tocca una lezione per aprirla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato, false)}.` : ''}`}
+        sotto={`Le lezioni generate dalle ricorrenze: aprine una per l’appello, il sostituto o per annullarla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato)}.` : ''}`}
       >
         <button
           type="button"
@@ -311,7 +311,7 @@ function Lezione({
                 role="radio"
                 aria-checked={l.stato === s}
                 className="sg-btn sg-scelta"
-                onClick={() => l.stato !== s && cambia({ stato: s }, s === 'annullata' ? 'Lezione annullata' : 'Stato cambiato')}
+                onClick={() => l.stato !== s && cambia({ stato: s }, s === 'annullata' ? 'Lezione annullata: calendario e tablet la mostrano così, ma gli iscritti non vengono avvisati. Vanno chiamati o scritti.' : s === 'svolta' ? 'Lezione segnata come svolta' : 'Lezione di nuovo prevista')}
               >
                 {testo}
               </button>
@@ -563,7 +563,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
           </>
         )}
         {aperto && elenco && elenco.length > 0 && (
-          <span style={{ fontSize: 12, color: 'var(--faint)' }}>Un tocco: presente, due: assente, tre: non segnato.</span>
+          <span style={{ fontSize: 12, color: 'var(--faint)' }}>Un clic: presente, due: assente, tre: non segnato.</span>
         )}
       </div>
     </>
