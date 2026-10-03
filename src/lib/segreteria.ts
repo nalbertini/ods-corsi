@@ -569,7 +569,7 @@ export interface DatiSegreteria {
   /**
    * Scrive inizio e fine dei corsi e toglie le lezioni da ricorrenza da domani
    * in poi fuori dalle date, tranne quelle con l'appello o una prova
-   * (`34-date-corsi.sql`).
+   * (`35-date-corsi.sql`).
    */
   salvaDateCorsi(inizio: string | null, fine: string | null): Promise<EsitoDate>
   /** Quello che farebbe `salvaDateCorsi`, senza cambiare niente: per chiedere prima. */
@@ -865,7 +865,7 @@ export interface EsitoDate {
   ultima: string | null
   /** Le prime tre rimaste fuori, col nome del corso e l'inizio. */
   rimaste?: Array<{ corso: string; inizio: string }>
-  /** Il database senza `34-date-corsi.sql`: le date sono salvate, niente è tolto, e cosa fare. */
+  /** Il database senza `35-date-corsi.sql`: le date sono salvate, niente è tolto, e cosa fare. */
   manca?: string
 }
 

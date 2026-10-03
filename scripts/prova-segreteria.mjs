@@ -1638,7 +1638,7 @@ console.log('\nuna lezione toccata e rimessa com\'era resta, e quelle di oggi pu
 
 console.log('\nSALVA LE DATE toglie le lezioni fuori dalle date dei corsi, tranne quelle con appello o prova')
 {
-  // Come `salva_date_corsi` (34-date-corsi.sql): da domani in poi, le lezioni
+  // Come `salva_date_corsi` (35-date-corsi.sql): da domani in poi, le lezioni
   // da ricorrenza fuori dalle date se ne vanno anche se toccate (annullate,
   // col sostituto, spostate); restano quelle con l'appello o una prova.
   await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
@@ -1745,15 +1745,15 @@ console.log('\nSALVA LE DATE toglie le lezioni fuori dalle date dei corsi, trann
     ['salva_date_corsi', { inizio: '2026-10-05', fine: '2026-10-10', solo_contare: false }],
     ['salva_date_corsi', { inizio: '2026-10-05', fine: '2026-10-10', solo_contare: true }],
   ])
-  // Senza 34-date-corsi.sql: le date si salvano lo stesso, e si dice cosa lanciare.
+  // Senza 35-date-corsi.sql: le date si salvano lo stesso, e si dice cosa lanciare.
   const senza = db((f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f}(fine, inizio) in the schema cache` } }))
   // Non si ferma: Regole rigenera e chiude la bozza, e l'avviso dice cosa lanciare.
   const e = await senza.salvaDateCorsi('2026-10-05', '2026-10-10').catch((x) => ({ lanciato: x.message }))
-  ok('senza il file sul database non toglie niente, e dice quale lanciare', [esito(e), /34-date-corsi\.sql/.test(e.manca ?? '')], [[0, 0, null, null], true])
+  ok('senza il file sul database non toglie niente, e dice quale lanciare', [esito(e), /35-date-corsi\.sql/.test(e.manca ?? '')], [[0, 0, null, null], true])
   ok('…ma le date le salva', scritte.some((r) => r.inizio_corsi === '2026-10-05' && r.fine_corsi === '2026-10-10'), true)
   const quante = scritte.length
   const cs = await senza.contaDateCorsi('2026-10-05', '2026-10-10').catch((x) => ({ lanciato: x.message }))
-  ok('contare senza il file: esito vuoto, dice quale lanciare, non scrive niente', [esito(cs), /34-date-corsi\.sql/.test(cs.manca ?? ''), scritte.length], [[0, 0, null, null], true, quante])
+  ok('contare senza il file: esito vuoto, dice quale lanciare, non scrive niente', [esito(cs), /35-date-corsi\.sql/.test(cs.manca ?? ''), scritte.length], [[0, 0, null, null], true, quante])
 
   // Le parole dell'avviso.
   const testo = (tolte, restano = 0, prima = null, ultima = prima) => m.testoDateSalvate({ tolte, restano, prima, ultima })
@@ -1781,12 +1781,12 @@ console.log('\nSALVA LE DATE toglie le lezioni fuori dalle date dei corsi, trann
 
   // La conferma prima di togliere, come per i mesi delle presenze.
   ok('conferma: il conto non è riuscito, si chiede lo stesso', m.confermaDateCorsi(null), { testo: 'Salvare le date? Da domani le lezioni fuori dalle date se ne vanno, tranne quelle con l’appello o una prova.', tasto: 'SALVA LE DATE' })
-  ok('conferma: senza il file non si chiede', m.confermaDateCorsi({ tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 34-date-corsi.sql' }), null)
+  ok('conferma: senza il file non si chiede', m.confermaDateCorsi({ tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 35-date-corsi.sql' }), null)
   ok('conferma: niente da togliere, non si chiede', m.confermaDateCorsi({ tolte: 0, restano: 2, prima: '2026-10-19', ultima: '2026-10-21' }), null)
   ok('conferma: tante da togliere, due restano', m.confermaDateCorsi({ tolte: 1877, restano: 2, prima: '2026-10-19', ultima: '2026-10-21' }), { testo: 'Togliere 1877 lezioni fuori dalle date? Restano 2 lezioni con l’appello o una prova.', tasto: 'SÌ, TOGLI 1877 LEZIONI' })
   ok('conferma: una da togliere', m.confermaDateCorsi({ tolte: 1, restano: 0, prima: null, ultima: null }), { testo: 'Togliere 1 lezione fuori dalle date?', tasto: 'SÌ, TOGLI 1 LEZIONE' })
   ok('conferma: cinque da togliere, una resta', m.confermaDateCorsi({ tolte: 5, restano: 1, prima: '2026-10-19', ultima: '2026-10-19' }), { testo: 'Togliere 5 lezioni fuori dalle date? Resta 1 lezione con l’appello o una prova.', tasto: 'SÌ, TOGLI 5 LEZIONI' })
-  ok('senza 34-date-corsi.sql', m.testoDateSalvate({ tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 34-date-corsi.sql' }), 'Date salvate, ma per togliere le lezioni fuori dalle date va lanciato 34-date-corsi.sql')
+  ok('senza 35-date-corsi.sql', m.testoDateSalvate({ tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 35-date-corsi.sql' }), 'Date salvate, ma per togliere le lezioni fuori dalle date va lanciato 35-date-corsi.sql')
 
   await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
   OGGI = new Date(2026, 8, 26, 12, 0).getTime()

@@ -245,10 +245,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
   const dateCorsi = async (inizio: string | null, fine: string | null, soloContare: boolean): Promise<EsitoDate> => {
     const r = await db.rpc('salva_date_corsi', { inizio, fine, solo_contare: soloContare })
     if (r.error?.code === 'PGRST202' || r.error?.code === '42883') {
-      // Senza 34-date-corsi.sql le date si salvano come prima e le lezioni fuori restano.
+      // Senza 35-date-corsi.sql le date si salvano come prima e le lezioni fuori restano.
       // Non è un errore: il calendario va allungato lo stesso.
       if (!soloContare) ok(await db.from('impostazioni').update({ inizio_corsi: inizio, fine_corsi: fine }).eq('id', true))
-      return { tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 34-date-corsi.sql' }
+      return { tolte: 0, restano: 0, prima: null, ultima: null, manca: 'va lanciato 35-date-corsi.sql' }
     }
     // Il json che costruisce `salva_date_corsi`, con questi nomi.
     return ok(r) as EsitoDate

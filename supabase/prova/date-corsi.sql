@@ -1,9 +1,9 @@
--- SALVA LE DATE (34-date-corsi.sql): scrive inizio e fine dei corsi e toglie
+-- SALVA LE DATE (35-date-corsi.sql): scrive inizio e fine dei corsi e toglie
 -- le lezioni da ricorrenza di domani in poi che restano fuori, tranne quelle
 -- con l'appello o una prova. Le straordinarie, oggi e il passato non si toccano.
 -- Lo fa solo la segreteria.
 -- Si lancia dopo finto-supabase.sql e i file dello schema fino a
--- 34-date-corsi.sql, su un database vuoto.
+-- 35-date-corsi.sql, su un database vuoto.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 reset role;
