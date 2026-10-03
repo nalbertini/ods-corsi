@@ -64,6 +64,11 @@ In fondo al menu:
 In prova c'è anche **Riparti
 dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
 
+Il tasto Indietro del browser riporta dov'eri: alla voce di prima, all'elenco
+degli iscritti dalla scheda di uno, alla griglia da una lezione aperta. Avanti
+ci torna. Ricaricando la pagina si resta dove si era, e una scheda iscritto si
+apre anche in un'altra finestra, copiandone il link.
+
 Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
 numero rosso accanto dice quante cose aspettano (richieste nuove, presenze da
 confermare, segnalazioni da rispondere). Accanto ci sono **?** e il tema.
@@ -115,4 +120,5 @@ clic fuori, lascia stare.
 
 Se si cambia voce del menu mentre una ricevuta, un iscritto nuovo o la modifica
 di una scheda sono scritti a metà, l'app chiede prima: **TORNA A FINIRE** o
-**LASCIALO A METÀ**. Chiudendo la pagina lo chiede il browser.
+**LASCIALO A METÀ**. Lo stesso col tasto Indietro o Avanti del browser:
+**TORNA A FINIRE** lascia tutto com'era. Chiudendo la pagina lo chiede il browser.

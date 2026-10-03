@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Destinazione } from './Segreteria'
 import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg } from '../../lib/segreteria'
 import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, pulisciAnagrafica } from '../../lib/segreteria'
@@ -43,7 +43,19 @@ function Bollino({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde' | 'spe
  * Un nome in elenco non ha bisogno di un accesso: gli iscritti non entrano
  * nell'app. Qui la segreteria li aggiunge, li iscrive e li toglie dai corsi.
  */
-export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegreteria; personaIniziale?: string; filtroIniziale?: Destinazione['filtro'] }) {
+export function Iscritti({
+  d,
+  scelta,
+  onScelta,
+  filtroIniziale,
+}: {
+  d: DatiSegreteria
+  /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
+  scelta?: string
+  /** `correggi`: al posto dell'indirizzo di adesso, senza un passo per Indietro. */
+  onScelta: (id: string | null, correggi?: boolean) => void
+  filtroIniziale?: Destinazione['filtro']
+}) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
   const freq = useCarica(() => d.frequenze(), [d])
@@ -56,9 +68,8 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [daStampare, setDaStampare] = useState(filtroIniziale === 'stampare')
-  const [scelta, setScelta] = useState<string | null>(personaIniziale ?? null)
   const [nuovo, setNuovo] = useState(false)
-  const { avviso, fai } = useAvviso()
+  const { avviso, avvisa, fai } = useAvviso()
   const oggi = chiaveGiorno(new Date())
 
   const perId = new Map((corsi.dato ?? []).map((c) => [c.id, c]))
@@ -102,8 +113,17 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
 
   const chiudi = () => {
     setNuovo(false)
-    setScelta(null)
+    if (scelta) onScelta(null)
   }
+
+  // Una scheda di qualcuno che non c'è più (un link vecchio, un'altra
+  // finestra): si torna all'elenco e lo si dice. Solo quando l'elenco arriva:
+  // un iscritto appena salvato non è ancora in quello di prima.
+  useEffect(() => {
+    if (!scelta || !persone.dato || persone.dato.some((p) => p.id === scelta)) return
+    avvisa('Quell’iscritto non c’è più')
+    onScelta(null, true)
+  }, [persone.dato]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
@@ -117,7 +137,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
             onLasciaStare={() => setNuovo(false)}
             onSalvato={(id) => {
               setNuovo(false)
-              setScelta(id)
+              onScelta(id)
               void ricarica()
             }}
           />
@@ -136,7 +156,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
             onCambiato={() => void ricarica()}
             onApri={(id) => {
               setNuovo(false)
-              setScelta(id)
+              onScelta(id)
             }}
           />
         </SchedaPiena>
@@ -224,7 +244,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
                   data-spento={!p.attiva}
                   onClick={() => {
                     setNuovo(false)
-                    setScelta(p.id)
+                    onScelta(p.id)
                   }}
                 >
                   <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>

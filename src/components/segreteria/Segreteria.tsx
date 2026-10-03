@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
@@ -25,8 +25,9 @@ import { CercaIscritto } from './CercaIscritto'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
+import { leggiIndirizzo, scriviIndirizzo, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 
-export type Voce = 'dafare' | 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'segnalate' | 'statistiche' | 'istruttori' | 'importa' | 'personale' | 'esercizi' | 'listino' | 'regole' | 'segnalazioni'
+export type { Voce }
 
 /** Dove portare la segreteria da un'altra sezione: la scheda di qualcuno, una lezione da aprire. */
 export interface Destinazione {
@@ -99,6 +100,16 @@ const GUIDE: Record<Voce, string> = {
   segnalazioni: 'segreteria/segnalazioni',
 }
 
+const lasciare = () => chiedi('Lasciare a metà quello che stai scrivendo? Quello che non hai salvato si perde.', 'LASCIALO A METÀ', { no: 'TORNA A FINIRE' })
+
+/** Scrive l'indirizzo della segreteria nella cronologia, senza ricaricare. */
+function scrivi(hash: string, passo: 'push' | 'replace') {
+  // Con percorso e query: le pagine delle aree hanno <base href="../">, e un «#…» da solo porterebbe via.
+  const url = window.location.pathname + window.location.search + hash
+  if (passo === 'push') window.history.pushState(null, '', url)
+  else window.history.replaceState(null, '', url)
+}
+
 /** L'indirizzo della pagina pubblica per iscriversi, quello da mandare su WhatsApp. */
 const LINK_PUBBLICO = indirizzo(INDIRIZZI.iscrizioni)
 
@@ -148,18 +159,57 @@ export function Segreteria({
   onIstruttori?: () => void
 }) {
   const [d, setD] = useState<DatiSegreteria | null>(null)
-  const [voce, setVoce] = useState<Voce>('dafare')
-  const [dove, setDove] = useState<Destinazione>({})
+  // Dove si è sta nell'indirizzo (vedi `indirizzoSegreteria.ts`): si parte
+  // da lì anche se i dati arrivano dopo, e Indietro/Avanti ci riportano.
+  const [posto, setPosto] = useState<Posto>(() => leggiIndirizzo(window.location.hash, { prova }) ?? { voce: 'dafare' })
+  const voce = posto.voce
+  // Il filtro acceso da DA FARE resta fuori dall'indirizzo: è un punto di partenza, non un posto.
+  const [filtro, setFiltro] = useState<Destinazione['filtro']>()
   // Il menu del telefono, aperto o chiuso; sul computer non conta.
   const [aperto, setAperto] = useState(false)
+  // Il posto di adesso per chi ascolta il browser, che non vede lo stato dell'ultimo giro.
+  const ora = useRef(posto)
+  /** Va in un posto: `push` è un passo per Indietro, `replace` corregge quello di adesso. */
+  const segna = useCallback((p: Posto, passo: 'push' | 'replace') => {
+    const prima = scriviIndirizzo(ora.current)
+    ora.current = p
+    setPosto(p)
+    const h = scriviIndirizzo(p)
+    if (h !== prima) scrivi(h, passo)
+  }, [])
   const vai = async (v: Voce, d: Destinazione = {}) => {
     // Un modulo scritto a metà (una ricevuta, un iscritto nuovo) non si perde con un clic sul menu.
-    if (bozzaAperta() && !(await chiedi('Lasciare a metà quello che stai scrivendo? Quello che non hai salvato si perde.', 'LASCIALO A METÀ', { no: 'TORNA A FINIRE' })))
-      return
-    setDove(d)
-    setVoce(v)
+    if (bozzaAperta() && !(await lasciare())) return
+    setFiltro(d.filtro)
+    // La stessa voce ritoccata chiude la scheda o la lezione e tiene il resto: settimana e sala.
+    segna(v === ora.current.voce && !d.persona && !d.lezione ? { ...ora.current, persona: undefined, lezione: undefined } : { voce: v, persona: d.persona, lezione: d.lezione }, 'push')
     setAperto(false)
   }
+  useEffect(() => {
+    // Un indirizzo che non si capisce diventa quello di DA FARE; quello degli altri si lascia stare.
+    const corretto = (letto: Posto) => {
+      const h = scriviIndirizzo(letto)
+      if (window.location.hash.length > 1 && window.location.hash !== h) scrivi(h, 'replace')
+    }
+    const letto = leggiIndirizzo(window.location.hash, { prova })
+    if (letto) corretto(letto)
+    const torna = async () => {
+      const letto = leggiIndirizzo(window.location.hash, { prova })
+      if (!letto) return
+      const prima = scriviIndirizzo(ora.current)
+      if (scriviIndirizzo(letto) === prima) return
+      // Indietro con un modulo a metà: la stessa domanda del menu, e chi torna a
+      // finire ritrova l'indirizzo del modulo.
+      if (bozzaAperta() && !(await lasciare())) return scrivi(prima, 'push')
+      if (letto.voce !== ora.current.voce) setFiltro(undefined)
+      ora.current = letto
+      setPosto(letto)
+      setAperto(false)
+      corretto(letto)
+    }
+    window.addEventListener('popstate', torna)
+    return () => window.removeEventListener('popstate', torna)
+  }, [prova])
   useEffect(() => {
     if (!aperto) return
     const esc = (e: KeyboardEvent) => e.key === 'Escape' && setAperto(false)
@@ -357,10 +407,12 @@ export function Segreteria({
           </div>
         )}
         {d && voce === 'dafare' && <DaFare conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
-        {d && voce === 'settimana' && <Settimana key={dove.lezione?.id ?? ''} d={d} lezioneIniziale={dove.lezione} />}
+        {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} />}
         {d && voce === 'corsi' && <Corsi d={d} />}
-        {d && voce === 'iscritti' && <Iscritti key={`${dove.persona ?? ''}-${dove.filtro ?? ''}`} d={d} personaIniziale={dove.persona} filtroIniziale={dove.filtro} />}
-        {d && voce === 'richieste' && <Richieste key={dove.filtro ?? ''} d={d} onVai={vai} stampareIniziale={dove.filtro === 'stampare'} />}
+        {d && voce === 'iscritti' && (
+          <Iscritti key={filtro ?? ''} d={d} scelta={posto.persona} onScelta={(id, correggi) => segna({ voce: 'iscritti', persona: id ?? undefined }, correggi ? 'replace' : 'push')} filtroIniziale={filtro} />
+        )}
+        {d && voce === 'richieste' && <Richieste key={filtro ?? ''} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} />}
         {d && inPresenze && conSegnalate && (
           <div role="tablist" aria-label="Presenze" className="schede sg-schede">
             <button type="button" role="tab" aria-selected={voce === 'presenze'} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
@@ -371,7 +423,7 @@ export function Segreteria({
             </button>
           </div>
         )}
-        {d && voce === 'presenze' && <Presenze key={dove.filtro ?? ''} d={d} onVai={vai} senzaAppello={dove.filtro === 'senza-appello'} />}
+        {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
