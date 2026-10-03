@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.9.2 — 3 ottobre 2026
+
+### Risolto
+
+- Un appello chiuso per sbaglio si recupera anche con chi prova, e in cima c'è la lezione da fare
+
 ## 0.9.1 — 3 ottobre 2026
 
 ### Risolto
