@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import type { DatiTablet, LezioneSala, Postazione, PresenzaIstruttore } from '../../lib/tablet'
-import { datiTablet, fase, lasciaTablet, REGOLE } from '../../lib/tablet'
+import { datiTablet, lasciaTablet, lezioneDiAdesso, REGOLE } from '../../lib/tablet'
 import type { Settings } from '../../../timer/src/types'
 import type { Incorporato, StatoTimer, TimerPronto } from '../../../timer/src/lib/incorporato'
 import type { Lezione } from '../../../timer/src/lib/lezione'
@@ -246,8 +246,9 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
     trattieniAggiornamento(inCorso(timer))
   }, [timer])
 
-  // La lezione in cui ci si segna adesso: il timer mette in cima i suoi timer.
-  const aperta = (lezioni ?? []).find((l) => l.stato !== 'annullata' && fase(l, adesso) === 'aperta') ?? null
+  // La lezione in cui ci si segna adesso (al cambio, quella che comincia): il
+  // timer mette in cima i suoi timer, e la barra ne conta i segnati.
+  const aperta = lezioneDiAdesso(lezioni ?? [], adesso)
   const lezioneTimer = useMemo<Lezione | null>(
     () => (aperta ? { corsoId: aperta.corsoId, sessioneId: eUnId(aperta.id) ? aperta.id : null, lezioneId: aperta.id, nome: aperta.corso } : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -420,24 +421,27 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
               {vista.s === 'pin' && (
                 <TabletPin d={d} onEntrato={(pin, chi) => setVista({ s: 'istruttore', pin, nome: chi.nome, presenze: chi.presenze })} onAnnulla={aHome} />
               )}
-              {vista.s === 'istruttore' && (
-                <TabletIstruttore
-                  d={d}
-                  pin={vista.pin}
-                  presenze={vista.presenze}
-                  adesso={adesso}
-                  lezioni={lezioni ?? []}
-                  onCambiato={() => void carica()}
-                  onEsci={aHome}
-                  onPinScaduto={() => setVista({ s: 'pin' })}
-                  onScollega={() => setVista({ s: 'esci', nome: vista.nome })}
-                />
-              )}
               {vista.s === 'esci-pin' && (
                 <TabletPin d={d} perUscire onEntrato={(_, chi) => setVista({ s: 'esci', nome: chi.nome })} onAnnulla={aHome} />
               )}
               {vista.s === 'esci' && <ConfermaUscita nome={vista.nome} onEsci={onScollega} onAnnulla={aHome} />}
             </>
+          )}
+          {/* L'area istruttore resta montata anche sotto il timer: tornando
+              alle presenze si ritrova la lezione che si stava guardando. */}
+          {vista.s === 'istruttore' && (
+            <TabletIstruttore
+              d={d}
+              pin={vista.pin}
+              presenze={vista.presenze}
+              adesso={adesso}
+              lezioni={lezioni ?? []}
+              visibile={scheda === 'presenze'}
+              onCambiato={() => void carica()}
+              onEsci={aHome}
+              onPinScaduto={() => setVista({ s: 'pin' })}
+              onScollega={() => setVista({ s: 'esci', nome: vista.nome })}
+            />
           )}
           <Suspense fallback={scheda === 'timer' ? <p className="tb-nota" style={{ padding: 32 }}>Un attimo…</p> : null}>
             <TimerSala incorporato={incorporato} visibile={scheda === 'timer'} />
