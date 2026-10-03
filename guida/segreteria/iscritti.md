@@ -70,7 +70,8 @@ timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
 In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
 **SEGNA IL CERTIFICATO** o **RINNOVA O CORREGGI** se il certificato manca o è
 scaduto, poi **+ REGISTRA UN PAGAMENTO** se la quota non è pagata tutta, poi il
-certificato in scadenza. Se è tutto a posto, **+ REGISTRA UN PAGAMENTO**.
+certificato in scadenza. Se è tutto a posto, **+ REGISTRA UN PAGAMENTO**. Se la
+scheda è disattivata, nessuno.
 
 - **MODIFICA** — nome, cognome, email, telefono.
 - **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,
