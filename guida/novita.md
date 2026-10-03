@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.17.1 — 3 ottobre 2026
+
+### Risolto
+
+- In prova l'inizio e la fine dei corsi decidono davvero quali lezioni ci sono in calendario
+
 ## 0.17.0 — 3 ottobre 2026
 
 ### Novità
