@@ -1008,6 +1008,13 @@ a.sg-voce { text-decoration: none; }
 }
 .sg-link { font-size: 13px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 .sg-link:hover { color: var(--text); }
+/* Col dito i link piccoli e le intestazioni che ordinano sono bersagli da
+   18-21 px: l'area che si tocca si allarga a 44 senza spostare niente. */
+@media (pointer: coarse) {
+  .sg-link, .sg-ordina { position: relative; }
+  .sg-link::after, .sg-ordina::after { content: ''; position: absolute; inset: -13px -6px; }
+  .sg-ordina::after { inset: -13px 0; }
+}
 
 .sg-corpo {
   flex-grow: 1; min-width: 0; overflow-y: auto;
