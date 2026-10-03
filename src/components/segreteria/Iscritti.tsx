@@ -396,7 +396,8 @@ function Scheda({
         </h2>
         <span style={{ fontSize: 13, color: 'var(--dim)' }}>{`In elenco dal ${dataLunga(p.creataIl)} · nessun accesso`}</span>
       </div>
-      <Timbri p={p} oggi={oggi} />
+      {/* Mentre si unisce o si fa una ricevuta le sezioni non ci sono: i timbri porterebbero a niente. */}
+      {!unendo && !pagando && <Timbri p={p} oggi={oggi} />}
 
       {unendo ? (
         <UnisciDoppione
@@ -638,7 +639,7 @@ function Timbri({ p, oggi }: { p: PersonaSeg; oggi: string }) {
     <div className="stack" style={{ gap: 12 }}>
       {t.disattivata && (
         <p className="sg-timbri-spenta">
-          DISATTIVATA: non è negli appelli né sul tablet
+          <strong>DISATTIVATA</strong> Non è negli appelli né sul tablet. Per rimetterla: RIATTIVA, in fondo alla scheda.
         </p>
       )}
       <div className="sg-timbri">
@@ -1097,7 +1098,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             Questo certificato è ancora caricato nell’app: aprilo, stampalo, mettilo nella cartellina e cancellalo da qui. La scadenza resta.
           </span>
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-            <button type="button" className="num sg-chip" onClick={apri}>
+            <button type="button" className="num sg-chip" data-primo onClick={apri}>
               APRI PER STAMPARE
             </button>
             <button
@@ -1144,7 +1145,8 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
         </>
       ) : (
         <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <button type="button" className="num sg-chip sg-chip-pieno" data-primo onClick={() => setBozza({ scade: c.scade && c.scade >= oggi ? c.scade : '' })}>
+          {/* Col file da stampare, il timbro porta prima lì (APRI PER STAMPARE). */}
+          <button type="button" className="num sg-chip sg-chip-pieno" data-primo={c.conFile ? undefined : true} onClick={() => setBozza({ scade: c.scade && c.scade >= oggi ? c.scade : '' })}>
             {c.scade ? 'RINNOVA O CORREGGI' : 'SEGNA IL CERTIFICATO'}
           </button>
           <div className="grow" />

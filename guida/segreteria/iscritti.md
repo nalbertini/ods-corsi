@@ -59,9 +59,11 @@ resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
 In cima, tre timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
 grandi, con le parole dell'elenco (verde a posto, giallo da guardare, rosso
-manca), e **DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare.
-Un clic su un timbro porta alla sua parte della scheda. Se la scheda è
-disattivata i timbri sono grigi, e sopra c'è scritto **DISATTIVATA**.
+manca; il certificato scaduto dice anche quando: **SCADUTO IL 25/09**), e
+**DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare. Un clic su
+un timbro porta alla sua parte della scheda. Se la scheda è disattivata i
+timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
+**RIATTIVA**.
 
 - **MODIFICA** — nome, cognome, email, telefono.
 - **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,

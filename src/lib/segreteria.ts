@@ -655,14 +655,16 @@ export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quot
 export type Tono = 'rosso' | 'giallo' | 'verde' | 'spento'
 
 /** Una parola grande col suo colore: un bollino in elenco, un timbro nella scheda. */
-export interface Bollino {
+export interface ParolaStato {
   tono: Tono
   parola: string
 }
 
 /** Un timbro in cima alla scheda; una riga senza tono prende quello del testo. */
-export interface Timbro extends Bollino {
+export interface Timbro extends ParolaStato {
   righe: Array<{ testo: string; tono?: Tono }>
+  /** La parola in elenco, quando quella del timbro è troppo lunga per la colonna. */
+  inElenco?: string
 }
 
 export interface TimbriScheda {
@@ -680,9 +682,9 @@ function timbroCertificato(c: CertificatoSeg, oggi: string): Timbro {
   const come = comeCertificato(c, oggi)
   // Il file di prima della carta è sempre un avviso, anche sotto un certificato valido.
   const righe: Timbro['righe'] = c.conFile ? [{ testo: 'DA STAMPARE', tono: 'giallo' }] : []
-  if (come === 'manca') return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...righe] }
-  const data = dataCorta(c.scade!)
-  if (come === 'scaduto') return { tono: 'rosso', parola: 'CERT. SCADUTO', righe: [{ testo: `IL ${data}` }, ...righe] }
+  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...righe] }
+  const data = dataCorta(c.scade)
+  if (come === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${data}`, inElenco: 'CERT. SCADUTO', righe }
   if (come === 'in_scadenza') return { tono: 'giallo', parola: c.scade === oggi ? 'SCADE OGGI' : `SCADE IL ${data}`, righe }
   return { tono: 'verde', parola: `VALIDO FINO AL ${data}`, righe }
 }
@@ -709,26 +711,28 @@ export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'doc
     documento: {
       tono: p.documento ? 'verde' : 'giallo',
       parola: p.documento ? 'IN SEGRETERIA' : 'DA PORTARE',
-      righe: [{ testo: 'NON SERVE PER ENTRARE' }, { testo: 'PER UN MINORE: DEL GENITORE' }],
+      // Del genitore, per un minore: la scheda non sa l'età, lo dice la sezione DOCUMENTO.
+      righe: [{ testo: 'NON SERVE PER ENTRARE' }],
     } satisfies Timbro,
   }
   if (p.attiva) return t
-  const spegni = (x: Timbro): Timbro => ({ tono: 'spento', parola: x.parola, righe: x.righe.map(({ testo }) => ({ testo })) })
+  const spegni = (x: Timbro): Timbro => ({ ...x, tono: 'spento', righe: x.righe.map(({ testo }) => ({ testo })) })
   return { certificato: spegni(t.certificato), quota: spegni(t.quota), documento: spegni(t.documento), disattivata: true }
 }
 
 /**
  * La colonna IN REGOLA dell'elenco: le parole dei timbri che non vanno, o
- * IN REGOLA; prima FUORI APP, perché prima o poi va una ricevuta. Il
+ * IN REGOLA; poi FUORI APP, perché prima o poi va una ricevuta. Il
  * certificato in scadenza si vede, anche se è ancora in regola.
  */
-export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string): Bollino[] {
+export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string): ParolaStato[] {
   const s = pagamentoDi(p, oggi)
   const cert = timbroCertificato(p.certificato, oggi)
   const quota = timbroQuota(s)
-  const fuori: Bollino[] = s.fonte === 'fuori_app' ? [{ tono: 'spento', parola: 'FUORI APP' }] : []
-  const guai = [cert, quota].filter((t) => t.tono !== 'verde').map(({ tono, parola }) => ({ tono, parola }))
-  return [...fuori, ...(guai.length ? guai : [{ tono: 'verde', parola: 'IN REGOLA' } as const])]
+  const fuori: ParolaStato[] = s.fonte === 'fuori_app' ? [{ tono: 'spento', parola: 'FUORI APP' }] : []
+  const guai = [cert, quota].filter((t) => t.tono !== 'verde').map((t): ParolaStato => ({ tono: t.tono, parola: t.inElenco ?? t.parola }))
+  const inRegola: ParolaStato = { tono: 'verde', parola: 'IN REGOLA' }
+  return [...(guai.length ? guai : [inRegola]), ...fuori]
 }
 
 /** Un giorno `AAAA-MM-GG` spostato di tanti giorni, senza passare dai fusi. */
