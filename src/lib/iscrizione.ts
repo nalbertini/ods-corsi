@@ -135,12 +135,12 @@ const PASSI_APP: Passo[] = [
   },
   {
     titolo: 'Fai il pagamento',
-    dettaglio: 'La quota associativa e il trimestre, oppure l’annuale. Tieni la ricevuta.',
+    dettaglio: 'La quota associativa e il trimestre, oppure l’annuale. Tieni la ricevuta, o paga in segreteria.',
     azione: 'pagamento',
   },
   {
     titolo: 'Manda la richiesta da qui',
-    dettaglio: "Le domande, la firma sul modulo, poi le foto della carta d'identità, del certificato medico se ce l'hai e della ricevuta.",
+    dettaglio: "Le domande, la firma sul modulo, poi le foto della carta d'identità, e del certificato medico e della ricevuta se li hai.",
     azione: 'modulo',
   },
 ]

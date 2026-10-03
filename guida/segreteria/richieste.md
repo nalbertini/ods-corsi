@@ -25,7 +25,9 @@ stampare.
 Un clic apre le risposte: nato il / a, codice fiscale, residenza, genitore (per
 un minore), email, telefono e l'eventuale telefono 2, corsi, come paga (trimestre o annuale), note.
 
-Sotto, **I FILE**: modulo firmato e ricevuta. Carta d'identità e certificato
+Sotto, **I FILE**: modulo firmato e ricevuta. La ricevuta non è obbligatoria:
+se non c'è, una riga dice «Nessuna ricevuta: il pagamento si fa in
+segreteria», e la richiesta si accoglie lo stesso. Carta d'identità e certificato
 medico stanno in un riquadro giallo, perché nell'app non restano: accolta la
 richiesta, li si apre, si stampano, si mettono nella cartellina e
 **STAMPATO, CANCELLA** li cancella per sempre. La scheda dell'iscritto segna
