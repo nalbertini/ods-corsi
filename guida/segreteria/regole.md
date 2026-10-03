@@ -100,8 +100,16 @@ Si sceglie fra **12, 24, 36 o 60 mesi**: dopo, le presenze si cancellano.
 Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è
 della palestra.
 
-Sotto c'è quante presenze sono già scadute. Si cancellano col lavoro mensile del
-database, se è stato attivato, oppure subito con **CANCELLA ORA** (chiede conferma: non si recuperano).
+Scegliendo più mesi si salva subito. Scegliendo meno mesi, l'app conta prima
+quante presenze sono più vecchie del periodo nuovo e, se ce ne sono, chiede
+conferma col numero: «Accorciare a 12 mesi? Il primo del mese si cancellano
+340 presenze più vecchie di 12 mesi…». Con **NO, LASCIA STARE** resta il
+periodo di prima.
+
+Sotto c'è quante presenze sono già scadute. Si cancellano da sé il primo di
+ogni mese, oppure subito con **CANCELLA ORA** (chiede conferma: non si
+recuperano). In prova non c'è il giro del primo del mese: si cancellano solo
+con CANCELLA ORA.
 
 ### Il backup
 

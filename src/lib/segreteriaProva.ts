@@ -116,8 +116,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
   }
 
   /** Le presenze più vecchie del periodo scelto in REGOLE: coppie lezione, persona. */
-  const scadute = () => {
-    const mesi = a().impostazioni?.mesiPresenze ?? 24
+  const scadute = (mesi = a().impostazioni?.mesiPresenze ?? 24) => {
     const limite = new Date()
     limite.setMonth(limite.getMonth() - mesi)
     return Object.entries(memoria.segnate).flatMap(([id, segni]) => {
@@ -1068,8 +1067,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
-    async scadute() {
-      return scadute().length
+    async scadute(mesi) {
+      return scadute(mesi).length
     },
 
     async pulisci() {
