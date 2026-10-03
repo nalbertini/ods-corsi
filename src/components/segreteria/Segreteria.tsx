@@ -3,6 +3,7 @@ import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
 import { TastoTema } from '../TastoTema'
+import { Cursori } from '../Icons'
 import { Settimana } from './Settimana'
 import { Corsi } from './Corsi'
 import { Iscritti } from './Iscritti'
@@ -209,6 +210,13 @@ export function Segreteria({
     }
   }, [tentativo])
 
+  // In un'altra scheda: la segreteria resta dov'era, con quello che c'era aperto.
+  const guida = (
+    <a className="icon-btn tasto-guida" href={indirizzoPagina(GUIDE[voce])} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida di questa voce">
+      ?
+    </a>
+  )
+
   return (
     <div className="sg">
       <header className="sg-barra-tel">
@@ -217,6 +225,8 @@ export function Segreteria({
           <span className="ob" style={{ fontSize: 18, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
           <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
         </span>
+        {guida}
+        <TastoTema />
         <button
           type="button"
           className="num sg-tasto-menu"
@@ -252,7 +262,8 @@ export function Segreteria({
                   <button
                     key={id}
                     type="button"
-                    className="num sg-voce"
+                    // IMPOSTAZIONI sul computer è il tasto coi cursori in fondo al menu; sul telefono resta qui.
+                    className={id === 'regole' ? 'num sg-voce sg-voce-tel' : 'num sg-voce'}
                     aria-current={voce === id || (id === 'presenze' && inPresenze) ? 'page' : undefined}
                     onClick={() => vai(id)}
                   >
@@ -274,11 +285,22 @@ export function Segreteria({
               ISTRUTTORI →
             </button>
           )}
-          {/* In un'altra scheda: la segreteria resta dov'era, con quello che c'era aperto. */}
-          <a className="num sg-voce" href={indirizzoPagina(GUIDE[voce])} target="_blank" rel="noopener">
-            GUIDA ↗
-          </a>
           <CopiaLink />
+        </div>
+        {/* Sul telefono stanno nella barra in cima. */}
+        <div className="row sg-icone">
+          {guida}
+          <TastoTema />
+          <button
+            type="button"
+            className="icon-btn"
+            aria-current={voce === 'regole' ? 'page' : undefined}
+            onClick={() => vai('regole')}
+            title="Impostazioni"
+            aria-label="Impostazioni"
+          >
+            <Cursori />
+          </button>
         </div>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
@@ -303,7 +325,6 @@ export function Segreteria({
               Riparti dall'orario vero
             </button>
           )}
-          <TastoTema link />
           {onEsci && (
             <button type="button" className="sg-link" onClick={onEsci}>
               Esci

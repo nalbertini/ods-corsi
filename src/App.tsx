@@ -333,9 +333,12 @@ function MenuIstruttori({
               SEGRETERIA →
             </button>
           )}
-          <a className="num sg-voce" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener">
-            GUIDA ↗
+        </div>
+        <div className="row sg-icone">
+          <a className="icon-btn tasto-guida" href={indirizzoPagina('istruttori')} target="_blank" rel="noopener" title="La guida" aria-label="Apri la guida">
+            ?
           </a>
+          <TastoTema />
         </div>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{chi ? `${chi.nome} ${chi.cognome}` : `${ISTRUTTORE_PROVA.nome} · di prova`}</span>
@@ -343,7 +346,6 @@ function MenuIstruttori({
             {!chi || chi.ruolo === 'istruttore' ? 'Istruttore · calendario e appello' : chi.ancheIstruttore ? `${nomeDelRuolo(chi)} · le tue lezioni` : 'Segreteria · anche l’appello'}
           </span>
           {!chi && <span className="num sg-bollino">DATI DI PROVA</span>}
-          <TastoTema link />
           {esci && (
             <button type="button" className="sg-link" onClick={esci}>
               Esci
