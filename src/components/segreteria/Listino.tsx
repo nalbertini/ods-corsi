@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { Prezzi, VoceCosto } from '../../lib/costi'
 import { STAGIONE } from '../../lib/costi'
-import { cosaNonVaListino, LIMITI, type Listino as DatiListino } from '../../lib/listino'
+import { annoScritto, cosaNonVaListino, LIMITI, type Listino as DatiListino } from '../../lib/listino'
 import { centesimi } from '../../lib/ricevute'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
@@ -25,6 +25,9 @@ interface BozzaCorso {
   chiave: number
   corso: string
   eta: string
+  /** Gli anni di nascita, scritti: vuoti vuol dire per tutti. */
+  natiDal: string
+  natiAl: string
   /** Uno per riga. */
   orari: string
   notaTrimestre: string
@@ -56,6 +59,8 @@ const bozzaCorso = (c: VoceCosto): BozzaCorso => ({
   chiave: nuovaChiave(),
   corso: c.corso,
   eta: c.eta,
+  natiDal: c.natiDal === undefined ? '' : String(c.natiDal),
+  natiAl: c.natiAl === undefined ? '' : String(c.natiAl),
   orari: c.orari.join('\n'),
   notaTrimestre: c.notaTrimestre ?? '',
   nota: c.nota ?? '',
@@ -96,7 +101,14 @@ function daBozza(b: Bozza): DatiListino | string {
       if (p.etichetta.trim()) x.etichetta = p.etichetta.trim().toUpperCase()
       prezzi.push(x)
     }
+    const anni: Pick<VoceCosto, 'natiDal' | 'natiAl'> = {}
+    for (const k of ['natiDal', 'natiAl'] as const) {
+      const n = annoScritto(c[k])
+      if (n === null) return `${k === 'natiDal' ? 'NATI DAL' : 'NATI AL'} di «${nome}» non va: «${c[k].trim()}». Scrivi un anno a quattro cifre, dal 1900 al 2100`
+      if (n !== undefined) anni[k] = n
+    }
     const v: VoceCosto = {
+      ...anni,
       corso: c.corso.trim(),
       eta: c.eta.trim(),
       orari: c.orari.split('\n').map((o) => o.trim()).filter(Boolean),
@@ -115,14 +127,18 @@ function daBozza(b: Bozza): DatiListino | string {
   return cosaNonVaListino(l) ?? l
 }
 
-/** Come si legge un corso chiuso: i prezzi in fila. */
+/** Come si legge un corso chiuso: gli anni di nascita, poi i prezzi in fila. */
 function riassunto(c: BozzaCorso) {
-  return c.prezzi
+  // Senza anni il corso va bene per tutti: si vede senza aprirlo, se è una dimenticanza.
+  const dal = c.natiDal.trim()
+  const al = c.natiAl.trim()
+  const anni = dal && al ? `nati ${dal}–${al}` : dal ? `nati dal ${dal}` : al ? `nati fino al ${al}` : 'senza anni di nascita'
+  return `${anni} — ${c.prezzi
     .map((p) => {
       const pezzi = [p.saldo && `saldo ${p.saldo} €`, p.annuale && `annuale ${p.annuale} €`, p.trimestre && `trimestre ${p.trimestre} €`].filter(Boolean).join(' · ')
       return p.etichetta ? `${p.etichetta.toLowerCase()}: ${pezzi}` : pezzi
     })
-    .join(' — ')
+    .join(' — ')}`
 }
 
 /**
@@ -247,7 +263,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               className="sg-btn sg-btn-tratteggio"
               disabled={b.corsi.length >= LIMITI.corsi}
               onClick={() => {
-                const nuovo: BozzaCorso = { chiave: nuovaChiave(), corso: '', eta: '', orari: '', notaTrimestre: '', nota: '', prezzi: [{ ...PREZZI_VUOTI }] }
+                const nuovo: BozzaCorso = { chiave: nuovaChiave(), corso: '', eta: '', natiDal: '', natiAl: '', orari: '', notaTrimestre: '', nota: '', prezzi: [{ ...PREZZI_VUOTI }] }
                 cambia({ corsi: [...b.corsi, nuovo] })
                 setAperto(nuovo.chiave)
               }}
@@ -346,9 +362,18 @@ function SchedaCorso({
   onChiudi: () => void
 }) {
   const id = (k: string) => `lc-${c.chiave}-${k}`
-  const testoCampo = (k: 'corso' | 'eta' | 'notaTrimestre' | 'nota', etichetta: string, max: number, largo = false, segnaposto = '') => (
+  const testoCampo = (k: 'corso' | 'eta' | 'natiDal' | 'natiAl' | 'notaTrimestre' | 'nota', etichetta: string, max: number, largo = false, segnaposto = '', anno = false) => (
     <Campo id={id(k)} etichetta={etichetta} largo={largo}>
-      <input id={id(k)} className="sg-campo" maxLength={max} placeholder={segnaposto} value={c[k]} onChange={(e) => onCambia({ [k]: e.target.value })} />
+      <input
+        id={id(k)}
+        className={anno ? 'sg-campo num' : 'sg-campo'}
+        inputMode={anno ? 'numeric' : undefined}
+        aria-describedby={anno ? id('anni') : undefined}
+        maxLength={max}
+        placeholder={segnaposto}
+        value={c[k]}
+        onChange={(e) => onCambia({ [k]: e.target.value })}
+      />
     </Campo>
   )
   const cambiaPrezzi = (i: number, x: Partial<BozzaPrezzi>) => onCambia({ prezzi: c.prezzi.map((p, j) => (j === i ? { ...p, ...x } : p)) })
@@ -359,6 +384,11 @@ function SchedaCorso({
       <div className="sg-due">
         {testoCampo('corso', 'NOME DEL CORSO', 80, true)}
         {testoCampo('eta', 'ETÀ', 120, true, 'nati 2019-2018-2017')}
+        {testoCampo('natiDal', 'NATI DAL', 4, false, '', true)}
+        {testoCampo('natiAl', 'NATI AL', 4, false, '', true)}
+        <span id={id('anni')} className="sg-sotto" style={{ gridColumn: '1 / -1', marginBottom: 6 }}>
+          Il corso va in cima per chi è nato in questi anni. Vuoti: sta a parte, «senza fascia d’età». Solo NATI AL: quell’anno e prima.
+        </span>
         <Campo id={id('orari')} etichetta="ORARI · UNO PER RIGA" largo>
           <textarea
             id={id('orari')}

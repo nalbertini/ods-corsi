@@ -10,6 +10,24 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.14.1 — 3 ottobre 2026
+
+### Risolto
+
+- Tasti più comodi in IMPOSTAZIONI e menu del telefono che si usa bene da tastiera
+
+## 0.14.0 — 3 ottobre 2026
+
+### Novità
+
+- Nel modulo di iscrizione i corsi giusti per l'età vengono per primi, con età e orari
+
+## 0.13.2 — 3 ottobre 2026
+
+### Risolto
+
+- In IMPOSTAZIONI errori e voci del timer si leggono senza parole da informatici
+
 ## 0.13.1 — 3 ottobre 2026
 
 ### Risolto
