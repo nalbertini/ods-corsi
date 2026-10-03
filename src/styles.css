@@ -1073,6 +1073,21 @@ a.sg-btn { text-decoration: none; }
 
 /* La settimana */
 .sg-griglia-scorre { overflow-x: auto; }
+.sg-sett-titolo { min-width: 240px; text-align: center; font-size: 18px; font-weight: 700; letter-spacing: 0.06em; }
+/* Il telefono: la striscia dei sette giorni, e le lezioni di quello scelto in colonna. */
+.sg-giorni-tel { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.sg-giorno-tel {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 56px; padding: 6px 0;
+  border: 2px solid var(--line-soft); border-bottom-width: 4px; color: var(--dim);
+}
+.sg-giorno-tel[data-oggi='true'] { border-bottom-color: var(--giallo); color: var(--giallo-testo); }
+.sg-giorno-tel[aria-pressed='true'] { background: var(--surface); border-color: var(--text); color: var(--text); }
+.sg-giorno-tel[aria-pressed='true'][data-oggi='true'] { border-bottom-color: var(--giallo); }
+.sg-giorno-lista { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 6px; }
+@media (max-width: 767px) {
+  /* Frecce e titolo su una riga; OGGI e le sale vanno sotto. */
+  .sg-sett-titolo { flex: 1 1 calc(100% - 128px); min-width: 0; font-size: 17px; white-space: nowrap; }
+}
 .sg-griglia { display: grid; grid-template-columns: 56px repeat(7, minmax(120px, 1fr)); gap: 6px; min-width: 900px; }
 .sg-giorno { display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid var(--line-soft); color: var(--dim); }
 .sg-giorno[data-oggi='true'] { border-bottom-color: var(--giallo); color: var(--giallo-testo); }

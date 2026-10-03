@@ -4,6 +4,7 @@ import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/
 import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../../lib/sala'
 import { dati, type Dati } from '../../lib/dati'
 import { Back } from '../Icons'
+import { useSchermo } from '../../lib/largo'
 import type { ChiProva } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
 import { Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
@@ -76,6 +77,15 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
   const adesso = Date.now()
   const lezione = sett.dato?.find((l) => l.id === aperta) ?? null
 
+  // Sul telefono sette colonne non ci stanno: un giorno per volta, scelto
+  // dalla striscia dei giorni; da sé oggi, se è in questa settimana.
+  const telefono = useSchermo('(max-width: 767px)')
+  const [giornoTel, setGiornoTel] = useState<string | null>(null)
+  const chiavi = giorni.map(chiaveGiorno)
+  const delGiorno = giornoTel && chiavi.includes(giornoTel) ? giornoTel : chiavi.includes(oggi) ? oggi : chiavi[0]
+  const lezioniDelGiorno = lezioni.filter((l) => chiaveGiorno(new Date(l.inizio)) === delGiorno)
+  const oreDelGiorno = [...new Set(lezioniDelGiorno.map((l) => oraDi(l.inizio)))].sort()
+
   return (
     <>
       <Testa
@@ -104,7 +114,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
         <button type="button" className="icon-btn" aria-label="Settimana prima" onClick={() => setPrimo(piu(primo, -7))}>
           <Back />
         </button>
-        <span className="ob" style={{ minWidth: 240, textAlign: 'center', fontSize: 18, fontWeight: 700, letterSpacing: '0.06em' }}>{titolo(primo)}</span>
+        <span className="ob sg-sett-titolo">{titolo(primo)}</span>
         <button type="button" className="icon-btn" aria-label="Settimana dopo" onClick={() => setPrimo(piu(primo, 7))}>
           <span style={{ transform: 'scaleX(-1)', display: 'flex' }}>
             <Back />
@@ -123,43 +133,76 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
 
       {sett.guaio && <Guaio testo={sett.guaio} />}
 
-      <div className="sg-griglia-scorre">
-        <div className="sg-griglia">
-          <span />
-          {giorni.map((g) => {
-            const k = chiaveGiorno(g)
-            return (
-              <div key={k} className="sg-giorno" data-oggi={k === oggi}>
-                <span className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em' }}>{CORTI[g.getDay()]}</span>
-                <span className="num" style={{ fontSize: 20, fontWeight: 700 }}>{g.getDate()}</span>
-              </div>
-            )
-          })}
-
-          {sett.dato === null && !sett.guaio && <p className="sg-sotto" style={{ gridColumn: '2 / -1' }}>Sto leggendo la settimana…</p>}
-          {sett.dato !== null && ore.length === 0 && (
-            <p className="sg-sotto" style={{ gridColumn: '2 / -1' }}>
-              Nessuna lezione {sala ? 'in questa sala, ' : ''}in questa settimana.
-            </p>
+      {telefono ? (
+        <>
+          <div className="sg-giorni-tel" role="group" aria-label="Giorno">
+            {giorni.map((g) => {
+              const k = chiaveGiorno(g)
+              return (
+                <button key={k} type="button" className="sg-giorno-tel" aria-pressed={k === delGiorno} data-oggi={k === oggi} onClick={() => setGiornoTel(k)}>
+                  <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em' }}>{CORTI[g.getDay()]}</span>
+                  <span className="num" style={{ fontSize: 20, fontWeight: 700 }}>{g.getDate()}</span>
+                </button>
+              )
+            })}
+          </div>
+          {sett.dato === null && !sett.guaio && <p className="sg-sotto">Sto leggendo la settimana…</p>}
+          {sett.dato !== null && oreDelGiorno.length === 0 && (
+            <p className="sg-sotto">Nessuna lezione {sala ? 'in questa sala ' : ''}in questo giorno.</p>
           )}
-
-          {ore.map((ora) => (
-            <Fila key={ora} ora={ora}>
-              {giorni.map((g) => {
-                const k = chiaveGiorno(g)
-                const qui = lezioni.filter((l) => chiaveGiorno(new Date(l.inizio)) === k && oraDi(l.inizio) === ora)
-                return (
-                  <div key={k} className="sg-casella" data-vuota={qui.length === 0}>
-                    {qui.map((l) => (
+          <div className="sg-giorno-lista">
+            {oreDelGiorno.map((ora) => (
+              <Fila key={ora} ora={ora}>
+                <div className="sg-casella">
+                  {lezioniDelGiorno
+                    .filter((l) => oraDi(l.inizio) === ora)
+                    .map((l) => (
                       <Tessera key={l.id} l={l} passata={Date.parse(l.fine) < adesso} onApri={() => setAperta(l.id)} />
                     ))}
-                  </div>
-                )
-              })}
-            </Fila>
-          ))}
+                </div>
+              </Fila>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="sg-griglia-scorre">
+          <div className="sg-griglia">
+            <span />
+            {giorni.map((g) => {
+              const k = chiaveGiorno(g)
+              return (
+                <div key={k} className="sg-giorno" data-oggi={k === oggi}>
+                  <span className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em' }}>{CORTI[g.getDay()]}</span>
+                  <span className="num" style={{ fontSize: 20, fontWeight: 700 }}>{g.getDate()}</span>
+                </div>
+              )
+            })}
+
+            {sett.dato === null && !sett.guaio && <p className="sg-sotto" style={{ gridColumn: '2 / -1' }}>Sto leggendo la settimana…</p>}
+            {sett.dato !== null && ore.length === 0 && (
+              <p className="sg-sotto" style={{ gridColumn: '2 / -1' }}>
+                Nessuna lezione {sala ? 'in questa sala, ' : ''}in questa settimana.
+              </p>
+            )}
+
+            {ore.map((ora) => (
+              <Fila key={ora} ora={ora}>
+                {giorni.map((g) => {
+                  const k = chiaveGiorno(g)
+                  const qui = lezioni.filter((l) => chiaveGiorno(new Date(l.inizio)) === k && oraDi(l.inizio) === ora)
+                  return (
+                    <div key={k} className="sg-casella" data-vuota={qui.length === 0}>
+                      {qui.map((l) => (
+                        <Tessera key={l.id} l={l} passata={Date.parse(l.fine) < adesso} onApri={() => setAperta(l.id)} />
+                      ))}
+                    </div>
+                  )
+                })}
+              </Fila>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="row sg-legenda">
         <span className="row" style={{ gap: 6 }}>
