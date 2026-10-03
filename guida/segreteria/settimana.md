@@ -23,7 +23,8 @@ In alto:
 
 - le frecce spostano di una settimana, **OGGI** riporta a quella corrente;
 - i tasti delle sale (**TUTTE**, **TATAMI**, …) fanno vedere una sala sola;
-- sotto il titolo c'è scritto fino a che giorno è pronto il calendario.
+- sotto il titolo c'è scritto fino a che giorno è pronto il calendario, cioè
+  fin dove ci sono le lezioni dell'orario (le straordinarie non contano).
 
 ## Aprire una lezione
 
