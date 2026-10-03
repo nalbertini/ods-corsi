@@ -220,7 +220,7 @@ export function useOrdina<T, K extends string>(colonne: Record<K, (x: T) => Valo
     )
     const ariaSort = verso === 1 ? 'ascending' : verso === -1 ? 'descending' : undefined
     return th ? (
-      <th key={per} scope={riga ? 'row' : 'col'} className={className} aria-sort={ariaSort}>
+      <th key={per} scope={riga ? 'row' : 'col'} className={className} style={destra ? { textAlign: 'right' } : undefined} aria-sort={ariaSort}>
         {tasto}
       </th>
     ) : (

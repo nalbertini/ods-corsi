@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { eIndirizzoGuida, esistePagina, INDIRIZZO_GUIDA, leggiPagina, paginaDi, risolvi } from '../lib/guida'
 import { Back } from './Icons'
+import { useOrdina } from './segreteria/comune'
 
 /**
  * La guida, dentro l'app: una pagina della cartella `guida/` per volta.
@@ -173,22 +174,32 @@ function Tabella({ rr, pagina }: { rr: string[]; pagina: string }) {
   const allinea = separa ? celle(rr[1]).map((c) => (c.startsWith(':') && c.endsWith(':') ? 'center' : c.endsWith(':') ? 'right' : undefined)) : []
   const corpo = (separa ? rr.slice(2) : rr).map(celle)
   const vuoteInTesta = !!testa && testa.every((c) => !c)
+  // Si ordina per il testo che si legge, senza i segni del Markdown.
+  const { ordina, colonna } = useOrdina<string[], string>(
+    Object.fromEntries((testa ?? []).map((_, k) => [String(k), (riga: string[]) => testoDi(riga[k] ?? '')])),
+  )
   return (
     <div className="guida-tabella">
       <table>
         {testa && !vuoteInTesta && (
           <thead>
             <tr>
-              {testa.map((c, k) => (
-                <th key={k} style={{ textAlign: allinea[k] }}>
-                  {linea(c, pagina)}
-                </th>
-              ))}
+              {testa.map((c, k) =>
+                // Non si ordina una colonna senza nome (non si saprebbe cosa si
+                // tocca), né una con lo stesso testo in ogni riga, come «Apri».
+                c && new Set(corpo.map((riga) => testoDi(riga[k] ?? ''))).size > 1 ? (
+                  colonna(String(k), linea(c, pagina), { th: true, className: '', destra: allinea[k] === 'right' })
+                ) : (
+                  <th key={k} style={{ textAlign: allinea[k] }}>
+                    {linea(c, pagina)}
+                  </th>
+                ),
+              )}
             </tr>
           </thead>
         )}
         <tbody>
-          {corpo.map((riga, j) => (
+          {ordina(corpo).map((riga, j) => (
             <tr key={j}>
               {riga.map((c, k) => (
                 <td key={k} style={{ textAlign: allinea[k] }}>
@@ -202,6 +213,9 @@ function Tabella({ rr, pagina }: { rr: string[]; pagina: string }) {
     </div>
   )
 }
+
+/** Il testo di una cella come si legge: `codice`, **grassetto** e [collegamenti](x.md) senza i segni. */
+const testoDi = (t: string) => t.replace(PEZZI, (_, codice, grassetto, corsivo, testo, _href, auto) => codice ?? grassetto ?? corsivo ?? testo ?? auto ?? '').replace(/\*\*|\*/g, '')
 
 /**
  * Il testo dentro una riga: `codice`, **grassetto**, *corsivo*,
