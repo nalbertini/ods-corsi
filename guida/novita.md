@@ -10,6 +10,17 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.5.0 — 3 ottobre 2026
+
+### Novità
+
+- Il tablet di sala dice qual è la prossima lezione e da che ora ci si segna
+
+### Risolto
+
+- Senza rete il tablet di sala tiene le presenze e le manda quando torna
+- Sul tablet di sala la conferma non copre più i nomi e il conteggio non si taglia
+
 ## 0.4.7 — 3 ottobre 2026
 
 ### Risolto
