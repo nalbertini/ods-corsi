@@ -91,16 +91,26 @@ SEGNARTI?**.
 2. Toccare **il proprio nome** (nome e iniziale del cognome: «Giulia F.»; se
    ci sono due «Giulia F.» compare «Giulia Fon.»).
 3. In basso compare **BUON ALLENAMENTO, GIULIA!**. Chi ha toccato il nome
-   sbagliato preme **ANNULLA** nella fascia in basso (resta qualche secondo;
-   l'annullo vale per due minuti).
+   sbagliato preme **ANNULLA** nella fascia in basso, che resta dieci secondi.
+   L'annullo vale per due minuti: in quel tempo, toccando di nuovo il nome,
+   **ANNULLA** ricompare.
 
 Altri messaggi possibili:
 
-- **… È GIÀ TRA I PRESENTI** — il nome era già segnato. Se non era lui, va detto
+- **… È GIÀ TRA I PRESENTI** — il nome era già segnato. Se l'ha segnato questo
+  tablet da meno di due minuti c'è **ANNULLA**; se no, e non era lui, va detto
   all'istruttore.
 - **L'ISTRUTTORE HA GIÀ SEGNATO …** — l'avete già segnato voi (di solito
   assente): il tablet non scavalca l'istruttore. Se c'era, lo correggete voi.
-- **NON È ANDATA** — la rete o il server non hanno risposto: riprovare.
+- **NON È ANDATA** — il server ha detto di no (per esempio la lezione non si
+  può più segnare): la fascia dice perché.
+
+**Senza rete** la presenza non si perde: il nome resta segnato, con il bordo
+giallo e **IN ATTESA DI RETE**, e la fascia dice che la presenza è salvata sul
+tablet. Parte da sola appena la rete torna, anche se intanto il tablet si
+riavvia; in alto la spia **IN ATTESA DI RETE · …** dice quante ne aspettano.
+Non serve ritoccare il nome. Una presenza che arriva dopo la fine della
+lezione risulta **SEGNATO DOPO**.
 
 Chi non trova il suo nome non è iscritto a quel corso: va detto alla segreteria.
 
@@ -144,7 +154,8 @@ iniziale.
 6. **ESCI** quando avete finito. Se ve ne dimenticate, dopo **2 minuti** senza
    tocchi l'area si chiude da sola: il PIN non resta aperto in sala.
 
-Dopo troppi PIN sbagliati il tablet si blocca per un po'. Il PIN lo dà e lo
+Dopo 5 PIN sbagliati il tablet si blocca per 5 minuti: dal secondo errore lo
+avvisa. Intanto l'appello si fa dall'app sul telefono. Il PIN lo dà e lo
 cambia la segreteria.
 
 ### La vostra presenza
