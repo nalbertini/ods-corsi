@@ -1339,14 +1339,37 @@ a.sg-btn { text-decoration: none; }
   .sg-corpo { padding: calc(var(--safe-t) + 20px) 20px 20px; }
 }
 
+/* Sul telefono il menu sta dietro una barra in cima: il marchio e MENU, col numero di quello che aspetta. Aperto copre la sezione,
+   con le voci di tutti i giorni in cima e le altre sotto ALTRO. */
+.sg-barra-tel, .sg-voci-altro { display: none; }
 @media (max-width: 767px) {
   .sg { flex-direction: column; }
-  .sg-menu { width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px; padding: calc(var(--safe-t) + 12px) 16px 12px; border-right: none; border-bottom: 2px solid var(--line-soft); overflow: visible; }
-  .sg-menu > .grow, .sg-chi > span:not(.sg-bollino) { display: none; }
-  .sg-voci { flex-direction: row; flex-wrap: wrap; }
-  .sg-voce { border-left: none; border-bottom: 4px solid transparent; }
-  .sg-voce[aria-current='page'] { border-bottom-color: var(--rosso); }
-  .sg-chi { flex-direction: row; align-items: center; padding: 6px 10px; }
+  .sg-barra-tel {
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    padding: calc(var(--safe-t) + 8px) 8px 8px 16px; background: var(--menu); border-bottom: 2px solid var(--line-soft);
+  }
+  /* 8 + 44 + 8 + il bordo: alta 62, ed è lì che il menu aperto comincia. */
+  .sg-tasto-menu {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;
+    border: 2px solid var(--line); color: var(--text);
+    font-family: var(--cond); font-size: 15px; font-weight: 700; letter-spacing: 0.16em;
+  }
+  .sg-tasto-menu[aria-expanded='true'] { border-color: var(--text); }
+  .sg-tasto-menu .sg-tag { font-size: 12px; padding: 1px 6px; }
+
+  .sg-menu {
+    display: none; position: absolute; z-index: 5; inset: calc(var(--safe-t) + 62px) 0 0 0;
+    width: auto; gap: 20px; padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 24px); border-right: none;
+  }
+  .sg-menu[data-aperto='true'] { display: flex; }
+  .sg-marchio, .sg-menu > .grow { display: none; }
+  .sg-voce[data-secondaria='true'] { order: 2; min-height: 40px; font-size: 14px; }
+  .sg-voci-altro {
+    display: block; order: 1; margin: 18px 12px 4px; padding-top: 14px; border-top: 2px solid var(--line-soft);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim);
+  }
+  .sg-chi { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+  .sg-chi > .sg-bollino { margin-top: 0; }
   .sg-corpo { padding: 16px; }
 }
 

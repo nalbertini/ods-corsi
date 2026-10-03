@@ -31,20 +31,25 @@ export interface Destinazione {
   lezione?: { id: string; inizio: string }
 }
 
-const VOCI: Array<[Voce, string]> = [
+/**
+ * Le voci del menu. Quelle segnate `true` sul telefono vanno in fondo, sotto
+ * ALTRO: listino, accessi, import si fanno dal computer, e in cima restano
+ * quelle da guardare al volo. Sul computer l'ordine è questo.
+ */
+const VOCI: Array<[Voce, string, boolean?]> = [
   ['settimana', 'SETTIMANA'],
-  ['corsi', 'CORSI'],
+  ['corsi', 'CORSI', true],
   ['iscritti', 'ISCRITTI'],
   ['richieste', 'RICHIESTE ONLINE'],
   ['presenze', 'PRESENZE'],
   ['segnalate', 'PRESENZE SEGNALATE'],
-  ['statistiche', 'STATISTICHE'],
+  ['statistiche', 'STATISTICHE', true],
   ['istruttori', 'PRESENZE ISTRUTTORI'],
-  ['importa', 'IMPORTA DA EXCEL'],
-  ['personale', 'ISTRUTTORI E ACCESSI'],
-  ['esercizi', 'ESERCIZI'],
-  ['listino', 'LISTINO'],
-  ['regole', 'IMPOSTAZIONI'],
+  ['importa', 'IMPORTA DA EXCEL', true],
+  ['personale', 'ISTRUTTORI E ACCESSI', true],
+  ['esercizi', 'ESERCIZI', true],
+  ['listino', 'LISTINO', true],
+  ['regole', 'IMPOSTAZIONI', true],
   ['segnalazioni', 'SEGNALAZIONI'],
 ]
 
@@ -96,8 +101,9 @@ function CopiaLink() {
  * La segreteria: il menu a sinistra e la sezione scelta a destra.
  *
  * È pensata per il computer della reception, non per il telefono: le tabelle
- * vogliono spazio. Su uno schermo stretto il menu va in cima e le colonne si
- * mettono una sotto l'altra, così si può comunque dare un'occhiata.
+ * vogliono spazio. Sul telefono il menu si chiude dietro una barra in cima,
+ * con la voce aperta e il tasto MENU, e le colonne si mettono una sotto
+ * l'altra, così si può comunque dare un'occhiata.
  */
 export function Segreteria({
   nome,
@@ -116,10 +122,19 @@ export function Segreteria({
   const [d, setD] = useState<DatiSegreteria | null>(null)
   const [voce, setVoce] = useState<Voce>('settimana')
   const [dove, setDove] = useState<Destinazione>({})
+  // Il menu del telefono, aperto o chiuso; sul computer non conta.
+  const [aperto, setAperto] = useState(false)
   const vai = (v: Voce, d: Destinazione = {}) => {
     setDove(d)
     setVoce(v)
+    setAperto(false)
   }
+  useEffect(() => {
+    if (!aperto) return
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setAperto(false)
+    window.addEventListener('keydown', esc)
+    return () => window.removeEventListener('keydown', esc)
+  }, [aperto])
 
   // Quante presenze di istruttori aspettano la segreteria: si vede dal menu,
   // da qualunque voce. Si rilegge cambiando voce; senza, il menu non lo dice.
@@ -166,6 +181,8 @@ export function Segreteria({
     }
   }, [d, voce, giroConte])
   const voci = VOCI.filter(([id]) => id !== 'segnalate' || (d?.modo === 'prova' && !!d.segnalate))
+  // Il numero sul tasto MENU: tutto quello che aspetta, da qualunque voce.
+  const daFare = daConfermare + daRispondere + (voci.some(([id]) => id === 'segnalate') ? segnalateDaVedere : 0)
 
   const [guaio, setGuaio] = useState(false)
   const [tentativo, setTentativo] = useState(0)
@@ -183,8 +200,30 @@ export function Segreteria({
 
   return (
     <div className="sg">
-      <nav className="sg-menu" aria-label="Segreteria">
-        <div className="row" style={{ gap: 10, padding: '0 8px' }}>
+      <header className="sg-barra-tel">
+        <Logo width={36} />
+        <span className="stack grow" style={{ gap: 2 }}>
+          <span className="ob" style={{ fontSize: 18, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
+          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
+        </span>
+        <button
+          type="button"
+          className="num sg-tasto-menu"
+          aria-expanded={aperto}
+          aria-controls="sg-menu"
+          aria-label={!aperto && daFare > 0 ? `Menu, ${daFare} da guardare` : undefined}
+          onClick={() => setAperto((a) => !a)}
+        >
+          {aperto ? 'CHIUDI' : 'MENU'}
+          {!aperto && daFare > 0 && (
+            <span className="num sg-tag" data-tipo="manca" aria-hidden="true">
+              {daFare}
+            </span>
+          )}
+        </button>
+      </header>
+      <nav className="sg-menu" id="sg-menu" aria-label="Segreteria" data-aperto={aperto}>
+        <div className="row sg-marchio" style={{ gap: 10, padding: '0 8px' }}>
           <Logo width={46} />
           <span className="stack" style={{ gap: 2 }}>
             <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS CORSI</span>
@@ -192,8 +231,11 @@ export function Segreteria({
           </span>
         </div>
         <div className="sg-voci">
-          {voci.map(([id, testo]) => (
-            <button key={id} type="button" className="num sg-voce" aria-current={voce === id ? 'page' : undefined} onClick={() => vai(id)}>
+          <span className="num sg-voci-altro" aria-hidden="true">
+            ALTRO
+          </span>
+          {voci.map(([id, testo, secondaria]) => (
+            <button key={id} type="button" className="num sg-voce" data-secondaria={secondaria} aria-current={voce === id ? 'page' : undefined} onClick={() => vai(id)}>
               {testo}
               {id === 'segnalate' && segnalateDaVedere > 0 && (
                 <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${segnalateDaVedere} da vedere`}>

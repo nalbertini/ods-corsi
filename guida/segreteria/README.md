@@ -50,6 +50,13 @@ In fondo al menu:
 In prova c'è anche **Riparti
 dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
 
+Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
+numero rosso accanto dice quante cose aspettano (presenze da confermare,
+segnalazioni da rispondere). In cima ci sono le voci da guardare al volo;
+**CORSI**, **STATISTICHE**, **IMPORTA DA EXCEL**, **ISTRUTTORI E ACCESSI**,
+**ESERCIZI**, **LISTINO** e **IMPOSTAZIONI** stanno sotto **ALTRO**, perché si
+fanno meglio dal computer.
+
 ## Ordinare le tabelle
 
 Le tabelle (iscritti, richieste, presenze segnalate, presenze degli
