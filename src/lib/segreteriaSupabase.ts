@@ -1214,8 +1214,17 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.from('impostazioni').update(riga).eq('id', true))
     },
 
-    async scadute() {
-      const { count, error } = await db.from('presenze_scadute').select('id', { count: 'exact', head: true })
+    async scadute(mesi) {
+      // Coi mesi salvati conta la vista, la stessa che usa la pulizia; con
+      // altri mesi si conta da qui, senza salvarli. Il limite viene
+      // dall'orologio del dispositivo: al più un giorno di scarto dal server,
+      // e CANCELLA ORA riconta comunque.
+      const limite = new Date()
+      if (mesi !== undefined) limite.setMonth(limite.getMonth() - mesi)
+      const { count, error } =
+        mesi === undefined
+          ? await db.from('presenze_scadute').select('id', { count: 'exact', head: true })
+          : await db.from('presenze').select('id, sessioni!inner ( inizio )', { count: 'exact', head: true }).lt('sessioni.inizio', limite.toISOString())
       if (error) throw guaio(error)
       return count ?? 0
     },
