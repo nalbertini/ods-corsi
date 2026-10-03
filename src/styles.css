@@ -557,7 +557,11 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .modulo-largo { grid-column: 1 / -1; }
 .modulo-etichetta { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
 .modulo-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.modulo-testa { gap: 10px; padding-top: 14px; }
+.modulo-testa { gap: 10px; padding-top: 14px; flex-wrap: wrap; }
+/* INDIETRO su una riga, anche quando chiede: se non c'è posto scende il bollino PROVA. */
+.modulo-testa .btn { white-space: nowrap; }
+/* INDIETRO che chiede (DueTocchi): in rosso, perché le risposte non tornano. */
+.modulo-testa .btn[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso-testo); }
 .modulo-piede { gap: 10px; padding-bottom: 28px; }
 /* L'invio è il tasto che chiude tutto: alto come `.btn`, non come gli altri passi. */
 .modulo-piede .passo-btn { min-height: 56px; }
