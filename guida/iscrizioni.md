@@ -8,8 +8,8 @@
 lista di passi scritta ogni volta su WhatsApp. Non chiede nessun accesso.
 
 L'indirizzo è <https://nalbertini.github.io/ods-corsi/iscrizioni/>. In
-segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, sempre in vista in
-fondo al menu, anche quando il menu scorre.
+segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu (dal
+computer e dal tablet resta sempre in vista, anche quando il menu scorre).
 
 ## Cosa c'è nella pagina
 
