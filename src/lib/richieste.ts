@@ -106,11 +106,12 @@ export interface DatiRichieste {
 }
 
 /** I file da caricare, nell'ordine in cui si chiedono. */
-export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string; obbligatorio: boolean }> = [
+export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string; obbligatorio: boolean; seManca?: string }> = [
   { tipo: 'modulo', etichetta: 'MODULO FIRMATO', dettaglio: 'Una foto, o il PDF firmato dal telefono.', obbligatorio: true },
   { tipo: 'documento', etichetta: "CARTA D'IDENTITÀ", dettaglio: 'Il fronte. Per un minore, quella del genitore.', obbligatorio: true },
   { tipo: 'documento-retro', etichetta: 'RETRO DEL DOCUMENTO', dettaglio: 'Se il fronte non basta.', obbligatorio: false },
-  { tipo: 'certificato', etichetta: 'CERTIFICATO MEDICO', dettaglio: 'Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria.', obbligatorio: false },
+  // Si chiede dai 6 anni ma non ferma la richiesta: «facoltativo» direbbe che non serve.
+  { tipo: 'certificato', etichetta: 'CERTIFICATO MEDICO', dettaglio: 'Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria.', obbligatorio: false, seManca: 'PUOI PORTARLO DOPO' },
   { tipo: 'ricevuta', etichetta: 'RICEVUTA DEL PAGAMENTO', dettaglio: 'La quota associativa e il trimestre, oppure l’annuale.', obbligatorio: true },
 ]
 
@@ -187,11 +188,19 @@ const CF_CORTO = 'Un campo non va: il codice fiscale ha 16 caratteri, lettere e 
 const CF_NOME = 'Il codice fiscale non torna con nome e cognome: scrivili tutti, come sul documento'
 const CF_NOME_GENITORE = 'Il codice fiscale del genitore non torna con il suo nome e cognome: scrivili tutti, come sul documento'
 
+/** Sotto il campo, cosa fare con un codice che non ha 16 lettere e numeri: quanti ne mancano o quanti toglierne. */
+function quantiCaratteri(cf: string): string {
+  if (/[^A-Z0-9]/.test(cf)) return 'Solo lettere e numeri'
+  const n = Math.abs(16 - cf.length)
+  const caratteri = n === 1 ? '1 carattere' : `${n} caratteri`
+  return cf.length < 16 ? `${n === 1 ? 'Manca' : 'Mancano'} ${caratteri}` : `Togli ${caratteri}`
+}
+
 /** Il codice fiscale di chi si iscrive o del genitore: scritto giusto, e di chi deve essere. */
 function guaiCf(campo: 'codiceFiscale' | 'genitoreCodiceFiscale', grezzo: string, di: string): Guaio | null {
   const cf = pulisciCf(grezzo)
   if (!cf) return null
-  if (!/^[A-Z0-9]{16}$/.test(cf)) return { campo, messaggio: CF_CORTO, testo: 'Sono 16 caratteri, lettere e numeri' }
+  if (!/^[A-Z0-9]{16}$/.test(cf)) return { campo, messaggio: CF_CORTO, testo: quantiCaratteri(cf) }
   if (!cfValido(cf))
     return { campo, messaggio: `Il codice fiscale${di && ' ' + di} non torna: controlla di averlo copiato giusto`, testo: 'Non torna: controlla lettere e numeri, uno per uno' }
   return null

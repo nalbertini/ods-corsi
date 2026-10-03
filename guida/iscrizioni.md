@@ -37,7 +37,7 @@ Chi si iscrive risponde alle domande dal telefono:
 
 - **Chi si iscrive**: nome, cognome, data e luogo di nascita, codice fiscale.
   Se dalla data di nascita risulta **minorenne**, il modulo chiede anche i dati
-  del **genitore** e il modulo per minori firmato da lui.
+  del **genitore** e il modulo per minori, che firma il genitore.
 - **Residenza**, e **come raggiungerti** (email, telefono e, se si vuole, un
   **telefono 2**; per un minore, quelli del genitore).
 - **I corsi** a cui iscriversi e **come paghi** (trimestre o annuale).
@@ -56,7 +56,8 @@ Chi si iscrive risponde alle domande dal telefono:
   medico** se ce l'ha già, e la ricevuta del pagamento. Il certificato si
   chiede solo quando serve: dai 6 anni quello normale, dai 12 quello
   agonistico se tra i corsi scelti c'è judo, aikido o lotta (lo dice il nome
-  del corso). Si può anche portare dopo in segreteria, ma senza non si
+  del corso). Si può anche portare dopo in segreteria (accanto al nome
+  c'è **PUOI PORTARLO DOPO**), ma senza non si
   partecipa alle lezioni: se non è stato caricato, lo ricorda **RICHIESTA
   ARRIVATA**. Documento e certificato la segreteria li stampa, li tiene su
   carta e li cancella dall'app.
