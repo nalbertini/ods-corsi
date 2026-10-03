@@ -1273,7 +1273,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-cassetto:focus, .sg-dialogo:focus { outline: none; }
 /* La conferma sta sopra tutto, anche sopra il cassetto della lezione. */
 .sg-conferma-velo { z-index: 40; }
-.sg-conferma { z-index: 41; gap: 12px; }
+/* Due classi: .sg-dialogo viene dopo nel foglio e col suo z-index 11 metteva il velo sopra la conferma. */
+.sg-dialogo.sg-conferma { z-index: 41; gap: 12px; }
 .sg-conferma-domanda { margin: 0; font-family: var(--cond); font-size: 24px; font-weight: 700; letter-spacing: 0.02em; line-height: 1.15; }
 .sg-conferma-resto { margin: 0; font-size: 16px; line-height: 1.5; color: var(--sec); white-space: pre-line; }
 .sg-conferma-tasti { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 8px; }
