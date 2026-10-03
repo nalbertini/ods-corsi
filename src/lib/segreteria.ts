@@ -637,12 +637,6 @@ export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: strin
 export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string) =>
   ['valido', 'in_scadenza'].includes(comeCertificato(p.certificato, oggi)) && comePaga(p, oggi) === 'pagato'
 
-export const PAGAMENTI: Array<[StatoPagamento, string]> = [
-  ['da_pagare', 'DA PAGARE'],
-  ['in_parte', 'IN PARTE'],
-  ['pagato', 'PAGATO'],
-]
-
 /** Un giorno `AAAA-MM-GG` spostato di tanti giorni, senza passare dai fusi. */
 function spostaGiorno(g: string, giorni: number) {
   const [a, m, d] = g.split('-').map(Number)

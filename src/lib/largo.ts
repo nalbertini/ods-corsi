@@ -14,11 +14,13 @@ export function useLargo(): boolean {
 }
 
 /**
- * Sotto questa soglia la segreteria mette le colonne una sotto l'altra: una
- * scheda accanto all'elenco finirebbe in fondo alla pagina. È la stessa di
- * `@media (max-width: 1000px)` in `styles.css`.
+ * Sotto questa soglia CORSI e RICHIESTE non mettono la scheda accanto
+ * all'elenco: la aprono al posto suo. Il menu (240 px), l'elenco (470) e una
+ * scheda che si legga (almeno 420) vogliono 1240 px: a 1024, il portatile
+ * della reception, la scheda restava larga 210 e i campi uscivano. È la
+ * stessa di `@media (max-width: 1240px)` in `styles.css`.
  */
-export const STRETTO = '(max-width: 1000px)'
+export const STRETTO = '(max-width: 1240px)'
 
 /** Se lo schermo risponde a una media query, e si aggiorna quando cambia. */
 export function useSchermo(query: string): boolean {
