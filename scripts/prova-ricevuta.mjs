@@ -14,7 +14,7 @@ import { writeFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/ricevute'; export { listinoDa, cosaNonVaListino, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
+      "export * from './src/lib/ricevute'; export { listinoDa, cosaNonVaListino, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'; export { archivio } from './src/lib/archivioProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -139,8 +139,8 @@ ok('il 31 agosto il saldo di Lotta 3 c’è, fra i primi', Array.isArray(fineAgo
 ok('il 1° settembre il saldo di Lotta 3 non c’è più, da nessuna parte', Array.isArray(settembre.primi) && Array.isArray(settembre.altri) ? [...settembre.primi, ...settembre.altri].includes('Lotta 3~0~saldo') : settembre.primi, false)
 
 console.log('I dati del socio')
-const adulto = { nome: 'Nicola', cognome: 'Albertini', natoIl: '1980-03-02', codiceFiscale: 'LBRNCL80C02L219X', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno' }
-const minore = { ...quella.intestatario, genitoreCodiceFiscale: 'LBRNCL80C02L219X' }
+const adulto = { nome: 'Nicola', cognome: 'Albertini', natoIl: '1980-03-02', codiceFiscale: 'LBRNCL80C02L219F', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno' }
+const minore = { ...quella.intestatario, genitoreCodiceFiscale: 'LBRNCL80C02L219F' }
 // Un giorno fisso: il minore della prova non deve diventare maggiorenne col calendario.
 const OGGI_SOCIO = new Date('2026-09-10')
 const manca = (campo, testo) => ({ campo, testo })
@@ -156,9 +156,25 @@ const quasi = { ...adulto, natoIl: '2008-09-20' }
 ok('alla data della ricevuta del 10 settembre è minore', prova(() => m.mancanoDatiSocio(quasi, new Date('2026-09-10')).minore), true)
 ok('alla data della ricevuta del 1° ottobre non più', prova(() => m.mancanoDatiSocio(quasi, new Date('2026-10-01')).minore), false)
 
+// Un codice fiscale scritto ma sbagliato non vale più di uno vuoto: sulla
+// ricevuta finirebbe un codice che l'Agenzia delle entrate rifiuta.
+ok('un adulto col codice fiscale «R»: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: 'R' }, OGGI_SOCIO).blocca), [manca('codiceFiscale', 'il codice fiscale non è giusto')])
+ok('un minore col suo codice fiscale «R»: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, codiceFiscale: 'R' }, OGGI_SOCIO).blocca), [manca('codiceFiscale', 'il codice fiscale del socio non è giusto')])
+ok('un minore col codice fiscale del genitore «F»: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, genitoreCodiceFiscale: 'F' }, OGGI_SOCIO).blocca), [manca('genitoreCodiceFiscale', 'il codice fiscale del genitore non è giusto')])
+ok('sedici caratteri con l’ultimo sbagliato: non è giusto', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: 'LBRNCL80C02L219X' }, OGGI_SOCIO).blocca), [manca('codiceFiscale', 'il codice fiscale non è giusto')])
+ok('un codice giusto scritto in minuscolo e con gli spazi: va', prova(() => m.mancanoDatiSocio({ ...minore, codiceFiscale: 'lbrmnl 14h53 l219x', genitoreCodiceFiscale: ' lbrncl80c02l219f ' }, OGGI_SOCIO).blocca), [])
+ok('un codice con l’omocodia (lettere al posto delle cifre): va', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: 'LBRNCL80C02L21VU' }, OGGI_SOCIO).blocca), [])
+
+console.log('Perché la ricevuta non si fa')
+ok('manca uno', prova(() => m.motivoBlocca([manca('codiceFiscale', 'il codice fiscale')])), 'Manca il codice fiscale: scrivilo nei DATI DEL SOCIO')
+ok('mancano due', prova(() => m.motivoBlocca([manca('genitore', 'il genitore'), manca('genitoreCodiceFiscale', 'il codice fiscale del genitore')])), 'Mancano il genitore e il codice fiscale del genitore: scrivili nei DATI DEL SOCIO')
+ok('uno sbagliato non «manca»', prova(() => m.motivoBlocca([manca('codiceFiscale', 'il codice fiscale non è giusto')])), 'Il codice fiscale non è giusto: correggilo nei DATI DEL SOCIO')
+ok('uno che manca e uno sbagliato', prova(() => m.motivoBlocca([manca('codiceFiscale', 'il codice fiscale del socio non è giusto'), manca('genitore', 'il genitore')])), 'Manca il genitore e il codice fiscale del socio non è giusto: correggili nei DATI DEL SOCIO')
+ok('niente', prova(() => m.motivoBlocca([])), '')
+
 console.log('A chi va la ricevuta')
-ok('un adulto: lui col suo codice fiscale', prova(() => m.ricevutaPer(adulto, false)), 'RICEVUTA PER ALBERTINI NICOLA · LBRNCL80C02L219X')
-ok('un minore: il genitore col suo', prova(() => m.ricevutaPer(minore, true)), 'RICEVUTA PER ALBERTINI NICOLA (GENITORE) · LBRNCL80C02L219X')
+ok('un adulto: lui col suo codice fiscale', prova(() => m.ricevutaPer(adulto, false)), 'RICEVUTA PER ALBERTINI NICOLA · LBRNCL80C02L219F')
+ok('un minore: il genitore col suo', prova(() => m.ricevutaPer(minore, true)), 'RICEVUTA PER ALBERTINI NICOLA (GENITORE) · LBRNCL80C02L219F')
 ok('un minore senza genitore: lo dice', prova(() => m.ricevutaPer({ ...minore, genitore: ' ', genitoreCodiceFiscale: undefined }, true)), 'RICEVUTA PER IL GENITORE · MANCA')
 ok('un adulto senza codice fiscale: solo il nome', prova(() => m.ricevutaPer({ ...adulto, codiceFiscale: '' }, false)), 'RICEVUTA PER ALBERTINI NICOLA')
 
@@ -173,6 +189,10 @@ ok('quel che la ricevuta non ha lo dà l’anagrafica', [fusi.cap, fusi.provinci
 ok('nome e cognome dalla persona', [fusi.nome, fusi.cognome], ['Manuela', 'Albertini'])
 ok('senza ricevuta: l’anagrafica', prova(() => m.intestatarioDa(null, an, chiE).indirizzo), 'Via Nuova 9')
 ok('senza niente: nome e cognome', prova(() => m.intestatarioDa(null, null, chiE)), chiE)
+
+console.log('I corsi della prova nel listino')
+// In prova le voci del corso vengono in cima solo se il suo nome è nel listino.
+for (const c of m.archivio.dati.corsi) ok(`«${c.nome}» trova le sue righe nel listino`, m.vociDelCorso(c.nome, '2026-09-10').length > 0, true)
 
 console.log('I PDF')
 const tante = {

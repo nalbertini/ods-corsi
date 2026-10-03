@@ -2,6 +2,7 @@ import { saldoAperto, VALIDITA } from './costi'
 import { LISTINO_PREDEFINITO, nomeCorso, type Listino } from './listino'
 import { minorenne, type DatiRichiesta } from './richieste'
 import { nomeProprio } from './nomi'
+import { cfValido } from './codiceFiscale'
 
 /**
  * Le ricevute dei pagamenti: la «ricevuta semplice» dell'associazione, come
@@ -293,9 +294,10 @@ export interface CampoCheManca {
  * Cosa manca nei dati del socio. Il codice fiscale la palestra lo vuole
  * sempre: per un adulto il suo; per un minore il suo e, siccome la ricevuta va
  * al genitore, anche nome e codice fiscale del genitore. Senza, la ricevuta
- * non si fa. L'indirizzo si può lasciare vuoto: lo si dice e basta. Minore o
- * no si decide al `giorno` della ricevuta, non a oggi. Solo l'app lo chiede,
- * il database no.
+ * non si fa, e nemmeno con un codice scritto sbagliato, che sulla ricevuta
+ * varrebbe quanto uno vuoto. L'indirizzo si può lasciare vuoto: lo si dice e
+ * basta. Minore o no si decide al `giorno` della ricevuta, non a oggi. Solo
+ * l'app lo chiede, il database no.
  */
 export function mancanoDatiSocio(i: IntestatarioRicevuta, giorno = new Date()) {
   const vuoto = (k: keyof IntestatarioRicevuta) => !String(i[k] ?? '').trim()
@@ -310,9 +312,24 @@ export function mancanoDatiSocio(i: IntestatarioRicevuta, giorno = new Date()) {
         ]
       : []),
   ]
-  const mancano = chiesti.filter((x) => vuoto(x.campo))
+  // Minuscole e spazi no: quando la si salva il codice diventa maiuscolo e attaccato.
+  const sbagliato = (k: keyof IntestatarioRicevuta) => (k === 'codiceFiscale' || k === 'genitoreCodiceFiscale') && !cfValido(String(i[k]).toUpperCase().replace(/\s/g, ''))
+  const mancano = chiesti.flatMap((x) => (vuoto(x.campo) ? [x] : sbagliato(x.campo) ? [{ ...x, testo: `${x.testo}${NON_GIUSTO}` }] : []))
   const solo = ({ campo, testo }: CampoCheManca): CampoCheManca => ({ campo, testo })
   return { minore, blocca: mancano.filter((x) => x.blocca).map(solo), avvisa: mancano.filter((x) => !x.blocca).map(solo) }
+}
+
+const NON_GIUSTO = ' non è giusto'
+const elenco = (x: string[]) => x.join(', ').replace(/, ([^,]*)$/, ' e $1')
+
+/** Perché la ricevuta non si fa, da `mancanoDatiSocio(…).blocca`; vuoto se si fa. */
+export function motivoBlocca(blocca: CampoCheManca[]): string {
+  if (!blocca.length) return ''
+  const sbagliati = blocca.filter((x) => x.testo.endsWith(NON_GIUSTO)).map((x) => x.testo)
+  const vuoti = blocca.filter((x) => !x.testo.endsWith(NON_GIUSTO)).map((x) => x.testo)
+  const frase = elenco([...(vuoti.length ? [`${vuoti.length > 1 ? 'mancano' : 'manca'} ${elenco(vuoti)}`] : []), ...sbagliati])
+  const fai = sbagliati.length ? 'correggil' : 'scrivil'
+  return `${frase[0].toUpperCase()}${frase.slice(1)}: ${fai}${blocca.length > 1 ? 'i' : 'o'} nei DATI DEL SOCIO`
 }
 
 /** La riga dei dati del socio chiusi: a chi va la ricevuta, per un minore il genitore che paga. */

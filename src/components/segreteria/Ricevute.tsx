@@ -9,6 +9,7 @@ import {
   METODI,
   nomeFileRicevuta,
   mancanoDatiSocio,
+  motivoBlocca,
   ricevutaPer,
   QUOTA,
   quoteDi,
@@ -258,6 +259,10 @@ export function NuovaRicevuta({
   const [note, setNote] = useState('')
   const [aggiungi, setAggiungi] = useState('')
   const [scontoSi, setScontoSi] = useState(true)
+  // I DATI DEL SOCIO aperti o chiusi si decide una volta, quando arrivano: poi
+  // li apre e chiude chi scrive. Se si chiudessero da sé appena è tutto a
+  // posto, si chiuderebbero sotto le dita, col fuoco e le lettere dopo persi.
+  const [socioAperto, setSocioAperto] = useState(false)
 
   const listino = partenza.dato?.[3].listino
   const gruppi = listino ? vociInDueGruppi(corsi, data, listino) : { primi: [], altri: [] }
@@ -277,6 +282,8 @@ export function NuovaRicevuta({
     if (!partenza.dato || voci) return
     const [intestatario, e, fatte, { listino: l }] = partenza.dato
     setSocio(intestatario)
+    const prima = mancanoDatiSocio(intestatario, new Date(data || oggi))
+    setSocioAperto(prima.blocca.length + prima.avvisa.length > 0)
     setEnte(e)
     const quotaPagata = fatte.some((r) => !r.annullataIl && r.voci.some((v) => v.descrizione.toUpperCase() === QUOTA && (!v.al || v.al >= oggi)))
     metti([
@@ -322,20 +329,21 @@ export function NuovaRicevuta({
   // Minore o no alla data della ricevuta: una fatta oggi con la data di ieri vale per ieri.
   const { minore, blocca, avvisa } = mancanoDatiSocio(socio, new Date(data || oggi))
   const manca = new Set(blocca.map((x) => x.campo))
+  const attenzione = new Set(avvisa.map((x) => x.campo))
   const elenco = (x: Array<{ testo: string }>) => x.map((y) => y.testo).join(', ').replace(/, ([^,]*)$/, ' e $1')
-  const bloccaTesto = blocca.length
-    ? `${blocca.length > 1 ? 'Mancano' : 'Manca'} ${elenco(blocca)}: ${blocca.length > 1 ? 'scrivili' : 'scrivilo'} nei DATI DEL SOCIO`
-    : ''
+  const bloccaTesto = motivoBlocca(blocca)
   const avvisaTesto = `Sulla ricevuta ${avvisa.length > 1 ? 'mancano' : 'manca'} ${elenco(avvisa)}`
-  const campoSocio = (k: keyof IntestatarioRicevuta, etichetta: string, o: { tipo?: string; largo?: boolean; max?: number } = {}) => (
+  const campoSocio = (k: keyof IntestatarioRicevuta, etichetta: string, o: { tipo?: string; largo?: boolean; max?: number; num?: boolean } = {}) => (
     <Campo id={`rs-${k}`} etichetta={etichetta} largo={o.largo} manca={manca.has(k)}>
       <input
         id={`rs-${k}`}
-        className="sg-campo"
+        // Il carattere stretto: a metà riga sul telefono i sedici del codice fiscale ci stanno tutti.
+        className={o.num ? 'sg-campo num' : 'sg-campo'}
         type={o.tipo ?? 'text'}
         maxLength={o.max ?? 120}
         value={socio[k] ?? ''}
         aria-invalid={manca.has(k) || undefined}
+        data-acceso={attenzione.has(k) || undefined}
         onChange={(e) => setSocio({ ...socio, [k]: e.target.value })}
       />
     </Campo>
@@ -490,7 +498,7 @@ export function NuovaRicevuta({
         )}
       </div>
 
-      <details open={blocca.length + avvisa.length > 0}>
+      <details open={socioAperto}>
         {/* Chiusi, i dati del socio dicono a chi va la ricevuta: per un minore, al genitore che paga oggi. */}
         <summary className="sg-etichetta sg-socio">DATI DEL SOCIO · {ricevutaPer(socio, minore)}</summary>
         <div className="sg-due" style={{ marginTop: 12 }}>
@@ -501,10 +509,10 @@ export function NuovaRicevuta({
           {campoSocio('comune', 'COMUNE', { max: 80 })}
           {campoSocio('provincia', 'PROVINCIA', { max: 2 })}
           {campoSocio('natoIl', 'NATO IL', { tipo: 'date' })}
-          {campoSocio('codiceFiscale', 'CODICE FISCALE', { max: 16 })}
+          {campoSocio('codiceFiscale', 'CODICE FISCALE', { max: 16, num: true })}
           {campoSocio('partitaIva', 'PARTITA IVA · FACOLTATIVA', { max: 11 })}
           {campoSocio('genitore', 'GENITORE · PER UN MINORE', { max: 160 })}
-          {campoSocio('genitoreCodiceFiscale', 'C.F. DEL GENITORE', { max: 16 })}
+          {campoSocio('genitoreCodiceFiscale', 'C.F. DEL GENITORE', { max: 16, num: true })}
         </div>
         <span style={{ fontSize: 12, color: 'var(--dim)' }}>
           Vengono dall’ultima ricevuta e, dove lì sono vuoti, dai DATI ANAGRAFICI della scheda. Qui si correggono per questa ricevuta; la scheda della persona non cambia.
