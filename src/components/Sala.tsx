@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { type Dati, dati as caricaDati, inProvaScelta, scegliProva } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
-import { CalendarioScreen } from './CalendarioScreen'
+import { Arretrato, CalendarioScreen } from './CalendarioScreen'
 import { AppelloScreen, type Conto } from './AppelloScreen'
 import { useLargo } from '../lib/largo'
 import { TIMER } from '../lib/aree'
@@ -83,7 +83,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
     )
   if (!d) return <p className="pad" style={{ color: 'var(--dim)', paddingTop: 20 }}>Un attimo…</p>
 
-  const esito = chiuso && <Esito lezione={chiuso} inCoda={inCoda} onVa={() => setChiuso(null)} />
+  const esito = chiuso && <Esito lezione={chiuso} inCoda={inCoda} onVa={() => setChiuso(null)} onRiapri={() => apriLezione(chiuso)} />
 
   return (
     <div ref={qui} style={{ display: 'contents' }}>
@@ -112,8 +112,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
         <div className="sala-due">
           <div className="sala-lato">
             {esito}
-            {segnalate}
-            <CalendarioScreen dati={d} onApri={apriLezione} apertaId={aperta?.id} conti={conti} soloDi={soloDi} />
+            <CalendarioScreen dati={d} onApri={apriLezione} apertaId={aperta?.id} conti={conti} soloDi={soloDi} arretrati={segnalate} />
           </div>
           <div className="sala-lato">
             {aperta ? (
@@ -156,8 +155,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
               rilegge, e si ritrova dov'era. */}
           <div hidden={!!aperta}>
             {esito}
-            {segnalate}
-            <CalendarioScreen dati={d} onApri={apriLezione} conti={conti} soloDi={soloDi} />
+            <CalendarioScreen dati={d} onApri={apriLezione} conti={conti} soloDi={soloDi} arretrati={segnalate} />
             <Strumenti onMieiTimer={onMieiTimer} />
           </div>
         </>
@@ -175,7 +173,7 @@ function SpiaCoda({ n }: { n: number }) {
   return (
     <div className="pad" style={{ paddingTop: 12 }}>
       <div className="spia-coda" role="status">
-        <span className="num spia-coda-quante">{n === 1 ? 'UN SEGNO DA INVIARE' : `${n} SEGNI DA INVIARE`}</span>
+        <span className="num spia-coda-quante">{n === 1 ? 'UNA PRESENZA DA INVIARE' : `${n} PRESENZE DA INVIARE`}</span>
         <span>Sono salvati sul telefono: partono da soli appena c’è rete.</span>
       </div>
     </div>
@@ -186,22 +184,30 @@ function SpiaCoda({ n }: { n: number }) {
  * Dopo CHIUDI L'APPELLO: arrivato in segreteria, o salvato sul telefono in
  * attesa della rete. Cambia da solo quando la coda si svuota.
  */
-function Esito({ lezione, inCoda, onVa }: { lezione: SessioneVista; inCoda: number; onVa: () => void }) {
+function Esito({ lezione, inCoda, onVa, onRiapri }: { lezione: SessioneVista; inCoda: number; onVa: () => void; onRiapri: () => void }) {
   const arrivato = inCoda === 0
   return (
     <div className="pad" style={{ paddingTop: 12 }}>
-      <div className="card row esito-appello" data-arrivato={arrivato} role="status">
-        <span className="appello-segno" aria-hidden="true">{arrivato ? '✓' : '…'}</span>
-        <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-          <span className="num appello-esito">{arrivato ? 'APPELLO ARRIVATO IN SEGRETERIA' : 'APPELLO SALVATO SUL TELEFONO'}</span>
-          <span style={{ fontSize: 14, color: 'var(--dim)' }}>
-            {lezione.corso}, {giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))} {oraDi(lezione.inizio)}
-            {arrivato ? '.' : `: ${inCoda === 1 ? 'un segno aspetta' : `${inCoda} segni aspettano`} la rete, e partono da soli.`}
+      <div className="card stack esito-appello" data-arrivato={arrivato}>
+        <span className="row" style={{ gap: 12 }} role="status">
+          <span className="appello-segno" aria-hidden="true">{arrivato ? '✓' : '…'}</span>
+          <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+            <span className="num appello-esito">{arrivato ? 'APPELLO ARRIVATO IN SEGRETERIA' : 'APPELLO SALVATO SUL TELEFONO'}</span>
+            <span style={{ fontSize: 14, color: 'var(--dim)' }}>
+              {lezione.corso}, {giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))} {oraDi(lezione.inizio)}
+              {arrivato ? '.' : `: ${inCoda === 1 ? 'una presenza aspetta' : `${inCoda} presenze aspettano`} la rete, e partono da sole.`}
+            </span>
           </span>
         </span>
-        <button type="button" className="icon-btn testo" onClick={onVa}>
-          OK
-        </button>
+        {/* Chiuso per sbaglio, o qualcuno arriva tardi: si riapre da qui. */}
+        <span className="row" style={{ gap: 8, justifyContent: 'flex-end' }}>
+          <button type="button" className="icon-btn testo" onClick={onRiapri}>
+            RIAPRI
+          </button>
+          <button type="button" className="icon-btn testo" onClick={onVa}>
+            OK
+          </button>
+        </span>
       </div>
     </div>
   )
@@ -254,23 +260,16 @@ function Segnalate({ dati, soloDi, giro, onApri }: { dati: Dati; soloDi?: string
   }, [dati, soloDi, giro])
   if (!l.length) return null
   return (
-    <div className="pad" style={{ paddingTop: 14 }}>
-      <div className="card stack segnalate-avviso">
-        <span className="rule-label" style={{ color: 'var(--giallo-testo)' }}>
-          {l.length === 1 ? 'UNA PRESENZA SEGNALATA' : `${l.length} PRESENZE SEGNALATE`}
-        </span>
-        <span style={{ fontSize: 13, color: 'var(--dim)' }}>Iscritti che dicono di esserci stati e non risultano: apri la lezione per confermare.</span>
-        {l.map((s) => (
-          <button key={s.id} type="button" className="row segnalate-voce" onClick={() => onApri(s.sessioneId)}>
-            <span className="grow" style={{ fontWeight: 600, textAlign: 'left' }}>
-              {perEsteso(s)}
-            </span>
-            <span style={{ fontSize: 13, color: 'var(--dim)' }}>
-              {s.corso} · {giornoPerEsteso(chiaveGiorno(new Date(s.inizio)))} {oraDi(s.inizio)}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
+    <Arretrato
+      tono="giallo"
+      titolo={l.length === 1 ? 'UNA PRESENZA SEGNALATA' : `${l.length} PRESENZE SEGNALATE`}
+      sotto="Iscritti che dicono di esserci stati e non risultano: tocca la lezione per confermare."
+      righe={l.map((s) => ({
+        chiave: s.id,
+        primo: perEsteso(s),
+        secondo: `${s.corso} · ${giornoPerEsteso(chiaveGiorno(new Date(s.inizio)))} ${oraDi(s.inizio)}`,
+        onApri: () => onApri(s.sessioneId),
+      }))}
+    />
   )
 }

@@ -20,6 +20,7 @@ colors:
   blu-ingranaggio: "#1b8ac4"
   viola-corso: "#8b5cc4"
   su-colore: "#121212"
+  su-rosso: "#ffffff"
   carta-chiara: "#f4f4f1"
   superficie-chiara: "#ffffff"
   superficie-alta-chiara: "#e9e9e5"
@@ -83,7 +84,7 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.rosso-ingranaggio}"
-    textColor: "{colors.su-colore}"
+    textColor: "{colors.su-rosso}"
     typography: "{typography.button}"
     rounded: "{rounded.none}"
     padding: "0 22px"
@@ -254,7 +255,7 @@ Squadrato. Raggio zero su tasti, card, campi, schede, chip, dialoghi e cassetti.
 ### Buttons
 Decisi e da palestra: maiuscolo, obliquo, spaziato largo.
 - **Shape:** squadrato (0px), alto 56px sul telefono (`.btn`), 48px in segreteria (`.sg-btn`), 60–88px sul tablet (`.tb-btn`, `.tb-btn-segna`).
-- **Primario:** fondo Rosso Ingranaggio, testo `su-colore`, Saira 700 19px, 0.16em, obliquo 9°, padding 0 22px.
+- **Primario:** fondo Rosso Ingranaggio, testo bianco (`su-rosso`), Saira 700 19px, 0.16em, obliquo 9°, padding 0 22px.
 - **Primario in segreteria** (`.sg-btn-pieno`): fondo `testo`, testo `nero-palestra` — si legge come tasto principale senza usare il rosso. `.sg-btn-rosso` (testo bianco) è solo per ciò che non si annulla.
 - **Vai:** fondo Verde Ingranaggio, per confermare una presenza o un invio.
 - **Linea / Ghost:** bordo 2px `riga`, testo `tasto`; al passaggio bordo `testo-spento` e testo `testo` (120ms).

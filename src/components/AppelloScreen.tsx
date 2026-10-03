@@ -201,6 +201,8 @@ export function AppelloScreen({
                   .join(' · ')}
               </span>
             </span>
+            {/* Si può già segnare (chi lo sa prima, un recupero), ma si vede. */}
+            {futura && <span className="num appello-futura">NON ANCORA COMINCIATA</span>}
           </span>
           {/* Il timer della lezione: si apre con i timer del corso in cima. */}
           <a className="icon-btn" href={timerDellaLezione(d.sessione)} aria-label="Apri il timer della lezione" title="Il timer della lezione">
@@ -224,10 +226,10 @@ export function AppelloScreen({
           </span>
         </div>
         <div className="row pad" style={{ gap: 8, paddingTop: 10 }}>
-          <button className="btn btn-go grow" style={{ minHeight: 48, fontSize: 15, padding: '0 12px' }} disabled={daSegnare === 0} onClick={tuttiGliAltri}>
+          <button className="btn btn-go grow" style={{ fontSize: 17, padding: '0 10px', letterSpacing: '0.1em' }} disabled={daSegnare === 0} onClick={tuttiGliAltri}>
             {segnati === 0 ? 'TUTTI PRESENTI' : 'GLI ALTRI PRESENTI'}
           </button>
-          <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO? AZZERA" onFai={azzera}>
+          <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO?" onFai={azzera}>
             AZZERA
           </DueTocchi>
         </div>
@@ -346,11 +348,21 @@ export function AppelloScreen({
       {onChiudi && (
         <div className="pad stack appello-fine">
           {/* Verde quando è tutto segnato; rosso quando chiudere vuol dire
-              segnare assenti, e il tasto lo dice. Una lezione non ancora
-              cominciata chiede un secondo tocco. */}
+              segnare assenti, e il tasto lo dice. Chiede un secondo tocco una
+              lezione non ancora cominciata, e una dove nessuno è segnato o
+              più di metà diventerebbe assente: di solito è TUTTI PRESENTI
+              dimenticato, e la segreteria riceverebbe assenze finte. */}
           <DueTocchi
             className={`btn ${daSegnare === 0 ? 'btn-go' : 'btn-primary'}`}
-            chiede={futura ? 'NON È ANCORA COMINCIATA: CHIUDI?' : undefined}
+            chiede={
+              futura
+                ? 'NON È ANCORA COMINCIATA: CHIUDI?'
+                : segnati === 0
+                  ? `NESSUNO SEGNATO: ${daSegnare} ASSENTI?`
+                  : daSegnare * 2 > d.elenco.length
+                    ? `SICURO? ${daSegnare} ASSENTI`
+                    : undefined
+            }
             onFai={chiudi}
           >
             {daSegnare === 0 ? 'CHIUDI L’APPELLO ✓' : `CHIUDI · ${daSegnare === 1 ? 'UN ASSENTE' : `${daSegnare} ASSENTI`}`}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
@@ -47,6 +47,49 @@ function quando(l: SessioneVista, adesso: number): string | null {
 
 const UN_GIORNO = 24 * 60 * 60 * 1000
 
+/**
+ * Le cose rimaste indietro (presenze segnalate, appelli da chiudere): una riga
+ * col conto, che si apre. In rosso o in giallo si vedono subito, ma non
+ * spingono sotto la lezione che sta per cominciare.
+ */
+export function Arretrato({
+  tono,
+  titolo,
+  sotto,
+  righe,
+}: {
+  tono: 'giallo' | 'rosso'
+  titolo: string
+  sotto: string
+  righe: { chiave: string; primo: string; secondo: string; onApri: () => void }[]
+}) {
+  const [aperto, setAperto] = useState(false)
+  return (
+    <div className="pad" style={{ paddingTop: 10 }}>
+      <div className="card stack arretrato" data-tono={tono}>
+        <button type="button" className="row arretrato-testa" aria-expanded={aperto} onClick={() => setAperto((x) => !x)}>
+          <span className="rule-label grow arretrato-titolo">{titolo}</span>
+          <span className="arretrato-freccia" aria-hidden="true">{aperto ? '−' : '+'}</span>
+        </button>
+        {aperto && (
+          <>
+            <span style={{ fontSize: 14, color: 'var(--dim)', lineHeight: 1.4 }}>{sotto}</span>
+            {righe.map((r) => (
+              <button key={r.chiave} type="button" className="row segnalate-voce" onClick={r.onApri}>
+                <span className="stack grow" style={{ gap: 2, textAlign: 'left', minWidth: 0 }}>
+                  <span style={{ fontWeight: 600 }}>{r.primo}</span>
+                  <span style={{ fontSize: 14, color: 'var(--dim)' }}>{r.secondo}</span>
+                </span>
+                <span className="arretrato-freccia" aria-hidden="true">›</span>
+              </button>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function Attesa() {
   return <p style={{ color: 'var(--dim)', fontSize: 15, margin: '4px 0 0' }}>Sto leggendo il calendario…</p>
 }
@@ -78,11 +121,14 @@ export function CalendarioScreen({
   apertaId,
   conti,
   soloDi,
+  arretrati,
 }: {
   dati: Dati
   onApri: (s: SessioneVista) => void
   apertaId?: string
   conti?: Record<string, Conto>
+  /** Altre cose rimaste indietro, sotto la lezione di adesso: le presenze segnalate. */
+  arretrati?: ReactNode
   soloDi?: string
 }) {
   const [primo, setPrimo] = useState(() => {
@@ -158,6 +204,12 @@ export function CalendarioScreen({
   const inVista = new Set((lezioni ?? []).map((l) => l.id))
   const senzaAppello = passate.map(conLConto).filter((l) => !inVista.has(l.id) && l.insegnanti?.includes(soloDi ?? '') && daChiudere(l))
 
+  // La lezione di adesso, o la prossima di oggi, in cima a un tocco: con
+  // quelle che cominciano alla stessa ora, se l'istruttore ne ha due.
+  const restano = elenco ? (perGiorno.get(chiaveGiorno(new Date())) ?? []).filter((l) => l.stato !== 'annullata' && new Date(l.fine).getTime() > adesso) : []
+  const ora = restano[0]
+  const ore = restano.filter((l) => ora && l.inizio === ora.inizio)
+
   const carta = (v: SessioneVista) => {
     const l = conLConto(v)
     // Gli iscritti presenti, senza chi prova: il conto torna con quello dell'appello.
@@ -186,13 +238,13 @@ export function CalendarioScreen({
           </span>
         </span>
         <span className="stack" style={{ gap: 2, alignItems: 'flex-end' }}>
-          <span className="num lezione-conto" data-fatto={fatto}>
+          <span className="num lezione-conto" data-fatto={fatto && presentiIscritti > 0}>
             {iniziato ? `${presentiIscritti}/${l.iscritti}` : l.iscritti}
           </span>
           <span className="num lezione-stato" data-fatto={fatto} data-manca={manca || undefined}>
             {manca ? 'DA CHIUDERE' : !iniziato ? 'ISCRITTI' : fatto ? '✓ FATTO' : 'IN CORSO'}
-            {(l.prove ?? 0) > 0 && ` · +${l.prove} PROVA`}
           </span>
+          {(l.prove ?? 0) > 0 && <span className="num lezione-stato lezione-prove">+{l.prove} PROVA</span>}
         </span>
       </button>
     )
@@ -200,27 +252,31 @@ export function CalendarioScreen({
 
   return (
     <>
-      {/* Come le presenze segnalate: un riquadro solo, una riga per lezione,
-          così i giorni da fare restano in vista. */}
-      {elenco && senzaAppello.length > 0 && (
-        <div className="pad" style={{ paddingTop: 14 }}>
-          <div className="card stack segnalate-avviso da-chiudere">
-            <span className="rule-label" style={{ color: 'var(--rosso)' }}>
-              {senzaAppello.length === 1 ? 'UN APPELLO DA CHIUDERE' : `${senzaAppello.length} APPELLI DA CHIUDERE`}
+      {ora && (
+        <section>
+          <div className="rule">
+            <span className="rule-label" style={{ color: 'var(--giallo-testo)' }}>
+              {quando(ora, adesso) === 'ADESSO' ? 'ADESSO' : 'LA PROSSIMA, OGGI'}
             </span>
-            <span style={{ fontSize: 13, color: 'var(--dim)' }}>Lezioni passate con qualcuno ancora da segnare: aprile e chiudi l’appello.</span>
-            {senzaAppello.map((l) => (
-              <button key={l.id} type="button" className="row segnalate-voce" onClick={() => onApri(l)}>
-                <span className="grow" style={{ fontWeight: 600, textAlign: 'left' }}>
-                  {l.corso}
-                </span>
-                <span style={{ fontSize: 13, color: 'var(--dim)' }}>
-                  {giornoPerEsteso(chiaveGiorno(new Date(l.inizio)))} {oraDi(l.inizio)} · {l.daSegnare} da segnare
-                </span>
-              </button>
-            ))}
+            <div className="rule-line" />
           </div>
-        </div>
+          <div className="pad stack" style={{ gap: 10 }}>{ore.map(carta)}</div>
+        </section>
+      )}
+
+      {arretrati}
+      {elenco && senzaAppello.length > 0 && (
+        <Arretrato
+          tono="rosso"
+          titolo={senzaAppello.length === 1 ? 'UN APPELLO DA CHIUDERE' : `${senzaAppello.length} APPELLI DA CHIUDERE`}
+          sotto="Lezioni passate con qualcuno ancora da segnare. Tocca la lezione, segna chi manca e chiudi l’appello."
+          righe={senzaAppello.map((l) => ({
+            chiave: l.id,
+            primo: l.corso,
+            secondo: `${giornoPerEsteso(chiaveGiorno(new Date(l.inizio)))} ${oraDi(l.inizio)} · ${l.daSegnare} da segnare`,
+            onApri: () => onApri(l),
+          }))}
+        />
       )}
 
       <div className="row pad" style={{ gap: 8, paddingTop: 14, alignItems: 'center' }}>

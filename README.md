@@ -47,6 +47,9 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
 - **L'appello**: l'elenco degli iscritti, un tocco per riga — presente, assente,
   non segnato — e `TUTTI PRESENTI` in cima, perché in una classe di ventidue con
   venti presenti si segnano due assenze invece di venti presenze.
+  `CHIUDI L'APPELLO` in fondo segna assenti i non segnati e dice se è arrivato
+  in segreteria; il calendario degli istruttori apre con la lezione di adesso e
+  tiene in rosso gli appelli da chiudere degli ultimi sette giorni.
 - **Le prove**: chi viene a provare lo aggiunge all'appello chi lo sta facendo,
   col tasto `PROVE` (l'istruttore dall'app o dal tablet col PIN, la segreteria
   dalla lezione aperta): nome, cognome e telefono, o chi è già venuto a
