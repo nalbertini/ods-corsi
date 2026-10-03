@@ -1,5 +1,5 @@
 import type { LezioneSala } from '../../lib/tablet'
-import { fase, REGOLE } from '../../lib/tablet'
+import { contoSala, fase, REGOLE } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Cronometro, Lucchetto, Recupero } from '../Icons'
 import type { TimerPronto } from '../../../timer/src/lib/incorporato'
@@ -108,7 +108,7 @@ export function TabletHome({
               <span className="ob tb-aperta-nome">{l.corso.toUpperCase()}</span>
               <span className="tb-sotto chi-kanji" style={{ gap: 10 }}>
                 <Kanji segni={l.kanji} medio />
-                <span>{[l.istruttori, `${l.presenti} ${l.presenti === 1 ? 'segnato' : 'segnati'} su ${l.iscritti}`].filter(Boolean).join(' · ')}</span>
+                <span>{[l.istruttori, `${contoSala(l).presenti} ${contoSala(l).presenti === 1 ? 'segnato' : 'segnati'} su ${l.iscritti}`].filter(Boolean).join(' · ')}</span>
               </span>
             </div>
             <button type="button" className="ob tb-btn-segna" onClick={() => onSegna(l)}>

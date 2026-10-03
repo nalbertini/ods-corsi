@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DatiTablet, LezioneSala, PresenzaIstruttore, RigaAppelloTablet } from '../../lib/tablet'
-import { fase, lezioneDiAdesso, sorvegliaScritture } from '../../lib/tablet'
+import { contoAppello, contoSala, fase, lezioneDiAdesso, sorvegliaScritture } from '../../lib/tablet'
 import type { StatoPresenza } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Croce, Spunta } from '../Icons'
@@ -214,7 +214,11 @@ export function TabletIstruttore({
     )
   }
 
-  const presenti = righe?.filter((r) => r.stato === 'presente').length ?? 0
+  // Come nell'app: gli iscritti su iscritti, chi prova a parte (+N PROVA).
+  const conto = righe ? contoAppello(righe) : null
+  const presenti = conto?.presenti ?? 0
+  const provePresenti = conto?.prove ?? 0
+  const iscrittiQui = conto?.iscritti
   const daSe = righe?.filter((r) => r.origine === 'tablet' || r.origine === 'recupero').length ?? 0
 
   const scegliCorso = (id: string) => {
@@ -268,6 +272,7 @@ export function TabletIstruttore({
             // Passata, non annullata e nessuno presente: l'appello quasi
             // certamente non è stato fatto. In rosso, come SENZA APPELLO in
             // segreteria: è il buco che l'istruttore viene a chiudere.
+            const conto = contoSala(l)
             const senzaAppello = l.stato !== 'annullata' && l.presenti === 0 && fase(l, adesso) === 'finita'
             return (
               <button
@@ -288,7 +293,8 @@ export function TabletIstruttore({
                   <span className="num tb-senza-appello">✕ SENZA APPELLO</span>
                 ) : (
                   <span style={{ fontSize: 15, color: 'var(--sec)' }}>
-                    {l.presenti} {l.presenti === 1 ? 'presente' : 'presenti'} su {l.iscritti}
+                    {conto.presenti} {conto.presenti === 1 ? 'presente' : 'presenti'} su {l.iscritti}
+                    {conto.prove > 0 && <span style={{ fontWeight: 700, color: 'var(--giallo-testo)' }}> · +{conto.prove} PROVA</span>}
                     {l.stato === 'annullata' ? ' · annullata' : ''}
                   </span>
                 )}
@@ -315,15 +321,19 @@ export function TabletIstruttore({
       <div className="tb-colonna" style={{ gap: 14 }}>
         {lezione ? (
           <div className="tb-testa-appello">
-            <div className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+            <div className="stack" style={{ gap: 2, minWidth: 0, flex: '1 1 0' }}>
               <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.03em' }}>{lezione.corso.toUpperCase()}</span>
               <span style={{ fontSize: 16, color: 'var(--sec)' }}>
                 {chiaveGiorno(new Date(lezione.inizio)) === oggi ? 'oggi' : giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))},{' '}
                 {orario(lezione)} · {daSe} {daSe === 1 ? 'segnato' : 'segnati'} da sé sul tablet · tocca un nome per cambiarlo
               </span>
             </div>
-            <span className="num" style={{ fontSize: 46, fontWeight: 700, lineHeight: 1 }}>{presenti}</span>
-            <span className="num" style={{ fontSize: 22, color: 'var(--dim)' }}>/ {righe?.length ?? lezione.iscritti}</span>
+            {/* Il conto tutto insieme: va a capo il sottotitolo, non «/ 10» lontano dal suo numero. */}
+            <span className="num" style={{ display: 'flex', alignItems: 'baseline', gap: 10, whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 46, fontWeight: 700, lineHeight: 1 }}>{presenti}</span>
+              <span style={{ fontSize: 22, color: 'var(--dim)' }}>/ {iscrittiQui ?? lezione.iscritti}</span>
+              {provePresenti > 0 && <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--giallo-testo)' }}>+{provePresenti} PROVA</span>}
+            </span>
             {/* I tre tasti insieme, sempre sulla stessa riga e nello stesso ordine. */}
             <div className="tb-azioni-appello">
               <button type="button" className="tb-btn tb-btn-verde" disabled={!daSegnarePresenti.length} onClick={() => tutti('tutti')}>
