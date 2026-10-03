@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'",
+      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla, sorvegliaScritture } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -291,6 +291,45 @@ console.log('\n11. i tocchi senza rete')
   m.ricordaTocco('L', 'elena')
   ok('appena toccato si annulla', m.siAnnulla('L', 'elena'), true)
   ok('chi non è stato toccato qui no', m.siAnnulla('L', 'giulia'), false)
+}
+
+console.log('\n12. una lettura dell\'appello non copre un tocco fatto mentre si rilegge')
+{
+  let s = m.sorvegliaScritture()
+  let foto = s.fotografa()
+  ok('senza scritture la lettura si mostra', s.lettura(foto), 'mostra')
+  ok('fine senza letture da parte: non si rilegge', (s.inizia(), s.fine()), false)
+
+  s = m.sorvegliaScritture()
+  foto = s.fotografa()
+  s.inizia()
+  ok('una scrittura intera dopo la foto: si rilegge', (s.fine(), s.lettura(foto)), 'rileggi')
+
+  s = m.sorvegliaScritture()
+  s.inizia()
+  foto = s.fotografa()
+  ok('partita durante una scrittura e tornata dopo la fine: si rilegge', (s.fine(), s.lettura(foto)), 'rileggi')
+
+  s = m.sorvegliaScritture()
+  foto = s.fotografa()
+  s.inizia()
+  ok('tornata mentre si scrive: si aspetta', s.lettura(foto), 'aspetta')
+  ok('la fine della scrittura chiede di rileggere', s.fine(), true)
+  ok('una volta sola', (s.inizia(), s.fine()), false)
+
+  s = m.sorvegliaScritture()
+  s.inizia()
+  foto = s.fotografa()
+  s.inizia()
+  ok('scritture sovrapposte: si aspetta', s.lettura(foto), 'aspetta')
+  ok('la fine della prima non rilegge, ne resta una in corso', s.fine(), false)
+  ok('la fine della seconda rilegge', s.fine(), true)
+  ok('e poi basta', s.fine(), false)
+
+  s = m.sorvegliaScritture()
+  s.inizia()
+  for (let i = 0; i < 5; i++) ok(`durante TUTTI PRESENTI la lettura ${i + 1} aspetta`, s.lettura(s.fotografa()), 'aspetta')
+  ok('a scrittura finita una lettura sola', [s.fine(), s.fine()], [true, false])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

@@ -124,6 +124,9 @@
   /* Lo stesso per il verde scritto: sul bianco quello del marchio non arriva
      al contrasto che serve a un testo piccolo. */
   --verde-testo: #16a54a;
+  /* E per il rosso: quello del marchio su queste superfici scure si ferma a
+     3,8:1, sotto il 4,5:1 di un testo piccolo. Va bene per bordi e fondi. */
+  --rosso-testo: #ff5a52;
   /* Le scritte sopra i colori del marchio restano scure in tutti e due i temi;
      sul rosso invece bianche: il nero si ferma a 4,1:1, il bianco arriva a 4,5:1. */
   --su-colore: #121212;
@@ -158,6 +161,7 @@
   --verde: #12913f;
   --giallo-testo: #8f6a00;
   --verde-testo: #0b7a33;
+  --rosso-testo: #b81d1d;
   --tasto: #4a4a46;
   --tratteggio: #b0b0aa;
   --menu: #ebebe7;
@@ -306,7 +310,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
   display: inline-grid; place-items: center;
   width: 22px; height: 22px;
   border: 1.5px solid var(--rosso); border-radius: 3px;
-  color: var(--rosso);
+  color: var(--rosso-testo);
   font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif;
   font-size: 15px; font-weight: 700; line-height: 1;
 }
@@ -328,14 +332,14 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .lezione-stato { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); text-align: right; white-space: nowrap; }
 .lezione-stato.lezione-prove { color: var(--giallo-testo); }
 .lezione-stato[data-fatto='true'] { color: var(--verde-testo); }
-.lezione-stato[data-manca] { color: var(--rosso); }
+.lezione-stato[data-manca] { color: var(--rosso-testo); }
 
 /* Le presenze segnalate dagli iscritti: in cima al calendario e nell'appello. */
 .arretrato { padding: 0 14px; gap: 8px; }
 .arretrato[data-tono='giallo'] { border-color: var(--giallo-testo); }
 .arretrato[data-tono='rosso'] { border-color: var(--rosso); }
 .arretrato[data-tono='giallo'] .arretrato-titolo { color: var(--giallo-testo); }
-.arretrato[data-tono='rosso'] .arretrato-titolo { color: var(--rosso); }
+.arretrato[data-tono='rosso'] .arretrato-titolo { color: var(--rosso-testo); }
 .arretrato-testa { width: 100%; min-height: 52px; gap: 10px; text-align: left; }
 .arretrato-freccia { font-family: var(--cond); font-size: 24px; font-weight: 700; line-height: 1; color: var(--dim); }
 .segnalate-voce { gap: 10px; min-height: 52px; padding: 8px 0; border-top: 1px solid var(--line-soft); width: 100%; cursor: pointer; }
@@ -360,6 +364,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .appello-titolo { font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05; }
 .appello-stato { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); }
 .appello-stato[data-fatto='true'] { color: var(--verde-testo); }
+.appello-stato[data-manca] { color: var(--rosso-testo); }
 .appello-prove { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: var(--giallo-testo); white-space: nowrap; }
 .appello-coda { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--giallo-testo); min-height: 1.3em; }
 .segnalata-esito { min-height: 44px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
@@ -367,7 +372,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .appello-aiuto { font-size: 14px; line-height: 1.4; color: var(--dim); margin: 0 0 10px; }
 .appello-fine { gap: 10px; padding-top: 20px; padding-bottom: calc(var(--safe-b) + 28px); }
 .azzera { min-height: 56px; width: 124px; flex-shrink: 0; padding: 0 8px; font-size: 16px; }
-.azzera[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso); }
+.azzera[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso-testo); }
 
 /* Dopo CHIUDI L'APPELLO: verde quando è arrivato, giallo finché aspetta la rete. */
 .esito-appello { gap: 8px; padding: 12px 10px 10px 14px; border-color: var(--giallo); }
@@ -375,13 +380,13 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .esito-appello[data-tono='guaio'] { border-color: var(--rosso); }
 .appello-segno { font-family: var(--cond); font-size: 28px; font-weight: 700; width: 24px; text-align: center; color: var(--giallo-testo); }
 .esito-appello[data-tono='arrivato'] .appello-segno { color: var(--verde-testo); }
-.esito-appello[data-tono='guaio'] .appello-segno { color: var(--rosso); }
+.esito-appello[data-tono='guaio'] .appello-segno { color: var(--rosso-testo); }
 .appello-esito-conto { font-size: 15px; font-weight: 700; letter-spacing: 0.06em; color: var(--sec); }
 .spia-coda[data-tono='guaio'] { border-color: var(--rosso); }
-.spia-coda[data-tono='guaio'] .spia-coda-quante { color: var(--rosso); }
+.spia-coda[data-tono='guaio'] .spia-coda-quante { color: var(--rosso-testo); }
 /* Un tasto pieno che sta chiedendo conferma: vuoto, col bordo del suo colore,
    così si vede che non è più lo stesso tasto. */
-.btn-primary[data-sicuro='true'] { background: transparent; border: 2px solid var(--rosso); color: var(--rosso); }
+.btn-primary[data-sicuro='true'] { background: transparent; border: 2px solid var(--rosso); color: var(--rosso-testo); }
 .btn-go[data-sicuro='true'] { background: transparent; border: 2px solid var(--verde); color: var(--verde-testo); }
 .appello-esito { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; }
 
@@ -401,7 +406,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .riga-appello[data-stato='presente'] { border-color: var(--verde); }
 .riga-appello[data-stato='presente'] .segno { color: var(--verde); }
 .riga-appello[data-stato='assente'] { border-color: var(--rosso); }
-.riga-appello[data-stato='assente'] .segno { color: var(--rosso); }
+.riga-appello[data-stato='assente'] .segno { color: var(--rosso-testo); }
 .riga-appello[data-stato='assente'] .nome-appello { color: var(--dim); text-decoration: line-through; }
 .elenco-appello { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
 
@@ -412,7 +417,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .prove-campi { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .prove-campi input { width: 100%; }
 .prove-sotto { font-size: 13px; line-height: 1.45; color: var(--dim); }
-.prove-guaio { font-size: 14px; line-height: 1.45; color: var(--rosso); }
+.prove-guaio { font-size: 14px; line-height: 1.45; color: var(--rosso-testo); }
 .prove-fatto { font-size: 14px; line-height: 1.45; color: var(--verde-testo); }
 .prove-gia {
   display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 6px 12px;
@@ -435,7 +440,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
   flex-shrink: 0; padding: 0 12px; min-height: 44px;
   border: 2px solid var(--line); color: var(--dim); font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
 }
-.prova-togli[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso); }
+.prova-togli[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso-testo); }
 .prova-togli:disabled { opacity: 0.4; cursor: default; }
 
 /* La spia delle scritture non ancora arrivate al server. */
@@ -470,7 +475,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
   background: var(--surface-2); border: 2px solid var(--line); font-size: 14px; font-weight: 600;
 }
 .miei-timer-chip > button { width: 44px; height: 40px; font-size: 20px; color: var(--dim); }
-.miei-timer-chip > button:hover { color: var(--rosso); }
+.miei-timer-chip > button:hover { color: var(--rosso-testo); }
 .miei-timer-modo { font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
 .miei-timer-scelta { min-height: 44px; font-size: 15px; flex: 1 1 220px; max-width: 100%; }
 .miei-timer-riga[data-suo='true'] { border-color: var(--giallo); border-left-color: var(--tinta); }
@@ -521,7 +526,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .passo-titolo { font-size: 17px; font-weight: 600; line-height: 1.3; }
 .passo-dettaglio { font-size: 14px; color: var(--dim); line-height: 1.4; }
 .passo-dettaglio[data-tono='testo'] { color: var(--text); }
-.passo-dettaglio[data-tono='guaio'] { color: var(--rosso); }
+.passo-dettaglio[data-tono='guaio'] { color: var(--rosso-testo); }
 .passo-dettaglio[data-tono='avviso'] { color: var(--giallo-testo); }
 .passo-btn { min-height: 48px; padding: 0 16px; font-size: 16px; text-decoration: none; align-self: flex-start; }
 /* L'IBAN in grande, a gruppi di quattro: se va a capo, va a capo fra un gruppo e l'altro. */
@@ -573,7 +578,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .modulo .campo[aria-invalid='true'] { border-color: var(--rosso); }
 /* Il luogo di nascita letto dal codice fiscale: si vede, non si scrive. */
 .modulo .campo[readonly] { background: transparent; border-style: dashed; color: var(--dim); }
-.modulo-nota { font-size: 14px; line-height: 1.35; color: var(--rosso); }
+.modulo-nota { font-size: 14px; line-height: 1.35; color: var(--rosso-testo); }
 .modulo-nota[data-avviso] { color: var(--giallo-testo); }
 .modulo-corsi:focus, .modulo [role='radiogroup']:focus { outline: none; }
 /* Il fuoco da tastiera: il contorno `text` di 2px, che su ogni fondo fa più di 3:1. */
@@ -693,7 +698,7 @@ a.btn { text-decoration: none; }
 .mia-lezione[data-annullata] .lezione-nome,
 .mia-lezione[data-annullata] .lezione-ora { text-decoration: line-through; color: var(--dim); }
 .mia-lezione-cosa { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: right; max-width: 40%; }
-.mia-lezione-cosa[data-tono='guaio'] { color: var(--rosso); }
+.mia-lezione-cosa[data-tono='guaio'] { color: var(--rosso-testo); }
 .mia-lezione-cosa[data-tono='avviso'] { color: var(--giallo-testo); }
 .mia-lezione-cosa[data-tono='fatto'] { color: var(--verde); }
 /* Il nucleo familiare: di chi si guarda la pagina, e le persone del nucleo. */
@@ -722,7 +727,7 @@ a.btn { text-decoration: none; }
 .mia-presenza-segno { font-size: 20px; font-weight: 700; width: 22px; text-align: center; color: var(--faint); }
 .mia-presenza-detto { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); }
 .mia-presenza[data-stato='presente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--verde); }
-.mia-presenza[data-stato='assente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--rosso); }
+.mia-presenza[data-stato='assente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--rosso-testo); }
 .mie-schede { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; padding-bottom: 12px; }
 .mia-ricevuta { gap: 12px; padding: 10px 14px; align-items: center; }
 .mia-ricevuta[data-annullata] .mia-ricevuta-euro { text-decoration: line-through; color: var(--dim); }
@@ -1028,7 +1033,7 @@ a.btn { text-decoration: none; }
 .tb-riga[data-stato='presente'] { border-color: var(--verde); }
 .tb-riga[data-stato='presente'] .tb-riga-segno { color: var(--verde); }
 .tb-riga[data-stato='assente'] { border-color: var(--rosso); }
-.tb-riga[data-stato='assente'] .tb-riga-segno { color: var(--rosso); }
+.tb-riga[data-stato='assente'] .tb-riga-segno { color: var(--rosso-testo); }
 .tb-riga[data-stato='assente'] .tb-riga-nome { color: var(--dim); text-decoration: line-through; }
 .tb-marchio {
   font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap;
@@ -1365,9 +1370,9 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-stat-tabella tbody tr > :first-child { white-space: normal; min-width: 120px; max-width: 140px; }
 }
 /* Un dato che manca e va completato: si vede rosso, ovunque. */
-.sg-manca { color: var(--rosso); font-weight: 600; }
+.sg-manca { color: var(--rosso-testo); font-weight: 600; }
 .sg-forse { color: var(--dim); font-weight: 600; }
-.sg-etichetta[data-manca] { color: var(--rosso); }
+.sg-etichetta[data-manca] { color: var(--rosso-testo); }
 .sg-campo[aria-invalid='true'] { border-color: var(--rosso); }
 .sg-scelte-mancano { padding: 6px; border: 2px dashed var(--rosso); }
 .sg-archiviato { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px; border: 2px dashed var(--line); color: var(--dim); }
@@ -1391,7 +1396,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-ricorrenza-sala { order: 1; grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; }
 .sg-ricorrenza-sala .sg-campo { height: 38px; flex-grow: 1; max-width: 320px; }
 .sg-togli { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--dim); }
-.sg-togli:hover { color: var(--rosso); }
+.sg-togli:hover { color: var(--rosso-testo); }
 .sg-nuova-ricorrenza { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; padding: 12px; border: 2px solid var(--text); }
 
 .sg-tabella { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -1402,7 +1407,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   display: inline-block; padding: 2px 6px; border: 1.5px solid currentColor;
   font-size: 11px; font-weight: 700; letter-spacing: 0.1em; line-height: 1.3; white-space: nowrap;
 }
-.sg-segno-regola[data-tono='rosso'] { color: var(--rosso); }
+.sg-segno-regola[data-tono='rosso'] { color: var(--rosso-testo); }
 .sg-segno-regola[data-tono='giallo'] { color: var(--giallo-testo); }
 .sg-segno-regola[data-tono='verde'] { color: var(--verde); }
 .sg-segno-regola[data-tono='spento'] { color: var(--dim); }
@@ -1447,7 +1452,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-storico { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; margin: 0; padding: 0; list-style: none; }
 .sg-quadretto { position: relative; height: 22px; border: 2px solid var(--line); display: grid; place-items: center; font-size: 12px; font-weight: 700; line-height: 1; }
 .sg-quadretto[data-stato='presente'] { background: var(--verde); border-color: var(--verde); color: var(--su-colore); }
-.sg-quadretto[data-stato='assente'] { border-color: var(--rosso); color: var(--rosso); }
+.sg-quadretto[data-stato='assente'] { border-color: var(--rosso); color: var(--rosso-testo); }
 .sg-quadretto[data-stato='giustificato'] { border-color: var(--giallo); color: var(--giallo-testo); }
 /* Il fuoco da tastiera della segreteria: il bordo che si accende, disegnato e non quello del browser. */
 .sg-btn:focus-visible, .sg-voce:focus-visible, .sg-chip:focus-visible, .sg-link:focus-visible, .sg-scelta:focus-visible,
@@ -1476,7 +1481,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   display: flex; align-items: flex-start; gap: 20px; padding: 16px 18px;
   background: var(--surface); border: 2px solid var(--line);
 }
-.sg-dafare-n { min-width: 64px; font-size: 44px; font-weight: 700; line-height: 0.9; color: var(--rosso); text-align: right; }
+.sg-dafare-n { min-width: 64px; font-size: 44px; font-weight: 700; line-height: 0.9; color: var(--rosso-testo); text-align: right; }
 /* Il rosso solo per quello che è già un guaio; quello che preme meno è giallo, e si stacca un po'. */
 .sg-dafare-riga[data-livello='presto'] .sg-dafare-n { color: var(--giallo-testo); }
 .sg-dafare-riga[data-livello='blocca'] + .sg-dafare-riga[data-livello='presto'] { margin-top: 14px; }

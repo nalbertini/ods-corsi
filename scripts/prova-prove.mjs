@@ -111,6 +111,31 @@ console.log('\n2. il giorno dopo, un altro corso: si ritrova per nome')
     `Marco Lotta 2 ${new Date(dopo(2).setHours(17)).toISOString().slice(0, 10)}`,
   ])
   ok('e non scrivendo «luca»', m.somiglianti(venuti, 'luca').length, 0)
+  // Apostrofi e trattini: chi scrive «d'am» o «deluca» deve ritrovare
+  // D'Amico e De-Luca, comunque siano stati salvati.
+  const gia = [
+    ['Paolo', "D'Amico"], ['Sara', 'D’Amico'], ['Giulia', 'Damico'], ['Anna', 'De-Luca'],
+    ['Marco', 'De Luca'], ['Ugo', 'Damiani'], ['Marco', 'Nuzzo'],
+  ].map(([nome, cognome], i) => ({ id: `g${i}`, nome, cognome, corso: 'Lotta', inizio: '2026-01-01T17:00:00Z' }))
+  const chi = (scritto) => m.somiglianti(gia, scritto).map((p) => `${p.cognome} ${p.nome}`).sort((a, b) => a.localeCompare(b, 'it'))
+  const damici = ["D'Amico Paolo", 'D’Amico Sara', 'Damico Giulia']
+  const conDamiani = ["D'Amico Paolo", 'D’Amico Sara', 'Damiani Ugo', 'Damico Giulia']
+  ok("«d'am» trova i D'Amico, Damico e Damiani", chi("d'am"), conDamiani)
+  ok('«d’am» (apostrofo tipografico) trova lo stesso', chi('d’am'), conDamiani)
+  ok('«dʼam» (apostrofo modificatore) trova lo stesso', chi('dʼam'), conDamiani)
+  ok('«d‘am» e «d´am» (da altre tastiere) trovano lo stesso', [chi('d‘am'), chi('d´am')], [conDamiani, conDamiani])
+  ok("«D'Amico» trova i D'Amico e Damico, non Damiani", chi("D'Amico"), damici)
+  ok("«amico» trova i due D'Amico", chi('amico'), ["D'Amico Paolo", 'D’Amico Sara'])
+  ok("«damico» trova i D'Amico e Damico, non Damiani", chi('damico'), damici)
+  ok('«de luca» trova i due De Luca', chi('de luca'), ['De Luca Marco', 'De-Luca Anna'])
+  ok('«de-luca» trova i due De Luca', chi('de-luca'), ['De Luca Marco', 'De-Luca Anna'])
+  ok('«deluca» trova i due De Luca', chi('deluca'), ['De Luca Marco', 'De-Luca Anna'])
+  ok("«d'amico giu» trova solo Damico Giulia", chi("d'amico giu"), ['Damico Giulia'])
+  ok('«mar nu» trova solo Nuzzo Marco', chi('mar nu'), ['Nuzzo Marco'])
+  ok("apostrofi e trattini non sono lettere: «d'a» e «d-'» nessuno", [chi("d'a"), chi("d-'")], [[], []])
+  // Al contrario: salvato attaccato, scritto staccato.
+  const attaccati = [{ id: 'a1', nome: 'Rita', cognome: 'Deluca', corso: 'Lotta', inizio: '2026-01-01T17:00:00Z' }, { id: 'a2', nome: 'Giulia', cognome: 'Damico', corso: 'Lotta', inizio: '2026-01-01T17:00:00Z' }]
+  ok('«de luca» e «d amico» trovano Deluca e Damico', [m.somiglianti(attaccati, 'de luca'), m.somiglianti(attaccati, 'd amico')].map((x) => x.map((p) => p.cognome)), [['Deluca'], ['Damico']])
   const prima = persone()
   await d.aggiungiProva(LOTTA_VEN, venuti[0])
   ok('la stessa persona, non una nuova', persone() - prima, 0)
@@ -145,6 +170,11 @@ console.log('\n3. dal tablet, col PIN')
   ok('non si segna da sé', await errore(() => t.segna(LOTTA_VEN, marco.personaId)), 'non è iscritto a questo corso')
   ok("l'istruttore lo segna assente", await t.correggi('1234', LOTTA_VEN, marco.personaId, 'assente', true), true)
   ok('e una prova non si «smarca»', await errore(() => t.correggi('1234', LOTTA_VEN, marco.personaId, null, true)), 'una prova si segna presente o assente')
+  // Dal pannello si può toccare chi è già in prova: resta col segno che ha.
+  ok('riaggiunto, chi è assente resta assente', [
+    await t.aggiungiProva('1234', LOTTA_VEN, { id: marco.personaId, nome: marco.nome, cognome: marco.cognome }),
+    (await t.appello('1234', LOTTA_VEN)).filter((r) => r.prova).map((r) => `${r.cognome}:${r.stato}`),
+  ], [true, ['Nuovo:assente']])
   const prima = persone()
   ok('una prova nuova dal tablet', await t.aggiungiProva('1234', LOTTA_VEN, { nome: 'Sara', cognome: 'Dalla Sala' }), true)
   ok('PIN sbagliato: non aggiunge', await t.aggiungiProva('0000', LOTTA_VEN, { nome: 'Ugo', cognome: 'Pin' }), false)
@@ -193,6 +223,37 @@ console.log('\n6. chi non si cerca più')
   const t = m.creaTabletProva()
   await t.scegliSala('Lotta')
   ok('neanche sul tablet', (await t.provati('1234')).map((x) => x.nome), ['Marco'])
+}
+
+console.log("\n7. D'Amico, De Luca, Rossi-Bianchi: apostrofi, spazi e trattini")
+{
+  // Le stesse persone e gli stessi casi in `prova-prove.mjs` (somiglianti) e
+  // `prova-segreteria.mjs` (trovaIscritti): l'apostrofo, di qualunque forma, e
+  // il trattino non separano soltanto, si possono anche saltare; un cognome di
+  // due parole si scrive anche attaccato.
+  const p = (id, nome, cognome, attiva = true) => ({ id, nome, cognome, attiva, corso: 'Lotta 2', inizio: '' })
+  const gente = [
+    p('a', 'Anna', "D'Amico"),
+    p('b', 'Bruno', 'D\u2019Amico'),
+    p('c', 'Nicolò', 'De Luca'),
+    p('d', 'Sara', 'Rossi-Bianchi'),
+    p('e', 'Marco', 'Nuovo'),
+    p('f', 'Marco', 'Rossi'),
+  ]
+  const chi = (scritto) => m.somiglianti(gente, scritto).map((x) => x.nome).sort()
+  for (const s of ["d'am", 'd\u2019am', 'd\u2018am', 'd\u02BCam', 'd\u00B4am', 'dam', 'damico', 'amico', "D'AM"])
+    ok(`«${s}» trova D'Amico, scritto con l'apostrofo dritto e con quello tipografico`, chi(s), ['Anna', 'Bruno'])
+  ok("«mico» non trova D'Amico: si comincia dall'inizio di una parola", chi('mico'), [])
+  ok("«d'a»: le lettere si contano senza l'apostrofo, e due non bastano", chi("d'a"), [])
+  ok('«NICOLO deluca» trova Nicolò De Luca', chi('NICOLO deluca'), ['Nicolò'])
+  for (const s of ['de lu', 'luca', 'del']) ok(`«${s}» trova De Luca`, chi(s), ['Nicolò'])
+  ok('«eluca» non trova De Luca', chi('eluca'), [])
+  for (const s of ['bianchi', 'rossibi', 'rossi-bi']) ok(`«${s}» trova Rossi-Bianchi`, chi(s), ['Sara'])
+  ok('«mar nu» trova solo Marco Nuovo', m.somiglianti(gente, 'mar nu').map((x) => x.id), ['e'])
+  ok('«marconu» nessuno: nome e cognome non si attaccano fra loro', chi('marconu'), [])
+  ok("«'», «-» e due spazi: nessuno", ["'", '-', '  '].map((s) => chi(s)), [[], [], []])
+  const dieci = ["D'Amico", 'Damiani', "D'Amato", 'Dameri', 'D\u2019Ambrosio', 'Damasio', "D'Amelio", 'Damonte', "D'Amore", 'Damigella'].map((c, i) => p(`x${i}`, 'Ugo', c))
+  ok('con dieci che cominciano per «dam», se ne mostrano sei', m.somiglianti(dieci, 'dam').length, 6)
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

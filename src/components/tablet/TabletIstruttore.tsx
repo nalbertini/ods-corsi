@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DatiTablet, LezioneSala, PresenzaIstruttore, RigaAppelloTablet } from '../../lib/tablet'
-import { fase, lezioneDiAdesso } from '../../lib/tablet'
+import { fase, lezioneDiAdesso, sorvegliaScritture } from '../../lib/tablet'
 import type { StatoPresenza } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Croce, Spunta } from '../Icons'
@@ -83,39 +83,67 @@ export function TabletIstruttore({
   const [nonAndato, setNonAndato] = useState<string | null>(null)
   const [giro, setGiro] = useState(0)
   const [conProve, setConProve] = useState(false)
+  // L'elenco si svuota solo cambiando lezione: rileggendo la stessa resta in
+  // vista, se no il pannello prove si smonta e perde il suo messaggio.
   useEffect(() => {
     setNonAndato(null)
     setConProve(false)
+    setRighe(null)
   }, [scelta])
+  // Uno per lezione: la lettura di quella nuova non aspetta le scritture
+  // ancora in corso su quella di prima.
+  const scritture = useMemo(sorvegliaScritture, [scelta])
+  const scrivendo = async (fai: () => Promise<void>) => {
+    scritture.inizia()
+    try {
+      await fai()
+    } finally {
+      if (scritture.fine()) setGiro((g) => g + 1)
+    }
+  }
   // Rileggere passa da qui, così una lettura vecchia non finisce sotto
   // un'altra lezione scelta nel frattempo.
   useEffect(() => {
     if (!scelta) return
     let vivo = true
-    setRighe(null)
+    const foto = scritture.fotografa()
     setGuaio(null)
     d.appello(pin, scelta)
-      .then((r) => vivo && setRighe(r))
-      .catch((e: unknown) => vivo && setGuaio(messaggio(e, "Non riesco a leggere l'appello")))
+      .then((r) => {
+        if (!vivo) return
+        const esito = scritture.lettura(foto)
+        if (esito === 'mostra') setRighe(r)
+        else if (esito === 'rileggi') setGiro((g) => g + 1)
+      })
+      .catch((e: unknown) => {
+        if (!vivo) return
+        // L'elenco vecchio può avere un tocco che il server non ha: sotto
+        // l'avviso mostrerebbe presente chi non lo è. Il pannello prove resta,
+        // con la conferma dell'aggiunta appena fatta.
+        setRighe(null)
+        setGuaio(messaggio(e, "Non riesco a leggere l'appello"))
+      })
     return () => {
       vivo = false
     }
-  }, [d, pin, scelta, giro])
+  }, [d, pin, scelta, giro, scritture])
 
   const metti = async (cambi: Array<{ personaId: string; stato: StatoPresenza; prova?: boolean }>) => {
     if (!scelta || !cambi.length) return
     setNonAndato(null)
     const quali = new Map(cambi.map((c) => [c.personaId, c.stato]))
     setRighe((r) => r && r.map((x) => (quali.has(x.personaId) ? { ...x, stato: quali.get(x.personaId)!, origine: 'appello' } : x)))
-    try {
-      for (const c of cambi) {
-        if (!(await d.correggi(pin, scelta, c.personaId, c.stato, c.prova))) return onPinScaduto()
+    await scrivendo(async () => {
+      try {
+        for (const c of cambi) {
+          if (!(await d.correggi(pin, scelta, c.personaId, c.stato, c.prova))) return onPinScaduto()
+        }
+        onCambiato()
+      } catch (e) {
+        setNonAndato(messaggio(e, 'Il server non risponde'))
+        setGiro((g) => g + 1)
       }
-      onCambiato()
-    } catch (e) {
-      setNonAndato(messaggio(e, 'Il server non risponde'))
-      setGiro((g) => g + 1)
-    }
+    })
   }
 
   // Senza coda, come il resto del tablet: si rilegge l'appello dal server.
@@ -129,13 +157,15 @@ export function TabletIstruttore({
     if (!scelta) return
     setNonAndato(null)
     setRighe((r) => r && r.filter((x) => x.personaId !== personaId))
-    try {
-      if (!(await d.togliProva(pin, scelta, personaId))) return onPinScaduto()
-      onCambiato()
-    } catch (e) {
-      setNonAndato(messaggio(e, 'Il server non risponde'))
-      setGiro((g) => g + 1)
-    }
+    await scrivendo(async () => {
+      try {
+        if (!(await d.togliProva(pin, scelta, personaId))) return onPinScaduto()
+        onCambiato()
+      } catch (e) {
+        setNonAndato(messaggio(e, 'Il server non risponde'))
+        setGiro((g) => g + 1)
+      }
+    })
   }
 
   // La lezione scelta resta in vista anche quando l'elenco è più lungo dello spazio.
@@ -298,11 +328,11 @@ export function TabletIstruttore({
         {nonAndato && !guaio && <Guaio titolo="NON SEGNATO" testo={nonAndato} />}
         {lezione && !guaio && righe === null && <p className="tb-nota">Sto leggendo l'appello…</p>}
 
-        {conProve && righe && (
+        {conProve && (
           <PannelloProve
             stile="tb"
             cerca={() => d.provati(pin)}
-            giaQui={new Set(righe.map((r) => r.personaId))}
+            giaQui={new Set((righe ?? []).map((r) => r.personaId))}
             onAggiungi={aggiungiProva}
             onChiudi={() => setConProve(false)}
           />

@@ -9,7 +9,7 @@
  * servono a dire subito cosa non va, prima di mandare.
  */
 
-import { nomeProprio } from './nomi'
+import { nomeProprio, paroleCercate, somiglia } from './nomi'
 
 /** Chi è già venuto a provare, con l'ultima lezione provata. */
 export interface GiaProvato {
@@ -55,27 +55,15 @@ export const pulisciProva = (n: NuovaProva): NuovaProva => ({
   telefono: n.telefono?.trim() || undefined,
 })
 
-const piano = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-
 /**
- * Chi, fra quelli già venuti, somiglia a quello che si sta scrivendo: ogni
- * parola scritta è l'inizio di una parola del nome o del cognome, senza
- * badare agli accenti. Sotto le tre lettere, nessuno: un elenco già pronto
- * mostrerebbe a chi passa i nomi di chi è venuto, spesso bambini.
+ * Chi, fra quelli già venuti, somiglia a quello che si sta scrivendo
+ * (`somiglia`). Sotto le tre lettere, nessuno: un elenco già pronto mostrerebbe
+ * a chi passa i nomi di chi è venuto, spesso bambini.
  */
 export function somiglianti(tutti: GiaProvato[], scritto: string, quanti = 6): GiaProvato[] {
-  const parole = piano(scritto).split(/\s+/).filter(Boolean)
+  const parole = paroleCercate(scritto)
   if (parole.join('').length < 3) return []
-  return tutti
-    .filter((p) => {
-      const sue = piano(`${p.nome} ${p.cognome}`).split(/[\s'-]+/)
-      return parole.every((w) => sue.some((s) => s.startsWith(w)))
-    })
-    .slice(0, quanti)
+  return tutti.filter((p) => somiglia(p, parole)).slice(0, quanti)
 }
 
 /** Un id nuovo per una persona nuova: lo decide chi la aggiunge, così anche senza rete sa come chiamarla. */

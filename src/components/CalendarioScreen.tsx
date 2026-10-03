@@ -27,7 +27,7 @@ function intervallo(da: Date, a: Date): string {
 function Guaio({ testo, onRiprova }: { testo: string; onRiprova: () => void }) {
   return (
     <div className="card stack" style={{ padding: 14, gap: 6, borderColor: 'var(--rosso)' }}>
-      <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso)' }}>CALENDARIO NON LETTO</span>
+      <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso-testo)' }}>CALENDARIO NON LETTO</span>
       <span style={{ fontSize: 14, color: 'var(--dim)' }}>{testo}</span>
       <button type="button" className="btn btn-ghost" style={{ minHeight: 44, fontSize: 14, padding: '0 14px', alignSelf: 'flex-start' }} onClick={onRiprova}>
         RIPROVA

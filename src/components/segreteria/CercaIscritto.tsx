@@ -1,9 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
+import { trovaIscritti, type DatiSegreteria, type PersonaSeg } from '../../lib/segreteria'
 import { useSchermo } from '../../lib/largo'
-
-/** Senza maiuscole né accenti: «nicolò» trova «Nicolo». */
-const piano = (t: string) => t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
 
 /**
  * Il gesto più frequente al banco: c'è qualcuno davanti, lo si trova. Il campo
@@ -39,14 +36,8 @@ export function CercaIscritto({ d, onApri }: { d: DatiSegreteria; onApri: (perso
     d.persone().then(setPersone, () => setPersone((x) => x ?? []))
   }
 
-  const cerca = piano(testo.trim())
-  const trovati = cerca
-    ? (persone ?? [])
-        .filter((p) => cerca.split(/\s+/).every((pezzo) => piano(`${p.nome} ${p.cognome}`).split(/\s+/).some((parola) => parola.startsWith(pezzo))))
-        .sort((a, b) => Number(b.attiva) - Number(a.attiva) || a.cognome.localeCompare(b.cognome, 'it'))
-        .slice(0, 8)
-    : []
-  const mostra = aperto && cerca.length > 0
+  const trovati = trovaIscritti(persone ?? [], testo)
+  const mostra = aperto && testo.trim().length > 0
 
   const apri = (p: PersonaSeg) => {
     setTesto('')
