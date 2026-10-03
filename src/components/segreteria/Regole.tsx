@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import type { DatiSegreteria, Impostazioni, ListaMusica, Sala } from '../../lib/segreteria'
+import { confermaMesiPresenze, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
 import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
@@ -49,6 +49,17 @@ export function Regole({ d }: { d: DatiSegreteria }) {
   const musica = useCarica(() => d.listeMusica(), [d])
   const { avviso, avvisa, fai } = useAvviso()
   const [sala, setSala] = useState<{ id?: string; nome: string; capienza?: number } | null>(null)
+  // I mesi scelti nella tendina mentre si aspetta il sì: lasciando stare, torna a quelli salvati.
+  const [mesiScelti, setMesiScelti] = useState<number | null>(null)
+  const cambiaMesi = async (dopo: number) => {
+    const prima = imp.dato?.mesiPresenze ?? 24
+    setMesiScelti(dopo)
+    const conto = dopo < prima ? await d.scadute(dopo).catch(() => null) : null
+    const domanda = confermaMesiPresenze({ prima, dopo, scadute: conto, modo: d.modo })
+    if (domanda && !(await chiedi(domanda.testo, domanda.tasto, { pericolo: true }))) return setMesiScelti(null)
+    await fai(() => d.salvaImpostazioni({ mesiPresenze: dopo }), 'Periodo cambiato', imp.ricarica)
+    setMesiScelti(null)
+  }
   const [chi, setChi] = useState('')
 
   const esporta = async () => {
@@ -194,9 +205,9 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             <select
               id="mesi"
               className="sg-campo"
-              value={imp.dato?.mesiPresenze ?? 24}
-              disabled={!imp.dato}
-              onChange={(e) => void fai(() => d.salvaImpostazioni({ mesiPresenze: Number(e.target.value) }), 'Periodo cambiato', imp.ricarica)}
+              value={mesiScelti ?? imp.dato?.mesiPresenze ?? 24}
+              disabled={!imp.dato || mesiScelti !== null}
+              onChange={(e) => void cambiaMesi(Number(e.target.value))}
             >
               {[12, 24, 36, 60].map((m) => (
                 <option key={m} value={m}>
@@ -209,10 +220,10 @@ export function Regole({ d }: { d: DatiSegreteria }) {
           <div className="row sg-voce-elenco" style={{ gap: 12 }}>
             <span className="stack grow">
               <span style={{ fontSize: 15, fontWeight: 600 }}>
-                {scadute.guaio ? 'Non si riesce a contarle' : scadute.dato === null ? '…' : scadute.dato === 0 ? 'Nessuna presenza scaduta' : `${scadute.dato} presenze scadute`}
+                {scadute.guaio ? 'Non si riesce a contarle' : scadute.dato === null ? '…' : scadute.dato === 0 ? 'Nessuna presenza scaduta' : scadute.dato === 1 ? '1 presenza scaduta' : `${scadute.dato} presenze scadute`}
               </span>
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-                {d.modo === 'prova' ? 'In prova si cancellano da qui.' : 'Si cancellano col job mensile (vedi supabase/LEGGIMI.md), o da qui.'}
+                {d.modo === 'prova' ? 'In prova si cancellano da qui.' : 'Si cancellano da sé il primo del mese, o da qui.'}
               </span>
             </span>
             <button
@@ -220,7 +231,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
               className="num sg-chip"
               disabled={!scadute.dato || !imp.dato}
               onClick={async () => {
-                if ((await chiedi(`Cancellare ${scadute.dato} presenze più vecchie di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`, 'CANCELLA LE PRESENZE', { pericolo: true }))) {
+                if ((await chiedi(`Cancellare ${scadute.dato === 1 ? '1 presenza più vecchia' : `${scadute.dato} presenze più vecchie`} di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`, 'CANCELLA LE PRESENZE', { pericolo: true }))) {
                   void fai(() => d.pulisci(), 'Presenze scadute cancellate', scadute.ricarica)
                 }
               }}

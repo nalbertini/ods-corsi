@@ -10,6 +10,19 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.13.1 — 3 ottobre 2026
+
+### Risolto
+
+- Accorciare per quanto si tengono le presenze chiede conferma, con quante si cancellano
+- Col tema chiaro le scritte piccole del menu si leggono meglio
+
+## 0.13.0 — 3 ottobre 2026
+
+### Novità
+
+- La richiesta di iscrizione si manda anche senza ricevuta, e si paga in segreteria
+
 ## 0.12.2 — 3 ottobre 2026
 
 ### Risolto
