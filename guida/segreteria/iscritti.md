@@ -14,15 +14,16 @@ elenco, che compaiono negli appelli e sul tablet.
 - **VENGONO POCO** — chi è venuto a meno di metà delle lezioni, su almeno tre.
 - **CERTIFICATO DA SISTEMARE** — chi non ha il certificato medico, ce l'ha
   scaduto o gli scade entro un mese.
-- **DA PAGARE** — chi non ha pagato, ha pagato solo in parte o ha il pagamento
-  scaduto.
+- **DA PAGARE** — chi non ha la quota associativa pagata: nessuna ricevuta
+  con la quota, pagata solo in parte, o scaduta.
 - **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
   segreteria.
 - **CERTIFICATI DA STAMPARE** — solo finché ce ne sono: chi ha ancora il file
   del certificato caricato nell'app, di prima della carta.
 
 La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
-**IN REGOLA** se certificato e pagamento sono a posto; altrimenti in rosso
+**IN REGOLA** se certificato e quota sono a posto (**FUORI APP**, in grigio,
+se la quota è pagata senza una ricevuta dell'app); altrimenti in rosso
 **NO CERTIFICATO**, **CERT. SCADUTO**, **DA PAGARE** o **QUOTA SCADUTA**, e in
 giallo **CERT. 14/10** (scade il 14 ottobre, entro un mese) o **IN PARTE**. In
 cima alla pagina c'è quanti sono senza certificato valido e quanti da pagare.
@@ -78,10 +79,18 @@ Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
   minore, quella del genitore). **LA COPIA È IN SEGRETERIA** lo segna, **Non
   c'è più** lo toglie. **SENZA DOCUMENTO**, sopra l'elenco, mostra chi non ce
   l'ha ancora.
-- **PAGAMENTO** — **DA PAGARE**, **IN PARTE** o **PAGATO**, e se serve **FINO
-  AL**: per chi paga il trimestre, la data in cui scade. Passata quella, la
-  scheda torna da sé a «pagamento scaduto». La **NOTA** è per quello che
-  manca («manca il saldo»). **SALVA** compare quando si cambia qualcosa.
+- **QUOTA** — se ha pagato lo dicono le ricevute: **PAGATA** se c'è una
+  ricevuta non annullata con la **QUOTA ASSOCIATIVA** che vale oggi, con fin
+  quando e il numero della ricevuta; **PAGATA IN PARTE** se della quota manca
+  qualcosa (e quanto); **QUOTA SCADUTA** quando è passata la sua data. Non si
+  segna a mano: si fa la ricevuta. I corsi (l'annuale, il trimestre) si
+  leggono sotto, con fin quando sono pagati, ma non contano per essere in
+  regola.
+  Per chi ha pagato la quota fuori dall'app (prima dell'app, con una ricevuta
+  di carta) c'è **Pagata senza ricevuta dell'app**: **VALE FINO AL** (di
+  solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
+  PAGATA**. In elenco e nella scheda si vede **FUORI APP**; alla sua data
+  scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
 - **RICEVUTE** — le ricevute dei pagamenti di questa persona (vedi sotto).
 - **ISCRIZIONI** — i corsi che fa. **TERMINA** la toglie da un corso: da
   domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
@@ -125,16 +134,19 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
 - **ANTICIPO** — quello che si era già dato prima, fuori da queste voci.
   **NOTE** — facoltative, vanno nel riquadro «Note».
 - Sotto si legge il **totale**, il **pagato** e il **netto a pagare**.
-- **Segna in scheda** — con la casella, la scheda passa da sola a **PAGATO**
-  (o **IN PARTE**, se resta qualcosa da pagare) fino all'ultima data delle
-  voci dei corsi.
+- Con la **QUOTA ASSOCIATIVA** fra le voci, fatta la ricevuta la quota è
+  pagata da sola. Senza, la ricevuta non cambia se è in regola, e sotto lo
+  dice.
 
 **FAI LA RICEVUTA** le dà il numero e scarica il PDF, da stampare o mandare.
 Nell'elenco **RICEVUTE** della scheda ogni ricevuta si riscarica con **PDF**,
 uguale a com'era.
 
 Una ricevuta fatta **non si cambia e non si cancella**: se è sbagliata,
-**Annulla** (chiede conferma) e se ne fa un'altra. L'annullata resta in elenco
+**Annulla** (chiede conferma) e se ne fa un'altra. Se la ricevuta annullata
+aveva la quota e nessun'altra la copre, la scheda chiede: **RESTA DA PAGARE**
+(di solito, perché se ne fa subito una giusta) o **ERA PAGATA FUORI
+DALL'APP**. L'annullata resta in elenco
 col suo numero, e il suo PDF dice ANNULLATA, così nella numerazione non ci
 sono buchi. I dati dell'associazione in testa alle ricevute si cambiano da
 [Impostazioni](regole.md#le-ricevute).

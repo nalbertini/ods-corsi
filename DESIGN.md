@@ -18,6 +18,7 @@ colors:
   verde-ingranaggio: "#16a54a"
   giallo-ingranaggio: "#f4c31b"
   blu-ingranaggio: "#1b8ac4"
+  viola-corso: "#8b5cc4"
   su-colore: "#121212"
   carta-chiara: "#f4f4f1"
   superficie-chiara: "#ffffff"
@@ -170,7 +171,7 @@ Il sistema rifiuta l'aspetto da SaaS generico: niente card morbide con ombra, ni
 Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i neutri sono grigi caldi, appena verso il giallo.
 
 ### Primary
-- **Rosso Ingranaggio** (#e4292a): l'azione principale (`btn-primary`, avvio del timer), la voce attiva del menu di segreteria, l'assenza nell'appello, gli errori e i dati mancanti, il timbro kanji. Uguale nei due temi.
+- **Rosso Ingranaggio** (#e4292a): ciò che manca o non va — l'assenza nell'appello, il SENZA APPELLO, i dati mancanti, gli errori — e, in segreteria, solo i tasti di ciò che non si annulla (FAI LA RICEVUTA, STAMPATO CANCELLALO, IMPORTA). Fuori dalla segreteria resta anche l'azione principale (`btn-primary`, avvio del timer) e il timbro kanji. Non è un colore dei corsi. Uguale nei due temi.
 
 ### Secondary
 - **Verde Ingranaggio** (#16a54a; #12913f sul tema chiaro): conferma e presenza. Tasto `btn-go`, "SEGNA LA PRESENZA" del tablet, riga presente, conteggio completo, toast di conferma.
@@ -191,11 +192,13 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 - **Tasto** (#b8b8b2 / chiaro #4a4a46): il testo dei tasti a linea a riposo, che si accende in `testo` al passaggio.
 
 ### Named Rules
-**La Regola del Segnale Unico.** Ogni colore del marchio ha un significato e uno solo. Il rosso non decora, il verde non è "brand": se un elemento è verde, qualcosa è fatto o presente.
+**La Regola del Segnale Unico.** Ogni colore del marchio ha un significato e uno solo. Il rosso non decora, il verde non è "brand": se un elemento è verde, qualcosa è fatto o presente. In segreteria il rosso dice solo «manca» o «non si torna indietro». Nella settimana è rosso solo il SENZA APPELLO; istruttore? e sala? sono grigi, perché sono buchi del corso e il rosso lo hanno in CORSI. Le lezioni passate con l'appello fatto si fanno da parte (fondo trasparente, bordo tenue).
+
+**La Regola dei Colori dei Corsi.** Un corso si colora fra Blu, Viola (#8b5cc4, fuori dal marchio, scelto apposta per non essere un segnale), Giallo e Verde. Mai Rosso (`supabase/26-colori-corsi.sql`).
 
 **La Regola della Tinta del Corso.** Il colore di un corso arriva come `--tinta` e vive solo su un bordo spesso (sinistra 6–8px, o in alto 4–6px). Mai come fondo pieno.
 
-**La Regola del Testo sul Colore.** Sopra rosso, verde e giallo il testo è sempre `su-colore` (#121212), in entrambi i temi.
+**La Regola del Testo sul Colore.** Sopra verde, giallo e blu pieno il testo è `su-colore` (#121212), in entrambi i temi. Sopra il rosso è bianco (#ffffff): il nero si ferma a 4,1:1, il bianco arriva a 4,5:1.
 
 ## Typography
 
@@ -252,6 +255,7 @@ Squadrato. Raggio zero su tasti, card, campi, schede, chip, dialoghi e cassetti.
 Decisi e da palestra: maiuscolo, obliquo, spaziato largo.
 - **Shape:** squadrato (0px), alto 56px sul telefono (`.btn`), 48px in segreteria (`.sg-btn`), 60–88px sul tablet (`.tb-btn`, `.tb-btn-segna`).
 - **Primario:** fondo Rosso Ingranaggio, testo `su-colore`, Saira 700 19px, 0.16em, obliquo 9°, padding 0 22px.
+- **Primario in segreteria** (`.sg-btn-pieno`): fondo `testo`, testo `nero-palestra` — si legge come tasto principale senza usare il rosso. `.sg-btn-rosso` (testo bianco) è solo per ciò che non si annulla.
 - **Vai:** fondo Verde Ingranaggio, per confermare una presenza o un invio.
 - **Linea / Ghost:** bordo 2px `riga`, testo `tasto`; al passaggio bordo `testo-spento` e testo `testo` (120ms).
 - **Tratteggiato:** bordo 2px tratteggiato `tratteggio`, largo quanto la colonna, per "aggiungi".
@@ -300,13 +304,14 @@ Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un 
 - **Do** dare a ogni stato un bordo colorato e un segno grande, così si legge da lontano.
 - **Do** tenere i bersagli ad almeno 44px, 56px per le righe che si toccano in piedi, 60px+ sul tablet.
 - **Do** scrivere tasti ed etichette in maiuscolo Saira Condensed, tasti obliqui 9°.
-- **Do** usare `su-colore` (#121212) per il testo sopra rosso, verde e giallo.
+- **Do** usare `su-colore` (#121212) per il testo sopra verde, giallo e blu pieno; bianco sopra il rosso.
 - **Do** usare `--giallo-testo` per il giallo scritto, mai `--giallo` sul tema chiaro.
 
 ### Don't:
 - **Don't** arrotondare angoli: raggio 0 ovunque, salvo il timbro kanji.
 - **Don't** usare ombre per dare profondità a card o tasti; solo per ciò che galleggia (playlist, fascia, lettore).
 - **Don't** usare gradienti o fondi pieni nella tinta del corso: la tinta vive su una barra di bordo.
-- **Don't** usare un colore del marchio per decorare: rosso è azione o errore, verde è fatto, giallo è avviso.
+- **Don't** usare un colore del marchio per decorare: rosso è mancanza o errore, verde è fatto, giallo è avviso.
+- **Don't** dare il rosso a un corso, alla voce attiva del menu o a un tasto che si può annullare.
 - **Don't** caricare font da servizi esterni: i caratteri stanno in `public/fonts`.
 - **Don't** mettere il maiuscolo spaziato sui nomi delle persone.

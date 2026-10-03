@@ -10,6 +10,7 @@ import type { Destinazione, Voce } from './Segreteria'
 const STATI: Record<StatoRichiesta, string> = { nuova: 'NUOVA', accolta: 'ACCOLTA', rifiutata: 'RIFIUTATA' }
 /** Per ordinare per stato: prima quelle da guardare. */
 const ORDINE_STATI: Record<StatoRichiesta, number> = { nuova: 0, accolta: 1, rifiutata: 2 }
+const CON_ARTICOLO: Partial<Record<string, string>> = { modulo: 'il modulo firmato', ricevuta: 'la ricevuta del pagamento' }
 const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 
 /**
@@ -33,7 +34,7 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * con la sua email non ha niente che la leghi all'iscritto che aveva dato la
  * propria, e da sola diventerebbe un doppione.
  */
-export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?: Destinazione) => void }) {
+export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; onVai: (v: Voce, d?: Destinazione) => void; stampareIniziale?: boolean }) {
   const [r, setR] = useState<DatiRichieste | null>(null)
   const elenco = useCarica(async () => {
     const x = await datiRichieste()
@@ -44,7 +45,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
   const persone = useCarica(() => d.persone(), [d])
   const conDocumento = useCarica(async () => (await datiRichieste()).conDocumento(), [])
   const [tutte, setTutte] = useState(false)
-  const [daStampare, setDaStampare] = useState(false)
+  const [daStampare, setDaStampare] = useState(!!stampareIniziale)
   const [scelta, setScelta] = useState<string | null>(null)
   const { avviso, fai } = useAvviso()
 
@@ -149,7 +150,7 @@ export function Richieste({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, d?
               onApri={(persona) => onVai('iscritti', { persona })}
             />
           ) : (
-            <span className="sg-sotto">Tocca una richiesta per vedere le risposte e i file.</span>
+            <span className="sg-sotto">Apri una richiesta per vedere le risposte e i file.</span>
           )}
         </section>
       </div>
@@ -196,6 +197,20 @@ function Scheda({
   const documenti = DA_STAMPARE.filter((t) => arrivati.has(t))
   const certificato = documenti.includes('certificato')
   const conDocumento = documenti.some((t) => t !== 'certificato')
+  // Accolta, la richiesta crea una persona iscritta ai corsi e non si torna
+  // indietro: quello che manca si dice prima, non dopo.
+  const problemi = [
+    !x.regolamento && 'Il regolamento non è accettato.',
+    file.guaio && 'I file non si sono aperti: non si sa se il modulo firmato e la ricevuta ci sono.',
+    ...(file.dato ? mancanti.map((f) => `Manca ${CON_ARTICOLO[f.tipo] ?? f.etichetta.toLowerCase()}.`) : []),
+  ].filter((t): t is string => !!t)
+  // Finché i file non si sono caricati non si sa cosa manca.
+  const inAttesa = file.dato === null && !file.guaio
+  const accogli = (op: () => Promise<unknown>, riuscito: string) => {
+    const chi = `${x.nome} ${x.cognome}${minore ? ' (minorenne)' : ''}`
+    if (problemi.length && !window.confirm(`Accogliere lo stesso la richiesta di ${chi}?\n\n${problemi.join('\n')}\n\nEntra in elenco iscritta ai suoi corsi, e non si torna indietro.`)) return
+    void fai(op, riuscito, onCambiato)
+  }
 
   // Solo da accolta: così la scheda dell'iscritto segna che la copia è in segreteria.
   const stampato = (personaId: string) => {
@@ -292,7 +307,7 @@ function Scheda({
               )}
             </div>
           )}
-          {mancanti.length > 0 && file.dato.length > 0 && (
+          {x.stato !== 'nuova' && mancanti.length > 0 && file.dato.length > 0 && (
             <span className="sg-sotto" style={{ color: 'var(--rosso)' }}>Manca: {mancanti.map((f) => f.etichetta.toLowerCase()).join(', ')}.</span>
           )}
           {file.dato.length > 0 && <span className="sg-sotto" style={{ fontSize: 12 }}>I link valgono dieci minuti: se non si aprono più, riapri la richiesta.</span>}
@@ -326,9 +341,8 @@ function Scheda({
                   <button
                     type="button"
                     className="sg-btn sg-btn-linea"
-                    onClick={() => {
-                      void fai(() => r.accogli(x.id, p.id), `Accolta sulla scheda di ${p.nome} ${p.cognome}, iscritta ai suoi corsi`, onCambiato)
-                    }}
+                    disabled={inAttesa}
+                    onClick={() => accogli(() => r.accogli(x.id, p.id), `Accolta sulla scheda di ${p.nome} ${p.cognome}, iscritta ai suoi corsi`)}
                   >
                     ACCOGLI SU QUESTA
                   </button>
@@ -339,17 +353,31 @@ function Scheda({
         </>
       )}
 
+      {x.stato === 'nuova' && problemi.length > 0 && (
+        <div className="sg-prima">
+          <span className="sg-etichetta" data-manca>PRIMA DI ACCOGLIERE</span>
+          <ul>
+            {problemi.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+          <span className="sg-sotto">
+            {minore && file.dato && !arrivati.has('modulo') ? 'È minorenne: senza il modulo firmato dal genitore non c’è il suo consenso. ' : ''}
+            Chiedi quello che manca prima, o accogli lo stesso se l’hai già in segreteria su carta.
+          </span>
+        </div>
+      )}
+
       <div className="row" style={{ gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
         {x.stato === 'nuova' && (
           <>
             <button
               type="button"
-              className="sg-btn sg-btn-verde"
-              onClick={() => {
-                void fai(() => r.accogli(x.id), 'Accolta: ora è in elenco e iscritta ai suoi corsi', onCambiato)
-              }}
+              className={problemi.length ? 'sg-btn sg-btn-linea' : 'sg-btn sg-btn-verde'}
+              disabled={inAttesa}
+              onClick={() => accogli(() => r.accogli(x.id), 'Accolta: ora è in elenco e iscritta ai suoi corsi')}
             >
-              ACCOGLI
+              {problemi.length ? 'ACCOGLI LO STESSO' : 'ACCOGLI'}
             </button>
             <button
               type="button"

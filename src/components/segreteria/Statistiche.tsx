@@ -655,7 +655,7 @@ function InRegola({ persone, oggi, onVai }: { persone: PersonaSeg[]; oggi: strin
   const paga = { pagato: 0, in_parte: 0, da_pagare: 0, scaduto: 0 }
   for (const p of persone) {
     cert[comeCertificato(p.certificato, oggi)]++
-    paga[comePaga(p.pagamento, oggi)]++
+    paga[comePaga(p, oggi)]++
   }
   return (
     <div className="stack" style={{ gap: 18 }}>

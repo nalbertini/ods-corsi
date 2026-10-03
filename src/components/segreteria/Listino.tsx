@@ -316,7 +316,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               >
                 LASCIA STARE
               </button>
-              <button type="button" className="sg-btn sg-btn-rosso" disabled={!!guaio || lavora} onClick={salva}>
+              <button type="button" className="sg-btn sg-btn-pieno" disabled={!!guaio || lavora} onClick={salva}>
                 SALVA
               </button>
             </div>

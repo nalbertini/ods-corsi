@@ -63,7 +63,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   dall'app o col PIN (`supabase/23-istruttori-dalle-lezioni.sql`). Si apre con
   `sala/` in fondo all'indirizzo, e da lì il dispositivo resta un tablet.
 - **La segreteria**: per il computer della reception, a chi ha il ruolo di
-  segreteria. La **settimana** in una griglia, con gli appelli che mancano in
+  segreteria. Si apre su **DA FARE**: gli appelli che mancano, le richieste nuove, le presenze degli istruttori da confermare, i certificati e i pagamenti da sistemare, contati, ognuno col tasto per andare a sistemarlo. La **settimana** in una griglia, con gli appelli che mancano in
   rosso, e ogni lezione si apre per annullarla, dare un sostituto, spostarla di
   sala o fare l'appello, un nome alla volta o tutti presenti, come dall'app;
   le lezioni straordinarie. I **corsi**, con sala,

@@ -1,28 +1,32 @@
 import { useState } from 'react'
-import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PagamentoSeg, PersonaSeg } from '../../lib/segreteria'
-import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, PAGAMENTI, pulisciAnagrafica } from '../../lib/segreteria'
+import type { Destinazione } from './Segreteria'
+import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg } from '../../lib/segreteria'
+import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, pulisciAnagrafica } from '../../lib/segreteria'
+import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Campo, dataLunga, Guaio, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
-import { euro } from '../../lib/ricevute'
+import { euro, QUOTA } from '../../lib/ricevute'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
 
 /** Il certificato da sistemare: manca, è scaduto o scade entro un mese. */
 const certificatoDaSistemare = (p: PersonaSeg, oggi: string) => comeCertificato(p.certificato, oggi) !== 'valido'
-const daPagare = (p: PersonaSeg, oggi: string) => comePaga(p.pagamento, oggi) !== 'pagato'
+const daPagare = (p: PersonaSeg, oggi: string) => comePaga(p, oggi) !== 'pagato'
+/** La quota pagata fuori dall'app: si vede in elenco, perché prima o poi va una ricevuta. */
+const fuoriApp = (p: PersonaSeg) => pagamentoDi(p, chiaveGiorno(new Date())).fonte === 'fuori_app'
 
 const TONO_CERTIFICATO: Record<ComeCertificato, 'rosso' | 'giallo' | 'verde'> = { manca: 'rosso', scaduto: 'rosso', in_scadenza: 'giallo', valido: 'verde' }
 const TONO_PAGA: Record<ComePaga, 'rosso' | 'giallo' | 'verde'> = { da_pagare: 'rosso', scaduto: 'rosso', in_parte: 'giallo', pagato: 'verde' }
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
 const GUAIO_CERTIFICATO: Record<ComeCertificato, number> = { manca: 2, scaduto: 2, in_scadenza: 1, valido: 0 }
 const GUAIO_PAGA: Record<ComePaga, number> = { da_pagare: 2, scaduto: 2, in_parte: 1, pagato: 0 }
-const PAROLA_PAGA: Record<ComePaga, string> = { da_pagare: 'DA PAGARE', in_parte: 'PAGATO IN PARTE', pagato: 'PAGATO', scaduto: 'PAGAMENTO SCADUTO' }
+const PAROLA_PAGA: Record<ComePaga, string> = { da_pagare: 'DA PAGARE', in_parte: 'PAGATA IN PARTE', pagato: 'PAGATA', scaduto: 'QUOTA SCADUTA' }
 
-function Bollino({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde'; children: string }) {
+function Bollino({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde' | 'spento'; children: string }) {
   return (
     <span className="num sg-segno-regola" data-tono={tono}>
       {children}
@@ -36,7 +40,7 @@ function Bollino({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde'; child
  * Un nome in elenco non ha bisogno di un accesso: gli iscritti non entrano
  * nell'app. Qui la segreteria li aggiunge, li iscrive e li toglie dai corsi.
  */
-export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIniziale?: string }) {
+export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegreteria; personaIniziale?: string; filtroIniziale?: Destinazione['filtro'] }) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
   const freq = useCarica(() => d.frequenze(), [d])
@@ -44,10 +48,10 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
   const [corso, setCorso] = useState('')
   const [senzaEmail, setSenzaEmail] = useState(false)
   const [poco, setPoco] = useState(false)
-  const [certificato, setCertificato] = useState(false)
-  const [pagare, setPagare] = useState(false)
+  const [certificato, setCertificato] = useState(filtroIniziale === 'certificato')
+  const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
-  const [daStampare, setDaStampare] = useState(false)
+  const [daStampare, setDaStampare] = useState(filtroIniziale === 'stampare')
   const [scelta, setScelta] = useState<string | null>(personaIniziale ?? null)
   const [nuovo, setNuovo] = useState(false)
   const { avviso, fai } = useAvviso()
@@ -78,7 +82,7 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
     nome: (p) => `${p.cognome} ${p.nome}`,
     corsi: (p) => suoiCorsi(p).join(', '),
     contatto: (p) => p.telefono ?? p.email,
-    regola: (p) => GUAIO_CERTIFICATO[comeCertificato(p.certificato, oggi)] + GUAIO_PAGA[comePaga(p.pagamento, oggi)],
+    regola: (p) => GUAIO_CERTIFICATO[comeCertificato(p.certificato, oggi)] + GUAIO_PAGA[comePaga(p, oggi)],
     frequenza: (p) => {
       const f = freq.dato?.get(p.id)
       return f && f.dovute ? f.presenti / f.dovute : null
@@ -138,7 +142,7 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
             stampare === 1 ? ' Un certificato caricato nell’app da stampare e cancellare.' : stampare ? ` ${stampare} certificati caricati nell’app da stampare e cancellare.` : ''
           }`}
         >
-          <button type="button" className="sg-btn sg-btn-rosso" onClick={() => setNuovo(true)}>
+          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
             + NUOVO ISCRITTO
           </button>
         </Testa>
@@ -198,7 +202,7 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
               const f = freq.dato?.get(p.id)
               const suoi = suoiCorsi(p)
               const cert = comeCertificato(p.certificato, oggi)
-              const paga = comePaga(p.pagamento, oggi)
+              const paga = comePaga(p, oggi)
               return (
                 <button
                   key={p.id}
@@ -221,6 +225,7 @@ export function Iscritti({ d, personaIniziale }: { d: DatiSegreteria; personaIni
                     {p.telefono ?? p.email ?? 'nessun contatto'}
                   </span>
                   <span role="cell" className="sg-in-regola">
+                    {fuoriApp(p) && <Bollino tono="spento">FUORI APP</Bollino>}
                     {cert === 'valido' && paga === 'pagato' ? (
                       <Bollino tono="verde">IN REGOLA</Bollino>
                     ) : (
@@ -320,7 +325,7 @@ function Nuovo({
         <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
           LASCIA STARE
         </button>
-        <button type="button" className="sg-btn sg-btn-rosso grow" disabled={!b.nome.trim() || !b.cognome.trim()} onClick={salva}>
+        <button type="button" className="sg-btn sg-btn-pieno grow" disabled={!b.nome.trim() || !b.cognome.trim()} onClick={salva}>
           SALVA
         </button>
       </div>
@@ -423,8 +428,8 @@ function Scheda({
           <DatiAnagrafici key={`a-${p.id}`} d={d} p={p} fai={fai} />
           <Certificato key={`c-${p.id}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
           <Documento d={d} p={p} fai={fai} onCambiato={onCambiato} />
-          <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${p.pagamento.nota ?? ''}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
-          <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} />
+          <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
+          <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
           {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
         </div>
 
@@ -522,7 +527,7 @@ function Scheda({
             </button>
             <button
               type="button"
-              className="sg-btn sg-btn-rosso grow"
+              className="sg-btn sg-btn-pieno grow"
               disabled={!modifica.nome.trim() || !modifica.cognome.trim()}
               onClick={() =>
                 void fai(() => d.salvaPersona(modifica), 'Scheda salvata', () => {
@@ -809,7 +814,7 @@ function ModificaAnagrafica({
         <button type="button" className="sg-btn sg-btn-linea" onClick={onFatto}>
           LASCIA STARE
         </button>
-        <button type="button" className="sg-btn sg-btn-rosso" disabled={!!no} onClick={() => void fai(() => d.salvaAnagrafica(p.id, pulita, true), 'Dati anagrafici salvati', onFatto)}>
+        <button type="button" className="sg-btn sg-btn-pieno" disabled={!!no} onClick={() => void fai(() => d.salvaAnagrafica(p.id, pulita, true), 'Dati anagrafici salvati', onFatto)}>
           SALVA
         </button>
       </div>
@@ -910,7 +915,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             </button>
             <button
               type="button"
-              className="sg-btn sg-btn-rosso grow"
+              className="sg-btn sg-btn-pieno grow"
               disabled={!bozza.scade}
               onClick={() =>
                 void fai(() => d.salvaCertificato(p.id, bozza.scade), c.scade ? 'Scadenza cambiata' : 'Certificato segnato', () => {
@@ -976,47 +981,108 @@ function Documento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
 }
 
 /**
- * Il pagamento: da pagare, in parte o pagato, e per chi paga il trimestre fino
- * a quando. Passata quella data torna da pagare da sé.
+ * La quota: se ha pagato lo dicono le ricevute (la QUOTA ASSOCIATIVA che vale
+ * oggi, vedi `pagamentoDi`). Per chi ha pagato fuori dall'app, prima dell'app
+ * o con una ricevuta di carta, c'è l'eccezione scritta a mano, fino a una
+ * data. Sotto, fin quando sono pagati i corsi: si guardano, non contano.
  */
 function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void }) {
   const oggi = chiaveGiorno(new Date())
-  const [b, setB] = useState<PagamentoSeg>({ stato: p.pagamento.stato, fino: p.pagamento.fino ?? '', nota: p.pagamento.nota ?? '' })
-  const come = comePaga(p.pagamento, oggi)
-  const cambiato = b.stato !== p.pagamento.stato || (b.fino || '') !== (p.pagamento.fino ?? '') || (b.nota ?? '').trim() !== (p.pagamento.nota ?? '')
+  const s = pagamentoDi(p, oggi)
+  const eccezione = p.pagamento.stato !== 'da_pagare'
+  const [scrivi, setScrivi] = useState(false)
+  const [b, setB] = useState({ fino: VALIDITA.quota.al, nota: '' })
+  const ricevute = useCarica(() => d.ricevute(p.id), [d, p.id])
+  // Per ogni corso pagato, l'ultima data fin cui vale.
+  const corsi = new Map<string, string>()
+  for (const r of ricevute.dato ?? []) {
+    if (r.annullataIl) continue
+    for (const v of r.voci) {
+      if (!v.al || v.descrizione.trim().toUpperCase() === QUOTA) continue
+      if ((corsi.get(v.descrizione) ?? '') < v.al) corsi.set(v.descrizione, v.al)
+    }
+  }
+  const fino = s.fino ? dataLunga(s.fino) : ''
+  // Una frase sola, per il caso che è: le date ci sono solo dove servono.
+  const detto =
+    s.come === 'pagato'
+      ? s.fonte === 'ricevuta'
+        ? `Pagata${fino ? ` fino al ${fino}` : ''} · ricevuta ${s.ricevuta}.`
+        : `Pagata fuori dall’app${fino ? `, fino al ${fino}` : ''}.`
+      : s.come === 'in_parte'
+        ? s.fonte === 'ricevuta'
+          ? `Mancano ${euro(s.mancano ?? 0)} € della quota · ricevuta ${s.ricevuta}.`
+          : `Pagata in parte fuori dall’app${fino ? `, fino al ${fino}` : ''}.`
+        : s.come === 'scaduto'
+          ? `Valeva fino al ${fino}: è da pagare di nuovo.`
+          : 'Nessuna ricevuta con la quota di questa stagione.'
 
   return (
     <div className="stack" style={{ gap: 8 }}>
-      <Riga titolo="PAGAMENTO">
-        <Bollino tono={TONO_PAGA[come]}>{PAROLA_PAGA[come]}</Bollino>
+      <Riga titolo="QUOTA">
+        <Bollino tono={TONO_PAGA[s.come]}>{PAROLA_PAGA[s.come]}</Bollino>
+        {s.fonte === 'fuori_app' && <Bollino tono="spento">FUORI APP</Bollino>}
       </Riga>
-      {come === 'scaduto' && <span style={{ fontSize: 14, color: 'var(--rosso)' }}>Pagato fino al {dataLunga(p.pagamento.fino!)}: ora è da pagare di nuovo.</span>}
-      {come === 'pagato' && p.pagamento.fino && <span style={{ fontSize: 14, color: 'var(--sec)' }}>Pagato fino al {dataLunga(p.pagamento.fino)}.</span>}
-      <div role="radiogroup" aria-label="Stato del pagamento" className="sg-tre">
-        {PAGAMENTI.map(([s, testo]) => (
-          <button key={s} type="button" role="radio" aria-checked={b.stato === s} className="sg-btn sg-scelta" style={{ fontSize: 13, padding: '0 6px', whiteSpace: 'nowrap' }} onClick={() => setB({ ...b, stato: s })}>
-            {testo}
-          </button>
-        ))}
-      </div>
-      <div className="sg-due">
-        <Campo id="pg-fino" etichetta="FINO AL · FACOLTATIVO">
-          <input id="pg-fino" className="sg-campo" type="date" value={b.fino ?? ''} onChange={(e) => setB({ ...b, fino: e.target.value })} />
-        </Campo>
-        <Campo id="pg-nota" etichetta="NOTA">
-          <input id="pg-nota" className="sg-campo" maxLength={300} placeholder="Manca il saldo…" value={b.nota ?? ''} onChange={(e) => setB({ ...b, nota: e.target.value })} />
-        </Campo>
-      </div>
-      <span style={{ fontSize: 12, color: 'var(--dim)' }}>«Fino al» serve per il trimestre: passata la data, torna da pagare.</span>
-      {cambiato && (
-        <div className="row" style={{ gap: 8 }}>
-          <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setB({ stato: p.pagamento.stato, fino: p.pagamento.fino ?? '', nota: p.pagamento.nota ?? '' })}>
-            LASCIA STARE
-          </button>
-          <button type="button" className="sg-btn sg-btn-rosso grow" onClick={() => void fai(() => d.salvaPagamento(p.id, b), 'Pagamento segnato', onCambiato)}>
-            SALVA
-          </button>
+      <span style={{ fontSize: 14, color: s.come === 'pagato' ? 'var(--sec)' : s.come === 'in_parte' ? 'var(--giallo-testo)' : 'var(--rosso)' }}>{detto}</span>
+      {s.fonte === 'fuori_app' && s.nota && <span style={{ fontSize: 14, color: 'var(--sec)' }}>{s.nota}</span>}
+      {corsi.size > 0 && (
+        <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 2, fontSize: 13, color: 'var(--sec)' }}>
+          {[...corsi].map(([corso, al]) => (
+            <li key={corso}>
+              {corso}: {al >= oggi ? `pagato fino al ${dataLunga(al)}` : <span style={{ color: 'var(--dim)' }}>valeva fino al {dataLunga(al)}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {scrivi ? (
+        <div className="stack" style={{ gap: 8, padding: '12px 14px', border: '2px dashed var(--tratteggio)' }}>
+          <span style={{ fontSize: 14, color: 'var(--sec)' }}>Per chi ha pagato la quota senza una ricevuta dell’app: prima dell’app, o con una ricevuta di carta.</span>
+          <div className="sg-due">
+            <Campo id="pg-fino" etichetta="VALE FINO AL">
+              <input id="pg-fino" className="sg-campo" type="date" value={b.fino} onChange={(e) => setB({ ...b, fino: e.target.value })} />
+            </Campo>
+            <Campo id="pg-nota" etichetta="NOTA · FACOLTATIVA">
+              <input id="pg-nota" className="sg-campo" maxLength={300} placeholder="Ricevuta di carta n. 12…" value={b.nota} onChange={(e) => setB({ ...b, nota: e.target.value })} />
+            </Campo>
+          </div>
+          <div className="row" style={{ gap: 8 }}>
+            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setScrivi(false)}>
+              LASCIA STARE
+            </button>
+            <button
+              type="button"
+              className="sg-btn sg-btn-pieno grow"
+              disabled={!b.fino || b.fino < oggi}
+              onClick={() =>
+                void fai(() => d.salvaPagamento(p.id, { stato: 'pagato', fino: b.fino, nota: b.nota.trim() || undefined }), 'Quota segnata pagata fuori dall’app', () => {
+                  setScrivi(false)
+                  onCambiato()
+                })
+              }
+            >
+              SEGNA PAGATA
+            </button>
+          </div>
         </div>
+      ) : eccezione ? (
+        <button
+          type="button"
+          className="sg-link"
+          style={{ alignSelf: 'flex-start' }}
+          onClick={() => {
+            if (window.confirm(`Togliere «pagata fuori dall’app» a ${p.nome} ${p.cognome}? Resta quello che dicono le ricevute.`))
+              void fai(() => d.salvaPagamento(p.id, { stato: 'da_pagare' }), 'Tolta: ora contano solo le ricevute', onCambiato)
+          }}
+        >
+          Togli «pagata fuori dall’app»
+        </button>
+      ) : (
+        s.come !== 'pagato' && (
+          <button type="button" className="sg-link" style={{ alignSelf: 'flex-start' }} onClick={() => setScrivi(true)}>
+            Pagata senza ricevuta dell’app
+          </button>
+        )
       )}
     </div>
   )
