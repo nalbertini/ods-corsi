@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.8.6 — 3 ottobre 2026
+
+### Risolto
+
+- Sul tablet di sala il timer torna in primo piano, e l'area istruttore funziona anche in verticale
+
+### Modificato
+
+- Segnalazioni: la chiusa resta in vista, le bozze non si perdono e i tasti spenti dicono cosa manca
+
 ## 0.8.5 — 3 ottobre 2026
 
 ### Risolto
