@@ -1200,7 +1200,7 @@ a.btn { text-decoration: none; }
 .sg-cerca-vuoto { padding: 10px; font-size: 14px; color: var(--dim); }
 .sg-gruppi { display: flex; flex-direction: column; gap: 18px; }
 .sg-gruppo { display: flex; flex-direction: column; gap: 4px; }
-.sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
+.sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
 /* Le schede di PRESENZE: larghe quanto serve, non quanto la sezione. */
 .sg-schede { flex-basis: auto; align-self: flex-start; grid-auto-columns: minmax(150px, auto); }
 .sg-schede .scheda { padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
@@ -1345,7 +1345,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-lezione[data-annullata='true'] .sg-lezione-nome { text-decoration: line-through; }
 .sg-lezione-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-lezione-dove { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sg-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; white-space: nowrap; }
+.sg-tag { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; white-space: nowrap; }
 .sg-tag[data-tipo='manca'] { background: var(--rosso); color: var(--su-rosso); }
 .sg-tag[data-tipo='aspetta'] { background: var(--giallo); color: var(--su-colore); }
 /* Un filo delle segnalazioni: la testata si tocca tutta; giallo se aspetta te. */
@@ -1474,11 +1474,11 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-in-regola { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 0; }
 .sg-segno-regola {
   display: inline-block; padding: 2px 6px; border: 1.5px solid currentColor;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; line-height: 1.3; white-space: nowrap;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.12em; line-height: 1.3; white-space: nowrap;
 }
 .sg-segno-regola[data-tono='rosso'] { color: var(--rosso-testo); }
 .sg-segno-regola[data-tono='giallo'] { color: var(--giallo-testo); }
-.sg-segno-regola[data-tono='verde'] { color: var(--verde); }
+.sg-segno-regola[data-tono='verde'] { color: var(--verde-testo); }
 .sg-segno-regola[data-tono='spento'] { color: var(--dim); }
 /* I timbri in cima alla scheda: bordo e parola del colore dello stato, il resto si legge sul fondo. */
 .sg-timbri { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.75fr); gap: 12px; align-items: stretch; }
@@ -1604,7 +1604,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-dafare-lezione-nome { font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); }
 .sg-dafare-aposto { margin: 0; font-size: 14px; line-height: 1.5; color: var(--sec); }
 .sg-dafare-fatto { display: flex; flex-direction: column; gap: 6px; padding: 28px; border: 2px solid var(--verde); }
-.sg-dafare-fatto .ob { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: var(--verde); }
+.sg-dafare-fatto .ob { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: var(--verde-testo); }
 @media (max-width: 700px) {
   .sg-dafare-riga { flex-wrap: wrap; gap: 12px; }
   .sg-dafare-n { min-width: 0; text-align: left; }
@@ -1708,7 +1708,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-passi { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
 .sg-passi li { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: 2px solid var(--line-soft); color: var(--dim); }
 .sg-passi li[aria-current='step'] { border-color: var(--text); color: var(--text); }
-.sg-passi li[data-fatto='true'] { color: var(--verde); }
+.sg-passi li[data-fatto='true'] { color: var(--verde-testo); }
 .sg-passo-num { font-size: 20px; font-weight: 700; }
 .sg-importa { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 .sg-cosa-entra { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }

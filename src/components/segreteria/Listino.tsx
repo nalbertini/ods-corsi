@@ -321,7 +321,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
 
           {cambiato && (
             <div className="sg-listino-salva">
-              <span className="grow" style={{ fontSize: 14, color: guaio ? 'var(--rosso)' : 'var(--sec)' }}>
+              <span className="grow" style={{ fontSize: 14, color: guaio ? 'var(--rosso-testo)' : 'var(--sec)' }}>
                 {guaio ?? 'Ci sono cambi da salvare: fino ad allora la pagina di iscrizione mostra quello di prima.'}
               </span>
               <button

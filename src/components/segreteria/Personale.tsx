@@ -134,7 +134,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
                   {p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}
                 </span>
               </span>
-              <span role="cell" className="sg-una-riga" style={{ fontSize: 13, color: p.email ? 'var(--sec)' : 'var(--rosso)' }} title={p.email ?? 'Senza email non può entrare'}>
+              <span role="cell" className="sg-una-riga" style={{ fontSize: 13, color: p.email ? 'var(--sec)' : 'var(--rosso-testo)' }} title={p.email ?? 'Senza email non può entrare'}>
                 {p.email ?? 'nessuna email'}
               </span>
               <span role="cell" style={{ fontSize: 14, color: 'var(--sec)' }}>
@@ -184,7 +184,7 @@ type Partito = (nome: string, come: 'invito' | 'password') => string
 
 function Accesso({ p }: { p: PersonaleSeg }) {
   return (
-    <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde)' : 'var(--giallo-testo)' }}>
+    <span className="num" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', color: !p.attiva ? 'var(--dim)' : p.collegato ? 'var(--verde-testo)' : 'var(--giallo-testo)' }}>
       {!p.attiva ? 'SENZA ACCESSO' : p.collegato ? 'HA FATTO L’ACCESSO' : 'NON ANCORA ENTRATO'}
     </span>
   )
@@ -349,7 +349,7 @@ function Scheda({
           <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>
             {`${p.nome} ${p.cognome}`.trim().toUpperCase()}
           </span>
-          <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso)' }}>
+          <span style={{ fontSize: 13, color: p.attiva ? 'var(--dim)' : 'var(--rosso-testo)' }}>
             {p.attiva ? nomeDelRuolo(p) : 'Accesso tolto: non entra nell’app né nell’area istruttore'}
           </span>
         </div>
@@ -399,7 +399,7 @@ function Scheda({
             <div className="stack" style={{ gap: 12 }}>
               <div className="sg-due">
                 <Campo etichetta="EMAIL">
-                  <span style={{ fontSize: 14, overflowWrap: 'anywhere', color: p.email ? 'var(--text)' : 'var(--rosso)' }}>{p.email ?? 'nessuna email: non può entrare'}</span>
+                  <span style={{ fontSize: 14, overflowWrap: 'anywhere', color: p.email ? 'var(--text)' : 'var(--rosso-testo)' }}>{p.email ?? 'nessuna email: non può entrare'}</span>
                 </Campo>
                 <Campo etichetta="CORSI">
                   <span style={{ fontSize: 14, color: p.corsi.length ? 'var(--text)' : 'var(--dim)' }}>{p.corsi.join(', ') || (ruoloScelto(p) === 'staff' ? 'segreteria' : 'nessun corso')}</span>
@@ -595,7 +595,7 @@ function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: P
             lascia stare
           </button>
           {aMano.trim() && (
-            <span style={{ fontSize: 13, color: 'var(--rosso)' }}>{!scritto ? 'Un kanji solo, senza altro' : giaDi ? `${scritto} è già di ${giaDi}` : ''}</span>
+            <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{!scritto ? 'Un kanji solo, senza altro' : giaDi ? `${scritto} è già di ${giaDi}` : ''}</span>
           )}
         </form>
       ) : (
