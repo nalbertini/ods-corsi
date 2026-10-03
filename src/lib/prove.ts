@@ -91,3 +91,20 @@ export function nuovoId(): string {
   const h = [...b].map((x) => x.toString(16).padStart(2, '0')).join('')
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`
 }
+
+/**
+ * Chi è già nell'appello, per non riproporlo fra i già venuti. Sul tablet,
+ * quando la rilettura non riesce, l'elenco si nasconde ma questo resta:
+ * riaggiungere chi c'è già non cambia il suo segno, e il pannello direbbe
+ * «segnato presente» anche a chi è assente.
+ */
+export function giaNellAppello(
+  prima: ReadonlySet<string>,
+  cambio: { letti: string[] } | { aggiunto: string } | { tolto: string },
+): Set<string> {
+  if ('letti' in cambio) return new Set(cambio.letti)
+  const dopo = new Set(prima)
+  if ('aggiunto' in cambio) dopo.add(cambio.aggiunto)
+  else dopo.delete(cambio.tolto)
+  return dopo
+}

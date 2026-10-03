@@ -15,7 +15,9 @@ database, se è stato attivato, oppure subito con **CANCELLA ORA** (chiede confe
 
 ## Il calendario
 
-- **PRONTO FINO AL** — fino a che giorno le lezioni sono già in calendario.
+- **PRONTO FINO AL** — fino a che giorno le lezioni dell'orario sono già in
+  calendario. Le lezioni straordinarie non contano: una fissata lontano resta
+  dov'è, e il calendario continua ad allungarsi.
 - **SI ALLUNGA** — **DA SÉ**: quando alla fine manca meno di metà del periodo
   (o, con la fine dei corsi, quando non ci arriva), il primo che apre il
   calendario lo allunga, istruttore, segreteria o tablet.

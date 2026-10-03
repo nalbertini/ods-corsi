@@ -19,6 +19,9 @@ const piano = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCa
 /** Apostrofi e trattini (anche lunghi) di ogni tastiera: D'Amico, D’Amico e De-Luca si scrivono in tanti modi. */
 const STACCA = /['’‘ʼ´‐–—-]/g
 
+/** Un nome scritto attaccato, senza accenti, apostrofi e trattini: D'Amico, D’amico e Damico diventano «damico». */
+export const compatto = (s: string) => piano(s).replace(STACCA, '').replace(/\s+/g, '')
+
 /** Le parole di quel che si sta scrivendo per cercare qualcuno, senza apostrofi né trattini. */
 export const paroleCercate = (scritto: string): string[] =>
   piano(scritto)
@@ -36,7 +39,7 @@ export const paroleCercate = (scritto: string): string[] =>
  */
 export function somiglia(p: { nome: string; cognome: string }, parole: string[]): boolean {
   const nomi = [p.nome, p.cognome].map(piano)
-  const attaccati = nomi.map((n) => n.replace(STACCA, '').replace(/\s+/g, ''))
+  const attaccati = [p.nome, p.cognome].map(compatto)
   const sue = [...nomi.flatMap((n) => n.replace(STACCA, ' ').split(/\s+/)), ...attaccati]
   return parole.every((w) => sue.some((s) => s.startsWith(w))) || attaccati.some((s) => s.startsWith(parole.join('')))
 }
