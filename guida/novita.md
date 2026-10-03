@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.8.0 — 3 ottobre 2026
+
+### Novità
+
+- Chi è già venuto a provare compare solo mentre si scrive il nome
+
 ## 0.7.6 — 3 ottobre 2026
 
 ### Modificato
