@@ -21,6 +21,7 @@
     "prova:prove": "node scripts/prova-prove.mjs",
     "prova:iscritti": "node scripts/prova-iscritti.mjs",
     "prova:indirizzi": "node scripts/prova-indirizzi.mjs",
+    "prova:informativa": "node scripts/prova-informativa.mjs",
     "prova:sql": "bash scripts/prova-sql.sh"
   },
   "dependencies": {

@@ -20,10 +20,20 @@
   modulo, ma si tengono su carta in segreteria e dall'app si cancellano
   appena stampati.
 
+  Cambiata dopo l'ultima approvazione, ancora da far approvare: per quanto
+  si tengono le presenze non è più «24 mesi» scritto qui, ma quello che la
+  segreteria sceglie in IMPOSTAZIONI. Lo script in fondo lo chiede al
+  database (src/lib/informativa.ts) e lo scrive nella cella; senza script,
+  senza rete o finché sul database non c'è 31-informativa-mesi.sql resta il
+  testo scritto nella cella, che non dice un numero ed è vero sempre.
+
   I fatti che il testo dà per certi vengono dall'app com'è oggi: se l'app
-  cambia (un dato in più nel modulo, un periodo di conservazione diverso in
-  IMPOSTAZIONI, un altro posto dove pubblicarla), va cambiato anche qui. Per
-  esempio i 24 mesi delle presenze sono quelli di IMPOSTAZIONI.
+  cambia (un dato in più nel modulo, un altro posto dove pubblicarla), va
+  cambiato anche qui.
+
+  È una pagina di Vite (vite.config.ts, `build.rollupOptions.input`), non un
+  file di public/, solo per quello script: esce in dist/informativa.html,
+  allo stesso indirizzo di prima.
 -->
 <style>
   :root { --bg: #121212; --surface: #1c1c1c; --line: #333; --text: #f2f2f0; --sec: #c9c9c4; --dim: #8c8c88; color-scheme: dark; }
@@ -86,7 +96,7 @@
   <h2>Per quanto tempo</h2>
   <table>
     <tr><th>Cosa</th><th>Per quanto</th></tr>
-    <tr><td>Le presenze</td><td>24 mesi dalla lezione, poi si cancellano da sole</td></tr>
+    <tr><td>Le presenze</td><td id="presenze-per-quanto">Per il periodo stabilito dalla palestra (oggi indicato in segreteria), poi si cancellano da sole</td></tr>
     <tr><td>La richiesta di iscrizione e l'anagrafica</td><td>Per la durata dell'iscrizione e fino a 10 anni dopo, per gli obblighi dell'associazione</td></tr>
     <tr><td>Il certificato medico, su carta</td><td>Finché vale: si distrugge quando arriva quello nuovo o quando l'iscritto smette</td></tr>
     <tr><td>La copia del documento d'identità, su carta</td><td>Fino al tesseramento, e comunque non oltre la fine della stagione</td></tr>
@@ -114,5 +124,9 @@
   <h2>Modifiche</h2>
   <p>Se questa informativa cambia, la versione nuova è pubblicata qui, con la data in cima.</p>
 </main>
+<script type="module">
+  import { mostraPresenze } from './src/lib/informativa.ts'
+  void mostraPresenze(document.getElementById('presenze-per-quanto'))
+</script>
 </body>
 </html>

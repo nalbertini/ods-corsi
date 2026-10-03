@@ -240,8 +240,8 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             </button>
           </div>
           <ComeFunziona>
-            Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è della palestra, titolare del trattamento, e va scritta
-            nell'informativa.
+            Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è della palestra, titolare del trattamento, e
+            l'informativa la riporta da sé.
           </ComeFunziona>
         </section>
 

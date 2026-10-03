@@ -99,7 +99,8 @@ ricevute si fanno dalla scheda di un iscritto (vedi
 
 Si sceglie fra **12, 24, 36 o 60 mesi**: dopo, le presenze si cancellano.
 Ventiquattro mesi è il valore di partenza, non una regola di legge: la scelta è
-della palestra.
+della palestra, titolare del trattamento, e l'informativa privacy la riporta da
+sé.
 
 Scegliendo più mesi si salva subito. Scegliendo meno mesi, l'app conta prima
 quante presenze sono più vecchie del periodo nuovo e, se ce ne sono, chiede
