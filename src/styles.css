@@ -560,6 +560,8 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .modulo-testa { gap: 10px; padding-top: 14px; flex-wrap: wrap; }
 /* INDIETRO su una riga, anche quando chiede: se non c'è posto scende il bollino PROVA. */
 .modulo-testa .btn { white-space: nowrap; }
+/* Sotto i 360px la domanda va a capo invece di uscire dal margine. */
+.modulo-testa .btn > .due-tocchi-chiede { white-space: normal; }
 /* INDIETRO che chiede (DueTocchi): in rosso, perché le risposte non tornano. */
 .modulo-testa .btn[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso-testo); }
 .modulo-piede { gap: 10px; padding-bottom: 28px; }

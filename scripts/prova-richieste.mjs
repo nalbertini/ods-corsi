@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { certificatoDaPortare, controlla, domandaUscita, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { certificatoDaPortare, chiFirma, controlla, domandaUscita, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -300,6 +300,15 @@ console.log('\n9. INDIETRO dal modulo, e chi firma che cambia')
   ok('firmato, ora minore: firma il genitore', m.firmaDaRifare(true, { ...niente, tratti: 3 }), GENITORE)
   ok('caselle scelte, ora maggiorenne: firma chi si iscrive', m.firmaDaRifare(false, { ...niente, scelte: 2 }), ISCRITTO)
   ok('solo la foto del foglio: avvisa', m.firmaDaRifare(false, { ...niente, foto: true }), ISCRITTO)
+  // Mentre si corregge la data dalla tastiera, il campo passa per vuoto o per anni come 0002:
+  // chi firma resta quello di prima, se no firma e caselle sparirebbero per niente.
+  ok('data vuota: chi firma resta il genitore', m.chiFirma('', true), true)
+  ok('data vuota: chi firma resta chi si iscrive', m.chiFirma('', false), false)
+  ok('anno a metà (0002): resta il genitore', m.chiFirma('0002-03-01', true), true)
+  ok('anno a metà (0201): resta il genitore', m.chiFirma('0201-03-01', true), true)
+  ok('data vera di un minore: il genitore', m.chiFirma('2015-03-01', false), true)
+  ok('data vera di un adulto: chi si iscrive', m.chiFirma('1990-03-01', true), false)
+  ok('appena aperto, senza data: chi si iscrive', m.chiFirma('', undefined), false)
   // La data cambia due volte: la firma è già sparita al primo, l'avviso resta e dice chi firma ora.
   ok('di nuovo maggiorenne, già avvisato: avvisa ancora', m.firmaDaRifare(false, { ...niente, avvisato: true }), ISCRITTO)
 }

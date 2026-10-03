@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { certificatoDaPortare, controlla, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, MASSIMO_FILE, minorenne, problemi, pulisciCf } from '../lib/richieste'
+import { certificatoDaPortare, chiFirma, controlla, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
@@ -144,7 +144,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const natoAGenitore = luogoGenitore?.nome ?? genitoreNatoA
   const provinciaGenitore = luogoGenitore?.sigla ?? genitoreProvincia
 
-  const minore = !!b.natoIl && minorenne(b.natoIl)
+  // Chi firmava fino a ora: una data a metà non lo cambia (`chiFirma`).
+  const minorePrima = useRef<boolean>()
+  const minore = chiFirma(b.natoIl, minorePrima.current)
   const pronta: DatiRichiesta = {
     ...b,
     natoA: luogo ? scriviLuogo(luogo) : b.natoA,
@@ -154,10 +156,10 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   }
   // Se chi firma cambia (la data di nascita dice minore, o non più), il foglio
   // è un altro: firma, caselle e foto del foglio di prima non sono le sue.
-  const minorePrima = useRef(minore)
   useEffect(() => {
-    if (minorePrima.current === minore) return
+    const prima = minorePrima.current
     minorePrima.current = minore
+    if (prima === undefined || prima === minore) return
     setDaRifare((avviso) => firmaDaRifare(minore, { tratti: tratti.length, scelte: Object.keys(scelte).length, foto: !!file.modulo, avvisato: !!avviso }))
     setTratti([])
     setScelte({})

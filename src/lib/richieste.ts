@@ -154,6 +154,16 @@ export function minorenne(natoIl: string, oggi = new Date()): boolean {
   return diciotto > oggi
 }
 
+/**
+ * Se firma il genitore (true) o chi si iscrive. Mentre si corregge la data
+ * dalla tastiera il campo passa per vuoto o per anni come 0002: lì chi firma
+ * resta quello di `prima`, se no firma e caselle sparirebbero per niente.
+ */
+export function chiFirma(natoIl: string, prima?: boolean, oggi = new Date()): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(natoIl) || Number(natoIl.slice(0, 4)) < 1900) return prima ?? false
+  return minorenne(natoIl, oggi)
+}
+
 /** I corsi per cui dai 12 anni serve il certificato agonistico. */
 const AGONISTICI = /\b(judo|aikido|lotta)\b/i
 
