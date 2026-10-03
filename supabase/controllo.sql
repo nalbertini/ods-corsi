@@ -80,7 +80,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
       where p.pronamespace = 'public'::regnamespace
         and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
         and has_function_privilege('anon', p.oid, 'execute')
-        and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino'))),
+        and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino', 'mesi_presenze_pubblici'))),
   ('06-iscrizioni.sql', 'documento e certificato col modulo, da stampare',
     exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%certificato%')
     and exists (select 1 from dentro where nome = 'richieste_con_documento' and corpo like '%certificato%')),
@@ -163,6 +163,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'unisci_persone')),
   ('30-pronto-fino-dalle-ricorrenze.sql', 'le straordinarie non fermano il calendario',
     exists (select 1 from dentro where nome = 'calendario_pronto_fino' and corpo like '%ricorrenza_id is not null%')),
+  ('31-informativa-mesi.sql', 'i mesi delle presenze letti dall''informativa',
+    exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'mesi_presenze_pubblici'
+            and has_function_privilege('anon', p.oid, 'execute'))),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

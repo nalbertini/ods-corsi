@@ -17,7 +17,7 @@ export const LINK_ISCRIZIONE = 'https://forms.gle/eZyGvAD4h7cNNpXF7'
 
 /**
  * L'informativa privacy per iscrizioni e corsi, di cui la palestra è titolare
- * del trattamento. È una pagina dell'app (`public/informativa.html`) e non
+ * del trattamento. È una pagina dell'app (`informativa.html`) e non
  * sta nel database perché la deve poter leggere chiunque, anche chi non ha un
  * accesso. Quella del sito della palestra copre solo la navigazione e dice
  * che il sito non raccoglie dati con dei moduli: per l'iscrizione non basta.
