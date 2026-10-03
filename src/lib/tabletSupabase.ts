@@ -3,6 +3,7 @@ import { allungaCalendario } from './allunga'
 import type { DatiTablet, EsitoTocco, LezioneSala, NomeSala, Origine, PresenzaIstruttore, RigaAppelloTablet, StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno } from './sala'
+import { sigleDeiProvati } from './tablet'
 import { leggiTimerSala, salvaTimerSala } from '../../timer/src/lib/impostazioniSala'
 import { fonteClipSupabase } from '../../timer/src/lib/clipSala'
 import type { GiaProvato } from './prove'
@@ -154,9 +155,11 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
       const righe = (data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; corso: string; inizio: string }>
       // Un PIN che non va più non solleva e non restituisce nessuno: se ne
       // accorge l'aggiunta, che dice `false`.
-      return righe
-        .map((r): GiaProvato => ({ id: r.persona_id, nome: r.nome, cognome: r.cognome, corso: r.corso, inizio: r.inizio }))
-        .sort((x, y) => y.inizio.localeCompare(x.inizio))
+      return sigleDeiProvati(
+        righe
+          .map((r): GiaProvato => ({ id: r.persona_id, nome: r.nome, cognome: r.cognome, corso: r.corso, inizio: r.inizio }))
+          .sort((x, y) => y.inizio.localeCompare(x.inizio)),
+      )
     },
 
     // Senza coda, come il resto del tablet: chi aggiunge deve sapere se è andata.

@@ -151,7 +151,8 @@ iniziale.
      modo veloce di chiudere l'appello quando gli allievi si sono segnati da
      soli;
    - **PROVE** — aggiunge chi viene a provare: nome, cognome e telefono, o
-     toccate chi è già venuto a provare (qui senza telefono: lo schermo è in
+     toccate chi è già venuto a provare, che compare dalla terza lettera (qui
+     senza telefono e col cognome all'iniziale, «Marco N.»: lo schermo è in
      sala). Entra in fondo all'appello già presente, col bollino **PROVA**, e
      **TOGLI** lo toglie se è un errore. Chi viene a provare non si segna da
      solo sul tablet: lo aggiungete voi. Come nell'app (vedi la
