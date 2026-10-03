@@ -209,6 +209,9 @@ function SceltaRuolo({ ruolo, onScegli }: { ruolo: RuoloScelto; onScegli: (r: Ru
   )
 }
 
+/** Il modulo appena aperto: diverso da questo, c'è da perdere qualcosa. */
+const VUOTA = { nome: '', cognome: '', email: '', ruolo: 'istruttore' as RuoloScelto }
+
 function Aggiungi({
   d,
   fai,
@@ -224,9 +227,9 @@ function Aggiungi({
   onLasciaStare: () => void
   onAggiunta: (id: string) => Promise<void>
 }) {
-  const [bozza, setBozza] = useState({ nome: '', cognome: '', email: '', ruolo: 'istruttore' as RuoloScelto })
+  const [bozza, setBozza] = useState(VUOTA)
   const [invitaSubito, setInvitaSubito] = useState(true)
-  useBozza(!!(bozza.nome.trim() || bozza.cognome.trim() || bozza.email.trim()) || bozza.ruolo !== 'istruttore', bozza.nome.trim() || undefined)
+  useBozza(!!(bozza.nome.trim() || bozza.cognome.trim() || bozza.email.trim()) || bozza.ruolo !== VUOTA.ruolo, bozza.nome.trim() || undefined)
 
   const aggiungi = (e: FormEvent) => {
     e.preventDefault()

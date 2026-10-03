@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { CorsoSeg, DatiCorso, DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
-import { COLORI, corsoCambiato, GIORNI_LUNGHI, inCorso } from '../../lib/segreteria'
+import { COLORI, corsoCambiato, GIORNI_LUNGHI, inCorso, ricorrenzaCambiata, ricorrenzaIniziale, type RicorrenzaNuova } from '../../lib/segreteria'
 import { chiaveGiorno } from '../../lib/sala'
 import { Croce } from '../Icons'
 import { STRETTO, useSchermo } from '../../lib/largo'
@@ -205,7 +205,7 @@ function Scheda({
     if (!corso && !bozza.salaId && sale.dato?.length) setBozza((b) => ({ ...b, salaId: sale.dato![0].id }))
   }, [corso, sale.dato, bozza.salaId])
 
-  const [ric, setRic] = useState<{ giorno: number; ora: string; durata: number; salaId?: string } | null>(null)
+  const [ric, setRic] = useState<RicorrenzaNuova | null>(null)
   const salaDelCorso = (sale.dato ?? []).find((s) => s.id === corso?.salaId)?.nome ?? corso?.sala ?? 'nessuna'
   /** La sala di un giorno: vuoto vuol dire quella del corso. */
   const sceltaSala = (id: string, valore: string | undefined, cambia: (salaId: string | undefined) => void, etichetta?: string) => (
@@ -228,11 +228,11 @@ function Scheda({
     </select>
   )
   const [daIscrivere, setDaIscrivere] = useState('')
-  const cambiato = corsoCambiato(corso, bozza, corso ? undefined : sale.dato?.[0]?.id)
-  // Il giorno nuovo si apre con questi valori: cambiato uno, c'è da perderlo.
-  const ricDi = (c: CorsoSeg) => ({ giorno: 1, ora: c.ricorrenze[0]?.ora ?? '17:00', durata: c.ricorrenze[0]?.durata ?? 60 })
-  const ricCambiato =
-    !!ric && !!corso && (ric.giorno !== ricDi(corso).giorno || ric.ora !== ricDi(corso).ora || ric.durata !== ricDi(corso).durata || !!ric.salaId)
+  // La bozza appena salvata: finché il corso non è riletto, `corso` è ancora
+  // quello di prima, e senza questo la domanda scatterebbe a vuoto.
+  const [salvata, setSalvata] = useState<DatiCorso | null>(null)
+  const cambiato = bozza !== salvata && corsoCambiato(corso, bozza, corso ? undefined : sale.dato?.[0]?.id)
+  const ricCambiato = !!ric && !!corso && ricorrenzaCambiata(corso, ric)
   useBozza(cambiato || ricCambiato || !!daIscrivere, corso?.nome ?? (bozza.nome.trim() || 'Nuovo corso'))
 
   const liberi = persone
@@ -266,10 +266,12 @@ function Scheda({
           disabled={(!!corso && !cambiato) || !bozza.nome.trim()}
           onClick={() => {
             let id = ''
+            const inviata = bozza
             void fai(
               async () => {
                 try {
-                  id = await d.salvaCorso(bozza)
+                  id = await d.salvaCorso(inviata)
+                  setSalvata(inviata)
                 } catch (e) {
                   // Il corso nuovo è stato creato anche se il resto no: si apre,
                   // così un secondo SALVA non ne crea un altro uguale.
@@ -449,7 +451,7 @@ function Scheda({
             <button
               type="button"
               className="sg-btn sg-btn-tratteggio"
-              onClick={() => setRic(ricDi(corso))}
+              onClick={() => setRic(ricorrenzaIniziale(corso))}
             >
               + AGGIUNGI UN GIORNO
             </button>

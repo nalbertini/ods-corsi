@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, corsoCambiato, personaCambiata, COLORI } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1172,7 +1172,7 @@ console.log('\nuna modifica non salvata: CORSI e ISTRUTTORI E ACCESSI chiedono p
 
   ok('la bozza uguale al corso salvato non è una modifica', cambiato(corso, b), false)
   ok('il nome cambiato è una modifica', cambiato(corso, { ...b, nome: 'Karate bambini' }), true)
-  ok('il nome cambiato e rimesso com’era non è una modifica', cambiato(corso, { ...{ ...b, nome: 'Karate bambini' }, nome: 'Karate' }), false)
+  ok('il nome con uno spazio in più non è una modifica', cambiato(corso, { ...b, nome: 'Karate ' }), false)
   ok('la sala cambiata è una modifica', cambiato(corso, { ...b, salaId: 's2' }), true)
   ok('i posti cambiati sono una modifica', cambiato(corso, { ...b, capienza: 25 }), true)
   ok('i posti tolti sono una modifica', cambiato(corso, { ...b, capienza: undefined }), true)
@@ -1197,11 +1197,35 @@ console.log('\nuna modifica non salvata: CORSI e ISTRUTTORI E ACCESSI chiedono p
   const mod = { nome: 'Anna', cognome: 'Neri', email: 'anna@esempio.it' }
   ok('la scheda aperta e non toccata non è una modifica', persona(salvata, mod), false)
   ok('l’email cambiata è una modifica', persona(salvata, { ...mod, email: 'anna.neri@esempio.it' }), true)
-  ok('l’email cambiata e rimessa com’era non è una modifica', persona(salvata, { ...{ ...mod, email: 'x@esempio.it' }, email: 'anna@esempio.it' }), false)
+  ok('l’email con uno spazio in più non è una modifica', persona(salvata, { ...mod, email: ' anna@esempio.it ' }), false)
   ok('senza email salvata, il campo vuoto non è una modifica', persona({ nome: 'Anna', cognome: 'Neri' }, { ...mod, email: '' }), false)
   ok('senza email salvata, un’email scritta è una modifica', persona({ nome: 'Anna', cognome: 'Neri' }, mod), true)
   ok('il nome cambiato è una modifica', persona(salvata, { ...mod, nome: 'Annalisa' }), true)
   ok('il cognome cambiato è una modifica', persona(salvata, { ...mod, cognome: 'Bianchi' }), true)
+
+  // Il giorno nuovo (+ AGGIUNGI UN GIORNO) si apre coi valori del primo giorno del corso.
+  const ricCorso = { ...corso, ricorrenze: [{ id: 'r1', giorno: 3, ora: '18:30', durata: 90 }] }
+  const ric = m.ricorrenzaIniziale?.(ricCorso)
+  ok('il giorno nuovo parte dall’ora e dai minuti del primo giorno', ric, { giorno: 1, ora: '18:30', durata: 90 })
+  ok('senza giorni, il giorno nuovo parte da lunedì alle 17:00 per un’ora', m.ricorrenzaIniziale?.(corso), { giorno: 1, ora: '17:00', durata: 60 })
+  const ricCambiata = (r) => m.ricorrenzaCambiata?.(ricCorso, r)
+  ok('il giorno nuovo appena aperto non è una modifica', ricCambiata(ric), false)
+  ok('il giorno nuovo con un altro giorno è una modifica', ricCambiata({ ...ric, giorno: 2 }), true)
+  ok('il giorno nuovo con un’altra ora è una modifica', ricCambiata({ ...ric, ora: '19:00' }), true)
+  ok('il giorno nuovo con altri minuti è una modifica', ricCambiata({ ...ric, durata: 60 }), true)
+  ok('il giorno nuovo con una sala scelta è una modifica', ricCambiata({ ...ric, salaId: 's2' }), true)
+
+  // La domanda la fa `lasciare` in comune.tsx; la vecchia «LASCIALO A METÀ» non c'è più.
+  const { readFileSync, readdirSync } = await import('node:fs')
+  const vecchie = readdirSync('src', { recursive: true })
+    .filter((f) => /\.(tsx?|css)$/.test(f))
+    .filter((f) => readFileSync(`src/${f}`, 'utf8').includes('LASCIALO A METÀ'))
+  ok('«LASCIALO A METÀ» non compare più in src/', vecchie, [])
+  const comune = readFileSync('src/components/segreteria/comune.tsx', 'utf8')
+  const corpo = comune.slice(comune.indexOf('export function lasciare'), comune.indexOf('\n}\n', comune.indexOf('export function lasciare')))
+  ok('lasciare: il tasto in evidenza è restare', corpo.includes('restare: true'), true)
+  ok('lasciare: dice che uscendo si perde', corpo.includes('Se esci si perdono'), true)
+  ok('lasciare: il tasto per uscire è ESCI SENZA SALVARE', corpo.includes('ESCI SENZA SALVARE'), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

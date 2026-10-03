@@ -861,6 +861,19 @@ export function corsoCambiato(corso: CorsoSeg | null, bozza: DatiCorso, salaIniz
   )
 }
 
+export type RicorrenzaNuova = { giorno: number; ora: string; durata: number; salaId?: string }
+
+/** Il giorno nuovo (+ AGGIUNGI UN GIORNO) si apre con l'ora e i minuti del primo giorno del corso. */
+export function ricorrenzaIniziale(corso: CorsoSeg): RicorrenzaNuova {
+  return { giorno: 1, ora: corso.ricorrenze[0]?.ora ?? '17:00', durata: corso.ricorrenze[0]?.durata ?? 60 }
+}
+
+/** C'è da perdere qualcosa nel giorno nuovo? Sì se è diverso da come si è aperto. */
+export function ricorrenzaCambiata(corso: CorsoSeg, ric: RicorrenzaNuova): boolean {
+  const i = ricorrenzaIniziale(corso)
+  return ric.giorno !== i.giorno || ric.ora !== i.ora || ric.durata !== i.durata || !!ric.salaId
+}
+
 /** C'è qualcosa da perdere uscendo da MODIFICA nella scheda di un istruttore? */
 export function personaCambiata(
   salvata: Pick<PersonaleSeg, 'nome' | 'cognome' | 'email'>,
