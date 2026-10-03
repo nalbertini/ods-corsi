@@ -987,6 +987,12 @@ a.btn { text-decoration: none; }
   overflow-y: auto;
 }
 .sg-voci { display: flex; flex-direction: column; gap: 2px; }
+.sg-gruppi { display: flex; flex-direction: column; gap: 18px; }
+.sg-gruppo { display: flex; flex-direction: column; gap: 4px; }
+.sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
+/* Le schede di PRESENZE: larghe quanto serve, non quanto la sezione. */
+.sg-schede { flex-basis: auto; align-self: flex-start; grid-auto-columns: minmax(150px, auto); }
+.sg-schede .scheda { padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
 .sg-voce {
   display: flex; align-items: center; min-height: 44px; padding: 0 12px;
   border-left: 4px solid transparent; color: var(--sec);
@@ -994,7 +1000,7 @@ a.btn { text-decoration: none; }
 }
 .sg-voce:hover { color: var(--text); }
 a.sg-voce { text-decoration: none; }
-.sg-voce[aria-current='page'] { border-left-color: var(--rosso); background: var(--surface); color: var(--text); }
+.sg-voce[aria-current='page'] { border-left-color: var(--text); background: var(--surface); color: var(--text); }
 .sg-chi { display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid var(--line-soft); }
 .sg-bollino {
   font-size: 11px; font-weight: 700; letter-spacing: 0.18em; color: var(--su-colore); background: var(--giallo);
@@ -1023,7 +1029,11 @@ a.sg-voce { text-decoration: none; }
   min-height: 48px; padding: 0 18px;
   font-family: var(--cond); font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em;
 }
-.sg-btn-rosso { background: var(--rosso); color: var(--su-colore); }
+/* Il tasto principale è pieno del colore del testo; rosso solo quando quello
+   che fa non si annulla (una ricevuta, un file cancellato, un import). Sul
+   rosso il testo è bianco: il nero arriva a 4,1:1, il bianco a 4,5:1. */
+.sg-btn-pieno { background: var(--text); color: var(--bg); }
+.sg-btn-rosso { background: var(--rosso); color: #ffffff; }
 .sg-btn-verde { background: var(--verde); color: var(--su-colore); }
 .sg-btn-linea { border: 2px solid var(--line); color: var(--sec); }
 .sg-btn-linea:hover { border-color: var(--dim); color: var(--text); }
@@ -1070,11 +1080,15 @@ a.sg-btn { text-decoration: none; }
 .sg-lezione:hover { border-color: var(--dim); border-top-color: var(--tinta); }
 .sg-lezione[data-manca='true'] { border-color: var(--rosso); border-top-color: var(--tinta); }
 .sg-lezione[data-annullata='true'] { opacity: 0.5; }
+/* Passata e fatta: si fa da parte, perché in vista resti quello che manca. */
+.sg-lezione[data-chiusa='true'] { background: transparent; border-color: var(--line-soft); border-top-color: color-mix(in srgb, var(--tinta) 55%, var(--bg)); }
+.sg-lezione[data-chiusa='true'] .sg-lezione-nome { color: var(--sec); }
+.sg-lezione[data-chiusa='true']:hover { border-color: var(--dim); border-top-color: var(--tinta); }
 .sg-lezione[data-annullata='true'] .sg-lezione-nome { text-decoration: line-through; }
 .sg-lezione-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sg-lezione-dove { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sg-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; }
-.sg-tag[data-tipo='manca'] { background: var(--rosso); color: var(--su-colore); }
+.sg-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--dim); padding: 0 4px; }
+.sg-tag[data-tipo='manca'] { background: var(--rosso); color: #ffffff; }
 .sg-tag[data-tipo='sostituto'] { background: var(--giallo); color: var(--su-colore); }
 .sg-legenda { gap: 20px; flex-wrap: wrap; font-size: 12px; color: var(--dim); }
 
@@ -1084,6 +1098,7 @@ a.sg-btn { text-decoration: none; }
   display: flex; flex-direction: column; gap: 18px; padding: calc(var(--safe-t) + 28px) 28px 28px;
   background: var(--surface); border-left: 2px solid var(--text); border-top: 6px solid var(--tinta); overflow-y: auto;
 }
+.sg-cassetto:focus, .sg-dialogo:focus { outline: none; }
 .sg-dialogo {
   position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 11;
   width: min(520px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 16px; padding: 28px;
@@ -1114,6 +1129,7 @@ a.sg-btn { text-decoration: none; }
 .sg-corso[data-manca='true'] { border-left: 6px solid var(--rosso); }
 /* Un dato che manca e va completato: si vede rosso, ovunque. */
 .sg-manca { color: var(--rosso); font-weight: 600; }
+.sg-forse { color: var(--dim); font-weight: 600; }
 .sg-etichetta[data-manca] { color: var(--rosso); }
 .sg-campo[aria-invalid='true'] { border-color: var(--rosso); }
 .sg-scelte-mancano { padding: 6px; border: 2px dashed var(--rosso); }
@@ -1152,6 +1168,7 @@ a.sg-btn { text-decoration: none; }
 .sg-segno-regola[data-tono='rosso'] { color: var(--rosso); }
 .sg-segno-regola[data-tono='giallo'] { color: var(--giallo-testo); }
 .sg-segno-regola[data-tono='verde'] { color: var(--verde); }
+.sg-segno-regola[data-tono='spento'] { color: var(--dim); }
 .sg-iscritto {
   width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid var(--surface-2); text-align: left;
 }
@@ -1182,6 +1199,9 @@ a.sg-btn { text-decoration: none; }
   width: 64px; height: 44px; display: flex; align-items: center; justify-content: center;
   font-size: 14px; font-weight: 700; letter-spacing: 0.12em; background: var(--surface-2); color: var(--sec);
 }
+/* Prima di un'azione che non si annulla: cosa manca, in rosso, sopra il tasto. */
+.sg-prima { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 2px solid var(--rosso); }
+.sg-prima ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 1.4; }
 .sg-iscrizione { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; background: var(--bg); border: 2px solid var(--line); }
 .sg-storico { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; }
 .sg-quadretto { height: 22px; border: 2px solid var(--line); }
@@ -1190,10 +1210,41 @@ a.sg-btn { text-decoration: none; }
 .sg-quadretto[data-stato='giustificato'] { border-color: var(--giallo); }
 
 .sg-avviso {
-  position: fixed; right: 36px; bottom: 28px; z-index: 20; max-width: 460px; padding: 14px 18px;
+  position: fixed; right: 36px; bottom: 28px; z-index: 20; max-width: 460px; padding: 10px 10px 10px 18px;
+  display: flex; align-items: center; gap: 14px;
   background: var(--text); color: var(--bg); font-size: 15px; font-weight: 600; line-height: 1.4;
 }
 .sg-avviso[data-guaio='true'] { background: var(--rosso); color: #f2f2f0; }
+.sg-avviso-chiudi {
+  flex-shrink: 0; align-self: stretch; min-height: 44px; padding: 0 12px; border: 2px solid currentColor;
+  font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em;
+}
+.sg-avviso-chiudi:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* DA FARE: una riga per cosa che aspetta, col numero grande; sotto, quello che è a posto. */
+.sg-dafare { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sg-dafare-riga {
+  display: flex; align-items: flex-start; gap: 20px; padding: 16px 18px;
+  background: var(--surface); border: 2px solid var(--line);
+}
+.sg-dafare-n { min-width: 64px; font-size: 44px; font-weight: 700; line-height: 0.9; color: var(--rosso); text-align: right; }
+.sg-dafare-titolo { font-family: var(--cond); font-size: 22px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.1; }
+.sg-dafare-tasto { flex-shrink: 0; align-self: center; }
+.sg-dafare-lezioni { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.sg-dafare-lezione {
+  display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; min-height: 44px; text-align: left;
+  background: var(--bg); border: 2px solid var(--line); border-top: 4px solid var(--tinta); font-size: 12px; color: var(--sec);
+}
+.sg-dafare-lezione:hover { border-color: var(--dim); border-top-color: var(--tinta); }
+.sg-dafare-lezione-nome { font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); }
+.sg-dafare-aposto { margin: 0; font-size: 14px; line-height: 1.5; color: var(--sec); }
+.sg-dafare-fatto { display: flex; flex-direction: column; gap: 6px; padding: 28px; border: 2px solid var(--verde); }
+.sg-dafare-fatto .ob { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: var(--verde); }
+@media (max-width: 700px) {
+  .sg-dafare-riga { flex-wrap: wrap; gap: 12px; }
+  .sg-dafare-n { min-width: 0; text-align: left; }
+  .sg-dafare-tasto { flex-basis: 100%; }
+}
 
 /* Presenze, import, personale, regole */
 .contents { display: contents; }
@@ -1262,8 +1313,8 @@ a.sg-btn { text-decoration: none; }
 }
 .sg-orario[data-gradino='1'] { background: color-mix(in srgb, var(--blu) 30%, var(--surface)); }
 .sg-orario[data-gradino='2'] { background: color-mix(in srgb, var(--blu) 55%, var(--surface)); }
-.sg-orario[data-gradino='3'] { background: color-mix(in srgb, var(--blu) 78%, var(--surface)); color: #fff; }
-.sg-orario[data-gradino='4'] { background: var(--blu); color: #fff; }
+.sg-orario[data-gradino='3'] { background: color-mix(in srgb, var(--blu) 78%, var(--surface)); color: var(--text); }
+.sg-orario[data-gradino='4'] { background: var(--blu); color: var(--su-colore); }
 .sg-orario:hover, .sg-orario:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; }
 .sg-stat-tabella { width: 100%; border-collapse: collapse; font-size: 14px; }
 .sg-stat-tabella th, .sg-stat-tabella td { padding: 8px 10px; border-bottom: 1px solid var(--surface-2); text-align: left; white-space: nowrap; }
@@ -1339,9 +1390,10 @@ a.sg-btn { text-decoration: none; }
   .sg-corpo { padding: calc(var(--safe-t) + 20px) 20px 20px; }
 }
 
-/* Sul telefono il menu sta dietro una barra in cima: il marchio e MENU, col numero di quello che aspetta. Aperto copre la sezione,
-   con le voci di tutti i giorni in cima e le altre sotto ALTRO. */
-.sg-barra-tel, .sg-voci-altro { display: none; }
+/* Sul telefono il menu sta dietro una barra in cima: il marchio e MENU, col
+   numero di quello che aspetta. Aperto copre la sezione, coi gruppi come sul
+   computer; LA PALESTRA, roba da computer, più piccola. */
+.sg-barra-tel { display: none; }
 @media (max-width: 767px) {
   .sg { flex-direction: column; }
   .sg-barra-tel {
@@ -1363,11 +1415,7 @@ a.sg-btn { text-decoration: none; }
   }
   .sg-menu[data-aperto='true'] { display: flex; }
   .sg-marchio, .sg-menu > .grow { display: none; }
-  .sg-voce[data-secondaria='true'] { order: 2; min-height: 40px; font-size: 14px; }
-  .sg-voci-altro {
-    display: block; order: 1; margin: 18px 12px 4px; padding-top: 14px; border-top: 2px solid var(--line-soft);
-    font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim);
-  }
+  .sg-gruppo[data-secondario='true'] .sg-voce { min-height: 40px; font-size: 14px; }
   .sg-chi { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
   .sg-chi > .sg-bollino { margin-top: 0; }
   .sg-corpo { padding: 16px; }

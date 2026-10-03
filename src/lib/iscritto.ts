@@ -1,7 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import type { CertificatoSeg, PagamentoSeg } from './segreteria'
-import { comeCertificato, comePaga } from './segreteria'
-import type { Ricevuta } from './ricevute'
+import { comeCertificato, pagamentoDi } from './segreteria'
+import { euro, type QuotaRicevuta, type Ricevuta } from './ricevute'
 import type { DatiRichiesta, StatoRichiesta } from './richieste'
 import type { Segnalata } from './segnalate'
 
@@ -32,7 +32,9 @@ export interface SchedaIscritto {
   /** I corsi a cui è iscritto oggi, per nome. */
   corsi: Array<{ id: string; nome: string; colore?: string }>
   certificato: CertificatoSeg
+  /** L'eccezione «pagato fuori dall'app»; se ha pagato lo dicono le `quote`. */
   pagamento: PagamentoSeg
+  quote?: QuotaRicevuta[]
 }
 
 /** Una lezione di uno dei suoi corsi, con quello che è cambiato rispetto al solito. */
@@ -121,16 +123,17 @@ const data = (g: string) => g.split('-').reverse().join('/')
  * Le cose da sapere in cima alla pagina: il certificato che manca o scade,
  * il pagamento da fare. Le lezioni cambiate si vedono già nell'elenco.
  */
-export function avvisi(s: Pick<SchedaIscritto, 'certificato' | 'pagamento'>, oggi: string): Avviso[] {
+export function avvisi(s: Pick<SchedaIscritto, 'certificato' | 'pagamento' | 'quote'>, oggi: string): Avviso[] {
   const x: Avviso[] = []
   const c = comeCertificato(s.certificato, oggi)
   if (c === 'manca') x.push({ tono: 'guaio', testo: 'Manca il certificato medico: portalo in segreteria prima della prossima lezione.' })
   if (c === 'scaduto') x.push({ tono: 'guaio', testo: `Il certificato medico è scaduto il ${data(s.certificato.scade!)}: portane uno nuovo in segreteria.` })
   if (c === 'in_scadenza') x.push({ tono: 'avviso', testo: `Il certificato medico scade il ${data(s.certificato.scade!)}: prenota la visita.` })
-  const p = comePaga(s.pagamento, oggi)
-  if (p === 'da_pagare') x.push({ tono: 'guaio', testo: 'La quota non risulta pagata: passa in segreteria.' })
-  if (p === 'in_parte') x.push({ tono: 'avviso', testo: `La quota è pagata in parte${s.pagamento.nota ? `: ${s.pagamento.nota.toLowerCase()}` : ''}.` })
-  if (p === 'scaduto') x.push({ tono: 'guaio', testo: `Il pagamento valeva fino al ${data(s.pagamento.fino!)}: passa in segreteria per rinnovarlo.` })
+  const p = pagamentoDi(s, oggi)
+  if (p.come === 'da_pagare') x.push({ tono: 'guaio', testo: 'La quota non risulta pagata: passa in segreteria.' })
+  if (p.come === 'in_parte')
+    x.push({ tono: 'avviso', testo: `La quota è pagata in parte${p.mancano ? `: mancano ${euro(p.mancano)} €` : p.nota ? `: ${p.nota.toLowerCase()}` : ''}.` })
+  if (p.come === 'scaduto') x.push({ tono: 'guaio', testo: `La quota valeva fino al ${data(p.fino!)}: passa in segreteria per rinnovarla.` })
   return x
 }
 

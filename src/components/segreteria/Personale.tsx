@@ -89,7 +89,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
       {/* L'elenco resta montato sotto la scheda: tornando, è dov'era. */}
       <div className="stack" style={{ gap: 18 }} hidden={!!(nuovo || persona)}>
         <Testa titolo="ISTRUTTORI E ACCESSI" sotto="Chi entra nell'app e cosa può fare. Gli iscritti non sono qui: non hanno un accesso.">
-          <button type="button" className="sg-btn sg-btn-rosso" onClick={() => setNuovo(true)}>
+          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
             + AGGIUNGI UNA PERSONA
           </button>
         </Testa>
@@ -266,7 +266,7 @@ function Aggiungi({
         <button type="button" className="sg-btn sg-btn-linea" onClick={onLasciaStare}>
           LASCIA STARE
         </button>
-        <button type="submit" className="sg-btn sg-btn-rosso">
+        <button type="submit" className="sg-btn sg-btn-pieno">
           AGGIUNGI
         </button>
       </div>
@@ -348,7 +348,7 @@ function Scheda({
                 </button>
                 <button
                   type="button"
-                  className="sg-btn sg-btn-rosso"
+                  className="sg-btn sg-btn-pieno"
                   disabled={!modifica.nome.trim()}
                   onClick={() =>
                     void fai(() => d.salvaPersonale({ ...dati, ...modifica, email: p.collegato ? p.email : modifica.email }), 'Scheda salvata', async () => {

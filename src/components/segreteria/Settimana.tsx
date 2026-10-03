@@ -6,7 +6,7 @@ import { dati, type Dati } from '../../lib/dati'
 import { Back } from '../Icons'
 import type { ChiProva } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
-import { Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica } from './comune'
+import { Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
 const MESI_CORTI = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC']
@@ -80,7 +80,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
     <>
       <Testa
         titolo="SETTIMANA"
-        sotto={`Le lezioni generate dalle ricorrenze. Tocca una lezione per aprirla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato, false)}.` : ''}`}
+        sotto={`Le lezioni generate dalle ricorrenze: aprine una per l’appello, il sostituto o per annullarla.${pronto.dato ? ` Calendario pronto fino al ${dataLunga(pronto.dato)}.` : ''}`}
       >
         <button
           type="button"
@@ -95,7 +95,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
         >
           RIGENERA
         </button>
-        <button type="button" className="sg-btn sg-btn-rosso" onClick={() => setNuova(true)}>
+        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuova(true)}>
           + LEZIONE STRAORDINARIA
         </button>
       </Testa>
@@ -174,6 +174,9 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
         <span className="row" style={{ gap: 6 }}>
           <span className="num sg-tag" data-tipo="sostituto">SOSTITUTO</span>un altro istruttore, solo per quel giorno
         </span>
+        <span className="row" style={{ gap: 6 }}>
+          <span className="sg-forse">istruttore?</span>il corso non ne ha uno: si assegna in CORSI
+        </span>
       </div>
 
       {lezione && (
@@ -217,18 +220,22 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
   const annullata = l.stato === 'annullata'
   const fatto = l.segnati > 0
   const manca = passata && !annullata && !fatto
+  // Passata e con l'appello fatto non chiede più niente: si fa da parte, e
+  // nella settimana resta in vista solo quello che manca.
+  const chiusa = passata && !annullata && fatto
   return (
     <button
       type="button"
       className="sg-lezione"
       data-annullata={annullata}
       data-manca={manca}
+      data-chiusa={chiusa}
       style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
       onClick={onApri}
     >
       <span className="ob sg-lezione-nome">{l.corso.toUpperCase()}</span>
       <span className="sg-lezione-dove">
-        {[l.sala ?? <span key="s" className="sg-manca">sala?</span>, l.istruttori || <span key="i" className="sg-manca">istruttore?</span>].map((x, i) => (
+        {[l.sala ?? <span key="s" className="sg-forse">sala?</span>, l.istruttori || <span key="i" className="sg-forse">istruttore?</span>].map((x, i) => (
           <span key={i}>
             {i > 0 && ' · '}
             {x}
@@ -281,12 +288,7 @@ function Lezione({
   fai: Fai
 }) {
   const istruttori = useCarica(() => d.istruttori(), [d])
-
-  useEffect(() => {
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && onChiudi()
-    window.addEventListener('keydown', esc)
-    return () => window.removeEventListener('keydown', esc)
-  }, [onChiudi])
+  const cassetto = useDialogo<HTMLElement>(onChiudi)
 
   const cambia = (cambi: Parameters<DatiSegreteria['aggiornaLezione']>[1], detto: string) =>
     void fai(() => d.aggiornaLezione(l.id, cambi), detto, onCambiato)
@@ -294,7 +296,7 @@ function Lezione({
   return (
     <>
       <button type="button" className="sg-velo" aria-label="Chiudi la lezione" onClick={onChiudi} />
-      <section role="dialog" aria-label={l.corso} className="sg-cassetto" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}>
+      <section ref={cassetto} role="dialog" aria-modal="true" tabIndex={-1} aria-label={l.corso} className="sg-cassetto" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}>
         <div className="row" style={{ alignItems: 'flex-start', gap: 12 }}>
           <div className="stack grow" style={{ gap: 4 }}>
             <span className="ob" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>{l.corso.toUpperCase()}</span>
@@ -316,7 +318,7 @@ function Lezione({
                 role="radio"
                 aria-checked={l.stato === s}
                 className="sg-btn sg-scelta"
-                onClick={() => l.stato !== s && cambia({ stato: s }, s === 'annullata' ? 'Lezione annullata' : 'Stato cambiato')}
+                onClick={() => l.stato !== s && cambia({ stato: s }, s === 'annullata' ? 'Lezione annullata: calendario e tablet la mostrano così, ma gli iscritti non vengono avvisati. Vanno chiamati o scritti.' : s === 'svolta' ? 'Lezione segnata come svolta' : 'Lezione di nuovo prevista')}
               >
                 {testo}
               </button>
@@ -379,7 +381,7 @@ function Lezione({
             TOGLI QUESTA LEZIONE STRAORDINARIA
           </button>
         )}
-        <button type="button" className="sg-btn sg-btn-rosso" onClick={onChiudi}>
+        <button type="button" className="sg-btn sg-btn-pieno" onClick={onChiudi}>
           FATTO
         </button>
       </section>
@@ -568,7 +570,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
           </>
         )}
         {aperto && elenco && elenco.length > 0 && (
-          <span style={{ fontSize: 12, color: 'var(--faint)' }}>Un tocco: presente, due: assente, tre: non segnato.</span>
+          <span style={{ fontSize: 12, color: 'var(--faint)' }}>Un clic: presente, due: assente, tre: non segnato.</span>
         )}
       </div>
     </>
@@ -596,6 +598,7 @@ function Straordinaria({
   const [ora, setOra] = useState('17:00')
   const [durata, setDurata] = useState(60)
   const scelto = corso || attivi[0]?.id || ''
+  const dialogo = useDialogo<HTMLFormElement>(onChiudi)
 
   const aggiungi = async (e: FormEvent) => {
     e.preventDefault()
@@ -608,7 +611,7 @@ function Straordinaria({
   return (
     <>
       <button type="button" className="sg-velo" aria-label="Chiudi" onClick={onChiudi} />
-      <form role="dialog" aria-label="Lezione straordinaria" className="sg-dialogo" onSubmit={(e) => void aggiungi(e)}>
+      <form ref={dialogo} role="dialog" aria-modal="true" tabIndex={-1} aria-label="Lezione straordinaria" className="sg-dialogo" onSubmit={(e) => void aggiungi(e)}>
         <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.04em' }}>LEZIONE STRAORDINARIA</span>
         <span className="sg-sotto" style={{ lineHeight: 1.5 }}>
           Una lezione in più, fuori dalle ricorrenze: un recupero, un evento, una prova aperta. Gli iscritti del corso sono già nell'appello.
@@ -646,7 +649,7 @@ function Straordinaria({
           <button type="button" className="sg-btn sg-btn-linea grow" onClick={onChiudi}>
             LASCIA STARE
           </button>
-          <button type="submit" className="sg-btn sg-btn-rosso grow" disabled={!scelto}>
+          <button type="submit" className="sg-btn sg-btn-pieno grow" disabled={!scelto}>
             AGGIUNGI
           </button>
         </div>
