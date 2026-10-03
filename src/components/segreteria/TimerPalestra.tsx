@@ -13,7 +13,7 @@ import {
   normalizza,
 } from '../../../timer/src/lib/esercizi'
 import { uid } from '../../../timer/src/lib/format'
-import { chiedi, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, ComeFunziona, Guaio, Testa, useAvviso, useCarica } from './comune'
 
 type Fai = (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => Promise<unknown>
 
@@ -70,11 +70,6 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
       <div className="stack" style={{ gap: 6 }}>
         <span className="sg-etichetta">VOCE DI SISTEMA</span>
         {voce.guaio && <Guaio testo={`La voce non si legge: ${voce.guaio}`} />}
-        <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-          Le voci le mette il dispositivo, non l'app: qui ci sono quelle di questo computer, e il tablet usa quella con lo stesso nome se
-          ce l'ha, altrimenti la sua prima voce italiana. Se il tablet ne ha una che qui non c'è, se ne scrive il nome. Quelle marcate
-          «enhanced» o «premium» suonano molto meno metalliche.
-        </span>
         <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
           <button type="button" className="num sg-chip" aria-pressed={letta && scelta === null} disabled={!letta} onClick={() => salvaVoce(null)}>
             LA PRIMA ITALIANA DEL TABLET
@@ -118,6 +113,11 @@ export function VoceSale({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
             <Spunta size={18} />
           </button>
         </form>
+        <ComeFunziona>
+          Le voci le mette il dispositivo, non l'app: qui ci sono quelle di questo computer, e il tablet usa quella con lo stesso nome se
+          ce l'ha, altrimenti la sua prima voce italiana. Se il tablet ne ha una che qui non c'è, se ne scrive il nome. Quelle marcate
+          «enhanced» o «premium» suonano molto meno metalliche.
+        </ComeFunziona>
       </div>
 
       <VoceIncisa d={d} fai={fai} chiavi={clip.dato} guaio={clip.guaio} ricarica={clip.ricarica} esercizi={esercizi} />
@@ -210,11 +210,12 @@ function VoceIncisa({
           {chiavi ? `${fatte}/${tutte.length}` : '…'}
         </span>
       </div>
-      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
-        Frasi registrate con una voce vera al posto della sintesi, per tutti i tablet. Si può incidere un pezzo per volta: dove manca la
-        clip, il tablet torna da solo alla voce di sistema. Le usa se nelle impostazioni del timer del tablet è acceso «Usa le clip incise». Meglio
-        registrare dal browser che usano i tablet: Safari e Chrome registrano in formati diversi.
-      </span>
+      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>Frasi registrate con una voce vera al posto della sintesi, per tutti i tablet.</span>
+      <ComeFunziona>
+        Si può incidere un pezzo per volta: dove manca la clip, il tablet torna da solo alla voce di sistema. Le usa se nelle impostazioni del
+        timer del tablet è acceso «Usa le clip incise». Meglio registrare dal browser che usano i tablet: Safari e Chrome registrano in formati
+        diversi.
+      </ComeFunziona>
       {guaio && <Guaio testo={`Le clip non si leggono: ${guaio}`} />}
       {!formato && <Guaio testo="Questo browser non permette di registrare audio: si incide da un altro." />}
       {problema && <Guaio testo={problema} />}

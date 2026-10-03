@@ -567,9 +567,9 @@ export function EnteRicevute({ d }: { d: DatiSegreteria }) {
   )
 
   return (
-    <section aria-label="Le ricevute" className="sg-riquadro">
-      <span className="ob sg-riquadro-titolo">LE RICEVUTE</span>
-      <span className="sg-sotto">Chi fa le ricevute: va in testa a ognuna. Quelle già fatte restano come erano.</span>
+    <section aria-label="Chi fa le ricevute" className="sg-riquadro">
+      <span className="ob sg-riquadro-titolo">CHI FA LE RICEVUTE</span>
+      <span className="sg-sotto">Va in testa a ognuna. Quelle già fatte restano come erano.</span>
       {ente.guaio && <Guaio testo={ente.guaio} />}
       <div className="sg-due">
         {campo('nome', 'ASSOCIAZIONE', 120, true)}

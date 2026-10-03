@@ -214,6 +214,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 ### Hierarchy
 - **Display** (700, 56px, 1): l'ora del tablet di sala; il conteggio dell'appello a 46px. Numeri tabellari.
 - **Headline** (700, 34–40px, 1): titolo di sezione della segreteria, nome della sala sul tablet, lezione aperta (38px).
+- **Titolo di gruppo** (700, 26px, 1, riga 2px `riga` sopra): un gruppo di riquadri dentro una sezione lunga (i gruppi di IMPOSTAZIONI), la scheda di un iscritto.
 - **Title** (700, 19–22px, 1.05): nome della lezione, ora, nome sul tablet (22px), tasti.
 - **Body** (Barlow 500, 17px, 1.4): nomi nell'appello, campi, testo dei moduli.
 - **Body small** (Barlow 400, 13–15px, 1.35–1.5): note, dettagli, frasi sotto i titoli, in `testo-spento`.
@@ -281,6 +282,7 @@ Quadrato 44px con bordo 2px `riga` e segno in `tasto`; quando contiene una parol
 - **Fatto e messo da parte** (lezione passata, segnalazione chiusa): fondo trasparente, bordo `riga-tenue`, titolo `testo-secondario`.
 - **Messaggi di un filo:** quelli degli altri hanno una barra sinistra di 4px `testo-spento` e un rientro; quelli della segreteria no.
 - **Internal Padding:** 14px (telefono), 20–28px (segreteria e tablet).
+- **Spiegazione a richiesta (`.sg-spiega`):** la spiegazione lunga di un riquadro, chiusa in un `<details>`. Il tasto «COME FUNZIONA?» è un'etichetta Saira 700 13px, 0.12em, in `testo-secondario`, alta 44px, con `+` / `−` davanti che dice se è aperta; aperta passa a `testo`. Fuoco: contorno 2px `testo`. Numeri, stati e avvisi non ci vanno mai dentro.
 
 ### Inputs / Fields
 - **Style:** bordo 2px `riga`, fondo `superficie` (in segreteria `nero-palestra`), alto 52px (44px in segreteria, 56px sul tablet), Barlow 17px.
