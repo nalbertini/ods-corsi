@@ -56,7 +56,8 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
       {ricevute.dato?.length === 0 && <span className="sg-sotto">Ancora nessuna ricevuta.</span>}
       {ricevute.dato?.map((r) => (
         <div key={r.id} className="sg-voce-elenco" style={{ flexWrap: 'wrap' }}>
-          <span className="stack grow" style={{ minWidth: 0 }}>
+          {/* Base zero: il testo lungo di una annullata non deve mandare a capo il PDF. */}
+          <span className="stack grow" style={{ minWidth: 0, flexBasis: 0 }}>
             {/* Annullata è storia, non qualcosa che manca: barrata e in grigio, non in rosso. */}
             <span className="num" style={{ fontSize: 15, fontWeight: 700, textDecoration: r.annullataIl ? 'line-through' : undefined, color: r.annullataIl ? 'var(--dim)' : undefined }}>
               N. {r.numero}/{r.anno} · {euro(r.totale)} €
