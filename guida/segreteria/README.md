@@ -30,9 +30,7 @@ A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
 **PERSONE** (ISCRITTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
 E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, ESERCIZI, IMPORTA DA EXCEL,
-SEGNALAZIONI). Le **IMPOSTAZIONI** sono il tasto coi due cursori in cima al
-menu. Ogni voce
-ha la sua guida:
+IMPOSTAZIONI, SEGNALAZIONI). Ogni voce ha la sua guida:
 
 | Voce | A cosa serve | Guida |
 |---|---|---|
@@ -52,10 +50,10 @@ ha la sua guida:
 | **IMPOSTAZIONI** | Per quanto si tengono le presenze, il calendario, le sale, il timer dei tablet con la sua voce, lo storico dei timer, la privacy | [Apri](regole.md) |
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo | [Apri](segnalazioni.md) |
 
-In cima al menu, sotto il nome, si vedono subito senza scorrere tre tasti:
+In cima al menu, sotto il nome, si vedono subito senza scorrere due tasti:
 **?**, la guida della voce aperta, in un'altra scheda; il **sole** (o la
-luna), il tema bianco per questo computer; i **cursori**, le IMPOSTAZIONI. In
-prova, accanto, il bollino **DATI DI PROVA**.
+luna), il tema bianco per questo computer. In prova, accanto, il bollino
+**DATI DI PROVA**.
 
 In fondo al menu:
 
@@ -73,11 +71,10 @@ apre anche in un'altra finestra, copiandone il link. Sul telefono, col MENU
 aperto, Indietro chiude solo il menu.
 
 Dal telefono il menu è chiuso dietro il tasto **MENU**, in alto a destra; il
-numero rosso accanto dice quante cose aspettano (richieste nuove, presenze da
+numero giallo accanto dice quante cose aspettano (richieste nuove, presenze da
 confermare, segnalazioni da rispondere). Accanto ci sono **?** e il tema.
-Aperto, ha gli stessi gruppi del computer, con IMPOSTAZIONI fra le voci di
-**LA PALESTRA**; le voci di **LA PALESTRA** sono più piccole, perché si fanno meglio
-dal computer.
+Aperto, ha gli stessi gruppi del computer; le voci di **LA PALESTRA** sono più
+piccole, perché si fanno meglio dal computer.
 
 ## Ordinare le tabelle
 

@@ -73,12 +73,3 @@ export const Luna = ({ size = 20 }: P) => (
     <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
   </svg>
 )
-
-/** Le impostazioni: due cursori, non l'ingranaggio, che accanto al sole si confonde. */
-export const Cursori = ({ size = 20 }: P) => (
-  <svg {...base(size)} aria-hidden="true">
-    <path d="M20 7h-9M14 17H4" />
-    <circle cx="7" cy="7" r="3" />
-    <circle cx="17" cy="17" r="3" />
-  </svg>
-)

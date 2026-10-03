@@ -1210,7 +1210,7 @@ a.sg-voce { text-decoration: none; }
   padding: 2px 6px; align-self: flex-start; margin-top: 4px;
 }
 .sg-icone { gap: 8px; padding: 0 4px; }
-/* DATI DI PROVA sta accanto ai tre tasti, in cima e sempre in vista; in chi è
+/* DATI DI PROVA sta accanto ai due tasti, in cima e sempre in vista; in chi è
    entrato resta solo sul telefono, dove i tasti sono nella barra in cima. */
 /* Senza il margine ci sta, dal computer, su due righe accanto ai tasti: la
    riga resta alta 44. Sul tablet, più stretto, va sotto. */
@@ -1218,8 +1218,6 @@ a.sg-voce { text-decoration: none; }
 /* 56 px: «DATI DI» su una riga e «PROVA» sotto. */
 #sg-menu .sg-icone > .sg-bollino { margin-top: 0; align-self: center; flex: 0 0 56px; }
 @media (min-width: 768px) { #sg-menu .sg-chi > .sg-bollino { display: none; } }
-.icon-btn[aria-current='page'] { border-color: var(--text); color: var(--text); }
-.sg-voce-tel { display: none; }
 .sg-link { font-size: 13px; color: var(--dim); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 .sg-link:hover { color: var(--text); }
 /* Col dito i link piccoli e le intestazioni che ordinano sono bersagli da
@@ -1715,8 +1713,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 @media (min-width: 768px) and (max-width: 1000px) {
   .sg-menu { width: 200px; padding-left: 12px; padding-right: 12px; }
   .sg-voce { font-size: 15px; letter-spacing: 0.1em; padding: 0 10px; }
-  /* Accanto ai tasti non ci sta: sotto, su una riga sola. */
-  #sg-menu .sg-icone > .sg-bollino { flex-basis: auto; }
   .sg-corpo { padding: calc(var(--safe-t) + 20px) 20px 20px; }
 }
 
@@ -1734,7 +1730,6 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-barra-tel > svg { flex-shrink: 0; }
   .sg-barra-tel > .icon-btn { border: none; }
   .sg-icone { display: none; }
-  .sg-voce-tel { display: flex; }
   .sg-tasto-menu {
     display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;
     border: 2px solid var(--line); color: var(--text);
@@ -1749,7 +1744,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   }
   .sg-menu[data-aperto='true'] { display: flex; }
   .sg-marchio, .sg-menu > .grow { display: none; }
-  .sg-gruppo[data-secondario='true'] .sg-voce { min-height: 40px; font-size: 14px; }
+  /* Più piccole di carattere, non di bersaglio: si toccano col dito come le altre. */
+  .sg-gruppo[data-secondario='true'] .sg-voce { font-size: 14px; }
   .sg-chi { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
   .sg-chi > .sg-bollino { margin-top: 0; }
   .sg-corpo { padding: 16px; }
