@@ -67,6 +67,12 @@ un timbro porta alla sua parte della scheda. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
 **RIATTIVA**.
 
+In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
+**SEGNA IL CERTIFICATO** o **RINNOVA O CORREGGI** se il certificato manca o è
+scaduto, poi **+ REGISTRA UN PAGAMENTO** se la quota non è pagata tutta, poi il
+certificato in scadenza. Se è tutto a posto, **+ REGISTRA UN PAGAMENTO**. Se la
+scheda è disattivata, nessuno.
+
 - **MODIFICA** — nome, cognome, email, telefono.
 - **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,
   il genitore. Vengono dal modulo di iscrizione dell'app o dall'import delle

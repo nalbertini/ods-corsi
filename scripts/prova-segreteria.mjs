@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1183,6 +1183,22 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
   // «AL» o «ALL’»: come si legge il giorno. 1, 8 e 11 cominciano per vocale.
   const al = [['2027-07-31', 'AL 31/07/2027'], ['2027-07-01', 'ALL’1/07/2027'], ['2027-08-08', 'ALL’8/08/2027'], ['2027-07-11', 'ALL’11/07/2027'], ['2027-07-18', 'AL 18/07/2027'], ['2027-07-05', 'AL 05/07/2027']]
   for (const [g, voluto] of al) ok(`${g}: ${voluto}`, m.alGiorno?.(g), voluto)
+
+  // 6. Il tasto pieno della scheda: uno solo, quello che c'è da fare per primo.
+  const tasto = (altro) => (m.tastoPrincipale ? m.tastoPrincipale(persona(altro), oggi) : 'nessuna tastoPrincipale')
+  const valido = { scade: fra(100), conFile: false }
+  const certInScadenza = { scade: fra(10), conFile: false }
+  const inParte = [{ ...pagata, mancano: 2000 }]
+  const scaduta = [{ ...pagata, dal: '2025-09-01', al: fra(-1) }]
+  ok('tasto: senza certificato e quota da pagare, prima il certificato', tasto({}), 'certificato')
+  ok('tasto: certificato scaduto e quota pagata, il certificato', tasto({ certificato: { scade: fra(-1), conFile: false }, quote: [pagata] }), 'certificato')
+  ok('tasto: certificato valido e quota scaduta, la quota', tasto({ certificato: valido, quote: scaduta }), 'quota')
+  ok('tasto: certificato valido e quota da pagare, la quota', tasto({ certificato: valido }), 'quota')
+  ok('tasto: certificato in scadenza e quota in parte, prima la quota', tasto({ certificato: certInScadenza, quote: inParte }), 'quota')
+  ok('tasto: certificato in scadenza e quota pagata, il certificato', tasto({ certificato: certInScadenza, quote: [pagata] }), 'certificato')
+  ok('tasto: tutto a posto, la quota (si apre per incassare)', tasto({ certificato: valido, quote: [pagata], documento: true }), 'quota')
+  ok('tasto: disattivata con tutto rosso, nessuno', tasto({ attiva: false, certificato: { scade: fra(-1), conFile: false } }), null)
+  ok('tasto: il documento mancante non cambia niente', [tasto({ certificato: valido, quote: [pagata], documento: false }), tasto({ certificato: certInScadenza, quote: [pagata], documento: false })], ['quota', 'certificato'])
 
   // E l'elenco non se le scrive da sé: Iscritti.tsx le prende da src/lib.
   const { readFileSync } = await import('node:fs')
