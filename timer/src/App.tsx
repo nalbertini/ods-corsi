@@ -80,7 +80,7 @@ type View =
 const TABS: Array<{ key: Tab; label: string; icon: typeof TimerIcon }> = [
   { key: 'timer', label: 'TIMER', icon: TimerIcon },
   { key: 'crono', label: 'CRONOMETRO', icon: Crono },
-  { key: 'countdown', label: 'COUNTDOWN', icon: Clessidra },
+  { key: 'countdown', label: 'ALLA ROVESCIA', icon: Clessidra },
   { key: 'impostazioni', label: 'IMPOSTAZIONI', icon: Gear },
 ]
 
@@ -841,7 +841,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
               <Logo width={58} />
               <Wordmark />
             </div>
-            <h1 className="ob page-title">{TAB_TITLE[tab]}</h1>
+            <h1 className="ob page-title">{tab === 'timer' && incorporato ? 'I TIMER DELLA SALA' : TAB_TITLE[tab]}</h1>
             <div className="grow" />
             {!incorporato && SU_TABLET_DI_SALA && <TornaSala className="torna-sala-alto" />}
           </header>

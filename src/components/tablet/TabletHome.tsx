@@ -57,12 +57,14 @@ export function TabletHome({
   // deve sapere che la sala non è chiusa, e da che ora ci si segna.
   const piuTardi = aperte.length ? null : (conFase.find((x) => x.f === 'dopo')?.l ?? null)
 
-  const titolo = aperte.length ? 'SI SEGNA ADESSO' : piuTardi ? 'PROSSIMA LEZIONE' : 'OGGI'
+  // Senza lezioni da qui a stasera il riquadro sotto dice già tutto, e a
+  // destra c'è OGGI IN QUESTA SALA: un altro OGGI sarebbe di troppo.
+  const titolo = aperte.length ? 'SI SEGNA ADESSO' : piuTardi ? 'PROSSIMA LEZIONE' : null
 
   return (
     <div className="tb-corpo tb-home">
       <div className="tb-colonna">
-        <span className="tb-etichetta">{titolo}</span>
+        {titolo && <span className="tb-etichetta">{titolo}</span>}
 
         {guaio && <Guaio titolo="CALENDARIO NON LETTO" testo={guaio} />}
         {!guaio && lezioni === null && <p className="tb-nota">Sto leggendo il calendario…</p>}

@@ -211,7 +211,7 @@ export function TabletIstruttore({
                   {scheda === 'corso' ? (g === oggi ? 'OGGI' : giornoPerEsteso(g).toUpperCase()) : l.corso.toUpperCase()}
                 </span>
                 <span style={{ fontSize: 15, color: 'var(--sec)' }}>
-                  {l.presenti} presenti su {l.iscritti}
+                  {l.presenti} {l.presenti === 1 ? 'presente' : 'presenti'} su {l.iscritti}
                   {l.stato === 'annullata' ? ' · annullata' : ''}
                 </span>
               </button>
