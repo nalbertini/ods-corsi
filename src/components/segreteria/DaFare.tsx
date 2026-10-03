@@ -22,9 +22,12 @@ export interface ContiDaFare {
   pagare: number | null
   certificatiDaStampare: number | null
   documentiDaStampare: number | null
+  /** Contato tutto almeno una volta: da qui un `null` vuol dire che non si è riusciti, non che si aspetta. */
+  contato: boolean
 }
 
 const VUOTI: ContiDaFare = {
+  contato: false,
   appelli: null,
   richieste: null,
   istruttori: null,
@@ -60,6 +63,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
       ([istr, ric, pers, lez, segn]) => {
         if (!vivo) return
         setConti((prima) => ({
+          contato: prima.contato || tutto,
           istruttori: istr,
           richieste: ric ? ric.tutte.filter((x) => x.stato === 'nuova').length : null,
           segnalate: d.segnalate ? (segn ? segn.filter((x) => x.stato === 'da_vedere').length : null) : undefined,
@@ -200,9 +204,9 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
         sotto={`${giornoPerEsteso(chiaveGiorno(new Date()))} ${new Date().getFullYear()}. Quello che aspetta la segreteria: si riconta ogni volta che torni qui.`}
       />
 
-      {!tuttoContato && daFare.length === 0 && aPosto.length === 0 && <span className="sg-sotto">Sto contando…</span>}
+      {!conti.contato && <span className="sg-sotto">Sto contando…</span>}
 
-      {tuttoContato && daFare.length === 0 && (
+      {conti.contato && tuttoContato && daFare.length === 0 && (
         <div className="sg-dafare-fatto">
           <span className="ob">NIENTE IN SOSPESO</span>
           <span className="sg-sotto">Appelli fatti, richieste e presenze guardate, certificati e pagamenti in regola.</span>
@@ -251,13 +255,13 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
         </p>
       )}
 
-      {tuttoContato || nonSo.length === cose.length ? null : (
-        <span className="sg-sotto">Sto contando: {nonSo.map((c) => c.aPosto).join(', ')}…</span>
-      )}
-      {tuttoContato || (
-        <button type="button" className="sg-link" style={{ alignSelf: 'flex-start' }} onClick={onRiprova}>
-          Non arriva? Riconta
-        </button>
+      {conti.contato && !tuttoContato && (
+        <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+          <span className="sg-sotto">Non si è riusciti a contare: {nonSo.map((c) => c.aPosto).join(', ')}.</span>
+          <button type="button" className="sg-link" onClick={onRiprova}>
+            Riconta
+          </button>
+        </div>
       )}
     </div>
   )

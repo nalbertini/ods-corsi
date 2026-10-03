@@ -1088,7 +1088,7 @@ a.sg-btn { text-decoration: none; }
   /* Frecce e titolo su una riga; OGGI e le sale vanno sotto. */
   .sg-sett-titolo { flex: 1 1 calc(100% - 128px); min-width: 0; font-size: 17px; white-space: nowrap; }
 }
-.sg-griglia { display: grid; grid-template-columns: 56px repeat(7, minmax(120px, 1fr)); gap: 6px; min-width: 900px; }
+.sg-griglia { display: grid; grid-template-columns: 56px repeat(7, minmax(120px, 1fr)); gap: 6px; min-width: 940px; }
 .sg-giorno { display: flex; align-items: baseline; gap: 6px; padding: 6px 8px; border-bottom: 2px solid var(--line-soft); color: var(--dim); }
 .sg-giorno[data-oggi='true'] { border-bottom-color: var(--giallo); color: var(--giallo-testo); }
 .sg-ora { font-size: 16px; font-weight: 700; color: var(--dim); padding-top: 8px; }
@@ -1473,10 +1473,14 @@ a.sg-btn { text-decoration: none; }
   .sg-corpo { padding: 16px; }
 }
 
-@media (max-width: 1000px) {
+/* Elenco e scheda affiancati solo dove ci stanno tutti e due (`STRETTO` in lib/largo.ts). */
+@media (max-width: 1240px) {
   .sg-due-colonne { flex-direction: column; align-items: stretch; }
   .sg-lista { width: auto; }
   .sg-scheda { position: static; }
+}
+
+@media (max-width: 1000px) {
   .sg-scheda-piena { padding: 20px; }
   .sg-scheda-griglia { grid-template-columns: minmax(0, 1fr); }
   .sg-scheda-piede > .sg-btn { flex: 1 1 0; min-width: 0; }
