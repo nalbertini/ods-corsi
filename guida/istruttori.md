@@ -40,7 +40,9 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 
 - Guardando la settimana di oggi, in cima c'è la **lezione di adesso**
   (**ADESSO**), o la prossima di oggi (**LA PROSSIMA, OGGI**, con **TRA 20
-  MIN** nell'ultima ora): un tocco e siete nell'appello. Nell'elenco sotto
+  MIN** nell'ultima ora): un tocco e siete nell'appello. Se quella in corso ha
+  già l'appello fatto, in cima va la prossima. L'ora va avanti da sola, anche
+  con l'app aperta. Nell'elenco sotto
   non si ripetono; le altre lezioni di oggi hanno la stessa scritta.
 - Sotto, quello che è rimasto indietro, in una riga che si apre col **+**:
   - **PRESENZE SEGNALATE**, in giallo (vedi sotto);
@@ -83,7 +85,7 @@ del tema e, sotto il vostro nome, **Esci**.
 In cima, ferma mentre scorrete l'elenco: il nome del corso, giorno, ora e sala,
 il conto grande degli iscritti presenti (`18 / 20`, con **+1 PROVA** a parte) e
 quanti iscritti restano da segnare; quando hanno tutti un segno, **CHIUDI IN
-FONDO ↓**. Tutti i conti sono degli iscritti: chi prova è sempre detto a
+FONDO ↓**, che si tocca e porta al tasto per chiudere. Tutti i conti sono degli iscritti: chi prova è sempre detto a
 parte. Se la lezione non è ancora
 cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare lo stesso.
 
@@ -104,8 +106,9 @@ I due tasti in cima:
   toccate una volta gli assenti. Se qualcuno è già segnato diventa **GLI ALTRI
   PRESENTI**, e mette ✓ solo a chi non ha ancora un segno: le assenze già
   messe restano. Quando tutti hanno un segno diventa **✓ TUTTI SEGNATI**, e
-  non si tocca. Se invece sono tutti assenti (un appello chiuso per sbaglio,
-  riaperto) torna **TUTTI PRESENTI**, e mette ✓ a tutti.
+  non si tocca. Se invece gli iscritti sono tutti assenti (un appello chiuso per
+  sbaglio, riaperto; chi prova non conta) torna **TUTTI PRESENTI**, e mette ✓
+  a tutti.
 - **AZZERA**: toglie tutti i segni della lezione, per ricominciare. Chiede
   **SICURO?**: toccatelo di nuovo entro qualche secondo.
 
@@ -135,8 +138,9 @@ presenti e quanti assenti:
 
 - **APPELLO ARRIVATO IN SEGRETERIA**, in verde;
 - **APPELLO SALVATO SUL TELEFONO**, in giallo, finché manca la rete: diventa
-  verde da solo quando le presenze arrivano. Giallo anche se non c'era nessun
-  presente, nel caso fosse un errore;
+  verde da solo quando le presenze arrivano;
+- **APPELLO CHIUSO · NESSUN PRESENTE**, in giallo, se nessun iscritto c'era:
+  forse è un errore, e **RIAPRI** è lì accanto;
 - **APPELLO NON ARRIVATO TUTTO**, in rosso, se il server ha rifiutato qualche
   presenza: avvisate la segreteria.
 
@@ -206,7 +210,7 @@ telefono e parte appena torna.
 ## Il timer della lezione
 
 In cima all'appello, a destra, c'è il tasto col cronometro: apre il timer con
-la lezione. In
+la lezione in un'altra scheda, così l'appello resta dov'era. In
 cima c'è **DI QUESTA LEZIONE**, se per quella lezione avete scelto dei timer, e
 poi **DEL CORSO**, i timer collegati al suo corso. Siccome siete entrati come
 istruttori, il timer vi riconosce da solo:
