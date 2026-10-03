@@ -22,6 +22,12 @@ export function useLargo(): boolean {
  */
 export const STRETTO = '(max-width: 1240px)'
 
+/**
+ * Il telefono della segreteria: il menu si chiude dietro il tasto MENU. È la
+ * stessa di `@media (max-width: 767px)` in `styles.css`.
+ */
+export const TELEFONO = '(max-width: 767px)'
+
 /** Se lo schermo risponde a una media query, e si aggiorna quando cambia. */
 export function useSchermo(query: string): boolean {
   const [si, setSi] = useState(() => window.matchMedia(query).matches)

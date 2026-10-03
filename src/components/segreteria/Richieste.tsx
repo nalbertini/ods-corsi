@@ -3,6 +3,8 @@ import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
+import { fuoriEta } from '../../lib/listino'
+import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { STRETTO, useSchermo } from '../../lib/largo'
 import { chiedi, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
@@ -204,6 +206,7 @@ function Scheda({
   onApri: (personaId: string) => void
 }) {
   const file = useCarica(() => r.file(x.id), [r, x.id])
+  const voci = useListino()?.listino.corsi
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
   // Documento e certificato, stampati, si cancellano: non mancano, sono su carta.
@@ -285,7 +288,19 @@ function Scheda({
             <a href={`tel:${x.telefono2.replace(/[^\d+]/g, '')}`} style={{ color: 'var(--sec)' }}>{x.telefono2}</a>
           </Dato>
         )}
-        <Dato etichetta="CORSI">{x.corsi.map((c) => nomi.get(c) ?? 'un corso che non c’è più').join(', ')}</Dato>
+        <Dato etichetta="CORSI">
+          {x.corsi.map((c, i) => {
+            const nome = nomi.get(c)
+            return (
+              <span key={c}>
+                {i > 0 && ', '}
+                {nome ?? 'un corso che non c’è più'}
+                {/* Chi si iscrive l'ha scelto lo stesso, avvisato che lo si richiama. */}
+                {nome && voci && fuoriEta(nome, x.natoIl, voci) && <span style={{ color: 'var(--giallo-testo)' }}> (fuori età: richiama)</span>}
+              </span>
+            )
+          })}
+        </Dato>
         <Dato etichetta="PAGA">{x.formula === 'annuale' ? 'L’annuale' : 'Il trimestre'}</Dato>
         {x.note && <Dato etichetta="NOTE">{x.note}</Dato>}
         <Dato etichetta="REGOLAMENTO">{x.regolamento ? 'Accettato' : 'Non accettato (richiesta di prima della casella)'}</Dato>
