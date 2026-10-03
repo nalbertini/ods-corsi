@@ -31,7 +31,7 @@ export interface Destinazione {
   persona?: string
   lezione?: { id: string; inizio: string }
   /** Un filtro già acceso: chi ha il certificato da sistemare, chi deve pagare, cosa c'è da stampare. */
-  filtro?: 'certificato' | 'pagare' | 'stampare'
+  filtro?: 'certificato' | 'scadenza' | 'pagare' | 'stampare' | 'senza-appello'
 }
 
 /**
@@ -340,7 +340,7 @@ export function Segreteria({
             </button>
           </div>
         )}
-        {d && voce === 'presenze' && <Presenze d={d} onVai={vai} />}
+        {d && voce === 'presenze' && <Presenze key={dove.filtro ?? ''} d={d} onVai={vai} senzaAppello={dove.filtro === 'senza-appello'} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}

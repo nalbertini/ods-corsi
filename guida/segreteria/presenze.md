@@ -11,7 +11,7 @@ questo sta in un riquadro a parte e non abbassa le medie.
 
 ## In alto
 
-- il **mese** da guardare;
+- il **mese** da guardare, o gli **ultimi 30 giorni** (quelli di DA FARE, anche a cavallo di due mesi);
 - **Tutti i corsi**, o un corso solo;
 - **SCARICA CSV** — il registro del periodo in un file che si apre con Excel.
 

@@ -12,9 +12,11 @@ elenco, che compaiono negli appelli e sul tablet.
 - **Tutti i corsi** → uno solo, per vedere chi fa quel corso.
 - **SOLO SENZA EMAIL** — chi non ha l'email in scheda.
 - **VENGONO POCO** — chi è venuto a meno di metà delle lezioni, su almeno tre.
-- **CERTIFICATO DA SISTEMARE** — chi non ha il certificato medico, ce l'ha
-  scaduto o gli scade entro un mese.
-- **DA PAGARE** — chi non ha la quota associativa pagata: nessuna ricevuta
+- **SENZA CERTIFICATO VALIDO** — chi è attivo e non ha il certificato medico,
+  o ce l'ha scaduto.
+- **CERTIFICATO IN SCADENZA** — chi è attivo e ha il certificato che scade
+  entro un mese.
+- **DA PAGARE** — chi è attivo e non ha la quota associativa pagata: nessuna ricevuta
   con la quota, pagata solo in parte, o scaduta.
 - **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
   segreteria.

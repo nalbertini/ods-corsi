@@ -14,8 +14,10 @@ import { euro, QUOTA } from '../../lib/ricevute'
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
 
 /** Il certificato da sistemare: manca, è scaduto o scade entro un mese. */
-const certificatoDaSistemare = (p: PersonaSeg, oggi: string) => comeCertificato(p.certificato, oggi) !== 'valido'
-const daPagare = (p: PersonaSeg, oggi: string) => comePaga(p, oggi) !== 'pagato'
+// Certificato e quota si cercano fra chi è attivo: chi ha smesso non li deve portare. Gli stessi conti di DA FARE.
+const senzaCertificatoValido = (p: PersonaSeg, oggi: string) => p.attiva && ['manca', 'scaduto'].includes(comeCertificato(p.certificato, oggi))
+const certificatoInScadenza = (p: PersonaSeg, oggi: string) => p.attiva && comeCertificato(p.certificato, oggi) === 'in_scadenza'
+const daPagare = (p: PersonaSeg, oggi: string) => p.attiva && comePaga(p, oggi) !== 'pagato'
 /** La quota pagata fuori dall'app: si vede in elenco, perché prima o poi va una ricevuta. */
 const fuoriApp = (p: PersonaSeg) => pagamentoDi(p, chiaveGiorno(new Date())).fonte === 'fuori_app'
 
@@ -49,6 +51,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
   const [senzaEmail, setSenzaEmail] = useState(false)
   const [poco, setPoco] = useState(false)
   const [certificato, setCertificato] = useState(filtroIniziale === 'certificato')
+  const [scadenza, setScadenza] = useState(filtroIniziale === 'scadenza')
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [daStampare, setDaStampare] = useState(filtroIniziale === 'stampare')
@@ -72,7 +75,8 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
       (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi))) &&
       (!senzaEmail || !p.email) &&
       (!poco || vienePoco(freq.dato?.get(p.id))) &&
-      (!certificato || certificatoDaSistemare(p, oggi)) &&
+      (!certificato || senzaCertificatoValido(p, oggi)) &&
+      (!scadenza || certificatoInScadenza(p, oggi)) &&
       (!pagare || daPagare(p, oggi)) &&
       (!senzaDocumento || !p.documento) &&
       (!soloStampare || p.certificato.conFile),
@@ -89,7 +93,8 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
     },
   })
   const attiveOra = tutti.filter((p) => p.attiva)
-  const senzaCertificato = attiveOra.filter((p) => ['manca', 'scaduto'].includes(comeCertificato(p.certificato, oggi))).length
+  const senzaCertificato = attiveOra.filter((p) => senzaCertificatoValido(p, oggi)).length
+  const inScadenza = attiveOra.filter((p) => certificatoInScadenza(p, oggi)).length
   const nonPagato = attiveOra.filter((p) => daPagare(p, oggi)).length
   const persona = nuovo ? null : (tutti.find((p) => p.id === scelta) ?? null)
   const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica()])
@@ -138,7 +143,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
       <div className="stack" style={{ gap: 18 }} hidden={!!(nuovo || persona)}>
         <Testa
           titolo="ISCRITTI"
-          sotto={`${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.${
+          sotto={`${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'}${inScadenza ? ` · ${inScadenza} in scadenza` : ''} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.${
             stampare === 1 ? ' Un certificato caricato nell’app da stampare e cancellare.' : stampare ? ` ${stampare} certificati caricati nell’app da stampare e cancellare.` : ''
           }`}
         >
@@ -170,7 +175,10 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
             VENGONO POCO
           </button>
           <button type="button" className="num sg-chip" aria-pressed={certificato} onClick={() => setCertificato(!certificato)}>
-            CERTIFICATO DA SISTEMARE
+            SENZA CERTIFICATO VALIDO
+          </button>
+          <button type="button" className="num sg-chip" aria-pressed={scadenza} onClick={() => setScadenza(!scadenza)}>
+            CERTIFICATO IN SCADENZA
           </button>
           <button type="button" className="num sg-chip" aria-pressed={pagare} onClick={() => setPagare(!pagare)}>
             DA PAGARE

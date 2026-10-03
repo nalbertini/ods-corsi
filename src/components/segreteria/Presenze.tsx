@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DatiSegreteria, ProvaSeg, RigaRegistro } from '../../lib/segreteria'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
@@ -63,14 +63,26 @@ function scaricaCsv(righe: RigaRegistro[], nome: string) {
  * dice che non è venuto nessuno, dice che nessuno ha segnato, e sta nel suo
  * riquadro invece di abbassare le medie.
  */
-export function Presenze({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void }) {
-  const periodi = useMemo(mesi, [])
-  const [periodo, setPeriodo] = useState(periodi[0].chiave)
+export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void; senzaAppello?: boolean }) {
+  // In cima, gli ultimi 30 giorni: quelli che conta DA FARE, a cavallo di due mesi.
+  const periodi = useMemo(() => {
+    const adesso = new Date()
+    return [{ chiave: '30', da: new Date(adesso.getTime() - 30 * 24 * 60 * 60_000), a: adesso, nome: 'Ultimi 30 giorni' }, ...mesi()]
+  }, [])
+  const [periodo, setPeriodo] = useState(senzaAppello ? '30' : periodi[1].chiave)
+
   const [corso, setCorso] = useState('')
   const [sopra, setSopra] = useState<string | null>(null)
   const p = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
 
   const registro = useCarica(() => d.registro(p.da, p.a), [d, p])
+  // Arrivati da DA FARE per gli appelli che mancano: la pagina si apre lì,
+  // quando il registro è arrivato e sopra c'è già tutto quello che lo precede.
+  const appelli = useRef<HTMLElement>(null)
+  const arrivato = registro.dato !== null
+  useEffect(() => {
+    if (senzaAppello && arrivato) appelli.current?.scrollIntoView({ block: 'start' })
+  }, [senzaAppello, arrivato])
   const prove = useCarica(() => d.prove(p.da, p.a), [d, p])
   // Chi si sta perdendo guarda più indietro del mese: le assenze di fila non si fermano al primo.
   const recenti = useCarica(() => d.registro(new Date(Date.now() - 60 * 24 * 60 * 60_000), new Date()), [d])
@@ -229,7 +241,7 @@ export function Presenze({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dov
             ))}
           </section>
 
-          <section aria-label="Appelli mancanti" className="sg-riquadro">
+          <section ref={appelli} aria-label="Appelli mancanti" className="sg-riquadro">
             <Riga titolo="APPELLI MANCANTI" />
             {registro.dato !== null && mancanti.length === 0 && <span style={{ fontSize: 14, color: 'var(--verde)' }}>Nessuno: tutte le lezioni passate hanno l'appello.</span>}
             {mancanti.slice(0, 30).map((r) => (
