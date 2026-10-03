@@ -283,31 +283,57 @@ export function vociInDueGruppi(corsi: string[], giorno: string, listino: Listin
   }
 }
 
-/** Il campo dei dati del socio per ognuna delle cose che possono mancare. */
-export const CAMPO_CHE_MANCA: Record<string, keyof IntestatarioRicevuta> = {
-  'il codice fiscale': 'codiceFiscale',
-  'l’indirizzo': 'indirizzo',
-  'il genitore': 'genitore',
-  'il codice fiscale del genitore': 'genitoreCodiceFiscale',
+/** Una cosa che manca nei dati del socio: il campo da segnare e come si dice. */
+export interface CampoCheManca {
+  campo: keyof IntestatarioRicevuta
+  testo: string
 }
 
 /**
- * Cosa manca nei dati del socio. Il codice fiscale di chi riceve la ricevuta
- * la palestra lo vuole sempre (per un minore è il genitore, nome e codice
- * fiscale): senza, la ricevuta non si fa. L'indirizzo, e il codice fiscale del
- * minore, si possono lasciare vuoti: lo si dice e basta. Solo l'app lo chiede,
+ * Cosa manca nei dati del socio. Il codice fiscale la palestra lo vuole
+ * sempre: per un adulto il suo; per un minore il suo e, siccome la ricevuta va
+ * al genitore, anche nome e codice fiscale del genitore. Senza, la ricevuta
+ * non si fa. L'indirizzo si può lasciare vuoto: lo si dice e basta. Minore o
+ * no si decide al `giorno` della ricevuta, non a oggi. Solo l'app lo chiede,
  * il database no.
  */
-export function mancanoDatiSocio(i: IntestatarioRicevuta, oggi = new Date()) {
+export function mancanoDatiSocio(i: IntestatarioRicevuta, giorno = new Date()) {
   const vuoto = (k: keyof IntestatarioRicevuta) => !String(i[k] ?? '').trim()
-  const minore = !!i.natoIl && minorenne(i.natoIl, oggi)
-  const chiesti: Array<[keyof IntestatarioRicevuta, string, boolean]> = [
-    ['codiceFiscale', 'il codice fiscale', !minore],
-    ['indirizzo', 'l’indirizzo', false],
-    ...(minore ? ([['genitore', 'il genitore', true], ['genitoreCodiceFiscale', 'il codice fiscale del genitore', true]] as Array<[keyof IntestatarioRicevuta, string, boolean]>) : []),
+  const minore = !!i.natoIl && minorenne(i.natoIl, giorno)
+  const chiesti: Array<CampoCheManca & { blocca: boolean }> = [
+    { campo: 'codiceFiscale', testo: minore ? 'il codice fiscale del socio' : 'il codice fiscale', blocca: true },
+    { campo: 'indirizzo', testo: 'l’indirizzo', blocca: false },
+    ...(minore
+      ? [
+          { campo: 'genitore' as const, testo: 'il genitore', blocca: true },
+          { campo: 'genitoreCodiceFiscale' as const, testo: 'il codice fiscale del genitore', blocca: true },
+        ]
+      : []),
   ]
-  const mancano = chiesti.filter(([k]) => vuoto(k))
-  return { blocca: mancano.filter(([, , b]) => b).map(([, t]) => t), avvisa: mancano.filter(([, , b]) => !b).map(([, t]) => t) }
+  const mancano = chiesti.filter((x) => vuoto(x.campo))
+  const solo = ({ campo, testo }: CampoCheManca): CampoCheManca => ({ campo, testo })
+  return { minore, blocca: mancano.filter((x) => x.blocca).map(solo), avvisa: mancano.filter((x) => !x.blocca).map(solo) }
+}
+
+/** La riga dei dati del socio chiusi: a chi va la ricevuta, per un minore il genitore che paga. */
+export function ricevutaPer(i: IntestatarioRicevuta, minore: boolean): string {
+  const [chi, cf] = minore ? [i.genitore?.trim(), i.genitoreCodiceFiscale?.trim()] : [`${i.cognome} ${i.nome}`.trim(), i.codiceFiscale?.trim()]
+  if (minore && !chi) return 'RICEVUTA PER IL GENITORE · MANCA'
+  return `RICEVUTA PER ${(chi || '…').toUpperCase()}${minore ? ' (GENITORE)' : ''}${cf ? ` · ${cf.toUpperCase()}` : ''}`
+}
+
+/**
+ * I dati del socio per una ricevuta nuova: quelli dell'ultima ricevuta, e
+ * dove sono vuoti quelli della scheda (DATI ANAGRAFICI), così un codice
+ * fiscale scritto dopo ci va. Nome e cognome sempre quelli della persona.
+ */
+export function intestatarioDa(
+  ultima: IntestatarioRicevuta | null,
+  anagrafica: Partial<DatiRichiesta> | null,
+  chi: Pick<IntestatarioRicevuta, 'nome' | 'cognome'>,
+): IntestatarioRicevuta {
+  const pieni = Object.fromEntries(Object.entries(ultima ?? {}).filter(([, v]) => typeof v === 'string' && v.trim()))
+  return { ...(anagrafica ? intestatarioDaRichiesta({ ...anagrafica, nome: chi.nome, cognome: chi.cognome }) : {}), ...pieni, nome: chi.nome, cognome: chi.cognome }
 }
 
 /** Il nome del file del PDF: `ricevuta-116-2026-albertini-manuela.pdf`. */

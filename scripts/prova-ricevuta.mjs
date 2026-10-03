@@ -143,12 +143,36 @@ const adulto = { nome: 'Nicola', cognome: 'Albertini', natoIl: '1980-03-02', cod
 const minore = { ...quella.intestatario, genitoreCodiceFiscale: 'LBRNCL80C02L219X' }
 // Un giorno fisso: il minore della prova non deve diventare maggiorenne col calendario.
 const OGGI_SOCIO = new Date('2026-09-10')
-ok('un adulto senza codice fiscale: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: '' }, OGGI_SOCIO)), { blocca: ['il codice fiscale'], avvisa: [] })
-ok('un adulto senza indirizzo: si fa, ma lo dice', prova(() => m.mancanoDatiSocio({ ...adulto, indirizzo: '  ' }, OGGI_SOCIO)), { blocca: [], avvisa: ['l’indirizzo'] })
-ok('un minore senza il codice fiscale del genitore: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, genitoreCodiceFiscale: undefined }, OGGI_SOCIO)), { blocca: ['il codice fiscale del genitore'], avvisa: [] })
-ok('un minore senza il genitore: servono nome e codice fiscale', prova(() => m.mancanoDatiSocio({ ...minore, genitore: undefined, genitoreCodiceFiscale: undefined }, OGGI_SOCIO).blocca), ['il genitore', 'il codice fiscale del genitore'])
-ok('un adulto con tutto: completo', prova(() => m.mancanoDatiSocio(adulto, OGGI_SOCIO)), { blocca: [], avvisa: [] })
-ok('un minore con tutto: completo', prova(() => m.mancanoDatiSocio(minore, OGGI_SOCIO)), { blocca: [], avvisa: [] })
+const manca = (campo, testo) => ({ campo, testo })
+ok('un adulto senza codice fiscale: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...adulto, codiceFiscale: '' }, OGGI_SOCIO)), { minore: false, blocca: [manca('codiceFiscale', 'il codice fiscale')], avvisa: [] })
+ok('un adulto senza indirizzo: si fa, ma lo dice', prova(() => m.mancanoDatiSocio({ ...adulto, indirizzo: '  ' }, OGGI_SOCIO)), { minore: false, blocca: [], avvisa: [manca('indirizzo', 'l’indirizzo')] })
+ok('un minore senza il codice fiscale del genitore: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, genitoreCodiceFiscale: undefined }, OGGI_SOCIO)), { minore: true, blocca: [manca('genitoreCodiceFiscale', 'il codice fiscale del genitore')], avvisa: [] })
+ok('un minore senza il genitore: servono nome e codice fiscale', prova(() => m.mancanoDatiSocio({ ...minore, genitore: undefined, genitoreCodiceFiscale: undefined }, OGGI_SOCIO).blocca), [manca('genitore', 'il genitore'), manca('genitoreCodiceFiscale', 'il codice fiscale del genitore')])
+ok('un minore senza il suo codice fiscale: la ricevuta non si fa', prova(() => m.mancanoDatiSocio({ ...minore, codiceFiscale: ' ' }, OGGI_SOCIO)), { minore: true, blocca: [manca('codiceFiscale', 'il codice fiscale del socio')], avvisa: [] })
+ok('un adulto con tutto: completo', prova(() => m.mancanoDatiSocio(adulto, OGGI_SOCIO)), { minore: false, blocca: [], avvisa: [] })
+ok('un minore con tutto: completo', prova(() => m.mancanoDatiSocio(minore, OGGI_SOCIO)), { minore: true, blocca: [], avvisa: [] })
+// Minore o no si decide alla data della ricevuta: 18 anni il 20 settembre 2026.
+const quasi = { ...adulto, natoIl: '2008-09-20' }
+ok('alla data della ricevuta del 10 settembre è minore', prova(() => m.mancanoDatiSocio(quasi, new Date('2026-09-10')).minore), true)
+ok('alla data della ricevuta del 1° ottobre non più', prova(() => m.mancanoDatiSocio(quasi, new Date('2026-10-01')).minore), false)
+
+console.log('A chi va la ricevuta')
+ok('un adulto: lui col suo codice fiscale', prova(() => m.ricevutaPer(adulto, false)), 'RICEVUTA PER ALBERTINI NICOLA · LBRNCL80C02L219X')
+ok('un minore: il genitore col suo', prova(() => m.ricevutaPer(minore, true)), 'RICEVUTA PER ALBERTINI NICOLA (GENITORE) · LBRNCL80C02L219X')
+ok('un minore senza genitore: lo dice', prova(() => m.ricevutaPer({ ...minore, genitore: ' ', genitoreCodiceFiscale: undefined }, true)), 'RICEVUTA PER IL GENITORE · MANCA')
+ok('un adulto senza codice fiscale: solo il nome', prova(() => m.ricevutaPer({ ...adulto, codiceFiscale: '' }, false)), 'RICEVUTA PER ALBERTINI NICOLA')
+
+console.log('I dati del socio: ultima ricevuta e anagrafica')
+const chiE = { nome: 'Manuela', cognome: 'Albertini' }
+const vecchia = { nome: 'Manu', cognome: 'Albertini', indirizzo: 'Via Vecchia 3', codiceFiscale: '', genitore: 'Albertini Nicola' }
+const an = { codiceFiscale: 'LBRMNL14H53L219X', indirizzo: 'Via Nuova 9', cap: '10093', genitoreNome: 'Laura', genitoreCognome: 'Rossi', genitoreCodiceFiscale: 'RSSLRA80A41L219X' }
+const fusi = prova(() => m.intestatarioDa(vecchia, an, chiE))
+ok('il codice fiscale vuoto della ricevuta lo dà l’anagrafica', fusi.codiceFiscale, 'LBRMNL14H53L219X')
+ok('quel che la ricevuta dice resta', [fusi.indirizzo, fusi.genitore], ['Via Vecchia 3', 'Albertini Nicola'])
+ok('quel che la ricevuta non ha lo dà l’anagrafica', [fusi.cap, fusi.provincia], ['10093', 'TO'])
+ok('nome e cognome dalla persona', [fusi.nome, fusi.cognome], ['Manuela', 'Albertini'])
+ok('senza ricevuta: l’anagrafica', prova(() => m.intestatarioDa(null, an, chiE).indirizzo), 'Via Nuova 9')
+ok('senza niente: nome e cognome', prova(() => m.intestatarioDa(null, null, chiE)), chiE)
 
 console.log('I PDF')
 const tante = {

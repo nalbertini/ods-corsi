@@ -62,9 +62,10 @@ resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
   il genitore. Vengono dal modulo di iscrizione dell'app o dall'import delle
   risposte del modulo Google, e accanto al titolo c'è scritto da dove. Sono
   quelli che una ricevuta nuova prende da sola. **MODIFICA** (o **AGGIUNGI**,
-  se non ce ne sono) → si correggono → **SALVA**: da lì valgono i nuovi,
-  anche sulle ricevute dopo; quelle già fatte restano com'erano. Un campo
-  lasciato vuoto si cancella. Se il codice fiscale non torna (l'ultimo
+  se non ce ne sono) → si correggono → **SALVA**: da lì valgono i nuovi. Una
+  ricevuta nuova parte dai dati dell'ultima ricevuta, e quel che lì è vuoto
+  (per esempio il codice fiscale) lo prende da qui; quelle già fatte restano
+  com'erano. Un campo lasciato vuoto si cancella. Se il codice fiscale non torna (l'ultimo
   carattere, il nome o la data) l'app lo dice in giallo, e si può salvare lo
   stesso. Senza codice fiscale si salva, ma la ricevuta non si fa: vedi
   [Un pagamento e la sua ricevuta](#un-pagamento-e-la-sua-ricevuta).
@@ -138,7 +139,7 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   voce…» ne aggiunge un'altra. In cima ci sono quelle che servono a lui: la
   quota, una voce scritta a mano e tutti i prezzi dei suoi corsi (annuale,
   trimestre e, per le ricevute con la data entro quella del saldo, annuale a
-  saldo). Sotto, in **Tutto il listino…**, quelli degli altri corsi.
+  saldo). Sotto, in **Il resto del listino…**, quelli degli altri corsi.
 - **Sconto famiglia** — se la persona è in un [nucleo
   familiare](#il-nucleo-familiare), la ricevuta lo mette da sé: il 20%
   sull'annuale che costa meno fra quelli di questa ricevuta e quelli già
@@ -150,15 +151,16 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
   già pagato: lo dice, e quello si sistema a parte. Cambiato a mano il
   prezzo della voce scontata, lo sconto è quello scritto.
 - **DATI DEL SOCIO** — nome, indirizzo, codice fiscale, data di nascita e, per
-  un minore, il genitore. Vengono dall'ultima ricevuta o dal modulo di
-  iscrizione online. Chiusi, dicono in una riga a chi va la ricevuta: il
-  socio col suo codice fiscale o, per un minore, il genitore col suo (così si
-  vede se oggi paga l'altro genitore). Si correggono per la ricevuta, la
-  scheda non cambia.
-  - Il **codice fiscale** di chi riceve la ricevuta serve sempre: quello del
-    socio o, per un minore, nome e codice fiscale del genitore. Se manca, i
-    dati si aprono da soli col campo segnato, e **FAI LA RICEVUTA** resta
-    spento finché non lo si scrive.
+  un minore, il genitore. Vengono dall'ultima ricevuta e, dove lì sono vuoti,
+  dai **DATI ANAGRAFICI** della scheda. Chiusi, dicono in una riga a chi va la
+  ricevuta: il socio col suo codice fiscale o, per un minore, il genitore col
+  suo (così si vede se oggi paga l'altro genitore); senza genitore dice
+  «RICEVUTA PER IL GENITORE · MANCA». Minore o no si conta alla data della
+  ricevuta. Si correggono per la ricevuta, la scheda non cambia.
+  - Il **codice fiscale** serve sempre: quello del socio e, per un minore,
+    anche nome e codice fiscale del genitore. Se manca, i dati si aprono da
+    soli col campo segnato, e **FAI LA RICEVUTA** resta spento finché non lo
+    si scrive.
   - Senza l'**indirizzo** la ricevuta si fa lo stesso: una riga gialla dice
     che resterà vuoto, e lo ripete la domanda prima di farla.
 - **ANTICIPO** — quello che si era già dato prima, fuori da queste voci.

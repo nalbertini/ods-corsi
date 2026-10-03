@@ -11,7 +11,7 @@ import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
-import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
+import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
 import { cosaNonVaSegnalazione, type Segnalazione } from './segnalazioni'
@@ -687,9 +687,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const chi = ok(p) as { nome: string; cognome: string }
       // Senza 16-ricevute.sql la ricevuta di prima non c'è: si va avanti con la richiesta.
       const u = ultima.error ? null : (ultima.data as { intestatario: IntestatarioRicevuta } | null)
-      if (u) return { ...u.intestatario, nome: chi.nome, cognome: chi.cognome }
       const x = await anagrafica(personaId, true)
-      return x ? intestatarioDaRichiesta({ ...x.dati, nome: chi.nome, cognome: chi.cognome }) : { nome: chi.nome, cognome: chi.cognome }
+      return intestatarioDa(u?.intestatario ?? null, x?.dati ?? null, chi)
     },
 
     anagraficaDi: (personaId) => anagrafica(personaId),

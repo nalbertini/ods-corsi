@@ -18,7 +18,7 @@ import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
-import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDaRichiesta, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
+import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 
 /**
  * La segreteria senza server: cambia l'archivio di prova sul dispositivo.
@@ -529,10 +529,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async intestatarioDi(personaId) {
       const p = persona(personaId)
-      const ultima = (a().ricevute ?? []).filter((r) => r.personaId === personaId).sort((x, y) => y.creataIl.localeCompare(x.creataIl))[0]
-      if (ultima) return { ...ultima.intestatario, nome: p.nome, cognome: p.cognome }
-      const an = anagraficaDi(personaId)
-      return an ? intestatarioDaRichiesta({ ...an.dati, nome: p.nome, cognome: p.cognome }) : { nome: p.nome, cognome: p.cognome }
+      const ultima = (a().ricevute ?? [])
+        .filter((r) => r.personaId === personaId)
+        // Fatte nello stesso millesimo (le prove), l'ultima è quella col numero dopo.
+        .sort((x, y) => y.creataIl.localeCompare(x.creataIl) || y.anno - x.anno || y.numero - x.numero)[0]
+      return intestatarioDa(ultima?.intestatario ?? null, anagraficaDi(personaId)?.dati ?? null, p)
     },
 
     async anagraficaDi(personaId) {

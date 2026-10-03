@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { pagamentoDi } from '../../lib/segreteria'
 import {
-  CAMPO_CHE_MANCA,
   centesimi,
   conti,
   cosaNonVa,
@@ -10,6 +9,7 @@ import {
   METODI,
   nomeFileRicevuta,
   mancanoDatiSocio,
+  ricevutaPer,
   QUOTA,
   quoteDi,
   vociDelCorso,
@@ -21,7 +21,6 @@ import {
   type VoceRicevuta,
 } from '../../lib/ricevute'
 import { abbonamentiDalleRicevute, descrizioneScontata, doveVaLoSconto, importoSconto, scontoDellaVoce, SCONTO_FAMIGLIA, type Abbonamento } from '../../lib/nucleo'
-import { minorenne } from '../../lib/richieste'
 import { chiaveGiorno } from '../../lib/sala'
 import { chiedi, Campo, dataLunga, Guaio, Riga, useAvviso, useCarica } from './comune'
 
@@ -320,16 +319,14 @@ export function NuovaRicevuta({
   const conQuota = (dati?.voci ?? []).some((v) => v.descrizione.trim().toUpperCase() === QUOTA)
 
   // Senza il codice fiscale di chi riceve la ricevuta non si fa; senza l'indirizzo sì, ma lo si dice.
-  const { blocca, avvisa } = mancanoDatiSocio(socio)
-  const manca = new Set(blocca.map((t) => CAMPO_CHE_MANCA[t]))
-  const elenco = (x: string[]) => x.join(', ').replace(/, ([^,]*)$/, ' e $1')
+  // Minore o no alla data della ricevuta: una fatta oggi con la data di ieri vale per ieri.
+  const { minore, blocca, avvisa } = mancanoDatiSocio(socio, new Date(data || oggi))
+  const manca = new Set(blocca.map((x) => x.campo))
+  const elenco = (x: Array<{ testo: string }>) => x.map((y) => y.testo).join(', ').replace(/, ([^,]*)$/, ' e $1')
   const bloccaTesto = blocca.length
     ? `${blocca.length > 1 ? 'Mancano' : 'Manca'} ${elenco(blocca)}: ${blocca.length > 1 ? 'scrivili' : 'scrivilo'} nei DATI DEL SOCIO`
     : ''
   const avvisaTesto = `Sulla ricevuta ${avvisa.length > 1 ? 'mancano' : 'manca'} ${elenco(avvisa)}`
-  // Chiusi, i dati del socio dicono a chi va la ricevuta: per un minore, al genitore che paga oggi.
-  const minore = !!socio.natoIl && minorenne(socio.natoIl)
-  const aChi = minore ? [socio.genitore, socio.genitoreCodiceFiscale] : [`${socio.cognome} ${socio.nome}`, socio.codiceFiscale]
   const campoSocio = (k: keyof IntestatarioRicevuta, etichetta: string, o: { tipo?: string; largo?: boolean; max?: number } = {}) => (
     <Campo id={`rs-${k}`} etichetta={etichetta} largo={o.largo} manca={manca.has(k)}>
       <input
@@ -445,13 +442,15 @@ export function NuovaRicevuta({
                 {v.etichetta}
               </option>
             ))}
-            <optgroup label="Tutto il listino…">
-              {gruppi.altri.map((v) => (
-                <option key={v.chiave} value={v.chiave}>
-                  {v.etichetta}
-                </option>
-              ))}
-            </optgroup>
+            {gruppi.altri.length > 0 && (
+              <optgroup label="Il resto del listino…">
+                {gruppi.altri.map((v) => (
+                  <option key={v.chiave} value={v.chiave}>
+                    {v.etichetta}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
           <button
             type="button"
@@ -492,11 +491,8 @@ export function NuovaRicevuta({
       </div>
 
       <details open={blocca.length + avvisa.length > 0}>
-        <summary className="sg-etichetta" style={{ cursor: 'pointer' }}>
-          DATI DEL SOCIO · RICEVUTA PER {(aChi[0] || '…').toUpperCase()}
-          {minore && ' (GENITORE)'}
-          {aChi[1] && ` · ${aChi[1].toUpperCase()}`}
-        </summary>
+        {/* Chiusi, i dati del socio dicono a chi va la ricevuta: per un minore, al genitore che paga oggi. */}
+        <summary className="sg-etichetta sg-socio">DATI DEL SOCIO · {ricevutaPer(socio, minore)}</summary>
         <div className="sg-due" style={{ marginTop: 12 }}>
           {campoSocio('nome', 'NOME', { max: 80 })}
           {campoSocio('cognome', 'COGNOME', { max: 80 })}
@@ -511,7 +507,7 @@ export function NuovaRicevuta({
           {campoSocio('genitoreCodiceFiscale', 'C.F. DEL GENITORE', { max: 16 })}
         </div>
         <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-          Vengono dall’ultima ricevuta o dal modulo di iscrizione. Qui si correggono per questa ricevuta; la scheda della persona non cambia.
+          Vengono dall’ultima ricevuta e, dove lì sono vuoti, dai DATI ANAGRAFICI della scheda. Qui si correggono per questa ricevuta; la scheda della persona non cambia.
         </span>
       </details>
 
@@ -549,7 +545,7 @@ export function NuovaRicevuta({
       {guaio && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       {avvisa.length > 0 && (
         <span style={{ fontSize: 15, color: 'var(--giallo-testo)' }}>
-          ⚠ {avvisaTesto}: si può fare lo stesso, ma {avvisa.length > 1 ? 'resteranno vuoti' : 'resterà vuoto'}.
+          {avvisaTesto}: si può fare lo stesso, ma {avvisa.length > 1 ? 'resteranno vuoti' : 'resterà vuoto'}.
         </span>
       )}
       {bloccaTesto && (

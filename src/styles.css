@@ -1492,6 +1492,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-compenso > summary { min-height: 48px; padding: 6px 14px; cursor: pointer; list-style: none; }
 .sg-compenso > summary::-webkit-details-marker { display: none; }
 .sg-compenso > summary:hover { background: var(--surface); }
+/* DATI DEL SOCIO nella ricevuta: tutta la riga si tocca, alta quanto un dito. */
+.sg-socio { box-sizing: border-box; min-height: 44px; padding: 13px 0; cursor: pointer; }
 /* Una richiesta online: le risposte in due colonne, i file con l'anteprima. */
 .sg-dati { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; align-items: baseline; }
 .sg-file {
