@@ -33,3 +33,15 @@ export function apriScheda(corpo: { scrollTop: number }): () => void {
 export function scorre(corpo: { scrollTop: number }): void {
   if (!segnate.has(corpo)) ultime.set(corpo, corpo.scrollTop)
 }
+
+/**
+ * A ogni cambio di voce: la voce nuova si legge dall'alto, e una scheda chiusa
+ * dopo non riporta alla posizione della voce di prima (una scheda aperta con
+ * «Cerca iscritto» da CORSI entra in ISCRITTI insieme alla sua voce).
+ */
+export function cambiaVoce(corpo: { scrollTop: number }): void {
+  corpo.scrollTop = 0
+  ultime.set(corpo, 0)
+  const segnata = segnate.get(corpo)
+  if (segnata) segnata.dovEra = 0
+}
