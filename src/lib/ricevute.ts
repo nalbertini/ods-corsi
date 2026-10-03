@@ -103,7 +103,7 @@ export const QUOTA = 'QUOTA ASSOCIATIVA'
 /**
  * La quota associativa di una ricevuta non annullata: da quando a quando
  * vale, e quanto ne manca (0: pagata). Le stesse righe della vista
- * `quote_ricevute` (supabase/26-pagamento-dalle-ricevute.sql).
+ * `quote_ricevute` (supabase/27-pagamento-dalle-ricevute.sql).
  */
 export interface QuotaRicevuta {
   anno: number

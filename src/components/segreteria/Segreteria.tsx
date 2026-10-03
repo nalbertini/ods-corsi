@@ -15,6 +15,8 @@ import { Listino } from './Listino'
 import { Richieste } from './Richieste'
 import { PresenzeIstruttori } from './PresenzeIstruttori'
 import { PresenzeSegnalate } from './PresenzeSegnalate'
+import { Segnalazioni } from './Segnalazioni'
+import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
 import { Guaio } from './comune'
@@ -22,7 +24,7 @@ import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
-export type Voce = 'dafare' | 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'segnalate' | 'statistiche' | 'istruttori' | 'importa' | 'personale' | 'esercizi' | 'listino' | 'regole'
+export type Voce = 'dafare' | 'settimana' | 'corsi' | 'iscritti' | 'richieste' | 'presenze' | 'segnalate' | 'statistiche' | 'istruttori' | 'importa' | 'personale' | 'esercizi' | 'listino' | 'regole' | 'segnalazioni'
 
 /** Dove portare la segreteria da un'altra sezione: la scheda di qualcuno, una lezione da aprire. */
 export interface Destinazione {
@@ -69,6 +71,7 @@ const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]> }> = [
       ['esercizi', 'ESERCIZI'],
       ['importa', 'IMPORTA DA EXCEL'],
       ['regole', 'IMPOSTAZIONI'],
+      ['segnalazioni', 'SEGNALAZIONI'],
     ],
   },
 ]
@@ -89,6 +92,7 @@ const GUIDE: Record<Voce, string> = {
   esercizi: 'segreteria/esercizi',
   listino: 'segreteria/listino',
   regole: 'segreteria/regole',
+  segnalazioni: 'segreteria/segnalazioni',
 }
 
 /** L'indirizzo della pagina pubblica per iscriversi, quello da mandare su WhatsApp. */
@@ -163,6 +167,19 @@ export function Segreteria({
         {n}
       </span>
     )
+  // Le segnalazioni che aspettano una risposta: aperte, e l'ultimo a scrivere è un altro.
+  const [daRispondere, setDaRispondere] = useState(0)
+  useEffect(() => {
+    if (!d) return
+    let vivo = true
+    d.segnalazioni().then(
+      (l) => vivo && setDaRispondere(l.filter(tocca).length),
+      () => vivo && setDaRispondere(0),
+    )
+    return () => {
+      vivo = false
+    }
+  }, [d, voce, giroConte])
 
   const [guaio, setGuaio] = useState(false)
   const [tentativo, setTentativo] = useState(0)
@@ -207,6 +224,7 @@ export function Segreteria({
                     {id === 'richieste' && segno(richiesteNuove, 'nuove')}
                     {id === 'presenze' && conSegnalate && segno(segnalateDaVedere, 'segnalate da vedere')}
                     {id === 'istruttori' && segno(daConfermare, 'da confermare')}
+                    {id === 'segnalazioni' && segno(daRispondere, 'da rispondere')}
                   </button>
                 ))}
               </div>
@@ -295,6 +313,7 @@ export function Segreteria({
         {d && voce === 'esercizi' && <EserciziPalestra d={d} />}
         {d && voce === 'listino' && <Listino d={d} />}
         {d && voce === 'regole' && <Regole d={d} />}
+        {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
       </main>
     </div>
   )

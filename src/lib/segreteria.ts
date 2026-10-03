@@ -9,6 +9,7 @@ import { VALIDITA } from './costi'
 import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio } from './nomi'
 import type { SegnalataVista } from './segnalate'
+import type { Segnalazione } from './segnalazioni'
 
 export type { ListaMusica } from './musica'
 
@@ -443,6 +444,12 @@ export interface DatiSegreteria {
   /** Le presenze segnalate dagli iscritti (vedi `segnalate.ts`); per ora solo in prova, col database non ci sono. */
   segnalate?(): Promise<SegnalataVista[]>
   gestisciSegnalata?(id: string, accogli: boolean): Promise<void>
+  /** Le segnalazioni della segreteria, coi loro messaggi (vedi `segnalazioni.ts`). */
+  segnalazioni(): Promise<Segnalazione[]>
+  apriSegnalazione(titolo: string, testo: string): Promise<void>
+  rispondiSegnalazione(id: string, testo: string): Promise<void>
+  /** La chiude, o con `false` la riapre. */
+  chiudiSegnalazione(id: string, chiusa: boolean): Promise<void>
 
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>
@@ -643,7 +650,7 @@ function spostaGiorno(g: string, giorni: number) {
   return x.toISOString().slice(0, 10)
 }
 
-// Niente rosso: in segreteria vuol dire che qualcosa manca (supabase/25-colori-corsi.sql).
+// Niente rosso: in segreteria vuol dire che qualcosa manca (supabase/26-colori-corsi.sql).
 export const COLORI = [
   { nome: 'Blu', hex: '#1b8ac4' },
   { nome: 'Viola', hex: '#8b5cc4' },

@@ -140,10 +140,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regclass('public.persone_kanji_unico') is not null),
   ('24-kanji.sql', 'il kanji degli istruttori sul tablet di sala',
     exists (select 1 from dentro where nome = 'kanji_sala')),
-  ('26-pagamento-dalle-ricevute.sql', 'se ha pagato lo dicono le ricevute',
+  ('27-pagamento-dalle-ricevute.sql', 'se ha pagato lo dicono le ricevute',
     to_regclass('public.quote_ricevute') is not null),
-  ('25-colori-corsi.sql', 'nessun corso rosso',
+  ('26-colori-corsi.sql', 'nessun corso rosso',
     not exists (select 1 from corsi where lower(colore) = '#e4292a')),
+  ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
+    to_regclass('public.segnalazioni') is not null),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')
