@@ -92,6 +92,9 @@ select atteso('chi ha provato, senza telefono', (select nome || ' ' || coalesce(
 select atteso('il tablet non chiama prove_recenti', tenta($$select count(*)::text from prove_recenti()$$), 'NEGATO: le prove le vede chi fa l''appello');
 select atteso('le prove della lezione', (select cognome || ' ' || stato || ' ' || origine from prove_con_pin('4321', 'eeeeeeee-0000-0000-0000-000000000006')), 'Nuovo assente appello');
 select atteso('PIN sbagliato: niente prove', (select count(*)::text from prove_con_pin('0000', 'eeeeeeee-0000-0000-0000-000000000006')), '0');
+-- Dal pannello si può toccare chi è già in prova: resta col segno che ha.
+select atteso('riaggiunto dal tablet', (select aggiungi_prova_con_pin('4321', 'eeeeeeee-0000-0000-0000-000000000006', 'ffffffff-0000-0000-0000-000000000001')::text), 'true');
+select atteso('chi è assente resta assente', (select string_agg(cognome || ' ' || stato, ' ') from prove_con_pin('4321', 'eeeeeeee-0000-0000-0000-000000000006')), 'Nuovo assente');
 select atteso('Maura la segna presente', (select segna_prova_con_pin('4321', 'eeeeeeee-0000-0000-0000-000000000006', 'ffffffff-0000-0000-0000-000000000001', 'presente')::text), 'true');
 select atteso('un iscritto non passa da qui', tenta($$select segna_prova_con_pin('4321', 'eeeeeeee-0000-0000-0000-000000000006', 'aaaaaaaa-0000-0000-0000-000000000004', 'presente')::text$$), 'NEGATO: non è fra le prove di questa lezione');
 select atteso('una prova nuova dal tablet', (select aggiungi_prova_con_pin('4321', 'eeeeeeee-0000-0000-0000-000000000006', 'ffffffff-0000-0000-0000-000000000002', 'Sara', 'Dalla Sala', null)::text), 'true');
