@@ -43,7 +43,7 @@ drop policy if exists segnalazioni_scrivi on segnalazioni;
 create policy segnalazioni_scrivi on segnalazioni for insert
   with check (e_staff() and autore_id = persona_corrente()
     -- Si risponde solo a un filo, non a una risposta.
-    and (padre_id is null or exists (select 1 from segnalazioni p where p.id = padre_id and p.padre_id is null)));
+    and (padre_id is null or exists (select 1 from segnalazioni p where p.id = segnalazioni.padre_id and p.padre_id is null)));
 
 drop policy if exists segnalazioni_chiudi on segnalazioni;
 create policy segnalazioni_chiudi on segnalazioni for update using (e_staff() and padre_id is null) with check (e_staff() and padre_id is null);
