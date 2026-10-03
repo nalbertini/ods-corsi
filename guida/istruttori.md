@@ -167,7 +167,7 @@ aggiungete voi, senza aspettare la segreteria: in fondo all'elenco c'è
 
 1. Scrivete **nome**, **cognome** e, se ve lo dà, il **telefono**: serve alla
    segreteria per richiamarlo.
-2. Mentre scrivete, sotto compare chi **è già venuto a provare** con quel
+2. Dalla terza lettera, sotto compare chi **è già venuto a provare** con quel
    nome (con il corso e il giorno dell'ultima prova; il telefono lo vede solo
    la segreteria). Se è lui, toccatelo:
    è la stessa persona, non un doppione. È il caso della settimana di prova,

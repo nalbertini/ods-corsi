@@ -78,7 +78,9 @@ export function PannelloProve({
     setFatto(null)
     try {
       await onAggiungi(chi)
-      setFatto(`${chi.cognome.trim()} ${chi.nome.trim()}: aggiunto, e segnato presente.`)
+      // Sul tablet il già venuto ha la sigla: il cognome intero non resta sullo schermo.
+      const sigla = 'sigla' in chi && typeof chi.sigla === 'string' ? chi.sigla : null
+      setFatto(`${sigla ? `${chi.nome} ${sigla}` : `${chi.cognome.trim()} ${chi.nome.trim()}`}: aggiunto, e segnato presente.`)
       setNome('')
       setCognome('')
       setTelefono('')
@@ -105,7 +107,7 @@ export function PannelloProve({
       <div className="row" style={{ gap: 10, alignItems: 'baseline' }}>
         <span className={`${k.etichetta} grow`}>CHI VIENE A PROVARE</span>
       </div>
-      <span className="prove-sotto">Entra nell'appello di questa lezione, già presente. Chi è già venuto si ritrova scrivendo il nome.</span>
+      <span className="prove-sotto">Entra nell'appello di questa lezione, già presente. Chi è già venuto compare dalla terza lettera.</span>
 
       {/* Senza i già venuti si aggiunge lo stesso: dall'app la prova va in
           coda come i segni dell'appello (il tablet, senza coda, lo dice se non va). */}
@@ -114,11 +116,11 @@ export function PannelloProve({
         <div className="prove-campi">
           <label className="stack" style={{ gap: 4 }} htmlFor={id('nome')}>
             <span className={k.etichetta}>NOME</span>
-            <input ref={primo} id={id('nome')} className={k.campo} autoComplete="off" value={nome} onChange={(e) => setNome(e.target.value)} />
+            <input ref={primo} id={id('nome')} className={k.campo} autoComplete="off" value={nome} onChange={(e) => { setNome(e.target.value); setFatto(null); setGuaio(null) }} />
           </label>
           <label className="stack" style={{ gap: 4 }} htmlFor={id('cognome')}>
             <span className={k.etichetta}>COGNOME</span>
-            <input id={id('cognome')} className={k.campo} autoComplete="off" value={cognome} onChange={(e) => setCognome(e.target.value)} />
+            <input id={id('cognome')} className={k.campo} autoComplete="off" value={cognome} onChange={(e) => { setCognome(e.target.value); setFatto(null); setGuaio(null) }} />
           </label>
           <label className="stack" style={{ gap: 4 }} htmlFor={id('telefono')}>
             <span className={k.etichetta}>TELEFONO, SE LO DÀ</span>
@@ -129,12 +131,12 @@ export function PannelloProve({
         {venuti === null && !nonVa && <span className="prove-sotto">Sto leggendo chi è già venuto…</span>}
         {proposti.length > 0 && (
           <div className="stack" style={{ gap: 6 }}>
-            <span className={k.etichetta}>{nome || cognome ? 'GIÀ VENUTI CON QUESTO NOME' : 'GLI ULTIMI VENUTI A PROVARE'}</span>
+            <span className={k.etichetta}>GIÀ VENUTI CON QUESTO NOME</span>
             {proposti.map((p) => (
               <button key={p.id} type="button" className={k.voce} disabled={aspetta} onClick={() => void aggiungi(p)}>
                 <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
                   <span className="prove-gia-nome">
-                    {p.cognome} {p.nome}
+                    {p.sigla ? `${p.nome} ${p.sigla}` : `${p.cognome} ${p.nome}`}
                   </span>
                   <span className="prove-sotto">
                     {p.corso}, {giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))}
