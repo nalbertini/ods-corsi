@@ -5,6 +5,7 @@ import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
+import { euro } from './ricevute'
 import { VALIDITA } from './costi'
 import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio, paroleCercate, somiglia } from './nomi'
@@ -650,6 +651,110 @@ export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: strin
 /** In regola: certificato valido (anche se in scadenza) e quota pagata. */
 export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string) =>
   ['valido', 'in_scadenza'].includes(comeCertificato(p.certificato, oggi)) && comePaga(p, oggi) === 'pagato'
+
+export type Tono = 'rosso' | 'giallo' | 'verde' | 'spento'
+
+/** Una parola grande col suo colore: un bollino in elenco, un timbro nella scheda. */
+export interface ParolaStato {
+  tono: Tono
+  parola: string
+}
+
+/** Un timbro in cima alla scheda; una riga senza tono prende quello del testo. */
+export interface Timbro extends ParolaStato {
+  righe: Array<{ testo: string; tono?: Tono }>
+  /** La parola in elenco, quando quella del timbro è troppo lunga per la colonna. */
+  inElenco?: string
+}
+
+export interface TimbriScheda {
+  certificato: Timbro
+  quota: Timbro
+  documento: Timbro
+  /** Disattivata: i timbri sono spenti, le parole restano. */
+  disattivata?: boolean
+}
+
+/** «12/10», da una data `AAAA-MM-GG`. */
+const dataCorta = (g: string) => `${g.slice(8, 10)}/${g.slice(5, 7)}`
+
+/** «12/10/2026»: nei timbri l'anno c'è, la scheda si legge anche fra un anno. */
+const dataTimbro = (g: string) => `${dataCorta(g)}/${g.slice(0, 4)}`
+
+/**
+ * «AL 31/07/2027», ma «ALL’11/07/2027»: l'1, l'8 e l'11 cominciano per
+ * vocale. Lì il giorno va senza zero, se no «ALL’08» non si legge.
+ */
+export function alGiorno(g: string): string {
+  const giorno = Number(g.slice(8, 10))
+  return [1, 8, 11].includes(giorno) ? `ALL’${giorno}${dataTimbro(g).slice(2)}` : `AL ${dataTimbro(g)}`
+}
+
+function timbroCertificato(c: CertificatoSeg, oggi: string): Timbro {
+  const come = comeCertificato(c, oggi)
+  // Il file di prima della carta è sempre un avviso, anche sotto un certificato valido.
+  const righe: Timbro['righe'] = c.conFile ? [{ testo: 'DA STAMPARE', tono: 'giallo' }] : []
+  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...righe] }
+  if (come === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'CERT. SCADUTO', righe }
+  if (come === 'in_scadenza') {
+    if (c.scade === oggi) return { tono: 'giallo', parola: 'SCADE OGGI', righe }
+    const fra = Math.round((Date.parse(c.scade) - Date.parse(oggi)) / 86_400_000)
+    return {
+      tono: 'giallo',
+      parola: `SCADE IL ${dataTimbro(c.scade)}`,
+      // In elenco la colonna è stretta: la data senza l'anno.
+      inElenco: `SCADE IL ${dataCorta(c.scade)}`,
+      righe: [{ testo: fra === 1 ? 'DOMANI' : `FRA ${fra} GIORNI` }, ...righe],
+    }
+  }
+  return { tono: 'verde', parola: `VALIDO FINO ${alGiorno(c.scade)}`, righe }
+}
+
+function timbroQuota(s: StatoPaga): Timbro {
+  const fino = s.fino ? [{ testo: `FINO ${alGiorno(s.fino)}` }] : []
+  const da = s.fonte === 'fuori_app' ? [{ testo: 'FUORI APP' }] : s.ricevuta ? [{ testo: `RICEVUTA ${s.ricevuta}` }] : []
+  if (s.come === 'pagato') return { tono: 'verde', parola: 'PAGATA', righe: [...da, ...fino] }
+  if (s.come === 'in_parte')
+    return { tono: 'giallo', parola: 'IN PARTE', righe: s.fonte === 'ricevuta' ? [{ testo: `MANCANO ${euro(s.mancano ?? 0)} €` }, ...da] : [...da, ...fino] }
+  if (s.come === 'scaduto') return { tono: 'rosso', parola: 'QUOTA SCADUTA', righe: s.fino ? [{ testo: `VALEVA FINO ${alGiorno(s.fino)}` }] : [] }
+  return { tono: 'rosso', parola: 'DA PAGARE', righe: [{ testo: 'NESSUNA RICEVUTA' }] }
+}
+
+/**
+ * I tre timbri in cima alla scheda: certificato, quota, documento. Il
+ * documento si vede ma non conta per «in regola» (vedi `inRegola`). Chi è
+ * disattivato li ha spenti, con le stesse parole.
+ */
+export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote'>, oggi: string): TimbriScheda {
+  const t = {
+    certificato: timbroCertificato(p.certificato, oggi),
+    quota: timbroQuota(pagamentoDi(p, oggi)),
+    documento: {
+      tono: p.documento ? 'verde' : 'giallo',
+      parola: p.documento ? 'IN SEGRETERIA' : 'DA PORTARE',
+      // Del genitore, per un minore: la scheda non sa l'età, lo dice la sezione DOCUMENTO.
+      righe: [{ testo: 'NON SERVE PER ENTRARE' }],
+    } satisfies Timbro,
+  }
+  if (p.attiva) return t
+  const spegni = (x: Timbro): Timbro => ({ ...x, tono: 'spento', righe: x.righe.map(({ testo }) => ({ testo })) })
+  return { certificato: spegni(t.certificato), quota: spegni(t.quota), documento: spegni(t.documento), disattivata: true }
+}
+
+/**
+ * La colonna IN REGOLA dell'elenco: le parole dei timbri che non vanno, o
+ * IN REGOLA; poi FUORI APP, perché prima o poi va una ricevuta. Il
+ * certificato in scadenza si vede, anche se è ancora in regola.
+ */
+export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string): ParolaStato[] {
+  const s = pagamentoDi(p, oggi)
+  const cert = timbroCertificato(p.certificato, oggi)
+  const quota = timbroQuota(s)
+  const fuori: ParolaStato[] = s.fonte === 'fuori_app' ? [{ tono: 'spento', parola: 'FUORI APP' }] : []
+  const guai = [cert, quota].filter((t) => t.tono !== 'verde').map((t): ParolaStato => ({ tono: t.tono, parola: t.inElenco ?? t.parola }))
+  const inRegola: ParolaStato = { tono: 'verde', parola: 'IN REGOLA' }
+  return [...(guai.length ? guai : [inRegola]), ...fuori]
+}
 
 /** Un giorno `AAAA-MM-GG` spostato di tanti giorni, senza passare dai fusi. */
 function spostaGiorno(g: string, giorni: number) {

@@ -114,7 +114,7 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
         </div>
       )}
       <div className="row">
-        <button type="button" className="num sg-chip sg-chip-pieno" onClick={onNuova}>
+        <button type="button" className="num sg-chip sg-chip-pieno" data-primo onClick={onNuova}>
           + REGISTRA UN PAGAMENTO
         </button>
       </div>

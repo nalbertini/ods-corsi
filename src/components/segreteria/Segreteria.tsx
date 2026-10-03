@@ -4,7 +4,6 @@ import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
 import { Bollino } from '../ds'
 import { TastoTema } from '../TastoTema'
-import { Cursori } from '../Icons'
 import { Settimana } from './Settimana'
 import { Corsi } from './Corsi'
 import { Iscritti } from './Iscritti'
@@ -255,6 +254,13 @@ export function Segreteria({
   // Le segnalate ci sono solo in prova: lì PRESENZE ha due schede.
   const conSegnalate = d?.modo === 'prova' && !!d.segnalate
   const inPresenze = voce === 'presenze' || voce === 'segnalate'
+  // Il menu è più alto di uno schermo da reception: la voce aperta (anche dopo
+  // una ricarica, o con Indietro) si porta in vista. E una voce nuova si legge
+  // dall'alto, non da dove era scesa quella di prima.
+  useEffect(() => {
+    document.querySelector('#sg-menu .sg-voce[aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
+    document.getElementById('sg-contenuto')?.scrollTo(0, 0)
+  }, [voce])
   const segno = (n: number, detto: string) =>
     n > 0 && (
       <span className="num sg-tag" data-tipo="presto" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${n} ${detto}`}>
@@ -341,16 +347,6 @@ export function Segreteria({
         <div className="row sg-icone">
           {guida}
           <TastoTema />
-          <button
-            type="button"
-            className="icon-btn"
-            aria-current={voce === 'regole' ? 'page' : undefined}
-            onClick={() => vai('regole')}
-            title="Impostazioni"
-            aria-label="Impostazioni"
-          >
-            <Cursori />
-          </button>
           {/* Fra DATI e DI uno spazio che non va a capo: in 56px si spezza solo prima di PROVA. */}
           {prova && <Bollino>DATI{'\u00a0'}DI PROVA</Bollino>}
         </div>
@@ -366,8 +362,7 @@ export function Segreteria({
                   <button
                     key={id}
                     type="button"
-                    // IMPOSTAZIONI sul computer è il tasto coi cursori in cima al menu; sul telefono resta qui.
-                    className={id === 'regole' ? 'num sg-voce sg-voce-tel' : 'num sg-voce'}
+                    className="num sg-voce"
                     aria-current={voce === id || (id === 'presenze' && inPresenze) ? 'page' : undefined}
                     onClick={() => vai(id)}
                   >

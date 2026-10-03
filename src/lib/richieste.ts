@@ -161,8 +161,51 @@ export function minorenne(natoIl: string, oggi = new Date()): boolean {
   return diciotto > oggi
 }
 
+/**
+ * Se firma il genitore (true) o chi si iscrive. Mentre si corregge la data
+ * dalla tastiera il campo passa per vuoto o per anni come 0002: lì chi firma
+ * resta quello di `prima`, se no firma e caselle sparirebbero per niente.
+ */
+export function chiFirma(natoIl: string, prima?: boolean, oggi = new Date()): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(natoIl) || Number(natoIl.slice(0, 4)) < 1900) return prima ?? false
+  return minorenne(natoIl, oggi)
+}
+
 /** I corsi per cui dai 12 anni serve il certificato agonistico. */
 const AGONISTICI = /\b(judo|aikido|lotta)\b/i
+
+/**
+ * INDIETRO dal modulo lo chiude, e quello che c'è scritto si perde: nessuna
+ * bozza resta sul telefono, per i dati dei minori. Se c'è qualcosa di nuovo
+ * rispetto a quando si è aperto (per il nucleo, i dati già scritti), lo chiede
+ * prima, come la freccia dell'appello (`domandaIndietro`).
+ */
+export function domandaUscita(m: {
+  risposte: DatiRichiesta
+  inizio: DatiRichiesta
+  file: number
+  scelte: number
+  tratti: number
+  privacy: boolean
+  luogoGenitore: string
+}): string | undefined {
+  // Object.keys dà string[]: le chiavi sono quelle di due DatiRichiesta.
+  const chiavi = new Set([...Object.keys(m.risposte), ...Object.keys(m.inizio)]) as Set<keyof DatiRichiesta>
+  const cambiate = [...chiavi].some((k) => JSON.stringify(m.risposte[k]) !== JSON.stringify(m.inizio[k]))
+  const nuovo = cambiate || m.file > 0 || m.scelte > 0 || m.tratti > 0 || m.privacy || !!m.luogoGenitore.trim()
+  return nuovo ? 'LE RISPOSTE SI PERDONO · ESCI?' : undefined
+}
+
+/**
+ * Se cambia chi firma (la data di nascita dice minore, o non più), cambia il
+ * foglio: firma, caselle e foto del foglio di prima non valgono, e si dice
+ * perché sono sparite. Se non c'era niente, non c'è niente da dire; se
+ * l'avviso c'era già (la data cambiata due volte), resta e dice chi firma ora.
+ */
+export function firmaDaRifare(minore: boolean, prima: { tratti: number; scelte: number; foto: boolean; avvisato: boolean }): string | undefined {
+  if (!prima.tratti && !prima.scelte && !prima.foto && !prima.avvisato) return undefined
+  return `Firma e autorizzazioni vanno rifatte: ora firma ${minore ? 'il genitore' : 'chi si iscrive'}.`
+}
 
 /**
  * Quale certificato medico ricordare a chi si iscrive: nessuno sotto i 6
