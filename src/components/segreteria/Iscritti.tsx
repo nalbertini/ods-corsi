@@ -1244,7 +1244,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
         </button>
       ) : (
         s.come !== 'pagato' && (
-          <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => setScrivi(true)}>
+          <button type="button" className="num sg-chip" style={{ alignSelf: 'flex-start' }} onClick={() => setScrivi(true)}>
             PAGATA SENZA RICEVUTA DELL’APP
           </button>
         )

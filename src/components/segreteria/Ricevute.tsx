@@ -69,10 +69,10 @@ export function RicevuteIscritto({ d, p, fai, onNuova, onCambiato }: { d: DatiSe
           <button type="button" className="num sg-chip" onClick={() => void fai(() => scarica(r))}>
             PDF
           </button>
-          {/* Raro e senza ritorno: su una riga sua, dal lato opposto al PDF che si preme ogni giorno. */}
+          {/* Raro e senza ritorno: su una riga sua, a destra, e non più grande del PDF che si preme ogni giorno. */}
           {!r.annullataIl && (
-            <div className="row" style={{ flexBasis: '100%' }}>
-              <button type="button" className="sg-btn sg-btn-linea" onClick={() => annulla(r)}>
+            <div className="row" style={{ flexBasis: '100%', justifyContent: 'flex-end' }}>
+              <button type="button" className="num sg-chip" onClick={() => annulla(r)}>
                 ANNULLA RICEVUTA
               </button>
             </div>

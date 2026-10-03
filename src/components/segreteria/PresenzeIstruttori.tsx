@@ -354,7 +354,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
                     <span className="stack" style={{ gap: 2 }}>
                       <span
                         className="num"
-                        style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.12em', color: x.stato === 'confermata' ? 'var(--verde)' : 'var(--rosso)' }}
+                        style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.12em', color: x.stato === 'confermata' ? 'var(--verde-testo)' : 'var(--rosso-testo)' }}
                       >
                         {x.stato === 'confermata' ? 'CONFERMATA' : 'RIFIUTATA'}
                       </span>
