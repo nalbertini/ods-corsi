@@ -987,6 +987,12 @@ a.btn { text-decoration: none; }
   overflow-y: auto;
 }
 .sg-voci { display: flex; flex-direction: column; gap: 2px; }
+.sg-gruppi { display: flex; flex-direction: column; gap: 18px; }
+.sg-gruppo { display: flex; flex-direction: column; gap: 4px; }
+.sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
+/* Le schede di PRESENZE: larghe quanto serve, non quanto la sezione. */
+.sg-schede { flex-basis: auto; align-self: flex-start; grid-auto-columns: minmax(150px, auto); }
+.sg-schede .scheda { padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
 .sg-voce {
   display: flex; align-items: center; min-height: 44px; padding: 0 12px;
   border-left: 4px solid transparent; color: var(--sec);
@@ -1387,6 +1393,9 @@ a.sg-voce { text-decoration: none; }
   .sg-menu { width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px; padding: calc(var(--safe-t) + 12px) 16px 12px; border-right: none; border-bottom: 2px solid var(--line-soft); overflow: visible; }
   .sg-menu > .grow, .sg-chi > span:not(.sg-bollino) { display: none; }
   .sg-voci { flex-direction: row; flex-wrap: wrap; }
+  .sg-gruppi { flex-direction: row; flex-wrap: wrap; gap: 0; }
+  .sg-gruppo, .sg-gruppo > .sg-voci { display: contents; }
+  .sg-gruppo-titolo { display: none; }
   .sg-voce { border-left: none; border-bottom: 4px solid transparent; }
   .sg-voce[aria-current='page'] { border-bottom-color: var(--text); }
   .sg-chi { flex-direction: row; align-items: center; padding: 6px 10px; }

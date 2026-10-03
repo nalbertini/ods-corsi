@@ -32,21 +32,45 @@ export interface Destinazione {
   filtro?: 'certificato' | 'pagare' | 'stampare'
 }
 
-const VOCI: Array<[Voce, string]> = [
-  ['dafare', 'DA FARE'],
-  ['settimana', 'SETTIMANA'],
-  ['corsi', 'CORSI'],
-  ['iscritti', 'ISCRITTI'],
-  ['richieste', 'RICHIESTE ONLINE'],
-  ['presenze', 'PRESENZE'],
-  ['segnalate', 'PRESENZE SEGNALATE'],
-  ['statistiche', 'STATISTICHE'],
-  ['istruttori', 'PRESENZE ISTRUTTORI'],
-  ['importa', 'IMPORTA DA EXCEL'],
-  ['personale', 'ISTRUTTORI E ACCESSI'],
-  ['esercizi', 'ESERCIZI'],
-  ['listino', 'LISTINO'],
-  ['regole', 'IMPOSTAZIONI'],
+/**
+ * Il menu in quattro gruppi, da quello che si apre ogni giorno a quello che
+ * si tocca una volta a stagione: tredici voci in fila non si leggevano. Le
+ * presenze segnalate sono una scheda di PRESENZE, non una voce.
+ */
+const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]> }> = [
+  {
+    titolo: 'OGNI GIORNO',
+    voci: [
+      ['dafare', 'DA FARE'],
+      ['settimana', 'SETTIMANA'],
+      ['richieste', 'RICHIESTE ONLINE'],
+      ['presenze', 'PRESENZE'],
+    ],
+  },
+  {
+    titolo: 'PERSONE',
+    voci: [
+      ['iscritti', 'ISCRITTI'],
+      ['corsi', 'CORSI'],
+    ],
+  },
+  {
+    titolo: 'ISTRUTTORI',
+    voci: [
+      ['istruttori', 'PRESENZE ISTRUTTORI'],
+      ['personale', 'ISTRUTTORI E ACCESSI'],
+    ],
+  },
+  {
+    titolo: 'LA PALESTRA',
+    voci: [
+      ['statistiche', 'STATISTICHE'],
+      ['listino', 'LISTINO'],
+      ['esercizi', 'ESERCIZI'],
+      ['importa', 'IMPORTA DA EXCEL'],
+      ['regole', 'IMPOSTAZIONI'],
+    ],
+  },
 ]
 
 /** La pagina della guida per ogni voce del menu: il tasto GUIDA apre quella della voce aperta. */
@@ -130,7 +154,15 @@ export function Segreteria({
   const richiesteNuove = conti.richieste ?? 0
   const daConfermare = conti.istruttori ?? 0
   const segnalateDaVedere = conti.segnalate ?? 0
-  const voci = VOCI.filter(([id]) => id !== 'segnalate' || (d?.modo === 'prova' && !!d.segnalate))
+  // Le segnalate ci sono solo in prova: lì PRESENZE ha due schede.
+  const conSegnalate = d?.modo === 'prova' && !!d.segnalate
+  const inPresenze = voce === 'presenze' || voce === 'segnalate'
+  const segno = (n: number, detto: string) =>
+    n > 0 && (
+      <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${n} ${detto}`}>
+        {n}
+      </span>
+    )
 
   const [guaio, setGuaio] = useState(false)
   const [tentativo, setTentativo] = useState(0)
@@ -156,26 +188,29 @@ export function Segreteria({
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>SEGRETERIA</span>
           </span>
         </div>
-        <div className="sg-voci">
-          {voci.map(([id, testo]) => (
-            <button key={id} type="button" className="num sg-voce" aria-current={voce === id ? 'page' : undefined} onClick={() => vai(id)}>
-              {testo}
-              {id === 'richieste' && richiesteNuove > 0 && (
-                <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${richiesteNuove} nuove`}>
-                  {richiesteNuove}
-                </span>
-              )}
-              {id === 'segnalate' && segnalateDaVedere > 0 && (
-                <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${segnalateDaVedere} da vedere`}>
-                  {segnalateDaVedere}
-                </span>
-              )}
-              {id === 'istruttori' && daConfermare > 0 && (
-                <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8, whiteSpace: 'nowrap' }} aria-label={`${daConfermare} da confermare`}>
-                  {daConfermare}
-                </span>
-              )}
-            </button>
+        <div className="sg-gruppi">
+          {GRUPPI.map((g) => (
+            <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo">
+              <span className="sg-gruppo-titolo" aria-hidden="true">
+                {g.titolo}
+              </span>
+              <div className="sg-voci">
+                {g.voci.map(([id, testo]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className="num sg-voce"
+                    aria-current={voce === id || (id === 'presenze' && inPresenze) ? 'page' : undefined}
+                    onClick={() => vai(id)}
+                  >
+                    {testo}
+                    {id === 'richieste' && segno(richiesteNuove, 'nuove')}
+                    {id === 'presenze' && conSegnalate && segno(segnalateDaVedere, 'segnalate da vedere')}
+                    {id === 'istruttori' && segno(daConfermare, 'da confermare')}
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
         <div className="grow" />
@@ -241,6 +276,16 @@ export function Segreteria({
         {d && voce === 'corsi' && <Corsi d={d} />}
         {d && voce === 'iscritti' && <Iscritti key={`${dove.persona ?? ''}-${dove.filtro ?? ''}`} d={d} personaIniziale={dove.persona} filtroIniziale={dove.filtro} />}
         {d && voce === 'richieste' && <Richieste key={dove.filtro ?? ''} d={d} onVai={vai} stampareIniziale={dove.filtro === 'stampare'} />}
+        {d && inPresenze && conSegnalate && (
+          <div role="tablist" aria-label="Presenze" className="schede sg-schede">
+            <button type="button" role="tab" aria-selected={voce === 'presenze'} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>
+              IL MESE
+            </button>
+            <button type="button" role="tab" aria-selected={voce === 'segnalate'} className="scheda" data-on={voce === 'segnalate'} onClick={() => vai('segnalate')}>
+              SEGNALATE{segno(segnalateDaVedere, 'da vedere')}
+            </button>
+          </div>
+        )}
         {d && voce === 'presenze' && <Presenze d={d} onVai={vai} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}

@@ -21,7 +21,12 @@ con **ISTRUTTORI →** nel menu, senza uscire.
 
 ## Il menu
 
-A sinistra il menu, a destra la voce scelta. Ogni voce ha la sua guida:
+A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
+**OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
+**PERSONE** (ISCRITTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
+E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, ESERCIZI, IMPORTA DA EXCEL,
+IMPOSTAZIONI). Sul telefono i gruppi stanno in fila, senza titolo. Ogni voce
+ha la sua guida:
 
 | Voce | A cosa serve | Guida |
 |---|---|---|
@@ -31,7 +36,7 @@ A sinistra il menu, a destra la voce scelta. Ogni voce ha la sua guida:
 | **ISCRITTI** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
 | **RICHIESTE ONLINE** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
 | **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |
-| **PRESENZE SEGNALATE** | Gli iscritti che dicono di esserci stati e non risultano, da accogliere o rifiutare (solo in prova) | [Apri](presenze-segnalate.md) |
+| **PRESENZE · SEGNALATE** | Una scheda di PRESENZE: gli iscritti che dicono di esserci stati e non risultano, da accogliere o rifiutare (solo in prova) | [Apri](presenze-segnalate.md) |
 | **STATISTICHE** | Come va la palestra mese per mese: presenze, iscritti, giorni e ore, corsi, istruttori, incassi | [Apri](statistiche.md) |
 | **PRESENZE ISTRUTTORI** | Le presenze degli istruttori dal PIN e dall'appello, confermate e da confermare, le lezioni tenute in cui scegliere chi c'era, il CSV e il report PDF | [Apri](presenze-istruttori.md) |
 | **IMPORTA DA EXCEL** | Corsi e iscritti dai fogli Excel o dalle risposte del modulo Google | [Apri](importa.md) |
