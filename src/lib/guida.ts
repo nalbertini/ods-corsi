@@ -22,9 +22,9 @@ function nomeDi(file: string): string {
 /** Il file di ogni pagina, relativo alla cartella `guida/`. */
 const PAGINE = new Map(Object.keys(FILE).map((k) => [nomeDi(k.slice(DOVE.length)), k.slice(DOVE.length)]))
 
-export const INDIRIZZO_GUIDA = '#guida'
+import { eIndirizzoGuida, INDIRIZZO_GUIDA } from './cancelletti'
 
-export const eIndirizzoGuida = (hash: string) => hash === INDIRIZZO_GUIDA || hash.startsWith(`${INDIRIZZO_GUIDA}/`)
+export { eIndirizzoGuida, INDIRIZZO_GUIDA }
 
 export const indirizzoPagina = (nome: string) => (nome ? `${INDIRIZZO_GUIDA}/${nome}` : INDIRIZZO_GUIDA)
 

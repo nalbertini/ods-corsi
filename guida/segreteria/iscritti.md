@@ -52,6 +52,9 @@ accoglie la sua richiesta (vedi [Richieste online](richieste.md)).
 
 Un clic su un nome apre la sua scheda a tutta pagina, al posto dell'elenco;
 **ISCRITTI** in alto torna all'elenco, con la ricerca e i filtri di prima.
+Anche il tasto Indietro del browser torna all'elenco, dalla scheda come dal
+modulo di un iscritto nuovo, e una scheda aperta
+resta aperta ricaricando la pagina o copiandone il link in un'altra finestra.
 
 
 - **MODIFICA** — nome, cognome, email, telefono.

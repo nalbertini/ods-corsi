@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Destinazione } from './Segreteria'
 import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg } from '../../lib/segreteria'
 import { comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, pulisciAnagrafica } from '../../lib/segreteria'
@@ -43,7 +43,24 @@ function Bollino({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde' | 'spe
  * Un nome in elenco non ha bisogno di un accesso: gli iscritti non entrano
  * nell'app. Qui la segreteria li aggiunge, li iscrive e li toglie dai corsi.
  */
-export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegreteria; personaIniziale?: string; filtroIniziale?: Destinazione['filtro'] }) {
+export function Iscritti({
+  d,
+  scelta,
+  nuovo = false,
+  onScelta,
+  onNuovo,
+  filtroIniziale,
+}: {
+  d: DatiSegreteria
+  /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
+  scelta?: string
+  /** Il modulo del nuovo iscritto: sta nell'indirizzo anche lui, così Indietro lo chiude. */
+  nuovo?: boolean
+  /** `push` è un passo per Indietro, `replace` corregge l'indirizzo di adesso. */
+  onScelta: (id: string | null, passo: 'push' | 'replace') => void
+  onNuovo: () => void
+  filtroIniziale?: Destinazione['filtro']
+}) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
   const freq = useCarica(() => d.frequenze(), [d])
@@ -56,9 +73,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [daStampare, setDaStampare] = useState(filtroIniziale === 'stampare')
-  const [scelta, setScelta] = useState<string | null>(personaIniziale ?? null)
-  const [nuovo, setNuovo] = useState(false)
-  const { avviso, fai } = useAvviso()
+  const { avviso, avvisa, fai } = useAvviso()
   const oggi = chiaveGiorno(new Date())
 
   const perId = new Map((corsi.dato ?? []).map((c) => [c.id, c]))
@@ -101,9 +116,18 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
   const ricarica = () => Promise.all([persone.ricarica(), freq.ricarica()])
 
   const chiudi = () => {
-    setNuovo(false)
-    setScelta(null)
+    if (scelta || nuovo) onScelta(null, 'push')
   }
+
+  // Una scheda di qualcuno che non c'è più (un link vecchio, un'altra
+  // finestra): si torna all'elenco e lo si dice. Solo quando l'elenco arriva:
+  // un iscritto appena salvato non è ancora in quello di prima.
+  useEffect(() => {
+    if (!scelta || !persone.dato || persone.dato.some((p) => p.id === scelta)) return
+    avvisa('Quell’iscritto non c’è più')
+    onScelta(null, 'replace')
+    // Solo all'arrivo dell'elenco: aprire una scheda non è un motivo per guardare.
+  }, [persone.dato])
 
   return (
     <>
@@ -114,10 +138,10 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
             d={d}
             corsi={attivi}
             fai={fai}
-            onLasciaStare={() => setNuovo(false)}
+            onLasciaStare={chiudi}
             onSalvato={(id) => {
-              setNuovo(false)
-              setScelta(id)
+              // Al posto del modulo: Indietro dalla scheda nuova torna all'elenco, non a un modulo vuoto.
+              onScelta(id, 'replace')
               void ricarica()
             }}
           />
@@ -134,10 +158,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
             f={freq.dato?.get(persona.id)}
             fai={fai}
             onCambiato={() => void ricarica()}
-            onApri={(id) => {
-              setNuovo(false)
-              setScelta(id)
-            }}
+            onApri={(id) => onScelta(id, 'push')}
           />
         </SchedaPiena>
       ) : null}
@@ -150,7 +171,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
             stampare === 1 ? ' Un certificato caricato nell’app da stampare e cancellare.' : stampare ? ` ${stampare} certificati caricati nell’app da stampare e cancellare.` : ''
           }`}
         >
-          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
+          <button type="button" className="sg-btn sg-btn-pieno" onClick={onNuovo}>
             + NUOVO ISCRITTO
           </button>
         </Testa>
@@ -223,8 +244,7 @@ export function Iscritti({ d, personaIniziale, filtroIniziale }: { d: DatiSegret
                   data-scelto={!nuovo && scelta === p.id}
                   data-spento={!p.attiva}
                   onClick={() => {
-                    setNuovo(false)
-                    setScelta(p.id)
+                    onScelta(p.id, 'push')
                   }}
                 >
                   <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>

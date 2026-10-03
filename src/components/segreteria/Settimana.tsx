@@ -1,24 +1,18 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, LezioneSeg } from '../../lib/segreteria'
 import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/sala'
-import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../../lib/sala'
+import { chiaveGiorno, giornoPerEsteso, lunedi, oraDi, perEsteso } from '../../lib/sala'
 import { dati, type Dati } from '../../lib/dati'
 import { Back } from '../Icons'
 import { useSchermo } from '../../lib/largo'
 import type { ChiProva } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
+import { settimanaDi, type Posto } from '../../lib/indirizzoSegreteria'
 import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
 const MESI_CORTI = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC']
 
-/** Il lunedì della settimana di una data. */
-function lunedi(d: Date): Date {
-  const x = new Date(d)
-  x.setHours(0, 0, 0, 0)
-  x.setDate(x.getDate() - ((x.getDay() + 6) % 7))
-  return x
-}
 const piu = (d: Date, giorni: number) => {
   const x = new Date(d)
   x.setDate(x.getDate() + giorni)
@@ -39,17 +33,51 @@ function titolo(primo: Date) {
  * lezioni che cominciano lì. È la vista da cui la segreteria vede in un colpo
  * solo cosa c'è, dove, e quali appelli mancano.
  */
-export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIniziale?: { id: string; inizio: string } }) {
-  const [primo, setPrimo] = useState(() => lunedi(lezioneIniziale ? new Date(lezioneIniziale.inizio) : new Date()))
-  const [sala, setSala] = useState('')
-  const [aperta, setAperta] = useState<string | null>(lezioneIniziale?.id ?? null)
+export function Settimana({
+  d,
+  posto,
+  onPosto,
+}: {
+  d: DatiSegreteria
+  /** Settimana, sala e lezione aperta stanno nell'indirizzo: le tiene la segreteria. */
+  posto: Posto
+  onPosto: (p: Omit<Posto, 'voce'>, passo: 'push' | 'replace') => void
+}) {
+  const { lezione: aperta, sala = '' } = posto
+  // Una chiave e non la data: la stessa settimana a ogni giro non rilegge la griglia.
+  const chiave = chiaveGiorno(settimanaDi(posto, new Date()))
+  const primo = useMemo(() => new Date(`${chiave}T00:00`), [chiave])
+  const vai = (cambi: Omit<Posto, 'voce'>, passo: 'push' | 'replace') =>
+    onPosto({ settimana: chiaveGiorno(primo), sala: sala || undefined, lezione: aperta, ...cambi }, passo)
+  // Sfogliare e cambiare sala non sono passi: Indietro torna alla voce di prima, non sei settimane fa.
+  const sfoglia = (x: Date) => vai({ settimana: chiaveGiorno(x) }, 'replace')
+  const scegliSala = (id: string) => vai({ sala: id || undefined }, 'replace')
   const [nuova, setNuova] = useState(false)
-  const { avviso, fai } = useAvviso()
+  const { avviso, avvisa, fai } = useAvviso()
 
   const giorni = useMemo(() => Array.from({ length: 7 }, (_, i) => piu(primo, i)), [primo])
   const sett = useCarica(() => d.settimana(giorni[0], giorni[6]), [d, giorni])
   const sale = useCarica(() => d.sale(), [d])
   const pronto = useCarica(() => d.prontoFino(), [d])
+
+  // Una lezione che non c'è più (un link vecchio, una straordinaria tolta):
+  // si resta sulla sua settimana e lo si dice. Solo quando la settimana
+  // arriva: col cambio di settimana, per un giro, c'è ancora quella di prima.
+  useEffect(() => {
+    if (!aperta || !sett.dato || sett.dato.some((l) => l.id === aperta.id)) return
+    avvisa('Quella lezione non c’è più')
+    vai({ lezione: undefined }, 'replace')
+    // Solo all'arrivo della settimana: aprire una lezione non è un motivo per guardare.
+  }, [sett.dato])
+
+  // Una sala che non c'è più (rinominata o tolta, in un link vecchio): la
+  // griglia la filtrerebbe vuota. Si tolgono sala e filtro e lo si dice.
+  useEffect(() => {
+    if (!sala || !sale.dato || sale.dato.some((s) => s.id === sala)) return
+    avvisa('Quella sala non c’è più')
+    vai({ sala: undefined }, 'replace')
+    // Solo all'arrivo delle sale, come per la lezione.
+  }, [sale.dato])
 
   // Le presenze segnate dal cassetto viaggiano nella coda dell'appello: la
   // griglia si rilegge quando la coda si svuota, cioè quando sono arrivate.
@@ -75,7 +103,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
   const ore = [...new Set(lezioni.map((l) => oraDi(l.inizio)))].sort()
   const oggi = chiaveGiorno(new Date())
   const adesso = Date.now()
-  const lezione = sett.dato?.find((l) => l.id === aperta) ?? null
+  const lezione = sett.dato?.find((l) => l.id === aperta?.id) ?? null
 
   // Sul telefono sette colonne non ci stanno: un giorno per volta, scelto
   // dalla striscia dei giorni; da sé oggi, se è in questa settimana.
@@ -98,21 +126,21 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
       </Testa>
 
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-        <button type="button" className="icon-btn" aria-label="Settimana prima" onClick={() => setPrimo(piu(primo, -7))}>
+        <button type="button" className="icon-btn" aria-label="Settimana prima" onClick={() => sfoglia(piu(primo, -7))}>
           <Back />
         </button>
         <span className="ob sg-sett-titolo">{titolo(primo)}</span>
-        <button type="button" className="icon-btn" aria-label="Settimana dopo" onClick={() => setPrimo(piu(primo, 7))}>
+        <button type="button" className="icon-btn" aria-label="Settimana dopo" onClick={() => sfoglia(piu(primo, 7))}>
           <span style={{ transform: 'scaleX(-1)', display: 'flex' }}>
             <Back />
           </span>
         </button>
-        <button type="button" className="sg-chip" onClick={() => setPrimo(lunedi(new Date()))}>
+        <button type="button" className="sg-chip" onClick={() => sfoglia(lunedi(new Date()))}>
           OGGI
         </button>
         <div className="grow" />
         {[{ id: '', nome: 'TUTTE' }, ...(sale.dato ?? [])].map((s) => (
-          <button key={s.id} type="button" className="num sg-chip" aria-pressed={sala === s.id} onClick={() => setSala(s.id)}>
+          <button key={s.id} type="button" className="num sg-chip" aria-pressed={sala === s.id} onClick={() => scegliSala(s.id)}>
             {s.nome.toUpperCase()}
           </button>
         ))}
@@ -144,7 +172,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
                   {lezioniDelGiorno
                     .filter((l) => oraDi(l.inizio) === ora)
                     .map((l) => (
-                      <Tessera key={l.id} l={l} passata={Date.parse(l.fine) < adesso} onApri={() => setAperta(l.id)} />
+                      <Tessera key={l.id} l={l} passata={Date.parse(l.fine) < adesso} onApri={() => vai({ lezione: { id: l.id, inizio: l.inizio } }, 'push')} />
                     ))}
                 </div>
               </Fila>
@@ -180,7 +208,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
                   return (
                     <div key={k} className="sg-casella" data-vuota={qui.length === 0}>
                       {qui.map((l) => (
-                        <Tessera key={l.id} l={l} passata={Date.parse(l.fine) < adesso} onApri={() => setAperta(l.id)} />
+                        <Tessera key={l.id} l={l} passata={Date.parse(l.fine) < adesso} onApri={() => vai({ lezione: { id: l.id, inizio: l.inizio } }, 'push')} />
                       ))}
                     </div>
                   )
@@ -215,7 +243,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
           l={lezione}
           sale={sale.dato ?? []}
           onCambiato={() => void sett.ricarica()}
-          onChiudi={() => setAperta(null)}
+          onChiudi={() => vai({ lezione: undefined }, 'push')}
           fai={fai}
         />
       )}
@@ -227,7 +255,7 @@ export function Settimana({ d, lezioneIniziale }: { d: DatiSegreteria; lezioneIn
           fai={fai}
           onFatto={(inizio) => {
             setNuova(false)
-            setPrimo(lunedi(inizio))
+            sfoglia(lunedi(inizio))
             void sett.ricarica()
           }}
         />

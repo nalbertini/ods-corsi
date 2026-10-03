@@ -33,7 +33,9 @@ In alto:
 ## Aprire una lezione
 
 Un clic su una lezione apre il riquadro a destra. Ogni cambio si salva subito;
-**FATTO** (o Esc) lo chiude.
+**FATTO** (o Esc) lo chiude, e così il tasto Indietro del browser: la griglia
+resta sulla stessa settimana e sala. Le settimane sfogliate con le frecce non
+contano: Indietro riporta alla voce di prima.
 
 - **STATO**: **PREVISTA**, **SVOLTA** o **ANNULLATA**. Una lezione saltata va
   messa ANNULLATA: così non risulta un appello mancante e non pesa sulle medie. Prima di annullarla l'app chiede conferma, perché gli iscritti non vengono
