@@ -216,28 +216,32 @@ export function Accesso({ onEntrato }: { onEntrato?: (p: Personale) => void }) {
           reception, gli istruttori al calendario e all’appello, il tablet di una sala nella sua sala. Resti collegato
           finché non premi «Esci».
         </span>
-        <input
-          className="campo"
-          type="text"
-          inputMode="email"
-          autoComplete="username"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          placeholder="email (o nome utente della sala)"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          className="campo"
-          type="password"
-          autoComplete="current-password"
-          placeholder="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <label className="stack" style={{ gap: 4 }}>
+          <span className="modulo-etichetta">EMAIL, O NOME UTENTE DELLA SALA</span>
+          <input
+            className="campo"
+            type="text"
+            inputMode="email"
+            autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </label>
+        <label className="stack" style={{ gap: 4 }}>
+          <span className="modulo-etichetta">PASSWORD</span>
+          <input
+            className="campo"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </label>
         <button type="submit" className="btn btn-go" disabled={aspetta}>
           {aspetta ? 'UN ATTIMO…' : 'ENTRA'}
         </button>
@@ -341,25 +345,29 @@ export function ScegliPassword({ arrivo }: { arrivo: Arrivo }) {
           </span>
           {/* Il campo nascosto fa ricordare al browser email e password insieme. */}
           <input type="email" autoComplete="username" value={account} readOnly hidden />
-          <input
-            className="campo"
-            type="password"
-            autoComplete="new-password"
-            placeholder="nuova password"
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <input
-            className="campo"
-            type="password"
-            autoComplete="new-password"
-            placeholder="ripetila"
-            value={ancora}
-            onChange={(e) => setAncora(e.target.value)}
-            required
-          />
+          <label className="stack" style={{ gap: 4 }}>
+            <span className="modulo-etichetta">NUOVA PASSWORD</span>
+            <input
+              className="campo"
+              type="password"
+              autoComplete="new-password"
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+          <label className="stack" style={{ gap: 4 }}>
+            <span className="modulo-etichetta">RIPETI LA NUOVA PASSWORD</span>
+            <input
+              className="campo"
+              type="password"
+              autoComplete="new-password"
+              value={ancora}
+              onChange={(e) => setAncora(e.target.value)}
+              required
+            />
+          </label>
           <button type="submit" className="btn btn-go" disabled={aspetta}>
             {aspetta ? 'UN ATTIMO…' : 'SALVA ED ENTRA'}
           </button>

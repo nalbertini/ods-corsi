@@ -50,6 +50,13 @@ export interface SessioneVista {
   iscritti: number
   presenti: number
   /**
+   * Di quei presenti, quanti sono venuti a provare (non sono fra gli
+   * iscritti), e quanti iscritti non sono ancora segnati: a zero l'appello è
+   * fatto. Senza, non si sa.
+   */
+  prove?: number
+  daSegnare?: number
+  /**
    * Chi fa questa lezione quel giorno, per id: il sostituto se c'è, altrimenti
    * gli istruttori del corso. Serve a mostrare a un istruttore solo le sue.
    */
@@ -65,6 +72,18 @@ export interface DettaglioSessione {
    * venuto a provare (`prova`, vedi `prove.ts`).
    */
   elenco: Array<Persona & { stato: StatoPresenza | null; prova?: boolean }>
+}
+
+/**
+ * Dagli iscritti di quel giorno e dai segni della lezione (persona → stato),
+ * quanti presenti sono venuti a provare e quanti iscritti mancano da segnare.
+ */
+export function contiDellAppello(iscritti: readonly { id: string }[], segni: ReadonlyMap<string, string> | Readonly<Record<string, string>> = new Map()) {
+  const m = segni instanceof Map ? segni : new Map(Object.entries(segni))
+  const qui = new Set(iscritti.map((p) => p.id))
+  let prove = 0
+  for (const [chi, stato] of m) if (stato === 'presente' && !qui.has(chi)) prove++
+  return { prove, daSegnare: iscritti.filter((p) => !m.get(p.id)).length }
 }
 
 /** Il nome per esteso, nell'ordine in cui si legge un elenco. */

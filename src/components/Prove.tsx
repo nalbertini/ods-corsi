@@ -45,7 +45,7 @@ export function PannelloProve({
 }) {
   const k = CLASSI[stile]
   const [venuti, setVenuti] = useState<GiaProvato[] | null>(null)
-  const [nonVa, setNonVa] = useState<string | null>(null)
+  const [nonVa, setNonVa] = useState(false)
   const [nome, setNome] = useState('')
   const [cognome, setCognome] = useState('')
   const [telefono, setTelefono] = useState('')
@@ -62,7 +62,7 @@ export function PannelloProve({
     leggi
       .current()
       .then((x) => vivo && setVenuti(x))
-      .catch((e: unknown) => vivo && setNonVa(scritto(e, 'Non riesco a leggere le prove')))
+      .catch(() => vivo && setNonVa(true))
     return () => {
       vivo = false
     }
@@ -107,74 +107,66 @@ export function PannelloProve({
       </div>
       <span className="prove-sotto">Entra nell'appello di questa lezione, già presente. Chi è già venuto si ritrova scrivendo il nome.</span>
 
-      {nonVa ? (
-        <span className="prove-guaio" role="alert">
-          {nonVa}
-        </span>
-      ) : (
-        <form className="stack" style={{ gap: 10 }} onSubmit={manda}>
-          <div className="prove-campi">
-            <label className="stack" style={{ gap: 4 }} htmlFor={id('nome')}>
-              <span className={k.etichetta}>NOME</span>
-              <input ref={primo} id={id('nome')} className={k.campo} autoComplete="off" value={nome} onChange={(e) => setNome(e.target.value)} />
-            </label>
-            <label className="stack" style={{ gap: 4 }} htmlFor={id('cognome')}>
-              <span className={k.etichetta}>COGNOME</span>
-              <input id={id('cognome')} className={k.campo} autoComplete="off" value={cognome} onChange={(e) => setCognome(e.target.value)} />
-            </label>
-            <label className="stack" style={{ gap: 4 }} htmlFor={id('telefono')}>
-              <span className={k.etichetta}>TELEFONO</span>
-              <input id={id('telefono')} className={`${k.campo} num`} type="tel" inputMode="tel" autoComplete="off" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
-            </label>
-          </div>
+      {/* Senza i già venuti si aggiunge lo stesso: dall'app la prova va in
+          coda come i segni dell'appello (il tablet, senza coda, lo dice se non va). */}
+      {nonVa && <span className="prove-sotto">Senza rete non vedo chi è già venuto: scrivi nome e cognome.</span>}
+      <form className="stack" style={{ gap: 10 }} onSubmit={manda}>
+        <div className="prove-campi">
+          <label className="stack" style={{ gap: 4 }} htmlFor={id('nome')}>
+            <span className={k.etichetta}>NOME</span>
+            <input ref={primo} id={id('nome')} className={k.campo} autoComplete="off" value={nome} onChange={(e) => setNome(e.target.value)} />
+          </label>
+          <label className="stack" style={{ gap: 4 }} htmlFor={id('cognome')}>
+            <span className={k.etichetta}>COGNOME</span>
+            <input id={id('cognome')} className={k.campo} autoComplete="off" value={cognome} onChange={(e) => setCognome(e.target.value)} />
+          </label>
+          <label className="stack" style={{ gap: 4 }} htmlFor={id('telefono')}>
+            <span className={k.etichetta}>TELEFONO, SE LO DÀ</span>
+            <input id={id('telefono')} className={`${k.campo} num`} type="tel" inputMode="tel" autoComplete="off" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+          </label>
+        </div>
 
-          {venuti === null && <span className="prove-sotto">Sto leggendo chi è già venuto…</span>}
-          {proposti.length > 0 && (
-            <div className="stack" style={{ gap: 6 }}>
-              <span className={k.etichetta}>{nome || cognome ? 'GIÀ VENUTI CON QUESTO NOME' : 'GLI ULTIMI VENUTI A PROVARE'}</span>
-              {proposti.map((p) => (
-                <button key={p.id} type="button" className={k.voce} disabled={aspetta} onClick={() => void aggiungi(p)}>
-                  <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-                    <span className="prove-gia-nome">
-                      {p.cognome} {p.nome}
-                    </span>
-                    <span className="prove-sotto">
-                      {p.corso}, {giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))}
-                      {p.telefono ? ` · ${p.telefono}` : ''}
-                    </span>
+        {venuti === null && !nonVa && <span className="prove-sotto">Sto leggendo chi è già venuto…</span>}
+        {proposti.length > 0 && (
+          <div className="stack" style={{ gap: 6 }}>
+            <span className={k.etichetta}>{nome || cognome ? 'GIÀ VENUTI CON QUESTO NOME' : 'GLI ULTIMI VENUTI A PROVARE'}</span>
+            {proposti.map((p) => (
+              <button key={p.id} type="button" className={k.voce} disabled={aspetta} onClick={() => void aggiungi(p)}>
+                <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+                  <span className="prove-gia-nome">
+                    {p.cognome} {p.nome}
                   </span>
-                  <span className="num prove-gia-tasto">AGGIUNGI</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {guaio && (
-            <span className="prove-guaio" role="alert">
-              {guaio}
-            </span>
-          )}
-          {fatto && (
-            <span className="prove-fatto" role="status">
-              {fatto}
-            </span>
-          )}
-
-          <div className="row" style={{ gap: 8 }}>
-            <button type="submit" className={`${k.si} grow`} disabled={aspetta || venuti === null}>
-              {aspetta ? 'AGGIUNGO…' : 'AGGIUNGI NUOVO'}
-            </button>
-            <button type="button" className={k.no} onClick={onChiudi}>
-              FATTO
-            </button>
+                  <span className="prove-sotto">
+                    {p.corso}, {giornoPerEsteso(chiaveGiorno(new Date(p.inizio)))}
+                    {p.telefono ? ` · ${p.telefono}` : ''}
+                  </span>
+                </span>
+                <span className="num prove-gia-tasto">AGGIUNGI</span>
+              </button>
+            ))}
           </div>
-        </form>
-      )}
-      {nonVa && (
-        <button type="button" className={k.no} onClick={onChiudi}>
-          CHIUDI
-        </button>
-      )}
+        )}
+
+        {guaio && (
+          <span className="prove-guaio" role="alert">
+            {guaio}
+          </span>
+        )}
+        {fatto && (
+          <span className="prove-fatto" role="status">
+            {fatto}
+          </span>
+        )}
+
+        <div className="row" style={{ gap: 8 }}>
+          <button type="submit" className={`${k.si} grow`} disabled={aspetta}>
+            {aspetta ? 'AGGIUNGO…' : 'AGGIUNGI NUOVO'}
+          </button>
+          <button type="button" className={k.no} onClick={onChiudi}>
+            FATTO
+          </button>
+        </div>
+      </form>
     </section>
   )
 }
