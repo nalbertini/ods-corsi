@@ -150,6 +150,9 @@ iniziale.
    - **GLI ALTRI ASSENTI** — segna assenti quelli ancora senza segno. È il
      modo veloce di chiudere l'appello quando gli allievi si sono segnati da
      soli;
+   - su una **lezione passata** questi due tasti chiedono un secondo tocco
+     (**CONFERMA: … PRESENTI**): l'appello è già storia, e un tocco sbagliato
+     lo cambierebbe tutto. Se non lo toccate, dopo cinque secondi torna com'era;
    - **PROVE** — aggiunge chi viene a provare: nome, cognome e telefono, o
      toccate chi è già venuto a provare, che compare dalla terza lettera (qui
      senza telefono e col cognome all'iniziale, «Marco N.»: lo schermo è in

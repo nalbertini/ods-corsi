@@ -170,7 +170,11 @@ export function TabletPresenza({
           <span className="ob tb-titolo">{lezione.corso.toUpperCase()}</span>
           <span className="num tb-quando chi-kanji" style={{ gap: 8 }}>
             <Kanji segni={lezione.kanji} />
-            <span>{[passata ? `${giorno.toUpperCase()} · ${orario(lezione)}` : orario(lezione), lezione.istruttori].filter(Boolean).join(' · ')}</span>
+            <span>
+              {passata ? `${giorno.toUpperCase()} · ${orario(lezione)}` : orario(lezione)}
+              {/* Il nome di chi la fa non si spazia: è il nome di una persona. */}
+              {lezione.istruttori && <span style={{ letterSpacing: 0 }}> · {lezione.istruttori}</span>}
+            </span>
           </span>
         </div>
         {passata && <span className="num tb-bollino" style={{ background: 'var(--giallo)' }}>LEZIONE PASSATA</span>}
