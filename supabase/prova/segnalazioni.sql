@@ -118,3 +118,21 @@ set role anon;
 select atteso('non legge', tenta($$select count(*)::text from segnalazioni$$), 'NEGATO: …');
 select atteso('non scrive', tenta($$insert into segnalazioni (titolo, testo) values ('Io', 'Da fuori')$$), 'NEGATO: …');
 reset role;
+
+\echo ''
+\echo '--- 5. rilanciato su un database con un filo senza titolo ---'
+-- La prima versione del vincolo lasciava entrare un filo con titolo null
+-- (scrivendo all'API: l'app lo chiede sempre). Rilanciare il file deve
+-- dargli un titolo e rimettere il vincolo, non fermarsi a metà.
+alter table segnalazioni drop constraint segnalazioni_check;
+alter table segnalazioni add constraint segnalazioni_check
+  check (padre_id is null and char_length(btrim(titolo)) between 1 and 120
+      or padre_id is not null and titolo is null and chiusa_il is null);
+insert into segnalazioni (id, autore_id, testo)
+  values ('eeeeeeee-0000-0000-0000-000000000009', 'aaaaaaaa-0000-0000-0000-000000000001', 'Entrato senza titolo');
+\ir ../25-segnalazioni.sql
+select atteso('il vincolo nuovo c''è',
+  (select count(*)::text from pg_constraint where conname = 'segnalazioni_check'
+     and pg_get_constraintdef(oid) like '%titolo IS NOT NULL%'), '1');
+select atteso('il filo ha un titolo',
+  (select titolo from segnalazioni where id = 'eeeeeeee-0000-0000-0000-000000000009'), 'Senza titolo');
