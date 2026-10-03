@@ -1636,6 +1636,72 @@ console.log('\nuna lezione toccata e rimessa com\'era resta, e quelle di oggi pu
   OGGI = new Date(2026, 8, 26, 12, 0).getTime()
 }
 
+console.log('\ntogliere un «non sono doppioni»')
+{
+  const scheda = (id, nome, cognome, altro = {}) => ({ id, nome, cognome, attiva: true, creataIl: '2026-09-26', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' }, ...altro })
+  const segnate = (indizi, id, tutte) =>
+    typeof m.segnateCon !== 'function'
+      ? 'segnateCon non c\'è'
+      : m.segnateCon({ codiciFiscali: {}, nascite: {}, nonDoppioni: [], ...indizi }, id, tutte).map((p) => p.id)
+
+  // Funzioni pure: le altre schede segnate con una, per cognome e nome.
+  const ivo = [scheda('i1', 'Ivo', 'Gallo'), scheda('i2', 'Ivo', 'Gallo'), scheda('i3', 'Ivo', 'Gallo')]
+  const coppiaIvo = { nonDoppioni: [['i1', 'i2']] }
+  ok('segnate Ivo1 e Ivo2: da Ivo1 si vede Ivo2', segnate(coppiaIvo, 'i1', ivo), ['i2'])
+  ok('e da Ivo2 si vede Ivo1', segnate(coppiaIvo, 'i2', ivo), ['i1'])
+  ok('una scheda senza coppie: nessuna', segnate(coppiaIvo, 'i3', ivo), [])
+  ok('più coppie, per cognome e nome',
+    segnate({ nonDoppioni: [['z', 'k'], ['a', 'k']] }, 'k', [scheda('k', 'Ivo', 'Gallo'), scheda('z', 'Zoe', 'Gallo'), scheda('a', 'Ada', 'Gallo')]), ['a', 'z'])
+  ok('una coppia con una scheda che non c\'è fra le persone: no', segnate({ nonDoppioni: [['i1', 'sparita']] }, 'i1', ivo), [])
+  ok('una delle due disattivata: c\'è lo stesso',
+    segnate(coppiaIvo, 'i1', [ivo[0], { ...ivo[1], attiva: false }]), ['i2'])
+
+  // La segreteria di prova.
+  const togli = (a, b) => (typeof s.togliNonDoppioni === 'function' ? s.togliNonDoppioni(a, b) : Promise.reject(new Error('togliNonDoppioni non c\'è')))
+  const nonDoppioni = async () => (await s.indiziDoppioni()).nonDoppioni.map((c) => [...c].sort().join())
+  const inCoppia = async (a, b) => m.coppieDoppioni(await s.persone(), await s.indiziDoppioni()).some((c) => c.map((p) => p.id).sort().join() === [a, b].sort().join())
+
+  const [eva1, eva2] = [await s.salvaPersona({ nome: 'Eva', cognome: 'Marchetti' }), await s.salvaPersona({ nome: 'Eva', cognome: 'Marchetti' })]
+  await s.segnaNonDoppioni(eva1, eva2)
+  ok('tolto «non sono doppioni», nell\'altro ordine', await errore(() => togli(eva2, eva1)), 'nessun errore')
+  ok('la coppia non è più fra le «non sono doppioni»', (await nonDoppioni()).includes([eva1, eva2].sort().join()), false)
+  ok('e torna fra i possibili doppioni', await inCoppia(eva1, eva2), true)
+  ok('tolto di nuovo: nessun errore', await errore(() => togli(eva1, eva2)), 'nessun errore')
+
+  const [rio1, rio2, rio3] = [await s.salvaPersona({ nome: 'Rio', cognome: 'Bassi' }), await s.salvaPersona({ nome: 'Rio', cognome: 'Bassi' }), await s.salvaPersona({ nome: 'Rio', cognome: 'Bassi' })]
+  await s.segnaNonDoppioni(rio1, rio3)
+  await s.segnaNonDoppioni(rio2, rio3)
+  await errore(() => togli(rio1, rio3))
+  ok('tolta Rio1–Rio3, resta Rio2–Rio3',
+    (await nonDoppioni()).filter((c) => [rio1, rio2, rio3].some((id) => c.includes(id))), [[rio2, rio3].sort().join()])
+
+  const [ada1, ada2] = [await s.salvaPersona({ nome: 'Ada', cognome: 'Conti' }), await s.salvaPersona({ nome: 'Ada', cognome: 'Conti' })]
+  await s.salvaAnagrafica(ada1, { codiceFiscale: 'CNTDAA10A41L219X' })
+  await s.salvaAnagrafica(ada2, { codiceFiscale: 'CNTDAA12B41L219Y' })
+  await s.segnaNonDoppioni(ada1, ada2)
+  await errore(() => togli(ada1, ada2))
+  ok('due codici fiscali diversi: tolta la coppia, non torna fra i possibili doppioni', await inCoppia(ada1, ada2), false)
+
+  // Col database senza 33-non-doppioni.sql: la tabella non c'è.
+  const risposta = (t) =>
+    t === 'non_doppioni'
+      ? { data: null, error: { code: 'PGRST205', message: "Could not find the table 'public.non_doppioni' in the schema cache" } }
+      : { data: [], error: null }
+  const richiestaFinta = (t) => {
+    const q = new Proxy(() => q, {
+      get: (_, k) => (k === 'then' ? (ok, ko) => Promise.resolve(risposta(t)).then(ok, ko) : () => q),
+      apply: () => q,
+    })
+    return q
+  }
+  const senza = m.creaSegreteriaSupabase({
+    from: (t) => richiestaFinta(t),
+    rpc: async (f) => ({ data: null, error: { code: 'PGRST202', message: `Could not find the function public.${f} in the schema cache` } }),
+  })
+  const manca = await errore(() => (typeof senza.togliNonDoppioni === 'function' ? senza.togliNonDoppioni(eva1, eva2) : Promise.reject(new Error('togliNonDoppioni non c\'è'))))
+  ok('senza il file sul database, togliere dice quale file lanciare', manca.includes('33-non-doppioni.sql') ? '33-non-doppioni.sql' : manca, '33-non-doppioni.sql')
+}
+
 console.log('\nSALVA LE DATE toglie le lezioni fuori dalle date dei corsi, tranne quelle con appello o prova')
 {
   // Come `salva_date_corsi` (35-date-corsi.sql): da domani in poi, le lezioni

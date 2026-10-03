@@ -6,6 +6,7 @@ import { timerDellaLezione } from '../lib/aree'
 import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
+import { unaVolta } from '../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from './Prove'
 import { DueTocchi } from './ds'
 import type { SegnalataVista } from '../lib/segnalate'
@@ -411,7 +412,7 @@ export function AppelloScreen({
         {conProve ? (
           <PannelloProve
             stile="app"
-            cerca={() => dati.provati()}
+            cerca={unaVolta(() => dati.provati())}
             giaQui={new Set(d.elenco.map((p) => p.id))}
             onAggiungi={aggiungiProva}
             onChiudi={() => setConProve(false)}

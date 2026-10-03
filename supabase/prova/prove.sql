@@ -87,8 +87,8 @@ reset role;
 select chi('66666666-6666-6666-6666-666666666666');  -- il tablet della Lotta
 set role authenticated;
 select atteso('il tablet non legge la tabella', tenta($$select count(*)::text from prove$$), '0');
-select atteso('PIN sbagliato: nessuno', (select count(*)::text from provati_con_pin('0000')), '0');
-select atteso('chi ha provato, senza telefono', (select nome || ' ' || coalesce(telefono, '-') from provati_con_pin('4321')), 'Marco -');
+select atteso('PIN sbagliato: nessuno', (select count(*)::text from provati_con_pin('0000', 'mar')), '0');
+select atteso('chi ha provato, senza telefono', (select nome || ' ' || coalesce(telefono, '-') from provati_con_pin('4321', 'mar')), 'Marco -');
 select atteso('il tablet non chiama prove_recenti', tenta($$select count(*)::text from prove_recenti()$$), 'NEGATO: le prove le vede chi fa l''appello');
 select atteso('le prove della lezione', (select cognome || ' ' || stato || ' ' || origine from prove_con_pin('4321', 'eeeeeeee-0000-0000-0000-000000000006')), 'Nuovo assente appello');
 select atteso('PIN sbagliato: niente prove', (select count(*)::text from prove_con_pin('0000', 'eeeeeeee-0000-0000-0000-000000000006')), '0');
@@ -154,7 +154,9 @@ select atteso('una prova di 91 giorni fa e una persona disattivata non ci sono',
 reset role;
 select chi('66666666-6666-6666-6666-666666666666');
 set role authenticated;
-select atteso('neanche sul tablet', (select string_agg(nome, ' ') from provati_con_pin('4321')), 'Marco');
+-- Il tablet cerca per nome (prove-per-nome.sql): si cercano tutti e tre.
+select atteso('neanche sul tablet', (select string_agg(nome, ' ') from (select * from provati_con_pin('4321', 'vito')
+  union all select * from provati_con_pin('4321', 'dora') union all select * from provati_con_pin('4321', 'marco')) x), 'Marco');
 reset role;
 
 \echo ''

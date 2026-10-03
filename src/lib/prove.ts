@@ -72,14 +72,74 @@ export const pulisciProva = (n: NuovaProva): NuovaProva => ({
 })
 
 /**
+ * Si cerca quando una parola ha almeno tre lettere (apostrofi e trattini non
+ * contano): tre lettere sparse, «d d d», troverebbero quasi tutti.
+ */
+export const bastaPerCercare = (scritto: string) => paroleCercate(scritto).some((w) => w.length >= 3)
+
+/**
  * Chi, fra quelli già venuti, somiglia a quello che si sta scrivendo
- * (`somiglia`). Sotto le tre lettere, nessuno: un elenco già pronto mostrerebbe
- * a chi passa i nomi di chi è venuto, spesso bambini.
+ * (`somiglia`). Senza una parola di almeno tre lettere (`bastaPerCercare`),
+ * nessuno: un elenco già pronto mostrerebbe a chi passa i nomi di chi è
+ * venuto, spesso bambini.
  */
 export function somiglianti(tutti: GiaProvato[], scritto: string, quanti = 6): GiaProvato[] {
+  if (!bastaPerCercare(scritto)) return []
   const parole = paroleCercate(scritto)
-  if (parole.join('').length < 3) return []
   return tutti.filter((p) => somiglia(p, parole)).slice(0, quanti)
+}
+
+/**
+ * Per chi legge già tutta l'anagrafica (l'app e la segreteria): l'elenco si
+ * legge una volta sola, la prima volta che si cerca, e da lì in poi si cerca
+ * in quello, anche senza rete. Se la lettura fallisce, la ricerca dopo riprova.
+ */
+export function unaVolta<T>(leggi: () => Promise<T>): (scritto: string) => Promise<T> {
+  let letto: Promise<T> | null = null
+  return () => {
+    letto ??= leggi().catch((e: unknown) => {
+      letto = null
+      throw e
+    })
+    return letto
+  }
+}
+
+/** Lo dice `provati_con_pin` (34-prove-per-nome.sql), e la modalità prova con le stesse parole. */
+export const TROPPE_RICERCHE = 'troppe ricerche: riprova fra qualche minuto'
+
+/**
+ * Cosa mostra il pannello PROVE mentre si scrive. `venuti` è la risposta per
+ * questo testo, se è arrivata; intanto `ultimi`, l'ultima arrivata, filtrata
+ * con quello scritto adesso: sullo schermo solo chi somiglia a questo testo.
+ * Finché non c'è nessuno da proporre, una riga dice se cerca o se non c'è
+ * nessuno. `guaio` è l'errore dell'ultima ricerca.
+ */
+export function daMostrare(o: {
+  testo: string
+  venuti?: GiaProvato[]
+  ultimi: GiaProvato[]
+  giaQui: ReadonlySet<string>
+  guaio: unknown
+}): { proposti: GiaProvato[]; stato: string | null; avviso: string | null } {
+  const letti = o.venuti ?? o.ultimi
+  const proposti = somiglianti(letti.filter((p) => !o.giaQui.has(p.id)), o.testo)
+  // «Nessuno» sarebbe falso se chi somiglia è già qui: farebbe aggiungere un doppione.
+  const giaQuiDentro = somiglianti(letti.filter((p) => o.giaQui.has(p.id)), o.testo).length > 0
+  const avviso = !o.guaio
+    ? null
+    : o.guaio instanceof Error && o.guaio.message === TROPPE_RICERCHE
+      ? 'Troppe ricerche da questo tablet: per qualche minuto scrivete nome e cognome.'
+      : 'Senza rete non vedo chi è già venuto: scrivi nome e cognome.'
+  const stato =
+    !avviso && bastaPerCercare(o.testo) && proposti.length === 0
+      ? giaQuiDentro
+        ? 'È già in questo appello.'
+        : o.venuti
+          ? 'Nessuno è già venuto con questo nome.'
+          : 'Cerco chi è già venuto…'
+      : null
+  return { proposti, stato, avviso }
 }
 
 /** Un id nuovo per una persona nuova: lo decide chi la aggiunge, così anche senza rete sa come chiamarla. */

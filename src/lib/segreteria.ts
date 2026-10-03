@@ -534,6 +534,8 @@ export interface DatiSegreteria {
   indiziDoppioni(): Promise<IndiziDoppioni>
   /** Due schede che non sono la stessa persona: non compaiono più fra i possibili doppioni (`33-non-doppioni.sql`). */
   segnaNonDoppioni(a: string, b: string): Promise<void>
+  /** Toglie una coppia «non sono doppioni», in qualunque ordine; se non c'è, niente. */
+  togliNonDoppioni(a: string, b: string): Promise<void>
 
   salvaSala(s: { id?: string; nome: string; capienza?: number }): Promise<string>
   /** La musica delle sale, per il tablet (vedi `musica.ts`). */

@@ -28,7 +28,9 @@ elenco, che compaiono negli appelli e sul tablet.
   codici fiscali o date di nascita diverse, e non i fratelli. Per ogni coppia
   si vedono nascita, codice fiscale, contatto e corsi: **UNISCI…** apre la
   prima scheda con l'unione già pronta sull'altra; **NON SONO DOPPIONI** la
-  toglie dall'elenco (due omonimi veri).
+  toglie dall'elenco (due omonimi veri). Toccato per sbaglio: **ANNULLA**
+  nell'avviso, subito dopo; o, più tardi, nella scheda di una delle due,
+  sezione **NON SONO DOPPIONI** → **TOGLI** accanto all'altra.
 
 La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
 **IN REGOLA** se certificato e quota sono a posto (**FUORI APP**, in grigio,
