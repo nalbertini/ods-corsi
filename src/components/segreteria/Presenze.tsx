@@ -224,7 +224,7 @@ export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai:
             <Riga titolo="CHI SI STA PERDENDO">
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>{DI_FILA} assenze di fila o più</span>
             </Riga>
-            {recenti.dato !== null && persi.length === 0 && <span style={{ fontSize: 14, color: 'var(--verde)' }}>Nessuno: chi è iscritto viene.</span>}
+            {recenti.dato !== null && persi.length === 0 && <span style={{ fontSize: 14, color: 'var(--verde-testo)' }}>Nessuno: chi è iscritto viene.</span>}
             {persi.map((x) => (
               <div key={x.id} className="sg-voce-elenco">
                 <span className="stack grow" style={{ minWidth: 0 }}>
@@ -233,7 +233,7 @@ export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai:
                     {x.corsi.join(', ')} · {x.ultima ? `l'ultima volta ${giornoPerEsteso(chiaveGiorno(new Date(x.ultima)))}` : 'mai negli ultimi due mesi'}
                   </span>
                 </span>
-                <span className="num" style={{ fontSize: 18, fontWeight: 700, color: 'var(--rosso)' }}>{x.fila}</span>
+                <span className="num" style={{ fontSize: 18, fontWeight: 700, color: 'var(--rosso-testo)' }}>{x.fila}</span>
                 <button type="button" className="num sg-chip" onClick={() => onVai('iscritti', { persona: x.id })}>
                   SCHEDA
                 </button>
@@ -243,7 +243,7 @@ export function Presenze({ d, onVai, senzaAppello }: { d: DatiSegreteria; onVai:
 
           <section ref={appelli} aria-label="Appelli mancanti" className="sg-riquadro">
             <Riga titolo="APPELLI MANCANTI" />
-            {registro.dato !== null && mancanti.length === 0 && <span style={{ fontSize: 14, color: 'var(--verde)' }}>Nessuno: tutte le lezioni passate hanno l'appello.</span>}
+            {registro.dato !== null && mancanti.length === 0 && <span style={{ fontSize: 14, color: 'var(--verde-testo)' }}>Nessuno: tutte le lezioni passate hanno l'appello.</span>}
             {mancanti.slice(0, 30).map((r) => (
               <div key={r.sessioneId} className="sg-voce-elenco" style={{ borderColor: 'var(--rosso)' }}>
                 <span className="stack grow" style={{ minWidth: 0 }}>
@@ -309,7 +309,7 @@ function Registro({ righe, caricato, onVai }: { righe: RigaRegistro[]; caricato:
                       {r.istruttori ? ` · ${r.istruttori}` : ''}
                     </span>
                   </span>
-                  <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--verde)', whiteSpace: 'nowrap' }}>
+                  <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--verde-testo)', whiteSpace: 'nowrap' }}>
                     {presenti.length}/{dovute}
                   </span>
                 </summary>
@@ -317,7 +317,7 @@ function Registro({ righe, caricato, onVai }: { righe: RigaRegistro[]; caricato:
                   {presenti.length === 0 && <span className="sg-sotto">Nessun presente.</span>}
                   {presenti.map((p) => (
                     <span key={p.personaId} style={{ fontSize: 15 }}>
-                      <span style={{ color: 'var(--verde)', fontWeight: 700 }}>✓</span> {p.cognome} {p.nome}
+                      <span style={{ color: 'var(--verde-testo)', fontWeight: 700 }}>✓</span> {p.cognome} {p.nome}
                     </span>
                   ))}
                   {altri.map((p) => (
@@ -380,7 +380,7 @@ function Prove({ prove, corso, onVai }: { prove: { dato: ProvaSeg[] | null; guai
           ) : (
             <span style={{ fontSize: 12, color: 'var(--faint)' }}>senza telefono</span>
           )}
-          {x.iscritto && <span className="num sg-chip" style={{ color: 'var(--verde)', borderColor: 'var(--verde)', display: 'inline-flex', alignItems: 'center' }}>ISCRITTO</span>}
+          {x.iscritto && <span className="num sg-chip" style={{ color: 'var(--verde-testo)', borderColor: 'var(--verde)', display: 'inline-flex', alignItems: 'center' }}>ISCRITTO</span>}
           <button type="button" className="num sg-chip" onClick={() => onVai('iscritti', { persona: x.personaId })}>
             SCHEDA
           </button>
@@ -394,7 +394,7 @@ function Prove({ prove, corso, onVai }: { prove: { dato: ProvaSeg[] | null; guai
 export function Numero({ titolo, valore, sotto, allarme }: { titolo: string; valore: number | string; sotto: string; allarme?: boolean }) {
   return (
     <div className="sg-numero" data-allarme={!!allarme}>
-      <span className="sg-etichetta" style={{ letterSpacing: '0.2em', color: allarme ? 'var(--rosso)' : undefined }}>{titolo}</span>
+      <span className="sg-etichetta" style={{ letterSpacing: '0.2em', color: allarme ? 'var(--rosso-testo)' : undefined }}>{titolo}</span>
       <span className="num" style={{ fontSize: 44, fontWeight: 700, lineHeight: 0.95 }}>{valore}</span>
       <span style={{ fontSize: 13, color: 'var(--dim)' }}>{sotto}</span>
     </div>

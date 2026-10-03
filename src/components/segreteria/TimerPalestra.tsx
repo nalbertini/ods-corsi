@@ -391,7 +391,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                           </option>
                         ))}
                       </select>
-                      {!libero(aperto.nome, e.id) && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>C'è già un esercizio con questo nome.</span>}
+                      {!libero(aperto.nome, e.id) && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>C'è già un esercizio con questo nome.</span>}
                       <button
                         type="button"
                         className="num sg-chip"
@@ -438,7 +438,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                 </option>
               ))}
             </select>
-            {nuovo.nome.trim() && !libero(nuovo.nome) && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>C'è già.</span>}
+            {nuovo.nome.trim() && !libero(nuovo.nome) && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>C'è già.</span>}
             <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!nuovo.nome.trim() || !libero(nuovo.nome)}>
               AGGIUNGI
             </button>

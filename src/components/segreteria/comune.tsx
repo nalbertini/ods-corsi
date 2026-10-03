@@ -327,7 +327,7 @@ export function Riga({ titolo, children }: { titolo: string; children?: ReactNod
 export function Guaio({ testo }: { testo: string }) {
   return (
     <div className="card stack" style={{ padding: 14, gap: 6, borderColor: 'var(--rosso)' }}>
-      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso)' }}>NON LETTO</span>
+      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'var(--rosso-testo)' }}>NON LETTO</span>
       <span style={{ fontSize: 14, color: 'var(--dim)' }}>{testo}</span>
     </div>
   )

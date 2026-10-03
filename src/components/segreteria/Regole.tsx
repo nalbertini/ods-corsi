@@ -496,7 +496,7 @@ function FormLista({
         onChange={(e) => setBozza({ ...bozza, link: e.target.value })}
       />
       <div className="row" style={{ gap: 8 }}>
-        <span className="grow" style={{ fontSize: 13, color: scritto && !fonte ? 'var(--rosso)' : 'var(--dim)' }}>
+        <span className="grow" style={{ fontSize: 13, color: scritto && !fonte ? 'var(--rosso-testo)' : 'var(--dim)' }}>
           {!scritto
             ? 'Da YouTube o da Spotify: Condividi › Copia link.'
             : fonte

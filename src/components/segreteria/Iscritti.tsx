@@ -246,7 +246,7 @@ export function Iscritti({
                     {p.certificato.conFile && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
-                  <span role="cell" style={{ fontSize: 13, color: p.email || p.telefono ? 'var(--sec)' : 'var(--rosso)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span role="cell" style={{ fontSize: 13, color: p.email || p.telefono ? 'var(--sec)' : 'var(--rosso-testo)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {p.telefono ?? p.email ?? 'nessun contatto'}
                   </span>
                   <span role="cell" className="sg-in-regola">
@@ -745,7 +745,7 @@ function UnisciDoppione({
             </span>
           ))}
           {passa.guaio ? (
-            <span style={{ fontSize: 14, color: 'var(--rosso)' }}>{passa.guaio}</span>
+            <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{passa.guaio}</span>
           ) : !passa.dato ? (
             <span className="sg-sotto">Conto cosa passa…</span>
           ) : (
@@ -1024,7 +1024,7 @@ function ModificaAnagrafica({
           </Campo>
         ))}
       </div>
-      {no && <span style={{ fontSize: 13, color: 'var(--rosso)' }}>{no}.</span>}
+      {no && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{no}.</span>}
       {avviso && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>{avviso} Si può salvare lo stesso.</span>}
       <span className="sg-sotto">Un campo lasciato vuoto si cancella. Le ricevute già fatte restano com'erano; le nuove prendono questi.</span>
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
@@ -1090,7 +1090,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
       <Riga titolo="CERTIFICATO MEDICO">
         <Bollino tono={t.tono}>{t.parola}</Bollino>
       </Riga>
-      {!bozza && <span style={{ fontSize: 14, color: come === 'valido' ? 'var(--sec)' : come === 'in_scadenza' ? 'var(--giallo-testo)' : 'var(--rosso)' }}>{stato}</span>}
+      {!bozza && <span style={{ fontSize: 14, color: come === 'valido' ? 'var(--sec)' : come === 'in_scadenza' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{stato}</span>}
 
       {c.conFile && (
         <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
@@ -1242,7 +1242,7 @@ function Pagamento({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg
         <Bollino tono={t.tono}>{t.parola}</Bollino>
         {s.fonte === 'fuori_app' && <Bollino tono="spento">FUORI APP</Bollino>}
       </Riga>
-      <span style={{ fontSize: 14, color: s.come === 'pagato' ? 'var(--sec)' : s.come === 'in_parte' ? 'var(--giallo-testo)' : 'var(--rosso)' }}>{detto}</span>
+      <span style={{ fontSize: 14, color: s.come === 'pagato' ? 'var(--sec)' : s.come === 'in_parte' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{detto}</span>
       {s.fonte === 'fuori_app' && s.nota && <span style={{ fontSize: 14, color: 'var(--sec)' }}>{s.nota}</span>}
       {corsi.size > 0 && (
         <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 2, fontSize: 13, color: 'var(--sec)' }}>
