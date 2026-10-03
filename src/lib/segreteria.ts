@@ -807,6 +807,23 @@ export function trovaIscritti(persone: PersonaSeg[], scritto: string): PersonaSe
 }
 
 /**
+ * Il nome di una voce di sistema senza la lingua: «Grandma», non «Grandma
+ * (Italiano (Italia))». Le voci della tendina sono già tutte italiane. Le
+ * marcature di qualità («Enhanced», «Premium») restano, perché si scelgono per
+ * quelle; se due voci dopo il taglio si chiamerebbero uguali, restano intere.
+ * Si mostra e basta: si salva il nome intero, che il tablet cerca così.
+ */
+export function nomeVoce(nome: string, tutte: string[]): string {
+  const corto = (n: string) =>
+    n
+      .replace(/\s*\([^()]*\([^()]*\)\)$/, '')
+      .replace(/\s+-\s+[^-()]*\([^()]*\)$/, '')
+      .trim() || n
+  const mio = corto(nome)
+  return tutte.some((v) => v !== nome && corto(v) === mio) ? nome : mio
+}
+
+/**
  * Prima di accorciare per quanto si tengono le presenze: quante se ne vanno.
  * Allungare non toglie niente e si salva subito; accorciare senza presenze da
  * togliere pure. Altrimenti si chiede, e si dice quando si cancellano: col

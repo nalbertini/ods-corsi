@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1003,6 +1003,39 @@ console.log('\nunire due schede')
   ok('i campi che non tornano: cognome, email, telefono',
     m.campiDiversi(mario, tutte[2]).map((c) => [c.resta, c.via]),
     [["D'Amico", 'DAmico'], ['mario@esempio.it', 'mario.damico@esempio.it'], ['', '333 1234567']])
+}
+
+console.log('\ngli errori del server e le voci dei tablet, detti per la segreteria')
+{
+  // Un database finto che a ogni domanda risponde con lo stesso errore.
+  const sbaglia = (error) => {
+    const passo = new Proxy(() => {}, {
+      get: (_, k) => (k === 'then' ? (fatto) => fatto({ data: null, error }) : () => passo),
+      apply: () => passo,
+    })
+    return m.creaSegreteriaSupabase({ from: () => passo, rpc: () => passo })
+  }
+  const zitta = console.error
+  console.error = () => {}
+  const scaduto = await errore(() => sbaglia({ code: 'XX000', message: 'JWT expired' }).sale())
+  ok('un errore sconosciuto non mostra il testo del server', /JWT|expired/.test(scaduto), false)
+  ok('…e dice cosa fare', /riprova/i.test(scaduto), true)
+  const senzaRete = await errore(() => sbaglia({ message: 'TypeError: Failed to fetch' }).sale())
+  ok('senza rete lo dice', [/rete/i.test(senzaRete), /fetch/i.test(senzaRete)], [true, false])
+  // I nostri `raise exception` sono già scritti per la segreteria: passano così come sono.
+  ok('un messaggio del database in italiano arriva com’è', await errore(() => sbaglia({ code: 'P0001', message: 'Scegli due schede diverse' }).sale()), 'Scegli due schede diverse')
+  ok('anche con P0002, «non c’è più»', await errore(() => sbaglia({ code: 'P0002', message: 'ricevuta inesistente o già annullata' }).sale()), 'ricevuta inesistente o già annullata')
+  ok('anche con 22023', await errore(() => sbaglia({ code: '22023', message: 'La data della ricevuta non si capisce' }).sale()), 'La data della ricevuta non si capisce')
+  ok('il permesso resta detto com’era', await errore(() => sbaglia({ code: '42501', message: 'permission denied for table sale' }).sale()), 'Non hai il permesso: serve un accesso da segreteria')
+  console.error = zitta
+
+  const tutte = ['Grandma (Italiano (Italia))', 'Alice (Enhanced)', 'Microsoft Elsa - Italian (Italy)', 'Federica']
+  ok('la lingua tra parentesi se ne va', m.nomeVoce('Grandma (Italiano (Italia))', tutte), 'Grandma')
+  ok('la marcatura di qualità resta', m.nomeVoce('Alice (Enhanced)', tutte), 'Alice (Enhanced)')
+  ok('anche la lingua dopo il trattino', m.nomeVoce('Microsoft Elsa - Italian (Italy)', tutte), 'Microsoft Elsa')
+  ok('un nome semplice resta', m.nomeVoce('Federica', tutte), 'Federica')
+  const doppie = ['Luca (Italiano (Italia))', 'Luca (Italiano (Svizzera))']
+  ok('due che diventerebbero uguali restano intere', doppie.map((v) => m.nomeVoce(v, doppie)), doppie)
 }
 
 // Il testo spento del tema chiaro sul fondo del menu e sui riquadri alti: le
