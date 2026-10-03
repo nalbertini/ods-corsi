@@ -325,14 +325,20 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .lezione-conto { font-size: 20px; font-weight: 700; color: var(--dim); }
 .lezione-conto[data-fatto='true'] { color: var(--verde-testo); }
 .lezione-quando { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--giallo-testo); white-space: nowrap; }
-.lezione-stato { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); text-align: right; }
+.lezione-stato { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); text-align: right; white-space: nowrap; }
+.lezione-stato.lezione-prove { color: var(--giallo-testo); }
 .lezione-stato[data-fatto='true'] { color: var(--verde-testo); }
 .lezione-stato[data-manca] { color: var(--rosso); }
 
 /* Le presenze segnalate dagli iscritti: in cima al calendario e nell'appello. */
-.segnalate-avviso { padding: 12px 14px; gap: 8px; border-color: var(--giallo); }
-.segnalate-avviso.da-chiudere { border-color: var(--rosso); }
-.segnalate-voce { gap: 10px; padding: 8px 0; border-top: 1px solid var(--line-soft); width: 100%; cursor: pointer; flex-wrap: wrap; }
+.arretrato { padding: 0 14px; gap: 8px; }
+.arretrato[data-tono='giallo'] { border-color: var(--giallo-testo); }
+.arretrato[data-tono='rosso'] { border-color: var(--rosso); }
+.arretrato[data-tono='giallo'] .arretrato-titolo { color: var(--giallo-testo); }
+.arretrato[data-tono='rosso'] .arretrato-titolo { color: var(--rosso); }
+.arretrato-testa { width: 100%; min-height: 52px; gap: 10px; text-align: left; }
+.arretrato-freccia { font-family: var(--cond); font-size: 24px; font-weight: 700; line-height: 1; color: var(--dim); }
+.segnalate-voce { gap: 10px; min-height: 52px; padding: 8px 0; border-top: 1px solid var(--line-soft); width: 100%; cursor: pointer; }
 .segnalata { padding: 12px 14px; gap: 10px; border-color: var(--giallo); }
 
 .conto-appello { font-size: 46px; font-weight: 700; line-height: 0.9; }
@@ -343,6 +349,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
   position: sticky; top: 0; z-index: 2;
   background: var(--bg); padding-bottom: 12px; border-bottom: 2px solid var(--line-soft);
 }
+.appello-futura { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--giallo-testo); }
 .appello-titolo { font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05; }
 .appello-stato { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec); }
 .appello-stato[data-fatto='true'] { color: var(--verde-testo); }
@@ -352,11 +359,11 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid
 .segnalata-esito[data-accolta='true'] { color: var(--verde-testo); }
 .appello-aiuto { font-size: 14px; line-height: 1.4; color: var(--dim); margin: 0 0 10px; }
 .appello-fine { gap: 10px; padding-top: 20px; padding-bottom: calc(var(--safe-b) + 28px); }
-.azzera { min-height: 48px; padding: 0 14px; font-size: 15px; }
+.azzera { min-height: 56px; width: 124px; flex-shrink: 0; padding: 0 8px; font-size: 16px; }
 .azzera[data-sicuro='true'] { border-color: var(--rosso); color: var(--rosso); }
 
 /* Dopo CHIUDI L'APPELLO: verde quando è arrivato, giallo finché aspetta la rete. */
-.esito-appello { gap: 12px; padding: 10px 10px 10px 14px; border-color: var(--giallo); }
+.esito-appello { gap: 8px; padding: 12px 10px 10px 14px; border-color: var(--giallo); }
 .esito-appello[data-arrivato='true'] { border-color: var(--verde); }
 .appello-segno { font-family: var(--cond); font-size: 28px; font-weight: 700; width: 24px; text-align: center; color: var(--giallo-testo); }
 .esito-appello[data-arrivato="true"] .appello-segno { color: var(--verde-testo); }

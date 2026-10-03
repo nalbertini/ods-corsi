@@ -473,7 +473,7 @@
       "refersTo": "button-primary",
       "description": "L'azione principale: rosso, maiuscolo, obliquo.",
       "html": "<button class=\"ds-btn ds-btn-primary\">AVVIA IL TIMER</button>",
-      "css": ".ds-btn{min-height:56px;padding:0 22px;display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:'Saira Condensed','Helvetica Neue',Arial,sans-serif;font-style:oblique 9deg;font-size:19px;font-weight:700;letter-spacing:.16em;border:none;border-radius:0;cursor:pointer;transition:border-color 120ms,color 120ms}.ds-btn-primary{background:#e4292a;color:#121212}.ds-btn-primary:focus-visible{outline:2px solid #f2f2f0;outline-offset:2px}.ds-btn-primary:disabled{opacity:.4;cursor:not-allowed}"
+      "css": ".ds-btn{min-height:56px;padding:0 22px;display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:'Saira Condensed','Helvetica Neue',Arial,sans-serif;font-style:oblique 9deg;font-size:19px;font-weight:700;letter-spacing:.16em;border:none;border-radius:0;cursor:pointer;transition:border-color 120ms,color 120ms}.ds-btn-primary{background:#e4292a;color:#ffffff}.ds-btn-primary:focus-visible{outline:2px solid #f2f2f0;outline-offset:2px}.ds-btn-primary:disabled{opacity:.4;cursor:not-allowed}"
     },
     {
       "name": "Tasto Vai",
