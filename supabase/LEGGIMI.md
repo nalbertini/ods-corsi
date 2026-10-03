@@ -134,6 +134,12 @@ Per le segnalazioni della segreteria basta `25-segnalazioni.sql` (dopo
 `02-policy.sql`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non
 c'è, SEGNALAZIONI dice che non si leggono. Chi l'aveva già lanciato lo
 rilancia: la prima versione lasciava entrare un filo senza titolo.
+Per i corsi rossi che passano al viola basta `26-colori-corsi.sql` (dopo
+`01-schema.sql`), una volta sola, che non chiede di rilanciare
+`06-iscrizioni.sql`: finché non c'è, i corsi che erano rossi restano rossi.
+Per il pagamento ricavato dalle ricevute basta `27-pagamento-dalle-ricevute.sql`
+(dopo `16-ricevute.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
+finché non c'è, l'app ricava le stesse righe dalle ricevute da sola.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
