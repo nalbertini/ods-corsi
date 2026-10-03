@@ -55,7 +55,7 @@ create index if not exists timer_persona on timer (persona_id);
 -- Chi l'ha creato e chi l'ha cambiato, scritto dal server e non dal browser.
 -- Di chi è un timer non cambia: portarne uno personale in palestra vuol dire
 -- farne una copia, e prendersi quello della palestra non si può.
-create or replace function timer_cambiato() returns trigger language plpgsql as $$
+create or replace function timer_cambiato() returns trigger language plpgsql set search_path = public as $$
 begin
   if tg_op = 'INSERT' then
     new.creato_il := now();
@@ -113,7 +113,7 @@ create table if not exists allenamenti (
 create index if not exists allenamenti_finito on allenamenti (finito_il);
 create index if not exists allenamenti_sessione on allenamenti (sessione_id);
 
-create or replace function allenamento_arrivato() returns trigger language plpgsql as $$
+create or replace function allenamento_arrivato() returns trigger language plpgsql set search_path = public as $$
 begin
   new.persona_id := persona_corrente();
   new.postazione_id := postazione_corrente();
@@ -137,7 +137,7 @@ create table if not exists preferenze_timer (
   cambiate_il   timestamptz not null default now()
 );
 
-create or replace function preferenze_cambiate() returns trigger language plpgsql as $$
+create or replace function preferenze_cambiate() returns trigger language plpgsql set search_path = public as $$
 begin
   new.persona_id := persona_corrente();
   new.cambiate_il := now();

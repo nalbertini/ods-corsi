@@ -145,6 +145,9 @@ finché non c'è, l'app ricava le stesse righe dalle ricevute da sola.
 Le funzioni dei trigger di `07`, `08`, `12` e `20`, e `nome_proprio`,
 restavano chiamabili da chi non ha un accesso (senza far uscire niente): basta
 rilanciare `06-iscrizioni.sql`, che le chiude.
+Dodici funzioni di `02`, `04`, `06`, `07` e `08` non dicevano dove cercare le
+tabelle (`search_path`), e Supabase lo segnala: si rilanciano quei cinque file,
+poi `06-iscrizioni.sql`. Finché non c'è, l'app funziona come prima.
 
 Per sapere cosa manca su un database già in uso c'è **`controllo.sql`**: si
 incolla nel SQL Editor, legge soltanto, e per ogni file dice «ok» o «DA
@@ -726,7 +729,7 @@ funzioni su un Postgres qualunque: `finto-supabase.sql` rifà il minimo che
 Supabase mette a disposizione (`auth.users`, `auth.uid()`, i ruoli),
 `calendario.sql` prova la generazione delle lezioni e il cambio dell'ora
 legale, `rls.sql` prova che chi non ha fatto l'accesso chiami solo le funzioni del
-modulo di iscrizione, poi gli accessi dal punto di vista di un iscritto, di un
+modulo di iscrizione e che ogni funzione abbia il suo `search_path`, poi gli accessi dal punto di vista di un iscritto, di un
 istruttore, della segreteria e di chi non ha fatto l'accesso, `tablet.sql`
 prova il tablet di sala: le finestre di tempo, il recupero, l'annullo, il PIN
 e il blocco, e che il tablet non veda niente più di quel che deve;
