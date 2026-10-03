@@ -123,7 +123,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
                 className="sg-campo"
                 value={imp.dato?.giorniCalendario ?? 60}
                 disabled={!imp.dato}
-                onChange={(e) => void fai(() => d.salvaImpostazioni({ giorniCalendario: Number(e.target.value) }), 'Cambiato: vale dal prossimo RIGENERA', imp.ricarica)}
+                onChange={(e) => void fai(() => d.salvaImpostazioni({ giorniCalendario: Number(e.target.value) }), 'Cambiato: vale da quando il calendario si allunga di nuovo', imp.ricarica)}
               >
                 {[30, 60, 90, 180].map((g) => (
                   <option key={g} value={g}>
