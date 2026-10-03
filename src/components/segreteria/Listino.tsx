@@ -5,7 +5,7 @@ import { STAGIONE } from '../../lib/costi'
 import { cosaNonVaListino, LIMITI, type Listino as DatiListino } from '../../lib/listino'
 import { centesimi } from '../../lib/ricevute'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
-import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 
 /*
  * Il listino si cambia in una bozza, tutto insieme, e si salva con un tasto
@@ -135,6 +135,8 @@ export function Listino({ d }: { d: DatiSegreteria }) {
   const { avviso, fai, lavora } = useAvviso()
   const [bozza, setBozza] = useState<Bozza | null>(null)
   const [aperto, setAperto] = useState<number | null>(null)
+  // La barra «Ci sono cambi da salvare» c'è finché c'è la bozza: uscendo si chiede.
+  useBozza(!!bozza, 'Listino')
 
   // Le chiavi della bozza di partenza restano le stesse fra un giro e l'altro: CAMBIA apre quella giusta.
   const base = useMemo(() => (letto.dato ? bozzaDa(letto.dato.listino) : null), [letto.dato])

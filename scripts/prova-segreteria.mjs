@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, corsoCambiato, personaCambiata, COLORI } from './src/lib/segreteria'; export { quoteDi } from './src/lib/ricevute'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -1156,6 +1156,52 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
   const tsx = readFileSync('src/components/segreteria/Iscritti.tsx', 'utf8')
   const ricopiate = ["'NO CERTIFICATO'", "'CERT. SCADUTO'", "'QUOTA SCADUTA'", 'const TONO_CERTIFICATO', 'const TONO_PAGA', 'const PAROLA_PAGA'].filter((x) => tsx.includes(x))
   ok('Iscritti.tsx non ha parole né toni suoi per IN REGOLA', ricopiate, [])
+}
+
+console.log('\nuna modifica non salvata: CORSI e ISTRUTTORI E ACCESSI chiedono prima di lasciarla')
+{
+  const cambiato = (corso, bozza, sala) => m.corsoCambiato?.(corso, bozza, sala)
+  const persona = (salvata, modifica) => m.personaCambiata?.(salvata, modifica)
+  const primo = m.COLORI[0].hex
+  const X = { id: 'x', nome: 'Anna' }
+  const Y = { id: 'y', nome: 'Bruno' }
+  const corso = { id: 'c1', nome: 'Karate', colore: m.COLORI[1].hex, salaId: 's1', sala: 'Sala 1', istruttori: [X, Y], capienza: 20, attivo: true, ricorrenze: [] }
+  // Come la costruisce Corsi.tsx: un corso salvato senza colore prende il primo.
+  const bozzaDi = (c) => ({ id: c?.id, nome: c?.nome ?? '', salaId: c?.salaId, istruttori: c?.istruttori.map((i) => i.id) ?? [], capienza: c?.capienza, colore: c?.colore ?? primo })
+  const b = bozzaDi(corso)
+
+  ok('la bozza uguale al corso salvato non è una modifica', cambiato(corso, b), false)
+  ok('il nome cambiato è una modifica', cambiato(corso, { ...b, nome: 'Karate bambini' }), true)
+  ok('il nome cambiato e rimesso com’era non è una modifica', cambiato(corso, { ...{ ...b, nome: 'Karate bambini' }, nome: 'Karate' }), false)
+  ok('la sala cambiata è una modifica', cambiato(corso, { ...b, salaId: 's2' }), true)
+  ok('i posti cambiati sono una modifica', cambiato(corso, { ...b, capienza: 25 }), true)
+  ok('i posti tolti sono una modifica', cambiato(corso, { ...b, capienza: undefined }), true)
+  ok('il colore cambiato è una modifica', cambiato(corso, { ...b, colore: m.COLORI[2].hex }), true)
+  ok('gli istruttori scambiati di posto sono una modifica: il primo è quello di riferimento', cambiato(corso, { ...b, istruttori: ['y', 'x'] }), true)
+  ok('gli stessi istruttori nello stesso ordine non sono una modifica', cambiato(corso, { ...b, istruttori: ['x', 'y'] }), false)
+  const Z = { id: 'z', nome: 'Carla' }
+  ok('gli altri istruttori in un altro ordine non sono una modifica: il database tiene solo il primo', cambiato({ ...corso, istruttori: [X, Y, Z] }, { ...b, istruttori: ['x', 'z', 'y'] }), false)
+  ok('un istruttore tolto è una modifica', cambiato(corso, { ...b, istruttori: ['x'] }), true)
+  const senzaColore = { ...corso, colore: undefined }
+  ok('un corso salvato senza colore, aperto col primo colore, non è una modifica', cambiato(senzaColore, bozzaDi(senzaColore)), false)
+
+  const nuovo = { ...bozzaDi(null), salaId: 's1' }
+  ok('un corso nuovo appena aperto, con la prima sala, non è una modifica', cambiato(null, nuovo, 's1'), false)
+  ok('un corso nuovo con un nome è una modifica', cambiato(null, { ...nuovo, nome: 'Judo' }, 's1'), true)
+  ok('un corso nuovo con un istruttore è una modifica', cambiato(null, { ...nuovo, istruttori: ['x'] }, 's1'), true)
+  ok('un corso nuovo con i posti è una modifica', cambiato(null, { ...nuovo, capienza: 10 }, 's1'), true)
+  ok('un corso nuovo con un altro colore è una modifica', cambiato(null, { ...nuovo, colore: m.COLORI[3].hex }, 's1'), true)
+  ok('un corso nuovo con un’altra sala è una modifica', cambiato(null, { ...nuovo, salaId: 's2' }, 's1'), true)
+
+  const salvata = { nome: 'Anna', cognome: 'Neri', email: 'anna@esempio.it' }
+  const mod = { nome: 'Anna', cognome: 'Neri', email: 'anna@esempio.it' }
+  ok('la scheda aperta e non toccata non è una modifica', persona(salvata, mod), false)
+  ok('l’email cambiata è una modifica', persona(salvata, { ...mod, email: 'anna.neri@esempio.it' }), true)
+  ok('l’email cambiata e rimessa com’era non è una modifica', persona(salvata, { ...{ ...mod, email: 'x@esempio.it' }, email: 'anna@esempio.it' }), false)
+  ok('senza email salvata, il campo vuoto non è una modifica', persona({ nome: 'Anna', cognome: 'Neri' }, { ...mod, email: '' }), false)
+  ok('senza email salvata, un’email scritta è una modifica', persona({ nome: 'Anna', cognome: 'Neri' }, mod), true)
+  ok('il nome cambiato è una modifica', persona(salvata, { ...mod, nome: 'Annalisa' }), true)
+  ok('il cognome cambiato è una modifica', persona(salvata, { ...mod, cognome: 'Bianchi' }), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

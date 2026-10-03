@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { CorsoSeg, DatiCorso, DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
-import { COLORI, GIORNI_LUNGHI, inCorso } from '../../lib/segreteria'
+import { COLORI, corsoCambiato, GIORNI_LUNGHI, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno } from '../../lib/sala'
 import { Croce } from '../Icons'
 import { STRETTO, useSchermo } from '../../lib/largo'
-import { chiedi, Campo, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, lasciare, Riga, SchedaPiena, Testa, useAvviso, useBozza, useCarica } from './comune'
 
 const CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
 
@@ -52,10 +52,14 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
   const stretto = useSchermo(STRETTO)
   const corso = nuovo ? null : (attivi.find((c) => c.id === scelto) ?? (stretto ? null : attivi[0]) ?? null)
   const piena = stretto && (nuovo || !!corso)
-  const chiudi = () => {
-    setNuovo(false)
-    setScelto(null)
+  // Un'altra scheda prende il posto di questa: prima si chiede di quel che non è salvato.
+  const apri = async (id: string | null, comeNuovo = false) => {
+    if (comeNuovo === nuovo && (comeNuovo || id === corso?.id)) return
+    if (!(await lasciare())) return
+    setNuovo(comeNuovo)
+    setScelto(id)
   }
+  const chiudi = () => void apri(null)
   const incompleti = attivi.filter((c) => mancano(c).length > 0).length
   const iscrittiA = (id: string) => (persone.dato ?? []).filter((p) => p.attiva && p.iscrizioni.some((i) => i.corsoId === id && inCorso(i, oggi)))
 
@@ -87,7 +91,7 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
       {/* L'elenco resta montato sotto la scheda, come negli iscritti. */}
       <div className="stack" style={{ gap: 18 }} hidden={piena}>
         <Testa titolo="CORSI" sotto="Un corso è cosa si fa; le ricorrenze dicono quando. Le lezioni si generano da quelle.">
-          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setNuovo(true)}>
+          <button type="button" className="sg-btn sg-btn-pieno" onClick={() => void apri(null, true)}>
             + NUOVO CORSO
           </button>
         </Testa>
@@ -118,10 +122,7 @@ export function Corsi({ d }: { d: DatiSegreteria }) {
                   data-manca={manca.length > 0}
                   title={manca.length ? `Manca: ${manca.join(', ')}` : undefined}
                   aria-pressed={!nuovo && corso?.id === c.id}
-                  onClick={() => {
-                    setNuovo(false)
-                    setScelto(c.id)
-                  }}
+                  onClick={() => void apri(c.id)}
                 >
                   <span className="row sg-corso-nome" style={{ gap: 10, minWidth: 0 }}>
                     <span style={{ width: 12, height: 12, flexShrink: 0, background: c.colore ?? 'var(--line)' }} />
@@ -227,13 +228,12 @@ function Scheda({
     </select>
   )
   const [daIscrivere, setDaIscrivere] = useState('')
-  const cambiato =
-    !corso ||
-    bozza.nome !== corso.nome ||
-    bozza.salaId !== corso.salaId ||
-    bozza.capienza !== corso.capienza ||
-    bozza.colore !== (corso.colore ?? COLORI[0].hex) ||
-    bozza.istruttori.join() !== corso.istruttori.map((i) => i.id).join()
+  const cambiato = corsoCambiato(corso, bozza, corso ? undefined : sale.dato?.[0]?.id)
+  // Il giorno nuovo si apre con questi valori: cambiato uno, c'è da perderlo.
+  const ricDi = (c: CorsoSeg) => ({ giorno: 1, ora: c.ricorrenze[0]?.ora ?? '17:00', durata: c.ricorrenze[0]?.durata ?? 60 })
+  const ricCambiato =
+    !!ric && !!corso && (ric.giorno !== ricDi(corso).giorno || ric.ora !== ricDi(corso).ora || ric.durata !== ricDi(corso).durata || !!ric.salaId)
+  useBozza(cambiato || ricCambiato || !!daIscrivere, corso?.nome ?? (bozza.nome.trim() || 'Nuovo corso'))
 
   const liberi = persone
     .filter((p) => p.attiva && !iscritti.some((i) => i.id === p.id))
@@ -263,7 +263,7 @@ function Scheda({
         <button
           type="button"
           className="sg-btn sg-btn-pieno"
-          disabled={!cambiato || !bozza.nome.trim()}
+          disabled={(!!corso && !cambiato) || !bozza.nome.trim()}
           onClick={() => {
             let id = ''
             void fai(
@@ -449,7 +449,7 @@ function Scheda({
             <button
               type="button"
               className="sg-btn sg-btn-tratteggio"
-              onClick={() => setRic({ giorno: 1, ora: corso.ricorrenze[0]?.ora ?? '17:00', durata: corso.ricorrenze[0]?.durata ?? 60 })}
+              onClick={() => setRic(ricDi(corso))}
             >
               + AGGIUNGI UN GIORNO
             </button>

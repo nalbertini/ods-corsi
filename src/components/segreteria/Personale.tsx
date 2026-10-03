@@ -1,8 +1,9 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import type { DatiSegreteria, PersonaleSeg, PresenzaIstruttoreSeg } from '../../lib/segreteria'
+import { personaCambiata } from '../../lib/segreteria'
 import { daRuoloScelto, nomeDelRuolo, ruoloScelto, type RuoloScelto } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { chiedi, Campo, Guaio, Riga, SchedaPiena, Testa, messaggio, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 import { Numero, mesi } from './Presenze'
 import { Kanji } from '../Kanji'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
@@ -54,6 +55,10 @@ export function Personale({ d }: { d: DatiSegreteria }) {
     setNuovo(false)
     setScelta(null)
   }
+  // ← ISTRUTTORI E ACCESSI con qualcosa scritto e non salvato: prima si chiede.
+  const torna = async () => {
+    if (await lasciare()) chiudi()
+  }
 
   /** Com'è andato l'invito, detto a chi l'ha mandato. */
   const partito = (nome: string, come: 'invito' | 'password') =>
@@ -66,7 +71,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
   return (
     <>
       {nuovo ? (
-        <SchedaPiena etichetta="Aggiungi una persona" torna="ISTRUTTORI E ACCESSI" onTorna={chiudi}>
+        <SchedaPiena etichetta="Aggiungi una persona" torna="ISTRUTTORI E ACCESSI" onTorna={() => void torna()}>
           <Aggiungi
             d={d}
             fai={fai}
@@ -81,7 +86,7 @@ export function Personale({ d }: { d: DatiSegreteria }) {
           />
         </SchedaPiena>
       ) : persona ? (
-        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`.trim()} torna="ISTRUTTORI E ACCESSI" onTorna={chiudi}>
+        <SchedaPiena key={persona.id} etichetta={`Scheda di ${persona.nome} ${persona.cognome}`.trim()} torna="ISTRUTTORI E ACCESSI" onTorna={() => void torna()}>
           <Scheda
             d={d}
             p={persona}
@@ -221,6 +226,7 @@ function Aggiungi({
 }) {
   const [bozza, setBozza] = useState({ nome: '', cognome: '', email: '', ruolo: 'istruttore' as RuoloScelto })
   const [invitaSubito, setInvitaSubito] = useState(true)
+  useBozza(!!(bozza.nome.trim() || bozza.cognome.trim() || bozza.email.trim()) || bozza.ruolo !== 'istruttore', bozza.nome.trim() || undefined)
 
   const aggiungi = (e: FormEvent) => {
     e.preventDefault()
@@ -312,6 +318,7 @@ function Scheda({
 }) {
   const [modifica, setModifica] = useState<{ nome: string; cognome: string; email: string } | null>(null)
   const [pin, setPin] = useState<string | null>(null)
+  useBozza((!!modifica && personaCambiata(p, modifica)) || !!pin, `${p.nome} ${p.cognome}`.trim())
   // Il ruolo doppio si scrive solo se c'era o ci sarà: un database senza la
   // sua colonna salva lo stesso tutti gli altri (vedi `ruoloDaScrivere`).
   const dati = { id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, ruolo: p.ruolo, ...(p.ancheIstruttore ? { ancheIstruttore: true } : {}) }
@@ -518,6 +525,7 @@ function Scheda({
  */
 function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: PersonaleSeg; altri: PersonaleSeg[]; fai: Fai; onCambiato: () => Promise<void> }) {
   const [aMano, setAMano] = useState<string | null>(null)
+  useBozza(!!aMano?.trim(), `${p.nome} ${p.cognome}`.trim())
   const di = new Map(altri.filter((x) => x.kanji).map((x) => [x.kanji!, `${x.nome} ${x.cognome}`.trim()]))
   const scegli = (segno: string | null) => {
     if (segno === (p.kanji ?? null)) return

@@ -3,7 +3,7 @@ import { confermaMesiPresenze, type DatiSegreteria, type Impostazioni, type List
 import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
-import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useCarica } from './comune'
+import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 
@@ -49,6 +49,9 @@ export function Regole({ d }: { d: DatiSegreteria }) {
   const musica = useCarica(() => d.listeMusica(), [d])
   const { avviso, avvisa, fai } = useAvviso()
   const [sala, setSala] = useState<{ id?: string; nome: string; capienza?: number } | null>(null)
+  // Una sala aperta e cambiata (o una nuova con qualcosa scritto) non si perde uscendo.
+  const salaPrima = sale.dato?.find((s) => s.id === sala?.id)
+  useBozza(!!sala && (sala.nome.trim() !== (salaPrima?.nome ?? '') || sala.capienza !== salaPrima?.capienza), salaPrima?.nome)
   // I mesi scelti nella tendina mentre si aspetta il sì: lasciando stare, torna a quelli salvati.
   const [mesiScelti, setMesiScelti] = useState<number | null>(null)
   const cambiaMesi = async (dopo: number) => {
@@ -381,6 +384,11 @@ function MusicaSale({
   fai: Fai
 }) {
   const [bozza, setBozza] = useState<Bozza | null>(null)
+  const prima = liste?.find((l) => l.id === bozza?.id)
+  useBozza(
+    !!bozza && (bozza.nome.trim() !== (prima?.nome ?? '') || bozza.link.trim() !== (prima?.link ?? '') || bozza.salaId !== (prima?.salaId ?? null)),
+    prima?.nome,
+  )
   const nomeSala = (id: string | null) => (id ? (sale.find((s) => s.id === id)?.nome ?? 'sala tolta') : 'Tutte le sale')
   const salva = () => {
     if (!bozza) return
@@ -528,6 +536,8 @@ function Stagione({ d, imp, avvisa, fai, poi }: {
   const [bozza, setBozza] = useState<{ inizio: string; fine: string } | null>(null)
   const inizio = bozza?.inizio ?? imp?.inizioCorsi ?? ''
   const fine = bozza?.fine ?? imp?.fineCorsi ?? ''
+  const cambiate = inizio !== (imp?.inizioCorsi ?? '') || fine !== (imp?.fineCorsi ?? '')
+  useBozza(cambiate, 'Inizio e fine dei corsi')
   // Il database senza le colonne: si dice cosa manca invece di un errore al salvataggio.
   if (imp && imp.inizioCorsi === undefined) {
     return (
@@ -536,7 +546,6 @@ function Stagione({ d, imp, avvisa, fai, poi }: {
       </span>
     )
   }
-  const cambiate = inizio !== (imp?.inizioCorsi ?? '') || fine !== (imp?.fineCorsi ?? '')
   const salva = () => {
     if (inizio && fine && fine < inizio) return avvisa('La fine dei corsi viene prima dell’inizio', true)
     // Il database ne tiene al massimo 400 giorni: un anno, con margine.

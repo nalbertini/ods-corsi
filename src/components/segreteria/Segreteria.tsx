@@ -20,7 +20,7 @@ import { Segnalazioni } from './Segnalazioni'
 import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
-import { bozzaAperta, chiedi, Conferme, Guaio } from './comune'
+import { bozzaAperta, chiedi, Conferme, Guaio, lasciare } from './comune'
 import { CercaIscritto } from './CercaIscritto'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
@@ -99,8 +99,6 @@ const GUIDE: Record<Voce, string> = {
   regole: 'segreteria/regole',
   segnalazioni: 'segreteria/segnalazioni',
 }
-
-const lasciare = () => chiedi('Lasciare a metà quello che stai scrivendo? Quello che non hai salvato si perde.', 'LASCIALO A METÀ', { no: 'TORNA A FINIRE' })
 
 /** Scrive l'indirizzo della segreteria nella cronologia, senza ricaricare. */
 function scrivi(hash: string, passo: 'push' | 'replace') {
@@ -194,7 +192,7 @@ export function Segreteria({
   }
   const vai = async (v: Voce, d: Destinazione = {}) => {
     // Un modulo scritto a metà (una ricevuta, un iscritto nuovo) non si perde con un clic sul menu.
-    if (bozzaAperta() && !(await lasciare())) return
+    if (!(await lasciare())) return
     setFiltro(d.filtro)
     // Dal menu del telefono la voce scelta prende il posto del passo del
     // menu: Indietro poi torna alla voce di prima, non al menu aperto.

@@ -49,30 +49,42 @@ export function useDialogo<T extends HTMLElement>(onChiudi: () => void) {
   return ref
 }
 
-// Quello che si sta scrivendo e non è ancora salvato (vedi `useBozza`).
-const bozze = new Set<object>()
+// Quello che si sta scrivendo e non è ancora salvato (vedi `useBozza`), con cosa è.
+const bozze = new Map<object, string | undefined>()
 
 /**
- * Finché `aperta`, c'è qualcosa scritto a metà: cambiando voce del menu la
- * segreteria chiede prima di perderlo (`bozzaAperta`), e chiudendo la pagina
- * lo chiede il browser. Al banco squilla il telefono, e un clic altrove non
- * deve buttare una ricevuta compilata.
+ * Finché `aperta`, c'è qualcosa scritto a metà: cambiando voce del menu, o
+ * scheda dentro una voce, la segreteria chiede prima di perderlo (`lasciare`),
+ * e chiudendo o ricaricando la pagina lo chiede il browser. Al banco squilla
+ * il telefono, e un clic altrove non deve buttare una ricevuta compilata.
+ * `cosa` («Judo 2») entra nella domanda, per dire quale modifica si perde.
  */
-export function useBozza(aperta: boolean) {
+export function useBozza(aperta: boolean, cosa?: string) {
   useEffect(() => {
     if (!aperta) return
     const io = {}
-    bozze.add(io)
+    bozze.set(io, cosa)
     const via = (e: BeforeUnloadEvent) => e.preventDefault()
     window.addEventListener('beforeunload', via)
     return () => {
       bozze.delete(io)
       window.removeEventListener('beforeunload', via)
     }
-  }, [aperta])
+  }, [aperta, cosa])
 }
 
 export const bozzaAperta = () => bozze.size > 0
+
+/**
+ * Prima di uscire da una bozza: `true` se non c'è niente da perdere o si esce
+ * lo stesso. Il tasto in evidenza, e col fuoco, è restare: un INVIO di
+ * troppo non deve buttare il lavoro.
+ */
+export function lasciare(): Promise<boolean> {
+  if (!bozzaAperta()) return Promise.resolve(true)
+  const cosa = [...bozze.values()].filter(Boolean).pop()
+  return chiedi(`${cosa ? `${cosa}: modifiche` : 'Ci sono modifiche'} non salvate. Se esci si perdono.`, 'ESCI SENZA SALVARE', { no: 'TORNA A FINIRE', restare: true })
+}
 
 /** Un modulo che diventa bozza al primo tasto battuto o alla prima scelta. */
 export function Bozza({ children }: { children: ReactNode }) {
@@ -90,6 +102,8 @@ interface Domanda {
   si: string
   no: string
   pericolo: boolean
+  /** Il no è il tasto in evidenza: si sta uscendo da qualcosa non salvato. */
+  restare: boolean
   risposta: (si: boolean) => void
 }
 let mostra: ((d: Domanda) => void) | null = null
@@ -101,10 +115,10 @@ let mostra: ((d: Domanda) => void) | null = null
  * `pericolo`: quello che non si annulla, col tasto rosso. Serve `<Conferme />`
  * nella pagina (la segreteria lo mette); senza, si chiede al browser.
  */
-export function chiedi(testo: string, si: string, o: { no?: string; pericolo?: boolean } = {}): Promise<boolean> {
+export function chiedi(testo: string, si: string, o: { no?: string; pericolo?: boolean; restare?: boolean } = {}): Promise<boolean> {
   return new Promise((risposta) => {
     if (!mostra) return risposta(window.confirm(testo))
-    mostra({ testo, si, no: o.no ?? 'NO, LASCIA STARE', pericolo: !!o.pericolo, risposta })
+    mostra({ testo, si, no: o.no ?? 'NO, LASCIA STARE', pericolo: !!o.pericolo, restare: !!o.restare, risposta })
   })
 }
 
@@ -146,10 +160,10 @@ function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean) => void }) {
           </p>
         )}
         <div className="sg-conferma-tasti">
-          <button ref={no} type="button" className="sg-btn sg-btn-linea" onClick={() => fine(false)}>
+          <button ref={no} type="button" className={d.restare ? 'sg-btn sg-btn-pieno' : 'sg-btn sg-btn-linea'} onClick={() => fine(false)}>
             {d.no}
           </button>
-          <button type="button" className={d.pericolo ? 'sg-btn sg-btn-rosso' : 'sg-btn sg-btn-pieno'} onClick={() => fine(true)}>
+          <button type="button" className={d.pericolo ? 'sg-btn sg-btn-rosso' : d.restare ? 'sg-btn sg-btn-linea' : 'sg-btn sg-btn-pieno'} onClick={() => fine(true)}>
             {d.si}
           </button>
         </div>
