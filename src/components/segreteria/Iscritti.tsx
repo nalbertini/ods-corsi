@@ -9,6 +9,7 @@ import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, messaggio, Riga, Sche
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
+import { campiDiversi, possibiliDoppioni, stessoCognome } from '../../lib/doppioni'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
@@ -374,6 +375,7 @@ function Scheda({
   useBozza(!!modifica)
   const [daAggiungere, setDaAggiungere] = useState('')
   const [pagando, setPagando] = useState(false)
+  const [unendo, setUnendo] = useState(false)
   // Dopo una ricevuta nuova l'elenco delle ricevute si rilegge da capo.
   const [giroRicevute, setGiroRicevute] = useState(0)
   const storico = useCarica(() => d.storico(p.id, 12), [d, p.id, p.iscrizioni.length])
@@ -395,7 +397,20 @@ function Scheda({
         </span>
       </div>
 
-      {pagando ? (
+      {unendo ? (
+        <UnisciDoppione
+          d={d}
+          p={p}
+          tutti={tutti}
+          fai={fai}
+          onLasciaStare={() => setUnendo(false)}
+          onUnite={(resta) => {
+            setUnendo(false)
+            onCambiato()
+            onApri(resta)
+          }}
+        />
+      ) : pagando ? (
         <Bozza>
         <NuovaRicevuta
           d={d}
@@ -572,12 +587,144 @@ function Scheda({
             >
               {p.attiva ? 'DISATTIVA' : 'RIATTIVA'}
             </button>
+            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setUnendo(true)}>
+              UNISCI…
+            </button>
           </>
         )}
       </div>
       </>
       )}
     </>
+  )
+}
+
+/**
+ * Unire un doppione (`doppioni.ts`, `29-unisci-doppioni.sql`): si sceglie
+ * l'altra scheda, si vede cosa passa e cosa non torna, si sceglie quale
+ * resta, e una conferma. Non si torna indietro.
+ */
+function UnisciDoppione({
+  d,
+  p,
+  tutti,
+  fai,
+  onLasciaStare,
+  onUnite,
+}: {
+  d: DatiSegreteria
+  p: PersonaSeg
+  tutti: PersonaSeg[]
+  fai: Fai
+  onLasciaStare: () => void
+  onUnite: (resta: string) => void
+}) {
+  const [altra, setAltra] = useState('')
+  const [scambiate, setScambiate] = useState(false)
+  const candidati = possibiliDoppioni(p, tutti)
+  const lei = tutti.find((x) => x.id === altra)
+  const [resta, via] = lei && scambiate ? [lei, p] : [p, lei]
+  const passa = useCarica(async () => (resta && via ? d.anteprimaUnione(resta.id, via.id) : null), [d, resta?.id, via?.id])
+  const nome = (x: PersonaSeg) => `${x.cognome} ${x.nome}`
+  const quanto = (n: { presenze: number; prove: number; iscrizioni: number; ricevute: number }) => {
+    const tutte: [number, string, string][] = [
+      [n.presenze, 'presenza', 'presenze'],
+      [n.prove, 'prova', 'prove'],
+      [n.iscrizioni, 'iscrizione', 'iscrizioni'],
+      [n.ricevute, 'ricevuta', 'ricevute'],
+    ]
+    const voci = tutte
+      .filter(([q]) => q > 0)
+      .map(([q, uno, tanti]) => `${q} ${q === 1 ? uno : tanti}`)
+    return voci.length ? `Passano ${voci.join(', ')}.` : 'L’altra scheda non ha presenze, prove, iscrizioni né ricevute.'
+  }
+  const colonna = (t: string, x: PersonaSeg) => (
+    <div className="stack" style={{ gap: 2, minWidth: 0 }}>
+      <span className="sg-etichetta">{t}</span>
+      <span style={{ fontSize: 15, fontWeight: 600 }}>{nome(x)}</span>
+      <span style={{ fontSize: 12, color: 'var(--dim)' }}>{x.attiva ? 'Attiva' : 'Disattivata'}</span>
+    </div>
+  )
+  const dove = (x: PersonaSeg) => [x.email, x.telefono, x.attiva ? '' : 'disattivata'].filter(Boolean).join(' · ')
+
+  return (
+    <div className="stack" style={{ gap: 16, maxWidth: 640 }}>
+      <Riga titolo="UNISCI UN DOPPIONE" />
+      <span className="sg-sotto">Due schede della stessa persona diventano una: tutto passa a quella che resta.</span>
+      <span className="sg-sotto">Unisci dopo gli appelli di oggi: uno fatto senza rete, arrivato tardi, si perderebbe.</span>
+      <Campo id="u-altra" etichetta="L’ALTRA SCHEDA">
+        <select id="u-altra" className="sg-campo" value={altra} onChange={(e) => {
+            setAltra(e.target.value)
+            setScambiate(false)
+          }}>
+          <option value="">Scegli…</option>
+          {[
+            ['STESSO COGNOME', candidati.filter((x) => stessoCognome(x, p))],
+            ['TUTTI GLI ALTRI', candidati.filter((x) => !stessoCognome(x, p))],
+          ].map(([gruppo, chi]) =>
+            typeof gruppo === 'string' && Array.isArray(chi) && chi.length > 0 ? (
+              <optgroup key={gruppo} label={gruppo}>
+                {chi.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {nome(x)}
+                    {dove(x) && ` · ${dove(x)}`}
+                  </option>
+                ))}
+              </optgroup>
+            ) : null,
+          )}
+        </select>
+      </Campo>
+
+      {resta && via && (
+        <>
+          <div className="sg-due">
+            {colonna('RESTA', resta)}
+            {colonna('SE NE VA', via)}
+          </div>
+          <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => setScambiate((v) => !v)}>
+            TIENI L’ALTRA
+          </button>
+          {campiDiversi(resta, via).map((c) => (
+            <span key={c.campo} style={{ fontSize: 14 }}>
+              {c.campo}: <b>{c.resta || c.via}</b>
+              {c.resta && c.via && <span style={{ color: 'var(--dim)' }}> (non «{c.via}»)</span>}
+              {!c.resta && <span style={{ color: 'var(--dim)' }}> (dall’altra)</span>}
+            </span>
+          ))}
+          {passa.guaio ? (
+            <span style={{ fontSize: 14, color: 'var(--rosso)' }}>{passa.guaio}</span>
+          ) : !passa.dato ? (
+            <span className="sg-sotto">Conto cosa passa…</span>
+          ) : (
+            (
+              <span className="sg-sotto">
+                {quanto(passa.dato)} Una presenza per lezione e un’iscrizione per corso; del certificato e della quota, la scadenza più lontana. Resta attiva
+                se una delle due lo era.
+              </span>
+            )
+          )}
+        </>
+      )}
+
+      <div className="sg-scheda-piede">
+        <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
+          LASCIA STARE
+        </button>
+        <button
+          type="button"
+          className="sg-btn sg-btn-rosso grow"
+          disabled={!resta || !via || !passa.dato}
+          onClick={async () => {
+            if (!resta || !via) return
+            if (!(await chiedi(`Unire ${nome(via)} in ${nome(resta)}? La scheda di ${nome(via)} se ne va, e non si torna indietro.`, 'UNISCI', { pericolo: true }))) return
+            void fai(() => d.unisciPersone(resta.id, via.id), 'Schede unite', () => onUnite(resta.id))
+          }}
+        >
+          UNISCI
+        </button>
+      </div>
+    </div>
   )
 }
 

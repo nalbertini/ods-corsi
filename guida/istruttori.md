@@ -185,7 +185,8 @@ aggiungete voi, senza aspettare la segreteria: in fondo all'elenco c'è
    «de luca» e «deluca» trovano De Luca e De-Luca (con il corso e il giorno
    dell'ultima prova; il telefono lo vede solo
    la segreteria). Se è lui, toccatelo:
-   è la stessa persona, non un doppione. È il caso della settimana di prova,
+   è la stessa persona, non un doppione (se capita, la segreteria lo unisce).
+   È il caso della settimana di prova,
    un giorno judo e uno lotta. Senza rete l'elenco dei già venuti non c'è:
    scrivete nome e cognome come al solito.
 3. Se no, **AGGIUNGI**.

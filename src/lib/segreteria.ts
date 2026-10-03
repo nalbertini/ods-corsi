@@ -515,6 +515,13 @@ export interface DatiSegreteria {
    * (`28-elimina-istruttore.sql`). Va chiesto dalla funzione `elimina`.
    */
   eliminaIstruttore(personaId: string): Promise<void>
+  /**
+   * Quante presenze, prove, iscrizioni e ricevute della scheda `via` passano
+   * a `resta` unendole; dice di no come `unisciPersone`, senza cambiare niente.
+   */
+  anteprimaUnione(resta: string, via: string): Promise<{ presenze: number; prove: number; iscrizioni: number; ricevute: number }>
+  /** Unisce due schede della stessa persona: `via` se ne va, tutto il suo passa a `resta` (`29-unisci-doppioni.sql`). */
+  unisciPersone(resta: string, via: string): Promise<void>
 
   salvaSala(s: { id?: string; nome: string; capienza?: number }): Promise<string>
   /** La musica delle sale, per il tablet (vedi `musica.ts`). */
