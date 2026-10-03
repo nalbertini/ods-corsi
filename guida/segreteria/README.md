@@ -53,7 +53,7 @@ dall'orario vero**, che toglie i cambi fatti in prova su quel computer.
 
 Le tabelle (iscritti, richieste, presenze segnalate, presenze degli
 istruttori, istruttori e accessi con i permessi di ogni ruolo, le lezioni del mese di un istruttore, i
-corsi, gli istruttori e la griglia degli orari nelle statistiche) si ordinano toccando il nome di una
+corsi, gli istruttori e la griglia degli orari nelle statistiche, e anche quelle di questa guida) si ordinano toccando il nome di una
 colonna. Il primo tocco mette i nomi dalla A alla Z e i numeri dal più
 grande, il secondo rovescia, il terzo torna all'ordine di sempre: la freccia
 accanto al nome dice il verso (▲ crescente, ▼ decrescente). Chi non ha
