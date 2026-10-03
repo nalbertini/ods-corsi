@@ -677,7 +677,8 @@ a.btn { text-decoration: none; }
   border-bottom: 2px solid var(--line-soft);
 }
 .tb-sala { font-size: 40px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }
-.tb-data { font-size: 15px; font-weight: 700; letter-spacing: 0.2em; color: var(--dim); }
+/* Su una riga sola: col timer in testata si accorcia il nome della palestra, non va a capo. */
+.tb-data { font-size: 15px; font-weight: 700; letter-spacing: 0.2em; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tb-ora { font-size: 56px; font-weight: 700; line-height: 1; letter-spacing: 0.02em; }
 .tb-bollino {
   font-size: 14px; font-weight: 700; letter-spacing: 0.16em; color: var(--su-colore);
@@ -696,7 +697,7 @@ a.btn { text-decoration: none; }
 /* Due lezioni almeno sempre in vista, anche sotto LA TUA PRESENZA: al cambio lezione sono due. */
 .tb-lezioni-istr { min-height: 212px; }
 
-.tb-etichetta { font-family: var(--cond); font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); }
+.tb-etichetta { font-family: var(--cond); font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: var(--dim); text-wrap: balance; }
 .tb-nota { font-size: 15px; line-height: 1.5; color: var(--dim); margin: 0; }
 .tb-sotto { font-size: 17px; color: var(--sec); }
 .tb-orario { font-size: 20px; font-weight: 700; letter-spacing: 0.06em; color: var(--dim); }
@@ -710,6 +711,9 @@ a.btn { text-decoration: none; }
 }
 .tb-riquadro-titolo { font-size: 34px; font-weight: 700; letter-spacing: 0.03em; }
 .tb-riquadro-testo { font-size: 18px; line-height: 1.5; color: var(--sec); }
+/* Nella colonna stretta dell'area istruttore: meno margine, così ESCI resta in vista. */
+.tb-istruttore .tb-riquadro { padding: 18px; gap: 6px; }
+.tb-istruttore .tb-riquadro-testo { font-size: 16px; line-height: 1.4; }
 
 /* La lezione in cui ci si segna adesso: il tasto è il più grande dello schermo. */
 .tb-aperta {
@@ -857,8 +861,10 @@ a.btn { text-decoration: none; }
 .tb-tessera[data-attesa] svg { color: var(--giallo); }
 .tb-tessera-attesa { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: var(--giallo-testo); }
 
+/* In fondo all'elenco, non sopra: occupa il suo posto, così l'ultima riga di
+   nomi resta da toccare; con tanti nomi resta attaccata in basso mentre si scorre. */
 .tb-fascia {
-  position: absolute; left: 32px; right: 32px; bottom: calc(var(--safe-b) + 24px);
+  position: sticky; bottom: var(--safe-b); z-index: 1; flex-shrink: 0;
   display: flex; align-items: center; gap: 18px; padding: 18px 22px;
   background: var(--surface); border: 3px solid var(--text);
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.6);
@@ -942,7 +948,7 @@ a.btn { text-decoration: none; }
   .tb-aperta { flex-direction: column; align-items: stretch; }
   .tb-btn-segna { min-width: 0; }
   .tb-righe { grid-template-columns: minmax(0, 1fr); }
-  .tb-fascia { left: 16px; right: 16px; flex-wrap: wrap; }
+  .tb-fascia { flex-wrap: wrap; }
   .tb-pin { gap: 32px; }
   .tb-tastiera { grid-template-columns: repeat(3, 90px); }
   .tb-scheda-sala { min-width: 0; padding: 0 14px; }
