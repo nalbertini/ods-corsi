@@ -207,7 +207,8 @@ export function CaricaFile({
           {/* Si va a capo solo dopo il «·»: «PUOI PORTARLO DOPO» resta intero. */}
           {seManca && ` · ${seManca.replaceAll(' ', '\u00a0')}`}
         </span>
-        <span className="passo-dettaglio una-riga">{file ? `${file.nome} · ${Math.max(1, Math.round(file.byte / 1024))} KB` : dettaglio}</span>
+        {/* Il nome del file sta su una riga; la spiegazione no: a 65 anni serve intera. */}
+        <span className={file ? 'passo-dettaglio una-riga' : 'passo-dettaglio'}>{file ? `${file.nome} · ${Math.max(1, Math.round(file.byte / 1024))} KB` : dettaglio}</span>
         {errore && <Dettaglio tono="guaio">{errore}</Dettaglio>}
       </span>
       <label htmlFor={id} className={`${classiTasto()} modulo-scegli`}>
