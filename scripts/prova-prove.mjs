@@ -103,6 +103,30 @@ console.log('\n2. il giorno dopo, un altro corso: si ritrova per nome')
   window.location.pathname = '/'
   ok('si trova scrivendo «mar nu»', m.somiglianti(venuti, 'mar nu').length, 1)
   ok('e non scrivendo «luca»', m.somiglianti(venuti, 'luca').length, 0)
+  // Apostrofi e trattini: chi scrive «d'am» o «deluca» deve ritrovare
+  // D'Amico e De-Luca, comunque siano stati salvati.
+  const gia = [
+    ['Paolo', "D'Amico"], ['Sara', 'D’Amico'], ['Giulia', 'Damico'], ['Anna', 'De-Luca'],
+    ['Marco', 'De Luca'], ['Ugo', 'Damiani'], ['Marco', 'Nuzzo'],
+  ].map(([nome, cognome], i) => ({ id: `g${i}`, nome, cognome, corso: 'Lotta', inizio: '2026-01-01T17:00:00Z' }))
+  const chi = (scritto) => m.somiglianti(gia, scritto).map((p) => `${p.cognome} ${p.nome}`).sort((a, b) => a.localeCompare(b, 'it'))
+  const damici = ["D'Amico Paolo", 'D’Amico Sara', 'Damico Giulia']
+  const conDamiani = ["D'Amico Paolo", 'D’Amico Sara', 'Damiani Ugo', 'Damico Giulia']
+  ok("«d'am» trova i D'Amico, Damico e Damiani", chi("d'am"), conDamiani)
+  ok('«d’am» (apostrofo tipografico) trova lo stesso', chi('d’am'), conDamiani)
+  ok('«dʼam» (apostrofo modificatore) trova lo stesso', chi('dʼam'), conDamiani)
+  ok('«d‘am» e «d´am» (da altre tastiere) trovano lo stesso', [chi('d‘am'), chi('d´am')], [conDamiani, conDamiani])
+  ok("«D'Amico» trova i D'Amico e Damico, non Damiani", chi("D'Amico"), damici)
+  ok("«amico» trova i due D'Amico", chi('amico'), ["D'Amico Paolo", 'D’Amico Sara'])
+  ok("«damico» trova i D'Amico e Damico, non Damiani", chi('damico'), damici)
+  ok('«de luca» trova i due De Luca', chi('de luca'), ['De Luca Marco', 'De-Luca Anna'])
+  ok('«de-luca» trova i due De Luca', chi('de-luca'), ['De Luca Marco', 'De-Luca Anna'])
+  ok('«deluca» trova i due De Luca', chi('deluca'), ['De Luca Marco', 'De-Luca Anna'])
+  ok("«d'amico giu» trova solo Damico Giulia", chi("d'amico giu"), ['Damico Giulia'])
+  ok('«mar nu» trova solo Nuzzo Marco', chi('mar nu'), ['Nuzzo Marco'])
+  // Al contrario: salvato attaccato, scritto staccato.
+  const attaccati = [{ id: 'a1', nome: 'Rita', cognome: 'Deluca', corso: 'Lotta', inizio: '2026-01-01T17:00:00Z' }, { id: 'a2', nome: 'Giulia', cognome: 'Damico', corso: 'Lotta', inizio: '2026-01-01T17:00:00Z' }]
+  ok('«de luca» e «d amico» trovano Deluca e Damico', [m.somiglianti(attaccati, 'de luca'), m.somiglianti(attaccati, 'd amico')].map((x) => x.map((p) => p.cognome)), [['Deluca'], ['Damico']])
   const prima = persone()
   await d.aggiungiProva(LOTTA_VEN, venuti[0])
   ok('la stessa persona, non una nuova', persone() - prima, 0)

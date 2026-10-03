@@ -59,18 +59,27 @@ const piano = (s: string) =>
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
 
+/** Apostrofi di ogni tastiera e trattini: D'Amico, D’Amico e De-Luca si scrivono in tanti modi. */
+const STACCA = /['’‘ʼ´-]/g
+
 /**
  * Chi, fra quelli già venuti, somiglia a quello che si sta scrivendo: ogni
- * parola scritta è l'inizio di una parola del nome o del cognome, senza
- * badare agli accenti. Con niente scritto, i più recenti.
+ * parola scritta è l'inizio di una parola del nome o del cognome, o del nome
+ * o del cognome scritti attaccati, senza badare ad accenti, apostrofi e
+ * trattini: «d'am», «damico» e «amico» trovano D'Amico, chiunque l'abbia
+ * scritto la prima volta. Anche tutto lo scritto attaccato va bene, se è
+ * l'inizio del nome o del cognome attaccati: «de luca» trova Deluca.
+ * Con niente scritto, i più recenti.
  */
 export function somiglianti(tutti: GiaProvato[], scritto: string, quanti = 6): GiaProvato[] {
-  const parole = piano(scritto).split(/\s+/).filter(Boolean)
+  const parole = piano(scritto).split(/\s+/).map((w) => w.replace(STACCA, '')).filter(Boolean)
   if (!parole.length) return tutti.slice(0, quanti)
   return tutti
     .filter((p) => {
-      const sue = piano(`${p.nome} ${p.cognome}`).split(/[\s'-]+/)
-      return parole.every((w) => sue.some((s) => s.startsWith(w)))
+      const nomi = [p.nome, p.cognome].map(piano)
+      const attaccati = nomi.map((n) => n.replace(STACCA, '').replace(/\s+/g, ''))
+      const sue = [...nomi.flatMap((n) => n.replace(STACCA, ' ').split(/\s+/)), ...attaccati]
+      return parole.every((w) => sue.some((s) => s.startsWith(w))) || attaccati.some((s) => s.startsWith(parole.join('')))
     })
     .slice(0, quanti)
 }
