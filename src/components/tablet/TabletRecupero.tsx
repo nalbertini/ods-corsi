@@ -28,9 +28,10 @@ export function TabletRecupero({
 }) {
   const [corsoId, setCorsoId] = useState<string | null>(corsoIniziale)
 
-  // I corsi della sala, con i giorni in cui si fanno.
+  // I corsi della sala con almeno una lezione da recuperare, e i giorni in cui
+  // si fanno: un corso che comincia la settimana prossima qui non ha niente.
   const corsi = new Map<string, { id: string; nome: string; colore?: string; giorni: Set<number> }>()
-  for (const l of lezioni) {
+  for (const l of lezioni.filter((x) => recuperabile(x, adesso))) {
     const c = corsi.get(l.corsoId) ?? { id: l.corsoId, nome: l.corso, colore: l.colore, giorni: new Set<number>() }
     c.giorni.add(new Date(l.inizio).getDay())
     corsi.set(l.corsoId, c)
