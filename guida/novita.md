@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.7.6 — 3 ottobre 2026
+
+### Modificato
+
+- Database: corretta la spiegazione dei permessi delle funzioni nuove
+
 ## 0.7.5 — 3 ottobre 2026
 
 ### Risolto
