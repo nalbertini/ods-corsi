@@ -99,6 +99,10 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
   // Le scritture in coda si eseguono qui. Se il server rifiuta per davvero —
   // non per mancanza di rete — l'operazione resterebbe in coda per sempre: per
   // questo un errore di permesso o di dati si butta via invece di riprovarlo.
+  // Le scritture buttate perché il server non le accetterà mai: chi ha fatto
+  // l'appello lo deve sapere, se no la coda vuota direbbe «arrivato».
+  let scartate = 0
+  const chiScarta = new Set<(n: number) => void>()
   const coda = new Coda(async (op) => {
     const [a, b, c] = op.args as [string, string, StatoPresenza | null]
     try {
@@ -108,7 +112,12 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       else if (op.tipo === 'prova') await scriviProva(db, a, b, op.args[2] as NuovaProva | null)
       else if (op.tipo === 'togliProva') await togliProva(db, a, b)
     } catch (e) {
-      if (definitivo(e)) return // scartata: riprovarla non cambierebbe niente
+      if (definitivo(e)) {
+        // Scartata: riprovarla non cambierebbe niente.
+        scartate++
+        for (const f of chiScarta) f(scartate)
+        return
+      }
       throw e
     }
   })
@@ -267,6 +276,11 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
     },
 
     guardaCoda: (f) => coda.guarda(f),
+    guardaScartate: (f) => {
+      chiScarta.add(f)
+      f(scartate)
+      return () => void chiScarta.delete(f)
+    },
   }
 }
 

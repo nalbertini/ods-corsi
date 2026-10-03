@@ -790,7 +790,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
       // archiviato conta come le sue lezioni passate: col database, ha
       // insegnato.
       const p = persona(personaId)
-      if (p.ruolo !== 'istruttore') throw new Error(`Si eliminano solo gli istruttori: a ${p.nome} si toglie l'accesso`)
+      // In prova è entrata la segreteria di prova.
+      if (personaId === 's-prova') throw new Error("Non ci si elimina da soli: lo fa un'altra persona di segreteria")
+      if (p.ruolo !== 'istruttore' && !(p.ruolo === 'staff' && p.ancheIstruttore))
+        throw new Error(`Si eliminano solo gli istruttori: a ${p.nome} si toglie l'accesso`)
       const nome = nomeDi(p)
       const tiene = a().corsi.filter((c) => c.attivo && c.istruttori.includes(personaId)).map((c) => c.nome).sort((x, y) => x.localeCompare(y, 'it'))
       if (tiene.length) throw new Error(`${nome} insegna ancora in ${tiene.join(', ')}: prima va tolto dai corsi`)

@@ -495,8 +495,8 @@ function Scheda({
         >
           {p.attiva ? 'TOGLI L’ACCESSO' : 'RIDAI L’ACCESSO'}
         </button>
-        {/* Solo gli istruttori: a chi è di segreteria si toglie l'accesso. Se ha corsi, lezioni o presenze il database dice di no, e perché. */}
-        {p.ruolo === 'istruttore' && (
+        {/* Solo chi insegna, anche col ruolo doppio: a chi è solo di segreteria si toglie l'accesso. Se ha corsi, lezioni o presenze il database dice di no, e perché. */}
+        {ruoloScelto(p) !== 'staff' && (
           <button
             type="button"
             className="sg-btn sg-btn-linea"

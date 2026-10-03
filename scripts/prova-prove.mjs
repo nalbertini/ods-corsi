@@ -77,6 +77,9 @@ console.log("\n1. l'istruttore aggiunge una prova dall'app")
   const lui = det.elenco.find((x) => x.id === p.id)
   ok("in fondo all'appello, presente, in prova", [det.elenco.indexOf(lui) === iscritti, lui.stato, lui.prova], [true, 'presente', true])
   ok('e conta fra i presenti della lezione', det.sessione.presenti, 1)
+  // Il conto della scheda nel calendario: chi prova a parte, e quanti
+  // iscritti mancano da segnare (a zero l'appello è fatto).
+  ok('la scheda conta la prova a parte', [det.sessione.prove, det.sessione.daSegnare], [1, iscritti])
   ok('senza nome no', await errore(() => d.aggiungiProva(LOTTA, { nome: ' ', cognome: 'Vuoto' })), 'Servono nome e cognome.')
   ok('un telefono che non è un numero no', await errore(() => d.aggiungiProva(LOTTA, { nome: 'Ugo', cognome: 'Strano', telefono: 'chiamami' })), 'Il telefono non sembra un numero.')
   const iscritto = det.elenco[0]
@@ -85,6 +88,8 @@ console.log("\n1. l'istruttore aggiunge una prova dall'app")
   ok('si tocca come gli altri', (await d.dettaglio(LOTTA)).elenco.find((x) => x.id === p.id).stato, 'assente')
   await d.segnaTutti(LOTTA, 'presente')
   ok('TUTTI PRESENTI vale anche per lui', (await d.dettaglio(LOTTA)).elenco.find((x) => x.id === p.id).stato, 'presente')
+  const fatta = (await d.dettaglio(LOTTA)).sessione
+  ok('dopo TUTTI PRESENTI non manca nessuno', [fatta.daSegnare, fatta.prove, fatta.presenti], [0, 1, iscritti + 1])
 }
 
 console.log('\n2. il giorno dopo, un altro corso: si ritrova per nome')

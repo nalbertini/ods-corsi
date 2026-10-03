@@ -51,3 +51,7 @@ Le stesse girano su ogni PR (`.github/workflows/controlla.yml`).
 - Sul database vero non si lancia niente senza un sì dell'utente.
 - PR unite con «Create a merge commit»: `versione.mjs` legge il titolo dal
   commit di merge.
+- Ogni PR ha l'Auto-fix acceso, e si unisce da sé appena le prove su GitHub
+  sono verdi e non ci sono conflitti: il sì dell'utente c'è già. Tranne
+  quando cambia `supabase/`: lì si aspetta che l'utente abbia lanciato i file
+  sul database vero, se no l'app pubblicata cerca cose che non ci sono.

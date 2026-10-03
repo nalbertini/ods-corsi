@@ -29,7 +29,11 @@ insert into persone (id, nome, cognome, ruolo, email, utente_id) values
   -- Mai insegnato, ma si allena alla Lotta.
   ('aaaaaaaa-0000-0000-0000-000000000010', 'Ugo', 'Allievo', 'istruttore', null, null),
   -- Una scheda legata, per sbaglio o apposta, all'account del tablet.
-  ('aaaaaaaa-0000-0000-0000-000000000011', 'Zeno', 'Tablet', 'istruttore', null, '66666666-6666-6666-6666-666666666666');
+  ('aaaaaaaa-0000-0000-0000-000000000011', 'Zeno', 'Tablet', 'istruttore', null, '66666666-6666-6666-6666-666666666666'),
+  -- Solo segreteria, e segreteria che insegna anche: nessun corso.
+  ('aaaaaaaa-0000-0000-0000-000000000012', 'Bea', 'Banco', 'staff', null, null),
+  ('aaaaaaaa-0000-0000-0000-000000000013', 'Dario', 'Doppio', 'staff', null, null);
+update persone set anche_istruttore = true where id = 'aaaaaaaa-0000-0000-0000-000000000013';
 insert into sale (id, nome) values ('bbbbbbbb-0000-0000-0000-000000000001', 'Lotta');
 insert into postazioni (id, nome, sala_id, utente_id) values
   ('dddddddd-0000-0000-0000-000000000001', 'Tablet Lotta', 'bbbbbbbb-0000-0000-0000-000000000001', '66666666-6666-6666-6666-666666666666');
@@ -99,7 +103,9 @@ select atteso('chi ha lezioni di un corso archiviato no', tenta($$select elimina
   'NEGATO: Rita Vecchia ha delle lezioni in calendario…');
 select atteso('chi ha una presenza da istruttore no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000008')::text$$),
   'NEGATO: Teo Passato ha delle presenze da istruttore…');
-select atteso('chi è di segreteria no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000001')::text$$),
+select atteso('se stessa no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000001')::text$$),
+  'NEGATO: Non ci si elimina da soli…');
+select atteso('chi è solo di segreteria no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000012')::text$$),
   'NEGATO: Si eliminano solo gli istruttori…');
 select atteso('un iscritto da qui no', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000003')::text$$),
   'NEGATO: Si eliminano solo gli istruttori…');
@@ -120,6 +126,9 @@ select atteso('Pino non c''è più', (select count(*)::text from persone where n
 select atteso('tolto dalla Lotta, Gino si elimina', tenta($$delete from corsi_istruttori where persona_id = 'aaaaaaaa-0000-0000-0000-000000000006'$$), 'FATTO (1 righe)');
 select atteso('senza account non c''è niente da togliere', tenta($$select coalesce(elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000006')::text, 'nessun account')$$),
   'nessun account');
+select atteso('la segreteria che insegna anche, senza corsi, sì', tenta($$select coalesce(elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000013')::text, 'nessun account')$$),
+  'nessun account');
+select atteso('Dario non c''è più', (select count(*)::text from persone where nome = 'Dario'), '0');
 select atteso('un iscritto si cancella come prima', tenta($$delete from persone where id = 'aaaaaaaa-0000-0000-0000-000000000009'$$), 'FATTO (1 righe)');
 select atteso('una persona che non c''è', tenta($$select elimina_istruttore('aaaaaaaa-0000-0000-0000-000000000005')::text$$), 'NEGATO: Questa persona non c''è più');
 reset role;
