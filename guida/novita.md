@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.20.3 — 3 ottobre 2026
+
+### Risolto
+
+- Un iscritto aperto con «Cerca iscritto» da un'altra voce riporta all'elenco partendo dalla cima
+
 ## 0.20.2 — 3 ottobre 2026
 
 ### Risolto
