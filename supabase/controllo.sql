@@ -171,6 +171,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',
     exists (select 1 from pg_constraint where conname = 'segnalazioni_check'
             and pg_get_constraintdef(oid) like '%titolo IS NOT NULL%')),
+  ('32-segnalazioni-allegati.sql', 'i file nelle segnalazioni, in un contenitore privato',
+    exists (select 1 from storage.buckets where id = 'segnalazioni' and not public)
+    and to_regclass('public.segnalazioni_allegati') is not null),
+  ('32-segnalazioni-allegati.sql', 'un allegato lo toglie solo chi l''ha mandato',
+    exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'togli_allegato')
+    and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'pulisci_allegati')),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')

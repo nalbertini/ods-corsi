@@ -10,7 +10,7 @@ import { memoria } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
-import { cosaNonVaSegnalazione, type Segnalazione } from './segnalazioni'
+import { allegatiScaduti, cosaNonVaSegnalazione, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { richiesteDi, spostaRichieste } from './richiesteProva'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -40,6 +40,24 @@ const GIORNO = 24 * 60 * 60_000
 const ruoloDi = (r: RuoloPersonale) =>
   r.ancheIstruttore === undefined ? { ruolo: r.ruolo } : { ruolo: r.ruolo, ancheIstruttore: r.ruolo === 'staff' && r.ancheIstruttore }
 const unico = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+
+/**
+ * I file delle segnalazioni, per messaggio: come quelli dei certificati restano
+ * solo finché la pagina è aperta, perché `localStorage` non li tiene.
+ */
+const fileProva = new Map<string, { allegati: Allegato[]; file: { id: string; file: File }[]; tolti: { da: string; il: string }[] }>()
+
+const metti = (messaggio: string, files: File[]) => {
+  if (!files.length) return
+  const nomi = nomiAllegati(files, new Date())
+  const r = { allegati: [] as Allegato[], file: [] as { id: string; file: File }[], tolti: [] as { da: string; il: string }[] }
+  files.forEach((f, i) => {
+    const id = `al-${unico()}`
+    r.allegati.push({ id, nome: nomi[i], tipo: f.type, peso: f.size, mio: true })
+    r.file.push({ id, file: f })
+  })
+  fileProva.set(messaggio, r)
+}
 
 /**
  * I file dei certificati di prima della carta: come quelli delle richieste,
@@ -467,27 +485,54 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     // In prova chi usa la segreteria è la segreteria di prova: ogni messaggio è suo.
     async segnalazioni() {
-      return a().segnalazioni ?? []
+      // Trenta giorni dopo la chiusura gli allegati non ci sono più, come nel database; il testo resta.
+      const adesso = new Date().toISOString()
+      return (a().segnalazioni ?? []).map((x) => ({
+        ...x,
+        messaggi: x.messaggi.map((m) => {
+          const r = fileProva.get(m.id)
+          return r ? { ...m, allegati: allegatiScaduti(x.chiusaIl, adesso) ? [] : r.allegati, tolti: r.tolti } : m
+        }),
+      }))
     },
 
-    async apriSegnalazione(titolo, testo) {
-      const no = cosaNonVaSegnalazione(testo, titolo)
+    async apriSegnalazione(titolo, testo, allegati = []) {
+      const no = cosaNonVaSegnalazione(testo, titolo) ?? guaioAllegati(allegati)
       if (no) throw new Error(no)
       const id = `sz-${unico()}`
       const s: Segnalazione = { id, titolo: titolo.trim(), messaggi: [{ id, autore: 'Segreteria di prova', mio: true, testo: testo.trim(), il: new Date().toISOString() }] }
       a().segnalazioni = [...(a().segnalazioni ?? []), s]
       salva()
+      metti(id, allegati)
       return id
     },
 
-    async rispondiSegnalazione(id, testo) {
-      const no = cosaNonVaSegnalazione(testo)
+    async rispondiSegnalazione(id, testo, allegati = []) {
+      const no = cosaNonVaSegnalazione(testo) ?? guaioAllegati(allegati)
       if (no) throw new Error(no)
       const tutte = a().segnalazioni ?? []
       if (!tutte.some((x) => x.id === id)) throw new Error('Segnalazione inesistente')
       const m = { id: `sz-${unico()}`, autore: 'Segreteria di prova', mio: true, testo: testo.trim(), il: new Date().toISOString() }
       a().segnalazioni = tutte.map((x) => (x.id === id ? { ...x, messaggi: [...x.messaggi, m] } : x))
       salva()
+      metti(m.id, allegati)
+    },
+
+    // In prova la segreteria è una sola e ogni allegato è suo: non c'è da controllare chi l'ha mandato, come fa il database.
+    async togliAllegato(id) {
+      for (const r of fileProva.values()) {
+        if (!r.allegati.some((x) => x.id === id)) continue
+        r.allegati = r.allegati.filter((x) => x.id !== id)
+        r.tolti.push({ da: 'Segreteria di prova', il: new Date().toISOString() })
+        return
+      }
+      throw new Error('Questo allegato non c\'è più')
+    },
+
+    async linkAllegato(id) {
+      const f = [...fileProva.values()].flatMap((r) => r.file).find((x) => x.id === id)
+      if (!f) throw new Error('Questo allegato non c\'è più')
+      return URL.createObjectURL(f.file)
     },
 
     async chiudiSegnalazione(id, chiusa) {

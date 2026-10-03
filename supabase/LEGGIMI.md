@@ -59,6 +59,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 29. `29-unisci-doppioni.sql` — unire due schede della stessa persona (un doppione fatto all'appello o dall'import): solo la segreteria, solo due iscritti senza accesso, mai con due codici fiscali diversi; tutto quello della scheda che se ne va passa a quella che resta
 30. `30-pronto-fino-dalle-ricorrenze.sql` — fin dove è pronto il calendario lo dicono le lezioni dell'orario: una straordinaria lontana non lo ferma più
 31. `31-informativa-mesi.sql` — per quanto si tengono le presenze, letto dall'informativa privacy anche da chi non ha un accesso
+32. `32-segnalazioni-allegati.sql` — i file nelle segnalazioni: fino a 3 foto o PDF per messaggio (10 MB), in un contenitore privato; li vede la segreteria, li toglie solo chi li ha mandati, e 30 giorni dopo la chiusura del filo si tolgono da soli
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -140,6 +141,12 @@ Per le segnalazioni della segreteria basta `25-segnalazioni.sql` (dopo
 `02-policy.sql`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non
 c'è, SEGNALAZIONI dice che non si leggono. Chi l'aveva già lanciato lo
 rilancia: la prima versione lasciava entrare un filo senza titolo.
+Per i file nelle segnalazioni basta `32-segnalazioni-allegati.sql` (dopo
+`25-segnalazioni.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
+finché non c'è, le segnalazioni funzionano come prima e il tasto per allegare
+dice che va lanciato. La pulizia dopo 30 giorni gira ogni notte con pg_cron
+(Database → Extensions); se non è acceso, `select pulisci_allegati();` si
+lancia a mano di tanto in tanto.
 Per i corsi rossi che passano al viola basta `26-colori-corsi.sql` (dopo
 `01-schema.sql`), una volta sola, che non chiede di rilanciare
 `06-iscrizioni.sql`: finché non c'è, i corsi che erano rossi restano rossi.
@@ -809,7 +816,7 @@ statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove,
 chi l'ha fatta, gli incassi del mese, e che le veda solo la segreteria. `segnalazioni.sql` prova le
 segnalazioni: le legge e le scrive solo la segreteria, l'autore è sempre chi
 scrive, si risponde solo a un filo, un messaggio non si cambia, di un filo si
-cambia solo se è chiuso, e niente si cancella. `elimina-istruttore.sql` prova
+cambia solo se è chiuso, e niente si cancella; gli allegati li vede e li carica la segreteria (max 3, tipi e peso del contenitore), li toglie solo chi li ha mandati lasciando la traccia, e dopo 30 giorni dalla chiusura si tolgono. `elimina-istruttore.sql` prova
 che un istruttore lo elimini solo la segreteria, e solo se non ha corsi,
 lezioni o presenze, anche cancellando la riga a mano. `unisci-doppioni.sql` prova
 che due schede le unisca solo la segreteria, solo fra iscritti senza accesso

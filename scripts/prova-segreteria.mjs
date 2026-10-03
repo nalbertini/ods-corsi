@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { memoria } from './src/lib/datiProva'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export { campiDiversi, possibiliDoppioni } from './src/lib/doppioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -776,6 +776,93 @@ console.log('\nle segnalazioni della segreteria')
   // Aprire dà l'id della nuova, così la si può mostrare subito.
   const nuovaId = await s.apriSegnalazione('Con id', 'Da vedere')
   ok('aprire dà l\'id della nuova', [typeof nuovaId, (await s.segnalazioni()).at(-1).id === nuovaId], ['string', true])
+}
+
+console.log('\nun file nelle segnalazioni')
+{
+  const MB = 1024 * 1024
+  const f = (name, type, size = 1000) => ({ name, type, size })
+  const png = f('schermata.png', 'image/png')
+  ok('al massimo 3 per messaggio', m.MAX_ALLEGATI, 3)
+  for (const t of ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'])
+    ok(`${t} va`, m.cosaNonVaAllegato(f('x', t), 0), null)
+  ok('10 MB giusti vanno', m.cosaNonVaAllegato(f('a.pdf', 'application/pdf', 10 * MB), 0), null)
+  ok('più di 10 MB no, col nome e cosa fare', m.cosaNonVaAllegato(f('foto.jpg', 'image/jpeg', 14 * MB), 0), '«foto.jpg» pesa 14 MB: il massimo è 10. Rimpiccioliscilo o mandane un altro')
+  ok('un tipo non ammesso no, col nome e cosa fare', m.cosaNonVaAllegato(f('cartella.zip', 'application/zip'), 0), '«cartella.zip» non si può allegare: vanno bene foto (JPEG, PNG, WebP, HEIC) e PDF. Mandane un altro')
+  ok('un file vuoto no', m.cosaNonVaAllegato(f('vuoto.png', 'image/png', 0), 0), '«vuoto.png» è vuoto. Mandane un altro')
+  ok('con 2 già, il terzo va', m.cosaNonVaAllegato(png, 2), null)
+  ok('con 3 già, il quarto no, e dice cosa fare', m.cosaNonVaAllegato(png, 3), 'Si allegano al massimo 3 file per messaggio: togline uno prima di aggiungere «schermata.png»')
+
+  // Lo screenshot incollato dagli appunti arriva sempre come «image.png».
+  const adesso = new Date(2026, 8, 26, 12, 5)
+  ok('uno screenshot incollato prende un nome dall\'ora', m.nomeAllegato(f('image.png', 'image/png'), adesso), 'schermata-2026-09-26-1205.png')
+  ok('anche senza nome, con l\'estensione del tipo', m.nomeAllegato(f('', 'image/jpeg'), adesso), 'schermata-2026-09-26-1205.jpg')
+  ok('un file scelto tiene il suo nome', m.nomeAllegato(f('lista.pdf', 'application/pdf'), adesso), 'lista.pdf')
+
+  ok('lo stesso nome due volte non si sovrascrive', m.nomeUnico('schermata.png', ['schermata.png']), 'schermata (2).png')
+  ok('e alla terza', m.nomeUnico('schermata.png', ['schermata.png', 'schermata (2).png']), 'schermata (3).png')
+  ok('un nome nuovo resta', m.nomeUnico('lista.pdf', ['schermata.png']), 'lista.pdf')
+  ok('senza rete un file non parte, e lo dice', m.motivoSenzaRete(false, 1), 'Niente rete: il file non parte')
+  ok('senza rete e senza file non dice niente', m.motivoSenzaRete(false, 0), null)
+  ok('con la rete niente', m.motivoSenzaRete(true, 2), null)
+
+  ok('un nome da più di 200 caratteri no, e dice di rinominarlo', m.cosaNonVaAllegato(f('a'.repeat(201) + '.png', 'image/png'), 0), 'Il nome di questo file è troppo lungo (massimo 200 caratteri): rinominalo o mandane un altro')
+
+  // I file scelti: entrano quelli che vanno, e il primo guaio resta detto (più uno se ce ne sono altri).
+  const sc = m.scegliAllegati([png], [f('a.pdf', 'application/pdf'), f('b.zip', 'application/zip')])
+  ok('scegliendone due, quello giusto entra', sc.dentro.map((x) => x.name), ['schermata.png', 'a.pdf'])
+  ok('e quello sbagliato lo dice', sc.guaio, '«b.zip» non si può allegare: vanno bene foto (JPEG, PNG, WebP, HEIC) e PDF. Mandane un altro')
+  const due = m.scegliAllegati([], [f('x.zip', 'application/zip'), f('y.zip', 'application/zip'), f('z.zip', 'application/zip')])
+  ok('più file sbagliati: il primo guaio e quanti altri', due.guaio, '«x.zip» non si può allegare: vanno bene foto (JPEG, PNG, WebP, HEIC) e PDF. Mandane un altro (e altri 2 file)')
+  ok('oltre il tetto non entrano', m.scegliAllegati([png, png, png], [f('d.pdf', 'application/pdf')]).dentro.length, 3)
+  ok('senza file niente guaio', m.scegliAllegati([png], []).guaio, '')
+  ok('un\'immagine che il browser disegna ha l\'anteprima', [m.haAnteprima('image/png'), m.haAnteprima('image/jpeg'), m.haAnteprima('image/webp')], [true, true, true])
+  ok('HEIC e PDF no', [m.haAnteprima('image/heic'), m.haAnteprima('application/pdf')], [false, false])
+
+  // Il messaggio parte, un file no: lo si dice, non si rimanda il messaggio.
+  const caricati = []
+  const falliti = await m.mandaAllegati([png, f('lista.pdf', 'application/pdf'), f('b.jpg', 'image/jpeg')], async (x) => {
+    if (x.name === 'lista.pdf') return false
+    caricati.push(x.name)
+    return true
+  })
+  ok('i file che partono, partono', caricati, ['schermata.png', 'b.jpg'])
+  ok('quello che non parte è detto per nome', falliti, ['lista.pdf'])
+  ok('l\'avviso dice quale e cosa fare', m.avvisoNonPartiti(['lista.pdf']), 'Messaggio mandato, ma non è partito: lista.pdf. Allegalo a una nuova risposta.')
+
+  // La pulizia: 30 giorni dopo la chiusura del filo, mai prima.
+  const adessoIso = new Date(2026, 8, 26, 12, 0).toISOString()
+  const fa = (g) => new Date(new Date(2026, 8, 26, 12, 0).getTime() - g * 24 * 3600 * 1000).toISOString()
+  ok('un filo aperto: restano', m.allegatiScaduti(undefined, adessoIso), false)
+  ok('chiuso da 29 giorni: restano', m.allegatiScaduti(fa(29), adessoIso), false)
+  ok('chiuso da 30 giorni: si tolgono', m.allegatiScaduti(fa(30), adessoIso), true)
+  ok('chiuso da 31: si tolgono', m.allegatiScaduti(fa(31), adessoIso), true)
+
+  // In prova gli allegati stanno solo in memoria, con le stesse regole.
+  await s.apriSegnalazione('Con file', 'Guarda')
+  const filo = async () => (await s.segnalazioni()).at(-1)
+  const id = (await filo()).id
+  ok('allegato senza testo no', await errore(() => s.rispondiSegnalazione(id, ' ', [png])), 'Manca il testo')
+  ok('un file troppo grande no, e dice quale', await errore(() => s.rispondiSegnalazione(id, 'Ecco', [f('foto.jpg', 'image/jpeg', 14 * MB)])), '«foto.jpg» pesa 14 MB: il massimo è 10. Rimpiccioliscilo o mandane un altro')
+  ok('quattro no', (await errore(() => s.rispondiSegnalazione(id, 'Ecco', [png, png, png, png]))).startsWith('Si allegano al massimo 3 file'), true)
+  ok('e non è entrato niente', (await filo()).messaggi.length, 1)
+  await s.rispondiSegnalazione(id, 'Ecco', [png, f('lista.pdf', 'application/pdf')])
+  const r = (await filo()).messaggi[1]
+  ok('la risposta ha i suoi allegati', (r.allegati ?? []).map((a) => [a.nome, a.tipo]), [['schermata.png', 'image/png'], ['lista.pdf', 'application/pdf']])
+  ok('un messaggio senza allegati ne ha zero', (await filo()).messaggi[0].allegati ?? [], [])
+  await s.togliAllegato?.(r.allegati?.[0]?.id)
+  const dopo = (await filo()).messaggi[1]
+  ok('tolto, resta l\'altro', (dopo.allegati ?? []).map((a) => a.nome), ['lista.pdf'])
+  ok('il testo non cambia', dopo.testo, 'Ecco')
+  ok('nel filo resta la traccia di chi e quando, non del contenuto', dopo.tolti?.length === 1 && !JSON.stringify(dopo.tolti).includes('schermata'), true)
+  ok('un allegato che non c\'è no', await errore(() => s.togliAllegato('non-esiste')), 'Questo allegato non c\'è più')
+  // Chiuso da 30 giorni gli allegati non si vedono più (il testo sì), come nel database.
+  await s.chiudiSegnalazione(id, true)
+  ok('appena chiuso gli allegati ci sono ancora', (await filo()).messaggi[1].allegati.length, 1)
+  m.archivio.dati.segnalazioni.find((x) => x.id === id).chiusaIl = new Date(Date.now() - 31 * 24 * 3600 * 1000).toISOString()
+  const scaduto = (await filo()).messaggi[1]
+  ok('chiuso da 31 giorni gli allegati non ci sono più', scaduto.allegati ?? [], [])
+  ok('e il testo resta', scaduto.testo, 'Ecco')
 }
 
 console.log('\neliminare un istruttore')

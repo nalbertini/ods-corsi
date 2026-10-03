@@ -448,8 +448,13 @@ export interface DatiSegreteria {
   /** Le segnalazioni della segreteria, coi loro messaggi (vedi `segnalazioni.ts`). */
   segnalazioni(): Promise<Segnalazione[]>
   /** Apre una segnalazione e dice il suo id, così il filo nuovo si apre da sé. */
-  apriSegnalazione(titolo: string, testo: string): Promise<string>
-  rispondiSegnalazione(id: string, testo: string): Promise<void>
+  apriSegnalazione(titolo: string, testo: string, allegati?: File[]): Promise<string>
+  /** Con `allegati`, se qualche file non parte il messaggio c'è lo stesso: lancia `AllegatiNonPartiti`. */
+  rispondiSegnalazione(id: string, testo: string, allegati?: File[]): Promise<void>
+  /** Toglie un allegato (solo chi l'ha mandato): file e riga, e nel filo resta la traccia. */
+  togliAllegato(id: string): Promise<void>
+  /** Un link per aprire un allegato: scade presto, se ne chiede uno nuovo ogni volta. */
+  linkAllegato(id: string): Promise<string>
   /** La chiude, o con `false` la riapre. */
   chiudiSegnalazione(id: string, chiusa: boolean): Promise<void>
 
