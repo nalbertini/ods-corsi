@@ -13,14 +13,14 @@ import type { Destinazione, Voce } from './Segreteria'
 const STATI: Record<StatoRichiesta, string> = { nuova: 'NUOVA', accolta: 'ACCOLTA', rifiutata: 'RIFIUTATA' }
 /** Per ordinare per stato: prima quelle da guardare. */
 const ORDINE_STATI: Record<StatoRichiesta, number> = { nuova: 0, accolta: 1, rifiutata: 2 }
-const CON_ARTICOLO: Partial<Record<string, string>> = { modulo: 'il modulo firmato', ricevuta: 'la ricevuta del pagamento' }
+const CON_ARTICOLO: Partial<Record<string, string>> = { modulo: 'il modulo firmato' }
 const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`
 
 /**
  * Le richieste arrivate dal modulo di iscrizione.
  *
  * Una richiesta non è ancora un iscritto: la segreteria guarda il modulo
- * firmato e la ricevuta, e poi la accoglie — la persona entra in elenco,
+ * firmato e la ricevuta, se c'è, e poi la accoglie — la persona entra in elenco,
  * iscritta ai corsi che ha scelto — o la rifiuta. Accolta o rifiutata resta
  * qui con quello che diceva, finché non la si elimina.
  *
@@ -218,7 +218,7 @@ function Scheda({
   // indietro: quello che manca si dice prima, non dopo.
   const problemi = [
     !x.regolamento && 'Il regolamento non è accettato.',
-    file.guaio && 'I file non si sono aperti: non si sa se il modulo firmato e la ricevuta ci sono.',
+    file.guaio && 'I file non si sono aperti: non si sa se il modulo firmato c’è.',
     ...(file.dato ? mancanti.map((f) => `Manca ${CON_ARTICOLO[f.tipo] ?? f.etichetta.toLowerCase()}.`) : []),
   ].filter((t): t is string => !!t)
   // Finché i file non si sono caricati non si sa cosa manca.
@@ -317,6 +317,8 @@ function Scheda({
           {FILE.filter((f) => arrivati.has(f.tipo) && !DA_STAMPARE.includes(f.tipo)).map((f) => (
             <Anteprima key={f.tipo} f={arrivati.get(f.tipo)!} />
           ))}
+          {/* Non è un guaio: la ricevuta non è obbligatoria, si paga anche al banco. */}
+          {file.dato.length > 0 && !arrivati.has('ricevuta') && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>}
           {documenti.length > 0 && (
             <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
               <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>

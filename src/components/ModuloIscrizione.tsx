@@ -319,6 +319,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
             Ricorda di consegnare in segreteria il certificato medico{certificato === 'agonistico' ? ' agonistico' : ''}: senza non si partecipa alle lezioni.
           </span>
         )}
+        {!file.ricevuta && <span className="esito-testo">Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato.</span>}
         <Tasto onClick={onChiudi}>{torna}</Tasto>
       </div>
     )
@@ -805,7 +806,7 @@ function SceltaFile({
 /**
  * Quanto costa una persona in più nel nucleo, con lo sconto famiglia, e come
  * pagarlo: l'IBAN e la causale col suo nome, da copiare. La ricevuta del
- * bonifico si carica qui sotto, fra i file.
+ * bonifico si carica qui sotto, fra i file, se si paga prima.
  */
 function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: string[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
   const letto = useListino()

@@ -28,7 +28,7 @@ colors:
   superficie-alta-chiara: "#e9e9e5"
   riga-chiara: "#d4d4ce"
   testo-chiaro: "#161616"
-  testo-spento-chiaro: "#6b6b67"
+  testo-spento-chiaro: "#656561"
   verde-chiaro: "#12913f"
   verde-testo-chiaro: "#0b7a33"
   giallo-testo-chiaro: "#8f6a00"
@@ -192,7 +192,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 - **Riga** (#333333 / chiaro #d4d4ce): i bordi da 2px di ogni contenitore e tasto.
 - **Riga Tenue** (#2a2a2a / chiaro #e2e2dd): divisori, linea dei titoletti, separatori tra colonne.
 - **Tratteggio** (#4a4a46 / chiaro #b0b0aa): bordi tratteggiati di "aggiungi" e del riquadro firma.
-- **Testo** (#f2f2f0 / chiaro #161616), **Testo Secondario** (#c9c9c4 / #3d3d3a), **Testo Spento** (#8c8c88 / #6b6b67), **Testo Flebile** (#5a5a56 / #a8a8a3): quattro gradini di testo, dal nome al segnaposto.
+- **Testo** (#f2f2f0 / chiaro #161616), **Testo Secondario** (#c9c9c4 / #3d3d3a), **Testo Spento** (#8c8c88 / #656561), **Testo Flebile** (#5a5a56 / #a8a8a3): quattro gradini di testo, dal nome al segnaposto. Il segnaposto dei campi della segreteria (Cerca iscritto) usa lo Spento, non il Flebile: è l’unica indicazione di cosa scrivere e deve leggersi.
 - **Tasto** (#b8b8b2 / chiaro #4a4a46): il testo dei tasti a linea a riposo, che si accende in `testo` al passaggio.
 
 ### Named Rules

@@ -73,7 +73,7 @@ cognome fanno famiglia, a gruppi di due o tre.
   sull'annuale che costa meno nel nucleo; a pari prezzo va sulla persona
   nuova). Gli annuali già pagati si leggono dalle ricevute del nucleo. Sotto,
   l'IBAN e la **causale** col nome di chi si iscrive, da copiare, e Satispay.
-  La ricevuta del bonifico si carica fra i file, come sempre. È una stima:
+  La ricevuta del bonifico si carica fra i file, o si paga in segreteria. È una stima:
   le altre offerte e l'importo giusto li conferma la segreteria.
 - **Pagamenti del nucleo**: per ogni persona se è pagato, quanto risulta
   dalle ricevute, il totale del nucleo, e su quale annuale va lo sconto

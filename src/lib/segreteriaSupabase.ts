@@ -144,6 +144,15 @@ function daRigaAnagrafica(r: RigaAnagrafica | null): Anagrafica | null {
   return Object.fromEntries(ANAGRAFICA.flatMap(([k, c]) => (r[c] ? [[k, r[c]]] : []))) as Anagrafica
 }
 
+/**
+ * Un errore che non conosciamo: alla segreteria si dice cosa fare, il testo
+ * del server (in inglese, per chi sviluppa) va solo nella console.
+ */
+function sconosciuto(testo: string | undefined, altrimenti = 'Non è andata: riprova fra poco'): string {
+  if (testo) console.error(testo)
+  return /failed to fetch|networkerror|load failed/i.test(testo ?? '') ? 'Non c’è rete: riprova quando torna' : altrimenti
+}
+
 /** Un errore del database detto in modo che la segreteria lo capisca. */
 function guaio(e: { message?: string; code?: string } | null): Error {
   // La tabella non c'è sul database: il file che la crea non è stato lanciato.
@@ -170,7 +179,10 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
-  return new Error(e?.message || 'Il server non risponde')
+  // I nostri `raise exception` (P0001 quando non hanno un codice; P0002 «non c'è più»; 22023 e 54000)
+  // sono già scritti per la segreteria: passano così come sono.
+  if (e?.message && ['P0001', 'P0002', '22023', '54000'].includes(e.code ?? '')) return new Error(e.message)
+  return new Error(sconosciuto(e?.message))
 }
 
 /**
@@ -188,9 +200,9 @@ async function guaioFunzione(e: { name?: string; message?: string; context?: unk
       // Non è la nostra risposta: sotto si dice il generico.
     }
   }
-  if (r?.status === 404) return new Error(`La funzione ${di} non è pubblicata su Supabase: vedi supabase/LEGGIMI.md`)
+  if (r?.status === 404) return new Error(`La funzione ${di} non è ancora pubblicata su Supabase`)
   if (e.name === 'FunctionsFetchError') return new Error(`La funzione ${di} non risponde: è pubblicata su Supabase? C’è rete?`)
-  return new Error(e.message || altrimenti)
+  return new Error(sconosciuto(e.message, altrimenti))
 }
 
 /** Un errore dello Storage detto per la segreteria. */
@@ -200,7 +212,7 @@ function guaioFile(e: { message?: string; statusCode?: string } | null): Error {
   if (/bucket not found/i.test(m)) return new Error('Il contenitore dei certificati non c’è più: il file non si trova')
   if (/exceeded|too large|413/i.test(m + (e?.statusCode ?? ''))) return new Error('Il file è troppo grande: al massimo 10 MB')
   if (/mime|type/i.test(m)) return new Error('Questo tipo di file non va: serve una foto o un PDF')
-  return new Error(m || 'Il file non è partito: riprova')
+  return new Error(sconosciuto(m, 'Il file non è partito: riprova'))
 }
 
 /** Un errore del contenitore della voce detto per la segreteria. */
@@ -210,7 +222,7 @@ function guaioVoce(e: unknown): Error {
   if (/row-level security|unauthorized|403/i.test(m)) return new Error('Non hai il permesso: serve un accesso da segreteria')
   if (/exceeded|too large|413/i.test(m)) return new Error('La clip è troppo lunga: una frase, non un discorso')
   if (/mime|type/i.test(m)) return new Error('Questo browser registra in un formato che il server non accetta')
-  return new Error(m || 'La clip non è partita: riprova')
+  return new Error(sconosciuto(m, 'La clip non è partita: riprova'))
 }
 
 export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
@@ -1214,8 +1226,17 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.from('impostazioni').update(riga).eq('id', true))
     },
 
-    async scadute() {
-      const { count, error } = await db.from('presenze_scadute').select('id', { count: 'exact', head: true })
+    async scadute(mesi) {
+      // Coi mesi salvati conta la vista, la stessa che usa la pulizia; con
+      // altri mesi si conta da qui, senza salvarli. Il limite viene
+      // dall'orologio del dispositivo: al più un giorno di scarto dal server,
+      // e CANCELLA ORA riconta comunque.
+      const limite = new Date()
+      if (mesi !== undefined) limite.setMonth(limite.getMonth() - mesi)
+      const { count, error } =
+        mesi === undefined
+          ? await db.from('presenze_scadute').select('id', { count: 'exact', head: true })
+          : await db.from('presenze').select('id, sessioni!inner ( inizio )', { count: 'exact', head: true }).lt('sessioni.inizio', limite.toISOString())
       if (error) throw guaio(error)
       return count ?? 0
     },

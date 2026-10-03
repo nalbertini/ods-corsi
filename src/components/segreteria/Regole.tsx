@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import type { DatiSegreteria, Impostazioni, ListaMusica, Sala } from '../../lib/segreteria'
+import { confermaMesiPresenze, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
 import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
@@ -36,7 +36,7 @@ function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
 }
 
 /**
- * Le impostazioni: le scelte che spettano alla palestra, non al codice. La
+ * Le impostazioni: le scelte che spettano alla palestra, non al programma. La
  * stagione; le sale con la loro musica, la voce e lo storico dei timer; chi
  * fa le ricevute; per quanto si tengono le presenze, il backup, la privacy.
  */
@@ -49,6 +49,17 @@ export function Regole({ d }: { d: DatiSegreteria }) {
   const musica = useCarica(() => d.listeMusica(), [d])
   const { avviso, avvisa, fai } = useAvviso()
   const [sala, setSala] = useState<{ id?: string; nome: string; capienza?: number } | null>(null)
+  // I mesi scelti nella tendina mentre si aspetta il sì: lasciando stare, torna a quelli salvati.
+  const [mesiScelti, setMesiScelti] = useState<number | null>(null)
+  const cambiaMesi = async (dopo: number) => {
+    const prima = imp.dato?.mesiPresenze ?? 24
+    setMesiScelti(dopo)
+    const conto = dopo < prima ? await d.scadute(dopo).catch(() => null) : null
+    const domanda = confermaMesiPresenze({ prima, dopo, scadute: conto, modo: d.modo })
+    if (domanda && !(await chiedi(domanda.testo, domanda.tasto, { pericolo: true }))) return setMesiScelti(null)
+    await fai(() => d.salvaImpostazioni({ mesiPresenze: dopo }), 'Periodo cambiato', imp.ricarica)
+    setMesiScelti(null)
+  }
   const [chi, setChi] = useState('')
 
   const esporta = async () => {
@@ -65,7 +76,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
 
   return (
     <>
-      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al codice." />
+      <Testa titolo="IMPOSTAZIONI" sotto="Le scelte che spettano alla palestra, non al programma." />
 
       {/* Tasti e non link «#…»: con <base href="../"> delle pagine delle aree, l'ancora porterebbe via dalla segreteria. */}
       <nav aria-label="In questa pagina" className="row sg-indice">
@@ -194,9 +205,9 @@ export function Regole({ d }: { d: DatiSegreteria }) {
             <select
               id="mesi"
               className="sg-campo"
-              value={imp.dato?.mesiPresenze ?? 24}
-              disabled={!imp.dato}
-              onChange={(e) => void fai(() => d.salvaImpostazioni({ mesiPresenze: Number(e.target.value) }), 'Periodo cambiato', imp.ricarica)}
+              value={mesiScelti ?? imp.dato?.mesiPresenze ?? 24}
+              disabled={!imp.dato || mesiScelti !== null}
+              onChange={(e) => void cambiaMesi(Number(e.target.value))}
             >
               {[12, 24, 36, 60].map((m) => (
                 <option key={m} value={m}>
@@ -209,10 +220,10 @@ export function Regole({ d }: { d: DatiSegreteria }) {
           <div className="row sg-voce-elenco" style={{ gap: 12 }}>
             <span className="stack grow">
               <span style={{ fontSize: 15, fontWeight: 600 }}>
-                {scadute.guaio ? 'Non si riesce a contarle' : scadute.dato === null ? '…' : scadute.dato === 0 ? 'Nessuna presenza scaduta' : `${scadute.dato} presenze scadute`}
+                {scadute.guaio ? 'Non si riesce a contarle' : scadute.dato === null ? '…' : scadute.dato === 0 ? 'Nessuna presenza scaduta' : scadute.dato === 1 ? '1 presenza scaduta' : `${scadute.dato} presenze scadute`}
               </span>
               <span style={{ fontSize: 12, color: 'var(--dim)' }}>
-                {d.modo === 'prova' ? 'In prova si cancellano da qui.' : 'Si cancellano col job mensile (vedi supabase/LEGGIMI.md), o da qui.'}
+                {d.modo === 'prova' ? 'In prova si cancellano da qui.' : 'Si cancellano da sé il primo del mese, o da qui.'}
               </span>
             </span>
             <button
@@ -220,7 +231,7 @@ export function Regole({ d }: { d: DatiSegreteria }) {
               className="num sg-chip"
               disabled={!scadute.dato || !imp.dato}
               onClick={async () => {
-                if ((await chiedi(`Cancellare ${scadute.dato} presenze più vecchie di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`, 'CANCELLA LE PRESENZE', { pericolo: true }))) {
+                if ((await chiedi(`Cancellare ${scadute.dato === 1 ? '1 presenza più vecchia' : `${scadute.dato} presenze più vecchie`} di ${imp.dato?.mesiPresenze ?? 24} mesi? Non si recuperano.`, 'CANCELLA LE PRESENZE', { pericolo: true }))) {
                   void fai(() => d.pulisci(), 'Presenze scadute cancellate', scadute.ricarica)
                 }
               }}
@@ -253,16 +264,14 @@ export function Regole({ d }: { d: DatiSegreteria }) {
                 {INFORMATIVA_BOZZA && (
                   <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
                     Scritta insieme all'app, non ancora approvata: la palestra, che è titolare del trattamento, la deve leggere e fare sua, e
-                    decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi si toglie il
-                    riquadro BOZZA dalla pagina e <code>INFORMATIVA_BOZZA</code> in <code>src/lib/iscrizione.ts</code>. Fino ad allora, col database
-                    vero, il pubblico non la vede e il modulo di iscrizione resta spento.
+                    decidere i punti in giallo (per quanto si tengono richieste, documenti e ricevute, dove si pubblica l'app). Poi chi cura l'app la
+                    segna come approvata. Fino ad allora, col database vero, il pubblico non la vede e il modulo di iscrizione resta spento.
                   </span>
                 )}
               </>
             ) : (
               <span style={{ fontSize: 14, color: 'var(--sec)', lineHeight: 1.5 }}>
-                Non c'è ancora. Il link va messo in <code>src/lib/iscrizione.ts</code>, accanto a quello del modulo di iscrizione: si vede in fondo alla scheda
-                ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google:
+                Non c'è ancora: va scritta e collegata all'app, e si vedrà in fondo alla scheda ISCRIZIONI, a tutti. Finché manca, col database vero il modulo di iscrizione dell'app resta spento e il passo porta ancora al modulo Google:
                 chiede codici fiscali e documenti, e prima va detto come si trattano.
               </span>
             )}
@@ -645,7 +654,7 @@ function Backup({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
       <ComeFunziona>
         Una copia di tutto il database si fa da sé ogni lunedì notte, e da qui quando serve: prima di un cambiamento grosso, o per averne una da mettere su
         Drive. GitHub tiene le copie novanta giorni. Il file è cifrato: senza la password del backup non lo apre nessuno, quindi su Drive può stare anche
-        in una cartella condivisa. La password va tenuta da parte, fuori da qui; come si rimette a posto una copia è in supabase/LEGGIMI.md.
+        in una cartella condivisa. La password va tenuta da parte, fuori da qui: per rimettere a posto una copia serve, insieme al file.
       </ComeFunziona>
     </section>
   )

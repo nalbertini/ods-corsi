@@ -555,8 +555,11 @@ export interface DatiSegreteria {
   allenamenti(quanti: number): Promise<AllenamentoSeg[]>
   impostazioni(): Promise<Impostazioni>
   salvaImpostazioni(i: Partial<Impostazioni>): Promise<void>
-  /** Quante presenze sono più vecchie del periodo, e la pulizia. */
-  scadute(): Promise<number>
+  /**
+   * Quante presenze sono più vecchie del periodo, e la pulizia. Con `mesi`,
+   * quante lo sarebbero con quel periodo: si conta e basta, non si salva.
+   */
+  scadute(mesi?: number): Promise<number>
   pulisci(): Promise<number>
   /** Tutto quello che si sa di una persona, per chi lo chiede (GDPR, art. 15). */
   esporta(personaId: string): Promise<unknown>
@@ -801,4 +804,50 @@ export function trovaIscritti(persone: PersonaSeg[], scritto: string): PersonaSe
     .filter((p) => somiglia(p, parole))
     .sort((a, b) => Number(b.attiva) - Number(a.attiva) || a.cognome.localeCompare(b.cognome, 'it'))
     .slice(0, 8)
+}
+
+/**
+ * Il nome di una voce di sistema senza la lingua: «Grandma», non «Grandma
+ * (Italiano (Italia))». Le voci della tendina sono già tutte italiane. Le
+ * marcature di qualità («Enhanced», «Premium») restano, perché si scelgono per
+ * quelle; se due voci dopo il taglio si chiamerebbero uguali, restano intere.
+ * Si mostra e basta: si salva il nome intero, che il tablet cerca così.
+ */
+export function nomeVoce(nome: string, tutte: string[]): string {
+  const corto = (n: string) =>
+    n
+      .replace(/\s*\([^()]*\([^()]*\)\)$/, '')
+      .replace(/\s+-\s+[^-()]*\([^()]*\)$/, '')
+      .trim() || n
+  const mio = corto(nome)
+  return tutte.some((v) => v !== nome && corto(v) === mio) ? nome : mio
+}
+
+/**
+ * Prima di accorciare per quanto si tengono le presenze: quante se ne vanno.
+ * Allungare non toglie niente e si salva subito; accorciare senza presenze da
+ * togliere pure. Altrimenti si chiede, e si dice quando si cancellano: col
+ * database vero il primo del mese (il lavoro `pulizia`), in prova solo con
+ * CANCELLA ORA. Senza il conteggio (`null`) si chiede lo stesso, senza numero.
+ */
+export function confermaMesiPresenze({
+  prima,
+  dopo,
+  scadute,
+  modo,
+}: {
+  prima: number
+  dopo: number
+  scadute: number | null
+  modo: 'prova' | 'supabase'
+}): { testo: string; tasto: string } | null {
+  if (dopo >= prima || scadute === 0) return null
+  const una = scadute === 1
+  const quante = `${scadute === null ? 'le presenze' : una ? '1 presenza' : `${scadute} presenze`} più ${una ? 'vecchia' : 'vecchie'} di ${dopo} mesi`
+  const dopoCosa =
+    modo === 'supabase'
+      ? `Il primo del mese si ${una ? 'cancella' : 'cancellano'} ${quante}`
+      : `${quante[0].toUpperCase()}${quante.slice(1)} si ${una ? 'potrà' : 'potranno'} cancellare con CANCELLA ORA`
+  const testo = `Accorciare a ${dopo} mesi? ${dopoCosa}: non si recuperano.`
+  return { testo, tasto: `SÌ, ACCORCIA A ${dopo} MESI` }
 }
