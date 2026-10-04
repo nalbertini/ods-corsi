@@ -3,7 +3,7 @@ import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
 import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
-import { fuoriEta } from '../../lib/listino'
+import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { STRETTO, useSchermo } from '../../lib/largo'
@@ -51,6 +51,7 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
   const [daStampare, setDaStampare] = useState(!!stampareIniziale)
   const [scelta, setScelta] = useState<string | null>(null)
   const { avviso, fai } = useAvviso()
+  const voci = useListino()?.listino.corsi
 
   const nomi = new Map((corsi.dato ?? []).map((c) => [c.id, c.nome]))
   const chi = new Map((persone.dato ?? []).map((p) => [p.id, `${p.nome} ${p.cognome}`]))
@@ -145,13 +146,21 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
                   data-spento={x.stato === 'rifiutata'}
                   onClick={() => setScelta(x.id)}
                 >
-                  <span role="cell" style={{ fontSize: 15, fontWeight: 600 }}>
+                  {/* I bollini vanno a capo: tutti su una riga allargherebbero la colonna e storcerebbero la tabella. */}
+                  <span role="cell" style={{ fontSize: 15, fontWeight: 600, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px 8px' }}>
                     <button type="button" className="sg-riga-apri" aria-current={scelta === x.id ? 'true' : undefined}>
                       {x.cognome} {x.nome}
                     </button>
-                    {minorenne(x.natoIl) && <span className="num sg-tag" style={{ marginLeft: 8 }}>MINORE</span>}
-                    {x.nucleoDi && <span className="num sg-tag" style={{ marginLeft: 8 }}>NUCLEO</span>}
-                    {doc.has(x.id) && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
+                    {minorenne(x.natoIl) && <span className="num sg-tag">MINORE</span>}
+                    {x.nucleoDi && <span className="num sg-tag">NUCLEO</span>}
+                    {doc.has(x.id) && <span className="num sg-tag">DA STAMPARE</span>}
+                    {/* La si richiama: meglio saperlo prima di aprirla. */}
+                    {voci && x.corsi.some((c) => {
+                      const nome = nomi.get(c)
+                      return !!nome && fuoriEta({ id: c, nome }, x.natoIl, voci)
+                    }) && (
+                      <span className="num sg-tag" data-tipo="aspetta">FUORI ETÀ</span>
+                    )}
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{x.corsi.map((c) => nomi.get(c) ?? '?').join(', ')}</span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{quando(x.creataIl)}</span>
@@ -296,7 +305,10 @@ function Scheda({
                 {i > 0 && ', '}
                 {nome ?? 'un corso che non c’è più'}
                 {/* Chi si iscrive l'ha scelto lo stesso, avvisato che lo si richiama. */}
-                {nome && voci && fuoriEta({ id: c, nome }, x.natoIl, voci) && <span style={{ color: 'var(--giallo-testo)' }}> (fuori età: richiama)</span>}
+                {/* Gli anni del corso: per richiamare non si apre il listino. */}
+                {nome && voci && fuoriEta({ id: c, nome }, x.natoIl, voci) && (
+                  <span style={{ color: 'var(--giallo-testo)' }}> (fuori età: {anniDiNascita(voceDelCorso(voci, { id: c, nome }) ?? {})}, richiama)</span>
+                )}
               </span>
             )
           })}

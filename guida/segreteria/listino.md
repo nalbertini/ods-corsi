@@ -53,7 +53,8 @@ Ogni corso è una riga col nome e i prezzi; **CAMBIA** la apre:
   iscrizione, il calendario non li guarda.
 - **NATI DAL** e **NATI AL** (facoltativi) — gli anni di nascita del corso,
   compresi. Nel modulo di iscrizione mettono il corso in cima per chi è nato
-  in quegli anni, e sotto **ALTRI CORSI** per gli altri. Vuoti, il corso sta
+  in quegli anni, o nei sei mesi prima o dopo (per un corso 2017–2019, da
+  luglio 2016 a giugno 2020), e sotto **ALTRI CORSI** per gli altri. Vuoti, il corso sta
   a parte, sotto **SENZA FASCIA D'ETÀ** (il corso chiuso lo dice: «senza anni
   di nascita»); uno solo, è aperto dall'altro lato («nati nel 2012 o prima»
   è solo **NATI AL** 2012). Il foglio li ha già dove l'età è chiara; se il listino

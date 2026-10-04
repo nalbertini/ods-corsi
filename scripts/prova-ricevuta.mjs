@@ -14,7 +14,7 @@ import { writeFileSync } from 'node:fs'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/ricevute'; export { annoScritto, corsiPerEta, cosaNonVaListino, fuoriEta, listinoDa, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
+      "export * from './src/lib/ricevute'; export { annoScritto, anniDiNascita, corsiPerEta, cosaNonVaListino, fuoriEta, listinoDa, LISTINO_PREDEFINITO } from './src/lib/listino'; export { ricevutaPdf, pagineDelleVoci } from './src/lib/ricevutaPdf'; export { PDFDocument } from 'pdf-lib'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -184,6 +184,10 @@ ok('senza data: l’ordine del listino', prova(() => m.corsiPerEta(aperti, [judo
 ok('nato nel 2018: i corsi senza anni a parte', prova(() => m.corsiPerEta(aperti, voci, '2018-05-10').senzaAnni.map((c) => c.nome)), ['Judo agonisti', 'Body functional'])
 ok('senza data: nessun gruppo a parte', prova(() => m.corsiPerEta(aperti, voci, '').senzaAnni), [])
 ok('nessun corso sparisce', prova(() => { const r = m.corsiPerEta(aperti, voci, '2018-05-10'); return r.adatti.length + r.senzaAnni.length + r.altri.length }), aperti.length)
+ok('gli anni del corso: tutti e due', prova(() => m.anniDiNascita({ natiDal: 2017, natiAl: 2019 })), 'nati 2017–2019')
+ok('gli anni del corso: solo dal', prova(() => m.anniDiNascita({ natiDal: 2017 })), 'nati dal 2017')
+ok('gli anni del corso: solo al', prova(() => m.anniDiNascita({ natiAl: 2012 })), 'nati fino al 2012')
+ok('gli anni del corso: nessuno', prova(() => m.anniDiNascita({})), 'senza anni di nascita')
 ok('il corso resta quello che era, id compreso', prova(() => m.corsiPerEta(aperti, voci, '1985-01-01').altri.map((c) => c.id)), ['b'])
 const righe = (natoIl) => prova(() => {
   const r = m.corsiPerEta(aperti, voci, natoIl)
@@ -205,6 +209,49 @@ ok('un corso senza anni non è mai fuori età', fuori('Judo agonisti', '2018-05-
 ok('un corso senza voce non è mai fuori età', fuori('Body functional', '2018-05-10'), false)
 ok('senza data non si dice fuori età', fuori('Judo adulti', ''), false)
 ok('con una data dell’anno 2 non si dice fuori età', fuori('Judo adulti', '0002-03-01'), false)
+
+// Sei mesi interi di tolleranza intorno a NATI DAL e NATI AL: chi è nato
+// a dicembre 2016 fa Judo 2 coi nati 2017, chi è nato a giugno 2020 pure.
+const dove = (natoIl, vv = voci, cc = aperti) => prova(() => {
+  const r = m.corsiPerEta(cc, vv, natoIl)
+  const nomi = (x) => x.map((c) => c.nome)
+  return { adatti: nomi(r.adatti), senzaAnni: nomi(r.senzaAnni), altri: nomi(r.altri) }
+})
+const inCima = (natoIl, nome, vv, cc) => { const r = dove(natoIl, vv, cc); return typeof r === 'string' ? r : r.adatti.includes(nome) }
+const negliAltri = (natoIl, nome, vv, cc) => { const r = dove(natoIl, vv, cc); return typeof r === 'string' ? r : r.altri.includes(nome) }
+const fuoriCon = (vv) => (nome, natoIl) => prova(() => m.fuoriEta(nome, natoIl, vv))
+for (const d of ['2020-06-30', '2016-07-01', '2016-12-20', '2020-01-05']) {
+  ok(`Judo 2 (nati 2017-2019) a chi è nato il ${d}: in cima`, inCima(d, 'JUDO 2'), true)
+  ok(`Judo 2 (nati 2017-2019) a chi è nato il ${d}: non è fuori età`, fuori('Judo 2', d), false)
+}
+for (const d of ['2020-07-01', '2016-06-30']) {
+  ok(`Judo 2 (nati 2017-2019) a chi è nato il ${d}: negli altri corsi`, negliAltri(d, 'JUDO 2'), true)
+  ok(`Judo 2 (nati 2017-2019) a chi è nato il ${d}: è fuori età`, fuori('Judo 2', d), true)
+}
+for (const d of ['2013-06-30', '1950-01-01']) {
+  ok(`Judo adulti (nati 2012 e prima) a chi è nato il ${d}: in cima`, inCima(d, 'Judo adulti'), true)
+  ok(`Judo adulti (nati 2012 e prima) a chi è nato il ${d}: non è fuori età`, fuori('Judo adulti', d), false)
+}
+ok('Judo adulti (nati 2012 e prima) a chi è nato il 2013-07-01: negli altri corsi', negliAltri('2013-07-01', 'Judo adulti'), true)
+ok('Judo adulti (nati 2012 e prima) a chi è nato il 2013-07-01: è fuori età', fuori('Judo adulti', '2013-07-01'), true)
+const judoPiccoli = { corso: 'Judo piccoli', eta: 'nati 2017 e dopo', orari: [], prezzi: [{ annuale: 300 }], natiDal: 2017 }
+const conPiccoli = [...voci, judoPiccoli]
+const apertiPiccoli = [...aperti, { id: 'p', nome: 'Judo piccoli' }]
+ok('Judo piccoli (nati 2017 e dopo) a chi è nato il 2016-07-01: in cima', inCima('2016-07-01', 'Judo piccoli', conPiccoli, apertiPiccoli), true)
+ok('Judo piccoli (nati 2017 e dopo) a chi è nato il 2016-07-01: non è fuori età', fuoriCon(conPiccoli)('Judo piccoli', '2016-07-01'), false)
+ok('Judo piccoli (nati 2017 e dopo) a chi è nato il 2016-06-30: negli altri corsi', negliAltri('2016-06-30', 'Judo piccoli', conPiccoli, apertiPiccoli), true)
+ok('Judo piccoli (nati 2017 e dopo) a chi è nato il 2016-06-30: è fuori età', fuoriCon(conPiccoli)('Judo piccoli', '2016-06-30'), true)
+for (const d of ['2016-06-30', '2016-07-01', '2020-07-01', '1950-01-01']) {
+  ok(`un corso senza fascia a chi è nato il ${d}: sotto SENZA FASCIA`, prova(() => dove(d).senzaAnni), ['Judo agonisti', 'Body functional'])
+  ok(`un corso senza fascia a chi è nato il ${d}: mai fuori età`, fuori('Judo agonisti', d), false)
+}
+// Il modulo (ALTRI CORSI) e la segreteria (FUORI ETÀ) dicono la stessa cosa.
+for (const d of ['2020-06-30', '2020-07-01', '2016-07-01', '2016-06-30', '2013-06-30', '2013-07-01', '2018-05-10', '1985-01-01'])
+  ok(`nato il ${d}: ALTRI CORSI sono quelli fuori età`, prova(() => m.corsiPerEta(apertiPiccoli, conPiccoli, d).altri.map((c) => c.id).sort()), prova(() => apertiPiccoli.filter((c) => m.fuoriEta(c, d, conPiccoli)).map((c) => c.id).sort()))
+for (const [cosa, d] of [['vuota', ''], ['dell’anno 2', '0002-03-01']]) {
+  ok(`data ${cosa}: niente gruppi`, dove(d, conPiccoli, apertiPiccoli), { adatti: ['JUDO 2', 'Judo adulti', 'Judo agonisti', 'Judo piccoli', 'Body functional'], senzaAnni: [], altri: [] })
+  ok(`data ${cosa}: nessun corso fuori età`, prova(() => apertiPiccoli.filter((c) => m.fuoriEta(c, d, conPiccoli)).map((c) => c.nome)), [])
+}
 
 console.log('I dati del socio')
 const adulto = { nome: 'Nicola', cognome: 'Albertini', natoIl: '1980-03-02', codiceFiscale: 'LBRNCL80C02L219F', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno' }
