@@ -25,6 +25,9 @@ Google, e vale solo per i mockup.
 | `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola` |
 | `Menu.dc.html` | Il menu di segreteria (`.sg-menu`) |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
+| `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
+| `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
+| `TimerLinea.dc.html` | `LineaDelTempo`: un blocco per passo, che si colora via via |
 | `Titoletto.dc.html` | `Titoletto` di `ds.tsx`: l'etichetta spaziata con la riga |
 | `Testata.dc.html` | `Testata` di `App.tsx`: marchio, luogo, guida e tema (misura del telefono) |
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
@@ -98,7 +101,7 @@ esadecimali a 6 cifre: i file della libreria scrivono sempre così.
 
 - La testa dell'appello (titolo, conto, TUTTI PRESENTI), le card dei riquadri
   (`Riquadro`), i campi del modulo, le tabelle di segreteria, i dialoghi e i
-  cassetti, i tasti del tablet di sala (`.tb-*`), il timer. Un mockup che li
+  cassetti, i tasti del tablet di sala (`.tb-*`), le schermate del timer oltre a anello, scaletta e linea (esempio completo in `../timer-desktop/`). Un mockup che li
   vuole li aggiunge alla libreria come `<Nome>.dc.html`, copiando i valori dal
   codice, prima di usarli.
 - Il menu sul telefono (la barra con MENU) e quello degli istruttori sullo

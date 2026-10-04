@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La linea del tempo dell'allenamento (proposta C): un blocco per passo, largo quanto la sua durata.
+     blocchi = "stato:durata" separati da ","; attuale = indice del passo in corso; avanzamento = quanto ne e' passato (0-1). I passi fatti sono pieni, quello in corso si colora via via, i prossimi restano tenui (come la barra di avanzamento sotto le cifre in TimerScreen).
+     Colori come STATE_COLOR di timer/src/lib/engine.ts. -->
+<div style="display: flex; gap: 2px; height: {{alto}}; width: 100%">
+  <sc-for list="{{blocchi}}" as="b" hint-placeholder-count="6">
+    <div style="position: relative; flex: {{b.durata}} 1 0; min-width: 0; outline: {{b.contorno}}; outline-offset: 2px">
+      <div style="position: absolute; inset: 0; background: {{b.colore}}; opacity: {{b.opacita}}"></div>
+      <div style="position: absolute; top: 0; bottom: 0; left: 0; width: {{b.riempito}}; background: {{b.colore}}"></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"blocchi":{"editor":"text","default":"work:30,rest:15,work:30,rest:15,work:30"},"attuale":{"editor":"int","default":0},"avanzamento":{"editor":"float","default":0,"min":0,"max":1,"step":0.01},"alto":{"editor":"text","default":"34px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":600,"height":40}}'>
+const COL = { prepare: '#f4c31b', work: '#e4292a', rest: '#16a54a', setRest: '#1b8ac4', cooldown: '#1b8ac4' };
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const att = Number(p.attuale ?? 0);
+    const av = Math.max(0, Math.min(1, Number(p.avanzamento ?? 0)));
+    const chiaro = p.tema === 'chiaro';
+    const blocchi = String(p.blocchi ?? '').split(',').filter(Boolean).map((s, i) => {
+      const [stato, durata] = s.split(':');
+      return {
+        durata: Number(durata) || 1,
+        colore: (chiaro && stato === 'rest') ? '#12913f' : (COL[stato] || '#8c8c88'),
+        opacita: 0.28,
+        riempito: i < att ? '100%' : i === att ? (av * 100).toFixed(1) + '%' : '0%',
+        contorno: i === att ? '2px solid ' + (chiaro ? '#161616' : '#f2f2f0') : 'none',
+      };
+    });
+    return { blocchi, alto: p.alto || '34px' };
+  }
+}
+</script>
+</body>
+</html>

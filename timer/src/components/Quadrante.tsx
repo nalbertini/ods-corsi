@@ -7,6 +7,15 @@
  * cifre sono le stesse cifre.
  */
 
+/** Il colore di ogni stato del timer: lo stesso per anello, bordo, scaletta e linea. */
+export const STATE_COLOR = {
+  prepare: 'var(--prepare)',
+  work: 'var(--work)',
+  rest: 'var(--rest)',
+  setRest: 'var(--setRest)',
+  cooldown: 'var(--cooldown)',
+} as const
+
 export function Ring({ progress, color }: { progress: number; color: string }) {
   const r = 43
   const circumference = 2 * Math.PI * r

@@ -9,22 +9,15 @@ import { type Interrotto, salvaInterrotto, scordaInterrotto } from '../lib/ripre
 import { useWakeLock } from '../lib/wakeLock'
 import { apriSessione, chiudiSessione } from '../lib/mediaSession'
 import { coloreFondo } from '../lib/tema'
-import { DentroAnello, Digits, Ring } from './Quadrante'
+import { giroCorrente, lineaDelTempo, oraDiFine, righeDaMostrare, righeScaletta } from '../lib/scaletta'
+import { useMedia } from '../lib/useMedia'
+import { Digits, STATE_COLOR } from './Quadrante'
+import { LineaDelTempo } from './LineaDelTempo'
+import { Scaletta } from './Scaletta'
 import { Close, Next, Pause, Play, Prev } from './Icons'
 import { MusicaBar } from './MusicaBar'
 import { useMusica, useMusicaAlTimer } from '../lib/useMusica'
 import type { StatoTimer } from '../lib/incorporato'
-
-const STATE_COLOR = {
-  prepare: 'var(--prepare)',
-  work: 'var(--work)',
-  rest: 'var(--rest)',
-  setRest: 'var(--setRest)',
-  cooldown: 'var(--cooldown)',
-} as const
-
-/** Anello a ingranaggio: il tratteggio richiama i denti del marchio. */
-
 
 export function TimerScreen({
   workout,
@@ -276,10 +269,20 @@ export function TimerScreen({
   const suTinta = tinta === STATE_COLOR.work ? 'var(--su-rosso)' : 'var(--su-colore)'
 
   const rounds = seg?.rounds ?? workout.rounds
-  const roundDots = Array.from({ length: Math.min(rounds, 16) }, (_, i) => i + 1)
+  // Quante righe di scaletta entrano: più dove l'altezza avanza, nessuna dove
+  // non basta (un telefono girato di lato, o uno schermo basso in verticale).
+  const verticale = useMedia('(orientation: portrait)')
+  const poco = useMedia('(max-height: 599px), (orientation: portrait) and (max-height: 699px)')
+  const alto = useMedia('(min-height: 800px)')
+  const nRighe = righeDaMostrare({ verticale, poco, alto })
+  // A fine allenamento `view.index` resta sull'ultimo passo: la scaletta si
+  // vuota passando una lista vuota, la linea si riempie tutta passando un
+  // indice oltre la fine (due casi provati in prova-scaletta).
+  const scaletta = righeScaletta(done ? [] : segments, view.index, nRighe)
+  const linea = lineaDelTempo(segments, done ? segments.length : view.index, view.progress)
 
   return (
-    <div className="timer" data-grande={settings.bigScreen} style={{ ['--state' as string]: tinta }}>
+    <div className="timer" data-grande={settings.bigScreen} style={{ ['--state' as string]: tinta, ['--state-testo' as string]: tinta === STATE_COLOR.prepare ? 'var(--giallo-testo)' : tinta }}>
       <div className="row timer-top">
         <button className="icon-btn" onClick={exit} aria-label="Chiudi il timer">
           <Close />
@@ -323,132 +326,103 @@ export function TimerScreen({
         </button>
       </div>
 
-      {rounds > 1 && (
-        <div className="dots timer-dots">
-          {roundDots.map((r) => {
-            const cur = seg?.round ?? 0
-            return (
-              <span
-                key={r}
-                style={{
-                  background: r === cur ? color : r < cur ? 'var(--tratteggio)' : 'transparent',
-                  borderColor: r === cur ? color : 'var(--line)',
-                }}
-              />
-            )
-          })}
-        </div>
-      )}
+      <div className="tf-corpo">
+        <div className="tf-sinistra">
+          {statoFermo.src && !done && !beccato && view.status !== 'idle' && (
+            <img className="tf-adesivo" src={statoFermo.src} alt="" />
+          )}
+          {done ? (
+            <>
+              {settings.coach !== 'off' && <img className="adesivo-finale" src={finale} alt="" />}
+              <span className="tf-stato">COMPLETATO</span>
+              <Digits value={clock(view.total)} className="tf-cifre" />
+              <span className="tf-esercizio">{workout.name}</span>
+            </>
+          ) : (
+            <>
+              <span className="tf-stato">{idle ? 'PRONTO' : (seg?.label ?? '')}</span>
+              <Digits value={clock(idle ? (segments[0]?.duration ?? 0) : view.display)} className="tf-cifre" />
+              <span className="tf-esercizio">{idle ? workout.name : (seg?.name ?? '')}</span>
+              {!idle && seg?.nota && <span className="tf-obiettivo">{seg.nota}</span>}
+            </>
+          )}
 
-      <div className="timer-main">
-        {statoFermo.src && !done && !beccato && view.status !== 'idle' && (
-          <img className="adesivo-stato" src={statoFermo.src} alt="" />
-        )}
-        {done ? (
-          <>
-            {settings.coach !== 'off' && <img className="adesivo-finale" src={finale} alt="" />}
-            <span className="state-label">COMPLETATO</span>
-            <Digits value={clock(view.total)} />
-            <span className="exercise">{workout.name}</span>
-          </>
-        ) : (
-          <>
-            {/* Quando Maurizio si tradisce prende il posto dell'anello, non quello
-                di tutto lo schermo: le cifre e il nome dell'esercizio devono
-                restare leggibili anche mentre fa la scenetta. */}
-            {beccato ? (
-              <div className="beccato">
-                <img src={beccato.src} alt="" />
-                <span className="beccato-frase">{beccato.frase}</span>
+          {/* Il gesto che si fa più spesso è il più grande; gli altri hanno la
+              parola scritta, perché un'icona sola non dice «indietro» a chi
+              guarda da lontano. Il «+30″» lo preme l'istruttore guardando la
+              sala: ha il bordo del colore dello stato quando si può usare. */}
+          <div className="tf-comandi">
+            <button
+              className="tf-avvia"
+              style={{ background: tinta, color: suTinta }}
+              onClick={done ? exit : startOrToggle}
+            >
+              {view.status === 'running' ? <Pause size={26} /> : <Play size={26} />}
+              <span>{done ? 'CHIUDI' : view.status === 'running' ? 'PAUSA' : idle ? 'AVVIA' : 'RIPRENDI'}</span>
+            </button>
+            {!done && (
+              <div className="tf-secondari">
+                <button className="tf-secondario" onClick={() => skip(-1)}>
+                  <Prev size={18} />
+                  INDIETRO
+                </button>
+                <button
+                  className="tf-secondario tf-piu"
+                  onClick={() => allunga(30)}
+                  disabled={idle}
+                  aria-label="Aggiungi trenta secondi a questo intervallo"
+                >
+                  +30&Prime;
+                </button>
+                <button className="tf-secondario" onClick={() => skip(1)}>
+                  AVANTI
+                  <Next size={18} />
+                </button>
               </div>
-            ) : (
-            <div className="anello">
-              <Ring progress={view.progress} color={color} />
-              {/* Le tre scritte si misurano sull'anello e non su un numero
-                  fisso: quando l'anello si stringe — schermo grande sul
-                  telefono, schermi piccoli — un «1/8» da 46 px gli usciva
-                  fuori e «RESTA» andava a capo sopra i trattini. */}
-              <DentroAnello
-                etichetta="GIRO"
-                numero={seg ? `${seg.round || 1}/${seg.rounds}` : '—'}
-                sotto={`RESTA ${clock(view.remainingTotal)}`}
-                colore={color}
-              />
-            </div>
             )}
-
-            <div className="timer-col" style={{ alignItems: 'center', gap: 4 }}>
-              <span className="state-label">{idle ? 'PRONTO' : (seg?.label ?? '')}</span>
-              <Digits value={clock(idle ? (segments[0]?.duration ?? 0) : view.display)} />
-              <span className="exercise">{idle ? workout.name : (seg?.name ?? '')}</span>
-              {!idle && seg?.nota && <span className="obiettivo">{seg.nota}</span>}
-            </div>
-          </>
-        )}
-      </div>
-
-      <div style={{ height: 10, background: 'var(--surface-2)' }}>
-        <div style={{ height: '100%', width: `${done ? 100 : view.progress * 100}%`, background: tinta }} />
-      </div>
-
-      {/* Il «+30″» sta accanto alla riga del prossimo intervallo e non fra i
-          comandi: quelli si premono al volo, questo lo preme l'istruttore
-          guardando la sala. In modalità schermo grande la riga del prossimo
-          non si costruisce — prima si nascondeva col CSS, e il tasto restava
-          un rettangolino spaesato accanto a un vuoto — così il «+30″» si
-          prende tutta la riga, che è dove serve di più. */}
-      <div className="row timer-azioni">
-        <button
-          className="btn-piu"
-          onClick={() => allunga(30)}
-          disabled={idle || done}
-          aria-label="Aggiungi trenta secondi a questo intervallo"
-        >
-          +30&Prime;
-        </button>
-        {view.next && view.next.extra === undefined && !done && !settings.bigScreen && (
-        <div className="row card timer-prossimo">
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.22em', color: 'var(--dim)' }}>PROSSIMO</span>
-          <div className="grow" style={{ minWidth: 8 }} />
-          <div style={{ width: 12, height: 12, flexShrink: 0, background: STATE_COLOR[view.next.kind] }} />
-          <span
-            className="num"
-            style={{
-              fontSize: 19,
-              fontWeight: 600,
-              color: 'var(--tasto)',
-              minWidth: 0,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {view.next.kind === 'work' && view.next.name ? view.next.name : view.next.label} {view.next.duration}
-            &quot;
-          </span>
           </div>
-        )}
-      </div>
+        </div>
 
-      {conMusica && <MusicaBar musica={musica} />}
+        <div className="tf-destra">
+          {beccato ? (
+            // Quando Maurizio si tradisce prende il posto del tempo che resta, non
+            // quello di tutto lo schermo: cifre ed esercizio restano leggibili.
+            <div className="beccato">
+              <img src={beccato.src} alt="" />
+              <span className="beccato-frase">{beccato.frase}</span>
+            </div>
+          ) : (
+            !done && (
+              <div className="tf-resta">
+                <span className="tf-etichetta">RESTA</span>
+                <span className="tf-resta-tempo">{clock(view.remainingTotal)}</span>
+                <span className="tf-etichetta">FINE ALLE {oraDiFine(Date.now(), view.remainingTotal)}</span>
+              </div>
+            )
+          )}
+          <Scaletta righe={scaletta.righe} altri={scaletta.altri} altriSecondi={scaletta.altriSecondi} />
+          {conMusica && <MusicaBar musica={musica} className="tf-musica" />}
+        </div>
 
-      <div className="row timer-controlli">
-        <button className="icon-btn tasto-salto" onClick={() => skip(-1)} aria-label="Intervallo precedente">
-          <Prev size={24} />
-        </button>
-        <button
-          className="btn grow tasto-avvia"
-          style={{ background: tinta, color: suTinta }}
-          onClick={done ? exit : startOrToggle}
-        >
-          {view.status === 'running' ? <Pause size={22} /> : <Play size={22} />}
-          <span style={{ fontSize: 22 }}>
-            {done ? 'CHIUDI' : view.status === 'running' ? 'PAUSA' : idle ? 'AVVIA' : 'RIPRENDI'}
-          </span>
-        </button>
-        <button className="icon-btn tasto-salto" onClick={() => skip(1)} aria-label="Intervallo successivo">
-          <Next size={24} />
-        </button>
+        {/* La barra fa da avanzamento dell'intero allenamento: sostituisce
+            anello e tacche dei giri, e dice dove si è su tutto il programma. */}
+        <div className="tf-barra">
+          <div className="tf-barra-testa">
+            {rounds > 1 && !done ? (
+              <span>
+                GIRO <b>{giroCorrente(seg)}</b>
+              </span>
+            ) : (
+              <span />
+            )}
+            {!done && (
+              <span className="tf-barra-resta">
+                RESTA <b>{clock(view.remainingTotal)}</b>
+              </span>
+            )}
+          </div>
+          <LineaDelTempo blocchi={linea} />
+        </div>
       </div>
     </div>
   )
