@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.27.1 — 4 ottobre 2026
+
+### Risolto
+
+- Nel timer le immagini di Maurizio compaiono sempre nello stesso posto
+
 ## 0.27.0 — 4 ottobre 2026
 
 ### Novità
