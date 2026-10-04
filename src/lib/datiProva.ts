@@ -5,6 +5,7 @@ import { archivio, nomeDi, type CorsoProva, type PresenzaIstruttoreProva, type R
 import { ISTRUTTORE_PROVA } from './dati'
 import { areaDelPercorso } from './percorso'
 import type { LezioneSenzaIstruttore } from './segreteria'
+import type { MiaPresenza } from './ore'
 import type { ChiProva, GiaProvato } from './prove'
 import { cosaNonVaProva, eGiaVenuto, pulisciProva } from './prove'
 
@@ -411,6 +412,20 @@ export function creaDatiProva(): Dati {
     async gestisciSegnalata(id, accogli, soloDi) {
       const { gestisciSegnalataProva } = await import('./segnalateProva')
       gestisciSegnalataProva(id, accogli, soloDi ? nomeIstruttore(soloDi) : 'Segreteria di prova', soloDi)
+    },
+
+    // Come le legge il database: le sue presenze, con la lezione; e le lezioni
+    // tenute senza segno dove era previsto (37-mie-ore.sql).
+    async mieOre(personaId, da, a) {
+      const dal = chiaveGiorno(da)
+      const al = chiaveGiorno(a)
+      const presenze = (archivio.dati.presenzeIstruttori ?? []).flatMap((x): MiaPresenza[] => {
+        const l = x.personaId === personaId ? trovaLezione(x.sessioneId) : undefined
+        if (!l || chiaveGiorno(l.inizio) < dal || chiaveGiorno(l.inizio) > al) return []
+        const { id, sessioneId, stato, prevista, gestitaDa, gestitaIl } = x
+        return [{ id, sessioneId, personaId, stato, prevista, gestitaDa, gestitaIl, corso: l.corso.nome, inizio: l.inizio.toISOString(), fine: l.fine.toISOString() }]
+      })
+      return { presenze, senzaIstruttore: lezioniSenzaIstruttoreProva().filter((l) => l.previsti.some((x) => x.id === personaId)) }
     },
 
     async calendario(da, a) {

@@ -23,6 +23,7 @@
     "prova:listino": "node scripts/prova-listino.mjs",
     "prova:indirizzi": "node scripts/prova-indirizzi.mjs",
     "prova:informativa": "node scripts/prova-informativa.mjs",
+    "prova:ore": "node scripts/prova-ore.mjs",
     "prova:sql": "bash scripts/prova-sql.sh"
   },
   "dependencies": {

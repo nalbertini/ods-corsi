@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { Dati } from './dati'
+import { daSenzaIstruttore, type MiaPresenza } from './ore'
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
 import { contiDellAppello, giornoDi, perCognome, valeIl } from './sala'
 import { Coda } from './coda'
@@ -175,6 +176,48 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
 
   return {
     modo: 'supabase',
+
+    async mieOre(personaId, da, a) {
+      const fino = new Date(a)
+      fino.setHours(23, 59, 59, 999)
+      const [presenze, senza] = await Promise.all([
+        // `!inner`: il mese è quello della lezione, e si filtra sulla lezione.
+        db
+          .from('presenze_istruttori')
+          .select('id, sessione_id, persona_id, stato, prevista, gestita_il, gestore:persone!gestita_da ( nome, cognome ), sessioni!inner ( inizio, fine, corsi ( nome ) )')
+          .eq('persona_id', personaId)
+          .gte('sessioni.inizio', da.toISOString())
+          .lte('sessioni.inizio', fino.toISOString()),
+        db.rpc('lezioni_senza_istruttore'),
+      ])
+      if (presenze.error) throw presenze.error
+      // La forma la dice la select con le lezioni dentro: il client non ha tipi generati.
+      const righe = (presenze.data ?? []) as unknown as Array<{
+        id: string
+        sessione_id: string
+        persona_id: string
+        stato: MiaPresenza['stato']
+        prevista: boolean
+        gestita_il: string | null
+        gestore: { nome: string; cognome: string } | null
+        sessioni: { inizio: string; fine: string; corsi: { nome: string } | null }
+      }>
+      return {
+        presenze: righe.map((r) => ({
+          id: r.id,
+          sessioneId: r.sessione_id,
+          personaId: r.persona_id,
+          stato: r.stato,
+          prevista: r.prevista,
+          gestitaIl: r.gestita_il ?? undefined,
+          gestitaDa: r.gestore ? `${r.gestore.nome} ${r.gestore.cognome}`.trim() : undefined,
+          corso: r.sessioni.corsi?.nome ?? 'Corso',
+          inizio: r.sessioni.inizio,
+          fine: r.sessioni.fine,
+        })),
+        senzaIstruttore: daSenzaIstruttore(senza, personaId),
+      }
+    },
 
     async calendario(da, a) {
       await allungaCalendario(db)

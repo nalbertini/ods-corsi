@@ -4,7 +4,8 @@ import { personaCambiata } from '../../lib/segreteria'
 import { daRuoloScelto, nomeDelRuolo, ruoloScelto, type RuoloScelto } from '../../lib/ruoli'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { chiedi, Campo, Guaio, lasciare, Riga, SchedaPiena, Testa, messaggio, useAvviso, useBozza, useCarica, useOrdina } from './comune'
-import { Numero, mesi } from './Presenze'
+import { Numero } from './Presenze'
+import { delMese, mesi, minutiDi, oreItaliane as ore } from '../../lib/ore'
 import { Kanji } from '../Kanji'
 import { KANJI, kanjiScritto, significato } from '../../lib/kanji'
 
@@ -614,16 +615,12 @@ function SceltaKanji({ d, p, altri, fai, onCambiato }: { d: DatiSegreteria; p: P
   )
 }
 
-const minuti = (x: PresenzaIstruttoreSeg) => Math.round((Date.parse(x.fine) - Date.parse(x.inizio)) / 60_000)
-/** In ore coi decimali, all'italiana: «1,5», per moltiplicarle per la paga oraria. */
-const ore = (m: number) => (m / 60).toLocaleString('it-IT', { maximumFractionDigits: 2 })
-
 /** Le lezioni confermate del mese in un foglio da aprire con Excel, come il registro delle presenze. */
 function scaricaCsv(righe: PresenzaIstruttoreSeg[], chi: string, mese: string) {
   const q = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
   const testo = [
     ['data', 'inizio', 'fine', 'ore', 'corso', 'sala', 'previsto'].join(';'),
-    ...righe.map((x) => [chiaveGiorno(new Date(x.inizio)), oraDi(x.inizio), oraDi(x.fine), ore(minuti(x)), x.corso, x.sala ?? '', x.prevista ? 'sì' : 'no'].map(q).join(';')),
+    ...righe.map((x) => [chiaveGiorno(new Date(x.inizio)), oraDi(x.inizio), oraDi(x.fine), ore(minutiDi(x)), x.corso, x.sala ?? '', x.prevista ? 'sì' : 'no'].map(q).join(';')),
   ].join('\r\n')
   const url = URL.createObjectURL(new Blob(['\ufeff' + testo], { type: 'text/csv;charset=utf-8' }))
   const a = document.createElement('a')
@@ -649,25 +646,7 @@ function PresenzeDelMese({ d, p }: { d: DatiSegreteria; p: PersonaleSeg }) {
   // Le lezioni tenute in cui era previsto e non si è segnato: da decidere anche quelle.
   const proposte = useCarica(() => d.lezioniSenzaIstruttore().catch(() => []), [d])
 
-  const da = chiaveGiorno(m.da)
-  const a = chiaveGiorno(m.a)
-  const del = (elenco.dato ?? [])
-    .filter((x) => x.personaId === p.id && chiaveGiorno(new Date(x.inizio)) >= da && chiaveGiorno(new Date(x.inizio)) <= a)
-    .sort((x, y) => x.inizio.localeCompare(y.inizio))
-  const fatte = del.filter((x) => x.stato === 'confermata')
-  const daConfermare =
-    del.filter((x) => x.stato === 'da_confermare').length +
-    (proposte.dato ?? []).filter((l) => {
-      const g = chiaveGiorno(new Date(l.inizio))
-      return g >= da && g <= a && l.previsti.some((x) => x.id === p.id && !x.stato)
-    }).length
-  const totale = fatte.reduce((t, x) => t + minuti(x), 0)
-  const perCorso = [...new Set(fatte.map((x) => x.corso))]
-    .map((corso) => {
-      const xs = fatte.filter((x) => x.corso === corso)
-      return { corso, xs, lezioni: xs.length, minuti: xs.reduce((t, x) => t + minuti(x), 0) }
-    })
-    .sort((x, y) => x.corso.localeCompare(y.corso, 'it'))
+  const { righe: del, confermate: fatte, minuti: totale, daConfermare, perCorso } = delMese(elenco.dato ?? [], proposte.dato ?? [], p.id, m)
   const { ordina, colonna } = useOrdina<(typeof perCorso)[number], 'corso' | 'lezioni' | 'ore'>({
     corso: (c) => c.corso,
     lezioni: (c) => c.lezioni,

@@ -77,15 +77,48 @@ select atteso('e per Federico niente', di('eeeeeeee-0000-0000-0000-000000000002'
 
 \echo ''
 \echo '--- 4. chi può ---'
+-- Un Lotta 2 di cinque giorni fa con Federico sostituto: Maura lì non è prevista.
+insert into sessioni (id, corso_id, inizio, fine, istruttore_id) values
+  ('eeeeeeee-0000-0000-0000-000000000009', 'cccccccc-0000-0000-0000-000000000001', now() - interval '5 days', now() - interval '5 days' + interval '1 hour', 'aaaaaaaa-0000-0000-0000-000000000006');
+insert into presenze (sessione_id, persona_id, stato, origine) values
+  ('eeeeeeee-0000-0000-0000-000000000009', 'aaaaaaaa-0000-0000-0000-000000000003', 'presente', 'tablet');
+-- Giulia Ferrari con un accesso, da iscritta.
+insert into auth.users (id, email) values ('77777777-7777-7777-7777-777777777777', 'giulia@ods.it');
+update persone set utente_id = '77777777-7777-7777-7777-777777777777' where id = 'aaaaaaaa-0000-0000-0000-000000000003';
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria le vede tutte, come prima', tenta($$select string_agg(sessione_id::text, ' ' order by inizio) from lezioni_senza_istruttore()$$),
+  'eeeeeeee-0000-0000-0000-000000000009 eeeeeeee-0000-0000-0000-000000000008');
+reset role;
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
-select atteso('un istruttore non le vede', tenta($$select count(*)::text from lezioni_senza_istruttore()$$), 'NEGATO: le lezioni da confermare le vede la segreteria');
+select atteso('un istruttore vede solo quelle dove è previsto', tenta($$select count(*)::text from lezioni_senza_istruttore()$$), '1');
+select atteso('quella di quattro giorni fa, non quella col sostituto', tenta($$select string_agg(sessione_id::text, ' ') from lezioni_senza_istruttore()$$), 'eeeeeeee-0000-0000-0000-000000000008');
+reset role;
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('Federico, previsto in tutte e due, le vede tutte e due', tenta($$select count(*)::text from lezioni_senza_istruttore()$$), '2');
+reset role;
+select chi('77777777-7777-7777-7777-777777777777');
+set role authenticated;
+select atteso('un iscritto non le vede', tenta($$select count(*)::text from lezioni_senza_istruttore()$$), 'NEGATO: le lezioni da confermare le vede la segreteria');
+reset role;
+select chi('99999999-9999-9999-9999-999999999999');
+set role authenticated;
+select atteso('chi ha un accesso ma nessuna scheda nemmeno', tenta($$select count(*)::text from lezioni_senza_istruttore()$$), 'NEGATO: le lezioni da confermare le vede la segreteria');
+reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
 select atteso('e non sceglie', tenta($$select segna_istruttori_lezione('eeeeeeee-0000-0000-0000-000000000008', array['aaaaaaaa-0000-0000-0000-000000000002']::uuid[])::text$$), 'NEGATO: la presenza la conferma la segreteria');
 select atteso('la funzione interna', tenta($$select previsti_su('eeeeeeee-0000-0000-0000-000000000008')::text$$), 'NEGATO: permission denied…');
 reset role;
 select chi('');
 set role anon;
 select atteso('senza accesso', tenta($$select count(*)::text from lezioni_senza_istruttore()$$), 'NEGATO: permission denied…');
+reset role;
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('il tablet non le vede', tenta($$select count(*)::text from lezioni_senza_istruttore()$$), 'NEGATO: le lezioni da confermare le vede la segreteria');
 reset role;
 
 \echo ''

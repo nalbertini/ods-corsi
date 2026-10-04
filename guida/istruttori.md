@@ -72,11 +72,11 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 
 Toccate una lezione per aprire l'appello. Sul telefono il calendario lascia il
 posto all'appello; la freccia in alto a sinistra riporta al calendario, dove lo
-avevate lasciato. Sotto le lezioni, in **STRUMENTI**, ci sono **I MIEI TIMER**
-e **TIMER ↗** (che si apre in un'altra scheda). Su un tablet in orizzontale o
+avevate lasciato. Sotto le lezioni, in **STRUMENTI**, ci sono **I MIEI TIMER**,
+**LE MIE ORE** e **TIMER ↗** (che si apre in un'altra scheda). Su un tablet in orizzontale o
 un computer stanno affiancati: calendario a sinistra, appello a destra. Lì
 l'app ha la stessa faccia della segreteria: a sinistra il menu, con
-**CALENDARIO**, **I MIEI TIMER** e **TIMER ↗** (si apre in un'altra scheda,
+**CALENDARIO**, **I MIEI TIMER**, **LE MIE ORE** e **TIMER ↗** (si apre in un'altra scheda,
 così l'appello resta dov'era), e in fondo il tasto **?** della guida, quello
 del tema e, sotto il vostro nome, **Esci**.
 
@@ -251,6 +251,46 @@ sceglie soltanto dove partono.
 
 Si scelgono i vostri timer e quelli della palestra. Il collegamento lo vedono
 anche il tablet e il collega che fa la lezione al posto vostro.
+
+## Le mie ore
+
+**LE MIE ORE** (nel menu sul computer, in **STRUMENTI** sotto il calendario
+sul telefono) dice quali lezioni risultano vostre in segreteria, mese per
+mese: si apre sul mese in corso, e in alto si sceglie uno degli ultimi
+dodici. Serve a controllare prima del compenso; qui si guarda soltanto, e se
+qualcosa non torna lo si dice in segreteria.
+
+In cima, tre numeri:
+
+- **LEZIONI** e **ORE**: solo le lezioni **confermate**. Le ore sono quelle
+  dell'orario della lezione, coi decimali: 1,5 è un'ora e mezza, 0,75 tre
+  quarti d'ora;
+- **DA CONFERMARE**, in giallo se non è zero: quelle che la segreteria deve
+  ancora decidere, comprese quelle in cui nessuno si è segnato (sotto il
+  numero c'è scritto quante sono: per quelle tocca a voi dirlo). Non entrano
+  nel conto finché non sono confermate.
+
+Sono gli stessi numeri che la segreteria vede nella vostra scheda.
+
+Sotto, **LE TUE LEZIONI**: una riga per lezione, con giorno, orario, corso,
+ore, e com'è messa:
+
+- **CONFERMATA**, in verde: conta. È così da sola quando era un vostro corso
+  o eravate il sostituto;
+- **DA CONFERMARE**, in giallo: l'avete fatta ma non era un vostro corso
+  (c'è scritto **non era un tuo corso**), e la decide la segreteria;
+- **RIFIUTATA**, in grigio: per la segreteria non c'eravate (c'è scritto
+  chi l'ha deciso e quando). Se c'eravate, ditelo al banco.
+
+Se ci sono lezioni tenute (con dei presenti) in cui eravate previsti e
+**nessun istruttore si è segnato**, né con l'appello né col PIN sul tablet,
+stanno sopra, a parte, sotto **NESSUNO SI È SEGNATO**: contano fra le da
+confermare. Se c'eravate, ditelo in segreteria, che vi segna.
+
+Una lezione compare quando l'appello o il PIN arriva in segreteria: se
+avete presenze ancora da inviare, una riga gialla lo dice, e quelle lezioni
+compaiono da sole quando la rete torna. Senza rete la pagina dice **LE MIE
+ORE NON LETTE**: premete **RIPROVA** quando la rete c'è.
 
 ## Senza rete
 

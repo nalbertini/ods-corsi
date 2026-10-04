@@ -69,6 +69,10 @@ chiudere il mese vanno decise in **PRESENZE ISTRUTTORI**.
 **SCARICA** dà il foglio Excel del mese: una riga per lezione, con data,
 orario, ore, corso e sala.
 
+Gli stessi tre numeri li vede l'istruttore dal telefono, in
+[LE MIE ORE](../istruttori.md#le-mie-ore): se al banco chiede di una lezione,
+state guardando lo stesso conto.
+
 ## Aggiungere una persona
 
 **+ AGGIUNGI UNA PERSONA** → nome, cognome, email, ruolo (**ISTRUTTORE**,

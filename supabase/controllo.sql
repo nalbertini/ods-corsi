@@ -176,6 +176,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'salva_date_corsi')),
   ('36-tablet-conto-prove.sql', 'sul tablet chi prova si conta a parte',
     exists (select 1 from dentro where nome = 'prove_sala')),
+  ('37-mie-ore.sql', 'l''istruttore vede le sue lezioni tenute senza segno',
+    exists (select 1 from dentro where nome = 'lezioni_senza_istruttore' and corpo like '%e_personale()%')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',
