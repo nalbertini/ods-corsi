@@ -21,6 +21,8 @@ export const DEFAULT_SETTINGS: Settings = {
   announceNext: true,
   keepAwake: true,
   bigScreen: false,
+  // Il player c'è di fabbrica: chi già lo usa non deve ritrovarselo sparito.
+  musica: true,
   // Spente finché non le accende qualcuno: comandare la musica della sala è
   // una scelta di chi la sala la tiene, non un effetto collaterale del timer.
   musicaFonte: 'spotify',

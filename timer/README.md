@@ -43,6 +43,9 @@ ciascuna, e quello che si aggiunge da una serie va solo lì.
   il lettore di YouTube è uno solo per tutta l'app: cambiando schermata non si
   interrompe. Sul tablet di sala la musica sta nella barra del tablet, con le
   liste preparate dalla segreteria (vedi sotto).
+- Il player si spegne dalle impostazioni (**Player musicale**): sparisce la
+  barra, non parte niente, e anche sul tablet di sala non compare. Di fabbrica
+  è acceso.
 - Da tastiera: `spazio` pausa, `←` `→` intervallo precedente e successivo,
   `Esc` esce.
 - Il tempo è ricavato dall'orologio a ogni tick, non accumulato: un tab in

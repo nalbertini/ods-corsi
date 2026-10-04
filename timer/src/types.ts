@@ -110,6 +110,8 @@ export interface Settings {
   volume: number
   keepAwake: boolean
   bigScreen: boolean
+  /** Il player musicale: spento, non compare e non suona niente. */
+  musica: boolean
   /** Da dove viene la musica: Spotify, comandato da fuori, o YouTube, suonato qui. */
   musicaFonte: 'spotify' | 'youtube'
   /** Il link di YouTube, playlist o video, quando la fonte è YouTube. */
