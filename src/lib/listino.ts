@@ -162,15 +162,27 @@ export function listinoDa(x: unknown): Listino | null {
 /** Per confrontare i nomi dei corsi: le ricevute li trovano così. */
 export const nomeCorso = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, ' ').trim()
 
-/** L'anno di nascita, se la data è vera: a metà (vuota, «0002-…») non dice niente. */
-function annoDi(natoIl: string): number | undefined {
+/**
+ * Il mese di nascita, contato dall'anno 0 (anno × 12 + mese da 0 a 11), se la
+ * data è vera: a metà (vuota, «0002-…») non dice niente.
+ */
+function meseDi(natoIl: string): number | undefined {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(natoIl)) return undefined
   const a = Number(natoIl.slice(0, 4))
-  return a >= 1900 ? a : undefined
+  return a >= 1900 ? a * 12 + Number(natoIl.slice(5, 7)) - 1 : undefined
 }
 
-const fuori = (v: VoceCosto | undefined, a: number | undefined) =>
-  a !== undefined && !!v && ((v.natiDal !== undefined && a < v.natiDal) || (v.natiAl !== undefined && a > v.natiAl))
+/**
+ * Chi è nato a meno di sei mesi dagli anni del corso ci sta lo stesso: la
+ * palestra lo prende senza richiamarlo. Mesi interi, da luglio dell'anno
+ * prima di NATI DAL a giugno dell'anno dopo NATI AL.
+ */
+const TOLLERANZA_MESI = 6
+
+const fuori = (v: VoceCosto | undefined, m: number | undefined) =>
+  m !== undefined &&
+  !!v &&
+  ((v.natiDal !== undefined && m < v.natiDal * 12 - TOLLERANZA_MESI) || (v.natiAl !== undefined && m > v.natiAl * 12 + 11 + TOLLERANZA_MESI))
 
 const comeCorso = (c: string | CorsoRef): CorsoRef => (typeof c === 'string' ? { id: '', nome: c } : c)
 
@@ -184,8 +196,14 @@ export function voceDelCorso(voci: VoceCosto[], corso: string | CorsoRef): VoceC
   return (c.id ? voci.find((v) => v.corsoId === c.id) : undefined) ?? voci.find((v) => (!v.corsoId || !c.id) && nomeCorso(v.corso) === nomeCorso(c.nome))
 }
 
-/** Se un corso non è per l'anno di nascita di chi si iscrive: lo dice il listino, coi suoi anni. */
-export const fuoriEta = (corso: string | CorsoRef, natoIl: string, voci: VoceCosto[]) => fuori(voceDelCorso(voci, corso), annoDi(natoIl))
+/** Gli anni di nascita di un corso, come li legge la segreteria. Vuoti, il corso va bene per tutti. */
+export function anniDiNascita(v: { natiDal?: number | string; natiAl?: number | string }) {
+  const { natiDal: dal, natiAl: al } = v
+  return dal && al ? `nati ${dal}–${al}` : dal ? `nati dal ${dal}` : al ? `nati fino al ${al}` : 'senza anni di nascita'
+}
+
+/** Se un corso non è per la data di nascita di chi si iscrive: lo dice il listino, coi suoi anni e i sei mesi di tolleranza. */
+export const fuoriEta = (corso: string | CorsoRef, natoIl: string, voci: VoceCosto[]) => fuori(voceDelCorso(voci, corso), meseDi(natoIl))
 
 export interface CorsoPerEta {
   id: string
@@ -200,7 +218,7 @@ export interface CorsoPerEta {
  * I corsi del modulo di iscrizione, divisi per l'anno di nascita: prima
  * quelli che vanno bene, poi gli altri, che si possono scegliere lo stesso.
  * Nessuno sparisce. Un corso va negli altri solo se il listino ha i suoi anni
- * e l'anno è fuori; senza data vera vanno tutti bene, in un elenco solo. Con
+ * e la data è fuori, anche coi sei mesi; senza data vera vanno tutti bene, in un elenco solo. Con
  * la data, i corsi che il listino non dice per che anni (o che non ha) stanno
  * a parte (`senzaAnni`): in cima sembrerebbero della sua età.
  * Per il resto l'ordine è quello del listino, poi i corsi che il listino non
@@ -212,7 +230,7 @@ export function corsiPerEta(
   natoIl: string,
   senzaPrezzoVaBene: readonly string[] = [],
 ): { adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[] } {
-  const a = annoDi(natoIl)
+  const a = meseDi(natoIl)
   const posto = (c: CorsoRef) => {
     const v = voceDelCorso(voci, c)
     return v ? voci.indexOf(v) : voci.length

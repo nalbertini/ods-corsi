@@ -459,6 +459,8 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
           <NotaCampo id="m-corsi-nota" nota={nota('corsi')} />
           {guaioCorsi && <Dettaglio tono="guaio">I corsi non si leggono: {guaioCorsi}</Dettaglio>}
           {!corsi && !guaioCorsi && <Dettaglio>Un attimo…</Dettaglio>}
+          {/* Il titolo serve solo se sotto c'è un altro gruppo: senza data i corsi sono in un elenco solo. */}
+          {perEta.adatti.length > 0 && (perEta.senzaAnni.length > 0 || perEta.altri.length > 0) && <span className="modulo-etichetta">PER LA SUA ETÀ</span>}
           <SceltaCorsi
             id="m-corsi-adatti"
             etichetta="Corsi"

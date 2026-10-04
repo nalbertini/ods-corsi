@@ -14,7 +14,9 @@ quando è **ARRIVATA**, **STATO** (**NUOVA**, **ACCOLTA**, **RIFIUTATA**), e
 iscritto per il suo nucleo familiare, dalla sua area: la scheda dice chi è
 (toccando il nome si apre la sua scheda), e accolta la persona entra nel
 suo nucleo. **DA STAMPARE** se la richiesta ha ancora la carta d'identità o
-il certificato medico caricati.
+il certificato medico caricati. **FUORI ETÀ** se ha scelto almeno un corso
+che non è per la sua età, neanche coi sei mesi di tolleranza: è da
+richiamare, ma si può accogliere lo stesso.
 
 Normalmente si vedono solo le nuove; **ANCHE QUELLE GIÀ GESTITE** mostra tutte,
 e **DA STAMPARE** (finché ce ne sono) quelle con documento o certificato da
@@ -23,9 +25,9 @@ stampare.
 ## Guardare una richiesta
 
 Un clic apre le risposte: nato il / a, codice fiscale, residenza, genitore (per
-un minore), email, telefono e l'eventuale telefono 2, corsi (con «fuori età:
-richiama» accanto a un corso che non è per il suo anno di nascita, secondo
-**NATI DAL / AL** del [listino](listino.md)), come paga (trimestre o annuale), note.
+un minore), email, telefono e l'eventuale telefono 2, corsi (con «fuori età: nati 2017–2019, richiama» — gli anni del corso —
+accanto a un corso che non è per la sua età, secondo
+**NATI DAL / AL** del [listino](listino.md) coi sei mesi di tolleranza), come paga (trimestre o annuale), note.
 
 Sotto, **I FILE**: modulo firmato e ricevuta. La ricevuta non è obbligatoria:
 se non c'è, una riga dice «Nessuna ricevuta: il pagamento si fa in

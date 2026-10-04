@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { Prezzi, VoceCosto } from '../../lib/costi'
 import { STAGIONE } from '../../lib/costi'
-import { agganciaPerNome, annoScritto, cambiNellaBozza, corsiScegliibili, domandaButta, cosaNonVaListino, LIMITI, listinoCambiato, corsiSenzaPrezzo, segnalazioniListino, type CorsoRef, type Listino as DatiListino } from '../../lib/listino'
+import { agganciaPerNome, anniDiNascita, annoScritto, cambiNellaBozza, corsiScegliibili, domandaButta, cosaNonVaListino, LIMITI, listinoCambiato, corsiSenzaPrezzo, segnalazioniListino, type CorsoRef, type Listino as DatiListino } from '../../lib/listino'
 import { centesimi } from '../../lib/ricevute'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -138,10 +138,7 @@ function daBozza(b: Bozza, corsi: ReadonlyArray<CorsoRef>): DatiListino | string
 /** Come si legge un corso chiuso: gli anni di nascita, poi i prezzi in fila. */
 function riassunto(c: BozzaCorso) {
   // Senza anni il corso va bene per tutti: si vede senza aprirlo, se è una dimenticanza.
-  const dal = c.natiDal.trim()
-  const al = c.natiAl.trim()
-  const anni = dal && al ? `nati ${dal}–${al}` : dal ? `nati dal ${dal}` : al ? `nati fino al ${al}` : 'senza anni di nascita'
-  return `${anni} — ${c.prezzi
+  return `${anniDiNascita({ natiDal: c.natiDal.trim(), natiAl: c.natiAl.trim() })} — ${c.prezzi
     .map((p) => {
       const pezzi = [p.saldo && `saldo ${p.saldo} €`, p.annuale && `annuale ${p.annuale} €`, p.trimestre && `trimestre ${p.trimestre} €`].filter(Boolean).join(' · ')
       return p.etichetta ? `${p.etichetta.toLowerCase()}: ${pezzi}` : pezzi
