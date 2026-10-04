@@ -18,6 +18,10 @@ export interface Dati {
   /** Le lezioni comprese fra due giorni, estremi inclusi. */
   calendario(da: Date, a: Date): Promise<SessioneVista[]>
   dettaglio(sessioneId: string): Promise<DettaglioSessione | null>
+  /** Le attività in uso, in ordine, da offrire per una lezione. L'elenco lo scrive solo la segreteria. */
+  attivita(): Promise<Array<{ id: string; nome: string }>>
+  /** Cosa si fa in una sua lezione; `null` per nessuna attività. */
+  cambiaAttivita(sessioneId: string, attivitaId: string | null): Promise<void>
   /** `null` toglie il segno: serve a correggere un tocco sbagliato. */
   segna(sessioneId: string, personaId: string, stato: StatoPresenza | null): Promise<void>
   segnaTutti(sessioneId: string, stato: StatoPresenza): Promise<void>

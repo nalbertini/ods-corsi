@@ -43,6 +43,8 @@ export interface SessioneVista {
   istruttore?: string
   /** I kanji di chi fa la lezione, uno per istruttore che ce l'ha (vedi `kanji.ts`). */
   kanji?: string
+  /** Cosa si fa in questa lezione (vedi «Attività» in segreteria): assente se niente. */
+  attivita?: string
   inizio: string
   fine: string
   stato: StatoSessione

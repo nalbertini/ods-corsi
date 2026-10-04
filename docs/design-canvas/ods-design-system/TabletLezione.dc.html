@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 22px; width: 100%; padding: 22px 24px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-left: 8px solid {{tinta}}; color: {{c.text}}">
+  <div style="display: flex; flex-direction: column; gap: 6px; flex: 1 1 280px; min-width: 0">
+    <span style="display: flex; align-items: center; gap: 12px">
+      <span style="white-space: nowrap; flex-shrink: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; letter-spacing: 0.06em; color: {{c.dim}}">{{ora}}</span>
+      <sc-if value="{{haAttivita}}" hint-placeholder-val="{{ false }}">
+        <span style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; min-width: 0; padding: 2px 8px; border: 2px solid {{c.line}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; line-height: 1.2; color: {{c.sec}}; text-transform: uppercase">{{attivita}}</span>
+      </sc-if>
+    </span>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 38px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; text-wrap: balance; text-transform: uppercase">{{corso}}</span>
+    <span style="display: inline-flex; align-items: center; gap: 10px; min-width: 0; font-size: 17px; color: {{c.sec}}">
+      <sc-if value="{{kanjiSotto}}" hint-placeholder-val="{{ true }}">
+        <span style="display: inline-flex; gap: 3px; flex-shrink: 0">
+          <sc-for list="{{kanji}}" as="k" hint-placeholder-count="1">
+            <span style="display: inline-grid; place-items: center; width: 32px; height: 32px; border: 2px solid #e4292a; border-radius: 4px; color: {{c.rossoTesto}}; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif; font-size: 22px; font-weight: 700; line-height: 1">{{k.segno}}</span>
+          </sc-for>
+        </span>
+      </sc-if>
+      <span>{{sotto}}</span>
+    </span>
+  </div>
+  <sc-if value="{{aperta}}" hint-placeholder-val="{{ true }}">
+    <span style="display: flex; align-items: center; justify-content: center; min-width: 300px; min-height: 88px; padding: 0 24px; background: {{c.verde}}; color: #121212; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.1em">SEGNA LA PRESENZA</span>
+  </sc-if>
+  <sc-if value="{{haAzioni}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <sc-if value="{{recupero}}" hint-placeholder-val="{{ false }}">
+      <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid {{c.giallo}}; color: {{c.text}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline><polyline points="12 7 12 12 15 14"></polyline></svg>
+        TI SEI DIMENTICATO DI SEGNARTI?
+      </span>
+    </sc-if>
+    <sc-if value="{{areaIstruttore}}" hint-placeholder-val="{{ false }}">
+      <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 60px; padding: 0 22px; border: 2px solid {{c.line}}; color: {{c.text}}">
+        <span style="display: flex; align-items: center; gap: 10px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          AREA ISTRUTTORE
+        </span>
+        <sc-if value="{{haIstruttori}}" hint-placeholder-val="{{ false }}">
+        <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: {{c.sec}}">
+          <span style="display: inline-flex; gap: 3px; flex-shrink: 0">
+            <sc-for list="{{kanji}}" as="k" hint-placeholder-count="1">
+              <span style="display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid #e4292a; border-radius: 3px; color: {{c.rossoTesto}}; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif; font-size: 15px; font-weight: 700; line-height: 1">{{k.segno}}</span>
+            </sc-for>
+          </span>
+          <span>{{istruttori}}</span>
+        </span>
+        </sc-if>
+      </span>
+    </sc-if>
+  </div>
+  </sc-if>
+  <sc-if value="{{dopo}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 300px; min-height: 88px; padding: 10px 24px; border: 2px solid {{c.line}}">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}">SI SEGNA DALLE</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 56px; font-weight: 700; line-height: 1">{{dalle}}</span>
+    </div>
+  </sc-if>
+  <sc-if value="{{haTimer}}" hint-placeholder-val="{{ true }}">
+    <div style="flex-basis: 100%; display: flex; align-items: center; gap: 16px; padding-top: 16px; border-top: 2px solid {{c.lineSoft}}; color: {{c.dim}}">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><polyline points="12 9 12 13 15 15"></polyline><line x1="10" y1="2" x2="14" y2="2"></line></svg>
+      <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.16em; color: {{c.dim}}">{{timerDa}}</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 24px; font-weight: 700; letter-spacing: 0.03em; color: {{c.text}}; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: uppercase">{{timer}}</span>
+      </div>
+      <span style="display: flex; align-items: center; justify-content: center; min-width: 220px; min-height: 64px; padding: 0 22px; background: #e4292a; color: #ffffff; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.12em">▶ AVVIA</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["aperta","dopo"],"default":"aperta"},"ora":{"editor":"text","default":"17:00–18:00"},"corso":{"editor":"text","default":"Lotta 2"},"kanji":{"editor":"text","default":"闘"},"sotto":{"editor":"text","default":"Coach, Federico, Maura, Nicola · 8 segnati su 14"},"tinta":{"editor":"text","default":"#16a54a"},"dalle":{"editor":"text","default":"18:30"},"timer":{"editor":"text","default":""},"timerDa":{"editor":"text","default":"IL TIMER DI QUESTA LEZIONE"},"senzaTasto":{"editor":"boolean","default":false},"areaIstruttore":{"editor":"boolean","default":false},"istruttori":{"editor":"text","default":""},"recupero":{"editor":"boolean","default":false},"attivita":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":808,"height":260}}'>
+// Riproduzione 1:1 della lezione grande della home del tablet: <div className="tb-aperta"> in
+// src/components/tablet/TabletHome.tsx (righe 91-141) con .tb-aperta*, .tb-btn-segna, .tb-dalle, .tb-pronto*,
+// .tb-btn-timer in src/styles.css (righe 862-895).
+// - stato "aperta": la lezione in cui ci si segna adesso, col tasto verde SEGNA LA PRESENZA (300x88, il piu'
+//   grande dello schermo). Stato "dopo": il tasto e' sostituito da SI SEGNA DALLE + l'ora (inizio meno 30 minuti).
+// - La tinta del corso e' sempre la barra sinistra da 8px, mai un fondo (DESIGN.md, La Regola della Tinta del Corso).
+// - timer: il nome del timer pronto sotto la lezione aperta, col tasto rosso AVVIA; vuoto = nessuna riga.
+//   timerDa e' la scritta sopra: IL TIMER DI QUESTA LEZIONE | IL TIMER DEL CORSO (al plurale con piu' timer).
+// - senzaTasto: toglie SEGNA LA PRESENZA, quando l'appello sta sotto, nella lista dei nomi.
+// - areaIstruttore: il tasto AREA ISTRUTTORE (.tb-btn-linea con Lucchetto) a destra; con `istruttori` ha sotto il kanji e i
+//   nomi (variante non usata di default): in quel caso il kanji non sta piu' nella riga sotto il titolo, che dice solo il conto.
+// - recupero: TI SEI DIMENTICATO DI SEGNARTI? (bordo giallo, icona Recupero), sopra AREA ISTRUTTORE nella stessa colonna.
+// - attivita: cosa si fa in questa lezione, se il corso cambia attivita' da un giorno all'altro (RANDORI, TECNICA...):
+//   un'etichetta a bordo accanto all'orario. Proposta, non esiste ancora nel codice.
+// - kanji: un timbro da 32px per carattere (.kanji[data-medio]).
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', giallo: '#f4c31b', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', giallo: '#f4c31b', rossoTesto: '#b81d1d' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const dopo = p.stato === 'dopo';
+    const timer = p.timer ?? '';
+    return {
+      c: T[p.tema] || T.scuro,
+      areaIstruttore: p.areaIstruttore === true || p.areaIstruttore === 'true',
+      attivita: p.attivita ?? '',
+      haAttivita: !!p.attivita,
+      kanjiSotto: !p.istruttori,
+      haIstruttori: !!p.istruttori,
+      istruttori: p.istruttori ?? '',
+      recupero: p.recupero === true || p.recupero === 'true',
+      haAzioni: [p.areaIstruttore, p.recupero].some((v) => v === true || v === 'true'),
+      aperta: !dopo && !(p.senzaTasto === true || p.senzaTasto === 'true'),
+      dopo,
+      ora: p.ora ?? '17:00–18:00',
+      corso: p.corso ?? 'Lotta 2',
+      kanji: [...String(p.kanji ?? '')].map((segno) => ({ segno })),
+      sotto: p.sotto ?? '',
+      tinta: p.tinta || '#16a54a',
+      dalle: p.dalle ?? '18:30',
+      haTimer: timer !== '' && !dopo,
+      timer,
+      timerDa: p.timerDa ?? 'IL TIMER DI QUESTA LEZIONE',
+    };
+  }
+}
+</script>
+</body>
+</html>

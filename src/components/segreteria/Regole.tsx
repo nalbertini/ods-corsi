@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { confermaDateCorsi, confermaMesiPresenze, testoDateSalvate, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, motivoAttivitaUsata, testoDateSalvate, type AttivitaSeg, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
 import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
@@ -190,6 +190,8 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
           )}
         </section>
 
+        <ElencoAttivita d={d} fai={fai} />
+
         <MusicaSale d={d} sale={sale.dato ?? []} liste={musica.dato} guaio={musica.guaio} ricarica={musica.ricarica} fai={fai} />
 
         <VoceSale d={d} fai={fai} />
@@ -365,6 +367,113 @@ function FormSala({
 }
 
 type Fai = (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => Promise<unknown>
+
+/**
+ * Le attività che si scelgono per un giorno e per una lezione (Karate, Fitness…):
+ * l'elenco lo scrive la segreteria, parte vuoto. Una in uso non si elimina: si mette
+ * NON PIÙ IN USO, e resta dov'è ma non si offre più.
+ */
+function ElencoAttivita({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
+  const att = useCarica(() => d.attivita(), [d])
+  const elenco = att.dato?.elenco ?? []
+  const manca = att.dato?.manca
+  const [bozza, setBozza] = useState<{ id?: string; nome: string } | null>(null)
+  const campo = useRef<HTMLInputElement>(null)
+  // Un nome cambiato (o nuovo con qualcosa scritto) non si perde uscendo.
+  const prima = elenco.find((a) => a.id === bozza?.id)
+  useBozza(!!bozza && bozza.nome.trim() !== (prima?.nome ?? ''), prima?.nome)
+  const salva = (b: { id?: string; nome: string }, nuova: boolean) => void fai(() => d.salvaAttivita(b), nuova ? 'Attività aggiunta' : 'Attività salvata', async () => {
+    // Una nuova lascia il campo aperto e vuoto per la successiva; se intanto si è
+    // già scritto altro, quel testo resta.
+    setBozza((c) => (nuova && c && c.nome === b.nome ? { nome: '' } : nuova ? c : null))
+    if (nuova) campo.current?.focus()
+    await att.ricarica()
+  })
+  const form = (b: { id?: string; nome: string }) => {
+    const errore = b.nome.trim() ? cosaNonVaAttivita(b.nome, elenco, b.id) : null
+    return (
+      <form
+        className="stack sg-voce-elenco"
+        style={{ gap: 6, borderColor: 'var(--text)', alignItems: 'stretch' }}
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (!errore) salva(b, !b.id)
+        }}
+      >
+        <div className="row" style={{ gap: 8 }}>
+          <input
+            ref={campo}
+            className="sg-campo grow"
+            aria-label="Nome dell'attività"
+            required
+            autoFocus
+            maxLength={40}
+            value={b.nome}
+            onChange={(e) => setBozza({ ...b, nome: e.target.value })}
+            onKeyDown={(e) => e.key === 'Escape' && setBozza(null)}
+            onBlur={() => !b.id && !b.nome && setBozza(null)}
+          />
+          <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setBozza(null)}>
+            LASCIA STARE
+          </button>
+          <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} aria-label="Salva l'attività" disabled={!!errore}>
+            <Spunta size={18} />
+          </button>
+        </div>
+        {errore && <span className="sg-manca" style={{ fontSize: 14 }}>{errore}</span>}
+      </form>
+    )
+  }
+  return (
+    <section aria-label="Le attività" className="sg-riquadro">
+      <span className="ob sg-riquadro-titolo">LE ATTIVITÀ</span>
+      {manca && <span className="sg-manca" style={{ fontSize: 14 }}>Le attività non sono ancora attive sul database. Va lanciato l'aggiornamento 39.</span>}
+      {att.guaio && <Guaio testo={`Le attività non si leggono: ${att.guaio}`} />}
+      {elenco.map((a: AttivitaSeg) => {
+        if (bozza?.id === a.id) return <div key={a.id}>{form(bozza)}</div>
+        const motivo = motivoAttivitaUsata(a.giorni, a.lezioni)
+        return (
+          <div key={a.id} className="stack sg-voce-elenco" style={{ gap: 4, alignItems: 'stretch' }}>
+            <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+              <span className="grow" style={{ fontSize: 15, fontWeight: 600, minWidth: 0, overflowWrap: 'anywhere', opacity: a.attiva ? 1 : 0.6 }}>{a.nome}</span>
+              {!a.attiva && <span className="num sg-tag" style={{ fontSize: 11, padding: '2px 6px' }}>NON PIÙ IN USO</span>}
+              <button type="button" className="num sg-chip" onClick={() => setBozza({ id: a.id, nome: a.nome })}>
+                CAMBIA
+              </button>
+              <button type="button" className="num sg-chip" onClick={() => void fai(() => d.attivaAttivita(a.id, !a.attiva), a.attiva ? 'Non più in uso' : 'Rimessa in uso', att.ricarica)}>
+                {a.attiva ? 'NON PIÙ IN USO' : 'RIMETTI IN USO'}
+              </button>
+              {!motivo && (
+                <button
+                  type="button"
+                  className="num sg-chip"
+                  onClick={async () => {
+                    if (await chiedi(`Eliminare l'attività «${a.nome}»?`, 'ELIMINA', { pericolo: true })) void fai(() => d.eliminaAttivita(a.id), 'Attività eliminata', att.ricarica)
+                  }}
+                >
+                  ELIMINA
+                </button>
+              )}
+            </div>
+            {motivo && <span className="sg-sotto">{motivo}</span>}
+          </div>
+        )
+      })}
+      {att.dato && elenco.length === 0 && !bozza && !manca && <span className="sg-sotto">Nessuna attività: aggiungile, poi si scelgono per ogni giorno di un corso.</span>}
+      {bozza && !bozza.id ? (
+        form(bozza)
+      ) : (
+        <button type="button" className="sg-btn sg-btn-tratteggio" disabled={!att.dato || !!manca} onClick={() => setBozza({ nome: '' })}>
+          + AGGIUNGI UN'ATTIVITÀ
+        </button>
+      )}
+      <ComeFunziona>
+        Cosa si fa in una lezione: Karate, Fitness, Open mat. Si sceglie per ogni giorno di un corso (da CORSI) e il tablet di sala la scrive accanto
+        all'orario. Una lezione può averne una diversa solo per quel giorno. Cambiare il nome qui lo cambia dappertutto.
+      </ComeFunziona>
+    </section>
+  )
+}
 type Bozza = { id?: string; nome: string; link: string; salaId: string | null }
 
 const FONTE = { youtube: 'YOUTUBE', spotify: 'SPOTIFY' } as const

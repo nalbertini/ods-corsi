@@ -3,6 +3,7 @@ import type { Dati } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
 import { Kanji } from './Kanji'
+import { EtichettaAttivita } from './ds'
 import type { Conto } from './AppelloScreen'
 
 const GIORNI_CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
@@ -122,6 +123,7 @@ export function CalendarioScreen({
   conti,
   soloDi,
   arretrati,
+  ricarica = 0,
 }: {
   dati: Dati
   onApri: (s: SessioneVista) => void
@@ -130,6 +132,8 @@ export function CalendarioScreen({
   /** Altre cose rimaste indietro, sotto la lezione di adesso: le presenze segnalate. */
   arretrati?: ReactNode
   soloDi?: string
+  /** Cambia quando le lezioni vanno rilette (un'attività cambiata dall'appello). */
+  ricarica?: number
 }) {
   const [primo, setPrimo] = useState(() => {
     const d = new Date()
@@ -157,7 +161,7 @@ export function CalendarioScreen({
     return () => {
       vivo = false
     }
-  }, [dati, giorni, giro])
+  }, [dati, giorni, giro, ricarica])
 
   useEffect(() => {
     if (!soloDi) return
@@ -170,7 +174,7 @@ export function CalendarioScreen({
     return () => {
       vivo = false
     }
-  }, [dati, soloDi, giro])
+  }, [dati, soloDi, giro, ricarica])
 
   const perGiorno = useMemo(() => {
     const m = new Map<string, SessioneVista[]>()
@@ -232,14 +236,24 @@ export function CalendarioScreen({
       <button
         key={l.id}
         className="card lezione"
+        data-attivita={l.attivita ? true : undefined}
         aria-current={l.id === apertaId ? 'true' : undefined}
         style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
         onClick={() => onApri(l)}
       >
-        <span className="stack" style={{ gap: 2 }}>
-          <span className="lezione-ora num">{oraDi(l.inizio)}</span>
-          {tra && <span className="num lezione-quando">{tra}</span>}
-        </span>
+        {l.attivita ? (
+          // Con un'attività, l'ora e la sua etichetta stanno in una riga sopra: accanto all'ora, senza togliere posto al nome.
+          <span className="lezione-testa">
+            <span className="lezione-ora num">{oraDi(l.inizio)}</span>
+            <EtichettaAttivita nome={l.attivita} />
+            {tra && <span className="num lezione-quando">{tra}</span>}
+          </span>
+        ) : (
+          <span className="stack" style={{ gap: 2 }}>
+            <span className="lezione-ora num">{oraDi(l.inizio)}</span>
+            {tra && <span className="num lezione-quando">{tra}</span>}
+          </span>
+        )}
         <span className="stack grow" style={{ gap: 3, minWidth: 0, textAlign: 'left' }}>
           <span className="ob lezione-nome">{l.corso.toUpperCase()}</span>
           <span className="chi-kanji" style={{ fontSize: 13, color: 'var(--dim)' }}>

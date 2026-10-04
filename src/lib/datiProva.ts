@@ -5,6 +5,7 @@ import { archivio, nomeDi, type CorsoProva, type PresenzaIstruttoreProva, type R
 import { ISTRUTTORE_PROVA } from './dati'
 import { areaDelPercorso } from './percorso'
 import type { LezioneSenzaIstruttore } from './segreteria'
+import { attivitaPerMenu } from './segreteria'
 import type { MiaPresenza } from './ore'
 import type { ChiProva, GiaProvato } from './prove'
 import { cosaNonVaProva, eGiaVenuto, pulisciProva } from './prove'
@@ -142,6 +143,14 @@ export function comeE(l: LezioneTrovata): { sala: string; istruttori: string[]; 
 
 /** La sala di una lezione se nessuno la sposta: quella del suo giorno, o quella del corso. */
 export const salaDelGiorno = (l: LezioneTrovata) => l.ricorrenza?.sala ?? l.corso.sala
+
+/** L'attività di una lezione: quella scelta a mano (anche «nessuna»), se no quella del suo giorno. */
+export function attivitaDi(l: LezioneTrovata): string | null {
+  const mano = archivio.dati.lezioni[l.id]?.attivitaId
+  return mano !== undefined ? mano : (l.ricorrenza?.attivitaId ?? null)
+}
+
+export const nomeAttivita = (id: string | null) => (id ? archivio.dati.attivita?.find((x) => x.id === id)?.nome : undefined)
 
 export const nomeIstruttore = (id: string) => {
   const p = archivio.dati.persone.find((x) => x.id === id)
@@ -391,6 +400,7 @@ export function creaDatiProva(): Dati {
       sala: k.sala,
       istruttore: k.istruttori.length ? k.istruttori.map(nomeIstruttore).join(', ') : undefined,
       kanji: k.istruttori.map(kanjiIstruttore).join('') || undefined,
+      attivita: nomeAttivita(attivitaDi(l)),
       insegnanti: k.istruttori,
       inizio: l.inizio.toISOString(),
       fine: l.fine.toISOString(),
@@ -430,6 +440,21 @@ export function creaDatiProva(): Dati {
 
     async calendario(da, a) {
       return lezioniFra(da, a).map(vista)
+    },
+
+    async attivita() {
+      return attivitaPerMenu(archivio.dati.attivita ?? []).map(({ id, nome }) => ({ id, nome }))
+    },
+
+    async cambiaAttivita(sessioneId, attivitaId) {
+      const t = trovaLezione(sessioneId)
+      if (!t) throw new Error('Lezione inesistente')
+      if (attivitaId && !archivio.dati.attivita?.some((x) => x.id === attivitaId)) throw new Error('Attività inesistente')
+      // Dal database lo rifiuta la policy sessioni_aggiorna: chi insegna il corso, anche se c'è un sostituto, o il sostituto.
+      const chi = chiFaLAppello()
+      if (chi && ![...t.corso.istruttori, ...comeE(t).istruttori].includes(chi)) throw new Error('Puoi cambiare l’attività solo delle tue lezioni')
+      archivio.dati.lezioni = { ...archivio.dati.lezioni, [sessioneId]: { ...archivio.dati.lezioni[sessioneId], attivitaId } }
+      archivio.salva()
     },
 
     async dettaglio(sessioneId) {

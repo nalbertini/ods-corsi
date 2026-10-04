@@ -40,6 +40,11 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
 
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello
   scelto, in ordine di orario, con sala, istruttore e iscritti.
+- **L'attività**: ogni giorno di un corso può avere la sua attività (Tecnica,
+  Sparring…), scelta da un elenco che la segreteria tiene in IMPOSTAZIONI; si
+  cambia anche per una lezione sola, e l'istruttore cambia quella della sua.
+  Si vede accanto all'orario su calendario, appello e tablet di sala
+  (`supabase/39-attivita.sql`).
 - **I miei timer**: nell'area istruttori, quali timer partono con ogni corso e
   con ogni singola lezione delle prossime due settimane, anche più d'uno;
   quelli di una lezione vengono prima di quelli del corso, dall'appello e sul tablet di sala
@@ -359,7 +364,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | | |
 |---|---|
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
-| `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. SALVA LE DATE che toglie le lezioni fuori dalle date dei corsi, tranne quelle con l'appello o una prova: la conferma prima, col conto, e l'avviso dopo, con corso e ora di quelle rimaste. |
+| `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. L'«Attività» di ogni giorno scelta da un elenco: nomi, rinomina, eliminazione, NON PIÙ IN USO, giorno e lezioni, l'istruttore che cambia la sua, il database senza `39-attivita.sql`. SALVA LE DATE che toglie le lezioni fuori dalle date dei corsi, tranne quelle con l'appello o una prova: la conferma prima, col conto, e l'avviso dopo, con corso e ora di quelle rimaste. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
 | `npm run prova:listino` | Il legame fra corsi e voci del listino per id: rinomina, voci doppie, corsi senza prezzo o voci senza corso, aggancio dei listini vecchi per nome. |
@@ -368,11 +373,12 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome (sul tablet al massimo venti, cercate scrivendo), tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:informativa` | Per quanto si tengono le presenze nell'informativa: solo un numero di mesi valido dal database cambia il testo; un errore, il tempo scaduto o l'app senza database lasciano quello della pagina, che non dice un numero. |
 | `npm run prova:ore` | LE MIE ORE dell'area istruttori: ognuno vede solo le sue, nel mese della lezione (non di quando è stata confermata), lezioni e ore delle confermate, le da confermare contate come in PRESENZE, le rifiutate con chi e quando, le lezioni tenute dove era previsto e nessuno si è segnato; e le decisioni della segreteria di prova che arrivano a `mieOre`. |
-| `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN e dall'appello, le lezioni tenute da confermare. |
+| `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN e dall'appello, le lezioni tenute da confermare. L'«Attività» della lezione sul tablet della sua sala e di nessun'altra, e la lettura del database che non perde né kanji né attività se manca una delle due. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/calendario-da-se.sql` | Il calendario che si allunga da sé: anche per un istruttore, solo quando serve, fin dove dicono le regole. |
 | `supabase/prova/calendario-pronto-fino.sql` | Fin dove è pronto il calendario: contano le lezioni dell'orario, e una straordinaria lontana non ferma le altre. |
 | `supabase/prova/date-corsi.sql` | SALVA LE DATE: solo la segreteria; toglie le lezioni da ricorrenza di domani in poi fuori dalle date, tranne quelle con l'appello o una prova (annullate, sostituti e presenze degli istruttori se ne vanno con loro), e dice quante ne ha tolte e quante restano, con corso e ora delle prime tre; contare prima, per la conferma, non cambia niente; straordinarie, oggi e passato intatti; date sbagliate o infinite non tolgono niente. |
+| `supabase/prova/attivita.sql` | L'«Attività» dei giorni e delle lezioni: il nome valido e unico, l'elenco che parte vuoto, chi lo scrive e chi lo legge, l'istruttore che sceglie solo per le sue lezioni, le lezioni future che seguono il giorno tranne quelle con l'appello, una prova o cambiate a mano, le nuove che nascono con quella del giorno, l'attività che non si elimina finché è usata, il tablet che legge solo la sua sala. |
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
 | `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
 | `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già. |

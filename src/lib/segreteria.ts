@@ -49,6 +49,9 @@ export interface RicorrenzaSeg {
   /** La sala di questo giorno, quando non è quella del corso. */
   salaId?: string
   sala?: string
+  /** Cosa si fa in questo giorno (vedi `AttivitaSeg`); le lezioni future lo seguono. */
+  attivitaId?: string
+  attivita?: string
 }
 
 export interface CorsoSeg {
@@ -75,6 +78,11 @@ export interface LezioneSeg {
   sala?: string
   /** Il sostituto, se c'è: vale solo per questa lezione. */
   sostitutoId?: string
+  /** Cosa si fa in questa lezione: quella del giorno, o una scelta a mano. */
+  attivitaId?: string
+  attivita?: string
+  /** L'attività è stata scelta a mano, diversa da quella del giorno: il giorno che cambia non la tocca. */
+  attivitaCambiata?: boolean
   /** Chi la fa: il sostituto, o chi insegna il corso. */
   istruttori: string
   inizio: string
@@ -86,6 +94,16 @@ export interface LezioneSeg {
   presenti: number
   /** Quanti hanno un segno qualsiasi: zero vuol dire che l'appello non c'è. */
   segnati: number
+}
+
+/** Una voce dell'elenco «Attività», con su quanti giorni e quante lezioni è. */
+export interface AttivitaSeg {
+  id: string
+  nome: string
+  /** Fuori uso: resta dov'è già, ma non si offre più nei menu. */
+  attiva: boolean
+  giorni: number
+  lezioni: number
 }
 
 export interface IscrizioneSeg {
@@ -400,8 +418,10 @@ export interface DatiSegreteria {
   settimana(da: Date, a: Date): Promise<LezioneSeg[]>
   aggiornaLezione(
     sessioneId: string,
-    cambi: { stato?: StatoSessione; sostitutoId?: string | null; salaId?: string | null },
+    cambi: { stato?: StatoSessione; sostitutoId?: string | null; salaId?: string | null; attivitaId?: string | null },
   ): Promise<void>
+  /** La lezione torna all'attività del suo giorno. */
+  attivitaComeIlGiorno(sessioneId: string): Promise<void>
   /** Una lezione in più, fuori dalle ricorrenze. */
   straordinaria(corsoId: string, inizio: Date, durata: number): Promise<void>
   /** Toglie una lezione straordinaria; quelle con un appello restano. */
@@ -414,9 +434,21 @@ export interface DatiSegreteria {
   salvaCorso(c: DatiCorso): Promise<string>
   archiviaCorso(corsoId: string, attivo: boolean): Promise<void>
   /** `rigenera: false` quando se ne aggiungono tante e il calendario si allunga dopo, una volta sola. */
-  aggiungiRicorrenza(corsoId: string, r: { giorno: number; ora: string; durata: number; salaId?: string }, opzioni?: { rigenera?: boolean }): Promise<void>
+  aggiungiRicorrenza(corsoId: string, r: { giorno: number; ora: string; durata: number; salaId?: string; attivitaId?: string }, opzioni?: { rigenera?: boolean }): Promise<void>
   /** Un giorno in un'altra sala; `null` lo rimette nella sala del corso. Le lezioni future lo seguono. */
   salaRicorrenza(ricorrenzaId: string, salaId: string | null): Promise<void>
+  /** Un'attività per un giorno; `null` la toglie. Le lezioni future che la seguivano la cambiano con lui. */
+  attivitaRicorrenza(ricorrenzaId: string, attivitaId: string | null): Promise<void>
+  /**
+   * L'elenco delle attività, in ordine. `manca` dice quale file va lanciato
+   * quando il database non ce l'ha ancora: l'elenco è vuoto e nessuna lezione ne ha una.
+   */
+  attivita(): Promise<{ elenco: AttivitaSeg[]; manca?: string }>
+  /** Una nuova, o con `id` la rinomina (una riga: il nome nuovo si vede ovunque). Dà l'id. */
+  salvaAttivita(a: { id?: string; nome: string }): Promise<string>
+  attivaAttivita(id: string, attiva: boolean): Promise<void>
+  /** Solo una mai usata: se è su un giorno o su una lezione, il motivo dice cosa fare. */
+  eliminaAttivita(id: string): Promise<void>
   togliRicorrenza(ricorrenzaId: string): Promise<void>
 
   persone(): Promise<PersonaSeg[]>
@@ -973,7 +1005,7 @@ export function corsoCambiato(corso: CorsoSeg | null, bozza: DatiCorso, salaIniz
   )
 }
 
-export type RicorrenzaNuova = { giorno: number; ora: string; durata: number; salaId?: string }
+export type RicorrenzaNuova = { giorno: number; ora: string; durata: number; salaId?: string; attivitaId?: string }
 
 /** Il giorno nuovo (+ AGGIUNGI UN GIORNO) si apre con l'ora e i minuti del primo giorno del corso. */
 export function ricorrenzaIniziale(corso: CorsoSeg): RicorrenzaNuova {
@@ -983,7 +1015,7 @@ export function ricorrenzaIniziale(corso: CorsoSeg): RicorrenzaNuova {
 /** C'è da perdere qualcosa nel giorno nuovo? Sì se è diverso da come si è aperto. */
 export function ricorrenzaCambiata(corso: CorsoSeg, ric: RicorrenzaNuova): boolean {
   const i = ricorrenzaIniziale(corso)
-  return ric.giorno !== i.giorno || ric.ora !== i.ora || ric.durata !== i.durata || !!ric.salaId
+  return ric.giorno !== i.giorno || ric.ora !== i.ora || ric.durata !== i.durata || !!ric.salaId || !!ric.attivitaId
 }
 
 /** C'è qualcosa da perdere uscendo da MODIFICA nella scheda di un istruttore? */
@@ -996,4 +1028,129 @@ export function personaCambiata(
     modifica.cognome.trim() !== salvata.cognome.trim() ||
     modifica.email.trim() !== (salvata.email ?? '').trim()
   )
+}
+
+const MAX_ATTIVITA = 40
+const chiaveNome = (s: string) => s.trim().toLocaleLowerCase('it')
+
+/**
+ * Cosa non va in un nome di attività: `null` se va bene. Maiuscole e spazi
+ * intorno non contano, come l'indice unico del database; `id` è la voce che si sta rinominando.
+ */
+export function cosaNonVaAttivita(nome: string, altre: Array<{ id?: string; nome: string }>, id?: string): string | null {
+  const n = nome.trim()
+  if (!n) return 'Scrivi il nome dell’attività'
+  if (n.length > MAX_ATTIVITA) return `Il nome è lungo al massimo ${MAX_ATTIVITA} caratteri`
+  if (altre.some((a) => a.id !== id && chiaveNome(a.nome) === chiaveNome(n))) return "C'è già un'attività con questo nome"
+  return null
+}
+
+/** In ordine alfabetico, senza badare a maiuscole e accenti. */
+export function ordinaAttivita<T extends { nome: string }>(elenco: T[]): T[] {
+  return [...elenco].sort((a, b) => a.nome.localeCompare(b.nome, 'it', { sensitivity: 'base' }))
+}
+
+/** Quello che si offre nei menu di un giorno e di una lezione: solo le attività in uso, in ordine. */
+export function attivitaPerMenu<T extends { nome: string; attiva: boolean }>(elenco: T[]): T[] {
+  return ordinaAttivita(elenco.filter((a) => a.attiva))
+}
+
+/**
+ * Le voci di un menu di attività: quelle in uso, in ordine, più quella che il
+ * giorno o la lezione hanno già (`correnteId`) se nel frattempo è uscita
+ * dall'uso, in fondo e marcata: il menu non deve mentire su cosa c'è adesso.
+ */
+export function vociAttivita<T extends { id: string; nome: string; attiva: boolean }>(elenco: T[], correnteId: string | null | undefined): Array<T & { fuoriUso: boolean }> {
+  const inUso = attivitaPerMenu(elenco).map((a) => ({ ...a, fuoriUso: false }))
+  const corrente = elenco.find((a) => !a.attiva && a.id === correnteId)
+  return corrente ? [...inUso, { ...corrente, fuoriUso: true }] : inUso
+}
+
+/** Perché un'attività non si elimina, o `null` se non è su niente. */
+export function motivoAttivitaUsata(giorni: number, lezioni: number): string | null {
+  if (!giorni && !lezioni) return null
+  const g = giorni === 1 ? '1 giorno' : `${giorni} giorni`
+  const l = lezioni === 1 ? '1 lezione' : `${lezioni} lezioni`
+  return `È su ${g} e ${l}: toglila dai giorni, oppure usa NON PIÙ IN USO`
+}
+
+/**
+ * Una lezione ha un'attività diversa da quella del suo giorno? Allora l'ha
+ * scelta qualcuno a mano. Una straordinaria non ha un giorno, quindi mai.
+ */
+export function attivitaCambiataAMano(lezione: { attivitaId?: string | null; straordinaria: boolean }, giorno?: { attivitaId?: string | null }): boolean {
+  if (lezione.straordinaria) return false
+  return (lezione.attivitaId ?? null) !== (giorno?.attivitaId ?? null)
+}
+
+/**
+ * Il giorno può ancora cambiare l'attività di questa lezione? Solo se è futura,
+ * senza appello e non straordinaria: come il trigger di `39-attivita.sql`, che
+ * non riscrive mai lo storico.
+ */
+function seguiIlGiorno(l: { straordinaria: boolean; inizio: string; segnati: number }, adesso: Date): boolean {
+  return !l.straordinaria && new Date(l.inizio) > adesso && !l.segnati
+}
+
+/**
+ * `attivitaCambiataAMano`, ma solo per le lezioni che il giorno può ancora
+ * cambiare: una passata o con l'appello ha l'attività che aveva, e se il giorno
+ * ne ha presa un'altra poi non è una scelta di nessuno.
+ */
+export function attivitaCambiata(
+  lezione: { attivitaId?: string | null; straordinaria: boolean; inizio: string; segnati: number },
+  giorno: { attivitaId?: string | null } | undefined,
+  adesso: Date = new Date(),
+): boolean {
+  return seguiIlGiorno(lezione, adesso) && attivitaCambiataAMano(lezione, giorno)
+}
+
+export const COME_IL_GIORNO = 'giorno'
+export const NESSUNA_ATTIVITA = 'nessuna'
+
+/**
+ * Cosa mostra il menu dell'attività di una lezione: `valore` è la voce scelta,
+ * `segue` che la lezione si aggiorna col giorno, `conGiorno` che il giorno la
+ * può ancora cambiare (e quindi si offre «Come il giorno»).
+ */
+export function sceltaAttivitaLezione(
+  l: { attivitaId?: string | null; attivitaCambiata?: boolean; straordinaria: boolean; inizio: string; segnati: number },
+  adesso: Date = new Date(),
+): { valore: string; segue: boolean; conGiorno: boolean } {
+  const conGiorno = seguiIlGiorno(l, adesso)
+  const segue = conGiorno && !l.attivitaCambiata
+  return { valore: segue ? COME_IL_GIORNO : (l.attivitaId ?? NESSUNA_ATTIVITA), segue, conGiorno }
+}
+
+/**
+ * Il nome dell'attività del giorno a cui appartiene una lezione, trovato dal
+ * giorno della settimana e dall'ora: assente se il giorno non c'è più o non ne ha.
+ */
+export function attivitaDelGiorno(corsi: CorsoSeg[], lezione: { corsoId: string; inizio: string }): string | undefined {
+  const i = new Date(lezione.inizio)
+  const ora = `${String(i.getHours()).padStart(2, '0')}:${String(i.getMinutes()).padStart(2, '0')}`
+  return corsi.find((c) => c.id === lezione.corsoId)?.ricorrenze.find((r) => r.giorno === i.getDay() && r.ora.slice(0, 5) === ora)?.attivita
+}
+
+/**
+ * Le lezioni che cambiano insieme al loro giorno: future, senza appello né
+ * prove, e ancora con l'attività che il giorno aveva prima (`prima`).
+ */
+export function lezioniCheSeguonoIlGiorno(
+  lezioni: Array<{ id: string; inizio: string; attivitaId?: string | null; segnati: number; prove: number }>,
+  prima: string | null | undefined,
+  adesso: Date,
+): string[] {
+  return lezioni
+    .filter((l) => new Date(l.inizio) > adesso && !l.segnati && !l.prove && (l.attivitaId ?? null) === (prima ?? null))
+    .map((l) => l.id)
+}
+
+/**
+ * Il database non ha ancora le attività (`39-attivita.sql` non lanciato)?
+ * Lo dicono la colonna, la tabella o il legame che mancano: in lettura si
+ * legge come prima, senza attività.
+ */
+export function mancaAttivita(e: { code?: string; message?: string } | null | undefined): boolean {
+  return !!e && ['42703', 'PGRST200', 'PGRST205', '42P01', '42883'].includes(e.code ?? '') && /attivita/.test(e.message ?? '')
 }

@@ -53,6 +53,18 @@ Cambiare i giorni tocca **solo le lezioni future**: quelle con un appello
 restano come sono, il passato è già nel registro. Un corso senza giorni non
 genera lezioni.
 
+## Un'attività per giorno
+
+Sotto ogni giorno, accanto alla sala, c'è **ATTIVITÀ**: cosa si fa quel giorno
+(«Karate» il lunedì, «Open mat» il giovedì), scelta fra l'elenco di
+[Impostazioni](regole.md#le-attività). **Nessuna attività** è la scelta di
+partenza. Anche **AGGIUNGI UN GIORNO** la chiede.
+
+Vale **da oggi in poi**: le lezioni future la seguono da sole. Le lezioni già
+fatte e quelle con l'appello restano com'erano; anche quelle che hai cambiato a
+mano dalla [settimana](settimana.md#aprire-una-lezione). Sul tablet di sala e
+nell'app degli istruttori l'attività si legge accanto all'orario.
+
 ## Un giorno in un'altra sala
 
 Un corso può fare il lunedì in Motricità e il giovedì in Tatami. Sotto ogni

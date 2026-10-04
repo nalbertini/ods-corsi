@@ -275,6 +275,7 @@ Quadrato 44px con bordo 2px `riga` e segno in `tasto`; quando contiene una parol
 - **Schede** (`.scheda`): righe di tasti uguali con gap 4px; attiva: fondo `superficie-alta`, bordo e testo `testo`.
 - **Scelte del modulo di iscrizione** (`.modulo-corso`): bordo 2px `riga`, quadratino da 22px a sinistra; scelta = bordo `testo`, fondo `superficie-alta`, quadratino con ✓ (più risposte) o ● (una sola) in `testo`. Non è verde: scegliere non è fatto. È verde solo il file caricato. Sotto il nome di un corso, età e orari del listino in Barlow 13px `testo-spento` (`testo-secondario` sul tasto scelto, per il contrasto); con la data di nascita, sotto i corsi della sua età vengono i gruppi SENZA FASCIA D'ETÀ e ALTRI CORSI, ciascuno dopo la sua etichetta; se si sceglie un corso fuori età, sotto l'ultimo gruppo un avviso in `giallo-testo` lo nomina.
 - **Bollini** (`.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola`): 12px maiuscolo spaziato (11px `.prova-marchio` e `.sg-bollino`, DATI DI PROVA: devono stare nei 56px del menu), bordo 2px giallo o fondo pieno; 13px nella testata di un filo delle segnalazioni.
+- **Etichetta attività** (`.attivita-et`): cosa si fa in una lezione, accanto all'orario. Saira 700 12px (15px sul tablet, che si legge da due metri), maiuscolo, 0.1em, bordo 2px `riga`, testo `testo-secondario`; al massimo due righe, poi «…», col nome intero nel `title`. Vuota non c'è: né etichetta né spazio. L'orario non va mai a capo: a stringersi è l'etichetta.
 
 ### Cards / Containers
 - **Corner Style:** 0px.

@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -2235,6 +2235,393 @@ console.log('\nSALVA LE DATE toglie le lezioni fuori dalle date dei corsi, trann
 
   await s.salvaImpostazioni({ inizioCorsi: null, fineCorsi: null })
   OGGI = new Date(2026, 8, 26, 12, 0).getTime()
+}
+
+console.log('\nl’«Attività» di ogni giorno dei corsi: le regole in src/lib/segreteria.ts')
+// Le funzioni ancora da scrivere non fermano la prova: ogni caso dice «ERRORE: …» e si va avanti.
+const lib = m.segreteriaLib
+const pura = (f) => {
+  try {
+    return f()
+  } catch (e) {
+    return `ERRORE: ${e.message}`
+  }
+}
+// Un messaggio vero, non l'errore di una funzione che manca: se no un «no» passerebbe senza che niente sia stato rifiutato.
+const eMessaggio = (x) => typeof x === 'string' && !x.startsWith('ERRORE') && !/is not a function/.test(x) && x !== 'nessun errore'
+{
+  const gia = "C'è già un'attività con questo nome"
+  const nomi = [{ id: '1', nome: 'Sacco' }, { id: '2', nome: 'Angoli' }]
+  ok('un nome nuovo va bene', pura(() => lib.cosaNonVaAttivita('Sparring', nomi)), null)
+  ok('con gli spazi intorno va bene', pura(() => lib.cosaNonVaAttivita('  Sparring  ', nomi)), null)
+  ok('«sacco » è «Sacco»: già c\'è', pura(() => lib.cosaNonVaAttivita('sacco ', nomi)), gia)
+  ok('«SACCO» pure', pura(() => lib.cosaNonVaAttivita('SACCO', nomi)), gia)
+  ok('rinominare «Angoli» in «sacco» no', pura(() => lib.cosaNonVaAttivita(' sacco', nomi, '2')), gia)
+  ok('la stessa voce può riscriversi, anche con le maiuscole diverse', [pura(() => lib.cosaNonVaAttivita('Sacco', nomi, '1')), pura(() => lib.cosaNonVaAttivita('SACCO', nomi, '1'))], [null, null])
+  const vuoto = pura(() => lib.cosaNonVaAttivita('', nomi))
+  const lungo = pura(() => lib.cosaNonVaAttivita('x'.repeat(41), nomi))
+  ok('vuoto no, e lo dice', [eMessaggio(vuoto), vuoto === gia], [true, false])
+  ok('solo spazi no, come vuoto', pura(() => lib.cosaNonVaAttivita('   ', nomi)), vuoto)
+  ok('41 caratteri no, e lo dice', [eMessaggio(lungo), lungo === gia, lungo === vuoto], [true, false, false])
+  ok('40 caratteri sì', pura(() => lib.cosaNonVaAttivita('x'.repeat(40), nomi)), null)
+  ok('40 caratteri più gli spazi intorno sì', pura(() => lib.cosaNonVaAttivita(` ${'x'.repeat(40)} `, nomi)), null)
+
+  ok('in ordine alfabetico, senza badare a maiuscole e accenti',
+    pura(() => lib.ordinaAttivita([{ nome: 'sacco' }, { nome: 'Zumba' }, { nome: 'Èlite' }, { nome: 'arrampicata' }, { nome: 'Angoli' }]).map((a) => a.nome)),
+    ['Angoli', 'arrampicata', 'Èlite', 'sacco', 'Zumba'])
+  const tutte = [{ id: 'z', nome: 'Zumba', attiva: true }, { id: 's', nome: 'Sacco', attiva: false }, { id: 'a', nome: 'Angoli', attiva: true }]
+  ok('i menu di giorno e lezione: solo quelle in uso, in ordine', pura(() => lib.attivitaPerMenu(tutte).map((a) => a.nome)), ['Angoli', 'Zumba'])
+  ok('l\'elenco da cui si prende non cambia', tutte.map((a) => a.nome), ['Zumba', 'Sacco', 'Angoli'])
+
+  ok('mai usata: si elimina', pura(() => lib.motivoAttivitaUsata(0, 0)), null)
+  ok('usata: il motivo dice quanti giorni e quante lezioni, e cosa fare',
+    pura(() => lib.motivoAttivitaUsata(2, 3)), 'È su 2 giorni e 3 lezioni: toglila dai giorni, oppure usa NON PIÙ IN USO')
+
+  ok('la lezione come il giorno: non è cambiata a mano', pura(() => lib.attivitaCambiataAMano({ attivitaId: 's', straordinaria: false }, { attivitaId: 's' })), false)
+  ok('un\'altra attività: cambiata a mano', pura(() => lib.attivitaCambiataAMano({ attivitaId: 'p', straordinaria: false }, { attivitaId: 's' })), true)
+  ok('«Nessuna attività» su un giorno che ce l\'ha: cambiata a mano', pura(() => lib.attivitaCambiataAMano({ attivitaId: null, straordinaria: false }, { attivitaId: 's' })), true)
+  ok('un\'attività su un giorno che non ce l\'ha: cambiata a mano', pura(() => lib.attivitaCambiataAMano({ attivitaId: 'p', straordinaria: false }, {})), true)
+  ok('nessuna e nessuna: no, null e assente sono lo stesso', pura(() => lib.attivitaCambiataAMano({ attivitaId: null, straordinaria: false }, { attivitaId: undefined })), false)
+  ok('una straordinaria non lo è mai, con o senza attività', [
+    pura(() => lib.attivitaCambiataAMano({ attivitaId: 'p', straordinaria: true }, undefined)),
+    pura(() => lib.attivitaCambiataAMano({ attivitaId: null, straordinaria: true }, undefined)),
+  ], [false, false])
+
+  // Il nome dell'attività del giorno di una lezione: giorno della settimana e ora.
+  const mercoledi = new Date(2026, 9, 14, 18, 0).toISOString()
+  const corsiAtt = [{ id: 'k', ricorrenze: [{ id: 'r1', giorno: 3, ora: '18:00', attivita: 'Sacco' }, { id: 'r2', giorno: 3, ora: '19:00' }] }]
+  ok('il nome dell\'attività del giorno della lezione', pura(() => lib.attivitaDelGiorno(corsiAtt, { corsoId: 'k', inizio: mercoledi })), 'Sacco')
+  ok('un giorno senza attività, o che non c\'è più: niente nome', [
+    pura(() => lib.attivitaDelGiorno(corsiAtt, { corsoId: 'k', inizio: new Date(2026, 9, 14, 19, 0).toISOString() })),
+    pura(() => lib.attivitaDelGiorno(corsiAtt, { corsoId: 'k', inizio: new Date(2026, 9, 15, 18, 0).toISOString() })),
+    pura(() => lib.attivitaDelGiorno(corsiAtt, { corsoId: 'x', inizio: mercoledi })),
+  ], [undefined, undefined, undefined])
+
+  // Chi segue il giorno quando cambia: le future, senza appello né prove, con ancora l'attività di prima.
+  const adesso = new Date(2026, 8, 26, 12, 0)
+  const futura = new Date(2026, 9, 14, 18, 0).toISOString()
+  const passata = new Date(2026, 8, 23, 18, 0).toISOString()
+  const l = (id, extra = {}) => ({ id, inizio: futura, attivitaId: undefined, segnati: 0, prove: 0, ...extra })
+  const seguono = (lezioni, prima) => pura(() => lib.lezioniCheSeguonoIlGiorno(lezioni, prima, adesso))
+  ok('senza attività prima: seguono le future senza appello né prove, non cambiate a mano',
+    seguono([l('passata', { inizio: passata }), l('appello', { segnati: 2 }), l('mano', { attivitaId: 'spar' }), l('a'), l('b', { attivitaId: null }), l('prova', { prove: 1 })], undefined), ['a', 'b'])
+  ok('«null» e assente sono lo stesso giorno vuoto', seguono([l('a'), l('b', { attivitaId: null })], null), ['a', 'b'])
+  ok('con «Sacco» prima: seguono quelle che hanno «Sacco»',
+    seguono([l('a', { attivitaId: 'sacco' }), l('vuota'), l('spar', { attivitaId: 'spar' }), l('appello', { attivitaId: 'sacco', segnati: 1 }), l('passata', { attivitaId: 'sacco', inizio: passata }), l('prova', { attivitaId: 'sacco', prove: 1 }), l('b', { attivitaId: 'sacco' })], 'sacco'), ['a', 'b'])
+  ok('nessuna da seguire', seguono([l('passata', { inizio: passata }), l('appello', { segnati: 1 })], undefined), [])
+  ok('una lezione che comincia adesso non è più futura', seguono([l('ora', { inizio: adesso.toISOString() })], undefined), [])
+
+  // Le voci dei menu: quelle in uso in ordine, più quella che la lezione o il giorno hanno già, se è uscita dall'uso.
+  const vv = [{ id: '1', nome: 'Sacco', attiva: false }, { id: '2', nome: 'Zumba', attiva: true }, { id: '3', nome: 'Angoli', attiva: true }]
+  const voci = (corrente) => pura(() => lib.vociAttivita(vv, corrente).map((a) => [a.nome, a.fuoriUso]))
+  ok('le voci: solo quelle in uso, in ordine', voci(null), [['Angoli', false], ['Zumba', false]])
+  ok('quella già messa e fuori uso resta, in fondo e marcata', voci('1'), [['Angoli', false], ['Zumba', false], ['Sacco', true]])
+  ok('quella già messa e in uso non si ripete', voci('2'), [['Angoli', false], ['Zumba', false]])
+  ok('una che non c\'è: niente di più', voci('x'), [['Angoli', false], ['Zumba', false]])
+
+  // Cosa mostra il menu di una lezione: segue il giorno solo se il giorno la può ancora cambiare.
+  const sc = (lez) => pura(() => lib.sceltaAttivitaLezione({ attivitaId: undefined, attivitaCambiata: false, straordinaria: false, inizio: futura, segnati: 0, ...lez }, adesso))
+  ok('futura, senza appello, come il giorno: segue', sc({}), { valore: lib.COME_IL_GIORNO, segue: true, conGiorno: true })
+  ok('futura cambiata a mano: la sua, con «Come il giorno» da offrire', sc({ attivitaCambiata: true, attivitaId: 'p' }), { valore: 'p', segue: false, conGiorno: true })
+  ok('futura con «nessuna»: nessuna', sc({ attivitaCambiata: true }), { valore: lib.NESSUNA_ATTIVITA, segue: false, conGiorno: true })
+  ok('straordinaria: la sua, senza giorno', sc({ straordinaria: true, attivitaId: 'p' }), { valore: 'p', segue: false, conGiorno: false })
+  ok('passata: la sua, senza «Come il giorno»', sc({ inizio: passata, attivitaId: 'p' }), { valore: 'p', segue: false, conGiorno: false })
+  ok('con l\'appello: la sua, senza «Come il giorno»', sc({ segnati: 3 }), { valore: lib.NESSUNA_ATTIVITA, segue: false, conGiorno: false })
+
+  // Cambiata a mano: come per `attivitaCambiataAMano`, ma solo se il giorno la può ancora cambiare (il trigger non tocca passate né appelli).
+  const cam = (lez, giorno) => pura(() => lib.attivitaCambiata({ attivitaId: undefined, straordinaria: false, inizio: futura, segnati: 0, ...lez }, giorno, adesso))
+  ok('futura con un\'altra attività: cambiata a mano', cam({ attivitaId: 'p' }, { attivitaId: 's' }), true)
+  ok('futura come il giorno: no', cam({ attivitaId: 's' }, { attivitaId: 's' }), false)
+  ok('passata che il giorno ha poi cambiato: storia, non una scelta', cam({ inizio: passata }, { attivitaId: 's' }), false)
+  ok('con l\'appello, stesso: no', cam({ segnati: 1 }, { attivitaId: 's' }), false)
+  ok('straordinaria: mai', cam({ straordinaria: true, attivitaId: 'p' }, undefined), false)
+}
+
+console.log('\nl’«Attività» di ogni giorno dei corsi: la segreteria di prova')
+try {
+  const elenco = async () => (await s.attivita()).elenco
+  const nomiElenco = async () => (await elenco()).map((a) => a.nome)
+  const bf = async (g) => (await s.settimana(...giorno(g))).find((l) => l.corsoId === 'body-functional')
+  // Body functional è il mercoledì alle 18: due lezioni passate, e dopo oggi (sabato 26 settembre) 30 settembre,
+  // 7, 14, 21 e 28 ottobre e 4 novembre.
+  const DATE = [[8, 16], [8, 23], [8, 30], [9, 7], [9, 14], [9, 21], [9, 28], [10, 4]]
+  const etichette = async () => Promise.all(DATE.map(async (g) => (await bf(g)).attivita ?? '-'))
+  const giornoBf = async () => (await s.corsi()).find((c) => c.id === 'body-functional').ricorrenze[0]
+  const sulGiorno = async (id) => s.attivitaRicorrenza((await giornoBf()).id, id)
+  const gia = "C'è già un'attività con questo nome"
+
+  ok('l’elenco parte vuoto', await elenco(), [])
+  const sacco = await s.salvaAttivita({ nome: 'Sacco' })
+  const angoli = await s.salvaAttivita({ nome: 'Angoli' })
+  const sparring = await s.salvaAttivita({ nome: 'Sparring' })
+  ok('in ordine alfabetico', await nomiElenco(), ['Angoli', 'Sacco', 'Sparring'])
+  ok('ognuna in uso e su niente', (await elenco()).map((a) => [a.nome, a.attiva, a.giorni, a.lezioni]), [['Angoli', true, 0, 0], ['Sacco', true, 0, 0], ['Sparring', true, 0, 0]])
+  ok('«sacco » è «Sacco»', await errore(() => s.salvaAttivita({ nome: 'sacco ' })), gia)
+  ok('«SACCO» pure', await errore(() => s.salvaAttivita({ nome: 'SACCO' })), gia)
+  ok('rinominare «Angoli» in «sacco» no', await errore(() => s.salvaAttivita({ id: angoli, nome: ' sacco' })), gia)
+  ok('il nome vuoto no', eMessaggio(await errore(() => s.salvaAttivita({ nome: '  ' }))), true)
+  ok('41 caratteri no', eMessaggio(await errore(() => s.salvaAttivita({ nome: 'x'.repeat(41) }))), true)
+  ok('i rifiuti non aggiungono niente', await nomiElenco(), ['Angoli', 'Sacco', 'Sparring'])
+  const lunga = await s.salvaAttivita({ nome: 'x'.repeat(40) })
+  ok('40 caratteri sì', (await nomiElenco()).includes('x'.repeat(40)), true)
+  await s.eliminaAttivita(lunga)
+  ok('mai usata, si elimina', await nomiElenco(), ['Angoli', 'Sacco', 'Sparring'])
+
+  // Le lezioni: una con l'appello, una cambiata a mano su Sparring, una con una prova.
+  const l30 = await bf([8, 30])
+  const chi = (await app.dettaglio(l30.id)).elenco[0].id
+  await app.segna(l30.id, chi, 'presente')
+  await s.aggiornaLezione((await bf([9, 7])).id, { attivitaId: sparring })
+  await app.aggiungiProva((await bf([10, 4])).id, { nome: 'Pia', cognome: 'Prova' })
+  ok('di partenza: solo quella cambiata a mano', await etichette(), ['-', '-', '-', 'Sparring', '-', '-', '-', '-'])
+  ok('quella cambiata a mano si riconosce, le altre no', [(await bf([9, 7])).attivitaCambiata, (await bf([9, 14])).attivitaCambiata], [true, false])
+
+  await sulGiorno(sacco)
+  ok('«Sacco» sul giorno: le tre future che lo seguivano, non quella con l\'appello, quella a mano, quella con la prova, le passate',
+    await etichette(), ['-', '-', '-', 'Sparring', 'Sacco', 'Sacco', 'Sacco', '-'])
+  ok('solo la lezione scelta a mano risulta cambiata a mano: non le passate né quella con l\'appello, che il giorno ha solo dopo cambiato',
+    // Anche quella con la prova (l'ultima) ha un appello: il giorno non la segue.
+    await Promise.all(DATE.map(async (g) => (await bf(g)).attivitaCambiata)), [false, false, false, true, false, false, false, false])
+  ok('il giorno dice «Sacco»', (await giornoBf()).attivita, 'Sacco')
+  ok('anche l\'app degli istruttori', (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'body-functional').attivita, 'Sacco')
+  ok('e quella a mano sul suo', (await app.calendario(...giorno([9, 7]))).find((x) => x.corsoId === 'body-functional').attivita, 'Sparring')
+  await sulGiorno(angoli)
+  ok('da «Sacco» ad «Angoli»: le stesse tre', await etichette(), ['-', '-', '-', 'Sparring', 'Angoli', 'Angoli', 'Angoli', '-'])
+  await sulGiorno(null)
+  ok('«Nessuna attività» sul giorno: la tolgono anche a chi lo seguiva', await etichette(), ['-', '-', '-', 'Sparring', '-', '-', '-', '-'])
+  ok('il giorno non ha attività', (await giornoBf()).attivita, undefined)
+  await sulGiorno(angoli)
+  ok('e da nessuna ad «Angoli»', await etichette(), ['-', '-', '-', 'Sparring', 'Angoli', 'Angoli', 'Angoli', '-'])
+  await s.rigenera()
+  ok('RIGENERA non cambia le attività', await etichette(), ['-', '-', '-', 'Sparring', 'Angoli', 'Angoli', 'Angoli', '-'])
+
+  // Un giorno nuovo con la sua attività: le lezioni nascono con quella.
+  await s.aggiungiRicorrenza('body-functional', { giorno: 6, ora: '10:00', durata: 60, attivitaId: sacco })
+  const sabato = (await s.settimana(...giorno([9, 3]))).find((x) => x.corsoId === 'body-functional')
+  ok('il giorno nuovo con «Sacco»: la sua lezione nasce con «Sacco»', sabato?.attivita, 'Sacco')
+  await s.togliRicorrenza((await s.corsi()).find((c) => c.id === 'body-functional').ricorrenze.find((r) => r.giorno === 6).id)
+
+  // Una lezione sola.
+  const l14 = await bf([9, 14])
+  await s.aggiornaLezione(l14.id, { attivitaId: sacco })
+  ok('un\'altra attività a una lezione: cambia solo quella', await etichette(), ['-', '-', '-', 'Sparring', 'Sacco', 'Angoli', 'Angoli', '-'])
+  ok('ed è cambiata a mano', (await bf([9, 14])).attivitaCambiata, true)
+  await s.aggiornaLezione(l14.id, { attivitaId: null })
+  await sulGiorno(sacco)
+  ok('«Nessuna attività» a una lezione: il giorno dopo non la segue', await etichette(), ['-', '-', '-', 'Sparring', '-', 'Sacco', 'Sacco', '-'])
+  ok('è ancora cambiata a mano', (await bf([9, 14])).attivitaCambiata, true)
+  await s.attivitaComeIlGiorno(l14.id)
+  ok('«Come il giorno»: prende quella del giorno', [(await bf([9, 14])).attivita, (await bf([9, 14])).attivitaCambiata], ['Sacco', false])
+  await sulGiorno(angoli)
+  ok('e torna a seguirlo', await etichette(), ['-', '-', '-', 'Sparring', 'Angoli', 'Angoli', 'Angoli', '-'])
+  await sulGiorno(sacco)
+
+  // Una straordinaria.
+  await s.straordinaria('body-functional', new Date(2026, 9, 3, 10, 0), 60)
+  const extra = (await s.settimana(...giorno([9, 3]))).find((x) => x.corsoId === 'body-functional' && x.straordinaria)
+  await s.aggiornaLezione(extra.id, { attivitaId: sparring })
+  const extraDopo = async () => (await s.settimana(...giorno([9, 3]))).find((x) => x.id === extra.id)
+  ok('la straordinaria ha la sua attività, e non è mai cambiata a mano', [(await extraDopo()).attivita, (await extraDopo()).attivitaCambiata], ['Sparring', false])
+  await sulGiorno(angoli)
+  await sulGiorno(sacco)
+  ok('il giorno cambia e lei no', (await extraDopo()).attivita, 'Sparring')
+  await s.togliLezione(extra.id)
+
+  // Annullata.
+  await s.aggiornaLezione((await bf([9, 21])).id, { stato: 'annullata' })
+  ok('annullata, tiene l\'attività', (await bf([9, 21])).attivita, 'Sacco')
+  await s.aggiornaLezione((await bf([9, 21])).id, { stato: 'prevista' })
+
+  // Rinominare: una riga, e il nome nuovo si vede ovunque, anche sulle passate.
+  await s.aggiornaLezione((await bf([8, 23])).id, { attivitaId: sacco })
+  ok('rinominare tiene la stessa voce', await s.salvaAttivita({ id: sacco, nome: 'Sacco pesante' }), sacco)
+  ok('una riga sola nell\'elenco', await nomiElenco(), ['Angoli', 'Sacco pesante', 'Sparring'])
+  ok('sul giorno, sulle future e sulla passata', [(await giornoBf()).attivita, await etichette()],
+    ['Sacco pesante', ['-', 'Sacco pesante', '-', 'Sparring', 'Sacco pesante', 'Sacco pesante', 'Sacco pesante', '-']])
+  await s.salvaAttivita({ id: sacco, nome: 'Sacco' })
+
+  // Eliminare.
+  const sua = (await elenco()).find((a) => a.id === sacco)
+  ok('«Sacco» è su un giorno e su delle lezioni', [sua.giorni, sua.lezioni > 0], [1, true])
+  ok('«Sacco»: bloccata, e il motivo dice quanti', await errore(() => s.eliminaAttivita(sacco)), lib.motivoAttivitaUsata(sua.giorni, sua.lezioni))
+  await s.aggiornaLezione((await bf([8, 16])).id, { attivitaId: angoli })
+  await sulGiorno(sacco)
+  const suaAngoli = (await elenco()).find((a) => a.id === angoli)
+  ok('«Angoli» è solo su lezioni passate: bloccata lo stesso', [suaAngoli.giorni, (await errore(() => s.eliminaAttivita(angoli))).startsWith('È su ')], [0, true])
+  const libera = await s.salvaAttivita({ nome: 'Libera' })
+  await s.eliminaAttivita(libera)
+  ok('una mai usata sì', await nomiElenco(), ['Angoli', 'Sacco', 'Sparring'])
+  ok('i rifiuti non hanno toccato niente', [(await giornoBf()).attivita, (await bf([9, 14])).attivita], ['Sacco', 'Sacco'])
+
+  // Non più in uso.
+  await s.attivaAttivita(sacco, false)
+  ok('fuori uso resta nell\'elenco della segreteria', (await elenco()).find((a) => a.id === sacco).attiva, false)
+  ok('ma non nei menu', lib.attivitaPerMenu(await elenco()).map((a) => a.nome), ['Angoli', 'Sparring'])
+  ok('e non nell\'elenco dell\'istruttore', (await app.attivita()).map((a) => a.nome), ['Angoli', 'Sparring'])
+  ok('sul giorno e sulle lezioni resta', [(await giornoBf()).attivita, (await bf([9, 14])).attivita], ['Sacco', 'Sacco'])
+  await s.attivaAttivita(sacco, true)
+  ok('si rimette con un tocco', lib.attivitaPerMenu(await elenco()).map((a) => a.nome), ['Angoli', 'Sacco', 'Sparring'])
+
+  // L'istruttore: sceglie per le sue lezioni, mai per quelle di un altro, e l'elenco non lo scrive.
+  window.location.pathname = '/istruttori/'
+  const judo = async () => (await app.calendario(...giorno([9, 7]))).find((x) => x.corsoId === 'judo-2')
+  ok('l\'istruttore vede l\'elenco in uso, in ordine', (await app.attivita()).map((a) => a.nome), ['Angoli', 'Sacco', 'Sparring'])
+  await app.cambiaAttivita((await judo()).id, sparring)
+  ok('cambia l\'attività di una sua lezione', (await judo()).attivita, 'Sparring')
+  ok('e la segreteria la vede cambiata a mano', await (async () => {
+    const x = (await s.settimana(...giorno([9, 7]))).find((y) => y.corsoId === 'judo-2')
+    return [x.attivita, x.attivitaCambiata]
+  })(), ['Sparring', true])
+  await app.cambiaAttivita((await judo()).id, null)
+  ok('anche «Nessuna attività»', (await judo()).attivita, undefined)
+  const altrui = (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'body-functional')
+  ok('quella di un altro no', eMessaggio(await errore(() => app.cambiaAttivita(altrui.id, sparring))), true)
+  ok('e non è cambiata', (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'body-functional').attivita, 'Sacco')
+  // Come la policy sessioni_aggiorna: chi la fa (il sostituto) o chi insegna il corso, anche se c'è un sostituto.
+  await s.aggiornaLezione((await judo()).id, { sostitutoId: 'i-fabio' })
+  await app.cambiaAttivita((await judo()).id, sparring)
+  ok('il titolare del corso cambia l\'attività anche con un sostituto', (await judo()).attivita, 'Sparring')
+  await s.aggiornaLezione((await judo()).id, { sostitutoId: null })
+  await app.cambiaAttivita((await judo()).id, null)
+  await s.aggiornaLezione(altrui.id, { sostitutoId: 'i-maurizio' })
+  await app.cambiaAttivita(altrui.id, sparring)
+  ok('il sostituto cambia quella della lezione che fa', (await app.calendario(...giorno([9, 14]))).find((x) => x.corsoId === 'body-functional').attivita, 'Sparring')
+  await s.aggiornaLezione(altrui.id, { sostitutoId: null })
+  await s.aggiornaLezione(altrui.id, { attivitaId: sacco })
+  ok('un\'attività che non c\'è: errore, e non cambia niente', [
+    await errore(async () => app.cambiaAttivita((await judo()).id, 'nope')),
+    await errore(async () => s.aggiornaLezione((await judo()).id, { attivitaId: 'nope' })),
+    (await judo()).attivita,
+  ], ['Attività inesistente', 'Attività inesistente', undefined])
+  ok('l\'elenco l\'istruttore non lo scrive: non ha come', ['salvaAttivita', 'eliminaAttivita', 'attivaAttivita'].map((k) => typeof app[k]), ['undefined', 'undefined', 'undefined'])
+  delete window.location.pathname
+
+  // Un archivio di prova salvato prima di questa funzione: l'elenco parte vuoto, senza errori.
+  const vecchio = JSON.stringify(m.archivio.dati, (k, v) => (/attivit/i.test(k) ? undefined : v))
+  memoria.set('ods-corsi:prova-archivio', vecchio)
+  const m2 = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text + '\n// archivio salvato prima\n').toString('base64'))
+  const s2 = m2.creaSegreteriaProva()
+  const prova2 = (f) => Promise.resolve().then(f).catch((e) => `ERRORE: ${e.message}`)
+  ok('archivio di prima: elenco vuoto', await prova2(() => s2.attivita().then((x) => x.elenco)), [])
+  const l2 = (await s2.settimana(...giorno([9, 14]))).find((x) => x.corsoId === 'body-functional')
+  ok('le lezioni si leggono come prima, senza attività', [l2?.corso, l2?.attivita], ['Body functional', undefined])
+  await s2.salvaAttivita({ nome: 'Nuova' })
+  ok('e si può cominciare a scrivere', (await s2.attivita()).elenco.map((a) => a.nome), ['Nuova'])
+  memoria.delete('ods-corsi:prova-archivio')
+} catch (e) {
+  delete window.location.pathname
+  ok('la segreteria di prova fa l’«Attività» senza fermarsi', e.message, 'nessun errore')
+}
+
+console.log('\nl’«Attività» con un database senza 39-attivita.sql: la segreteria e gli istruttori leggono come prima')
+{
+  const risposta = (r) => {
+    const c = new Proxy(() => c, { get: (_, k) => (k === 'then' ? (f, ko) => Promise.resolve(r).then(f, ko) : () => c), apply: () => c })
+    return c
+  }
+  const senzaRpc = async () => ({ data: null, error: { code: 'PGRST202', message: 'Could not find the function' } })
+  // Come risponde Postgres/PostgREST quando manca la colonna, la tabella, o il legame fra le due.
+  const MANCANZE = [
+    ['42703', 'column sessioni.attivita_id does not exist'],
+    ['PGRST200', "Could not find a relationship between 'sessioni' and 'attivita' in the schema cache"],
+    ['PGRST205', "Could not find the table 'public.attivita' in the schema cache"],
+    ['42P01', 'relation "attivita" does not exist'],
+  ]
+  const IN = new Date(2026, 9, 14, 12, 0)
+  const prova = (f) => Promise.resolve().then(f).catch((e) => `ERRORE: ${e.message}`)
+
+  // Segreteria.
+  for (const [codice, messaggio] of MANCANZE) {
+    const guaio = { data: null, error: { code: codice, message: messaggio } }
+    const riga = {
+      id: 'x1', corso_id: 'c1', ricorrenza_id: 'r1', inizio: '2026-10-14T16:00:00.000Z', fine: '2026-10-14T17:00:00.000Z', stato: 'prevista', sala_id: null, istruttore_id: null,
+      corsi: { nome: 'Body functional', colore: null, capienza: null, sala_id: null, istruttore_id: null }, sale: null, persone: null,
+    }
+    const corso = { id: 'c1', nome: 'Body functional', colore: null, capienza: null, attivo: true, sala_id: null, istruttore_id: null, sale: null, ricorrenze: [{ id: 'r1', giorno: 3, ora: '18:00', durata_min: 60, dal: '2026-09-14', al: null, sala_id: null, sale: null }] }
+    const scritto = []
+    const vero = m.creaSegreteriaSupabase({
+      auth: { getSession: async () => ({ data: { session: null } }) },
+      from: (t) => ({
+        select: (cols) => {
+          if (t === 'attivita' || /attivita/.test(cols ?? '')) return risposta(guaio)
+          if (t === 'sessioni') return risposta({ data: cols.includes('ricorrenza_id') ? [riga] : { corsi: { sala_id: null, istruttore_id: null }, ricorrenze: { sala_id: null } }, error: null })
+          if (t === 'corsi') return risposta({ data: [corso], error: null })
+          return risposta({ data: [], error: null })
+        },
+        insert: () => risposta(t === 'attivita' ? guaio : { data: null, error: null }),
+        update: (v) => {
+          scritto.push([t, Object.keys(v).join()])
+          return risposta(/attivita/.test(Object.keys(v).join()) ? { data: null, error: { code: 'PGRST204', message: "Could not find the 'attivita_id' column of 'sessioni' in the schema cache" } } : { data: null, error: null })
+        },
+        delete: () => risposta(guaio),
+      }),
+      rpc: senzaRpc,
+    })
+    const cosa = `senza 39-attivita.sql (${codice})`
+    const lez = await prova(() => vero.settimana(IN, IN))
+    ok(`${cosa}: le lezioni si leggono come oggi, senza attività`, Array.isArray(lez) ? [lez.length, lez[0].corso, lez[0].attivita] : lez, [1, 'Body functional', undefined])
+    const corsi = await prova(() => vero.corsi())
+    ok(`${cosa}: i corsi pure, coi giorni`, Array.isArray(corsi) ? [corsi.length, corsi[0].ricorrenze.length, corsi[0].ricorrenze[0].attivita] : corsi, [1, 1, undefined])
+    const att = await prova(() => vero.attivita())
+    ok(`${cosa}: la segreteria vede l'avviso, e l'elenco vuoto`, att && typeof att === 'object' ? [att.elenco, String(att.manca).includes('39-attivita.sql')] : att, [[], true])
+    ok(`${cosa}: scrivere un'attività dice quale file lanciare`, (await errore(() => vero.salvaAttivita({ nome: 'Sacco' }))).includes('39-attivita.sql'), true)
+    ok(`${cosa}: scegliere un'attività per una lezione dice quale file lanciare`, (await errore(() => vero.aggiornaLezione('x1', { attivitaId: 'a1' }))).includes('39-attivita.sql'), true)
+    ok(`${cosa}: cambiare la sala di una lezione funziona come prima`, await errore(() => vero.aggiornaLezione('x1', { salaId: 'sala-1' })), 'nessun errore')
+    ok(`${cosa}: e nella scrittura non c'è l'attività`, scritto.filter(([, k]) => /attivita/.test(k) && k !== 'attivita_id').length, 0)
+  }
+
+  // L'app: calendario e appello, con le due colonne facoltative (kanji e attività) che non si mascherano.
+  const riga = (conKanji, conAttivita) => ({
+    id: 'x1', corso_id: 'c1', inizio: '2026-10-14T16:00:00.000Z', fine: '2026-10-14T17:00:00.000Z', stato: 'prevista', note: null, istruttore_id: 'p1',
+    corsi: { nome: 'Body functional', colore: null, capienza: null, istruttore_id: 'p1', corsi_istruttori: [] },
+    sale: { nome: 'Motricità' },
+    persone: { nome: 'Tiziano', cognome: 'Tre', ...(conKanji ? { kanji: '虎' } : {}) },
+    ...(conAttivita ? { attivita: { nome: 'Sacco' } } : {}),
+  })
+  const appDi = (conKanji, conAttivita, [codice, messaggio] = MANCANZE[0]) => {
+    const letture = []
+    const db = {
+      from: (t) => ({
+        select: (cols) => {
+          if (t !== 'sessioni') return risposta({ data: [], error: null })
+          letture.push(cols)
+          if (!conAttivita && /attivita/.test(cols)) return risposta({ data: null, error: { code: codice, message: messaggio } })
+          if (!conKanji && /kanji/.test(cols)) return risposta({ data: null, error: { code: '42703', message: 'column persone_1.kanji does not exist' } })
+          // `calendario` aspetta una lista, `dettaglio` chiama `.single()` e aspetta la riga.
+          const c = new Proxy(() => c, {
+            get: (_, k) =>
+              k === 'then' ? (f, ko) => Promise.resolve({ data: [riga(conKanji, conAttivita)], error: null }).then(f, ko)
+              : k === 'single' ? () => risposta({ data: riga(conKanji, conAttivita), error: null })
+              : () => c,
+            apply: () => c,
+          })
+          return c
+        },
+      }),
+      rpc: senzaRpc,
+    }
+    return { dati: m.creaDatiSupabase(db), letture }
+  }
+  const vista = async (conKanji, conAttivita, mancanza) => {
+    const { dati } = appDi(conKanji, conAttivita, mancanza)
+    const [x] = await dati.calendario(IN, IN)
+    return [x.corso, x.kanji, x.attivita]
+  }
+  const dettaglio = async (conKanji, conAttivita) => {
+    const { dati } = appDi(conKanji, conAttivita)
+    const d = await dati.dettaglio('x1')
+    return [d.sessione.kanji, d.sessione.attivita]
+  }
+  ok('database completo: kanji e attività', await prova(() => vista(true, true)), ['Body functional', '虎', 'Sacco'])
+  for (const mancanza of MANCANZE) {
+    ok(`senza attività (${mancanza[0]}): le lezioni come oggi, il kanji resta`, await prova(() => vista(true, false, mancanza)), ['Body functional', '虎', undefined])
+  }
+  ok('senza kanji: l\'attività resta', await prova(() => vista(false, true)), ['Body functional', undefined, 'Sacco'])
+  ok('senza né l\'uno né l\'altra: le lezioni come oggi', await prova(() => vista(false, false)), ['Body functional', undefined, undefined])
+  ok('l\'appello: completo', await prova(() => dettaglio(true, true)), ['虎', 'Sacco'])
+  ok('l\'appello senza attività: il kanji resta', await prova(() => dettaglio(true, false)), ['虎', undefined])
+  ok('l\'appello senza kanji: l\'attività resta', await prova(() => dettaglio(false, true)), [undefined, 'Sacco'])
+  ok('l\'appello senza né l\'uno né l\'altra', await prova(() => dettaglio(false, false)), [undefined, undefined])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

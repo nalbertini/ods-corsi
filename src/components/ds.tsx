@@ -76,6 +76,21 @@ export function Etichetta({ children }: { children: ReactNode }) {
   return <span className="rule-label etichetta-riquadro">{children}</span>
 }
 
+/**
+ * Cosa si fa in una lezione (Karate, Fitness…), accanto all'orario: bordo,
+ * MAIUSCOLO, al massimo due righe poi «…», col nome intero nel `title`.
+ * Vuota non c'è: né etichetta né spazio. `grande` per il tablet, che si legge da due metri;
+ * `intera` dove c'è posto per il nome tutto (la lezione aperta).
+ */
+export function EtichettaAttivita({ nome, grande, intera }: { nome?: string; grande?: boolean; intera?: boolean }) {
+  if (!nome) return null
+  return (
+    <span className="attivita-et" data-grande={grande || undefined} data-intera={intera || undefined} title={nome}>
+      {nome}
+    </span>
+  )
+}
+
 /** Un numero grande: un prezzo, una quota. */
 export function Cifra({ children }: { children: ReactNode }) {
   return <span className="num cifra">{children}</span>

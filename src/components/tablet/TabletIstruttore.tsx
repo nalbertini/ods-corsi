@@ -4,6 +4,7 @@ import { contoAppello, contoSala, fase, lezioneDiAdesso, sorvegliaScritture } fr
 import type { StatoPresenza } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Croce, Spunta } from '../Icons'
+import { EtichettaAttivita } from '../ds'
 import { Guaio, messaggio, orario } from './comune'
 import type { ChiProva } from '../../lib/prove'
 import { giaNellAppello } from '../../lib/prove'
@@ -285,7 +286,10 @@ export function TabletIstruttore({
                 style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}
                 onClick={() => setScelta(l.id)}
               >
-                <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
+                <span className="attivita-quando">
+                  <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)', flexShrink: 0 }}>{orario(l)}</span>
+                  <EtichettaAttivita nome={l.attivita} grande />
+                </span>
                 <span className="ob" style={{ fontSize: 20, fontWeight: 700 }}>
                   {scheda === 'corso' ? (g === oggi ? 'OGGI' : giornoPerEsteso(g).toUpperCase()) : l.corso.toUpperCase()}
                 </span>
@@ -323,9 +327,15 @@ export function TabletIstruttore({
           <div className="tb-testa-appello">
             <div className="stack" style={{ gap: 2, minWidth: 0, flex: '1 1 0' }}>
               <span className="ob" style={{ fontSize: 26, fontWeight: 700, letterSpacing: '0.03em' }}>{lezione.corso.toUpperCase()}</span>
-              <span style={{ fontSize: 16, color: 'var(--sec)' }}>
-                {chiaveGiorno(new Date(lezione.inizio)) === oggi ? 'oggi' : giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))},{' '}
-                {orario(lezione)} · {daSe} {daSe === 1 ? 'segnato' : 'segnati'} da sé sul tablet · tocca un nome per cambiarlo
+              <span style={{ fontSize: 16, color: 'var(--sec)', display: 'flex', alignItems: 'center', columnGap: 10, flexWrap: 'wrap' }}>
+                <span style={{ whiteSpace: 'nowrap' }}>
+                  {chiaveGiorno(new Date(lezione.inizio)) === oggi ? 'oggi' : giornoPerEsteso(chiaveGiorno(new Date(lezione.inizio)))}, {orario(lezione)}
+                </span>
+                <EtichettaAttivita nome={lezione.attivita} grande />
+                <span>
+                  {lezione.attivita ? '' : '· '}
+                  {daSe} {daSe === 1 ? 'segnato' : 'segnati'} da sé sul tablet · tocca un nome per cambiarlo
+                </span>
               </span>
             </div>
             {/* Il conto tutto insieme: va a capo il sottotitolo, non «/ 10» lontano dal suo numero. */}

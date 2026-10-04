@@ -136,3 +136,29 @@ insert into presenze (sessione_id, persona_id, stato, segnata_da)
 reset role;
 select p.cognome as "risulta segnata da" from presenze pr join persone p on p.id = pr.segnata_da
   where pr.stato = 'assente' and pr.persona_id = 'aaaaaaaa-0000-0000-0000-000000000003';
+
+\echo ''
+\echo '--- ATTIVITÀ dei giorni e delle lezioni (39-attivita.sql) ---'
+-- L'elenco lo scrive la segreteria; l'istruttore lo legge e sceglie per le sue
+-- lezioni, mai per quelle di un altro; chi non ha l'accesso non lo vede.
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select pg_temp.atteso('la segreteria scrive l''elenco', tenta($$insert into attivita (id, nome) values ('a1000000-0000-0000-0000-000000000001', 'Sacco')$$), 'FATTO (1 righe)');
+reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select pg_temp.atteso('l''istruttore legge l''elenco', (select count(*)::text from attivita), '1');
+select pg_temp.atteso('ma non ci scrive', tenta($$insert into attivita (nome) values ('Abusiva')$$), 'NEGATO');
+select pg_temp.atteso('né lo cambia', tenta($$update attivita set nome = 'Abusiva'$$), 'a vuoto (0 righe)');
+select pg_temp.atteso('né toglie una voce', tenta($$delete from attivita$$), 'a vuoto (0 righe)');
+select pg_temp.atteso('né sceglie quella di un giorno', tenta($$update ricorrenze set attivita_id = 'a1000000-0000-0000-0000-000000000001'$$), 'a vuoto (0 righe)');
+select pg_temp.atteso('cambia l''attività delle sue lezioni',
+  tenta($$update sessioni set attivita_id = 'a1000000-0000-0000-0000-000000000001' where corso_id = 'cccccccc-0000-0000-0000-000000000001'$$), 'FATTO (' || (select count(*) from sessioni where corso_id = 'cccccccc-0000-0000-0000-000000000001') || ' righe)');
+select pg_temp.atteso('non quella delle lezioni di Giulia',
+  tenta($$update sessioni set attivita_id = 'a1000000-0000-0000-0000-000000000001' where corso_id = 'cccccccc-0000-0000-0000-000000000002'$$), 'a vuoto (0 righe)');
+reset role;
+select chi('');
+set role anon;
+select pg_temp.atteso('anon non legge l''elenco', tenta($$select count(*) from attivita$$), 'NEGATO');
+select pg_temp.atteso('anon non lo scrive', tenta($$insert into attivita (nome) values ('Abusiva')$$), 'NEGATO');
+reset role;

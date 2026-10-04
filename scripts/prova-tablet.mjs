@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla, sorvegliaScritture } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'; export * as tablet from './src/lib/tablet'",
+      "export * from './src/lib/tabletProva'; export { sigle, lezioneDiAdesso, rifiutato, codaDelTablet, chiaveTocco, inAttesa, ricordaTocco, siAnnulla, sorvegliaScritture } from './src/lib/tablet'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { creaDatiProva, comeE, lezioniFra } from './src/lib/datiProva'; export { archivio } from './src/lib/archivioProva'; export * as tablet from './src/lib/tablet'; export { creaTabletSupabase } from './src/lib/tabletSupabase'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -362,6 +362,74 @@ console.log('\n13. il conto della lezione: gli iscritti presenti, chi prova a pa
     typeof m.tablet.contoAppello === 'function' ? m.tablet.contoAppello(righe) : 'contoAppello non c\'è',
     { presenti: iscritti.filter((r) => r.stato === 'presente').length, prove: 1, iscritti: iscritti.length },
   )
+}
+
+console.log('\nl’«Attività» di ogni giorno sul tablet di sala')
+try {
+  const s = m.creaSegreteriaProva()
+  const sacco = await s.salvaAttivita({ nome: 'Sacco' })
+  // Body functional è il mercoledì alle 18 in Motricità; il 14 ottobre è un mercoledì.
+  const giorno = (await s.corsi()).find((c) => c.id === 'body-functional').ricorrenze[0]
+  await s.attivitaRicorrenza(giorno.id, sacco)
+  const il14 = [new Date(2026, 9, 14), new Date(2026, 9, 14)]
+  const bf = async (sala = 'Motricità') => (await (await alle('2026-10-14T17:40', sala)).lezioni(...il14)).find((l) => l.corsoId === 'body-functional')
+  const lezione = (await s.settimana(...il14)).find((l) => l.corsoId === 'body-functional')
+
+  ok('il tablet della sala vede l\'attività del giorno', (await bf())?.attivita, 'Sacco')
+  ok('le altre lezioni della sala, senza attività, non ne hanno', (await (await alle('2026-10-14T17:40', 'Motricità')).lezioni(...il14)).filter((l) => l.corsoId !== 'body-functional').every((l) => l.attivita === undefined), true)
+  ok('quello di un\'altra sala non vede la lezione, e quindi nemmeno l\'attività', [await bf('Tatami'), (await (await alle('2026-10-14T17:40', 'Tatami')).lezioni(...il14)).some((l) => l.attivita === 'Sacco')], [undefined, false])
+  await s.salvaAttivita({ id: sacco, nome: 'Sacco pesante' })
+  ok('rinominata, il tablet legge il nome nuovo', (await bf())?.attivita, 'Sacco pesante')
+  await s.attivaAttivita(sacco, false)
+  ok('fuori uso, resta sulla lezione', (await bf())?.attivita, 'Sacco pesante')
+  await s.attivaAttivita(sacco, true)
+  await s.aggiornaLezione(lezione.id, { attivitaId: null })
+  ok('«Nessuna attività» su quella lezione: il tablet non ne ha', (await bf())?.attivita, undefined)
+  const lunga = await s.salvaAttivita({ nome: 'x'.repeat(40) })
+  await s.aggiornaLezione(lezione.id, { attivitaId: lunga })
+  ok('40 caratteri arrivano interi: è lo schermo ad andare a capo e a tagliare', (await bf())?.attivita, 'x'.repeat(40))
+  await s.aggiornaLezione(lezione.id, { stato: 'annullata' })
+  ok('annullata tiene l\'attività', [(await bf())?.stato, (await bf())?.attivita], ['annullata', 'x'.repeat(40)])
+  await s.aggiornaLezione(lezione.id, { stato: 'prevista' })
+} catch (e) {
+  ok('il tablet di prova legge l’«Attività» senza fermarsi', e.message, 'nessun errore')
+}
+
+console.log('\nl’«Attività» sul tablet con il database: le due letture facoltative, kanji e attività, non si mascherano')
+{
+  const IN = new Date(2026, 9, 14, 12, 0)
+  const lezioniSala = [{
+    id: 'x1', corso_id: 'c1', corso: 'Body functional', colore: null, descrizione: null, istruttori: 'Tiziano',
+    inizio: '2026-10-14T16:00:00.000Z', fine: '2026-10-14T17:00:00.000Z', stato: 'prevista', iscritti: 5, presenti: 0,
+  }]
+  const MANCANZE = {
+    'funzione assente': async () => ({ data: null, error: { code: 'PGRST202', message: 'Could not find the function public.attivita_sala' } }),
+    'funzione non trovata': async () => ({ data: null, error: { code: '42883', message: 'function attivita_sala does not exist' } }),
+    'senza rete': async () => { throw new Error('Failed to fetch') },
+  }
+  const tabletDi = (kanji, attivita) => m.creaTabletSupabase({
+    auth: { getSession: async () => ({ data: { session: null } }) },
+    rpc: async (nome) => {
+      if (nome === 'lezioni_sala') return { data: lezioniSala, error: null }
+      if (nome === 'kanji_sala') return kanji ? { data: [{ sessione_id: 'x1', kanji: '虎' }], error: null } : { data: null, error: { code: 'PGRST202', message: 'Could not find the function public.kanji_sala' } }
+      if (nome === 'attivita_sala') return typeof attivita === 'function' ? attivita() : { data: [{ sessione_id: 'x1', attivita: 'Sacco' }], error: null }
+      return { data: null, error: { code: 'PGRST202', message: `Could not find the function public.${nome}` } }
+    },
+  })
+  const vista = async (kanji, attivita) => {
+    try {
+      const l = await tabletDi(kanji, attivita).lezioni(IN, IN)
+      return [l.length, l[0]?.corso, l[0]?.kanji, l[0]?.attivita]
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  ok('database completo: kanji e attività', await vista(true, true), [1, 'Body functional', '虎', 'Sacco'])
+  ok('senza kanji: l\'attività resta', await vista(false, true), [1, 'Body functional', undefined, 'Sacco'])
+  for (const [come, risposta] of Object.entries(MANCANZE)) {
+    ok(`senza 39-attivita.sql (${come}): le lezioni come oggi, il kanji resta`, await vista(true, risposta), [1, 'Body functional', '虎', undefined])
+  }
+  ok('senza né kanji né attività: le lezioni come oggi', await vista(false, MANCANZE['funzione assente']), [1, 'Body functional', undefined, undefined])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

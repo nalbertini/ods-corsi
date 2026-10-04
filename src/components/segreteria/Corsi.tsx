@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { CorsoSeg, DatiCorso, DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
-import { COLORI, corsoCambiato, GIORNI_LUNGHI, inCorso, ricorrenzaCambiata, ricorrenzaIniziale, type RicorrenzaNuova } from '../../lib/segreteria'
+import { COLORI, corsoCambiato, GIORNI_LUNGHI, inCorso, ricorrenzaCambiata, ricorrenzaIniziale, vociAttivita, type RicorrenzaNuova } from '../../lib/segreteria'
 import { chiaveGiorno } from '../../lib/sala'
 import { Croce } from '../Icons'
 import { STRETTO, useSchermo } from '../../lib/largo'
@@ -217,6 +217,7 @@ function Scheda({
 }) {
   const sale = useCarica(() => d.sale(), [d])
   const istruttori = useCarica(() => d.istruttori(), [d])
+  const attivita = useCarica(() => d.attivita(), [d])
   const [bozza, setBozza] = useState<DatiCorso>(() => ({
     id: corso?.id,
     nome: corso?.nome ?? '',
@@ -253,6 +254,22 @@ function Scheda({
         ))}
     </select>
   )
+  /** L'attività di un giorno; una già messa e poi tolta dall'uso resta in elenco, o il menu mentirebbe. */
+  const sceltaAttivita = (id: string, valore: string | undefined, cambia: (attivitaId: string | undefined) => void, etichetta?: string) => {
+    const elenco = attivita.dato?.elenco ?? []
+    const voci = vociAttivita(elenco, valore)
+    return (
+      <select id={id} aria-label={etichetta} className="sg-campo" value={valore ?? ''} onChange={(e) => cambia(e.target.value || undefined)}>
+        <option value="">Nessuna attività</option>
+        {voci.map((a) => (
+          <option key={a.id} value={a.id}>
+            {a.nome}
+            {a.fuoriUso ? ' (non più in uso)' : ''}
+          </option>
+        ))}
+      </select>
+    )
+  }
   const [daIscrivere, setDaIscrivere] = useState('')
   // La bozza appena salvata: finché il corso non è riletto, `corso` è ancora
   // quello di prima, e senza questo la domanda scatterebbe a vuoto.
@@ -416,6 +433,24 @@ function Scheda({
                     ),
                   `Sala del ${GIORNI_LUNGHI[r.giorno].toLowerCase()} alle ${r.ora}`,
                 )}
+                {!attivita.dato?.manca && (
+                  <span className="sg-ricorrenza-voce">
+                    <span className="sg-etichetta" aria-hidden="true">
+                      ATTIVITÀ
+                    </span>
+                    {sceltaAttivita(
+                      `r-att-${r.id}`,
+                      r.attivitaId,
+                      (attivitaId) =>
+                        void fai(
+                          () => d.attivitaRicorrenza(r.id, attivitaId ?? null),
+                          `${GIORNI_LUNGHI[r.giorno]}: ${attivitaId ? (attivita.dato?.elenco.find((a) => a.id === attivitaId)?.nome ?? 'attività') : 'nessuna attività'}`,
+                          onCambiato,
+                        ),
+                      `Attività del ${GIORNI_LUNGHI[r.giorno].toLowerCase()} alle ${r.ora}`,
+                    )}
+                  </span>
+                )}
               </span>
               <button
                 type="button"
@@ -460,6 +495,11 @@ function Scheda({
               <Campo id="r-s" etichetta="SALA">
                 {sceltaSala('r-s', ric.salaId, (salaId) => setRic({ ...ric, salaId }))}
               </Campo>
+              {!attivita.dato?.manca && (
+                <Campo id="r-a" etichetta="ATTIVITÀ">
+                  {sceltaAttivita('r-a', ric.attivitaId, (attivitaId) => setRic({ ...ric, attivitaId }))}
+                </Campo>
+              )}
               <div className="grow" />
               <button type="button" className="num sg-chip" onClick={() => setRic(null)}>
                 LASCIA STARE
@@ -489,6 +529,11 @@ function Scheda({
             Cambiare i giorni tocca solo le lezioni future: quelle con un appello restano come sono. Anche la sala di un giorno vale da oggi in
             avanti, e una lezione spostata a mano dalla settimana resta dov'è.
           </span>
+          {!attivita.dato?.manca && (
+            <span style={{ fontSize: 13, color: 'var(--dim)' }}>
+              L'attività vale da oggi in poi. Le lezioni già fatte e quelle con l'appello restano com'erano; anche quelle che hai cambiato a mano.
+            </span>
+          )}
         </div>
       )}
 
