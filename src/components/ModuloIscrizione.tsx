@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { certificatoDaPortare, chiFirma, controlla, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
+import { anniScritti, certificatoDaPortare, chiFirma, controlla, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
@@ -74,9 +74,9 @@ const VUOTO: DatiRichiesta = {
 const ID: Record<CampoModulo, string> = {
   nome: 'm-nome',
   cognome: 'm-cognome',
+  codiceFiscale: 'm-cf',
   natoIl: 'm-nato-il',
   natoA: 'm-nato-a',
-  codiceFiscale: 'm-cf',
   genitoreNome: 'm-g-nome',
   genitoreCognome: 'm-g-cognome',
   genitoreCodiceFiscale: 'm-g-cf',
@@ -137,19 +137,24 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     }
   }, [])
 
+  // La data di nascita la dice il codice fiscale, come il luogo: quella scritta a
+  // mano non si cancella, e torna se il codice smette di essere valido.
+  const dalCf = dataDaCf(b.codiceFiscale, b.natoIl)
+  const natoIl = dalCf ?? b.natoIl
   // Se l'elenco non arriva, il luogo si scrive a mano come prima.
   useEffect(() => void caricaLuoghi().then(setLuoghi, () => {}), [])
   // Il luogo di nascita lo dice il codice fiscale: quando lo si trova, non si scrive.
-  const luogo = luoghi && luogoDaCf(luoghi, pulisciCf(b.codiceFiscale), b.natoIl)
+  const luogo = luoghi && luogoDaCf(luoghi, pulisciCf(b.codiceFiscale), natoIl)
   const luogoGenitore = luoghi && luogoDaCf(luoghi, pulisciCf(b.genitoreCodiceFiscale ?? ''))
   const natoAGenitore = luogoGenitore?.nome ?? genitoreNatoA
   const provinciaGenitore = luogoGenitore?.sigla ?? genitoreProvincia
 
   // Chi firmava fino a ora: una data a metà non lo cambia (`chiFirma`).
   const minorePrima = useRef<boolean>()
-  const minore = chiFirma(b.natoIl, minorePrima.current)
+  const minore = chiFirma(natoIl, minorePrima.current)
   const pronta: DatiRichiesta = {
     ...b,
+    natoIl,
     natoA: luogo ? scriviLuogo(luogo) : b.natoA,
     genitoreNome: minore ? b.genitoreNome : '',
     genitoreCognome: minore ? b.genitoreCognome : '',
@@ -171,11 +176,11 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const foglio = MODULI[minore ? 1 : 0]
   // I corsi giusti per l'anno di nascita prima, gli altri dopo: si sceglie senza tornare al listino.
   const listino = useListino()?.listino
-  const perEta = corsiPerEta(corsi ?? [], listino?.corsi ?? [], b.natoIl, listino?.senzaPrezzoVaBene)
+  const perEta = corsiPerEta(corsi ?? [], listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
   const fuoriEta = perEta.altri.filter((c) => b.corsi.includes(c.id)).map((c) => c.nome)
   const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined })
   const certificato = certificatoDaPortare(
-    b.natoIl,
+    natoIl,
     (corsi ?? []).filter((c) => b.corsi.includes(c.id)).map((c) => c.nome),
   )
 
@@ -386,11 +391,25 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
         <Campo id="m-cognome" nota={nota('cognome')} etichetta="COGNOME">
           <input id="m-cognome" {...segna('cognome')} className="campo" autoComplete="family-name" value={b.cognome} onChange={metti('cognome')} />
         </Campo>
-        <Campo id="m-nato-il" nota={nota('natoIl')} etichetta="DATA DI NASCITA">
-          <input id="m-nato-il" {...segna('natoIl')} className="campo" type="date" value={b.natoIl} onChange={metti('natoIl')} />
-        </Campo>
         <Campo id="m-cf" nota={nota('codiceFiscale')} etichetta="CODICE FISCALE" largo>
           <input id="m-cf" {...segna('codiceFiscale')} className="campo num campo-codice" autoCapitalize="characters" spellCheck={false} maxLength={20} value={b.codiceFiscale} onChange={metti('codiceFiscale')} />
+        </Campo>
+        {/* Gli anni accanto alla data: il codice del genitore al posto di quello del figlio si vede subito. */}
+        <Campo
+          id="m-nato-il"
+          nota={nota('natoIl') ?? (dalCf ? { testo: `${anniScritti(dalCf)}: lo dice il codice fiscale`, guaio: false } : undefined)}
+          etichetta="DATA DI NASCITA"
+        >
+          <input
+            id="m-nato-il"
+            {...segna('natoIl')}
+            {...(dalCf && { 'aria-describedby': 'm-nato-il-nota' })}
+            className="campo"
+            type="date"
+            readOnly={!!dalCf}
+            value={natoIl}
+            onChange={metti('natoIl')}
+          />
         </Campo>
         <Campo id="m-nato-a" nota={nota('natoA')} etichetta="LUOGO DI NASCITA">
           <input
