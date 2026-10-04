@@ -29,6 +29,7 @@ import { VERSIONE } from './lib/aggiornamento'
 import { useMusica } from './lib/useMusica'
 import { MusicaBar } from './components/MusicaBar'
 import { PlayerYoutube } from './components/PlayerYoutube'
+import { PlayerAudio } from './components/PlayerAudio'
 import { PalestraSezione } from './components/PalestraSezione'
 import { type Accesso, accessoRicordato, chiSei, db, eUnId, haUnServer, nuovoId, sessione } from './lib/palestra'
 import {
@@ -669,14 +670,16 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   // le automazioni, sulla stessa fonte.
   const settingsMusica = useMemo(
     () => (incorporato ? { ...settings, ...incorporato.musica } : settings),
-    [settings, incorporato?.musica.musicaFonte, incorporato?.musica.youtube, incorporato?.musica.musica], // eslint-disable-line react-hooks/exhaustive-deps
+    [settings, incorporato?.musica.musicaFonte, incorporato?.musica.youtube, incorporato?.musica.radio, incorporato?.musica.musica], // eslint-disable-line react-hooks/exhaustive-deps
   )
   const musica = useMusica(settingsMusica)
   const conYoutube = musica.fonte === 'youtube' && musica.attiva && !incorporato
+  const fonteAudio = musica.fonte === 'file' || musica.fonte === 'radio' ? musica.fonte : null
   const con = (schermata: ReactNode) => (
     <>
       {schermata}
       {conYoutube && <PlayerYoutube link={settings.youtube} />}
+      {fonteAudio && musica.attiva && !incorporato && <PlayerAudio fonte={fonteAudio} link={settings.radio} nome="" />}
     </>
   )
 

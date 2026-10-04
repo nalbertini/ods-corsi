@@ -182,6 +182,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_constraint where conname = 'segnalazioni_categoria_solo_filo')
     and exists (select 1 from pg_policy where polname = 'segnalazioni_scrivi'
                 and pg_get_expr(polwithcheck, polrelid) like '%categoria IS NOT NULL%')),
+  ('39-musica-radio.sql', 'le liste della musica possono essere radio (https)',
+    exists (select 1 from pg_constraint where conname = 'musica_sale_link_check'
+            and pg_get_constraintdef(oid) like '%https://%a-z0-9%')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

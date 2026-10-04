@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { CoachLevel, Settings } from '../types'
 import { Cues, italianVoices, speak } from '../lib/audio'
 import { COACH_HINT, COACH_LABEL, COACH_LEVELS } from '../lib/engine'
@@ -19,6 +19,9 @@ import { type Tema, useTema } from '../lib/tema'
 import { clientId, clientIdDaCompilazione, collega, impostaClientId, indirizzoRitorno, scollega } from '../lib/spotify'
 import { useMusica, useSpotify } from '../lib/useMusica'
 import { VOLUME_BLOCCATO, leggiLink } from '../lib/youtube'
+import { aggiungiFileScelti, ascoltaAudio, statoAudio, svuotaFileScelti, togliFileScelto } from '../lib/musicaAudio'
+import { TESTI_MUSICA } from '../lib/musicaLocale'
+import { eHttp, leggiRadio, MESSAGGIO_HTTP } from '../lib/link'
 import { Chevron } from './Icons'
 import { Logo } from './Logo'
 import { daRadice } from '../lib/radice'
@@ -701,6 +704,7 @@ function MusicaScelte({
   m: ReturnType<typeof useMusica>
   yt: boolean
 }) {
+  const locale = settings.musicaFonte === 'file' || settings.musicaFonte === 'radio'
   return (
     <>
         <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
@@ -710,6 +714,8 @@ function MusicaScelte({
               [
                 ['spotify', 'SPOTIFY'],
                 ['youtube', 'YOUTUBE'],
+                ['file', TESTI_MUSICA.file],
+                ['radio', TESTI_MUSICA.radio],
               ] as [Settings['musicaFonte'], string][]
             ).map(([f, etichetta]) => (
               <button
@@ -726,13 +732,25 @@ function MusicaScelte({
             ))}
           </div>
           <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--dim)' }}>
-            {yt
-              ? 'Suona dentro il timer, da un link a una playlist o a un video. Niente account. Il lettore resta visibile nel timer e si ferma con lo schermo spento: adatto al tablet di sala.'
-              : 'Il timer comanda Spotify ovunque stia già suonando: tablet, telefono, cassa. Collegato qui, lo comanda anche il tablet di sala. Serve un account Premium e un’app registrata una volta su developer.spotify.com.'}
+            {settings.musicaFonte === 'file'
+              ? 'Suona i file scelti su questo apparecchio, in ordine casuale. Niente account, niente pubblicità, anche senza rete.'
+              : settings.musicaFonte === 'radio'
+                ? 'Suona una radio dal suo indirizzo. Niente account. Serve la rete.'
+                : yt
+                  ? 'Suona dentro il timer, da un link a una playlist o a un video. Niente account. Il lettore resta visibile nel timer e si ferma con lo schermo spento: adatto al tablet di sala.'
+                  : 'Il timer comanda Spotify ovunque stia già suonando: tablet, telefono, cassa. Collegato qui, lo comanda anche il tablet di sala. Serve un account Premium e un’app registrata una volta su developer.spotify.com.'}
           </span>
         </div>
 
-        {yt ? <PassiYoutube settings={settings} onChange={onChange} /> : <PassiSpotify />}
+        {settings.musicaFonte === 'file' ? (
+          <PassiFile />
+        ) : settings.musicaFonte === 'radio' ? (
+          <PassiRadio settings={settings} onChange={onChange} />
+        ) : yt ? (
+          <PassiYoutube settings={settings} onChange={onChange} />
+        ) : (
+          <PassiSpotify />
+        )}
 
         {m.attiva && (
           <>
@@ -768,9 +786,9 @@ function MusicaScelte({
                   style={{ width: '100%', accentColor: 'var(--verde)', height: 28 }}
                   aria-label="Volume della musica nel recupero"
                 />
-                {(yt ? VOLUME_BLOCCATO : m.lettore?.volume === null) && (
+                {(yt || locale ? VOLUME_BLOCCATO : m.lettore?.volume === null) && (
                   <span style={{ fontSize: 12, lineHeight: 1.4, color: 'var(--giallo-testo)' }}>
-                    {yt
+                    {yt || locale
                       ? 'Su iPhone e iPad il volume lo decidono solo i tasti del dispositivo: qui la musica resta com’è.'
                       : `${m.lettore?.dispositivo} non lascia cambiare il volume da fuori: qui la musica resta com’è.`}
                   </span>
@@ -780,8 +798,97 @@ function MusicaScelte({
           </>
         )}
 
-        {!yt && m.errore && <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--rosso)' }}>{m.errore}</span>}
+        {!yt && settings.musicaFonte !== 'file' && m.errore && <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--rosso-testo)' }}>{m.errore}</span>}
     </>
+  )
+}
+
+/** I file del tablet: si scelgono, si tolgono, restano su questo apparecchio. */
+function PassiFile() {
+  const { elenco, errore } = useSyncExternalStore(ascoltaAudio, statoAudio)
+  const [guaio, setGuaio] = useState<string | null>(null)
+  const scelti = async (files: FileList | null) => {
+    if (files?.length) setGuaio(await aggiungiFileScelti(Array.from(files)))
+  }
+  const togliFile = async (id: string) => setGuaio(await togliFileScelto(id))
+  const svuota = async () => setGuaio(await svuotaFileScelti())
+  return (
+    <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
+      <span style={{ fontSize: 15, fontWeight: 600 }}>{TESTI_MUSICA.fileQui}</span>
+      <span style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--dim)' }}>
+        I file restano su questo apparecchio: sugli altri tablet e telefoni vanno scelti di nuovo.
+      </span>
+      <label className="btn btn-ghost" style={{ minHeight: 48, fontSize: 15 }}>
+        {elenco.length ? 'AGGIUNGI ALTRI FILE' : 'SCEGLI I FILE'}
+        <input
+          type="file"
+          accept="audio/*"
+          multiple
+          hidden
+          onChange={(e) => {
+            const campo = e.target
+            void scelti(campo.files).then(() => (campo.value = ''))
+          }}
+        />
+      </label>
+      {elenco.map((f) => (
+        <div key={f.id} className="row" style={{ gap: 8, alignItems: 'center' }}>
+          <span className="grow" style={{ fontSize: 14, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {f.nome}
+          </span>
+          <button
+            className="btn btn-ghost"
+            style={{ minHeight: 44, fontSize: 13, padding: '0 12px' }}
+            onClick={() => void togliFile(f.id)}
+            aria-label={`Togli ${f.nome}`}
+          >
+            TOGLI
+          </button>
+        </div>
+      ))}
+      {elenco.length > 1 && (
+        <button className="btn btn-ghost" style={{ minHeight: 44, fontSize: 13 }} onClick={() => void svuota()}>
+          TOGLI TUTTI
+        </button>
+      )}
+      {(guaio ?? errore) && <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--rosso-testo)' }}>{guaio ?? errore}</span>}
+    </div>
+  )
+}
+
+/** La radio: un indirizzo, e subito si vede se si legge. */
+function PassiRadio({ settings, onChange }: { settings: Settings; onChange: (patch: Partial<Settings>) => void }) {
+  const [testo, setTesto] = useState(settings.radio)
+  const valida = leggiRadio(testo) !== null
+  const esito = !testo.trim()
+    ? 'Incolla l’indirizzo della radio: comincia con https, per esempio https://radio.esempio.it/musica.'
+    : valida
+      ? 'Indirizzo valido. Tocca ▶ per sentirla.'
+      : eHttp(testo)
+        ? MESSAGGIO_HTTP
+        : 'Questo non sembra l’indirizzo di una radio.'
+  return (
+    <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
+      <span style={{ fontSize: 15, fontWeight: 600 }}>Indirizzo della radio</span>
+      <input
+        className="field"
+        value={testo}
+        placeholder="https://radio.esempio.it/musica"
+        inputMode="url"
+        autoCapitalize="off"
+        autoCorrect="off"
+        spellCheck={false}
+        onChange={(e) => {
+          setTesto(e.target.value)
+          // Si salva solo un indirizzo che si legge: uno a metà non deve spegnere la musica.
+          if (leggiRadio(e.target.value) || !e.target.value.trim()) onChange({ radio: e.target.value.trim() })
+        }}
+        style={{ fontSize: 15 }}
+      />
+      <span style={{ fontSize: 12, lineHeight: 1.45, color: testo.trim() && !valida ? 'var(--rosso-testo)' : valida ? 'var(--verde-testo)' : 'var(--dim)' }}>
+        {esito}
+      </span>
+    </div>
   )
 }
 
@@ -815,7 +922,7 @@ function PassiYoutube({ settings, onChange }: { settings: Settings; onChange: (p
         }}
         style={{ fontSize: 15 }}
       />
-      <span style={{ fontSize: 12, lineHeight: 1.45, color: testo.trim() && !letto ? 'var(--rosso)' : letto ? 'var(--verde)' : 'var(--dim)' }}>
+      <span style={{ fontSize: 12, lineHeight: 1.45, color: testo.trim() && !letto ? 'var(--rosso-testo)' : letto ? 'var(--verde-testo)' : 'var(--dim)' }}>
         {esito}
       </span>
       <span style={{ fontSize: 12, lineHeight: 1.45, color: 'var(--dim)' }}>

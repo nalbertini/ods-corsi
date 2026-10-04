@@ -13,6 +13,7 @@
     "build:timer": "npm --prefix timer run build -- --outDir ../dist/timer --emptyOutDir",
     "build:tutto": "npm run build && npm run build:timer",
     "prova:musica": "node scripts/prova-musica.mjs",
+    "prova:musica-file": "node scripts/prova-musica-file.mjs",
     "prova:coda": "node scripts/prova-coda.mjs",
     "prova:tablet": "node scripts/prova-tablet.mjs",
     "prova:segreteria": "node scripts/prova-segreteria.mjs",

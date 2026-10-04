@@ -66,6 +66,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 36. `36-tablet-conto-prove.sql` — sul tablet chi è venuto a provare si conta a parte: «10 presenti su 10 · +1 PROVA», non «11 su 10»
 37. `37-mie-ore.sql` — in LE MIE ORE l'istruttore vede anche le lezioni tenute in cui era previsto e nessuno si è segnato; la segreteria le vede tutte, come prima
 38. `38-segnalazioni-categoria.sql` — la categoria delle segnalazioni: idea o correzione, scelta da chi la apre e cambiabile dalla segreteria; i fili di prima restano senza
+39. `39-musica-radio.sql` — le liste della musica delle sale possono essere anche radio: un indirizzo https, accanto a YouTube e Spotify
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -203,6 +204,10 @@ Per la categoria delle segnalazioni (idea o correzione) basta
 `38-segnalazioni-categoria.sql` (dopo `25-segnalazioni.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, SEGNALAZIONI si legge senza
 categorie e MANDA dice che va lanciato. Chi rilancia `25` rilancia poi anche `38`.
+Per le radio nelle liste della musica basta `39-musica-radio.sql` (dopo
+`09-musica.sql`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non
+c'è, la segreteria non può salvare una radio e il database dice di lanciarlo.
+Chi rilancia `09` rilancia poi anche `39`.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -615,7 +620,8 @@ tablet no.
 Il tablet ha la musica nella barra in basso, sotto le presenze e sotto il
 timer. Cosa far partire lo prepara la segreteria, da **Impostazioni → La
 musica delle sale**: qualche lista, ognuna un nome e il link a una playlist di
-YouTube o di Spotify, per una sala o per tutte (`09-musica.sql`, tabella
+YouTube o di Spotify, o l'indirizzo https di una radio (`39-musica-radio.sql`),
+per una sala o per tutte (`09-musica.sql`, tabella
 `musica_sale`). La segreteria le cura, il resto del personale le vede, il
 tablet le legge da `musica_sala()` — solo quelle della sua sala e quelle di
 tutte — e non le cambia.

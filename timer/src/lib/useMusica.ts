@@ -2,6 +2,8 @@ import { useEffect, useRef, useSyncExternalStore } from 'react'
 import type { SegmentKind, Settings } from '../types'
 import * as spotify from './spotify'
 import * as youtube from './youtube'
+import * as audio from './musicaAudio'
+import { cosaSiFerma, musicaPronta } from './musicaLocale'
 import type { Lettore } from './spotify'
 import type { Status } from './useTimer'
 import { musicaAttiva } from './musicaAttiva'
@@ -26,7 +28,7 @@ export interface Comandi {
 
 export interface Musica {
   fonte: Settings['musicaFonte']
-  /** C'è qualcosa da comandare: Spotify collegato, o un link di YouTube valido. */
+  /** C'è qualcosa da comandare: Spotify collegato, un link di YouTube valido, dei file o una radio. */
   attiva: boolean
   lettore: Lettore | null
   errore: string | null
@@ -40,6 +42,17 @@ export interface Musica {
 export function useMusica(settings: Settings): Musica {
   const sp = useSpotify()
   const yt = useSyncExternalStore(youtube.ascoltaYoutube, youtube.statoYoutube)
+  const au = useSyncExternalStore(audio.ascoltaAudio, audio.statoAudio)
+  useUnaFonteSola(settings.musicaFonte)
+  if (settings.musicaFonte === 'file' || settings.musicaFonte === 'radio') {
+    return {
+      fonte: settings.musicaFonte,
+      attiva: musicaPronta(settings, { spotifyCollegato: sp.collegato, nFile: au.elenco.length, radio: settings.radio.trim() || null }),
+      lettore: au.lettore,
+      errore: au.errore,
+      comandi: audio,
+    }
+  }
   if (settings.musicaFonte === 'youtube') {
     return {
       fonte: 'youtube',
@@ -50,6 +63,18 @@ export function useMusica(settings: Settings): Musica {
     }
   }
   return { fonte: 'spotify', attiva: musicaAttiva(settings, sp.collegato), lettore: sp.lettore, errore: sp.errore, comandi: spotify }
+}
+
+/**
+ * Una fonte sola alla volta. YouTube, i file e la radio si fermano da sé quando
+ * il loro lettore si smonta; Spotify suona altrove e va fermato a mano.
+ */
+function useUnaFonteSola(fonte: Settings['musicaFonte']) {
+  const prima = useRef<Settings['musicaFonte'] | null>(null)
+  useEffect(() => {
+    if (cosaSiFerma(prima.current, fonte).includes('spotify')) void spotify.pausa()
+    prima.current = fonte
+  }, [fonte])
 }
 
 /** I blocchi in cui la musica scende: si riprende fiato e si ascolta l'istruttore. */
