@@ -28,6 +28,11 @@ const Ferma = ({ size = 22 }: P) => (
     <rect x="14" y="4" width="4" height="16" />
   </svg>
 )
+const Spegni = ({ size = 22 }: P) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden="true">
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+)
 const Liste = ({ size = 24 }: P) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden="true">
     <path d="M4 6h16M4 12h16M4 18h10" />
@@ -56,6 +61,7 @@ export function MusicaSala({
   scelta,
   spotifyCollegato,
   onScegli,
+  onSpegni,
 }: {
   musica: Musica
   liste: ListaMusica[]
@@ -63,6 +69,8 @@ export function MusicaSala({
   scelta: string | null
   spotifyCollegato: boolean
   onScegli: (l: ListaMusica | null) => void
+  /** Spegne la musica su questo tablet: sparisce la barra e il lettore. */
+  onSpegni: () => void
 }) {
   const [aperte, setAperte] = useState(false)
   // File e radio senza niente da suonare dicono perché (file spariti, radio caduta): non restano muti.
@@ -164,6 +172,10 @@ export function MusicaSala({
           <Liste />
         </button>
       )}
+
+      <button type="button" className="tb-musica-tasto" onClick={onSpegni} aria-label="Spegni la musica e nascondi il lettore">
+        <Spegni />
+      </button>
 
       {aperte && (
         <div className="tb-liste" role="dialog" aria-label="La musica della sala">

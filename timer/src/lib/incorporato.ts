@@ -21,7 +21,7 @@ export interface Incorporato {
   /** La lezione in cui ci si segna adesso: in cima i timer del suo corso. */
   lezione: Lezione | null
   /** Fonte e link della musica scelti in sala, al posto di quelli delle impostazioni. */
-  musica: Pick<Settings, 'musicaFonte' | 'youtube' | 'radio'>
+  musica: Pick<Settings, 'musicaFonte' | 'youtube' | 'radio'> & { musica?: false }
   /**
    * Il timer uguale per tutti i tablet, con la voce e il catalogo degli
    * esercizi scelti dalla segreteria; nullo finché non si è letto (senza rete,

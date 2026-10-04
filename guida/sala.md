@@ -80,6 +80,13 @@ una scheda all'altra non si ferma, nemmeno con YouTube. Con YouTube il lettore
 si vede a destra, sopra la barra: YouTube vuole che resti visibile. Sotto il
 timer galleggia nell'angolo in basso a destra, sopra lo schermo.
 
+Il tasto **✕**, l'ultimo della barra, **spegne la musica su quel tablet**: la
+musica si ferma e spariscono la barra e il lettore, anche se nelle impostazioni
+del timer è accesa. Al suo posto c'è **ACCENDI LA MUSICA**, e la scelta resta
+anche se il tablet si ricarica. Se invece la musica è spenta dalle impostazioni
+del timer (**Player musicale**), sul tablet non c'è niente da accendere: la
+barra e il lettore spariscono da soli, appena si cambia l'impostazione.
+
 Il tasto **☰** accanto apre **LA MUSICA DELLA SALA**, le liste preparate dalla
 segreteria («Riscaldamento», «Randori»…): se ne tocca una e parte. **DALLE
 IMPOSTAZIONI DEL TIMER** torna a quella scelta nelle impostazioni del timer.

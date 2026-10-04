@@ -36,6 +36,15 @@ export function erroreDelLink(link: string): string | null {
   return fonteDelLink(link) === null && eHttp(link) ? MESSAGGIO_HTTP : null
 }
 
+/**
+ * La musica che il tablet passa al timer: fonte e link scelti in sala. Se chi è
+ * in sala l'ha spenta dal tablet, `musica: false` vince su quello che dicono le
+ * impostazioni; altrimenti il campo non c'è e valgono le impostazioni.
+ */
+export function musicaDellaSala<T extends object>(base: T, spenta: boolean): T | (T & { musica: false }) {
+  return spenta ? { ...base, musica: false } : base
+}
+
 export const MAX_NOME_LISTA = 40
 /** Quanto può essere lungo un link: lo dice anche il database. */
 const MAX_LINK = 500

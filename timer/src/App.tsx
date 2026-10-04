@@ -670,7 +670,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   // le automazioni, sulla stessa fonte.
   const settingsMusica = useMemo(
     () => (incorporato ? { ...settings, ...incorporato.musica } : settings),
-    [settings, incorporato?.musica.musicaFonte, incorporato?.musica.youtube, incorporato?.musica.radio], // eslint-disable-line react-hooks/exhaustive-deps
+    [settings, incorporato?.musica.musicaFonte, incorporato?.musica.youtube, incorporato?.musica.radio, incorporato?.musica.musica], // eslint-disable-line react-hooks/exhaustive-deps
   )
   const musica = useMusica(settingsMusica)
   const conYoutube = musica.fonte === 'youtube' && musica.attiva && !incorporato
