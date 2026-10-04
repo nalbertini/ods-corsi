@@ -45,7 +45,7 @@ const conCentesimi = (ms: number) => `${minutiSecondi(ms)}.${pad(centesimi(ms))}
  * Cronometro
  * ------------------------------------------------------------------ */
 
-export function CronometroScreen({ settings }: { settings: Settings }) {
+export function CronometroScreen({ settings, onChiudi }: { settings: Settings; onChiudi: () => void }) {
   // `partito` è l'istante in cui è ripartito, `banca` quello già accumulato
   // prima dell'ultima pausa: il tempo mostrato è sempre la somma dei due letta
   // adesso, mai un contatore incrementato a ogni tick.
@@ -101,6 +101,11 @@ export function CronometroScreen({ settings }: { settings: Settings }) {
   return (
     <div className="timer" data-attrezzo="true" style={{ ['--state' as string]: 'var(--blu)' }}>
       <div className="row timer-top">
+        <button className="icon-btn testo" onClick={onChiudi} aria-label="Torna ai timer">
+          <span className="cond" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em' }}>
+            TIMER
+          </span>
+        </button>
         <div className="stack grow" style={{ gap: 1, minWidth: 0 }}>
           <span className="ob titolo-timer">CRONOMETRO</span>
           <span className="sottotitolo-timer" style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', color: 'var(--dim)' }}>
@@ -192,11 +197,11 @@ export function CronometroScreen({ settings }: { settings: Settings }) {
  * sala, e si dà il via quando la sala è pronta. Quindi scegliere prepara e
  * basta; a far partire è AVVIA.
  */
-export function CountdownTab({ settings }: { settings: Settings }) {
-  return <ContaAllaRovescia settings={settings} />
+export function CountdownTab({ settings, onChiudi }: { settings: Settings; onChiudi: () => void }) {
+  return <ContaAllaRovescia settings={settings} onChiudi={onChiudi} />
 }
 
-function ContaAllaRovescia({ settings }: { settings: Settings }) {
+function ContaAllaRovescia({ settings, onChiudi }: { settings: Settings; onChiudi: () => void }) {
   const [durata, setDurata] = useState(DURATE_AL_VOLO[0])
   const [fine, setFine] = useState<number | null>(null)
   const [restoInPausa, setRestoInPausa] = useState(DURATE_AL_VOLO[0] * 1000)
@@ -366,6 +371,11 @@ function ContaAllaRovescia({ settings }: { settings: Settings }) {
   return (
     <div className="timer" data-attrezzo="true" style={{ ['--state' as string]: tinta }}>
       <div className="row timer-top">
+        <button className="icon-btn testo" onClick={onChiudi} aria-label="Torna ai timer">
+          <span className="cond" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em' }}>
+            TIMER
+          </span>
+        </button>
         <div className="stack grow" style={{ gap: 1, minWidth: 0 }}>
           <span className="ob titolo-timer">CONTO ALLA ROVESCIA</span>
           <span className="sottotitolo-timer" style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', color: 'var(--dim)' }}>

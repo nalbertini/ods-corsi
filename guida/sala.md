@@ -33,9 +33,10 @@ aprite l'appello completo e lo correggete.
 ## Il timer
 
 **TIMER**, nella barra in basso, apre il timer dentro il tablet: è lo stesso
-timer del telefono, con cronometro, conto alla rovescia e impostazioni. Se in
-quel momento ci si segna a una lezione, in cima c'è **DI QUESTA LEZIONE**, i
-timer che l'istruttore ha scelto per quella lezione sola, poi **DEL CORSO**, i
+timer del telefono. In cima alla lista, in **STRUMENTI**, ci sono il
+cronometro e il conto alla rovescia: si aprono a tutto schermo e con la X si
+torna ai timer. Se in quel momento ci si segna a una lezione, subito sotto c'è
+**DI QUESTA LEZIONE**, i timer che l'istruttore ha scelto per quella lezione sola, poi **DEL CORSO**, i
 timer collegati al corso, poi quelli della palestra. Li scelgono gli
 istruttori, in [I MIEI TIMER](istruttori.md#i-miei-timer).
 
@@ -94,7 +95,21 @@ Il tasto **☰** accanto apre **LA MUSICA DELLA SALA**, le liste preparate dalla
 segreteria («Riscaldamento», «Randori»…): se ne tocca una e parte. **DALLE
 IMPOSTAZIONI DEL TIMER** torna a quella scelta nelle impostazioni del timer.
 Le liste di Spotify vogliono Spotify collegato sul tablet (Impostazioni del
-timer › Musica, con l'area istruttore aperta); senza, sono spente.
+timer › Musica, con l'area istruttore aperta); senza, sono spente. Se alle liste
+è stata data una disciplina, sopra l'elenco ci sono i pulsanti per sceglierne una
+(**TUTTE** le mostra tutte): una lista di «Tutte» compare sotto ognuna.
+
+Due fonti non hanno pubblicità né account e non vogliono un riquadro da tenere
+in vista. **RADIO**: la segreteria scrive nelle liste l'indirizzo di una radio
+(comincia con https); ⏮ e ⏭ restano spenti. Se la radio cade la barra lo dice,
+con il tasto **Riprova**: da sola non riparte. **FILE DEL TABLET**: si scelgono
+dalle impostazioni del timer, con l'area istruttore aperta, e restano su
+questo apparecchio (sugli altri tablet vanno scelti di nuovo). Suonano in
+ordine casuale, anche senza rete. Se il tablet li perde, la barra dice di
+sceglierli di nuovo.
+
+Dopo un ricaricamento la musica non riparte da sola: la barra dice «Tocca ▶ per
+farla partire».
 
 Se nelle impostazioni del timer sono accese, la musica parte e si ferma col
 timer e si abbassa nel recupero, qualunque lista suoni.

@@ -100,7 +100,7 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- Cosa cambia un istruttore di una sua lezione: lo stato, la nota e, dal 39,
+-- Cosa cambia un istruttore di una sua lezione: lo stato, la nota e, dal 41,
 -- l'attività. Orario, sala, corso e istruttore restano alla segreteria. Senza
 -- utente (un job, i trigger della segreteria) passa tutto.
 -- ---------------------------------------------------------------------------

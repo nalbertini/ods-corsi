@@ -9,9 +9,10 @@ import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
-import { fonteDelLink, MAX_NOME_LISTA } from './musica'
+import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
+import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
@@ -40,7 +41,7 @@ interface RigaSessione {
   corsi: { nome: string; colore: string | null; capienza: number | null; sala_id: string | null; istruttore_id: string | null } | null
   sale: { nome: string } | null
   persone: { nome: string; cognome: string } | null
-  /** Arrivano con 39-attivita.sql: senza, la lettura è quella di prima. */
+  /** Arrivano con 41-attivita.sql: senza, la lettura è quella di prima. */
   attivita_id?: string | null
   attivita?: { nome: string } | null
   ricorrenze?: { attivita_id: string | null } | null
@@ -121,7 +122,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/presenze_istruttori/, 'Le presenze degli istruttori non sono ancora attive sul database: va lanciato 15-presenze-istruttori.sql'],
 ]
 
-const MANCA_ATTIVITA = 'Le attività non sono ancora attive sul database: va lanciato 39-attivita.sql'
+const MANCA_ATTIVITA = 'Le attività non sono ancora attive sul database: va lanciato 41-attivita.sql'
 
 const MANCA_DOPPIO = 'Il ruolo doppio, segreteria e istruttore, non è ancora attivo sul database: va rilanciato 01-schema.sql'
 
@@ -168,7 +169,7 @@ function sconosciuto(testo: string | undefined, altrimenti = 'Non è andata: rip
 
 /** Un errore del database detto in modo che la segreteria lo capisca. */
 function guaio(e: { message?: string; code?: string } | null): Error {
-  // Le attività arrivano con 39-attivita.sql: la colonna, la tabella o il legame che mancano.
+  // Le attività arrivano con 41-attivita.sql: la colonna, la tabella o il legame che mancano.
   if (/attivita/.test(e?.message ?? '')) {
     if (mancaAttivita(e) || e?.code === 'PGRST204') return new Error(MANCA_ATTIVITA)
     if (e?.code === '23505') return new Error("C'è già un'attività con questo nome")
@@ -180,6 +181,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
     if (t) return new Error(t[1])
     return new Error(`Manca una tabella sul database: va lanciato il file che la crea (controllo.sql dice quale). ${e.message ?? ''}`.trim())
   }
+  // Una radio nelle liste della musica: il vincolo del link la ammette dal 39.
+  if (e?.code === '23514' && /musica_sale_link_check/.test(e.message ?? ''))
+    return new Error('Le radio nelle liste non sono ancora attive sul database: va lanciato 39-musica-radio.sql')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
     return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
   if (e?.code === '42703' && /ricevute/.test(e.message ?? '')) return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
@@ -199,6 +203,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === 'P0002' && /allegato/.test(e.message ?? '')) return new Error('Questo allegato non c’è più')
   if (e?.code === '42501' && /allegato/.test(e.message ?? '')) return new Error('Un allegato lo toglie solo chi l’ha mandato')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /allegato/.test(e.message ?? '')) return new Error(MANCANO_ALLEGATI)
+  // Le discipline arrivano con 40-discipline.sql.
+  if ((e?.code === '42703' || e?.code === 'PGRST204') && /disciplin/.test(e.message ?? ''))
+    return new Error('Le discipline non sono ancora attive sul database: va lanciato 40-discipline.sql')
   // La categoria delle segnalazioni arriva con 38-segnalazioni-categoria.sql.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /categoria/.test(e.message ?? ''))
     return new Error('Le categorie delle segnalazioni non sono ancora attive sul database: va lanciato 38-segnalazioni-categoria.sql')
@@ -262,6 +269,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     const { count, error } = await db.from(tabella).select('id', { count: 'exact', head: true }).eq('attivita_id', id)
     if (error) throw guaio(error)
     return count ?? 0
+  }
+
+  /** Le discipline della palestra; senza 40-discipline.sql (colonna mancante) quelle di partenza. */
+  const leggiDiscipline = async () => {
+    const r = await db.from('impostazioni').select('discipline').maybeSingle()
+    if (r.error?.code === '42703') return disciplineDa(null)
+    return disciplineDa((ok(r) as { discipline?: unknown } | null)?.discipline)
   }
 
   /** `salva_date_corsi`: conta soltanto, o salva e toglie. */
@@ -417,7 +431,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         db.from('sessioni').select(colonne).gte('inizio', da.toISOString()).lte('inizio', fino.toISOString()).order('inizio')
       const BASE = 'id, corso_id, ricorrenza_id, inizio, fine, stato, sala_id, istruttore_id, corsi ( nome, colore, capienza, sala_id, istruttore_id ), sale ( nome ), persone ( nome, cognome )'
       let lette = await leggi(`${BASE}, attivita_id, attivita ( nome ), ricorrenze ( attivita_id )`)
-      // Senza 39-attivita.sql le lezioni si leggono come prima, senza attività.
+      // Senza 41-attivita.sql le lezioni si leggono come prima, senza attività.
       if (mancaAttivita(lette.error)) lette = await leggi(BASE)
       const sessioni = ok(lette) as unknown as RigaSessione[]
       const corsi = [...new Set(sessioni.map((s) => s.corso_id))]
@@ -509,7 +523,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const leggi = (giorno: string) =>
         db.from('corsi').select(`id, nome, colore, capienza, attivo, sala_id, istruttore_id, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al, sala_id, sale ( nome )${giorno} )`).order('nome')
       let lette = await leggi(', attivita_id, attivita ( nome )')
-      // Senza 39-attivita.sql i giorni si leggono come prima, senza attività.
+      // Senza 41-attivita.sql i giorni si leggono come prima, senza attività.
       if (mancaAttivita(lette.error)) lette = await leggi('')
       const righe = ok(lette) as unknown as Array<{
         id: string; nome: string; colore: string | null; capienza: number | null; attivo: boolean; sala_id: string | null; istruttore_id: string | null
@@ -594,13 +608,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async attivitaRicorrenza(ricorrenzaId, attivitaId) {
-      // Le lezioni future che la seguivano le cambia il trigger di 39-attivita.sql.
+      // Le lezioni future che la seguivano le cambia il trigger di 41-attivita.sql.
       ok(await db.from('ricorrenze').update({ attivita_id: attivitaId }).eq('id', ricorrenzaId))
     },
 
     async attivita() {
       const r = await db.from('attivita').select('id, nome, attiva')
-      if (mancaAttivita(r.error)) return { elenco: [], manca: 'va lanciato 39-attivita.sql' }
+      if (mancaAttivita(r.error)) return { elenco: [], manca: 'va lanciato 41-attivita.sql' }
       const righe = ok(r) as unknown as Array<{ id: string; nome: string; attiva: boolean }>
       // Su quanti giorni e quante lezioni è: una conta per voce, sono poche.
       const elenco = await Promise.all(
@@ -1154,18 +1168,26 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async listeMusica() {
-      const righe = ok(await db.from('musica_sale').select('id, nome, link, sala_id').order('ordine').order('nome')) as Array<{
-        id: string; nome: string; link: string; sala_id: string | null
-      }>
-      return righe.map((r) => ({ id: r.id, nome: r.nome, link: r.link, salaId: r.sala_id }))
+      type Riga = { id: string; nome: string; link: string; sala_id: string | null; disciplina?: string | null }
+      // Senza 40-discipline.sql la colonna non c'è: le liste si leggono senza disciplina.
+      const con = await db.from('musica_sale').select('id, nome, link, sala_id, disciplina').order('ordine').order('nome')
+      const senza = con.error?.code === '42703' ? await db.from('musica_sale').select('id, nome, link, sala_id').order('ordine').order('nome') : null
+      const righe = ok(senza ?? con) as Riga[]
+      const discipline = await leggiDiscipline()
+      return righe.map((x) => {
+        const disciplina = ripulisciDisciplina(x.disciplina, discipline)
+        return { id: x.id, nome: x.nome, link: x.link, salaId: x.sala_id, ...(disciplina ? { disciplina } : {}) }
+      })
     },
 
     async salvaListaMusica(l) {
       const nome = l.nome.trim().slice(0, MAX_NOME_LISTA)
       const link = l.link.trim()
       if (!nome) throw new Error('La lista ha bisogno di un nome')
-      if (!fonteDelLink(link)) throw new Error('Il link non è una playlist di YouTube o di Spotify')
-      const riga = { nome, link, sala_id: l.salaId }
+      if (!fonteDelLink(link)) throw new Error(erroreDelLink(link) ?? 'Il link non è una playlist di YouTube o di Spotify, né una radio')
+      // Assente = non si tocca; nulla o sconosciuta = nessuna. La colonna c'è con 40-discipline.sql.
+      const disciplina = disciplinaDaSalvare(l, await leggiDiscipline())
+      const riga = { nome, link, sala_id: l.salaId, ...(disciplina !== undefined ? { disciplina } : {}) }
       if (l.id) {
         ok(await db.from('musica_sale').update(riga).eq('id', l.id))
         return l.id
@@ -1209,12 +1231,25 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async eserciziPalestra() {
       const r = ok(await db.from('impostazioni').select('esercizi').maybeSingle()) as { esercizi: unknown } | null
-      return eserciziDellaPalestra(r?.esercizi)
+      return eserciziDellaPalestra(r?.esercizi, await leggiDiscipline())
     },
 
     async salvaEserciziPalestra(l) {
-      const lista = eserciziDellaPalestra(l) ?? []
-      ok(await db.from('impostazioni').update({ esercizi: lista.map(({ id, nome, categoria }) => ({ id, nome, categoria })) }).eq('id', true))
+      const lista = eserciziDellaPalestra(l, await leggiDiscipline()) ?? []
+      ok(
+        await db
+          .from('impostazioni')
+          .update({ esercizi: lista.map(({ id, nome, categoria, disciplina }) => ({ id, nome, categoria, ...(disciplina ? { disciplina } : {}) })) })
+          .eq('id', true),
+      )
+    },
+
+    async discipline() {
+      return leggiDiscipline()
+    },
+
+    async salvaDiscipline(l) {
+      ok(await db.from('impostazioni').update({ discipline: disciplineDa(l) }).eq('id', true))
     },
 
     async presenzeIstruttori(giorni) {

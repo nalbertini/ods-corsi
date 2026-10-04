@@ -44,7 +44,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   Sparring…), scelta da un elenco che la segreteria tiene in IMPOSTAZIONI; si
   cambia anche per una lezione sola, e l'istruttore cambia quella della sua.
   Si vede accanto all'orario su calendario, appello e tablet di sala
-  (`supabase/39-attivita.sql`).
+  (`supabase/41-attivita.sql`).
 - **I miei timer**: nell'area istruttori, quali timer partono con ogni corso e
   con ogni singola lezione delle prossime due settimane, anche più d'uno;
   quelli di una lezione vengono prima di quelli del corso, dall'appello e sul tablet di sala
@@ -211,7 +211,11 @@ presenze, quindi un allenamento avviato continua mentre chi arriva tardi si
 segna; la testata ne mostra l'intervallo, i secondi e il colore. Nella barra
 c'è anche la musica, sempre nello stesso punto: il lettore di YouTube non si
 sposta e non si ricarica cambiando scheda. Le liste della musica le prepara la
-segreteria (`supabase/09-musica.sql`), e così la voce di sistema dei tablet,
+segreteria (`supabase/09-musica.sql`; le radio, indirizzi https, con
+`supabase/39-musica-radio.sql`). Oltre a YouTube e Spotify la musica può venire
+da **file del tablet** (nella memoria del browser, in ordine casuale) e da
+**radio**, con un `<audio>` senza account né pubblicità (`timer/src/lib/musicaAudio.ts`,
+regole in `musicaLocale.ts`), e così la voce di sistema dei tablet,
 le clip della voce incisa e il catalogo degli esercizi, da **Impostazioni** ed
 **Esercizi** (`supabase/13-voce-esercizi.sql`,
 `timer/src/lib/impostazioniSala.ts`); in Impostazioni c'è anche lo storico dei
@@ -364,7 +368,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | | |
 |---|---|
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
-| `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. L'«Attività» di ogni giorno scelta da un elenco: nomi, rinomina, eliminazione, NON PIÙ IN USO, giorno e lezioni, l'istruttore che cambia la sua, il database senza `39-attivita.sql`. SALVA LE DATE che toglie le lezioni fuori dalle date dei corsi, tranne quelle con l'appello o una prova: la conferma prima, col conto, e l'avviso dopo, con corso e ora di quelle rimaste. |
+| `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. L'«Attività» di ogni giorno scelta da un elenco: nomi, rinomina, eliminazione, NON PIÙ IN USO, giorno e lezioni, l'istruttore che cambia la sua, il database senza `41-attivita.sql`. SALVA LE DATE che toglie le lezioni fuori dalle date dei corsi, tranne quelle con l'appello o una prova: la conferma prima, col conto, e l'avviso dopo, con corso e ora di quelle rimaste. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
 | `npm run prova:listino` | Il legame fra corsi e voci del listino per id: rinomina, voci doppie, corsi senza prezzo o voci senza corso, aggancio dei listini vecchi per nome. |
@@ -397,7 +401,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/non-doppioni.sql` | Le coppie «non sono doppioni»: le vede, le segna e le toglie solo la segreteria, una riga per coppia a nome di chi scrive; se ne vanno con la scheda, e unendo due schede passano senza fermare l'unione. |
 | `supabase/prova/segnalazioni.sql` | Le segnalazioni: le legge e le scrive solo la segreteria, a nome suo; si risponde a un filo e non a una risposta; un messaggio scritto non si cambia, di un filo si cambia solo se è chiuso e la categoria (idea o correzione, obbligatoria per un filo nuovo, mai su una risposta), e niente si cancella. Istruttore, iscritto, tablet e chi non ha accesso non vedono niente. Gli allegati: bucket privato, max 3 per messaggio, tipi e 10 MB, li toglie solo chi li ha mandati (resta la traccia), si tolgono da soli 30 giorni dopo la chiusura. |
 | `supabase/prova/informativa-mesi.sql` | Per quanto si tengono le presenze, per l'informativa: chi non ha un accesso legge i mesi scelti dalla segreteria e nient'altro delle impostazioni, anche dopo aver rilanciato `06-iscrizioni.sql`. |
-| `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia. In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
+| `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia; anche le radio (indirizzi https). In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`
 applicato prima: rifà il minimo che Supabase mette a disposizione.

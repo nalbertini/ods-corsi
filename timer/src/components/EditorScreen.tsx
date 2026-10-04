@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import type { Esercizio } from '../lib/esercizi'
+import type { Disciplina } from '../lib/discipline'
 import { PickerEsercizi } from './PickerEsercizi'
+import { SceltaDisciplina } from './DisciplinaScelta'
 import type { Dove, Exercise, Segment, Workout } from '../types'
 import type { Corso } from '../lib/libreria'
 import { MODE_BADGE, MODE_FIELDS, MODE_HINT, MODE_LABEL, descriviObiettivo, totalDuration } from '../lib/engine'
@@ -136,6 +138,7 @@ export function EditorScreen({
   destinazioni,
   corsi,
   catalogo,
+  discipline,
   onCatalogo,
   onSave,
   onCancel,
@@ -149,6 +152,7 @@ export function EditorScreen({
   /** I corsi a cui si può collegare, con l'accesso da istruttore. */
   corsi: Corso[]
   catalogo: Esercizio[]
+  discipline: Disciplina[]
   onCatalogo: (lista: Esercizio[]) => void
   onSave: (w: Workout) => void
   onCancel: () => void
@@ -230,6 +234,7 @@ export function EditorScreen({
     return (
       <PickerEsercizi
         catalogo={catalogo}
+        discipline={discipline}
         onCatalogo={onCatalogo}
         onScegli={scegli}
         onChiudi={() => setScegliendo(null)}
@@ -261,6 +266,12 @@ export function EditorScreen({
             onChange={(e) => set({ name: e.target.value })}
           />
         </div>
+
+        {discipline.length > 0 && (
+          <div className="pad" style={{ paddingTop: 8 }}>
+            <SceltaDisciplina discipline={discipline} valore={w.disciplina} onCambia={(d) => set({ disciplina: d })} />
+          </div>
+        )}
 
         {/* Lo schema si sceglie nella schermata prima, e qui si legge soltanto:
             un elenco di schemi da ri-scegliere dentro l'editor era un bivio

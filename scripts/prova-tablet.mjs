@@ -427,7 +427,7 @@ console.log('\nl’«Attività» sul tablet con il database: le due letture faco
   ok('database completo: kanji e attività', await vista(true, true), [1, 'Body functional', '虎', 'Sacco'])
   ok('senza kanji: l\'attività resta', await vista(false, true), [1, 'Body functional', undefined, 'Sacco'])
   for (const [come, risposta] of Object.entries(MANCANZE)) {
-    ok(`senza 39-attivita.sql (${come}): le lezioni come oggi, il kanji resta`, await vista(true, risposta), [1, 'Body functional', '虎', undefined])
+    ok(`senza 41-attivita.sql (${come}): le lezioni come oggi, il kanji resta`, await vista(true, risposta), [1, 'Body functional', '虎', undefined])
   }
   ok('senza né kanji né attività: le lezioni come oggi', await vista(false, MANCANZE['funzione assente']), [1, 'Body functional', undefined, undefined])
 }

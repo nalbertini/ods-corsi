@@ -43,6 +43,8 @@ interface Magro {
   e: Array<[string, number, number, number, number, number?]>
 }
 
+// La disciplina non viaggia nel link, di proposito: è un id della lista di una
+// palestra, e chi riceve il link può stare su un'altra lista, dove non esisterebbe.
 function magro(w: Workout): Magro {
   return {
     n: w.name,

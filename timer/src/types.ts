@@ -29,6 +29,8 @@ export interface Exercise {
 export interface Workout {
   id: string
   name: string
+  /** La disciplina (id della lista della palestra), o `tutte`; senza, nessuna in particolare. */
+  disciplina?: string
   mode: Mode
   /** Conto alla rovescia iniziale, prima del primo lavoro. */
   prepare: number
@@ -114,10 +116,12 @@ export interface Settings {
   bigScreen: boolean
   /** Il player musicale: spento, non compare e non suona niente. */
   musica: boolean
-  /** Da dove viene la musica: Spotify, comandato da fuori, o YouTube, suonato qui. */
-  musicaFonte: 'spotify' | 'youtube'
+  /** Da dove viene la musica: Spotify (comandato da fuori), YouTube, i file del tablet o una radio. */
+  musicaFonte: 'spotify' | 'youtube' | 'file' | 'radio'
   /** Il link di YouTube, playlist o video, quando la fonte è YouTube. */
   youtube: string
+  /** L'indirizzo della radio, quando la fonte è la radio. */
+  radio: string
   /** La musica parte e si ferma insieme al timer. */
   musicaSegue: boolean
   /** Nel recupero la musica scende a `musicaRecupero`. */

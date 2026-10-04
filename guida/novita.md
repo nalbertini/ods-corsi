@@ -10,6 +10,36 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.31.0 — 4 ottobre 2026
+
+### Novità
+
+- Cronometro e conto alla rovescia stanno fra i timer, con la stessa grafica
+
+## 0.30.0 — 4 ottobre 2026
+
+### Novità
+
+- Anche i timer e le liste di musica si dividono per disciplina
+
+## 0.29.0 — 4 ottobre 2026
+
+### Novità
+
+- Gli esercizi si dividono per disciplina (Judo, Lotta, Pilates, Yoga…), e la segreteria ne tiene la lista
+
+## 0.28.0 — 4 ottobre 2026
+
+### Novità
+
+- La musica della sala anche da file del tablet e da radio, senza pubblicità né account
+
+## 0.27.4 — 4 ottobre 2026
+
+### Risolto
+
+- Nella scaletta del timer i nomi dei passi sono tutti in maiuscolo
+
 ## 0.27.3 — 4 ottobre 2026
 
 ### Risolto

@@ -1,4 +1,5 @@
-import { leggiLink, leggiLinkSpotify } from '../../timer/src/lib/link'
+import { eHttp, leggiLink, leggiLinkSpotify, leggiRadio, MESSAGGIO_HTTP } from '../../timer/src/lib/link'
+import { type Disciplina, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 
 /**
  * La musica delle sale: le liste che la segreteria prepara e il tablet fa
@@ -15,15 +16,37 @@ export interface ListaMusica {
   link: string
   /** Nulla: per tutte le sale. */
   salaId: string | null
+  /** La disciplina (id della lista della palestra), o `tutte`; senza, nessuna in particolare. */
+  disciplina?: string
 }
 
-export type FonteMusica = 'youtube' | 'spotify'
+/**
+ * La disciplina da scrivere salvando una lista: `undefined` se non se ne parla
+ * (la riga resta com'era), `null` per toglierla, altrimenti l'id. Una
+ * disciplina che non esiste vale «nessuna».
+ */
+export function disciplinaDaSalvare(l: { disciplina?: string | null }, discipline: Disciplina[]): string | null | undefined {
+  if (!('disciplina' in l)) return undefined
+  return ripulisciDisciplina(l.disciplina, discipline) ?? null
+}
 
-/** Da dove viene un link: YouTube, Spotify, o niente che si sappia suonare. */
+export type FonteMusica = 'youtube' | 'spotify' | 'radio'
+
+/**
+ * Da dove viene un link: YouTube, Spotify, una radio (un indirizzo https
+ * qualunque), o niente che si sappia suonare. L'http semplice non va: l'app è
+ * su https e il browser blocca il suono (vedi `erroreDelLink`).
+ */
 export function fonteDelLink(link: string): FonteMusica | null {
   if (leggiLink(link)) return 'youtube'
   if (leggiLinkSpotify(link)) return 'spotify'
-  return null
+  return leggiRadio(link) ? 'radio' : null
+}
+
+/** Cosa dire a chi scrive un indirizzo che comincia con http: null se non è il caso. */
+export function erroreDelLink(link: string): string | null {
+  if (link.trim().length > MAX_LINK) return 'Il link è troppo lungo'
+  return fonteDelLink(link) === null && eHttp(link) ? MESSAGGIO_HTTP : null
 }
 
 /**
@@ -36,3 +59,5 @@ export function musicaDellaSala<T extends object>(base: T, spenta: boolean): T |
 }
 
 export const MAX_NOME_LISTA = 40
+/** Quanto può essere lungo un link: lo dice anche il database. */
+const MAX_LINK = 500

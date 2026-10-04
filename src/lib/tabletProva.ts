@@ -315,12 +315,12 @@ export function creaTabletProva(): DatiTablet {
     async musica() {
       return (archivio.dati.musica ?? [])
         .filter((l) => l.sala === null || l.sala === sala)
-        .map((l) => ({ id: l.id, nome: l.nome, link: l.link, salaId: l.sala }))
+        .map((l) => ({ id: l.id, nome: l.nome, link: l.link, salaId: l.sala, ...(l.disciplina ? { disciplina: l.disciplina } : {}) }))
     },
 
     async timerSala() {
       const a = archivio.dati
-      return timerSala({ timer: a.timerSale, voce: a.voceSale, esercizi: a.eserciziSale })
+      return timerSala({ timer: a.timerSale, voce: a.voceSale, esercizi: a.eserciziSale, discipline: a.discipline })
     },
 
     async salvaTimerSala(i) {

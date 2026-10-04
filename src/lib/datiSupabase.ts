@@ -41,7 +41,7 @@ interface RigaSessione {
   } | null
   sale: { nome: string } | null
   persone: { nome: string; cognome: string; kanji?: string | null } | null
-  /** Cosa si fa in quella lezione, che arriva con 39-attivita.sql. */
+  /** Cosa si fa in quella lezione, che arriva con 41-attivita.sql. */
   attivita?: { nome: string } | null
 }
 
@@ -87,7 +87,7 @@ const SELEZIONE_BASE = `
   sale ( nome ),
   persone ( nome, cognome__KANJI__ )__ATTIVITA__
 `
-/** Le due colonne facoltative: il kanji dell'istruttore (24-kanji.sql) e l'attività della lezione (39-attivita.sql). */
+/** Le due colonne facoltative: il kanji dell'istruttore (24-kanji.sql) e l'attività della lezione (41-attivita.sql). */
 const selezione = (kanji: boolean, attivita: boolean) =>
   SELEZIONE_BASE.replace('__KANJI__', kanji ? ', kanji' : '').replace('__ATTIVITA__', attivita ? ',\n  attivita ( nome )' : '')
 
@@ -241,7 +241,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
 
     async attivita() {
       const { data, error } = await db.from('attivita').select('id, nome, attiva')
-      // Senza 39-attivita.sql non c'è niente da scegliere.
+      // Senza 41-attivita.sql non c'è niente da scegliere.
       if (mancaAttivita(error)) return []
       if (error) throw error
       return attivitaPerMenu((data ?? []) as Array<{ id: string; nome: string; attiva: boolean }>).map(({ id, nome }) => ({ id, nome }))

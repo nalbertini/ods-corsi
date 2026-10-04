@@ -1,6 +1,7 @@
-import type { Workout } from '../types'
+import type { Mode, Workout } from '../types'
 import type { Accesso } from './palestra'
 import type { Lezione } from './lezione'
+import { dellaDisciplina } from './discipline'
 
 /** Una sezione della lista dei timer. */
 export interface Gruppo {
@@ -14,11 +15,21 @@ export interface Gruppo {
 const piùRecenti = (a: Workout, b: Workout) => b.updatedAt - a.updatedAt
 
 /**
+ * Le sezioni della lista, per disciplina se se ne sceglie una: i timer di quella
+ * disciplina e quelli di «tutte». Le sezioni che il filtro svuota spariscono,
+ * anche quelle con la frase «nessun timer»; l'ordine non cambia.
+ */
+export function gruppiDi(timer: Workout[], accesso: Accesso, lezione: Lezione | null, disciplina: string | null = null): Gruppo[] {
+  if (disciplina === null) return sezioniDi(timer, accesso, lezione)
+  return sezioniDi(dellaDisciplina(timer, disciplina), accesso, lezione).filter((g) => g.timer.length > 0)
+}
+
+/**
  * Le sezioni della lista. Senza database, o senza un accesso, è una sola,
  * com'è sempre stata. Con l'accesso i timer si dividono per dove stanno, e se
  * si arriva da una lezione in cima ci sono quelli del suo corso.
  */
-export function gruppiDi(timer: Workout[], accesso: Accesso, lezione: Lezione | null): Gruppo[] {
+function sezioniDi(timer: Workout[], accesso: Accesso, lezione: Lezione | null): Gruppo[] {
   const del = (f: (w: Workout) => boolean) => timer.filter(f).sort(piùRecenti)
   const gruppi: Gruppo[] = []
   // Il timer scelto per questa lezione sola viene prima di quelli del corso
@@ -74,3 +85,33 @@ export function gruppiDi(timer: Workout[], accesso: Accesso, lezione: Lezione | 
   })
   return gruppi
 }
+
+/**
+ * Cronometro e conto alla rovescia, in lista accanto ai timer. Non sono
+ * timer salvati (niente id, niente database): per questo non stanno nelle
+ * sezioni di `gruppiDi`, da cui il tablet ricava i timer della lezione, ma in
+ * una sezione loro, sempre in cima.
+ */
+export type Strumento = 'crono' | 'countdown'
+
+export interface SchedaStrumento {
+  chiave: Strumento
+  /** L'etichetta di tipo, dove i timer hanno INTERVALLI, EMOM... */
+  tipo: string
+  nome: string
+  riassunto: string
+}
+
+const STRUMENTI: SchedaStrumento[] = [
+  { chiave: 'crono', tipo: 'CRONOMETRO', nome: 'CRONOMETRO', riassunto: 'conta in salita · segna i giri' },
+  { chiave: 'countdown', tipo: 'ALLA ROVESCIA', nome: 'CONTO ALLA ROVESCIA', riassunto: '30″ – 3′ · scegli la durata' },
+]
+
+/** Con un filtro per tipo non compaiono: non hanno un tipo da filtrare. */
+export const strumentiDa = (filtro: Mode | 'all'): SchedaStrumento[] => (filtro === 'all' ? STRUMENTI : [])
+
+/** La barra laterale serve se ha più di una voce; sul tablet, con una sola, è vuota. */
+export const conBarra = (incorporato: boolean, voci: number) => !incorporato || voci > 1
+
+/** Lo strumento aperto prende lo schermo, ma solo nella scheda dei timer. */
+export const aTuttoSchermo = (tab: string, strumento: Strumento | null) => tab === 'timer' && strumento !== null

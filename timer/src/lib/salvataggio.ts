@@ -1,8 +1,10 @@
 import type { CoachLevel, HistoryEntry, Settings, Workout } from '../types'
 import { DEFAULT_SETTINGS } from './storage'
-import { CATEGORIE, type Categoria, type Esercizio } from './esercizi'
+import { categoriaEDisciplina, type Esercizio } from './esercizi'
+import { type Disciplina, DISCIPLINE_DI_PARTENZA, ripulisciDisciplina } from './discipline'
 import { MAX_CATALOGO, MAX_STORICO, MAX_TIMER, numeroSano, testoSano, workoutSano } from './sano'
 import { uid } from './format'
+import { leggiFonte } from './musicaLocale'
 
 /**
  * La copia di tutto, in un file.
@@ -69,8 +71,9 @@ function impostazioniSane(v: unknown): Settings {
     keepAwake: bool(o.keepAwake, DEFAULT_SETTINGS.keepAwake),
     bigScreen: bool(o.bigScreen, DEFAULT_SETTINGS.bigScreen),
     musica: bool(o.musica, DEFAULT_SETTINGS.musica),
-    musicaFonte: o.musicaFonte === 'youtube' ? 'youtube' : 'spotify',
+    musicaFonte: leggiFonte(o.musicaFonte),
     youtube: typeof o.youtube === 'string' ? o.youtube.slice(0, 500) : '',
+    radio: typeof o.radio === 'string' ? o.radio.slice(0, 500) : '',
     musicaSegue: bool(o.musicaSegue, DEFAULT_SETTINGS.musicaSegue),
     musicaAbbassa: bool(o.musicaAbbassa, DEFAULT_SETTINGS.musicaAbbassa),
     musicaRecupero: Math.round(numeroSano(o.musicaRecupero, 0, 100, DEFAULT_SETTINGS.musicaRecupero)),
@@ -115,7 +118,14 @@ export function comeFile(s: Salvataggio): Blob {
  * si crede sulla parola. In più qui si conservano le identità dei timer, perché
  * un ripristino rimette a posto i tuoi, non ne crea di nuovi.
  */
-export function leggiSalvataggio(testo: string): Salvataggio | null {
+/** Il timer con la sua disciplina solo se esiste ancora; altrimenti senza. */
+function conDisciplina(w: Workout, discipline: Disciplina[] = DISCIPLINE_DI_PARTENZA): Workout {
+  const { disciplina, ...resto } = w
+  const d = ripulisciDisciplina(disciplina, discipline)
+  return d ? { ...resto, disciplina: d } : resto
+}
+
+export function leggiSalvataggio(testo: string, discipline?: Disciplina[]): Salvataggio | null {
   let grezzo: unknown
   try {
     grezzo = JSON.parse(testo)
@@ -130,6 +140,7 @@ export function leggiSalvataggio(testo: string): Salvataggio | null {
     .slice(0, MAX_TIMER)
     .map((w) => workoutSano(w, false))
     .filter((w): w is Workout => w !== null)
+    .map((w) => conDisciplina(w, discipline))
 
   const esercizi = (Array.isArray(o.esercizi) ? o.esercizi : [])
     .slice(0, MAX_CATALOGO)
@@ -137,10 +148,7 @@ export function leggiSalvataggio(testo: string): Salvataggio | null {
       const x = (e ?? {}) as Record<string, unknown>
       const nome = testoSano(x.nome, 60)
       if (!nome) return null
-      const categoria = CATEGORIE.includes(x.categoria as Categoria)
-        ? (x.categoria as Categoria)
-        : 'A corpo libero'
-      const out: Esercizio = { id: testoSano(x.id, 40) || uid(), nome, categoria }
+      const out: Esercizio = { id: testoSano(x.id, 40) || uid(), nome, ...categoriaEDisciplina(x.categoria, x.disciplina, discipline) }
       if (x.propri === true) out.propri = true
       return out
     })

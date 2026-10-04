@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, motivoAttivitaUsata, testoDateSalvate, type AttivitaSeg, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
-import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
+import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
 import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -8,6 +8,8 @@ import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
 import { Importa } from './Importa'
 import type { Destinazione, Voce } from './Segreteria'
+import { type Disciplina, nomeDisciplina } from '../../../timer/src/lib/discipline'
+import { SelectDisciplina } from './TimerPalestra'
 
 /** I gruppi della pagina, da quello che si tocca a inizio stagione a quello che si tocca quasi mai. */
 const GRUPPI = {
@@ -50,6 +52,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
   const sale = useCarica(() => d.sale(), [d])
   const persone = useCarica(() => d.persone(), [d])
   const musica = useCarica(() => d.listeMusica(), [d])
+  const discipline = useCarica(() => d.discipline(), [d])
   const { avviso, avvisa, fai } = useAvviso()
   const [sala, setSala] = useState<{ id?: string; nome: string; capienza?: number } | null>(null)
   // Una sala aperta e cambiata (o una nuova con qualcosa scritto) non si perde uscendo.
@@ -192,7 +195,7 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
 
         <ElencoAttivita d={d} fai={fai} />
 
-        <MusicaSale d={d} sale={sale.dato ?? []} liste={musica.dato} guaio={musica.guaio} ricarica={musica.ricarica} fai={fai} />
+        <MusicaSale d={d} sale={sale.dato ?? []} discipline={discipline.dato ?? []} liste={musica.dato} guaio={musica.guaio} ricarica={musica.ricarica} fai={fai} />
 
         <VoceSale d={d} fai={fai} />
 
@@ -427,7 +430,7 @@ function ElencoAttivita({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
   return (
     <section aria-label="Le attività" className="sg-riquadro">
       <span className="ob sg-riquadro-titolo">LE ATTIVITÀ</span>
-      {manca && <span className="sg-manca" style={{ fontSize: 14 }}>Le attività non sono ancora attive sul database. Va lanciato l'aggiornamento 39.</span>}
+      {manca && <span className="sg-manca" style={{ fontSize: 14 }}>Le attività non sono ancora attive sul database. Va lanciato l'aggiornamento 41.</span>}
       {att.guaio && <Guaio testo={`Le attività non si leggono: ${att.guaio}`} />}
       {elenco.map((a: AttivitaSeg) => {
         if (bozza?.id === a.id) return <div key={a.id}>{form(bozza)}</div>
@@ -474,9 +477,9 @@ function ElencoAttivita({ d, fai }: { d: DatiSegreteria; fai: Fai }) {
     </section>
   )
 }
-type Bozza = { id?: string; nome: string; link: string; salaId: string | null }
+type Bozza = { id?: string; nome: string; link: string; salaId: string | null; disciplina?: string }
 
-const FONTE = { youtube: 'YOUTUBE', spotify: 'SPOTIFY' } as const
+const FONTE = { youtube: 'YOUTUBE', spotify: 'SPOTIFY', radio: 'RADIO' } as const
 
 /**
  * Le liste della musica che il tablet di ogni sala fa partire dalla sua barra
@@ -485,6 +488,7 @@ const FONTE = { youtube: 'YOUTUBE', spotify: 'SPOTIFY' } as const
 function MusicaSale({
   d,
   sale,
+  discipline,
   liste,
   guaio,
   ricarica,
@@ -492,6 +496,7 @@ function MusicaSale({
 }: {
   d: DatiSegreteria
   sale: Sala[]
+  discipline: Disciplina[]
   liste: ListaMusica[] | null
   guaio: string | null
   ricarica: () => Promise<unknown>
@@ -500,13 +505,16 @@ function MusicaSale({
   const [bozza, setBozza] = useState<Bozza | null>(null)
   const prima = liste?.find((l) => l.id === bozza?.id)
   useBozza(
-    !!bozza && (bozza.nome.trim() !== (prima?.nome ?? '') || bozza.link.trim() !== (prima?.link ?? '') || bozza.salaId !== (prima?.salaId ?? null)),
+    !!bozza && (bozza.nome.trim() !== (prima?.nome ?? '') || bozza.link.trim() !== (prima?.link ?? '') || bozza.salaId !== (prima?.salaId ?? null) || bozza.disciplina !== prima?.disciplina),
     prima?.nome,
   )
   const nomeSala = (id: string | null) => (id ? (sale.find((s) => s.id === id)?.nome ?? 'sala tolta') : 'Tutte le sale')
   const salva = () => {
     if (!bozza) return
-    void fai(() => d.salvaListaMusica(bozza), bozza.id ? 'Lista salvata' : 'Lista aggiunta', async () => {
+    // La disciplina si manda solo se è cambiata: così una lista si salva anche su un database senza 40-discipline.sql.
+    const { disciplina, ...senza } = bozza
+    const cambiata = disciplina !== prima?.disciplina
+    void fai(() => d.salvaListaMusica(cambiata ? { ...senza, disciplina: disciplina ?? null } : senza), bozza.id ? 'Lista salvata' : 'Lista aggiunta', async () => {
       setBozza(null)
       await ricarica()
     })
@@ -518,7 +526,7 @@ function MusicaSale({
       {guaio && <Guaio testo={`Le liste non si leggono: ${guaio}`} />}
       {(liste ?? []).map((l) =>
         bozza?.id === l.id ? (
-          <FormLista key={l.id} bozza={bozza} sale={sale} setBozza={setBozza} onSalva={salva} />
+          <FormLista key={l.id} bozza={bozza} sale={sale} discipline={discipline} setBozza={setBozza} onSalva={salva} />
         ) : (
           <div key={l.id} className="row sg-voce-elenco" style={{ gap: 12, flexWrap: 'wrap' }}>
             <span className="stack grow" style={{ minWidth: 0 }}>
@@ -528,7 +536,9 @@ function MusicaSale({
             <span className="num sg-tag" style={{ fontSize: 11, padding: '2px 6px' }}>
               {FONTE[fonteDelLink(l.link) ?? 'youtube']}
             </span>
-            <span className="num" style={{ fontSize: 14, color: 'var(--sec)', whiteSpace: 'nowrap' }}>{nomeSala(l.salaId)}</span>
+            <span className="num" style={{ fontSize: 14, color: 'var(--sec)', whiteSpace: 'nowrap' }}>
+              {[nomeSala(l.salaId), nomeDisciplina(l.disciplina, discipline)].filter(Boolean).join(' · ')}
+            </span>
             <button type="button" className="num sg-chip" onClick={() => setBozza({ ...l })}>
               CAMBIA
             </button>
@@ -548,7 +558,7 @@ function MusicaSale({
       )}
       {liste && liste.length === 0 && !bozza && <span className="sg-sotto">Nessuna lista: il tablet suona quella scelta nelle impostazioni del timer.</span>}
       {bozza && !bozza.id ? (
-        <FormLista bozza={bozza} sale={sale} setBozza={setBozza} onSalva={salva} />
+        <FormLista bozza={bozza} sale={sale} discipline={discipline} setBozza={setBozza} onSalva={salva} />
       ) : (
         <button type="button" className="sg-btn sg-btn-tratteggio" disabled={!liste} onClick={() => setBozza({ nome: '', link: '', salaId: null })}>
           + AGGIUNGI UNA LISTA
@@ -556,7 +566,7 @@ function MusicaSale({
       )}
       <ComeFunziona>
         Le liste che il tablet di sala fa partire dalla sua barra in basso, sempre a portata di mano: un nome e il link a una playlist di YouTube o di
-        Spotify. Il tablet le sceglie e basta. Per Spotify serve che sul tablet sia collegato un account Premium, dalle impostazioni del timer.
+        Spotify, oppure l'indirizzo di una radio (comincia con https). Il tablet le sceglie e basta. Per Spotify serve che sul tablet sia collegato un account Premium, dalle impostazioni del timer.
       </ComeFunziona>
     </section>
   )
@@ -565,11 +575,13 @@ function MusicaSale({
 function FormLista({
   bozza,
   sale,
+  discipline,
   setBozza,
   onSalva,
 }: {
   bozza: Bozza
   sale: Sala[]
+  discipline: Disciplina[]
   setBozza: (b: Bozza | null) => void
   onSalva: () => void
 }) {
@@ -603,11 +615,12 @@ function FormLista({
             </option>
           ))}
         </select>
+        <SelectDisciplina discipline={discipline} valore={bozza.disciplina} etichetta="Disciplina della lista" onCambia={(x) => setBozza({ ...bozza, disciplina: x })} />
       </div>
       <input
         className="sg-campo"
         aria-label="Link alla playlist"
-        placeholder="link a una playlist di YouTube o di Spotify"
+        placeholder="link di YouTube, Spotify o radio"
         required
         inputMode="url"
         autoCapitalize="none"
@@ -619,10 +632,12 @@ function FormLista({
       <div className="row" style={{ gap: 8 }}>
         <span className="grow" style={{ fontSize: 13, color: scritto && !fonte ? 'var(--rosso-testo)' : 'var(--dim)' }}>
           {!scritto
-            ? 'Da YouTube o da Spotify: Condividi › Copia link.'
-            : fonte
-              ? `Una playlist di ${fonte === 'youtube' ? 'YouTube' : 'Spotify'}.`
-              : 'Questo link non è di YouTube né di Spotify.'}
+            ? 'Da YouTube o da Spotify: Condividi › Copia link. Una radio: l’indirizzo con https.'
+            : fonte === 'radio'
+              ? 'Una radio: con lei i tasti brano restano spenti.'
+              : fonte
+                ? `Una playlist di ${fonte === 'youtube' ? 'YouTube' : 'Spotify'}.`
+                : (erroreDelLink(bozza.link) ?? 'Questo link non è di YouTube né di Spotify, e non sembra l’indirizzo di una radio.')}
         </span>
         <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setBozza(null)}>
           LASCIA STARE

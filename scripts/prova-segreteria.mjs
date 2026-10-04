@@ -557,7 +557,12 @@ console.log('\nla musica delle sale')
   const randori = await s.salvaListaMusica({ nome: '  Randori  ', link: yt, salaId: 'Lotta' })
   await s.salvaListaMusica({ nome: 'Riscaldamento', link: sp, salaId: null })
   await s.salvaListaMusica({ nome: 'Bambini', link: 'https://youtu.be/dQw4w9WgXcQ', salaId: 'Tatami' })
-  ok('un link che non è musica no', await errore(() => s.salvaListaMusica({ nome: 'Altro', link: 'https://esempio.it/lista', salaId: null })), 'Il link non è una playlist di YouTube o di Spotify')
+  ok('un link che non è musica no', await errore(() => s.salvaListaMusica({ nome: 'Altro', link: 'la mia musica', salaId: null })), 'Il link non è una playlist di YouTube o di Spotify, né una radio')
+  ok('un indirizzo http no, e dice cosa fare', await errore(() => s.salvaListaMusica({ nome: 'Altro', link: 'http://esempio.it/lista', salaId: null })), 'Questo indirizzo non è sicuro: cerca l\'indirizzo che comincia con https.')
+  ok('un link troppo lungo no', await errore(() => s.salvaListaMusica({ nome: 'Altro', link: 'https://stream.esempio.it/' + 'a'.repeat(500), salaId: null })), 'Il link è troppo lungo')
+  const radio = await s.salvaListaMusica({ nome: 'Radio Rock', link: 'https://stream.esempio.it/rock', salaId: null })
+  ok('una radio https sì', (await s.listeMusica()).find((l) => l.id === radio)?.link, 'https://stream.esempio.it/rock')
+  await s.togliListaMusica(radio)
   ok('un nome vuoto no', await errore(() => s.salvaListaMusica({ nome: '  ', link: yt, salaId: null })), 'La lista ha bisogno di un nome')
   ok('una sala che non c\'è no', await errore(() => s.salvaListaMusica({ nome: 'X', link: yt, salaId: 'Piscina' })), 'Sala inesistente')
   ok('la segreteria le vede tutte, col nome pulito', (await s.listeMusica()).map((l) => l.nome), ['Randori', 'Riscaldamento', 'Bambini'])
@@ -2513,7 +2518,7 @@ try {
   ok('la segreteria di prova fa l’«Attività» senza fermarsi', e.message, 'nessun errore')
 }
 
-console.log('\nl’«Attività» con un database senza 39-attivita.sql: la segreteria e gli istruttori leggono come prima')
+console.log('\nl’«Attività» con un database senza 41-attivita.sql: la segreteria e gli istruttori leggono come prima')
 {
   const risposta = (r) => {
     const c = new Proxy(() => c, { get: (_, k) => (k === 'then' ? (f, ko) => Promise.resolve(r).then(f, ko) : () => c), apply: () => c })
@@ -2557,15 +2562,15 @@ console.log('\nl’«Attività» con un database senza 39-attivita.sql: la segre
       }),
       rpc: senzaRpc,
     })
-    const cosa = `senza 39-attivita.sql (${codice})`
+    const cosa = `senza 41-attivita.sql (${codice})`
     const lez = await prova(() => vero.settimana(IN, IN))
     ok(`${cosa}: le lezioni si leggono come oggi, senza attività`, Array.isArray(lez) ? [lez.length, lez[0].corso, lez[0].attivita] : lez, [1, 'Body functional', undefined])
     const corsi = await prova(() => vero.corsi())
     ok(`${cosa}: i corsi pure, coi giorni`, Array.isArray(corsi) ? [corsi.length, corsi[0].ricorrenze.length, corsi[0].ricorrenze[0].attivita] : corsi, [1, 1, undefined])
     const att = await prova(() => vero.attivita())
-    ok(`${cosa}: la segreteria vede l'avviso, e l'elenco vuoto`, att && typeof att === 'object' ? [att.elenco, String(att.manca).includes('39-attivita.sql')] : att, [[], true])
-    ok(`${cosa}: scrivere un'attività dice quale file lanciare`, (await errore(() => vero.salvaAttivita({ nome: 'Sacco' }))).includes('39-attivita.sql'), true)
-    ok(`${cosa}: scegliere un'attività per una lezione dice quale file lanciare`, (await errore(() => vero.aggiornaLezione('x1', { attivitaId: 'a1' }))).includes('39-attivita.sql'), true)
+    ok(`${cosa}: la segreteria vede l'avviso, e l'elenco vuoto`, att && typeof att === 'object' ? [att.elenco, String(att.manca).includes('41-attivita.sql')] : att, [[], true])
+    ok(`${cosa}: scrivere un'attività dice quale file lanciare`, (await errore(() => vero.salvaAttivita({ nome: 'Sacco' }))).includes('41-attivita.sql'), true)
+    ok(`${cosa}: scegliere un'attività per una lezione dice quale file lanciare`, (await errore(() => vero.aggiornaLezione('x1', { attivitaId: 'a1' }))).includes('41-attivita.sql'), true)
     ok(`${cosa}: cambiare la sala di una lezione funziona come prima`, await errore(() => vero.aggiornaLezione('x1', { salaId: 'sala-1' })), 'nessun errore')
     ok(`${cosa}: e nella scrittura non c'è l'attività`, scritto.filter(([, k]) => /attivita/.test(k) && k !== 'attivita_id').length, 0)
   }
@@ -2622,6 +2627,104 @@ console.log('\nl’«Attività» con un database senza 39-attivita.sql: la segre
   ok('l\'appello senza attività: il kanji resta', await prova(() => dettaglio(true, false)), ['虎', undefined])
   ok('l\'appello senza kanji: l\'attività resta', await prova(() => dettaglio(false, true)), [undefined, 'Sacco'])
   ok('l\'appello senza né l\'uno né l\'altra', await prova(() => dettaglio(false, false)), [undefined, undefined])
+}
+
+// Le discipline: la segreteria le cura, il catalogo le tiene, il tablet le riceve.
+{
+  const nomi = (l) => l.map((d) => d.id)
+  ok('di partenza: judo, lotta, pilates, yoga', nomi(await s.discipline()), ['judo', 'lotta', 'pilates', 'yoga'])
+  await s.salvaDiscipline([...(await s.discipline()), { id: 'karate', nome: 'Karate' }])
+  await s.salvaEserciziPalestra([
+    { id: 'e1', nome: 'Kata', categoria: 'A corpo libero', disciplina: 'karate' },
+    { id: 'e2', nome: 'Squat', categoria: 'Core', disciplina: 'tutte' },
+    { id: 'e3', nome: 'Plank', categoria: 'Core', disciplina: 'inventata' },
+    { id: 'e4', nome: 'Randori', categoria: 'Judo' },
+  ])
+  const cat = await s.eserciziPalestra()
+  ok('il catalogo tiene la disciplina nuova, «tutte», toglie quella inventata e migra «Judo»',
+    cat.map((e) => [e.nome, e.categoria, e.disciplina]),
+    [['Kata', 'A corpo libero', 'karate'], ['Squat', 'Core', 'tutte'], ['Plank', 'Core', undefined], ['Randori', 'A corpo libero', 'judo']])
+  const sala = await m.creaTabletProva().timerSala()
+  ok('il tablet riceve la lista e il catalogo con le discipline', [nomi(sala.discipline), sala.esercizi.find((e) => e.nome === 'Kata')?.disciplina], [['judo', 'lotta', 'pilates', 'yoga', 'karate'], 'karate'])
+  await s.salvaDiscipline((await s.discipline()).filter((d) => d.id !== 'karate'))
+  ok('tolta la disciplina, l\'esercizio resta senza', (await s.eserciziPalestra()).find((e) => e.nome === 'Kata')?.disciplina, undefined)
+  ok('e la lista non ha più karate', nomi(await s.discipline()), ['judo', 'lotta', 'pilates', 'yoga'])
+  await s.salvaEserciziPalestra([])
+}
+
+// Le liste di musica per disciplina: la segreteria la sceglie, il tablet la riceve.
+{
+  const sala = 'Lotta'
+  const id1 = await s.salvaListaMusica({ nome: 'Randori (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo1Z', salaId: sala, disciplina: 'judo' })
+  const id2 = await s.salvaListaMusica({ nome: 'Riscaldamento (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo2Z', salaId: null, disciplina: 'tutte' })
+  const id3 = await s.salvaListaMusica({ nome: 'Varie (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo3Z', salaId: null, disciplina: 'inventata' })
+  const id4 = await s.salvaListaMusica({ nome: 'Senza (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo4Z', salaId: null })
+  const liste = await s.listeMusica()
+  const di = (id) => liste.find((l) => l.id === id)?.disciplina
+  ok('la lista tiene la disciplina scelta, «tutte», e toglie una inventata', [di(id1), di(id2), di(id3), di(id4)], ['judo', 'tutte', undefined, undefined])
+  await s.salvaListaMusica({ id: id1, nome: 'Randori (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo1Z', salaId: sala, disciplina: null })
+  ok('cambiandola in «nessuna» la disciplina si toglie', (await s.listeMusica()).find((l) => l.id === id1)?.disciplina, undefined)
+  await s.salvaListaMusica({ id: id1, nome: 'Randori (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo1Z', salaId: sala, disciplina: 'lotta' })
+  const t = m.creaTabletProva()
+  await t.scegliSala(sala)
+  const tablet = await t.musica()
+  ok('il tablet della sala riceve la disciplina delle sue liste e di quelle di tutte', tablet.filter((l) => l.nome.endsWith('(disc.)')).map((l) => [l.nome, l.disciplina]).sort(),
+    [['Randori (disc.)', 'lotta'], ['Riscaldamento (disc.)', 'tutte'], ['Senza (disc.)', undefined], ['Varie (disc.)', undefined]])
+  for (const id of [id1, id2, id3, id4]) await s.togliListaMusica(id)
+}
+
+// Il ramo Supabase delle liste di musica, con un database finto: senza 40-discipline.sql la colonna non c'è.
+{
+  const righe = [{ id: 'l1', nome: 'Randori', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: null, disciplina: 'judo' }, { id: 'l2', nome: 'Varie', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: null, disciplina: 'karate' }]
+  const chiamate = []
+  const finto = ({ colonna }) => ({
+    from: (tab) => ({
+      select: (cols) => {
+        chiamate.push(`${tab}:${cols}`)
+        const risposta = () => {
+          if (tab === 'impostazioni') return { data: { discipline: [{ id: 'judo', nome: 'Judo' }] }, error: null }
+          if (cols.includes('disciplina') && !colonna) return { data: null, error: { code: '42703', message: 'column musica_sale.disciplina does not exist' } }
+          return { data: righe.map(({ disciplina, ...r }) => (cols.includes('disciplina') ? { ...r, disciplina } : r)), error: null }
+        }
+        const q = { order: () => q, maybeSingle: async () => risposta(), then: (ok, no) => Promise.resolve(risposta()).then(ok, no) }
+        return q
+      },
+    }),
+  })
+  const con = await m.creaSegreteriaSupabase(finto({ colonna: true })).listeMusica()
+  ok('con la colonna: la disciplina c\'è, una sconosciuta no', con.map((l) => [l.nome, l.disciplina]), [['Randori', 'judo'], ['Varie', undefined]])
+  const senza = await m.creaSegreteriaSupabase(finto({ colonna: false })).listeMusica()
+  ok('senza la colonna (42703): si leggono lo stesso, senza disciplina', senza.map((l) => [l.nome, l.disciplina]), [['Randori', undefined], ['Varie', undefined]])
+  // Scrivere: il finto database risponde PGRST204 (colonna sconosciuta) se la riga porta `disciplina` e la colonna non c'è.
+  const scrive = (colonna, scritti) => ({
+    from: (tab) => {
+      if (tab === 'impostazioni') return { select: () => ({ maybeSingle: async () => ({ data: { discipline: [{ id: 'judo', nome: 'Judo' }] }, error: null }) }) }
+      const esito = (riga) => {
+        scritti.push(riga)
+        return 'disciplina' in riga && !colonna ? { data: null, error: { code: 'PGRST204', message: "Could not find the 'disciplina' column of 'musica_sale' in the schema cache" } } : { data: { id: 'nuova' }, error: null }
+      }
+      return {
+        insert: (riga) => ({ select: () => ({ single: async () => esito(riga) }) }),
+        update: (riga) => ({ eq: async () => esito(riga) }),
+      }
+    },
+  })
+  const yt = 'https://youtu.be/dQw4w9WgXcQ'
+  {
+    const scritti = []
+    await m.creaSegreteriaSupabase(scrive(false, scritti)).salvaListaMusica({ id: 'l1', nome: 'Randori', link: yt, salaId: null })
+    ok('senza la colonna, una lista si salva se la disciplina non c\'entra', scritti.map((r) => 'disciplina' in r), [false])
+  }
+  {
+    const scritti = []
+    const e = await errore(() => m.creaSegreteriaSupabase(scrive(false, scritti)).salvaListaMusica({ id: 'l1', nome: 'Randori', link: yt, salaId: null, disciplina: 'judo' }))
+    ok('senza la colonna, scegliere una disciplina dice di lanciare il 40', e, 'Le discipline non sono ancora attive sul database: va lanciato 40-discipline.sql')
+  }
+  {
+    const scritti = []
+    await m.creaSegreteriaSupabase(scrive(true, scritti)).salvaListaMusica({ id: 'l1', nome: 'Randori', link: yt, salaId: null, disciplina: null })
+    ok('con la colonna, nulla toglie la disciplina (null nella riga)', scritti.map((r) => r.disciplina), [null])
+  }
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

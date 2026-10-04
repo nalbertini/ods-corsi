@@ -138,7 +138,7 @@ select p.cognome as "risulta segnata da" from presenze pr join persone p on p.id
   where pr.stato = 'assente' and pr.persona_id = 'aaaaaaaa-0000-0000-0000-000000000003';
 
 \echo ''
-\echo '--- ATTIVITÀ dei giorni e delle lezioni (39-attivita.sql) ---'
+\echo '--- ATTIVITÀ dei giorni e delle lezioni (41-attivita.sql) ---'
 -- L'elenco lo scrive la segreteria; l'istruttore lo legge e sceglie per le sue
 -- lezioni, mai per quelle di un altro; chi non ha l'accesso non lo vede.
 select chi('11111111-1111-1111-1111-111111111111');

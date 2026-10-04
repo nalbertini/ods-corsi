@@ -1,7 +1,7 @@
 -- L'«Attività» di ogni giorno dei corsi, scelta da un elenco: chi tiene
 -- l'elenco, cosa blocca, e come le lezioni seguono il giorno.
 -- Si lancia dopo finto-supabase.sql e tutti i file dello schema fino a
--- 39-attivita.sql.
+-- 41-attivita.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 

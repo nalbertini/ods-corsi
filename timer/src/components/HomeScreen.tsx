@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import type { Mode, Workout } from '../types'
-import type { Gruppo } from '../lib/gruppi'
+import { type Gruppo, type Strumento, strumentiDa } from '../lib/gruppi'
 import type { Corso } from '../lib/libreria'
 import { MODE_BADGE, describe, totalDuration } from '../lib/engine'
 import { clock, compact } from '../lib/format'
 import { type Interrotto, doveEraRimasto } from '../lib/ripresa'
+import { type Disciplina, nomeDisciplina } from '../lib/discipline'
 import { Copy, Edit, Play, Plus, Share, Trash } from './Icons'
+import { FiltroDiscipline } from './DisciplinaScelta'
 
 const FILTERS: Array<{ key: Mode | 'all'; label: string }> = [
   { key: 'all', label: 'TUTTI' },
@@ -22,6 +24,7 @@ export function HomeScreen({
   corsi,
   lezione,
   onStart,
+  onStrumento,
   onEdit,
   onDuplicate,
   onDelete,
@@ -31,6 +34,10 @@ export function HomeScreen({
   interrotto,
   onNew,
   conFiltri = true,
+  discipline,
+  disciplineUsate,
+  filtroDisciplina,
+  onFiltroDisciplina,
 }: {
   /** Le sezioni della lista: una sola senza database, com'era. */
   gruppi: Gruppo[]
@@ -40,6 +47,8 @@ export function HomeScreen({
   /** Il nome del corso della lezione da cui si arriva, se si arriva da una. */
   lezione: string | null
   onStart: (w: Workout) => void
+  /** Cronometro e conto alla rovescia si aprono dalla lista, come un timer. */
+  onStrumento: (s: Strumento) => void
   onEdit: (w: Workout) => void
   onDuplicate: (w: Workout) => void
   onDelete: (w: Workout) => void
@@ -53,6 +62,12 @@ export function HomeScreen({
   onNew: (filtro: Mode | 'all') => void
   /** Sul tablet di sala no: lì in cima ci sono già i timer della lezione, e sei filtri sono troppi da lontano. */
   conFiltri?: boolean
+  /** Tutte le discipline della palestra, per i nomi sulle schede. */
+  discipline: Disciplina[]
+  /** Quelle che hanno almeno un timer: i pulsanti del filtro. */
+  disciplineUsate: Disciplina[]
+  filtroDisciplina: string | null
+  onFiltroDisciplina: (id: string | null) => void
 }) {
   const [filter, setFilter] = useState<Mode | 'all'>('all')
   const [open, setOpen] = useState<string | null>(null)
@@ -61,6 +76,7 @@ export function HomeScreen({
     () => gruppi.map((g) => ({ ...g, timer: filter === 'all' ? g.timer : g.timer.filter((w) => w.mode === filter) })),
     [gruppi, filter],
   )
+  const strumenti = strumentiDa(filter)
   const nomeCorso = (id: string) => corsi.find((c) => c.id === id)?.nome
   // La chiave del riquadro aperto porta anche la sezione, per sicurezza.
   const card = (g: string, w: Workout) => {
@@ -68,6 +84,7 @@ export function HomeScreen({
     const isOpen = open === chiave
     const suo = modificabile(w)
     const nomiCorsi = (w.corsi ?? []).map(nomeCorso).filter(Boolean)
+    const nomeDellaDisciplina = nomeDisciplina(w.disciplina, discipline)
     return (
       <div key={chiave} className="card stack">
         <div className="wcard">
@@ -84,6 +101,11 @@ export function HomeScreen({
               {w.name.toUpperCase()}
             </button>
             <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--dim)' }}>{describe(w)}</span>
+            {nomeDellaDisciplina && (
+              <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: 'var(--faint)' }}>
+                {nomeDellaDisciplina.toUpperCase()}
+              </span>
+            )}
             {nomiCorsi.length > 0 && (
               <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: 'var(--faint)' }}>
                 {nomiCorsi.join(' · ').toUpperCase()}
@@ -173,6 +195,10 @@ export function HomeScreen({
         </div>
       )}
 
+      <div style={{ paddingTop: 14 }}>
+        <FiltroDiscipline discipline={disciplineUsate} valore={filtroDisciplina} onCambia={onFiltroDisciplina} />
+      </div>
+
       {conFiltri && (
         <div className="row pad" style={{ gap: 8, paddingTop: 14, paddingBottom: 14, overflowX: 'auto' }}>
           {FILTERS.map((f) => (
@@ -180,6 +206,38 @@ export function HomeScreen({
               {f.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {strumenti.length > 0 && (
+        <div>
+          <div className="rule">
+            <span className="rule-label">STRUMENTI</span>
+            <div className="rule-line" />
+            <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>
+              {strumenti.length}
+            </span>
+          </div>
+          <div className="pad wlist stack" style={{ gap: 10, paddingBottom: 16 }}>
+            {strumenti.map((s) => (
+              <div key={s.chiave} className="card stack">
+                <div className="wcard">
+                  <div className="stack grow" style={{ gap: 6, minWidth: 0 }}>
+                    <div className="row" style={{ gap: 8 }}>
+                      <span className="badge badge-tipo">{s.tipo}</span>
+                    </div>
+                    <button className="wcard-name" style={{ textAlign: 'left', padding: 0 }} onClick={() => onStrumento(s.chiave)}>
+                      {s.nome}
+                    </button>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--dim)' }}>{s.riassunto}</span>
+                  </div>
+                  <button className="play-btn" style={{ borderColor: 'var(--rosso)', color: 'var(--rosso)' }} onClick={() => onStrumento(s.chiave)} aria-label={`Apri ${s.nome}`}>
+                    <Play />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -1009,6 +1009,12 @@ a.btn { text-decoration: none; }
 }
 .tb-lista[aria-pressed='true'] { border-color: var(--verde); background: var(--surface-2); }
 .tb-lista:disabled { opacity: 0.45; cursor: default; }
+.tb-filtro { display: flex; flex-wrap: wrap; gap: 8px; }
+.tb-filtro-tasto {
+  min-height: 48px; padding: 0 16px; border: 2px solid var(--line); color: var(--text);
+  font-size: 15px; font-weight: 700; letter-spacing: 0.08em;
+}
+.tb-filtro-tasto[aria-pressed='true'] { border-color: var(--text); background: var(--surface-2); }
 .tb-lista-nome { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 .tb-musica-testo { gap: 2px; min-width: 0; max-width: 260px; }
 .tb-musica-titolo { font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

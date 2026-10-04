@@ -54,8 +54,8 @@ select atteso('una per tutte le sale, da Spotify',
 select atteso('una per il Tatami',
   tenta($$insert into musica_sale (id, sala_id, nome, link) values
     ('c0000000-0000-0000-0000-000000000003', 'bbbbbbbb-0000-0000-0000-000000000002', 'Bambini', 'spotify:playlist:37i9dQZF1DXdPec7aLTmlC')$$), 'FATTO (1 righe)');
-select atteso('un link che non è musica no',
-  tenta($$insert into musica_sale (nome, link) values ('Altro', 'https://esempio.it/lista')$$), 'NEGATO: …');
+select atteso('un link http (non https) no',
+  tenta($$insert into musica_sale (nome, link) values ('Altro', 'http://esempio.it/lista')$$), 'NEGATO: …');
 select atteso('un nome vuoto no',
   tenta($$insert into musica_sale (nome, link) values ('   ', 'https://youtu.be/dQw4w9WgXcQ')$$), 'NEGATO: …');
 select atteso('la rinomina', tenta($$update musica_sale set nome = 'Randori forte' where id = 'c0000000-0000-0000-0000-000000000001'$$), 'FATTO (1 righe)');
@@ -139,4 +139,54 @@ select chi('');
 set role anon;
 select atteso('chi non ha fatto l''accesso no', tenta($$select timer::text from impostazioni$$), 'NEGATO: …');
 select atteso('e dalla funzione nemmeno', tenta($$select salva_timer_sala('{}')::text$$), 'NEGATO: …');
+reset role;
+
+\echo ''
+\echo '--- 8. La radio: un indirizzo https qualunque passa ---'
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('una radio https passa',
+  tenta($$insert into musica_sale (id, nome, link) values
+    ('c0000000-0000-0000-0000-000000000004', 'Radio Rock', 'https://stream.radio.example:8443/rock.aac')$$), 'FATTO (1 righe)');
+select atteso('anche una radio con una sala',
+  tenta($$insert into musica_sale (sala_id, nome, link) values
+    ('bbbbbbbb-0000-0000-0000-000000000001', 'Radio Lotta', 'https://radio.esempio.it/lotta')$$), 'FATTO (1 righe)');
+select atteso('un indirizzo http (non https) no',
+  tenta($$insert into musica_sale (nome, link) values ('Radio', 'http://stream.radio.example/rock')$$), 'NEGATO: …');
+select atteso('un testo che non è un indirizzo no',
+  tenta($$insert into musica_sale (nome, link) values ('Radio', 'la mia musica preferita')$$), 'NEGATO: …');
+select atteso('https senza altro no',
+  tenta($$insert into musica_sale (nome, link) values ('Radio', 'https://')$$), 'NEGATO: …');
+select atteso('un indirizzo troppo lungo no',
+  tenta($$insert into musica_sale (nome, link) values ('Radio', 'https://radio.esempio.it/' || repeat('a', 500))$$), 'NEGATO: …');
+select atteso('una query senza barra no',
+  tenta($$insert into musica_sale (nome, link) values ('Radio', 'https://radio.esempio.it?x=1')$$), 'NEGATO: …');
+select atteso('un trattino basso nel nome no',
+  tenta($$insert into musica_sale (nome, link) values ('Radio', 'https://radio_x.esempio.it/a')$$), 'NEGATO: …');
+select atteso('uno spazio nel percorso no',
+  tenta($$insert into musica_sale (nome, link) values ('Radio', 'https://radio.esempio.it/a b')$$), 'NEGATO: …');
+select atteso('una virgoletta nel percorso no',
+  tenta($$insert into musica_sale (nome, link) values ('Radio', 'https://radio.esempio.it/a"b')$$), 'NEGATO: …');
+select atteso('nome utente e password no',
+  tenta($$insert into musica_sale (nome, link) values ('Radio', 'https://u:p@radio.esempio.it/x')$$), 'NEGATO: …');
+select atteso('YouTube di prima passa ancora',
+  tenta($$insert into musica_sale (nome, link) values ('Yt', 'https://youtu.be/dQw4w9WgXcQ')$$), 'FATTO (1 righe)');
+select atteso('Spotify di prima passa ancora',
+  tenta($$insert into musica_sale (nome, link) values ('Sp', 'https://open.spotify.com/playlist/37i9dQZF1DX76Wlfdnj7AP')$$), 'FATTO (1 righe)');
+select atteso('una radio si può mettere anche su una lista che c''è',
+  tenta($$update musica_sale set link = 'https://stream.radio.example/altra' where id = 'c0000000-0000-0000-0000-000000000004'$$), 'FATTO (1 righe)');
+reset role;
+
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('l''istruttrice una radio non la aggiunge',
+  tenta($$insert into musica_sale (nome, link) values ('Mia radio', 'https://stream.radio.example/rock')$$), 'NEGATO: …');
+reset role;
+
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('il tablet una radio non la aggiunge',
+  tenta($$insert into musica_sale (nome, link) values ('Mia radio', 'https://stream.radio.example/rock')$$), 'NEGATO: …');
+select atteso('la radio della sua sala la trova dalla funzione',
+  tenta($$select string_agg(nome, ', ' order by nome) from musica_sala() where link like 'https://radio.esempio.it/%'$$), 'Radio Lotta');
 reset role;

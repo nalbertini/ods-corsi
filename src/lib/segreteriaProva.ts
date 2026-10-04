@@ -13,8 +13,9 @@ import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { richiesteDi, spostaRichieste } from './richiesteProva'
-import { fonteDelLink, MAX_NOME_LISTA } from './musica'
+import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
+import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
@@ -1179,17 +1180,25 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async listeMusica() {
-      return (a().musica ?? []).map((l) => ({ id: l.id, nome: l.nome, link: l.link, salaId: l.sala }))
+      const discipline = disciplineDa(a().discipline)
+      return (a().musica ?? []).map((l) => {
+        const disciplina = ripulisciDisciplina(l.disciplina, discipline)
+        return { id: l.id, nome: l.nome, link: l.link, salaId: l.sala, ...(disciplina ? { disciplina } : {}) }
+      })
     },
 
     async salvaListaMusica(l) {
       const nome = l.nome.trim().slice(0, MAX_NOME_LISTA)
       const link = l.link.trim()
       if (!nome) throw new Error('La lista ha bisogno di un nome')
-      if (!fonteDelLink(link)) throw new Error('Il link non è una playlist di YouTube o di Spotify')
+      if (!fonteDelLink(link)) throw new Error(erroreDelLink(link) ?? 'Il link non è una playlist di YouTube o di Spotify, né una radio')
       if (l.salaId && !a().sale.includes(l.salaId)) throw new Error('Sala inesistente')
       const id = l.id ?? `musica~${unico()}`
-      const riga = { id, nome, link, sala: l.salaId }
+      const precedente = (a().musica ?? []).find((x) => x.id === l.id)
+      // Assente = com'era; nulla o sconosciuta = nessuna.
+      const daScrivere = disciplinaDaSalvare(l, disciplineDa(a().discipline))
+      const disciplina = daScrivere === undefined ? precedente?.disciplina : (daScrivere ?? undefined)
+      const riga = { id, nome, link, sala: l.salaId, ...(disciplina ? { disciplina } : {}) }
       const prima = a().musica ?? []
       a().musica = l.id ? prima.map((x) => (x.id === l.id ? riga : x)) : [...prima, riga]
       salva()
@@ -1224,11 +1233,26 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async eserciziPalestra() {
-      return eserciziDellaPalestra(a().eserciziSale)
+      return eserciziDellaPalestra(a().eserciziSale, disciplineDa(a().discipline))
     },
 
     async salvaEserciziPalestra(l) {
-      a().eserciziSale = (eserciziDellaPalestra(l) ?? []).map(({ id, nome, categoria }) => ({ id, nome, categoria }))
+      a().eserciziSale = (eserciziDellaPalestra(l, disciplineDa(a().discipline)) ?? []).map(({ id, nome, categoria, disciplina }) => ({
+        id,
+        nome,
+        categoria,
+        ...(disciplina ? { disciplina } : {}),
+      }))
+      salva()
+    },
+
+    async discipline() {
+      return disciplineDa(a().discipline)
+    },
+
+    async salvaDiscipline(l) {
+      // Il database rifiuta oltre 4000 byte; in prova non c'è il limite, e con 20 voci da 30 lettere non ci si arriva.
+      a().discipline = disciplineDa(l)
       salva()
     },
 

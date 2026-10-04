@@ -91,7 +91,7 @@ export interface LezioneProva {
   straordinaria?: { corsoId: string; inizio: string; durata: number }
 }
 
-/** Come una riga di `attivita` (39-attivita.sql). */
+/** Come una riga di `attivita` (41-attivita.sql). */
 export interface AttivitaProva {
   id: string
   nome: string
@@ -114,13 +114,15 @@ export interface Archivio {
   pin?: Record<string, string>
   impostazioni?: { mesiPresenze: number; giorniCalendario: number; inizioCorsi?: string | null; fineCorsi?: string | null }
   /** Le liste della musica delle sale; `sala` nulla vuol dire tutte. */
-  musica?: Array<{ id: string; nome: string; link: string; sala: string | null }>
+  musica?: Array<{ id: string; nome: string; link: string; sala: string | null; disciplina?: string }>
   /** Il timer dei tablet di sala, uguale per tutti: lo cambia un tablet qualunque. */
   timerSale?: Record<string, unknown>
   /** La voce di sistema dei tablet, per nome. */
   voceSale?: string | null
   /** Il catalogo degli esercizi della palestra, se la segreteria ne ha fatto uno. */
   eserciziSale?: unknown[]
+  /** Le discipline di prova; mancanti: quelle di partenza. */
+  discipline?: unknown[]
   /** Gli istruttori entrati col PIN sul tablet durante una lezione. */
   presenzeIstruttori?: PresenzaIstruttoreProva[]
   /**

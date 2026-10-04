@@ -59,7 +59,7 @@ scrive accanto all'orario.
   il nome si legge dove, e cosa fare.
 
 Se compare «Le attività non sono ancora attive sul database», va lanciato
-l'aggiornamento 39 (vedi `supabase/LEGGIMI.md`): finché manca, i menu delle
+l'aggiornamento 41 (vedi `supabase/LEGGIMI.md`): finché manca, i menu delle
 attività non ci sono e tutto il resto funziona come prima.
 
 ### La musica delle sale
@@ -69,9 +69,13 @@ Le liste che il tablet di sala fa partire dalla sua barra in basso (vedi
 
 - **un nome**, quello che si legge sul tablet: «Riscaldamento», «Randori»;
 - **il link a una playlist** di YouTube o di Spotify: dall'app, **Condividi ›
-  Copia link**, e si incolla. Sotto il campo si legge se è YouTube o Spotify;
-  un link che non è né l'uno né l'altro non si salva;
-- **la sala**, o **Tutte le sale**.
+  Copia link**, e si incolla. Oppure **l'indirizzo di una radio**, che
+  comincia con https: suona senza pubblicità né account. Sotto il campo si
+  legge cos'è; un indirizzo che comincia con http, o che non è nessuno dei
+  tre, non si salva;
+- **la sala**, o **Tutte le sale**;
+- **la disciplina** (Judo, Lotta…; la lista si cura in [ESERCIZI](esercizi.md)),
+  o **Tutte** per quelle comuni, o nessuna: sul tablet si filtrano per quella.
 
 **CAMBIA** per correggerla, **TOGLI** per toglierla. Il tablet le rilegge ogni
 cinque minuti. Le liste di Spotify suonano solo se sul tablet è collegato un

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import type { Musica } from '../../../timer/src/lib/useMusica'
 import { PostoPlayer } from '../../../timer/src/components/PlayerYoutube'
+import { TESTI_MUSICA } from '../../../timer/src/lib/musicaLocale'
 import { fonteDelLink, type ListaMusica } from '../../lib/musica'
+import { type Disciplina, dellaDisciplina, disciplineConVoci, filtroValido, nomeDisciplina } from '../../../timer/src/lib/discipline'
 
 type P = { size?: number }
 const Prec = ({ size = 22 }: P) => (
@@ -38,7 +40,12 @@ const Liste = ({ size = 24 }: P) => (
   </svg>
 )
 
-const NOME_FONTE = { youtube: 'YouTube', spotify: 'Spotify' } as const
+const NOME_FONTE = {
+  youtube: 'YouTube',
+  spotify: 'Spotify',
+  file: 'File del tablet',
+  radio: 'Radio',
+} as const
 
 /**
  * La musica della sala, nella barra in basso del tablet: cosa suona, il
@@ -56,6 +63,7 @@ export function MusicaSala({
   spotifyCollegato,
   onScegli,
   onSpegni,
+  discipline,
 }: {
   musica: Musica
   liste: ListaMusica[]
@@ -65,39 +73,80 @@ export function MusicaSala({
   onScegli: (l: ListaMusica | null) => void
   /** Spegne la musica su questo tablet: sparisce la barra e il lettore. */
   onSpegni: () => void
+  /** Le discipline della palestra: il filtro delle liste. */
+  discipline: Disciplina[]
 }) {
   const [aperte, setAperte] = useState(false)
-  if (!musica.attiva && liste.length === 0) return null
+  const [disciplina, setDisciplina] = useState<string | null>(null)
+  // Il filtro mostra solo le discipline che hanno una lista; uno su una disciplina rimasta senza non resta acceso.
+  const usate = disciplineConVoci(liste, discipline)
+  const filtro = filtroValido(disciplina, usate)
+  // File e radio senza niente da suonare dicono perché (file spariti, radio caduta): non restano muti.
+  const locale = musica.fonte === 'file' || musica.fonte === 'radio'
+  if (!musica.attiva && liste.length === 0 && !(locale && musica.errore)) return null
 
   const l = musica.lettore
   const suonando = l?.inRiproduzione ?? false
   const yt = musica.fonte === 'youtube'
   const nomeLista = liste.find((x) => x.id === scelta)?.nome
-  const sotto = musica.errore ?? (l ? [l.artista, nomeLista ?? l.dispositivo].filter(Boolean).join(' · ') : musica.attiva ? 'Tocca ▶ per farla partire' : 'Scegli una lista')
+  const sotto =
+    musica.errore ??
+    (locale && l && !suonando
+      ? 'Tocca ▶ per farla partire'
+      : l
+        ? [l.artista, nomeLista ?? l.dispositivo].filter(Boolean).join(' · ')
+        : musica.attiva
+          ? 'Tocca ▶ per farla partire'
+          : musica.fonte === 'file'
+            ? 'Scegli i file nelle impostazioni del timer'
+            : 'Scegli una lista')
 
   return (
     <div className="tb-musica">
-      {musica.attiva && !yt && (l?.copertina ? <img className="tb-musica-copertina" src={l.copertina} alt="" /> : <span className="tb-musica-copertina" />)}
+      {musica.attiva && !yt && (l?.copertina ? <img className="tb-musica-copertina" src={l.copertina} alt="" /> : musica.fonte === 'spotify' && <span className="tb-musica-copertina" />)}
       <span className="stack tb-musica-testo">
-        <span className="tb-musica-titolo">{l?.titolo || nomeLista || (musica.attiva ? NOME_FONTE[musica.fonte] : 'Musica della sala')}</span>
-        <span className="tb-musica-sotto" style={musica.errore ? { color: 'var(--rosso)' } : undefined}>
+        <span className="tb-musica-titolo">
+          {l?.titolo || nomeLista || (musica.attiva ? NOME_FONTE[musica.fonte] : 'Musica della sala')}
+        </span>
+        <span className="tb-musica-sotto" style={musica.errore ? { color: 'var(--rosso-testo)', whiteSpace: 'normal' } : undefined}>
           {sotto}
         </span>
       </span>
+      {musica.fonte === 'radio' && musica.errore && (
+        <button type="button" className="btn btn-ghost" style={{ minHeight: 44, minWidth: 44, padding: '0 12px', fontSize: 13, textTransform: 'uppercase' }} onClick={() => void musica.comandi.suona()}>
+          {TESTI_MUSICA.riprova}
+        </button>
+      )}
       {musica.attiva && (
         <>
           {l?.volume != null && (
             <>
-              <button type="button" className="tb-musica-tasto" onClick={() => void musica.comandi.volume(l.volume! - 10)} aria-label="Musica più bassa">
+              <button
+                type="button"
+                className="tb-musica-tasto"
+                onClick={() => void musica.comandi.volume(l.volume! - 10)}
+                aria-label="Musica più bassa"
+              >
                 −
               </button>
               <span className="num tb-musica-volume">{l.volume}</span>
-              <button type="button" className="tb-musica-tasto" onClick={() => void musica.comandi.volume(l.volume! + 10)} aria-label="Musica più alta">
+              <button
+                type="button"
+                className="tb-musica-tasto"
+                onClick={() => void musica.comandi.volume(l.volume! + 10)}
+                aria-label="Musica più alta"
+              >
                 +
               </button>
             </>
           )}
-          <button type="button" className="tb-musica-tasto" onClick={() => void musica.comandi.indietro()} disabled={!l} aria-label="Brano precedente">
+          <button
+            type="button"
+            className="tb-musica-tasto"
+            onClick={() => void musica.comandi.indietro()}
+            disabled={!l || musica.fonte === 'radio'}
+            aria-label="Brano precedente"
+          >
             <Prec />
           </button>
           <button
@@ -108,7 +157,13 @@ export function MusicaSala({
           >
             {suonando ? <Ferma /> : <Suona />}
           </button>
-          <button type="button" className="tb-musica-tasto" onClick={() => void musica.comandi.avanti()} disabled={!l} aria-label="Brano successivo">
+          <button
+            type="button"
+            className="tb-musica-tasto"
+            onClick={() => void musica.comandi.avanti()}
+            disabled={!l || musica.fonte === 'radio'}
+            aria-label="Brano successivo"
+          >
             <Succ />
           </button>
         </>
@@ -133,8 +188,21 @@ export function MusicaSala({
       {aperte && (
         <div className="tb-liste" role="dialog" aria-label="La musica della sala">
           <span className="tb-etichetta">LA MUSICA DELLA SALA</span>
-          {liste.map((x) => {
+          {usate.length > 0 && (
+            <div className="tb-filtro" role="group" aria-label="Disciplina">
+              <button type="button" className="tb-filtro-tasto" aria-pressed={filtro === null} onClick={() => setDisciplina(null)}>
+                TUTTE
+              </button>
+              {usate.map((d) => (
+                <button key={d.id} type="button" className="tb-filtro-tasto" aria-pressed={filtro === d.id} onClick={() => setDisciplina(d.id)}>
+                  {d.nome.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          )}
+          {dellaDisciplina(liste, filtro).map((x) => {
             const fonte = fonteDelLink(x.link)
+            const nomeDisc = nomeDisciplina(x.disciplina, discipline)
             const spenta = !fonte || (fonte === 'spotify' && !spotifyCollegato)
             return (
               <button
@@ -154,7 +222,7 @@ export function MusicaSala({
                     {fonte === 'spotify' && !spotifyCollegato
                       ? 'Spotify non è collegato su questo tablet'
                       : fonte
-                        ? `Playlist ${NOME_FONTE[fonte]}${x.salaId ? '' : ' · tutte le sale'}`
+                        ? `${fonte === 'radio' ? 'Radio' : `Playlist ${NOME_FONTE[fonte]}`}${x.salaId ? '' : ' · tutte le sale'}${nomeDisc ? ` · ${nomeDisc}` : ''}`
                         : 'Link non valido'}
                   </span>
                 </span>

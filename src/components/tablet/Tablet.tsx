@@ -12,6 +12,7 @@ import { clock } from '../../../timer/src/lib/format'
 import { useMusica, useSpotify } from '../../../timer/src/lib/useMusica'
 import { leggiLinkSpotify, suonaLista } from '../../../timer/src/lib/spotify'
 import { PlayerYoutube } from '../../../timer/src/components/PlayerYoutube'
+import { PlayerAudio } from '../../../timer/src/components/PlayerAudio'
 import { fonteDelLink, musicaDellaSala, type ListaMusica } from '../../lib/musica'
 import { trattieniAggiornamento } from '../../lib/aggiornamento'
 import { Cronometro, Persone } from '../Icons'
@@ -305,18 +306,23 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   const [spenta, setSpenta] = useState(spentaRicordata)
   const musicaSala = useMemo(
     () =>
-      musicaDellaSala<Pick<Settings, 'musicaFonte' | 'youtube'>>(
+      musicaDellaSala<Pick<Settings, 'musicaFonte' | 'youtube' | 'radio'>>(
         lista && fonteLista
-          ? { musicaFonte: fonteLista, youtube: fonteLista === 'youtube' ? lista.link : settingsTimer.youtube }
-          : { musicaFonte: settingsTimer.musicaFonte, youtube: settingsTimer.youtube },
+          ? {
+              musicaFonte: fonteLista,
+              youtube: fonteLista === 'youtube' ? lista.link : settingsTimer.youtube,
+              radio: fonteLista === 'radio' ? lista.link : settingsTimer.radio,
+            }
+          : { musicaFonte: settingsTimer.musicaFonte, youtube: settingsTimer.youtube, radio: settingsTimer.radio },
         spenta,
       ),
-    [lista, fonteLista, settingsTimer.musicaFonte, settingsTimer.youtube, spenta],
+    [lista, fonteLista, settingsTimer.musicaFonte, settingsTimer.youtube, settingsTimer.radio, spenta],
   )
   const conSala = useMemo(() => ({ ...settingsTimer, ...musicaSala }), [settingsTimer, musicaSala])
   const musica = useMusica(conSala)
   const spotify = useSpotify()
   const conYoutube = musica.fonte === 'youtube' && musica.attiva
+  const fonteAudio = musica.fonte === 'file' || musica.fonte === 'radio' ? musica.fonte : null
   const spegniMusica = () => {
     void musica.comandi.pausa()
     ricordaSpenta(true)
@@ -598,6 +604,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
               spotifyCollegato={spotify.collegato}
               onScegli={scegliLista}
               onSpegni={spegniMusica}
+              discipline={timerSala?.discipline ?? []}
             />
           ))}
       </footer>
@@ -605,6 +612,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
       {/* Il lettore di YouTube, uno solo e fermo qui: si appoggia sopra il suo
           posto, a destra, e cambiando scheda non si ricarica. */}
       {conYoutube && <PlayerYoutube link={musicaSala.youtube} parti={parti} />}
+      {fonteAudio && musica.attiva && <PlayerAudio fonte={fonteAudio} link={musicaSala.radio} nome={lista && fonteLista === 'radio' ? lista.nome : ''} parti={parti} />}
     </>
   )
 }

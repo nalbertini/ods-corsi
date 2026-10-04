@@ -2,6 +2,7 @@ import type { Dove, HistoryEntry, Settings, Workout } from '../types'
 import { Coda, type Operazione } from '../../../src/lib/coda'
 import { db, nuovoId, sessione } from './palestra'
 import { type TimerSala, leggiTimerSala } from './impostazioniSala'
+import { type Disciplina, DISCIPLINE_DI_PARTENZA, eIdDisciplina, ripulisciDisciplina } from './discipline'
 
 /**
  * I timer, lo storico e le preferenze sul database di ODS Corsi.
@@ -29,7 +30,7 @@ interface RigaTimer {
 }
 
 /** Quello che il database custodisce di un timer: tutto tranne ciò che dice dove sta. */
-function schemaDi(w: Workout): Record<string, unknown> {
+export function schemaDi(w: Workout): Record<string, unknown> {
   const s: Record<string, unknown> = { ...w }
   for (const k of ['id', 'name', 'builtin', 'updatedAt', 'dove', 'corsi', 'lezioni']) delete s[k]
   return s
@@ -38,12 +39,24 @@ function schemaDi(w: Workout): Record<string, unknown> {
 const MODI = ['interval', 'circuit', 'emom', 'amrap', 'fortime']
 
 /** Il timer letto dal database, o niente se lo schema non è uno che il timer sa far partire. */
-function workoutDa(r: RigaTimer, io: string | null, corsi: string[], lezioni: string[]): Workout | null {
+export function workoutDa(
+  r: RigaTimer,
+  io: string | null,
+  corsi: string[],
+  lezioni: string[],
+  /** La lista delle discipline; `null` se non si è riusciti a leggerla: allora non si toglie niente. */
+  discipline: Disciplina[] | null = DISCIPLINE_DI_PARTENZA,
+): Workout | null {
+  // `as`: lo schema viene dal database e qui si controlla solo `mode`; il resto lo ripulisce chi lo usa.
   const s = r.schema as Partial<Workout>
   if (!s || typeof s.mode !== 'string' || !MODI.includes(s.mode)) return null
   const dove: Dove = r.persona_id === null ? 'palestra' : r.persona_id === io ? 'miei' : 'collega'
+  // Una disciplina tolta dalla lista dopo che il timer la nominava: il timer resta, senza.
+  const { disciplina: grezza, ...resto } = s as Workout
+  const disciplina = discipline === null ? (eIdDisciplina(grezza) ? grezza : undefined) : ripulisciDisciplina(grezza, discipline)
   return {
-    ...(s as Workout),
+    ...resto,
+    ...(disciplina ? { disciplina } : {}),
     exercises: Array.isArray(s.exercises) ? s.exercises : [],
     id: r.id,
     name: r.nome,
@@ -154,7 +167,7 @@ const inizioDiOggi = () => {
 }
 
 /** Tutto quello che il database ha per chi è collegato: timer, collegamenti ai corsi, corsi. */
-export async function scaricaLibreria(io: string | null): Promise<{ timer: Workout[]; corsi: Corso[] }> {
+export async function scaricaLibreria(io: string | null, discipline?: Disciplina[] | null): Promise<{ timer: Workout[]; corsi: Corso[] }> {
   const c = await db()
   const [t, ct, co, st] = await Promise.all([
     c.from('timer').select('id, persona_id, nome, schema, cambiato_il').order('nome'),
@@ -176,7 +189,7 @@ export async function scaricaLibreria(io: string | null): Promise<{ timer: Worko
     lezioniDi.set(r.timer_id, [...(lezioniDi.get(r.timer_id) ?? []), r.sessione_id])
   }
   const timer = ((t.data ?? []) as RigaTimer[])
-    .map((r) => workoutDa(r, io, corsiDi.get(r.id) ?? [], lezioniDi.get(r.id) ?? []))
+    .map((r) => workoutDa(r, io, corsiDi.get(r.id) ?? [], lezioniDi.get(r.id) ?? [], discipline))
     .filter((w): w is Workout => w !== null)
   const corsi = ((co.data ?? []) as Array<{ id: string; nome: string; colore: string | null }>).map((r) => ({
     id: r.id,

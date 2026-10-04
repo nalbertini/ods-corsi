@@ -71,7 +71,7 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
           (r) => new Map(((r.data ?? []) as Array<{ sessione_id: string; kanji: string }>).map((k) => [k.sessione_id, k.kanji])),
           () => new Map<string, string>(),
         ),
-        // L'attività arriva con 39-attivita.sql: senza, o se non risponde, le lezioni sono come prima.
+        // L'attività arriva con 41-attivita.sql: senza, o se non risponde, le lezioni sono come prima.
         db.rpc('attivita_sala', giorni).then(
           (r) => new Map(((r.data ?? []) as Array<{ sessione_id: string; attivita: string | null }>).map((k) => [k.sessione_id, k.attivita ?? undefined])),
           () => new Map<string, string | undefined>(),
@@ -192,8 +192,9 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     togliProva: (pin, sessioneId, personaId) => rpc<boolean>('togli_prova_con_pin', { pin, sessione: sessioneId, persona: personaId }),
 
     async musica() {
-      const righe = await rpc<Array<{ id: string; nome: string; link: string; sala_id: string | null }>>('musica_sala', {})
-      return (righe ?? []).map((r) => ({ id: r.id, nome: r.nome, link: r.link, salaId: r.sala_id }))
+      const righe = await rpc<Array<{ id: string; nome: string; link: string; sala_id: string | null; disciplina?: string | null }>>('musica_sala', {})
+      // La disciplina arriva con 40-discipline.sql; il tablet la confronta con la sua lista, e una sconosciuta non trova niente.
+      return (righe ?? []).map((r) => ({ id: r.id, nome: r.nome, link: r.link, salaId: r.sala_id, ...(r.disciplina ? { disciplina: r.disciplina } : {}) }))
     },
 
     // La riga delle impostazioni la legge chiunque abbia un accesso (05-segreteria.sql),
