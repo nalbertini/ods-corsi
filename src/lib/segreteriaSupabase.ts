@@ -12,6 +12,7 @@ import { chiaveGiorno, giornoDi, valeIl } from './sala'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
+import { disciplineDa } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
@@ -187,6 +188,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === 'P0002' && /allegato/.test(e.message ?? '')) return new Error('Questo allegato non c’è più')
   if (e?.code === '42501' && /allegato/.test(e.message ?? '')) return new Error('Un allegato lo toglie solo chi l’ha mandato')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /allegato/.test(e.message ?? '')) return new Error(MANCANO_ALLEGATI)
+  // Le discipline arrivano con 39-discipline.sql.
+  if ((e?.code === '42703' || e?.code === 'PGRST204') && /discipline/.test(e.message ?? ''))
+    return new Error('Le discipline non sono ancora attive sul database: va lanciato 39-discipline.sql')
   // La categoria delle segnalazioni arriva con 38-segnalazioni-categoria.sql.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /categoria/.test(e.message ?? ''))
     return new Error('Le categorie delle segnalazioni non sono ancora attive sul database: va lanciato 38-segnalazioni-categoria.sql')
@@ -243,6 +247,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
   const ok = <T>(r: { data: T; error: { message?: string; code?: string } | null }): T => {
     if (r.error) throw guaio(r.error)
     return r.data
+  }
+
+  /** Le discipline della palestra; senza 39-discipline.sql (colonna mancante) quelle di partenza. */
+  const leggiDiscipline = async () => {
+    const r = await db.from('impostazioni').select('discipline').maybeSingle()
+    if (r.error?.code === '42703') return disciplineDa(null)
+    return disciplineDa((ok(r) as { discipline?: unknown } | null)?.discipline)
   }
 
   /** `salva_date_corsi`: conta soltanto, o salva e toglie. */
@@ -1135,12 +1146,25 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async eserciziPalestra() {
       const r = ok(await db.from('impostazioni').select('esercizi').maybeSingle()) as { esercizi: unknown } | null
-      return eserciziDellaPalestra(r?.esercizi)
+      return eserciziDellaPalestra(r?.esercizi, await leggiDiscipline())
     },
 
     async salvaEserciziPalestra(l) {
-      const lista = eserciziDellaPalestra(l) ?? []
-      ok(await db.from('impostazioni').update({ esercizi: lista.map(({ id, nome, categoria }) => ({ id, nome, categoria })) }).eq('id', true))
+      const lista = eserciziDellaPalestra(l, await leggiDiscipline()) ?? []
+      ok(
+        await db
+          .from('impostazioni')
+          .update({ esercizi: lista.map(({ id, nome, categoria, disciplina }) => ({ id, nome, categoria, ...(disciplina ? { disciplina } : {}) })) })
+          .eq('id', true),
+      )
+    },
+
+    async discipline() {
+      return leggiDiscipline()
+    },
+
+    async salvaDiscipline(l) {
+      ok(await db.from('impostazioni').update({ discipline: disciplineDa(l) }).eq('id', true))
     },
 
     async presenzeIstruttori(giorni) {

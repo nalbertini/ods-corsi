@@ -1,3 +1,4 @@
+import { eIdDisciplina } from './discipline'
 import type { Exercise, Mode, Workout } from '../types'
 import { uid } from './format'
 
@@ -74,5 +75,7 @@ export function workoutSano(v: unknown, nuovoId = true): Workout | null {
     duration: numeroSano(o.duration, 60, 5400, 600),
     exercises: esercizi.map(esercizioSano).filter((e): e is Exercise => e !== null),
     updatedAt: numeroSano(o.updatedAt, 0, Number.MAX_SAFE_INTEGER, Date.now()),
+    // Solo scritta come un id: se esiste nella lista lo dice chi legge (vedi `leggiSalvataggio`).
+    ...(eIdDisciplina(o.disciplina) ? { disciplina: o.disciplina } : {}),
   }
 }

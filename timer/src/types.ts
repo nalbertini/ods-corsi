@@ -29,6 +29,8 @@ export interface Exercise {
 export interface Workout {
   id: string
   name: string
+  /** La disciplina (id della lista della palestra), o `tutte`; senza, nessuna in particolare. */
+  disciplina?: string
   mode: Mode
   /** Conto alla rovescia iniziale, prima del primo lavoro. */
   prepare: number

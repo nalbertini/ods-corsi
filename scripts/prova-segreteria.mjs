@@ -2237,5 +2237,28 @@ console.log('\nSALVA LE DATE toglie le lezioni fuori dalle date dei corsi, trann
   OGGI = new Date(2026, 8, 26, 12, 0).getTime()
 }
 
+// Le discipline: la segreteria le cura, il catalogo le tiene, il tablet le riceve.
+{
+  const nomi = (l) => l.map((d) => d.id)
+  ok('di partenza: judo, lotta, pilates, yoga', nomi(await s.discipline()), ['judo', 'lotta', 'pilates', 'yoga'])
+  await s.salvaDiscipline([...(await s.discipline()), { id: 'karate', nome: 'Karate' }])
+  await s.salvaEserciziPalestra([
+    { id: 'e1', nome: 'Kata', categoria: 'A corpo libero', disciplina: 'karate' },
+    { id: 'e2', nome: 'Squat', categoria: 'Core', disciplina: 'tutte' },
+    { id: 'e3', nome: 'Plank', categoria: 'Core', disciplina: 'inventata' },
+    { id: 'e4', nome: 'Randori', categoria: 'Judo' },
+  ])
+  const cat = await s.eserciziPalestra()
+  ok('il catalogo tiene la disciplina nuova, «tutte», toglie quella inventata e migra «Judo»',
+    cat.map((e) => [e.nome, e.categoria, e.disciplina]),
+    [['Kata', 'A corpo libero', 'karate'], ['Squat', 'Core', 'tutte'], ['Plank', 'Core', undefined], ['Randori', 'A corpo libero', 'judo']])
+  const sala = await m.creaTabletProva().timerSala()
+  ok('il tablet riceve la lista e il catalogo con le discipline', [nomi(sala.discipline), sala.esercizi.find((e) => e.nome === 'Kata')?.disciplina], [['judo', 'lotta', 'pilates', 'yoga', 'karate'], 'karate'])
+  await s.salvaDiscipline((await s.discipline()).filter((d) => d.id !== 'karate'))
+  ok('tolta la disciplina, l\'esercizio resta senza', (await s.eserciziPalestra()).find((e) => e.nome === 'Kata')?.disciplina, undefined)
+  ok('e la lista non ha più karate', nomi(await s.discipline()), ['judo', 'lotta', 'pilates', 'yoga'])
+  await s.salvaEserciziPalestra([])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

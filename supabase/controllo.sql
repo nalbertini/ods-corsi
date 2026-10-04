@@ -182,6 +182,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_constraint where conname = 'segnalazioni_categoria_solo_filo')
     and exists (select 1 from pg_policy where polname = 'segnalazioni_scrivi'
                 and pg_get_expr(polwithcheck, polrelid) like '%categoria IS NOT NULL%')),
+  ('39-discipline.sql', 'esercizi, timer e liste di musica si dividono per disciplina',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'discipline')
+    and exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'musica_sale' and column_name = 'disciplina')
+    and exists (select 1 from dentro where nome = 'musica_sala' and corpo like '%disciplina%')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

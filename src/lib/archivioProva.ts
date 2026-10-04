@@ -108,6 +108,8 @@ export interface Archivio {
   voceSale?: string | null
   /** Il catalogo degli esercizi della palestra, se la segreteria ne ha fatto uno. */
   eserciziSale?: unknown[]
+  /** Le discipline di prova; mancanti: quelle di partenza. */
+  discipline?: unknown[]
   /** Gli istruttori entrati col PIN sul tablet durante una lezione. */
   presenzeIstruttori?: PresenzaIstruttoreProva[]
   /**

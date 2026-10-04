@@ -27,6 +27,7 @@
     "prova:ore": "node scripts/prova-ore.mjs",
     "prova:anteprima": "node scripts/prova-anteprima.mjs",
     "prova:scaletta": "node scripts/prova-scaletta.mjs",
+    "prova:discipline": "node scripts/prova-discipline.mjs",
     "prova:sql": "bash scripts/prova-sql.sh"
   },
   "dependencies": {

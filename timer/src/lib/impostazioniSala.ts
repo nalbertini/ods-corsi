@@ -1,7 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Settings } from '../types'
 import { DEFAULT_SETTINGS } from './storage'
-import { CATEGORIE, type Categoria, type Esercizio, normalizza } from './esercizi'
+import { categoriaEDisciplina, type Esercizio, normalizza } from './esercizi'
+import { type Disciplina, disciplineDa } from './discipline'
 
 /**
  * Le impostazioni del timer uguali su tutti i tablet di sala.
@@ -73,13 +74,15 @@ export interface TimerSala {
   voce: string | null
   /** `null` finché la segreteria non l'ha mai toccato: il tablet tiene il suo. */
   esercizi: Esercizio[] | null
+  /** La lista delle discipline (`supabase/39-discipline.sql`); quella di partenza finché non c'è. */
+  discipline: Disciplina[]
 }
 
 /** Quanti esercizi tiene al massimo il catalogo della palestra. */
 export const MAX_CATALOGO = 400
 
 /** Il catalogo come arriva dal database, ripulito: nomi veri, categorie note, niente doppioni. */
-export function eserciziDellaPalestra(grezzi: unknown): Esercizio[] | null {
+export function eserciziDellaPalestra(grezzi: unknown, discipline?: Disciplina[]): Esercizio[] | null {
   if (!Array.isArray(grezzi)) return null
   const visti = new Set<string>()
   const lista: Esercizio[] = []
@@ -90,8 +93,8 @@ export function eserciziDellaPalestra(grezzi: unknown): Esercizio[] | null {
     const k = normalizza(nome)
     if (!nome || visti.has(k)) continue
     visti.add(k)
-    const categoria = CATEGORIE.includes(e.categoria as Categoria) ? (e.categoria as Categoria) : 'A corpo libero'
-    lista.push({ id: typeof e.id === 'string' && e.id ? e.id.slice(0, 40) : `p-${lista.length}`, nome, categoria })
+    const id = typeof e.id === 'string' && e.id ? e.id.slice(0, 40) : `p-${lista.length}`
+    lista.push({ id, nome, ...categoriaEDisciplina(e.categoria, e.disciplina, discipline) })
   }
   return lista
 }
@@ -100,19 +103,27 @@ export function voceDellaSala(grezza: unknown): string | null {
   return typeof grezza === 'string' && grezza.trim() ? grezza.trim().slice(0, 200) : null
 }
 
-export function timerSala(riga: { timer?: unknown; voce?: unknown; esercizi?: unknown } | null): TimerSala {
+export function timerSala(riga: { timer?: unknown; voce?: unknown; esercizi?: unknown; discipline?: unknown } | null): TimerSala {
+  const discipline = disciplineDa(riga?.discipline)
   return {
     impostazioni: impostazioniSala(riga?.timer),
     voce: voceDellaSala(riga?.voce),
-    esercizi: eserciziDellaPalestra(riga?.esercizi),
+    esercizi: eserciziDellaPalestra(riga?.esercizi, discipline),
+    discipline,
   }
 }
 
-/** La riga delle impostazioni, senza voce e catalogo se `13-voce-esercizi.sql` non c'è ancora. */
+/**
+ * La riga delle impostazioni, senza discipline se `39-discipline.sql` non c'è
+ * ancora, e senza voce e catalogo se manca anche `13-voce-esercizi.sql`.
+ */
 export async function leggiTimerSala(c: SupabaseClient): Promise<TimerSala> {
-  const tutto = await c.from('impostazioni').select('timer, voce, esercizi').maybeSingle()
+  const tutto = await c.from('impostazioni').select('timer, voce, esercizi, discipline').maybeSingle()
   if (!tutto.error) return timerSala(tutto.data as Record<string, unknown> | null)
   if (tutto.error.code !== '42703') throw new Error(tutto.error.message)
+  const senzaDiscipline = await c.from('impostazioni').select('timer, voce, esercizi').maybeSingle()
+  if (!senzaDiscipline.error) return timerSala(senzaDiscipline.data as Record<string, unknown> | null)
+  if (senzaDiscipline.error.code !== '42703') throw new Error(senzaDiscipline.error.message)
   const { data, error } = await c.from('impostazioni').select('timer').maybeSingle()
   if (error) throw new Error(error.message)
   return timerSala(data as Record<string, unknown> | null)
@@ -122,4 +133,14 @@ export async function leggiTimerSala(c: SupabaseClient): Promise<TimerSala> {
 export async function salvaTimerSala(c: SupabaseClient, i: ImpostazioniSala): Promise<void> {
   const { error } = await c.rpc('salva_timer_sala', { timer: impostazioniSala(i) })
   if (error) throw new Error(error.message)
+}
+
+/** La lista delle discipline della palestra, per chi è dell'app ma non è un tablet; quella di partenza se `39-discipline.sql` non c'è. */
+export async function scaricaDiscipline(c: SupabaseClient): Promise<Disciplina[]> {
+  const { data, error } = await c.from('impostazioni').select('discipline').maybeSingle()
+  if (error) {
+    if (error.code === '42703') return disciplineDa(null)
+    throw new Error(error.message)
+  }
+  return disciplineDa((data as { discipline?: unknown } | null)?.discipline)
 }

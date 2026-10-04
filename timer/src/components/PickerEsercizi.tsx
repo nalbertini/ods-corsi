@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { CATEGORIE, type Categoria, type Esercizio, normalizza } from '../lib/esercizi'
 import { uid } from '../lib/format'
+import { type Disciplina, dellaDisciplina, nomeDisciplina } from '../lib/discipline'
+import { FiltroDiscipline } from './DisciplinaScelta'
 import { Close, Plus, Trash } from './Icons'
 
 /**
@@ -12,26 +14,31 @@ import { Close, Plus, Trash } from './Icons'
  */
 export function PickerEsercizi({
   catalogo,
+  discipline,
   onCatalogo,
   onScegli,
   onChiudi,
 }: {
   catalogo: Esercizio[]
+  discipline: Disciplina[]
   onCatalogo: (lista: Esercizio[]) => void
   onScegli: (nomi: string[]) => void
   onChiudi: () => void
 }) {
   const [cerca, setCerca] = useState('')
   const [categoria, setCategoria] = useState<Categoria | 'tutte'>('tutte')
+  const [disciplina, setDisciplina] = useState<string | null>(null)
   const [scelti, setScelti] = useState<string[]>([])
 
   const q = normalizza(cerca)
+  // Un filtro su una disciplina tolta nel frattempo non resta acceso.
+  const filtro = disciplina !== null && discipline.some((d) => d.id === disciplina) ? disciplina : null
   const visibili = useMemo(
     () =>
-      catalogo.filter(
+      dellaDisciplina(catalogo, filtro).filter(
         (e) => (categoria === 'tutte' || e.categoria === categoria) && (!q || normalizza(e.nome).includes(q)),
       ),
-    [catalogo, categoria, q],
+    [catalogo, categoria, filtro, q],
   )
 
   const esisteGià = catalogo.some((e) => normalizza(e.nome) === q)
@@ -39,7 +46,14 @@ export function PickerEsercizi({
   const creaEScegli = () => {
     const nome = cerca.trim()
     if (!nome) return
-    const nuovo: Esercizio = { id: uid(), nome, categoria: categoria === 'tutte' ? 'A corpo libero' : categoria, propri: true }
+    // Creato con un filtro acceso, prende quella disciplina.
+    const nuovo: Esercizio = {
+      id: uid(),
+      nome,
+      categoria: categoria === 'tutte' ? 'A corpo libero' : categoria,
+      ...(filtro ? { disciplina: filtro } : {}),
+      propri: true,
+    }
     onCatalogo([...catalogo, nuovo])
     setScelti((p) => [...p, nome])
     setCerca('')
@@ -85,6 +99,8 @@ export function PickerEsercizi({
         ))}
       </div>
 
+      <FiltroDiscipline discipline={discipline} valore={filtro} onCambia={setDisciplina} />
+
       <div className="scroll">
         <div className="pad stack" style={{ gap: 6, paddingBottom: 16 }}>
           {cerca.trim() && !esisteGià && (
@@ -95,7 +111,7 @@ export function PickerEsercizi({
           )}
 
           {visibili.length === 0 && !cerca.trim() && (
-            <span style={{ fontSize: 14, color: 'var(--dim)' }}>Nessun esercizio in questa categoria.</span>
+            <span style={{ fontSize: 14, color: 'var(--dim)' }}>Nessun esercizio qui.</span>
           )}
 
           {visibili.map((e) => {
@@ -128,7 +144,7 @@ export function PickerEsercizi({
                   <div className="stack grow" style={{ gap: 1, minWidth: 0 }}>
                     <span style={{ fontSize: 15, fontWeight: 600 }}>{e.nome}</span>
                     <span style={{ fontSize: 11, color: 'var(--faint)', letterSpacing: '0.1em' }}>
-                      {e.categoria.toUpperCase()}
+                      {[e.categoria, nomeDisciplina(e.disciplina, discipline)].filter(Boolean).join(' · ').toUpperCase()}
                     </span>
                   </div>
                 </button>
