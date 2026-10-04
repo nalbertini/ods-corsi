@@ -1,13 +1,13 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
-import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, cosaNonVaAnagrafica, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import type { IndiziDoppioni } from './doppioni'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
-import { comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, trovaLezione, type LezioneTrovata } from './datiProva'
-import { memoria } from './datiProva'
+import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, trovaLezione, type LezioneTrovata } from './datiProva'
+import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
@@ -199,6 +199,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
   const vista = (l: LezioneTrovata): LezioneSeg => {
     const k = comeE(l)
+    const c = conti(l.id)
     return {
       id: l.id,
       corsoId: l.corso.id,
@@ -212,9 +213,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
       fine: l.fine.toISOString(),
       stato: k.stato,
       straordinaria: l.straordinaria,
+      attivitaId: attivitaDi(l) ?? undefined,
+      attivita: nomeAttivita(attivitaDi(l)),
+      attivitaCambiata: attivitaCambiata({ attivitaId: attivitaDi(l), straordinaria: l.straordinaria, inizio: l.inizio.toISOString(), segnati: c.segnati }, { attivitaId: l.ricorrenza?.attivitaId }),
       iscritti: iscrittiIl(l.corso.id, chiaveGiorno(l.inizio)).length,
       capienza: l.corso.capienza,
-      ...conti(l.id),
+      ...c,
     }
   }
 
@@ -239,12 +243,25 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async aggiornaLezione(sessioneId, cambi) {
       const l = trovaLezione(sessioneId)
       if (!l) throw new Error('Lezione inesistente')
+      if (cambi.attivitaId && !a().attivita?.some((x) => x.id === cambi.attivitaId)) throw new Error('Attività inesistente')
       cambiaLezione(sessioneId, (x) => {
         if (cambi.stato) x.stato = cambi.stato === 'prevista' ? undefined : cambi.stato
         // «Come da corso» vuol dire nessuna decisione a mano.
         if (cambi.sostitutoId !== undefined) x.istruttore = cambi.sostitutoId && !l.corso.istruttori.includes(cambi.sostitutoId) ? cambi.sostitutoId : undefined
         if (cambi.salaId !== undefined) x.sala = cambi.salaId && cambi.salaId !== salaDelGiorno(l) ? cambi.salaId : undefined
+        // `null` è «nessuna attività», una scelta: va tenuta, non tolta come un valore vuoto.
+        if (cambi.attivitaId !== undefined) x.attivitaId = cambi.attivitaId
         for (const k of Object.keys(x) as Array<keyof LezioneProva>) if (x[k] === undefined) delete x[k]
+        return x
+      })
+      salva()
+    },
+
+    async attivitaComeIlGiorno(sessioneId) {
+      const l = trovaLezione(sessioneId)
+      if (!l) throw new Error('Lezione inesistente')
+      cambiaLezione(sessioneId, (x) => {
+        delete x.attivitaId
         return x
       })
       salva()
@@ -291,7 +308,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
           attivo: c.attivo,
           ricorrenze: c.ricorrenze
             .filter((r) => !r.al || r.al >= g)
-            .map(({ sala, ...r }) => ({ ...r, salaId: sala, sala }))
+            .map(({ sala, ...r }) => ({ ...r, salaId: sala, sala, attivita: nomeAttivita(r.attivitaId ?? null) }))
             .sort((x, y) => ((x.giorno + 6) % 7) - ((y.giorno + 6) % 7) || x.ora.localeCompare(y.ora)),
         }),
       )
@@ -353,7 +370,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const base = idRicorrenza(c.id, r.giorno, r.ora)
       const id = c.ricorrenze.some((x) => x.id === base) ? `${base}~${unico()}` : base
       const dal = oggi() > STAGIONE.dal ? oggi() : STAGIONE.dal
-      const nuova = { id, giorno: r.giorno, ora: r.ora, durata: r.durata, dal, al: STAGIONE.al, ...(r.salaId && r.salaId !== c.sala ? { sala: r.salaId } : {}) }
+      const nuova = { id, giorno: r.giorno, ora: r.ora, durata: r.durata, dal, al: STAGIONE.al, ...(r.salaId && r.salaId !== c.sala ? { sala: r.salaId } : {}), ...(r.attivitaId ? { attivitaId: r.attivitaId } : {}) }
       a().corsi = a().corsi.map((x) => (x.id === c.id ? { ...x, ricorrenze: [...x.ricorrenze, nuova] } : x))
       salva()
     },
@@ -386,6 +403,86 @@ export function creaSegreteriaProva(): DatiSegreteria {
           return x
         })
       }
+      salva()
+    },
+
+    async attivitaRicorrenza(ricorrenzaId, attivitaId) {
+      const c = a().corsi.find((x) => x.ricorrenze.some((r) => r.id === ricorrenzaId))
+      const giorno = c?.ricorrenze.find((r) => r.id === ricorrenzaId)
+      if (!c || !giorno) throw new Error('Ricorrenza inesistente')
+      if (attivitaId && !a().attivita?.some((x) => x.id === attivitaId)) throw new Error('Attività inesistente')
+      const prima = giorno.attivitaId ?? null
+      // Come il trigger del database: le future senza appello né prove, con ancora quella di prima, seguono il giorno;
+      // le altre (passate, con un appello) tengono quella di prima.
+      const mie = lezioniFra(new Date(`${giorno.dal}T00:00`), new Date(`${giorno.al ?? STAGIONE.al}T00:00`)).filter((l) => l.ricorrenza?.id === ricorrenzaId)
+      const seguono = new Set(
+        lezioniCheSeguonoIlGiorno(
+          mie.map((l) => ({
+            id: l.id,
+            inizio: l.inizio.toISOString(),
+            attivitaId: attivitaDi(l),
+            segnati: Object.keys(memoria.segnate[l.id] ?? {}).length,
+            prove: (a().prove ?? []).filter((p) => p.sessioneId === l.id).length,
+          })),
+          prima,
+          new Date(),
+        ),
+      )
+      for (const l of mie) {
+        if (seguono.has(l.id)) cambiaLezione(l.id, (x) => (delete x.attivitaId, x))
+        else if (attivitaDi(l) === prima && a().lezioni[l.id]?.attivitaId === undefined) cambiaLezione(l.id, (x) => ({ ...x, attivitaId: prima }))
+      }
+      a().corsi = a().corsi.map((x) =>
+        x.id !== c.id
+          ? x
+          : { ...x, ricorrenze: x.ricorrenze.map((r) => {
+                if (r.id !== ricorrenzaId) return r
+                const { attivitaId: _vecchia, ...resto } = r
+                return attivitaId ? { ...resto, attivitaId } : resto
+              }),
+            },
+      )
+      salva()
+    },
+
+    async attivita() {
+      // Sul database ogni lezione è una riga, e conta chi ha quell'attività: qui si calcolano.
+      const lezioni = lezioniFra(new Date(`${STAGIONE.dal}T00:00`), new Date(`${STAGIONE.al}T00:00`))
+      return {
+        elenco: ordinaAttivita(a().attivita ?? []).map((x) => ({
+          ...x,
+          giorni: a().corsi.flatMap((c) => c.ricorrenze).filter((r) => r.attivitaId === x.id).length,
+          lezioni: lezioni.filter((l) => attivitaDi(l) === x.id).length,
+        })),
+      }
+    },
+
+    async salvaAttivita({ id, nome }) {
+      const elenco = a().attivita ?? []
+      const guaio = cosaNonVaAttivita(nome, elenco, id)
+      if (guaio) throw new Error(guaio)
+      if (id) {
+        if (!elenco.some((x) => x.id === id)) throw new Error('Attività inesistente')
+        a().attivita = elenco.map((x) => (x.id === id ? { ...x, nome: nome.trim() } : x))
+        salva()
+        return id
+      }
+      const nuovo = `at-${unico()}`
+      a().attivita = [...elenco, { id: nuovo, nome: nome.trim(), attiva: true }]
+      salva()
+      return nuovo
+    },
+
+    async attivaAttivita(id, attiva) {
+      a().attivita = (a().attivita ?? []).map((x) => (x.id === id ? { ...x, attiva } : x))
+      salva()
+    },
+
+    async eliminaAttivita(id) {
+      const { giorni, lezioni } = (await this.attivita()).elenco.find((x) => x.id === id) ?? { giorni: 0, lezioni: 0 }
+      const motivo = motivoAttivitaUsata(giorni, lezioni)
+      if (motivo) throw new Error(motivo)
+      a().attivita = (a().attivita ?? []).filter((x) => x.id !== id)
       salva()
     },
 

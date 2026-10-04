@@ -3,6 +3,7 @@ import { contoSala, fase, REGOLE } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Cronometro, Lucchetto, Recupero } from '../Icons'
 import type { TimerPronto } from '../../../timer/src/lib/incorporato'
+import { EtichettaAttivita } from '../ds'
 import { Guaio, orario, Riquadro } from './comune'
 import { Kanji } from '../Kanji'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
@@ -85,7 +86,10 @@ export function TabletHome({
         {piuTardi && (
           <div className="tb-aperta" style={{ ['--tinta' as string]: piuTardi.colore ?? 'var(--blu)' }}>
             <div className="tb-aperta-testo">
-              <span className="num tb-orario">{orario(piuTardi)}</span>
+              <span className="attivita-quando">
+                <span className="num tb-orario">{orario(piuTardi)}</span>
+                <EtichettaAttivita nome={piuTardi.attivita} grande />
+              </span>
               <span className="ob tb-aperta-nome">{piuTardi.corso.toUpperCase()}</span>
               {piuTardi.istruttori && (
                 <span className="tb-sotto chi-kanji" style={{ gap: 10 }}>
@@ -104,7 +108,10 @@ export function TabletHome({
         {aperte.map(({ l }) => (
           <div key={l.id} className="tb-aperta" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}>
             <div className="tb-aperta-testo">
-              <span className="num tb-orario">{orario(l)}</span>
+              <span className="attivita-quando">
+                <span className="num tb-orario">{orario(l)}</span>
+                <EtichettaAttivita nome={l.attivita} grande />
+              </span>
               <span className="ob tb-aperta-nome">{l.corso.toUpperCase()}</span>
               <span className="tb-sotto chi-kanji" style={{ gap: 10 }}>
                 <Kanji segni={l.kanji} medio />
@@ -168,7 +175,10 @@ export function TabletHome({
             <span className="tb-tacca" style={{ background: l.colore ?? 'var(--blu)' }} />
             <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
               <span className="ob" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.03em', textWrap: 'balance' }}>{l.corso.toUpperCase()}</span>
-              <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
+              <span className="attivita-quando">
+                <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)', flexShrink: 0 }}>{orario(l)}</span>
+                <EtichettaAttivita nome={l.attivita} grande />
+              </span>
             </span>
             <Kanji segni={l.kanji} />
             <span className="num tb-fase">{ETICHETTA[f]}</span>

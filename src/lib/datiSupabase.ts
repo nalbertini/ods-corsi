@@ -3,6 +3,7 @@ import { allungaCalendario } from './allunga'
 import type { Dati } from './dati'
 import { daSenzaIstruttore, type MiaPresenza } from './ore'
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
+import { attivitaPerMenu, mancaAttivita } from './segreteria'
 import { contiDellAppello, giornoDi, perCognome, valeIl } from './sala'
 import { Coda } from './coda'
 import type { GiaProvato, NuovaProva } from './prove'
@@ -40,6 +41,8 @@ interface RigaSessione {
   } | null
   sale: { nome: string } | null
   persone: { nome: string; cognome: string; kanji?: string | null } | null
+  /** Cosa si fa in quella lezione, che arriva con 41-attivita.sql. */
+  attivita?: { nome: string } | null
 }
 
 /**
@@ -78,23 +81,28 @@ const iscrittiIl = (righe: RigaIscrizione[], corsoId: string, giorno: string): P
       return p
     })
 
-const SELEZIONE_SENZA_KANJI = `
+const SELEZIONE_BASE = `
   id, corso_id, inizio, fine, stato, note, istruttore_id,
   corsi ( nome, colore, capienza, istruttore_id, corsi_istruttori ( persona_id ) ),
   sale ( nome ),
-  persone ( nome, cognome )
+  persone ( nome, cognome__KANJI__ )__ATTIVITA__
 `
-/** Con il kanji dell'istruttore, che arriva con 24-kanji.sql. */
-const SELEZIONE = SELEZIONE_SENZA_KANJI.replace('persone ( nome, cognome )', 'persone ( nome, cognome, kanji )')
+/** Le due colonne facoltative: il kanji dell'istruttore (24-kanji.sql) e l'attività della lezione (41-attivita.sql). */
+const selezione = (kanji: boolean, attivita: boolean) =>
+  SELEZIONE_BASE.replace('__KANJI__', kanji ? ', kanji' : '').replace('__ATTIVITA__', attivita ? ',\n  attivita ( nome )' : '')
 
 export function creaDatiSupabase(db: SupabaseClient): Dati {
-  // Senza 24-kanji.sql la colonna non c'è: si legge come prima, senza kanji.
-  let selezione = SELEZIONE
+  // Senza uno dei due file la colonna non c'è: si legge come prima, senza. Ognuno
+  // si toglie solo quando è lui a mancare, così uno non nasconde l'altro.
+  let conKanji = true
+  let conAttivita = true
   const leggiSessioni = async <T,>(q: (sel: string) => PromiseLike<{ data: T; error: { code?: string; message?: string } | null }>) => {
-    const r = await q(selezione)
-    if (r.error?.code !== '42703' || !/kanji/.test(r.error.message ?? '') || selezione === SELEZIONE_SENZA_KANJI) return r
-    selezione = SELEZIONE_SENZA_KANJI
-    return q(selezione)
+    for (;;) {
+      const r = await q(selezione(conKanji, conAttivita))
+      if (conKanji && r.error?.code === '42703' && /kanji/.test(r.error.message ?? '')) conKanji = false
+      else if (conAttivita && mancaAttivita(r.error)) conAttivita = false
+      else return r
+    }
   }
 
   // Le scritture in coda si eseguono qui. Se il server rifiuta per davvero —
@@ -163,6 +171,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
         sala: s.sale?.nome,
         istruttore: s.persone ? `${s.persone.nome} ${s.persone.cognome}` : undefined,
         kanji: s.persone?.kanji ?? undefined,
+        attivita: s.attivita?.nome,
         inizio: s.inizio,
         fine: s.fine,
         stato: s.stato,
@@ -228,6 +237,22 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       )
       if (error) throw error
       return conta((data ?? []) as unknown as RigaSessione[])
+    },
+
+    async attivita() {
+      const { data, error } = await db.from('attivita').select('id, nome, attiva')
+      // Senza 41-attivita.sql non c'è niente da scegliere.
+      if (mancaAttivita(error)) return []
+      if (error) throw error
+      return attivitaPerMenu((data ?? []) as Array<{ id: string; nome: string; attiva: boolean }>).map(({ id, nome }) => ({ id, nome }))
+    },
+
+    async cambiaAttivita(sessioneId, attivitaId) {
+      // Subito, non in coda: è una scelta fatta davanti a uno schermo con la rete, e senza risposta non si sa se è passata.
+      const { data, error } = await db.from('sessioni').update({ attivita_id: attivitaId }).eq('id', sessioneId).select('id')
+      if (error) throw new Error(error.code === 'PGRST204' || mancaAttivita(error) ? 'Le attività non sono ancora attive: chiedi alla segreteria' : 'Non è andata: riprova fra poco')
+      // La policy lascia cambiare solo le proprie lezioni, e dice di no non dando righe.
+      if (!data?.length) throw new Error('Puoi cambiare l’attività solo delle tue lezioni')
     },
 
     async dettaglio(sessioneId) {

@@ -17,6 +17,7 @@ della disciplina, la sala e l'istruttore. Il numero in basso dice:
 | **SENZA APPELLO** in rosso | la lezione è passata e nessuno ha segnato niente |
 | **SOSTITUTO** | la fa un altro istruttore, solo quel giorno |
 | **ANNULLATA** | non si è fatta |
+| **✎ CAMBIATA A MANO** | l'attività di quella lezione è diversa da quella del giorno: non lo segue più |
 | **STRAORDINARIA** | una lezione in più, fuori dall'orario |
 
 In alto:
@@ -43,6 +44,12 @@ contano: Indietro riporta alla voce di prima.
 - **ISTRUTTORE**: «Come da corso» o un altro nome. Scegliere un altro nome mette
   un **sostituto** solo per quella lezione; il corso resta com'è. Il sostituto
   vede la lezione nel suo calendario e fa l'appello.
+- **ATTIVITÀ**: **Come il giorno** (con il nome), **Nessuna attività** o una
+  dell'elenco di [Impostazioni](regole.md#le-attività). Con «Come il giorno»
+  si legge **Si aggiorna da sola**: se il giorno cambia attività, cambia anche
+  la lezione. Scegliere altro la segna **Cambiata a mano**, solo per quella
+  lezione: il giorno resta com'è. **COME IL GIORNO** la riporta com'era. Anche
+  l'istruttore della lezione può cambiarla, dall'appello sul telefono.
 - **SALA**: per spostare quella lezione in un'altra sala. Se un giorno del
   corso si fa **sempre** in un'altra sala, si sceglie invece nei
   [corsi](corsi.md), accanto a quel giorno.

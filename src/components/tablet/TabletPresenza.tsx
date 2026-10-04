@@ -3,6 +3,7 @@ import type { DatiTablet, LezioneSala, NomeSala } from '../../lib/tablet'
 import { chiaveTocco, codaDelTablet, contoSala, dimenticaTocco, fase, inAttesa, ricordaTocco, rifiutato, siAnnulla } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
 import { Spunta } from '../Icons'
+import { EtichettaAttivita } from '../ds'
 import { Guaio, Indietro, messaggio, orario } from './comune'
 import { Kanji } from '../Kanji'
 
@@ -175,6 +176,7 @@ export function TabletPresenza({
               {/* Il nome di chi la fa non si spazia: è il nome di una persona. */}
               {lezione.istruttori && <span style={{ letterSpacing: 0 }}> · {lezione.istruttori}</span>}
             </span>
+            <EtichettaAttivita nome={lezione.attivita} grande />
           </span>
         </div>
         {passata && <span className="num tb-bollino" style={{ background: 'var(--giallo)' }}>LEZIONE PASSATA</span>}

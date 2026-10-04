@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<footer style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 32px 20px; border-top: 2px solid {{c.lineSoft}}; color: {{c.text}}">
+  <span style="display: flex; align-items: center; gap: 12px; min-height: 64px; min-width: 190px; padding: 0 20px; border: 2px solid {{presenze.bordo}}; background: {{presenze.fondo}}; color: {{presenze.colore}}">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><circle cx="17" cy="9" r="2.8"></circle><path d="M17 14c2.8 0 4.8 2 4.8 5"></path></svg>
+    <span style="display: flex; flex-direction: column; gap: 1px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: {{c.text}}">PRESENZE</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap">{{sottoPresenze}}</span>
+    </span>
+  </span>
+  <span style="display: flex; align-items: center; gap: 12px; min-height: 64px; min-width: 190px; padding: 0 20px; border: 2px solid {{timer.bordo}}; background: {{timer.fondo}}; color: {{timer.colore}}">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><polyline points="12 9 12 13 15 15"></polyline><line x1="10" y1="2" x2="14" y2="2"></line></svg>
+    <span style="display: flex; flex-direction: column; gap: 1px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: {{c.text}}">TIMER</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap">{{sottoTimer}}</span>
+    </span>
+  </span>
+  <span style="flex-grow: 1"></span>
+  <span style="display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; border: 2px solid {{c.line}}; color: {{c.text}}" aria-label="Accendi la musica">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+  </span>
+</footer>
+</x-dc>
+<script data-dc-script data-props='{"scheda":{"editor":"enum","options":["presenze","timer"],"default":"presenze"},"sottoPresenze":{"editor":"text","default":"OGGI IN SALA"},"sottoTimer":{"editor":"text","default":"DELLA PALESTRA"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1280,"height":100}}'>
+// Riproduzione 1:1 della barra in basso del tablet: <footer className="tb-piede"> in src/components/tablet/Tablet.tsx
+// (righe 543-583) con .tb-piede, .tb-scheda-sala, .tb-scheda-nome, .tb-scheda-sotto, .tb-btn in src/styles.css
+// (righe 913-923 e 974-981). E' la stessa sotto le presenze e sotto il timer.
+// - scheda: quale delle due schede e' premuta (bordo `text`, fondo `surface-2`).
+// - sottoPresenze: «8/14 SEGNATI» con una lezione aperta, altrimenti OGGI IN SALA. sottoTimer: il corso della
+//   lezione aperta, o DELLA PALESTRA; con un timer in corso l'app scrive l'intervallo e il tempo (non riprodotto).
+// - A destra la musica spenta: nel codice e' il tasto testuale ACCENDI LA MUSICA (.tb-btn-linea), qui proposto come icona della nota, 60px quadrato. Il lettore acceso (MusicaSala) non e' riprodotto.
+const T = {
+  scuro: { lineSoft: '#2a2a2a', line: '#333333', surface2: '#242424', text: '#f2f2f0', dim: '#8c8c88' },
+  chiaro: { lineSoft: '#e2e2dd', line: '#d4d4ce', surface2: '#e9e9e5', text: '#161616', dim: '#656561' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const scheda = (premuta) => premuta
+      ? { bordo: c.text, fondo: c.surface2, colore: c.text }
+      : { bordo: c.line, fondo: 'transparent', colore: c.dim };
+    return {
+      c,
+      presenze: scheda(p.scheda !== 'timer'),
+      timer: scheda(p.scheda === 'timer'),
+      sottoPresenze: p.sottoPresenze ?? 'OGGI IN SALA',
+      sottoTimer: p.sottoTimer ?? 'DELLA PALESTRA',
+    };
+  }
+}
+</script>
+</body>
+</html>

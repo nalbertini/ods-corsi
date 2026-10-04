@@ -52,6 +52,8 @@ export interface LezioneSala {
   istruttori?: string
   /** I loro kanji, nello stesso ordine (vedi `kanji.ts`). */
   kanji?: string
+  /** Cosa si fa in questa lezione, se la segreteria l'ha scelto. */
+  attivita?: string
   inizio: string
   fine: string
   stato: StatoSessione

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { LezioneSala } from '../../lib/tablet'
 import { contoSala, recuperabile, REGOLE } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso } from '../../lib/sala'
+import { EtichettaAttivita } from '../ds'
 import { Indietro, orario } from './comune'
 
 const GIORNI_CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
@@ -89,7 +90,10 @@ export function TabletRecupero({
                   <span className="ob" style={{ fontSize: 22, fontWeight: 700, letterSpacing: '0.04em' }}>
                     {g === oggi ? 'OGGI' : giornoPerEsteso(g).toUpperCase()}
                   </span>
-                  <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)' }}>{orario(l)}</span>
+                  <span className="attivita-quando">
+                    <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)', flexShrink: 0 }}>{orario(l)}</span>
+                    <EtichettaAttivita nome={l.attivita} grande />
+                  </span>
                 </span>
                 <span className="num" style={{ fontSize: 15, fontWeight: 700, color: 'var(--sec)', whiteSpace: 'nowrap' }}>
                   {contoSala(l).presenti} su {l.iscritti}

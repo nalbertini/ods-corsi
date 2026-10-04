@@ -34,6 +34,8 @@ export interface RicorrenzaProva {
   al?: string
   /** La sala di questo giorno, quando non è quella del corso. */
   sala?: string
+  /** Cosa si fa in questo giorno, per id (vedi `Archivio.attivita`); le lezioni senza scelta a mano lo seguono. */
+  attivitaId?: string
 }
 
 export interface CorsoProva {
@@ -84,7 +86,16 @@ export interface LezioneProva {
   /** Il sostituto; `null` o assente vuol dire «come da corso». */
   istruttore?: string | null
   sala?: string | null
+  /** Scelta a mano: `null` vuol dire «nessuna attività»; assente, quella del giorno. */
+  attivitaId?: string | null
   straordinaria?: { corsoId: string; inizio: string; durata: number }
+}
+
+/** Come una riga di `attivita` (41-attivita.sql). */
+export interface AttivitaProva {
+  id: string
+  nome: string
+  attiva: boolean
 }
 
 export interface Archivio {
@@ -97,6 +108,8 @@ export interface Archivio {
   lezioni: Record<string, LezioneProva>
   /** Quelle che seguono sono venute dopo: in un archivio già salvato possono mancare. */
   capienzaSale?: Record<string, number>
+  /** L'elenco delle attività; nell'archivio di partenza è vuoto, e uno salvato prima non l'ha. */
+  attivita?: AttivitaProva[]
   /** I PIN del tablet cambiati dalla segreteria, per persona. */
   pin?: Record<string, string>
   impostazioni?: { mesiPresenze: number; giorniCalendario: number; inizioCorsi?: string | null; fineCorsi?: string | null }

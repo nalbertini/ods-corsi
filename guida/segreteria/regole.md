@@ -44,6 +44,24 @@ FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista
 L'elenco delle sale con i loro posti: **CAMBIA** per il nome o i posti,
 **AGGIUNGI UNA SALA** per una nuova.
 
+### Le attività
+
+Cosa si fa in una lezione: «Karate», «Fitness», «Open mat». L'elenco lo scrive
+la segreteria e **parte vuoto**. Ogni attività si sceglie poi per un giorno di
+un corso (vedi [Corsi](corsi.md)) e il tablet di sala la
+scrive accanto all'orario.
+
+- **AGGIUNGI UN'ATTIVITÀ** per una nuova; **CAMBIA** per il nome: il nome nuovo
+  si vede ovunque, perché è sempre la stessa attività.
+- **NON PIÙ IN USO** la toglie dai menu ma la lascia dov'è già: le lezioni che
+  l'hanno restano com'erano. **RIMETTI IN USO** la riporta nei menu.
+- **ELIMINA** solo per una mai usata. Se è su un giorno o su una lezione, sotto
+  il nome si legge dove, e cosa fare.
+
+Se compare «Le attività non sono ancora attive sul database», va lanciato
+l'aggiornamento 41 (vedi `supabase/LEGGIMI.md`): finché manca, i menu delle
+attività non ci sono e tutto il resto funziona come prima.
+
 ### La musica delle sale
 
 Le liste che il tablet di sala fa partire dalla sua barra in basso (vedi

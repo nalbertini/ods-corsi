@@ -8,8 +8,74 @@ import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
 import { unaVolta } from '../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from './Prove'
-import { DueTocchi } from './ds'
+import { DueTocchi, EtichettaAttivita } from './ds'
+import { vociAttivita } from '../lib/segreteria'
 import type { SegnalataVista } from '../lib/segnalate'
+
+/**
+ * Cosa si fa in questa lezione, scelto fra le attività della palestra: lo
+ * cambia chi la fa, solo per questa lezione. Senza attività da offrire non compare.
+ */
+function CambiaAttivita({ dati, sessione, onCambiata }: { dati: Dati; sessione: SessioneVista; onCambiata: () => void }) {
+  const [elenco, setElenco] = useState<Array<{ id: string; nome: string }>>([])
+  const [guaio, setGuaio] = useState<string | null>(null)
+  useEffect(() => {
+    let vivo = true
+    // Se l'elenco non arriva il menu non compare: non c'è niente da dire a chi sta facendo l'appello.
+    dati.attivita().then((l) => vivo && setElenco(l), () => {})
+    return () => {
+      vivo = false
+    }
+  }, [dati])
+  // L'elenco è delle sole attività in uso e la lezione ne porta il nome: la voce
+  // di una già tolta dall'uso si ricava dal nome, e non si può scegliere.
+  const attuale = elenco.find((a) => a.nome === sessione.attivita)
+  const corrente = attuale?.id ?? (sessione.attivita ? FUORI : null)
+  const voci = vociAttivita(
+    [...elenco.map((a) => ({ ...a, attiva: true })), ...(corrente === FUORI ? [{ id: FUORI, nome: sessione.attivita ?? '', attiva: false }] : [])],
+    corrente,
+  )
+  if (!voci.length) return null
+  return (
+    <div className="pad stack" style={{ gap: 4, paddingTop: 12 }}>
+      <label htmlFor="appello-attivita" className="sg-etichetta">
+        ATTIVITÀ DI QUESTA LEZIONE
+      </label>
+      <select
+        id="appello-attivita"
+        className="campo"
+        style={{ minHeight: 44 }}
+        value={corrente ?? ''}
+        onChange={async (e) => {
+          setGuaio(null)
+          try {
+            await dati.cambiaAttivita(sessione.id, e.target.value || null)
+            onCambiata()
+          } catch (er) {
+            // I testi di chi sta sotto sono già per chi usa l'app; «controlla la connessione» solo se non ce n'è uno.
+            setGuaio(er instanceof Error && er.message ? er.message : 'Non sono riuscito a cambiare l’attività: controlla la connessione e riprova.')
+          }
+        }}
+      >
+        <option value="">Nessuna attività</option>
+        {voci.map((a) => (
+          <option key={a.id} value={a.id} disabled={a.fuoriUso}>
+            {a.nome}
+            {a.fuoriUso ? ' (non più in uso)' : ''}
+          </option>
+        ))}
+      </select>
+      <span style={{ fontSize: 13, color: 'var(--dim)' }}>Cambia solo questa lezione.</span>
+      {guaio && (
+        <span role="alert" style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>
+          {guaio}
+        </span>
+      )}
+    </div>
+  )
+}
+
+const FUORI = 'fuori'
 
 /**
  * L'appello.
@@ -41,6 +107,7 @@ export function AppelloScreen({
   onConto,
   soloDi,
   onSegnalate,
+  onAttivitaCambiata,
   onIndietro,
   onChiudi,
   inCoda = 0,
@@ -50,6 +117,8 @@ export function AppelloScreen({
   onConto?: (c: Conto) => void
   soloDi?: string
   onSegnalate?: () => void
+  /** L'istruttore ha cambiato l'attività di questa lezione: il calendario va riletto. */
+  onAttivitaCambiata?: () => void
   /** Sul telefono: torna al calendario. */
   onIndietro?: () => void
   /** Dopo CHIUDI L'APPELLO, con la lezione chiusa e com'è finita. */
@@ -262,6 +331,8 @@ export function AppelloScreen({
                   .join(' · ')}
               </span>
             </span>
+            {/* Il nome intero, qui c'è posto: nel calendario si accorcia. */}
+            <EtichettaAttivita nome={d.sessione.attivita} intera />
             {/* Si può già segnare (chi lo sa prima, un recupero), ma si vede. */}
             {futura && <span className="num appello-futura">NON ANCORA COMINCIATA</span>}
           </span>
@@ -313,6 +384,11 @@ export function AppelloScreen({
           </DueTocchi>
         </div>
       </div>
+
+      {soloDi && d.sessione.insegnanti?.includes(soloDi) && <CambiaAttivita dati={dati} sessione={d.sessione} onCambiata={() => {
+        setGiro((g) => g + 1)
+        onAttivitaCambiata?.()
+      }} />}
 
       {segnalate.length > 0 && (
         <>

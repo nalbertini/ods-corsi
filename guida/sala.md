@@ -19,6 +19,9 @@ aprite l'appello completo e lo correggete.
     l'ora da cui ci si segna. A quell'ora diventa **SEGNA LA PRESENZA**;
   - **OGGI** — oggi non ci sono più lezioni: se oggi non ci sono corsi dice
     quando è la prossima lezione, se sono finiti dice **PER OGGI QUI È FINITO**.
+- Se per la lezione c'è un'attività («Karate», «Open mat»), sta in un
+  riquadro **accanto all'orario**, sia a sinistra sia nell'elenco di oggi; un
+  nome lungo va a capo su due righe.
 - **A destra**, **OGGI IN QUESTA SALA**: tutte le lezioni del giorno, con
   FINITA, SI SEGNA ORA o PIÙ TARDI. Col tablet in verticale sta sotto la
   lezione: se non ci sta tutto, la pagina scorre.

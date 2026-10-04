@@ -301,6 +301,9 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
   cursor: pointer; text-align: left;
 }
 .lezione-ora { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; min-width: 62px; }
+.lezione[data-attivita] { flex-wrap: wrap; row-gap: 8px; }
+.lezione-testa { flex: 1 1 100%; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.lezione-testa .lezione-quando { margin-left: auto; }
 .lezione-nome { font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; }
 
 /* Il kanji di un istruttore, come un timbro (vedi `Kanji.tsx`). I caratteri
@@ -907,6 +910,16 @@ a.btn { text-decoration: none; }
 .tb-giornata-riga[data-fase='finita'] { border-color: var(--line-soft); }
 .tb-giornata-riga[data-fase='finita'] .tb-tacca { opacity: 0.4; }
 .tb-tacca { width: 10px; height: 36px; flex-shrink: 0; }
+.attivita-et {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere;
+  min-width: 0; padding: 1px 6px; border: 2px solid var(--line); text-transform: uppercase;
+  font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; line-height: 1.2; color: var(--sec);
+}
+.attivita-et[data-intera] { display: inline-block; align-self: flex-start; }
+.attivita-et[data-grande] { font-size: 15px; padding: 2px 8px; }
+.attivita-quando { display: flex; align-items: center; gap: 10px; min-width: 0; }
+/* L'orario non si spezza mai: a stringersi è l'etichetta, che va a capo. */
+.attivita-quando > :first-child { white-space: nowrap; flex-shrink: 0; }
 .tb-fase { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); white-space: nowrap; }
 .tb-giornata-riga[data-fase='aperta'] .tb-fase { color: var(--verde-testo); }
 
@@ -1511,9 +1524,10 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   min-height: 48px; padding: 4px 12px 10px; background: var(--bg); border: 2px solid var(--line);
 }
 /* La sala del giorno sta sotto, su tutta la riga. */
-.sg-ricorrenza-sala { order: 1; grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; }
-.sg-ricorrenza-sala .sg-campo { height: 38px; flex-grow: 1; max-width: 320px; }
-.sg-togli { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--dim); }
+.sg-ricorrenza-sala { order: 1; grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.sg-ricorrenza-voce { display: flex; align-items: center; gap: 10px; flex: 1 1 260px; min-width: 0; }
+.sg-ricorrenza-sala .sg-campo { min-height: 44px; flex-grow: 1; max-width: 320px; min-width: 0; }
+.sg-togli { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: var(--dim); }
 .sg-togli:hover { color: var(--rosso-testo); }
 .sg-nuova-ricorrenza { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; padding: 12px; border: 2px solid var(--text); }
 

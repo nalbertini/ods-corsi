@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il tablet di sala (TabletHome) un lunedi' alle 17:10, tema chiaro, con i corsi: Lotta 2 e' aperta (ci si segna da
+     30 minuti prima dell'inizio), Lotta 1 e' finita, Lotta adulti viene dopo. Sotto la lezione aperta c'e' il suo
+     timer pronto. Colonne come .tb-home: 1fr + 380px, gap 28px, padding 22px 32px 24px. -->
+<div style="display: flex; flex-direction: column; width: 1280px; height: 800px; background: #f4f4f1">
+  <dc-import name="TabletTestata" sala="SALA LOTTA" data="LUNEDÌ 5 OTTOBRE · OFFICINE DELLO SPORT" ora="17:10" tema="chiaro" hint-size="100%,92px"></dc-import>
+  <div style="flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; padding: 22px 32px 24px">
+    <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+      <dc-import name="TabletLezione" stato="aperta" attivita="Tecnica" senza-tasto="{{ true }}" area-istruttore="{{ true }}" ora="17:00–18:00" corso="Lotta 2" kanji="闘" sotto="Coach, Federico, Maura, Nicola · 8 segnati su 14" tinta="#16a54a" tema="chiaro" hint-size="100%,150px"></dc-import>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <dc-import name="RigaAppello" nome="Luca B." stato="presente" tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Sara C." stato="presente" tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Tommaso F." stato="assente" tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Anna G." stato="presente" tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Pietro M." stato="presente" tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Giulia R." stato="presente" tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Chiara N." tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Marco D." stato="presente" tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Elena P." tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Davide S." stato="presente" tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Irene V." tema="chiaro" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Paolo Z." tema="chiaro" hint-size="100%,56px"></dc-import>
+      </div>
+      <div style="flex-grow: 1"></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px">
+      </div>
+    </div>
+    <aside style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.24em; color: #656561; ">PRECEDENTI</span>
+      <dc-import name="TabletRigaGiornata" corso="Lotta 1" attivita="Randori" ora="15:30–16:30" kanji="闘" tinta="#16a54a" fase="finita" tema="chiaro" hint-size="100%,64px"></dc-import>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.24em; color: #656561; margin-top: 6px">IN CORSO</span>
+      <dc-import name="TabletRigaGiornata" corso="Lotta 2" attivita="Tecnica" ora="17:00–18:00" kanji="闘" tinta="#16a54a" fase="aperta" tema="chiaro" hint-size="100%,64px"></dc-import>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.24em; color: #656561; margin-top: 6px">PIÙ TARDI</span>
+      <dc-import name="TabletRigaGiornata" corso="Lotta adulti" attivita="Preparazione" ora="19:00–20:00" kanji="闘" tinta="#1b8ac4" fase="dopo" tema="chiaro" hint-size="100%,64px"></dc-import>
+      <div style="flex-grow: 1"></div>
+      <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #f4c31b; color: #161616; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; text-align: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline><polyline points="12 7 12 12 15 14"></polyline></svg>
+        TI SEI DIMENTICATO DI SEGNARTI?
+      </span>
+    </aside>
+  </div>
+  <dc-import name="TabletPiede" scheda="presenze" sotto-presenze="8/14 SEGNATI" sotto-timer="LOTTA 2" tema="chiaro" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

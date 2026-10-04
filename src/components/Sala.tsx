@@ -31,6 +31,9 @@ export function Sala({ soloDi, onMieiTimer, onMieOre }: { soloDi?: string; onMie
   const apri = (sessioneId: string) => void d?.dettaglio(sessioneId).then((x) => x && apriLezione(x.sessione))
   const segnalate = d && <Segnalate dati={d} soloDi={soloDi} giro={giroSegnalate} onApri={apri} />
   const ricontaSegnalate = () => setGiroSegnalate((g) => g + 1)
+  // L'attività cambiata dall'appello: il calendario ha ancora la vecchia etichetta, e si rilegge quando si lascia l'appello.
+  const [giroCalendario, setGiroCalendario] = useState(0)
+  const attivitaCambiata = useRef(false)
   const largo = useLargo()
   // L'ultimo appello chiuso, per dire se è arrivato in segreteria.
   const [chiuso, setChiuso] = useState<{ lezione: SessioneVista; presenti: number; assenti: number; prove: number; scartatePrima: number } | null>(null)
@@ -43,6 +46,10 @@ export function Sala({ soloDi, onMieiTimer, onMieOre }: { soloDi?: string; onMie
   const apriLezione = (s: SessioneVista | null) => {
     const scorre = qui.current?.closest('.scroll')
     if (s && !aperta && scorre) eraA.current = scorre.scrollTop
+    if (attivitaCambiata.current) {
+      attivitaCambiata.current = false
+      setGiroCalendario((g) => g + 1)
+    }
     setAperta(s)
     if (s) setChiuso(null)
   }
@@ -135,7 +142,7 @@ export function Sala({ soloDi, onMieiTimer, onMieOre }: { soloDi?: string; onMie
       <div className="sala-due">
         <div className="sala-lato" hidden={!largo && !!aperta}>
           {esito}
-          <CalendarioScreen dati={d} onApri={apriLezione} apertaId={largo ? aperta?.id : undefined} conti={conti} soloDi={soloDi} arretrati={segnalate} />
+          <CalendarioScreen dati={d} onApri={apriLezione} apertaId={largo ? aperta?.id : undefined} conti={conti} soloDi={soloDi} arretrati={segnalate} ricarica={giroCalendario} />
           {!largo && <Strumenti onMieiTimer={onMieiTimer} onMieOre={onMieOre} />}
         </div>
         <div className="sala-lato">
@@ -146,6 +153,7 @@ export function Sala({ soloDi, onMieiTimer, onMieOre }: { soloDi?: string; onMie
               sessioneId={aperta.id}
               soloDi={soloDi}
               onSegnalate={ricontaSegnalate}
+              onAttivitaCambiata={() => (attivitaCambiata.current = true)}
               onConto={(c) => setConti((x) => ({ ...x, [aperta.id]: c }))}
               inCoda={inCoda}
               onIndietro={largo ? undefined : () => apriLezione(null)}

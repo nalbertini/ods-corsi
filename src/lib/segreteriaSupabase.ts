@@ -3,7 +3,7 @@ import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
-import { cosaNonVaAnagrafica, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, cosaNonVaAnagrafica, cosaNonVaAttivita, mancaAttivita, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
@@ -41,6 +41,10 @@ interface RigaSessione {
   corsi: { nome: string; colore: string | null; capienza: number | null; sala_id: string | null; istruttore_id: string | null } | null
   sale: { nome: string } | null
   persone: { nome: string; cognome: string } | null
+  /** Arrivano con 41-attivita.sql: senza, la lettura è quella di prima. */
+  attivita_id?: string | null
+  attivita?: { nome: string } | null
+  ricorrenze?: { attivita_id: string | null } | null
 }
 
 type Iscrizione = { corso_id: string; persona_id: string; dal: string; al: string | null }
@@ -118,6 +122,8 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/presenze_istruttori/, 'Le presenze degli istruttori non sono ancora attive sul database: va lanciato 15-presenze-istruttori.sql'],
 ]
 
+const MANCA_ATTIVITA = 'Le attività non sono ancora attive sul database: va lanciato 41-attivita.sql'
+
 const MANCA_DOPPIO = 'Il ruolo doppio, segreteria e istruttore, non è ancora attivo sul database: va rilanciato 01-schema.sql'
 
 /**
@@ -163,6 +169,12 @@ function sconosciuto(testo: string | undefined, altrimenti = 'Non è andata: rip
 
 /** Un errore del database detto in modo che la segreteria lo capisca. */
 function guaio(e: { message?: string; code?: string } | null): Error {
+  // Le attività arrivano con 41-attivita.sql: la colonna, la tabella o il legame che mancano.
+  if (/attivita/.test(e?.message ?? '')) {
+    if (mancaAttivita(e) || e?.code === 'PGRST204') return new Error(MANCA_ATTIVITA)
+    if (e?.code === '23505') return new Error("C'è già un'attività con questo nome")
+    if (e?.code === '23503') return new Error('È ancora su dei giorni o delle lezioni: toglila dai giorni, oppure usa NON PIÙ IN USO')
+  }
   // La tabella non c'è sul database: il file che la crea non è stato lanciato.
   if (e?.code === 'PGRST200' || e?.code === 'PGRST205' || e?.code === '42P01') {
     const t = TABELLE_DOPO.find(([nome]) => nome.test(e.message ?? ''))
@@ -250,6 +262,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
   const ok = <T>(r: { data: T; error: { message?: string; code?: string } | null }): T => {
     if (r.error) throw guaio(r.error)
     return r.data
+  }
+
+  /** Quante righe di una tabella hanno questa attività. */
+  const quante = async (tabella: 'ricorrenze' | 'sessioni', id: string) => {
+    const { count, error } = await db.from(tabella).select('id', { count: 'exact', head: true }).eq('attivita_id', id)
+    if (error) throw guaio(error)
+    return count ?? 0
   }
 
   /** Le discipline della palestra; senza 40-discipline.sql (colonna mancante) quelle di partenza. */
@@ -408,14 +427,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       await allungaCalendario(db)
       const fino = new Date(a)
       fino.setHours(23, 59, 59, 999)
-      const sessioni = ok(
-        await db
-          .from('sessioni')
-          .select('id, corso_id, ricorrenza_id, inizio, fine, stato, sala_id, istruttore_id, corsi ( nome, colore, capienza, sala_id, istruttore_id ), sale ( nome ), persone ( nome, cognome )')
-          .gte('inizio', da.toISOString())
-          .lte('inizio', fino.toISOString())
-          .order('inizio'),
-      ) as unknown as RigaSessione[]
+      const leggi = (colonne: string) =>
+        db.from('sessioni').select(colonne).gte('inizio', da.toISOString()).lte('inizio', fino.toISOString()).order('inizio')
+      const BASE = 'id, corso_id, ricorrenza_id, inizio, fine, stato, sala_id, istruttore_id, corsi ( nome, colore, capienza, sala_id, istruttore_id ), sale ( nome ), persone ( nome, cognome )'
+      let lette = await leggi(`${BASE}, attivita_id, attivita ( nome ), ricorrenze ( attivita_id )`)
+      // Senza 41-attivita.sql le lezioni si leggono come prima, senza attività.
+      if (mancaAttivita(lette.error)) lette = await leggi(BASE)
+      const sessioni = ok(lette) as unknown as RigaSessione[]
       const corsi = [...new Set(sessioni.map((s) => s.corso_id))]
       const ids = sessioni.map((s) => s.id)
       const vuoto = ['00000000-0000-0000-0000-000000000000']
@@ -448,6 +466,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           capienza: s.corsi?.capienza ?? undefined,
           presenti: segni.filter((p) => p.stato === 'presente').length,
           segnati: segni.length,
+          attivitaId: s.attivita_id ?? undefined,
+          attivita: s.attivita?.nome,
+          attivitaCambiata: attivitaCambiata({ attivitaId: s.attivita_id, straordinaria: !s.ricorrenza_id, inizio: s.inizio, segnati: segni.length }, { attivitaId: s.ricorrenze?.attivita_id }),
         }
       })
     },
@@ -463,7 +484,14 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // ne ha una): così la lezione torna a seguirlo.
       if (cambi.sostitutoId !== undefined) riga.istruttore_id = cambi.sostitutoId ?? s.corsi?.istruttore_id ?? null
       if (cambi.salaId !== undefined) riga.sala_id = cambi.salaId ?? s.ricorrenze?.sala_id ?? s.corsi?.sala_id ?? null
+      if (cambi.attivitaId !== undefined) riga.attivita_id = cambi.attivitaId
       ok(await db.from('sessioni').update(riga).eq('id', sessioneId))
+    },
+
+    async attivitaComeIlGiorno(sessioneId) {
+      // Il valore del giorno: così la lezione torna a seguirlo (una straordinaria non ne ha: nessuna).
+      const s = ok(await db.from('sessioni').select('ricorrenze ( attivita_id )').eq('id', sessioneId).single()) as unknown as { ricorrenze: { attivita_id: string | null } | null }
+      ok(await db.from('sessioni').update({ attivita_id: s.ricorrenze?.attivita_id ?? null }).eq('id', sessioneId))
     },
 
     async straordinaria(corsoId, inizio, durata) {
@@ -492,12 +520,15 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     rigenera,
 
     async corsi() {
-      const righe = ok(
-        await db.from('corsi').select('id, nome, colore, capienza, attivo, sala_id, istruttore_id, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al, sala_id, sale ( nome ) )').order('nome'),
-      ) as unknown as Array<{
+      const leggi = (giorno: string) =>
+        db.from('corsi').select(`id, nome, colore, capienza, attivo, sala_id, istruttore_id, sale ( nome ), ricorrenze ( id, giorno, ora, durata_min, dal, al, sala_id, sale ( nome )${giorno} )`).order('nome')
+      let lette = await leggi(', attivita_id, attivita ( nome )')
+      // Senza 41-attivita.sql i giorni si leggono come prima, senza attività.
+      if (mancaAttivita(lette.error)) lette = await leggi('')
+      const righe = ok(lette) as unknown as Array<{
         id: string; nome: string; colore: string | null; capienza: number | null; attivo: boolean; sala_id: string | null; istruttore_id: string | null
         sale: { nome: string } | null
-        ricorrenze: Array<{ id: string; giorno: number; ora: string; durata_min: number; dal: string; al: string | null; sala_id: string | null; sale: { nome: string } | null }>
+        ricorrenze: Array<{ id: string; giorno: number; ora: string; durata_min: number; dal: string; al: string | null; sala_id: string | null; sale: { nome: string } | null; attivita_id?: string | null; attivita?: { nome: string } | null }>
       }>
       const chi = await insegnanti(righe.map((r) => r.id))
       const g = oggi()
@@ -522,6 +553,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
               al: x.al ?? undefined,
               salaId: x.sala_id ?? undefined,
               sala: x.sale?.nome,
+              attivitaId: x.attivita_id ?? undefined,
+              attivita: x.attivita?.nome,
             }))
             .sort((x, y) => ((x.giorno + 6) % 7) - ((y.giorno + 6) % 7) || x.ora.localeCompare(y.ora)),
         }),
@@ -561,13 +594,54 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async aggiungiRicorrenza(corsoId, r, opzioni) {
-      ok(await db.from('ricorrenze').insert({ corso_id: corsoId, giorno: r.giorno, ora: r.ora, durata_min: r.durata, dal: oggi(), sala_id: r.salaId ?? null }))
+      ok(
+        await db
+          .from('ricorrenze')
+          .insert({ corso_id: corsoId, giorno: r.giorno, ora: r.ora, durata_min: r.durata, dal: oggi(), sala_id: r.salaId ?? null, ...(r.attivitaId ? { attivita_id: r.attivitaId } : {}) }),
+      )
       if (opzioni?.rigenera !== false) await rigenera()
     },
 
     async salaRicorrenza(ricorrenzaId, salaId) {
       // Le lezioni future le sposta il trigger di 05-segreteria.sql.
       ok(await db.from('ricorrenze').update({ sala_id: salaId }).eq('id', ricorrenzaId))
+    },
+
+    async attivitaRicorrenza(ricorrenzaId, attivitaId) {
+      // Le lezioni future che la seguivano le cambia il trigger di 41-attivita.sql.
+      ok(await db.from('ricorrenze').update({ attivita_id: attivitaId }).eq('id', ricorrenzaId))
+    },
+
+    async attivita() {
+      const r = await db.from('attivita').select('id, nome, attiva')
+      if (mancaAttivita(r.error)) return { elenco: [], manca: 'va lanciato 41-attivita.sql' }
+      const righe = ok(r) as unknown as Array<{ id: string; nome: string; attiva: boolean }>
+      // Su quanti giorni e quante lezioni è: una conta per voce, sono poche.
+      const elenco = await Promise.all(
+        ordinaAttivita(righe).map(async (x) => ({ id: x.id, nome: x.nome, attiva: x.attiva, giorni: await quante('ricorrenze', x.id), lezioni: await quante('sessioni', x.id) })),
+      )
+      return { elenco }
+    },
+
+    async salvaAttivita({ id, nome }) {
+      const altre = ok(await db.from('attivita').select('id, nome')) as unknown as Array<{ id: string; nome: string }>
+      const guaioNome = cosaNonVaAttivita(nome, altre, id)
+      if (guaioNome) throw new Error(guaioNome)
+      if (id) {
+        ok(await db.from('attivita').update({ nome: nome.trim() }).eq('id', id))
+        return id
+      }
+      return (ok(await db.from('attivita').insert({ nome: nome.trim() }).select('id').single()) as { id: string }).id
+    },
+
+    async attivaAttivita(id, attiva) {
+      ok(await db.from('attivita').update({ attiva }).eq('id', id))
+    },
+
+    async eliminaAttivita(id) {
+      const motivo = motivoAttivitaUsata(await quante('ricorrenze', id), await quante('sessioni', id))
+      if (motivo) throw new Error(motivo)
+      ok(await db.from('attivita').delete().eq('id', id))
     },
 
     async togliRicorrenza(ricorrenzaId) {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import type { DatiSegreteria, LezioneSeg } from '../../lib/segreteria'
+import { attivitaDelGiorno, COME_IL_GIORNO, NESSUNA_ATTIVITA, sceltaAttivitaLezione, vociAttivita, type DatiSegreteria, type LezioneSeg } from '../../lib/segreteria'
 import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso, lunedi, oraDi, perEsteso } from '../../lib/sala'
 import { dati, type Dati } from '../../lib/dati'
@@ -294,7 +294,7 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
     >
       <span className="ob sg-lezione-nome">{l.corso.toUpperCase()}</span>
       <span className="sg-lezione-dove">
-        {[l.sala ?? <span key="s" className="sg-forse">sala?</span>, l.istruttori || <span key="i" className="sg-forse">istruttore?</span>].map((x, i) => (
+        {[l.sala ?? <span key="s" className="sg-forse">sala?</span>, l.istruttori || <span key="i" className="sg-forse">istruttore?</span>, ...(l.attivita ? [l.attivita] : [])].map((x, i) => (
           <span key={i}>
             {i > 0 && ' · '}
             {x}
@@ -314,6 +314,11 @@ function Tessera({ l, passata, onApri }: { l: LezioneSeg; passata: boolean; onAp
         {l.sostitutoId && (
           <span className="num sg-tag" data-tipo="sostituto">
             SOSTITUTO
+          </span>
+        )}
+        {l.attivitaCambiata && (
+          <span className="num sg-tag" data-tipo="sostituto" title="L'attività di questa lezione è stata scelta a mano: non segue più il giorno">
+            ✎ CAMBIATA A MANO
           </span>
         )}
         {l.straordinaria && <span className="num sg-tag">STRAORDINARIA</span>}
@@ -347,6 +352,8 @@ function Lezione({
   fai: Fai
 }) {
   const istruttori = useCarica(() => d.istruttori(), [d])
+  const attivita = useCarica(() => d.attivita(), [d])
+  const corsi = useCarica(() => d.corsi(), [d])
   const cassetto = useDialogo<HTMLElement>(onChiudi)
 
   const cambia = (cambi: Parameters<DatiSegreteria['aggiornaLezione']>[1], detto: string) =>
@@ -434,6 +441,16 @@ function Lezione({
         </div>
         {l.sostitutoId && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Sostituzione solo per questa lezione: il corso resta com'è.</span>}
 
+        {attivita.dato && !attivita.dato.manca && (
+          <Attivita
+            l={l}
+            elenco={attivita.dato.elenco}
+            giorno={corsi.dato ? attivitaDelGiorno(corsi.dato, l) : undefined}
+            cambia={cambia}
+            comeIlGiorno={() => void fai(() => d.attivitaComeIlGiorno(l.id), 'Attività come il giorno', onCambiato)}
+          />
+        )}
+
         <Appello key={l.id} l={l} onCambiato={onCambiato} />
 
         <div className="grow" />
@@ -457,6 +474,64 @@ function Lezione({
         </button>
       </section>
     </>
+  )
+}
+
+/** Cosa si fa in questa lezione: quella del giorno, che la segue da sola, o una scelta a mano solo per lei. */
+function Attivita({
+  l,
+  elenco,
+  giorno,
+  cambia,
+  comeIlGiorno,
+}: {
+  l: LezioneSeg
+  elenco: Array<{ id: string; nome: string; attiva: boolean }>
+  giorno?: string
+  cambia: (cambi: { attivitaId: string | null }, detto: string) => void
+  comeIlGiorno: () => void
+}) {
+  const { valore, segue, conGiorno } = sceltaAttivitaLezione(l)
+  const voci = vociAttivita(elenco, l.attivitaId)
+  return (
+    <div className="stack" style={{ gap: 6 }}>
+      <Campo id="z-att" etichetta="ATTIVITÀ">
+        <select
+          id="z-att"
+          className="sg-campo"
+          data-acceso={!segue && conGiorno}
+          value={valore}
+          onChange={(e) => {
+            if (e.target.value === COME_IL_GIORNO) return comeIlGiorno()
+            const id = e.target.value === NESSUNA_ATTIVITA ? null : e.target.value
+            cambia({ attivitaId: id }, id ? `Attività: ${elenco.find((a) => a.id === id)?.nome}` : 'Nessuna attività')
+          }}
+        >
+          {conGiorno && <option value={COME_IL_GIORNO}>Come il giorno{giorno ? ` (${giorno})` : ''}</option>}
+          <option value={NESSUNA_ATTIVITA}>Nessuna attività</option>
+          {voci.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.nome}
+              {a.fuoriUso ? ' (non più in uso)' : ''}
+            </option>
+          ))}
+        </select>
+      </Campo>
+      {conGiorno && (
+        <span className="row" style={{ gap: 10, flexWrap: 'wrap', fontSize: 13, color: segue ? 'var(--dim)' : 'var(--giallo-testo)' }}>
+          {segue ? (
+            <span>Si aggiorna da sola: se il giorno cambia attività, cambia anche questa lezione.</span>
+          ) : (
+            <>
+              <span>Cambiata a mano. Solo per questa lezione: il giorno resta com'è.</span>
+              <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={comeIlGiorno}>
+                COME IL GIORNO
+              </button>
+            </>
+          )}
+        </span>
+      )}
+    </div>
   )
 }
 

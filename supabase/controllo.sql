@@ -191,6 +191,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from information_schema.columns
                 where table_schema = 'public' and table_name = 'musica_sale' and column_name = 'disciplina')
     and exists (select 1 from dentro where nome = 'musica_sala' and corpo like '%disciplina%')),
+  ('41-attivita.sql', 'l''attività dei giorni e delle lezioni, scelta da un elenco',
+    to_regclass('public.attivita') is not null
+    and exists (select 1 from dentro where nome = 'attivita_sala')
+    and exists (select 1 from dentro where nome = 'ricorrenza_cambiata' and corpo like '%attivita_id%')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

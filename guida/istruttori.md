@@ -89,6 +89,11 @@ FONDO ↓**, che si tocca e porta al tasto per chiudere. Tutti i conti sono degl
 parte. Se la lezione non è ancora
 cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare lo stesso.
 
+Se la segreteria ha scelto un'attività per quella lezione («Karate», «Open
+mat»), la leggete accanto all'ora. Se la lezione è vostra, sotto la testata c'è
+**ATTIVITÀ DI QUESTA LEZIONE**: potete cambiarla, o scegliere **Nessuna
+attività**. Vale solo per quella lezione, non per le altre dello stesso giorno.
+
 Sotto, l'elenco degli iscritti. **Un tocco per nome**, e il giro è:
 
 | Tocco | Segno | Significa |

@@ -1,0 +1,73 @@
+{
+  "title": "Tablet di sala",
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Tablet di sala"
+    },
+    {
+      "id": "page-2",
+      "name": "Libreria"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Tablet di sala · con i corsi (tema chiaro)",
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 800,
+      "page": "page-1"
+    },
+    {
+      "file": "TabletTestata.dc.html",
+      "title": "TabletTestata",
+      "x": 0,
+      "y": 0,
+      "w": 1280,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletLezione.dc.html",
+      "title": "TabletLezione",
+      "x": 0,
+      "y": 180,
+      "w": 840,
+      "h": 280,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletRigaGiornata.dc.html",
+      "title": "TabletRigaGiornata",
+      "x": 0,
+      "y": 540,
+      "w": 420,
+      "h": 90,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletPiede.dc.html",
+      "title": "TabletPiede",
+      "x": 0,
+      "y": 710,
+      "w": 1280,
+      "h": 120,
+      "page": "page-2"
+    },
+    {
+      "file": "Bottone.dc.html",
+      "title": "Bottone",
+      "x": 0,
+      "y": 910,
+      "w": 300,
+      "h": 90,
+      "page": "page-2"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
+}
