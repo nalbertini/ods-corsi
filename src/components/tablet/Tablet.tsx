@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type FormEve
 import type { DatiTablet, LezioneSala, Postazione, PresenzaIstruttore } from '../../lib/tablet'
 import { codaDelTablet, contoSala, datiTablet, lasciaTablet, lezioneDiAdesso, REGOLE } from '../../lib/tablet'
 import type { Settings } from '../../../timer/src/types'
-import type { Incorporato, StatoTimer, TimerPronto } from '../../../timer/src/lib/incorporato'
+import type { Incorporato, StatoTimer } from '../../../timer/src/lib/incorporato'
 import type { Lezione } from '../../../timer/src/lib/lezione'
 import { loadSettings } from '../../../timer/src/lib/storage'
 import type { ImpostazioniSala, TimerSala } from '../../../timer/src/lib/impostazioniSala'
@@ -15,9 +15,10 @@ import { PlayerYoutube } from '../../../timer/src/components/PlayerYoutube'
 import { PlayerAudio } from '../../../timer/src/components/PlayerAudio'
 import { fonteDelLink, musicaDellaSala, type ListaMusica } from '../../lib/musica'
 import { trattieniAggiornamento } from '../../lib/aggiornamento'
-import { Cronometro, Persone } from '../Icons'
+import { Accensione, Cronometro, Nota, Persone } from '../Icons'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Logo } from '../Logo'
+import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 import { accedi, account, passaA } from '../../lib/accesso'
 import { TastoTema } from '../TastoTema'
 import { giornoDopo, messaggio, useAdesso, useInattivo, useSchermoAcceso } from './comune'
@@ -285,15 +286,6 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
     [aperta?.id, aperta?.corsoId, aperta?.corso],
   )
 
-  // I timer che la lezione aperta ha pronti (li dice il timer, che ha la
-  // libreria), e la richiesta di farne partire uno da qui.
-  const [pronto, setPronto] = useState<TimerPronto | null>(null)
-  const [avvia, setAvvia] = useState<{ id: string; volta: number } | null>(null)
-  const avviaPronto = (id: string) => {
-    setScheda('timer')
-    setAvvia((a) => ({ id, volta: (a?.volta ?? 0) + 1 }))
-  }
-
   // --- La musica --------------------------------------------------------------
   // Una lista della sala, se se n'è scelta una; altrimenti quella delle
   // impostazioni del timer. La barra, il lettore e il timer suonano questa.
@@ -382,10 +374,8 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
       onStato: setTimer,
       onSettings: setSettingsTimer,
       onTimerSala: salvaTimerSala,
-      onPronto: setPronto,
-      avvia,
     }),
-    [lezioneTimer, musicaSala, timerSala, clipSala, scheda, sbloccato, avvia, salvaTimerSala],
+    [lezioneTimer, musicaSala, timerSala, clipSala, scheda, sbloccato, salvaTimerSala],
   )
 
   // Chi se ne va a metà lascia il tablet com'era; l'area istruttore si chiude
@@ -416,6 +406,11 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
       aHome()
     }
     setScheda('timer')
+  }
+  const esciDalTablet = () => {
+    setSbloccato(false)
+    setScheda('presenze')
+    setVista({ s: 'esci-pin' })
   }
   const segnaAperta = () => {
     if (!aperta) return
@@ -492,6 +487,10 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
         )}
         <span className="num tb-ora">{oraDi(adesso.toISOString())}</span>
         <TastoTema />
+        {/* Esce dal tablet: col PIN di un istruttore e una conferma. Dalla scheda TIMER si torna alle presenze, dove il PIN si digita. */}
+        <button type="button" className="icon-btn" title="Esci dal tablet" aria-label="Esci dal tablet" onClick={esciDalTablet}>
+          <Accensione />
+        </button>
       </header>
 
       <div className="tb-centro" data-scheda={scheda} data-timer={timer ? 'aperto' : undefined}>
@@ -500,17 +499,14 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
             <>
               {vista.s === 'home' && (
                 <TabletHome
-                  sala={postazione.sala}
+                  d={d}
                   adesso={adesso}
                   lezioni={lezioni}
                   guaio={guaio}
                   onSegna={(l) => setVista({ s: 'presenza', lezione: l, da: 'home' })}
-                  timer={aperta && lezioneTimer ? { lezioneId: aperta.id, pronto, inCorso: inCorso(timer) } : null}
-                  onAvviaTimer={avviaPronto}
-                  onVaiTimer={vaiTimer}
+                  onCambiato={() => void carica()}
                   onRecupero={() => setVista({ s: 'recupero', corsoId: null })}
                   onPin={() => setVista({ s: 'pin' })}
-                  onEsci={() => setVista({ s: 'esci-pin' })}
                 />
               )}
               {vista.s === 'presenza' && (
@@ -593,8 +589,8 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
         <span className="grow" />
         {settingsTimer.musica &&
           (spenta ? (
-            <button type="button" className="tb-btn tb-btn-linea" onClick={accendiMusica}>
-              ACCENDI LA MUSICA
+            <button type="button" className="tb-btn tb-btn-linea tb-btn-quadro" title="Accendi la musica" aria-label="Accendi la musica" onClick={accendiMusica}>
+              <Nota size={28} />
             </button>
           ) : (
             <MusicaSala
@@ -643,6 +639,10 @@ function ConfermaUscita({ nome, onEsci, onAnnulla }: { nome: string; onEsci: () 
         <span className="tb-sotto" style={{ fontSize: 18, lineHeight: 1.5 }}>
           {nome ? `${nome}, il` : 'Il'} tablet si scollega dalla sala: nessuno potrà più segnarsi qui finché la segreteria non lo
           ricollega con l'account della sala.
+        </span>
+        {/* Serve a capire se l'app di questo tablet è aggiornata. */}
+        <span className="tb-nota" title={VERSIONE_ESTESA}>
+          Versione {VERSIONE}
         </span>
         {guaio && (
           <span role="alert" style={{ fontSize: 19, fontWeight: 700, color: 'var(--rosso)' }}>

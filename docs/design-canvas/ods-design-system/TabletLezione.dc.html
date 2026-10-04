@@ -85,8 +85,9 @@
 </x-dc>
 <script data-dc-script data-props='{"stato":{"editor":"enum","options":["aperta","dopo"],"default":"aperta"},"ora":{"editor":"text","default":"17:00–18:00"},"corso":{"editor":"text","default":"Lotta 2"},"kanji":{"editor":"text","default":"闘"},"sotto":{"editor":"text","default":"Coach, Federico, Maura, Nicola · 8 segnati su 14"},"tinta":{"editor":"text","default":"#16a54a"},"dalle":{"editor":"text","default":"18:30"},"timer":{"editor":"text","default":""},"timerDa":{"editor":"text","default":"IL TIMER DI QUESTA LEZIONE"},"senzaTasto":{"editor":"boolean","default":false},"areaIstruttore":{"editor":"boolean","default":false},"istruttori":{"editor":"text","default":""},"recupero":{"editor":"boolean","default":false},"attivita":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":808,"height":260}}'>
 // Riproduzione 1:1 della lezione grande della home del tablet: <div className="tb-aperta"> in
-// src/components/tablet/TabletHome.tsx (righe 91-141) con .tb-aperta*, .tb-btn-segna, .tb-dalle, .tb-pronto*,
-// .tb-btn-timer in src/styles.css (righe 862-895).
+// src/components/tablet/TabletHome.tsx con .tb-aperta*, .tb-dalle in src/styles.css. Nell'app la card aperta e' tutta un
+// tasto che apre l'appello (senzaTasto + areaIstruttore, i nomi stanno sotto): il tasto SEGNA LA PRESENZA e la riga del
+// timer pronto sono nella libreria ma non piu' nell'app.
 // - stato "aperta": la lezione in cui ci si segna adesso, col tasto verde SEGNA LA PRESENZA (300x88, il piu'
 //   grande dello schermo). Stato "dopo": il tasto e' sostituito da SI SEGNA DALLE + l'ora (inizio meno 30 minuti).
 // - La tinta del corso e' sempre la barra sinistra da 8px, mai un fondo (DESIGN.md, La Regola della Tinta del Corso).

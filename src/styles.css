@@ -231,6 +231,9 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 /* Lo stesso tasto quando dentro c'è una parola invece di un segno: 44 px fissi
    bastano a «RESET» e tagliano «AZZERA». */
 .icon-btn.testo { width: auto; min-width: 44px; padding: 0 11px; }
+/* In testata il tablet si tocca da un metro: tasti da 60 px, icone da 28. */
+.tb-testata .icon-btn { width: 60px; height: 60px; }
+.tb-testata .icon-btn svg { width: 28px; height: 28px; }
 
 .btn {
   min-height: 56px; padding: 0 22px;
@@ -834,6 +837,8 @@ a.btn { text-decoration: none; }
 .tb-pila { display: flex; flex-direction: column; gap: 18px; }
 .tb-colonna { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
 .tb-home { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; }
+.tb-gruppo { font-size: 15px; }
+.tb-gruppo:not(:first-child) { margin-top: 6px; }
 .tb-istruttore { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; }
 .tb-pin { display: flex; align-items: center; justify-content: center; gap: 72px; flex-wrap: wrap; }
 .tb-preparazione { display: flex; align-items: center; justify-content: center; }
@@ -869,33 +874,19 @@ a.btn { text-decoration: none; }
 /* Il nome va a capo nella sua colonna: il tasto resta a destra anche con un corso dal nome lungo. */
 .tb-aperta-testo { display: flex; flex-direction: column; gap: 6px; flex: 1 1 280px; min-width: 0; }
 .tb-aperta-nome { font-size: 38px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; text-wrap: balance; }
-.tb-btn-segna {
-  min-width: 300px; min-height: 88px; padding: 0 24px;
-  background: var(--verde); color: var(--su-colore);
-  font-size: 26px; font-weight: 700; letter-spacing: 0.1em;
-}
-/* Il timer della lezione aperta, sotto il tasto delle presenze: una riga sola,
-   da far partire con un tocco quando si comincia. */
 .tb-aperta { flex-wrap: wrap; }
+/* La lezione aperta è tutta un tasto: il testo prende la card e il suo padding,
+   così si tocca ovunque; AREA ISTRUTTORE le sta accanto, a destra. */
+.tb-aperta-lezione { padding: 0; gap: 0; align-items: stretch; }
+.tb-aperta-lezione > .tb-aperta-testo { padding: 22px 24px; text-align: left; justify-content: center; }
+.tb-aperta-lezione > .tb-btn { align-self: center; margin-right: 24px; }
+.tb-aperta-lezione:has(> .tb-aperta-testo:active) { background: var(--surface-2); }
 /* Al posto del tasto, quando la lezione non è ancora aperta: l'ora da cui ci si segna. */
 .tb-dalle {
   min-width: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   min-height: 88px; padding: 10px 24px; border: 2px solid var(--line);
 }
 .tb-dalle-ora { font-size: 56px; font-weight: 700; line-height: 1; }
-.tb-pronto {
-  flex-basis: 100%; display: flex; align-items: center; gap: 16px;
-  padding-top: 16px; border-top: 2px solid var(--line-soft); color: var(--dim);
-}
-.tb-pronto-da { font-size: 15px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); }
-.tb-pronto-nome { font-size: 24px; font-weight: 700; letter-spacing: 0.03em; color: var(--text); line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tb-pronto[data-seguito] { padding-top: 12px; border-top-style: dashed; }
-.tb-btn-timer {
-  min-width: 220px; min-height: 64px; padding: 0 22px;
-  background: var(--rosso); color: var(--su-rosso);
-  font-size: 22px; font-weight: 700; letter-spacing: 0.12em;
-}
-.tb-btn-timer-linea { background: none; border: 2px solid var(--line); color: var(--text); font-size: 18px; }
 .tb-incorso {
   display: flex; align-items: center; gap: 18px; padding: 16px 22px;
   background: var(--surface); border: 2px solid var(--line); border-left: 8px solid var(--tinta);
@@ -906,6 +897,7 @@ a.btn { text-decoration: none; }
   background: var(--surface); border: 2px solid var(--line);
 }
 .tb-giornata-riga[data-fase='aperta'] { border-color: var(--verde); }
+button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 /* Passata: si spengono barra e bordo, non le scritte, che devono ancora leggersi. */
 .tb-giornata-riga[data-fase='finita'] { border-color: var(--line-soft); }
 .tb-giornata-riga[data-fase='finita'] .tb-tacca { opacity: 0.4; }
@@ -1041,6 +1033,11 @@ a.btn { text-decoration: none; }
 .tb-tessera[data-attesa] svg { color: var(--giallo-testo); }
 .tb-tessera-attesa { font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: var(--giallo-testo); }
 
+/* L'appello veloce sotto la lezione aperta: tre nomi per riga, ognuno alto più di 56px. */
+.tb-veloce { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.tb-veloce .tb-tessera { min-height: 60px; border-width: 2px; font-size: 22px; }
+.tb-btn-quadro { width: 60px; padding: 0; }
+
 /* In fondo all'elenco, non sopra: occupa il suo posto, così l'ultima riga di
    nomi resta da toccare; con tanti nomi resta attaccata in basso mentre si scorre. */
 .tb-fascia {
@@ -1141,6 +1138,10 @@ a.btn { text-decoration: none; }
    TUTTI PRESENTI e l'intestazione dell'appello restano in vista mentre si
    scorrono i nomi, ESCI resta in fondo alle lezioni. */
 @media (min-width: 901px) {
+  /* Anche la home: scorre la colonna dei nomi, non la pagina, così TI SEI DIMENTICATO
+     DI SEGNARTI? e la giornata restano dove sono. */
+  .tb-home { overflow: hidden; grid-template-rows: minmax(0, 1fr); }
+  .tb-home > .tb-colonna { overflow-y: auto; }
   .tb-istruttore { overflow: hidden; grid-template-rows: minmax(0, 1fr); }
   .tb-istruttore > .tb-colonna { overflow-y: auto; }
   /* Nella colonna che scorre si accorcia solo l'elenco delle lezioni: tendina,
@@ -1176,7 +1177,7 @@ a.btn { text-decoration: none; }
   .tb-aperta { flex-direction: column; align-items: stretch; }
   /* In colonna la base da 280px diventerebbe un'altezza: il testo prende solo quello che gli serve. */
   .tb-aperta-testo { flex: 0 0 auto; }
-  .tb-btn-segna, .tb-dalle { min-width: 0; }
+  .tb-dalle { min-width: 0; }
   .tb-righe { grid-template-columns: minmax(0, 1fr); }
   .tb-fascia { flex-wrap: wrap; }
   .tb-pin { gap: 32px; }

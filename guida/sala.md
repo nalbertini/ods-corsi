@@ -10,23 +10,32 @@ aprite l'appello completo e lo correggete.
 
 ## Cosa si vede quando nessuno lo tocca
 
-- In alto: **SALA …**, la data, l'ora, e il tasto del tema bianco.
-- **A sinistra**, la lezione in cui ci si segna adesso, con il grande tasto
-  **SEGNA LA PRESENZA**. Il titolo cambia:
-  - **SI SEGNA ADESSO** — c'è una lezione aperta, anche se è già cominciata;
-  - **PROSSIMA LEZIONE** — non c'è niente di aperto, ma più tardi c'è una
-    lezione (la mattina, o fra due lezioni): dice quale e **SI SEGNA DALLE …**,
-    l'ora da cui ci si segna. A quell'ora diventa **SEGNA LA PRESENZA**;
-  - **OGGI** — oggi non ci sono più lezioni: se oggi non ci sono corsi dice
-    quando è la prossima lezione, se sono finiti dice **PER OGGI QUI È FINITO**.
+- In alto: **SALA …**, la data, l'ora, il tasto del tema bianco e, ultimo, il
+  tasto di accensione: **ESCI DAL TABLET** (vedi [Uscire dal
+  tablet](#uscire-dal-tablet)).
+- **A sinistra**, la lezione in cui ci si segna adesso, senza titolo. Tutta la
+  card è un tasto: toccandola si apre la schermata dei nomi (**TOCCA IL TUO
+  NOME**), con più spazio. Dentro la card, a destra, **AREA ISTRUTTORE**. Se
+  non c'è una lezione aperta, **AREA ISTRUTTORE** sta in basso a sinistra.
+  - Sotto la card ci sono già **i nomi degli iscritti**, tre per riga:
+    toccare il proprio nome segna la presenza, come nella schermata dei nomi
+    (con **ANNULLA** in basso, e la coda se la rete manca). Se le lezioni
+    aperte sono due, ognuna ha la sua lista. Con tanti iscritti la colonna
+    scorre.
+  - Se non c'è niente di aperto ma più tardi c'è una lezione (la mattina, o
+    fra due lezioni), la card dice quale e **SI SEGNA DALLE …**, l'ora da cui ci
+    si segna. A quell'ora diventa la card dei nomi;
+  - se oggi non ci sono corsi, un riquadro dice quando è la prossima lezione;
+    se sono finiti dice **PER OGGI QUI È FINITO**.
 - Se per la lezione c'è un'attività («Karate», «Open mat»), sta in un
   riquadro **accanto all'orario**, sia a sinistra sia nell'elenco di oggi; un
   nome lungo va a capo su due righe.
-- **A destra**, **OGGI IN QUESTA SALA**: tutte le lezioni del giorno, con
-  FINITA, SI SEGNA ORA o PIÙ TARDI. Col tablet in verticale sta sotto la
-  lezione: se non ci sta tutto, la pagina scorre.
-- Sotto la lezione, **TI SEI DIMENTICATO DI SEGNARTI?** e **AREA
-  ISTRUTTORE**.
+- **A destra**, le lezioni di oggi in questa sala in tre gruppi, ognuno con il
+  suo titoletto: **PRECEDENTI** (**FINITA**), **IN CORSO** (**SI SEGNA ORA**),
+  **PIÙ TARDI**. Un gruppo senza lezioni non compare. Col tablet in verticale
+  sta sotto la lezione: se non ci sta tutto, la pagina scorre.
+- In fondo alla colonna di destra, a tutta larghezza, **TI SEI DIMENTICATO DI
+  SEGNARTI?**.
 - **In fondo, la barra della sala**, che è la stessa su ogni schermata: le
   due schede **PRESENZE** e **TIMER**, e la musica.
 
@@ -40,13 +49,6 @@ torna ai timer. Se in quel momento ci si segna a una lezione, subito sotto c'è
 timer collegati al corso, poi quelli della palestra. Li scelgono gli
 istruttori, in [I MIEI TIMER](istruttori.md#i-miei-timer).
 
-**Il timer pronto nella lezione.** Senza cercarlo nella scheda: sotto **SEGNA
-LA PRESENZA** della lezione aperta ci sono i suoi timer, **I TIMER DI QUESTA
-LEZIONE** o, se non ce ne sono, **I TIMER DEL CORSO**, uno per riga, ognuno
-con il suo **▶ AVVIA** (nell'ordine della scheda TIMER). Un tocco, e il
-tablet passa al timer e fa partire quello. Mentre uno va, al posto degli
-AVVIA c'è **IN CORSO · VEDI**, che riporta al timer. Se né la lezione né il
-corso hanno un timer, la riga non c'è.
 Dal tablet i timer si fanno partire, non si cambiano: si creano e si
 modificano dal proprio telefono, entrando come istruttore. Il tema bianco
 scelto qui vale anche nel timer, e viceversa.
@@ -86,7 +88,7 @@ timer galleggia nell'angolo in basso a destra, sopra lo schermo.
 
 Il tasto **✕**, l'ultimo della barra, **spegne la musica su quel tablet**: la
 musica si ferma e spariscono la barra e il lettore, anche se nelle impostazioni
-del timer è accesa. Al suo posto c'è **ACCENDI LA MUSICA**, e la scelta resta
+del timer è accesa. Al suo posto c'è un tasto con la nota, **ACCENDI LA MUSICA**, e la scelta resta
 anche se il tablet si ricarica. Se invece la musica è spenta dalle impostazioni
 del timer (**Player musicale**), sul tablet non c'è niente da accendere: la
 barra e il lettore spariscono da soli, appena si cambia l'impostazione.
@@ -127,10 +129,10 @@ SEGNARTI?**.
 
 ## Per gli allievi: segnarsi
 
-1. Toccare **SEGNA LA PRESENZA**.
-2. Toccare **il proprio nome** (nome e iniziale del cognome: «Giulia F.»; se
-   ci sono due «Giulia F.» compare «Giulia Fon.»).
-3. In basso compare **BUON ALLENAMENTO, GIULIA!**. Chi ha toccato il nome
+1. Toccare **il proprio nome** nell'elenco sotto la lezione (nome e iniziale
+   del cognome: «Giulia F.»; se ci sono due «Giulia F.» compare «Giulia
+   Fon.»). Toccando la lezione si apre la stessa lista a tutto schermo.
+2. In basso compare **BUON ALLENAMENTO, GIULIA!**. Chi ha toccato il nome
    sbagliato preme **ANNULLA** nella fascia in basso, che resta dieci secondi.
    L'annullo vale per due minuti: in quel tempo, toccando di nuovo il nome,
    **ANNULLA** ricompare. Annullato, la fascia lo dice: **ANNULLATO**.
@@ -232,9 +234,11 @@ Per chiudere l'area istruttore non serve: per quello c'è **ESCI**.
 
 Si esce in due modi, e tutti e due chiedono conferma prima di scollegare:
 
-- dalla schermata di sempre, con **Esci dal tablet** in basso a destra: il
+- dalla schermata di sempre, con il tasto di accensione in alto a destra, dopo
+  il tema: il
   tablet chiede il PIN di un istruttore, uno qualsiasi, e poi **USCIRE DAL
-  TABLET?** con **SÌ, ESCI** o **ANNULLA**. Questo PIN non segna la presenza
+  TABLET?** con **SÌ, ESCI** o **ANNULLA**, e il numero di versione dell'app
+  (serve a capire se questo tablet è aggiornato). Questo PIN non segna la presenza
   di nessuno, e gli errori contano come quelli dell'area istruttore;
 - dall'area istruttore, con **Scollega il tablet** in fondo: il PIN c'è già, e
   arriva subito la conferma.

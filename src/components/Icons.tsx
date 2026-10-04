@@ -39,6 +39,23 @@ export const Cronometro = ({ size = 20 }: P) => (
   </svg>
 )
 
+/** Il tasto di accensione: ESCI DAL TABLET. */
+export const Accensione = ({ size = 20 }: P) => (
+  <svg {...base(size)} aria-hidden="true">
+    <path d="M12 2v10" />
+    <path d="M18.4 6.6a9 9 0 1 1-12.8 0" />
+  </svg>
+)
+
+/** La nota: la musica. */
+export const Nota = ({ size = 20 }: P) => (
+  <svg {...base(size)} aria-hidden="true">
+    <path d="M9 18V5l12-2v13" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="18" cy="16" r="3" />
+  </svg>
+)
+
 export const Persone = ({ size = 20 }: P) => (
   <svg {...base(size)} aria-hidden="true">
     <circle cx="9" cy="8" r="3.5" />

@@ -49,7 +49,7 @@ import {
 } from './lib/libreria'
 import { type Lezione, lezioneDaIndirizzo } from './lib/lezione'
 import { type Gruppo, type Strumento, aTuttoSchermo, conBarra, gruppiDi } from './lib/gruppi'
-import type { Incorporato, TimerPronto } from './lib/incorporato'
+import type { Incorporato } from './lib/incorporato'
 import { CHIAVI_SALA, type ImpostazioniSala, type TimerSala, salvaTimerSala, scaricaDiscipline, toccaLaSala } from './lib/impostazioniSala'
 import { type Disciplina, disciplineConVoci, filtroValido, loadDiscipline, saveDiscipline } from './lib/discipline'
 
@@ -570,29 +570,6 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
     () => (filtroAcceso === null ? gruppi : gruppiDi(workouts, accesso, lezione, filtroAcceso)),
     [gruppi, filtroAcceso, workouts, accesso, lezione],
   )
-  // Sul tablet: i timer pronti per la lezione, e la richiesta di farne partire uno.
-  const pronto = useMemo<TimerPronto | null>(() => {
-    const g = gruppi.find((x) => x.chiave === 'lezione' && x.timer.length) ?? gruppi.find((x) => x.chiave === 'corso' && x.timer.length)
-    return g ? { da: g.chiave === 'lezione' ? 'lezione' : 'corso', timer: g.timer.map((w) => ({ id: w.id, nome: w.name })) } : null
-  }, [gruppi])
-  const firmaPronto = pronto ? `${pronto.da}|${pronto.timer.map((t) => `${t.id}:${t.nome}`).join('|')}` : ''
-  const avvisaPronto = incorporato?.onPronto
-  useEffect(() => {
-    avvisaPronto?.(pronto)
-    // Si avvisa quando cambiano i timer, non quando cambia chi ascolta.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firmaPronto])
-  const richiesta = incorporato?.avvia
-  const fatta = useRef(0)
-  useEffect(() => {
-    if (!richiesta || richiesta.volta === fatta.current) return
-    fatta.current = richiesta.volta
-    const w = workouts.find((x) => x.id === richiesta.id)
-    if (w) startWorkout(w, true)
-    // Solo per una richiesta nuova: la lista che cambia non la ripete.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [richiesta?.volta])
-
   const nomeLezione = lezione ? lezione.nome || corsi.find((c) => c.id === lezione.corsoId)?.nome || 'la lezione' : null
 
   const body = useMemo(() => {
