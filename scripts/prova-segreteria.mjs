@@ -2265,5 +2265,80 @@ console.log('\nSALVA LE DATE toglie le lezioni fuori dalle date dei corsi, trann
   await s.salvaEserciziPalestra([])
 }
 
+// Le liste di musica per disciplina: la segreteria la sceglie, il tablet la riceve.
+{
+  const sala = 'Lotta'
+  const id1 = await s.salvaListaMusica({ nome: 'Randori (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo1Z', salaId: sala, disciplina: 'judo' })
+  const id2 = await s.salvaListaMusica({ nome: 'Riscaldamento (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo2Z', salaId: null, disciplina: 'tutte' })
+  const id3 = await s.salvaListaMusica({ nome: 'Varie (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo3Z', salaId: null, disciplina: 'inventata' })
+  const id4 = await s.salvaListaMusica({ nome: 'Senza (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo4Z', salaId: null })
+  const liste = await s.listeMusica()
+  const di = (id) => liste.find((l) => l.id === id)?.disciplina
+  ok('la lista tiene la disciplina scelta, «tutte», e toglie una inventata', [di(id1), di(id2), di(id3), di(id4)], ['judo', 'tutte', undefined, undefined])
+  await s.salvaListaMusica({ id: id1, nome: 'Randori (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo1Z', salaId: sala, disciplina: null })
+  ok('cambiandola in «nessuna» la disciplina si toglie', (await s.listeMusica()).find((l) => l.id === id1)?.disciplina, undefined)
+  await s.salvaListaMusica({ id: id1, nome: 'Randori (disc.)', link: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo1Z', salaId: sala, disciplina: 'lotta' })
+  const t = m.creaTabletProva()
+  await t.scegliSala(sala)
+  const tablet = await t.musica()
+  ok('il tablet della sala riceve la disciplina delle sue liste e di quelle di tutte', tablet.filter((l) => l.nome.endsWith('(disc.)')).map((l) => [l.nome, l.disciplina]).sort(),
+    [['Randori (disc.)', 'lotta'], ['Riscaldamento (disc.)', 'tutte'], ['Senza (disc.)', undefined], ['Varie (disc.)', undefined]])
+  for (const id of [id1, id2, id3, id4]) await s.togliListaMusica(id)
+}
+
+// Il ramo Supabase delle liste di musica, con un database finto: senza 40-discipline.sql la colonna non c'è.
+{
+  const righe = [{ id: 'l1', nome: 'Randori', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: null, disciplina: 'judo' }, { id: 'l2', nome: 'Varie', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: null, disciplina: 'karate' }]
+  const chiamate = []
+  const finto = ({ colonna }) => ({
+    from: (tab) => ({
+      select: (cols) => {
+        chiamate.push(`${tab}:${cols}`)
+        const risposta = () => {
+          if (tab === 'impostazioni') return { data: { discipline: [{ id: 'judo', nome: 'Judo' }] }, error: null }
+          if (cols.includes('disciplina') && !colonna) return { data: null, error: { code: '42703', message: 'column musica_sale.disciplina does not exist' } }
+          return { data: righe.map(({ disciplina, ...r }) => (cols.includes('disciplina') ? { ...r, disciplina } : r)), error: null }
+        }
+        const q = { order: () => q, maybeSingle: async () => risposta(), then: (ok, no) => Promise.resolve(risposta()).then(ok, no) }
+        return q
+      },
+    }),
+  })
+  const con = await m.creaSegreteriaSupabase(finto({ colonna: true })).listeMusica()
+  ok('con la colonna: la disciplina c\'è, una sconosciuta no', con.map((l) => [l.nome, l.disciplina]), [['Randori', 'judo'], ['Varie', undefined]])
+  const senza = await m.creaSegreteriaSupabase(finto({ colonna: false })).listeMusica()
+  ok('senza la colonna (42703): si leggono lo stesso, senza disciplina', senza.map((l) => [l.nome, l.disciplina]), [['Randori', undefined], ['Varie', undefined]])
+  // Scrivere: il finto database risponde PGRST204 (colonna sconosciuta) se la riga porta `disciplina` e la colonna non c'è.
+  const scrive = (colonna, scritti) => ({
+    from: (tab) => {
+      if (tab === 'impostazioni') return { select: () => ({ maybeSingle: async () => ({ data: { discipline: [{ id: 'judo', nome: 'Judo' }] }, error: null }) }) }
+      const esito = (riga) => {
+        scritti.push(riga)
+        return 'disciplina' in riga && !colonna ? { data: null, error: { code: 'PGRST204', message: "Could not find the 'disciplina' column of 'musica_sale' in the schema cache" } } : { data: { id: 'nuova' }, error: null }
+      }
+      return {
+        insert: (riga) => ({ select: () => ({ single: async () => esito(riga) }) }),
+        update: (riga) => ({ eq: async () => esito(riga) }),
+      }
+    },
+  })
+  const yt = 'https://youtu.be/dQw4w9WgXcQ'
+  {
+    const scritti = []
+    await m.creaSegreteriaSupabase(scrive(false, scritti)).salvaListaMusica({ id: 'l1', nome: 'Randori', link: yt, salaId: null })
+    ok('senza la colonna, una lista si salva se la disciplina non c\'entra', scritti.map((r) => 'disciplina' in r), [false])
+  }
+  {
+    const scritti = []
+    const e = await errore(() => m.creaSegreteriaSupabase(scrive(false, scritti)).salvaListaMusica({ id: 'l1', nome: 'Randori', link: yt, salaId: null, disciplina: 'judo' }))
+    ok('senza la colonna, scegliere una disciplina dice di lanciare il 40', e, 'Le discipline non sono ancora attive sul database: va lanciato 40-discipline.sql')
+  }
+  {
+    const scritti = []
+    await m.creaSegreteriaSupabase(scrive(true, scritti)).salvaListaMusica({ id: 'l1', nome: 'Randori', link: yt, salaId: null, disciplina: null })
+    ok('con la colonna, nulla toglie la disciplina (null nella riga)', scritti.map((r) => r.disciplina), [null])
+  }
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -101,7 +101,7 @@ export interface Archivio {
   pin?: Record<string, string>
   impostazioni?: { mesiPresenze: number; giorniCalendario: number; inizioCorsi?: string | null; fineCorsi?: string | null }
   /** Le liste della musica delle sale; `sala` nulla vuol dire tutte. */
-  musica?: Array<{ id: string; nome: string; link: string; sala: string | null }>
+  musica?: Array<{ id: string; nome: string; link: string; sala: string | null; disciplina?: string }>
   /** Il timer dei tablet di sala, uguale per tutti: lo cambia un tablet qualunque. */
   timerSale?: Record<string, unknown>
   /** La voce di sistema dei tablet, per nome. */

@@ -61,6 +61,9 @@ const E = await importa(`
 const L = await importa(`
   export { schemaDi, workoutDa } from './timer/src/lib/libreria'
 `)
+const G = await importa(`
+  export { gruppiDi } from './timer/src/lib/gruppi'
+`)
 const I = await importa(`
   export { leggiTimerSala, scaricaDiscipline } from './timer/src/lib/impostazioniSala'
 `)
@@ -292,6 +295,40 @@ await prova('scaricaDiscipline: colonna mancante → quella di partenza; array v
   await I.scaricaDiscipline(finto(() => colonnaMancante)),
   await I.scaricaDiscipline(finto(() => ({ data: { discipline: [] }, error: null }))),
 ], [lista, []])
+
+console.log('\nLe discipline che hanno qualcosa (disciplineConVoci)')
+const conVoci = (voci) => D.disciplineConVoci(voci, lista).map((x) => x.id)
+await prova('solo quelle che compaiono, nell\'ordine della lista', () => conVoci([{ disciplina: 'yoga' }, { disciplina: 'judo' }, { disciplina: 'yoga' }]), ['judo', 'yoga'])
+await prova('«tutte» e le voci senza disciplina non ne accendono nessuna', () => conVoci([{ disciplina: 'tutte' }, {}, { disciplina: null }]), [])
+await prova('una disciplina sconosciuta non conta', () => conVoci([{ disciplina: 'karate' }]), [])
+await prova('nessuna voce: nessuna disciplina', () => conVoci([]), [])
+await prova('non muta la lista delle discipline', () => {
+  const l = [d('a', 'A'), d('b', 'B')]
+  D.disciplineConVoci([{ disciplina: 'b' }], l)
+  return l
+}, [d('a', 'A'), d('b', 'B')])
+
+console.log('\nLa lista dei timer per disciplina (gruppiDi)')
+const t = (id, dove, disciplina, extra = {}) => ({ ...timer({ id, name: id, dove, ...extra }), ...(disciplina ? { disciplina } : {}) })
+const elenco = [t('a', 'palestra', 'judo'), t('b', 'palestra', 'lotta'), t('c', 'miei', 'tutte'), t('d', 'palestra'), t('e', 'miei', 'judo')]
+const personale = { chi: 'personale', personaId: 'io' }
+const idDi = (gruppi) => gruppi.map((g) => [g.chiave, g.timer.map((w) => w.id).sort()])
+await prova('senza filtro, uguale a prima', () => idDi(G.gruppiDi(elenco, personale, null)), idDi(G.gruppiDi(elenco, personale, null, null)))
+await prova('un filtro: i timer di quella disciplina e quelli di «tutte», nelle loro sezioni', () =>
+  idDi(G.gruppiDi(elenco, personale, null, 'judo')), [['miei', ['c', 'e']], ['palestra', ['a']]])
+await prova('le sezioni che si svuotano spariscono, anche quella del corso con la frase «nessun timer»', () =>
+  G.gruppiDi(elenco, personale, { corsoId: 'c1', sessioneId: null, lezioneId: null, nome: 'Judo' }, 'lotta').map((g) => g.chiave), ['miei', 'palestra'])
+await prova('l\'ordine delle sezioni non cambia', () => G.gruppiDi(elenco, personale, null, 'judo').map((g) => g.chiave), ['miei', 'palestra'])
+await prova('senza accesso: una sezione sola, filtrata', () => idDi(G.gruppiDi(elenco, { chi: 'nessuno' }, null, 'judo')), [['tutti', ['a', 'c', 'e']]])
+await prova('un filtro con solo le voci di «tutte»: solo la loro sezione', () => idDi(G.gruppiDi(elenco, personale, null, 'yoga')), [['miei', ['c']]])
+await prova('un filtro che non trova niente, nemmeno «tutte»: nessuna sezione', () => G.gruppiDi(elenco.filter((w) => w.disciplina !== 'tutte'), personale, null, 'yoga'), [])
+
+console.log('\nIl filtro acceso (filtroValido)')
+await prova('una disciplina della lista resta', () => D.filtroValido('judo', lista), 'judo')
+await prova('una tolta o sconosciuta si spegne', () => D.filtroValido('karate', lista), null)
+await prova('nessun filtro resta nessuno', () => D.filtroValido(null, lista), null)
+await prova('«tutte» non è un pulsante: non vale come filtro', () => D.filtroValido('tutte', lista), null)
+await prova('con la lista vuota nessun filtro vale', () => D.filtroValido('judo', []), null)
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

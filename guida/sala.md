@@ -91,7 +91,9 @@ Il tasto **☰** accanto apre **LA MUSICA DELLA SALA**, le liste preparate dalla
 segreteria («Riscaldamento», «Randori»…): se ne tocca una e parte. **DALLE
 IMPOSTAZIONI DEL TIMER** torna a quella scelta nelle impostazioni del timer.
 Le liste di Spotify vogliono Spotify collegato sul tablet (Impostazioni del
-timer › Musica, con l'area istruttore aperta); senza, sono spente.
+timer › Musica, con l'area istruttore aperta); senza, sono spente. Se alle liste
+è stata data una disciplina, sopra l'elenco ci sono i pulsanti per sceglierne una
+(**TUTTE** le mostra tutte): una lista di «Tutte» compare sotto ognuna.
 
 Due fonti non hanno pubblicità né account e non vogliono un riquadro da tenere
 in vista. **RADIO**: la segreteria scrive nelle liste l'indirizzo di una radio

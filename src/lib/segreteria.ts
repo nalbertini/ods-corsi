@@ -543,7 +543,8 @@ export interface DatiSegreteria {
   salvaSala(s: { id?: string; nome: string; capienza?: number }): Promise<string>
   /** La musica delle sale, per il tablet (vedi `musica.ts`). */
   listeMusica(): Promise<ListaMusica[]>
-  salvaListaMusica(l: { id?: string; nome: string; link: string; salaId: string | null }): Promise<string>
+  /** `disciplina`: assente = non si tocca; nulla = nessuna. */
+  salvaListaMusica(l: { id?: string; nome: string; link: string; salaId: string | null; disciplina?: string | null }): Promise<string>
   togliListaMusica(id: string): Promise<void>
   /** La voce di sistema dei tablet, per nome; `null` è la prima voce italiana del tablet. */
   voceSale(): Promise<string | null>

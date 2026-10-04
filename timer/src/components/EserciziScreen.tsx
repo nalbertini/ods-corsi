@@ -8,7 +8,7 @@ import {
   nomiDaTesto,
   normalizza,
 } from '../lib/esercizi'
-import { type Disciplina, dellaDisciplina, nomeDisciplina } from '../lib/discipline'
+import { type Disciplina, dellaDisciplina, filtroValido, nomeDisciplina } from '../lib/discipline'
 import { listClips } from '../lib/clipStore'
 import { exerciseKey } from '../lib/voiceClips'
 import { uid } from '../lib/format'
@@ -57,7 +57,7 @@ export function EserciziScreen({
   }, [catalogo])
 
   // Un filtro su una disciplina tolta nel frattempo non resta acceso.
-  const filtro = filtroDisciplina !== null && discipline.some((d) => d.id === filtroDisciplina) ? filtroDisciplina : null
+  const filtro = filtroValido(filtroDisciplina, discipline)
   const q = normalizza(cerca)
   const visibili = useMemo(
     () =>

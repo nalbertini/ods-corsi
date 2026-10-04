@@ -1,6 +1,7 @@
 import type { Workout } from '../types'
 import type { Accesso } from './palestra'
 import type { Lezione } from './lezione'
+import { dellaDisciplina } from './discipline'
 
 /** Una sezione della lista dei timer. */
 export interface Gruppo {
@@ -14,11 +15,21 @@ export interface Gruppo {
 const piùRecenti = (a: Workout, b: Workout) => b.updatedAt - a.updatedAt
 
 /**
+ * Le sezioni della lista, per disciplina se se ne sceglie una: i timer di quella
+ * disciplina e quelli di «tutte». Le sezioni che il filtro svuota spariscono,
+ * anche quelle con la frase «nessun timer»; l'ordine non cambia.
+ */
+export function gruppiDi(timer: Workout[], accesso: Accesso, lezione: Lezione | null, disciplina: string | null = null): Gruppo[] {
+  if (disciplina === null) return sezioniDi(timer, accesso, lezione)
+  return sezioniDi(dellaDisciplina(timer, disciplina), accesso, lezione).filter((g) => g.timer.length > 0)
+}
+
+/**
  * Le sezioni della lista. Senza database, o senza un accesso, è una sola,
  * com'è sempre stata. Con l'accesso i timer si dividono per dove stanno, e se
  * si arriva da una lezione in cima ci sono quelli del suo corso.
  */
-export function gruppiDi(timer: Workout[], accesso: Accesso, lezione: Lezione | null): Gruppo[] {
+function sezioniDi(timer: Workout[], accesso: Accesso, lezione: Lezione | null): Gruppo[] {
   const del = (f: (w: Workout) => boolean) => timer.filter(f).sort(piùRecenti)
   const gruppi: Gruppo[] = []
   // Il timer scelto per questa lezione sola viene prima di quelli del corso

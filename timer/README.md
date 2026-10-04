@@ -112,7 +112,9 @@ una palestra di judo e divisi in cinque categorie: a corpo libero, attrezzi,
 core, cardio, mobilità. Il judo è una *disciplina*, non una categoria: oltre al
 tipo, ogni esercizio può avere una disciplina (Judo, Lotta, Pilates, Yoga…, la
 lista la tiene la segreteria, `timer/src/lib/discipline.ts`) o «Tutte» per quelli
-comuni, e il catalogo si filtra anche per quella. Sta in `localStorage` come i timer, quindi si cura
+comuni, e il catalogo si filtra anche per quella. Anche i timer hanno una disciplina,
+che si sceglie nell'editor, e l'elenco si filtra per quella (i pulsanti ci sono
+solo per le discipline che hanno un timer). Sta in `localStorage` come i timer, quindi si cura
 liberamente: quelli aggiunti a mano si possono togliere, quelli di partenza no.
 
 Nell'editor gli esercizi si scelgono dall'anteprima: si tocca la riga di un round

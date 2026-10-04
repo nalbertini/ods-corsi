@@ -527,7 +527,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
 }
 
 /** La scelta della disciplina di una voce: nessuna, «Tutte» o una della lista. Non compare se la palestra non ne ha. */
-function SelectDisciplina({
+export function SelectDisciplina({
   discipline,
   valore,
   etichetta,

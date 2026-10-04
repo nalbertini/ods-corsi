@@ -51,7 +51,7 @@ import { type Lezione, lezioneDaIndirizzo } from './lib/lezione'
 import { type Gruppo, gruppiDi } from './lib/gruppi'
 import type { Incorporato, TimerPronto } from './lib/incorporato'
 import { CHIAVI_SALA, type ImpostazioniSala, type TimerSala, salvaTimerSala, scaricaDiscipline, toccaLaSala } from './lib/impostazioniSala'
-import { type Disciplina, loadDiscipline, saveDiscipline } from './lib/discipline'
+import { type Disciplina, disciplineConVoci, filtroValido, loadDiscipline, saveDiscipline } from './lib/discipline'
 
 /** I corsi dell'ultima volta, per il titolo della lezione e l'editor senza rete. */
 const DOVE_CORSI = 'ods-timer:corsi'
@@ -562,6 +562,15 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   }, [workouts, personaId])
 
   const gruppi: Gruppo[] = useMemo(() => gruppiDi(workouts, accesso, lezione), [workouts, accesso, lezione])
+  // La lista mostrata si filtra per disciplina; quella dei timer «pronti» per il tablet (qui sopra) no.
+  const [filtroDisciplina, setFiltroDisciplina] = useState<string | null>(null)
+  const disciplineUsate = useMemo(() => disciplineConVoci(workouts, discipline), [workouts, discipline])
+  // Un filtro su una disciplina tolta, o rimasta senza timer, non resta acceso.
+  const filtroAcceso = filtroValido(filtroDisciplina, disciplineUsate)
+  const gruppiMostrati: Gruppo[] = useMemo(
+    () => (filtroAcceso === null ? gruppi : gruppiDi(workouts, accesso, lezione, filtroAcceso)),
+    [gruppi, filtroAcceso, workouts, accesso, lezione],
+  )
   // Sul tablet: i timer pronti per la lezione, e la richiesta di farne partire uno.
   const pronto = useMemo<TimerPronto | null>(() => {
     const g = gruppi.find((x) => x.chiave === 'lezione' && x.timer.length) ?? gruppi.find((x) => x.chiave === 'corso' && x.timer.length)
@@ -592,7 +601,11 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
       case 'timer':
         return (
           <HomeScreen
-            gruppi={gruppi}
+            gruppi={gruppiMostrati}
+            discipline={discipline}
+            disciplineUsate={disciplineUsate}
+            filtroDisciplina={filtroAcceso}
+            onFiltroDisciplina={setFiltroDisciplina}
             modificabile={(w) => !w.dove || (!!personaId && w.dove !== 'collega')}
             corsi={corsi}
             lezione={nomeLezione}
@@ -657,7 +670,10 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
     tab,
     timerDellaSala,
     workouts,
-    gruppi,
+    gruppiMostrati,
+    discipline,
+    disciplineUsate,
+    filtroAcceso,
     corsi,
     nomeLezione,
     accesso,

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CATEGORIE, type Categoria, type Esercizio, normalizza } from '../lib/esercizi'
 import { uid } from '../lib/format'
-import { type Disciplina, dellaDisciplina, nomeDisciplina } from '../lib/discipline'
+import { type Disciplina, dellaDisciplina, filtroValido, nomeDisciplina } from '../lib/discipline'
 import { FiltroDiscipline } from './DisciplinaScelta'
 import { Close, Plus, Trash } from './Icons'
 
@@ -32,7 +32,7 @@ export function PickerEsercizi({
 
   const q = normalizza(cerca)
   // Un filtro su una disciplina tolta nel frattempo non resta acceso.
-  const filtro = disciplina !== null && discipline.some((d) => d.id === disciplina) ? disciplina : null
+  const filtro = filtroValido(disciplina, discipline)
   const visibili = useMemo(
     () =>
       dellaDisciplina(catalogo, filtro).filter(
