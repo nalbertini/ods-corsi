@@ -26,4 +26,13 @@ export function fonteDelLink(link: string): FonteMusica | null {
   return null
 }
 
+/**
+ * La musica che il tablet passa al timer: fonte e link scelti in sala. Se chi è
+ * in sala l'ha spenta dal tablet, `musica: false` vince su quello che dicono le
+ * impostazioni; altrimenti il campo non c'è e valgono le impostazioni.
+ */
+export function musicaDellaSala<T extends object>(base: T, spenta: boolean): T | (T & { musica: false }) {
+  return spenta ? { ...base, musica: false } : base
+}
+
 export const MAX_NOME_LISTA = 40

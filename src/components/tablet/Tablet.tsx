@@ -12,7 +12,7 @@ import { clock } from '../../../timer/src/lib/format'
 import { useMusica, useSpotify } from '../../../timer/src/lib/useMusica'
 import { leggiLinkSpotify, suonaLista } from '../../../timer/src/lib/spotify'
 import { PlayerYoutube } from '../../../timer/src/components/PlayerYoutube'
-import { fonteDelLink, type ListaMusica } from '../../lib/musica'
+import { fonteDelLink, musicaDellaSala, type ListaMusica } from '../../lib/musica'
 import { trattieniAggiornamento } from '../../lib/aggiornamento'
 import { Cronometro, Persone } from '../Icons'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -166,6 +166,24 @@ const testoDi = (t: StatoTimer) =>
 /** Un allenamento che conta: avviato e non finito. */
 const inCorso = (t: StatoTimer | null): t is StatoTimer => !!t && (t.status === 'running' || t.status === 'paused')
 
+/** Se la musica è spenta su questo tablet: come la lista, resta dopo un ricaricamento. */
+const DOVE_SPENTA = 'ods-corsi:musica-spenta'
+function spentaRicordata(): boolean {
+  try {
+    return localStorage.getItem(DOVE_SPENTA) === '1'
+  } catch {
+    return false
+  }
+}
+function ricordaSpenta(spenta: boolean) {
+  try {
+    if (spenta) localStorage.setItem(DOVE_SPENTA, '1')
+    else localStorage.removeItem(DOVE_SPENTA)
+  } catch {
+    // Si perde solo la scelta al prossimo ricaricamento.
+  }
+}
+
 /** La lista della musica scelta su questo tablet: resta anche dopo un ricaricamento. */
 const DOVE_MUSICA = 'ods-corsi:musica-sala'
 function listaRicordata(): string | null {
@@ -282,17 +300,50 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   const [parti, setParti] = useState(false)
   const lista = liste.find((l) => l.id === sceltaId) ?? null
   const fonteLista = lista ? fonteDelLink(lista.link) : null
-  const musicaSala = useMemo<Pick<Settings, 'musicaFonte' | 'youtube'>>(
+  // Chi è in sala può spegnere la musica dal tablet anche se nelle impostazioni
+  // è accesa: sparisce la barra, sparisce il lettore, e non parte più niente.
+  const [spenta, setSpenta] = useState(spentaRicordata)
+  const musicaSala = useMemo(
     () =>
-      lista && fonteLista
-        ? { musicaFonte: fonteLista, youtube: fonteLista === 'youtube' ? lista.link : settingsTimer.youtube }
-        : { musicaFonte: settingsTimer.musicaFonte, youtube: settingsTimer.youtube },
-    [lista, fonteLista, settingsTimer.musicaFonte, settingsTimer.youtube],
+      musicaDellaSala<Pick<Settings, 'musicaFonte' | 'youtube'>>(
+        lista && fonteLista
+          ? { musicaFonte: fonteLista, youtube: fonteLista === 'youtube' ? lista.link : settingsTimer.youtube }
+          : { musicaFonte: settingsTimer.musicaFonte, youtube: settingsTimer.youtube },
+        spenta,
+      ),
+    [lista, fonteLista, settingsTimer.musicaFonte, settingsTimer.youtube, spenta],
   )
   const conSala = useMemo(() => ({ ...settingsTimer, ...musicaSala }), [settingsTimer, musicaSala])
   const musica = useMusica(conSala)
   const spotify = useSpotify()
   const conYoutube = musica.fonte === 'youtube' && musica.attiva
+  const spegniMusica = () => {
+    void musica.comandi.pausa()
+    ricordaSpenta(true)
+    setSpenta(true)
+  }
+  const accendiMusica = () => {
+    ricordaSpenta(false)
+    setSpenta(false)
+  }
+  // Le impostazioni del timer si cambiano anche dall'altra app, sullo stesso
+  // dispositivo: un tablet che resta aperto per settimane le rilegge quando
+  // cambiano (un'altra scheda) o quando torna in primo piano.
+  useEffect(() => {
+    const rileggi = () => setSettingsTimer(loadSettings())
+    const siCambia = (e: StorageEvent) => {
+      if (e.key === null || e.key === 'ods-timer:settings') rileggi()
+    }
+    const torna = () => {
+      if (document.visibilityState === 'visible') rileggi()
+    }
+    window.addEventListener('storage', siCambia)
+    document.addEventListener('visibilitychange', torna)
+    return () => {
+      window.removeEventListener('storage', siCambia)
+      document.removeEventListener('visibilitychange', torna)
+    }
+  }, [])
   const scegliLista = (l: ListaMusica | null) => {
     setSceltaId(l?.id ?? null)
     ricordaLista(l?.id ?? null)
@@ -437,7 +488,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
         <TastoTema />
       </header>
 
-      <div className="tb-centro" data-scheda={scheda}>
+      <div className="tb-centro" data-scheda={scheda} data-timer={timer ? 'aperto' : undefined}>
         <div className="tb-area">
           {scheda === 'presenze' && (
             <>
@@ -534,9 +585,21 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
           </span>
         </button>
         <span className="grow" />
-        {settingsTimer.musica && (
-          <MusicaSala musica={musica} liste={liste} scelta={lista ? lista.id : null} spotifyCollegato={spotify.collegato} onScegli={scegliLista} />
-        )}
+        {settingsTimer.musica &&
+          (spenta ? (
+            <button type="button" className="tb-btn tb-btn-linea" onClick={accendiMusica}>
+              ACCENDI LA MUSICA
+            </button>
+          ) : (
+            <MusicaSala
+              musica={musica}
+              liste={liste}
+              scelta={lista ? lista.id : null}
+              spotifyCollegato={spotify.collegato}
+              onScegli={scegliLista}
+              onSpegni={spegniMusica}
+            />
+          ))}
       </footer>
 
       {/* Il lettore di YouTube, uno solo e fermo qui: si appoggia sopra il suo
