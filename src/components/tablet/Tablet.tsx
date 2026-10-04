@@ -437,7 +437,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
         <TastoTema />
       </header>
 
-      <div className="tb-centro">
+      <div className="tb-centro" data-scheda={scheda}>
         <div className="tb-area">
           {scheda === 'presenze' && (
             <>

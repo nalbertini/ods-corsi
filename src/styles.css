@@ -941,6 +941,13 @@ a.btn { text-decoration: none; }
    destra, sopra la barra, e resta lì qualunque scheda si guardi. */
 .tb-video { flex-shrink: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 32px 16px 0; }
 .tb-video .musica-video { width: 200px; height: 200px; background: #000; }
+/* Sotto il timer il lettore non ruba una colonna: galleggia nell'angolo in
+   basso a destra, sopra lo schermo, e il timer usa tutta la larghezza. Lì
+   sotto c'è la parte vuota della colonna di destra; solo la barra in fondo,
+   che si accorcia, gli lascia il posto. */
+.tb-centro { position: relative; }
+.tb-centro[data-scheda='timer'] .tb-video { position: absolute; right: 0; bottom: 0; padding: 0 24px 20px 0; }
+.tb-centro[data-scheda='timer']:has(.tb-video) .tf-barra { padding-right: 252px; }
 .player-youtube { position: fixed; z-index: 30; background: #000; }
 .player-youtube[data-angolo='true'] { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35); }
 .player-youtube iframe { display: block; width: 100%; height: 100%; border: 0; }
