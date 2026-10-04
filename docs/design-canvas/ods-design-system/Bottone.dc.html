@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<button type="button" onClick="{{click}}" style="display: inline-flex; align-items: center; justify-content: center; gap: {{s.gap}}; min-height: {{s.minHeight}}; min-width: {{s.minWidth}}; width: {{s.width}}; padding: {{s.padding}}; border: {{s.border}}; background: {{s.bg}}; color: {{s.fg}}; font-family: {{s.family}}; font-style: {{s.fontStyle}}; font-size: {{s.fontSize}}; font-weight: {{s.weight}}; letter-spacing: {{s.spacing}}; line-height: normal; white-space: nowrap; opacity: {{s.opacity}}; cursor: {{s.cursor}}">{{label}}</button>
+</x-dc>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"SEGNA LA PRESENZA"},"variante":{"editor":"enum","options":["principale","vai","linea","tratteggiato","pieno","rosso","icona"],"default":"principale"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"disabled":{"editor":"boolean","default":false},"alto":{"editor":"text","default":""},"corpo":{"editor":"text","default":""},"spazio":{"editor":"text","default":""},"larghezza":{"editor":"text","default":""},"onClick":{"editor":null},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":260,"height":80}}'>
+// Riproduzione 1:1 di .btn / .icon-btn / .sg-btn in src/styles.css (righe 224-247 e 1295-1314) e dei tasti di
+// src/components/ds.tsx (Tasto).
+// contesto "app": .btn, 56px, 19px, 0.16em. contesto "segreteria": .sg-btn, 48px, 15px, 0.14em.
+// variante: principale (rosso) e vai (verde) esistono in tutti e due; "pieno" e "rosso" sono i tasti della
+// segreteria (.sg-btn-pieno: fondo `text`, testo `bg`; .sg-btn-rosso: solo per cio' che non si annulla).
+// In segreteria "principale" e' "pieno"; nell'app "pieno" e "rosso" sono "principale".
+// icona = .icon-btn: 44px quadrati, bordo 2px; con piu' di un carattere si allarga (.icon-btn.testo).
+// alto / corpo / spazio / larghezza: gli style inline del codice (es. il tasto ‹ del calendario: minHeight 44,
+// minWidth 44, fontSize 22, padding 0).
+// disabled: nell'app opacita' 0.4; in segreteria un blocco `surface-2` senza bordo, testo `dim`.
+// Il fuoco e il passaggio del mouse non sono riprodotti (stati dinamici).
+const T = {
+  scuro: { bg: '#121212', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', verde: '#16a54a', tasto: '#b8b8b2', tratteggio: '#4a4a46', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', verde: '#12913f', tasto: '#4a4a46', tratteggio: '#b0b0aa', suColore: '#121212', suRosso: '#ffffff' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const sg = p.contesto === 'segreteria';
+    const label = p.label ?? 'SEGNA LA PRESENZA';
+    let v = p.variante || 'principale';
+    if (sg && v === 'principale') v = 'pieno';
+    if (!sg && (v === 'pieno' || v === 'rosso')) v = 'principale';
+    const off = truthy(p.disabled);
+
+    const s = sg
+      ? { minHeight: '48px', padding: '0 18px', fontSize: '15px', spacing: '0.14em', gap: '8px' }
+      : { minHeight: '56px', padding: '0 22px', fontSize: '19px', spacing: '0.16em', gap: '10px' };
+    s.minWidth = '0'; s.width = 'auto'; s.family = COND; s.fontStyle = 'oblique 9deg'; s.weight = 700;
+
+    const FILL = sg
+      ? { pieno: [c.text, c.bg], rosso: [c.rosso, c.suRosso], vai: [c.verde, c.suColore] }
+      : { principale: [c.rosso, c.suRosso], vai: [c.verde, c.suColore] };
+    const fg0 = sg ? c.sec : c.tasto;
+    const LINE = { linea: ['solid', c.line], tratteggiato: ['dashed', c.tratteggio] };
+
+    let bg = 'transparent', fg = fg0, border = '0';
+    if (FILL[v]) {
+      [bg, fg] = FILL[v];
+    } else if (v === 'icona') {
+      const largo = [...label].length > 1;
+      s.family = 'inherit'; s.fontStyle = 'normal'; s.weight = 400; s.fontSize = '16px'; s.spacing = 'normal';
+      s.minHeight = '44px'; s.minWidth = '44px'; s.padding = largo ? '0 11px' : '0'; s.width = largo ? 'auto' : '44px';
+      fg = c.tasto; border = '2px solid ' + c.line;
+    } else {
+      const [stile, colore] = LINE[v] || LINE.linea;
+      border = '2px ' + stile + ' ' + colore;
+      if (v === 'tratteggiato' && !sg) s.width = '100%';
+    }
+    if (off && sg) {
+      bg = c.surface2; fg = c.dim;
+      if (border !== '0') border = '2px solid transparent';
+    }
+    if (p.alto) s.minHeight = p.alto;
+    if (p.corpo) s.fontSize = p.corpo;
+    if (p.spazio) s.padding = p.spazio;
+    if (p.larghezza) s.minWidth = p.larghezza;
+    if (p.alto && v === 'icona') s.width = 'auto';
+
+    return {
+      label,
+      click: () => { if (!off && typeof p.onClick === 'function') p.onClick(); },
+      s: { ...s, bg, fg, border, opacity: off && !sg ? 0.4 : 1, cursor: off ? 'not-allowed' : 'pointer' },
+    };
+  }
+}
+</script>
+</body>
+</html>

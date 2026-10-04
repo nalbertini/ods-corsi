@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<nav style="display: flex; flex-direction: column; gap: 28px; width: 240px; height: {{altezza}}; overflow: hidden; padding: 28px 12px 24px; background: {{c.menu}}; border-right: 2px solid {{c.lineSoft}}; color: {{c.text}}">
+  <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+    <svg width="46" height="31.6" viewBox="0 0 160 110" role="img" aria-label="Officine Dello Sport">
+      <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
+        <circle cx="38" cy="40" r="22" stroke="#1b8ac4"></circle>
+        <circle cx="80" cy="40" r="22" stroke="{{c.text}}"></circle>
+        <circle cx="122" cy="40" r="22" stroke="#e4292a"></circle>
+        <circle cx="59" cy="74" r="22" stroke="#f4c31b"></circle>
+        <circle cx="101" cy="74" r="22" stroke="#16a54a"></circle>
+      </g>
+      <g fill="none" stroke-width="5">
+        <circle cx="38" cy="40" r="14" stroke="#1b8ac4"></circle>
+        <circle cx="80" cy="40" r="14" stroke="{{c.text}}"></circle>
+        <circle cx="122" cy="40" r="14" stroke="#e4292a"></circle>
+        <circle cx="59" cy="74" r="14" stroke="#f4c31b"></circle>
+        <circle cx="101" cy="74" r="14" stroke="#16a54a"></circle>
+      </g>
+    </svg>
+    <span style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">ODS CORSI</span>
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.22em; color: {{c.dim}}">SEGRETERIA</span>
+    </span>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700">?</span>
+    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
+      <sc-if value="{{scuro}}" hint-placeholder-val="{{ true }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+      </sc-if>
+      <sc-if value="{{chiaro}}" hint-placeholder-val="{{ false }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+      </sc-if>
+    </span>
+    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9M14 17H4"></path><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg>
+    </span>
+    <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
+      <span style="flex: 0 0 56px; align-self: center; padding: 2px 6px; background: #f4c31b; color: #121212; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; letter-spacing: 0.18em">DATI DI PROVA</span>
+    </sc-if>
+  </div>
+
+  <div style="padding: 0 4px">
+    <div style="display: flex; align-items: center; width: 100%; height: 44px; padding: 0 12px; background: {{c.surface}}; border: 2px solid {{c.line}}; font-size: 15px; color: {{c.dim}}">Cerca iscritto</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column">
+    <sc-for list="{{voci}}" as="v" hint-placeholder-count="12">
+      <div style="display: flex; align-items: center; min-height: {{v.altezza}}; margin-top: {{v.sopra}}; margin-bottom: {{v.sotto}}; padding: {{v.padding}}; border-left: 4px solid {{v.barra}}; background: {{v.sfondo}}; color: {{v.colore}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: {{v.corpo}}; font-weight: 700; letter-spacing: {{v.spazio}}; text-align: left">
+        <span style="flex: 1; min-width: 0">{{v.testo}}</span>
+        <sc-if value="{{v.haNumero}}" hint-placeholder-val="{{ false }}">
+          <span style="margin-left: 8px; padding: 0 4px; background: #f4c31b; color: #121212; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap">{{v.numero}}</span>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex-grow: 1"></div>
+
+  <div style="display: flex; flex-direction: column; gap: 2px">
+    <div style="display: flex; align-items: center; min-height: 44px; padding: 0 8px 0 12px; border-left: 4px solid transparent; color: {{c.sec}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; letter-spacing: 0.1em">COPIA LINK ISCRIZIONI</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid {{c.lineSoft}}">
+    <span style="font-size: 14px; font-weight: 600">{{nome}}</span>
+    <span style="font-size: 12px; color: {{c.dim}}">{{ruolo}} · accesso completo</span>
+    <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
+      <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 13px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Riparti dall'orario vero</span>
+    </sc-if>
+    <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 13px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Esci</span>
+  </div>
+</nav>
+</x-dc>
+<script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
+// Riproduzione 1:1 del menu di segreteria: src/components/segreteria/Segreteria.tsx (righe 378-460, GRUPPI alle
+// righe 47-80) con .sg-menu, .sg-voce, .sg-gruppo, .sg-chi e figli di src/styles.css (righe 1201-1270).
+// Misure del computer (da 1001px): colonna di 240px su `menu`, padding 28px 12px 24px, gap 28px, bordo destro
+// 2px `line-soft`; voci Saira 16px, 0.1em, alte 44px, barra sinistra di 4px (la voce corrente la porta in
+// `text` su fondo `surface`, MAI rossa: il rosso e' per cio' che manca). I numeri accanto alle voci sono
+// bollini gialli (.sg-tag data-tipo="presto"). Sul telefono il menu sta dietro una barra: non riprodotto.
+// attiva: il testo della voce corrente, come nel codice ("PRESENZE"). numeri: "VOCE:n" separati da virgola.
+// prova: i tre tasti hanno accanto DATI DI PROVA e in fondo compare "Riparti dall'orario vero".
+// Il logo e' Logo.tsx; nell'app l'ingranaggio bianco segue il colore del testo (nero nel tema chiaro).
+// I tasti (?, tema, impostazioni) mostrano l'icona che porta altrove: sole sul tema scuro, luna sul chiaro.
+// altezza: l'altezza dello schermo. Il menu dell'app scorre (overflow-y: auto) e, su uno schermo da 900px, taglia
+// le ultime voci: qui il taglio e' lo stesso. Per vederlo intero basta "1140px".
+// Non riprodotti: l'elenco della ricerca aperto, ISTRUTTORI →, il passaggio del mouse.
+const T = {
+  scuro: { surface: '#1c1c1c', menu: '#161616', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tasto: '#b8b8b2' },
+  chiaro: { surface: '#ffffff', menu: '#ebebe7', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', tasto: '#4a4a46' },
+};
+const GRUPPI = [
+  ['OGNI GIORNO', ['DA FARE', 'SETTIMANA', 'RICHIESTE ONLINE', 'PRESENZE']],
+  ['PERSONE', ['ISCRITTI', 'CORSI']],
+  ['ISTRUTTORI', ['PRESENZE ISTRUTTORI', 'ISTRUTTORI E ACCESSI']],
+  ['LA PALESTRA', ['STATISTICHE', 'LISTINO', 'ESERCIZI', 'SEGNALAZIONI']],
+];
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const numeri = {};
+    for (const s of String(p.numeri ?? '').split(',')) {
+      const i = s.lastIndexOf(':');
+      if (i > 0) numeri[s.slice(0, i).trim()] = s.slice(i + 1).trim();
+    }
+    const voci = [];
+    GRUPPI.forEach(([titolo, elenco], g) => {
+      voci.push({
+        testo: titolo, haNumero: false, numero: '', altezza: '0', padding: '0 12px 0 16px', barra: 'transparent', sfondo: 'transparent', colore: c.dim,
+        corpo: '12px', spazio: '0.22em', sopra: g === 0 ? '0' : '18px', sotto: '4px',
+      });
+      elenco.forEach((testo, i) => {
+        const corrente = testo === p.attiva;
+        voci.push({
+          testo, haNumero: !!numeri[testo], numero: numeri[testo] ?? '', altezza: '44px', padding: '0 8px 0 12px',
+          barra: corrente ? c.text : 'transparent', sfondo: corrente ? c.surface : 'transparent', colore: corrente ? c.text : c.sec,
+          corpo: '16px', spazio: '0.1em', sopra: i === 0 ? '0' : '2px', sotto: '0',
+        });
+      });
+    });
+    return {
+      c, voci,
+      scuro: (p.tema || 'scuro') !== 'chiaro',
+      chiaro: p.tema === 'chiaro',
+      prova: truthy(p.prova),
+      nome: p.nome ?? 'Marco Rossi',
+      ruolo: p.ruolo ?? 'Segreteria',
+      altezza: p.altezza || '900px',
+    };
+  }
+}
+</script>
+</body>
+</html>

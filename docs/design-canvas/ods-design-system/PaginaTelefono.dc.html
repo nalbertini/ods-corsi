@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Tavola modello, telefono (390x844): testata col marchio + lo scorrimento (`.app` / `.scroll`). E' la faccia che
+     l'app mostra per prima: l'app e' pensata per il telefono in una mano. Una schermata nuova si fa copiando questo
+     file e sostituendo il contenuto di <main>; i blocchi usano il margine di 20px (`.pad`) e i titoletti
+     (Titoletto) portano gia' il loro. Qui l'esempio e' la pagina ISCRIZIONI > COSTI (`.costi`: gap 10px).
+     Per il tema chiaro: sfondo #f4f4f1 qui sotto e tema="chiaro" su ogni <dc-import>. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+  <dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <dc-import name="Titoletto" label="QUANTO COSTA" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+      <dc-import name="SchedaCorso" corso="Judo kids" frase="Cintura dopo cintura, giocando." eta="Dai 6 ai 10 anni" orari="Lunedì e mercoledì 17:30-18:30|Sabato 10:00-11:00" prezzi="120 €|310 €|105 €" hint-size="100%,300px"></dc-import>
+      <dc-import name="SchedaCorso" corso="Lotta adulti" eta="Dai 16 anni" orari="Martedì e giovedì 19:30-21:00" saldo="{{ false }}" etichette="{{ true }}" prezzi="Intero|380 €|135 €; Ridotto|320 €|115 €" nota="Il certificato medico è obbligatorio." hint-size="100%,300px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 28px">
+      <dc-import name="Bottone" label="ISCRIVITI" variante="principale" hint-size="100%,56px"></dc-import>
+      <dc-import name="Bottone" label="CHIAMA LA PALESTRA" variante="linea" hint-size="100%,56px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

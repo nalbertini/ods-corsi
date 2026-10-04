@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: {{c.sfondo}}; border: 2px solid {{c.bordo}}; border-left: 6px solid {{tinta}}; color: {{c.text}}; text-align: left">
+  <div style="display: flex; flex-direction: column; gap: 2px">
+    <span style="min-width: 62px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; letter-spacing: 0.02em">{{ora}}</span>
+    <sc-if value="{{haQuando}}" hint-placeholder-val="{{ false }}">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: {{c.gialloTesto}}; white-space: nowrap">{{quando}}</span>
+    </sc-if>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0; text-align: left">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; text-transform: uppercase">{{corso}}</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: {{c.dim}}">
+      <span style="display: inline-flex; gap: 3px; flex-shrink: 0">
+        <sc-for list="{{kanji}}" as="k" hint-placeholder-count="1">
+          <span style="display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid #e4292a; border-radius: 3px; color: {{c.rossoTesto}}; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif; font-size: 15px; font-weight: 700; line-height: 1">{{k.segno}}</span>
+        </sc-for>
+      </span>
+      <span>{{dove}}</span>
+    </span>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 2px; align-items: flex-end">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; color: {{coloreConto}}">{{conto}}</span>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-align: right; white-space: nowrap; color: {{coloreStato}}">{{statoTesto}}</span>
+    <sc-if value="{{haProve}}" hint-placeholder-val="{{ false }}">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-align: right; white-space: nowrap; color: {{c.gialloTesto}}">{{proveTesto}}</span>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"ora":{"editor":"text","default":"19:00"},"quando":{"editor":"text","default":""},"corso":{"editor":"text","default":"Judo kids"},"sala":{"editor":"text","default":"Sala 1"},"istruttore":{"editor":"text","default":"Marco R."},"kanji":{"editor":"text","default":""},"tinta":{"editor":"text","default":"#1b8ac4"},"iscritti":{"editor":"text","default":"12"},"presenti":{"editor":"text","default":"0"},"stato":{"editor":"enum","options":["iscritti","in-corso","fatto","nessun-presente","da-chiudere"],"default":"iscritti"},"prove":{"editor":"text","default":"0"},"aperta":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":380,"height":90}}'>
+// Riproduzione 1:1 della lezione nel calendario: `carta()` in src/components/CalendarioScreen.tsx (righe 232-270)
+// con .card, .lezione e figli in src/styles.css (righe 249, 297-337).
+// - barra sinistra 6px nella tinta del corso (--tinta; il codice usa var(--blu) se il corso non ha colore);
+//   la tinta e' SEMPRE una barra, mai un fondo (DESIGN.md, La Regola della Tinta del Corso).
+// - quando: "ADESSO" o "TRA 20 MIN", giallo-testo, solo per le lezioni di oggi.
+// - stato: iscritti (conto = iscritti, scritta ISCRITTI) | in-corso (presenti/iscritti, IN CORSO) | fatto
+//   (verde, ✓ FATTO) | nessun-presente (giallo) | da-chiudere (rosso, DA CHIUDERE).
+// - prove > 0 aggiunge "+N PROVA" in giallo-testo.
+// - aperta = aria-current dello schermo largo (da 960px): fondo `surface-2`, bordo `text`, barra nella tinta.
+// - kanji: un timbro per carattere (.kanji, 22px, bordo 1.5px rosso, raggio 3px: l'unico raggio dell'app).
+// Il passaggio del mouse non e' riprodotto.
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', dim: '#656561', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const t = T[p.tema] || T.scuro;
+    const aperta = truthy(p.aperta);
+    const stato = p.stato || 'iscritti';
+    const iscritti = String(p.iscritti ?? '12');
+    const presenti = Number(p.presenti) || 0;
+    // Come `iniziato` nel codice: finche' nessuno e' segnato si vede il numero degli iscritti, non presenti/iscritti.
+    const iniziato = stato !== 'iscritti' && !(stato === 'da-chiudere' && presenti === 0);
+    const conto = iniziato ? presenti + '/' + iscritti : iscritti;
+    const fatto = stato === 'fatto';
+    const TESTO = { 'iscritti': 'ISCRITTI', 'in-corso': 'IN CORSO', 'fatto': '✓ FATTO', 'nessun-presente': 'NESSUN PRESENTE', 'da-chiudere': 'DA CHIUDERE' };
+    const COLORE = { 'fatto': t.verdeTesto, 'nessun-presente': t.gialloTesto, 'da-chiudere': t.rossoTesto };
+    const prove = Number(p.prove) || 0;
+    const quando = p.quando ?? '';
+    return {
+      c: { ...t, sfondo: aperta ? t.surface2 : t.surface, bordo: aperta ? t.text : t.line },
+      ora: p.ora ?? '19:00',
+      quando,
+      haQuando: quando !== '',
+      corso: p.corso ?? 'Judo kids',
+      dove: [p.sala, p.istruttore].filter(Boolean).join(' · '),
+      kanji: [...String(p.kanji ?? '')].map((segno) => ({ segno })),
+      tinta: p.tinta || '#1b8ac4',
+      conto,
+      coloreConto: fatto ? t.verdeTesto : t.dim,
+      statoTesto: TESTO[stato] || TESTO.iscritti,
+      coloreStato: COLORE[stato] || t.dim,
+      haProve: prove > 0,
+      proveTesto: '+' + prove + ' PROVA',
+    };
+  }
+}
+</script>
+</body>
+</html>

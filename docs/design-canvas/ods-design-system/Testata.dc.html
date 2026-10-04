@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<header style="display: flex; flex-wrap: nowrap; align-items: center; gap: 10px {{gap}}; padding: 14px 20px 4px; color: {{c.text}}">
+  <svg width="{{logo.w}}" height="{{logo.h}}" viewBox="0 0 160 110" role="img" aria-label="Officine Dello Sport">
+    <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
+      <circle cx="38" cy="40" r="22" stroke="#1b8ac4"></circle>
+      <circle cx="80" cy="40" r="22" stroke="{{c.text}}"></circle>
+      <circle cx="122" cy="40" r="22" stroke="#e4292a"></circle>
+      <circle cx="59" cy="74" r="22" stroke="#f4c31b"></circle>
+      <circle cx="101" cy="74" r="22" stroke="#16a54a"></circle>
+    </g>
+    <g fill="none" stroke-width="5">
+      <circle cx="38" cy="40" r="14" stroke="#1b8ac4"></circle>
+      <circle cx="80" cy="40" r="14" stroke="{{c.text}}"></circle>
+      <circle cx="122" cy="40" r="14" stroke="#e4292a"></circle>
+      <circle cx="59" cy="74" r="14" stroke="#f4c31b"></circle>
+      <circle cx="101" cy="74" r="14" stroke="#16a54a"></circle>
+    </g>
+  </svg>
+  <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: {{nomeCorpo}}; font-weight: 700; letter-spacing: 0.04em; line-height: 1">OFFICINE DELLO SPORT</span>
+    <span style="font-size: 11px; font-weight: 600; letter-spacing: {{luogoSpazio}}; color: {{c.dim}}">{{luogo}} · COLLEGNO</span>
+  </div>
+  <sc-if value="{{guida}}" hint-placeholder-val="{{ true }}">
+    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700">?</span>
+  </sc-if>
+  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
+    <sc-if value="{{scuro}}" hint-placeholder-val="{{ true }}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+    </sc-if>
+    <sc-if value="{{chiaro}}" hint-placeholder-val="{{ false }}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+    </sc-if>
+  </span>
+</header>
+</x-dc>
+<script data-dc-script data-props='{"luogo":{"editor":"text","default":"ISTRUTTORI"},"guida":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":72}}'>
+// Riproduzione 1:1 della testata di src/App.tsx (Testata, righe 70-90) con .testata, .testata-nome,
+// .testata-luogo di src/styles.css (righe 254-267). E' la misura del TELEFONO (390px, sotto i 420px): marchio
+// da 46px, nome 18px, luogo a 0.16em, colonne a 8px. Sul telefono il marchio, la guida e il tema stanno su una
+// riga sola. Da 960px la testata ha anche il bordo inferiore `line-soft` e il marchio da 58px: lo schermo
+// largo non la usa quasi mai, perche' li' c'e' il menu (Segreteria o istruttori), vedi Menu.dc.html.
+// luogo: la parola sopra COLLEGNO (ACCESSO, CORSI, ISCRIZIONI, ISCRITTI, ISTRUTTORI, GUIDA, SEGRETERIA).
+// guida: il tasto "?" (la guida di quella pagina); il tasto del tema mostra dove porta: sole sul tema scuro,
+// luna sul chiaro.
+const T = {
+  scuro: { line: '#333333', text: '#f2f2f0', dim: '#8c8c88', tasto: '#b8b8b2' },
+  chiaro: { line: '#d4d4ce', text: '#161616', dim: '#656561', tasto: '#4a4a46' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return {
+      c: T[p.tema] || T.scuro,
+      scuro: (p.tema || 'scuro') !== 'chiaro',
+      chiaro: p.tema === 'chiaro',
+      luogo: p.luogo ?? 'ISTRUTTORI',
+      guida: p.guida === undefined ? true : truthy(p.guida),
+      logo: { w: 46, h: 31.6 },
+      gap: '8px',
+      nomeCorpo: '18px',
+      luogoSpazio: '0.16em',
+    };
+  }
+}
+</script>
+</body>
+</html>

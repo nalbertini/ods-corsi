@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 20px 4px">
+  <sc-for list="{{giorni}}" as="g" hint-placeholder-count="7">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 1px; min-height: 62px; padding: 8px 0 6px; background: {{g.sfondo}}; border: 2px solid {{g.bordo}}; color: {{g.coloreNome}}">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em">{{g.nome}}</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 19px; font-weight: 700; line-height: 1; color: {{g.coloreNum}}">{{g.num}}</span>
+      <span style="height: 10px; font-size: 9px; line-height: 1; letter-spacing: 1px; color: #1b8ac4">{{g.punti}}</span>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"giorni":{"editor":"text","default":"DOM 4 0, LUN 5 2 o, MAR 6 3 s, MER 7 1, GIO 8 0, VEN 9 4, SAB 10 2"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":90}}'>
+// Riproduzione 1:1 della striscia dei giorni: .striscia-giorni, .giorno e figli (src/styles.css righe 277-295) con
+// il markup di CalendarioScreen.tsx (righe 340-353). Sette caselle alte 62px; i puntini blu contano le lezioni
+// del giorno (al massimo quattro); oggi ha il numero giallo; il giorno scelto ha bordo `text` e fondo `surface-2`.
+// giorni: "NOME numero lezioni [o] [s]" separati da virgola; `o` = oggi, `s` = giorno scelto.
+// Il padding laterale di 20px e' quello della classe (--bordo-pagina).
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', gialloTesto: '#f4c31b' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', dim: '#656561', gialloTesto: '#8f6a00' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const c = T[this.props.tema] || T.scuro;
+    const giorni = String(this.props.giorni ?? '')
+      .split(',')
+      .map((s) => s.trim().split(/\s+/))
+      .filter((w) => w.length >= 2 && w[0] !== '')
+      .map(([nome, num, lezioni, ...segni]) => {
+        const scelto = segni.includes('s');
+        const oggi = segni.includes('o');
+        const quante = Number(lezioni) || 0;
+        return {
+          nome, num,
+          punti: quante ? '•'.repeat(Math.min(quante, 4)) : ' ',
+          sfondo: scelto ? c.surface2 : c.surface,
+          bordo: scelto ? c.text : c.line,
+          coloreNome: scelto ? c.text : c.dim,
+          coloreNum: oggi ? c.gialloTesto : c.text,
+        };
+      });
+    return { giorni };
+  }
+}
+</script>
+</body>
+</html>
