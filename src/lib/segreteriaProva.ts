@@ -1237,10 +1237,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async salvaEserciziPalestra(l) {
-      a().eserciziSale = (eserciziDellaPalestra(l, disciplineDa(a().discipline)) ?? []).map(({ id, nome, categoria, disciplina }) => ({
+      a().eserciziSale = (eserciziDellaPalestra(l, disciplineDa(a().discipline)) ?? []).map(({ id, nome, disciplina }) => ({
         id,
         nome,
-        categoria,
         ...(disciplina ? { disciplina } : {}),
       }))
       salva()

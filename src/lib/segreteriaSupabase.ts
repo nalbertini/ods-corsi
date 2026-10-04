@@ -1239,7 +1239,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(
         await db
           .from('impostazioni')
-          .update({ esercizi: lista.map(({ id, nome, categoria, disciplina }) => ({ id, nome, categoria, ...(disciplina ? { disciplina } : {}) })) })
+          .update({ esercizi: lista.map(({ id, nome, disciplina }) => ({ id, nome, ...(disciplina ? { disciplina } : {}) })) })
           .eq('id', true),
       )
     },

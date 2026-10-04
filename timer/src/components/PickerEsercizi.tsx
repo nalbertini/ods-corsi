@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { CATEGORIE, type Categoria, type Esercizio, normalizza } from '../lib/esercizi'
+import { type Esercizio, normalizza } from '../lib/esercizi'
 import { uid } from '../lib/format'
 import { type Disciplina, dellaDisciplina, filtroValido, nomeDisciplina } from '../lib/discipline'
 import { FiltroDiscipline } from './DisciplinaScelta'
@@ -26,19 +26,15 @@ export function PickerEsercizi({
   onChiudi: () => void
 }) {
   const [cerca, setCerca] = useState('')
-  const [categoria, setCategoria] = useState<Categoria | 'tutte'>('tutte')
   const [disciplina, setDisciplina] = useState<string | null>(null)
   const [scelti, setScelti] = useState<string[]>([])
 
   const q = normalizza(cerca)
-  // Un filtro su una disciplina tolta nel frattempo non resta acceso.
+  // Un filtro su una categoria tolta nel frattempo non resta acceso.
   const filtro = filtroValido(disciplina, discipline)
   const visibili = useMemo(
-    () =>
-      dellaDisciplina(catalogo, filtro).filter(
-        (e) => (categoria === 'tutte' || e.categoria === categoria) && (!q || normalizza(e.nome).includes(q)),
-      ),
-    [catalogo, categoria, filtro, q],
+    () => dellaDisciplina(catalogo, filtro).filter((e) => !q || normalizza(e.nome).includes(q)),
+    [catalogo, filtro, q],
   )
 
   const esisteGià = catalogo.some((e) => normalizza(e.nome) === q)
@@ -46,11 +42,10 @@ export function PickerEsercizi({
   const creaEScegli = () => {
     const nome = cerca.trim()
     if (!nome) return
-    // Creato con un filtro acceso, prende quella disciplina.
+    // Creato con un filtro acceso, prende quella categoria.
     const nuovo: Esercizio = {
       id: uid(),
       nome,
-      categoria: categoria === 'tutte' ? 'A corpo libero' : categoria,
       ...(filtro ? { disciplina: filtro } : {}),
       propri: true,
     }
@@ -86,17 +81,6 @@ export function PickerEsercizi({
           onChange={(ev) => setCerca(ev.target.value)}
           autoFocus
         />
-      </div>
-
-      <div className="pad row" style={{ gap: 8, overflowX: 'auto', paddingBottom: 12 }}>
-        <button className="chip" data-on={categoria === 'tutte'} onClick={() => setCategoria('tutte')}>
-          TUTTI
-        </button>
-        {CATEGORIE.map((c) => (
-          <button key={c} className="chip" data-on={categoria === c} onClick={() => setCategoria(c)}>
-            {c.toUpperCase()}
-          </button>
-        ))}
       </div>
 
       <FiltroDiscipline discipline={discipline} valore={filtro} onCambia={setDisciplina} />
@@ -143,9 +127,11 @@ export function PickerEsercizi({
                   </span>
                   <div className="stack grow" style={{ gap: 1, minWidth: 0 }}>
                     <span style={{ fontSize: 15, fontWeight: 600 }}>{e.nome}</span>
-                    <span style={{ fontSize: 11, color: 'var(--faint)', letterSpacing: '0.1em' }}>
-                      {[e.categoria, nomeDisciplina(e.disciplina, discipline)].filter(Boolean).join(' · ').toUpperCase()}
-                    </span>
+                    {e.disciplina && (
+                      <span style={{ fontSize: 12, color: 'var(--dim)', letterSpacing: '0.1em' }}>
+                        {nomeDisciplina(e.disciplina, discipline)?.toUpperCase()}
+                      </span>
+                    )}
                   </div>
                 </button>
                 {e.propri && (

@@ -1,8 +1,10 @@
 /**
- * Le discipline della palestra: Judo, Lotta, Pilates, Yoga…
+ * Le discipline della palestra: Judo, Lotta, Pilates, Yoga, e le ex categorie
+ * degli esercizi (A corpo libero, Attrezzi, Core, Cardio, Mobilità). Per chi
+ * usa l'app si chiamano «categorie».
  *
- * Gli esercizi, i timer e le liste di musica si dividono per disciplina, oltre
- * che per tipo. Una voce ne ha una sola, o nessuna. «Tutte» (id riservato)
+ * Gli esercizi, i timer e le liste di musica si dividono per questo elenco, e
+ * solo per questo. Una voce ne ha una sola, o nessuna. «Tutte» (id riservato)
  * non sta nella lista: è per le voci comuni, come il riscaldamento, e compare
  * sotto ogni disciplina. La lista la tiene la segreteria
  * (`supabase/40-discipline.sql`); quel che arriva dal database o da un backup
@@ -21,6 +23,11 @@ export const DISCIPLINE_DI_PARTENZA: Disciplina[] = [
   { id: 'lotta', nome: 'Lotta' },
   { id: 'pilates', nome: 'Pilates' },
   { id: 'yoga', nome: 'Yoga' },
+  { id: 'corpo-libero', nome: 'A corpo libero' },
+  { id: 'attrezzi', nome: 'Attrezzi' },
+  { id: 'core', nome: 'Core' },
+  { id: 'cardio', nome: 'Cardio' },
+  { id: 'mobilita', nome: 'Mobilità' },
 ]
 
 export const MAX_DISCIPLINE = 20
@@ -65,10 +72,10 @@ export function disciplineDa(grezzo: unknown): Disciplina[] {
 /** Perché un nome non va bene, detto a chi lo scrive; `null` se va bene. `eccetto` è la disciplina che si sta rinominando. */
 export function nomeDisciplinaValido(nome: string, lista: Disciplina[], eccetto?: string): string | null {
   const n = nome.trim()
-  if (!n) return 'Scrivi il nome della disciplina.'
+  if (!n) return 'Scrivi il nome della categoria.'
   if (n.length > MAX_NOME_DISCIPLINA) return `Il nome è troppo lungo: al massimo ${MAX_NOME_DISCIPLINA} lettere.`
-  if (chiave(n) === chiave(NOME_TUTTE)) return '«Tutte» c’è già: è per le voci comuni a tutte le discipline.'
-  if (lista.some((d) => d.id !== eccetto && chiave(d.nome) === chiave(n))) return 'C’è già una disciplina con questo nome.'
+  if (chiave(n) === chiave(NOME_TUTTE)) return '«Tutte» c’è già: è per le voci comuni a tutte le categorie.'
+  if (lista.some((d) => d.id !== eccetto && chiave(d.nome) === chiave(n))) return 'C’è già una categoria con questo nome.'
   return null
 }
 
@@ -102,6 +109,26 @@ export function dellaDisciplina<T extends { disciplina?: string | null }>(voci: 
 export function disciplineConVoci(voci: Array<{ disciplina?: string | null }>, lista: Disciplina[]): Disciplina[] {
   const usate = new Set(voci.map((v) => v.disciplina))
   return lista.filter((d) => usate.has(d.id))
+}
+
+/**
+ * Le voci divise per categoria, nell'ordine della lista, poi «Tutte», poi
+ * quelle senza categoria (anche quelle la cui categoria è stata tolta dalla
+ * lista). I gruppi vuoti non ci sono; l'ordine delle voci non cambia.
+ */
+export function gruppiPerDisciplina<T extends { disciplina?: string | null }>(
+  voci: T[],
+  lista: Disciplina[],
+): Array<{ chiave: string; nome: string; voci: T[] }> {
+  const noti = new Set(lista.map((d) => d.id))
+  const gruppo = (v: T) => (v.disciplina === TUTTE ? TUTTE : v.disciplina && noti.has(v.disciplina) ? v.disciplina : '')
+  return [
+    ...lista.map((d) => ({ chiave: d.id, nome: d.nome })),
+    { chiave: TUTTE, nome: NOME_TUTTE },
+    { chiave: '', nome: 'Senza categoria' },
+  ]
+    .map((g) => ({ ...g, voci: voci.filter((v) => gruppo(v) === g.chiave) }))
+    .filter((g) => g.voci.length > 0)
 }
 
 /** Il filtro acceso, se è ancora una disciplina della lista; altrimenti spento (`null`). Una tolta nel frattempo, o «tutte» (che non è un pulsante), non resta accesa. */

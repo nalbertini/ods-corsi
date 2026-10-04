@@ -195,6 +195,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.attivita') is not null
     and exists (select 1 from dentro where nome = 'attivita_sala')
     and exists (select 1 from dentro where nome = 'ricorrenza_cambiata' and corpo like '%attivita_id%')),
+  ('42-categorie-esercizi.sql', 'gli esercizi hanno una sola categoria: le ex categorie sono voci dell''elenco',
+    -- Solo l'assenza di `categoria`: la segreteria può togliere le voci, o non aver mai toccato l'elenco.
+    not exists (select 1 from impostazioni, jsonb_array_elements(esercizi) e where jsonb_typeof(e) = 'object' and e ? 'categoria')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

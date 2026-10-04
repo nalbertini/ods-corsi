@@ -2632,24 +2632,62 @@ console.log('\nl’«Attività» con un database senza 41-attivita.sql: la segre
 // Le discipline: la segreteria le cura, il catalogo le tiene, il tablet le riceve.
 {
   const nomi = (l) => l.map((d) => d.id)
-  ok('di partenza: judo, lotta, pilates, yoga', nomi(await s.discipline()), ['judo', 'lotta', 'pilates', 'yoga'])
+  ok('di partenza: judo, lotta, pilates, yoga e le ex categorie degli esercizi', nomi(await s.discipline()), ['judo', 'lotta', 'pilates', 'yoga', 'corpo-libero', 'attrezzi', 'core', 'cardio', 'mobilita'])
   await s.salvaDiscipline([...(await s.discipline()), { id: 'karate', nome: 'Karate' }])
+  // Un solo campo per esercizio: la disciplina (la «categoria» per chi usa l'app). Le vecchie categorie sono voci della lista.
+  await s.salvaEserciziPalestra([
+    { id: 'e1', nome: 'Kata', categoria: 'A corpo libero', disciplina: 'karate' },
+    { id: 'e2', nome: 'Squat', categoria: 'Core', disciplina: 'tutte' },
+    { id: 'e3', nome: 'Plank', categoria: 'Core', disciplina: 'inventata' },
+    { id: 'e4', nome: 'Randori', categoria: 'Judo' },
+    { id: 'e5', nome: 'Burpee', categoria: 'A corpo libero' },
+    { id: 'e6', nome: 'Libero' },
+    { id: 'e7', nome: 'Uchi komi', categoria: 'A corpo libero', disciplina: 'judo' },
+  ])
+  const cat = await s.eserciziPalestra()
+  ok('il catalogo tiene la disciplina nuova e «tutte», toglie quella inventata; la vecchia categoria diventa la voce; una sola voce per esercizio',
+    cat.map((e) => [e.nome, e.disciplina, 'categoria' in e]),
+    [['Kata', 'karate', false], ['Squat', 'tutte', false], ['Plank', undefined, false], ['Randori', 'judo', false], ['Burpee', 'corpo-libero', false], ['Libero', undefined, false], ['Uchi komi', 'judo', false]])
+  ok('in modalità prova l\'archivio salva solo id, nome e voce: niente categoria',
+    JSON.parse(localStorage.getItem('ods-corsi:prova-archivio')).eserciziSale,
+    [{ id: 'e1', nome: 'Kata', disciplina: 'karate' }, { id: 'e2', nome: 'Squat', disciplina: 'tutte' }, { id: 'e3', nome: 'Plank' }, { id: 'e4', nome: 'Randori', disciplina: 'judo' }, { id: 'e5', nome: 'Burpee', disciplina: 'corpo-libero' }, { id: 'e6', nome: 'Libero' }, { id: 'e7', nome: 'Uchi komi', disciplina: 'judo' }])
+  ok('le ex categorie sono voci della lista di partenza, accanto a judo, lotta, pilates, yoga',
+    nomi(await s.discipline()).slice(4, 9), ['corpo-libero', 'attrezzi', 'core', 'cardio', 'mobilita'])
+  ok('«Tutte» non compare tra le voci', nomi(await s.discipline()).includes('tutte'), false)
+  // Rinominare un esercizio: l'id resta, la voce resta, e la clip incisa (chiave dal nome) è quella del nome nuovo.
+  await s.salvaEserciziPalestra(cat.map((e) => (e.id === 'e5' ? { ...e, nome: 'Burpee + salto' } : e)))
+  ok('rinominato: la voce resta e non spunta una categoria', (await s.eserciziPalestra()).filter((e) => e.id === 'e5').map((e) => [e.nome, e.disciplina, 'categoria' in e]), [['Burpee + salto', 'corpo-libero', false]])
+  // Togliere una voce dall'elenco non rompe né toglie gli esercizi che la usavano.
+  await s.salvaDiscipline((await s.discipline()).filter((x) => x.id !== 'corpo-libero'))
+  ok('tolta una voce dall\'elenco: l\'esercizio resta, senza voce', (await s.eserciziPalestra()).filter((e) => e.id === 'e5').map((e) => [e.nome, e.disciplina]), [['Burpee + salto', undefined]])
+  await s.salvaDiscipline([...(await s.discipline()), { id: 'corpo-libero', nome: 'A corpo libero' }])
   await s.salvaEserciziPalestra([
     { id: 'e1', nome: 'Kata', categoria: 'A corpo libero', disciplina: 'karate' },
     { id: 'e2', nome: 'Squat', categoria: 'Core', disciplina: 'tutte' },
     { id: 'e3', nome: 'Plank', categoria: 'Core', disciplina: 'inventata' },
     { id: 'e4', nome: 'Randori', categoria: 'Judo' },
   ])
-  const cat = await s.eserciziPalestra()
-  ok('il catalogo tiene la disciplina nuova, «tutte», toglie quella inventata e migra «Judo»',
-    cat.map((e) => [e.nome, e.categoria, e.disciplina]),
-    [['Kata', 'A corpo libero', 'karate'], ['Squat', 'Core', 'tutte'], ['Plank', 'Core', undefined], ['Randori', 'A corpo libero', 'judo']])
   const sala = await m.creaTabletProva().timerSala()
-  ok('il tablet riceve la lista e il catalogo con le discipline', [nomi(sala.discipline), sala.esercizi.find((e) => e.nome === 'Kata')?.disciplina], [['judo', 'lotta', 'pilates', 'yoga', 'karate'], 'karate'])
+  ok('il tablet riceve la lista e il catalogo con le discipline, senza categoria', [nomi(sala.discipline).includes('karate'), sala.esercizi.find((e) => e.nome === 'Kata')?.disciplina, sala.esercizi.some((e) => 'categoria' in e)], [true, 'karate', false])
   await s.salvaDiscipline((await s.discipline()).filter((d) => d.id !== 'karate'))
   ok('tolta la disciplina, l\'esercizio resta senza', (await s.eserciziPalestra()).find((e) => e.nome === 'Kata')?.disciplina, undefined)
-  ok('e la lista non ha più karate', nomi(await s.discipline()), ['judo', 'lotta', 'pilates', 'yoga'])
+  ok('e la lista non ha più karate', nomi(await s.discipline()).includes('karate'), false)
   await s.salvaEserciziPalestra([])
+}
+
+// Il catalogo sul database vero: si scrivono id, nome e voce, mai la categoria; si legge anche quello di prima.
+{
+  const scritti = []
+  const db = {
+    from: () => ({
+      select: () => ({ maybeSingle: async () => ({ data: { discipline: [{ id: 'judo', nome: 'Judo' }, { id: 'core', nome: 'Core' }], esercizi: [{ id: 'a', nome: 'Squat', categoria: 'Core' }, { id: 'b', nome: 'Randori', categoria: 'A corpo libero', disciplina: 'judo' }, { id: 'c', nome: 'Ukemi', categoria: 'Judo' }] }, error: null }) }),
+      update: (riga) => ({ eq: async () => (scritti.push(riga), { data: null, error: null }) }),
+    }),
+  }
+  const v = m.creaSegreteriaSupabase(db)
+  ok('database: un catalogo di prima si legge, con una voce sola', (await v.eserciziPalestra()).map((e) => [e.nome, e.disciplina, 'categoria' in e]), [['Squat', 'core', false], ['Randori', 'judo', false], ['Ukemi', 'judo', false]])
+  await v.salvaEserciziPalestra([{ id: 'a', nome: 'Squat', categoria: 'Core' }, { id: 'b', nome: 'Libero' }, { id: 'c', nome: 'Randori', categoria: 'A corpo libero', disciplina: 'judo' }])
+  ok('database: salvando, il JSON non ha la categoria', scritti, [{ esercizi: [{ id: 'a', nome: 'Squat', disciplina: 'core' }, { id: 'b', nome: 'Libero' }, { id: 'c', nome: 'Randori', disciplina: 'judo' }] }])
 }
 
 // Le liste di musica per disciplina: la segreteria la sceglie, il tablet la riceve.

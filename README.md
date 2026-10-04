@@ -45,6 +45,10 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   cambia anche per una lezione sola, e l'istruttore cambia quella della sua.
   Si vede accanto all'orario su calendario, appello e tablet di sala
   (`supabase/41-attivita.sql`).
+- **La categoria degli esercizi**: una sola divisione, la stessa lista di timer e
+  liste di musica (Judo, Lotta, Pilates, Yoga, A corpo libero, Attrezzi, Core,
+  Cardio, Mobilità…), che la segreteria cura in ESERCIZI; un filtro e gruppi
+  per categoria in segreteria e nel timer (`supabase/42-categorie-esercizi.sql`).
 - **I miei timer**: nell'area istruttori, quali timer partono con ogni corso e
   con ogni singola lezione delle prossime due settimane, anche più d'uno;
   quelli di una lezione vengono prima di quelli del corso, dall'appello e sul tablet di sala
@@ -383,6 +387,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/calendario-pronto-fino.sql` | Fin dove è pronto il calendario: contano le lezioni dell'orario, e una straordinaria lontana non ferma le altre. |
 | `supabase/prova/date-corsi.sql` | SALVA LE DATE: solo la segreteria; toglie le lezioni da ricorrenza di domani in poi fuori dalle date, tranne quelle con l'appello o una prova (annullate, sostituti e presenze degli istruttori se ne vanno con loro), e dice quante ne ha tolte e quante restano, con corso e ora delle prime tre; contare prima, per la conferma, non cambia niente; straordinarie, oggi e passato intatti; date sbagliate o infinite non tolgono niente. |
 | `supabase/prova/attivita.sql` | L'«Attività» dei giorni e delle lezioni: il nome valido e unico, l'elenco che parte vuoto, chi lo scrive e chi lo legge, l'istruttore che sceglie solo per le sue lezioni, le lezioni future che seguono il giorno tranne quelle con l'appello, una prova o cambiate a mano, le nuove che nascono con quella del giorno, l'attività che non si elimina finché è usata, il tablet che legge solo la sua sala. |
+| `supabase/prova/categorie-esercizi.sql` | Una sola categorizzazione degli esercizi: l'elenco delle discipline si completa con A corpo libero, Attrezzi, Core, Cardio, Mobilità (senza duplicare né rimettere quelle tolte), e il catalogo perde la `categoria` (vince la disciplina, se no la categoria diventa la voce; «tutte» e gli esercizi senza voce restano). Si può rilanciare; la segreteria lo scrive, gli altri lo leggono. |
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
 | `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
 | `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già. |

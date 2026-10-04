@@ -8,15 +8,15 @@ import { type Disciplina, DISCIPLINE_DI_PARTENZA, ripulisciDisciplina } from './
  * finito l'insieme dei nomi: la clip della voce di un esercizio si chiama come
  * il suo nome, quindi con un catalogo diventa un elenco che si può incidere.
  */
-export type Categoria = 'A corpo libero' | 'Attrezzi' | 'Core' | 'Cardio' | 'Mobilità'
-
-export const CATEGORIE: Categoria[] = ['A corpo libero', 'Attrezzi', 'Core', 'Cardio', 'Mobilità']
-
 export interface Esercizio {
   id: string
   nome: string
-  categoria: Categoria
-  /** La disciplina (id), o `tutte`; senza, vale per nessuna in particolare. */
+  /**
+   * L'unica divisione degli esercizi (per chi usa l'app, la «categoria»): una
+   * voce dell'elenco della segreteria (`discipline.ts`) o `tutte`; senza, non è
+   * in nessuna in particolare. Il campo si chiama ancora `disciplina` perché
+   * timer e liste di musica usano lo stesso elenco.
+   */
   disciplina?: string
   /** Vero per quelli aggiunti a mano: nel picker solo quelli si tolgono al volo. */
   propri?: boolean
@@ -26,59 +26,65 @@ const CHIAVE = 'ods-timer:esercizi'
 
 /** Un punto di partenza per una palestra di judo, da curare a piacere. */
 export function catalogoDiPartenza(): Esercizio[] {
-  const per = (categoria: Categoria, nomi: string[], disciplina?: string): Esercizio[] =>
-    nomi.map((nome) => (disciplina ? { id: uid(), nome, categoria, disciplina } : { id: uid(), nome, categoria }))
+  const per = (disciplina: string, nomi: string[]): Esercizio[] => nomi.map((nome) => ({ id: uid(), nome, disciplina }))
   return [
-    ...per(
-      'A corpo libero',
-      [
-        'Uchi komi', 'Nage komi', 'Ukemi', 'Ne waza', 'Randori', 'Kuzushi',
-        'Entrate di seoi nage', 'Passaggi di guardia', 'Sprawl', 'Fuga d’anca', 'Ponte',
-      ],
-      'judo',
-    ),
-    ...per('A corpo libero', [
+    ...per('judo', [
+      'Uchi komi', 'Nage komi', 'Ukemi', 'Ne waza', 'Randori', 'Kuzushi',
+      'Entrate di seoi nage', 'Passaggi di guardia', 'Sprawl', 'Fuga d’anca', 'Ponte',
+    ]),
+    ...per('corpo-libero', [
       'Burpee', 'Burpee + salto', 'Piegamenti', 'Squat', 'Jump squat', 'Affondi alternati',
       'Plank jack', 'Mountain climber', 'Salto sul box', 'Trazioni', 'Dip', 'Step up',
     ]),
-    ...per('Attrezzi', [
+    ...per('attrezzi', [
       'Kettlebell swing', 'Goblet squat', 'Stacco rumeno', 'Panca piana', 'Lat machine',
       'Leg press', 'Vogatore', 'Palla medica', 'Trascinamento sacco', 'Corda da arrampicata',
     ]),
-    ...per('Core', [
+    ...per('core', [
       'Plank', 'Plank laterale', 'Hollow hold', 'Russian twist', 'Bicicletta', 'V-up',
       'Superman', 'Sit up',
     ]),
-    ...per('Cardio', [
+    ...per('cardio', [
       'Corsa sul posto', 'Skip alto', 'Salti con la corda', 'Jumping jack', 'Scatti navetta', 'Cyclette',
     ]),
-    ...per('Mobilità', [
+    ...per('mobilita', [
       'Mobilità anche', 'Mobilità spalle', 'Rotazioni del busto', 'Stretching collo', 'Respirazione',
     ]),
   ]
 }
 
+// Le vecchie categorie degli esercizi: ora sono voci dell'elenco, con questi id
+// (gli stessi di `supabase/42-categorie-esercizi.sql`). «Judo» era una categoria ancora prima.
+const VOCE_DELLA_CATEGORIA = new Map([
+  ['Judo', 'judo'],
+  ['A corpo libero', 'corpo-libero'],
+  ['Attrezzi', 'attrezzi'],
+  ['Core', 'core'],
+  ['Cardio', 'cardio'],
+  ['Mobilità', 'mobilita'],
+])
+
 /**
- * Categoria e disciplina di un esercizio letto da fuori (il browser, il
- * database, un backup). «Judo» era una categoria: ora è una disciplina, e chi
- * l'aveva si ritrova in «A corpo libero» con disciplina `judo`, se non ne
- * aveva già una. Una disciplina che non esiste (più) si toglie.
+ * L'unica categoria di un esercizio letto da fuori (il browser, il database,
+ * un backup, o un'app non ancora aggiornata che scrive ancora `categoria`).
+ * Una disciplina scritta vince, anche se non c'è più nell'elenco (e allora
+ * l'esercizio resta senza); se no, la vecchia categoria diventa la voce con lo
+ * stesso nome, se c'è nell'elenco. Nessuna voce è permessa.
  */
-export function categoriaEDisciplina(
+export function disciplinaDi(
   categoria: unknown,
   disciplina: unknown,
   discipline: Disciplina[] = DISCIPLINE_DI_PARTENZA,
-): { categoria: Categoria; disciplina?: string } {
-  const eraJudo = categoria === 'Judo'
-  const cat = CATEGORIE.includes(categoria as Categoria) ? (categoria as Categoria) : 'A corpo libero'
-  const d = ripulisciDisciplina(disciplina ?? (eraJudo ? 'judo' : undefined), discipline)
-  return d ? { categoria: cat, disciplina: d } : { categoria: cat }
+): string | undefined {
+  if (typeof disciplina === 'string' && disciplina) return ripulisciDisciplina(disciplina, discipline)
+  return ripulisciDisciplina(typeof categoria === 'string' ? VOCE_DELLA_CATEGORIA.get(categoria) : undefined, discipline)
 }
 
-/** Un esercizio con categoria e disciplina ripulite; il resto com'è. */
+/** Un esercizio con la categoria ripulita; il resto com'è. */
 export function esercizioPulito(e: Esercizio, discipline?: Disciplina[]): Esercizio {
-  const { categoria, disciplina } = categoriaEDisciplina(e.categoria, e.disciplina, discipline)
-  const out: Esercizio = { id: e.id, nome: e.nome, categoria }
+  // `as`: una copia vecchia può avere ancora `categoria`, che il tipo non ha più.
+  const disciplina = disciplinaDi((e as { categoria?: unknown }).categoria, e.disciplina, discipline)
+  const out: Esercizio = { id: e.id, nome: e.nome }
   if (disciplina) out.disciplina = disciplina
   if (e.propri) out.propri = e.propri
   return out
@@ -136,7 +142,6 @@ export const stessoNome = (a: string, b: string) => normalizza(a) === normalizza
 export function aggiungiNomi(
   catalogo: Esercizio[],
   nomi: string[],
-  categoria: Categoria,
   disciplina?: string,
 ): { lista: Esercizio[]; aggiunti: string[]; saltati: string[] } {
   const visti = new Set(catalogo.map((e) => normalizza(e.nome)))
@@ -152,7 +157,7 @@ export function aggiungiNomi(
       continue
     }
     visti.add(chiave)
-    nuovi.push({ id: uid(), nome, categoria, ...(disciplina ? { disciplina } : {}), propri: true })
+    nuovi.push({ id: uid(), nome, ...(disciplina ? { disciplina } : {}), propri: true })
     aggiunti.push(nome)
   }
   return { lista: [...catalogo, ...nuovi], aggiunti, saltati }

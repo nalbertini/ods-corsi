@@ -8,6 +8,12 @@
 // scelta valida. La lista la cura la segreteria; quel che arriva dal
 // database o da un backup si ripulisce. Gli esercizi, le liste di musica e i
 // timer ne portano una; la parte del database è in supabase/prova/discipline.sql.
+//
+// Una cosa sola per esercizio: la disciplina (che per chi usa l'app si chiama
+// «categoria»). Le vecchie categorie (A corpo libero, Attrezzi, Core, Cardio,
+// Mobilità) sono voci della stessa lista, accanto a Judo, Lotta, Pilates, Yoga;
+// gli esercizi non hanno più il campo `categoria`, ma lo si legge ancora da
+// browser, database e backup vecchi (la parte del database: prova/categorie-esercizi.sql).
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 
@@ -29,7 +35,7 @@ const importaDavvero = async (contents) => {
     write: false,
     logLevel: 'silent',
     // libreria.ts apre il collegamento al database: qui non serve.
-    define: { 'import.meta.env.VITE_SUPABASE_URL': '""', 'import.meta.env.VITE_SUPABASE_ANON_KEY': '""' },
+    define: { __TIMER_RADICE__: '""', 'import.meta.env.VITE_SUPABASE_URL': '""', 'import.meta.env.VITE_SUPABASE_ANON_KEY': '""' },
   })
   return import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 }
@@ -54,7 +60,7 @@ const D = await importa(`
   export * from './timer/src/lib/discipline'
 `)
 const E = await importa(`
-  export { CATEGORIE, catalogoDiPartenza, loadEsercizi } from './timer/src/lib/esercizi'
+  export * from './timer/src/lib/esercizi'
   export { eserciziDellaPalestra } from './timer/src/lib/impostazioniSala'
   export { leggiSalvataggio } from './timer/src/lib/salvataggio'
 `)
@@ -64,25 +70,33 @@ const L = await importa(`
 const G = await importa(`
   export { gruppiDi } from './timer/src/lib/gruppi'
 `)
+const V = await importa(`
+  export { exerciseKey } from './timer/src/lib/voiceClips'
+`)
 const I = await importa(`
   export { leggiTimerSala, scaricaDiscipline } from './timer/src/lib/impostazioniSala'
 `)
 
 const d = (id, nome) => ({ id, nome })
 const lista = [d('judo', 'Judo'), d('lotta', 'Lotta'), d('pilates', 'Pilates'), d('yoga', 'Yoga')]
+// Le ex categorie: i loro id sono quelli che scrive anche la migrazione (supabase/42-categorie-esercizi.sql).
+const exCategorie = [d('corpo-libero', 'A corpo libero'), d('attrezzi', 'Attrezzi'), d('core', 'Core'), d('cardio', 'Cardio'), d('mobilita', 'Mobilità')]
+const partenza = [...lista, ...exCategorie]
 
 console.log('Le costanti')
 await prova('«Tutte» è riservata', () => [D.TUTTE, D.NOME_TUTTE], ['tutte', 'Tutte'])
-await prova('si parte da Judo, Lotta, Pilates, Yoga, in quest\'ordine', () => D.DISCIPLINE_DI_PARTENZA, lista)
+await prova('si parte da Judo, Lotta, Pilates, Yoga e dalle ex categorie, in quest\'ordine', () => D.DISCIPLINE_DI_PARTENZA, partenza)
+await prova('«Tutte» non compare tra le voci di partenza', () => D.DISCIPLINE_DI_PARTENZA.filter((x) => x.id === 'tutte' || x.nome === 'Tutte').length, 0)
+await prova('la lista di partenza sta nei limiti (20 voci)', () => D.DISCIPLINE_DI_PARTENZA.length <= D.MAX_DISCIPLINE, true)
 
 console.log('\nLa lista ripulita (disciplineDa)')
-await prova('non un array: la lista di partenza', () => [D.disciplineDa(null), D.disciplineDa(undefined), D.disciplineDa('judo'), D.disciplineDa({})], [lista, lista, lista, lista])
+await prova('non un array: la lista di partenza', () => [D.disciplineDa(null), D.disciplineDa(undefined), D.disciplineDa('judo'), D.disciplineDa({})], [partenza, partenza, partenza, partenza])
 await prova('la lista di partenza è una copia, non quella stessa', () => {
   const a = D.disciplineDa(null)
   a.push(d('x', 'X'))
   a[0].nome = 'Cambiato'
   return D.DISCIPLINE_DI_PARTENZA
-}, lista)
+}, partenza)
 await prova('un array vuoto resta vuoto: è una scelta', () => D.disciplineDa([]), [])
 await prova('una lista buona resta com\'è, nell\'ordine dato', () => D.disciplineDa([d('yoga', 'Yoga'), d('judo', 'Judo')]), [d('yoga', 'Yoga'), d('judo', 'Judo')])
 await prova('scarta le voci senza id o nome validi', () =>
@@ -176,34 +190,94 @@ await prova('le voci tornano intere (stessi oggetti)', () => D.dellaDisciplina(v
 console.log('\nIl catalogo di partenza')
 const cat = E.catalogoDiPartenza()
 const eraJudo = ['Uchi komi', 'Nage komi', 'Ukemi', 'Ne waza', 'Randori', 'Kuzushi', 'Entrate di seoi nage', 'Passaggi di guardia', 'Sprawl', 'Fuga d’anca', 'Ponte']
-await prova('le categorie sono 5, senza «Judo»', () => E.CATEGORIE, ['A corpo libero', 'Attrezzi', 'Core', 'Cardio', 'Mobilità'])
-await prova('nessun esercizio ha più la categoria «Judo»', () => cat.filter((e) => e.categoria === 'Judo').length, 0)
-await prova('quelli che erano «Judo» sono «A corpo libero» con disciplina judo', () =>
-  eraJudo.map((n) => { const e = cat.find((x) => x.nome === n); return [e?.categoria, e?.disciplina] }),
-  eraJudo.map(() => ['A corpo libero', 'judo']))
-await prova('gli altri non hanno disciplina', () => cat.filter((e) => !eraJudo.includes(e.nome) && e.disciplina !== undefined).length, 0)
+const quanti = (id) => cat.filter((e) => e.disciplina === id).length
+await prova('gli esercizi non hanno più categorie: né l\'elenco né il tipo', () => [E.CATEGORIE, E.categoriaEDisciplina], [undefined, undefined])
+await prova('nessun esercizio ha il campo «categoria»', () => cat.filter((e) => 'categoria' in e).length, 0)
+await prova('quelli di judo hanno la voce judo', () =>
+  eraJudo.map((n) => cat.find((x) => x.nome === n)?.disciplina), eraJudo.map(() => 'judo'))
+await prova('gli altri hanno la voce che era la loro categoria: corpo libero, attrezzi, core, cardio, mobilità', () =>
+  [quanti('judo'), quanti('corpo-libero'), quanti('attrezzi'), quanti('core'), quanti('cardio'), quanti('mobilita')], [11, 12, 10, 8, 6, 5])
+await prova('una voce per esercizio, e nessuna fuori dalla lista di partenza', () =>
+  cat.every((e) => D.DISCIPLINE_DI_PARTENZA.some((x) => x.id === e.disciplina)), true)
+await prova('un esempio: Squat è nel corpo libero, Plank nel core', () => [cat.find((e) => e.nome === 'Squat')?.disciplina, cat.find((e) => e.nome === 'Plank')?.disciplina], ['corpo-libero', 'core'])
 await prova('i nomi di prima ci sono tutti', () => cat.length, 11 + 12 + 10 + 8 + 6 + 5)
+
+console.log('\nLe voci di un esercizio letto da fuori (disciplinaDi)')
+const dd = (categoria, disciplina, l) => E.disciplinaDi(categoria, disciplina, l)
+await prova('categoria e disciplina: vince la disciplina', () => dd('A corpo libero', 'judo'), 'judo')
+await prova('anche se è un\'altra: Randori in «Judo» con disciplina lotta resta lotta', () => dd('Judo', 'lotta'), 'lotta')
+await prova('solo la categoria: diventa la voce con lo stesso nome', () => ['A corpo libero', 'Attrezzi', 'Core', 'Cardio', 'Mobilità'].map((c) => dd(c, undefined)),
+  ['corpo-libero', 'attrezzi', 'core', 'cardio', 'mobilita'])
+await prova('la vecchia categoria «Judo» senza disciplina: judo', () => dd('Judo', undefined), 'judo')
+await prova('solo la disciplina: invariata', () => dd(undefined, 'yoga'), 'yoga')
+await prova('«tutte» resta, anche con la lista vuota e con una categoria', () => [dd(undefined, 'tutte', []), dd('Core', 'tutte')], ['tutte', 'tutte'])
+await prova('né categoria né disciplina: nessuna voce (è permesso)', () => [dd(undefined, undefined), dd(null, null), dd('', '')], [undefined, undefined, undefined])
+await prova('una categoria che non conosciamo: nessuna voce', () => [dd('Boh', undefined), dd(7, undefined)], [undefined, undefined])
+await prova('una disciplina tolta dalla lista: nessuna voce, senza ripiego sulla categoria', () => dd('Core', 'karate'), undefined)
+await prova('una disciplina nulla o vuota non conta: si guarda la categoria', () => [dd('Core', null), dd('Core', ''), dd('Core', 7)], ['core', 'core', 'core'])
+await prova('la voce che era la categoria non c\'è più nella lista (tolta): nessuna voce, l\'esercizio resta', () => [dd('Core', undefined, lista), dd('Judo', undefined, [d('lotta', 'Lotta')])], [undefined, undefined])
+await prova('senza la lista passata vale quella di partenza', () => [dd('Core', undefined), dd(undefined, 'karate')], ['core', undefined])
+
+console.log('\nAggiungere esercizi (aggiungiNomi)')
+await prova('un elenco incollato: nome e voce, niente categoria', () =>
+  E.aggiungiNomi([{ id: 'a', nome: 'Squat', disciplina: 'core' }], ['Plank', 'squat', ' Burpee ', ''], 'corpo-libero').lista.slice(1).map(({ id, ...x }) => [typeof id, x]),
+  [['string', { nome: 'Plank', disciplina: 'corpo-libero', propri: true }], ['string', { nome: 'Burpee', disciplina: 'corpo-libero', propri: true }]])
+await prova('aggiunti e saltati si dicono', () => {
+  const r = E.aggiungiNomi([{ id: 'a', nome: 'Squat' }], ['Plank', 'SQUAT', 'plank'], 'core')
+  return [r.aggiunti, r.saltati]
+}, [['Plank'], ['SQUAT', 'plank']])
+await prova('senza voce è permesso: l\'esercizio non ha il campo', () =>
+  E.aggiungiNomi([], ['Plank'], undefined).lista.map(({ id, ...x }) => x), [{ nome: 'Plank', propri: true }])
+await prova('con «tutte»', () => E.aggiungiNomi([], ['Corsa'], 'tutte').lista[0].disciplina, 'tutte')
+
+console.log('\nUn solo filtro e un solo raggruppamento')
+const esercizi = [
+  { id: '1', nome: 'Randori', disciplina: 'judo' }, { id: '2', nome: 'Squat', disciplina: 'core' },
+  { id: '3', nome: 'Corsa', disciplina: 'tutte' }, { id: '4', nome: 'Libero' }, { id: '5', nome: 'Kata', disciplina: 'karate' },
+  { id: '6', nome: 'Ukemi', disciplina: 'judo' }, { id: '7', nome: 'Plank', disciplina: 'core' },
+]
+const idsDi = (l) => l.map((e) => e.id)
+await prova('filtro su una voce: quella e «Tutte», niente altro', () => idsDi(D.dellaDisciplina(esercizi, 'core')), ['2', '3', '7'])
+await prova('i pulsanti del filtro: solo le voci che hanno esercizi, in ordine di lista, mai «Tutte»', () =>
+  D.disciplineConVoci(esercizi, partenza).map((x) => x.id), ['judo', 'core'])
+await prova('raggruppati: nell\'ordine della lista, poi «Tutte», poi quelli senza voce; le voci vuote non compaiono', () =>
+  D.gruppiPerDisciplina(esercizi, partenza).map((g) => [g.chiave, g.nome, idsDi(g.voci)]),
+  [['judo', 'Judo', ['1', '6']], ['core', 'Core', ['2', '7']], ['tutte', 'Tutte', ['3']], ['', 'Senza categoria', ['4', '5']]])
+await prova('una voce tolta dalla lista: i suoi esercizi non spariscono, finiscono tra quelli senza voce', () =>
+  D.gruppiPerDisciplina(esercizi, lista).map((g) => [g.chiave, idsDi(g.voci)]),
+  [['judo', ['1', '6']], ['tutte', ['3']], ['', ['2', '4', '5', '7']]])
+await prova('filtrati e raggruppati: la voce scelta e «Tutte»', () =>
+  D.gruppiPerDisciplina(D.dellaDisciplina(esercizi, 'judo'), partenza).map((g) => g.chiave), ['judo', 'tutte'])
+await prova('nessun esercizio: nessun gruppo', () => D.gruppiPerDisciplina([], partenza), [])
+await prova('non muta l\'elenco', () => {
+  const x = [{ id: 'a', disciplina: 'core' }, { id: 'b' }]
+  D.gruppiPerDisciplina(x, partenza)
+  return x
+}, [{ id: 'a', disciplina: 'core' }, { id: 'b' }])
 
 console.log('\nIl catalogo del database (eserciziDellaPalestra)')
 const ep = (g, l) => E.eserciziDellaPalestra(g, l)
 const vecchio = (extra = {}) => ({ id: 'e1', nome: 'Randori', categoria: 'Judo', ...extra })
-await prova('un catalogo vecchio, senza il campo, funziona uguale', () =>
-  ep([{ id: 'a', nome: 'Squat', categoria: 'Core' }]), [{ id: 'a', nome: 'Squat', categoria: 'Core' }])
-await prova('«Judo» diventa «A corpo libero» con disciplina judo', () => ep([vecchio()]), [{ id: 'e1', nome: 'Randori', categoria: 'A corpo libero', disciplina: 'judo' }])
-await prova('se ha già una disciplina, quella resta', () =>
-  ep([vecchio({ disciplina: 'lotta' })]), [{ id: 'e1', nome: 'Randori', categoria: 'A corpo libero', disciplina: 'lotta' }])
-await prova('una disciplina valida nella lista si tiene', () =>
-  ep([{ id: 'a', nome: 'Asana', categoria: 'Mobilità', disciplina: 'yoga' }], lista), [{ id: 'a', nome: 'Asana', categoria: 'Mobilità', disciplina: 'yoga' }])
-await prova('«tutte» si tiene sempre', () =>
-  ep([{ id: 'a', nome: 'Corsa', categoria: 'Cardio', disciplina: 'tutte' }], []), [{ id: 'a', nome: 'Corsa', categoria: 'Cardio', disciplina: 'tutte' }])
-await prova('una sconosciuta si toglie', () =>
-  ep([{ id: 'a', nome: 'Asana', categoria: 'Mobilità', disciplina: 'karate' }], lista), [{ id: 'a', nome: 'Asana', categoria: 'Mobilità' }])
+await prova('un catalogo vecchio, {Squat, Core} senza disciplina: la voce core', () =>
+  ep([{ id: 'a', nome: 'Squat', categoria: 'Core' }]), [{ id: 'a', nome: 'Squat', disciplina: 'core' }])
+await prova('il vecchio «Judo» senza disciplina: judo', () => ep([vecchio()]), [{ id: 'e1', nome: 'Randori', disciplina: 'judo' }])
+await prova('{Randori, A corpo libero, judo}: judo, senza errori', () =>
+  ep([{ id: 'e1', nome: 'Randori', categoria: 'A corpo libero', disciplina: 'judo' }]), [{ id: 'e1', nome: 'Randori', disciplina: 'judo' }])
+await prova('se ha già una disciplina, quella resta', () => ep([vecchio({ disciplina: 'lotta' })]), [{ id: 'e1', nome: 'Randori', disciplina: 'lotta' }])
+await prova('una copia nuova, senza categoria, si legge uguale', () =>
+  ep([{ id: 'a', nome: 'Asana', disciplina: 'yoga' }, { id: 'b', nome: 'Libero' }], lista), [{ id: 'a', nome: 'Asana', disciplina: 'yoga' }, { id: 'b', nome: 'Libero' }])
+await prova('un\'app non aggiornata che scrive ancora la categoria: si legge senza errori, e la categoria non resta', () =>
+  ep([{ id: 'a', nome: 'Plank', categoria: 'Core', disciplina: 'yoga' }, { id: 'b', nome: 'Corsa', categoria: 'Cardio' }], lista.concat(exCategorie)),
+  [{ id: 'a', nome: 'Plank', disciplina: 'yoga' }, { id: 'b', nome: 'Corsa', disciplina: 'cardio' }])
+await prova('«tutte» si tiene sempre', () => ep([{ id: 'a', nome: 'Corsa', categoria: 'Cardio', disciplina: 'tutte' }], []), [{ id: 'a', nome: 'Corsa', disciplina: 'tutte' }])
+await prova('una disciplina sconosciuta si toglie, l\'esercizio resta', () =>
+  ep([{ id: 'a', nome: 'Asana', categoria: 'Mobilità', disciplina: 'karate' }], lista), [{ id: 'a', nome: 'Asana' }])
 await prova('senza la lista passata vale quella di partenza', () =>
-  [ep([{ id: 'a', nome: 'A', categoria: 'Core', disciplina: 'yoga' }])[0].disciplina, ep([{ id: 'a', nome: 'A', categoria: 'Core', disciplina: 'karate' }])[0].disciplina], ['yoga', undefined])
-await prova('«Judo» con la disciplina judo tolta dalla lista: resta in «A corpo libero», senza disciplina', () =>
-  ep([vecchio()], [d('lotta', 'Lotta')]), [{ id: 'e1', nome: 'Randori', categoria: 'A corpo libero' }])
-await prova('un valore che non è un testo si toglie', () =>
-  ep([{ id: 'a', nome: 'A', categoria: 'Core', disciplina: 7 }], lista), [{ id: 'a', nome: 'A', categoria: 'Core' }])
+  [ep([{ id: 'a', nome: 'A', disciplina: 'yoga' }])[0].disciplina, ep([{ id: 'a', nome: 'A', disciplina: 'karate' }])[0].disciplina, ep([{ id: 'a', nome: 'A', categoria: 'Cardio' }])[0].disciplina],
+  ['yoga', undefined, 'cardio'])
+await prova('la voce che era la categoria tolta dalla lista: l\'esercizio resta, senza voce', () =>
+  ep([{ id: 'a', nome: 'Squat', categoria: 'Core' }, vecchio()], [d('lotta', 'Lotta')]), [{ id: 'a', nome: 'Squat' }, { id: 'e1', nome: 'Randori' }])
+await prova('i doppioni per nome restano fuori, come prima', () => ep([{ id: 'a', nome: 'Squat' }, { id: 'b', nome: 'squat', categoria: 'Core' }]).length, 1)
 await prova('non muta l\'input', () => {
   const x = [vecchio()]
   ep(x, lista)
@@ -212,31 +286,51 @@ await prova('non muta l\'input', () => {
 await prova('non un array: nessun catalogo', () => ep('x', lista), null)
 
 console.log('\nIl catalogo nel browser (loadEsercizi) e nel backup (leggiSalvataggio)')
-await prova('dal localStorage: «Judo» diventa «A corpo libero» + judo', () => {
-  const m = new Map([['ods-timer:esercizi', JSON.stringify([vecchio(), { id: 'b', nome: 'Plank', categoria: 'Core' }])]])
+const nelBrowser = (salvato, l = partenza) => {
+  const m = new Map(salvato === undefined ? [] : [['ods-timer:esercizi', JSON.stringify(salvato)]])
   globalThis.localStorage = { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, v) }
-  const r = E.loadEsercizi(lista)
+  const letti = E.loadEsercizi(l)
+  const risalvato = JSON.parse(m.get('ods-timer:esercizi'))
   delete globalThis.localStorage
-  return r
-}, [{ id: 'e1', nome: 'Randori', categoria: 'A corpo libero', disciplina: 'judo' }, { id: 'b', nome: 'Plank', categoria: 'Core' }])
-await prova('dal localStorage: la disciplina sconosciuta si toglie', () => {
-  const m = new Map([['ods-timer:esercizi', JSON.stringify([{ id: 'b', nome: 'Plank', categoria: 'Core', disciplina: 'karate' }])]])
-  globalThis.localStorage = { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, v) }
-  const r = E.loadEsercizi(lista)
-  delete globalThis.localStorage
-  return r
-}, [{ id: 'b', nome: 'Plank', categoria: 'Core' }])
+  return { letti, risalvato }
+}
+await prova('dal localStorage: {Randori, A corpo libero, judo} → judo; {Squat, Core} → core; il vecchio «Judo» → judo', () =>
+  nelBrowser([{ id: 'e1', nome: 'Randori', categoria: 'A corpo libero', disciplina: 'judo' }, { id: 'b', nome: 'Squat', categoria: 'Core' }, vecchio({ id: 'c', nome: 'Ukemi' })]).letti,
+  [{ id: 'e1', nome: 'Randori', disciplina: 'judo' }, { id: 'b', nome: 'Squat', disciplina: 'core' }, { id: 'c', nome: 'Ukemi', disciplina: 'judo' }])
+await prova('dal localStorage: quel che si risalva non ha più la categoria', () =>
+  nelBrowser([{ id: 'b', nome: 'Squat', categoria: 'Core' }]).risalvato, [{ id: 'b', nome: 'Squat', disciplina: 'core' }])
+await prova('dal localStorage: la disciplina sconosciuta si toglie, l\'esercizio resta', () =>
+  nelBrowser([{ id: 'b', nome: 'Plank', categoria: 'Core', disciplina: 'karate' }], lista).letti, [{ id: 'b', nome: 'Plank' }])
+await prova('dal localStorage: un esercizio senza voce resta senza, «propri» resta', () =>
+  nelBrowser([{ id: 'b', nome: 'Libero', propri: true }]).letti, [{ id: 'b', nome: 'Libero', propri: true }])
+await prova('mai salvato: il catalogo di partenza, risalvato senza categoria', () => {
+  const { letti, risalvato } = nelBrowser(undefined)
+  return [letti.length, risalvato.some((e) => 'categoria' in e), letti.every((e) => e.disciplina)]
+}, [52, false, true])
 const file = (esercizi) => JSON.stringify({ app: 'ods-timer', versione: 1, quando: 'oggi', timer: [], esercizi, impostazioni: {}, storico: [] })
-await prova('dal backup: «Judo» diventa «A corpo libero» + judo', () => E.leggiSalvataggio(file([vecchio()]), lista)?.esercizi,
-  [{ id: 'e1', nome: 'Randori', categoria: 'A corpo libero', disciplina: 'judo' }])
+await prova('dal backup: {Randori, A corpo libero, judo} → judo, senza errori', () =>
+  E.leggiSalvataggio(file([{ id: 'e1', nome: 'Randori', categoria: 'A corpo libero', disciplina: 'judo' }]), partenza)?.esercizi, [{ id: 'e1', nome: 'Randori', disciplina: 'judo' }])
+await prova('dal backup: il vecchio «Judo» → judo; {Squat, Core} → core', () =>
+  E.leggiSalvataggio(file([vecchio(), { id: 'b', nome: 'Squat', categoria: 'Core' }]), partenza)?.esercizi,
+  [{ id: 'e1', nome: 'Randori', disciplina: 'judo' }, { id: 'b', nome: 'Squat', disciplina: 'core' }])
 await prova('dal backup: disciplina valida tenuta, sconosciuta tolta, «propri» resta', () =>
   E.leggiSalvataggio(file([
     { id: 'a', nome: 'Asana', categoria: 'Mobilità', disciplina: 'yoga', propri: true },
     { id: 'b', nome: 'Altro', categoria: 'Core', disciplina: 'karate' },
   ]), lista)?.esercizi,
-  [{ id: 'a', nome: 'Asana', categoria: 'Mobilità', disciplina: 'yoga', propri: true }, { id: 'b', nome: 'Altro', categoria: 'Core' }])
-await prova('dal backup, un file vecchio senza il campo funziona uguale', () => E.leggiSalvataggio(file([{ id: 'a', nome: 'Plank', categoria: 'Core' }]))?.esercizi,
-  [{ id: 'a', nome: 'Plank', categoria: 'Core' }])
+  [{ id: 'a', nome: 'Asana', disciplina: 'yoga', propri: true }, { id: 'b', nome: 'Altro' }])
+await prova('dal backup, un file nuovo (senza categoria) e uno senza voce si leggono uguale', () =>
+  E.leggiSalvataggio(file([{ id: 'a', nome: 'Plank', disciplina: 'core' }, { id: 'b', nome: 'Libero' }]))?.esercizi,
+  [{ id: 'a', nome: 'Plank', disciplina: 'core' }, { id: 'b', nome: 'Libero' }])
+
+console.log('\nLa voce incisa segue il nome, non la voce dell\'esercizio')
+await prova('la chiave della clip dipende dal solo nome', () => V.exerciseKey('Burpee + salto'), 'esercizi/burpee-salto')
+await prova('rinominare un esercizio: la sua clip è quella del nome nuovo, per qualunque voce', () => {
+  const rinomina = (e, nome) => ep([{ ...e, nome }], partenza)[0]
+  const prima = { id: 'a', nome: 'Squat', categoria: 'Core' }
+  const dopo = rinomina(prima, 'Squat profondo')
+  return [V.exerciseKey(dopo.nome), dopo.disciplina, V.exerciseKey(rinomina({ id: 'b', nome: 'Squat', disciplina: 'tutte' }, 'Squat profondo').nome)]
+}, ['esercizi/squat-profondo', 'core', 'esercizi/squat-profondo'])
 
 console.log('\nUn timer con la sua disciplina')
 const timer = (extra = {}) => ({
@@ -281,8 +375,8 @@ await prova('con la colonna: la lista della riga, ripulita', async () => {
 }, [d('karate', 'Karate')])
 await prova('senza 40-discipline.sql (colonna mancante): quella di partenza, il resto si legge', async () => {
   const r = await I.leggiTimerSala(finto((c) => (c.includes('discipline') ? colonnaMancante : { data: { timer: {}, voce: 'Elsa', esercizi: [{ id: 'a', nome: 'Squat', categoria: 'Core' }] }, error: null })))
-  return [r.discipline, r.voce, r.esercizi?.length]
-}, [lista, 'Elsa', 1])
+  return [r.discipline, r.voce, r.esercizi]
+}, [partenza, 'Elsa', [{ id: 'a', nome: 'Squat', disciplina: 'core' }]])
 await prova('un altro errore non si nasconde', async () => {
   try {
     await I.leggiTimerSala(finto(() => ({ data: null, error: { code: '57014', message: 'timeout' } })))
@@ -294,7 +388,7 @@ await prova('un altro errore non si nasconde', async () => {
 await prova('scaricaDiscipline: colonna mancante → quella di partenza; array vuoto resta vuoto', async () => [
   await I.scaricaDiscipline(finto(() => colonnaMancante)),
   await I.scaricaDiscipline(finto(() => ({ data: { discipline: [] }, error: null }))),
-], [lista, []])
+], [partenza, []])
 
 console.log('\nLe discipline che hanno qualcosa (disciplineConVoci)')
 const conVoci = (voci) => D.disciplineConVoci(voci, lista).map((x) => x.id)

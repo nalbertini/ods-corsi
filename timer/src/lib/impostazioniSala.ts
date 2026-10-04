@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Settings } from '../types'
 import { DEFAULT_SETTINGS } from './storage'
-import { categoriaEDisciplina, type Esercizio, normalizza } from './esercizi'
+import { disciplinaDi, type Esercizio, normalizza } from './esercizi'
 import { type Disciplina, disciplineDa } from './discipline'
 
 /**
@@ -81,7 +81,7 @@ export interface TimerSala {
 /** Quanti esercizi tiene al massimo il catalogo della palestra. */
 export const MAX_CATALOGO = 400
 
-/** Il catalogo come arriva dal database, ripulito: nomi veri, categorie note, niente doppioni. */
+/** Il catalogo come arriva dal database, ripulito: nomi veri, categoria nota, niente doppioni. */
 export function eserciziDellaPalestra(grezzi: unknown, discipline?: Disciplina[]): Esercizio[] | null {
   if (!Array.isArray(grezzi)) return null
   const visti = new Set<string>()
@@ -94,7 +94,8 @@ export function eserciziDellaPalestra(grezzi: unknown, discipline?: Disciplina[]
     if (!nome || visti.has(k)) continue
     visti.add(k)
     const id = typeof e.id === 'string' && e.id ? e.id.slice(0, 40) : `p-${lista.length}`
-    lista.push({ id, nome, ...categoriaEDisciplina(e.categoria, e.disciplina, discipline) })
+    const disciplina = disciplinaDi(e.categoria, e.disciplina, discipline)
+    lista.push(disciplina ? { id, nome, disciplina } : { id, nome })
   }
   return lista
 }
