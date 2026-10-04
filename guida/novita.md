@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.22.0 — 4 ottobre 2026
+
+### Novità
+
+- LE MIE ORE, l'istruttore vede dal telefono le lezioni e le ore del mese che risultano in segreteria
+
 ## 0.21.0 — 4 ottobre 2026
 
 ### Novità
