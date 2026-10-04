@@ -432,5 +432,43 @@ console.log('\nl’«Attività» sul tablet con il database: le due letture faco
   ok('senza né kanji né attività: le lezioni come oggi', await vista(false, MANCANZE['funzione assente']), [1, 'Body functional', undefined, undefined])
 }
 
+// ---------------------------------------------------------------------------
+// OGGI IN QUESTA SALA, a gruppi: PRECEDENTI, IN CORSO, PIÙ TARDI.
+// ---------------------------------------------------------------------------
+console.log('\nLa giornata a gruppi')
+{
+  const l = (id, da, a) => ({ id, inizio: `2026-10-08T${da}:00`, fine: `2026-10-08T${a}:00`, stato: 'programmata' })
+  const giornata = [l('a', '15:30', '16:30'), l('b', '17:00', '18:00'), l('c', '19:00', '20:00')]
+  const ids = (g) => g.map((x) => [x.titolo, x.lezioni.map((y) => y.id)])
+  const alle2 = (hhmm) => new Date(`2026-10-08T${hhmm}:00`)
+  ok('una finita, una aperta, una dopo: tre gruppi in ordine', ids(m.tablet.gruppiGiornata(giornata, alle2('17:10'))), [['PRECEDENTI', ['a']], ['IN CORSO', ['b']], ['PIÙ TARDI', ['c']]])
+  ok('un gruppo vuoto non compare (mattina: niente precedenti)', ids(m.tablet.gruppiGiornata(giornata, alle2('09:00'))), [['PIÙ TARDI', ['a', 'b', 'c']]])
+  ok('a sera tutte finite: solo PRECEDENTI', ids(m.tablet.gruppiGiornata(giornata, alle2('21:00'))), [['PRECEDENTI', ['a', 'b', 'c']]])
+  ok('nessuna lezione: nessun gruppo', m.tablet.gruppiGiornata([], alle2('17:10')), [])
+  ok('le etichette dei gruppi sono dei gruppi', m.tablet.gruppiGiornata(giornata, alle2('17:10')).map((g) => g.etichetta), ['FINITA', 'SI SEGNA ORA', 'PIÙ TARDI'])
+  // Stesso ordine delle card a sinistra: la più recente in cima.
+  ok('al cambio, in IN CORSO quella che comincia è in cima', ids(m.tablet.gruppiGiornata(giornata, alle2('16:35'))), [['IN CORSO', ['b', 'a']], ['PIÙ TARDI', ['c']]])
+}
+
+// ---------------------------------------------------------------------------
+// Cosa mostra la home: lezioniDellaHome.
+// ---------------------------------------------------------------------------
+console.log('\nLa home del tablet')
+{
+  const l = (id, giorno, da, a, stato = 'programmata') => ({ id, inizio: `2026-10-${giorno}T${da}:00`, fine: `2026-10-${giorno}T${a}:00`, stato })
+  const oggi = [l('a', '08', '15:30', '16:30'), l('b', '08', '17:00', '18:00'), l('c', '08', '19:00', '20:00')]
+  const alle = (hhmm) => new Date(`2026-10-08T${hhmm}:00`)
+  const h = (lez, hhmm) => {
+    const r = m.tablet.lezioniDellaHome(lez, alle(hhmm))
+    return [r.aperte.map((x) => x.id), r.piuTardi?.id ?? null, r.finite, r.prossima?.id ?? null]
+  }
+  ok('una aperta', h(oggi, '17:10'), [['b'], null, false, null])
+  ok('due aperte: la più recente in cima', h(oggi, '16:35'), [['b', 'a'], null, false, null])
+  ok('solo più tardi: la prima che viene', h(oggi, '09:00'), [[], 'a', false, null])
+  ok('tutte finite', h(oggi, '21:00'), [[], null, true, null])
+  ok('nessuna lezione oggi: la prossima nei giorni dopo', h([l('x', '09', '17:00', '18:00'), l('y', '10', '17:00', '18:00')], '17:10'), [[], null, false, 'x'])
+  ok('annullata esclusa (anche dalla prossima)', h([l('a', '08', '17:00', '18:00', 'annullata'), l('x', '09', '17:00', '18:00', 'annullata'), l('y', '10', '17:00', '18:00')], '17:10'), [[], null, false, 'y'])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

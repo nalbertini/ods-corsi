@@ -45,20 +45,6 @@ export interface Incorporato {
   conImpostazioni?: boolean
   onStato: (s: StatoTimer | null) => void
   onSettings: (s: Settings) => void
-  /**
-   * I timer pronti per la lezione: quelli di DI QUESTA LEZIONE, o se non ce
-   * ne sono quelli di DEL CORSO. Il tablet li mette in evidenza nella lezione,
-   * ognuno con un tasto per farlo partire senza cercarlo nella scheda TIMER.
-   */
-  onPronto?: (t: TimerPronto | null) => void
-  /** Fa partire un timer: ogni `volta` nuova è una richiesta nuova. */
-  avvia?: { id: string; volta: number } | null
-}
-
-/** I timer che la lezione ha pronti, nell'ordine della scheda TIMER, e da dove vengono. */
-export interface TimerPronto {
-  da: 'lezione' | 'corso'
-  timer: { id: string; nome: string }[]
 }
 
 /** L'allenamento aperto, per chi lo guarda da fuori. */

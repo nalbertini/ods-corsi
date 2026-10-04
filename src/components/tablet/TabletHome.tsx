@@ -1,72 +1,50 @@
-import type { LezioneSala } from '../../lib/tablet'
-import { contoSala, fase, REGOLE } from '../../lib/tablet'
+import { Fragment } from 'react'
+import type { DatiTablet, LezioneSala } from '../../lib/tablet'
+import { contoSala, gruppiGiornata, lezioniDellaHome, REGOLE } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { Cronometro, Lucchetto, Recupero } from '../Icons'
-import type { TimerPronto } from '../../../timer/src/lib/incorporato'
+import { Lucchetto, Recupero } from '../Icons'
 import { EtichettaAttivita } from '../ds'
 import { Guaio, orario, Riquadro } from './comune'
 import { Kanji } from '../Kanji'
-import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
-
-const ETICHETTA = { finita: 'FINITA', aperta: 'SI SEGNA ORA', dopo: 'PIÙ TARDI' } as const
+import { AppelloVeloce } from './AppelloVeloce'
 
 /**
  * Quello che il tablet mostra quando nessuno lo tocca.
  *
- * A sinistra la lezione in cui ci si segna adesso, con un tasto grande quanto
- * una mano; a destra la giornata della sala. Chi entra deve capire da lontano
- * se è il suo turno. Il timer e la musica stanno nella barra in basso, che è
- * del tablet e non di questa schermata; sotto la lezione aperta ci sono però i
- * suoi timer, ognuno pronto con AVVIA: quelli scelti per la lezione in I MIEI
- * TIMER, o se non ce ne sono quelli del corso.
+ * A sinistra la lezione in cui ci si segna adesso: la card è un tasto che apre
+ * l'appello intero, e sotto ci sono i nomi da toccare; a destra la giornata
+ * della sala a gruppi, e in fondo il recupero. Chi entra deve capire da lontano
+ * se è il suo turno. Il timer, la musica e l'uscita stanno nella barra in basso
+ * e nella testata, che sono del tablet e non di questa schermata.
  */
 export function TabletHome({
-  sala,
+  d,
   adesso,
   lezioni,
   guaio,
   onSegna,
   onRecupero,
   onPin,
-  onEsci,
-  timer,
-  onAvviaTimer,
-  onVaiTimer,
+  onCambiato,
 }: {
-  sala: string
+  d: DatiTablet
   adesso: Date
   lezioni: LezioneSala[] | null
   guaio: string | null
   onSegna: (l: LezioneSala) => void
   onRecupero: () => void
   onPin: () => void
-  /** Esce dal tablet: col PIN di un istruttore e una conferma. */
-  onEsci: () => void
-  /** I timer della lezione aperta: `pronto` nullo se né la lezione né il corso ne hanno. */
-  timer?: { lezioneId: string; pronto: TimerPronto | null; inCorso: boolean } | null
-  onAvviaTimer?: (id: string) => void
-  onVaiTimer?: () => void
+  /** Un tocco sui nomi è arrivato al server: i conti vanno riletti. */
+  onCambiato?: () => void
 }) {
   const oggi = chiaveGiorno(adesso)
   const diOggi = (lezioni ?? []).filter((l) => chiaveGiorno(new Date(l.inizio)) === oggi && l.stato !== 'annullata')
-  const conFase = diOggi.map((l) => ({ l, f: fase(l, adesso) }))
-  // Al cambio lezione, in cima quella che comincia: chi arriva adesso viene per lei.
-  const aperte = conFase.filter((x) => x.f === 'aperta').sort((a, b) => b.l.inizio.localeCompare(a.l.inizio))
-  const finite = diOggi.length > 0 && conFase.every((x) => x.f === 'finita')
-  const prossima = (lezioni ?? []).find((l) => chiaveGiorno(new Date(l.inizio)) > oggi && l.stato !== 'annullata')
-  // Nessuna aperta ma una più tardi: la mattina, o fra due lezioni. Chi passa
-  // deve sapere che la sala non è chiusa, e da che ora ci si segna.
-  const piuTardi = aperte.length ? null : (conFase.find((x) => x.f === 'dopo')?.l ?? null)
-
-  // Senza lezioni da qui a stasera il riquadro sotto dice già tutto, e a
-  // destra c'è OGGI IN QUESTA SALA: un altro OGGI sarebbe di troppo.
-  const titolo = aperte.length ? 'SI SEGNA ADESSO' : piuTardi ? 'PROSSIMA LEZIONE' : null
+  const { aperte, piuTardi, finite, prossima } = lezioniDellaHome(lezioni ?? [], adesso)
+  // `['--tinta' as string]`: lo style di React non conosce le variabili CSS, e la chiave va dichiarata stringa.
 
   return (
     <div className="tb-corpo tb-home">
       <div className="tb-colonna">
-        {titolo && <span className="tb-etichetta">{titolo}</span>}
-
         {guaio && <Guaio titolo="CALENDARIO NON LETTO" testo={guaio} />}
         {!guaio && lezioni === null && <p className="tb-nota">Sto leggendo il calendario…</p>}
 
@@ -79,7 +57,7 @@ export function TabletHome({
         )}
         {finite && (
           <Riquadro titolo="PER OGGI QUI È FINITO">
-            Le lezioni di questa sala sono tutte passate. Chi si è dimenticato di segnarsi lo fa qui sotto.
+            Le lezioni di questa sala sono tutte passate. Chi si è dimenticato di segnarsi usa TI SEI DIMENTICATO DI SEGNARTI?.
           </Riquadro>
         )}
 
@@ -105,92 +83,77 @@ export function TabletHome({
           </div>
         )}
 
-        {aperte.map(({ l }) => (
-          <div key={l.id} className="tb-aperta" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}>
-            <div className="tb-aperta-testo">
-              <span className="attivita-quando">
-                <span className="num tb-orario">{orario(l)}</span>
-                <EtichettaAttivita nome={l.attivita} grande />
-              </span>
-              <span className="ob tb-aperta-nome">{l.corso.toUpperCase()}</span>
-              <span className="tb-sotto chi-kanji" style={{ gap: 10 }}>
-                <Kanji segni={l.kanji} medio />
-                <span>{[l.istruttori, `${contoSala(l).presenti} ${contoSala(l).presenti === 1 ? 'segnato' : 'segnati'} su ${l.iscritti}`].filter(Boolean).join(' · ')}</span>
-              </span>
+        {aperte.map((l) => (
+          <Fragment key={l.id}>
+            <div id={`lezione-${l.id}`} className="tb-aperta tb-aperta-lezione" style={{ ['--tinta' as string]: l.colore ?? 'var(--blu)' }}>
+              <button type="button" className="tb-aperta-testo" aria-label={`Apri l'appello: ${l.corso}`} onClick={() => onSegna(l)}>
+                <span className="attivita-quando">
+                  <span className="num tb-orario">{orario(l)}</span>
+                  <EtichettaAttivita nome={l.attivita} grande />
+                </span>
+                <span className="ob tb-aperta-nome">{l.corso.toUpperCase()}</span>
+                <span className="tb-sotto chi-kanji" style={{ gap: 10 }}>
+                  <Kanji segni={l.kanji} medio />
+                  <span>{[l.istruttori, `${contoSala(l).presenti} ${contoSala(l).presenti === 1 ? 'segnato' : 'segnati'} su ${l.iscritti}`].filter(Boolean).join(' · ')}</span>
+                </span>
+              </button>
+              <button type="button" className="tb-btn tb-btn-linea" onClick={onPin}>
+                <Lucchetto />
+                AREA ISTRUTTORE
+              </button>
             </div>
-            <button type="button" className="ob tb-btn-segna" onClick={() => onSegna(l)}>
-              SEGNA LA PRESENZA
-            </button>
-            {timer?.lezioneId === l.id &&
-              timer.pronto?.timer.map((t, i) => (
-                <div key={t.id} className="tb-pronto" data-seguito={i > 0 || undefined}>
-                  <Cronometro size={30} />
-                  <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-                    {i === 0 && (
-                      <span className="num tb-pronto-da">
-                        {timer.pronto!.da === 'lezione'
-                          ? timer.pronto!.timer.length > 1 ? 'I TIMER DI QUESTA LEZIONE' : 'IL TIMER DI QUESTA LEZIONE'
-                          : timer.pronto!.timer.length > 1 ? 'I TIMER DEL CORSO' : 'IL TIMER DEL CORSO'}
-                      </span>
-                    )}
-                    <span className="ob tb-pronto-nome">{t.nome.toUpperCase()}</span>
-                  </span>
-                  {timer.inCorso ? (
-                    i === 0 && (
-                      <button type="button" className="ob tb-btn-timer tb-btn-timer-linea" onClick={onVaiTimer}>
-                        IN CORSO · VEDI
-                      </button>
-                    )
-                  ) : (
-                    <button type="button" className="ob tb-btn-timer" onClick={() => onAvviaTimer?.(t.id)}>
-                      ▶ AVVIA
-                    </button>
-                  )}
-                </div>
-              ))}
-          </div>
+            <AppelloVeloce d={d} lezione={l} onCambiato={onCambiato} />
+          </Fragment>
         ))}
 
         <div className="grow" />
-        <div className="tb-barra" style={{ flexWrap: 'wrap', gap: 12 }}>
-          <button type="button" className="tb-btn tb-btn-linea" style={{ borderColor: 'var(--giallo)' }} onClick={onRecupero}>
-            <Recupero />
-            TI SEI DIMENTICATO DI SEGNARTI?
-          </button>
-          <button type="button" className="tb-btn tb-btn-linea" onClick={onPin}>
-            <Lucchetto />
-            AREA ISTRUTTORE
-          </button>
-        </div>
-        <span className="tb-nota">
-          Si segna da {REGOLE.primaMin} minuti prima dell'inizio a {REGOLE.dopoMin} minuti dopo la fine. Qui compaiono solo nome e
-          iniziale del cognome.
-        </span>
+        {/* Con una lezione aperta sta nella sua card. */}
+        {!aperte.length && (
+          <div className="tb-barra">
+            <button type="button" className="tb-btn tb-btn-linea" onClick={onPin}>
+              <Lucchetto />
+              AREA ISTRUTTORE
+            </button>
+          </div>
+        )}
       </div>
 
       <aside className="tb-colonna tb-giornata">
-        <span className="tb-etichetta">OGGI IN QUESTA SALA</span>
-        {conFase.map(({ l, f }) => (
-          <div key={l.id} className="tb-giornata-riga" data-fase={f}>
-            <span className="tb-tacca" style={{ background: l.colore ?? 'var(--blu)' }} />
-            <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
-              <span className="ob" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.03em', textWrap: 'balance' }}>{l.corso.toUpperCase()}</span>
-              <span className="attivita-quando">
-                <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)', flexShrink: 0 }}>{orario(l)}</span>
-                <EtichettaAttivita nome={l.attivita} grande />
-              </span>
-            </span>
-            <Kanji segni={l.kanji} />
-            <span className="num tb-fase">{ETICHETTA[f]}</span>
-          </div>
+        {gruppiGiornata(diOggi, adesso).map((g) => (
+          <Fragment key={g.fase}>
+            <span className="tb-etichetta tb-gruppo">{g.titolo}</span>
+            {g.lezioni.map((l) => {
+              // Con due lezioni aperte la lista dei nomi è una sola colonna che scorre: la riga porta alla card giusta.
+              const vaAllaCard = g.fase === 'aperta' && aperte.length > 1
+              const Riga = vaAllaCard ? 'button' : 'div'
+              return (
+              <Riga
+                key={l.id}
+                type={vaAllaCard ? 'button' : undefined}
+                className="tb-giornata-riga"
+                data-fase={g.fase}
+                onClick={vaAllaCard ? () => document.getElementById(`lezione-${l.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) : undefined}
+              >
+                <span className="tb-tacca" style={{ background: l.colore ?? 'var(--blu)' }} />
+                <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+                  <span className="ob" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '0.03em', textWrap: 'balance' }}>{l.corso.toUpperCase()}</span>
+                  <span className="attivita-quando">
+                    <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--dim)', flexShrink: 0 }}>{orario(l)}</span>
+                    <EtichettaAttivita nome={l.attivita} grande />
+                  </span>
+                </span>
+                <Kanji segni={l.kanji} />
+                <span className="num tb-fase">{g.etichetta}</span>
+              </Riga>
+              )
+            })}
+          </Fragment>
         ))}
         {lezioni !== null && diOggi.length === 0 && <span className="tb-nota">Nessuna lezione.</span>}
         <div className="grow" />
-        <span className="tb-nota" title={VERSIONE_ESTESA}>
-          Tablet di sala · {sala} · {VERSIONE}
-        </span>
-        <button type="button" className="tb-scollega" onClick={onEsci}>
-          Esci dal tablet
+        <button type="button" className="tb-btn tb-btn-linea" style={{ borderColor: 'var(--giallo)' }} onClick={onRecupero}>
+          <Recupero />
+          TI SEI DIMENTICATO DI SEGNARTI?
         </button>
       </aside>
     </div>

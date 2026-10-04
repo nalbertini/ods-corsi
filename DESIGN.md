@@ -258,7 +258,7 @@ Squadrato. Raggio zero su tasti, card, campi, schede, chip, dialoghi e cassetti.
 
 ### Buttons
 Decisi e da palestra: maiuscolo, obliquo, spaziato largo.
-- **Shape:** squadrato (0px), alto 56px sul telefono (`.btn`), 48px in segreteria (`.sg-btn`), 60–88px sul tablet (`.tb-btn`, `.tb-btn-segna`).
+- **Shape:** squadrato (0px), alto 56px sul telefono (`.btn`), 48px in segreteria (`.sg-btn`), 60–88px sul tablet (`.tb-btn`).
 - **Primario:** fondo Rosso Ingranaggio, testo `su-rosso` (bianco), Saira 700 19px, 0.16em, obliquo 9°, padding 0 22px.
 - **Primario in segreteria** (`.sg-btn-pieno`): fondo `testo`, testo `nero-palestra` — si legge come tasto principale senza usare il rosso. `.sg-btn-rosso` (testo bianco) è solo per ciò che non si annulla.
 - **Vai:** fondo Verde Ingranaggio, per confermare una presenza o un invio.
@@ -302,7 +302,11 @@ Riga piena larga 56px: segno grande a sinistra (Saira 22px), nome Barlow 17px. T
 La lezione è una riga con barra sinistra 6px nella tinta del corso, ora e nome in Saira, conteggio a destra che diventa verde a appello fatto. La striscia dei giorni è una griglia di 7 caselle alte 62px: oggi ha il numero giallo, il giorno scelto bordo `testo` e fondo `superficie-alta`, i puntini blu contano le lezioni.
 
 ### Tessere del tablet
-Nomi da toccare alti 84px, bordo 3px, Barlow 22px (sono nomi di persona: niente Saira maiuscola); segnato = bordo e testo verdi su `superficie-alta`. La lezione aperta ha il tasto più grande dello schermo (88px, verde).
+- **Appello veloce** (`.tb-veloce`): sotto la lezione aperta i nomi stanno a tre colonne, righe alte 60px, bordo 2px, Barlow 22px (sono nomi di persona: niente Saira maiuscola; «Giacomo Maria R.» con la spunta sta in una riga a 1280px e in verticale a 800px); segnato = bordo e testo verdi su `superficie-alta`, con la spunta. Le tessere delle altre schermate (`.tb-tessera` da sola) restano da 84px con bordo 3px.
+- **Lezione aperta** (`.tb-aperta-lezione`): la card è un tasto che apre l'appello intero (aria-label «Apri l'appello: corso»), con AREA ISTRUTTORE (`.tb-btn-linea`) a destra, in ogni card se le aperte sono due. Senza lezione aperta AREA ISTRUTTORE sta in basso a sinistra. Il vecchio tasto verde da 88px non c'è più.
+- **Gruppi della giornata** (`.tb-gruppo`): a destra PRECEDENTI, IN CORSO, PIÙ TARDI, titolo da 15px; in IN CORSO le lezioni seguono l'ordine delle card a sinistra, la più recente in cima.
+- **Testata:** i tasti tema e Accensione (esci dal tablet) sono da 60px con icone da 28px, solo dentro `.tb-testata`; la testata sta su una riga a 1280px e in verticale.
+- **Piede:** `.tb-btn-quadro` è un tasto da 60px quadrato con la sola icona (la nota della musica).
 
 ### Timbro kanji
 Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un serif giapponese di sistema; tre misure (22, 32, 56px).

@@ -1,6 +1,7 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import { haUnServer } from './dati'
 import { areaDelPercorso } from './percorso'
+import { chiaveGiorno } from './sala'
 import type { ListaMusica } from './musica'
 import type { ImpostazioniSala, TimerSala } from '../../timer/src/lib/impostazioniSala'
 import type { FonteClip } from '../../timer/src/lib/voice'
@@ -306,6 +307,46 @@ export function lezioneDiAdesso<T extends Pick<LezioneSala, 'inizio' | 'fine' | 
       .filter((l) => l.stato !== 'annullata' && fase(l, adesso) === 'aperta')
       .sort((a, b) => b.inizio.localeCompare(a.inizio))[0] ?? null
   )
+}
+
+/** Quella che comincia per prima in cima: chi arriva al cambio lezione viene per lei. */
+const piuRecenteInCima = (a: Pick<LezioneSala, 'inizio'>, b: Pick<LezioneSala, 'inizio'>) => b.inizio.localeCompare(a.inizio)
+
+/**
+ * OGGI IN QUESTA SALA a gruppi, per chi guarda da lontano: PRECEDENTI, IN CORSO,
+ * PIÙ TARDI. Un gruppo senza lezioni non c'è; le aperte vanno nello stesso
+ * ordine delle card della home (la più recente in cima), le altre come arrivano.
+ */
+export function gruppiGiornata<T extends Pick<LezioneSala, 'inizio' | 'fine'>>(lezioni: T[], adesso: Date) {
+  const GRUPPI: Array<{ fase: Fase; titolo: string; etichetta: string }> = [
+    { fase: 'finita', titolo: 'PRECEDENTI', etichetta: 'FINITA' },
+    { fase: 'aperta', titolo: 'IN CORSO', etichetta: 'SI SEGNA ORA' },
+    { fase: 'dopo', titolo: 'PIÙ TARDI', etichetta: 'PIÙ TARDI' },
+  ]
+  return GRUPPI.map((g) => {
+    const dentro = lezioni.filter((l) => fase(l, adesso) === g.fase)
+    return { ...g, lezioni: g.fase === 'aperta' ? dentro.sort(piuRecenteInCima) : dentro }
+  }).filter((g) => g.lezioni.length > 0)
+}
+
+/**
+ * Cosa mostra la home del tablet delle lezioni che arrivano: le aperte di
+ * oggi (la più recente in cima), la prima più tardi se nessuna è aperta, se
+ * oggi è tutto passato, e la prossima lezione dei giorni dopo. Le annullate
+ * non contano.
+ */
+export function lezioniDellaHome<T extends Pick<LezioneSala, 'inizio' | 'fine' | 'stato'>>(lezioni: T[], adesso: Date) {
+  const oggi = chiaveGiorno(adesso)
+  const valide = lezioni.filter((l) => l.stato !== 'annullata')
+  const diOggi = valide.filter((l) => chiaveGiorno(new Date(l.inizio)) === oggi)
+  const aperte = diOggi.filter((l) => fase(l, adesso) === 'aperta').sort(piuRecenteInCima)
+  return {
+    aperte,
+    // Nessuna aperta ma una più tardi: la mattina, o fra due lezioni.
+    piuTardi: aperte.length ? null : (diOggi.find((l) => fase(l, adesso) === 'dopo') ?? null),
+    finite: diOggi.length > 0 && diOggi.every((l) => fase(l, adesso) === 'finita'),
+    prossima: valide.find((l) => chiaveGiorno(new Date(l.inizio)) > oggi) ?? null,
+  }
 }
 
 /** Si recupera una lezione cominciata da non più di due settimane e non più aperta. */
