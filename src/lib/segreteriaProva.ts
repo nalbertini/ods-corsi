@@ -11,7 +11,7 @@ import { memoria } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
-import { allegatiScaduti, cosaNonVaSegnalazione, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
+import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { richiesteDi, spostaRichieste } from './richiesteProva'
 import { fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -548,11 +548,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       }))
     },
 
-    async apriSegnalazione(titolo, testo, allegati = []) {
-      const no = cosaNonVaSegnalazione(testo, titolo) ?? guaioAllegati(allegati)
+    async apriSegnalazione(titolo, testo, categoria, allegati = []) {
+      const no = cosaNonVaSegnalazione(testo, titolo, categoria) ?? guaioAllegati(allegati)
       if (no) throw new Error(no)
       const id = `sz-${unico()}`
-      const s: Segnalazione = { id, titolo: titolo.trim(), messaggi: [{ id, autore: 'Segreteria di prova', mio: true, testo: testo.trim(), il: new Date().toISOString() }] }
+      const s: Segnalazione = { id, titolo: titolo.trim(), categoria, messaggi: [{ id, autore: 'Segreteria di prova', mio: true, testo: testo.trim(), il: new Date().toISOString() }] }
       a().segnalazioni = [...(a().segnalazioni ?? []), s]
       salva()
       metti(id, allegati)
@@ -589,6 +589,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async chiudiSegnalazione(id, chiusa) {
       a().segnalazioni = (a().segnalazioni ?? []).map((x) => (x.id === id ? { ...x, chiusaIl: chiusa ? new Date().toISOString() : undefined } : x))
+      salva()
+    },
+
+    async categoriaSegnalazione(id, categoria) {
+      // Come il database: solo le due categorie.
+      if (!eCategoria(categoria)) throw new Error(SCEGLI)
+      a().segnalazioni = (a().segnalazioni ?? []).map((x) => (x.id === id ? { ...x, categoria } : x))
       salva()
     },
 

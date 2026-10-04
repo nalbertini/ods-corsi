@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -627,11 +627,22 @@ console.log('\nil kanji degli istruttori')
 
 console.log('\nle segnalazioni della segreteria')
 {
-  ok('senza titolo no', await errore(() => s.apriSegnalazione('  ', 'qualcosa')), 'Manca il titolo')
-  ok('senza testo no', await errore(() => s.apriSegnalazione('Appello', ' ')), 'Manca il testo')
-  await s.apriSegnalazione(' Appello lento ', ' Ci mette tanto ')
+  const scegli = 'Scegli se è un\'idea o una correzione'
+  ok('senza categoria no', await errore(() => s.apriSegnalazione('Appello', 'qualcosa')), scegli)
+  ok('con una categoria che non c\'è no', await errore(() => s.apriSegnalazione('Appello', 'qualcosa', 'altro')), scegli)
+  ok('la categoria si chiede prima del titolo', await errore(() => s.apriSegnalazione('  ', 'qualcosa')), scegli)
+  ok('senza titolo no', await errore(() => s.apriSegnalazione('  ', 'qualcosa', 'correzione')), 'Manca il titolo')
+  ok('senza testo no', await errore(() => s.apriSegnalazione('Appello', ' ', 'correzione')), 'Manca il testo')
+  ok('e nessuna di queste è entrata', (await s.segnalazioni()).length, 0)
+  await s.apriSegnalazione(' Appello lento ', ' Ci mette tanto ', 'correzione')
   const [x] = await s.segnalazioni()
   ok('aperta, ripulita', [x.titolo, x.messaggi[0].testo, x.chiusaIl], ['Appello lento', 'Ci mette tanto', undefined])
+  ok('il filo porta la sua categoria', x.categoria, 'correzione')
+  await s.categoriaSegnalazione(x.id, 'idea')
+  ok('la segreteria la cambia dopo', (await s.segnalazioni())[0].categoria, 'idea')
+  ok('una categoria che non c\'è no', await errore(() => s.categoriaSegnalazione(x.id, 'altro')), scegli)
+  ok('e la categoria resta quella', (await s.segnalazioni())[0].categoria, 'idea')
+  await s.categoriaSegnalazione(x.id, 'correzione')
   ok('scritta da me non aspetta me', m.tocca(x), false)
   await s.rispondiSegnalazione(x.id, 'Sistemato')
   ok('la risposta sotto', (await s.segnalazioni())[0].messaggi.map((y) => y.testo), ['Ci mette tanto', 'Sistemato'])
@@ -645,7 +656,7 @@ console.log('\nle segnalazioni della segreteria')
   // Chiudere con una risposta scritta: la risposta va, poi il filo si chiude.
   const filo = async (id) => (await s.segnalazioni()).find((y) => y.id === id)
   const apri = async (titolo) => {
-    await s.apriSegnalazione(titolo, 'Da sistemare')
+    await s.apriSegnalazione(titolo, 'Da sistemare', 'correzione')
     return (await s.segnalazioni()).at(-1).id
   }
   const r2 = await apri('Chiusa con risposta')
@@ -693,8 +704,11 @@ console.log('\nle segnalazioni della segreteria')
   const E = f('E', true, '2026-09-26T11:00', '2026-09-26T11:00')
   ok('senza da rispondere, aperte per recenza poi chiuse', m.ordinaSegnalazioni([E, D, A]).map((y) => y.id), ['A', 'D', 'E'])
 
-  ok('il titolo di 120 caratteri va', m.cosaNonVaSegnalazione('x', 'a'.repeat(120)), null)
-  ok('di 121 no', m.cosaNonVaSegnalazione('x', 'a'.repeat(121)), 'Titolo troppo lungo: togli 1 carattere (massimo 120)')
+  ok('il titolo di 120 caratteri va', m.cosaNonVaSegnalazione('x', 'a'.repeat(120), 'idea'), null)
+  ok('di 121 no', m.cosaNonVaSegnalazione('x', 'a'.repeat(121), 'idea'), 'Titolo troppo lungo: togli 1 carattere (massimo 120)')
+  ok('un filo nuovo senza categoria no, prima del titolo', m.cosaNonVaSegnalazione('x', ''), scegli)
+  ok('né con una categoria che non c\'è', m.cosaNonVaSegnalazione('x', 'Appello', 'altro'), scegli)
+  ok('una risposta non ha categoria', m.cosaNonVaSegnalazione('x'), null)
   ok('un testo di 4000 caratteri va', m.cosaNonVaSegnalazione('a'.repeat(4000)), null)
   ok('di 4001 si dice, con quanto togliere', m.cosaNonVaSegnalazione('a'.repeat(4002)), 'Testo troppo lungo: togli 2 caratteri (massimo 4000)')
 
@@ -732,10 +746,29 @@ console.log('\nle segnalazioni della segreteria')
   ok('mentre lavora non dice niente', m.motivoSpento({ titolo: '', testo: '', lavora: true }), null)
   ok('risposta vuota', m.motivoSpento({ testo: '  ', lavora: false, risposta: true }), 'Scrivi la risposta')
   ok('risposta scritta', m.motivoSpento({ testo: 'ok', lavora: false, risposta: true }), null)
-  ok('nuova senza titolo', m.motivoSpento({ titolo: ' ', testo: 'x', lavora: false }), 'Scrivi il titolo')
-  ok('nuova senza testo', m.motivoSpento({ titolo: 'Appello', testo: ' ', lavora: false }), 'Scrivi cosa non va')
-  ok('troppo lunga: lo dice già la nota sotto il campo', m.motivoSpento({ titolo: 'a'.repeat(121), testo: 'x', lavora: false }), null)
-  ok('tutto a posto', m.motivoSpento({ titolo: 'Appello', testo: 'lento', lavora: false }), null)
+  ok('nuova senza categoria, prima del titolo', m.motivoSpento({ titolo: '', testo: '', lavora: false }), scegli)
+  ok('una risposta non chiede la categoria', m.motivoSpento({ testo: 'ok', lavora: false, risposta: true }), null)
+  ok('nuova senza titolo', m.motivoSpento({ titolo: ' ', testo: 'x', lavora: false, categoria: 'correzione' }), 'Scrivi il titolo')
+  ok('nuova correzione senza testo', m.motivoSpento({ titolo: 'Appello', testo: ' ', lavora: false, categoria: 'correzione' }), 'Scrivi cosa non va')
+  ok('nuova idea senza testo', m.motivoSpento({ titolo: 'Appello', testo: ' ', lavora: false, categoria: 'idea' }), 'Scrivi cosa servirebbe')
+  ok('troppo lunga: lo dice già la nota sotto il campo', m.motivoSpento({ titolo: 'a'.repeat(121), testo: 'x', lavora: false, categoria: 'idea' }), null)
+  ok('tutto a posto', m.motivoSpento({ titolo: 'Appello', testo: 'lento', lavora: false, categoria: 'correzione' }), null)
+
+  // Il segnaposto del testo segue la categoria scelta.
+  ok('correzione: dove, cosa, cosa ti aspettavi', m.segnapostoTesto('correzione'), 'Dove, cosa hai fatto, cosa ti aspettavi')
+  ok('senza categoria come la correzione', m.segnapostoTesto(), 'Dove, cosa hai fatto, cosa ti aspettavi')
+  ok('idea: cosa servirebbe', m.segnapostoTesto('idea'), 'Cosa servirebbe, e per fare cosa')
+
+  // L'avviso su WhatsApp comincia con la categoria; un filo vecchio senza, come prima.
+  const link = 'https://ods.esempio/segreteria'
+  const conCategoria = (categoria) => ({ id: 'W', titolo: 'Appello lento', categoria, messaggi: [] })
+  ok('WhatsApp, una correzione', m.testoWhatsApp(conCategoria('correzione'), link),
+    `Ti ho scritto sulla correzione «Appello lento»: la trovi in Segreteria, alla voce SEGNALAZIONI. ${link}`)
+  ok('WhatsApp, un\'idea', m.testoWhatsApp(conCategoria('idea'), link),
+    `Ti ho scritto sull'idea «Appello lento»: la trovi in Segreteria, alla voce SEGNALAZIONI. ${link}`)
+  ok('avviso del cambio', [m.avvisoCategoria('idea'), m.avvisoCategoria('correzione')], ["Ora è un'idea", 'Ora è una correzione'])
+  ok('WhatsApp, senza categoria come prima', m.testoWhatsApp(conCategoria(undefined), link),
+    `Ti ho scritto sulla segnalazione «Appello lento»: la trovi in Segreteria, alla voce SEGNALAZIONI. ${link}`)
 
   // Le bozze stanno nello Storage passato, e non lanciano mai.
   const deposito = () => {
@@ -775,8 +808,51 @@ console.log('\nle segnalazioni della segreteria')
   ok('e scrivere o svuotare non lancia', [await errore(() => m.scriviBozza(undefined, 'k', 'x')), await errore(() => m.scriviBozza(rotto, 'k', 'x')), await errore(() => m.svuotaBozze(undefined)), await errore(() => m.svuotaBozze(rotto))], ['nessun errore', 'nessun errore', 'nessun errore', 'nessun errore'])
 
   // Aprire dà l'id della nuova, così la si può mostrare subito.
-  const nuovaId = await s.apriSegnalazione('Con id', 'Da vedere')
+  const nuovaId = await s.apriSegnalazione('Con id', 'Da vedere', 'idea')
   ok('aprire dà l\'id della nuova', [typeof nuovaId, (await s.segnalazioni()).at(-1).id === nuovaId], ['string', true])
+
+  // Un filo aperto prima delle categorie resta senza: non se ne inventa una.
+  m.archivio.dati.segnalazioni.push({ id: 'sz-vecchio', titolo: 'Di prima', messaggi: [{ id: 'sz-vecchio', autore: 'Segreteria di prova', mio: true, testo: 'Vecchio', il: '2026-09-01T10:00:00.000Z' }] })
+  ok('un filo di prima resta senza categoria', (await filo('sz-vecchio')).categoria, undefined)
+  await s.chiudiSegnalazione('sz-vecchio', true)
+  ok('e si chiude lo stesso', [!!(await filo('sz-vecchio')).chiusaIl, (await filo('sz-vecchio')).categoria], [true, undefined])
+
+  // Col database vero: la categoria va nella riga del filo, e si cambia lì.
+  const scritto = []
+  const q = new Proxy(() => q, {
+    get: (_, k) => (k === 'then' ? (fatto) => fatto({ data: { id: 'n1' }, error: null }) : k === 'insert' || k === 'update' ? (riga) => (scritto.push([k, riga]), q) : () => q),
+    apply: () => q,
+  })
+  const vero = m.creaSegreteriaSupabase({ from: () => q, rpc: () => q })
+  await vero.apriSegnalazione(' Idea ', ' Un tasto ', 'idea')
+  await vero.categoriaSegnalazione('n1', 'correzione')
+  ok('database: il filo nasce con la categoria, poi la cambia', scritto,
+    [['insert', { titolo: 'Idea', testo: 'Un tasto', categoria: 'idea' }], ['update', { categoria: 'correzione' }]])
+  ok('database: senza categoria non si scrive niente', [await errore(() => vero.apriSegnalazione('Idea', 'Un tasto')), scritto.length], [scegli, 2])
+
+  // Col database senza 38-segnalazioni-categoria.sql: la colonna non c'è.
+  const risposta = (r) => {
+    const c = new Proxy(() => c, { get: (_, k) => (k === 'then' ? (fatto) => fatto(r) : () => c), apply: () => c })
+    return c
+  }
+  const lette = []
+  const senzaCategoria = m.creaSegreteriaSupabase({
+    auth: { getSession: async () => ({ data: { session: null } }) },
+    from: (t) => ({
+      select: (cols) => {
+        if (t !== 'segnalazioni') return risposta({ data: [], error: null })
+        lette.push(cols)
+        return risposta(cols.includes('categoria')
+          ? { data: null, error: { code: '42703', message: 'column segnalazioni.categoria does not exist' } }
+          : { data: [{ id: 'v1', padre_id: null, titolo: 'Di prima', testo: 'Vecchio', scritta_il: '2026-09-01T10:00:00.000Z', chiusa_il: null, autore: null }], error: null })
+      },
+      insert: () => risposta({ data: null, error: { code: 'PGRST204', message: "Could not find the 'categoria' column of 'segnalazioni' in the schema cache" } }),
+    }),
+  })
+  const fili = await senzaCategoria.segnalazioni()
+  ok('senza 38-…: si rilegge senza, e il filo non ha categoria', [lette.length, fili.map((y) => [y.id, y.categoria])], [2, [['v1', undefined]]])
+  ok('senza 38-…: aprire dice quale file lanciare', await errore(() => senzaCategoria.apriSegnalazione('T', 'x', 'idea')),
+    'Le categorie delle segnalazioni non sono ancora attive sul database: va lanciato 38-segnalazioni-categoria.sql')
 }
 
 console.log('\nun file nelle segnalazioni')
@@ -840,7 +916,7 @@ console.log('\nun file nelle segnalazioni')
   ok('chiuso da 31: si tolgono', m.allegatiScaduti(fa(31), adessoIso), true)
 
   // In prova gli allegati stanno solo in memoria, con le stesse regole.
-  await s.apriSegnalazione('Con file', 'Guarda')
+  await s.apriSegnalazione('Con file', 'Guarda', 'correzione')
   const filo = async () => (await s.segnalazioni()).at(-1)
   const id = (await filo()).id
   ok('allegato senza testo no', await errore(() => s.rispondiSegnalazione(id, ' ', [png])), 'Manca il testo')

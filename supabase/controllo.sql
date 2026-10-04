@@ -178,6 +178,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'prove_sala')),
   ('37-mie-ore.sql', 'l''istruttore vede le sue lezioni tenute senza segno',
     exists (select 1 from dentro where nome = 'lezioni_senza_istruttore' and corpo like '%e_personale()%')),
+  ('38-segnalazioni-categoria.sql', 'le segnalazioni dicono se sono un''idea o una correzione',
+    exists (select 1 from pg_constraint where conname = 'segnalazioni_categoria_solo_filo')
+    and exists (select 1 from pg_policy where polname = 'segnalazioni_scrivi'
+                and pg_get_expr(polwithcheck, polrelid) like '%categoria IS NOT NULL%')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

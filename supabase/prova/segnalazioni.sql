@@ -4,8 +4,10 @@
 -- si cancella. Gli allegati (dalla sezione 6): solo la segreteria li vede,
 -- li carica (max 3, tipi e peso del bucket) e li toglie chi li ha mandati;
 -- 30 giorni dopo la chiusura del filo si tolgono da soli, il testo resta.
+-- Un filo nuovo è un'idea o una correzione, e la segreteria la cambia dopo
+-- (sezione 4b); quelli di prima restano senza, e si chiudono lo stesso.
 -- Si lancia dopo finto-supabase.sql, i file dello schema,
--- 25-segnalazioni.sql e 32-segnalazioni-allegati.sql.
+-- 25-segnalazioni.sql, 32-segnalazioni-allegati.sql e 38-segnalazioni-categoria.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -50,15 +52,15 @@ set role authenticated;
 -- Con `returning`, come fa l'app (`.select('id').single()`): chi apre deve
 -- poter rileggere la riga, se no il filo nuovo non si apre e chi riprova lo duplica.
 select atteso('apre un filo e ne rilegge l''id',
-  tenta($$insert into segnalazioni (id, titolo, testo)
-    values ('eeeeeeee-0000-0000-0000-000000000001', 'La stampa delle ricevute', 'Esce tagliata a destra') returning id$$), 'FATTO (1 righe)');
+  tenta($$insert into segnalazioni (id, titolo, testo, categoria)
+    values ('eeeeeeee-0000-0000-0000-000000000001', 'La stampa delle ricevute', 'Esce tagliata a destra', 'correzione') returning id$$), 'FATTO (1 righe)');
 select atteso('l''autore è lei',
   (select p.nome from segnalazioni s join persone p on p.id = s.autore_id where s.id = 'eeeeeeee-0000-0000-0000-000000000001'), 'Anna');
 select atteso('a nome di un altro no',
-  tenta($$insert into segnalazioni (titolo, testo, autore_id)
-    values ('Altro', 'Scritto da Bea', 'aaaaaaaa-0000-0000-0000-000000000004')$$), 'NEGATO: …');
-select atteso('un filo senza titolo no', tenta($$insert into segnalazioni (testo) values ('Senza titolo')$$), 'NEGATO: …');
-select atteso('un testo vuoto no', tenta($$insert into segnalazioni (titolo, testo) values ('Vuoto', '   ')$$), 'NEGATO: …');
+  tenta($$insert into segnalazioni (titolo, testo, autore_id, categoria)
+    values ('Altro', 'Scritto da Bea', 'aaaaaaaa-0000-0000-0000-000000000004', 'idea')$$), 'NEGATO: …');
+select atteso('un filo senza titolo no', tenta($$insert into segnalazioni (testo, categoria) values ('Senza titolo', 'idea')$$), 'NEGATO: …');
+select atteso('un testo vuoto no', tenta($$insert into segnalazioni (titolo, testo, categoria) values ('Vuoto', '   ', 'idea')$$), 'NEGATO: …');
 select atteso('risponde al filo',
   tenta($$insert into segnalazioni (id, padre_id, testo)
     values ('eeeeeeee-0000-0000-0000-000000000002', 'eeeeeeee-0000-0000-0000-000000000001', 'Anche col margine stretto')$$), 'FATTO (1 righe)');
@@ -99,7 +101,7 @@ reset role;
 select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 select atteso('l''istruttore non vede niente', (select count(*)::text from segnalazioni), '0');
-select atteso('non apre un filo', tenta($$insert into segnalazioni (titolo, testo) values ('Io', 'Dall''istruttore')$$), 'NEGATO: …');
+select atteso('non apre un filo', tenta($$insert into segnalazioni (titolo, testo, categoria) values ('Io', 'Dall''istruttore', 'idea')$$), 'NEGATO: …');
 select atteso('non risponde',
   tenta($$insert into segnalazioni (padre_id, testo) values ('eeeeeeee-0000-0000-0000-000000000001', 'Dall''istruttore')$$), 'NEGATO: …');
 select atteso('non chiude', tenta($$update segnalazioni set chiusa_il = now()$$), 'a vuoto (0 righe)');
@@ -107,12 +109,12 @@ reset role;
 select chi('33333333-3333-3333-3333-333333333333');
 set role authenticated;
 select atteso('l''iscritto non vede niente', (select count(*)::text from segnalazioni), '0');
-select atteso('e non scrive', tenta($$insert into segnalazioni (titolo, testo) values ('Io', 'Dall''iscritto')$$), 'NEGATO: …');
+select atteso('e non scrive', tenta($$insert into segnalazioni (titolo, testo, categoria) values ('Io', 'Dall''iscritto', 'idea')$$), 'NEGATO: …');
 reset role;
 select chi('66666666-6666-6666-6666-666666666666');
 set role authenticated;
 select atteso('il tablet non vede niente', (select count(*)::text from segnalazioni), '0');
-select atteso('e non scrive', tenta($$insert into segnalazioni (titolo, testo) values ('Io', 'Dal tablet')$$), 'NEGATO: …');
+select atteso('e non scrive', tenta($$insert into segnalazioni (titolo, testo, categoria) values ('Io', 'Dal tablet', 'idea')$$), 'NEGATO: …');
 reset role;
 
 \echo ''
@@ -120,7 +122,72 @@ reset role;
 select chi('');
 set role anon;
 select atteso('non legge', tenta($$select count(*)::text from segnalazioni$$), 'NEGATO: …');
-select atteso('non scrive', tenta($$insert into segnalazioni (titolo, testo) values ('Io', 'Da fuori')$$), 'NEGATO: …');
+select atteso('non scrive', tenta($$insert into segnalazioni (titolo, testo, categoria) values ('Io', 'Da fuori', 'idea')$$), 'NEGATO: …');
+reset role;
+
+\echo ''
+\echo '--- 4b. la categoria: idea o correzione ---'
+-- Il filo nuovo la sceglie (la policy di insert, non un vincolo: i fili di
+-- prima restano senza e si chiudono lo stesso); la risposta non ce l'ha; la
+-- segreteria la cambia dopo, gli altri no.
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('apre un''idea',
+  tenta($$insert into segnalazioni (id, titolo, testo, categoria)
+    values ('eeeeeeee-0000-0000-0000-0000000000c1', 'Un tasto per stampare', 'Servirebbe al banco', 'idea')$$), 'FATTO (1 righe)');
+select atteso('la categoria è quella', (select categoria from segnalazioni where id = 'eeeeeeee-0000-0000-0000-0000000000c1'), 'idea');
+select atteso('una categoria che non c''è no',
+  tenta($$insert into segnalazioni (titolo, testo, categoria) values ('Altro', 'Boh', 'altro')$$), 'NEGATO: …');
+select atteso('un filo nuovo senza categoria no',
+  tenta($$insert into segnalazioni (titolo, testo) values ('Senza', 'Niente categoria')$$), 'NEGATO: …');
+select atteso('una risposta con la categoria no',
+  tenta($$insert into segnalazioni (padre_id, testo, categoria)
+    values ('eeeeeeee-0000-0000-0000-0000000000c1', 'Risposta', 'idea')$$), 'NEGATO: …');
+select atteso('una risposta senza va',
+  tenta($$insert into segnalazioni (id, padre_id, testo)
+    values ('eeeeeeee-0000-0000-0000-0000000000c2', 'eeeeeeee-0000-0000-0000-0000000000c1', 'Anche per le ricevute')$$), 'FATTO (1 righe)');
+reset role;
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('un''altra segreteria la cambia',
+  tenta($$update segnalazioni set categoria = 'correzione' where id = 'eeeeeeee-0000-0000-0000-0000000000c1'$$), 'FATTO (1 righe)');
+select atteso('ed è cambiata', (select categoria from segnalazioni where id = 'eeeeeeee-0000-0000-0000-0000000000c1'), 'correzione');
+select atteso('non in una che non c''è',
+  tenta($$update segnalazioni set categoria = 'altro' where id = 'eeeeeeee-0000-0000-0000-0000000000c1'$$), 'NEGATO: …');
+select atteso('a una risposta non si mette',
+  tenta($$update segnalazioni set categoria = 'idea' where id = 'eeeeeeee-0000-0000-0000-0000000000c2'$$), 'a vuoto (0 righe)');
+reset role;
+select atteso('la risposta resta senza', coalesce((select categoria from segnalazioni where id = 'eeeeeeee-0000-0000-0000-0000000000c2'), 'nessuna'), 'nessuna');
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('l''istruttore non la cambia',
+  tenta($$update segnalazioni set categoria = 'idea' where id = 'eeeeeeee-0000-0000-0000-0000000000c1'$$), 'a vuoto (0 righe)');
+reset role;
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select atteso('l''iscritto nemmeno',
+  tenta($$update segnalazioni set categoria = 'idea' where id = 'eeeeeeee-0000-0000-0000-0000000000c1'$$), 'a vuoto (0 righe)');
+reset role;
+select chi('');
+set role anon;
+select atteso('chi non ha l''accesso nemmeno',
+  tenta($$update segnalazioni set categoria = 'idea' where id = 'eeeeeeee-0000-0000-0000-0000000000c1'$$), 'NEGATO: …');
+reset role;
+select atteso('ed è ancora una correzione', (select categoria from segnalazioni where id = 'eeeeeeee-0000-0000-0000-0000000000c1'), 'correzione');
+
+-- Un filo di prima delle categorie: entrato senza, si chiude e si riapre.
+insert into segnalazioni (id, autore_id, titolo, testo) values
+  ('eeeeeeee-0000-0000-0000-0000000000c3', 'aaaaaaaa-0000-0000-0000-000000000001', 'Di prima', 'Senza categoria');
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('un filo di prima si chiude',
+  tenta($$update segnalazioni set chiusa_il = now() where id = 'eeeeeeee-0000-0000-0000-0000000000c3'$$), 'FATTO (1 righe)');
+select atteso('e si riapre',
+  tenta($$update segnalazioni set chiusa_il = null where id = 'eeeeeeee-0000-0000-0000-0000000000c3'$$), 'FATTO (1 righe)');
+select atteso('gli si risponde',
+  tenta($$insert into segnalazioni (padre_id, testo) values ('eeeeeeee-0000-0000-0000-0000000000c3', 'Vista')$$), 'FATTO (1 righe)');
+select atteso('e gli si dà una categoria',
+  tenta($$update segnalazioni set categoria = 'idea' where id = 'eeeeeeee-0000-0000-0000-0000000000c3'$$), 'FATTO (1 righe)');
 reset role;
 
 \echo ''
@@ -140,6 +207,15 @@ select atteso('il vincolo nuovo c''è',
      and pg_get_constraintdef(oid) like '%titolo IS NOT NULL%'), '1');
 select atteso('il filo ha un titolo',
   (select titolo from segnalazioni where id = 'eeeeeeee-0000-0000-0000-000000000009'), 'Senza titolo');
+-- Rilanciato 25-, 38- rilanciato dopo rimette le sue regole sulla categoria.
+\ir ../38-segnalazioni-categoria.sql
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('dopo i due file, la segreteria cambia ancora la categoria',
+  tenta($$update segnalazioni set categoria = 'idea' where id = 'eeeeeeee-0000-0000-0000-0000000000c1'$$), 'FATTO (1 righe)');
+select atteso('e un filo nuovo senza categoria è ancora no',
+  tenta($$insert into segnalazioni (titolo, testo) values ('Senza', 'Niente categoria')$$), 'NEGATO: …');
+reset role;
 
 \echo ''
 \echo '--- 6. gli allegati: il bucket e la tabella ---'

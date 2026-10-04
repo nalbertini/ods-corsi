@@ -1396,6 +1396,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 /* Sul telefono il tasto principale viene prima del filtro. */
 @media (max-width: 767px) { .sg-chip-dopo { order: 1; } }
 .sg-filo-testa { display: flex; gap: 12px; align-items: center; width: 100%; padding: 12px 14px; text-align: left; cursor: pointer; }
+/* Sul telefono le etichette (categoria, BOZZA, DA RISPONDERE) vanno sotto il titolo invece di schiacciarlo. */
+@media (max-width: 640px) { .sg-filo-testa { flex-wrap: wrap; row-gap: 8px; } .sg-filo-testa > .grow { flex-basis: 100%; } }
 /* Due nomi nello stesso posto: il tasto è largo quanto il più lungo, e si vede solo quello giusto. */
 .sg-due-nomi { display: inline-grid; }
 .sg-due-nomi > span { grid-area: 1 / 1; }
