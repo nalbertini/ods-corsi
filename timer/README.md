@@ -108,8 +108,11 @@ dispositivo.
 ## La libreria di esercizi
 
 `src/lib/esercizi.ts` tiene un catalogo di 52 esercizi di partenza, pensati per
-una palestra di judo e divisi in sei categorie: judo, a corpo libero, attrezzi,
-core, cardio, mobilità. Sta in `localStorage` come i timer, quindi si cura
+una palestra di judo e divisi in cinque categorie: a corpo libero, attrezzi,
+core, cardio, mobilità. Il judo è una *disciplina*, non una categoria: oltre al
+tipo, ogni esercizio può avere una disciplina (Judo, Lotta, Pilates, Yoga…, la
+lista la tiene la segreteria, `timer/src/lib/discipline.ts`) o «Tutte» per quelli
+comuni, e il catalogo si filtra anche per quella. Sta in `localStorage` come i timer, quindi si cura
 liberamente: quelli aggiunti a mano si possono togliere, quelli di partenza no.
 
 Nell'editor gli esercizi si scelgono dall'anteprima: si tocca la riga di un round

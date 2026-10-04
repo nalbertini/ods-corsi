@@ -15,6 +15,7 @@ import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllega
 import { richiesteDi, spostaRichieste } from './richiesteProva'
 import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
+import { disciplineDa } from '../../timer/src/lib/discipline'
 import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
@@ -1127,11 +1128,26 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async eserciziPalestra() {
-      return eserciziDellaPalestra(a().eserciziSale)
+      return eserciziDellaPalestra(a().eserciziSale, disciplineDa(a().discipline))
     },
 
     async salvaEserciziPalestra(l) {
-      a().eserciziSale = (eserciziDellaPalestra(l) ?? []).map(({ id, nome, categoria }) => ({ id, nome, categoria }))
+      a().eserciziSale = (eserciziDellaPalestra(l, disciplineDa(a().discipline)) ?? []).map(({ id, nome, categoria, disciplina }) => ({
+        id,
+        nome,
+        categoria,
+        ...(disciplina ? { disciplina } : {}),
+      }))
+      salva()
+    },
+
+    async discipline() {
+      return disciplineDa(a().discipline)
+    },
+
+    async salvaDiscipline(l) {
+      // Il database rifiuta oltre 4000 byte; in prova non c'è il limite, e con 20 voci da 30 lettere non ci si arriva.
+      a().discipline = disciplineDa(l)
       salva()
     },
 

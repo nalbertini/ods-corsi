@@ -13,6 +13,15 @@ import {
   normalizza,
 } from '../../../timer/src/lib/esercizi'
 import { uid } from '../../../timer/src/lib/format'
+import {
+  type Disciplina,
+  NOME_TUTTE,
+  TUTTE,
+  dellaDisciplina,
+  nomeDisciplina,
+  nomeDisciplinaValido,
+  nuovaDisciplina,
+} from '../../../timer/src/lib/discipline'
 import { chiedi, ComeFunziona, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 
 type Fai = (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => Promise<unknown>
@@ -294,17 +303,21 @@ function VoceIncisa({
  */
 export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
   // Avvolto: un catalogo nullo vuol dire «mai fatto», non «non ancora letto».
-  const letto = useCarica(async () => ({ lista: await d.eserciziPalestra() }), [d])
+  const letto = useCarica(async () => ({ lista: await d.eserciziPalestra(), discipline: await d.discipline() }), [d])
   const catalogo = letto.dato ? letto.dato.lista : undefined
+  const discipline = letto.dato?.discipline ?? []
   const { guaio, ricarica } = letto
   const { avviso, fai } = useAvviso()
   const [cerca, setCerca] = useState('')
   const [categoria, setCategoria] = useState<Categoria | 'tutte'>('tutte')
-  const [aperto, setAperto] = useState<{ id: string; nome: string; categoria: Categoria } | null>(null)
-  const [nuovo, setNuovo] = useState<{ nome: string; categoria: Categoria }>({ nome: '', categoria: 'A corpo libero' })
+  const [filtroDisciplina, setFiltroDisciplina] = useState('')
+  const [aperto, setAperto] = useState<{ id: string; nome: string; categoria: Categoria; disciplina?: string } | null>(null)
+  const [nuovo, setNuovo] = useState<{ nome: string; categoria: Categoria; disciplina?: string }>({ nome: '', categoria: 'A corpo libero' })
   const [incolla, setIncolla] = useState<string | null>(null)
 
   const lista = catalogo ?? []
+  // Un filtro su una disciplina tolta nel frattempo non resta acceso.
+  const filtro = discipline.some((x) => x.id === filtroDisciplina) ? filtroDisciplina : ''
   const salva = (l: Esercizio[], riuscito: string, poi?: () => void) =>
     void fai(() => d.salvaEserciziPalestra(l), riuscito, async () => {
       poi?.()
@@ -315,16 +328,17 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
   const q = normalizza(cerca)
   const gruppi = CATEGORIE.map((c) => ({
     categoria: c,
-    esercizi: lista
+    esercizi: dellaDisciplina(lista, filtro || null)
       .filter((e) => e.categoria === c && (categoria === 'tutte' || categoria === c) && (!q || normalizza(e.nome).includes(q)))
       .sort((a, b) => a.nome.localeCompare(b.nome, 'it')),
   })).filter((g) => g.esercizi.length > 0)
 
   return (
     <>
-    <Testa titolo="ESERCIZI" sotto="L'elenco della palestra: crea, rinomina, sposta di categoria.">
+    <Testa titolo="ESERCIZI" sotto="L'elenco della palestra: crea, rinomina, sposta di categoria e di disciplina.">
       {catalogo && <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--dim)' }}>{lista.length} ESERCIZI</span>}
     </Testa>
+    {letto.dato && <DisciplinePalestra d={d} lista={discipline} ricarica={ricarica} />}
     <section aria-label="Gli esercizi della palestra" className="sg-riquadro">
       <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
         L'elenco che i tablet di sala propongono scrivendo un timer, e i nomi che la voce incisa sa dire (in IMPOSTAZIONI › LA VOCE DEI
@@ -359,6 +373,16 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                 </option>
               ))}
             </select>
+            {discipline.length > 0 && (
+              <select className="sg-campo" aria-label="Disciplina" value={filtro} onChange={(e) => setFiltroDisciplina(e.target.value)}>
+                <option value="">Ogni disciplina</option>
+                {discipline.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.nome}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {gruppi.length === 0 && <span className="sg-sotto">{lista.length ? 'Nessun esercizio con questo nome.' : 'Il catalogo è vuoto.'}</span>}
@@ -379,7 +403,11 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                         const nome = aperto.nome.trim()
                         if (!nome || !libero(nome, e.id)) return
                         salva(
-                          lista.map((x) => (x.id === e.id ? { ...x, nome, categoria: aperto.categoria } : x)),
+                          lista.map((x) => {
+                            if (x.id !== e.id) return x
+                            const { disciplina: _tolta, ...resto } = x
+                            return { ...resto, nome, categoria: aperto.categoria, ...(aperto.disciplina ? { disciplina: aperto.disciplina } : {}) }
+                          }),
                           'Esercizio salvato',
                           () => setAperto(null),
                         )
@@ -393,6 +421,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                           </option>
                         ))}
                       </select>
+                      <SelectDisciplina discipline={discipline} valore={aperto.disciplina} etichetta="Disciplina dell'esercizio" onCambia={(x) => setAperto({ ...aperto, disciplina: x })} />
                       {!libero(aperto.nome, e.id) && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>C'è già un esercizio con questo nome.</span>}
                       <button
                         type="button"
@@ -413,8 +442,9 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                       </button>
                     </form>
                   ) : (
-                    <button key={e.id} type="button" className="num sg-chip" style={{ letterSpacing: '0.04em' }} onClick={() => setAperto({ id: e.id, nome: e.nome, categoria: e.categoria })}>
+                    <button key={e.id} type="button" className="num sg-chip" style={{ letterSpacing: '0.04em' }} onClick={() => setAperto({ id: e.id, nome: e.nome, categoria: e.categoria, disciplina: e.disciplina })}>
                       {e.nome}
+                      {nomeDisciplina(e.disciplina, discipline) && <span style={{ color: 'var(--dim)' }}> · {nomeDisciplina(e.disciplina, discipline)}</span>}
                     </button>
                   ),
                 )}
@@ -429,7 +459,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
               ev.preventDefault()
               const nome = nuovo.nome.trim()
               if (!nome || !libero(nome)) return
-              salva([...lista, { id: uid(), nome, categoria: nuovo.categoria }], 'Esercizio aggiunto', () => setNuovo({ ...nuovo, nome: '' }))
+              salva([...lista, { id: uid(), nome, categoria: nuovo.categoria, ...(nuovo.disciplina ? { disciplina: nuovo.disciplina } : {}) }], 'Esercizio aggiunto', () => setNuovo({ ...nuovo, nome: '' }))
             }}
           >
             <input className="sg-campo grow" aria-label="Nuovo esercizio" placeholder="un esercizio nuovo" maxLength={60} value={nuovo.nome} onChange={(e) => setNuovo({ ...nuovo, nome: e.target.value })} />
@@ -440,6 +470,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
                 </option>
               ))}
             </select>
+            <SelectDisciplina discipline={discipline} valore={nuovo.disciplina} etichetta="Disciplina del nuovo esercizio" onCambia={(x) => setNuovo({ ...nuovo, disciplina: x })} />
             {nuovo.nome.trim() && !libero(nuovo.nome) && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>C'è già.</span>}
             <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!nuovo.nome.trim() || !libero(nuovo.nome)}>
               AGGIUNGI
@@ -456,10 +487,10 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
               style={{ gap: 8, alignItems: 'stretch', borderColor: 'var(--text)' }}
               onSubmit={(ev) => {
                 ev.preventDefault()
-                const { lista: nuova, aggiunti, saltati } = aggiungiNomi(lista, nomiDaTesto(incolla), nuovo.categoria)
+                const { lista: nuova, aggiunti, saltati } = aggiungiNomi(lista, nomiDaTesto(incolla), nuovo.categoria, nuovo.disciplina)
                 if (!aggiunti.length) return
                 salva(
-                  nuova.map(({ id, nome, categoria }) => ({ id, nome, categoria })),
+                  nuova.map(({ id, nome, categoria, disciplina }) => ({ id, nome, categoria, ...(disciplina ? { disciplina } : {}) })),
                   `${aggiunti.length} aggiunti${saltati.length ? `, ${saltati.length} c'erano già` : ''}`,
                   () => setIncolla(null),
                 )
@@ -476,7 +507,7 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
               />
               <div className="row" style={{ gap: 8 }}>
                 <span className="grow" style={{ fontSize: 13, color: 'var(--dim)' }}>
-                  Vanno in «{nuovo.categoria}», la categoria scelta qui sopra. Quelli che ci sono già si saltano.
+                  Vanno in «{nuovo.categoria}»{nuovo.disciplina ? `, disciplina ${nomeDisciplina(nuovo.disciplina, discipline)}` : ''}, scelte qui sopra. Quelli che ci sono già si saltano.
                 </span>
                 <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setIncolla(null)}>
                   LASCIA STARE
@@ -491,6 +522,138 @@ export function EserciziPalestra({ d }: { d: DatiSegreteria }) {
       )}
     </section>
     {avviso}
+    </>
+  )
+}
+
+/** La scelta della disciplina di una voce: nessuna, «Tutte» o una della lista. Non compare se la palestra non ne ha. */
+function SelectDisciplina({
+  discipline,
+  valore,
+  etichetta,
+  onCambia,
+}: {
+  discipline: Disciplina[]
+  valore: string | undefined
+  etichetta: string
+  onCambia: (id: string | undefined) => void
+}) {
+  if (discipline.length === 0) return null
+  return (
+    <select className="sg-campo" aria-label={etichetta} value={valore ?? ''} onChange={(ev) => onCambia(ev.target.value || undefined)}>
+      <option value="">Nessuna disciplina</option>
+      <option value={TUTTE}>{NOME_TUTTE} (ogni disciplina)</option>
+      {discipline.map((x) => (
+        <option key={x.id} value={x.id}>
+          {x.nome}
+        </option>
+      ))}
+    </select>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Le discipline della palestra
+// ---------------------------------------------------------------------------
+
+/**
+ * Judo, Lotta, Pilates, Yoga…: la lista con cui si dividono gli esercizi, i
+ * timer e le liste di musica. La tiene la segreteria; istruttori e tablet la
+ * usano per filtrare. «Tutte» non è nella lista: è per le voci comuni a tutte,
+ * come il riscaldamento. Togliere una disciplina non toglie niente: chi la
+ * nominava resta senza.
+ */
+function DisciplinePalestra({ d, lista, ricarica }: { d: DatiSegreteria; lista: Disciplina[]; ricarica: () => Promise<unknown> | void }) {
+  const { avviso, fai } = useAvviso()
+  const [aperta, setAperta] = useState<{ id: string; nome: string } | null>(null)
+  const [nuova, setNuova] = useState('')
+  const salva = (l: Disciplina[], riuscito: string, poi?: () => void) =>
+    void fai(() => d.salvaDiscipline(l), riuscito, async () => {
+      poi?.()
+      await ricarica()
+    })
+  const sposta = (i: number, verso: -1 | 1) => {
+    const l = [...lista]
+    ;[l[i], l[i + verso]] = [l[i + verso], l[i]]
+    salva(l, 'Ordine cambiato')
+  }
+  const erroreNuova = nuova.trim() ? nomeDisciplinaValido(nuova, lista) : null
+
+  return (
+    <>
+      <section aria-label="Le discipline della palestra" className="sg-riquadro">
+        <span className="sg-etichetta">LE DISCIPLINE</span>
+        <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>
+          Gli esercizi, i timer e le liste di musica si dividono per disciplina. Ognuno ne ha una sola, o nessuna; «{NOME_TUTTE}» è per quelli comuni a
+          tutte, e compare sotto ogni disciplina. Togliere una disciplina non toglie niente: chi la nominava resta senza.
+        </span>
+        <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+          {lista.length === 0 && <span className="sg-sotto">Nessuna disciplina: l'elenco non si divide.</span>}
+          {lista.map((x, i) =>
+            aperta?.id === x.id ? (
+              <form
+                key={x.id}
+                className="row sg-voce-elenco"
+                style={{ gap: 8, borderColor: 'var(--text)', flexBasis: '100%', flexWrap: 'wrap' }}
+                onSubmit={(ev) => {
+                  ev.preventDefault()
+                  const nome = aperta.nome.trim()
+                  if (nomeDisciplinaValido(nome, lista, x.id)) return
+                  salva(lista.map((y) => (y.id === x.id ? { ...y, nome } : y)), 'Disciplina rinominata', () => setAperta(null))
+                }}
+              >
+                <input className="sg-campo grow" aria-label="Nome della disciplina" required autoFocus maxLength={30} value={aperta.nome} onChange={(ev) => setAperta({ ...aperta, nome: ev.target.value })} />
+                {nomeDisciplinaValido(aperta.nome, lista, x.id) && aperta.nome.trim() && (
+                  <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{nomeDisciplinaValido(aperta.nome, lista, x.id)}</span>
+                )}
+                <button type="button" className="num sg-chip" style={{ minHeight: 44 }} disabled={i === 0} aria-label="Sposta prima" onClick={() => sposta(i, -1)}>
+                  ‹
+                </button>
+                <button type="button" className="num sg-chip" style={{ minHeight: 44 }} disabled={i === lista.length - 1} aria-label="Sposta dopo" onClick={() => sposta(i, 1)}>
+                  ›
+                </button>
+                <button
+                  type="button"
+                  className="num sg-chip"
+                  style={{ minHeight: 44 }}
+                  onClick={async () => {
+                    if (await chiedi(`Togliere «${x.nome}»? Gli esercizi, i timer e le liste che la nominano restano, senza disciplina.`, 'TOGLI LA DISCIPLINA'))
+                      salva(lista.filter((y) => y.id !== x.id), 'Disciplina tolta', () => setAperta(null))
+                  }}
+                >
+                  TOGLI
+                </button>
+                <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setAperta(null)}>
+                  LASCIA STARE
+                </button>
+                <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!!nomeDisciplinaValido(aperta.nome, lista, x.id)} aria-label="Salva la disciplina">
+                  <Spunta size={18} />
+                </button>
+              </form>
+            ) : (
+              <button key={x.id} type="button" className="num sg-chip" style={{ letterSpacing: '0.04em' }} onClick={() => setAperta({ id: x.id, nome: x.nome })}>
+                {x.nome}
+              </button>
+            ),
+          )}
+        </div>
+        <form
+          className="row sg-voce-elenco"
+          style={{ gap: 8, flexWrap: 'wrap' }}
+          onSubmit={(ev) => {
+            ev.preventDefault()
+            if (!nuova.trim() || nomeDisciplinaValido(nuova, lista)) return
+            salva([...lista, nuovaDisciplina(nuova, lista)], 'Disciplina aggiunta', () => setNuova(''))
+          }}
+        >
+          <input className="sg-campo grow" aria-label="Nuova disciplina" placeholder="una disciplina nuova" maxLength={30} value={nuova} onChange={(e) => setNuova(e.target.value)} />
+          {erroreNuova && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{erroreNuova}</span>}
+          <button type="submit" className="num sg-chip sg-chip-pieno" style={{ minHeight: 44 }} disabled={!nuova.trim() || !!erroreNuova}>
+            AGGIUNGI
+          </button>
+        </form>
+      </section>
+      {avviso}
     </>
   )
 }

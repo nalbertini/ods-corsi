@@ -4,6 +4,7 @@ import type { RuoloPersonale } from './ruoli'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
 import type { Esercizio } from '../../timer/src/lib/esercizi'
+import type { Disciplina } from '../../timer/src/lib/discipline'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
 import { euro } from './ricevute'
@@ -555,6 +556,9 @@ export interface DatiSegreteria {
   /** Il catalogo degli esercizi dei tablet; `null` se non se n'è mai fatto uno. */
   eserciziPalestra(): Promise<Esercizio[] | null>
   salvaEserciziPalestra(l: Esercizio[]): Promise<void>
+  /** Le discipline della palestra (Judo, Lotta…): le tiene la segreteria, le usano tutti. */
+  discipline(): Promise<Disciplina[]>
+  salvaDiscipline(l: Disciplina[]): Promise<void>
   /**
    * Le presenze degli istruttori dal PIN del tablet: tutte quelle da
    * confermare, e le altre degli ultimi `giorni`, dalla più recente.

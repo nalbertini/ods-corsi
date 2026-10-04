@@ -1,3 +1,4 @@
+import type { Disciplina } from '../lib/discipline'
 import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { CoachLevel, Settings } from '../types'
 import { Cues, italianVoices, speak } from '../lib/audio'
@@ -74,8 +75,10 @@ export function SettingsScreen({
   sala = false,
   incorporato = false,
   palestra,
+  discipline,
 }: {
   settings: Settings
+  discipline: Disciplina[]
   onChange: (patch: Partial<Settings>) => void
   historyCount: number
   onOpenRecorder: () => void
@@ -497,7 +500,7 @@ export function SettingsScreen({
             const f = e.target.files?.[0]
             e.target.value = ''
             if (!f) return
-            const letto = leggiSalvataggio(await f.text())
+            const letto = leggiSalvataggio(await f.text(), discipline)
             if (!letto) {
               setMessaggio('Questo file non è un salvataggio di ODS Timer.')
               return
