@@ -1,4 +1,4 @@
-import type { Workout } from '../types'
+import type { Mode, Workout } from '../types'
 import type { Accesso } from './palestra'
 import type { Lezione } from './lezione'
 import { dellaDisciplina } from './discipline'
@@ -85,3 +85,33 @@ function sezioniDi(timer: Workout[], accesso: Accesso, lezione: Lezione | null):
   })
   return gruppi
 }
+
+/**
+ * Cronometro e conto alla rovescia, in lista accanto ai timer. Non sono
+ * timer salvati (niente id, niente database): per questo non stanno nelle
+ * sezioni di `gruppiDi`, da cui il tablet ricava i timer della lezione, ma in
+ * una sezione loro, sempre in cima.
+ */
+export type Strumento = 'crono' | 'countdown'
+
+export interface SchedaStrumento {
+  chiave: Strumento
+  /** L'etichetta di tipo, dove i timer hanno INTERVALLI, EMOM... */
+  tipo: string
+  nome: string
+  riassunto: string
+}
+
+const STRUMENTI: SchedaStrumento[] = [
+  { chiave: 'crono', tipo: 'CRONOMETRO', nome: 'CRONOMETRO', riassunto: 'conta in salita · segna i giri' },
+  { chiave: 'countdown', tipo: 'ALLA ROVESCIA', nome: 'CONTO ALLA ROVESCIA', riassunto: '30″ – 3′ · scegli la durata' },
+]
+
+/** Con un filtro per tipo non compaiono: non hanno un tipo da filtrare. */
+export const strumentiDa = (filtro: Mode | 'all'): SchedaStrumento[] => (filtro === 'all' ? STRUMENTI : [])
+
+/** La barra laterale serve se ha più di una voce; sul tablet, con una sola, è vuota. */
+export const conBarra = (incorporato: boolean, voci: number) => !incorporato || voci > 1
+
+/** Lo strumento aperto prende lo schermo, ma solo nella scheda dei timer. */
+export const aTuttoSchermo = (tab: string, strumento: Strumento | null) => tab === 'timer' && strumento !== null
