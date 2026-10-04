@@ -534,7 +534,9 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
           </span>
         </button>
         <span className="grow" />
-        <MusicaSala musica={musica} liste={liste} scelta={lista ? lista.id : null} spotifyCollegato={spotify.collegato} onScegli={scegliLista} />
+        {settingsTimer.musica && (
+          <MusicaSala musica={musica} liste={liste} scelta={lista ? lista.id : null} spotifyCollegato={spotify.collegato} onScegli={scegliLista} />
+        )}
       </footer>
 
       {/* Il lettore di YouTube, uno solo e fermo qui: si appoggia sopra il suo

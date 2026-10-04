@@ -88,6 +88,10 @@ timer › Musica, con l'area istruttore aperta); senza, sono spente.
 Se nelle impostazioni del timer sono accese, la musica parte e si ferma col
 timer e si abbassa nel recupero, qualunque lista suoni.
 
+Se la sala la musica non la vuole, si spegne con **Player musicale** in
+Impostazioni del timer › Musica: la barra sparisce dal tablet e non parte
+niente. Vale per tutti i tablet di sala; si riaccende dallo stesso posto.
+
 ## Quando ci si segna
 
 Da **30 minuti prima** dell'inizio a **10 minuti dopo la fine**: per tutta la

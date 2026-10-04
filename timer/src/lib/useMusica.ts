@@ -4,6 +4,7 @@ import * as spotify from './spotify'
 import * as youtube from './youtube'
 import type { Lettore } from './spotify'
 import type { Status } from './useTimer'
+import { musicaAttiva } from './musicaAttiva'
 
 /** Lo stato di Spotify, aggiornato finché il componente resta montato. */
 export function useSpotify() {
@@ -42,13 +43,13 @@ export function useMusica(settings: Settings): Musica {
   if (settings.musicaFonte === 'youtube') {
     return {
       fonte: 'youtube',
-      attiva: youtube.leggiLink(settings.youtube) !== null,
+      attiva: musicaAttiva(settings, youtube.leggiLink(settings.youtube) !== null),
       lettore: yt.lettore,
       errore: yt.errore,
       comandi: youtube,
     }
   }
-  return { fonte: 'spotify', attiva: sp.collegato, lettore: sp.lettore, errore: sp.errore, comandi: spotify }
+  return { fonte: 'spotify', attiva: musicaAttiva(settings, sp.collegato), lettore: sp.lettore, errore: sp.errore, comandi: spotify }
 }
 
 /** I blocchi in cui la musica scende: si riprende fiato e si ascolta l'istruttore. */

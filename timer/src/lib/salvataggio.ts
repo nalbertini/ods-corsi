@@ -68,6 +68,7 @@ function impostazioniSane(v: unknown): Settings {
     volume: numeroSano(o.volume, 0, 1, DEFAULT_SETTINGS.volume),
     keepAwake: bool(o.keepAwake, DEFAULT_SETTINGS.keepAwake),
     bigScreen: bool(o.bigScreen, DEFAULT_SETTINGS.bigScreen),
+    musica: bool(o.musica, DEFAULT_SETTINGS.musica),
     musicaFonte: o.musicaFonte === 'youtube' ? 'youtube' : 'spotify',
     youtube: typeof o.youtube === 'string' ? o.youtube.slice(0, 500) : '',
     musicaSegue: bool(o.musicaSegue, DEFAULT_SETTINGS.musicaSegue),

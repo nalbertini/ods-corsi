@@ -678,6 +678,31 @@ function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: 
         <div className="rule-line" />
       </div>
       <div className="pad stack" style={{ gap: 8 }}>
+        <Toggle
+          label="Player musicale"
+          hint="Spento, la barra della musica sparisce e non parte niente"
+          on={settings.musica}
+          onChange={(v) => onChange({ musica: v })}
+        />
+        {settings.musica && <MusicaScelte settings={settings} onChange={onChange} m={m} yt={yt} />}
+      </div>
+    </>
+  )
+}
+
+function MusicaScelte({
+  settings,
+  onChange,
+  m,
+  yt,
+}: {
+  settings: Settings
+  onChange: (patch: Partial<Settings>) => void
+  m: ReturnType<typeof useMusica>
+  yt: boolean
+}) {
+  return (
+    <>
         <div className="card stack" style={{ gap: 10, padding: '12px 14px 14px' }}>
           <span style={{ fontSize: 15, fontWeight: 600 }}>Da dove viene la musica</span>
           <div className="segmenti" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
@@ -756,7 +781,6 @@ function Musica({ settings, onChange }: { settings: Settings; onChange: (patch: 
         )}
 
         {!yt && m.errore && <span style={{ fontSize: 13, lineHeight: 1.4, color: 'var(--rosso)' }}>{m.errore}</span>}
-      </div>
     </>
   )
 }
