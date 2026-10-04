@@ -667,9 +667,9 @@ a.navitem { text-decoration: none; }
 .tf-destra { display: contents; }
 .tf-resta { display: none; }
 .tf-scaletta { order: 1; margin-top: 16px; }
-.tf-barra { order: 2; margin-top: auto; padding-top: 16px; }
-.tf-musica { order: 3; margin: 10px 0 0; }
-.tf-destra .beccato { order: 1; width: 100%; height: min(24vh, 200px); margin-top: 8px; }
+.tf-maurizio-p { order: 2; height: min(24vh, 200px); margin-top: 8px; }
+.tf-barra { order: 3; margin-top: auto; padding-top: 16px; }
+.tf-musica { order: 4; margin: 10px 0 0; }
 
 .tf-stato {
   font-family: var(--cond); font-style: oblique 9deg; font-weight: 700;
@@ -688,10 +688,13 @@ a.navitem { text-decoration: none; }
   font-family: var(--cond); font-variant-numeric: tabular-nums; font-weight: 600;
   font-size: clamp(15px, 4vw, 20px); letter-spacing: 0.1em; color: var(--dim); text-align: center;
 }
+.tf-maurizio { display: flex; align-items: center; justify-content: center; min-height: 0; pointer-events: none; }
+.tf-maurizio-l { display: none; }
+.tf-maurizio .beccato { width: 100%; height: 100%; }
+.tf-maurizio .beccato > img { height: auto; max-height: 72%; }
 .tf-adesivo {
-  position: absolute; top: 4px; right: 0; z-index: 3; width: auto; pointer-events: none;
-  height: 44px; opacity: 0.92;
-  filter: drop-shadow(0 4px 14px #000000aa); animation: entra 260ms ease-out;
+  max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;
+  opacity: 0.92; filter: drop-shadow(0 4px 14px #000000aa); animation: entra 260ms ease-out;
 }
 
 .tf-comandi {
@@ -761,7 +764,6 @@ a.navitem { text-decoration: none; }
 
 /* Di fianco: la griglia a due colonne, con la barra che le attraversa. */
 @media (orientation: landscape) {
-  .tf-adesivo { top: 8px; height: clamp(60px, 11vh, 110px); }
   .tf-etichetta { font-size: 15px; }
   .tf-altri, .tf-barra-testa { font-size: 16px; }
   .tf-corpo {
@@ -774,9 +776,10 @@ a.navitem { text-decoration: none; }
     padding: 22px 20px 20px; border-left: 2px solid var(--line-soft);
   }
   .tf-resta { display: flex; }
-  .tf-scaletta, .tf-barra, .tf-musica, .tf-destra .beccato { order: 0; margin: 0; }
+  .tf-scaletta, .tf-barra, .tf-musica { order: 0; margin: 0; }
   .tf-musica { margin-top: auto; }
-  .tf-destra .beccato { height: min(30vh, 260px); margin-top: 0; }
+  .tf-maurizio-p { display: none; }
+  .tf-maurizio-l { display: flex; flex: 1 1 0; width: 100%; margin-top: 8px; }
   .tf-barra { grid-column: 1 / -1; padding: 12px 20px 14px; border-top: 2px solid var(--line-soft); }
   .tf-barra-resta { display: none; }
   .tf-linea { height: clamp(30px, 5vh, 44px); }
@@ -807,7 +810,7 @@ a.navitem { text-decoration: none; }
   .tf-barra { padding: 6px 14px 8px; }
   .tf-barra-testa { margin-bottom: 4px; }
   .tf-linea { height: 24px; }
-  .tf-adesivo { display: none; }
+  .tf-maurizio-l { display: none; }
 }
 @media (orientation: portrait) {
   .timer[data-grande='true'] .tf-cifre { font-size: min(34vw, 28vh); }
