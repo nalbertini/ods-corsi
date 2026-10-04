@@ -147,9 +147,9 @@ input, textarea { font: inherit; color: inherit; }
 /* Le frecce per riordinare una riga: piccole ma con un'area di tocco vera,
    e spente in cima e in fondo all'elenco invece di non fare niente. */
 .riordina {
-  width: 32px; height: 25px; flex-shrink: 0;
+  width: 44px; height: 44px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  color: var(--faint); background: var(--surface-2);
+  color: var(--dim); background: var(--surface-2);
 }
 .riordina:hover:not(:disabled) { color: var(--text); }
 .riordina:disabled { opacity: 0.3; cursor: default; }
@@ -169,18 +169,18 @@ input, textarea { font: inherit; color: inherit; }
 /* Le serie sopra l'elenco degli esercizi: scorrono di lato se sono tante. */
 .serie-schede { gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
 .serie-schede::-webkit-scrollbar { display: none; }
-.serie-schede .chip { padding: 8px 12px; flex-shrink: 0; }
+.serie-schede .chip { padding: 8px 12px; min-height: 44px; flex-shrink: 0; }
 
 /* In quale serie si fa un esercizio: sottotono se in tutte, pieno se in una. */
 .serie-esercizio {
-  padding: 2px 8px; border: 2px solid var(--line-soft);
+  padding: 2px 12px; min-height: 44px; border: 2px solid var(--line-soft);
   font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint);
 }
 .serie-esercizio[data-una='true'] { border-color: var(--blu); color: var(--blu); }
 .serie-esercizio[data-fuori='true'] { border-color: var(--rosso); color: var(--rosso); }
 
 .chip {
-  padding: 10px 16px; white-space: nowrap;
+  padding: 10px 16px; min-height: 44px; white-space: nowrap;
   font-size: 12px; font-weight: 600; letter-spacing: 0.14em;
   border: 2px solid var(--line); background: var(--surface); color: var(--tasto);
 }
