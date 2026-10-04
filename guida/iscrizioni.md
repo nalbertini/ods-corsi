@@ -43,7 +43,7 @@ Chi si iscrive risponde alle domande dal telefono:
   **telefono 2**; per un minore, quelli del genitore).
 - **I corsi** a cui iscriversi e **come paghi** (trimestre o annuale). Sotto
   ogni corso ci sono età e orari del listino. Scritta la data di nascita, i
-  corsi giusti per quell'anno vengono per primi (anche se si è nati nei sei
+  corsi giusti per quell'anno vengono per primi, sotto **PER LA SUA ETÀ** (anche se si è nati nei sei
   mesi prima o dopo gli anni del corso); sotto **SENZA FASCIA D'ETÀ**
   quelli per cui il listino non dice gli anni, e sotto **ALTRI CORSI** quelli
   di un'altra età: si possono scegliere lo stesso, e un avviso giallo dice
