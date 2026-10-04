@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { certificatoDaPortare, chiFirma, controlla, domandaUscita, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { anni, anniScritti, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -160,6 +160,22 @@ console.log('\n2b. il codice fiscale, letto')
   ok('l’omocodia anche nel luogo', m.luogoDaCf(luoghi, 'RSSMRA85T10A56NH'), { nome: 'SAN GIULIANO TERME', sigla: 'PI' })
   ok('uno stato estero', m.luogoDaCf(luoghi, cf('RSSLCU96A01Z129')), { nome: 'ROMANIA', sigla: 'EE' })
   ok('un codice che non c’è: si scrive a mano', m.luogoDaCf(luoghi, cf('RSSLCU96A01Z999')), null)
+  const ottobre = new Date(2026, 9, 4)
+  ok('la data dal codice', m.dataDaCf('RSSLCU96A01L219K', '', ottobre), '1996-01-01')
+  ok('la data dal codice, scritto in minuscolo e con spazi', m.dataDaCf(' rsslcu96a01 l219k', '', ottobre), '1996-01-01')
+  ok('la data scritta che non torna: vale il codice', m.dataDaCf('RSSLCU96A01L219K', '1990-05-05', ottobre), '1996-01-01')
+  ok('la data scritta che torna resta: il secolo lo dice chi scrive', m.dataDaCf(cf('RSSLCU26R04L219'), '1926-10-04', ottobre), '1926-10-04')
+  ok('una donna: il giorno meno 40', m.dataDaCf('RSSGLI17C41L219G', '', ottobre), '2017-03-01')
+  ok('l’omocodia anche nella data', m.dataDaCf('RSSMRA85T10A56NH', '', ottobre), '1985-12-10')
+  ok('un codice a metà non dice niente', m.dataDaCf('RSSLCU96A01L219', '1990-05-05', ottobre), null)
+  ok('un codice sbagliato non dice niente', m.dataDaCf('RSSLCU96A01L219X', '', ottobre), null)
+  ok('un giorno che non esiste non dice niente', m.dataDaCf(cf('RSSLCU96B31L219'), '', ottobre), null)
+  ok('dal codice di un bambino firma il genitore', m.chiFirma(m.dataDaCf('RSSGLI17C41L219G', '', ottobre), undefined, ottobre), true)
+  ok('gli anni compiuti', m.anni('2017-03-01', ottobre), 9)
+  ok('gli anni, il giorno prima del compleanno', m.anni('2017-10-05', ottobre), 8)
+  ok('gli anni, il giorno del compleanno', m.anni('2017-10-04', ottobre), 9)
+  ok('gli anni, scritti', m.anniScritti('2017-03-01', ottobre), '9 anni')
+  ok('un anno solo, al singolare', m.anniScritti('2025-03-01', ottobre), '1 anno')
   ok('il genitore di un altro nome', await errore(() => r.invia(minore({ genitoreNome: 'Marta' }))), 'Il codice fiscale del genitore non torna con il suo nome e cognome: scrivili tutti, come sul documento')
 }
 

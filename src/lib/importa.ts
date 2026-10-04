@@ -1,5 +1,6 @@
 import type { Anagrafica, CorsoSeg, DatiSegreteria, PersonaSeg, PersonaleSeg, Sala } from './segreteria'
 import { chiaveGiorno } from './sala'
+import { anni } from './richieste'
 import { STRUTTURA_CF, cfTornaColNome, cfTornaConLaData, cfValido, lettereCognome, lettereNome } from './codiceFiscale'
 
 /**
@@ -512,12 +513,6 @@ export function leggiData(s: string, oggi = new Date()): string | null {
   const d = new Date(a, m - 1, g)
   if (d.getFullYear() !== a || d.getMonth() !== m - 1 || d.getDate() !== g || d > oggi) return null
   return `${a}-${String(m).padStart(2, '0')}-${String(g).padStart(2, '0')}`
-}
-
-/** Quanti anni ha oggi chi è nato in quel giorno. */
-const anni = (natoIl: string, oggi = new Date()) => {
-  const [a, m, g] = natoIl.split('-').map(Number)
-  return oggi.getFullYear() - a - (oggi.getMonth() + 1 < m || (oggi.getMonth() + 1 === m && oggi.getDate() < g) ? 1 : 0)
 }
 
 /** Quanto può essere lungo un campo di `anagrafiche` (18-anagrafiche.sql). */
