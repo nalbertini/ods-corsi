@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.31.0 — 4 ottobre 2026
+
+### Novità
+
+- Cronometro e conto alla rovescia stanno fra i timer, con la stessa grafica
+
 ## 0.30.0 — 4 ottobre 2026
 
 ### Novità
