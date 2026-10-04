@@ -8,7 +8,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { DEFAULT_SETTINGS } from './timer/src/lib/storage'; export { musicaAttiva } from './timer/src/lib/musicaAttiva'",
+      "export { DEFAULT_SETTINGS } from './timer/src/lib/storage'; export { musicaAttiva } from './timer/src/lib/musicaAttiva'; export { musicaDellaSala } from './src/lib/musica'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -40,6 +40,13 @@ ok('accesa e con qualcosa da comandare: attiva', m.musicaAttiva({ musica: true }
 ok('accesa ma senza niente da comandare: non attiva', m.musicaAttiva({ musica: true }, false), false)
 ok('spenta, anche con Spotify collegato o un link valido: non attiva', m.musicaAttiva({ musica: false }, true), false)
 ok('un salvataggio vecchio, senza il campo: resta accesa', m.musicaAttiva({}, true), true)
+
+// Il tablet di sala può spegnere la musica da sé, anche se nelle impostazioni è accesa.
+const base = { musicaFonte: 'youtube', youtube: 'https://youtu.be/x' }
+ok('tablet acceso: fonte e link restano, e il campo `musica` non c\'è (vale quello delle impostazioni)', m.musicaDellaSala(base, false), base)
+ok('tablet spento: stessa fonte, ma `musica` è falso', m.musicaDellaSala(base, true), { ...base, musica: false })
+ok('spento dal tablet, anche con la musica accesa nelle impostazioni: non attiva', m.musicaAttiva({ ...{ musica: true }, ...m.musicaDellaSala(base, true) }, true), false)
+ok('acceso dal tablet ma spento nelle impostazioni: resta non attiva', m.musicaAttiva({ ...{ musica: false }, ...m.musicaDellaSala(base, false) }, true), false)
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
