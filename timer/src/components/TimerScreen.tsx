@@ -13,6 +13,7 @@ import { giroCorrente, lineaDelTempo, oraDiFine, righeDaMostrare, righeScaletta 
 import { useMedia } from '../lib/useMedia'
 import { Digits, STATE_COLOR } from './Quadrante'
 import { LineaDelTempo } from './LineaDelTempo'
+import { PostoMaurizio } from './PostoMaurizio'
 import { Scaletta } from './Scaletta'
 import { Close, Next, Pause, Play, Prev } from './Icons'
 import { MusicaBar } from './MusicaBar'
@@ -269,6 +270,7 @@ export function TimerScreen({
   const suTinta = tinta === STATE_COLOR.work ? 'var(--su-rosso)' : 'var(--su-colore)'
 
   const rounds = seg?.rounds ?? workout.rounds
+  const sticker = statoFermo.src && !done && view.status !== 'idle' ? statoFermo.src : null
   // Quante righe di scaletta entrano: più dove l'altezza avanza, nessuna dove
   // non basta (un telefono girato di lato, o uno schermo basso in verticale).
   const verticale = useMedia('(orientation: portrait)')
@@ -328,9 +330,6 @@ export function TimerScreen({
 
       <div className="tf-corpo">
         <div className="tf-sinistra">
-          {statoFermo.src && !done && !beccato && view.status !== 'idle' && (
-            <img className="tf-adesivo" src={statoFermo.src} alt="" />
-          )}
           {done ? (
             <>
               {settings.coach !== 'off' && <img className="adesivo-finale" src={finale} alt="" />}
@@ -346,6 +345,8 @@ export function TimerScreen({
               {!idle && seg?.nota && <span className="tf-obiettivo">{seg.nota}</span>}
             </>
           )}
+
+          <PostoMaurizio className="tf-maurizio-l" stato={sticker} beccato={beccato} />
 
           {/* Il gesto che si fa più spesso è il più grande; gli altri hanno la
               parola scritta, perché un'icona sola non dice «indietro» a chi
@@ -384,23 +385,15 @@ export function TimerScreen({
         </div>
 
         <div className="tf-destra">
-          {beccato ? (
-            // Quando Maurizio si tradisce prende il posto del tempo che resta, non
-            // quello di tutto lo schermo: cifre ed esercizio restano leggibili.
-            <div className="beccato">
-              <img src={beccato.src} alt="" />
-              <span className="beccato-frase">{beccato.frase}</span>
+          {!done && (
+            <div className="tf-resta">
+              <span className="tf-etichetta">RESTA</span>
+              <span className="tf-resta-tempo">{clock(view.remainingTotal)}</span>
+              <span className="tf-etichetta">FINE ALLE {oraDiFine(Date.now(), view.remainingTotal)}</span>
             </div>
-          ) : (
-            !done && (
-              <div className="tf-resta">
-                <span className="tf-etichetta">RESTA</span>
-                <span className="tf-resta-tempo">{clock(view.remainingTotal)}</span>
-                <span className="tf-etichetta">FINE ALLE {oraDiFine(Date.now(), view.remainingTotal)}</span>
-              </div>
-            )
           )}
           <Scaletta righe={scaletta.righe} altri={scaletta.altri} altriSecondi={scaletta.altriSecondi} />
+          <PostoMaurizio className="tf-maurizio-p" stato={sticker} beccato={beccato} />
           {conMusica && <MusicaBar musica={musica} className="tf-musica" />}
         </div>
 

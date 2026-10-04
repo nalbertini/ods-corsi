@@ -149,7 +149,7 @@ console.log('Quante righe entrano')
 await prova('di fianco, schermo normale: tre', () => righeDaMostrare({ verticale: false, poco: false, alto: false }), 3)
 await prova('di fianco, schermo alto: cinque', () => righeDaMostrare({ verticale: false, poco: false, alto: true }), 5)
 await prova('in verticale, schermo normale: due', () => righeDaMostrare({ verticale: true, poco: false, alto: false }), 2)
-await prova('in verticale, schermo alto: quattro', () => righeDaMostrare({ verticale: true, poco: false, alto: true }), 4)
+await prova('in verticale, schermo alto: sempre due (il posto che avanza è di Maurizio)', () => righeDaMostrare({ verticale: true, poco: false, alto: true }), 2)
 await prova('dove l\'altezza non basta: nessuna, in qualunque orientamento', () =>
   [righeDaMostrare({ verticale: true, poco: true, alto: false }), righeDaMostrare({ verticale: false, poco: true, alto: true })], [0, 0])
 

@@ -82,6 +82,7 @@ export function oraDiFine(adesso: number, restanti: number): string {
  */
 export function righeDaMostrare({ verticale, poco, alto }: { verticale: boolean; poco: boolean; alto: boolean }): number {
   if (poco) return 0
-  if (verticale) return alto ? 4 : 2
+  // In verticale il posto che avanza è di Maurizio, non di altre righe.
+  if (verticale) return 2
   return alto ? 5 : 3
 }
