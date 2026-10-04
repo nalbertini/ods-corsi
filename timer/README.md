@@ -100,7 +100,10 @@ una palestra di judo e divisi in sei categorie: judo, a corpo libero, attrezzi,
 core, cardio, mobilità. Sta in `localStorage` come i timer, quindi si cura
 liberamente: quelli aggiunti a mano si possono togliere, quelli di partenza no.
 
-Nell'editor, «aggiungi esercizio» apre il catalogo: si cerca (senza badare ad
+Nell'editor gli esercizi si scelgono dall'anteprima: si tocca la riga di un round
+(o «aggiungi esercizio») e si apre il catalogo. Toccare un round che ha già un
+esercizio lo cambia, toccarne uno che non ne ha ancora ne aggiunge uno, e da lì
+i nomi si alternano. Il catalogo: si cerca (senza badare ad
 accenti e maiuscole), si filtra per categoria, si scelgono più esercizi in un
 colpo solo — un circuito si costruisce in blocco — e se un nome non c'è lo si
 crea scrivendolo, così il catalogo non diventa mai una gabbia.

@@ -136,6 +136,7 @@ export function buildSegments(w: Workout): Segment[] {
             rounds,
             set,
             sets,
+            ...(names.length ? { esercizioId: ex.id } : {}),
             ...nota(ex),
           })
           const isVeryLast = set === sets && round === rounds && i === stations.length - 1
@@ -166,6 +167,7 @@ export function buildSegments(w: Workout): Segment[] {
           rounds,
           set,
           sets,
+          ...(ex ? { esercizioId: ex.id } : {}),
           ...nota(ex),
         })
         const isVeryLast = set === sets && round === rounds

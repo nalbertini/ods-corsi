@@ -3,8 +3,9 @@ import type { Esercizio } from '../lib/esercizi'
 import { PickerEsercizi } from './PickerEsercizi'
 import type { Dove, Exercise, Segment, Workout } from '../types'
 import type { Corso } from '../lib/libreria'
-import { MODE_BADGE, MODE_FIELDS, MODE_HINT, MODE_LABEL, buildSegments, descriviObiettivo, totalDuration } from '../lib/engine'
-import { clock, uid } from '../lib/format'
+import { MODE_BADGE, MODE_FIELDS, MODE_HINT, MODE_LABEL, descriviObiettivo, totalDuration } from '../lib/engine'
+import { clock } from '../lib/format'
+import { applicaScelta, righeAnteprima } from '../lib/anteprima'
 import { Back, Caret, Minus, Play, Plus, Trash } from './Icons'
 
 type Field = keyof Workout
@@ -100,10 +101,10 @@ function CampoObiettivo({
 }) {
   return (
     <label className="stack grow" style={{ gap: 4, minWidth: 0 }}>
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', color: 'var(--faint)' }}>{label}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', color: 'var(--dim)' }}>{label}</span>
       <input
         className="field"
-        style={{ padding: '8px 10px', fontSize: 15, textAlign: 'center' }}
+        style={{ padding: '8px 10px', minHeight: 44, fontSize: 15, textAlign: 'center' }}
         type="number"
         inputMode="decimal"
         min={0}
@@ -158,10 +159,13 @@ export function EditorScreen({
   const [w, setW] = useState<Workout>(() =>
     nuovo && destinazioni?.includes('miei') && !initial.dove ? { ...initial, dove: 'miei' } : initial,
   )
-  const [scegliendo, setScegliendo] = useState(false)
-  // L'obiettivo si apre una riga per volta: tre campi per ogni esercizio,
+  // Il picker si apre da una riga dell'anteprima (e allora `bersaglio` è
+  // l'esercizio da cambiare) o dai tasti che aggiungono (senza).
+  const [scegliendo, setScegliendo] = useState<{ bersaglio?: string } | null>(null)
+  // Una riga si apre per volta: obiettivo, serie e cestino per ogni riga,
   // sempre aperti, trasformerebbero un circuito da otto stazioni in un modulo.
-  const [obiettivoAperto, setObiettivoAperto] = useState<string | null>(null)
+  const [rigaAperta, setRigaAperta] = useState<{ i: number; id: string } | null>(null)
+  const [tutteLeRighe, setTutteLeRighe] = useState(false)
   // La serie che si sta guardando: 0 vuol dire tutte. Gli esercizi aggiunti
   // da qui finiscono in quella serie, e l'elenco mostra solo quelli che ci si fanno.
   const [serieScelta, setSerieScelta] = useState(0)
@@ -169,7 +173,6 @@ export function EditorScreen({
 
   const fields = MODE_FIELDS[w.mode]
   const steppers = fields.filter((f) => f !== 'sets' || w.mode !== 'fortime')
-  const segments = buildSegments(w)
   // La cella del lavoro è anche dove si scelgono gli esercizi: è lì che si
   // pensa a cosa fare, e scendere fino all'elenco per aggiungerli era un
   // secondo passaggio. Il circuito non ce l'ha: ogni stazione ha la sua durata.
@@ -182,34 +185,43 @@ export function EditorScreen({
   const nomiEsercizi = visibili.map((e) => e.name.trim()).filter(Boolean)
   // L'anteprima di una serie parte dalla serie: guardando la terza, le prime
   // dodici righe dell'allenamento non direbbero niente.
-  const anteprima = vista === 0 ? segments : segments.filter((s) => s.set === vista && s.kind !== 'prepare' && s.kind !== 'cooldown')
+  const righe = righeAnteprima(w, vista)
+  // Un circuito o un amrap di più di dodici righe non si taglia: lì l'anteprima
+  // è l'unico elenco, e una stazione nascosta non si potrebbe togliere.
+  const tutte = tutteLeRighe || w.mode === 'circuit' || w.mode === 'amrap' || w.mode === 'fortime'
+  const mostrate = tutte ? righe : righe.slice(0, 12)
 
-  const aggiungiDalCatalogo = (nomi: string[]) => {
-    set({ exercises: [...w.exercises, ...nomi.map((name) => ({ id: uid(), name, ...(vista ? { serie: vista } : {}) }))] })
-    setScegliendo(false)
+  const scegli = (nomi: string[]) => {
+    set({ exercises: applicaScelta(w.exercises, scegliendo?.bersaglio, nomi, vista || undefined) })
+    setScegliendo(null)
   }
-  const renameExercise = (id: string, name: string) =>
-    set({ exercises: w.exercises.map((e) => (e.id === id ? { ...e, name } : e)) })
   const setExerciseDuration = (id: string, duration: number) =>
     set({ exercises: w.exercises.map((e) => (e.id === id ? { ...e, duration } : e)) })
-  const removeExercise = (id: string) => set({ exercises: w.exercises.filter((e) => e.id !== id) })
+  // Si sposta fra le righe che si vedono: dentro una serie, scambiarla con una
+  // riga di un'altra serie, nascosta, sembrerebbe un tocco andato a vuoto.
+  const move = (id: string, step: -1 | 1) => {
+    const index = visibili.findIndex((e) => e.id === id)
+    const to = index + step
+    if (index < 0 || to < 0 || to >= visibili.length) return
+    const a = w.exercises.indexOf(visibili[index])
+    const b = w.exercises.indexOf(visibili[to])
+    const list = [...w.exercises]
+    ;[list[a], list[b]] = [list[b], list[a]]
+    set({ exercises: list })
+    // Il pannello segue l'esercizio: la riga sotto il dito adesso è un'altra.
+    const i = righeAnteprima({ ...w, exercises: list }, vista).findIndex((r) => r.esercizioId === id)
+    setRigaAperta(i < 0 ? null : { i, id })
+  }
+  const removeExercise = (id: string) => {
+    set({ exercises: w.exercises.filter((e) => e.id !== id) })
+    setRigaAperta(null)
+  }
   const setObiettivo = (id: string, patch: Partial<Pick<Exercise, 'sets' | 'reps' | 'kg'>>) =>
     set({ exercises: w.exercises.map((e) => (e.id === id ? { ...e, ...patch } : e)) })
   /** In quale serie si fa: il tocco passa a quella dopo, e dall'ultima torna a tutte. */
   const cambiaSerie = (ex: Exercise) => {
     const prossima = !ex.serie || ex.serie >= w.sets ? (ex.serie ? undefined : 1) : ex.serie + 1
     set({ exercises: w.exercises.map((e) => (e.id === ex.id ? { ...e, serie: prossima } : e)) })
-  }
-  // Si sposta fra le righe che si vedono: dentro una serie, scambiarla con una
-  // riga di un'altra serie, nascosta, sembrerebbe un tocco andato a vuoto.
-  const move = (index: number, step: -1 | 1) => {
-    const to = index + step
-    if (to < 0 || to >= visibili.length) return
-    const a = w.exercises.indexOf(visibili[index])
-    const b = w.exercises.indexOf(visibili[to])
-    const list = [...w.exercises]
-    ;[list[a], list[b]] = [list[b], list[a]]
-    set({ exercises: list })
   }
 
   const named = { ...w, name: w.name.trim() || 'Timer senza nome' }
@@ -219,8 +231,8 @@ export function EditorScreen({
       <PickerEsercizi
         catalogo={catalogo}
         onCatalogo={onCatalogo}
-        onScegli={aggiungiDalCatalogo}
-        onChiudi={() => setScegliendo(false)}
+        onScegli={scegli}
+        onChiudi={() => setScegliendo(null)}
       />
     )
   }
@@ -278,7 +290,7 @@ export function EditorScreen({
                 <button
                   className="scegli-esercizi"
                   data-vuoto={nomiEsercizi.length === 0}
-                  onClick={() => setScegliendo(true)}
+                  onClick={() => setScegliendo({})}
                   title={nomiEsercizi.join(' · ') || undefined}
                 >
                   {nomiEsercizi.length === 0 ? (
@@ -301,164 +313,6 @@ export function EditorScreen({
               )}
             </Stepper>
           ))}
-        </div>
-
-        <div className="rule">
-          <span className="rule-label">{w.mode === 'circuit' ? 'STAZIONI' : 'ESERCIZI'}</span>
-          <div className="rule-line" />
-          <span className="num" style={{ fontSize: 14, fontWeight: 600, color: 'var(--dim)' }}>
-            {visibili.length}
-          </span>
-        </div>
-        {conSerie && (
-          <div className="pad row serie-schede" role="tablist" aria-label="Esercizi per serie">
-            {Array.from({ length: w.sets + 1 }, (_, n) => (
-              <button
-                key={n}
-                className="chip"
-                role="tab"
-                data-on={vista === n}
-                aria-selected={vista === n}
-                onClick={() => setSerieScelta(n)}
-              >
-                {n === 0 ? 'TUTTE' : `SERIE ${n}`}
-              </button>
-            ))}
-          </div>
-        )}
-        <p className="pad" style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)', margin: '0 0 10px' }}>
-          {vista > 0
-            ? `Nella serie ${vista} si fanno i suoi esercizi e quelli di tutte le serie. Quelli che aggiungi da qui vanno solo nella serie ${vista}.`
-            : w.mode === 'circuit'
-              ? 'Ogni stazione è un intervallo di lavoro, con la sua durata.'
-              : 'I nomi si alternano a ogni round. Lascia vuoto per non annunciare nulla.'}{' '}
-          {conSerie && vista === 0 && 'Tocca TUTTE LE SERIE sotto un esercizio per farlo solo in una. '}
-          L’obiettivo — serie, ripetizioni, carico — si vede sotto il nome mentre lavori, e non cambia i tempi.
-        </p>
-
-        <div className="pad stack" style={{ gap: 8 }}>
-          {visibili.map((ex, i) => {
-            const obiettivo = descriviObiettivo(ex)
-            const aperto = obiettivoAperto === ex.id
-            // Una serie che non c'è più, perché le serie sono scese: resta
-            // nell'elenco, ma il timer non la fa, e va detto.
-            const fuori = !!ex.serie && (w.mode === 'fortime' || ex.serie > w.sets)
-            return (
-              <div key={ex.id} className="card stack" style={{ gap: 6, padding: '8px 10px' }}>
-                <div className="row" style={{ gap: 8 }}>
-                  {/* Due frecce invece di una maniglia: sembrava trascinabile e
-                      non lo era, e sapeva solo salire — per far scendere una
-                      stazione bisognava far salire tutte le altre. */}
-                  <div className="stack" style={{ gap: 2, flexShrink: 0 }}>
-                    <button
-                      className="riordina"
-                      onClick={() => move(i, -1)}
-                      disabled={i === 0}
-                      aria-label={`Sposta ${ex.name || `la riga ${i + 1}`} più in alto`}
-                    >
-                      <Caret verso="su" />
-                    </button>
-                    <button
-                      className="riordina"
-                      onClick={() => move(i, 1)}
-                      disabled={i === visibili.length - 1}
-                      aria-label={`Sposta ${ex.name || `la riga ${i + 1}`} più in basso`}
-                    >
-                      <Caret verso="giu" />
-                    </button>
-                  </div>
-                  <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--faint)', width: 22 }}>
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <input
-                    className="field grow"
-                    style={{ border: 'none', background: 'transparent', padding: '10px 0', fontSize: 15 }}
-                    value={ex.name}
-                    placeholder={w.mode === 'circuit' ? `Stazione ${i + 1}` : `Esercizio ${i + 1}`}
-                    onChange={(e) => renameExercise(ex.id, e.target.value)}
-                  />
-                  {w.mode === 'circuit' && (
-                    <input
-                      className="field"
-                      style={{ width: 76, textAlign: 'center', padding: '10px 4px', fontSize: 15 }}
-                      type="number"
-                      min={5}
-                      max={600}
-                      value={ex.duration ?? w.work}
-                      onChange={(e) => setExerciseDuration(ex.id, Number(e.target.value) || w.work)}
-                      aria-label={`Durata di ${ex.name || `stazione ${i + 1}`}`}
-                    />
-                  )}
-                  <button
-                    className="icon-btn"
-                    style={{ width: 40, border: 'none', color: 'var(--faint)' }}
-                    onClick={() => removeExercise(ex.id)}
-                    aria-label="Rimuovi"
-                  >
-                    <Trash size={16} />
-                  </button>
-                </div>
-
-                <div className="row" style={{ gap: 14, padding: '2px 0 2px 60px', flexWrap: 'wrap' }}>
-                  <button
-                    className="row"
-                    style={{
-                      gap: 6,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      letterSpacing: '0.08em',
-                      color: obiettivo ? 'var(--giallo-testo)' : 'var(--faint)',
-                    }}
-                    onClick={() => setObiettivoAperto(aperto ? null : ex.id)}
-                    aria-expanded={aperto}
-                  >
-                    {obiettivo || '+ OBIETTIVO'}
-                  </button>
-                  {(conSerie || ex.serie) && (
-                    <button
-                      className="serie-esercizio"
-                      data-una={!!ex.serie}
-                      data-fuori={fuori}
-                      onClick={() => cambiaSerie(ex)}
-                      aria-label={`${ex.name || `Riga ${i + 1}`}: ${ex.serie ? `solo nella serie ${ex.serie}` : 'in tutte le serie'}. Tocca per cambiare.`}
-                    >
-                      {ex.serie ? `SERIE ${ex.serie}${fuori ? ' · NON C’È' : ''}` : 'TUTTE LE SERIE'}
-                    </button>
-                  )}
-                </div>
-
-                {aperto && (
-                  <div className="row" style={{ gap: 8, padding: '2px 0 6px' }}>
-                    <CampoObiettivo
-                      label="SERIE"
-                      value={ex.sets}
-                      max={20}
-                      onChange={(v) => setObiettivo(ex.id, { sets: v })}
-                    />
-                    <CampoObiettivo
-                      label="RIPETIZIONI"
-                      value={ex.reps}
-                      max={200}
-                      onChange={(v) => setObiettivo(ex.id, { reps: v })}
-                    />
-                    <CampoObiettivo
-                      label="KG"
-                      value={ex.kg}
-                      step={0.5}
-                      max={500}
-                      onChange={(v) => setObiettivo(ex.id, { kg: v })}
-                    />
-                  </div>
-                )}
-              </div>
-            )
-          })}
-          <button className="btn btn-dashed" style={{ minHeight: 50, fontSize: 15 }} onClick={() => setScegliendo(true)}>
-            <Plus size={16} />
-            {/* Dentro una serie il tasto dice dove va, e non quel che è: sul
-                telefono le due cose insieme non stanno in una riga. */}
-            {vista > 0 ? `AGGIUNGI ALLA SERIE ${vista}` : `AGGIUNGI ${w.mode === 'circuit' ? 'STAZIONE' : 'ESERCIZIO'}`}
-          </button>
         </div>
 
         {destinazioni && (
@@ -525,36 +379,153 @@ export function EditorScreen({
           </>
         )}
 
+        {/* L'anteprima è anche l'elenco degli esercizi: si tocca la riga di un
+            round per sceglierne l'esercizio, invece di tenerli in una sezione
+            a parte e guardare poi qui cosa ne usciva. */}
         <div className="rule">
           <span className="rule-label">{vista > 0 ? `ANTEPRIMA · SERIE ${vista}` : 'ANTEPRIMA'}</span>
           <div className="rule-line" />
           <span className="num" style={{ fontSize: 14, fontWeight: 600, color: 'var(--dim)' }}>
-            {anteprima.length} intervalli
+            {righe.length} intervalli
           </span>
         </div>
+        {conSerie && (
+          <div className="pad row serie-schede" role="tablist" aria-label="Anteprima per serie">
+            {Array.from({ length: w.sets + 1 }, (_, n) => (
+              <button
+                key={n}
+                className="chip"
+                role="tab"
+                data-on={vista === n}
+                aria-selected={vista === n}
+                onClick={() => {
+                  setSerieScelta(n)
+                  setRigaAperta(null)
+                }}
+              >
+                {n === 0 ? 'TUTTE' : `SERIE ${n}`}
+              </button>
+            ))}
+          </div>
+        )}
+        <p className="pad" style={{ fontSize: 13, lineHeight: 1.45, color: 'var(--dim)', margin: '0 0 10px' }}>
+          Tocca un intervallo di lavoro per scegliere l’esercizio.
+          {w.mode !== 'circuit' && w.mode !== 'amrap' && w.mode !== 'fortime' && ' I nomi si alternano a ogni round.'}
+          {vista > 0 && ` Quelli che aggiungi da qui vanno solo nella serie ${vista}.`}
+        </p>
         <div className="pad stack" style={{ gap: 4, paddingBottom: 20 }}>
-          {anteprima.slice(0, 12).map((s, i) => (
-            <div
-              key={`${s.offset}-${i}`}
-              className="row"
-              style={{ gap: 10, height: 36, padding: '0 10px', background: 'var(--surface)', borderLeft: `4px solid var(--${s.kind})` }}
-            >
-              <span className="num" style={{ fontSize: 13, fontWeight: 600, color: 'var(--faint)', width: 22 }}>
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <span style={{ fontSize: 14, fontWeight: 600 }} className="grow">
-                {rigaAnteprima(s)}
-              </span>
-              <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--tasto)' }}>
-                {s.duration}&quot;
-              </span>
-            </div>
-          ))}
-          {anteprima.length > 12 && (
-            <span style={{ fontSize: 13, color: 'var(--dim)', padding: '4px 10px' }}>
-              … e altri {anteprima.length - 12} intervalli
-            </span>
+          {mostrate.map((r, i) => {
+            const s = r.segment
+            const ex = r.esercizioId ? w.exercises.find((e) => e.id === r.esercizioId) : undefined
+            const lavoro = s.kind === 'work'
+            const aperta = !!ex && rigaAperta?.i === i && rigaAperta.id === ex.id
+            const obiettivo = ex ? descriviObiettivo(ex) : ''
+            // Una serie che non c'è più, perché le serie sono scese: resta
+            // nell'elenco, ma il timer non la fa, e va detto.
+            const fuori = !!ex?.serie && (w.mode === 'fortime' || ex.serie > w.sets)
+            const nome = ex ? (obiettivo ? `${ex.name} · ${obiettivo}` : ex.name) : rigaAnteprima(s)
+            const contenuto = (
+              <>
+                <span className="num" style={{ fontSize: 13, fontWeight: 600, color: 'var(--faint)', width: 22 }}>
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 600, textAlign: 'left', minWidth: 0, overflowWrap: 'anywhere', color: lavoro && !ex ? 'var(--dim)' : undefined }} className="grow">
+                  {nome}
+                  {lavoro && !ex && ' · + ESERCIZIO'}
+                  {fuori && ' · SERIE NON C’È'}
+                </span>
+                {r.durata && (
+                  <span className="num" style={{ fontSize: 16, fontWeight: 700, color: 'var(--tasto)' }}>
+                    {s.duration}&quot;
+                  </span>
+                )}
+              </>
+            )
+            const stile = { gap: 10, minHeight: lavoro ? 56 : 36, padding: '0 10px', background: 'var(--surface)', borderLeft: `4px solid var(--${s.kind})` }
+            return (
+              <div key={`${s.offset}-${i}`} className="stack" style={{ gap: 0 }}>
+                {lavoro ? (
+                  <button
+                    className="row"
+                    style={{ ...stile, width: '100%' }}
+                    aria-expanded={ex ? aperta : undefined}
+                    aria-label={ex ? `${ex.name}: opzioni dell’esercizio` : `Intervallo ${i + 1}: scegli l’esercizio`}
+                    onClick={() => (ex ? setRigaAperta(aperta ? null : { i, id: ex.id }) : setScegliendo({}))}
+                  >
+                    {contenuto}
+                  </button>
+                ) : (
+                  <div className="row" style={stile}>
+                    {contenuto}
+                  </div>
+                )}
+
+                {aperta && ex && (
+                  <div className="card stack" style={{ gap: 8, padding: '8px 10px' }}>
+                    <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+                      <button className="chip" onClick={() => setScegliendo({ bersaglio: ex.id })}>
+                        CAMBIA ESERCIZIO
+                      </button>
+                      {(conSerie || ex.serie) && (
+                        <button
+                          className="serie-esercizio"
+                          data-una={!!ex.serie}
+                          data-fuori={fuori}
+                          onClick={() => cambiaSerie(ex)}
+                          aria-label={`${ex.name}: ${ex.serie ? `solo nella serie ${ex.serie}` : 'in tutte le serie'}. Tocca per cambiare.`}
+                        >
+                          {ex.serie ? `SERIE ${ex.serie}` : 'TUTTE LE SERIE'}
+                        </button>
+                      )}
+                      {w.mode === 'circuit' && (
+                        <input
+                          className="field"
+                          style={{ width: 76, minHeight: 44, textAlign: 'center', padding: '8px 4px', fontSize: 15 }}
+                          type="number"
+                          min={5}
+                          max={600}
+                          value={ex.duration ?? w.work}
+                          onChange={(e) => setExerciseDuration(ex.id, Number(e.target.value) || w.work)}
+                          aria-label={`Durata di ${ex.name}`}
+                        />
+                      )}
+                      <span className="grow" />
+                      <button className="riordina" onClick={() => move(ex.id, -1)} disabled={visibili[0]?.id === ex.id} aria-label={`Sposta ${ex.name} più in alto`}>
+                        <Caret verso="su" />
+                      </button>
+                      <button className="riordina" onClick={() => move(ex.id, 1)} disabled={visibili[visibili.length - 1]?.id === ex.id} aria-label={`Sposta ${ex.name} più in basso`}>
+                        <Caret verso="giu" />
+                      </button>
+                      <button
+                        className="icon-btn"
+                        style={{ width: 44, border: 'none', color: 'var(--dim)' }}
+                        onClick={() => removeExercise(ex.id)}
+                        aria-label={`Togli ${ex.name}`}
+                      >
+                        <Trash size={16} />
+                      </button>
+                    </div>
+                    <div className="row" style={{ gap: 8 }}>
+                      <CampoObiettivo label="SERIE" value={ex.sets} max={20} onChange={(v) => setObiettivo(ex.id, { sets: v })} />
+                      <CampoObiettivo label="RIPETIZIONI" value={ex.reps} max={200} onChange={(v) => setObiettivo(ex.id, { reps: v })} />
+                      <CampoObiettivo label="KG" value={ex.kg} step={0.5} max={500} onChange={(v) => setObiettivo(ex.id, { kg: v })} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          {righe.length > mostrate.length && (
+            <button className="chip" onClick={() => setTutteLeRighe(true)}>
+              MOSTRA TUTTI ({righe.length - mostrate.length} IN PIÙ)
+            </button>
           )}
+          <button className="btn btn-dashed" style={{ minHeight: 50, fontSize: 15, marginTop: 6 }} onClick={() => setScegliendo({})}>
+            <Plus size={16} />
+            {/* Dentro una serie il tasto dice dove va, e non quel che è: sul
+                telefono le due cose insieme non stanno in una riga. */}
+            {vista > 0 ? `AGGIUNGI ALLA SERIE ${vista}` : `AGGIUNGI ${w.mode === 'circuit' ? 'STAZIONE' : 'ESERCIZIO'}`}
+          </button>
         </div>
       </div>
 

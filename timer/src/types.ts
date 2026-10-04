@@ -85,6 +85,8 @@ export interface Segment {
   offset: number
   /** Il conto mostrato secondo per secondo, quando Maurizio ci mette del suo. */
   display?: number[]
+  /** L'esercizio che si fa, quando c'è: dall'anteprima si tocca la riga per cambiarlo. */
+  esercizioId?: string
   /** Serie, ripetizioni e carico già impaginati: `3×10 · 16 kg`. */
   nota?: string
   /** Il giro in più che Maurizio si inventa: indice della frase con cui lo annuncia. */
