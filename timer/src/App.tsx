@@ -50,7 +50,8 @@ import {
 import { type Lezione, lezioneDaIndirizzo } from './lib/lezione'
 import { type Gruppo, type Strumento, aTuttoSchermo, conBarra, gruppiDi } from './lib/gruppi'
 import type { Incorporato, TimerPronto } from './lib/incorporato'
-import { CHIAVI_SALA, type ImpostazioniSala, type TimerSala, salvaTimerSala, toccaLaSala } from './lib/impostazioniSala'
+import { CHIAVI_SALA, type ImpostazioniSala, type TimerSala, salvaTimerSala, scaricaDiscipline, toccaLaSala } from './lib/impostazioniSala'
+import { type Disciplina, disciplineConVoci, filtroValido, loadDiscipline, saveDiscipline } from './lib/discipline'
 
 /** I corsi dell'ultima volta, per il titolo della lezione e l'editor senza rete. */
 const DOVE_CORSI = 'ods-timer:corsi'
@@ -155,7 +156,9 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory())
   // Il catalogo sta qui e non nell'editor: la sezione esercizi e la scelta
   // dentro un timer devono vedere la stessa lista, non due copie.
-  const [catalogo, setCatalogo] = useState<Esercizio[]>(() => loadEsercizi())
+  const [catalogo, setCatalogo] = useState<Esercizio[]>(() => loadEsercizi(loadDiscipline()))
+  // Le discipline della palestra: l'ultima lista vista su questo dispositivo, poi quella del database.
+  const [disciplineLocali, setDisciplineLocali] = useState<Disciplina[]>(() => loadDiscipline())
   const [tab, setTab] = useState<Tab>('timer')
   // Cronometro e conto alla rovescia si aprono dalla lista dei timer, a tutto schermo.
   const [strumento, setStrumento] = useState<Strumento | null>(null)
@@ -281,7 +284,18 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             },
           )
       }
-      const l = await scaricaLibreria(a.chi === 'personale' ? a.personaId : null)
+      // Se la lista non si legge (senza rete) non si toglie la disciplina a nessun timer: `null`.
+      const dis =
+        a.chi === 'personale'
+          ? await scaricaDiscipline(await db()).then(
+              (l) => {
+                setDisciplineLocali(l)
+                return l
+              },
+              () => null,
+            )
+          : null
+      const l = await scaricaLibreria(a.chi === 'personale' ? a.personaId : null, dis)
       setWorkouts((attuali) => unisci(attuali, l.timer))
       setCorsi(l.corsi)
       try {
@@ -387,6 +401,8 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   }, [settings, mandaSala])
   // Il catalogo degli esercizi, quando la segreteria ne ha fatto uno:
   // sul tablet è quello della palestra, e si salva qui per quando manca la rete.
+  const discipline = dellaSala?.discipline ?? disciplineLocali
+  useEffect(() => saveDiscipline(discipline), [discipline])
   const eserciziSala = dellaSala?.esercizi ?? null
   useEffect(() => {
     if (eserciziSala) setCatalogo((c) => (JSON.stringify(c) === JSON.stringify(eserciziSala) ? c : eserciziSala))
@@ -545,6 +561,15 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   }, [workouts, personaId])
 
   const gruppi: Gruppo[] = useMemo(() => gruppiDi(workouts, accesso, lezione), [workouts, accesso, lezione])
+  // La lista mostrata si filtra per disciplina; quella dei timer «pronti» per il tablet (qui sopra) no.
+  const [filtroDisciplina, setFiltroDisciplina] = useState<string | null>(null)
+  const disciplineUsate = useMemo(() => disciplineConVoci(workouts, discipline), [workouts, discipline])
+  // Un filtro su una disciplina tolta, o rimasta senza timer, non resta acceso.
+  const filtroAcceso = filtroValido(filtroDisciplina, disciplineUsate)
+  const gruppiMostrati: Gruppo[] = useMemo(
+    () => (filtroAcceso === null ? gruppi : gruppiDi(workouts, accesso, lezione, filtroAcceso)),
+    [gruppi, filtroAcceso, workouts, accesso, lezione],
+  )
   // Sul tablet: i timer pronti per la lezione, e la richiesta di farne partire uno.
   const pronto = useMemo<TimerPronto | null>(() => {
     const g = gruppi.find((x) => x.chiave === 'lezione' && x.timer.length) ?? gruppi.find((x) => x.chiave === 'corso' && x.timer.length)
@@ -575,7 +600,11 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
       case 'timer':
         return (
           <HomeScreen
-            gruppi={gruppi}
+            gruppi={gruppiMostrati}
+            discipline={discipline}
+            disciplineUsate={disciplineUsate}
+            filtroDisciplina={filtroAcceso}
+            onFiltroDisciplina={setFiltroDisciplina}
             modificabile={(w) => !w.dove || (!!personaId && w.dove !== 'collega')}
             corsi={corsi}
             lezione={nomeLezione}
@@ -610,6 +639,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         return (
           <SettingsScreen
             settings={settings}
+            discipline={discipline}
             onChange={patchSettings}
             historyCount={history.length}
             onOpenRecorder={() => setView({ kind: 'voce' })}
@@ -636,7 +666,10 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
     tab,
     timerDellaSala,
     workouts,
-    gruppi,
+    gruppiMostrati,
+    discipline,
+    disciplineUsate,
+    filtroAcceso,
     corsi,
     nomeLezione,
     accesso,
@@ -767,6 +800,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         <div className="scroll">
           <EserciziScreen
             catalogo={catalogo}
+            discipline={discipline}
             onCatalogo={setCatalogo}
             usi={usiEsercizi}
             onRinomina={rinominaEsercizio}
@@ -788,6 +822,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         destinazioni={personaId && !view.workout.dove ? ['miei', 'palestra', 'qui'] : null}
         corsi={personaId ? corsi : []}
         catalogo={catalogo}
+        discipline={discipline}
         onCatalogo={setCatalogo}
         onCancel={() => setView({ kind: 'tabs' })}
         onSave={(w) => {

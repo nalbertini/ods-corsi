@@ -8,10 +8,12 @@ import {
   nomiDaTesto,
   normalizza,
 } from '../lib/esercizi'
+import { type Disciplina, dellaDisciplina, filtroValido, nomeDisciplina } from '../lib/discipline'
 import { listClips } from '../lib/clipStore'
 import { exerciseKey } from '../lib/voiceClips'
 import { uid } from '../lib/format'
 import { Plus, Trash } from './Icons'
+import { FiltroDiscipline, SceltaDisciplina } from './DisciplinaScelta'
 
 /**
  * La gestione del catalogo: è qui che la palestra si costruisce il proprio
@@ -23,15 +25,18 @@ import { Plus, Trash } from './Icons'
 interface Bozza {
   nome: string
   categoria: Categoria
+  disciplina?: string
 }
 
 export function EserciziScreen({
   catalogo,
+  discipline,
   onCatalogo,
   usi,
   onRinomina,
 }: {
   catalogo: Esercizio[]
+  discipline: Disciplina[]
   onCatalogo: (lista: Esercizio[]) => void
   /** Quante volte ogni nome (normalizzato) compare nei timer salvati. */
   usi: Record<string, number>
@@ -39,6 +44,7 @@ export function EserciziScreen({
 }) {
   const [cerca, setCerca] = useState('')
   const [categoria, setCategoria] = useState<Categoria | 'tutte'>('tutte')
+  const [filtroDisciplina, setFiltroDisciplina] = useState<string | null>(null)
   const [aperto, setAperto] = useState<string | null>(null)
   const [bozza, setBozza] = useState<Bozza>({ nome: '', categoria: 'A corpo libero' })
   const [incolla, setIncolla] = useState(false)
@@ -50,13 +56,15 @@ export function EserciziScreen({
     void listClips().then((k) => setIncise(new Set(k)))
   }, [catalogo])
 
+  // Un filtro su una disciplina tolta nel frattempo non resta acceso.
+  const filtro = filtroValido(filtroDisciplina, discipline)
   const q = normalizza(cerca)
   const visibili = useMemo(
     () =>
-      catalogo.filter(
+      dellaDisciplina(catalogo, filtro).filter(
         (e) => (categoria === 'tutte' || e.categoria === categoria) && (!q || normalizza(e.nome).includes(q)),
       ),
-    [catalogo, categoria, q],
+    [catalogo, categoria, filtro, q],
   )
 
   const gruppi = useMemo(() => {
@@ -74,14 +82,18 @@ export function EserciziScreen({
     setIncolla(false)
     setEsito(null)
     setAperto(e.id)
-    setBozza({ nome: e.nome, categoria: e.categoria })
+    setBozza({ nome: e.nome, categoria: e.categoria, disciplina: e.disciplina })
   }
 
   const apriNuovo = () => {
     setIncolla(false)
     setEsito(null)
     setAperto('nuovo')
-    setBozza({ nome: cerca.trim(), categoria: categoria === 'tutte' ? 'A corpo libero' : categoria })
+    setBozza({
+      nome: cerca.trim(),
+      categoria: categoria === 'tutte' ? 'A corpo libero' : categoria,
+      disciplina: filtro ?? undefined,
+    })
   }
 
   const chiudi = () => setAperto(null)
@@ -90,12 +102,21 @@ export function EserciziScreen({
     const nome = bozza.nome.trim()
     if (!nome || !libero(nome, aperto ?? undefined)) return
     if (aperto === 'nuovo') {
-      onCatalogo([...catalogo, { id: uid(), nome, categoria: bozza.categoria, propri: true }])
+      onCatalogo([
+        ...catalogo,
+        { id: uid(), nome, categoria: bozza.categoria, ...(bozza.disciplina ? { disciplina: bozza.disciplina } : {}), propri: true },
+      ])
       setCerca('')
     } else {
       const vecchio = catalogo.find((e) => e.id === aperto)
       if (!vecchio) return
-      onCatalogo(catalogo.map((e) => (e.id === aperto ? { ...e, nome, categoria: bozza.categoria } : e)))
+      onCatalogo(
+        catalogo.map((e) => {
+          if (e.id !== aperto) return e
+          const { disciplina: _tolta, ...resto } = e
+          return { ...resto, nome, categoria: bozza.categoria, ...(bozza.disciplina ? { disciplina: bozza.disciplina } : {}) }
+        }),
+      )
       if (vecchio.nome !== nome) onRinomina(vecchio.nome, nome)
     }
     chiudi()
@@ -124,7 +145,7 @@ export function EserciziScreen({
   }, [catalogo, nomiIncollati])
 
   const confermaIncolla = () => {
-    const { lista, aggiunti, saltati } = aggiungiNomi(catalogo, nomiIncollati, bozza.categoria)
+    const { lista, aggiunti, saltati } = aggiungiNomi(catalogo, nomiIncollati, bozza.categoria, bozza.disciplina)
     onCatalogo(lista)
     setTesto('')
     setIncolla(false)
@@ -167,6 +188,7 @@ export function EserciziScreen({
           </button>
         ))}
       </div>
+      <SceltaDisciplina discipline={discipline} valore={bozza.disciplina} onCambia={(d) => setBozza((b) => ({ ...b, disciplina: d }))} />
       {bozza.nome.trim() && !libero(bozza.nome, aperto ?? undefined) && (
         <span style={{ fontSize: 12, color: 'var(--giallo-testo)' }}>C’è già un esercizio con questo nome.</span>
       )}
@@ -213,6 +235,7 @@ export function EserciziScreen({
           placeholder="Cerca nel catalogo"
           onChange={(ev) => setCerca(ev.target.value)}
         />
+        <FiltroDiscipline discipline={discipline} valore={filtro} onCambia={setFiltroDisciplina} />
         <div className="row" style={{ gap: 8, overflowX: 'auto' }}>
           <button className="chip" data-on={categoria === 'tutte'} onClick={() => setCategoria('tutte')}>
             TUTTI
@@ -271,9 +294,11 @@ export function EserciziScreen({
                 >
                   <div className="stack grow" style={{ gap: 1, minWidth: 0 }}>
                     <span style={{ fontSize: 15, fontWeight: 600 }}>{e.nome}</span>
-                    {(n > 0 || voce) && (
+                    {(n > 0 || voce || e.disciplina) && (
                       <span style={{ fontSize: 11, color: 'var(--faint)' }}>
-                        {[n > 0 ? `in ${n} timer` : '', voce ? 'voce incisa' : ''].filter(Boolean).join(' · ')}
+                        {[nomeDisciplina(e.disciplina, discipline), n > 0 ? `in ${n} timer` : '', voce ? 'voce incisa' : '']
+                          .filter(Boolean)
+                          .join(' · ')}
                       </span>
                     )}
                   </div>
@@ -317,6 +342,7 @@ export function EserciziScreen({
                 </button>
               ))}
             </div>
+            <SceltaDisciplina discipline={discipline} valore={bozza.disciplina} onCambia={(d) => setBozza((b) => ({ ...b, disciplina: d }))} />
             <button
               className="btn btn-go"
               style={{ minHeight: 48, fontSize: 16 }}

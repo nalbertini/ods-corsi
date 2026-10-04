@@ -1,4 +1,5 @@
 import { eHttp, leggiLink, leggiLinkSpotify, leggiRadio, MESSAGGIO_HTTP } from '../../timer/src/lib/link'
+import { type Disciplina, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 
 /**
  * La musica delle sale: le liste che la segreteria prepara e il tablet fa
@@ -15,6 +16,18 @@ export interface ListaMusica {
   link: string
   /** Nulla: per tutte le sale. */
   salaId: string | null
+  /** La disciplina (id della lista della palestra), o `tutte`; senza, nessuna in particolare. */
+  disciplina?: string
+}
+
+/**
+ * La disciplina da scrivere salvando una lista: `undefined` se non se ne parla
+ * (la riga resta com'era), `null` per toglierla, altrimenti l'id. Una
+ * disciplina che non esiste vale «nessuna».
+ */
+export function disciplinaDaSalvare(l: { disciplina?: string | null }, discipline: Disciplina[]): string | null | undefined {
+  if (!('disciplina' in l)) return undefined
+  return ripulisciDisciplina(l.disciplina, discipline) ?? null
 }
 
 export type FonteMusica = 'youtube' | 'spotify' | 'radio'

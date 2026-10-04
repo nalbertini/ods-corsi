@@ -5,7 +5,9 @@ import type { Corso } from '../lib/libreria'
 import { MODE_BADGE, describe, totalDuration } from '../lib/engine'
 import { clock, compact } from '../lib/format'
 import { type Interrotto, doveEraRimasto } from '../lib/ripresa'
+import { type Disciplina, nomeDisciplina } from '../lib/discipline'
 import { Copy, Edit, Play, Plus, Share, Trash } from './Icons'
+import { FiltroDiscipline } from './DisciplinaScelta'
 
 const FILTERS: Array<{ key: Mode | 'all'; label: string }> = [
   { key: 'all', label: 'TUTTI' },
@@ -32,6 +34,10 @@ export function HomeScreen({
   interrotto,
   onNew,
   conFiltri = true,
+  discipline,
+  disciplineUsate,
+  filtroDisciplina,
+  onFiltroDisciplina,
 }: {
   /** Le sezioni della lista: una sola senza database, com'era. */
   gruppi: Gruppo[]
@@ -56,6 +62,12 @@ export function HomeScreen({
   onNew: (filtro: Mode | 'all') => void
   /** Sul tablet di sala no: lì in cima ci sono già i timer della lezione, e sei filtri sono troppi da lontano. */
   conFiltri?: boolean
+  /** Tutte le discipline della palestra, per i nomi sulle schede. */
+  discipline: Disciplina[]
+  /** Quelle che hanno almeno un timer: i pulsanti del filtro. */
+  disciplineUsate: Disciplina[]
+  filtroDisciplina: string | null
+  onFiltroDisciplina: (id: string | null) => void
 }) {
   const [filter, setFilter] = useState<Mode | 'all'>('all')
   const [open, setOpen] = useState<string | null>(null)
@@ -72,6 +84,7 @@ export function HomeScreen({
     const isOpen = open === chiave
     const suo = modificabile(w)
     const nomiCorsi = (w.corsi ?? []).map(nomeCorso).filter(Boolean)
+    const nomeDellaDisciplina = nomeDisciplina(w.disciplina, discipline)
     return (
       <div key={chiave} className="card stack">
         <div className="wcard">
@@ -88,6 +101,11 @@ export function HomeScreen({
               {w.name.toUpperCase()}
             </button>
             <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--dim)' }}>{describe(w)}</span>
+            {nomeDellaDisciplina && (
+              <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: 'var(--faint)' }}>
+                {nomeDellaDisciplina.toUpperCase()}
+              </span>
+            )}
             {nomiCorsi.length > 0 && (
               <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: 'var(--faint)' }}>
                 {nomiCorsi.join(' · ').toUpperCase()}
@@ -176,6 +194,10 @@ export function HomeScreen({
           </div>
         </div>
       )}
+
+      <div style={{ paddingTop: 14 }}>
+        <FiltroDiscipline discipline={disciplineUsate} valore={filtroDisciplina} onCambia={onFiltroDisciplina} />
+      </div>
 
       {conFiltri && (
         <div className="row pad" style={{ gap: 8, paddingTop: 14, paddingBottom: 14, overflowX: 'auto' }}>

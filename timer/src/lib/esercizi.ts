@@ -1,4 +1,5 @@
 import { uid } from './format'
+import { type Disciplina, DISCIPLINE_DI_PARTENZA, ripulisciDisciplina } from './discipline'
 
 /**
  * Il catalogo degli esercizi.
@@ -7,14 +8,16 @@ import { uid } from './format'
  * finito l'insieme dei nomi: la clip della voce di un esercizio si chiama come
  * il suo nome, quindi con un catalogo diventa un elenco che si può incidere.
  */
-export type Categoria = 'Judo' | 'A corpo libero' | 'Attrezzi' | 'Core' | 'Cardio' | 'Mobilità'
+export type Categoria = 'A corpo libero' | 'Attrezzi' | 'Core' | 'Cardio' | 'Mobilità'
 
-export const CATEGORIE: Categoria[] = ['Judo', 'A corpo libero', 'Attrezzi', 'Core', 'Cardio', 'Mobilità']
+export const CATEGORIE: Categoria[] = ['A corpo libero', 'Attrezzi', 'Core', 'Cardio', 'Mobilità']
 
 export interface Esercizio {
   id: string
   nome: string
   categoria: Categoria
+  /** La disciplina (id), o `tutte`; senza, vale per nessuna in particolare. */
+  disciplina?: string
   /** Vero per quelli aggiunti a mano: nel picker solo quelli si tolgono al volo. */
   propri?: boolean
 }
@@ -23,13 +26,17 @@ const CHIAVE = 'ods-timer:esercizi'
 
 /** Un punto di partenza per una palestra di judo, da curare a piacere. */
 export function catalogoDiPartenza(): Esercizio[] {
-  const per = (categoria: Categoria, nomi: string[]): Esercizio[] =>
-    nomi.map((nome) => ({ id: uid(), nome, categoria }))
+  const per = (categoria: Categoria, nomi: string[], disciplina?: string): Esercizio[] =>
+    nomi.map((nome) => (disciplina ? { id: uid(), nome, categoria, disciplina } : { id: uid(), nome, categoria }))
   return [
-    ...per('Judo', [
-      'Uchi komi', 'Nage komi', 'Ukemi', 'Ne waza', 'Randori', 'Kuzushi',
-      'Entrate di seoi nage', 'Passaggi di guardia', 'Sprawl', 'Fuga d’anca', 'Ponte',
-    ]),
+    ...per(
+      'A corpo libero',
+      [
+        'Uchi komi', 'Nage komi', 'Ukemi', 'Ne waza', 'Randori', 'Kuzushi',
+        'Entrate di seoi nage', 'Passaggi di guardia', 'Sprawl', 'Fuga d’anca', 'Ponte',
+      ],
+      'judo',
+    ),
     ...per('A corpo libero', [
       'Burpee', 'Burpee + salto', 'Piegamenti', 'Squat', 'Jump squat', 'Affondi alternati',
       'Plank jack', 'Mountain climber', 'Salto sul box', 'Trazioni', 'Dip', 'Step up',
@@ -51,6 +58,32 @@ export function catalogoDiPartenza(): Esercizio[] {
   ]
 }
 
+/**
+ * Categoria e disciplina di un esercizio letto da fuori (il browser, il
+ * database, un backup). «Judo» era una categoria: ora è una disciplina, e chi
+ * l'aveva si ritrova in «A corpo libero» con disciplina `judo`, se non ne
+ * aveva già una. Una disciplina che non esiste (più) si toglie.
+ */
+export function categoriaEDisciplina(
+  categoria: unknown,
+  disciplina: unknown,
+  discipline: Disciplina[] = DISCIPLINE_DI_PARTENZA,
+): { categoria: Categoria; disciplina?: string } {
+  const eraJudo = categoria === 'Judo'
+  const cat = CATEGORIE.includes(categoria as Categoria) ? (categoria as Categoria) : 'A corpo libero'
+  const d = ripulisciDisciplina(disciplina ?? (eraJudo ? 'judo' : undefined), discipline)
+  return d ? { categoria: cat, disciplina: d } : { categoria: cat }
+}
+
+/** Un esercizio con categoria e disciplina ripulite; il resto com'è. */
+export function esercizioPulito(e: Esercizio, discipline?: Disciplina[]): Esercizio {
+  const { categoria, disciplina } = categoriaEDisciplina(e.categoria, e.disciplina, discipline)
+  const out: Esercizio = { id: e.id, nome: e.nome, categoria }
+  if (disciplina) out.disciplina = disciplina
+  if (e.propri) out.propri = e.propri
+  return out
+}
+
 function leggi<T>(chiave: string, ripiego: T): T {
   try {
     const grezzo = localStorage.getItem(chiave)
@@ -60,11 +93,16 @@ function leggi<T>(chiave: string, ripiego: T): T {
   }
 }
 
-export function loadEsercizi(): Esercizio[] {
+export function loadEsercizi(discipline?: Disciplina[]): Esercizio[] {
   // Un elenco vuoto è una scelta, non un errore: chi svuota il catalogo per
   // incollare quello vero della palestra non se lo deve ritrovare com'era.
   const salvati = leggi<Esercizio[] | null>(CHIAVE, null)
-  if (Array.isArray(salvati)) return salvati
+  if (Array.isArray(salvati)) {
+    const sani = salvati.map((e) => esercizioPulito(e, discipline))
+    // Chi aveva «Judo» come categoria si ritrova il catalogo migrato: lo si risalva.
+    if (JSON.stringify(sani) !== JSON.stringify(salvati)) saveEsercizi(sani)
+    return sani
+  }
   const iniziale = catalogoDiPartenza()
   saveEsercizi(iniziale)
   return iniziale
@@ -99,6 +137,7 @@ export function aggiungiNomi(
   catalogo: Esercizio[],
   nomi: string[],
   categoria: Categoria,
+  disciplina?: string,
 ): { lista: Esercizio[]; aggiunti: string[]; saltati: string[] } {
   const visti = new Set(catalogo.map((e) => normalizza(e.nome)))
   const aggiunti: string[] = []
@@ -113,7 +152,7 @@ export function aggiungiNomi(
       continue
     }
     visti.add(chiave)
-    nuovi.push({ id: uid(), nome, categoria, propri: true })
+    nuovi.push({ id: uid(), nome, categoria, ...(disciplina ? { disciplina } : {}), propri: true })
     aggiunti.push(nome)
   }
   return { lista: [...catalogo, ...nuovi], aggiunti, saltati }

@@ -3,6 +3,7 @@ import type { Musica } from '../../../timer/src/lib/useMusica'
 import { PostoPlayer } from '../../../timer/src/components/PlayerYoutube'
 import { TESTI_MUSICA } from '../../../timer/src/lib/musicaLocale'
 import { fonteDelLink, type ListaMusica } from '../../lib/musica'
+import { type Disciplina, dellaDisciplina, disciplineConVoci, filtroValido, nomeDisciplina } from '../../../timer/src/lib/discipline'
 
 type P = { size?: number }
 const Prec = ({ size = 22 }: P) => (
@@ -62,6 +63,7 @@ export function MusicaSala({
   spotifyCollegato,
   onScegli,
   onSpegni,
+  discipline,
 }: {
   musica: Musica
   liste: ListaMusica[]
@@ -71,8 +73,14 @@ export function MusicaSala({
   onScegli: (l: ListaMusica | null) => void
   /** Spegne la musica su questo tablet: sparisce la barra e il lettore. */
   onSpegni: () => void
+  /** Le discipline della palestra: il filtro delle liste. */
+  discipline: Disciplina[]
 }) {
   const [aperte, setAperte] = useState(false)
+  const [disciplina, setDisciplina] = useState<string | null>(null)
+  // Il filtro mostra solo le discipline che hanno una lista; uno su una disciplina rimasta senza non resta acceso.
+  const usate = disciplineConVoci(liste, discipline)
+  const filtro = filtroValido(disciplina, usate)
   // File e radio senza niente da suonare dicono perché (file spariti, radio caduta): non restano muti.
   const locale = musica.fonte === 'file' || musica.fonte === 'radio'
   if (!musica.attiva && liste.length === 0 && !(locale && musica.errore)) return null
@@ -180,8 +188,21 @@ export function MusicaSala({
       {aperte && (
         <div className="tb-liste" role="dialog" aria-label="La musica della sala">
           <span className="tb-etichetta">LA MUSICA DELLA SALA</span>
-          {liste.map((x) => {
+          {usate.length > 0 && (
+            <div className="tb-filtro" role="group" aria-label="Disciplina">
+              <button type="button" className="tb-filtro-tasto" aria-pressed={filtro === null} onClick={() => setDisciplina(null)}>
+                TUTTE
+              </button>
+              {usate.map((d) => (
+                <button key={d.id} type="button" className="tb-filtro-tasto" aria-pressed={filtro === d.id} onClick={() => setDisciplina(d.id)}>
+                  {d.nome.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          )}
+          {dellaDisciplina(liste, filtro).map((x) => {
             const fonte = fonteDelLink(x.link)
+            const nomeDisc = nomeDisciplina(x.disciplina, discipline)
             const spenta = !fonte || (fonte === 'spotify' && !spotifyCollegato)
             return (
               <button
@@ -201,7 +222,7 @@ export function MusicaSala({
                     {fonte === 'spotify' && !spotifyCollegato
                       ? 'Spotify non è collegato su questo tablet'
                       : fonte
-                        ? `${fonte === 'radio' ? 'Radio' : `Playlist ${NOME_FONTE[fonte]}`}${x.salaId ? '' : ' · tutte le sale'}`
+                        ? `${fonte === 'radio' ? 'Radio' : `Playlist ${NOME_FONTE[fonte]}`}${x.salaId ? '' : ' · tutte le sale'}${nomeDisc ? ` · ${nomeDisc}` : ''}`
                         : 'Link non valido'}
                   </span>
                 </span>

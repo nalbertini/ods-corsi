@@ -186,8 +186,9 @@ export function creaTabletSupabase(db: SupabaseClient): DatiTablet {
     togliProva: (pin, sessioneId, personaId) => rpc<boolean>('togli_prova_con_pin', { pin, sessione: sessioneId, persona: personaId }),
 
     async musica() {
-      const righe = await rpc<Array<{ id: string; nome: string; link: string; sala_id: string | null }>>('musica_sala', {})
-      return (righe ?? []).map((r) => ({ id: r.id, nome: r.nome, link: r.link, salaId: r.sala_id }))
+      const righe = await rpc<Array<{ id: string; nome: string; link: string; sala_id: string | null; disciplina?: string | null }>>('musica_sala', {})
+      // La disciplina arriva con 40-discipline.sql; il tablet la confronta con la sua lista, e una sconosciuta non trova niente.
+      return (righe ?? []).map((r) => ({ id: r.id, nome: r.nome, link: r.link, salaId: r.sala_id, ...(r.disciplina ? { disciplina: r.disciplina } : {}) }))
     },
 
     // La riga delle impostazioni la legge chiunque abbia un accesso (05-segreteria.sql),
