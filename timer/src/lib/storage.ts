@@ -1,5 +1,6 @@
 import type { HistoryEntry, Settings, Workout } from '../types'
 import { seedLibrary } from './presets'
+import { leggiFonte } from './musicaLocale'
 
 const KEY_WORKOUTS = 'ods-timer:workouts'
 const KEY_SETTINGS = 'ods-timer:settings'
@@ -27,6 +28,7 @@ export const DEFAULT_SETTINGS: Settings = {
   // una scelta di chi la sala la tiene, non un effetto collaterale del timer.
   musicaFonte: 'spotify',
   youtube: '',
+  radio: '',
   musicaSegue: false,
   musicaAbbassa: false,
   musicaRecupero: 30,
@@ -86,7 +88,9 @@ export function loadWorkouts(): Workout[] {
 export const saveWorkouts = (list: Workout[]) => write(KEY_WORKOUTS, list)
 
 export function loadSettings(): Settings {
-  return { ...DEFAULT_SETTINGS, ...read<Partial<Settings>>(KEY_SETTINGS, {}) }
+  const s = { ...DEFAULT_SETTINGS, ...read<Partial<Settings>>(KEY_SETTINGS, {}) }
+  // Un salvataggio vecchio o rovinato non deve portare una fonte che non esiste.
+  return { ...s, musicaFonte: leggiFonte(s.musicaFonte) }
 }
 
 export const saveSettings = (s: Settings) => write(KEY_SETTINGS, s)

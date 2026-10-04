@@ -60,3 +60,23 @@ export function leggiLinkSpotify(testo: string): string | null {
   const m = /^\/(?:intl-[\w-]+\/)?(playlist|album|artist)\/([A-Za-z0-9]{10,40})\/?$/.exec(u.pathname)
   return m ? `spotify:${m[1]}:${m[2]}` : null
 }
+
+/**
+ * Una radio è un indirizzo https qualunque, che non sia già un link di YouTube
+ * o di Spotify sbagliato. Dice la stessa cosa del vincolo del database
+ * (`supabase/39-musica-radio.sql`): se qui passasse un indirizzo che lì no, la
+ * segreteria vedrebbe un errore che non c'entra. L'app è su https e il browser
+ * non suona l'http: lo si dice invece di tentare (vedi `MESSAGGIO_HTTP`).
+ */
+const RADIO = /^https:\/\/([a-z0-9-]+(?:\.[a-z0-9-]+)+)(?::[0-9]+)?(?:\/[^\s"<>\\]*)?$/i
+const ALTRI_SERVIZI = /^(?:www\.|m\.|music\.|open\.)?(?:youtube\.com|youtu\.be|youtube-nocookie\.com|spotify\.com)$/i
+
+export function leggiRadio(testo: string): string | null {
+  const t = testo.trim()
+  const m = t.length <= 500 ? RADIO.exec(t) : null
+  return m && !ALTRI_SERVIZI.test(m[1]) ? t : null
+}
+
+export const eHttp = (testo: string) => /^http:\/\/\S+$/i.test(testo.trim())
+
+export const MESSAGGIO_HTTP = "Questo indirizzo non è sicuro: cerca l'indirizzo che comincia con https."

@@ -5,7 +5,7 @@
  * che per tipo. Una voce ne ha una sola, o nessuna. «Tutte» (id riservato)
  * non sta nella lista: è per le voci comuni, come il riscaldamento, e compare
  * sotto ogni disciplina. La lista la tiene la segreteria
- * (`supabase/39-discipline.sql`); quel che arriva dal database o da un backup
+ * (`supabase/40-discipline.sql`); quel che arriva dal database o da un backup
  * si ripulisce qui.
  */
 export interface Disciplina {

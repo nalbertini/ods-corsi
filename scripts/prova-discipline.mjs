@@ -276,7 +276,7 @@ await prova('con la colonna: la lista della riga, ripulita', async () => {
   const r = await I.leggiTimerSala(finto(() => ({ data: { timer: {}, voce: null, esercizi: null, discipline: [{ id: 'karate', nome: 'Karate' }, { id: 'x y', nome: 'No' }] }, error: null })))
   return r.discipline
 }, [d('karate', 'Karate')])
-await prova('senza 39-discipline.sql (colonna mancante): quella di partenza, il resto si legge', async () => {
+await prova('senza 40-discipline.sql (colonna mancante): quella di partenza, il resto si legge', async () => {
   const r = await I.leggiTimerSala(finto((c) => (c.includes('discipline') ? colonnaMancante : { data: { timer: {}, voce: 'Elsa', esercizi: [{ id: 'a', nome: 'Squat', categoria: 'Core' }] }, error: null })))
   return [r.discipline, r.voce, r.esercizi?.length]
 }, [lista, 'Elsa', 1])

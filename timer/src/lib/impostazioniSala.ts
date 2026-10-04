@@ -74,7 +74,7 @@ export interface TimerSala {
   voce: string | null
   /** `null` finché la segreteria non l'ha mai toccato: il tablet tiene il suo. */
   esercizi: Esercizio[] | null
-  /** La lista delle discipline (`supabase/39-discipline.sql`); quella di partenza finché non c'è. */
+  /** La lista delle discipline (`supabase/40-discipline.sql`); quella di partenza finché non c'è. */
   discipline: Disciplina[]
 }
 
@@ -114,7 +114,7 @@ export function timerSala(riga: { timer?: unknown; voce?: unknown; esercizi?: un
 }
 
 /**
- * La riga delle impostazioni, senza discipline se `39-discipline.sql` non c'è
+ * La riga delle impostazioni, senza discipline se `40-discipline.sql` non c'è
  * ancora, e senza voce e catalogo se manca anche `13-voce-esercizi.sql`.
  */
 export async function leggiTimerSala(c: SupabaseClient): Promise<TimerSala> {
@@ -135,7 +135,7 @@ export async function salvaTimerSala(c: SupabaseClient, i: ImpostazioniSala): Pr
   if (error) throw new Error(error.message)
 }
 
-/** La lista delle discipline della palestra, per chi è dell'app ma non è un tablet; quella di partenza se `39-discipline.sql` non c'è. */
+/** La lista delle discipline della palestra, per chi è dell'app ma non è un tablet; quella di partenza se `40-discipline.sql` non c'è. */
 export async function scaricaDiscipline(c: SupabaseClient): Promise<Disciplina[]> {
   const { data, error } = await c.from('impostazioni').select('discipline').maybeSingle()
   if (error) {

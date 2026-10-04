@@ -51,8 +51,10 @@ Le liste che il tablet di sala fa partire dalla sua barra in basso (vedi
 
 - **un nome**, quello che si legge sul tablet: «Riscaldamento», «Randori»;
 - **il link a una playlist** di YouTube o di Spotify: dall'app, **Condividi ›
-  Copia link**, e si incolla. Sotto il campo si legge se è YouTube o Spotify;
-  un link che non è né l'uno né l'altro non si salva;
+  Copia link**, e si incolla. Oppure **l'indirizzo di una radio**, che
+  comincia con https: suona senza pubblicità né account. Sotto il campo si
+  legge cos'è; un indirizzo che comincia con http, o che non è nessuno dei
+  tre, non si salva;
 - **la sala**, o **Tutte le sale**.
 
 **CAMBIA** per correggerla, **TOGLI** per toglierla. Il tablet le rilegge ogni

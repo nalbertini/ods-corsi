@@ -11,7 +11,7 @@ comuni a ogni disciplina (il riscaldamento, il core…), e compare sotto ognuna.
 È la segreteria a tenere la lista; istruttori e tablet la usano per filtrare.
 Se togli una disciplina e poi ne aggiungi una con lo stesso nome, le voci che la
 nominavano e non sono ancora state risalvate tornano ad averla.
-Serve `39-discipline.sql` sul database: finché non c'è, la lista non si salva.
+Serve `40-discipline.sql` sul database: finché non c'è, la lista non si salva.
 
 L'elenco degli esercizi che i tablet propongono scrivendo un timer, e i nomi
 che la voce incisa sa dire. Finché non c'è, ogni tablet usa il suo: si parte

@@ -1,4 +1,4 @@
-import { leggiLink, leggiLinkSpotify } from '../../timer/src/lib/link'
+import { eHttp, leggiLink, leggiLinkSpotify, leggiRadio, MESSAGGIO_HTTP } from '../../timer/src/lib/link'
 
 /**
  * La musica delle sale: le liste che la segreteria prepara e il tablet fa
@@ -17,13 +17,23 @@ export interface ListaMusica {
   salaId: string | null
 }
 
-export type FonteMusica = 'youtube' | 'spotify'
+export type FonteMusica = 'youtube' | 'spotify' | 'radio'
 
-/** Da dove viene un link: YouTube, Spotify, o niente che si sappia suonare. */
+/**
+ * Da dove viene un link: YouTube, Spotify, una radio (un indirizzo https
+ * qualunque), o niente che si sappia suonare. L'http semplice non va: l'app è
+ * su https e il browser blocca il suono (vedi `erroreDelLink`).
+ */
 export function fonteDelLink(link: string): FonteMusica | null {
   if (leggiLink(link)) return 'youtube'
   if (leggiLinkSpotify(link)) return 'spotify'
-  return null
+  return leggiRadio(link) ? 'radio' : null
+}
+
+/** Cosa dire a chi scrive un indirizzo che comincia con http: null se non è il caso. */
+export function erroreDelLink(link: string): string | null {
+  if (link.trim().length > MAX_LINK) return 'Il link è troppo lungo'
+  return fonteDelLink(link) === null && eHttp(link) ? MESSAGGIO_HTTP : null
 }
 
 /**
@@ -36,3 +46,5 @@ export function musicaDellaSala<T extends object>(base: T, spenta: boolean): T |
 }
 
 export const MAX_NOME_LISTA = 40
+/** Quanto può essere lungo un link: lo dice anche il database. */
+const MAX_LINK = 500

@@ -182,7 +182,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from pg_constraint where conname = 'segnalazioni_categoria_solo_filo')
     and exists (select 1 from pg_policy where polname = 'segnalazioni_scrivi'
                 and pg_get_expr(polwithcheck, polrelid) like '%categoria IS NOT NULL%')),
-  ('39-discipline.sql', 'esercizi, timer e liste di musica si dividono per disciplina',
+  ('39-musica-radio.sql', 'le liste della musica possono essere radio (https)',
+    exists (select 1 from pg_constraint where conname = 'musica_sale_link_check'
+            and pg_get_constraintdef(oid) like '%https://%a-z0-9%')),
+  ('40-discipline.sql', 'esercizi, timer e liste di musica si dividono per disciplina',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'discipline')
     and exists (select 1 from information_schema.columns

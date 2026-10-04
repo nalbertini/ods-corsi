@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { confermaDateCorsi, confermaMesiPresenze, testoDateSalvate, type DatiSegreteria, type Impostazioni, type ListaMusica, type Sala } from '../../lib/segreteria'
-import { fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
+import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
 import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -367,7 +367,7 @@ function FormSala({
 type Fai = (op: () => Promise<unknown>, riuscito?: string, poi?: () => unknown) => Promise<unknown>
 type Bozza = { id?: string; nome: string; link: string; salaId: string | null }
 
-const FONTE = { youtube: 'YOUTUBE', spotify: 'SPOTIFY' } as const
+const FONTE = { youtube: 'YOUTUBE', spotify: 'SPOTIFY', radio: 'RADIO' } as const
 
 /**
  * Le liste della musica che il tablet di ogni sala fa partire dalla sua barra
@@ -447,7 +447,7 @@ function MusicaSale({
       )}
       <ComeFunziona>
         Le liste che il tablet di sala fa partire dalla sua barra in basso, sempre a portata di mano: un nome e il link a una playlist di YouTube o di
-        Spotify. Il tablet le sceglie e basta. Per Spotify serve che sul tablet sia collegato un account Premium, dalle impostazioni del timer.
+        Spotify, oppure l'indirizzo di una radio (comincia con https). Il tablet le sceglie e basta. Per Spotify serve che sul tablet sia collegato un account Premium, dalle impostazioni del timer.
       </ComeFunziona>
     </section>
   )
@@ -498,7 +498,7 @@ function FormLista({
       <input
         className="sg-campo"
         aria-label="Link alla playlist"
-        placeholder="link a una playlist di YouTube o di Spotify"
+        placeholder="link di YouTube, Spotify o radio"
         required
         inputMode="url"
         autoCapitalize="none"
@@ -510,10 +510,12 @@ function FormLista({
       <div className="row" style={{ gap: 8 }}>
         <span className="grow" style={{ fontSize: 13, color: scritto && !fonte ? 'var(--rosso-testo)' : 'var(--dim)' }}>
           {!scritto
-            ? 'Da YouTube o da Spotify: Condividi › Copia link.'
-            : fonte
-              ? `Una playlist di ${fonte === 'youtube' ? 'YouTube' : 'Spotify'}.`
-              : 'Questo link non è di YouTube né di Spotify.'}
+            ? 'Da YouTube o da Spotify: Condividi › Copia link. Una radio: l’indirizzo con https.'
+            : fonte === 'radio'
+              ? 'Una radio: con lei i tasti brano restano spenti.'
+              : fonte
+                ? `Una playlist di ${fonte === 'youtube' ? 'YouTube' : 'Spotify'}.`
+                : (erroreDelLink(bozza.link) ?? 'Questo link non è di YouTube né di Spotify, e non sembra l’indirizzo di una radio.')}
         </span>
         <button type="button" className="num sg-chip" style={{ minHeight: 44 }} onClick={() => setBozza(null)}>
           LASCIA STARE
