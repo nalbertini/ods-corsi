@@ -22,7 +22,7 @@ import { RicevutoScreen } from './components/RicevutoScreen'
 import { CountdownTab, CronometroScreen } from './components/AlVolo'
 import { pulisciLink, workoutDaLink } from './lib/condivisione'
 import { type Interrotto, leggiInterrotto, scordaInterrotto } from './lib/ripresa'
-import { Back, Clessidra, Crono, Gear, TimerIcon } from './components/Icons'
+import { Back, Gear, TimerIcon } from './components/Icons'
 import { Logo, Wordmark } from './components/Logo'
 import { completaAccesso } from './lib/spotify'
 import { VERSIONE } from './lib/aggiornamento'
@@ -48,7 +48,7 @@ import {
   versoIlServer,
 } from './lib/libreria'
 import { type Lezione, lezioneDaIndirizzo } from './lib/lezione'
-import { type Gruppo, gruppiDi } from './lib/gruppi'
+import { type Gruppo, type Strumento, aTuttoSchermo, conBarra, gruppiDi } from './lib/gruppi'
 import type { Incorporato, TimerPronto } from './lib/incorporato'
 import { CHIAVI_SALA, type ImpostazioniSala, type TimerSala, salvaTimerSala, toccaLaSala } from './lib/impostazioniSala'
 
@@ -63,7 +63,7 @@ function corsiRicordati(): Corso[] {
   }
 }
 
-type Tab = 'timer' | 'crono' | 'countdown' | 'impostazioni'
+type Tab = 'timer' | 'impostazioni'
 type View =
   | { kind: 'tabs' }
   /** `nuovo`: non sta ancora nella libreria, quindi la topbar dice NUOVO
@@ -80,21 +80,13 @@ type View =
 
 const TABS: Array<{ key: Tab; label: string; icon: typeof TimerIcon }> = [
   { key: 'timer', label: 'TIMER', icon: TimerIcon },
-  { key: 'crono', label: 'CRONOMETRO', icon: Crono },
-  { key: 'countdown', label: 'ALLA ROVESCIA', icon: Clessidra },
   { key: 'impostazioni', label: 'IMPOSTAZIONI', icon: Gear },
 ]
 
 const TAB_TITLE: Record<Tab, string> = {
   timer: 'I TUOI TIMER',
-  crono: 'CRONOMETRO',
-  countdown: 'CONTO ALLA ROVESCIA',
   impostazioni: 'IMPOSTAZIONI',
 }
-
-/* Le due schede degli attrezzi riempiono l'area, non scorrono: le cifre grandi
-   vogliono l'altezza intera, e sotto c'è già la barra delle schede. */
-const PIENE: Tab[] = ['crono', 'countdown']
 
 /**
  * ODS Corsi, il calendario e l'appello, è l'app che contiene questa: il timer
@@ -165,6 +157,13 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   // dentro un timer devono vedere la stessa lista, non due copie.
   const [catalogo, setCatalogo] = useState<Esercizio[]>(() => loadEsercizi())
   const [tab, setTab] = useState<Tab>('timer')
+  // Cronometro e conto alla rovescia si aprono dalla lista dei timer, a tutto schermo.
+  const [strumento, setStrumento] = useState<Strumento | null>(null)
+  const pieno = aTuttoSchermo(tab, strumento)
+  const vaiA = (t: Tab) => {
+    setStrumento(null)
+    setTab(t)
+  }
   // Sul tablet le impostazioni si aprono solo con l'area istruttore: chiusa
   // quella, la scheda sparisce e chi c'era dentro torna ai timer.
   const conImpostazioni = incorporato?.conImpostazioni ?? true
@@ -582,6 +581,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             lezione={nomeLezione}
             conFiltri={!incorporato}
             onStart={startWorkout}
+            onStrumento={setStrumento}
             onEdit={(w) => setView({ kind: 'editor', workout: w })}
             onDuplicate={duplicate}
             onDelete={remove}
@@ -606,10 +606,6 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             }}
           />
         )
-      case 'crono':
-      case 'countdown':
-        // Restano montati sempre, più sotto: qui non ci arriva mai.
-        return null
       case 'impostazioni':
         return (
           <SettingsScreen
@@ -811,32 +807,35 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
       {/* Su desktop la stessa faccia della segreteria e degli istruttori di
           ODS Corsi: il marchio piccolo con il nome dell'area, le voci con il
           filo rosso a sinistra, e in fondo il ritorno e la versione. */}
-      <nav className="sidebar" aria-label="Timer">
-        {/* Sul tablet il marchio c'è già, nella testata della sala. */}
-        {!incorporato && (
-          <div className="row" style={{ gap: 10, padding: '0 8px' }}>
-            <Logo width={46} />
-            <span className="stack" style={{ gap: 2 }}>
-              <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS TIMER</span>
-              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>COLLEGNO</span>
-            </span>
+      {/* Sul tablet con le impostazioni chiuse le voci sarebbero una sola: niente barra. */}
+      {conBarra(!!incorporato, schede.length) && (
+        <nav className="sidebar" aria-label="Timer">
+          {/* Sul tablet il marchio c'è già, nella testata della sala. */}
+          {!incorporato && (
+            <div className="row" style={{ gap: 10, padding: '0 8px' }}>
+              <Logo width={46} />
+              <span className="stack" style={{ gap: 2 }}>
+                <span className="ob" style={{ fontSize: 20, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1 }}>ODS TIMER</span>
+                <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', color: 'var(--dim)' }}>COLLEGNO</span>
+              </span>
+            </div>
+          )}
+          <div className="stack" style={{ gap: 2 }}>
+            {schede.map((t) => (
+              <button key={t.key} className="navitem" aria-current={tab === t.key ? 'page' : undefined} onClick={() => vaiA(t.key)}>
+                {t.label}
+              </button>
+            ))}
           </div>
-        )}
-        <div className="stack" style={{ gap: 2 }}>
-          {schede.map((t) => (
-            <button key={t.key} className="navitem" aria-current={tab === t.key ? 'page' : undefined} onClick={() => setTab(t.key)}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-        <div className="grow" />
-        {!incorporato && (
-          <div className="stack" style={{ gap: 12 }}>
-            {SU_TABLET_DI_SALA && <TornaSala className="" />}
-            <span className="num sidebar-versione">ODS TIMER {VERSIONE}</span>
-          </div>
-        )}
-      </nav>
+          <div className="grow" />
+          {!incorporato && (
+            <div className="stack" style={{ gap: 12 }}>
+              {SU_TABLET_DI_SALA && <TornaSala className="" />}
+              <span className="num sidebar-versione">ODS TIMER {VERSIONE}</span>
+            </div>
+          )}
+        </nav>
+      )}
 
       <div className="app content">
         {/* Cronometro e conto alla rovescia si prendono lo schermo dall'alto:
@@ -845,7 +844,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             intestazione aveva già preso — sessantun pixel di nulla su un
             telefono, e la cornice colorata che cominciava a metà. Senza, la
             cornice inquadra tutto lo schermo, che è il motivo per cui c'è. */}
-        {!PIENE.includes(tab) && (
+        {!pieno && (
           <header className="topbar">
             <div style={{ display: 'contents' }} className="only-mobile">
               <Logo width={58} />
@@ -861,38 +860,41 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             guarda un'altra scheda, nascosti e non smontati: un conto avviato e
             poi lasciato per controllare un timer deve continuare a contare, e
             suonare quando scade anche se in quel momento sei altrove. */}
-        <div className="pieno" hidden={tab !== 'crono'}>
-          <CronometroScreen settings={settings} />
+        <div className="pieno" hidden={!pieno || strumento !== 'crono'}>
+          <CronometroScreen settings={settings} onChiudi={() => setStrumento(null)} />
         </div>
-        <div className="pieno" hidden={tab !== 'countdown'}>
-          <CountdownTab settings={settings} />
+        <div className="pieno" hidden={!pieno || strumento !== 'countdown'}>
+          <CountdownTab settings={settings} onChiudi={() => setStrumento(null)} />
         </div>
-        {!PIENE.includes(tab) && <div className="scroll">{body}</div>}
+        {!pieno && <div className="scroll">{body}</div>}
 
         {/* La musica si comanda da tutte le schede, non solo dentro un
             allenamento: in sala la si fa partire prima che arrivino tutti. */}
         {!incorporato && <MusicaBar musica={musica} className="musica-schede" />}
 
-        <nav className="tabbar">
-          {schede.map((t) => {
-            const Icon = t.icon
-            return (
-              <button key={t.key} className="tab" data-on={tab === t.key} onClick={() => setTab(t.key)}>
-                <Icon />
-                {t.label}
-              </button>
-            )
-          })}
-          {/* Su un telefono in alto non c'è posto accanto al marchio: il ritorno
-              sta qui. Da tablet c'è il tasto grosso in alto, se in alto c'è
-              la testata; nelle schede a tutto schermo resta questo. */}
-          {!incorporato && SU_TABLET_DI_SALA && (
-            <a className={PIENE.includes(tab) ? 'tab' : 'tab tab-sala'} href={SALA}>
-              <Back size={22} />
-              SALA
-            </a>
-          )}
-        </nav>
+        {/* Con una voce sola (il tablet, impostazioni chiuse) la barra non serve. */}
+        {schede.length > 1 && (
+          <nav className="tabbar">
+            {schede.map((t) => {
+              const Icon = t.icon
+              return (
+                <button key={t.key} className="tab" data-on={tab === t.key} onClick={() => vaiA(t.key)}>
+                  <Icon />
+                  {t.label}
+                </button>
+              )
+            })}
+            {/* Su un telefono in alto non c'è posto accanto al marchio: il ritorno
+                sta qui. Da tablet c'è il tasto grosso in alto, se in alto c'è
+                la testata; nelle schede a tutto schermo resta questo. */}
+            {!incorporato && SU_TABLET_DI_SALA && (
+              <a className={pieno ? 'tab' : 'tab tab-sala'} href={SALA}>
+                <Back size={22} />
+                SALA
+              </a>
+            )}
+          </nav>
+        )}
       </div>
     </div>
   )

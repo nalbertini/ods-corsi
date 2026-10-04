@@ -30,9 +30,10 @@ aprite l'appello completo e lo correggete.
 ## Il timer
 
 **TIMER**, nella barra in basso, apre il timer dentro il tablet: è lo stesso
-timer del telefono, con cronometro, conto alla rovescia e impostazioni. Se in
-quel momento ci si segna a una lezione, in cima c'è **DI QUESTA LEZIONE**, i
-timer che l'istruttore ha scelto per quella lezione sola, poi **DEL CORSO**, i
+timer del telefono. In cima alla lista, in **STRUMENTI**, ci sono il
+cronometro e il conto alla rovescia: si aprono a tutto schermo e con la X si
+torna ai timer. Se in quel momento ci si segna a una lezione, subito sotto c'è
+**DI QUESTA LEZIONE**, i timer che l'istruttore ha scelto per quella lezione sola, poi **DEL CORSO**, i
 timer collegati al corso, poi quelli della palestra. Li scelgono gli
 istruttori, in [I MIEI TIMER](istruttori.md#i-miei-timer).
 

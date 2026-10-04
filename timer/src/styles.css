@@ -462,7 +462,7 @@ a.navitem { text-decoration: none; }
 @media (orientation: landscape) and (max-height: 560px) {
   .tabbar { padding: 4px 6px max(6px, var(--safe-b)); }
   .tab { min-height: 34px; gap: 2px; font-size: 8px; }
-  .timer[data-attrezzo='true'] .timer-top { padding-top: calc(var(--safe-t) + 2px); }
+  .timer[data-attrezzo='true'] .timer-top { padding-top: calc(var(--safe-t) + 8px); }
   .timer[data-attrezzo='true'] .sottotitolo-timer { display: none; }
   .timer[data-attrezzo='true'] .icon-btn { height: 36px; min-height: 36px; }
   .timer[data-attrezzo='true'] .digits { font-size: min(11vw, 17vh); }
