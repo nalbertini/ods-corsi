@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.27.4 — 4 ottobre 2026
+
+### Risolto
+
+- Nella scaletta del timer i nomi dei passi sono tutti in maiuscolo
+
 ## 0.27.3 — 4 ottobre 2026
 
 ### Risolto
