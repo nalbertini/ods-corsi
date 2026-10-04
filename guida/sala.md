@@ -77,7 +77,8 @@ mezzo senza tocchi torna da solo al timer.
 In fondo a destra c'è la musica: il brano, il volume e ⏮ ▶ ⏭, sotto le
 presenze come sotto il timer. È sempre nello stesso punto, quindi passando da
 una scheda all'altra non si ferma, nemmeno con YouTube. Con YouTube il lettore
-si vede a destra, sopra la barra: YouTube vuole che resti visibile.
+si vede a destra, sopra la barra: YouTube vuole che resti visibile. Sotto il
+timer galleggia nell'angolo in basso a destra, sopra lo schermo.
 
 Il tasto **☰** accanto apre **LA MUSICA DELLA SALA**, le liste preparate dalla
 segreteria («Riscaldamento», «Randori»…): se ne tocca una e parte. **DALLE
