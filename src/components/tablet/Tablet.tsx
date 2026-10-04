@@ -12,6 +12,7 @@ import { clock } from '../../../timer/src/lib/format'
 import { useMusica, useSpotify } from '../../../timer/src/lib/useMusica'
 import { leggiLinkSpotify, suonaLista } from '../../../timer/src/lib/spotify'
 import { PlayerYoutube } from '../../../timer/src/components/PlayerYoutube'
+import { PlayerAudio } from '../../../timer/src/components/PlayerAudio'
 import { fonteDelLink, type ListaMusica } from '../../lib/musica'
 import { trattieniAggiornamento } from '../../lib/aggiornamento'
 import { Cronometro, Persone } from '../Icons'
@@ -282,17 +283,22 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   const [parti, setParti] = useState(false)
   const lista = liste.find((l) => l.id === sceltaId) ?? null
   const fonteLista = lista ? fonteDelLink(lista.link) : null
-  const musicaSala = useMemo<Pick<Settings, 'musicaFonte' | 'youtube'>>(
+  const musicaSala = useMemo<Pick<Settings, 'musicaFonte' | 'youtube' | 'radio'>>(
     () =>
       lista && fonteLista
-        ? { musicaFonte: fonteLista, youtube: fonteLista === 'youtube' ? lista.link : settingsTimer.youtube }
-        : { musicaFonte: settingsTimer.musicaFonte, youtube: settingsTimer.youtube },
-    [lista, fonteLista, settingsTimer.musicaFonte, settingsTimer.youtube],
+        ? {
+            musicaFonte: fonteLista,
+            youtube: fonteLista === 'youtube' ? lista.link : settingsTimer.youtube,
+            radio: fonteLista === 'radio' ? lista.link : settingsTimer.radio,
+          }
+        : { musicaFonte: settingsTimer.musicaFonte, youtube: settingsTimer.youtube, radio: settingsTimer.radio },
+    [lista, fonteLista, settingsTimer.musicaFonte, settingsTimer.youtube, settingsTimer.radio],
   )
   const conSala = useMemo(() => ({ ...settingsTimer, ...musicaSala }), [settingsTimer, musicaSala])
   const musica = useMusica(conSala)
   const spotify = useSpotify()
   const conYoutube = musica.fonte === 'youtube' && musica.attiva
+  const fonteAudio = musica.fonte === 'file' || musica.fonte === 'radio' ? musica.fonte : null
   const scegliLista = (l: ListaMusica | null) => {
     setSceltaId(l?.id ?? null)
     ricordaLista(l?.id ?? null)
@@ -542,6 +548,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
       {/* Il lettore di YouTube, uno solo e fermo qui: si appoggia sopra il suo
           posto, a destra, e cambiando scheda non si ricarica. */}
       {conYoutube && <PlayerYoutube link={musicaSala.youtube} parti={parti} />}
+      {fonteAudio && musica.attiva && <PlayerAudio fonte={fonteAudio} link={musicaSala.radio} nome={lista && fonteLista === 'radio' ? lista.nome : ''} parti={parti} />}
     </>
   )
 }

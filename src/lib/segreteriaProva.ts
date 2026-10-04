@@ -13,7 +13,7 @@ import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { richiesteDi, spostaRichieste } from './richiesteProva'
-import { fonteDelLink, MAX_NOME_LISTA } from './musica'
+import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
@@ -1089,7 +1089,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const nome = l.nome.trim().slice(0, MAX_NOME_LISTA)
       const link = l.link.trim()
       if (!nome) throw new Error('La lista ha bisogno di un nome')
-      if (!fonteDelLink(link)) throw new Error('Il link non è una playlist di YouTube o di Spotify')
+      if (!fonteDelLink(link)) throw new Error(erroreDelLink(link) ?? 'Il link non è una playlist di YouTube o di Spotify, né una radio')
       if (l.salaId && !a().sale.includes(l.salaId)) throw new Error('Sala inesistente')
       const id = l.id ?? `musica~${unico()}`
       const riga = { id, nome, link, sala: l.salaId }

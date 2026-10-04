@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS } from './storage'
 import { CATEGORIE, type Categoria, type Esercizio } from './esercizi'
 import { MAX_CATALOGO, MAX_STORICO, MAX_TIMER, numeroSano, testoSano, workoutSano } from './sano'
 import { uid } from './format'
+import { leggiFonte } from './musicaLocale'
 
 /**
  * La copia di tutto, in un file.
@@ -69,8 +70,9 @@ function impostazioniSane(v: unknown): Settings {
     keepAwake: bool(o.keepAwake, DEFAULT_SETTINGS.keepAwake),
     bigScreen: bool(o.bigScreen, DEFAULT_SETTINGS.bigScreen),
     musica: bool(o.musica, DEFAULT_SETTINGS.musica),
-    musicaFonte: o.musicaFonte === 'youtube' ? 'youtube' : 'spotify',
+    musicaFonte: leggiFonte(o.musicaFonte),
     youtube: typeof o.youtube === 'string' ? o.youtube.slice(0, 500) : '',
+    radio: typeof o.radio === 'string' ? o.radio.slice(0, 500) : '',
     musicaSegue: bool(o.musicaSegue, DEFAULT_SETTINGS.musicaSegue),
     musicaAbbassa: bool(o.musicaAbbassa, DEFAULT_SETTINGS.musicaAbbassa),
     musicaRecupero: Math.round(numeroSano(o.musicaRecupero, 0, 100, DEFAULT_SETTINGS.musicaRecupero)),

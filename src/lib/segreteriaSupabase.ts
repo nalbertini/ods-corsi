@@ -9,7 +9,7 @@ import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
-import { fonteDelLink, MAX_NOME_LISTA } from './musica'
+import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
@@ -168,6 +168,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
     if (t) return new Error(t[1])
     return new Error(`Manca una tabella sul database: va lanciato il file che la crea (controllo.sql dice quale). ${e.message ?? ''}`.trim())
   }
+  // Una radio nelle liste della musica: il vincolo del link la ammette dal 39.
+  if (e?.code === '23514' && /musica_sale_link_check/.test(e.message ?? ''))
+    return new Error('Le radio nelle liste non sono ancora attive sul database: va lanciato 39-musica-radio.sql')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
     return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
   if (e?.code === '42703' && /ricevute/.test(e.message ?? '')) return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
@@ -1090,7 +1093,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const nome = l.nome.trim().slice(0, MAX_NOME_LISTA)
       const link = l.link.trim()
       if (!nome) throw new Error('La lista ha bisogno di un nome')
-      if (!fonteDelLink(link)) throw new Error('Il link non è una playlist di YouTube o di Spotify')
+      if (!fonteDelLink(link)) throw new Error(erroreDelLink(link) ?? 'Il link non è una playlist di YouTube o di Spotify, né una radio')
       const riga = { nome, link, sala_id: l.salaId }
       if (l.id) {
         ok(await db.from('musica_sale').update(riga).eq('id', l.id))

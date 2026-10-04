@@ -86,6 +86,18 @@ IMPOSTAZIONI DEL TIMER** torna a quella scelta nelle impostazioni del timer.
 Le liste di Spotify vogliono Spotify collegato sul tablet (Impostazioni del
 timer › Musica, con l'area istruttore aperta); senza, sono spente.
 
+Due fonti non hanno pubblicità né account e non vogliono un riquadro da tenere
+in vista. **RADIO**: la segreteria scrive nelle liste l'indirizzo di una radio
+(comincia con https); ⏮ e ⏭ restano spenti. Se la radio cade la barra lo dice,
+con il tasto **Riprova**: da sola non riparte. **FILE DEL TABLET**: si scelgono
+dalle impostazioni del timer, con l'area istruttore aperta, e restano su
+questo apparecchio (sugli altri tablet vanno scelti di nuovo). Suonano in
+ordine casuale, anche senza rete. Se il tablet li perde, la barra dice di
+sceglierli di nuovo.
+
+Dopo un ricaricamento la musica non riparte da sola: la barra dice «Tocca ▶ per
+farla partire».
+
 Se nelle impostazioni del timer sono accese, la musica parte e si ferma col
 timer e si abbassa nel recupero, qualunque lista suoni.
 
