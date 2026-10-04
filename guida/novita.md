@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.27.0 — 4 ottobre 2026
+
+### Novità
+
+- Il timer ha una scaletta dei passi e una barra che si colora, dal telefono al computer
+
 ## 0.26.1 — 4 ottobre 2026
 
 ### Modificato
