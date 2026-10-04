@@ -98,6 +98,17 @@ export function dellaDisciplina<T extends { disciplina?: string | null }>(voci: 
   return voci.filter((v) => v.disciplina === filtro || v.disciplina === TUTTE)
 }
 
+/** Le discipline della lista che hanno almeno una voce, nell'ordine della lista: il filtro mostra solo quelle. «Tutte» non ne accende nessuna. */
+export function disciplineConVoci(voci: Array<{ disciplina?: string | null }>, lista: Disciplina[]): Disciplina[] {
+  const usate = new Set(voci.map((v) => v.disciplina))
+  return lista.filter((d) => usate.has(d.id))
+}
+
+/** Il filtro acceso, se è ancora una disciplina della lista; altrimenti spento (`null`). Una tolta nel frattempo, o «tutte» (che non è un pulsante), non resta accesa. */
+export function filtroValido(filtro: string | null, lista: Disciplina[]): string | null {
+  return filtro !== null && lista.some((d) => d.id === filtro) ? filtro : null
+}
+
 /** Come si chiama una disciplina in una riga o in un pulsante; `undefined` se la voce non ne ha una. */
 export function nomeDisciplina(id: string | undefined, lista: Disciplina[]): string | undefined {
   if (id === TUTTE) return NOME_TUTTE

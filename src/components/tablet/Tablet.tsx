@@ -604,6 +604,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
               spotifyCollegato={spotify.collegato}
               onScegli={scegliLista}
               onSpegni={spegniMusica}
+              discipline={timerSala?.discipline ?? []}
             />
           ))}
       </footer>

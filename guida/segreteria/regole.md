@@ -55,7 +55,9 @@ Le liste che il tablet di sala fa partire dalla sua barra in basso (vedi
   comincia con https: suona senza pubblicità né account. Sotto il campo si
   legge cos'è; un indirizzo che comincia con http, o che non è nessuno dei
   tre, non si salva;
-- **la sala**, o **Tutte le sale**.
+- **la sala**, o **Tutte le sale**;
+- **la disciplina** (Judo, Lotta…; la lista si cura in [ESERCIZI](esercizi.md)),
+  o **Tutte** per quelle comuni, o nessuna: sul tablet si filtrano per quella.
 
 **CAMBIA** per correggerla, **TOGLI** per toglierla. Il tablet le rilegge ogni
 cinque minuti. Le liste di Spotify suonano solo se sul tablet è collegato un

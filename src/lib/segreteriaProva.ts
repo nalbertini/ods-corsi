@@ -13,9 +13,9 @@ import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { richiesteDi, spostaRichieste } from './richiesteProva'
-import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
+import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
-import { disciplineDa } from '../../timer/src/lib/discipline'
+import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
@@ -1083,7 +1083,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async listeMusica() {
-      return (a().musica ?? []).map((l) => ({ id: l.id, nome: l.nome, link: l.link, salaId: l.sala }))
+      const discipline = disciplineDa(a().discipline)
+      return (a().musica ?? []).map((l) => {
+        const disciplina = ripulisciDisciplina(l.disciplina, discipline)
+        return { id: l.id, nome: l.nome, link: l.link, salaId: l.sala, ...(disciplina ? { disciplina } : {}) }
+      })
     },
 
     async salvaListaMusica(l) {
@@ -1093,7 +1097,11 @@ export function creaSegreteriaProva(): DatiSegreteria {
       if (!fonteDelLink(link)) throw new Error(erroreDelLink(link) ?? 'Il link non è una playlist di YouTube o di Spotify, né una radio')
       if (l.salaId && !a().sale.includes(l.salaId)) throw new Error('Sala inesistente')
       const id = l.id ?? `musica~${unico()}`
-      const riga = { id, nome, link, sala: l.salaId }
+      const precedente = (a().musica ?? []).find((x) => x.id === l.id)
+      // Assente = com'era; nulla o sconosciuta = nessuna.
+      const daScrivere = disciplinaDaSalvare(l, disciplineDa(a().discipline))
+      const disciplina = daScrivere === undefined ? precedente?.disciplina : (daScrivere ?? undefined)
+      const riga = { id, nome, link, sala: l.salaId, ...(disciplina ? { disciplina } : {}) }
       const prima = a().musica ?? []
       a().musica = l.id ? prima.map((x) => (x.id === l.id ? riga : x)) : [...prima, riga]
       salva()
