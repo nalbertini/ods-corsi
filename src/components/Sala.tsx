@@ -18,9 +18,10 @@ import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
  * lo si fa.
  *
  * `soloDi` è l'istruttore di cui mostrare le lezioni (vedi `CalendarioScreen`);
- * `onMieiTimer` apre I MIEI TIMER dal fondo del calendario del telefono.
+ * `onMieiTimer` e `onMieOre` aprono I MIEI TIMER e LE MIE ORE dal fondo del
+ * calendario del telefono.
  */
-export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: () => void } = {}) {
+export function Sala({ soloDi, onMieiTimer, onMieOre }: { soloDi?: string; onMieiTimer?: () => void; onMieOre?: () => void } = {}) {
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
@@ -135,7 +136,7 @@ export function Sala({ soloDi, onMieiTimer }: { soloDi?: string; onMieiTimer?: (
         <div className="sala-lato" hidden={!largo && !!aperta}>
           {esito}
           <CalendarioScreen dati={d} onApri={apriLezione} apertaId={largo ? aperta?.id : undefined} conti={conti} soloDi={soloDi} arretrati={segnalate} />
-          {!largo && <Strumenti onMieiTimer={onMieiTimer} />}
+          {!largo && <Strumenti onMieiTimer={onMieiTimer} onMieOre={onMieOre} />}
         </div>
         <div className="sala-lato">
           {aperta ? (
@@ -262,7 +263,7 @@ function Esito({
  * in meno; in un'altra scheda, così il calendario resta dov'era. Il tablet di
  * sala no: è un'area a sé, e dagli istruttori non ci si va.
  */
-function Strumenti({ onMieiTimer }: { onMieiTimer?: () => void }) {
+function Strumenti({ onMieiTimer, onMieOre }: { onMieiTimer?: () => void; onMieOre?: () => void }) {
   return (
     <>
       <div className="rule">
@@ -273,6 +274,11 @@ function Strumenti({ onMieiTimer }: { onMieiTimer?: () => void }) {
         {onMieiTimer && (
           <button type="button" className="btn btn-ghost" onClick={onMieiTimer}>
             I MIEI TIMER
+          </button>
+        )}
+        {onMieOre && (
+          <button type="button" className="btn btn-ghost" onClick={onMieOre}>
+            LE MIE ORE
           </button>
         )}
         <a className="btn btn-ghost" href={TIMER} target="_blank" rel="noopener">

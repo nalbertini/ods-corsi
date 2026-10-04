@@ -7,6 +7,7 @@ import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { AreaIscritti, IscrittiChiusa } from './components/AreaIscritti'
 import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
+import { MieOre } from './components/MieOre'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
 import { INDIRIZZI, TIMER, useArea } from './lib/aree'
@@ -247,22 +248,38 @@ function Istruttori() {
           <main className="scroll">{x}</main>
         </div>
       )}
-      dentro={(chi, onEsci) => (
+      dentro={(chi, onEsci) => {
+        const mio = soloDi(chi)
+        return (
         <div className={largo ? 'sg' : 'app'}>
           {largo ? (
-            <MenuIstruttori chi={chi} onEsci={onEsci} pagina={pagina} onPagina={setPagina} />
+            <MenuIstruttori chi={chi} onEsci={onEsci} pagina={pagina} onPagina={setPagina} conOre={!!mio} />
           ) : (
             <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
           )}
           <main className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
             {!largo && chi && <ChiSei chi={chi} onEsci={onEsci} />}
             <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
-              <Sala soloDi={soloDi(chi)} onMieiTimer={largo ? undefined : () => setPagina('timer')} />
+              <Sala
+                soloDi={mio}
+                onMieiTimer={largo ? undefined : () => setPagina('timer')}
+                onMieOre={
+                  largo || !mio
+                    ? undefined
+                    : () => {
+                        // Calendario e LE MIE ORE scorrono nello stesso riquadro: i numeri si vedono per primi.
+                        setPagina('ore')
+                        document.querySelector('.scroll')?.scrollTo(0, 0)
+                      }
+                }
+              />
             </div>
-            {pagina === 'timer' && <MieiTimer soloDi={soloDi(chi)} onIndietro={largo ? undefined : () => setPagina('calendario')} />}
+            {pagina === 'timer' && <MieiTimer soloDi={mio} onIndietro={largo ? undefined : () => setPagina('calendario')} />}
+            {pagina === 'ore' && mio && <MieOre personaId={mio} onIndietro={largo ? undefined : () => setPagina('calendario')} />}
           </main>
         </div>
-      )}
+        )
+      }}
     />
   )
 }
@@ -274,18 +291,21 @@ function Istruttori() {
  * Tranne chi è di segreteria e insegna anche: entra in tutte e due, e passa
  * dall'una all'altra senza uscire.
  */
-type Pagina = 'calendario' | 'timer'
+type Pagina = 'calendario' | 'timer' | 'ore'
 
 function MenuIstruttori({
   chi,
   onEsci,
   pagina,
   onPagina,
+  conOre,
 }: {
   chi: Personale | null
   onEsci?: () => void
   pagina: Pagina
   onPagina: (p: Pagina) => void
+  /** Le ore sono di chi insegna: la segreteria, che vede le lezioni di tutti, non ne ha. */
+  conOre: boolean
 }) {
   const esci = onEsci ?? (inProvaScelta ? () => scegliProva(false) : undefined)
   return (
@@ -307,6 +327,11 @@ function MenuIstruttori({
         <button type="button" className="num sg-voce" aria-current={pagina === 'timer' ? 'page' : undefined} onClick={() => onPagina('timer')}>
           I MIEI TIMER
         </button>
+        {conOre && (
+          <button type="button" className="num sg-voce" aria-current={pagina === 'ore' ? 'page' : undefined} onClick={() => onPagina('ore')}>
+            LE MIE ORE
+          </button>
+        )}
         <a className="num sg-voce" href={TIMER} target="_blank" rel="noopener">
           TIMER ↗
         </a>

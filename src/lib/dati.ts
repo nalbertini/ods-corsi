@@ -1,6 +1,8 @@
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
 import type { ChiProva, GiaProvato } from './prove'
 import type { SegnalataVista } from './segnalate'
+import type { MiaPresenza } from './ore'
+import type { LezioneSenzaIstruttore } from './segreteria'
 
 /**
  * Da dove arrivano corsi, lezioni e presenze.
@@ -38,6 +40,12 @@ export interface Dati {
   segnalate?(soloDi?: string): Promise<SegnalataVista[]>
   /** Accoglie (l'iscritto è presente) o rifiuta; con `soloDi`, solo per le sue lezioni. */
   gestisciSegnalata?(id: string, accogli: boolean, soloDi?: string): Promise<void>
+  /**
+   * LE MIE ORE: le presenze di un istruttore nelle lezioni fra due giorni, e
+   * le lezioni tenute in cui era previsto e nessuno si è segnato. I conti
+   * li fa `delMese` di `ore.ts`.
+   */
+  mieOre?(personaId: string, da: Date, a: Date): Promise<{ presenze: MiaPresenza[]; senzaIstruttore: LezioneSenzaIstruttore[] }>
   /** Quante scritture non sono ancora arrivate al server. Sempre 0 in prova. */
   guardaCoda?(f: (n: number) => void): () => void
   /**

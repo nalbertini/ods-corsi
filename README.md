@@ -44,6 +44,11 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   con ogni singola lezione delle prossime due settimane, anche più d'uno;
   quelli di una lezione vengono prima di quelli del corso, dall'appello e sul tablet di sala
   (`supabase/11-timer-lezioni.sql`).
+- **Le mie ore**: nell'area istruttori, mese per mese, le lezioni che in
+  segreteria risultano dell'istruttore, con lezioni, ore e da confermare
+  uguali alla sua scheda in segreteria (`src/lib/ore.ts`), le rifiutate con
+  chi e quando, e a parte quelle tenute in cui nessuno si è segnato
+  (`supabase/37-mie-ore.sql`).
 - **L'appello**: l'elenco degli iscritti, un tocco per riga — presente, assente,
   non segnato — e `TUTTI PRESENTI` in cima, perché in una classe di ventidue con
   venti presenti si segnano due assenze invece di venti presenze.
@@ -362,6 +367,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:indirizzi` | Gli indirizzi della segreteria: voce, scheda iscritto, lezione, settimana e sala che si rileggono uguali; gli indirizzi sbagliati che portano a DA FARE; quelli di Supabase, della guida e delle aree che non sono della segreteria. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome (sul tablet al massimo venti, cercate scrivendo), tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:informativa` | Per quanto si tengono le presenze nell'informativa: solo un numero di mesi valido dal database cambia il testo; un errore, il tempo scaduto o l'app senza database lasciano quello della pagina, che non dice un numero. |
+| `npm run prova:ore` | LE MIE ORE dell'area istruttori: ognuno vede solo le sue, nel mese della lezione (non di quando è stata confermata), lezioni e ore delle confermate, le da confermare contate come in PRESENZE, le rifiutate con chi e quando, le lezioni tenute dove era previsto e nessuno si è segnato; e le decisioni della segreteria di prova che arrivano a `mieOre`. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN e dall'appello, le lezioni tenute da confermare. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/calendario-da-se.sql` | Il calendario che si allunga da sé: anche per un istruttore, solo quando serve, fin dove dicono le regole. |
@@ -376,7 +382,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/tablet-conto-prove.sql` | Sul tablet quanti dei presenti sono venuti a provare, cioè non iscritti quel giorno (chi ha provato e poi si è iscritto è un iscritto), solo per il tablet: «10 su 10 · +1 PROVA», non «11 su 10». |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
 | `supabase/prova/presenze-istruttori.sql` | La presenza degli istruttori dal PIN del tablet: da sola a chi era previsto, anche da sostituto, da confermare agli altri; la conferma solo la segreteria. |
-| `supabase/prova/istruttori-dalle-lezioni.sql` | La presenza di chi fa l'appello (confermata se era previsto, da confermare se no, la segreteria al banco no) e le lezioni tenute senza l'istruttore segnato: le vede e le decide solo la segreteria, scegliendo fra i previsti. Dopo `tablet.sql` e `presenze-istruttori.sql`. |
+| `supabase/prova/istruttori-dalle-lezioni.sql` | La presenza di chi fa l'appello (confermata se era previsto, da confermare se no, la segreteria al banco no) e le lezioni tenute senza l'istruttore segnato: le decide solo la segreteria, scegliendo fra i previsti; le vede lei tutte, un istruttore solo quelle dove era previsto, un iscritto no. Dopo `tablet.sql` e `presenze-istruttori.sql`. |
 | `supabase/prova/prove.sql` | Le prove: le aggiunge chi fa l'appello (dall'app o col PIN), già presenti; si ritrovano per nome, col telefono solo per la segreteria; si tolgono con la persona se è nata lì; un iscritto e chi non ha accesso non le vedono. Dopo `tablet.sql`. |
 | `supabase/prova/prove-per-nome.sql` | Il tablet ritrova chi è venuto a provare solo per nome: dalla terza lettera di una parola, al massimo venti e i più recenti, cento ricerche in dieci minuti e trecento al giorno per tablet, con apostrofi, trattini e accenti come nell'app, e % _ \ che non fanno da jolly; col PIN giusto e solo da un tablet. Dopo `tablet.sql` e `prove.sql`. |
 | `supabase/prova/statistiche.sql` | Le statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove, chi l'ha fatta, gli incassi del mese; le vede solo la segreteria. |

@@ -503,6 +503,25 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .miei-timer-chip > button:hover { color: var(--rosso-testo); }
 .miei-timer-modo { font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
 .miei-timer-scelta { min-height: 44px; font-size: 15px; flex: 1 1 220px; max-width: 100%; }
+
+/* LE MIE ORE: tre numeri grandi, poi una riga per lezione con lo stato a parole.
+   La barra di 4px è il tono, non la tinta del corso (che è di 6px). */
+.mie-ore-mese { min-height: 52px; }
+.mie-ore-numeri, .mie-ore-elenco { max-width: 720px; }
+.mie-ore-numeri { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 14px; }
+.mie-ore-numero { padding: 12px; gap: 4px; min-width: 0; }
+.mie-ore-numero[data-allarme='true'] { border-color: var(--giallo-testo); }
+/* Le etichette alte uguali: DA CONFERMARE va su due righe, e le cifre restano allineate. */
+@media (max-width: 640px) { .mie-ore-numero .sg-etichetta { min-height: 2.6em; } }
+@media (max-width: 360px) { .mie-ore-numero .sg-etichetta { letter-spacing: 0.06em; } .mie-ore-numero { padding: 10px 8px; } }
+.mie-ore-valore { font-size: 36px; font-weight: 700; line-height: 1; }
+.mie-ore-sotto { font-size: 13px; color: var(--dim); }
+.mie-ore-riga { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-left: 4px solid var(--line); }
+.mie-ore-riga[data-tono='fatto'] { border-left-color: var(--verde); }
+.mie-ore-riga[data-tono='avviso'] { border-left-color: var(--giallo-testo); }
+.mie-ore-stato { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; color: var(--dim); }
+.mie-ore-riga[data-tono='fatto'] .mie-ore-stato { color: var(--verde-testo); }
+.mie-ore-riga[data-tono='avviso'] .mie-ore-stato { color: var(--giallo-testo); }
 .miei-timer-riga[data-suo='true'] { border-color: var(--giallo); border-left-color: var(--tinta); }
 .miei-timer-detto {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 30;

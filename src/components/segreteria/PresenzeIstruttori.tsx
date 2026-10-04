@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { DatiSegreteria, LezioneSenzaIstruttore, PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import type { StatoPresenzaIstruttore } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
-import { mesi } from './Presenze'
+import { mesi } from '../../lib/ore'
 import { Guaio, Testa, useAvviso, useCarica, useOrdina } from './comune'
 
 const quando = (iso: string) => `${giornoPerEsteso(chiaveGiorno(new Date(iso)))}, ${oraDi(iso)}`

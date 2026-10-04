@@ -64,6 +64,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 34. `34-prove-per-nome.sql` — sul tablet chi è già venuto a provare si cerca per nome, dalla terza lettera di una parola e al massimo venti, con cento ricerche in dieci minuti e trecento al giorno per tablet: il tablet non ha più l'elenco intero
 35. `35-date-corsi.sql` — SALVA LE DATE toglie le lezioni da domani in poi rimaste fuori da inizio e fine dei corsi, tranne quelle con l'appello o una prova, e dice quante
 36. `36-tablet-conto-prove.sql` — sul tablet chi è venuto a provare si conta a parte: «10 presenti su 10 · +1 PROVA», non «11 su 10»
+37. `37-mie-ore.sql` — in LE MIE ORE l'istruttore vede anche le lezioni tenute in cui era previsto e nessuno si è segnato; la segreteria le vede tutte, come prima
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -193,6 +194,10 @@ fuori restano e l'app dice che va lanciato.
 Perché il tablet conti chi prova a parte basta `36-tablet-conto-prove.sql`
 (dopo `04-tablet.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
 finché non c'è, il tablet conta come prima, prove comprese («11 su 10»).
+Perché in LE MIE ORE l'istruttore veda le sue lezioni tenute senza segno basta
+`37-mie-ore.sql` (dopo `23-istruttori-dalle-lezioni.sql`), che non chiede di
+rilanciare `06-iscrizioni.sql`: finché non c'è, quelle lezioni lì non
+compaiono. Chi rilancia `23` rilancia poi anche `37`.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -826,7 +831,8 @@ o rifiutata solo dalla segreteria; `istruttori-dalle-lezioni.sql`, dopo
 `presenze-istruttori.sql`, prova chi fa l'appello (confermato se previsto, da
 confermare se no, la segreteria al banco no), le lezioni tenute senza
 l'istruttore segnato, la scelta di chi c'era fatta solo dalla segreteria e
-solo fra i previsti, e da quando si propongono; `informativa-mesi.sql` prova
+solo fra i previsti, da quando si propongono, e che un istruttore vede solo
+quelle dove era previsto (`37-mie-ore.sql`); `informativa-mesi.sql` prova
 che chi non ha un accesso legga i mesi delle presenze, quelli che la segreteria
 ha appena salvato, e nient'altro della tabella, anche dopo aver rilanciato
 `06-iscrizioni.sql`; `ricevute.sql` prova le ricevute: le fa e le

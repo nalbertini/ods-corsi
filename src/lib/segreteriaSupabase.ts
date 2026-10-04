@@ -1,3 +1,4 @@
+import { daSenzaIstruttore } from './ore'
 import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
@@ -1286,26 +1287,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async lezioniSenzaIstruttore() {
-      const righe = ok(await db.rpc('lezioni_senza_istruttore')) as Array<{
-        sessione_id: string
-        corso: string
-        colore: string | null
-        inizio: string
-        fine: string
-        sala: string | null
-        presenti: number
-        previsti: Array<{ id: string; nome: string; cognome: string; stato: StatoPresenzaIstruttore | null }> | null
-      }>
-      return righe.map((r) => ({
-        sessioneId: r.sessione_id,
-        corso: r.corso,
-        colore: r.colore ?? undefined,
-        inizio: r.inizio,
-        fine: r.fine,
-        sala: r.sala ?? undefined,
-        presenti: r.presenti,
-        previsti: (r.previsti ?? []).map((x) => ({ id: x.id, nome: nome(x), stato: x.stato ?? undefined })),
-      }))
+      return daSenzaIstruttore({ data: ok(await db.rpc('lezioni_senza_istruttore')), error: null })
     },
 
     async segnaIstruttoriLezione(sessioneId, presenti) {

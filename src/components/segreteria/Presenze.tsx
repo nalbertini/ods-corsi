@@ -3,19 +3,10 @@ import type { DatiSegreteria, ProvaSeg, RigaRegistro } from '../../lib/segreteri
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { Guaio, Riga, Testa, useCarica } from './comune'
+import { mesi } from '../../lib/ore'
 
-const MESI = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre']
 /** «Chi si sta perdendo»: tante assenze di fila, negli appelli fatti. */
 const DI_FILA = 3
-
-/** I dodici mesi fino a questo, dal più recente. */
-export function mesi() {
-  const oggi = new Date()
-  return Array.from({ length: 12 }, (_, i) => {
-    const d = new Date(oggi.getFullYear(), oggi.getMonth() - i, 1)
-    return { chiave: `${d.getFullYear()}-${d.getMonth()}`, da: d, a: new Date(d.getFullYear(), d.getMonth() + 1, 0), nome: `${MESI[d.getMonth()]} ${d.getFullYear()}` }
-  })
-}
 
 const conAppello = (r: RigaRegistro) => r.appello.some((p) => p.stato !== null)
 /** Presenti su lezioni dovute: i giustificati non contano né sopra né sotto. */
