@@ -695,17 +695,19 @@ a.navitem { text-decoration: none; }
    le tre scritte si danno il corpo in frazioni dell'anello. Le frazioni sono
    scelte perché sull'anello del tablet in sala — 176 px in schermo grande —
    ridiano esattamente i 15, 46 e 13 px di prima: quello era già il caso
-   giusto, ed è quello che non deve cambiare. */
+   giusto, ed è quello che non deve cambiare. I tetti stanno oltre i 300 px
+   dell'anello sul desktop, dove i vecchi tenevano le scritte minuscole in un
+   cerchio vuoto. */
 .anello-etichetta {
-  font-size: clamp(8px, calc(var(--anello) * 0.085), 15px);
+  font-size: clamp(8px, calc(var(--anello) * 0.085), 26px);
   font-weight: 700; letter-spacing: 0.2em; color: var(--dim); white-space: nowrap;
 }
 .anello-giro {
-  font-size: clamp(20px, calc(var(--anello) * 0.26), 46px);
+  font-size: clamp(20px, calc(var(--anello) * 0.26), 80px);
   font-weight: 700; line-height: 1;
 }
 .anello-resta {
-  font-size: clamp(8px, calc(var(--anello) * 0.074), 13px);
+  font-size: clamp(8px, calc(var(--anello) * 0.074), 22px);
   font-weight: 600; letter-spacing: 0.16em;
 }
 
