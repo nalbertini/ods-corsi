@@ -1,0 +1,144 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Design System"
+    },
+    {
+      "id": "page-2",
+      "name": "Libreria"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Foundations",
+      "x": 0,
+      "y": 0,
+      "w": 1200,
+      "h": 4250,
+      "page": "page-1"
+    },
+    {
+      "file": "Pagina.dc.html",
+      "title": "Pagina modello · schermo largo (segreteria)",
+      "x": 1320,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "PaginaTelefono.dc.html",
+      "title": "Pagina modello · telefono",
+      "x": 2880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "Bottone.dc.html",
+      "title": "Bottone",
+      "x": 0,
+      "y": 0,
+      "w": 300,
+      "h": 90,
+      "page": "page-2"
+    },
+    {
+      "file": "Badge.dc.html",
+      "title": "Badge",
+      "x": 400,
+      "y": 0,
+      "w": 200,
+      "h": 60,
+      "page": "page-2"
+    },
+    {
+      "file": "Titoletto.dc.html",
+      "title": "Titoletto",
+      "x": 700,
+      "y": 0,
+      "w": 420,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "RigaCalendario.dc.html",
+      "title": "RigaCalendario",
+      "x": 0,
+      "y": 220,
+      "w": 420,
+      "h": 110,
+      "page": "page-2"
+    },
+    {
+      "file": "RigaAppello.dc.html",
+      "title": "RigaAppello",
+      "x": 520,
+      "y": 220,
+      "w": 380,
+      "h": 90,
+      "page": "page-2"
+    },
+    {
+      "file": "StrisciaGiorni.dc.html",
+      "title": "StrisciaGiorni",
+      "x": 1000,
+      "y": 220,
+      "w": 430,
+      "h": 110,
+      "page": "page-2"
+    },
+    {
+      "file": "SchedaCorso.dc.html",
+      "title": "SchedaCorso",
+      "x": 0,
+      "y": 440,
+      "w": 420,
+      "h": 320,
+      "page": "page-2"
+    },
+    {
+      "file": "Testata.dc.html",
+      "title": "Testata",
+      "x": 520,
+      "y": 440,
+      "w": 430,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "Menu.dc.html",
+      "title": "Menu",
+      "x": 0,
+      "y": 880,
+      "w": 240,
+      "h": 900,
+      "page": "page-2"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "come-riusare",
+      "x": 0,
+      "y": -420,
+      "w": 520,
+      "page": "page-1",
+      "text": "Come si riusa questo design system\n\n1. I file .dc.html vivono nel repo in docs/design-canvas/ods-design-system/: sono la libreria.\n2. Una schermata nuova si fa copiando Pagina.dc.html (schermo largo, segreteria) o PaginaTelefono.dc.html (telefono) e sostituendo il contenuto di <main>: menu, testata e margini restano quelli dell'app. I componenti si importano con <dc-import name=\"Bottone\" label=\"SEGNA LA PRESENZA\" variante=\"vai\" hint-size=\"200px,56px\">.\n3. Un nuovo canvas si crea passando gli stessi file (tutti i <Nome>.dc.html della pagina Libreria) insieme alle schermate nuove.\n4. Foundations e' la specifica visiva: valori letti da DESIGN.md e src/styles.css, non ridisegnati.\n5. Prima di pubblicare: node docs/design-canvas/ods-design-system/verifica.mjs deve uscire 0."
+    },
+    {
+      "id": "libreria-note",
+      "x": 0,
+      "y": -220,
+      "w": 460,
+      "page": "page-2",
+      "text": "Componenti importabili con <dc-import>. Ogni chip in alto e' una prop: variante, stato, tema... Le props si passano come attributi (kebab-case), i booleani come aperta=\"{{ true }}\". Tutti hanno la prop tema (scuro | chiaro)."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
+}

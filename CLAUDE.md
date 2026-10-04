@@ -49,6 +49,14 @@ Le stesse girano su ogni PR (`.github/workflows/controlla.yml`).
 - `guida/novita.md` e `version` in `package.json` li scrive
   `scripts/versione.mjs` quando si pubblica: non si toccano.
 - Sul database vero non si lancia niente senza un sì dell'utente.
+- Ogni mockup fatto con `/design` parte dalla libreria in
+  `docs/design-canvas/ods-design-system/`, mai da artboard disegnate da zero:
+  si copia `Pagina.dc.html` o `PaginaTelefono.dc.html` e si importano i
+  componenti con `<dc-import>`. Un componente mancante si aggiunge alla
+  libreria come `.dc.html`, copiando i valori dal codice. Se cambia un token
+  (`src/styles.css`, `DESIGN.md`) o un componente, si aggiorna il file
+  corrispondente nello stesso commit. Prima di pubblicare:
+  `node docs/design-canvas/ods-design-system/verifica.mjs`.
 - PR unite con «Create a merge commit»: `versione.mjs` legge il titolo dal
   commit di merge.
 - Ogni PR ha l'Auto-fix acceso, e si unisce da sé appena le prove su GitHub

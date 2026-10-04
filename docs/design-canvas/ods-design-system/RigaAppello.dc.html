@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: stretch; gap: 6px; width: 100%">
+  <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0; min-height: 56px; padding: 0 14px; background: {{c.surface}}; border: 2px solid {{bordo}}; color: {{c.text}}; text-align: left">
+    <span style="width: 26px; text-align: center; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 700; line-height: 1; color: {{coloreSegno}}">{{segno}}</span>
+    <span style="flex-grow: 1; font-size: 17px; font-weight: 500; color: {{coloreNome}}; text-decoration: {{decorazione}}">{{nome}}</span>
+    <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; color: {{c.gialloTesto}}; border: 2px solid #f4c31b; padding: 1px 6px">PROVA</span>
+    </sc-if>
+  </div>
+  <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
+    <span style="display: inline-flex; align-items: center; flex-shrink: 0; min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; color: {{c.dim}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.12em">TOGLI</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Rossi Giulia"},"stato":{"editor":"enum","options":["niente","presente","assente"],"default":"niente"},"prova":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":320,"height":70}}'>
+// Riproduzione 1:1 della riga dell'appello: .riga-appello e .nome-appello (src/styles.css righe 413-429) usate in
+// src/components/AppelloScreen.tsx (righe 365-382). Tre stati, tre colori, e il segno grande a sinistra:
+// presente = bordo e segno verdi (--verde, non -testo: il segno e' grande); assente = bordo rosso, segno in
+// rosso-testo, nome barrato e spento; niente = bordo `line`, nessun segno.
+// prova = la riga di chi viene a provare: marchio PROVA (.prova-marchio) dentro la riga e TOGLI accanto
+// (.riga-prova, .prova-togli, righe 457-469; AppelloScreen.tsx righe 386-405).
+// Alta 56px perche' la si tocca in piedi e di fretta (La Regola del Dito di Fretta, DESIGN.md).
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', verde: '#16a54a', rosso: '#e4292a', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', verde: '#12913f', rosso: '#e4292a', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const stato = p.stato || 'niente';
+    return {
+      c,
+      nome: p.nome ?? 'Rossi Giulia',
+      prova: truthy(p.prova),
+      bordo: stato === 'presente' ? c.verde : stato === 'assente' ? c.rosso : c.line,
+      segno: stato === 'presente' ? '✓' : stato === 'assente' ? '✕' : '',
+      coloreSegno: stato === 'presente' ? c.verde : c.rossoTesto,
+      coloreNome: stato === 'assente' ? c.dim : c.text,
+      decorazione: stato === 'assente' ? 'line-through' : 'none',
+    };
+  }
+}
+</script>
+</body>
+</html>

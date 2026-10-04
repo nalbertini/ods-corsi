@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: baseline; gap: 10px; padding: {{padding}}">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: {{colore}}">{{label}}</span>
+  <div style="flex-grow: 1; height: 2px; background: {{riga}}"></div>
+  <sc-if value="{{haConto}}" hint-placeholder-val="{{ true }}">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600; color: {{dim}}">{{conto}}</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"LEZIONI"},"conto":{"editor":"text","default":""},"dentro":{"editor":"boolean","default":false},"giallo":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":50}}'>
+// Riproduzione 1:1 di .rule / .rule-label / .rule-line / .rule-conto (src/styles.css righe 218-220 e 486-487) e
+// di Titoletto in src/components/ds.tsx. E' il titoletto di sezione con la riga: etichetta Saira 15px, 0.24em,
+// `dim`; riga da 2px `line-soft`; conto a destra (15px, 600, tabulare).
+// dentro = .rule-dentro (padding 12px 0 0, per un titoletto dentro un riquadro). giallo = l'etichetta in
+// giallo-testo (ADESSO, OGGI: CalendarioScreen.tsx).
+const T = {
+  scuro: { lineSoft: '#2a2a2a', dim: '#8c8c88', gialloTesto: '#f4c31b' },
+  chiaro: { lineSoft: '#e2e2dd', dim: '#656561', gialloTesto: '#8f6a00' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const conto = p.conto ?? '';
+    return {
+      label: p.label ?? 'LEZIONI',
+      conto,
+      haConto: String(conto) !== '',
+      padding: truthy(p.dentro) ? '12px 0 0' : '22px 20px 10px',
+      colore: truthy(p.giallo) ? c.gialloTesto : c.dim,
+      dim: c.dim,
+      riga: c.lineSoft,
+    };
+  }
+}
+</script>
+</body>
+</html>

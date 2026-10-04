@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 3px; padding: 14px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; text-transform: uppercase">{{corso}}</span>
+  <sc-if value="{{haFrase}}" hint-placeholder-val="{{ true }}">
+    <span style="margin-bottom: 4px; font-size: 14px; line-height: 1.35; color: {{c.sec}}">{{frase}}</span>
+  </sc-if>
+  <span style="font-size: 14px; line-height: 1.4; color: {{c.text}}">{{eta}}</span>
+  <sc-for list="{{orari}}" as="o" hint-placeholder-count="2">
+    <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{o.testo}}</span>
+  </sc-for>
+  <div style="display: grid; grid-template-columns: {{colonne}}; gap: 4px 10px; margin-top: 8px; padding-top: 10px; border-top: 2px solid {{c.lineSoft}}">
+    <sc-for list="{{celle}}" as="x" hint-placeholder-count="8">
+      <span style="align-self: {{x.allinea}}; white-space: pre-line; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: {{x.corpo}}; font-weight: 700; letter-spacing: {{x.spazio}}; line-height: {{x.altezza}}; color: {{x.colore}}">{{x.testo}}</span>
+    </sc-for>
+  </div>
+  <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 14px; line-height: 1.4; color: {{c.gialloTesto}}">{{nota}}</span>
+  </sc-if>
+  <sc-if value="{{link}}" hint-placeholder-val="{{ true }}">
+    <span style="align-self: flex-start; display: inline-flex; align-items: center; margin-top: 10px; min-height: 44px; border-bottom: 2px solid {{c.dim}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: {{c.text}}">SCOPRI IL CORSO</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"frase":{"editor":"text","default":""},"eta":{"editor":"text","default":"Dai 6 ai 10 anni"},"orari":{"editor":"text","default":"Lunedì e mercoledì 17:30-18:30|Sabato 10:00-11:00"},"saldo":{"editor":"boolean","default":true},"dataSaldo":{"editor":"text","default":"31/8"},"notaTrimestre":{"editor":"text","default":""},"prezzi":{"editor":"text","default":"120 €|310 €|105 €"},"etichette":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"link":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":380,"height":300}}'>
+// Riproduzione 1:1 della scheda di un corso nel listino: `Costo` in src/components/ds.tsx (righe 255-322) con
+// .card, .costo e figli in src/styles.css (righe 249 e 669-686: .costo, .costo-griglia, .costo-testa,
+// .costo-euro, .costo-frase, .costo-link, e riga 564 .costo-etichetta). Il corso e' in Saira obliqua maiuscola come il nome di una lezione.
+// orari: separati da `|`. prezzi: righe separate da `;`, celle da `|` — saldo, annuale, trimestre (senza
+// `saldo`: annuale, trimestre). Con `etichette` la prima cella di ogni riga e' l'etichetta (es. "Adulti").
+// Una cella vuota o "-" e' un trattino spento (`faint`), come un prezzo non ancora scritto.
+// notaTrimestre va a capo sotto TRIMESTRE. nota = riga gialla in fondo; link = SCOPRI IL CORSO.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', gialloTesto: '#f4c31b' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', gialloTesto: '#8f6a00' },
+};
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const saldo = p.saldo === undefined ? true : truthy(p.saldo);
+    const etichette = truthy(p.etichette);
+    const n = saldo ? 3 : 2;
+    const testa = (testo, allinea) => ({ testo, allinea: allinea || 'stretch', corpo: '11px', spazio: '0.12em', altezza: '1.2', colore: c.dim });
+    const celle = [];
+    if (etichette) celle.push(testa(''));
+    if (saldo) celle.push(testa('SALDO ' + (p.dataSaldo ?? '31/8')));
+    celle.push(testa('ANNUALE'));
+    celle.push(testa('TRIMESTRE' + (p.notaTrimestre ? '\n' + String(p.notaTrimestre).toUpperCase() : '')));
+    for (const riga of lista(p.prezzi, ';')) {
+      const campi = String(riga).split('|').map((s) => s.trim());
+      if (etichette) celle.push(testa(campi.shift() ?? '', 'center'));
+      for (let i = 0; i < n; i++) {
+        const v = campi[i];
+        const vuoto = v === undefined || v === '' || v === '-';
+        celle.push({ testo: vuoto ? '—' : v, allinea: 'stretch', corpo: '20px', spazio: 'normal', altezza: 'normal', colore: vuoto ? c.faint : c.text });
+      }
+    }
+    return {
+      c,
+      corso: p.corso ?? 'Judo kids',
+      frase: p.frase ?? '',
+      haFrase: String(p.frase ?? '') !== '',
+      eta: p.eta ?? '',
+      orari: lista(p.orari, '|').map((testo) => ({ testo })),
+      colonne: (etichette ? 'auto ' : '') + 'repeat(' + n + ', 1fr)',
+      celle,
+      nota: p.nota ?? '',
+      haNota: String(p.nota ?? '') !== '',
+      link: p.link === undefined ? true : truthy(p.link),
+    };
+  }
+}
+</script>
+</body>
+</html>
