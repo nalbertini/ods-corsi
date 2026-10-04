@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.21.0 — 4 ottobre 2026
+
+### Novità
+
+- Chi è nato a pochi mesi dalla fascia d'età trova il corso tra i suoi, e le richieste fuori età si vedono subito in segreteria
+
 ## 0.20.7 — 4 ottobre 2026
 
 ### Modificato
