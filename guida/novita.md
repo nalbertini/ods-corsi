@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.29.0 — 4 ottobre 2026
+
+### Novità
+
+- Gli esercizi si dividono per disciplina (Judo, Lotta, Pilates, Yoga…), e la segreteria ne tiene la lista
+
 ## 0.28.0 — 4 ottobre 2026
 
 ### Novità
