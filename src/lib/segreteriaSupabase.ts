@@ -16,7 +16,7 @@ import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '..
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
-import { AllegatiNonPartiti, cosaNonVaSegnalazione, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
+import { AllegatiNonPartiti, cosaNonVaSegnalazione, eCategoria, SCEGLI, type Categoria, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 
 /**
  * La segreteria col database vero.
@@ -187,6 +187,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === 'P0002' && /allegato/.test(e.message ?? '')) return new Error('Questo allegato non c’è più')
   if (e?.code === '42501' && /allegato/.test(e.message ?? '')) return new Error('Un allegato lo toglie solo chi l’ha mandato')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /allegato/.test(e.message ?? '')) return new Error(MANCANO_ALLEGATI)
+  // La categoria delle segnalazioni arriva con 38-segnalazioni-categoria.sql.
+  if ((e?.code === '42703' || e?.code === 'PGRST204') && /categoria/.test(e.message ?? ''))
+    return new Error('Le categorie delle segnalazioni non sono ancora attive sul database: va lanciato 38-segnalazioni-categoria.sql')
   if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
@@ -1205,12 +1208,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async segnalazioni() {
       const io = (await db.auth.getSession()).data.session?.user.id
-      const righe = ok(
-        await db.from('segnalazioni').select('id, padre_id, titolo, testo, scritta_il, chiusa_il, autore:persone!autore_id ( nome, cognome, utente_id )').order('scritta_il'),
-      ) as unknown as Array<{
+      // Senza 38-segnalazioni-categoria.sql la colonna non c'è: si rilegge senza, e i fili non hanno categoria.
+      const leggi = (categoria: string) =>
+        db.from('segnalazioni').select(`id, padre_id, titolo, testo, scritta_il, chiusa_il, ${categoria}autore:persone!autore_id ( nome, cognome, utente_id )`).order('scritta_il')
+      let letto = await leggi('categoria, ')
+      if (letto.error?.code === '42703' && /categoria/.test(letto.error.message ?? '')) letto = await leggi('')
+      const righe = ok(letto) as unknown as Array<{
         id: string
         padre_id: string | null
         titolo: string | null
+        categoria?: string | null
         testo: string
         scritta_il: string
         chiusa_il: string | null
@@ -1237,17 +1244,17 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const fili = new Map<string, Segnalazione>()
       for (const r of righe) {
         const m = { id: r.id, autore: nome(r.autore) || '—', mio: !!io && r.autore?.utente_id === io, testo: r.testo, il: r.scritta_il, ...per.get(r.id) }
-        if (!r.padre_id) fili.set(r.id, { id: r.id, titolo: r.titolo ?? '', messaggi: [m], chiusaIl: r.chiusa_il ?? undefined })
+        if (!r.padre_id) fili.set(r.id, { id: r.id, titolo: r.titolo ?? '', categoria: eCategoria(r.categoria) ? r.categoria : undefined, messaggi: [m], chiusaIl: r.chiusa_il ?? undefined })
         else fili.get(r.padre_id)?.messaggi.push(m)
       }
       return [...fili.values()]
     },
 
-    async apriSegnalazione(titolo, testo, allegati = []) {
-      const no = cosaNonVaSegnalazione(testo, titolo) ?? guaioAllegati(allegati)
+    async apriSegnalazione(titolo, testo, categoria, allegati = []) {
+      const no = cosaNonVaSegnalazione(testo, titolo, categoria) ?? guaioAllegati(allegati)
       if (no) throw new Error(no)
       // Come per corsi e persone: `.single()` dà `data` nullo nel tipo, ma `ok` ha già lanciato se non c'è.
-      const id = (ok(await db.from('segnalazioni').insert({ titolo: titolo.trim(), testo: testo.trim() }).select('id').single()) as { id: string }).id
+      const id = (ok(await db.from('segnalazioni').insert({ titolo: titolo.trim(), testo: testo.trim(), categoria }).select('id').single()) as { id: string }).id
       await allega(id, allegati)
       return id
     },
@@ -1280,6 +1287,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async chiudiSegnalazione(id, chiusa) {
       ok(await db.from('segnalazioni').update({ chiusa_il: chiusa ? new Date().toISOString() : null }).eq('id', id))
+    },
+
+    async categoriaSegnalazione(id, categoria: Categoria) {
+      if (!eCategoria(categoria)) throw new Error(SCEGLI)
+      ok(await db.from('segnalazioni').update({ categoria }).eq('id', id))
     },
 
     async gestisciPresenzaIstruttore(id, conferma) {

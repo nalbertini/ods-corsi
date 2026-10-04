@@ -16,6 +16,13 @@ import {
   leggiBozza,
   motivoSenzaRete,
   motivoSpento,
+  nomeCategoria,
+  segnapostoTesto,
+  testoWhatsApp,
+  avvisoCategoria,
+  CATEGORIE,
+  eCategoria,
+  type Categoria,
   quando,
   rigaFilo,
   scegliAllegati,
@@ -35,8 +42,20 @@ import { Campo, Guaio, Testa, chiedi, useAvviso, useCarica } from './comune'
  * WhatsApp con l'avviso già scritto: senza numero, a chi mandarlo si sceglie
  * lì. La segreteria non ha un indirizzo per voce: si dice dove guardare.
  */
-const avvisoWhatsApp = (s: Segnalazione) =>
-  `https://wa.me/?text=${encodeURIComponent(`Ti ho scritto sulla segnalazione «${s.titolo}»: la trovi in Segreteria, alla voce SEGNALAZIONI. ${indirizzo(INDIRIZZI.segreteria)}`)}`
+const avvisoWhatsApp = (s: Segnalazione) => `https://wa.me/?text=${encodeURIComponent(testoWhatsApp(s, indirizzo(INDIRIZZI.segreteria)))}`
+
+/** IDEA o CORREZIONE: due tasti, ne è premuto al massimo uno. */
+function SceltaCategoria({ id, scelta, onScegli, disabled }: { id: string; scelta?: Categoria; onScegli: (c: Categoria) => void; disabled?: boolean }) {
+  return (
+    <div className="row" role="group" aria-labelledby={id} style={{ gap: 8, flexWrap: 'wrap' }}>
+      {CATEGORIE.map((c) => (
+        <button key={c} type="button" className="num sg-chip" aria-pressed={c === scelta} disabled={disabled} onClick={() => onScegli(c)}>
+          {nomeCategoria(c)}
+        </button>
+      ))}
+    </div>
+  )
+}
 
 /** Una bozza che resta se si cambia voce e si torna (vedi `leggiBozza`). */
 function useBozza(chiave: string) {
@@ -211,7 +230,10 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
   const [tenute, setTenute] = useState<ReadonlySet<string>>(() => new Set())
   const [titolo, setTitolo] = useBozza(chiaveBozza(d.modo, 'nuova-titolo'))
   const [testo, setTesto] = useBozza(chiaveBozza(d.modo, 'nuova-testo'))
-  const [nuova, setNuova] = useState(() => !!(titolo || testo))
+  // Parte vuota e va scelta: una scelta già fatta resterebbe lì anche per l'altra.
+  const [scelta, setScelta] = useBozza(chiaveBozza(d.modo, 'nuova-categoria'))
+  const categoria = eCategoria(scelta) ? scelta : undefined
+  const [nuova, setNuova] = useState(() => !!(titolo || testo || categoria))
   const f = useFile()
   const inRete = useOnline()
   const { avviso, avvisa, fai, lavora } = useAvviso()
@@ -229,35 +251,38 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
   // Titolo e testo non si tagliano in silenzio: oltre il massimo lo si dice.
   const lungo = troppoLungo('Titolo', titolo, MAX_TITOLO)
   const testoLungo = troppoLungo('Testo', testo, MAX_TESTO)
-  const motivo = motivoSpento({ titolo, testo, lavora }) ?? motivoSenzaRete(inRete, f.file.length)
+  const motivo = motivoSpento({ titolo, testo, lavora, categoria }) ?? motivoSenzaRete(inRete, f.file.length)
   // Si manda se non manca niente e niente è troppo lungo: vale per il tasto e per Invio.
   const pronto = !lavora && !motivo && !lungo && !testoLungo
   const svuota = () => {
     setTitolo('')
     setTesto('')
+    setScelta('')
     f.svuota()
     setNuova(false)
   }
   // LASCIA STARE butta via, ma si riprende dall'avviso: un tocco sbagliato col telefono che suona non perde niente.
   const lasciaStare = () => {
-    const [t, x, conFile] = [titolo, testo, f.file.length > 0]
+    const [t, x, c, conFile] = [titolo, testo, scelta, f.file.length > 0]
     svuota()
-    if (t.trim() || x.trim())
+    if (t.trim() || x.trim() || c)
       avvisa('Segnalazione buttata via', false, {
         etichetta: 'RIPRENDI',
         fa: () => {
           setTitolo(t)
           setTesto(x)
+          setScelta(c)
           setNuova(true)
           avvisa(conFile ? 'Segnalazione ripresa: i file vanno riallegati' : 'Segnalazione ripresa')
         },
       })
   }
   const apri = () => {
+    if (!categoria) return
     let esito = { id: '', nonPartiti: [] as string[] }
     void fai(
       async () => {
-        esito = await mandaConFile(() => d.apriSegnalazione(titolo, testo, f.file))
+        esito = await mandaConFile(() => d.apriSegnalazione(titolo, testo, categoria, f.file))
       },
       undefined,
       async () => {
@@ -298,6 +323,12 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
             if (pronto) apri()
           }}
         >
+          <div className="stack" style={{ gap: 6 }}>
+            <span id="sz-categoria" className="sg-etichetta">
+              È UN'IDEA O UNA CORREZIONE?
+            </span>
+            <SceltaCategoria id="sz-categoria" scelta={categoria} onScegli={setScelta} />
+          </div>
           <Campo id="sz-titolo" etichetta="TITOLO" manca={!!lungo}>
             <input
               id="sz-titolo"
@@ -320,7 +351,7 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
               rows={5}
               value={testo}
               onChange={(e) => setTesto(e.target.value)}
-              placeholder="Dove, cosa hai fatto, cosa ti aspettavi"
+              placeholder={segnapostoTesto(categoria)}
               onPaste={incollaFile(f.aggiungi)}
               aria-invalid={!!testoLungo || undefined}
               aria-describedby={testoLungo ? 'sz-testo-nota sz-file-avviso' : 'sz-file-avviso'}
@@ -458,6 +489,7 @@ function Filo({
           <span className="sg-filo-titolo">{s.titolo}</span>
           <span className="sg-filo-riga">{rigaFilo(s)}</span>
         </span>
+        {s.categoria && <span className="num sg-tag">{nomeCategoria(s.categoria)}</span>}
         {/* Una risposta scritta e non mandata si vede anche a filo chiuso a fisarmonica. */}
         {risposta.trim() && !aperto && <span className="num sg-tag">BOZZA</span>}
         {s.messaggi.some((m) => m.allegati?.length) && <span className="num sg-tag">ALLEGATO</span>}
@@ -474,6 +506,18 @@ function Filo({
 
       {aperto && (
         <div className="stack" style={{ gap: 12, padding: '0 14px 14px', borderTop: '1px solid var(--line)' }}>
+          {/* In cima, prima di rispondere o avvisare: si cambia se era sbagliata, o si dà ai fili di prima. */}
+          <div className="stack" style={{ gap: 6, paddingTop: 12 }}>
+            <span id={`sz-c-${s.id}`} className="sg-etichetta">
+              È UN'IDEA O UNA CORREZIONE?
+            </span>
+            <SceltaCategoria
+              id={`sz-c-${s.id}`}
+              scelta={s.categoria}
+              disabled={lavora}
+              onScegli={(c) => c !== s.categoria && void fai(() => d.categoriaSegnalazione(s.id, c), avvisoCategoria(c), poi)}
+            />
+          </div>
           {s.messaggi.map((m) => (
             // Gli altri hanno la barra a sinistra: in un filo lungo si vede chi ha scritto cosa.
             <div key={m.id} className="stack sg-messaggio" data-altro={!m.mio || undefined}>

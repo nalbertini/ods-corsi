@@ -65,6 +65,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 35. `35-date-corsi.sql` — SALVA LE DATE toglie le lezioni da domani in poi rimaste fuori da inizio e fine dei corsi, tranne quelle con l'appello o una prova, e dice quante
 36. `36-tablet-conto-prove.sql` — sul tablet chi è venuto a provare si conta a parte: «10 presenti su 10 · +1 PROVA», non «11 su 10»
 37. `37-mie-ore.sql` — in LE MIE ORE l'istruttore vede anche le lezioni tenute in cui era previsto e nessuno si è segnato; la segreteria le vede tutte, come prima
+38. `38-segnalazioni-categoria.sql` — la categoria delle segnalazioni: idea o correzione, scelta da chi la apre e cambiabile dalla segreteria; i fili di prima restano senza
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -198,6 +199,10 @@ Perché in LE MIE ORE l'istruttore veda le sue lezioni tenute senza segno basta
 `37-mie-ore.sql` (dopo `23-istruttori-dalle-lezioni.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, quelle lezioni lì non
 compaiono. Chi rilancia `23` rilancia poi anche `37`.
+Per la categoria delle segnalazioni (idea o correzione) basta
+`38-segnalazioni-categoria.sql` (dopo `25-segnalazioni.sql`), che non chiede di
+rilanciare `06-iscrizioni.sql`: finché non c'è, SEGNALAZIONI si legge senza
+categorie e MANDA dice che va lanciato. Chi rilancia `25` rilancia poi anche `38`.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non

@@ -11,7 +11,7 @@ import { VALIDITA } from './costi'
 import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio, paroleCercate, somiglia } from './nomi'
 import type { SegnalataVista } from './segnalate'
-import type { Segnalazione } from './segnalazioni'
+import type { Categoria, Segnalazione } from './segnalazioni'
 
 export type { ListaMusica } from './musica'
 import type { IndiziDoppioni } from './doppioni'
@@ -450,7 +450,7 @@ export interface DatiSegreteria {
   /** Le segnalazioni della segreteria, coi loro messaggi (vedi `segnalazioni.ts`). */
   segnalazioni(): Promise<Segnalazione[]>
   /** Apre una segnalazione e dice il suo id, così il filo nuovo si apre da sé. */
-  apriSegnalazione(titolo: string, testo: string, allegati?: File[]): Promise<string>
+  apriSegnalazione(titolo: string, testo: string, categoria: Categoria, allegati?: File[]): Promise<string>
   /** Con `allegati`, se qualche file non parte il messaggio c'è lo stesso: lancia `AllegatiNonPartiti`. */
   rispondiSegnalazione(id: string, testo: string, allegati?: File[]): Promise<void>
   /** Toglie un allegato (solo chi l'ha mandato): file e riga, e nel filo resta la traccia. */
@@ -459,6 +459,8 @@ export interface DatiSegreteria {
   linkAllegato(id: string): Promise<string>
   /** La chiude, o con `false` la riapre. */
   chiudiSegnalazione(id: string, chiusa: boolean): Promise<void>
+  /** Cambia la categoria di un filo: una scelta sbagliata non resta sbagliata. */
+  categoriaSegnalazione(id: string, categoria: Categoria): Promise<void>
 
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>

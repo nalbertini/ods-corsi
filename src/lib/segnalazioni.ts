@@ -22,9 +22,18 @@ export interface Messaggio {
   tolti?: { da: string; il: string }[]
 }
 
+/** Un'idea (cosa servirebbe) o una correzione (cosa non va). */
+export type Categoria = 'idea' | 'correzione'
+export const CATEGORIE: Categoria[] = ['idea', 'correzione']
+// `includes` su un array di `Categoria` non accetta `unknown`: si allarga l'array, non il valore.
+export const eCategoria = (c: unknown): c is Categoria => (CATEGORIE as readonly unknown[]).includes(c)
+export const SCEGLI = "Scegli se è un'idea o una correzione"
+
 export interface Segnalazione {
   id: string
   titolo: string
+  /** Del filo, non delle risposte. Quelli scritti prima delle categorie non ce l'hanno. */
+  categoria?: Categoria
   /** Il primo è quello che la apre, poi le risposte in ordine. */
   messaggi: Messaggio[]
   chiusaIl?: string
@@ -33,9 +42,10 @@ export interface Segnalazione {
 export const MAX_TITOLO = 120
 export const MAX_TESTO = 4000
 
-/** Perché non si può scrivere, o `null` se si può. Senza titolo è una risposta. */
-export function cosaNonVaSegnalazione(testo: string, titolo?: string): string | null {
+/** Perché non si può scrivere, o `null` se si può. Senza titolo è una risposta, e non ha categoria. */
+export function cosaNonVaSegnalazione(testo: string, titolo?: string, categoria?: string): string | null {
   if (titolo !== undefined) {
+    if (!eCategoria(categoria)) return SCEGLI
     if (!titolo.trim()) return 'Manca il titolo'
     const lungo = troppoLungo('Titolo', titolo, MAX_TITOLO)
     if (lungo) return lungo
@@ -125,12 +135,35 @@ export function rigaFilo(s: Segnalazione): string {
  * Perché un tasto che manda è spento, da scrivere accanto. Niente mentre
  * lavora, e niente per un testo troppo lungo: lo dice già la nota sotto il campo.
  */
-export function motivoSpento(o: { titolo?: string; testo: string; lavora: boolean; risposta?: boolean }): string | null {
+export function motivoSpento(o: { titolo?: string; testo: string; lavora: boolean; risposta?: boolean; categoria?: Categoria }): string | null {
   if (o.lavora) return null
   if (o.risposta) return o.testo.trim() ? null : 'Scrivi la risposta'
+  if (!o.categoria) return SCEGLI
   if (!o.titolo?.trim()) return 'Scrivi il titolo'
-  return o.testo.trim() ? null : 'Scrivi cosa non va'
+  return o.testo.trim() ? null : o.categoria === 'idea' ? 'Scrivi cosa servirebbe' : 'Scrivi cosa non va'
 }
+
+/** Il suggerimento nel campo del testo: un'idea si racconta diversa da una cosa che non va. */
+export const segnapostoTesto = (c?: Categoria) => (c === 'idea' ? 'Cosa servirebbe, e per fare cosa' : 'Dove, cosa hai fatto, cosa ti aspettavi')
+
+/** Come si chiama una categoria nell'app: l'etichetta e la scelta del modulo. */
+export const nomeCategoria = (c: Categoria) => (c === 'idea' ? 'IDEA' : 'CORREZIONE')
+
+/** Come la si dice in una frase: «un'idea», «sull'idea». */
+const PAROLE: Record<Categoria, { una: string; sulla: string }> = {
+  idea: { una: "un'idea", sulla: "sull'idea" },
+  correzione: { una: 'una correzione', sulla: 'sulla correzione' },
+}
+
+/**
+ * L'avviso da mandare su WhatsApp. Dice la categoria accanto al titolo, così
+ * chi lo riceve sa subito di che si tratta; un filo di prima, senza, come prima.
+ */
+export const testoWhatsApp = (s: Segnalazione, link: string) =>
+  `Ti ho scritto ${s.categoria ? PAROLE[s.categoria].sulla : 'sulla segnalazione'} «${s.titolo}»: la trovi in Segreteria, alla voce SEGNALAZIONI. ${link}`
+
+/** L'avviso dopo il cambio di categoria. */
+export const avvisoCategoria = (c: Categoria) => `Ora è ${PAROLE[c].una}`
 
 /*
  * Le bozze: quello che si sta scrivendo resta se si cambia voce e si torna.
