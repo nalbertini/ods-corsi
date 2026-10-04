@@ -153,6 +153,31 @@ export function compiuti(natoIl: string, anni: number, oggi = new Date()): boole
   return new Date(a + anni, m - 1, g) <= oggi
 }
 
+/** Quanti anni ha oggi chi è nato in quel giorno. */
+export const anni = (natoIl: string, oggi = new Date()) => {
+  const [a, m, g] = natoIl.split('-').map(Number)
+  return oggi.getFullYear() - a - (oggi.getMonth() + 1 < m || (oggi.getMonth() + 1 === m && oggi.getDate() < g) ? 1 : 0)
+}
+
+/** Gli anni a parole: «9 anni», «1 anno». */
+export function anniScritti(natoIl: string, oggi = new Date()): string {
+  const n = anni(natoIl, oggi)
+  return `${n} ${n === 1 ? 'anno' : 'anni'}`
+}
+
+/**
+ * La data di nascita che dice il codice fiscale, se è valido e la data esiste:
+ * chi lo scrive non la scrive. Se la data già scritta dice lo stesso giorno
+ * resta quella, perché l'anno del codice ha due cifre e il secolo lo sa chi
+ * scrive. `null`: il codice non dice niente, la data si scrive a mano.
+ */
+export function dataDaCf(codiceFiscale: string, natoIl: string, oggi = new Date()): string | null {
+  const cf = pulisciCf(codiceFiscale)
+  const dal = cfNatoIl(cf, oggi)
+  if (!dal) return null
+  return cfTornaConLaData(cf, natoIl) ? natoIl : dal
+}
+
 /** Minorenne oggi, da una data `AAAA-MM-GG`. */
 export function minorenne(natoIl: string, oggi = new Date()): boolean {
   const [a, m, g] = natoIl.split('-').map(Number)

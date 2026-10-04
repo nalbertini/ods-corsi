@@ -36,7 +36,11 @@ segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
 
 Chi si iscrive risponde alle domande dal telefono:
 
-- **Chi si iscrive**: nome, cognome, data e luogo di nascita, codice fiscale.
+- **Chi si iscrive**: nome, cognome, codice fiscale, data e luogo di nascita.
+  Scritto il codice fiscale, data e luogo si riempiono da soli e non si
+  cambiano (si corregge il codice); accanto alla data c'è quanti anni ha, così
+  il codice del genitore al posto di quello del figlio si vede subito. Se il
+  codice non è valido, la data si scrive a mano.
   Se dalla data di nascita risulta **minorenne**, il modulo chiede anche i dati
   del **genitore** e il modulo per minori, che firma il genitore.
 - **Residenza**, e **come raggiungerti** (email, telefono e, se si vuole, un
