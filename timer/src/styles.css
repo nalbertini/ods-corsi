@@ -309,19 +309,10 @@ a.tab { text-decoration: none; }
   font-size: clamp(20px, 5vw, 44px); font-weight: 600; letter-spacing: 0.04em;
   text-align: center; text-wrap: balance;
 }
-/* Serie, ripetizioni e carico: un promemoria, non un protagonista. */
-.obiettivo {
-  font-family: var(--cond); font-variant-numeric: tabular-nums;
-  font-size: clamp(13px, 2.6vw, 22px); font-weight: 600; letter-spacing: 0.1em;
-  color: var(--dim); text-align: center;
-}
 /* Definita anche fuori dalla media query: in verticale senza `display: flex`
    l'allineamento centrato non si applicava e stato ed esercizio restavano a
    sinistra sotto le cifre. */
 .timer-col { display: flex; flex-direction: column; align-items: center; min-width: 0; }
-
-.dots { display: flex; gap: 4px; }
-.dots > span { flex-grow: 1; height: 10px; border: 2px solid var(--line); }
 
 /* Il quadrante sta di fianco appena la finestra è più larga che alta: vale per
    il tablet a muro come per un telefono ruotato, che altrimenti userebbe
@@ -404,19 +395,6 @@ a.navitem { text-decoration: none; }
   text-shadow: 0 2px 12px #000000cc;
 }
 
-/* Gli stati tranquilli: piccola e in un angolo, non deve rubare la scena ai
-   numeri né competere con l'illustrazione centrale di Maurizio. */
-.adesivo-stato {
-  /* In alto a destra dentro il blocco centrale, non dello schermo: è lo spazio
-     morto accanto all'anello, e ancorata qui non può invadere l'intestazione
-     quando il nome dell'allenamento va a capo. */
-  position: absolute; right: var(--bordo); top: 0; z-index: 3;
-  height: 15vh; max-height: 118px; width: auto; pointer-events: none;
-  opacity: 0.92;
-  filter: drop-shadow(0 4px 14px #000000aa);
-  animation: entra 260ms ease-out;
-}
-
 .adesivo-finale {
   height: 34vh; max-height: 300px; width: auto;
   animation: entra 320ms ease-out;
@@ -429,28 +407,9 @@ a.navitem { text-decoration: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .beccato,
-  .adesivo-stato,
   .adesivo-finale {
     animation: none;
   }
-}
-
-@media (min-width: 900px) and (orientation: landscape) {
-  /* In orizzontale l'angolo in alto a destra è occupato dall'intestazione, e
-     più in basso c'è la riga «prossimo». Resta la fascia vuota sotto
-     l'anello. */
-  /* Il tetto era 130 px mentre il file ne ha trecento: su un 1920×1080
-     l'illustrazione occupava il 6% della larghezza e del judogi non si
-     leggeva niente. Il tetto ora è la misura vera del disegno, così cresce
-     invece di restare un francobollo. */
-  .adesivo-stato { left: var(--bordo); right: auto; top: auto; bottom: var(--bordo); height: 16vh; max-height: 300px; }
-}
-
-/* Sotto l'anello, su uno schermo grande, resta una fascia vuota alta fra i 250
-   e i 440 px: misurata, non stimata. Lì l'illustrazione può stare comoda senza
-   avvicinarsi né all'anello né alla colonna delle cifre. */
-@media (min-width: 1200px) and (min-height: 900px) and (orientation: landscape) {
-  .adesivo-stato { height: 22vh; }
 }
 
 /* Il QR sta su carta bianca anche dentro un'app nera: un lettore cerca moduli
@@ -459,74 +418,6 @@ a.navitem { text-decoration: none; }
   align-self: center; background: #ffffff; padding: 14px;
   display: flex; align-items: center; justify-content: center;
   min-height: 180px; width: min(300px, 86vw);
-}
-
-/* ---------- modalità schermo grande ---------- */
-
-/* Il tablet appeso in sala si guarda da dieci metri, e chi lo guarda vuole
-   sapere due cose: quanto manca e cosa sta facendo. Tutto il resto si toglie
-   di mezzo — la riga «prossimo» sparisce, l'anello si stringe a fare da
-   contagiri e da posto per Maurizio, i margini laterali servono a chi tiene
-   il telefono in mano e non a un muro — e quello spazio va alle cifre. Le
-   regole stanno su un attributo e non in una media query perché è una scelta
-   di chi usa l'app, non una misura dello schermo.
-
-   Prima le misure di base, poi le condizioni per orientamento: hanno la
-   stessa specificità, quindi a decidere è l'ordine. */
-.timer[data-grande='true'] {
-  --anello: min(190px, 22vh, 24vw);
-}
-.timer[data-grande='true'] .timer-main { padding: 0 16px; gap: 24px; }
-.timer[data-grande='true'] .state-label { font-size: clamp(26px, 5vw, 64px); }
-.timer[data-grande='true'] .exercise { font-size: clamp(22px, 4.2vw, 54px); }
-.timer[data-grande='true'] .obiettivo { font-size: clamp(15px, 2.4vw, 30px); }
-.timer[data-grande='true'] .beccato-frase { font-size: clamp(13px, 2.6vw, 20px); }
-.timer[data-grande='true'] .btn-piu { min-width: 96px; font-size: 20px; min-height: 48px; }
-.timer[data-grande='true'] .timer-dots { padding-top: 10px; }
-.timer[data-grande='true'] .timer-controlli { gap: 10px; padding: 10px 20px calc(var(--safe-b) + 12px); }
-.timer[data-grande='true'] .tasto-salto { width: 56px; height: 56px; }
-.timer[data-grande='true'] .tasto-avvia { height: 56px; }
-.timer[data-grande='true'] .adesivo-stato { height: 11vh; max-height: 90px; }
-
-/* «00:45» è largo 2,53 volte il corpo del carattere — misurato, non stimato —
-   e se non ci sta va a capo su due righe e sfonda tutto quello che ha sotto,
-   compresi i comandi. Il limite vero non è quindi l'altezza ma la larghezza,
-   e cambia con l'orientamento, perché in orizzontale la colonna deve
-   dividersi lo schermo con l'anello. Da qui tetti diversi, ognuno con un
-   margine sopra il minimo calcolato per lo schermo più stretto della
-   sua categoria. */
-@media (orientation: portrait) {
-  .timer[data-grande='true'] .digits { font-size: min(35vw, 58vh); }
-}
-
-/* Schermo grande su un telefono tenuto in verticale. La modalità è tarata sul
-   tablet appeso in sala, dove 24vw sono trecento pixel di anello; su un
-   telefono da 412 sono novantanove, e un anello da novantanove non è più un
-   contagiri — è un bottone con dentro tre scritte che non ci stanno. Le cifre
-   restano larghe quanto lo schermo permette, quindi l'altezza che avanza può
-   andare solo all'anello e ai due testi, ed è lì che va. */
-@media (orientation: portrait) and (max-width: 560px) and (min-height: 560px) {
-  .timer[data-grande='true'] { --anello: min(190px, 22vh, 42vw); }
-  .timer[data-grande='true'] .state-label { font-size: clamp(26px, 7.5vw, 64px); }
-  .timer[data-grande='true'] .exercise { font-size: clamp(22px, 6vw, 54px); }
-}
-@media (orientation: landscape) {
-  .timer[data-grande='true'] .digits { font-size: min(29vw, 55vh); }
-}
-/* Un telefono girato di lato non ha spazio da regalare a nessuno: lì la
-   modalità schermo grande torna alle misure normali, invece di far
-   traboccare il nome dell'esercizio sotto la barra di avanzamento. */
-@media (orientation: landscape) and (max-height: 560px) {
-  .timer[data-grande='true'] .digits { font-size: min(18vw, 30vh); }
-  .timer[data-grande='true'] .state-label { font-size: clamp(18px, 3.4vw, 30px); }
-  .timer[data-grande='true'] .exercise { font-size: clamp(16px, 3vw, 28px); }
-  .timer[data-grande='true'] .obiettivo { font-size: clamp(12px, 2vw, 18px); }
-  /* Anche i comandi: le misure da tablet sono più specifiche di quelle del
-     telefono ruotato e restavano in piedi, rubando alla colonna centrale i
-     pochi pixel che le mancavano per non finire sotto la barra. */
-  .timer[data-grande='true'] .timer-controlli { gap: 8px; padding: 8px 14px calc(var(--safe-b) + 8px); }
-  .timer[data-grande='true'] .tasto-salto { width: 50px; height: 50px; }
-  .timer[data-grande='true'] .tasto-avvia { height: 50px; }
 }
 
 /* ---------- gli attrezzi al volo: cronometro e conto alla rovescia ---------- */
@@ -712,9 +603,6 @@ a.navitem { text-decoration: none; }
 }
 
 .timer-top { gap: 12px; padding: calc(var(--safe-t) + 14px) 20px 0; }
-.timer-dots { padding: 16px 20px 0; }
-.timer-azioni { gap: 8px; margin: 14px 20px 0; align-items: stretch; }
-.timer-prossimo { gap: 10px; flex-grow: 1; min-width: 0; padding: 10px 14px; }
 /* Il tasto che allunga l'intervallo in corso: piccolo, ma con un'area di tocco
    vera, perché lo si preme guardando la sala e non lo schermo. */
 .btn-piu {
@@ -730,12 +618,7 @@ a.navitem { text-decoration: none; }
 .btn-piu:not(:disabled) { border-color: var(--state); color: var(--text); }
 .btn-piu:active:not(:disabled) { background: var(--surface-2); }
 .btn-piu:disabled { opacity: 0.35; }
-/* Quando la riga del prossimo non c'è — schermo grande, o ultimo intervallo —
-   il tasto resterebbe un rettangolino spaesato in un angolo. Da solo si prende
-   tutta la riga: è anche l'unico gesto che si fa guardando la sala. */
-.timer-azioni > .btn-piu:only-child { flex-grow: 1; }
 .timer-controlli { gap: 12px; padding: 16px 20px calc(var(--safe-b) + 20px); }
-.tasto-salto { width: 68px; height: 68px; }
 .tasto-avvia { height: 68px; }
 
 /* Schermi bassi: si stringe tutto invece di lasciare che il contenuto
@@ -744,14 +627,8 @@ a.navitem { text-decoration: none; }
   .timer { --anello: min(300px, 24vh, 50vw); }
   .timer-main { gap: 2px; }
   .timer-top { padding-top: calc(var(--safe-t) + 8px); }
-  .timer-dots { padding-top: 8px; }
-  .timer-azioni { margin-top: 8px; }
-  .timer-prossimo { padding: 7px 12px; }
   .timer-controlli { gap: 10px; padding: 10px 16px calc(var(--safe-b) + 12px); }
-  .tasto-salto { width: 58px; height: 58px; }
   .tasto-avvia { height: 58px; }
-  .adesivo-stato { height: 12vh; max-height: 86px; }
-  .obiettivo { font-size: clamp(12px, 2.2vw, 18px); }
 }
 
 
@@ -763,15 +640,190 @@ a.navitem { text-decoration: none; }
   .digits { font-size: min(18vw, 30vh); }
   .state-label { font-size: clamp(18px, 3.4vw, 30px); letter-spacing: 0.2em; }
   .exercise { font-size: clamp(16px, 3vw, 28px); }
-  .obiettivo { font-size: clamp(12px, 2vw, 18px); }
   .timer-top { padding-top: calc(var(--safe-t) + 6px); }
-  .timer-dots { padding-top: 6px; }
-  .timer-azioni { margin-top: 6px; }
-  .timer-prossimo { padding: 5px 10px; }
   .timer-controlli { gap: 8px; padding: 8px 14px calc(var(--safe-b) + 8px); }
-  .tasto-salto { width: 50px; height: 50px; }
   .tasto-avvia { height: 50px; }
-  .adesivo-stato { display: none; }
+}
+
+/* ---------- il timer dell'allenamento ---------- */
+
+/* Tre fasce: l'intestazione, il corpo (a sinistra quel che si guarda e si
+   preme, a destra quel che viene dopo) e la barra che sta sotto tutto e fa da
+   avanzamento dell'intero allenamento. In verticale è una colonna sola, nello
+   stesso ordine; di fianco, da una finestra più larga che alta, diventa una
+   griglia. Il colore dello stato sta nel bordo (`--state`), nel tasto grande,
+   nella riga in corso e nella barra: si legge da tutta la sala. */
+.tf-corpo {
+  flex-grow: 1; min-height: 0; display: flex; flex-direction: column;
+  margin-top: 12px; padding: 0 14px calc(var(--safe-b) + 10px);
+  border-top: 2px solid var(--line-soft); overflow-y: auto;
+}
+.tf-sinistra {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding-top: 16px; min-width: 0;
+}
+/* Il tempo che resta sta già nella barra, in verticale; la colonna di destra
+   non è una colonna ma una pila ordinata insieme alla sinistra. */
+.tf-destra { display: contents; }
+.tf-resta { display: none; }
+.tf-scaletta { order: 1; margin-top: 16px; }
+.tf-barra { order: 2; margin-top: auto; padding-top: 16px; }
+.tf-musica { order: 3; margin: 10px 0 0; }
+.tf-destra .beccato { order: 1; width: 100%; height: min(24vh, 200px); margin-top: 8px; }
+
+.tf-stato {
+  font-family: var(--cond); font-style: oblique 9deg; font-weight: 700;
+  font-size: clamp(26px, 7vw, 36px); letter-spacing: 0.26em; color: var(--state-testo); line-height: 1;
+}
+.tf-cifre {
+  font-family: var(--cond); font-variant-numeric: tabular-nums; font-weight: 700;
+  line-height: 0.88; letter-spacing: -0.03em; font-size: min(32vw, 24vh);
+}
+.tf-esercizio {
+  font-family: var(--cond); font-style: oblique 9deg; font-weight: 600; letter-spacing: 0.04em;
+  font-size: clamp(24px, 8vw, 36px); text-align: center; text-wrap: balance;
+}
+/* Serie, ripetizioni e carico: un promemoria, non un protagonista. */
+.tf-obiettivo {
+  font-family: var(--cond); font-variant-numeric: tabular-nums; font-weight: 600;
+  font-size: clamp(15px, 4vw, 20px); letter-spacing: 0.1em; color: var(--dim); text-align: center;
+}
+.tf-adesivo {
+  position: absolute; top: 4px; right: 0; z-index: 3; width: auto; pointer-events: none;
+  height: 44px; opacity: 0.92;
+  filter: drop-shadow(0 4px 14px #000000aa); animation: entra 260ms ease-out;
+}
+
+.tf-comandi {
+  width: 100%; max-width: 560px; margin-top: auto; padding-top: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.tf-avvia {
+  height: 72px; display: flex; align-items: center; justify-content: center; gap: 12px;
+  font-family: var(--cond); font-style: oblique 9deg; font-weight: 700;
+  font-size: 26px; letter-spacing: 0.18em;
+}
+.tf-secondari { display: flex; gap: 8px; }
+.tf-secondario {
+  flex: 1; min-height: 48px; padding: 0 6px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  border: 2px solid var(--line); color: var(--tasto);
+  font-family: var(--cond); font-variant-numeric: tabular-nums; font-weight: 700;
+  font-size: 16px; letter-spacing: 0.1em;
+}
+.tf-secondario:hover:not(:disabled) { border-color: var(--dim); color: var(--text); }
+/* Il +30″ lo preme l'istruttore guardando la sala: quando si può usare prende
+   il colore dello stato. */
+.tf-piu:not(:disabled) { border-color: var(--state); background: var(--surface); color: var(--text); }
+.tf-piu:disabled { opacity: 0.35; }
+.tf-avvia:focus-visible, .tf-secondario:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+
+.tf-etichetta {
+  font-family: var(--cond); font-weight: 700; font-size: 13px; letter-spacing: 0.22em; color: var(--dim);
+}
+.tf-resta { flex-direction: column; gap: 4px; }
+.tf-resta-tempo {
+  font-family: var(--cond); font-variant-numeric: tabular-nums; font-weight: 700;
+  font-size: clamp(44px, 4.4vw, 64px); line-height: 0.9;
+}
+
+.tf-righe { list-style: none; margin: 6px 0 0; padding: 0; }
+.tf-riga {
+  display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px;
+  border-bottom: 2px solid var(--line-soft);
+  font-family: var(--cond); font-weight: 600; font-size: 22px; letter-spacing: 0.04em;
+}
+.tf-segno { width: 14px; height: 14px; flex-shrink: 0; background: var(--c); }
+.tf-riga-nome { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tf-riga-durata { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tf-riga[data-corrente='true'] { background: var(--c); border-bottom-color: var(--c); color: var(--su-colore); }
+.tf-riga[data-corrente='true'][data-kind='work'] { color: var(--su-rosso); }
+.tf-riga[data-corrente='true'] .tf-segno { background: currentColor; }
+.tf-altri {
+  display: block; padding: 10px 12px 0;
+  font-family: var(--cond); font-weight: 700; font-size: 14px; letter-spacing: 0.16em; color: var(--dim);
+}
+
+.tf-barra-testa {
+  display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; min-height: 1.3em;
+  font-family: var(--cond); font-variant-numeric: tabular-nums; font-weight: 700;
+  font-size: 14px; letter-spacing: 0.16em; color: var(--dim);
+}
+.tf-barra-testa b { color: var(--text); font-size: 1.35em; letter-spacing: 0.06em; }
+.tf-linea { display: flex; gap: 1px; height: 30px; }
+/* I blocchi sono larghi quanto durano; i passi tenui sono il colore dello
+   stato al 28%, quelli fatti o in corso lo riempiono da sinistra. */
+.tf-blocco {
+  position: relative; flex-basis: 0; flex-shrink: 1; min-width: 1px;
+  background: color-mix(in srgb, var(--c) 28%, transparent);
+}
+.tf-blocco > span { position: absolute; top: 0; bottom: 0; left: 0; background: var(--c); }
+
+/* Di fianco: la griglia a due colonne, con la barra che le attraversa. */
+@media (orientation: landscape) {
+  .tf-adesivo { top: 8px; height: clamp(60px, 11vh, 110px); }
+  .tf-etichetta { font-size: 15px; }
+  .tf-altri, .tf-barra-testa { font-size: 16px; }
+  .tf-corpo {
+    display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto; padding: 0; overflow: hidden;
+  }
+  .tf-sinistra { justify-content: flex-start; padding: 22px 28px 20px; }
+  .tf-destra {
+    display: flex; flex-direction: column; gap: 16px; min-height: 0;
+    padding: 22px 20px 20px; border-left: 2px solid var(--line-soft);
+  }
+  .tf-resta { display: flex; }
+  .tf-scaletta, .tf-barra, .tf-musica, .tf-destra .beccato { order: 0; margin: 0; }
+  .tf-musica { margin-top: auto; }
+  .tf-destra .beccato { height: min(30vh, 260px); margin-top: 0; }
+  .tf-barra { grid-column: 1 / -1; padding: 12px 20px 14px; border-top: 2px solid var(--line-soft); }
+  .tf-barra-resta { display: none; }
+  .tf-linea { height: clamp(30px, 5vh, 44px); }
+  .tf-stato { font-size: clamp(24px, 3.4vw, 44px); }
+  .tf-cifre { font-size: min(16vw, 30vh); }
+  .tf-esercizio { font-size: clamp(24px, 3.4vw, 44px); }
+  .tf-obiettivo { font-size: clamp(15px, 1.6vw, 22px); }
+  .tf-avvia { height: clamp(64px, 11vh, 96px); font-size: clamp(22px, 2.4vw, 32px); }
+  .tf-secondario { min-height: clamp(48px, 7vh, 56px); font-size: clamp(16px, 1.4vw, 18px); }
+  .tf-riga { min-height: clamp(48px, 7vh, 56px); font-size: clamp(22px, 1.8vw, 25px); }
+  /* Il tablet appeso in sala si guarda da due metri: cifre più grandi. */
+  .timer[data-grande='true'] .tf-cifre { font-size: min(19vw, 34vh); }
+}
+/* Telefono girato di lato: l'altezza è poca, le fasce si stringono e la
+   scaletta (già tolta dalla schermata) lascia il posto al lettore. */
+@media (orientation: landscape) and (max-height: 599px) {
+  .tf-sinistra { padding: 8px 16px; gap: 2px; }
+  .tf-destra { padding: 8px 14px; gap: 8px; }
+  .tf-stato { font-size: 20px; }
+  .tf-cifre { font-size: min(18vw, 26vh); }
+  .tf-esercizio { font-size: 20px; }
+  .tf-obiettivo { display: none; }
+  .tf-resta-tempo { font-size: clamp(56px, 12vh, 96px); }
+  .tf-comandi { flex-direction: row; align-items: stretch; padding-top: 6px; gap: 6px; }
+  .tf-avvia { flex: 1 1 36%; height: 48px; font-size: 18px; letter-spacing: 0.1em; }
+  .tf-secondari { flex: 1 1 64%; gap: 6px; }
+  .tf-secondario { min-height: 48px; font-size: 13px; letter-spacing: 0.04em; gap: 4px; }
+  .tf-barra { padding: 6px 14px 8px; }
+  .tf-barra-testa { margin-bottom: 4px; }
+  .tf-linea { height: 24px; }
+  .tf-adesivo { display: none; }
+}
+@media (orientation: portrait) {
+  .timer[data-grande='true'] .tf-cifre { font-size: min(34vw, 28vh); }
+}
+/* Schermi bassi in verticale: si stringe tutto invece di far traboccare. */
+@media (orientation: portrait) and (max-height: 740px) {
+  .tf-sinistra { padding-top: 8px; }
+  .tf-comandi { padding-top: 10px; }
+  .tf-avvia { height: 60px; }
+  .tf-secondario { min-height: 44px; }
+  .tf-scaletta { margin-top: 10px; }
+  .tf-riga { min-height: 44px; }
+  .tf-barra { padding-top: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tf-adesivo { animation: none; }
 }
 
 /* ---------- musica (Spotify) ---------- */
@@ -802,7 +854,7 @@ a.navitem { text-decoration: none; }
 .musica-titolo { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .musica-sotto { font-size: 11px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .musica-tasto {
-  width: 40px; height: 40px; flex-shrink: 0;
+  width: 44px; height: 44px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   border: 2px solid var(--line); color: var(--tasto);
 }
@@ -816,20 +868,15 @@ a.navitem { text-decoration: none; }
 }
 @media (max-height: 740px) and (orientation: portrait) {
   .musica-bar { margin-top: 6px; padding: 4px 4px 4px 6px; }
-  .musica-copertina, .musica-bar[data-fonte='spotify'] .musica-tasto { width: 36px; height: 36px; }
+  .musica-copertina { width: 36px; height: 36px; }
 }
 @media (orientation: landscape) and (max-height: 560px) {
   .musica-bar { margin-top: 4px; padding: 3px 3px 3px 5px; }
-  .musica-copertina, .musica-bar[data-fonte='spotify'] .musica-tasto { width: 32px; height: 32px; }
+  .musica-copertina { width: 32px; height: 32px; }
   .musica-sotto { display: none; }
 }
 @media (max-width: 480px) {
   .musica-bar[data-fonte='youtube'] .musica-tasti { gap: 4px; }
-  .musica-bar[data-fonte='youtube'] .musica-tasto { width: 38px; height: 38px; }
+  .musica-bar[data-fonte='youtube'] .musica-tasto { width: 44px; height: 44px; }
 }
-/* I 200 pixel del lettore li paga il quadrante: in verticale l'anello si
-   stringe, altrimenti stato ed esercizio finiscono sotto la barra. */
-@media (orientation: portrait) {
-  .timer:has(.musica-bar[data-fonte='youtube']) { --anello: min(300px, 19vh, 50vw); }
-  .timer:has(.musica-bar[data-fonte='youtube']) .digits { font-size: min(30vw, 30vh); }
-}
+

@@ -229,6 +229,15 @@ istruttori, il timer vi riconosce da solo:
   **IMPOSTAZIONI → ODS CORSI → PORTA FRA I MIEI**.
 - Maurizio, bip e voce, volume vi seguono da un dispositivo all'altro.
 
+Quando il timer parte, in alto ci sono lo stato e le cifre; sotto, il tasto
+grande **PAUSA** (o **AVVIA**, **RIPRENDI**) e i tre con la parola scritta:
+**INDIETRO**, **+30″** (allunga di mezzo minuto il passo in corso) e **AVANTI**.
+Su un computer o un tablet in orizzontale, a destra compaiono il tempo che
+resta, l'ora a cui finisce e la **SCALETTA**: il passo in corso in evidenza e
+quelli che vengono, con **+ ALTRI** per il resto. La barra in fondo mostra tutto
+l'allenamento e si colora mentre passa. Sul telefono in verticale la scaletta
+è corta; se lo schermo è basso non c'è, e la barra dice comunque dove siete.
+
 Anche il timer funziona senza rete: quello che salvate aspetta sul telefono e
 parte da solo quando la rete torna.
 

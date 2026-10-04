@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'anello del timer: Ring di timer/src/components/Quadrante.tsx (r 43, tratteggio 9 10.4, 9 di spessore) e DentroAnello (etichetta, numero, riga sotto).
+     Con "resta" fuori dall'anello il numero del giro resta dentro e RESTA gli sta accanto. -->
+<div style="position: relative; width: {{misura}}; height: {{misura}}">
+  <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg)" aria-hidden="true">
+    <circle cx="50" cy="50" r="43" fill="none" stroke="{{c.fondo}}" stroke-width="9" stroke-dasharray="9 10.4"></circle>
+    <circle cx="50" cy="50" r="43" fill="none" stroke="{{colore}}" stroke-width="9" stroke-dasharray="{{arco}}"></circle>
+  </svg>
+  <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif">
+    <span style="font-size: {{corpoEtichetta}}; font-weight: 700; letter-spacing: 0.2em; color: {{c.dim}}">GIRO</span>
+    <span style="font-size: {{corpoNumero}}; font-weight: 700; line-height: 1; color: {{colore}}">{{giro}}</span>
+    <sc-if value="{{dentro}}" hint-placeholder-val="{{ true }}">
+      <span style="font-size: {{corpoResta}}; font-weight: 600; letter-spacing: 0.16em; color: {{c.dim}}">RESTA {{resta}}</span>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"giro":{"editor":"text","default":"1/8"},"resta":{"editor":"text","default":"16:32"},"progresso":{"editor":"float","default":0.125,"min":0,"max":1,"step":0.01},"colore":{"editor":"color","default":"#f4c31b"},"misura":{"editor":"text","default":"300px"},"restaDentro":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":300,"height":300}}'>
+const T = {
+  scuro: { fondo: '#242424', dim: '#8c8c88' },
+  chiaro: { fondo: '#e9e9e5', dim: '#656561' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const px = parseFloat(p.misura || '300');
+    const circ = 2 * Math.PI * 43;
+    const prog = Math.max(0, Math.min(1, Number(p.progresso ?? 0.125)));
+    return {
+      c: T[p.tema] || T.scuro,
+      misura: p.misura || '300px',
+      colore: p.colore || '#f4c31b',
+      giro: p.giro || '1/8',
+      resta: p.resta || '16:32',
+      dentro: p.restaDentro === undefined ? true : (p.restaDentro === true || p.restaDentro === 'true'),
+      arco: (circ * prog).toFixed(2) + ' ' + circ.toFixed(2),
+      corpoEtichetta: Math.min(26, Math.max(8, px * 0.085)).toFixed(1) + 'px',
+      corpoNumero: Math.min(80, Math.max(20, px * 0.26)).toFixed(1) + 'px',
+      corpoResta: Math.min(22, Math.max(8, px * 0.074)).toFixed(1) + 'px',
+    };
+  }
+}
+</script>
+</body>
+</html>

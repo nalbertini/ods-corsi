@@ -27,6 +27,15 @@ ciascuna, e quello che si aggiunge da una serie va solo lì.
 - **I colori del marchio sono gli stati**: giallo preparati, rosso lavoro, verde
   recupero, blu riposo tra le serie. Il bordo dello schermo prende il colore
   dello stato, così si legge da tutta la sala senza mettere a fuoco i numeri.
+- **Una schermata sola, dal telefono al computer**: stato, cifre grandi e nome
+  dell'esercizio; sotto, un tasto grande (AVVIA / PAUSA / RIPRENDI) e i tre
+  con la parola scritta, INDIETRO, +30″ e AVANTI. Di fianco, da una finestra più
+  larga che alta, a destra stanno il tempo che resta, l'ora di fine e la
+  **scaletta**: il passo in corso evidenziato e i prossimi, con «+ ALTRI N PASSI»
+  per il resto. In fondo una barra mostra tutto l'allenamento, un blocco per
+  passo largo quanto dura, e si colora mentre il tempo passa. La scaletta si
+  accorcia o sparisce dove l'altezza non basta (un telefono girato di lato); il
+  giro in più di Maurizio non compare mai in anticipo.
 - Tre bip sugli ultimi 3 secondi, tono diverso all'inizio di lavoro e recupero,
   voce italiana che annuncia stato ed esercizio, vibrazione sul telefono.
 - Lo schermo resta acceso (Wake Lock) e si riaggancia da solo al rientro.

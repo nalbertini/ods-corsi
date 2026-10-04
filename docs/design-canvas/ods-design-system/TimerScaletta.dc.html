@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La scaletta dei passi del timer (proposta, non ancora nell'app): una riga per passo, la prima e' il passo in corso.
+     righe = "stato:nome:durata:volte" separate da ";" (stato: prepare, work, rest, setRest, cooldown). I colori sono
+     STATE_COLOR di timer/src/lib/engine.ts: prepare giallo, work rosso, rest verde, setRest e cooldown blu. -->
+<div style="display: flex; flex-direction: column; width: 100%; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif">
+  <div style="font-size: 14px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}; padding: 0 0 8px">SCALETTA</div>
+  <sc-for list="{{righe}}" as="r" hint-placeholder-count="4">
+    <div style="display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 12px; background: {{r.fondo}}; color: {{r.testo}}; border-bottom: 2px solid {{c.line}}">
+      <span style="width: 14px; height: 14px; flex-shrink: 0; background: {{r.colore}}; outline: {{r.contorno}}"></span>
+      <span style="flex: 1; min-width: 0; font-size: 25px; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.nome}}</span>
+      <span style="font-size: 19px; font-weight: 700; letter-spacing: 0.06em; color: {{r.testoSecondario}}">{{r.volte}}</span>
+      <span style="font-size: 25px; font-weight: 700; font-variant-numeric: tabular-nums">{{r.durata}}</span>
+    </div>
+  </sc-for>
+  <sc-if value="{{altri}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 10px 12px; font-size: 16px; font-weight: 700; letter-spacing: 0.16em; color: {{c.dim}}">{{altri}}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"righe":{"editor":"text","default":"work:LOTTA TERRA:30:1;rest:RECUPERO:15:1;work:LOTTA TERRA:30:7;setRest:RIPOSO TRA LE SERIE:60:1"},"altri":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":420,"height":320}}'>
+const T = {
+  scuro: { dim: '#8c8c88', line: '#2a2a2a', text: '#f2f2f0', sec: '#b8b8b2', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { dim: '#656561', line: '#e2e2dd', text: '#161616', sec: '#4a4a46', suColore: '#121212', suRosso: '#ffffff' },
+};
+const COL = { prepare: '#f4c31b', work: '#e4292a', rest: '#16a54a', setRest: '#1b8ac4', cooldown: '#1b8ac4' };
+const COLCH = { rest: '#12913f' };
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const righe = String(p.righe ?? '').split(';').filter(Boolean).map((s, i) => {
+      const [stato, nome, durata, volte] = s.split(':');
+      const colore = (p.tema === 'chiaro' && COLCH[stato]) || COL[stato] || '#8c8c88';
+      const corrente = i === 0;
+      return {
+        nome,
+        durata: durata + '"',
+        volte: Number(volte) > 1 ? '× ' + volte : '',
+        colore,
+        fondo: corrente ? colore : 'transparent',
+        testo: corrente ? (stato === 'work' ? c.suRosso : c.suColore) : c.text,
+        testoSecondario: corrente ? (stato === 'work' ? c.suRosso : c.suColore) : c.sec,
+        contorno: corrente ? '2px solid ' + (stato === 'work' ? c.suRosso : c.suColore) : 'none',
+      };
+    });
+    return { c, righe, altri: p.altri || '' };
+  }
+}
+</script>
+</body>
+</html>
