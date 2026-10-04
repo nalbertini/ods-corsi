@@ -737,7 +737,9 @@ a.navitem { text-decoration: none; }
   font-family: var(--cond); font-weight: 600; font-size: 22px; letter-spacing: 0.04em;
 }
 .tf-segno { width: 14px; height: 14px; flex-shrink: 0; background: var(--c); }
-.tf-riga-nome { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Maiuscolo come le etichette dell'app: «Lavoro» (il nome di partenza) e «RECUPERO»
+   (l'etichetta del passo) nella stessa riga non si leggono come due cose diverse. */
+.tf-riga-nome { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
 .tf-riga-durata { font-weight: 700; font-variant-numeric: tabular-nums; }
 .tf-riga[data-corrente='true'] { background: var(--c); border-bottom-color: var(--c); color: var(--su-colore); }
 .tf-riga[data-corrente='true'][data-kind='work'] { color: var(--su-rosso); }
