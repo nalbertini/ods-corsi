@@ -692,6 +692,41 @@ console.log('\n12b. un foglio nella casella sbagliata')
   ok('un iscritti.csv giusto non è toccato', [giusto.iscritti.length, giusto.saltate.length], [1, 0])
 }
 
+console.log('\n12c. nome e cognome in una casella sola: l\'ordine e le particelle')
+{
+  const il = m.importaLib
+  const prova = (f) => { try { return f() } catch (e) { return `ERRORE: ${e.message}` } }
+  // L'ordine dell'intestazione: «COGNOME NOME» o «NOME E COGNOME».
+  ok('«COGNOME NOME ATLETA» dice cognome prima', prova(() => il.indovinaOrdine(['Email', 'COGNOME NOME ATLETA'], { nomeCompleto: 1 })), 'cognomeNome')
+  ok('«Cognome e nome» pure', prova(() => il.indovinaOrdine(['Cognome e nome'], { nomeCompleto: 0 })), 'cognomeNome')
+  ok('«Nome e cognome» dice nome prima', prova(() => il.indovinaOrdine(['Nome e cognome'], { nomeCompleto: 0 })), 'nomeCognome')
+  ok('e senza una colonna scelta, nome prima', prova(() => il.indovinaOrdine(['Email'], {})), 'nomeCognome')
+  // Nome prima: le particelle restano col cognome.
+  ok('nome prima: «Anna De Luca»', prova(() => m.dividiNome('Anna De Luca')), { nome: 'Anna', cognome: 'De Luca' })
+  ok('nome prima: «Maria Grazia De Luca»', prova(() => m.dividiNome('Maria Grazia De Luca')), { nome: 'Maria Grazia', cognome: 'De Luca' })
+  ok('nome prima: «Luigi Dell\'Aglio» (l\'apostrofo è una parola sola)', prova(() => m.dividiNome('Luigi Dell\'Aglio')), { nome: 'Luigi', cognome: 'Dell\'Aglio' })
+  ok('nome prima: «Mario Di Biase»', prova(() => m.dividiNome('Mario Di Biase')), { nome: 'Mario', cognome: 'Di Biase' })
+  ok('nome prima: «Maria Luisa Rossi» non cambia', prova(() => m.dividiNome('Maria Luisa Rossi')), { nome: 'Maria Luisa', cognome: 'Rossi' })
+  // Cognome prima.
+  ok('cognome prima: «Rossi Mario»', prova(() => m.dividiNome('Rossi Mario', undefined, undefined, 'cognomeNome')), { nome: 'Mario', cognome: 'Rossi' })
+  ok('cognome prima: «Rossi Maria Grazia»', prova(() => m.dividiNome('Rossi Maria Grazia', undefined, undefined, 'cognomeNome')), { nome: 'Maria Grazia', cognome: 'Rossi' })
+  ok('cognome prima: «De Luca Anna»', prova(() => m.dividiNome('De Luca Anna', undefined, undefined, 'cognomeNome')), { nome: 'Anna', cognome: 'De Luca' })
+  ok('cognome prima: «Dell\'Aglio Luigi»', prova(() => m.dividiNome('Dell\'Aglio Luigi', undefined, undefined, 'cognomeNome')), { nome: 'Luigi', cognome: 'Dell\'Aglio' })
+  ok('cognome prima: «Di Biase Raffaele»', prova(() => m.dividiNome('Di Biase Raffaele', undefined, undefined, 'cognomeNome')), { nome: 'Raffaele', cognome: 'Di Biase' })
+  ok('una parola sola non si divide, in nessun ordine', [m.dividiNome('Rossi'), m.dividiNome('Rossi', undefined, undefined, 'cognomeNome')], [null, null])
+  // Il codice fiscale, quando c'è, vince sull'ordine.
+  const corpo = 'PRDMNL90A01L219'
+  const cf = corpo + m.carattereControllo(corpo)
+  ok('col codice fiscale l\'ordine non conta', [m.dividiNome('Prudente Manuel', cf, undefined, 'nomeCognome'), m.dividiNome('Prudente Manuel', cf, undefined, 'cognomeNome')],
+    [{ nome: 'Manuel', cognome: 'Prudente' }, { nome: 'Manuel', cognome: 'Prudente' }])
+  // Dalle risposte, con l'ordine scelto.
+  const t = m.leggiTabella('Informazioni cronologiche,COGNOME NOME ATLETA,Email,Corsi\n14/08/2026 10.00.00,De Luca Anna,anna@esempio.it,\n14/08/2026 10.01.00,Rossi Maria Grazia,maria@esempio.it,\n')
+  const col = m.indovinaColonne(t.testa)
+  const dalFoglio = (ordine) => prova(() => m.leggiRisposte(t, col, {}, [], ordine).iscritti.map((x) => `${x.nome}|${x.cognome}`))
+  ok('leggiRisposte con cognome prima', dalFoglio('cognomeNome'), ['Anna|De Luca', 'Maria Grazia|Rossi'])
+  ok('e senza dirlo vale nome prima, come prima', dalFoglio(undefined), ['De Luca|Anna', 'Rossi Maria|Grazia'])
+}
+
 console.log('\n13. il promemoria del backup, prima di importare')
 {
   const il = m.importaLib

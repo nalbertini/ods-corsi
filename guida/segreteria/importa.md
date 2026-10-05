@@ -43,9 +43,12 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
      sue lettere dicono qual è il cognome, anche se è di due parole («De Luca
      Sara») o scritto prima del nome («Bianchi Anna»), e a chi ha scritto
      solo il cognome il nome si cerca nell'email («mario.rossi@…»), se torna
-     col codice; fra le note si vede a chi è successo. Senza codice il
-     cognome è l'ultima parola, e un cognome di due parole va corretto dopo,
-     nella scheda.
+     col codice; fra le note si vede a chi è successo. Senza codice vale
+     l'ordine che scegli sotto **NELLA COLONNA DEL NOME INTERO, PRIMA C'È**: il
+     nome («Anna De Luca») o il cognome («De Luca Anna»). L'app lo propone da
+     sola dall'intestazione («COGNOME NOME ATLETA» → il cognome), e lo correggi
+     se sbaglia. De, Di, Del, Dell', Van… restano col cognome; un cognome che
+     non segue queste regole va corretto dopo, nella scheda.
    - Dalle risposte entrano anche **nascita, residenza e genitore**: la data
      e il luogo di nascita, il codice fiscale, il comune, l'indirizzo e il
      CAP, e per un minore il genitore (nome e cognome, codice fiscale, luogo

@@ -6,6 +6,7 @@ import {
   importa,
   indovinaColonne,
   indovinaCorso,
+  indovinaOrdine,
   leggiFogli,
   leggiRisposte,
   leggiTabella,
@@ -17,6 +18,7 @@ import {
   testoResoconto,
   type Colonne,
   type Fogli,
+  type OrdineNome,
   type Resoconto,
   type Ruolo,
   type RigaControllo,
@@ -60,7 +62,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
   const [aspetta, setAspetta] = useState<string | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
   // Le risposte del modulo: le colonne indovinate e le scelte dei corsi abbinate, da correggere a mano.
-  const [risposte, setRisposte] = useState<{ t: Tabella; colonne: Colonne; abbinamenti: Record<string, string>; corsi: Corso[] } | null>(null)
+  const [risposte, setRisposte] = useState<{ t: Tabella; colonne: Colonne; abbinamenti: Record<string, string>; corsi: Corso[]; ordine: OrdineNome } | null>(null)
 
   const carica = async (chiave: string, file: File | undefined) => {
     if (!file) return
@@ -71,7 +73,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
         const t = leggiTabella(testo)
         const corsi = (await d.corsi()).filter((c) => c.attivo).map((c) => ({ id: c.id, nome: c.nome }))
         const colonne = indovinaColonne(t.testa)
-        setRisposte({ t, colonne, abbinamenti: abbina(t, colonne, corsi, {}), corsi })
+        setRisposte({ t, colonne, abbinamenti: abbina(t, colonne, corsi, {}), corsi, ordine: indovinaOrdine(t.testa, colonne) })
         setFogli((x) => ({ ...x, risposte: { nome: file.name, testo, righe: t.righe.filter((r) => r.some(Boolean)).length } }))
       } catch (e) {
         setGuaio(messaggio(e))
@@ -93,7 +95,9 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
       delete colonne.cognome
     }
     if ((k === 'nome' || k === 'cognome') && v !== '') delete colonne.nomeCompleto
-    setRisposte({ ...risposte, colonne, abbinamenti: abbina(risposte.t, colonne, risposte.corsi, risposte.abbinamenti) })
+    // Cambiando la colonna del nome intero, l'ordine si ripropone da quello che dice la sua intestazione.
+    const ordine = k === 'nomeCompleto' ? indovinaOrdine(risposte.t.testa, colonne) : risposte.ordine
+    setRisposte({ ...risposte, colonne, abbinamenti: abbina(risposte.t, colonne, risposte.corsi, risposte.abbinamenti), ordine })
   }
   const nomeChiaro = !!risposte && (risposte.colonne.nomeCompleto !== undefined || (risposte.colonne.nome !== undefined && risposte.colonne.cognome !== undefined))
 
@@ -105,7 +109,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
       const [sale, personale, corsi, persone, backup] = await Promise.all([d.sale(), d.personale(), d.corsi(), d.persone(), d.backup().catch(() => undefined)])
       const f = leggiFogli(fogli.corsi?.testo ?? null, fogli.iscritti?.testo ?? null, corsi.map((c) => c.nome))
       if (risposte && fogli.risposte) {
-        const r = leggiRisposte(risposte.t, risposte.colonne, risposte.abbinamenti, corsi.map((c) => ({ id: c.id, nome: c.nome })))
+        const r = leggiRisposte(risposte.t, risposte.colonne, risposte.abbinamenti, corsi.map((c) => ({ id: c.id, nome: c.nome })), risposte.ordine)
         f.iscritti.push(...r.iscritti)
         f.righe.risposte = r.righe
         f.saltate.push(...r.saltate)
@@ -221,6 +225,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
             <Risposte
               r={risposte}
               onColonna={cambiaColonna}
+              onOrdine={(ordine) => setRisposte({ ...risposte, ordine })}
               onAbbina={(scelta, id) => setRisposte({ ...risposte, abbinamenti: { ...risposte.abbinamenti, [scelta]: id } })}
             />
           )}
@@ -473,10 +478,12 @@ function abbina(t: Tabella, colonne: Colonne, corsi: Corso[], prima: Record<stri
 function Risposte({
   r,
   onColonna,
+  onOrdine,
   onAbbina,
 }: {
-  r: { t: Tabella; colonne: Colonne; abbinamenti: Record<string, string>; corsi: Corso[] }
+  r: { t: Tabella; colonne: Colonne; abbinamenti: Record<string, string>; corsi: Corso[]; ordine: OrdineNome }
   onColonna: (k: Ruolo, v: string) => void
+  onOrdine: (o: OrdineNome) => void
   onAbbina: (scelta: string, id: string) => void
 }) {
   const scelte = scelteCorsi(r.t, r.colonne.corsi)
@@ -512,11 +519,20 @@ function Risposte({
           ))}
         </div>
         {r.colonne.nomeCompleto !== undefined && (
-          <span className="sg-sotto">
-            {r.colonne.codiceFiscale !== undefined
-              ? "Col nome e cognome insieme, il codice fiscale dice qual è il cognome, anche di due parole e anche scritto prima del nome; a chi ha scritto solo il cognome, il nome si cerca nell'email. Senza codice, il cognome è l'ultima parola."
-              : "Col nome e cognome insieme, il cognome è l'ultima parola: «Maria Luisa Rossi» → Maria Luisa, Rossi. Un cognome di due parole va corretto dopo, nella scheda; con la colonna del codice fiscale lo capisce da sé."}
-          </span>
+          <div className="stack" style={{ gap: 6 }}>
+            <label htmlFor="ordine-nome" className="sg-etichetta">
+              NELLA COLONNA DEL NOME INTERO, PRIMA C'È
+            </label>
+            <select id="ordine-nome" className="sg-campo" value={r.ordine} onChange={(e) => onOrdine(e.target.value === 'cognomeNome' ? 'cognomeNome' : 'nomeCognome')}>
+              <option value="nomeCognome">Il nome («Anna De Luca»)</option>
+              <option value="cognomeNome">Il cognome («De Luca Anna»)</option>
+            </select>
+            <span className="sg-sotto">
+              {r.colonne.codiceFiscale !== undefined
+                ? "Il codice fiscale dice qual è il cognome, anche di due parole; a chi ha scritto solo il cognome, il nome si cerca nell'email. Dove il codice manca o non torna, vale quello che scegli qui: De, Di, Del, Dell', Van… restano col cognome."
+                : "Senza la colonna del codice fiscale vale quello che scegli qui, e De, Di, Del, Dell', Van… restano col cognome. Un cognome che non segue queste regole va corretto dopo, nella scheda."}
+            </span>
+          </div>
         )}
       </section>
 
