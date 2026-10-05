@@ -317,7 +317,7 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
       {nuova && (
         <form
           className="card stack"
-          style={{ padding: 16, gap: 12, maxWidth: 760 }}
+          style={{ padding: 16, gap: 12, maxWidth: 1100 }}
           onSubmit={(e) => {
             e.preventDefault()
             if (pronto) apri()
@@ -348,7 +348,7 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
             <textarea
               id="sz-testo"
               className="sg-campo"
-              rows={5}
+              rows={8}
               value={testo}
               onChange={(e) => setTesto(e.target.value)}
               placeholder={segnapostoTesto(categoria)}
@@ -386,7 +386,7 @@ export function Segnalazioni({ d, onCambiato }: { d: DatiSegreteria; onCambiato?
         <p className="sg-sotto">{chiuse || !tutte.length ? 'Nessuna segnalazione.' : 'Nessuna aperta. Le altre si vedono con ANCHE LE CHIUSE.'}</p>
       )}
 
-      <div className="stack" style={{ gap: 10, maxWidth: 760 }}>
+      <div className="stack" style={{ gap: 10, maxWidth: 1100 }}>
         {lista.map((s) => (
           <Filo
             key={s.id}
@@ -544,7 +544,7 @@ function Filo({
               <textarea
                 id={`sz-r-${s.id}`}
                 className="sg-campo"
-                rows={3}
+                rows={8}
                 value={risposta}
                 onChange={(e) => setRisposta(e.target.value)}
                 placeholder="Rispondi…"
