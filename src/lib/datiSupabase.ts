@@ -6,8 +6,8 @@ import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from '.
 import { attivitaPerMenu, mancaAttivita } from './segreteria'
 import { contiDellAppello, giornoDi, perCognome, valeIl } from './sala'
 import { Coda } from './coda'
-import type { GiaProvato, NuovaProva } from './prove'
-import { eGiaVenuto, nuovoId, pulisciProva } from './prove'
+import type { GiaProvato, NuovaProva, PersonaTrovata } from './prove'
+import { bastaPerCercare, eGiaVenuto, nuovoId, pulisciProva, RICERCA_NON_ATTIVA } from './prove'
 
 /**
  * La sala corsi con il database vero.
@@ -324,6 +324,22 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       return (data ?? []).map(daRiga).sort((x: GiaProvato, y: GiaProvato) => y.inizio.localeCompare(x.inizio))
     },
 
+    // Dal server solo chi somiglia, dalla terza lettera: sotto quella soglia
+    // la risposta sarebbe vuota, e non si chiama. Se manca 43-cerca-persone.sql
+    // l'errore lo dice, e chi aggiunge scrive il nome a mano.
+    async cercaPersone(scritto): Promise<PersonaTrovata[]> {
+      if (!bastaPerCercare(scritto)) return []
+      const { data, error } = await db.rpc('cerca_persone', { scritto })
+      if (error) throw manca43(error)
+      // supabase-js non conosce il tipo di ritorno della funzione: lo dice questa riga.
+      return ((data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; corsi: string[] | null }>).map((r) => ({
+        id: r.persona_id,
+        nome: r.nome,
+        cognome: r.cognome,
+        corsi: r.corsi ?? [],
+      }))
+    },
+
     // Le scritture passano dalla coda, come le presenze: una prova aggiunta
     // in fondo alla sala senza campo non si perde. L'id lo decide l'app, così
     // un tocco sul nome dopo sa già a chi va.
@@ -420,6 +436,12 @@ function manca20(e: { code?: string; message?: string }): Error {
   if (e.code === 'PGRST202' || e.code === '42883' || e.code === '42P01') {
     return new Error('Le prove non sono ancora attive: va lanciato supabase/21-prove.sql.')
   }
+  return new Error(e.message || 'Il server non risponde')
+}
+
+/** Il file che crea la ricerca fra tutti non è stato lanciato: `trovateDa` lo dice a chi usa l'app. */
+function manca43(e: { code?: string; message?: string }): Error {
+  if (e.code === 'PGRST202' || e.code === '42883') return new Error(RICERCA_NON_ATTIVA)
   return new Error(e.message || 'Il server non risponde')
 }
 

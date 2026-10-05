@@ -7,8 +7,9 @@ import { areaDelPercorso } from './percorso'
 import type { LezioneSenzaIstruttore } from './segreteria'
 import { attivitaPerMenu } from './segreteria'
 import type { MiaPresenza } from './ore'
-import type { ChiProva, GiaProvato } from './prove'
-import { cosaNonVaProva, eGiaVenuto, pulisciProva } from './prove'
+import type { ChiProva, GiaProvato, PersonaTrovata } from './prove'
+import { bastaPerCercare, cosaNonVaProva, eGiaVenuto, pulisciProva, TETTO_TROVATI } from './prove'
+import { paroleCercate, somiglia } from './nomi'
 
 /**
  * La sala corsi senza server: l'orario vero della stagione 2026/27, con degli
@@ -282,6 +283,40 @@ export function provatiProva(conTelefono: boolean): GiaProvato[] {
 }
 
 /**
+ * Come `cerca_persone` (43-cerca-persone.sql): chi fra tutti gli iscritti
+ * attivi somiglia a quel che si scrive, dalla terza lettera di una parola, in
+ * ordine di cognome e al massimo uno più del tetto che l'app mostra. Dice i
+ * corsi di oggi; mai il telefono, il personale né i disattivati. L'ordine
+ * fra lettere accentate, apostrofi e spazi può differire da quello del
+ * database (`localeCompare` contro la sua collation): conta solo oltre i
+ * ventuno che somigliano, per chi resta fuori dal tetto.
+ */
+export function cercaPersoneProva(scritto: string): PersonaTrovata[] {
+  // Come il database: un nome sta in cento lettere, un testo più lungo non si cerca.
+  if (scritto.length > 100 || !bastaPerCercare(scritto)) return []
+  const parole = paroleCercate(scritto)
+  const oggi = chiaveGiorno(new Date())
+  const corsi = new Map(archivio.dati.corsi.map((c) => [c.id, c.nome]))
+  return archivio.dati.persone
+    .filter((p) => p.ruolo === 'iscritto' && p.attiva && somiglia(p, parole))
+    .sort(perCognome)
+    .slice(0, TETTO_TROVATI + 1)
+    .map((p) => ({
+      id: p.id,
+      nome: p.nome,
+      cognome: p.cognome,
+      corsi: [
+        ...new Set(
+          archivio.dati.iscrizioni
+            .filter((i) => i.personaId === p.id && dentro(oggi, i))
+            .map((i) => corsi.get(i.corsoId))
+            .filter((n): n is string => !!n),
+        ),
+      ].sort((a, b) => a.localeCompare(b, 'it')),
+    }))
+}
+
+/**
  * Come `metti_prova`: aggiunge chi viene a provare, già presente, e la
  * persona se è nuova. `da` è chi l'ha aggiunta, quando si sa.
  */
@@ -495,6 +530,10 @@ export function creaDatiProva(): Dati {
       // Come `prove_recenti`: il telefono solo alla segreteria. In prova chi è
       // collegato lo dice l'area, quindi chi è segreteria e insegna qui non c'è.
       return provatiProva(typeof window !== 'undefined' && areaDelPercorso() === 'segreteria')
+    },
+
+    async cercaPersone(scritto) {
+      return cercaPersoneProva(scritto)
     },
 
     async aggiungiProva(sessioneId, chi) {

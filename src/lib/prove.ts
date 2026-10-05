@@ -9,7 +9,7 @@
  * servono a dire subito cosa non va, prima di mandare.
  */
 
-import { nomeProprio, paroleCercate, somiglia } from './nomi'
+import { compatto, nomeProprio, paroleCercate, somiglia } from './nomi'
 
 /** Chi è già venuto a provare, con l'ultima lezione provata. */
 export interface GiaProvato {
@@ -167,4 +167,81 @@ export function giaNellAppello(
   if ('aggiunto' in cambio) dopo.add(cambio.aggiunto)
   else dopo.delete(cambio.tolto)
   return dopo
+}
+
+/**
+ * Una persona della palestra trovata cercando per nome, per «Aggiungi chi
+ * prova»: i corsi a cui è iscritta oggi servono a distinguere due omonimi.
+ * Né telefono né età: l'istruttore ha davanti gli allievi, e per un minore il
+ * telefono è quello del genitore (`cerca_persone`, 43-cerca-persone.sql).
+ */
+export interface PersonaTrovata {
+  id: string
+  nome: string
+  cognome: string
+  corsi: string[]
+}
+
+/** Quanti se ne mostrano; il database ne dà uno di più, per sapere se ce ne sono altri. */
+export const TETTO_TROVATI = 20
+
+/** Lo dice `datiSupabase` quando manca 43-cerca-persone.sql, e `trovateDa` lo traduce per chi usa l'app. */
+export const RICERCA_NON_ATTIVA = 'ricerca-non-attiva'
+
+/** «Rossi Marco (Judo 2, Lotta)»: come si legge un elenco, coi corsi se ne ha. */
+export const dicePersona = (p: PersonaTrovata) => `${p.cognome} ${p.nome}${p.corsi.length ? ` (${p.corsi.join(', ')})` : ''}`
+
+/** Perché chi è già nell'appello non si aggiunge: la stessa frase nei risultati e nell'avviso del doppione. */
+export const perCheGiaQui = (qui: 'iscritto' | 'prova') =>
+  qui === 'iscritto' ? 'È iscritto a questa lezione: lo trovi in ISCRITTI.' : 'È già in prova in questa lezione.'
+
+/**
+ * Cosa mostra la pagina «Aggiungi chi prova» mentre si scrive. `risposta` e
+ * `fallita` sono l'ultima risposta e l'ultimo errore, ognuno col testo per cui
+ * è arrivato: scrivendo ancora, quelli di un testo vecchio non contano. `giaQui`
+ * dice chi è già nell'appello e come: chi è iscritto alla lezione e chi è già
+ * in prova non si aggiungono, ma compaiono con il perché, perché nascondendoli
+ * chi cerca li crederebbe mancanti e li riscriverebbe come nuovi. «Poco
+ * scritto» e «nessuno» sono due cose: la prima non ha cercato niente, e dire
+ * «nessuno» farebbe aggiungere a mano un doppione. `aMano` dice quando la
+ * pagina offre da sé il nome a mano: quando non c'è nessuno o la ricerca non va.
+ */
+export function trovateDa(o: {
+  testo: string
+  risposta?: { testo: string; trovati: PersonaTrovata[] }
+  fallita?: { testo: string; guaio: unknown }
+  giaQui: ReadonlyMap<string, 'iscritto' | 'prova'>
+}): { voci: Array<PersonaTrovata & { qui: 'iscritto' | 'prova' | null; perche: string | null }>; riga: string | null; aMano: boolean } {
+  const vuoto = { voci: [], aMano: false }
+  if (!o.testo.trim()) return { ...vuoto, riga: 'Scrivi il nome o il cognome di chi viene a provare.' }
+  if (!bastaPerCercare(o.testo)) return { ...vuoto, riga: 'Scrivi almeno tre lettere del nome o del cognome.' }
+  if (o.fallita?.testo === o.testo) {
+    return {
+      ...vuoto,
+      aMano: true,
+      riga:
+        o.fallita.guaio instanceof Error && o.fallita.guaio.message === RICERCA_NON_ATTIVA
+          ? 'La ricerca fra tutti non è disponibile: scrivi nome e cognome, e avvisa la segreteria.'
+          : 'Senza rete non si vede chi è già iscritto: scrivi nome e cognome.',
+    }
+  }
+  if (o.risposta?.testo !== o.testo) return { ...vuoto, riga: 'Cerco…' }
+  const trovati = o.risposta.trovati
+  if (!trovati.length) return { ...vuoto, aMano: true, riga: 'Nessuno con questo nome.' }
+  const voci = trovati.slice(0, TETTO_TROVATI).map((p) => {
+    const qui = o.giaQui.get(p.id) ?? null
+    return { ...p, qui, perche: qui ? perCheGiaQui(qui) : null }
+  })
+  return { voci, aMano: false, riga: trovati.length > TETTO_TROVATI ? 'Ce ne sono altri: scrivi più lettere, o il cognome.' : null }
+}
+
+/**
+ * Chi ha già questo nome e cognome, per avvisare prima di scrivere a mano una
+ * persona che c'è già: come `somiglia`, non conta maiuscole, accenti, spazi e
+ * apostrofi, e nome e cognome scambiati sono la stessa persona.
+ */
+export function doppioneDi(n: { nome: string; cognome: string }, persone: PersonaTrovata[]): PersonaTrovata | null {
+  const chiave = (nome: string, cognome: string) => [compatto(nome), compatto(cognome)].sort().join('|')
+  const suo = chiave(n.nome, n.cognome)
+  return persone.find((p) => chiave(p.nome, p.cognome) === suo) ?? null
 }

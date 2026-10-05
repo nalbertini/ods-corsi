@@ -25,7 +25,7 @@ const CLASSI: Record<Stile, { riquadro: string; etichetta: string; campo: string
   tb: { riquadro: 'tb-riquadro prove-pannello', etichetta: 'tb-etichetta', campo: 'tb-campo', si: 'tb-btn tb-btn-verde', no: 'tb-btn tb-btn-linea', voce: 'prove-gia prove-gia-tb' },
 }
 
-const scritto = (e: unknown, altrimenti: string) => (e instanceof Error && e.message ? e.message : altrimenti)
+export const scritto = (e: unknown, altrimenti: string) => (e instanceof Error && e.message ? e.message : altrimenti)
 
 export function PannelloProve({
   stile,

@@ -1,5 +1,5 @@
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
-import type { ChiProva, GiaProvato } from './prove'
+import type { ChiProva, GiaProvato, PersonaTrovata } from './prove'
 import type { SegnalataVista } from './segnalate'
 import type { MiaPresenza } from './ore'
 import type { LezioneSenzaIstruttore } from './segreteria'
@@ -27,6 +27,14 @@ export interface Dati {
   segnaTutti(sessioneId: string, stato: StatoPresenza): Promise<void>
   /** Chi è già venuto a provare negli ultimi novanta giorni, dal più recente. */
   provati(): Promise<GiaProvato[]>
+  /**
+   * Chi, fra tutte le persone iscritte e attive, somiglia a quel che si scrive
+   * (dalla terza lettera di una parola): per «Aggiungi chi prova», anche chi è
+   * iscritto a un altro corso o non ha mai provato. Al massimo ventuno, in
+   * ordine di cognome; senza telefono. Solleva se non c'è rete, o se manca
+   * `43-cerca-persone.sql` (`RICERCA_NON_ATTIVA`).
+   */
+  cercaPersone(scritto: string): Promise<PersonaTrovata[]>
   /**
    * Aggiunge all'appello chi viene a provare, già presente: uno già venuto o
    * uno nuovo. Restituisce la persona, con l'id che avrà anche sul server.

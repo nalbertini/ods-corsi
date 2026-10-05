@@ -198,6 +198,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('42-categorie-esercizi.sql', 'gli esercizi hanno una sola categoria: le ex categorie sono voci dell''elenco',
     -- Solo l'assenza di `categoria`: la segreteria può togliere le voci, o non aver mai toccato l'elenco.
     not exists (select 1 from impostazioni, jsonb_array_elements(esercizi) e where jsonb_typeof(e) = 'object' and e ? 'categoria')),
+  ('43-cerca-persone.sql', 'Aggiungi chi prova cerca fra tutte le persone, senza telefono',
+    exists (select 1 from pg_proc where proname = 'cerca_persone'
+            and pg_get_function_result(oid) = 'TABLE(persona_id uuid, nome text, cognome text, corsi text[])')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

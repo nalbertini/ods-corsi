@@ -70,6 +70,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 40. `40-discipline.sql` — la lista delle discipline della palestra (Judo, Lotta, Pilates, Yoga…), tenuta dalla segreteria, e la disciplina di ogni lista di musica; esercizi e timer la tengono nel loro JSON
 41. `41-attivita.sql` — l'«Attività» di ogni giorno dei corsi e di ogni lezione, scelta da un elenco della segreteria: le lezioni future seguono il giorno, l'istruttore cambia solo quella delle sue lezioni, il tablet legge quella della sua sala
 42. `42-categorie-esercizi.sql` — gli esercizi hanno una sola categoria: le cinque vecchie (A corpo libero, Attrezzi, Core, Cardio, Mobilità) diventano voci dell'elenco delle discipline, e il campo `categoria` esce dal catalogo
+43. `43-cerca-persone.sql` — «Aggiungi chi prova» cerca per nome fra tutte le persone iscritte e attive, anche di altri corsi, dalla terza lettera di una parola e al massimo ventuno risultati, con i corsi di oggi e mai il telefono; solo il personale
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -225,6 +226,10 @@ Per la categoria unica degli esercizi basta `42-categorie-esercizi.sql` (dopo
 lanciato prima di pubblicare l'app che non usa più la categoria: finché non
 c'è, un esercizio che aveva solo la categoria si legge senza voce, e la
 segreteria che salva la perde.
+Per cercare chi prova fra tutte le persone basta `43-cerca-persone.sql` (dopo
+`34-prove-per-nome.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
+finché non c'è, l'app dice che manca l'aggiornamento e lascia scrivere il nome
+a mano; l'appello degli iscritti non cambia. Il tablet non usa questa ricerca.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -885,7 +890,7 @@ le coppie passino senza fermare l'unione. `prove-per-nome.sql`,
 dopo `prove.sql`, prova che il tablet ritrovi chi è venuto a provare solo per
 nome: dalla terza lettera di una parola, al massimo venti, come la ricerca
 dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno.
-`tablet-conto-prove.sql` prova che il tablet sappia quanti dei presenti sono
+`cerca-persone.sql`, dopo `tablet.sql`, prova che «Aggiungi chi prova» trovi anche chi è iscritto a un altro corso o non ha mai provato, con i corsi di oggi e senza telefono per nessuno; che personale e disattivati non compaiano; la soglia delle tre lettere, il tetto di ventuno e che tablet, iscritti e `anon` non la usino. `tablet-conto-prove.sql` prova che il tablet sappia quanti dei presenti sono
 prove, cioè non iscritti quel giorno (chi ha provato e poi si è iscritto no,
 chi ha l'iscrizione finita sì), e che nessun altro lo chieda. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.
