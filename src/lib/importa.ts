@@ -158,7 +158,17 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
   const noti = new Set([...corsi.keys(), ...corsiGiaDentro.map(piatto)])
   const iscritti = new Map<string, IscrittoFoglio>()
   const perEmail = new Map<string, { chi: string; nome: string; riga: number }>()
-  const righeIscritti = testoIscritti ? leggiCsv(testoIscritti) : []
+  let righeIscritti = testoIscritti ? leggiCsv(testoIscritti) : []
+  // Il foglio delle risposte del modulo, caricato nella casella di iscritti.csv, non ha le colonne
+  // nome e cognome: una riga sola lo dice, invece di una per ogni persona col nome «undefined».
+  if (righeIscritti.length && !('nome' in righeIscritti[0] && 'cognome' in righeIscritti[0])) {
+    saltate.push({
+      foglio: 'iscritti.csv',
+      riga: 1,
+      motivo: `Le ${righeIscritti.length} righe di questo foglio non si leggono: mancano le colonne nome e cognome. Se è il foglio delle risposte del modulo Google, caricalo nella casella «risposte del modulo Google»`,
+    })
+    righeIscritti = []
+  }
   righeIscritti.forEach((r, i) => {
     const riga = i + 2
     if (!Object.values(r).some(Boolean)) return
