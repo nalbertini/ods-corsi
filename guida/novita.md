@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.35.1 — 5 ottobre 2026
+
+### Risolto
+
+- L'import dei fogli non fa più doppioni coi nomi al contrario, e dice chi è entrato e chi no
+
 ## 0.35.0 — 5 ottobre 2026
 
 ### Novità
