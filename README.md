@@ -68,7 +68,11 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   col tasto `PROVE` (l'istruttore dall'app o dal tablet col PIN, la segreteria
   dalla lezione aperta): nome, cognome e telefono, o chi è già venuto a
   provare, ritrovato per nome. Entra già presente, e la segreteria lo ritrova in
-  PRESENZE per richiamarlo (`supabase/21-prove.sql`).
+  PRESENZE per richiamarlo (`supabase/21-prove.sql`). Dall'app degli istruttori
+  `+ AGGIUNGI CHI PROVA` apre una pagina che cerca per nome fra tutte le persone
+  della palestra, anche iscritte ad altri corsi, coi loro corsi e senza telefono,
+  e se manca fa scrivere il nome a mano, avvisando se esiste già
+  (`supabase/43-cerca-persone.sql`).
 - **Il tablet di sala**: un tablet appeso al muro di ogni sala con il calendario
   della sala. Chi arriva tocca il suo nome e la presenza è segnata, senza
   domande e con ANNULLA per chi sbaglia; quando non si segna ancora, dice qual
@@ -378,6 +382,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:listino` | Il legame fra corsi e voci del listino per id: rinomina, voci doppie, corsi senza prezzo o voci senza corso, aggancio dei listini vecchi per nome. |
 | `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia, e i cambi dalla scheda della segreteria. Le presenze segnalate: chi le manda, chi le vede e chi le accoglie. |
 | `npm run prova:indirizzi` | Gli indirizzi della segreteria: voce, scheda iscritto, lezione, settimana e sala che si rileggono uguali; gli indirizzi sbagliati che portano a DA FARE; quelli di Supabase, della guida e delle aree che non sono della segreteria. |
+| `npm run prova:cerca-persone` | «Aggiungi chi prova» cerca fra tutte le persone: anche chi è iscritto altrove o non ha mai provato, coi corsi di oggi e senza telefono; mai personale né disattivati; dalla terza lettera, massimo ventuno, tetto di cento lettere; cosa dice la pagina (poco scritto, nessuno, ce ne sono altri, già nell'appello, senza rete, ricerca non disponibile) e l'avviso di chi ha già quel nome. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome (sul tablet al massimo venti, cercate scrivendo), tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:informativa` | Per quanto si tengono le presenze nell'informativa: solo un numero di mesi valido dal database cambia il testo; un errore, il tempo scaduto o l'app senza database lasciano quello della pagina, che non dice un numero. |
 | `npm run prova:ore` | LE MIE ORE dell'area istruttori: ognuno vede solo le sue, nel mese della lezione (non di quando è stata confermata), lezioni e ore delle confermate, le da confermare contate come in PRESENZE, le rifiutate con chi e quando, le lezioni tenute dove era previsto e nessuno si è segnato; e le decisioni della segreteria di prova che arrivano a `mieOre`. |
