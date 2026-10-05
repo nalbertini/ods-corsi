@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.33.0 — 5 ottobre 2026
+
+### Novità
+
+- Gli esercizi hanno una sola categoria, la stessa di timer e musica
+
 ## 0.32.0 — 4 ottobre 2026
 
 ### Novità
