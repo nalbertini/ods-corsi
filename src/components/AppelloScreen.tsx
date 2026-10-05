@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
-import { domandaIndietro, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
+import { cercaNellElenco, domandaIndietro, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { timerDellaLezione } from '../lib/aree'
 import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
@@ -172,6 +172,9 @@ export function AppelloScreen({
   }, [conProve])
 
   const [giro, setGiro] = useState(0)
+  // Per trovare qualcuno senza scorrere: restringe solo quel che si vede, i
+  // conti e i tasti della testa restano sull'appello intero.
+  const [cerca, setCerca] = useState('')
   // Per una lezione passata, i non segnati di quando la si apre vanno in cima:
   // si recupera un appello senza cercarli fra gli altri. L'ordine si decide una
   // volta sola, così non cambia sotto il dito mentre li si segna.
@@ -229,6 +232,9 @@ export function AppelloScreen({
   }
   const prima = primi.current
   const inOrdine = prima.size ? [...iscritti.filter((p) => prima.has(p.id)), ...iscritti.filter((p) => !prima.has(p.id))] : iscritti
+  const iscrittiTrovati = cercaNellElenco(inOrdine, cerca)
+  const proveTrovate = cercaNellElenco(inProva, cerca)
+  const cercando = cerca.trim() !== ''
 
   // presente → assente → non segnato, e si ricomincia.
   const prossimo = (s: StatoPresenza | null): StatoPresenza | null =>
@@ -435,9 +441,32 @@ export function AppelloScreen({
 
       {/* Sempre uguale, anche dopo il primo segno: se sparisse, i nomi
           salirebbero sotto il dito e il tocco dopo andrebbe a un altro. */}
+      <div className="pad" style={{ paddingBottom: 10 }}>
+        <label htmlFor="appello-cerca" className="sg-etichetta">
+          CERCA PER NOME O COGNOME
+        </label>
+        <input
+          id="appello-cerca"
+          className="campo"
+          style={{ minHeight: 44, width: '100%', marginTop: 4 }}
+          type="search"
+          autoComplete="off"
+          autoCorrect="off"
+          value={cerca}
+          onChange={(e) => setCerca(e.target.value)}
+        />
+        {cercando && (
+          <span role="status" style={{ fontSize: 13, color: 'var(--dim)' }}>
+            {iscrittiTrovati.length + proveTrovate.length
+              ? `${iscrittiTrovati.length} su ${iscritti.length} iscritti${proveTrovate.length ? ` · ${proveTrovate.length} in prova` : ''}`
+              : 'Nessuno si chiama così: controlla come è scritto.'}
+          </span>
+        )}
+      </div>
+
       <p className="pad appello-aiuto">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>
       <div className="pad elenco-appello">
-        {inOrdine.map((p) => (
+        {iscrittiTrovati.map((p) => (
           <button
             key={p.id}
             className="riga-appello"
@@ -453,15 +482,15 @@ export function AppelloScreen({
         ))}
       </div>
 
-      {inProva.length > 0 && (
+      {proveTrovate.length > 0 && (
         <>
           <div className="rule">
             <span className="rule-label">PROVE</span>
             <div className="rule-line" />
-            <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{inProva.length}</span>
+            <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{proveTrovate.length}</span>
           </div>
           <div className="pad elenco-appello">
-            {inProva.map((p) => (
+            {proveTrovate.map((p) => (
               <div key={p.id} className="riga-prova">
                 <button
                   className="riga-appello"
