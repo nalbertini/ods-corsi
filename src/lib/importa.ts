@@ -1,4 +1,4 @@
-import type { Anagrafica, CorsoSeg, DatiSegreteria, PersonaSeg, PersonaleSeg, Sala } from './segreteria'
+import type { Anagrafica, CorsoSeg, DatiSegreteria, PersonaSeg, PersonaleSeg, Sala, StatoBackup } from './segreteria'
 import { chiaveGiorno } from './sala'
 import { anni } from './richieste'
 import { compatto, paroleDelNome } from './nomi'
@@ -415,6 +415,26 @@ export function righeBuone(f: Fogli, c: { righe: RigaControllo[] }, scelte: Scel
     return !!r.archiviato && sc?.archiviato !== 'riattiva'
   }).length
   return lette - f.saltate.length - inAttesa
+}
+
+/**
+ * Cosa dire sul backup prima di importare: l'import scrive e non si disfa.
+ * `stato` è quel che dice `backup()`, o `undefined` se non si è potuto leggere.
+ * `avviso` è vero quando conviene farne uno prima: mai fatto, non riuscito,
+ * o più vecchio di ieri (la copia da sé è settimanale).
+ */
+export function promemoriaBackup(stato: StatoBackup | undefined, adesso = new Date()): { testo: string; avviso: boolean } {
+  const dove = 'IMPOSTAZIONI › IL BACKUP'
+  if (!stato) return { testo: `Non riesco a leggere i backup: controlla da ${dove} prima di importare.`, avviso: true }
+  const ultimo = stato.ultimo
+  if (!ultimo) return { testo: `Non risulta nessun backup. Prima di importare, fanne uno da ${dove}.`, avviso: true }
+  if (ultimo.stato === 'in_corso') return { testo: 'Un backup è in corso: aspetta che finisca, poi importa.', avviso: false }
+  if (ultimo.stato === 'fallito') return { testo: `L'ultimo backup non è riuscito. Riprova da ${dove} prima di importare.`, avviso: true }
+  // Giorni di calendario, non ore: un backup di ieri sera è «ieri».
+  const giorni = Math.round((Date.parse(chiaveGiorno(adesso)) - Date.parse(chiaveGiorno(new Date(ultimo.quando)))) / 86_400_000)
+  if (giorni <= 0) return { testo: 'Ultimo backup riuscito oggi.', avviso: false }
+  if (giorni === 1) return { testo: 'Ultimo backup riuscito ieri.', avviso: false }
+  return { testo: `Ultimo backup riuscito ${giorni} giorni fa. Se importi tanto, fanne uno nuovo da ${dove}.`, avviso: true }
 }
 
 export interface RigaSistemare {

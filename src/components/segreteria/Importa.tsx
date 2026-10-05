@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { DatiSegreteria } from '../../lib/segreteria'
+import type { DatiSegreteria, StatoBackup } from '../../lib/segreteria'
 import {
   anteprima,
   controllaRighe,
@@ -9,6 +9,7 @@ import {
   leggiFogli,
   leggiRisposte,
   leggiTabella,
+  promemoriaBackup,
   RUOLI,
   chiaveRiga,
   righeBuone,
@@ -51,7 +52,7 @@ type Corso = { id: string; nome: string }
  */
 export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void }) {
   const [fogli, setFogli] = useState<Record<string, Foglio | undefined>>({})
-  const [controllo, setControllo] = useState<{ f: Fogli; s: Situazione } | null>(null)
+  const [controllo, setControllo] = useState<{ f: Fogli; s: Situazione; backup?: StatoBackup } | null>(null)
   // Le scelte sui dubbi, per riga del foglio: di base non si tocca niente.
   const [scelte, setScelte] = useState<Scelte>({})
   const [copiato, setCopiato] = useState(false)
@@ -100,7 +101,8 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
     setAspetta('Controllo i fogli…')
     setGuaio(null)
     try {
-      const [sale, personale, corsi, persone] = await Promise.all([d.sale(), d.personale(), d.corsi(), d.persone()])
+      // Il backup si legge per il promemoria: se non risponde, l'import non si ferma.
+      const [sale, personale, corsi, persone, backup] = await Promise.all([d.sale(), d.personale(), d.corsi(), d.persone(), d.backup().catch(() => undefined)])
       const f = leggiFogli(fogli.corsi?.testo ?? null, fogli.iscritti?.testo ?? null, corsi.map((c) => c.nome))
       if (risposte && fogli.risposte) {
         const r = leggiRisposte(risposte.t, risposte.colonne, risposte.abbinamenti, corsi.map((c) => ({ id: c.id, nome: c.nome })))
@@ -110,7 +112,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
         f.note = [...(f.note ?? []), ...r.note]
       }
       setScelte({})
-      setControllo({ f, s: { sale, personale, corsi, persone } })
+      setControllo({ f, s: { sale, personale, corsi, persone }, backup })
     } catch (e) {
       setGuaio(messaggio(e))
     } finally {
@@ -157,6 +159,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
   // Il controllo delle righe non dipende dalle scelte; i conti di COSA ENTRA sì, e si rifanno a ogni scelta.
   const righe = useMemo(() => (controllo ? controllaRighe(controllo.f, controllo.s) : null), [controllo])
   const a = useMemo(() => (controllo ? anteprima(controllo.f, controllo.s, scelte) : null), [controllo, scelte])
+  const backup = promemoriaBackup(controllo?.backup)
   const buone = controllo && righe ? righeBuone(controllo.f, righe, scelte) : 0
   const scegli = (chiave: string, scelta: Scelte[string]) => setScelte((x) => ({ ...x, [chiave]: { ...x[chiave], ...scelta } }))
 
@@ -328,6 +331,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
               </section>
             )}
 
+            <span className="sg-sotto" role="note" style={{ color: backup.avviso ? 'var(--giallo-testo)' : undefined }}>{backup.testo}</span>
             <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
               <button type="button" className="sg-btn sg-btn-linea" disabled={!!aspetta} onClick={daCapo}>
                 CARICA DI NUOVO

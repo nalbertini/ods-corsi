@@ -78,6 +78,10 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
    - **I NOMI NUOVI**: sale, istruttori e corsi che non c'erano. Attenzione: un
      nome scritto in modo diverso («Lotta 2» e «Lotta2») vale come un corso
      nuovo. Se è un errore, correggerlo nel foglio e **CARICA DI NUOVO**.
+   Sopra i tasti c'è il promemoria del **backup**: dice quando è stato fatto
+   l'ultimo, e in giallo se non c'è, non è riuscito o è di più di ieri. L'import
+   scrive e non si disfa: in quel caso conviene fare **FAI UN BACKUP ORA** in
+   IMPOSTAZIONI › IL BACKUP prima di importare.
 3. **NELL'APP** — **IMPORTA LE N RIGHE BUONE** (senza quelle da sistemare e
    quelle che aspettano una scelta). Una riga che non va non ferma le altre.
    A fine import il titolo dice **FATTO, N righe da sistemare**, e sotto c'è
