@@ -679,6 +679,19 @@ console.log('\n12. l\'import: ricaricare il foglio, doppioni, resoconto, archivi
   OGGI = new DateVera(2026, 8, 26, 12, 0).getTime()
 }
 
+console.log('\n12b. un foglio nella casella sbagliata')
+{
+  const risposteGoogle = 'Informazioni cronologiche,Indirizzo email,COGNOME NOME ATLETA,CORSO\n14/08/2026 14.53.00,a@esempio.it,Rossi Anna,Judo 2\n14/08/2026 14.58.00,b@esempio.it,Verdi Luca,Judo 2\n'
+  const f = m.leggiFogli(null, risposteGoogle, [])
+  ok('le risposte del modulo nella casella di iscritti.csv: nessuna riga letta', [f.iscritti.length, f.righe.iscritti], [0, 0])
+  ok('e una sola riga da sistemare, che dice di usare la casella delle risposte', f.saltate.map((x) => [x.foglio, x.riga, x.motivo]),
+    [['iscritti.csv', 1, 'Le 2 righe di questo foglio non si leggono: mancano le colonne nome e cognome. Se è il foglio delle risposte del modulo Google, caricalo nella casella «risposte del modulo Google»']])
+  const senzaCognome = m.leggiFogli(null, 'nome;email;corso\nAnna;a@esempio.it;Judo 2\n', [])
+  ok('basta che manchi una colonna: lo dice anche così', [senzaCognome.iscritti.length, senzaCognome.saltate.length], [0, 1])
+  const giusto = m.leggiFogli(null, 'nome;cognome;email;telefono;corso\nAnna;Rossi;;;\n;;;;\n', [])
+  ok('un iscritti.csv giusto non è toccato', [giusto.iscritti.length, giusto.saltate.length], [1, 0])
+}
+
 console.log('\n13. il promemoria del backup, prima di importare')
 {
   const il = m.importaLib

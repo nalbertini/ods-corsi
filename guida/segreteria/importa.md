@@ -20,6 +20,10 @@ Si caricano file **CSV**:
 | `iscritti.csv` | nome; cognome; email; telefono; corso |
 | risposte del modulo Google | com'è: le colonne si scelgono dopo averlo caricato |
 
+Il foglio delle risposte del modulo Google va nella sua casella, non in
+`iscritti.csv`: se lo metti lì, l'app lo dice con una riga sola («mancano le
+colonne nome e cognome») e non importa niente.
+
 Basta anche un foglio solo: gli iscritti si possono iscrivere ai corsi che ci
 sono già.
 
