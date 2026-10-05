@@ -190,32 +190,46 @@ arriva prima.
 
 ## Chi viene a provare: PROVE
 
-Chi non è iscritto e viene a provare una lezione (o la settimana di prova) lo
-aggiungete voi, senza aspettare la segreteria: in fondo all'elenco c'è
-**+ AGGIUNGI CHI PROVA**.
+Chi non è iscritto a questa lezione e viene a provarla (o a fare la settimana
+di prova) lo aggiungete voi, senza aspettare la segreteria: in fondo
+all'elenco c'è **+ AGGIUNGI CHI PROVA**. Apre una pagina a parte, con la
+tastiera già pronta.
 
-1. Scrivete **nome**, **cognome** e, se ve lo dà, il **telefono**: serve alla
-   segreteria per richiamarlo.
-2. Dalla terza lettera, subito sotto il cognome (prima del telefono) compare
-   chi **è già venuto a provare** con quel nome, comunque lo scriviate: «d'am», «damico» e «amico» trovano D'Amico,
-   «de luca» e «deluca» trovano De Luca e De-Luca (con il corso e il giorno
-   dell'ultima prova; il telefono lo vede solo
-   la segreteria). Se è lui, toccatelo:
-   è la stessa persona, non un doppione (se capita, la segreteria lo unisce).
-   È il caso della settimana di prova,
-   un giorno judo e uno lotta. Senza rete l'elenco dei già venuti non c'è:
-   scrivete nome e cognome come al solito.
-3. Se no, **AGGIUNGI**.
+1. Scrivete il **nome o il cognome**, in qualunque ordine. Dalla terza lettera
+   compaiono **tutte le persone della palestra** che somigliano, anche chi è
+   iscritto a un altro corso o non ha mai provato: maiuscole, accenti e
+   apostrofi non contano («d'am», «damico» e «amico» trovano D'Amico, «de luca»
+   e «deluca» trovano De Luca). Sotto il nome, i **corsi** a cui è iscritto:
+   servono a distinguere due omonimi. Il telefono non si vede.
+2. Se è lui, **toccatelo**: entra nell'appello già presente e si torna
+   all'appello.
+   Chi è già nell'appello compare lo stesso, grigio, e dice dov'è («È iscritto
+   a questa lezione: lo trovi in ISCRITTI»): non si aggiunge due volte.
+3. Con meno di tre lettere la pagina lo dice (**Scrivi almeno tre lettere**):
+   non vuol dire che la persona non c'è. Con più di venti risultati ne
+   mostra venti e avvisa (**Ce ne sono altri**): scrivete più lettere, o il
+   cognome.
+4. Se non c'è nessuno (**Nessuno con questo nome**), o se non lo trovate,
+   **NON LO TROVO: SCRIVO IL NOME**: nome, cognome e, se ve lo dà, il
+   **telefono**, che serve alla segreteria per richiamarlo. Se esiste già una
+   persona con quel nome e cognome la pagina lo dice, col corso: **SÌ, È LUI**
+   la aggiunge, **È UN ALTRO** ne fa una nuova (due omonimi veri esistono).
+   Se vi sfugge un doppione, la segreteria lo unisce.
 
 Chi aggiungete entra in fondo all'appello, sotto **PROVE**, già **presente**
-(✓) e col bollino **PROVA**; si tocca come gli altri. Potete aggiungerne
-quanti volete, uno dopo l'altro; **NASCONDI** chiude il riquadro. Se avete
-scritto un nome e non l'avete ancora aggiunto, il tasto diventa **AGGIUNGI E
-NASCONDI**: niente si perde. Anche la freccia per tornare al calendario, sul
-telefono, prima lo chiede (**Marco R. NON AGGIUNTO · ESCI?**): toccatela di
-nuovo per lasciarlo perdere, o **AGGIUNGI** per tenerlo. Se ne avete
-messo uno per sbaglio (un nome scritto male), **TOGLI** accanto al nome, e
-**SICURO? TOGLI** per confermare: se era nuovo sparisce del tutto.
+(✓) e col bollino **PROVA**, con una riga verde che dice che ha funzionato; si
+tocca come gli altri. Per aggiungerne un'altra, toccate di nuovo il tasto.
+Se tornate indietro dalla pagina con un nome scritto a mano e non aggiunto, la
+freccia lo chiede (**Marco R. NON AGGIUNTO · ESCI?**): toccatela di nuovo per
+lasciarlo perdere. Se ne avete messo uno per sbaglio, **TOGLI** accanto al
+nome, e **SICURO? TOGLI** per confermare: se l'avevate scritto a mano sparisce
+del tutto, se era una persona già iscritta altrove resta com'era.
+
+Senza rete la ricerca fra tutti non c'è (**Senza rete non vedo chi è già
+iscritto**): scrivete nome e cognome come al solito. In quel caso nessuno vi
+avvisa di un doppione, e la segreteria dopo può ritrovarsi due schede uguali:
+le unisce lei. Se la ricerca dice che **non è ancora attiva**, chiedete alla
+segreteria di far lanciare l'aggiornamento: il nome a mano funziona lo stesso.
 
 La segreteria ritrova tutte le prove in **PRESENZE**, con il telefono, e chi
 le ha aggiunte. Come i tocchi, anche una prova aggiunta senza rete aspetta sul

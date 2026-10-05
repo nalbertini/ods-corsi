@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
-import { cercaNellElenco, domandaIndietro, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
+import { cercaNellElenco, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { timerDellaLezione } from '../lib/aree'
 import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
-import { unaVolta } from '../lib/prove'
-import { MarchioProva, PannelloProve, TogliProva } from './Prove'
+import { MarchioProva, TogliProva } from './Prove'
+import { CercaPersona } from './CercaPersona'
 import { DueTocchi, EtichettaAttivita } from './ds'
 import { vociAttivita } from '../lib/segreteria'
 import type { SegnalataVista } from '../lib/segnalate'
@@ -162,14 +162,16 @@ export function AppelloScreen({
     }
   }
   const [guaio, setGuaio] = useState<string | null>(null)
-  const [conProve, setConProve] = useState(false)
-  // Chi è scritto in PROVE e non aggiunto: tornando al calendario si
-  // perderebbe, e la freccia lo chiede prima (`domandaIndietro`).
-  const [scritta, setScritta] = useState<string | null>(null)
-  const prove = useRef<HTMLDivElement>(null)
+  // La pagina «Aggiungi chi prova» al posto dell'appello, che resta montato:
+  // i segni e la coda non si perdono, e tornando è tutto com'era.
+  const [aggiungendo, setAggiungendo] = useState(false)
+  // Chi è appena entrato in PROVE: si vede un attimo, per sapere che ha funzionato.
+  const [appena, setAppena] = useState<{ id: string; testo: string } | null>(null)
   useEffect(() => {
-    if (conProve) prove.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [conProve])
+    if (!appena) return
+    const t = window.setTimeout(() => setAppena(null), 8000)
+    return () => window.clearTimeout(t)
+  }, [appena])
 
   const [giro, setGiro] = useState(0)
   // Per trovare qualcuno senza scorrere: restringe solo quel che si vede, i
@@ -273,6 +275,10 @@ export function AppelloScreen({
   const aggiungiProva = async (chi: ChiProva) => {
     const p = await dati.aggiungiProva(sessioneId, chi)
     setD((v) => v && (v.elenco.some((x) => x.id === p.id) ? v : { ...v, elenco: [...v.elenco, { ...p, stato: 'presente', prova: true }] }))
+    // Una ricerca ancora scritta nascondrebbe chi è appena entrato.
+    setCerca('')
+    setAppena({ id: p.id, testo: `${perEsteso(p)}: aggiunto, e segnato presente.` })
+    setAggiungendo(false)
   }
 
   const togliProva = (personaId: string) => {
@@ -316,6 +322,11 @@ export function AppelloScreen({
           ? `SICURO? ${assentiDetti}`
           : undefined
 
+  if (aggiungendo) {
+    const giaQui = new Map<string, 'iscritto' | 'prova'>(d.elenco.map((p) => [p.id, p.prova ? 'prova' : 'iscritto']))
+    return <CercaPersona dati={dati} lezione={d.sessione.corso} giaQui={giaQui} onAggiungi={aggiungiProva} onIndietro={() => setAggiungendo(false)} />
+  }
+
   return (
     <>
       {/* In cima e ferma mentre si scorre l'elenco: quale lezione, quanti
@@ -323,7 +334,7 @@ export function AppelloScreen({
       <div className="appello-testa">
         <div className="row pad" style={{ gap: 10, paddingTop: 12 }}>
           {onIndietro && (
-            <DueTocchi className="icon-btn" chiede={domandaIndietro(scritta)} etichetta="Torna al calendario" onFai={onIndietro}>
+            <DueTocchi className="icon-btn" etichetta="Torna al calendario" onFai={onIndietro}>
               <Back />
             </DueTocchi>
           )}
@@ -356,7 +367,7 @@ export function AppelloScreen({
           <span className="grow" />
           <span className="stack" style={{ alignItems: 'flex-end', gap: 2, alignSelf: 'center' }}>
             {/* Con tutti segnati il tasto qui sotto lo dice già: qui il passo dopo. */}
-            {tuttiSegnati && !tuttiAssenti && onChiudi && !conProve ? (
+            {tuttiSegnati && !tuttiAssenti && onChiudi ? (
               // Si legge come un invito, e allora si tocca: porta al tasto in fondo.
               <button type="button" className="num appello-stato appello-vai" data-fatto="true" onClick={vaiAChiudere}>
                 CHIUDI IN FONDO ↓
@@ -489,9 +500,21 @@ export function AppelloScreen({
             <div className="rule-line" />
             <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{proveTrovate.length}</span>
           </div>
+          {appena && (
+            <p className="pad prove-fatto" role="status" style={{ margin: '0 0 8px' }}>
+              {appena.testo}
+            </p>
+          )}
           <div className="pad elenco-appello">
             {proveTrovate.map((p) => (
-              <div key={p.id} className="riga-prova">
+              <div
+                key={p.id}
+                className="riga-prova"
+                data-appena={p.id === appena?.id}
+                ref={(el) => {
+                  if (el && p.id === appena?.id) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+                }}
+              >
                 <button
                   className="riga-appello"
                   data-stato={p.stato ?? 'niente'}
@@ -511,28 +534,15 @@ export function AppelloScreen({
         </>
       )}
 
-      {/* Chi viene a provare si aggiunge in fondo, dove entra: l'elenco resta
-          dov'è, e la tastiera non lo copre. */}
-      <div className="pad" ref={prove} style={{ paddingTop: 4 }}>
-        {conProve ? (
-          <PannelloProve
-            stile="app"
-            cerca={unaVolta(() => dati.provati())}
-            giaQui={new Set(d.elenco.map((p) => p.id))}
-            onAggiungi={aggiungiProva}
-            onChiudi={() => setConProve(false)}
-            onScritto={setScritta}
-          />
-        ) : (
-          <button type="button" className="btn btn-dashed" style={{ minHeight: 52, fontSize: 16 }} onClick={() => setConProve(true)}>
-            + AGGIUNGI CHI PROVA
-          </button>
-        )}
+      {/* Chi viene a provare si cerca fra tutte le persone in una pagina a
+          parte (`CercaPersona`); qui sotto il tasto, in fondo, dove entra. */}
+      <div className="pad" style={{ paddingTop: 4 }}>
+        <button type="button" className="btn btn-dashed" style={{ minHeight: 52, fontSize: 16 }} onClick={() => setAggiungendo(true)}>
+          + AGGIUNGI CHI PROVA
+        </button>
       </div>
 
-      {/* Col pannello delle prove aperto il suo tasto per chiudere stava sopra
-          questo, e si chiamavano uguali: prima si finisce con le prove. */}
-      {onChiudi && !conProve && (
+      {onChiudi && (
         <div className="pad stack appello-fine" ref={fine}>
           {/* Verde quando è tutto segnato; rosso quando chiudere vuol dire
               segnare assenti, e il tasto lo dice. Chiede un secondo tocco una

@@ -467,6 +467,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 /* La riga di una prova: il tocco sul nome come le altre, e accanto TOGLI. */
 .riga-prova { display: flex; gap: 6px; align-items: stretch; }
 .riga-prova > :first-child { flex-grow: 1; min-width: 0; }
+/* Chi è appena entrato dalla ricerca: si vede un attimo, poi torna come gli altri. */
+.riga-prova[data-appena='true'] .riga-appello { border-color: var(--verde); }
 .prova-togli {
   flex-shrink: 0; padding: 0 12px; min-height: 44px;
   border: 2px solid var(--line); color: var(--dim); font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
