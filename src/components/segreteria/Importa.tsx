@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import {
   anteprima,
+  controllaRighe,
   importa,
   indovinaColonne,
   indovinaCorso,
@@ -9,11 +10,17 @@ import {
   leggiRisposte,
   leggiTabella,
   RUOLI,
+  chiaveRiga,
+  righeBuone,
   scelteCorsi,
-  type Anteprima,
+  testoResoconto,
   type Colonne,
   type Fogli,
+  type Resoconto,
   type Ruolo,
+  type RigaControllo,
+  type Scelte,
+  type Situazione,
   type Tabella,
 } from '../../lib/importa'
 import type { Destinazione, Voce } from './Segreteria'
@@ -44,8 +51,11 @@ type Corso = { id: string; nome: string }
  */
 export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void }) {
   const [fogli, setFogli] = useState<Record<string, Foglio | undefined>>({})
-  const [controllo, setControllo] = useState<{ f: Fogli; a: Anteprima } | null>(null)
-  const [fatto, setFatto] = useState<{ a: Anteprima; pronto: string | null } | null>(null)
+  const [controllo, setControllo] = useState<{ f: Fogli; s: Situazione } | null>(null)
+  // Le scelte sui dubbi, per riga del foglio: di base non si tocca niente.
+  const [scelte, setScelte] = useState<Scelte>({})
+  const [copiato, setCopiato] = useState(false)
+  const [fatto, setFatto] = useState<{ a: Resoconto; pronto: string | null } | null>(null)
   const [aspetta, setAspetta] = useState<string | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
   // Le risposte del modulo: le colonne indovinate e le scelte dei corsi abbinate, da correggere a mano.
@@ -99,7 +109,8 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
         f.saltate.push(...r.saltate)
         f.note = [...(f.note ?? []), ...r.note]
       }
-      setControllo({ f, a: anteprima(f, { sale, personale, corsi, persone }) })
+      setScelte({})
+      setControllo({ f, s: { sale, personale, corsi, persone } })
     } catch (e) {
       setGuaio(messaggio(e))
     } finally {
@@ -113,9 +124,10 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
     setAspetta('Comincio…')
     setGuaio(null)
     try {
-      const a = await importa(d, controllo.f, setAspetta)
+      const a = await importa(d, controllo.f, setAspetta, scelte)
       setFatto({ a, pronto: await d.prontoFino() })
       setControllo(null)
+      setCopiato(false)
     } catch (e) {
       setGuaio(`L'import si è fermato: ${messaggio(e)}. Quello che era già entrato resta; si può rilanciare, non duplica.`)
     } finally {
@@ -129,20 +141,34 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
     setControllo(null)
     setFatto(null)
     setGuaio(null)
+    setScelte({})
+  }
+
+  const copia = async (testo: string) => {
+    try {
+      await navigator.clipboard.writeText(testo)
+      setCopiato(true)
+    } catch {
+      setGuaio('Non riesco a copiare: seleziona il testo dell\'elenco e copialo a mano.')
+    }
   }
 
   const passo = fatto ? 3 : controllo ? 2 : 1
-  const buone = controllo ? controllo.f.righe.corsi + controllo.f.righe.iscritti + (controllo.f.righe.risposte ?? 0) - controllo.f.saltate.length : 0
+  // Il controllo delle righe non dipende dalle scelte; i conti di COSA ENTRA sì, e si rifanno a ogni scelta.
+  const righe = useMemo(() => (controllo ? controllaRighe(controllo.f, controllo.s) : null), [controllo])
+  const a = useMemo(() => (controllo ? anteprima(controllo.f, controllo.s, scelte) : null), [controllo, scelte])
+  const buone = controllo && righe ? righeBuone(controllo.f, righe, scelte) : 0
+  const scegli = (chiave: string, scelta: Scelte[string]) => setScelte((x) => ({ ...x, [chiave]: { ...x[chiave], ...scelta } }))
 
   return (
     // Occupa tutta la riga della griglia di IMPOSTAZIONI: i passi e i tre fogli vogliono la larghezza intera.
     <div className="stack" style={{ gap: 16, gridColumn: '1 / -1' }}>
       <span className="sg-sotto">
-        Corsi e iscritti da due fogli, o gli iscritti dalle risposte del modulo Google. Si può rifare quante volte si vuole: non duplica niente.
+        Corsi e iscritti da due fogli, o gli iscritti dalle risposte del modulo Google. Si può rifare quante volte si vuole: non duplica niente. Chi c'è già si riconosce dal nome e cognome (anche scritti con il cognome prima, o con accenti e maiuscole diverse) e gli si aggiungono solo i corsi che mancano; le persone nuove entrano e si iscrivono ai corsi della colonna «Corsi».
       </span>
 
       <ol className="sg-passi">
-        {['I FOGLI', 'IL CONTROLLO', 'NEL DATABASE'].map((nome, i) => (
+        {['I FOGLI', 'IL CONTROLLO', 'NELL\'APP'].map((nome, i) => (
           <li key={nome} aria-current={passo === i + 1 ? 'step' : undefined} data-fatto={passo > i + 1}>
             <span className="num sg-passo-num">{i + 1}</span>
             <span className="num" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.16em' }}>{nome}</span>
@@ -207,7 +233,7 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
         </>
       )}
 
-      {passo === 2 && controllo && (
+      {passo === 2 && controllo && a && righe && (
         <div className="sg-importa">
           <div className="stack" style={{ gap: 16, minWidth: 0 }}>
             <div className="sg-due">
@@ -230,18 +256,43 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
             <section aria-label="Cosa entra" className="sg-riquadro">
               <Riga titolo="COSA ENTRA" />
               <div className="sg-cosa-entra">
-                <Conto n={controllo.a.saleNuove.length} testo="sale nuove" />
-                <Conto n={controllo.a.istruttoriNuovi.length} testo={`istruttori nuovi · ${controllo.a.istruttoriTrovati} già in palestra`} />
-                <Conto n={controllo.a.corsiNuovi.length} testo="corsi nuovi" />
-                <Conto n={controllo.a.ricorrenzeNuove} testo="giorni di lezione nuovi" />
-                <Conto n={controllo.a.iscrittiNuovi} testo="iscritti nuovi" />
-                <Conto n={controllo.a.iscrizioniNuove} testo="iscrizioni ai corsi" />
-                {controllo.a.anagrafiche > 0 && <Conto n={controllo.a.anagrafiche} testo="con nascita, residenza o genitore" />}
+                <Conto n={a.saleNuove.length} testo="sale nuove" />
+                <Conto n={a.istruttoriNuovi.length} testo={`istruttori nuovi · ${a.istruttoriTrovati} già in palestra`} />
+                <Conto n={a.corsiNuovi.length} testo="corsi nuovi" />
+                <Conto n={a.ricorrenzeNuove} testo="giorni di lezione nuovi" />
+                <Conto n={a.iscrittiNuovi} testo="iscritti nuovi" />
+                <Conto n={a.iscrizioniNuove} testo="iscrizioni ai corsi" />
+                {a.anagrafiche > 0 && <Conto n={a.anagrafiche} testo="con nascita, residenza o genitore" />}
               </div>
               <span className="sg-sotto">Quello che c'è già resta com'è: un corso esistente prende solo i giorni e gli istruttori che gli mancano. Poi il calendario si allunga.</span>
             </section>
 
-            {(controllo.f.saltate.length > 0 || controllo.a.avvisi.length > 0 || (controllo.f.note?.length ?? 0) > 0 || controllo.a.emailDiAltri.length > 0) && (
+            <section aria-label="Riga per riga" className="sg-riquadro">
+              <Riga titolo="RIGA PER RIGA" />
+              <span style={{ fontSize: 15 }}>
+                <b>{righe.totali.nuova}</b> nuove · <b>{righe.totali.in_palestra}</b> già in palestra · <b>{righe.totali.da_sistemare}</b> da sistemare
+              </span>
+              {righe.righe.filter((r) => r.chiedeScelta).map((r) => (
+                <RigaDaGuardare key={chiaveRiga(r)} r={r} scelta={scelte[chiaveRiga(r)]} onScegli={(x) => scegli(chiaveRiga(r), x)} />
+              ))}
+              <details className="sg-spiega">
+                <summary>VEDI TUTTE LE RIGHE</summary>
+                <div className="sg-saltate" style={{ marginTop: 8 }}>
+                  {righe.righe.map((r) => (
+                    <div key={chiaveRiga(r)} className="contents">
+                      <span className="num" style={{ fontWeight: 700 }}>{r.foglio} · riga {r.riga}</span>
+                      <span>
+                        {r.nome} · {ETICHETTA[r.esito]}
+                        {r.motivo ? `: ${r.motivo}` : ''}
+                        {r.avvisi.map((x) => ` · ${x}`).join('')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            </section>
+
+            {(controllo.f.saltate.length > 0 || a.avvisi.length > 0 || (controllo.f.note?.length ?? 0) > 0 || a.emailDiAltri.length > 0) && (
               <section aria-label="Righe saltate" className="sg-riquadro">
                 <Riga titolo="DA SISTEMARE" />
                 <div className="sg-saltate">
@@ -261,13 +312,13 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
                       <span>{s.motivo}</span>
                     </div>
                   ))}
-                  {controllo.a.emailDiAltri.map((s, i) => (
+                  {a.emailDiAltri.map((s, i) => (
                     <div key={`e${i}`} className="contents">
                       <span className="num" style={{ color: 'var(--dim)', fontWeight: 700 }}>iscritto · entra</span>
                       <span>{s}</span>
                     </div>
                   ))}
-                  {controllo.a.avvisi.map((s, i) => (
+                  {a.avvisi.map((s, i) => (
                     <div key={`a${i}`} className="contents">
                       <span className="num" style={{ color: 'var(--dim)', fontWeight: 700 }}>istruttore</span>
                       <span>{s}</span>
@@ -287,12 +338,12 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
             </div>
           </div>
 
-          {controllo.a.corsiNuovi.length + controllo.a.saleNuove.length + controllo.a.istruttoriNuovi.length > 0 && (
+          {a.corsiNuovi.length + a.saleNuove.length + a.istruttoriNuovi.length > 0 && (
             <section aria-label="I nomi nuovi" className="sg-riquadro">
               <Riga titolo="I NOMI NUOVI" />
-              {controllo.a.saleNuove.length > 0 && <Elenco titolo="Sale" nomi={controllo.a.saleNuove} />}
-              {controllo.a.istruttoriNuovi.length > 0 && <Elenco titolo="Istruttori" nomi={controllo.a.istruttoriNuovi} />}
-              {controllo.a.corsiNuovi.length > 0 && <Elenco titolo="Corsi" nomi={controllo.a.corsiNuovi} />}
+              {a.saleNuove.length > 0 && <Elenco titolo="Sale" nomi={a.saleNuove} />}
+              {a.istruttoriNuovi.length > 0 && <Elenco titolo="Istruttori" nomi={a.istruttoriNuovi} />}
+              {a.corsiNuovi.length > 0 && <Elenco titolo="Corsi" nomi={a.corsiNuovi} />}
               <span className="sg-sotto">Un nome scritto in modo diverso («Lotta 2» e «Lotta2») vale come un corso nuovo: se è un errore, correggilo nel foglio.</span>
             </section>
           )}
@@ -300,8 +351,8 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
       )}
 
       {passo === 3 && fatto && (
-        <div className="sg-riquadro" style={{ borderColor: 'var(--verde)', maxWidth: 640 }}>
-          <span className="ob" style={{ fontSize: 30, fontWeight: 700, letterSpacing: '0.04em' }}>FATTO</span>
+        <div className="sg-riquadro" style={{ borderColor: fatto.a.daSistemare.length ? 'var(--giallo)' : 'var(--verde)', maxWidth: 640 }}>
+          <span className="ob" style={{ fontSize: 30, fontWeight: 700, letterSpacing: '0.04em' }}>{testoResoconto(fatto.a).split('\n')[0]}</span>
           <span style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--sec)' }}>
             {fatto.a.corsiNuovi.length} corsi nuovi, {fatto.a.ricorrenzeNuove} giorni di lezione, {fatto.a.iscrittiNuovi} iscritti nuovi e {fatto.a.iscrizioniNuove} iscrizioni.
             {fatto.pronto ? ` Il calendario è pronto fino al ${dataLunga(fatto.pronto)}.` : ''}
@@ -311,9 +362,23 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
               Nascita, residenza e genitore sono rimasti fuori: {fatto.a.anagraficheFuori}. Gli iscritti sono entrati lo stesso; lanciato il file, si reimporta e arrivano anche quelli.
             </span>
           )}
-          <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--dim)' }}>
-            Le righe saltate non sono entrate. Correggile nel foglio e reimporta: quello che c'è già non si duplica.
-          </span>
+          {fatto.a.daSistemare.length > 0 && (
+            <>
+              <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--giallo-testo)' }}>
+                {fatto.a.daSistemare.length} {fatto.a.daSistemare.length === 1 ? 'RIGA' : 'RIGHE'} DA SISTEMARE
+              </span>
+              <pre className="sg-mono" style={{ fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap', margin: 0 }}>
+                {testoResoconto(fatto.a).split('\n').slice(1).join('\n')}
+              </pre>
+              <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--dim)' }}>
+                Queste righe non sono entrate. Correggile nel foglio, o scegli cosa fare, e reimporta: quello che c'è già non si duplica.
+              </span>
+              <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => void copia(testoResoconto(fatto.a))}>
+                {copiato ? 'COPIATO' : 'COPIA L\'ELENCO'}
+              </button>
+              <span role="status" className="vh">{copiato ? 'Elenco copiato' : ''}</span>
+            </>
+          )}
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
             <button type="button" className="sg-btn sg-btn-pieno" onClick={() => onVai('settimana')}>
               VAI ALLA SETTIMANA
@@ -323,6 +388,46 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
             </button>
           </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+const ETICHETTA = { nuova: 'nuova', in_palestra: 'già in palestra', da_sistemare: 'da sistemare' } as const
+
+/** Una riga dubbia, col nome e la scelta: finché non si sceglie, di base non si tocca niente. */
+function RigaDaGuardare({ r, scelta, onScegli }: { r: RigaControllo; scelta: Scelte[string] | undefined; onScegli: (x: Scelte[string]) => void }) {
+  const id = `riga-${chiaveRiga(r)}`
+  return (
+    <div className="stack" style={{ gap: 4 }}>
+      {(() => {
+        const testo = (
+          <>
+            <span className="num" style={{ color: 'var(--giallo-testo)', fontWeight: 700 }}>{r.foglio} · riga {r.riga}</span> · {r.nome}
+            <span style={{ color: 'var(--dim)' }}> — {r.motivo ?? r.avvisi.join(' · ')}</span>
+          </>
+        )
+        // Senza una scelta da fare non c'è un campo a cui legare l'etichetta.
+        return r.doppione || r.archiviato || r.terminate ? <label htmlFor={id} style={{ fontSize: 14 }}>{testo}</label> : <span style={{ fontSize: 14 }}>{testo}</span>
+      })()}
+      {r.doppione && (
+        <select id={id} className="sg-campo" style={{ width: '100%' }} value={scelta?.doppione ?? ''} onChange={(e) => onScegli({ doppione: e.target.value === 'lega' ? 'lega' : e.target.value === 'nuova' ? 'nuova' : undefined })}>
+          <option value="">Per ora lasciala fuori</option>
+          <option value="lega">È lei: aggiungi i corsi a {r.doppione.nome}</option>
+          <option value="nuova">È un'altra persona: creala</option>
+        </select>
+      )}
+      {r.archiviato && (
+        <select id={id} className="sg-campo" style={{ width: '100%' }} value={scelta?.archiviato ?? ''} onChange={(e) => onScegli({ archiviato: e.target.value === 'riattiva' ? 'riattiva' : undefined })}>
+          <option value="">Resta archiviata, non la iscrivo</option>
+          <option value="riattiva">Riattivala e iscrivila</option>
+        </select>
+      )}
+      {r.terminate && (
+        <select id={r.archiviato || r.doppione ? `${id}-t` : id} className="sg-campo" style={{ width: '100%' }} aria-label={`Iscrizione terminata: ${r.terminate.join(', ')}`} value={scelta?.terminate ?? ''} onChange={(e) => onScegli({ terminate: e.target.value === 'riapri' ? 'riapri' : undefined })}>
+          <option value="">Lascia terminata: {r.terminate.join(', ')}</option>
+          <option value="riapri">Riapri: {r.terminate.join(', ')}</option>
+        </select>
       )}
     </div>
   )

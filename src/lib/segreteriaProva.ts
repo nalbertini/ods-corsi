@@ -803,7 +803,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salvaListinoProva(pronto)
     },
 
-    async iscrivi(personaId, corsoId) {
+    async iscrivi(personaId, corsoId, dal) {
       persona(personaId)
       corso(corsoId)
       const g = oggi()
@@ -816,7 +816,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         return
       }
       // Una sola iscrizione per corso, come nel database: chi torna riparte da oggi.
-      a().iscrizioni = [...a().iscrizioni.filter((i) => i !== c), { corsoId, personaId, dal: g }]
+      a().iscrizioni = [...a().iscrizioni.filter((i) => i !== c), { corsoId, personaId, dal: dal ?? g }]
       salva()
     },
 
