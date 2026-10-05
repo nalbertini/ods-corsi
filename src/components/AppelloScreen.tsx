@@ -162,13 +162,17 @@ export function AppelloScreen({
     }
   }
   const [guaio, setGuaio] = useState<string | null>(null)
-  // La pagina «Aggiungi chi prova» al posto dell'appello, che resta montato:
-  // i segni e la coda non si perdono, e tornando è tutto com'era.
+  // La pagina «Aggiungi chi prova» al posto dell'appello: lo stato resta qui
+  // (i segni, la coda, i conti), ma la schermata si ridisegna da capo, e
+  // tornando senza aver aggiunto nessuno lo scorrimento riparte dall'alto.
   const [aggiungendo, setAggiungendo] = useState(false)
   // Chi è appena entrato in PROVE: si vede un attimo, per sapere che ha funzionato.
   const [appena, setAppena] = useState<{ id: string; testo: string } | null>(null)
+  const rigaAppena = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!appena) return
+    // Una volta sola, quando entra: toccando un'altra riga l'elenco non deve tornare qui.
+    rigaAppena.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
     const t = window.setTimeout(() => setAppena(null), 8000)
     return () => window.clearTimeout(t)
   }, [appena])
@@ -511,9 +515,7 @@ export function AppelloScreen({
                 key={p.id}
                 className="riga-prova"
                 data-appena={p.id === appena?.id}
-                ref={(el) => {
-                  if (el && p.id === appena?.id) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-                }}
+                ref={p.id === appena?.id ? rigaAppena : undefined}
               >
                 <button
                   className="riga-appello"

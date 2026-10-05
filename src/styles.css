@@ -458,6 +458,12 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .prove-gia:disabled { opacity: 0.5; cursor: default; }
 .prove-gia-tb { min-height: 60px; }
 .prove-gia-nome { font-size: 16px; font-weight: 600; }
+/* Nella pagina «Aggiungi chi prova» si tocca in piedi, come l'appello. */
+.cerca-persona .prove-gia { min-height: 56px; }
+/* Chi è già nell'appello: non si tocca, e si legge lo stesso (niente opacità, che toglie contrasto). */
+.prove-gia-qui { background: transparent; border-style: dashed; cursor: default; }
+.prove-gia-qui .prove-gia-nome { color: var(--dim); }
+.prove-gia-qui .prove-sotto { color: var(--text); }
 .prove-gia-tb .prove-gia-nome { font-size: 18px; }
 .prove-gia-tasto { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--verde-testo); white-space: nowrap; }
 .prova-marchio {
@@ -468,7 +474,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .riga-prova { display: flex; gap: 6px; align-items: stretch; }
 .riga-prova > :first-child { flex-grow: 1; min-width: 0; }
 /* Chi è appena entrato dalla ricerca: si vede un attimo, poi torna come gli altri. */
-.riga-prova[data-appena='true'] .riga-appello { border-color: var(--verde); }
+.riga-prova[data-appena='true'] .riga-appello { outline: 2px solid var(--text); outline-offset: 2px; }
 .prova-togli {
   flex-shrink: 0; padding: 0 12px; min-height: 44px;
   border: 2px solid var(--line); color: var(--dim); font-size: 12px; font-weight: 700; letter-spacing: 0.12em;

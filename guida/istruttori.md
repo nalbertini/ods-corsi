@@ -210,10 +210,10 @@ tastiera già pronta.
    mostra venti e avvisa (**Ce ne sono altri**): scrivete più lettere, o il
    cognome.
 4. Se non c'è nessuno (**Nessuno con questo nome**), o se non lo trovate,
-   **NON LO TROVO: SCRIVO IL NOME**: nome, cognome e, se ve lo dà, il
+   **NON LO TROVO: SCRIVI IL NOME**: nome, cognome e, se ve lo dà, il
    **telefono**, che serve alla segreteria per richiamarlo. Se esiste già una
-   persona con quel nome e cognome la pagina lo dice, col corso: **SÌ, È LUI**
-   la aggiunge, **È UN ALTRO** ne fa una nuova (due omonimi veri esistono).
+   persona con quel nome e cognome la pagina lo dice, col corso: **SÌ, È LA STESSA
+   PERSONA** la aggiunge, **NO, È UN ALTRO** ne fa una nuova (due omonimi veri esistono).
    Se vi sfugge un doppione, la segreteria lo unisce.
 
 Chi aggiungete entra in fondo all'appello, sotto **PROVE**, già **presente**
@@ -225,11 +225,11 @@ lasciarlo perdere. Se ne avete messo uno per sbaglio, **TOGLI** accanto al
 nome, e **SICURO? TOGLI** per confermare: se l'avevate scritto a mano sparisce
 del tutto, se era una persona già iscritta altrove resta com'era.
 
-Senza rete la ricerca fra tutti non c'è (**Senza rete non vedo chi è già
+Senza rete la ricerca fra tutti non c'è (**Senza rete non si vede chi è già
 iscritto**): scrivete nome e cognome come al solito. In quel caso nessuno vi
 avvisa di un doppione, e la segreteria dopo può ritrovarsi due schede uguali:
-le unisce lei. Se la ricerca dice che **non è ancora attiva**, chiedete alla
-segreteria di far lanciare l'aggiornamento: il nome a mano funziona lo stesso.
+le unisce lei. Se la ricerca dice che **non è disponibile**, avvisate la segreteria: il
+nome a mano funziona lo stesso.
 
 La segreteria ritrova tutte le prove in **PRESENZE**, con il telefono, e chi
 le ha aggiunte. Come i tocchi, anche una prova aggiunta senza rete aspetta sul

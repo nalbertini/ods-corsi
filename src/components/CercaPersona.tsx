@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { Dati } from '../lib/dati'
 import type { ChiProva, NuovaProva, PersonaTrovata } from '../lib/prove'
-import { bastaPerCercare, cosaNonVaProva, dicePersona, doppioneDi, provaScritta, trovateDa } from '../lib/prove'
+import { bastaPerCercare, cosaNonVaProva, dicePersona, doppioneDi, perCheGiaQui, provaScritta, trovateDa } from '../lib/prove'
 import { domandaIndietro } from '../lib/sala'
 import { Back } from './Icons'
 import { DueTocchi } from './ds'
+import { scritto } from './Prove'
 
 /**
  * «Aggiungi chi prova», dall'appello dell'app: una pagina che cerca per nome
@@ -20,8 +21,6 @@ import { DueTocchi } from './ds'
  *
  * Il tablet e la segreteria usano ancora il pannello di `Prove.tsx`.
  */
-
-const scritto = (e: unknown, altrimenti: string) => (e instanceof Error && e.message ? e.message : altrimenti)
 
 export function CercaPersona({
   dati,
@@ -56,8 +55,16 @@ export function CercaPersona({
   // Chi ha già questo nome, trovato prima di scrivere una persona nuova.
   const [doppione, setDoppione] = useState<PersonaTrovata | null>(null)
   const campo = useRef<HTMLInputElement>(null)
+  // Il controllo del doppione aspetta il server: nel frattempo si può tornare
+  // indietro o cambiare il nome, e allora la persona non va più aggiunta.
+  const montata = useRef(true)
+  const versione = useRef(0)
 
   useEffect(() => campo.current?.focus(), [])
+  useEffect(() => {
+    montata.current = true
+    return () => void (montata.current = false)
+  }, [])
 
   useEffect(() => {
     if (!bastaPerCercare(testo)) return
@@ -75,15 +82,10 @@ export function CercaPersona({
     }
   }, [dati, testo])
 
-  const cosa = trovateDa({
-    testo,
-    trovati: risposta?.testo === testo ? risposta.trovati : undefined,
-    giaQui,
-    guaio: fallita?.testo === testo ? fallita.guaio : null,
-  })
-  // Il nome a mano si offre quando non c'è nessuno o la ricerca non va; e a chi
-  // lo vuole, sempre: due omonimi veri, o un nome corto che non si cerca.
-  const form = aMano || cosa.nessuno || (fallita?.testo === testo && bastaPerCercare(testo))
+  const cosa = trovateDa({ testo, risposta: risposta ?? undefined, fallita: fallita ?? undefined, giaQui })
+  // Il nome a mano si offre da sé quando non c'è nessuno o la ricerca non va; e
+  // a chi lo vuole, sempre: due omonimi veri, o un nome corto che non si cerca.
+  const form = aMano || cosa.aMano
 
   const aggiungi = async (chi: ChiProva) => {
     setAspetta(true)
@@ -91,7 +93,7 @@ export function CercaPersona({
     try {
       await onAggiungi(chi)
     } catch (e) {
-      setGuaio(scritto(e, 'Non aggiunto: il server non risponde'))
+      setGuaio(scritto(e, 'Non aggiunto: riprova tra un attimo.'))
       setAspetta(false)
     }
   }
@@ -105,11 +107,14 @@ export function CercaPersona({
     // Prima di fare una persona nuova, se ne esiste una uguale lo si dice.
     // Senza rete non si può controllare: si aggiunge, e la segreteria unisce.
     if (!doppione && bastaPerCercare(`${nome} ${cognome}`)) {
+      const mia = ++versione.current
       setAspetta(true)
       const uguale = await dati.cercaPersone(`${nome} ${cognome}`).then(
         (t) => doppioneDi(n, t),
         () => null,
       )
+      // Tornato indietro, o cambiato il nome: quel che si è scritto non è più questo.
+      if (!montata.current || versione.current !== mia) return
       setAspetta(false)
       if (uguale) return setDoppione(uguale)
     }
@@ -122,18 +127,18 @@ export function CercaPersona({
   return (
     <>
       <div className="appello-testa">
-        <div className="row pad" style={{ gap: 10, paddingTop: 12, paddingBottom: 12 }}>
+        <div className="row pad" style={{ gap: 10, paddingTop: 12 }}>
           <DueTocchi className="icon-btn" chiede={domandaIndietro(scritta)} etichetta="Torna all'appello" onFai={onIndietro}>
             <Back />
           </DueTocchi>
           <span className="stack grow" style={{ gap: 3, minWidth: 0 }}>
             <span className="ob appello-titolo">AGGIUNGI CHI PROVA</span>
-            <span style={{ fontSize: 13, color: 'var(--dim)' }}>{lezione}: entra nell'appello, già presente.</span>
+            <span style={{ fontSize: 13, color: 'var(--dim)' }}>Aggiungi a {lezione}: entra segnato presente.</span>
           </span>
         </div>
       </div>
 
-      <div className="pad stack" style={{ gap: 10, paddingTop: 14 }}>
+      <div className="pad stack cerca-persona" style={{ gap: 10, paddingTop: 14 }}>
         <label htmlFor="cerca-persona" className="sg-etichetta">
           CERCA PER NOME O COGNOME
         </label>
@@ -145,6 +150,9 @@ export function CercaPersona({
           type="search"
           autoComplete="off"
           autoCorrect="off"
+          autoCapitalize="words"
+          spellCheck={false}
+          enterKeyHint="search"
           value={testo}
           onChange={(e) => {
             setTesto(e.target.value)
@@ -161,7 +169,7 @@ export function CercaPersona({
           <div className="stack" style={{ gap: 6 }}>
             {cosa.voci.map((p) =>
               p.qui ? (
-                <div key={p.id} className="prove-gia" style={{ opacity: 0.7 }}>
+                <div key={p.id} className="prove-gia prove-gia-qui">
                   <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
                     <span className="prove-gia-nome">{`${p.cognome} ${p.nome}`}</span>
                     <span className="prove-sotto">{p.perche}</span>
@@ -188,7 +196,7 @@ export function CercaPersona({
 
         {!form && (
           <button type="button" className="btn btn-dashed" style={{ minHeight: 48 }} onClick={() => setAMano(true)}>
-            NON LO TROVO: SCRIVO IL NOME
+            NON LO TROVO: SCRIVI IL NOME
           </button>
         )}
 
@@ -206,6 +214,7 @@ export function CercaPersona({
                   onChange={(e) => {
                     setNome(e.target.value)
                     setDoppione(null)
+                    versione.current++
                     setGuaio(null)
                   }}
                 />
@@ -220,6 +229,7 @@ export function CercaPersona({
                   onChange={(e) => {
                     setCognome(e.target.value)
                     setDoppione(null)
+                    versione.current++
                     setGuaio(null)
                   }}
                 />
@@ -230,17 +240,19 @@ export function CercaPersona({
               </label>
             </div>
             {doppione ? (
-              <div className="stack" style={{ gap: 8 }} role="alert">
-                <span className="prove-guaio">Esiste già {dicePersona(doppione)}.</span>
+              <div className="stack" style={{ gap: 8 }}>
+                <span className="prove-guaio" role="alert">
+                  Esiste già {dicePersona(doppione)}.
+                </span>
                 {uguale ? (
-                  <span className="prove-sotto">{uguale === 'iscritto' ? 'È iscritto a questa lezione: lo trovi in ISCRITTI.' : 'È già in prova in questa lezione.'}</span>
+                  <span className="prove-sotto">{perCheGiaQui(uguale)}</span>
                 ) : (
                   <button type="button" className="btn btn-go" style={{ minHeight: 48 }} disabled={aspetta} onClick={() => void aggiungi({ id: doppione.id, nome: doppione.nome, cognome: doppione.cognome })}>
-                    SÌ, È LUI: AGGIUNGI {doppione.nome.toUpperCase()} {doppione.cognome.toUpperCase()}
+                    SÌ, È LA STESSA PERSONA: AGGIUNGI
                   </button>
                 )}
                 <button type="button" className="btn btn-ghost" style={{ minHeight: 48 }} disabled={aspetta} onClick={() => void aggiungi({ nome, cognome, telefono })}>
-                  È UN ALTRO {nome.trim().toUpperCase()}: AGGIUNGI NUOVO
+                  NO, È UN ALTRO: AGGIUNGI NUOVO
                 </button>
               </div>
             ) : (

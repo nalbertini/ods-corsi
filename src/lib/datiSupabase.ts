@@ -331,6 +331,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       if (!bastaPerCercare(scritto)) return []
       const { data, error } = await db.rpc('cerca_persone', { scritto })
       if (error) throw manca43(error)
+      // supabase-js non conosce il tipo di ritorno della funzione: lo dice questa riga.
       return ((data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; corsi: string[] | null }>).map((r) => ({
         id: r.persona_id,
         nome: r.nome,

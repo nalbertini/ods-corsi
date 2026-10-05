@@ -286,10 +286,14 @@ export function provatiProva(conTelefono: boolean): GiaProvato[] {
  * Come `cerca_persone` (43-cerca-persone.sql): chi fra tutti gli iscritti
  * attivi somiglia a quel che si scrive, dalla terza lettera di una parola, in
  * ordine di cognome e al massimo uno più del tetto che l'app mostra. Dice i
- * corsi di oggi; mai il telefono, il personale né i disattivati.
+ * corsi di oggi; mai il telefono, il personale né i disattivati. L'ordine
+ * fra lettere accentate, apostrofi e spazi può differire da quello del
+ * database (`localeCompare` contro la sua collation): conta solo oltre i
+ * ventuno che somigliano, per chi resta fuori dal tetto.
  */
 export function cercaPersoneProva(scritto: string): PersonaTrovata[] {
-  if (!bastaPerCercare(scritto)) return []
+  // Come il database: un nome sta in cento lettere, un testo più lungo non si cerca.
+  if (scritto.length > 100 || !bastaPerCercare(scritto)) return []
   const parole = paroleCercate(scritto)
   const oggi = chiaveGiorno(new Date())
   const corsi = new Map(archivio.dati.corsi.map((c) => [c.id, c.nome]))

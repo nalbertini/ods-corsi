@@ -188,48 +188,51 @@ export const TETTO_TROVATI = 20
 /** Lo dice `datiSupabase` quando manca 43-cerca-persone.sql, e `trovateDa` lo traduce per chi usa l'app. */
 export const RICERCA_NON_ATTIVA = 'ricerca-non-attiva'
 
-/** «Marco Rossi (Judo 2, Lotta)»: il nome come lo si legge a una persona, coi corsi se ne ha. */
-export const dicePersona = (p: PersonaTrovata) => `${p.nome} ${p.cognome}${p.corsi.length ? ` (${p.corsi.join(', ')})` : ''}`
+/** «Rossi Marco (Judo 2, Lotta)»: come si legge un elenco, coi corsi se ne ha. */
+export const dicePersona = (p: PersonaTrovata) => `${p.cognome} ${p.nome}${p.corsi.length ? ` (${p.corsi.join(', ')})` : ''}`
+
+/** Perché chi è già nell'appello non si aggiunge: la stessa frase nei risultati e nell'avviso del doppione. */
+export const perCheGiaQui = (qui: 'iscritto' | 'prova') =>
+  qui === 'iscritto' ? 'È iscritto a questa lezione: lo trovi in ISCRITTI.' : 'È già in prova in questa lezione.'
 
 /**
- * Cosa mostra la pagina «Aggiungi chi prova» mentre si scrive. `trovati` è la
- * risposta per questo testo, se è arrivata. `giaQui` dice chi è già
- * nell'appello e come: chi è iscritto alla lezione e chi è già in prova non si
- * aggiungono, ma compaiono con il perché, perché nascondendoli chi cerca li
- * crederebbe mancanti e li riscriverebbe come nuovi. «Poco scritto» e «nessuno»
- * sono due cose: la prima non ha cercato niente, e dire «nessuno» farebbe
- * aggiungere a mano un doppione. `nessuno` dice quando ha senso offrire il nome a mano.
+ * Cosa mostra la pagina «Aggiungi chi prova» mentre si scrive. `risposta` e
+ * `fallita` sono l'ultima risposta e l'ultimo errore, ognuno col testo per cui
+ * è arrivato: scrivendo ancora, quelli di un testo vecchio non contano. `giaQui`
+ * dice chi è già nell'appello e come: chi è iscritto alla lezione e chi è già
+ * in prova non si aggiungono, ma compaiono con il perché, perché nascondendoli
+ * chi cerca li crederebbe mancanti e li riscriverebbe come nuovi. «Poco
+ * scritto» e «nessuno» sono due cose: la prima non ha cercato niente, e dire
+ * «nessuno» farebbe aggiungere a mano un doppione. `aMano` dice quando la
+ * pagina offre da sé il nome a mano: quando non c'è nessuno o la ricerca non va.
  */
 export function trovateDa(o: {
   testo: string
-  trovati?: PersonaTrovata[]
+  risposta?: { testo: string; trovati: PersonaTrovata[] }
+  fallita?: { testo: string; guaio: unknown }
   giaQui: ReadonlyMap<string, 'iscritto' | 'prova'>
-  guaio: unknown
-}): { voci: Array<PersonaTrovata & { qui: 'iscritto' | 'prova' | null; perche: string | null }>; altri: boolean; riga: string | null; nessuno: boolean } {
-  const vuoto = { voci: [], altri: false, nessuno: false }
+}): { voci: Array<PersonaTrovata & { qui: 'iscritto' | 'prova' | null; perche: string | null }>; riga: string | null; aMano: boolean } {
+  const vuoto = { voci: [], aMano: false }
   if (!o.testo.trim()) return { ...vuoto, riga: 'Scrivi il nome o il cognome di chi viene a provare.' }
   if (!bastaPerCercare(o.testo)) return { ...vuoto, riga: 'Scrivi almeno tre lettere del nome o del cognome.' }
-  if (o.guaio) {
+  if (o.fallita?.testo === o.testo) {
     return {
       ...vuoto,
+      aMano: true,
       riga:
-        o.guaio instanceof Error && o.guaio.message === RICERCA_NON_ATTIVA
-          ? 'La ricerca fra tutti non è ancora attiva: va lanciato supabase/43-cerca-persone.sql. Intanto scrivi nome e cognome.'
-          : 'Senza rete non vedo chi è già iscritto: scrivi nome e cognome.',
+        o.fallita.guaio instanceof Error && o.fallita.guaio.message === RICERCA_NON_ATTIVA
+          ? 'La ricerca fra tutti non è disponibile: scrivi nome e cognome, e avvisa la segreteria.'
+          : 'Senza rete non si vede chi è già iscritto: scrivi nome e cognome.',
     }
   }
-  if (!o.trovati) return { ...vuoto, riga: 'Cerco…' }
-  if (!o.trovati.length) return { ...vuoto, riga: 'Nessuno con questo nome.', nessuno: true }
-  const altri = o.trovati.length > TETTO_TROVATI
-  const voci = o.trovati.slice(0, TETTO_TROVATI).map((p) => {
+  if (o.risposta?.testo !== o.testo) return { ...vuoto, riga: 'Cerco…' }
+  const trovati = o.risposta.trovati
+  if (!trovati.length) return { ...vuoto, aMano: true, riga: 'Nessuno con questo nome.' }
+  const voci = trovati.slice(0, TETTO_TROVATI).map((p) => {
     const qui = o.giaQui.get(p.id) ?? null
-    return {
-      ...p,
-      qui,
-      perche: qui === 'iscritto' ? 'È iscritto a questa lezione: lo trovi in ISCRITTI.' : qui === 'prova' ? 'È già in prova in questa lezione.' : null,
-    }
+    return { ...p, qui, perche: qui ? perCheGiaQui(qui) : null }
   })
-  return { voci, altri, riga: altri ? 'Ce ne sono altri: scrivi più lettere, o il cognome.' : null, nessuno: false }
+  return { voci, aMano: false, riga: trovati.length > TETTO_TROVATI ? 'Ce ne sono altri: scrivi più lettere, o il cognome.' : null }
 }
 
 /**

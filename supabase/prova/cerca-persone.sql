@@ -55,6 +55,8 @@ select atteso('la segreteria (Anna) non è una persona da aggiungere', (select c
 select atteso('un istruttore nemmeno', (select count(*)::text from cerca_persone('maura')), '0');
 select atteso('chi è disattivato non compare', (select count(*)::text from cerca_persone('spenta')), '0');
 select atteso('un testo di oltre cento lettere non cerca', (select count(*)::text from cerca_persone(repeat('a', 101))), '0');
+select atteso('una parola corta accanto a una di tre lettere restringe', (select count(*)::text from cerca_persone('ferr g')), '1');
+select atteso('lettere a larghezza piena e uno spazio invisibile non fanno una parola', (select count(*)::text from cerca_persone('ＦＥＲＲ')) || (select count(*)::text from cerca_persone('f' || chr(8203) || 'e' || chr(8203) || 'r')), '00');
 select atteso('% e _ non sono jolly', (select count(*)::text from cerca_persone('%%%')) || (select count(*)::text from cerca_persone('___')), '00');
 reset role;
 
