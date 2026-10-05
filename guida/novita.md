@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.37.0 — 6 ottobre 2026
+
+### Novità
+
+- Dal modulo Google, nome e cognome insieme si dividono nell'ordine giusto
+
 ## 0.36.1 — 5 ottobre 2026
 
 ### Modificato
