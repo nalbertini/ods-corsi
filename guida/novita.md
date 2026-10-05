@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.35.0 — 5 ottobre 2026
+
+### Novità
+
+- «Aggiungi chi prova» cerca fra tutte le persone della palestra, non solo fra chi ha già provato
+
 ## 0.34.0 — 5 ottobre 2026
 
 ### Novità
