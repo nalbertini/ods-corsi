@@ -1,6 +1,7 @@
 import type { Anagrafica, CorsoSeg, DatiSegreteria, PersonaSeg, PersonaleSeg, Sala } from './segreteria'
 import { chiaveGiorno } from './sala'
 import { anni } from './richieste'
+import { compatto, paroleDelNome } from './nomi'
 import { STRUTTURA_CF, cfTornaColNome, cfTornaConLaData, cfValido, lettereCognome, lettereNome } from './codiceFiscale'
 
 /**
@@ -79,6 +80,8 @@ export interface Saltata {
   foglio: 'corsi.csv' | 'iscritti.csv' | 'risposte'
   riga: number
   motivo: string
+  /** Chi è la riga, com'è scritto nel foglio: serve a ritrovarla nell'elenco di quelle da sistemare. */
+  nome?: string
 }
 
 interface CorsoFoglio {
@@ -104,6 +107,13 @@ interface IscrittoFoglio {
   soloStessoNome?: boolean
   /** Nascita, residenza e genitore: solo dalle risposte del modulo. */
   anagrafica?: Anagrafica
+  /** Il foglio e la prima riga in cui compare: la segreteria la cerca lì. Le righe di due fogli diversi hanno lo stesso numero. */
+  foglio: Saltata['foglio']
+  riga: number
+  /** Da quando è iscritto: il giorno della risposta nel modulo, `AAAA-MM-GG`. Senza, vale oggi. */
+  iscrittoIl?: string
+  /** L'email era già di un altro nel foglio: entra senza, col telefono. */
+  senzaEmail?: boolean
 }
 
 export interface Fogli {
@@ -152,21 +162,23 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
   righeIscritti.forEach((r, i) => {
     const riga = i + 2
     if (!Object.values(r).some(Boolean)) return
-    if (!r.nome || !r.cognome) return saltate.push({ foglio: 'iscritti.csv', riga, motivo: `Manca ${r.nome ? 'il cognome' : 'il nome'}: «${r.nome || r.cognome}»${r.corso ? `, ${r.corso}` : ''}` })
-    if (r.corso && !noti.has(piatto(r.corso))) return saltate.push({ foglio: 'iscritti.csv', riga, motivo: `Il corso «${r.corso}» non è fra i corsi` })
-    const chi = `${piatto(r.nome)} ${piatto(r.cognome)}`
+    if (!r.nome || !r.cognome) return saltate.push({ foglio: 'iscritti.csv', riga, nome: r.nome || r.cognome, motivo: `Manca ${r.nome ? 'il cognome' : 'il nome'}: «${r.nome || r.cognome}»${r.corso ? `, ${r.corso}` : ''}` })
+    if (r.corso && !noti.has(piatto(r.corso))) return saltate.push({ foglio: 'iscritti.csv', riga, nome: `${r.nome} ${r.cognome}`, motivo: `Il corso «${r.corso}» non è fra i corsi` })
+    const chi = `${compatto(r.nome)} ${compatto(r.cognome)}`
     let email = r.email?.toLowerCase() || undefined
+    let senzaEmail = false
     if (email) {
       const prima = perEmail.get(email)
       // Due fratelli con l'email del genitore: entrano tutti e due, il secondo senza.
       if (prima && prima.chi !== chi) {
         note.push({ foglio: 'iscritti.csv', riga, motivo: `${r.nome} ${r.cognome}: stessa email di ${prima.nome} (riga ${prima.riga}), entra senza email, col telefono` })
         email = undefined
+        senzaEmail = true
       } else perEmail.set(email, { chi, nome: `${r.nome} ${r.cognome}`, riga })
     }
     // L'email, quando c'è, è l'unica cosa che distingue davvero due omonimi.
     const k = email ?? chi
-    const x = iscritti.get(k) ?? { nome: r.nome, cognome: r.cognome, email, telefono: r.telefono || undefined, corsi: [] }
+    const x = iscritti.get(k) ?? { nome: r.nome, cognome: r.cognome, email, telefono: r.telefono || undefined, corsi: [], foglio: 'iscritti.csv', riga, ...(senzaEmail ? { senzaEmail } : {}) }
     if (r.corso && !x.corsi.some((c) => piatto(c) === piatto(r.corso))) x.corsi.push(r.corso)
     iscritti.set(k, x)
   })
@@ -213,7 +225,7 @@ const nomeCognome = (s: string) => {
 }
 
 /** Cosa farebbe l'import, senza fare niente. */
-export function anteprima(f: Fogli, s: Situazione): Anteprima {
+export function anteprima(f: Fogli, s: Situazione, scelte: Scelte = {}): Anteprima {
   const avvisi: string[] = []
   const sale = new Set(s.sale.map((x) => piatto(x.nome)))
   const tutte = f.corsi.flatMap((c) => [c.sala, ...c.orari.map((o) => o.sala)]).filter((x): x is string => !!x)
@@ -255,13 +267,24 @@ export function anteprima(f: Fogli, s: Situazione): Anteprima {
   const emailDiAltri: string[] = []
   const oggi = chiaveGiorno(new Date())
   for (const x of f.iscritti) {
-    const p = trovaPersona(x, s.persone)
-    if (!p) iscrittiNuovi++
-    const diChi = !p && x.email ? s.persone.find((q) => q.email?.toLowerCase() === x.email) : undefined
-    if (diChi) emailDiAltri.push(`${x.nome} ${x.cognome}: l'email ${x.email} è già di ${diChi.nome} ${diChi.cognome}, entra come persona a sé, senza email`)
+    const sc = scelte[chiaveRiga(x)]
+    const c = riconosci(x, s.persone, s.personale, sc)
+    // Chi aspetta una scelta o ha l'email del personale non entra: non si conta.
+    if (c.esito === 'da_sistemare') continue
+    if (c.esito === 'nuova') {
+      iscrittiNuovi++
+      iscrizioniNuove += x.corsi.length
+      const diChi = x.email ? s.persone.find((q) => q.email?.toLowerCase() === x.email) : undefined
+      if (diChi) emailDiAltri.push(`${x.nome} ${x.cognome}: l'email ${x.email} è già di ${diChi.nome} ${diChi.cognome}, entra come persona a sé, senza email`)
+      continue
+    }
+    if (!c.p.attiva && sc?.archiviato !== 'riattiva') continue
     for (const nome of x.corsi) {
-      const c = corsiDentro.get(piatto(nome))
-      if (!p || !c || !p.iscrizioni.some((i) => i.corsoId === c.id && (!i.al || i.al >= oggi))) iscrizioniNuove++
+      const corso = corsiDentro.get(piatto(nome))
+      const dentro = corso && c.p.iscrizioni.find((i) => i.corsoId === corso.id)
+      if (dentro?.al && dentro.al < oggi) {
+        if (sc?.terminate === 'riapri') iscrizioniNuove++
+      } else if (!dentro || dentro.al) iscrizioniNuove++
     }
   }
   const anagrafiche = f.iscritti.filter((x) => x.anagrafica && Object.keys(x.anagrafica).length > 0).length
@@ -269,7 +292,9 @@ export function anteprima(f: Fogli, s: Situazione): Anteprima {
 }
 
 function trovaPersona(x: IscrittoFoglio, persone: PersonaSeg[]) {
-  const stessoNome = (p: PersonaSeg) => piatto(p.nome) === piatto(x.nome) && piatto(p.cognome) === piatto(x.cognome)
+  // Senza accenti, maiuscole, apostrofi e spazi: «D’Angelo», «d'angelo» e «Dangelo»,
+  // «De Luca» e «Deluca» sono lo stesso cognome.
+  const stessoNome = (p: PersonaSeg) => compatto(p.nome) === compatto(x.nome) && compatto(p.cognome) === compatto(x.cognome)
   const perEmail = x.email ? persone.find((p) => p.email?.toLowerCase() === x.email) : undefined
   // L'email dice chi è solo se torna anche il nome: quella del genitore è
   // uguale per due fratelli, e il secondo non deve finire sulla scheda del primo.
@@ -279,17 +304,159 @@ function trovaPersona(x: IscrittoFoglio, persone: PersonaSeg[]) {
   return persone.find((p) => !p.email && stessoNome(p)) ?? persone.find(stessoNome)
 }
 
+/** La riga di un foglio, per chiave: «iscritti.csv:5» e «risposte:5» sono due righe diverse. */
+export const chiaveRiga = (x: { foglio: Saltata['foglio']; riga: number }) => `${x.foglio}:${x.riga}`
+
+/** Le scelte della segreteria sui dubbi, per riga: di base, senza scelta, non si tocca niente. */
+export type Scelte = Record<string, { doppione?: 'lega' | 'nuova'; archiviato?: 'riattiva'; terminate?: 'riapri' }>
+
+type Chi =
+  | { esito: 'nuova' }
+  | { esito: 'in_palestra'; p: PersonaSeg }
+  | { esito: 'da_sistemare'; motivo: string; doppione?: PersonaSeg }
+
+const paroleOrdinate = (nome: string, cognome: string) => paroleDelNome(`${nome} ${cognome}`).sort().join(' ')
+
+/**
+ * Chi è la riga del foglio: una persona già in palestra, una nuova, o una che
+ * va guardata prima. Nome e cognome scambiati («Prudente Manuel» per «Manuel
+ * Prudente») non si danno per nuovi in silenzio: la segreteria sceglie.
+ */
+function riconosci(x: IscrittoFoglio, persone: PersonaSeg[], personale: PersonaleSeg[], scelta?: Scelte[string]): Chi {
+  const p = trovaPersona(x, persone)
+  if (p) return { esito: 'in_palestra', p }
+  // L'email di un istruttore o della segreteria non può essere anche di un iscritto.
+  if (x.email && personale.some((q) => q.email?.toLowerCase() === x.email)) return { esito: 'da_sistemare', motivo: 'è già un istruttore o segreteria' }
+  const doppione = persone.find(
+    (q) =>
+      (compatto(q.nome) === compatto(x.cognome) && compatto(q.cognome) === compatto(x.nome)) ||
+      paroleOrdinate(q.nome, q.cognome) === paroleOrdinate(x.nome, x.cognome),
+  )
+  if (!doppione) return { esito: 'nuova' }
+  if (scelta?.doppione === 'lega') return { esito: 'in_palestra', p: doppione }
+  if (scelta?.doppione === 'nuova') return { esito: 'nuova' }
+  return { esito: 'da_sistemare', motivo: `forse è già in palestra come ${doppione.nome} ${doppione.cognome}`, doppione }
+}
+
+/** I nomi dei corsi del foglio a cui la persona era iscritta e ha smesso. */
+const terminate = (p: PersonaSeg, x: IscrittoFoglio, corsi: Map<string, CorsoSeg>, oggi: string) =>
+  x.corsi.filter((nome) => {
+    const c = corsi.get(piatto(nome))
+    return !!c && p.iscrizioni.some((i) => i.corsoId === c.id && i.al && i.al < oggi)
+  })
+
+export type EsitoRiga = 'nuova' | 'in_palestra' | 'da_sistemare'
+
+export interface RigaControllo {
+  /** Il foglio e la riga: la segreteria la cerca lì. */
+  foglio: Saltata['foglio']
+  riga: number
+  nome: string
+  esito: EsitoRiga
+  motivo?: string
+  /** Cose da sapere anche se entra: archiviato, iscrizione terminata, senza email. */
+  avvisi: string[]
+  /** Se «forse è già in palestra»: chi. */
+  doppione?: { id: string; nome: string }
+  /** Già in palestra ma archiviato: la scelta è RIATTIVA o LASCIA. */
+  archiviato?: boolean
+  /** Già in palestra con iscrizioni finite a questi corsi: la scelta è RIAPRI o LASCIA. */
+  terminate?: string[]
+  /** Aspetta una scelta della segreteria, o è un'email del personale da cambiare nel foglio. */
+  chiedeScelta: boolean
+}
+
+/** Il controllo riga per riga, col nome, in ordine di riga del foglio, e i totali per tipo. */
+export function controllaRighe(f: Fogli, s: Situazione): { righe: RigaControllo[]; totali: Record<EsitoRiga, number> } {
+  const oggi = chiaveGiorno(new Date())
+  const corsi = new Map(s.corsi.map((c) => [piatto(c.nome), c]))
+  const righe: RigaControllo[] = f.saltate
+    .filter((x) => x.foglio !== 'corsi.csv')
+    .map((x) => ({ foglio: x.foglio, riga: x.riga, nome: x.nome ?? '', esito: 'da_sistemare' as const, motivo: x.motivo, avvisi: [], chiedeScelta: false }))
+  for (const x of f.iscritti) {
+    const c = riconosci(x, s.persone, s.personale)
+    const avvisi: string[] = []
+    let archiviato = false
+    let ferme: string[] = []
+    if (x.senzaEmail || (c.esito === 'nuova' && x.email && s.persone.some((q) => q.email?.toLowerCase() === x.email))) {
+      avvisi.push('entra senza email, col telefono: la sua è già di un altro')
+    }
+    if (c.esito === 'in_palestra') {
+      archiviato = !c.p.attiva
+      if (archiviato) avvisi.push('è archiviato: resta archiviato e non lo iscrivo, a meno che tu scelga «Riattivala e iscrivila»')
+      ferme = terminate(c.p, x, corsi, oggi)
+      if (ferme.length) avvisi.push(`l'iscrizione a ${ferme.join(', ')} era terminata: resta terminata, a meno che tu scelga «Riapri»`)
+    }
+    righe.push({
+      foglio: x.foglio,
+      riga: x.riga,
+      nome: `${x.nome} ${x.cognome}`,
+      esito: c.esito,
+      ...(c.esito === 'da_sistemare' ? { motivo: c.motivo, ...(c.doppione ? { doppione: { id: c.doppione.id, nome: `${c.doppione.nome} ${c.doppione.cognome}` } } : {}) } : {}),
+      avvisi,
+      ...(archiviato ? { archiviato } : {}),
+      ...(ferme.length ? { terminate: ferme } : {}),
+      chiedeScelta: c.esito === 'da_sistemare' || archiviato || ferme.length > 0,
+    })
+  }
+  righe.sort((a, b) => a.foglio.localeCompare(b.foglio) || a.riga - b.riga)
+  const totali = { nuova: 0, in_palestra: 0, da_sistemare: 0 }
+  for (const r of righe) totali[r.esito]++
+  return { righe, totali }
+}
+
+/** Quante righe del foglio entrano: quelle lette, meno le saltate e quelle che aspettano ancora una scelta. */
+export function righeBuone(f: Fogli, c: { righe: RigaControllo[] }, scelte: Scelte): number {
+  const lette = f.righe.corsi + f.righe.iscritti + (f.righe.risposte ?? 0)
+  const inAttesa = c.righe.filter((r) => {
+    if (f.saltate.some((x) => x.foglio === r.foglio && x.riga === r.riga)) return false
+    const sc = scelte[chiaveRiga(r)]
+    if (r.esito === 'da_sistemare') return !(r.doppione && sc?.doppione)
+    return !!r.archiviato && sc?.archiviato !== 'riattiva'
+  }).length
+  return lette - f.saltate.length - inAttesa
+}
+
+export interface RigaSistemare {
+  foglio: Saltata['foglio']
+  riga: number
+  nome: string
+  motivo: string
+}
+
+export type Resoconto = Anteprima & { daSistemare: RigaSistemare[] }
+
+/** Il testo del database non dice alla segreteria cosa fare: lo si traduce, e un messaggio già chiaro resta com'è. */
+export function messaggioRiga(e: unknown): string {
+  const m = e instanceof Error ? e.message : String(e)
+  if (/duplicate key|unique constraint/i.test(m)) return 'questa email è già di un\'altra persona: toglila dal foglio o cambiala e rilancia'
+  if (/row-level|policy|permission denied|not authorized|jwt/i.test(m)) return 'non hai il permesso di scrivere questa riga: esci, rientra come segreteria e rilancia'
+  if (/fetch|network|timeout|offline|load failed/i.test(m)) return 'la rete è caduta: controlla la connessione e rilancia, quello che è già entrato non si duplica'
+  if (/violat|constraint|relation |column |syntax|null value|invalid input|pgrst|schema/i.test(m)) return 'il database non l\'ha accettata: controlla i dati della riga e rilancia; se si ripete, scrivilo in SEGNALAZIONI'
+  // Un messaggio nostro è in italiano; quello che non riconosciamo non si mostra com'è.
+  if (/\b(non|già|è|di|il|la|un|una|serve|manca|questa|questo|controlla|riprova)\b/i.test(m)) return m
+  return 'la riga non è entrata: rilancia, e se si ripete scrivilo in SEGNALAZIONI'
+}
+
+/** Il resoconto di fine import, da leggere e da copiare per correggere il foglio. */
+export function testoResoconto(a: { daSistemare: RigaSistemare[] }): string {
+  const n = a.daSistemare.length
+  if (!n) return 'FATTO'
+  return [`FATTO, ${n} ${n === 1 ? 'riga' : 'righe'} da sistemare`, ...a.daSistemare.map((r) => `${r.foglio}, riga ${r.riga}: ${r.nome} — ${r.motivo}`)].join('\n')
+}
+
 /**
  * L'import vero. Va in ordine — sale, istruttori, corsi, giorni, iscritti — e
  * alla fine allunga il calendario una volta sola. `passo` dice a che punto è.
+ * Una riga che non va non ferma le altre: finisce nel resoconto, col motivo.
  */
-export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string) => void) {
+export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string) => void, scelte: Scelte = {}): Promise<Resoconto> {
   const leggi = async (): Promise<Situazione> => {
     const [sale, personale, corsi, persone] = await Promise.all([d.sale(), d.personale(), d.corsi(), d.persone()])
     return { sale, personale, corsi, persone }
   }
   let s = await leggi()
-  const a = anteprima(f, s)
+  const a = anteprima(f, s, scelte)
 
   passo('Le sale…')
   for (const nome of a.saleNuove) await d.salvaSala({ nome })
@@ -326,36 +493,72 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
   }
 
   passo('Gli iscritti…')
+  const daSistemare: RigaSistemare[] = f.saltate
+    .filter((x) => x.foglio !== 'corsi.csv')
+    .map((x) => ({ foglio: x.foglio, riga: x.riga, nome: x.nome ?? '', motivo: x.motivo }))
+  const oggi = chiaveGiorno(new Date())
   const persone = [...s.persone]
   for (const x of f.iscritti) {
-    let p = trovaPersona(x, persone)
-    if (!p) {
-      // Un'email è di una persona sola: se è già di un altro (il fratello, dal
-      // modulo), entra senza, col telefono.
-      const email = x.email && !persone.some((q) => q.email?.toLowerCase() === x.email) ? x.email : undefined
-      const id = await d.salvaPersona({ nome: x.nome, cognome: x.cognome, email, telefono: x.telefono })
-      p = { id, nome: x.nome, cognome: x.cognome, email, attiva: true, creataIl: '', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' } }
-      persone.push(p)
-    }
-    for (const nome of x.corsi) {
-      const c = corsi.get(piatto(nome))
-      if (c) await d.iscrivi(p.id, c.id)
-    }
-    if (x.anagrafica && Object.keys(x.anagrafica).length > 0 && !a.anagraficheFuori) {
-      try {
-        await d.salvaAnagrafica(p.id, x.anagrafica)
-      } catch (e) {
-        // Senza 18-anagrafiche.sql gli iscritti entrano lo stesso: si dice cosa è rimasto fuori.
-        const m = e instanceof Error ? e.message : String(e)
-        if (!/18-anagrafiche/.test(m)) throw e
-        a.anagraficheFuori = m
+    const riga = x.riga
+    const nome = `${x.nome} ${x.cognome}`
+    const sc = scelte[chiaveRiga(x)]
+    try {
+      const c = riconosci(x, persone, s.personale, sc)
+      if (c.esito === 'da_sistemare') {
+        daSistemare.push({ foglio: x.foglio, riga, nome, motivo: c.motivo })
+        continue
       }
+      let p: PersonaSeg
+      if (c.esito === 'in_palestra') {
+        p = c.p
+        if (!p.attiva) {
+          // Un archiviato resta com'è finché la segreteria non sceglie.
+          if (sc?.archiviato !== 'riattiva') {
+            daSistemare.push({ foglio: x.foglio, riga, nome, motivo: 'è archiviato: non l\'ho iscritto. Riattivalo tu, o rilancia scegliendo «Riattivala e iscrivila»' })
+            continue
+          }
+          await d.attivaPersona(p.id, true)
+        }
+      } else {
+        // Un'email è di una persona sola: se è già di un altro (il fratello, dal
+        // modulo), entra senza, col telefono.
+        const email = x.email && !persone.some((q) => q.email?.toLowerCase() === x.email) ? x.email : undefined
+        const id = await d.salvaPersona({ nome: x.nome, cognome: x.cognome, email, telefono: x.telefono })
+        p = { id, nome: x.nome, cognome: x.cognome, email, attiva: true, creataIl: '', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' } }
+        persone.push(p)
+      }
+      const ferme: string[] = []
+      for (const nomeCorso of x.corsi) {
+        const corso = corsi.get(piatto(nomeCorso))
+        if (!corso) continue
+        const dentro = p.iscrizioni.find((i) => i.corsoId === corso.id)
+        // Un'iscrizione finita non si riapre da sola: chi era uscito può non voler tornare.
+        if (dentro?.al && dentro.al < oggi && sc?.terminate !== 'riapri') {
+          ferme.push(nomeCorso)
+          continue
+        }
+        // La data della risposta vale per un'iscrizione nuova; chi riapre riparte da oggi.
+        await d.iscrivi(p.id, corso.id, dentro ? undefined : x.iscrittoIl)
+      }
+      if (ferme.length) daSistemare.push({ foglio: x.foglio, riga, nome, motivo: `l'iscrizione a ${ferme.join(', ')} era terminata: non l'ho riaperta. Rilancia scegliendo «Riapri» se serve` })
+      if (x.anagrafica && Object.keys(x.anagrafica).length > 0 && !a.anagraficheFuori) {
+        try {
+          await d.salvaAnagrafica(p.id, x.anagrafica)
+        } catch (e) {
+          // Senza 18-anagrafiche.sql gli iscritti entrano lo stesso: si dice cosa è rimasto fuori.
+          const m = e instanceof Error ? e.message : String(e)
+          if (!/18-anagrafiche/.test(m)) throw e
+          a.anagraficheFuori = m
+        }
+      }
+    } catch (e) {
+      daSistemare.push({ foglio: x.foglio, riga, nome, motivo: messaggioRiga(e) })
     }
   }
 
   passo('Il calendario…')
   await d.rigenera()
-  return a
+  return { ...a, daSistemare: daSistemare.sort((x, y) => x.foglio.localeCompare(y.foglio) || x.riga - y.riga) }
 }
 
 // ---------------------------------------------------------------------------
@@ -385,6 +588,7 @@ export type Ruolo =
   | 'genitore'
   | 'genitoreCodiceFiscale'
   | 'genitoreNato'
+  | 'dataRisposta'
 
 export const RUOLI: Array<[Ruolo, string]> = [
   ['nome', 'NOME'],
@@ -402,6 +606,7 @@ export const RUOLI: Array<[Ruolo, string]> = [
   ['genitore', 'GENITORE (NOME E COGNOME)'],
   ['genitoreCodiceFiscale', 'CODICE FISCALE DEL GENITORE'],
   ['genitoreNato', 'NASCITA DEL GENITORE'],
+  ['dataRisposta', 'DATA DELLA RISPOSTA (DA QUANDO È ISCRITTO)'],
 ]
 
 /** Ruolo → posizione della colonna. */
@@ -434,6 +639,8 @@ export function indovinaColonne(testa: string[]): Colonne {
   c.cap = trova((x) => persona(x) && /\bcap\b|codice\s*postale|c\.a\.p/.test(x))
   const delGenitore = (x: string) => DEL_GENITORE.test(x)
   c.genitoreCodiceFiscale = trova((x) => delGenitore(x) && /codice\s*fiscale|\bc\.?\s?f\.?(\s|$)/.test(x))
+  // Il giorno in cui Google ha registrato la risposta: da lì si sa da quando è iscritto.
+  c.dataRisposta = trova((x) => /informazioni cronologiche|timestamp|data.*(risposta|invio|compilazione)/.test(x))
   c.genitoreNato = trova((x) => delGenitore(x) && /nascita|nat[oa]\b/.test(x))
   c.genitore = trova((x) => delGenitore(x) && /nome|cognome/.test(x) && !/nascita|fiscale|mail|telefono/.test(x))
   for (const k of Object.keys(c) as Ruolo[]) if (c[k] === undefined) delete c[k]
@@ -589,9 +796,9 @@ export function leggiRisposte(
     }
     if (!nome || !cognome) {
       const scritto = cella(r, 'nomeCompleto') || nome || cognome
-      return saltate.push({ foglio: 'risposte', riga, motivo: scritto ? `«${scritto}»: servono nome e cognome` : 'Manca il nome' })
+      return saltate.push({ foglio: 'risposte', riga, nome: scritto, motivo: scritto ? `«${scritto}»: servono nome e cognome` : 'Manca il nome' })
     }
-    const chi = `${piatto(nome)} ${piatto(cognome)}`
+    const chi = `${compatto(nome)} ${compatto(cognome)}`
     let email = cella(r, 'email').toLowerCase() || undefined
     if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       note.push({ foglio: 'risposte', riga, motivo: `${nome} ${cognome}: l'email «${email}» non sembra giusta, entra senza` })
@@ -603,10 +810,13 @@ export function leggiRisposte(
     }
     if (email) emailDi.set(email, chi)
 
-    const x = iscritti.get(chi) ?? { nome, cognome, email, telefono: cella(r, 'telefono') || undefined, corsi: [], soloStessoNome: true }
+    const x = iscritti.get(chi) ?? { nome, cognome, email, telefono: cella(r, 'telefono') || undefined, corsi: [], soloStessoNome: true, foglio: 'risposte', riga }
     // Chi ha mandato il modulo due volte: vale l'ultima email e l'ultimo telefono, i corsi si sommano.
     if (email) x.email = email
     if (cella(r, 'telefono')) x.telefono = cella(r, 'telefono')
+    // Chi ha mandato il modulo più volte è iscritto dalla prima risposta. Con la data illeggibile vale oggi.
+    const quando = leggiData(cella(r, 'dataRisposta').split(/[\sT]/)[0])
+    if (quando && (!x.iscrittoIl || quando < x.iscrittoIl)) x.iscrittoIl = quando
     for (const scelta of divideScelte(cella(r, 'corsi'))) {
       const id = abbinamenti[scelta]
       if (id === '') continue

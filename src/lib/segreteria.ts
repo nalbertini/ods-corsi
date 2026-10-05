@@ -458,7 +458,8 @@ export interface DatiSegreteria {
   storico(personaId: string, quante: number): Promise<StoricoSeg[]>
   salvaPersona(p: DatiPersona): Promise<string>
   attivaPersona(personaId: string, attiva: boolean): Promise<void>
-  iscrivi(personaId: string, corsoId: string): Promise<void>
+  /** `dal`: da quando, se non è oggi (l'import dei fogli usa il giorno della risposta). Vale per un'iscrizione nuova o ripresa, non per una in corso. */
+  iscrivi(personaId: string, corsoId: string, dal?: string): Promise<void>
   termina(personaId: string, corsoId: string): Promise<void>
   /** Il certificato medico, che sta su carta in segreteria: fino a quando vale. */
   salvaCertificato(personaId: string, scade: string): Promise<void>

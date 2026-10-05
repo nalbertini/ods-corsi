@@ -759,7 +759,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.from('persone').update({ attiva }).eq('id', personaId))
     },
 
-    async iscrivi(personaId, corsoId) {
+    async iscrivi(personaId, corsoId, dal) {
       const g = oggi()
       const c = ok(await db.from('iscrizioni').select('dal, al').eq('persona_id', personaId).eq('corso_id', corsoId).maybeSingle()) as {
         dal: string; al: string | null
@@ -772,7 +772,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         return
       }
       // Una riga per persona e corso: chi torna riparte da oggi.
-      ok(await db.from('iscrizioni').upsert({ persona_id: personaId, corso_id: corsoId, dal: g, al: null }, { onConflict: 'corso_id,persona_id' }))
+      ok(await db.from('iscrizioni').upsert({ persona_id: personaId, corso_id: corsoId, dal: dal ?? g, al: null }, { onConflict: 'corso_id,persona_id' }))
     },
 
     async termina(personaId, corsoId) {

@@ -107,7 +107,7 @@ nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer
   in elenco per mese, corso, istruttore e stato: quelle in cui non erano previsti si confermano o si rifiutano, e
   le lezioni tenute in cui nessun istruttore si è segnato si propongono, per scegliere chi c'era
   (`supabase/23-istruttori-dalle-lezioni.sql`). Il CSV e il report PDF del mese o dell'anno, con le statistiche. L'**import dai fogli Excel**, e delle risposte del modulo Google così come
-  si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`).
+  si scaricano, con le colonne e i corsi da abbinare, e con nascita, residenza e genitore per le ricevute (`supabase/18-anagrafiche.sql`). Si può ricaricare lo stesso foglio senza doppioni: nome e cognome al contrario si segnalano e si sceglie, e a fine import c'è l'elenco, riga per riga, di chi non è entrato.
   **Istruttori e accessi**, coi PIN del tablet e il **kanji** di ciascuno: un
   segno solo, come un timbro, che lo fa riconoscere a colpo d'occhio accanto al
   nome nel calendario, nell'appello e sul tablet di sala (`src/lib/kanji.ts`, `supabase/24-kanji.sql`). Un istruttore che non ha

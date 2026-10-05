@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -382,7 +382,7 @@ console.log('\n11. le risposte del modulo Google')
   ].join('\n')
   const t = m.leggiTabella(csv)
   const col = m.indovinaColonne(t.testa)
-  ok('le colonne si riconoscono, il genitore a parte', col, { cognome: 3, nome: 2, email: 1, telefono: 5, corsi: 6, genitore: 4 })
+  ok('le colonne si riconoscono, il genitore a parte', col, { cognome: 3, nome: 2, email: 1, telefono: 5, corsi: 6, dataRisposta: 0, genitore: 4 })
   ok('la virgola dentro le parentesi non divide', m.divideScelte('Judo 2 (nati 2017-2019, lunedì), Lotta 3'), ['Judo 2 (nati 2017-2019, lunedì)', 'Lotta 3'])
   ok('nemmeno quella prima di una minuscola', m.divideScelte('Judo 2 lunedì, mercoledì e venerdì, Lotta 3'), ['Judo 2 lunedì, mercoledì e venerdì', 'Lotta 3'])
   const corsi = (await s.corsi()).filter((c) => c.attivo).map((c) => ({ id: c.id, nome: c.nome }))
@@ -419,7 +419,7 @@ console.log('\n11. le risposte del modulo Google')
   // Un altro modulo: nome e cognome in una domanda sola, prima quella del genitore.
   const t2 = m.leggiTabella('Timestamp,Nome e cognome del genitore,Nome e cognome dell\'iscritto,Cellulare,Email\n1,Paola Verdi,Maria Luisa Verdi,333,p@e.it\n')
   const c2 = m.indovinaColonne(t2.testa)
-  ok('nome e cognome insieme, dell\'iscritto', c2, { nomeCompleto: 2, email: 4, telefono: 3, genitore: 1 })
+  ok('nome e cognome insieme, dell\'iscritto', c2, { nomeCompleto: 2, email: 4, telefono: 3, dataRisposta: 0, genitore: 1 })
   ok('il cognome è l\'ultima parola', m.leggiRisposte(t2, c2, {}, []).iscritti.map((x) => [x.nome, x.cognome]), [['Maria Luisa', 'Verdi']])
   ok('Marco resta Marco', (await s.persone()).filter((x) => x.cognome === 'Neri').map((x) => x.nome).sort(), ['Giulia', 'Marco'])
 
@@ -433,7 +433,7 @@ console.log('\n11. le risposte del modulo Google')
     '4,x@esempio.it,Verdi,,,,,,Judo 2',
   ].join('\n'))
   const c3 = m.indovinaColonne(t3.testa)
-  ok('il codice fiscale dell\'atleta, non del genitore', c3, { nomeCompleto: 2, codiceFiscale: 3, email: 1, telefono: 4, corsi: 8, genitore: 5 })
+  ok('il codice fiscale dell\'atleta, non del genitore', c3, { nomeCompleto: 2, codiceFiscale: 3, email: 1, telefono: 4, corsi: 8, dataRisposta: 0, genitore: 5 })
   const r3 = m.leggiRisposte(t3, c3, { 'Judo adulti': 'judo-adulti', 'Judo 2': 'judo-2' }, corsi)
   ok('il codice dice cosa è il nome e cosa il cognome', r3.iscritti.map((x) => [x.nome, x.cognome]), [['Mario', 'Rossi'], ['Anna', 'Bianchi'], ['Sara', 'De Luca']])
   ok('la colonna vuota prende quella con la stessa domanda', r3.iscritti[2].telefono, '333 333')
@@ -484,6 +484,199 @@ console.log('\n11. le risposte del modulo Google')
   // Reimportato con una risposta che dice meno: quello che c'era resta.
   await s.salvaAnagrafica(emmaDentro.id, { comune: 'Rivoli', indirizzo: '' })
   ok('una risposta nuova aggiunge e non cancella', [(await s.intestatarioDi(emmaDentro.id)).comune, (await s.intestatarioDi(emmaDentro.id)).indirizzo], ['Rivoli', 'via Roma 1'])
+}
+
+console.log('\n12. l\'import: ricaricare il foglio, doppioni, resoconto, archiviati, data d\'iscrizione')
+{
+  // `prova` registra un errore lanciato come risultato, così una prova che cade non ferma le altre.
+  const il = m.importaLib
+  const prova = async (cosa, f, voluto) => {
+    let avuto
+    try { avuto = await f() } catch (e) { avuto = `ERRORE: ${e.message}` }
+    ok(cosa, avuto, voluto)
+  }
+  const nomiCorsi = async () => (await s.corsi()).map((c) => c.nome)
+  const situazione = async () => {
+    const [sale, personale, corsi, persone] = await Promise.all([s.sale(), s.personale(), s.corsi(), s.persone()])
+    return { sale, personale, corsi, persone }
+  }
+  const excel = async (righe) => m.leggiFogli(null, 'nome;cognome;email;telefono;corso\n' + righe.join('\n') + '\n', await nomiCorsi())
+  const risposte = async (testa, righe, extra = {}) => {
+    const t = m.leggiTabella([testa, ...righe].join('\n'))
+    const r = m.leggiRisposte(t, { ...m.indovinaColonne(t.testa), ...extra }, { 'Judo 2': 'judo-2', 'Judo adulti': 'judo-adulti' }, (await s.corsi()).map((c) => ({ id: c.id, nome: c.nome })))
+    return { corsi: [], iscritti: r.iscritti, righe: { corsi: 0, iscritti: 0, risposte: r.righe }, saltate: r.saltate, note: r.note }
+  }
+  const persona = async (nome, cognome) => (await s.persone()).find((p) => p.nome === nome && p.cognome === cognome)
+  const quante = async () => (await s.persone()).length
+
+  // 1. Ricaricare un file già importato.
+  const base = ['Mario;D\'Angelo;;;Judo 2', 'Anna;De Luca;;;Judo 2', 'Luigi;Dell\'Aglio;;;Lotta 2', 'Nicolò;Bianchi;;;Lotta 2']
+  await m.importa(s, await excel(base), () => {})
+  let n = await quante()
+  let a = await m.importa(s, await excel(base), () => {})
+  ok('lo stesso file due volte: 0 iscritti nuovi, 0 iscrizioni nuove, persone invariate', [a.iscrittiNuovi, a.iscrizioniNuove, (await quante()) - n], [0, 0, 0])
+  a = await m.importa(s, await excel(['MARIO;D’ANGELO;;;Judo 2', 'Anna;Deluca;;;Judo 2', 'luigi;dell’aglio;;;Lotta 2', 'Nicolo;BIANCHI;;;Lotta 2']), () => {})
+  ok('lo stesso file riscritto con maiuscole, accenti, apostrofi e doppi cognomi diversi: nessuno nuovo', [a.iscrittiNuovi, a.iscrizioniNuove, (await quante()) - n], [0, 0, 0])
+
+  // 2. Il controllo, riga per riga, col nome.
+  const f2 = await excel(['Mario;D\'Angelo;;;Judo 2', 'Giorgia;;;;Judo 2', 'Teresa;Nuova;teresa@esempio.it;;Judo 2', 'Paolo;Nuova;teresa@esempio.it;;Judo 2'])
+  await prova('il controllo elenca ogni riga col nome e cosa succede', async () => il.controllaRighe(f2, await situazione()).righe.map((r) => [r.riga, r.nome, r.esito]),
+    [[2, 'Mario D\'Angelo', 'in_palestra'], [3, 'Giorgia', 'da_sistemare'], [4, 'Teresa Nuova', 'nuova'], [5, 'Paolo Nuova', 'nuova']])
+  await prova('e i totali per tipo', async () => il.controllaRighe(f2, await situazione()).totali, { nuova: 2, in_palestra: 1, da_sistemare: 1 })
+  await prova('la riga da sistemare dice perché', async () => il.controllaRighe(f2, await situazione()).righe[1].motivo, 'Manca il cognome: «Giorgia», Judo 2')
+  await prova('il fratello con l\'email del genitore resta una persona a sé, e il controllo lo scrive', async () => {
+    const r = il.controllaRighe(f2, await situazione()).righe[3]
+    return [r.esito, r.avvisi.some((x) => /senza email/.test(x))]
+  }, ['nuova', true])
+
+  // 3. Possibili doppioni.
+  await s.salvaPersona({ nome: 'Manuel', cognome: 'Prudente' })
+  const testa = 'Informazioni cronologiche,Email,Nome e cognome,Codice fiscale,Corsi'
+  const rd = await risposte(testa, [
+    '1,p1@esempio.it,Prudente Manuel,,Judo 2',
+    '2,p2@esempio.it,D’ANGELO MARIO,,Judo 2',
+    '3,p3@esempio.it,De Luca Anna,,Judo 2',
+    '4,p4@esempio.it,DELL\'AGLIO LUIGI,,Judo 2',
+    '5,p5@esempio.it,Nicolò Bianchi,,Judo 2',
+  ])
+  ok('ogni riga porta il suo numero di riga del foglio', rd.iscritti.map((x) => x.riga), [2, 3, 4, 5, 6])
+  await prova('«Prudente Manuel» con in app «Manuel Prudente»: forse è lui, e il nome giusto è scritto', async () => {
+    const r = il.controllaRighe(rd, await situazione()).righe
+    return r.slice(0, 4).map((x) => [x.esito, x.motivo])
+  }, [
+    ['da_sistemare', 'forse è già in palestra come Manuel Prudente'],
+    ['da_sistemare', 'forse è già in palestra come Mario D\'Angelo'],
+    ['da_sistemare', 'forse è già in palestra come Anna De Luca'],
+    ['da_sistemare', 'forse è già in palestra come Luigi Dell\'Aglio'],
+  ])
+  await prova('stesso nome nell\'ordine giusto, solo con l\'accento diverso: è già in palestra, senza avviso', async () => {
+    const x = il.controllaRighe(rd, await situazione()).righe[4]
+    return [x.esito, x.motivo, x.avvisi]
+  }, ['in_palestra', undefined, []])
+  n = await quante()
+  a = await m.importa(s, rd, () => {})
+  ok('senza una scelta nessuno dei dubbi crea una persona nuova', [a.iscrittiNuovi, (await quante()) - n], [0, 0])
+  await prova('e il resoconto li elenca', () => a.daSistemare.map((x) => [x.riga, x.nome]), [[2, 'Prudente Manuel'], [3, 'D’ANGELO MARIO'], [4, 'De Luca Anna'], [5, 'DELL\'AGLIO LUIGI']])
+  a = await m.importa(s, rd, () => {}, { 'risposte:2': { doppione: 'lega' }, 'risposte:3': { doppione: 'nuova' } })
+  ok('«lega» mette Manuel sulla scheda che c\'è, «nuova» ne crea una', [(await quante()) - n, (await persona('Manuel', 'Prudente')).iscrizioni.map((i) => i.corsoId)], [1, ['judo-2']])
+  // Col codice fiscale che dà l'ordine si lega senza dubbi.
+  const corpo = 'PRDMNL90A01L219'
+  const cf = corpo + m.carattereControllo(corpo)
+  const rc = await risposte(testa, [`1,cf@esempio.it,Prudente Manuel,${cf},Judo adulti`])
+  await prova('col codice fiscale che dà l\'ordine: Manuel Prudente, già in palestra, senza avviso', async () => {
+    const x = il.controllaRighe(rc, await situazione()).righe[0]
+    return [x.nome, x.esito, x.motivo, x.avvisi, rc.note.length]
+  }, ['Manuel Prudente', 'in_palestra', undefined, [], 0])
+
+  // 4. L'email di un istruttore o della segreteria.
+  await s.salvaPersonale({ nome: 'Ilaria', cognome: 'Istruttrice', email: 'istr.import@esempio.it', ruolo: 'istruttore' })
+  await s.salvaPersonale({ nome: 'Sara', cognome: 'Segreteria', email: 'seg.import@esempio.it', ruolo: 'staff' })
+  const f4 = await excel(['Zeno;Primo;zeno@esempio.it;;Judo 2', 'Ugo;Istr;ISTR.import@esempio.it;;Judo 2', 'Vera;Secondo;vera@esempio.it;;Judo 2', 'Sandro;Seg;seg.import@esempio.it;;Judo 2', 'Wanda;Terza;wanda@esempio.it;;Judo 2'])
+  await prova('l\'email di un istruttore o della segreteria: da sistemare, le altre righe sono nuove', async () => il.controllaRighe(f4, await situazione()).righe.map((r) => [r.riga, r.esito, r.motivo]),
+    [[2, 'nuova', undefined], [3, 'da_sistemare', 'è già un istruttore o segreteria'], [4, 'nuova', undefined], [5, 'da_sistemare', 'è già un istruttore o segreteria'], [6, 'nuova', undefined]])
+  n = await quante()
+  const senzaFermarsi = async (f) => { try { return await f() } catch (e) { ok('l\'import non si ferma per una riga', `ERRORE: ${e.message}`, 'nessun errore'); return { daSistemare: [] } } }
+  a = await senzaFermarsi(() => m.importa(s, f4, () => {}))
+  ok('importando entrano le altre, ma non chi ha l\'email del personale', [(await quante()) - n, !!(await persona('Zeno', 'Primo')), !!(await persona('Wanda', 'Terza')), !!(await persona('Ugo', 'Istr'))], [3, true, true, false])
+  await prova('e il resoconto dice quali righe e perché', () => a.daSistemare.map((x) => [x.riga, x.nome, x.motivo]), [[3, 'Ugo Istr', 'è già un istruttore o segreteria'], [5, 'Sandro Seg', 'è già un istruttore o segreteria']])
+
+  // 5. Un errore a metà elenco non ferma le righe dopo.
+  const rotto = {
+    ...s,
+    async salvaPersona(p) {
+      if (p.cognome === 'Guasto') throw new Error('duplicate key value violates unique constraint "persone_email_key"')
+      return s.salvaPersona(p)
+    },
+  }
+  const f5 = await excel(['Anna;Prima;;;Judo 2', 'Bruno;Guasto;;;Judo 2', 'Carla;Terza;;;Judo 2', 'Elia;;;;Judo 2', 'Dino;Guasto;;;Judo 2', 'Fabio;Ultimo;;;Judo 2'])
+  let esito = ''
+  try { a = await m.importa(rotto, f5, () => {}) } catch (e) { esito = e.message }
+  ok('un errore su una riga non ferma l\'import', esito, '')
+  ok('le righe dopo l\'errore sono entrate', [!!(await persona('Anna', 'Prima')), !!(await persona('Carla', 'Terza')), !!(await persona('Fabio', 'Ultimo'))], [true, true, true])
+  await prova('il resoconto: riga del foglio, nome, motivo, in ordine', () => a.daSistemare.map((x) => [x.riga, x.nome]), [[3, 'Bruno Guasto'], [5, 'Elia'], [6, 'Dino Guasto']])
+  await prova('il motivo è in italiano, mai il testo del database', () => a.daSistemare.map((x) => !!x.motivo && !/duplicate|constraint|violates|key/i.test(x.motivo)), [true, true, true])
+  await prova('il resoconto finale dice FATTO e quante righe', () => il.testoResoconto(a).split('\n')[0], 'FATTO, 3 righe da sistemare')
+  await prova('e sotto, una riga per ognuna', () => il.testoResoconto(a).split('\n').slice(1).map((l) => [/riga 3\b/.test(l) && /Bruno Guasto/.test(l), /riga 5\b/.test(l) && /Elia/.test(l), /riga 6\b/.test(l) && /Dino Guasto/.test(l)].some(Boolean)), [true, true, true])
+  await prova('senza righe da sistemare dice solo FATTO', () => il.testoResoconto({ daSistemare: [] }).split('\n')[0], 'FATTO')
+
+  // 8. Messaggi d'errore per chi usa l'app.
+  await prova('un errore del database si traduce, e dice cosa fare', () => [
+    'duplicate key value violates unique constraint "persone_email_key"',
+    'new row violates row-level security policy for table "iscrizioni"',
+    'FetchError: Failed to fetch',
+  ].map((t) => { const x = il.messaggioRiga(new Error(t)); return !!x && !/duplicate|constraint|violates|policy|Fetch/i.test(x) }), [true, true, true])
+  await prova('un errore che non conosciamo non mostra il testo grezzo', () => il.messaggioRiga(new TypeError('Cannot read properties of undefined (reading id)')).includes('Cannot'), false)
+  await prova('un messaggio già in italiano resta com\'è', () => il.messaggioRiga(new Error('Questa email è già di Mario Rossi')), 'Questa email è già di Mario Rossi')
+  const rotto2 = { ...s, async iscrivi() { throw new Error('new row violates row-level security policy for table "iscrizioni"') } }
+  a = await senzaFermarsi(async () => m.importa(rotto2, await excel(['Gina;Quarta;;;Judo 2', 'Hugo;Quinto;;;Judo 2']), () => {}))
+  await prova('anche un errore sull\'iscrizione si dice in italiano, e l\'altra riga prosegue', async () => [a.daSistemare.map((x) => x.riga), a.daSistemare.every((x) => !/row-level|policy/i.test(x.motivo)), !!(await persona('Hugo', 'Quinto'))], [[2, 3], true, true])
+
+  // 7. Da quando è iscritto: la data della risposta, se c'è.
+  const rt = await risposte('Informazioni cronologiche,Nome e cognome,Email,Corsi', [
+    '"20/09/2026 18.01.22",Rita Datata,rita@esempio.it,Judo 2',
+    ',Sergio Senzadata,sergio@esempio.it,Judo 2',
+    'boh,Tina Storta,tina@esempio.it,Judo 2',
+  ])
+  ok('«Informazioni cronologiche» si propone da sola come data della risposta', m.indovinaColonne(m.leggiTabella('Informazioni cronologiche,Nome e cognome,Email,Corsi').testa).dataRisposta, 0)
+  await prova('la data della risposta si legge (con l\'ora), o manca', () => rt.iscritti.map((x) => x.iscrittoIl), ['2026-09-20', undefined, undefined])
+  await m.importa(s, rt, () => {})
+  const dal = async (n, c) => (await persona(n, c)).iscrizioni.map((i) => i.dal)
+  ok('dal = la data della risposta; senza data, o illeggibile, oggi', [await dal('Rita', 'Datata'), await dal('Sergio', 'Senzadata'), await dal('Tina', 'Storta')], [['2026-09-20'], ['2026-09-26'], ['2026-09-26']])
+  const r2 = await risposte('Informazioni cronologiche,Nome e cognome,Email,Corsi', [
+    '18/09/2026 10.00.00,Elena Doppia,elena.doppia@esempio.it,Judo 2',
+    '12/09/2026 10.00.00,Elena Doppia,elena.doppia@esempio.it,Judo 2',
+    '30/09/2026 10.00.00,Franco Futuro,franco.futuro@esempio.it,Judo 2',
+    '17/09/2026 10.00.00,Nicolò Bianchi,,Judo adulti',
+  ])
+  await m.importa(s, r2, () => {})
+  ok('chi manda il modulo due volte è iscritto dalla prima risposta', await dal('Elena', 'Doppia'), ['2026-09-12'])
+  ok('una data nel futuro non vale: oggi', await dal('Franco', 'Futuro'), ['2026-09-26'])
+  ok('una persona già in palestra, iscritta a un corso nuovo, ha la data della risposta', (await persona('Nicolò', 'Bianchi')).iscrizioni.filter((i) => i.corsoId === 'judo-adulti').map((i) => i.dal), ['2026-09-17'])
+
+  // Le scelte sono per foglio e riga: la riga 2 di un foglio non è la riga 2 dell'altro.
+  const quirino = await s.salvaPersona({ nome: 'Quirino', cognome: 'Archiviato' })
+  const ugo = await s.salvaPersona({ nome: 'Ugo', cognome: 'Archiviato' })
+  await s.attivaPersona(quirino, false)
+  await s.attivaPersona(ugo, false)
+  const dueFogli = await excel(['Quirino;Archiviato;;;Judo 2'])
+  const dalModulo = await risposte('Nome e cognome,Corsi', ['Ugo Archiviato,Judo 2'])
+  dueFogli.iscritti.push(...dalModulo.iscritti)
+  await m.importa(s, dueFogli, () => {}, { 'iscritti.csv:2': { archiviato: 'riattiva' } })
+  ok('una scelta sulla riga 2 di un foglio non vale per la riga 2 dell\'altro', [(await persona('Quirino', 'Archiviato')).attiva, (await persona('Ugo', 'Archiviato')).attiva], [true, false])
+
+  // I conti di COSA ENTRA seguono le scelte.
+  await s.salvaPersona({ nome: 'Gianni', cognome: 'Sbagliato' })
+  const fg = await risposte('Nome e cognome,Corsi', ['Sbagliato Gianni,Judo 2'])
+  const sit = await situazione()
+  const conti = (sc) => { const x = il.anteprima(fg, sit, sc); return [x.iscrittiNuovi, x.iscrizioniNuove] }
+  ok('il dubbio senza scelta non conta', conti({}), [0, 0])
+  ok('«è un\'altra persona»: un iscritto nuovo e la sua iscrizione', conti({ 'risposte:2': { doppione: 'nuova' } }), [1, 1])
+  ok('«è lei»: nessun iscritto nuovo, ma l\'iscrizione al corso sì', conti({ 'risposte:2': { doppione: 'lega' } }), [0, 1])
+
+  // 6. Archiviati e iscrizioni terminate: si sceglie per riga, e di base non si tocca niente.
+  const olga = await s.salvaPersona({ nome: 'Olga', cognome: 'Archiviata' })
+  await s.attivaPersona(olga, false)
+  const fo = await excel(['Olga;Archiviata;;;Judo 2'])
+  await prova('archiviata: il controllo avvisa', async () => { const r = il.controllaRighe(fo, await situazione()).righe[0]; return [r.esito, r.avvisi.some((x) => /archiviat/.test(x))] }, ['in_palestra', true])
+  await m.importa(s, fo, () => {})
+  let o = await persona('Olga', 'Archiviata')
+  ok('l\'import da solo non la riattiva e non la iscrive', [o.attiva, o.iscrizioni.length], [false, 0])
+  await m.importa(s, fo, () => {}, { 'iscritti.csv:2': { archiviato: 'riattiva' } })
+  o = await persona('Olga', 'Archiviata')
+  ok('«riattiva»: torna attiva, con l\'iscrizione', [o.attiva, o.iscrizioni.map((i) => [i.corsoId, i.al ?? null])], [true, [['judo-2', null]]])
+
+  const pietro = await s.salvaPersona({ nome: 'Pietro', cognome: 'Terminato' })
+  await s.iscrivi(pietro, 'judo-2')
+  await s.termina(pietro, 'judo-2')
+  OGGI = new DateVera(2026, 8, 29, 12, 0).getTime()
+  const fp = await excel(['Pietro;Terminato;;;Judo 2'])
+  await prova('iscrizione terminata: il controllo avvisa', async () => il.controllaRighe(fp, await situazione()).righe[0].avvisi.some((x) => /terminat/.test(x)), true)
+  await m.importa(s, fp, () => {})
+  const attive = async () => (await persona('Pietro', 'Terminato')).iscrizioni.filter((i) => !i.al || i.al >= '2026-09-29').length
+  ok('l\'import da solo non la riapre', await attive(), 0)
+  await m.importa(s, fp, () => {}, { 'iscritti.csv:2': { terminate: 'riapri' } })
+  ok('«riapri»: l\'iscrizione torna', await attive(), 1)
+  OGGI = new DateVera(2026, 8, 26, 12, 0).getTime()
 }
 
 console.log('\nil certificato medico, il documento e il pagamento')
