@@ -1,0 +1,162 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Importa da Excel"
+    },
+    {
+      "id": "page-2",
+      "name": "Libreria"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "2 · Il controllo · schermo largo",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1400,
+      "page": "page-1"
+    },
+    {
+      "file": "DopoLaScelta.dc.html",
+      "title": "Dopo la scelta · schermo largo",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 1400,
+      "page": "page-1"
+    },
+    {
+      "file": "Fatto.dc.html",
+      "title": "3 · Il resoconto · schermo largo",
+      "x": 3120,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "FattoTelefono.dc.html",
+      "title": "3 · Il resoconto · telefono",
+      "x": 4680,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "ControlloChiaro.dc.html",
+      "title": "2 · Il controllo · tema chiaro",
+      "x": 0,
+      "y": 1520,
+      "w": 1440,
+      "h": 1400,
+      "page": "page-1"
+    },
+    {
+      "file": "FattoChiaro.dc.html",
+      "title": "3 · Il resoconto · tema chiaro",
+      "x": 1560,
+      "y": 1520,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Bottone.dc.html",
+      "title": "Bottone",
+      "x": 0,
+      "y": 0,
+      "w": 300,
+      "h": 90,
+      "page": "page-2"
+    },
+    {
+      "file": "Titoletto.dc.html",
+      "title": "Titoletto",
+      "x": 400,
+      "y": 0,
+      "w": 420,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "Testata.dc.html",
+      "title": "Testata",
+      "x": 900,
+      "y": 0,
+      "w": 430,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "Menu.dc.html",
+      "title": "Menu",
+      "x": 1500,
+      "y": 0,
+      "w": 240,
+      "h": 900,
+      "page": "page-2"
+    },
+    {
+      "file": "Passi.dc.html",
+      "title": "Passi",
+      "x": 0,
+      "y": 160,
+      "w": 560,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "FoglioLetto.dc.html",
+      "title": "FoglioLetto",
+      "x": 700,
+      "y": 160,
+      "w": 300,
+      "h": 150,
+      "page": "page-2"
+    },
+    {
+      "file": "CosaEntra.dc.html",
+      "title": "CosaEntra",
+      "x": 0,
+      "y": 380,
+      "w": 560,
+      "h": 240,
+      "page": "page-2"
+    },
+    {
+      "file": "RigaPerRiga.dc.html",
+      "title": "RigaPerRiga",
+      "x": 0,
+      "y": 700,
+      "w": 640,
+      "h": 560,
+      "page": "page-2"
+    },
+    {
+      "file": "NomiNuovi.dc.html",
+      "title": "NomiNuovi",
+      "x": 700,
+      "y": 380,
+      "w": 360,
+      "h": 260,
+      "page": "page-2"
+    },
+    {
+      "file": "Resoconto.dc.html",
+      "title": "Resoconto",
+      "x": 760,
+      "y": 700,
+      "w": 640,
+      "h": 520,
+      "page": "page-2"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
+}

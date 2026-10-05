@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- 3 · Il resoconto sul telefono (390px): fatto copiando PaginaTelefono.dc.html. Il passo e il resoconto stanno
+     impilati col margine di 20px; le righe da sistemare vanno a capo (`pre-wrap`). Dati inventati. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+  <dc-import name="Testata" luogo="IMPOSTAZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column; gap: 16px; padding: 20px 20px 28px">
+    <dc-import name="Titoletto" label="IMPORTA DA EXCEL" dentro="{{ true }}" tema="scuro" hint-size="100%,32px"></dc-import>
+      <dc-import name="Passi" attivo="3" tema="scuro" hint-size="560px,50px"></dc-import>
+      <dc-import name="Resoconto" tono="giallo" titolo="FATTO, 3 righe da sistemare" frase="4 corsi nuovi, 9 giorni di lezione, 118 iscritti nuovi e 163 iscrizioni. Il calendario è pronto fino al 31 maggio 2027." conto="3 RIGHE DA SISTEMARE" elenco="iscritti.csv, riga 5: Elia — Manca il cognome: «Elia», Judo 2;;iscritti.csv, riga 12: Bianchi Marco — forse è già in palestra come Marco Bianchi;;iscritti.csv, riga 33: Verdi Luca — questa email è già di un'altra persona: toglila dal foglio o cambiala e rilancia" spiegazione="Queste righe non sono entrate. Correggile nel foglio, o scegli cosa fare, e reimporta: quello che c'è già non si duplica." tema="scuro" hint-size="100%,720px"></dc-import>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

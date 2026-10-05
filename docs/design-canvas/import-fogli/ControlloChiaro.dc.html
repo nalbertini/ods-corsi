@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- 2 · Il controllo, tema chiaro.
+     Fatto copiando Pagina.dc.html (schermo largo) e usando solo <dc-import>: il menu e la testata sono quelli dell'app
+     (IMPOSTAZIONI e' il tasto coi cursori in cima al menu). Corpo di IMPOSTAZIONI > IMPORTA DA EXCEL = `.sg-corpo`:
+     36px ai lati, 28px in alto e in basso, 18px fra i blocchi (Importa.tsx, `gap: 16`). Dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 1400px; background: #f4f4f1">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="IMPOSTAZIONI" impostazioni="{{ true }}" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="1400px" tema="chiaro" hint-size="240px,1400px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">IMPOSTAZIONI</h1>
+      <span style="font-size: 14px; color: #656561">Le scelte che spettano alla palestra, non al programma.</span>
+    </div>
+    <dc-import name="Titoletto" label="IMPORTA DA EXCEL" dentro="{{ true }}" tema="chiaro" hint-size="100%,32px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <span style="font-size: 14px; color: #656561">Corsi e iscritti da due fogli, o gli iscritti dalle risposte del modulo Google. Si può rifare quante volte si vuole: non duplica niente. Chi c'è già si riconosce dal nome e cognome (anche scritti con il cognome prima, o con accenti e maiuscole diverse) e gli si aggiungono solo i corsi che mancano; le persone nuove entrano e si iscrivono ai corsi della colonna «Corsi».</span>
+      <dc-import name="Passi" attivo="2" tema="chiaro" hint-size="560px,50px"></dc-import>
+      <div style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start">
+        <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+            <dc-import name="FoglioLetto" foglio="corsi.csv" righe="8" saltate="0" tema="chiaro" hint-size="100%,136px"></dc-import>
+            <dc-import name="FoglioLetto" foglio="iscritti.csv" righe="90" saltate="2" tema="chiaro" hint-size="100%,136px"></dc-import>
+            <dc-import name="FoglioLetto" foglio="risposte del modulo Google" righe="57" saltate="0" tema="chiaro" hint-size="100%,136px"></dc-import>
+          </div>
+          <dc-import name="CosaEntra" conti="1|sale nuove;2|istruttori nuovi · 1 già in palestra;4|corsi nuovi;9|giorni di lezione nuovi;120|iscritti nuovi;163|iscrizioni ai corsi;57|con nascita, residenza o genitore" nota="Quello che c'è già resta com'è: un corso esistente prende solo i giorni e gli istruttori che gli mancano. Poi il calendario si allunga." tema="chiaro" hint-size="100%,260px"></dc-import>
+          <dc-import name="RigaPerRiga" nuove="120" in-palestra="20" da-sistemare="7" righe="iscritti.csv|12|Bianchi Marco|forse è già in palestra come Marco Bianchi|Per ora lasciala fuori#È lei: aggiungi i corsi a Marco Bianchi#È un'altra persona: creala|0;;risposte|31|Neri Aldo|è archiviato: resta archiviato e non lo iscrivo, a meno che tu scelga «Riattivala e iscrivila»|Resta archiviata, non la iscrivo#Riattivala e iscrivila|0;;iscritti.csv|40|Rossi Zeno|l'iscrizione a Judo 2 era terminata: resta terminata, a meno che tu scelga «Riapri»|Lascia terminata: Judo 2#Riapri: Judo 2|0;;risposte|55|Gialli Anna|è già un istruttore o segreteria||0" tema="chiaro" hint-size="100%,560px"></dc-import>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px">
+            <dc-import name="Bottone" label="CARICA DI NUOVO" variante="linea" contesto="segreteria" tema="chiaro" hint-size="190px,48px"></dc-import>
+            <dc-import name="Bottone" label="IMPORTA LE 118 RIGHE BUONE" variante="rosso" contesto="segreteria" tema="chiaro" hint-size="300px,48px"></dc-import>
+          </div>
+        </div>
+        <dc-import name="NomiNuovi" gruppi="Sale|Sala 3;;Istruttori|Elena Marchi · Davide Conti;;Corsi|Judo 2 · Lotta adulti · Pilates 3 · Yoga mattina" nota="Un nome scritto in modo diverso («Lotta 2» e «Lotta2») vale come un corso nuovo: se è un errore, correggilo nel foglio." tema="chiaro" hint-size="100%,330px"></dc-import>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

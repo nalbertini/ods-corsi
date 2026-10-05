@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il riquadro di un foglio letto nel controllo (Importa.tsx, `.sg-due` > `.sg-riquadro`): nome in mono 15px,
+     il conto delle righe 34px, e sotto «tutte lette» in verde o «N saltate, da correggere nel foglio» in giallo.
+     .sg-riquadro: styles.css riga 1689. -->
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; background: {{c.surface}}; border: 2px solid {{bordo}}; min-width: 0">
+  <span style="font-family: {{mono}}; font-size: 15px">{{foglio}}</span>
+  <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 34px; font-weight: 700; line-height: 1">{{righe}} <span style="font-size: 15px; color: {{c.dim}}">righe</span></span>
+  <span style="font-size: 13px; color: {{stato.colore}}">{{stato.testo}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"foglio":{"editor":"text","default":"iscritti.csv"},"righe":{"editor":"int","default":120},"saltate":{"editor":"int","default":0},"$preview":{"width":300,"height":150},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"}}'>
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', bg: '#121212', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', verde: '#16a54a', verdeTesto: '#16a54a' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', bg: '#f4f4f1', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', verde: '#12913f', verdeTesto: '#0b7a33' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const s = Number(p.saltate ?? 0);
+    return {
+      c, cond: COND, mono: MONO, bordo: c.line,
+      foglio: p.foglio ?? 'iscritti.csv', righe: p.righe ?? 120,
+      stato: s ? { colore: c.gialloTesto, testo: s + ' saltate, da correggere nel foglio' } : { colore: c.verdeTesto, testo: 'tutte lette' },
+    };
+  }
+}
+</script>
+</body>
+</html>

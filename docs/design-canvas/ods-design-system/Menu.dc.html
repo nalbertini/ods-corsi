@@ -48,7 +48,7 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
       </sc-if>
     </span>
-    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
+    <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid {{impBordo}}; color: {{impColore}}">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9M14 17H4"></path><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg>
     </span>
     <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
@@ -87,7 +87,7 @@
   </div>
 </nav>
 </x-dc>
-<script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
+<script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"impostazioni":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
 // Riproduzione 1:1 del menu di segreteria: src/components/segreteria/Segreteria.tsx (righe 378-460, GRUPPI alle
 // righe 47-80) con .sg-menu, .sg-voce, .sg-gruppo, .sg-chi e figli di src/styles.css (righe 1201-1270).
 // Misure del computer (da 1001px): colonna di 240px su `menu`, padding 28px 12px 24px, gap 28px, bordo destro
@@ -98,6 +98,7 @@
 // prova: i tre tasti hanno accanto DATI DI PROVA e in fondo compare "Riparti dall'orario vero".
 // Il logo e' Logo.tsx; nell'app l'ingranaggio bianco segue il colore del testo (nero nel tema chiaro).
 // I tasti (?, tema, impostazioni) mostrano l'icona che porta altrove: sole sul tema scuro, luna sul chiaro.
+// impostazioni: il tasto coi cursori e' la pagina corrente (.icon-btn[aria-current='page']: bordo e icona in `text`).
 // altezza: l'altezza dello schermo. Il menu dell'app scorre (overflow-y: auto) e, su uno schermo da 900px, taglia
 // le ultime voci: qui il taglio e' lo stesso. Per vederlo intero basta "1140px".
 // Non riprodotti: l'elenco della ricerca aperto, ISTRUTTORI →, il passaggio del mouse.
@@ -141,6 +142,8 @@ class Component extends DCLogic {
       scuro: (p.tema || 'scuro') !== 'chiaro',
       chiaro: p.tema === 'chiaro',
       prova: truthy(p.prova),
+      impBordo: truthy(p.impostazioni) ? c.text : c.line,
+      impColore: truthy(p.impostazioni) ? c.text : c.tasto,
       nome: p.nome ?? 'Marco Rossi',
       ruolo: p.ruolo ?? 'Segreteria',
       altezza: p.altezza || '900px',

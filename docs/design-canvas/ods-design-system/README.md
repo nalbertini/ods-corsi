@@ -23,13 +23,19 @@ Google, e vale solo per i mockup.
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
 | `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola` |
-| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`) |
+| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`); `impostazioni` accende il tasto coi cursori |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
 | `TimerLinea.dc.html` | `LineaDelTempo`: un blocco per passo, che si colora via via |
 | `Titoletto.dc.html` | `Titoletto` di `ds.tsx`: l'etichetta spaziata con la riga |
 | `Testata.dc.html` | `Testata` di `App.tsx`: marchio, luogo, guida e tema (misura del telefono) |
+| `Passi.dc.html` | `.sg-passi` di `Importa.tsx`: I FOGLI, IL CONTROLLO, NELL'APP, con quello corrente acceso |
+| `FoglioLetto.dc.html` | Il riquadro (`.sg-riquadro`) di un foglio letto: nome, conto delle righe, «tutte lette» o «N saltate» |
+| `CosaEntra.dc.html` | Il riquadro COSA ENTRA: `Riga` di `comune.tsx` + i conti (`.sg-cosa-entra`) + la frase sotto |
+| `RigaPerRiga.dc.html` | Il riquadro RIGA PER RIGA: sommario, le righe dubbie con la loro select (`.sg-campo`) e VEDI TUTTE LE RIGHE chiuso (`.sg-spiega`) |
+| `NomiNuovi.dc.html` | Il riquadro I NOMI NUOVI: gruppi di nomi con l'etichetta (`Elenco`) |
+| `Resoconto.dc.html` | Il resoconto di fine import: riquadro a bordo giallo o verde, elenco monospazio e i tre tasti |
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 
@@ -99,8 +105,8 @@ esadecimali a 6 cifre: i file della libreria scrivono sempre così.
 
 ## Cosa non copre (ancora)
 
-- La testa dell'appello (titolo, conto, TUTTI PRESENTI), le card dei riquadri
-  (`Riquadro`), i campi del modulo, le tabelle di segreteria, i dialoghi e i
+- La testa dell'appello (titolo, conto, TUTTI PRESENTI), `Riquadro` in generale
+  (ci sono solo quelli di IMPORTA DA EXCEL), i campi del modulo, le tabelle di segreteria, i dialoghi e i
   cassetti, i tasti del tablet di sala (`.tb-*`), le schermate del timer oltre a anello, scaletta e linea (esempio completo in `../timer-desktop/`). Un mockup che li
   vuole li aggiunge alla libreria come `<Nome>.dc.html`, copiando i valori dal
   codice, prima di usarli.

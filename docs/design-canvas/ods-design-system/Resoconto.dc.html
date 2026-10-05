@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il resoconto di fine import (Importa.tsx passo 3: `.sg-riquadro` con bordo `giallo` se resta qualche riga da
+     sistemare, `verde` se non manca niente; max 640px). Titolo `.ob` 30px 700 0.04em; frase 15px `sec`; «N RIGHE DA
+     SISTEMARE» cond 14px 700 giallo-testo; elenco `.sg-mono` 13px, interlinea 1.5, `pre-wrap`; spiegazione 14px dim.
+     elenco: righe separate da ;; (vuoto = tutto entrato). copiato: il tasto dice COPIATO. -->
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 640px; padding: 18px 20px; background: {{c.surface}}; border: 2px solid {{bordo}}; min-width: 0">
+  <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 30px; font-weight: 700; letter-spacing: 0.04em">{{titolo}}</span>
+  <span style="font-size: 15px; line-height: 1.5; color: {{c.sec}}">{{frase}}</span>
+  <sc-if value="{{haElenco}}" hint-placeholder-val="{{ true }}">
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; color: {{c.gialloTesto}}">{{conto}}</span>
+    <div style="display: flex; flex-direction: column; font-family: {{mono}}; font-size: 13px; line-height: 1.5; white-space: pre-wrap">
+      <sc-for list="{{righe}}" as="r" hint-placeholder-count="3"><span>{{r}}</span></sc-for>
+    </div>
+    <span style="font-size: 14px; line-height: 1.5; color: {{c.dim}}">{{spiegazione}}</span>
+    <div style="display: flex; align-self: flex-start">
+      <dc-import name="Bottone" label="{{tastoCopia}}" variante="linea" contesto="segreteria" tema="{{tema}}" hint-size="190px,48px"></dc-import>
+    </div>
+  </sc-if>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px">
+    <dc-import name="Bottone" label="VAI ALLA SETTIMANA" variante="pieno" contesto="segreteria" tema="{{tema}}" hint-size="230px,48px"></dc-import>
+    <dc-import name="Bottone" label="IMPORTA DI NUOVO" variante="linea" contesto="segreteria" tema="{{tema}}" hint-size="210px,48px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tono":{"editor":"enum","options":["giallo","verde"],"default":"giallo"},"titolo":{"editor":"text","default":"FATTO, 3 righe da sistemare"},"frase":{"editor":"text","default":""},"conto":{"editor":"text","default":"3 RIGHE DA SISTEMARE"},"elenco":{"editor":"text","default":""},"spiegazione":{"editor":"text","default":""},"copiato":{"editor":"boolean","default":false},"$preview":{"width":640,"height":520},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"}}'>
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', bg: '#121212', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', verde: '#16a54a', verdeTesto: '#16a54a' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', bg: '#f4f4f1', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', verde: '#12913f', verdeTesto: '#0b7a33' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const righe = String(p.elenco ?? '').split(';;').filter(Boolean);
+    return {
+      c, cond: COND, mono: MONO, tema: p.tema === 'chiaro' ? 'chiaro' : 'scuro',
+      bordo: p.tono === 'verde' ? c.verde : c.giallo,
+      titolo: p.titolo ?? 'FATTO, 3 righe da sistemare', frase: p.frase ?? '', conto: p.conto ?? '', spiegazione: p.spiegazione ?? '',
+      righe, haElenco: righe.length > 0, tastoCopia: truthy(p.copiato) ? 'COPIATO' : "COPIA L'ELENCO",
+    };
+  }
+}
+</script>
+</body>
+</html>

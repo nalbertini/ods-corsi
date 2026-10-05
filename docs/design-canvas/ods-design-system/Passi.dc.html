@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- .sg-passi (src/styles.css righe 1780-1784) e i tre passi di Importa.tsx: I FOGLI, IL CONTROLLO, NELL'APP. -->
+<ol style="display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none">
+  <sc-for list="{{passi}}" as="p" hint-placeholder-count="3">
+    <li style="display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: 2px solid {{p.bordo}}; color: {{p.colore}}">
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700">{{p.n}}</span>
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; letter-spacing: 0.16em">{{p.nome}}</span>
+    </li>
+  </sc-for>
+</ol>
+</x-dc>
+<script data-dc-script data-props='{"attivo":{"editor":"int","default":2,"min":1,"max":3},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":520,"height":50}}'>
+// .sg-passi li: bordo 2px line-soft, dim; [aria-current=step] bordo e testo in `text`; [data-fatto=true] (i passi
+// gia' fatti) testo in verde-testo. Numero 20px, nome 14px, 0.16em (Importa.tsx).
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', bg: '#121212', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', verde: '#16a54a', verdeTesto: '#16a54a' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', bg: '#f4f4f1', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', verde: '#12913f', verdeTesto: '#0b7a33' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const c = T[this.props.tema] || T.scuro;
+    const a = Number(this.props.attivo ?? 2);
+    const nomi = ['I FOGLI', 'IL CONTROLLO', "NELL'APP"];
+    return {
+      cond: COND,
+      passi: nomi.map((nome, i) => ({
+        n: i + 1, nome,
+        bordo: a === i + 1 ? c.text : c.lineSoft,
+        colore: a === i + 1 ? c.text : a > i + 1 ? c.verdeTesto : c.dim,
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>
