@@ -117,6 +117,13 @@ I due tasti in cima:
 - **AZZERA**: toglie tutti i segni della lezione, per ricominciare. Chiede
   **SICURO?**: toccatelo di nuovo entro qualche secondo.
 
+Sopra l'elenco c'è **CERCA PER NOME O COGNOME**: scrivete qualche lettera e
+restano solo le persone che somigliano, in qualunque ordine (anche «marco
+rossi» e «rossi marco»), senza badare a maiuscole, accenti e apostrofi. Si
+tocca il nome come sempre. I conti in cima e i tasti **TUTTI PRESENTI** e
+**AZZERA** valgono per tutta la lezione, non solo per chi si vede: cancellate
+la ricerca per vedere di nuovo tutti.
+
 Non c'è niente da salvare: ogni tocco parte subito.
 
 ### Chiudere l'appello

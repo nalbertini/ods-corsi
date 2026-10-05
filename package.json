@@ -21,6 +21,7 @@
     "prova:firma": "node scripts/prova-firma.mjs",
     "prova:ricevuta": "node scripts/prova-ricevuta.mjs",
     "prova:prove": "node scripts/prova-prove.mjs",
+    "prova:appello-cerca": "node scripts/prova-appello-cerca.mjs",
     "prova:iscritti": "node scripts/prova-iscritti.mjs",
     "prova:listino": "node scripts/prova-listino.mjs",
     "prova:indirizzi": "node scripts/prova-indirizzi.mjs",

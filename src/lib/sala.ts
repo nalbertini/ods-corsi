@@ -8,6 +8,8 @@
  * a ogni passaggio se in mano si ha un `Date` o una stringa.
  */
 
+import { paroleCercate, somiglia } from './nomi'
+
 export type Ruolo = 'istruttore' | 'staff' | 'iscritto'
 export type StatoSessione = 'prevista' | 'svolta' | 'annullata'
 export type StatoPresenza = 'presente' | 'assente' | 'giustificato'
@@ -90,6 +92,17 @@ export function contiDellAppello(iscritti: readonly { id: string }[], segni: Rea
 
 /** Il nome per esteso, nell'ordine in cui si legge un elenco. */
 export const perEsteso = (p: { nome: string; cognome: string }) => `${p.cognome} ${p.nome}`
+
+/**
+ * Chi, nell'elenco dell'appello, somiglia a quel che si è scritto nella
+ * ricerca: nome e cognome in qualunque ordine, senza badare a maiuscole,
+ * accenti e apostrofi (`somiglia`). Senza niente scritto, tutti. L'ordine è
+ * quello dato.
+ */
+export const cercaNellElenco = <T extends { nome: string; cognome: string }>(elenco: T[], scritto: string): T[] => {
+  const parole = paroleCercate(scritto)
+  return parole.length ? elenco.filter((p) => somiglia(p, parole)) : elenco
+}
 
 /**
  * L'ordine dell'appello: per cognome, come qualunque elenco di classe.
