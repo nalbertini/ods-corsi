@@ -234,6 +234,38 @@ const nomeCognome = (s: string) => {
   return p.length < 2 ? null : { nome: p.slice(0, -1).join(' '), cognome: p[p.length - 1] }
 }
 
+/** Chi sta scritto prima in una casella sola: il nome («Anna De Luca») o il cognome («De Luca Anna»). */
+export type OrdineNome = 'nomeCognome' | 'cognomeNome'
+
+/** Le parole che aprono un cognome e restano con lui: «De Luca», «Dal Pozzo», «Van Basten». */
+const PARTICELLE = new Set(['de', 'di', 'del', 'della', 'dello', 'dei', 'degli', 'delle', 'dal', 'dalla', 'da', 'lo', 'la', 'le', 'van', 'von', 'der', 'den'])
+const particella = (w: string) => PARTICELLE.has(piatto(w))
+
+/**
+ * Nome e cognome da una casella sola, senza codice fiscale: il cognome è
+ * l'ultima parola o la prima, a seconda dell'ordine, e si porta dietro le
+ * particelle che lo precedono («Anna De Luca» → Anna, De Luca). Una parola
+ * sola non si divide.
+ */
+function dividiPerOrdine(testo: string, ordine: OrdineNome): { nome: string; cognome: string } | null {
+  const p = testo.trim().split(/\s+/).filter(Boolean)
+  if (p.length < 2) return null
+  if (ordine === 'nomeCognome') {
+    let da = p.length - 1
+    while (da > 1 && particella(p[da - 1])) da--
+    return { nome: p.slice(0, da).join(' '), cognome: p.slice(da).join(' ') }
+  }
+  let fino = 1
+  while (fino < p.length - 1 && particella(p[fino - 1])) fino++
+  return { nome: p.slice(fino).join(' '), cognome: p.slice(0, fino).join(' ') }
+}
+
+/** L'ordine che dice l'intestazione della colonna: «COGNOME NOME ATLETA» → cognome prima; senza colonna o senza dirlo, nome prima. */
+export function indovinaOrdine(testa: string[], col: Colonne): OrdineNome {
+  const h = col.nomeCompleto === undefined ? '' : piatto(testa[col.nomeCompleto] ?? '')
+  return /cognome\s*(e|,|\/)?\s*nome/.test(h) ? 'cognomeNome' : 'nomeCognome'
+}
+
 /** Cosa farebbe l'import, senza fare niente. */
 export function anteprima(f: Fogli, s: Situazione, scelte: Scelte = {}): Anteprima {
   const avvisi: string[] = []
@@ -762,9 +794,9 @@ const LUNGHI: Partial<Record<keyof Anagrafica, number>> = { natoA: 80, comune: 8
  * l'uno e quali l'altro, anche per un cognome di due parole («De Luca Mario»).
  * A chi ha scritto una parola sola si cerca l'altra nell'email
  * («nicola.albertini@…»), se torna col codice. Senza codice, o se non torna
- * in nessun modo, il cognome è l'ultima parola.
+ * in nessun modo, vale l'ordine scelto: il cognome è l'ultima parola o la prima.
  */
-export function dividiNome(testo: string, cf?: string, email?: string): { nome: string; cognome: string; dallEmail?: boolean } | null {
+export function dividiNome(testo: string, cf?: string, email?: string, ordine: OrdineNome = 'nomeCognome'): { nome: string; cognome: string; dallEmail?: boolean } | null {
   const p = testo.trim().split(/\s+/).filter(Boolean)
   const codice = cf ? cfDi(cf) : undefined
   if (codice) {
@@ -782,7 +814,7 @@ export function dividiNome(testo: string, cf?: string, email?: string): { nome: 
       if (cognome) return { nome: p[0], cognome: maiuscola(cognome), dallEmail: true }
     }
   }
-  return nomeCognome(testo)
+  return dividiPerOrdine(testo, ordine)
 }
 
 /**
@@ -794,6 +826,7 @@ export function leggiRisposte(
   col: Colonne,
   abbinamenti: Record<string, string>,
   corsi: Array<{ id: string; nome: string }>,
+  ordine: OrdineNome = 'nomeCognome',
 ): { iscritti: IscrittoFoglio[]; righe: number; saltate: Saltata[]; note: Saltata[] } {
   const saltate: Saltata[] = []
   const note: Saltata[] = []
@@ -819,7 +852,7 @@ export function leggiRisposte(
     let nome = cella(r, 'nome')
     let cognome = cella(r, 'cognome')
     if (col.nomeCompleto !== undefined) {
-      const nc = dividiNome(cella(r, 'nomeCompleto'), cella(r, 'codiceFiscale'), cella(r, 'email'))
+      const nc = dividiNome(cella(r, 'nomeCompleto'), cella(r, 'codiceFiscale'), cella(r, 'email'), ordine)
       nome = nc?.nome ?? ''
       cognome = nc?.cognome ?? ''
       if (nc?.dallEmail) note.push({ foglio: 'risposte', riga, motivo: `«${cella(r, 'nomeCompleto')}»: scritto solo in parte, ${nome} ${cognome} viene dall'email e dal codice fiscale` })
