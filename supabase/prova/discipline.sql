@@ -42,9 +42,9 @@ grant execute on function tenta(text), atteso(text, text, text), chi(text) to an
 
 \echo ''
 \echo '--- 1. La lista di partenza ---'
-select atteso('Judo, Lotta, Pilates, Yoga',
+select atteso('Judo, Lotta, Pilates, Yoga e le ex categorie degli esercizi (42-categorie-esercizi.sql)',
   (select string_agg(d->>'id', ', ' order by ord) from impostazioni, jsonb_array_elements(discipline) with ordinality as t(d, ord)),
-  'judo, lotta, pilates, yoga');
+  'judo, lotta, pilates, yoga, corpo-libero, attrezzi, core, cardio, mobilita');
 
 \echo ''
 \echo '--- 2. Anna, segreteria: la cura e ci associa le liste ---'

@@ -108,20 +108,19 @@ dispositivo.
 ## La libreria di esercizi
 
 `src/lib/esercizi.ts` tiene un catalogo di 52 esercizi di partenza, pensati per
-una palestra di judo e divisi in cinque categorie: a corpo libero, attrezzi,
-core, cardio, mobilità. Il judo è una *disciplina*, non una categoria: oltre al
-tipo, ogni esercizio può avere una disciplina (Judo, Lotta, Pilates, Yoga…, la
-lista la tiene la segreteria, `timer/src/lib/discipline.ts`) o «Tutte» per quelli
-comuni, e il catalogo si filtra anche per quella. Anche i timer hanno una disciplina,
+una palestra di judo. Ogni esercizio ha una sola categoria (Judo, A corpo libero,
+Attrezzi, Core, Cardio, Mobilità…, la lista la tiene la segreteria,
+`timer/src/lib/discipline.ts`) o «Tutte» per quelli comuni, o nessuna, e il
+catalogo si filtra e si raggruppa per quella. Anche i timer hanno una categoria,
 che si sceglie nell'editor, e l'elenco si filtra per quella (i pulsanti ci sono
-solo per le discipline che hanno un timer). Sta in `localStorage` come i timer, quindi si cura
+solo per le categorie che hanno un timer). Sta in `localStorage` come i timer, quindi si cura
 liberamente: quelli aggiunti a mano si possono togliere, quelli di partenza no.
 
 Nell'editor gli esercizi si scelgono dall'anteprima: si tocca la riga di un round
 (o «aggiungi esercizio») e si apre il catalogo. Toccare un round che ha già un
 esercizio lo cambia, toccarne uno che non ne ha ancora ne aggiunge uno, e da lì
 i nomi si alternano. Il catalogo: si cerca (senza badare ad
-accenti e maiuscole), si filtra per categoria, si scelgono più esercizi in un
+accenti e maiuscole), si filtra per categoria (la stessa lista), si scelgono più esercizi in un
 colpo solo — un circuito si costruisce in blocco — e se un nome non c'è lo si
 crea scrivendolo, così il catalogo non diventa mai una gabbia.
 

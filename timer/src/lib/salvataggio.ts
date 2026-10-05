@@ -1,6 +1,6 @@
 import type { CoachLevel, HistoryEntry, Settings, Workout } from '../types'
 import { DEFAULT_SETTINGS } from './storage'
-import { categoriaEDisciplina, type Esercizio } from './esercizi'
+import { disciplinaDi, type Esercizio } from './esercizi'
 import { type Disciplina, DISCIPLINE_DI_PARTENZA, ripulisciDisciplina } from './discipline'
 import { MAX_CATALOGO, MAX_STORICO, MAX_TIMER, numeroSano, testoSano, workoutSano } from './sano'
 import { uid } from './format'
@@ -148,7 +148,9 @@ export function leggiSalvataggio(testo: string, discipline?: Disciplina[]): Salv
       const x = (e ?? {}) as Record<string, unknown>
       const nome = testoSano(x.nome, 60)
       if (!nome) return null
-      const out: Esercizio = { id: testoSano(x.id, 40) || uid(), nome, ...categoriaEDisciplina(x.categoria, x.disciplina, discipline) }
+      const out: Esercizio = { id: testoSano(x.id, 40) || uid(), nome }
+      const d = disciplinaDi(x.categoria, x.disciplina, discipline)
+      if (d) out.disciplina = d
       if (x.propri === true) out.propri = true
       return out
     })

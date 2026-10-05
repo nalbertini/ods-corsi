@@ -69,6 +69,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 39. `39-musica-radio.sql` — le liste della musica delle sale possono essere anche radio: un indirizzo https, accanto a YouTube e Spotify
 40. `40-discipline.sql` — la lista delle discipline della palestra (Judo, Lotta, Pilates, Yoga…), tenuta dalla segreteria, e la disciplina di ogni lista di musica; esercizi e timer la tengono nel loro JSON
 41. `41-attivita.sql` — l'«Attività» di ogni giorno dei corsi e di ogni lezione, scelta da un elenco della segreteria: le lezioni future seguono il giorno, l'istruttore cambia solo quella delle sue lezioni, il tablet legge quella della sua sala
+42. `42-categorie-esercizi.sql` — gli esercizi hanno una sola categoria: le cinque vecchie (A corpo libero, Attrezzi, Core, Cardio, Mobilità) diventano voci dell'elenco delle discipline, e il campo `categoria` esce dal catalogo
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -219,6 +220,11 @@ Per l'attività dei giorni e delle lezioni basta `41-attivita.sql` (dopo
 `05-segreteria.sql` e `24-kanji.sql`), che non chiede di rilanciare
 `06-iscrizioni.sql`: finché non c'è, l'app non offre l'attività e le lezioni
 restano com'erano. Chi rilancia `03` o `05` rilancia poi anche `41`.
+Per la categoria unica degli esercizi basta `42-categorie-esercizi.sql` (dopo
+`40-discipline.sql`), che non chiede di rilanciare `06-iscrizioni.sql`. Va
+lanciato prima di pubblicare l'app che non usa più la categoria: finché non
+c'è, un esercizio che aveva solo la categoria si legge senza voce, e la
+segreteria che salva la perde.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -827,7 +833,7 @@ modulo di iscrizione e che ogni funzione abbia il suo `search_path`, poi gli acc
 istruttore, della segreteria e di chi non ha fatto l'accesso, `tablet.sql`
 prova il tablet di sala: le finestre di tempo, il recupero, l'annullo, il PIN
 e il blocco, e che il tablet non veda niente più di quel che deve;
-`attivita.sql` prova l'elenco delle attività, le lezioni che seguono il giorno e chi può cambiarle; `segreteria.sql` prova cosa succede alle lezioni quando un corso, o uno dei
+`categorie-esercizi.sql` prova la categoria unica degli esercizi: le cinque voci in più, la conversione dei dati vecchi, il rilancio, e che il database accetti ancora una copia vecchia dell'app; `attivita.sql` prova l'elenco delle attività, le lezioni che seguono il giorno e chi può cambiarle; `segreteria.sql` prova cosa succede alle lezioni quando un corso, o uno dei
 suoi giorni, cambia sala, quando cambiano istruttore o giorni, o si archivia, e il primo accesso; `iscrizioni.sql`
 prova il modulo di iscrizione: cosa può fare chi non ha un accesso, i limiti
 sui file (anche documento e certificato, e che si trovino da stampare), e chi accoglie le richieste;

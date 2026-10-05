@@ -234,9 +234,10 @@ istruttori, il timer vi riconosce da solo:
   **IMPOSTAZIONI → ODS CORSI → PORTA FRA I MIEI**.
 - Maurizio, bip e voce, volume vi seguono da un dispositivo all'altro.
 
-Nell'elenco dei timer, se qualcuno ha una disciplina, sopra ci sono i pulsanti
-**OGNI DISCIPLINA · JUDO · LOTTA…** per vederne una sola (con quelli di «Tutte»).
-La disciplina di un timer si sceglie nel suo editor, sotto il nome.
+Nell'elenco dei timer, se qualcuno ha una categoria, sopra ci sono i pulsanti
+**OGNI CATEGORIA · JUDO · LOTTA…** per vederne una sola (con quelli di «Tutte»).
+La categoria di un timer si sceglie nel suo editor, sotto il nome. Anche gli
+esercizi hanno una sola categoria, la stessa lista, e si filtrano allo stesso modo.
 
 Quando il timer parte, in alto ci sono lo stato e le cifre; sotto, il tasto
 grande **PAUSA** (o **AVVIA**, **RIPRENDI**) e i tre con la parola scritta:

@@ -615,7 +615,7 @@ function FormLista({
             </option>
           ))}
         </select>
-        <SelectDisciplina discipline={discipline} valore={bozza.disciplina} etichetta="Disciplina della lista" onCambia={(x) => setBozza({ ...bozza, disciplina: x })} />
+        <SelectDisciplina discipline={discipline} valore={bozza.disciplina} etichetta="Categoria della lista" onCambia={(x) => setBozza({ ...bozza, disciplina: x })} />
       </div>
       <input
         className="sg-campo"

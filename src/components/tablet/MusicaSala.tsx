@@ -189,7 +189,7 @@ export function MusicaSala({
         <div className="tb-liste" role="dialog" aria-label="La musica della sala">
           <span className="tb-etichetta">LA MUSICA DELLA SALA</span>
           {usate.length > 0 && (
-            <div className="tb-filtro" role="group" aria-label="Disciplina">
+            <div className="tb-filtro" role="group" aria-label="Categoria">
               <button type="button" className="tb-filtro-tasto" aria-pressed={filtro === null} onClick={() => setDisciplina(null)}>
                 TUTTE
               </button>
