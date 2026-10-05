@@ -113,9 +113,11 @@ export function CercaPersona({
         (t) => doppioneDi(n, t),
         () => null,
       )
-      // Tornato indietro, o cambiato il nome: quel che si è scritto non è più questo.
-      if (!montata.current || versione.current !== mia) return
+      // Tornato indietro: la pagina non c'è più. Cambiato il nome: il tasto si
+      // sblocca, ma quel che si è scritto non è più questo, e non si aggiunge.
+      if (!montata.current) return
       setAspetta(false)
+      if (versione.current !== mia) return
       if (uguale) return setDoppione(uguale)
     }
     void aggiungi(n)
