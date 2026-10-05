@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- 3 · Il resoconto, tema chiaro.
+     Fatto copiando Pagina.dc.html (schermo largo) e usando solo <dc-import>: il menu e la testata sono quelli dell'app
+     (IMPOSTAZIONI e' il tasto coi cursori in cima al menu). Corpo di IMPOSTAZIONI > IMPORTA DA EXCEL = `.sg-corpo`:
+     36px ai lati, 28px in alto e in basso, 18px fra i blocchi (Importa.tsx, `gap: 16`). Dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #f4f4f1">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="IMPOSTAZIONI" impostazioni="{{ true }}" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" tema="chiaro" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">IMPOSTAZIONI</h1>
+      <span style="font-size: 14px; color: #656561">Le scelte che spettano alla palestra, non al programma.</span>
+    </div>
+    <dc-import name="Titoletto" label="IMPORTA DA EXCEL" dentro="{{ true }}" tema="chiaro" hint-size="100%,32px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <span style="font-size: 14px; color: #656561">Corsi e iscritti da due fogli, o gli iscritti dalle risposte del modulo Google. Si può rifare quante volte si vuole: non duplica niente. Chi c'è già si riconosce dal nome e cognome (anche scritti con il cognome prima, o con accenti e maiuscole diverse) e gli si aggiungono solo i corsi che mancano; le persone nuove entrano e si iscrivono ai corsi della colonna «Corsi».</span>
+      <dc-import name="Passi" attivo="3" tema="chiaro" hint-size="560px,50px"></dc-import>
+      <dc-import name="Resoconto" tono="giallo" titolo="FATTO, 3 righe da sistemare" frase="4 corsi nuovi, 9 giorni di lezione, 118 iscritti nuovi e 163 iscrizioni. Il calendario è pronto fino al 31 maggio 2027." conto="3 RIGHE DA SISTEMARE" elenco="iscritti.csv, riga 5: Elia — Manca il cognome: «Elia», Judo 2;;iscritti.csv, riga 12: Bianchi Marco — forse è già in palestra come Marco Bianchi;;iscritti.csv, riga 33: Verdi Luca — questa email è già di un'altra persona: toglila dal foglio o cambiala e rilancia" spiegazione="Queste righe non sono entrate. Correggile nel foglio, o scegli cosa fare, e reimporta: quello che c'è già non si duplica." tema="chiaro" hint-size="100%,460px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>
