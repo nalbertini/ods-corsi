@@ -21,6 +21,9 @@ con Docker sono nella skill `nuova-migrazione`). Un comportamento nuovo
 dell'app ha il suo caso nello script `scripts/prova-*.mjs` della sua area, che
 prova la modalità prova (`src/lib/*Prova.ts`).
 
+Se è cambiato qualcosa che si vede, anche `node docs/design-canvas/ods-design-system/verifica.mjs`:
+la libreria deve già descrivere l'app com'è ora (`nuova-funzione`, passo 12).
+
 ## 2. Il database
 
 File numerati in `supabase/` nuovi o cambiati: **REQUIRED SUB-SKILL:**
