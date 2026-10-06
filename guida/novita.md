@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.45.2 — 6 ottobre 2026
+
+### Risolto
+
+- La firma a schermo intero in orizzontale ha lo spazio per firmare
+
+### Modificato
+
+- Libreria del design: la testata può non scrivere COLLEGNO
+
 ## 0.45.1 — 6 ottobre 2026
 
 ### Risolto
