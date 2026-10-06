@@ -14,7 +14,7 @@ import {
 } from '../lib/iscritto'
 import type { Segnalata } from '../lib/segnalate'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
-import { comeCertificato, comePaga, pagamentoDi } from '../lib/segreteria'
+import { comePaga, dalCertificato, pagamentoDi, statoCertificato } from '../lib/segreteria'
 import { euro, nomeFileRicevuta, type Ricevuta } from '../lib/ricevute'
 import { CONTATTI, chiama } from '../lib/sito'
 import { abbonamentiDalleRicevute, doveVaLoSconto, SCONTO_FAMIGLIA } from '../lib/nucleo'
@@ -237,7 +237,7 @@ function Saluto({ scheda, tua }: { scheda: SchedaIscritto; tua: boolean }) {
       {x.length === 0 ? (
         <Riquadro stretto>
           <TitoloEsito tono="fatto">SEI IN REGOLA</TitoloEsito>
-          <Dettaglio>Certificato medico valido e quota pagata.</Dettaglio>
+          <Dettaglio>{statoCertificato(scheda, oggi) === 'non_serve' && !scheda.certificato.scade ? 'Quota pagata. Sotto i 6 anni il certificato non serve.' : 'Certificato medico valido e quota pagata.'}</Dettaglio>
         </Riquadro>
       ) : (
         x.map((a) => (
@@ -439,7 +439,7 @@ const data = (g: string) => g.split('-').reverse().join('/')
 
 function InRegola({ scheda }: { scheda: SchedaIscritto }) {
   const oggi = chiaveGiorno(new Date())
-  const cert = comeCertificato(scheda.certificato, oggi)
+  const cert = statoCertificato(scheda, oggi)
   const stato = pagamentoDi(scheda, oggi)
   const paga = stato.come
   const certTesto = {
@@ -447,6 +447,8 @@ function InRegola({ scheda }: { scheda: SchedaIscritto }) {
     scaduto: `Scaduto il ${data(scheda.certificato.scade ?? '')}.`,
     in_scadenza: `Vale fino al ${data(scheda.certificato.scade ?? '')}: scade fra poco.`,
     valido: `Vale fino al ${data(scheda.certificato.scade ?? '')}.`,
+    non_serve: 'Sotto i 6 anni non serve.',
+    in_arrivo: `Dal ${data(dalCertificato(scheda.natoIl ?? ''))}, a 6 anni, serve: portalo in segreteria.`,
   }[cert]
   const pagaTesto = {
     da_pagare: 'Non risulta pagata.',
@@ -461,7 +463,7 @@ function InRegola({ scheda }: { scheda: SchedaIscritto }) {
       <div className="pad mie-schede">
         <Riquadro stretto>
           <Etichetta>CERTIFICATO MEDICO</Etichetta>
-          <Dettaglio tono={tono(cert === 'valido', cert === 'in_scadenza')}>{certTesto}</Dettaglio>
+          <Dettaglio tono={tono(cert === 'valido' || cert === 'non_serve', cert === 'in_scadenza' || cert === 'in_arrivo')}>{certTesto}</Dettaglio>
         </Riquadro>
         <Riquadro stretto>
           <Etichetta>QUOTA</Etichetta>

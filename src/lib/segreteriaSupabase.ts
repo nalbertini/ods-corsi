@@ -2,8 +2,8 @@ import { daSenzaIstruttore } from './ore'
 import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
-import { attivitaCambiata, cosaNonVaAnagrafica, cosaNonVaAttivita, mancaAttivita, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
+import { attivitaCambiata, cosaNonVaAnagrafica, cosaNonVaAttivita, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
@@ -667,6 +667,34 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           for (const q of quoteDi([{ ...x, voci: x.voci } as unknown as Ricevuta])) metti(x.persona_id, q)
         return perPersona
       })()
+      // La data di nascita decide se il certificato serve (sotto i 6 anni no). Senza queste tabelle, o senza il permesso,
+      // nessuna data: il certificato serve a tutti, come prima. A pagine, per il tetto di righe di PostgREST.
+      const nati = (async (): Promise<Map<string, string>> => {
+        const PAGINA = 1000
+        const tutte = async (leggi: (da: number) => PromiseLike<{ data: unknown; error: unknown }>): Promise<unknown[]> => {
+          const righe: unknown[] = []
+          for (let da = 0; ; da += PAGINA) {
+            const r = await leggi(da)
+            if (r.error || !Array.isArray(r.data)) return []
+            righe.push(...r.data)
+            if (r.data.length < PAGINA) return righe
+          }
+        }
+        const [an, rich] = await Promise.all([
+          tutte((da) => db.from('anagrafiche').select('persona_id, nato_il, cambiata_il').order('persona_id').range(da, da + PAGINA - 1)),
+          tutte((da) =>
+            db.from('richieste_iscrizione').select('id, persona_id, nato_il, gestita_il, creata_il').eq('stato', 'accolta').not('persona_id', 'is', null).order('id').range(da, da + PAGINA - 1),
+          ),
+        ])
+        // as: le righe sono quelle dei select qui sopra.
+        const dalleAnagrafiche = (an as Array<{ persona_id: string; nato_il: string | null; cambiata_il: string }>).map(
+          (x): FonteNascita => ({ personaId: x.persona_id, da: 'segreteria', quando: x.cambiata_il, natoIl: x.nato_il ?? undefined }),
+        )
+        const dalleRichieste = (rich as Array<{ persona_id: string; nato_il: string | null; gestita_il: string | null; creata_il: string }>).map(
+          (x): FonteNascita => ({ personaId: x.persona_id, da: 'modulo', quando: x.gestita_il ?? x.creata_il, natoIl: x.nato_il ?? undefined }),
+        )
+        return nascitaDelleFonti([...dalleAnagrafiche, ...dalleRichieste])
+      })()
       const campi = 'id, nome, cognome, email, telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )'
       const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'
       const leggi = (schede: string | null) =>
@@ -687,6 +715,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         schede_iscritti?: Scheda | Scheda[] | null
       }>
       const pagate = await quote
+      const natiIl = await nati
       return righe.map((r): PersonaSeg => {
         // Una a una con la persona: PostgREST la dà come oggetto, ma meglio non contarci.
         const s = Array.isArray(r.schede_iscritti) ? r.schede_iscritti[0] : r.schede_iscritti
@@ -703,6 +732,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           documento: !!s?.documento_in_segreteria,
           pagamento: { stato: s?.pagamento ?? 'da_pagare', fino: s?.pagato_fino ?? undefined, nota: s?.pagamento_nota ?? undefined },
           quote: pagate.get(r.id) ?? [],
+          natoIl: natiIl.get(r.id),
         }
       })
     },

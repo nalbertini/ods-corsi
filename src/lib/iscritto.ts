@@ -1,6 +1,6 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import type { CertificatoSeg, PagamentoSeg } from './segreteria'
-import { comeCertificato, pagamentoDi } from './segreteria'
+import { dalCertificato, pagamentoDi, statoCertificato } from './segreteria'
 import { euro, type QuotaRicevuta, type Ricevuta } from './ricevute'
 import type { DatiRichiesta, StatoRichiesta } from './richieste'
 import type { Segnalata } from './segnalate'
@@ -35,6 +35,8 @@ export interface SchedaIscritto {
   /** L'eccezione «pagato fuori dall'app»; se ha pagato lo dicono le `quote`. */
   pagamento: PagamentoSeg
   quote?: QuotaRicevuta[]
+  /** `AAAA-MM-GG`; senza, il certificato serve (vedi `serveCertificato`). */
+  natoIl?: string
 }
 
 /** Una lezione di uno dei suoi corsi, con quello che è cambiato rispetto al solito. */
@@ -123,11 +125,12 @@ const data = (g: string) => g.split('-').reverse().join('/')
  * Le cose da sapere in cima alla pagina: il certificato che manca o scade,
  * il pagamento da fare. Le lezioni cambiate si vedono già nell'elenco.
  */
-export function avvisi(s: Pick<SchedaIscritto, 'certificato' | 'pagamento' | 'quote'>, oggi: string): Avviso[] {
+export function avvisi(s: Pick<SchedaIscritto, 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): Avviso[] {
   const x: Avviso[] = []
-  const c = comeCertificato(s.certificato, oggi)
+  const c = statoCertificato(s, oggi)
   if (c === 'manca') x.push({ tono: 'guaio', testo: 'Manca il certificato medico: portalo in segreteria prima della prossima lezione.' })
   if (c === 'scaduto') x.push({ tono: 'guaio', testo: `Il certificato medico è scaduto il ${data(s.certificato.scade!)}: portane uno nuovo in segreteria.` })
+  if (c === 'in_arrivo') x.push({ tono: 'avviso', testo: `Dal ${data(dalCertificato(s.natoIl!))} serve il certificato medico: portalo in segreteria.` }) // `in_arrivo` c'è solo con la data di nascita
   if (c === 'in_scadenza') x.push({ tono: 'avviso', testo: `Il certificato medico scade il ${data(s.certificato.scade!)}: prenota la visita.` })
   const p = pagamentoDi(s, oggi)
   if (p.come === 'da_pagare') x.push({ tono: 'guaio', testo: 'La quota non risulta pagata: passa in segreteria.' })

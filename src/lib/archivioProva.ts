@@ -18,7 +18,8 @@ import type { Anagrafica } from './segreteria'
  */
 
 const DOVE = 'ods-corsi:prova-archivio'   // vedi la nota in coda.ts
-const VERSIONE = 1
+// 2: gli iscritti piccoli hanno la data di nascita (il certificato sotto i 6 anni non serve).
+const VERSIONE = 2
 
 /** Quando cominciano e finiscono i corsi della stagione. */
 export const STAGIONE = { dal: '2026-09-14', al: '2027-06-30' }
@@ -314,6 +315,13 @@ function inRegolaDiProva(id: string): Pick<PersonaProva, 'certificato' | 'docume
   }
 }
 
+/** Un giorno `AAAA-MM-GG` di tanti anni e giorni fa, da oggi: i piccoli di prova restano piccoli quando la prova si apre. */
+function natoIlDa(anni: number, giorni: number): string {
+  const d = new Date()
+  const n = new Date(d.getFullYear() - anni, d.getMonth(), d.getDate() + giorni)
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`
+}
+
 function iniziale(): Archivio {
   const persone = new Map<string, PersonaProva>()
   for (const [id, nome] of Object.entries(ISTRUTTORI)) {
@@ -341,8 +349,21 @@ function iniziale(): Archivio {
       iscrizioni.push({ corsoId: c.id, personaId: id, dal: STAGIONE.dal })
     }
   }
+  // Nei corsi dei piccoli: due di 5 anni senza certificato, e uno che compie 6 anni fra due settimane.
+  const anagrafiche: NonNullable<Archivio['anagrafiche']> = {}
+  const piccoli = iscrizioni.filter((i) => ['psicomotricita', 'giocomotricita'].includes(i.corsoId)).map((i) => i.personaId)
+  piccoli.slice(0, 2).forEach((id) => (anagrafiche[id] = { natoIl: natoIlDa(5, -120) }))
+  // Il primo senza certificato (NON SERVE), il secondo con quello valido già segnato.
+  if (piccoli[0]) persone.get(piccoli[0])!.certificato = undefined
+  if (piccoli[2]) {
+    anagrafiche[piccoli[2]] = { natoIl: natoIlDa(6, 14) }
+    // Senza certificato: è quello che l'avviso di DA FARE deve far vedere.
+    // `piccoli` viene dalle iscrizioni, che hanno sempre la persona.
+    persone.get(piccoli[2])!.certificato = undefined
+  }
   return {
     versione: VERSIONE,
+    anagrafiche,
     sale: ['Tatami', 'Lotta', 'Pesi', 'Motricità'],
     corsi: CORSI.map((c) => ({
       id: c.id,

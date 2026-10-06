@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { DatiSegreteria, LezioneSeg } from '../../lib/segreteria'
-import { comeCertificato, comePaga } from '../../lib/segreteria'
+import { certificatoInArrivo, certificatoInScadenza, comePaga, senzaCertificatoValido } from '../../lib/segreteria'
 import { datiRichieste } from '../../lib/richieste'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { dataLunga, Testa } from './comune'
@@ -22,6 +22,8 @@ export interface ContiDaFare {
   certificati: number | null
   /** …e in scadenza entro un mese. */
   scadenza: number | null
+  /** …e compie 6 anni entro un mese, senza certificato: da avvisare la famiglia. */
+  arrivo: number | null
   pagare: number | null
   certificatiDaStampare: number | null
   documentiDaStampare: number | null
@@ -36,6 +38,7 @@ const VUOTI: ContiDaFare = {
   istruttori: null,
   certificati: null,
   scadenza: null,
+  arrivo: null,
   pagare: null,
   certificatiDaStampare: null,
   documentiDaStampare: null,
@@ -79,8 +82,9 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
               : null
             : prima.appelli,
           // Contati come i filtri di ISCRITTI che apre VEDI CHI: il numero è quello delle righe che si vedono.
-          certificati: tutto ? (attive ? attive.filter((p) => ['manca', 'scaduto'].includes(comeCertificato(p.certificato, oggi))).length : null) : prima.certificati,
-          scadenza: tutto ? (attive ? attive.filter((p) => comeCertificato(p.certificato, oggi) === 'in_scadenza').length : null) : prima.scadenza,
+          certificati: tutto ? (attive ? attive.filter((p) => senzaCertificatoValido(p, oggi)).length : null) : prima.certificati,
+          scadenza: tutto ? (attive ? attive.filter((p) => certificatoInScadenza(p, oggi)).length : null) : prima.scadenza,
+          arrivo: tutto ? (attive ? attive.filter((p) => certificatoInArrivo(p, oggi)).length : null) : prima.arrivo,
           pagare: tutto ? (attive ? attive.filter((p) => comePaga(p, oggi) !== 'pagato').length : null) : prima.pagare,
           certificatiDaStampare: tutto ? (pers ? pers.filter((p) => p.certificato.conFile).length : null) : prima.certificatiDaStampare,
           documentiDaStampare: tutto ? (ric?.conDocumento ? ric.conDocumento.size : null) : prima.documentiDaStampare,
@@ -122,6 +126,7 @@ const LIVELLO: Record<string, Livello> = {
   istruttori: 'presto',
   segnalate: 'presto',
   scadenza: 'presto',
+  arrivo: 'presto',
   'certificati-stampa': 'faccenda',
   'documenti-stampa': 'faccenda',
 }
@@ -183,7 +188,7 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       chiave: 'certificati',
       n: conti.certificati,
       titolo: (n) => uno(n, 'iscritto senza certificato valido', 'iscritti senza certificato valido'),
-      sotto: 'Il certificato medico manca o è scaduto: senza, in sala non si entra.',
+      sotto: 'Il certificato medico manca o è scaduto: senza, in sala non si entra. Sotto i 6 anni non serve.',
       aPosto: 'certificati',
       tasto: 'VEDI CHI',
       voce: 'iscritti',
@@ -198,6 +203,16 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       tasto: 'VEDI CHI',
       voce: 'iscritti',
       dove: { filtro: 'scadenza' },
+    },
+    {
+      chiave: 'arrivo',
+      n: conti.arrivo,
+      titolo: (n) => uno(n, 'iscritto compie 6 anni senza certificato', 'iscritti compiono 6 anni senza certificato'),
+      sotto: 'Dal compleanno il certificato serve: nel prossimo mese, da avvisare alla famiglia.',
+      aPosto: 'compleanni dei 6 anni',
+      tasto: 'VEDI CHI',
+      voce: 'iscritti',
+      dove: { filtro: 'arrivo' },
     },
     {
       chiave: 'pagare',

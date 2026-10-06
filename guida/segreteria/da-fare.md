@@ -21,7 +21,10 @@ si sistema:
 - **Presenze segnalate da vedere**, solo in prova ([presenze
   segnalate](presenze-segnalate.md)).
 - **Iscritti senza certificato valido**, **certificati in scadenza** (entro un
-  mese) e **iscritti da pagare**, contati fra chi è attivo: **VEDI CHI** apre
+  mese), **iscritti che compiono 6 anni senza certificato** (entro un mese: da
+  quel giorno il certificato serve, meglio avvisare la famiglia) e **iscritti
+  da pagare**, contati fra chi è attivo. Chi ha meno di 6 anni non ha l'obbligo
+  del certificato, e non è nei primi due: **VEDI CHI** apre
   gli [iscritti](iscritti.md) col filtro già acceso, e le righe sono quelle
   contate qui. Gli stessi numeri li dice la testata di ISCRITTI. Il filtro, e
   la ricerca scritta sopra, restano finché si resta negli iscritti, anche
@@ -35,7 +38,7 @@ Le righe sono in ordine di quanto premono. Prima, col numero **rosso**,
 quello che è già un guaio: lezioni senza appello, chi entra in sala senza
 certificato valido o senza la quota. Poi, col numero **giallo**, quello che
 aspetta una risposta o scade fra poco: richieste, presenze da confermare,
-certificati in scadenza. Le stampe stanno in una riga sola, **QUANDO C'È UN
+certificati in scadenza, chi sta per compiere 6 anni. Le stampe stanno in una riga sola, **QUANDO C'È UN
 MOMENTO**. I numeri del menu sono gialli per la stessa ragione.
 
 Sotto, in una riga, **A POSTO** dice quello in cui non c'è niente da fare.
