@@ -75,7 +75,7 @@
   </div>
 </nav>
 </x-dc>
-<script data-dc-script data-props='{"attiva":{"editor":"enum","options":["CALENDARIO","I MIEI TIMER","LE MIE ORE"],"default":"CALENDARIO"},"conOre":{"editor":"boolean","default":true},"ancheSegreteria":{"editor":"boolean","default":false},"prova":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Maurizio Verdi"},"ruolo":{"editor":"text","default":"Istruttore · calendario e appello"},"versione":{"editor":"text","default":"v0.37.1"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
+<script data-dc-script data-props='{"attiva":{"editor":"enum","options":["CALENDARIO","TIMER","I MIEI TIMER","LE MIE ORE","I MIEI","ORE"],"default":"CALENDARIO"},"elenco":{"editor":"text","default":""},"conTimer":{"editor":"boolean","default":false},"conOre":{"editor":"boolean","default":true},"ancheSegreteria":{"editor":"boolean","default":false},"prova":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Maurizio Verdi"},"ruolo":{"editor":"text","default":"Istruttore · calendario e appello"},"versione":{"editor":"text","default":"v0.37.1"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
 // Riproduzione 1:1 del menu degli istruttori sullo schermo largo: MenuIstruttori in src/App.tsx (righe 296-366),
 // fatto con le classi del menu di segreteria (.sg-menu, .sg-voci, .sg-voce, .sg-icone, .sg-chi, .sg-bollino,
 // .sg-link: src/styles.css righe 1238-1310) ma SENZA id #sg-menu: quindi margini di 16px (non 12), voci con
@@ -87,6 +87,8 @@
 // un'altra scheda); la corrente ha barra sinistra, fondo `surface` e testo `text`, mai rossa. In fondo, dopo lo spazio
 // libero: SEGRETERIA → (solo a chi e' di segreteria e insegna: ancheSegreteria), i tasti ? e tema (qui non c'e'
 // il tasto delle impostazioni), il riquadro con nome, ruolo, DATI DI PROVA (prova), Esci e la versione (.versione).
+// conTimer: PROPOSTA (non ancora nell'app), la voce TIMER che apre il timer dentro l'app, subito dopo CALENDARIO; con conTimer TIMER ↗ non c'è più.
+// elenco: PROPOSTA «Navigazione», le voci scritte a mano separate da | (es. CALENDARIO|TIMER|ORE): sostituisce quelle di sopra, stesse voci della barra in basso del telefono (BarraNavigazione).
 // attiva: la voce corrente. prova: nome "<Nome> · di prova" e bollino. altezza: come in Menu.dc.html.
 // Non riprodotti: il passaggio del mouse e il fuoco.
 const T = {
@@ -100,7 +102,9 @@ class Component extends DCLogic {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
 const conOre = truthy(p.conOre ?? true);
-    const voci = [['CALENDARIO'], ['I MIEI TIMER'], conOre ? ['LE MIE ORE'] : null, ['TIMER ↗', true]].filter(Boolean).map(([testo, fuori]) => {
+    const conTimer = truthy(p.conTimer);
+    const dellElenco = String(p.elenco || '').split('|').map((t) => t.trim()).filter(Boolean).map((t) => [t]);
+    const voci = (dellElenco.length ? dellElenco : [['CALENDARIO'], conTimer ? ['TIMER'] : null, ['I MIEI TIMER'], conOre ? ['LE MIE ORE'] : null, conTimer ? null : ['TIMER ↗', true]].filter(Boolean)).map(([testo, fuori]) => {
       const corrente = !fuori && testo === (p.attiva || 'CALENDARIO');
       return { testo, barra: corrente ? c.text : 'transparent', sfondo: corrente ? c.surface : 'transparent', colore: corrente ? c.text : c.sec };
     });

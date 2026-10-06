@@ -4,7 +4,6 @@ import type { SessioneVista } from '../lib/sala'
 import { Arretrato, CalendarioScreen } from './CalendarioScreen'
 import { AppelloScreen, type Conto } from './AppelloScreen'
 import { useLargo } from '../lib/largo'
-import { TIMER } from '../lib/aree'
 import type { SegnalataVista } from '../lib/segnalate'
 import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 
@@ -18,10 +17,9 @@ import { chiaveGiorno, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
  * lo si fa.
  *
  * `soloDi` è l'istruttore di cui mostrare le lezioni (vedi `CalendarioScreen`);
- * `onMieiTimer` e `onMieOre` aprono I MIEI TIMER e LE MIE ORE dal fondo del
- * calendario del telefono.
+ * `onTimer` apre il timer della lezione, dal cronometro dell'appello.
  */
-export function Sala({ soloDi, onMieiTimer, onMieOre }: { soloDi?: string; onMieiTimer?: () => void; onMieOre?: () => void } = {}) {
+export function Sala({ soloDi, onTimer }: { soloDi?: string; onTimer?: (l: SessioneVista) => void } = {}) {
   const [d, setD] = useState<Dati | null>(null)
   const [aperta, setAperta] = useState<SessioneVista | null>(null)
   const [inCoda, setInCoda] = useState(0)
@@ -143,7 +141,6 @@ export function Sala({ soloDi, onMieiTimer, onMieOre }: { soloDi?: string; onMie
         <div className="sala-lato" hidden={!largo && !!aperta}>
           {esito}
           <CalendarioScreen dati={d} onApri={apriLezione} apertaId={largo ? aperta?.id : undefined} conti={conti} soloDi={soloDi} arretrati={segnalate} ricarica={giroCalendario} />
-          {!largo && <Strumenti onMieiTimer={onMieiTimer} onMieOre={onMieOre} />}
         </div>
         <div className="sala-lato">
           {aperta ? (
@@ -153,6 +150,7 @@ export function Sala({ soloDi, onMieiTimer, onMieOre }: { soloDi?: string; onMie
               sessioneId={aperta.id}
               soloDi={soloDi}
               onSegnalate={ricontaSegnalate}
+              onTimer={onTimer}
               onAttivitaCambiata={() => (attivitaCambiata.current = true)}
               onConto={(c) => setConti((x) => ({ ...x, [aperta.id]: c }))}
               inCoda={inCoda}
@@ -262,38 +260,6 @@ function Esito({
         </span>
       </div>
     </div>
-  )
-}
-
-/**
- * Sul telefono, sotto le lezioni, quello che sul computer sta nel menu: I
- * MIEI TIMER e il timer. In fondo e non in testata, dove ogni riga in più è una riga d'elenco
- * in meno; in un'altra scheda, così il calendario resta dov'era. Il tablet di
- * sala no: è un'area a sé, e dagli istruttori non ci si va.
- */
-function Strumenti({ onMieiTimer, onMieOre }: { onMieiTimer?: () => void; onMieOre?: () => void }) {
-  return (
-    <>
-      <div className="rule">
-        <span className="rule-label">STRUMENTI</span>
-        <div className="rule-line" />
-      </div>
-      <div className="pad strumenti" style={{ paddingBottom: 20 }}>
-        {onMieiTimer && (
-          <button type="button" className="btn btn-ghost" onClick={onMieiTimer}>
-            I MIEI TIMER
-          </button>
-        )}
-        {onMieOre && (
-          <button type="button" className="btn btn-ghost" onClick={onMieOre}>
-            LE MIE ORE
-          </button>
-        )}
-        <a className="btn btn-ghost" href={TIMER} target="_blank" rel="noopener">
-          TIMER ↗
-        </a>
-      </div>
-    </>
   )
 }
 

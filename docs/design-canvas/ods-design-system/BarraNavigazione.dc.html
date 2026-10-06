@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<nav aria-label="Pagine" style="display: flex; align-items: stretch; width: 100%; background: {{c.menu}}; border-top: 2px solid {{c.lineSoft}}; color: {{c.text}}">
+  <sc-for list="{{voci}}" as="v" hint-placeholder-count="3">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0; min-height: 64px; gap: 4px; padding: 0 4px; border-top: 4px solid {{v.barra}}; margin-top: -2px; background: {{v.sfondo}}; color: {{v.colore}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{v.d1}}"></path><path d="{{v.d2}}"></path><path d="{{v.d3}}"></path></svg>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; line-height: 1; white-space: nowrap">{{v.testo}}</span>
+    </div>
+  </sc-for>
+</nav>
+</x-dc>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"CALENDARIO|TIMER|I MIEI|ORE"},"attiva":{"editor":"text","default":"CALENDARIO"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":66}}'>
+// PROPOSTA «Navigazione», variante B scelta (non ancora nell'app): quattro voci CALENDARIO · TIMER · I MIEI · ORE; la segreteria che non insegna ne ha due, CALENDARIO · TIMER (senza ORE).
+//  la barra in basso del telefono per l'app degli istruttori, al posto del
+// tasto STRUMENTI sotto il calendario. Stesse voci e stessi nomi del menu a sinistra dello schermo largo (MenuIstruttori, prop
+// `elenco`). Colori e bordi come BarraTelefono e il menu: fondo `menu`, bordo alto 2px `line-soft`, testo `sec`.
+// Voci: a larghezza uguale, alte 64px (tocco minimo 44px), icona a linea 24px (tratto 2, come i tasti sole/luna di
+// BarraTelefono) sopra l'etichetta in Saira Condensed 13px 700 con 0.1em. La voce corrente si legge in tre modi, non
+// solo col colore: barra alta 4px sopra (come la barra a sinistra del menu largo), fondo `surface` e testo `text`;
+// le altre sono `sec` su fondo del menu, mai rosse.
+// Sta in flusso in fondo alla pagina (nell'app: `position: sticky; bottom: 0`, con padding-bottom
+// `env(safe-area-inset-bottom)`): la striscia dell'allenamento sta in alto sotto la testata, quindi le due non si toccano.
+// voci: nomi separati da | (CALENDARIO, TIMER, I MIEI, ORE hanno la loro icona; un altro nome prende quella del foglio).
+// attiva: il nome della voce corrente. Non riprodotti: il passaggio del mouse e il fuoco.
+const T = {
+  scuro: { menu: '#161616', surface: '#1c1c1c', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4' },
+  chiaro: { menu: '#ebebe7', surface: '#ffffff', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a' },
+};
+const ICONE = {
+  CALENDARIO: ['M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z', 'M4 10h16', 'M8 3v4M16 3v4'],
+  TIMER: ['M4 13a8 8 0 1 0 16 0a8 8 0 1 0-16 0', 'M12 9v4l2.5 2', 'M9.5 2.5h5M12 2.5V5'],
+  'I MIEI': ['M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z', '', ''],
+};
+const FOGLIO = ['M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z', 'M9 8h6M9 12h6', 'M9 16h3'];
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const nomi = String(p.voci ?? 'CALENDARIO|TIMER|I MIEI|ORE').split('|').map((t) => t.trim()).filter(Boolean);
+    const voci = nomi.map((testo) => {
+      const corrente = testo === (p.attiva || 'CALENDARIO');
+      const [d1, d2, d3] = ICONE[testo] || FOGLIO;
+      return { testo, d1, d2, d3, barra: corrente ? c.text : 'transparent', sfondo: corrente ? c.surface : 'transparent', colore: corrente ? c.text : c.sec };
+    });
+    return { c, voci };
+  }
+}
+</script>
+</body>
+</html>

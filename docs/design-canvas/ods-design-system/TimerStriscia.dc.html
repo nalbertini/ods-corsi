@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: stretch; width: 100%; min-height: 56px; background: {{k.sfondo}}; border-bottom: 2px solid {{k.bordo}}; color: {{k.testo}}">
+  <span style="display: flex; align-items: center; flex-grow: 1; min-width: 0; gap: 12px; padding: 0 8px 0 20px">
+    <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+      <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.16em; line-height: 1">{{k.etichetta}}</span>
+      <span style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: {{k.secondo}}">{{riga2}}</span>
+    </span>
+    <span style="flex-grow: 1"></span>
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 30px; font-weight: 700; line-height: 1">{{tempo}}</span>
+  </span>
+  <sc-if value="{{haStop}}" hint-placeholder-val="{{ true }}">
+    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 64px; margin: 6px 8px 6px 4px; padding: 0 12px; border: 2px solid {{k.testo}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em">STOP</span>
+  </sc-if>
+  <sc-if value="{{haOk}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 64px; margin: 6px 8px 6px 4px; padding: 0 12px; border: 2px solid {{k.testo}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em">OK</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["lavoro","recupero","pausa","finito"],"default":"lavoro"},"nome":{"editor":"text","default":"Tabata brucia grassi"},"tempo":{"editor":"text","default":"0:14"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":56}}'>
+// PROPOSTA (non ancora nell'app): la striscia dell'allenamento in corso, visibile da ogni pagina dell'app istruttori mentre
+// il timer incorporato non e' a schermo. Il suo stato si legge col colore E col testo (mai solo col colore):
+// lavoro = fondo rosso `rosso` (colore della fase di lavoro del timer), testo LAVORO; recupero = fondo `verde`, RECUPERO;
+// pausa = fondo `surface-2` con bordo, IN PAUSA; finito = fondo `giallo`, FINITO (la striscia cambia colore e testo, il
+// tempo diventa «FINE» e al posto di STOP c'e' OK; il suono e la vibrazione stanno nel codice, non qui).
+// Misura: alta 56px, a tutta larghezza, in flusso sotto la testata (spinge giu' il contenuto: non copre i tasti dell'appello).
+// Tocco sulla striscia = torna al timer; STOP (min 44px di tocco, bordo 2px) ferma l'allenamento senza aprire il timer.
+// Valori: rosso #e4292a, verde #16a54a, giallo #f4c31b, testo sui colori #121212 (`su-colore`), `surface-2`, `line` di src/styles.css.
+const T = {
+  scuro: { surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', rosso: '#e4292a', verde: '#16a54a', giallo: '#f4c31b', suColore: '#121212' },
+  chiaro: { surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', rosso: '#e4292a', verde: '#12913f', giallo: '#f4c31b', suColore: '#121212' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const stato = ['lavoro', 'recupero', 'pausa', 'finito'].includes(p.stato) ? p.stato : 'lavoro';
+    const K = {
+      lavoro: { sfondo: c.rosso, bordo: c.rosso, testo: c.suColore, secondo: c.suColore, etichetta: 'LAVORO' },
+      recupero: { sfondo: c.verde, bordo: c.verde, testo: c.suColore, secondo: c.suColore, etichetta: 'RECUPERO' },
+      pausa: { sfondo: c.surface2, bordo: c.line, testo: c.text, secondo: c.sec, etichetta: 'IN PAUSA' },
+      finito: { sfondo: c.giallo, bordo: c.giallo, testo: c.suColore, secondo: c.suColore, etichetta: 'FINITO' },
+    }[stato];
+    return {
+      k: K, cond: COND,
+      haStop: stato !== 'finito', haOk: stato === 'finito',
+      tempo: stato === 'finito' ? 'FINE' : (p.tempo ?? '0:14'),
+      riga2: stato === 'finito' ? 'Tocca per tornare al timer' : (p.nome ?? 'Tabata brucia grassi'),
+    };
+  }
+}
+</script>
+</body>
+</html>

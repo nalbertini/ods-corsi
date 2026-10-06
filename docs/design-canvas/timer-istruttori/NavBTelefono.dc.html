@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- VARIANTE B: quattro voci in basso, CALENDARIO · TIMER · I MIEI · ORE. TIMER = libreria dei timer e cronometro; I MIEI = i timer creati da me (la pagina si intitola I MIEI TIMER); ORE = le ore fatte. STRUMENTI e TIMER ↗ non ci sono più. Chi non insegna non ha ORE. Telefono, CALENDARIO acceso. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+  <dc-import name="Testata" luogo="ISTRUTTORI" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column; flex-grow: 1">
+    <dc-import name="ChiSei" chi="MARCO ROSSI · ISTRUTTORE" hint-size="100%,54px"></dc-import>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 20px 0">
+      <dc-import name="Bottone" label="‹" variante="linea" alto="44px" larghezza="44px" corpo="22px" spazio="0" hint-size="44px,44px"></dc-import>
+      <span style="flex-grow: 1; text-align: center; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 17px; font-weight: 700; letter-spacing: 0.06em">6 OTT – 12 OTT</span>
+      <dc-import name="Bottone" label="›" variante="linea" alto="44px" larghezza="44px" corpo="22px" spazio="0" hint-size="44px,44px"></dc-import>
+    </div>
+    <div style="padding-top: 14px">
+      <dc-import name="StrisciaGiorni" giorni="MAR 6 2 o s, MER 7 3, GIO 8 2, VEN 9 4, SAB 10 1, DOM 11 0, LUN 12 3" hint-size="100%,66px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" label="OGGI · MARTEDÌ 6 OTTOBRE" conto="2" giallo="{{ true }}" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 20px">
+      <dc-import name="RigaCalendario" ora="18:30" quando="ADESSO" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" presenti="7" stato="in-corso" hint-size="100%,72px"></dc-import>
+      <dc-import name="RigaCalendario" ora="20:00" corso="Judo adulti" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="9" stato="iscritti" hint-size="100%,72px"></dc-import>
+    </div>
+  </main>
+  <dc-import name="BarraNavigazione" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="CALENDARIO" hint-size="100%,66px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

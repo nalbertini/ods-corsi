@@ -50,6 +50,9 @@ Google, e vale solo per i mockup.
 | `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`) |
 | `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`) |
 | `BarraTelefono` | La barra in cima al telefono con il tasto MENU (`.sg-barra-tel`); il menu aperto è `Menu` |
+| `BarraNavigazione` | PROPOSTA, scelta la variante B: la barra in basso del telefono istruttori (CALENDARIO, TIMER, I MIEI, ORE; due voci per la segreteria che non insegna): icona a linea, etichetta, voce corrente con barra, fondo e testo. `MenuIstruttori` ha la prop `elenco` per le stesse voci a sinistra |
+| `SchedeTimer` | Variante A scartata: le schede DA FARE / I MIEI in cima alla pagina TIMER: tasti da 52px, quella attiva con bordo, quadratino e bordo sotto spesso |
+| `TimerRiga` | La riga di un timer nell'elenco (tipo, durata, nome, nota, ▶), per le sezioni CREATI DA TE e le copie; `TimerPagina` ha `conTitolo`, `conBarra`, `tutti` e `cronometro`: nella B la pagina TIMER è `conBarra` falso, `tutti="LIBRERIA"`, `cronometro` vero |
 | `TabletTasto` | `.tb-btn`: linea, verde, rosso, grande, quadro |
 | `TabletTastiera` | I pallini e il tastierino del PIN |
 | `TabletTessera` | Il nome da toccare nella lista della sala |

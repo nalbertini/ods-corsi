@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- VARIANTE A, schermo largo, pagina TIMER, scheda I MIEI: menu a sinistra con TIMER acceso (come NavALargo), titolo grande, schede di 360px (non a tutta larghezza) e due colonne: i timer legati a sinistra, quelli creati e le copie a destra. -->
+<div style="display: flex; width: 1000px; min-height: 1000px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="MenuIstruttori" attiva="TIMER" elenco="CALENDARIO|TIMER|ORE" nome="Maurizio Verdi" ruolo="Istruttore · calendario e appello" versione="v0.37.4" altezza="1000px" hint-size="240px,1000px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; flex: 1; min-width: 0; padding: 28px 36px; gap: 18px">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1.05">TIMER</span>
+    <div style="width: 360px; max-width: 100%">
+      <dc-import name="SchedeTimer" schede="DA FARE|I MIEI" attiva="I MIEI" hint-size="360px,56px"></dc-import>
+    </div>
+    <p style="margin: 0; max-width: 560px; font-size: 15px; line-height: 1.4; color: #8c8c88">Scegli quale timer parte con ogni tuo corso, dall’appello e sul tablet di sala. Se una lezione ne vuole uno diverso, lo scegli più sotto.</p>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 24px; align-items: start; margin: 0 -20px">
+      <div style="display: flex; flex-direction: column">
+        <dc-import name="Titoletto" label="PER CORSO" conto="2" hint-size="100%,50px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+          <dc-import name="MieiTimerRiga" tipo="corso" nome="Judo adulti" tinta="#1b8ac4" timer="Riscaldamento:INTERVALLI" scegli="+ Collega un timer" hint-size="100%,170px"></dc-import>
+          <dc-import name="MieiTimerRiga" tipo="corso" nome="Judo kids" tinta="#1b8ac4" timer="Riscaldamento:INTERVALLI|Tabata:EMOM" scegli="+ Collega un timer" hint-size="100%,230px"></dc-import>
+        </div>
+        <dc-import name="Titoletto" label="PER LEZIONE" conto="PROSSIMI 14 GIORNI" hint-size="100%,50px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 16px; padding: 0 20px">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">GIOVEDÌ 8 OTTOBRE</span>
+            <dc-import name="MieiTimerRiga" tipo="lezione" ora="17:30" nome="Judo kids" dettaglio="Sala 1 · Marco R." tinta="#1b8ac4" timer="Circuito forza:CIRCUITO" suo="{{ true }}" scegli="+ Aggiungi un timer" hint-size="100%,230px"></dc-import>
+          </div>
+          <dc-import name="Bottone" label="SCEGLI PER UNA LEZIONE (4)" variante="tratteggiato" alto="52px" corpo="16px" hint-size="100%,52px"></dc-import>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column">
+        <dc-import name="Titoletto" label="CREATI DA TE" conto="2" hint-size="100%,50px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+          <dc-import name="TimerRiga" tipo="CIRCUITO" tinta="#f4c31b" durata="24 MIN" nome="Circuito forza" hint-size="100%,86px"></dc-import>
+          <dc-import name="TimerRiga" tipo="TABATA" tinta="#e4292a" durata="4 MIN" nome="Tabata brucia grassi" nota="Copia di quello della palestra" hint-size="100%,100px"></dc-import>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

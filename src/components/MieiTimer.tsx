@@ -2,8 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { dati as caricaDati } from '../lib/dati'
 import { type Collegamenti, type DatiMieiTimer, NOMI_MODO, type TimerDaScegliere, datiMieiTimer } from '../lib/mieiTimer'
 import { type SessioneVista, chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
-import { TIMER } from '../lib/aree'
-import { Back } from './Icons'
 
 /** Quanti giorni di lezioni si preparano: due settimane, come si programma in palestra. */
 const GIORNI = 14
@@ -17,7 +15,7 @@ const GIORNI = 14
  * così un corso che non fa più non resta in mezzo. `soloDi` come nel
  * calendario; senza, sono tutte (la segreteria).
  */
-export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?: () => void }) {
+export function MieiTimer({ soloDi, onTimer }: { soloDi?: string; onTimer: () => void }) {
   const [d, setD] = useState<DatiMieiTimer | null>(null)
   const [timer, setTimer] = useState<TimerDaScegliere[] | null>(null)
   const [col, setCol] = useState<Collegamenti | null>(null)
@@ -105,17 +103,12 @@ export function MieiTimer({ soloDi, onIndietro }: { soloDi?: string; onIndietro?
   return (
     <div className="miei-timer">
       <div className="row pad" style={{ gap: 10, paddingTop: 16, alignItems: 'center' }}>
-        {onIndietro && (
-          <button className="icon-btn" onClick={onIndietro} aria-label="Torna al calendario">
-            <Back />
-          </button>
-        )}
         <span className="ob grow appello-titolo" style={{ whiteSpace: 'nowrap' }}>
           I MIEI TIMER
         </span>
-        <a className="btn btn-ghost miei-timer-apri" href={TIMER} target="_blank" rel="noopener">
-          APRI IL TIMER ↗
-        </a>
+        <button type="button" className="btn btn-ghost miei-timer-apri" onClick={onTimer}>
+          APRI IL TIMER
+        </button>
       </div>
       <p className="pad passo-dettaglio" style={{ fontSize: 15, margin: '10px 0 0' }}>
         Scegli quale timer parte con ogni tuo corso, dall’appello e sul tablet di sala. Se una lezione ne vuole uno diverso,

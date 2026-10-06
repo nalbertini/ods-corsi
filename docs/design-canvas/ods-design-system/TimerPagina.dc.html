@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 100%; min-height: {{altezza}}; background: {{c.bg}}; color: {{c.text}}">
+  <sc-if value="{{conTitolo}}" hint-placeholder-val="{{ true }}">
+  <div style="display: flex; align-items: center; gap: 10px; padding: 16px 20px 0">
+    <sc-if value="{{haIndietro}}" hint-placeholder-val="{{ true }}">
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 44px; height: 44px; padding: 0 10px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.12em; gap: 6px"><span style="font-size: 22px; line-height: 1">&#8249;</span>{{indietro}}</span>
+    </sc-if>
+    <span style="flex-grow: 1; font-family: {{cond}}; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05">TIMER</span>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{senzaRete}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; gap: 4px; margin: 14px 20px 0; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-left: 6px solid {{c.giallo}}" role="status">
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: {{c.gialloTesto}}">SENZA RETE</span>
+      <span style="font-size: 14px; line-height: 1.4; color: {{c.sec}}">Il timer funziona lo stesso. La voce incisa lascia il posto a quella del telefono e le illustrazioni degli esercizi non si vedono.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{conLezione}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; align-items: baseline; gap: 10px; padding: 18px 20px 10px">
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: {{c.gialloTesto}}">DI QUESTA LEZIONE</span>
+      <div style="flex-grow: 1; height: 2px; background: {{c.lineSoft}}"></div>
+    </div>
+    <div style="padding: 0 20px"><div style="display: flex; flex-direction: column; gap: 4px; padding: 0 0 8px; font-size: 13px; color: {{c.dim}}">{{lezione}}</div></div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+      <div style="display: flex; align-items: center; gap: 14px; min-height: 86px; padding: 13px 15px; background: {{c.surface}}; border: 2px solid {{c.giallo}}">
+        <span style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0">
+          <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 9px; background: #f4c31b; color: #121212; font-size: 10px; font-weight: 700; letter-spacing: 0.16em">CIRCUITO</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">24 MIN</span></span>
+          <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 21px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05">CIRCUITO FORZA</span>
+        </span>
+        <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 52px; height: 52px; border: 2px solid {{c.giallo}}; color: {{c.gialloTesto}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{conCorso}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; align-items: baseline; gap: 10px; padding: 18px 20px 10px">
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}">{{etichettaCorso}}</span>
+      <div style="flex-grow: 1; height: 2px; background: {{c.lineSoft}}"></div>
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600; color: {{c.dim}}">2</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+      <sc-for list="{{delCorso}}" as="r" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; gap: 14px; min-height: 86px; padding: 13px 15px; background: {{c.surface}}; border: 2px solid {{c.line}}">
+          <span style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0">
+            <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 9px; background: {{r.tinta}}; color: #121212; font-size: 10px; font-weight: 700; letter-spacing: 0.16em">{{r.tipo}}</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">{{r.durata}}</span></span>
+            <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 21px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05">{{r.nome}}</span>
+          </span>
+          <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 52px; height: 52px; border: 2px solid {{r.tinta}}; color: {{r.tinta}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <div style="display: flex; align-items: baseline; gap: 10px; padding: 18px 20px 10px">
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}">{{etichettaTutti}}</span>
+    <div style="flex-grow: 1; height: 2px; background: {{c.lineSoft}}"></div>
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 600; color: {{c.dim}}">6</span>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+    <sc-for list="{{altri}}" as="r" hint-placeholder-count="2">
+      <div style="display: flex; align-items: center; gap: 14px; min-height: 86px; padding: 13px 15px; background: {{c.surface}}; border: 2px solid {{c.line}}">
+        <span style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0">
+          <span style="display: flex; align-items: center; gap: 8px"><span style="padding: 3px 9px; background: {{r.tinta}}; color: #121212; font-size: 10px; font-weight: 700; letter-spacing: 0.16em">{{r.tipo}}</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">{{r.durata}}</span></span>
+          <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 21px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05">{{r.nome}}</span>
+        </span>
+        <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 52px; height: 52px; border: 2px solid {{r.tinta}}; color: {{r.tinta}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></span>
+      </div>
+    </sc-for>
+  </div>
+  <sc-if value="{{cronometro}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; align-items: center; gap: 14px; min-height: 64px; margin: 10px 20px 0; padding: 6px 15px; border: 2px dashed {{c.line}}; color: {{c.sec}}">
+      <span style="flex-grow: 1; font-family: {{cond}}; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.03em">CRONOMETRO LIBERO</span>
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">00:00</span>
+    </div>
+  </sc-if>
+
+  <div style="flex-grow: 1; min-height: 20px"></div>
+  <sc-if value="{{conBarra}}" hint-placeholder-val="{{ true }}">
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid {{c.lineSoft}}; background: {{c.menu}}; padding: 10px 8px 14px">
+    <sc-for list="{{barra}}" as="b" hint-placeholder-count="4">
+      <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 52px; color: {{b.colore}}; font-size: 10px; font-weight: 700; letter-spacing: 0.14em">
+        <span style="width: 22px; height: 22px; border: 2px solid {{b.colore}}"></span>{{b.testo}}
+      </span>
+    </sc-for>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"lezione":{"editor":"text","default":"Judo kids · martedì 18:30 · Sala 1"},"conLezione":{"editor":"boolean","default":true},"conCorso":{"editor":"boolean","default":true},"corso":{"editor":"text","default":"DEL CORSO · JUDO KIDS"},"indietro":{"editor":"text","default":"APPELLO"},"senzaRete":{"editor":"boolean","default":false},"conTitolo":{"editor":"boolean","default":true},"conBarra":{"editor":"boolean","default":true},"tutti":{"editor":"text","default":""},"cronometro":{"editor":"boolean","default":false},"altezza":{"editor":"text","default":"780px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":780}}'>
+// PROPOSTA (non ancora nell'app): la pagina TIMER dentro l'app istruttori, elenco dei timer (la «casa» di timer/src/App.tsx,
+// vedi timer/design/Home.dc.html per le righe: tipo 10px 0.16em su fondo tinta, durata cond 14px, nome .ob 21px, tasto ▶ 52px).
+// Senza marchio, senza SALA e senza versione (la testata e il menu sono quelli dell'app che la contiene). In cima, se si arriva dal
+// cronometro dell'appello: DI QUESTA LEZIONE (bordo giallo, con la lezione scritta sotto) e DEL CORSO; poi I MIEI TIMER.
+// Senza lezione scelta (la segreteria che non insegna, o dal menu): conLezione e conCorso a false, solo I MIEI TIMER.
+// indietro: il tasto ‹ con scritto dove riporta (APPELLO); vuoto = nessun tasto (si arriva dal menu).
+// senzaRete: l'avviso giallo sopra l'elenco (bordo sinistro 6px `giallo`, SENZA RETE in giallo-testo): niente musica, voce incisa che ricade
+// sulla sintesi, niente illustrazioni di Maurizio. In fondo la barra a quattro voci del timer (TIMER, LIBRERIA, STORICO, PROFILO).
+// Variante A della navigazione: conTitolo=false e conBarra=false (il titolo TIMER e le schede li disegna la pagina, la barra è BarraNavigazione); tutti="LIBRERIA" cambia l'etichetta dell'elenco; cronometro mostra il tasto tratteggiato CRONOMETRO LIBERO sotto l'elenco.
+// Valori: surface/line/line-soft/menu/dim/giallo di src/styles.css; tinte dei tipi come in timer/design/Home.dc.html.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', tasto: '#b8b8b2', menu: '#161616', blu: '#1b8ac4', verde: '#16a54a', rosso: '#e4292a' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', tasto: '#4a4a46', menu: '#ebebe7', blu: '#1b8ac4', verde: '#12913f', rosso: '#e4292a' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const conLezione = truthy(p.conLezione ?? true);
+    const conCorso = truthy(p.conCorso ?? true);
+    const ind = p.indietro ?? 'APPELLO';
+    return {
+      c, cond: COND,
+      conLezione, conCorso, lezione: p.lezione ?? 'Judo kids · martedì 18:30 · Sala 1',
+      etichettaCorso: p.corso ?? 'DEL CORSO · JUDO KIDS',
+      etichettaTutti: p.tutti || (conLezione || conCorso ? 'ALTRI MIEI TIMER' : 'I MIEI TIMER'),
+      haIndietro: ind !== '', indietro: ind,
+      senzaRete: truthy(p.senzaRete),
+      conTitolo: truthy(p.conTitolo ?? true), conBarra: truthy(p.conBarra ?? true), cronometro: truthy(p.cronometro),
+      altezza: p.altezza || '780px',
+      delCorso: [{ tipo: 'INTERVALLI', tinta: c.blu, durata: '18 MIN', nome: 'RISCALDAMENTO' }, { tipo: 'EMOM', tinta: c.verde, durata: '12 MIN', nome: 'EMOM GAMBE' }],
+      altri: [{ tipo: 'TABATA', tinta: c.rosso, durata: '4 MIN', nome: 'TABATA BRUCIA GRASSI' }, { tipo: 'AMRAP', tinta: c.blu, durata: '10 MIN', nome: 'AMRAP CORE' }],
+      barra: [['TIMER', c.blu], ['LIBRERIA', c.dim], ['STORICO', c.dim], ['PROFILO', c.dim]].map(([testo, colore]) => ({ testo, colore })),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -75,7 +75,7 @@ pubblica nella sottocartella `timer/` dello stesso sito
 repository a sé, [nalbertini/Timer-](https://github.com/nalbertini/Timer-): la
 storia è stata portata qui intera.
 
-## Dentro il tablet di sala
+## Dentro il tablet di sala e dentro istruttori
 
 Sul tablet di sala di ODS Corsi il timer non si apre in un'altra pagina: è la
 scheda **TIMER** del tablet, accanto a **PRESENZE**, compilata dentro ODS Corsi
@@ -90,6 +90,13 @@ da questi stessi file (`App` con la prop `incorporato`, vedi
   restano le automazioni — parte, si ferma, si abbassa nel recupero — sulla
   fonte scelta dal tablet;
 - la tastiera lo comanda solo quando lo si guarda;
+- lo stesso timer sta anche nell'app istruttori (`istruttori/`), come pagina
+  **TIMER** accanto a CALENDARIO, I MIEI e ORE, con lo stesso componente
+  (`TimerSala`). Lì in più `senzaTestata` toglie il suo titolo (lo mette la
+  pagina), `ferma` lo ferma dal di fuori (STOP della striscia in alto, o un'altra
+  lezione al suo posto) e `musica: false` lo lascia senza musica. `onStato` porta
+  anche `scadeAlle` e `secondiFermo`, perché la striscia ricalcola il tempo
+  dall'orologio. Senza rete funziona come da solo, e l'app lo dice (SENZA RETE).
 - i suoi file (voce, illustrazioni, guida) stanno un piano sotto la pagina, in
   `timer/`: lo dice `__TIMER_RADICE__` (`src/lib/radice.ts`), vuoto qui.
 

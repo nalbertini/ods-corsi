@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 100%; min-height: {{altezza}}; background: {{c.bg}}; color: {{c.text}}; border: 10px solid {{c.fase}}">
+  <div style="display: flex; align-items: center; gap: 12px; padding: 14px 14px 0">
+    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 44px; height: 44px; padding: 0 10px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.12em; gap: 6px"><span style="font-size: 22px; line-height: 1">&#8249;</span>{{indietro}}</span>
+    <span style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+      <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.03em; line-height: 1">{{nome}}</span>
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.18em; color: {{c.dim}}">{{serie}}</span>
+    </span>
+  </div>
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; gap: 6px; padding: 0 20px">
+    <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 30px; font-weight: 700; letter-spacing: 0.28em; color: {{c.faseTesto}}; line-height: 1">{{fase}}</span>
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: {{corpoTempo}}; font-weight: 700; line-height: 0.95; letter-spacing: -0.03em">{{tempo}}</span>
+    <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 28px; font-weight: 600; letter-spacing: 0.05em; text-align: center">{{esercizio}}</span>
+    <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: {{c.dim}}">ROUND</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700; line-height: 1">04</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 500; color: {{c.dim}}">/08</span></span>
+  </div>
+  <div style="display: flex; align-items: center; gap: 12px; margin: 0 14px; padding: 12px 16px; background: {{c.surface}}; border: 2px solid {{c.line}}">
+    <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.22em; color: {{c.dim}}">PROSSIMO</span>
+    <span style="flex-grow: 1"></span>
+    <span style="width: 12px; height: 12px; background: {{c.verde}}"></span>
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 600; letter-spacing: 0.05em; color: {{c.tasto}}">RECUPERO 10&quot;</span>
+  </div>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 16px 14px 18px">
+    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 68px; height: 68px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.tasto}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></span>
+    <span style="display: flex; align-items: center; justify-content: center; flex-grow: 1; height: 68px; background: {{c.fase}}; color: {{c.suColore}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 24px; font-weight: 700; letter-spacing: 0.18em">PAUSA</span>
+    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 68px; height: 68px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.tasto}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"TABATA BRUCIA GRASSI"},"serie":{"editor":"text","default":"SERIE 2 / 3"},"indietro":{"editor":"text","default":"APPELLO"},"fase":{"editor":"enum","options":["LAVORO","RECUPERO"],"default":"LAVORO"},"tempo":{"editor":"text","default":"14"},"esercizio":{"editor":"text","default":"BURPEE + SALTO"},"largo":{"editor":"boolean","default":false},"altezza":{"editor":"text","default":"780px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":780}}'>
+// PROPOSTA (non ancora nell'app): l'allenamento in corso dentro l'app istruttori. E' la schermata di timer/design/TimerPhone.dc.html
+// (cornice di 10px del colore della fase, titolo + SERIE, fase, tempo grande, esercizio, ROUND, PROSSIMO, comandi 68px indietro/PAUSA/avanti)
+// con due cambi: in alto non c'e' la X ma il tasto ‹ col nome di dove riporta (APPELLO, o TIMER se si e' partiti dall'elenco);
+// uscendo l'allenamento NON si ferma: resta nella striscia (TimerStriscia). Niente audio ne' marchio ne' SALA.
+// fase: LAVORO = rosso, RECUPERO = verde. largo: il tempo a 130px del telefono diventa 200px.
+// Valori copiati da timer/design/TimerPhone.dc.html e da src/styles.css.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', tasto: '#b8b8b2', rosso: '#e4292a', verde: '#16a54a', rossoTesto: '#ff5a52', verdeTesto: '#16a54a', suColore: '#121212' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', tasto: '#4a4a46', rosso: '#e4292a', verde: '#12913f', rossoTesto: '#b81d1d', verdeTesto: '#0b7a33', suColore: '#121212' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const base = T[p.tema] || T.scuro;
+    const lavoro = (p.fase || 'LAVORO') === 'LAVORO';
+    const c = { ...base, fase: lavoro ? base.rosso : base.verde, faseTesto: lavoro ? base.rossoTesto : base.verdeTesto };
+    return {
+      c, cond: COND,
+      nome: p.nome ?? 'TABATA BRUCIA GRASSI', serie: p.serie ?? 'SERIE 2 / 3', indietro: p.indietro ?? 'APPELLO',
+      fase: p.fase || 'LAVORO', tempo: p.tempo ?? '14', esercizio: p.esercizio ?? 'BURPEE + SALTO',
+      corpoTempo: truthy(p.largo) ? '200px' : '130px', altezza: p.altezza || '780px',
+    };
+  }
+}
+</script>
+</body>
+</html>

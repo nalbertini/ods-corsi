@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA: i quattro stati della striscia. Lo stato si legge col testo (LAVORO, RECUPERO, IN PAUSA, FINITO) oltre che col colore: rosso, verde, grigio, giallo. -->
+<div style="width: 390px; background: #121212; padding-top: 14px">
+  <dc-import name="TimerStriscia" stato="lavoro" nome="Tabata brucia grassi" tempo="0:14" hint-size="100%,56px"></dc-import>
+  <div style="height: 14px"></div>
+  <dc-import name="TimerStriscia" stato="recupero" nome="Tabata brucia grassi" tempo="0:08" hint-size="100%,56px"></dc-import>
+  <div style="height: 14px"></div>
+  <dc-import name="TimerStriscia" stato="pausa" nome="Tabata brucia grassi" tempo="0:14" hint-size="100%,56px"></dc-import>
+  <div style="height: 14px"></div>
+  <dc-import name="TimerStriscia" stato="finito" nome="Tabata brucia grassi" tempo="" hint-size="100%,56px"></dc-import>
+  <div style="height: 14px"></div>
+</div>
+</x-dc>
+</body>
+</html>

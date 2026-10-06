@@ -3,7 +3,6 @@ import { dati as caricaDati, type Dati } from '../lib/dati'
 import { delMese, mesi, minutiDi, oreItaliane, type MiaPresenza } from '../lib/ore'
 import type { LezioneSenzaIstruttore } from '../lib/segreteria'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../lib/sala'
-import { Back } from './Icons'
 
 const STATO: Record<MiaPresenza['stato'], string> = { confermata: 'CONFERMATA', da_confermare: 'DA CONFERMARE', rifiutata: 'RIFIUTATA' }
 
@@ -14,7 +13,7 @@ const giorno = (iso: string) => giornoPerEsteso(chiaveGiorno(new Date(iso)))
  * con gli stessi numeri della sua scheda PRESENZE (`delMese` di `ore.ts`).
  * Solo da leggere: conferma e rifiuta la segreteria.
  */
-export function MieOre({ personaId, onIndietro }: { personaId: string; onIndietro?: () => void }) {
+export function MieOre({ personaId }: { personaId: string }) {
   const periodi = useMemo(mesi, [])
   const [periodo, setPeriodo] = useState(periodi[0].chiave)
   const m = periodi.find((x) => x.chiave === periodo) ?? periodi[0]
@@ -57,11 +56,6 @@ export function MieOre({ personaId, onIndietro }: { personaId: string; onIndietr
   return (
     <div className="miei-timer">
       <div className="row pad" style={{ gap: 10, paddingTop: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-        {onIndietro && (
-          <button className="icon-btn" onClick={onIndietro} aria-label="Torna al calendario">
-            <Back />
-          </button>
-        )}
         <span className="ob grow appello-titolo" style={{ whiteSpace: 'nowrap' }}>
           LE MIE ORE
         </span>
