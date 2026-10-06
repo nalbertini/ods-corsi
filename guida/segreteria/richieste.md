@@ -13,13 +13,13 @@ quando è **ARRIVATA**, **STATO** (**NUOVA**, **ACCOLTA**, **RIFIUTATA**), e
 **MINORE** se chi si iscrive è minorenne, **NUCLEO** se l'ha aggiunta un
 iscritto per il suo nucleo familiare, dalla sua area: la scheda dice chi è
 (toccando il nome si apre la sua scheda), e accolta la persona entra nel
-suo nucleo. **DA STAMPARE** se la richiesta ha ancora la carta d'identità o
-il certificato medico caricati. **FUORI ETÀ** se ha scelto almeno un corso
+suo nucleo. **DA STAMPARE** se la richiesta ha ancora la carta d'identità
+caricata. **FUORI ETÀ** se ha scelto almeno un corso
 che non è per la sua età, neanche coi sei mesi di tolleranza: è da
 richiamare, ma si può accogliere lo stesso.
 
 Normalmente si vedono solo le nuove; **ANCHE QUELLE GIÀ GESTITE** mostra tutte,
-e **DA STAMPARE** (finché ce ne sono) quelle con documento o certificato da
+e **DA STAMPARE** (finché ce ne sono) quelle con il documento da
 stampare.
 
 ## Guardare una richiesta
@@ -31,12 +31,25 @@ accanto a un corso che non è per la sua età, secondo
 
 Sotto, **I FILE**: modulo firmato e ricevuta. La ricevuta non è obbligatoria:
 se non c'è, una riga dice «Nessuna ricevuta: il pagamento si fa in
-segreteria», e la richiesta si accoglie lo stesso. Carta d'identità e certificato
-medico stanno in un riquadro giallo, perché nell'app non restano: accolta la
-richiesta, li si apre, si stampano, si mettono nella cartellina e
-**STAMPATO, CANCELLA** li cancella per sempre. La scheda dell'iscritto segna
-da sé che la copia del documento è in segreteria; per il certificato, lì si
-scrive fino a quando vale (vedi [Iscritti](iscritti.md)). Il modulo è
+segreteria», e la richiesta si accoglie lo stesso. La carta d'identità sta in un riquadro giallo,
+perché nell'app non resta: accolta la richiesta, la si apre, si stampa, si
+mette nella cartellina e **STAMPATO, CANCELLA** la cancella per sempre. La
+scheda dell'iscritto segna da sé che la copia è in segreteria.
+
+Il **certificato medico**, se è arrivato, ha il suo riquadro, **IL
+CERTIFICATO ARRIVATO DAL MODULO**, da guardare prima di accogliere: **APRI**
+(il link dura 10 minuti), e **VALIDO FINO AL**, dove si scrive la data
+leggendo il foglio. Se è quello sbagliato, **RIFIUTA IL FILE** lo cancella e
+chi si è iscritto lo rimanda (o lo porta in segreteria). Accogliendo, il file
+passa alla scheda dell'iscritto, in **CERTIFICATO MEDICO**, con la data
+scritta qui; non va stampato né cancellato. Se il file c'è e la data no, sotto
+**PRIMA DI ACCOGLIERE** c'è «Manca la data del certificato» e il tasto è
+**ACCOGLI LO STESSO**: la data si scrive poi dalla scheda. Se la data scritta
+qui non si salva, l'app dice che la richiesta è accolta e che la data va
+scritta dalla scheda. Se la scheda aveva già un certificato scaduto, quello
+nuovo prende il posto del vecchio; se ne aveva uno ancora valido, il file della
+richiesta non lo sostituisce e resta qui, per guardarlo (vedi
+[Iscritti](iscritti.md)). Il modulo è
 la foto del foglio firmato a mano, oppure il PDF firmato dal telefono: il
 foglio della palestra compilato in blu, con la firma e, in fondo, la data e
 l'ora in cui è stato firmato. Se ne manca uno

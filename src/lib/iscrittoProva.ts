@@ -41,7 +41,7 @@ export function creaIscrittoProva(): DatiIscritto {
       nome: p.nome,
       cognome: p.cognome,
       corsi,
-      certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file },
+      certificato: { scade: p.certificato?.scade },
       pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
       quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
       // Come la segreteria: l'età decide se il certificato serve.

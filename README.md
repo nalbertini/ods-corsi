@@ -100,8 +100,9 @@ dell'allenamento in corso sempre in vista; resta anche l'app a sé in `timer/`
   istruttori, posti, colore e i giorni in cui si fanno, ognuno anche in
   una sala diversa (il lunedì in Tatami, il giovedì in Lotta). Gli **iscritti**, da
   cercare, iscrivere e togliere dai corsi, con quanto vengono negli ultimi
-  trenta giorni, il **certificato medico** (fino a quando vale: il foglio sta
-  su carta in segreteria, come la copia del documento d'identità) e lo
+  trenta giorni, il **certificato medico** (fino a quando vale, col file che solo la
+  segreteria apre dalla scheda e che si cancella da sé 30 giorni dopo la
+  scadenza) e lo
   stato del **pagamento**, con chi non è in regola in evidenza. Quando
   qualcuno paga, la **ricevuta**: la «ricevuta semplice» dell'associazione,
   in PDF con le due copie affiancate, col numero che va avanti da sé, la
@@ -135,8 +136,8 @@ dell'allenamento in corso sempre in vista; resta anche l'app a sé in `timer/`
   delle autorizzazioni (il PDF della palestra, compilato coi suoi dati da
   `src/lib/firma.ts`; o ne carica la foto firmata a mano), e carica il
   documento d'identità, il certificato medico se c'è già, e la ricevuta
-  (documento e certificato la segreteria li stampa, li tiene su carta e li
-  cancella dall'app); per un minore la data di nascita fa chiedere i dati
+  (il documento la segreteria lo stampa, lo tiene su carta e lo cancella
+  dall'app; il certificato resta nella scheda); per un minore la data di nascita fa chiedere i dati
   del genitore. Il codice fiscale si controlla davvero (il carattere di
   controllo, la data di nascita, e per un minore che quello del genitore sia
   di un adulto) e cosa non va si scrive sotto il campo. Le richieste arrivano in segreteria, in **RICHIESTE ONLINE**,
@@ -385,6 +386,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 |---|---|
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. L'«Attività» di ogni giorno scelta da un elenco: nomi, rinomina, eliminazione, NON PIÙ IN USO, giorno e lezioni, l'istruttore che cambia la sua, il database senza `41-attivita.sql`. SALVA LE DATE che toglie le lezioni fuori dalle date dei corsi, tranne quelle con l'appello o una prova: la conferma prima, col conto, e l'avviso dopo, con corso e ora di quelle rimaste. |
+| `npm run prova:certificati` | I certificati medici che restano nell'app: gli stati della scheda (nessuno, valido, in scadenza, scaduto con o senza file, valido senza file, file di prima), sotto i 6 anni che non manca, un file per persona che prende il posto del vecchio con la data, i rifiuti (tipo, 10 MB, data) che non cambiano niente, il file che se ne va 30 giorni dopo la scadenza o con la persona disattivata, il file che passa a chi resta unendo due schede e dalla richiesta accolta alla scheda, il link di dieci minuti e il database non aggiornato col Supabase finto; cosa dice la scheda in ogni stato e quando SALVA è pronto, una sola regola per «in regola» (sotto i 6 anni, anche il 29 febbraio) in DA FARE, ISCRITTI, statistiche e area iscritti, la data che viaggia con l'accoglimento e il rollback che dice di avvisare chi gestisce il database. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database, e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:ricevuta` | La ricevuta di un pagamento: i conti, i rifiuti, e i PDF (con una cartella li lascia lì da guardare). |
 | `npm run prova:listino` | Il legame fra corsi e voci del listino per id: rinomina, voci doppie, corsi senza prezzo o voci senza corso, aggancio dei listini vecchi per nome. |
@@ -406,9 +408,9 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/categorie-esercizi.sql` | Una sola categorizzazione degli esercizi: l'elenco delle discipline si completa con A corpo libero, Attrezzi, Core, Cardio, Mobilità (senza duplicare né rimettere quelle tolte), e il catalogo perde la `categoria` (vince la disciplina, se no la categoria diventa la voce; «tutte» e gli esercizi senza voce restano). Si può rilanciare; la segreteria lo scrive, gli altri lo leggono. |
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
 | `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
-| `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già. |
+| `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già. Il certificato non si stampa: accolta la richiesta passa alla scheda, e uno sbagliato si toglie prima. |
 | `supabase/prova/timer.sql` | Il timer: la libreria della palestra, i timer personali e dei corsi, il tablet che li apre e non li scrive, lo storico, le preferenze. |
-| `supabase/prova/certificati.sql` | Certificati medici, documento e pagamenti: li vede e li cambia solo la segreteria; i certificati stanno su carta, di file nuovi non ne entrano, e quelli di prima li legge e li cancella solo lei. |
+| `supabase/prova/certificati.sql` | Certificati medici, documento e pagamenti: li vede e li cambia solo la segreteria. Il file del certificato sta in un contenitore privato (foto e PDF, 10 MB) che apre solo lei: istruttori, iscritti, tablet e chi non ha un accesso non lo leggono né ne vedono la presenza; un file nuovo prende il posto del vecchio con la data in un passaggio solo, si cancella da sé 30 giorni dopo la scadenza e con la persona disattivata. |
 | `supabase/prova/ricevute.sql` | Le ricevute: le fa e le annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i conti li fa il server, e una ricevuta fatta non si cambia. |
 | `supabase/prova/tablet-conto-prove.sql` | Sul tablet quanti dei presenti sono venuti a provare, cioè non iscritti quel giorno (chi ha provato e poi si è iscritto è un iscritto), solo per il tablet: «10 su 10 · +1 PROVA», non «11 su 10». |
 | `supabase/prova/tablet.sql` | Le stesse regole del tablet, dal lato del database, e che il tablet non veda niente più di quel che deve. |
@@ -419,7 +421,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/prove-per-nome.sql` | Il tablet ritrova chi è venuto a provare solo per nome: dalla terza lettera di una parola, al massimo venti e i più recenti, cento ricerche in dieci minuti e trecento al giorno per tablet, con apostrofi, trattini e accenti come nell'app, e % _ \ che non fanno da jolly; col PIN giusto e solo da un tablet. Dopo `tablet.sql` e `prove.sql`. |
 | `supabase/prova/statistiche.sql` | Le statistiche: i numeri di ogni lezione contati come in PRESENZE, le prove, chi l'ha fatta, gli incassi del mese; le vede solo la segreteria. |
 | `supabase/prova/elimina-istruttore.sql` | Eliminare un istruttore: solo la segreteria, solo un istruttore, e solo se non ha corsi non archiviati, lezioni in calendario o presenze da istruttore, anche cancellando la riga a mano. Un iscritto si cancella come prima. |
-| `supabase/prova/unisci-doppioni.sql` | Unire due schede della stessa persona: solo la segreteria, solo due iscritti senza accesso, mai con due codici fiscali diversi o un certificato da stampare; vince chi resta, il doppione riempie i vuoti, presenze, prove e iscrizioni una per lezione e per corso, le ricevute passano intatte, e tutto o niente. |
+| `supabase/prova/unisci-doppioni.sql` | Unire due schede della stessa persona: solo la segreteria, solo due iscritti senza accesso, mai con due codici fiscali diversi; il file del certificato di chi se ne va passa a chi resta, e se ce n'è uno per parte resta quello con la scadenza più lontana; vince chi resta, il doppione riempie i vuoti, presenze, prove e iscrizioni una per lezione e per corso, le ricevute passano intatte, e tutto o niente. |
 | `supabase/prova/non-doppioni.sql` | Le coppie «non sono doppioni»: le vede, le segna e le toglie solo la segreteria, una riga per coppia a nome di chi scrive; se ne vanno con la scheda, e unendo due schede passano senza fermare l'unione. |
 | `supabase/prova/segnalazioni.sql` | Le segnalazioni: le legge e le scrive solo la segreteria, a nome suo; si risponde a un filo e non a una risposta; un messaggio scritto non si cambia, di un filo si cambia solo se è chiuso e la categoria (idea o correzione, obbligatoria per un filo nuovo, mai su una risposta), e niente si cancella. Istruttore, iscritto, tablet e chi non ha accesso non vedono niente. Gli allegati: bucket privato, max 3 per messaggio, tipi e 10 MB, li toglie solo chi li ha mandati (resta la traccia), si tolgono da soli 30 giorni dopo la chiusura. |
 | `supabase/prova/informativa-mesi.sql` | Per quanto si tengono le presenze, per l'informativa: chi non ha un accesso legge i mesi scelti dalla segreteria e nient'altro delle impostazioni, anche dopo aver rilanciato `06-iscrizioni.sql`. |

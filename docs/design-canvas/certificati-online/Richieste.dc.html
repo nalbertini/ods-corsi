@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Richieste online, scheda della richiesta da accogliere: il certificato arrivato dal modulo si vede prima di accogliere, con APRI, VALIDO FINO AL e RIFIUTA IL FILE. Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="RICHIESTE ONLINE"  numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" tema="scuro" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">ANNA CONTI</span>
+      <span style="font-size: 14px; color: #8c8c88">Arrivata il 5 ottobre · nata il 21 giugno 1990 · Pilates</span>
+    </div>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">I FILE</span>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; border-left: 4px solid #f4c31b"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">IL CERTIFICATO ARRIVATO DAL MODULO</span>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #121212; border: 2px solid #333333">
+        <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Il certificato medico</span>
+        </span>
+        <dc-import name="Bottone" label="APRI" variante="linea" contesto="segreteria" alto="44px" corpo="13px" spazio="0 12px" hint-size="70px,44px"></dc-import>
+      </div>
+      <span style="font-size: 13px; line-height: 1.35; color: #8c8c88">Aprilo prima di accogliere: se è quello sbagliato, rifiutalo e la persona lo rimanda. Il link dura 10 minuti: se scade, basta riaprire la richiesta.</span>
+      <div style="max-width: 280px">
+        <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="VALIDO FINO AL" valore="05/09/2027" hint-size="280px,72px"></dc-import>
+      </div>
+      <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">La data la scrivi tu, leggendo il foglio. Accogliendo, il file resta nella scheda dell’iscritto, in CERTIFICATO MEDICO: non va stampato né cancellato.</span>
+      <div style="display: flex">
+        <dc-import name="Bottone" label="RIFIUTA IL FILE" variante="linea" contesto="segreteria" hint-size="170px,48px"></dc-import>
+      </div></div>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; "><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">DOCUMENTO D’IDENTITÀ</span>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #121212; border: 2px solid #333333">
+        <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">La carta d’identità</span>
+        </span>
+        <dc-import name="Bottone" label="APRI" variante="linea" contesto="segreteria" alto="44px" corpo="13px" spazio="0 12px" hint-size="70px,44px"></dc-import>
+      </div></div>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px">
+      <dc-import name="Bottone" label="ACCOGLI" variante="vai" contesto="segreteria" hint-size="140px,48px"></dc-import>
+      <dc-import name="Bottone" label="RIFIUTA LA RICHIESTA" variante="linea" contesto="segreteria" hint-size="220px,48px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

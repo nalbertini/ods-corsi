@@ -1,11 +1,11 @@
-import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
-import { attivitaCambiata, contattoNonValido, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
+import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import { contattoDopoUnione, type IndiziDoppioni } from './doppioni'
-import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
+import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
@@ -13,6 +13,7 @@ import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { richiesteDi, spostaRichieste } from './richiesteProva'
+import { ESTENSIONI } from './richieste'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
@@ -61,24 +62,21 @@ const metti = (messaggio: string, files: File[]) => {
   fileProva.set(messaggio, r)
 }
 
-/**
- * I file dei certificati di prima della carta: come quelli delle richieste,
- * restano solo finché la pagina è aperta, perché `localStorage` non li tiene.
- * In archivio resta che il file c'era. Di nuovi non se ne caricano.
- */
-const certificati = new Map<string, FileSeg>()
-
-function scordaFile(personaId: string) {
-  const vecchio = certificati.get(personaId)
-  if (vecchio && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(vecchio.url)
-  certificati.delete(personaId)
-}
-
 export function creaSegreteriaProva(): DatiSegreteria {
   const a = () => archivio.dati
   const oggi = () => chiaveGiorno(new Date())
   const ieri = () => chiaveGiorno(new Date(Date.now() - GIORNO))
   const salva = () => archivio.salva()
+  /** Trenta giorni dopo la scadenza il file se ne va, la data resta: come `pulisci_certificati` del database. */
+  const potaCertificati = () => {
+    const g = oggi()
+    const scaduti = a().persone.filter((p) => p.certificato?.file && p.certificato.scade && cancellaFileIl(p.certificato.scade) <= g)
+    if (!scaduti.length) return
+    for (const p of scaduti) scordaCertificato(p.id)
+    // Il giorno di caricamento resta: dice che un file c'è stato.
+    a().persone = a().persone.map((p) => (scaduti.includes(p) ? { ...p, certificato: { scade: p.certificato!.scade, caricatoIl: p.certificato!.caricatoIl } } : p))
+    salva()
+  }
 
   const corso = (id: string) => {
     const c = a().corsi.find((x) => x.id === id)
@@ -104,7 +102,6 @@ export function creaSegreteriaProva(): DatiSegreteria {
         .sort((x, y) => (y.gestitaIl ?? '').localeCompare(x.gestitaIl ?? ''))[0]?.codiceFiscale
     if (cf(resta) && cf(via) && cf(resta) !== cf(via))
       throw new Error('Hanno due codici fiscali diversi: non sono la stessa persona. Se uno è sbagliato, correggilo nella scheda e riprova')
-    if (v.certificato?.file) throw new Error(`La scheda di ${nomeDi(v)} ha ancora il file del certificato: stampalo, cancellalo dalla scheda e riprova`)
     if (v.nucleo) throw new Error(`${nomeDi(v)} è nel nucleo familiare di un'altra persona: prima toglila dal nucleo`)
     if (a().persone.some((x) => x.nucleo === via)) throw new Error(`${nomeDi(v)} è titolare di un nucleo familiare: prima rendi titolare qualcun altro o togli gli altri dal nucleo`)
   }
@@ -505,6 +502,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async persone() {
+      potaCertificati()
       return a()
         .persone.filter((p) => p.ruolo === 'iscritto')
         .map(
@@ -520,7 +518,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             iscrizioni: a()
               .iscrizioni.filter((i) => i.personaId === p.id)
               .map((i) => ({ corsoId: i.corsoId, dal: i.dal, al: i.al })),
-            certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file },
+            certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file, vecchio: !!p.certificato?.file && !p.certificato.caricatoIl, caricatoIl: p.certificato?.caricatoIl },
             documento: !!p.documento,
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
@@ -586,28 +584,39 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async attivaPersona(personaId, attiva) {
       persona(personaId)
-      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, attiva } : p))
+      // Disattivata, si lascia dietro il file del certificato; la data resta, e riattivarla non lo riporta.
+      if (!attiva) scordaCertificato(personaId)
+      a().persone = a().persone.map((p) =>
+        p.id !== personaId ? p : { ...p, attiva, certificato: !attiva && p.certificato ? { scade: p.certificato.scade, caricatoIl: p.certificato.caricatoIl } : p.certificato },
+      )
       salva()
     },
 
     async salvaCertificato(personaId, scade) {
       persona(personaId)
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(scade)) throw new Error('Serve la data di scadenza del certificato')
-      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: { scade, file: p.certificato?.file } } : p))
+      const guaio = cosaNonVaScadenza(scade)
+      if (guaio) throw new Error(guaio)
+      a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: { ...p.certificato, scade } } : p))
+      salva()
+    },
+
+    async caricaCertificato(personaId, file, scade) {
+      const guaio = cosaNonVaCertificato(file, scade)
+      if (guaio) throw new Error(guaio)
+      persona(personaId)
+      // Un file per persona: il nuovo prende il posto del vecchio, insieme alla data.
+      scordaCertificato(personaId)
+      certificatiProva.set(personaId, { url: typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : '', pdf: file.type === 'application/pdf' })
+      a().persone = a().persone.map((p) =>
+        p.id === personaId ? { ...p, certificato: { scade, file: `${personaId}/certificato-${Date.now()}.${ESTENSIONI[file.type]}`, caricatoIl: oggi() } } : p,
+      )
       salva()
     },
 
     async togliCertificato(personaId) {
       persona(personaId)
-      scordaFile(personaId)
+      scordaCertificato(personaId)
       a().persone = a().persone.map((p) => (p.id === personaId ? { ...p, certificato: undefined } : p))
-      salva()
-    },
-
-    async cancellaFileCertificato(personaId) {
-      persona(personaId)
-      scordaFile(personaId)
-      a().persone = a().persone.map((p) => (p.id === personaId && p.certificato ? { ...p, certificato: { scade: p.certificato.scade } } : p))
       salva()
     },
 
@@ -619,7 +628,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async apriCertificato(personaId) {
       persona(personaId)
-      return certificati.get(personaId) ?? null
+      potaCertificati()
+      return certificatiProva.get(personaId) ?? null
     },
 
     async salvaPagamento(personaId, dati) {
@@ -1061,6 +1071,13 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const vinceSuo = !!v.pagamento && (!r.pagamento || r.pagamento.stato === 'da_pagare' || finoA(v.pagamento) > finoA(r.pagamento))
       const scelto = vinceSuo ? v.pagamento : r.pagamento
       const pagamento = scelto && { ...scelto, nota: r.pagamento?.nota ?? v.pagamento?.nota }
+      const fileDelDoppione = !!v.certificato?.file && (!r.certificato?.file || (v.certificato.scade ?? '') > (r.certificato.scade ?? ''))
+      if (fileDelDoppione) {
+        const suo = certificatiProva.get(via)
+        scordaCertificato(resta)
+        certificatiProva.delete(via)
+        if (suo) certificatiProva.set(resta, suo)
+      } else scordaCertificato(via)
       const unita: PersonaProva = {
         ...r,
         email: r.email ?? v.email,
@@ -1069,7 +1086,15 @@ export function creaSegreteriaProva(): DatiSegreteria {
         telefono: r.telefono ?? v.telefono,
         // Attiva se una delle due lo era: chi trova un doppione spesso l'ha già disattivato.
         attiva: r.attiva || v.attiva,
-        certificato: r.certificato || v.certificato ? { ...r.certificato, scade: fino(r.certificato?.scade, v.certificato?.scade) } : undefined,
+        // Il file è di chi resta, o di chi se ne va se la sua data è più lontana (e l'altro si cancella).
+        certificato:
+          r.certificato || v.certificato
+            ? {
+                ...(fileDelDoppione ? { file: v.certificato?.file, caricatoIl: v.certificato?.caricatoIl } : { file: r.certificato?.file, caricatoIl: r.certificato?.caricatoIl }),
+                // La data è quella del certificato il cui file resta; se nessuno ha un file, la più lontana.
+                scade: fileDelDoppione ? v.certificato?.scade : r.certificato?.file ? r.certificato.scade : fino(r.certificato?.scade, v.certificato?.scade),
+              }
+            : undefined,
         documento: r.documento || v.documento,
         pagamento,
       }

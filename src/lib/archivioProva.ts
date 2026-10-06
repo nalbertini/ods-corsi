@@ -2,7 +2,7 @@ import type { Segnalata } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 import type { Ruolo, StatoSessione } from './sala'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
-import type { Anagrafica } from './segreteria'
+import type { Anagrafica, FileSeg } from './segreteria'
 
 /**
  * L'archivio della modalità prova: corsi, orari, persone e iscrizioni.
@@ -67,8 +67,8 @@ export interface PersonaProva {
   attiva: boolean
   creataIl: string
   /** Solo degli iscritti, e anche questi possono mancare in un archivio già salvato. */
-  /** `file`: caricato prima della carta, da stampare e cancellare. */
-  certificato?: { scade?: string; file?: string }
+  /** `file`: il nome di quello caricato nell'app; senza `caricatoIl` è di prima della nuova gestione. */
+  certificato?: { scade?: string; file?: string; caricatoIl?: string }
   /** La copia del documento d'identità è in segreteria. */
   documento?: boolean
   pagamento?: { stato: 'da_pagare' | 'in_parte' | 'pagato'; fino?: string; nota?: string }
@@ -303,7 +303,7 @@ function inRegolaDiProva(id: string): Pick<PersonaProva, 'certificato' | 'docume
   const cert = h % 12
   const paga = (h >> 4) % 12
   return {
-    // Qualcuno col file di prima della carta, da stampare.
+    // Qualcuno col file di prima della nuova gestione (in prova non si apre: i file stanno solo in memoria).
     certificato: cert === 0 ? undefined : { scade: giorno(cert === 1 ? -5 : cert === 2 ? 30 : 180 + cert * 20), file: cert === 3 ? 'certificato.pdf' : undefined },
     documento: (h >> 8) % 6 !== 0,
     pagamento:
@@ -425,3 +425,16 @@ export const archivio = {
 
 /** Il nome di un istruttore, o della persona: per le liste e le intestazioni. */
 export const nomeDi = (p: Pick<PersonaProva, 'nome' | 'cognome'>) => (p.cognome ? `${p.nome} ${p.cognome}` : p.nome)
+
+/**
+ * I file dei certificati, per persona: come quelli delle richieste restano
+ * solo finché la pagina è aperta, perché `localStorage` non li tiene. In
+ * archivio resta che il file c'era.
+ */
+export const certificatiProva = new Map<string, FileSeg>()
+
+export function scordaCertificato(personaId: string) {
+  const vecchio = certificatiProva.get(personaId)
+  if (vecchio?.url && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(vecchio.url)
+  certificatiProva.delete(personaId)
+}

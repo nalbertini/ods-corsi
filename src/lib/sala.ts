@@ -135,6 +135,12 @@ export function giornoPerEsteso(iso: string): string {
   return `${GIORNI[d.getDay()]} ${d.getDate()} ${MESI[d.getMonth()]}`
 }
 
+/** «12 gennaio 2026», da una data `AAAA-MM-GG`; senza l'anno se `anno` è falso. */
+export function dataLunga(g: string, anno = true) {
+  const [a, m, d] = g.split('-').map(Number)
+  return `${d} ${MESI[m - 1]}${anno ? ` ${a}` : ''}`
+}
+
 /** La chiave `AAAA-MM-GG` di una data locale, senza passare da UTC. */
 export function chiaveGiorno(d: Date): string {
   const p = (n: number) => String(n).padStart(2, '0')

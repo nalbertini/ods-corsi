@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { DatiSegreteria, LezioneSeg } from '../../lib/segreteria'
-import { certificatoInArrivo, certificatoInScadenza, comePaga, senzaCertificatoValido } from '../../lib/segreteria'
+import { certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, comePaga, senzaCertificatoValido } from '../../lib/segreteria'
 import { datiRichieste } from '../../lib/richieste'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { dataLunga, Testa } from './comune'
@@ -86,7 +86,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           scadenza: tutto ? (attive ? attive.filter((p) => certificatoInScadenza(p, oggi)).length : null) : prima.scadenza,
           arrivo: tutto ? (attive ? attive.filter((p) => certificatoInArrivo(p, oggi)).length : null) : prima.arrivo,
           pagare: tutto ? (attive ? attive.filter((p) => comePaga(p, oggi) !== 'pagato').length : null) : prima.pagare,
-          certificatiDaStampare: tutto ? (pers ? pers.filter((p) => p.certificato.conFile).length : null) : prima.certificatiDaStampare,
+          certificatiDaStampare: tutto ? (pers ? pers.filter((p) => certificatoDaStampare(p.certificato)).length : null) : prima.certificatiDaStampare,
           documentiDaStampare: tutto ? (ric?.conDocumento ? ric.conDocumento.size : null) : prima.documentiDaStampare,
         }))
       },
@@ -127,7 +127,7 @@ const LIVELLO: Record<string, Livello> = {
   segnalate: 'presto',
   scadenza: 'presto',
   arrivo: 'presto',
-  'certificati-stampa': 'faccenda',
+  'file-di-prima': 'faccenda',
   'documenti-stampa': 'faccenda',
 }
 const ORDINE: Record<Livello, number> = { blocca: 0, presto: 1, faccenda: 2 }
@@ -225,20 +225,20 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       dove: { filtro: 'pagare' },
     },
     {
-      chiave: 'certificati-stampa',
+      chiave: 'file-di-prima',
       n: conti.certificatiDaStampare,
-      titolo: (n) => uno(n, 'certificato da stampare', 'certificati da stampare'),
-      sotto: 'Caricati nell’app: si stampano, si mettono nella cartellina e si cancellano da qui.',
-      aPosto: 'certificati da stampare',
+      titolo: (n) => uno(n, 'file di certificato di prima', 'file di certificato di prima'),
+      sotto: 'Caricati nell’app prima della nuova gestione: si aprono dalla scheda come gli altri, e si cancellano da soli 30 giorni dopo la scadenza.',
+      aPosto: 'file di certificato di prima',
       tasto: 'VEDI QUALI',
       voce: 'iscritti',
-      dove: { filtro: 'stampare' },
+      dove: { filtro: 'file-di-prima' },
     },
     {
       chiave: 'documenti-stampa',
       n: conti.documentiDaStampare,
       titolo: (n) => uno(n, 'richiesta con documenti da stampare', 'richieste con documenti da stampare'),
-      sotto: 'Documento d’identità e certificato arrivati col modulo: accolta la richiesta, si stampano e si cancellano.',
+      sotto: 'Documento d’identità arrivato col modulo: accolta la richiesta, si stampa e si cancella.',
       aPosto: 'richieste da stampare',
       tasto: 'VEDI QUALI',
       voce: 'richieste',
@@ -267,7 +267,7 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
         <div className="sg-dafare-fatto">
           <span className="ob">NIENTE IN SOSPESO</span>
           <span className="sg-sotto">
-            Appelli fatti, richieste e presenze guardate, certificati e pagamenti in regola{faccende.length ? '; in fondo, solo qualcosa da stampare' : ''}.
+            Appelli fatti, richieste e presenze guardate, certificati e pagamenti in regola{faccende.length ? '; in fondo, solo qualche faccenda' : ''}.
           </span>
         </div>
       )}

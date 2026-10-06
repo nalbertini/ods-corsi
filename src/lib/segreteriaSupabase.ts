@@ -3,8 +3,9 @@ import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
-import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
+import { ESTENSIONI } from './richieste'
 import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
@@ -88,6 +89,8 @@ const ricevuta = (r: RigaRicevuta): Ricevuta => ({
 type Scheda = {
   certificato_scade: string | null
   certificato_file: string | null
+  /** Arriva con 45-certificati-online.sql: senza, ogni file è di prima. */
+  certificato_caricato_il?: string | null
   documento_in_segreteria?: boolean
   pagamento: StatoPagamento
   pagato_fino: string | null
@@ -95,11 +98,11 @@ type Scheda = {
 }
 
 /**
- * I certificati medici di prima della carta: un contenitore privato, che apre
- * solo la segreteria (`07-certificati-pagamenti.sql`), per stamparli e
- * cancellarli. Di nuovi non se ne caricano.
+ * I certificati medici: un contenitore privato, che apre solo la segreteria
+ * (`45-certificati-online.sql`), con un link che dura dieci minuti.
  */
 const CERTIFICATI = 'certificati'
+const MANCA_CERTIFICATI = 'I certificati nell’app non sono ancora attivi sul database: va lanciato 45-certificati-online.sql'
 const NUCLEO_SOLO_PROVA = 'Il nucleo familiare c’è solo in prova, per ora: il database non lo tiene ancora'
 const DURATA_LINK = 600
 const ALLEGATI = 'segnalazioni'
@@ -197,6 +200,9 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /anche_istruttore/.test(e.message ?? '')) return new Error(MANCA_DOPPIO)
   // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
+  // Il file del certificato e la data insieme arrivano con 45-certificati-online.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_certificato/.test(e.message ?? '')) return new Error(MANCA_CERTIFICATI)
+  if ((e?.code === '42703' || e?.code === 'PGRST204') && /certificato_caricato_il/.test(e.message ?? '')) return new Error(MANCA_CERTIFICATI)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /unisci_persone|anteprima_unione/.test(e.message ?? ''))
     return new Error('Unire due schede non è ancora attivo sul database: va lanciato 29-unisci-doppioni.sql')
   // Togliere un allegato: `togli_allegato` dice di no a chi non l'ha mandato.
@@ -319,11 +325,11 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     if (falliti.length) throw new AllegatiNonPartiti(messaggio, falliti)
   }
 
-  /** Dove sta il file del certificato di prima della carta, se c'è ancora. */
+  /** Dove sta il file del certificato, se c'è. */
   const fileCertificato = async (personaId: string) =>
     (ok(await db.from('schede_iscritti').select('certificato_file').eq('persona_id', personaId).maybeSingle()) as { certificato_file: string | null } | null)?.certificato_file ?? null
   /**
-   * Cancella il file di prima della carta, se c'è: dopo, nella scheda non
+   * Cancella il file del certificato, se c'è: dopo, nella scheda non
    * deve restare un nome che porta a niente. Lo Storage non dice di no quando
    * la policy non lascia cancellare, torna solo meno file: lo si controlla.
    */
@@ -707,11 +713,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           .select(schede ? `${campi(contatto)}, schede_iscritti!persona_id ( ${schede} )` : campi(contatto))
           .eq('ruolo', 'iscritto')
           .order('cognome')
+      const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703' && !/email_contatto/.test(x.error.message ?? '')
       const leggiTutto = async (contatto: boolean) => {
         // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
-        let r = await leggi(`${scheda}, documento_in_segreteria`, contatto)
-        // 07-certificati-pagamenti.sql di prima del documento su carta: senza la colonna nuova.
-        if (r.error?.code === '42703' && !/email_contatto/.test(r.error.message ?? '')) r = await leggi(scheda, contatto)
+        let r = await leggi(`${scheda}, certificato_caricato_il, documento_in_segreteria`, contatto)
+        // Senza 45-certificati-online.sql ogni file è di prima; e 07-certificati-pagamenti.sql di prima del documento su carta: senza la colonna nuova.
+        if (colonnaMancante(r)) r = await leggi(`${scheda}, documento_in_segreteria`, contatto)
+        if (colonnaMancante(r)) r = await leggi(scheda, contatto)
         // Un database dove 07-certificati-pagamenti.sql non è ancora passato: l'elenco si vede lo stesso.
         if (r.error?.code === 'PGRST200') r = await leggi(null, contatto)
         return r
@@ -739,7 +747,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           attiva: r.attiva,
           creataIl: r.creata_il.slice(0, 10),
           iscrizioni: r.iscrizioni.map((i) => ({ corsoId: i.corso_id, dal: i.dal, al: i.al ?? undefined })),
-          certificato: { scade: s?.certificato_scade ?? undefined, conFile: !!s?.certificato_file },
+          certificato: {
+            scade: s?.certificato_scade ?? undefined,
+            conFile: !!s?.certificato_file,
+            // Un file senza data di caricamento è di prima della nuova gestione.
+            vecchio: !!s?.certificato_file && !s.certificato_caricato_il,
+            caricatoIl: s?.certificato_caricato_il?.slice(0, 10),
+          },
           documento: !!s?.documento_in_segreteria,
           pagamento: { stato: s?.pagamento ?? 'da_pagare', fino: s?.pagato_fino ?? undefined, nota: s?.pagamento_nota ?? undefined },
           quote: pagate.get(r.id) ?? [],
@@ -834,18 +848,35 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async salvaCertificato(personaId, scade) {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(scade)) throw new Error('Serve la data di scadenza del certificato')
+      const guasto = cosaNonVaScadenza(scade)
+      if (guasto) throw new Error(guasto)
       ok(await db.from('schede_iscritti').upsert({ persona_id: personaId, certificato_scade: scade }, { onConflict: 'persona_id' }))
+    },
+
+    async caricaCertificato(personaId, file, scade) {
+      const guasto = cosaNonVaCertificato(file, scade)
+      if (guasto) throw new Error(guasto)
+      // Prima il file, poi file e data in un passaggio solo: `salva_certificato` toglie il vecchio.
+      const nomeFile = `${personaId}/certificato-${Date.now()}.${ESTENSIONI[file.type]}`
+      const su = await db.storage.from(CERTIFICATI).upload(nomeFile, file, { contentType: file.type, upsert: false })
+      if (su.error) throw /bucket not found/i.test(su.error.message ?? '') ? new Error(MANCA_CERTIFICATI) : guaioFile(su.error)
+      const r = await db.rpc('salva_certificato', { persona: personaId, file: nomeFile, scade })
+      if (r.error) {
+        // Il file è salito ma la scheda non lo ha: si toglie, se no resta lì senza che nessuno lo ritrovi.
+        // Lo Storage non dice di no quando non può cancellare, torna solo meno file: lo si controlla.
+        const via = await db.storage.from(CERTIFICATI).remove([nomeFile])
+        const causa = guaio(r.error).message
+        if (via.error || !via.data?.length) throw new Error(`${causa}. Il file caricato non si è potuto togliere: avvisa chi gestisce il database`)
+        throw new Error(causa)
+      }
     },
 
     async togliCertificato(personaId) {
       await cancellaFile(personaId)
-      ok(await db.from('schede_iscritti').update({ certificato_scade: null, certificato_file: null }).eq('persona_id', personaId))
-    },
-
-    async cancellaFileCertificato(personaId) {
-      await cancellaFile(personaId)
-      ok(await db.from('schede_iscritti').update({ certificato_file: null }).eq('persona_id', personaId))
+      // Anche il giorno di caricamento (45-certificati-online.sql): senza il file non ha senso. Se la colonna non c'è ancora si toglie il resto.
+      let r = await db.from('schede_iscritti').update({ certificato_scade: null, certificato_file: null, certificato_caricato_il: null }).eq('persona_id', personaId)
+      if (r.error?.code === '42703' || r.error?.code === 'PGRST204') r = await db.from('schede_iscritti').update({ certificato_scade: null, certificato_file: null }).eq('persona_id', personaId)
+      ok(r)
     },
 
     async salvaDocumento(personaId, inSegreteria) {

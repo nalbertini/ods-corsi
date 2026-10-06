@@ -24,6 +24,7 @@ const SEZIONI = [
   { id: 'importa-fogli', nome: 'Importa da Excel', cartella: 'import-fogli' },
   { id: 'email-contatto', nome: 'Email di contatto · proposta', cartella: 'email-contatto' },
   { id: 'timer-desktop', nome: 'Timer desktop · proposte', cartella: 'timer-desktop' },
+  { id: 'certificati-online', nome: 'Certificati online', cartella: 'certificati-online' },
   { id: 'certificato-piccoli', nome: 'Certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
 ]
 

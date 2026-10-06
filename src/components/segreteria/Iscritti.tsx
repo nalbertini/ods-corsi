@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { campoDelGuaio, cercaNellElenco, certificatoInArrivo, certificatoInScadenza, comePaga, cosaNonVaAnagrafica, dalCertificato, inCorso, mancaLaData, pagamentoDi, paroleInRegola, pulisciAnagrafica, senzaCertificatoValido, statoCertificato, senzaEmail, tastoPrincipale, timbriScheda } from '../../lib/segreteria'
+import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -112,7 +112,7 @@ export function Iscritti({
   const [arrivo, setArrivo] = useState(filtroIniziale === 'arrivo')
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
-  const [daStampare, setDaStampare] = useState(filtroIniziale === 'stampare')
+  const [filePrima, setFilePrima] = useState(filtroIniziale === 'file-di-prima')
   const [doppi, setDoppi] = useState(false)
   // Da una coppia di possibili doppioni: la scheda si apre con UNISCI già sull'altra.
   const [unisciCon, setUnisciCon] = useState<string | null>(null)
@@ -124,9 +124,9 @@ export function Iscritti({
   const tutti = [...(persone.dato ?? [])].sort(
     (a, b) => Number(b.attiva) - Number(a.attiva) || a.cognome.localeCompare(b.cognome, 'it') || a.nome.localeCompare(b.nome, 'it'),
   )
-  const stampare = tutti.filter((p) => p.certificato.conFile).length
-  // Stampati tutti, il filtro si spegne da sé.
-  const soloStampare = daStampare && stampare > 0
+  const nFilePrima = tutti.filter((p) => certificatoDaStampare(p.certificato)).length
+  // Finiti tutti (cancellati da soli o tolti), il filtro si spegne da sé.
+  const soloFilePrima = filePrima && nFilePrima > 0
   const coppie = indizi.dato ? coppieDoppioni(tutti, indizi.dato) : []
   // Unite o segnate tutte, il filtro si spegne da sé.
   const soloDoppi = doppi && coppie.length > 0
@@ -141,7 +141,7 @@ export function Iscritti({
       (!arrivo || certificatoInArrivo(p, oggi)) &&
       (!pagare || daPagare(p, oggi)) &&
       (!senzaDocumento || !p.documento) &&
-      (!soloStampare || p.certificato.conFile),
+      (!soloFilePrima || certificatoDaStampare(p.certificato)),
   )
   const suoiCorsi = (p: PersonaSeg) => p.iscrizioni.filter((i) => inCorso(i, oggi)).map((i) => perId.get(i.corsoId)?.nome).filter(Boolean)
   const { ordina, colonna } = useOrdina<PersonaSeg, 'nome' | 'corsi' | 'contatto' | 'regola' | 'frequenza'>({
@@ -225,7 +225,7 @@ export function Iscritti({
         <Testa
           titolo="ISCRITTI"
           sotto={`${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'}${inScadenza ? ` · ${inScadenza} in scadenza` : ''} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.${
-            stampare === 1 ? ' Un certificato caricato nell’app da stampare e cancellare.' : stampare ? ` ${stampare} certificati caricati nell’app da stampare e cancellare.` : ''
+            nFilePrima === 1 ? ' Un file di certificato è di prima della nuova gestione.' : nFilePrima ? ` ${nFilePrima} file di certificato sono di prima della nuova gestione.` : ''
           }`}
         >
           <button type="button" className="sg-btn sg-btn-pieno" onClick={onNuovo}>
@@ -270,9 +270,9 @@ export function Iscritti({
           <button type="button" className="num sg-chip" aria-pressed={senzaDocumento} onClick={() => setSenzaDocumento(!senzaDocumento)}>
             SENZA DOCUMENTO
           </button>
-          {stampare > 0 && (
-            <button type="button" className="num sg-chip" aria-pressed={soloStampare} onClick={() => setDaStampare(!soloStampare)}>
-              CERTIFICATI DA STAMPARE
+          {nFilePrima > 0 && (
+            <button type="button" className="num sg-chip" aria-pressed={soloFilePrima} onClick={() => setFilePrima(!soloFilePrima)}>
+              FILE DI PRIMA
             </button>
           )}
           {coppie.length > 0 && (
@@ -346,7 +346,7 @@ export function Iscritti({
                     <button type="button" className="sg-riga-apri" aria-current={!nuovo && scelta === p.id ? 'true' : undefined}>
                       {p.cognome} {p.nome}
                     </button>
-                    {p.certificato.conFile && <span className="num sg-tag" style={{ marginLeft: 8 }}>DA STAMPARE</span>}
+                    {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>FILE DI PRIMA</span>}
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
                   <span role="cell" style={{ fontSize: 13, color: p.email || p.emailContatto || p.telefono ? 'var(--sec)' : 'var(--rosso-testo)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -764,7 +764,7 @@ function Scheda({
               type="button"
               className="sg-btn sg-btn-linea grow"
               onClick={async () => {
-                if (p.attiva && !(await chiedi(`Disattivare ${p.nome} ${p.cognome}? Sparisce dagli appelli e dal tablet; si può riattivare.`, 'DISATTIVA LA SCHEDA'))) return
+                if (p.attiva && !(await chiedi(confermaDisattiva(`${p.nome} ${p.cognome}`, p.certificato), 'DISATTIVA LA SCHEDA'))) return
                 void fai(() => d.attivaPersona(p.id, !p.attiva), p.attiva ? 'Scheda disattivata' : 'Scheda riattivata', onCambiato)
               }}
             >
@@ -995,7 +995,7 @@ function UnisciDoppione({
           ) : (
             (
               <span className="sg-sotto">
-                {quanto(passa.dato)} Una presenza per lezione e un’iscrizione per corso; del certificato e della quota, la scadenza più lontana. Resta attiva
+                {quanto(passa.dato)} Una presenza per lezione e un’iscrizione per corso; del certificato, la scadenza più lontana col suo file, e della quota, quella più lontana. Resta attiva
                 se una delle due lo era.
               </span>
             )
@@ -1016,7 +1016,7 @@ function UnisciDoppione({
             const persi = indirizziPersi(resta, via)
             // Niente sparisce in silenzio: l'indirizzo che non trova posto si dice prima.
             const perso = persi.length ? `\nDell'altra scheda si perde ${persi.join(', ')}: non c'è posto fra l'email e il contatto di chi resta.\nCopialo prima, se ti serve.` : ''
-            if (!(await chiedi(`Unire ${nome(via)} in ${nome(resta)}? La scheda di ${nome(via)} se ne va, e non si torna indietro.${perso}`, 'UNISCI', { pericolo: true }))) return
+            if (!(await chiedi(confermaUnione(nome(via), nome(resta), via.certificato, resta.certificato, perso), 'UNISCI', { pericolo: true }))) return
             void fai(() => d.unisciPersone(resta.id, via.id), 'Schede unite', () => onUnite(resta.id))
           }}
         >
@@ -1287,38 +1287,23 @@ function ModificaAnagrafica({
   )
 }
 
-/** Quanti giorni da oggi a una data `AAAA-MM-GG`. */
-const giorniA = (g: string, oggi: string) => Math.round((Date.parse(g) - Date.parse(oggi)) / 86_400_000)
-
 /**
- * Il certificato medico: fino a quando vale. Il foglio sta su carta, nella
- * cartellina della segreteria: qui si scrive solo la scadenza. Senza, in sala
- * non si entra: in elenco si vede in rosso, e un mese prima della scadenza in
- * giallo.
- *
- * Un certificato caricato nell'app prima della carta ha ancora il file: si
- * apre, si stampa e si cancella da qui.
+ * Il certificato medico: il file e fino a quando vale. Il file sta nell'app,
+ * lo apre solo la segreteria con un link di dieci minuti, e si cancella da
+ * solo trenta giorni dopo la scadenza. La data la scrive la segreteria
+ * leggendo il foglio: senza, in sala non si entra (e sotto i 6 anni non serve).
+ * Un gesto solo per caricare o sostituire: il file e la data insieme, un solo
+ * SALVA. Chi ha il file ma non la data (arrivato col modulo) scrive solo la data.
  */
 function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaSeg; fai: Fai; onCambiato: () => void }) {
   const oggi = chiaveGiorno(new Date())
-  const [bozza, setBozza] = useState<{ scade: string } | null>(null)
+  const [gesto, setGesto] = useState<{ file?: File; scade: string } | null>(null)
+  const sel = useRef<HTMLInputElement>(null)
   const c = p.certificato
-  const come = statoCertificato(p, oggi)
-  const t = timbriScheda(p, oggi).certificato
-  const fra = c.scade ? giorniA(c.scade, oggi) : 0
-
-  const stato =
-    come === 'manca'
-      ? `Nessun certificato in segreteria: senza, in sala non si entra.${mancaLaData(p) ? ' Manca la data di nascita: sotto i 6 anni non serve.' : ''}`
-      : come === 'scaduto'
-        ? `Scaduto il ${dataLunga(c.scade!)}: va rinnovato prima di tornare in sala.`
-        : come === 'in_scadenza'
-          ? `Scade il ${dataLunga(c.scade!)}, ${fra === 0 ? 'oggi' : fra === 1 ? 'domani' : `fra ${fra} giorni`}.`
-          : come === 'in_arrivo'
-            ? `Compie 6 anni il ${dataLunga(dalCertificato(p.natoIl!) /* `in_arrivo` c'è solo con la data di nascita */)}: da quel giorno serve il certificato. Meglio avvisare la famiglia.`
-            : come === 'non_serve'
-              ? `Sotto i 6 anni il certificato non è obbligatorio.${c.scade ? ` In segreteria c’è, ${c.scade < oggi ? 'scaduto' : 'valido'} il ${dataLunga(c.scade)}.` : ''}`
-              : `Valido fino al ${dataLunga(c.scade!)}.`
+  // Cosa dire e quale tasto offrire sta in `src/lib/segreteria.ts`: qui si mostra.
+  const x = presentaCertificato(c, p.natoIl, oggi, p.attiva)
+  const nonServe = x.parola === 'NON SERVE'
+  const pronto = !!gesto && certificatoPronto(gesto, c)
 
   const apri = () => {
     // La finestra si apre subito, col clic: dopo l'attesa del link il browser la bloccherebbe.
@@ -1330,7 +1315,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
       })
       if (!f) {
         w?.close()
-        throw new Error(d.modo === 'prova' ? 'In prova il file resta solo finché la pagina è aperta: questo non c’è più, si può cancellare' : 'Il file non si trova')
+        throw new Error(d.modo === 'prova' ? 'In prova il file resta solo finché la pagina è aperta: questo non c’è più, si può togliere' : 'Il file non si trova')
       }
       if (w) w.location.href = f.url
       else window.location.href = f.url
@@ -1340,67 +1325,94 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
   return (
     <div className="stack" style={{ gap: 8 }}>
       <Riga titolo="CERTIFICATO MEDICO">
-        <Bollino tono={t.tono}>{t.parola}</Bollino>
+        <Bollino tono={x.tono}>{x.parola}</Bollino>
       </Riga>
-      {!bozza && <span style={{ fontSize: 14, color: come === 'valido' || come === 'non_serve' ? 'var(--sec)' : come === 'in_scadenza' || come === 'in_arrivo' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{stato}</span>}
+      <span style={{ fontSize: 14, color: x.tono === 'verde' || x.tono === 'spento' ? 'var(--sec)' : x.tono === 'giallo' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{x.senzaNascita ? `${x.frase} ${x.senzaNascita}` : x.frase}</span>
 
-      {c.conFile && (
-        <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
-          <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>
-            Questo certificato è ancora caricato nell’app: aprilo, stampalo, mettilo nella cartellina e cancellalo da qui. La scadenza resta.
-          </span>
-          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-            <button type="button" className="num sg-chip" data-primo onClick={apri}>
-              APRI PER STAMPARE
-            </button>
-            <button
-              type="button"
-              className="num sg-chip"
-              onClick={async () => {
-                if ((await chiedi(`Il certificato di ${p.nome} ${p.cognome} è stampato e nella cartellina? Dall'app si cancella per sempre.`, 'SÌ, CANCELLA IL FILE', { pericolo: true })))
-                  void fai(() => d.cancellaFileCertificato(p.id), 'File cancellato: il certificato ora è solo su carta', onCambiato)
-              }}
-            >
-              STAMPATO, CANCELLALO
+      {c.conFile ? (
+        <div className="stack" style={{ gap: 6 }}>
+          <div className="row" style={{ gap: 12, alignItems: 'center', padding: '10px 12px', background: 'var(--surface)', border: '2px solid var(--line)' }}>
+            <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+              <span style={{ fontSize: 15, fontWeight: 600 }}>Il file del certificato</span>
+              <span style={{ fontSize: 13, color: 'var(--dim)' }}>{c.caricatoIl ? `caricato il ${dataLunga(c.caricatoIl)}` : 'caricato prima della nuova gestione'}</span>
+            </span>
+            <button type="button" className="num sg-chip sg-chip-pieno" onClick={apri}>
+              APRI
             </button>
           </div>
+          <span style={{ fontSize: 13, color: 'var(--dim)' }}>Lo vede solo la segreteria. Il link dura 10 minuti: se scade, basta riaprire con APRI.</span>
+          {x.cancellaIl && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Il file si cancella da solo il {dataLunga(x.cancellaIl)}, 30 giorni dopo la scadenza.</span>}
+          {c.vecchio && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>È un file di prima della nuova gestione: si apre con APRI come gli altri.</span>}
         </div>
+      ) : (
+        !nonServe &&
+        x.nota && (
+          <div className="row" style={{ padding: '10px 12px', border: '2px dashed var(--tratteggio)' }}>
+            <span style={{ fontSize: 14, color: 'var(--dim)' }}>{x.nota}</span>
+          </div>
+        )
       )}
 
-      {bozza ? (
-        <>
-          <Campo id="c-scade" etichetta="VALIDO FINO AL">
-            <input id="c-scade" className="sg-campo" type="date" value={bozza.scade} onChange={(e) => setBozza({ scade: e.target.value })} />
+      {gesto ? (
+        <div className="stack" style={{ gap: 10, padding: 14, background: 'var(--surface)', border: '2px solid var(--line)', borderLeft: '4px solid var(--giallo)' }}>
+          <Campo etichetta="FILE">
+            <div className="row" style={{ gap: 12, alignItems: 'center', padding: '6px 6px 6px 12px', background: 'var(--bg)', border: `2px solid ${gesto.file ? 'var(--verde-testo)' : 'var(--line)'}` }}>
+              <span className="grow" style={{ minWidth: 0, fontSize: 15, color: gesto.file ? 'var(--text)' : 'var(--dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {gesto.file ? gesto.file.name : c.conFile ? 'Resta quello che c’è' : 'Nessun file scelto'}
+              </span>
+              <button type="button" className="num sg-chip" onClick={() => sel.current?.click()}>
+                {gesto.file ? 'CAMBIA' : 'SCEGLI'}
+              </button>
+              <input
+                ref={sel}
+                type="file"
+                className="vh"
+                tabIndex={-1}
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  e.target.value = ''
+                  if (file) setGesto({ ...gesto, file })
+                }}
+              />
+            </div>
           </Campo>
-          <span style={{ fontSize: 13, color: 'var(--dim)' }}>
-            Il foglio va nella cartellina, e quello vecchio si distrugge. Se è arrivato per email o WhatsApp: stampalo e cancellalo da lì.
-          </span>
-          {bozza.scade && bozza.scade < oggi && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Questa data è già passata: il certificato risulterà scaduto.</span>}
+          <Campo id="c-scade" etichetta="VALIDO FINO AL">
+            <input id="c-scade" className="sg-campo" type="date" value={gesto.scade} onChange={(e) => setGesto({ ...gesto, scade: e.target.value })} />
+          </Campo>
+          {avvisiGesto(gesto, c, oggi).map((t) => (
+            <span key={t} style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>
+              {t}
+            </span>
+          ))}
           <div className="row" style={{ gap: 8 }}>
-            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setBozza(null)}>
+            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setGesto(null)}>
               LASCIA STARE
             </button>
             <button
               type="button"
               className="sg-btn sg-btn-pieno grow"
-              disabled={!bozza.scade}
+              disabled={!pronto}
               onClick={() =>
-                void fai(() => d.salvaCertificato(p.id, bozza.scade), c.scade ? 'Scadenza cambiata' : 'Certificato segnato', () => {
-                  setBozza(null)
-                  onCambiato()
-                })
+                void fai(
+                  () => (gesto.file ? d.caricaCertificato(p.id, gesto.file, gesto.scade) : d.salvaCertificato(p.id, gesto.scade)),
+                  c.scade || c.conFile ? 'Certificato cambiato' : 'Certificato salvato',
+                  () => {
+                    setGesto(null)
+                    onCambiato()
+                  },
+                )
               }
             >
               SALVA
             </button>
           </div>
-        </>
-      ) : (
-        <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          {/* Col file da stampare, il timbro porta prima lì (APRI PER STAMPARE). */}
-          {/* Pieno solo se è la prima cosa da fare (`tastoPrincipale`): in scheda un tasto pieno alla volta. */}
-          <button type="button" className={tastoPrincipale(p, oggi) === 'certificato' ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo={c.conFile ? undefined : true} onClick={() => setBozza({ scade: c.scade && c.scade >= oggi ? c.scade : '' })}>
-            {c.scade ? 'RINNOVA O CORREGGI' : 'SEGNA IL CERTIFICATO'}
+        </div>
+      ) : x.puoCambiare ? (
+        <div className="row sg-tasti-cert" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          {/* Pieno solo se è la prima cosa da fare: in scheda un tasto pieno alla volta. */}
+          <button type="button" className={x.primo ? 'num sg-chip sg-chip-pieno' : 'num sg-chip'} data-primo={x.primo || undefined} onClick={() => setGesto(gestoIniziale(c))}>
+            {x.tasto}
           </button>
           <div className="grow" />
           {(c.conFile || c.scade) && (
@@ -1408,7 +1420,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
               type="button"
               className="sg-btn sg-btn-linea"
               onClick={async () => {
-                if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file caricato nell’app si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne segna uno nuovo. Il foglio in segreteria va distrutto a mano.`, 'TOGLI IL CERTIFICATO', { pericolo: true })))
+                if ((await chiedi(`Togliere il certificato di ${p.nome} ${p.cognome}?${c.conFile ? ' Il file si cancella per sempre.' : ''} Senza certificato non entra in sala finché non se ne carica uno nuovo.`, 'TOGLI IL CERTIFICATO', { pericolo: true })))
                   void fai(() => d.togliCertificato(p.id), 'Certificato tolto', onCambiato)
               }}
             >
@@ -1416,7 +1428,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
             </button>
           )}
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

@@ -12,9 +12,10 @@ import { cfNatoIl, cfTornaColNome, cfTornaConLaData, cfValido } from './codiceFi
  * (`supabase/06-iscrizioni.sql`), dove chi non ha un accesso può solo
  * mandarle e la segreteria è l'unica a leggerle.
  *
- * Il documento d'identità e il certificato medico si caricano per comodità,
- * ma non restano online: la segreteria li stampa, li tiene su carta e li
- * cancella dall'app (`DA_STAMPARE`).
+ * Il documento d'identità si carica per comodità, ma non resta online: la
+ * segreteria lo stampa, lo tiene su carta e lo cancella dall'app
+ * (`DA_STAMPARE`). Il certificato medico invece resta: accolta la richiesta
+ * passa alla scheda, dove lo apre solo la segreteria.
  *
  * I controlli qui sotto sono gli stessi della funzione `invia_iscrizione`:
  * nel browser servono a dire subito cosa manca, ma a decidere è il server.
@@ -122,8 +123,8 @@ export const FILE: Array<{ tipo: TipoFile; etichetta: string; dettaglio: string;
   },
 ]
 
-/** I file che non restano nell'app: la segreteria li stampa, li tiene su carta e li cancella. */
-export const DA_STAMPARE: TipoFile[] = ['documento', 'documento-retro', 'certificato']
+/** I file che non restano nell'app: la segreteria li stampa, li tiene su carta e li cancella. Il certificato no: passa alla scheda. */
+export const DA_STAMPARE: TipoFile[] = ['documento', 'documento-retro']
 
 export const ETICHETTA_FILE = Object.fromEntries(FILE.map((f) => [f.tipo, f.etichetta])) as Record<TipoFile, string>
 
@@ -142,6 +143,34 @@ export const FORMULE: Array<[Formula, string]> = [
   ['annuale', 'Annuale'],
   ['trimestre', 'Trimestre'],
 ]
+
+/** Cosa manca del certificato arrivato col modulo prima di accogliere: la data, che la richiesta non porta. */
+export const problemiCertificato = (conFile: boolean, scade: string): string[] => (conFile && !scade ? ['Manca la data del certificato.'] : [])
+
+/**
+ * Accoglie la richiesta e, se c'è, scrive la data del certificato sulla
+ * scheda: un passo solo per chi usa l'app. Se la richiesta è accolta ma la
+ * data no, lo dice con la causa e dice dove scriverla: accogliere non si
+ * annulla, e rifarlo non serve.
+ */
+export async function accogliConCertificato(
+  r: Pick<DatiRichieste, 'accogli'>,
+  d: { salvaCertificato(personaId: string, scade: string): Promise<void> },
+  richiestaId: string,
+  personaId: string | undefined,
+  scade: string,
+): Promise<string> {
+  const id = await r.accogli(richiestaId, personaId)
+  if (scade) {
+    try {
+      await d.salvaCertificato(id, scade)
+    } catch (e) {
+      const causa = e instanceof Error ? e.message : ''
+      throw new Error(`Richiesta accolta, ma la data del certificato non si è salvata${causa ? `: ${causa}` : ''}. Scrivila dalla scheda dell’iscritto.`, { cause: e })
+    }
+  }
+  return id
+}
 
 /** Come la vuole il database: senza spazi, in maiuscolo. */
 export const pulisciCf = (s: string) => s.replace(/\s/g, '').toUpperCase()
@@ -236,7 +265,7 @@ export function firmaDaRifare(minore: boolean, prima: { tratti: number; scelte: 
  * Quale certificato medico ricordare a chi si iscrive: nessuno sotto i 6
  * anni (o finché non c'è la data di nascita), l'agonistico dai 12 per judo,
  * aikido e lotta, se no quello normale. Si può caricare col modulo o portare
- * in segreteria: è un dato sulla salute, e si tiene su carta.
+ * in segreteria: è un dato sulla salute, e lo vede solo la segreteria.
  */
 export function certificatoDaPortare(natoIl: string, nomiCorsi: string[], oggi = new Date()): 'nessuno' | 'normale' | 'agonistico' {
   if (!compiuti(natoIl, 6, oggi)) return 'nessuno'

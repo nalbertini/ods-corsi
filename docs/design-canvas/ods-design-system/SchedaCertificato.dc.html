@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: 0; color: {{c.text}}">
+  <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px">
+    <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">CERTIFICATO MEDICO</span>
+    <span style="display: inline-block; padding: 2px 6px; border: 1.5px solid {{coloreBollino}}; color: {{coloreBollino}}; font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; line-height: 1.3; white-space: nowrap">{{parola}}</span>
+  </div>
+  <sc-if value="{{haFrase}}" hint-placeholder-val="{{ true }}">
+    <span style="font-size: 14px; line-height: 1.4; color: {{coloreFrase}}">{{frase}}</span>
+  </sc-if>
+
+  <sc-if value="{{haFile}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: {{c.surface}}; border: 2px solid {{c.line}}">
+        <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600">Il file del certificato</span>
+          <span style="font-size: 13px; color: {{c.dim}}">{{quandoCaricato}}</span>
+        </span>
+        <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 44px; padding: 0 12px; background: {{c.text}}; border: 2px solid {{c.text}}; color: {{c.bg}}; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap">APRI</span>
+      </div>
+      <span style="font-size: 13px; line-height: 1.35; color: {{c.dim}}">Lo vede solo la segreteria. Il link dura 10 minuti: se scade, basta riaprire con APRI.</span>
+      <sc-if value="{{haCancella}}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 13px; line-height: 1.35; color: {{c.gialloTesto}}">Il file si cancella da solo il {{cancellaIl}}, 30 giorni dopo la scadenza.</span>
+      </sc-if>
+      <sc-if value="{{eVecchio}}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 13px; line-height: 1.35; color: {{c.gialloTesto}}">È un file di prima della nuova gestione: si apre con APRI come gli altri.</span>
+      </sc-if>
+    </div>
+  </sc-if>
+  <sc-if value="{{haSenzaFile}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 2px dashed {{c.tratteggio}}">
+      <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{fraseSenzaFile}}</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{gesto}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-left: 4px solid {{c.giallo}}">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">FILE</span>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 12px; background: {{c.bg}}; border: 2px solid {{bordoFile}}">
+          <span style="flex-grow: 1; min-width: 0; font-size: 15px; color: {{coloreFileScelto}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{testoFileScelto}}</span>
+          <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; color: {{c.sec}}; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.12em">{{tastoFile}}</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">VALIDO FINO AL</span>
+        <div style="display: flex; align-items: center; height: 44px; padding: 0 12px; background: {{c.bg}}; border: 2px solid {{c.line}}; font-size: 15px; color: {{coloreData}}">{{testoData}}</div>
+      </div>
+      <sc-if value="{{haAvviso}}" hint-placeholder-val="{{ true }}">
+        <span style="font-size: 13px; line-height: 1.35; color: {{c.gialloTesto}}">Salvando, il file vecchio si cancella: resta solo questo.</span>
+      </sc-if>
+      <div style="display: flex; gap: 8px">
+        <span style="display: flex; align-items: center; justify-content: center; flex-grow: 1; flex-basis: 0; min-height: 48px; padding: 0 18px; border: 2px solid {{c.line}}; color: {{c.sec}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em; white-space: nowrap">LASCIA STARE</span>
+        <span style="display: flex; align-items: center; justify-content: center; flex-grow: 1; flex-basis: 0; min-height: 48px; padding: 0 18px; background: {{bgSalva}}; color: {{fgSalva}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em; white-space: nowrap">SALVA</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{haTasti}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex-direction: {{direzioneTasti}}; align-items: {{allineaTasti}}">
+      <span style="display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 12px; background: {{bgCarica}}; border: 2px solid {{bordoCarica}}; color: {{fgCarica}}; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap">{{tastoCarica}}</span>
+      <sc-if value="{{haTogli}}" hint-placeholder-val="{{ true }}">
+        <span style="display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 18px; border: 2px solid {{c.line}}; color: {{c.sec}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em; white-space: nowrap">{{tastoTogli}}</span>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["nessuno","valido","in_scadenza","scaduto_con_file","scaduto_senza_file","valido_senza_file","file_vecchio"],"default":"valido"},"caricatoIl":{"editor":"text","default":"3 febbraio 2026"},"scadenza":{"editor":"text","default":"14 marzo 2027"},"fra":{"editor":"text","default":"12"},"cancellaIl":{"editor":"text","default":"11 ottobre 2026"},"gesto":{"editor":"boolean","default":false},"fileScelto":{"editor":"text","default":""},"dataScelta":{"editor":"text","default":""},"telefono":{"editor":"boolean","default":false},"maiUnFile":{"editor":"boolean","default":false},"disattivata":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":560,"height":240}}'>
+// Il blocco CERTIFICATO MEDICO della scheda iscritto, schermo largo (PROPOSTA «certificati online»): `Certificato` di
+// src/components/segreteria/Iscritti.tsx (righe 1203-1330), col nuovo layout. Non e' ancora nel codice: i valori sono quelli
+// dei CSS veri, copiati a mano.
+// Titolo = .sg-etichetta (src/styles.css riga 1354: Saira 12px 700 0.18em `dim`) + il bollino = .sg-segno-regola (riga 1509: 12px,
+// 0.12em, bordo 1.5px del colore del testo, padding 2px 6px), come `Bollino` di Iscritti.tsx (righe 26-32) e le parole di `timbriScheda`.
+// La frase di stato: 14px, `sec` se valido, giallo-testo se in scadenza, rosso-testo altrimenti (come `stato` dell'app).
+// La riga del file: `surface`, bordo 2px `line`, padding 10px 12px; nome 15px, «caricato il ...» 13px `dim`. APRI e' .sg-chip pieno (nella richiesta e' in linea: il pieno li' e' ACCOGLI)
+// (riga 1377 e 1382: 44px, 13px, 0.12em, fondo `text`, testo `bg`). CARICA / SOSTITUISCI e' .sg-chip, pieno solo se e' la prima
+// cosa da fare (`tastoPrincipale`: nessuno, scaduto, valido_senza_file); TOGLI IL CERTIFICATO e' .sg-btn-linea (righe 1357-1369:
+// 48px, 15px, 0.14em, bordo 2px `line`). Senza file: riquadro tratteggiato (.sg-btn-tratteggio: 2px dashed `tratteggio`).
+// Il gesto aperto (`gesto`): un solo riquadro con bordo giallo a sinistra (come Riquadro tono prova), FILE (scegli) + VALIDO FINO AL
+// (.sg-campo: 44px, bordo 2px `line`, fondo `bg`) + l'avviso che il vecchio si cancella + LASCIA STARE / SALVA. SALVA e' spento
+// (.sg-btn:disabled: `surface-2`, testo `dim`, senza bordo) finche' non c'e' la data e qualcosa da salvare (un file scelto o la data cambiata): un solo gesto, un solo SALVA.
+// Il gesto si apre con la data VUOTA (dataScelta vuoto), anche sostituendo un certificato con la sua data: la vecchia e' una trappola nel rinnovo.
+// `maiUnFile`: la sola data scritta a mano, niente parola sul file. `disattivata`: il file e' andato con la disattivazione, e non si offre
+// piu' SOSTITUISCI ne' TOGLI IL CERTIFICATO. `telefono`: i tasti vanno in colonna a tutta larghezza (sotto 768px).
+// stato: nessuno | valido | in_scadenza | scaduto_con_file | scaduto_senza_file | valido_senza_file | file_vecchio.
+// Non riprodotti: passaggio del mouse e fuoco da tastiera.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tratteggio: '#4a4a46', giallo: '#f4c31b', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', tratteggio: '#b0b0aa', giallo: '#f4c31b', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const st = p.stato || 'valido';
+    const scadenza = p.scadenza ?? '14 marzo 2027';
+    const fra = p.fra ?? '12';
+    const gesto = truthy(p.gesto);
+    const tel = truthy(p.telefono);
+    const conFile = ['valido', 'in_scadenza', 'scaduto_con_file', 'file_vecchio'].includes(st);
+    const senzaFile = ['nessuno', 'scaduto_senza_file', 'valido_senza_file'].includes(st);
+    const scaduto = st === 'scaduto_con_file' || st === 'scaduto_senza_file';
+    const parola = { nessuno: 'MANCA', valido: 'VALIDO', file_vecchio: 'VALIDO', in_scadenza: 'IN SCADENZA', scaduto_con_file: 'SCADUTO', scaduto_senza_file: 'SCADUTO', valido_senza_file: 'VALIDO' }[st];
+    const verde = st === 'valido' || st === 'file_vecchio' || st === 'valido_senza_file';
+    const coloreBollino = verde ? c.verdeTesto : st === 'in_scadenza' ? c.gialloTesto : c.rossoTesto;
+    const frase = {
+      nessuno: 'Nessun certificato in segreteria: senza, in sala non si entra.',
+      valido: 'Valido fino al ' + scadenza + '.',
+      file_vecchio: 'Valido fino al ' + scadenza + '.',
+      valido_senza_file: 'Valido fino al ' + scadenza + ', ma il file non c’è: la data è segnata, il foglio no.',
+      in_scadenza: 'Scade il ' + scadenza + ', fra ' + fra + ' giorni.',
+      scaduto_con_file: 'Scaduto il ' + scadenza + ': va rinnovato prima di tornare in sala.',
+      scaduto_senza_file: truthy(p.maiUnFile) ? 'Certificato scaduto il ' + scadenza + ': ne serve uno nuovo prima di tornare in sala.' : 'Certificato scaduto, file cancellato. Scaduto il ' + scadenza + ': ne serve uno nuovo prima di tornare in sala.',
+    }[st];
+    // Il tasto pieno e' uno solo: la prima cosa da fare.
+    const primo = st === 'nessuno' || scaduto || st === 'valido_senza_file';
+    const tastoCarica = st === 'nessuno' ? 'CARICA IL CERTIFICATO' : st === 'scaduto_senza_file' ? 'CARICA IL NUOVO' : st === 'valido_senza_file' ? 'CARICA IL FILE' : 'SOSTITUISCI';
+    const haTogli = st !== 'nessuno';
+    const scelto = String(p.fileScelto ?? '');
+    const data = String(p.dataScelta ?? '');
+    const pronto = data !== ''; // la data scelta e' una data cambiata, o c'e' un file scelto: nel mockup basta la data
+    return {
+      c, cond: COND,
+      parola, coloreBollino, frase, haFrase: true,
+      coloreFrase: verde ? c.sec : st === 'in_scadenza' ? c.gialloTesto : c.rossoTesto,
+      haFile: conFile, haSenzaFile: senzaFile,
+      fraseSenzaFile: st === 'nessuno' ? 'Nessun file caricato.' : truthy(p.disattivata) && !truthy(p.maiUnFile) ? 'File cancellato alla disattivazione.' : st === 'scaduto_senza_file' && !truthy(p.maiUnFile) ? 'Il file è stato cancellato 30 giorni dopo la scadenza, come previsto.' : 'Nessun file caricato: la data l’ha scritta la segreteria.',
+      quandoCaricato: st === 'file_vecchio' ? 'caricato prima della nuova gestione' : 'caricato il ' + (p.caricatoIl ?? '3 febbraio 2026'), cancellaIl: p.cancellaIl ?? '11 ottobre 2026',
+      haCancella: st === 'scaduto_con_file', eVecchio: st === 'file_vecchio',
+      gesto, haTasti: !gesto && !truthy(p.disattivata),
+      haAvviso: conFile,
+      testoFileScelto: scelto || 'Nessun file scelto', coloreFileScelto: scelto ? c.text : c.dim,
+      bordoFile: scelto ? c.verdeTesto : c.line, tastoFile: scelto ? 'CAMBIA' : 'SCEGLI',
+      testoData: data || 'gg/mm/aaaa', coloreData: data ? c.text : c.dim,
+      bgSalva: pronto ? c.text : c.surface2, fgSalva: pronto ? c.bg : c.dim,
+      tastoCarica, haTogli, tastoTogli: 'TOGLI IL CERTIFICATO',
+      bgCarica: primo ? c.text : 'transparent', bordoCarica: primo ? c.text : c.line, fgCarica: primo ? c.bg : c.sec,
+      direzioneTasti: tel ? 'column' : 'row', allineaTasti: tel ? 'stretch' : 'center',
+    };
+  }
+}
+</script>
+</body>
+</html>

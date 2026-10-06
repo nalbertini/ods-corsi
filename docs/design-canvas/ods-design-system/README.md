@@ -48,6 +48,7 @@ Google, e vale solo per i mockup.
 | `FiltriIscritti` | La barra sopra la tabella ISCRITTI: ricerca, corso, chip |
 | `CercaIscritto` | La ricerca in cima al menu di segreteria, anche con l'elenco aperto |
 | `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`) |
+| `SchedaCertificato` | PROPOSTA «certificati online»: il blocco CERTIFICATO MEDICO della scheda iscritto (`Certificato` di `Iscritti.tsx`) col file online: titolo + bollino, frase di stato, riga del file con APRI, CARICA / SOSTITUISCI e TOGLI; `stato` nessuno, valido, in_scadenza, scaduto_con_file, scaduto_senza_file, valido_senza_file, file_vecchio; `gesto` apre file + VALIDO FINO AL + un solo SALVA; `telefono` mette i tasti in colonna |
 | `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`) |
 | `BarraTelefono` | La barra in cima al telefono con il tasto MENU (`.sg-barra-tel`); il menu aperto è `Menu` |
 | `BarraNavigazione` | PROPOSTA, scelta la variante B: la barra in basso del telefono istruttori (CALENDARIO, TIMER, I MIEI, ORE; due voci per la segreteria che non insegna): icona a linea, etichetta, voce corrente con barra, fondo e testo. `MenuIstruttori` ha la prop `elenco` per le stesse voci a sinistra |

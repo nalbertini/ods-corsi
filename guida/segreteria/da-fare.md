@@ -29,10 +29,11 @@ si sistema:
   contate qui. Gli stessi numeri li dice la testata di ISCRITTI. Il filtro, e
   la ricerca scritta sopra, restano finché si resta negli iscritti, anche
   aprendo una scheda e tornando dal menu.
-- **Certificati da stampare** (caricati nella scheda, di prima) e
-  **richieste con documenti da stampare** (documento d'identità e
-  certificato arrivati col modulo): da stampare, mettere nella cartellina e
-  cancellare.
+- **File di certificato di prima** (caricati prima della nuova gestione: si
+  aprono dalla scheda come gli altri e si cancellano da soli) e **richieste
+  con documenti da stampare** (il documento d'identità arrivato col modulo):
+  il documento si stampa, si mette nella cartellina e si cancella. Il
+  certificato arrivato col modulo no: passa alla scheda.
 
 Le righe sono in ordine di quanto premono. Prima, col numero **rosso**,
 quello che è già un guaio: lezioni senza appello, chi entra in sala senza

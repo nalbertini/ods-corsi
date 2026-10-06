@@ -69,7 +69,7 @@ Chi si iscrive risponde alle domande dal telefono:
 - **I file**: la foto della **carta d'identità** (per un minore, quella del
   genitore; non si chiede per un minore aggiunto dal nucleo, perché la
   segreteria ha già quella del genitore), il retro se serve, il **certificato
-  medico** se ce l'ha già, e la **ricevuta del pagamento** se ha già pagato:
+  medico** se ce l'ha già (lo vede solo la segreteria), e la **ricevuta del pagamento** se ha già pagato:
   chi paga in contanti al banco la lascia vuota (accanto c'è **PUOI PAGARE IN
   SEGRETERIA**). Il certificato si
   chiede solo quando serve: dai 6 anni quello normale, dai 12 quello
@@ -77,8 +77,9 @@ Chi si iscrive risponde alle domande dal telefono:
   del corso). Si può anche portare dopo in segreteria (accanto al nome
   c'è **PUOI PORTARLO DOPO**), ma senza non si
   partecipa alle lezioni: se non è stato caricato, lo ricorda **RICHIESTA
-  ARRIVATA**. Documento e certificato la segreteria li stampa, li tiene su
-  carta e li cancella dall'app.
+  ARRIVATA**. Il documento la segreteria lo stampa, lo tiene su carta e lo
+  cancella dall'app; il certificato resta nell'app e lo vede solo la
+  segreteria.
 - **Altro**: le note per la segreteria (facoltative, e **mai dati sulla
   salute**: quelli si portano in segreteria), la casella obbligatoria
   «Accetto il Regolamento Sociale» (col link al regolamento, quando c'è:

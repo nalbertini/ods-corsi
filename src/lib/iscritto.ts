@@ -31,7 +31,8 @@ export interface SchedaIscritto {
   cognome: string
   /** I corsi a cui è iscritto oggi, per nome. */
   corsi: Array<{ id: string; nome: string; colore?: string }>
-  certificato: CertificatoSeg
+  /** Solo fino a quando vale: se c'è un file, e di che tipo, lo sa solo la segreteria. */
+  certificato: Pick<CertificatoSeg, 'scade'>
   /** L'eccezione «pagato fuori dall'app»; se ha pagato lo dicono le `quote`. */
   pagamento: PagamentoSeg
   quote?: QuotaRicevuta[]

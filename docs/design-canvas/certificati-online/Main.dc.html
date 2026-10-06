@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Oggi e proposta, tema scuro: scheda di un iscritto con il certificato in scadenza. A sinistra com’è adesso (si stampa e si cancella), a destra col file online. Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="ISCRITTI"  numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" tema="scuro" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">LUCA BIANCHI</h1>
+      <span style="font-size: 14px; color: #8c8c88">Lotta adulti · nato l’8 aprile 1994</span>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.75fr); gap: 12px">
+      <dc-import name="Timbro" titolo="CERTIFICATO" parola="IN SCADENZA" tono="giallo" righe="il 18 ottobre 2026:giallo" tema="scuro" hint-size="100%,100px"></dc-import>
+      <dc-import name="Timbro" titolo="QUOTA" parola="IN REGOLA" tono="verde" righe="pagata il 2 ottobre" tema="scuro" hint-size="100%,100px"></dc-import>
+      <dc-import name="Timbro" titolo="DOCUMENTO" parola="IN SEGRETERIA" tono="verde" righe="" piccolo="{{ true }}" tema="scuro" hint-size="100%,100px"></dc-import>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+        <dc-import name="Titoletto" label="OGGI" tema="scuro" hint-size="100%,32px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; border-left: 4px solid #8c8c88"><div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">CERTIFICATO MEDICO</span>
+          <dc-import name="Badge" tipo="segno" tono="giallo" label="IN SCADENZA" hint-size="110px,26px"></dc-import>
+        </div>
+        <span style="font-size: 14px; color: #f4c31b">Scade il 18 ottobre 2026, fra 12 giorni.</span>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px solid #f4c31b; border-radius: 6px">
+          <span style="font-size: 14px; color: #f4c31b">Questo certificato è ancora caricato nell’app: aprilo, stampalo, mettilo nella cartellina e cancellalo da qui. La scadenza resta.</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <dc-import name="Bottone" label="APRI PER STAMPARE" variante="linea" contesto="segreteria" alto="44px" corpo="13px" spazio="0 12px" hint-size="190px,44px"></dc-import>
+            <dc-import name="Bottone" label="STAMPATO, CANCELLALO" variante="linea" contesto="segreteria" alto="44px" corpo="13px" spazio="0 12px" hint-size="210px,44px"></dc-import>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+          <dc-import name="Bottone" label="RINNOVA O CORREGGI" variante="linea" contesto="segreteria" alto="44px" corpo="13px" spazio="0 12px" hint-size="190px,44px"></dc-import>
+          <div style="flex-grow: 1"></div>
+          <dc-import name="Bottone" label="TOGLI IL CERTIFICATO" variante="linea" contesto="segreteria" hint-size="220px,48px"></dc-import>
+        </div>
+        <span style="font-size: 14px; color: #8c8c88">Il file si stampa e si cancella: poi resta solo la data. Chi apre la scheda dopo non vede più il certificato.</span>
+      </div></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+        <dc-import name="Titoletto" label="PROPOSTA" giallo="{{ true }}" tema="scuro" hint-size="100%,32px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; border-left: 4px solid #f4c31b"><dc-import name="SchedaCertificato" stato="in_scadenza" nome-file="certificato-bianchi.pdf" caricato-il="3 febbraio 2026" scadenza="18 ottobre 2026" fra="12" tema="scuro" hint-size="100%,300px"></dc-import></div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

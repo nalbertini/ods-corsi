@@ -83,12 +83,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
         and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino', 'mesi_presenze_pubblici'))),
   ('06-iscrizioni.sql', 'documento e certificato col modulo, da stampare',
     exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%certificato%')
-    and exists (select 1 from dentro where nome = 'richieste_con_documento' and corpo like '%certificato%')),
+    and exists (select 1 from dentro where nome = 'richieste_con_documento')),
   ('07-certificati-pagamenti.sql', 'certificati e pagamenti',
     to_regclass('public.schede_iscritti') is not null),
   ('07-certificati-pagamenti.sql', 'certificato e documento su carta',
-    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'documento_in_segreteria')
-    and not exists (select 1 from pg_policies where schemaname = 'storage' and policyname = 'certificati_carica')),
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'documento_in_segreteria')),
   ('08-timer.sql', 'il timer: libreria, corsi, storico, preferenze',
     to_regclass('public.preferenze_timer') is not null),
   ('09-musica.sql', 'la musica delle sale',
@@ -208,6 +207,15 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('44-email-contatto.sql', 'accogliere una richiesta e unire due schede tengono conto del contatto',
     exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%email_contatto%')
     and exists (select 1 from dentro where nome = 'unisci_persone' and corpo like '%email_contatto%')),
+  ('45-certificati-online.sql', 'il certificato resta nell''app: contenitore privato, file e data insieme, via 30 giorni dopo la scadenza',
+    exists (select 1 from storage.buckets where id = 'certificati' and not public and file_size_limit = 10485760)
+    and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'certificato_caricato_il')
+    and exists (select 1 from dentro where nome = 'salva_certificato')
+    and exists (select 1 from dentro where nome = 'pulisci_certificati')),
+  ('45-certificati-online.sql', 'accogliere porta il certificato alla scheda, e unire non si ferma sul file',
+    exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%certificati%')
+    and exists (select 1 from dentro where nome = 'unisci_persone' and corpo like '%togli_file_certificato%')
+    and not exists (select 1 from dentro where nome = 'richieste_con_documento' and corpo like '%certificato%')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

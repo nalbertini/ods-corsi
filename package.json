@@ -17,6 +17,7 @@
     "prova:coda": "node scripts/prova-coda.mjs",
     "prova:tablet": "node scripts/prova-tablet.mjs",
     "prova:segreteria": "node scripts/prova-segreteria.mjs",
+    "prova:certificati": "node scripts/prova-certificati.mjs",
     "prova:richieste": "node scripts/prova-richieste.mjs",
     "prova:iscrizione-passi": "node scripts/prova-iscrizione-passi.mjs",
     "prova:firma": "node scripts/prova-firma.mjs",
