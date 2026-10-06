@@ -1,6 +1,6 @@
 import type { StatoPresenza, StatoSessione } from './sala'
 import type { CertificatoSeg, PagamentoSeg } from './segreteria'
-import { comeCertificato, pagamentoDi } from './segreteria'
+import { comeCertificatoDi, pagamentoDi } from './segreteria'
 import { euro, type QuotaRicevuta, type Ricevuta } from './ricevute'
 import type { DatiRichiesta, StatoRichiesta } from './richieste'
 import type { Segnalata } from './segnalate'
@@ -31,7 +31,10 @@ export interface SchedaIscritto {
   cognome: string
   /** I corsi a cui è iscritto oggi, per nome. */
   corsi: Array<{ id: string; nome: string; colore?: string }>
-  certificato: CertificatoSeg
+  /** Solo fino a quando vale: se c'è un file, e di che tipo, lo sa solo la segreteria. */
+  certificato: Pick<CertificatoSeg, 'scade'>
+  /** Sotto i 6 anni il certificato non si chiede. */
+  natoIl?: string
   /** L'eccezione «pagato fuori dall'app»; se ha pagato lo dicono le `quote`. */
   pagamento: PagamentoSeg
   quote?: QuotaRicevuta[]
@@ -123,9 +126,10 @@ const data = (g: string) => g.split('-').reverse().join('/')
  * Le cose da sapere in cima alla pagina: il certificato che manca o scade,
  * il pagamento da fare. Le lezioni cambiate si vedono già nell'elenco.
  */
-export function avvisi(s: Pick<SchedaIscritto, 'certificato' | 'pagamento' | 'quote'>, oggi: string): Avviso[] {
+export function avvisi(s: Pick<SchedaIscritto, 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): Avviso[] {
   const x: Avviso[] = []
-  const c = comeCertificato(s.certificato, oggi)
+  // `non_serve` (sotto i 6 anni) non avvisa di niente.
+  const c = comeCertificatoDi(s, oggi)
   if (c === 'manca') x.push({ tono: 'guaio', testo: 'Manca il certificato medico: portalo in segreteria prima della prossima lezione.' })
   if (c === 'scaduto') x.push({ tono: 'guaio', testo: `Il certificato medico è scaduto il ${data(s.certificato.scade!)}: portane uno nuovo in segreteria.` })
   if (c === 'in_scadenza') x.push({ tono: 'avviso', testo: `Il certificato medico scade il ${data(s.certificato.scade!)}: prenota la visita.` })

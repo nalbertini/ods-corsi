@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { DatiSegreteria, LezioneStat, PersonaSeg, ProvaSeg } from '../../lib/segreteria'
-import { comeCertificato, comePaga, inCorso } from '../../lib/segreteria'
+import { comePaga, contiCertificati, inCorso } from '../../lib/segreteria'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import type { Destinazione, Voce } from './Segreteria'
 import { Guaio, Riga, Testa, useCarica, useOrdina } from './comune'
@@ -651,10 +651,10 @@ function Parti({ titolo, parti }: { titolo: string; parti: Array<{ nome: string;
 
 function InRegola({ persone, oggi, onVai }: { persone: PersonaSeg[]; oggi: string; onVai: (v: Voce, dove?: Destinazione) => void }) {
   if (!persone.length) return <span className="sg-sotto">Nessuno è iscritto oggi.</span>
-  const cert = { valido: 0, in_scadenza: 0, scaduto: 0, manca: 0 }
+  // Gli stessi conti di DA FARE e di ISCRITTI (`certificatoInRegola`): sotto i 6 anni non serve.
+  const cert = contiCertificati(persone, oggi)
   const paga = { pagato: 0, in_parte: 0, da_pagare: 0, scaduto: 0 }
   for (const p of persone) {
-    cert[comeCertificato(p.certificato, oggi)]++
     paga[comePaga(p, oggi)]++
   }
   return (
@@ -666,6 +666,7 @@ function InRegola({ persone, oggi, onVai }: { persone: PersonaSeg[]; oggi: strin
           { nome: 'In scadenza', n: cert.in_scadenza, tono: 'giallo' },
           { nome: 'Scaduto', n: cert.scaduto, tono: 'rosso' },
           { nome: 'Manca', n: cert.manca, tono: 'spento' },
+          ...(cert.non_serve ? [{ nome: 'Non serve', n: cert.non_serve, tono: 'spento' as const }] : []),
         ]}
       />
       <Parti

@@ -292,12 +292,13 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
             )}
           </div>
           <div className="stack" style={{ gap: 6 }}>
-            <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>DATI SANITARI: SOLO IL CERTIFICATO, SU CARTA</span>
+            <span className="sg-etichetta" style={{ color: 'var(--giallo-testo)' }}>DATI SANITARI: SOLO IL CERTIFICATO</span>
             <span style={{ fontSize: 14, color: 'var(--sec)' }}>Patologie e allergie: in nessun campo, nemmeno nelle note.</span>
             <ComeFunziona>
-              Il certificato medico è un dato sulla salute, con altri obblighi: si tiene su carta, nella cartellina in un armadio chiuso, e nell'app si
-              scrive solo fino a quando vale, nella scheda dell'iscritto. Lo stesso per la copia del documento d'identità. Se arrivano col modulo
-              si stampano e si cancellano dalla richiesta; per email o WhatsApp, da lì. Patologie, allergie e simili non vanno scritte in nessun campo, nemmeno nelle note.
+              Il certificato medico è un dato sulla salute, con altri obblighi: il file sta nell'app, nella scheda dell'iscritto, e lo vede solo la
+              segreteria (un link che dura 10 minuti). Si cancella da solo 30 giorni dopo la scadenza, e subito se la persona viene disattivata; la data
+              di scadenza resta. Sotto i 6 anni non si chiede. La copia del documento d'identità invece sta su carta, in un armadio chiuso: se arriva
+              col modulo si stampa e si cancella dalla richiesta; per email o WhatsApp, da lì. Patologie, allergie e simili non vanno scritte in nessun campo, nemmeno nelle note.
             </ComeFunziona>
           </div>
           <div className="stack" style={{ gap: 6 }}>

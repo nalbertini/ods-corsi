@@ -1,13 +1,13 @@
 import { useState, type ReactNode } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta } from '../../lib/richieste'
-import { DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne } from '../../lib/richieste'
+import { accogliConCertificato, DA_STAMPARE, datiRichieste, ETICHETTA_FILE, FILE, minorenne, problemiCertificato } from '../../lib/richieste'
 import { piatto } from '../../lib/importa'
 import { anniDiNascita, fuoriEta, voceDelCorso } from '../../lib/listino'
 import { useListino } from '../Costi'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { STRETTO, useSchermo } from '../../lib/largo'
-import { chiedi, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
+import { chiedi, Campo, dataLunga, Guaio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
 
 const STATI: Record<StatoRichiesta, string> = { nuova: 'NUOVA', accolta: 'ACCOLTA', rifiutata: 'RIFIUTATA' }
@@ -24,9 +24,12 @@ const quando = (iso: string) => `${dataLunga(chiaveGiorno(new Date(iso)))}, ${or
  * iscritta ai corsi che ha scelto — o la rifiuta. Accolta o rifiutata resta
  * qui con quello che diceva, finché non la si elimina.
  *
- * Il documento d'identità e il certificato medico arrivano col modulo, ma si
- * tengono su carta: DA STAMPARE trova le richieste che li hanno ancora, e
- * dalla scheda, accolta la richiesta, li si stampa e li si cancella.
+ * Il documento d'identità arriva col modulo, ma si tiene su carta: DA
+ * STAMPARE trova le richieste che ce l'hanno ancora, e dalla scheda, accolta
+ * la richiesta, lo si stampa e lo si cancella. Il certificato medico invece
+ * resta: lo si apre prima di accogliere, si scrive la data leggendo il foglio
+ * (o si rifiuta il file se è quello sbagliato), e accolta la richiesta passa
+ * alla scheda dell'iscritto.
  *
  * Una richiesta mandata dall'area degli iscritti per il nucleo familiare di
  * qualcuno lo dice (NUCLEO): accolta, la persona entra nel suo nucleo, e per
@@ -103,7 +106,7 @@ export function Richieste({ d, onVai, stampareIniziale }: { d: DatiSegreteria; o
         <Testa
           titolo="RICHIESTE ONLINE"
           sotto={`${nuove === 1 ? 'Una richiesta da guardare.' : nuove ? `${nuove} richieste da guardare.` : 'Nessuna richiesta da guardare.'}${
-            stampare === 1 ? ' Una con documento o certificato da stampare e cancellare.' : stampare ? ` ${stampare} con documento o certificato da stampare e cancellare.` : ''
+            stampare === 1 ? ' Una con il documento da stampare e cancellare.' : stampare ? ` ${stampare} con il documento da stampare e cancellare.` : ''
           }`}
         >
           {stampare > 0 && (
@@ -209,7 +212,7 @@ function Scheda({
   omonimi: PersonaSeg[]
   fai: Fai
   onCambiato: () => void
-  /** Il documento o il certificato stampato e cancellato. */
+  /** Il documento stampato e cancellato. */
   onStampato: () => void
   onEliminata: () => void
   onApri: (personaId: string) => void
@@ -218,25 +221,46 @@ function Scheda({
   const voci = useListino()?.listino.corsi
   const minore = minorenne(x.natoIl)
   const arrivati = new Map((file.dato ?? []).map((f) => [f.tipo, f]))
-  // Documento e certificato, stampati, si cancellano: non mancano, sono su carta.
+  // Il documento, stampato, si cancella: non manca, è su carta.
   const mancanti = FILE.filter((f) => f.obbligatorio && !DA_STAMPARE.includes(f.tipo) && !arrivati.has(f.tipo))
   const documenti = DA_STAMPARE.filter((t) => arrivati.has(t))
-  const certificato = documenti.includes('certificato')
-  const conDocumento = documenti.some((t) => t !== 'certificato')
+  // Il certificato si guarda prima di accogliere, con la data da scrivere: poi passa alla scheda.
+  const certificato = x.stato === 'nuova' ? arrivati.get('certificato') : undefined
+  const [scadeCert, setScadeCert] = useState('')
   // Accolta, la richiesta crea una persona iscritta ai corsi e non si torna
   // indietro: quello che manca si dice prima, non dopo.
   const problemi = [
     !x.regolamento && 'Il regolamento non è accettato.',
     file.guaio && 'I file non si sono aperti: non si sa se il modulo firmato c’è.',
     ...(file.dato ? mancanti.map((f) => `Manca ${CON_ARTICOLO[f.tipo] ?? f.etichetta.toLowerCase()}.`) : []),
+    ...problemiCertificato(!!certificato, scadeCert),
   ].filter((t): t is string => !!t)
   // Finché i file non si sono caricati non si sa cosa manca.
   const inAttesa = file.dato === null && !file.guaio
-  const accogli = async (op: () => Promise<unknown>, riuscito: string) => {
+  const accogli = async (op: () => Promise<string>, riuscito: string) => {
     const chi = `${x.nome} ${x.cognome}${minore ? ' (minorenne)' : ''}`
     if (problemi.length && !(await chiedi(`Accogliere lo stesso la richiesta di ${chi}?\n\n${problemi.join('\n')}\n\nEntra in elenco iscritta ai suoi corsi, e non si torna indietro.`, 'ACCOGLI LO STESSO', { pericolo: true }))) return
-    void fai(op, riuscito, onCambiato)
+    // Accolta, il certificato è passato alla scheda: l'elenco dei file si rilegge, se no resterebbe a schermo.
+    const rileggi = () => {
+      void file.ricarica()
+      onCambiato()
+    }
+    void fai(
+      async () => {
+        try {
+          return await op()
+        } catch (e) {
+          // Accolta ma con la data non salvata: la richiesta è già cambiata, e a schermo deve risultare.
+          rileggi()
+          throw e
+        }
+      },
+      riuscito,
+      rileggi,
+    )
   }
+  // La data del certificato la scrive la segreteria dal foglio: la richiesta non la porta, e viaggia con l'accoglimento.
+  const accoglila = (personaId?: string) => () => accogliConCertificato(r, d, x.id, personaId, certificato ? scadeCert : '')
 
   // Solo da accolta: così la scheda dell'iscritto segna che la copia è in segreteria.
   const stampato = async (personaId: string) => {
@@ -244,9 +268,9 @@ function Scheda({
     void fai(
       async () => {
         for (const t of documenti) await r.eliminaFile(x.id, t)
-        if (conDocumento) await d.salvaDocumento(personaId, true)
+        await d.salvaDocumento(personaId, true)
       },
-      certificato ? 'Cancellati: ora segna nella sua scheda fino a quando vale il certificato' : 'Cancellato: la scheda dice che la copia è in segreteria',
+      'Cancellato: la scheda dice che la copia è in segreteria',
       () => {
         void file.ricarica()
         onStampato()
@@ -326,16 +350,52 @@ function Scheda({
           {file.dato.length === 0 && (
             <span className="sg-sotto">{r.modo === 'prova' ? 'Nessun file: in prova restano solo finché la pagina è aperta.' : 'Nessun file arrivato.'}</span>
           )}
-          {FILE.filter((f) => arrivati.has(f.tipo) && !DA_STAMPARE.includes(f.tipo)).map((f) => (
+          {FILE.filter((f) => arrivati.has(f.tipo) && !DA_STAMPARE.includes(f.tipo) && !(certificato && f.tipo === 'certificato')).map((f) => (
             <Anteprima key={f.tipo} f={arrivati.get(f.tipo)!} />
           ))}
+          {certificato && (
+            <div className="stack" style={{ gap: 12, padding: '18px 20px', background: 'var(--surface)', border: '2px solid var(--line)', borderLeft: '4px solid var(--giallo)' }}>
+              <span className="sg-etichetta">IL CERTIFICATO ARRIVATO DAL MODULO</span>
+              <div className="row" style={{ gap: 12, alignItems: 'center', padding: '10px 12px', background: 'var(--bg)', border: '2px solid var(--line)' }}>
+                <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
+                  <span style={{ fontSize: 15, fontWeight: 600 }}>Il certificato medico</span>
+                </span>
+                {/* In linea: il tasto pieno della pagina è ACCOGLI. */}
+                <a href={certificato.url} target="_blank" rel="noreferrer" className="num sg-chip">
+                  APRI
+                </a>
+              </div>
+              <span className="sg-sotto">
+                Aprilo prima di accogliere: se è quello sbagliato, rifiutalo e la persona lo rimanda. Il link dura 10 minuti: se scade, basta riaprire la richiesta.
+              </span>
+              <div style={{ maxWidth: 280 }}>
+                <Campo id="r-scade" etichetta="VALIDO FINO AL">
+                  <input id="r-scade" className="sg-campo" type="date" value={scadeCert} onChange={(e) => setScadeCert(e.target.value)} />
+                </Campo>
+              </div>
+              <span className="sg-sotto">
+                La data la scrivi tu, leggendo il foglio. Accogliendo, il file resta nella scheda dell’iscritto, in CERTIFICATO MEDICO: non va stampato né cancellato.
+              </span>
+              <div className="row">
+                <button
+                  type="button"
+                  className="sg-btn sg-btn-linea"
+                  onClick={async () => {
+                    if ((await chiedi(`Rifiutare il certificato di ${x.nome} ${x.cognome}? Il file si cancella per sempre: va rimandato, o portato in segreteria.`, 'RIFIUTA IL FILE', { pericolo: true })))
+                      void fai(() => r.eliminaFile(x.id, 'certificato'), 'File rifiutato e cancellato', () => void file.ricarica())
+                  }}
+                >
+                  RIFIUTA IL FILE
+                </button>
+              </div>
+            </div>
+          )}
           {/* Non è un guaio: la ricevuta non è obbligatoria, si paga anche al banco. */}
           {file.dato.length > 0 && !arrivati.has('ricevuta') && <span className="sg-sotto">Nessuna ricevuta: il pagamento si fa in segreteria.</span>}
           {documenti.length > 0 && (
             <div className="stack" style={{ gap: 8, padding: '10px 12px', border: '1px solid var(--giallo-testo)', borderRadius: 6 }}>
               <span style={{ fontSize: 14, color: 'var(--giallo-testo)' }}>
-                {conDocumento && certificato ? 'Documento e certificato non restano' : certificato ? 'Il certificato medico non resta' : 'Il documento d’identità non resta'}{' '}
-                nell’app: aprili, stampali, mettili nella cartellina e cancellali da qui.
+                Il documento d’identità non resta nell’app: aprilo, stampalo, mettilo nella cartellina e cancellalo da qui.
                 {!x.personaId && ' Prima accogli la richiesta, così la scheda dell’iscritto lo segna.'}
               </span>
               {documenti.map((t) => (
@@ -385,7 +445,7 @@ function Scheda({
                     type="button"
                     className="sg-btn sg-btn-linea"
                     disabled={inAttesa}
-                    onClick={() => accogli(() => r.accogli(x.id, p.id), `Accolta sulla scheda di ${p.nome} ${p.cognome}, iscritta ai suoi corsi`)}
+                    onClick={() => accogli(accoglila(p.id), `Accolta sulla scheda di ${p.nome} ${p.cognome}, iscritta ai suoi corsi`)}
                   >
                     ACCOGLI SU QUESTA
                   </button>
@@ -418,7 +478,7 @@ function Scheda({
               type="button"
               className={problemi.length ? 'sg-btn sg-btn-linea' : 'sg-btn sg-btn-verde'}
               disabled={inAttesa}
-              onClick={() => accogli(() => r.accogli(x.id), 'Accolta: ora è in elenco e iscritta ai suoi corsi')}
+              onClick={() => accogli(accoglila(), 'Accolta: ora è in elenco e iscritta ai suoi corsi')}
             >
               {problemi.length ? 'ACCOGLI LO STESSO' : 'ACCOGLI'}
             </button>

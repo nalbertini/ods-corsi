@@ -9,9 +9,10 @@
 -- Solo la segreteria (ruolo doppio compreso), solo fra due iscritti senza
 -- accesso: le schede del personale hanno corsi, PIN e compensi, e un accesso
 -- è un account da non perdere. Non si uniscono due schede con due codici
--- fiscali diversi, anche solo dal modulo accolto (sono due persone), né se quella che se ne va ha ancora il
--- file di un certificato: il file sta nella sua cartella (`certificato_suo`,
--- 07-certificati-pagamenti.sql), prima si stampa e si cancella.
+-- fiscali diversi, anche solo dal modulo accolto (sono due persone). Il file
+-- del certificato non ferma più l'unione dal `44-certificati-online.sql`, che
+-- rifà `unione_possibile` e `unisci_persone` (rilanciando questo, va
+-- rilanciato anche il 44).
 --
 -- Cosa passa:
 --   · nome, email, telefono, anagrafica e scheda: vince chi resta, e da

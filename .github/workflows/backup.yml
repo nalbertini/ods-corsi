@@ -8,7 +8,9 @@ name: Backup del database
 #
 # Il piano gratuito di Supabase non lascia scaricare i suoi backup: questa è
 # l'unica copia che la palestra ha in mano. Come rimetterla a posto è in
-# supabase/LEGGIMI.md, «Il backup».
+# supabase/LEGGIMI.md, «Il backup». Nella stessa copia cifrata ci sono anche i
+# file del contenitore `certificati` dello Storage (i certificati medici), se
+# ci sono i segreti SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.
 on:
   schedule:
     - cron: '17 3 * * 1'
@@ -30,6 +32,8 @@ jobs:
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       BACKUP_PASSWORD: ${{ secrets.BACKUP_PASSWORD }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       # Senza l'indirizzo del database non c'è niente da copiare: la palestra
       # non ha ancora il suo, e una X rossa ogni lunedì non direbbe niente.
@@ -48,6 +52,14 @@ jobs:
             exit 1
           fi
           echo "pronto=si" >> "$GITHUB_OUTPUT"
+          # I file dei certificati servono altri due segreti: senza, la copia
+          # del database si fa lo stesso e si dice cosa manca.
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::notice::Mancano i segreti SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY: i certificati medici nello Storage non entrano nella copia (vedi supabase/LEGGIMI.md, «Il backup»)."
+            echo "certificati=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "certificati=si" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: supabase/setup-cli@v1
         if: steps.segreti.outputs.pronto == 'si'
@@ -74,6 +86,69 @@ jobs:
             [ -s "$f" ] || { echo "::error::$f è vuoto"; exit 1; }
           done
           ls -l
+
+      # I certificati medici stanno nello Storage, non nel dump: si scaricano
+      # dal contenitore `certificati` con la chiave di servizio, nella stessa
+      # cartella del dump, così escono nella stessa copia cifrata. Una
+      # cartella per persona. Se qualcosa non va si ferma rosso: una copia
+      # senza i file, detta completa, è peggio di nessuna.
+      - name: Copia i certificati
+        if: steps.segreti.outputs.pronto == 'si' && steps.segreti.outputs.certificati == 'si'
+        run: |
+          set -euo pipefail
+          base="${SUPABASE_URL%/}/storage/v1"
+          dest="backup-$GIORNO/certificati"
+          mkdir -p "$dest"
+          # Se qualcosa non va, il passo si ferma rosso e dice cosa guardare: mai la chiave.
+          trap 'rc=$?; [ "$rc" -eq 0 ] || echo "::error::Copia dei certificati non riuscita (vedi sopra). Controlla i segreti SUPABASE_URL (https://<id>.supabase.co) e SUPABASE_SERVICE_ROLE_KEY (la chiave service_role) e che il contenitore «certificati» esista (supabase/44-certificati-online.sql). La copia del database NON è stata cifrata né caricata: va rifatta."' EXIT
+          guaio() {
+            echo "Errore: $1" >&2
+            exit 1
+          }
+          chiama() {
+            # $1 = percorso, resto = argomenti di curl; scrive su stdout, o in -o.
+            local percorso="$1"; shift
+            curl --silent --show-error --fail --max-time 120 "$base/$percorso" \
+              -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" "$@" \
+              || guaio "la richiesta a «$percorso» è fallita (indirizzo, chiave o rete)"
+          }
+          # Un file o una cartella per riga, da `prefisso` (le pagine sono da mille).
+          elenca() {
+            local da=0 pagina
+            while :; do
+              pagina=$(chiama object/list/certificati -X POST -H 'Content-Type: application/json' \
+                -d "$(jq -n --arg p "$1" --argjson o "$da" '{prefix: $p, limit: 1000, offset: $o}')")
+              echo "$pagina" | jq -e 'type == "array"' > /dev/null || guaio "l'elenco dei file non è quello atteso"
+              echo "$pagina" | jq -c '.[]'
+              [ "$(echo "$pagina" | jq length)" -lt 1000 ] && break
+              da=$((da + 1000))
+            done
+          }
+          scarica() {
+            mkdir -p "$dest/$(dirname "$1")"
+            chiama "object/certificati/$1" -o "$dest/$1"
+            [ -s "$dest/$1" ] || guaio "il file «$1» è arrivato vuoto"
+          }
+          n=0
+          # In una variabile, non in una sostituzione di processo: un errore dell'elenco ferma il passo.
+          voci=$(elenca "")
+          while IFS= read -r voce; do
+            [ -n "$voce" ] || continue
+            nome=$(echo "$voce" | jq -r .name)
+            if [ "$(echo "$voce" | jq -r .id)" = null ]; then
+              files=$(elenca "$nome")
+              while IFS= read -r file; do
+                [ -n "$file" ] || continue
+                [ "$(echo "$file" | jq -r .id)" = null ] && continue
+                scarica "$nome/$(echo "$file" | jq -r .name)"
+                n=$((n + 1))
+              done <<< "$files"
+            else
+              scarica "$nome"
+              n=$((n + 1))
+            fi
+          done <<< "$voci"
+          echo "Certificati copiati: $n"
 
       # Il repository è pubblico, e gli artefatti di un repository pubblico li
       # scarica chiunque abbia un account GitHub. Dentro ci sono nomi,

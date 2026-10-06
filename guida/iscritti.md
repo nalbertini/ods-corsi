@@ -36,7 +36,8 @@ ognuno, e il dispositivo si ricorda la scelta.
   ad allora la riga dice **DA CONFERMARE**, e poi diventa presente, o dice
   **RIFIUTATA**. Una volta sola per lezione.
 - **Certificato e quota**: fino a quando vale il certificato medico, e fino a
-  quando è pagata la quota.
+  quando è pagata la quota. Il file del certificato lo vede solo la
+  segreteria: qui c'è solo la data.
 - **Ricevute**: quelle fatte dalla segreteria (**SEGRETERIA → RICEVUTE**),
   dalla più recente, ognuna col suo **PDF** da scaricare: lo stesso che
   stampa la segreteria.

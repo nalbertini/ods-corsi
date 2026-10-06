@@ -1484,6 +1484,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-conferma-resto { margin: 0; font-size: 16px; line-height: 1.5; color: var(--sec); white-space: pre-line; }
 .sg-conferma-tasti { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 @media (max-width: 767px) { .sg-conferma-tasti > .sg-btn { flex: 1 1 100%; } }
+/* I tasti del certificato (SOSTITUISCI, TOGLI) sul telefono: in colonna, a tutta larghezza. */
+@media (max-width: 767px) { .sg-tasti-cert { flex-direction: column; align-items: stretch; } .sg-tasti-cert > .grow { display: none; } }
 .sg-dialogo {
   position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 11;
   width: min(520px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 16px; padding: 28px;

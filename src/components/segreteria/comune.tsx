@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Back } from '../Icons'
 import { apriScheda } from '../../lib/scorri'
+import { dataLunga } from '../../lib/sala'
 
 type Valore = string | number | null | undefined
 
@@ -368,13 +369,8 @@ export function ComeFunziona({ children }: { children: ReactNode }) {
   )
 }
 
-const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
 
-/** «12 gennaio 2026», da una data `AAAA-MM-GG`. */
-export function dataLunga(g: string, anno = true) {
-  const [a, m, d] = g.split('-').map(Number)
-  return `${d} ${MESI[m - 1]}${anno ? ` ${a}` : ''}`
-}
+export { dataLunga }
 
 /**
  * Una scheda a pieno schermo: prende tutta la sezione al posto dell'elenco,

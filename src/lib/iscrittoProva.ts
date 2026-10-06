@@ -1,7 +1,7 @@
 import type { AggiuntaNucleo, DatiIscritto, MiaLezione, MiaPresenza, SchedaIscritto } from './iscritto'
 import { archivio } from './archivioProva'
 import { creaSegreteriaProva } from './segreteriaProva'
-import { creaRichiesteProva } from './richiesteProva'
+import { creaRichiesteProva, nascitePerPersona } from './richiesteProva'
 import { minorenne } from './richieste'
 import { quoteDi } from './ricevute'
 import { segnalaProva, segnalateDi } from './segnalateProva'
@@ -41,7 +41,8 @@ export function creaIscrittoProva(): DatiIscritto {
       nome: p.nome,
       cognome: p.cognome,
       corsi,
-      certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file },
+      certificato: { scade: p.certificato?.scade },
+      natoIl: a().anagrafiche?.[p.id]?.natoIl ?? nascitePerPersona().get(p.id),
       pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
       quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
     }

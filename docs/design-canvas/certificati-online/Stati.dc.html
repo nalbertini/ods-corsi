@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Tutti gli stati di SchedaCertificato in una griglia, tema scuro. Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; flex-direction: column; gap: 18px; width: 1500px; min-height: 1160px; padding: 36px; background: #121212">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">TUTTI GLI STATI</h1>
+      <span style="font-size: 14px; color: #8c8c88">Ogni stato ha il suo bollino e la sua frase: rosso = non si entra, giallo = presto, verde = a posto. Il tasto pieno è uno solo, la prima cosa da fare.</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">1 · NESSUNO</span>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; "><dc-import name="SchedaCertificato" stato="nessuno" tema="scuro" hint-size="100%,200px"></dc-import></div>
+    </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">2 · VALIDO</span>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; "><dc-import name="SchedaCertificato" stato="valido" scadenza="14 marzo 2027" tema="scuro" hint-size="100%,260px"></dc-import></div>
+    </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">3 · IN SCADENZA</span>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; "><dc-import name="SchedaCertificato" stato="in_scadenza" scadenza="18 ottobre 2026" fra="12" tema="scuro" hint-size="100%,260px"></dc-import></div>
+    </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">4 · SCADUTO, FILE ANCORA QUI</span>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; "><dc-import name="SchedaCertificato" stato="scaduto_con_file" scadenza="12 settembre 2026" cancella-il="12 ottobre 2026" tema="scuro" hint-size="100%,300px"></dc-import></div>
+    </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">5 · SCADUTO, FILE CANCELLATO</span>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; "><dc-import name="SchedaCertificato" stato="scaduto_senza_file" scadenza="12 agosto 2026" tema="scuro" hint-size="100%,220px"></dc-import></div>
+    </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">6 · VALIDO, SENZA FILE</span>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; "><dc-import name="SchedaCertificato" stato="valido_senza_file" scadenza="14 marzo 2027" tema="scuro" hint-size="100%,220px"></dc-import></div>
+    </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">7 · FILE DI PRIMA DELLA CARTA</span>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; "><dc-import name="SchedaCertificato" stato="file_vecchio" nome-file="certificato.pdf" caricato-il="9 novembre 2025" scadenza="9 novembre 2026" tema="scuro" hint-size="100%,300px"></dc-import></div>
+    </div>
+    </div>
+  </div>
+</x-dc>
+</body>
+</html>

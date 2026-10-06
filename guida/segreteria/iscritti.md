@@ -20,8 +20,9 @@ elenco, che compaiono negli appelli e sul tablet.
   con la quota, pagata solo in parte, o scaduta.
 - **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
   segreteria.
-- **CERTIFICATI DA STAMPARE** — solo finché ce ne sono: chi ha ancora il file
-  del certificato caricato nell'app, di prima della carta.
+- **FILE DI PRIMA** — solo finché ce ne sono: chi ha un file di certificato
+  caricato prima della nuova gestione (senza data di caricamento). Quelli
+  nuovi non ci sono mai.
 - **POSSIBILI DOPPIONI** col numero — solo finché ce ne sono: le schede che
   sembrano la stessa persona, a coppie, dalle più sicure: lo stesso codice
   fiscale, lo stesso nome scritto in un altro modo (D'Amico e Damico), nome e
@@ -82,8 +83,8 @@ timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
 **RIATTIVA**.
 
 In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
-**SEGNA IL CERTIFICATO** o **RINNOVA O CORREGGI** se il certificato manca o è
-scaduto, poi **+ REGISTRA UN PAGAMENTO** se la quota non è pagata tutta, poi il
+**CARICA IL CERTIFICATO**, **CARICA IL NUOVO**, **CARICA IL FILE** o
+**SOSTITUISCI** se il certificato manca o è scaduto, poi **+ REGISTRA UN PAGAMENTO** se la quota non è pagata tutta, poi il
 certificato in scadenza. Se è tutto a posto, **+ REGISTRA UN PAGAMENTO**. Se la
 scheda è disattivata, nessuno.
 
@@ -99,19 +100,36 @@ scheda è disattivata, nessuno.
   carattere, il nome o la data) l'app lo dice in giallo, e si può salvare lo
   stesso. Senza codice fiscale si salva, ma la ricevuta non si fa: vedi
   [Un pagamento e la sua ricevuta](#un-pagamento-e-la-sua-ricevuta).
-- **CERTIFICATO MEDICO** — fino a quando vale. Il certificato sta **su
-  carta**, nella cartellina della segreteria. Se è arrivato col modulo di
-  iscrizione, si stampa dalla richiesta (vedi [Richieste online](richieste.md)).
-  Col foglio in mano, **SEGNA IL CERTIFICATO** → la data in **VALIDO FINO AL** →
-  **SALVA**. Col certificato nuovo, **RINNOVA O CORREGGI** cambia la data, e il
-  foglio vecchio si distrugge. Se è arrivato per email o WhatsApp, si stampa e
-  si cancella da lì. **TOGLI IL CERTIFICATO** lo toglie.
-- **Un certificato caricato prima della carta** ha ancora il file nell'app:
-  la scheda lo dice in giallo, e in elenco c'è **DA STAMPARE** accanto al
-  nome (il filtro **CERTIFICATI DA STAMPARE** li mostra tutti, finché ce ne
-  sono). **APRI PER STAMPARE** lo apre (il link vale dieci minuti), si stampa,
-  si mette nella cartellina, e **STAMPATO, CANCELLALO** lo cancella per
-  sempre. La data resta.
+- **CERTIFICATO MEDICO** — il file e fino a quando vale. Il file sta
+  nell'app e lo vede **solo la segreteria**: **APRI** lo apre con un link che
+  dura 10 minuti (se scade, si riapre con APRI), e nessun altro, né un
+  istruttore né l'iscritto, sa nemmeno se c'è. In cima il bollino dice com'è:
+  **MANCA**, **VALIDO**, **IN SCADENZA**, **SCADUTO**, e sotto una frase con
+  la data. La data la scrive la segreteria leggendo il foglio.
+  Per caricarlo, un gesto solo: **CARICA IL CERTIFICATO** (o **SOSTITUISCI**
+  se c'è già) → **SCEGLI** il file, una foto o un PDF fino a 10 MB → la data
+  in **VALIDO FINO AL** → **SALVA**, che resta spento finché non c'è la data e
+  qualcosa da salvare: un file scelto, o una data diversa da quella in scheda. Il file nuovo prende il posto del vecchio, che si cancella (la scheda
+  lo avvisa prima): per ogni persona c'è un file solo. **LASCIA STARE** non
+  cambia niente. Se il file è arrivato col modulo di iscrizione, c'è già ma
+  senza data: **SCRIVI LA DATA** → **SALVA**, senza scegliere un altro file.
+  **TOGLI IL CERTIFICATO** toglie file e data. Una data più di tre anni avanti
+  non si salva («La data è troppo lontana: controlla l'anno»), e con una
+  scadenza di più di 30 giorni fa l'app avvisa che il file verrà cancellato
+  subito. Una scheda disattivata non offre né SOSTITUISCI né TOGLI IL
+  CERTIFICATO: dice «File cancellato alla disattivazione», e disattivando, la
+  conferma lo ricorda.
+  Il file si cancella da solo **30 giorni dopo la scadenza** (la scheda dice
+  quando), o subito se la persona viene disattivata; la data resta, e la
+  scheda dice «file cancellato». Riattivare la persona non lo riporta: se
+  serve, si carica di nuovo. **Sotto i 6 anni** il certificato non si chiede:
+  il bollino dice **NON SERVE**, e chi ha meno di 6 anni non conta fra chi è
+  senza certificato valido.
+- **Un file di prima della nuova gestione** (caricato quando il certificato
+  stava su carta) si apre con **APRI** come gli altri, e la scheda lo dice in
+  giallo; in elenco c'è **FILE DI PRIMA** accanto al nome (il filtro
+  **FILE DI PRIMA** li mostra tutti, finché ce ne sono). Si cancella
+  da solo come gli altri, o con **TOGLI IL CERTIFICATO**.
 - **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
   minore, quella del genitore). **LA COPIA È IN SEGRETERIA** lo segna, **LA
   COPIA NON C'È PIÙ** lo toglie. **SENZA DOCUMENTO**, sopra l'elenco, mostra chi non ce
@@ -143,12 +161,14 @@ scheda è disattivata, nessuno.
   ne va, i campi che non tornano e quante presenze, prove, iscrizioni e
   ricevute passano; **TIENI L'ALTRA** scambia le due. Della scheda che resta
   vale quello che c'è scritto; dall'altra si prende solo quello che manca, e
-  di certificato e quota la scadenza più lontana; resta attiva se una delle
+  di certificato e quota la scadenza più lontana (e del certificato, il file
+  di quella scheda: se ce n'è uno per parte resta uno solo, l'altro si
+  cancella); resta attiva se una delle
   due lo era. Le ricevute passano così come sono. Una conferma, e non si
   torna indietro.
   Non si uniscono due schede con due codici fiscali diversi, anche solo
-  quello del modulo di iscrizione (sono due persone), né se quella che se ne va ha ancora il file di un certificato:
-  prima stampatelo e cancellatelo. Unite quando gli appelli del giorno sono
+  quello del modulo di iscrizione (sono due persone). Il file del certificato
+  non ferma l'unione: passa a chi resta. Unite quando gli appelli del giorno sono
   arrivati: un appello fatto senza rete che arriva dopo sulla scheda che se
   ne va si perde.
 
@@ -223,8 +243,8 @@ sono buchi. I dati dell'associazione in testa alle ricevute si cambiano da
 
 Il certificato è un dato sulla salute: lo vede solo la segreteria, non gli
 istruttori, e non va scritto da nessun'altra parte (nemmeno nelle note). In
-prova i file di prima della carta non si aprono: restano solo finché la
-pagina è aperta, e si possono cancellare lo stesso.
+prova i file restano solo finché la pagina è aperta: ricaricandola non si
+aprono più, e si possono togliere lo stesso.
 
 ## Il nucleo familiare
 

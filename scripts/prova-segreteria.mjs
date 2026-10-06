@@ -798,13 +798,9 @@ console.log('\nil certificato medico, il documento e il pagamento')
   await s.salvaDocumento(p.id, false)
   ok('e non c\'è più', (await s.persone()).find((y) => y.id === p.id).documento, false)
 
-  // Chi aveva il file caricato prima della carta: si stampa e si cancella, la scadenza resta.
+  // Chi aveva il file caricato prima della nuova gestione lo ha ancora, e la scheda lo sa.
   const vecchio = tutti.find((x) => x.certificato.conFile)
-  ok('in prova qualcuno ha ancora il file da stampare', !!vecchio, true)
-  await s.cancellaFileCertificato(vecchio.id)
-  const dopo = (await s.persone()).find((y) => y.id === vecchio.id)
-  ok('stampato e cancellato: la scadenza resta', [dopo.certificato.conFile, dopo.certificato.scade], [false, vecchio.certificato.scade])
-  ok('e il file non si apre più', await s.apriCertificato(vecchio.id), null)
+  ok('in prova qualcuno ha ancora un file di prima', [!!vecchio, vecchio?.certificato.vecchio], [true, true])
 }
 
 console.log('\nla musica delle sale')
@@ -1307,11 +1303,7 @@ console.log('\nunire due schede')
   await s.salvaAnagrafica(sara2, { codiceFiscale: 'BNCSRA12B41L219Y' })
   ok('due codici fiscali diversi no', await errore(() => s.unisciPersone(sara1, sara2)), 'Hanno due codici fiscali diversi: non sono la stessa persona. Se uno è sbagliato, correggilo nella scheda e riprova')
   ok('e restano tutte e due', [!!(await di(sara1)), !!(await di(sara2))], [true, true])
-  const colFile = await nuova('Mario', 'Damico')
-  m.archivio.dati.persone = m.archivio.dati.persone.map((p) => (p.id === colFile ? { ...p, certificato: { scade: '2027-01-31', file: `${colFile}/certificato-1.pdf` } } : p))
-  const file = await errore(() => s.unisciPersone(resta, colFile))
-  ok('chi ha ancora il file del certificato no, e dice di stamparlo prima', /certificato/.test(file) && /stampa/i.test(file) ? 'dice di stamparlo' : file, 'dice di stamparlo')
-  ok('e il file resta', (await di(colFile)).certificato.conFile, true)
+  // Chi ha un file del certificato non blocca più l'unione: il file passa a chi resta (prova-certificati.mjs).
   const titolare = await nuova('Gina', 'Damico')
   const figlio = await nuova('Mario', 'Damico')
   await s.mettiNelNucleo(figlio, titolare)
@@ -1518,7 +1510,7 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
   ok('… e sotto quanto manca: FRA 10 GIORNI', testi(cert(fra(10)))[1], 'FRA 10 GIORNI')
   ok('scade domani: sotto DOMANI, non FRA 1 GIORNI', testi(cert(fra(1)))[1], 'DOMANI')
   ok('scade oggi: niente FRA sotto', testi(cert(oggi)).some((x) => x.startsWith('FRA ') || x === 'DOMANI'), false)
-  ok('in scadenza col file: prima FRA, poi DA STAMPARE', testi(cert(fra(10), true)).slice(1), ['FRA 10 GIORNI', 'DA STAMPARE'])
+  ok('in scadenza col file: solo FRA, il file non dice più DA STAMPARE', testi(cert(fra(10), true)).slice(1), ['FRA 10 GIORNI'])
   ok('certificato che scade fra 31 giorni: verde', cert(fra(31))?.tono, 'verde')
   ok('… VALIDO FINO AL gg/mm/aaaa', cert(fra(31))?.parola, `VALIDO FINO AL ${lunga(fra(31))}`)
   ok('… VALIDO FINO ALL’11/07/2027, non AL 11', cert('2027-07-11')?.parola, 'VALIDO FINO ALL’11/07/2027')
@@ -1529,12 +1521,11 @@ console.log('\ni timbri in cima alla scheda: certificato, quota, documento')
   ok('scade oggi: giallo', cert(oggi)?.tono, 'giallo')
   ok('scade oggi: SCADE OGGI, non SCADE IL', [testi(cert(oggi)).includes('SCADE OGGI'), testi(cert(oggi)).some((x) => x.startsWith('SCADE IL'))], [true, false])
 
-  // 2. Il file ancora da stampare: sempre giallo, anche sotto un timbro verde.
+  // 2. Il file non cambia il timbro: né un DA STAMPARE, né un altro colore (il file di prima: prova-certificati.mjs).
   ok('con il file e valido fino a fra 100 giorni: verde', cert(fra(100), true)?.tono, 'verde')
-  ok('… e la riga DA STAMPARE gialla', riga(cert(fra(100), true), 'DA STAMPARE')?.tono, 'giallo')
+  ok('… e nessuna riga DA STAMPARE', riga(cert(fra(100), true), 'DA STAMPARE'), null)
   ok('con il file e senza data: rosso', cert(undefined, true)?.tono, 'rosso')
-  ok('… e la riga DA STAMPARE gialla', riga(cert(undefined, true), 'DA STAMPARE')?.tono, 'giallo')
-  ok('senza file, niente DA STAMPARE', cert(fra(100)) ? riga(cert(fra(100)), 'DA STAMPARE') : 'nessun timbro', null)
+  ok('… e nessuna riga DA STAMPARE', riga(cert(undefined, true), 'DA STAMPARE'), null)
 
   // 3. La quota.
   const q1 = quota({ quote: [pagata] })

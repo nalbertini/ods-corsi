@@ -159,14 +159,15 @@ backup.
 - **L'informativa** — lo stato dell'informativa privacy che vede chi si
   iscrive. Finché è una **BOZZA DA APPROVARE**, va letta e fatta propria dalla
   palestra, che è titolare del trattamento.
-- **DATI SANITARI: SOLO IL CERTIFICATO, SU CARTA** — il certificato medico si
-  tiene su carta, nella cartellina in un armadio chiuso; nell'app si scrive
-  solo fino a quando vale, nella scheda dell'iscritto (vedi
-  [Iscritti](iscritti.md)), dove lo vede la segreteria e nessun altro. Lo
-  stesso per la copia del documento d'identità. Se arrivano col modulo di
-  iscrizione si stampano e si cancellano dalla richiesta; per email o
-  WhatsApp, si stampano e si cancellano da lì. Patologie, allergie e simili
-  non vanno scritte da nessuna parte nell'app, nemmeno nelle note.
+- **DATI SANITARI: SOLO IL CERTIFICATO** — il file del certificato medico
+  sta nell'app, nella scheda dell'iscritto (vedi [Iscritti](iscritti.md)),
+  dove lo vede la segreteria e nessun altro, con un link che dura 10 minuti.
+  Si cancella da solo 30 giorni dopo la scadenza, e subito se la persona è
+  disattivata; la data resta. Sotto i 6 anni non si chiede. La copia del
+  documento d'identità invece sta su carta, nella cartellina in un armadio
+  chiuso: se arriva col modulo di iscrizione si stampa e si cancella dalla
+  richiesta; per email o WhatsApp, da lì. Patologie, allergie e simili non
+  vanno scritte da nessuna parte nell'app, nemmeno nelle note.
 - **ESPORTA I DATI DI UNA PERSONA** — si sceglie chi li ha chiesti e si preme
-  **ESPORTA**: un file con anagrafica, iscrizioni, presenze, certificato, pagamento e ricevute. È quello che una
+  **ESPORTA**: un file con anagrafica, iscrizioni, presenze, la scadenza del certificato (non il file), pagamento e ricevute. È quello che una
   persona ha diritto di chiedere.

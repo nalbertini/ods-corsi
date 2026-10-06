@@ -351,5 +351,14 @@ console.log('\n10. le presenze segnalate')
   ok('e non si rimanda', await err(() => io.segnala(altro, altra.sessioneId)), 'È già stata rifiutata: chiedi alla segreteria')
 }
 
+console.log('\n6. il certificato: l’iscritto non vede nemmeno se c’è un file')
+{
+  m.archivio.dati.persone = m.archivio.dati.persone.map((p) => (p.id === chi ? { ...p, certificato: { scade: '2027-06-01', file: `${chi}/certificato-1.pdf` } } : p))
+  const c = (await io.scheda(chi)).certificato
+  ok('vede fino a quando vale', c.scade, '2027-06-01')
+  ok('ma non se sta nell’app, né di che tipo', ['conFile', 'vecchio', 'caricatoIl'].filter((k) => k in c), [])
+  ok('e gli avvisi non ne hanno bisogno', m.avvisi({ certificato: { scade: '2027-06-01' }, pagamento: { stato: 'pagato' } }, '2026-10-02'), [])
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

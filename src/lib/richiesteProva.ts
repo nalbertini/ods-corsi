@@ -1,7 +1,7 @@
 import type { DatiRichieste, FileRichiesta, Richiesta, TipoFile } from './richieste'
 import { controlla, DA_STAMPARE, pulisciCf, minorenne } from './richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
-import { archivio } from './archivioProva'
+import { archivio, certificatiProva, scordaCertificato } from './archivioProva'
 import { nomeProprio } from './nomi'
 import { chiaveGiorno } from './sala'
 
@@ -32,6 +32,14 @@ const file = new Map<string, Map<TipoFile, FileRichiesta>>()
 /** Le richieste di prova, per l'esportazione dei dati di una persona. */
 export function richiesteDi(personaId: string): Richiesta[] {
   return leggi().filter((r) => r.personaId === personaId)
+}
+
+/** La data di nascita scritta nella richiesta accolta più recente di ognuno, per persona. */
+export function nascitePerPersona(): Map<string, string> {
+  const m = new Map<string, string>()
+  for (const r of leggi().filter((x) => x.stato === 'accolta' && x.personaId && x.natoIl).sort((x, y) => (x.gestitaIl ?? '').localeCompare(y.gestitaIl ?? '')))
+    m.set(r.personaId!, r.natoIl)
+  return m
 }
 
 /** Le richieste di una persona passano a un'altra: due schede unite (`unisciPersone`). */
@@ -203,6 +211,16 @@ export function creaRichiesteProva(): DatiRichieste {
         if (c && !c.al) continue
         // Chi aveva una fine segnata la perde; chi aveva già smesso riparte da oggi.
         a.iscrizioni = [...a.iscrizioni.filter((i) => i !== c), { corsoId, personaId: id, dal: c && c.al! >= oggi ? c.dal : oggi }]
+      }
+      // Il certificato passa alla scheda, senza data: la scrive la segreteria. Come `accogli_iscrizione`.
+      const cert = file.get(richiestaId)?.get('certificato')
+      if (cert) {
+        scordaCertificato(id)
+        certificatiProva.set(id, { url: cert.url, pdf: cert.pdf })
+        file.get(richiestaId)?.delete('certificato')
+        a.persone = a.persone.map((p) =>
+          p.id === id ? { ...p, certificato: { scade: p.certificato?.scade, file: `${id}/certificato-${Date.now()}.${cert.pdf ? 'pdf' : 'jpg'}`, caricatoIl: oggi } } : p,
+        )
       }
       archivio.salva()
       cambia(richiestaId, { stato: 'accolta', personaId: id, gestitaIl: new Date().toISOString(), gestitaDa: 'Segreteria di prova' })

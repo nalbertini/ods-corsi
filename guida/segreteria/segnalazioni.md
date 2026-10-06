@@ -68,7 +68,7 @@ leva prima di mandare. Il testo resta obbligatorio: il file da solo non basta.
 Un file che non va (troppo pesante, di un altro tipo, il quarto) lo dice col
 suo nome e cosa fare.
 
-**Niente certificati medici né documenti d'identità**: restano su carta. Negli
+**Niente certificati medici né documenti d'identità**: il certificato sta nella scheda dell'iscritto, il documento resta su carta. Negli
 screenshot, copri i nomi di iscritti e bambini prima di mandarli; li vede
 solo la segreteria, ma meno dati ci sono meglio è.
 

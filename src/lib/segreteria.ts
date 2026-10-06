@@ -1,5 +1,5 @@
 import type { StatoPresenza, StatoSessione } from './sala'
-import { chiaveGiorno, oraDi } from './sala'
+import { chiaveGiorno, dataLunga, oraDi } from './sala'
 import type { RuoloPersonale } from './ruoli'
 import { haUnServer } from './dati'
 import type { ListaMusica } from './musica'
@@ -9,6 +9,7 @@ import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
 import { euro } from './ricevute'
 import { VALIDITA } from './costi'
+import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio, paroleCercate, somiglia } from './nomi'
 import type { SegnalataVista } from './segnalate'
@@ -121,6 +122,8 @@ export interface PersonaSeg {
   telefono?: string
   attiva: boolean
   creataIl: string
+  /** La data di nascita, se si sa: sotto i 6 anni il certificato non si chiede. */
+  natoIl?: string
   /** Anche quelle terminate: dicono da quando a quando. */
   iscrizioni: IscrizioneSeg[]
   certificato: CertificatoSeg
@@ -135,16 +138,16 @@ export interface PersonaSeg {
 }
 
 /**
- * Il certificato medico: fino a quando vale. Il certificato vero sta su
- * carta, in segreteria.
+ * Il certificato medico: fino a quando vale, e il file caricato nell'app, che
+ * apre solo la segreteria. La data la scrive la segreteria leggendo il foglio.
  */
 export interface CertificatoSeg {
   scade?: string
-  /**
-   * C'è ancora il file caricato nell'app, di prima della carta: da stampare
-   * e cancellare.
-   */
   conFile: boolean
+  /** Il file è di prima della nuova gestione (senza data di caricamento): si apre come gli altri. */
+  vecchio?: boolean
+  /** Il giorno in cui il file è stato caricato. Resta anche dopo che il file è stato cancellato (a scadenza + 30 giorni, o con la disattivazione): dice che un file c'è stato. */
+  caricatoIl?: string
 }
 
 export type StatoPagamento = 'da_pagare' | 'in_parte' | 'pagato'
@@ -461,14 +464,17 @@ export interface DatiSegreteria {
   /** `dal`: da quando, se non è oggi (l'import dei fogli usa il giorno della risposta). Vale per un'iscrizione nuova o ripresa, non per una in corso. */
   iscrivi(personaId: string, corsoId: string, dal?: string): Promise<void>
   termina(personaId: string, corsoId: string): Promise<void>
-  /** Il certificato medico, che sta su carta in segreteria: fino a quando vale. */
+  /** Solo la data di scadenza del certificato: il file, se c'è, resta. */
   salvaCertificato(personaId: string, scade: string): Promise<void>
-  /** Toglie la scadenza, e il file di prima se c'è ancora. */
+  /**
+   * Il file del certificato e la data insieme, in un gesto solo: il file nuovo
+   * prende il posto del vecchio, che si cancella. Se qualcosa non va non cambia niente.
+   */
+  caricaCertificato(personaId: string, file: File, scade: string): Promise<void>
+  /** Toglie la data e il file. */
   togliCertificato(personaId: string): Promise<void>
-  /** Il file del certificato di prima della carta, o `null` se non c'è: per stamparlo. */
+  /** Il file del certificato, o `null` se non c'è: il link vale dieci minuti. */
   apriCertificato(personaId: string): Promise<FileSeg | null>
-  /** Il file di prima, stampato: si cancella per sempre, la scadenza resta. */
-  cancellaFileCertificato(personaId: string): Promise<void>
   /** Se la copia del documento d'identità è in segreteria. */
   salvaDocumento(personaId: string, inSegreteria: boolean): Promise<void>
   salvaPagamento(personaId: string, p: PagamentoSeg): Promise<void>
@@ -670,6 +676,174 @@ export function comeCertificato(c: Pick<CertificatoSeg, 'scade'>, oggi: string):
   return c.scade <= spostaGiorno(oggi, AVVISO_CERTIFICATO) ? 'in_scadenza' : 'valido'
 }
 
+export type StatoCertificato = 'nessuno' | 'valido' | 'in_scadenza' | 'scaduto_con_file' | 'scaduto_senza_file' | 'valido_senza_file' | 'file_vecchio'
+
+/**
+ * Lo stato che dice la scheda. Senza data il certificato non c'è, anche col
+ * file: la data la scrive la segreteria. In scadenza e scaduto vengono prima
+ * del file: lì conta cosa fare, non dov'è il foglio.
+ */
+export function statoCertificato(c: CertificatoSeg, oggi: string): StatoCertificato {
+  if (!c.scade) return 'nessuno'
+  if (c.scade < oggi) return c.conFile ? 'scaduto_con_file' : 'scaduto_senza_file'
+  if (c.scade <= spostaGiorno(oggi, AVVISO_CERTIFICATO)) return 'in_scadenza'
+  return !c.conFile ? 'valido_senza_file' : c.vecchio ? 'file_vecchio' : 'valido'
+}
+
+/** Quanti giorni dopo la scadenza il file si cancella da sé. */
+export const GIORNI_FILE_DOPO_SCADENZA = 30
+
+/** Il giorno in cui il file di un certificato che scade il `scade` si cancella. */
+export const cancellaFileIl = (scade: string) => spostaGiorno(scade, GIORNI_FILE_DOPO_SCADENZA)
+
+/** Sotto i 6 anni il certificato non si chiede. Senza la data di nascita, come per tutti. */
+export function sottoSeiAnni(natoIl: string | undefined, oggi: string): boolean {
+  // Il confronto è fra stringhe: a 6 anni si arriva il giorno stesso, e chi è nato il 29 febbraio li compie il 1 marzo (ogni anno) o il 29.
+  return !!natoIl && natoIl > `${Number(oggi.slice(0, 4)) - 6}${oggi.slice(4)}`
+}
+
+export type ComeCertificatoDi = ComeCertificato | 'non_serve'
+
+/** Quel che serve a dire come sta uno col certificato: la scheda della segreteria e quella che vede l'iscritto. */
+type ConCertificato = { certificato: Pick<CertificatoSeg, 'scade'>; natoIl?: string }
+
+/** Come `comeCertificato`, ma sotto i 6 anni, senza un certificato valido, `non_serve`: è a posto lo stesso. */
+export function comeCertificatoDi(p: ConCertificato, oggi: string): ComeCertificatoDi {
+  const come = comeCertificato(p.certificato, oggi)
+  return sottoSeiAnni(p.natoIl, oggi) && come !== 'valido' && come !== 'in_scadenza' ? 'non_serve' : come
+}
+
+/** In regola col certificato: valido (anche se in scadenza), o non serve. L'unica regola: la usano tutte le schermate. */
+export const certificatoInRegola = (p: ConCertificato, oggi: string) => comeCertificatoDi(p, oggi) !== 'manca' && comeCertificatoDi(p, oggi) !== 'scaduto'
+
+/** Chi è attivo e non è in regola col certificato: manca o è scaduto. */
+export const certificatoMancante = (p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'natoIl'>, oggi: string) => p.attiva && !certificatoInRegola(p, oggi)
+
+/** Quanti, per come stanno col certificato: i numeri delle statistiche, che sono quelli di DA FARE e di ISCRITTI. */
+export function contiCertificati(persone: ConCertificato[], oggi: string): Record<ComeCertificatoDi, number> {
+  const conti: Record<ComeCertificatoDi, number> = { valido: 0, in_scadenza: 0, scaduto: 0, manca: 0, non_serve: 0 }
+  for (const p of persone) conti[comeCertificatoDi(p, oggi)]++
+  return conti
+}
+
+/** Il file di prima della nuova gestione: era da stampare, ora si apre come gli altri. */
+export const certificatoDaStampare = (c: Pick<CertificatoSeg, 'conFile' | 'vecchio'>) => c.conFile && !!c.vecchio
+
+/** Cosa dice il blocco CERTIFICATO MEDICO della scheda, e quale tasto offre. */
+export interface PresentaCertificato {
+  parola: string
+  tono: Tono
+  frase: string
+  /** Il tasto che apre il gesto: file e data insieme. */
+  tasto: string
+  /** È la prima cosa da fare: il tasto è pieno. */
+  primo: boolean
+  /** Il giorno in cui il file si cancella da sé, se c'è un file di un certificato scaduto. */
+  cancellaIl?: string
+  /** Cosa dire al posto del file, quando non c'è. */
+  nota?: string
+  /** Si può caricare, sostituire, togliere: non per una persona disattivata. */
+  puoCambiare: boolean
+}
+
+export function presentaCertificato(c: CertificatoSeg, natoIl: string | undefined, oggi: string, attiva = true): PresentaCertificato {
+  const stato = statoCertificato(c, oggi)
+  const nonServe = comeCertificatoDi({ certificato: c, natoIl }, oggi) === 'non_serve'
+  const data = c.scade ? dataLunga(c.scade) : ''
+  const fra = c.scade ? Math.round((Date.parse(c.scade) - Date.parse(oggi)) / 86_400_000) : 0
+  const frase = {
+    nessuno: c.conFile ? 'Il file c’è, ma manca la data: scrivila leggendo il foglio. Senza, in sala non si entra.' : 'Nessun certificato in segreteria: senza, in sala non si entra.',
+    valido: `Valido fino al ${data}.`,
+    file_vecchio: `Valido fino al ${data}.`,
+    valido_senza_file: `Valido fino al ${data}, ma il file non c’è: la data è segnata, il foglio no.`,
+    in_scadenza: `Scade il ${data}, ${fra === 0 ? 'oggi' : fra === 1 ? 'domani' : `fra ${fra} giorni`}.`,
+    scaduto_con_file: `Scaduto il ${data}: va rinnovato prima di tornare in sala.`,
+    // «File cancellato» solo se un file c'è stato: la sola data scritta a mano non ne ha mai avuto.
+    scaduto_senza_file: c.caricatoIl
+      ? `Certificato scaduto, file cancellato. Scaduto il ${data}: ne serve uno nuovo prima di tornare in sala.`
+      : `Certificato scaduto il ${data}: ne serve uno nuovo prima di tornare in sala.`,
+  }[stato]
+  const fileCancellato = !c.conFile && !!c.caricatoIl
+  const nota = c.conFile
+    ? undefined
+    : fileCancellato
+      ? c.scade && cancellaFileIl(c.scade) <= oggi
+        ? 'Il file è stato cancellato 30 giorni dopo la scadenza, come previsto.'
+        : !attiva
+          ? 'File cancellato alla disattivazione.'
+          : 'Il file è stato cancellato.'
+      : stato === 'nessuno'
+        ? 'Nessun file caricato.'
+        : 'Nessun file caricato: la data l’ha scritta la segreteria.'
+  const parola = { nessuno: 'MANCA', valido: 'VALIDO', file_vecchio: 'VALIDO', valido_senza_file: 'VALIDO', in_scadenza: 'IN SCADENZA', scaduto_con_file: 'SCADUTO', scaduto_senza_file: 'SCADUTO' }[stato]
+  const verde = stato === 'valido' || stato === 'file_vecchio' || stato === 'valido_senza_file'
+  const tasto =
+    c.conFile && !c.scade
+      ? 'SCRIVI LA DATA'
+      : stato === 'nessuno'
+        ? 'CARICA IL CERTIFICATO'
+        : stato === 'scaduto_senza_file'
+          ? 'CARICA IL NUOVO'
+          : stato === 'valido_senza_file'
+            ? 'CARICA IL FILE'
+            : 'SOSTITUISCI'
+  return {
+    ...(nonServe
+      ? { parola: 'NON SERVE', tono: 'spento' as Tono, frase: 'Sotto i 6 anni il certificato non si chiede.' }
+      : { parola, tono: (verde ? 'verde' : stato === 'in_scadenza' ? 'giallo' : 'rosso') as Tono, frase }),
+    tasto,
+    // Il tasto pieno è uno solo: la prima cosa da fare.
+    primo: !nonServe && ['nessuno', 'scaduto_con_file', 'scaduto_senza_file', 'valido_senza_file'].includes(stato),
+    cancellaIl: stato === 'scaduto_con_file' ? cancellaFileIl(c.scade ?? '') : undefined,
+    nota,
+    puoCambiare: attiva,
+  }
+}
+
+/** Come si apre il gesto CARICA / SOSTITUISCI: la data vuota, anche sostituendo un certificato che ne ha una (la vecchia è una trappola nel rinnovo). */
+export const gestoIniziale = (_c: Pick<CertificatoSeg, 'scade'>): { file?: File; scade: string } => ({ scade: '' })
+
+/**
+ * SALVA è pronto quando c'è la data e c'è qualcosa da salvare: un file nuovo
+ * scelto, o la data cambiata rispetto a quella già in scheda.
+ */
+export const certificatoPronto = (gesto: { file?: unknown; scade: string }, c: Pick<CertificatoSeg, 'scade'>) =>
+  !!gesto.scade && (!!gesto.file || gesto.scade !== c.scade)
+
+/** Cosa non va in un file di certificato e nella sua data, prima di mandarli: foto o PDF, 10 MB, e la data. */
+export function cosaNonVaCertificato(file: Pick<File, 'type' | 'size'>, scade: string, oggi = chiaveGiorno(new Date())): string | null {
+  if (!ESTENSIONI[file.type]) return 'Questo tipo di file non va: serve una foto o un PDF'
+  if (file.size > MASSIMO_FILE) return 'Il file è troppo grande: al massimo 10 MB'
+  return cosaNonVaScadenza(scade, oggi)
+}
+
+/** La data di scadenza: una data vera, e non più di tre anni avanti (quasi sempre vuol dire l'anno sbagliato). Come `salva_certificato`. */
+export function cosaNonVaScadenza(scade: string, oggi = chiaveGiorno(new Date())): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(scade) || Number.isNaN(Date.parse(scade))) return 'Serve la data di scadenza del certificato'
+  if (scade > `${Number(oggi.slice(0, 4)) + 3}${oggi.slice(4)}`) return "La data è troppo lontana: controlla l'anno."
+  return null
+}
+
+/** Cosa dire sotto la data del gesto CARICA / SOSTITUISCI, prima di salvare. */
+export function avvisiGesto(gesto: { file?: unknown; scade: string }, c: Pick<CertificatoSeg, 'conFile'>, oggi: string): string[] {
+  const x: string[] = []
+  if (gesto.scade && gesto.scade < oggi) x.push('Questa data è già passata: il certificato risulterà scaduto.')
+  // Col file che c'è (o che si sceglie), una scadenza di più di 30 giorni fa lo fa cancellare alla prima pulizia.
+  if (gesto.scade && cancellaFileIl(gesto.scade) <= oggi && (gesto.file || c.conFile)) x.push('Sono passati più di 30 giorni dalla scadenza: il file verrà cancellato subito.')
+  if (gesto.file && c.conFile) x.push('Salvando, il file vecchio si cancella: resta solo questo.')
+  return x
+}
+
+/** La domanda prima di disattivare: col file del certificato, dice che si cancella e che riattivare non lo riporta. */
+export const confermaDisattiva = (nome: string, c: Pick<CertificatoSeg, 'conFile'>) =>
+  `Disattivare ${nome}? Sparisce dagli appelli e dal tablet; si può riattivare.${c.conFile ? ' Il file del certificato si cancella subito e riattivarla non lo riporta: la data resta.' : ''}`
+
+/** La domanda prima di unire due schede: con un certificato da una delle due, dice quale resta. */
+export const confermaUnione = (nomeVia: string, nomeResta: string, via: Pick<CertificatoSeg, 'scade' | 'conFile'>, resta: Pick<CertificatoSeg, 'scade' | 'conFile'>) =>
+  `Unire ${nomeVia} in ${nomeResta}? La scheda di ${nomeVia} se ne va, e non si torna indietro.${
+    via.scade || via.conFile || resta.scade || resta.conFile ? ' Del certificato resta quello che scade più tardi, col suo file (se uno non ha il file, quello col file).' : ''
+  }`
+
 export type ComePaga = StatoPagamento | 'scaduto'
 
 /** Com'è messo coi pagamenti, e perché: la ricevuta, o l'eccezione fuori dall'app. */
@@ -713,8 +887,8 @@ export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: st
 export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: string): ComePaga => pagamentoDi(p, oggi).come
 
 /** In regola: certificato valido (anche se in scadenza) e quota pagata. */
-export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string) =>
-  ['valido', 'in_scadenza'].includes(comeCertificato(p.certificato, oggi)) && comePaga(p, oggi) === 'pagato'
+export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string) =>
+  certificatoInRegola(p, oggi) && comePaga(p, oggi) === 'pagato'
 
 export type Tono = 'rosso' | 'giallo' | 'verde' | 'spento'
 
@@ -754,11 +928,11 @@ export function alGiorno(g: string): string {
   return [1, 8, 11].includes(giorno) ? `ALL’${giorno}${dataTimbro(g).slice(2)}` : `AL ${dataTimbro(g)}`
 }
 
-function timbroCertificato(c: CertificatoSeg, oggi: string): Timbro {
+function timbroCertificato(c: CertificatoSeg, oggi: string, natoIl?: string): Timbro {
   const come = comeCertificato(c, oggi)
-  // Il file di prima della carta è sempre un avviso, anche sotto un certificato valido.
-  const righe: Timbro['righe'] = c.conFile ? [{ testo: 'DA STAMPARE', tono: 'giallo' }] : []
-  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...righe] }
+  const righe: Timbro['righe'] = []
+  if (comeCertificatoDi({ certificato: c, natoIl }, oggi) === 'non_serve') return { tono: 'spento', parola: 'NON SERVE', righe: [{ testo: 'SOTTO I 6 ANNI' }] }
+  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }] }
   if (come === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'CERT. SCADUTO', righe }
   if (come === 'in_scadenza') {
     if (c.scade === oggi) return { tono: 'giallo', parola: 'SCADE OGGI', righe }
@@ -789,9 +963,9 @@ function timbroQuota(s: StatoPaga): Timbro {
  * documento si vede ma non conta per «in regola» (vedi `inRegola`). Chi è
  * disattivato li ha spenti, con le stesse parole.
  */
-export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote'>, oggi: string): TimbriScheda {
+export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'documento' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): TimbriScheda {
   const t = {
-    certificato: timbroCertificato(p.certificato, oggi),
+    certificato: timbroCertificato(p.certificato, oggi, p.natoIl),
     quota: timbroQuota(pagamentoDi(p, oggi)),
     documento: {
       tono: p.documento ? 'verde' : 'giallo',
@@ -811,11 +985,11 @@ export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'doc
  * l'avviso. Con tutto a posto resta la quota: la scheda si apre soprattutto
  * per incassare. Il documento non conta, come per «in regola».
  */
-export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote'>, oggi: string): 'certificato' | 'quota' | null {
+export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): 'certificato' | 'quota' | null {
   if (!p.attiva) return null
-  const cert = comeCertificato(p.certificato, oggi)
+  const cert = comeCertificatoDi(p, oggi)
   const quota = pagamentoDi(p, oggi).come
-  if (cert === 'manca' || cert === 'scaduto') return 'certificato'
+  if (certificatoMancante(p, oggi)) return 'certificato'
   if (quota !== 'pagato') return 'quota'
   return cert === 'in_scadenza' ? 'certificato' : 'quota'
 }
@@ -825,12 +999,12 @@ export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | '
  * IN REGOLA; poi FUORI APP, perché prima o poi va una ricevuta. Il
  * certificato in scadenza si vede, anche se è ancora in regola.
  */
-export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote'>, oggi: string): ParolaStato[] {
+export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): ParolaStato[] {
   const s = pagamentoDi(p, oggi)
-  const cert = timbroCertificato(p.certificato, oggi)
+  const cert = timbroCertificato(p.certificato, oggi, p.natoIl)
   const quota = timbroQuota(s)
   const fuori: ParolaStato[] = s.fonte === 'fuori_app' ? [{ tono: 'spento', parola: 'FUORI APP' }] : []
-  const guai = [cert, quota].filter((t) => t.tono !== 'verde').map((t): ParolaStato => ({ tono: t.tono, parola: t.inElenco ?? t.parola }))
+  const guai = [cert, quota].filter((t) => t.tono !== 'verde' && t.tono !== 'spento').map((t): ParolaStato => ({ tono: t.tono, parola: t.inElenco ?? t.parola }))
   const inRegola: ParolaStato = { tono: 'verde', parola: 'IN REGOLA' }
   return [...(guai.length ? guai : [inRegola]), ...fuori]
 }

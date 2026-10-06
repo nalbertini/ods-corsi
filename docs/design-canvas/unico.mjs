@@ -22,6 +22,7 @@ const SEZIONI = [
   { id: 'iscrizione', nome: 'Registrazione utente', cartella: 'iscrizione' },
   { id: 'importa-fogli', nome: 'Importa da Excel', cartella: 'import-fogli' },
   { id: 'timer-desktop', nome: 'Timer desktop · proposte', cartella: 'timer-desktop' },
+  { id: 'certificati-online', nome: 'Certificati online', cartella: 'certificati-online' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

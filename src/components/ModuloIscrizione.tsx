@@ -38,8 +38,10 @@ import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
  * documento del genitore non serve: la segreteria ha già il suo.
  *
  * Il documento d'identità e il certificato medico si caricano qui, per
- * comodità: la segreteria li stampa, li tiene su carta e li cancella
- * dall'app. Il certificato, se non c'è ancora, si può anche portare dopo.
+ * comodità. Il documento la segreteria lo stampa, lo tiene su carta e lo
+ * cancella dall'app; il certificato resta nell'app e lo vede solo lei. Il
+ * certificato, se non c'è ancora, si può anche portare dopo: sotto i 6 anni
+ * non si chiede.
  */
 
 /** Una persona in più nel nucleo: chi la aggiunge, cosa si sa già, e gli annuali che il nucleo paga. */
@@ -662,7 +664,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
               {certificato === 'agonistico'
                 ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico.'
                 : 'Dai 6 anni il certificato medico è obbligatorio.'}{' '}
-              Caricalo qui sotto, o consegnalo in segreteria: senza non si partecipa alle lezioni.
+              Caricalo qui sotto, o consegnalo in segreteria: lo vede solo la segreteria, e senza non si partecipa alle lezioni.
             </Dettaglio>
           </div>
         )}

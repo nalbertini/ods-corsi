@@ -194,15 +194,15 @@ const terzo = await r.invia(adulto({ nome: 'Terzo', codiceFiscale: 'RSSTRZ96A01L
   ok('il luogo di nascita è quello del codice', l.natoA, 'TORINO (TO)')
   await r.caricaFile(luca, 'modulo', new File(['x'], 'modulo.pdf', { type: 'application/pdf' }))
   ok('il file si ritrova, come PDF', (await r.file(luca)).map((f) => [f.tipo, f.pdf]), [['modulo', true]])
-  // Documento e certificato arrivano col modulo: si stampano e si cancellano, il resto resta.
+  // Il documento arriva col modulo: si stampa e si cancella. Il certificato no: resta nell'app e passa alla scheda (prova-certificati.mjs).
   await r.caricaFile(luca, 'documento', new File(['x'], 'documento.jpg', { type: 'image/jpeg' }))
   await r.caricaFile(luca, 'certificato', new File(['x'], 'certificato.pdf', { type: 'application/pdf' }))
-  ok('documento e certificato si trovano fra quelli da stampare', [...(await r.conDocumento())], [luca])
+  ok('il documento si trova fra quelli da stampare', [...(await r.conDocumento())], [luca])
   await r.eliminaFile(luca, 'documento')
-  ok('col certificato ancora lì, c\'è ancora da stampare', [...(await r.conDocumento())], [luca])
+  ok('stampato il documento, il certificato ancora lì non tiene la richiesta fra quelle da stampare', (await r.conDocumento()).size, 0)
+  ok('il certificato resta con il modulo, finché non si accoglie', (await r.file(luca)).map((f) => f.tipo), ['modulo', 'certificato'])
   await r.eliminaFile(luca, 'certificato')
-  ok('stampati e cancellati: non c\'è più niente da stampare', (await r.conDocumento()).size, 0)
-  ok('e il modulo resta', (await r.file(luca)).map((f) => f.tipo), ['modulo'])
+  ok('un certificato sbagliato si toglie prima di accogliere', (await r.file(luca)).map((f) => f.tipo), ['modulo'])
 }
 
 console.log('\n4. la segreteria accoglie e rifiuta')
@@ -214,7 +214,9 @@ console.log('\n4. la segreteria accoglie e rifiuta')
   ok('una seconda volta no', await errore(() => r.accogli(luca)), 'Questa richiesta è già stata accolta')
   ok('la richiesta sa chi è nata', (await r.richieste()).find((x) => x.id === luca).personaId, id)
 
+  await r.caricaFile(giulia, 'certificato', new File(['x'], 'certificato.pdf', { type: 'application/pdf' }))
   const g = await r.accogli(giulia)
+  ok('accolta, i file della richiesta non hanno più il certificato (la scheda li rilegge e non lo mostra)', (await r.file(giulia)).some((f) => f.tipo === 'certificato'), false)
   const mm = await r.accogli(marco)
   const persone = await s.persone()
   ok('i due fratelli: la mail a una sola', [persone.find((x) => x.id === g).email, persone.find((x) => x.id === mm).email], ['mamma@esempio.it', undefined])

@@ -1,0 +1,82 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Certificati online"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Oggi e proposta · schermo largo",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Stati.dc.html",
+      "title": "Tutti gli stati · schermo largo",
+      "x": 1560,
+      "y": 0,
+      "w": 1500,
+      "h": 1160,
+      "page": "page-1"
+    },
+    {
+      "file": "Gesto.dc.html",
+      "title": "CARICA e SOSTITUISCI aperti · schermo largo",
+      "x": 3180,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Richieste.dc.html",
+      "title": "Il certificato nella richiesta · schermo largo",
+      "x": 4740,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Chiaro.dc.html",
+      "title": "Tema chiaro · schermo largo",
+      "x": 6300,
+      "y": 0,
+      "w": 1440,
+      "h": 760,
+      "page": "page-1"
+    },
+    {
+      "file": "Telefono.dc.html",
+      "title": "Telefono · 390px",
+      "x": 7860,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "n1",
+      "x": 0,
+      "y": -140,
+      "w": 1440,
+      "text": "Decisioni: il file resta online e lo apre solo la segreteria (link da 10 minuti); la carta sparisce, resta solo il documento d'identità; il file si sostituisce col nuovo e si cancella da sé 30 giorni dopo la scadenza, o quando la persona viene disattivata; sotto i 6 anni non si chiede; la data la scrive la segreteria.",
+      "page": "page-1"
+    },
+    {
+      "id": "n2",
+      "x": 1560,
+      "y": -140,
+      "w": 1500,
+      "text": "Via ogni «DA STAMPARE». Schede unite: il file passa a quella che resta. I file di prima della carta si aprono con lo stesso APRI.",
+      "page": "page-1"
+    }
+  ]
+}
