@@ -129,13 +129,13 @@ function Scelta({ prova, onScegli }: { prova: boolean; onScegli: (chi: P.Chi) =>
           etichetta="Chi si iscrive"
           una
           voci={[
-            { id: 'adulto', testo: 'IO, SONO ADULTO', riga: 'Ti servono: il tuo codice fiscale e la tua carta d’identità. 4 passi.' },
-            { id: 'figlio', testo: 'MIO FIGLIO O MIA FIGLIA', riga: 'Ti servono: il codice fiscale del bambino e il tuo, e la tua carta d’identità. 5 passi.' },
+            { id: 'adulto', testo: 'IO, SONO ADULTO', riga: `Ti servono: il tuo codice fiscale e la tua carta d’identità. ${P.passiDi('adulto', false).length} passi.` },
+            { id: 'figlio', testo: 'MIO FIGLIO O MIA FIGLIA', riga: `Ti servono: il codice fiscale del bambino e il tuo, e la tua carta d’identità. ${P.passiDi('figlio', false).length} passi.` },
           ]}
           scelti={[]}
           onScegli={(c) => onScegli(c === 'figlio' ? 'figlio' : 'adulto')}
         />
-        <Dettaglio>Il certificato medico si può caricare nell’ultimo passo, o portare in segreteria prima della prima lezione.</Dettaglio>
+        <Dettaglio>Il certificato medico si può caricare nel passo dei documenti, o portare in segreteria prima della prima lezione.</Dettaglio>
       </div>
       <Prova />
       <Contatti />
@@ -743,7 +743,7 @@ function Flusso({
               </div>
             </>
           )}
-          <Titoletto>{figlio ? 'COME PAGA' : 'COME PAGHI'}</Titoletto>
+          <Titoletto>{figlio ? 'QUANDO PAGA' : 'QUANDO PAGHI'}</Titoletto>
           <div className="pad stack passo-dopo">
             <SceltaCorsi
               id="n-formula"
@@ -753,18 +753,12 @@ function Flusso({
               scelti={[r.formula]}
               onScegli={(f) => setR({ formula: f === 'annuale' ? 'annuale' : 'trimestre' })}
             />
-            <QuantoCosta nome={nome} cognome={r.cognome.trim()} corsi={refDei(r.corsi)} formula={r.formula} abbonamenti={[]} />
-          </div>
-          <Titoletto>LA RICEVUTA</Titoletto>
-          <div className="pad stack passo-dopo">
-            <SceltaFile tipo="ricevuta" file={v.file.ricevuta} onFile={(f) => setFile('ricevuta', f)} />
           </div>
         </>
       )
     }
 
     if (tipo === 'modulo') {
-      const certificato = daChiedere.certificato
       return (
         <>
           <div className="pad modulo-griglia passo-prima">
@@ -909,7 +903,16 @@ function Flusso({
               </span>
             </label>
           </div>
-          <Titoletto>I FILE</Titoletto>
+        </>
+      )
+    }
+
+    if (tipo === 'documenti') {
+      const certificato = daChiedere.certificato
+      const nome = r.nome.trim() || 'Chi si iscrive'
+      return (
+        <>
+          <Titoletto>I DOCUMENTI</Titoletto>
           <div className="pad modulo-griglia passo-dopo">
             {certificato !== 'nessuno' && !figlio && (
               <div className="modulo-campo modulo-largo">
@@ -933,6 +936,15 @@ function Flusso({
                 )
               })}
           </div>
+          <Titoletto>QUANTO PAGHI</Titoletto>
+          <div className="pad stack passo-dopo">
+            <Dettaglio>Pagare in segreteria va benissimo: non serve il bonifico né caricare niente.</Dettaglio>
+            <QuantoCosta nome={nome} cognome={r.cognome.trim()} corsi={refDei(r.corsi)} formula={r.formula} abbonamenti={[]} />
+          </div>
+          <Titoletto>LA RICEVUTA · FACOLTATIVA</Titoletto>
+          <div className="pad stack passo-dopo">
+            <SceltaFile tipo="ricevuta" file={v.file.ricevuta} onFile={(f) => setFile('ricevuta', f)} />
+          </div>
         </>
       )
     }
@@ -948,7 +960,7 @@ function Flusso({
               <Dettaglio tono="testo">I tuoi dati li hai già scritti: ne mancano pochi. La carta d’identità e la firma valgono anche per te.</Dettaglio>
             </span>
             <div className="modulo-largo">
-              <Riepilogo righe={[{ stato: 'fatto', titolo: nomeLui || 'Il genitore', dettaglio: 'nome, cognome, codice fiscale, residenza e contatti dei passi 2 e 1' }]} />
+              <Riepilogo righe={[{ stato: 'fatto', titolo: nomeLui || 'Il genitore', dettaglio: 'nome, cognome, codice fiscale, residenza e contatti, scritti nel passo ' + passoDi('dati') + ' e nel passo ' + passoDi('genitore') }]} />
             </div>
             <div className="modulo-campo modulo-largo">
               <span className="modulo-etichetta">IL TUO CORSO</span>
@@ -1018,8 +1030,8 @@ function Flusso({
       { stato: 'fatto', titolo: `${r.nome.trim()} ${r.cognome.trim()}`, dettaglio: r.natoIl ? `nato il ${r.natoIl.split('-').reverse().join('/')} · ${anniScritti(r.natoIl)}` : undefined, tasto: modifica('dati') },
       ...righe.filter((x) => !x.manca && !x.suo && x.cosa !== 'ricevuta').map(vistaDi),
       ...(suo ? [{ stato: 'fatto' as const, titolo: nomeLui || 'Il genitore', dettaglio: `${nomiDei(suo.corsi)} · ${suo.formula} · ${scelteDette(suo.scelte)}`, tasto: modifica('anche') }] : []),
-      { stato: 'fatto', titolo: figlio ? 'Firma del genitore' : 'Firma sul modulo', dettaglio: v.file.modulo ? 'foglio firmato, in foto' : scelteDette(v.scelte), tasto: modifica('modulo') },
-      { stato: 'fatto', titolo: figlio ? 'Carta d’identità del genitore' : 'Carta d’identità', dettaglio: v.file.documento?.name, tasto: modifica('modulo') },
+      { stato: 'fatto', titolo: figlio ? 'Firma del genitore' : 'Firma sul modulo', dettaglio: v.file.modulo ? 'foglio firmato, in foto' : scelteDette(v.scelte), tasto: modifica(P.passoDelRiepilogo('firma')) },
+      { stato: 'fatto', titolo: figlio ? 'Carta d’identità del genitore' : 'Carta d’identità', dettaglio: v.file.documento?.name, tasto: modifica(P.passoDelRiepilogo('carta')) },
       ...righe.filter((x) => x.manca || x.suo || x.cosa === 'ricevuta').map(vistaDi),
     ]
     const senzaCertificato = righe.some((x) => x.carica === 'certificato')
@@ -1069,6 +1081,7 @@ function Flusso({
         // Un passo nuovo riparte con l'elenco chiuso.
         key={passo}
         manca={manca}
+        totale={P.totaleDelPasso(v, passo, corsi ?? [], listino, chiaveGiorno(new Date()))}
         onVai={focus}
         // Il «tutto a posto» solo se davvero non manca niente: a passo vuoto, prima di provare, non c'è né elenco né ✓.
         nota={mancaOra.length === 0 ? (ultimo ? undefined : 'Tutto a posto in questo passo.') : undefined}

@@ -77,18 +77,19 @@ export const nuovoStato = (chi: Chi): StatoPassi => ({
 })
 
 /** Cosa si fa in ogni passo: l'ordine sta qui, e solo qui. */
-export type TipoPasso = 'dati' | 'genitore' | 'corso' | 'modulo' | 'anche' | 'riepilogo'
+export type TipoPasso = 'dati' | 'genitore' | 'corso' | 'modulo' | 'documenti' | 'anche' | 'riepilogo'
 
 export const tipiDiPassi = (chi: Chi, ancheTu: boolean): TipoPasso[] =>
-  chi === 'adulto' ? ['dati', 'corso', 'modulo', 'riepilogo'] : ['dati', 'genitore', 'corso', 'modulo', ...(ancheTu ? (['anche'] as const) : []), 'riepilogo']
+  chi === 'adulto' ? ['dati', 'corso', 'modulo', 'documenti', 'riepilogo'] : ['dati', 'genitore', 'corso', 'modulo', 'documenti', ...(ancheTu ? (['anche'] as const) : []), 'riepilogo']
 
 const NOME_PASSO: Record<Chi, Partial<Record<TipoPasso, string>>> = {
-  adulto: { dati: 'I TUOI DATI', corso: 'IL CORSO E COME SI PAGA', modulo: 'IL MODULO, LA FIRMA E I FILE', riepilogo: 'CONTROLLA E INVIA' },
+  adulto: { dati: 'I TUOI DATI', corso: 'SCEGLI IL CORSO', modulo: 'IL MODULO E LA FIRMA', documenti: 'I DOCUMENTI E IL PAGAMENTO', riepilogo: 'CONTROLLA E INVIA' },
   figlio: {
     dati: 'IL BAMBINO',
     genitore: 'IL GENITORE CHE FIRMA',
-    corso: 'CORSI E COME SI PAGA',
-    modulo: 'IL MODULO, LA FIRMA E I FILE',
+    corso: 'SCEGLI IL CORSO',
+    modulo: 'IL MODULO E LA FIRMA',
+    documenti: 'I DOCUMENTI E IL PAGAMENTO',
     anche: 'ANCHE TU: POCHE COSE',
     riepilogo: 'CONTROLLA E INVIA',
   },
@@ -157,7 +158,7 @@ function campi(s: StatoPassi, oggi: Date, quali: CampoModulo[]): Pastiglia[] {
   return quali.filter((k) => g[k]).map((k) => ({ chiave: k, nome: NOMI[k] }))
 }
 
-/** Caselle e firma (se il foglio non è stato firmato a mano), regolamento, privacy e documento: come in pagina. */
+/** Caselle e firma (se il foglio non è stato firmato a mano), regolamento e privacy: come in pagina. */
 function moduloEFile(s: StatoPassi): Pastiglia[] {
   const m: Pastiglia[] = []
   if (s.firmaInFoto && !s.file.modulo) {
@@ -169,8 +170,12 @@ function moduloEFile(s: StatoPassi): Pastiglia[] {
   }
   if (!s.risposte.regolamento) m.push({ chiave: 'regolamento', nome: 'REGOLAMENTO' })
   if (!s.privacy) m.push({ chiave: 'privacy', nome: 'INFORMATIVA PRIVACY' })
-  m.push(...FILE.filter((f) => f.obbligatorio && f.tipo !== 'modulo' && !s.file[f.tipo]).map((f) => ({ chiave: f.tipo, nome: f.etichetta })))
   return m
+}
+
+/** I documenti che ferma la richiesta: la carta d'identità. Il retro, il certificato e la ricevuta non fermano. */
+function documenti(s: StatoPassi): Pastiglia[] {
+  return FILE.filter((f) => f.obbligatorio && f.tipo !== 'modulo' && !s.file[f.tipo]).map((f) => ({ chiave: f.tipo, nome: f.etichetta }))
 }
 
 /** «Anche tu»: il corso e i consensi del genitore, che decide da sé. */
@@ -198,6 +203,8 @@ function sezione(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
       ]
     case 'modulo':
       return moduloEFile(s)
+    case 'documenti':
+      return documenti(s)
     case 'anche':
       return ilSuo(s)
     default:
@@ -365,6 +372,30 @@ export function fraseCorsiNascosti(nascosti: string[], nomeBambino: string): str
   return `${cosa}: ${lui} è troppo piccolo. Cerchi altro? Chiama la segreteria.`
 }
 
+/** A quale passo manda MODIFICA nelle righe fisse del riepilogo: la carta d'identità sta nei documenti, la firma nel modulo. */
+export const passoDelRiepilogo = (riga: 'carta' | 'firma'): TipoPasso => (riga === 'carta' ? 'documenti' : 'modulo')
+
+/** Una cifra in centesimi per la riga del totale: «50 €», «50,50 €», lo sconto con il meno. */
+const euroBreve = (cent: number) => `${cent < 0 ? '−' : ''}${Math.abs(cent) % 100 === 0 ? Math.abs(cent) / 100 : (Math.abs(cent) / 100).toFixed(2).replace('.', ',')} €`
+
+/**
+ * Il totale che sta sempre sopra la barra, nei passi del corso e dei documenti: la stessa stima
+ * del riepilogo (stessi centesimi), solo scritta corta, di chi si iscrive: come QUANTO COSTA nello stesso passo.
+ * Il conto della famiglia, con lo sconto, sta nel riepilogo.
+ * Senza corso scelto, senza listino e negli altri passi non c'è.
+ */
+export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
+  const tipo = tipiDiPassi(s.chi, s.ancheTu === true)[passo - 1]
+  if ((tipo !== 'corso' && tipo !== 'documenti') || !listino || !s.risposte.corsi.length) return undefined
+  const conto = stimaIscrizione(persona(s, corsi), [], giorno, listino)
+  // Un corso senza prezzo nel listino non vale 0: lo dice la riga, e il totale è quello che si sa.
+  const daConfermare = conto.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`)
+  // Le righe si accorciano: «Quota associativa» → «Quota», «Annuale Judo adulti» → «Judo adulti annuale».
+  const voce = (testo: string) =>
+    testo.replace(/^Quota associativa$/, 'Quota').replace(/^(Annuale|Trimestre|Saldo)\s+(.+)$/i, (_, f: string, c: string) => `${c} ${f.toLowerCase()}`)
+  return { righe: [...conto.righe.map((r) => `${voce(r.testo)} ${euroBreve(r.importo)}`), ...daConfermare].join(' + '), totale: euroBreve(conto.totale) }
+}
+
 /** I file da chiedere: il certificato solo dai 6 anni, e quale lo dice l'età e il corso. */
 export function fileDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new Date()) {
   const certificato = certificatoDaPortare(natoIl, nomiCorsi, oggi)
@@ -390,7 +421,7 @@ export interface RigaRiepilogo {
   /** Di cosa parla la riga: la schermata sceglie da qui il titolo, non dall'etichetta. */
   cosa: 'corso' | 'genitore' | 'certificato' | 'ricevuta'
   /** A quale passo manda MODIFICA o CARICA. */
-  passo: 'dati' | 'genitore' | 'corso' | 'modulo' | 'anche'
+  passo: 'dati' | 'genitore' | 'corso' | 'modulo' | 'documenti' | 'anche'
   manca?: boolean
   carica?: TipoFile
   /** La riga è del genitore che si iscrive con il figlio. */
@@ -420,8 +451,8 @@ export function righeRiepilogo(s: StatoPassi, corsi: CorsoRef[], oggi = new Date
       ? []
       : [
           dato
-            ? { etichetta: ETICHETTA_FILE.certificato, valore: dato.name, cosa: 'certificato', passo: suo ? 'anche' : 'modulo', suo }
-            : { etichetta: ETICHETTA_FILE.certificato, valore: seManca('certificato'), cosa: 'certificato', passo: suo ? 'anche' : 'modulo', manca: true, carica: 'certificato', suo },
+            ? { etichetta: ETICHETTA_FILE.certificato, valore: dato.name, cosa: 'certificato', passo: suo ? 'anche' : 'documenti', suo }
+            : { etichetta: ETICHETTA_FILE.certificato, valore: seManca('certificato'), cosa: 'certificato', passo: suo ? 'anche' : 'documenti', manca: true, carica: 'certificato', suo },
         ]
   const righe: RigaRiepilogo[] = [{ etichetta: 'CORSO', valore: nomi(r.corsi).join(', '), cosa: 'corso', passo: 'corso' }]
   if (s.chi === 'figlio') righe.push({ etichetta: 'GENITORE', valore: `${r.genitoreNome ?? ''} ${r.genitoreCognome ?? ''}`.trim(), cosa: 'genitore', passo: 'genitore' })
@@ -430,8 +461,8 @@ export function righeRiepilogo(s: StatoPassi, corsi: CorsoRef[], oggi = new Date
     righe.push(...certificato(dataDaCf(r.genitoreCodiceFiscale ?? '', '', oggi) ?? '', s.suo.corsi, s.suo.certificato, true))
   righe.push(
     s.file.ricevuta
-      ? { etichetta: ETICHETTA_FILE.ricevuta, valore: s.file.ricevuta.name, cosa: 'ricevuta', passo: 'corso' }
-      : { etichetta: ETICHETTA_FILE.ricevuta, valore: seManca('ricevuta'), cosa: 'ricevuta', passo: 'corso', manca: true, carica: 'ricevuta' },
+      ? { etichetta: ETICHETTA_FILE.ricevuta, valore: s.file.ricevuta.name, cosa: 'ricevuta', passo: 'documenti' }
+      : { etichetta: ETICHETTA_FILE.ricevuta, valore: seManca('ricevuta'), cosa: 'ricevuta', passo: 'documenti', manca: true, carica: 'ricevuta' },
   )
   return righe
 }
@@ -521,13 +552,20 @@ export function contoFamiglia(
  * per il riepilogo (il corso e la formula scelti dal genitore). Senza genitore
  * e senza proposta non c'è un conto di famiglia.
  */
+/** Chi si iscrive nello stato dei passi, come entra in ogni conto: nome (o «Il bambino» / «Chi si iscrive»), corsi e formula. */
+const persona = (s: StatoPassi, corsi: CorsoRef[]) => ({
+  chi: s.risposte.nome.trim() || (s.chi === 'figlio' ? 'Il bambino' : 'Chi si iscrive'),
+  corsi: corsi.filter((c) => s.risposte.corsi.includes(c.id)),
+  formula: s.risposte.formula,
+})
+
 export function contoDelloStato(s: StatoPassi, corsi: CorsoRef[], listino: Listino, giorno: string, proposta?: CorsoRef) {
   const ref = (ids: string[]) => corsi.filter((c) => ids.includes(c.id))
   const lui = proposta ? { corsi: [proposta], formula: s.risposte.formula } : s.chi === 'figlio' && s.ancheTu && s.suo ? { corsi: ref(s.suo.corsi), formula: s.suo.formula } : undefined
   if (!lui) return undefined
   return contoFamiglia(
     [
-      { chi: s.risposte.nome.trim() || 'Il bambino', corsi: ref(s.risposte.corsi), formula: s.risposte.formula },
+      persona(s, corsi),
       { chi: s.risposte.genitoreNome?.trim() || 'Genitore', ...lui },
     ],
     giorno,
