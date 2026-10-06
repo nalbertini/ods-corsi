@@ -118,7 +118,10 @@ export interface PersonaSeg {
   id: string
   nome: string
   cognome: string
+  /** L'email di accesso: una sola persona per indirizzo. */
   email?: string
+  /** Dove scrivere alla famiglia: facoltativa, può essere la stessa di altri (`44-email-contatto.sql`). */
+  emailContatto?: string
   telefono?: string
   attiva: boolean
   creataIl: string
@@ -409,6 +412,7 @@ export interface DatiPersona {
   nome: string
   cognome: string
   email?: string
+  emailContatto?: string
   telefono?: string
 }
 
@@ -900,10 +904,10 @@ export const confermaDisattiva = (nome: string, c: Pick<CertificatoSeg, 'conFile
   `Disattivare ${nome}? Sparisce dagli appelli e dal tablet; si può riattivare.${c.conFile ? ' Il file del certificato si cancella subito e riattivarla non lo riporta: la data resta.' : ''}`
 
 /** La domanda prima di unire due schede: con un certificato da una delle due, dice quale resta. */
-export const confermaUnione = (nomeVia: string, nomeResta: string, via: Pick<CertificatoSeg, 'scade' | 'conFile'>, resta: Pick<CertificatoSeg, 'scade' | 'conFile'>) =>
+export const confermaUnione = (nomeVia: string, nomeResta: string, via: Pick<CertificatoSeg, 'scade' | 'conFile'>, resta: Pick<CertificatoSeg, 'scade' | 'conFile'>, perso = '') =>
   `Unire ${nomeVia} in ${nomeResta}? La scheda di ${nomeVia} se ne va, e non si torna indietro.${
     via.scade || via.conFile || resta.scade || resta.conFile ? ' Del certificato resta quello che scade più tardi, col suo file (se uno non ha il file, quello col file).' : ''
-  }`
+  }${perso}`
 
 export type ComePaga = StatoPagamento | 'scaduto'
 
@@ -1421,3 +1425,32 @@ export function lezioniCheSeguonoIlGiorno(
 export function mancaAttivita(e: { code?: string; message?: string } | null | undefined): boolean {
   return !!e && ['42703', 'PGRST200', 'PGRST205', '42P01', '42883'].includes(e.code ?? '') && /attivita/.test(e.message ?? '')
 }
+
+/** La forma di un indirizzo, la stessa del vincolo `persone_email_contatto_forma` (44-email-contatto.sql). */
+const FORMA_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+
+export const CONTATTO_SBAGLIATO = 'L’email di contatto non sembra un indirizzo: scrivila come nome@esempio.it, al massimo 160 lettere.'
+
+/** Cosa si dice quando l'email di accesso è già di un'altra persona. */
+export const emailGiaDi = (nome: string) => `Questo indirizzo è già di ${nome}: mettilo come email di contatto.`
+
+/** A quale campo della scheda appartiene un errore di salvataggio, per dirlo sotto quel campo; `null` se non è di un campo. */
+export function campoDelGuaio(messaggio: string): 'email' | 'emailContatto' | null {
+  if (/^Questo indirizzo è già di .+: mettilo come email di contatto\.$/.test(messaggio)) return 'email'
+  return messaggio === CONTATTO_SBAGLIATO ? 'emailContatto' : null
+}
+
+/** Perché un'email di contatto non va bene, per chi usa l'app; `null` se va (o se è vuota: è facoltativa). */
+export function contattoNonValido(contatto?: string): string | null {
+  const c = contatto?.trim()
+  return c && (!FORMA_EMAIL.test(c) || c.length > 160) ? CONTATTO_SBAGLIATO : null
+}
+
+/** Una scheda dell'elenco ISCRITTI per quello che si è scritto in CERCA: nome in un verso o nell'altro, email di accesso o di contatto. */
+export function cercaNellElenco(p: PersonaSeg, testo: string): boolean {
+  const ago = testo.trim().toLowerCase()
+  return !ago || `${p.cognome} ${p.nome} ${p.nome} ${p.cognome} ${p.email ?? ''} ${p.emailContatto ?? ''}`.toLowerCase().includes(ago)
+}
+
+/** «Solo senza email» guarda l'email di accesso: il contatto non fa entrare nell'app. */
+export const senzaEmail = (p: PersonaSeg) => !p.email

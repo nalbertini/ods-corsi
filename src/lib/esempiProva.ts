@@ -388,10 +388,15 @@ function seminaNuclei() {
     .sort((x, y) => x[0].cognome.localeCompare(y[0].cognome, 'it'))
     .slice(0, 8)
   const nel = new Map<string, string>()
+  const contatti = new Map<string, string>()
   const anagrafiche = { ...(a.anagrafiche ?? {}) }
   for (const g of famiglie) {
     const [titolare, ...altri] = [...g].sort((x, y) => x.nome.localeCompare(y.nome, 'it'))
-    for (const p of altri) nel.set(p.id, titolare.id)
+    for (const p of altri) {
+      nel.set(p.id, titolare.id)
+      // La famiglia scrive a un solo indirizzo: l'email del titolare, o uno di casa.
+      contatti.set(p.id, titolare.email ?? `${p.cognome}@esempio.it`.toLowerCase().replace(/[^a-z@.]+/g, ''))
+    }
     if (anagrafiche[titolare.id]) continue
     const anno = 1972 + Math.floor(numero(`anno|${titolare.id}`) * 18)
     const mese = 1 + Math.floor(numero(`mese|${titolare.id}`) * 12)
@@ -409,7 +414,7 @@ function seminaNuclei() {
       cambiataIl: STAGIONE.dal,
     }
   }
-  a.persone = a.persone.map((p) => (nel.has(p.id) ? { ...p, nucleo: nel.get(p.id) } : p))
+  a.persone = a.persone.map((p) => (nel.has(p.id) ? { ...p, nucleo: nel.get(p.id), emailContatto: p.emailContatto ?? contatti.get(p.id) } : p))
   a.anagrafiche = anagrafiche
   archivio.salva()
   try {

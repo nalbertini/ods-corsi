@@ -34,7 +34,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 4. `04-tablet.sql` — il tablet di sala e i PIN degli istruttori
 5. `05-segreteria.sql` — le lezioni che seguono i cambi dei corsi, il primo accesso
 6. `06-iscrizioni.sql` — il modulo di iscrizione, i suoi file, e chi può chiamare cosa
-7. `07-certificati-pagamenti.sql` — il certificato medico (la scadenza; il file lo aggiunge il 44), il documento d'identità (su carta) e il pagamento degli iscritti
+7. `07-certificati-pagamenti.sql` — il certificato medico (la scadenza; il file lo aggiunge il 45), il documento d'identità (su carta) e il pagamento degli iscritti
 8. `08-timer.sql` — il timer: la libreria della palestra, i timer personali e dei corsi, lo storico, le preferenze
 9. `09-musica.sql` — la musica delle sale, che il tablet fa partire dalla sua barra
 10. `10-timer-sale.sql` — il timer dei tablet di sala, uguale per tutti
@@ -71,7 +71,8 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 41. `41-attivita.sql` — l'«Attività» di ogni giorno dei corsi e di ogni lezione, scelta da un elenco della segreteria: le lezioni future seguono il giorno, l'istruttore cambia solo quella delle sue lezioni, il tablet legge quella della sua sala
 42. `42-categorie-esercizi.sql` — gli esercizi hanno una sola categoria: le cinque vecchie (A corpo libero, Attrezzi, Core, Cardio, Mobilità) diventano voci dell'elenco delle discipline, e il campo `categoria` esce dal catalogo
 43. `43-cerca-persone.sql` — «Aggiungi chi prova» cerca per nome fra tutte le persone iscritte e attive, anche di altri corsi, dalla terza lettera di una parola e al massimo ventuno risultati, con i corsi di oggi e mai il telefono; solo il personale
-44. `44-certificati-online.sql` — il certificato medico resta nell'app: un file per persona (foto o PDF, 10 MB) in un contenitore privato che apre solo la segreteria, caricato insieme alla data in un passaggio solo, cancellato 30 giorni dopo la scadenza o quando la persona è disattivata; accogliendo una richiesta il certificato passa alla scheda, e unire due schede non si ferma più sul file
+44. `44-email-contatto.sql` — l'email di contatto delle persone (`persone.email_contatto`): facoltativa, può ripetersi fra parenti, la scrive la segreteria e la legge il personale come l'email di accesso, che resta una per persona; accogliere una richiesta e unire due schede la tengono in conto
+45. `45-certificati-online.sql` — il certificato medico resta nell'app: un file per persona (foto o PDF, 10 MB) in un contenitore privato che apre solo la segreteria, caricato insieme alla data in un passaggio solo, cancellato 30 giorni dopo la scadenza o quando la persona è disattivata; accogliendo una richiesta il certificato passa alla scheda, e unire due schede non si ferma più sul file
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -86,7 +87,7 @@ iscritti si vede lo stesso, e salvare un certificato dice che manca. Per il
 documento su carta si rilanciano `06-iscrizioni.sql` e
 `07-certificati-pagamenti.sql`: dopo, il documento arriva col modulo e la
 segreteria lo stampa e lo cancella. Per il certificato nell'app, al posto
-della carta, basta `44-certificati-online.sql` (vedi «Il certificato medico
+della carta, basta `45-certificati-online.sql` (vedi «Il certificato medico
 nell'app», più sotto). Per la sala dei singoli giorni
 (la colonna `ricorrenze.sala_id`) sono `01-schema.sql`, `03-funzioni.sql`,
 `04-tablet.sql` e `05-segreteria.sql`: le lezioni già generate restano dove
@@ -231,12 +232,17 @@ Per cercare chi prova fra tutte le persone basta `43-cerca-persone.sql` (dopo
 `34-prove-per-nome.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
 finché non c'è, l'app dice che manca l'aggiornamento e lascia scrivere il nome
 a mano; l'appello degli iscritti non cambia. Il tablet non usa questa ricerca.
-Per il certificato medico che resta nell'app basta `44-certificati-online.sql`
-(dopo `43-cerca-persone.sql`, quindi anche dopo `06`, `07` e `29`), che non
-chiede di rilanciare `06-iscrizioni.sql`: rifà da sé `accogli_iscrizione` e
+Per l'email di contatto basta `44-email-contatto.sql` (dopo `43-cerca-persone.sql`,
+`06` e `29`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è,
+l'elenco si vede lo stesso, il contatto non si salva (l'app dice che manca
+l'aggiornamento) e l'email già di un'altra persona resta fuori dalla scheda
+come prima. Chi rilancia `06` o `29` rilancia poi anche `44`.
+Per il certificato medico che resta nell'app basta `45-certificati-online.sql`
+(dopo `44-email-contatto.sql`, quindi anche dopo `06`, `07` e `29`), che non
+chiede di rilanciare `06-iscrizioni.sql`: rifà da sé (partendo dalle versioni del `44-email-contatto.sql`, che tiene) `accogli_iscrizione` e
 `richieste_con_documento` (06) e `unione_possibile` e `unisci_persone` (29),
 e chiude le sue funzioni. Rilanciando `06` o `29` dopo, quelle quattro tornano
-a com'erano: va rilanciato anche il `44`. Finché non c'è, la scheda dice che
+a com'erano: va rilanciato anche il `45` (e lo stesso dopo `44-email-contatto.sql`). Finché non c'è, la scheda dice che
 va lanciato questo file; caricare un certificato non funziona, e il certificato
 resta su carta come prima. Va lanciato prima di pubblicare l'app che non
 stampa più il certificato.
@@ -472,7 +478,7 @@ Cosa fa `06-iscrizioni.sql`:
   entro un'ora. Non li può rileggere né sostituire;
 - `richieste_con_documento()` dice alla segreteria quali richieste hanno
   ancora il documento d'identità caricato: RICHIESTE ONLINE le segna **DA
-  STAMPARE** (il certificato no: dal `44` resta nell'app, vedi più sotto);
+  STAMPARE** (il certificato no: dal `45` resta nell'app, vedi più sotto);
 - la porta non è spalancata: tre richieste al giorno dalla stessa email, trenta
   all'ora in tutto. I numeri stanno in `iscrizioni_regole()`;
 - accogliere (`accogli_iscrizione`) mette la persona in elenco e la iscrive ai
@@ -523,7 +529,7 @@ Cosa fa `07-certificati-pagamenti.sql`:
   `persone` per l'appello, e il certificato è un dato sulla salute. Chi l'ha
   cambiata e quando lo scrive il server. `documento_in_segreteria` dice se
   la copia del documento è nella cartellina;
-- le policy del contenitore **`certificati`** (che il `44` rifà): la
+- le policy del contenitore **`certificati`** (che il `45` rifà): la
   segreteria legge e cancella i file;
 - la riga se ne va con la persona (`on delete cascade`). Un file di prima,
   se la persona si cancella dal database a mano, resta nel contenitore e va
@@ -541,7 +547,7 @@ sta nell'app, nella scheda dell'iscritto, in **CERTIFICATO MEDICO**. La
 copia del documento d'identità invece resta su carta, in un armadio chiuso, e
 nell'app si segna solo che c'è: si stampa dalla richiesta e si cancella.
 
-Cosa fa `44-certificati-online.sql`:
+Cosa fa `45-certificati-online.sql`:
 
 - il contenitore **`certificati`**, privato, foto e PDF fino a 10 MB, una
   cartella per persona (`<persona>/certificato-<n>.<est>`). Lo legge, lo
@@ -607,7 +613,7 @@ cambia nome da SQL: se Supabase non lo ritrova (la riga si sposta, il file
 fisico no), lo si ricarica dalla scheda. Il pannello **Storage** mostra cosa
 c'è davvero nel contenitore.
 
-**Il controllo da fare subito dopo aver lanciato il `44`:** accogliere una
+**Il controllo da fare subito dopo aver lanciato il `45`:** accogliere una
 richiesta di prova che ha un certificato (una persona nuova, o una con il
 certificato scaduto) e, dalla sua scheda, **APRI**. Se il file si apre, a posto.
 Se dà 404, la riga è passata ma il file fisico no: il passaggio da SQL non
@@ -982,7 +988,7 @@ lezione, un'iscrizione per corso, le ricevute intatte, chi ha segnato le
 presenze) e che un errore a metà non cambi niente. `non-doppioni.sql` prova
 che le coppie «non sono doppioni» le veda, le segni e le tolga solo la
 segreteria, una riga per coppia a nome di chi scrive, e che unendo due schede
-le coppie passino senza fermare l'unione. `prove-per-nome.sql`,
+le coppie passino senza fermare l'unione. `email-contatto.sql` prova che l'email di accesso resti di una persona sola e il contatto no, la forma e le 160 lettere, e che il primo accesso leghi per email e mai per contatto. `prove-per-nome.sql`,
 dopo `prove.sql`, prova che il tablet ritrovi chi è venuto a provare solo per
 nome: dalla terza lettera di una parola, al massimo venti, come la ricerca
 dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno.

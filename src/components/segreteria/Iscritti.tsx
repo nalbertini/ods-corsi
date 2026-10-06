@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Destinazione } from './Segreteria'
+import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, statoCertificato, timbriScheda } from '../../lib/segreteria'
+import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -9,7 +10,7 @@ import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, 
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
-import { altraDellaCoppia, campiDiversi, coppieDoppioni, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, vicina, type IndiziDoppioni } from '../../lib/doppioni'
+import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
 
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
@@ -19,6 +20,52 @@ const daPagare = (p: PersonaSeg, oggi: string) => p.attiva && comePaga(p, oggi) 
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
 const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto: 2, in_scadenza: 1, in_arrivo: 1, valido: 0, non_serve: 0 }
 const GUAIO_PAGA: Record<ComePaga, number> = { da_pagare: 2, scaduto: 2, in_parte: 1, pagato: 0 }
+
+/**
+ * Le due email di una scheda, ognuna con la sua riga che dice a cosa serve
+ * (44-email-contatto.sql). Se il salvataggio è fallito per una delle due,
+ * l'errore sta sotto quel campo (`campoDelGuaio`).
+ */
+function CampiEmail({
+  prefisso,
+  email,
+  contatto,
+  guaio,
+  onEmail,
+  onContatto,
+}: {
+  prefisso: string
+  email: string
+  contatto: string
+  guaio: string
+  onEmail: (v: string) => void
+  onContatto: (v: string) => void
+}) {
+  const campo = campoDelGuaio(guaio)
+  const nota = (di: typeof campo, avviso: string): Nota => (campo === di ? { testo: guaio, guaio: true } : { testo: avviso, guaio: false })
+  const campi = [
+    { id: `${prefisso}-email`, etichetta: 'EMAIL', valore: email, cambia: onEmail, di: 'email' as const, avviso: "Per entrare nell'app. Una sola persona per indirizzo." },
+    { id: `${prefisso}-contatto`, etichetta: 'EMAIL DI CONTATTO', valore: contatto, cambia: onContatto, di: 'emailContatto' as const, avviso: "Dove scriviamo o telefoniamo alla famiglia. Può essere lo stesso di altri. L'app non manda mai mail qui." },
+  ]
+  return (
+    <>
+      {campi.map((c) => (
+        <Campo key={c.id} id={c.id} etichetta={c.etichetta} nota={nota(c.di, c.avviso)}>
+          <input
+            id={c.id}
+            className="sg-campo"
+            type="email"
+            placeholder="nome@esempio.it"
+            value={c.valore}
+            aria-invalid={campo === c.di || undefined}
+            aria-describedby={`${c.id}-nota`}
+            onChange={(e) => c.cambia(e.target.value)}
+          />
+        </Campo>
+      ))}
+    </>
+  )
+}
 
 function Bollino({ tono, children }: { tono: Tono; children: string }) {
   return (
@@ -58,7 +105,7 @@ export function Iscritti({
   const indizi = useCarica(() => d.indiziDoppioni(), [d])
   const [cerca, setCerca] = useState('')
   const [corso, setCorso] = useState('')
-  const [senzaEmail, setSenzaEmail] = useState(false)
+  const [soloSenzaEmail, setSoloSenzaEmail] = useState(false)
   const [poco, setPoco] = useState(false)
   const [certificato, setCertificato] = useState(filtroIniziale === 'certificato')
   const [scadenza, setScadenza] = useState(filtroIniziale === 'scadenza')
@@ -77,7 +124,6 @@ export function Iscritti({
   const tutti = [...(persone.dato ?? [])].sort(
     (a, b) => Number(b.attiva) - Number(a.attiva) || a.cognome.localeCompare(b.cognome, 'it') || a.nome.localeCompare(b.nome, 'it'),
   )
-  const ago = cerca.trim().toLowerCase()
   const nFilePrima = tutti.filter((p) => certificatoDaStampare(p.certificato)).length
   // Finiti tutti (cancellati da soli o tolti), il filtro si spegne da sé.
   const soloFilePrima = filePrima && nFilePrima > 0
@@ -86,9 +132,9 @@ export function Iscritti({
   const soloDoppi = doppi && coppie.length > 0
   const trovati = tutti.filter(
     (p) =>
-      (!ago || `${p.cognome} ${p.nome} ${p.nome} ${p.cognome} ${p.email ?? ''}`.toLowerCase().includes(ago)) &&
+      cercaNellElenco(p, cerca) &&
       (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi))) &&
-      (!senzaEmail || !p.email) &&
+      (!soloSenzaEmail || senzaEmail(p)) &&
       (!poco || vienePoco(freq.dato?.get(p.id))) &&
       (!certificato || senzaCertificatoValido(p, oggi)) &&
       (!scadenza || certificatoInScadenza(p, oggi)) &&
@@ -101,7 +147,7 @@ export function Iscritti({
   const { ordina, colonna } = useOrdina<PersonaSeg, 'nome' | 'corsi' | 'contatto' | 'regola' | 'frequenza'>({
     nome: (p) => `${p.cognome} ${p.nome}`,
     corsi: (p) => suoiCorsi(p).join(', '),
-    contatto: (p) => p.telefono ?? p.email,
+    contatto: (p) => p.telefono ?? p.email ?? p.emailContatto,
     regola: (p) => GUAIO_CERTIFICATO[statoCertificato(p, oggi)] + GUAIO_PAGA[comePaga(p, oggi)],
     frequenza: (p) => {
       const f = freq.dato?.get(p.id)
@@ -203,7 +249,7 @@ export function Iscritti({
               </option>
             ))}
           </select>
-          <button type="button" className="num sg-chip" aria-pressed={senzaEmail} onClick={() => setSenzaEmail(!senzaEmail)}>
+          <button type="button" className="num sg-chip" aria-pressed={soloSenzaEmail} onClick={() => setSoloSenzaEmail(!soloSenzaEmail)}>
             SOLO SENZA EMAIL
           </button>
           <button type="button" className="num sg-chip" aria-pressed={poco} onClick={() => setPoco(!poco)}>
@@ -303,8 +349,8 @@ export function Iscritti({
                     {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>FILE DI PRIMA</span>}
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
-                  <span role="cell" style={{ fontSize: 13, color: p.email || p.telefono ? 'var(--sec)' : 'var(--rosso-testo)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {p.telefono ?? p.email ?? 'nessun contatto'}
+                  <span role="cell" style={{ fontSize: 13, color: p.email || p.emailContatto || p.telefono ? 'var(--sec)' : 'var(--rosso-testo)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {p.telefono ?? p.email ?? p.emailContatto ?? 'nessun contatto'}
                   </span>
                   <span role="cell" className="sg-in-regola">
                     {paroleInRegola(p, oggi).map((b) => (
@@ -347,12 +393,18 @@ function Nuovo({
   onLasciaStare: () => void
   onSalvato: (id: string) => void
 }) {
-  const [b, setB] = useState<DatiPersona & { corso: string }>({ nome: '', cognome: '', email: '', telefono: '', corso: '' })
+  const [b, setB] = useState<DatiPersona & { corso: string }>({ nome: '', cognome: '', email: '', emailContatto: '', telefono: '', corso: '' })
+  // Cosa non va nei campi dell'email, sotto il campo giusto (`campoDelGuaio`); l'avviso in basso resta.
+  const [guaio, setGuaio] = useState('')
   const salva = () => {
     let id = ''
+    setGuaio('')
     void fai(
       async () => {
-        id = await d.salvaPersona(b)
+        id = await d.salvaPersona(b).catch((e: unknown) => {
+          setGuaio(messaggio(e))
+          throw e
+        })
         if (!b.corso) return
         try {
           await d.iscrivi(id, b.corso)
@@ -376,9 +428,7 @@ function Nuovo({
         <Campo id="n-cognome" etichetta="COGNOME">
           <input id="n-cognome" className="sg-campo" value={b.cognome} onChange={(e) => setB({ ...b, cognome: e.target.value })} />
         </Campo>
-        <Campo id="n-email" etichetta="EMAIL · FACOLTATIVA">
-          <input id="n-email" className="sg-campo" type="email" placeholder="nome@esempio.it" value={b.email} onChange={(e) => setB({ ...b, email: e.target.value })} />
-        </Campo>
+        <CampiEmail prefisso="n" email={b.email ?? ''} contatto={b.emailContatto ?? ''} guaio={guaio} onEmail={(v) => setB({ ...b, email: v })} onContatto={(v) => setB({ ...b, emailContatto: v })} />
         <Campo id="n-tel" etichetta="TELEFONO · FACOLTATIVO">
           <input id="n-tel" className="sg-campo" type="tel" value={b.telefono} onChange={(e) => setB({ ...b, telefono: e.target.value })} />
         </Campo>
@@ -393,7 +443,6 @@ function Nuovo({
           </select>
         </Campo>
       </div>
-      <span style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--dim)' }}>L'email è l'unica cosa che distingue due omonimi.</span>
       <div className="sg-scheda-piede">
         <button type="button" className="sg-btn sg-btn-linea grow" onClick={onLasciaStare}>
           LASCIA STARE
@@ -440,6 +489,7 @@ function Scheda({
 }) {
   const oggi = chiaveGiorno(new Date())
   const [modifica, setModifica] = useState<DatiPersona | null>(null)
+  const [guaio, setGuaio] = useState('')
   // Aperta la modifica, uscire dal menu chiede prima di perderla.
   useBozza(!!modifica)
   const [daAggiungere, setDaAggiungere] = useState('')
@@ -455,6 +505,7 @@ function Scheda({
   // Gli altri del nucleo familiare, per lo sconto famiglia della ricevuta.
   const titolare = p.nucleo ? tutti.find((x) => x.id === p.nucleo) : p
   const nucleo = titolare ? [titolare, ...tutti.filter((x) => x.nucleo === titolare.id && x.attiva)].filter((x) => x.id !== p.id) : []
+  const parenti = stessoContatto(p, tutti)
 
   return (
     <>
@@ -509,9 +560,7 @@ function Scheda({
               <Campo id="m-cognome" etichetta="COGNOME">
                 <input id="m-cognome" className="sg-campo" value={modifica.cognome} onChange={(e) => setModifica({ ...modifica, cognome: e.target.value })} />
               </Campo>
-              <Campo id="m-email" etichetta="EMAIL">
-                <input id="m-email" className="sg-campo" type="email" value={modifica.email ?? ''} onChange={(e) => setModifica({ ...modifica, email: e.target.value })} />
-              </Campo>
+              <CampiEmail prefisso="m" email={modifica.email ?? ''} contatto={modifica.emailContatto ?? ''} guaio={guaio} onEmail={(v) => setModifica({ ...modifica, email: v })} onContatto={(v) => setModifica({ ...modifica, emailContatto: v })} />
               <Campo id="m-tel" etichetta="TELEFONO">
                 <input id="m-tel" className="sg-campo" type="tel" value={modifica.telefono ?? ''} onChange={(e) => setModifica({ ...modifica, telefono: e.target.value })} />
               </Campo>
@@ -521,9 +570,24 @@ function Scheda({
               <Campo etichetta="EMAIL">
                 <span style={{ fontSize: 14, wordBreak: 'break-all', color: p.email ? 'var(--text)' : 'var(--dim)' }}>{p.email ?? '—'}</span>
               </Campo>
+              <Campo etichetta="EMAIL DI CONTATTO">
+                <span style={{ fontSize: 14, wordBreak: 'break-all', color: p.emailContatto ? 'var(--text)' : 'var(--dim)' }}>{p.emailContatto ?? '—'}</span>
+              </Campo>
               <Campo etichetta="TELEFONO">
                 <span style={{ fontSize: 14, color: p.telefono ? 'var(--text)' : 'var(--dim)' }}>{p.telefono ?? '—'}</span>
               </Campo>
+            </div>
+          )}
+
+          {parenti.length > 0 && (
+            <div className="stack" style={{ gap: 8 }}>
+              <Riga titolo="STESSO CONTATTO DI" />
+              <span className="sg-sotto">Parenti, non doppioni: usano lo stesso indirizzo.</span>
+              {parenti.map((nome, i) => (
+                <div key={`${nome}-${i}`} className="sg-iscrizione">
+                  <span style={{ fontSize: 15, fontWeight: 600 }}>{nome}</span>
+                </div>
+              ))}
             </div>
           )}
 
@@ -669,19 +733,31 @@ function Scheda({
               type="button"
               className="sg-btn sg-btn-pieno grow"
               disabled={!modifica.nome.trim() || !modifica.cognome.trim()}
-              onClick={() =>
-                void fai(() => d.salvaPersona(modifica), 'Scheda salvata', () => {
-                  setModifica(null)
-                  onCambiato()
-                })
-              }
+              onClick={() => {
+                setGuaio('')
+                void fai(
+                  () =>
+                    d.salvaPersona(modifica).catch((e: unknown) => {
+                      setGuaio(messaggio(e))
+                      throw e
+                    }),
+                  'Scheda salvata',
+                  () => {
+                    setModifica(null)
+                    onCambiato()
+                  },
+                )
+              }}
             >
               SALVA
             </button>
           </>
         ) : (
           <>
-            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, telefono: p.telefono })}>
+            <button type="button" className="sg-btn sg-btn-linea grow" onClick={() => {
+                setGuaio('')
+                setModifica({ id: p.id, nome: p.nome, cognome: p.cognome, email: p.email, emailContatto: p.emailContatto, telefono: p.telefono })
+              }}>
               MODIFICA
             </button>
             <button
@@ -860,7 +936,7 @@ function UnisciDoppione({
       <span style={{ fontSize: 12, color: 'var(--dim)' }}>{x.attiva ? 'Attiva' : 'Disattivata'}</span>
     </div>
   )
-  const dove = (x: PersonaSeg) => [x.email, x.telefono, x.attiva ? '' : 'disattivata'].filter(Boolean).join(' · ')
+  const dove = (x: PersonaSeg) => [x.email ?? x.emailContatto, x.telefono, x.attiva ? '' : 'disattivata'].filter(Boolean).join(' · ')
 
   return (
     <div className="stack" style={{ gap: 16, maxWidth: 640 }}>
@@ -937,7 +1013,10 @@ function UnisciDoppione({
           disabled={!resta || !via || !passa.dato}
           onClick={async () => {
             if (!resta || !via) return
-            if (!(await chiedi(confermaUnione(nome(via), nome(resta), via.certificato, resta.certificato), 'UNISCI', { pericolo: true }))) return
+            const persi = indirizziPersi(resta, via)
+            // Niente sparisce in silenzio: l'indirizzo che non trova posto si dice prima.
+            const perso = persi.length ? `\nDell'altra scheda si perde ${persi.join(', ')}: non c'è posto fra l'email e il contatto di chi resta.\nCopialo prima, se ti serve.` : ''
+            if (!(await chiedi(confermaUnione(nome(via), nome(resta), via.certificato, resta.certificato, perso), 'UNISCI', { pericolo: true }))) return
             void fai(() => d.unisciPersone(resta.id, via.id), 'Schede unite', () => onUnite(resta.id))
           }}
         >

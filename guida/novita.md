@@ -10,6 +10,18 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.42.0 — 6 ottobre 2026
+
+### Novità
+
+- Più persone possono avere la stessa email, con l'email di contatto accanto a quella di accesso
+
+## 0.41.0 — 6 ottobre 2026
+
+### Novità
+
+- Nel canvas del tablet le schermate del PIN e dell'uscita anche in tema chiaro
+
 ## 0.40.3 — 6 ottobre 2026
 
 ### Risolto

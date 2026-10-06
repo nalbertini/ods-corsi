@@ -217,6 +217,8 @@ select atteso('dalle richieste i certificati sono usciti', (select count(*)::tex
 select atteso('e non c''è niente da stampare', (select cardinality(richieste_con_documento())::text), '0');
 select atteso('Marco, stessa email: entra senza', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Marco')) is not null)::text$$), 'true');
 select atteso('i due fratelli', (select string_agg(nome || ':' || coalesce(email::text, 'senza email'), ', ' order by nome) from persone where nome in ('Giulia', 'Marco')), 'Giulia:mamma@esempio.it, Marco:senza email');
+select atteso('Marco senza email di accesso ha quella della mamma come contatto',
+  (select string_agg(nome || ':' || coalesce(email_contatto::text, '—'), ', ' order by nome) from persone where nome in ('Giulia', 'Marco')), 'Giulia:—, Marco:mamma@esempio.it');
 select atteso('Giulia ha i suoi due corsi', (select count(*)::text from iscrizioni i join persone p on p.id = i.persona_id where p.nome = 'Giulia'), '2');
 select atteso('il terzo si rifiuta', tenta($$select rifiuta_iscrizione((select id from richieste_iscrizione where nome = 'Terzo'))::text$$), '');
 select atteso('rifiutata', (select stato::text from richieste_iscrizione where nome = 'Terzo'), 'rifiutata');
@@ -323,6 +325,36 @@ select atteso('accolta, non diventa l''istruttrice: è una persona nuova',
   tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'maura@ods.it')) <> 'aaaaaaaa-0000-0000-0000-000000000002')::text$$), 'true');
 select atteso('e l''istruttrice è ancora un''istruttrice, senza telefono nuovo',
   (select ruolo || ' ' || coalesce(telefono, 'senza telefono') from persone where id = 'aaaaaaaa-0000-0000-0000-000000000002'), 'istruttore senza telefono');
+reset role;
+
+-- Un'email già di un'altra persona, anche del personale (Maura, istruttrice):
+-- l'iscritto entra con l'email vuota e quell'indirizzo come contatto.
+set role anon;
+select atteso('Zeno la manda con l''email di Maura', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Zeno', 'cognome', 'Gialli', 'codice_fiscale', cf_prova('GLLZNE', (current_date - interval '30 years')::date), 'email', 'Maura@ods.it', 'telefono', '347 555 0000'))) is not null)::text$$), 'true');
+reset role;
+set role authenticated;
+select atteso('accolta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Zeno')) is not null)::text$$), 'true');
+select atteso('Zeno è una persona nuova, senza email di accesso e con quell''indirizzo come contatto',
+  (select ruolo || ' ' || coalesce(email::text, 'senza email') || ' · ' || coalesce(email_contatto::text, '—') from persone where nome = 'Zeno'), 'iscritto senza email · maura@ods.it');
+select atteso('Maura resta com''è', (select email::text || ' ' || coalesce(email_contatto::text, '—') from persone where id = 'aaaaaaaa-0000-0000-0000-000000000002'), 'maura@ods.it —');
+reset role;
+
+-- La scheda c'era già (stesso nome, senza email): l'email di un altro va nel suo
+-- contatto, se non ne ha già uno.
+insert into persone (nome, cognome, ruolo, email_contatto) values ('Ivo', 'Gialli', 'iscritto', null), ('Lia', 'Gialli', 'iscritto', 'casa@esempio.it');
+set role anon;
+select atteso('Ivo la manda con l''email di Anna', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Ivo', 'cognome', 'Gialli', 'codice_fiscale', cf_prova('GLLVIO', (current_date - interval '30 years')::date), 'email', 'Anna@ods.it', 'telefono', '347 555 0001'))) is not null)::text$$), 'true');
+select atteso('Lia la manda con l''email di Maura', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Lia', 'cognome', 'Gialli', 'codice_fiscale', cf_prova('GLLLIA', (current_date - interval '30 years')::date), 'email', 'Maura@ods.it', 'telefono', '347 555 0002'))) is not null)::text$$), 'true');
+reset role;
+set role authenticated;
+select atteso('Ivo accolta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Ivo')) is not null)::text$$), 'true');
+select atteso('Lia accolta', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where nome = 'Lia')) is not null)::text$$), 'true');
+select atteso('Ivo: la stessa scheda, email vuota e l''indirizzo come contatto',
+  (select count(*)::text || ' ' || coalesce(max(email::text), 'senza email') || ' · ' || coalesce(max(email_contatto::text), '—') from persone where nome = 'Ivo'), '1 senza email · anna@ods.it');
+select atteso('Lia aveva già un contatto: resta quello', (select coalesce(email::text, 'senza email') || ' · ' || email_contatto::text from persone where nome = 'Lia'), 'senza email · casa@esempio.it');
 reset role;
 
 \echo ''

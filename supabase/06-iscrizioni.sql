@@ -10,10 +10,10 @@
 -- Documento d'identità e certificato medico si caricano per comodità, ma si
 -- tengono su carta: restano nella cartella della richiesta finché la
 -- segreteria non li stampa e li cancella (`richieste_con_documento`, più
--- sotto). Dal `44-certificati-online.sql` il certificato non si stampa più:
+-- sotto). Dal `45-certificati-online.sql` il certificato non si stampa più:
 -- accogliendo la richiesta passa alla scheda, e `accogli_iscrizione` e
 -- `richieste_con_documento` sono quelle di quel file (rilanciando questo,
--- va rilanciato anche il 44).
+-- va rilanciato anche il 45).
 --
 -- È la prima cosa dell'app che si fa **senza un accesso**, e per questo sta
 -- tutta dietro a due funzioni: `anon` non vede e non scrive nessuna tabella,

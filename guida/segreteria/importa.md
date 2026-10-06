@@ -74,13 +74,15 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
        Prudente»). Scegli **È lei: aggiungi i corsi** (non si crea un doppione)
        o **È un'altra persona: creala**. Con il codice fiscale scelto fra le
        colonne l'ordine si capisce da solo e non c'è dubbio;
-     - *è già un istruttore o segreteria*: l'email del foglio è di un
-       istruttore o di chi lavora in segreteria. La riga non entra: cambia
-       l'email nel foglio;
      - una persona **archiviata**: di base resta archiviata e non la iscrivo;
        con **Riattivala e iscrivila** torna fra gli iscritti;
      - un'iscrizione **terminata** a un corso: di base resta terminata; con
        **Riapri** riparte da oggi.
+   - **EMAIL DI CONTATTO**: se l'email di una riga è già di un'altra
+     persona (il fratello nel foglio, un iscritto, un istruttore o la
+     segreteria), la riga entra lo stesso, senza email di accesso, e quell'indirizzo
+     diventa la sua **email di contatto**. Il controllo e il resoconto dicono
+     chi è e quale indirizzo; rifacendo l'import non si duplica;
    - **DA SISTEMARE**: le righe che non si capiscono, col perché;
    - **I NOMI NUOVI**: sale, istruttori e corsi che non c'erano. Attenzione: un
      nome scritto in modo diverso («Lotta 2» e «Lotta2») vale come un corso

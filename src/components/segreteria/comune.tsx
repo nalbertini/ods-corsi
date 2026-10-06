@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { Back } from '../Icons'
+import { NotaCampo, type Nota } from '../ds'
 import { apriScheda } from '../../lib/scorri'
 import { dataLunga } from '../../lib/sala'
 
@@ -317,7 +318,7 @@ export function Testa({ titolo, sotto, children }: { titolo: string; sotto: Reac
 }
 
 /** Un campo con la sua etichetta; `manca` la fa rossa: è un dato da completare. */
-export function Campo({ id, etichetta, children, largo, manca }: { id?: string; etichetta: string; children: ReactNode; largo?: boolean; manca?: boolean }) {
+export function Campo({ id, etichetta, children, largo, manca, nota }: { id?: string; etichetta: string; children: ReactNode; largo?: boolean; manca?: boolean; nota?: Nota }) {
   return (
     <div className="stack" style={{ gap: 6, gridColumn: largo ? 'span 2' : undefined, minWidth: 0 }}>
       {id ? (
@@ -330,6 +331,7 @@ export function Campo({ id, etichetta, children, largo, manca }: { id?: string; 
         </span>
       )}
       {children}
+      {id && <NotaCampo id={`${id}-nota`} nota={nota} />}
     </div>
   )
 }

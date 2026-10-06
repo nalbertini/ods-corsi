@@ -51,6 +51,12 @@ dell'allenamento in corso sempre in vista; resta anche l'app a sé in `timer/`
   liste di musica (Judo, Lotta, Pilates, Yoga, A corpo libero, Attrezzi, Core,
   Cardio, Mobilità…), che la segreteria cura in ESERCIZI; un filtro e gruppi
   per categoria in segreteria e nel timer (`supabase/42-categorie-esercizi.sql`).
+- **L'email di contatto**: l'email di accesso resta di una sola persona; chi usa
+  l'indirizzo di un altro (fratelli, un genitore, a volte un istruttore) ha una
+  seconda, l'email di contatto, che può ripetersi e dove la palestra scrive alla
+  famiglia; l'app non ci manda mai mail. L'import e il modulo online ci mettono
+  da soli l'indirizzo già di altri, la scheda mostra chi lo condivide
+  (`supabase/44-email-contatto.sql`).
 - **I miei timer**: nell'area istruttori, quali timer partono con ogni corso e
   con ogni singola lezione delle prossime due settimane, anche più d'uno;
   quelli di una lezione vengono prima di quelli del corso, dall'appello e sul tablet di sala
@@ -392,6 +398,8 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:informativa` | Per quanto si tengono le presenze nell'informativa: solo un numero di mesi valido dal database cambia il testo; un errore, il tempo scaduto o l'app senza database lasciano quello della pagina, che non dice un numero. |
 | `npm run prova:ore` | LE MIE ORE dell'area istruttori: ognuno vede solo le sue, nel mese della lezione (non di quando è stata confermata), lezioni e ore delle confermate, le da confermare contate come in PRESENZE, le rifiutate con chi e quando, le lezioni tenute dove era previsto e nessuno si è segnato; e le decisioni della segreteria di prova che arrivano a `mieOre`. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN e dall'appello, le lezioni tenute da confermare. L'«Attività» della lezione sul tablet della sua sala e di nessun'altra, e la lettura del database che non perde né kanji né attività se manca una delle due. |
+| `npm run prova:email-contatto` | L'email di contatto: l'email di accesso doppia si rifiuta dicendo di chi è e di mettere l'altra come contatto, il contatto no; la forma e le 160 lettere; l'import dei fogli e il modulo online che mettono nel contatto l'indirizzo che non si può tenere; unire due schede e gli indirizzi che non si possono tenere, da dire prima; «stesso contatto di…», la ricerca, il database senza `44-email-contatto.sql`, gli esempi con un contatto in comune. |
+| `supabase/prova/email-contatto.sql` | L'email di contatto: l'email di accesso resta di una persona sola, il contatto no, stessa forma dell'email e al massimo 160 lettere, e il primo accesso lega per email e mai per contatto (anche se è quello di un istruttore o di un iscritto). Chi lo legge sta in `rls.sql`, il modulo in `iscrizioni.sql`, l'unione in `unisci-doppioni.sql`. |
 | `supabase/prova/calendario.sql` | La generazione delle lezioni, il cambio dell'ora legale, la rigenerazione che non duplica. |
 | `supabase/prova/calendario-da-se.sql` | Il calendario che si allunga da sé: anche per un istruttore, solo quando serve, fin dove dicono le regole. |
 | `supabase/prova/calendario-pronto-fino.sql` | Fin dove è pronto il calendario: contano le lezioni dell'orario, e una straordinaria lontana non ferma le altre. |

@@ -100,7 +100,7 @@ jobs:
           dest="backup-$GIORNO/certificati"
           mkdir -p "$dest"
           # Se qualcosa non va, il passo si ferma rosso e dice cosa guardare: mai la chiave.
-          trap 'rc=$?; [ "$rc" -eq 0 ] || echo "::error::Copia dei certificati non riuscita (vedi sopra). Controlla i segreti SUPABASE_URL (https://<id>.supabase.co) e SUPABASE_SERVICE_ROLE_KEY (la chiave service_role) e che il contenitore «certificati» esista (supabase/44-certificati-online.sql). La copia del database NON è stata cifrata né caricata: va rifatta."' EXIT
+          trap 'rc=$?; [ "$rc" -eq 0 ] || echo "::error::Copia dei certificati non riuscita (vedi sopra). Controlla i segreti SUPABASE_URL (https://<id>.supabase.co) e SUPABASE_SERVICE_ROLE_KEY (la chiave service_role) e che il contenitore «certificati» esista (supabase/45-certificati-online.sql). La copia del database NON è stata cifrata né caricata: va rifatta."' EXIT
           guaio() {
             echo "Errore: $1" >&2
             exit 1

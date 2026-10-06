@@ -4,7 +4,7 @@
 //   node scripts/prova-certificati.mjs
 //
 // La segreteria di prova deve dire quello che dice il database
-// (`supabase/44-certificati-online.sql`, provato da `supabase/prova/certificati.sql`,
+// (`supabase/45-certificati-online.sql`, provato da `supabase/prova/certificati.sql`,
 // `iscrizioni.sql` e `unisci-doppioni.sql`): un file per persona, che prende
 // il posto del vecchio insieme alla data, che passa dalla richiesta alla
 // scheda, che si cancella 30 giorni dopo la scadenza o con la persona
@@ -450,13 +450,13 @@ await sezione('8. col database: prima il file, poi file e data in un passaggio s
 await sezione('9. col database non aggiornato l\'app non finge', async () => {
   const senzaFunzione = finto({ rpc: { data: null, error: { code: 'PGRST202', message: 'Could not find the function public.salva_certificato(persona, file, scade) in the schema cache' } } })
   const msg = await errore(() => senzaFunzione.segreteria.caricaCertificato(P, pdf(), '2028-01-31'))
-  ok('dice quale file lanciare', msg.includes('44-certificati-online.sql'), true)
+  ok('dice quale file lanciare', msg.includes('45-certificati-online.sql'), true)
   ok('senza il testo grezzo dell\'API', /PGRST|schema cache/.test(msg), false)
   const caricato = senzaFunzione.registro.find((x) => x[0] === 'upload')?.[2]
   ok('e il file salito non resta lì senza scheda', senzaFunzione.registro.find((x) => x[0] === 'remove'), ['remove', 'certificati', caricato])
 
   const senzaContenitore = finto({ upload: { data: null, error: { message: 'Bucket not found', statusCode: '404' } } })
-  ok('senza contenitore dice lo stesso quale lanciare', (await errore(() => senzaContenitore.segreteria.caricaCertificato(P, pdf(), '2028-01-31'))).includes('44-certificati-online.sql'), true)
+  ok('senza contenitore dice lo stesso quale lanciare', (await errore(() => senzaContenitore.segreteria.caricaCertificato(P, pdf(), '2028-01-31'))).includes('45-certificati-online.sql'), true)
 
   const nonSiToglie = finto({ rpc: { data: null, error: { code: 'XX000', message: 'boom' } }, rimuovi: { data: null, error: { message: 'storage down' } } })
   const guasto = await errore(() => nonSiToglie.segreteria.caricaCertificato(P, pdf(), '2028-01-31'))

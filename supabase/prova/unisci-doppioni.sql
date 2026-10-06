@@ -87,7 +87,7 @@ insert into schede_iscritti (persona_id, certificato_scade, pagamento, pagato_fi
   ('aaaaaaaa-0000-0000-0000-000000000010', '2026-12-31', 'pagato', '2026-10-31', null, null),
   ('aaaaaaaa-0000-0000-0000-000000000011', '2027-05-31', 'pagato', '2027-01-31', 'carta n. 12', null),
   ('aaaaaaaa-0000-0000-0000-000000000014', '2027-01-31', 'da_pagare', null, null, 'aaaaaaaa-0000-0000-0000-000000000014/certificato-1.pdf');
--- Il contenitore dei certificati, se `44-certificati-online.sql` non l'ha già fatto.
+-- Il contenitore dei certificati, se `45-certificati-online.sql` non l'ha già fatto.
 insert into storage.buckets (id, name, public) values ('certificati', 'certificati', false) on conflict (id) do nothing;
 insert into storage.objects (bucket_id, name) values ('certificati', 'aaaaaaaa-0000-0000-0000-000000000014/certificato-1.pdf');
 insert into anagrafiche (persona_id, comune, codice_fiscale, cap, genitore_nome) values
@@ -310,7 +310,63 @@ select atteso('la scheda unita è attiva', (select attiva::text from persone whe
 reset role;
 
 \echo ''
-\echo '--- 11. il file del certificato passa a chi resta, e l''unione non si ferma ---'
+\echo '--- 11. email di accesso e di contatto (44-email-contatto.sql) ---'
+-- Chi resta tiene la sua email. Il contatto di chi resta vince, se manca
+-- prende quello di chi se ne va. L'email di chi se ne va, se chi resta non ne
+-- ha, la prende; se è diversa va nel contatto, quando c'è posto. Quando non c'è,
+-- l'unione non si ferma: l'app lo dice prima, e qui si vede cosa resta.
+insert into persone (id, nome, cognome, ruolo, email, email_contatto) values
+  -- a. due email diverse, nessun contatto: l'altra diventa il contatto
+  ('aaaaaaaa-0000-0000-0000-000000000027', 'Ada', 'Uno', 'iscritto', 'r1@ods.it', null),
+  ('aaaaaaaa-0000-0000-0000-000000000028', 'Ada', 'Uno', 'iscritto', 'v1@ods.it', null),
+  -- b. tutto pieno e diverso: resta quello di chi resta
+  ('aaaaaaaa-0000-0000-0000-000000000029', 'Bea', 'Due', 'iscritto', 'r2@ods.it', 'cr2@esempio.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000030', 'Bea', 'Due', 'iscritto', 'v2@ods.it', 'cv2@esempio.it'),
+  -- c. chi resta non ha niente: prende email e contatto di chi se ne va
+  ('aaaaaaaa-0000-0000-0000-000000000031', 'Cleo', 'Tre', 'iscritto', null, null),
+  ('aaaaaaaa-0000-0000-0000-000000000032', 'Cleo', 'Tre', 'iscritto', 'v3@ods.it', 'cv3@esempio.it'),
+  -- d. email diverse e un solo posto per il contatto: vince il contatto di chi se ne va
+  ('aaaaaaaa-0000-0000-0000-000000000033', 'Dino', 'Quattro', 'iscritto', 'r4@ods.it', null),
+  ('aaaaaaaa-0000-0000-0000-000000000034', 'Dino', 'Quattro', 'iscritto', 'v4@ods.it', 'cv4@esempio.it'),
+  -- e. chi se ne va ha solo il contatto
+  ('aaaaaaaa-0000-0000-0000-000000000035', 'Eva', 'Cinque', 'iscritto', 'r5@ods.it', null),
+  ('aaaaaaaa-0000-0000-0000-000000000036', 'Eva', 'Cinque', 'iscritto', null, 'cv5@esempio.it'),
+  -- f. chi resta ha solo il contatto, chi se ne va solo l'email
+  ('aaaaaaaa-0000-0000-0000-000000000037', 'Fio', 'Sei', 'iscritto', null, 'cr6@esempio.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000038', 'Fio', 'Sei', 'iscritto', 'v6@ods.it', null),
+  -- g. l'email di chi se ne va è già il contatto di chi resta: non si perde
+  ('aaaaaaaa-0000-0000-0000-000000000039', 'Gigi', 'Sette', 'iscritto', 'r7@ods.it', 'V7@ods.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000040', 'Gigi', 'Sette', 'iscritto', 'v7@ods.it', null);
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('a. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000027', 'aaaaaaaa-0000-0000-0000-000000000028')$$), 'fatto');
+select atteso('a. chi resta tiene la sua email e l''altra diventa il contatto',
+  (select email || ' · ' || coalesce(email_contatto::text, '—') from persone where id = 'aaaaaaaa-0000-0000-0000-000000000027'), 'r1@ods.it · v1@ods.it');
+select atteso('b. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000029', 'aaaaaaaa-0000-0000-0000-000000000030')$$), 'fatto');
+select atteso('b. senza posto non si ferma: restano email e contatto di chi resta',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000029'), 'r2@ods.it · cr2@esempio.it');
+select atteso('c. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000031', 'aaaaaaaa-0000-0000-0000-000000000032')$$), 'fatto');
+select atteso('c. chi resta senza niente prende email e contatto',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000031'), 'v3@ods.it · cv3@esempio.it');
+select atteso('d. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000033', 'aaaaaaaa-0000-0000-0000-000000000034')$$), 'fatto');
+select atteso('d. il contatto di chi se ne va prende il posto libero',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000033'), 'r4@ods.it · cv4@esempio.it');
+select atteso('e. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000035', 'aaaaaaaa-0000-0000-0000-000000000036')$$), 'fatto');
+select atteso('e. il contatto di chi se ne va, se chi resta non ne ha',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000035'), 'r5@ods.it · cv5@esempio.it');
+select atteso('f. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000037', 'aaaaaaaa-0000-0000-0000-000000000038')$$), 'fatto');
+select atteso('f. l''email di chi se ne va diventa l''email, e il contatto di chi resta resta',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000037'), 'v6@ods.it · cr6@esempio.it');
+select atteso('g. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000039', 'aaaaaaaa-0000-0000-0000-000000000040')$$), 'fatto');
+select atteso('g. l''email di chi se ne va è già il contatto di chi resta: resta com''è',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000039'), 'r7@ods.it · V7@ods.it');
+select atteso('e le schede che se ne vanno sono sparite', (select count(*)::text from persone where id::text in
+  ('aaaaaaaa-0000-0000-0000-000000000028', 'aaaaaaaa-0000-0000-0000-000000000030', 'aaaaaaaa-0000-0000-0000-000000000032',
+   'aaaaaaaa-0000-0000-0000-000000000034', 'aaaaaaaa-0000-0000-0000-000000000036', 'aaaaaaaa-0000-0000-0000-000000000038',
+   'aaaaaaaa-0000-0000-0000-000000000040')), '0');
+reset role;
+
+\echo '--- 12. il file del certificato passa a chi resta, e l''unione non si ferma ---'
 -- Mario (10) non ha un file: quello del doppione (14, caricato prima della carta) è suo.
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
@@ -327,56 +383,57 @@ reset role;
 
 -- Due file: resta quello della scadenza più lontana, l'altro si cancella anche dal contenitore.
 insert into persone (id, nome, cognome, ruolo) values
-  ('aaaaaaaa-0000-0000-0000-000000000030', 'Rita', 'Bruni', 'iscritto'),
-  ('aaaaaaaa-0000-0000-0000-000000000031', 'Rita', 'Bruni', 'iscritto'),
-  ('aaaaaaaa-0000-0000-0000-000000000032', 'Dino', 'Neri', 'iscritto'),
-  ('aaaaaaaa-0000-0000-0000-000000000033', 'Dino', 'Neri', 'iscritto');
+  ('aaaaaaaa-0000-0000-0000-000000000050', 'Rita', 'Bruni', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000051', 'Rita', 'Bruni', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000052', 'Dino', 'Neri', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000053', 'Dino', 'Neri', 'iscritto');
 insert into storage.objects (bucket_id, name) values
-  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000030/certificato-1.png'),
-  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000031/certificato-1.pdf'),
-  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000032/certificato-1.png'),
-  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000033/certificato-1.pdf');
+  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000050/certificato-1.png'),
+  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000051/certificato-1.pdf'),
+  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000052/certificato-1.png'),
+  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000053/certificato-1.pdf');
 insert into schede_iscritti (persona_id, certificato_scade, certificato_file, certificato_caricato_il) values
-  ('aaaaaaaa-0000-0000-0000-000000000030', '2026-12-31', 'aaaaaaaa-0000-0000-0000-000000000030/certificato-1.png', now()),
-  ('aaaaaaaa-0000-0000-0000-000000000031', '2027-03-31', 'aaaaaaaa-0000-0000-0000-000000000031/certificato-1.pdf', now()),
-  ('aaaaaaaa-0000-0000-0000-000000000032', '2027-06-30', 'aaaaaaaa-0000-0000-0000-000000000032/certificato-1.png', now()),
-  ('aaaaaaaa-0000-0000-0000-000000000033', '2027-01-31', 'aaaaaaaa-0000-0000-0000-000000000033/certificato-1.pdf', now());
+  ('aaaaaaaa-0000-0000-0000-000000000050', '2026-12-31', 'aaaaaaaa-0000-0000-0000-000000000050/certificato-1.png', now()),
+  ('aaaaaaaa-0000-0000-0000-000000000051', '2027-03-31', 'aaaaaaaa-0000-0000-0000-000000000051/certificato-1.pdf', now()),
+  ('aaaaaaaa-0000-0000-0000-000000000052', '2027-06-30', 'aaaaaaaa-0000-0000-0000-000000000052/certificato-1.png', now()),
+  ('aaaaaaaa-0000-0000-0000-000000000053', '2027-01-31', 'aaaaaaaa-0000-0000-0000-000000000053/certificato-1.pdf', now());
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('due schede con un file ciascuna si uniscono',
-  tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000030', 'aaaaaaaa-0000-0000-0000-000000000031')$$), 'fatto');
+  tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000050', 'aaaaaaaa-0000-0000-0000-000000000051')$$), 'fatto');
 select atteso('il doppione ha la scadenza più lontana: il suo file, in cartella di chi resta, e la sua data',
-  (select (certificato_file ~ '^aaaaaaaa-0000-0000-0000-000000000030/certificato-[0-9]+\.pdf$')::text || ' ' || certificato_scade from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000030'), 'true 2027-03-31');
+  (select (certificato_file ~ '^aaaaaaaa-0000-0000-0000-000000000050/certificato-[0-9]+\.pdf$')::text || ' ' || certificato_scade from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000050'), 'true 2027-03-31');
 select atteso('nel contenitore resta un file solo, e il png di chi restava non c''è più',
-  (select count(*)::text from storage.objects where bucket_id = 'certificati' and (name like 'aaaaaaaa-0000-0000-0000-000000000030/%' or name like 'aaaaaaaa-0000-0000-0000-000000000031/%')), '1');
+  (select count(*)::text from storage.objects where bucket_id = 'certificati' and (name like 'aaaaaaaa-0000-0000-0000-000000000050/%' or name like 'aaaaaaaa-0000-0000-0000-000000000051/%')), '1');
 select atteso('due schede, e chi resta ha la scadenza più lontana: tiene il suo file',
-  tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000032', 'aaaaaaaa-0000-0000-0000-000000000033')$$), 'fatto');
+  tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000052', 'aaaaaaaa-0000-0000-0000-000000000053')$$), 'fatto');
 select atteso('è il suo png, con la sua data',
-  (select (certificato_file ~ '^aaaaaaaa-0000-0000-0000-000000000032/certificato-[0-9]+\.png$')::text || ' ' || certificato_scade from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000032'), 'true 2027-06-30');
+  (select (certificato_file ~ '^aaaaaaaa-0000-0000-0000-000000000052/certificato-[0-9]+\.png$')::text || ' ' || certificato_scade from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000052'), 'true 2027-06-30');
 select atteso('e il pdf del doppione è stato cancellato dal contenitore',
-  (select count(*)::text from storage.objects where bucket_id = 'certificati' and name like 'aaaaaaaa-0000-0000-0000-000000000033/%'), '0');
+  (select count(*)::text from storage.objects where bucket_id = 'certificati' and name like 'aaaaaaaa-0000-0000-0000-000000000053/%'), '0');
 reset role;
 
 -- La data è quella del certificato il cui file resta, non la più lontana delle due.
 insert into persone (id, nome, cognome, ruolo) values
-  ('aaaaaaaa-0000-0000-0000-000000000034', 'Eva', 'Gialli', 'iscritto'),
-  ('aaaaaaaa-0000-0000-0000-000000000035', 'Eva', 'Gialli', 'iscritto');
+  ('aaaaaaaa-0000-0000-0000-000000000054', 'Eva', 'Gialli', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000055', 'Eva', 'Gialli', 'iscritto');
 insert into storage.objects (bucket_id, name) values
-  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000034/certificato-1.pdf'),
-  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000035/certificato-5.png');
+  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000054/certificato-1.pdf'),
+  ('certificati', 'aaaaaaaa-0000-0000-0000-000000000055/certificato-5.png');
 insert into schede_iscritti (persona_id, certificato_scade, certificato_file, certificato_caricato_il) values
-  ('aaaaaaaa-0000-0000-0000-000000000034', '2027-01-31', 'aaaaaaaa-0000-0000-0000-000000000034/certificato-1.pdf', now()),
-  ('aaaaaaaa-0000-0000-0000-000000000035', '2028-01-31', null, null);
+  ('aaaaaaaa-0000-0000-0000-000000000054', '2027-01-31', 'aaaaaaaa-0000-0000-0000-000000000054/certificato-1.pdf', now()),
+  ('aaaaaaaa-0000-0000-0000-000000000055', '2028-01-31', null, null);
 -- Nella cartella di chi se ne va c'è anche un file rimasto lì senza scheda.
 select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('un file e una data più lontana senza file: si uniscono',
-  tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000034', 'aaaaaaaa-0000-0000-0000-000000000035')$$), 'fatto');
+  tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000054', 'aaaaaaaa-0000-0000-0000-000000000055')$$), 'fatto');
 select atteso('la data è quella del certificato col file, che resta',
-  (select certificato_scade || ' ' || (certificato_file ~ '^aaaaaaaa-0000-0000-0000-000000000034/certificato-1\.pdf$') from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000034'), '2027-01-31 true');
+  (select certificato_scade || ' ' || (certificato_file ~ '^aaaaaaaa-0000-0000-0000-000000000054/certificato-1\.pdf$') from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000054'), '2027-01-31 true');
 select atteso('e nella cartella di chi se ne va non resta niente, nemmeno il file senza scheda',
-  (select count(*)::text from storage.objects where bucket_id = 'certificati' and name like 'aaaaaaaa-0000-0000-0000-000000000035/%'), '0');
+  (select count(*)::text from storage.objects where bucket_id = 'certificati' and name like 'aaaaaaaa-0000-0000-0000-000000000055/%'), '0');
 reset role;
+
 
 \echo ''
 \echo 'TUTTO A POSTO'

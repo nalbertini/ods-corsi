@@ -36,9 +36,14 @@
 -- (32-segnalazioni-allegati.sql): la riga se ne va e il file non si apre più,
 -- ma lo Storage può tenerne la copia fisica (vedi supabase/LEGGIMI.md).
 --
--- Si lancia dopo `43-cerca-persone.sql` (e quindi 06, 07 e 29). Chiude da sé
--- le sue funzioni. Rilanciare `06-iscrizioni.sql` o `29-unisci-doppioni.sql`
--- riporta le loro funzioni a com'erano: dopo, va rilanciato anche questo.
+-- Le quattro funzioni qui sono quelle di `44-email-contatto.sql` (che già
+-- cambiava `accogli_iscrizione` e `unisci_persone`: l'email di contatto resta)
+-- con le modifiche di questo file sopra.
+--
+-- Si lancia dopo `44-email-contatto.sql` (e quindi 06, 07 e 29). Chiude da sé
+-- le sue funzioni. Rilanciare `06-iscrizioni.sql`, `29-unisci-doppioni.sql` o
+-- `44-email-contatto.sql` riporta le loro funzioni a com'erano: dopo, va
+-- rilanciato anche questo.
 -- Finché non c'è, la scheda dice che va lanciato questo file, e il
 -- certificato resta su carta come prima.
 -- ---------------------------------------------------------------------------
@@ -218,15 +223,20 @@ begin
       limit 1;
   end if;
   if chi is null then
-    insert into persone (nome, cognome, email, telefono, ruolo)
+    -- L'email già di un'altra persona (un fratello, la mamma, un istruttore)
+    -- non è la sua email di accesso: va nel contatto, dove può ripetersi.
+    insert into persone (nome, cognome, email, email_contatto, telefono, ruolo)
     values (r.nome, r.cognome,
             case when not exists (select 1 from persone where email = r.email) then r.email end,
+            case when exists (select 1 from persone where email = r.email) then r.email end,
             r.telefono, 'iscritto')
     returning id into chi;
   else
     update persone set attiva = true,
       telefono = coalesce(telefono, r.telefono),
-      email = coalesce(email, case when not exists (select 1 from persone where email = r.email) then r.email end)
+      email = coalesce(email, case when not exists (select 1 from persone where email = r.email) then r.email end),
+      -- L'email è di un'altra persona: la scheda che c'era la tiene come contatto, se non ne ha già uno.
+      email_contatto = coalesce(email_contatto, case when exists (select 1 from persone where email = r.email and id <> chi) then r.email end)
     where id = chi;
   end if;
 
@@ -337,8 +347,13 @@ begin
 
   -- Prima si toglie l'email a chi se ne va: è unica (persone_email_unica).
   update persone set email = null where id = via;
+  -- Chi resta tiene la sua email, e il suo contatto se ce l'ha. L'email di chi
+  -- se ne va diventa quella di chi resta se questa non ne ha, se no il suo
+  -- contatto, ma solo se è libero (l'app lo dice prima, `indirizziPersi`).
   -- Attiva se una delle due lo era: chi trova un doppione spesso l'ha già disattivato.
-  update persone set email = coalesce(email, b.email), telefono = coalesce(telefono, b.telefono), attiva = attiva or b.attiva
+  update persone set email = coalesce(email, b.email),
+      email_contatto = coalesce(email_contatto, b.email_contatto, case when email is not null and b.email <> email then b.email end),
+      telefono = coalesce(telefono, b.telefono), attiva = attiva or b.attiva
    where id = resta;
 
   -- Presenze. Spostarle non è segnarle: `presenze_chi_segna` (03-funzioni.sql)
@@ -443,7 +458,6 @@ begin
 
   delete from persone where id = via;
 end $$;
-
 
 -- ---------------------------------------------------------------------------
 -- Chi può chiamare cosa.

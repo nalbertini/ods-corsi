@@ -3,7 +3,7 @@
 -- contenitore privato che apre solo lei; ne esiste uno solo per persona, un
 -- file nuovo prende il posto del vecchio insieme alla data, e sparisce da sé
 -- 30 giorni dopo la scadenza o quando la persona è disattivata
--- (`44-certificati-online.sql`). Quelli di prima della carta restano apribili.
+-- (`45-certificati-online.sql`). Quelli di prima della carta restano apribili.
 -- Si lancia dopo finto-supabase.sql e i file dello schema.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
@@ -48,7 +48,7 @@ end $$;
 grant execute on function tenta(text), atteso(text, text, text), chi(text) to anon, authenticated;
 
 -- Un database di prima: il contenitore c'era già, col certificato di Luca
--- caricato allora. Se `44-certificati-online.sql` l'ha già fatto, non cambia
+-- caricato allora. Se `45-certificati-online.sql` l'ha già fatto, non cambia
 -- niente: le regole del contenitore sono quelle del file.
 insert into storage.buckets (id, name, public) values ('certificati', 'certificati', false) on conflict (id) do nothing;
 insert into storage.objects (bucket_id, name) values ('certificati', 'aaaaaaaa-0000-0000-0000-000000000003/certificato-1.pdf');

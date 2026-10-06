@@ -1,0 +1,55 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Email di contatto"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Modifica.dc.html",
+      "title": "1 · Scheda in modifica · le due email",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "ErroreEmail.dc.html",
+      "title": "2 · Email già di un altro",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Lettura.dc.html",
+      "title": "3 · Scheda in lettura · stesso contatto",
+      "x": 3120,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Importa.dc.html",
+      "title": "4 · Resoconto dell'import",
+      "x": 0,
+      "y": 1020,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Unisci.dc.html",
+      "title": "5 · Unisci doppioni",
+      "x": 1560,
+      "y": 1020,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    }
+  ]
+}

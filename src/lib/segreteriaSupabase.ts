@@ -3,7 +3,7 @@ import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
-import { attivitaCambiata, cosaNonVaAnagrafica, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { ESTENSIONI } from './richieste'
 import { insegna, type RuoloPersonale } from './ruoli'
@@ -89,7 +89,7 @@ const ricevuta = (r: RigaRicevuta): Ricevuta => ({
 type Scheda = {
   certificato_scade: string | null
   certificato_file: string | null
-  /** Arriva con 44-certificati-online.sql: senza, ogni file è di prima. */
+  /** Arriva con 45-certificati-online.sql: senza, ogni file è di prima. */
   certificato_caricato_il?: string | null
   documento_in_segreteria?: boolean
   pagamento: StatoPagamento
@@ -99,10 +99,10 @@ type Scheda = {
 
 /**
  * I certificati medici: un contenitore privato, che apre solo la segreteria
- * (`44-certificati-online.sql`), con un link che dura dieci minuti.
+ * (`45-certificati-online.sql`), con un link che dura dieci minuti.
  */
 const CERTIFICATI = 'certificati'
-const MANCA_CERTIFICATI = 'I certificati nell’app non sono ancora attivi sul database: va lanciato 44-certificati-online.sql'
+const MANCA_CERTIFICATI = 'I certificati nell’app non sono ancora attivi sul database: va lanciato 45-certificati-online.sql'
 const NUCLEO_SOLO_PROVA = 'Il nucleo familiare c’è solo in prova, per ora: il database non lo tiene ancora'
 const DURATA_LINK = 600
 const ALLEGATI = 'segnalazioni'
@@ -200,7 +200,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /anche_istruttore/.test(e.message ?? '')) return new Error(MANCA_DOPPIO)
   // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
-  // Il file del certificato e la data insieme arrivano con 44-certificati-online.sql.
+  // Il file del certificato e la data insieme arrivano con 45-certificati-online.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_certificato/.test(e.message ?? '')) return new Error(MANCA_CERTIFICATI)
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /certificato_caricato_il/.test(e.message ?? '')) return new Error(MANCA_CERTIFICATI)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /unisci_persone|anteprima_unione/.test(e.message ?? ''))
@@ -215,6 +215,10 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // La categoria delle segnalazioni arriva con 38-segnalazioni-categoria.sql.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /categoria/.test(e.message ?? ''))
     return new Error('Le categorie delle segnalazioni non sono ancora attive sul database: va lanciato 38-segnalazioni-categoria.sql')
+  // L'email di contatto arriva con 44-email-contatto.sql, e ha la stessa forma dell'email.
+  if ((e?.code === '42703' || e?.code === 'PGRST204') && /email_contatto/.test(e.message ?? ''))
+    return new Error('L’email di contatto non è ancora attiva sul database: va lanciato 44-email-contatto.sql')
+  if (e?.code === '23514' && /email_contatto/.test(e.message ?? '')) return new Error(CONTATTO_SBAGLIATO)
   if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
@@ -701,23 +705,30 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         )
         return nascitaDelleFonti([...dalleAnagrafiche, ...dalleRichieste])
       })()
-      const campi = 'id, nome, cognome, email, telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )'
+      const campi = (contatto: boolean) => `id, nome, cognome, email, ${contatto ? 'email_contatto, ' : ''}telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )`
       const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'
-      const leggi = (schede: string | null) =>
+      const leggi = (schede: string | null, contatto: boolean) =>
         db
           .from('persone')
-          .select(schede ? `${campi}, schede_iscritti!persona_id ( ${schede} )` : campi)
+          .select(schede ? `${campi(contatto)}, schede_iscritti!persona_id ( ${schede} )` : campi(contatto))
           .eq('ruolo', 'iscritto')
           .order('cognome')
-      // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
-      let r0 = await leggi(`${scheda}, certificato_caricato_il, documento_in_segreteria`)
-      // Senza 44-certificati-online.sql ogni file è di prima; e senza il documento su carta di 07, senza la colonna nuova.
-      if (r0.error?.code === '42703') r0 = await leggi(`${scheda}, documento_in_segreteria`)
-      if (r0.error?.code === '42703') r0 = await leggi(scheda)
-      // Un database dove 07-certificati-pagamenti.sql non è ancora passato: l'elenco si vede lo stesso.
-      if (r0.error?.code === 'PGRST200') r0 = await leggi(null)
+      const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703' && !/email_contatto/.test(x.error.message ?? '')
+      const leggiTutto = async (contatto: boolean) => {
+        // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
+        let r = await leggi(`${scheda}, certificato_caricato_il, documento_in_segreteria`, contatto)
+        // Senza 45-certificati-online.sql ogni file è di prima; e 07-certificati-pagamenti.sql di prima del documento su carta: senza la colonna nuova.
+        if (colonnaMancante(r)) r = await leggi(`${scheda}, documento_in_segreteria`, contatto)
+        if (colonnaMancante(r)) r = await leggi(scheda, contatto)
+        // Un database dove 07-certificati-pagamenti.sql non è ancora passato: l'elenco si vede lo stesso.
+        if (r.error?.code === 'PGRST200') r = await leggi(null, contatto)
+        return r
+      }
+      let r0 = await leggiTutto(true)
+      // Un database dove 44-email-contatto.sql non è ancora passato: l'elenco si vede lo stesso, senza contatti.
+      if (r0.error?.code === '42703' && /email_contatto/.test(r0.error.message ?? '')) r0 = await leggiTutto(false)
       const righe = ok(r0) as unknown as Array<{
-        id: string; nome: string; cognome: string; email: string | null; telefono: string | null; attiva: boolean; creata_il: string
+        id: string; nome: string; cognome: string; email: string | null; email_contatto?: string | null; telefono: string | null; attiva: boolean; creata_il: string
         iscrizioni: Array<{ corso_id: string; dal: string; al: string | null }>
         schede_iscritti?: Scheda | Scheda[] | null
       }>
@@ -731,6 +742,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           nome: r.nome,
           cognome: r.cognome,
           email: r.email ?? undefined,
+          emailContatto: r.email_contatto ?? undefined,
           telefono: r.telefono ?? undefined,
           attiva: r.attiva,
           creataIl: r.creata_il.slice(0, 10),
@@ -780,11 +792,24 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async salvaPersona(p) {
       if (!p.nome.trim() || !p.cognome.trim()) throw new Error('Servono nome e cognome')
       const riga = { nome: nomeProprio(p.nome), cognome: nomeProprio(p.cognome), email: p.email?.trim() || null, telefono: p.telefono?.trim() || null }
+      const contatto = p.emailContatto?.trim() || null
+      const scrivi = (campi: Record<string, string | null>) =>
+        p.id ? db.from('persone').update(campi).eq('id', p.id) : db.from('persone').insert({ ...campi, ruolo: 'iscritto' }).select('id').single()
+      let r = await scrivi({ ...riga, email_contatto: contatto })
+      // Un database dove 44-email-contatto.sql non è ancora passato: senza un contatto da salvare si salva come prima.
+      if (!contatto && r.error?.code === 'PGRST204' && /email_contatto/.test(r.error.message ?? '')) r = await scrivi(riga)
+      // L'email di accesso è di una persona sola: si dice di chi, e che per la famiglia c'è il contatto.
+      if (r.error?.code === '23505' && riga.email) {
+        // `as`: il client non conosce le colonne scelte con `select`.
+        const di = (await db.from('persone').select('nome, cognome').eq('email', riga.email).maybeSingle()).data as { nome: string; cognome: string } | null
+        if (di) throw new Error(emailGiaDi(`${di.nome} ${di.cognome}`))
+      }
       if (p.id) {
-        ok(await db.from('persone').update(riga).eq('id', p.id))
+        ok(r)
         return p.id
       }
-      return (ok(await db.from('persone').insert({ ...riga, ruolo: 'iscritto' }).select('id').single()) as { id: string }).id
+      // `as`: l'insert con `select('id')` rende la riga nuova, e il client non conosce le colonne scelte.
+      return (ok(r) as { id: string }).id
     },
 
     // Il nucleo familiare c'è solo in prova, per ora (vedi `nucleo.ts`).
@@ -848,7 +873,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async togliCertificato(personaId) {
       await cancellaFile(personaId)
-      // Anche il giorno di caricamento (44-certificati-online.sql): senza il file non ha senso. Se la colonna non c'è ancora si toglie il resto.
+      // Anche il giorno di caricamento (45-certificati-online.sql): senza il file non ha senso. Se la colonna non c'è ancora si toglie il resto.
       let r = await db.from('schede_iscritti').update({ certificato_scade: null, certificato_file: null, certificato_caricato_il: null }).eq('persona_id', personaId)
       if (r.error?.code === '42703' || r.error?.code === 'PGRST204') r = await db.from('schede_iscritti').update({ certificato_scade: null, certificato_file: null }).eq('persona_id', personaId)
       ok(r)

@@ -200,12 +200,19 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('43-cerca-persone.sql', 'Aggiungi chi prova cerca fra tutte le persone, senza telefono',
     exists (select 1 from pg_proc where proname = 'cerca_persone'
             and pg_get_function_result(oid) = 'TABLE(persona_id uuid, nome text, cognome text, corsi text[])')),
-  ('44-certificati-online.sql', 'il certificato resta nell''app: contenitore privato, file e data insieme, via 30 giorni dopo la scadenza',
+  ('44-email-contatto.sql', 'l''email di contatto delle persone, che può ripetersi',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'persone' and column_name = 'email_contatto')
+    and exists (select 1 from pg_constraint where conname = 'persone_email_contatto_forma')),
+  ('44-email-contatto.sql', 'accogliere una richiesta e unire due schede tengono conto del contatto',
+    exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%email_contatto%')
+    and exists (select 1 from dentro where nome = 'unisci_persone' and corpo like '%email_contatto%')),
+  ('45-certificati-online.sql', 'il certificato resta nell''app: contenitore privato, file e data insieme, via 30 giorni dopo la scadenza',
     exists (select 1 from storage.buckets where id = 'certificati' and not public and file_size_limit = 10485760)
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schede_iscritti' and column_name = 'certificato_caricato_il')
     and exists (select 1 from dentro where nome = 'salva_certificato')
     and exists (select 1 from dentro where nome = 'pulisci_certificati')),
-  ('44-certificati-online.sql', 'accogliere porta il certificato alla scheda, e unire non si ferma sul file',
+  ('45-certificati-online.sql', 'accogliere porta il certificato alla scheda, e unire non si ferma sul file',
     exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%certificati%')
     and exists (select 1 from dentro where nome = 'unisci_persone' and corpo like '%togli_file_certificato%')
     and not exists (select 1 from dentro where nome = 'richieste_con_documento' and corpo like '%certificato%')),

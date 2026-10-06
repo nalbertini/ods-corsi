@@ -162,7 +162,8 @@ export function creaRichiesteProva(): DatiRichieste {
       const a = archivio.dati
       const oggi = chiaveGiorno(new Date())
       const stesso = (x: string, y: string) => x.toLowerCase() === y.toLowerCase()
-      const emailLibera = !a.persone.some((p) => p.email?.toLowerCase() === r.email)
+      const email = r.email.toLowerCase()
+      const emailLibera = !a.persone.some((p) => p.email?.toLowerCase() === email)
       const cifre = (t?: string) => (t ?? '').replace(/\D/g, '').slice(-10)
       const scelta = personaId ? a.persone.find((p) => p.id === personaId) : undefined
       if (personaId && !scelta) throw new Error('Questa scheda non c’è più')
@@ -176,20 +177,30 @@ export function creaRichiesteProva(): DatiRichieste {
       // O quello dei dati anagrafici, di chi è arrivato dalle risposte del modulo Google.
       const perAnagrafica = a.persone.find((p) => a.anagrafiche?.[p.id]?.codiceFiscale === r.codiceFiscale)
       const perNome = a.persone
-        .filter((p) => stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome) && (!p.email || p.email.toLowerCase() === r.email || (cifre(r.telefono).length >= 9 && cifre(p.telefono) === cifre(r.telefono))))
+        .filter((p) => stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome) && (!p.email || p.email.toLowerCase() === email || (cifre(r.telefono).length >= 9 && cifre(p.telefono) === cifre(r.telefono))))
         .sort((x, y) => Number(!!y.email) - Number(!!x.email))[0]
       const trovata = scelta ?? perCf ?? perAnagrafica ?? perNome
       let id: string
       if (trovata) {
         id = trovata.id
         a.persone = a.persone.map((p) =>
-          p.id === id ? { ...p, attiva: true, telefono: p.telefono ?? r.telefono, email: p.email ?? (emailLibera ? r.email : undefined) } : p,
+          p.id === id
+            ? {
+                ...p,
+                attiva: true,
+                telefono: p.telefono ?? r.telefono,
+                email: p.email ?? (emailLibera ? email : undefined),
+                // L'email è di un'altra persona: la scheda che c'era la tiene come contatto, se non ne ha già uno.
+                emailContatto: p.emailContatto ?? (!emailLibera && p.email?.toLowerCase() !== email ? email : undefined),
+              }
+            : p,
         )
       } else {
         id = `p-web-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
         a.persone = [
           ...a.persone,
-          { id, nome: r.nome, cognome: r.cognome, ruolo: 'iscritto', email: emailLibera ? r.email : undefined, telefono: r.telefono, attiva: true, creataIl: oggi },
+          // L'email già di un'altra persona non è la sua di accesso: va nel contatto (44-email-contatto.sql).
+          { id, nome: r.nome, cognome: r.cognome, ruolo: 'iscritto', email: emailLibera ? email : undefined, emailContatto: emailLibera ? undefined : email, telefono: r.telefono, attiva: true, creataIl: oggi },
         ]
       }
       // Dal nucleo di un iscritto: ci entra, a meno che non sia il titolare

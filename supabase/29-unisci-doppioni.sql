@@ -10,9 +10,9 @@
 -- accesso: le schede del personale hanno corsi, PIN e compensi, e un accesso
 -- è un account da non perdere. Non si uniscono due schede con due codici
 -- fiscali diversi, anche solo dal modulo accolto (sono due persone). Il file
--- del certificato non ferma più l'unione dal `44-certificati-online.sql`, che
+-- del certificato non ferma più l'unione dal `45-certificati-online.sql`, che
 -- rifà `unione_possibile` e `unisci_persone` (rilanciando questo, va
--- rilanciato anche il 44).
+-- rilanciato anche il 45).
 --
 -- Cosa passa:
 --   · nome, email, telefono, anagrafica e scheda: vince chi resta, e da

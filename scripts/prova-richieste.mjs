@@ -220,6 +220,7 @@ console.log('\n4. la segreteria accoglie e rifiuta')
   const mm = await r.accogli(marco)
   const persone = await s.persone()
   ok('i due fratelli: la mail a una sola', [persone.find((x) => x.id === g).email, persone.find((x) => x.id === mm).email], ['mamma@esempio.it', undefined])
+  ok('Marco senza email di accesso ha quella della mamma come contatto', [persone.find((x) => x.id === g).emailContatto, persone.find((x) => x.id === mm).emailContatto], [undefined, 'mamma@esempio.it'])
   ok('Giulia ha i suoi due corsi', persone.find((x) => x.id === g).iscrizioni.map((i) => i.corsoId).sort(), ['judo-2', 'lotta-2'])
 
   await r.rifiuta(terzo)
