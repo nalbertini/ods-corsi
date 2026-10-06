@@ -58,6 +58,13 @@ Chi si iscrive risponde alle domande dal telefono:
   dal computer). Si sceglie come sul foglio se si acconsente al
   **tesseramento** alla FIJLKAM e/o FIPE e se si autorizzano le **foto**; per
   un minore si scrive anche dove è nato il genitore, e firma il genitore.
+  Il riquadro della firma è piccolo: sotto c'è **FIRMA A SCHERMO INTERO**
+  (o basta un tocco sul riquadro), che apre una schermata tutta per la firma,
+  con **ANNULLA**, **FATTO** e **CANCELLA E RIFAI**. La schermata sta ferma
+  mentre firmi: la pagina sotto non scorre e il tasto indietro del browser non
+  fa niente. Se **giri il telefono** la firma si cancella e va rifatta (lo
+  dice un avviso), perché le misure cambiano; **ANNULLA** lascia la firma di
+  prima.
   **GUARDA IL MODULO** mostra il PDF com'è venuto: il foglio della palestra
   con i dati delle domande, le crocette, la data e la firma su ogni riga dove
   serve, e in fondo, in piccolo, che è stato firmato dal telefono e quando.

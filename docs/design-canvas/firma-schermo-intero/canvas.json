@@ -1,0 +1,77 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Firma a schermo intero"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Modulo.dc.html",
+   "title": "Modulo · prima di firmare",
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 700,
+   "page": "page-1"
+  },
+  {
+   "file": "FirmaVuota.dc.html",
+   "title": "A schermo intero · vuota (verticale)",
+   "x": 510,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "page": "page-1"
+  },
+  {
+   "file": "FirmaFatta.dc.html",
+   "title": "A schermo intero · firmata (verticale)",
+   "x": 1020,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "page": "page-1"
+  },
+  {
+   "file": "FirmaOrizzontale.dc.html",
+   "title": "A schermo intero · telefono girato",
+   "x": 1530,
+   "y": 0,
+   "w": 844,
+   "h": 390,
+   "page": "page-1"
+  },
+  {
+   "file": "ModuloFirmato.dc.html",
+   "title": "Modulo · dopo FATTO",
+   "x": 2494,
+   "y": 0,
+   "w": 390,
+   "h": 700,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "n1",
+   "x": 0,
+   "y": -300,
+   "w": 520,
+   "text": "Proposta: la firma si fa a schermo intero, per avere piu' spazio, e la schermata e' FISSA: non scorre, non si ricarica tirando, non si ingrandisce, la barra del browser non si ritira. Si esce solo con ANNULLA o FATTO. Tasto FIRMA A SCHERMO INTERO (o un tocco sul riquadro), telefono verticale o girato. Dopo FATTO il riquadro del modulo mostra la firma rimpicciolita.",
+   "page": "page-1"
+  },
+  {
+   "id": "n2",
+   "x": 0,
+   "y": -120,
+   "w": 520,
+   "text": "Girare il telefono con la firma a meta': la firma si cancella (le misure cambiano) e la schermata dice «Hai girato il telefono: firma di nuovo».",
+   "page": "page-1"
+  }
+ ],
+ "launch": {
+  "view": "canvas",
+  "page": "page-1"
+ }
+}

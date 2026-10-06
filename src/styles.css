@@ -2041,3 +2041,40 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .guida th { font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); background: var(--surface); }
 /* Il titolo di una sezione raggiunto da un timbro: lo stesso contorno dei tasti. */
 [id^='sez-'] :focus-visible, [id^='sez-']:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+/* La firma a schermo intero. Misure da FirmaSchermoIntero.dc.html (docs/design-canvas):
+   in cima ANNULLA, il nome e FATTO; in mezzo il riquadro; sotto la frase e CANCELLA E RIFAI.
+   Copre tutto e sta ferma: `touch-action: none` e `overscroll-behavior: none` perché niente
+   sposti il riquadro mentre si firma; dvh e safe area perché la barra del browser e la tacca
+   non lo coprano. */
+.firma-apri { margin-top: 8px; align-self: stretch; min-height: 56px; }
+.firma-apri-frase { margin: 0; font-size: 14px; line-height: 1.4; color: var(--dim); }
+html.firma-aperta, html.firma-aperta body { overflow: hidden; overscroll-behavior: none; touch-action: none; }
+.firma-intera {
+  position: fixed; inset: 0; height: 100dvh; z-index: 1000;
+  display: flex; flex-direction: column; background: var(--bg); color: var(--text);
+  touch-action: none; overscroll-behavior: none; user-select: none; -webkit-user-select: none;
+  padding: var(--safe-t) env(safe-area-inset-right, 0px) var(--safe-b) env(safe-area-inset-left, 0px);
+}
+.firma-intera-testa { display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-bottom: 2px solid var(--line); }
+.firma-intera-titolo {
+  flex-grow: 1; min-width: 0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: var(--cond); font-size: 15px; font-weight: 700; letter-spacing: 0.2em; color: var(--dim);
+}
+.firma-intera-tasto {
+  display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px;
+  border: 2px solid var(--line); color: var(--tasto);
+  font-family: var(--cond); font-style: oblique 9deg; font-size: 16px; font-weight: 700; letter-spacing: 0.16em;
+}
+.firma-intera-tasto:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.firma-intera-fatto { padding: 0 20px; background: var(--rosso); border-color: var(--rosso); color: var(--su-rosso); }
+/* Spento: fondo surface-2, bordo line, testo dim (non rosso). Contrasto testo/fondo 4,60:1 nel tema
+   scuro (#8c8c88 su #242424) e 4,81:1 nel chiaro (#656561 su #e9e9e5), sopra il 4,5:1. */
+.firma-intera-fatto:disabled { background: var(--surface-2); border-color: var(--line); color: var(--dim); }
+.firma-intera-riquadro { position: relative; flex-grow: 1; min-height: 0; margin: 16px 20px; background: var(--surface); border: 2px dashed var(--tratteggio); }
+.firma-intera-riquadro .firma-riga { bottom: 25%; }
+.firma-intera-riquadro .firma-invito { bottom: calc(25% + 12px); }
+.firma-intera-piede { display: flex; flex-direction: column; gap: 8px; padding: 0 20px 20px; }
+.firma-intera-frase, .firma-intera-avviso { margin: 0; font-size: 14px; line-height: 1.4; color: var(--dim); }
+.firma-intera-avviso { color: var(--giallo-testo); }
+.firma-intera-avviso:empty { display: none; }

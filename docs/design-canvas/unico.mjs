@@ -20,6 +20,7 @@ const SEZIONI = [
   { id: 'istruttore', nome: 'Sezione istruttore', cartella: 'istruttore' },
   { id: 'tablet-sala', nome: 'Tablet di sala', cartella: 'tablet-sala' },
   { id: 'iscrizione', nome: 'Registrazione utente', cartella: 'iscrizione' },
+  { id: 'firma-schermo-intero', nome: 'Firma a schermo intero', cartella: 'firma-schermo-intero' },
   { id: 'iscrizione-nuovo', nome: 'Registrazione · nuovo flusso', cartella: 'iscrizione-nuovo' },
   { id: 'importa-fogli', nome: 'Importa da Excel', cartella: 'import-fogli' },
   { id: 'email-contatto', nome: 'Email di contatto · proposta', cartella: 'email-contatto' },
