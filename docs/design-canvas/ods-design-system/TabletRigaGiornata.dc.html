@@ -57,7 +57,7 @@ class Component extends DCLogic {
       attivita: p.attivita ?? '',
       haAttivita: !!p.attivita,
       ora: p.ora ?? '17:00–18:00',
-      kanji: [...String(p.kanji ?? '')].map((segno) => ({ segno })),
+      kanji: [...String(p.kanji ?? '闘')].map((segno) => ({ segno })),
       tinta: p.tinta || '#16a54a',
       testoFase: FASE[fase],
       coloreFase: fase === 'aperta' ? c.verdeTesto : c.dim,

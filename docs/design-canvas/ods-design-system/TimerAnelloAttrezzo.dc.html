@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'anello di cronometro e conto alla rovescia: Ring e DentroAnello di timer/src/components/Quadrante.tsx, con le tre scritte a scelta (TimerAnello ha GIRO e RESTA fissi). -->
+<div style="position: relative; width: {{misura}}; height: {{misura}}; flex-shrink: 0">
+  <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg)" aria-hidden="true">
+    <circle cx="50" cy="50" r="43" fill="none" stroke="{{c.fondo}}" stroke-width="9" stroke-dasharray="9 10.4"></circle>
+    <circle cx="50" cy="50" r="43" fill="none" stroke="{{colore}}" stroke-width="9" stroke-dasharray="{{arco}}"></circle>
+  </svg>
+  <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif">
+    <span style="font-size: {{corpoEtichetta}}; font-weight: 700; letter-spacing: 0.2em; color: {{c.dim}}; white-space: nowrap">{{etichetta}}</span>
+    <span style="font-size: {{corpoNumero}}; font-weight: 700; line-height: 1; color: {{colore}}; font-variant-numeric: tabular-nums">{{numero}}</span>
+    <sc-if value="{{haSotto}}" hint-placeholder-val="{{ true }}">
+      <span style="font-size: {{corpoSotto}}; font-weight: 600; letter-spacing: 0.16em; color: {{c.dim}}; white-space: nowrap; font-variant-numeric: tabular-nums">{{sotto}}</span>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"GIRO"},"numero":{"editor":"text","default":"4"},"sotto":{"editor":"text","default":"00:15.29"},"progresso":{"editor":"float","default":0.19,"min":0,"max":1,"step":0.01},"colore":{"editor":"color","default":"#1b8ac4"},"misura":{"editor":"text","default":"97px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":120,"height":120}}'>
+// Riproduzione 1:1 di .anello, .anello-etichetta, .anello-giro, .anello-resta di timer/src/styles.css (righe 585-612) con Ring e
+// DentroAnello di Quadrante.tsx. I corpi sono frazioni della misura, come nel foglio: etichetta 0,085 (8-26 px), numero 0,26 (20-80 px),
+// riga sotto 0,074 (8-22 px). Sotto i 96 px la riga sotto sparisce (@container (max-width: 96px) .anello-resta).
+// Sul tablet l'anello degli attrezzi misura 97 px (16cqh: .timer[data-attrezzo] sotto i 700 px di altezza), e' per questo che e' la misura di partenza.
+// colore: il blu del cronometro, il rosso del conto alla rovescia, il verde allo zero.
+const T = {
+  scuro: { fondo: '#242424', dim: '#8c8c88' },
+  chiaro: { fondo: '#e9e9e5', dim: '#656561' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const px = parseFloat(p.misura || '97');
+    const circ = 2 * Math.PI * 43;
+    const prog = Math.max(0, Math.min(1, Number(p.progresso ?? 0)));
+    return {
+      c: T[p.tema] || T.scuro,
+      misura: p.misura || '97px',
+      colore: p.colore || '#1b8ac4',
+      etichetta: p.etichetta ?? 'GIRO',
+      numero: p.numero ?? '4',
+      sotto: p.sotto ?? '00:15.29',
+      haSotto: !!p.sotto && px > 96,
+      arco: (circ * prog).toFixed(2) + ' ' + circ.toFixed(2),
+      corpoEtichetta: Math.min(26, Math.max(8, px * 0.085)).toFixed(1) + 'px',
+      corpoNumero: Math.min(80, Math.max(20, px * 0.26)).toFixed(1) + 'px',
+      corpoSotto: Math.min(22, Math.max(8, px * 0.074)).toFixed(1) + 'px',
+    };
+  }
+}
+</script>
+</body>
+</html>

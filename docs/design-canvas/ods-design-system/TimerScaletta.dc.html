@@ -43,7 +43,7 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
-    const righe = String(p.righe ?? '').split(';').filter(Boolean).map((s, i) => {
+    const righe = String(p.righe ?? 'work:LOTTA TERRA:30:1;rest:RECUPERO:15:1;work:LOTTA TERRA:30:7;setRest:RIPOSO TRA LE SERIE:60:1').split(';').filter(Boolean).map((s, i) => {
       const [stato, nome, durata, volte] = s.split(':');
       const colore = (p.tema === 'chiaro' && COLCH[stato]) || COL[stato] || '#8c8c88';
       const corrente = i === 0;

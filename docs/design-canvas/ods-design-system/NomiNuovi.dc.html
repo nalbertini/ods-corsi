@@ -42,7 +42,7 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
-    const gruppi = String(p.gruppi ?? '').split(';;').filter(Boolean).map((s) => { const i = s.indexOf('|'); return { titolo: s.slice(0, i).toUpperCase(), nomi: s.slice(i + 1) }; });
+    const gruppi = String(p.gruppi ?? 'Istruttori|Elena Marchi · Davide Conti;;Corsi|Judo 2 · Lotta adulti · Pilates 3').split(';;').filter(Boolean).map((s) => { const i = s.indexOf('|'); return { titolo: s.slice(0, i).toUpperCase(), nomi: s.slice(i + 1) }; });
     return { c, cond: COND, bordo: c.line, titolo: p.titolo ?? 'I NOMI NUOVI', gruppi, nota: p.nota ?? '' };
   }
 }

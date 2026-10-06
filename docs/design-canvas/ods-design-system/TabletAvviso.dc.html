@@ -43,8 +43,8 @@ class Component extends DCLogic {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
     const guaio = p.tipo === 'guaio';
-    const titolo = p.titolo ?? '';
-    const testo = p.testo ?? '';
+    const titolo = p.titolo ?? 'OGGI QUI NON CI SONO CORSI';
+    const testo = p.testo ?? 'La prossima lezione è mercoledì 7 ottobre alle 16:30: Judo baby, con Maurizio.';
     return {
       c,
       guaio,

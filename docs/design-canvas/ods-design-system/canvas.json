@@ -720,6 +720,69 @@
       "w": 380,
       "h": 110,
       "page": "page-2"
+    },
+    {
+      "file": "TimerAnelloAttrezzo.dc.html",
+      "title": "TimerAnelloAttrezzo",
+      "x": 0,
+      "y": 12008,
+      "w": 400,
+      "h": 200,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerGiri.dc.html",
+      "title": "TimerGiri",
+      "x": 500,
+      "y": 12008,
+      "w": 400,
+      "h": 200,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerDurate.dc.html",
+      "title": "TimerDurate",
+      "x": 1000,
+      "y": 12008,
+      "w": 400,
+      "h": 200,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerSegmenti.dc.html",
+      "title": "TimerSegmenti",
+      "x": 1500,
+      "y": 12008,
+      "w": 400,
+      "h": 200,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerInterruttore.dc.html",
+      "title": "TimerInterruttore",
+      "x": 2000,
+      "y": 12008,
+      "w": 400,
+      "h": 200,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTendina.dc.html",
+      "title": "TabletTendina",
+      "x": 0,
+      "y": 12308,
+      "w": 400,
+      "h": 200,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletProvaPannello.dc.html",
+      "title": "TabletProvaPannello",
+      "x": 500,
+      "y": 12308,
+      "w": 400,
+      "h": 200,
+      "page": "page-2"
     }
   ],
   "annotations": [

@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il CONTO ALLA ROVESCIA (CountdownTab in timer/src/components/AlVolo.tsx), a tutto schermo dalla card CONTO ALLA ROVESCIA in STRUMENTI; TIMER torna alla lista. Qui sono scelti 1′30 e il conto gira: mentre gira porta il rosso del lavoro (cornice da 14px, anello, barra, tasto PAUSA), allo zero passa al verde. Dentro l'anello IN TUTTO, la durata scelta e SVOLTI; le cifre sono quelle che restano. Sotto la barra di avanzamento (10px) le sei durate (30″ 45″ 1′ 1′30 2′ 3′): sceglierne una carica il conto e lo lascia fermo, a far partire e' AVVIA. +30″ allunga il conto, RIFAI lo ricomincia. Sul tablet, riquadro alto 608 px: sotto i 700 il foglio toglie la parola di stato e la riga sotto le cifre (.timer[data-attrezzo]) e stringe l'anello a 97 px. Il +30″ e' il .btn-piu del foglio, che non ha un'altezza: nella riga dei comandi resta alto quanto il testo (circa 25 px), accanto al tasto da 68. Il tasto grande ha la scritta scura anche sul rosso, come nel codice. Non riprodotti: il conto fermo e appena scelto (PRONTO, AVVIA), in pausa (RIPRENDI) e a zero (verde, TEMPO, RIFAI, con le illustrazioni di Maurizio al posto dell'anello). -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden; color: #f2f2f0">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:41" tema="scuro" chip="segna" corso="JUDO KIDS" conteggio="7/12" hint-size="100%,92px"></dc-import>
+  <div style="position: relative; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 20px 0">
+      <span style="display: flex; align-items: center; justify-content: center; min-width: 44px; height: 44px; padding: 0 11px; border: 2px solid #333333; color: #b8b8b2; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em">TIMER</span>
+      <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 1px; min-width: 0">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; line-height: 1.05">CONTO ALLA ROVESCIA</span>
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.18em; color: #8c8c88">1′30 IN TUTTO</span>
+      </div>
+      <span style="display: flex; align-items: center; justify-content: center; min-width: 44px; height: 44px; padding: 0 11px; border: 2px solid #333333; color: #b8b8b2; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em">RIFAI</span>
+    </div>
+    <div style="position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 56px; padding: 0 60px">
+      <dc-import name="TimerAnelloAttrezzo" etichetta="IN TUTTO" numero="1′30" sotto="SVOLTI 00:28" progresso="0.31" colore="#e4292a" misura="97px" tema="scuro" hint-size="97px,97px"></dc-import>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 207px; font-weight: 700; line-height: 0.88; letter-spacing: -0.03em">01:02</span>
+    </div>
+    <div style="height: 10px; background: #242424; flex-shrink: 0"><div style="height: 100%; width: 31%; background: #e4292a"></div></div>
+    <div style="margin: 16px 20px 0; flex-shrink: 0">
+      <dc-import name="TimerDurate" durate="30″;45″;1′;1′30;2′;3′" attiva="1′30" tema="scuro" hint-size="100%,50px"></dc-import>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 16px 20px 20px">
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 66px; padding: 0 12px; border: 2px solid #e4292a; background: #1c1c1c; color: #f2f2f0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 700; letter-spacing: 0.06em">+30″</span>
+      <span style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 10px; height: 68px; background: #e4292a; color: #121212; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.16em"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>PAUSA</span>
+    </div>
+    <div style="position: absolute; inset: 0; z-index: 5; pointer-events: none; border: 14px solid #e4292a"></div>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="timer" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

@@ -68,11 +68,11 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
-const righe = lista(p.righe ?? '', '|').map((s) => { const i = s.lastIndexOf(':'); const importo = s.slice(i + 1); return { testo: s.slice(0, i), importo, colore: /^[−-]/.test(importo) ? c.verde : c.text }; });
+const righe = lista(p.righe ?? 'Quota associativa:50 €|Judo kids · trimestre:105 €|Sconto famiglia 20% su Judo kids di Ginevra:−21 €', '|').map((s) => { const i = s.lastIndexOf(':'); const importo = s.slice(i + 1); return { testo: s.slice(0, i), importo, colore: /^[−-]/.test(importo) ? c.verde : c.text }; });
     const avviso = p.avviso ?? '';
     return {
       c, cond: COND, righe, nessuna: righe.length === 0, totale: p.totale ?? '134 €',
-      frasi: lista(p.frasi ?? '', '|'), avviso, haAvviso: avviso !== '',
+      frasi: lista(p.frasi ?? 'Lo sconto famiglia va sull annuale che costa meno nel nucleo: Judo kids di Ginevra, che l ha già avuto o lo avrà in segreteria.', '|'), avviso, haAvviso: avviso !== '',
       stima: 'È una stima dal listino: le altre offerte e l importo giusto li conferma la segreteria. Bonifico a ' + (p.intestatario ?? 'ASD Il Centro Judo') + ':',
       iban: p.iban ?? 'IT00 X000 0000 0000 0000 0000 000', causale: p.causale ?? 'Iscrizione Giulia Rossi · Judo kids',
       tasti: lista(p.tasti ?? 'COPIA IBAN|COPIA CAUSALE|PAGA CON SATISPAY', '|'),

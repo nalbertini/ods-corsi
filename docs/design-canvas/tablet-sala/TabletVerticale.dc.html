@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il tablet in verticale, 800 x 1280: la home con Judo kids aperta, martedi' 6 ottobre alle 18:40. Le regole sono in `@media (max-width: 900px)` di src/styles.css (righe 1188-1218, «In verticale, o su uno schermo piccolo: una colonna sola»; non c'e' nessun `orientation: portrait`, vale per qualunque larghezza sotto 901px). Cambia: testata e barra con margini da 16px, sala da 30px e ora da 40px (prop `verticale` di TabletTestataSala e TabletPiedeMusica); il corpo a 16px di margine e una colonna sola (`.tb-home`), con la lezione aperta sopra, i nomi tre per riga e la giornata sotto, in fila come le altre, invece che a destra; la card della lezione in colonna (`.tb-aperta { flex-direction: column }`) con AREA ISTRUTTORE sotto il testo, fuori centro per il margin-right da 24px che le regole orizzontali le danno e che nessuna regola verticale toglie, e senza margine in basso (`.tb-aperta-lezione` ha padding 0): sembra una svista dell'app, ed e' disegnata com'e'; la barra in due righe, PRESENZE e TIMER sopra e la musica a tutta larghezza sotto. Non riprodotti: le altre schermate, che seguono le stesse regole (area istruttore in una colonna, PIN con il tastierino da 90px, righe dell'appello una per riga) e il chip del timer in testata, che senza spazio perde il testo e tiene solo il tempo. La pagina scorre: qui e' ferma in cima. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 800px; height: 1280px; background: #121212; overflow: hidden; color: #f2f2f0">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="scuro" verticale="{{ true }}" hint-size="100%,92px"></dc-import>
+  <div style="flex: 1; min-height: 0; display: grid; align-content: start; grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 16px; overflow: hidden">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; flex-direction: column; align-items: stretch; background: #1c1c1c; border: 2px solid #333333; border-left: 8px solid #1b8ac4">
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 22px 24px">
+          <span style="display: flex; align-items: center; gap: 12px">
+            <span style="white-space: nowrap; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; letter-spacing: 0.06em; color: #8c8c88">18:30–19:30</span>
+            <span style="padding: 2px 8px; border: 2px solid #333333; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; line-height: 1.2; color: #c9c9c4; text-transform: uppercase">Tecnica</span>
+          </span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 38px; font-weight: 700; letter-spacing: 0.03em; line-height: 1; text-transform: uppercase">Judo kids</span>
+          <span style="display: inline-flex; align-items: center; gap: 10px; font-size: 17px; color: #c9c9c4">
+            <span style="display: inline-grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border: 2px solid #e4292a; border-radius: 4px; color: #ff5a52; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif; font-size: 22px; font-weight: 700; line-height: 1">柔</span>
+            <span>Maurizio · 7 segnati su 12</span>
+          </span>
+        </div>
+        <span style="display: flex; align-items: center; justify-content: center; align-self: center; gap: 10px; min-height: 60px; margin-right: 24px; padding: 0 22px; border: 2px solid #333333; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>AREA ISTRUTTORE</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <dc-import name="TabletTessera" nome="Luca B." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Sara C." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Elena C." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Marco E." veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Tommaso F." veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Sofia G." veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Anna G." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Pietro M." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Giulia R." veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Matteo R." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Irene V." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Paolo Z." veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      </div>
+    </div>
+  <aside style="display: flex; flex-direction: column; gap: 14px">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #8c8c88">PRECEDENTI</span>
+    <dc-import name="TabletRigaGiornata" corso="Judo baby" attivita="Gioco" ora="16:30–17:15" kanji="柔" tinta="#f4c31b" fase="finita" tema="scuro" hint-size="100%,64px"></dc-import>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #8c8c88; margin-top: 6px">IN CORSO</span>
+    <dc-import name="TabletRigaGiornata" corso="Judo kids" attivita="Tecnica" ora="18:30–19:30" kanji="柔" tinta="#1b8ac4" fase="aperta" tema="scuro" hint-size="100%,64px"></dc-import>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #8c8c88; margin-top: 6px">PIÙ TARDI</span>
+    <dc-import name="TabletRigaGiornata" corso="Judo adulti" ora="20:00–21:00" kanji="柔" tinta="#1b8ac4" fase="dopo" tema="scuro" hint-size="100%,64px"></dc-import>
+    <div style="height: 6px"></div>
+    <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #f4c31b; color: #f2f2f0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; text-align: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline><polyline points="12 7 12 12 15 14"></polyline></svg>TI SEI DIMENTICATO DI SEGNARTI?</span>
+  </aside>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" verticale="{{ true }}" hint-size="100%,172px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

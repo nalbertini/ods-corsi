@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Le IMPOSTAZIONI del timer sul tablet (SettingsScreen.tsx con sala e incorporato): si aprono col PIN, dall'area istruttore con TIMER, e per questo in testata c'e' il bollino IMPOSTAZIONI APERTE. Con due schede (TIMER, IMPOSTAZIONI) a sinistra compare la barra da 240px; nessun tema, nessuna libreria esercizi, nessuna voce incisa, nessun salvataggio su file e nessuna versione: sono di ODS Corsi o della segreteria. Quel che cambia qui vale per tutti i tablet di sala. La pagina scorre: questa e' la parte alta. Questa e' la stessa pagina scorsa piu' in basso, fino a MUSICA: Player musicale acceso (spento, la barra della musica sparisce dal tablet), DA DOVE VIENE LA MUSICA (SPOTIFY, YOUTUBE, FILE DEL TABLET, RADIO: qui SPOTIFY, di fabbrica), lo stato di Spotify (collegato, con SCOLLEGA; se non lo e', Client ID e COLLEGA SPOTIFY) e i due interruttori che legano la musica al timer, spenti di fabbrica; accendendo «Più bassa nel recupero» compare il volume nel recupero, in verde. Sotto ci sono SCHERMO (Schermo sempre acceso, Modalità schermo grande) e, per YOUTUBE, RADIO e FILE DEL TABLET, i loro campi: non riprodotti. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden; color: #f2f2f0">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:41" tema="scuro" chip="segna" corso="JUDO KIDS" conteggio="7/12" impostazioni="true" hint-size="100%,92px"></dc-import>
+  <div style="position: relative; flex: 1; min-height: 0; overflow: hidden; display: flex">
+    <nav style="display: flex; flex-direction: column; gap: 28px; flex-shrink: 0; width: 240px; padding: 28px 16px 24px; background: #161616; border-right: 2px solid #2a2a2a">
+      <div style="display: flex; flex-direction: column; gap: 2px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.12em">
+        <span style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-left: 4px solid transparent; color: #b8b8b2">TIMER</span>
+        <span style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-left: 4px solid #e4292a; background: #1c1c1c; color: #f2f2f0">IMPOSTAZIONI</span>
+      </div>
+    </nav>
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 28px 36px 8px; flex-shrink: 0">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">IMPOSTAZIONI</span>
+      </div>
+      <div style="flex: 1; min-height: 0; overflow: hidden">
+        <div style="padding: 4px 16px 0"><dc-import name="Titoletto" label="MUSICA" tema="scuro" hint-size="100%,50px"></dc-import></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 36px">
+          <dc-import name="TimerInterruttore" nome="Player musicale" nota="Spento, la barra della musica sparisce e non parte niente" acceso="true" tema="scuro" hint-size="100%,58px"></dc-import>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 14px 14px; background: #1c1c1c; border: 2px solid #333333"><span style="font-size: 15px; font-weight: 600">Da dove viene la musica</span>
+            <dc-import name="TimerSegmenti" voci="SPOTIFY;YOUTUBE;FILE DEL TABLET;RADIO" attiva="SPOTIFY" colonne="2" tono="blu" tema="scuro" hint-size="100%,112px"></dc-import>
+            <span style="font-size: 13px; line-height: 1.4; color: #8c8c88">Il timer comanda Spotify ovunque stia già suonando: tablet, telefono, cassa. Collegato qui, lo comanda anche il tablet di sala. Serve un account Premium e un'app registrata una volta su developer.spotify.com.</span></div>
+          <div style="display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 10px 14px; background: #1c1c1c; border: 2px solid #333333">
+            <span style="width: 10px; height: 10px; flex-shrink: 0; background: #16a54a"></span>
+            <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 1px; min-width: 0">
+              <span style="font-size: 15px; font-weight: 600">Spotify collegato</span>
+              <span style="font-size: 12px; color: #8c8c88">Suona su Tablet sala judo</span>
+            </div>
+            <span style="display: flex; align-items: center; min-height: 40px; padding: 0 12px; border: 2px solid #333333; color: #b8b8b2; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 13px; font-weight: 700; letter-spacing: 0.16em">SCOLLEGA</span>
+          </div>
+          <dc-import name="TimerInterruttore" nome="La musica segue il timer" nota="Parte con l’avvio, si ferma con la pausa e a fine allenamento" acceso="false" tema="scuro" hint-size="100%,58px"></dc-import>
+          <dc-import name="TimerInterruttore" nome="Più bassa nel recupero" nota="Nel recupero e fra le serie scende, al lavoro torna dov’era" acceso="false" tema="scuro" hint-size="100%,58px"></dc-import>
+        </div>
+      </div>
+    </div>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="timer" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

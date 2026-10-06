@@ -118,7 +118,7 @@ class Component extends DCLogic {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
     const numeri = {};
-    for (const s of String(p.numeri ?? '').split(',')) {
+    for (const s of String(p.numeri ?? 'RICHIESTE ONLINE:3, PRESENZE:2').split(',')) {
       const i = s.lastIndexOf(':');
       if (i > 0) numeri[s.slice(0, i).trim()] = s.slice(i + 1).trim();
     }
