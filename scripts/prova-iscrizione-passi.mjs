@@ -987,5 +987,144 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('la riga «Carta d’identità» del riepilogo non manda al modulo', rigaCarta !== '' && !rigaCarta.includes("modifica('modulo')"), true)
 }
 
+// 26. L'avviso del browser all'uscita: la stessa regola di INDIETRO, in una funzione sola.
+{
+  console.log('\n26. l’avviso all’uscita (chiudere la scheda, ricaricare)')
+  // Firma attesa: rispostePerdibili(stato) → boolean, vero quando domandaUscita(perDomandaUscita(stato)) dà la domanda.
+  const p = (stato) => { try { return m.rispostePerdibili(stato) } catch (e) { return `ERRORE: ${e.message}` } }
+  const uguale = (stato) => m.domandaUscita(m.perDomandaUscita(stato)) !== undefined
+  const vuoto = m.nuovoStato('adulto')
+  const aperto = adulto({}, { inizio: adulto().risposte, scelte: {}, tratti: 0, file: {}, privacy: false })
+  const stati = {
+    'stato vuoto': vuoto,
+    'stato vuoto, figlio': m.nuovoStato('figlio'),
+    'appena aperto, niente di nuovo': aperto,
+    'una risposta cambiata': { ...aperto, risposte: { ...aperto.risposte, nome: 'Marco' } },
+    'un corso scelto in più': { ...aperto, risposte: { ...aperto.risposte, corsi: ['judo-adulti', 'judo-3'] } },
+    'un file caricato': { ...aperto, file: { documento: F('d.jpg') } },
+    'una scelta fatta': { ...aperto, scelte: { tesseramento: true } },
+    'una firma cominciata': { ...aperto, tratti: 2 },
+    'la privacy spuntata': { ...aperto, privacy: true },
+    'il luogo del genitore': { ...aperto, natoAGenitore: 'Torino' },
+    'il luogo del genitore, solo spazi': { ...aperto, natoAGenitore: '  ' },
+    'tutto compilato': adulto(),
+    'figlio tutto compilato': figlio(),
+  }
+  for (const [nome, st] of Object.entries(stati)) ok(`${nome}: l’avviso c’è se c’è la domanda di INDIETRO`, p(st), uguale(st))
+  ok('stato vuoto: nessun avviso', p(vuoto), false)
+  ok('appena aperto: nessun avviso', p(aperto), false)
+  ok('tutto compilato: l’avviso c’è', p(adulto()), true)
+  ok('una sola lettera cambiata: l’avviso c’è', p(stati['una risposta cambiata']), true)
+
+  const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  const codice = pagina.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((r) => !/^\s*\/\//.test(r)).join('\n')
+  // L'ascoltatore sta in un useEffect che dipende dalla fase: dopo l'invio riuscito (esito) si toglie.
+  const effetto = codice.split('useEffect(').find((b) => b.includes('beforeunload')) ?? ''
+  ok('il componente ascolta beforeunload', effetto !== '', true)
+  ok('lo decide rispostePerdibili, non una regola scritta di nuovo', effetto.includes('rispostePerdibili('), true)
+  ok('si toglie quando la fase non è compila né invio (removeEventListener, dipende da fase)', /removeEventListener\(\s*'beforeunload'/.test(effetto) && /\bfase\b/.test(effetto.slice(effetto.lastIndexOf('['))), true)
+  ok('guarda la fase: compila o invio', /fase\.tipo\s*(===|!==)\s*'(compila|invio|esito)'/.test(effetto), true)
+  ok('il browser chiede con preventDefault', effetto.includes('preventDefault()'), true)
+}
+
+// 27. Il fuoco sul titolo del passo, a ogni cambio di passo (e non a ogni lettera).
+{
+  console.log('\n27. il fuoco va al titolo del passo')
+  const ds = readFileSync('src/components/ds.tsx', 'utf8')
+  const avanza = ds.slice(ds.indexOf('export function Avanzamento'), ds.indexOf('export function Avanzamento') + 1500).split(/\n}\n/)[0]
+  ok('Avanzamento (ds.tsx) prende il fuoco da codice: tabIndex={-1}', avanza.includes('tabIndex={-1}'), true)
+  ok('Avanzamento (ds.tsx) riceve un ref', /\bref\b/.test(avanza), true)
+  const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  const codice = pagina.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((r) => !/^\s*\/\//.test(r)).join('\n')
+  const effetto = codice.split('useEffect(').find((b) => /\.focus\(/.test(b) && /Ref\.current/.test(b) && /titolo|Titolo|avanz/i.test(b)) ?? ''
+  ok('un useEffect mette a fuoco il titolo del passo', effetto !== '', true)
+  ok('dipende solo da passo: non scatta a ogni lettera', /\[\s*passo\s*\]\s*\)/.test(effetto), true)
+  ok('<Avanzamento> riceve il ref', /<Avanzamento[^>]*\bref=/.test(codice) || /<Avanzamento[^>]*\b(titoloRef|rif)=/.test(codice), true)
+}
+
+// 28. La riga CHIAMA sotto la testata dei passi: lo stesso numero di «Contatti».
+{
+  console.log('\n28. CHIAMA nel flusso')
+  const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  const codice = pagina.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((r) => !/^\s*\/\//.test(r)).join('\n')
+  const sito = readFileSync('src/lib/sito.ts', 'utf8')
+  const schermata = readFileSync('src/components/IscrizioniScreen.tsx', 'utf8')
+  ok('il numero sta in lib/sito: CONTATTI.telefono e chiama', /export const CONTATTI/.test(sito) && /export const chiama/.test(sito), true)
+  ok('IscrizioniScreen usa la stessa fonte (chiama)', /import \{[^}]*\bchiama\b[^}]*\} from '..\/lib\/sito'/.test(schermata), true)
+  ok('il flusso importa chiama da lib/sito', /import \{[^}]*\bchiama\b[^}]*\} from '..\/lib\/sito'/.test(codice), true)
+  ok('c’è un tasto CHIAMA che usa href={chiama}', /<Tasto[^>]*href=\{chiama\}[^>]*>\s*CHIAMA/.test(codice), true)
+  ok('il numero non è scritto a mano nel flusso', /\btel:|\b\d{3}\s\d{3}\s\d{4}\b/.test(codice), false)
+  // Sta nel flusso, sotto la testata: prima di <Avanzamento> non c'è, e non dentro <BarraPasso>.
+  const dopoAvanzamento = codice.slice(codice.indexOf('<Avanzamento'))
+  ok('CHIAMA viene dopo la testata <Avanzamento>', /CHIAMA/.test(dopoAvanzamento), true)
+  const barra = codice.slice(codice.indexOf('<BarraPasso'), codice.indexOf('/>', codice.indexOf('<BarraPasso')))
+  ok('CHIAMA non sta dentro la barra del passo', /CHIAMA/.test(barra), false)
+}
+
+// 29. «RICHIESTA ARRIVATA»: l'importo e i contatti li dà la lib, la schermata mostra.
+{
+  console.log('\n29. la schermata finale: cosa pagare e chi avvisa')
+  const voce = (corso, corsoId, natiDal, natiAl, annuale, trimestre) => ({
+    corso, corsoId, eta: '', orari: ['martedì 18.00'], natiDal, natiAl, prezzi: [{ saldo: annuale, annuale, trimestre }],
+  })
+  const listino = { quota: 50, saldoEntro: '2026-08-31', offerte: [], corsi: [voce('Judo 3', 'judo-3', 2013, 2016, 300, 120), voce('Judo adulti', 'judo-adulti', undefined, 2012, 360, 140)] }
+  const corsi = [{ id: 'judo-3', nome: 'Judo 3' }, { id: 'judo-adulti', nome: 'Judo adulti' }]
+  const giorno = '2026-10-06'
+  // Firma attesa: riassuntoEsito(stato, corsi, listino, giorno) → { importo?: string, daPagare: boolean, senzaPrezzo: string[], contatti: { email: string, telefono: string } }.
+  // importo: «410 €» come totaleDelPasso; con due richieste (bambino + genitore) il conto della famiglia con lo sconto (contoDelloStato).
+  // senzaPrezzo: i nomi dei corsi senza prezzo nel listino («prezzo da confermare»); l'importo è quello che si sa.
+  const r = (stato, l = listino, c = corsi) => { try { return m.riassuntoEsito(stato, c, l, giorno) } catch (e) { return { ERRORE: e.message } } }
+  const euro = (cent) => `${cent / 100} €`
+
+  ok('adulto, senza ricevuta: da pagare, 410 €', [r(adulto()).daPagare, r(adulto()).importo], [true, '410 €'])
+  ok('l’importo è quello di totaleDelPasso', r(adulto()).importo, m.totaleDelPasso(adulto(), 2, corsi, listino, giorno).totale)
+  ok('adulto, trimestre: 190 €', r(adulto({ formula: 'trimestre' })).importo, '190 €')
+  ok('adulto, con la ricevuta caricata: niente da pagare', r(adulto({}, { file: { documento: F('d.jpg'), ricevuta: F('r.jpg') } })).daPagare, false)
+  ok('figlio, senza ricevuta: da pagare, 350 €', [r(figlio()).daPagare, r(figlio()).importo], [true, '350 €'])
+  ok('figlio, con la ricevuta: niente da pagare', r(figlio({}, { file: { documento: F('d.jpg'), ricevuta: F('r.jpg') } })).daPagare, false)
+
+  const famiglia = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
+  const conto = m.contoDelloStato(famiglia, corsi, listino, giorno)
+  ok('famiglia: l’importo è quello del conto con lo sconto, stessi centesimi', r(famiglia).importo, euro(conto.totale))
+  ok('famiglia: lo sconto c’è, quindi meno della somma dei due', conto.totale < 35000 + 41000, true)
+  ok('famiglia, con la ricevuta: niente da pagare', r({ ...famiglia, file: { ...famiglia.file, ricevuta: F('r.jpg') } }).daPagare, false)
+  const senzaSuo = figlio({}, { ancheTu: true, suo: { corsi: [], formula: 'annuale', scelte: {} } })
+  ok('famiglia, corso del genitore non scelto: come il conto dello stato', r(senzaSuo).importo, euro(m.contoDelloStato(senzaSuo, corsi, listino, giorno).totale))
+
+  ok('senza listino: importo non c’è, ma da pagare sì', [r(adulto(), null).importo, r(adulto(), null).daPagare], [undefined, true])
+  ok('senza listino: il resto c’è lo stesso', [r(adulto(), undefined).daPagare, r(adulto(), undefined).contatti?.email], [true, 'paola@esempio.it'])
+  ok('senza corso scelto: importo non c’è, ma da pagare sì', [r(adulto({ corsi: [] })).importo, r(adulto({ corsi: [] })).daPagare], [undefined, true])
+  ok('corso non nell’elenco dei corsi: importo non c’è, ma da pagare sì', [r(adulto(), listino, []).importo, r(adulto(), listino, []).daPagare], [undefined, true])
+
+  const psico = adulto({ corsi: ['psico'] })
+  const corsiPsico = [...corsi, { id: 'psico', nome: 'Psicomotricità' }]
+  ok('corso senza prezzo: importo è la sola quota', r(psico, listino, corsiPsico).importo, '50 €')
+  ok('corso senza prezzo: lo dice per nome', r(psico, listino, corsiPsico).senzaPrezzo, ['Psicomotricità'])
+  ok('corso col prezzo: nessun «da confermare»', [r(adulto()).importo, r(adulto()).senzaPrezzo], ['410 €', []])
+
+  ok('adulto: i contatti sono quelli scritti da chi si iscrive', r(adulto({ email: 'luca@esempio.it', telefono: '333 000 1111' })).contatti, { email: 'luca@esempio.it', telefono: '333 000 1111' })
+  ok('figlio: i contatti sono quelli del genitore (stanno nelle risposte)', r(figlio({ email: 'paola@esempio.it', telefono: '347 111 2233' })).contatti, { email: 'paola@esempio.it', telefono: '347 111 2233' })
+  ok('contatti con spazi ai lati: tagliati', r(adulto({ email: ' luca@esempio.it ', telefono: ' 333 000 1111 ' })).contatti, { email: 'luca@esempio.it', telefono: '333 000 1111' })
+
+  const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  const codice = pagina.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((r) => !/^\s*\/\//.test(r)).join('\n')
+  ok('la schermata finale usa riassuntoEsito', /P\.riassuntoEsito\(|\briassuntoEsito\(/.test(codice), true)
+  ok('la schermata finale usa fraseContatti', /P\.fraseContatti\(|\bfraseContatti\(/.test(codice), true)
+  ok('il testo vecchio «se manca qualcosa» non è più scritto nel componente', /ti scrive a \{/.test(codice), false)
+}
+
+// 30. La frase dei contatti: chi scrive, chi chiama.
+{
+  console.log('\n30. la frase «La segreteria ti scrive…»')
+  // Firma attesa: fraseContatti(email: string, telefono: string) → string | undefined.
+  const f = (e, t) => { try { return m.fraseContatti(e, t) } catch (x) { return `ERRORE: ${x.message}` } }
+  ok('solo email', f('luca@esempio.it', ''), 'La segreteria ti scrive a luca@esempio.it, se manca qualcosa.')
+  ok('solo telefono', f('', '333 000 1111'), 'La segreteria ti chiama al 333 000 1111, se manca qualcosa.')
+  ok('tutti e due: «o»', f('luca@esempio.it', '333 000 1111'), 'La segreteria ti scrive a luca@esempio.it o ti chiama al 333 000 1111, se manca qualcosa.')
+  ok('nessuno dei due: niente frase', f('', ''), undefined)
+  ok('spazi soltanto: come vuoti', f('  ', ' '), undefined)
+  ok('spazi attorno: tagliati', f(' luca@esempio.it ', ''), 'La segreteria ti scrive a luca@esempio.it, se manca qualcosa.')
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

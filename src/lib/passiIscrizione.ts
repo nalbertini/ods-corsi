@@ -386,14 +386,54 @@ const euroBreve = (cent: number) => `${cent < 0 ? '−' : ''}${Math.abs(cent) % 
  */
 export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
   const tipo = tipiDiPassi(s.chi, s.ancheTu === true)[passo - 1]
-  if ((tipo !== 'corso' && tipo !== 'documenti') || !listino || !s.risposte.corsi.length) return undefined
-  const conto = stimaIscrizione(persona(s, corsi), [], giorno, listino)
+  if (tipo !== 'corso' && tipo !== 'documenti') return undefined
+  const c = contoDiChiSiIscrive(s, corsi, listino, giorno)
+  return c && { righe: c.righe, totale: c.totale }
+}
+
+/** Il conto di chi si iscrive (non della famiglia), scritto corto; `undefined` senza listino o senza un corso che c'è nell'elenco. */
+function contoDiChiSiIscrive(s: StatoPassi, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string; senzaPrezzo: string[] } | undefined {
+  const lui = persona(s, corsi)
+  if (!listino || !lui.corsi.length) return undefined
+  const conto = stimaIscrizione(lui, [], giorno, listino)
   // Un corso senza prezzo nel listino non vale 0: lo dice la riga, e il totale è quello che si sa.
   const daConfermare = conto.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`)
   // Le righe si accorciano: «Quota associativa» → «Quota», «Annuale Judo adulti» → «Judo adulti annuale».
-  const voce = (testo: string) =>
-    testo.replace(/^Quota associativa$/, 'Quota').replace(/^(Annuale|Trimestre|Saldo)\s+(.+)$/i, (_, f: string, c: string) => `${c} ${f.toLowerCase()}`)
-  return { righe: [...conto.righe.map((r) => `${voce(r.testo)} ${euroBreve(r.importo)}`), ...daConfermare].join(' + '), totale: euroBreve(conto.totale) }
+  const voce = (testo: string) => testo.replace(/^Quota associativa$/, 'Quota').replace(/^(Annuale|Trimestre|Saldo)\s+(.+)$/i, (_, f: string, c: string) => `${c} ${f.toLowerCase()}`)
+  return {
+    righe: [...conto.righe.map((r) => `${voce(r.testo)} ${euroBreve(r.importo)}`), ...daConfermare].join(' + '),
+    totale: euroBreve(conto.totale),
+    senzaPrezzo: conto.senzaPrezzo,
+  }
+}
+
+/** Se chi esce perde qualcosa che ha scritto: la stessa regola della domanda di INDIETRO, per l'avviso del browser. */
+export const rispostePerdibili = (s: StatoPassi): boolean => domandaUscita(perDomandaUscita(s)) !== undefined
+
+/** Cosa dice la schermata «RICHIESTA ARRIVATA»: quanto pagare (se manca la ricevuta) e dove la segreteria trova chi si è iscritto. */
+export function riassuntoEsito(
+  s: StatoPassi,
+  corsi: CorsoRef[],
+  listino: Listino | undefined,
+  giorno: string,
+): { importo?: string; daPagare: boolean; senzaPrezzo: string[]; contatti: { email: string; telefono: string } } {
+  const famiglia = listino && s.chi === 'figlio' && s.ancheTu && s.suo ? contoDelloStato(s, corsi, listino, giorno) : undefined
+  const solo = famiglia ? undefined : contoDiChiSiIscrive(s, corsi, listino, giorno)
+  return {
+    importo: famiglia ? euroBreve(famiglia.totale) : solo?.totale,
+    daPagare: !s.file.ricevuta,
+    senzaPrezzo: solo?.senzaPrezzo ?? [],
+    contatti: { email: s.risposte.email.trim(), telefono: s.risposte.telefono.trim() },
+  }
+}
+
+/** «La segreteria ti scrive a …, se manca qualcosa»: con l'email, il telefono o tutti e due. */
+export function fraseContatti(email: string, telefono: string): string | undefined {
+  const e = email.trim()
+  const t = telefono.trim()
+  if (!e && !t) return undefined
+  const come = [e && `ti scrive a ${e}`, t && `ti chiama al ${t}`].filter(Boolean).join(' o ')
+  return `La segreteria ${come}, se manca qualcosa.`
 }
 
 /** I file da chiedere: il certificato solo dai 6 anni, e quale lo dice l'età e il corso. */

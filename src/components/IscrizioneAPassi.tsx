@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { chiama } from '../lib/sito'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
 import { anniScritti, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
-import { INFORMATIVA_PUBBLICA, MODULI, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
+import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
 import { corsiAmmessi, corsiPerEta, type CorsoPerEta, type Listino } from '../lib/listino'
 import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
@@ -328,6 +329,29 @@ function Flusso({
   const mancaOra = P.mancaNelPasso(v, passo)
   const manca = provato ? P.mancanti(v, passo) : []
 
+  // Chi esce (o ricarica) con risposte già scritte lo sente dal browser; dopo l'invio non c'è più niente da perdere.
+  useEffect(() => {
+    if (fase.tipo !== 'compila' && fase.tipo !== 'invio') return
+    if (!P.rispostePerdibili(v)) return
+    const avvisa = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', avvisa)
+    return () => window.removeEventListener('beforeunload', avvisa)
+  }, [fase, v])
+
+  // A ogni cambio di passo il fuoco va al titolo (e lo screen reader legge «Passo N di N»); non alla prima apertura, né a ogni lettera.
+  const titoloRef = useRef<HTMLDivElement>(null)
+  const primoDisegno = useRef(true)
+  useEffect(() => {
+    if (primoDisegno.current) {
+      primoDisegno.current = false
+      return
+    }
+    titoloRef.current?.focus({ preventScroll: true })
+  }, [passo])
+
   const vai = (p: number) => {
     setPasso(p)
     setProvato(false)
@@ -463,6 +487,8 @@ function Flusso({
     if (e.esito === 'fatto') {
       const certificati = P.certificatiMancanti(v, corsi ?? []).map((x) => (x === 'chi' ? nomeBambino : r.genitoreNome?.trim() || 'il genitore'))
       const email = r.email.trim() || 'la tua email'
+      const riassunto = P.riassuntoEsito(v, corsi ?? [], listino, chiaveGiorno(new Date()))
+      const frase = P.fraseContatti(riassunto.contatti.email, riassunto.contatti.telefono)
       const ultimaVolta = figlio ? 'ISCRIVI UN ALTRO FIGLIO' : 'ISCRIVI UN’ALTRA PERSONA'
       const righe: RigaRiepilogo[] = [
         { stato: 'numero', titolo: 'La segreteria ti scrive', dettaglio: `a ${email}, se manca qualcosa` },
@@ -484,9 +510,29 @@ function Flusso({
                 ? `La segreteria ha ricevuto l’iscrizione di ${nomeBambino} al corso di ${nomiDei(r.corsi)}, e controlla il modulo, il documento e il pagamento.`
                 : `La segreteria ha ricevuto la tua richiesta per ${nomiDei(r.corsi)}, e controlla il modulo, il documento e il pagamento.`}
           </span>
-          <span className="esito-testo">La segreteria ti scrive a {email} se manca qualcosa.</span>
+          {frase && <span className="esito-testo">{frase}</span>}
           <Titoletto dentro>E ADESSO</Titoletto>
           <Riepilogo righe={righe} />
+          {riassunto.daPagare && riassunto.importo ? (
+            <>
+              <Titoletto dentro>DA PAGARE</Titoletto>
+              {due ? (
+                <>
+                  <span className="esito-testo">
+                    In tutto {riassunto.importo}, con lo sconto famiglia. Paghi in segreteria, oppure con un bonifico a {PAGAMENTO.intestatario}: <span className="num iban">{PAGAMENTO.iban}</span>
+                  </span>
+                </>
+              ) : (
+                <QuantoCosta nome={r.nome.trim()} cognome={r.cognome.trim()} corsi={refDei(r.corsi)} formula={r.formula} abbonamenti={[]} />
+              )}
+              {riassunto.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">{riassunto.senzaPrezzo.join(', ')}: prezzo da confermare, lo dice la segreteria.</Dettaglio>}
+            </>
+          ) : (
+            !riassunto.daPagare && <Dettaglio>La segreteria controlla il pagamento.</Dettaglio>
+          )}
+          <Tasto href={chiama} qui>
+            CHIAMA LA SEGRETERIA
+          </Tasto>
           <Tasto onClick={() => (figlio ? onAltroFiglio(v) : onEsci())}>{ultimaVolta}</Tasto>
           {figlio && <Dettaglio>I tuoi dati di genitore restano: non li riscrivi.</Dettaglio>}
           {figlio && <Tasto onClick={onEsci}>FINITO</Tasto>}
@@ -1075,7 +1121,13 @@ function Flusso({
           <Bollino>PROVA: RESTA SU QUESTO DISPOSITIVO</Bollino>
         </div>
       )}
-      <Avanzamento numero={passo} totale={tipi.length} titolo={nomiPassi[passo - 1] ?? ''} />
+      <Avanzamento rif={titoloRef} numero={passo} totale={tipi.length} titolo={nomiPassi[passo - 1] ?? ''} />
+      <div className="pad passo-chiama">
+        <span className="passo-chiama-testo">Un dubbio? Chiama la segreteria.</span>
+        <Tasto href={chiama} qui>
+          CHIAMA
+        </Tasto>
+      </div>
       {corpo()}
       <BarraPasso
         // Un passo nuovo riparte con l'elenco chiuso.

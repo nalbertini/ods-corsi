@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react'
 
 /**
  * I pezzi del design system ODS Corsi che servono alle iscrizioni: le stesse
@@ -412,9 +412,10 @@ export function DueTocchi({
  * adesso in tinta testo, gli altri `line`), il numero grande e «DI N» col nome
  * del passo. Fonte: docs/design-canvas/ods-design-system/Avanzamento.dc.html.
  */
-export function Avanzamento({ numero, totale, titolo }: { numero: number; totale: number; titolo: string }) {
+export function Avanzamento({ numero, totale, titolo, rif }: { numero: number; totale: number; titolo: string; rif?: RefObject<HTMLDivElement> }) {
   return (
-    <div className="avanza" role="group" aria-label={`Passo ${numero} di ${totale}: ${titolo}`}>
+    // tabIndex -1: a ogni cambio di passo il fuoco viene qui, e chi usa uno screen reader sente «Passo N di N: nome».
+    <div ref={rif} tabIndex={-1} className="avanza" role="group" aria-label={`Passo ${numero} di ${totale}: ${titolo}`}>
       <div className="avanza-segmenti" aria-hidden>
         {Array.from({ length: totale }, (_, i) => (
           <div key={i} className="avanza-segmento" data-stato={i + 1 < numero ? 'fatto' : i + 1 === numero ? 'adesso' : undefined} />

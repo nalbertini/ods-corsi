@@ -724,6 +724,9 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
      L'ombra non allarga l'area che scorre (niente barra orizzontale); il clip la tiene fuori da sopra e sotto. */
   box-shadow: 0 2px 0 100vmax var(--bg), 0 0 0 100vmax var(--line); clip-path: inset(0 -100vmax);
 }
+/* La riga CHIAMA sotto l'avanzamento: nel flusso, non sticky, così non copre né AVANTI né i campi. */
+.passo-chiama { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px; padding-bottom: 4px; }
+.passo-chiama-testo { font-size: 14px; line-height: 1.3; color: var(--sec); }
 /* Il totale sopra la barra: da bordo a bordo del telefono, cosa lo compone e la cifra grande. */
 .barra-totale { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: -12px -20px 0; padding: 10px 20px; background: var(--surface); border-bottom: 2px solid var(--line); }
 .barra-totale-righe { font-size: 14px; line-height: 1.35; color: var(--sec); }
