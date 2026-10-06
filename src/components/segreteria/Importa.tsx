@@ -15,6 +15,8 @@ import {
   chiaveRiga,
   righeBuone,
   scelteCorsi,
+  fraseResoconto,
+  righeDaSistemare,
   testoResoconto,
   type Colonne,
   type Fogli,
@@ -360,12 +362,13 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
       )}
 
       {passo === 3 && fatto && (
-        <div className="sg-riquadro" style={{ borderColor: fatto.a.daSistemare.length ? 'var(--giallo)' : 'var(--verde)', maxWidth: 640 }}>
+        <div className="sg-riquadro" style={{ borderColor: fatto.a.daSistemare.length || fatto.a.emailDiAltri.length ? 'var(--giallo)' : 'var(--verde)', maxWidth: 640 }}>
           <span className="ob" style={{ fontSize: 30, fontWeight: 700, letterSpacing: '0.04em' }}>{testoResoconto(fatto.a).split('\n')[0]}</span>
           <span style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--sec)' }}>
             {fatto.a.corsiNuovi.length} corsi nuovi, {fatto.a.ricorrenzeNuove} giorni di lezione, {fatto.a.iscrittiNuovi} iscritti nuovi e {fatto.a.iscrizioniNuove} iscrizioni.
             {fatto.pronto ? ` Il calendario è pronto fino al ${dataLunga(fatto.pronto)}.` : ''}
           </span>
+          {fatto.a.emailDiAltri.length > 0 && <span style={{ fontSize: 15, lineHeight: 1.5 }}>{fraseResoconto(fatto.a)}</span>}
           {fatto.a.anagraficheFuori && (
             <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--giallo-testo)' }}>
               Nascita, residenza e genitore sono rimasti fuori: {fatto.a.anagraficheFuori}. Gli iscritti sono entrati lo stesso; lanciato il file, si reimporta e arrivano anche quelli.
@@ -377,11 +380,28 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
                 {fatto.a.daSistemare.length} {fatto.a.daSistemare.length === 1 ? 'RIGA' : 'RIGHE'} DA SISTEMARE
               </span>
               <pre className="sg-mono" style={{ fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap', margin: 0 }}>
-                {testoResoconto(fatto.a).split('\n').slice(1).join('\n')}
+                {righeDaSistemare(fatto.a).join('\n')}
               </pre>
               <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--dim)' }}>
                 Queste righe non sono entrate. Correggile nel foglio, o scegli cosa fare, e reimporta: quello che c'è già non si duplica.
               </span>
+            </>
+          )}
+          {fatto.a.emailDiAltri.length > 0 && (
+            <>
+              <span className="num" style={{ fontSize: 14, fontWeight: 700, color: 'var(--giallo-testo)' }}>
+                {fatto.a.emailDiAltri.length} CON L'EMAIL DI CONTATTO
+              </span>
+              <pre className="sg-mono" style={{ fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap', margin: 0 }}>
+                {fatto.a.emailDiAltri.join('\n')}
+              </pre>
+              <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--dim)' }}>
+                Entrano senza email di accesso: l'email di accesso resta di chi ce l'aveva. Il contatto si vede nella scheda.
+              </span>
+            </>
+          )}
+          {(fatto.a.daSistemare.length > 0 || fatto.a.emailDiAltri.length > 0) && (
+            <>
               <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => void copia(testoResoconto(fatto.a))}>
                 {copiato ? 'COPIATO' : 'COPIA L\'ELENCO'}
               </button>

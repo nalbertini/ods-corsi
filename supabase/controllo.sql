@@ -201,6 +201,13 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('43-cerca-persone.sql', 'Aggiungi chi prova cerca fra tutte le persone, senza telefono',
     exists (select 1 from pg_proc where proname = 'cerca_persone'
             and pg_get_function_result(oid) = 'TABLE(persona_id uuid, nome text, cognome text, corsi text[])')),
+  ('44-email-contatto.sql', 'l''email di contatto delle persone, che può ripetersi',
+    exists (select 1 from information_schema.columns
+            where table_schema = 'public' and table_name = 'persone' and column_name = 'email_contatto')
+    and exists (select 1 from pg_constraint where conname = 'persone_email_contatto_forma')),
+  ('44-email-contatto.sql', 'accogliere una richiesta e unire due schede tengono conto del contatto',
+    exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%email_contatto%')
+    and exists (select 1 from dentro where nome = 'unisci_persone' and corpo like '%email_contatto%')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

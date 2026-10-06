@@ -309,3 +309,60 @@ set role authenticated;
 select atteso('unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000025', 'aaaaaaaa-0000-0000-0000-000000000026')$$), 'fatto');
 select atteso('la scheda unita è attiva', (select attiva::text from persone where id = 'aaaaaaaa-0000-0000-0000-000000000025'), 'true');
 reset role;
+
+\echo ''
+\echo '--- 11. email di accesso e di contatto (44-email-contatto.sql) ---'
+-- Chi resta tiene la sua email. Il contatto di chi resta vince, se manca
+-- prende quello di chi se ne va. L'email di chi se ne va, se chi resta non ne
+-- ha, la prende; se è diversa va nel contatto, quando c'è posto. Quando non c'è,
+-- l'unione non si ferma: l'app lo dice prima, e qui si vede cosa resta.
+insert into persone (id, nome, cognome, ruolo, email, email_contatto) values
+  -- a. due email diverse, nessun contatto: l'altra diventa il contatto
+  ('aaaaaaaa-0000-0000-0000-000000000027', 'Ada', 'Uno', 'iscritto', 'r1@ods.it', null),
+  ('aaaaaaaa-0000-0000-0000-000000000028', 'Ada', 'Uno', 'iscritto', 'v1@ods.it', null),
+  -- b. tutto pieno e diverso: resta quello di chi resta
+  ('aaaaaaaa-0000-0000-0000-000000000029', 'Bea', 'Due', 'iscritto', 'r2@ods.it', 'cr2@esempio.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000030', 'Bea', 'Due', 'iscritto', 'v2@ods.it', 'cv2@esempio.it'),
+  -- c. chi resta non ha niente: prende email e contatto di chi se ne va
+  ('aaaaaaaa-0000-0000-0000-000000000031', 'Cleo', 'Tre', 'iscritto', null, null),
+  ('aaaaaaaa-0000-0000-0000-000000000032', 'Cleo', 'Tre', 'iscritto', 'v3@ods.it', 'cv3@esempio.it'),
+  -- d. email diverse e un solo posto per il contatto: vince il contatto di chi se ne va
+  ('aaaaaaaa-0000-0000-0000-000000000033', 'Dino', 'Quattro', 'iscritto', 'r4@ods.it', null),
+  ('aaaaaaaa-0000-0000-0000-000000000034', 'Dino', 'Quattro', 'iscritto', 'v4@ods.it', 'cv4@esempio.it'),
+  -- e. chi se ne va ha solo il contatto
+  ('aaaaaaaa-0000-0000-0000-000000000035', 'Eva', 'Cinque', 'iscritto', 'r5@ods.it', null),
+  ('aaaaaaaa-0000-0000-0000-000000000036', 'Eva', 'Cinque', 'iscritto', null, 'cv5@esempio.it'),
+  -- f. chi resta ha solo il contatto, chi se ne va solo l'email
+  ('aaaaaaaa-0000-0000-0000-000000000037', 'Fio', 'Sei', 'iscritto', null, 'cr6@esempio.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000038', 'Fio', 'Sei', 'iscritto', 'v6@ods.it', null),
+  -- g. l'email di chi se ne va è già il contatto di chi resta: non si perde
+  ('aaaaaaaa-0000-0000-0000-000000000039', 'Gigi', 'Sette', 'iscritto', 'r7@ods.it', 'V7@ods.it'),
+  ('aaaaaaaa-0000-0000-0000-000000000040', 'Gigi', 'Sette', 'iscritto', 'v7@ods.it', null);
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('a. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000027', 'aaaaaaaa-0000-0000-0000-000000000028')$$), 'fatto');
+select atteso('a. chi resta tiene la sua email e l''altra diventa il contatto',
+  (select email || ' · ' || coalesce(email_contatto::text, '—') from persone where id = 'aaaaaaaa-0000-0000-0000-000000000027'), 'r1@ods.it · v1@ods.it');
+select atteso('b. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000029', 'aaaaaaaa-0000-0000-0000-000000000030')$$), 'fatto');
+select atteso('b. senza posto non si ferma: restano email e contatto di chi resta',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000029'), 'r2@ods.it · cr2@esempio.it');
+select atteso('c. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000031', 'aaaaaaaa-0000-0000-0000-000000000032')$$), 'fatto');
+select atteso('c. chi resta senza niente prende email e contatto',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000031'), 'v3@ods.it · cv3@esempio.it');
+select atteso('d. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000033', 'aaaaaaaa-0000-0000-0000-000000000034')$$), 'fatto');
+select atteso('d. il contatto di chi se ne va prende il posto libero',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000033'), 'r4@ods.it · cv4@esempio.it');
+select atteso('e. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000035', 'aaaaaaaa-0000-0000-0000-000000000036')$$), 'fatto');
+select atteso('e. il contatto di chi se ne va, se chi resta non ne ha',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000035'), 'r5@ods.it · cv5@esempio.it');
+select atteso('f. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000037', 'aaaaaaaa-0000-0000-0000-000000000038')$$), 'fatto');
+select atteso('f. l''email di chi se ne va diventa l''email, e il contatto di chi resta resta',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000037'), 'v6@ods.it · cr6@esempio.it');
+select atteso('g. unite', tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000039', 'aaaaaaaa-0000-0000-0000-000000000040')$$), 'fatto');
+select atteso('g. l''email di chi se ne va è già il contatto di chi resta: resta com''è',
+  (select email || ' · ' || email_contatto from persone where id = 'aaaaaaaa-0000-0000-0000-000000000039'), 'r7@ods.it · V7@ods.it');
+select atteso('e le schede che se ne vanno sono sparite', (select count(*)::text from persone where id::text in
+  ('aaaaaaaa-0000-0000-0000-000000000028', 'aaaaaaaa-0000-0000-0000-000000000030', 'aaaaaaaa-0000-0000-0000-000000000032',
+   'aaaaaaaa-0000-0000-0000-000000000034', 'aaaaaaaa-0000-0000-0000-000000000036', 'aaaaaaaa-0000-0000-0000-000000000038',
+   'aaaaaaaa-0000-0000-0000-000000000040')), '0');
+reset role;

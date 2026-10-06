@@ -162,3 +162,58 @@ set role anon;
 select pg_temp.atteso('anon non legge l''elenco', tenta($$select count(*) from attivita$$), 'NEGATO');
 select pg_temp.atteso('anon non lo scrive', tenta($$insert into attivita (nome) values ('Abusiva')$$), 'NEGATO');
 reset role;
+
+\echo ''
+\echo '--- EMAIL DI CONTATTO (44-email-contatto.sql) ---'
+-- Il contatto ha la stessa visibilità dell'email, né più né meno: lo scrive solo
+-- la segreteria; il personale vede le schede di tutti (persone_legge, 02-policy.sql)
+-- e quindi anche il contatto, come oggi l'email; il tablet, un iscritto (che vede
+-- solo sé) e chi non ha l'accesso no. Le due funzioni dicono «non lo legge» sia
+-- quando la colonna è negata sia quando di contatti non ne arriva nessuno.
+update persone set email_contatto = 'mamma@esempio.it' where id = 'aaaaaaaa-0000-0000-0000-000000000004';
+update persone set email_contatto = 'luca.casa@esempio.it' where id = 'aaaaaaaa-0000-0000-0000-000000000003';
+insert into auth.users (id, email) values ('66666666-6666-6666-6666-666666666666', 'tablet@sale.ods-corsi.it');
+insert into postazioni (id, nome, sala_id, utente_id) values
+  ('dddddddd-0000-0000-0000-000000000001', 'Tablet sala grande', 'bbbbbbbb-0000-0000-0000-000000000001', '66666666-6666-6666-6666-666666666666');
+create or replace function contatti_letti() returns text language plpgsql as $$
+declare n int;
+begin
+  select count(*) into n from persone where email_contatto is not null;
+  return case when n = 0 then 'non lo legge' else 'ne legge ' || n end;
+exception when insufficient_privilege then return 'non lo legge';
+end $$;
+create or replace function contatto_visto() returns text language plpgsql as $$
+declare n text;
+begin
+  select string_agg(coalesce(email_contatto::text, '—'), ',') into n from persone where id = 'aaaaaaaa-0000-0000-0000-000000000004';
+  return coalesce(n, 'non lo legge');
+exception when insufficient_privilege then return 'non lo legge';
+end $$;
+grant execute on function contatti_letti(), contatto_visto() to anon, authenticated;
+
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select pg_temp.atteso('la segreteria legge i contatti', contatti_letti(), 'ne legge 2');
+select pg_temp.atteso('la segreteria li scrive', tenta($$update persone set email_contatto = 'mamma.bianchi@esempio.it' where id = 'aaaaaaaa-0000-0000-0000-000000000004'$$), 'FATTO (1 righe)');
+reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select pg_temp.atteso('un istruttore li vede come vede le email', contatti_letti(), 'ne legge 2');
+select pg_temp.atteso('anche quello di Sara', contatto_visto(), 'mamma.bianchi@esempio.it');
+-- Negato o a vuoto, l'importante è che non cambi.
+select pg_temp.atteso('né lo scrive', (tenta($$update persone set email_contatto = 'abusivo@esempio.it' where id = 'aaaaaaaa-0000-0000-0000-000000000004'$$) in ('NEGATO', 'a vuoto (0 righe)'))::text, 'true');
+reset role;
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select pg_temp.atteso('un iscritto non legge il contatto di Sara', contatto_visto(), 'non lo legge');
+reset role;
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select pg_temp.atteso('il tablet di sala non legge i contatti', contatti_letti(), 'non lo legge');
+select pg_temp.atteso('né quello di Sara', contatto_visto(), 'non lo legge');
+reset role;
+select chi('');
+set role anon;
+select pg_temp.atteso('chi non ha l''accesso non legge i contatti', contatti_letti(), 'non lo legge');
+reset role;
+select pg_temp.atteso('il contatto di Sara è quello scritto dalla segreteria', (select email_contatto::text from persone where id = 'aaaaaaaa-0000-0000-0000-000000000004'), 'mamma.bianchi@esempio.it');

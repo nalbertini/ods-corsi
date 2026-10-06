@@ -46,7 +46,10 @@ aprono più, riaprire la richiesta.
 ## Decidere
 
 - **ACCOGLI** — la persona entra in elenco, iscritta ai corsi che ha scelto. Se
-  c'era già (stessa persona), non si crea un doppione. **APRI LA SCHEDA** porta
+  c'era già (stessa persona), non si crea un doppione. Se l'email della richiesta
+  è già di un'altra persona (un fratello, il genitore), la nuova scheda entra
+  senza email di accesso e con quell'indirizzo come **email di contatto**: lì
+  trovate l'indirizzo da richiamare. **APRI LA SCHEDA** porta
   alla sua scheda in [Iscritti](iscritti.md).
 - **RIFIUTA** — chi l'ha mandata **non viene avvisato**: va chiamato o scritto
   a mano.

@@ -166,7 +166,7 @@ console.log('\n4. le lezioni straordinarie')
 console.log('\n5. iscritti')
 {
   const id = await s.salvaPersona({ nome: 'Marta', cognome: 'Nuova', email: 'marta@esempio.it' })
-  ok('un\'email già usata no', await errore(() => s.salvaPersona({ nome: 'Altra', cognome: 'Marta', email: 'MARTA@esempio.it' })), 'Questa email è già di Marta Nuova')
+  ok('un\'email già usata no', await errore(() => s.salvaPersona({ nome: 'Altra', cognome: 'Marta', email: 'MARTA@esempio.it' })), 'Questo indirizzo è già di Marta Nuova: mettilo come email di contatto.')
   await s.iscrivi(id, 'lotta-2')
   const [ven] = await lotta2([9, 2])
   ok('iscritta da oggi: è nell\'appello di venerdì', (await app.dettaglio(ven.id)).elenco.some((p) => p.id === id), true)
@@ -572,13 +572,22 @@ console.log('\n12. l\'import: ricaricare il foglio, doppioni, resoconto, archivi
   await s.salvaPersonale({ nome: 'Ilaria', cognome: 'Istruttrice', email: 'istr.import@esempio.it', ruolo: 'istruttore' })
   await s.salvaPersonale({ nome: 'Sara', cognome: 'Segreteria', email: 'seg.import@esempio.it', ruolo: 'staff' })
   const f4 = await excel(['Zeno;Primo;zeno@esempio.it;;Judo 2', 'Ugo;Istr;ISTR.import@esempio.it;;Judo 2', 'Vera;Secondo;vera@esempio.it;;Judo 2', 'Sandro;Seg;seg.import@esempio.it;;Judo 2', 'Wanda;Terza;wanda@esempio.it;;Judo 2'])
-  await prova('l\'email di un istruttore o della segreteria: da sistemare, le altre righe sono nuove', async () => il.controllaRighe(f4, await situazione()).righe.map((r) => [r.riga, r.esito, r.motivo]),
-    [[2, 'nuova', undefined], [3, 'da_sistemare', 'è già un istruttore o segreteria'], [4, 'nuova', undefined], [5, 'da_sistemare', 'è già un istruttore o segreteria'], [6, 'nuova', undefined]])
+  // Dall'email di contatto (44-email-contatto.sql) l'email del personale non è più un blocco: l'iscritto entra con l'email vuota e quell'indirizzo come contatto.
+  await prova('l\'email di un istruttore o della segreteria: entra lo stesso, nessuna riga da sistemare', async () => il.controllaRighe(f4, await situazione()).righe.map((r) => [r.riga, r.esito, r.motivo]),
+    [[2, 'nuova', undefined], [3, 'nuova', undefined], [4, 'nuova', undefined], [5, 'nuova', undefined], [6, 'nuova', undefined]])
+  await prova('e il controllo dice che l\'indirizzo va nel contatto', async () => il.controllaRighe(f4, await situazione()).righe.map((r) => r.avvisi.some((x) => /contatto/.test(x))), [false, true, false, true, false])
   n = await quante()
   const senzaFermarsi = async (f) => { try { return await f() } catch (e) { ok('l\'import non si ferma per una riga', `ERRORE: ${e.message}`, 'nessun errore'); return { daSistemare: [] } } }
   a = await senzaFermarsi(() => m.importa(s, f4, () => {}))
-  ok('importando entrano le altre, ma non chi ha l\'email del personale', [(await quante()) - n, !!(await persona('Zeno', 'Primo')), !!(await persona('Wanda', 'Terza')), !!(await persona('Ugo', 'Istr'))], [3, true, true, false])
-  await prova('e il resoconto dice quali righe e perché', () => a.daSistemare.map((x) => [x.riga, x.nome, x.motivo]), [[3, 'Ugo Istr', 'è già un istruttore o segreteria'], [5, 'Sandro Seg', 'è già un istruttore o segreteria']])
+  ok('importando entrano tutte e cinque, anche chi ha l\'email del personale', [(await quante()) - n, !!(await persona('Zeno', 'Primo')), !!(await persona('Wanda', 'Terza')), !!(await persona('Ugo', 'Istr'))], [5, true, true, true])
+  await prova('Ugo e Sandro: email vuota, e l\'indirizzo del personale come contatto', async () => [await persona('Ugo', 'Istr'), await persona('Sandro', 'Seg')].map((p) => [p.email ?? null, p.emailContatto ?? null]),
+    [[null, 'istr.import@esempio.it'], [null, 'seg.import@esempio.it']])
+  await prova('l\'istruttrice e la segreteria restano come sono', async () => (await s.personale()).filter((q) => ['Ilaria', 'Sara'].includes(q.nome) && ['Istruttrice', 'Segreteria'].includes(q.cognome)).map((q) => [q.nome, q.email]).sort(),
+    [['Ilaria', 'istr.import@esempio.it'], ['Sara', 'seg.import@esempio.it']])
+  await prova('e il resoconto non ha righe da sistemare', () => a.daSistemare, [])
+  n = await quante()
+  a = await senzaFermarsi(() => m.importa(s, f4, () => {}))
+  ok('rifatto: nessuno si duplica, nemmeno chi è entrato col contatto', [a.iscrittiNuovi, (await quante()) - n], [0, 0])
 
   // 5. Un errore a metà elenco non ferma le righe dopo.
   const rotto = {

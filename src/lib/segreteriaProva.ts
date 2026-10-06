@@ -1,10 +1,10 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, FileSeg, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
-import { attivitaCambiata, cosaNonVaAnagrafica, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, contattoNonValido, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
-import type { IndiziDoppioni } from './doppioni'
+import { contattoDopoUnione, type IndiziDoppioni } from './doppioni'
 import { archivio, idRicorrenza, nomeDi, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
@@ -513,6 +513,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             nome: p.nome,
             cognome: p.cognome,
             email: p.email,
+            emailContatto: p.emailContatto,
             telefono: p.telefono,
             attiva: p.attiva,
             creataIl: p.creataIl,
@@ -563,18 +564,21 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const cognome = nomeProprio(dati.cognome)
       if (!nome || !cognome) throw new Error('Servono nome e cognome')
       const email = dati.email?.trim() || undefined
+      const emailContatto = dati.emailContatto?.trim() || undefined
       const telefono = dati.telefono?.trim() || undefined
-      // Come l'indice unico del database: due persone, due email.
+      // Come l'indice unico del database: due persone, due email; il contatto invece può ripetersi.
       const altro = email && a().persone.find((p) => p.id !== dati.id && p.email?.toLowerCase() === email.toLowerCase())
-      if (altro) throw new Error(`Questa email è già di ${nomeDi(altro)}`)
+      if (altro) throw new Error(emailGiaDi(nomeDi(altro)))
+      const guaio = contattoNonValido(emailContatto)
+      if (guaio) throw new Error(guaio)
       if (!dati.id) {
         const id = `p-nuovo-${unico()}`
-        a().persone = [...a().persone, { id, nome, cognome, email, telefono, ruolo: 'iscritto', attiva: true, creataIl: oggi() }]
+        a().persone = [...a().persone, { id, nome, cognome, email, emailContatto, telefono, ruolo: 'iscritto', attiva: true, creataIl: oggi() }]
         salva()
         return id
       }
       persona(dati.id)
-      a().persone = a().persone.map((p) => (p.id === dati.id ? { ...p, nome, cognome, email, telefono } : p))
+      a().persone = a().persone.map((p) => (p.id === dati.id ? { ...p, nome, cognome, email, emailContatto, telefono } : p))
       salva()
       return dati.id
     },
@@ -1059,6 +1063,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const unita: PersonaProva = {
         ...r,
         email: r.email ?? v.email,
+        // Come `unisci_persone`: gli indirizzi che non trovano posto si perdono, e `indirizziPersi` lo dice prima.
+        emailContatto: contattoDopoUnione(r, v),
         telefono: r.telefono ?? v.telefono,
         // Attiva se una delle due lo era: chi trova un doppione spesso l'ha già disattivato.
         attiva: r.attiva || v.attiva,

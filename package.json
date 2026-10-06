@@ -33,6 +33,7 @@
     "prova:strumenti": "node scripts/prova-strumenti.mjs",
     "prova:discipline": "node scripts/prova-discipline.mjs",
     "prova:timer-istruttori": "node scripts/prova-timer-istruttori.mjs",
+    "prova:email-contatto": "node scripts/prova-email-contatto.mjs",
     "prova:sql": "bash scripts/prova-sql.sh"
   },
   "dependencies": {

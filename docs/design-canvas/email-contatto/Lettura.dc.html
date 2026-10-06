@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Scheda iscritto in LETTURA: EMAIL vuota e contatto pieno non sono un errore (nessun rosso); sotto, «STESSO CONTATTO DI» elenca i nomi di chi usa lo stesso indirizzo, come email o come contatto (`.sg-iscrizione`, senza link: non sono doppioni). Fatto copiando Pagina.dc.html; dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="ISCRITTI" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" tema="scuro" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">ROSSI LUCA</h1>
+      <span style="font-size: 14px; color: #8c8c88">ISCRITTI</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 880px">
+      <dc-import name="Campo" contesto="segreteria" etichetta="EMAIL" valore="—"  tema="scuro" hint-size="100%,72px"></dc-import>
+      <dc-import name="Campo" contesto="segreteria" etichetta="EMAIL DI CONTATTO" valore="giulia.rossi@esempio.it"  tema="scuro" hint-size="100%,72px"></dc-import>
+      <dc-import name="Campo" contesto="segreteria" etichetta="TELEFONO" valore="333 123 4567"  tema="scuro" hint-size="100%,72px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; max-width: 880px">
+      <dc-import name="Titoletto" label="STESSO CONTATTO DI" dentro="{{ true }}" tema="scuro" hint-size="100%,32px"></dc-import>
+      <span style="font-size: 14px; color: #8c8c88">Parenti, non doppioni: usano lo stesso indirizzo.</span>
+      <div style="display: flex; align-items: center; min-height: 48px; padding: 0 12px; background: #121212; border: 2px solid #333333; font-size: 15px; font-weight: 600">Luca Neri</div>
+      <div style="display: flex; align-items: center; min-height: 48px; padding: 0 12px; background: #121212; border: 2px solid #333333; font-size: 15px; font-weight: 600">Marta Neri</div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

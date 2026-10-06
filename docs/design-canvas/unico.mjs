@@ -21,6 +21,7 @@ const SEZIONI = [
   { id: 'tablet-sala', nome: 'Tablet di sala', cartella: 'tablet-sala' },
   { id: 'iscrizione', nome: 'Registrazione utente', cartella: 'iscrizione' },
   { id: 'importa-fogli', nome: 'Importa da Excel', cartella: 'import-fogli' },
+  { id: 'email-contatto', nome: 'Email di contatto · proposta', cartella: 'email-contatto' },
   { id: 'timer-desktop', nome: 'Timer desktop · proposte', cartella: 'timer-desktop' },
 ]
 

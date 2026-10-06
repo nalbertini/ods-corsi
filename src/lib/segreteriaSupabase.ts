@@ -3,7 +3,7 @@ import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
-import { attivitaCambiata, cosaNonVaAnagrafica, cosaNonVaAttivita, mancaAttivita, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, mancaAttivita, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
@@ -209,6 +209,10 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // La categoria delle segnalazioni arriva con 38-segnalazioni-categoria.sql.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /categoria/.test(e.message ?? ''))
     return new Error('Le categorie delle segnalazioni non sono ancora attive sul database: va lanciato 38-segnalazioni-categoria.sql')
+  // L'email di contatto arriva con 44-email-contatto.sql, e ha la stessa forma dell'email.
+  if ((e?.code === '42703' || e?.code === 'PGRST204') && /email_contatto/.test(e.message ?? ''))
+    return new Error('L’email di contatto non è ancora attiva sul database: va lanciato 44-email-contatto.sql')
+  if (e?.code === '23514' && /email_contatto/.test(e.message ?? '')) return new Error(CONTATTO_SBAGLIATO)
   if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
@@ -667,22 +671,28 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           for (const q of quoteDi([{ ...x, voci: x.voci } as unknown as Ricevuta])) metti(x.persona_id, q)
         return perPersona
       })()
-      const campi = 'id, nome, cognome, email, telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )'
+      const campi = (contatto: boolean) => `id, nome, cognome, email, ${contatto ? 'email_contatto, ' : ''}telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )`
       const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'
-      const leggi = (schede: string | null) =>
+      const leggi = (schede: string | null, contatto: boolean) =>
         db
           .from('persone')
-          .select(schede ? `${campi}, schede_iscritti!persona_id ( ${schede} )` : campi)
+          .select(schede ? `${campi(contatto)}, schede_iscritti!persona_id ( ${schede} )` : campi(contatto))
           .eq('ruolo', 'iscritto')
           .order('cognome')
-      // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
-      let r0 = await leggi(`${scheda}, documento_in_segreteria`)
-      // 07-certificati-pagamenti.sql di prima del documento su carta: senza la colonna nuova.
-      if (r0.error?.code === '42703') r0 = await leggi(scheda)
-      // Un database dove 07-certificati-pagamenti.sql non è ancora passato: l'elenco si vede lo stesso.
-      if (r0.error?.code === 'PGRST200') r0 = await leggi(null)
+      const leggiTutto = async (contatto: boolean) => {
+        // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
+        let r = await leggi(`${scheda}, documento_in_segreteria`, contatto)
+        // 07-certificati-pagamenti.sql di prima del documento su carta: senza la colonna nuova.
+        if (r.error?.code === '42703' && !/email_contatto/.test(r.error.message ?? '')) r = await leggi(scheda, contatto)
+        // Un database dove 07-certificati-pagamenti.sql non è ancora passato: l'elenco si vede lo stesso.
+        if (r.error?.code === 'PGRST200') r = await leggi(null, contatto)
+        return r
+      }
+      let r0 = await leggiTutto(true)
+      // Un database dove 44-email-contatto.sql non è ancora passato: l'elenco si vede lo stesso, senza contatti.
+      if (r0.error?.code === '42703' && /email_contatto/.test(r0.error.message ?? '')) r0 = await leggiTutto(false)
       const righe = ok(r0) as unknown as Array<{
-        id: string; nome: string; cognome: string; email: string | null; telefono: string | null; attiva: boolean; creata_il: string
+        id: string; nome: string; cognome: string; email: string | null; email_contatto?: string | null; telefono: string | null; attiva: boolean; creata_il: string
         iscrizioni: Array<{ corso_id: string; dal: string; al: string | null }>
         schede_iscritti?: Scheda | Scheda[] | null
       }>
@@ -695,6 +705,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           nome: r.nome,
           cognome: r.cognome,
           email: r.email ?? undefined,
+          emailContatto: r.email_contatto ?? undefined,
           telefono: r.telefono ?? undefined,
           attiva: r.attiva,
           creataIl: r.creata_il.slice(0, 10),
@@ -737,11 +748,24 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async salvaPersona(p) {
       if (!p.nome.trim() || !p.cognome.trim()) throw new Error('Servono nome e cognome')
       const riga = { nome: nomeProprio(p.nome), cognome: nomeProprio(p.cognome), email: p.email?.trim() || null, telefono: p.telefono?.trim() || null }
+      const contatto = p.emailContatto?.trim() || null
+      const scrivi = (campi: Record<string, string | null>) =>
+        p.id ? db.from('persone').update(campi).eq('id', p.id) : db.from('persone').insert({ ...campi, ruolo: 'iscritto' }).select('id').single()
+      let r = await scrivi({ ...riga, email_contatto: contatto })
+      // Un database dove 44-email-contatto.sql non è ancora passato: senza un contatto da salvare si salva come prima.
+      if (!contatto && r.error?.code === 'PGRST204' && /email_contatto/.test(r.error.message ?? '')) r = await scrivi(riga)
+      // L'email di accesso è di una persona sola: si dice di chi, e che per la famiglia c'è il contatto.
+      if (r.error?.code === '23505' && riga.email) {
+        // `as`: il client non conosce le colonne scelte con `select`.
+        const di = (await db.from('persone').select('nome, cognome').eq('email', riga.email).maybeSingle()).data as { nome: string; cognome: string } | null
+        if (di) throw new Error(emailGiaDi(`${di.nome} ${di.cognome}`))
+      }
       if (p.id) {
-        ok(await db.from('persone').update(riga).eq('id', p.id))
+        ok(r)
         return p.id
       }
-      return (ok(await db.from('persone').insert({ ...riga, ruolo: 'iscritto' }).select('id').single()) as { id: string }).id
+      // `as`: l'insert con `select('id')` rende la riga nuova, e il client non conosce le colonne scelte.
+      return (ok(r) as { id: string }).id
     },
 
     // Il nucleo familiare c'è solo in prova, per ora (vedi `nucleo.ts`).

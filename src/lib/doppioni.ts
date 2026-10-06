@@ -32,6 +32,7 @@ const CAMPI = [
   ['nome', 'Nome'],
   ['cognome', 'Cognome'],
   ['email', 'Email'],
+  ['emailContatto', 'Email di contatto'],
   ['telefono', 'Telefono'],
 ] as const
 
@@ -142,4 +143,37 @@ export function altraDellaCoppia(coppie: [PersonaSeg, PersonaSeg][], id: string)
 export function segnateCon(i: IndiziDoppioni, id: string, tutte: PersonaSeg[]): PersonaSeg[] {
   const altre = new Set(i.nonDoppioni.filter((c) => c.includes(id)).map(([a, b]) => (a === id ? b : a)))
   return tutte.filter((p) => altre.has(p.id)).sort((a, b) => `${a.cognome} ${a.nome}`.localeCompare(`${b.cognome} ${b.nome}`, 'it'))
+}
+
+const stessa = (a?: string, b?: string) => !!a && !!b && a.toLowerCase() === b.toLowerCase()
+
+/**
+ * Chi usa lo stesso indirizzo di contatto, per cognome e nome, senza lei: i
+ * parenti. L'indirizzo conta come contatto o come email, in tutte e due le
+ * direzioni: la famiglia con un solo indirizzo ce l'ha come email di uno e
+ * come contatto degli altri. Non è un indizio di doppione.
+ */
+export function stessoContatto(persona: PersonaSeg, tutte: PersonaSeg[]): string[] {
+  return tutte
+    .filter((p) => p.id !== persona.id && (stessa(p.emailContatto, persona.emailContatto) || stessa(p.email, persona.emailContatto) || stessa(p.emailContatto, persona.email)))
+    .sort((a, b) => `${a.cognome} ${a.nome}`.localeCompare(`${b.cognome} ${b.nome}`, 'it'))
+    .map((p) => `${p.nome} ${p.cognome}`)
+}
+
+/**
+ * Gli indirizzi di chi se ne va che unendo non trovano posto: la scheda che
+ * resta tiene la sua email e il suo contatto, e prende quelli dell'altra solo
+ * dove manca (come `unisci_persone`, 44-email-contatto.sql). La segreteria
+ * lo legge prima di unire.
+ */
+type Indirizzi = Pick<PersonaSeg, 'email' | 'emailContatto'>
+
+/** Il contatto della scheda unita: il suo, se no quello dell'altra, se no l'altra email (se chi resta ne ha una). */
+export const contattoDopoUnione = (resta: Indirizzi, via: Indirizzi): string | undefined =>
+  resta.emailContatto ?? via.emailContatto ?? (resta.email && via.email && !stessa(resta.email, via.email) ? via.email : undefined)
+
+export function indirizziPersi(resta: PersonaSeg, via: PersonaSeg): string[] {
+  const email = resta.email ?? via.email
+  const contatto = contattoDopoUnione(resta, via)
+  return [via.email, via.emailContatto].filter((x): x is string => !!x && !stessa(x, email) && !stessa(x, contatto))
 }

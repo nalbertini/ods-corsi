@@ -112,9 +112,18 @@ interface IscrittoFoglio {
   riga: number
   /** Da quando è iscritto: il giorno della risposta nel modulo, `AAAA-MM-GG`. Senza, vale oggi. */
   iscrittoIl?: string
-  /** L'email era già di un altro nel foglio: entra senza, col telefono. */
-  senzaEmail?: boolean
+  /**
+   * L'email era già di un altro (il fratello, nel foglio): non è la sua di
+   * accesso, entra senza e la tiene come contatto (`44-email-contatto.sql`).
+   */
+  emailContatto?: string
+  /** Di chi era quell'email nel foglio, per dirlo nel resoconto. */
+  contattoDi?: string
 }
+
+/** Chi ha già quell'email in palestra: un iscritto, un istruttore o la segreteria. */
+const diChiEmail = (email: string | undefined, persone: PersonaSeg[], personale: PersonaleSeg[]) =>
+  email ? [...persone, ...personale].find((q) => q.email?.toLowerCase() === email) : undefined
 
 export interface Fogli {
   corsi: CorsoFoglio[]
@@ -158,6 +167,7 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
   const noti = new Set([...corsi.keys(), ...corsiGiaDentro.map(piatto)])
   const iscritti = new Map<string, IscrittoFoglio>()
   const perEmail = new Map<string, { chi: string; nome: string; riga: number }>()
+  const notate = new Set<string>()
   let righeIscritti = testoIscritti ? leggiCsv(testoIscritti) : []
   // Il foglio delle risposte del modulo, caricato nella casella di iscritti.csv, non ha le colonne
   // nome e cognome: una riga sola lo dice, invece di una per ogni persona col nome «undefined».
@@ -176,19 +186,23 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
     if (r.corso && !noti.has(piatto(r.corso))) return saltate.push({ foglio: 'iscritti.csv', riga, nome: `${r.nome} ${r.cognome}`, motivo: `Il corso «${r.corso}» non è fra i corsi` })
     const chi = `${compatto(r.nome)} ${compatto(r.cognome)}`
     let email = r.email?.toLowerCase() || undefined
-    let senzaEmail = false
+    let emailContatto: string | undefined
+    let contattoDi: string | undefined
     if (email) {
       const prima = perEmail.get(email)
-      // Due fratelli con l'email del genitore: entrano tutti e due, il secondo senza.
+      // Due fratelli con l'email del genitore: entrano tutti e due, il secondo senza email di accesso e con quella come contatto.
       if (prima && prima.chi !== chi) {
-        note.push({ foglio: 'iscritti.csv', riga, motivo: `${r.nome} ${r.cognome}: stessa email di ${prima.nome} (riga ${prima.riga}), entra senza email, col telefono` })
+        // Una persona su più righe (un corso per riga) ha una nota sola.
+        if (!notate.has(chi)) note.push({ foglio: 'iscritti.csv', riga, motivo: `${r.nome} ${r.cognome}: ${email} è già di ${prima.nome} (riga ${prima.riga}): la metto come email di contatto, senza email di accesso` })
+        notate.add(chi)
+        emailContatto = email
+        contattoDi = prima.nome
         email = undefined
-        senzaEmail = true
       } else perEmail.set(email, { chi, nome: `${r.nome} ${r.cognome}`, riga })
     }
     // L'email, quando c'è, è l'unica cosa che distingue davvero due omonimi.
     const k = email ?? chi
-    const x = iscritti.get(k) ?? { nome: r.nome, cognome: r.cognome, email, telefono: r.telefono || undefined, corsi: [], foglio: 'iscritti.csv', riga, ...(senzaEmail ? { senzaEmail } : {}) }
+    const x = iscritti.get(k) ?? { nome: r.nome, cognome: r.cognome, email, telefono: r.telefono || undefined, corsi: [], foglio: 'iscritti.csv', riga, ...(emailContatto ? { emailContatto, contattoDi } : {}) }
     if (r.corso && !x.corsi.some((c) => piatto(c) === piatto(r.corso))) x.corsi.push(r.corso)
     iscritti.set(k, x)
   })
@@ -223,7 +237,7 @@ export interface Anteprima {
   /** Gli iscritti con nascita, residenza o genitore da scrivere. */
   anagrafiche: number
   avvisi: string[]
-  /** Gli iscritti che entrano senza email, perché la loro è già di un altro. */
+  /** Gli iscritti che entrano senza email di accesso, perché la loro è già di un altro: una riga ciascuno, con la riga del foglio e di chi era. */
   emailDiAltri: string[]
   /** Dopo l'import: perché nascita, residenza e genitore non sono entrati. */
   anagraficheFuori?: string
@@ -310,14 +324,15 @@ export function anteprima(f: Fogli, s: Situazione, scelte: Scelte = {}): Antepri
   const oggi = chiaveGiorno(new Date())
   for (const x of f.iscritti) {
     const sc = scelte[chiaveRiga(x)]
-    const c = riconosci(x, s.persone, s.personale, sc)
-    // Chi aspetta una scelta o ha l'email del personale non entra: non si conta.
+    const c = riconosci(x, s.persone, sc)
+    // Chi aspetta una scelta non entra: non si conta.
     if (c.esito === 'da_sistemare') continue
     if (c.esito === 'nuova') {
       iscrittiNuovi++
       iscrizioniNuove += x.corsi.length
-      const diChi = x.email ? s.persone.find((q) => q.email?.toLowerCase() === x.email) : undefined
-      if (diChi) emailDiAltri.push(`${x.nome} ${x.cognome}: l'email ${x.email} è già di ${diChi.nome} ${diChi.cognome}, entra come persona a sé, senza email`)
+      const diChi = diChiEmail(x.email, s.persone, s.personale)
+      const [indirizzo, di] = x.emailContatto ? [x.emailContatto, x.contattoDi] : [x.email, diChi && `${diChi.nome} ${diChi.cognome}`]
+      if (indirizzo && di) emailDiAltri.push(`riga ${x.riga}: ${x.nome} ${x.cognome}, contatto ${indirizzo} (email di ${di})`)
       continue
     }
     if (!c.p.attiva && sc?.archiviato !== 'riattiva') continue
@@ -341,6 +356,9 @@ function trovaPersona(x: IscrittoFoglio, persone: PersonaSeg[]) {
   // L'email dice chi è solo se torna anche il nome: quella del genitore è
   // uguale per due fratelli, e il secondo non deve finire sulla scheda del primo.
   if (perEmail && stessoNome(perEmail)) return perEmail
+  // Chi era entrato con quell'indirizzo come contatto (l'email era di un altro): rifacendo il foglio non si duplica.
+  const perContatto = x.email ? persone.find((p) => p.emailContatto?.toLowerCase() === x.email && stessoNome(p)) : undefined
+  if (perContatto) return perContatto
   // Dal foglio Excel un'email nuova è una persona nuova, anche se omonima.
   if (x.email && !perEmail && !x.soloStessoNome) return undefined
   return persone.find((p) => !p.email && stessoNome(p)) ?? persone.find(stessoNome)
@@ -364,11 +382,9 @@ const paroleOrdinate = (nome: string, cognome: string) => paroleDelNome(`${nome}
  * va guardata prima. Nome e cognome scambiati («Prudente Manuel» per «Manuel
  * Prudente») non si danno per nuovi in silenzio: la segreteria sceglie.
  */
-function riconosci(x: IscrittoFoglio, persone: PersonaSeg[], personale: PersonaleSeg[], scelta?: Scelte[string]): Chi {
+function riconosci(x: IscrittoFoglio, persone: PersonaSeg[], scelta?: Scelte[string]): Chi {
   const p = trovaPersona(x, persone)
   if (p) return { esito: 'in_palestra', p }
-  // L'email di un istruttore o della segreteria non può essere anche di un iscritto.
-  if (x.email && personale.some((q) => q.email?.toLowerCase() === x.email)) return { esito: 'da_sistemare', motivo: 'è già un istruttore o segreteria' }
   const doppione = persone.find(
     (q) =>
       (compatto(q.nome) === compatto(x.cognome) && compatto(q.cognome) === compatto(x.nome)) ||
@@ -404,7 +420,7 @@ export interface RigaControllo {
   archiviato?: boolean
   /** Già in palestra con iscrizioni finite a questi corsi: la scelta è RIAPRI o LASCIA. */
   terminate?: string[]
-  /** Aspetta una scelta della segreteria, o è un'email del personale da cambiare nel foglio. */
+  /** Aspetta una scelta della segreteria. */
   chiedeScelta: boolean
 }
 
@@ -416,12 +432,12 @@ export function controllaRighe(f: Fogli, s: Situazione): { righe: RigaControllo[
     .filter((x) => x.foglio !== 'corsi.csv')
     .map((x) => ({ foglio: x.foglio, riga: x.riga, nome: x.nome ?? '', esito: 'da_sistemare' as const, motivo: x.motivo, avvisi: [], chiedeScelta: false }))
   for (const x of f.iscritti) {
-    const c = riconosci(x, s.persone, s.personale)
+    const c = riconosci(x, s.persone)
     const avvisi: string[] = []
     let archiviato = false
     let ferme: string[] = []
-    if (x.senzaEmail || (c.esito === 'nuova' && x.email && s.persone.some((q) => q.email?.toLowerCase() === x.email))) {
-      avvisi.push('entra senza email, col telefono: la sua è già di un altro')
+    if (x.emailContatto || (c.esito === 'nuova' && diChiEmail(x.email, s.persone, s.personale))) {
+      avvisi.push('la sua email è già di un altro: entra senza email di accesso, e la tiene come email di contatto')
     }
     if (c.esito === 'in_palestra') {
       archiviato = !c.p.attiva
@@ -500,11 +516,25 @@ export function messaggioRiga(e: unknown): string {
   return 'la riga non è entrata: rilancia, e se si ripete scrivilo in SEGNALAZIONI'
 }
 
-/** Il resoconto di fine import, da leggere e da copiare per correggere il foglio. */
-export function testoResoconto(a: { daSistemare: RigaSistemare[] }): string {
-  const n = a.daSistemare.length
+/** Le righe non entrate, una per riga di testo. */
+export const righeDaSistemare = (a: { daSistemare: RigaSistemare[] }) => a.daSistemare.map((r) => `${r.foglio}, riga ${r.riga}: ${r.nome} — ${r.motivo}`)
+
+/**
+ * Il resoconto di fine import, da leggere e da copiare per correggere il foglio.
+ * Chi è entrato con l'email di un altro come contatto è da controllare, non da sistemare.
+ */
+export function testoResoconto(a: { daSistemare: RigaSistemare[]; emailDiAltri?: string[] }): string {
+  const contatti = a.emailDiAltri ?? []
+  const n = a.daSistemare.length + contatti.length
   if (!n) return 'FATTO'
-  return [`FATTO, ${n} ${n === 1 ? 'riga' : 'righe'} da sistemare`, ...a.daSistemare.map((r) => `${r.foglio}, riga ${r.riga}: ${r.nome} — ${r.motivo}`)].join('\n')
+  const come = contatti.length ? 'controllare' : 'sistemare'
+  return [`FATTO, ${n} ${n === 1 ? 'riga' : 'righe'} da ${come}`, ...righeDaSistemare(a), ...contatti].join('\n')
+}
+
+/** La frase sotto il titolo del resoconto, quando qualcuno è entrato con l'email di un altro come contatto. */
+export function fraseResoconto(a: { iscrittiNuovi: number; emailDiAltri: string[] }): string {
+  const m = a.emailDiAltri.length
+  return `${a.iscrittiNuovi === 1 ? 'È entrato 1 iscritto' : `Sono entrati ${a.iscrittiNuovi} iscritti`}. Per ${m} l'email era già di un'altra persona: ora è ${m === 1 ? 'la sua' : 'la loro'} email di contatto.`
 }
 
 /**
@@ -565,7 +595,7 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
     const nome = `${x.nome} ${x.cognome}`
     const sc = scelte[chiaveRiga(x)]
     try {
-      const c = riconosci(x, persone, s.personale, sc)
+      const c = riconosci(x, persone, sc)
       if (c.esito === 'da_sistemare') {
         daSistemare.push({ foglio: x.foglio, riga, nome, motivo: c.motivo })
         continue
@@ -582,11 +612,13 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
           await d.attivaPersona(p.id, true)
         }
       } else {
-        // Un'email è di una persona sola: se è già di un altro (il fratello, dal
-        // modulo), entra senza, col telefono.
-        const email = x.email && !persone.some((q) => q.email?.toLowerCase() === x.email) ? x.email : undefined
-        const id = await d.salvaPersona({ nome: x.nome, cognome: x.cognome, email, telefono: x.telefono })
-        p = { id, nome: x.nome, cognome: x.cognome, email, attiva: true, creataIl: '', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' } }
+        // L'email di accesso è di una persona sola: se è già di un altro (il
+        // fratello, un istruttore), entra senza e la tiene come contatto.
+        const presa = !!diChiEmail(x.email, persone, s.personale)
+        const email = presa ? undefined : x.email
+        const emailContatto = x.emailContatto ?? (presa ? x.email : undefined)
+        const id = await d.salvaPersona({ nome: x.nome, cognome: x.cognome, email, emailContatto, telefono: x.telefono })
+        p = { id, nome: x.nome, cognome: x.cognome, email, emailContatto, attiva: true, creataIl: '', iscrizioni: [], certificato: { conFile: false }, documento: false, pagamento: { stato: 'da_pagare' } }
         persone.push(p)
       }
       const ferme: string[] = []
@@ -841,6 +873,7 @@ export function leggiRisposte(
   }
   const iscritti = new Map<string, IscrittoFoglio>()
   const emailDi = new Map<string, string>()
+  const emailNome = new Map<string, string>()
   const genitoreDi = new Map<IscrittoFoglio, string>()
   const rigaDi = new Map<IscrittoFoglio, number>()
   let righe = 0
@@ -867,15 +900,23 @@ export function leggiRisposte(
       note.push({ foglio: 'risposte', riga, motivo: `${nome} ${cognome}: l'email «${email}» non sembra giusta, entra senza` })
       email = undefined
     }
+    let emailContatto: string | undefined
+    let contattoDi: string | undefined
     if (email && emailDi.has(email) && emailDi.get(email) !== chi) {
-      note.push({ foglio: 'risposte', riga, motivo: `${nome} ${cognome}: stessa email di un altro iscritto (della stessa famiglia?), entra senza email, col telefono` })
+      contattoDi = emailNome.get(email)
+      note.push({ foglio: 'risposte', riga, motivo: `${nome} ${cognome}: ${email} è già di un altro iscritto (della stessa famiglia?): la metto come email di contatto, senza email di accesso` })
+      emailContatto = email
       email = undefined
     }
-    if (email) emailDi.set(email, chi)
+    if (email) {
+      emailDi.set(email, chi)
+      emailNome.set(email, `${nome} ${cognome}`)
+    }
 
-    const x = iscritti.get(chi) ?? { nome, cognome, email, telefono: cella(r, 'telefono') || undefined, corsi: [], soloStessoNome: true, foglio: 'risposte', riga }
+    const x = iscritti.get(chi) ?? { nome, cognome, email, telefono: cella(r, 'telefono') || undefined, corsi: [], soloStessoNome: true, foglio: 'risposte', riga, ...(emailContatto ? { emailContatto, contattoDi } : {}) }
     // Chi ha mandato il modulo due volte: vale l'ultima email e l'ultimo telefono, i corsi si sommano.
     if (email) x.email = email
+    if (emailContatto) x.emailContatto = emailContatto
     if (cella(r, 'telefono')) x.telefono = cella(r, 'telefono')
     // Chi ha mandato il modulo più volte è iscritto dalla prima risposta. Con la data illeggibile vale oggi.
     const quando = leggiData(cella(r, 'dataRisposta').split(/[\sT]/)[0])
