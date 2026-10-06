@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.47.0 — 6 ottobre 2026
+
+### Novità
+
+- Nell'iscrizione, il corso e il pagamento hanno ciascuno il suo passo, e il modulo e i documenti pure
+
 ## 0.46.1 — 6 ottobre 2026
 
 ### Modificato
