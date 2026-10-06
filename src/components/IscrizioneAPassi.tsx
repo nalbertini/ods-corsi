@@ -938,11 +938,11 @@ function Flusso({
           </div>
           <Titoletto>QUANTO PAGHI</Titoletto>
           <div className="pad stack passo-dopo">
+            <Dettaglio>Pagare in segreteria va benissimo: non serve il bonifico né caricare niente.</Dettaglio>
             <QuantoCosta nome={nome} cognome={r.cognome.trim()} corsi={refDei(r.corsi)} formula={r.formula} abbonamenti={[]} />
           </div>
           <Titoletto>LA RICEVUTA · FACOLTATIVA</Titoletto>
           <div className="pad stack passo-dopo">
-            <Dettaglio>Pagare in segreteria va benissimo: non serve caricare niente.</Dettaglio>
             <SceltaFile tipo="ricevuta" file={v.file.ricevuta} onFile={(f) => setFile('ricevuta', f)} />
           </div>
         </>
