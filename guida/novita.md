@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.37.4 — 6 ottobre 2026
+
+### Modificato
+
+- Libreria del design: i titoli di tre componenti usano il font giusto
+- Il design della sezione istruttore, com'è oggi
+
 ## 0.37.3 — 6 ottobre 2026
 
 ### Modificato
