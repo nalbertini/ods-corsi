@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; min-height: 44px; min-width: 0; padding: {{padding}}; text-align: left; background: {{c.bg}}; border: 2px solid {{bordo}}; border-left-width: 4px; font-family: COND; font-weight: 700; color: {{coloreBase}}">
+  <span style="font-size: 12px; letter-spacing: 0.2em; color: {{c.dim}}">{{titolo}}</span>
+  <span style="font-size: {{corpoParola}}; line-height: 1.05; letter-spacing: 0.04em; color: {{coloreParola}}; overflow-wrap: anywhere">{{parola}}</span>
+  <sc-for list="{{righe}}" as="r" hint-placeholder-count="1">
+    <span style="font-size: {{corpoRiga}}; letter-spacing: 0.12em; color: {{r.colore}}; border: {{r.bordo}}; padding: {{r.padding}}">{{r.testo}}</span>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"CERTIFICATO"},"parola":{"editor":"text","default":"SCADUTO"},"tono":{"editor":"enum","options":["rosso","giallo","verde","spento"],"default":"rosso"},"righe":{"editor":"text","default":"il 12 marzo:giallo"},"piccolo":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":120}}'>
+// Riproduzione 1:1 del timbro in cima alla scheda di un iscritto: .sg-timbro e figli (src/styles.css righe 1558-1575)
+// disegnato da `Timbri` in src/components/segreteria/Iscritti.tsx (righe 722-735), con le parole di `timbriScheda`.
+// Nell'app sono tre in fila (.sg-timbri: griglia minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.75fr), gap 12px; sotto
+// i 1000px una colonna): CERTIFICATO, QUOTA e il piu' stretto DOCUMENTO (piccolo). Qui un timbro solo, largo quanto
+// il contenitore.
+// Fondo `bg`, bordo 2px del colore dello stato (rosso / giallo / verde; spento = `line`) e 4px a sinistra, padding
+// 12px 14px (piccolo: 10px 12px), gap 4px. Titolo Saira 12px 0.2em `dim`; la parola Saira 22px (piccolo: 19px),
+// interlinea 1.05, nel colore-testo dello stato (rosso-testo, giallo-testo, verde-testo, `dim`); le righe 14px 0.12em
+// (piccolo: 12px in `dim`). Una riga gialla ha il bordo 2px giallo e il testo giallo-testo, tranne nel timbro piccolo.
+// tono: lo stato. righe: "testo:tono" separati da | (tono giallo o vuoto). Non riprodotti: bordo `text` al
+// passaggio del mouse e il fuoco da tastiera.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', tasto: '#b8b8b2', menu: '#161616' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#ebebe7' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const tono = p.tono || 'rosso';
+    const piccolo = truthy(p.piccolo);
+    const BORDO = { rosso: c.rosso, giallo: c.giallo, verde: c.verde, spento: c.line };
+    const TESTO = { rosso: c.rossoTesto, giallo: c.gialloTesto, verde: c.verdeTesto, spento: c.dim };
+    const righe = String(p.righe ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
+      const k = s.lastIndexOf(':');
+      const testo = k > 0 ? s.slice(0, k).trim() : s;
+      const t = k > 0 ? s.slice(k + 1).trim() : '';
+      const giallo = t === 'giallo' && !piccolo;
+      return { testo, colore: piccolo ? c.dim : giallo ? c.gialloTesto : 'inherit', bordo: giallo ? '2px solid ' + c.giallo : '0', padding: giallo ? '0 6px' : '0' };
+    });
+    return {
+      c, righe, titolo: p.titolo ?? '', parola: p.parola ?? '',
+      bordo: BORDO[tono] || c.line, coloreParola: TESTO[tono] || c.text,
+      coloreBase: tono === 'spento' ? c.dim : c.sec,
+      padding: piccolo ? '10px 12px' : '12px 14px',
+      corpoParola: piccolo ? '19px' : '22px', corpoRiga: piccolo ? '12px' : '14px',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<header style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 8px 8px 16px; background: {{c.menu}}; border-bottom: 2px solid {{c.lineSoft}}; color: {{c.text}}">
+  <svg width="36" height="24.7" viewBox="0 0 160 110" role="img" aria-label="Officine Dello Sport" style="flex-shrink: 0">
+    <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
+      <circle cx="38" cy="40" r="22" stroke="#1b8ac4"></circle>
+      <circle cx="80" cy="40" r="22" stroke="{{c.text}}"></circle>
+      <circle cx="122" cy="40" r="22" stroke="#e4292a"></circle>
+      <circle cx="59" cy="74" r="22" stroke="#f4c31b"></circle>
+      <circle cx="101" cy="74" r="22" stroke="#16a54a"></circle>
+    </g>
+    <g fill="none" stroke-width="5">
+      <circle cx="38" cy="40" r="14" stroke="#1b8ac4"></circle>
+      <circle cx="80" cy="40" r="14" stroke="{{c.text}}"></circle>
+      <circle cx="122" cy="40" r="14" stroke="#e4292a"></circle>
+      <circle cx="59" cy="74" r="14" stroke="#f4c31b"></circle>
+      <circle cx="101" cy="74" r="14" stroke="#16a54a"></circle>
+    </g>
+  </svg>
+  <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">ODS CORSI</span>
+    <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.22em; color: {{c.dim}}">{{luogo}}</span>
+  </span>
+  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; color: {{c.tasto}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: 700">?</span>
+  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; color: {{c.tasto}}">
+    <sc-if value="{{scuro}}" hint-placeholder-val="{{ true }}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+    </sc-if>
+    <sc-if value="{{chiaro}}" hint-placeholder-val="{{ false }}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+    </sc-if>
+  </span>
+  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; color: {{c.tasto}}">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9M14 17H4"></path><circle cx="7" cy="7" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg>
+  </span>
+  <span style="display: inline-flex; align-items: center; flex-shrink: 0; gap: 8px; min-height: 44px; padding: 0 14px; border: 2px solid {{bordoMenu}}; color: {{c.text}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.16em">{{testoMenu}}
+    <sc-if value="{{haNumero}}" hint-placeholder-val="{{ true }}">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; padding: 1px 6px; white-space: nowrap; background: #f4c31b; color: #121212">{{daFare}}</span>
+    </sc-if>
+  </span>
+</header>
+</x-dc>
+<script data-dc-script data-props='{"luogo":{"editor":"text","default":"SEGRETERIA"},"aperto":{"editor":"boolean","default":false},"daFare":{"editor":"text","default":"3"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":62}}'>
+// Riproduzione 1:1 della barra in cima al telefono della segreteria: <header className="sg-barra-tel"> in
+// src/components/segreteria/Segreteria.tsx (righe 355-380) con .sg-barra-tel, .sg-tasto-menu, .sg-tag[data-tipo='presto']
+// in src/styles.css (righe 1856-1874, solo sotto i 768px). Alta 62px: 8 + 44 + 8 + il bordo, ed e' li' che il menu aperto
+// comincia. Marchio 36px, ODS CORSI + il luogo, poi ?, tema (sole sul tema scuro), IMPOSTAZIONI (senza bordo,
+// `.sg-barra-tel > .icon-btn`) e il tasto MENU.
+// - aperto: il tasto dice CHIUDI, ha il bordo `text` e perde il numero (il menu aperto e' Menu.dc.html, a tutto schermo).
+// - daFare: la somma dei segni del menu, in un `.sg-tag` giallo (data-tipo presto); vuoto o 0 = nessun numero.
+// - luogo: SEGRETERIA nella segreteria; sul menu degli istruttori l'app usa la Testata (vedi Testata.dc.html).
+const T = {
+  scuro: { menu: '#161616', lineSoft: '#2a2a2a', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', tasto: '#b8b8b2' },
+  chiaro: { menu: '#ebebe7', lineSoft: '#e2e2dd', line: '#d4d4ce', text: '#161616', dim: '#656561', tasto: '#4a4a46' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const tema = T[p.tema] ? p.tema : 'scuro';
+    const c = T[tema];
+    const aperto = truthy(p.aperto);
+    const n = String(p.daFare ?? '3');
+    return {
+      c,
+      scuro: tema === 'scuro',
+      chiaro: tema === 'chiaro',
+      luogo: p.luogo ?? 'SEGRETERIA',
+      testoMenu: aperto ? 'CHIUDI' : 'MENU',
+      bordoMenu: aperto ? c.text : c.line,
+      haNumero: !aperto && n !== '' && n !== '0',
+      daFare: n,
+    };
+  }
+}
+</script>
+</body>
+</html>

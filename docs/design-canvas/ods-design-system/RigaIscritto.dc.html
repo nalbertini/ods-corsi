@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="row" style="display: grid; grid-template-columns: {{griglia}}; gap: 14px; align-items: center; width: 100%; min-height: 50px; padding: 0 14px; border-bottom: 1px solid {{c.surface2}}; background: {{sfondo}}; outline: {{contorno}}; outline-offset: -2px; opacity: {{opacita}}; text-align: left">
+  <span style="font-size: 15px; font-weight: 600; color: {{c.text}}">{{nome}}<sc-if value="{{daStampare}}" hint-placeholder-val="{{ false }}"><span style="margin-left: 8px; display: inline-block; vertical-align: middle"><dc-import name="Badge" tipo="tag" tono="neutro" label="DA STAMPARE" tema="{{tema}}" hint-size="96px,20px"></dc-import></span></sc-if></span>
+  <span style="font-size: 13px; color: {{c.sec}}">{{corsi}}</span>
+  <span style="font-size: 13px; color: {{coloreContatto}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{contatto}}</span>
+  <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 0">
+    <sc-for list="{{bollini}}" as="x" hint-placeholder-count="2">
+      <dc-import name="Badge" tipo="segno" tono="{{x.tono}}" label="{{x.testo}}" tema="{{tema}}" hint-size="120px,24px"></dc-import>
+    </sc-for>
+  </span>
+  <span style="font-family: COND; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: {{coloreFreq}}">{{frequenza}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Rossi Giulia"},"corsi":{"editor":"text","default":"Judo kids, Pilates"},"contatto":{"editor":"text","default":"333 1234567"},"bollini":{"editor":"text","default":"CERTIFICATO:verde|QUOTA:giallo"},"frequenza":{"editor":"text","default":"5/8"},"poco":{"editor":"boolean","default":false},"daStampare":{"editor":"boolean","default":false},"stato":{"editor":"enum","options":["normale","scelta","spenta"],"default":"normale"},"griglia":{"editor":"text","default":"1.2fr 1.4fr 1.3fr 150px 80px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":900,"height":70}}'>
+// Riproduzione 1:1 della riga della tabella ISCRITTI: .sg-riga-iscritto + .sg-iscritto (src/styles.css righe 1544 e
+// 1586-1593, 1599) usata in src/components/segreteria/Iscritti.tsx (righe 286-317). Alta almeno 50px, padding 0 14px,
+// filetto sotto 1px `surface-2`. Nome 15px 600 (+ DA STAMPARE, .sg-tag, se il certificato e' un file da stampare e
+// cancellare); corsi 13px `sec`; contatto 13px `sec`, in rosso-testo se manca ("nessun contatto"); IN REGOLA: un
+// bollino .sg-segno-regola per ogni parola (`Bollino`, .sg-in-regola: colonna, gap 4px, padding 6px 0), fatto con
+// Badge tipo segno; ultima colonna Saira 16px 700 a destra, giallo-testo se viene poco (`vienePoco`).
+// stato: scelta = la scheda aperta (.sg-iscritto[data-scelto]: fondo `surface-2` e contorno 2px `text` dentro la riga);
+// spenta = disattivata (opacita' 0.45). Si clicca tutta (cursor pointer, non riprodotto), come il passaggio del mouse
+// (fondo `surface`).
+// bollini: "PAROLA:tono" separati da | (tono rosso / giallo / verde / spento). La testata sta in TestataTabella.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', tasto: '#b8b8b2', menu: '#161616' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#ebebe7' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const stato = p.stato || 'normale';
+    const contatto = p.contatto ?? '333 1234567';
+    const bollini = String(p.bollini ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
+      const i = s.lastIndexOf(':');
+      return i > 0 ? { testo: s.slice(0, i).trim(), tono: s.slice(i + 1).trim() } : { testo: s, tono: 'spento' };
+    });
+    return {
+      c, bollini, contatto, tema: p.tema || 'scuro',
+      nome: p.nome ?? 'Rossi Giulia', corsi: p.corsi ?? '', frequenza: p.frequenza ?? '',
+      griglia: p.griglia || '1.2fr 1.4fr 1.3fr 150px 80px',
+      daStampare: truthy(p.daStampare),
+      sfondo: stato === 'scelta' ? c.surface2 : 'transparent',
+      contorno: stato === 'scelta' ? '2px solid ' + c.text : 'none',
+      opacita: stato === 'spenta' ? '0.45' : '1',
+      coloreContatto: contatto === 'nessun contatto' ? c.rossoTesto : c.sec,
+      coloreFreq: truthy(p.poco) ? c.gialloTesto : c.text,
+    };
+  }
+}
+</script>
+</body>
+</html>

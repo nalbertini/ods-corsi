@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; width: 22px; text-align: center; color: {{coloreSegno}}">{{segno}}</span>
+  <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 1px; min-width: 0">
+    <span style="font-weight: 600">{{corso}}</span>
+    <span style="font-size: 13px; color: {{c.dim}}">{{quando}}</span>
+  </span>
+  <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{coloreSegno}}">{{detto}}</span>
+    <sc-if value="{{haSegnalata}}" hint-placeholder-val="{{ false }}">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; white-space: nowrap; color: {{coloreSegnalata}}">{{segnalata}}</span>
+    </sc-if>
+    <sc-if value="{{puoSegnalare}}" hint-placeholder-val="{{ false }}">
+      <span style="display: inline-flex; align-items: center; min-height: 32px; padding: 6px 10px; border: 2px solid {{c.line}}; background: {{c.surface}}; color: {{c.text}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.12em">SEGNALA</span>
+    </sc-if>
+  </span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"quando":{"editor":"text","default":"Lunedì 5 ottobre · 17:30"},"stato":{"editor":"enum","options":["presente","assente","giustificato","niente"],"default":"presente"},"segnalata":{"editor":"enum","options":["no","da-confermare","rifiutata"],"default":"no"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":80}}'>
+// Riproduzione 1:1 della riga delle presenze nell'area iscritti: <li className="mia-presenza-voce"> con .mia-presenza in
+// src/components/AreaIscritti.tsx (righe 366-399) e src/styles.css (righe 792-807, 797-800). Nell'app le righe stanno in un
+// unico riquadro (.mie-presenze, padding 4px 14px) separate da un filo; qui una riga col suo riquadro.
+// - stato: presente = segno ✓ e PRESENTE in verde; assente = ✗ e ASSENTE in rosso-testo; giustificato = – e niente = · (NON SEGNATO), spenti in `faint`.
+// - segnalata: una segnalazione gia' fatta (DA CONFERMARE in giallo-testo, RIFIUTATA in rosso-testo): sostituisce il tasto.
+// - Il tasto SEGNALA (.mia-segnala, 32px) c'e' solo dove non risulta presente ne' giustificato e non c'e' gia' una segnalazione.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', faint: '#5a5a56', verde: '#16a54a', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', faint: '#a8a8a3', verde: '#12913f', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+};
+const SEGNI = { presente: ['✓', 'PRESENTE'], assente: ['✗', 'ASSENTE'], giustificato: ['–', 'GIUSTIFICATO'], niente: ['·', 'NON SEGNATO'] };
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const stato = SEGNI[p.stato] ? p.stato : 'presente';
+    const segn = p.segnalata === 'da-confermare' || p.segnalata === 'rifiutata' ? p.segnalata : 'no';
+    return {
+      c,
+      corso: p.corso ?? 'Judo kids',
+      quando: p.quando ?? 'Lunedì 5 ottobre · 17:30',
+      segno: SEGNI[stato][0],
+      detto: SEGNI[stato][1],
+      coloreSegno: stato === 'presente' ? c.verde : stato === 'assente' ? c.rossoTesto : c.faint,
+      haSegnalata: segn !== 'no',
+      segnalata: segn === 'rifiutata' ? 'RIFIUTATA' : 'DA CONFERMARE',
+      coloreSegnalata: segn === 'rifiutata' ? c.rossoTesto : c.gialloTesto,
+      puoSegnalare: segn === 'no' && stato !== 'presente' && stato !== 'giustificato',
+    };
+  }
+}
+</script>
+</body>
+</html>

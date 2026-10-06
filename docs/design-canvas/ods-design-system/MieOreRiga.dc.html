@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-left: 4px solid {{barra}}; color: {{c.text}}">
+  <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 3px; min-width: 0">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; text-transform: uppercase">{{corso}}</span>
+    <span style="font-size: 14px; color: {{c.dim}}">{{giorno}}</span>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 14px; color: {{c.dim}}; white-space: nowrap">{{orario}}</span>
+    <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 13px; color: {{c.dim}}">{{nota}}</span>
+    </sc-if>
+  </span>
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; color: {{coloreStato}}">{{stato}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"giorno":{"editor":"text","default":"Lunedì 5 ottobre"},"orario":{"editor":"text","default":"17:30–18:30 · 1 h"},"nota":{"editor":"text","default":""},"stato":{"editor":"text","default":"CONFERMATA"},"tono":{"editor":"enum","options":["fatto","avviso","spento"],"default":"fatto"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":110}}'>
+// Riproduzione 1:1 della riga di LE MIE ORE: la funzione Riga di src/components/MieOre.tsx (righe 172-191) con .card,
+// .mie-ore-riga e .mie-ore-stato in src/styles.css (righe 533-538). Corso obliquo (.lezione-nome, 19px), giorno e ora in
+// `dim`, la nota piccola, e a destra lo stato in 12px spaziato.
+// - tono fatto: barra a sinistra verde, stato verde-testo (CONFERMATA). avviso: giallo-testo (DA CONFERMARE, NESSUNO SI E' SEGNATO).
+//   spento: barra `line` e stato `dim`.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', dim: '#8c8c88', text: '#f2f2f0', verde: '#16a54a', verdeTesto: '#16a54a', gialloTesto: '#f4c31b' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', dim: '#656561', text: '#161616', verde: '#12913f', verdeTesto: '#0b7a33', gialloTesto: '#8f6a00' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const tono = p.tono === 'avviso' || p.tono === 'spento' ? p.tono : 'fatto';
+    return {
+      c,
+      corso: p.corso ?? 'Judo kids',
+      giorno: p.giorno ?? 'Lunedì 5 ottobre',
+      orario: p.orario ?? '17:30–18:30 · 1 h',
+      nota: p.nota ?? '',
+      haNota: !!p.nota,
+      stato: p.stato ?? 'CONFERMATA',
+      barra: tono === 'fatto' ? c.verde : tono === 'avviso' ? c.gialloTesto : c.line,
+      coloreStato: tono === 'fatto' ? c.verdeTesto : tono === 'avviso' ? c.gialloTesto : c.dim,
+    };
+  }
+}
+</script>
+</body>
+</html>

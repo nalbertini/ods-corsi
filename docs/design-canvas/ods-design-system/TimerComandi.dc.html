@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- I comandi della schermata del timer: AVVIA/PAUSA e i tre tasti sotto (INDIETRO, +30", AVANTI). Riproduce `.tf-comandi`, `.tf-avvia`, `.tf-secondari`, `.tf-secondario`, `.tf-piu` di timer/src/styles.css (righe 700-722) e i tasti di timer/src/components/TimerScreen.tsx (righe 355-385); le icone sono Play, Pause, Prev, Next di timer/src/components/Icons.tsx.
+     stato = il colore dello stato (prepare, work, rest, setRest, cooldown: STATE_COLOR di timer/src/lib/engine.ts); il tasto grande ha quel fondo, scritta bianca sul rosso e scura sugli altri (come TimerScaletta). azione: avvia, pausa, riprendi, chiudi (a fine allenamento: niente tasti sotto). piu = false e' il +30" spento (opacita' 0.35, si spegne prima di avviare); acceso ha il bordo del colore dello stato. Misura da telefono (larghezza 100%, massimo 560px). -->
+<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 560px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif">
+  <div style="height: 72px; display: flex; align-items: center; justify-content: center; gap: 12px; background: {{a.fondo}}; color: {{a.testo}}; font-style: oblique 9deg; font-weight: 700; font-size: 26px; letter-spacing: 0.18em">
+    <sc-if value="{{a.pausa}}" hint-placeholder-val="{{ false }}">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+    </sc-if>
+    <sc-if value="{{a.play}}" hint-placeholder-val="{{ true }}">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg>
+    </sc-if>
+    <span>{{a.scritta}}</span>
+  </div>
+  <sc-if value="{{secondari}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; gap: 8px">
+      <div style="flex: 1; min-height: 48px; padding: 0 6px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; letter-spacing: 0.1em">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+        INDIETRO
+      </div>
+      <div style="flex: 1; min-height: 48px; padding: 0 6px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2px solid {{piu.bordo}}; background: {{piu.fondo}}; color: {{piu.testo}}; opacity: {{piu.opacita}}; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; letter-spacing: 0.1em">+30"</div>
+      <div style="flex: 1; min-height: 48px; padding: 0 6px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; letter-spacing: 0.1em">
+        AVANTI
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["prepare","work","rest","setRest","cooldown"],"default":"work"},"azione":{"editor":"enum","options":["avvia","pausa","riprendi","chiudi"],"default":"pausa"},"piu":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":420,"height":142}}'>
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+};
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+const COL = { prepare: '#f4c31b', work: '#e4292a', rest: '#16a54a', setRest: '#1b8ac4', cooldown: '#1b8ac4' };
+const SCRITTA = { avvia: 'AVVIA', pausa: 'PAUSA', riprendi: 'RIPRENDI', chiudi: 'CHIUDI' };
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const stato = p.stato || 'work';
+    const azione = p.azione || 'pausa';
+    const tinta = (p.tema === 'chiaro' && stato === 'rest') ? '#12913f' : (COL[stato] || COL.work);
+    const piuOn = p.piu === undefined ? true : truthy(p.piu);
+    return {
+      c,
+      a: { fondo: tinta, testo: stato === 'work' ? c.suRosso : c.suColore, scritta: SCRITTA[azione] || 'PAUSA', pausa: azione === 'pausa', play: azione !== 'pausa' },
+      secondari: azione !== 'chiudi',
+      piu: piuOn ? { bordo: tinta, fondo: c.surface, testo: c.text, opacita: 1 } : { bordo: c.line, fondo: 'transparent', testo: c.tasto, opacita: 0.35 },
+    };
+  }
+}
+</script>
+</body>
+</html>

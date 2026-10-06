@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 100%; background: {{c.bg}}; padding-bottom: 12px; border-bottom: 2px solid {{c.lineSoft}}; color: {{c.text}}">
+  <div style="display: flex; align-items: center; gap: 10px; padding: 12px 20px 0">
+    <sc-if value="{{indietro}}" hint-placeholder-val="{{ true }}">
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-size: 22px; line-height: 1">&#8249;</span>
+    </sc-if>
+    <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 3px; min-width: 0">
+      <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05">{{corso}}</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: {{c.dim}}">
+        <span style="display: inline-flex; gap: 3px; flex-shrink: 0">
+          <sc-for list="{{kanji}}" as="k" hint-placeholder-count="1">
+            <span style="display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid #e4292a; border-radius: 3px; color: {{c.rossoTesto}}; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif; font-size: 15px; font-weight: 700; line-height: 1">{{k.segno}}</span>
+          </sc-for>
+        </span>
+        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0">{{quando}}</span>
+      </span>
+      <sc-if value="{{haAttivita}}" hint-placeholder-val="{{ true }}">
+        <span style="display: inline-block; align-self: flex-start; min-width: 0; padding: 1px 6px; border: 2px solid {{c.line}}; text-transform: uppercase; font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; line-height: 1.2; color: {{c.sec}}">{{attivita}}</span>
+      </sc-if>
+      <sc-if value="{{futura}}" hint-placeholder-val="{{ false }}">
+        <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: {{c.gialloTesto}}">NON ANCORA COMINCIATA</span>
+      </sc-if>
+    </div>
+    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l3 2M9 2h6"></path></svg>
+    </span>
+  </div>
+  <div style="display: flex; align-items: baseline; gap: 10px; padding: 12px 20px 0">
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 46px; font-weight: 700; line-height: 0.9">{{presenti}}</span>
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 22px; color: {{c.dim}}">/ {{iscritti}}</span>
+    <sc-if value="{{haProve}}" hint-placeholder-val="{{ true }}">
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: {{c.gialloTesto}}; white-space: nowrap">{{proveTesto}}</span>
+    </sc-if>
+    <span style="flex-grow: 1"></span>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; align-self: center; gap: 2px">
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: {{coloreStato}}; text-decoration: {{decorazioneStato}}; text-underline-offset: 4px">{{statoTesto}}</span>
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: {{c.gialloTesto}}; min-height: 1.3em">{{coda}}</span>
+    </div>
+  </div>
+  <div style="display: flex; align-items: stretch; gap: 8px; padding: 10px 20px 0">
+    <span style="display: flex; align-items: center; justify-content: center; flex-grow: 1; min-height: 56px; padding: 0 10px; background: {{c.verde}}; color: {{c.suColore}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 17px; font-weight: 700; letter-spacing: 0.1em; opacity: {{opacitaTasto}}">{{tasto}}</span>
+    <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 124px; min-height: 56px; padding: 0 8px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 16px; font-weight: 700; letter-spacing: 0.16em; opacity: {{opacitaAzzera}}">AZZERA</span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Judo kids"},"kanji":{"editor":"text","default":"柔"},"quando":{"editor":"text","default":"Lunedì 17:30 · Sala 1 · Marco R."},"attivita":{"editor":"text","default":""},"futura":{"editor":"boolean","default":false},"indietro":{"editor":"boolean","default":true},"presenti":{"editor":"text","default":"7"},"iscritti":{"editor":"text","default":"12"},"prove":{"editor":"text","default":"0"},"stato":{"editor":"enum","options":["mancano","segnati","assenti","chiudi"],"default":"mancano"},"mancano":{"editor":"text","default":"5"},"coda":{"editor":"text","default":""},"tasto":{"editor":"text","default":"GLI ALTRI PRESENTI"},"tastoSpento":{"editor":"boolean","default":false},"azzeraSpento":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":250}}'>
+// Riproduzione 1:1 della testa dell'appello: .appello-testa e quel che c'e' dentro (src/styles.css righe 356-399, 198-216
+// e 238-250), usata in src/components/AppelloScreen.tsx (righe 336-398). In cima e ferma mentre si scorre l'elenco
+// (qui e' statica): fondo `bg`, riga in basso 2px `line-soft`. Tre righe.
+// 1. indietro (.icon-btn, 44px) · titolo .appello-titolo (cond oblique 22px 700 0.06em) con sotto quando/dove (13px dim:
+//    kanji .kanji 22px + testo) e l'etichetta dell'attivita' (.attivita-et, `attivita` vuota = niente) · timer (.icon-btn).
+//    futura = NON ANCORA COMINCIATA (.appello-futura).
+// 2. conto .conto-appello (46px 700, interlinea 0.9) / iscritti 22px dim; prove > 0 = «+N PROVA» (.appello-prove, 14px giallo-testo);
+//    a destra .appello-stato (14px, 0.12em): mancano = «N DA SEGNARE» in `sec`; segnati = ✓ TUTTI SEGNATI in verde-testo;
+//    assenti = TUTTI ASSENTI in rosso-testo; chiudi = CHIUDI IN FONDO ↓ (verde-testo, sottolineato: e' un tasto).
+//    Sotto, .appello-coda (13px giallo-testo, alta 1.3em anche vuota: la testa non cambia altezza), es. «2 DA INVIARE».
+// 3. .btn.btn-go (56px, 17px, 0.1em; `tasto` = TUTTI PRESENTI | GLI ALTRI PRESENTI | ✓ TUTTI SEGNATI, `tastoSpento` = disabled,
+//    opacita' 0.4) + AZZERA (.btn-ghost.azzera: 124px, 56px, 16px; `azzeraSpento` = nessuno segnato).
+// Sotto i 420px il titolo scende a 20px e il conto a 40px (@media del foglio): qui sempre la misura larga.
+const T = {
+  scuro: { bg: '#121212', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', verdeTesto: '#16a54a', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52', tasto: '#b8b8b2', suColore: '#121212' },
+  chiaro: { bg: '#f4f4f1', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', verdeTesto: '#0b7a33', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d', tasto: '#4a4a46', suColore: '#121212' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const stato = p.stato || 'mancano';
+    const prove = Number(p.prove ?? 0);
+    const attivita = p.attivita ?? '';
+    return {
+      c, cond: COND,
+      corso: String(p.corso ?? 'Judo kids').toUpperCase(),
+      kanji: [...String(p.kanji ?? '柔')].map((segno) => ({ segno })),
+      quando: p.quando ?? '',
+      attivita, haAttivita: attivita !== '',
+      futura: truthy(p.futura),
+      indietro: p.indietro === undefined ? true : truthy(p.indietro),
+      presenti: p.presenti ?? '7', iscritti: p.iscritti ?? '12',
+      haProve: prove > 0, proveTesto: '+' + prove + ' PROVA',
+      statoTesto: stato === 'segnati' ? '✓ TUTTI SEGNATI' : stato === 'assenti' ? 'TUTTI ASSENTI' : stato === 'chiudi' ? 'CHIUDI IN FONDO ↓' : (p.mancano ?? '5') + ' DA SEGNARE',
+      coloreStato: stato === 'segnati' || stato === 'chiudi' ? c.verdeTesto : stato === 'assenti' ? c.rossoTesto : c.sec,
+      decorazioneStato: stato === 'chiudi' ? 'underline' : 'none',
+      coda: p.coda ?? '',
+      tasto: p.tasto ?? 'GLI ALTRI PRESENTI',
+      opacitaTasto: truthy(p.tastoSpento) ? '0.4' : '1',
+      opacitaAzzera: truthy(p.azzeraSpento) ? '0.4' : '1',
+    };
+  }
+}
+</script>
+</body>
+</html>

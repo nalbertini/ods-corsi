@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<span style="display: flex; align-items: center; justify-content: center; gap: 10px; width: {{larghezza}}; min-height: {{alto}}; padding: {{spazio}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: {{corpo}}; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; background: {{fondo}}; border: {{bordo}}; color: {{colore}}; opacity: {{opacita}}">{{label}}</span>
+</x-dc>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"ANNULLA"},"variante":{"editor":"enum","options":["linea","verde","rosso"],"default":"linea"},"grande":{"editor":"boolean","default":false},"quadro":{"editor":"boolean","default":false},"acceso":{"editor":"boolean","default":false},"spento":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":220,"height":70}}'>
+// Riproduzione 1:1 del tasto del tablet di sala: .tb-btn con .tb-btn-linea, .tb-btn-verde, .tb-btn-rosso, .tb-btn-grande e
+// .tb-btn-quadro in src/styles.css (righe 932-944 e 1047). E' il <button className="tb-btn tb-btn-linea"> di Tablet.tsx,
+// TabletHome.tsx, tocchi.tsx e TabletPin.tsx. Alto 60px (grande 64px, corpo 20), perche' si tocca da un metro.
+// - variante: linea = bordo `line`, scritta `text` (ANNULLA, VA BENE, AREA ISTRUTTORE); verde = SEGNA LA PRESENZA, scritta scura;
+//   rosso = AVVIA, scritta bianca (--su-rosso).
+// - quadro: largo 60px, senza padding (il tasto della musica, il sole del tema). Il contenuto e' una parola o un segno.
+// - acceso: aria-expanded='true' (.tb-btn-linea[aria-expanded='true'], riga 1063): bordo `text` e fondo `surface-2`, per i tasti che aprono un pannello (PROVE).
+// - spento: disabled; i tasti verde e rosso a meta' opacita' (righe 942 e 944), il tasto a linea resta com'e'.
+const T = {
+  scuro: { surface2: '#242424', line: '#333333', text: '#f2f2f0', verde: '#16a54a', rosso: '#e4292a', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', verde: '#12913f', rosso: '#e4292a', suColore: '#121212', suRosso: '#ffffff' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const v = p.variante === 'verde' || p.variante === 'rosso' ? p.variante : 'linea';
+    const grande = truthy(p.grande);
+    const quadro = truthy(p.quadro);
+    const acceso = truthy(p.acceso) && v === 'linea';
+    const spento = truthy(p.spento);
+    return {
+      label: p.label ?? 'ANNULLA',
+      alto: grande ? '64px' : '60px',
+      corpo: grande ? '20px' : '18px',
+      spazio: quadro ? '0' : grande ? '0 26px' : '0 22px',
+      larghezza: quadro ? '60px' : 'auto',
+      fondo: v === 'verde' ? c.verde : v === 'rosso' ? c.rosso : acceso ? c.surface2 : 'transparent',
+      bordo: v === 'linea' ? '2px solid ' + (acceso ? c.text : c.line) : 'none',
+      colore: v === 'verde' ? c.suColore : v === 'rosso' ? c.suRosso : c.text,
+      opacita: spento && v !== 'linea' ? '0.5' : '1',
+    };
+  }
+}
+</script>
+</body>
+</html>

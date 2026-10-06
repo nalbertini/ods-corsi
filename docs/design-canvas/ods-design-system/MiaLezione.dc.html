@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-left: 6px solid {{tinta}}; color: {{c.text}}; text-align: left">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; letter-spacing: 0.02em; min-width: 62px; color: {{coloreTesto}}; text-decoration: {{decorazione}}">{{ora}}</span>
+  <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 3px; min-width: 0">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; text-transform: uppercase; color: {{coloreTesto}}; text-decoration: {{decorazione}}">{{corso}}</span>
+    <span style="font-size: 13px; color: {{c.dim}}">{{sotto}}</span>
+  </span>
+  <sc-if value="{{haCosa}}" hint-placeholder-val="{{ true }}">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: right; max-width: 40%; color: {{coloreCosa}}">{{cosa}}</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"ora":{"editor":"text","default":"18:30"},"corso":{"editor":"text","default":"Judo kids"},"sotto":{"editor":"text","default":"Sala 1 · Marco R."},"cosa":{"editor":"text","default":"SOSTITUTO"},"tinta":{"editor":"text","default":"#1b8ac4"},"annullata":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":72}}'>
+// Riproduzione 1:1 della lezione nell'area iscritti: la funzione Lezione di src/components/AreaIscritti.tsx (righe 291-309)
+// con .card, .lezione, .lezione-ora, .lezione-nome e .mia-lezione in src/styles.css (righe 300-310 e 774-780). Non e' un
+// tasto (cursor default): ora, corso, sala e istruttore, a destra cosa ha di diverso dal solito.
+// - cosa: IN PIU' | SOSTITUTO | IN <SALA>, uniti da « · », in giallo-testo. Vuoto = niente.
+// - annullata: la scritta e' ANNULLATA in rosso-testo e ora e corso diventano `dim` e barrati (.mia-lezione[data-annullata]).
+// - tinta: la barra sinistra da 6px, il colore del corso (mai un fondo).
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const annullata = truthy(p.annullata);
+    const cosa = annullata ? 'ANNULLATA' : (p.cosa ?? 'SOSTITUTO');
+    return {
+      c,
+      ora: p.ora ?? '18:30',
+      corso: p.corso ?? 'Judo kids',
+      sotto: p.sotto ?? 'Sala 1 · Marco R.',
+      tinta: p.tinta || '#1b8ac4',
+      cosa,
+      haCosa: cosa !== '',
+      coloreCosa: annullata ? c.rossoTesto : c.gialloTesto,
+      coloreTesto: annullata ? c.dim : c.text,
+      decorazione: annullata ? 'line-through' : 'none',
+    };
+  }
+}
+</script>
+</body>
+</html>
