@@ -51,10 +51,10 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
-    const nomiFiltri = String(p.filtri ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    const nomiFiltri = String(p.filtri ?? 'Riscaldamento, Randori').split(',').map((s) => s.trim()).filter(Boolean);
     const filtro = (p.filtro ?? '').trim();
-    const scelta = (p.scelta ?? '').trim();
-    const righe = String(p.liste ?? '').split(';').map((s) => s.trim()).filter(Boolean).map((s) => {
+    const scelta = (p.scelta ?? 'Riscaldamento').trim();
+    const righe = String(p.liste ?? 'Riscaldamento|Playlist Spotify · tutte le sale · Riscaldamento; Randori|Playlist YouTube · Randori; Radio della palestra|Radio · tutte le sale; Defaticamento|Spotify non è collegato su questo tablet|spenta').split(';').map((s) => s.trim()).filter(Boolean).map((s) => {
       const [nome, sotto, stato] = s.split('|');
       return { nome: nome.toUpperCase(), sotto: sotto ?? '', spenta: stato === 'spenta', premuta: nome === scelta };
     });

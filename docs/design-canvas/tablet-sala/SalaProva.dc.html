@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- In prova il tablet non ha un account di sala: Preparazione (Tablet.tsx, con `d.sale` e `d.scegliSala`) al posto del modulo mostra la scelta della sala, quattro tasti grandi in due colonne (Tatami, Lotta, Pesi, Motricita': le sale dei dati di prova, tabletProva.ts). Sopra il nastro giallo DATI DI PROVA, come su ogni schermata del tablet in prova. Un tocco sceglie la sala e il tablet resta cosi' finche' qualcuno non lo scollega. Sotto, «Non e' un tablet di sala» riporta alla pagina di accesso. Tasti: .tb-scelta (fondo `surface`, bordo `line`, barra a sinistra da 8px in `line`, 96px, nome obliquo da 26px). -->
+<div style="display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; color: #f2f2f0">
+  <dc-import name="NastroProva" tema="scuro" hint-size="100%,40px"></dc-import>
+  <div style="display: flex; flex: 1; min-height: 0; align-items: center; justify-content: center; padding: 22px 32px 24px">
+  <div style="display: flex; flex-direction: column; gap: 18px; width: 560px">
+      <svg width="90" height="62" viewBox="0 0 160 110" role="img" aria-label="Officine Dello Sport">
+        <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
+          <circle cx="38" cy="40" r="22" stroke="#1b8ac4"></circle><circle cx="80" cy="40" r="22" stroke="#f2f2f0"></circle><circle cx="122" cy="40" r="22" stroke="#e4292a"></circle><circle cx="59" cy="74" r="22" stroke="#f4c31b"></circle><circle cx="101" cy="74" r="22" stroke="#16a54a"></circle>
+        </g>
+        <g fill="none" stroke-width="5">
+          <circle cx="38" cy="40" r="14" stroke="#1b8ac4"></circle><circle cx="80" cy="40" r="14" stroke="#f2f2f0"></circle><circle cx="122" cy="40" r="14" stroke="#e4292a"></circle><circle cx="59" cy="74" r="14" stroke="#f4c31b"></circle><circle cx="101" cy="74" r="14" stroke="#16a54a"></circle>
+        </g>
+      </svg>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 40px; font-weight: 700; letter-spacing: 0.03em; line-height: 1">TABLET DI SALA</span>
+      <span style="font-size: 18px; line-height: 1.5; color: #c9c9c4">In che sala è appeso questo tablet? Col database lo dice l’account della sala; in prova si sceglie qui.</span>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <span style="display: flex; flex-direction: column; gap: 4px; min-height: 96px; padding: 18px 20px; background: #1c1c1c; border: 2px solid #333333; border-left: 8px solid #333333; color: #f2f2f0; text-align: left; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.06em">TATAMI</span>
+          <span style="display: flex; flex-direction: column; gap: 4px; min-height: 96px; padding: 18px 20px; background: #1c1c1c; border: 2px solid #333333; border-left: 8px solid #333333; color: #f2f2f0; text-align: left; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.06em">LOTTA</span>
+          <span style="display: flex; flex-direction: column; gap: 4px; min-height: 96px; padding: 18px 20px; background: #1c1c1c; border: 2px solid #333333; border-left: 8px solid #333333; color: #f2f2f0; text-align: left; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.06em">PESI</span>
+          <span style="display: flex; flex-direction: column; gap: 4px; min-height: 96px; padding: 18px 20px; background: #1c1c1c; border: 2px solid #333333; border-left: 8px solid #333333; color: #f2f2f0; text-align: left; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.06em">MOTRICITÀ</span>
+      </div>
+      <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 16px; color: #8c8c88; text-decoration: underline; text-underline-offset: 3px">← Non è un tablet di sala: torna all’accesso</span>
+  </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

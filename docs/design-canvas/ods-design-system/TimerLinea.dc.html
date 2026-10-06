@@ -34,7 +34,7 @@ class Component extends DCLogic {
     const att = Number(p.attuale ?? 0);
     const av = Math.max(0, Math.min(1, Number(p.avanzamento ?? 0)));
     const chiaro = p.tema === 'chiaro';
-    const blocchi = String(p.blocchi ?? '').split(',').filter(Boolean).map((s, i) => {
+    const blocchi = String(p.blocchi ?? 'work:30,rest:15,work:30,rest:15,work:30').split(',').filter(Boolean).map((s, i) => {
       const [stato, durata] = s.split(':');
       return {
         durata: Number(durata) || 1,

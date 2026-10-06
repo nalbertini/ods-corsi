@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'area istruttore col pannello PROVE aperto (TabletIstruttore.tsx con `conProve`, Prove.tsx `stile="tb"`): dopo il PIN di Maurizio, martedi' 6 ottobre alle 18:40, Judo kids. Il tasto PROVE e' acceso (bordo `text`, fondo `surface-2`) e sotto la testa dell'appello compare CHI VIENE A PROVARE col bordo giallo: nome e cognome scritti (Marco Bianchi), il campo del telefono ancora vuoto e, fra i campi e il telefono, i GIA' VENUTI CON QUESTO NOME (compaiono dalla terza lettera: uno solo, da toccare con AGGIUNGI, che lo aggiunge all'appello gia' presente). In fondo AGGIUNGI e NASCONDI (con qualcosa di scritto sarebbe AGGIUNGI E NASCONDI). Con il pannello aperto la colonna scorre e i nomi restano sotto: qui se ne vedono due righe, il resto e' sotto lo schermo; Neri Chiara, gia' in prova, e' in fondo. Il pannello e' TabletProvaPannello, non ProvaPannello (quello e' la faccia dell'app). -->
+<div style="display: flex; flex-direction: column; width: 1280px; height: 900px; background: #121212; color: #f2f2f0">
+  <dc-import name="TabletTestataIstruttore" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" chi="Maurizio" hint-size="100%,92px"></dc-import>
+  <div style="flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 24px; padding: 22px 32px 24px; overflow: hidden">
+    <div style="position: relative; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+      <dc-import name="TabletSchede" scelta="oggi" hint-size="100%,60px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <dc-import name="TabletLezioneIstr" ora="16:30–17:15" titolo="JUDO BABY" tinta="#f4c31b" senza-appello="{{ true }}" hint-size="100%,90px"></dc-import>
+        <dc-import name="TabletLezioneIstr" ora="18:30–19:30" attivita="Tecnica" titolo="JUDO KIDS" sotto="7 presenti su 12" prove="1" tinta="#1b8ac4" scelta="{{ true }}" hint-size="100%,90px"></dc-import>
+        <dc-import name="TabletLezioneIstr" ora="20:00–21:00" titolo="JUDO ADULTI" sotto="0 presenti su 9" tinta="#1b8ac4" hint-size="100%,90px"></dc-import>
+      </div>
+      <dc-import name="TabletRiquadro" titolo="LA TUA PRESENZA È SEGNATA" testo="Judo kids. Eri previsto su questa lezione." tono="verde" hint-size="100%,100px"></dc-import>
+      <dc-import name="TabletTasto" label="ESCI" variante="linea" hint-size="100px,60px"></dc-import>
+      <span style="font-size: 15px; line-height: 1.5; color: #8c8c88">Si esce da soli dopo 2 minuti senza tocchi: il tablet resta in sala.</span>
+      <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 16px; color: #8c8c88; text-decoration: underline; text-underline-offset: 3px">Scollega il tablet</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+      <dc-import name="TabletTestaAppello" corso="Judo kids" quando="oggi, 18:30–19:30" attivita="Tecnica" sotto="3 segnati da sé sul tablet · tocca un nome per cambiarlo" presenti="7" iscritti="12" prove="1" prove-aperte="{{ true }}" hint-size="100%,170px"></dc-import>
+      <dc-import name="TabletProvaPannello" nome="Marco" cognome="Bianchi" proposti="Bianchi Marco:Judo kids, martedì 29 settembre · 333 1234567" hint-size="100%,360px"></dc-import>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-content: start">
+        <dc-import name="TabletRigaAppello" nome="Bianchi Luca" stato="presente" marchio="dal-tablet" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Colombo Sara" stato="presente" marchio="dal-tablet" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Ferrari Tommaso" stato="assente" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Greco Anna" stato="presente" hint-size="100%,60px"></dc-import>
+      </div>
+    </div>
+  </div>
+  <dc-import name="TabletPiede" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

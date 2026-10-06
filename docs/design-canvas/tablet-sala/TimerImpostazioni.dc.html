@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Le IMPOSTAZIONI del timer sul tablet (SettingsScreen.tsx con sala e incorporato): si aprono col PIN, dall'area istruttore con TIMER, e per questo in testata c'e' il bollino IMPOSTAZIONI APERTE. Con due schede (TIMER, IMPOSTAZIONI) a sinistra compare la barra da 240px; nessun tema, nessuna libreria esercizi, nessuna voce incisa, nessun salvataggio su file e nessuna versione: sono di ODS Corsi o della segreteria. Quel che cambia qui vale per tutti i tablet di sala. La pagina scorre: questa e' la parte alta. Le voci, dall'alto: la nota sui tablet, la scheda MODALITÀ MAURIZIO (quattro livelli, qui CLASSICO, quello di fabbrica) e AUDIO, con i SEGNALI ACUSTICI (MUTO, SOLO BIP, BIP + VOCE; di fabbrica BIP + VOCE). Piu' in basso ci sono gli altri interruttori e il volume dei segnali, MUSICA e SCHERMO: vedi TimerImpostazioniMusica. Non riprodotti: il viso di Maurizio (l'immagine adesivi/indica.webp, qui un riquadro vuoto da 110px) e la sfumatura calda del fondo della scheda (--caldo del timer, non e' nella palette dell'app: qui il fondo e' quello delle altre schede). La barra a sinistra usa il menu dell'app (#161616); il timer ne ha uno quasi uguale, un punto piu' chiaro. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden; color: #f2f2f0">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:41" tema="scuro" chip="segna" corso="JUDO KIDS" conteggio="7/12" impostazioni="true" hint-size="100%,92px"></dc-import>
+  <div style="position: relative; flex: 1; min-height: 0; overflow: hidden; display: flex">
+    <nav style="display: flex; flex-direction: column; gap: 28px; flex-shrink: 0; width: 240px; padding: 28px 16px 24px; background: #161616; border-right: 2px solid #2a2a2a">
+      <div style="display: flex; flex-direction: column; gap: 2px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.12em">
+        <span style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-left: 4px solid transparent; color: #b8b8b2">TIMER</span>
+        <span style="display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-left: 4px solid #e4292a; background: #1c1c1c; color: #f2f2f0">IMPOSTAZIONI</span>
+      </div>
+    </nav>
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 28px 36px 8px; flex-shrink: 0">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">IMPOSTAZIONI</span>
+      </div>
+      <div style="flex: 1; min-height: 0; overflow: hidden">
+        <div style="padding: 16px 36px 0">
+          <p style="margin: 0; font-size: 13px; line-height: 1.45; color: #8c8c88">Maurizio, i segnali, lo schermo e la musica durante il timer valgono per tutti i tablet di sala: cambiati qui, gli altri li prendono entro cinque minuti. La voce e gli esercizi li sceglie la segreteria, da ODS Corsi › Segreteria › Impostazioni.</p>
+        </div>
+        <div style="padding: 16px 36px 0">
+          <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 18px; border: 2px solid #f4c31b; background: #1c1c1c">
+            <div style="display: flex; align-items: flex-start; gap: 14px">
+              <span style="display: block; flex-shrink: 0; width: 110px; height: 110px; background: #242424"></span>
+              <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 6px; min-width: 0">
+                <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 25px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">MODALITÀ MAURIZIO</span>
+                <p style="margin: 0; font-size: 13px; line-height: 1.45; color: #8c8c88">L'allenatore che perde il conto per farti lavorare qualche secondo in più. Il tempo in più è deciso all'avvio e sparso a caso fra gli intervalli di lavoro; il recupero non si tocca.</p>
+              </div>
+            </div>
+            <dc-import name="TimerSegmenti" voci="SPENTA;DISTRATTO;CLASSICO;SPIETATO" attiva="CLASSICO" colonne="4" tono="giallo" tema="scuro" hint-size="100%,52px"></dc-import>
+            <span style="font-size: 13px; line-height: 1.4; color: #f4c31b">Il Maurizio di tutti i giorni: succede a circa un intervallo su due.</span>
+          </div>
+        </div>
+        <div style="padding: 4px 16px 0"><dc-import name="Titoletto" label="AUDIO" tema="scuro" hint-size="100%,50px"></dc-import></div>
+        <div style="padding: 0 36px">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 14px 14px; background: #1c1c1c; border: 2px solid #333333"><span style="font-size: 15px; font-weight: 600">Segnali acustici</span>
+            <dc-import name="TimerSegmenti" voci="MUTO;SOLO BIP;BIP + VOCE" attiva="BIP + VOCE" colonne="3" tono="blu" tema="scuro" hint-size="100%,52px"></dc-import>
+            <span style="font-size: 13px; line-height: 1.4; color: #1b8ac4">I bip più la voce, che annuncia lo stato e il nome dell'esercizio.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="timer" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

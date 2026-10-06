@@ -35,7 +35,7 @@ class Component extends DCLogic {
     const password = truthy(p.password);
     return {
       c,
-      testo: valore ? (password ? '•'.repeat(valore.length) : valore) : (p.segnaposto ?? ''),
+      testo: valore ? (password ? '•'.repeat(valore.length) : valore) : (p.segnaposto ?? 'nome utente della sala'),
       colore: valore ? c.text : c.dim,
       bordo: truthy(p.fuoco) ? c.text : c.line,
     };

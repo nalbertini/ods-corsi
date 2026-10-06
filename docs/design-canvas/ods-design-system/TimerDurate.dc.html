@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Le sei durate del conto alla rovescia (.al-volo-scelte e .chip di timer/src/styles.css, AlVolo.tsx): una griglia che si divide lo spazio. durate = voci separate da ";", attiva = la voce scelta. -->
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; width: 100%">
+  <sc-for list="{{voci}}" as="v" hint-placeholder-count="6">
+    <div style="min-height: 46px; padding: 0 2px; display: flex; align-items: center; justify-content: center; border: 2px solid {{v.bordo}}; background: {{v.fondo}}; color: {{v.testo}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap">{{v.nome}}</div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"durate":{"editor":"text","default":"30″;45″;1′;1′30;2′;3′"},"attiva":{"editor":"text","default":"1′30"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1240,"height":50}}'>
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', tasto: '#b8b8b2', blu: '#1b8ac4', suColore: '#121212' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', tasto: '#4a4a46', blu: '#1b8ac4', suColore: '#121212' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const voci = String(p.durate ?? '30″;45″;1′;1′30;2′;3′').split(';').filter(Boolean).map((n) => {
+      const on = n === p.attiva;
+      return { nome: n, fondo: on ? c.blu : c.surface, bordo: on ? c.blu : c.line, testo: on ? c.suColore : c.tasto };
+    });
+    return { voci };
+  }
+}
+</script>
+</body>
+</html>

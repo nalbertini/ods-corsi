@@ -87,6 +87,13 @@ Google, e vale solo per i mockup.
 | `TabletAvviso` | `Riquadro` e `Guaio` di `comune.tsx`: riquadro normale o errore rosso a tutta colonna |
 | `TabletCampo` | `.tb-campo`, il campo di testo del tablet: segnaposto, valore, password, fuoco |
 | `TabletPinSchermata` | La schermata del PIN (`TabletPin.tsx`) com'è nell'app: pallini a sinistra, tastierino a destra |
+| `TimerAnelloAttrezzo` | L'anello di cronometro e conto alla rovescia con tre scritte a scelta (`Ring` e `DentroAnello` di `Quadrante.tsx`); `TimerAnello` ha GIRO e RESTA fissi |
+| `TimerGiri` | I giri segnati del cronometro (`.crono-giri`): il più recente in cima, il più veloce in verde |
+| `TimerDurate` | Le sei durate del conto alla rovescia (`.al-volo-scelte`), con quella scelta accesa |
+| `TimerSegmenti` | `.segmenti` e `.livello` delle impostazioni del timer: voci, attiva, colonne, tono blu o giallo |
+| `TimerInterruttore` | `Toggle` delle impostazioni del timer: nome, nota, acceso o spento |
+| `TabletTendina` | La tendina CORSO aperta dell'area istruttore (`.tb-select`); il `<select>` vero è del sistema |
+| `TabletProvaPannello` | `PannelloProve` con stile tablet (`Prove.tsx`): CHI VIENE A PROVARE alzato per il dito, campi su tre colonne e già venuti sotto |
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 

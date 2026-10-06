@@ -53,7 +53,7 @@ class Component extends DCLogic {
     return {
       c, cond: COND, mono: MONO, tema: p.tema === 'chiaro' ? 'chiaro' : 'scuro',
       bordo: p.tono === 'verde' ? c.verde : c.giallo,
-      titolo: p.titolo ?? 'FATTO, 3 righe da sistemare', frase: p.frase ?? '', conto: p.conto ?? '', spiegazione: p.spiegazione ?? '',
+      titolo: p.titolo ?? 'FATTO, 3 righe da sistemare', frase: p.frase ?? '', conto: p.conto ?? '3 RIGHE DA SISTEMARE', spiegazione: p.spiegazione ?? '',
       righe, haElenco: righe.length > 0, tastoCopia: truthy(p.copiato) ? 'COPIATO' : "COPIA L'ELENCO",
     };
   }

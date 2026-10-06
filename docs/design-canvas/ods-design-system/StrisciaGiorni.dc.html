@@ -37,7 +37,7 @@ const T = {
 class Component extends DCLogic {
   renderVals() {
     const c = T[this.props.tema] || T.scuro;
-    const giorni = String(this.props.giorni ?? '')
+    const giorni = String(this.props.giorni ?? 'DOM 4 0, LUN 5 2 o, MAR 6 3 s, MER 7 1, GIO 8 0, VEN 9 4, SAB 10 2')
       .split(',')
       .map((s) => s.trim().split(/\s+/))
       .filter((w) => w.length >= 2 && w[0] !== '')

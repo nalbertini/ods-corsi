@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'appello che non si legge (TabletIstruttore.tsx, `guaio`): scelta una lezione, il server non risponde. A destra solo la testa (conto 0 / 12 dalla lezione, TUTTI PRESENTI e GLI ALTRI ASSENTI spenti perche' non c'e' nessun nome da cambiare; PROVE e' spento anche lui nell'app, qui disegnato com'e' di solito) e il riquadro rosso APPELLO. Non c'e' un tasto per riprovare: l'elenco si rilegge cambiando lezione, e scegliere un'altra lezione e poi questa lo fa. Senza i nomi non si mostra nulla di vecchio: un elenco vecchio avrebbe presente chi non lo e'. -->
+<div style="display: flex; flex-direction: column; width: 1280px; height: 900px; background: #121212; color: #f2f2f0">
+  <dc-import name="TabletTestataIstruttore" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" chi="Maurizio" hint-size="100%,92px"></dc-import>
+  <div style="flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 24px; padding: 22px 32px 24px; overflow: hidden">
+    <div style="position: relative; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+      <dc-import name="TabletSchede" scelta="oggi" hint-size="100%,60px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <dc-import name="TabletLezioneIstr" ora="16:30–17:15" titolo="JUDO BABY" tinta="#f4c31b" senza-appello="{{ true }}" hint-size="100%,90px"></dc-import>
+        <dc-import name="TabletLezioneIstr" ora="18:30–19:30" attivita="Tecnica" titolo="JUDO KIDS" sotto="7 presenti su 12" prove="1" tinta="#1b8ac4" scelta="{{ true }}" hint-size="100%,90px"></dc-import>
+        <dc-import name="TabletLezioneIstr" ora="20:00–21:00" titolo="JUDO ADULTI" sotto="0 presenti su 9" tinta="#1b8ac4" hint-size="100%,90px"></dc-import>
+      </div>
+      <dc-import name="TabletRiquadro" titolo="LA TUA PRESENZA È SEGNATA" testo="Judo kids. Eri previsto su questa lezione." tono="verde" hint-size="100%,100px"></dc-import>
+      <dc-import name="TabletTasto" label="ESCI" variante="linea" hint-size="100px,60px"></dc-import>
+      <span style="font-size: 15px; line-height: 1.5; color: #8c8c88">Si esce da soli dopo 2 minuti senza tocchi: il tablet resta in sala.</span>
+      <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 16px; color: #8c8c88; text-decoration: underline; text-underline-offset: 3px">Scollega il tablet</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+      <dc-import name="TabletTestaAppello" corso="Judo kids" quando="oggi, 18:30–19:30" attivita="Tecnica" sotto="0 segnati da sé sul tablet · tocca un nome per cambiarlo" presenti="0" iscritti="12" prove="0" tutti-presenti="{{ false }}" altri-assenti="{{ false }}" hint-size="100%,170px"></dc-import>
+      <dc-import name="TabletAvviso" tipo="guaio" titolo="APPELLO" testo="Non riesco a leggere l'appello" tema="scuro" hint-size="100%,120px"></dc-import>
+    </div>
+  </div>
+  <dc-import name="TabletPiede" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

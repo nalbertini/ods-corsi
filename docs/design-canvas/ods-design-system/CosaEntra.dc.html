@@ -44,7 +44,7 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
-    const conti = String(p.conti ?? '').split(';').filter(Boolean).map((s) => { const i = s.indexOf('|'); return { n: s.slice(0, i), testo: s.slice(i + 1) }; });
+    const conti = String(p.conti ?? '0|sale nuove;2|istruttori nuovi · 1 già in palestra;4|corsi nuovi;9|giorni di lezione nuovi;118|iscritti nuovi;143|iscrizioni ai corsi').split(';').filter(Boolean).map((s) => { const i = s.indexOf('|'); return { n: s.slice(0, i), testo: s.slice(i + 1) }; });
     return { c, cond: COND, bordo: c.line, titolo: p.titolo ?? 'COSA ENTRA', conti, nota: p.nota ?? '', colonne: Number(p.colonne ?? 3) };
   }
 }

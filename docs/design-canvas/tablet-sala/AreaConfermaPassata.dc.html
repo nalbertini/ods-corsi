@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La conferma sulle lezioni passate, la variante di GLI ALTRI ASSENTI (TabletIstruttore.tsx, `conConferma` e `daConfermare`): Judo kids di martedi' 29 settembre, scelta con PER CORSO. Su una lezione che non e' piu' aperta il primo tocco su GLI ALTRI ASSENTI non segna niente: il tasto diventa «CONFERMA: 6 ASSENTI» (i 6 senza segno: i presenti e Ferrari, gia' assente, non si toccano) e sotto i tre tasti compare in giallo «Lezione passata: tocca ancora per confermare…», che si annulla da sola dopo 5 secondi o cambiando lezione. Il secondo tocco segna davvero. Sulla lezione aperta tutto resta un tocco solo. La variante con TUTTI PRESENTI e' in TabletAppelloPassato; i messaggi d'errore dell'area sono in AreaNonSegnato (una scrittura non andata) e AreaAppelloNonLetto (l'appello non si legge). -->
+<div style="display: flex; flex-direction: column; width: 1280px; height: 900px; background: #121212; color: #f2f2f0">
+  <dc-import name="TabletTestataIstruttore" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" chi="Maurizio" hint-size="100%,92px"></dc-import>
+  <div style="flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 24px; padding: 22px 32px 24px; overflow: hidden">
+    <div style="position: relative; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+      <dc-import name="TabletSchede" scelta="corso" corso="Judo kids" hint-size="100%,160px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <dc-import name="TabletLezioneIstr" ora="18:30–19:30" attivita="Tecnica" titolo="OGGI" sotto="7 presenti su 12" prove="1" tinta="#1b8ac4" hint-size="100%,90px"></dc-import>
+        <dc-import name="TabletLezioneIstr" ora="18:30–19:30" attivita="Tecnica" titolo="GIOVEDÌ 1 OTTOBRE" sotto="9 presenti su 12" tinta="#1b8ac4" hint-size="100%,90px"></dc-import>
+        <dc-import name="TabletLezioneIstr" ora="18:30–19:30" attivita="Tecnica" titolo="MARTEDÌ 29 SETTEMBRE" sotto="5 presenti su 12" tinta="#1b8ac4" scelta="{{ true }}" hint-size="100%,90px"></dc-import>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+      <dc-import name="TabletTestaAppelloPassato" corso="Judo kids" quando="martedì 29 settembre, 18:30–19:30" attivita="Tecnica" sotto="2 segnati da sé sul tablet · tocca un nome per cambiarlo" presenti="5" iscritti="12" conferma="altri" da-segnare="6" hint-size="100%,190px"></dc-import>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-content: start">
+        <dc-import name="TabletRigaAppello" nome="Bianchi Luca" stato="presente" marchio="dal-tablet" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Colombo Sara" stato="presente" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Conti Elena" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Esposito Marco" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Ferrari Tommaso" stato="assente" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Gallo Sofia" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Greco Anna" stato="presente" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Marino Pietro" stato="presente" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Rossi Giulia" stato="presente" marchio="dopo" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Russo Matteo" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Villa Irene" hint-size="100%,60px"></dc-import>
+        <dc-import name="TabletRigaAppello" nome="Zanetti Paolo" hint-size="100%,60px"></dc-import>
+      </div>
+    </div>
+  </div>
+  <dc-import name="TabletPiede" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

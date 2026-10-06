@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- I giri segnati del cronometro: .crono-giri e .crono-giro di timer/src/styles.css (righe 505-520), da CronometroScreen in AlVolo.tsx.
+     giri = "scarto|totale" separati da ";", in ordine di segnatura (il piu' recente sta in cima, come nell'app). Il giro piu' veloce e' verde, ma solo con due giri o piu'. -->
+<div style="display: flex; flex-direction: column; width: 100%; max-height: {{altezzaMax}}; overflow: hidden; border-top: 2px solid {{c.lineSoft}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums">
+  <sc-for list="{{giri}}" as="g" hint-placeholder-count="3">
+    <div style="display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: baseline; padding: 9px 2px; border-bottom: 1px solid {{c.lineSoft}}">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: {{c.faint}}">GIRO {{g.n}}</span>
+      <span style="font-size: 21px; font-weight: 700; text-align: right; color: {{g.colore}}">{{g.scarto}}</span>
+      <span style="font-size: 14px; color: {{c.dim}}">{{g.totale}}</span>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"giri":{"editor":"text","default":"00:38.40|00:38.40;00:41.07|01:19.47;00:36.82|01:56.29"},"altezzaMax":{"editor":"text","default":"158px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1240,"height":140}}'>
+// Un giro e' «scarto|totale»: i tempi hanno i due punti dei minuti, quindi il separatore e' "|". Il giro n e' la posizione nell'ordine di segnatura.
+const T = {
+  scuro: { lineSoft: '#2a2a2a', faint: '#5a5a56', dim: '#8c8c88', text: '#f2f2f0', verde: '#16a54a' },
+  chiaro: { lineSoft: '#e2e2dd', faint: '#a8a8a3', dim: '#656561', text: '#161616', verde: '#12913f' },
+};
+const pad2 = (n) => String(n).padStart(2, '0');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const righe = String(p.giri ?? '00:38.40|00:38.40;00:41.07|01:19.47;00:36.82|01:56.29').split(';').filter(Boolean).map((x) => x.split('|'));
+    const sec = (t) => { const m = /^(\d+):(\d+)\.(\d+)$/.exec(t); return m ? Number(m[1]) * 6000 + Number(m[2]) * 100 + Number(m[3]) : 0; };
+    const scarti = righe.map((r) => sec(r[0]));
+    const inTesta = scarti.length > 1 ? Math.min(...scarti) : null;
+    const giri = righe.map((r, i) => ({ n: pad2(i + 1), scarto: r[0], totale: r[1], colore: inTesta !== null && scarti[i] === inTesta ? c.verde : c.text })).reverse();
+    return { c, giri, altezzaMax: p.altezzaMax || '158px' };
+  }
+}
+</script>
+</body>
+</html>

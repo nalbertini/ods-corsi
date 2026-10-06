@@ -14,7 +14,7 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<footer style="position: relative; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; width: 100%; padding: 14px 32px 20px; border-top: 2px solid {{c.lineSoft}}; color: {{c.text}}">
+<footer style="position: relative; display: flex; align-items: center; gap: 12px; flex-wrap: {{avvolgi}}; width: 100%; padding: {{spazioPiede}}; border-top: 2px solid {{c.lineSoft}}; color: {{c.text}}">
   <span style="display: flex; align-items: center; gap: 12px; min-height: 64px; min-width: 190px; padding: 0 20px; border: 2px solid {{presenze.bordo}}; background: {{presenze.fondo}}; color: {{presenze.colore}}">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><circle cx="17" cy="9" r="2.8"></circle><path d="M17 14c2.8 0 4.8 2 4.8 5"></path></svg>
     <span style="display: flex; flex-direction: column; gap: 1px">
@@ -36,11 +36,11 @@
     </span>
   </sc-if>
   <sc-if value="{{conBarra}}" hint-placeholder-val="{{ true }}">
-    <div style="display: flex; align-items: center; gap: 8px; min-width: 0">
+    <div style="display: flex; align-items: center; gap: 8px; min-width: 0; width: {{larghezzaMusica}}">
       <sc-if value="{{copertina}}" hint-placeholder-val="{{ true }}">
         <span style="width: 60px; height: 60px; flex-shrink: 0; background: {{c.surface2}}"></span>
       </sc-if>
-      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; max-width: 260px">
+      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex-grow: {{crescitaTesto}}; max-width: {{maxTesto}}">
         <span style="font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{titolo}}</span>
         <span style="font-size: 15px; color: {{coloreSotto}}; overflow: hidden; text-overflow: ellipsis; white-space: {{aCapo}}">{{sotto}}</span>
       </span>
@@ -68,10 +68,11 @@
   </sc-if>
 </footer>
 </x-dc>
-<script data-dc-script data-props='{"scheda":{"editor":"enum","options":["presenze","timer"],"default":"presenze"},"sottoPresenze":{"editor":"text","default":"7/12 SEGNATI"},"sottoTimer":{"editor":"text","default":"JUDO KIDS"},"intervalloTimer":{"editor":"enum","options":["","prepare","work","rest","setRest","cooldown"],"default":""},"musica":{"editor":"enum","options":["suona","pausa","errore","spenta","nessuna"],"default":"suona"},"fonte":{"editor":"enum","options":["spotify","radio","youtube"],"default":"spotify"},"titolo":{"editor":"text","default":"Riscaldamento"},"sotto":{"editor":"text","default":"Collegno Sala Judo · Sala Judo"},"volume":{"editor":"text","default":"40"},"liste":{"editor":"boolean","default":true},"listeAperte":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1280,"height":100}}'>
+<script data-dc-script data-props='{"scheda":{"editor":"enum","options":["presenze","timer"],"default":"presenze"},"sottoPresenze":{"editor":"text","default":"7/12 SEGNATI"},"sottoTimer":{"editor":"text","default":"JUDO KIDS"},"intervalloTimer":{"editor":"enum","options":["","prepare","work","rest","setRest","cooldown"],"default":""},"musica":{"editor":"enum","options":["suona","pausa","errore","spenta","nessuna"],"default":"suona"},"fonte":{"editor":"enum","options":["spotify","radio","youtube"],"default":"spotify"},"titolo":{"editor":"text","default":"Riscaldamento"},"sotto":{"editor":"text","default":"Collegno Sala Judo · Sala Judo"},"volume":{"editor":"text","default":"40"},"liste":{"editor":"boolean","default":true},"listeAperte":{"editor":"boolean","default":false},"verticale":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1280,"height":100}}'>
 // Riproduzione 1:1 della barra in basso del tablet di sala COMPLETA, con la musica: <footer className="tb-piede"> di Tablet.tsx (righe 543-
 // 583) con MusicaSala.tsx e .tb-piede, .tb-scheda-sala, .tb-musica*, .tb-btn-quadro di src/styles.css (righe 926-931, 987-1029). TabletPiede
 // ha solo il tasto della nota; questo ha anche il lettore acceso. E' la stessa sotto le presenze e sotto il timer.
+// - verticale: lo schermo stretto (@media max-width: 900px, styles.css riga 1193-1195): margini da 16px e la musica su una riga sua, larga quanto la barra, col titolo che prende lo spazio.
 // - scheda, sottoPresenze, sottoTimer: come TabletPiede. intervalloTimer: con un timer in corso il sotto della scheda TIMER prende il
 //   colore dell'intervallo (prepare, work, rest, setRest, cooldown; sul tema chiaro giallo e verde "da leggere"); vuoto = colore normale.
 // - musica: suona (⏸ in mostra), pausa (▶ in mostra), errore (radio caduta: sotto in rosso, a capo, e il tasto Riprova), spenta (resta
@@ -100,8 +101,14 @@ class Component extends DCLogic {
     const attiva = musica === 'suona' || musica === 'pausa';
     const liste = p.liste === undefined ? true : truthy(p.liste);
     const aperte = truthy(p.listeAperte);
+    const verticale = truthy(p.verticale);
     return {
       c,
+      avvolgi: verticale ? 'wrap' : 'nowrap',
+      spazioPiede: verticale ? '14px 16px 20px' : '14px 32px 20px',
+      larghezzaMusica: verticale ? '100%' : 'auto',
+      crescitaTesto: verticale ? '1' : '0',
+      maxTesto: verticale ? 'none' : '260px',
       presenze: scheda(p.scheda !== 'timer'),
       timer: scheda(p.scheda === 'timer'),
       sottoPresenze: p.sottoPresenze ?? '7/12 SEGNATI',
@@ -111,7 +118,7 @@ class Component extends DCLogic {
       conBarra: musica === 'suona' || musica === 'pausa' || musica === 'errore',
       copertina: attiva && fonte === 'spotify',
       titolo: p.titolo ?? 'Riscaldamento',
-      sotto: errore ? 'La radio non parte: controlla la rete e riprova.' : (p.sotto ?? ''),
+      sotto: errore ? 'La radio non parte: controlla la rete e riprova.' : (p.sotto ?? 'Collegno Sala Judo · Sala Judo'),
       coloreSotto: errore ? c.rossoTesto : c.dim,
       aCapo: errore ? 'normal' : 'nowrap',
       riprova: errore,
