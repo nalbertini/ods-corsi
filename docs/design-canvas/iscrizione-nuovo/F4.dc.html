@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- IDEA. I corsi di ogni persona per la sua età, come SceltaCorsi di oggi, e il conto con lo sconto famiglia calcolato come nel listino. I prezzi sono esempi: vengono dal listino. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1324px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="3" totale="5" titolo="CORSI E PREZZI" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 4px"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">GIULIA · TU</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Judo adulti" riga="nati nel 2012 o prima · martedì e giovedì 17.30-18.30 · 360 €" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Bottone" label="CAMBIA CORSO" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import></div><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">MATTEO · 10 ANNI</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Judo 3" riga="nati 2013-2016 · martedì e giovedì 17.30-18.30 · 300 €" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Bottone" label="CAMBIA CORSO" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import></div><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">SARA · 8 ANNI</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Aikido 2" riga="nati 2016-2019 · venerdì 17.00-18.00 · 280 €" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Bottone" label="CAMBIA CORSO" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import></div></div><dc-import name="Titoletto" label="COME PAGATE" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Annuale" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Trimestre" hint-size="50%,52px"></dc-import></div></div></div><dc-import name="Titoletto" label="IL CONTO, GIÀ CON GLI SCONTI" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><dc-import name="RiquadroPasso" titolo="" righe="3 quote associative:150 €|3 annuali:940 €|Sconto famiglia 20% sull’annuale più basso (Aikido 2):−56 €|Totale:1.034 €" testo="La quota associativa non ha sconti e vale fino a luglio 2027. Se uno di voi fa più corsi, vale il tetto di 660 € del listino." tasti="" hint-size="100%,300px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" avanti="AVANTI · PAGA" nota="Tutto a posto in questo passo." hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

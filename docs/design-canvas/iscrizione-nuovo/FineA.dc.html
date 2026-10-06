@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Esito dopo MANDA LA RICHIESTA (TitoloEsito di ds.tsx), con le frasi di oggi: la richiesta non è ancora un’iscrizione, la accoglie la segreteria in RICHIESTE ONLINE. I tre «E ADESSO» compaiono solo quando servono (certificato non caricato, ricevuta non caricata); la segreteria non promette un numero di giorni.  -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 28px"><dc-import name="TitoloEsito" titolo="RICHIESTA ARRIVATA" tono="fatto" testi="Grazie, Paolo. La segreteria ha ricevuto la tua richiesta per Judo adulti, e controlla il modulo, il documento e il pagamento.|La segreteria ti scrive a paolo@esempio.it se manca qualcosa." hint-size="100%,330px"></dc-import><dc-import name="Titoletto" label="E ADESSO" hint-size="100%,50px"></dc-import><dc-import name="Riepilogo" numerati="{{ true }}" righe="x~La segreteria ti scrive~a paolo@esempio.it, se manca qualcosa|x~Porti il certificato medico~in segreteria, prima della prima lezione|x~Paghi la quota e l’annuale~in segreteria, o mandi la ricevuta" hint-size="100%,250px"></dc-import><dc-import name="Bottone" label="ISCRIVI UN’ALTRA PERSONA" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import></div>
+</main>
+
+</div>
+</x-dc>
+</body>
+</html>

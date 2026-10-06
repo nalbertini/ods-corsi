@@ -1,0 +1,307 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Nuovo flusso"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Main.dc.html",
+   "title": "Iscrizione · scelta di chi si iscrive",
+   "x": 0,
+   "y": 140,
+   "w": 390,
+   "h": 1088,
+   "page": "page-1"
+  },
+  {
+   "file": "A1.dc.html",
+   "title": "Adulto · passo 1 i tuoi dati",
+   "x": 0,
+   "y": 1568,
+   "w": 390,
+   "h": 1534,
+   "page": "page-1"
+  },
+  {
+   "file": "A1Controllo.dc.html",
+   "title": "Adulto · passo 1 il codice dice un’altra cosa",
+   "x": 510,
+   "y": 1568,
+   "w": 390,
+   "h": 1114,
+   "page": "page-1"
+  },
+  {
+   "file": "A2.dc.html",
+   "title": "Adulto · passo 2 corso e pagamento",
+   "x": 1020,
+   "y": 1568,
+   "w": 390,
+   "h": 1566,
+   "page": "page-1"
+  },
+  {
+   "file": "A3.dc.html",
+   "title": "Adulto · passo 3 modulo, firma e file",
+   "x": 1530,
+   "y": 1568,
+   "w": 390,
+   "h": 1792,
+   "page": "page-1"
+  },
+  {
+   "file": "A4.dc.html",
+   "title": "Adulto · passo 4 controlla e invia",
+   "x": 2040,
+   "y": 1568,
+   "w": 390,
+   "h": 1092,
+   "page": "page-1"
+  },
+  {
+   "file": "FineA.dc.html",
+   "title": "Adulto · richiesta arrivata",
+   "x": 2550,
+   "y": 1568,
+   "w": 390,
+   "h": 844,
+   "page": "page-1"
+  },
+  {
+   "file": "Uscita.dc.html",
+   "title": "Indietro dal passo 1 chiede",
+   "x": 3060,
+   "y": 1568,
+   "w": 390,
+   "h": 844,
+   "page": "page-1"
+  },
+  {
+   "file": "MancaQualcheFile.dc.html",
+   "title": "Manca qualche file · come oggi",
+   "x": 3570,
+   "y": 1568,
+   "w": 390,
+   "h": 844,
+   "page": "page-1"
+  },
+  {
+   "file": "M1.dc.html",
+   "title": "Minore · passo 1 il bambino",
+   "x": 0,
+   "y": 3700,
+   "w": 390,
+   "h": 1208,
+   "page": "page-1"
+  },
+  {
+   "file": "M1Controllo.dc.html",
+   "title": "Minore · passo 1 il codice dice un adulto",
+   "x": 510,
+   "y": 3700,
+   "w": 390,
+   "h": 1114,
+   "page": "page-1"
+  },
+  {
+   "file": "M2.dc.html",
+   "title": "Minore · passo 2 il genitore",
+   "x": 1020,
+   "y": 3700,
+   "w": 390,
+   "h": 1260,
+   "page": "page-1"
+  },
+  {
+   "file": "M3.dc.html",
+   "title": "Minore · passo 3 corsi, proposta e pagamento",
+   "x": 1530,
+   "y": 3700,
+   "w": 390,
+   "h": 1998,
+   "page": "page-1"
+  },
+  {
+   "file": "M4.dc.html",
+   "title": "Minore · passo 4 modulo, firma e file",
+   "x": 2040,
+   "y": 3700,
+   "w": 390,
+   "h": 1792,
+   "page": "page-1"
+  },
+  {
+   "file": "M5.dc.html",
+   "title": "Minore · passo 5 controlla e invia",
+   "x": 2550,
+   "y": 3700,
+   "w": 390,
+   "h": 1132,
+   "page": "page-1"
+  },
+  {
+   "file": "FineM.dc.html",
+   "title": "Minore · richiesta arrivata",
+   "x": 3060,
+   "y": 3700,
+   "w": 390,
+   "h": 878,
+   "page": "page-1"
+  },
+  {
+   "file": "T1.dc.html",
+   "title": "Anche tu · passo 5 di 6",
+   "x": 0,
+   "y": 6038,
+   "w": 390,
+   "h": 1224,
+   "page": "page-1"
+  },
+  {
+   "file": "T2.dc.html",
+   "title": "Anche tu · controlla e invia",
+   "x": 510,
+   "y": 6038,
+   "w": 390,
+   "h": 1494,
+   "page": "page-1"
+  },
+  {
+   "file": "FineT.dc.html",
+   "title": "Anche tu · richieste arrivate",
+   "x": 1020,
+   "y": 6038,
+   "w": 390,
+   "h": 844,
+   "page": "page-1"
+  },
+  {
+   "file": "FineTMezza.dc.html",
+   "title": "Anche tu · una richiesta è arrivata, l’altra no",
+   "x": 1530,
+   "y": 6038,
+   "w": 390,
+   "h": 844,
+   "page": "page-1"
+  },
+  {
+   "file": "F1.dc.html",
+   "title": "Famiglia · 1 ci conosciamo già",
+   "x": 0,
+   "y": 7872,
+   "w": 390,
+   "h": 854,
+   "page": "page-1"
+  },
+  {
+   "file": "F2.dc.html",
+   "title": "Famiglia · 2 il codice",
+   "x": 510,
+   "y": 7872,
+   "w": 390,
+   "h": 844,
+   "page": "page-1"
+  },
+  {
+   "file": "F3.dc.html",
+   "title": "Famiglia · 3 la tua famiglia",
+   "x": 1020,
+   "y": 7872,
+   "w": 390,
+   "h": 844,
+   "page": "page-1"
+  },
+  {
+   "file": "F4.dc.html",
+   "title": "Famiglia · 4 corsi e prezzi",
+   "x": 1530,
+   "y": 7872,
+   "w": 390,
+   "h": 1324,
+   "page": "page-1"
+  },
+  {
+   "file": "F5.dc.html",
+   "title": "Famiglia · 5 paga",
+   "x": 2040,
+   "y": 7872,
+   "w": 390,
+   "h": 898,
+   "page": "page-1"
+  },
+  {
+   "file": "F6.dc.html",
+   "title": "Famiglia · 6 pagato",
+   "x": 2550,
+   "y": 7872,
+   "w": 390,
+   "h": 844,
+   "page": "page-1"
+  },
+  {
+   "file": "F7.dc.html",
+   "title": "Famiglia · 7 WhatsApp",
+   "x": 3060,
+   "y": 7872,
+   "w": 390,
+   "h": 974,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "r0",
+   "x": 0,
+   "y": 0,
+   "w": 520,
+   "text": "Scelta",
+   "page": "page-1"
+  },
+  {
+   "id": "r1",
+   "x": 0,
+   "y": 1428,
+   "w": 520,
+   "text": "Adulto · 4 passi",
+   "page": "page-1"
+  },
+  {
+   "id": "r2",
+   "x": 0,
+   "y": 3560,
+   "w": 520,
+   "text": "Minore · 5 passi, con la proposta al genitore",
+   "page": "page-1"
+  },
+  {
+   "id": "r3",
+   "x": 0,
+   "y": 5898,
+   "w": 520,
+   "text": "Se il genitore dice sì: iscrive anche sé, 6 passi",
+   "page": "page-1"
+  },
+  {
+   "id": "r4",
+   "x": 0,
+   "y": 7732,
+   "w": 520,
+   "text": "Idea: una famiglia, una iscrizione, pagamento nel flusso, WhatsApp",
+   "page": "page-1"
+  },
+  {
+   "id": "n1",
+   "x": 520,
+   "y": 0,
+   "w": 520,
+   "text": "Il flusso nuovo (3 ottobre) con le logiche di oggi: codice fiscale prima della data, corsi per età, annuale o trimestre, QUANTO COSTA, certificato e ricevuta facoltativi, INDIETRO che torna al passo prima (due tocchi solo dal passo 1), niente bozza. Corsi, orari, prezzi, IBAN e tempi sono esempi: vanno presi dal listino.",
+   "page": "page-1"
+  }
+ ],
+ "launch": {
+  "view": "canvas",
+  "page": "page-1"
+ }
+}

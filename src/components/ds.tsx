@@ -404,3 +404,122 @@ export function DueTocchi({
     </button>
   )
 }
+
+/**
+ * Dove si è nel modulo a passi: un segmento per passo (fatti verdi, quello di
+ * adesso in tinta testo, gli altri `line`), il numero grande e «DI N» col nome
+ * del passo. Fonte: docs/design-canvas/ods-design-system/Avanzamento.dc.html.
+ */
+export function Avanzamento({ numero, totale, titolo }: { numero: number; totale: number; titolo: string }) {
+  return (
+    <div className="avanza" role="group" aria-label={`Passo ${numero} di ${totale}: ${titolo}`}>
+      <div className="avanza-segmenti" aria-hidden>
+        {Array.from({ length: totale }, (_, i) => (
+          <div key={i} className="avanza-segmento" data-stato={i + 1 < numero ? 'fatto' : i + 1 === numero ? 'adesso' : undefined} />
+        ))}
+      </div>
+      <div className="avanza-testa" aria-hidden>
+        <span className="num ob avanza-numero">{numero}</span>
+        <span className="avanza-nome">
+          <span>DI {totale}</span>
+          <span>{titolo}</span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Il fondo di ogni passo: cosa manca (una pastiglia per cosa) o la nota verde,
+ * poi INDIETRO e AVANTI (`vai` verde, per l'ultimo, che manda). INDIETRO è un
+ * DueTocchi: se `chiede` c'è, prende tutta la riga. Senza `onIndietro` non c'è.
+ * Fonte: docs/design-canvas/ods-design-system/BarraPasso.dc.html.
+ */
+export function BarraPasso({
+  manca = [],
+  nota,
+  avanti = 'AVANTI',
+  tono = 'principale',
+  occupato,
+  chiede,
+  onAvanti,
+  onIndietro,
+}: {
+  manca?: readonly string[]
+  nota?: string
+  avanti?: string
+  tono?: 'principale' | 'vai'
+  occupato?: boolean
+  chiede?: string
+  onAvanti: () => void
+  onIndietro?: () => void
+}) {
+  return (
+    <div className="barra-passo">
+      {manca.length > 0 && (
+        <div className="barra-manca" role="alert">
+          <span className="barra-manca-titolo">{manca.length === 1 ? 'MANCA 1 COSA:' : `MANCANO ${manca.length} COSE:`}</span>
+          {manca.map((m) => (
+            <span key={m} className="barra-pastiglia">
+              {m}
+            </span>
+          ))}
+        </div>
+      )}
+      {manca.length === 0 && nota && (
+        <div className="barra-nota">
+          <span className="barra-nota-segno" aria-hidden>
+            ✓
+          </span>
+          <span>{nota}</span>
+        </div>
+      )}
+      <div className="barra-tasti">
+        {onIndietro && (
+          <DueTocchi className="btn btn-ghost barra-indietro" disabled={occupato} chiede={chiede} onFai={onIndietro}>
+            INDIETRO
+          </DueTocchi>
+        )}
+        <button type="button" className={`btn ${VARIANTI[tono]} barra-avanti`} disabled={occupato} onClick={onAvanti}>
+          {avanti}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export interface RigaRiepilogo {
+  /** `fatto` ✓ verde, `manca` – giallo (una cosa facoltativa non data; il trattino pesa più d'un punto, che si perdeva), `guaio` ! rosso; `numero` mostra la posizione (E ADESSO). */
+  stato: 'fatto' | 'manca' | 'guaio' | 'numero'
+  titolo: string
+  dettaglio?: string
+  /** MODIFICA, CARICA: da 44px. */
+  tasto?: { testo: string; onFai: () => void }
+}
+
+/**
+ * Il riepilogo prima di mandare: una riga per cosa, col tasto per cambiarla.
+ * Fonte: docs/design-canvas/ods-design-system/Riepilogo.dc.html.
+ */
+export function Riepilogo({ righe }: { righe: readonly RigaRiepilogo[] }) {
+  return (
+    <ul className="card riepilogo">
+      {righe.map((r, i) => (
+        <li key={i} className="riepilogo-riga">
+          <span className="num riepilogo-segno" data-stato={r.stato} aria-hidden>
+            {r.stato === 'numero' ? i + 1 : r.stato === 'fatto' ? '✓' : r.stato === 'guaio' ? '!' : '–'}
+          </span>
+          <span className="riepilogo-testo">
+            <span className="riepilogo-titolo">{r.titolo}</span>
+            {r.dettaglio && <span className="riepilogo-dettaglio">{r.dettaglio}</span>}
+          </span>
+          {r.tasto && (
+            <button type="button" className="riepilogo-tasto" onClick={r.tasto.onFai}>
+              {r.tasto.testo}
+            </button>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}

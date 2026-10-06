@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- IDEA. Le persone del nucleo (come MembroNucleo nell’area iscritti di oggi), da scegliere per l’iscrizione di quest’anno. AGGIUNGI UN’ALTRA PERSONA riparte dai dati del titolare, come UNA PERSONA IN PIÙ di oggi. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="2" totale="5" titolo="LA TUA FAMIGLIA" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 12px"><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">Ciao Giulia! Abbiamo ritrovato la tua famiglia. Scegli chi si iscrive quest’anno.</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Giulia Rossi · tu" riga="Judo adulti, l’anno scorso · certificato medico valido fino a ottobre 2027" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Matteo Rossi · nato nel 2016" riga="Judo 3, l’anno scorso · certificato medico valido fino a marzo 2027" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Sara Rossi · nata nel 2018" riga="Aikido 2, l’anno scorso · certificato scaduto: da portare in segreteria" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Bottone" label="+ AGGIUNGI UN’ALTRA PERSONA" variante="tratteggiato" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Vedi solo nomi e anni. Codice fiscale, indirizzo e telefono restano al sicuro, e si ricontrollano alla fine.</span></div>
+</main>
+<dc-import name="BarraPasso" avanti="AVANTI · 3 PERSONE" nota="Tutto a posto in questo passo." hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

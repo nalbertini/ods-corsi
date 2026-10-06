@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Passo 3, minore. I corsi per l’età di Matteo (nato nel 2016, dal codice fiscale) in cima, come in SceltaCorsi di oggi; i corsi fuori età si scelgono lo stesso e la segreteria richiama (FUORI ETÀ negli elenchi di segreteria, con la tolleranza di sei mesi). La proposta al genitore è la parte nuova del flusso: lo sconto famiglia è quello del listino, 20% sull’annuale più basso della famiglia, quota esclusa. Il corso parallelo si ricava dai dati del listino: stessa disciplina, anno di nascita del genitore dentro natiDal/natiAl, orari che coincidono. Il conto è QUANTO COSTA di oggi. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1998px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="3" totale="5" titolo="CORSI E COME SI PAGA" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 4px"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">PER LA SUA ETÀ</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Judo 3" riga="nati 2013-2016 · martedì e giovedì 17.30-18.30" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Aikido 2" riga="nati 2016-2019 · venerdì 17.00-18.00" hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Lotta 3" riga="nati 2016 e prima · lunedì e mercoledì 16.30-17.30" hint-size="100%,72px"></dc-import></div><dc-import name="Bottone" label="+ ALTRI 9 CORSI, NON PER LA SUA ETÀ" variante="tratteggiato" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Se scegli un corso che non è della sua età, la segreteria ti richiama.</span></div><dc-import name="Titoletto" label="TI ISCRIVI ANCHE TU?" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><dc-import name="RiquadroPasso" tono="prova" titolo="Mentre Matteo fa Judo 3, tu puoi fare Judo adulti" testo="Judo adulti è per nati nel 2012 o prima, quindi anche per te. Stessa ora: martedì e giovedì 17.30-18.30.|Lo sconto famiglia vale sull’annuale: con il trimestre non c’è." righe="Matteo, con la quota:350 €|Tu: quota 50 + Judo adulti 360:410 €|Sconto famiglia 20% sull’annuale più basso (Matteo):−60 €|In due:700 €" tasti="ISCRIVO ANCHE ME|NO, SOLO MATTEO" primoPrincipale="{{ true }}" hint-size="100%,420px"></dc-import></div><dc-import name="Titoletto" label="COME PAGA" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Annuale" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Trimestre" hint-size="50%,52px"></dc-import></div></div><dc-import name="StimaCosto" righe="Quota associativa:50 €|Judo 3 · annuale:300 €" totale="350 €" frasi="La quota associativa vale fino a luglio 2027." causale="Iscrizione Matteo Rossi · Judo 3" iban="IT03 D076 0101 0000 0007 6350 339" intestatario="ASD Il Centro Judo" hint-size="100%,470px"></dc-import></div><dc-import name="Titoletto" label="LA RICEVUTA" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><dc-import name="CaricaFile" etichetta="RICEVUTA DEL PAGAMENTO" seManca="PUOI PAGARE IN SEGRETERIA" dettaglio="Se hai già pagato la quota associativa e l’annuale: una foto o il PDF. Se no, paghi in segreteria." hint-size="100%,120px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" avanti="AVANTI" manca="SCEGLI: ANCHE TE?" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

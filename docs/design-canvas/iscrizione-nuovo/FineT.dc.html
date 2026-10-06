@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Esito di due richieste insieme. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 28px"><dc-import name="TitoloEsito" titolo="RICHIESTE ARRIVATE" tono="fatto" testi="Grazie, Giulia. La segreteria ha ricevuto le iscrizioni di Matteo (Judo 3) e la tua (Judo adulti).|La segreteria ti scrive a giulia@esempio.it se manca qualcosa." hint-size="100%,330px"></dc-import><dc-import name="Titoletto" label="E ADESSO" hint-size="100%,50px"></dc-import><dc-import name="Riepilogo" numerati="{{ true }}" righe="x~La segreteria ti scrive~a giulia@esempio.it, se manca qualcosa|x~Portate i due certificati medici~prima della prima lezione|x~Pagate 700 €~in segreteria, con lo sconto famiglia già tolto" hint-size="100%,250px"></dc-import><dc-import name="Bottone" label="ISCRIVI UN ALTRO FIGLIO" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import></div>
+</main>
+
+</div>
+</x-dc>
+</body>
+</html>

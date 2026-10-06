@@ -689,6 +689,66 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
   .modulo-griglia, .modulo-corsi { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* Il modulo a passi (iscrizioni/#nuova, solo in prova). Misure dai componenti del
+   design system: Avanzamento.dc.html, BarraPasso.dc.html, Riepilogo.dc.html. */
+.avanza { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 4px; }
+.avanza-segmenti { display: flex; gap: 4px; }
+/* I blocchi di un passo del modulo a passi: un respiro sopra e sotto, come fra i titoletti del modulo di oggi. */
+.passo-prima { padding-top: 14px; }
+.passo-dopo { padding-bottom: 12px; }
+/* Le due caselle del regolamento e della privacy hanno già 11px sopra e sotto: col gap della griglia stavano a 34px, più delle altre scelte. */
+.modulo-consensi { row-gap: 0; }
+.scelta-chi { padding-top: 14px; padding-bottom: 12px; }
+/* Sul telefono le due schede (IO / MIO FIGLIO) una sotto l'altra: due colonne stringerebbero la riga che spiega cosa serve. */
+@media (max-width: 560px) { .scelta-chi .modulo-scelte-una { flex-direction: column; } }
+/* QUANTO COSTA sotto i bottoni della formula: un respiro, non attaccato. */
+.passo-dopo.stack > .modulo-campo { padding-top: 12px; }
+.avanza-segmento { flex: 1; height: 6px; background: var(--line); }
+.avanza-segmento[data-stato='fatto'] { background: var(--verde); }
+.avanza-segmento[data-stato='adesso'] { background: var(--text); }
+.avanza-testa { display: flex; align-items: baseline; gap: 10px; }
+.avanza-numero { font-size: 56px; font-weight: 700; line-height: 0.9; letter-spacing: 0.02em; color: var(--text); }
+.avanza-nome { display: flex; flex-direction: column; font-family: var(--cond); font-size: 15px; font-weight: 700; letter-spacing: 0.16em; line-height: 1.15; color: var(--sec); }
+/* Resta in fondo allo schermo: su un telefono AVANTI sta sempre sotto il pollice. */
+.barra-passo {
+  position: sticky; bottom: 0; z-index: 1; display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 20px calc(var(--safe-b) + 20px); background: var(--bg); border-top: 2px solid var(--line); color: var(--text);
+  /* Lo sfondo e il filo vanno da bordo a bordo dello schermo largo, il contenuto resta largo quanto `.modulo`.
+     L'ombra non allarga l'area che scorre (niente barra orizzontale); il clip la tiene fuori da sopra e sotto. */
+  box-shadow: 0 2px 0 100vmax var(--bg), 0 0 0 100vmax var(--line); clip-path: inset(0 -100vmax);
+}
+.barra-manca { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.barra-manca-titolo { font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.2em; color: var(--rosso-testo); }
+.barra-pastiglia {
+  display: flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid var(--line);
+  font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec);
+}
+.barra-nota { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.35; color: var(--sec); }
+.barra-nota-segno { font-family: var(--cond); font-size: 16px; font-weight: 700; color: var(--verde-testo); }
+.barra-tasti { display: flex; flex-wrap: wrap; gap: 10px; }
+.barra-indietro { width: 110px; flex: none; }
+/* La domanda dei due tocchi prende tutta la riga, e AVANTI scende sotto. */
+.barra-indietro[data-sicuro='true'] { width: 100%; border-color: var(--rosso); color: var(--rosso-testo); }
+.barra-indietro > .due-tocchi-chiede { white-space: normal; text-align: center; }
+.barra-avanti { flex: 1 1 0; min-width: 0; text-align: center; }
+.barra-indietro[data-sicuro='true'] ~ .barra-avanti { flex-basis: 100%; }
+.riepilogo { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.riepilogo-riga { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 12px 14px; }
+.riepilogo-riga + .riepilogo-riga { border-top: 2px solid var(--line-soft); }
+.riepilogo-segno { width: 26px; flex: none; text-align: center; font-size: 22px; font-weight: 700; line-height: 1; color: var(--text); }
+.riepilogo-segno[data-stato='fatto'] { color: var(--verde-testo); }
+.riepilogo-segno[data-stato='manca'] { color: var(--giallo-testo); }
+.riepilogo-segno[data-stato='guaio'] { color: var(--rosso-testo); }
+.riepilogo-testo { display: flex; flex-direction: column; flex-grow: 1; min-width: 0; line-height: 1.2; }
+.riepilogo-titolo { font-weight: 600; }
+.riepilogo-dettaglio { font-size: 13px; color: var(--dim); }
+.riepilogo-tasto {
+  display: flex; align-items: center; flex: none; min-height: 44px; padding: 0 12px; border: 2px solid var(--line);
+  font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: var(--sec);
+}
+.riepilogo-tasto:hover { border-color: var(--dim); color: var(--text); }
+.riepilogo-tasto:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
 /* La pagina senza indirizzo: le quattro aree, una scheda ciascuna. */
 .scelta-area { gap: 4px; padding: 16px; color: var(--text); text-decoration: none; }
 .scelta-area:hover { border-color: var(--dim); }
