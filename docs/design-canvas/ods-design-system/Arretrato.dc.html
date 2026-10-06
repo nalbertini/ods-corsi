@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 100%; padding: 10px 20px 0; color: {{c.text}}">
+  <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 14px; background: {{c.surface}}; border: 2px solid {{bordo}}">
+    <div style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; text-align: left">
+      <span style="flex-grow: 1; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: {{coloreTitolo}}">{{titolo}}</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: 700; line-height: 1; color: {{c.dim}}">{{freccia}}</span>
+    </div>
+    <sc-if value="{{aperto}}" hint-placeholder-val="{{ true }}">
+      <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{sotto}}</span>
+    </sc-if>
+    <sc-if value="{{aperto}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column">
+        <sc-for list="{{righe}}" as="r" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 0; border-top: 1px solid {{c.lineSoft}}">
+            <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0; text-align: left">
+              <span style="font-weight: 600">{{r.primo}}</span>
+              <span style="font-size: 14px; color: {{c.dim}}">{{r.secondo}}</span>
+            </div>
+            <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: 700; line-height: 1; color: {{c.dim}}">&#8250;</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tono":{"editor":"enum","options":["giallo","rosso"],"default":"giallo"},"aperto":{"editor":"boolean","default":false},"titolo":{"editor":"text","default":"UNA PRESENZA SEGNALATA"},"sotto":{"editor":"text","default":"Iscritti che dicono di esserci stati e non risultano: tocca la lezione per confermare."},"righe":{"editor":"text","default":"Rossi Giulia:Judo kids · lunedì 5 ottobre 17:30"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":120}}'>
+// Riproduzione 1:1 di `Arretrato` (src/components/CalendarioScreen.tsx righe 50-95) con .arretrato* e .segnalate-voce
+// (src/styles.css righe 346-353): le cose rimaste indietro (PRESENZE SEGNALATE, APPELLI DA CHIUDERE) sotto la lezione di
+// adesso, una riga col conto che si apre. Fuori `.pad` (20px) con 10px sopra; dentro una `.card` (2px, padding 0 14px, gap 8px).
+// - tono: giallo = bordo e titolo `giallo-testo`; rosso = bordo `rosso` (il colore del marchio) e titolo `rosso-testo`.
+// - testa alta 52px: titolo `.rule-label` (Saira 15px 700 0.24em) e a destra + (chiuso) o − (aperto), 24px `dim`.
+// - aperto: sotto la testa la frase (14px dim, interlinea 1.4) e le righe `primo:secondo|primo:secondo` (primo 600, secondo
+//   14px dim, › a destra), 52px, riga sopra 1px `line-soft`. Il primo ':' separa: il secondo puo' contenere l'ora (17:30).
+const T = {
+  scuro: { surface: '#1c1c1c', lineSoft: '#2a2a2a', text: '#f2f2f0', dim: '#8c8c88', rosso: '#e4292a', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', lineSoft: '#e2e2dd', text: '#161616', dim: '#656561', rosso: '#e4292a', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const rosso = p.tono === 'rosso';
+    const aperto = truthy(p.aperto);
+    const righe = String(p.righe ?? 'Rossi Giulia:Judo kids · lunedì 5 ottobre 17:30').split('|').filter((x) => x.trim() !== '').map((x) => {
+      const i = x.indexOf(':');
+      return i < 0 ? { primo: x.trim(), secondo: '' } : { primo: x.slice(0, i).trim(), secondo: x.slice(i + 1).trim() };
+    });
+    return {
+      c,
+      bordo: rosso ? c.rosso : c.gialloTesto,
+      coloreTitolo: rosso ? c.rossoTesto : c.gialloTesto,
+      titolo: p.titolo ?? 'UNA PRESENZA SEGNALATA',
+      sotto: p.sotto ?? 'Iscritti che dicono di esserci stati e non risultano: tocca la lezione per confermare.',
+      aperto,
+      freccia: aperto ? '−' : '+',
+      righe,
+    };
+  }
+}
+</script>
+</body>
+</html>

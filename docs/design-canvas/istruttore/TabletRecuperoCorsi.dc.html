@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- TI SEI DIMENTICATO DI SEGNARTI? (TabletRecupero.tsx), primo passo: la scelta del corso. Si arriva dal tasto giallo in fondo alla
+     colonna di TabletHome. Sotto la testata normale della sala (qui nessun bollino: il recupero non e' l'area istruttore), martedi' 6
+     ottobre alle 18:40, tema scuro. .tb-corpo.tb-pila (padding 22px 32px 24px, gap 18px): la barra con INDIETRO, titolo da 32px e
+     «Scegli il tuo corso.», la griglia .tb-griglia (4 colonne da ~295px a 1280px, gap 12px) con un corso per scheda e la nota in fondo.
+     Compaiono solo i corsi con almeno una lezione recuperabile (recuperabile in lib/tablet.ts: cominciata da non piu' di 14 giorni,
+     non annullata e non aperta); sotto il nome i giorni della settimana in cui si fa. Judo kids e' aperta adesso, ma ha le lezioni
+     delle settimane scorse. Non riprodotto: «In questa sala non ci sono state lezioni di recente.» a elenco vuoto. -->
+<div style="display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212">
+  <dc-import name="TabletTestata" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" hint-size="100%,92px"></dc-import>
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 18px; padding: 22px 32px 24px; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 18px">
+        <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #333333; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; color: #f2f2f0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>INDIETRO</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 32px; font-weight: 700; letter-spacing: 0.03em; line-height: 1">TI SEI DIMENTICATO DI SEGNARTI?</span>
+          <span style="font-size: 17px; color: #c9c9c4">Scegli il tuo corso.</span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-content: start">
+        <dc-import name="TabletScelta" variante="corso" titolo="JUDO ADULTI" sotto="lun mar gio" tinta="#1b8ac4" hint-size="100%,96px"></dc-import>
+        <dc-import name="TabletScelta" variante="corso" titolo="JUDO BABY" sotto="mar gio" tinta="#f4c31b" hint-size="100%,96px"></dc-import>
+        <dc-import name="TabletScelta" variante="corso" titolo="JUDO KIDS" sotto="mar sab" tinta="#1b8ac4" hint-size="100%,96px"></dc-import>
+      </div>
+      <div style="flex-grow: 1"></div>
+      <span style="font-size: 17px; line-height: 1.5; color: #8c8c88">Si recupera fino a 14 giorni indietro. La presenza risulta «segnata dopo» e l'istruttore la vede così nell'appello.</span>
+  </div>
+  <dc-import name="TabletPiede" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

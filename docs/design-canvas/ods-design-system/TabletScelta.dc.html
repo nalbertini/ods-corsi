@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<sc-if value="{{corsoVar}}" hint-placeholder-val="{{ true }}">
+  <div style="display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 18px 20px; background: {{c.surface}}; border: 2px solid {{c.line}}; border-left: 8px solid {{tinta}}; color: {{c.text}}; text-align: left">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 24px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05; text-transform: uppercase">{{titolo}}</span>
+    <span style="font-size: 17px; color: {{c.sec}}">{{sotto}}</span>
+  </div>
+</sc-if>
+<sc-if value="{{lezioneVar}}" hint-placeholder-val="{{ false }}">
+  <div style="display: flex; align-items: center; gap: 14px; width: 100%; min-height: 84px; padding: 18px 20px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}; text-align: left">
+    <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase">{{titolo}}</span>
+      <span style="display: flex; align-items: center; gap: 10px; min-width: 0">
+        <span style="white-space: nowrap; flex-shrink: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; color: {{c.dim}}">{{ora}}</span>
+        <sc-if value="{{haAttivita}}" hint-placeholder-val="{{ false }}">
+          <span style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; min-width: 0; padding: 2px 8px; border: 2px solid {{c.line}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; line-height: 1.2; color: {{c.sec}}; text-transform: uppercase">{{attivita}}</span>
+        </sc-if>
+      </span>
+    </span>
+    <span style="white-space: nowrap; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; color: {{c.sec}}">{{conto}}</span>
+  </div>
+</sc-if>
+</x-dc>
+<script data-dc-script data-props='{"variante":{"editor":"enum","options":["corso","lezione"],"default":"corso"},"titolo":{"editor":"text","default":"JUDO KIDS"},"sotto":{"editor":"text","default":"lun mar gio"},"tinta":{"editor":"text","default":"#1b8ac4"},"ora":{"editor":"text","default":"18:30–19:30"},"attivita":{"editor":"text","default":""},"conto":{"editor":"text","default":"7 su 12"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":295,"height":96}}'>
+// Riproduzione 1:1 delle scelte di TI SEI DIMENTICATO DI SEGNARTI? (TabletRecupero.tsx, righe 66-111): .tb-scelta e
+// .tb-scelta-riga (src/styles.css, righe 1071-1076), dentro .tb-griglia (colonne da minimo 260px, gap 12px).
+// - variante corso: scheda a colonna, padding 18px 20px, bordo `line` da 2px e barra a sinistra da 8px nella tinta del
+//   corso; titolo obliquo da 24px, sotto i giorni in cui si fa (`sotto`, «lun mar gio») da 17px in `sec`.
+// - variante lezione: riga alta almeno 84px, barra a sinistra da 2px (nessuna tinta); a sinistra il giorno (`titolo`:
+//   OGGI o MARTEDI' 6 OTTOBRE, 22px obliquo) e sotto l'ora (16px, `dim`) con l'etichetta dell'attivita'; a destra «N su M»
+//   (`conto`, 15px, `sec`).
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const lezione = p.variante === 'lezione';
+    return {
+      c: T[p.tema] || T.scuro,
+      corsoVar: !lezione, lezioneVar: lezione,
+      titolo: p.titolo ?? 'JUDO KIDS', sotto: p.sotto ?? 'lun mar gio', tinta: p.tinta || '#1b8ac4',
+      ora: p.ora ?? '18:30–19:30', attivita: p.attivita ?? '', haAttivita: !!p.attivita,
+      conto: p.conto ?? '7 su 12',
+    };
+  }
+}
+</script>
+</body>
+</html>

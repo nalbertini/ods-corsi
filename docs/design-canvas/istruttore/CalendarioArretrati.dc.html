@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Calendario dell'istruttore sul telefono (CalendarioScreen con `soloDi`) quando restano cose indietro: sotto la lezione
+     di adesso, PRESENZE SEGNALATE (gialla, chiusa: `arretrati`) e APPELLI DA CHIUDERE (rossa, aperta: `senzaAppello`, le
+     lezioni passate fuori dalla settimana che si guarda). Nell'elenco, una lezione di oggi gia' finita porta DA CHIUDERE.
+     Martedi' 6 ottobre 2026, sono le 18:45. Copiato da PaginaTelefono.dc.html, solo <dc-import>. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+  <dc-import name="Testata" luogo="ISTRUTTORI" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <dc-import name="Titoletto" label="ADESSO" giallo="{{ true }}" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+      <dc-import name="RigaCalendario" ora="18:30" quando="ADESSO" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" presenti="7" stato="in-corso" hint-size="100%,72px"></dc-import>
+    </div>
+
+    <dc-import name="Arretrato" tono="giallo" titolo="UNA PRESENZA SEGNALATA" sotto="Iscritti che dicono di esserci stati e non risultano: tocca la lezione per confermare." righe="Rossi Giulia:Judo kids · lunedì 5 ottobre 17:30" hint-size="100%,72px"></dc-import>
+    <dc-import name="Arretrato" tono="rosso" aperto="{{ true }}" titolo="2 APPELLI DA CHIUDERE" sotto="Lezioni passate con qualcuno ancora da segnare. Tocca la lezione, segna chi manca e chiudi l’appello." righe="Judo kids:lunedì 5 ottobre 17:30 · 3 da segnare|Judo kids:sabato 3 ottobre 10:00 · 2 da segnare" hint-size="100%,248px"></dc-import>
+
+    <div style="display: flex; align-items: center; gap: 8px; padding: 14px 20px 0">
+      <dc-import name="Bottone" label="‹" variante="linea" alto="44px" larghezza="44px" corpo="22px" spazio="0" hint-size="44px,44px"></dc-import>
+      <span style="flex-grow: 1; text-align: center; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 17px; font-weight: 700; letter-spacing: 0.06em">6 OTT – 12 OTT</span>
+      <dc-import name="Bottone" label="›" variante="linea" alto="44px" larghezza="44px" corpo="22px" spazio="0" hint-size="44px,44px"></dc-import>
+    </div>
+
+    <dc-import name="Titoletto" label="OGGI · MARTEDÌ 6 OTTOBRE" conto="2" giallo="{{ true }}" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+      <dc-import name="RigaCalendario" ora="16:30" corso="Judo mini" sala="Sala 2" istruttore="Marco R." kanji="柔" tinta="#8b5cc4" iscritti="8" presenti="5" stato="da-chiudere" hint-size="100%,72px"></dc-import>
+      <dc-import name="RigaCalendario" ora="20:00" corso="Judo adulti" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="9" stato="iscritti" hint-size="100%,72px"></dc-import>
+    </div>
+
+    <dc-import name="Titoletto" label="GIOVEDÌ 8 OTTOBRE" conto="1" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 28px">
+      <dc-import name="RigaCalendario" ora="17:30" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="iscritti" hint-size="100%,72px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

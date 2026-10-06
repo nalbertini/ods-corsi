@@ -540,6 +540,33 @@
       "w": 1280,
       "h": 92,
       "page": "page-2"
+    },
+    {
+      "file": "Arretrato.dc.html",
+      "title": "Arretrato",
+      "x": 0,
+      "y": 9490,
+      "w": 390,
+      "h": 120,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletScelta.dc.html",
+      "title": "TabletScelta",
+      "x": 490,
+      "y": 9490,
+      "w": 295,
+      "h": 96,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTestaAppelloPassato.dc.html",
+      "title": "TabletTestaAppelloPassato",
+      "x": 885,
+      "y": 9490,
+      "w": 808,
+      "h": 170,
+      "page": "page-2"
     }
   ],
   "annotations": [
