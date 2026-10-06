@@ -543,6 +543,11 @@ export function richiesteDaMandare(s: StatoPassi, provincia: string, faiPdf: (c:
   return daMandare
 }
 
+/** Cosa dire se il PDF non viene: «Ho il foglio firmato» c'è tra le scelte solo senza «Anche tu». */
+export const moduloNonSiPrepara = (conFoglioInFoto: boolean) =>
+  'Non riesco a preparare il modulo con la tua firma. Riprova fra un momento. ' +
+  (conFoglioInFoto ? 'Se non va, torna indietro, scegli «Ho il foglio firmato», firma il modulo a mano e carica la foto.' : 'Se non va, chiama la segreteria.')
+
 type Mancato = { richiesta: number; tipo: TipoFile }
 
 export type Esito =
@@ -583,7 +588,7 @@ async function mandaDavvero(d: DatiRichieste, daMandare: DaMandare[]): Promise<E
     } catch (e) {
       // Chi usa l'app non legge il testo dell'errore: ci serve solo in console.
       console.error(e)
-      return { esito: 'fermo', perche: 'Il modulo firmato non si prepara: riprova, o caricane la foto' }
+      return { esito: 'fermo', perche: moduloNonSiPrepara(daMandare.length === 1) }
     }
   }
   // Le due richieste arrivano separate: la segreteria le lega da questa riga.

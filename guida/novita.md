@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.43.1 — 6 ottobre 2026
+
+### Risolto
+
+- I campi si vedono anche nel tema scuro e le scelte a due non sembrano più caselle
+
+### Modificato
+
+- Quando il modulo firmato non si prepara, il messaggio dice cosa fare
+
 ## 0.43.0 — 6 ottobre 2026
 
 ### Novità
