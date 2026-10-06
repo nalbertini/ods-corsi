@@ -144,7 +144,8 @@ function daBozza(b: Bozza, corsi: ReadonlyArray<CorsoRef>): DatiListino | string
 /** Come si legge un corso chiuso: gli anni di nascita, poi i prezzi in fila. */
 function riassunto(c: BozzaCorso) {
   // Senza anni il corso va bene per tutti: si vede senza aprirlo, se è una dimenticanza.
-  return `${anniDiNascita({ natiDal: c.natiDal.trim(), natiAl: c.natiAl.trim() })} — ${c.prezzi
+  const minima = c.etaMinima.trim() ? ` · dai ${c.etaMinima.trim()} anni` : ''
+  return `${anniDiNascita({ natiDal: c.natiDal.trim(), natiAl: c.natiAl.trim() })}${minima} — ${c.prezzi
     .map((p) => {
       const pezzi = [p.saldo && `saldo ${p.saldo} €`, p.annuale && `annuale ${p.annuale} €`, p.trimestre && `trimestre ${p.trimestre} €`].filter(Boolean).join(' · ')
       return p.etichetta ? `${p.etichetta.toLowerCase()}: ${pezzi}` : pezzi
@@ -464,7 +465,10 @@ function SchedaCorso({
         {testoCampo('natiAl', 'NATI AL', 4, false, '', true)}
         {testoCampo('etaMinima', 'DAI (ANNI)', 2, false, '', true)}
         <span id={id('anni')} className="sg-sotto" style={{ gridColumn: '1 / -1', marginBottom: 6 }}>
-          Il corso va in cima per chi è nato in questi anni. Vuoti: sta a parte, «senza fascia d’età». Solo NATI AL: quell’anno e prima. DAI (ANNI): chi ha meno anni non vede il corso quando si iscrive (per i corsi per grandi); vuoto, nessun limite.
+          Il corso va in cima per chi è nato in questi anni. Vuoti: sta a parte, «senza fascia d’età». Solo NATI AL: quell’anno e prima.
+        </span>
+        <span className="sg-sotto" style={{ gridColumn: '1 / -1', marginBottom: 6 }}>
+          DAI (ANNI): chi è più piccolo non vede il corso. Vuoto: per tutti. Nel modulo la riga dice «dai N anni» solo se ETÀ è vuoto.
         </span>
         <Campo id={id('orari')} etichetta="ORARI · UNO PER RIGA" largo>
           <textarea
