@@ -184,9 +184,11 @@ export function SceltaCorsi({
         const stato = una ? { role: 'radio', 'aria-checked': on } : { 'aria-pressed': on }
         return (
           <button key={v.id} type="button" className="modulo-corso" {...stato} onClick={() => onScegli(v.id)}>
-            <span className="modulo-spunta" aria-hidden>
-              {on ? (una ? '●' : '✓') : ''}
-            </span>
+            {!una && (
+              <span className="modulo-spunta" aria-hidden>
+                {on ? '✓' : ''}
+              </span>
+            )}
             {v.riga ? (
               <span className="stack modulo-corso-testo">
                 {v.testo}

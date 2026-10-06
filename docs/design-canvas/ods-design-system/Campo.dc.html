@@ -37,6 +37,14 @@
       </span>
     </div>
   </sc-if>
+  <sc-if value="{{eUna}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 100%; min-height: 52px; padding: 8px 12px; background: {{fondoUna}}; border: 2px solid {{bordoScelta}}; font-size: 15px; font-weight: 600; text-align: center; color: {{coloreUna}}">
+      {{testo}}
+      <sc-if value="{{haRiga}}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 13px; font-weight: 400; line-height: 1.35; color: {{coloreRigaUna}}">{{riga}}</span>
+      </sc-if>
+    </div>
+  </sc-if>
   <sc-if value="{{eSpunta}}" hint-placeholder-val="{{ false }}">
     <div style="display: flex; align-items: flex-start; gap: 12px; padding: 11px 0; font-size: 15px; line-height: 1.4; color: {{c.sec}}">
       <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 22px; height: 22px; border: 2px solid {{bordoSpunta}}; background: {{sfondoSpunta}}; color: {{c.bg}}; font-size: 16px; line-height: 1">{{segnoSpunta}}</span>
@@ -59,14 +67,15 @@
 //   .sg-etichetta (stessa misura; manca = rosso-testo); controllo .sg-campo (44px, padding 0 12px, 15px, fondo `bg`, bordo 2px
 //   `line`); acceso = bordo `giallo` (data-acceso); area alta quanto le righe (padding 10px 12px, interlinea 1.4); select = con la ▾.
 // nota = NotaCampo (.modulo-nota, 14px, interlinea 1.35): guaio rosso-testo e il campo prende il bordo `rosso` (aria-invalid), avviso giallo-testo.
+// PROPOSTA (rifinitura iscrizione): con `una` la scelta e' un SEGMENTO PIENO, senza quadratino: la scelta prende il fondo `text` e il testo `bg`, le altre il bordo `riga-campo`; il quadratino con ✓ resta solo per le scelte multiple. I bordi dei campi e delle scelte usano `riga-campo` (3:1 sul fondo), non `line`.
 // scelta = .modulo-corso (52px, fondo `surface`, 15px 600) con la spunta .modulo-spunta (22px): ✓ per piu' d'una, ● con `una` (come paghi);
 //   scelto = bordo `text`, fondo `surface-2`; riga = eta' e orari sotto il nome (13px `dim`, `sec` sul scelto).
 // spunta = .modulo-privacy: la casella 22px (qui disegnata: la nativa dipende dal browser) e il testo 15px `sec`.
 // Per scelta e spunta il testo e' `valore`.
 // Il fuoco, il segnaposto del browser e il cursore non sono riprodotti (stati dinamici).
 const T = {
-  scuro: { surface: '#1c1c1c', surface2: '#242424', bg: '#121212', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52' },
-  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', bg: '#f4f4f1', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d' },
+  scuro: { surface: '#1c1c1c', surface2: '#242424', bg: '#121212', line: '#333333', lineCampo: '#6e6e6a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', bg: '#f4f4f1', line: '#d4d4ce', lineCampo: '#8a8a85', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const BODY = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
@@ -92,13 +101,13 @@ class Component extends DCLogic {
       etichetta, conEtichetta: etichetta !== '',
       coloreEtichetta: truthy(p.manca) ? c.rossoTesto : c.dim,
       eControllo: tipo === 'testo' || tipo === 'select' || area || sola,
-      eSelect: tipo === 'select', eScelta: tipo === 'scelta', eSpunta: tipo === 'spunta',
+      eSelect: tipo === 'select', eScelta: tipo === 'scelta' && !una, eUna: tipo === 'scelta' && una, fondoUna: scelto ? c.text : c.surface, coloreUna: scelto ? c.bg : c.text, coloreRigaUna: scelto ? c.bg : c.dim, eSpunta: tipo === 'spunta',
       allinea: area ? 'flex-start' : 'center',
       alto: area ? (sg ? '88px' : '104px') : sg ? '44px' : '52px',
       padding: area ? (sg ? '10px 12px' : '12px 14px 0') : sg ? '0 12px' : '0 14px',
       sfondo: sola ? 'transparent' : sg ? c.bg : c.surface,
       stileBordo: sola ? 'dashed' : 'solid',
-      bordo: guaio ? c.rosso : truthy(p.acceso) ? c.giallo : c.line,
+      bordo: guaio ? c.rosso : truthy(p.acceso) ? c.giallo : c.lineCampo,
       coloreValore: sola ? c.dim : valore !== '' ? c.text : c.dim,
       famiglia: codice ? COND : BODY,
       tabulare: codice ? 'tabular-nums' : 'normal',
@@ -108,10 +117,10 @@ class Component extends DCLogic {
       aCapo: area ? 'normal' : 'nowrap',
       testo: valore !== '' || tipo === 'scelta' || tipo === 'spunta' ? valore : (p.segnaposto ?? ''),
       sfondoScelta: scelto ? c.surface2 : c.surface,
-      bordoScelta: scelto ? c.text : c.line,
+      bordoScelta: scelto ? c.text : c.lineCampo,
       segno: scelto ? (una ? '●' : '✓') : '',
       haRiga: riga !== '', riga, coloreRiga: scelto ? c.sec : c.dim,
-      bordoSpunta: scelto ? c.text : c.line,
+      bordoSpunta: scelto ? c.text : c.lineCampo,
       sfondoSpunta: scelto ? c.text : 'transparent',
       segnoSpunta: scelto ? '✓' : '',
       haNota: nota !== '', nota,

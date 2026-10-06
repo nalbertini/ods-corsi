@@ -109,6 +109,8 @@ RICHIESTA** la manda. Chi iscrive il figlio può iscriversi anche lui, con
 **ISCRIVO ANCHE ME**: sono poche domande in più, e la segreteria vede il
 conto della famiglia con lo sconto.
 
+Quando c'è da scegliere fra due cose (**IO, SONO ADULTO** o **MIO FIGLIO**, **TRIMESTRE** o **ANNUALE**, **AUTORIZZO** o **NON AUTORIZZO**) la scelta fatta si riempie: è il tasto pieno. I corsi, dove se ne possono scegliere più d'uno, hanno invece la casella con la spunta. I bordi dei campi sono più chiari, anche nel tema scuro.
+
 Per ora si apre solo in prova, con l'indirizzo `iscrizioni/?prova#nuova`.
 Non salva niente: se si esce prima di mandare, le risposte si perdono, e con
 la prova nulla va a un server. Il modulo di sopra resta quello di oggi.

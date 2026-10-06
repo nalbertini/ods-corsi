@@ -38,7 +38,7 @@ Google, e vale solo per i mockup.
 | `Resoconto.dc.html` | Il resoconto di fine import: riquadro a bordo giallo o verde, elenco monospazio e i tre tasti |
 | `TestaAppello` | La testa dell'appello (`.appello-testa`): indietro, titolo con kanji, conto, TUTTI PRESENTI e AZZERA |
 | `Riquadro` | `Riquadro`, `Etichetta`, `Cifra`, `Dettaglio` di `ds.tsx` e `.sg-riquadro`; toni normale, prova, guaio |
-| `Campo` | I campi del modulo e di segreteria: testo, select, area, sola lettura, scelta, spunta, con nota ed errore |
+| `Campo` | I campi del modulo e di segreteria: testo, select, area, sola lettura, scelta, spunta, con nota ed errore. Bordo `riga-campo`; con `una` la scelta è un segmento pieno, senza quadratino |
 | `Dialogo` | Il pannello sul velo: conferma, dialogo (lezione straordinaria) e cassetto della lezione |
 | `ProvaPannello` | `Prove.tsx`: CHI VIENE A PROVARE, con campi, già venuti e i due tasti |
 | `CercaPersona` | La pagina «Aggiungi chi prova» (`CercaPersona.tsx`) |

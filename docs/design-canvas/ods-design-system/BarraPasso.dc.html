@@ -43,8 +43,8 @@
 // passo che manda la richiesta). `indietroChiede` e' lo stato dei due tocchi di DueTocchi (ds.tsx): bordo e testo rossi,
 // LE RISPOSTE SI PERDONO · ESCI?; il tasto prende tutta la riga e AVANTI scende sotto.
 const T = {
-  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tasto: '#b8b8b2', rosso: '#e4292a', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suRosso: '#ffffff', suColore: '#121212' },
-  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', tasto: '#4a4a46', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suRosso: '#ffffff', suColore: '#121212' },
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', lineCampo: '#6e6e6a', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tasto: '#b8b8b2', rosso: '#e4292a', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suRosso: '#ffffff', suColore: '#121212' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', lineCampo: '#8a8a85', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', tasto: '#4a4a46', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suRosso: '#ffffff', suColore: '#121212' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
@@ -61,7 +61,7 @@ class Component extends DCLogic {
       mancaTitolo: manca.length === 1 ? 'MANCA 1 COSA:' : 'MANCANO ' + manca.length + ' COSE:',
       haNota: manca.length === 0 && String(p.nota ?? '') !== '', nota: p.nota ?? '',
       haIndietro: !truthy(p.senzaIndietro), indietro: chiede ? 'LE RISPOSTE SI PERDONO · ESCI?' : (p.indietro ?? 'INDIETRO'),
-      coloreIndietro: chiede ? c.rossoTesto : c.tasto, bordoIndietro: chiede ? c.rosso : c.line, larghezzaIndietro: chiede ? '100%' : '110px', baseAvanti: chiede ? '100%' : '0',
+      coloreIndietro: chiede ? c.rossoTesto : c.tasto, bordoIndietro: chiede ? c.rosso : c.lineCampo, larghezzaIndietro: chiede ? '100%' : '110px', baseAvanti: chiede ? '100%' : '0',
       avanti: p.avanti ?? 'AVANTI',
       fondoAvanti: vai ? c.verde : c.rosso, bordoAvanti: vai ? c.verde : c.rosso, coloreAvanti: vai ? c.suColore : c.suRosso,
     };

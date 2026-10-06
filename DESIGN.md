@@ -8,6 +8,7 @@ colors:
   menu: "#161616"
   riga: "#333333"
   riga-tenue: "#2a2a2a"
+  riga-campo: "#6e6e6a"
   tratteggio: "#4a4a46"
   testo: "#f2f2f0"
   testo-secondario: "#c9c9c4"
@@ -27,6 +28,7 @@ colors:
   superficie-chiara: "#ffffff"
   superficie-alta-chiara: "#e9e9e5"
   riga-chiara: "#d4d4ce"
+  riga-campo-chiara: "#8a8a85"
   testo-chiaro: "#161616"
   testo-spento-chiaro: "#656561"
   verde-chiaro: "#12913f"
@@ -190,6 +192,7 @@ Un nero da palestra con cinque segnali puri presi dagli ingranaggi del logo; i n
 - **Superficie Alta** (#242424 / chiaro #e9e9e5): stato selezionato (giorno scelto, scheda attiva, chip premuto).
 - **Menu** (#161616 / chiaro #ebebe7): la colonna del menu di segreteria.
 - **Riga** (#333333 / chiaro #d4d4ce): i bordi da 2px di ogni contenitore e tasto.
+- **Riga Campo** (#6e6e6a / chiaro #8a8a85): il bordo dei campi e delle scelte del modulo, a 3:1 sul fondo (WCAG 1.4.11): `Riga` sul nero non ci arriva. Campi, scelte e il tasto INDIETRO dei passi; il resto resta su `Riga`.
 - **Riga Tenue** (#2a2a2a / chiaro #e2e2dd): divisori, linea dei titoletti, separatori tra colonne.
 - **Tratteggio** (#4a4a46 / chiaro #b0b0aa): bordi tratteggiati di "aggiungi" e del riquadro firma.
 - **Testo** (#f2f2f0 / chiaro #161616), **Testo Secondario** (#c9c9c4 / #3d3d3a), **Testo Spento** (#8c8c88 / #656561), **Testo Flebile** (#5a5a56 / #a8a8a3): quattro gradini di testo, dal nome al segnaposto. Il segnaposto dei campi della segreteria (Cerca iscritto) usa lo Spento, non il Flebile: è l’unica indicazione di cosa scrivere e deve leggersi.
