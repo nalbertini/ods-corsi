@@ -29,10 +29,11 @@
 // per lasciare posto alle righe sul telefono).
 // La scheda attiva (aria-selected) si legge in tre modi, non solo col colore: bordo e scritta `text` su fondo `surface-2`, un
 // quadratino pieno prima della scritta e il bordo sotto spesso 4px (come la barra in alto della voce corrente di BarraNavigazione).
+// La scheda spenta ha fondo `surface` come .scheda in src/styles.css: con `transparent` la scritta `sec` si perdeva su un canvas chiaro.
 // schede: nomi separati da |; attiva: il nome acceso; conti: numeri opzionali, uno per scheda, separati da | (vuoto: nessuno).
 const T = {
-  scuro: { surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88' },
-  chiaro: { surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561' },
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561' },
 };
 const lista = (v) => String(v ?? '').split('|').map((s) => s.trim());
 class Component extends DCLogic {
@@ -43,7 +44,7 @@ class Component extends DCLogic {
     const conti = lista(p.conti);
     const schede = nomi.map((nome, i) => {
       const on = nome === (p.attiva || nomi[0]);
-      return { nome, on, conto: conti[i] || '', bordo: on ? c.text : c.line, bordoSotto: on ? c.text : c.line, sotto: on ? '4px' : '2px', fondo: on ? c.surface2 : 'transparent', colore: on ? c.text : c.sec };
+      return { nome, on, conto: conti[i] || '', bordo: on ? c.text : c.line, bordoSotto: on ? c.text : c.line, sotto: on ? '4px' : '2px', fondo: on ? c.surface2 : c.surface, colore: on ? c.text : c.sec };
     });
     return { c, schede, n: nomi.length || 2 };
   }
