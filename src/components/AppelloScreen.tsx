@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Dati } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
 import { cercaNellElenco, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
-import { timerDellaLezione } from '../lib/aree'
 import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
 import type { ChiProva } from '../lib/prove'
@@ -107,6 +106,7 @@ export function AppelloScreen({
   onConto,
   soloDi,
   onSegnalate,
+  onTimer,
   onAttivitaCambiata,
   onIndietro,
   onChiudi,
@@ -117,6 +117,8 @@ export function AppelloScreen({
   onConto?: (c: Conto) => void
   soloDi?: string
   onSegnalate?: () => void
+  /** Apre il timer della lezione, dentro l'app: senza, il cronometro non c'è. */
+  onTimer?: (l: SessioneVista) => void
   /** L'istruttore ha cambiato l'attività di questa lezione: il calendario va riletto. */
   onAttivitaCambiata?: () => void
   /** Sul telefono: torna al calendario. */
@@ -358,10 +360,12 @@ export function AppelloScreen({
             {futura && <span className="num appello-futura">NON ANCORA COMINCIATA</span>}
           </span>
           {/* Il timer della lezione: si apre con i timer del corso in cima. */}
-          {/* In un'altra scheda, come dal menu: tornando l'appello è dov'era. */}
-          <a className="icon-btn" href={timerDellaLezione(d.sessione)} target="_blank" rel="noopener" aria-label="Apri il timer della lezione (in un'altra scheda)" title="Il timer della lezione">
-            <Cronometro size={20} />
-          </a>
+          {/* Dentro l'app: l'appello resta montato sotto, e tornando è dov'era. */}
+          {onTimer && (
+            <button type="button" className="icon-btn" onClick={() => onTimer(d.sessione)} aria-label="Apri il timer della lezione" title="Il timer della lezione">
+              <Cronometro size={20} />
+            </button>
+          )}
         </div>
 
         <div className="row pad" style={{ gap: 10, paddingTop: 12, alignItems: 'baseline' }}>

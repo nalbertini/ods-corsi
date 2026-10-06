@@ -5,7 +5,7 @@ import type { ImpostazioniSala, TimerSala } from './impostazioniSala'
 import type { FonteClip } from './voice'
 
 /**
- * Il timer dentro il tablet di sala.
+ * Il timer dentro il tablet di sala e dentro l'app degli istruttori.
  *
  * Da solo il timer è un'app intera, con il suo tasto SALA per tornare al
  * tablet. Sul tablet è una scheda accanto alle presenze: resta montato anche
@@ -43,6 +43,17 @@ export interface Incorporato {
    * al muro può toccarle chiunque. Senza, vale come aperta.
    */
   conImpostazioni?: boolean
+  /**
+   * La pagina che lo contiene ha già la sua testata, col titolo TIMER e il
+   * suo ritorno: niente marchio e niente titolo del timer. Lo fa l'app
+   * istruttori, sul telefono e sul computer.
+   */
+  senzaTestata?: boolean
+  /**
+   * Cresce per fermare l'allenamento dal di fuori (STOP della striscia, o
+   * un'altra lezione al suo posto): come uscire dal timer, ma senza toccarlo.
+   */
+  ferma?: number
   onStato: (s: StatoTimer | null) => void
   onSettings: (s: Settings) => void
 }
@@ -59,4 +70,8 @@ export interface StatoTimer {
   secondi: number
   /** «GIRO 3/8», se c'è più di un giro. */
   conto: string
+  /** Quando finisce l'intervallo, sull'orologio (ms): chi guarda da fuori ricalcola il tempo da qui. */
+  scadeAlle: number
+  /** I secondi rimasti da fermo, in pausa. */
+  secondiFermo: number
 }

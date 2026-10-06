@@ -35,8 +35,10 @@ su un tablet di sala, che va sempre al tablet. Non c'è una pagina per
 scegliere l'area: la sceglie l'account. Tranne per chi ha il ruolo doppio,
 segreteria e istruttore (`persone.anche_istruttore`, in
 `supabase/01-schema.sql`): dopo l'accesso sceglie se andare in segreteria o
-nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer** si apre in `timer/`
-(`nalbertini.github.io/ods-corsi/timer/`), dal menu degli istruttori.
+nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer** è una pagina dell'area istruttori
+(barra in basso sul telefono, menu a sinistra su schermo largo: CALENDARIO, TIMER, I MIEI, ORE), con la striscia
+dell'allenamento in corso sempre in vista; resta anche l'app a sé in `timer/`
+(`nalbertini.github.io/ods-corsi/timer/`).
 
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello
   scelto, in ordine di orario, con sala, istruttore e iscritti.
@@ -384,6 +386,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:indirizzi` | Gli indirizzi della segreteria: voce, scheda iscritto, lezione, settimana e sala che si rileggono uguali; gli indirizzi sbagliati che portano a DA FARE; quelli di Supabase, della guida e delle aree che non sono della segreteria. |
 | `npm run prova:cerca-persone` | «Aggiungi chi prova» cerca fra tutte le persone: anche chi è iscritto altrove o non ha mai provato, coi corsi di oggi e senza telefono; mai personale né disattivati; dalla terza lettera, massimo ventuno, tetto di cento lettere; cosa dice la pagina (poco scritto, nessuno, ce ne sono altri, già nell'appello, senza rete, ricerca non disponibile) e l'avviso di chi ha già quel nome. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome (sul tablet al massimo venti, cercate scrivendo), tolte per sbaglio, e l'elenco della segreteria. |
+| `npm run prova:timer-istruttori` | Il timer nell'app istruttori: le voci di navigazione per ruolo (CALENDARIO, TIMER, I MIEI, ORE), il timer aperto dall'appello con la lezione, lo stato dell'allenamento per la striscia (calcolato dall'orologio), la domanda prima di sostituire un allenamento in corso, l'avviso senza rete. |
 | `npm run prova:informativa` | Per quanto si tengono le presenze nell'informativa: solo un numero di mesi valido dal database cambia il testo; un errore, il tempo scaduto o l'app senza database lasciano quello della pagina, che non dice un numero. |
 | `npm run prova:ore` | LE MIE ORE dell'area istruttori: ognuno vede solo le sue, nel mese della lezione (non di quando è stata confermata), lezioni e ore delle confermate, le da confermare contate come in PRESENZE, le rifiutate con chi e quando, le lezioni tenute dove era previsto e nessuno si è segnato; e le decisioni della segreteria di prova che arrivano a `mieOre`. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN e dall'appello, le lezioni tenute da confermare. L'«Attività» della lezione sul tablet della sua sala e di nessun'altra, e la lettura del database che non perde né kanji né attività se manca una delle due. |

@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="tablist" aria-label="Timer" style="display: grid; grid-template-columns: repeat({{n}}, minmax(0, 1fr)); gap: 6px; width: 100%">
+  <sc-for list="{{schede}}" as="s" hint-placeholder-count="2">
+    <div role="tab" aria-selected="{{s.on}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 8px; border: 2px solid {{s.bordo}}; border-bottom: {{s.sotto}} solid {{s.bordoSotto}}; background: {{s.fondo}}; color: {{s.colore}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 700; letter-spacing: 0.14em; white-space: nowrap">
+      <sc-if value="{{s.on}}" hint-placeholder-val="{{ true }}"><span style="width: 8px; height: 8px; flex-shrink: 0; background: {{c.text}}"></span></sc-if>{{s.nome}}<sc-if value="{{s.conto}}" hint-placeholder-val="{{ true }}"><span style="font-size: 14px; font-weight: 600; letter-spacing: 0.04em; color: {{c.dim}}">{{s.conto}}</span></sc-if>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"schede":{"editor":"text","default":"DA FARE|I MIEI"},"conti":{"editor":"text","default":""},"attiva":{"editor":"text","default":"DA FARE"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":56}}'>
+// PROPOSTA «Navigazione A» (non ancora nell'app): le due schede in cima alla pagina TIMER, DA FARE e I MIEI. Stessa forma delle
+// schede OGGI / PER CORSO del tablet (TabletSchede: .tb-scheda, src/styles.css righe 1089-1094): griglia a colonne uguali, gap 6px,
+// bordo 2px `line` e scritta `sec` in Saira Condensed 18px 700 0.14em. Alte 52px (tocco minimo 44px, un po' meno delle 60 del tablet
+// per lasciare posto alle righe sul telefono).
+// La scheda attiva (aria-selected) si legge in tre modi, non solo col colore: bordo e scritta `text` su fondo `surface-2`, un
+// quadratino pieno prima della scritta e il bordo sotto spesso 4px (come la barra in alto della voce corrente di BarraNavigazione).
+// schede: nomi separati da |; attiva: il nome acceso; conti: numeri opzionali, uno per scheda, separati da | (vuoto: nessuno).
+const T = {
+  scuro: { surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88' },
+  chiaro: { surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561' },
+};
+const lista = (v) => String(v ?? '').split('|').map((s) => s.trim());
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const nomi = lista(p.schede ?? 'DA FARE|I MIEI').filter(Boolean);
+    const conti = lista(p.conti);
+    const schede = nomi.map((nome, i) => {
+      const on = nome === (p.attiva || nomi[0]);
+      return { nome, on, conto: conti[i] || '', bordo: on ? c.text : c.line, bordoSotto: on ? c.text : c.line, sotto: on ? '4px' : '2px', fondo: on ? c.surface2 : 'transparent', colore: on ? c.text : c.sec };
+    });
+    return { c, schede, n: nomi.length || 2 };
+  }
+}
+</script>
+</body>
+</html>

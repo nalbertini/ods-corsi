@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA (variante B): il timer sullo schermo largo, nella stessa scheda. Come l'appello (.sala-due): menu a sinistra con TIMER acceso, l'elenco dei timer (con DI QUESTA LEZIONE e DEL CORSO se si viene dall'appello) e a destra l'allenamento in corso. Senza marchio del timer, senza SALA, senza versione. La striscia non serve su questa pagina: l'allenamento e' a schermo; sulle altre pagine larghe sta in cima al corpo. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="MenuIstruttori" attiva="TIMER" elenco="CALENDARIO|TIMER|I MIEI|ORE" nome="Maurizio Verdi" ruolo="Istruttore · calendario e appello" versione="v0.37.4" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: grid; grid-template-columns: minmax(380px, 460px) minmax(0, 1fr); flex: 1; min-width: 0">
+    <div>
+      <dc-import name="TimerPagina" indietro="" con-barra="{{ false }}" tutti="LIBRERIA" cronometro="{{ true }}" altezza="900px" hint-size="100%,900px"></dc-import>
+    </div>
+    <div style="border-left: 2px solid #2a2a2a; display: flex; flex-direction: column">
+      <dc-import name="TimerAllenamento" indietro="TIMER" largo="{{ true }}" altezza="900px" hint-size="100%,900px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

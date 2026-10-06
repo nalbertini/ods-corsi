@@ -30,6 +30,7 @@ export function TimerScreen({
   onStato,
   tastiera = true,
   conMusica = true,
+  ferma,
 }: {
   workout: Workout
   settings: Settings
@@ -45,6 +46,8 @@ export function TimerScreen({
   tastiera?: boolean
   /** Falso sul tablet di sala, dove la musica sta nella barra in basso. */
   conMusica?: boolean
+  /** Cresce per fermare l'allenamento dal di fuori (vedi `Incorporato.ferma`). */
+  ferma?: number
 }) {
   // I secondi regalati da Maurizio si estraggono a ogni avvio: due giri dello
   // stesso allenamento non cadono negli stessi punti. Riprendendo un
@@ -211,6 +214,9 @@ export function TimerScreen({
       etichetta: view.segment?.label ?? '',
       secondi: view.display,
       conto,
+      // Chi guarda da fuori ricalcola il tempo dall'orologio: una scheda in secondo piano non lo rallenta.
+      scadeAlle: Date.now() + view.display * 1000,
+      secondiFermo: view.display,
     })
   }, [workout.name, view.status, view.segment?.kind, view.segment?.label, view.display, conto])
   useEffect(() => () => statoRef.current?.(null), [])
@@ -242,6 +248,14 @@ export function TimerScreen({
   exitRef.current = exit
   const startOrToggleRef = useRef(startOrToggle)
   startOrToggleRef.current = startOrToggle
+  // Fermato dal di fuori: come EXIT. Il valore col quale si monta non conta,
+  // se no un nuovo allenamento uscirebbe subito per uno STOP di prima.
+  const fermaPrima = useRef(ferma)
+  useEffect(() => {
+    if (ferma === fermaPrima.current) return
+    fermaPrima.current = ferma
+    exitRef.current()
+  }, [ferma])
   const tastieraRef = useRef(tastiera)
   tastieraRef.current = tastiera
 

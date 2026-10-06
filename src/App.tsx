@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
@@ -8,15 +8,20 @@ import { AreaIscritti, IscrittiChiusa } from './components/AreaIscritti'
 import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
 import { MieOre } from './components/MieOre'
+import { BarraNavigazione, PaginaTimer, StrisciaTimer } from './components/TimerIstruttori'
+import { Conferme, chiedi } from './components/segreteria/comune'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
-import { INDIRIZZI, TIMER, useArea } from './lib/aree'
+import { INDIRIZZI, useArea } from './lib/aree'
 import { account, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type Personale } from './lib/accesso'
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
 import { ISTRUTTORE_PROVA, inProvaScelta, scegliProva } from './lib/dati'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
+import { chiediPrimaDiSostituire, lezioneDelTimer, mostraStriscia, statoCambiato, timerAperto, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
+import type { Incorporato, StatoTimer } from '../timer/src/lib/incorporato'
+import { oraDi, type SessioneVista } from './lib/sala'
 
 /**
  * ODS Corsi: il calendario delle sale e il registro delle presenze.
@@ -221,17 +226,97 @@ function Iscritti() {
  *
  * Da qui non si va da nessun'altra parte, nemmeno in prova: segreteria,
  * sala e iscrizioni sono aree a sé, ognuna col suo indirizzo, e l'istruttore
- * non trova rimandi. Restano solo la guida degli istruttori e il timer, che
- * è uno strumento della lezione.
+ * non trova rimandi. Il timer è una pagina di questa stessa scheda.
  *
- * Sullo schermo largo ha la stessa faccia della segreteria: il menu a
- * sinistra, con la guida e chi è entrato, e a destra calendario e appello
- * affiancati, alti quanto lo schermo.
+ * Quattro pagine (vedi `vociNavigazione`): CALENDARIO, TIMER, I MIEI e ORE,
+ * nella barra in basso sul telefono e nel menu a sinistra sullo schermo largo.
+ * Sullo schermo largo hanno la stessa faccia della segreteria: a destra
+ * calendario e appello affiancati, alti quanto lo schermo.
  */
+type LezioneTimer = Pick<SessioneVista, 'id' | 'corsoId' | 'corso' | 'inizio'>
+
+/** Il timer incorporato non ha impostazioni da dire a nessuno: qui non c'è una barra della musica che le legga. */
+const nessuno = () => {}
+
 function Istruttori() {
   const largo = useLargo()
-  // Il calendario resta montato anche in I MIEI TIMER: tornando, l'appello è dov'era.
-  const [pagina, setPagina] = useState<Pagina>('calendario')
+  // Il calendario (e con lui l'appello) e il timer restano montati cambiando
+  // pagina, nascosti: tornando, i segni, la ricerca e l'allenamento sono com'erano.
+  const [pagina, setPagina] = useState<PaginaIstruttori>('calendario')
+  // La lezione del timer: quella dell'appello da cui si è arrivati, o nessuna dal menu.
+  const [lezioneTimer, setLezioneTimer] = useState<LezioneTimer | null>(null)
+  const [daAppello, setDaAppello] = useState(false)
+  // Il timer pesa: si monta alla prima visita, e poi resta.
+  const [timerMontato, setTimerMontato] = useState(false)
+  // L'allenamento aperto nel timer, e di quale lezione è partito.
+  const [allenamento, setAllenamento] = useState<{ stato: StatoTimer; lezione: LezioneTimer | null } | null>(null)
+  const [ferma, setFerma] = useState(0)
+  const lezioneRef = useRef(lezioneTimer)
+  lezioneRef.current = lezioneTimer
+
+  // Sul telefono le pagine scorrono nello stesso riquadro: ognuna riparte da dove era.
+  const corpo = useRef<HTMLElement>(null)
+  const scorse = useRef<Partial<Record<PaginaIstruttori, number>>>({})
+  const prima = useRef(pagina)
+  useLayoutEffect(() => {
+    if (prima.current === pagina) return
+    prima.current = pagina
+    if (corpo.current) corpo.current.scrollTop = scorse.current[pagina] ?? 0
+  }, [pagina])
+  const vaiA = (p: PaginaIstruttori) => {
+    if (corpo.current) scorse.current[pagina] = corpo.current.scrollTop
+    if (p === 'timer') setTimerMontato(true)
+    setPagina(p)
+  }
+  // Dal menu il timer si apre senza lezione, a meno che non ce ne sia una in corso: quella non si tocca.
+  const dalMenu = (p: PaginaIstruttori) => {
+    if (p === pagina) return
+    if (p === 'timer' && lezioneDelTimer(allenamento && { lezioneId: allenamento.lezione?.id ?? null, status: allenamento.stato.status }, null, true) === null) setLezioneTimer(null)
+    setDaAppello(false)
+    vaiA(p)
+  }
+  // Dal cronometro dell'appello: il timer di quella lezione. Un altro allenamento si ferma, dopo aver chiesto se era in corso.
+  const apriTimer = async (l: LezioneTimer) => {
+    const a = allenamento
+    if (a && a.lezione?.id !== l.id) {
+      if (chiediPrimaDiSostituire({ lezioneId: a.lezione?.id ?? null, status: a.stato.status }, l.id)) {
+        const sostituisci = await chiedi(
+          `Sostituire l’allenamento in corso? Sul timer c’è già ${a.stato.nome.toUpperCase()}${a.stato.conto ? `, ${a.stato.conto.toLowerCase()}` : ''}${a.lezione ? `, di ${a.lezione.corso} delle ${oraDi(a.lezione.inizio)}` : ''}. Se parti con quello di ${l.corso} delle ${oraDi(l.inizio)}, il primo si ferma e non si riprende.`,
+          'SOSTITUISCI',
+          { no: 'TIENI QUELLO IN CORSO', restare: true },
+        )
+        if (!sostituisci) return
+      }
+      // STOP deve registrare il parziale con la lezione di quando l'allenamento è partito:
+      // `ferma` e `setLezioneTimer` stanno nello stesso render, e `allenamento.lezione` resta quella vecchia.
+      setFerma((f) => f + 1)
+    }
+    setLezioneTimer(l)
+    setDaAppello(true)
+    vaiA('timer')
+  }
+
+  const incorporato = useMemo<Incorporato>(
+    () => ({
+      lezione: timerAperto(lezioneTimer),
+      // Nessuna musica: il timer qui è per la lezione, e la musica la comanda la sala.
+      musica: { musicaFonte: 'spotify', youtube: '', radio: '', musica: false },
+      sala: null,
+      clip: null,
+      visibile: pagina === 'timer',
+      conImpostazioni: false,
+      senzaTestata: true,
+      ferma,
+      onStato: (s) => {
+        // La lezione è quella di quando l'allenamento è partito: poi la pagina può cambiare, lui no.
+        const lezione = lezioneRef.current
+        // Il timer manda lo stato a ogni secondo: la pagina si ridisegna solo se cambia qualcosa che si vede.
+        setAllenamento((x) => (statoCambiato(x?.stato ?? null, s) ? (s ? { stato: s, lezione: x ? x.lezione : lezione } : null) : x))
+      },
+      onSettings: nessuno,
+    }),
+    [lezioneTimer, pagina, ferma],
+  )
 
   // Di chi sono le lezioni da mostrare: dell'istruttore entrato (anche della
   // segreteria che insegna), o di quello di prova. Tutte per la segreteria, e
@@ -250,33 +335,38 @@ function Istruttori() {
       )}
       dentro={(chi, onEsci) => {
         const mio = soloDi(chi)
+        const voci = vociNavigazione({ ruolo: chi?.ruolo === 'staff' ? 'staff' : 'istruttore', ancheIstruttore: chi?.ancheIstruttore })
+        // In flusso: sul telefono sotto la testata, sullo schermo largo in cima al corpo.
+        const striscia = allenamento && mostraStriscia(allenamento.stato.status, pagina) && (
+          <StrisciaTimer
+            stato={allenamento.stato}
+            onApri={() => {
+              setDaAppello(false)
+              vaiA('timer')
+            }}
+            onFerma={() => setFerma((f) => f + 1)}
+          />
+        )
         return (
         <div className={largo ? 'sg' : 'app'}>
           {largo ? (
-            <MenuIstruttori chi={chi} onEsci={onEsci} pagina={pagina} onPagina={setPagina} conOre={!!mio} />
+            <MenuIstruttori chi={chi} onEsci={onEsci} voci={voci} pagina={pagina} onPagina={dalMenu} />
           ) : (
             <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
           )}
-          <main className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
-            {!largo && chi && <ChiSei chi={chi} onEsci={onEsci} />}
+          {!largo && striscia}
+          <main ref={corpo} className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
+            {largo && striscia}
+            {!largo && chi && pagina !== 'timer' && <ChiSei chi={chi} onEsci={onEsci} />}
             <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
-              <Sala
-                soloDi={mio}
-                onMieiTimer={largo ? undefined : () => setPagina('timer')}
-                onMieOre={
-                  largo || !mio
-                    ? undefined
-                    : () => {
-                        // Calendario e LE MIE ORE scorrono nello stesso riquadro: i numeri si vedono per primi.
-                        setPagina('ore')
-                        document.querySelector('.scroll')?.scrollTo(0, 0)
-                      }
-                }
-              />
+              <Sala soloDi={mio} onTimer={(l) => void apriTimer(l)} />
             </div>
-            {pagina === 'timer' && <MieiTimer soloDi={mio} onIndietro={largo ? undefined : () => setPagina('calendario')} />}
-            {pagina === 'ore' && mio && <MieOre personaId={mio} onIndietro={largo ? undefined : () => setPagina('calendario')} />}
+            {timerMontato && <PaginaTimer incorporato={incorporato} visibile={pagina === 'timer'} indietro={daAppello} onIndietro={() => dalMenu('calendario')} />}
+            {pagina === 'mieiTimer' && <MieiTimer soloDi={mio} onTimer={() => dalMenu('timer')} />}
+            {pagina === 'ore' && mio && <MieOre personaId={mio} />}
           </main>
+          {!largo && <BarraNavigazione voci={voci} attiva={pagina} onPagina={dalMenu} />}
+          <Conferme />
         </div>
         )
       }}
@@ -286,26 +376,24 @@ function Istruttori() {
 
 /**
  * Il menu degli istruttori sullo schermo largo, fatto come quello della
- * segreteria. Niente passaggi alle altre aree, nemmeno in prova: ognuna ha la
- * sua porta, e da qui non si va in segreteria nemmeno se si è di segreteria.
- * Tranne chi è di segreteria e insegna anche: entra in tutte e due, e passa
- * dall'una all'altra senza uscire.
+ * segreteria, con le stesse voci della barra in basso del telefono. Niente
+ * passaggi alle altre aree, nemmeno in prova: ognuna ha la sua porta, e da
+ * qui non si va in segreteria nemmeno se si è di segreteria. Tranne chi è di
+ * segreteria e insegna anche: entra in tutte e due, e passa dall'una
+ * all'altra senza uscire.
  */
-type Pagina = 'calendario' | 'timer' | 'ore'
-
 function MenuIstruttori({
   chi,
   onEsci,
+  voci,
   pagina,
   onPagina,
-  conOre,
 }: {
   chi: Personale | null
   onEsci?: () => void
-  pagina: Pagina
-  onPagina: (p: Pagina) => void
-  /** Le ore sono di chi insegna: la segreteria, che vede le lezioni di tutti, non ne ha. */
-  conOre: boolean
+  voci: { pagina: PaginaIstruttori; nome: string }[]
+  pagina: PaginaIstruttori
+  onPagina: (p: PaginaIstruttori) => void
 }) {
   const esci = onEsci ?? (inProvaScelta ? () => scegliProva(false) : undefined)
   return (
@@ -317,24 +405,12 @@ function MenuIstruttori({
           <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.2em', color: 'var(--dim)' }}>ISTRUTTORI</span>
         </span>
       </div>
-      {/* Quello che l'istruttore fa, tutto qui: il calendario con l'appello e
-          I MIEI TIMER in questa pagina, il timer in un'altra scheda, così
-          l'appello resta dov'era. */}
       <div className="sg-voci">
-        <button type="button" className="num sg-voce" aria-current={pagina === 'calendario' ? 'page' : undefined} onClick={() => onPagina('calendario')}>
-          CALENDARIO
-        </button>
-        <button type="button" className="num sg-voce" aria-current={pagina === 'timer' ? 'page' : undefined} onClick={() => onPagina('timer')}>
-          I MIEI TIMER
-        </button>
-        {conOre && (
-          <button type="button" className="num sg-voce" aria-current={pagina === 'ore' ? 'page' : undefined} onClick={() => onPagina('ore')}>
-            LE MIE ORE
+        {voci.map((v) => (
+          <button key={v.pagina} type="button" className="num sg-voce" aria-current={pagina === v.pagina ? 'page' : undefined} onClick={() => onPagina(v.pagina)}>
+            {v.nome}
           </button>
-        )}
-        <a className="num sg-voce" href={TIMER} target="_blank" rel="noopener">
-          TIMER ↗
-        </a>
+        ))}
       </div>
       <div className="grow" />
       <div className="sg-voci">

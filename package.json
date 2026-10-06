@@ -32,6 +32,7 @@
     "prova:scaletta": "node scripts/prova-scaletta.mjs",
     "prova:strumenti": "node scripts/prova-strumenti.mjs",
     "prova:discipline": "node scripts/prova-discipline.mjs",
+    "prova:timer-istruttori": "node scripts/prova-timer-istruttori.mjs",
     "prova:sql": "bash scripts/prova-sql.sh"
   },
   "dependencies": {

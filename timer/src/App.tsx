@@ -331,6 +331,17 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
     void leggiDalServer()
   }, [suTablet, chiaveSala, leggiDalServer])
   useEffect(() => guardaCoda(setInCoda), [])
+  // Il timer incorporato resta montato mentre in I MIEI si cambiano i collegamenti
+  // corso/lezione: tornando, si rilegge, o il primo salvataggio li cancellerebbe con la lista vecchia.
+  const visibileOra = incorporato?.visibile
+  useEffect(() => {
+    if (!visibileOra) return
+    if (!sessione) {
+      setWorkouts(soloDelDispositivo(loadWorkouts()))
+      setSettings(loadSettings())
+    }
+    void leggiDalServer()
+  }, [visibileOra, leggiDalServer])
 
   // Le preferenze seguono l'istruttore: si leggono una volta, e da lì ogni
   // cambio parte verso il database (dopo un attimo, perché il cursore del
@@ -373,7 +384,8 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   const [salaDalServer, setSalaDalServer] = useState<TimerSala | null>(null)
   const [clipDalServer, setClipDalServer] = useState<FonteClip | null>(null)
   const dellaSala = incorporato ? incorporato.sala : salaDalServer
-  const timerDellaSala = !!incorporato || accesso.chi === 'sala'
+  // Solo il tablet di sala salva le impostazioni di sala: l'app istruttori (incorporato senza `sala`) non le tocca.
+  const timerDellaSala = (!!incorporato && !!incorporato.sala) || accesso.chi === 'sala'
   useEffect(() => {
     if (dellaSala) setSettings((s) => ({ ...s, ...dellaSala.impostazioni }))
   }, [dellaSala])
@@ -699,6 +711,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         onStato={incorporato?.onStato}
         tastiera={incorporato ? incorporato.visibile : true}
         conMusica={!incorporato}
+        ferma={incorporato?.ferma}
         onExit={() => setView({ kind: 'tabs' })}
         onFinish={recordFinish(view.workout)}
       />
@@ -856,7 +869,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
             intestazione aveva già preso — sessantun pixel di nulla su un
             telefono, e la cornice colorata che cominciava a metà. Senza, la
             cornice inquadra tutto lo schermo, che è il motivo per cui c'è. */}
-        {!pieno && (
+        {!pieno && !incorporato?.senzaTestata && (
           <header className="topbar">
             <div style={{ display: 'contents' }} className="only-mobile">
               <Logo width={58} />

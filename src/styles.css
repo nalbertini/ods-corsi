@@ -199,6 +199,31 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .ob { font-family: var(--cond); font-style: oblique 9deg; }
 .num { font-family: var(--cond); font-variant-numeric: tabular-nums; }
 
+/* ---------- il timer negli istruttori ---------- */
+
+/* La barra in basso del telefono: voci alte 64, la corrente con la barra sopra. */
+.barra-nav { display: flex; align-items: stretch; flex-shrink: 0; background: var(--menu); border-top: 2px solid var(--line-soft); padding-bottom: var(--safe-b); }
+.barra-voce {
+  flex: 1 1 0; min-width: 0; min-height: 64px; margin-top: -2px; padding: 0 4px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  border-top: 4px solid transparent; color: var(--sec);
+  font-size: 13px; font-weight: 700; letter-spacing: 0.1em; line-height: 1; white-space: nowrap;
+}
+.barra-voce[aria-current='page'] { border-top-color: var(--text); background: var(--surface); color: var(--text); }
+/* La striscia: in flusso sotto la testata, spinge giù il contenuto. */
+.striscia-timer { display: flex; align-items: stretch; flex-shrink: 0; min-height: 56px; border-bottom: 2px solid; position: sticky; top: 0; z-index: 5; }
+.striscia-apri { display: flex; align-items: center; flex-grow: 1; min-width: 0; gap: 12px; padding: 0 8px 0 20px; text-align: left; color: inherit; }
+.striscia-testo { font-size: 18px; font-weight: 700; letter-spacing: 0.16em; line-height: 1; }
+.striscia-nome { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.striscia-tempo { font-size: 30px; font-weight: 700; line-height: 1; }
+.striscia-stop {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 64px; min-height: 44px; margin: 6px 8px 6px 4px; padding: 0 12px;
+  border: 2px solid currentColor; color: inherit; font-family: var(--cond); font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em;
+}
+.faccia-timer { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.avviso-rete { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: var(--surface); border: 2px solid var(--line); border-left: 6px solid var(--giallo); font-size: 14px; line-height: 1.4; color: var(--sec); }
+.avviso-rete-titolo { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--giallo-testo); }
+
 /* ---------- impalcatura ---------- */
 
 .app { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
@@ -538,15 +563,15 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .mie-ore-riga[data-tono='avviso'] .mie-ore-stato { color: var(--giallo-testo); }
 .miei-timer-riga[data-suo='true'] { border-color: var(--giallo); border-left-color: var(--tinta); }
 .miei-timer-detto {
-  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 30;
+  /* Sopra la barra in basso del telefono (66px): sotto, coprirebbe i suoi tasti. */
+  position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); z-index: 30;
   padding: 10px 18px; background: var(--verde); color: var(--su-colore);
   max-width: calc(100% - 32px); width: max-content; text-align: center; margin-bottom: var(--safe-b);
   font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.14em;
 }
+@media (min-width: 960px) { .miei-timer-detto { bottom: 24px; } }
 @media (min-width: 960px) { .sg-corpo-sala > .miei-timer { padding-top: calc(var(--safe-t) + 12px); } }
 /* Tablet di sala e timer, sotto il calendario del telefono. */
-.strumenti { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.strumenti > .btn { min-height: 52px; padding: 0 10px; font-size: 16px; letter-spacing: 0.08em; white-space: nowrap; text-decoration: none; }
 .riquadro { padding: 14px; gap: 8px; }
 .riquadro[data-stretto] { gap: 4px; }
 /* La prova sta prima dei passi e non è uno di loro: niente numero, il bordo giallo. */
@@ -1319,7 +1344,7 @@ a.sg-voce { text-decoration: none; }
 /* Gli istruttori sullo schermo largo, dentro lo stesso menu: calendario e
    appello prendono tutto quello che resta, senza il margine della sezione. */
 .sg-corpo-sala { padding: 0; gap: 0; }
-.sg-corpo-sala > .faccia-corsi { flex: 1; height: auto; min-height: 0; }
+.sg-corpo-sala > .faccia-corsi, .sg-corpo-sala > .faccia-timer { flex: 1; height: auto; min-height: 0; }
 .sg-corpo-sala .sala-due { max-width: none; }
 .sg-testa { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .sg-titolo { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; }

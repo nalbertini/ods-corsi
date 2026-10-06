@@ -22,7 +22,7 @@ della segreteria si finisce in segreteria, che ha anche l'appello, anche se si
 stesso computer qualcuno è entrato in segreteria, `istruttori/` riporta in
 segreteria, e per entrare col vostro account bisogna prima uscire. Uscendo si
 torna alla pagina di accesso. Da qui non si va nelle altre parti dell'app
-(segreteria, tablet di sala, iscrizioni).
+(segreteria, tablet di sala, iscrizioni); il timer è una pagina di questa.
 
 Chi è della segreteria e insegna anche sceglie, dopo l'accesso, se andare in
 segreteria o qui; qui vede le sue lezioni, come un istruttore, e torna in
@@ -72,13 +72,19 @@ In alto c'è scritto chi siete: `MAURIZIO … · ISTRUTTORE`.
 
 Toccate una lezione per aprire l'appello. Sul telefono il calendario lascia il
 posto all'appello; la freccia in alto a sinistra riporta al calendario, dove lo
-avevate lasciato. Sotto le lezioni, in **STRUMENTI**, ci sono **I MIEI TIMER**,
-**LE MIE ORE** e **TIMER ↗** (che si apre in un'altra scheda). Su un tablet in orizzontale o
-un computer stanno affiancati: calendario a sinistra, appello a destra. Lì
-l'app ha la stessa faccia della segreteria: a sinistra il menu, con
-**CALENDARIO**, **I MIEI TIMER**, **LE MIE ORE** e **TIMER ↗** (si apre in un'altra scheda,
-così l'appello resta dov'era), e in fondo il tasto **?** della guida, quello
-del tema e, sotto il vostro nome, **Esci**.
+avevate lasciato. Su un tablet in orizzontale o un computer stanno affiancati:
+calendario a sinistra, appello a destra.
+
+### Le pagine
+
+Le pagine sono quattro, con lo stesso nome ovunque: **CALENDARIO**, **TIMER**,
+**I MIEI** (i timer collegati ai vostri corsi) e **ORE** (le vostre ore). Sul
+telefono stanno nella barra in basso; la pagina in cui siete ha una riga sopra
+ed è scritta più chiara, non solo di un altro colore. Sul computer e sul tablet
+in orizzontale sono nel menu a sinistra, che ha la stessa faccia della
+segreteria, e in fondo il tasto **?** della guida, quello del tema e, sotto il
+vostro nome, **Esci**. Chi è della segreteria e non insegna non ha **ORE**: non
+ha ore sue.
 
 ## L'appello
 
@@ -237,11 +243,13 @@ telefono e parte appena torna.
 
 ## Il timer della lezione
 
-In cima all'appello, a destra, c'è il tasto col cronometro: apre il timer con
-la lezione in un'altra scheda, così l'appello resta dov'era. In
-cima c'è **DI QUESTA LEZIONE**, se per quella lezione avete scelto dei timer, e
-poi **DEL CORSO**, i timer collegati al suo corso. Siccome siete entrati come
-istruttori, il timer vi riconosce da solo:
+**TIMER**, nella barra in basso o nel menu, apre il timer nella stessa pagina
+dell'app, senza lezione: l'elenco dei timer e il cronometro libero. In cima
+all'appello, a destra, c'è invece il tasto col cronometro: apre il timer con
+la lezione, e **‹ APPELLO** in alto riporta all'appello com'era, con i segni e
+la ricerca che avevate. In cima al timer c'è **DI QUESTA LEZIONE**, se per
+quella lezione avete scelto dei timer, e poi **DEL CORSO**, i timer collegati al
+suo corso. Siccome siete entrati come istruttori, il timer vi riconosce da solo:
 
 - **I MIEI** sono i vostri timer, e li ritrovate su ogni telefono o tablet in
   cui entrate. **DELLA PALESTRA** sono quelli di tutti: li può sistemare
@@ -269,15 +277,29 @@ quelli che vengono, con **+ ALTRI** per il resto. La barra in fondo mostra tutto
 l'allenamento e si colora mentre passa. Sul telefono in verticale la scaletta
 è corta; se lo schermo è basso non c'è, e la barra dice comunque dove siete.
 
+Qui il timer non ha musica: non c'è la sua barra, e non parte né si ferma
+niente. La musica è del tablet di sala.
+
+**L'allenamento in corso** non si perde cambiando pagina: il timer resta aperto
+e il tempo si ricalcola dall'orologio. In tutte le pagine tranne **TIMER**, sotto
+la testata, c'è una striscia con lo stato (**LAVORO**, **RECUPERO**,
+**IN PAUSA**), il nome del timer e il tempo che resta. Toccandola tornate al
+timer; **STOP** ferma l'allenamento senza aprirlo. A fine allenamento diventa
+**FINITO** con **FINE**, e **OK** la toglie.
+
+Se un allenamento è in corso e aprite col cronometro il timer di un'altra
+lezione, l'app chiede **Sostituire l'allenamento in corso?**: **TIENI QUELLO IN
+CORSO** lascia tutto com'è, **SOSTITUISCI** ferma il primo, che non si
+riprende. Dal menu **TIMER** non sostituisce niente: riapre quello in corso.
+
 Anche il timer funziona senza rete: quello che salvate aspetta sul telefono e
 parte da solo quando la rete torna.
 
 ## I miei timer
 
-**I MIEI TIMER** (nel menu sul computer, in **STRUMENTI** sotto il calendario
-sul telefono) dice quale timer parte con i vostri corsi e con le singole
-lezioni. I timer si fanno e si cambiano nel timer (**APRI IL TIMER ↗**); qui si
-sceglie soltanto dove partono.
+**I MIEI** (la pagina si intitola **I MIEI TIMER**) dice quale timer parte con i
+vostri corsi e con le singole lezioni. I timer si fanno e si cambiano nel timer
+(**APRI IL TIMER**, o la pagina **TIMER**); qui si sceglie soltanto dove partono.
 
 - **PER CORSO**: i corsi delle vostre prossime lezioni. **+ Collega un timer**
   ne aggiunge uno, la **×** lo toglie. Vale per tutte le lezioni del corso.
@@ -294,8 +316,7 @@ anche il tablet e il collega che fa la lezione al posto vostro.
 
 ## Le mie ore
 
-**LE MIE ORE** (nel menu sul computer, in **STRUMENTI** sotto il calendario
-sul telefono) dice quali lezioni risultano vostre in segreteria, mese per
+**ORE** (la pagina si intitola **LE MIE ORE**) dice quali lezioni risultano vostre in segreteria, mese per
 mese: si apre sul mese in corso, e in alto si sceglie uno degli ultimi
 dodici. Serve a controllare prima del compenso; qui si guarda soltanto, e se
 qualcosa non torna lo si dice in segreteria.
@@ -340,6 +361,10 @@ telefono. Dentro la lezione, sotto quanti restano da segnare, compare in giallo
 Spariscono quando è tutto arrivato. Se toccate più volte la stessa persona
 mentre la rete non c'è, parte solo l'ultimo segno.
 
+Il timer, aperto dentro l'app, lo dice quando manca la rete: un riquadro giallo
+**SENZA RETE** sopra l'elenco. Le illustrazioni di Maurizio non compaiono e la
+voce incisa può essere quella del telefono, ma il timer parte lo stesso.
+
 ## Se qualcosa non torna
 
 - **PRESENZE RIFIUTATE**, in rosso sopra il calendario: il server non ha
@@ -357,4 +382,5 @@ Anche in prova da qui non si va nelle altre parti: segreteria, tablet di sala
 e iscrizioni si provano dai loro indirizzi (`segreteria/`, `sala/`,
 `iscrizioni/`). Il nastro giallo dice che i dati sono inventati, e da lì si
 esce dalla prova. L'istruttore della prova è Maurizio: il
-calendario mostra le sue lezioni.
+calendario mostra le sue lezioni, e il timer funziona con i suoi timer, salvati
+sul dispositivo.

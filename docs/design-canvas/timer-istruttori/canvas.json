@@ -1,0 +1,351 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Ora"
+    },
+    {
+      "id": "page-2",
+      "name": "Proposta"
+    },
+    {
+      "id": "page-3",
+      "name": "Libreria"
+    },
+    {
+      "id": "page-4",
+      "name": "Navigazione"
+    }
+  ],
+  "annotations": [],
+  "launch": {
+    "view": "canvas",
+    "page": "page-4"
+  },
+  "artboards": [
+    {
+      "file": "MenuOra.dc.html",
+      "title": "Ora · menu largo",
+      "x": 0,
+      "y": 0,
+      "w": 240,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "StrumentiOra.dc.html",
+      "title": "Ora · STRUMENTI telefono",
+      "x": 360,
+      "y": 0,
+      "w": 390,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "MenuNuovo.dc.html",
+      "title": "Proposta · Menu largo",
+      "x": 0,
+      "y": 0,
+      "w": 240,
+      "h": 900,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerDaAppello.dc.html",
+      "title": "Proposta · Timer dall'appello",
+      "x": 870,
+      "y": 0,
+      "w": 390,
+      "h": 900,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerSenzaLezione.dc.html",
+      "title": "Proposta · Timer senza lezione",
+      "x": 1380,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerSenzaRete.dc.html",
+      "title": "Proposta · Timer senza rete",
+      "x": 1890,
+      "y": 0,
+      "w": 390,
+      "h": 1000,
+      "page": "page-2"
+    },
+    {
+      "file": "Main.dc.html",
+      "title": "Proposta · Calendario con striscia",
+      "x": 0,
+      "y": 1020,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AppelloStriscia.dc.html",
+      "title": "Proposta · Appello con striscia",
+      "x": 510,
+      "y": 1020,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "AllenamentoTelefono.dc.html",
+      "title": "Proposta · Allenamento in pagina",
+      "x": 1020,
+      "y": 1020,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "CalendarioFinito.dc.html",
+      "title": "Proposta · Striscia a fine allenamento",
+      "x": 1530,
+      "y": 1020,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "DialogoSostituire.dc.html",
+      "title": "Proposta · Sostituire l'allenamento?",
+      "x": 2040,
+      "y": 1020,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    },
+    {
+      "file": "StrisciaStati.dc.html",
+      "title": "Proposta · Striscia, i quattro stati",
+      "x": 2550,
+      "y": 1020,
+      "w": 390,
+      "h": 330,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerLargo.dc.html",
+      "title": "Proposta · Timer schermo largo",
+      "x": 0,
+      "y": 2060,
+      "w": 1440,
+      "h": 900,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerStriscia.dc.html",
+      "title": "TimerStriscia",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 56,
+      "page": "page-3"
+    },
+    {
+      "file": "TimerPagina.dc.html",
+      "title": "TimerPagina",
+      "x": 490,
+      "y": 0,
+      "w": 390,
+      "h": 780,
+      "page": "page-3"
+    },
+    {
+      "file": "TimerAllenamento.dc.html",
+      "title": "TimerAllenamento",
+      "x": 980,
+      "y": 0,
+      "w": 390,
+      "h": 780,
+      "page": "page-3"
+    },
+    {
+      "file": "MenuIstruttori.dc.html",
+      "title": "MenuIstruttori",
+      "x": 1470,
+      "y": 0,
+      "w": 240,
+      "h": 900,
+      "page": "page-3"
+    },
+    {
+      "file": "Dialogo.dc.html",
+      "title": "Dialogo",
+      "x": 1810,
+      "y": 0,
+      "w": 640,
+      "h": 440,
+      "page": "page-3"
+    },
+    {
+      "file": "Testata.dc.html",
+      "title": "Testata",
+      "x": 2550,
+      "y": 0,
+      "w": 390,
+      "h": 72,
+      "page": "page-3"
+    },
+    {
+      "file": "TestaAppello.dc.html",
+      "title": "TestaAppello",
+      "x": 3040,
+      "y": 0,
+      "w": 390,
+      "h": 250,
+      "page": "page-3"
+    },
+    {
+      "file": "Titoletto.dc.html",
+      "title": "Titoletto",
+      "x": 3530,
+      "y": 0,
+      "w": 360,
+      "h": 50,
+      "page": "page-3"
+    },
+    {
+      "file": "ChiSei.dc.html",
+      "title": "ChiSei",
+      "x": 3990,
+      "y": 0,
+      "w": 390,
+      "h": 60,
+      "page": "page-3"
+    },
+    {
+      "file": "Bottone.dc.html",
+      "title": "Bottone",
+      "x": 4480,
+      "y": 0,
+      "w": 260,
+      "h": 80,
+      "page": "page-3"
+    },
+    {
+      "file": "RigaCalendario.dc.html",
+      "title": "RigaCalendario",
+      "x": 4840,
+      "y": 0,
+      "w": 380,
+      "h": 90,
+      "page": "page-3"
+    },
+    {
+      "file": "RigaAppello.dc.html",
+      "title": "RigaAppello",
+      "x": 5320,
+      "y": 0,
+      "w": 320,
+      "h": 70,
+      "page": "page-3"
+    },
+    {
+      "file": "NavATelefono.dc.html",
+      "title": "(scartata) A · telefono",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-4"
+    },
+    {
+      "file": "NavATelefonoStriscia.dc.html",
+      "title": "(scartata) A · telefono con allenamento in corso",
+      "x": 510,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-4"
+    },
+    {
+      "file": "NavBTelefono.dc.html",
+      "title": "Navigazione · B · telefono",
+      "x": 1020,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-4"
+    },
+    {
+      "file": "NavBTelefonoStriscia.dc.html",
+      "title": "Navigazione · B · telefono con allenamento in corso",
+      "x": 1530,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-4"
+    },
+    {
+      "file": "NavALargo.dc.html",
+      "title": "(scartata) A · schermo largo",
+      "x": 0,
+      "y": 1000,
+      "w": 1000,
+      "h": 900,
+      "page": "page-4"
+    },
+    {
+      "file": "NavBLargo.dc.html",
+      "title": "Navigazione · B · schermo largo",
+      "x": 1120,
+      "y": 1000,
+      "w": 1000,
+      "h": 900,
+      "page": "page-4"
+    },
+    {
+      "file": "BarraNavigazione.dc.html",
+      "title": "BarraNavigazione",
+      "x": 0,
+      "y": 960,
+      "w": 390,
+      "h": 66,
+      "page": "page-3"
+    },
+    {
+      "file": "NavATimerDaFare.dc.html",
+      "title": "(scartata) A · TIMER, scheda DA FARE",
+      "x": 0,
+      "y": 2000,
+      "w": 390,
+      "h": 1120,
+      "page": "page-4"
+    },
+    {
+      "file": "NavATimerMiei.dc.html",
+      "title": "(scartata) A · TIMER, scheda I MIEI",
+      "x": 510,
+      "y": 2000,
+      "w": 390,
+      "h": 1560,
+      "page": "page-4"
+    },
+    {
+      "file": "NavATimerMieiLargo.dc.html",
+      "title": "(scartata) A · TIMER, scheda I MIEI, schermo largo",
+      "x": 1020,
+      "y": 2000,
+      "w": 1000,
+      "h": 1000,
+      "page": "page-4"
+    },
+    {
+      "file": "SegreteriaSenzaOre.dc.html",
+      "title": "Proposta · Segreteria che non insegna",
+      "x": 360,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2"
+    }
+  ]
+}
