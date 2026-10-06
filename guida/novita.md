@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.40.3 — 6 ottobre 2026
+
+### Risolto
+
+- Nel canvas «Uscire dal tablet?» aveva un numero di versione vecchio
+
 ## 0.40.2 — 6 ottobre 2026
 
 ### Modificato
