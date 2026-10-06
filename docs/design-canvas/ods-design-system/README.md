@@ -139,6 +139,23 @@ Tutti i componenti hanno la prop `tema` (`scuro` | `chiaro`).
    cambia un token in `src/styles.css` o `DESIGN.md`, o un componente in `src/`,
    si aggiorna il file corrispondente qui nello stesso commit.
 
+## Il canvas unico
+
+Libreria e sezioni (istruttore, tablet di sala, registrazione utente, importa
+da Excel, timer) stanno in un solo Artifact, una pagina per sezione:
+
+```bash
+node docs/design-canvas/unico.mjs <cartella>
+```
+
+Si pubblica sempre sullo stesso Artifact, «ODS Corsi · Design»:
+<https://claude.ai/artifact/3Q5mhpdEkgt2K6D3RRwvm1>.
+
+Scrive in `<cartella>/project/` i file e `canvas.json`, e `files.json` con
+l'elenco da pubblicare. I file di ogni sezione prendono il prefisso della
+sezione (ogni cartella ha il suo `Main`); quelli della libreria restano coi loro
+nomi. Una sezione nuova si aggiunge a `SEZIONI` in `unico.mjs`.
+
 ## Controllo prima di pubblicare
 
 ```bash
