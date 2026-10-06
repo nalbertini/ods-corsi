@@ -616,6 +616,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .passo-dettaglio[data-tono='avviso'] { color: var(--giallo-testo); }
 .passo-btn { min-height: 48px; padding: 0 16px; font-size: 16px; text-decoration: none; align-self: flex-start; }
 /* L'IBAN in grande, a gruppi di quattro: se va a capo, va a capo fra un gruppo e l'altro. */
+.iban-riga { display: block; overflow-wrap: anywhere; }
+.esito-importo { color: var(--text); }
 .iban { background: var(--surface-2); border: 2px solid var(--line); padding: 8px 10px; font-size: 17px; font-weight: 600; letter-spacing: 0.02em; user-select: all; }
 
 /* Il modulo di iscrizione. Due colonne dove c'è posto, una sul telefono:
@@ -698,6 +700,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 
 /* Il modulo a passi (iscrizioni/#nuova, solo in prova). Misure dai componenti del
    design system: Avanzamento.dc.html, BarraPasso.dc.html, Riepilogo.dc.html. */
+.avanza:focus { outline: none; } /* il fuoco qui serve a chi usa lo screen reader; quello visibile resta sui tasti e sui campi */
 .avanza { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 4px; }
 .avanza-segmenti { display: flex; gap: 4px; }
 /* I blocchi di un passo del modulo a passi: un respiro sopra e sotto, come fra i titoletti del modulo di oggi. */
