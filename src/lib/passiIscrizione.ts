@@ -158,7 +158,7 @@ function campi(s: StatoPassi, oggi: Date, quali: CampoModulo[]): Pastiglia[] {
   return quali.filter((k) => g[k]).map((k) => ({ chiave: k, nome: NOMI[k] }))
 }
 
-/** Caselle e firma (se il foglio non è stato firmato a mano), regolamento, privacy e documento: come in pagina. */
+/** Caselle e firma (se il foglio non è stato firmato a mano), regolamento e privacy: come in pagina. */
 function moduloEFile(s: StatoPassi): Pastiglia[] {
   const m: Pastiglia[] = []
   if (s.firmaInFoto && !s.file.modulo) {
@@ -386,11 +386,11 @@ const euroBreve = (cent: number) => `${cent < 0 ? '−' : ''}${Math.abs(cent) % 
 export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
   const tipo = tipiDiPassi(s.chi, s.ancheTu === true)[passo - 1]
   if ((tipo !== 'corso' && tipo !== 'documenti') || !listino || !s.risposte.corsi.length) return undefined
-  const ref = (ids: string[]) => corsi.filter((c) => ids.includes(c.id))
   const famiglia = s.chi === 'figlio' && s.ancheTu && s.suo?.corsi.length ? contoDelloStato(s, corsi, listino, giorno) : undefined
-  const conto = famiglia ?? stimaIscrizione({ chi: s.risposte.nome.trim() || 'Chi si iscrive', corsi: ref(s.risposte.corsi), formula: s.risposte.formula }, [], giorno, listino)
-  // «Quota associativa» → «Quota»; «Annuale Judo adulti» → «Judo adulti annuale».
-  const voce = (testo: string) => testo.replace(/^Quota associativa$/, 'Quota').replace(/^(Annuale|Trimestre|Saldo)\s+(.+)$/i, (_, f: string, c: string) => `${c} ${f.toLowerCase()}`)
+  const conto = famiglia ?? stimaIscrizione(persona(s, corsi), [], giorno, listino)
+  // Per una persona sola le righe si accorciano («Quota associativa» → «Quota», «Annuale Judo adulti» → «Judo adulti annuale»); per la famiglia i testi della stima restano com'è.
+  const voce = (testo: string) =>
+    famiglia ? testo : testo.replace(/^Quota associativa$/, 'Quota').replace(/^(Annuale|Trimestre|Saldo)\s+(.+)$/i, (_, f: string, c: string) => `${c} ${f.toLowerCase()}`)
   return { righe: conto.righe.map((r) => `${voce(r.testo)} ${euroBreve(r.importo)}`).join(' + '), totale: euroBreve(conto.totale) }
 }
 
@@ -550,13 +550,20 @@ export function contoFamiglia(
  * per il riepilogo (il corso e la formula scelti dal genitore). Senza genitore
  * e senza proposta non c'è un conto di famiglia.
  */
+/** Chi si iscrive nello stato dei passi, come entra in ogni conto: nome (o «Il bambino» / «Chi si iscrive»), corsi e formula. */
+const persona = (s: StatoPassi, corsi: CorsoRef[]) => ({
+  chi: s.risposte.nome.trim() || (s.chi === 'figlio' ? 'Il bambino' : 'Chi si iscrive'),
+  corsi: corsi.filter((c) => s.risposte.corsi.includes(c.id)),
+  formula: s.risposte.formula,
+})
+
 export function contoDelloStato(s: StatoPassi, corsi: CorsoRef[], listino: Listino, giorno: string, proposta?: CorsoRef) {
   const ref = (ids: string[]) => corsi.filter((c) => ids.includes(c.id))
   const lui = proposta ? { corsi: [proposta], formula: s.risposte.formula } : s.chi === 'figlio' && s.ancheTu && s.suo ? { corsi: ref(s.suo.corsi), formula: s.suo.formula } : undefined
   if (!lui) return undefined
   return contoFamiglia(
     [
-      { chi: s.risposte.nome.trim() || 'Il bambino', corsi: ref(s.risposte.corsi), formula: s.risposte.formula },
+      persona(s, corsi),
       { chi: s.risposte.genitoreNome?.trim() || 'Genitore', ...lui },
     ],
     giorno,

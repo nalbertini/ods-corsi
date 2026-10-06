@@ -960,7 +960,7 @@ function Flusso({
               <Dettaglio tono="testo">I tuoi dati li hai già scritti: ne mancano pochi. La carta d’identità e la firma valgono anche per te.</Dettaglio>
             </span>
             <div className="modulo-largo">
-              <Riepilogo righe={[{ stato: 'fatto', titolo: nomeLui || 'Il genitore', dettaglio: 'nome, cognome, codice fiscale, residenza e contatti dei passi ' + passoDi('genitore') + ' e ' + passoDi('dati') }]} />
+              <Riepilogo righe={[{ stato: 'fatto', titolo: nomeLui || 'Il genitore', dettaglio: 'nome, cognome, codice fiscale, residenza e contatti, scritti nel passo ' + passoDi('genitore') + ' e nel passo ' + passoDi('dati') }]} />
             </div>
             <div className="modulo-campo modulo-largo">
               <span className="modulo-etichetta">IL TUO CORSO</span>

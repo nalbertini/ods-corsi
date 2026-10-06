@@ -948,7 +948,7 @@ console.log('\n19. la barra compatta: markup e stile')
   const giorno = '2026-10-06'
   // Firma attesa: totaleDelPasso(stato, passo, corsi, listino, giorno) → { righe, totale } | undefined.
   // Euro interi senza decimali («50 €»), con i centesimi la virgola («50,50 €»); le righe sono «<voce> <prezzo> €» unite da « + ».
-  const t = (stato, passo, l = listino) => (m.totaleDelPasso ? m.totaleDelPasso(stato, passo, corsi, l, giorno) : 'totaleDelPasso non c’è')
+  const t = (stato, passo, l = listino) => m.totaleDelPasso(stato, passo, corsi, l, giorno)
 
   ok('adulto, passo del corso: la riga e il totale', t(adulto(), 2), { righe: 'Quota 50 € + Judo adulti annuale 360 €', totale: '410 €' })
   ok('adulto, passo dei documenti: lo stesso', t(adulto(), 4), t(adulto(), 2))
@@ -968,6 +968,9 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('anche tu: è il totale di contoDelloStato, stessi centesimi', t(famiglia, 5)?.totale, `${m.contoDelloStato(famiglia, corsi, listino, giorno).totale / 100} €`)
   ok('anche tu: la riga nomina lo sconto famiglia', t(famiglia, 5)?.righe?.includes('Sconto'), true)
   ok('anche tu: il passo «anche tu» (6) non lo mostra', t(famiglia, 6), undefined)
+  // I testi della stima non si riscrivono: chi fa il bonifico legge le stesse parole del riepilogo.
+  const righeFamiglia = m.contoDelloStato(famiglia, corsi, listino, giorno).righe
+  ok('anche tu: la riga ha una voce per ogni riga della stima, coi suoi testi', t(famiglia, 5)?.righe?.split(' + ').map((x, i) => x.startsWith(righeFamiglia[i].testo)), righeFamiglia.map(() => true))
   const senzaSuo = figlio({}, { ancheTu: true, suo: { corsi: [], formula: 'annuale', scelte: {} } })
   ok('anche tu, ma il corso del genitore non è ancora scelto: solo il bambino', t(senzaSuo, 5)?.totale, '350 €')
 }
