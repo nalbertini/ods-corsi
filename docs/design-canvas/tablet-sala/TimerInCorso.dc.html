@@ -15,7 +15,7 @@
   </style>
 </helmet>
 <!-- Un allenamento in corso (TimerScreen.tsx del timer, dentro il riquadro della scheda TIMER). Il colore dell'intervallo (qui LAVORO, rosso) sta nella cornice da 14px, nel tasto grande PAUSA, nella riga in corso della scaletta e nella linea del tempo: si legge da tutta la sala. A sinistra stato, cifre da due metri, esercizio e i comandi (PAUSA, INDIETRO, +30″, AVANTI); a destra RESTA, FINE ALLE e la scaletta dei passi; in fondo la linea del tempo, un blocco per passo. In testata resta SI SEGNA ORA · SEGNATI per chi arriva tardi, e la scheda TIMER in basso dice a che punto e'. Scaletta e linea sono i componenti del canvas del timer, con piccole differenze (la linea qui ha il passo in corso col contorno). Non riprodotti: PRONTO, COMPLETATO, IN PAUSA e gli altri colori (giallo, verde, blu). -->
-<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden; color: #f2f2f0">
   <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:41" tema="scuro" chip="segna" corso="JUDO KIDS" conteggio="7/12" hint-size="100%,92px"></dc-import>
   <div style="position: relative; flex: 1; min-height: 0; overflow: hidden; border: 14px solid #e4292a">
     <div style="display: flex; align-items: center; gap: 12px; padding: 0 20px">

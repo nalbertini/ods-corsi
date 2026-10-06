@@ -15,7 +15,7 @@
   </style>
 </helmet>
 <!-- Il modulo di iscrizione aperto dal nucleo (AggiungiUnaPersona in AreaIscritti.tsx; ModuloIscrizione con `nucleo`; QuantoCosta): titolo UNA PERSONA IN PIU', riquadro a bordo giallo che dice di chi e' il nucleo e che cognome, residenza e contatti sono quelli che la segreteria ha gia'. I campi partono compilati col titolare (qui: Tommaso Rossi, minorenne, genitore Marta); nell'app si cambia tutto prima di mandare. Scelti i corsi e come paga, QUANTO COSTA mostra le righe dal listino con lo sconto famiglia (verde), il totale, l'IBAN, la causale col suo nome e COPIA IBAN, COPIA CAUSALE, PAGA CON SATISPAY. Per un minore del nucleo la carta d'identita' non si chiede (la segreteria ha gia' quella del genitore), e il tasto in fondo, a invio fatto, dice TORNA ALLA TUA PAGINA. Cima del modulo e fondo con i file: stesse schermate di ModuloDati e ModuloFile. -->
-<div style="display: flex; flex-direction: column; width: 390px; min-height: 1500px; background: #121212">
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1500px; background: #121212; color: #f2f2f0">
 <dc-import name="Testata" luogo="ISCRITTI" guida="{{ true }}" hint-size="100%,72px"></dc-import>
 <main style="display: flex; flex-direction: column">
 <dc-import name="Titoletto" label="UNA PERSONA IN PIÙ" hint-size="100%,50px"></dc-import>

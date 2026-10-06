@@ -15,7 +15,7 @@
   </style>
 </helmet>
 <!-- La scheda TIMER (TimerSala.tsx): il timer vero, lo stesso del telefono (timer/src, HomeScreen.tsx), dentro il tablet, in un riquadro con le sue misure (container query). Titolo I TIMER DELLA SALA, la card LEZIONE col corso aperto, poi STRUMENTI (cronometro e conto alla rovescia, a tutto schermo), DI QUESTA LEZIONE, DEL CORSO, DELLA PALESTRA (la lista scorre). Dal tablet i timer si fanno partire, non si cambiano: niente MODIFICA, DUPLICA, INVIA ne' NUOVO TIMER sulla scheda. Col timer davanti chi arriva tardi si segna dal chip SI SEGNA ORA · SEGNATI in testata. Musica, voce, segnali e schermo si scelgono nelle IMPOSTAZIONI del timer, che sul tablet si aprono col PIN (bollino IMPOSTAZIONI APERTE, non riprodotte). Non riprodotti: il filtro per disciplina e la lista di una sala senza timer. -->
-<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden; color: #f2f2f0">
   <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="scuro" chip="segna" corso="JUDO KIDS" conteggio="7/12" hint-size="100%,92px"></dc-import>
   <div style="position: relative; flex: 1; min-height: 0; overflow: hidden">
         <div style="display: flex; align-items: center; padding: 28px 36px 8px">
