@@ -59,7 +59,7 @@ Ogni corso è una riga col nome e i prezzi; **CAMBIA** la apre:
   di nascita»); uno solo, è aperto dall'altro lato («nati nel 2012 o prima»
   è solo **NATI AL** 2012). Il foglio li ha già dove l'età è chiara; se il listino
   l'hai già cambiato e salvato, vanno scritti qui corso per corso.
-- **DAI (ANNI)** (facoltativo) — l'età minima del corso, per i corsi per grandi (per esempio **16** per la Pesistica). Chi si iscrive e ha meno anni non lo vede nel modulo, e la pagina gli dice di chiamare la segreteria; chi ha l'età lo trova fra i corsi per lui, con scritto «dai 16 anni». Vuoto, nessun limite. L'età si conta alla data in cui si compila il modulo. Se si lascia vuoto, un corso senza anni di nascita resta sotto **SENZA FASCIA D'ETÀ**, e un bambino lo può scegliere lo stesso.
+- **DAI (ANNI)** (facoltativo) — l'età minima del corso, per i corsi per grandi (per esempio **16** per la Pesistica). Chi si iscrive e ha meno anni non lo vede nel modulo, e la pagina gli dice di chiamare la segreteria; chi ha l'età lo trova fra i corsi per lui, con scritto «dai 16 anni». Vuoto, nessun limite. L'età si conta alla data in cui si compila il modulo. Dopo un aggiornamento dell'app, prima di salvare ricarica la pagina: una scheda rimasta aperta da prima non conosce DAI (ANNI) e, salvando, lo cancellerebbe. Se si lascia vuoto, un corso senza anni di nascita resta sotto **SENZA FASCIA D'ETÀ**, e un bambino lo può scegliere lo stesso.
 - **PREZZI** — **A SALDO**, **ANNUALE** e **TRIMESTRE**, in euro, anche coi
   centesimi (`12,50`). Un prezzo lasciato vuoto non c'è: la pagina scrive un
   trattino e la ricevuta non lo propone. Un corso con più prezzi (la

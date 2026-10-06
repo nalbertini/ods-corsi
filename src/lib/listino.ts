@@ -1,5 +1,6 @@
 import { COSTI, OFFERTE, QUOTA_ASSOCIATIVA, SALDO_ENTRO, type Prezzi, type VoceCosto } from './costi'
 import { haUnServer } from './dati'
+import { anni as anniDi } from './richieste'
 
 /**
  * Il listino che vale: quello che la segreteria ha cambiato da LISTINO, o
@@ -63,7 +64,7 @@ const etaMinima = (x: unknown) => (typeof x === 'number' && Number.isInteger(x) 
 export function etaMinimaScritta(t: string): number | undefined | null {
   const s = t.trim()
   if (!s) return undefined
-  return (/^\d{1,2}$/.test(s) && etaMinima(Number(s))) || null
+  return (/^\d+$/.test(s) && etaMinima(Number(s))) || null
 }
 const giorno = (x: unknown) => (typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) && !Number.isNaN(Date.parse(x)) ? x : undefined)
 const senzaVuoti = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T
@@ -209,13 +210,6 @@ export function anniDiNascita(v: { natiDal?: number | string; natiAl?: number | 
   return dal && al ? `nati ${dal}–${al}` : dal ? `nati dal ${dal}` : al ? `nati fino al ${al}` : 'senza anni di nascita'
 }
 
-/** Gli anni compiuti a `oggi`, per una data `AAAA-MM-GG` vera. */
-function anniCompiuti(natoIl: string, oggi: Date): number {
-  const [a, m, g] = natoIl.split('-').map(Number)
-  const prima = oggi.getMonth() + 1 < m || (oggi.getMonth() + 1 === m && oggi.getDate() < g)
-  return oggi.getFullYear() - a - (prima ? 1 : 0)
-}
-
 /** Se un corso non è per la data di nascita di chi si iscrive: lo dice il listino, coi suoi anni e i sei mesi di tolleranza. */
 export const fuoriEta = (corso: string | CorsoRef, natoIl: string, voci: VoceCosto[]) => fuori(voceDelCorso(voci, corso), meseDi(natoIl))
 
@@ -246,7 +240,7 @@ export function corsiPerEta(
   oggi = new Date(),
 ): { adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[]; nascosti: string[] } {
   const a = meseDi(natoIl)
-  const anni = a === undefined ? undefined : anniCompiuti(natoIl, oggi)
+  const anni = a === undefined ? undefined : anniDi(natoIl, oggi)
   const posto = (c: CorsoRef) => {
     const v = voceDelCorso(voci, c)
     return v ? voci.indexOf(v) : voci.length
@@ -271,6 +265,12 @@ export function corsiPerEta(
   }
   // Senza data non si sa niente: un elenco solo.
   return a === undefined ? { adatti: perTutti, senzaAnni: [], altri, nascosti } : { adatti: giusti, senzaAnni: perTutti, altri, nascosti }
+}
+
+/** I corsi scelti che la data di nascita (corretta dopo) non nasconde: quelli «dai N anni» per chi è più piccolo non partono con la richiesta. */
+export function corsiAmmessi(scelti: readonly string[], corsi: ReadonlyArray<{ id: string; nome: string }>, voci: VoceCosto[], natoIl: string, oggi = new Date()): string[] {
+  const nascosti = new Set(corsiPerEta(corsi, voci, natoIl, [], oggi).nascosti)
+  return scelti.filter((id) => !nascosti.has(corsi.find((c) => c.id === id)?.nome ?? ''))
 }
 
 /**

@@ -236,6 +236,16 @@ console.log('\n5. l’età minima di un corso («dai N anni»)')
 }
 
 
+// Un corso già scelto che l'età (corretta dopo) nasconde non parte con la richiesta.
+{
+  const OGGI = new Date(2026, 9, 6, 12, 0)
+  const corsi = [{ id: 'c-pes', nome: 'Pesistica 1' }, { id: 'c-zu', nome: 'Zumba' }]
+  const voci = [{ ...voce('Pesistica 1', 'c-pes'), etaMinima: 16 }, voce('Zumba', 'c-zu')]
+  ok('corsi scelti: un bambino perde il corso per grandi', prova(() => m.corsiAmmessi(['c-pes', 'c-zu'], corsi, voci, '2016-04-12', OGGI)), ['c-zu'])
+  ok('corsi scelti: un adulto li tiene tutti', prova(() => m.corsiAmmessi(['c-pes', 'c-zu'], corsi, voci, '1984-05-05', OGGI)), ['c-pes', 'c-zu'])
+  ok('corsi scelti: senza data vera non si toglie niente', prova(() => m.corsiAmmessi(['c-pes', 'c-zu'], corsi, voci, '', OGGI)), ['c-pes', 'c-zu'])
+}
+
 if (guai) {
   console.log(`\n${guai} cose non tornano`)
   process.exit(1)

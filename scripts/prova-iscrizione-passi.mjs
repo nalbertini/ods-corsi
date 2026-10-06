@@ -602,6 +602,8 @@ console.log('\n13. anche tu: il conto, il corso parallelo, la richiesta del geni
   const ep = m.corsiPerEtaConStessaOra(corsi, rovesciato, '1984-05-05', ['judo-3'], 'Matteo')
   ok('stessa ora: il corso con lo stesso orario del figlio passa in cima', ep.adatti.map((c) => c.id), ['judo-adulti', 'aikido-adulti'])
   ok('stessa ora: la riga lo dice, solo su quello', ep.adatti.map((c) => c.riga?.includes('stessa ora di Matteo') ?? false), [true, false])
+  const grandi = { ...listino, corsi: listino.corsi.map((v, i) => (i === 0 ? { ...v, etaMinima: 16 } : v)) }
+  ok('stessa ora: i corsi per grandi nascosti arrivano alla schermata', m.corsiPerEtaConStessaOra(corsi, grandi, '2016-04-12', [], 'Luca').nascosti.length, 1)
   ok('senza listino niente corsi per età e nessun «stessa ora»', m.corsiPerEtaConStessaOra(corsi, undefined, '1984-05-05', ['judo-3'], 'Matteo').adatti.some((c) => c.riga?.includes('stessa ora')), false)
 
   // Cosa parte per ognuno: il file di ogni richiesta e i dati del PDF.
