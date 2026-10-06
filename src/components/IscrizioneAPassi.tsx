@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { anniScritti, dataDaCf, datiRichieste, domandaUscita, ETICHETTA_FILE, FORMULE, problemi, pulisciCf } from '../lib/richieste'
+import { anniScritti, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
+import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { INFORMATIVA_PUBBLICA, MODULI, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
 import { corsiPerEta, type CorsoPerEta, type Listino } from '../lib/listino'
@@ -8,7 +9,7 @@ import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import * as P from '../lib/passiIscrizione'
 import { useListino } from './Costi'
-import { Avanzamento, BarraPasso, Bollino, Campo, Dettaglio, NotaCampo, Riepilogo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota, type RigaRiepilogo } from './ds'
+import { Avanzamento, BarraPasso, Bollino, CaricaFile, Campo, Dettaglio, NotaCampo, Riepilogo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota, type RigaRiepilogo } from './ds'
 import { Contatti, Prova } from './IscrizioniScreen'
 import { Casella, QuantoCosta, SceltaFile } from './ModuloIscrizione'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
@@ -81,6 +82,37 @@ export function IscrizioneAPassi() {
         <Scelta prova={d?.modo === 'prova'} onScegli={(chi) => setAvvio({ chi, n: 1 })} />
       )}
     </div>
+  )
+}
+
+/**
+ * Come `SceltaFile` del modulo di oggi (che non si tocca), ma coi testi per il genitore
+ * di chi iscrive il figlio: `etichetta` e `dettaglio` al posto di quelli di `FILE`.
+ */
+function SceltaFileGenitore({ tipo, file, onFile, etichetta, dettaglio }: { tipo: TipoFile; file?: File; onFile: (f: File | undefined) => void; etichetta: string; dettaglio: string }) {
+  const f = FILE.find((x) => x.tipo === tipo)!
+  const [guaio, setGuaio] = useState<string | null>(null)
+  const [lavoro, setLavoro] = useState(false)
+  const scelto = async (x: File | undefined) => {
+    setGuaio(null)
+    if (!x) return onFile(undefined)
+    if (!ESTENSIONI[x.type]) return setGuaio('Serve una foto (JPG, PNG, HEIC) o un PDF')
+    setLavoro(true)
+    const ridotto = await riduciFoto(x)
+    setLavoro(false)
+    if (ridotto.size > MASSIMO_FILE) return setGuaio('Il file è troppo grande: al massimo 10 MB')
+    onFile(ridotto)
+  }
+  return (
+    <CaricaFile
+      id={`m-file-${tipo}`}
+      etichetta={etichetta}
+      seManca={f.obbligatorio ? undefined : (f.seManca ?? 'FACOLTATIVO')}
+      dettaglio={lavoro ? 'Preparo la foto…' : dettaglio}
+      file={file && !lavoro ? { nome: file.name, byte: file.size } : undefined}
+      errore={guaio}
+      onFile={(x) => void scelto(x)}
+    />
   )
 }
 
@@ -639,6 +671,16 @@ function Flusso({
               <input id="n-genitoreCognome" maxLength={60} {...segna('genitoreCognome')} className="campo" value={r.genitoreCognome ?? ''} onChange={metti('genitoreCognome')} />
             </Campo>
             {cf('genitoreCodiceFiscale', 'CODICE FISCALE DEL GENITORE', natoIlGenitore)}
+            {P.luogoGenitoreDaChiedere(v, luoghi ?? undefined) && (
+              <>
+                <Campo id="n-natoAGenitore" etichetta="DOVE SEI NATO" nota={{ testo: 'Dal tuo codice fiscale non riusciamo a leggerlo: scrivilo tu.', guaio: false }}>
+                  <input id="n-natoAGenitore" className="campo" value={v.natoAGenitore} onChange={(e) => setGrezzo((p) => ({ ...p, natoAGenitore: e.target.value }))} />
+                </Campo>
+                <Campo id="n-provincia" etichetta="PROVINCIA (ES. TO)">
+                  <input id="n-provincia" className="campo campo-codice" autoCapitalize="characters" maxLength={2} value={provinciaGenitore} onChange={(e) => setProvincia(e.target.value.toUpperCase())} />
+                </Campo>
+              </>
+            )}
           </div>
           {contatti}
         </>
@@ -777,30 +819,6 @@ function Flusso({
                   scelta={v.scelte.foto}
                   onScegli={(x) => setGrezzo((p) => ({ ...p, scelte: { ...p.scelte, foto: x } }))}
                 />
-                {figlio && (
-                  <>
-                    <Campo id="n-natoAGenitore" etichetta="DOVE È NATO IL GENITORE">
-                      <input
-                        id="n-natoAGenitore"
-                        className="campo"
-                        readOnly={!!luogoGenitore}
-                        value={v.natoAGenitore}
-                        onChange={(e) => setGrezzo((p) => ({ ...p, natoAGenitore: e.target.value }))}
-                      />
-                    </Campo>
-                    <Campo id="n-provincia" etichetta="PROVINCIA (ES. TO)">
-                      <input
-                        id="n-provincia"
-                        className="campo campo-codice"
-                        autoCapitalize="characters"
-                        maxLength={2}
-                        readOnly={!!luogoGenitore}
-                        value={provinciaGenitore}
-                        onChange={(e) => setProvincia(e.target.value.toUpperCase())}
-                      />
-                    </Campo>
-                  </>
-                )}
                 <div className="modulo-campo modulo-largo">
                   <label htmlFor="n-firma" className="modulo-etichetta">
                     {nomeFirmatario ? (
@@ -891,26 +909,25 @@ function Flusso({
           <div className="pad modulo-griglia passo-dopo">
             {certificato !== 'nessuno' && (
               <div className="modulo-campo modulo-largo">
-                <span className="modulo-etichetta">{certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
+                <span className="modulo-etichetta">{figlio ? P.testoFile(v.chi, 'certificato', r.nome).etichetta : certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
                 <Dettaglio tono="avviso">
-                  {certificato === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico' : 'Dai 6 anni serve il certificato medico'} per partecipare alle lezioni. Se non ce l’hai ancora, lo porti in segreteria prima della
-                  prima lezione.
+                  {certificato === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico' : 'Dai 6 anni serve il certificato medico'} per partecipare alle lezioni.{' '}
+                  {figlio ? P.testoFile(v.chi, 'certificato', r.nome).dettaglio : 'Se non ce l’hai ancora, lo porti in segreteria prima della prima lezione.'}
                 </Dettaglio>
               </div>
             )}
             {daChiedere.file
               .filter((f) => f.tipo === 'documento' || f.tipo === 'documento-retro' || f.tipo === 'certificato')
-              .map((f) => (
-                <SceltaFile
-                  key={f.tipo}
-                  tipo={f.tipo}
-                  file={v.file[f.tipo]}
-                  onFile={(x) => setFile(f.tipo, x)}
-                  facoltativo={!f.obbligatorio}
-                  // Il perché del certificato è già detto sopra: qui solo cosa caricare.
-                  dettaglio={f.tipo === 'certificato' ? 'Una foto o il PDF.' : undefined}
-                />
-              ))}
+              .map((f) => {
+                const testi = P.testoFile(v.chi, f.tipo, r.nome)
+                // Il perché del certificato è già detto sopra: qui solo cosa caricare.
+                const dettaglio = f.tipo === 'certificato' ? 'Una foto o il PDF.' : testi.dettaglio
+                return figlio ? (
+                  <SceltaFileGenitore key={f.tipo} tipo={f.tipo} file={v.file[f.tipo]} onFile={(x) => setFile(f.tipo, x)} etichetta={testi.etichetta} dettaglio={dettaglio} />
+                ) : (
+                  <SceltaFile key={f.tipo} tipo={f.tipo} file={v.file[f.tipo]} onFile={(x) => setFile(f.tipo, x)} facoltativo={!f.obbligatorio} dettaglio={f.tipo === 'certificato' ? dettaglio : undefined} />
+                )
+              })}
           </div>
         </>
       )
