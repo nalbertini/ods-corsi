@@ -24,7 +24,7 @@ elenco, che compaiono negli appelli e sul tablet.
   con la quota, pagata solo in parte, o scaduta.
 - **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
   segreteria.
-- **FILE DI PRIMA** — solo finché ce ne sono: chi ha un file di certificato
+- **NON ARCHIVIATO** — solo finché ce ne sono: chi ha un file di certificato
   caricato prima della nuova gestione (senza data di caricamento). Quelli
   nuovi non ci sono mai.
 - **POSSIBILI DOPPIONI** col numero — solo finché ce ne sono: le schede che
@@ -148,10 +148,10 @@ scheda è disattivata, nessuno.
   serve, si carica di nuovo. **Sotto i 6 anni** il certificato non si chiede:
   il bollino dice **NON SERVE**, e chi ha meno di 6 anni non conta fra chi è
   senza certificato valido.
-- **Un file di prima della nuova gestione** (caricato quando il certificato
+- **Un certificato non archiviato** (file caricato quando il certificato
   stava su carta) si apre con **APRI** come gli altri, e la scheda lo dice in
-  giallo; in elenco c'è **FILE DI PRIMA** accanto al nome (il filtro
-  **FILE DI PRIMA** li mostra tutti, finché ce ne sono). Si cancella
+  giallo; in elenco c'è **NON ARCHIVIATO** accanto al nome (il filtro
+  **NON ARCHIVIATO** li mostra tutti, finché ce ne sono). Si cancella
   da solo come gli altri, o con **TOGLI IL CERTIFICATO**.
 - **DOCUMENTO D'IDENTITÀ** — se la copia è in segreteria, su carta (per un
   minore, quella del genitore). **LA COPIA È IN SEGRETERIA** lo segna, **LA

@@ -225,7 +225,7 @@ export function Iscritti({
         <Testa
           titolo="ISCRITTI"
           sotto={`${attiveOra.length} persone attive · ${senzaCertificato ? `${senzaCertificato} senza certificato valido` : 'tutti col certificato'}${inScadenza ? ` · ${inScadenza} in scadenza` : ''} · ${nonPagato ? `${nonPagato} da pagare` : 'tutti in regola coi pagamenti'}.${
-            nFilePrima === 1 ? ' Un file di certificato è di prima della nuova gestione.' : nFilePrima ? ` ${nFilePrima} file di certificato sono di prima della nuova gestione.` : ''
+            nFilePrima === 1 ? ' Un certificato non archiviato.' : nFilePrima ? ` ${nFilePrima} certificati non archiviati.` : ''
           }`}
         >
           <button type="button" className="sg-btn sg-btn-pieno" onClick={onNuovo}>
@@ -272,7 +272,7 @@ export function Iscritti({
           </button>
           {nFilePrima > 0 && (
             <button type="button" className="num sg-chip" aria-pressed={soloFilePrima} onClick={() => setFilePrima(!soloFilePrima)}>
-              FILE DI PRIMA
+              NON ARCHIVIATO
             </button>
           )}
           {coppie.length > 0 && (
@@ -346,7 +346,7 @@ export function Iscritti({
                     <button type="button" className="sg-riga-apri" aria-current={!nuovo && scelta === p.id ? 'true' : undefined}>
                       {p.cognome} {p.nome}
                     </button>
-                    {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>FILE DI PRIMA</span>}
+                    {certificatoDaStampare(p.certificato) && <span className="num sg-tag" style={{ marginLeft: 8 }}>NON ARCHIVIATO</span>}
                   </span>
                   <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{suoi.join(', ') || '—'}</span>
                   <span role="cell" style={{ fontSize: 13, color: p.email || p.emailContatto || p.telefono ? 'var(--sec)' : 'var(--rosso-testo)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -1342,7 +1342,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
           </div>
           <span style={{ fontSize: 13, color: 'var(--dim)' }}>Lo vede solo la segreteria. Il link dura 10 minuti: se scade, basta riaprire con APRI.</span>
           {x.cancellaIl && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Il file si cancella da solo il {dataLunga(x.cancellaIl)}, 30 giorni dopo la scadenza.</span>}
-          {c.vecchio && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>È un file di prima della nuova gestione: si apre con APRI come gli altri.</span>}
+          {c.vecchio && <span style={{ fontSize: 13, color: 'var(--giallo-testo)' }}>Certificato non archiviato (caricato prima della nuova gestione): si apre con APRI come gli altri.</span>}
         </div>
       ) : (
         !nonServe &&

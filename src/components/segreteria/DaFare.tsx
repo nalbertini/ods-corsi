@@ -227,9 +227,9 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
     {
       chiave: 'file-di-prima',
       n: conti.certificatiDaStampare,
-      titolo: (n) => uno(n, 'file di certificato di prima', 'file di certificato di prima'),
+      titolo: (n) => uno(n, 'certificato non archiviato', 'certificati non archiviati'),
       sotto: 'Caricati nell’app prima della nuova gestione: si aprono dalla scheda come gli altri, e si cancellano da soli 30 giorni dopo la scadenza.',
-      aPosto: 'file di certificato di prima',
+      aPosto: 'certificati non archiviati',
       tasto: 'VEDI QUALI',
       voce: 'iscritti',
       dove: { filtro: 'file-di-prima' },

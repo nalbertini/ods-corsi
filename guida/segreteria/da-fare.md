@@ -29,7 +29,7 @@ si sistema:
   contate qui. Gli stessi numeri li dice la testata di ISCRITTI. Il filtro, e
   la ricerca scritta sopra, restano finché si resta negli iscritti, anche
   aprendo una scheda e tornando dal menu.
-- **File di certificato di prima** (caricati prima della nuova gestione: si
+- **Certificati non archiviati** (file caricati prima della nuova gestione: si
   aprono dalla scheda come gli altri e si cancellano da soli) e **richieste
   con documenti da stampare** (il documento d'identità arrivato col modulo):
   il documento si stampa, si mette nella cartellina e si cancella. Il
