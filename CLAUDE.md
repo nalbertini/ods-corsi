@@ -49,6 +49,10 @@ Le stesse girano su ogni PR (`.github/workflows/controlla.yml`).
 - `guida/novita.md` e `version` in `package.json` li scrive
   `scripts/versione.mjs` quando si pubblica: non si toccano.
 - Sul database vero non si lancia niente senza un sì dell'utente.
+- Una funzione che cambia qualcosa che si vede parte dal design: proposta in
+  un canvas che parte dalla libreria, discussione con l'utente, solo dopo
+  prove e codice, e a fine lavoro la libreria aggiornata (skill
+  `nuova-funzione`, passi 4, 5 e 12).
 - Ogni mockup fatto con `/design` parte dalla libreria in
   `docs/design-canvas/ods-design-system/`, mai da artboard disegnate da zero:
   si copia `Pagina.dc.html` o `PaginaTelefono.dc.html` e si importano i
