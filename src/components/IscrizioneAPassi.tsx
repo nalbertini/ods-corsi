@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
 import { anniScritti, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
-import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
+import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { INFORMATIVA_PUBBLICA, MODULI, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
 import { corsiPerEta, type CorsoPerEta, type Listino } from '../lib/listino'
 import { euro } from '../lib/ricevute'
@@ -88,6 +88,7 @@ export function IscrizioneAPassi() {
 /**
  * Come `SceltaFile` del modulo di oggi (che non si tocca), ma coi testi per il genitore
  * di chi iscrive il figlio: `etichetta` e `dettaglio` al posto di quelli di `FILE`.
+ * Da cancellare quando il modulo vecchio sparisce: `SceltaFile` prenderà etichetta e dettaglio.
  */
 function SceltaFileGenitore({ tipo, file, onFile, etichetta, dettaglio }: { tipo: TipoFile; file?: File; onFile: (f: File | undefined) => void; etichetta: string; dettaglio: string }) {
   const f = FILE.find((x) => x.tipo === tipo)!
@@ -673,7 +674,7 @@ function Flusso({
             {cf('genitoreCodiceFiscale', 'CODICE FISCALE DEL GENITORE', natoIlGenitore)}
             {P.luogoGenitoreDaChiedere(v, luoghi ?? undefined) && (
               <>
-                <Campo id="n-natoAGenitore" etichetta="DOVE SEI NATO" nota={{ testo: 'Dal tuo codice fiscale non riusciamo a leggerlo: scrivilo tu.', guaio: false }}>
+                <Campo id="n-natoAGenitore" etichetta="DOVE SEI NATO" nota={cfValido(pulisciCf(r.genitoreCodiceFiscale ?? '')) ? { testo: 'Dal tuo codice fiscale non riusciamo a leggerlo: scrivilo tu.', guaio: false } : undefined}>
                   <input id="n-natoAGenitore" className="campo" value={v.natoAGenitore} onChange={(e) => setGrezzo((p) => ({ ...p, natoAGenitore: e.target.value }))} />
                 </Campo>
                 <Campo id="n-provincia" etichetta="PROVINCIA (ES. TO)">

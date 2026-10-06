@@ -188,7 +188,8 @@ function sezione(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
       return campi(s, oggi, s.chi === 'adulto' ? [...DATI, ...CONTATTI] : DATI)
     case 'genitore':
       // Il luogo del genitore lo dice il suo codice fiscale (il componente lo riempie): se resta vuoto lo chiede qui, dove si parla a lui.
-      return [...campi(s, oggi, GENITORE), ...(s.natoAGenitore.trim() ? [] : [{ chiave: 'natoAGenitore', nome: 'DOVE SEI NATO' }]), ...campi(s, oggi, CONTATTI)]
+      // Serve solo al PDF del modulo: col foglio firmato in foto il PDF non si fa e non lo chiede.
+      return [...campi(s, oggi, GENITORE), ...(s.natoAGenitore.trim() || s.file.modulo || s.firmaInFoto ? [] : [{ chiave: 'natoAGenitore', nome: 'DOVE SEI NATO' }]), ...campi(s, oggi, CONTATTI)]
     case 'corso':
       return [
         ...campi(s, oggi, ['corsi']),
@@ -345,7 +346,11 @@ export function testoFile(chi: Chi, tipo: TipoFile, nome: string): { etichetta: 
   return { etichetta: f.etichetta, dettaglio: f.dettaglio }
 }
 
-/** Il luogo di nascita del genitore si chiede solo se il suo codice fiscale non lo dice (elenco dei luoghi assente, codice non ancora scritto o luogo che non c'è). */
+/**
+ * Il luogo di nascita del genitore si chiede solo se il suo codice fiscale non lo dice (elenco dei luoghi assente,
+ * codice non ancora scritto o luogo che non c'è). Segue `natoAGenitore`, che il componente riempie dallo stesso elenco:
+ * se uno dei due cambia, cambia anche l'altro (la mancanza «DOVE SEI NATO» in `sezione`).
+ */
 export function luogoGenitoreDaChiedere(s: StatoPassi, luoghi: Luoghi | undefined): boolean {
   if (s.chi !== 'figlio') return false
   return !(luoghi && luogoDaCf(luoghi, pulisciCf(s.risposte.genitoreCodiceFiscale ?? '')))

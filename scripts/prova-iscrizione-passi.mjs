@@ -898,5 +898,13 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('il canvas della firma ha tabIndex={-1}', /<canvas[^>]*tabIndex=\{-1\}/s.test(tavola), true)
 }
 
+// 22. Col foglio firmato in foto il PDF non si fa: il luogo del genitore non serve, e non ferma il passo.
+{
+  console.log('\n22. foglio in foto: il luogo del genitore non si chiede')
+  const foto = figlio({}, { natoAGenitore: '', firmaInFoto: true, file: { documento: F('d.jpg') } })
+  ok('figlio, foglio firmato in foto, luogo non ricavato: il passo del genitore non lo chiede', m.mancaNelPasso(foto, 2).includes('DOVE SEI NATO'), false)
+  ok('figlio, firmo qui, luogo non ricavato: lo chiede', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 2).includes('DOVE SEI NATO'), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
