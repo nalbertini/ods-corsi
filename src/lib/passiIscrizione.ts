@@ -207,6 +207,26 @@ function mancanze(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
   return tutte.filter((p, i) => tutte.findIndex((q) => q.nome === p.nome) === i)
 }
 
+/**
+ * Le voci toccabili della barra: nome e chiave del campo dove portano. Come
+ * `mancaNelPasso`, ma all'ultimo passo chi iscrive e il genitore restano due
+ * voci (la chiave le distingue, il nome lo dice), così il tocco va al campo giusto.
+ */
+export function mancanti(s: StatoPassi, passo: number, oggi = new Date()): Pastiglia[] {
+  const ultimo = passiDi(s.chi, s.ancheTu === true).length
+  if (passo < ultimo) return sezione(s, passo, oggi)
+  const tutte = Array.from({ length: ultimo - 1 }, (_, i) => sezione(s, i + 1, oggi)).flat()
+  return tutte
+    .filter((p, i) => tutte.findIndex((q) => q.chiave === p.chiave) === i)
+    .map((p) => ({ ...p, nome: NOMI_DEL_GENITORE[p.chiave] ?? p.nome }))
+}
+
+const NOMI_DEL_GENITORE: Record<string, string> = {
+  suoCorsi: 'IL TUO CORSO',
+  suoTesseramento: 'TESSERAMENTO DEL GENITORE',
+  suoFoto: 'FOTO DEL GENITORE',
+}
+
 /** Le pastiglie di «MANCA N COSE»: lista viva, conta anche «scritto male». */
 export const mancaNelPasso = (s: StatoPassi, passo: number, oggi = new Date()): string[] => mancanze(s, passo, oggi).map((p) => p.nome)
 

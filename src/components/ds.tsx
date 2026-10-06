@@ -432,9 +432,11 @@ export function Avanzamento({ numero, totale, titolo }: { numero: number; totale
 }
 
 /**
- * Il fondo di ogni passo: cosa manca (una pastiglia per cosa) o la nota verde,
- * poi INDIETRO e AVANTI (`vai` verde, per l'ultimo, che manda). INDIETRO è un
- * DueTocchi: se `chiede` c'è, prende tutta la riga. Senza `onIndietro` non c'è.
+ * Il fondo di ogni passo: cosa manca in una riga sola (quanti, il tasto VAI A la
+ * prima voce, ▾ che apre l'elenco; ogni voce è un tasto che porta al campo) o la
+ * nota verde, poi INDIETRO e AVANTI (`vai` verde, per l'ultimo, che manda).
+ * INDIETRO è un DueTocchi: se `chiede` c'è, prende tutta la riga. Senza
+ * `onIndietro` non c'è. `aperta` è lo stato iniziale dell'elenco.
  * Fonte: docs/design-canvas/ods-design-system/BarraPasso.dc.html.
  */
 export function BarraPasso({
@@ -444,31 +446,66 @@ export function BarraPasso({
   tono = 'principale',
   occupato,
   chiede,
+  aperta = false,
+  onVai,
   onAvanti,
   onIndietro,
 }: {
-  manca?: readonly string[]
+  manca?: ReadonlyArray<{ nome: string; chiave: string }>
   nota?: string
   avanti?: string
   tono?: 'principale' | 'vai'
   occupato?: boolean
   chiede?: string
+  aperta?: boolean
+  onVai: (chiave: string) => void
   onAvanti: () => void
   onIndietro?: () => void
 }) {
+  const [elenco, setElenco] = useState(aperta)
+  const prima = manca[0]
   return (
     <div className="barra-passo">
-      {manca.length > 0 && (
+      {prima && (
         <div className="barra-manca" role="alert">
-          <span className="barra-manca-titolo">{manca.length === 1 ? 'MANCA 1 COSA:' : `MANCANO ${manca.length} COSE:`}</span>
-          {manca.map((m) => (
-            <span key={m} className="barra-pastiglia">
-              {m}
-            </span>
-          ))}
+          <div className="barra-manca-riga">
+            <span className="barra-manca-titolo">{manca.length === 1 ? 'MANCA 1' : `MANCANO ${manca.length}`}</span>
+            <button type="button" className="barra-manca-vai" aria-label={`Vai a: ${prima.nome}`} onClick={() => onVai(prima.chiave)}>
+              <span className="barra-manca-nome">VAI A: {prima.nome}</span>
+              <span aria-hidden>›</span>
+            </button>
+            <button
+              type="button"
+              className="barra-manca-apri"
+              aria-expanded={elenco}
+              aria-label={elenco ? 'Chiudi l’elenco di quel che manca' : 'Apri l’elenco di quel che manca'}
+              onClick={() => setElenco(!elenco)}
+            >
+              <span aria-hidden>{elenco ? '▴' : '▾'}</span>
+            </button>
+          </div>
+          {elenco && (
+            <div className="barra-manca-elenco">
+              {manca.map((m) => (
+                <button
+                  key={m.chiave}
+                  type="button"
+                  className="barra-manca-voce"
+                  aria-label={`Vai a: ${m.nome}`}
+                  onClick={() => {
+                    setElenco(false)
+                    onVai(m.chiave)
+                  }}
+                >
+                  <span>{m.nome}</span>
+                  <span aria-hidden>›</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
-      {manca.length === 0 && nota && (
+      {!prima && nota && (
         <div className="barra-nota">
           <span className="barra-nota-segno" aria-hidden>
             ✓

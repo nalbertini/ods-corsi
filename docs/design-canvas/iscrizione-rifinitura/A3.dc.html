@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1560px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 20px; border-bottom: 2px solid #2a2a2a"><span style="font-size: 14px; line-height: 1.3; color: #c9c9c4">Un dubbio? Chiama la segreteria.</span><dc-import name="Bottone" label="CHIAMA" variante="linea" alto="44px" corpo="16px" larghezza="132px" hint-size="132px,44px"></dc-import></div>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="3" totale="5" titolo="IL MODULO E LA FIRMA" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 4px"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">1 · LEGGI IL MODULO</span><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">Sono le autorizzazioni della palestra: tesseramento, foto e privacy. Ci vuole un minuto.</span><dc-import name="Bottone" label="GUARDA IL MODULO" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import></div><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">2 · COME FIRMI?</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" etichetta="" valore="Firmo qui" una="{{ true }}" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" etichetta="" valore="Ho il foglio firmato" una="{{ true }}" hint-size="50%,52px"></dc-import></div></div></div><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">IL TESSERAMENTO ALLA FIJLKAM E/O FIPE</span><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Per la stagione 2026/27. Sono le federazioni di judo e di pesi: ti danno l’assicurazione e ti fanno gareggiare. Se dici no, fai il corso lo stesso.</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" etichetta="" valore="Autorizzo" una="{{ true }}" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" etichetta="" valore="Non autorizzo" una="{{ true }}" hint-size="50%,52px"></dc-import></div></div></div><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">LE FOTO E I VIDEO</span><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Sui canali social della palestra e nei volantini e manifesti.</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" etichetta="" valore="Autorizzo" una="{{ true }}" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" etichetta="" valore="Non autorizzo" una="{{ true }}" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div></div></div><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">3 · FIRMA</span><dc-import name="TavolaFirma" firmata="{{ true }}" hint-size="100%,170px"></dc-import></div><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">4 · I DUE OK</span><dc-import name="Campo" tipo="spunta" etichetta="" valore="Ho letto il Regolamento Sociale" scelto="{{ true }}" hint-size="100%,48px"></dc-import><dc-import name="Campo" tipo="spunta" etichetta="" valore="Ho letto l’informativa sulla privacy" scelto="{{ true }}" hint-size="100%,70px"></dc-import></div></div>
+</main>
+<dc-import name="BarraPasso" nota="Tutto a posto in questo passo." avanti="AVANTI" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

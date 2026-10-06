@@ -733,5 +733,108 @@ console.log('\n17. due tocchi nello stesso istante mandano una richiesta sola')
   ok('RIPROVA due volte insieme: il file riparte una volta sola', tentativi, 2)
 }
 
+// ---------------------------------------------------------------------------
+console.log('\n18. la barra di quel che manca: una riga, e ogni voce è un tasto che porta al campo')
+{
+  const vuoto = (chi) => m.nuovoStato(chi)
+  const anche = { ...vuoto('figlio'), ancheTu: true, suo: { corsi: [], formula: 'trimestre', scelte: {} } }
+  // Finché `mancanti` non c'è, ogni prova che la usa cade con ✗ invece di fermare lo script.
+  const voci = (stato, passo) => (m.mancanti ? m.mancanti(stato, passo) : [])
+
+  // La lista toccabile: nome e chiave, nell'ordine di sempre.
+  ok('mancanti: stessi nomi di mancaNelPasso, stesso ordine', voci(vuoto('adulto'), 1).map((v) => v.nome), m.mancaNelPasso(vuoto('adulto'), 1))
+  ok('mancanti: la prima chiave è quella del focus', voci(vuoto('adulto'), 1)[0]?.chiave, m.primoDaCorreggere(vuoto('adulto'), 1))
+  ok('mancanti: a posto, nessuna voce', voci(adulto(), 1), [])
+  ok('mancanti: ogni voce ha nome e chiave', voci(vuoto('adulto'), 1).length > 0 && voci(vuoto('adulto'), 1).every((v) => v.nome && v.chiave), true)
+  ok('mancanti: la data di nascita ha la sua chiave', voci(vuoto('adulto'), 1).find((v) => v.nome === 'DATA DI NASCITA')?.chiave, 'natoIl')
+
+  // «Anche tu»: all'ultimo passo il riepilogo mette insieme tutto, ma due persone non diventano una voce.
+  const riepilogo = voci(anche, 6)
+  ok('anche tu, ultimo passo: corso del bambino e corso del genitore sono due voci', riepilogo.filter((v) => v.chiave === 'corsi' || v.chiave === 'suoCorsi').map((v) => v.chiave), ['corsi', 'suoCorsi'])
+  ok('anche tu, ultimo passo: tesseramento e foto, due volte ciascuno', riepilogo.filter((v) => /tesseramento|foto/i.test(v.chiave)).map((v) => v.chiave).sort(), ['foto', 'suoFoto', 'suoTesseramento', 'tesseramento'])
+  ok('anche tu, ultimo passo: nessun nome ripetuto, si distinguono a parole', riepilogo.length > 0 && new Set(riepilogo.map((v) => v.nome)).size === riepilogo.length, true)
+  ok('anche tu: il corso del genitore si chiama «IL TUO CORSO»', riepilogo.find((v) => v.chiave === 'suoCorsi')?.nome, 'IL TUO CORSO')
+  ok('anche tu, passo 5: i nomi di sempre', m.mancaNelPasso(anche, 5), ['CORSO', 'TESSERAMENTO', 'FOTO'])
+
+  // Ogni chiave porta a un id che c'è nella pagina.
+  const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  const moduloFile = readFileSync('src/components/ModuloIscrizione.tsx', 'utf8')
+  const tutte = new Map()
+  for (const stato of [vuoto('adulto'), vuoto('figlio'), anche, { ...vuoto('figlio'), ancheTu: false }])
+    for (let p = 1; p <= m.passiDi(stato.chi, stato.ancheTu === true).length; p++) for (const v of voci(stato, p)) tutte.set(v.chiave, v.nome)
+  const haId = (k) =>
+    pagina.includes(`id="n-${k}"`) || pagina.includes(`id: 'n-${k}'`) || pagina.includes(`cf('${k}'`) ||
+    (m.FILE.some((f) => f.tipo === k) && moduloFile.includes('id={`m-file-${tipo}`}'))
+  ok('ogni voce possibile ha un id nella pagina (n-<chiave> o m-file-<chiave>)', tutte.size > 0 ? [...tutte.keys()].filter((k) => !haId(k)) : ['nessuna voce'], [])
+
+  // Il tocco usa lo stesso focus dell'AVANTI.
+  ok('la pagina passa il suo focus alla barra', /<BarraPasso[\s\S]*?onVai=\{focus\}/.test(pagina), true)
+}
+
+// ---------------------------------------------------------------------------
+console.log('\n19. la barra compatta: markup e stile')
+{
+  const { outputFiles } = await build({
+    stdin: {
+      contents:
+        "import { createElement } from 'react'; import { renderToStaticMarkup } from 'react-dom/server'; import { BarraPasso } from './src/components/ds'; export const rendi = (props) => renderToStaticMarkup(createElement(BarraPasso, { onAvanti() {}, onVai() {}, ...props }))",
+      resolveDir: '.',
+      loader: 'tsx',
+    },
+    bundle: true,
+    format: 'esm',
+    platform: 'node',
+    jsx: 'automatic',
+    write: false,
+    logLevel: 'error',
+    banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(process.cwd() + '/x.js');" },
+    define: { 'import.meta.env': '{}', 'process.env.NODE_ENV': '"production"' },
+  })
+  let rendi
+  try {
+    ;({ rendi } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64')))
+  } catch (e) {
+    console.log('  ✗ la barra non si carica:', String(e.message).slice(0, 160))
+    process.exit(1)
+  }
+  const v = (n) => Array.from({ length: n }, (_, i) => ({ nome: `VOCE ${i + 1}`, chiave: `k${i + 1}` }))
+  const tasti = (html) => (html.match(/<button/g) ?? []).length
+  const riga = (html) => html.match(/<div class="barra-manca"[\s\S]*?<div class="barra-tasti"/)?.[0] ?? ''
+
+  // Oggi la barra vuole stringhe: con voci {nome, chiave} il render cade, e ogni prova che ne legge il markup lo dice.
+  const rendiSicuro = (p) => {
+    try {
+      return rendi(p)
+    } catch (e) {
+      return `[render caduto: ${String(e.message).slice(0, 90)}]`
+    }
+  }
+  const tre = rendiSicuro({ manca: v(3) })
+  ok('titolo scritto col numero: MANCANO 3', riga(tre).includes('MANCANO 3'), true)
+  ok('una cosa sola: MANCA 1', riga(rendiSicuro({ manca: v(1) })).includes('MANCA 1'), true)
+  ok('chiusa: il tasto «VAI A» porta alla prima voce', riga(tre).includes('VAI A: VOCE 1'), true)
+  ok('chiusa: il nome accessibile del tasto è «Vai a: VOCE 1»', riga(tre).includes('aria-label="Vai a: VOCE 1"'), true)
+  ok('chiusa: le altre voci non ci sono', riga(tre).includes('VAI A') && !riga(tre).includes('VOCE 2'), true)
+  ok('chiusa: due tasti, vai e apri', tasti(riga(tre)), 2)
+  ok('chiusa: l’apri è chiuso (aria-expanded=false)', /<button[^>]*aria-expanded="false"/.test(riga(tre)), true)
+  const forma = (n) => riga(rendiSicuro({ manca: v(n) })).replace(/\d+/g, 'N').replace(/VOCE N/g, 'V')
+  ok('chiusa: la riga è la stessa con 2 o con 9 voci, e ha il VAI A', forma(9) === forma(2) && forma(9).includes('VAI A'), true)
+  const aperta = rendiSicuro({ manca: v(3), aperta: true })
+  ok('aperta: aria-expanded=true', /<button[^>]*aria-expanded="true"/.test(riga(aperta)), true)
+  ok('aperta: ogni voce è un tasto «Vai a: …»', [1, 2, 3].every((i) => riga(aperta).includes(`aria-label="Vai a: VOCE ${i}"`)), true)
+  ok('aperta: vai, apri e tre voci = 5 tasti', tasti(riga(aperta)), 5)
+  ok('aperta: l’elenco è nella barra, con la sua classe', riga(aperta).includes('barra-manca-elenco'), true)
+  ok('a posto: la nota, senza elenco', rendiSicuro({ manca: [], nota: 'Tutto a posto in questo passo.' }).includes('Tutto a posto in questo passo.') && !rendiSicuro({ manca: [], nota: 'x' }).includes('barra-manca'), true)
+
+  const css = readFileSync('src/styles.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+  const corpo = (sel) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(([, s]) => s.split(',').map((x) => x.trim()).includes(sel)).map(([, , c]) => c).join(';')
+  ok('la riga chiusa non va a capo', /flex-wrap\s*:\s*wrap/.test(corpo('.barra-manca')), false)
+  ok('l’elenco aperto scorre, con altezza in dvh', /max-height\s*:[^;]*dvh/.test(corpo('.barra-manca-elenco')) && /overflow-y\s*:\s*(auto|scroll)/.test(corpo('.barra-manca-elenco')), true)
+  ok('il tasto VAI A è alto almeno 44px', /min-height\s*:\s*44px/.test(corpo('.barra-manca-vai')), true)
+  ok('il tasto ▾ è alto almeno 44px', /min-height\s*:\s*44px/.test(corpo('.barra-manca-apri')), true)
+  ok('ogni voce dell’elenco è alta almeno 44px', /min-height\s*:\s*44px/.test(corpo('.barra-manca-voce')), true)
+  ok('DESIGN.md descrive la barra compatta («VAI A»)', /Barra del passo[^\n]*VAI A/.test(readFileSync('DESIGN.md', 'utf8')), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
