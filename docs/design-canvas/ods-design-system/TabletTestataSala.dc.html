@@ -75,7 +75,7 @@
   </span>
 </header>
 </x-dc>
-<script data-dc-script data-props='{"sala":{"editor":"text","default":"SALA JUDO"},"data":{"editor":"text","default":"MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT"},"ora":{"editor":"text","default":"18:40"},"chip":{"editor":"enum","options":["nessuno","timer","segna"],"default":"nessuno"},"intervallo":{"editor":"enum","options":["prepare","work","rest","setRest","cooldown"],"default":"work"},"pausa":{"editor":"boolean","default":false},"fase":{"editor":"text","default":"LAVORO"},"tempo":{"editor":"text","default":"0:24"},"nomeTimer":{"editor":"text","default":"TECNICA A COPPIE"},"conto":{"editor":"text","default":"GIRO 3/8"},"corso":{"editor":"text","default":"JUDO KIDS"},"conteggio":{"editor":"text","default":"7/12"},"rete":{"editor":"text","default":""},"impostazioni":{"editor":"boolean","default":false},"area":{"editor":"text","default":""},"verticale":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1280,"height":92}}'>
+<script data-dc-script data-props='{"sala":{"editor":"text","default":"SALA JUDO"},"data":{"editor":"text","default":"MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT"},"ora":{"editor":"text","default":"18:40"},"chip":{"editor":"enum","options":["nessuno","timer","segna"],"default":"nessuno"},"intervallo":{"editor":"enum","options":["prepare","work","rest","setRest","cooldown"],"default":"work"},"pausa":{"editor":"boolean","default":false},"fase":{"editor":"text","default":"LAVORO"},"tempo":{"editor":"text","default":"00:24"},"nomeTimer":{"editor":"text","default":"TECNICA A COPPIE"},"conto":{"editor":"text","default":"GIRO 3/8"},"corso":{"editor":"text","default":"JUDO KIDS"},"conteggio":{"editor":"text","default":"7/12"},"rete":{"editor":"text","default":""},"impostazioni":{"editor":"boolean","default":false},"area":{"editor":"text","default":""},"verticale":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1280,"height":92}}'>
 // Riproduzione 1:1 della testata completa del tablet di sala: <header className="tb-testata"> di src/components/tablet/Tablet.tsx (righe
 // 426-503) con .tb-testata, .tb-bollino, .tb-spia-rete, .tb-chip* di src/styles.css (righe 829-842 e 971-986). Come TabletTestata, con in
 // piu' tutto cio' che compare e scompare:
@@ -122,7 +122,7 @@ class Component extends DCLogic {
       tinta: COL[iv],
       tintaTesto: COLTESTO[iv],
       fase: pausa ? 'IN PAUSA' : (p.fase ?? 'LAVORO'),
-      tempo: p.tempo ?? '0:24',
+      tempo: p.tempo ?? '00:24',
       nomeTimer: String(p.nomeTimer ?? 'TECNICA A COPPIE').toUpperCase(),
       sottoChip: (p.conto ? p.conto + ' · ' : '') + 'tocca per tornare',
       corso: String(p.corso ?? 'JUDO KIDS').toUpperCase(),

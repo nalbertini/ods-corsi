@@ -31,7 +31,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"stato":{"editor":"enum","options":["lavoro","recupero","pausa","finito"],"default":"lavoro"},"nome":{"editor":"text","default":"Tabata brucia grassi"},"tempo":{"editor":"text","default":"0:14"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":56}}'>
+<script data-dc-script data-props='{"stato":{"editor":"enum","options":["lavoro","recupero","pausa","finito"],"default":"lavoro"},"nome":{"editor":"text","default":"Tabata brucia grassi"},"tempo":{"editor":"text","default":"00:14"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":56}}'>
 // PROPOSTA (non ancora nell'app): la striscia dell'allenamento in corso, visibile da ogni pagina dell'app istruttori mentre
 // il timer incorporato non e' a schermo. Il suo stato si legge col colore E col testo (mai solo col colore):
 // lavoro = fondo rosso `rosso` (colore della fase di lavoro del timer), testo LAVORO; recupero = fondo `verde`, RECUPERO;
@@ -59,7 +59,7 @@ class Component extends DCLogic {
     return {
       k: K, cond: COND,
       haStop: stato !== 'finito', haOk: stato === 'finito',
-      tempo: stato === 'finito' ? 'FINE' : (p.tempo ?? '0:14'),
+      tempo: stato === 'finito' ? 'FINE' : (p.tempo ?? '00:14'),
       riga2: stato === 'finito' ? 'Tocca per tornare al timer' : (p.nome ?? 'Tabata brucia grassi'),
     };
   }
