@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Passo 1, minore. Come ModuloDati di oggi: la data e il luogo di nascita si riempiono dal codice fiscale, quindi non c’è una data da scrivere; finché il codice è incompleto restano vuoti e tratteggiati. La data è quella che sceglie i corsi giusti per l’età nel passo 3. L’errore del codice è quello dell’app (15 caratteri su 16). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1208px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="1" totale="5" titolo="IL BAMBINO" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 4px"><dc-import name="Campo" etichetta="NOME" valore="Matteo" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="COGNOME" valore="Rossi" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="CODICE FISCALE" valore="RSSMTT16C15L219" nota="Sono 15 caratteri su 16: ne manca 1. Controlla che non ci sia uno spazio." notaTono="guaio" codice="{{ true }}" hint-size="100%,110px"></dc-import><dc-import name="Campo" etichetta="DATA DI NASCITA" valore="" nota="Compare dal codice fiscale" notaTono="avviso" tipo="sola-lettura" hint-size="100%,110px"></dc-import><dc-import name="Campo" etichetta="LUOGO DI NASCITA" valore="" tipo="sola-lettura" hint-size="100%,80px"></dc-import></div><dc-import name="Titoletto" label="DOVE ABITA" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><dc-import name="Campo" etichetta="VIA E NUMERO" valore="Via Roma 12" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="CAP" valore="10093" codice="{{ true }}" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="COMUNE" valore="Collegno" hint-size="100%,80px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" avanti="AVANTI" manca="CODICE FISCALE" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

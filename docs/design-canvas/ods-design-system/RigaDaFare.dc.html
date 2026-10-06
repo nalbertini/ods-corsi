@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: flex-start; gap: 20px; width: 100%; padding: 16px 18px; background: {{c.surface}}; border: 2px solid {{c.line}}; text-align: left">
+  <span style="min-width: 64px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 44px; font-weight: 700; line-height: 0.9; text-align: right; color: {{coloreN}}">{{n}}</span>
+  <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.1; color: {{c.text}}">{{titolo}}</span>
+    <span style="font-size: 14px; line-height: 1.5; color: {{c.sec}}">{{sotto}}</span>
+  </div>
+  <div style="flex-shrink: 0; align-self: center">
+    <dc-import name="Bottone" label="{{tasto}}" variante="linea" contesto="segreteria" tema="{{tema}}" hint-size="150px,44px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"n":{"editor":"text","default":"3"},"titolo":{"editor":"text","default":"iscritti senza certificato valido"},"sotto":{"editor":"text","default":"Il certificato medico manca o è scaduto: senza, in sala non si entra."},"tasto":{"editor":"text","default":"VEDI CHI"},"livello":{"editor":"enum","options":["blocca","presto"],"default":"blocca"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":100}}'>
+// Riproduzione 1:1 di una riga di DA FARE: .sg-dafare-riga + .sg-dafare-n + .sg-dafare-titolo (src/styles.css righe
+// 1683-1693), disegnata da `DaFare` in src/components/segreteria/DaFare.tsx. Fondo `surface`, bordo 2px `line`,
+// padding 16px 18px, gap 20px. Il numero Saira 44px 700, min 64px, a destra: rosso-testo se `livello` e' blocca,
+// giallo-testo se e' presto (il rosso solo per quello che e' gia' un guaio). Titolo Saira 22px 700; sotto, 14px `sec`.
+// Il tasto e' un .sg-btn-linea (Bottone, segreteria). Non riprodotti: le lezioni da aprire sotto gli appelli e il
+// ritorno a capo sotto i 700px.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', rossoTesto: '#ff5a52', gialloTesto: '#f4c31b' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    return {
+      c, tema: p.tema || 'scuro', n: p.n ?? '3', titolo: p.titolo ?? 'iscritti senza certificato valido',
+      sotto: p.sotto ?? 'Il certificato medico manca o è scaduto: senza, in sala non si entra.', tasto: p.tasto ?? 'VEDI CHI',
+      coloreN: p.livello === 'presto' ? c.gialloTesto : c.rossoTesto,
+    };
+  }
+}
+</script>
+</body>
+</html>

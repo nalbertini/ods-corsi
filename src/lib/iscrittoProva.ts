@@ -29,7 +29,7 @@ export function creaIscrittoProva(): DatiIscritto {
   /** Era iscritto a quel corso quel giorno: l'elenco dell'appello lo dice. */
   const suo = (personaId: string, corsoId: string, giorno: string) => iscrittiIl(corsoId, giorno).some((p) => p.id === personaId)
 
-  const scheda = (personaId: string): SchedaIscritto | null => {
+  const scheda = async (personaId: string): Promise<SchedaIscritto | null> => {
     const p = persona(personaId)
     if (!p) return null
     const oggi = chiaveGiorno(new Date())
@@ -44,6 +44,8 @@ export function creaIscrittoProva(): DatiIscritto {
       certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file },
       pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
       quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
+      // Come la segreteria: l'età decide se il certificato serve.
+      natoIl: (await creaSegreteriaProva().anagraficaDi(p.id))?.dati.natoIl,
     }
   }
   const eTitolare = (personaId: string) => !!persona(personaId) && !persona(personaId)!.nucleo
@@ -106,14 +108,17 @@ export function creaIscrittoProva(): DatiIscritto {
     },
 
     async nucleo(personaId) {
-      const io = scheda(personaId)
+      const io = await scheda(personaId)
       if (!io) return []
       if (!eTitolare(personaId)) return [io]
-      const altri = a()
-        .persone.filter((p) => p.nucleo === personaId && p.ruolo === 'iscritto' && p.attiva)
-        .sort((x, y) => x.nome.localeCompare(y.nome, 'it'))
-        .map((p) => scheda(p.id))
-        .filter((x): x is SchedaIscritto => !!x)
+      const altri = (
+        await Promise.all(
+          a()
+            .persone.filter((p) => p.nucleo === personaId && p.ruolo === 'iscritto' && p.attiva)
+            .sort((x, y) => x.nome.localeCompare(y.nome, 'it'))
+            .map((p) => scheda(p.id)),
+        )
+      ).filter((x): x is SchedaIscritto => !!x)
       return [io, ...altri]
     },
 

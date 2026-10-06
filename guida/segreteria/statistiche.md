@@ -49,7 +49,8 @@ medie: si conta a parte.
   vengono in media. Una lezione di un corso con due istruttori conta per
   tutti e due.
 - **IN REGOLA OGGI** — il certificato medico e il pagamento di chi è
-  iscritto oggi. **CHI NON È IN REGOLA** apre [Iscritti](iscritti.md).
+  iscritto oggi; chi ha meno di 6 anni non ha l'obbligo del certificato e non
+  si conta. **CHI NON È IN REGOLA** apre [Iscritti](iscritti.md).
 - **PROVE MESE PER MESE** — quante persone sono venute a provare, ognuna
   contata una volta, nel mese della sua prima prova (chi fa la settimana di
   prova non conta tre volte). Col mouse sopra dice anche le lezioni di prova

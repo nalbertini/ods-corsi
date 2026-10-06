@@ -14,7 +14,7 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<header style="display: flex; align-items: center; gap: 18px; width: 100%; padding: 18px 32px 14px; border-bottom: 2px solid {{c.lineSoft}}; color: {{c.text}}">
+<header style="display: flex; align-items: center; gap: 18px; width: 100%; padding: 18px 32px 14px; border-bottom: 2px solid {{c.lineSoft}}; background: {{c.bg}}; color: {{c.text}}">
   <svg width="70" height="48" viewBox="0 0 160 110" role="img" aria-label="Officine Dello Sport">
     <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
       <circle cx="38" cy="40" r="22" stroke="#1b8ac4"></circle>
@@ -55,8 +55,8 @@
 // il timer in corso (bordo da 8px nel suo colore, .tb-chip) ne' la spia IN ATTESA DI RETE: stati dinamici.
 // Il tasto del tema mostra dove porta: sole sul tema scuro, luna sul chiaro. Tasti da 60px con icone da 28 (.tb-testata .icon-btn: solo in testata, TastoTema altrove resta 44px).
 const T = {
-  scuro: { lineSoft: '#2a2a2a', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', tasto: '#b8b8b2', suColore: '#121212' },
-  chiaro: { lineSoft: '#e2e2dd', line: '#d4d4ce', text: '#161616', dim: '#656561', tasto: '#4a4a46', suColore: '#121212' },
+  scuro: { bg: '#121212', lineSoft: '#2a2a2a', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', tasto: '#b8b8b2', suColore: '#121212' },
+  chiaro: { bg: '#f4f4f1', lineSoft: '#e2e2dd', line: '#d4d4ce', text: '#161616', dim: '#656561', tasto: '#4a4a46', suColore: '#121212' },
 };
 const SOLE = 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4';
 const LUNA = 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z';

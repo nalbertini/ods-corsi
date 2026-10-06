@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Il controllo fra la scelta in apertura e il codice fiscale: nel modulo di oggi la data decide da sola se è un minore (compare IL GENITORE). Qui, con la scelta iniziale, se i due non combaciano si dice e si offre la strada giusta. Vale anche al contrario, per MIO FIGLIO con un codice fiscale da maggiorenne (qui non riprodotto). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1114px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="1" totale="4" titolo="I TUOI DATI" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 12px"><dc-import name="Campo" etichetta="NOME" valore="Paolo" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="COGNOME" valore="Bianchi" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="CODICE FISCALE" valore="BNCMTT16C15L219Y" nota="Il codice torna, ma dice che è nato nel 2016: è minorenne." notaTono="avviso" codice="{{ true }}" hint-size="100%,110px"></dc-import><dc-import name="Campo" etichetta="DATA DI NASCITA" valore="15/03/2016" nota="10 anni: lo dice il codice fiscale" notaTono="avviso" tipo="sola-lettura" hint-size="100%,110px"></dc-import><dc-import name="Campo" etichetta="LUOGO DI NASCITA" valore="Torino (TO)" tipo="sola-lettura" hint-size="100%,80px"></dc-import><dc-import name="RiquadroPasso" tono="guaio" titolo="Stai iscrivendo un bambino?" testo="Hai scelto «IO, SONO ADULTO», ma il codice fiscale è di un minorenne. Torna indietro e scegli «MIO FIGLIO O MIA FIGLIA»: ti chiediamo anche i tuoi dati di genitore." tonoTesto="testo" tasti="SCEGLI MIO FIGLIO O MIA FIGLIA|CORREGGO IL CODICE" hint-size="100%,220px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" avanti="AVANTI" manca="CODICE FISCALE" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Tema chiaro di PinUscita (stessi dati, valori `chiaro` di src/styles.css). Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il tasto di accensione in testata (ESCI DAL TABLET) chiede prima il PIN di un istruttore, uno qualsiasi (TabletPin con perUscire): stessa tastiera, titolo ESCI DAL TABLET, e questo PIN non segna la presenza di nessuno. Dalla scheda TIMER si torna prima alle presenze, dove il PIN si digita. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #f4f4f1; overflow: hidden; color: #161616">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="chiaro" hint-size="100%,92px"></dc-import>
+  <div style="flex: 1; min-height: 0">
+    <dc-import name="TabletPinSchermata" titolo="ESCI DAL TABLET" testo="Il PIN di un istruttore, uno qualsiasi. Poi ti chiedo conferma: uscendo il tablet si scollega dalla sala, e per ricollegarlo serve di nuovo l’account della sala." cifre="0" tema="chiaro" hint-size="100%,608px"></dc-import>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="chiaro" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

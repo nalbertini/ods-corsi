@@ -14,9 +14,12 @@ elenco, che compaiono negli appelli e sul tablet.
   contatto non conta: non serve per entrare nell'app).
 - **VENGONO POCO** — chi è venuto a meno di metà delle lezioni, su almeno tre.
 - **SENZA CERTIFICATO VALIDO** — chi è attivo e non ha il certificato medico,
-  o ce l'ha scaduto.
+  o ce l'ha scaduto. Chi ha meno di 6 anni non c'è: per lui il certificato
+  non è obbligatorio.
 - **CERTIFICATO IN SCADENZA** — chi è attivo e ha il certificato che scade
-  entro un mese.
+  entro un mese (di chi ha meno di 6 anni no).
+- **COMPIONO 6 ANNI** — chi è attivo, compie 6 anni entro un mese e non ha il
+  certificato: da quel giorno serve, e conviene avvisare la famiglia prima.
 - **DA PAGARE** — chi è attivo e non ha la quota associativa pagata: nessuna ricevuta
   con la quota, pagata solo in parte, o scaduta.
 - **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
@@ -43,7 +46,12 @@ La colonna **IN REGOLA** dice in un colpo d'occhio cosa manca: in verde
 se la quota è pagata senza una ricevuta dell'app); altrimenti in rosso
 **NO CERTIFICATO**, **CERT. SCADUTO**, **DA PAGARE** o **QUOTA SCADUTA**, e in
 giallo **SCADE IL 14/10** (entro un mese; **SCADE OGGI** l'ultimo giorno) o
-**IN PARTE**. In
+**IN PARTE**. Sotto i 6 anni il certificato non serve: il bambino è
+**IN REGOLA** con la quota pagata, e accanto c'è **CERT. NON SERVE** in grigio;
+un mese prima del compleanno diventa **SERVE DAL 14/10** in giallo. Per
+sapere l'età serve la data di nascita: senza, il certificato serve come per
+tutti, e chi non ha nemmeno il certificato ha accanto **MANCA LA DATA** in grigio:
+scrivila nei dati anagrafici della scheda. In
 cima alla pagina c'è quanti sono senza certificato valido e quanti da pagare.
 
 La colonna **30 GIORNI** dice quanto è venuto ognuno nell'ultimo mese:
@@ -85,7 +93,10 @@ In cima, tre timbri dicono subito come sta: **CERTIFICATO MEDICO** e **QUOTA**
 grandi (verde a posto, giallo da guardare, rosso manca), con le parole
 dell'elenco ma la data intera: **SCADUTO IL 25/09/2026**, **VALIDO FINO
 AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
-(**SCADE IL 14/10/2026**, sotto **FRA 18 GIORNI**, o **DOMANI**). E
+(**SCADE IL 14/10/2026**, sotto **FRA 18 GIORNI**, o **DOMANI**). Sotto i 6 anni
+il timbro è grigio, **NON SERVE**, con **SOTTO I 6 ANNI**; un certificato già
+segnato si vede com'è, senza rosso. Nell'ultimo mese prima del compleanno è
+giallo, **SERVE DAL 14/10/2026**, sotto **FRA 14 GIORNI**. Senza certificato e senza data di nascita il timbro è rosso e dice anche **MANCA LA DATA DI NASCITA**. E
 **DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare. Un clic su
 un timbro porta alla sua parte della scheda. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
@@ -94,7 +105,7 @@ timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
 In evidenza, pieno, è il tasto di quello che c'è da fare per primo:
 **SEGNA IL CERTIFICATO** o **RINNOVA O CORREGGI** se il certificato manca o è
 scaduto, poi **+ REGISTRA UN PAGAMENTO** se la quota non è pagata tutta, poi il
-certificato in scadenza. Se è tutto a posto, **+ REGISTRA UN PAGAMENTO**. Se la
+certificato in scadenza. Sotto i 6 anni il tasto del certificato non c'è. Se è tutto a posto, **+ REGISTRA UN PAGAMENTO**. Se la
 scheda è disattivata, nessuno.
 
 - **MODIFICA** — nome, cognome, email, email di contatto, telefono. Chi ha lo

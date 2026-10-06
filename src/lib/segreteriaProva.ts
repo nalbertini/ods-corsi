@@ -525,6 +525,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
             nucleo: p.nucleo,
+            natoIl: anagraficaDi(p.id)?.dati.natoIl,
           }),
         )
     },

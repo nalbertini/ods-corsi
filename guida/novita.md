@@ -10,6 +10,42 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.41.0 — 6 ottobre 2026
+
+### Novità
+
+- Nel canvas del tablet le schermate del PIN e dell'uscita anche in tema chiaro
+
+## 0.40.3 — 6 ottobre 2026
+
+### Risolto
+
+- Nel canvas «Uscire dal tablet?» aveva un numero di versione vecchio
+
+## 0.40.2 — 6 ottobre 2026
+
+### Modificato
+
+- Iscrizione a passi: prima prova, solo in prova
+
+## 0.40.1 — 6 ottobre 2026
+
+### Risolto
+
+- Nel canvas i pezzi del tablet da soli non si leggevano
+
+## 0.40.0 — 6 ottobre 2026
+
+### Novità
+
+- Senza data di nascita l'elenco dice «manca la data»
+
+## 0.39.0 — 6 ottobre 2026
+
+### Novità
+
+- Sotto i 6 anni il certificato medico non serve
+
 ## 0.38.8 — 6 ottobre 2026
 
 ### Risolto

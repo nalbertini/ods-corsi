@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- IDEA. Oggi si paga con bonifico o Satispay dal modulo (StimaCosto) e la ricevuta si carica dopo; qui si paga dentro il flusso. Satispay e la carta richiedono un’integrazione che oggi non c’è: bonifico e in segreteria restano come oggi. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 898px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="4" totale="5" titolo="PAGA" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 12px"><dc-import name="RiquadroPasso" titolo="Da pagare: 1.034 €" testo="Giulia, Matteo e Sara Rossi · stagione 2026/27" tasti="" hint-size="100%,130px"></dc-import><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">COME PAGHI?</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Satispay" riga="Apri l’app e conferma: la ricevuta arriva subito." scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Carta" riga="Carta di credito o debito, Apple Pay, Google Pay." hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Bonifico" riga="Come oggi: IBAN e causale. La ricevuta si carica dopo." hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="In segreteria" riga="Contanti o POS, quando passi." hint-size="100%,72px"></dc-import></div><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Paghi all’ASD Il Centro Judo. Non vuoi pagare ora? Scegli «in segreteria»: la richiesta parte lo stesso.</span></div>
+</main>
+<dc-import name="BarraPasso" avanti="PAGA 1.034 € CON SATISPAY" tono="vai" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

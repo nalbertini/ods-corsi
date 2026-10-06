@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 4px; color: {{c.text}}">
+  <div style="display: flex; gap: 4px">
+    <sc-for list="{{segmenti}}" as="s" hint-placeholder-count="4">
+      <div style="flex: 1; height: 6px; background: {{s.colore}}"></div>
+    </sc-for>
+  </div>
+  <div style="display: flex; align-items: baseline; gap: 10px">
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-style: oblique 9deg; font-size: 56px; font-weight: 700; line-height: 0.9; letter-spacing: 0.02em; color: {{c.text}}">{{numero}}</span>
+    <span style="display: flex; flex-direction: column; font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.16em; line-height: 1.15; color: {{c.sec}}">
+      <span>DI {{totale}}</span>
+      <span>{{titolo}}</span>
+    </span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"numero":{"editor":"text","default":"2"},"totale":{"editor":"text","default":"4"},"titolo":{"editor":"text","default":"IL CORSO E COME SI PAGA"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":120}}'>
+// L'avanzamento del modulo a passi: `Avanzamento` di src/components/ds.tsx e `.avanza*` di src/styles.css (solo in prova, iscrizioni/#nuova). Per chi legge lo schermo dice «Passo N di N: nome».
+// Un segmento da 6px per passo (fatti verdi, quello di adesso in tinta testo, gli altri `line`), poi il numero grande in Saira 56px
+// obliquo e a destra «DI N» e il nome del passo (15px, 0.16em, `sec`). Margine 20px come .pad dell'app.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tasto: '#b8b8b2', rosso: '#e4292a', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suRosso: '#ffffff', suColore: '#121212' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', tasto: '#4a4a46', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suRosso: '#ffffff', suColore: '#121212' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const n = Number(p.numero ?? 2);
+    const tot = Number(p.totale ?? 4);
+    const segmenti = Array.from({ length: tot }, (_, i) => ({ colore: i + 1 < n ? c.verde : i + 1 === n ? c.text : c.line }));
+    return { c, cond: COND, segmenti, numero: String(n), totale: String(tot), titolo: p.titolo ?? '' };
+  }
+}
+</script>
+</body>
+</html>
