@@ -477,6 +477,69 @@
       "w": 420,
       "h": 58,
       "page": "page-2"
+    },
+    {
+      "file": "ChiSei.dc.html",
+      "title": "ChiSei",
+      "x": 0,
+      "y": 8940,
+      "w": 390,
+      "h": 60,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletLezioneIstr.dc.html",
+      "title": "TabletLezioneIstr",
+      "x": 490,
+      "y": 8940,
+      "w": 300,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletRigaAppello.dc.html",
+      "title": "TabletRigaAppello",
+      "x": 890,
+      "y": 8940,
+      "w": 420,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletRiquadro.dc.html",
+      "title": "TabletRiquadro",
+      "x": 1410,
+      "y": 8940,
+      "w": 300,
+      "h": 120,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletSchede.dc.html",
+      "title": "TabletSchede",
+      "x": 1810,
+      "y": 8940,
+      "w": 300,
+      "h": 140,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTestaAppello.dc.html",
+      "title": "TabletTestaAppello",
+      "x": 0,
+      "y": 9180,
+      "w": 808,
+      "h": 170,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTestataIstruttore.dc.html",
+      "title": "TabletTestataIstruttore",
+      "x": 908,
+      "y": 9180,
+      "w": 1280,
+      "h": 92,
+      "page": "page-2"
     }
   ],
   "annotations": [

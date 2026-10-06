@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- LE MIE ORE sullo schermo largo, com'e' oggi (App.tsx Istruttori + MieOre.tsx): menu degli istruttori con LE MIE ORE accesa e,
+     nel corpo senza margine (.sg-corpo-sala), il blocco .miei-timer (max 960px, padding-top 12px). Senza freccia indietro (solo sul
+     telefono); titolo da 26px (.appello-titolo a 960px+) e tendina del mese a destra (.mie-ore-mese, min-height 52px). Sotto, i tre
+     numeri (max 720px), NESSUNO SI E' SEGNATO (lezioni in cui eri previsto e nessuno si e' segnato) e LE TUE LEZIONI con
+     i tre stati: CONFERMATA, DA CONFERMARE, RIFIUTATA. Ottobre 2026, oggi martedi' 6; ore = confermate (tre lezioni da 1 h). -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="MenuIstruttori" attiva="LE MIE ORE" nome="Maurizio Verdi" ruolo="Istruttore · calendario e appello" versione="v0.37.3" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="flex: 1; min-width: 0">
+    <div style="max-width: 960px; padding: 12px 0 20px">
+      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 16px 20px 0">
+        <span style="flex-grow: 1; white-space: nowrap; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05">LE MIE ORE</span>
+        <div style="width: 200px">
+          <dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="" valore="Ottobre 2026" hint-size="200px,52px"></dc-import>
+        </div>
+      </div>
+      <p style="margin: 10px 0 0; padding: 0 20px; font-size: 15px; line-height: 1.4; color: #8c8c88">Le lezioni che in segreteria risultano tue. Se qualcosa non torna, dillo in segreteria.</p>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-width: 720px; padding: 14px 20px 0">
+        <dc-import name="MieOreNumero" etichetta="LEZIONI" valore="3" sotto="confermate" hint-size="100%,100px"></dc-import>
+        <dc-import name="MieOreNumero" etichetta="ORE" valore="3" sotto="solo le confermate" hint-size="100%,100px"></dc-import>
+        <dc-import name="MieOreNumero" etichetta="DA CONFERMARE" valore="1" sotto="1 senza segno: dillo tu" allarme="{{ true }}" hint-size="100%,100px"></dc-import>
+      </div>
+
+      <dc-import name="Titoletto" label="NESSUNO SI È SEGNATO" conto="1" hint-size="100%,50px"></dc-import>
+      <p style="margin: 0; padding: 0 20px; font-size: 15px; line-height: 1.4; color: #f4c31b">Lezioni tenute in cui eri previsto e nessun istruttore si è segnato: se c’eri, dillo in segreteria.</p>
+      <div style="display: flex; flex-direction: column; gap: 8px; max-width: 720px; padding: 14px 20px 0">
+        <dc-import name="MieOreRiga" corso="Lotta adulti" giorno="Lunedì 5 ottobre" orario="19:30–20:30 · 1 h" stato="NON SEGNATA" tono="avviso" hint-size="100%,100px"></dc-import>
+      </div>
+
+      <dc-import name="Titoletto" label="LE TUE LEZIONI" conto="4" hint-size="100%,50px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 8px; max-width: 720px; padding: 0 20px 24px">
+        <dc-import name="MieOreRiga" corso="Judo kids" giorno="Sabato 3 ottobre" orario="10:00–11:00 · 1 h" stato="CONFERMATA" tono="fatto" hint-size="100%,100px"></dc-import>
+        <dc-import name="MieOreRiga" corso="Judo adulti" giorno="Giovedì 1 ottobre" orario="20:00–21:00 · 1 h" stato="CONFERMATA" tono="fatto" hint-size="100%,100px"></dc-import>
+        <dc-import name="MieOreRiga" corso="Judo kids" giorno="Giovedì 1 ottobre" orario="17:30–18:30 · 1 h" stato="CONFERMATA" tono="fatto" hint-size="100%,100px"></dc-import>
+        <dc-import name="MieOreRiga" corso="Lotta adulti" giorno="Venerdì 2 ottobre" orario="19:30–20:30 · 1 h" stato="DA CONFERMARE" nota="non era un tuo corso" tono="avviso" hint-size="100%,120px"></dc-import>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

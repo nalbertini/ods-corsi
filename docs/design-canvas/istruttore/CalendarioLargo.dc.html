@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il calendario dell'istruttore sullo schermo largo, com'e' oggi (App.tsx Istruttori + Sala.tsx + CalendarioScreen.tsx con
+     `soloDi`): menu degli istruttori (240px) e, in .sala-due, calendario a sinistra (minmax(380px, 460px)) e appello della
+     lezione scelta a destra, ciascun lato col suo scorrimento. Martedi' 6 ottobre, 18:40, Maurizio Verdi: la lezione in corso
+     in cima (ADESSO, aperta nell'appello), poi la settimana a elenco, un gruppo per giorno e solo i giorni in cui insegna;
+     quella di adesso non si ripete nel gruppo di oggi. Non riprodotti: le righe PRESENZE SEGNALATE e APPELLI DA CHIUDERE
+     (.arretrato, compaiono solo se c'e' qualcosa di rimasto indietro) e il nastro DATI DI PROVA. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="MenuIstruttori" attiva="CALENDARIO" nome="Maurizio Verdi" ruolo="Istruttore · calendario e appello" versione="v0.37.3" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: grid; grid-template-columns: minmax(380px, 460px) minmax(0, 1fr); flex: 1; min-width: 0">
+    <div>
+      <dc-import name="Titoletto" label="ADESSO" giallo="{{ true }}" hint-size="100%,50px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+        <dc-import name="RigaCalendario" ora="18:30" quando="ADESSO" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" presenti="7" prove="1" stato="in-corso" aperta="{{ true }}" hint-size="100%,88px"></dc-import>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px; padding: 14px 20px 0">
+        <dc-import name="Bottone" label="‹" variante="linea" alto="44px" larghezza="44px" corpo="22px" spazio="0" hint-size="44px,44px"></dc-import>
+        <span style="flex-grow: 1; text-align: center; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 17px; font-weight: 700; letter-spacing: 0.06em">6 OTT – 12 OTT</span>
+        <dc-import name="Bottone" label="›" variante="linea" alto="44px" larghezza="44px" corpo="22px" spazio="0" hint-size="44px,44px"></dc-import>
+      </div>
+
+      <dc-import name="Titoletto" label="OGGI · MARTEDÌ 6 OTTOBRE" conto="1" giallo="{{ true }}" hint-size="100%,50px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+        <dc-import name="RigaCalendario" ora="20:00" corso="Judo adulti" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="9" stato="iscritti" hint-size="100%,72px"></dc-import>
+      </div>
+
+      <dc-import name="Titoletto" label="GIOVEDÌ 8 OTTOBRE" conto="2" hint-size="100%,50px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+        <dc-import name="RigaCalendario" ora="17:30" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" stato="iscritti" hint-size="100%,72px"></dc-import>
+        <dc-import name="RigaCalendario" ora="20:00" corso="Judo adulti" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="9" stato="iscritti" hint-size="100%,72px"></dc-import>
+      </div>
+
+      <dc-import name="Titoletto" label="SABATO 10 OTTOBRE" conto="1" hint-size="100%,50px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+        <dc-import name="RigaCalendario" ora="10:00" corso="Judo kids" sala="Sala 1" istruttore="Marco R." kanji="柔" tinta="#1b8ac4" iscritti="12" prove="2" stato="iscritti" hint-size="100%,88px"></dc-import>
+      </div>
+    </div>
+    <div style="border-left: 2px solid #2a2a2a">
+      <dc-import name="TestaAppello" corso="JUDO KIDS" kanji="柔" quando="Martedì 18:30 · Sala 1 · Marco R." indietro="{{ false }}" presenti="7" iscritti="12" prove="1" stato="mancano" mancano="4" tasto="GLI ALTRI PRESENTI" hint-size="100%,250px"></dc-import>
+      <dc-import name="Titoletto" label="ISCRITTI" conto="12" hint-size="100%,50px"></dc-import>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; padding: 0 20px 20px">
+        <dc-import name="RigaAppello" nome="Bianchi Luca" stato="presente" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Colombo Sara" stato="presente" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Ferrari Tommaso" stato="assente" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Greco Anna" stato="presente" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Marino Pietro" stato="presente" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Rossi Giulia" stato="presente" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Russo Matteo" stato="presente" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Conti Elena" stato="presente" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Esposito Marco" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Villa Irene" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Zanetti Paolo" hint-size="100%,56px"></dc-import>
+        <dc-import name="RigaAppello" nome="Gallo Sofia" hint-size="100%,56px"></dc-import>
+      </div>
+      <dc-import name="Titoletto" label="PROVE" conto="1" hint-size="100%,50px"></dc-import>
+      <div style="padding: 0 20px 20px">
+        <dc-import name="RigaAppello" nome="Neri Chiara" stato="presente" prova="{{ true }}" hint-size="100%,56px"></dc-import>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

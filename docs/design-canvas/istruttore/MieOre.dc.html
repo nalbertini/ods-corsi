@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COM'E' OGGI: LE MIE ORE dell'istruttore (src/components/MieOre.tsx), sul telefono, a ottobre 2026. Copia di PaginaTelefono.dc.html
+     con la libreria: Testata, Bottone, Campo (il mese), MieOreNumero, Titoletto, MieOreRiga. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+  <dc-import name="Testata" luogo="ISTRUTTORI" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 16px 20px 0">
+      <dc-import name="Bottone" label="‹" variante="icona" hint-size="44px,44px"></dc-import>
+      <span style="flex-grow: 1; white-space: nowrap; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05">LE MIE ORE</span>
+      <div style="width: 150px"><dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="" valore="Ottobre 2026" hint-size="150px,44px"></dc-import></div>
+    </div>
+    <p style="margin: 10px 0 0; padding: 0 20px; font-size: 15px; line-height: 1.4; color: #8c8c88">Le lezioni che in segreteria risultano tue. Se qualcosa non torna, dillo in segreteria.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 14px 20px 0">
+      <dc-import name="MieOreNumero" etichetta="LEZIONI" valore="9" sotto="confermate" hint-size="100%,100px"></dc-import>
+      <dc-import name="MieOreNumero" etichetta="ORE" valore="11,5" sotto="solo le confermate" hint-size="100%,100px"></dc-import>
+      <dc-import name="MieOreNumero" etichetta="DA CONFERMARE" valore="2" sotto="1 senza segno: dillo tu" allarme="{{ true }}" hint-size="100%,100px"></dc-import>
+    </div>
+
+    <dc-import name="Titoletto" label="NESSUNO SI È SEGNATO" conto="1" hint-size="100%,50px"></dc-import>
+    <p style="margin: 0; padding: 0 20px 8px; font-size: 15px; line-height: 1.4; color: #f4c31b">Lezioni tenute in cui eri previsto e nessun istruttore si è segnato: se c’eri, dillo in segreteria.</p>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px">
+      <dc-import name="MieOreRiga" corso="Judo adulti" giorno="Lunedì 5 ottobre" orario="20:00–21:00 · 1 h" stato="NON SEGNATA" tono="avviso" hint-size="100%,100px"></dc-import>
+    </div>
+
+    <dc-import name="Titoletto" label="LE TUE LEZIONI" conto="4" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px 24px">
+      <dc-import name="MieOreRiga" corso="Judo kids" giorno="Sabato 3 ottobre" orario="10:00–11:00 · 1 h" stato="DA CONFERMARE" tono="avviso" hint-size="100%,100px"></dc-import>
+      <dc-import name="MieOreRiga" corso="Judo kids" giorno="Giovedì 1 ottobre" orario="17:30–18:30 · 1 h" stato="CONFERMATA" tono="fatto" hint-size="100%,100px"></dc-import>
+      <dc-import name="MieOreRiga" corso="Pilates" giorno="Mercoledì 30 settembre" orario="18:30–20:00 · 1,5 h" nota="non era un tuo corso" stato="CONFERMATA" tono="fatto" hint-size="100%,118px"></dc-import>
+      <dc-import name="MieOreRiga" corso="Judo adulti" giorno="Martedì 29 settembre" orario="20:00–21:00 · 1 h" nota="per la segreteria non c’eri · Laura B., mercoledì 30 settembre" stato="RIFIUTATA" tono="spento" hint-size="100%,140px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

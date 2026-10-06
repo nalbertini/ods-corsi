@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; color: {{c.text}}">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px">
+    <sc-for list="{{schede}}" as="s" hint-placeholder-count="2">
+      <span style="display: flex; align-items: center; justify-content: center; min-height: 60px; border: 2px solid {{s.bordo}}; background: {{s.fondo}}; color: {{s.colore}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 700; letter-spacing: 0.14em">{{s.nome}}</span>
+    </sc-for>
+  </div>
+  <sc-if value="{{haCorso}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}">CORSO</span>
+    <span style="display: flex; align-items: center; height: 56px; padding: 0 48px 0 14px; position: relative; background: {{c.surface}}; border: 2px solid {{c.line}}; font-size: 18px">
+      {{corso}}
+      <svg style="position: absolute; right: 14px" width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="{{c.text}}" stroke-width="2.5"><polyline points="1 2 7 8 13 2"></polyline></svg>
+    </span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"scelta":{"editor":"enum","options":["oggi","corso"],"default":"oggi"},"corso":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":300,"height":140}}'>
+// Riproduzione 1:1 delle schede OGGI / PER CORSO dell'area istruttore del tablet (TabletIstruttore.tsx, righe 237-285) con
+// .tb-schede, .tb-scheda, .tb-etichetta e .tb-select (src/styles.css, righe 1089-1107). Due tasti da 60px; quello scelto
+// (aria-selected) ha bordo `text`, fondo `surface-2` e scritta `text`, l'altro bordo `line` e scritta `sec`.
+// - scelta: la scheda accesa. corso: se non vuoto compaiono la scritta CORSO e la tendina (56px, freccia a destra), che
+//   nell'app si vede solo con PER CORSO; il valore e' il corso scelto.
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const scelta = p.scelta === 'corso' ? 'corso' : 'oggi';
+    const schede = [['oggi', 'OGGI'], ['corso', 'PER CORSO']].map(([id, nome]) => {
+      const on = id === scelta;
+      return { nome, bordo: on ? c.text : c.line, fondo: on ? c.surface2 : 'transparent', colore: on ? c.text : c.sec };
+    });
+    return { c, schede, corso: p.corso ?? '', haCorso: !!p.corso };
+  }
+}
+</script>
+</body>
+</html>
