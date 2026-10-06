@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.48.0 — 6 ottobre 2026
+
+### Novità
+
+- L'iscrizione ti avvisa se esci, ti dà il numero da chiamare, e alla fine riassume cosa pagare
+
 ## 0.47.0 — 6 ottobre 2026
 
 ### Novità
