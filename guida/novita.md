@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.38.1 — 6 ottobre 2026
+
+### Modificato
+
+- Design del canvas: le schermate hanno il colore del testo
+
 ## 0.38.0 — 6 ottobre 2026
 
 ### Novità
