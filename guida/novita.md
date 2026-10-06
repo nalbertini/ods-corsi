@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.37.9 — 6 ottobre 2026
+
+### Modificato
+
+- Design del tablet: il conteggio di CONFERMA nell'appello passato
+
 ## 0.37.8 — 6 ottobre 2026
 
 ### Modificato
