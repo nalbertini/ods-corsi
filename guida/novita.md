@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.37.6 — 6 ottobre 2026
+
+### Modificato
+
+- Il design della registrazione utente, com'è oggi
+- Il design del tablet di sala, com'è oggi
+
 ## 0.37.5 — 6 ottobre 2026
 
 ### Modificato
