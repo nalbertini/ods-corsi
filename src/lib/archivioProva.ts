@@ -61,6 +61,8 @@ export interface PersonaProva {
   /** Il suo segno, per riconoscerlo (vedi `kanji.ts`). */
   kanji?: string
   email?: string
+  /** Dove scrivere alla famiglia: può ripetersi, l'email di accesso no (`44-email-contatto.sql`). */
+  emailContatto?: string
   telefono?: string
   attiva: boolean
   creataIl: string

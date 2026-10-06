@@ -71,6 +71,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 41. `41-attivita.sql` — l'«Attività» di ogni giorno dei corsi e di ogni lezione, scelta da un elenco della segreteria: le lezioni future seguono il giorno, l'istruttore cambia solo quella delle sue lezioni, il tablet legge quella della sua sala
 42. `42-categorie-esercizi.sql` — gli esercizi hanno una sola categoria: le cinque vecchie (A corpo libero, Attrezzi, Core, Cardio, Mobilità) diventano voci dell'elenco delle discipline, e il campo `categoria` esce dal catalogo
 43. `43-cerca-persone.sql` — «Aggiungi chi prova» cerca per nome fra tutte le persone iscritte e attive, anche di altri corsi, dalla terza lettera di una parola e al massimo ventuno risultati, con i corsi di oggi e mai il telefono; solo il personale
+44. `44-email-contatto.sql` — l'email di contatto delle persone (`persone.email_contatto`): facoltativa, può ripetersi fra parenti, la scrive la segreteria e la legge il personale come l'email di accesso, che resta una per persona; accogliere una richiesta e unire due schede la tengono in conto
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -230,6 +231,11 @@ Per cercare chi prova fra tutte le persone basta `43-cerca-persone.sql` (dopo
 `34-prove-per-nome.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
 finché non c'è, l'app dice che manca l'aggiornamento e lascia scrivere il nome
 a mano; l'appello degli iscritti non cambia. Il tablet non usa questa ricerca.
+Per l'email di contatto basta `44-email-contatto.sql` (dopo `43-cerca-persone.sql`,
+`06` e `29`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è,
+l'elenco si vede lo stesso, il contatto non si salva (l'app dice che manca
+l'aggiornamento) e l'email già di un'altra persona resta fuori dalla scheda
+come prima. Chi rilancia `06` o `29` rilancia poi anche `44`.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -886,7 +892,7 @@ lezione, un'iscrizione per corso, le ricevute intatte, chi ha segnato le
 presenze) e che un errore a metà non cambi niente. `non-doppioni.sql` prova
 che le coppie «non sono doppioni» le veda, le segni e le tolga solo la
 segreteria, una riga per coppia a nome di chi scrive, e che unendo due schede
-le coppie passino senza fermare l'unione. `prove-per-nome.sql`,
+le coppie passino senza fermare l'unione. `email-contatto.sql` prova che l'email di accesso resti di una persona sola e il contatto no, la forma e le 160 lettere, e che il primo accesso leghi per email e mai per contatto. `prove-per-nome.sql`,
 dopo `prove.sql`, prova che il tablet ritrovi chi è venuto a provare solo per
 nome: dalla terza lettera di una parola, al massimo venti, come la ricerca
 dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno.

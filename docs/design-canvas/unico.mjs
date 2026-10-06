@@ -22,6 +22,7 @@ const SEZIONI = [
   { id: 'iscrizione', nome: 'Registrazione utente', cartella: 'iscrizione' },
   { id: 'iscrizione-nuovo', nome: 'Registrazione · nuovo flusso', cartella: 'iscrizione-nuovo' },
   { id: 'importa-fogli', nome: 'Importa da Excel', cartella: 'import-fogli' },
+  { id: 'email-contatto', nome: 'Email di contatto · proposta', cartella: 'email-contatto' },
   { id: 'timer-desktop', nome: 'Timer desktop · proposte', cartella: 'timer-desktop' },
   { id: 'certificato-piccoli', nome: 'Certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
 ]

@@ -8,9 +8,10 @@ elenco, che compaiono negli appelli e sul tablet.
 
 ## Cercare
 
-- **Cerca per nome o email**.
+- **Cerca per nome o email**, di accesso o di contatto.
 - **Tutti i corsi** → uno solo, per vedere chi fa quel corso.
-- **SOLO SENZA EMAIL** — chi non ha l'email in scheda.
+- **SOLO SENZA EMAIL** — chi non ha l'email di accesso in scheda (quella di
+  contatto non conta: non serve per entrare nell'app).
 - **VENGONO POCO** — chi è venuto a meno di metà delle lezioni, su almeno tre.
 - **SENZA CERTIFICATO VALIDO** — chi è attivo e non ha il certificato medico,
   o ce l'ha scaduto. Chi ha meno di 6 anni non c'è: per lui il certificato
@@ -58,15 +59,24 @@ La colonna **30 GIORNI** dice quanto è venuto ognuno nell'ultimo mese:
 giallo chi viene poco.
 
 La colonna **CONTATTO** mostra il telefono, così in caso di emergenza si trova
-subito; l'email solo se il telefono manca. Se mancano tutti e due c'è scritto
-«nessun contatto».
+subito; l'email (di accesso, se no di contatto) solo se il telefono manca. Se
+manca tutto c'è scritto «nessun contatto».
 
 ## Nuovo iscritto
 
-**NUOVO ISCRITTO** → nome, cognome, email e telefono (facoltativi), **ISCRIVI
-A** un corso → **SALVA**.
+**NUOVO ISCRITTO** → nome, cognome, email, email di contatto e telefono
+(facoltativi), **ISCRIVI A** un corso → **SALVA**.
 
-L'email è l'unica cosa che distingue due omonimi: se c'è, meglio metterla.
+Le email sono due, e servono a cose diverse:
+
+- **EMAIL** è per entrare nell'app: una sola persona per indirizzo. Se è già di
+  qualcuno, l'app dice di chi e di metterla come email di contatto.
+- **EMAIL DI CONTATTO** è dove scrivete o telefonate alla famiglia: può essere
+  la stessa per più persone (un genitore e i figli, due fratelli). L'app non
+  manda mai mail a questo indirizzo.
+
+Due omonimi si distinguono dal telefono, dal codice fiscale o dalla data di
+nascita: l'email non basta più, perché un figlio può non averla.
 
 Chi arriva dal modulo online non va aggiunto a mano: entra da solo quando si
 accoglie la sua richiesta (vedi [Richieste online](richieste.md)).
@@ -98,7 +108,9 @@ scaduto, poi **+ REGISTRA UN PAGAMENTO** se la quota non è pagata tutta, poi il
 certificato in scadenza. Sotto i 6 anni il tasto del certificato non c'è. Se è tutto a posto, **+ REGISTRA UN PAGAMENTO**. Se la
 scheda è disattivata, nessuno.
 
-- **MODIFICA** — nome, cognome, email, telefono.
+- **MODIFICA** — nome, cognome, email, email di contatto, telefono. Chi ha lo
+  stesso contatto di altri vede in lettura **STESSO CONTATTO DI** con i loro
+  nomi: sono parenti, non doppioni.
 - **DATI ANAGRAFICI** — nascita, codice fiscale, residenza e, per un minore,
   il genitore. Vengono dal modulo di iscrizione dell'app o dall'import delle
   risposte del modulo Google, e accanto al titolo c'è scritto da dove. Sono
@@ -155,7 +167,10 @@ scheda è disattivata, nessuno.
   ricevute passano; **TIENI L'ALTRA** scambia le due. Della scheda che resta
   vale quello che c'è scritto; dall'altra si prende solo quello che manca, e
   di certificato e quota la scadenza più lontana; resta attiva se una delle
-  due lo era. Le ricevute passano così come sono. Una conferma, e non si
+  due lo era. Le email: chi resta tiene la sua e il suo contatto; l'email
+  dell'altra scheda diventa la sua se non ne ha, se no il suo contatto se è
+  libero. Se non c'è posto, quell'indirizzo si perde: la conferma lo scrive
+  prima, e fino ad allora si può copiare. Le ricevute passano così come sono. Una conferma, e non si
   torna indietro.
   Non si uniscono due schede con due codici fiscali diversi, anche solo
   quello del modulo di iscrizione (sono due persone), né se quella che se ne va ha ancora il file di un certificato:

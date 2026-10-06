@@ -14,7 +14,10 @@ TABLET**.
   - **HA FATTO L'ACCESSO** — è entrata almeno una volta;
   - **NON ANCORA ENTRATO** — c'è in elenco ma non è mai entrata;
   - **SENZA ACCESSO** — l'accesso è stato tolto.
-- Senza email (in rosso «nessuna email») una persona non può entrare.
+- Senza email (in rosso «nessuna email») una persona non può entrare. È l'email
+  di accesso: una sola persona per indirizzo. Se un iscritto ha come contatto
+  l'indirizzo di un istruttore, non diventa lui: l'accesso si lega solo
+  all'email, mai al contatto.
 
 ## La scheda di una persona
 

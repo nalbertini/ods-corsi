@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- UNISCI DOPPIONI: chi se ne va ha un'email diversa e chi resta ha già il contatto pieno. Lo dice prima di confermare, niente sparisce in silenzio. Fatto copiando Pagina.dc.html; dati inventati. -->
+<div style="width: 1440px; height: 900px">
+  <dc-import name="Dialogo" tipo="conferma" domanda="Unisci Luca Rossi e Rossi Luca?" resto="Resta la scheda di Luca Rossi.&#10;Il suo contatto resta giulia.rossi@esempio.it.&#10;L'email luca.r@esempio.it dell'altra scheda non si può tenere: il contatto è già pieno. Copiala se ti serve." no="LASCIA STARE" si="UNISCI" altezza="900px" tema="scuro" hint-size="1440px,900px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>
