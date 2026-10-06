@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.38.0 — 6 ottobre 2026
+
+### Novità
+
+- Il timer dentro l'app degli istruttori, senza cambiare scheda
+
 ## 0.37.9 — 6 ottobre 2026
 
 ### Modificato
