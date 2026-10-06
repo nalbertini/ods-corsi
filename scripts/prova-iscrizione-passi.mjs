@@ -962,15 +962,11 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('figlio, passo dei documenti (5): lo stesso', t(figlio(), 5), t(figlio(), 3))
   for (const passo of [1, 2, 4, 6]) ok(`figlio, passo ${passo}: il totale non c’è`, t(figlio(), passo), undefined)
 
-  // Con «Anche tu» il totale è quello della famiglia, con lo sconto: lo dice contoDelloStato.
+  // Con «Anche tu» il totale sopra la barra resta quello del bambino: la famiglia, con lo sconto, è nel riepilogo.
   const famiglia = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
-  ok('anche tu, passo dei documenti (5): il totale della famiglia, 700 €', t(famiglia, 5)?.totale, '700 €')
-  ok('anche tu: è il totale di contoDelloStato, stessi centesimi', t(famiglia, 5)?.totale, `${m.contoDelloStato(famiglia, corsi, listino, giorno).totale / 100} €`)
-  ok('anche tu: la riga nomina lo sconto famiglia', t(famiglia, 5)?.righe?.includes('Sconto'), true)
+  // Il totale sopra la barra è di chi si iscrive, come QUANTO COSTA nello stesso passo; il conto della famiglia con lo sconto sta nel riepilogo.
+  ok('anche tu, passo dei documenti (5): il totale è quello del bambino, come QUANTO COSTA', t(famiglia, 5)?.totale, '350 €')
   ok('anche tu: il passo «anche tu» (6) non lo mostra', t(famiglia, 6), undefined)
-  // I testi della stima non si riscrivono: chi fa il bonifico legge le stesse parole del riepilogo.
-  const righeFamiglia = m.contoDelloStato(famiglia, corsi, listino, giorno).righe
-  ok('anche tu: la riga ha una voce per ogni riga della stima, coi suoi testi', t(famiglia, 5)?.righe?.split(' + ').map((x, i) => x.startsWith(righeFamiglia[i].testo)), righeFamiglia.map(() => true))
   // Un corso senza prezzo nel listino non vale 0: la riga lo dice, e il totale è solo quello che si sa.
   const senzaPrezzo = (l = listino) => m.totaleDelPasso(adulto({ corsi: ['psico'] }), 2, [...corsi, { id: 'psico', nome: 'Psicomotricità' }], l, giorno)
   ok('corso senza prezzo: la riga dice «prezzo da confermare»', senzaPrezzo()?.righe, 'Quota 50 € + Psicomotricità prezzo da confermare')

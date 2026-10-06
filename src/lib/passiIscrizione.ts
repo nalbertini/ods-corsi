@@ -380,19 +380,19 @@ const euroBreve = (cent: number) => `${cent < 0 ? '−' : ''}${Math.abs(cent) % 
 
 /**
  * Il totale che sta sempre sopra la barra, nei passi del corso e dei documenti: la stessa stima
- * del riepilogo (stessi centesimi), solo scritta corta. Con «Anche tu» è quello della famiglia, con lo sconto.
+ * del riepilogo (stessi centesimi), solo scritta corta, di chi si iscrive: come QUANTO COSTA nello stesso passo.
+ * Il conto della famiglia, con lo sconto, sta nel riepilogo.
  * Senza corso scelto, senza listino e negli altri passi non c'è.
  */
 export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
   const tipo = tipiDiPassi(s.chi, s.ancheTu === true)[passo - 1]
   if ((tipo !== 'corso' && tipo !== 'documenti') || !listino || !s.risposte.corsi.length) return undefined
-  const famiglia = s.chi === 'figlio' && s.ancheTu && s.suo?.corsi.length ? contoDelloStato(s, corsi, listino, giorno) : undefined
-  const conto = famiglia ?? stimaIscrizione(persona(s, corsi), [], giorno, listino)
+  const conto = stimaIscrizione(persona(s, corsi), [], giorno, listino)
   // Un corso senza prezzo nel listino non vale 0: lo dice la riga, e il totale è quello che si sa.
-  const daConfermare = !famiglia && 'senzaPrezzo' in conto ? conto.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`) : []
-  // Per una persona sola le righe si accorciano («Quota associativa» → «Quota», «Annuale Judo adulti» → «Judo adulti annuale»); per la famiglia i testi della stima restano com'è.
+  const daConfermare = conto.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`)
+  // Le righe si accorciano: «Quota associativa» → «Quota», «Annuale Judo adulti» → «Judo adulti annuale».
   const voce = (testo: string) =>
-    famiglia ? testo : testo.replace(/^Quota associativa$/, 'Quota').replace(/^(Annuale|Trimestre|Saldo)\s+(.+)$/i, (_, f: string, c: string) => `${c} ${f.toLowerCase()}`)
+    testo.replace(/^Quota associativa$/, 'Quota').replace(/^(Annuale|Trimestre|Saldo)\s+(.+)$/i, (_, f: string, c: string) => `${c} ${f.toLowerCase()}`)
   return { righe: [...conto.righe.map((r) => `${voce(r.testo)} ${euroBreve(r.importo)}`), ...daConfermare].join(' + '), totale: euroBreve(conto.totale) }
 }
 

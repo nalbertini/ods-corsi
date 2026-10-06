@@ -135,7 +135,7 @@ function Scelta({ prova, onScegli }: { prova: boolean; onScegli: (chi: P.Chi) =>
           scelti={[]}
           onScegli={(c) => onScegli(c === 'figlio' ? 'figlio' : 'adulto')}
         />
-        <Dettaglio>Il certificato medico si può caricare nell’ultimo passo, o portare in segreteria prima della prima lezione.</Dettaglio>
+        <Dettaglio>Il certificato medico si può caricare nel passo dei documenti, o portare in segreteria prima della prima lezione.</Dettaglio>
       </div>
       <Prova />
       <Contatti />
