@@ -92,6 +92,51 @@
       "page": "page-1"
     },
     {
+      "file": "CalendarioArretrati.dc.html",
+      "title": "Calendario con arretrati · telefono",
+      "x": 3060,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "AppelloPassato.dc.html",
+      "title": "Appello passato · telefono",
+      "x": 3570,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "TabletRecuperoCorsi.dc.html",
+      "title": "Tablet · Recupero · scelta del corso",
+      "x": 0,
+      "y": 3460,
+      "w": 1280,
+      "h": 800,
+      "page": "page-1"
+    },
+    {
+      "file": "TabletRecuperoLezioni.dc.html",
+      "title": "Tablet · Recupero · scelta della lezione",
+      "x": 1400,
+      "y": 3460,
+      "w": 1280,
+      "h": 800,
+      "page": "page-1"
+    },
+    {
+      "file": "TabletAppelloPassato.dc.html",
+      "title": "Tablet · Area istruttore · appello lezione passata",
+      "x": 2800,
+      "y": 3460,
+      "w": 1280,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
       "file": "Bottone.dc.html",
       "title": "Bottone",
       "x": 0,
@@ -278,6 +323,42 @@
       "y": 2050,
       "w": 360,
       "h": 50,
+      "page": "page-2"
+    },
+    {
+      "file": "Arretrato.dc.html",
+      "title": "Arretrato",
+      "x": 0,
+      "y": 2240,
+      "w": 390,
+      "h": 120,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletScelta.dc.html",
+      "title": "TabletScelta",
+      "x": 490,
+      "y": 2240,
+      "w": 295,
+      "h": 96,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTestaAppelloPassato.dc.html",
+      "title": "TabletTestaAppelloPassato",
+      "x": 885,
+      "y": 2240,
+      "w": 808,
+      "h": 170,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTestata.dc.html",
+      "title": "TabletTestata",
+      "x": 1793,
+      "y": 2240,
+      "w": 1280,
+      "h": 92,
       "page": "page-2"
     }
   ],

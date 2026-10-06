@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'appello di una lezione passata (AppelloScreen), aperto dalla riga di APPELLI DA CHIUDERE: lunedi' 5 ottobre 17:30,
+     Judo kids, 12 iscritti. I non segnati di quando si apre stanno in cima (`primi`), poi chi e' gia' segnato; sopra gli
+     iscritti DICONO DI ESSERCI STATI, la segnalata di Rossi Giulia (nel codice: `segnalata` giallo, nota e stato
+     nell'appello, C'ERA: PRESENTE + RIFIUTA). In fondo il tasto rosso CHIUDI · 4 ASSENTI: chi non e' segnato risulta assente (4 su 12).
+     Nessun secondo tocco: meno della meta' dei 12 iscritti diventerebbe assente e qualcuno e' segnato. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+  <dc-import name="TestaAppello" corso="Judo kids" kanji="柔" quando="Lunedì 5 ottobre 17:30 · Sala 1 · Marco R." presenti="8" iscritti="12" stato="mancano" mancano="4" tasto="GLI ALTRI PRESENTI" hint-size="100%,250px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <dc-import name="Titoletto" label="DICONO DI ESSERCI STATI" conto="1" giallo="{{ true }}" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; background: #1c1c1c; border: 2px solid #f4c31b">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 16px; font-weight: 600">Rossi Giulia</span>
+          <span style="font-size: 13px; color: #8c8c88">«Ero in ritardo, sono entrata alle 17:45.» Nell’appello: non segnato.</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <dc-import name="Bottone" label="C’ERA: PRESENTE" variante="vai" alto="44px" corpo="14px" hint-size="100%,44px"></dc-import>
+          <dc-import name="Bottone" label="RIFIUTA" variante="linea" alto="44px" corpo="14px" larghezza="110px" hint-size="110px,44px"></dc-import>
+        </div>
+      </div>
+    </div>
+
+    <dc-import name="Titoletto" label="ISCRITTI" conto="12" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 20px">
+      <dc-import name="RigaAppello" nome="Bianchi Marco" stato="niente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" nome="Esposito Luca" stato="niente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" nome="Ricci Sofia" stato="niente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" nome="Rossi Giulia" stato="niente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" nome="Colombo Anna" stato="presente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" nome="Ferrari Paolo" stato="presente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" nome="Greco Elena" stato="presente" hint-size="100%,56px"></dc-import>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 20px 20px 28px">
+      <dc-import name="Bottone" label="CHIUDI · 4 ASSENTI" variante="principale" hint-size="100%,56px"></dc-import>
+      <span style="font-size: 14px; line-height: 1.4; color: #8c8c88; margin: 0 0 10px">I 4 non segnati risultano assenti. Si può sempre riaprire e correggere.</span>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>
