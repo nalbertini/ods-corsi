@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La porta (Porta.tsx, Accesso) sul telefono: email e password, ENTRA, PASSWORD DIMENTICATA?, e sotto la prova con
+     dati inventati. Copia di PaginaTelefono.dc.html: solo <dc-import> e i due testi `.passo-dettaglio` (14px dim). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+  <dc-import name="Testata" luogo="ISTRUTTORI" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <dc-import name="Titoletto" label="ACCESSO" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 16px">
+      <span style="font-size: 15px; line-height: 1.4; color: #8c8c88">Entra con l’account che ti ha dato la palestra, e l’app ti porta da sola nella tua area: la segreteria alla reception, gli istruttori al calendario e all’appello, il tablet di una sala nella sua sala. Resti collegato finché non premi «Esci».</span>
+      <dc-import name="Campo" etichetta="EMAIL, O NOME UTENTE DELLA SALA" valore="marco.rossi@officinedellosport.it" hint-size="100%,88px"></dc-import>
+      <dc-import name="Campo" etichetta="PASSWORD" valore="••••••••••" hint-size="100%,88px"></dc-import>
+      <dc-import name="Bottone" label="ENTRA" variante="vai" hint-size="100%,56px"></dc-import>
+      <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: #8c8c88; text-decoration: underline">PASSWORD DIMENTICATA?</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px 16px">
+      <span style="font-size: 15px; line-height: 1.4; color: #8c8c88">Senza account si può guardare l’app in prova: l’orario vero, iscritti inventati, e niente di quel che si tocca arriva al database.</span>
+      <dc-import name="Bottone" label="PROVA CON DATI INVENTATI" variante="linea" hint-size="100%,56px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

@@ -60,6 +60,10 @@ Google, e vale solo per i mockup.
 | `MieiTimerRiga` | La riga di I MIEI TIMER, per un corso o una lezione |
 | `TimerComandi`, `TimerTestata`, `TimerCella` | I comandi, la testata e la cella dell'editor del timer (`timer/src/`) |
 | `GuidaTesto` | La colonna di testo della guida dentro l'app |
+| `ChiSei` | La riga «NOME COGNOME · RUOLO» con ESCI (e SEGRETERIA per chi ha due aree) sopra il calendario del telefono (`ChiSei` di `Porta.tsx`) |
+| `TabletTestataIstruttore` | `TabletTestata` col bollino blu AREA ISTRUTTORE · nome (`Tablet.tsx`) |
+| `TabletSchede`, `TabletLezioneIstr` | Le schede OGGI / PER CORSO (con la tendina) e una lezione nell'elenco dell'area istruttore (`.tb-schede`, `.tb-lezione-istr`) |
+| `TabletRigaAppello`, `TabletTestaAppello`, `TabletRiquadro` | La riga dell'appello del tablet (DAL TABLET, SEGNATO DOPO, PROVA), la sua testa con i tre tasti, e il riquadro LA TUA PRESENZA |
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 
@@ -129,8 +133,8 @@ esadecimali a 6 cifre: i file della libreria scrivono sempre così.
 
 ## Cosa non copre (ancora)
 
-- Le liste musica del tablet (`.tb-liste`, `.tb-musica*`) e `tb-scheda`,
-  `tb-select`, `tb-campo`, `tb-lezione-istr`, `tb-riga`; `.mia-chip`.
+- Le liste musica del tablet (`.tb-liste`, `.tb-musica*`), `tb-campo`,
+  `.mia-chip`; lo stato «doppione» di `CercaPersona`.
 - Nella guida, titoli h3 e h4, codice e collegamenti.
 - Gli stati dinamici: passaggio del mouse e fuoco da tastiera.
 - I componenti nuovi sono stati scritti dal codice ma non guardati in un

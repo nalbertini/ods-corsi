@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 18px; background: {{c.surface}}; border: 2px solid {{bordo}}; color: {{c.text}}">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: {{scritto}}">{{titolo}}</span>
+  <span style="font-size: 16px; line-height: 1.4; color: {{c.sec}}">{{testo}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"LA TUA PRESENZA È SEGNATA"},"testo":{"editor":"text","default":"Lotta 2. Eri previsto su questa lezione."},"tono":{"editor":"enum","options":["verde","giallo","rosso"],"default":"verde"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":300,"height":120}}'>
+// Riproduzione 1:1 del riquadro LaTuaPresenza dell'area istruttore del tablet (TabletIstruttore.tsx, righe 441-480):
+// .tb-riquadro con .tb-etichetta e .tb-riquadro-testo, nella colonna stretta (.tb-istruttore .tb-riquadro: padding 18px,
+// gap 6px, testo 16px / 1.4; src/styles.css righe 867-875). Il bordo prende il colore dello stato, la scritta il suo
+// colore «da leggere» (giallo e verde puri sul tema chiaro non si leggono).
+// - tono verde = LA TUA PRESENZA È SEGNATA (eri previsto); giallo = PRESENZA DA CONFERMARE (non eri previsto, decide la
+//   segreteria); rosso = PRESENZA NON CONFERMATA. Il testo e' «<corso>. <frase>».
+const T = {
+  scuro: { surface: '#1c1c1c', text: '#f2f2f0', sec: '#c9c9c4', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a' },
+  chiaro: { surface: '#ffffff', text: '#161616', sec: '#3d3d3a', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const t = p.tono === 'giallo' || p.tono === 'rosso' ? p.tono : 'verde';
+    return {
+      c, titolo: p.titolo ?? 'LA TUA PRESENZA È SEGNATA', testo: p.testo ?? 'Lotta 2. Eri previsto su questa lezione.',
+      bordo: t === 'verde' ? c.verde : t === 'giallo' ? c.giallo : c.rosso,
+      scritto: t === 'verde' ? c.verdeTesto : t === 'giallo' ? c.gialloTesto : c.rosso,
+    };
+  }
+}
+</script>
+</body>
+</html>

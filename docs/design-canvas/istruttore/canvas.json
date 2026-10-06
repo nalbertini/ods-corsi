@@ -1,0 +1,289 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Sezione istruttore"
+    },
+    {
+      "id": "page-2",
+      "name": "Libreria"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Calendario · telefono",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "Accesso.dc.html",
+      "title": "Accesso · telefono",
+      "x": 510,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "Appello.dc.html",
+      "title": "Appello · telefono",
+      "x": 1020,
+      "y": 0,
+      "w": 390,
+      "h": 1180,
+      "page": "page-1"
+    },
+    {
+      "file": "MieiTimer.dc.html",
+      "title": "I miei timer · telefono",
+      "x": 1530,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "MieOre.dc.html",
+      "title": "Le mie ore · telefono",
+      "x": 2040,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "AggiungiChiProva.dc.html",
+      "title": "Aggiungi chi prova · telefono",
+      "x": 2550,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "CalendarioLargo.dc.html",
+      "title": "Calendario · schermo largo",
+      "x": 0,
+      "y": 1340,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "MieOreLargo.dc.html",
+      "title": "Le mie ore · schermo largo",
+      "x": 1560,
+      "y": 1340,
+      "w": 1440,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "TabletAreaIstruttore.dc.html",
+      "title": "Tablet di sala · area istruttore",
+      "x": 0,
+      "y": 2400,
+      "w": 1280,
+      "h": 900,
+      "page": "page-1"
+    },
+    {
+      "file": "Bottone.dc.html",
+      "title": "Bottone",
+      "x": 0,
+      "y": 0,
+      "w": 260,
+      "h": 80,
+      "page": "page-2"
+    },
+    {
+      "file": "Campo.dc.html",
+      "title": "Campo",
+      "x": 360,
+      "y": 0,
+      "w": 360,
+      "h": 90,
+      "page": "page-2"
+    },
+    {
+      "file": "CercaPersona.dc.html",
+      "title": "CercaPersona",
+      "x": 820,
+      "y": 0,
+      "w": 390,
+      "h": 640,
+      "page": "page-2"
+    },
+    {
+      "file": "ChiSei.dc.html",
+      "title": "ChiSei",
+      "x": 1310,
+      "y": 0,
+      "w": 390,
+      "h": 60,
+      "page": "page-2"
+    },
+    {
+      "file": "MenuIstruttori.dc.html",
+      "title": "MenuIstruttori",
+      "x": 1800,
+      "y": 0,
+      "w": 240,
+      "h": 900,
+      "page": "page-2"
+    },
+    {
+      "file": "MieOreNumero.dc.html",
+      "title": "MieOreNumero",
+      "x": 2140,
+      "y": 0,
+      "w": 150,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "MieOreRiga.dc.html",
+      "title": "MieOreRiga",
+      "x": 0,
+      "y": 1000,
+      "w": 360,
+      "h": 110,
+      "page": "page-2"
+    },
+    {
+      "file": "MieiTimerRiga.dc.html",
+      "title": "MieiTimerRiga",
+      "x": 460,
+      "y": 1000,
+      "w": 560,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "RigaAppello.dc.html",
+      "title": "RigaAppello",
+      "x": 1120,
+      "y": 1000,
+      "w": 320,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "RigaCalendario.dc.html",
+      "title": "RigaCalendario",
+      "x": 1540,
+      "y": 1000,
+      "w": 380,
+      "h": 90,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletLezioneIstr.dc.html",
+      "title": "TabletLezioneIstr",
+      "x": 2020,
+      "y": 1000,
+      "w": 300,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletPiede.dc.html",
+      "title": "TabletPiede",
+      "x": 0,
+      "y": 1210,
+      "w": 1280,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletRigaAppello.dc.html",
+      "title": "TabletRigaAppello",
+      "x": 1380,
+      "y": 1210,
+      "w": 420,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletRiquadro.dc.html",
+      "title": "TabletRiquadro",
+      "x": 1900,
+      "y": 1210,
+      "w": 300,
+      "h": 120,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletSchede.dc.html",
+      "title": "TabletSchede",
+      "x": 0,
+      "y": 1430,
+      "w": 300,
+      "h": 140,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTasto.dc.html",
+      "title": "TabletTasto",
+      "x": 400,
+      "y": 1430,
+      "w": 220,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTestaAppello.dc.html",
+      "title": "TabletTestaAppello",
+      "x": 720,
+      "y": 1430,
+      "w": 808,
+      "h": 170,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTestataIstruttore.dc.html",
+      "title": "TabletTestataIstruttore",
+      "x": 0,
+      "y": 1700,
+      "w": 1280,
+      "h": 92,
+      "page": "page-2"
+    },
+    {
+      "file": "TestaAppello.dc.html",
+      "title": "TestaAppello",
+      "x": 1380,
+      "y": 1700,
+      "w": 390,
+      "h": 250,
+      "page": "page-2"
+    },
+    {
+      "file": "Testata.dc.html",
+      "title": "Testata",
+      "x": 1870,
+      "y": 1700,
+      "w": 390,
+      "h": 72,
+      "page": "page-2"
+    },
+    {
+      "file": "Titoletto.dc.html",
+      "title": "Titoletto",
+      "x": 0,
+      "y": 2050,
+      "w": 360,
+      "h": 50,
+      "page": "page-2"
+    }
+  ],
+  "annotations": [],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
+}

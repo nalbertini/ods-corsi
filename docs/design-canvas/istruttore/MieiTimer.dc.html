@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COM'E' OGGI: I MIEI TIMER dell'istruttore (src/components/MieiTimer.tsx), sul telefono. Copia di PaginaTelefono.dc.html con la
+     libreria: Testata, Titoletto, Bottone, MieiTimerRiga. Le lezioni col timer proprio sono in evidenza (bordo giallo), le altre
+     stanno dietro SCEGLI PER UNA LEZIONE. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+  <dc-import name="Testata" luogo="ISTRUTTORI" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 16px 20px 0">
+      <dc-import name="Bottone" label="‹" variante="icona" hint-size="44px,44px"></dc-import>
+      <span style="flex-grow: 1; white-space: nowrap; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05">I MIEI TIMER</span>
+      <dc-import name="Bottone" label="APRI IL TIMER ↗" variante="linea" alto="44px" corpo="14px" spazio="0.1em" larghezza="auto" hint-size="150px,44px"></dc-import>
+    </div>
+    <p style="margin: 10px 0 0; padding: 0 20px; font-size: 15px; line-height: 1.4; color: #8c8c88">Scegli quale timer parte con ogni tuo corso, dall’appello e sul tablet di sala. Se una lezione ne vuole uno diverso, lo scegli più sotto. I timer si creano e si cambiano nel timer.</p>
+
+    <dc-import name="Titoletto" label="PER CORSO" conto="3" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px">
+      <dc-import name="MieiTimerRiga" tipo="corso" nome="Judo adulti" tinta="#1b8ac4" timer="Riscaldamento:INTERVALLI" scegli="+ Collega un timer" hint-size="100%,170px"></dc-import>
+      <dc-import name="MieiTimerRiga" tipo="corso" nome="Judo kids" tinta="#1b8ac4" timer="Riscaldamento:INTERVALLI|Tabata:EMOM" scegli="+ Collega un timer" hint-size="100%,230px"></dc-import>
+      <dc-import name="MieiTimerRiga" tipo="corso" nome="Pilates" tinta="#16a54a" timer="" vuoto="Nessun timer" scegli="+ Collega un timer" hint-size="100%,130px"></dc-import>
+    </div>
+
+    <dc-import name="Titoletto" label="PER LEZIONE" conto="PROSSIMI 14 GIORNI" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 16px; padding: 0 20px 24px">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">GIOVEDÌ 8 OTTOBRE</span>
+        <dc-import name="MieiTimerRiga" tipo="lezione" ora="17:30" nome="Judo kids" dettaglio="Sala 1 · Marco R." tinta="#1b8ac4" timer="Circuito forza:CIRCUITO" suo="{{ true }}" scegli="+ Aggiungi un timer" hint-size="100%,230px"></dc-import>
+      </div>
+      <dc-import name="Bottone" label="SCEGLI PER UNA LEZIONE (4)" variante="tratteggiato" alto="52px" corpo="16px" hint-size="100%,52px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

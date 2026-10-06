@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 16px; width: 100%; padding: 14px 18px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}">
+  <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 0">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase">{{corso}}</span>
+    <span style="display: flex; align-items: center; flex-wrap: wrap; column-gap: 10px; font-size: 16px; color: {{c.sec}}">
+      <span style="white-space: nowrap">{{quando}}</span>
+      <sc-if value="{{haAttivita}}" hint-placeholder-val="{{ false }}">
+        <span style="padding: 2px 8px; border: 2px solid {{c.line}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; line-height: 1.2; color: {{c.sec}}; text-transform: uppercase">{{attivita}}</span>
+      </sc-if>
+      <span>{{sotto}}</span>
+    </span>
+  </div>
+  <span style="display: flex; align-items: baseline; gap: 10px; white-space: nowrap; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums">
+    <span style="font-size: 46px; font-weight: 700; line-height: 1">{{presenti}}</span>
+    <span style="font-size: 22px; color: {{c.dim}}">/ {{iscritti}}</span>
+    <sc-if value="{{haProve}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 22px; font-weight: 700; color: {{c.gialloTesto}}">+{{prove}} PROVA</span>
+    </sc-if>
+  </span>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; flex-basis: 100%">
+    <dc-import name="TabletTasto" label="{{tastoTutti}}" variante="verde" spento="{{spentoTutti}}" tema="{{tema}}" hint-size="260px,60px"></dc-import>
+    <dc-import name="TabletTasto" label="GLI ALTRI ASSENTI" variante="linea" spento="{{spentoAltri}}" tema="{{tema}}" hint-size="260px,60px"></dc-import>
+    <dc-import name="TabletTasto" label="PROVE" variante="linea" acceso="{{proveAperte}}" tema="{{tema}}" hint-size="140px,60px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"corso":{"editor":"text","default":"Lotta 2"},"quando":{"editor":"text","default":"oggi, 17:00–18:00"},"attivita":{"editor":"text","default":""},"sotto":{"editor":"text","default":"3 segnati da sé sul tablet · tocca un nome per cambiarlo"},"presenti":{"editor":"text","default":"8"},"iscritti":{"editor":"text","default":"14"},"prove":{"editor":"text","default":"0"},"tuttiPresenti":{"editor":"boolean","default":true},"altriAssenti":{"editor":"boolean","default":true},"proveAperte":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":808,"height":170}}'>
+// Riproduzione 1:1 della testa dell'appello dell'area istruttore del tablet: .tb-testa-appello e .tb-azioni-appello
+// (TabletIstruttore.tsx, righe 335-376; src/styles.css, righe 1119-1126). Riquadro `surface` con bordo `line`: a sinistra il
+// corso (26px obliquo) e sotto quando, l'etichetta dell'attivita' e «N segnati da se' sul tablet · tocca un nome per cambiarlo»;
+// a destra il conto (46px, «/ iscritti» a 22px, «+N PROVA» in giallo-testo); sotto, su tutta la riga, i tre tasti del tablet
+// (TabletTasto): TUTTI PRESENTI (verde), GLI ALTRI ASSENTI e PROVE (a linea, PROVE acceso quando il pannello e' aperto).
+// - tuttiPresenti / altriAssenti: false = tasto spento (niente da segnare). Non riprodotta la conferma sulle lezioni passate
+//   («CONFERMA: N PRESENTI» e la frase gialla sotto), che e' uno stato di un secondo tocco.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', gialloTesto: '#f4c31b' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', gialloTesto: '#8f6a00' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return {
+      c: T[p.tema] || T.scuro, tema: p.tema === 'chiaro' ? 'chiaro' : 'scuro',
+      corso: p.corso ?? 'Lotta 2', quando: p.quando ?? 'oggi, 17:00–18:00',
+      attivita: p.attivita ?? '', haAttivita: !!p.attivita,
+      sotto: p.sotto ?? '3 segnati da sé sul tablet · tocca un nome per cambiarlo',
+      presenti: p.presenti ?? '8', iscritti: p.iscritti ?? '14', prove: p.prove ?? '0', haProve: Number(p.prove) > 0,
+      tastoTutti: 'TUTTI PRESENTI', spentoTutti: p.tuttiPresenti === undefined ? false : !truthy(p.tuttiPresenti),
+      spentoAltri: p.altriAssenti === undefined ? false : !truthy(p.altriAssenti),
+      proveAperte: truthy(p.proveAperte),
+    };
+  }
+}
+</script>
+</body>
+</html>

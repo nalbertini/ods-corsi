@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: stretch; gap: 6px; width: 100%">
+<div style="display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0; min-height: 60px; padding: 0 16px; background: {{c.surface}}; border: 2px solid {{bordo}}; color: {{c.text}}; text-align: left">
+  <span style="width: 26px; display: flex; justify-content: center; color: {{coloreSegno}}">
+    <sc-if value="{{presente}}" hint-placeholder-val="{{ true }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"></polyline></svg>
+    </sc-if>
+    <sc-if value="{{assente}}" hint-placeholder-val="{{ false }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>
+    </sc-if>
+  </span>
+  <span style="flex-grow: 1; font-size: 18px; font-weight: 500; color: {{coloreNome}}; text-decoration: {{decorazione}}">{{nome}}</span>
+  <sc-if value="{{haMarchio}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; color: {{coloreMarchio}}; border: 2px solid {{bordoMarchio}}; padding: 2px 7px">{{marchio}}</span>
+  </sc-if>
+  <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; color: {{c.gialloTesto}}; border: 2px solid #f4c31b; padding: 1px 6px">PROVA</span>
+  </sc-if>
+</div>
+  <sc-if value="{{prova}}" hint-placeholder-val="{{ false }}">
+    <span style="display: inline-flex; align-items: center; flex-shrink: 0; min-height: 44px; align-self: center; padding: 0 12px; border: 2px solid {{c.line}}; color: {{c.dim}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.12em">TOGLI</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Cognome Nome"},"stato":{"editor":"enum","options":["niente","presente","assente"],"default":"niente"},"marchio":{"editor":"enum","options":["","dal-tablet","dopo"],"default":""},"prova":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":420,"height":70}}'>
+// Riproduzione 1:1 della riga dell'appello dell'area istruttore del tablet: .tb-riga, .tb-riga-segno, .tb-riga-nome e
+// .tb-marchio (TabletIstruttore.tsx, righe 411-434; src/styles.css, righe 1127-1143). Alta 60px, nome da 18px,
+// spunta o croce da 22px a sinistra (non il glifo della riga dell'app: qui sono le icone Spunta e Croce).
+// - stato: presente = bordo e segno verdi; assente = bordo rosso, segno rosso-testo, nome barrato e spento; niente = bordo `line`.
+// - marchio: «dal-tablet» = DAL TABLET (si e' segnato da se' sul tablet), «dopo» = SEGNATO DOPO (giallo: segnato a lezione finita);
+//   compaiono solo su un presente. prova: il marchio PROVA (.prova-marchio, 15px nel tablet); TOGLI (.prova-togli, 44px) e' accanto alla riga, dentro .riga-prova.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', verde: '#16a54a', rosso: '#e4292a', rossoTesto: '#ff5a52', gialloTesto: '#f4c31b' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', verde: '#12913f', rosso: '#e4292a', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const st = p.stato === 'presente' || p.stato === 'assente' ? p.stato : 'niente';
+    const dopo = p.marchio === 'dopo';
+    const marchio = st === 'presente' && (dopo || p.marchio === 'dal-tablet') ? (dopo ? 'SEGNATO DOPO' : 'DAL TABLET') : '';
+    return {
+      c, nome: p.nome ?? 'Cognome Nome', prova: truthy(p.prova),
+      presente: st === 'presente', assente: st === 'assente',
+      bordo: st === 'presente' ? c.verde : st === 'assente' ? c.rosso : c.line,
+      coloreSegno: st === 'presente' ? c.verde : c.rossoTesto,
+      coloreNome: st === 'assente' ? c.dim : c.text,
+      decorazione: st === 'assente' ? 'line-through' : 'none',
+      marchio, haMarchio: !!marchio,
+      coloreMarchio: dopo ? c.gialloTesto : c.dim, bordoMarchio: dopo ? '#f4c31b' : c.line,
+    };
+  }
+}
+</script>
+</body>
+</html>
