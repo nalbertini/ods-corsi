@@ -721,6 +721,7 @@ console.log('\n16b. le parole per il genitore, nel flusso del figlio')
   // «di il bambino» non è italiano: senza nome si dice «del bambino».
   ok('figlio senza nome: «non quella del bambino»', t('figlio', 'documento', ' ').dettaglio, 'Il fronte. Firmi tu, genitore: serve la tua, non quella del bambino.')
   ok('figlio: il retro è della carta del genitore', t('figlio', 'documento-retro', 'Matteo').etichetta, 'IL RETRO DELLA TUA CARTA')
+  ok('figlio: il retro, cosa caricare', t('figlio', 'documento-retro', 'Matteo').dettaglio, 'Il retro. Una foto o il PDF.')
   ok('figlio: il certificato col nome in maiuscolo', t('figlio', 'certificato', 'Matteo').etichetta, 'IL CERTIFICATO DI MATTEO')
   ok('figlio: il certificato senza nome', t('figlio', 'certificato', '').etichetta, 'IL CERTIFICATO DEL BAMBINO')
   ok('figlio: il certificato, cosa succede se manca', t('figlio', 'certificato', 'Matteo').dettaglio, 'Lo porti in segreteria prima della prima lezione: senza, Matteo non può partecipare.')

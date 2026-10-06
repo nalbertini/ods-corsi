@@ -335,7 +335,7 @@ export function testoFile(chi: Chi, tipo: TipoFile, nome: string): { etichetta: 
   const n = nome.trim()
   if (chi === 'figlio') {
     if (tipo === 'documento') return { etichetta: 'LA TUA CARTA D’IDENTITÀ', dettaglio: `Il fronte. Firmi tu, genitore: serve la tua, non quella ${n ? `di ${n}` : 'del bambino'}.` }
-    if (tipo === 'documento-retro') return { etichetta: 'IL RETRO DELLA TUA CARTA', dettaglio: f.dettaglio }
+    if (tipo === 'documento-retro') return { etichetta: 'IL RETRO DELLA TUA CARTA', dettaglio: 'Il retro. Una foto o il PDF.' }
     if (tipo === 'certificato') {
       return {
         etichetta: `IL CERTIFICATO ${n ? `DI ${n.toUpperCase()}` : 'DEL BAMBINO'}`,

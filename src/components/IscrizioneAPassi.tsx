@@ -674,11 +674,11 @@ function Flusso({
             {cf('genitoreCodiceFiscale', 'CODICE FISCALE DEL GENITORE', natoIlGenitore)}
             {P.luogoGenitoreDaChiedere(v, luoghi ?? undefined) && (
               <>
-                <Campo id="n-natoAGenitore" etichetta="DOVE SEI NATO" nota={cfValido(pulisciCf(r.genitoreCodiceFiscale ?? '')) ? { testo: 'Dal tuo codice fiscale non riusciamo a leggerlo: scrivilo tu.', guaio: false } : undefined}>
-                  <input id="n-natoAGenitore" className="campo" value={v.natoAGenitore} onChange={(e) => setGrezzo((p) => ({ ...p, natoAGenitore: e.target.value }))} />
+                <Campo id="n-natoAGenitore" etichetta="DOVE SEI NATO">
+                  <input id="n-natoAGenitore" className="campo" placeholder="Comune" value={v.natoAGenitore} onChange={(e) => setGrezzo((p) => ({ ...p, natoAGenitore: e.target.value }))} />
                 </Campo>
-                <Campo id="n-provincia" etichetta="PROVINCIA (ES. TO)">
-                  <input id="n-provincia" className="campo campo-codice" autoCapitalize="characters" maxLength={2} value={provinciaGenitore} onChange={(e) => setProvincia(e.target.value.toUpperCase())} />
+                <Campo id="n-provincia" etichetta="PROVINCIA" nota={cfValido(pulisciCf(r.genitoreCodiceFiscale ?? '')) ? { testo: 'Non lo ricaviamo dal tuo codice fiscale: scrivilo tu.', guaio: false } : undefined}>
+                  <input id="n-provincia" className="campo campo-codice" autoCapitalize="characters" maxLength={2} placeholder="ES. TO" value={provinciaGenitore} onChange={(e) => setProvincia(e.target.value.toUpperCase())} />
                 </Campo>
               </>
             )}
@@ -908,7 +908,7 @@ function Flusso({
           </div>
           <Titoletto>I FILE</Titoletto>
           <div className="pad modulo-griglia passo-dopo">
-            {certificato !== 'nessuno' && (
+            {certificato !== 'nessuno' && !figlio && (
               <div className="modulo-campo modulo-largo">
                 <span className="modulo-etichetta">{figlio ? P.testoFile(v.chi, 'certificato', r.nome).etichetta : certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
                 <Dettaglio tono="avviso">
@@ -922,11 +922,11 @@ function Flusso({
               .map((f) => {
                 const testi = P.testoFile(v.chi, f.tipo, r.nome)
                 // Il perché del certificato è già detto sopra: qui solo cosa caricare.
-                const dettaglio = f.tipo === 'certificato' ? 'Una foto o il PDF.' : testi.dettaglio
+                const dettaglio = testi.dettaglio
                 return figlio ? (
                   <SceltaFileGenitore key={f.tipo} tipo={f.tipo} file={v.file[f.tipo]} onFile={(x) => setFile(f.tipo, x)} etichetta={testi.etichetta} dettaglio={dettaglio} />
                 ) : (
-                  <SceltaFile key={f.tipo} tipo={f.tipo} file={v.file[f.tipo]} onFile={(x) => setFile(f.tipo, x)} facoltativo={!f.obbligatorio} dettaglio={f.tipo === 'certificato' ? dettaglio : undefined} />
+                  <SceltaFile key={f.tipo} tipo={f.tipo} file={v.file[f.tipo]} onFile={(x) => setFile(f.tipo, x)} facoltativo={!f.obbligatorio} dettaglio={f.tipo === 'certificato' ? 'Una foto o il PDF.' : undefined} />
                 )
               })}
           </div>
