@@ -737,6 +737,9 @@ export const certificatoInScadenza = (p: PersonaSeg, oggi: string) => p.attiva &
 /** Compie 6 anni entro un mese e non ha il certificato: da avvisare la famiglia. */
 export const certificatoInArrivo = (p: PersonaSeg, oggi: string) => p.attiva && statoCertificato(p, oggi) === 'in_arrivo'
 
+/** Senza certificato e senza data di nascita: non si sa se serve, e la segreteria deve saperlo. */
+export const mancaLaData = (p: Pick<PersonaSeg, 'certificato' | 'natoIl'>) => !p.natoIl && !p.certificato.scade
+
 /** Il riquadro CERTIFICATO delle statistiche: chi non ha l'obbligo non si conta. */
 export function contaCertificati(persone: Array<Pick<PersonaSeg, 'certificato' | 'natoIl'>>, oggi: string) {
   const conto = { valido: 0, in_scadenza: 0, scaduto: 0, manca: 0 }
@@ -854,7 +857,7 @@ function timbroCertificato(c: CertificatoSeg, oggi: string, natoIl?: string): Ti
     }
   }
   const righe = file
-  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...righe] }
+  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...(mancaLaData({ certificato: c, natoIl }) ? [{ testo: 'MANCA LA DATA DI NASCITA' }] : []), ...righe] }
   if (stato === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'CERT. SCADUTO', righe }
   if (stato === 'in_scadenza') {
     if (c.scade === oggi) return { tono: 'giallo', parola: 'SCADE OGGI', righe }
@@ -930,7 +933,11 @@ export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' |
   const fuori: ParolaStato[] = s.fonte === 'fuori_app' ? [{ tono: 'spento', parola: 'FUORI APP' }] : []
   const guai = (nonServe ? [quota] : [cert, quota]).filter((t) => t.tono !== 'verde').map((t): ParolaStato => ({ tono: t.tono, parola: t.inElenco ?? t.parola }))
   const inRegola: ParolaStato = { tono: 'verde', parola: 'IN REGOLA' }
-  const segno: ParolaStato[] = nonServe ? [{ tono: 'spento', parola: 'CERT. NON SERVE' }] : []
+  const segno: ParolaStato[] = nonServe
+    ? [{ tono: 'spento', parola: 'CERT. NON SERVE' }]
+    : mancaLaData(p)
+      ? [{ tono: 'spento', parola: 'MANCA LA DATA' }]
+      : []
   return [...(guai.length ? guai : [inRegola]), ...segno, ...fuori]
 }
 

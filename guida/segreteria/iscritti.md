@@ -49,7 +49,8 @@ giallo **SCADE IL 14/10** (entro un mese; **SCADE OGGI** l'ultimo giorno) o
 **IN REGOLA** con la quota pagata, e accanto c'è **CERT. NON SERVE** in grigio;
 un mese prima del compleanno diventa **SERVE DAL 14/10** in giallo. Per
 sapere l'età serve la data di nascita: senza, il certificato serve come per
-tutti. In
+tutti, e chi non ha nemmeno il certificato ha accanto **MANCA LA DATA** in grigio:
+scrivila nei dati anagrafici della scheda. In
 cima alla pagina c'è quanti sono senza certificato valido e quanti da pagare.
 
 La colonna **30 GIORNI** dice quanto è venuto ognuno nell'ultimo mese:
@@ -85,7 +86,7 @@ AL 31/07/2027**; il certificato in scadenza dice anche quanto manca
 (**SCADE IL 14/10/2026**, sotto **FRA 18 GIORNI**, o **DOMANI**). Sotto i 6 anni
 il timbro è grigio, **NON SERVE**, con **SOTTO I 6 ANNI**; un certificato già
 segnato si vede com'è, senza rosso. Nell'ultimo mese prima del compleanno è
-giallo, **SERVE DAL 14/10/2026**, sotto **FRA 14 GIORNI**. E
+giallo, **SERVE DAL 14/10/2026**, sotto **FRA 14 GIORNI**. Senza certificato e senza data di nascita il timbro è rosso e dice anche **MANCA LA DATA DI NASCITA**. E
 **DOCUMENTO D'IDENTITÀ** più piccolo, perché non serve per entrare. Un clic su
 un timbro porta alla sua parte della scheda. Se la scheda è disattivata i
 timbri sono grigi, e sopra c'è scritto **DISATTIVATA**: si rimette con
