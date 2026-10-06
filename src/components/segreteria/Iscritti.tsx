@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Destinazione } from './Segreteria'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { certificatoInArrivo, certificatoInScadenza, comePaga, cosaNonVaAnagrafica, dalCertificato, inCorso, pagamentoDi, paroleInRegola, pulisciAnagrafica, senzaCertificatoValido, statoCertificato, tastoPrincipale, timbriScheda } from '../../lib/segreteria'
+import { certificatoInArrivo, certificatoInScadenza, comePaga, cosaNonVaAnagrafica, dalCertificato, inCorso, mancaLaData, pagamentoDi, paroleInRegola, pulisciAnagrafica, senzaCertificatoValido, statoCertificato, tastoPrincipale, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -1230,7 +1230,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
 
   const stato =
     come === 'manca'
-      ? 'Nessun certificato in segreteria: senza, in sala non si entra.'
+      ? `Nessun certificato in segreteria: senza, in sala non si entra.${mancaLaData(p) ? ' Manca la data di nascita: sotto i 6 anni non serve.' : ''}`
       : come === 'scaduto'
         ? `Scaduto il ${dataLunga(c.scade!)}: va rinnovato prima di tornare in sala.`
         : come === 'in_scadenza'
