@@ -28,14 +28,14 @@
     <sc-if value="{{vuota}}" hint-placeholder-val="{{ true }}">
       <span style="position: absolute; left: 0; right: 0; bottom: calc(25% + 12px); text-align: center; font-family: {{cond}}; font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: {{c.faint}}">{{invito}}</span>
     </sc-if>
-    <sc-if value="{{verticale}}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{invitoGira}}" hint-placeholder-val="{{ true }}">
       <!-- Solo in verticale e finche' non si firma: riquadro giallo (non e' un tasto), in cima, non copre la riga. Sparisce al primo dito o a telefono girato. -->
       <div style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: {{c.surface}}; border: 2px solid {{c.gialloTesto}}; color: {{c.gialloTesto}}; font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.12em; line-height: 1.25">
         <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: rotate(-90deg)" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 18h2"></path></svg>
         <span>GIRA IL TELEFONO IN ORIZZONTALE: FIRMI MEGLIO</span>
       </div>
     </sc-if>
-    <sc-if value="{{orizzontale}}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{avvisoGira}}" hint-placeholder-val="{{ false }}">
       <!-- Girato il telefono, l'avviso sta dentro il riquadro, sopra la riga e l'invito; sparisce alla prima penna. -->
       <span style="position: absolute; left: 16px; right: 16px; bottom: calc(25% + 44px); text-align: center; font-size: 14px; font-weight: 700; color: {{c.gialloTesto}}">Hai girato il telefono: firma di nuovo</span>
     </sc-if>
@@ -69,8 +69,6 @@ const T = {
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
 const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
-const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
-const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
@@ -80,6 +78,8 @@ class Component extends DCLogic {
     return {
       c, cond: COND, w: orizz ? 844 : 390, h: orizz ? 390 : 844, firmata, vuota: !firmata,
       verticale: !orizz, orizzontale: orizz,
+      // L'invito a girare e l'avviso di rotazione stanno solo a riquadro vuoto: a firma fatta non servono.
+      invitoGira: !orizz && !firmata, avvisoGira: orizz && !firmata,
       // Orizzontale compatta: barra sola da 56px con tasti da 44 (ANNULLA, nome, CANCELLA E RIFAI, FATTO), riquadro a 8px dai bordi, niente piede.
       padTesta: orizz ? '6px 12px' : '10px 20px', altTesta: orizz ? 56 : 0, altTasto: orizz ? 44 : 48, padTasto: orizz ? 12 : 16, padFatto: orizz ? 16 : 20, corpoTasto: orizz ? 14 : 16, margRiq: orizz ? '8px 12px' : '16px 20px',
       // In verticale il titolo intero va a capo a 390: resta il nome. In orizzontale sta su una riga.
