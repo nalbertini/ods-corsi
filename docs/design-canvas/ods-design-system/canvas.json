@@ -171,6 +171,312 @@
       "w": 640,
       "h": 520,
       "page": "page-2"
+    },
+    {
+      "file": "BarraTelefono.dc.html",
+      "title": "BarraTelefono",
+      "x": 0,
+      "y": 3100,
+      "w": 390,
+      "h": 62,
+      "page": "page-2"
+    },
+    {
+      "file": "Campo.dc.html",
+      "title": "Campo",
+      "x": 510,
+      "y": 3100,
+      "w": 360,
+      "h": 90,
+      "page": "page-2"
+    },
+    {
+      "file": "CercaIscritto.dc.html",
+      "title": "CercaIscritto",
+      "x": 990,
+      "y": 3100,
+      "w": 216,
+      "h": 260,
+      "page": "page-2"
+    },
+    {
+      "file": "CercaPersona.dc.html",
+      "title": "CercaPersona",
+      "x": 1326,
+      "y": 3100,
+      "w": 390,
+      "h": 640,
+      "page": "page-2"
+    },
+    {
+      "file": "Dialogo.dc.html",
+      "title": "Dialogo",
+      "x": 0,
+      "y": 3900,
+      "w": 640,
+      "h": 440,
+      "page": "page-2"
+    },
+    {
+      "file": "FiltriIscritti.dc.html",
+      "title": "FiltriIscritti",
+      "x": 760,
+      "y": 3900,
+      "w": 1000,
+      "h": 110,
+      "page": "page-2"
+    },
+    {
+      "file": "GuidaTesto.dc.html",
+      "title": "GuidaTesto",
+      "x": 0,
+      "y": 4500,
+      "w": 480,
+      "h": 520,
+      "page": "page-2"
+    },
+    {
+      "file": "MenuIstruttori.dc.html",
+      "title": "MenuIstruttori",
+      "x": 600,
+      "y": 4500,
+      "w": 240,
+      "h": 900,
+      "page": "page-2"
+    },
+    {
+      "file": "MiaLezione.dc.html",
+      "title": "MiaLezione",
+      "x": 960,
+      "y": 4500,
+      "w": 360,
+      "h": 72,
+      "page": "page-2"
+    },
+    {
+      "file": "MiaPresenza.dc.html",
+      "title": "MiaPresenza",
+      "x": 1440,
+      "y": 4500,
+      "w": 360,
+      "h": 80,
+      "page": "page-2"
+    },
+    {
+      "file": "MieOreNumero.dc.html",
+      "title": "MieOreNumero",
+      "x": 1920,
+      "y": 4500,
+      "w": 150,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "MieOreRiga.dc.html",
+      "title": "MieOreRiga",
+      "x": 0,
+      "y": 5560,
+      "w": 360,
+      "h": 110,
+      "page": "page-2"
+    },
+    {
+      "file": "MieiTimerRiga.dc.html",
+      "title": "MieiTimerRiga",
+      "x": 480,
+      "y": 5560,
+      "w": 560,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "ProvaPannello.dc.html",
+      "title": "ProvaPannello",
+      "x": 1160,
+      "y": 5560,
+      "w": 390,
+      "h": 520,
+      "page": "page-2"
+    },
+    {
+      "file": "RigaIscritto.dc.html",
+      "title": "RigaIscritto",
+      "x": 0,
+      "y": 6240,
+      "w": 900,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "RigaPresenzaIstruttore.dc.html",
+      "title": "RigaPresenzaIstruttore",
+      "x": 1020,
+      "y": 6240,
+      "w": 1000,
+      "h": 80,
+      "page": "page-2"
+    },
+    {
+      "file": "Riquadro.dc.html",
+      "title": "Riquadro",
+      "x": 0,
+      "y": 6480,
+      "w": 360,
+      "h": 120,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletFascia.dc.html",
+      "title": "TabletFascia",
+      "x": 480,
+      "y": 6480,
+      "w": 820,
+      "h": 120,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletLezione.dc.html",
+      "title": "TabletLezione",
+      "x": 1420,
+      "y": 6480,
+      "w": 808,
+      "h": 260,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletPiede.dc.html",
+      "title": "TabletPiede",
+      "x": 0,
+      "y": 6900,
+      "w": 1280,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletRigaGiornata.dc.html",
+      "title": "TabletRigaGiornata",
+      "x": 1400,
+      "y": 6900,
+      "w": 380,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTastiera.dc.html",
+      "title": "TabletTastiera",
+      "x": 1900,
+      "y": 6900,
+      "w": 354,
+      "h": 490,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTasto.dc.html",
+      "title": "TabletTasto",
+      "x": 0,
+      "y": 7550,
+      "w": 220,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTessera.dc.html",
+      "title": "TabletTessera",
+      "x": 340,
+      "y": 7550,
+      "w": 240,
+      "h": 90,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTestata.dc.html",
+      "title": "TabletTestata",
+      "x": 700,
+      "y": 7550,
+      "w": 1280,
+      "h": 92,
+      "page": "page-2"
+    },
+    {
+      "file": "TestaAppello.dc.html",
+      "title": "TestaAppello",
+      "x": 0,
+      "y": 7802,
+      "w": 390,
+      "h": 250,
+      "page": "page-2"
+    },
+    {
+      "file": "TestataTabella.dc.html",
+      "title": "TestataTabella",
+      "x": 510,
+      "y": 7802,
+      "w": 900,
+      "h": 40,
+      "page": "page-2"
+    },
+    {
+      "file": "Timbro.dc.html",
+      "title": "Timbro",
+      "x": 1530,
+      "y": 7802,
+      "w": 240,
+      "h": 120,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerAnello.dc.html",
+      "title": "TimerAnello",
+      "x": 1890,
+      "y": 7802,
+      "w": 300,
+      "h": 300,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerCella.dc.html",
+      "title": "TimerCella",
+      "x": 0,
+      "y": 8262,
+      "w": 200,
+      "h": 112,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerComandi.dc.html",
+      "title": "TimerComandi",
+      "x": 320,
+      "y": 8262,
+      "w": 420,
+      "h": 142,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerLinea.dc.html",
+      "title": "TimerLinea",
+      "x": 860,
+      "y": 8262,
+      "w": 600,
+      "h": 40,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerScaletta.dc.html",
+      "title": "TimerScaletta",
+      "x": 1580,
+      "y": 8262,
+      "w": 420,
+      "h": 320,
+      "page": "page-2"
+    },
+    {
+      "file": "TimerTestata.dc.html",
+      "title": "TimerTestata",
+      "x": 0,
+      "y": 8742,
+      "w": 420,
+      "h": 58,
+      "page": "page-2"
     }
   ],
   "annotations": [

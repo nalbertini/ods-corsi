@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 100%; min-width: 0; gap: {{gap}}; padding: {{padding}}; background: {{c.surface}}; border: 2px solid {{bordo}}; border-left: {{bordoSinistro}}; color: {{c.text}}">
+  <sc-if value="{{haEtichetta}}" hint-placeholder-val="{{ true }}">
+    <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: {{c.dim}}">{{etichetta}}</span>
+  </sc-if>
+  <sc-if value="{{haTitolo}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.04em">{{titolo}}</span>
+  </sc-if>
+  <sc-if value="{{haCifra}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">{{cifra}}</span>
+  </sc-if>
+  <sc-if value="{{haTesto}}" hint-placeholder-val="{{ true }}">
+    <span style="font-size: {{corpo}}; line-height: 1.4; color: {{coloreTesto}}">{{testo}}</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tono":{"editor":"enum","options":["normale","prova","guaio"],"default":"normale"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"stretto":{"editor":"boolean","default":false},"fatto":{"editor":"boolean","default":false},"etichetta":{"editor":"text","default":"QUOTA ASSOCIATIVA"},"titolo":{"editor":"text","default":""},"cifra":{"editor":"text","default":""},"testo":{"editor":"text","default":"Si paga una volta l anno, all iscrizione."},"tonoTesto":{"editor":"enum","options":["dim","testo","guaio","avviso"],"default":"dim"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":120}}'>
+// Riproduzione 1:1 di Riquadro, Etichetta cifra e Dettaglio di src/components/ds.tsx (righe 66-122).
+// contesto "app": `.card.stack.riquadro` (src/styles.css righe 252 e 550-555): surface, bordo 2px `line`, padding 14px, gap 8px;
+//   stretto = gap 4px; tono prova = gap 6px e bordo sinistro 4px `giallo` (sta prima dei passi, non e' uno di loro);
+//   tono guaio = bordo `rosso`, testo `text` 15px. Dentro: l'etichetta (.rule-label.etichetta-riquadro: cond 12px 700 0.2em `dim`),
+//   la cifra (.num.cifra: 26px 700) e la frase (.passo-dettaglio: 14px, interlinea 1.4; tonoTesto dim | testo | guaio |
+//   avviso = `dim`, `text`, rosso-testo, giallo-testo). Con guaio la frase e' del riquadro: 15px `text`.
+// contesto "segreteria": `.sg-riquadro` (righe 1689-1691): padding 18px 20px, gap 12px, min-width 0; fatto = bordo `verde`;
+//   titolo .sg-riquadro-titolo (.ob 20px 700 0.04em).
+// Vuoto quel che non serve (`etichetta=""`, `testo=""`). Fa da guscio dei riquadri di IMPORTA DA EXCEL (FoglioLetto, CosaEntra...).
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', giallo: '#f4c31b', gialloTesto: '#f4c31b', verde: '#16a54a', rosso: '#e4292a', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', giallo: '#f4c31b', gialloTesto: '#8f6a00', verde: '#12913f', rosso: '#e4292a', rossoTesto: '#b81d1d' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const sg = p.contesto === 'segreteria';
+    const tono = p.tono || 'normale';
+    const guaio = !sg && tono === 'guaio';
+    const prova = !sg && tono === 'prova';
+    const etichetta = p.etichetta ?? 'QUOTA ASSOCIATIVA';
+    const titolo = p.titolo ?? '';
+    const cifra = p.cifra ?? '';
+    const testo = p.testo ?? 'Si paga una volta l anno, all iscrizione.';
+    const tt = p.tonoTesto || 'dim';
+    return {
+      c, cond: COND,
+      padding: sg ? '18px 20px' : '14px',
+      gap: sg ? '12px' : prova ? '6px' : truthy(p.stretto) ? '4px' : '8px',
+      bordo: sg ? (truthy(p.fatto) ? c.verde : c.line) : guaio ? c.rosso : c.line,
+      bordoSinistro: prova ? '4px solid ' + c.giallo : '2px solid ' + (sg ? (truthy(p.fatto) ? c.verde : c.line) : guaio ? c.rosso : c.line),
+      etichetta, haEtichetta: etichetta !== '',
+      titolo, haTitolo: titolo !== '',
+      cifra, haCifra: cifra !== '',
+      testo, haTesto: testo !== '',
+      corpo: guaio ? '15px' : '14px',
+      coloreTesto: guaio ? c.text : tt === 'testo' ? c.text : tt === 'guaio' ? c.rossoTesto : tt === 'avviso' ? c.gialloTesto : c.dim,
+    };
+  }
+}
+</script>
+</body>
+</html>

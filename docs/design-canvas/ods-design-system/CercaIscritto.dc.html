@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; width: 216px; height: {{altezza}}; padding: 0 4px">
+  <div style="display: flex; align-items: center; width: 100%; height: 44px; padding: 0 12px; background: {{c.surface}}; border: 2px solid {{bordoCampo}}; font-size: 15px; color: {{coloreTesto}}">{{mostrato}}</div>
+  <sc-if value="{{mostra}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; left: 4px; right: 4px; top: 48px; z-index: 25; padding: 4px; background: {{c.surface}}; border: 2px solid {{c.text}}; box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25)">
+      <sc-if value="{{haNota}}" hint-placeholder-val="{{ false }}">
+        <div style="padding: 10px; font-size: 14px; color: {{c.dim}}">{{nota}}</div>
+      </sc-if>
+      <sc-for list="{{voci}}" as="v" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; padding: 0 10px; font-size: 15px; background: {{v.sfondo}}; color: {{v.colore}}">
+          <span>{{v.nome}}</span>
+          <sc-if value="{{v.nota}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: {{c.dim}}">{{v.nota}}</span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"ros"},"risultati":{"editor":"text","default":"Rossi Giulia|Rossi Marco:non attiva|Rossetti Anna"},"scelto":{"editor":"text","default":"0"},"aperta":{"editor":"boolean","default":true},"leggo":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":216,"height":260}}'>
+// Riproduzione 1:1 della ricerca iscritto in cima al menu di segreteria, anche APERTA: .sg-cerca, .sg-cerca-elenco,
+// .sg-cerca-voce, .sg-cerca-nota, .sg-cerca-vuoto (src/styles.css righe 1255-1266) disegnata da
+// src/components/segreteria/CercaIscritto.tsx. Il campo e' .sg-campo (44px, padding 0 12px, 15px) con fondo
+// `surface`; scrivendo si apre l'elenco: sotto il campo di 4px, largo come lui, fondo `surface`, bordo 2px `text`,
+// ombra 0 16px 50px, padding 4px; ogni voce 40px, padding 0 10px, 15px; quella scelta con le frecce ha fondo
+// `surface-2`; chi non e' attivo e' in `dim` con "non attiva" a destra (12px). Senza risultati: "Nessuno si chiama
+// cosi'." (14px, `dim`); mentre legge: "Sto leggendo l'elenco...". Nel campo vuoto il segnaposto e' "Cerca iscritto  /"
+// (col mouse, la barra e' la scorciatoia); a campo aperto il bordo e' `text` (fuoco).
+// La misura e' quella del menu (216px di colonna: 240 meno 12 + 12). L'elenco galleggia sul resto del menu: qui
+// l'artboard e' alta quanto serve a contenerlo.
+// testo: cio' che e' scritto. risultati: "Cognome Nome" separati da |, con ":non attiva" dopo il nome per chi non lo
+// e'. scelto: la voce evidenziata (da 0). aperta: l'elenco c'e' solo con aperta e un testo scritto. leggo: l'elenco
+// non e' ancora arrivato.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', tasto: '#b8b8b2', menu: '#161616' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#ebebe7' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const testo = p.testo ?? 'ros';
+    const aperta = truthy(p.aperta ?? true);
+    const mostra = aperta && testo.trim().length > 0;
+    const scelto = Number(p.scelto) || 0;
+    const voci = String(p.risultati ?? 'Rossi Giulia|Rossi Marco:non attiva|Rossetti Anna').split('|').map((s) => s.trim()).filter(Boolean).map((s, i) => {
+      const k = s.lastIndexOf(':');
+      const nome = k > 0 ? s.slice(0, k).trim() : s;
+      const nota = k > 0 ? s.slice(k + 1).trim() : '';
+      return { nome, nota, sfondo: i === scelto ? c.surface2 : 'transparent', colore: nota ? c.dim : c.text };
+    });
+    const leggo = truthy(p.leggo);
+    const nota = leggo ? 'Sto leggendo l’elenco…' : voci.length === 0 ? 'Nessuno si chiama così.' : '';
+    const righe = leggo ? 0 : voci.length;
+    return {
+      c, mostra, voci: leggo ? [] : voci, nota, haNota: nota !== '',
+      mostrato: testo || 'Cerca iscritto  /', coloreTesto: testo ? c.text : c.dim,
+      bordoCampo: aperta ? c.text : c.line,
+      altezza: mostra ? (48 + 12 + (nota ? 38 : 0) + righe * 40) + 'px' : '44px',
+    };
+  }
+}
+</script>
+</body>
+</html>

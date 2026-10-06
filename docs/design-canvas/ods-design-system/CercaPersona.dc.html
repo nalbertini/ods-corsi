@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 100%; background: {{c.bg}}; color: {{c.text}}">
+  <div style="padding-bottom: 12px; background: {{c.bg}}; border-bottom: 2px solid {{c.lineSoft}}">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 12px 20px 0">
+      <dc-import name="Bottone" label="‹" variante="icona" tema="{{tema}}" hint-size="44px,44px"></dc-import>
+      <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 3px; min-width: 0">
+        <span style="font-family: COND; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05">AGGIUNGI CHI PROVA</span>
+        <span style="font-size: 13px; color: {{c.dim}}">Aggiungi a {{lezione}}: entra segnato presente.</span>
+      </span>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 20px 0">
+    <span style="font-family: COND; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">CERCA PER NOME O COGNOME</span>
+    <div style="display: flex; align-items: center; width: 100%; min-height: 48px; padding: 0 14px; background: {{c.surface}}; border: 2px solid {{c.text}}; font-size: 17px; color: {{c.text}}">{{testo}}</div>
+    <sc-if value="{{haRiga}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.45; color: {{c.dim}}">{{riga}}</span></sc-if>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <sc-for list="{{voci}}" as="v" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 6px 12px; background: {{v.sfondo}}; border: 2px {{v.stileBordo}} {{c.line}}; text-align: left">
+          <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
+            <span style="font-size: 16px; font-weight: 600; color: {{v.coloreNome}}">{{v.nome}}</span>
+            <span style="font-size: 13px; line-height: 1.45; color: {{v.coloreSotto}}">{{v.sotto}}</span>
+          </span>
+          <sc-if value="{{v.tasto}}" hint-placeholder-val="{{ true }}"><span style="font-family: COND; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: {{c.verdeTesto}}; white-space: nowrap">AGGIUNGI</span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <sc-if value="{{haGuaio}}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; line-height: 1.45; color: {{c.rossoTesto}}">{{guaio}}</span></sc-if>
+    <sc-if value="{{chiudi}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="Bottone" label="NON LO TROVO: SCRIVI IL NOME" variante="tratteggiato" tema="{{tema}}" hint-size="100%,48px"></dc-import>
+    </sc-if>
+    <sc-if value="{{aMano}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: {{c.surface}}; border: 2px solid {{c.line}}">
+        <span style="font-family: COND; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">UNA PERSONA NUOVA</span>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+            <span style="font-family: COND; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">NOME</span>
+            <span style="min-height: 52px; background: {{c.surface}}; border: 2px solid {{c.line}}"></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+            <span style="font-family: COND; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">COGNOME</span>
+            <span style="min-height: 52px; background: {{c.surface}}; border: 2px solid {{c.line}}"></span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+            <span style="font-family: COND; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">TELEFONO, SE LO DÀ</span>
+            <span style="min-height: 52px; background: {{c.surface}}; border: 2px solid {{c.line}}"></span>
+          </span>
+        </div>
+        <dc-import name="Bottone" label="AGGIUNGI" variante="vai" tema="{{tema}}" hint-size="100%,48px"></dc-import>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"ros"},"lezione":{"editor":"text","default":"Judo kids"},"risultati":{"editor":"text","default":"Rossi Giulia:Judo kids, Pilates|Rossi Marco:Nessun corso|Rossetti Anna:già nell’appello: iscritta"},"riga":{"editor":"text","default":""},"guaio":{"editor":"text","default":""},"aMano":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":640}}'>
+// Riproduzione 1:1 di «Aggiungi chi prova», la pagina dell'appello dell'app, anche con la ricerca APERTA:
+// src/components/CercaPersona.tsx (righe 152-264) con .appello-testa, .appello-titolo (src/styles.css righe 360-383),
+// .sg-etichetta, .campo (riga 1201: alto 52px, ma qui 48px, 17px), .prove-sotto, .prove-gia, .prove-gia-qui,
+// .prove-gia-tasto, .prove-guaio (righe 450-468), .btn-dashed e il modulo .card della persona nuova.
+// Testa: ‹ (icon-btn) + AGGIUNGI CHI PROVA (Saira 22px 700 0.06em) + "Aggiungi a <lezione>: entra segnato presente."
+// 13px `dim`, con bordo sotto 2px `line-soft`. Sotto, in colonna con gap 10px: etichetta, campo (col fuoco: bordo
+// `text`), la riga di stato (.prove-sotto), i risultati (gap 6px, alti 56px, bordo 2px `line`, nome 16px 600; la
+// seconda riga elenca i corsi, o "Nessun corso"; AGGIUNGI in verde-testo), il guaio in rosso-testo.
+// Chi e' gia' nell'appello (.prove-gia-qui): fondo trasparente, bordo tratteggiato, nome in `dim`, il perche' in
+// `text`, niente tasto. NON LO TROVO e' il tasto tratteggiato (.btn-dashed); aMano apre il modulo UNA PERSONA NUOVA
+// (nome e cognome affiancati, telefono sotto, AGGIUNGI verde) al suo posto.
+// risultati: "Nome:seconda riga" separati da |; con "già" all'inizio della seconda riga e' una persona gia' nell'appello.
+// riga: la riga di stato (es. "Scrivi almeno 3 lettere"); guaio: il messaggio d'errore. Non riprodotti: il controllo
+// del doppione (due tasti SI', E' LA STESSA PERSONA / NO, E' UN ALTRO) e AGGIUNGI mentre aspetta.
+// La pagina e' alta quanto il contenuto; l'artboard e' quella del telefono (390px).
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', tasto: '#b8b8b2', menu: '#161616' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#ebebe7' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const aMano = truthy(p.aMano);
+    const voci = String(p.risultati ?? 'Rossi Giulia:Judo kids, Pilates|Rossi Marco:Nessun corso|Rossetti Anna:già nell’appello: iscritta').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
+      const k = s.indexOf(':');
+      const nome = k > 0 ? s.slice(0, k).trim() : s;
+      const sotto = k > 0 ? s.slice(k + 1).trim() : '';
+      const qui = sotto.toLowerCase().startsWith('già');
+      return {
+        nome, sotto, tasto: !qui,
+        sfondo: qui ? 'transparent' : c.surface, stileBordo: qui ? 'dashed' : 'solid',
+        coloreNome: qui ? c.dim : c.text, coloreSotto: qui ? c.text : c.dim,
+      };
+    });
+    return {
+      c, tema: p.tema || 'scuro', voci, aMano, chiudi: !aMano,
+      testo: p.testo ?? 'ros', lezione: p.lezione ?? 'Judo kids',
+      riga: p.riga ?? '', haRiga: !!p.riga, guaio: p.guaio ?? '', haGuaio: !!p.guaio,
+    };
+  }
+}
+</script>
+</body>
+</html>

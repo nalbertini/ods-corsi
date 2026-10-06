@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La riga di I MIEI TIMER (src/components/MieiTimer.tsx): un corso o una lezione col timer collegato. Riproduce `.card.miei-timer-riga` (con `data-suo`), `.lezione-ora`, `.lezione-nome`, `.miei-timer-scelti`, `.miei-timer-chip`, `.miei-timer-modo` e `.miei-timer-scelta` (src/styles.css righe 301-310, 504-519, 539) e `Collegati`.
+     tipo corso: nome in Saira maiuscola. tipo lezione: ora + nome + riga dim (sala, istruttore). tinta = il colore del corso (barra a sinistra, 6px). timer = i collegati, "Nome:MODO" separati da "|" (MODO opzionale); senza, compare la frase `vuoto`. scegli = il testo della scelta per aggiungerne un altro (vuoto: niente scelta). suo = la lezione ha un timer suo: bordo giallo. -->
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; width: 100%; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{bordo}}; border-left: 6px solid {{tinta}}; color: {{c.text}}">
+  <sc-if value="{{lezione}}" hint-placeholder-val="{{ false }}">
+    <span style="min-width: 62px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; letter-spacing: 0.02em">{{ora}}</span>
+  </sc-if>
+  <span style="display: flex; flex-direction: column; flex: 1 1 160px; min-width: 0; gap: 3px">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05">{{nomeMaiuscolo}}</span>
+    <sc-if value="{{dettaglio}}" hint-placeholder-val="{{ true }}">
+      <span style="font-size: 13px; color: {{c.dim}}">{{dettaglio}}</span>
+    </sc-if>
+  </span>
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 2 1 200px">
+    <sc-if value="{{senza}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{vuoto}}</span>
+    </sc-if>
+    <sc-for list="{{chips}}" as="t" hint-placeholder-count="2">
+      <span style="display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 0 0 10px; background: {{c.surface2}}; border: 2px solid {{c.line}}; font-size: 14px; font-weight: 600">{{t.nome}}<span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{c.dim}}">{{t.modo}}</span><span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 40px; font-size: 20px; color: {{c.dim}}">×</span></span>
+    </sc-for>
+  </div>
+  <sc-if value="{{scegli}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; align-items: center; flex: 1 1 220px; max-width: 100%; min-height: 44px; padding: 0 14px; font-size: 15px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}">{{scegli}}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["corso","lezione"],"default":"corso"},"nome":{"editor":"text","default":"Judo kids"},"tinta":{"editor":"text","default":"#1b8ac4"},"ora":{"editor":"text","default":"18:30"},"dettaglio":{"editor":"text","default":""},"timer":{"editor":"text","default":"Tabata:TABATA"},"vuoto":{"editor":"text","default":"Nessun timer"},"scegli":{"editor":"text","default":"+ Collega un timer"},"suo":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":560,"height":70}}'>
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+};
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const lezione = p.tipo === 'lezione';
+    const chips = lista(p.timer ?? 'Tabata:TABATA', '|').map((s) => {
+      const [nome, modo] = s.split(':');
+      return { nome, modo: modo || '' };
+    });
+    return {
+      c,
+      lezione,
+      ora: p.ora ?? '18:30',
+      nomeMaiuscolo: String(p.nome ?? 'Judo kids').toUpperCase(),
+      dettaglio: lezione ? (p.dettaglio ?? '') : '',
+      tinta: p.tinta || '#1b8ac4',
+      bordo: truthy(p.suo) ? c.giallo : c.line,
+      chips,
+      senza: chips.length === 0,
+      vuoto: p.vuoto ?? 'Nessun timer',
+      scegli: p.scegli ?? '+ Collega un timer',
+    };
+  }
+}
+</script>
+</body>
+</html>

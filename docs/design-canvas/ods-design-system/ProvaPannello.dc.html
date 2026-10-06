@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il pannello CHI VIENE A PROVARE dell'appello, nella faccia dell'app (`stile="app"`): `PannelloProve` di src/components/Prove.tsx (righe 165-237) con `.card.prove-pannello`, `.prove-campi`, `.prove-sotto`, `.prove-gia`, `.prove-guaio`, `.prove-fatto`, `.modulo-etichetta`, `.campo`, `.btn.btn-go` e `.btn.btn-ghost` (src/styles.css righe 224-247, 252, 439-468, 598, 1201).
+     nome, cognome, telefono = quel che e' scritto. stato = la riga dim sotto il cognome ("Sto leggendo chi e' gia' venuto…"); proposti = i gia' venuti, "Cognome Nome:Corso, giorno · telefono" separati da "|" (con il tasto AGGIUNGI verde); avviso = la riga sotto l'introduzione; guaio = errore rosso; fatto = esito verde; aspetta = AGGIUNGO… e tasti spenti. nascondi = la scritta del secondo tasto (NASCONDI, oppure AGGIUNGI E NASCONDI con un nome scritto). Campi come nel codice: due colonne sul telefono, i gia' venuti su riga intera. -->
+<section style="display: flex; flex-direction: column; gap: 12px; width: 100%; padding: 14px; background: {{c.surface}}; border: 2px solid {{c.giallo}}; color: {{c.text}}">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">CHI VIENE A PROVARE</span>
+  <span style="font-size: 13px; line-height: 1.45; color: {{c.dim}}">Entra nell'appello di questa lezione, già presente. Chi è già venuto compare dalla terza lettera.</span>
+  <sc-if value="{{avviso}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 13px; line-height: 1.45; color: {{c.dim}}">{{avviso}}</span>
+  </sc-if>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(max(150px, 30%), 1fr)); grid-auto-flow: dense; gap: 10px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">NOME</span>
+      <div style="width: 100%; min-height: 52px; padding: 0 14px; display: flex; align-items: center; font-size: 17px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}">{{nome}}</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">COGNOME</span>
+      <div style="width: 100%; min-height: 52px; padding: 0 14px; display: flex; align-items: center; font-size: 17px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}">{{cognome}}</div>
+    </div>
+    <sc-if value="{{stato}}" hint-placeholder-val="{{ false }}">
+      <span style="grid-column: 1 / -1; font-size: 13px; line-height: 1.45; color: {{c.dim}}">{{stato}}</span>
+    </sc-if>
+    <sc-if value="{{haProposti}}" hint-placeholder-val="{{ true }}">
+      <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">GIÀ VENUTI CON QUESTO NOME</span>
+        <sc-for list="{{proposti}}" as="g" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 6px 12px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}">
+            <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
+              <span style="font-size: 16px; font-weight: 600">{{g.nome}}</span>
+              <span style="font-size: 13px; line-height: 1.45; color: {{c.dim}}">{{g.dettaglio}}</span>
+            </span>
+            <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: {{c.verdeTesto}}; white-space: nowrap">AGGIUNGI</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">TELEFONO, SE LO DÀ</span>
+      <div style="width: 100%; min-height: 52px; padding: 0 14px; display: flex; align-items: center; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 17px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}">{{telefono}}</div>
+    </div>
+  </div>
+  <sc-if value="{{guaio}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 14px; line-height: 1.45; color: {{c.rossoTesto}}">{{guaio}}</span>
+  </sc-if>
+  <sc-if value="{{fatto}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 14px; line-height: 1.45; color: {{c.verdeTesto}}">{{fatto}}</span>
+  </sc-if>
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; opacity: {{opacitaTasti}}">
+    <div style="flex-grow: 1; min-height: 56px; padding: 0 22px; display: flex; align-items: center; justify-content: center; gap: 10px; background: {{c.verde}}; color: {{c.suColore}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.16em">{{aggiungi}}</div>
+    <div style="min-height: 56px; padding: 0 22px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.16em; white-space: nowrap">{{nascondi}}</div>
+  </div>
+</section>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Marco"},"cognome":{"editor":"text","default":"Bianchi"},"telefono":{"editor":"text","default":""},"stato":{"editor":"text","default":""},"proposti":{"editor":"text","default":"Bianchi Marco:Judo kids, martedì 3 ottobre · 333 1234567"},"avviso":{"editor":"text","default":""},"guaio":{"editor":"text","default":""},"fatto":{"editor":"text","default":""},"aspetta":{"editor":"boolean","default":false},"nascondi":{"editor":"text","default":"AGGIUNGI E NASCONDI"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":520}}'>
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+};
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const aspetta = truthy(p.aspetta);
+    const proposti = lista(p.proposti ?? 'Bianchi Marco:Judo kids, martedì 3 ottobre · 333 1234567', '|').map((s) => {
+      const i = s.indexOf(':');
+      return i < 0 ? { nome: s, dettaglio: '' } : { nome: s.slice(0, i), dettaglio: s.slice(i + 1) };
+    });
+    return {
+      c: T[p.tema] || T.scuro,
+      nome: p.nome ?? 'Marco',
+      cognome: p.cognome ?? 'Bianchi',
+      telefono: p.telefono ?? '',
+      stato: p.stato ?? '',
+      avviso: p.avviso ?? '',
+      guaio: p.guaio ?? '',
+      fatto: p.fatto ?? '',
+      proposti,
+      haProposti: proposti.length > 0,
+      aggiungi: aspetta ? 'AGGIUNGO…' : 'AGGIUNGI',
+      nascondi: p.nascondi ?? 'AGGIUNGI E NASCONDI',
+      opacitaTasti: aspetta ? 0.4 : 1,
+    };
+  }
+}
+</script>
+</body>
+</html>

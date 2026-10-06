@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: {{alto}}; padding: 0 16px; background: {{fondo}}; border: {{spessore}} {{stile}} {{bordo}}; color: {{colore}}; font-size: 22px; font-weight: 700; text-align: left">
+  <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px">
+    <span>{{nome}}</span>
+    <sc-if value="{{inAttesa}}" hint-placeholder-val="{{ false }}">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: {{c.gialloTesto}}">IN ATTESA DI RETE</span>
+    </sc-if>
+  </span>
+  <sc-if value="{{fatto}}" hint-placeholder-val="{{ true }}">
+    <span style="display: flex; color: {{coloreSegno}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"></polyline></svg>
+    </span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Giulia R."},"stato":{"editor":"enum","options":["niente","fatto","attesa"],"default":"niente"},"veloce":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":90}}'>
+// Riproduzione 1:1 del nome da toccare sul tablet: .tb-tessera, .tb-tessera-attesa e .tb-veloce in src/styles.css (righe
+// 1033-1047), usati in src/components/tablet/TabletPresenza.tsx (righe 70-95) e AppelloVeloce.tsx (righe 24-42). Tessera alta 84px
+// con bordo da 3px: un dito e mezzo. Nell'elenco stanno in griglia da 220px minimo (.tb-tessere), qui ne basta una.
+// - stato niente: bordo `line`. fatto: fondo `surface-2`, bordo verde, nome in verde-testo e la spunta a destra.
+//   attesa: segnato qui ma non ancora sul server: bordo giallo tratteggiato, nome in `text`, spunta gialla e la scritta
+//   IN ATTESA DI RETE (la stessa spia della coda del tablet).
+// - veloce: la variante dell'appello veloce sotto la lezione aperta (.tb-veloce .tb-tessera): alta 60px, bordo da 2px.
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const stato = p.stato === 'fatto' || p.stato === 'attesa' ? p.stato : 'niente';
+    const veloce = truthy(p.veloce);
+    // L'attesa e' un fatto in coda: il bordo e il tratteggio li prende dalla coda, lo sfondo e il nome no.
+    const verde = stato === 'fatto';
+    return {
+      c,
+      nome: p.nome ?? 'Giulia R.',
+      alto: veloce ? '60px' : '84px',
+      spessore: veloce ? '2px' : '3px',
+      stile: stato === 'attesa' ? 'dashed' : 'solid',
+      bordo: verde ? c.verde : stato === 'attesa' ? c.giallo : c.line,
+      fondo: verde || stato === 'attesa' ? c.surface2 : c.surface,
+      colore: verde ? c.verdeTesto : c.text,
+      coloreSegno: stato === 'attesa' ? c.gialloTesto : c.verdeTesto,
+      fatto: stato !== 'niente',
+      inAttesa: stato === 'attesa',
+    };
+  }
+}
+</script>
+</body>
+</html>

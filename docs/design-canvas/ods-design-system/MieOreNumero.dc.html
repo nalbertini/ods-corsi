@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 12px; background: {{c.surface}}; border: 2px solid {{bordo}}; color: {{c.text}}">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">{{etichetta}}</span>
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 36px; font-weight: 700; line-height: 1">{{valore}}</span>
+  <span style="font-size: 13px; color: {{c.dim}}">{{sotto}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"LEZIONI"},"valore":{"editor":"text","default":"12"},"sotto":{"editor":"text","default":"confermate"},"allarme":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":150,"height":100}}'>
+// Riproduzione 1:1 di uno dei tre numeri di LE MIE ORE: <div className="card stack mie-ore-numero"> in
+// src/components/MieOre.tsx (righe 103-120) con .card, .mie-ore-numero, .mie-ore-valore, .mie-ore-sotto, .sg-etichetta in
+// src/styles.css (righe 525-532 e 1329). Nell'app sono tre in una griglia (LEZIONI, ORE, DA CONFERMARE), larghi un terzo.
+// - allarme: DA CONFERMARE sopra lo zero: bordo giallo-testo (.mie-ore-numero[data-allarme='true']).
+// - Sotto i 640px l'etichetta ha altezza minima 2.6em, perche' DA CONFERMARE va su due righe: qui non riprodotto.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', gialloTesto: '#f4c31b' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', gialloTesto: '#8f6a00' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    return {
+      c,
+      etichetta: p.etichetta ?? 'LEZIONI',
+      valore: p.valore ?? '12',
+      sotto: p.sotto ?? 'confermate',
+      bordo: truthy(p.allarme) ? c.gialloTesto : c.line,
+    };
+  }
+}
+</script>
+</body>
+</html>

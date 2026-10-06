@@ -36,6 +36,30 @@ Google, e vale solo per i mockup.
 | `RigaPerRiga.dc.html` | Il riquadro RIGA PER RIGA: sommario, le righe dubbie con la loro select (`.sg-campo`) e VEDI TUTTE LE RIGHE chiuso (`.sg-spiega`) |
 | `NomiNuovi.dc.html` | Il riquadro I NOMI NUOVI: gruppi di nomi con l'etichetta (`Elenco`) |
 | `Resoconto.dc.html` | Il resoconto di fine import: riquadro a bordo giallo o verde, elenco monospazio e i tre tasti |
+| `TestaAppello` | La testa dell'appello (`.appello-testa`): indietro, titolo con kanji, conto, TUTTI PRESENTI e AZZERA |
+| `Riquadro` | `Riquadro`, `Etichetta`, `Cifra`, `Dettaglio` di `ds.tsx` e `.sg-riquadro`; toni normale, prova, guaio |
+| `Campo` | I campi del modulo e di segreteria: testo, select, area, sola lettura, scelta, spunta, con nota ed errore |
+| `Dialogo` | Il pannello sul velo: conferma, dialogo (lezione straordinaria) e cassetto della lezione |
+| `ProvaPannello` | `Prove.tsx`: CHI VIENE A PROVARE, con campi, già venuti e i due tasti |
+| `CercaPersona` | La pagina «Aggiungi chi prova» (`CercaPersona.tsx`) |
+| `TestataTabella` | La testata delle tabelle di segreteria (`.sg-lista-testa`, `.sg-ordina`) |
+| `RigaIscritto` | La riga della tabella ISCRITTI: normale, scelta, spenta |
+| `RigaPresenzaIstruttore` | La riga di PRESENZE ISTRUTTORI, con CONFERMA e RIFIUTA |
+| `FiltriIscritti` | La barra sopra la tabella ISCRITTI: ricerca, corso, chip |
+| `CercaIscritto` | La ricerca in cima al menu di segreteria, anche con l'elenco aperto |
+| `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`) |
+| `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`) |
+| `BarraTelefono` | La barra in cima al telefono con il tasto MENU (`.sg-barra-tel`); il menu aperto è `Menu` |
+| `TabletTasto` | `.tb-btn`: linea, verde, rosso, grande, quadro |
+| `TabletTastiera` | I pallini e il tastierino del PIN |
+| `TabletTessera` | Il nome da toccare nella lista della sala |
+| `TabletFascia` | La fascia dopo un tocco: fatto, attesa, già, errore |
+| `TabletTestata`, `TabletLezione`, `TabletPiede`, `TabletRigaGiornata` | La testata, la lezione aperta, il piede e la riga della giornata del tablet di sala |
+| `MieOreNumero`, `MieOreRiga` | I numeri e le righe di LE MIE ORE |
+| `MiaLezione`, `MiaPresenza` | La lezione e la riga delle presenze nell'area iscritti |
+| `MieiTimerRiga` | La riga di I MIEI TIMER, per un corso o una lezione |
+| `TimerComandi`, `TimerTestata`, `TimerCella` | I comandi, la testata e la cella dell'editor del timer (`timer/src/`) |
+| `GuidaTesto` | La colonna di testo della guida dentro l'app |
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 
@@ -105,11 +129,12 @@ esadecimali a 6 cifre: i file della libreria scrivono sempre così.
 
 ## Cosa non copre (ancora)
 
-- La testa dell'appello (titolo, conto, TUTTI PRESENTI), `Riquadro` in generale
-  (ci sono solo quelli di IMPORTA DA EXCEL), i campi del modulo, le tabelle di segreteria, i dialoghi e i
-  cassetti, i tasti del tablet di sala (`.tb-*`), le schermate del timer oltre a anello, scaletta e linea (esempio completo in `../timer-desktop/`). Un mockup che li
-  vuole li aggiunge alla libreria come `<Nome>.dc.html`, copiando i valori dal
-  codice, prima di usarli.
-- Il menu sul telefono (la barra con MENU) e quello degli istruttori sullo
-  schermo largo.
-- Gli stati dinamici: passaggio del mouse, fuoco da tastiera, ricerca aperta.
+- Le liste musica del tablet (`.tb-liste`, `.tb-musica*`) e `tb-scheda`,
+  `tb-select`, `tb-campo`, `tb-lezione-istr`, `tb-riga`; `.mia-chip`.
+- Nella guida, titoli h3 e h4, codice e collegamenti.
+- Gli stati dinamici: passaggio del mouse e fuoco da tastiera.
+- I componenti nuovi sono stati scritti dal codice ma non guardati in un
+  canvas: la prima volta che un mockup li usa, si controlla a occhio.
+
+Un mockup che vuole una cosa che manca la aggiunge alla libreria come
+`<Nome>.dc.html`, copiando i valori dal codice, prima di usarla.

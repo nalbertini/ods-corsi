@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div role="row" style="display: grid; grid-template-columns: {{griglia}}; gap: 14px; align-items: center; width: 100%; padding: 0 14px 6px; border-bottom: 2px solid {{c.lineSoft}}">
+  <sc-for list="{{colonne}}" as="k" hint-placeholder-count="5">
+    <span style="display: inline-flex; align-items: center; gap: 4px; justify-self: {{k.lato}}; white-space: nowrap; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: {{corpo}}; font-weight: 700; letter-spacing: 0.18em; color: {{k.colore}}">{{k.testo}}<span style="font-size: {{segnoCorpo}}; letter-spacing: 0; opacity: {{k.opacita}}">{{k.segno}}</span></span>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"colonne":{"editor":"text","default":"NOME|CORSI|CONTATTO|IN REGOLA|30 GIORNI"},"griglia":{"editor":"text","default":"1.2fr 1.4fr 1.3fr 150px 80px"},"ordinata":{"editor":"text","default":"NOME"},"verso":{"editor":"enum","options":["su","giu","niente"],"default":"su"},"ultimaADestra":{"editor":"boolean","default":true},"grande":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":900,"height":40}}'>
+// Riproduzione 1:1 della testata di una tabella di segreteria: .sg-lista-testa (src/styles.css riga 1478) con la
+// griglia della riga sotto (.sg-riga-iscritto riga 1544: 1.2fr 1.4fr 1.3fr 150px 80px, gap 14px) e le intestazioni
+// che ordinano (.sg-etichetta riga 1329 + .sg-ordina righe 1480-1483), come le disegna `colonna` di
+// src/components/segreteria/comune.tsx (righe 461-475) in Iscritti.tsx e Personale.tsx.
+// Padding 0 14px 6px, bordo sotto 2px `line-soft`. Etichetta Saira 12px, 700, 0.18em, `dim`; la colonna per cui si
+// ordina e il tasto sotto il mouse sono in `text` e con la freccia piena (▲ crescente, ▼ decrescente), le altre
+// hanno ↕ al 35%. Freccia 0.85em, senza spaziatura.
+// colonne: i nomi separati da |. griglia: grid-template-columns della riga sotto (Personale: minmax(0, 1.2fr)
+// minmax(0, 1fr) 110px 170px 110px; presenze istruttori: 1fr 1.5fr 1fr 130px 240px, con grande acceso: 13px e
+// freccia 12px, righe 1603-1604). ordinata: il testo della colonna ordinata; verso: su / giu / niente.
+// ultimaADestra: l'ultima colonna e' allineata a destra (30 GIORNI, `destra`).
+// Non riprodotto: il passaggio del mouse.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', tasto: '#b8b8b2', menu: '#161616' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', tasto: '#4a4a46', menu: '#ebebe7' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const nomi = String(p.colonne ?? 'NOME|CORSI|CONTATTO|IN REGOLA|30 GIORNI').split('|').map((x) => x.trim()).filter(Boolean);
+    const verso = p.verso || 'su';
+    const grande = truthy(p.grande);
+    const colonne = nomi.map((testo, i) => {
+      const acceso = testo === (p.ordinata ?? 'NOME') && verso !== 'niente';
+      return {
+        testo,
+        segno: acceso ? (verso === 'giu' ? '▼' : '▲') : '↕',
+        opacita: acceso ? '1' : '0.35',
+        colore: acceso ? c.text : c.dim,
+        lato: truthy(p.ultimaADestra ?? true) && i === nomi.length - 1 ? 'end' : 'start',
+      };
+    });
+    return { c, colonne, griglia: p.griglia || '1.2fr 1.4fr 1.3fr 150px 80px', corpo: grande ? '13px' : '12px', segnoCorpo: grande ? '12px' : '0.85em' };
+  }
+}
+</script>
+</body>
+</html>

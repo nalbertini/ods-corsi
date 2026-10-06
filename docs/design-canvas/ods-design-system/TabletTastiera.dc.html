@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 16px; width: 354px; color: {{c.text}}">
+  <div style="display: flex; align-items: center; gap: 14px; padding: 8px 0">
+    <sc-for list="{{pallini}}" as="x" hint-placeholder-count="4">
+      <span style="width: 26px; height: 26px; border: 3px solid {{x.bordo}}; background: {{x.fondo}}"></span>
+    </sc-for>
+  </div>
+  <sc-if value="{{haGuaio}}" hint-placeholder-val="{{ false }}">
+    <span style="font-size: 19px; font-weight: 700; color: #e4292a">{{guaio}}</span>
+  </sc-if>
+  <div style="display: grid; grid-template-columns: repeat(3, 110px); gap: 12px">
+    <sc-for list="{{tasti}}" as="t" hint-placeholder-count="12">
+      <span style="display: flex; align-items: center; justify-content: center; height: 96px; background: {{t.fondo}}; border: {{t.bordo}}; color: {{c.text}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: {{t.corpo}}; font-weight: 700; letter-spacing: 0.06em">{{t.testo}}</span>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"cifre":{"editor":"text","default":"2"},"guaio":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":354,"height":490}}'>
+// Riproduzione 1:1 del PIN del tablet: i quattro pallini (.tb-pallino) e la tastiera (.tb-tastiera, .tb-tasto) di
+// src/components/tablet/TabletPin.tsx (righe 78-125) con src/styles.css (righe 1078-1087). Tasti 110x96 su tre colonne,
+// cifre da 38px; CANCELLA da 17px (data-piccolo); la cella sotto l'8 a sinistra dello 0 e' vuota.
+// - cifre: quante cifre sono state battute (0-4): i pallini si riempiono di `text`.
+// - guaio: il messaggio d'errore sotto i pallini (PIN sbagliato. Riprova.); con un testo i pallini diventano rossi
+//   (data-guaio) e il messaggio e' rosso 19px. Vuoto = niente.
+// Il titolo, la spiegazione e ANNULLA stanno nella colonna accanto (TabletPin.tsx): qui solo quello che si tocca.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616' },
+};
+const TASTI = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'CANCELLA', '0', ''];
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const n = Math.max(0, Math.min(4, parseInt(p.cifre ?? '2', 10) || 0));
+    const guaio = p.guaio ?? '';
+    return {
+      c,
+      haGuaio: guaio !== '',
+      guaio,
+      pallini: [0, 1, 2, 3].map((i) => ({ bordo: guaio ? '#e4292a' : c.text, fondo: i < n ? c.text : 'transparent' })),
+      tasti: TASTI.map((testo) => ({ testo, corpo: testo === 'CANCELLA' ? '17px' : '38px', fondo: testo ? c.surface : 'transparent', bordo: testo ? '2px solid ' + c.line : 'none' })),
+    };
+  }
+}
+</script>
+</body>
+</html>
