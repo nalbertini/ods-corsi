@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.37.5 — 6 ottobre 2026
+
+### Modificato
+
+- Il design dell'appello della lezione precedente, sul telefono e sul tablet
+
 ## 0.37.4 — 6 ottobre 2026
 
 ### Modificato
