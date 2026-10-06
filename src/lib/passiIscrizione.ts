@@ -388,10 +388,12 @@ export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], 
   if ((tipo !== 'corso' && tipo !== 'documenti') || !listino || !s.risposte.corsi.length) return undefined
   const famiglia = s.chi === 'figlio' && s.ancheTu && s.suo?.corsi.length ? contoDelloStato(s, corsi, listino, giorno) : undefined
   const conto = famiglia ?? stimaIscrizione(persona(s, corsi), [], giorno, listino)
+  // Un corso senza prezzo nel listino non vale 0: lo dice la riga, e il totale è quello che si sa.
+  const daConfermare = !famiglia && 'senzaPrezzo' in conto ? conto.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`) : []
   // Per una persona sola le righe si accorciano («Quota associativa» → «Quota», «Annuale Judo adulti» → «Judo adulti annuale»); per la famiglia i testi della stima restano com'è.
   const voce = (testo: string) =>
     famiglia ? testo : testo.replace(/^Quota associativa$/, 'Quota').replace(/^(Annuale|Trimestre|Saldo)\s+(.+)$/i, (_, f: string, c: string) => `${c} ${f.toLowerCase()}`)
-  return { righe: conto.righe.map((r) => `${voce(r.testo)} ${euroBreve(r.importo)}`).join(' + '), totale: euroBreve(conto.totale) }
+  return { righe: [...conto.righe.map((r) => `${voce(r.testo)} ${euroBreve(r.importo)}`), ...daConfermare].join(' + '), totale: euroBreve(conto.totale) }
 }
 
 /** I file da chiedere: il certificato solo dai 6 anni, e quale lo dice l'età e il corso. */

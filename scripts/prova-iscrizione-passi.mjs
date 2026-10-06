@@ -971,6 +971,10 @@ console.log('\n19. la barra compatta: markup e stile')
   // I testi della stima non si riscrivono: chi fa il bonifico legge le stesse parole del riepilogo.
   const righeFamiglia = m.contoDelloStato(famiglia, corsi, listino, giorno).righe
   ok('anche tu: la riga ha una voce per ogni riga della stima, coi suoi testi', t(famiglia, 5)?.righe?.split(' + ').map((x, i) => x.startsWith(righeFamiglia[i].testo)), righeFamiglia.map(() => true))
+  // Un corso senza prezzo nel listino non vale 0: la riga lo dice, e il totale è solo quello che si sa.
+  const senzaPrezzo = (l = listino) => m.totaleDelPasso(adulto({ corsi: ['psico'] }), 2, [...corsi, { id: 'psico', nome: 'Psicomotricità' }], l, giorno)
+  ok('corso senza prezzo: la riga dice «prezzo da confermare»', senzaPrezzo()?.righe, 'Quota 50 € + Psicomotricità prezzo da confermare')
+  ok('corso senza prezzo: il totale è la sola quota', senzaPrezzo()?.totale, '50 €')
   const senzaSuo = figlio({}, { ancheTu: true, suo: { corsi: [], formula: 'annuale', scelte: {} } })
   ok('anche tu, ma il corso del genitore non è ancora scelto: solo il bambino', t(senzaSuo, 5)?.totale, '350 €')
 }
