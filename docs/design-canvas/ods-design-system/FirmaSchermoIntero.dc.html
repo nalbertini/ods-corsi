@@ -15,15 +15,29 @@
   </style>
 </helmet>
 <div style="position: relative; display: flex; flex-direction: column; width: {{w}}px; height: {{h}}px; background: {{c.bg}}; color: {{c.text}}">
-  <div style="display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-bottom: 2px solid {{c.line}}">
-    <span style="display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border: 2px solid {{c.line}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 16px; font-weight: 700; letter-spacing: 0.16em; color: {{c.tasto}}">ANNULLA</span>
+  <div style="display: flex; align-items: center; gap: 10px; padding: {{padTesta}}; border-bottom: 2px solid {{c.line}}; min-height: {{altTesta}}px">
+    <span style="display: flex; align-items: center; justify-content: center; min-height: {{altTasto}}px; padding: 0 {{padTasto}}px; border: 2px solid {{c.line}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: {{corpoTasto}}px; font-weight: 700; letter-spacing: 0.16em; color: {{c.tasto}}">ANNULLA</span>
     <span style="flex-grow: 1; min-width: 0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.2em; color: {{c.dim}}">{{titolo}}</span>
-    <span style="display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; background: {{fondoFatto}}; border: 2px solid {{bordoFatto}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 16px; font-weight: 700; letter-spacing: 0.16em; color: {{coloreFatto}}">FATTO</span>
+    <sc-if value="{{orizzontale}}" hint-placeholder-val="{{ false }}">
+      <span style="display: flex; align-items: center; justify-content: center; min-height: {{altTasto}}px; padding: 0 {{padTasto}}px; border: 2px solid {{c.line}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: {{corpoTasto}}px; font-weight: 700; letter-spacing: 0.16em; color: {{c.tasto}}">CANCELLA E RIFAI</span>
+    </sc-if>
+    <span style="display: flex; align-items: center; justify-content: center; min-height: {{altTasto}}px; padding: 0 {{padFatto}}px; background: {{fondoFatto}}; border: 2px solid {{bordoFatto}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: {{corpoTasto}}px; font-weight: 700; letter-spacing: 0.16em; color: {{coloreFatto}}">FATTO</span>
   </div>
-  <div style="position: relative; flex-grow: 1; margin: 16px 20px; background: {{c.surface}}; border: 2px dashed {{c.tratteggio}}">
+  <div style="position: relative; flex-grow: 1; margin: {{margRiq}}; background: {{c.surface}}; border: 2px dashed {{c.tratteggio}}">
     <span style="position: absolute; left: 16px; right: 16px; bottom: 25%; height: 2px; background: {{c.line}}"></span>
     <sc-if value="{{vuota}}" hint-placeholder-val="{{ true }}">
       <span style="position: absolute; left: 0; right: 0; bottom: calc(25% + 12px); text-align: center; font-family: {{cond}}; font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: {{c.faint}}">{{invito}}</span>
+    </sc-if>
+    <sc-if value="{{verticale}}" hint-placeholder-val="{{ true }}">
+      <!-- Solo in verticale e finche' non si firma: riquadro giallo (non e' un tasto), in cima, non copre la riga. Sparisce al primo dito o a telefono girato. -->
+      <div style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: {{c.surface}}; border: 2px solid {{c.gialloTesto}}; color: {{c.gialloTesto}}; font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.12em; line-height: 1.25">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: rotate(-90deg)" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 18h2"></path></svg>
+        <span>GIRA IL TELEFONO IN ORIZZONTALE: FIRMI MEGLIO</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{orizzontale}}" hint-placeholder-val="{{ false }}">
+      <!-- Girato il telefono, l'avviso sta dentro il riquadro, sopra la riga e l'invito; sparisce alla prima penna. -->
+      <span style="position: absolute; left: 16px; right: 16px; bottom: calc(25% + 44px); text-align: center; font-size: 14px; font-weight: 700; color: {{c.gialloTesto}}">Hai girato il telefono: firma di nuovo</span>
     </sc-if>
     <sc-if value="{{firmata}}" hint-placeholder-val="{{ false }}">
       <svg viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%" fill="none" stroke="{{c.text}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-label="La firma">
@@ -31,19 +45,20 @@
       </svg>
     </sc-if>
   </div>
+  <sc-if value="{{verticale}}" hint-placeholder-val="{{ true }}">
   <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px 20px">
-    <sc-if value="{{verticale}}" hint-placeholder-val="{{ true }}">
-      <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{frase}}</span>
-    </sc-if>
     <span style="display: flex; align-items: center; justify-content: center; min-height: 48px; border: 2px solid {{c.line}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 16px; font-weight: 700; letter-spacing: 0.16em; color: {{c.tasto}}">CANCELLA E RIFAI</span>
   </div>
+  </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"orientamento":{"editor":"enum","options":["verticale","orizzontale"],"default":"verticale"},"firmata":{"editor":"boolean","default":false},"titolo":{"editor":"text","default":"LA FIRMA DI GIULIA ROSSI"},"invito":{"editor":"text","default":"FIRMA QUI COL DITO"},"frase":{"editor":"text","default":"Gira il telefono per avere più spazio. La schermata non si muove mentre firmi."},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":844}}'>
+<script data-dc-script data-props='{"orientamento":{"editor":"enum","options":["verticale","orizzontale"],"default":"verticale"},"firmata":{"editor":"boolean","default":false},"titolo":{"editor":"text","default":"LA FIRMA DI GIULIA ROSSI"},"invito":{"editor":"text","default":"FIRMA QUI COL DITO"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":844}}'>
 // PROPOSTA, non ancora nell'app: la firma a schermo intero. Si apre dal riquadro del modulo (TavolaFirma) o dal tasto FIRMA A SCHERMO INTERO
 // e occupa tutto lo schermo: in cima ANNULLA, il nome di chi firma e FATTO (acceso solo con una firma vera); in mezzo il riquadro, che
-// prende tutto lo spazio, con la riga a un quarto dal fondo; sotto la frase e CANCELLA E RIFAI. Verticale 390x844 o orizzontale 844x390
-// (telefono girato: piu' spazio per il dito). I valori sono quelli di TavolaFirma e dei tasti (Bottone).
+// prende tutto lo spazio, con la riga a un quarto dal fondo; sotto CANCELLA E RIFAI. Verticale 390x844 o orizzontale 844x390
+// (telefono girato: piu' spazio per il dito). In orizzontale la barra e' una sola e compatta (CANCELLA E RIFAI sale in cima, niente piede): il
+// riquadro prende l'80% e oltre dell'altezza visibile, anche con le barre di Safari in vista (1280x420, 844x330).
+// In verticale, finche' non si firma, un riquadro giallo dentro invita a girare il telefono. I valori sono quelli di TavolaFirma e dei tasti (Bottone).
 // FISSO: aperta, la schermata non si muove. La pagina sotto non scorre, non si tira per ricaricare, non si ingrandisce con due dita e la barra
 // del browser non si ritira: niente puo' spostare il riquadro mentre si firma, se no la firma esce storta. Si esce solo con ANNULLA o FATTO.
 // Se si gira il telefono con la firma a meta', la firma si cancella (le misure cambiano) e lo dice.
@@ -64,9 +79,11 @@ class Component extends DCLogic {
     const firmata = truthy(p.firmata);
     return {
       c, cond: COND, w: orizz ? 844 : 390, h: orizz ? 390 : 844, firmata, vuota: !firmata,
-      verticale: !orizz,
+      verticale: !orizz, orizzontale: orizz,
+      // Orizzontale compatta: barra sola da 56px con tasti da 44 (ANNULLA, nome, CANCELLA E RIFAI, FATTO), riquadro a 8px dai bordi, niente piede.
+      padTesta: orizz ? '6px 12px' : '10px 20px', altTesta: orizz ? 56 : 0, altTasto: orizz ? 44 : 48, padTasto: orizz ? 12 : 16, padFatto: orizz ? 16 : 20, corpoTasto: orizz ? 14 : 16, margRiq: orizz ? '8px 12px' : '16px 20px',
       // In verticale il titolo intero va a capo a 390: resta il nome. In orizzontale sta su una riga.
-      titolo: orizz ? (p.titolo ?? '') : (p.titolo ?? '').replace(/^LA FIRMA DI /, ''), invito: p.invito ?? '', frase: p.frase ?? '',
+      titolo: orizz ? (p.titolo ?? '') : (p.titolo ?? '').replace(/^LA FIRMA DI /, ''), invito: p.invito ?? '',
       // FATTO spento: surface-2 con testo dim, 4,60:1 scuro e 4,81:1 chiaro (il vecchio line+dim: 3,74 e 3,93). Non rosso.
       fondoFatto: firmata ? c.rosso : c.surface2, bordoFatto: firmata ? c.rosso : c.line, coloreFatto: firmata ? c.suRosso : c.dim,
     };

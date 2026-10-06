@@ -48,6 +48,24 @@ export function orientamento(w: number, h: number): 'verticale' | 'orizzontale' 
 }
 
 /**
+ * L'altezza che si vede davvero: su iOS Safari con le barre in vista 100dvh può
+ * restare quella a barre nascoste e il fondo finisce sotto la barra. La
+ * visualViewport (se misurata) è la verità; intera per non far scorrere.
+ */
+export function altezzaVisibile(visuale: number | undefined, interna: number): number {
+  return Math.floor(visuale && visuale > 0 ? Math.min(visuale, interna) : interna)
+}
+
+/**
+ * L'invito a girare il telefono: solo in verticale e finché non si firma (il
+ * primo dito lo toglie, anche prima che il tratto finisca). Non si somma
+ * all'avviso di rotazione, che dice già di rifare la firma.
+ */
+export function invitoGirare(verso: 'verticale' | 'orizzontale', nTratti: number, toccato: boolean, avviso: string): boolean {
+  return verso === 'verticale' && !nTratti && !toccato && !avviso
+}
+
+/**
  * Un tocco o un clic senza movimento non è un tratto: apre lo schermo intero.
  * Esattamente 6 px dal primo punto è ancora un tocco (il dito trema); un tratto
  * comincia oltre.

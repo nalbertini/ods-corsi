@@ -10,7 +10,7 @@ import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export { adattaTratti, daIsolare, firmaVera, limitaPunto, orientamento, risultatoFatto, serveBack, trattoVero } from './src/lib/tratti'",
+    contents: "export { adattaTratti, daIsolare, firmaVera, limitaPunto, orientamento, altezzaVisibile, invitoGirare, risultatoFatto, serveBack, trattoVero } from './src/lib/tratti'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -146,6 +146,23 @@ console.log('\n11. la voce di cronologia e l\'inert')
   const [radice, libero, giaInert] = [el(false), el(false), el(true)]
   const da = m.daIsolare([libero, radice, giaInert], radice)
   ok('si isola solo chi non lo era già, e non la radice', [da.length, da[0] === libero], [1, true])
+}
+
+console.log('\n12. l\'altezza visibile (barre del browser in vista)')
+{
+  ok('con le barre in vista vince la visualViewport, più bassa', m.altezzaVisibile(420, 780), 420)
+  ok('senza visualViewport vale innerHeight', m.altezzaVisibile(undefined, 390), 390)
+  ok('arrotonda per difetto, i decimali fanno scorrere', m.altezzaVisibile(419.6, 430), 419)
+  ok('una visualViewport a zero (non ancora misurata) non vale', m.altezzaVisibile(0, 390), 390)
+}
+
+console.log('\n13. l\'invito a girare il telefono (solo in verticale, solo prima di firmare)')
+{
+  ok('in verticale, riquadro vuoto e intatto: si mostra', m.invitoGirare('verticale', 0, false, ''), true)
+  ok('in orizzontale non serve', m.invitoGirare('orizzontale', 0, false, ''), false)
+  ok('al primo dito sparisce, anche prima del tratto finito', m.invitoGirare('verticale', 0, true, ''), false)
+  ok('con una firma già nel riquadro sparisce', m.invitoGirare('verticale', 2, false, ''), false)
+  ok('non si somma all\'avviso di rotazione', m.invitoGirare('verticale', 0, false, 'Hai girato il telefono: firma di nuovo'), false)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
