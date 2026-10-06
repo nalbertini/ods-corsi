@@ -2083,9 +2083,11 @@ html.firma-aperta, html.firma-aperta body { overflow: hidden; overscroll-behavio
 .firma-intera-riquadro .firma-riga { bottom: 25%; }
 .firma-intera-riquadro .firma-invito { bottom: calc(25% + 12px); }
 .firma-intera-piede { display: flex; flex-direction: column; gap: 8px; padding: 0 20px 20px; }
-.firma-intera-frase, .firma-intera-avviso { margin: 0; font-size: 14px; line-height: 1.4; color: var(--dim); }
-.firma-intera-avviso { color: var(--giallo-testo); }
-.firma-intera-avviso:empty { display: none; }
+/* L'avviso resta nell'albero anche vuoto (non display: none): è una regione che gli screen reader annunciano. */
+.firma-intera-avviso {
+  position: absolute; left: 16px; right: 16px; bottom: calc(25% + 44px); margin: 0; pointer-events: none; text-align: center;
+  font-size: 14px; font-weight: 700; line-height: 1.4; color: var(--giallo-testo);
+}
 /* In orizzontale (FirmaSchermoIntero.dc.html, variante compatta) una barra sola da 56px con tasti da 44,
    niente piede, margini da 8px: il riquadro prende il resto dell'altezza visibile. L'avviso sta
    dentro, sopra la riga e l'invito, e non intercetta il primo tocco. */
@@ -2102,4 +2104,3 @@ html.firma-aperta, html.firma-aperta body { overflow: hidden; overscroll-behavio
 .firma-gira svg { flex-shrink: 0; transform-origin: center; animation: firma-gira 2.4s ease-in-out infinite; }
 @keyframes firma-gira { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
 @media (prefers-reduced-motion: reduce) { .firma-gira svg { animation: none; transform: rotate(-90deg); } }
-.firma-intera-avviso-dentro { position: absolute; left: 16px; right: 16px; bottom: calc(25% + 44px); pointer-events: none; text-align: center; font-weight: 700; }

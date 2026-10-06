@@ -57,6 +57,14 @@ export function altezzaVisibile(visuale: number | undefined, interna: number): n
 }
 
 /**
+ * Girare il telefono (solo su schermi a tocco: col mouse un resize non conta)
+ * cancella la bozza e il «dito già sceso», così l'invito può ricomparire.
+ */
+export function rotazioneCancella(prima: 'verticale' | 'orizzontale', ora: 'verticale' | 'orizzontale', aTocco: boolean): boolean {
+  return aTocco && prima !== ora
+}
+
+/**
  * L'invito a girare il telefono: solo in verticale e finché non si firma (il
  * primo dito lo toglie, anche prima che il tratto finisca). Non si somma
  * all'avviso di rotazione, che dice già di rifare la firma.

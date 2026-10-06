@@ -10,7 +10,7 @@ import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export { adattaTratti, daIsolare, firmaVera, limitaPunto, orientamento, altezzaVisibile, invitoGirare, risultatoFatto, serveBack, trattoVero } from './src/lib/tratti'",
+    contents: "export { adattaTratti, daIsolare, firmaVera, limitaPunto, orientamento, altezzaVisibile, invitoGirare, rotazioneCancella, risultatoFatto, serveBack, trattoVero } from './src/lib/tratti'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -163,6 +163,13 @@ console.log('\n13. l\'invito a girare il telefono (solo in verticale, solo prima
   ok('al primo dito sparisce, anche prima del tratto finito', m.invitoGirare('verticale', 0, true, ''), false)
   ok('con una firma già nel riquadro sparisce', m.invitoGirare('verticale', 2, false, ''), false)
   ok('non si somma all\'avviso di rotazione', m.invitoGirare('verticale', 0, false, 'Hai girato il telefono: firma di nuovo'), false)
+}
+
+console.log('\n14. girare il telefono cancella bozza e dito già sceso (così l\'invito ricompare)')
+{
+  ok('a tocco, verso cambiato: cancella', m.rotazioneCancella('verticale', 'orizzontale', true), true)
+  ok('a tocco, stesso verso: no', m.rotazioneCancella('verticale', 'verticale', true), false)
+  ok('col mouse un resize non cancella', m.rotazioneCancella('verticale', 'orizzontale', false), false)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

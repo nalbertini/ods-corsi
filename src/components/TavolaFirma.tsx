@@ -1,6 +1,6 @@
 import { type ReactNode, type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { adattaTratti, altezzaVisibile, daIsolare, invitoGirare, firmaVera, limitaPunto, orientamento, risultatoFatto, serveBack, trattoVero, type Tratto } from '../lib/tratti'
+import { adattaTratti, altezzaVisibile, daIsolare, invitoGirare, rotazioneCancella, firmaVera, limitaPunto, orientamento, risultatoFatto, serveBack, trattoVero, type Tratto } from '../lib/tratti'
 
 /**
  * Il riquadro dove si firma col dito, o col mouse dal computer.
@@ -214,10 +214,11 @@ function FirmaSchermoIntero({ titolo, piccolo, ritorno, firmaPrima, onTratti, on
     const gira = () => {
       const nuovo = orientamento(window.innerWidth, window.innerHeight)
       setVerso(nuovo) // titolo e frase seguono il verso anche col mouse
-      if (!window.matchMedia('(pointer: coarse)').matches) return
-      if (nuovo === prima) return
+      const cancella = rotazioneCancella(prima, nuovo, window.matchMedia('(pointer: coarse)').matches)
+      if (!cancella) return
       prima = nuovo
       setBozza([])
+      setToccato(false)
       setAvviso('Hai girato il telefono: firma di nuovo')
     }
     window.addEventListener('resize', gira)
@@ -295,22 +296,13 @@ function FirmaSchermoIntero({ titolo, piccolo, ritorno, firmaPrima, onTratti, on
             GIRA IL TELEFONO IN ORIZZONTALE: FIRMI MEGLIO
           </p>
         )}
-        {/* In orizzontale l'avviso sta dentro il riquadro, sopra la riga: sparisce alla prima penna. */}
-        {orizz && (
-          <p className="firma-intera-avviso firma-intera-avviso-dentro" role="status" aria-live="polite">
-            {avviso}
-          </p>
-        )}
+        {/* Un solo avviso, sempre montato (vuoto finché non serve), se no gli screen reader non lo annunciano.
+            Sta nel riquadro, sopra la riga e l'invito, in verticale e in orizzontale; sparisce alla prima penna. */}
+        <p className="firma-intera-avviso" role="status" aria-live="polite">
+          {avviso}
+        </p>
       </RiquadroFirma>
-      {!orizz && (
-        <div className="firma-intera-piede">
-          {/* Sempre nel documento, se no chi usa uno screen reader non sente l'avviso comparire. */}
-          <p className="firma-intera-avviso" role="status" aria-live="polite">
-            {avviso}
-          </p>
-          {rifai}
-        </div>
-      )}
+      {!orizz && <div className="firma-intera-piede">{rifai}</div>}
     </div>,
     document.body,
   )
