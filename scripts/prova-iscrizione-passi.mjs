@@ -907,5 +907,18 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('figlio, firmo qui, luogo non ricavato: lo chiede', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 2).includes('DOVE SEI NATO'), true)
 }
 
+// 23. Il testo sotto l'elenco di un minore, quando dei corsi per grandi non compaiono.
+{
+  console.log('\n23. i corsi per grandi che non compaiono: la frase')
+  const f = (n, nome = 'Luca') => { try { return m.fraseCorsiNascosti(n, nome) } catch (e) { return `ERRORE: ${e.message}` } }
+  ok('due corsi', f(['Pesistica 1', 'Preparazione atletica 2']), 'Pesistica 1 e Preparazione atletica 2 non compaiono: Luca è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('un corso solo: «non compare»', f(['Pesistica 1']), 'Pesistica 1 non compare: Luca è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('tre corsi: «A, B e C»', f(['A', 'B', 'C']), 'A, B e C non compaiono: Luca è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('più di tre corsi: la frase generica', f(['A', 'B', 'C', 'D']), 'I corsi per grandi non compaiono: Luca è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('senza nome: «il bambino»', f(['Pesistica 1'], ''), 'Pesistica 1 non compare: il bambino è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('nome di soli spazi: «il bambino»', f(['Pesistica 1'], '  '), 'Pesistica 1 non compare: il bambino è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('senza corsi nascosti niente frase', f([]), undefined)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

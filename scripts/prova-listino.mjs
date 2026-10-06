@@ -192,6 +192,50 @@ console.log('\n10. una sola funzione trova la voce di un corso')
   ok('senza voce, niente', prova(() => m.voceDelCorso(voci, { id: 'zz', nome: 'Zumba' }) ?? null), null)
 }
 
+console.log('\n5. l’età minima di un corso («dai N anni»)')
+{
+  const OGGI = new Date(2026, 9, 6, 12, 0)
+  const ora = ['lunedì, mercoledì e venerdì 18.00-19.00']
+  const pesistica = { ...voce('Pesistica 1', 'c-pes'), etaMinima: 16, orari: ora }
+  const judoPiccoli = { ...voce('Judo piccoli', 'c-jp'), natiDal: 2017, natiAl: 2019 }
+  const preparazione = { ...voce('Preparazione atletica 2', 'c-pa2'), etaMinima: 14 }
+  const libero = voce('Zumba', 'c-zu')
+  const corsi = [{ id: 'c-pes', nome: 'Pesistica 1' }, { id: 'c-jp', nome: 'Judo piccoli' }, { id: 'c-pa2', nome: 'Preparazione atletica 2' }, { id: 'c-zu', nome: 'Zumba' }]
+  const voci = [pesistica, judoPiccoli, preparazione, libero]
+  const dove = (natoIl, v = voci, c = corsi) => prova(() => {
+    const r = m.corsiPerEta(c, v, natoIl, [], OGGI)
+    const n = (x) => x.map((y) => y.nome)
+    return { adatti: n(r.adatti), senzaAnni: n(r.senzaAnni), altri: n(r.altri), nascosti: r.nascosti }
+  })
+
+  const base = lista(voce('Judo 3', 'c-judo3'))
+  for (const [cosa, x] of [['16', 16], ['1', 1], ['99', 99]])
+    ok(`l’età minima ${cosa} si tiene`, prova(() => m.listinoDa({ ...base, corsi: [{ ...base.corsi[0], etaMinima: x }] }).corsi[0].etaMinima), x)
+  for (const [cosa, x] of [['zero', 0], ['100', 100], ['negativa', -3], ['con la virgola', 16.5], ['una stringa', '16'], ['NaN', NaN], ['null', null]])
+    ok(`l’età minima ${cosa} si butta, in silenzio`, prova(() => 'etaMinima' in m.listinoDa({ ...base, corsi: [{ ...base.corsi[0], etaMinima: x }] }).corsi[0]), false)
+  ok('un listino vecchio senza il campo resta com’è', prova(() => m.listinoDa(base).corsi[0]), { corso: 'Judo 3', corsoId: 'c-judo3', eta: '', orari: [], prezzi: [{ annuale: 400, trimestre: 150 }] })
+  ok('l’età minima sopravvive a salvataggio e lettura', prova(() => m.listinoDa(JSON.parse(JSON.stringify({ ...base, corsi: [{ ...base.corsi[0], etaMinima: 16 }] }))).corsi[0].etaMinima), 16)
+  ok('un listino con l’età minima si salva', prova(() => m.cosaNonVaListino({ ...base, corsi: [{ ...base.corsi[0], etaMinima: 16 }] }, [judo3])), null)
+
+  ok('16 anni compiuti oggi: Pesistica è fra gli adatti', dove('2010-10-06'), { adatti: ['Pesistica 1', 'Preparazione atletica 2'], senzaAnni: ['Zumba'], altri: ['Judo piccoli'], nascosti: [] })
+  ok('15 anni, il compleanno è domani: Pesistica non compare', dove('2010-10-07'), { adatti: ['Preparazione atletica 2'], senzaAnni: ['Zumba'], altri: ['Judo piccoli'], nascosti: ['Pesistica 1'] })
+  ok('nato nel 2018: i corsi per grandi non compaiono in nessuna lista, i nomi in ordine del listino', dove('2018-05-10'), { adatti: ['Judo piccoli'], senzaAnni: ['Zumba'], altri: [], nascosti: ['Pesistica 1', 'Preparazione atletica 2'] })
+  ok('un adulto vede tutto, niente nascosto', dove('1985-01-01').nascosti, [])
+  ok('un corso con l’età minima e senza anni di nascita è «adatto», non «senza anni»', dove('1985-01-01').adatti, ['Pesistica 1', 'Preparazione atletica 2'])
+  ok('età minima e anni di nascita: valgono tutti e due (età giusta, anno sbagliato: negli altri)', dove('2005-03-03', [{ ...pesistica, natiDal: 2009, natiAl: 2010 }], [corsi[0]]), { adatti: [], senzaAnni: [], altri: ['Pesistica 1'], nascosti: [] })
+  ok('età minima e anni di nascita: età giusta e anno giusto, adatto', dove('2009-03-03', [{ ...pesistica, natiDal: 2009, natiAl: 2010 }], [corsi[0]]), { adatti: ['Pesistica 1'], senzaAnni: [], altri: [], nascosti: [] })
+  ok('età minima e anni di nascita: troppo piccolo, nascosto anche se l’anno andrebbe', dove('2012-03-03', [{ ...pesistica, natiDal: 2009, natiAl: 2012 }], [corsi[0]]), { adatti: [], senzaAnni: [], altri: [], nascosti: ['Pesistica 1'] })
+  for (const [cosa, d] of [['vuota', ''], ['che non è una data', 'ieri'], ['dell’anno 2', '0002-03-01']])
+    ok(`data ${cosa}: un elenco solo, niente nascosto`, dove(d), { adatti: ['Pesistica 1', 'Judo piccoli', 'Preparazione atletica 2', 'Zumba'], senzaAnni: [], altri: [], nascosti: [] })
+  ok('un corso senza voce non ha età minima: compare', dove('2018-05-10', [], [{ id: 'x', nome: 'Nuovo' }]), { adatti: [], senzaAnni: ['Nuovo'], altri: [], nascosti: [] })
+
+  const riga = (v, natoIl = '1985-01-01') => prova(() => m.corsiPerEta([corsi[0]], [v], natoIl, [], OGGI).adatti[0].riga)
+  ok('la riga comincia con «dai N anni», poi gli orari', riga(pesistica), 'dai 16 anni · lunedì, mercoledì e venerdì 18.00-19.00')
+  ok('«dai N anni» anche senza orari', riga({ ...pesistica, orari: [] }), 'dai 16 anni')
+  ok('se la voce ha già il testo dell’età, resta quello', riga({ ...pesistica, eta: 'ragazzi e adulti' }), 'ragazzi e adulti · lunedì, mercoledì e venerdì 18.00-19.00')
+}
+
+
 if (guai) {
   console.log(`\n${guai} cose non tornano`)
   process.exit(1)

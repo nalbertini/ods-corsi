@@ -705,6 +705,7 @@ function Flusso({
               nota={nota('corsi')}
               caricando={guaioCorsi ? `I corsi non si leggono: ${guaioCorsi}` : !corsi ? 'Un attimo…' : undefined}
             />
+            {figlio && P.fraseCorsiNascosti(ep.nascosti, r.nome) && <Dettaglio>{P.fraseCorsiNascosti(ep.nascosti, r.nome)}</Dettaglio>}
           </div>
           {figlio && (
             <>

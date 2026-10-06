@@ -58,6 +58,13 @@ export function annoScritto(t: string): number | undefined | null {
   if (!s) return undefined
   return (/^\d{4}$/.test(s) && anno(Number(s))) || null
 }
+const etaMinima = (x: unknown) => (typeof x === 'number' && Number.isInteger(x) && x >= 1 && x <= 99 ? x : undefined)
+/** L'età minima scritta in LISTINO: `undefined` se è vuota, `null` se non si capisce (un numero da 1 a 99). */
+export function etaMinimaScritta(t: string): number | undefined | null {
+  const s = t.trim()
+  if (!s) return undefined
+  return (/^\d{1,2}$/.test(s) && etaMinima(Number(s))) || null
+}
 const giorno = (x: unknown) => (typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) && !Number.isNaN(Date.parse(x)) ? x : undefined)
 const senzaVuoti = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as T
 
@@ -139,7 +146,7 @@ export function listinoDa(x: unknown): Listino | null {
       return r.saldo === undefined && r.annuale === undefined && r.trimestre === undefined ? [] : [r]
     })
     const orari = (Array.isArray(v.orari) ? v.orari : []).slice(0, LIMITI.orari).flatMap((s) => testo(s, 120) ?? [])
-    return [senzaVuoti({ corso, corsoId: testo(v.corsoId, 80), eta: testo(v.eta, 120) ?? '', natiDal: anno(v.natiDal), natiAl: anno(v.natiAl), orari, prezzi, notaTrimestre: testo(v.notaTrimestre, 60), nota: testo(v.nota, 300) })]
+    return [senzaVuoti({ corso, corsoId: testo(v.corsoId, 80), eta: testo(v.eta, 120) ?? '', natiDal: anno(v.natiDal), natiAl: anno(v.natiAl), etaMinima: etaMinima(v.etaMinima), orari, prezzi, notaTrimestre: testo(v.notaTrimestre, 60), nota: testo(v.nota, 300) })]
   })
   const offerte = (Array.isArray(o.offerte) ? o.offerte : []).slice(0, LIMITI.offerte).flatMap((f): Offerta[] => {
     if (!f || typeof f !== 'object') return []
@@ -202,6 +209,13 @@ export function anniDiNascita(v: { natiDal?: number | string; natiAl?: number | 
   return dal && al ? `nati ${dal}–${al}` : dal ? `nati dal ${dal}` : al ? `nati fino al ${al}` : 'senza anni di nascita'
 }
 
+/** Gli anni compiuti a `oggi`, per una data `AAAA-MM-GG` vera. */
+function anniCompiuti(natoIl: string, oggi: Date): number {
+  const [a, m, g] = natoIl.split('-').map(Number)
+  const prima = oggi.getMonth() + 1 < m || (oggi.getMonth() + 1 === m && oggi.getDate() < g)
+  return oggi.getFullYear() - a - (prima ? 1 : 0)
+}
+
 /** Se un corso non è per la data di nascita di chi si iscrive: lo dice il listino, coi suoi anni e i sei mesi di tolleranza. */
 export const fuoriEta = (corso: string | CorsoRef, natoIl: string, voci: VoceCosto[]) => fuori(voceDelCorso(voci, corso), meseDi(natoIl))
 
@@ -217,7 +231,7 @@ export interface CorsoPerEta {
 /**
  * I corsi del modulo di iscrizione, divisi per l'anno di nascita: prima
  * quelli che vanno bene, poi gli altri, che si possono scegliere lo stesso.
- * Nessuno sparisce. Un corso va negli altri solo se il listino ha i suoi anni
+ * Nessuno sparisce, salvo i corsi «dai N anni» (`etaMinima`) per chi è più piccolo: finiscono in `nascosti`. Un corso va negli altri solo se il listino ha i suoi anni
  * e la data è fuori, anche coi sei mesi; senza data vera vanno tutti bene, in un elenco solo. Con
  * la data, i corsi che il listino non dice per che anni (o che non ha) stanno
  * a parte (`senzaAnni`): in cima sembrerebbero della sua età.
@@ -229,8 +243,10 @@ export function corsiPerEta(
   voci: VoceCosto[],
   natoIl: string,
   senzaPrezzoVaBene: readonly string[] = [],
-): { adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[] } {
+  oggi = new Date(),
+): { adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[]; nascosti: string[] } {
   const a = meseDi(natoIl)
+  const anni = a === undefined ? undefined : anniCompiuti(natoIl, oggi)
   const posto = (c: CorsoRef) => {
     const v = voceDelCorso(voci, c)
     return v ? voci.indexOf(v) : voci.length
@@ -239,15 +255,22 @@ export function corsiPerEta(
   const giusti: CorsoPerEta[] = []
   const perTutti: CorsoPerEta[] = []
   const altri: CorsoPerEta[] = []
+  const nascosti: string[] = []
   for (const c of ordinati) {
     const v = voceDelCorso(voci, c)
-    const riga = v ? [v.eta, ...v.orari].filter((t) => t.trim()).join(' · ') || undefined : undefined
-    const conAnni = a !== undefined && (v?.natiDal !== undefined || v?.natiAl !== undefined)
+    // «Dai N anni»: chi è più piccolo non lo vede, e la frase sotto l'elenco manda a chiamare la segreteria.
+    if (anni !== undefined && v?.etaMinima !== undefined && anni < v.etaMinima) {
+      nascosti.push(c.nome)
+      continue
+    }
+    const eta = v?.eta.trim() ? v.eta : v?.etaMinima !== undefined ? `dai ${v.etaMinima} anni` : ''
+    const riga = v ? [eta, ...v.orari].filter((t) => t.trim()).join(' · ') || undefined : undefined
+    const conAnni = a !== undefined && (v?.natiDal !== undefined || v?.natiAl !== undefined || v?.etaMinima !== undefined)
     const daConfermare = !v && !senzaPrezzoVaBene.includes(c.id)
     ;(fuori(v, a) ? altri : conAnni ? giusti : perTutti).push({ id: c.id, nome: c.nome, riga, ...(daConfermare && { prezzoDaConfermare: true as const }) })
   }
   // Senza data non si sa niente: un elenco solo.
-  return a === undefined ? { adatti: perTutti, senzaAnni: [], altri } : { adatti: giusti, senzaAnni: perTutti, altri }
+  return a === undefined ? { adatti: perTutti, senzaAnni: [], altri, nascosti } : { adatti: giusti, senzaAnni: perTutti, altri, nascosti }
 }
 
 /**

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { Prezzi, VoceCosto } from '../../lib/costi'
 import { STAGIONE } from '../../lib/costi'
-import { agganciaPerNome, anniDiNascita, annoScritto, cambiNellaBozza, corsiScegliibili, domandaButta, cosaNonVaListino, LIMITI, listinoCambiato, corsiSenzaPrezzo, segnalazioniListino, type CorsoRef, type Listino as DatiListino } from '../../lib/listino'
+import { agganciaPerNome, anniDiNascita, annoScritto, cambiNellaBozza, corsiScegliibili, domandaButta, cosaNonVaListino, etaMinimaScritta, LIMITI, listinoCambiato, corsiSenzaPrezzo, segnalazioniListino, type CorsoRef, type Listino as DatiListino } from '../../lib/listino'
 import { centesimi } from '../../lib/ricevute'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
@@ -30,6 +30,8 @@ interface BozzaCorso {
   /** Gli anni di nascita, scritti: vuoti vuol dire per tutti. */
   natiDal: string
   natiAl: string
+  /** «Dai N anni», scritto: vuoto vuol dire nessun limite. */
+  etaMinima: string
   /** Uno per riga. */
   orari: string
   notaTrimestre: string
@@ -65,6 +67,7 @@ const bozzaCorso = (c: VoceCosto): BozzaCorso => ({
   eta: c.eta,
   natiDal: c.natiDal === undefined ? '' : String(c.natiDal),
   natiAl: c.natiAl === undefined ? '' : String(c.natiAl),
+  etaMinima: c.etaMinima === undefined ? '' : String(c.etaMinima),
   orari: c.orari.join('\n'),
   notaTrimestre: c.notaTrimestre ?? '',
   nota: c.nota ?? '',
@@ -112,8 +115,11 @@ function daBozza(b: Bozza, corsi: ReadonlyArray<CorsoRef>): DatiListino | string
       if (n === null) return `${k === 'natiDal' ? 'NATI DAL' : 'NATI AL'} di «${nome}» non va: «${c[k].trim()}». Scrivi un anno a quattro cifre, dal 1900 al 2100`
       if (n !== undefined) anni[k] = n
     }
+    const minima = etaMinimaScritta(c.etaMinima)
+    if (minima === null) return `DAI (ANNI) di «${nome}» non va: «${c.etaMinima.trim()}». Scrivi un numero da 1 a 99, o lascia vuoto`
     const v: VoceCosto = {
       ...anni,
+      ...(minima !== undefined && { etaMinima: minima }),
       // Il nome è quello di CORSI: se il corso è stato rinominato, lo segue.
       corso: (c.corsoId && corsi.find((x) => x.id === c.corsoId)?.nome) || c.corso.trim(),
       ...(c.corsoId && { corsoId: c.corsoId }),
@@ -290,7 +296,7 @@ export function Listino({ d }: { d: DatiSegreteria }) {
               className="sg-btn sg-btn-tratteggio"
               disabled={b.corsi.length >= LIMITI.corsi}
               onClick={() => {
-                const nuovo: BozzaCorso = { chiave: nuovaChiave(), corso: '', corsoId: '', eta: '', natiDal: '', natiAl: '', orari: '', notaTrimestre: '', nota: '', prezzi: [{ ...PREZZI_VUOTI }] }
+                const nuovo: BozzaCorso = { chiave: nuovaChiave(), corso: '', corsoId: '', eta: '', natiDal: '', natiAl: '', etaMinima: '', orari: '', notaTrimestre: '', nota: '', prezzi: [{ ...PREZZI_VUOTI }] }
                 cambia({ corsi: [...b.corsi, nuovo] })
                 setAperto(nuovo.chiave)
               }}
@@ -417,7 +423,7 @@ function SchedaCorso({
   onChiudi: () => void
 }) {
   const id = (k: string) => `lc-${c.chiave}-${k}`
-  const testoCampo = (k: 'eta' | 'natiDal' | 'natiAl' | 'notaTrimestre' | 'nota', etichetta: string, max: number, largo = false, segnaposto = '', anno = false) => (
+  const testoCampo = (k: 'eta' | 'natiDal' | 'natiAl' | 'etaMinima' | 'notaTrimestre' | 'nota', etichetta: string, max: number, largo = false, segnaposto = '', anno = false) => (
     <Campo id={id(k)} etichetta={etichetta} largo={largo}>
       <input
         id={id(k)}
@@ -456,8 +462,9 @@ function SchedaCorso({
         {testoCampo('eta', 'ETÀ', 120, true, 'nati 2019-2018-2017')}
         {testoCampo('natiDal', 'NATI DAL', 4, false, '', true)}
         {testoCampo('natiAl', 'NATI AL', 4, false, '', true)}
+        {testoCampo('etaMinima', 'DAI (ANNI)', 2, false, '', true)}
         <span id={id('anni')} className="sg-sotto" style={{ gridColumn: '1 / -1', marginBottom: 6 }}>
-          Il corso va in cima per chi è nato in questi anni. Vuoti: sta a parte, «senza fascia d’età». Solo NATI AL: quell’anno e prima.
+          Il corso va in cima per chi è nato in questi anni. Vuoti: sta a parte, «senza fascia d’età». Solo NATI AL: quell’anno e prima. DAI (ANNI): chi ha meno anni non vede il corso quando si iscrive (per i corsi per grandi); vuoto, nessun limite.
         </span>
         <Campo id={id('orari')} etichetta="ORARI · UNO PER RIGA" largo>
           <textarea

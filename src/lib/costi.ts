@@ -43,6 +43,8 @@ export interface VoceCosto {
    */
   natiDal?: number
   natiAl?: number
+  /** «Dai N anni»: chi ha meno anni non vede il corso all'iscrizione (corsi per grandi). Vuoto, nessun limite. */
+  etaMinima?: number
   /** Cosa copre il trimestre, se non è un trimestre intero. */
   notaTrimestre?: string
   nota?: string
