@@ -447,6 +447,7 @@ export function BarraPasso({
   occupato,
   chiede,
   aperta = false,
+  totale,
   onVai,
   onAvanti,
   onIndietro,
@@ -458,6 +459,8 @@ export function BarraPasso({
   occupato?: boolean
   chiede?: string
   aperta?: boolean
+  /** Il totale della richiesta, sempre in vista nei passi del corso e dei documenti. */
+  totale?: { righe: string; totale: string }
   onVai: (chiave: string) => void
   onAvanti: () => void
   onIndietro?: () => void
@@ -466,6 +469,12 @@ export function BarraPasso({
   const prima = manca[0]
   return (
     <div className="barra-passo">
+      {totale && (
+        <div className="barra-totale">
+          <span className="barra-totale-righe">{totale.righe}</span>
+          <span className="barra-totale-cifra">{totale.totale}</span>
+        </div>
+      )}
       {prima && (
         <div className="barra-manca" role="alert">
           <div className="barra-manca-riga">

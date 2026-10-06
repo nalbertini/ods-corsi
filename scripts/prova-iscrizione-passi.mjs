@@ -161,17 +161,17 @@ console.log('\n3. il modulo di oggi non cambia: solo la parola export')
 // ---------------------------------------------------------------------------
 console.log('\n4. i passi')
 {
-  const ADULTO = ['I TUOI DATI', 'IL CORSO E COME SI PAGA', 'IL MODULO, LA FIRMA E I FILE', 'CONTROLLA E INVIA']
-  const FIGLIO = ['IL BAMBINO', 'IL GENITORE CHE FIRMA', 'CORSI E COME SI PAGA', 'IL MODULO, LA FIRMA E I FILE', 'CONTROLLA E INVIA']
-  ok('adulto: quattro passi', m.passiDi('adulto', false), ADULTO)
-  ok('figlio: cinque passi', m.passiDi('figlio', false), FIGLIO)
-  ok('figlio e anche tu: sei passi', m.passiDi('figlio', true), [...FIGLIO.slice(0, 4), 'ANCHE TU: POCHE COSE', 'CONTROLLA E INVIA'])
+  const ADULTO = ['I TUOI DATI', 'SCEGLI IL CORSO', 'IL MODULO E LA FIRMA', 'I DOCUMENTI E IL PAGAMENTO', 'CONTROLLA E INVIA']
+  const FIGLIO = ['IL BAMBINO', 'IL GENITORE CHE FIRMA', 'SCEGLI IL CORSO', 'IL MODULO E LA FIRMA', 'I DOCUMENTI E IL PAGAMENTO', 'CONTROLLA E INVIA']
+  ok('adulto: cinque passi', m.passiDi('adulto', false), ADULTO)
+  ok('figlio: sei passi', m.passiDi('figlio', false), FIGLIO)
+  ok('figlio e anche tu: sette passi', m.passiDi('figlio', true), [...FIGLIO.slice(0, 5), 'ANCHE TU: POCHE COSE', 'CONTROLLA E INVIA'])
   ok('un adulto non ha un «anche tu»', m.passiDi('adulto', true), ADULTO)
   // Cosa si fa in ogni passo lo dice la lib: la schermata non ripete l'ordine.
-  ok('tipi: adulto', m.tipiDiPassi('adulto', false), ['dati', 'corso', 'modulo', 'riepilogo'])
-  ok('tipi: figlio', m.tipiDiPassi('figlio', false), ['dati', 'genitore', 'corso', 'modulo', 'riepilogo'])
-  ok('tipi: figlio e anche tu', m.tipiDiPassi('figlio', true), ['dati', 'genitore', 'corso', 'modulo', 'anche', 'riepilogo'])
-  ok('tipi: un adulto non ha un «anche tu»', m.tipiDiPassi('adulto', true), ['dati', 'corso', 'modulo', 'riepilogo'])
+  ok('tipi: adulto', m.tipiDiPassi('adulto', false), ['dati', 'corso', 'modulo', 'documenti', 'riepilogo'])
+  ok('tipi: figlio', m.tipiDiPassi('figlio', false), ['dati', 'genitore', 'corso', 'modulo', 'documenti', 'riepilogo'])
+  ok('tipi: figlio e anche tu', m.tipiDiPassi('figlio', true), ['dati', 'genitore', 'corso', 'modulo', 'documenti', 'anche', 'riepilogo'])
+  ok('tipi: un adulto non ha un «anche tu»', m.tipiDiPassi('adulto', true), ['dati', 'corso', 'modulo', 'documenti', 'riepilogo'])
   for (const [chi, anche] of [['adulto', false], ['figlio', false], ['figlio', true]])
     ok(`tipi e nomi dei passi sono tanti uguali (${chi}${anche ? ' + anche tu' : ''})`, m.tipiDiPassi(chi, anche).length, m.passiDi(chi, anche).length)
 }
@@ -190,14 +190,18 @@ console.log('\n5. ogni AVANTI guarda solo il suo passo')
   ok('manca e scritto male contano tutti e due', nomi(vuoto, 1), ['CAP', 'EMAIL', 'NOME'])
   ok('un campo di un altro passo non ferma questo', nomi(adulto({ corsi: [], formula: 'annuale' }), 1), [])
   ok('passo 2: nessun corso', nomi(adulto({ corsi: [] }), 2), ['CORSO'])
-  ok('passo 3: manca il documento', nomi(adulto({}, { file: {} }), 3), ["CARTA D'IDENTITÀ"])
+  ok('passo 4 (i documenti): manca il documento', nomi(adulto({}, { file: {} }), 4), ["CARTA D'IDENTITÀ"])
+  ok('passo 3 (il modulo): la carta d’identità non lo ferma più', nomi(adulto({}, { file: {} }), 3), [])
   ok('passo 3: manca la privacy', nomi(adulto({}, { privacy: false }), 3), ['INFORMATIVA PRIVACY'])
   ok('passo 3: manca il regolamento', nomi(adulto({ regolamento: false }), 3), ['REGOLAMENTO'])
   ok('passo 3: nessuna firma né caselle', nomi(adulto({}, { tratti: 0, scelte: {} }), 3), ['FIRMA', 'FOTO', 'TESSERAMENTO'])
   ok('passo 3: col foglio firmato non serve la firma', nomi(adulto({}, { tratti: 0, scelte: {}, file: { documento: F('d.jpg'), modulo: F('m.jpg') } }), 3), [])
-  ok('il retro e il certificato non fermano', nomi(adulto(), 3), [])
-  ok('l’ultimo passo rimette insieme tutto: a posto', nomi(adulto(), 4), [])
-  ok('l’ultimo passo rimette insieme tutto: manca un nome', nomi(adulto({ nome: '' }), 4), ['NOME'])
+  ok('il retro, il certificato e la ricevuta non fermano (modulo e documenti)', [nomi(adulto(), 3), nomi(adulto(), 4)], [[], []])
+  ok('i documenti: a posto con la sola carta', nomi(adulto({}, { tratti: 0, scelte: {}, privacy: false }), 4), [])
+  ok('l’ultimo passo rimette insieme tutto: a posto', nomi(adulto(), 5), [])
+  ok('l’ultimo passo rimette insieme tutto: manca un nome', nomi(adulto({ nome: '' }), 5), ['NOME'])
+  ok('l’ultimo passo rimette insieme tutto: modulo e documenti, senza doppioni', nomi(adulto({}, { file: {}, privacy: false }), 5), ["CARTA D'IDENTITÀ", 'INFORMATIVA PRIVACY'])
+  ok('il passo del corso non chiede più il pagamento: la ricevuta non manca mai', nomi(adulto(), 2), [])
 
   ok('figlio, passo 1 a posto', nomi(figlio(), 1), [])
   ok('figlio, passo 2: il genitore non c’è', nomi(figlio({ genitoreNome: '', genitoreCodiceFiscale: '' }), 2), ['CODICE FISCALE DEL GENITORE', 'NOME DEL GENITORE'])
@@ -206,6 +210,9 @@ console.log('\n5. ogni AVANTI guarda solo il suo passo')
   ok('figlio, passo 3: risposto no, a posto', nomi(figlio(), 3), [])
   ok('figlio, passo 2: dove sei nato, se il luogo non si ricava dal codice', nomi(figlio({}, { natoAGenitore: ' ' }), 2), ['DOVE SEI NATO'])
   ok('figlio, passo 4 (il modulo): dove è nato il genitore non manca più', nomi(figlio({}, { natoAGenitore: ' ' }), 4), [])
+  ok('figlio, passo 4 (il modulo): la carta d’identità non lo ferma', nomi(figlio({}, { file: {} }), 4), [])
+  ok('figlio, passo 5 (i documenti): manca la carta del genitore', nomi(figlio({}, { file: {} }), 5), ["CARTA D'IDENTITÀ"])
+  ok('figlio, passo 5 (i documenti): retro, certificato e ricevuta non fermano', nomi(figlio(), 5), [])
   ok('figlio con il genitore col codice del bambino: ferma', nomi(figlio({ genitoreCodiceFiscale: CF_MATTEO }), 2), ['CODICE FISCALE DEL GENITORE'])
 
   const sotto = (e, provato, visto) => m.notaSottoIlCampo(e, provato, visto)
@@ -240,7 +247,7 @@ console.log('\n6. la scelta e il codice fiscale: combaciano?')
   ok('diciotto anni ieri: adulto', m.controlloScelta(conCf(nato('2008-09-25'))), null)
   ok('diciotto anni domani: ancora minore', m.controlloScelta(conCf(nato('2008-09-27'))), MINORE)
   ok('diciotto anni domani: per «mio figlio» va bene', m.controlloScelta(nel(nato('2008-09-27'))), null)
-  ok('ricontrollo all’invio: l’ultimo passo lo vede', nomi(conCf(CF_MATTEO), 4).includes('CODICE FISCALE'), true)
+  ok('ricontrollo all’invio: l’ultimo passo lo vede', nomi(conCf(CF_MATTEO), 5).includes('CODICE FISCALE'), true)
 }
 
 // ---------------------------------------------------------------------------
@@ -298,7 +305,7 @@ console.log('\n9. nessuna bozza')
 {
   const prima = [...memoria.keys()].sort().join()
   const s = figlio({}, { tratti: 3 })
-  for (let p = 1; p <= 5; p++) m.mancaNelPasso(s, p)
+  for (let p = 1; p <= 6; p++) m.mancaNelPasso(s, p)
   m.controlloScelta(s)
   m.cambiaScelta(s, 'adulto')
   m.righeRiepilogo(s, [{ id: 'judo-3', nome: 'Judo 3' }])
@@ -656,8 +663,9 @@ console.log('\n14. il riepilogo')
   const f = m.righeRiepilogo(figlio(), corsi)
   ok('figlio: la riga del genitore', f.find((r) => r.etichetta === 'GENITORE')?.valore, 'Paola Rossi')
   const t = m.righeRiepilogo(figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: { tesseramento: true, foto: true }, certificato: undefined } }), corsi)
-  ok('ogni riga dice a quale passo manda MODIFICA o CARICA', [f.find((r) => r.cosa === 'corso')?.passo, f.find((r) => r.cosa === 'genitore')?.passo, f.find((r) => r.cosa === 'certificato')?.passo, f.find((r) => r.cosa === 'ricevuta')?.passo], ['corso', 'genitore', 'modulo', 'corso'])
-  ok('il certificato del genitore rimanda al passo «anche tu»', t.filter((r) => r.cosa === 'certificato').map((r) => [!!r.suo, r.passo]), [[false, 'modulo'], [true, 'anche']])
+  ok('ogni riga dice a quale passo manda MODIFICA o CARICA', [f.find((r) => r.cosa === 'corso')?.passo, f.find((r) => r.cosa === 'genitore')?.passo, f.find((r) => r.cosa === 'certificato')?.passo, f.find((r) => r.cosa === 'ricevuta')?.passo], ['corso', 'genitore', 'documenti', 'documenti'])
+  ok('il certificato del genitore rimanda al passo «anche tu»', t.filter((r) => r.cosa === 'certificato').map((r) => [!!r.suo, r.passo]), [[false, 'documenti'], [true, 'anche']])
+  ok('la riga «Carta d’identità» manda ai documenti, quella «Firma» al modulo', (m.passoDelRiepilogo ? [m.passoDelRiepilogo('carta'), m.passoDelRiepilogo('firma')] : 'passoDelRiepilogo non c’è'), ['documenti', 'modulo'])
   // Chi deve portare il certificato: lo stesso conto per il riepilogo e per l'esito.
   const lui = { corsi: ['judo-adulti'], formula: 'annuale', scelte: { tesseramento: true, foto: true } }
   ok('certificato: l’adulto che non l’ha caricato', m.certificatiMancanti(adulto(), corsi), ['chi'])
@@ -703,14 +711,20 @@ console.log('\n16. l’ordine di «manca» è quello della pagina: il focus va a
   ok('adulto, passo 1: il focus va al nome', m.primoDaCorreggere(vuoto('adulto'), 1), 'nome')
   ok('bambino, passo 2: il genitore e poi i contatti', chiavi(figlio({ genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '', email: '', telefono: '' }), 2), ['NOME DEL GENITORE', 'COGNOME DEL GENITORE', 'CODICE FISCALE DEL GENITORE', 'EMAIL', 'TELEFONO'])
   ok('bambino, passo 3: i corsi prima della domanda «anche te?»', chiavi(vuoto('figlio'), 3), ['CORSO', 'SCEGLI: ANCHE TE?'])
-  ok('adulto, passo 3 (il modulo): tesseramento, foto, firma, regolamento, privacy, carta d’identità', chiavi({ ...vuoto('adulto'), risposte: { ...vuoto('adulto').risposte, regolamento: false } }, 3), [
+  ok('adulto, passo 3 (il modulo): tesseramento, foto, firma, regolamento, privacy', chiavi({ ...vuoto('adulto'), risposte: { ...vuoto('adulto').risposte, regolamento: false } }, 3), [
+    'TESSERAMENTO', 'FOTO', 'FIRMA', 'REGOLAMENTO', 'INFORMATIVA PRIVACY',
+  ])
+  ok('adulto, passo 4 (i documenti): la carta d’identità', chiavi(vuoto('adulto'), 4), ['CARTA D\'IDENTITÀ'])
+  ok('adulto, l’ultimo passo: prima il modulo, poi i documenti', chiavi({ ...vuoto('adulto'), risposte: { ...vuoto('adulto').risposte, regolamento: false } }, 5).slice(-6), [
     'TESSERAMENTO', 'FOTO', 'FIRMA', 'REGOLAMENTO', 'INFORMATIVA PRIVACY', 'CARTA D\'IDENTITÀ',
   ])
-  ok('adulto, passo 3: il focus va alla prima casella, non alla carta d’identità', m.primoDaCorreggere(vuoto('adulto'), 3), 'tesseramento')
-  ok('bambino, passo 4 (il modulo): dove è nato il genitore prima della firma', chiavi(figlio({}, { scelte: {}, tratti: 0, file: {}, privacy: false, natoAGenitore: '' }), 4), ['TESSERAMENTO', 'FOTO', 'FIRMA', 'INFORMATIVA PRIVACY', 'CARTA D\'IDENTITÀ'])
+  ok('adulto, passo 3: il focus va alla prima casella', m.primoDaCorreggere(vuoto('adulto'), 3), 'tesseramento')
+  ok('adulto, passo 4: il focus va alla carta d’identità', m.primoDaCorreggere(vuoto('adulto'), 4), 'documento')
+  ok('bambino, passo 4 (il modulo): dove è nato il genitore prima della firma', chiavi(figlio({}, { scelte: {}, tratti: 0, file: {}, privacy: false, natoAGenitore: '' }), 4), ['TESSERAMENTO', 'FOTO', 'FIRMA', 'INFORMATIVA PRIVACY'])
+  ok('bambino, passo 5 (i documenti): la carta del genitore', chiavi(figlio({}, { file: {} }), 5), ['CARTA D\'IDENTITÀ'])
   ok('bambino, passo 2: «dove sei nato» sta dopo il codice del genitore, prima dei contatti', chiavi(figlio({ genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '', email: '', telefono: '' }, { natoAGenitore: '' }), 2), ['NOME DEL GENITORE', 'COGNOME DEL GENITORE', 'CODICE FISCALE DEL GENITORE', 'DOVE SEI NATO', 'EMAIL', 'TELEFONO'])
-  ok('bambino, l’ultimo passo: «dove sei nato» una volta sola', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 5), ['DOVE SEI NATO'])
-  ok('anche tu, passo 5: corso, tesseramento, foto', chiavi({ ...vuoto('figlio'), ancheTu: true, suo: { corsi: [], formula: 'trimestre', scelte: {} } }, 5), ['CORSO', 'TESSERAMENTO', 'FOTO'])
+  ok('bambino, l’ultimo passo: «dove sei nato» una volta sola', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 6), ['DOVE SEI NATO'])
+  ok('anche tu, passo 6: corso, tesseramento, foto', chiavi({ ...vuoto('figlio'), ancheTu: true, suo: { corsi: [], formula: 'trimestre', scelte: {} } }, 6), ['CORSO', 'TESSERAMENTO', 'FOTO'])
 }
 
 // ---------------------------------------------------------------------------
@@ -796,13 +810,13 @@ console.log('\n18. la barra di quel che manca: una riga, e ogni voce è un tasto
   ok('mancanti: la data di nascita ha la sua chiave', voci(vuoto('adulto'), 1).find((v) => v.nome === 'DATA DI NASCITA')?.chiave, 'natoIl')
 
   // «Anche tu»: all'ultimo passo il riepilogo mette insieme tutto, ma due persone non diventano una voce.
-  const riepilogo = voci(anche, 6)
+  const riepilogo = voci(anche, 7)
   ok('anche tu, ultimo passo: corso del bambino e corso del genitore sono due voci', riepilogo.filter((v) => v.chiave === 'corsi' || v.chiave === 'suoCorsi').map((v) => v.chiave), ['corsi', 'suoCorsi'])
   ok('anche tu, ultimo passo: tesseramento e foto, due volte ciascuno', riepilogo.filter((v) => /tesseramento|foto/i.test(v.chiave)).map((v) => v.chiave).sort(), ['foto', 'suoFoto', 'suoTesseramento', 'tesseramento'])
   ok('anche tu, ultimo passo: nessun nome ripetuto, si distinguono a parole', riepilogo.length > 0 && new Set(riepilogo.map((v) => v.nome)).size === riepilogo.length, true)
   ok('anche tu: il corso del genitore si chiama «IL TUO CORSO»', riepilogo.find((v) => v.chiave === 'suoCorsi')?.nome, 'IL TUO CORSO')
-  ok('anche tu, passo 5: i nomi di sempre', m.mancaNelPasso(anche, 5), ['CORSO', 'TESSERAMENTO', 'FOTO'])
-  ok('anche tu, ultimo passo: la barra conta le persone, AVANTI i nomi', riepilogo.length > m.mancaNelPasso(anche, 6).length, true)
+  ok('anche tu, passo 6: i nomi di sempre', m.mancaNelPasso(anche, 6), ['CORSO', 'TESSERAMENTO', 'FOTO'])
+  ok('anche tu, ultimo passo: la barra conta le persone, AVANTI i nomi', riepilogo.length > m.mancaNelPasso(anche, 7).length, true)
 
   // Ogni chiave porta a un id che c'è nella pagina.
   const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
@@ -882,6 +896,7 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('il tasto ▾ è alto almeno 44px', /min-height\s*:\s*44px/.test(corpo('.barra-manca-apri')), true)
   ok('ogni voce dell’elenco è alta almeno 44px', /min-height\s*:\s*44px/.test(corpo('.barra-manca-voce')), true)
   ok('DESIGN.md descrive la barra compatta («VAI A»)', /Barra del passo[^\n]*VAI A/.test(readFileSync('DESIGN.md', 'utf8')), true)
+  ok('DESIGN.md: la barra del passo cita il totale', /Barra del passo[^\n]*totale/i.test(readFileSync('DESIGN.md', 'utf8')), true)
 }
 
 // 20. «Ho il foglio firmato» senza ancora il file: la barra manda al file, non a campi che non ci sono.
@@ -920,6 +935,53 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('senza nome: «il bambino»', f(['Pesistica 1'], ''), 'Pesistica 1 non compare: il bambino è troppo piccolo. Cerchi altro? Chiama la segreteria.')
   ok('nome di soli spazi: «il bambino»', f(['Pesistica 1'], '  '), 'Pesistica 1 non compare: il bambino è troppo piccolo. Cerchi altro? Chiama la segreteria.')
   ok('senza corsi nascosti niente frase', f([]), undefined)
+}
+
+// 24. Il totale sempre in vista: nel passo del corso e in quello dei documenti, dalla stessa stima del riepilogo.
+{
+  console.log('\n24. il totale nei passi del corso e dei documenti')
+  const voce = (corso, corsoId, natiDal, natiAl, annuale, trimestre) => ({
+    corso, corsoId, eta: '', orari: ['martedì 18.00'], natiDal, natiAl, prezzi: [{ saldo: annuale, annuale, trimestre }],
+  })
+  const listino = { quota: 50, saldoEntro: '2026-08-31', offerte: [], corsi: [voce('Judo 3', 'judo-3', 2013, 2016, 300, 120), voce('Judo adulti', 'judo-adulti', undefined, 2012, 360, 140)] }
+  const corsi = [{ id: 'judo-3', nome: 'Judo 3' }, { id: 'judo-adulti', nome: 'Judo adulti' }]
+  const giorno = '2026-10-06'
+  // Firma attesa: totaleDelPasso(stato, passo, corsi, listino, giorno) → { righe, totale } | undefined.
+  // Euro interi senza decimali («50 €»), con i centesimi la virgola («50,50 €»); le righe sono «<voce> <prezzo> €» unite da « + ».
+  const t = (stato, passo, l = listino) => (m.totaleDelPasso ? m.totaleDelPasso(stato, passo, corsi, l, giorno) : 'totaleDelPasso non c’è')
+
+  ok('adulto, passo del corso: la riga e il totale', t(adulto(), 2), { righe: 'Quota 50 € + Judo adulti annuale 360 €', totale: '410 €' })
+  ok('adulto, passo dei documenti: lo stesso', t(adulto(), 4), t(adulto(), 2))
+  ok('con la formula trimestre: la riga dice trimestre e il prezzo cambia', t(adulto({ formula: 'trimestre' }), 2), { righe: 'Quota 50 € + Judo adulti trimestre 140 €', totale: '190 €' })
+  ok('adulto: il totale è quello della stima di oggi, stessi centesimi', t(adulto(), 2)?.totale, `${m.contoFamiglia([{ chi: 'Luca', corsi: [corsi[1]], formula: 'annuale' }], giorno, listino).totale / 100} €`)
+  ok('senza corso scelto: niente totale', t(adulto({ corsi: [] }), 2), undefined)
+  ok('senza listino: niente totale', t(adulto(), 2, null), undefined)
+  for (const passo of [1, 3, 5]) ok(`adulto, passo ${passo}: il totale non c’è`, t(adulto(), passo), undefined)
+
+  ok('figlio, passo del corso (3): il conto del bambino', t(figlio(), 3), { righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
+  ok('figlio, passo dei documenti (5): lo stesso', t(figlio(), 5), t(figlio(), 3))
+  for (const passo of [1, 2, 4, 6]) ok(`figlio, passo ${passo}: il totale non c’è`, t(figlio(), passo), undefined)
+
+  // Con «Anche tu» il totale è quello della famiglia, con lo sconto: lo dice contoDelloStato.
+  const famiglia = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
+  ok('anche tu, passo dei documenti (5): il totale della famiglia, 700 €', t(famiglia, 5)?.totale, '700 €')
+  ok('anche tu: è il totale di contoDelloStato, stessi centesimi', t(famiglia, 5)?.totale, `${m.contoDelloStato(famiglia, corsi, listino, giorno).totale / 100} €`)
+  ok('anche tu: la riga nomina lo sconto famiglia', t(famiglia, 5)?.righe?.includes('Sconto'), true)
+  ok('anche tu: il passo «anche tu» (6) non lo mostra', t(famiglia, 6), undefined)
+  const senzaSuo = figlio({}, { ancheTu: true, suo: { corsi: [], formula: 'annuale', scelte: {} } })
+  ok('anche tu, ma il corso del genitore non è ancora scelto: solo il bambino', t(senzaSuo, 5)?.totale, '350 €')
+}
+
+// 25. La riga del riepilogo e le parole del componente: i numeri dei passi si calcolano, non si scrivono.
+{
+  console.log('\n25. il componente non scrive a mano i numeri dei passi')
+  const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  const codice = pagina.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((r) => !/^\s*\/\//.test(r)).join('\n')
+  const scritti = codice.match(/\b\d+\s+passi\b|\bpass[oi]\s+\d+\b|\bpassi\s+\d+\s+e\s+\d+\b/gi) ?? []
+  ok('niente «N passi» né «passo N» scritti a mano', scritti, [])
+  ok('la scelta iniziale conta i passi da passiDi', /passiDi\(\s*'adulto'[^)]*\)\.length/.test(codice) && /passiDi\(\s*'figlio'[^)]*\)\.length/.test(codice), true)
+  const rigaCarta = codice.split('\n').find((r) => r.includes('Carta d’identità')) ?? ''
+  ok('la riga «Carta d’identità» del riepilogo non manda al modulo', rigaCarta !== '' && !rigaCarta.includes("modifica('modulo')"), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
