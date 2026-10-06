@@ -837,6 +837,51 @@
       "w": 400,
       "h": 200,
       "page": "page-2"
+    },
+    {
+      "file": "PinChiaro.dc.html",
+      "title": "Tablet · PIN · tema chiaro",
+      "x": 0,
+      "y": 28820,
+      "w": 1280,
+      "h": 800,
+      "page": "page-1"
+    },
+    {
+      "file": "PinSbagliatoChiaro.dc.html",
+      "title": "Tablet · PIN · sbagliato · tema chiaro",
+      "x": 1400,
+      "y": 28820,
+      "w": 1280,
+      "h": 800,
+      "page": "page-1"
+    },
+    {
+      "file": "PinBloccatoChiaro.dc.html",
+      "title": "Tablet · PIN · bloccato · tema chiaro",
+      "x": 0,
+      "y": 29780,
+      "w": 1280,
+      "h": 800,
+      "page": "page-1"
+    },
+    {
+      "file": "PinUscitaChiaro.dc.html",
+      "title": "Tablet · PIN · uscita · tema chiaro",
+      "x": 1400,
+      "y": 29780,
+      "w": 1280,
+      "h": 800,
+      "page": "page-1"
+    },
+    {
+      "file": "ConfermaUscitaChiaro.dc.html",
+      "title": "Tablet · Uscire dal tablet? · tema chiaro",
+      "x": 0,
+      "y": 30740,
+      "w": 1280,
+      "h": 800,
+      "page": "page-1"
     }
   ],
   "annotations": [],
