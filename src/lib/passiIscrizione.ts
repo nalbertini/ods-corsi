@@ -24,6 +24,8 @@ export interface StatoPassi {
   ancheTu?: boolean
   /** Chi si iscrive (adulto), o il bambino col genitore e i suoi contatti. */
   risposte: DatiRichiesta
+  /** «Ho il foglio firmato»: il modulo si manda in foto, non si firma qui. */
+  firmaInFoto?: boolean
   /** Com'era all'apertura: INDIETRO chiede solo se c'è qualcosa di nuovo. */
   inizio: DatiRichiesta
   scelte: Scelte
@@ -157,7 +159,9 @@ function campi(s: StatoPassi, oggi: Date, quali: CampoModulo[]): Pastiglia[] {
 /** Caselle e firma (se il foglio non è stato firmato a mano), regolamento, privacy e documento: come in pagina. */
 function moduloEFile(s: StatoPassi): Pastiglia[] {
   const m: Pastiglia[] = []
-  if (!s.file.modulo) {
+  if (s.firmaInFoto && !s.file.modulo) {
+    m.push({ chiave: 'modulo', nome: 'MODULO FIRMATO' })
+  } else if (!s.file.modulo) {
     if (s.scelte.tesseramento === undefined) m.push({ chiave: 'tesseramento', nome: 'TESSERAMENTO' })
     if (s.scelte.foto === undefined) m.push({ chiave: 'foto', nome: 'FOTO' })
     if (s.chi === 'figlio' && !s.natoAGenitore.trim()) m.push({ chiave: 'natoAGenitore', nome: 'DOVE È NATO IL GENITORE' })
@@ -201,10 +205,15 @@ function sezione(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
 
 /** Le cose che mancano nel passo, in ordine; l'ultimo passo rimette insieme tutto. */
 function mancanze(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
+  return senzaDoppioni(s, passo, oggi, 'nome')
+}
+
+/** Il passo, o all'ultimo tutti i precedenti insieme, senza doppioni per `nome` (la conta di AVANTI) o per `chiave` (le voci toccabili). */
+function senzaDoppioni(s: StatoPassi, passo: number, oggi: Date, per: 'nome' | 'chiave'): Pastiglia[] {
   const ultimo = passiDi(s.chi, s.ancheTu === true).length
   if (passo < ultimo) return sezione(s, passo, oggi)
   const tutte = Array.from({ length: ultimo - 1 }, (_, i) => sezione(s, i + 1, oggi)).flat()
-  return tutte.filter((p, i) => tutte.findIndex((q) => q.nome === p.nome) === i)
+  return tutte.filter((p, i) => tutte.findIndex((q) => q[per] === p[per]) === i)
 }
 
 /**
@@ -213,12 +222,11 @@ function mancanze(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
  * voci (la chiave le distingue, il nome lo dice), così il tocco va al campo giusto.
  */
 export function mancanti(s: StatoPassi, passo: number, oggi = new Date()): Pastiglia[] {
-  const ultimo = passiDi(s.chi, s.ancheTu === true).length
-  if (passo < ultimo) return sezione(s, passo, oggi)
-  const tutte = Array.from({ length: ultimo - 1 }, (_, i) => sezione(s, i + 1, oggi)).flat()
-  return tutte
-    .filter((p, i) => tutte.findIndex((q) => q.chiave === p.chiave) === i)
-    .map((p) => ({ ...p, nome: NOMI_DEL_GENITORE[p.chiave] ?? p.nome }))
+  const bambino = s.risposte.nome.trim().toUpperCase()
+  return senzaDoppioni(s, passo, oggi, 'chiave').map((p) => ({
+    ...p,
+    nome: NOMI_DEL_GENITORE[p.chiave] ?? (p.chiave === 'corsi' && s.ancheTu && bambino ? `CORSO DI ${bambino}` : p.nome),
+  }))
 }
 
 const NOMI_DEL_GENITORE: Record<string, string> = {

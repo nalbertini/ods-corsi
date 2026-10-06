@@ -733,7 +733,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
   background: none; color: var(--text); font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em;
 }
 .barra-manca-vai { flex: 1; min-width: 0; padding: 0 12px; border: 2px solid var(--rosso); }
-.barra-manca-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.barra-manca-nome { min-width: 0; overflow: hidden; line-height: 1.15; text-align: left; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .barra-manca-apri { flex-shrink: 0; justify-content: center; width: 44px; border: 2px solid var(--riga-campo); color: var(--tasto); font-size: 14px; }
 /* L'elenco scorre dentro la barra: con venti voci non mangia lo schermo. */
 .barra-manca-elenco { display: flex; flex-direction: column; max-height: 30dvh; overflow-y: auto; }

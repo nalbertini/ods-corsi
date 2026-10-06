@@ -238,8 +238,10 @@ function Flusso({
       ...grezzo,
       risposte: { ...r, natoIl, natoA: luogo ? scriviLuogo(luogo) : r.natoA },
       natoAGenitore: luogoG?.nome ?? grezzo.natoAGenitore,
+      // Con «Anche tu» il foglio si firma sempre qui.
+      firmaInFoto: come === 'foto' && !grezzo.ancheTu,
     }
-  }, [grezzo, luoghi])
+  }, [grezzo, luoghi, come])
   const r = v.risposte
   const figlio = v.chi === 'figlio'
   const ancheTu = !!v.ancheTu
@@ -1043,6 +1045,8 @@ function Flusso({
       <Avanzamento numero={passo} totale={tipi.length} titolo={nomiPassi[passo - 1] ?? ''} />
       {corpo()}
       <BarraPasso
+        // Un passo nuovo riparte con l'elenco chiuso.
+        key={passo}
         manca={manca}
         onVai={focus}
         // Il «tutto a posto» solo se davvero non manca niente: a passo vuoto, prima di provare, non c'è né elenco né ✓.

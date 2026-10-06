@@ -474,17 +474,19 @@ export function BarraPasso({
               <span className="barra-manca-nome">VAI A: {prima.nome}</span>
               <span aria-hidden>›</span>
             </button>
-            <button
-              type="button"
-              className="barra-manca-apri"
-              aria-expanded={elenco}
-              aria-label={elenco ? 'Chiudi l’elenco di quel che manca' : 'Apri l’elenco di quel che manca'}
-              onClick={() => setElenco(!elenco)}
-            >
-              <span aria-hidden>{elenco ? '▴' : '▾'}</span>
-            </button>
+            {manca.length > 1 && (
+              <button
+                type="button"
+                className="barra-manca-apri"
+                aria-expanded={elenco}
+                aria-label={elenco ? 'Chiudi l’elenco di quel che manca' : 'Apri l’elenco di quel che manca'}
+                onClick={() => setElenco(!elenco)}
+              >
+                <span aria-hidden>{elenco ? '▴' : '▾'}</span>
+              </button>
+            )}
           </div>
-          {elenco && (
+          {elenco && manca.length > 1 && (
             <div className="barra-manca-elenco">
               {manca.map((m) => (
                 <button

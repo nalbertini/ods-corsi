@@ -755,6 +755,7 @@ console.log('\n18. la barra di quel che manca: una riga, e ogni voce è un tasto
   ok('anche tu, ultimo passo: nessun nome ripetuto, si distinguono a parole', riepilogo.length > 0 && new Set(riepilogo.map((v) => v.nome)).size === riepilogo.length, true)
   ok('anche tu: il corso del genitore si chiama «IL TUO CORSO»', riepilogo.find((v) => v.chiave === 'suoCorsi')?.nome, 'IL TUO CORSO')
   ok('anche tu, passo 5: i nomi di sempre', m.mancaNelPasso(anche, 5), ['CORSO', 'TESSERAMENTO', 'FOTO'])
+  ok('anche tu, ultimo passo: la barra conta le persone, AVANTI i nomi', riepilogo.length > m.mancaNelPasso(anche, 6).length, true)
 
   // Ogni chiave porta a un id che c'è nella pagina.
   const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
@@ -834,6 +835,16 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('il tasto ▾ è alto almeno 44px', /min-height\s*:\s*44px/.test(corpo('.barra-manca-apri')), true)
   ok('ogni voce dell’elenco è alta almeno 44px', /min-height\s*:\s*44px/.test(corpo('.barra-manca-voce')), true)
   ok('DESIGN.md descrive la barra compatta («VAI A»)', /Barra del passo[^\n]*VAI A/.test(readFileSync('DESIGN.md', 'utf8')), true)
+}
+
+// 20. «Ho il foglio firmato» senza ancora il file: la barra manda al file, non a campi che non ci sono.
+{
+  console.log('\n20. con il foglio firmato la barra chiede il file, non la firma')
+  const foto = adulto({}, { tratti: 0, scelte: {}, firmaInFoto: true, file: { documento: F('d.jpg') } })
+  ok('foglio firmato, senza file: manca solo MODULO FIRMATO', nomi(foto, 3), ['MODULO FIRMATO'])
+  ok('foglio firmato: la voce porta al file del modulo', m.mancanti(foto, 3).map((v) => v.chiave), ['modulo'])
+  ok('foglio firmato, col file: non manca niente', nomi(adulto({}, { tratti: 0, scelte: {}, firmaInFoto: true, file: { documento: F('d.jpg'), modulo: F('m.jpg') } }), 3), [])
+  ok('firmo qui: restano tesseramento, foto e firma', nomi(adulto({}, { tratti: 0, scelte: {}, firmaInFoto: false }), 3), ['FIRMA', 'FOTO', 'TESSERAMENTO'])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
