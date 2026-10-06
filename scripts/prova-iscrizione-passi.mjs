@@ -1021,9 +1021,9 @@ console.log('\n19. la barra compatta: markup e stile')
   // L'ascoltatore sta in un useEffect che dipende dalla fase: dopo l'invio riuscito (esito) si toglie.
   const effetto = codice.split('useEffect(').find((b) => b.includes('beforeunload')) ?? ''
   ok('il componente ascolta beforeunload', effetto !== '', true)
-  ok('lo decide rispostePerdibili, non una regola scritta di nuovo', effetto.includes('rispostePerdibili('), true)
-  ok('si toglie quando la fase non è compila né invio (removeEventListener, dipende da fase)', /removeEventListener\(\s*'beforeunload'/.test(effetto) && /\bfase\b/.test(effetto.slice(effetto.lastIndexOf('['))), true)
-  ok('guarda la fase: compila o invio', /fase\.tipo\s*(===|!==)\s*'(compila|invio|esito)'/.test(effetto), true)
+  ok('lo decide rispostePerdibili, non una regola scritta di nuovo', codice.includes('P.rispostePerdibili(') && /\[\s*perdibile\s*\]/.test(effetto), true)
+  ok('si toglie quando non c’è più niente da perdere (removeEventListener, dipende da perdibile)', /removeEventListener\(\s*'beforeunload'/.test(effetto) && /perdibile/.test(effetto.slice(effetto.lastIndexOf('['))), true)
+  ok('guarda la fase: dopo una richiesta arrivata («fatto») non avvisa, negli altri esiti sì', /fase\.tipo\s*===\s*'esito'\s*&&\s*fase\.esito\.esito\s*===\s*'fatto'/.test(codice), true)
   ok('il browser chiede con preventDefault', effetto.includes('preventDefault()'), true)
 }
 
@@ -1088,6 +1088,18 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('famiglia: l’importo è quello del conto con lo sconto, stessi centesimi', r(famiglia).importo, euro(conto.totale))
   ok('famiglia: lo sconto c’è, quindi meno della somma dei due', conto.totale < 35000 + 41000, true)
   ok('famiglia, con la ricevuta: niente da pagare', r({ ...famiglia, file: { ...famiglia.file, ricevuta: F('r.jpg') } }).daPagare, false)
+  // Cosa scrive la schermata lo decide la lib: `pagamento` e `famiglia`, `conSconto` e i corsi senza prezzo anche per due richieste.
+  ok('pagamento: da pagare con importo', r(adulto()).pagamento, 'importo')
+  ok('pagamento: con la ricevuta', r(adulto({}, { file: { documento: F('d.jpg'), ricevuta: F('r.jpg') } })).pagamento, 'ricevuta')
+  ok('pagamento: da pagare ma senza listino, l’importo non c’è', r(adulto(), null).pagamento, 'senzaImporto')
+  ok('famiglia: lo dice il riassunto', [r(famiglia).famiglia, r(adulto()).famiglia, r(figlio()).famiglia], [true, false, false])
+  ok('famiglia con due annuali: c’è lo sconto', r(famiglia).conSconto, true)
+  const famTrimestre = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'trimestre', scelte: {} } })
+  ok('famiglia con un trimestre: lo sconto non c’è', r(famTrimestre).conSconto, false)
+  const conSenzaPrezzo = (l = listino) => r(famiglia, l, [...corsi, { id: 'psico', nome: 'Psicomotricità' }])
+  const famPsico = figlio({}, { ancheTu: true, suo: { corsi: ['psico'], formula: 'annuale', scelte: {} } })
+  ok('famiglia, corso del genitore senza prezzo: lo dice', r(famPsico, listino, [...corsi, { id: 'psico', nome: 'Psicomotricità' }]).senzaPrezzo, ['Psicomotricità'])
+  void conSenzaPrezzo
   const senzaSuo = figlio({}, { ancheTu: true, suo: { corsi: [], formula: 'annuale', scelte: {} } })
   ok('famiglia, corso del genitore non scelto: come il conto dello stato', r(senzaSuo).importo, euro(m.contoDelloStato(senzaSuo, corsi, listino, giorno).totale))
 

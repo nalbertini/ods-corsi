@@ -410,19 +410,36 @@ function contoDiChiSiIscrive(s: StatoPassi, corsi: CorsoRef[], listino: Listino 
 /** Se chi esce perde qualcosa che ha scritto: la stessa regola della domanda di INDIETRO, per l'avviso del browser. */
 export const rispostePerdibili = (s: StatoPassi): boolean => domandaUscita(perDomandaUscita(s)) !== undefined
 
-/** Cosa dice la schermata «RICHIESTA ARRIVATA»: quanto pagare (se manca la ricevuta) e dove la segreteria trova chi si è iscritto. */
+/**
+ * Cosa dice la schermata «RICHIESTA ARRIVATA». `pagamento` decide il blocco del conto: `ricevuta` (già caricata, la segreteria
+ * controlla), `importo` (da pagare, con la cifra) o `senzaImporto` (da pagare ma la cifra non si sa: listino non letto, corso non in elenco).
+ * `famiglia` sono le due richieste (bambino e genitore): l'importo è quello del conto con lo sconto, se c'è (`conSconto`).
+ */
 export function riassuntoEsito(
   s: StatoPassi,
   corsi: CorsoRef[],
   listino: Listino | undefined,
   giorno: string,
-): { importo?: string; daPagare: boolean; senzaPrezzo: string[]; contatti: { email: string; telefono: string } } {
+): {
+  importo?: string
+  pagamento: 'ricevuta' | 'importo' | 'senzaImporto'
+  daPagare: boolean
+  famiglia: boolean
+  conSconto: boolean
+  senzaPrezzo: string[]
+  contatti: { email: string; telefono: string }
+} {
   const famiglia = listino && s.chi === 'figlio' && s.ancheTu && s.suo ? contoDelloStato(s, corsi, listino, giorno) : undefined
   const solo = famiglia ? undefined : contoDiChiSiIscrive(s, corsi, listino, giorno)
+  const importo = famiglia ? euroBreve(famiglia.totale) : solo?.totale
+  const daPagare = !s.file.ricevuta
   return {
-    importo: famiglia ? euroBreve(famiglia.totale) : solo?.totale,
-    daPagare: !s.file.ricevuta,
-    senzaPrezzo: solo?.senzaPrezzo ?? [],
+    importo,
+    pagamento: !daPagare ? 'ricevuta' : importo ? 'importo' : 'senzaImporto',
+    daPagare,
+    famiglia: !!famiglia,
+    conSconto: famiglia?.sconto !== undefined,
+    senzaPrezzo: famiglia?.senzaPrezzo ?? solo?.senzaPrezzo ?? [],
     contatti: { email: s.risposte.email.trim(), telefono: s.risposte.telefono.trim() },
   }
 }
@@ -563,7 +580,7 @@ export function contoFamiglia(
   persone: Array<{ chi: string; corsi: Array<string | CorsoRef>; formula: Formula }>,
   giorno: string,
   listino: Listino,
-): { righe: RigaStima[]; totale: number; sconto?: number } {
+): { righe: RigaStima[]; totale: number; sconto?: number; senzaPrezzo: string[] } {
   // Gli annuali di una persona, uno per corso: il prezzo lo dice la stessa stima di oggi.
   const annuali = (p: (typeof persone)[number]): Abbonamento[] =>
     p.formula !== 'annuale'
@@ -575,6 +592,7 @@ export function contoFamiglia(
   const righe: RigaStima[] = []
   let totale = 0
   let sconto: number | undefined
+  const senzaPrezzo: string[] = []
   persone.forEach((p, i) => {
     const st = stimaIscrizione(p, persone.flatMap((x, j) => (j === i ? [] : annuali(x))), giorno, listino)
     const doppio = st.sconto?.qui && sconto !== undefined
@@ -582,8 +600,9 @@ export function contoFamiglia(
     righe.push(...mie.map((r) => ({ ...r, testo: `${p.chi}: ${r.testo}` })))
     totale += mie.reduce((t, r) => t + r.importo, 0)
     sconto = sconto ?? st.sconto?.importo
+    senzaPrezzo.push(...st.senzaPrezzo)
   })
-  return { righe, totale, sconto }
+  return { righe, totale, sconto, senzaPrezzo }
 }
 
 /**

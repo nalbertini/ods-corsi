@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 20px">
+  <span style="font-size: 14px; line-height: 1.3; color: {{c.sec}}">{{testo}}</span>
+  <dc-import name="Bottone" label="CHIAMA" variante="linea" tema="{{ tema }}" hint-size="120px,48px"></dc-import>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"Un dubbio? Chiama la segreteria."},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":60}}'>
+// La riga CHIAMA del modulo a passi (`.passo-chiama` di src/styles.css, `IscrizioneAPassi.tsx`): sotto l'avanzamento di ogni passo, nel flusso (non sticky),
+// la frase a sinistra (14px `sec`) e il tasto CHIAMA a destra (href `chiama` di src/lib/sito.ts).
+const T = {
+  scuro: { sec: '#c9c9c4' },
+  chiaro: { sec: '#3d3d3a' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { c: T[p.tema] || T.scuro, testo: p.testo ?? 'Un dubbio? Chiama la segreteria.' };
+  }
+}
+</script>
+</body>
+</html>

@@ -329,17 +329,19 @@ function Flusso({
   const mancaOra = P.mancaNelPasso(v, passo)
   const manca = provato ? P.mancanti(v, passo) : []
 
-  // Chi esce (o ricarica) con risposte già scritte lo sente dal browser; dopo l'invio non c'è più niente da perdere.
+  // Chi esce (o ricarica) con risposte già scritte lo sente dal browser. Solo dopo una richiesta arrivata non c'è più niente da perdere:
+  // negli esiti con qualcosa da rimandare (secondaNo, file) la richiesta è ancora in memoria.
+  const perdibile = !(fase.tipo === 'esito' && fase.esito.esito === 'fatto') && P.rispostePerdibili(v)
   useEffect(() => {
-    if (fase.tipo !== 'compila' && fase.tipo !== 'invio') return
-    if (!P.rispostePerdibili(v)) return
+    if (!perdibile) return
     const avvisa = (e: BeforeUnloadEvent) => {
       e.preventDefault()
+      // Safari e i browser meno nuovi aprono l'avviso solo se returnValue è scritto.
       e.returnValue = ''
     }
     window.addEventListener('beforeunload', avvisa)
     return () => window.removeEventListener('beforeunload', avvisa)
-  }, [fase, v])
+  }, [perdibile])
 
   // A ogni cambio di passo il fuoco va al titolo (e lo screen reader legge «Passo N di N»); non alla prima apertura, né a ogni lettera.
   const titoloRef = useRef<HTMLDivElement>(null)
@@ -486,16 +488,14 @@ function Flusso({
     const persone = figlio ? r.genitoreNome?.trim() || 'genitore' : r.nome.trim()
     if (e.esito === 'fatto') {
       const certificati = P.certificatiMancanti(v, corsi ?? []).map((x) => (x === 'chi' ? nomeBambino : r.genitoreNome?.trim() || 'il genitore'))
-      const email = r.email.trim() || 'la tua email'
       const riassunto = P.riassuntoEsito(v, corsi ?? [], listino, chiaveGiorno(new Date()))
       const frase = P.fraseContatti(riassunto.contatti.email, riassunto.contatti.telefono)
       const ultimaVolta = figlio ? 'ISCRIVI UN ALTRO FIGLIO' : 'ISCRIVI UN’ALTRA PERSONA'
       const righe: RigaRiepilogo[] = [
-        { stato: 'numero', titolo: 'La segreteria ti scrive', dettaglio: `a ${email}, se manca qualcosa` },
         ...(certificati.length
           ? [{ stato: 'numero' as const, titolo: certificati.length > 1 ? 'Portate i certificati medici' : `Porti il certificato medico${figlio && !due ? ` di ${nomeBambino}` : ''}`, dettaglio: 'in segreteria, prima della prima lezione' }]
           : []),
-        ...(!v.file.ricevuta
+        ...(riassunto.daPagare
           ? [{ stato: 'numero' as const, titolo: due ? 'Pagate la quota e l’iscrizione' : 'Paghi la quota e l’iscrizione', dettaglio: due ? 'in segreteria, o mandate la ricevuta' : 'in segreteria, o mandi la ricevuta' }]
           : []),
       ]
@@ -513,22 +513,21 @@ function Flusso({
           {frase && <span className="esito-testo">{frase}</span>}
           <Titoletto dentro>E ADESSO</Titoletto>
           <Riepilogo righe={righe} />
-          {riassunto.daPagare && riassunto.importo ? (
+          {riassunto.pagamento === 'ricevuta' ? (
+            <Dettaglio>La segreteria controlla il pagamento.</Dettaglio>
+          ) : (
             <>
               <Titoletto dentro>DA PAGARE</Titoletto>
-              {due ? (
-                <>
-                  <span className="esito-testo">
-                    In tutto {riassunto.importo}, con lo sconto famiglia. Paghi in segreteria, oppure con un bonifico a {PAGAMENTO.intestatario}: <span className="num iban">{PAGAMENTO.iban}</span>
-                  </span>
-                </>
-              ) : (
+              {riassunto.pagamento === 'importo' && !riassunto.famiglia ? (
                 <QuantoCosta nome={r.nome.trim()} cognome={r.cognome.trim()} corsi={refDei(r.corsi)} formula={r.formula} abbonamenti={[]} />
+              ) : (
+                <span className="esito-testo">
+                  {riassunto.importo ? `In tutto ${riassunto.importo}${riassunto.conSconto ? ', con lo sconto famiglia' : ''}. ` : ''}
+                  Paghi in segreteria, oppure con un bonifico a {PAGAMENTO.intestatario}: <span className="num iban">{PAGAMENTO.iban}</span>
+                </span>
               )}
-              {riassunto.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">{riassunto.senzaPrezzo.join(', ')}: prezzo da confermare, lo dice la segreteria.</Dettaglio>}
+              {riassunto.famiglia && riassunto.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">{riassunto.senzaPrezzo.join(', ')}: prezzo da confermare, lo dice la segreteria.</Dettaglio>}
             </>
-          ) : (
-            !riassunto.daPagare && <Dettaglio>La segreteria controlla il pagamento.</Dettaglio>
           )}
           <Tasto href={chiama} qui>
             CHIAMA LA SEGRETERIA
