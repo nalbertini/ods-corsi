@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.38.8 — 6 ottobre 2026
+
+### Risolto
+
+- Nel canvas del tablet il tempo del timer nel piede era 0:24
+
 ## 0.38.7 — 6 ottobre 2026
 
 ### Risolto
