@@ -19,13 +19,13 @@
     <div style="display: flex; align-items: center; gap: 10px; padding: 12px 20px 0">
       <dc-import name="Bottone" label="‹" variante="icona" tema="{{tema}}" hint-size="44px,44px"></dc-import>
       <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 3px; min-width: 0">
-        <span style="font-family: COND; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05">AGGIUNGI CHI PROVA</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05">AGGIUNGI CHI PROVA</span>
         <span style="font-size: 13px; color: {{c.dim}}">Aggiungi a {{lezione}}: entra segnato presente.</span>
       </span>
     </div>
   </div>
   <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 20px 0">
-    <span style="font-family: COND; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">CERCA PER NOME O COGNOME</span>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">CERCA PER NOME O COGNOME</span>
     <div style="display: flex; align-items: center; width: 100%; min-height: 48px; padding: 0 14px; background: {{c.surface}}; border: 2px solid {{c.text}}; font-size: 17px; color: {{c.text}}">{{testo}}</div>
     <sc-if value="{{haRiga}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.45; color: {{c.dim}}">{{riga}}</span></sc-if>
     <div style="display: flex; flex-direction: column; gap: 6px">
@@ -35,7 +35,7 @@
             <span style="font-size: 16px; font-weight: 600; color: {{v.coloreNome}}">{{v.nome}}</span>
             <span style="font-size: 13px; line-height: 1.45; color: {{v.coloreSotto}}">{{v.sotto}}</span>
           </span>
-          <sc-if value="{{v.tasto}}" hint-placeholder-val="{{ true }}"><span style="font-family: COND; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: {{c.verdeTesto}}; white-space: nowrap">AGGIUNGI</span></sc-if>
+          <sc-if value="{{v.tasto}}" hint-placeholder-val="{{ true }}"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: {{c.verdeTesto}}; white-space: nowrap">AGGIUNGI</span></sc-if>
         </div>
       </sc-for>
     </div>
@@ -45,18 +45,18 @@
     </sc-if>
     <sc-if value="{{aMano}}" hint-placeholder-val="{{ false }}">
       <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: {{c.surface}}; border: 2px solid {{c.line}}">
-        <span style="font-family: COND; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">UNA PERSONA NUOVA</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">UNA PERSONA NUOVA</span>
         <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
           <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
-            <span style="font-family: COND; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">NOME</span>
+            <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">NOME</span>
             <span style="min-height: 52px; background: {{c.surface}}; border: 2px solid {{c.line}}"></span>
           </span>
           <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
-            <span style="font-family: COND; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">COGNOME</span>
+            <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">COGNOME</span>
             <span style="min-height: 52px; background: {{c.surface}}; border: 2px solid {{c.line}}"></span>
           </span>
           <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
-            <span style="font-family: COND; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">TELEFONO, SE LO DÀ</span>
+            <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">TELEFONO, SE LO DÀ</span>
             <span style="min-height: 52px; background: {{c.surface}}; border: 2px solid {{c.line}}"></span>
           </span>
         </div>
