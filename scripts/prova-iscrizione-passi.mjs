@@ -403,7 +403,20 @@ console.log('\n12. mandare: il PDF, le richieste, i file')
     console.error = () => {}
     const e = await m.mandaRichieste(d, [{ dati: m.risposteDaiPassi(adulto()), file: {}, faiPdf: async () => { throw new Error('boom') } }])
     console.error = consoleErrorVera
-    ok('il PDF non viene: nessuna richiesta, si dice cosa fare, senza il testo grezzo', [e.esito, e.perche, d.log], ['fermo', 'Il modulo firmato non si prepara: riprova, o caricane la foto', []])
+    ok('il PDF non viene: nessuna richiesta, si dice cosa fare con le parole dell’app, senza il testo grezzo', [e.esito, e.perche, d.log], ['fermo', 'Non riesco a preparare il modulo con la tua firma. Riprova fra un momento. Se non va, torna indietro, scegli «Ho il foglio firmato», firma il modulo a mano e carica la foto.', []])
+  }
+  // Con «Anche tu» il foglio in foto non c'è tra le scelte: si manda alla segreteria.
+  {
+    const d = finto()
+    const consoleErrorVera = console.error
+    console.error = () => {}
+    const pdfNo = async () => { throw new Error('boom') }
+    const e = await m.mandaRichieste(d, [
+      { dati: m.risposteDaiPassi(adulto()), file: {}, faiPdf: pdfNo },
+      { dati: m.risposteDaiPassi(adulto({ nome: 'Paola' })), file: {}, faiPdf: pdfNo },
+    ])
+    console.error = consoleErrorVera
+    ok('il PDF non viene con due richieste: niente foglio in foto, si chiama la segreteria', e.perche, 'Non riesco a preparare il modulo con la tua firma. Riprova fra un momento. Se non va, chiama la segreteria.')
   }
   // Il server non risponde.
   {
