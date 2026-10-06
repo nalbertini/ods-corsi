@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 700px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 20px; border-bottom: 2px solid #2a2a2a"><span style="font-size: 14px; line-height: 1.3; color: #c9c9c4">Un dubbio? Chiama la segreteria.</span><dc-import name="Bottone" label="CHIAMA" variante="linea" alto="44px" corpo="16px" larghezza="132px" hint-size="132px,44px"></dc-import></div>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="1" totale="6" titolo="I DATI" hint-size="100%,120px"></dc-import><dc-import name="Titoletto" label="TU, GENITORE" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><dc-import name="Campo" etichetta="CODICE FISCALE" valore="BNCLCU15M12L219X" codice="{{ true }}" nota="Metti il tuo codice fiscale, non quello di Luca." hint-size="100%,90px"></dc-import><dc-import name="Campo" etichetta="DOVE SEI NATO" valore="" segnaposto="Comune" hint-size="100%,90px"></dc-import><dc-import name="Campo" etichetta="PROVINCIA" valore="" segnaposto="ES. TO" nota="Dal tuo codice fiscale non riusciamo a leggerlo: scrivilo tu." notaTono="avviso" hint-size="100%,90px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" manca="CODICE FISCALE|DOVE SEI NATO|PROVINCIA" compatta="{{ true }}" avanti="AVANTI" senzaIndietro="{{ true }}" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

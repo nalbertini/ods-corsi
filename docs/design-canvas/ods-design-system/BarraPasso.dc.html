@@ -15,6 +15,22 @@
   </style>
 </helmet>
 <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 20px 20px; background: {{c.bg}}; border-top: 2px solid {{c.line}}; color: {{c.text}}">
+  <sc-if value="{{eCompatta}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <span style="flex-shrink: 0; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.2em; color: {{c.rossoTesto}}">{{contoCompatto}}</span>
+        <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: 1; min-width: 0; min-height: 44px; padding: 0 12px; border: 2px solid {{c.rosso}}; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: {{c.text}}"><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">VAI A: {{prossimo}}</span><span>&#8250;</span></span>
+        <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid {{c.lineCampo}}; font-size: 14px; color: {{c.tasto}}">{{freccia}}</span>
+      </div>
+      <sc-if value="{{eAperta}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; max-height: 232px; overflow: hidden">
+          <sc-for list="{{manca}}" as="m" hint-placeholder-count="3">
+            <span style="display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 0 12px; border-top: 2px solid {{c.line}}; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: {{c.sec}}"><span>{{m.testo}}</span><span>&#8250;</span></span>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
   <sc-if value="{{haManca}}" hint-placeholder-val="{{ true }}">
     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
       <span style="font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.2em; color: {{c.rossoTesto}}">{{mancaTitolo}}</span>
@@ -37,7 +53,8 @@
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"avanti":{"editor":"text","default":"AVANTI"},"indietro":{"editor":"text","default":"INDIETRO"},"manca":{"editor":"text","default":""},"nota":{"editor":"text","default":""},"tono":{"editor":"enum","options":["principale","vai"],"default":"principale"},"indietroChiede":{"editor":"boolean","default":false},"senzaIndietro":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":150}}'>
+<script data-dc-script data-props='{"avanti":{"editor":"text","default":"AVANTI"},"indietro":{"editor":"text","default":"INDIETRO"},"manca":{"editor":"text","default":""},"nota":{"editor":"text","default":""},"tono":{"editor":"enum","options":["principale","vai"],"default":"principale"},"indietroChiede":{"editor":"boolean","default":false},"compatta":{"editor":"boolean","default":false},"aperta":{"editor":"boolean","default":false},"senzaIndietro":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":150}}'>
+// PROPOSTA (rifinitura iscrizione): `compatta` = la barra del mancante in una riga sola (MANCANO N, il tasto VAI A: la prima voce, e ▾ che apre l'elenco; `aperta` lo mostra, una voce = un tasto che porta al campo); le voci mancanti sono la lista `manca` come prima, la prima e' la prossima. Il bordo di INDIETRO usa `riga-campo`. Nell'app e' sempre compatta (`compatta` vero); la pastiglia per cosa resta per le proposte vecchie.
 // Il fondo di ogni passo: `BarraPasso` di src/components/ds.tsx e `.barra-passo*` di src/styles.css (modulo a passi, solo in prova). Nell'app e' sticky: resta in fondo allo schermo, sotto il pollice; qui e' ferma. Se manca qualcosa dice cosa (MANCA 1 COSA: + una pastiglia da 44px per cosa,
 // separate da |); se no una riga verde con la nota. Poi INDIETRO (110px, linea) e AVANTI (principale rosso, o vai verde per l'ultimo
 // passo che manda la richiesta). `indietroChiede` e' lo stato dei due tocchi di DueTocchi (ds.tsx): bordo e testo rossi,
@@ -57,7 +74,9 @@ class Component extends DCLogic {
     const chiede = truthy(p.indietroChiede);
     const vai = p.tono === 'vai';
     return {
-      c, cond: COND, manca, haManca: manca.length > 0,
+      c, cond: COND, manca, haManca: manca.length > 0 && !truthy(p.compatta),
+      eCompatta: manca.length > 0 && truthy(p.compatta), eAperta: truthy(p.aperta), freccia: truthy(p.aperta) ? '\u25b4' : '\u25be',
+      prossimo: manca.length > 0 ? manca[0].testo : '', contoCompatto: manca.length === 1 ? 'MANCA 1' : 'MANCANO ' + manca.length,
       mancaTitolo: manca.length === 1 ? 'MANCA 1 COSA:' : 'MANCANO ' + manca.length + ' COSE:',
       haNota: manca.length === 0 && String(p.nota ?? '') !== '', nota: p.nota ?? '',
       haIndietro: !truthy(p.senzaIndietro), indietro: chiede ? 'LE RISPOSTE SI PERDONO · ESCI?' : (p.indietro ?? 'INDIETRO'),

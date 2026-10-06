@@ -110,7 +110,7 @@ accoglie.
 
 È un modulo nuovo, che fa le stesse domande una schermata alla volta: prima
 si sceglie **IO, SONO ADULTO** o **MIO FIGLIO O MIA FIGLIA**, poi si va avanti
-con **AVANTI**, e in fondo allo schermo c'è sempre cosa manca. L'ultimo passo
+con **AVANTI**. Se tocchi AVANTI e manca qualcosa, in fondo allo schermo una riga dice quante cose mancano e **VAI A** la prima: un tocco e il cursore è già nel campo. La freccia accanto apre l'elenco di tutto quel che manca, e ogni voce porta al suo campo. L'ultimo passo
 è il riepilogo: da lì **MODIFICA** riporta al passo da cambiare, e **MANDA LA
 RICHIESTA** la manda. Chi iscrive il figlio può iscriversi anche lui, con
 **ISCRIVO ANCHE ME**: sono poche domande in più, e la segreteria vede il

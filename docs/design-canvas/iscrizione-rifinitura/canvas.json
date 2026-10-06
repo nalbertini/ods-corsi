@@ -1,0 +1,122 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Rifinitura"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Barra.dc.html",
+   "title": "La barra del mancante · compatta",
+   "x": 0,
+   "y": 140,
+   "w": 390,
+   "h": 1000,
+   "page": "page-1"
+  },
+  {
+   "file": "A2.dc.html",
+   "title": "Adulto · passo 2 scegli il corso",
+   "x": 510,
+   "y": 140,
+   "w": 390,
+   "h": 1330,
+   "page": "page-1"
+  },
+  {
+   "file": "M2.dc.html",
+   "title": "Figlio · passo 2 scegli il corso di Luca",
+   "x": 1020,
+   "y": 140,
+   "w": 390,
+   "h": 1280,
+   "page": "page-1"
+  },
+  {
+   "file": "A3.dc.html",
+   "title": "Adulto · passo 3 il modulo e la firma",
+   "x": 1530,
+   "y": 140,
+   "w": 390,
+   "h": 1560,
+   "page": "page-1"
+  },
+  {
+   "file": "A4.dc.html",
+   "title": "Adulto · passo 4 i documenti e il pagamento",
+   "x": 2040,
+   "y": 140,
+   "w": 390,
+   "h": 1900,
+   "page": "page-1"
+  },
+  {
+   "file": "M4.dc.html",
+   "title": "Figlio · passo 4 i documenti, con le parole per il genitore",
+   "x": 2550,
+   "y": 140,
+   "w": 390,
+   "h": 900,
+   "page": "page-1"
+  },
+  {
+   "file": "M1Genitore.dc.html",
+   "title": "Figlio · passo 1 il codice è quello di Luca, e il luogo si chiede solo se serve",
+   "x": 3060,
+   "y": 140,
+   "w": 390,
+   "h": 700,
+   "page": "page-1"
+  },
+  {
+   "file": "Fine.dc.html",
+   "title": "Adulto · richiesta arrivata, con importo e IBAN",
+   "x": 3570,
+   "y": 140,
+   "w": 390,
+   "h": 1400,
+   "page": "page-1"
+  },
+  {
+   "file": "Scelte.dc.html",
+   "title": "Scelte a due e bordi · tema scuro",
+   "x": 4080,
+   "y": 140,
+   "w": 390,
+   "h": 780,
+   "page": "page-1"
+  },
+  {
+   "file": "ScelteChiaro.dc.html",
+   "title": "Scelte a due e bordi · tema chiaro",
+   "x": 4590,
+   "y": 140,
+   "w": 390,
+   "h": 780,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "n1",
+   "x": 0,
+   "y": 0,
+   "w": 1400,
+   "text": "Rifinitura dell’iscrizione a passi · PROPOSTA. Adulto 5 passi (1 dati, 2 corso, 3 modulo e firma, 4 documenti e pagamento, 5 controlla e invia), figlio 6. Oggi: 4 e 5. Il corso resta obbligatorio.",
+   "page": "page-1"
+  },
+  {
+   "id": "n2",
+   "x": 0,
+   "y": 2200,
+   "w": 1400,
+   "text": "DA CONFERMARE CON LA PALESTRA (le frasi sono bozze): cosa dire sul tesseramento FIJLKAM/FIPE; orario del telefono; in quanti giorni la segreteria risponde; da che età i corsi per grandi (Pesistica dai 16?). Nessuna bozza sul telefono: solo l’avviso del browser se esci con risposte inserite.",
+   "page": "page-1"
+  }
+ ],
+ "launch": {
+  "view": "canvas",
+  "page": "page-1"
+ }
+}

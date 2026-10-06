@@ -238,8 +238,10 @@ function Flusso({
       ...grezzo,
       risposte: { ...r, natoIl, natoA: luogo ? scriviLuogo(luogo) : r.natoA },
       natoAGenitore: luogoG?.nome ?? grezzo.natoAGenitore,
+      // Con «Anche tu» il foglio si firma sempre qui.
+      firmaInFoto: come === 'foto' && !grezzo.ancheTu,
     }
-  }, [grezzo, luoghi])
+  }, [grezzo, luoghi, come])
   const r = v.risposte
   const figlio = v.chi === 'figlio'
   const ancheTu = !!v.ancheTu
@@ -290,7 +292,7 @@ function Flusso({
 
   const controllo = P.controlloScelta(v)
   const mancaOra = P.mancaNelPasso(v, passo)
-  const manca = provato ? mancaOra : []
+  const manca = provato ? P.mancanti(v, passo) : []
 
   const vai = (p: number) => {
     setPasso(p)
@@ -504,6 +506,8 @@ function Flusso({
 
   const cf = (chiave: 'codiceFiscale' | 'genitoreCodiceFiscale', etichetta: string, nascita: string) => {
     const a = nascita ? `${anniScritti(nascita)}: lo dice il codice fiscale` : undefined
+    const notaNascita = a ? { testo: a, guaio: false } : { testo: 'Compare dal codice fiscale', guaio: false }
+    const valoreNascita = nascita ? nascita.split('-').reverse().join('/') : ''
     return (
       <>
         <Campo id={`n-${chiave}`} nota={chiave === 'codiceFiscale' && controllo && !errori[chiave] ? { testo: `Il codice torna, ma dice che è nato nel ${r.natoIl.slice(0, 4)}: è ${controllo.verdetto === 'minore' ? 'minorenne' : 'maggiorenne'}.`, guaio: false } : nota(chiave)} etichetta={etichetta} largo>
@@ -518,9 +522,16 @@ function Flusso({
             onChange={metti(chiave)}
           />
         </Campo>
-        <Campo id={`n-nascita-${chiave}`} etichetta="DATA DI NASCITA" nota={a ? { testo: a, guaio: false } : { testo: 'Compare dal codice fiscale', guaio: false }}>
-          <input id={`n-nascita-${chiave}`} className="campo" readOnly value={nascita ? nascita.split('-').reverse().join('/') : ''} />
-        </Campo>
+        {/* La voce DATA DI NASCITA della barra (chiave natoIl) porta qui: la data la dice il codice fiscale di chi si iscrive. */}
+        {chiave === 'codiceFiscale' ? (
+          <Campo id="n-natoIl" etichetta="DATA DI NASCITA" nota={notaNascita}>
+            <input id="n-natoIl" className="campo" readOnly value={valoreNascita} />
+          </Campo>
+        ) : (
+          <Campo id="n-nascita-genitoreCodiceFiscale" etichetta="DATA DI NASCITA" nota={notaNascita}>
+            <input id="n-nascita-genitoreCodiceFiscale" className="campo" readOnly value={valoreNascita} />
+          </Campo>
+        )}
         {chiave === 'codiceFiscale' ? (
           <Campo id="n-natoA" etichetta="LUOGO DI NASCITA" nota={nota('natoA')}>
             <input
@@ -1034,7 +1045,10 @@ function Flusso({
       <Avanzamento numero={passo} totale={tipi.length} titolo={nomiPassi[passo - 1] ?? ''} />
       {corpo()}
       <BarraPasso
+        // Un passo nuovo riparte con l'elenco chiuso.
+        key={passo}
         manca={manca}
+        onVai={focus}
         // Il «tutto a posto» solo se davvero non manca niente: a passo vuoto, prima di provare, non c'è né elenco né ✓.
         nota={mancaOra.length === 0 ? (ultimo ? undefined : 'Tutto a posto in questo passo.') : undefined}
         avanti={inVolo ? 'MANDO…' : ultimo ? (dueRichieste ? 'MANDA LE RICHIESTE' : 'MANDA LA RICHIESTA') : 'AVANTI'}

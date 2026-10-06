@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1900px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 20px; border-bottom: 2px solid #2a2a2a"><span style="font-size: 14px; line-height: 1.3; color: #c9c9c4">Un dubbio? Chiama la segreteria.</span><dc-import name="Bottone" label="CHIAMA" variante="linea" alto="44px" corpo="16px" larghezza="132px" hint-size="132px,44px"></dc-import></div>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="4" totale="5" titolo="I DOCUMENTI E IL PAGAMENTO" hint-size="100%,120px"></dc-import><dc-import name="Titoletto" label="I DOCUMENTI" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><dc-import name="CaricaFile" etichetta="LA TUA CARTA D’IDENTITÀ" dettaglio="Il fronte. Una foto o il PDF." nome="carta-identita.jpg" kb="412" hint-size="100%,120px"></dc-import><dc-import name="CaricaFile" etichetta="IL RETRO DELLA CARTA" dettaglio="Il retro. Una foto o il PDF." hint-size="100%,120px"></dc-import><dc-import name="CaricaFile" etichetta="IL CERTIFICATO MEDICO" seManca="PUOI PORTARLO DOPO" dettaglio="Dai 6 anni serve per partecipare. Se non ce l’hai ancora, lo porti in segreteria prima della prima lezione." hint-size="100%,130px"></dc-import></div><dc-import name="Titoletto" label="QUANTO PAGHI" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><dc-import name="StimaCosto" righe="Quota associativa:50 €|Judo adulti · annuale:360 €" totale="410 €" frasi="La quota associativa vale fino a luglio 2027." causale="Iscrizione Paolo Bianchi · Judo adulti" iban="IT03 D076 0101 0000 0007 6350 339" intestatario="ASD Il Centro Judo" hint-size="100%,470px"></dc-import></div><dc-import name="Titoletto" label="LA RICEVUTA · FACOLTATIVA" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">Pagare in segreteria va benissimo: non serve caricare niente.</span><dc-import name="CaricaFile" etichetta="RICEVUTA DEL PAGAMENTO" seManca="PAGO IN SEGRETERIA" dettaglio="Se hai già pagato: una foto o il PDF." hint-size="100%,120px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" nota="Tutto a posto in questo passo." avanti="AVANTI" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

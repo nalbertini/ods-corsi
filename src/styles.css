@@ -724,12 +724,20 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
      L'ombra non allarga l'area che scorre (niente barra orizzontale); il clip la tiene fuori da sopra e sotto. */
   box-shadow: 0 2px 0 100vmax var(--bg), 0 0 0 100vmax var(--line); clip-path: inset(0 -100vmax);
 }
-.barra-manca { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.barra-manca-titolo { font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.2em; color: var(--rosso-testo); }
-.barra-pastiglia {
-  display: flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid var(--line);
-  font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--sec);
+/* Cosa manca, in una riga sola: quanti, VAI A la prima voce, ▾ per l'elenco. L'altezza non dipende da quante voci mancano. */
+.barra-manca { display: flex; flex-direction: column; gap: 6px; }
+.barra-manca-riga { display: flex; align-items: center; gap: 8px; }
+.barra-manca-titolo { flex-shrink: 0; font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.2em; color: var(--rosso-testo); }
+.barra-manca-vai, .barra-manca-apri, .barra-manca-voce {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px;
+  background: none; color: var(--text); font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em;
 }
+.barra-manca-vai { flex: 1; min-width: 0; padding: 0 12px; border: 2px solid var(--rosso); }
+.barra-manca-nome { min-width: 0; overflow: hidden; line-height: 1.15; text-align: left; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.barra-manca-apri { flex-shrink: 0; justify-content: center; width: 44px; border: 2px solid var(--riga-campo); color: var(--tasto); font-size: 14px; }
+/* L'elenco scorre dentro la barra: con venti voci non mangia lo schermo. */
+.barra-manca-elenco { display: flex; flex-direction: column; max-height: 30dvh; overflow-y: auto; }
+.barra-manca-voce { padding: 0 12px; border: 0; border-top: 2px solid var(--line); text-align: left; color: var(--sec); }
 .barra-nota { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.35; color: var(--sec); }
 .barra-nota-segno { font-family: var(--cond); font-size: 16px; font-weight: 700; color: var(--verde-testo); }
 .barra-tasti { display: flex; flex-wrap: wrap; gap: 10px; }

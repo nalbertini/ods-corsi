@@ -118,6 +118,8 @@ function Tela({ id, tratti, onTratti, onTocco, limita, descritto }: { id?: strin
   return (
     <canvas
       id={id}
+      // Senza tabindex il fuoco non ci arriva: VAI A: FIRMA della barra non lo sposterebbe.
+      tabIndex={-1}
       ref={tela}
       className="firma-tela"
       role="img"
