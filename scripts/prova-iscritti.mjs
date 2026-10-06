@@ -134,6 +134,19 @@ console.log('\n5. gli avvisi in cima')
   ok('pagato fino a ieri: guaio', t({ scade: '2027-06-01', conFile: true }, { stato: 'pagato', fino: '2026-10-01' }), ['guaio'])
 }
 
+console.log('\n5b. sotto i 6 anni il certificato non serve (area iscritti)')
+{
+  const t = (natoIl, certificato) => m.avvisi({ certificato, pagamento: { stato: 'pagato' }, natoIl }, '2026-10-02').map((a) => a.tono)
+  ok('5 anni senza certificato: niente da sistemare', t('2021-03-10', { conFile: false }), [])
+  ok('5 anni col certificato scaduto: nemmeno', t('2021-03-10', { scade: '2026-09-01', conFile: false }), [])
+  ok('compie 6 anni fra due settimane, senza certificato: un avviso, non il via libera', t('2020-10-16', { conFile: false }), ['avviso'])
+  ok('compie 6 anni oggi: manca il certificato', t('2020-10-02', { conFile: false }), ['guaio'])
+  ok('senza data di nascita: come prima', t(undefined, { conFile: false }), ['guaio'])
+  // La scheda dell'iscritto porta la data di nascita che la segreteria conosce.
+  await s.salvaAnagrafica(chi, { natoIl: '2021-03-10' })
+  ok('la scheda porta la data di nascita', (await io.scheda(chi)).natoIl, '2021-03-10')
+}
+
 console.log('\n6. le ricevute degli esempi')
 {
   const DOVE = 'ods-corsi:prova-esempi-ricevute'

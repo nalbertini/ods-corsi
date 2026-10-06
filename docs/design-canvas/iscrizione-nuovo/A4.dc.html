@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Passo 4, adulto. Il riepilogo è la parte nuova del flusso. Le righe facoltative non date (certificato, ricevuta) sono gialle e hanno il tasto CARICA, perché in questo flusso sono file facoltativi come nel modulo di oggi. Le NOTE PER LA SEGRETERIA vengono dal fondo di ModuloFile. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1092px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="4" totale="4" titolo="CONTROLLA E INVIA" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 12px"><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">Ecco cosa stai mandando. Tocca MODIFICA per cambiare qualcosa.</span><dc-import name="Riepilogo" righe="fatto~Paolo Bianchi~nato il 15/08/1985 · 40 anni~MODIFICA|fatto~Judo adulti · annuale~martedì e giovedì 17.30-18.30 · 410 € con la quota~MODIFICA|fatto~Firma sul modulo~tesseramento: autorizzo · foto: non autorizzo~MODIFICA|fatto~Carta d’identità~fronte~MODIFICA|manca~Certificato medico~non caricato: lo porti in segreteria~CARICA|manca~Ricevuta del pagamento~non caricata: paghi in segreteria~CARICA" hint-size="100%,420px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #f4c31b">Il certificato medico si porta in segreteria prima della prima lezione: senza non si partecipa.</span><dc-import name="Campo" tipo="area" etichetta="NOTE PER LA SEGRETERIA · FACOLTATIVE" segnaposto="Niente dati sulla salute: quelli si portano in segreteria." hint-size="100%,130px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Mandala una volta sola: ogni invio è una richiesta per la segreteria.</span></div>
+</main>
+<dc-import name="BarraPasso" avanti="MANDA LA RICHIESTA" tono="vai" nota="Tutto a posto: puoi mandare." hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

@@ -89,7 +89,7 @@ const nuova = (nome, cognome) => s.salvaPersona({ nome, cognome })
 
 await sezione('1. gli stati della scheda', async () => {
   const oggi = '2026-09-26'
-  const stato = (c) => f('statoCertificato', c, oggi)
+  const stato = (c) => f('statoFileCertificato', c, oggi)
   ok('nessun certificato', stato({ conFile: false }), 'nessuno')
   ok('un file senza la data: manca ancora il certificato, finché la segreteria non scrive la data', stato({ conFile: true }), 'nessuno')
   ok('valido, col file', stato({ scade: '2027-03-14', conFile: true }), 'valido')
@@ -106,7 +106,7 @@ await sezione('1. gli stati della scheda', async () => {
   ok('il file si cancella 30 giorni dopo la scadenza', f('cancellaFileIl', '2026-09-01'), '2026-10-01')
   ok('anche a cavallo dell\'anno', f('cancellaFileIl', '2026-12-15'), '2027-01-14')
 
-  const sotto = (natoIl, certificato = { conFile: false }, attiva = true) => f('certificatoMancante', { attiva, certificato, natoIl }, oggi)
+  const sotto = (natoIl, certificato = { conFile: false }, attiva = true) => f('senzaCertificatoValido', { attiva, certificato, natoIl }, oggi)
   ok('sotto i 6 anni il certificato non manca', sotto('2020-09-27'), false)
   ok('a 6 anni compiuti oggi manca', sotto('2020-09-26'), true)
   ok('senza data di nascita manca come per tutti', sotto(undefined), true)
@@ -186,11 +186,11 @@ await sezione('1b. cosa dice la scheda e cosa si può salvare', async () => {
 
 await sezione('1c. sotto i 6 anni, per tutti allo stesso modo', async () => {
   const oggi = '2026-09-26'
-  ok('sotto i 6 anni il 29 febbraio: nato il 29 febbraio 2020, il 28 febbraio 2026 ha 5 anni', f('sottoSeiAnni', '2020-02-29', '2026-02-28'), true)
-  ok('… il 1 marzo 2026 ne ha 6', f('sottoSeiAnni', '2020-02-29', '2026-03-01'), false)
-  ok('oggi che è il 29 febbraio 2028: nato il 29 febbraio 2024, ha 4 anni', f('sottoSeiAnni', '2024-02-29', '2028-02-29'), true)
-  ok('nato il 29 febbraio 2020, il 29 febbraio 2028 ne ha 8', f('sottoSeiAnni', '2020-02-29', '2028-02-29'), false)
-  ok('senza la data di nascita no', f('sottoSeiAnni', undefined, oggi), false)
+  ok('sotto i 6 anni il 29 febbraio: nato il 29 febbraio 2020, il 28 febbraio 2026 ha 5 anni', f('serveCertificato', '2020-02-29', '2026-02-28') !== 'serve', true)
+  ok('… il 1 marzo 2026 ne ha 6', f('serveCertificato', '2020-02-29', '2026-03-01') !== 'serve', false)
+  ok('oggi che è il 29 febbraio 2028: nato il 29 febbraio 2024, ha 4 anni', f('serveCertificato', '2024-02-29', '2028-02-29') !== 'serve', true)
+  ok('nato il 29 febbraio 2020, il 29 febbraio 2028 ne ha 8', f('serveCertificato', '2020-02-29', '2028-02-29') !== 'serve', false)
+  ok('senza la data di nascita no', f('serveCertificato', undefined, oggi) !== 'serve', false)
   const persone = [
     { attiva: true, natoIl: '2021-05-05', certificato: { conFile: false } },
     { attiva: true, natoIl: '2021-05-05', certificato: { scade: '2026-01-01', conFile: false } },
@@ -202,14 +202,14 @@ await sezione('1c. sotto i 6 anni, per tutti allo stesso modo', async () => {
     { attiva: true, certificato: { conFile: false } },
   ]
   const attive = persone.filter((x) => x.attiva)
-  const conti = f('contiCertificati', attive, oggi)
-  ok('i conti: valido, in scadenza, scaduto, manca, non serve', conti, { valido: 1, in_scadenza: 1, scaduto: 1, manca: 2, non_serve: 2 })
+  const conti = f('contaCertificati', attive, oggi)
+  ok('i conti delle statistiche: valido, in scadenza, scaduto, manca (chi non ha l\'obbligo non si conta)', conti, { valido: 1, in_scadenza: 1, scaduto: 1, manca: 2 })
   ok('chi manca è chi non è a posto: stesso numero in DA FARE, ISCRITTI e nelle statistiche', [
-    attive.filter((x) => f('certificatoMancante', x, oggi)).length,
-    attive.filter((x) => !f('certificatoInRegola', x, oggi)).length,
+    attive.filter((x) => f('senzaCertificatoValido', x, oggi)).length,
+    attive.filter((x) => ['manca', 'scaduto'].includes(f('statoCertificato', x, oggi))).length,
     conti.scaduto + conti.manca,
   ], [3, 3, 3])
-  ok('un bambino sotto i 6 anni è a posto, e non avvisa l\'iscritto', [f('certificatoInRegola', persone[0], oggi), f('certificatoInRegola', persone[3], oggi)], [true, false])
+  ok('un bambino sotto i 6 anni è a posto, e non avvisa l\'iscritto', [f('statoCertificato', persone[0], oggi), f('statoCertificato', persone[3], oggi)], ['non_serve', 'scaduto'])
   const quotaPagata = { pagamento: { stato: 'pagato' }, quote: [] }
   ok('l\'area dell\'iscritto: un bambino sotto i 6 anni non ha avvisi, un adulto sì', [m.iscrittoLib.avvisi({ certificato: {}, natoIl: '2021-05-05', ...quotaPagata }, oggi).length, m.iscrittoLib.avvisi({ certificato: {}, natoIl: '1990-05-05', ...quotaPagata }, oggi).length], [0, 1])
   ok('inRegola usa la stessa regola', f('inRegola', { ...persone[0], pagamento: { stato: 'pagato' }, quote: [] }, oggi), true)
@@ -264,10 +264,10 @@ await sezione('3. trenta giorni dopo la scadenza il file se ne va, la data resta
   const v = await nuova('Vera', 'Scaduta')
   await s.caricaCertificato(u, png(), '2026-08-28') // scaduto da 29 giorni
   await s.caricaCertificato(v, png(), '2026-08-27') // da 30
-  ok('a 29 giorni dalla scadenza il file c\'è ancora, e la scheda dice scaduto', [(await di(u)).certificato.conFile, f('statoCertificato', (await di(u)).certificato, '2026-09-26')], [true, 'scaduto_con_file'])
+  ok('a 29 giorni dalla scadenza il file c\'è ancora, e la scheda dice scaduto', [(await di(u)).certificato.conFile, f('statoFileCertificato', (await di(u)).certificato, '2026-09-26')], [true, 'scaduto_con_file'])
   const dopo = await di(v)
   ok('a 30 il file non c\'è più, la data sì', [dopo.certificato.conFile, dopo.certificato.scade, await s.apriCertificato(v)], [false, '2026-08-27', null])
-  ok('e la scheda dice scaduto, file cancellato', f('statoCertificato', dopo.certificato, '2026-09-26'), 'scaduto_senza_file')
+  ok('e la scheda dice scaduto, file cancellato', f('statoFileCertificato', dopo.certificato, '2026-09-26'), 'scaduto_senza_file')
   OGGI += GIORNO
   try {
     ok('il giorno dopo se ne va anche quello di Ugo', [(await di(u)).certificato.conFile, (await di(u)).certificato.scade, await s.apriCertificato(u)], [false, '2026-08-28', null])
@@ -344,11 +344,11 @@ await sezione('6. la richiesta accolta porta il certificato sulla scheda', async
   const id = await r.accogli(luca)
   const c = (await di(id)).certificato
   ok('accolta: il file è sulla scheda, senza data', [c.conFile, c.scade, !c.vecchio, c.caricatoIl], [true, undefined, true, '2026-09-26'])
-  ok('la scheda dice che manca il certificato finché non c\'è la data', f('statoCertificato', c, '2026-09-26'), 'nessuno')
+  ok('la scheda dice che manca il certificato finché non c\'è la data', f('statoFileCertificato', c, '2026-09-26'), 'nessuno')
   ok('e il file si apre', (await s.apriCertificato(id))?.pdf, true)
   ok('dalla richiesta il certificato è uscito, il modulo resta', (await r.file(luca)).map((x) => x.tipo), ['modulo'])
   await s.salvaCertificato(id, '2027-09-01')
-  ok('la segreteria scrive la data e il file resta', [(await di(id)).certificato.conFile, f('statoCertificato', (await di(id)).certificato, '2026-09-26')], [true, 'valido'])
+  ok('la segreteria scrive la data e il file resta', [(await di(id)).certificato.conFile, f('statoFileCertificato', (await di(id)).certificato, '2026-09-26')], [true, 'valido'])
 
   // Un file sbagliato si toglie prima di accogliere.
   const terzo = await r.invia(adulto({ nome: 'Terzo', codiceFiscale: 'RSSTRZ96A01L219A', email: 'terzo@esempio.it' }))

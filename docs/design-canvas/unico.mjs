@@ -20,9 +20,11 @@ const SEZIONI = [
   { id: 'istruttore', nome: 'Sezione istruttore', cartella: 'istruttore' },
   { id: 'tablet-sala', nome: 'Tablet di sala', cartella: 'tablet-sala' },
   { id: 'iscrizione', nome: 'Registrazione utente', cartella: 'iscrizione' },
+  { id: 'iscrizione-nuovo', nome: 'Registrazione · nuovo flusso', cartella: 'iscrizione-nuovo' },
   { id: 'importa-fogli', nome: 'Importa da Excel', cartella: 'import-fogli' },
   { id: 'timer-desktop', nome: 'Timer desktop · proposte', cartella: 'timer-desktop' },
   { id: 'certificati-online', nome: 'Certificati online', cartella: 'certificati-online' },
+  { id: 'certificato-piccoli', nome: 'Certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

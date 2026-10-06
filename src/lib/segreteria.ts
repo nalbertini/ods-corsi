@@ -122,8 +122,6 @@ export interface PersonaSeg {
   telefono?: string
   attiva: boolean
   creataIl: string
-  /** La data di nascita, se si sa: sotto i 6 anni il certificato non si chiede. */
-  natoIl?: string
   /** Anche quelle terminate: dicono da quando a quando. */
   iscrizioni: IscrizioneSeg[]
   certificato: CertificatoSeg
@@ -135,6 +133,8 @@ export interface PersonaSeg {
   quote?: QuotaRicevuta[]
   /** Il titolare del nucleo familiare di cui fa parte, per id (vedi `nucleo.ts`). Solo in prova, per ora. */
   nucleo?: string
+  /** `AAAA-MM-GG`, dall'anagrafica; senza, l'età non si sa e il certificato serve (vedi `serveCertificato`). */
+  natoIl?: string
 }
 
 /**
@@ -676,14 +676,93 @@ export function comeCertificato(c: Pick<CertificatoSeg, 'scade'>, oggi: string):
   return c.scade <= spostaGiorno(oggi, AVVISO_CERTIFICATO) ? 'in_scadenza' : 'valido'
 }
 
-export type StatoCertificato = 'nessuno' | 'valido' | 'in_scadenza' | 'scaduto_con_file' | 'scaduto_senza_file' | 'valido_senza_file' | 'file_vecchio'
+/** Dal 6° compleanno il certificato serve; un mese prima (`AVVISO_CERTIFICATO`) la segreteria deve già saperlo. */
+const ANNI_CERTIFICATO = 6
+
+/** Il giorno in cui compie 6 anni, `AAAA-MM-GG`: quello in cui il certificato comincia a servire. */
+export function dalCertificato(natoIl: string): string {
+  const [a, m, g] = natoIl.split('-').map(Number)
+  const d = new Date(a + ANNI_CERTIFICATO, m - 1, g)
+  return chiaveGiorno(d)
+}
 
 /**
- * Lo stato che dice la scheda. Senza data il certificato non c'è, anche col
+ * Chi ha meno di 6 anni non ha l'obbligo del certificato. `in_arrivo`: lo
+ * avrà entro un mese. Senza una data di nascita valida l'età non si sa, e il
+ * certificato serve come prima.
+ */
+export function serveCertificato(natoIl: string | undefined, oggi: string): 'serve' | 'in_arrivo' | 'non_serve' {
+  if (!natoIl || !/^\d{4}-\d{2}-\d{2}$/.test(natoIl)) return 'serve'
+  const dal = dalCertificato(natoIl)
+  if (dal <= oggi) return 'serve'
+  return dal <= spostaGiorno(oggi, AVVISO_CERTIFICATO) ? 'in_arrivo' : 'non_serve'
+}
+
+/** Dove si è scritta una data di nascita: la scheda della segreteria o la richiesta accolta. */
+export interface FonteNascita {
+  personaId: string
+  da: 'segreteria' | 'modulo'
+  /** Quando è stata scritta: vince la più recente, a parità la segreteria (come `anagrafica`). */
+  quando: string
+  natoIl?: string
+}
+
+/**
+ * La data di nascita di ognuno: quella della fonte più recente, intera. Se
+ * la più recente non ha la data, non c'è: come l'anagrafica della scheda,
+ * che non passa a una fonte più vecchia.
+ */
+export function nascitaDelleFonti(fonti: FonteNascita[]): Map<string, string> {
+  const vince = new Map<string, FonteNascita>()
+  for (const f of fonti) {
+    const prima = vince.get(f.personaId)
+    if (!prima || f.quando > prima.quando || (f.quando === prima.quando && f.da === 'segreteria')) vince.set(f.personaId, f)
+  }
+  return new Map([...vince].flatMap(([id, f]) => (f.natoIl ? [[id, f.natoIl] as [string, string]] : [])))
+}
+
+export type StatoCertificato = ComeCertificato | 'non_serve' | 'in_arrivo'
+
+/**
+ * `comeCertificato` con l'età. Sotto i 6 anni non serve, anche se la
+ * segreteria ne ha segnato uno; a un mese dal compleanno, senza certificato,
+ * è `in_arrivo`.
+ */
+export function statoCertificato(p: { certificato: Pick<CertificatoSeg, 'scade'>; natoIl?: string }, oggi: string): StatoCertificato {
+  const serve = serveCertificato(p.natoIl, oggi)
+  if (serve === 'serve') return comeCertificato(p.certificato, oggi)
+  if (serve === 'in_arrivo' && !p.certificato.scade) return 'in_arrivo'
+  return 'non_serve'
+}
+
+// Il certificato si cerca fra chi è attivo: chi ha smesso non lo deve portare. Gli stessi conti di DA FARE.
+export const senzaCertificatoValido = (p: PersonaSeg, oggi: string) => p.attiva && ['manca', 'scaduto'].includes(statoCertificato(p, oggi))
+export const certificatoInScadenza = (p: PersonaSeg, oggi: string) => p.attiva && statoCertificato(p, oggi) === 'in_scadenza'
+/** Compie 6 anni entro un mese e non ha il certificato: da avvisare la famiglia. */
+export const certificatoInArrivo = (p: PersonaSeg, oggi: string) => p.attiva && statoCertificato(p, oggi) === 'in_arrivo'
+
+/** Senza certificato e senza data di nascita: non si sa se serve, e la segreteria deve saperlo. */
+export const mancaLaData = (p: Pick<PersonaSeg, 'certificato' | 'natoIl'>) => !p.natoIl && !p.certificato.scade
+
+/** Il riquadro CERTIFICATO delle statistiche: chi non ha l'obbligo non si conta. */
+export function contaCertificati(persone: Array<Pick<PersonaSeg, 'certificato' | 'natoIl'>>, oggi: string) {
+  const conto = { valido: 0, in_scadenza: 0, scaduto: 0, manca: 0 }
+  for (const p of persone) {
+    const come = statoCertificato(p, oggi)
+    if (come !== 'non_serve' && come !== 'in_arrivo') conto[come]++
+  }
+  return conto
+}
+
+
+export type StatoFileCertificato = 'nessuno' | 'valido' | 'in_scadenza' | 'scaduto_con_file' | 'scaduto_senza_file' | 'valido_senza_file' | 'file_vecchio'
+
+/**
+ * Lo stato del file e della data che dice la scheda (l'età la dice `statoCertificato`). Senza data il certificato non c'è, anche col
  * file: la data la scrive la segreteria. In scadenza e scaduto vengono prima
  * del file: lì conta cosa fare, non dov'è il foglio.
  */
-export function statoCertificato(c: CertificatoSeg, oggi: string): StatoCertificato {
+export function statoFileCertificato(c: CertificatoSeg, oggi: string): StatoFileCertificato {
   if (!c.scade) return 'nessuno'
   if (c.scade < oggi) return c.conFile ? 'scaduto_con_file' : 'scaduto_senza_file'
   if (c.scade <= spostaGiorno(oggi, AVVISO_CERTIFICATO)) return 'in_scadenza'
@@ -695,36 +774,6 @@ export const GIORNI_FILE_DOPO_SCADENZA = 30
 
 /** Il giorno in cui il file di un certificato che scade il `scade` si cancella. */
 export const cancellaFileIl = (scade: string) => spostaGiorno(scade, GIORNI_FILE_DOPO_SCADENZA)
-
-/** Sotto i 6 anni il certificato non si chiede. Senza la data di nascita, come per tutti. */
-export function sottoSeiAnni(natoIl: string | undefined, oggi: string): boolean {
-  // Il confronto è fra stringhe: a 6 anni si arriva il giorno stesso, e chi è nato il 29 febbraio li compie il 1 marzo (ogni anno) o il 29.
-  return !!natoIl && natoIl > `${Number(oggi.slice(0, 4)) - 6}${oggi.slice(4)}`
-}
-
-export type ComeCertificatoDi = ComeCertificato | 'non_serve'
-
-/** Quel che serve a dire come sta uno col certificato: la scheda della segreteria e quella che vede l'iscritto. */
-type ConCertificato = { certificato: Pick<CertificatoSeg, 'scade'>; natoIl?: string }
-
-/** Come `comeCertificato`, ma sotto i 6 anni, senza un certificato valido, `non_serve`: è a posto lo stesso. */
-export function comeCertificatoDi(p: ConCertificato, oggi: string): ComeCertificatoDi {
-  const come = comeCertificato(p.certificato, oggi)
-  return sottoSeiAnni(p.natoIl, oggi) && come !== 'valido' && come !== 'in_scadenza' ? 'non_serve' : come
-}
-
-/** In regola col certificato: valido (anche se in scadenza), o non serve. L'unica regola: la usano tutte le schermate. */
-export const certificatoInRegola = (p: ConCertificato, oggi: string) => comeCertificatoDi(p, oggi) !== 'manca' && comeCertificatoDi(p, oggi) !== 'scaduto'
-
-/** Chi è attivo e non è in regola col certificato: manca o è scaduto. */
-export const certificatoMancante = (p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'natoIl'>, oggi: string) => p.attiva && !certificatoInRegola(p, oggi)
-
-/** Quanti, per come stanno col certificato: i numeri delle statistiche, che sono quelli di DA FARE e di ISCRITTI. */
-export function contiCertificati(persone: ConCertificato[], oggi: string): Record<ComeCertificatoDi, number> {
-  const conti: Record<ComeCertificatoDi, number> = { valido: 0, in_scadenza: 0, scaduto: 0, manca: 0, non_serve: 0 }
-  for (const p of persone) conti[comeCertificatoDi(p, oggi)]++
-  return conti
-}
 
 /** Il file di prima della nuova gestione: era da stampare, ora si apre come gli altri. */
 export const certificatoDaStampare = (c: Pick<CertificatoSeg, 'conFile' | 'vecchio'>) => c.conFile && !!c.vecchio
@@ -744,11 +793,16 @@ export interface PresentaCertificato {
   nota?: string
   /** Si può caricare, sostituire, togliere: non per una persona disattivata. */
   puoCambiare: boolean
+  /** Senza certificato e senza data di nascita non si sa se serve: da dire accanto alla frase. */
+  senzaNascita?: string
 }
 
 export function presentaCertificato(c: CertificatoSeg, natoIl: string | undefined, oggi: string, attiva = true): PresentaCertificato {
-  const stato = statoCertificato(c, oggi)
-  const nonServe = comeCertificatoDi({ certificato: c, natoIl }, oggi) === 'non_serve'
+  const stato = statoFileCertificato(c, oggi)
+  // L'età la dice `statoCertificato`, la stessa di DA FARE, ISCRITTI e statistiche: sotto i 6 anni senza un certificato valido non serve.
+  const eta = statoCertificato({ certificato: c, natoIl }, oggi)
+  const nonServe = eta === 'non_serve' && comeCertificato(c, oggi) !== 'valido' && comeCertificato(c, oggi) !== 'in_scadenza'
+  const inArrivo = eta === 'in_arrivo'
   const data = c.scade ? dataLunga(c.scade) : ''
   const fra = c.scade ? Math.round((Date.parse(c.scade) - Date.parse(oggi)) / 86_400_000) : 0
   const frase = {
@@ -789,14 +843,21 @@ export function presentaCertificato(c: CertificatoSeg, natoIl: string | undefine
             : 'SOSTITUISCI'
   return {
     ...(nonServe
-      ? { parola: 'NON SERVE', tono: 'spento' as Tono, frase: 'Sotto i 6 anni il certificato non si chiede.' }
-      : { parola, tono: (verde ? 'verde' : stato === 'in_scadenza' ? 'giallo' : 'rosso') as Tono, frase }),
+      ? {
+          parola: 'NON SERVE',
+          tono: 'spento' as Tono,
+          frase: `Sotto i 6 anni il certificato non è obbligatorio.${c.scade ? ` In segreteria c’è, scaduto il ${data}.` : ''}`,
+        }
+      : inArrivo
+        ? { parola: 'SERVE DAL', tono: 'giallo' as Tono, frase: `Compie 6 anni il ${dataLunga(dalCertificato(natoIl!))}: da quel giorno serve il certificato. Meglio avvisare la famiglia.` }
+        : { parola, tono: (verde ? 'verde' : stato === 'in_scadenza' ? 'giallo' : 'rosso') as Tono, frase }),
     tasto,
     // Il tasto pieno è uno solo: la prima cosa da fare.
-    primo: !nonServe && ['nessuno', 'scaduto_con_file', 'scaduto_senza_file', 'valido_senza_file'].includes(stato),
+    primo: !nonServe && !inArrivo && ['nessuno', 'scaduto_con_file', 'scaduto_senza_file', 'valido_senza_file'].includes(stato),
     cancellaIl: stato === 'scaduto_con_file' ? cancellaFileIl(c.scade ?? '') : undefined,
     nota,
     puoCambiare: attiva,
+    senzaNascita: stato === 'nessuno' && mancaLaData({ certificato: c, natoIl }) ? 'Manca la data di nascita: sotto i 6 anni non serve.' : undefined,
   }
 }
 
@@ -888,7 +949,7 @@ export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: strin
 
 /** In regola: certificato valido (anche se in scadenza) e quota pagata. */
 export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string) =>
-  certificatoInRegola(p, oggi) && comePaga(p, oggi) === 'pagato'
+  !['manca', 'scaduto'].includes(statoCertificato(p, oggi)) && comePaga(p, oggi) === 'pagato'
 
 export type Tono = 'rosso' | 'giallo' | 'verde' | 'spento'
 
@@ -929,12 +990,31 @@ export function alGiorno(g: string): string {
 }
 
 function timbroCertificato(c: CertificatoSeg, oggi: string, natoIl?: string): Timbro {
-  const come = comeCertificato(c, oggi)
-  const righe: Timbro['righe'] = []
-  if (comeCertificatoDi({ certificato: c, natoIl }, oggi) === 'non_serve') return { tono: 'spento', parola: 'NON SERVE', righe: [{ testo: 'SOTTO I 6 ANNI' }] }
-  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }] }
-  if (come === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'CERT. SCADUTO', righe }
-  if (come === 'in_scadenza') {
+  // Il file non cambia il timbro: né un DA STAMPARE, né un altro colore (la scheda dice com'è il file).
+  const file: Timbro['righe'] = []
+  const stato = statoCertificato({ certificato: c, natoIl }, oggi)
+  if (stato === 'non_serve') {
+    const nonServe = [{ testo: 'NON SERVE SOTTO I 6 ANNI' }, ...file]
+    // Un certificato già segnato si vede com'è, ma senza rosso: non serve.
+    if (c.scade && c.scade < oggi) return { tono: 'spento', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'CERT. SCADUTO', righe: nonServe }
+    if (c.scade) return { tono: 'verde', parola: `VALIDO FINO ${alGiorno(c.scade)}`, righe: nonServe }
+    return { tono: 'spento', parola: 'NON SERVE', righe: [{ testo: 'SOTTO I 6 ANNI' }, ...file], inElenco: 'CERT. NON SERVE' }
+  }
+  if (stato === 'in_arrivo') {
+    // `in_arrivo` c'è solo con una data di nascita valida.
+    const dal = dalCertificato(natoIl!)
+    const fra = Math.round((Date.parse(dal) - Date.parse(oggi)) / 86_400_000)
+    return {
+      tono: 'giallo',
+      parola: `SERVE DAL ${dataTimbro(dal)}`,
+      inElenco: `SERVE DAL ${dataCorta(dal)}`,
+      righe: [{ testo: fra === 1 ? 'DOMANI' : `FRA ${fra} GIORNI` }, ...file],
+    }
+  }
+  const righe = file
+  if (!c.scade) return { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }, ...(mancaLaData({ certificato: c, natoIl }) ? [{ testo: 'MANCA LA DATA DI NASCITA' }] : []), ...righe] }
+  if (stato === 'scaduto') return { tono: 'rosso', parola: `SCADUTO IL ${dataTimbro(c.scade)}`, inElenco: 'CERT. SCADUTO', righe }
+  if (stato === 'in_scadenza') {
     if (c.scade === oggi) return { tono: 'giallo', parola: 'SCADE OGGI', righe }
     const fra = Math.round((Date.parse(c.scade) - Date.parse(oggi)) / 86_400_000)
     return {
@@ -987,9 +1067,9 @@ export function timbriScheda(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'doc
  */
 export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): 'certificato' | 'quota' | null {
   if (!p.attiva) return null
-  const cert = comeCertificatoDi(p, oggi)
+  const cert = statoCertificato(p, oggi)
   const quota = pagamentoDi(p, oggi).come
-  if (certificatoMancante(p, oggi)) return 'certificato'
+  if (cert === 'manca' || cert === 'scaduto') return 'certificato'
   if (quota !== 'pagato') return 'quota'
   return cert === 'in_scadenza' ? 'certificato' : 'quota'
 }
@@ -1002,11 +1082,18 @@ export function tastoPrincipale(p: Pick<PersonaSeg, 'attiva' | 'certificato' | '
 export function paroleInRegola(p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string): ParolaStato[] {
   const s = pagamentoDi(p, oggi)
   const cert = timbroCertificato(p.certificato, oggi, p.natoIl)
+  // Sotto i 6 anni, senza un certificato valido: non è un guaio, ma si dice perché non c'è.
+  const nonServe = statoCertificato(p, oggi) === 'non_serve' && cert.tono === 'spento'
   const quota = timbroQuota(s)
   const fuori: ParolaStato[] = s.fonte === 'fuori_app' ? [{ tono: 'spento', parola: 'FUORI APP' }] : []
-  const guai = [cert, quota].filter((t) => t.tono !== 'verde' && t.tono !== 'spento').map((t): ParolaStato => ({ tono: t.tono, parola: t.inElenco ?? t.parola }))
+  const guai = (nonServe ? [quota] : [cert, quota]).filter((t) => t.tono !== 'verde').map((t): ParolaStato => ({ tono: t.tono, parola: t.inElenco ?? t.parola }))
   const inRegola: ParolaStato = { tono: 'verde', parola: 'IN REGOLA' }
-  return [...(guai.length ? guai : [inRegola]), ...fuori]
+  const segno: ParolaStato[] = nonServe
+    ? [{ tono: 'spento', parola: 'CERT. NON SERVE' }]
+    : mancaLaData(p)
+      ? [{ tono: 'spento', parola: 'MANCA LA DATA' }]
+      : []
+  return [...(guai.length ? guai : [inRegola]), ...segno, ...fuori]
 }
 
 /** Un giorno `AAAA-MM-GG` spostato di tanti giorni, senza passare dai fusi. */

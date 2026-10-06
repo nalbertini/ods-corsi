@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Passo 2, minore: la sezione IL GENITORE di ModuloDati, con i contatti del genitore. Il codice fiscale del genitore deve dire che è maggiorenne (se no, l’errore dell’app). I contatti sono quelli del genitore, come oggi. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1260px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="2" totale="5" titolo="IL GENITORE CHE FIRMA" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 4px"><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">Firma tu, che sei maggiorenne. I tuoi dati servono anche per il modulo.</span><dc-import name="Campo" etichetta="NOME" valore="Giulia" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="COGNOME" valore="Rossi" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="CODICE FISCALE DEL GENITORE" valore="RSSGLI84E52L219K" nota="Il codice torna: sei maggiorenne." notaTono="avviso" codice="{{ true }}" hint-size="100%,110px"></dc-import><dc-import name="Campo" etichetta="DATA DI NASCITA" valore="12/05/1984" nota="42 anni: lo dice il codice fiscale" notaTono="avviso" tipo="sola-lettura" hint-size="100%,110px"></dc-import><dc-import name="Campo" etichetta="LUOGO DI NASCITA" valore="Torino (TO)" tipo="sola-lettura" hint-size="100%,80px"></dc-import></div><dc-import name="Titoletto" label="COME TI TROVIAMO" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><dc-import name="Campo" etichetta="EMAIL" valore="giulia@esempio.it" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="TELEFONO" valore="338 000 0000" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="TELEFONO 2 · FACOLTATIVO" valore="" hint-size="100%,80px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" avanti="AVANTI" nota="Tutto a posto in questo passo." hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

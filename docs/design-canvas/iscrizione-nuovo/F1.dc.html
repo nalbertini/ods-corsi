@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- IDEA, non nell’app: oggi l’area degli iscritti è chiusa in produzione e il nucleo si vede solo in prova (AreaIscritto, Nucleo). Qui chi è già iscritto ritrova la famiglia con un codice mandato su WhatsApp o per email, senza password. Chi non è iscritto va ai flussi Adulto e Minore. Il codice fiscale da solo non apre niente. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 854px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="1" totale="5" titolo="CHI SEI" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 12px"><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">Scrivi il codice fiscale tuo o di uno dei tuoi figli. Se siete già iscritti ritroviamo i vostri dati, e non li riscrivi.</span><dc-import name="Campo" etichetta="CODICE FISCALE" valore="RSSGLI84E52L219K" nota="Il codice torna." notaTono="avviso" codice="{{ true }}" hint-size="100%,110px"></dc-import><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">DOVE TI MANDIAMO UN CODICE?</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="WhatsApp" riga="al 338 ••• ••00" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Email" riga="g•••@esempio.it" hint-size="100%,72px"></dc-import></div><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Serve a essere sicuri che sei tu. Scrivendo solo un codice fiscale non si vedono i dati di nessuno.</span><dc-import name="Bottone" label="NON SIAMO ANCORA ISCRITTI" variante="tratteggiato" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" avanti="MANDAMI IL CODICE" senzaIndietro="{{ true }}" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

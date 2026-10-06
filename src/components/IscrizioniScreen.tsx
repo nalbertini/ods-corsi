@@ -72,7 +72,7 @@ export function IscrizioniScreen({ pubblica = false }: { pubblica?: boolean }) {
 }
 
 /** Prima dei passi: chi non ha ancora deciso comincia da qui. */
-function Prova() {
+export function Prova() {
   return (
     <section className="pad iscrizioni-prova">
       <Riquadro tono="prova">
@@ -93,7 +93,7 @@ function Prova() {
 }
 
 /** Per chi si blocca a metà: dove siamo e come ci si trova, dal piede del sito. */
-function Contatti() {
+export function Contatti() {
   return (
     <section className="pad iscrizioni-contatti">
       <Riquadro>

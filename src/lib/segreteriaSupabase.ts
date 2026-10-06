@@ -2,8 +2,8 @@ import { daSenzaIstruttore } from './ore'
 import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
-import { attivitaCambiata, cosaNonVaAnagrafica, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
+import { attivitaCambiata, cosaNonVaAnagrafica, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
 import { ESTENSIONI } from './richieste'
 import { insegna, type RuoloPersonale } from './ruoli'
@@ -342,26 +342,6 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     const ancora = await db.storage.from(CERTIFICATI).list(cartella)
     if ((ancora.data ?? []).some((f) => f.name === nome)) throw new Error('Il file non si è cancellato: serve un accesso da segreteria')
   }
-  /**
-   * La data di nascita di ognuno, per i 6 anni sotto i quali il certificato non
-   * si chiede: quella scritta in segreteria, se no quella del modulo accolto
-   * più recente. Due letture sole, per tutti insieme (non una per persona), con
-   * i soli campi che servono. Il limite è quello di `persone()`, che legge le
-   * stesse righe: nessuno ne resta fuori più di prima. Una tabella che manca
-   * (06 o 18 non lanciati) vuol dire nessuna data, non un errore.
-   */
-  const leggiNascite = async () => {
-    const [an, ri] = await Promise.all([
-      db.from('anagrafiche').select('persona_id, nato_il'),
-      db.from('richieste_iscrizione').select('persona_id, nato_il').eq('stato', 'accolta').not('persona_id', 'is', null).order('gestita_il', { ascending: true, nullsFirst: true }),
-    ])
-    const m = new Map<string, string>()
-    // as: il progetto non ha i tipi generati del database; la forma è quella delle colonne scelte qui sopra.
-    for (const x of [...((ri.error ? [] : ri.data) ?? []), ...((an.error ? [] : an.data) ?? [])] as Array<{ persona_id: string | null; nato_il: string | null }>)
-      if (x.persona_id && x.nato_il) m.set(x.persona_id, x.nato_il)
-    return m
-  }
-
   const oggi = () => chiaveGiorno(new Date())
 
   /**
@@ -693,9 +673,36 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           for (const q of quoteDi([{ ...x, voci: x.voci } as unknown as Ricevuta])) metti(x.persona_id, q)
         return perPersona
       })()
+      // La data di nascita decide se il certificato serve (sotto i 6 anni no). Senza queste tabelle, o senza il permesso,
+      // nessuna data: il certificato serve a tutti, come prima. A pagine, per il tetto di righe di PostgREST.
+      const nati = (async (): Promise<Map<string, string>> => {
+        const PAGINA = 1000
+        const tutte = async (leggi: (da: number) => PromiseLike<{ data: unknown; error: unknown }>): Promise<unknown[]> => {
+          const righe: unknown[] = []
+          for (let da = 0; ; da += PAGINA) {
+            const r = await leggi(da)
+            if (r.error || !Array.isArray(r.data)) return []
+            righe.push(...r.data)
+            if (r.data.length < PAGINA) return righe
+          }
+        }
+        const [an, rich] = await Promise.all([
+          tutte((da) => db.from('anagrafiche').select('persona_id, nato_il, cambiata_il').order('persona_id').range(da, da + PAGINA - 1)),
+          tutte((da) =>
+            db.from('richieste_iscrizione').select('id, persona_id, nato_il, gestita_il, creata_il').eq('stato', 'accolta').not('persona_id', 'is', null).order('id').range(da, da + PAGINA - 1),
+          ),
+        ])
+        // as: le righe sono quelle dei select qui sopra.
+        const dalleAnagrafiche = (an as Array<{ persona_id: string; nato_il: string | null; cambiata_il: string }>).map(
+          (x): FonteNascita => ({ personaId: x.persona_id, da: 'segreteria', quando: x.cambiata_il, natoIl: x.nato_il ?? undefined }),
+        )
+        const dalleRichieste = (rich as Array<{ persona_id: string; nato_il: string | null; gestita_il: string | null; creata_il: string }>).map(
+          (x): FonteNascita => ({ personaId: x.persona_id, da: 'modulo', quando: x.gestita_il ?? x.creata_il, natoIl: x.nato_il ?? undefined }),
+        )
+        return nascitaDelleFonti([...dalleAnagrafiche, ...dalleRichieste])
+      })()
       const campi = 'id, nome, cognome, email, telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )'
       const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'
-      const nascite = leggiNascite()
       const leggi = (schede: string | null) =>
         db
           .from('persone')
@@ -715,7 +722,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         schede_iscritti?: Scheda | Scheda[] | null
       }>
       const pagate = await quote
-      const nati = await nascite
+      const natiIl = await nati
       return righe.map((r): PersonaSeg => {
         // Una a una con la persona: PostgREST la dà come oggetto, ma meglio non contarci.
         const s = Array.isArray(r.schede_iscritti) ? r.schede_iscritti[0] : r.schede_iscritti
@@ -728,7 +735,6 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           attiva: r.attiva,
           creataIl: r.creata_il.slice(0, 10),
           iscrizioni: r.iscrizioni.map((i) => ({ corsoId: i.corso_id, dal: i.dal, al: i.al ?? undefined })),
-          natoIl: nati.get(r.id),
           certificato: {
             scade: s?.certificato_scade ?? undefined,
             conFile: !!s?.certificato_file,
@@ -739,6 +745,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           documento: !!s?.documento_in_segreteria,
           pagamento: { stato: s?.pagamento ?? 'da_pagare', fino: s?.pagato_fino ?? undefined, nota: s?.pagamento_nota ?? undefined },
           quote: pagate.get(r.id) ?? [],
+          natoIl: natiIl.get(r.id),
         }
       })
     },

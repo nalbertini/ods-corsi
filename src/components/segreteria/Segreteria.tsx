@@ -36,7 +36,7 @@ export interface Destinazione {
   persona?: string
   lezione?: { id: string; inizio: string }
   /** Un filtro già acceso: chi ha il certificato da sistemare, chi deve pagare, chi ha un file di prima, cosa c'è da stampare. */
-  filtro?: 'certificato' | 'scadenza' | 'pagare' | 'file-di-prima' | 'stampare' | 'senza-appello'
+  filtro?: 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'file-di-prima' | 'stampare' | 'senza-appello'
 }
 
 /**

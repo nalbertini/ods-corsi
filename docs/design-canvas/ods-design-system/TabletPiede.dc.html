@@ -14,7 +14,7 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<footer style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 32px 20px; border-top: 2px solid {{c.lineSoft}}; color: {{c.text}}">
+<footer style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 32px 20px; border-top: 2px solid {{c.lineSoft}}; background: {{c.bg}}; color: {{c.text}}">
   <span style="display: flex; align-items: center; gap: 12px; min-height: 64px; min-width: 190px; padding: 0 20px; border: 2px solid {{presenze.bordo}}; background: {{presenze.fondo}}; color: {{presenze.colore}}">
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><circle cx="17" cy="9" r="2.8"></circle><path d="M17 14c2.8 0 4.8 2 4.8 5"></path></svg>
     <span style="display: flex; flex-direction: column; gap: 1px">
@@ -44,8 +44,8 @@
 //   lezione aperta, o DELLA PALESTRA; con un timer in corso l'app scrive l'intervallo e il tempo (non riprodotto).
 // - A destra la musica spenta: nel codice e' il tasto con la nota (.tb-btn-linea .tb-btn-quadro, aria-label ACCENDI LA MUSICA), 60px quadrato. Il lettore acceso (MusicaSala) non e' riprodotto.
 const T = {
-  scuro: { lineSoft: '#2a2a2a', line: '#333333', surface2: '#242424', text: '#f2f2f0', dim: '#8c8c88' },
-  chiaro: { lineSoft: '#e2e2dd', line: '#d4d4ce', surface2: '#e9e9e5', text: '#161616', dim: '#656561' },
+  scuro: { bg: '#121212', lineSoft: '#2a2a2a', line: '#333333', surface2: '#242424', text: '#f2f2f0', dim: '#8c8c88' },
+  chiaro: { bg: '#f4f4f1', lineSoft: '#e2e2dd', line: '#d4d4ce', surface2: '#e9e9e5', text: '#161616', dim: '#656561' },
 };
 class Component extends DCLogic {
   renderVals() {

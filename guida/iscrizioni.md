@@ -99,6 +99,26 @@ La richiesta **non è ancora un'iscrizione**: arriva in segreteria, in
 [RICHIESTE ONLINE](segreteria/richieste.md), dove qualcuno guarda i file e la
 accoglie.
 
+## Il modulo a passi (solo in prova)
+
+È un modulo nuovo, che fa le stesse domande una schermata alla volta: prima
+si sceglie **IO, SONO ADULTO** o **MIO FIGLIO O MIA FIGLIA**, poi si va avanti
+con **AVANTI**, e in fondo allo schermo c'è sempre cosa manca. L'ultimo passo
+è il riepilogo: da lì **MODIFICA** riporta al passo da cambiare, e **MANDA LA
+RICHIESTA** la manda. Chi iscrive il figlio può iscriversi anche lui, con
+**ISCRIVO ANCHE ME**: sono poche domande in più, e la segreteria vede il
+conto della famiglia con lo sconto.
+
+Per ora si apre solo in prova, con l'indirizzo `iscrizioni/?prova#nuova`.
+Non salva niente: se si esce prima di mandare, le risposte si perdono, e con
+la prova nulla va a un server. Il modulo di sopra resta quello di oggi.
+
+Cosa arriva in **RICHIESTE ONLINE**: una richiesta, o due se c'è «Anche tu»
+(una del bambino, una del genitore). Le due sono separate, e nelle note di
+ognuna c'è una riga che dice «mandata insieme alla richiesta di…, sconto
+famiglia da applicare», così la segreteria le lega. Le note che scrive chi
+compila sono al massimo 900 caratteri, per fare posto a quella riga.
+
 ## Cosa dire a chi chiede
 
 - «Ti mando il link: ci sono i passi, i costi e il modulo.»

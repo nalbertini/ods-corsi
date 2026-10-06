@@ -12,7 +12,7 @@ import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
-import { nascitePerPersona, richiesteDi, spostaRichieste } from './richiesteProva'
+import { richiesteDi, spostaRichieste } from './richiesteProva'
 import { ESTENSIONI } from './richieste'
 import { disciplinaDaSalvare, erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from './musica'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
@@ -503,7 +503,6 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async persone() {
       potaCertificati()
-      const nascite = nascitePerPersona()
       return a()
         .persone.filter((p) => p.ruolo === 'iscritto')
         .map(
@@ -518,12 +517,12 @@ export function creaSegreteriaProva(): DatiSegreteria {
             iscrizioni: a()
               .iscrizioni.filter((i) => i.personaId === p.id)
               .map((i) => ({ corsoId: i.corsoId, dal: i.dal, al: i.al })),
-            natoIl: a().anagrafiche?.[p.id]?.natoIl ?? nascite.get(p.id),
             certificato: { scade: p.certificato?.scade, conFile: !!p.certificato?.file, vecchio: !!p.certificato?.file && !p.certificato.caricatoIl, caricatoIl: p.certificato?.caricatoIl },
             documento: !!p.documento,
             pagamento: { stato: p.pagamento?.stato ?? 'da_pagare', fino: p.pagamento?.fino, nota: p.pagamento?.nota },
             quote: quoteDi((a().ricevute ?? []).filter((r) => r.personaId === p.id)),
             nucleo: p.nucleo,
+            natoIl: anagraficaDi(p.id)?.dati.natoIl,
           }),
         )
     },

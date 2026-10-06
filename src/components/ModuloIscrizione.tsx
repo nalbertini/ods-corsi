@@ -38,10 +38,8 @@ import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
  * documento del genitore non serve: la segreteria ha già il suo.
  *
  * Il documento d'identità e il certificato medico si caricano qui, per
- * comodità. Il documento la segreteria lo stampa, lo tiene su carta e lo
- * cancella dall'app; il certificato resta nell'app e lo vede solo lei. Il
- * certificato, se non c'è ancora, si può anche portare dopo: sotto i 6 anni
- * non si chiede.
+ * comodità: la segreteria li stampa, li tiene su carta e li cancella
+ * dall'app. Il certificato, se non c'è ancora, si può anche portare dopo.
  */
 
 /** Una persona in più nel nucleo: chi la aggiunge, cosa si sa già, e gli annuali che il nucleo paga. */
@@ -664,7 +662,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
               {certificato === 'agonistico'
                 ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico.'
                 : 'Dai 6 anni il certificato medico è obbligatorio.'}{' '}
-              Caricalo qui sotto, o consegnalo in segreteria: lo vede solo la segreteria, e senza non si partecipa alle lezioni.
+              Caricalo qui sotto, o consegnalo in segreteria: senza non si partecipa alle lezioni.
             </Dettaglio>
           </div>
         )}
@@ -750,7 +748,7 @@ function Sezione({ titolo, children }: { titolo: string; children: ReactNode }) 
 }
 
 /** Una casella del modulo: sì o no, e finché non si sceglie nessuna delle due. */
-function Casella({
+export function Casella({
   id,
   etichetta,
   dettaglio,
@@ -787,7 +785,7 @@ function Casella({
 }
 
 /** Un file da scegliere: controlla il tipo, rimpicciolisce la foto, e la passa su. */
-function SceltaFile({
+export function SceltaFile({
   tipo,
   file,
   onFile,
@@ -831,7 +829,7 @@ function SceltaFile({
  * pagarlo: l'IBAN e la causale col suo nome, da copiare. La ricevuta del
  * bonifico si carica qui sotto, fra i file, se si paga prima.
  */
-function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: CorsoRef[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
+export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: CorsoRef[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
   const letto = useListino()
   const [copiato, setCopiato] = useState<string | null>(null)
   if (!letto) return null

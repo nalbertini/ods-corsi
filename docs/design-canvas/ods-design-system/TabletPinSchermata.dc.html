@@ -14,7 +14,7 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 72px; width: 100%; height: 100%; padding: 22px 32px 24px; color: {{c.text}}">
+<div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 72px; width: 100%; height: 100%; padding: 22px 32px 24px; background: {{c.bg}}; color: {{c.text}}">
   <div style="display: flex; flex-direction: column; gap: 16px; max-width: 380px">
     <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 36px; font-weight: 700; letter-spacing: 0.03em; line-height: 1">{{titolo}}</span>
     <span style="font-size: 18px; line-height: 1.5; color: {{c.sec}}">{{testo}}</span>
@@ -47,8 +47,8 @@
 // - cifre: quante cifre sono state battute (0-4). guaio: l'errore (PIN sbagliato. Riprova. / l'avviso del limite / il blocco); con un
 //   testo i pallini hanno il bordo rosso e il messaggio e' rosso da 19px. prova: la riga «In prova: 1234 è Maurizio...», solo coi dati di prova.
 const T = {
-  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#b8b8b2', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
-  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#4a4a46', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#b8b8b2', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#4a4a46', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
 };
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {

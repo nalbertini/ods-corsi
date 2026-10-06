@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Destinazione } from './Segreteria'
-import type { Anagrafica, ComeCertificato, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, certificatoDaStampare, certificatoMancante, certificatoPronto, gestoIniziale, confermaDisattiva, confermaUnione, comeCertificato, comePaga, cosaNonVaAnagrafica, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, timbriScheda } from '../../lib/segreteria'
+import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
+import { avvisiGesto, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, statoCertificato, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -14,13 +14,10 @@ import { altraDellaCoppia, campiDiversi, coppieDoppioni, MOTIVI, motivoDoppione,
 /** «Viene poco»: meno di metà delle lezioni, su almeno tre che ha avuto. */
 const vienePoco = (f?: Frequenza) => !!f && f.dovute >= 3 && f.presenti / f.dovute < 0.5
 
-/** Il certificato da sistemare: manca, è scaduto o scade entro un mese. */
-// Certificato e quota si cercano fra chi è attivo: chi ha smesso non li deve portare. Gli stessi conti di DA FARE.
-const senzaCertificatoValido = (p: PersonaSeg, oggi: string) => certificatoMancante(p, oggi)
-const certificatoInScadenza = (p: PersonaSeg, oggi: string) => p.attiva && comeCertificato(p.certificato, oggi) === 'in_scadenza'
+// La quota si cerca fra chi è attivo: chi ha smesso non la deve portare. Gli stessi conti di DA FARE.
 const daPagare = (p: PersonaSeg, oggi: string) => p.attiva && comePaga(p, oggi) !== 'pagato'
 /** Quanto non è in regola, per ordinare: i guai più grossi prima. */
-const GUAIO_CERTIFICATO: Record<ComeCertificato, number> = { manca: 2, scaduto: 2, in_scadenza: 1, valido: 0 }
+const GUAIO_CERTIFICATO: Record<StatoCertificato, number> = { manca: 2, scaduto: 2, in_scadenza: 1, in_arrivo: 1, valido: 0, non_serve: 0 }
 const GUAIO_PAGA: Record<ComePaga, number> = { da_pagare: 2, scaduto: 2, in_parte: 1, pagato: 0 }
 
 function Bollino({ tono, children }: { tono: Tono; children: string }) {
@@ -65,6 +62,7 @@ export function Iscritti({
   const [poco, setPoco] = useState(false)
   const [certificato, setCertificato] = useState(filtroIniziale === 'certificato')
   const [scadenza, setScadenza] = useState(filtroIniziale === 'scadenza')
+  const [arrivo, setArrivo] = useState(filtroIniziale === 'arrivo')
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [filePrima, setFilePrima] = useState(filtroIniziale === 'file-di-prima')
@@ -94,6 +92,7 @@ export function Iscritti({
       (!poco || vienePoco(freq.dato?.get(p.id))) &&
       (!certificato || senzaCertificatoValido(p, oggi)) &&
       (!scadenza || certificatoInScadenza(p, oggi)) &&
+      (!arrivo || certificatoInArrivo(p, oggi)) &&
       (!pagare || daPagare(p, oggi)) &&
       (!senzaDocumento || !p.documento) &&
       (!soloFilePrima || certificatoDaStampare(p.certificato)),
@@ -103,7 +102,7 @@ export function Iscritti({
     nome: (p) => `${p.cognome} ${p.nome}`,
     corsi: (p) => suoiCorsi(p).join(', '),
     contatto: (p) => p.telefono ?? p.email,
-    regola: (p) => GUAIO_CERTIFICATO[comeCertificato(p.certificato, oggi)] + GUAIO_PAGA[comePaga(p, oggi)],
+    regola: (p) => GUAIO_CERTIFICATO[statoCertificato(p, oggi)] + GUAIO_PAGA[comePaga(p, oggi)],
     frequenza: (p) => {
       const f = freq.dato?.get(p.id)
       return f && f.dovute ? f.presenti / f.dovute : null
@@ -215,6 +214,9 @@ export function Iscritti({
           </button>
           <button type="button" className="num sg-chip" aria-pressed={scadenza} onClick={() => setScadenza(!scadenza)}>
             CERTIFICATO IN SCADENZA
+          </button>
+          <button type="button" className="num sg-chip" aria-pressed={arrivo} onClick={() => setArrivo(!arrivo)}>
+            COMPIONO 6 ANNI
           </button>
           <button type="button" className="num sg-chip" aria-pressed={pagare} onClick={() => setPagare(!pagare)}>
             DA PAGARE
@@ -1246,7 +1248,7 @@ function Certificato({ d, p, fai, onCambiato }: { d: DatiSegreteria; p: PersonaS
       <Riga titolo="CERTIFICATO MEDICO">
         <Bollino tono={x.tono}>{x.parola}</Bollino>
       </Riga>
-      <span style={{ fontSize: 14, color: x.tono === 'verde' || x.tono === 'spento' ? 'var(--sec)' : x.tono === 'giallo' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{x.frase}</span>
+      <span style={{ fontSize: 14, color: x.tono === 'verde' || x.tono === 'spento' ? 'var(--sec)' : x.tono === 'giallo' ? 'var(--giallo-testo)' : 'var(--rosso-testo)' }}>{x.senzaNascita ? `${x.frase} ${x.senzaNascita}` : x.frase}</span>
 
       {c.conFile ? (
         <div className="stack" style={{ gap: 6 }}>

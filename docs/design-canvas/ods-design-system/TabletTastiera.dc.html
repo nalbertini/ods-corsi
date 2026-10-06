@@ -14,7 +14,7 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 16px; width: 354px; color: {{c.text}}">
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 16px; width: 354px; background: {{c.bg}}; color: {{c.text}}">
   <div style="display: flex; align-items: center; gap: 14px; padding: 8px 0">
     <sc-for list="{{pallini}}" as="x" hint-placeholder-count="4">
       <span style="width: 26px; height: 26px; border: 3px solid {{x.bordo}}; background: {{x.fondo}}"></span>
@@ -39,8 +39,8 @@
 //   (data-guaio) e il messaggio e' rosso 19px. Vuoto = niente.
 // Il titolo, la spiegazione e ANNULLA stanno nella colonna accanto (TabletPin.tsx): qui solo quello che si tocca.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616' },
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616' },
 };
 const TASTI = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'CANCELLA', '0', ''];
 class Component extends DCLogic {

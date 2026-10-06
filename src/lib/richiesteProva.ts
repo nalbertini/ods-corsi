@@ -34,14 +34,6 @@ export function richiesteDi(personaId: string): Richiesta[] {
   return leggi().filter((r) => r.personaId === personaId)
 }
 
-/** La data di nascita scritta nella richiesta accolta più recente di ognuno, per persona. */
-export function nascitePerPersona(): Map<string, string> {
-  const m = new Map<string, string>()
-  for (const r of leggi().filter((x) => x.stato === 'accolta' && x.personaId && x.natoIl).sort((x, y) => (x.gestitaIl ?? '').localeCompare(y.gestitaIl ?? '')))
-    m.set(r.personaId!, r.natoIl)
-  return m
-}
-
 /** Le richieste di una persona passano a un'altra: due schede unite (`unisciPersone`). */
 export function spostaRichieste(da: string, a: string) {
   try {
