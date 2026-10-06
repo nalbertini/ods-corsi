@@ -847,5 +847,12 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('firmo qui: restano tesseramento, foto e firma', nomi(adulto({}, { tratti: 0, scelte: {}, firmaInFoto: false }), 3), ['FIRMA', 'FOTO', 'TESSERAMENTO'])
 }
 
+// 21. VAI A: FIRMA deve poter portare il fuoco al riquadro: un canvas senza tabindex non lo riceve.
+{
+  console.log('\n21. il riquadro della firma riceve il fuoco')
+  const tavola = readFileSync('src/components/TavolaFirma.tsx', 'utf8')
+  ok('il canvas della firma ha tabIndex={-1}', /<canvas[^>]*tabIndex=\{-1\}/s.test(tavola), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

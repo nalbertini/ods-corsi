@@ -118,6 +118,8 @@ export function TavolaFirma({ id, tratti, onTratti, descritto }: { id: string; t
     <div className="firma" data-vuota={!tratti.length || undefined}>
       <canvas
         id={id}
+        // Senza tabindex il fuoco non ci arriva: VAI A: FIRMA della barra non lo sposterebbe.
+        tabIndex={-1}
         ref={tela}
         className="firma-tela"
         role="img"
