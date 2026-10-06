@@ -77,6 +77,13 @@ Google, e vale solo per i mockup.
 | `RigaNucleoPagamento` | Una riga di PAGAMENTI DEL NUCLEO, con la variante «Tutto il nucleo» |
 | `NastroProva` | Il nastro giallo DATI DI PROVA in cima all'area iscritti (`.nastro-prova`) |
 | `MiaChip` | `.mia-chip` (corso col colore) e `.mia-chip-tasto` (TU, nome di chi è nel nucleo) |
+| `TabletTestataSala` | La testata completa del tablet (`Tablet.tsx`): come `TabletTestata`, più il chip del timer in corso, SI SEGNA ORA, IN ATTESA DI RETE e i bollini IMPOSTAZIONI APERTE e AREA ISTRUTTORE |
+| `TabletPiedeMusica` | La barra in basso: PRESENZE / TIMER e la musica (`MusicaSala.tsx`): suona, pausa, errore, spenta; Spotify, radio, YouTube |
+| `TabletListeMusica` | Il pannello LA MUSICA DELLA SALA (`.tb-liste`): filtri per categoria e liste accese o spente |
+| `TabletTimerCard` | La scheda di un timer nella lista del timer, col solo tasto ▶ |
+| `TabletAvviso` | `Riquadro` e `Guaio` di `comune.tsx`: riquadro normale o errore rosso a tutta colonna |
+| `TabletCampo` | `.tb-campo`, il campo di testo del tablet: segnaposto, valore, password, fuoco |
+| `TabletPinSchermata` | La schermata del PIN (`TabletPin.tsx`) com'è nell'app: pallini a sinistra, tastierino a destra |
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 

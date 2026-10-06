@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La scheda TIMER (TimerSala.tsx): il timer vero, lo stesso del telefono (timer/src, HomeScreen.tsx), dentro il tablet, in un riquadro con le sue misure (container query). Titolo I TIMER DELLA SALA, la card LEZIONE col corso aperto, poi STRUMENTI (cronometro e conto alla rovescia, a tutto schermo), DI QUESTA LEZIONE, DEL CORSO, DELLA PALESTRA (la lista scorre). Dal tablet i timer si fanno partire, non si cambiano: niente MODIFICA, DUPLICA, INVIA ne' NUOVO TIMER sulla scheda. Col timer davanti chi arriva tardi si segna dal chip SI SEGNA ORA · SEGNATI in testata. Musica, voce, segnali e schermo si scelgono nelle IMPOSTAZIONI del timer, che sul tablet si aprono col PIN (bollino IMPOSTAZIONI APERTE, non riprodotte). Non riprodotti: il filtro per disciplina e la lista di una sala senza timer. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="scuro" chip="segna" corso="JUDO KIDS" conteggio="7/12" hint-size="100%,92px"></dc-import>
+  <div style="position: relative; flex: 1; min-height: 0; overflow: hidden">
+        <div style="display: flex; align-items: center; padding: 28px 36px 8px">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">I TIMER DELLA SALA</span>
+        </div>
+        <div style="padding: 14px 36px 0">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 14px; background: #1c1c1c; border: 2px solid #1b8ac4">
+            <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px">
+              <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">LEZIONE</span>
+              <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700">JUDO KIDS</span>
+            </div>
+          </div>
+        </div>
+        <div style="padding: 4px 16px 0"><dc-import name="Titoletto" label="STRUMENTI" conto="2" tema="scuro" hint-size="100%,50px"></dc-import></div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 0 36px 16px">
+          <dc-import name="TabletTimerCard" tipo="CRONOMETRO" durata="" nome="Cronometro" riassunto="conta in salita · segna i giri" tema="scuro" hint-size="100%,110px"></dc-import>
+          <dc-import name="TabletTimerCard" tipo="ALLA ROVESCIA" durata="" nome="Conto alla rovescia" riassunto="30″ – 3′ · scegli la durata" tema="scuro" hint-size="100%,110px"></dc-import>
+        </div>
+        <div style="padding: 4px 16px 0"><dc-import name="Titoletto" label="DI QUESTA LEZIONE" conto="1" tema="scuro" hint-size="100%,50px"></dc-import></div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 0 36px 16px">
+          <dc-import name="TabletTimerCard" tipo="INTERVALLI" durata="18:30" nome="Tecnica a coppie" riassunto="8 × 30"/15"" etichetta="Judo kids" tema="scuro" hint-size="100%,110px"></dc-import>
+        </div>
+        <div style="padding: 4px 16px 0"><dc-import name="Titoletto" label="DEL CORSO" conto="2" tema="scuro" hint-size="100%,50px"></dc-import></div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 0 36px 16px">
+          <dc-import name="TabletTimerCard" tipo="CIRCUITO" durata="14:00" nome="Riscaldamento judo" riassunto="5 stazioni × 3 giri" etichetta="Judo · Judo kids" tema="scuro" hint-size="100%,110px"></dc-import>
+          <dc-import name="TabletTimerCard" tipo="INTERVALLI" durata="12:00" nome="Randori a tempo" riassunto="6 × 90"/30"" etichetta="Judo · Judo kids" tema="scuro" hint-size="100%,110px"></dc-import>
+        </div>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="timer" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

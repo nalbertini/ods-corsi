@@ -14,7 +14,7 @@
     body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<!-- Il tablet di sala (TabletHome in Tablet.tsx), martedi' 6 ottobre alle 18:40, tema scuro: Judo kids e' aperta (ci si segna da 30 minuti prima dell'inizio a 10 dopo la fine), Judo baby e' finita, Judo adulti viene dopo. Colonne come .tb-home: 1fr + 380px, gap 28px, padding 22px 32px 24px. A sinistra la card della lezione (tutta un tasto che apre l'appello, con AREA ISTRUTTORE dentro) e sotto i nomi da toccare, tre per riga (AppelloVeloce); a destra la giornata a gruppi e in fondo TI SEI DIMENTICATO DI SEGNARTI?. La testata, la barra PRESENZE / TIMER e la musica sono del tablet e stanno su ogni schermata. -->
+<!-- La radio caduta: la barra non resta muta, dice perche' (in rosso, a capo) e ha il tasto Riprova; da sola non riparte. Con la radio ⏮ e ⏭ sono spenti (0.35) e non c'e' il volume. Stessa cosa per i file del tablet che spariscono («Scegli i file nelle impostazioni del timer»). Dopo un ricaricamento la musica non riparte da sola: la barra dice «Tocca ▶ per farla partire». -->
 <div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
   <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="scuro" hint-size="100%,92px"></dc-import>
   <div style="position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; padding: 22px 32px 24px">
@@ -47,7 +47,7 @@
     <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #f4c31b; color: #f2f2f0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; text-align: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline><polyline points="12 7 12 12 15 14"></polyline></svg>TI SEI DIMENTICATO DI SEGNARTI?</span>
   </aside>
   </div>
-  <dc-import name="TabletPiedeMusica" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
+  <dc-import name="TabletPiedeMusica" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="errore" fonte="radio" titolo="Radio della palestra" sotto="Studio Beat · Riscaldamento" volume="" tema="scuro" hint-size="100%,100px"></dc-import>
 </div>
 </x-dc>
 </body>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 18px; background: {{c.surface}}; border: 2px solid {{c.text}}; box-shadow: {{c.ombra}}; color: {{c.text}}" role="dialog" aria-label="La musica della sala">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}">LA MUSICA DELLA SALA</span>
+  <sc-if value="{{haFiltri}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+      <sc-for list="{{filtri}}" as="f" hint-placeholder-count="3">
+        <span style="display: flex; align-items: center; min-height: 48px; padding: 0 16px; border: 2px solid {{f.bordo}}; background: {{f.fondo}}; color: {{c.text}}; font-size: 15px; font-weight: 700; letter-spacing: 0.08em">{{f.nome}}</span>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-for list="{{righe}}" as="r" hint-placeholder-count="3">
+    <div style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 16px; border: 2px solid {{r.bordo}}; background: {{r.fondo}}; color: {{c.text}}; opacity: {{r.opacita}}; text-align: left">
+      <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.04em">{{r.nome}}</span>
+        <span style="font-size: 15px; color: {{c.dim}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{r.sotto}}</span>
+      </span>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"filtri":{"editor":"text","default":"Riscaldamento, Randori"},"filtro":{"editor":"text","default":""},"liste":{"editor":"text","default":"Riscaldamento|Playlist Spotify · tutte le sale · Riscaldamento; Randori|Playlist YouTube · Randori; Radio della palestra|Radio · tutte le sale; Defaticamento|Spotify non è collegato su questo tablet|spenta"},"scelta":{"editor":"text","default":"Riscaldamento"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":440,"height":480}}'>
+// Riproduzione 1:1 del pannello LA MUSICA DELLA SALA, quello che si apre dal tasto ☰: <div className="tb-liste"> di MusicaSala.tsx (righe
+// 187-243) con .tb-liste, .tb-lista, .tb-filtro-tasto, .tb-lista-nome di src/styles.css (righe 1000-1018). Nell'app sta sopra la barra, a destra
+// (position absolute, 440px, ombra scura); qui e' un riquadro da 440px da mettere sopra il piede.
+// - filtri: le categorie delle liste, separate da virgole; i pulsanti TUTTE + queste, solo se ce n'e' almeno una (vuoto = niente
+//   filtro). filtro: quale e' premuta (vuoto = TUTTE; bordo `text` e fondo `surface-2`).
+// - liste: «nome|sotto» separate da ';'; un terzo pezzo `spenta` spegne la riga (opacita' 0.45: Spotify non collegato, link non valido).
+// - scelta: il nome della lista che suona (bordo verde e fondo `surface-2`). In fondo c'e' sempre DALLE IMPOSTAZIONI DEL TIMER
+//   (« Quella scelta in Impostazioni › Musica»), acceso se scelta e' vuoto.
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#b8b8b2', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#4a4a46', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const nomiFiltri = String(p.filtri ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    const filtro = (p.filtro ?? '').trim();
+    const scelta = (p.scelta ?? '').trim();
+    const righe = String(p.liste ?? '').split(';').map((s) => s.trim()).filter(Boolean).map((s) => {
+      const [nome, sotto, stato] = s.split('|');
+      return { nome: nome.toUpperCase(), sotto: sotto ?? '', spenta: stato === 'spenta', premuta: nome === scelta };
+    });
+    righe.push({ nome: 'DALLE IMPOSTAZIONI DEL TIMER', sotto: 'Quella scelta in Impostazioni › Musica', spenta: false, premuta: scelta === '' });
+    return {
+      c,
+      haFiltri: nomiFiltri.length > 0,
+      filtri: ['TUTTE', ...nomiFiltri.map((n) => n.toUpperCase())].map((nome, i) => {
+        const premuto = filtro === '' ? i === 0 : nome === filtro.toUpperCase();
+        return { nome, bordo: premuto ? c.text : c.line, fondo: premuto ? c.surface2 : 'transparent' };
+      }),
+      righe: righe.map((r) => ({ ...r, bordo: r.premuta ? c.verde : c.line, fondo: r.premuta ? c.surface2 : 'transparent', opacita: r.spenta ? '0.45' : '1' })),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La home quando il calendario non si legge (CALENDARIO NON LETTO, Guaio in comune.tsx): il riquadro rosso dice il motivo del server, a destra resta solo il recupero. Il tablet riprova da solo ogni cinque minuti e appena torna la rete. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="scuro" hint-size="100%,92px"></dc-import>
+  <div style="position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; padding: 22px 32px 24px">
+    <div style="position: relative; display: flex; flex-direction: column; gap: 14px; min-height: 0">
+      <dc-import name="TabletAvviso" tipo="guaio" titolo="CALENDARIO NON LETTO" testo="Non riesco a leggere il calendario" tema="scuro" hint-size="100%,120px"></dc-import>
+      <div style="flex-grow: 1"></div>
+      <div style="display: flex; align-items: center; gap: 18px"><span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #333333; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; color: #f2f2f0; "><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>AREA ISTRUTTORE</span></div>
+    </div>
+  <aside style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+
+    <div style="flex-grow: 1"></div>
+    <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #f4c31b; color: #f2f2f0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; text-align: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline><polyline points="12 7 12 12 15 14"></polyline></svg>TI SEI DIMENTICATO DI SEGNARTI?</span>
+  </aside>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="presenze" sotto-presenze="OGGI IN SALA" sotto-timer="DELLA PALESTRA" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

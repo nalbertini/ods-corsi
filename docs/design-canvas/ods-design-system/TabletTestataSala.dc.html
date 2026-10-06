@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<header style="display: flex; align-items: center; gap: 18px; width: 100%; padding: 18px 32px 14px; border-bottom: {{bordoTesta}}; color: {{c.text}}">
+  <svg width="70" height="48" viewBox="0 0 160 110" role="img" aria-label="Officine Dello Sport">
+    <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
+      <circle cx="38" cy="40" r="22" stroke="#1b8ac4"></circle>
+      <circle cx="80" cy="40" r="22" stroke="{{c.text}}"></circle>
+      <circle cx="122" cy="40" r="22" stroke="#e4292a"></circle>
+      <circle cx="59" cy="74" r="22" stroke="#f4c31b"></circle>
+      <circle cx="101" cy="74" r="22" stroke="#16a54a"></circle>
+    </g>
+    <g fill="none" stroke-width="5">
+      <circle cx="38" cy="40" r="14" stroke="#1b8ac4"></circle>
+      <circle cx="80" cy="40" r="14" stroke="{{c.text}}"></circle>
+      <circle cx="122" cy="40" r="14" stroke="#e4292a"></circle>
+      <circle cx="59" cy="74" r="14" stroke="#f4c31b"></circle>
+      <circle cx="101" cy="74" r="14" stroke="#16a54a"></circle>
+    </g>
+  </svg>
+  <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 40px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">{{sala}}</span>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.2em; color: {{c.dim}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{data}}</span>
+  </div>
+  <sc-if value="{{impostazioni}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; letter-spacing: 0.16em; color: {{c.suColore}}; padding: 6px 12px; white-space: nowrap; background: {{c.blu}}">IMPOSTAZIONI APERTE</span>
+  </sc-if>
+  <sc-if value="{{haArea}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; letter-spacing: 0.16em; color: {{c.suColore}}; padding: 6px 12px; white-space: nowrap; background: {{c.blu}}">AREA ISTRUTTORE · <span style="letter-spacing: 0">{{area}}</span></span>
+  </sc-if>
+  <sc-if value="{{chipTimer}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 18px; flex-shrink: 0; background: {{c.surface}}; border: 3px solid {{tinta}}; text-align: left">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: {{tintaTesto}}; white-space: nowrap">{{fase}}</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 38px; font-weight: 700; line-height: 1">{{tempo}}</span>
+      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px">{{nomeTimer}}</span>
+        <span style="font-size: 15px; color: {{c.dim}}; white-space: nowrap">{{sottoChip}}</span>
+      </span>
+    </span>
+  </sc-if>
+  <sc-if value="{{chipSegna}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 8px 0 18px; flex-shrink: 0; background: {{c.surface}}; border: 2px solid {{c.verde}}; text-align: left">
+      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span style="font-size: 15px; white-space: nowrap; color: {{c.verdeTesto}}; font-weight: 700; letter-spacing: 0.16em">SI SEGNA ORA</span>
+        <span style="display: flex; align-items: center; gap: 6px; min-width: 0">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px">{{corso}}</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-variant-numeric: tabular-nums; font-size: 19px; font-weight: 700; white-space: nowrap">· {{conteggio}}</span>
+        </span>
+      </span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; display: flex; align-items: center; min-height: 48px; padding: 0 16px; background: {{c.verde}}; color: {{c.suColore}}; font-size: 17px; font-weight: 700; letter-spacing: 0.1em">SEGNATI</span>
+    </span>
+  </sc-if>
+  <sc-if value="{{haRete}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 700; letter-spacing: 0.16em; color: {{c.gialloTesto}}; padding: 6px 12px; white-space: nowrap; border: 2px solid {{c.giallo}}">IN ATTESA DI RETE · {{rete}}</span>
+  </sc-if>
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 56px; font-weight: 700; line-height: 1; letter-spacing: 0.02em">{{ora}}</span>
+  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 60px; height: 60px; border: 2px solid {{c.line}}; color: {{c.tasto}}">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{icona}}"></path></svg>
+  </span>
+  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 60px; height: 60px; border: 2px solid {{c.line}}; color: {{c.tasto}}" aria-label="Esci dal tablet">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"></path><path d="M18.4 6.6a9 9 0 1 1-12.8 0"></path></svg>
+  </span>
+</header>
+</x-dc>
+<script data-dc-script data-props='{"sala":{"editor":"text","default":"SALA JUDO"},"data":{"editor":"text","default":"MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT"},"ora":{"editor":"text","default":"18:40"},"chip":{"editor":"enum","options":["nessuno","timer","segna"],"default":"nessuno"},"intervallo":{"editor":"enum","options":["prepare","work","rest","setRest","cooldown"],"default":"work"},"pausa":{"editor":"boolean","default":false},"fase":{"editor":"text","default":"LAVORO"},"tempo":{"editor":"text","default":"0:24"},"nomeTimer":{"editor":"text","default":"TECNICA A COPPIE"},"conto":{"editor":"text","default":"GIRO 3/8"},"corso":{"editor":"text","default":"JUDO KIDS"},"conteggio":{"editor":"text","default":"7/12"},"rete":{"editor":"text","default":""},"impostazioni":{"editor":"boolean","default":false},"area":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1280,"height":92}}'>
+// Riproduzione 1:1 della testata completa del tablet di sala: <header className="tb-testata"> di src/components/tablet/Tablet.tsx (righe
+// 426-503) con .tb-testata, .tb-bollino, .tb-spia-rete, .tb-chip* di src/styles.css (righe 829-842 e 971-986). Come TabletTestata, con in
+// piu' tutto cio' che compare e scompare:
+// - chip "timer": il timer in corso (col timer in corso e le presenze davanti): intervallo (LAVORO, RECUPERO... o IN PAUSA), secondi, nome e
+//   giro. Bordo da 3px nel colore dell'intervallo (prepare giallo, work rosso, rest verde, setRest e cooldown blu: COLORE_TIMER); il
+//   testo giallo e verde sul tema chiaro prende le varianti "da leggere". Sulla testata, tranne nel recupero (rest), un bordo da 8px
+//   dello stesso colore.
+// - chip "segna": SI SEGNA ORA · corso · segnati/iscritti e il tasto verde SEGNATI, col timer davanti e una lezione aperta.
+// - rete: «IN ATTESA DI RETE · N», la coda dei tocchi senza rete (vuoto = niente).
+// - impostazioni: bollino blu IMPOSTAZIONI APERTE (timer, area istruttore sbloccata col PIN).
+// - area: bollino blu AREA ISTRUTTORE · nome (presenze davanti, area istruttore aperta).
+// Il tasto del tema mostra dove porta: sole sul tema scuro, luna sul chiaro.
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#b8b8b2', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#4a4a46', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const chiaro = p.tema === 'chiaro';
+    const COL = { prepare: c.giallo, work: c.rosso, rest: c.verde, setRest: c.blu, cooldown: c.blu };
+    const COLTESTO = { prepare: c.gialloTesto, work: c.rosso, rest: c.verdeTesto, setRest: c.blu, cooldown: c.blu };
+    const chip = p.chip === 'timer' || p.chip === 'segna' ? p.chip : 'nessuno';
+    const iv = COL[p.intervallo] ? p.intervallo : 'work';
+    const pausa = truthy(p.pausa);
+    const rete = p.rete ?? '';
+    return {
+      c,
+      sala: p.sala ?? 'SALA JUDO',
+      data: p.data ?? 'MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT',
+      ora: p.ora ?? '18:40',
+      icona: chiaro ? 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z' : 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      bordoTesta: chip === 'timer' && iv !== 'rest' ? '8px solid ' + COL[iv] : '2px solid ' + c.lineSoft,
+      chipTimer: chip === 'timer',
+      chipSegna: chip === 'segna',
+      tinta: COL[iv],
+      tintaTesto: COLTESTO[iv],
+      fase: pausa ? 'IN PAUSA' : (p.fase ?? 'LAVORO'),
+      tempo: p.tempo ?? '0:24',
+      nomeTimer: String(p.nomeTimer ?? 'TECNICA A COPPIE').toUpperCase(),
+      sottoChip: (p.conto ? p.conto + ' · ' : '') + 'tocca per tornare',
+      corso: String(p.corso ?? 'JUDO KIDS').toUpperCase(),
+      conteggio: p.conteggio ?? '7/12',
+      haRete: rete !== '',
+      rete,
+      impostazioni: truthy(p.impostazioni),
+      haArea: !!p.area,
+      area: p.area ?? '',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- TI SEI DIMENTICATO DI SEGNARTI? (TabletRecupero.tsx), secondo passo: scelto Judo baby, le sue lezioni delle ultime due settimane,
+     dalla piu' recente (le stesse di recuperabile: cominciate da non piu' di 14 giorni dal 6 ottobre 18:40, non annullate, non aperte).
+     Titolo = il corso, sotto «Scegli la lezione a cui eri.»; INDIETRO torna alla scelta del corso. Una riga per lezione in .tb-griglia:
+     OGGI o il giorno per esteso, l'ora con l'etichetta dell'attivita' e a destra «presenti su iscritti» (contoSala). Quella di oggi,
+     finita da poco, non ha ancora nessun presente (0 su 8). Mar 22 settembre non c'e': comincio' prima del limite. Toccando una riga si
+     apre la presenza di quella lezione. Non riprodotto: «Nessuna lezione di questo corso negli ultimi 14 giorni.» a elenco vuoto. -->
+<div style="display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212">
+  <dc-import name="TabletTestata" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" hint-size="100%,92px"></dc-import>
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 18px; padding: 22px 32px 24px; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 18px">
+        <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #333333; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; color: #f2f2f0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>INDIETRO</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 32px; font-weight: 700; letter-spacing: 0.03em; line-height: 1">JUDO BABY</span>
+          <span style="font-size: 17px; color: #c9c9c4">Scegli la lezione a cui eri.</span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-content: start">
+        <dc-import name="TabletScelta" variante="lezione" titolo="OGGI" ora="16:30–17:15" attivita="Gioco" conto="0 su 8" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletScelta" variante="lezione" titolo="GIOVEDÌ 1 OTTOBRE" ora="16:30–17:15" attivita="Gioco" conto="4 su 8" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletScelta" variante="lezione" titolo="MARTEDÌ 29 SETTEMBRE" ora="16:30–17:15" attivita="Gioco" conto="7 su 8" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletScelta" variante="lezione" titolo="GIOVEDÌ 24 SETTEMBRE" ora="16:30–17:15" attivita="Gioco" conto="6 su 8" hint-size="100%,84px"></dc-import>
+      </div>
+      <div style="flex-grow: 1"></div>
+      <span style="font-size: 17px; line-height: 1.5; color: #8c8c88">Si recupera fino a 14 giorni indietro. La presenza risulta «segnata dopo» e l'istruttore la vede così nell'appello.</span>
+  </div>
+  <dc-import name="TabletPiede" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La home alle 21:30, a lezioni finite: il riquadro PER OGGI QUI E' FINITO manda chi si e' dimenticato a TI SEI DIMENTICATO DI SEGNARTI?; a destra tutte le lezioni sono sotto PRECEDENTI, con FINITA e la barra spenta. Gli stessi dati di Main. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="21:30" tema="scuro" hint-size="100%,92px"></dc-import>
+  <div style="position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; padding: 22px 32px 24px">
+    <div style="position: relative; display: flex; flex-direction: column; gap: 14px; min-height: 0">
+      <dc-import name="TabletAvviso" tipo="riquadro" titolo="PER OGGI QUI È FINITO" testo="Le lezioni di questa sala sono tutte passate. Chi si è dimenticato di segnarsi usa TI SEI DIMENTICATO DI SEGNARTI?." tema="scuro" hint-size="100%,150px"></dc-import>
+      <div style="flex-grow: 1"></div>
+      <div style="display: flex; align-items: center; gap: 18px"><span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #333333; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; color: #f2f2f0; "><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>AREA ISTRUTTORE</span></div>
+    </div>
+  <aside style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #8c8c88">PRECEDENTI</span>
+    <dc-import name="TabletRigaGiornata" corso="Judo baby" attivita="Gioco" ora="16:30–17:15" kanji="柔" tinta="#f4c31b" fase="finita" tema="scuro" hint-size="100%,64px"></dc-import>
+    <dc-import name="TabletRigaGiornata" corso="Judo kids" attivita="Tecnica" ora="18:30–19:30" kanji="柔" tinta="#1b8ac4" fase="finita" tema="scuro" hint-size="100%,64px"></dc-import>
+    <dc-import name="TabletRigaGiornata" corso="Judo adulti" ora="20:00–21:00" kanji="柔" tinta="#1b8ac4" fase="finita" tema="scuro" hint-size="100%,64px"></dc-import>
+    <div style="flex-grow: 1"></div>
+    <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #f4c31b; color: #f2f2f0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; text-align: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline><polyline points="12 7 12 12 15 14"></polyline></svg>TI SEI DIMENTICATO DI SEGNARTI?</span>
+  </aside>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="presenze" sotto-presenze="OGGI IN SALA" sotto-timer="DELLA PALESTRA" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

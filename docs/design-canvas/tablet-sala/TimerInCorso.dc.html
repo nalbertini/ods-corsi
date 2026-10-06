@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Un allenamento in corso (TimerScreen.tsx del timer, dentro il riquadro della scheda TIMER). Il colore dell'intervallo (qui LAVORO, rosso) sta nella cornice da 14px, nel tasto grande PAUSA, nella riga in corso della scaletta e nella linea del tempo: si legge da tutta la sala. A sinistra stato, cifre da due metri, esercizio e i comandi (PAUSA, INDIETRO, +30″, AVANTI); a destra RESTA, FINE ALLE e la scaletta dei passi; in fondo la linea del tempo, un blocco per passo. In testata resta SI SEGNA ORA · SEGNATI per chi arriva tardi, e la scheda TIMER in basso dice a che punto e'. Scaletta e linea sono i componenti del canvas del timer, con piccole differenze (la linea qui ha il passo in corso col contorno). Non riprodotti: PRONTO, COMPLETATO, IN PAUSA e gli altri colori (giallo, verde, blu). -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:41" tema="scuro" chip="segna" corso="JUDO KIDS" conteggio="7/12" hint-size="100%,92px"></dc-import>
+  <div style="position: relative; flex: 1; min-height: 0; overflow: hidden; border: 14px solid #e4292a">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 0 20px">
+      <span style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 2px solid #333333; color: #b8b8b2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></span>
+      <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 1px; min-width: 0">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; line-height: 1.05">TECNICA A COPPIE</span>
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.18em; color: #8c8c88">SERIE 1 / 2</span>
+      </div>
+      <span style="display: flex; align-items: center; justify-content: center; min-width: 44px; height: 44px; padding: 0 10px; border: 2px solid #333333; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: #b8b8b2">RESET</span>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; margin-top: 12px; border-top: 2px solid #2a2a2a; height: calc(100% - 56px)">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 28px 16px; min-width: 0">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 43px; font-weight: 700; letter-spacing: 0.26em; color: #e4292a; line-height: 1">LAVORO</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 150px; font-weight: 700; line-height: 0.88; letter-spacing: -0.03em">0:24</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 43px; font-weight: 600; letter-spacing: 0.04em; text-align: center">Osoto gari</span>
+        <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 560px; margin-top: auto">
+          <span style="display: flex; align-items: center; justify-content: center; gap: 12px; height: 67px; background: #e4292a; color: #ffffff; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 30px; font-weight: 700; letter-spacing: 0.18em"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>PAUSA</span>
+          <div style="display: flex; gap: 8px">
+            <span style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border: 2px solid #333333; color: #b8b8b2; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; letter-spacing: 0.1em">INDIETRO</span>
+            <span style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 48px; border: 2px solid #e4292a; background: #1c1c1c; color: #f2f2f0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; letter-spacing: 0.1em">+30″</span>
+            <span style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border: 2px solid #333333; color: #b8b8b2; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; letter-spacing: 0.1em">AVANTI</span>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px; min-height: 0; padding: 22px 20px 20px; border-left: 2px solid #2a2a2a">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.22em; color: #8c8c88">RESTA</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 56px; font-weight: 700; line-height: 0.9">12:40</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.22em; color: #8c8c88">FINE ALLE 18:53</span>
+        </div>
+        <dc-import name="TimerScaletta" righe="work:OSOTO GARI:30:1;rest:RECUPERO:15:1;work:UCHI MATA:30:7;setRest:RIPOSO TRA LE SERIE:60:1" altri="+ ALTRI 6 PASSI · 9:45" tema="scuro" hint-size="100%,300px"></dc-import>
+      </div>
+      <div style="grid-column: 1 / -1; padding: 12px 20px 14px; border-top: 2px solid #2a2a2a">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; letter-spacing: 0.16em; color: #8c8c88">
+          <span>GIRO <b style="color: #f2f2f0; font-size: 1.35em; letter-spacing: 0.06em">3</b></span><span></span>
+        </div>
+        <dc-import name="TimerLinea" blocchi="work:30,rest:15,work:30,rest:15,work:30,rest:15,work:30,rest:15,work:30,rest:15,work:30,rest:15,work:30,rest:15,work:30,setRest:60" attuale="4" avanzamento="0.2" alto="30px" tema="scuro" hint-size="100%,30px"></dc-import>
+      </div>
+    </div>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="timer" sotto-presenze="7/12 SEGNATI" sotto-timer="LAVORO 0:24" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" intervallo-timer="work" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>
