@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.38.3 — 6 ottobre 2026
+
+### Modificato
+
+- Libreria del design: NastroProva è alto 40 px
+
 ## 0.38.2 — 6 ottobre 2026
 
 ### Modificato
