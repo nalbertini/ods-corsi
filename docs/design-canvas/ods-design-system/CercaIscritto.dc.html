@@ -55,11 +55,11 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
-const testo = p.testo ?? '';
+const testo = p.testo ?? 'ros';
     const aperta = truthy(p.aperta ?? true);
     const mostra = aperta && testo.trim().length > 0;
     const scelto = Number(p.scelto) || 0;
-    const voci = String(p.risultati ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s, i) => {
+    const voci = String(p.risultati ?? 'Rossi Giulia|Rossi Marco:non attiva|Rossetti Anna').split('|').map((s) => s.trim()).filter(Boolean).map((s, i) => {
       const k = s.lastIndexOf(':');
       const nome = k > 0 ? s.slice(0, k).trim() : s;
       const nota = k > 0 ? s.slice(k + 1).trim() : '';

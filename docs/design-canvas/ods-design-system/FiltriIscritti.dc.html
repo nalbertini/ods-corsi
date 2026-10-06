@@ -44,7 +44,7 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
-const accesi = String(p.attivi ?? '').split('|').map((s) => s.trim()).filter(Boolean);
+const accesi = String(p.attivi ?? 'DA PAGARE').split('|').map((s) => s.trim()).filter(Boolean);
     const nomi = ['SOLO SENZA EMAIL', 'VENGONO POCO', 'SENZA CERTIFICATO VALIDO', 'CERTIFICATO IN SCADENZA', 'DA PAGARE', 'SENZA DOCUMENTO'];
     if (truthy(p.daStampare)) nomi.push('CERTIFICATI DA STAMPARE');
     const doppi = Number(p.doppioni) || 0;

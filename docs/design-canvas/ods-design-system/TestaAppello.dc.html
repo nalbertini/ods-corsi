@@ -89,7 +89,7 @@ class Component extends DCLogic {
       c, cond: COND,
       corso: String(p.corso ?? 'Judo kids').toUpperCase(),
       kanji: [...String(p.kanji ?? '柔')].map((segno) => ({ segno })),
-      quando: p.quando ?? '',
+      quando: p.quando ?? 'Lunedì 17:30 · Sala 1 · Marco R.',
       attivita, haAttivita: attivita !== '',
       futura: truthy(p.futura),
       indietro: p.indietro === undefined ? true : truthy(p.indietro),

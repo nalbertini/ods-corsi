@@ -97,18 +97,18 @@ class Component extends DCLogic {
     const tipo = p.tipo || 'conferma';
     const pericolo = truthy(p.pericolo);
     const restare = truthy(p.restare);
-    const resto = p.resto ?? '';
+    const resto = p.resto ?? 'Calendario e tablet la mostrano annullata, ma gli iscritti non vengono avvisati: vanno chiamati o scritti. Si rimette con PREVISTA.';
     const stato = p.stato || 'prevista';
     return {
       c, cond: COND, tema: p.tema === 'chiaro' ? 'chiaro' : 'scuro',
       eConferma: tipo === 'conferma', eDialogo: tipo === 'dialogo', eCassetto: tipo === 'cassetto',
       altezza: p.altezza || (tipo === 'cassetto' ? '600px' : tipo === 'dialogo' ? '520px' : '440px'),
-      domanda: p.domanda ?? '', resto, haResto: resto !== '',
+      domanda: p.domanda ?? 'Annullare Judo kids di lunedì alle 18:30?', resto, haResto: resto !== '',
       no: p.no ?? 'LASCIA STARE', si: p.si ?? 'ANNULLA LA LEZIONE',
       varianteNo: restare ? 'pieno' : 'linea',
       varianteSi: pericolo ? 'rosso' : restare ? 'linea' : 'pieno',
       titolo: p.titolo || (tipo === 'cassetto' ? 'JUDO KIDS' : 'LEZIONE STRAORDINARIA'),
-      sotto: p.sotto ?? '', quando: p.quando ?? '',
+      sotto: p.sotto ?? 'Una lezione in più, fuori dalle ricorrenze: un recupero, un evento, una prova aperta. Gli iscritti del corso sono già nell appello.', quando: p.quando ?? 'LUNEDÌ 12 OTTOBRE · 18:30–19:30',
       tinta: p.tinta || '#1b8ac4',
       istruttore: p.istruttore ?? 'Come da corso',
       stati: [['prevista', 'PREVISTA'], ['svolta', 'SVOLTA'], ['annullata', 'ANNULLATA']].map(([s, testo]) => ({

@@ -49,13 +49,13 @@ class Component extends DCLogic {
     const c = T[p.tema] || T.scuro;
 const stato = p.stato || 'normale';
     const contatto = p.contatto ?? '333 1234567';
-    const bollini = String(p.bollini ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
+    const bollini = String(p.bollini ?? 'CERTIFICATO:verde|QUOTA:giallo').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
       const i = s.lastIndexOf(':');
       return i > 0 ? { testo: s.slice(0, i).trim(), tono: s.slice(i + 1).trim() } : { testo: s, tono: 'spento' };
     });
     return {
       c, bollini, contatto, tema: p.tema || 'scuro',
-      nome: p.nome ?? 'Rossi Giulia', corsi: p.corsi ?? '', frequenza: p.frequenza ?? '',
+      nome: p.nome ?? 'Rossi Giulia', corsi: p.corsi ?? 'Judo kids, Pilates', frequenza: p.frequenza ?? '5/8',
       griglia: p.griglia || '1.2fr 1.4fr 1.3fr 150px 80px',
       daStampare: truthy(p.daStampare),
       sfondo: stato === 'scelta' ? c.surface2 : 'transparent',

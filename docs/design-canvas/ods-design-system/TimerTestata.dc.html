@@ -43,7 +43,7 @@ class Component extends DCLogic {
     return {
       c: T[p.tema] || T.scuro,
       nome: String(p.nome ?? 'TABATA').toUpperCase(),
-      sotto: String(p.sotto ?? '').toUpperCase(),
+      sotto: String(p.sotto ?? 'SERIE 2 / 3').toUpperCase(),
       maurizio: p.maurizio === undefined ? true : truthy(p.maurizio),
     };
   }

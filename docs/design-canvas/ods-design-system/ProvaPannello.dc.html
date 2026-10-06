@@ -76,7 +76,7 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const aspetta = truthy(p.aspetta);
-    const proposti = lista(p.proposti ?? '', '|').map((s) => {
+    const proposti = lista(p.proposti ?? 'Bianchi Marco:Judo kids, martedì 3 ottobre · 333 1234567', '|').map((s) => {
       const i = s.indexOf(':');
       return i < 0 ? { nome: s, dettaglio: '' } : { nome: s.slice(0, i), dettaglio: s.slice(i + 1) };
     });

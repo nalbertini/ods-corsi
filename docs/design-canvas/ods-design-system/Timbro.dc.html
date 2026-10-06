@@ -48,7 +48,7 @@ const tono = p.tono || 'rosso';
     const piccolo = truthy(p.piccolo);
     const BORDO = { rosso: c.rosso, giallo: c.giallo, verde: c.verde, spento: c.line };
     const TESTO = { rosso: c.rossoTesto, giallo: c.gialloTesto, verde: c.verdeTesto, spento: c.dim };
-    const righe = String(p.righe ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
+    const righe = String(p.righe ?? 'il 12 marzo:giallo').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
       const k = s.lastIndexOf(':');
       const testo = k > 0 ? s.slice(0, k).trim() : s;
       const t = k > 0 ? s.slice(k + 1).trim() : '';
@@ -56,7 +56,7 @@ const tono = p.tono || 'rosso';
       return { testo, colore: piccolo ? c.dim : giallo ? c.gialloTesto : 'inherit', bordo: giallo ? '2px solid ' + c.giallo : '0', padding: giallo ? '0 6px' : '0' };
     });
     return {
-      c, righe, titolo: p.titolo ?? '', parola: p.parola ?? '',
+      c, righe, titolo: p.titolo ?? 'CERTIFICATO', parola: p.parola ?? 'SCADUTO',
       bordo: BORDO[tono] || c.line, coloreParola: TESTO[tono] || c.text,
       coloreBase: tono === 'spento' ? c.dim : c.sec,
       padding: piccolo ? '10px 12px' : '12px 14px',

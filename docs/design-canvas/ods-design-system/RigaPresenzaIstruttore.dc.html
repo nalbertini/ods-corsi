@@ -68,15 +68,15 @@ const stato = p.stato || 'da_confermare';
     const daConfermare = stato === 'da_confermare';
     return {
       c, tema: p.tema || 'scuro',
-      nome: p.nome ?? '', corso: p.corso ?? '', quando: p.quando ?? '', previsti: p.previsti || 'nessuno',
-      entrata: p.entrata ?? '', come: p.come ?? '', tinta: p.tinta || c.line,
+      nome: p.nome ?? 'Marco Rossi', corso: p.corso ?? 'Judo kids', quando: p.quando ?? 'lunedì 5 ottobre, 17:30–18:30', previsti: p.previsti || 'nessuno',
+      entrata: p.entrata ?? '17:24', come: p.come ?? 'col PIN', tinta: p.tinta || c.line,
       griglia: p.griglia || '1fr 1.5fr 1fr 130px 240px',
       opacita: stato === 'rifiutata' ? '0.5' : '1',
       daConfermare,
       gestita: !daConfermare,
       parolaStato: conf ? 'CONFERMATA' : 'RIFIUTATA',
       coloreStato: conf ? c.verdeTesto : c.rossoTesto,
-      dettoGestita: p.gestita ?? '',
+      dettoGestita: p.gestita ?? 'da Elena, ieri',
       ripensa: conf ? 'Rifiuta' : 'Conferma',
     };
   }

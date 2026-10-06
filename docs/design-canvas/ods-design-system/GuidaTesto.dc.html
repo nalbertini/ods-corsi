@@ -55,9 +55,9 @@ class Component extends DCLogic {
     return {
       c,
       titolo: p.titolo ?? 'Il timer',
-      testo: p.testo ?? '',
-      sezione: p.sezione ?? '',
-      voci: lista(p.voci ?? '', '|').map((testo) => ({ testo })),
+      testo: p.testo ?? 'Il timer conta i passi dell’allenamento e passa da solo al successivo.',
+      sezione: p.sezione ?? 'I comandi',
+      voci: lista(p.voci ?? 'AVVIA parte dal primo passo|PAUSA ferma il conto|+30″ allunga il passo in corso', '|').map((testo) => ({ testo })),
       conTabella: n > 0 && righe.length > 0,
       colonne: 'repeat(' + n + ', 1fr)',
       celle,
