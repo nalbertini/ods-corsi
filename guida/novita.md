@@ -10,6 +10,46 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.47.0 — 6 ottobre 2026
+
+### Novità
+
+- Nell'iscrizione, il corso e il pagamento hanno ciascuno il suo passo, e il modulo e i documenti pure
+
+## 0.46.1 — 6 ottobre 2026
+
+### Modificato
+
+- Libreria del design: la firma a schermo intero si legge di nuovo
+
+## 0.46.0 — 6 ottobre 2026
+
+### Novità
+
+- Nell'iscrizione, i corsi della sua età per primi, e niente corsi da adulti per i bambini
+
+## 0.45.2 — 6 ottobre 2026
+
+### Risolto
+
+- La firma a schermo intero in orizzontale ha lo spazio per firmare
+
+### Modificato
+
+- Libreria del design: la testata può non scrivere COLLEGNO
+
+## 0.45.1 — 6 ottobre 2026
+
+### Risolto
+
+- Nell'iscrizione di un minore, le parole per il genitore dicono cosa fare
+
+## 0.45.0 — 6 ottobre 2026
+
+### Novità
+
+- Nell'iscrizione, la barra di quel che manca è una riga e si tocca per andare al campo
+
 ## 0.44.0 — 6 ottobre 2026
 
 ### Novità

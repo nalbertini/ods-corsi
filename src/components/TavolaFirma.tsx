@@ -1,6 +1,6 @@
 import { type ReactNode, type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { adattaTratti, daIsolare, firmaVera, limitaPunto, orientamento, risultatoFatto, serveBack, trattoVero, type Tratto } from '../lib/tratti'
+import { adattaTratti, altezzaVisibile, daIsolare, invitoGirare, rotazioneCancella, firmaVera, limitaPunto, orientamento, risultatoFatto, serveBack, trattoVero, type Tratto } from '../lib/tratti'
 
 /**
  * Il riquadro dove si firma col dito, o col mouse dal computer.
@@ -145,9 +145,9 @@ function Tela({ id, tratti, onTratti, onTocco, limita, descritto }: { id?: strin
 }
 
 /** Il riquadro con la riga e l'invito, lo stesso in piccolo e a schermo intero. */
-function RiquadroFirma({ classe, rif, vuota, children }: { classe: string; rif?: RefObject<HTMLDivElement>; vuota: boolean; children: ReactNode }) {
+function RiquadroFirma({ classe, rif, vuota, giu, children }: { classe: string; rif?: RefObject<HTMLDivElement>; vuota: boolean; giu?: () => void; children: ReactNode }) {
   return (
-    <div ref={rif} className={classe} data-vuota={vuota || undefined}>
+    <div ref={rif} className={classe} data-vuota={vuota || undefined} onPointerDownCapture={giu}>
       {children}
       <span className="firma-riga" aria-hidden />
       {vuota && (
@@ -170,6 +170,7 @@ function FirmaSchermoIntero({ titolo, piccolo, ritorno, firmaPrima, onTratti, on
   const annulla = useRef<HTMLButtonElement>(null)
   const [bozza, setBozza] = useState<Tratto[]>([])
   const [avviso, setAvviso] = useState('')
+  const [toccato, setToccato] = useState(false)
   const [verso, setVerso] = useState(() => orientamento(window.innerWidth, window.innerHeight))
   const fatto = risultatoFatto(bozza, piccolo.w, piccolo.h)
 
@@ -213,13 +214,19 @@ function FirmaSchermoIntero({ titolo, piccolo, ritorno, firmaPrima, onTratti, on
     const gira = () => {
       const nuovo = orientamento(window.innerWidth, window.innerHeight)
       setVerso(nuovo) // titolo e frase seguono il verso anche col mouse
-      if (!window.matchMedia('(pointer: coarse)').matches) return
-      if (nuovo === prima) return
+      const cancella = rotazioneCancella(prima, nuovo, window.matchMedia('(pointer: coarse)').matches)
+      if (!cancella) return
       prima = nuovo
       setBozza([])
+      setToccato(false)
       setAvviso('Hai girato il telefono: firma di nuovo')
     }
     window.addEventListener('resize', gira)
+    // L'altezza visibile (barre del browser comprese) in --altezza-firma: 100dvh su iOS non basta.
+    const misura = () => el.style.setProperty('--altezza-firma', `${altezzaVisibile(window.visualViewport?.height, window.innerHeight)}px`)
+    misura()
+    window.addEventListener('resize', misura)
+    window.visualViewport?.addEventListener('resize', misura)
     const tasti = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
@@ -242,6 +249,8 @@ function FirmaSchermoIntero({ titolo, piccolo, ritorno, firmaPrima, onTratti, on
     return () => {
       document.removeEventListener('keydown', tasti)
       window.removeEventListener('resize', gira)
+      window.removeEventListener('resize', misura)
+      window.visualViewport?.removeEventListener('resize', misura)
       window.removeEventListener('popstate', indietro)
       el.removeEventListener('touchmove', ferma)
       el.removeEventListener('gesturestart', ferma)
@@ -255,32 +264,45 @@ function FirmaSchermoIntero({ titolo, piccolo, ritorno, firmaPrima, onTratti, on
     }
   }, [])
 
+  const orizz = verso === 'orizzontale'
+  const rifai = (
+    <button type="button" className="firma-intera-tasto" onClick={() => { setBozza([]); setAvviso('') }}>
+      CANCELLA E RIFAI
+    </button>
+  )
   return createPortal(
-    <div ref={radice} className="firma-intera" role="dialog" aria-modal="true" aria-label={titolo}>
+    <div ref={radice} className={`firma-intera${orizz ? ' firma-intera-orizz' : ''}`} role="dialog" aria-modal="true" aria-label={titolo}>
       <div className="firma-intera-testa">
         <button type="button" ref={annulla} className="firma-intera-tasto" onClick={() => chiudi('annulla')}>
           ANNULLA
         </button>
         {/* In verticale il titolo intero va a capo: resta solo il nome (l'etichetta del dialog è intera). */}
-        <span className="firma-intera-titolo">{verso === 'verticale' ? titolo.replace(/^LA FIRMA DI /, '') : titolo}</span>
+        <span className="firma-intera-titolo">{orizz ? titolo : titolo.replace(/^LA FIRMA DI /, '')}</span>
+        {/* In orizzontale una barra sola: CANCELLA E RIFAI sta in cima e sotto il riquadro non c'è niente. */}
+        {orizz && rifai}
         <button type="button" className="firma-intera-tasto firma-intera-fatto" disabled={!fatto.chiama} onClick={() => chiudi('fatto')}>
           FATTO
         </button>
       </div>
-      <RiquadroFirma classe="firma-intera-riquadro" rif={riquadro} vuota={!bozza.length}>
+      <RiquadroFirma classe="firma-intera-riquadro" rif={riquadro} vuota={!bozza.length} giu={() => setToccato(true)}>
         <Tela tratti={bozza} onTratti={(t) => { setBozza(t); setAvviso('') }} />
-      </RiquadroFirma>
-      <div className="firma-intera-piede">
-        {/* Sempre nel documento, se no chi usa uno screen reader non sente l'avviso comparire. */}
+        {/* In verticale, finché non si firma: girare il telefono dà più spazio al dito. Non copre la riga. */}
+        {invitoGirare(verso, bozza.length, toccato, avviso) && (
+          <p className="firma-gira">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <rect x="7" y="2" width="10" height="20" rx="2" />
+              <path d="M11 18h2" />
+            </svg>
+            GIRA IL TELEFONO IN ORIZZONTALE: FIRMI MEGLIO
+          </p>
+        )}
+        {/* Un solo avviso, sempre montato (vuoto finché non serve), se no gli screen reader non lo annunciano.
+            Sta nel riquadro, sopra la riga e l'invito, in verticale e in orizzontale; sparisce alla prima penna. */}
         <p className="firma-intera-avviso" role="status" aria-live="polite">
           {avviso}
         </p>
-        {/* In orizzontale il riquadro più alto serve alla firma: la frase c'è solo in verticale. */}
-        {verso === 'verticale' && <p className="firma-intera-frase">Gira il telefono per avere più spazio. La schermata non si muove mentre firmi.</p>}
-        <button type="button" className="firma-intera-tasto" onClick={() => { setBozza([]); setAvviso('') }}>
-          CANCELLA E RIFAI
-        </button>
-      </div>
+      </RiquadroFirma>
+      {!orizz && <div className="firma-intera-piede">{rifai}</div>}
     </div>,
     document.body,
   )
@@ -307,7 +329,7 @@ export function TavolaFirma({ id, tratti, onTratti, descritto }: { id: string; t
         {tratti.length ? 'RIFAI LA FIRMA A SCHERMO INTERO' : 'FIRMA A SCHERMO INTERO'}
       </button>
       <p className="firma-apri-frase">
-        {tratti.length ? 'Firma pronta: parte con la richiesta. Toccando il riquadro si riapre a schermo intero.' : 'Più spazio per il dito: si apre a tutto schermo, e puoi anche girare il telefono. Si può firmare anche qui nel riquadro.'}
+        {tratti.length ? 'Firma pronta: parte con la richiesta. Toccando il riquadro si riapre a schermo intero.' : 'In orizzontale firmi meglio: gira il telefono quando apri la firma.'}
       </p>
       {aperta && (
         <FirmaSchermoIntero
