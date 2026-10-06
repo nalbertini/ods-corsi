@@ -4,6 +4,7 @@ import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
+import { IscrizioneAPassi } from './components/IscrizioneAPassi'
 import { AreaIscritti, IscrittiChiusa } from './components/AreaIscritti'
 import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
@@ -17,7 +18,8 @@ import { account, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type P
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
-import { ISTRUTTORE_PROVA, inProvaScelta, scegliProva } from './lib/dati'
+import { ISTRUTTORE_PROVA, haUnServer, inProvaScelta, scegliProva } from './lib/dati'
+import { flussoNuovoAcceso } from './lib/passiIscrizione'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
 import { chiediPrimaDiSostituire, lezioneDelTimer, mostraStriscia, statoCambiato, timerAperto, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
 import type { Incorporato, StatoTimer } from '../timer/src/lib/incorporato'
@@ -199,7 +201,8 @@ function Iscrizioni() {
     <div className="app">
       <Testata luogo="ISCRIZIONI" />
       <main className="scroll">
-        <IscrizioniScreen pubblica />
+        {/* Il flusso a passi è solo in prova e solo con #nuova: il vecchio resta com'è. */}
+        {flussoNuovoAcceso(haUnServer, window.location.hash) ? <IscrizioneAPassi /> : <IscrizioniScreen pubblica />}
       </main>
     </div>
   )

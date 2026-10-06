@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; border: 2px solid {{c.line}}; background: {{c.surface}}; color: {{c.text}}">
+  <sc-for list="{{righe}}" as="r" hint-placeholder-count="3">
+    <div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 12px 14px; border-top: {{r.sopra}}">
+      <span style="width: 26px; flex: none; text-align: center; font-family: {{cond}}; font-size: 22px; font-weight: 700; line-height: 1; color: {{r.colore}}">{{r.segno}}</span>
+      <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0; line-height: 1.2">
+        <span style="font-weight: 600">{{r.titolo}}</span>
+        <span style="font-size: 13px; color: {{c.dim}}">{{r.dettaglio}}</span>
+      </span>
+      <sc-if value="{{r.haTasto}}" hint-placeholder-val="{{ true }}">
+        <span style="display: flex; align-items: center; flex: none; min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; font-family: {{cond}}; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: {{c.sec}}">{{r.tasto}}</span>
+      </sc-if>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"righe":{"editor":"text","default":"fatto~Paolo Bianchi~nato il 15/08/1985~MODIFICA|fatto~Judo adulti~mar e gio 17:30-18:30~MODIFICA|manca~Ricevuta del pagamento~non caricata: paghi in segreteria~CARICA"},"numerati":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":240}}'>
+// Il riepilogo prima di mandare: `Riepilogo` di src/components/ds.tsx e `.riepilogo*` di src/styles.css (modulo a passi, solo in prova). Una riga per cosa, separate da |, con i campi
+// separati da ~: stato~titolo~dettaglio~tasto. Stato: fatto (✓ verde), manca (– giallo, cosa facoltativa non data: il trattino pesa piu' d'un punto, che si perdeva), guaio (! rosso);
+// con numerati vero lo stato e' un numero (1, 2, 3: «E adesso»). Il tasto (MODIFICA, CARICA) e' facoltativo, da 44px.
+// Riquadro .card: bordo 2px `line`, fondo `surface`, righe da almeno 56px divise da una riga `lineSoft`.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tasto: '#b8b8b2', rosso: '#e4292a', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suRosso: '#ffffff', suColore: '#121212' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', tasto: '#4a4a46', rosso: '#e4292a', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suRosso: '#ffffff', suColore: '#121212' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const num = truthy(p.numerati);
+    const righe = lista(p.righe, '|').map((r, i) => {
+      const [stato, titolo, dettaglio, tasto] = r.split('~').map((s) => s.trim());
+      const segno = num ? String(i + 1) : stato === 'fatto' ? '✓' : stato === 'guaio' ? '!' : '–';
+      const colore = num ? c.text : stato === 'fatto' ? c.verdeTesto : stato === 'guaio' ? c.rossoTesto : c.gialloTesto;
+      return { segno, colore, titolo: titolo ?? '', dettaglio: dettaglio ?? '', tasto: tasto ?? '', haTasto: !!tasto, sopra: i === 0 ? '0' : '2px solid ' + c.lineSoft };
+    });
+    return { c, cond: COND, righe };
+  }
+}
+</script>
+</body>
+</html>

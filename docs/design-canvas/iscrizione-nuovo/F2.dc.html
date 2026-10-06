@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- IDEA. Il codice a quattro cifre di F1. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="1" totale="5" titolo="CHI SEI" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 12px"><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">Ti abbiamo scritto su WhatsApp, al 338 ••• ••00. Vale 10 minuti.</span><dc-import name="Campo" etichetta="IL CODICE" valore="4829" codice="{{ true }}" hint-size="100%,80px"></dc-import><dc-import name="Bottone" label="MANDALO DI NUOVO" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Non è arrivato? Prova con l’email, o chiama la segreteria.</span></div>
+</main>
+<dc-import name="BarraPasso" avanti="CONTINUA" indietro="CAMBIA" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

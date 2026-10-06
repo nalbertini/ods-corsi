@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Come ModuloUscita di oggi (domandaUscita di richieste.ts; DueTocchi in ds.tsx), ma nella barra dei passi e solo dal passo 1: il tasto nel suo stato «chiede» prende tutta la riga. Sostituisce la «bozza salvata» del flusso nuovo, che non c’è: la regola di oggi è che le risposte non restano sul telefono. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="1" totale="4" titolo="I TUOI DATI" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 12px"><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">INDIETRO dal passo 2 in poi torna al passo prima, senza domande: le risposte sono ancora in memoria. Dal passo 1 esce dal flusso, e se c’è già qualcosa di scritto, firmato o scelto il primo tocco cambia il tasto in LE RISPOSTE SI PERDONO · ESCI? e solo il secondo esce (dopo 6 secondi torna INDIETRO).</span><dc-import name="Campo" etichetta="NOME" valore="Paolo" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="COGNOME" valore="Bianchi" hint-size="100%,80px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" avanti="AVANTI" indietroChiede="{{ true }}" manca="CODICE FISCALE" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

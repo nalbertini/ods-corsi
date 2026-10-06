@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il caso inverso di A1Controllo: MIO FIGLIO con un codice fiscale da maggiorenne. Stesse due strade: cambiare scelta (si tengono nome, cognome, codice, residenza e contatti; firma, caselle e foto del foglio si azzerano) o correggere il codice. AVANTI resta bloccato. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1114px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="1" totale="5" titolo="IL BAMBINO" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 12px"><dc-import name="Campo" etichetta="NOME" valore="Matteo" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="COGNOME" valore="Rossi" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="CODICE FISCALE" valore="RSSMTT84C15L219Y" nota="Il codice torna, ma dice che è nato nel 1984: è maggiorenne." notaTono="avviso" codice="{{ true }}" hint-size="100%,110px"></dc-import><dc-import name="Campo" etichetta="DATA DI NASCITA" valore="15/03/1984" nota="42 anni: lo dice il codice fiscale" notaTono="avviso" tipo="sola-lettura" hint-size="100%,110px"></dc-import><dc-import name="Campo" etichetta="LUOGO DI NASCITA" valore="Torino (TO)" tipo="sola-lettura" hint-size="100%,80px"></dc-import><dc-import name="RiquadroPasso" tono="guaio" titolo="Ti stai iscrivendo tu?" testo="Hai scelto «MIO FIGLIO O MIA FIGLIA», ma il codice fiscale è di un maggiorenne. Torna indietro e scegli «IO, SONO ADULTO»: i dati che hai scritto restano." tonoTesto="testo" tasti="SCEGLI IO, SONO ADULTO|CORREGGO IL CODICE" hint-size="100%,220px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" avanti="AVANTI" manca="CODICE FISCALE" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. La scelta in apertura del flusso nuovo, sulla pagina ISCRIZIONI di oggi (IscrizioniScreen.tsx): il riquadro PRIMA DI ISCRIVERTI con le prove (3 € e 10 €) e i contatti restano come nell’app. La frase sul salvataggio segue la regola di oggi: nel modulo non resta niente sul telefono, quindi niente bozza. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1088px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Titoletto" label="ISCRIZIONE" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 12px"><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">Ci vogliono circa 5 minuti. Quello che scrivi non resta sul telefono: se esci prima di mandare la richiesta, le risposte si perdono.</span><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">CHI SI ISCRIVE?</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="IO, SONO ADULTO" riga="Ti servono: il tuo codice fiscale e la tua carta d’identità. 4 passi." hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="MIO FIGLIO O MIA FIGLIA" riga="Ti servono: il codice fiscale del bambino e il tuo, e la tua carta d’identità. 5 passi." hint-size="100%,72px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Il certificato medico si può caricare nell’ultimo passo, o portare in segreteria prima della prima lezione.</span></div><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 12px"><dc-import name="RiquadroPasso" tono="prova" etichetta="PRIMA DI ISCRIVERTI" titolo="" righe="Una lezione di prova:3 €|Una settimana di prova:10 €" testo="Una lezione per provare un corso, o una settimana per provare tutti gli sport e scegliere quello giusto, prima di iscriversi. Per cominciare, passa in palestra o chiamaci." tasti="CHIAMA" hint-size="100%,270px"></dc-import></div><div style="display: flex; flex-direction: column; gap: 12px; padding: 8px 20px 28px"><dc-import name="RiquadroPasso" titolo="Hai un dubbio? Chiamaci o passa in palestra." testo="Via Sassi 26, Collegno, a pochi metri dalla metro Fermi. Telefono 346 329 2786." tasti="CHIAMA|MAPPA" hint-size="100%,330px"></dc-import></div>
+</main>
+
+</div>
+</x-dc>
+</body>
+</html>

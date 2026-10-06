@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Passo 1, adulto. Come ModuloDati di oggi: scritto il codice fiscale, data e luogo di nascita si riempiono da soli (campo tratteggiato) e l’età sta sotto la data. Per questo il codice fiscale viene prima della data, al contrario del flusso nuovo. I contatti sono quelli del modulo di oggi: email obbligatoria, telefono, secondo telefono facoltativo. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1534px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1">
+<dc-import name="Avanzamento" numero="1" totale="4" titolo="I TUOI DATI" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 4px"><dc-import name="Campo" etichetta="NOME" valore="Paolo" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="COGNOME" valore="Bianchi" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="CODICE FISCALE" valore="BNCPLA85M15L219X" nota="Il codice torna." notaTono="avviso" codice="{{ true }}" hint-size="100%,110px"></dc-import><dc-import name="Campo" etichetta="DATA DI NASCITA" valore="15/08/1985" nota="40 anni: lo dice il codice fiscale" notaTono="avviso" tipo="sola-lettura" hint-size="100%,110px"></dc-import><dc-import name="Campo" etichetta="LUOGO DI NASCITA" valore="Torino (TO)" tipo="sola-lettura" hint-size="100%,80px"></dc-import></div><dc-import name="Titoletto" label="DOVE ABITI" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><dc-import name="Campo" etichetta="VIA E NUMERO" valore="Via Roma 12" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="CAP" valore="10093" codice="{{ true }}" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="COMUNE" valore="Collegno" hint-size="100%,80px"></dc-import></div><dc-import name="Titoletto" label="COME TI TROVIAMO" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><dc-import name="Campo" etichetta="EMAIL" valore="paolo@esempio.it" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="TELEFONO" valore="339 000 0000" hint-size="100%,80px"></dc-import><dc-import name="Campo" etichetta="TELEFONO 2 · FACOLTATIVO" valore="" hint-size="100%,80px"></dc-import></div>
+</main>
+<dc-import name="BarraPasso" avanti="AVANTI" nota="Tutto a posto in questo passo." hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

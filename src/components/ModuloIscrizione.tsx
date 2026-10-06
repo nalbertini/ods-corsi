@@ -748,7 +748,7 @@ function Sezione({ titolo, children }: { titolo: string; children: ReactNode }) 
 }
 
 /** Una casella del modulo: sì o no, e finché non si sceglie nessuna delle due. */
-function Casella({
+export function Casella({
   id,
   etichetta,
   dettaglio,
@@ -785,7 +785,7 @@ function Casella({
 }
 
 /** Un file da scegliere: controlla il tipo, rimpicciolisce la foto, e la passa su. */
-function SceltaFile({
+export function SceltaFile({
   tipo,
   file,
   onFile,
@@ -829,7 +829,7 @@ function SceltaFile({
  * pagarlo: l'IBAN e la causale col suo nome, da copiare. La ricevuta del
  * bonifico si carica qui sotto, fra i file, se si paga prima.
  */
-function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: CorsoRef[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
+export function QuantoCosta({ nome, cognome, corsi, formula, abbonamenti }: { nome: string; cognome: string; corsi: CorsoRef[]; formula: DatiRichiesta['formula']; abbonamenti: Abbonamento[] }) {
   const letto = useListino()
   const [copiato, setCopiato] = useState<string | null>(null)
   if (!letto) return null
