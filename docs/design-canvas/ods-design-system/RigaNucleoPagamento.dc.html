@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 0; border-top: {{filoBordo}}; color: {{c.text}}">
+  <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 1px; min-width: 0">
+    <span style="font-weight: {{peso}}">{{nome}}</span>
+    <sc-if value="{{haSotto}}" hint-placeholder-val="{{ true }}">
+      <span style="font-size: 13px; color: {{c.dim}}">{{sotto}}</span>
+    </sc-if>
+  </span>
+  <sc-if value="{{haDetto}}" hint-placeholder-val="{{ true }}">
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{colore}}">{{detto}}</span>
+  </sc-if>
+  <sc-if value="{{totale}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 700; white-space: nowrap">{{importo}}</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Marta"},"sotto":{"editor":"text","default":"Pagati 500 € nelle ricevute"},"detto":{"editor":"text","default":"PAGATO"},"tono":{"editor":"enum","options":["pagato","in-parte","da-pagare"],"default":"pagato"},"totale":{"editor":"boolean","default":false},"importo":{"editor":"text","default":"550 €"},"filo":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":60}}'>
+// Riproduzione 1:1 di una riga di PAGAMENTI DEL NUCLEO: <li className="row mia-presenza"> di Nucleo in src/components/AreaIscritti.tsx (righe 560-585)
+// con .mia-presenza, .mia-presenza-detto e .mia-ricevuta-euro di src/styles.css (righe 793-806): gap 12px, padding 8px 0; il nome (600) e sotto, in 13px `dim`,
+// «Pagati N € nelle ricevute»; a destra PAGATO, IN PARTE, DA PAGARE o DA RINNOVARE in Saira 11px 0.12em. tono: pagato = `verde`, in-parte = `faint`, da-pagare = `rosso-testo`.
+// totale = l'ultima riga («Tutto il nucleo»): testo 700 e importo in Saira 17px 700. filo = il filo da 1px `line-soft` sopra (le righe dopo la prima).
+// Nell'app le righe stanno in un unico riquadro (.card.mie-presenze, padding 4px 14px): qui una riga sola, la cornice la fa la schermata.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const totale = truthy(p.totale);
+    const tono = p.tono || 'pagato';
+    const c2 = { lineSoft: p.tema === 'chiaro' ? '#e2e2dd' : '#2a2a2a' };
+    return {
+      c, cond: COND, totale, peso: totale ? 700 : 600, nome: p.nome ?? 'Marta',
+      sotto: totale ? '' : (p.sotto ?? 'Pagati 500 € nelle ricevute'), haSotto: !totale,
+      detto: totale ? '' : (p.detto ?? 'PAGATO'), haDetto: !totale, importo: p.importo ?? '550 €',
+      colore: tono === 'pagato' ? c.verde : tono === 'da-pagare' ? c.rossoTesto : c.faint,
+      filoBordo: truthy(p.filo) ? '1px solid ' + c2.lineSoft : '0',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il nucleo familiare nell'area degli iscritti, per il titolare (AreaIscritti.tsx, Nucleo): IL TUO NUCLEO con le persone (ognuna IN REGOLA o DA SISTEMARE, toccandola si apre la sua pagina) e quelle aggiunte che la segreteria non ha ancora accolto (bordo tratteggiato, LA GUARDA LA SEGRETERIA, oppure RIFIUTATA: CHIAMA LA SEGRETERIA); AGGIUNGI UNA PERSONA apre il modulo (vedi ModuloNucleo). Con piu' di una persona, PAGAMENTI DEL NUCLEO: per ognuna se e' pagato e quanto risulta dalle ricevute, il totale e dove va lo sconto famiglia. In fondo QUALCOSA NON TORNA?. In prova gli iscritti inventati con lo stesso cognome fanno nucleo; col database vero il nucleo non c'e' ancora. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1290px; background: #121212">
+<dc-import name="Testata" luogo="ISCRITTI" guida="{{ true }}" hint-size="100%,72px"></dc-import>
+<dc-import name="NastroProva"  hint-size="100%,28px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" label="IL TUO NUCLEO" conto="2" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px 12px">
+<dc-import name="MembroNucleo" nome="Marta Rossi" tu="{{ true }}" corsi="Judo adulti" stato="IN REGOLA" tono="fatto" hint-size="100%,66px"></dc-import>
+<dc-import name="MembroNucleo" nome="Giulia Rossi" corsi="Judo 2" stato="DA SISTEMARE" tono="avviso" hint-size="100%,66px"></dc-import>
+<dc-import name="MembroNucleo" nome="Tommaso Rossi" corsi="Aikido 2" stato="LA GUARDA LA SEGRETERIA" tono="avviso" attesa="{{ true }}" hint-size="100%,66px"></dc-import>
+<span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Figli, coniuge, fratelli: il modulo parte coi tuoi dati, e la richiesta arriva in segreteria come le altre.</span>
+<dc-import name="Bottone" label="AGGIUNGI UNA PERSONA" variante="principale" alto="48px" corpo="16px" larghezza="100%" hint-size="100%,48px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="PAGAMENTI DEL NUCLEO" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px 12px">
+<div style="display: flex; flex-direction: column; padding: 4px 14px; background: #1c1c1c; border: 2px solid #333333">
+  <dc-import name="RigaNucleoPagamento" nome="Marta" sotto="Pagati 500 € nelle ricevute" detto="PAGATO" tono="pagato" hint-size="100%,56px"></dc-import>
+  <dc-import name="RigaNucleoPagamento" nome="Giulia" sotto="Pagati 50 € nelle ricevute" detto="IN PARTE" tono="in-parte" filo="{{ true }}" hint-size="100%,56px"></dc-import>
+  <dc-import name="RigaNucleoPagamento" nome="Tutto il nucleo" totale="{{ true }}" importo="550 €" filo="{{ true }}" hint-size="100%,40px"></dc-import>
+</div>
+<span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Con due annuali nel nucleo, quello che costa meno ha il 20% di sconto (la quota associativa no).</span>
+</div>
+<section style="padding: 4px 20px 20px">
+  <dc-import name="RiquadroPasso" titolo="Qualcosa non torna?" testo="Questa pagina mostra quello che sa la segreteria. Per un certificato nuovo, un pagamento o un cambio di corso passa in palestra o chiama il 346 329 2786." tasti="CHIAMA" hint-size="100%,190px"></dc-import>
+</section>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

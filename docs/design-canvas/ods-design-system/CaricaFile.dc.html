@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: {{c.surface}}; border: 2px solid {{bordo}}; color: {{c.text}}">
+  <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 3px; min-width: 0">
+    <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{coloreEtichetta}}">{{etichetta}}</span>
+    <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}; {{unaRiga}}">{{frase}}</span>
+    <sc-if value="{{haErrore}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 14px; line-height: 1.4; color: {{c.rossoTesto}}">{{errore}}</span>
+    </sc-if>
+  </span>
+  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 48px; padding: 0 16px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 16px; font-weight: 700; letter-spacing: 0.16em">{{tasto}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"etichetta":{"editor":"text","default":"CARTA D IDENTITÀ"},"seManca":{"editor":"text","default":""},"dettaglio":{"editor":"text","default":"Il fronte. Per un minore, quella del genitore."},"nome":{"editor":"text","default":""},"kb":{"editor":"text","default":"412"},"errore":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":100}}'>
+// Riproduzione 1:1 di CaricaFile di src/components/ds.tsx (righe 207-245) con .modulo-file, .modulo-file-testo, .modulo-etichetta,
+// .passo-dettaglio, .una-riga e .modulo-scegli di src/styles.css (righe 633-636, 598, 585, 560). E' la riga di ogni file del modulo
+// di iscrizione (carta d'identita', certificato, ricevuta, foto del modulo firmato): una scheda `surface` con a sinistra l'etichetta
+// (12px 0.18em) e la frase, a destra il tasto linea SCEGLI (CAMBIA a file scelto: .btn.btn-ghost.passo-btn, 48px).
+// seManca = la parola accanto all'etichetta quando si puo' mandare senza (FACOLTATIVO, PUOI PORTARLO DOPO, PUOI PAGARE IN SEGRETERIA):
+// si va a capo solo dopo il «·». Con `nome` il file e' scelto: bordo e etichetta verdi, la frase diventa «nome · N KB» su una riga sola.
+// errore = riga rossa sotto (formato sbagliato, file troppo grande). Il fuoco da tastiera non e' riprodotto.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const nome = p.nome ?? '';
+    const fatto = nome !== '';
+    const seManca = p.seManca ?? '';
+    const errore = p.errore ?? '';
+    const kb = Number(p.kb ?? 412) || 1;
+    const etichetta = (p.etichetta ?? 'CARTA D IDENTITÀ') + (seManca ? ' · ' + seManca.split(' ').join('\u00a0') : '');
+    return {
+      c, cond: COND,
+      bordo: fatto ? c.verde : c.line,
+      etichetta, coloreEtichetta: fatto ? c.verdeTesto : c.dim,
+      frase: fatto ? nome + ' · ' + kb + ' KB' : (p.dettaglio ?? 'Il fronte. Per un minore, quella del genitore.'),
+      unaRiga: fatto ? 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap' : '',
+      errore, haErrore: errore !== '',
+      tasto: fatto ? 'CAMBIA' : 'SCEGLI',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Registrazione utente"
+    },
+    {
+      "id": "page-2",
+      "name": "Libreria"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Iscrizioni · i passi (telefono)",
+      "x": 0,
+      "y": 0,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "Costi.dc.html",
+      "title": "Costi · telefono",
+      "x": 520,
+      "y": 0,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "ModuloDati.dc.html",
+      "title": "Modulo · dati (minorenne)",
+      "x": 1040,
+      "y": 0,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "ModuloErrori.dc.html",
+      "title": "Modulo · errori",
+      "x": 1560,
+      "y": 0,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "ModuloUscita.dc.html",
+      "title": "Modulo · indietro chiede",
+      "x": 2080,
+      "y": 0,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "ModuloCorsi.dc.html",
+      "title": "Modulo · corsi e come paghi",
+      "x": 2600,
+      "y": 0,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "ModuloFirma.dc.html",
+      "title": "Modulo · firma",
+      "x": 3120,
+      "y": 0,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "ModuloFile.dc.html",
+      "title": "Modulo · file e invio",
+      "x": 0,
+      "y": 360,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "RichiestaArrivata.dc.html",
+      "title": "Richiesta arrivata",
+      "x": 520,
+      "y": 360,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "MancaQualcheFile.dc.html",
+      "title": "Manca qualche file",
+      "x": 1040,
+      "y": 360,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "AreaChiusa.dc.html",
+      "title": "Area iscritti · chiusa (produzione)",
+      "x": 1560,
+      "y": 360,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "AreaIscritto.dc.html",
+      "title": "Area iscritti · pilota in prova",
+      "x": 2080,
+      "y": 360,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "Nucleo.dc.html",
+      "title": "Nucleo familiare",
+      "x": 2600,
+      "y": 360,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "ModuloNucleo.dc.html",
+      "title": "Modulo · una persona in più",
+      "x": 3120,
+      "y": 360,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "Invito.dc.html",
+      "title": "Invito · scegli la password",
+      "x": 0,
+      "y": 720,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "LinkScaduto.dc.html",
+      "title": "Link scaduto",
+      "x": 520,
+      "y": 720,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "Accesso.dc.html",
+      "title": "Accesso · errore",
+      "x": 1040,
+      "y": 720,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "IscrizioniLargo.dc.html",
+      "title": "Iscrizioni · schermo largo",
+      "x": 1560,
+      "y": 720,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "ModuloLargo.dc.html",
+      "title": "Modulo · schermo largo",
+      "x": 2080,
+      "y": 720,
+      "w": 400,
+      "h": 200,
+      "page": "page-1"
+    },
+    {
+      "file": "Bottone.dc.html",
+      "title": "Bottone",
+      "x": 0,
+      "y": 0,
+      "w": 260,
+      "h": 80,
+      "page": "page-2"
+    },
+    {
+      "file": "Campo.dc.html",
+      "title": "Campo",
+      "x": 360,
+      "y": 0,
+      "w": 360,
+      "h": 90,
+      "page": "page-2"
+    },
+    {
+      "file": "CaricaFile.dc.html",
+      "title": "CaricaFile",
+      "x": 820,
+      "y": 0,
+      "w": 360,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "MembroNucleo.dc.html",
+      "title": "MembroNucleo",
+      "x": 1280,
+      "y": 0,
+      "w": 360,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "MiaChip.dc.html",
+      "title": "MiaChip",
+      "x": 1740,
+      "y": 0,
+      "w": 140,
+      "h": 40,
+      "page": "page-2"
+    },
+    {
+      "file": "MiaLezione.dc.html",
+      "title": "MiaLezione",
+      "x": 1980,
+      "y": 0,
+      "w": 360,
+      "h": 72,
+      "page": "page-2"
+    },
+    {
+      "file": "MiaPresenza.dc.html",
+      "title": "MiaPresenza",
+      "x": 0,
+      "y": 200,
+      "w": 360,
+      "h": 80,
+      "page": "page-2"
+    },
+    {
+      "file": "NastroProva.dc.html",
+      "title": "NastroProva",
+      "x": 460,
+      "y": 200,
+      "w": 390,
+      "h": 28,
+      "page": "page-2"
+    },
+    {
+      "file": "PassoIscrizione.dc.html",
+      "title": "PassoIscrizione",
+      "x": 950,
+      "y": 200,
+      "w": 360,
+      "h": 180,
+      "page": "page-2"
+    },
+    {
+      "file": "RigaNucleoPagamento.dc.html",
+      "title": "RigaNucleoPagamento",
+      "x": 1410,
+      "y": 200,
+      "w": 360,
+      "h": 60,
+      "page": "page-2"
+    },
+    {
+      "file": "Riquadro.dc.html",
+      "title": "Riquadro",
+      "x": 1870,
+      "y": 200,
+      "w": 360,
+      "h": 120,
+      "page": "page-2"
+    },
+    {
+      "file": "RiquadroPasso.dc.html",
+      "title": "RiquadroPasso",
+      "x": 0,
+      "y": 480,
+      "w": 360,
+      "h": 200,
+      "page": "page-2"
+    },
+    {
+      "file": "SchedaCorso.dc.html",
+      "title": "SchedaCorso",
+      "x": 460,
+      "y": 480,
+      "w": 380,
+      "h": 300,
+      "page": "page-2"
+    },
+    {
+      "file": "StimaCosto.dc.html",
+      "title": "StimaCosto",
+      "x": 940,
+      "y": 480,
+      "w": 360,
+      "h": 420,
+      "page": "page-2"
+    },
+    {
+      "file": "TavolaFirma.dc.html",
+      "title": "TavolaFirma",
+      "x": 1400,
+      "y": 480,
+      "w": 360,
+      "h": 170,
+      "page": "page-2"
+    },
+    {
+      "file": "Testata.dc.html",
+      "title": "Testata",
+      "x": 1860,
+      "y": 480,
+      "w": 390,
+      "h": 72,
+      "page": "page-2"
+    },
+    {
+      "file": "Titoletto.dc.html",
+      "title": "Titoletto",
+      "x": 0,
+      "y": 1000,
+      "w": 360,
+      "h": 50,
+      "page": "page-2"
+    },
+    {
+      "file": "TitoloEsito.dc.html",
+      "title": "TitoloEsito",
+      "x": 460,
+      "y": 1000,
+      "w": 360,
+      "h": 90,
+      "page": "page-2"
+    }
+  ],
+  "annotations": [],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
+}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'esito quando le risposte sono arrivate ma un file no (ModuloIscrizione.tsx, fase «file»): MANCA QUALCHE FILE in giallo, quali non sono partiti, il motivo in rosso, la riga di quel file per sceglierlo di nuovo (CaricaFile) e RIPROVA, che si puo' premere per un'ora; poi si portano i fogli in segreteria. Qui non e' partita la carta d'identita': il motivo e' quello che dice l'errore (qui la frase di ripiego «Il file non è partito»). Se si sceglie un altro file e non va bene, la riga ha il suo errore sotto (ModuloFile). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" label="RICHIESTA DI ISCRIZIONE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 28px">
+<dc-import name="TitoloEsito" titolo="MANCA QUALCHE FILE" tono="avviso" testi="Le risposte sono arrivate. Non è partito: carta d’identità." hint-size="100%,110px"></dc-import>
+<span style="font-size: 14px; line-height: 1.4; color: #ff5a52">Il file non è partito</span>
+<dc-import name="CaricaFile" etichetta="CARTA D’IDENTITÀ" dettaglio="Il fronte. Per un minore, quella del genitore." hint-size="100%,100px"></dc-import>
+<dc-import name="Bottone" label="RIPROVA" variante="principale" hint-size="100%,56px"></dc-import>
+<span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Si può riprovare per un’ora. Se non va, porta i fogli in segreteria.</span>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

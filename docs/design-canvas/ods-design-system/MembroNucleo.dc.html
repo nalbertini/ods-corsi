@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 14px; background: {{c.surface}}; border: 2px {{stileBordo}} {{c.line}}; color: {{c.text}}">
+  <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0; text-align: left">
+    <span style="font-weight: 600">{{nome}}</span>
+    <span style="font-size: 13px; color: {{c.dim}}">{{corsi}}</span>
+  </span>
+  <span style="max-width: 40%; font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: right; color: {{colore}}">{{stato}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Giulia Rossi"},"corsi":{"editor":"text","default":"Judo kids"},"stato":{"editor":"text","default":"IN REGOLA"},"tono":{"editor":"enum","options":["fatto","avviso","guaio"],"default":"fatto"},"tu":{"editor":"boolean","default":false},"attesa":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":70}}'>
+// Riproduzione 1:1 di una persona del nucleo familiare: <button className="card row mio-membro"> di Nucleo in src/components/AreaIscritti.tsx
+// (righe 521-557) con .card, .mio-membro e .mia-lezione-cosa di src/styles.css (righe 252 e 777-786): padding 10px 14px, gap 12px, a sinistra
+// nome (600) e corsi (13px `dim`), a destra lo stato in Saira 12px 0.1em, allineato a destra, al massimo il 40% della riga.
+// tono: fatto = verde (IN REGOLA), avviso = giallo-testo (DA SISTEMARE, LA GUARDA LA SEGRETERIA), guaio = rosso-testo (RIFIUTATA: CHIAMA LA SEGRETERIA).
+// attesa = una persona aggiunta che la segreteria non ha ancora accolto (data-attesa): bordo tratteggiato e non si tocca.
+// `tu` aggiunge « · tu» dopo il nome.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const tono = p.tono || 'fatto';
+    return {
+      c, cond: COND, stileBordo: truthy(p.attesa) ? 'dashed' : 'solid',
+      nome: (p.nome ?? 'Giulia Rossi') + (truthy(p.tu) ? ' · tu' : ''), corsi: p.corsi ?? 'Judo kids', stato: p.stato ?? 'IN REGOLA',
+      colore: tono === 'guaio' ? c.rossoTesto : tono === 'avviso' ? c.gialloTesto : c.verde,
+    };
+  }
+}
+</script>
+</body>
+</html>

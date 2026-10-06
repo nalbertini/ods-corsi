@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La pagina ISCRITTI col database vero (App.tsx Iscritti; IscrittiChiusa in AreaIscritti.tsx): per ora un iscritto non ha un accesso, quindi la pagina dice IN ARRIVO e offre GUARDALA IN PROVA, che apre l'area con dati inventati (?prova). E' l'unica faccia dell'area iscritti in produzione. Il tasto ? porta alla guida di iscritti/. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+<dc-import name="Testata" luogo="ISCRITTI" guida="{{ true }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column; padding: 20px 20px 0">
+<dc-import name="RiquadroPasso" tono="prova" etichetta="IN ARRIVO" titolo="L’area per gli iscritti non è ancora aperta." testo="Ci troverai le prossime lezioni dei tuoi corsi, le presenze, il certificato medico, la quota e le ricevute. Intanto si può vedere com’è, con dati inventati." tasti="GUARDALA IN PROVA" primoPrincipale="{{ true }}" hint-size="100%,260px"></dc-import>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

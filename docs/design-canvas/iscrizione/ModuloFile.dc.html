@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il modulo di iscrizione, fondo: I FILE, ALTRO e il tasto (ModuloIscrizione.tsx, CaricaFile di ds.tsx). Il certificato medico si ricorda solo quando serve (dai 6 anni; dai 12 l'agonistico per judo, aikido e lotta) e non ferma la richiesta: PUOI PORTARLO DOPO. La carta d'identita' (quella del genitore, per un minore) e' qui caricata (bordo verde, nome del file, CAMBIA); il retro, il certificato e la ricevuta sono facoltativi, con la parola accanto all'etichetta che dice cosa succede se mancano. In ALTRO: note per la segreteria (mai dati sulla salute), la casella obbligatoria del Regolamento Sociale e quella dell'informativa privacy, qui entrambe spuntate. Il tasto parte spento ma quando e' premuto dice, in maiuscolo, il passo («PREPARO IL MODULO FIRMATO…», «MANDO LE RISPOSTE…», «CARICO LA CARTA D'IDENTITÀ…»): non riprodotto. Non riprodotti: «Il file è troppo grande: al massimo 10 MB» e «Serve una foto (JPG, PNG, HEIC) o un PDF» (stesso schema, riga rossa sotto il file). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1260px; background: #121212">
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" label="I FILE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">IL CERTIFICATO MEDICO</span>
+  <span style="font-size: 14px; line-height: 1.4; color: #f4c31b">Dai 6 anni il certificato medico è obbligatorio. Caricalo qui sotto, o consegnalo in segreteria: senza non si partecipa alle lezioni.</span>
+</div>
+<dc-import name="CaricaFile" etichetta="CARTA D’IDENTITÀ" nome="carta-identita-genitore.jpg" kb="412" hint-size="100%,84px"></dc-import>
+<dc-import name="CaricaFile" etichetta="RETRO DEL DOCUMENTO" seManca="FACOLTATIVO" dettaglio="Se il fronte non basta." hint-size="100%,84px"></dc-import>
+<dc-import name="CaricaFile" etichetta="CERTIFICATO MEDICO" seManca="PUOI PORTARLO DOPO" dettaglio="Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria." hint-size="100%,100px"></dc-import>
+<dc-import name="CaricaFile" etichetta="RICEVUTA DEL PAGAMENTO" seManca="PUOI PAGARE IN SEGRETERIA" dettaglio="Se hai già pagato la quota associativa e il trimestre, oppure l’annuale." hint-size="100%,120px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="ALTRO" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" tipo="area" etichetta="NOTE PER LA SEGRETERIA · FACOLTATIVE" segnaposto="Niente dati sulla salute: quelli si portano in segreteria." hint-size="100%,130px"></dc-import>
+<dc-import name="Campo" tipo="spunta" etichetta="" valore="Accetto il Regolamento Sociale dell’associazione." scelto="{{ true }}" hint-size="100%,70px"></dc-import>
+<dc-import name="Campo" tipo="spunta" etichetta="" valore="Ho letto l’informativa privacy e so che questi dati li legge solo la segreteria della palestra." scelto="{{ true }}" hint-size="100%,90px"></dc-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 20px 20px 28px">
+  
+  <dc-import name="Bottone" label="MANDA LA RICHIESTA" variante="principale" hint-size="100%,56px"></dc-import>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

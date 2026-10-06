@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: {{gap}}; width: 100%; min-width: 0; padding: 14px; background: {{c.surface}}; border: 2px solid {{bordo}}; border-left: {{bordoSinistro}}; color: {{c.text}}; font-size: {{corpo}}">
+  <sc-if value="{{haEtichetta}}" hint-placeholder-val="{{ false }}">
+    <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: {{c.dim}}">{{etichetta}}</span>
+  </sc-if>
+  <sc-if value="{{haTitolo}}" hint-placeholder-val="{{ true }}">
+    <span style="font-size: 17px; font-weight: 600; line-height: 1.3">{{titolo}}</span>
+  </sc-if>
+  <sc-for list="{{righe}}" as="r" hint-placeholder-count="0">
+    <span style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px">
+      <span style="font-size: 17px; font-weight: 600; line-height: 1.3">{{r.titolo}}</span>
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">{{r.cifra}}</span>
+    </span>
+  </sc-for>
+  <sc-for list="{{frasi}}" as="f" hint-placeholder-count="1">
+    <span style="font-size: 14px; line-height: 1.4; color: {{coloreTesto}}">{{f}}</span>
+  </sc-for>
+  <sc-if value="{{haTasti}}" hint-placeholder-val="{{ true }}">
+    <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+      <sc-for list="{{tasti}}" as="t" hint-placeholder-count="2">
+        <span style="display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; background: {{t.sfondo}}; border: {{t.bordo}}; color: {{t.colore}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 16px; font-weight: 700; letter-spacing: 0.16em; white-space: nowrap">{{t.testo}}</span>
+      </sc-for>
+    </span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tono":{"editor":"enum","options":["normale","prova","guaio"],"default":"normale"},"etichetta":{"editor":"text","default":""},"titolo":{"editor":"text","default":"Hai un dubbio? Chiamaci o passa in palestra."},"righe":{"editor":"text","default":""},"testo":{"editor":"text","default":"Via Esempio 1, a pochi metri dalla metro Fermi. Telefono 011 000 0000."},"tonoTesto":{"editor":"enum","options":["dim","testo","avviso","guaio"],"default":"dim"},"tasti":{"editor":"text","default":"CHIAMA|MAPPA"},"primoPrincipale":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":200}}'>
+// Il riquadro delle pagine ISCRIZIONI e iscritti: <Riquadro> di src/components/ds.tsx (righe 66-90) con dentro quel che ci mettono
+// Prova e Contatti (IscrizioniScreen.tsx), il riquadro del nucleo (ModuloIscrizione.tsx righe 375-385), Segreteria e IscrittiChiusa
+// (AreaIscritti.tsx) e il guaio sopra MANDA LA RICHIESTA. Misure: .card.stack.riquadro (padding 14px, gap 8px; prova gap 6px e bordo
+// sinistro 4px `giallo`; guaio bordo `rosso`, 15px `text`), .etichetta-riquadro (12px, 0.2em), .passo-titolo (17px 600), .cifra (26px 700), .passo-dettaglio.
+// etichetta = la riga spaziata in cima; titolo = .passo-titolo; righe = `Titolo:cifra` separate da `|` (PROVA: «Una lezione di prova» e «3 €», sulla stessa riga);
+// testo = frasi .passo-dettaglio separate da `|` (tonoTesto dim | testo | avviso | guaio); tasti = .btn.passo-btn separati da `|`, il primo rosso con primoPrincipale.
+// Diverso da Riquadro.dc.html (che ha la cifra sotto l'etichetta e un solo testo): qui c'e' il titolo da 17px e piu' frasi.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const principale = truthy(p.primoPrincipale);
+    const tasti = lista(p.tasti ?? 'CHIAMA|MAPPA', '|').map((testo, i) => i === 0 && principale
+      ? { testo, sfondo: c.rosso, bordo: '0', colore: c.suRosso }
+      : { testo, sfondo: 'transparent', bordo: '2px solid ' + c.line, colore: c.tasto });
+    const tono = p.tono || 'normale';
+    const prova = tono === 'prova', guaio = tono === 'guaio';
+    const tt = p.tonoTesto || 'dim';
+    const righe = lista(p.righe ?? '', '|').map((s) => { const i = s.lastIndexOf(':'); return { titolo: s.slice(0, i), cifra: s.slice(i + 1) }; });
+    const etichetta = p.etichetta ?? '', titolo = p.titolo ?? 'Hai un dubbio? Chiamaci o passa in palestra.';
+    const bordo = guaio ? c.rosso : c.line;
+    return {
+      c, cond: COND,
+      gap: prova ? '6px' : '8px', corpo: guaio ? '15px' : '16px',
+      bordo, bordoSinistro: prova ? '4px solid ' + c.giallo : '2px solid ' + bordo,
+      etichetta, haEtichetta: etichetta !== '', titolo, haTitolo: titolo !== '',
+      righe, frasi: lista(p.testo ?? 'Via Esempio 1, a pochi metri dalla metro Fermi. Telefono 011 000 0000.', '|'),
+      coloreTesto: guaio ? c.text : tt === 'testo' ? c.text : tt === 'guaio' ? c.rossoTesto : tt === 'avviso' ? c.gialloTesto : c.dim,
+      tasti, haTasti: tasti.length > 0,
+    };
+  }
+}
+</script>
+</body>
+</html>

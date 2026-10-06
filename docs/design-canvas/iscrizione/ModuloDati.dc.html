@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il modulo di iscrizione (ModuloIscrizione.tsx), cima: chi si iscrive e il genitore, per una minorenne. Giulia Rossi, nata il 14/03/2017: scritto il codice fiscale, data e luogo di nascita si riempiono da soli (campo tratteggiato, non si scrive) e accanto alla data c'e' l'eta' in giallo; la data dice minorenne, quindi compaiono l'avviso e la sezione IL GENITORE (nome, cognome, codice fiscale), e piu' sotto i contatti sono quelli del genitore. Nome del titolo come in IscrizioniScreen (RICHIESTA DI ISCRIZIONE). Col database vero non c'e' il bollino PROVA: RESTA SU QUESTO DISPOSITIVO. Nome, cognome e indirizzo d'esempio inventati. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1780px; background: #121212">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" label="RICHIESTA DI ISCRIZIONE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 14px 20px 0">
+  <dc-import name="Bottone" label="← INDIETRO" variante="linea" alto="48px" corpo="16px" hint-size="160px,48px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="CHI SI ISCRIVE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" etichetta="NOME" valore="Giulia" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="COGNOME" valore="Rossi" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="CODICE FISCALE" valore="RSSGLI17C54L219K" codice="{{ true }}" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" tipo="sola-lettura" etichetta="DATA DI NASCITA" valore="14/03/2017" nota="9 anni: lo dice il codice fiscale" notaTono="avviso" hint-size="100%,100px"></dc-import>
+<dc-import name="Campo" tipo="sola-lettura" etichetta="LUOGO DI NASCITA" valore="Torino (TO)" hint-size="100%,80px"></dc-import>
+<span style="font-size: 14px; line-height: 1.4; color: #f4c31b">È minorenne: servono i dati del genitore qui sotto, e il modulo per minori, che firma il genitore.</span>
+</div>
+<dc-import name="Titoletto" label="IL GENITORE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" etichetta="NOME" valore="Marta" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="COGNOME" valore="Rossi" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="CODICE FISCALE DEL GENITORE" valore="RSSMRT85M41L219Z" codice="{{ true }}" hint-size="100%,80px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="RESIDENZA" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" etichetta="VIA E NUMERO" valore="Via Esempio 12" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="CAP" valore="10093" codice="{{ true }}" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="COMUNE" valore="Collegno" hint-size="100%,80px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="COME RAGGIUNGERE IL GENITORE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" etichetta="EMAIL" valore="marta.rossi@example.it" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="TELEFONO" valore="333 123 4567" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="TELEFONO 2 · FACOLTATIVO" valore="" hint-size="100%,80px"></dc-import>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>
