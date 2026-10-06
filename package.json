@@ -21,6 +21,7 @@
     "prova:richieste": "node scripts/prova-richieste.mjs",
     "prova:iscrizione-passi": "node scripts/prova-iscrizione-passi.mjs",
     "prova:firma": "node scripts/prova-firma.mjs",
+    "prova:firma-tratti": "node scripts/prova-firma-tratti.mjs",
     "prova:ricevuta": "node scripts/prova-ricevuta.mjs",
     "prova:prove": "node scripts/prova-prove.mjs",
     "prova:cerca-persone": "node scripts/prova-cerca-persone.mjs",
