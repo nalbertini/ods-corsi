@@ -7,3 +7,6 @@ dist/
 
 # La CLI di Supabase, dopo un deploy: il progetto collegato, non va nel repository.
 supabase/.temp/
+
+# Grafo di conoscenza generato da graphify
+graphify-out/
