@@ -657,6 +657,69 @@
       "w": 360,
       "h": 90,
       "page": "page-2"
+    },
+    {
+      "file": "TabletAvviso.dc.html",
+      "title": "TabletAvviso",
+      "x": 0,
+      "y": 10660,
+      "w": 800,
+      "h": 150,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletCampo.dc.html",
+      "title": "TabletCampo",
+      "x": 900,
+      "y": 10660,
+      "w": 560,
+      "h": 56,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletListeMusica.dc.html",
+      "title": "TabletListeMusica",
+      "x": 1560,
+      "y": 10660,
+      "w": 440,
+      "h": 480,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletPiedeMusica.dc.html",
+      "title": "TabletPiedeMusica",
+      "x": 0,
+      "y": 10960,
+      "w": 1280,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletPinSchermata.dc.html",
+      "title": "TabletPinSchermata",
+      "x": 0,
+      "y": 11260,
+      "w": 1280,
+      "h": 608,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTestataSala.dc.html",
+      "title": "TabletTestataSala",
+      "x": 0,
+      "y": 11560,
+      "w": 1280,
+      "h": 92,
+      "page": "page-2"
+    },
+    {
+      "file": "TabletTimerCard.dc.html",
+      "title": "TabletTimerCard",
+      "x": 1380,
+      "y": 11560,
+      "w": 380,
+      "h": 110,
+      "page": "page-2"
     }
   ],
   "annotations": [

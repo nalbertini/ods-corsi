@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COLLEGA IL TABLET con un accesso che non va: il motivo sta sotto il modulo, in rosso (qui: manca la rete). Durante l'invio il tasto dice UN ATTIMO…. -->
+<div style="display: flex; align-items: center; justify-content: center; width: 1280px; height: 800px; background: #121212; padding: 22px 32px 24px">
+  <div style="display: flex; flex-direction: column; gap: 18px; width: 560px">
+      <svg width="90" height="62" viewBox="0 0 160 110" role="img" aria-label="Officine Dello Sport">
+        <g fill="none" stroke-width="9" stroke-dasharray="6 7.82">
+          <circle cx="38" cy="40" r="22" stroke="#1b8ac4"></circle><circle cx="80" cy="40" r="22" stroke="#f2f2f0"></circle><circle cx="122" cy="40" r="22" stroke="#e4292a"></circle><circle cx="59" cy="74" r="22" stroke="#f4c31b"></circle><circle cx="101" cy="74" r="22" stroke="#16a54a"></circle>
+        </g>
+        <g fill="none" stroke-width="5">
+          <circle cx="38" cy="40" r="14" stroke="#1b8ac4"></circle><circle cx="80" cy="40" r="14" stroke="#f2f2f0"></circle><circle cx="122" cy="40" r="14" stroke="#e4292a"></circle><circle cx="59" cy="74" r="14" stroke="#f4c31b"></circle><circle cx="101" cy="74" r="14" stroke="#16a54a"></circle>
+        </g>
+      </svg>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 40px; font-weight: 700; letter-spacing: 0.03em; line-height: 1">TABLET DI SALA</span>
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <span style="font-size: 18px; line-height: 1.5; color: #c9c9c4">Si fa una volta sola, con l’account della sala che ha preparato la segreteria. Poi il tablet resta collegato. È la stessa porta di tutta l’app: con l’account di un istruttore o della segreteria si va nella propria area.</span>
+        <dc-import name="TabletCampo" segnaposto="nome utente della sala" valore="judo" tema="scuro" hint-size="100%,56px"></dc-import>
+        <dc-import name="TabletCampo" segnaposto="password" valore="segreta1" password="{{ true }}" fuoco="{{ true }}" tema="scuro" hint-size="100%,56px"></dc-import>
+        <dc-import name="TabletTasto" label="COLLEGA IL TABLET" variante="verde" tema="scuro" hint-size="100%,60px"></dc-import>
+      </div>
+      <span style="font-size: 19px; font-weight: 700; color: #e4292a">Il server non risponde: c’è rete?</span>
+      <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 16px; color: #8c8c88; text-decoration: underline; text-underline-offset: 3px">← Non è un tablet di sala: torna all’accesso</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

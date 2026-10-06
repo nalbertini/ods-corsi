@@ -14,12 +14,12 @@
     body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<!-- Il tablet di sala (TabletHome in Tablet.tsx), martedi' 6 ottobre alle 18:40, tema scuro: Judo kids e' aperta (ci si segna da 30 minuti prima dell'inizio a 10 dopo la fine), Judo baby e' finita, Judo adulti viene dopo. Colonne come .tb-home: 1fr + 380px, gap 28px, padding 22px 32px 24px. A sinistra la card della lezione (tutta un tasto che apre l'appello, con AREA ISTRUTTORE dentro) e sotto i nomi da toccare, tre per riga (AppelloVeloce); a destra la giornata a gruppi e in fondo TI SEI DIMENTICATO DI SEGNARTI?. La testata, la barra PRESENZE / TIMER e la musica sono del tablet e stanno su ogni schermata. -->
+<!-- Dalla home si tocca il proprio nome sotto la lezione: segna subito e in fondo alla colonna di sinistra compare la fascia BUON ALLENAMENTO, GIULIA! con ANNULLA (resta dieci secondi). Stessi tocchi e stessa fascia della schermata dei nomi (useTocchi). Il conto della barra in basso sale a 8/12. -->
 <div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
   <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="scuro" hint-size="100%,92px"></dc-import>
   <div style="position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; padding: 22px 32px 24px">
     <div style="position: relative; display: flex; flex-direction: column; gap: 14px; min-height: 0">
-      <dc-import name="TabletLezione" stato="aperta" attivita="Tecnica" senza-tasto="{{ true }}" area-istruttore="{{ true }}" ora="18:30–19:30" corso="Judo kids" kanji="柔" sotto="Maurizio · 7 segnati su 12" tinta="#1b8ac4" tema="scuro" hint-size="100%,150px"></dc-import>
+      <dc-import name="TabletLezione" stato="aperta" attivita="Tecnica" senza-tasto="{{ true }}" area-istruttore="{{ true }}" ora="18:30–19:30" corso="Judo kids" kanji="柔" sotto="Maurizio · 8 segnati su 12" tinta="#1b8ac4" tema="scuro" hint-size="100%,150px"></dc-import>
     <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
       <dc-import name="TabletTessera" nome="Luca B." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
       <dc-import name="TabletTessera" nome="Sara C." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
@@ -29,12 +29,13 @@
       <dc-import name="TabletTessera" nome="Sofia G." veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
       <dc-import name="TabletTessera" nome="Anna G." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
       <dc-import name="TabletTessera" nome="Pietro M." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
-      <dc-import name="TabletTessera" nome="Giulia R." veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
+      <dc-import name="TabletTessera" nome="Giulia R." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
       <dc-import name="TabletTessera" nome="Matteo R." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
       <dc-import name="TabletTessera" nome="Irene V." stato="fatto" veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
       <dc-import name="TabletTessera" nome="Paolo Z." veloce="{{ true }}" tema="scuro" hint-size="100%,60px"></dc-import>
     </div>
       <div style="flex-grow: 1"></div>
+      <dc-import name="TabletFascia" tipo="fatto" titolo="BUON ALLENAMENTO, GIULIA!" sotto="Presenza segnata. Toccato il nome sbagliato? Annulla qui." tasto="ANNULLA" tema="scuro" hint-size="100%,110px"></dc-import>
     </div>
   <aside style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
     <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #8c8c88">PRECEDENTI</span>
@@ -47,7 +48,7 @@
     <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #f4c31b; color: #f2f2f0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; text-align: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><polyline points="3 4 3 9 8 9"></polyline><polyline points="12 7 12 12 15 14"></polyline></svg>TI SEI DIMENTICATO DI SEGNARTI?</span>
   </aside>
   </div>
-  <dc-import name="TabletPiedeMusica" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
+  <dc-import name="TabletPiedeMusica" scheda="presenze" sotto-presenze="8/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
 </div>
 </x-dc>
 </body>

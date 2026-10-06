@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Si tocca un nome gia' segnato: la fascia dice ANNA G. E' GIA' TRA I PRESENTI (6 secondi). Se l'ha segnato questo tablet da meno di due minuti c'e' ANNULLA («Toccato per sbaglio?»); se no c'e' VA BENE e la frase manda dall'istruttore (variante non riprodotta). -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="scuro" hint-size="100%,92px"></dc-import>
+  <div style="position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 18px; padding: 22px 32px 24px; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 18px">
+        <span style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 0 22px; border: 2px solid #333333; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; color: #f2f2f0; "><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>INDIETRO</span>
+        <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 32px; font-weight: 700; letter-spacing: 0.03em; line-height: 1">JUDO KIDS</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: #8c8c88">
+            <span style="display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid #e4292a; border-radius: 3px; color: #ff5a52; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif; font-size: 15px; font-weight: 700; line-height: 1">柔</span>
+            <span>18:30–19:30<span style="letter-spacing: 0"> · Maurizio</span></span>
+            <span style="display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; min-width: 0; padding: 2px 8px; border: 2px solid #333333; font-size: 15px; letter-spacing: 0.1em; line-height: 1.2; color: #c9c9c4; text-transform: uppercase">Tecnica</span>
+          </span>
+        </div>
+        <span style="display: flex; align-items: baseline; gap: 8px">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 48px; font-weight: 700; line-height: 1">7</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 22px; color: #8c8c88">/ 12</span>
+        </span>
+      </div>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 30px; font-weight: 700; letter-spacing: 0.06em; color: #f2f2f0">TOCCA IL TUO NOME</span>
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px">
+        <dc-import name="TabletTessera" nome="Luca B." stato="fatto" tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Sara C." stato="fatto" tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Elena C." stato="fatto" tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Marco E." tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Tommaso F." tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Sofia G." tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Anna G." stato="fatto" tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Pietro M." stato="fatto" tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Giulia R." tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Matteo R." stato="fatto" tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Irene V." stato="fatto" tema="scuro" hint-size="100%,84px"></dc-import>
+        <dc-import name="TabletTessera" nome="Paolo Z." tema="scuro" hint-size="100%,84px"></dc-import>
+      </div>
+      <div style="flex-grow: 1"></div>
+      <span style="font-size: 17px; line-height: 1.5; color: #8c8c88">Non trovi il tuo nome? Chiedi all'istruttore: qui ci sono solo gli iscritti a questo corso.</span>
+    <div style="position: absolute; left: 32px; right: 32px; bottom: 24px"><dc-import name="TabletFascia" tipo="gia" titolo="ANNA G. È GIÀ TRA I PRESENTI" sotto="Toccato per sbaglio? Annulla qui." tasto="ANNULLA" tema="scuro" hint-size="100%,110px"></dc-import></div>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

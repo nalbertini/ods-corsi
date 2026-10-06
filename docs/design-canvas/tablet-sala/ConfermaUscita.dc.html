@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'ultima domanda prima di uscire (ConfermaUscita in Tablet.tsx), dopo il PIN: uscendo il tablet si scollega dalla sala e senza l'account della sala non ci torna. Una schermata del tablet e non un confirm() del browser. Dice anche la versione dell'app (serve a capire se questo tablet e' aggiornato). SI', ESCI scollega e porta alla pagina di accesso di tutta l'app; ANNULLA (o 90 secondi senza tocchi) torna alla home. Si arriva qui anche dall'area istruttore con «Scollega il tablet», col PIN gia' dato. -->
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
+  <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="scuro" hint-size="100%,92px"></dc-import>
+  <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 22px 32px 24px">
+    <div style="display: flex; flex-direction: column; gap: 16px; max-width: 560px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 36px; font-weight: 700; letter-spacing: 0.03em; line-height: 1">USCIRE DAL TABLET?</span>
+      <span style="font-size: 18px; line-height: 1.5; color: #c9c9c4">Maurizio, il tablet si scollega dalla sala: nessuno potrà più segnarsi qui finché la segreteria non lo ricollega con l’account della sala.</span>
+      <span style="font-size: 17px; line-height: 1.5; color: #8c8c88">Versione v0.37.4</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px">
+        <dc-import name="TabletTasto" label="SÌ, ESCI" variante="rosso" grande="{{ true }}" tema="scuro" hint-size="160px,64px"></dc-import>
+        <dc-import name="TabletTasto" label="ANNULLA" variante="linea" grande="{{ true }}" tema="scuro" hint-size="160px,64px"></dc-import>
+      </div>
+    </div>
+  </div>
+  <dc-import name="TabletPiedeMusica" scheda="presenze" sotto-presenze="7/12 SEGNATI" sotto-timer="JUDO KIDS" musica="suona" fonte="spotify" titolo="Corsa leggera" sotto="Studio Beat · Riscaldamento" volume="40" tema="scuro" hint-size="100%,100px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

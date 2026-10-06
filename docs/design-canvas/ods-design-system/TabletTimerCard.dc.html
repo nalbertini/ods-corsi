@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 14px; width: 100%; padding: 13px 15px; min-height: 86px; background: {{c.surface}}; border: 2px solid {{c.line}}; color: {{c.text}}">
+  <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 6px; min-width: 0">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span style="padding: 1px 7px; border: 2px solid {{c.line}}; color: {{c.dim}}; font-size: 10px; font-weight: 700; letter-spacing: 0.16em; white-space: nowrap">{{tipo}}</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; color: {{c.dim}}">{{durata}}</span>
+    </div>
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 21px; font-weight: 700; line-height: 1.05">{{nome}}</span>
+    <span style="font-size: 13px; font-weight: 500; color: {{c.dim}}">{{riassunto}}</span>
+    <sc-if value="{{haEtichetta}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: {{c.faint}}">{{etichetta}}</span>
+    </sc-if>
+  </div>
+  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 52px; height: 52px; border: 2px solid {{c.rosso}}; color: {{c.rosso}}">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg>
+  </span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tipo":{"editor":"text","default":"INTERVALLI"},"durata":{"editor":"text","default":"18:30"},"nome":{"editor":"text","default":"Tecnica a coppie"},"riassunto":{"editor":"text","default":"8 round · 30″ lavoro · 15″ recupero"},"etichetta":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":380,"height":110}}'>
+// Riproduzione 1:1 della scheda di un timer nella lista del timer: .card, .wcard, .badge-tipo, .wcard-name, .play-btn di
+// timer/src/styles.css (righe 189-197, 252-270) e la `card` di HomeScreen.tsx (timer/src/components). Nella scheda TIMER del tablet
+// il timer vero e' dentro la sala: la scheda e' la stessa del telefono, con l'unica azione AVVIA (▶ rosso da 52px): dal tablet i timer
+// si fanno partire, non si cambiano (niente MODIFICA, DUPLICA, INVIA).
+// - tipo: l'etichetta dello schema (INTERVALLI, EMOM, AMRAP, CIRCUITO, FOR TIME); durata: il totale; riassunto: `describe`.
+// - etichetta: la riga piccola in fondo (disciplina, e i corsi a cui e' collegato, in maiuscolo); vuoto = niente.
+// `faint` e' il grigio piu' tenue del timer: nel tema scuro e nel chiaro e' il colore di --faint.
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#b8b8b2', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#4a4a46', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const FAINT = { scuro: '#5a5a56', chiaro: '#a8a8a3' };
+    return {
+      c: { ...c, faint: FAINT[p.tema] || FAINT.scuro },
+      tipo: p.tipo ?? 'INTERVALLI',
+      durata: p.durata ?? '18:30',
+      nome: String(p.nome ?? 'Tecnica a coppie').toUpperCase(),
+      riassunto: p.riassunto ?? '',
+      haEtichetta: !!p.etichetta,
+      etichetta: String(p.etichetta ?? '').toUpperCase(),
+    };
+  }
+}
+</script>
+</body>
+</html>

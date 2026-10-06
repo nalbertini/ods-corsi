@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<footer style="position: relative; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; width: 100%; padding: 14px 32px 20px; border-top: 2px solid {{c.lineSoft}}; color: {{c.text}}">
+  <span style="display: flex; align-items: center; gap: 12px; min-height: 64px; min-width: 190px; padding: 0 20px; border: 2px solid {{presenze.bordo}}; background: {{presenze.fondo}}; color: {{presenze.colore}}">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><circle cx="17" cy="9" r="2.8"></circle><path d="M17 14c2.8 0 4.8 2 4.8 5"></path></svg>
+    <span style="display: flex; flex-direction: column; gap: 1px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: {{c.text}}">PRESENZE</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap">{{sottoPresenze}}</span>
+    </span>
+  </span>
+  <span style="display: flex; align-items: center; gap: 12px; min-height: 64px; min-width: 190px; padding: 0 20px; border: 2px solid {{timer.bordo}}; background: {{timer.fondo}}; color: {{timer.colore}}">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><polyline points="12 9 12 13 15 15"></polyline><line x1="10" y1="2" x2="14" y2="2"></line></svg>
+    <span style="display: flex; flex-direction: column; gap: 1px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; color: {{c.text}}">TIMER</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; color: {{coloreSottoTimer}}">{{sottoTimer}}</span>
+    </span>
+  </span>
+  <span style="flex-grow: 1"></span>
+  <sc-if value="{{spenta}}" hint-placeholder-val="{{ false }}">
+    <span style="display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; border: 2px solid {{c.line}}; color: {{c.text}}" aria-label="Accendi la musica">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+    </span>
+  </sc-if>
+  <sc-if value="{{conBarra}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; align-items: center; gap: 8px; min-width: 0">
+      <sc-if value="{{copertina}}" hint-placeholder-val="{{ true }}">
+        <span style="width: 60px; height: 60px; flex-shrink: 0; background: {{c.surface2}}"></span>
+      </sc-if>
+      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; max-width: 260px">
+        <span style="font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{titolo}}</span>
+        <span style="font-size: 15px; color: {{coloreSotto}}; overflow: hidden; text-overflow: ellipsis; white-space: {{aCapo}}">{{sotto}}</span>
+      </span>
+      <sc-if value="{{riprova}}" hint-placeholder-val="{{ false }}">
+        <span style="display: flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 12px; border: 2px solid {{c.line}}; font-size: 13px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.1em">Riprova</span>
+      </sc-if>
+      <sc-if value="{{suona}}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{haVolume}}" hint-placeholder-val="{{ true }}">
+          <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 60px; height: 60px; border: 2px solid {{c.line}}; color: {{c.text}}; font-size: 26px; font-weight: 700; ">−</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; width: 34px; text-align: center; font-size: 17px; font-weight: 700; color: {{c.dim}}">{{volume}}</span>
+          <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 60px; height: 60px; border: 2px solid {{c.line}}; color: {{c.text}}; font-size: 26px; font-weight: 700; ">+</span>
+        </sc-if>
+        <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 60px; height: 60px; border: 2px solid {{c.line}}; color: {{c.text}}; opacity: {{opSalta}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"></polygon><rect x="4" y="5" width="2.5" height="14"></rect></svg></span>
+        <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 60px; height: 60px; border: 2px solid {{c.line}}; color: {{c.text}}">
+          <sc-if value="{{inRiproduzione}}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></sc-if>
+          <sc-if value="{{inPausa}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></sc-if>
+        </span>
+        <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 60px; height: 60px; border: 2px solid {{c.line}}; color: {{c.text}}; opacity: {{opSalta}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"></polygon><rect x="17.5" y="5" width="2.5" height="14"></rect></svg></span>
+      </sc-if>
+      <sc-if value="{{haListe}}" hint-placeholder-val="{{ true }}">
+        <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 60px; height: 60px; border: 2px solid {{bordoListe}}; background: {{fondoListe}}; color: {{c.text}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 6h16M4 12h16M4 18h10"></path></svg></span>
+      </sc-if>
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 60px; height: 60px; border: 2px solid {{c.line}}; color: {{c.text}}" aria-label="Spegni la musica e nascondi il lettore"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"></path></svg></span>
+    </div>
+  </sc-if>
+</footer>
+</x-dc>
+<script data-dc-script data-props='{"scheda":{"editor":"enum","options":["presenze","timer"],"default":"presenze"},"sottoPresenze":{"editor":"text","default":"7/12 SEGNATI"},"sottoTimer":{"editor":"text","default":"JUDO KIDS"},"intervalloTimer":{"editor":"enum","options":["","prepare","work","rest","setRest","cooldown"],"default":""},"musica":{"editor":"enum","options":["suona","pausa","errore","spenta","nessuna"],"default":"suona"},"fonte":{"editor":"enum","options":["spotify","radio","youtube"],"default":"spotify"},"titolo":{"editor":"text","default":"Riscaldamento"},"sotto":{"editor":"text","default":"Collegno Sala Judo · Sala Judo"},"volume":{"editor":"text","default":"40"},"liste":{"editor":"boolean","default":true},"listeAperte":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1280,"height":100}}'>
+// Riproduzione 1:1 della barra in basso del tablet di sala COMPLETA, con la musica: <footer className="tb-piede"> di Tablet.tsx (righe 543-
+// 583) con MusicaSala.tsx e .tb-piede, .tb-scheda-sala, .tb-musica*, .tb-btn-quadro di src/styles.css (righe 926-931, 987-1029). TabletPiede
+// ha solo il tasto della nota; questo ha anche il lettore acceso. E' la stessa sotto le presenze e sotto il timer.
+// - scheda, sottoPresenze, sottoTimer: come TabletPiede. intervalloTimer: con un timer in corso il sotto della scheda TIMER prende il
+//   colore dell'intervallo (prepare, work, rest, setRest, cooldown; sul tema chiaro giallo e verde "da leggere"); vuoto = colore normale.
+// - musica: suona (⏸ in mostra), pausa (▶ in mostra), errore (radio caduta: sotto in rosso, a capo, e il tasto Riprova), spenta (resta
+//   solo il tasto con la nota, ACCENDI LA MUSICA), nessuna (musica spenta dalle impostazioni del timer: niente a destra).
+// - fonte: spotify (copertina da 60px e volume − N +), radio (senza volume, ⏮ e ⏭ spenti a 0.35), youtube (niente copertina: il lettore
+//   sta nel riquadro a destra, sopra la barra).
+// - titolo, sotto: il brano e la riga sotto (artista · dispositivo/lista); liste: il tasto ☰ (acceso con listeAperte, come .tb-musica-tasto[data-on]).
+// Il pannello delle liste (.tb-liste) e' TabletListeMusica.
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#b8b8b2', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#4a4a46', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const COL = { prepare: c.giallo, work: c.rosso, rest: c.verde, setRest: c.blu, cooldown: c.blu };
+    const COLTESTO = { prepare: c.gialloTesto, work: c.rosso, rest: c.verdeTesto, setRest: c.blu, cooldown: c.blu };
+    const scheda = (premuta) => premuta
+      ? { bordo: c.text, fondo: c.surface2, colore: c.text }
+      : { bordo: c.line, fondo: 'transparent', colore: c.dim };
+    const musica = ['suona', 'pausa', 'errore', 'spenta', 'nessuna'].includes(p.musica) ? p.musica : 'suona';
+    const fonte = ['spotify', 'radio', 'youtube'].includes(p.fonte) ? p.fonte : 'spotify';
+    const errore = musica === 'errore';
+    const attiva = musica === 'suona' || musica === 'pausa';
+    const liste = p.liste === undefined ? true : truthy(p.liste);
+    const aperte = truthy(p.listeAperte);
+    return {
+      c,
+      presenze: scheda(p.scheda !== 'timer'),
+      timer: scheda(p.scheda === 'timer'),
+      sottoPresenze: p.sottoPresenze ?? '7/12 SEGNATI',
+      sottoTimer: p.sottoTimer ?? 'JUDO KIDS',
+      coloreSottoTimer: COLTESTO[p.intervalloTimer] || 'inherit',
+      spenta: musica === 'spenta',
+      conBarra: musica === 'suona' || musica === 'pausa' || musica === 'errore',
+      copertina: attiva && fonte === 'spotify',
+      titolo: p.titolo ?? 'Riscaldamento',
+      sotto: errore ? 'La radio non parte: controlla la rete e riprova.' : (p.sotto ?? ''),
+      coloreSotto: errore ? c.rossoTesto : c.dim,
+      aCapo: errore ? 'normal' : 'nowrap',
+      riprova: errore,
+      suona: attiva,
+      inRiproduzione: musica === 'suona',
+      inPausa: musica === 'pausa',
+      haVolume: fonte === 'spotify' && (p.volume ?? '40') !== '',
+      volume: p.volume ?? '40',
+      opSalta: fonte === 'radio' ? '0.35' : '1',
+      haListe: liste,
+      bordoListe: aperte ? c.text : c.line,
+      fondoListe: aperte ? c.surface2 : 'transparent',
+    };
+  }
+}
+</script>
+</body>
+</html>

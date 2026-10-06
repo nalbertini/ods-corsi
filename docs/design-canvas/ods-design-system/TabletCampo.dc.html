@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; width: 100%; height: 56px; padding: 0 14px; background: {{c.surface}}; border: 2px solid {{bordo}}; font-size: 18px; color: {{colore}}">
+  <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{testo}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"segnaposto":{"editor":"text","default":"nome utente della sala"},"valore":{"editor":"text","default":""},"password":{"editor":"boolean","default":false},"fuoco":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":560,"height":56}}'>
+// Riproduzione 1:1 di .tb-campo (src/styles.css, righe 1095-1108), il campo di testo del tablet: alto 56px, bordo da 2px, testo da 18px.
+// E' quello della schermata COLLEGA IL TABLET (Preparazione in Tablet.tsx). Con `valore` mostra il testo scritto (con `password`, tanti
+// puntini quanti sono i caratteri), senza il segnaposto in `dim`; con `fuoco` il bordo passa a `text` (:focus).
+const T = {
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', verde: '#16a54a', verdeTesto: '#16a54a', giallo: '#f4c31b', gialloTesto: '#f4c31b', rosso: '#e4292a', rossoTesto: '#ff5a52', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#b8b8b2', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', sec: '#3d3d3a', dim: '#656561', verde: '#12913f', verdeTesto: '#0b7a33', giallo: '#f4c31b', gialloTesto: '#8f6a00', rosso: '#e4292a', rossoTesto: '#b81d1d', blu: '#1b8ac4', suColore: '#121212', suRosso: '#ffffff', tasto: '#4a4a46', ombra: '0 16px 50px rgba(0, 0, 0, 0.45)' },
+};
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const valore = p.valore ?? '';
+    const password = truthy(p.password);
+    return {
+      c,
+      testo: valore ? (password ? '•'.repeat(valore.length) : valore) : (p.segnaposto ?? ''),
+      colore: valore ? c.text : c.dim,
+      bordo: truthy(p.fuoco) ? c.text : c.line,
+    };
+  }
+}
+</script>
+</body>
+</html>
