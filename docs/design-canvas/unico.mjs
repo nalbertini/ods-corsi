@@ -27,9 +27,16 @@ const SEZIONI = [
 const stem = (f) => f.replace(/\.dc\.html$/, '')
 const leggi = (p) => readFileSync(p, 'utf8')
 const dcHtml = (cartella) => readdirSync(cartella).filter((f) => f.endsWith('.dc.html'))
+// La misura di un artboard: `$preview` se c'è; se no, larghezza e altezza (anche minima) del primo elemento
+// dopo <helmet>, che nelle schermate è fisso (la regola del canvas). Senza niente, 400x200.
 const anteprima = (testo) => {
   const m = testo.match(/"\$preview":\{"width":(\d+),"height":(\d+)/)
-  return m ? { w: Number(m[1]), h: Number(m[2]) } : { w: 400, h: 200 }
+  if (m) return { w: Number(m[1]), h: Number(m[2]) }
+  const da = testo.includes('</helmet>') ? testo.indexOf('</helmet>') : testo.indexOf('<x-dc>')
+  const stile = testo.slice(Math.max(da, 0)).match(/style="([^"]*)"/)?.[1] ?? ''
+  const w = stile.match(/(?<![-\w])width:\s*(\d+)px/)
+  const h = stile.match(/(?<![-\w])(?:min-)?height:\s*(\d+)px/)
+  return w && h ? { w: Number(w[1]), h: Number(h[1]) } : { w: 400, h: 200 }
 }
 // Senza canvas.json di una sezione: una griglia, a righe larghe al massimo 2800.
 function griglia(cartella, file) {
@@ -91,6 +98,7 @@ for (const s of SEZIONI) {
   const c = existsSync(cj) ? JSON.parse(leggi(cj)) : null
   if (c) {
     posti = c.artboards.filter((a) => propri.includes(a.file) && !(a.page === 'page-2' && nomiLibreria.has(stem(a.file))))
+    for (const a of posti) Object.assign(a, anteprima(leggi(join(cartella, a.file))))
     const senzaPosto = propri.filter((f) => !posti.some((a) => a.file === f))
     const yMax = Math.max(0, ...posti.map((a) => a.y + a.h)) + 160
     posti.push(...griglia(cartella, senzaPosto).map((e) => ({ ...e, y: e.y + yMax })))
