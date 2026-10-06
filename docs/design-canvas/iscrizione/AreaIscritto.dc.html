@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'area degli iscritti nel pilota, in prova (AreaIscritti.tsx: AreaIscritti, Pagina, Saluto, Prossime, Presenze, InRegola), com'e' per Marta Rossi, titolare di un nucleo: in cima il nastro DATI DI PROVA e la scelta di quale iscritto inventato essere (c'e' solo in prova), poi TU / GIULIA per passare alla pagina di chi e' nel nucleo, Ciao Marta, i corsi col loro colore, SEI IN REGOLA, PROSSIME LEZIONI (un gruppo per giorno), LE TUE PRESENZE (SEGNALA dove non risulta) e CERTIFICATO E QUOTA. Seguono, non riprodotti, RICEVUTE (ognuna col suo PDF) e il nucleo: vedi Nucleo. Solo in lettura: per cambiare qualcosa si passa in segreteria. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1470px; background: #121212">
+<dc-import name="Testata" luogo="ISCRITTI" guida="{{ true }}" hint-size="100%,72px"></dc-import>
+<dc-import name="NastroProva"  hint-size="100%,28px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 20px 6px">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">IN PROVA SEI</span>
+  <dc-import name="Campo" tipo="select" etichetta="" valore="Rossi Marta" hint-size="100%,52px"></dc-import>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 20px 6px">
+  <dc-import name="MiaChip" label="TU" tipo="tasto" acceso="{{ true }}" hint-size="60px,36px"></dc-import>
+  <dc-import name="MiaChip" label="GIULIA" tipo="tasto" hint-size="90px,36px"></dc-import>
+</div>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 6px 20px 0">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 30px; font-weight: 700; letter-spacing: 0.03em; line-height: 1.05">Ciao Marta</span>
+  <div style="display: flex; flex-wrap: wrap; gap: 6px"><dc-import name="MiaChip" label="JUDO ADULTI" tinta="#1b8ac4" hint-size="130px,28px"></dc-import></div>
+  <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px; background: #1c1c1c; border: 2px solid #333333">
+    <dc-import name="TitoloEsito" titolo="SEI IN REGOLA" tono="fatto" hint-size="100%,40px"></dc-import>
+    <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Certificato medico valido e quota pagata.</span>
+  </div>
+</section>
+<dc-import name="Titoletto" label="PROSSIME LEZIONI" conto="2" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px">
+  <span style="padding: 0 20px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">OGGI · MARTEDÌ 6 OTTOBRE</span>
+  <div style="padding: 0 20px"><dc-import name="MiaLezione" ora="19:00" corso="Judo adulti" sotto="Sala 1 · Marco R." cosa="" tinta="#1b8ac4" hint-size="100%,72px"></dc-import></div>
+  <span style="padding: 0 20px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">VENERDÌ 9 OTTOBRE</span>
+  <div style="padding: 0 20px"><dc-import name="MiaLezione" ora="19:00" corso="Judo adulti" sotto="Sala 1 · Marco R." cosa="" tinta="#1b8ac4" hint-size="100%,72px"></dc-import></div>
+</div>
+<dc-import name="Titoletto" label="LE TUE PRESENZE" conto="3/4" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px 12px">
+  <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Negli ultimi 30 giorni: presente a 3 lezioni su 4. Se c’eri e non risulta, tocca SEGNALA: la conferma l’istruttore o la segreteria.</span>
+  <dc-import name="MiaPresenza" corso="Judo adulti" quando="Lunedì 5 ottobre · 19:00" stato="presente" hint-size="100%,64px"></dc-import>
+  <dc-import name="MiaPresenza" corso="Judo adulti" quando="Venerdì 2 ottobre · 19:00" stato="niente" hint-size="100%,64px"></dc-import>
+  <dc-import name="MiaPresenza" corso="Judo adulti" quando="Lunedì 28 settembre · 19:00" stato="presente" hint-size="100%,64px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="CERTIFICATO E QUOTA" hint-size="100%,50px"></dc-import>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; padding: 0 20px 20px">
+  <dc-import name="Riquadro" etichetta="CERTIFICATO MEDICO" testo="Vale fino al 12/03/2027." stretto="{{ true }}" hint-size="100%,80px"></dc-import>
+  <dc-import name="Riquadro" etichetta="QUOTA" testo="Pagata fino al 31/07/2027." stretto="{{ true }}" hint-size="100%,80px"></dc-import>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

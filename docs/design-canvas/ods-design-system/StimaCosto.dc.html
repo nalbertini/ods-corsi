@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; color: {{c.text}}">
+  <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">QUANTO COSTA</span>
+  <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px; background: {{c.surface}}; border: 2px solid {{c.line}}">
+    <sc-if value="{{nessuna}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">Scegli i corsi per vedere quanto costa.</span>
+    </sc-if>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <sc-for list="{{righe}}" as="r" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; gap: 12px; font-size: 15px; color: {{r.colore}}">
+          <span style="flex-grow: 1">{{r.testo}}</span>
+          <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums">{{r.importo}}</span>
+        </div>
+      </sc-for>
+      <div style="display: flex; align-items: center; gap: 12px; padding-top: 6px; border-top: 2px solid {{c.line}}; font-size: 17px; font-weight: 700">
+        <span style="flex-grow: 1">Totale</span>
+        <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums">{{totale}}</span>
+      </div>
+    </div>
+    <sc-for list="{{frasi}}" as="f" hint-placeholder-count="1">
+      <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{f}}</span>
+    </sc-for>
+    <sc-if value="{{haAvviso}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 14px; line-height: 1.4; color: {{c.gialloTesto}}">{{avviso}}</span>
+    </sc-if>
+    <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{stima}}</span>
+    <span style="margin-top: 4px; padding: 8px 10px; background: {{c.surface2}}; border: 2px solid {{c.line}}; font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 600; letter-spacing: 0.02em">{{iban}}</span>
+    <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">Causale: <span style="color: {{c.text}}">{{causale}}</span></span>
+    <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px">
+      <sc-for list="{{tasti}}" as="t" hint-placeholder-count="3">
+        <span style="display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 16px; font-weight: 700; letter-spacing: 0.16em; white-space: nowrap">{{t}}</span>
+      </sc-for>
+    </span>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"righe":{"editor":"text","default":"Quota associativa:50 €|Judo kids · trimestre:105 €|Sconto famiglia 20% su Judo kids di Ginevra:−21 €"},"totale":{"editor":"text","default":"134 €"},"frasi":{"editor":"text","default":"Lo sconto famiglia va sull annuale che costa meno nel nucleo: Judo kids di Ginevra, che l ha già avuto o lo avrà in segreteria."},"avviso":{"editor":"text","default":""},"intestatario":{"editor":"text","default":"ASD Il Centro Judo"},"iban":{"editor":"text","default":"IT00 X000 0000 0000 0000 0000 000"},"causale":{"editor":"text","default":"Iscrizione Giulia Rossi · Judo kids"},"tasti":{"editor":"text","default":"COPIA IBAN|COPIA CAUSALE|PAGA CON SATISPAY"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":420}}'>
+// Riproduzione 1:1 di QuantoCosta di src/components/ModuloIscrizione.tsx (righe 832-885): la voce QUANTO COSTA di una persona in piu' nel
+// nucleo. Il guscio e' Riquadro stretto (.card.stack.riquadro[data-stretto]: padding 14px, gap 4px) preceduto da .modulo-etichetta (12px 0.18em);
+// le righe sono .stima (src/styles.css righe 788-791): .stima-riga 15px, importo in Saira tabulare, riga di sconto in `verde`, .stima-totale
+// con filo 2px `line` sopra, 17px 700; le frasi sono .passo-dettaglio (14px `dim`, avviso giallo-testo); l'IBAN e' la scatola .iban; i tasti .passo-btn.
+// righe = `Voce:importo` separate da `|` (un importo che comincia per «−» e' lo sconto: verde); totale = la cifra del Totale;
+// frasi = .passo-dettaglio separate da `|`; avviso = riga gialla; causale = il testo dopo «Causale:» (in `text`); tasti separati da `|`.
+// Vuoto `righe`: «Scegli i corsi per vedere quanto costa» (nessun corso scelto).
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const righe = lista(p.righe ?? '', '|').map((s) => { const i = s.lastIndexOf(':'); const importo = s.slice(i + 1); return { testo: s.slice(0, i), importo, colore: /^[−-]/.test(importo) ? c.verde : c.text }; });
+    const avviso = p.avviso ?? '';
+    return {
+      c, cond: COND, righe, nessuna: righe.length === 0, totale: p.totale ?? '134 €',
+      frasi: lista(p.frasi ?? '', '|'), avviso, haAvviso: avviso !== '',
+      stima: 'È una stima dal listino: le altre offerte e l importo giusto li conferma la segreteria. Bonifico a ' + (p.intestatario ?? 'ASD Il Centro Judo') + ':',
+      iban: p.iban ?? 'IT00 X000 0000 0000 0000 0000 000', causale: p.causale ?? 'Iscrizione Giulia Rossi · Judo kids',
+      tasti: lista(p.tasti ?? 'COPIA IBAN|COPIA CAUSALE|PAGA CON SATISPAY', '|'),
+    };
+  }
+}
+</script>
+</body>
+</html>

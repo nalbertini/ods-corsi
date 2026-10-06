@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; width: 100%; height: 170px; background: {{c.surface}}; border: 2px dashed {{c.tratteggio}}; color: {{c.text}}">
+  <span style="position: absolute; left: 16px; right: 16px; bottom: 44px; height: 2px; background: {{c.line}}"></span>
+  <sc-if value="{{vuota}}" hint-placeholder-val="{{ true }}">
+    <span style="position: absolute; left: 0; right: 0; bottom: 54px; text-align: center; font-family: {{cond}}; font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: {{c.faint}}">{{invito}}</span>
+  </sc-if>
+  <sc-if value="{{firmata}}" hint-placeholder-val="{{ false }}">
+    <svg viewBox="0 0 300 120" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%" fill="none" stroke="{{c.text}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-label="La firma">
+      <path d="M52 92 C60 56 70 34 78 40 C86 48 66 96 74 96 C86 96 92 62 104 62 C112 62 104 90 114 90 C128 90 130 58 144 58 C152 58 146 84 158 84 C176 84 190 52 214 50 C230 49 226 66 212 74 C196 82 226 84 250 70"></path>
+      <path d="M60 100 C110 106 190 104 246 96"></path>
+    </svg>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"firmata":{"editor":"boolean","default":false},"invito":{"editor":"text","default":"FIRMA QUI COL DITO"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":170}}'>
+// Riproduzione 1:1 del riquadro della firma: TavolaFirma di src/components/TavolaFirma.tsx (righe 76-136) con .firma, .firma-riga e
+// .firma-invito di src/styles.css (righe 646-654): alto 170px, fondo `surface`, bordo 2px tratteggiato (`tratteggio`), la riga su cui
+// poggiare (a 44px dal fondo, 16px dai lati, 2px `line`) e, finche' e' vuoto, FIRMA QUI COL DITO (14px 0.2em `faint`).
+// firmata = una firma d'esempio nel colore del testo (sullo schermo l'inchiostro e' quello del tema; nel PDF e' blu). Il disegno col dito
+// non e' riprodotto.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const firmata = truthy(p.firmata);
+    return { c, cond: COND, firmata, vuota: !firmata, invito: p.invito ?? 'FIRMA QUI COL DITO' };
+  }
+}
+</script>
+</body>
+</html>

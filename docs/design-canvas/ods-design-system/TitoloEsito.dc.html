@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 14px; width: 100%; color: {{c.text}}">
+  <span style="font-family: {{cond}}; font-style: oblique 9deg; font-size: {{corpo}}; font-weight: 700; letter-spacing: 0.04em; color: {{colore}}">{{titolo}}</span>
+  <sc-for list="{{testi}}" as="t" hint-placeholder-count="0">
+    <span style="font-size: 16px; line-height: 1.4; color: {{c.dim}}">{{t}}</span>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"RICHIESTA ARRIVATA"},"tono":{"editor":"enum","options":["fatto","avviso"],"default":"fatto"},"testi":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":90}}'>
+// Riproduzione 1:1 di TitoloEsito di src/components/ds.tsx (righe 108-115) con .esito-titolo di src/styles.css (righe 562-564): il titolo di
+// un esito, grande e obliquo (Saira, 9 gradi), 30px 700 0.04em; tono fatto = `verde` (RICHIESTA ARRIVATA), avviso = `giallo-testo` e 26px (MANCA QUALCHE FILE).
+// Le frasi sotto sono .esito-testo (16px `dim`, interlinea 1.4): `testi` le separa con `|`. Il guscio .esito (padding 20px 20px 28px, gap 14px) lo da' la schermata.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', faint: '#a8a8a3', tasto: '#4a4a46', tratteggio: '#b0b0aa', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#12913f', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33', rossoTesto: '#b81d1d', suColore: '#121212', suRosso: '#ffffff' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+const lista = (v, sep) => String(v ?? '').split(sep).map((s) => s.trim()).filter((s) => s !== '');
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+const avviso = p.tono === 'avviso';
+    return { c, cond: COND, titolo: p.titolo ?? 'RICHIESTA ARRIVATA', corpo: avviso ? '26px' : '30px', colore: avviso ? c.gialloTesto : c.verde, testi: lista(p.testi ?? '', '|') };
+  }
+}
+</script>
+</body>
+</html>

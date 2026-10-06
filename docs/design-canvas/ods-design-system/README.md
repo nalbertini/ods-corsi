@@ -67,6 +67,16 @@ Google, e vale solo per i mockup.
 | `Arretrato` | `Arretrato` di `CalendarioScreen.tsx` (`.arretrato*`): la riga delle cose rimaste indietro sotto la lezione di adesso, in giallo (presenze segnalate) o rosso (appelli da chiudere), chiusa o aperta con le righe `primo:secondo|...` |
 | `TabletScelta` | Le scelte di TI SEI DIMENTICATO DI SEGNARTI? (`.tb-scelta`): `variante="corso"` (barra nella tinta, nome, giorni) o `"lezione"` (giorno, ora, «N su M») |
 | `TabletTestaAppelloPassato` | `TabletTestaAppello` per una lezione passata: col primo tocco il tasto diventa «CONFERMA: N PRESENTI» e compare la frase gialla |
+| `PassoIscrizione` | Un passo della pagina ISCRIZIONI (`.passo` di `IscrizioniScreen.tsx`): numero, titolo, frasi, IBAN e tasti |
+| `RiquadroPasso` | Il riquadro con titolo da 17px, righe `Titolo:cifra`, frasi e tasti (`Riquadro` di `ds.tsx`): PRIMA DI ISCRIVERTI, contatti, nucleo, il guaio sopra MANDA LA RICHIESTA |
+| `CaricaFile` | La riga di un file del modulo (`CaricaFile` di `ds.tsx`): SCEGLI o CAMBIA, file scelto in verde, errore |
+| `TavolaFirma` | Il riquadro della firma (`TavolaFirma.tsx`): vuoto con FIRMA QUI COL DITO, o firmato |
+| `StimaCosto` | QUANTO COSTA di una persona del nucleo: righe, sconto famiglia, totale, IBAN, causale, tasti |
+| `TitoloEsito` | `TitoloEsito` di `ds.tsx` con le frasi `.esito-testo`: RICHIESTA ARRIVATA e MANCA QUALCHE FILE |
+| `MembroNucleo` | Una persona del nucleo (`.mio-membro`): IN REGOLA, DA SISTEMARE, in attesa o rifiutata |
+| `RigaNucleoPagamento` | Una riga di PAGAMENTI DEL NUCLEO, con la variante «Tutto il nucleo» |
+| `NastroProva` | Il nastro giallo DATI DI PROVA in cima all'area iscritti (`.nastro-prova`) |
+| `MiaChip` | `.mia-chip` (corso col colore) e `.mia-chip-tasto` (TU, nome di chi è nel nucleo) |
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 

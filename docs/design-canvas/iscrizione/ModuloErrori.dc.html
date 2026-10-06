@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il modulo di iscrizione dopo MANDA LA RICHIESTA con le risposte che non vanno (un maggiorenne, Luca Bianchi): sotto ogni campo la sua nota (Campo + NotaCampo): rosso col bordo rosso dove ferma l'invio, e «Manca» solo dopo il primo tentativo. Il codice fiscale dice quanti caratteri mancano. In fondo il riquadro rosso con l'elenco (controlla di richieste.ts) sopra il tasto, che e' sempre MANDA LA RICHIESTA. Non riprodotti: il fuoco sul primo campo sbagliato e le note «Non torna con nome e cognome» o «con la data di nascita», che seguono lo stesso schema. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1330px; background: #121212">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" label="RICHIESTA DI ISCRIZIONE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 14px 20px 0">
+  <dc-import name="Bottone" label="← INDIETRO" variante="linea" alto="48px" corpo="16px" hint-size="160px,48px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="CHI SI ISCRIVE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" etichetta="NOME" valore="" nota="Manca" hint-size="100%,104px"></dc-import>
+<dc-import name="Campo" etichetta="COGNOME" valore="Bianchi" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="CODICE FISCALE" valore="BNCLCU90A01L219" codice="{{ true }}" nota="Manca 1 carattere" hint-size="100%,104px"></dc-import>
+<dc-import name="Campo" etichetta="DATA DI NASCITA" valore="01/01/1990" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="LUOGO DI NASCITA" valore="" nota="Manca" hint-size="100%,104px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="RESIDENZA" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" etichetta="VIA E NUMERO" valore="" nota="Manca" hint-size="100%,104px"></dc-import>
+<dc-import name="Campo" etichetta="CAP" valore="1009" codice="{{ true }}" nota="Sono 5 cifre" hint-size="100%,104px"></dc-import>
+<dc-import name="Campo" etichetta="COMUNE" valore="" nota="Manca" hint-size="100%,104px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="COME RAGGIUNGERTI" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" etichetta="EMAIL" valore="luca.bianchi@example" nota="Non sembra giusta" hint-size="100%,104px"></dc-import>
+<dc-import name="Campo" etichetta="TELEFONO" valore="" nota="Manca" hint-size="100%,104px"></dc-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 20px 20px 28px">
+  <dc-import name="RiquadroPasso" tono="guaio" titolo="" testo="Mancano: nome, luogo di nascita, indirizzo, comune, telefono" tonoTesto="testo" tasti="" hint-size="100%,80px"></dc-import>
+  <dc-import name="Bottone" label="MANDA LA RICHIESTA" variante="principale" hint-size="100%,56px"></dc-import>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

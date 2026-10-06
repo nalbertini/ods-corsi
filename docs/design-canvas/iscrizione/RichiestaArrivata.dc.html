@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- L'esito dopo MANDA LA RICHIESTA (ModuloIscrizione.tsx, fase «fatto»; TitoloEsito di ds.tsx): RICHIESTA ARRIVATA in verde e le frasi di cosa succede adesso, con l'email scritta nel modulo. Le righe sotto ci sono solo quando servono: il certificato medico da consegnare (se non e' stato caricato; «agonistico» dai 12 anni per judo, aikido e lotta) e la ricevuta (se non e' stata caricata: paga in segreteria). Il tasto torna alle iscrizioni (TORNA ALLE ISCRIZIONI; dal nucleo e' TORNA ALLA TUA PAGINA). La richiesta non e' ancora un'iscrizione: la accoglie la segreteria in RICHIESTE ONLINE. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" label="RICHIESTA DI ISCRIZIONE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 28px">
+<dc-import name="TitoloEsito" titolo="RICHIESTA ARRIVATA" tono="fatto" testi="Grazie. La segreteria controlla il modulo, il documento e il pagamento, e ti scrive a marta.rossi@example.it se manca qualcosa.|Ricorda di consegnare in segreteria il certificato medico: senza non si partecipa alle lezioni.|Non hai caricato la ricevuta: paga in segreteria, o portala lì se hai già pagato." hint-size="100%,330px"></dc-import>
+<dc-import name="Bottone" label="TORNA ALLE ISCRIZIONI" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

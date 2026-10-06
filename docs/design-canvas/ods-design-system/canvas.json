@@ -567,6 +567,96 @@
       "w": 808,
       "h": 170,
       "page": "page-2"
+    },
+    {
+      "file": "CaricaFile.dc.html",
+      "title": "CaricaFile",
+      "x": 0,
+      "y": 9800,
+      "w": 360,
+      "h": 100,
+      "page": "page-2"
+    },
+    {
+      "file": "MembroNucleo.dc.html",
+      "title": "MembroNucleo",
+      "x": 460,
+      "y": 9800,
+      "w": 360,
+      "h": 70,
+      "page": "page-2"
+    },
+    {
+      "file": "MiaChip.dc.html",
+      "title": "MiaChip",
+      "x": 920,
+      "y": 9800,
+      "w": 140,
+      "h": 40,
+      "page": "page-2"
+    },
+    {
+      "file": "NastroProva.dc.html",
+      "title": "NastroProva",
+      "x": 1160,
+      "y": 9800,
+      "w": 390,
+      "h": 28,
+      "page": "page-2"
+    },
+    {
+      "file": "PassoIscrizione.dc.html",
+      "title": "PassoIscrizione",
+      "x": 1650,
+      "y": 9800,
+      "w": 360,
+      "h": 180,
+      "page": "page-2"
+    },
+    {
+      "file": "RigaNucleoPagamento.dc.html",
+      "title": "RigaNucleoPagamento",
+      "x": 0,
+      "y": 10100,
+      "w": 360,
+      "h": 60,
+      "page": "page-2"
+    },
+    {
+      "file": "RiquadroPasso.dc.html",
+      "title": "RiquadroPasso",
+      "x": 460,
+      "y": 10100,
+      "w": 360,
+      "h": 200,
+      "page": "page-2"
+    },
+    {
+      "file": "StimaCosto.dc.html",
+      "title": "StimaCosto",
+      "x": 920,
+      "y": 10100,
+      "w": 360,
+      "h": 420,
+      "page": "page-2"
+    },
+    {
+      "file": "TavolaFirma.dc.html",
+      "title": "TavolaFirma",
+      "x": 1380,
+      "y": 10100,
+      "w": 360,
+      "h": 170,
+      "page": "page-2"
+    },
+    {
+      "file": "TitoloEsito.dc.html",
+      "title": "TitoloEsito",
+      "x": 1840,
+      "y": 10100,
+      "w": 360,
+      "h": 90,
+      "page": "page-2"
     }
   ],
   "annotations": [

@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La sezione COSTI 2026/27 della pagina ISCRIZIONI sul telefono (Costi.tsx): QUOTA ASSOCIATIVA, una scheda per corso, OFFERTE e IL FOGLIO ORIGINALE, poi la nota sull'informativa privacy. Passata la data del saldo (31 agosto) la colonna SALDO non c'e': oggi, 6 ottobre, mostra solo ANNUALE e TRIMESTRE. Sono alcuni corsi del listino (costi.ts), non tutti: il resto continua con lo stesso schema. E' un tratto della pagina: in app segue i contatti. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1900px; background: #121212">
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" label="COSTI 2026/27" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+<dc-import name="Riquadro" etichetta="QUOTA ASSOCIATIVA" cifra="50 €" testo="Una per stagione, valida fino a luglio 2027. Si somma al corso." stretto="{{ true }}" hint-size="100%,120px"></dc-import>
+<dc-import name="SchedaCorso" corso="Judo 2" eta="nati 2019-2018-2017" orari="lunedì, mercoledì e venerdì 17.00-18.00" saldo="{{ false }}" prezzi="480 €|180 €" hint-size="100%,260px"></dc-import>
+<dc-import name="SchedaCorso" corso="Judo adulti" eta="nati nel 2012 o prima" orari="lunedì, mercoledì e venerdì 19.00-20.30" saldo="{{ false }}" prezzi="500 €|190 €" hint-size="100%,260px"></dc-import>
+<dc-import name="SchedaCorso" corso="Judo agonisti" eta="solo judoka agonisti (2015-2014 e prima)" orari="martedì e giovedì 18.00-19.30" saldo="{{ false }}" prezzi="660 €|230 €" nota="Solo in aggiunta a Judo 3 e Judo adulti." link="{{ false }}" hint-size="100%,290px"></dc-import>
+<dc-import name="SchedaCorso" corso="Prepugilistica" eta="nati 2010-2009-2008 e prima" orari="mercoledì 19.00-20.30" saldo="{{ false }}" prezzi="340 €|130 €" link="{{ false }}" hint-size="100%,260px"></dc-import>
+<dc-import name="SchedaCorso" corso="Preparazione atletica, pesi e Mobility" eta="nati nel 2012 o prima" orari="lunedì, mercoledì e venerdì 18.00-19.00|martedì e giovedì 18.00-19.00 / 19.30-20.30" saldo="{{ false }}" etichette="{{ true }}" prezzi="1 GIORNO|340 €|130 €; 2 GIORNI|450 €|140 €; 3 GIORNI|480 €|180 €; 4-5 GIORNI|660 €|230 €" link="{{ false }}" hint-size="100%,440px"></dc-import>
+<dc-import name="Titoletto" label="OFFERTE" dentro="{{ true }}" hint-size="100%,50px"></dc-import>
+<dc-import name="RiquadroPasso" titolo="SCONTO FAMIGLIA" testo="L’abbonamento annuale con il costo minore ha il 20% di sconto (esclusa la quota associativa)." tasti="" hint-size="100%,110px"></dc-import>
+<dc-import name="RiquadroPasso" titolo="PIÙ CORSI" testo="Il costo totale per partecipare a più corsi nella struttura è di 660 €." tasti="" hint-size="100%,90px"></dc-import>
+<dc-import name="Bottone" label="IL FOGLIO ORIGINALE" variante="linea" alto="48px" corpo="16px" larghezza="100%" hint-size="100%,48px"></dc-import>
+</div>
+<p style="margin: 0; padding: 0 20px 20px; font-size: 13px; line-height: 1.5; color: #8c8c88">Come trattiamo i tuoi dati: <span style="color: #c9c9c4; text-decoration: underline">l'informativa privacy</span>.</p>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

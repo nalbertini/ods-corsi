@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- La pagina ISCRIZIONI sullo schermo largo (da 768px, qui 1280): .iscrizioni e' una griglia a due colonne, passi a sinistra (PRIMA DI ISCRIVERTI, i tre passi, i contatti) e COSTI a destra, la nota sotto i passi. La testata e' quella del telefono (Testata.dc.html non ha la misura larga: da 960px ha anche il bordo sotto e il marchio da 58px). Il menu di segreteria non c'e': e' una pagina pubblica. -->
+<div style="display: flex; flex-direction: column; width: 1280px; min-height: 1560px; background: #121212">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; width: 100%; max-width: 1280px; margin: 0 auto">
+  <div style="display: flex; flex-direction: column">
+    <dc-import name="Titoletto" label="ISCRIZIONI" conto="3 PASSI" hint-size="100%,50px"></dc-import>
+    <div style="padding: 0 20px 10px"><dc-import name="RiquadroPasso" tono="prova" etichetta="PRIMA DI ISCRIVERTI" titolo="" righe="Una lezione di prova:3 €|Una settimana di prova:10 €" testo="Una lezione per provare un corso, o una settimana per provare tutti gli sport e scegliere quello giusto, prima di iscriversi. Per cominciare, passa in palestra o chiamaci." tasti="CHIAMA" hint-size="100%,270px"></dc-import></div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+<dc-import name="PassoIscrizione" numero="1" titolo="Leggi il modulo" dettaglio="Quello per maggiorenni, o quello per minori che firma il genitore. Lo firmi col dito nell’ultimo passo, o lo stampi e ne fai una foto." tasti="MAGGIORENNI|MINORI" hint-size="100%,200px"></dc-import>
+<dc-import name="PassoIscrizione" numero="2" titolo="Fai il pagamento" dettaglio="La quota associativa e il trimestre, oppure l’annuale. Tieni la ricevuta, o paga in segreteria.|Quota associativa 50 €, valida fino a luglio 2027. Bonifico a ASD Il Centro Judo:" iban="IT03 D076 0101 0000 0007 6350 339" dettaglio2="Oppure con Satispay, dall’app." tasti="COPIA IBAN|PAGA CON SATISPAY|VEDI I COSTI" hint-size="100%,400px"></dc-import>
+<dc-import name="PassoIscrizione" numero="3" titolo="Manda la richiesta da qui" dettaglio="Le domande, la firma sul modulo, poi le foto della carta d’identità, e del certificato medico e della ricevuta se li hai." tasti="COMPILA LA RICHIESTA" primoPrincipale="{{ true }}" hint-size="100%,200px"></dc-import>
+</div>
+    <div style="padding: 0 20px 16px"><dc-import name="RiquadroPasso" titolo="Hai un dubbio? Chiamaci o passa in palestra." testo="Via Sassi 26, Collegno, a pochi metri dalla metro Fermi. Telefono 346 329 2786." tasti="CHIAMA|MAPPA|INSTAGRAM|FACEBOOK|IL SITO" hint-size="100%,330px"></dc-import></div>
+    <p style="margin: 0; padding: 0 20px 20px; font-size: 13px; color: #8c8c88">Come trattiamo i tuoi dati: <span style="color: #c9c9c4; text-decoration: underline">l'informativa privacy</span>.</p>
+  </div>
+  <div style="display: flex; flex-direction: column">
+    <dc-import name="Titoletto" label="COSTI 2026/27" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+<dc-import name="Riquadro" etichetta="QUOTA ASSOCIATIVA" cifra="50 €" testo="Una per stagione, valida fino a luglio 2027. Si somma al corso." stretto="{{ true }}" hint-size="100%,120px"></dc-import>
+<dc-import name="SchedaCorso" corso="Judo 2" eta="nati 2019-2018-2017" orari="lunedì, mercoledì e venerdì 17.00-18.00" saldo="{{ false }}" prezzi="480 €|180 €" hint-size="100%,260px"></dc-import>
+<dc-import name="SchedaCorso" corso="Judo adulti" eta="nati nel 2012 o prima" orari="lunedì, mercoledì e venerdì 19.00-20.30" saldo="{{ false }}" prezzi="500 €|190 €" hint-size="100%,260px"></dc-import>
+<dc-import name="SchedaCorso" corso="Judo agonisti" eta="solo judoka agonisti (2015-2014 e prima)" orari="martedì e giovedì 18.00-19.30" saldo="{{ false }}" prezzi="660 €|230 €" nota="Solo in aggiunta a Judo 3 e Judo adulti." link="{{ false }}" hint-size="100%,290px"></dc-import>
+<dc-import name="Titoletto" label="OFFERTE" dentro="{{ true }}" hint-size="100%,50px"></dc-import>
+<dc-import name="RiquadroPasso" titolo="SCONTO FAMIGLIA" testo="L’abbonamento annuale con il costo minore ha il 20% di sconto (esclusa la quota associativa)." tasti="" hint-size="100%,110px"></dc-import>
+<dc-import name="RiquadroPasso" titolo="PIÙ CORSI" testo="Il costo totale per partecipare a più corsi nella struttura è di 660 €." tasti="" hint-size="100%,90px"></dc-import>
+<dc-import name="Bottone" label="IL FOGLIO ORIGINALE" variante="linea" alto="48px" corpo="16px" larghezza="100%" hint-size="100%,48px"></dc-import>
+</div>
+  </div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

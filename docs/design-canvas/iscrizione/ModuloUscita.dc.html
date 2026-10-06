@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- INDIETRO nel modulo quando c'e' gia' qualcosa di scritto, firmato o scelto (domandaUscita di richieste.ts; DueTocchi in ds.tsx): nel modulo non resta niente sul telefono, quindi il primo tocco cambia il tasto in LE RISPOSTE SI PERDONO · ESCI? (bordo e testo rossi, .modulo-testa .btn[data-sicuro]) e solo il secondo esce; senza il secondo tocco, dopo 6 secondi torna ← INDIETRO. Qui il tasto e' nel suo stato «chiede», con le prime risposte sotto. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 560px; background: #121212">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" label="RICHIESTA DI ISCRIZIONE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 14px 20px 0">
+  <span style="display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border: 2px solid #e4292a; color: #ff5a52; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 16px; font-weight: 700; letter-spacing: 0.16em">LE RISPOSTE SI PERDONO · ESCI?</span>
+</div>
+<dc-import name="Titoletto" label="CHI SI ISCRIVE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" etichetta="NOME" valore="Luca" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="COGNOME" valore="Bianchi" hint-size="100%,80px"></dc-import>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>

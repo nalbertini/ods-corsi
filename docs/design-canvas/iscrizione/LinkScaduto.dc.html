@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Il link di un'email che non vale piu' (Porta.tsx ScegliPassword con arrivo «scaduto»; invito.ts: error_code otp_expired → «Il link è scaduto o è già stato usato.»): titolo LINK SCADUTO, il motivo, cosa fare (chiedere un altro invito alla segreteria, o «password dimenticata» dalla porta) e VAI ALLA PORTA. Stessa pagina se il link e' valido ma la sessione non si ricava. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+<dc-import name="Testata" luogo="ACCESSO" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<div style="display: flex; align-items: baseline; gap: 10px; padding: 22px 20px 10px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: #8c8c88">LINK SCADUTO</span><div style="flex-grow: 1; height: 2px; background: #2a2a2a"></div></div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 16px">
+<span style="font-size: 14px; line-height: 1.4; color: #8c8c88; font-size: 15px">Il link è scaduto o è già stato usato. Se era un invito, chiedi alla segreteria di mandarne un altro; se avevi già una password, dalla porta c’è «password dimenticata».</span>
+<dc-import name="Bottone" label="VAI ALLA PORTA" variante="vai" hint-size="100%,56px"></dc-import>
+</div>
+</main>
+</div>
+</x-dc>
+</body>
+</html>
