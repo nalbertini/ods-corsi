@@ -357,7 +357,7 @@ function Flusso({
       // Chi usa l'app non legge il testo dell'errore: ci serve solo in console.
       console.error(e)
       scheda?.close()
-      setGuaioFirma('Il modulo non si prepara: riprova fra poco')
+      setGuaioFirma(P.moduloNonSiPrepara(!ancheTu))
     }
   }
 
