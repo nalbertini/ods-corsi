@@ -33,9 +33,9 @@ riga.
 zero: si copia `Pagina.dc.html` o `PaginaTelefono.dc.html` e si importano i
 componenti (vedi il README della libreria). Il canvas della funzione sta in
 `docs/design-canvas/<nome>/` e mostra com'è oggi (se la schermata esiste già)
-e la proposta, affiancati. Un componente che manca si aggiunge prima alla
+e la proposta, affiancati; `unico.mjs` lo mette, come pagina, nel canvas unico. Un componente che manca si aggiunge prima alla
 libreria. Prima di mostrarlo: `node docs/design-canvas/ods-design-system/verifica.mjs`.
-Si pubblica come Artifact e si dà il link all'utente.
+Si pubblica il canvas unico (vedi sotto) e si dà il link all'utente.
 
 **Discussione (5).** Ogni giro di correzioni aggiorna il canvas, non resta a
 parole. Il design è approvato quando l'utente lo dice: le prove e il codice
@@ -47,8 +47,14 @@ libreria (`<Nome>.dc.html`, valori copiati dal codice, riga nella tabella del
 README), i token cambiati in `src/styles.css` o `DESIGN.md` si ripetono nei
 file che li usano, la cornice (`Pagina*.dc.html`) segue il menu e la testata
 veri. Se il costruito ha scartato qualcosa dell'approvato, vince il costruito.
-Poi `verifica.mjs` e si ripubblica sullo stesso Artifact. Il canvas della
-funzione resta come storia; quello che vale è la libreria.
+Poi `verifica.mjs` e si ripubblica il canvas unico. Il canvas della funzione
+resta come storia; quello che vale è la libreria.
+
+**Il canvas unico.** La libreria e tutte le sezioni stanno in un solo Artifact,
+una pagina per sezione, per consultarle insieme. Lo costruisce
+`node docs/design-canvas/unico.mjs <cartella>` (una sezione nuova si aggiunge
+a `SEZIONI` nello script) e si pubblica sullo stesso Artifact di sempre, con
+`files.json` come elenco dei file.
 
 ## Come si passano il lavoro
 
