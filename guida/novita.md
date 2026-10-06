@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.39.0 — 6 ottobre 2026
+
+### Novità
+
+- Sotto i 6 anni il certificato medico non serve
+
 ## 0.38.8 — 6 ottobre 2026
 
 ### Risolto
