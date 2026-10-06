@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.45.0 — 6 ottobre 2026
+
+### Novità
+
+- Nell'iscrizione, la barra di quel che manca è una riga e si tocca per andare al campo
+
 ## 0.44.0 — 6 ottobre 2026
 
 ### Novità
