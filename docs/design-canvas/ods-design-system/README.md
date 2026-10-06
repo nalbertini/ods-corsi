@@ -73,8 +73,9 @@ Google, e vale solo per i mockup.
 | `TabletScelta` | Le scelte di TI SEI DIMENTICATO DI SEGNARTI? (`.tb-scelta`): `variante="corso"` (barra nella tinta, nome, giorni) o `"lezione"` (giorno, ora, «N su M») |
 | `TabletTestaAppelloPassato` | `TabletTestaAppello` per una lezione passata: col primo tocco il tasto diventa «CONFERMA: N PRESENTI» e compare la frase gialla |
 | `PassoIscrizione` | Un passo della pagina ISCRIZIONI (`.passo` di `IscrizioniScreen.tsx`): numero, titolo, frasi, IBAN e tasti |
-| `Avanzamento` | `Avanzamento` di `ds.tsx` (`.avanza`): il modulo a passi, un segmento per passo (fatti verdi, quello di adesso in `testo`), il numero da 56px e «DI N» col nome del passo |
+| `Avanzamento` | `Avanzamento` di `ds.tsx` (`.avanza`): il modulo a passi, un segmento per passo (fatti verdi, quello di adesso in `testo`), il numero da 56px e «DI N» col nome del passo; a ogni cambio di passo il fuoco va qui (`tabIndex -1`) |
 | `BarraPasso` | `BarraPasso` di `ds.tsx` (`.barra-passo`, sticky in fondo): cosa manca in una riga sola (`compatta`: MANCANO N, VAI A la prima voce, ▾ che apre l'elenco con `aperta`; ogni voce un tasto da 44px) o la nota verde; `totale` e `totaleRighe` mettono sopra la barra il totale della richiesta, INDIETRO da 110px e AVANTI; `tono="vai"` all'ultimo passo, `indietroChiede` per i due tocchi |
+| `RigaChiama` | La riga CHIAMA sotto l'avanzamento di ogni passo (`.passo-chiama`): la frase «Un dubbio? Chiama la segreteria.» e il tasto, nel flusso e non sticky |
 | `Riepilogo` | `Riepilogo` di `ds.tsx` (`.riepilogo`): una riga per cosa col segno ✓ verde, – giallo (facoltativa non data), ! rosso o il numero, e il tasto MODIFICA o CARICA da 44px |
 | `RiquadroPasso` | Il riquadro con titolo da 17px, righe `Titolo:cifra`, frasi e tasti (`Riquadro` di `ds.tsx`): PRIMA DI ISCRIVERTI, contatti, nucleo, il guaio sopra MANDA LA RICHIESTA |
 | `CaricaFile` | La riga di un file del modulo (`CaricaFile` di `ds.tsx`): SCEGLI o CAMBIA, file scelto in verde, errore |

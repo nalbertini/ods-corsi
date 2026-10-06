@@ -125,6 +125,8 @@ I corsi per grandi (quelli che la segreteria segna con un'età minima in **LISTI
 
 Chi iscrive un figlio trova le parole rivolte a lui, il genitore: **LA TUA CARTA D'IDENTITÀ** (la sua, non quella del bambino), **IL CERTIFICATO DI** e il nome del bambino (con cosa succede se manca), e l'errore sul codice fiscale dice «Metti il tuo codice fiscale, non quello di» e il nome. Il luogo di nascita del genitore (**DOVE SEI NATO**, **PROVINCIA**) si chiede solo nei suoi dati e solo se il suo codice fiscale non lo dice da sé.
 
+In ogni passo, sotto il numero, c'è **CHIAMA**: un tocco e si telefona alla segreteria. A ogni passo nuovo il cursore va al titolo, così chi usa uno screen reader sente dove si trova. Se si esce o si ricarica la pagina dopo aver scritto qualcosa, il browser chiede conferma. Alla fine, **RICHIESTA ARRIVATA** dice dove la segreteria ti scrive o ti chiama, e se non hai caricato la ricevuta quanto devi pagare e come (l'IBAN, e per una persona sola anche la causale), con **CHIAMA LA SEGRETERIA** a portata di mano.
+
 Per ora si apre solo in prova, con l'indirizzo `iscrizioni/?prova#nuova`.
 Non salva niente: se si esce prima di mandare, le risposte si perdono, e con
 la prova nulla va a un server. Il modulo di sopra resta quello di oggi.
