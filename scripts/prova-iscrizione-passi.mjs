@@ -602,6 +602,8 @@ console.log('\n13. anche tu: il conto, il corso parallelo, la richiesta del geni
   const ep = m.corsiPerEtaConStessaOra(corsi, rovesciato, '1984-05-05', ['judo-3'], 'Matteo')
   ok('stessa ora: il corso con lo stesso orario del figlio passa in cima', ep.adatti.map((c) => c.id), ['judo-adulti', 'aikido-adulti'])
   ok('stessa ora: la riga lo dice, solo su quello', ep.adatti.map((c) => c.riga?.includes('stessa ora di Matteo') ?? false), [true, false])
+  const grandi = { ...listino, corsi: listino.corsi.map((v, i) => (i === 0 ? { ...v, etaMinima: 16 } : v)) }
+  ok('stessa ora: i corsi per grandi nascosti arrivano alla schermata', m.corsiPerEtaConStessaOra(corsi, grandi, '2016-04-12', [], 'Luca').nascosti.length, 1)
   ok('senza listino niente corsi per età e nessun «stessa ora»', m.corsiPerEtaConStessaOra(corsi, undefined, '1984-05-05', ['judo-3'], 'Matteo').adatti.some((c) => c.riga?.includes('stessa ora')), false)
 
   // Cosa parte per ognuno: il file di ogni richiesta e i dati del PDF.
@@ -905,6 +907,19 @@ console.log('\n19. la barra compatta: markup e stile')
   const foto = figlio({}, { natoAGenitore: '', firmaInFoto: true, file: { documento: F('d.jpg') } })
   ok('figlio, foglio firmato in foto, luogo non ricavato: il passo del genitore non lo chiede', m.mancaNelPasso(foto, 2).includes('DOVE SEI NATO'), false)
   ok('figlio, firmo qui, luogo non ricavato: lo chiede', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 2).includes('DOVE SEI NATO'), true)
+}
+
+// 23. Il testo sotto l'elenco di un minore, quando dei corsi per grandi non compaiono.
+{
+  console.log('\n23. i corsi per grandi che non compaiono: la frase')
+  const f = (n, nome = 'Luca') => { try { return m.fraseCorsiNascosti(n, nome) } catch (e) { return `ERRORE: ${e.message}` } }
+  ok('due corsi', f(['Pesistica 1', 'Preparazione atletica 2']), 'Pesistica 1 e Preparazione atletica 2 non compaiono: Luca è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('un corso solo: «non compare»', f(['Pesistica 1']), 'Pesistica 1 non compare: Luca è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('tre corsi: «A, B e C»', f(['A', 'B', 'C']), 'A, B e C non compaiono: Luca è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('più di tre corsi: la frase generica', f(['A', 'B', 'C', 'D']), 'I corsi per grandi non compaiono: Luca è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('senza nome: «il bambino»', f(['Pesistica 1'], ''), 'Pesistica 1 non compare: il bambino è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('nome di soli spazi: «il bambino»', f(['Pesistica 1'], '  '), 'Pesistica 1 non compare: il bambino è troppo piccolo. Cerchi altro? Chiama la segreteria.')
+  ok('senza corsi nascosti niente frase', f([]), undefined)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

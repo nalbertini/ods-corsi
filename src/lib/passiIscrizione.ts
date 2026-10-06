@@ -356,6 +356,15 @@ export function luogoGenitoreDaChiedere(s: StatoPassi, luoghi: Luoghi | undefine
   return !(luoghi && luogoDaCf(luoghi, pulisciCf(s.risposte.genitoreCodiceFiscale ?? '')))
 }
 
+/** La frase sotto l'elenco dei corsi di un minore, se qualche corso per grandi non compare. */
+export function fraseCorsiNascosti(nascosti: string[], nomeBambino: string): string | undefined {
+  if (!nascosti.length) return undefined
+  const lui = nomeBambino.trim() || 'il bambino'
+  const elenco = nascosti.length > 3 ? undefined : nascosti.length === 1 ? nascosti[0] : `${nascosti.slice(0, -1).join(', ')} e ${nascosti[nascosti.length - 1]}`
+  const cosa = elenco ? `${elenco} ${nascosti.length === 1 ? 'non compare' : 'non compaiono'}` : 'I corsi per grandi non compaiono'
+  return `${cosa}: ${lui} è troppo piccolo. Cerchi altro? Chiama la segreteria.`
+}
+
 /** I file da chiedere: il certificato solo dai 6 anni, e quale lo dice l'età e il corso. */
 export function fileDaChiedere(natoIl: string, nomiCorsi: string[], oggi = new Date()) {
   const certificato = certificatoDaPortare(natoIl, nomiCorsi, oggi)

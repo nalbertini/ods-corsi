@@ -4,7 +4,7 @@ import { anniScritti, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, ETICHE
 import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { INFORMATIVA_PUBBLICA, MODULI, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
-import { corsiPerEta, type CorsoPerEta, type Listino } from '../lib/listino'
+import { corsiAmmessi, corsiPerEta, type CorsoPerEta, type Listino } from '../lib/listino'
 import { euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import * as P from '../lib/passiIscrizione'
@@ -269,12 +269,13 @@ function Flusso({
     const luogoG = luoghi && luogoDaCf(luoghi, pulisciCf(r.genitoreCodiceFiscale ?? ''))
     return {
       ...grezzo,
-      risposte: { ...r, natoIl, natoA: luogo ? scriviLuogo(luogo) : r.natoA },
+      // Un corso «dai N anni» scelto prima di correggere la data non parte con la richiesta.
+      risposte: { ...r, natoIl, natoA: luogo ? scriviLuogo(luogo) : r.natoA, corsi: listino && corsi ? corsiAmmessi(r.corsi, corsi, listino.corsi, natoIl) : r.corsi },
       natoAGenitore: luogoG?.nome ?? grezzo.natoAGenitore,
       // Con «Anche tu» il foglio si firma sempre qui.
       firmaInFoto: come === 'foto' && !grezzo.ancheTu,
     }
-  }, [grezzo, luoghi, come])
+  }, [grezzo, luoghi, come, corsi, listino])
   const r = v.risposte
   const figlio = v.chi === 'figlio'
   const ancheTu = !!v.ancheTu
@@ -690,6 +691,7 @@ function Flusso({
 
     if (tipo === 'corso') {
       const ep = perEta(r.natoIl)
+      const fraseNascosti = figlio ? P.fraseCorsiNascosti(ep.nascosti, r.nome) : undefined
       const nome = r.nome.trim() || 'Chi si iscrive'
       // Alla famiglia si propone un corso parallelo per il genitore, con lo stesso orario.
       const conto = listino && paralleli[0] && r.corsi.length ? P.contoDelloStato(v, corsi ?? [], listino, chiaveGiorno(new Date()), paralleli[0]) : undefined
@@ -705,6 +707,7 @@ function Flusso({
               nota={nota('corsi')}
               caricando={guaioCorsi ? `I corsi non si leggono: ${guaioCorsi}` : !corsi ? 'Un attimo…' : undefined}
             />
+            {fraseNascosti && <Dettaglio>{fraseNascosti}</Dettaglio>}
           </div>
           {figlio && (
             <>
