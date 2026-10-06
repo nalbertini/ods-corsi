@@ -21,8 +21,8 @@ ognuno, e il dispositivo si ricorda la scelta.
 
 - **Ciao, e i corsi**: i corsi a cui è iscritto oggi, col loro colore. Sotto,
   **SEI IN REGOLA** in verde, o le cose da sistemare: il certificato medico
-  che manca, è scaduto o scade entro un mese; la quota da pagare, pagata in
-  parte o da rinnovare.
+  che manca, è scaduto o scade entro un mese (sotto i 6 anni non serve); la
+  quota da pagare, pagata in parte o da rinnovare.
 - **Prossime lezioni**: le lezioni dei suoi corsi nelle prossime due
   settimane, un gruppo per giorno. Quello che cambia rispetto al solito si
   legge sulla lezione: **ANNULLATA** in rosso, **SOSTITUTO** quando la fa un
@@ -35,8 +35,8 @@ ognuno, e il dispositivo si ricorda la scelta.
   La presenza la conferma l'istruttore della lezione o la segreteria; fino
   ad allora la riga dice **DA CONFERMARE**, e poi diventa presente, o dice
   **RIFIUTATA**. Una volta sola per lezione.
-- **Certificato e quota**: fino a quando vale il certificato medico, e fino a
-  quando è pagata la quota.
+- **Certificato e quota**: fino a quando vale il certificato medico (sotto i
+  6 anni non è obbligatorio), e fino a quando è pagata la quota.
 - **Ricevute**: quelle fatte dalla segreteria (**SEGRETERIA → RICEVUTE**),
   dalla più recente, ognuna col suo **PDF** da scaricare: lo stesso che
   stampa la segreteria.

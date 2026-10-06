@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- SCHEDA ISCRITTO, i timbri. Il certificato di un bambino sotto i 6 anni e' spento, non rosso, e dice perche'.
+     Se la segreteria ne ha gia' segnato uno, la data resta com'e', senza rosso. Chi sta per compiere 6 anni ha il
+     giallo, come un certificato in scadenza. -->
+<div style="display: flex; flex-direction: column; width: 1100px; background: #121212; padding: 28px 36px 36px; gap: 22px">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">OGGI</span>
+  <div style="width: 330px"><dc-import name="Timbro" titolo="CERTIFICATO" parola="NO CERTIFICATO" tono="rosso" righe="SENZA, IN SALA NON SI ENTRA" hint-size="330px,120px"></dc-import></div>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA</span>
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px">
+    <div><span style="font: 600 12px Barlow; color: #8c8c88">5 anni, senza certificato</span><dc-import name="Timbro" titolo="CERTIFICATO" parola="NON SERVE" tono="spento" righe="SOTTO I 6 ANNI" hint-size="100%,100px"></dc-import></div>
+    <div><span style="font: 600 12px Barlow; color: #8c8c88">5 anni, certificato valido segnato</span><dc-import name="Timbro" titolo="CERTIFICATO" parola="VALIDO FINO AL 31/07/2027" tono="verde" righe="NON SERVE SOTTO I 6 ANNI" hint-size="100%,120px"></dc-import></div>
+    <div><span style="font: 600 12px Barlow; color: #8c8c88">5 anni, certificato segnato e scaduto</span><dc-import name="Timbro" titolo="CERTIFICATO" parola="SCADUTO IL 12/03/2026" tono="spento" righe="NON SERVE SOTTO I 6 ANNI" hint-size="100%,120px"></dc-import></div>
+    <div><span style="font: 600 12px Barlow; color: #8c8c88">Compie 6 anni il 14/10, senza certificato</span><dc-import name="Timbro" titolo="CERTIFICATO" parola="SERVE DAL 14/10/2026" tono="giallo" righe="FRA 8 GIORNI" hint-size="100%,100px"></dc-import></div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1100,"height":420}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

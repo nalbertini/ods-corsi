@@ -3022,5 +3022,135 @@ console.log('\nl’«Attività» con un database senza 41-attivita.sql: la segre
   }
 }
 
+console.log('\nsotto i 6 anni il certificato non serve')
+{
+  const L = m.segreteriaLib
+  const oggi = '2026-09-26'
+  // Una funzione che manca fa fallire il caso, non tutta la prova.
+  const vedi = (f) => { try { return f() } catch (e) { return `ERRORE: ${e.message}` } }
+  const quota = { numero: 1, anno: 2026, dal: '2026-09-01', al: '2027-08-31', mancano: 0 }
+  const persona = (natoIl, certificato = { conFile: false }, extra = {}) => ({
+    id: 'x', nome: 'Aldo', cognome: 'Rossi', attiva: true, creataIl: '2026-01-01', iscrizioni: [], documento: true,
+    pagamento: { stato: 'da_pagare' }, quote: [quota], natoIl, certificato, ...extra,
+  })
+  const cinque = '2021-03-10'
+  const parole = (p) => L.paroleInRegola(p, oggi)
+
+  // La regola sola, per età.
+  ok('5 anni: non serve', vedi(() => L.serveCertificato(cinque, oggi)), 'non_serve')
+  ok('compie 6 anni oggi: serve', vedi(() => L.serveCertificato('2020-09-26', oggi)), 'serve')
+  ok('compie 6 anni domani: non serve ancora, ma sta per servire', vedi(() => L.serveCertificato('2020-09-27', oggi)), 'in_arrivo')
+  ok('fra 30 giorni: in arrivo', vedi(() => L.serveCertificato('2020-10-26', oggi)), 'in_arrivo')
+  ok('fra 31 giorni: non serve', vedi(() => L.serveCertificato('2020-10-27', oggi)), 'non_serve')
+  ok('senza data di nascita: serve', vedi(() => L.serveCertificato(undefined, oggi)), 'serve')
+  ok('adulto: serve', vedi(() => L.serveCertificato('1990-01-01', oggi)), 'serve')
+  ok('il giorno dei 6 anni', vedi(() => L.dalCertificato('2020-10-10')), '2026-10-10')
+
+  // Lo stato del certificato, con l'età.
+  const stato = (p) => vedi(() => L.statoCertificato(p, oggi))
+  ok('5 anni senza certificato: non serve', stato(persona(cinque)), 'non_serve')
+  ok('5 anni col certificato scaduto: non serve', stato(persona(cinque, { scade: '2026-01-01', conFile: false })), 'non_serve')
+  ok('5 anni, ai 6 mancano 14 giorni, senza certificato: in arrivo', stato(persona('2020-10-10')), 'in_arrivo')
+  ok('ai 6 anni mancano 14 giorni, con un certificato già segnato (anche scaduto): non serve, l\'avviso è solo per chi non ce l\'ha', [stato(persona('2020-10-10', { scade: '2026-01-01', conFile: false })), stato(persona('2020-10-10', { scade: '2027-06-01', conFile: false }))], ['non_serve', 'non_serve'])
+  ok('6 anni oggi, senza certificato: manca', stato(persona('2020-09-26')), 'manca')
+  ok('senza data di nascita, senza certificato: manca', stato(persona(undefined)), 'manca')
+  ok('senza data di nascita, scaduto: scaduto', stato(persona(undefined, { scade: '2026-01-01', conFile: false })), 'scaduto')
+  ok('adulto col certificato valido: valido', stato(persona('1990-01-01', { scade: '2027-06-01', conFile: false })), 'valido')
+
+  // I filtri e i conteggi di ISCRITTI e DA FARE.
+  const senza = (p) => vedi(() => L.senzaCertificatoValido(p, oggi))
+  const scad = (p) => vedi(() => L.certificatoInScadenza(p, oggi))
+  const arrivo = (p) => vedi(() => L.certificatoInArrivo(p, oggi))
+  ok('SENZA CERTIFICATO VALIDO: l\'adulto sì, il bambino di 5 anni no', [senza(persona('1990-01-01')), senza(persona(cinque))], [true, false])
+  ok('SENZA CERTIFICATO VALIDO: nemmeno il bambino di 5 anni col certificato scaduto', senza(persona(cinque, { scade: '2026-01-01', conFile: false })), false)
+  ok('SENZA CERTIFICATO VALIDO: senza data di nascita sì', senza(persona(undefined)), true)
+  ok('SENZA CERTIFICATO VALIDO: chi compie 6 anni oggi sì', senza(persona('2020-09-26')), true)
+  ok('SENZA CERTIFICATO VALIDO: chi è disattivato no', senza(persona('1990-01-01', { conFile: false }, { attiva: false })), false)
+  ok('CERTIFICATO IN SCADENZA: il bambino di 5 anni col certificato che scade fra una settimana no', scad(persona(cinque, { scade: '2026-10-03', conFile: false })), false)
+  ok('CERTIFICATO IN SCADENZA: l\'adulto sì', scad(persona('1990-01-01', { scade: '2026-10-03', conFile: false })), true)
+  ok('iscritti che compiono 6 anni senza certificato: chi li compie fra 14 giorni sì', arrivo(persona('2020-10-10')), true)
+  ok('iscritti che compiono 6 anni senza certificato: chi li ha compiuti, no', arrivo(persona('2020-09-26')), false)
+  ok('iscritti che compiono 6 anni senza certificato: chi ha già il certificato, no', arrivo(persona('2020-10-10', { scade: '2027-06-01', conFile: false })), false)
+  ok('iscritti che compiono 6 anni senza certificato: chi è disattivato, no', arrivo(persona('2020-10-10', { conFile: false }, { attiva: false })), false)
+  ok('iscritti che compiono 6 anni senza certificato: il bambino di 5 anni lontano dai 6, no', arrivo(persona(cinque)), false)
+
+  // La colonna IN REGOLA dell'elenco.
+  ok('elenco: 5 anni, quota pagata, senza certificato: in regola e certificato spento', vedi(() => parole(persona(cinque))), [{ tono: 'verde', parola: 'IN REGOLA' }, { tono: 'spento', parola: 'CERT. NON SERVE' }])
+  ok('elenco: 5 anni con la quota da pagare: non in regola, il guaio è la quota', vedi(() => parole(persona(cinque, undefined, { quote: [] }))).map((x) => x.parola), ['DA PAGARE', 'CERT. NON SERVE'])
+  ok('elenco: ai 6 anni mancano 14 giorni: bollino giallo con la data', vedi(() => parole(persona('2020-10-10'))), [{ tono: 'giallo', parola: 'SERVE DAL 10/10' }])
+  ok('elenco: 6 anni oggi: NO CERTIFICATO come oggi', vedi(() => parole(persona('2020-09-26'))), [{ tono: 'rosso', parola: 'NO CERTIFICATO' }])
+  ok('elenco: senza data di nascita: NO CERTIFICATO come oggi', vedi(() => parole(persona(undefined))), [{ tono: 'rosso', parola: 'NO CERTIFICATO' }])
+  ok('elenco: 5 anni col certificato valido: niente bollino del certificato: è verde come per tutti', vedi(() => parole(persona(cinque, { scade: '2027-06-01', conFile: false }))).map((x) => x.parola), ['IN REGOLA'])
+
+  // In regola.
+  ok('in regola: 5 anni, quota pagata, niente certificato', vedi(() => L.inRegola(persona(cinque), oggi)), true)
+  ok('in regola: 5 anni senza quota no', vedi(() => L.inRegola(persona(cinque, undefined, { quote: [] }), oggi)), false)
+  ok('in regola: ai 6 anni mancano 14 giorni, quota pagata: sì, in sala può entrare', vedi(() => L.inRegola(persona('2020-10-10'), oggi)), true)
+  ok('in regola: 6 anni oggi senza certificato no', vedi(() => L.inRegola(persona('2020-09-26'), oggi)), false)
+  ok('in regola: senza data di nascita e senza certificato no', vedi(() => L.inRegola(persona(undefined), oggi)), false)
+
+  // La scheda.
+  const cert = (p) => vedi(() => L.timbriScheda(p, oggi).certificato)
+  ok('scheda: 5 anni senza certificato, timbro spento', cert(persona(cinque)), { tono: 'spento', parola: 'NON SERVE', righe: [{ testo: 'SOTTO I 6 ANNI' }], inElenco: 'CERT. NON SERVE' })
+  ok('scheda: 5 anni col certificato valido, la data resta, verde', cert(persona(cinque, { scade: '2027-06-01', conFile: false })), { tono: 'verde', parola: 'VALIDO FINO ALL’1/06/2027', righe: [{ testo: 'NON SERVE SOTTO I 6 ANNI' }] })
+  ok('scheda: 5 anni col certificato scaduto, la data resta, spento e non rosso', cert(persona(cinque, { scade: '2026-01-15', conFile: false })), { tono: 'spento', parola: 'SCADUTO IL 15/01/2026', inElenco: 'CERT. SCADUTO', righe: [{ testo: 'NON SERVE SOTTO I 6 ANNI' }] })
+  ok('scheda: ai 6 anni mancano 14 giorni, giallo con la data e i giorni', cert(persona('2020-10-10')), { tono: 'giallo', parola: 'SERVE DAL 10/10/2026', inElenco: 'SERVE DAL 10/10', righe: [{ testo: 'FRA 14 GIORNI' }] })
+  ok('scheda: 6 anni oggi, rosso come oggi', cert(persona('2020-09-26')).parola, 'NO CERTIFICATO')
+  ok('scheda: senza data di nascita, rosso come oggi', cert(persona(undefined)), { tono: 'rosso', parola: 'NO CERTIFICATO', righe: [{ testo: 'SENZA, IN SALA NON SI ENTRA' }] })
+  ok('scheda: il file da stampare resta anche sotto i 6 anni', vedi(() => cert(persona(cinque, { scade: '2027-06-01', conFile: true })).righe), [{ testo: 'NON SERVE SOTTO I 6 ANNI' }, { testo: 'DA STAMPARE', tono: 'giallo' }])
+  ok('scheda: chi è disattivato ha il timbro spento, con le stesse parole', vedi(() => { const t = L.timbriScheda(persona(cinque, undefined, { attiva: false }), oggi); return [t.certificato.tono, t.certificato.parola] }), ['spento', 'NON SERVE'])
+
+  // Il tasto grosso della scheda.
+  ok('tasto: 5 anni senza certificato, con la quota pagata: quota', vedi(() => L.tastoPrincipale(persona(cinque), oggi)), 'quota')
+  ok('tasto: 5 anni senza certificato, senza quota: quota, mai il certificato', vedi(() => L.tastoPrincipale(persona(cinque, undefined, { quote: [] }), oggi)), 'quota')
+  ok('tasto: 6 anni oggi senza certificato: certificato', vedi(() => L.tastoPrincipale(persona('2020-09-26'), oggi)), 'certificato')
+  ok('tasto: senza data di nascita senza certificato: certificato', vedi(() => L.tastoPrincipale(persona(undefined), oggi)), 'certificato')
+
+  // Il riquadro CERTIFICATO delle statistiche.
+  const conta = vedi(() => L.contaCertificati([persona(cinque), persona(cinque, { scade: '2026-01-01', conFile: false }), persona('2020-10-10'), persona(undefined), persona('1990-01-01', { scade: '2027-06-01', conFile: false })], oggi))
+  ok('statistiche: i bambini di 5 anni non si contano, né chi sta per compiere 6 anni', conta, { valido: 1, in_scadenza: 0, scaduto: 0, manca: 1 })
+
+  // La data di nascita dalle fonti: la più recente, intera.
+  const fonti = (l) => [...L.nascitaDelleFonti(l)]
+  ok('nascita: vince la fonte più recente', fonti([
+    { personaId: 'a', da: 'modulo', quando: '2026-01-01', natoIl: '2021-03-10' },
+    { personaId: 'a', da: 'segreteria', quando: '2026-02-01', natoIl: '2021-04-11' },
+  ]), [['a', '2021-04-11']])
+  ok('nascita: la scheda più recente senza data non passa la mano alla richiesta', fonti([
+    { personaId: 'a', da: 'modulo', quando: '2026-01-01', natoIl: '2021-03-10' },
+    { personaId: 'a', da: 'segreteria', quando: '2026-02-01' },
+  ]), [])
+  ok('nascita: a parità vince la segreteria, in qualunque ordine', [
+    fonti([{ personaId: 'a', da: 'segreteria', quando: '2026-02-01', natoIl: '2021-04-11' }, { personaId: 'a', da: 'modulo', quando: '2026-02-01', natoIl: '2021-03-10' }]),
+    fonti([{ personaId: 'a', da: 'modulo', quando: '2026-02-01', natoIl: '2021-03-10' }, { personaId: 'a', da: 'segreteria', quando: '2026-02-01', natoIl: '2021-04-11' }]),
+  ], [[['a', '2021-04-11']], [['a', '2021-04-11']]])
+
+  // Col database: persone() porta la data; senza le tabelle o col permesso negato, nessun errore e nessuna data.
+  const persona1 = { id: 'p1', nome: 'Leo', cognome: 'Conti', email: null, telefono: null, attiva: true, creata_il: '2026-09-01T10:00:00Z', iscrizioni: [], schede_iscritti: null }
+  const dbFinto = (tabelle) => m.creaSegreteriaSupabase({
+    from: (t) => {
+      const c = new Proxy(() => c, { get: (_, k) => (k === 'then' ? (fatto) => fatto(tabelle[t] ?? { data: [], error: null }) : () => c), apply: () => c })
+      return c
+    },
+  })
+  const dal = async (tabelle) => (await dbFinto({ persone: { data: [persona1], error: null }, ...tabelle }).persone())[0].natoIl
+  ok('database: la data della richiesta accolta arriva alla persona', await dal({ richieste_iscrizione: { data: [{ id: 'r1', persona_id: 'p1', nato_il: '2021-03-10', gestita_il: '2026-09-02T10:00:00Z', creata_il: '2026-09-01T10:00:00Z' }], error: null } }), '2021-03-10')
+  ok('database: la scheda più recente vince sulla richiesta', await dal({
+    richieste_iscrizione: { data: [{ id: 'r1', persona_id: 'p1', nato_il: '2021-03-10', gestita_il: '2026-09-02T10:00:00Z', creata_il: '2026-09-01T10:00:00Z' }], error: null },
+    anagrafiche: { data: [{ persona_id: 'p1', nato_il: '2021-04-11', cambiata_il: '2026-09-05T10:00:00Z' }], error: null },
+  }), '2021-04-11')
+  ok('database: senza le tabelle nessuna data e nessun errore', await dal({ anagrafiche: { data: null, error: { code: '42P01' } }, richieste_iscrizione: { data: null, error: { code: '42P01' } } }), undefined)
+
+  // La modalità prova: la data di nascita arriva a PersonaSeg.
+  const tutti = await s.persone()
+  const stati = tutti.filter((p) => p.attiva).map((p) => vedi(() => L.statoCertificato(p, oggi)))
+  ok('in prova ci sono bambini di 5 anni senza obbligo', stati.filter((x) => x === 'non_serve').length >= 2, true)
+  ok('in prova c\'è un iscritto prossimo ai 6 anni', stati.filter((x) => x === 'in_arrivo').length >= 1, true)
+  const chi = tutti.find((p) => p.attiva)
+  await s.salvaAnagrafica(chi.id, { natoIl: '2021-03-10' })
+  ok('la data di nascita della scheda arriva alla persona', (await s.persone()).find((p) => p.id === chi.id).natoIl, '2021-03-10')
+  ok('senza data di nascita la persona resta come prima', (await s.persone()).filter((p) => p.id !== chi.id).some((p) => p.natoIl === undefined), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
