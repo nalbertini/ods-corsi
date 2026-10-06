@@ -15,7 +15,7 @@
   </style>
 </helmet>
 <!-- Dopo un PIN sbagliato i pallini si svuotano e diventano rossi col messaggio «PIN sbagliato. Riprova.». Dal secondo errore il messaggio avvisa del limite: dopo 5 PIN sbagliati il tablet si blocca per 5 minuti (REGOLE.pinTentativi e pinBloccoMin in src/lib/tablet.ts). -->
-<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden; color: #f2f2f0">
   <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="scuro" hint-size="100%,92px"></dc-import>
   <div style="flex: 1; min-height: 0">
     <dc-import name="TabletPinSchermata" titolo="AREA ISTRUTTORE" testo="Il tuo PIN a quattro cifre. Da qui fai l’appello completo e correggi le presenze segnate sul tablet. Durante una lezione ti segna anche la tua presenza." cifre="0" guaio="PIN sbagliato. Attenzione: dopo 5 PIN sbagliati il tablet si blocca per 5 minuti." tema="scuro" hint-size="100%,608px"></dc-import>

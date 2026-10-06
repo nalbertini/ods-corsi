@@ -15,7 +15,7 @@
   </style>
 </helmet>
 <!-- L'ultima domanda prima di uscire (ConfermaUscita in Tablet.tsx), dopo il PIN: uscendo il tablet si scollega dalla sala e senza l'account della sala non ci torna. Una schermata del tablet e non un confirm() del browser. Dice anche la versione dell'app (serve a capire se questo tablet e' aggiornato). SI', ESCI scollega e porta alla pagina di accesso di tutta l'app; ANNULLA (o 90 secondi senza tocchi) torna alla home. Si arriva qui anche dall'area istruttore con «Scollega il tablet», col PIN gia' dato. -->
-<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden">
+<div style="position: relative; display: flex; flex-direction: column; width: 1280px; height: 800px; background: #121212; overflow: hidden; color: #f2f2f0">
   <dc-import name="TabletTestataSala" sala="SALA JUDO" data="MARTEDÌ 6 OTTOBRE · OFFICINE DELLO SPORT" ora="18:40" tema="scuro" hint-size="100%,92px"></dc-import>
   <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 22px 32px 24px">
     <div style="display: flex; flex-direction: column; gap: 16px; max-width: 560px">
