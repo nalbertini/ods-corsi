@@ -144,6 +144,10 @@ console.log('\n2b. il codice fiscale, letto')
   ok('il genitore: quanti toglierne', notaGen('RSSPLA80A41L219PABCDE'), 'Togli 5 caratteri')
   ok('il genitore: uno di troppo', notaGen('RSSPLA80A41L219PA'), 'Togli 1 carattere')
   ok('il genitore: un segno', notaGen('RSSPLA80A41-219P'), 'Solo lettere e numeri')
+  // Il codice del genitore uguale a quello del bambino: la nota dice cosa fare, con il nome di chi si iscrive.
+  const stessoCf = (nome) => m.problemi(minore({ nome, genitoreCodiceFiscale: 'RSSGLI17C41L219G' })).genitoreCodiceFiscale
+  ok('il genitore col codice del figlio: dice di metterci il suo', stessoCf('Giulia'), 'Metti il tuo codice fiscale, non quello di Giulia.')
+  ok('il genitore col codice del figlio, senza nome: «del bambino»', stessoCf(''), 'Metti il tuo codice fiscale, non quello del bambino.')
   // La ricevuta non ferma la richiesta: si può pagare in contanti al banco.
   ok('la ricevuta non è obbligatoria', m.FILE.find((f) => f.tipo === 'ricevuta').obbligatorio, false)
   ok('la ricevuta dice che si può pagare in segreteria', m.FILE.find((f) => f.tipo === 'ricevuta').seManca, 'PUOI PAGARE IN SEGRETERIA')

@@ -351,7 +351,7 @@ function guai(d: DatiRichiesta, oggi: Date): Guaio[] {
     metti(guaiCf('genitoreCodiceFiscale', gen, 'del genitore'))
     const suo = cfValido(gen) ? cfNatoIl(gen, oggi) : null
     if (gen && gen === cf)
-      metti({ campo: 'genitoreCodiceFiscale', messaggio: 'Il codice fiscale del genitore è lo stesso di chi si iscrive', testo: 'È lo stesso di chi si iscrive' })
+      metti({ campo: 'genitoreCodiceFiscale', messaggio: 'Il codice fiscale del genitore è lo stesso di chi si iscrive', testo: `Metti il tuo codice fiscale, non quello ${d.nome?.trim() ? `di ${d.nome.trim()}` : 'del bambino'}.` })
     else if (suo && minorenne(suo, oggi))
       metti({ campo: 'genitoreCodiceFiscale', messaggio: 'Il codice fiscale del genitore è di un minorenne', testo: 'È di un minorenne' })
     else if (cfValido(gen) && d.genitoreNome?.trim() && d.genitoreCognome?.trim() && !cfTornaColNome(gen, d.genitoreNome, d.genitoreCognome))

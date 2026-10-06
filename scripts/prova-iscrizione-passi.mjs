@@ -204,7 +204,8 @@ console.log('\n5. ogni AVANTI guarda solo il suo passo')
   ok('figlio, passo 2: contatti a posto', nomi(figlio(), 2), [])
   ok('figlio, passo 3: «anche te?» senza risposta', nomi(figlio({}, { ancheTu: undefined }), 3), ['SCEGLI: ANCHE TE?'])
   ok('figlio, passo 3: risposto no, a posto', nomi(figlio(), 3), [])
-  ok('figlio, passo 4: dove è nato il genitore', nomi(figlio({}, { natoAGenitore: ' ' }), 4), ['DOVE È NATO IL GENITORE'])
+  ok('figlio, passo 2: dove sei nato, se il luogo non si ricava dal codice', nomi(figlio({}, { natoAGenitore: ' ' }), 2), ['DOVE SEI NATO'])
+  ok('figlio, passo 4 (il modulo): dove è nato il genitore non manca più', nomi(figlio({}, { natoAGenitore: ' ' }), 4), [])
   ok('figlio con il genitore col codice del bambino: ferma', nomi(figlio({ genitoreCodiceFiscale: CF_MATTEO }), 2), ['CODICE FISCALE DEL GENITORE'])
 
   const sotto = (e, provato, visto) => m.notaSottoIlCampo(e, provato, visto)
@@ -704,8 +705,39 @@ console.log('\n16. l’ordine di «manca» è quello della pagina: il focus va a
     'TESSERAMENTO', 'FOTO', 'FIRMA', 'REGOLAMENTO', 'INFORMATIVA PRIVACY', 'CARTA D\'IDENTITÀ',
   ])
   ok('adulto, passo 3: il focus va alla prima casella, non alla carta d’identità', m.primoDaCorreggere(vuoto('adulto'), 3), 'tesseramento')
-  ok('bambino, passo 4 (il modulo): dove è nato il genitore prima della firma', chiavi(figlio({}, { scelte: {}, tratti: 0, file: {}, privacy: false, natoAGenitore: '' }), 4), ['TESSERAMENTO', 'FOTO', 'DOVE È NATO IL GENITORE', 'FIRMA', 'INFORMATIVA PRIVACY', 'CARTA D\'IDENTITÀ'])
+  ok('bambino, passo 4 (il modulo): dove è nato il genitore prima della firma', chiavi(figlio({}, { scelte: {}, tratti: 0, file: {}, privacy: false, natoAGenitore: '' }), 4), ['TESSERAMENTO', 'FOTO', 'FIRMA', 'INFORMATIVA PRIVACY', 'CARTA D\'IDENTITÀ'])
+  ok('bambino, passo 2: «dove sei nato» sta dopo il codice del genitore, prima dei contatti', chiavi(figlio({ genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '', email: '', telefono: '' }, { natoAGenitore: '' }), 2), ['NOME DEL GENITORE', 'COGNOME DEL GENITORE', 'CODICE FISCALE DEL GENITORE', 'DOVE SEI NATO', 'EMAIL', 'TELEFONO'])
+  ok('bambino, l’ultimo passo: «dove sei nato» una volta sola', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 5), ['DOVE SEI NATO'])
   ok('anche tu, passo 5: corso, tesseramento, foto', chiavi({ ...vuoto('figlio'), ancheTu: true, suo: { corsi: [], formula: 'trimestre', scelte: {} } }, 5), ['CORSO', 'TESSERAMENTO', 'FOTO'])
+}
+
+// ---------------------------------------------------------------------------
+console.log('\n16b. le parole per il genitore, nel flusso del figlio')
+{
+  const t = (chi, tipo, nome) => m.testoFile(chi, tipo, nome)
+  const adultoDoc = m.FILE.find((f) => f.tipo === 'documento')
+  ok('figlio: la carta d’identità è del genitore', t('figlio', 'documento', 'Matteo').etichetta, 'LA TUA CARTA D’IDENTITÀ')
+  ok('figlio: il fronte lo firma il genitore', t('figlio', 'documento', 'Matteo').dettaglio, 'Il fronte. Firmi tu, genitore: serve la tua, non quella di Matteo.')
+  // «di il bambino» non è italiano: senza nome si dice «del bambino».
+  ok('figlio senza nome: «non quella del bambino»', t('figlio', 'documento', ' ').dettaglio, 'Il fronte. Firmi tu, genitore: serve la tua, non quella del bambino.')
+  ok('figlio: il retro è della carta del genitore', t('figlio', 'documento-retro', 'Matteo').etichetta, 'IL RETRO DELLA TUA CARTA')
+  ok('figlio: il retro, cosa caricare', t('figlio', 'documento-retro', 'Matteo').dettaglio, 'Il retro. Una foto o il PDF.')
+  ok('figlio: il certificato col nome in maiuscolo', t('figlio', 'certificato', 'Matteo').etichetta, 'IL CERTIFICATO DI MATTEO')
+  ok('figlio: il certificato senza nome', t('figlio', 'certificato', '').etichetta, 'IL CERTIFICATO DEL BAMBINO')
+  ok('figlio: il certificato, cosa succede se manca', t('figlio', 'certificato', 'Matteo').dettaglio, 'Lo porti in segreteria prima della prima lezione: senza, Matteo non può partecipare.')
+  ok('figlio senza nome: il certificato dice «il bambino»', t('figlio', 'certificato', '').dettaglio, 'Lo porti in segreteria prima della prima lezione: senza, il bambino non può partecipare.')
+  ok('adulto: i testi di oggi, documento', t('adulto', 'documento', 'Luca'), { etichetta: adultoDoc.etichetta, dettaglio: adultoDoc.dettaglio })
+  const cert = m.FILE.find((f) => f.tipo === 'certificato')
+  ok('adulto: i testi di oggi, certificato', t('adulto', 'certificato', 'Luca'), { etichetta: cert.etichetta, dettaglio: cert.dettaglio })
+  ok('i testi di FILE non cambiano', [adultoDoc.etichetta, adultoDoc.dettaglio], ["CARTA D'IDENTITÀ", 'Il fronte. Per un minore, quella del genitore.'])
+
+  // «Dove sei nato» si chiede solo se il codice del genitore non lo dice.
+  const luoghi = { L219: [['TORINO', 'TO']] }
+  ok('luogo del genitore: il codice lo dice, non si chiede', m.luogoGenitoreDaChiedere(figlio(), luoghi), false)
+  ok('luogo del genitore: codice di un luogo che non c’è in elenco, si chiede', m.luogoGenitoreDaChiedere(figlio(), { Z999: [['ROMA', 'RM']] }), true)
+  ok('luogo del genitore: elenco assente, si chiede', m.luogoGenitoreDaChiedere(figlio(), undefined), true)
+  ok('luogo del genitore: codice non scritto ancora, si chiede', m.luogoGenitoreDaChiedere(figlio({ genitoreCodiceFiscale: '' }), luoghi), true)
+  ok('luogo del genitore: l’adulto non lo chiede mai', m.luogoGenitoreDaChiedere(adulto(), undefined), false)
 }
 
 // ---------------------------------------------------------------------------
@@ -865,6 +897,14 @@ console.log('\n19. la barra compatta: markup e stile')
   console.log('\n21. il riquadro della firma riceve il fuoco')
   const tavola = readFileSync('src/components/TavolaFirma.tsx', 'utf8')
   ok('il canvas della firma ha tabIndex={-1}', /<canvas[^>]*tabIndex=\{-1\}/s.test(tavola), true)
+}
+
+// 22. Col foglio firmato in foto il PDF non si fa: il luogo del genitore non serve, e non ferma il passo.
+{
+  console.log('\n22. foglio in foto: il luogo del genitore non si chiede')
+  const foto = figlio({}, { natoAGenitore: '', firmaInFoto: true, file: { documento: F('d.jpg') } })
+  ok('figlio, foglio firmato in foto, luogo non ricavato: il passo del genitore non lo chiede', m.mancaNelPasso(foto, 2).includes('DOVE SEI NATO'), false)
+  ok('figlio, firmo qui, luogo non ricavato: lo chiede', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 2).includes('DOVE SEI NATO'), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
