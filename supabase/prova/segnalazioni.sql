@@ -396,3 +396,127 @@ select atteso('l''iscritto riceve lo stesso no per un id vero e uno finto',
   tenta($$select togli_allegato('cccccccc-0000-0000-0000-0000000000b1')::text$$),
   tenta($$select togli_allegato('cccccccc-0000-0000-0000-00000000ffff')::text$$));
 reset role;
+
+\echo ''
+\echo '--- 11. gli allegati: chi può, su quale messaggio, con che nome ---'
+-- d1: filo aperto di Anna; d2: risposta di Bea; d3: risposta di Anna; d4: filo
+-- chiuso di Anna; d5: sua risposta in un filo chiuso; d6: filo con 3 righe e
+-- nessun file.
+insert into segnalazioni (id, autore_id, titolo, testo) values
+  ('eeeeeeee-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000001', 'Aperto', 'Filo aperto');
+insert into segnalazioni (id, padre_id, autore_id, testo) values
+  ('eeeeeeee-0000-0000-0000-0000000000d2', 'eeeeeeee-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000004', 'Di Bea'),
+  ('eeeeeeee-0000-0000-0000-0000000000d3', 'eeeeeeee-0000-0000-0000-0000000000d1', 'aaaaaaaa-0000-0000-0000-000000000001', 'Di Anna');
+insert into segnalazioni (id, autore_id, titolo, testo, chiusa_il) values
+  ('eeeeeeee-0000-0000-0000-0000000000d4', 'aaaaaaaa-0000-0000-0000-000000000001', 'Chiuso da poco', 'Fatto', now());
+insert into segnalazioni (id, padre_id, autore_id, testo) values
+  ('eeeeeeee-0000-0000-0000-0000000000d5', 'eeeeeeee-0000-0000-0000-0000000000d4', 'aaaaaaaa-0000-0000-0000-000000000001', 'Risposta in un filo chiuso');
+insert into segnalazioni (id, autore_id, titolo, testo) values
+  ('eeeeeeee-0000-0000-0000-0000000000d6', 'aaaaaaaa-0000-0000-0000-000000000001', 'Tre righe', 'Righe senza file');
+insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso, autore_id)
+  select 'eeeeeeee-0000-0000-0000-0000000000d6', 'r' || n || '.png', 'image/png', 10, 'aaaaaaaa-0000-0000-0000-000000000001' from generate_series(1, 3) n;
+
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('una sua risposta in un filo aperto: il file va',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d3/r.png')$$), 'FATTO (1 righe)');
+select atteso('e la riga',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d3', 'r.png', 'image/png', 10)$$), 'FATTO (1 righe)');
+select atteso('su una risposta di Bea no (file)',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d2/r.png')$$), 'NEGATO: …');
+select atteso('su una risposta di Bea no (riga)',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d2', 'r.png', 'image/png', 10)$$), 'NEGATO: …');
+select atteso('su una sua risposta in un filo chiuso no (file)',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d5/r.png')$$), 'NEGATO: …');
+select atteso('su una sua risposta in un filo chiuso no (riga)',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d5', 'r.png', 'image/png', 10)$$), 'NEGATO: …');
+select atteso('su un messaggio che non c''è no',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000ff/r.png')$$), 'NEGATO: …');
+select atteso('con tre righe già scritte il file non va',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d6/nuovo.png')$$), 'NEGATO: …');
+-- Il nome deve essere <id del messaggio>/<nome>, con un nome solo.
+select atteso('un nome senza cartella no',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'r.png')$$), 'NEGATO: …');
+select atteso('una cartella che non è un id no',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'cartella/r.png')$$), 'NEGATO: …');
+select atteso('un nome vuoto no',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d1/')$$), 'NEGATO: …');
+select atteso('un sotto-percorso no',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d1/a/r.png')$$), 'NEGATO: …');
+select atteso('un nome di 201 caratteri no',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d1/' || repeat('a', 201))$$), 'NEGATO: …');
+select atteso('uno di 200 va',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d1/' || repeat('a', 200))$$), 'FATTO (1 righe)');
+-- La riga: nome, tipi e peso (i tipi ammessi sono quelli del contenitore).
+select atteso('una riga senza nome no',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d1', '', 'image/png', 10)$$), 'NEGATO: …');
+select atteso('una riga con nome di 201 caratteri no',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d1', repeat('a', 201), 'image/png', 10)$$), 'NEGATO: …');
+select atteso('un peso negativo no',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d1', 'n.png', 'image/png', -1)$$), 'NEGATO: …');
+select atteso('una GIF no',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d1', 'g.gif', 'image/gif', 10)$$), 'NEGATO: …');
+select atteso('un HEIC va',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d1', 'f.heic', 'image/heic', 10)$$), 'FATTO (1 righe)');
+select atteso('il controllo dice sì sul suo messaggio', (select puo_allegare('eeeeeeee-0000-0000-0000-0000000000d1')::text), 'true');
+select atteso('no su quello di Bea', (select puo_allegare('eeeeeeee-0000-0000-0000-0000000000d2')::text), 'false');
+select atteso('no con tre righe', (select puo_allegare('eeeeeeee-0000-0000-0000-0000000000d6')::text), 'false');
+select atteso('no in un filo chiuso', (select puo_allegare('eeeeeeee-0000-0000-0000-0000000000d5')::text), 'false');
+select atteso('il file di un messaggio suo lo cancella lei',
+  tenta($$delete from storage.objects where bucket_id = 'segnalazioni' and name = 'eeeeeeee-0000-0000-0000-0000000000d3/r.png'$$), 'FATTO (1 righe)');
+select atteso('un file non si rinomina verso un altro messaggio',
+  tenta($$update storage.objects set name = 'eeeeeeee-0000-0000-0000-0000000000d6/x.png' where bucket_id = 'segnalazioni' and name like 'eeeeeeee-0000-0000-0000-0000000000d1/a%'$$), 'a vuoto (0 righe)');
+select atteso('togliere un allegato che non c''è dice che non c''è più',
+  tenta($$select togli_allegato('cccccccc-0000-0000-0000-00000000fff0')::text$$), 'NEGATO: Questo allegato non c''è più');
+reset role;
+
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('Bea sulla sua risposta: il file va',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d2/b.png')$$), 'FATTO (1 righe)');
+select atteso('Bea su una risposta di Anna no',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d3/b.png')$$), 'NEGATO: …');
+select atteso('Bea sul filo di Anna no (riga)',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d1', 'b.png', 'image/png', 10)$$), 'NEGATO: …');
+select atteso('Bea non cancella il file di Anna',
+  tenta($$delete from storage.objects where bucket_id = 'segnalazioni' and name like 'eeeeeeee-0000-0000-0000-0000000000d1/a%'$$), 'a vuoto (0 righe)');
+reset role;
+
+-- Gli altri: nessuno carica, nessuno scrive righe, nessuno cancella.
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('l''istruttore non carica file',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d1/i.png')$$), 'NEGATO: …');
+select atteso('non cancella file', tenta($$delete from storage.objects where bucket_id = 'segnalazioni'$$), 'a vuoto (0 righe)');
+select atteso('il controllo dice no', (select puo_allegare('eeeeeeee-0000-0000-0000-0000000000d1')::text), 'false');
+select atteso('e per il file no',
+  (select puo_caricare_allegato('eeeeeeee-0000-0000-0000-0000000000d1/i.png')::text), 'false');
+select atteso('non toglie un allegato', tenta($$select togli_allegato('cccccccc-0000-0000-0000-0000000000b1')::text$$), 'NEGATO: …');
+reset role;
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select atteso('l''iscritto non carica file',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d1/i.png')$$), 'NEGATO: …');
+select atteso('non cancella file', tenta($$delete from storage.objects where bucket_id = 'segnalazioni'$$), 'a vuoto (0 righe)');
+select atteso('non scrive righe',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d1', 'i.png', 'image/png', 10)$$), 'NEGATO: …');
+reset role;
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('il tablet non carica file',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d1/t.png')$$), 'NEGATO: …');
+select atteso('né scrive righe',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d1', 't.png', 'image/png', 10)$$), 'NEGATO: …');
+reset role;
+select chi('');
+set role anon;
+select atteso('chi non ha l''accesso non carica file',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000d1/a.png')$$), 'NEGATO: …');
+select atteso('non scrive righe',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000d1', 'a.png', 'image/png', 10)$$), 'NEGATO: …');
+select atteso('non legge i file', tenta($$select count(*)::text from storage.objects where bucket_id = 'segnalazioni'$$), '0');
+select atteso('non cancella file', tenta($$delete from storage.objects where bucket_id = 'segnalazioni'$$), 'a vuoto (0 righe)');
+select atteso('non chiama il controllo', tenta($$select puo_allegare('eeeeeeee-0000-0000-0000-0000000000d1')::text$$), 'NEGATO: …');
+select atteso('né quello del file', tenta($$select puo_caricare_allegato('eeeeeeee-0000-0000-0000-0000000000d1/a.png')::text$$), 'NEGATO: …');
+select atteso('né toglie un allegato', tenta($$select togli_allegato('cccccccc-0000-0000-0000-0000000000b1')::text$$), 'NEGATO: …');
+reset role;
