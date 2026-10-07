@@ -12,7 +12,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/listino'; export { vociDelCorso, vociPronte } from './src/lib/ricevute'; export { stimaIscrizione } from './src/lib/nucleo'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'",
+      "export * from './src/lib/listino'; export { COSTI, QUOTA_ASSOCIATIVA, SALDO_ENTRO, VALIDITA, saldoAperto } from './src/lib/costi'; export { vociDelCorso, vociPronte } from './src/lib/ricevute'; export { stimaIscrizione } from './src/lib/nucleo'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -244,6 +244,28 @@ console.log('\n5. l’età minima di un corso («dai N anni»)')
   ok('corsi scelti: un bambino perde il corso per grandi', prova(() => m.corsiAmmessi(['c-pes', 'c-zu'], corsi, voci, '2016-04-12', OGGI)), ['c-zu'])
   ok('corsi scelti: un adulto li tiene tutti', prova(() => m.corsiAmmessi(['c-pes', 'c-zu'], corsi, voci, '1984-05-05', OGGI)), ['c-pes', 'c-zu'])
   ok('corsi scelti: senza data vera non si toglie niente', prova(() => m.corsiAmmessi(['c-pes', 'c-zu'], corsi, voci, '', OGGI)), ['c-pes', 'c-zu'])
+}
+
+// I costi di partenza (`costi.ts`): il saldo, la quota, le validità.
+{
+  ok('saldo: il 31/08 è l\'ultimo giorno', m.SALDO_ENTRO, '2026-08-31')
+  ok('saldo: il giorno prima è aperto', m.saldoAperto('2026-08-30'), true)
+  ok('saldo: il giorno stesso è ancora aperto (entro è compreso)', m.saldoAperto('2026-08-31'), true)
+  ok('saldo: il giorno dopo è chiuso', m.saldoAperto('2026-09-01'), false)
+  ok('saldo: a cavallo d\'anno, prima dell\'estate è aperto', m.saldoAperto('2025-12-31'), true)
+  ok('saldo: a cavallo d\'anno, dopo capodanno è chiuso', m.saldoAperto('2027-01-01'), false)
+  ok('saldo: con la data del listino vale quella, non il 31/08', [m.saldoAperto('2026-09-15', '2026-09-30'), m.saldoAperto('2026-09-30', '2026-09-30'), m.saldoAperto('2026-10-01', '2026-09-30')], [true, true, false])
+  ok('quota associativa: 50 euro', m.QUOTA_ASSOCIATIVA, 50)
+  ok('il listino di partenza porta quota e saldo di costi.ts', [m.LISTINO_PREDEFINITO.quota, m.LISTINO_PREDEFINITO.saldoEntro], [50, '2026-08-31'])
+  ok('validità: la quota fino a fine luglio', m.VALIDITA.quota, { dal: '2026-09-01', al: '2027-07-31' })
+  ok('validità: l\'annuale dei corsi fino a fine giugno', m.VALIDITA.corsi, { dal: '2026-09-01', al: '2027-06-30' })
+  ok('validità: la quota dura più dei corsi, e partono insieme', [m.VALIDITA.quota.al > m.VALIDITA.corsi.al, m.VALIDITA.quota.dal === m.VALIDITA.corsi.dal], [true, true])
+  ok('ricevuta: il saldo del 31/08 c\'è, quello del 01/09 no', [m.vociDelCorso('Judo 3', '2026-08-31').some((v) => v.chiave.endsWith('~saldo')), m.vociDelCorso('Judo 3', '2026-09-01').some((v) => v.chiave.endsWith('~saldo'))], [true, false])
+  ok('costi: ogni voce ha un corso, un nome unico e prezzi in euro interi positivi', m.COSTI.every((c) => c.corso && c.prezzi.length && c.prezzi.every((p) => [p.saldo, p.annuale, p.trimestre].every((x) => x === undefined || (Number.isInteger(x) && x > 0)))) && new Set(m.COSTI.map((c) => c.corso)).size === m.COSTI.length, true)
+  ok('costi: il saldo, dove c\'è, costa meno dell\'annuale', m.COSTI.flatMap((c) => c.prezzi).filter((p) => p.saldo !== undefined && p.annuale !== undefined && p.saldo >= p.annuale).length, 0)
+  ok('costi: il trimestre costa meno dell\'annuale', m.COSTI.flatMap((c) => c.prezzi).filter((p) => p.trimestre !== undefined && p.annuale !== undefined && p.trimestre >= p.annuale).length, 0)
+  ok('costi: gli anni di nascita, dove ci sono tutti e due, vanno dal più vecchio al più giovane', m.COSTI.filter((c) => c.natiDal && c.natiAl && c.natiDal > c.natiAl).length, 0)
+  ok('costi: Prepugilistica costa come un corso da un giorno', m.COSTI.find((c) => c.corso === 'Prepugilistica').prezzi, [{ saldo: 320, annuale: 340, trimestre: 130 }])
 }
 
 if (guai) {
