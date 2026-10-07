@@ -16,7 +16,7 @@ rompe.
 | Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:campi`, `prova:listino`, `supabase/prova/iscrizioni.sql`, `listino.sql`; **SCOPERTO**: `costi.ts` (`saldoAperto`, quota associativa, validità: solo il foglio costi via `vociDelCorso` in `prova:ricevuta`) | sì |
 | Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste`, `prova:coda`; **SCOPERTO**: `creaRichiesteSupabase` (la metà vera, solo la finta è provata) | sì |
 | Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:coda`, `prova:appello-cerca`, `prova:tablet`, `supabase/prova/presenze-istruttori.sql` | sì |
-| Ore degli istruttori | segreteria | compenso sbagliato | `prova:ore`, `prova:timer-istruttori`, `supabase/prova/presenze-istruttori.sql`; **SCOPERTO**: `contiReport` / PDF del report istruttori (`reportIstruttoriPdf.ts`) | no |
+| Ore degli istruttori | segreteria | compenso sbagliato | `prova:ore` (anche `contiReport`), `prova:timer-istruttori`, `supabase/prova/presenze-istruttori.sql`; il disegno del PDF non è provato | no |
 | Certificati medici (carica, archivia, non archiviato) | segreteria, iscritto | certificato perso o visibile a chi non deve | `prova:certificati`, `supabase/prova/certificati.sql` | sì |
 | Ricevute e pagamenti | segreteria | quota o ricevuta sbagliata | `prova:ricevuta`, `supabase/prova/ricevute.sql` | sì |
 | Firma e informativa | iscritto | consenso non valido | `prova:firma`, `prova:firma-tratti`, `prova:informativa`, `supabase/prova/informativa-mesi.sql` | sì |

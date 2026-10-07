@@ -229,5 +229,53 @@ console.log('\n4. le lezioni senza segno lette dal database')
   await prova('un altro errore non passa per «nessuna»', () => leggi({ data: null, error: { code: 'PGRST000', message: 'rete' } }, 'A').length, 'ERRORE: rete')
 }
 
+console.log('\n5. i conti del report per il compenso (contiReport)')
+{
+  // Il PDF si importa senza disegnarlo: pdf-lib è caricato solo dentro la funzione che disegna.
+  let r = {}
+  try {
+    r = await importa("export { contiReport } from './src/lib/reportIstruttoriPdf'")
+  } catch (e) {
+    console.log('  ✗ reportIstruttoriPdf.ts non si carica —', e.errors?.[0]?.text ?? e.message)
+    guai++
+  }
+  const riga = (id, personaId, nome, corso, inizio, minuti, stato, altro = {}) => ({ ...presenza(id, personaId, corso, inizio, minuti, stato), nome, ...altro })
+  const conti = (...x) => {
+    try {
+      return r.contiReport(...x)
+    } catch (e) {
+      return { errore: e.message }
+    }
+  }
+  const righe = [
+    riga('a1', 'A', 'Maurizio', 'Lotta 2', new Date(2026, 9, 5, 17, 0), 60, 'confermata'),
+    riga('a2', 'A', 'Maurizio', 'Judo', new Date(2026, 9, 6, 19, 0), 90, 'confermata', { prevista: false }),
+    riga('a3', 'A', 'Maurizio', 'Judo', new Date(2026, 9, 7, 19, 0), 60, 'rifiutata'),
+    riga('b1', 'B', 'Maura', 'Lotta 2', new Date(2026, 9, 5, 17, 0), 150, 'confermata'),
+    riga('c1', 'C', 'Anna', 'Pesi', new Date(2026, 9, 8, 18, 0), 60, 'da_confermare'),
+    // Mezzanotte e mezza del primo novembre: è novembre, non il 31 ottobre (UTC).
+    riga('d1', 'D', 'Bruno', 'Lotta 2', new Date(2026, 10, 1, 0, 30), 30, 'confermata'),
+  ]
+  const c = conti(righe)
+  ok('i minuti totali sono quelli delle sole confermate (mezze ore comprese)', c.minutiTotali, 60 + 90 + 150 + 30)
+  ok('la rifiutata e la da confermare non contano nei minuti', conti(righe.filter((x) => x.stato !== 'confermata')).minutiTotali, 0)
+  ok('rifiutate e da confermare si contano a parte', [c.rifiutate, c.daConfermare], [1, 1])
+  ok('le confermate', ids(c.confermate), ['a1', 'a2', 'b1', 'd1'])
+  ok('fuori programma: le confermate dove non era previsto', c.fuoriProgramma, 1)
+  ok('istruttori e corsi contano solo chi ha confermate', [c.istruttori, c.corsi], [3, 2])
+  // Maura e Maurizio fanno 150 minuti a testa: a pari minuti, il nome.
+  ok('per istruttore: più minuti prima, chi non ne ha in fondo ma c\'è', c.perIstruttore?.map((g) => [g.nome, g.confermate.length, g.daConfermare, g.rifiutate]), [
+    ['Maura', 1, 0, 0],
+    ['Maurizio', 2, 0, 1],
+    ['Bruno', 1, 0, 0],
+    ['Anna', 0, 1, 0],
+  ])
+  ok('a pari minuti, in ordine di nome', conti([riga('x', 'Z', 'Zeno', 'Judo', new Date(2026, 9, 5, 9), 60, 'confermata'), riga('y', 'Y', 'Ada', 'Judo', new Date(2026, 9, 6, 9), 60, 'confermata')]).perIstruttore?.map((g) => g.nome), ['Ada', 'Zeno'])
+  ok('per corso, in ordine di minuti', c.perCorso?.map((g) => [g.nome, g.confermate.length, g.rifiutate]), [['Lotta 2', 3, 0], ['Judo', 1, 1], ['Pesi', 0, 0]])
+  ok('per mese, in ordine di data, con il mese di Roma', c.perMese?.map((g) => [g.nome, g.confermate.length]), [['Ottobre 2026', 3], ['Novembre 2026', 1]])
+  ok('per giorno, da lunedì', c.perGiorno?.map((g) => [g.nome, g.confermate.length]), [['Lunedì', 2], ['Martedì', 1], ['Mercoledì', 0], ['Giovedì', 0], ['Domenica', 1]])
+  ok('nessuna presenza: tutto a zero', (({ minutiTotali, istruttori, corsi, perIstruttore }) => [minutiTotali, istruttori, corsi, perIstruttore])(conti([])), [0, 0, 0, []])
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
