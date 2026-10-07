@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.48.8 — 7 ottobre 2026
+
+### Risolto
+
+- Importando iscritti.csv la stessa persona con e senza email è una scheda sola
+
 ## 0.48.7 — 7 ottobre 2026
 
 ### Risolto
