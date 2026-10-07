@@ -20,7 +20,7 @@ rompe.
 | Certificati medici (carica, archivia, non archiviato) | segreteria, iscritto | certificato perso o visibile a chi non deve | `prova:certificati`, `supabase/prova/certificati.sql` | sì |
 | Ricevute e pagamenti | segreteria | quota o ricevuta sbagliata | `prova:ricevuta`, `supabase/prova/ricevute.sql` | sì |
 | Firma e informativa | iscritto | consenso non valido | `prova:firma`, `prova:firma-tratti`, `prova:informativa`, `supabase/prova/informativa-mesi.sql` | sì |
-| Anagrafiche, nuclei, doppioni | segreteria | persone duplicate o unite male | `prova:iscritti`, `prova:cerca-persone`, `prova:email-contatto`, `supabase/prova/anagrafiche.sql`, `non-doppioni.sql`, `unisci-doppioni.sql`, `cerca-persone.sql`, `email-contatto.sql`; **SCOPERTO**: `unisciSessioni`/`chiaveSessione` (`sessioni.ts`) | no |
+| Anagrafiche, nuclei, doppioni | segreteria | persone duplicate o unite male | `prova:iscritti`, `prova:cerca-persone`, `prova:email-contatto`, `supabase/prova/anagrafiche.sql`, `non-doppioni.sql`, `unisci-doppioni.sql`, `cerca-persone.sql`, `email-contatto.sql`; `unisciSessioni`/`chiaveSessione` (`sessioni.ts`) in `prova:iscritti` | no |
 | Accesso e ruoli (PIN, RLS) | tutti | dati visti da chi non deve | `supabase/prova/rls.sql`, `segreteria.sql`, `prova:segreteria` (ruoli e accessi di `segreteria.ts`) | no |
 | Calendario e date dei corsi | segreteria, tablet | lezione che non compare | `supabase/prova/calendario*.sql`, `date-corsi.sql`, `prova:indirizzi` (indirizzi della segreteria) | no |
 | Prove (modalità prova) e statistiche | segreteria | numeri sbagliati | `prova:prove`, `supabase/prova/prove.sql`, `statistiche.sql` | no |

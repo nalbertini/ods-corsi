@@ -16,7 +16,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { avvisi, contoPresenze } from './src/lib/iscritto'; export { creaDatiProva } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { ENTE_PREDEFINITO, vociDelCorso } from './src/lib/ricevute'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { stimaIscrizione, abbonamentiDalleRicevute, descrizioneScontata, scontoDellaVoce, doveVaLoSconto } from './src/lib/nucleo'; export { LISTINO_PREDEFINITO } from './src/lib/listino'; export { carattereControllo, lettereCognome, lettereNome, cfValido } from './src/lib/codiceFiscale'; export { GIORNI_SEGNALA } from './src/lib/segnalate'; export { paroleInRegola } from './src/lib/segreteria'",
+      "export { creaIscrittoProva } from './src/lib/iscrittoProva'; export { avvisi, contoPresenze } from './src/lib/iscritto'; export { creaDatiProva } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { seminaEsempi } from './src/lib/esempiProva'; export { ENTE_PREDEFINITO, vociDelCorso } from './src/lib/ricevute'; export { creaRichiesteProva } from './src/lib/richiesteProva'; export { stimaIscrizione, abbonamentiDalleRicevute, descrizioneScontata, scontoDellaVoce, doveVaLoSconto } from './src/lib/nucleo'; export { LISTINO_PREDEFINITO } from './src/lib/listino'; export { carattereControllo, lettereCognome, lettereNome, cfValido } from './src/lib/codiceFiscale'; export { GIORNI_SEGNALA } from './src/lib/segnalate'; export { paroleInRegola } from './src/lib/segreteria'; export { chiaveSessione, unisciSessioni, PERSONA_VISTA } from './src/lib/sessioni'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -371,6 +371,73 @@ console.log('\n6. il certificato: l’iscritto non vede nemmeno se c’è un fil
   ok('vede fino a quando vale', c.scade, '2027-06-01')
   ok('ma non se sta nell’app, né di che tipo', ['conFile', 'vecchio', 'caricatoIl'].filter((k) => k in c), [])
   ok('e gli avvisi non ne hanno bisogno', m.avvisi({ certificato: { scade: '2027-06-01' }, pagamento: { stato: 'pagato' } }, '2026-10-02'), [])
+}
+
+console.log('\n7. la sessione sul dispositivo: la chiave e le tre sessioni di prima riportate a una')
+{
+  const URL = 'https://abcd.supabase.co'
+  const K = m.chiaveSessione(URL)
+  const SEG = `${K}-segreteria`
+  const SALA = `${K}-sala`
+  const VISTA = m.PERSONA_VISTA
+  const pulisci = () => [K, SEG, SALA, VISTA, `${VISTA}-segreteria`, 'ods-corsi:modo'].forEach((k) => localStorage.removeItem(k))
+  const leggi = () => [K, SEG, SALA, VISTA, `${VISTA}-segreteria`].map((k) => localStorage.getItem(k))
+
+  ok('la chiave è quella di sempre di Supabase', K, 'sb-abcd-auth-token')
+  ok('conta solo il progetto: percorso e porta non cambiano la chiave', m.chiaveSessione(URL + ':443/rest/v1/'), K)
+  ok('un indirizzo storto cade su «ods»', m.chiaveSessione('non un indirizzo'), 'sb-ods-auth-token')
+
+  pulisci()
+  m.unisciSessioni(URL)
+  ok('senza sessioni di prima non cambia niente', leggi(), [null, null, null, null, null])
+
+  localStorage.setItem(SEG, 'seg')
+  localStorage.setItem(SALA, 'sala')
+  localStorage.setItem(`${VISTA}-segreteria`, 'p-seg')
+  m.unisciSessioni(URL)
+  ok('fuori dal tablet resta quella della segreteria, con la sua persona vista', leggi(), ['seg', null, null, 'p-seg', null])
+
+  pulisci()
+  localStorage.setItem('ods-corsi:modo', 'tablet')
+  localStorage.setItem(SEG, 'seg')
+  localStorage.setItem(SALA, 'sala')
+  localStorage.setItem(`${VISTA}-segreteria`, 'p-seg')
+  m.unisciSessioni(URL)
+  ok('sul tablet resta quella della sala, e la persona della segreteria si butta', leggi(), ['sala', null, null, null, null])
+
+  pulisci()
+  localStorage.setItem('ods-corsi:modo', 'tablet')
+  localStorage.setItem(SEG, 'seg')
+  m.unisciSessioni(URL)
+  ok('sul tablet senza quella della sala va quella della segreteria', leggi(), ['seg', null, null, null, null])
+
+  pulisci()
+  localStorage.setItem(SALA, 'sala')
+  m.unisciSessioni(URL)
+  ok('fuori dal tablet senza quella della segreteria va quella della sala', leggi(), ['sala', null, null, null, null])
+
+  pulisci()
+  localStorage.setItem(K, 'sempre')
+  localStorage.setItem(VISTA, 'p-sempre')
+  localStorage.setItem(SEG, 'seg')
+  localStorage.setItem(SALA, 'sala')
+  localStorage.setItem(`${VISTA}-segreteria`, 'p-seg')
+  m.unisciSessioni(URL)
+  ok('se la chiave di sempre c’è già vince lei: le altre si buttano', leggi(), ['sempre', null, null, 'p-sempre', null])
+
+  pulisci()
+  localStorage.setItem(SEG, 'seg')
+  m.unisciSessioni(URL)
+  m.unisciSessioni(URL)
+  ok('lanciata due volte non cambia niente', leggi(), ['seg', null, null, null, null])
+
+  const vera = globalThis.localStorage
+  globalThis.localStorage = { getItem() { throw new Error('negato') }, setItem() {}, removeItem() {} }
+  let tenuto = true
+  try { m.unisciSessioni(URL) } catch { tenuto = false }
+  globalThis.localStorage = vera
+  ok('senza localStorage non si rompe niente', tenuto, true)
+  pulisci()
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
