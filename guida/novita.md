@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.48.9 — 7 ottobre 2026
+
+### Risolto
+
+- Chi sta sia nel foglio Excel sia nel modulo Google entra come una persona sola
+
+### Modificato
+
+- Prove per il netto con anticipo nelle ricevute
+
 ## 0.48.8 — 7 ottobre 2026
 
 ### Risolto
