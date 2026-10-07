@@ -7,7 +7,7 @@ perde o si sbaglia un dato, o la segreteria non riesce a lavorare.
 **Prove** = script `prova:*` (app) e file di `supabase/prova/` (database).
 **Collaudo** = va passato anche a mano con `collaudatore` quando cambia.
 
-Terzo audit completo: 2026-10-07 (27 `prova:*` e 31 file SQL verdi; le prove SQL sono state anche rotte a mano per vedere che cadono: togliendo l'anticipo da `quote_ricevute` cade `ricevute`). Dove
+Quarto audit completo: 2026-10-07 (27 `prova:*` e 31 file SQL verdi, ripetute con lo stesso esito; rotte a mano 7 regole di denaro/presenze/sconto, 8 di `importa.ts`, 8 SQL: cadono tutte tranne tre, che hanno ora la loro prova: la finestra dei due minuti dell'annullo sul tablet, le ricevute annullate in `quote_ricevute` e gli omonimi in `unisciFogli`). Dove
 la colonna Prove dice **SCOPERTO** non c'è una prova che cada se la regola si
 rompe.
 
@@ -15,12 +15,12 @@ rompe.
 |---|---|---|---|---|
 | Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:campi`, `prova:listino`, `supabase/prova/iscrizioni.sql`, `listino.sql` | sì |
 | Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste` (la finta e `creaRichiesteSupabase`, la metà vera, con un client finto), `prova:coda` | sì |
-| Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:coda`, `prova:appello-cerca`, `prova:tablet`, `supabase/prova/presenze-istruttori.sql`, `istruttori-dalle-lezioni.sql`, `tablet-conto-prove.sql` | sì |
+| Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:coda`, `prova:appello-cerca`, `prova:tablet`, `supabase/prova/presenze-istruttori.sql`, `istruttori-dalle-lezioni.sql`, `tablet-conto-prove.sql`, `tablet.sql` (anche l'annullo oltre i due minuti: negato) | sì |
 | Ore degli istruttori | segreteria | compenso sbagliato | `prova:ore` (anche `contiReport`), `prova:timer-istruttori`, `supabase/prova/presenze-istruttori.sql`; il disegno del PDF non è provato | no |
 | Certificati medici (carica, archivia, non archiviato) | segreteria, iscritto | certificato perso o visibile a chi non deve | `prova:certificati`, `supabase/prova/certificati.sql` | sì |
-| Ricevute e pagamenti | segreteria | quota o ricevuta sbagliata | `prova:ricevuta`, `supabase/prova/ricevute.sql` (netto e quota con anticipo: stessi casi nelle due metà) | sì |
+| Ricevute e pagamenti | segreteria | quota o ricevuta sbagliata | `prova:ricevuta`, `supabase/prova/ricevute.sql` (netto e quota con anticipo: stessi casi nelle due metà; una ricevuta annullata non lascia quote) | sì |
 | Firma e informativa | iscritto | consenso non valido | `prova:firma`, `prova:firma-tratti`, `prova:informativa`, `supabase/prova/informativa-mesi.sql` | sì |
-| Importazione persone da CSV | segreteria | persona persa, duplicata o scritta male | `prova:importa` (lettura del CSV, `leggiFogli`, `controllaRighe`, `righeBuone`, le risposte del modulo); la scrittura sul database (`importa()`) in `prova:email-contatto` e `prova:segreteria` | no |
+| Importazione persone da CSV | segreteria | persona persa, duplicata o scritta male | `prova:importa` (lettura del CSV, `leggiFogli`, `controllaRighe`, `righeBuone`, le risposte del modulo, `unisciFogli`, `soloMancanti`, telefoni diversi, stessa persona con e senza email, omonimi con email diverse) | no |
 | Anagrafiche, nuclei, doppioni | segreteria | persone duplicate o unite male | `prova:iscritti`, `prova:cerca-persone`, `prova:email-contatto`, `supabase/prova/anagrafiche.sql`, `non-doppioni.sql`, `unisci-doppioni.sql`, `cerca-persone.sql`, `email-contatto.sql`; `unisciSessioni`/`chiaveSessione` (`sessioni.ts`) in `prova:iscritti` | no |
 | Accesso e ruoli (PIN, RLS) | tutti | dati visti da chi non deve | `supabase/prova/rls.sql`, `segreteria.sql`, `elimina-istruttore.sql`, `prova:segreteria` (ruoli e accessi di `segreteria.ts`) | no |
 | Calendario e date dei corsi | segreteria, tablet | lezione che non compare | `supabase/prova/calendario*.sql`, `date-corsi.sql`, `prova:indirizzi` (indirizzi della segreteria) | no |
