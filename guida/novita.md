@@ -10,6 +10,21 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.48.5 — 7 ottobre 2026
+
+### Risolto
+
+- «Chi non è in regola» apre gli iscritti già filtrati
+
+## 0.48.4 — 7 ottobre 2026
+
+### Modificato
+
+- Prove per i conti del report ore degli istruttori
+- Prove per le richieste di iscrizione sul database vero
+- Prove per gli allegati delle segnalazioni
+- Prove per le sessioni di accesso
+
 ## 0.48.3 — 7 ottobre 2026
 
 ### Modificato
