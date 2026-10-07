@@ -82,6 +82,8 @@ select atteso('la annulla', tenta($$select annulla_ricevuta((select id from rice
 select atteso('annullata resta, col suo numero', (select count(*)::text from ricevute where numero = 117 and annullata_il is not null), '1');
 select atteso('due volte no', tenta($$select annulla_ricevuta((select id from ricevute where numero = 117))::text$$), 'NEGATO: ricevuta inesistente o già annullata');
 select atteso('il numero dell''annullata non si riusa', (select (emetti_ricevuta(ricevuta('2026-09-07')))->>'numero'), '120');
+select atteso('una ricevuta annullata non lascia quote da pagare', (select count(*)::text from quote_ricevute where anno = 2026 and numero = 117), '0');
+select atteso('la stessa persona, ricevuta non annullata: la sua quota c''è', (select count(*)::text || '/' || min(mancano) from quote_ricevute where anno = 2026 and numero = 116 and persona_id = 'aaaaaaaa-0000-0000-0000-000000000003'), '1/0');
 select emetti_ricevuta(ricevuta_anticipo(301, 0, 29440, 29440, 2000));
 select emetti_ricevuta(ricevuta_anticipo(302, 0, 29440, 29440, 5000));
 select emetti_ricevuta(ricevuta_anticipo(303, 0, 29440, 0, 34440));
