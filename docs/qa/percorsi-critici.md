@@ -7,7 +7,7 @@ perde o si sbaglia un dato, o la segreteria non riesce a lavorare.
 **Prove** = script `prova:*` (app) e file di `supabase/prova/` (database).
 **Collaudo** = va passato anche a mano con `collaudatore` quando cambia.
 
-Audit completo: 2026-10-07, secondo giro dopo le prove di `costi.ts`, `contiReport`, `creaRichiesteSupabase`, `unisciSessioni` e allegati (25 `prova:*` e 31 file SQL verdi). Dove
+Terzo audit completo: 2026-10-07 (27 `prova:*` e 31 file SQL verdi; le prove SQL sono state anche rotte a mano per vedere che cadono: togliendo l'anticipo da `quote_ricevute` cade `ricevute`). Dove
 la colonna Prove dice **SCOPERTO** non c'è una prova che cada se la regola si
 rompe.
 
@@ -25,7 +25,7 @@ rompe.
 | Accesso e ruoli (PIN, RLS) | tutti | dati visti da chi non deve | `supabase/prova/rls.sql`, `segreteria.sql`, `elimina-istruttore.sql`, `prova:segreteria` (ruoli e accessi di `segreteria.ts`) | no |
 | Calendario e date dei corsi | segreteria, tablet | lezione che non compare | `supabase/prova/calendario*.sql`, `date-corsi.sql`, `prova:indirizzi` (indirizzi della segreteria) | no |
 | Prove (modalità prova) e statistiche | segreteria | numeri sbagliati | `prova:prove`, `prova:segreteria` (`fuoriRegola`, il bottone CHI NON È IN REGOLA), `supabase/prova/prove.sql`, `prove-per-nome.sql`, `statistiche.sql` | no |
-| Segnalazioni | tutti | problema segnalato che sparisce | `supabase/prova/segnalazioni.sql` (anche gli allegati), `attivita.sql` | no |
+| Segnalazioni | tutti | problema segnalato che sparisce | `supabase/prova/segnalazioni.sql` (anche gli allegati; usa `\ir`: in locale va lanciata dalla cartella `supabase/prova`), `attivita.sql` | no |
 | Backup del database | utente | niente da ripristinare | `.github/workflows/backup.yml` (ultimo run verde 2026-10-06, 3 su 3 verdi); **SCOPERTO**: nessuna prova di ripristino | no |
 | Musica, timer, tablet di sala | istruttore, sala | lezione senza timer/musica | `prova:musica`, `prova:musica-file`, `prova:tablet`, `prova:scaletta`, `prova:strumenti`, `prova:anteprima`, `prova:discipline`, `supabase/prova/musica.sql`, `categorie-esercizi.sql`, `discipline.sql`, `timer.sql`, `timer-lezioni.sql`, `tablet.sql` | no |
 
