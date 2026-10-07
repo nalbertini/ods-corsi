@@ -10,6 +10,16 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.48.10 — 7 ottobre 2026
+
+### Risolto
+
+- Reimportando le risposte del modulo non si perdono più i dati anagrafici corretti a mano
+
+### Modificato
+
+- Ogni lunedì una prova che l'ultimo backup si rimette a posto
+
 ## 0.48.9 — 7 ottobre 2026
 
 ### Risolto
