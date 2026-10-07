@@ -134,6 +134,31 @@ export interface Fogli {
   note?: Saltata[]
 }
 
+/** I telefoni letti per ogni scheda, con la riga: serve a dire quale è stato preso se sono diversi. */
+const telefoniDi = new WeakMap<IscrittoFoglio, { lista: { riga: number; telefono: string }[]; nota: Saltata }>()
+
+/**
+ * Il telefono di una persona che sta su più righe: il primo scritto entra, e se una riga dopo ne ha
+ * uno diverso (confronto sulle sole cifre) vale l'ultimo e una nota sola dice quali erano.
+ */
+function aggiungiTelefono(x: IscrittoFoglio, telefono: string, riga: number, foglio: Saltata['foglio'], note: Saltata[]) {
+  if (!telefono) return
+  const prima = telefoniDi.get(x)
+  const cifre = (t: string) => t.replace(/\D/g, '')
+  if (!prima) {
+    x.telefono = telefono
+    telefoniDi.set(x, { lista: [{ riga, telefono }], nota: { foglio, riga, motivo: '' } })
+    return
+  }
+  if (cifre(telefono) === cifre(x.telefono ?? '')) return
+  prima.lista.push({ riga, telefono })
+  x.telefono = telefono
+  const n = prima.lista.length
+  prima.nota.riga = riga
+  prima.nota.motivo = `${x.nome} ${x.cognome}: ${n === 2 ? 'due' : n} telefoni diversi (${prima.lista.map((l) => `riga ${l.riga}: ${l.telefono}`).join(', ')}), ho preso ${telefono}`
+  if (!note.includes(prima.nota)) note.push(prima.nota)
+}
+
 /** Dai due testi ai corsi e agli iscritti, con le righe che non si capiscono messe da parte. */
 export function leggiFogli(testoCorsi: string | null, testoIscritti: string | null, corsiGiaDentro: string[] = []): Fogli {
   const saltate: Saltata[] = []
@@ -202,7 +227,8 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
     }
     // L'email, quando c'è, è l'unica cosa che distingue davvero due omonimi.
     const k = email ?? chi
-    const x = iscritti.get(k) ?? { nome: r.nome, cognome: r.cognome, email, telefono: r.telefono || undefined, corsi: [], foglio: 'iscritti.csv', riga, ...(emailContatto ? { emailContatto, contattoDi } : {}) }
+    const x = iscritti.get(k) ?? { nome: r.nome, cognome: r.cognome, email, corsi: [], foglio: 'iscritti.csv', riga, ...(emailContatto ? { emailContatto, contattoDi } : {}) }
+    aggiungiTelefono(x, r.telefono ?? '', riga, 'iscritti.csv', note)
     if (r.corso && !x.corsi.some((c) => piatto(c) === piatto(r.corso))) x.corsi.push(r.corso)
     iscritti.set(k, x)
   })
@@ -913,11 +939,11 @@ export function leggiRisposte(
       emailNome.set(email, `${nome} ${cognome}`)
     }
 
-    const x = iscritti.get(chi) ?? { nome, cognome, email, telefono: cella(r, 'telefono') || undefined, corsi: [], soloStessoNome: true, foglio: 'risposte', riga, ...(emailContatto ? { emailContatto, contattoDi } : {}) }
+    const x = iscritti.get(chi) ?? { nome, cognome, email, corsi: [], soloStessoNome: true, foglio: 'risposte', riga, ...(emailContatto ? { emailContatto, contattoDi } : {}) }
     // Chi ha mandato il modulo due volte: vale l'ultima email e l'ultimo telefono, i corsi si sommano.
     if (email) x.email = email
     if (emailContatto) x.emailContatto = emailContatto
-    if (cella(r, 'telefono')) x.telefono = cella(r, 'telefono')
+    aggiungiTelefono(x, cella(r, 'telefono'), riga, 'risposte', note)
     // Chi ha mandato il modulo più volte è iscritto dalla prima risposta. Con la data illeggibile vale oggi.
     const quando = leggiData(cella(r, 'dataRisposta').split(/[\sT]/)[0])
     if (quando && (!x.iscrittoIl || quando < x.iscrittoIl)) x.iscrittoIl = quando
