@@ -9,6 +9,7 @@ import {
   indovinaOrdine,
   leggiFogli,
   leggiRisposte,
+  unisciFogli,
   leggiTabella,
   promemoriaBackup,
   RUOLI,
@@ -112,10 +113,11 @@ export function Importa({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove
       const f = leggiFogli(fogli.corsi?.testo ?? null, fogli.iscritti?.testo ?? null, corsi.map((c) => c.nome))
       if (risposte && fogli.risposte) {
         const r = leggiRisposte(risposte.t, risposte.colonne, risposte.abbinamenti, corsi.map((c) => ({ id: c.id, nome: c.nome })), risposte.ordine)
-        f.iscritti.push(...r.iscritti)
+        const u = unisciFogli(f.iscritti, r.iscritti)
+        f.iscritti = u.iscritti
         f.righe.risposte = r.righe
         f.saltate.push(...r.saltate)
-        f.note = [...(f.note ?? []), ...r.note]
+        f.note = [...(f.note ?? []), ...u.note, ...r.note]
       }
       setScelte({})
       setControllo({ f, s: { sale, personale, corsi, persone }, backup })

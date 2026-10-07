@@ -71,7 +71,10 @@ corso è la sala del corso, e una riga con un'altra sala mette quel giorno lì
      sta su più righe è il primo che trovi; se due righe ne hanno di diversi
      vale l'ultimo e una nota dice quali erano. Le righe di una persona con
      l'email e senza sono una scheda sola (con due omonimi dalle email
-     diverse, la riga senza email resta a parte). Per le righe dubbie c'è una
+     diverse, la riga senza email resta a parte). Chi sta sia nel foglio Excel
+     sia nelle risposte del modulo è una persona sola, con i corsi di tutti e
+     due; se telefono o email sono diversi vale quello del modulo e una nota
+     dice quello dell'Excel che non è entrato. Per le righe dubbie c'è una
      scelta; **finché non scegli, non entrano**:
      - *forse è già in palestra come…*: nome e cognome sono scritti al
        contrario di una persona che c'è già («Prudente Manuel» per «Manuel
