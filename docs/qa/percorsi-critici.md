@@ -26,7 +26,7 @@ rompe.
 | Calendario e date dei corsi | segreteria, tablet | lezione che non compare | `supabase/prova/calendario*.sql`, `date-corsi.sql`, `prova:indirizzi` (indirizzi della segreteria) | no |
 | Prove (modalità prova) e statistiche | segreteria | numeri sbagliati | `prova:prove`, `prova:segreteria` (`fuoriRegola`, il bottone CHI NON È IN REGOLA), `supabase/prova/prove.sql`, `prove-per-nome.sql`, `statistiche.sql` | no |
 | Segnalazioni | tutti | problema segnalato che sparisce | `supabase/prova/segnalazioni.sql` (anche gli allegati), `attivita.sql` | no |
-| Backup del database | utente | niente da ripristinare | `.github/workflows/backup.yml` (ultimo run verde 2026-10-06, 3 su 3 verdi); **SCOPERTO**: nessuna prova di ripristino | no |
+| Backup del database | utente | niente da ripristinare | `.github/workflows/backup.yml` (ultimo run verde 2026-10-06, 3 su 3 verdi), `.github/workflows/ripristino.yml` (ogni lunedì rimette l'ultima copia in un Postgres usa e getta e conta le righe: `scripts/ripristina.sh`, provato in locale su una copia finta; il primo giro sul backup vero può chiedere un aggiustamento) | no |
 | Musica, timer, tablet di sala | istruttore, sala | lezione senza timer/musica | `prova:musica`, `prova:musica-file`, `prova:tablet`, `prova:scaletta`, `prova:strumenti`, `prova:anteprima`, `prova:discipline`, `supabase/prova/musica.sql`, `categorie-esercizi.sql`, `discipline.sql`, `timer.sql`, `timer-lezioni.sql`, `tablet.sql` | no |
 
 ## Come si aggiorna

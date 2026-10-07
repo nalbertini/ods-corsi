@@ -843,6 +843,19 @@ settimane. GitHub spegne i workflow programmati di un repository pubblico
 dopo sessanta giorni senza commit, e lo dice per email: se succede, si
 riaccende dalla stessa pagina con **Enable workflow**.
 
+### La prova di ripristino
+
+`.github/workflows/ripristino.yml` parte ogni lunedì alle 4:17 UTC, un'ora dopo
+il backup (o da **Actions → Prova di ripristino del backup → Run workflow**):
+scarica l'ultima copia, la decifra con `BACKUP_PASSWORD`, la rimette in un
+Postgres usa e getta e conta le righe di persone, iscrizioni, presenze e
+ricevute (e i file dei certificati). Si ferma rosso se la copia manca, non si
+apre, non si rimette a posto o non ha nessuna persona. Non vede mai il
+database vero. Il repository è pubblico, quindi nei log escono solo numeri:
+per capire un errore sui dati si rifà in locale, con la copia scaricata e la
+password: `scripts/ripristina.sh <cartella della copia>` (serve un Postgres
+con `PGHOST`, `PGUSER` e `PGPASSWORD`).
+
 ### Dalla segreteria, e su Drive
 
 In **IMPOSTAZIONI → IL BACKUP** la segreteria vede com'è andato l'ultimo
