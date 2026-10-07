@@ -175,6 +175,33 @@ c = controllo(base + 'Anna;;;;Judo 2\nLuca;Neri;;;Karate\nAnna;Bianchi;;;Judo 2\
 ok('righe saltate e buone in ordine di riga, con i totali', [c.righe.map((r) => r.riga), c.totali], [[2, 3, 4], { nuova: 1, in_palestra: 0, da_sistemare: 2 }])
 ok('una riga saltata è «da sistemare» col suo motivo e il nome', [c.righe[0].esito, c.righe[0].nome, c.righe[0].motivo, c.righe[1].nome], ['da_sistemare', 'Anna', 'Manca il cognome: «Anna», Judo 2', 'Luca Neri'])
 
+console.log('\nLa stessa persona con e senza email')
+const schede = (testo) => dif(base + testo).iscritti.map((i) => [i.nome, i.cognome, i.email, i.corsi])
+ok('senza email + con email, stesso nome: una scheda con l’email e i due corsi', schede('Anna;Bianchi;;;Judo 2\nAnna;Bianchi;a@e.it;;Lotta 3\n'), [['Anna', 'Bianchi', 'a@e.it', ['Judo 2', 'Lotta 3']]])
+ok('…e in ordine inverso è identico', schede('Anna;Bianchi;a@e.it;;Lotta 3\nAnna;Bianchi;;;Judo 2\n'), [['Anna', 'Bianchi', 'a@e.it', ['Lotta 3', 'Judo 2']]])
+ok('…il nome si confronta senza badare alle maiuscole', schede('ANNA;Bianchi;;;Judo 2\nAnna;BIANCHI;a@e.it;;Lotta 3\n').length, 1)
+ok('due schede con email diverse + una senza: la senza non si lega, restano tre', schede('Anna;Bianchi;a@e.it;;Judo 2\nAnna;Bianchi;b@e.it;;Judo 2\nAnna;Bianchi;;;Lotta 3\n').map((s) => s[2]), ['a@e.it', 'b@e.it', undefined])
+ok('due righe senza email, stesso nome: una scheda sola, corsi sommati', schede('Anna;Bianchi;;;Judo 2\nAnna;Bianchi;;;Lotta 3\n'), [['Anna', 'Bianchi', undefined, ['Judo 2', 'Lotta 3']]])
+ok('fratelli con nomi diversi: non si toccano', schede('Anna;Bianchi;;;Judo 2\nLuca;Bianchi;l@e.it;;Lotta 3\n').length, 2)
+c = controllo(base + 'Anna;Bianchi;;;Judo 2\nAnna;Bianchi;a@e.it;;Lotta 3\n', [])
+ok('il controllo con database vuoto dice 1 nuova, non 2', c.totali, { nuova: 1, in_palestra: 0, da_sistemare: 0 })
+{
+  const creati = []
+  const corsiFinti = [{ id: 'j2', nome: 'Judo 2', ricorrenze: [], istruttori: [] }, { id: 'l3', nome: 'Lotta 3', ricorrenze: [], istruttori: [] }]
+  const iscritte = []
+  const d = {
+    sale: async () => [], personale: async () => [], corsi: async () => corsiFinti,
+    persone: async () => creati.map((p, i) => persona({ ...p, id: 'n' + i })),
+    salvaPersona: async (p) => { creati.push(p); return 'n' + (creati.length - 1) },
+    iscrivi: async (id, corso) => { iscritte.push([id, corso]) },
+    rigenera: async () => {},
+  }
+  const r = await L.importa(d, dif(base + 'Anna;Bianchi;;;Judo 2\nAnna;Bianchi;a@e.it;;Lotta 3\n'), () => {})
+  ok('importa: una sola persona creata, con l’email', creati.map((p) => [p.nome, p.cognome, p.email]), [['Anna', 'Bianchi', 'a@e.it']])
+  ok('…iscritta a tutti e due i corsi', iscritte, [['n0', 'j2'], ['n0', 'l3']])
+  ok('…e niente da sistemare', r.daSistemare, [])
+}
+
 console.log('\nQuante righe entrano (righeBuone)')
 let ff = dif(base + 'Anna;Bianchi;;;Judo 2\nLuca;Neri;;;Karate\nPaola;Gialli;;;Judo 2\n')
 let cc = L.controllaRighe(ff, sit([]))

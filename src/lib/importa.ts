@@ -193,6 +193,8 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
   const iscritti = new Map<string, IscrittoFoglio>()
   const perEmail = new Map<string, { chi: string; nome: string; riga: number }>()
   const notate = new Set<string>()
+  // Le email di ogni persona (nome e cognome) già viste: serve a unire la riga senza email.
+  const emailDi = new Map<string, Set<string>>()
   let righeIscritti = testoIscritti ? leggiCsv(testoIscritti) : []
   // Il foglio delle risposte del modulo, caricato nella casella di iscritti.csv, non ha le colonne
   // nome e cognome: una riga sola lo dice, invece di una per ogni persona col nome «undefined».
@@ -225,8 +227,21 @@ export function leggiFogli(testoCorsi: string | null, testoIscritti: string | nu
         email = undefined
       } else perEmail.set(email, { chi, nome: `${r.nome} ${r.cognome}`, riga })
     }
-    // L'email, quando c'è, è l'unica cosa che distingue davvero due omonimi.
-    const k = email ?? chi
+    // L'email, quando c'è, è l'unica cosa che distingue davvero due omonimi. Una riga senza email è la
+    // stessa persona della scheda con email dello stesso nome, se ce n'è una sola: una scheda sola.
+    const conEmail = emailDi.get(chi) ?? new Set<string>()
+    let k = email ?? chi
+    if (!email && conEmail.size === 1) k = [...conEmail][0]
+    if (email && !iscritti.has(email) && iscritti.has(chi) && conEmail.size === 0) {
+      const senza = iscritti.get(chi)
+      iscritti.delete(chi)
+      // Lo stesso oggetto, non una copia: i telefoni letti sono legati a lui.
+      if (senza) {
+        senza.email = email
+        iscritti.set(email, senza)
+      }
+    }
+    if (email) emailDi.set(chi, conEmail.add(email))
     const x = iscritti.get(k) ?? { nome: r.nome, cognome: r.cognome, email, corsi: [], foglio: 'iscritti.csv', riga, ...(emailContatto ? { emailContatto, contattoDi } : {}) }
     aggiungiTelefono(x, r.telefono ?? '', riga, 'iscritti.csv', note)
     if (r.corso && !x.corsi.some((c) => piatto(c) === piatto(r.corso))) x.corsi.push(r.corso)
