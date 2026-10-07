@@ -10,6 +10,14 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.48.12 — 7 ottobre 2026
+
+### Modificato
+
+- Prove per l'unione dei fogli con omonimi
+- Prova per le quote delle ricevute annullate
+- Prova per la finestra dei due minuti dell'annullo sul tablet
+
 ## 0.48.11 — 7 ottobre 2026
 
 ### Modificato
