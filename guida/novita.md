@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.48.7 — 7 ottobre 2026
+
+### Risolto
+
+- Importando iscritti.csv il telefono non si perde più, e due telefoni diversi vengono segnalati
+
 ## 0.48.6 — 7 ottobre 2026
 
 ### Modificato
