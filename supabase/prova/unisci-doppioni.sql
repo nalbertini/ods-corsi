@@ -434,6 +434,86 @@ select atteso('e nella cartella di chi se ne va non resta niente, nemmeno il fil
   (select count(*)::text from storage.objects where bucket_id = 'certificati' and name like 'aaaaaaaa-0000-0000-0000-000000000055/%'), '0');
 reset role;
 
+\echo ''
+\echo '--- 13. il codice fiscale solo nella richiesta accolta, senza anagrafica ---'
+insert into persone (id, nome, cognome, ruolo) values
+  -- a. due richieste accolte, due codici fiscali
+  ('aaaaaaaa-0000-0000-0000-000000000060', 'Nino', 'Alfa', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000061', 'Nino', 'Alfa', 'iscritto'),
+  -- b. due richieste accolte, lo stesso codice fiscale
+  ('aaaaaaaa-0000-0000-0000-000000000062', 'Nina', 'Beta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000063', 'Nina', 'Beta', 'iscritto'),
+  -- c. il codice fiscale ce l'ha solo chi se ne va
+  ('aaaaaaaa-0000-0000-0000-000000000064', 'Noemi', 'Gamma', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000065', 'Noemi', 'Gamma', 'iscritto'),
+  -- d. il codice fiscale ce l'ha solo chi resta
+  ('aaaaaaaa-0000-0000-0000-000000000066', 'Nora', 'Delta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000067', 'Nora', 'Delta', 'iscritto'),
+  -- e. chi resta ha il suo nella richiesta, chi se ne va ne ha un altro in segreteria
+  ('aaaaaaaa-0000-0000-0000-000000000068', 'Nico', 'Epsilon', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000069', 'Nico', 'Epsilon', 'iscritto'),
+  -- f. chi se ne va ha un altro codice fiscale, ma in una richiesta non accolta: non conta
+  ('aaaaaaaa-0000-0000-0000-000000000070', 'Nadia', 'Zeta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000071', 'Nadia', 'Zeta', 'iscritto');
+insert into anagrafiche (persona_id, codice_fiscale) values
+  ('aaaaaaaa-0000-0000-0000-000000000069', 'PSLNCI10A01L219B'),
+  ('aaaaaaaa-0000-0000-0000-000000000070', 'ZTANDA10A41L219H');
+insert into richieste_iscrizione (nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono, corsi, formula, stato, persona_id)
+select 'Nome', 'Cognome', '2010-01-01', 'Torino', v.cf, 'via Po 2', '10093', 'Collegno', 'r@ods.it', '3337654321',
+       array['cccccccc-0000-0000-0000-000000000002']::uuid[], 'annuale', v.stato::stato_richiesta, v.persona::uuid
+from (values
+  ('RSSNNO10A01L219A', 'accolta', 'aaaaaaaa-0000-0000-0000-000000000060'),
+  ('RSSNNO12B01L219B', 'accolta', 'aaaaaaaa-0000-0000-0000-000000000061'),
+  ('RSSNNA10A41L219C', 'accolta', 'aaaaaaaa-0000-0000-0000-000000000062'),
+  ('RSSNNA10A41L219C', 'accolta', 'aaaaaaaa-0000-0000-0000-000000000063'),
+  ('RSSNMO10A41L219D', 'accolta', 'aaaaaaaa-0000-0000-0000-000000000065'),
+  ('RSSNRO10A41L219E', 'accolta', 'aaaaaaaa-0000-0000-0000-000000000066'),
+  ('RSSNCO10A01L219F', 'accolta', 'aaaaaaaa-0000-0000-0000-000000000068'),
+  ('RSSNDA10A41L219G', 'nuova', 'aaaaaaaa-0000-0000-0000-000000000071')
+) v(cf, stato, persona);
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('a. due richieste accolte con codici fiscali diversi: no',
+  rifiuta($$select unisci_persone('aaaaaaaa-0000-0000-0000-000000000060', 'aaaaaaaa-0000-0000-0000-000000000061')$$),
+  'RIFIUTATO: Hanno due codici fiscali diversi: non sono la stessa persona…');
+select atteso('a. e anche l''anteprima',
+  rifiuta($$select anteprima_unione('aaaaaaaa-0000-0000-0000-000000000060', 'aaaaaaaa-0000-0000-0000-000000000061')$$),
+  'RIFIUTATO: Hanno due codici fiscali diversi: non sono la stessa persona…');
+select atteso('a. restano tutti e due', (select count(*)::text from persone where cognome = 'Alfa'), '2');
+select atteso('b. due richieste accolte con lo stesso codice fiscale: unite',
+  tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000062', 'aaaaaaaa-0000-0000-0000-000000000063')$$), 'fatto');
+select atteso('c. il codice fiscale solo da chi se ne va: unite',
+  tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000064', 'aaaaaaaa-0000-0000-0000-000000000065')$$), 'fatto');
+select atteso('d. il codice fiscale solo da chi resta: unite',
+  tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000066', 'aaaaaaaa-0000-0000-0000-000000000067')$$), 'fatto');
+select atteso('e. codice fiscale di chi resta dalla richiesta, diverso da quello in segreteria di chi se ne va: no',
+  rifiuta($$select unisci_persone('aaaaaaaa-0000-0000-0000-000000000068', 'aaaaaaaa-0000-0000-0000-000000000069')$$),
+  'RIFIUTATO: Hanno due codici fiscali diversi: non sono la stessa persona…');
+select atteso('f. una richiesta non accolta non conta: unite',
+  tenta($$select 'fatto' from unisci_persone('aaaaaaaa-0000-0000-0000-000000000070', 'aaaaaaaa-0000-0000-0000-000000000071')$$), 'fatto');
+reset role;
+
+\echo ''
+\echo '--- 14. solo le schede degli iscritti: il personale senza accesso no ---'
+-- Senza utente_id, così non li ferma il controllo dell'accesso: ferma solo il ruolo.
+insert into persone (id, nome, cognome, ruolo) values
+  ('aaaaaaaa-0000-0000-0000-000000000072', 'Ines', 'Eta', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000073', 'Ines', 'Eta', 'istruttore'),
+  ('aaaaaaaa-0000-0000-0000-000000000074', 'Ines', 'Eta', 'staff');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('un istruttore senza accesso non va via',
+  rifiuta($$select unisci_persone('aaaaaaaa-0000-0000-0000-000000000072', 'aaaaaaaa-0000-0000-0000-000000000073')$$),
+  'RIFIUTATO: Si uniscono solo le schede degli iscritti…');
+select atteso('né una scheda di segreteria senza accesso',
+  rifiuta($$select unisci_persone('aaaaaaaa-0000-0000-0000-000000000072', 'aaaaaaaa-0000-0000-0000-000000000074')$$),
+  'RIFIUTATO: Si uniscono solo le schede degli iscritti…');
+select atteso('né come quella che resta',
+  rifiuta($$select unisci_persone('aaaaaaaa-0000-0000-0000-000000000073', 'aaaaaaaa-0000-0000-0000-000000000072')$$),
+  'RIFIUTATO: Si uniscono solo le schede degli iscritti…');
+select atteso('restano tutte e tre', (select count(*)::text from persone where cognome = 'Eta'), '3');
+reset role;
+
 
 \echo ''
 \echo 'TUTTO A POSTO'
