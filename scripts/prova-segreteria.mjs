@@ -485,6 +485,14 @@ console.log('\n11. le risposte del modulo Google')
   // Reimportato con una risposta che dice meno: quello che c'era resta.
   await s.salvaAnagrafica(emmaDentro.id, { comune: 'Rivoli', indirizzo: '' })
   ok('una risposta nuova aggiunge e non cancella', [(await s.intestatarioDi(emmaDentro.id)).comune, (await s.intestatarioDi(emmaDentro.id)).indirizzo], ['Rivoli', 'via Roma 1'])
+  // Chi è già in palestra: il modulo riempie solo i campi vuoti, e non rimette il vecchio sulle correzioni a mano.
+  const schedaPrima = (await s.anagraficaDi(emmaDentro.id)).dati
+  const emmaModulo = { ...emma, anagrafica: { codiceFiscale: 'GLLMME16E44L219X', cap: '10100', indirizzo: 'via Altra 2', genitoreNome: 'Paolo', genitoreNato: 'Asti, 01/01/1980', natoA: 'Asti' } }
+  await m.importa(s, { corsi: [], iscritti: [emmaModulo], righe: { corsi: 0, iscritti: 0, risposte: 1 }, saltate: [], note: [] }, () => {})
+  const dopo = (await s.anagraficaDi(emmaDentro.id)).dati
+  ok('reimport su chi è in palestra: il codice fiscale corretto a mano resta', dopo.codiceFiscale, schedaPrima.codiceFiscale)
+  ok('…l\'indirizzo, il luogo di nascita e il genitore già compilati restano', [dopo.indirizzo, dopo.natoA, dopo.genitoreNome], [schedaPrima.indirizzo, schedaPrima.natoA, schedaPrima.genitoreNome])
+  ok('…il CAP e il genitore vuoti nella scheda entrano', [dopo.cap, dopo.genitoreNato], ['10100', 'Asti, 01/01/1980'])
 }
 
 console.log('\n12. l\'import: ricaricare il foglio, doppioni, resoconto, archiviati, data d\'iscrizione')

@@ -113,5 +113,7 @@ nel futuro, vale oggi, senza avvisi: controlla che il foglio abbia le date
 scritte giorno/mese/anno.
 
 Quello che c'è già resta com'è: un corso esistente prende solo i giorni e gli
-istruttori che gli mancano. Le righe saltate non sono entrate: si correggono nel
+istruttori che gli mancano. Chi c'è già tiene i suoi dati anagrafici: dalle
+risposte del modulo l'import riempie solo quelli vuoti, e non cambia quelli già
+scritti, anche se nel modulo sono diversi. Le righe saltate non sono entrate: si correggono nel
 foglio e si reimporta.
