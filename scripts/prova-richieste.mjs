@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { anni, anniScritti, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { anni, anniScritti, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -337,6 +337,181 @@ console.log('\n9. INDIETRO dal modulo, e chi firma che cambia')
   ok('appena aperto, senza data: chi si iscrive', m.chiFirma('', undefined), false)
   // La data cambia due volte: la firma è già sparita al primo, l'avviso resta e dice chi firma ora.
   ok('di nuovo maggiorenne, già avvisato: avvisa ancora', m.firmaDaRifare(false, { ...niente, avvisato: true }), ISCRITTO)
+}
+
+console.log('\n10. la metà vera, con un database finto: cosa parte e come si dice quando va male')
+{
+  // Un finto client: registra ogni chiamata e risponde con quel che gli si dà.
+  // Come `prova-certificati.mjs`, ma qui interessa anche l'ordine delle chiamate.
+  const finto = ({ rpc = {}, tabella = { data: [], error: null }, elenco = {}, upload = { error: null }, rimuovi, link, cancella = { error: null } } = {}) => {
+    const reg = []
+    const catena = (nome) => {
+      let cancellando = false
+      const c = {
+        select: (...a) => (reg.push(['select', ...a]), c),
+        order: (...a) => (reg.push(['order', ...a]), c),
+        delete: () => ((cancellando = true), reg.push(['delete']), c),
+        eq: (...a) => (reg.push(['eq', ...a]), c),
+        then: (bene, male) => Promise.resolve(cancellando ? cancella : tabella).then(bene, male),
+      }
+      return c
+    }
+    const db = {
+      from: (t) => (reg.push(['from', t]), catena(t)),
+      rpc: async (nome, args) => (reg.push(['rpc', nome, args]), rpc[nome] ?? { data: null, error: null }),
+      storage: {
+        from: (b) => ({
+          list: async (cartella) => (reg.push(['list', b, cartella]), elenco[cartella] ?? { data: [], error: null }),
+          upload: async (nome, f, o) => (reg.push(['upload', b, nome, o]), upload),
+          remove: async (nomi) => (reg.push(['remove', b, nomi]), rimuovi ?? { data: nomi.map((name) => ({ name })), error: null }),
+          createSignedUrls: async (nomi, sec) => (reg.push(['link', b, nomi, sec]), link ?? { data: nomi.map((path) => ({ path, signedUrl: 'https://esempio.it/' + path })), error: null }),
+        }),
+      },
+    }
+    return { v: m.creaRichiesteSupabase(db), reg }
+  }
+  const ERR = (code, message = 'testo grezzo') => ({ data: null, error: { code, message } })
+  const PERMESSO = 'Non hai il permesso: serve un accesso da segreteria'
+  const NON_ATTIVO = 'Il modulo di iscrizione non è ancora attivo sul database: la segreteria deve lanciare 06-iscrizioni.sql'
+  const nomiFile = (...n) => ({ data: n.map((name) => ({ name })), error: null })
+
+  // --- i corsi
+  {
+    const { v, reg } = finto({ rpc: { corsi_aperti: { data: [{ id: 'judo-adulti', nome: 'Judo adulti' }], error: null } } })
+    ok('i corsi: li chiede a corsi_aperti, senza argomenti', [await v.corsiAperti(), reg[0]], [[{ id: 'judo-adulti', nome: 'Judo adulti' }], ['rpc', 'corsi_aperti', undefined]])
+    ok('i corsi: senza permesso lo dice per la segreteria', await errore(() => finto({ rpc: { corsi_aperti: ERR('42501') } }).v.corsiAperti()), PERMESSO)
+    ok('i corsi: funzione assente, dice cosa lanciare', await errore(() => finto({ rpc: { corsi_aperti: ERR('PGRST202') } }).v.corsiAperti()), NON_ATTIVO)
+    ok('i corsi: errore senza testo, il server non risponde', await errore(() => finto({ rpc: { corsi_aperti: { data: null, error: {} } } }).v.corsiAperti()), 'Il server non risponde')
+  }
+
+  // --- invia
+  {
+    const { v, reg } = finto({ rpc: { invia_iscrizione: { data: 'r-1', error: null } } })
+    const id = await v.invia(adulto({ telefono2: '011 1', note: 'ciao', ...genitore, regolamento: true }))
+    ok('invia: torna l’id della richiesta', id, 'r-1')
+    ok('invia: chiama invia_iscrizione con un solo argomento, dati', [reg[0][1], Object.keys(reg[0][2])], ['invia_iscrizione', ['dati']])
+    ok('invia: i campi, coi nomi del database e senza ritocchi', reg[0][2].dati, {
+      nome: 'Luca', cognome: 'Rossi', nato_il: '1996-01-01', nato_a: 'Torino', codice_fiscale: 'rsslcu96a01 l219k',
+      indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'Luca@Esempio.it', telefono: '347 111 2233', telefono_2: '011 1',
+      genitore_nome: 'Paola', genitore_cognome: 'Rossi', genitore_codice_fiscale: 'RSSPLA80A41L219P',
+      corsi: ['judo-adulti'], formula: 'annuale', note: 'ciao', regolamento: true,
+    })
+    const a = finto()
+    await a.v.invia(adulto({ regolamento: undefined }))
+    ok('invia: il regolamento non detto parte come no, mai vuoto', a.reg[0][2].dati.regolamento, false)
+    const b = finto()
+    await b.v.invia(adulto({ regolamento: 'sì' }))
+    ok('invia: il regolamento vale solo se è proprio vero', b.reg[0][2].dati.regolamento, false)
+    ok('invia: il rifiuto del database arriva com’è, è già detto per chi si iscrive', await errore(() => finto({ rpc: { invia_iscrizione: ERR('P0001', 'Mancano: cognome') } }).v.invia(adulto({ cognome: ' ' }))), 'Mancano: cognome')
+    ok('invia: la quarta email del giorno, stesso messaggio della finta', await errore(() => finto({ rpc: { invia_iscrizione: ERR('P0001', 'Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria') } }).v.invia(adulto())), 'Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria')
+    ok('invia: funzione assente, dice cosa lanciare', await errore(() => finto({ rpc: { invia_iscrizione: ERR('PGRST202') } }).v.invia(adulto())), NON_ATTIVO)
+    ok('invia: errore senza testo, il server non risponde', await errore(() => finto({ rpc: { invia_iscrizione: { data: null, error: {} } } }).v.invia(adulto())), 'Il server non risponde')
+  }
+
+  // --- caricaFile
+  {
+    const pdf = new File(['x'], 'm.pdf', { type: 'application/pdf' })
+    const { v, reg } = finto()
+    await v.caricaFile('r-1', 'modulo', pdf)
+    ok('file: nella cartella della richiesta, col tipo per nome, senza sovrascrivere', reg[0], ['upload', 'iscrizioni', 'r-1/modulo.pdf', { contentType: 'application/pdf', upsert: false }])
+    const f = finto()
+    await f.v.caricaFile('r-1', 'documento', new File(['x'], 'd.jpg', { type: 'image/jpeg' }))
+    ok('file: una foto prende .jpg', f.reg[0][2], 'r-1/documento.jpg')
+    const tipoNo = finto()
+    ok('file: un tipo che non va, detto prima di toccare la rete', [await errore(() => tipoNo.v.caricaFile('r-1', 'modulo', new File(['x'], 'a.exe', { type: 'application/x-msdownload' }))), tipoNo.reg.length], ['Questo tipo di file non va: serve una foto o un PDF', 0])
+    const grande = finto()
+    ok('file: oltre 10 MB, detto prima di toccare la rete', [await errore(() => grande.v.caricaFile('r-1', 'modulo', { type: 'application/pdf', size: 10 * 1024 * 1024 + 1 })), grande.reg.length], ['Il file è troppo grande: al massimo 10 MB', 0])
+    const giusto = finto()
+    await giusto.v.caricaFile('r-1', 'modulo', { type: 'application/pdf', size: 10 * 1024 * 1024 })
+    ok('file: 10 MB giusti passano', giusto.reg.length, 1)
+    const su = (error) => errore(() => finto({ upload: { error } }).v.caricaFile('r-1', 'modulo', pdf))
+    ok('file: già arrivato (risposta persa), per chi riprova è andata', await su({ message: 'The resource already exists', statusCode: '409' }), 'nessun errore')
+    ok('file: cartella chiusa (un’ora passata), dice di scrivere alla segreteria', await su({ message: 'new row violates row-level security policy', statusCode: '403' }), 'Il tempo per caricare i file è scaduto, o sono già arrivati tutti: scrivi alla segreteria')
+    ok('file: troppo grande per il server', await su({ message: 'The object exceeded the maximum allowed size', statusCode: '413' }), 'Il file è troppo grande: al massimo 10 MB')
+    ok('file: tipo rifiutato dal contenitore', await su({ message: 'mime type image/gif is not supported' }), 'Questo tipo di file non va: serve una foto o un PDF')
+    ok('file: errore senza testo, riprova', await su({}), 'Il file non è partito: riprova')
+  }
+
+  // --- richieste (la segreteria)
+  {
+    const riga = (cambi = {}) => ({
+      id: 'r-1', creata_il: '2026-09-26T10:00:00Z', stato: 'nuova', nome: 'Luca', cognome: 'Rossi', nato_il: '1996-01-01', nato_a: 'TORINO (TO)',
+      codice_fiscale: 'RSSLCU96A01L219K', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'luca@esempio.it', telefono: '347 111 2233',
+      telefono_2: null, genitore_nome: null, genitore_cognome: null, genitore_codice_fiscale: null, corsi: ['judo-adulti'], formula: 'annuale', note: null,
+      regolamento: true, persona_id: null, gestita_il: null, gestore: null, ...cambi,
+    })
+    const { v, reg } = finto({ tabella: { data: [riga(), riga({ id: 'r-2', stato: 'accolta', persona_id: 'p-1', gestita_il: '2026-09-27T09:00:00Z', gestore: { nome: 'Anna', cognome: 'Bianchi' }, telefono_2: '011 1', note: 'ciao', genitore_nome: 'Paola', genitore_cognome: 'Rossi', genitore_codice_fiscale: 'RSSPLA80A41L219P' })], error: null } })
+    const [a, b] = await v.richieste()
+    ok('elenco: dalla tabella richieste_iscrizione, col gestore, dalla più recente', reg, [['from', 'richieste_iscrizione'], ['select', '*, gestore:persone!gestita_da ( nome, cognome )'], ['order', 'creata_il', { ascending: false }]])
+    ok('elenco: i campi, coi nomi dell’app', [a.id, a.creataIl, a.stato, a.natoIl, a.natoA, a.codiceFiscale, a.corsi, a.formula, a.regolamento], ['r-1', '2026-09-26T10:00:00Z', 'nuova', '1996-01-01', 'TORINO (TO)', 'RSSLCU96A01L219K', ['judo-adulti'], 'annuale', true])
+    ok('elenco: i campi vuoti del database sono assenti, non null', [a.telefono2, a.genitoreNome, a.genitoreCognome, a.genitoreCodiceFiscale, a.note, a.personaId, a.gestitaIl, a.gestitaDa], [undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined])
+    ok('elenco: una richiesta gestita porta chi, quando e la scheda', [b.stato, b.personaId, b.gestitaIl, b.gestitaDa], ['accolta', 'p-1', '2026-09-27T09:00:00Z', 'Anna Bianchi'])
+    ok('elenco: genitore, secondo telefono e note si tengono', [b.telefono2, b.genitoreNome, b.genitoreCognome, b.genitoreCodiceFiscale, b.note], ['011 1', 'Paola', 'Rossi', 'RSSPLA80A41L219P', 'ciao'])
+    ok('elenco: vuoto, nessuna richiesta', await finto({ tabella: { data: [], error: null } }).v.richieste(), [])
+    ok('elenco: senza permesso lo dice per la segreteria', await errore(() => finto({ tabella: ERR('42501') }).v.richieste()), PERMESSO)
+  }
+
+  // --- file di una richiesta
+  {
+    const { v, reg } = finto({ elenco: { 'r-1': nomiFile('modulo.pdf', 'documento.jpg') } })
+    const tutti = await v.file('r-1')
+    ok('apri file: legge la cartella della richiesta e chiede un link per ognuno, a dieci minuti', reg, [['list', 'iscrizioni', 'r-1'], ['link', 'iscrizioni', ['r-1/modulo.pdf', 'r-1/documento.jpg'], 600]])
+    ok('apri file: tipo, link e se è un PDF', tutti.map((f) => [f.tipo, f.url, f.pdf]), [['modulo', 'https://esempio.it/r-1/modulo.pdf', true], ['documento', 'https://esempio.it/r-1/documento.jpg', false]])
+    const vuoto = finto()
+    ok('apri file: nessun file, niente link chiesti', [await vuoto.v.file('r-1'), vuoto.reg.map((x) => x[0])], [[], ['list']])
+    const senzaLink = finto({ elenco: { 'r-1': nomiFile('modulo.pdf', 'documento.jpg') }, link: { data: [{ path: 'r-1/modulo.pdf', signedUrl: 'https://x/m' }, { path: 'r-1/documento.jpg', signedUrl: null }], error: null } })
+    ok('apri file: un link che non è arrivato non entra', (await senzaLink.v.file('r-1')).map((f) => f.tipo), ['modulo'])
+    ok('apri file: cartella illeggibile, dice di scrivere alla segreteria', await errore(() => finto({ elenco: { 'r-1': { data: null, error: { message: 'row-level security', statusCode: '403' } } } }).v.file('r-1')), 'Il tempo per caricare i file è scaduto, o sono già arrivati tutti: scrivi alla segreteria')
+    ok('apri file: link negati, stesso modo', await errore(() => finto({ elenco: { 'r-1': nomiFile('modulo.pdf') }, link: { data: null, error: { message: 'x' } } }).v.file('r-1')), 'x')
+  }
+
+  // --- documenti da stampare
+  {
+    const { v, reg } = finto({ rpc: { richieste_con_documento: { data: ['r-1', 'r-2'], error: null } } })
+    const s = await v.conDocumento()
+    ok('da stampare: chiede a richieste_con_documento', [reg[0][1], [...s]], ['richieste_con_documento', ['r-1', 'r-2']])
+    ok('da stampare: nessun risultato, insieme vuoto', (await finto().v.conDocumento()).size, 0)
+    ok('da stampare: funzione assente, niente da segnalare e l’elenco si vede', (await finto({ rpc: { richieste_con_documento: ERR('PGRST202') } }).v.conDocumento()).size, 0)
+    ok('da stampare: altri errori no, si dicono', await errore(() => finto({ rpc: { richieste_con_documento: ERR('42501') } }).v.conDocumento()), PERMESSO)
+  }
+
+  // --- togliere un file
+  {
+    const elenco = { 'r-1': nomiFile('modulo.pdf', 'documento.jpg', 'certificato.pdf') }
+    const { v, reg } = finto({ elenco })
+    await v.eliminaFile('r-1', 'documento')
+    ok('toglie solo il file di quel tipo', reg[1], ['remove', 'iscrizioni', ['r-1/documento.jpg']])
+    const niente = finto({ elenco })
+    await niente.v.eliminaFile('r-1', 'ricevuta')
+    ok('un tipo che non c’è: niente da cancellare', niente.reg.map((x) => x[0]), ['list'])
+    ok('lo Storage non lo cancella (policy): lo dice', await errore(() => finto({ elenco, rimuovi: { data: [], error: null } }).v.eliminaFile('r-1', 'documento')), 'Il file non si è cancellato: serve un accesso da segreteria')
+    ok('lo Storage si rompe: messaggio del file', await errore(() => finto({ elenco, rimuovi: { data: null, error: {} } }).v.eliminaFile('r-1', 'documento')), 'Il file non è partito: riprova')
+  }
+
+  // --- accogliere, rifiutare, eliminare
+  {
+    const { v, reg } = finto({ rpc: { accogli_iscrizione: { data: 'p-9', error: null } } })
+    ok('accoglie: torna la scheda, con la sola richiesta se la segreteria non ne sceglie una', [await v.accogli('r-1'), reg[0]], ['p-9', ['rpc', 'accogli_iscrizione', { richiesta: 'r-1' }]])
+    await v.accogli('r-1', 'p-3')
+    ok('accoglie: con la scheda scelta, la manda', reg[1], ['rpc', 'accogli_iscrizione', { richiesta: 'r-1', persona: 'p-3' }])
+    ok('accoglie: già accolta, il messaggio è quello del database', await errore(() => finto({ rpc: { accogli_iscrizione: ERR('P0001', 'Questa richiesta è già stata accolta') } }).v.accogli('r-1')), 'Questa richiesta è già stata accolta')
+    ok('accoglie: senza permesso', await errore(() => finto({ rpc: { accogli_iscrizione: ERR('42501') } }).v.accogli('r-1')), PERMESSO)
+    const r = finto()
+    await r.v.rifiuta('r-1')
+    ok('rifiuta: chiama rifiuta_iscrizione', r.reg, [['rpc', 'rifiuta_iscrizione', { richiesta: 'r-1' }]])
+    ok('rifiuta: già rifiutata, il messaggio del database', await errore(() => finto({ rpc: { rifiuta_iscrizione: ERR('P0001', 'Questa richiesta non è più nuova') } }).v.rifiuta('r-1')), 'Questa richiesta non è più nuova')
+    ok('rifiuta: senza permesso', await errore(() => finto({ rpc: { rifiuta_iscrizione: ERR('42501') } }).v.rifiuta('r-1')), PERMESSO)
+
+    const e = finto({ elenco: { 'r-1': nomiFile('modulo.pdf', 'documento.jpg') } })
+    await e.v.elimina('r-1')
+    ok('elimina: prima i file, poi la riga', e.reg, [['list', 'iscrizioni', 'r-1'], ['remove', 'iscrizioni', ['r-1/modulo.pdf', 'r-1/documento.jpg']], ['from', 'richieste_iscrizione'], ['delete'], ['eq', 'id', 'r-1']])
+    const senza = finto()
+    await senza.v.elimina('r-1')
+    ok('elimina: senza file, solo la riga', senza.reg.map((x) => x[0]), ['list', 'from', 'delete', 'eq'])
+    const rotto = finto({ elenco: { 'r-1': nomiFile('modulo.pdf') }, rimuovi: { data: null, error: { message: 'down' } } })
+    ok('elimina: se i file non vanno via, la riga resta (un file senza riga non lo ritrova nessuno)', [await errore(() => rotto.v.elimina('r-1')), rotto.reg.some((x) => x[0] === 'delete')], ['down', false])
+    ok('elimina: senza permesso sulla riga', await errore(() => finto({ cancella: ERR('42501') }).v.elimina('r-1')), PERMESSO)
+  }
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
