@@ -41,6 +41,10 @@ Le stesse girano su ogni PR (`.github/workflows/controlla.yml`).
 
 - Una funzione nuova, un cambio di comportamento o un problema da correggere
   segue la skill `nuova-funzione`, col team di agenti di `.claude/agents/`.
+- I percorsi critici della palestra (iscrizioni, quote, presenze, certificati,
+  ricevute, backup) stanno in `docs/qa/percorsi-critici.md`, con le prove che
+  li coprono. Un problema corretto lascia una prova che non lo fa tornare;
+  l'agente `garante-qualita` lo controlla prima della PR.
 - La sicurezza sta nel database (RLS, grant, funzioni), non nell'app: la
   chiave anon è pubblica. Un file SQL nuovo o cambiato segue la skill
   `nuova-migrazione` e passa dall'agente `rls-reviewer`.
