@@ -13,7 +13,7 @@ rompe.
 
 | Percorso | Chi | Se cade | Prove | Collaudo |
 |---|---|---|---|---|
-| Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:campi`, `prova:listino`, `supabase/prova/iscrizioni.sql`, `listino.sql`; **SCOPERTO**: `costi.ts` (`saldoAperto`, quota associativa, validità: solo il foglio costi via `vociDelCorso` in `prova:ricevuta`) | sì |
+| Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:campi`, `prova:listino`, `supabase/prova/iscrizioni.sql`, `listino.sql` | sì |
 | Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste`, `prova:coda`; **SCOPERTO**: `creaRichiesteSupabase` (la metà vera, solo la finta è provata) | sì |
 | Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:coda`, `prova:appello-cerca`, `prova:tablet`, `supabase/prova/presenze-istruttori.sql` | sì |
 | Ore degli istruttori | segreteria | compenso sbagliato | `prova:ore`, `prova:timer-istruttori`, `supabase/prova/presenze-istruttori.sql`; **SCOPERTO**: `contiReport` / PDF del report istruttori (`reportIstruttoriPdf.ts`) | no |
