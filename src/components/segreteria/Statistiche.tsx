@@ -676,7 +676,7 @@ function InRegola({ persone, oggi, onVai }: { persone: PersonaSeg[]; oggi: strin
           { nome: 'Da pagare', n: paga.da_pagare, tono: 'spento' },
         ]}
       />
-      <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => onVai('iscritti')}>
+      <button type="button" className="sg-btn sg-btn-linea" style={{ alignSelf: 'flex-start' }} onClick={() => onVai('iscritti', { filtro: 'fuori-regola' })}>
         CHI NON È IN REGOLA
       </button>
     </div>

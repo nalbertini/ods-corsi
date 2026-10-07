@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
-import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, confermaDisattiva, confermaUnione, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
+import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, fuoriRegola, confermaDisattiva, confermaUnione, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -111,6 +111,7 @@ export function Iscritti({
   const [scadenza, setScadenza] = useState(filtroIniziale === 'scadenza')
   const [arrivo, setArrivo] = useState(filtroIniziale === 'arrivo')
   const [pagare, setPagare] = useState(filtroIniziale === 'pagare')
+  const [fuori, setFuori] = useState(filtroIniziale === 'fuori-regola')
   const [senzaDocumento, setSenzaDocumento] = useState(false)
   const [filePrima, setFilePrima] = useState(filtroIniziale === 'file-di-prima')
   const [doppi, setDoppi] = useState(false)
@@ -140,6 +141,7 @@ export function Iscritti({
       (!scadenza || certificatoInScadenza(p, oggi)) &&
       (!arrivo || certificatoInArrivo(p, oggi)) &&
       (!pagare || daPagare(p, oggi)) &&
+      (!fuori || fuoriRegola(p, oggi)) &&
       (!senzaDocumento || !p.documento) &&
       (!soloFilePrima || certificatoDaStampare(p.certificato)),
   )
@@ -266,6 +268,9 @@ export function Iscritti({
           </button>
           <button type="button" className="num sg-chip" aria-pressed={pagare} onClick={() => setPagare(!pagare)}>
             DA PAGARE
+          </button>
+          <button type="button" className="num sg-chip" aria-pressed={fuori} onClick={() => setFuori(!fuori)}>
+            NON IN REGOLA
           </button>
           <button type="button" className="num sg-chip" aria-pressed={senzaDocumento} onClick={() => setSenzaDocumento(!senzaDocumento)}>
             SENZA DOCUMENTO

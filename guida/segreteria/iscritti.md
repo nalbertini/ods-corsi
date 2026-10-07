@@ -22,6 +22,8 @@ elenco, che compaiono negli appelli e sul tablet.
   certificato: da quel giorno serve, e conviene avvisare la famiglia prima.
 - **DA PAGARE** — chi è attivo e non ha la quota associativa pagata: nessuna ricevuta
   con la quota, pagata solo in parte, o scaduta.
+- **NON IN REGOLA** — chi è attivo e ha il certificato o la quota da sistemare. Ci arrivi
+  anche dal bottone **CHI NON È IN REGOLA** delle [Statistiche](statistiche.md).
 - **SENZA DOCUMENTO** — chi non ha ancora la copia del documento d'identità in
   segreteria.
 - **NON ARCHIVIATO** — solo finché ce ne sono: chi ha un file di certificato

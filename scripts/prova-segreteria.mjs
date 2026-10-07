@@ -3073,6 +3073,12 @@ console.log('\nsotto i 6 anni il certificato non serve')
   ok('iscritti che compiono 6 anni senza certificato: chi ha già il certificato, no', arrivo(persona('2020-10-10', { scade: '2027-06-01', conFile: false })), false)
   ok('iscritti che compiono 6 anni senza certificato: chi è disattivato, no', arrivo(persona('2020-10-10', { conFile: false }, { attiva: false })), false)
   ok('iscritti che compiono 6 anni senza certificato: il bambino di 5 anni lontano dai 6, no', arrivo(persona(cinque)), false)
+  // CHI NON È IN REGOLA (dal riquadro delle statistiche): certificato o quota da sistemare, fra chi è attivo.
+  const fuori = (p) => vedi(() => L.fuoriRegola(p, oggi))
+  ok('CHI NON È IN REGOLA: chi ha certificato e quota a posto no', fuori(persona('1990-01-01', { scade: '2027-06-01', conFile: false })), false)
+  ok('CHI NON È IN REGOLA: certificato mancante sì', fuori(persona('1990-01-01')), true)
+  ok('CHI NON È IN REGOLA: quota non pagata sì', fuori(persona(cinque, undefined, { quote: [] })), true)
+  ok('CHI NON È IN REGOLA: chi è disattivato no', fuori(persona('1990-01-01', { conFile: false }, { attiva: false })), false)
 
   // La colonna IN REGOLA dell'elenco.
   ok('elenco: 5 anni, quota pagata, senza certificato: in regola e certificato spento', vedi(() => parole(persona(cinque))), [{ tono: 'verde', parola: 'IN REGOLA' }, { tono: 'spento', parola: 'CERT. NON SERVE' }])

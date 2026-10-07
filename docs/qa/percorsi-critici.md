@@ -23,7 +23,7 @@ rompe.
 | Anagrafiche, nuclei, doppioni | segreteria | persone duplicate o unite male | `prova:iscritti`, `prova:cerca-persone`, `prova:email-contatto`, `supabase/prova/anagrafiche.sql`, `non-doppioni.sql`, `unisci-doppioni.sql`, `cerca-persone.sql`, `email-contatto.sql`; `unisciSessioni`/`chiaveSessione` (`sessioni.ts`) in `prova:iscritti` | no |
 | Accesso e ruoli (PIN, RLS) | tutti | dati visti da chi non deve | `supabase/prova/rls.sql`, `segreteria.sql`, `prova:segreteria` (ruoli e accessi di `segreteria.ts`) | no |
 | Calendario e date dei corsi | segreteria, tablet | lezione che non compare | `supabase/prova/calendario*.sql`, `date-corsi.sql`, `prova:indirizzi` (indirizzi della segreteria) | no |
-| Prove (modalità prova) e statistiche | segreteria | numeri sbagliati | `prova:prove`, `supabase/prova/prove.sql`, `statistiche.sql` | no |
+| Prove (modalità prova) e statistiche | segreteria | numeri sbagliati | `prova:prove`, `prova:segreteria` (`fuoriRegola`, il bottone CHI NON È IN REGOLA), `supabase/prova/prove.sql`, `statistiche.sql` | no |
 | Segnalazioni | tutti | problema segnalato che sparisce | `supabase/prova/segnalazioni.sql` | no |
 | Backup del database | utente | niente da ripristinare | `.github/workflows/backup.yml` (ultimo run verde 2026-10-06); **SCOPERTO**: nessuna prova di ripristino | no |
 | Musica, timer, tablet di sala | istruttore, sala | lezione senza timer/musica | `prova:musica`, `prova:musica-file`, `prova:tablet`, `prova:scaletta`, `prova:strumenti`, `prova:anteprima`, `prova:discipline`, `supabase/prova/musica.sql`, `timer.sql`, `timer-lezioni.sql`, `tablet.sql` | no |
