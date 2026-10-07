@@ -940,7 +940,7 @@ export function leggiRisposte(
     }
 
     const x = iscritti.get(chi) ?? { nome, cognome, email, corsi: [], soloStessoNome: true, foglio: 'risposte', riga, ...(emailContatto ? { emailContatto, contattoDi } : {}) }
-    // Chi ha mandato il modulo due volte: vale l'ultima email e l'ultimo telefono, i corsi si sommano.
+    // Chi ha mandato il modulo due volte: vale l'ultima email e, se i telefoni sono diversi, l'ultimo (con una nota); i corsi si sommano.
     if (email) x.email = email
     if (emailContatto) x.emailContatto = emailContatto
     aggiungiTelefono(x, cella(r, 'telefono'), riga, 'risposte', note)
