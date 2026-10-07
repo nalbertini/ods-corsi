@@ -14,7 +14,7 @@ rompe.
 | Percorso | Chi | Se cade | Prove | Collaudo |
 |---|---|---|---|---|
 | Iscrizione a passi (famiglia, minori, sconto, corsi senza prezzo) | genitore, segreteria | iscrizione persa o quota sbagliata | `prova:iscrizione-passi`, `prova:campi`, `prova:listino`, `supabase/prova/iscrizioni.sql`, `listino.sql` | sì |
-| Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste`, `prova:coda`; **SCOPERTO**: `creaRichiesteSupabase` (la metà vera, solo la finta è provata) | sì |
+| Richieste e coda di approvazione | segreteria | richiesta persa | `prova:richieste` (la finta e `creaRichiesteSupabase`, la metà vera, con un client finto), `prova:coda` | sì |
 | Appello e presenze (anche senza rete) | istruttore | presenze perse | `prova:coda`, `prova:appello-cerca`, `prova:tablet`, `supabase/prova/presenze-istruttori.sql` | sì |
 | Ore degli istruttori | segreteria | compenso sbagliato | `prova:ore` (anche `contiReport`), `prova:timer-istruttori`, `supabase/prova/presenze-istruttori.sql`; il disegno del PDF non è provato | no |
 | Certificati medici (carica, archivia, non archiviato) | segreteria, iscritto | certificato perso o visibile a chi non deve | `prova:certificati`, `supabase/prova/certificati.sql` | sì |
