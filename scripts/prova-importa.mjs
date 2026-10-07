@@ -450,6 +450,18 @@ const AnnaMod = '13/06/2020 10:00:00,Anna Bianchi,anna@x.it,222,,,Judo 2\n'
   const { creati } = await provaImporta(f)
   ok('…il secondo senza email di accesso, con quella come contatto', creati.map((p) => [p.nome, p.email, p.emailContatto]), [['Mario', 'fam@x.it', undefined], ['Paolo', undefined, 'fam@x.it']])
 }
+{
+  // Due omonimi in iscritti.csv, corsi diversi: il modulo va su quello con la sua email.
+  const csv = 'Anna;Bianchi;a1@x.it;;Judo 2\nAnna;Bianchi;a2@x.it;;Yoga\n'
+  const corsiDi = (f) => f.iscritti.map((x) => [x.email, x.corsi, x.telefono])
+  let f = duePosti(csv, '13/06/2020 10:00:00,Anna Bianchi,a2@x.it,222,,,Judo 2\n')
+  ok('due omonimi: il modulo con l’email del secondo va sul secondo, non sul primo', corsiDi(f), [['a1@x.it', ['Judo 2'], undefined], ['a2@x.it', ['Yoga', 'Judo 2'], '222']])
+  f = duePosti(csv, '13/06/2020 10:00:00,Anna Bianchi,altra@x.it,222,,,Judo 2\n')
+  ok('due omonimi: il modulo con un’email che non è di nessuno va sul primo', corsiDi(f).map((r) => r[1]), [['Judo 2'], ['Yoga']])
+  ok('…col telefono del modulo sul primo, e l’altro com’era', [f.iscritti[0].telefono, f.iscritti[1].telefono], ['222', undefined])
+  f = duePosti(csv, '13/06/2020 10:00:00,Anna Bianchi,,222,,,Yoga\n')
+  ok('due omonimi: il modulo senza email va sul primo', corsiDi(f), [['a1@x.it', ['Judo 2', 'Yoga'], '222'], ['a2@x.it', ['Yoga'], undefined]])
+}
 
 console.log('\nChi è già in palestra: il modulo riempie solo i campi vuoti')
 {
