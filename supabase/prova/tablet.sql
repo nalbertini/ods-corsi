@@ -104,6 +104,22 @@ select atteso('origine a lezione in corso', (select origine::text from presenze 
 select atteso('origine di ieri', (select origine::text from presenze where sessione_id = 'eeeeeeee-0000-0000-0000-000000000002'), 'recupero');
 select atteso('segnata dal tablet', (select postazione_id::text from presenze where sessione_id = 'eeeeeeee-0000-0000-0000-000000000001'), 'dddddddd-0000-0000-0000-000000000001');
 
+-- L'ANNULLA vale due minuti (tablet_regole().annulla): dopo, la presenza resta.
+-- Il trigger rimette segnata_il a now() a ogni scrittura, lo si spegne per
+-- portare indietro le due presenze di prima (quella di oggi e quella di ieri).
+alter table presenze disable trigger presenze_chi_segna;
+update presenze set segnata_il = now() - interval '3 minutes'
+  where sessione_id in ('eeeeeeee-0000-0000-0000-000000000001', 'eeeeeeee-0000-0000-0000-000000000002')
+    and persona_id in ('aaaaaaaa-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000004');
+alter table presenze enable trigger presenze_chi_segna;
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('ANNULLA dopo tre minuti: negato', annulla_dal_tablet('eeeeeeee-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000003')::text, 'false');
+select atteso('ANNULLA dopo tre minuti, presenza di recupero: negato', annulla_dal_tablet('eeeeeeee-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000004')::text, 'false');
+reset role;
+select atteso('la presenza di oggi resta', (select count(*)::text from presenze where sessione_id = 'eeeeeeee-0000-0000-0000-000000000001' and persona_id = 'aaaaaaaa-0000-0000-0000-000000000003'), '1');
+select atteso('la presenza di ieri resta', (select count(*)::text from presenze where sessione_id = 'eeeeeeee-0000-0000-0000-000000000002' and persona_id = 'aaaaaaaa-0000-0000-0000-000000000004'), '1');
+
 \echo ''
 \echo '--- 4. il tablet non scavalca l''istruttore ---'
 select chi('22222222-2222-2222-2222-222222222222');
