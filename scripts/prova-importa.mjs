@@ -370,7 +370,7 @@ const duePosti = (csv, modulo) => {
   return { ...f, iscritti: u.iscritti, note: [...(f.note ?? []), ...u.note] }
 }
 // Il database finto: chi c'è già (`dentro`), cosa salva importa().
-const provaImporta = async (f, dentro = []) => {
+const provaImporta = async (f, dentro = [], schede = {}) => {
   const creati = []
   const iscritte = []
   const salvate = []
@@ -379,6 +379,7 @@ const provaImporta = async (f, dentro = []) => {
     persone: async () => [...dentro, ...creati.map((p, i) => persona({ ...p, id: 'n' + i }))],
     salvaPersona: async (p) => { creati.push(p); return 'n' + (creati.length - 1) },
     iscrivi: async (id, corso, dal) => { iscritte.push([id, corso, dal]) },
+    anagraficaDi: async (id) => (schede[id] ? { da: 'segreteria', dati: schede[id] } : null),
     salvaAnagrafica: async (id, a) => { salvate.push([id, a]) },
     rigenera: async () => {},
   }
@@ -448,6 +449,35 @@ const AnnaMod = '13/06/2020 10:00:00,Anna Bianchi,anna@x.it,222,,,Judo 2\n'
   ok('fratelli con la stessa email del genitore, uno per foglio: due persone', f.iscritti.map((x) => x.nome), ['Mario', 'Paolo'])
   const { creati } = await provaImporta(f)
   ok('…il secondo senza email di accesso, con quella come contatto', creati.map((p) => [p.nome, p.email, p.emailContatto]), [['Mario', 'fam@x.it', undefined], ['Paolo', undefined, 'fam@x.it']])
+}
+
+console.log('\nChi è già in palestra: il modulo riempie solo i campi vuoti')
+{
+  const gia = persona({ nome: 'Anna', cognome: 'Bianchi', id: 'a1' })
+  const f = duePosti(AnnaCsv, '13/06/2020 10:00:00,Anna Bianchi,anna@x.it,222,10/03/2015,00100,Judo 2\n')
+  // (b) CAP vuoto e data già compilata: entra il CAP, la data resta
+  const b = await provaImporta(f, [gia], { a1: { natoIl: '2014-01-01' } })
+  ok('scheda con la data e senza CAP: entra solo il CAP, la data della scheda resta', b.salvate, [['a1', { cap: '00100' }]])
+  // (c) tutto già compilato: niente da salvare
+  const c = await provaImporta(f, [gia], { a1: { natoIl: '2014-01-01', cap: '10100' } })
+  ok('scheda piena: non si salva niente', c.salvate, [])
+  // (d) persona nuova: tutto come prima
+  const d = await provaImporta(f)
+  ok('persona nuova: tutti i campi del modulo', d.salvate, [['n0', { natoIl: '2015-03-10', cap: '00100' }]])
+  // (a) il CAP compilato resta, la data vuota entra
+  const a = await provaImporta(f, [gia], { a1: { cap: '10100' } })
+  ok('CAP già compilato e data vuota: entra solo la data, il CAP resta', a.salvate, [['a1', { natoIl: '2015-03-10' }]])
+}
+
+console.log('\nsoloMancanti: dei campi del modulo, quelli vuoti nella scheda')
+{
+  const sm = (modulo, scheda) => { try { return L.soloMancanti(modulo, scheda) } catch (e) { return 'ERRORE: ' + e.message } }
+  ok('i campi vuoti, assenti o di sola stringa vuota entrano; i pieni no', sm({ cap: '00100', comune: 'Roma', indirizzo: 'via A', natoA: 'Asti' }, { cap: '', comune: 'Torino', indirizzo: undefined }), { cap: '00100', indirizzo: 'via A', natoA: 'Asti' })
+  ok('scheda senza campi: tutto il modulo', sm({ cap: '00100' }, {}), { cap: '00100' })
+  ok('scheda assente: tutto il modulo', sm({ cap: '00100' }, null), { cap: '00100' })
+  ok('scheda tutta piena: oggetto vuoto', sm({ cap: '00100', codiceFiscale: 'X' }, { cap: '1', codiceFiscale: 'Y' }), {})
+  ok('modulo vuoto: oggetto vuoto', sm({}, { cap: '1' }), {})
+  ok('il genitore segue la regola come gli altri campi', sm({ genitoreNome: 'Paolo', genitoreCognome: 'Rossi' }, { genitoreNome: 'Luca' }), { genitoreCognome: 'Rossi' })
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

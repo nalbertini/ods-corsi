@@ -389,6 +389,17 @@ export function anteprima(f: Fogli, s: Situazione, scelte: Scelte = {}): Antepri
   return { saleNuove, istruttoriNuovi, istruttoriTrovati, istruttori, corsiNuovi, ricorrenzeNuove, iscrittiNuovi, iscrizioniNuove, anagrafiche, avvisi, emailDiAltri }
 }
 
+/** I soli campi di `modulo` che in `scheda` sono assenti o vuoti: ciò che un reimport può ancora aggiungere. */
+export function soloMancanti<T extends object>(modulo: T, scheda: object | null | undefined): Partial<T> {
+  const gia: Record<string, unknown> = { ...scheda }
+  const r: Partial<T> = {}
+  for (const [k, v] of Object.entries(modulo)) {
+    // `as`: le chiavi vengono da Object.entries(modulo), quindi sono chiavi di T; TypeScript non lo sa.
+    if (gia[k] === undefined || gia[k] === null || gia[k] === '') (r as Record<string, unknown>)[k] = v
+  }
+  return r
+}
+
 function trovaPersona(x: IscrittoFoglio, persone: PersonaSeg[]) {
   // Senza accenti, maiuscole, apostrofi e spazi: «D’Angelo», «d'angelo» e «Dangelo»,
   // «De Luca» e «Deluca» sono lo stesso cognome.
@@ -678,7 +689,9 @@ export async function importa(d: DatiSegreteria, f: Fogli, passo: (testo: string
       if (ferme.length) daSistemare.push({ foglio: x.foglio, riga, nome, motivo: `l'iscrizione a ${ferme.join(', ')} era terminata: non l'ho riaperta. Rilancia scegliendo «Riapri» se serve` })
       if (x.anagrafica && Object.keys(x.anagrafica).length > 0 && !a.anagraficheFuori) {
         try {
-          await d.salvaAnagrafica(p.id, x.anagrafica)
+          // Chi c'è già tiene i suoi dati: un reimport riempie solo i campi vuoti, non rimette il valore sbagliato del modulo su quello corretto a mano.
+          const nuovi = soloMancanti(x.anagrafica, (await d.anagraficaDi(p.id))?.dati)
+          if (Object.keys(nuovi).length > 0) await d.salvaAnagrafica(p.id, nuovi)
         } catch (e) {
           // Senza 18-anagrafiche.sql gli iscritti entrano lo stesso: si dice cosa è rimasto fuori.
           const m = e instanceof Error ? e.message : String(e)

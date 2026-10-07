@@ -118,7 +118,8 @@ scheda è disattivata, nessuno.
   il genitore. Vengono dal modulo di iscrizione dell'app o dall'import delle
   risposte del modulo Google, e accanto al titolo c'è scritto da dove. Sono
   quelli che una ricevuta nuova prende da sola. **MODIFICA** (o **AGGIUNGI**,
-  se non ce ne sono) → si correggono → **SALVA**: da lì valgono i nuovi. Una
+  se non ce ne sono) → si correggono → **SALVA**: da lì valgono i nuovi, e un reimport
+  delle risposte del modulo non li cambia (riempie solo i campi vuoti). Una
   ricevuta nuova parte dai dati dell'ultima ricevuta, e quel che lì è vuoto
   (per esempio il codice fiscale) lo prende da qui; quelle già fatte restano
   com'erano. Un campo lasciato vuoto si cancella. Se il codice fiscale non torna (l'ultimo
