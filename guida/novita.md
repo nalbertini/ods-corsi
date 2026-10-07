@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.48.11 — 7 ottobre 2026
+
+### Modificato
+
+- Prove per l'unione dei doppioni (codice fiscale e solo iscritti)
+
 ## 0.48.10 — 7 ottobre 2026
 
 ### Risolto
