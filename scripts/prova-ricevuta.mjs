@@ -337,6 +337,52 @@ const scontata = {
 }
 ok('con lo sconto famiglia, il totale scontato', m.conti(scontata).totale, 34440)
 ok('va bene', m.cosaNonVa(scontata), null)
+console.log('Con un anticipo')
+// Gli stessi casi di supabase/prova/ricevute.sql (ricevute 301-304): stessi numeri.
+const conAnticipo = (quota, annuale, annualePagato, anticipo) => ({
+  ...quella,
+  anticipo,
+  voci: [
+    { ...m.voceQuota().voce('2026-09-10'), pagamenti: quota ? pagato(quota) : [] },
+    { descrizione: 'Annuale Lotta 3 · sconto famiglia 20% su 368,00 €', quantita: 1, prezzo: annuale, dal: '2026-09-01', al: '2027-06-30', pagamenti: annualePagato ? pagato(annualePagato) : [] },
+  ],
+})
+const mancano = (r) => m.quoteDi([{ ...r, annullataIl: undefined }]).map((q) => q.mancano)
+const parziale = conAnticipo(0, 29440, 29440, 2000)
+ok('anticipo parziale: il netto scende dell’anticipo', m.conti(parziale), { totale: 34440, pagato: 29440, netto: 3000 })
+ok('anticipo parziale: alla quota manca quel che resta', mancano(parziale), [3000])
+ok('anticipo parziale: la ricevuta va bene', m.cosaNonVa(parziale), null)
+ok('senza anticipo alla quota mancano i suoi 50 €', mancano({ ...parziale, anticipo: 0 }), [5000])
+const copreQuota = conAnticipo(0, 29440, 29440, 5000)
+ok('l’anticipo che copre il resto: netto zero', m.conti(copreQuota).netto, 0)
+ok('l’anticipo che copre il resto: la quota non manca', mancano(copreQuota), [0])
+const tuttoAnticipo = conAnticipo(0, 29440, 0, 34440)
+ok('anticipo pari al totale: netto zero', m.conti(tuttoAnticipo), { totale: 34440, pagato: 0, netto: 0 })
+ok('anticipo pari al totale: la quota non manca', mancano(tuttoAnticipo), [0])
+ok('anticipo pari al totale: la ricevuta va bene', m.cosaNonVa(tuttoAnticipo), null)
+const misto = conAnticipo(2000, 29440, 0, 10000)
+ok('anticipo e quota pagata in parte: il netto toglie pagato e anticipo', m.conti(misto), { totale: 34440, pagato: 2000, netto: 22440 })
+ok('anticipo e quota pagata in parte: manca la quota, non di più', mancano(misto), [3000])
+ok('un anticipo oltre il totale no', m.cosaNonVa(conAnticipo(0, 29440, 29440, 5001)), 'Si è pagato più del totale: controlla gli importi')
+ok('una ricevuta annullata non ha quote', m.quoteDi([{ ...parziale, annullataIl: '2026-09-11T10:00:00Z' }]), [])
+ok('la domanda con l’anticipo: quanto si paga ora e quanto resta', m.domandaRicevuta('n. 5/2026', leone, false, m.conti(parziale)), 'Fare la ricevuta n. 5/2026 a Leone Alessandro, 344,40 € · pagati ora 294,40 € · restano 30,00 €?')
+ok('la domanda con l’anticipo che copre tutto', m.domandaRicevuta('n. 5/2026', leone, false, m.conti(copreQuota)), 'Fare la ricevuta n. 5/2026 a Leone Alessandro, 344,40 € · pagati ora 294,40 € · restano 0,00 €?')
+
+console.log('Il socio da una richiesta, e pulito')
+const richiesta = { nome: 'Manuela', cognome: 'Albertini', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', natoIl: '2014-06-13', codiceFiscale: 'LBRMNL14H53L219X', genitoreCognome: 'Albertini', genitoreNome: 'Nicola', genitoreCodiceFiscale: 'LBRNCL80C02L219F' }
+ok('da una richiesta di un minore: socio, provincia e genitore', m.intestatarioDaRichiesta(richiesta), {
+  nome: 'Manuela', cognome: 'Albertini', indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', provincia: 'TO', natoIl: '2014-06-13', codiceFiscale: 'LBRMNL14H53L219X',
+  genitore: 'Albertini Nicola', genitoreCodiceFiscale: 'LBRNCL80C02L219F',
+})
+ok('da una richiesta di un adulto: niente genitore, anche col suo codice', m.intestatarioDaRichiesta({ nome: 'Nicola', cognome: 'Albertini', genitoreCodiceFiscale: 'LBRNCL80C02L219F' }).genitoreCodiceFiscale, undefined)
+ok('da una richiesta con i campi vuoti: restano non scritti', m.intestatarioDaRichiesta({ nome: 'Nicola', cognome: 'Albertini', cap: '', comune: '' }), {
+  nome: 'Nicola', cognome: 'Albertini', indirizzo: undefined, cap: undefined, comune: undefined, provincia: undefined, natoIl: undefined, codiceFiscale: undefined, genitore: undefined, genitoreCodiceFiscale: undefined,
+})
+ok('pulire: via i vuoti, gli spazi doppi, maiuscole al loro posto', m.pulisciIntestatario({
+  nome: '  mario  ', cognome: "d'amico", indirizzo: '  Via   Roma  1 ', cap: '  ', provincia: 'to', codiceFiscale: ' lbrmnl 14h53 l219x ', genitore: 'nicola   albertini', genitoreCodiceFiscale: 'lbrncl80c02l219f',
+}), { nome: 'Mario', cognome: "D'Amico", indirizzo: 'Via Roma 1', provincia: 'TO', codiceFiscale: 'LBRMNL14H53L219X', genitore: 'Nicola Albertini', genitoreCodiceFiscale: 'LBRNCL80C02L219F' })
+ok('pulire: nome e cognome ci sono sempre, anche vuoti', m.pulisciIntestatario({ nome: ' ', cognome: '' }), { nome: '', cognome: '' })
+
 for (const [nome, r] of [['ricevuta-116', quella], ['ricevuta-sconto-famiglia', scontata], ['ricevuta-tante', tante], ['ricevuta-annullata', { ...quella, annullataIl: '2026-09-02T10:00:00Z' }]]) {
   const byte = await m.ricevutaPdf(r)
   const doc = await m.PDFDocument.load(byte)

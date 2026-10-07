@@ -43,7 +43,15 @@ create or replace function ricevuta(giorno text, numero int default null, pagato
         'pagamenti', jsonb_build_array(jsonb_build_object('data', giorno, 'importo', pagato, 'metodo', 'Bonifico')))),
     'anticipo', 0)
 $$;
-grant execute on function tenta(text), atteso(text, text, text), chi(text), ricevuta(text, int, int) to anon, authenticated;
+-- L'anticipo: i soldi dati prima, fuori dalle voci. Gli stessi casi di «con un anticipo» in scripts/prova-ricevuta.mjs.
+create or replace function ricevuta_anticipo(numero int, quota_pagata int, annuale int, annuale_pagato int, anticipo int) returns jsonb language sql as $$
+  select ricevuta('2026-09-10', numero) || jsonb_build_object('anticipo', anticipo, 'voci', jsonb_build_array(
+    jsonb_build_object('descrizione', 'QUOTA ASSOCIATIVA', 'quantita', 1, 'prezzo', 5000, 'dal', '2026-09-01', 'al', '2027-07-31',
+      'pagamenti', jsonb_build_array(jsonb_build_object('data', '2026-09-10', 'importo', quota_pagata, 'metodo', 'Bonifico'))),
+    jsonb_build_object('descrizione', 'Annuale Lotta 3 · sconto famiglia 20% su 368,00 €', 'quantita', 1, 'prezzo', annuale, 'dal', '2026-09-01', 'al', '2027-06-30',
+      'pagamenti', jsonb_build_array(jsonb_build_object('data', '2026-09-10', 'importo', annuale_pagato, 'metodo', 'Bonifico')))))
+$$;
+grant execute on function tenta(text), atteso(text, text, text), chi(text), ricevuta(text, int, int), ricevuta_anticipo(int, int, int, int, int) to anon, authenticated;
 
 \echo ''
 \echo '--- 1. la segreteria ---'
@@ -74,6 +82,16 @@ select atteso('la annulla', tenta($$select annulla_ricevuta((select id from rice
 select atteso('annullata resta, col suo numero', (select count(*)::text from ricevute where numero = 117 and annullata_il is not null), '1');
 select atteso('due volte no', tenta($$select annulla_ricevuta((select id from ricevute where numero = 117))::text$$), 'NEGATO: ricevuta inesistente o già annullata');
 select atteso('il numero dell''annullata non si riusa', (select (emetti_ricevuta(ricevuta('2026-09-07')))->>'numero'), '120');
+select emetti_ricevuta(ricevuta_anticipo(301, 0, 29440, 29440, 2000));
+select emetti_ricevuta(ricevuta_anticipo(302, 0, 29440, 29440, 5000));
+select emetti_ricevuta(ricevuta_anticipo(303, 0, 29440, 0, 34440));
+select emetti_ricevuta(ricevuta_anticipo(304, 2000, 29440, 0, 10000));
+select atteso('con un anticipo: totale, pagato e anticipo', (select totale || '/' || pagato || '/' || anticipo from ricevute where numero = 301), '34440/29440/2000');
+select atteso('anticipo parziale: la quota manca di quel che resta', (select mancano::text from quote_ricevute where numero = 301), '3000');
+select atteso('l''anticipo che copre la quota: non manca niente', (select mancano::text from quote_ricevute where numero = 302), '0');
+select atteso('anticipo pari al totale: non manca niente', (select mancano::text from quote_ricevute where numero = 303), '0');
+select atteso('anticipo e quota pagata in parte: manca la quota, non di più', (select mancano::text from quote_ricevute where numero = 304), '3000');
+select atteso('un anticipo oltre il totale no', tenta($$select emetti_ricevuta(ricevuta_anticipo(305, 0, 29440, 29440, 5001))::text$$), 'NEGATO: Si è pagato più del totale…');
 select atteso('i dati dell''associazione', tenta($$update impostazioni set ricevute = '{"nome": "Asd Il Centro Judo", "codiceFiscale": "10002760014"}'$$), 'FATTO (1 righe)');
 reset role;
 
