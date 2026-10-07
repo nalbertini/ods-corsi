@@ -358,5 +358,97 @@ ok('il genitore che ha mandato il modulo: si prende il suo nome com’è scritto
 r = leggi('Nome e cognome,Indirizzo\nMario Rossi,' + 'x'.repeat(161) + '\n')
 ok('un indirizzo di oltre 160 lettere: fuori, con nota', [r.iscritti[0].anagrafica, r.note[0].motivo.includes('troppo lungo')], [undefined, true])
 
+console.log('\nLo stesso nome in iscritti.csv e nel modulo: una persona sola')
+const unisci = L.unisciFogli
+const corsiDue = [{ id: 'j2', nome: 'Judo 2', ricorrenze: [], istruttori: [] }, { id: 'yo', nome: 'Yoga', ricorrenze: [], istruttori: [] }]
+const Tm = 'Informazioni cronologiche,Nome e cognome,Indirizzo email,Telefono,Data di nascita,CAP,Corsi\n'
+const duePosti = (csv, modulo) => {
+  const f = L.leggiFogli(null, base + csv, ['Judo 2', 'Yoga'])
+  const t = L.leggiTabella(Tm + modulo)
+  const r = L.leggiRisposte(t, L.indovinaColonne(t.testa), { 'Judo 2': 'j2', Yoga: 'yo' }, [{ id: 'j2', nome: 'Judo 2' }, { id: 'yo', nome: 'Yoga' }])
+  const u = unisci(f.iscritti, r.iscritti)
+  return { ...f, iscritti: u.iscritti, note: [...(f.note ?? []), ...u.note] }
+}
+// Il database finto: chi c'è già (`dentro`), cosa salva importa().
+const provaImporta = async (f, dentro = []) => {
+  const creati = []
+  const iscritte = []
+  const salvate = []
+  const d = {
+    sale: async () => [], personale: async () => [], corsi: async () => corsiDue,
+    persone: async () => [...dentro, ...creati.map((p, i) => persona({ ...p, id: 'n' + i }))],
+    salvaPersona: async (p) => { creati.push(p); return 'n' + (creati.length - 1) },
+    iscrivi: async (id, corso, dal) => { iscritte.push([id, corso, dal]) },
+    salvaAnagrafica: async (id, a) => { salvate.push([id, a]) },
+    rigenera: async () => {},
+  }
+  const r = await L.importa(d, f, () => {})
+  return { creati, iscritte, salvate, r }
+}
+const AnnaCsv = 'Anna;Bianchi;;111;Judo 2\n'
+const AnnaMod = '13/06/2020 10:00:00,Anna Bianchi,anna@x.it,222,,,Judo 2\n'
+{
+  const f = duePosti(AnnaCsv, AnnaMod)
+  ok('stesso nome nei due fogli: una scheda sola', f.iscritti.length, 1)
+  ok('il controllo dice 1 nuova, non 2', L.controllaRighe(f, sit([])).totali, { nuova: 1, in_palestra: 0, da_sistemare: 0 })
+  const { creati, r } = await provaImporta(f)
+  ok('importa: una persona creata, con l’email del modulo e il suo telefono', creati.map((p) => [p.nome, p.cognome, p.email, p.telefono]), [['Anna', 'Bianchi', 'anna@x.it', '222']])
+  ok('…e niente da sistemare', r.daSistemare, [])
+  const n = f.note.filter((x) => x.motivo.includes('111'))
+  ok('una nota dice il telefono di iscritti.csv che non è entrato, con foglio e riga', [n.length, n[0]?.foglio, n[0]?.riga, n[0]?.motivo.includes('iscritti.csv'), n[0]?.motivo.includes('riga 2')], [1, 'iscritti.csv', 2, true, true])
+}
+{
+  const f = duePosti('Anna;Bianchi;csv@x.it;;Judo 2\n', AnnaMod)
+  const { creati } = await provaImporta(f)
+  ok('email diverse: vince il modulo, e quella di iscritti.csv non diventa email di contatto', creati.map((p) => [p.email, p.emailContatto]), [['anna@x.it', undefined]])
+  ok('…ma è scritta in una nota, con foglio e riga', f.note.filter((x) => x.motivo.includes('csv@x.it')).map((x) => [x.foglio, x.riga]), [['iscritti.csv', 2]])
+}
+{
+  const { creati } = await provaImporta(duePosti('Anna;Bianchi;;111;Judo 2\n', '13/06/2020 10:00:00,Anna Bianchi,,,,,Judo 2\n'))
+  ok('telefono solo in iscritti.csv: vale quello, senza note', creati.map((p) => p.telefono), ['111'])
+  const f = duePosti('Anna;Bianchi;;111;Judo 2\n', '13/06/2020 10:00:00,Anna Bianchi,,,,,Judo 2\n')
+  ok('…nessuna nota di dato scartato', f.note.length, 0)
+}
+{
+  const { creati } = await provaImporta(duePosti('Anna;Bianchi;csv@x.it;;Judo 2\n', '13/06/2020 10:00:00,Anna Bianchi,,222,,,Judo 2\n'))
+  ok('email solo in iscritti.csv, telefono solo nel modulo: entrano tutti e due', creati.map((p) => [p.email, p.telefono]), [['csv@x.it', '222']])
+}
+{
+  const { creati } = await provaImporta(duePosti('Anna;Bianchi;;111;Judo 2\n', '13/06/2020 10:00:00,anna  BIANCHI,,111 ,,,Judo 2\n'))
+  ok('stesso telefono scritto in altro modo, nome con maiuscole diverse: una persona, nessuna nota', creati.length, 1)
+  const f = duePosti('Anna;Bianchi;;111;Judo 2\n', '13/06/2020 10:00:00,anna  BIANCHI,,111 ,,,Judo 2\n')
+  ok('…nessuna nota', f.note.length, 0)
+}
+{
+  const f = duePosti('Anna;Bianchi;;;Judo 2\n', '13/06/2020 10:00:00,Anna Bianchi,,,,,"Judo 2, Yoga"\n')
+  ok('corsi sommati senza doppioni: Judo 2 e Yoga una volta ciascuno', f.iscritti.map((x) => x.corsi), [['Judo 2', 'Yoga']])
+  const { iscritte } = await provaImporta(f)
+  ok('importa: due iscrizioni, e Judo 2 con la data della risposta del modulo', iscritte, [['n0', 'j2', '2020-06-13'], ['n0', 'yo', '2020-06-13']])
+}
+{
+  const { salvate } = await provaImporta(duePosti(AnnaCsv, '13/06/2020 10:00:00,Anna Bianchi,anna@x.it,222,10/03/2015,00100,Judo 2\n'))
+  ok('l’anagrafica che c’è solo nel modulo viene salvata', salvate, [['n0', { natoIl: '2015-03-10', cap: '00100' }]])
+}
+{
+  const gia = { ...persona({ nome: 'Anna', cognome: 'Bianchi', id: 'a1' }), telefono: '999' }
+  const f = duePosti(AnnaCsv, AnnaMod)
+  const { creati, iscritte, r } = await provaImporta(f, [gia])
+  ok('già nel database: non si crea una seconda persona', creati.length, 0)
+  ok('…il telefono (999) e l’email non si toccano: nessuna scrittura sulla persona', [gia.telefono, gia.email], ['999', undefined])
+  ok('…iscritta al suo corso, una volta', iscritte, [['a1', 'j2', '2020-06-13']])
+  ok('…e niente da sistemare', r.daSistemare, [])
+}
+{
+  const f = duePosti('Anna;Rossi;;;Judo 2\n', '13/06/2020 10:00:00,Anna Bianchi,,,,,Judo 2\n')
+  ok('Anna Rossi in iscritti.csv, Anna Bianchi nel modulo: due persone', f.iscritti.map((x) => [x.nome, x.cognome]), [['Anna', 'Rossi'], ['Anna', 'Bianchi']])
+  ok('…il controllo conta due nuove', L.controllaRighe(f, sit([])).totali.nuova, 2)
+}
+{
+  const f = duePosti('Mario;Rossi;fam@x.it;;Judo 2\n', '13/06/2020 10:00:00,Paolo Rossi,fam@x.it,,,,Judo 2\n')
+  ok('fratelli con la stessa email del genitore, uno per foglio: due persone', f.iscritti.map((x) => x.nome), ['Mario', 'Paolo'])
+  const { creati } = await provaImporta(f)
+  ok('…il secondo senza email di accesso, con quella come contatto', creati.map((p) => [p.nome, p.email, p.emailContatto]), [['Mario', 'fam@x.it', undefined], ['Paolo', undefined, 'fam@x.it']])
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

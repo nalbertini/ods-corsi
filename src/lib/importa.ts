@@ -891,6 +891,50 @@ export function dividiNome(testo: string, cf?: string, email?: string, ordine: O
 }
 
 /**
+ * Chi sta sia in iscritti.csv sia nel modulo è una persona sola: la scheda del foglio prende i corsi
+ * e i dati del modulo. Telefono ed email, se diversi, vale quello del modulo (il più recente) e una
+ * nota dice quello di iscritti.csv che non è entrato.
+ */
+export function unisciFogli(daCsv: IscrittoFoglio[], daModulo: IscrittoFoglio[]): { iscritti: IscrittoFoglio[]; note: Saltata[] } {
+  const note: Saltata[] = []
+  const iscritti = daCsv.map((x) => ({ ...x, corsi: [...x.corsi] }))
+  const cifre = (t: string) => t.replace(/\D/g, '')
+  const chiDi = (x: IscrittoFoglio) => `${compatto(x.nome)} ${compatto(x.cognome)}`
+  for (const m of daModulo) {
+    const stessi = iscritti.filter((x) => chiDi(x) === chiDi(m))
+    if (!stessi.length) {
+      iscritti.push(m)
+      continue
+    }
+    // Più omonimi nel foglio: quello con la stessa email, se c'è.
+    const x = stessi.find((c) => c.email && c.email === m.email) ?? stessi[0]
+    const chi = `${x.nome} ${x.cognome}`
+    for (const c of m.corsi) if (!x.corsi.some((y) => piatto(y) === piatto(c))) x.corsi.push(c)
+    if (m.telefono) {
+      if (x.telefono && cifre(x.telefono) !== cifre(m.telefono)) {
+        note.push({ foglio: 'iscritti.csv', riga: x.riga, nome: chi, motivo: `${chi}: telefono diverso nei due fogli, vale quello del modulo (${m.telefono}); in iscritti.csv, riga ${x.riga}, c'era ${x.telefono}` })
+      }
+      x.telefono = m.telefono
+    }
+    if (m.email) {
+      if (x.email && x.email !== m.email) {
+        note.push({ foglio: 'iscritti.csv', riga: x.riga, nome: chi, motivo: `${chi}: email diversa nei due fogli, vale quella del modulo (${m.email}); in iscritti.csv, riga ${x.riga}, c'era ${x.email}` })
+      }
+      x.email = m.email
+    }
+    if (m.emailContatto && !x.emailContatto) {
+      x.emailContatto = m.emailContatto
+      x.contattoDi = m.contattoDi
+    }
+    // Un'email del modulo non basta a dire che è un'altra persona (spesso è quella del genitore): si riconosce dal nome.
+    if (m.soloStessoNome) x.soloStessoNome = true
+    if (m.anagrafica) x.anagrafica = { ...x.anagrafica, ...m.anagrafica }
+    if (m.iscrittoIl && (!x.iscrittoIl || m.iscrittoIl < x.iscrittoIl)) x.iscrittoIl = m.iscrittoIl
+  }
+  return { iscritti, note }
+}
+
+/**
  * Dalle risposte agli iscritti. `abbinamenti` dice, per ogni scelta, il corso
  * (il suo id) o `''` per lasciarla stare; `corsi` dà i nomi dei corsi.
  */
