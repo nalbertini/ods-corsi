@@ -399,7 +399,8 @@ console.log('\n11. le risposte del modulo Google')
   ok('Giulia, due corsi', r.iscritti[0].corsi, ['Judo 2', 'Lotta 3'])
   ok('Marco, la stessa email della sorella: entra senza', [r.iscritti[1].email, r.iscritti[1].telefono], [undefined, '347 000 1111'])
   ok('Andrea due volte: una persona, l\'ultimo telefono', [r.iscritti[2].corsi, r.iscritti[2].telefono], [['Judo adulti'], '333 999 9999'])
-  ok('le note dicono cosa è entrato a metà', r.note.map((x) => x.riga), [3, 4])
+  // La riga 5 è la nota dei due telefoni diversi di Andrea (regola nuova: vale l'ultimo e lo dice).
+  ok('le note dicono cosa è entrato a metà', r.note.map((x) => x.riga), [3, 4, 5])
 
   const f = { corsi: [], iscritti: r.iscritti, righe: { corsi: 0, iscritti: 0, risposte: r.righe }, saltate: r.saltate, note: r.note }
   const prima = (await s.persone()).length
