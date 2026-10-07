@@ -955,6 +955,9 @@ export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: strin
 export const inRegola = (p: Pick<PersonaSeg, 'certificato' | 'pagamento' | 'quote' | 'natoIl'>, oggi: string) =>
   !['manca', 'scaduto'].includes(statoCertificato(p, oggi)) && comePaga(p, oggi) === 'pagato'
 
+/** Chi è attivo e ha il certificato o la quota da sistemare: il bottone CHI NON È IN REGOLA delle statistiche. */
+export const fuoriRegola = (p: PersonaSeg, oggi: string) => p.attiva && !inRegola(p, oggi)
+
 export type Tono = 'rosso' | 'giallo' | 'verde' | 'spento'
 
 /** Una parola grande col suo colore: un bollino in elenco, un timbro nella scheda. */

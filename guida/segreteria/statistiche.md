@@ -50,7 +50,7 @@ medie: si conta a parte.
   tutti e due.
 - **IN REGOLA OGGI** — il certificato medico e il pagamento di chi è
   iscritto oggi; chi ha meno di 6 anni non ha l'obbligo del certificato e non
-  si conta. **CHI NON È IN REGOLA** apre [Iscritti](iscritti.md).
+  si conta. **CHI NON È IN REGOLA** apre [Iscritti](iscritti.md) già filtrato su chi ha il certificato o la quota da sistemare.
 - **PROVE MESE PER MESE** — quante persone sono venute a provare, ognuna
   contata una volta, nel mese della sua prima prova (chi fa la settimana di
   prova non conta tre volte). Col mouse sopra dice anche le lezioni di prova
