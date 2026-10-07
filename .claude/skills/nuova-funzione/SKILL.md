@@ -25,6 +25,7 @@ riga.
 | 10 | L'app in prova, da rompere | `collaudatore` | se cambia qualcosa che si vede |
 | 11 | La prova in prima persona | `cliente-ods` | se cambia qualcosa che si vede |
 | 12 | Il design aggiornato: la libreria dice com'è l'app adesso | Claude | se è cambiato qualcosa che si vede |
+| 12b | Percorsi critici protetti, prove che non passano per caso | `garante-qualita` | sempre, dopo il 9 (anche in parallelo al 10) |
 | 13 | Prove, guida, titolo, PR | skill `chiudi-lavoro` | sempre |
 
 ## Il design
