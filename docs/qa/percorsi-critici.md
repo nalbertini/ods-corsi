@@ -24,7 +24,7 @@ rompe.
 | Accesso e ruoli (PIN, RLS) | tutti | dati visti da chi non deve | `supabase/prova/rls.sql`, `segreteria.sql`, `prova:segreteria` (ruoli e accessi di `segreteria.ts`) | no |
 | Calendario e date dei corsi | segreteria, tablet | lezione che non compare | `supabase/prova/calendario*.sql`, `date-corsi.sql`, `prova:indirizzi` (indirizzi della segreteria) | no |
 | Prove (modalità prova) e statistiche | segreteria | numeri sbagliati | `prova:prove`, `supabase/prova/prove.sql`, `statistiche.sql` | no |
-| Segnalazioni | tutti | problema segnalato che sparisce | `supabase/prova/segnalazioni.sql`; **SCOPERTO**: allegati (`puo_caricare_allegato`, `puo_allegare`, 32-segnalazioni-allegati.sql) | no |
+| Segnalazioni | tutti | problema segnalato che sparisce | `supabase/prova/segnalazioni.sql` | no |
 | Backup del database | utente | niente da ripristinare | `.github/workflows/backup.yml` (ultimo run verde 2026-10-06); **SCOPERTO**: nessuna prova di ripristino | no |
 | Musica, timer, tablet di sala | istruttore, sala | lezione senza timer/musica | `prova:musica`, `prova:musica-file`, `prova:tablet`, `prova:scaletta`, `prova:strumenti`, `prova:anteprima`, `prova:discipline`, `supabase/prova/musica.sql`, `timer.sql`, `timer-lezioni.sql`, `tablet.sql` | no |
 
