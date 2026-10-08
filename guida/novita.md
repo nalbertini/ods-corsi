@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.48.13 — 8 ottobre 2026
+
+### Modificato
+
+- Libreria di design: il filtro NON IN REGOLA degli iscritti
+
 ## 0.48.12 — 7 ottobre 2026
 
 ### Modificato
