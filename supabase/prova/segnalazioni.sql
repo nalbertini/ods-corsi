@@ -520,3 +520,41 @@ select atteso('non chiama il controllo', tenta($$select puo_allegare('eeeeeeee-0
 select atteso('né quello del file', tenta($$select puo_caricare_allegato('eeeeeeee-0000-0000-0000-0000000000d1/a.png')::text$$), 'NEGATO: …');
 select atteso('né toglie un allegato', tenta($$select togli_allegato('cccccccc-0000-0000-0000-0000000000b1')::text$$), 'NEGATO: …');
 reset role;
+
+\echo ''
+\echo '--- 12. chi era segreteria e non lo è più ---'
+-- Il messaggio resta suo (autore_id), il filo è aperto: a fermarlo è solo
+-- `e_staff()` dentro `puo_allegare`. Dario scrive da segreteria, poi gli
+-- cambiano il ruolo (le segnalazioni non lo impediscono: restano a suo nome).
+insert into auth.users (id, email) values ('77777777-7777-7777-7777-777777777777', 'dario@ods.it');
+insert into persone (id, nome, cognome, ruolo, email, utente_id) values
+  ('aaaaaaaa-0000-0000-0000-000000000007', 'Dario', 'Ex', 'staff', 'dario@ods.it', '77777777-7777-7777-7777-777777777777');
+insert into segnalazioni (id, autore_id, titolo, testo) values
+  ('eeeeeeee-0000-0000-0000-0000000000e1', 'aaaaaaaa-0000-0000-0000-000000000007', 'Di Dario', 'Scritto da segreteria');
+
+select chi('77777777-7777-7777-7777-777777777777');
+set role authenticated;
+select atteso('finché è segreteria, il controllo dice sì',
+  (select puo_allegare('eeeeeeee-0000-0000-0000-0000000000e1')::text), 'true');
+reset role;
+
+update persone set ruolo = 'istruttore' where id = 'aaaaaaaa-0000-0000-0000-000000000007';
+select chi('77777777-7777-7777-7777-777777777777');
+select atteso('(da superutente) il messaggio è ancora a suo nome',
+  (select autore_id::text from segnalazioni where id = 'eeeeeeee-0000-0000-0000-0000000000e1'), 'aaaaaaaa-0000-0000-0000-000000000007');
+set role authenticated;
+select atteso('ma il controllo dice no', (select puo_allegare('eeeeeeee-0000-0000-0000-0000000000e1')::text), 'false');
+select atteso('e per il file no',
+  (select puo_caricare_allegato('eeeeeeee-0000-0000-0000-0000000000e1/d.png')::text), 'false');
+select atteso('il file non si carica',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000e1/d.png')$$), 'NEGATO: …');
+select atteso('la riga non si scrive',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso) values ('eeeeeeee-0000-0000-0000-0000000000e1', 'd.png', 'image/png', 10)$$), 'NEGATO: …');
+reset role;
+
+-- Stesso con l'accesso tolto (`attiva = false`): ruolo_corrente() è null.
+update persone set ruolo = 'staff', attiva = false where id = 'aaaaaaaa-0000-0000-0000-000000000007';
+set role authenticated;
+select atteso('con l''accesso tolto il controllo dice no',
+  (select puo_allegare('eeeeeeee-0000-0000-0000-0000000000e1')::text), 'false');
+reset role;
