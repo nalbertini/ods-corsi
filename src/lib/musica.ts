@@ -1,5 +1,6 @@
 import { eHttp, leggiLink, leggiLinkSpotify, leggiRadio, MESSAGGIO_HTTP } from '../../timer/src/lib/link'
-import { type Disciplina, ripulisciDisciplina } from '../../timer/src/lib/discipline'
+import type { Settings } from '../../timer/src/types'
+import { type Disciplina, nomeDisciplina, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 
 /**
  * La musica delle sale: le liste che la segreteria prepara e il tablet fa
@@ -32,6 +33,9 @@ export function disciplinaDaSalvare(l: { disciplina?: string | null }, disciplin
 
 export type FonteMusica = 'youtube' | 'spotify' | 'radio'
 
+/** Fonte e link della musica, come li legge il timer. */
+export type MusicaDelTimer = Pick<Settings, 'musicaFonte' | 'youtube' | 'radio'>
+
 /**
  * Da dove viene un link: YouTube, Spotify, una radio (un indirizzo https
  * qualunque), o niente che si sappia suonare. L'http semplice non va: l'app è
@@ -61,3 +65,128 @@ export function musicaDellaSala<T extends object>(base: T, spenta: boolean): T |
 export const MAX_NOME_LISTA = 40
 /** Quanto può essere lungo un link: lo dice anche il database. */
 const MAX_LINK = 500
+
+/**
+ * La musica che il timer suona: quella della lista scelta, se se ne sa
+ * suonare il link, altrimenti quella delle impostazioni del timer. Spenta,
+ * vince `musica: false`. La stessa per il tablet e per il telefono.
+ */
+export function musicaScelta(
+  lista: ListaMusica | null,
+  impostazioni: MusicaDelTimer,
+  spenta: boolean,
+): MusicaDelTimer & { musica?: false } {
+  const fonte = lista ? fonteDelLink(lista.link) : null
+  return musicaDellaSala<MusicaDelTimer>(
+    lista && fonte
+      ? { musicaFonte: fonte, youtube: fonte === 'youtube' ? lista.link : impostazioni.youtube, radio: fonte === 'radio' ? lista.link : impostazioni.radio }
+      : { musicaFonte: impostazioni.musicaFonte, youtube: impostazioni.youtube, radio: impostazioni.radio },
+    spenta,
+  )
+}
+
+/** Dove suona: il tablet di sala o il telefono di chi insegna, ognuno con la sua scelta. */
+export type Dispositivo = 'tablet' | 'telefono'
+
+// Le chiavi del tablet sono quelle di sempre: un tablet già in sala non perde la sua scelta.
+const DOVE_SPENTA: Record<Dispositivo, string> = { tablet: 'ods-corsi:musica-spenta', telefono: 'ods-corsi:musica-istruttori-spenta' }
+const DOVE_LISTA: Record<Dispositivo, string> = { tablet: 'ods-corsi:musica-sala', telefono: 'ods-corsi:musica-istruttori' }
+
+/**
+ * Se la musica è spenta su questo dispositivo. Il tablet parte acceso, come
+ * sempre; il telefono spento: suona solo se lo vuole chi insegna, anche in una
+ * sala col tablet che suona già. Senza memoria vale lo stesso.
+ */
+export function spentaRicordata(d: Dispositivo): boolean {
+  try {
+    const v = localStorage.getItem(DOVE_SPENTA[d])
+    return v === null ? d === 'telefono' : v === '1'
+  } catch {
+    return d === 'telefono'
+  }
+}
+export function ricordaSpenta(d: Dispositivo, spenta: boolean) {
+  try {
+    localStorage.setItem(DOVE_SPENTA[d], spenta ? '1' : '0')
+  } catch {
+    // Si perde solo la scelta al prossimo ricaricamento.
+  }
+}
+export function listaRicordata(d: Dispositivo): string | null {
+  try {
+    return localStorage.getItem(DOVE_LISTA[d])
+  } catch {
+    return null
+  }
+}
+export function ricordaLista(d: Dispositivo, id: string | null) {
+  try {
+    if (id) localStorage.setItem(DOVE_LISTA[d], id)
+    else localStorage.removeItem(DOVE_LISTA[d])
+  } catch {
+    // Si perde solo la scelta al prossimo ricaricamento.
+  }
+}
+
+export type StatoMusica = 'spenta' | 'ferma' | 'suona' | 'pausa'
+
+/**
+ * A che punto è la musica. «Ferma» è prima del primo ▶ (o della prima lista
+ * toccata): dopo un ricaricamento la musica non riparte da sola, il browser
+ * non lo lascerebbe e in palestra sarebbe una sorpresa.
+ */
+export function statoMusica({ spenta, partita, inRiproduzione }: { spenta: boolean; partita: boolean; inRiproduzione: boolean }): StatoMusica {
+  if (spenta) return 'spenta'
+  if (!partita) return 'ferma'
+  return inRiproduzione ? 'suona' : 'pausa'
+}
+
+/** La riga sotto il titolo della barra: l'errore prima di tutto, poi «Tocca ▶» se è ferma. */
+export function sottoMusica({ stato, errore, dettaglio }: { stato: StatoMusica; errore: string | null; dettaglio: string }): string {
+  return errore ?? (stato === 'ferma' ? 'Tocca ▶ per farla partire' : dettaglio)
+}
+
+const NOME_FONTE: Record<FonteMusica, string> = { youtube: 'YouTube', spotify: 'Spotify', radio: 'Radio' }
+
+/**
+ * Una lista nel pannello ☰: spenta se non si può suonare, e la riga sotto il
+ * nome che dice cos'è o perché no. Sul telefono la sala non conta (le liste
+ * sono tutte) e YouTube avvisa che col telefono bloccato si ferma.
+ */
+export function rigaLista(
+  l: ListaMusica,
+  { dispositivo, spotifyCollegato, discipline }: { dispositivo: Dispositivo; spotifyCollegato: boolean; discipline: Disciplina[] },
+): { spenta: boolean; sotto: string } {
+  const fonte = fonteDelLink(l.link)
+  if (!fonte) return { spenta: true, sotto: 'Link non valido' }
+  if (fonte === 'spotify' && !spotifyCollegato) return { spenta: true, sotto: `Spotify non è collegato su questo ${dispositivo}` }
+  const disciplina = nomeDisciplina(l.disciplina, discipline)
+  const pezzi = [
+    fonte === 'radio' ? 'Radio' : `Playlist ${NOME_FONTE[fonte]}`,
+    dispositivo === 'tablet' && !l.salaId ? 'tutte le sale' : null,
+    disciplina,
+    dispositivo === 'telefono' && fonte === 'youtube' ? 'si ferma col telefono bloccato' : null,
+  ]
+  return { spenta: false, sotto: pezzi.filter(Boolean).join(' · ') }
+}
+
+export type AzioneMusica = 'scegli' | 'spegni' | 'accendi' | 'ferma' | 'suona'
+
+/**
+ * Cosa fa un tasto della musica: se la musica è partita, se va messa in pausa
+ * e cosa ricordare dello spento (assente: resta com'era). Accesa non vuol dire
+ * partita: dopo ACCENDI si tocca ▶ o una lista.
+ */
+export function azioneMusica(a: AzioneMusica): { parti: boolean; pausa: boolean; spenta?: boolean } {
+  switch (a) {
+    case 'scegli':
+    case 'suona':
+      return { parti: true, pausa: false }
+    case 'spegni':
+      return { parti: false, pausa: true, spenta: true }
+    case 'accendi':
+      return { parti: false, pausa: false, spenta: false }
+    case 'ferma':
+      return { parti: false, pausa: true }
+  }
+}

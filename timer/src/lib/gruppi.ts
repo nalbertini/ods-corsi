@@ -115,3 +115,10 @@ export const conBarra = (incorporato: boolean, voci: number) => !incorporato || 
 
 /** Lo strumento aperto prende lo schermo, ma solo nella scheda dei timer. */
 export const aTuttoSchermo = (tab: string, strumento: Strumento | null) => tab === 'timer' && strumento !== null
+
+/**
+ * Cambiando scheda, lo strumento aperto: un tocco sulle schede del timer lo
+ * chiude; la scheda chiesta da fuori (il tasto IMPOSTAZIONI dell'app
+ * istruttori) no, perché un cronometro avviato deve restare quello che era.
+ */
+export const strumentoDopo = (aperto: Strumento | null, chi: 'tasto' | 'fuori'): Strumento | null => (chi === 'fuori' ? aperto : null)

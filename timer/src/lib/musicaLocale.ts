@@ -18,7 +18,7 @@ export interface Coda {
 
 /** Le scritte per chi usa l'app: parole della palestra, non da tecnici. */
 export const TESTI_MUSICA = {
-  file: 'FILE DEL TABLET',
+  file: 'FILE',
   radio: 'RADIO',
   fileQui: 'File su questo apparecchio',
   fileIlleggibili: 'Non riesco a leggere questi file: scegli file MP3 o AAC',

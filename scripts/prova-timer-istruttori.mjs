@@ -12,7 +12,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/timerIstruttori'; export { timerDellaLezione } from './src/lib/aree'; export { lezioneDaIndirizzo } from './timer/src/lib/lezione'",
+      "export * from './src/lib/timerIstruttori'; export { timerDellaLezione } from './src/lib/aree'; export { lezioneDaIndirizzo } from './timer/src/lib/lezione'; export { strumentoDopo } from './timer/src/lib/gruppi'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -116,6 +116,54 @@ ok('nessuno e nessuno: non ridisegna', m.statoCambiato(null, null), false)
 const TESTO = 'Il timer funziona lo stesso. La voce incisa lascia il posto a quella del telefono e le illustrazioni degli esercizi non si vedono.'
 ok('offline: il testo del design', m.avvisoSenzaRete(false), TESTO)
 ok('online: nessun avviso', m.avvisoSenzaRete(true), null)
+
+// Una funzione che manca fa fallire il caso, non tutta la prova.
+const vedi = (f) => { try { return f() } catch (e) { return `ERRORE: ${e.message}` } }
+
+// 9. LA MUSICA DEL TABLET NEL TIMER DEL TELEFONO (design: docs/design-canvas/timer-musica).
+const MUSICA = 'Il timer funziona lo stesso. YouTube, Spotify e la radio non partono, i file del telefono sì. La voce incisa lascia il posto a quella del telefono e le illustrazioni degli esercizi non si vedono.'
+ok('offline con la musica: l\'avviso dice cosa fa la musica', vedi(() => m.avvisoSenzaRete(false, true)), MUSICA)
+ok('offline senza la musica: il testo di oggi', vedi(() => m.avvisoSenzaRete(false, false)), TESTO)
+ok('online con la musica: nessun avviso', vedi(() => m.avvisoSenzaRete(true, true)), null)
+
+// La barra piccola della musica, fuori dalla pagina TIMER.
+ok('suona su un\'altra pagina: la barra piccola si vede', vedi(() => m.mostraMusicaMini('suona', 'calendario')), true)
+ok('in pausa su un\'altra pagina: si vede', vedi(() => m.mostraMusicaMini('pausa', 'ore')), true)
+ok('nella pagina TIMER: non si vede (lì c\'è la barra intera)', vedi(() => m.mostraMusicaMini('suona', 'timer')), false)
+ok('spenta: non si vede', vedi(() => m.mostraMusicaMini('spenta', 'calendario')), false)
+ok('ferma dopo un ricaricamento: non si vede', vedi(() => m.mostraMusicaMini('ferma', 'mieiTimer')), false)
+ok(
+  'indipendente dalla striscia: musica senza allenamento, si vede solo la musica',
+  vedi(() => [m.mostraStriscia('idle', 'calendario'), m.mostraMusicaMini('suona', 'calendario')]),
+  [false, true],
+)
+ok(
+  'indipendente dalla striscia: allenamento senza musica, si vede solo la striscia',
+  vedi(() => [m.mostraStriscia('running', 'calendario'), m.mostraMusicaMini('spenta', 'calendario')]),
+  [true, false],
+)
+
+// Il timer del telefono non tocca i tablet: niente onTimerSala, e sala resta null.
+{
+  const musica = { musicaFonte: 'youtube', youtube: 'https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo1Z', radio: '' }
+  const inc = vedi(() => m.incorporatoIstruttori({ lezione: null, musica, visibile: true, ferma: 0 }))
+  ok('il timer del telefono non manda le impostazioni ai tablet (niente onTimerSala)', typeof inc === 'object' && inc !== null && !('onTimerSala' in inc), true)
+  ok('il timer del telefono non ha il timer della sala', inc?.sala, null)
+  ok('il timer del telefono suona la musica scelta sul telefono', inc?.musica, musica)
+}
+
+// IMPOSTAZIONI dall'app istruttori: si cambia solo la scheda, un cronometro aperto resta aperto.
+ok('scheda chiesta da fuori: il cronometro aperto resta', vedi(() => m.strumentoDopo('crono', 'fuori')), 'crono')
+ok('scheda toccata nel timer: lo strumento si chiude, come sempre', vedi(() => m.strumentoDopo('crono', 'tasto')), null)
+
+// ESCI ferma la musica, prima di uscire: anche quella che suona nell'app di Spotify.
+{
+  const fatto = []
+  const esci = vedi(() => m.esciConMusica(() => fatto.push('ferma'), () => fatto.push('esci')))
+  if (typeof esci === 'function') esci()
+  ok('ESCI: prima si ferma la musica, poi si esce', fatto, ['ferma', 'esci'])
+  ok('senza ESCI (prova senza account): niente tasto', vedi(() => m.esciConMusica(() => fatto.push('ferma'), undefined)), undefined)
+}
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

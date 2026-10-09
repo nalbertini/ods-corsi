@@ -26,6 +26,8 @@ const SEZIONI = [
   { id: 'importa-fogli', nome: 'Importa da Excel', cartella: 'import-fogli' },
   { id: 'email-contatto', nome: 'Email di contatto · proposta', cartella: 'email-contatto' },
   { id: 'timer-desktop', nome: 'Timer desktop · proposte', cartella: 'timer-desktop' },
+  { id: 'timer-istruttori', nome: 'Timer nell\'app istruttori', cartella: 'timer-istruttori' },
+  { id: 'timer-musica', nome: 'Musica nel timer istruttori', cartella: 'timer-musica' },
   { id: 'certificati-online', nome: 'Certificati online', cartella: 'certificati-online' },
   { id: 'certificato-piccoli', nome: 'Certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
   { id: 'istruttore-collega', nome: 'Istruttore che insegna con te', cartella: 'istruttore-collega' },
@@ -106,6 +108,15 @@ for (const s of SEZIONI) {
   if (c) {
     posti = c.artboards.filter((a) => propri.includes(a.file) && !(a.page === 'page-2' && nomiLibreria.has(stem(a.file))))
     for (const a of posti) Object.assign(a, anteprima(leggi(join(cartella, a.file))))
+    // Una sezione con più pagine diventa una pagina sola: ogni pagina ripartirebbe da 0,0 sopra le altre,
+    // quindi si mettono una sotto l'altra, nell'ordine di canvas.json.
+    let yPagina = 0
+    for (const p of c.pages ?? []) {
+      const suoi = posti.filter((a) => (a.page ?? 'page-1') === p.id)
+      if (!suoi.length) continue
+      for (const a of suoi) a.y += yPagina
+      yPagina = Math.max(...suoi.map((a) => a.y + a.h)) + 300
+    }
     const senzaPosto = propri.filter((f) => !posti.some((a) => a.file === f))
     const yMax = Math.max(0, ...posti.map((a) => a.y + a.h)) + 160
     posti.push(...griglia(cartella, senzaPosto).map((e) => ({ ...e, y: e.y + yMax })))

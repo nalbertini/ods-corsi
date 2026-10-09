@@ -3,6 +3,8 @@ import { lezioneDaIndirizzo, type Lezione } from '../../timer/src/lib/lezione'
 import type { SegmentKind } from '../../timer/src/types'
 import type { Status } from '../../timer/src/lib/useTimer'
 import { timerDellaLezione } from './aree'
+import type { Incorporato, StatoTimer } from '../../timer/src/lib/incorporato'
+import type { StatoMusica } from './musica'
 
 /**
  * Il timer dentro l'app degli istruttori: una pagina della stessa scheda, con
@@ -85,10 +87,14 @@ export function chiediPrimaDiSostituire(inCorso: { lezioneId: string | null; sta
   return richiesta !== inCorso.lezioneId
 }
 
-/** Senza rete il timer parte lo stesso: l'avviso dice cosa cambia. Null se online. */
-export function avvisoSenzaRete(online: boolean): string | null {
-  return online
-    ? null
+/**
+ * Senza rete il timer parte lo stesso: l'avviso dice cosa cambia, e con la
+ * musica accesa anche cosa suona ancora. Null se online.
+ */
+export function avvisoSenzaRete(online: boolean, conMusica = false): string | null {
+  if (online) return null
+  return conMusica
+    ? 'Il timer funziona lo stesso. YouTube, Spotify e la radio non partono, i file del telefono sì. La voce incisa lascia il posto a quella del telefono e le illustrazioni degli esercizi non si vedono.'
     : 'Il timer funziona lo stesso. La voce incisa lascia il posto a quella del telefono e le illustrazioni degli esercizi non si vedono.'
 }
 
@@ -114,4 +120,48 @@ interface StatoVisto {
 export function statoCambiato(prima: StatoVisto | null, dopo: StatoVisto | null): boolean {
   if (!prima || !dopo) return prima !== dopo
   return prima.status !== dopo.status || prima.kind !== dopo.kind || prima.nome !== dopo.nome || prima.conto !== dopo.conto
+}
+
+/**
+ * La barra piccola della musica, fuori dalla pagina TIMER: solo se la musica
+ * suona o è in pausa. Spenta o ferma (dopo un ricaricamento) non c'è niente da
+ * comandare da fuori. Non dipende dall'allenamento: le due barre sono separate.
+ */
+export function mostraMusicaMini(stato: StatoMusica, pagina: PaginaIstruttori): boolean {
+  return pagina !== 'timer' && (stato === 'suona' || stato === 'pausa')
+}
+
+/**
+ * Il timer dentro l'app istruttori. Senza `sala` né `onTimerSala`: le
+ * impostazioni cambiate dal telefono (la musica compresa) restano sul
+ * telefono e non arrivano ai tablet. La musica è quella scelta qui.
+ */
+export function incorporatoIstruttori({
+  lezione,
+  musica,
+  visibile,
+  ferma,
+  onStato = () => {},
+  onSettings = () => {},
+}: {
+  lezione: Lezione | null
+  musica: Incorporato['musica']
+  visibile: boolean
+  ferma: number
+  onStato?: (s: StatoTimer | null) => void
+  onSettings?: Incorporato['onSettings']
+}): Incorporato {
+  // La scheda (TIMER o IMPOSTAZIONI) la sceglie PaginaTimer, col tasto accanto al titolo.
+  return { lezione, musica, sala: null, clip: null, visibile, conImpostazioni: true, senzaTestata: true, ferma, onStato, onSettings }
+}
+
+/** ESCI ferma la musica prima di uscire: Spotify suonerebbe ancora nella sua app. Senza ESCI, niente tasto. */
+export function esciConMusica(ferma: () => void, esci: (() => void) | undefined): (() => void) | undefined {
+  return (
+    esci &&
+    (() => {
+      ferma()
+      esci()
+    })
+  )
 }

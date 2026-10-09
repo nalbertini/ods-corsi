@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «musica nel timer istruttori»: fuori dal TIMER: in alto la striscia dell'allenamento, in basso la barra piccola della musica, sopra la barra delle pagine. Non coprono i nomi ne' CHIUDI. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+  <dc-import name="TimerStriscia" stato="lavoro" nome="Tabata brucia grassi" tempo="00:14" hint-size="100%,56px"></dc-import>
+  <dc-import name="TestaAppello" corso="Judo kids" kanji="柔" quando="Martedì 18:30 · Sala 1" presenti="2" iscritti="5" prove="1" mancano="2" tasto="GLI ALTRI PRESENTI" hint-size="100%,224px"></dc-import>
+  <main style="display: flex; flex-direction: column; flex-grow: 1">
+    <dc-import name="Titoletto" label="ISCRITTI" conto="5" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px 20px">
+      <dc-import name="RigaAppello" nome="Bianchi Sofia" stato="presente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" nome="Ferrari Matteo" stato="presente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" nome="Greco Luca" stato="assente" hint-size="100%,56px"></dc-import>
+      <dc-import name="RigaAppello" nome="Marino Anna" stato="niente" hint-size="100%,56px"></dc-import>
+    </div>
+    <div style="padding: 0 20px 28px">
+      <dc-import name="Bottone" label="CHIUDI · 2 ASSENTI" variante="principale" hint-size="100%,56px"></dc-import>
+    </div>
+  </main>
+  <dc-import name="MusicaMini" musica="suona" titolo="Riscaldamento" hint-size="100%,56px"></dc-import>
+  <dc-import name="BarraNavigazione" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="CALENDARIO" hint-size="100%,66px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

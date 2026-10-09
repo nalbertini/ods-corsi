@@ -48,7 +48,7 @@ import {
   versoIlServer,
 } from './lib/libreria'
 import { type Lezione, lezioneDaIndirizzo } from './lib/lezione'
-import { type Gruppo, type Strumento, aTuttoSchermo, conBarra, gruppiDi } from './lib/gruppi'
+import { type Gruppo, type Strumento, aTuttoSchermo, conBarra, gruppiDi, strumentoDopo } from './lib/gruppi'
 import type { Incorporato } from './lib/incorporato'
 import { CHIAVI_SALA, type ImpostazioniSala, type TimerSala, salvaTimerSala, scaricaDiscipline, toccaLaSala } from './lib/impostazioniSala'
 import { type Disciplina, disciplineConVoci, filtroValido, loadDiscipline, saveDiscipline } from './lib/discipline'
@@ -163,8 +163,8 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   // Cronometro e conto alla rovescia si aprono dalla lista dei timer, a tutto schermo.
   const [strumento, setStrumento] = useState<Strumento | null>(null)
   const pieno = aTuttoSchermo(tab, strumento)
-  const vaiA = (t: Tab) => {
-    setStrumento(null)
+  const vaiA = (t: Tab, chi: 'tasto' | 'fuori' = 'tasto') => {
+    setStrumento((s) => strumentoDopo(s, chi))
     setTab(t)
   }
   // Sul tablet le impostazioni si aprono solo con l'area istruttore: chiusa
@@ -174,6 +174,14 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   useEffect(() => {
     if (!conImpostazioni) setTab((t) => (t === 'impostazioni' ? 'timer' : t))
   }, [conImpostazioni])
+  // Con la scheda scelta da fuori la barra delle schede non c'è: le voci contano come una.
+  const comandata = incorporato?.scheda
+  const voci = comandata ? 1 : schede.length
+  useEffect(() => {
+    if (comandata) vaiA(comandata, 'fuori')
+    // Solo al cambio di scheda chiesto da fuori: vaiA è nuova a ogni render ma fa sempre lo stesso.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comandata])
   // Letto una volta all'apertura: è la fotografia di com'era quando l'app è morta.
   const [interrotto, setInterrotto] = useState<Interrotto | null>(() => leggiInterrotto())
   const [view, setView] = useState<View>({ kind: 'tabs' })
@@ -833,7 +841,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
           ODS Corsi: il marchio piccolo con il nome dell'area, le voci con il
           filo rosso a sinistra, e in fondo il ritorno e la versione. */}
       {/* Sul tablet con le impostazioni chiuse le voci sarebbero una sola: niente barra. */}
-      {conBarra(!!incorporato, schede.length) && (
+      {conBarra(!!incorporato, voci) && (
         <nav className="sidebar" aria-label="Timer">
           {/* Sul tablet il marchio c'è già, nella testata della sala. */}
           {!incorporato && (
@@ -898,7 +906,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
         {!incorporato && <MusicaBar musica={musica} className="musica-schede" />}
 
         {/* Con una voce sola (il tablet, impostazioni chiuse) la barra non serve. */}
-        {schede.length > 1 && (
+        {voci > 1 && (
           <nav className="tabbar">
             {schede.map((t) => {
               const Icon = t.icon

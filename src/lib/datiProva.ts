@@ -10,6 +10,7 @@ import type { MiaPresenza } from './ore'
 import type { ChiProva, GiaProvato, PersonaTrovata } from './prove'
 import { bastaPerCercare, cosaNonVaProva, eGiaVenuto, pulisciProva, TETTO_TROVATI } from './prove'
 import { paroleCercate, somiglia } from './nomi'
+import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 
 /**
  * La sala corsi senza server: l'orario vero della stagione 2026/27, con degli
@@ -531,6 +532,15 @@ export function creaDatiProva(): Dati {
 
     async attivita() {
       return attivitaPerMenu(archivio.dati.attivita ?? []).map(({ id, nome }) => ({ id, nome }))
+    },
+
+    async listeMusica() {
+      // Una categoria tolta dalla segreteria non resta appesa: come col database.
+      const discipline = disciplineDa(archivio.dati.discipline)
+      return (archivio.dati.musica ?? []).map((l) => {
+        const disciplina = ripulisciDisciplina(l.disciplina, discipline)
+        return { id: l.id, nome: l.nome, link: l.link, salaId: l.sala, ...(disciplina ? { disciplina } : {}) }
+      })
     },
 
     async cambiaAttivita(sessioneId, attivitaId) {

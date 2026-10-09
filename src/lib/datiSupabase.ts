@@ -7,6 +7,7 @@ import { attivitaPerMenu, mancaAttivita, type ComePresenzaIstruttore } from './s
 import type { StatoPresenzaIstruttore } from './tablet'
 import { contiDellAppello, giornoDi, perCognome, valeIl } from './sala'
 import { Coda } from './coda'
+import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import type { GiaProvato, NuovaProva, PersonaTrovata } from './prove'
 import { bastaPerCercare, eGiaVenuto, nuovoId, pulisciProva, RICERCA_NON_ATTIVA } from './prove'
 
@@ -248,6 +249,23 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       if (mancaAttivita(error)) return []
       if (error) throw error
       return attivitaPerMenu((data ?? []) as Array<{ id: string; nome: string; attiva: boolean }>).map(({ id, nome }) => ({ id, nome }))
+    },
+
+    async listeMusica() {
+      type Riga = { id: string; nome: string; link: string; sala_id: string | null; disciplina?: string | null }
+      // Senza 40-discipline.sql la colonna non c'è: le liste si leggono senza categoria.
+      const con = await db.from('musica_sale').select('id, nome, link, sala_id, disciplina').order('ordine').order('nome')
+      const r = con.error?.code === '42703' ? await db.from('musica_sale').select('id, nome, link, sala_id').order('ordine').order('nome') : con
+      // Senza 09-musica.sql non ci sono liste: resta la musica delle impostazioni del timer.
+      if (r.error?.code === '42P01' || r.error?.code === 'PGRST205') return []
+      if (r.error) throw r.error
+      const d = await db.from('impostazioni').select('discipline').maybeSingle()
+      // Senza i tipi generati di supabase-js le righe arrivano senza forma: la si dice qui, come nel resto del file.
+      const discipline = disciplineDa(d.error ? null : (d.data as { discipline?: unknown } | null)?.discipline)
+      return ((r.data ?? []) as Riga[]).map((x) => {
+        const disciplina = ripulisciDisciplina(x.disciplina, discipline)
+        return { id: x.id, nome: x.nome, link: x.link, salaId: x.sala_id, ...(disciplina ? { disciplina } : {}) }
+      })
     },
 
     async cambiaAttivita(sessioneId, attivitaId) {
