@@ -381,6 +381,15 @@ reset role;
 select atteso('il quarto no nemmeno dalla porta di Storage',
   tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000b1/f5.png')$$),
   'NEGATO: Questo messaggio ha già 3 allegati…');
+insert into storage.buckets (id, name) values ('spostato', 'spostato') on conflict do nothing;
+insert into storage.objects (bucket_id, name) values ('spostato', 'x/f6.png');
+select atteso('né spostandocene uno da un altro contenitore',
+  tenta($$update storage.objects set bucket_id = 'segnalazioni', name = 'eeeeeeee-0000-0000-0000-0000000000b1/f6.png' where bucket_id = 'spostato'$$),
+  'NEGATO: Questo messaggio ha già 3 allegati…');
+delete from storage.objects where bucket_id = 'spostato';
+select atteso('ma uno che cambia nome nella sua cartella sì',
+  tenta($$update storage.objects set name = 'eeeeeeee-0000-0000-0000-0000000000b1/f1-bis.png' where name = 'eeeeeeee-0000-0000-0000-0000000000b1/f1.png'$$),
+  'FATTO (1 righe)');
 select atteso('file e righe degli allegati si contano uno alla volta',
   (select string_agg(proname || ' ' || (strpos(prosrc, 'pg_advisory_xact_lock') between 1 and strpos(prosrc, 'count(*)'))::text, ', ' order by proname)
      from pg_proc where proname in ('limita_allegati', 'limita_file_allegati')),
