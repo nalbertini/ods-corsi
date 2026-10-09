@@ -124,6 +124,12 @@ select atteso('il genitore di un altro nome', tenta($$select invia_iscrizione(ad
   'NEGATO: Il codice fiscale del genitore non torna con il suo nome e cognome…');
 select atteso('la quarta nello stesso giorno no', tenta($$select invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Quarto', 'codice_fiscale', cf_prova('RSSQRT', (current_date - interval '30 years')::date))))::text$$), 'NEGATO: Da questa email sono già arrivate 3 richieste oggi…');
 reset role;
+-- Venti richieste mandate insieme vedevano tutte lo stesso conteggio e ne
+-- passavano tredici invece di tre: in psql il parallelo non si fa, quindi si
+-- guarda che la funzione prenda il suo turno prima di contare.
+select atteso('le richieste si contano una alla volta',
+  (select (strpos(prosrc, 'pg_advisory_xact_lock(hashtext(''invia_iscrizione''))') between 1 and strpos(prosrc, 'per_email_al_giorno'))::text
+     from pg_proc where proname = 'invia_iscrizione'), 'true');
 select atteso('email e codice fiscale messi in ordine',
   (select email || ' ' || (codice_fiscale = cf_prova('RSSLCU', (current_date - interval '30 years')::date)) from richieste_iscrizione where nome = 'Luca'), 'luca@esempio.it true');
 select atteso('il luogo di nascita è quello del codice, non quello scritto',

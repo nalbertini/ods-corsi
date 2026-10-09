@@ -65,6 +65,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'corsi_aperti')),
   ('06-iscrizioni.sql', 'le richieste rifiutate fuori dal limite',
     exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%<> ''rifiutata''%')),
+  ('06-iscrizioni.sql', 'le richieste contate una alla volta',
+    exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pg_advisory_xact_lock%')),
   ('06-iscrizioni.sql', 'il codice fiscale controllato',
     exists (select 1 from dentro where nome = 'cf_controllo')),
   -- Chi non ha un accesso chiama solo le funzioni del modulo. Se ce n'è

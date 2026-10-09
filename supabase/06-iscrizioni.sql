@@ -218,6 +218,11 @@ declare
   tel_2 text := nullif(trim(coalesce(dati->>'telefono_2', '')), '');
   testo text;
 begin
+  -- Una richiesta alla volta: senza, quelle mandate insieme vedono tutte lo
+  -- stesso conteggio della porta qui sotto e passano oltre il limite. Il turno
+  -- dura fino alla fine della transazione, cioè fino all'insert.
+  perform pg_advisory_xact_lock(hashtext('invia_iscrizione'));
+
   -- I campi di testo obbligatori, detti per nome se mancano.
   foreach testo in array array['nome:nome', 'cognome:cognome', 'nato_il:data di nascita', 'nato_a:luogo di nascita',
                                'codice_fiscale:codice fiscale', 'indirizzo:indirizzo', 'cap:CAP',
