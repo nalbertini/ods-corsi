@@ -10,6 +10,13 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.51.1 — 9 ottobre 2026
+
+### Risolto
+
+- I file di una richiesta di iscrizione restano cinque anche caricandoli tutti insieme
+- Gli allegati di una segnalazione restano tre anche caricandoli tutti insieme
+
 ## 0.51.0 — 9 ottobre 2026
 
 ### Novità

@@ -87,6 +87,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('06-iscrizioni.sql', 'documento e certificato col modulo, da stampare',
     exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%certificato%')
     and exists (select 1 from dentro where nome = 'richieste_con_documento')),
+  ('06-iscrizioni.sql', 'i file di una richiesta contati uno alla volta',
+    exists (select 1 from pg_trigger where tgname = 'limita_file_iscrizione' and not tgisinternal)),
   ('07-certificati-pagamenti.sql', 'certificati e pagamenti',
     to_regclass('public.schede_iscritti') is not null),
   ('07-certificati-pagamenti.sql', 'certificato e documento su carta',
@@ -249,6 +251,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('32-segnalazioni-allegati.sql', 'un allegato lo toglie solo chi l''ha mandato',
     exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'togli_allegato')
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'pulisci_allegati')),
+  ('32-segnalazioni-allegati.sql', 'gli allegati di un messaggio contati uno alla volta',
+    exists (select 1 from pg_trigger where tgname = 'limita_file_allegati' and not tgisinternal)
+    and exists (select 1 from pg_trigger where tgname = 'limita_allegati' and not tgisinternal)),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')

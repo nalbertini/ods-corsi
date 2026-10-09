@@ -91,7 +91,10 @@ documento su carta si rilanciano `06-iscrizioni.sql` e
 segreteria lo stampa e lo cancella. Perché il limite delle richieste di
 iscrizione regga anche quando ne arrivano tante insieme si rilancia
 `06-iscrizioni.sql`, e dopo `45-certificati-online.sql`: finché non c'è, il
-modulo funziona come prima. Per il certificato nell'app, al posto
+modulo funziona come prima. Lo stesso rilancio tiene i file di una richiesta
+dentro il limite anche quando si caricano tutti insieme: lo fa un trigger su
+`storage.objects`, una tabella di Supabase, e se un suo aggiornamento lo
+togliesse `controllo.sql` lo dice e si rilancia `06-iscrizioni.sql`. Per il certificato nell'app, al posto
 della carta, basta `45-certificati-online.sql` (vedi «Il certificato medico
 nell'app», più sotto). Per la sala dei singoli giorni
 (la colonna `ricorrenze.sala_id`) sono `01-schema.sql`, `03-funzioni.sql`,
@@ -164,7 +167,10 @@ Per i file nelle segnalazioni basta `32-segnalazioni-allegati.sql` (dopo
 finché non c'è, le segnalazioni funzionano come prima e il tasto per allegare
 dice che va lanciato. La pulizia dopo 30 giorni gira ogni notte con pg_cron
 (Database → Extensions); se non è acceso, `select pulisci_allegati();` si
-lancia a mano di tanto in tanto.
+lancia a mano di tanto in tanto. Perché i 3 allegati per messaggio restino 3
+anche caricandoli insieme si rilancia `32-segnalazioni-allegati.sql`: lo fa un
+trigger su `storage.objects`, una tabella di Supabase, e se un suo
+aggiornamento lo togliesse `controllo.sql` lo dice.
 Per i corsi rossi che passano al viola basta `26-colori-corsi.sql` (dopo
 `01-schema.sql`), una volta sola, che non chiede di rilanciare
 `06-iscrizioni.sql`: finché non c'è, i corsi che erano rossi restano rossi.
