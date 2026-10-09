@@ -161,6 +161,7 @@ ok('telefono: link non valido', riga(listaRotta, 'telefono', true), [true, 'Link
 ok('telefono: YouTube dice che col telefono bloccato si ferma', riga(listaYt, 'telefono', true), [false, 'Playlist YouTube · si ferma col telefono bloccato'])
 ok('telefono: Spotify collegato', riga(listaSp, 'telefono', true), [false, 'Playlist Spotify'])
 ok('telefono: radio', riga(listaRadio, 'telefono', false), [false, 'Radio'])
+ok('telefono: per tutte le sale e per il judo, la sala non si dice', riga({ ...listaYt, salaId: null, disciplina: 'judo' }, 'telefono', true), [false, 'Playlist YouTube · Judo · si ferma col telefono bloccato'])
 
 console.log('\nCosa fanno i tasti della musica: cosa si ricorda e se la musica è partita')
 const az = (a) => piano(vedi(() => L.azioneMusica(a)))

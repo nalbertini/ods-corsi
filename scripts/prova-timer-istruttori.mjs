@@ -12,7 +12,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/timerIstruttori'; export { timerDellaLezione } from './src/lib/aree'; export { lezioneDaIndirizzo } from './timer/src/lib/lezione'",
+      "export * from './src/lib/timerIstruttori'; export { timerDellaLezione } from './src/lib/aree'; export { lezioneDaIndirizzo } from './timer/src/lib/lezione'; export { strumentoDopo } from './timer/src/lib/gruppi'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -151,6 +151,10 @@ ok(
   ok('il timer del telefono non ha il timer della sala', inc?.sala, null)
   ok('il timer del telefono suona la musica scelta sul telefono', inc?.musica, musica)
 }
+
+// IMPOSTAZIONI dall'app istruttori: si cambia solo la scheda, un cronometro aperto resta aperto.
+ok('scheda chiesta da fuori: il cronometro aperto resta', vedi(() => m.strumentoDopo('crono', 'fuori')), 'crono')
+ok('scheda toccata nel timer: lo strumento si chiude, come sempre', vedi(() => m.strumentoDopo('crono', 'tasto')), null)
 
 // ESCI ferma la musica, prima di uscire: anche quella che suona nell'app di Spotify.
 {

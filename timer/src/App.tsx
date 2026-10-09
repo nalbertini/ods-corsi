@@ -48,7 +48,7 @@ import {
   versoIlServer,
 } from './lib/libreria'
 import { type Lezione, lezioneDaIndirizzo } from './lib/lezione'
-import { type Gruppo, type Strumento, aTuttoSchermo, conBarra, gruppiDi } from './lib/gruppi'
+import { type Gruppo, type Strumento, aTuttoSchermo, conBarra, gruppiDi, strumentoDopo } from './lib/gruppi'
 import type { Incorporato } from './lib/incorporato'
 import { CHIAVI_SALA, type ImpostazioniSala, type TimerSala, salvaTimerSala, scaricaDiscipline, toccaLaSala } from './lib/impostazioniSala'
 import { type Disciplina, disciplineConVoci, filtroValido, loadDiscipline, saveDiscipline } from './lib/discipline'
@@ -163,8 +163,8 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   // Cronometro e conto alla rovescia si aprono dalla lista dei timer, a tutto schermo.
   const [strumento, setStrumento] = useState<Strumento | null>(null)
   const pieno = aTuttoSchermo(tab, strumento)
-  const vaiA = (t: Tab) => {
-    setStrumento(null)
+  const vaiA = (t: Tab, chi: 'tasto' | 'fuori' = 'tasto') => {
+    setStrumento((s) => strumentoDopo(s, chi))
     setTab(t)
   }
   // Sul tablet le impostazioni si aprono solo con l'area istruttore: chiusa
@@ -178,8 +178,9 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   const comandata = incorporato?.scheda
   const voci = comandata ? 1 : schede.length
   useEffect(() => {
-    // Solo la scheda, non `vaiA`: un cronometro aperto resta aperto passando dalle impostazioni.
-    if (comandata) setTab(comandata)
+    if (comandata) vaiA(comandata, 'fuori')
+    // Solo al cambio di scheda chiesto da fuori: vaiA è nuova a ogni render ma fa sempre lo stesso.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comandata])
   // Letto una volta all'apertura: è la fotografia di com'era quando l'app è morta.
   const [interrotto, setInterrotto] = useState<Interrotto | null>(() => leggiInterrotto())

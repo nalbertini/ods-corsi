@@ -3058,7 +3058,7 @@ const valore = async (f) => { try { return await f() } catch (e) { return `ERROR
 
 // Lo stesso col database, finto: la tabella o la colonna disciplina possono mancare.
 {
-  const righe = [{ id: 'l1', nome: 'Randori', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: 'Lotta', disciplina: 'judo' }, { id: 'l2', nome: 'Varie', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: null, disciplina: null }]
+  const righe = [{ id: 'l1', nome: 'Randori', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: 'Lotta', disciplina: 'judo' }, { id: 'l2', nome: 'Varie', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: null, disciplina: null }, { id: 'l3', nome: 'Vecchia', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: null, disciplina: 'karate' }]
   const scritture = []
   const finto = ({ tabella, colonna, codice = '42P01' }) => {
     const risposta = (tab, cols) => {
@@ -3087,8 +3087,8 @@ const valore = async (f) => { try { return await f() } catch (e) { return `ERROR
   const leggi = async (o) => {
     return valore(async () => (await m.creaDatiSupabase(finto(o)).listeMusica()).map((l) => [l.nome, l.salaId, l.disciplina]))
   }
-  ok('database: tutte le liste, con sala e categoria', await leggi({ tabella: true, colonna: true }), [['Randori', 'Lotta', 'judo'], ['Varie', null, undefined]])
-  ok('database senza la colonna disciplina (42703): le liste, senza categoria', await leggi({ tabella: true, colonna: false }), [['Randori', 'Lotta', undefined], ['Varie', null, undefined]])
+  ok('database: tutte le liste, con sala e categoria; una categoria tolta sparisce', await leggi({ tabella: true, colonna: true }), [['Randori', 'Lotta', 'judo'], ['Varie', null, undefined], ['Vecchia', null, undefined]])
+  ok('database senza la colonna disciplina (42703): le liste, senza categoria', await leggi({ tabella: true, colonna: false }), [['Randori', 'Lotta', undefined], ['Varie', null, undefined], ['Vecchia', null, undefined]])
   ok('database senza la tabella (42P01): nessuna lista, nessun errore', await leggi({ tabella: false, codice: '42P01' }), [])
   ok('database senza la tabella (PGRST205): nessuna lista, nessun errore', await leggi({ tabella: false, codice: 'PGRST205' }), [])
   ok('database: leggere le liste non scrive niente', scritture, [])
