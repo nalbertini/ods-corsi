@@ -228,12 +228,14 @@ console.log('\n6. la riga di PRESENZE ISTRUTTORI')
 }
 
 {
-  const riga = (id, personaId, sessioneId = 's') => ({ id, personaId, sessioneId, previstiElenco: [{ id: 'n', nome: 'Nicola' }, { id: 'g', nome: 'Giulia' }] })
+  const riga = (id, personaId, sessioneId = 's', inizio = new Date(OGGI - 2 * 86400_000).toISOString()) => ({ id, personaId, sessioneId, inizio, previstiElenco: [{ id: 'n', nome: 'Nicola' }, { id: 'g', nome: 'Giulia' }] })
   const tutte = [riga('1', 'n'), riga('2', 'x'), riga('3', 'g', 'altra')]
   const c = (x, viste) => m.segreteriaLib.previstiSenzaPresenza(x, viste, tutte).map((p) => p.id)
   ok('c\'era: Giulia, sulla prima riga della lezione', c(tutte[0], tutte), ['g'])
   ok('non ripetuto sulla seconda', c(tutte[1], tutte), [])
   ok('su un\'altra lezione Nicola manca', c(tutte[2], tutte), ['n'])
+  ok('lezione di tre settimane fa: niente c\'era, è rumore', c(riga('4', 'n', 'vecchia', new Date(OGGI - 21 * 86400_000).toISOString()), [riga('4', 'n', 'vecchia', new Date(OGGI - 21 * 86400_000).toISOString())]), [])
+  ok('lezione di domani: niente c\'era, non è ancora fatta', c(riga('5', 'n', 'domani', new Date(OGGI + 86400_000).toISOString()), [riga('5', 'n', 'domani', new Date(OGGI + 86400_000).toISOString())]), [])
   ok('lezione annullata: niente c\'era', m.segreteriaLib.previstiSenzaPresenza({ ...tutte[0], annullata: true }, tutte, tutte), [])
   ok('ordinate al contrario: va sulla prima che si vede', c(tutte[1], [tutte[1], tutte[0]]), ['g'])
   ok('la prima nascosta da un filtro: va sulla seconda, e Nicola resta segnato', c(tutte[1], [tutte[1]]), ['g'])

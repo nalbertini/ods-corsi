@@ -386,8 +386,16 @@ export interface PresenzaIstruttoreSeg {
  * PRESENZE ISTRUTTORI: solo sulla prima riga della lezione fra quelle che si
  * vedono (`viste`, coi filtri e l'ordine), così due righe non lo ripetono; chi
  * ha già una presenza lo dicono `tutte`, anche quelle nascoste dai filtri.
+ * Solo le lezioni già cominciate delle ultime due settimane: dove gli
+ * istruttori si alternano chi non c'era resta senza presenza, e su mesi di
+ * lezioni il link sarebbe ovunque.
  */
+/** Per quanti giorni indietro la segreteria trova «+ Nome c'era». */
+export const GIORNI_CERA = 14
+
 export function previstiSenzaPresenza(x: PresenzaIstruttoreSeg, viste: PresenzaIstruttoreSeg[], tutte: PresenzaIstruttoreSeg[]): Array<{ id: string; nome: string }> {
+  const inizio = new Date(x.inizio).getTime()
+  if (inizio > Date.now() || inizio < Date.now() - GIORNI_CERA * 24 * 60 * 60_000) return []
   if (x.annullata || viste.find((y) => y.sessioneId === x.sessioneId)?.id !== x.id) return []
   return (x.previstiElenco ?? []).filter((p) => !tutte.some((y) => y.sessioneId === x.sessioneId && y.personaId === p.id))
 }

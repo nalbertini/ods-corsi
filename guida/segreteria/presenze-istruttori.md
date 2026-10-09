@@ -52,6 +52,7 @@ Sotto **PREVISTO**, se uno dei previsti non ha una presenza su quella lezione,
 c'è **+ Nome c'era**: un tocco e risulta presente, confermato dalla
 segreteria. Serve quando la lezione la fanno in due, uno si è segnato e
 l'altro no: la lezione è coperta e non arriva fra quelle senza istruttore.
+Compare solo sulle lezioni delle ultime due settimane.
 
 Si vedono tutte, **confermate** e **da confermare** (e le rifiutate, in
 grigio), dalla lezione più recente, con chi le ha decise (o **da sé: era

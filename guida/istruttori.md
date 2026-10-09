@@ -177,7 +177,7 @@ Se la lezione la fate in due (o in tre), in fondo all'appello, prima di
 **CHIUDI**, c'è **ISTRUTTORI**: chi doveva farla con voi. Appena cominciate
 l'appello risultate segnati («· tu»); da lì un tocco su un collega che non si
 è segnato e risulta presente anche lui, senza PIN. Un altro tocco lo toglie, se l'avete segnato
-per sbaglio, finché la segreteria non l'ha guardato. Chi si è già segnato col
+per sbaglio, finché la segreteria non lo conferma o lo rifiuta. Chi si è già segnato col
 PIN ha la ✓ e non si tocca. Con un sostituto, il previsto è solo lui: un
 altro che c'era lo dice alla segreteria.
 

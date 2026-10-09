@@ -114,7 +114,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
     istruttore: (x) => x.nome,
     lezione: (x) => x.inizio,
     previsto: (x) => x.previsti,
-    entrato: (x) => (x.come === 'segreteria' ? null : x.entratoIl),
+    entrato: (x) => (x.come === 'segreteria' || x.come === 'collega' ? null : x.entratoIl),
     stato: (x) => ORDINE_STATI[x.stato],
   })
 
@@ -344,7 +344,8 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
                 ))}
               </span>
               <span role="cell" className="stack" style={{ gap: 2 }}>
-                {x.come === 'segreteria' ? (
+                {/* Scelto in segreteria o segnato da un collega: nessuna ora d'entrata vera da mostrare. */}
+                {x.come === 'segreteria' || x.come === 'collega' ? (
                   <span style={{ fontSize: 15, color: 'var(--sec)' }}>{comeArrivata(x).come}</span>
                 ) : (
                   <>

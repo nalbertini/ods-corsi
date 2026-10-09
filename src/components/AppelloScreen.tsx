@@ -588,7 +588,7 @@ export function AppelloScreen({
                 ? 'Chi insegnava con te e non si è segnato: un tocco e risulta presente.'
                 : ''}
             {colleghi.some((x) => x.tocco === 'togli') &&
-              ` Un altro tocco su ${colleghi.filter((x) => x.tocco === 'togli').map((x) => x.nome).join(', ')} toglie il segno, finché la segreteria non l’ha guardato.`}
+              ` Un altro tocco su ${colleghi.filter((x) => x.tocco === 'togli').map((x) => x.nome).join(', ')} toglie il segno, finché la segreteria non lo conferma o lo rifiuta.`}
           </p>
           {guaioIstruttore && (
             <p className="pad" role="alert" style={{ margin: '0 0 8px', fontSize: 14, color: 'var(--rosso-testo)' }}>
