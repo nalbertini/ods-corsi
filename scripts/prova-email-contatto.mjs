@@ -125,6 +125,9 @@ console.log('\n3. la forma del contatto è quella dell\'email, al massimo 160 le
 }
 
 console.log('\n4. il database vero: cosa scrive, cosa legge, cosa dice')
+// Come Supabase: dalla seconda pagina (`.range()` oltre la prima) un elenco
+// finto è finito. Senza, `tutteLeRighe` rileggerebbe le stesse righe per sempre.
+const oltre = { then: (f, ko) => Promise.resolve({ data: [], error: null }).then(f, ko) }
 {
   // Un database finto: chi scrive riceve l'errore dell'email già usata, chi legge la riga di Paola.
   const paola = { id: 'p-1', nome: 'Paola', cognome: 'Bianchi', email: 'mamma@esempio.it', ruolo: 'iscritto' }
@@ -141,6 +144,7 @@ console.log('\n4. il database vero: cosa scrive, cosa legge, cosa dice')
               return Promise.resolve(lettura(passi)).then(fatto, rifiuta)
             }
           return (...a) => {
+            if (k === 'range' && a[0]) return oltre
             if (['insert', 'update'].includes(k)) scritte.push(a[0])
             return catena(tabella, [...passi, [k, a]])
           }

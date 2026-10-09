@@ -394,9 +394,12 @@ await sezione('6b. accogliere porta anche la data, in un passo solo', async () =
 // Il database finto: una catena che risponde a qualunque domanda, e uno Storage
 // che si ricorda cosa gli è stato chiesto.
 // ---------------------------------------------------------------------------
+// Come Supabase: dalla seconda pagina (`.range()` oltre la prima) un elenco
+// finto è finito. Senza, `tutteLeRighe` rileggerebbe le stesse righe per sempre.
+const oltre = { then: (f, ko) => Promise.resolve({ data: [], error: null }).then(f, ko) }
 const catena = (risposta, log = []) => {
   const c = new Proxy(function () {}, {
-    get: (_, p) => (p === 'then' ? (bene, male) => Promise.resolve(risposta()).then(bene, male) : (...a) => (log.push([p, JSON.stringify(a)]), c)),
+    get: (_, p) => (p === 'range' ? (da) => (da ? oltre : c) : p === 'then' ? (bene, male) => Promise.resolve(risposta()).then(bene, male) : (...a) => (log.push([p, JSON.stringify(a)]), c)),
     apply: () => c,
   })
   return c

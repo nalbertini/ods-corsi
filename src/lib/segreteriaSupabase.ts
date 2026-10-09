@@ -440,7 +440,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const fino = new Date(a)
       fino.setHours(23, 59, 59, 999)
       const leggi = (colonne: string) =>
-        db.from('sessioni').select(colonne).gte('inizio', da.toISOString()).lte('inizio', fino.toISOString()).order('inizio')
+        tutteLeRighe((prima, ultima) => db.from('sessioni').select(colonne).gte('inizio', da.toISOString()).lte('inizio', fino.toISOString()).order('inizio').order('id').range(prima, ultima))
       const BASE = 'id, corso_id, ricorrenza_id, inizio, fine, stato, sala_id, istruttore_id, corsi ( nome, colore, capienza, sala_id, istruttore_id ), sale ( nome ), persone ( nome, cognome )'
       let lette = await leggi(`${BASE}, attivita_id, attivita ( nome ), ricorrenze ( attivita_id )`)
       // Senza 41-attivita.sql le lezioni si leggono come prima, senza attività.
@@ -450,7 +450,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const ids = sessioni.map((s) => s.id)
       const vuoto = ['00000000-0000-0000-0000-000000000000']
       const [isc, pres, chi] = await Promise.all([
-        db.from('iscrizioni').select('corso_id, persona_id, dal, al, persone ( attiva )').in('corso_id', corsi.length ? corsi : vuoto),
+        tutteLeRighe((prima, ultima) => db.from('iscrizioni').select('corso_id, persona_id, dal, al, persone ( attiva )').in('corso_id', corsi.length ? corsi : vuoto).order('id').range(prima, ultima)),
         tutteLeRighe((da, fino) => db.from('presenze').select('sessione_id, stato').in('sessione_id', ids.length ? ids : vuoto).order('id').range(da, fino)),
         insegnanti(corsi),
       ])
@@ -666,13 +666,13 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const quote = (async (): Promise<Map<string, QuotaRicevuta[]>> => {
         const perPersona = new Map<string, QuotaRicevuta[]>()
         const metti = (id: string, q: QuotaRicevuta) => perPersona.set(id, [...(perPersona.get(id) ?? []), q])
-        const vista = await db.from('quote_ricevute').select('persona_id, anno, numero, dal, al, mancano')
+        const vista = await tutteLeRighe((prima, ultima) => db.from('quote_ricevute').select('persona_id, anno, numero, dal, al, mancano').order('persona_id').order('anno').order('numero').order('dal').order('al').order('mancano').range(prima, ultima))
         if (!vista.error) {
           for (const q of vista.data as Array<{ persona_id: string; anno: number; numero: number; dal: string | null; al: string | null; mancano: number }>)
             metti(q.persona_id, { anno: q.anno, numero: q.numero, dal: q.dal ?? undefined, al: q.al ?? undefined, mancano: q.mancano })
           return perPersona
         }
-        const r = await db.from('ricevute').select('persona_id, anno, numero, voci, anticipo').is('annullata_il', null).not('persona_id', 'is', null)
+        const r = await tutteLeRighe((prima, ultima) => db.from('ricevute').select('persona_id, anno, numero, voci, anticipo').is('annullata_il', null).not('persona_id', 'is', null).order('id').range(prima, ultima))
         // Senza ricevute sul database (16-ricevute.sql) resta l'eccezione scritta a mano.
         if (r.error) return perPersona
         for (const x of r.data as Array<{ persona_id: string; anno: number; numero: number; voci: VoceRicevuta[]; anticipo: number }>)
@@ -682,20 +682,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // La data di nascita decide se il certificato serve (sotto i 6 anni no). Senza queste tabelle, o senza il permesso,
       // nessuna data: il certificato serve a tutti, come prima. A pagine, per il tetto di righe di PostgREST.
       const nati = (async (): Promise<Map<string, string>> => {
-        const PAGINA = 1000
-        const tutte = async (leggi: (da: number) => PromiseLike<{ data: unknown; error: unknown }>): Promise<unknown[]> => {
-          const righe: unknown[] = []
-          for (let da = 0; ; da += PAGINA) {
-            const r = await leggi(da)
-            if (r.error || !Array.isArray(r.data)) return []
-            righe.push(...r.data)
-            if (r.data.length < PAGINA) return righe
-          }
+        const tutte = async (r: Promise<{ data: unknown[]; error: unknown }>) => {
+          const { data, error } = await r
+          return error ? [] : data
         }
         const [an, rich] = await Promise.all([
-          tutte((da) => db.from('anagrafiche').select('persona_id, nato_il, cambiata_il').order('persona_id').range(da, da + PAGINA - 1)),
-          tutte((da) =>
-            db.from('richieste_iscrizione').select('id, persona_id, nato_il, gestita_il, creata_il').eq('stato', 'accolta').not('persona_id', 'is', null).order('id').range(da, da + PAGINA - 1),
+          tutte(tutteLeRighe((prima, ultima) => db.from('anagrafiche').select('persona_id, nato_il, cambiata_il').order('persona_id').range(prima, ultima))),
+          tutte(
+            tutteLeRighe((prima, ultima) =>
+              db.from('richieste_iscrizione').select('id, persona_id, nato_il, gestita_il, creata_il').eq('stato', 'accolta').not('persona_id', 'is', null).order('id').range(prima, ultima),
+            ),
           ),
         ])
         // as: le righe sono quelle dei select qui sopra.
@@ -710,11 +706,15 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const campi = (contatto: boolean) => `id, nome, cognome, email, ${contatto ? 'email_contatto, ' : ''}telefono, attiva, creata_il, iscrizioni ( corso_id, dal, al )`
       const scheda = 'certificato_scade, certificato_file, pagamento, pagato_fino, pagamento_nota'
       const leggi = (schede: string | null, contatto: boolean) =>
-        db
-          .from('persone')
-          .select(schede ? `${campi(contatto)}, schede_iscritti!persona_id ( ${schede} )` : campi(contatto))
-          .eq('ruolo', 'iscritto')
-          .order('cognome')
+        tutteLeRighe((prima, ultima) =>
+          db
+            .from('persone')
+            .select(schede ? `${campi(contatto)}, schede_iscritti!persona_id ( ${schede} )` : campi(contatto))
+            .eq('ruolo', 'iscritto')
+            .order('cognome')
+            .order('id')
+            .range(prima, ultima),
+        )
       const colonnaMancante = (x: { error: { code?: string; message?: string } | null }) => x.error?.code === '42703' && !/email_contatto/.test(x.error.message ?? '')
       const leggiTutto = async (contatto: boolean) => {
         // «!persona_id»: schede_iscritti punta a persone due volte (persona_id e cambiata_da), va detto quale.
@@ -999,12 +999,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       fino.setHours(23, 59, 59, 999)
       const adesso = new Date()
       const sessioni = ok(
-        await db
-          .from('sessioni')
-          .select('id, corso_id, inizio, stato, istruttore_id, corsi ( nome, istruttore_id ), sale ( nome ), persone ( nome, cognome )')
-          .gte('inizio', da.toISOString())
-          .lte('inizio', (fino < adesso ? fino : adesso).toISOString())
-          .order('inizio'),
+        await tutteLeRighe((prima, ultima) =>
+          db
+            .from('sessioni')
+            .select('id, corso_id, inizio, stato, istruttore_id, corsi ( nome, istruttore_id ), sale ( nome ), persone ( nome, cognome )')
+            .gte('inizio', da.toISOString())
+            .lte('inizio', (fino < adesso ? fino : adesso).toISOString())
+            .order('inizio')
+            .order('id')
+            .range(prima, ultima),
+        ),
       ) as unknown as Array<{
         id: string; corso_id: string; inizio: string; stato: RigaRegistro['stato']; istruttore_id: string | null
         corsi: { nome: string; istruttore_id: string | null } | null; sale: { nome: string } | null; persone: { nome: string; cognome: string } | null
@@ -1012,7 +1016,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const corsi = [...new Set(sessioni.map((x) => x.corso_id))]
       const vuoto = ['00000000-0000-0000-0000-000000000000']
       const [isc, pres, chi] = await Promise.all([
-        db.from('iscrizioni').select('corso_id, persona_id, dal, al, persone ( nome, cognome, attiva )').in('corso_id', corsi.length ? corsi : vuoto),
+        tutteLeRighe((prima, ultima) => db.from('iscrizioni').select('corso_id, persona_id, dal, al, persone ( nome, cognome, attiva )').in('corso_id', corsi.length ? corsi : vuoto).order('id').range(prima, ultima)),
         tutteLeRighe((da, fino) => db.from('presenze').select('sessione_id, persona_id, stato').in('sessione_id', sessioni.length ? sessioni.map((x) => x.id) : vuoto).order('id').range(da, fino)),
         insegnanti(corsi),
       ])
@@ -1215,14 +1219,17 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         return ok(r) ?? []
       }
       const [anagrafiche, richieste, coppie] = await Promise.all([
-        db.from('anagrafiche').select('persona_id, codice_fiscale, nato_il').then(oVuoto<{ persona_id: string; codice_fiscale: string | null; nato_il: string | null }>),
-        db
-          .from('richieste_iscrizione')
-          .select('persona_id, codice_fiscale, nato_il')
-          .eq('stato', 'accolta')
-          .not('persona_id', 'is', null)
-          .order('gestita_il', { ascending: true, nullsFirst: true })
-          .then(oVuoto<{ persona_id: string; codice_fiscale: string; nato_il: string }>),
+        tutteLeRighe((prima, ultima) => db.from('anagrafiche').select('persona_id, codice_fiscale, nato_il').order('persona_id').range(prima, ultima)).then(oVuoto<{ persona_id: string; codice_fiscale: string | null; nato_il: string | null }>),
+        tutteLeRighe((prima, ultima) =>
+          db
+            .from('richieste_iscrizione')
+            .select('persona_id, codice_fiscale, nato_il')
+            .eq('stato', 'accolta')
+            .not('persona_id', 'is', null)
+            .order('gestita_il', { ascending: true, nullsFirst: true })
+            .order('id')
+            .range(prima, ultima),
+        ).then(oVuoto<{ persona_id: string; codice_fiscale: string; nato_il: string }>),
         db.from('non_doppioni').select('a, b').then(oVuoto<{ a: string; b: string }>),
       ])
       const i: IndiziDoppioni = { codiciFiscali: {}, nascite: {}, nonDoppioni: coppie.map((c) => [c.a, c.b]) }
@@ -1342,16 +1349,20 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async presenzeIstruttori(giorni) {
       const da = new Date(Date.now() - giorni * 24 * 60 * 60_000).toISOString()
       const righe = ok(
-        await db
-          .from('presenze_istruttori')
-          .select(
-            // Con `*`: `come` c'è solo dopo 23-istruttori-dalle-lezioni.sql, e senza si legge lo stesso.
-            '*, ' +
-              'sessioni ( corso_id, inizio, fine, istruttore_id, stato, corsi ( nome, colore, istruttore_id ), persone ( nome, cognome ) ), ' +
-              'persona:persone!persona_id ( nome, cognome ), gestore:persone!gestita_da ( nome, cognome ), postazioni ( sale ( nome ) )',
-          )
-          .or(`stato.eq.da_confermare,entrato_il.gte.${da}`)
-          .order('entrato_il', { ascending: false }),
+        await tutteLeRighe((prima, ultima) =>
+          db
+            .from('presenze_istruttori')
+            .select(
+              // Con `*`: `come` c'è solo dopo 23-istruttori-dalle-lezioni.sql, e senza si legge lo stesso.
+              '*, ' +
+                'sessioni ( corso_id, inizio, fine, istruttore_id, stato, corsi ( nome, colore, istruttore_id ), persone ( nome, cognome ) ), ' +
+                'persona:persone!persona_id ( nome, cognome ), gestore:persone!gestita_da ( nome, cognome ), postazioni ( sale ( nome ) )',
+            )
+            .or(`stato.eq.da_confermare,entrato_il.gte.${da}`)
+            .order('entrato_il', { ascending: false })
+            .order('id')
+            .range(prima, ultima),
+        ),
       ) as unknown as Array<{
         id: string
         sessione_id: string
@@ -1420,7 +1431,9 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const io = (await db.auth.getSession()).data.session?.user.id
       // Senza 38-segnalazioni-categoria.sql la colonna non c'è: si rilegge senza, e i fili non hanno categoria.
       const leggi = (categoria: string) =>
-        db.from('segnalazioni').select(`id, padre_id, titolo, testo, scritta_il, chiusa_il, ${categoria}autore:persone!autore_id ( nome, cognome, utente_id )`).order('scritta_il')
+        tutteLeRighe((prima, ultima) =>
+          db.from('segnalazioni').select(`id, padre_id, titolo, testo, scritta_il, chiusa_il, ${categoria}autore:persone!autore_id ( nome, cognome, utente_id )`).order('scritta_il').order('id').range(prima, ultima),
+        )
       let letto = await leggi('categoria, ')
       if (letto.error?.code === '42703' && /categoria/.test(letto.error.message ?? '')) letto = await leggi('')
       const righe = ok(letto) as unknown as Array<{
@@ -1436,8 +1449,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Gli allegati sono di 32-segnalazioni-allegati.sql: finché non c'è, i fili si leggono lo stesso, senza.
       // Ogni altro guaio (rete, permessi) si dice: non deve sembrare che non ci siano allegati.
       const [allegati, tolti] = await Promise.all([
-        db.from('segnalazioni_allegati').select('id, messaggio_id, nome, tipo, peso, autore:persone!autore_id ( utente_id )').order('caricato_il'),
-        db.from('segnalazioni_allegati_tolti').select('messaggio_id, tolto_il, tolto:persone!tolto_da ( nome, cognome )').order('tolto_il'),
+        tutteLeRighe((prima, ultima) => db.from('segnalazioni_allegati').select('id, messaggio_id, nome, tipo, peso, autore:persone!autore_id ( utente_id )').order('caricato_il').order('id').range(prima, ultima)),
+        tutteLeRighe((prima, ultima) => db.from('segnalazioni_allegati_tolti').select('messaggio_id, tolto_il, tolto:persone!tolto_da ( nome, cognome )').order('tolto_il').order('id').range(prima, ultima)),
       ])
       const manca = (e: { code?: string } | null) => e?.code === 'PGRST205' || e?.code === '42P01' || e?.code === 'PGRST200'
       for (const r of [allegati, tolti]) if (r.error && !manca(r.error)) throw guaio(r.error)
@@ -1590,7 +1603,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const [persona, isc, pres, rich, scheda, ric, anag] = await Promise.all([
         db.from('persone').select('nome, cognome, email, telefono, ruolo, attiva, creata_il').eq('id', personaId).single(),
         db.from('iscrizioni').select('dal, al, corsi ( nome )').eq('persona_id', personaId),
-        db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId),
+        tutteLeRighe((prima, ultima) => db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId).order('id').range(prima, ultima)),
         // Le richieste dal modulo di iscrizione: i file restano nello Storage, qui c'è quali sono.
         db.from('richieste_iscrizione').select('creata_il, stato, nome, cognome, nato_il, nato_a, codice_fiscale, indirizzo, cap, comune, email, telefono, genitore_nome, genitore_cognome, genitore_codice_fiscale, corsi, formula, note, gestita_il').eq('persona_id', personaId),
         // Il certificato (la scadenza; il foglio è su carta), il documento e il
