@@ -3,37 +3,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import TimerApp from '../../../timer/src/App'
 import type { Incorporato } from '../../../timer/src/lib/incorporato'
 import cssTimer from '../../../timer/src/styles.css?inline'
-
-/**
- * Il foglio di stile del timer, adattato a stare dentro un riquadro.
- *
- * Il timer è scritto per avere la pagina tutta per sé: `:root`, `body`, le
- * misure in `vh` e `vw`, le `@media` sulla finestra. Qui sta in un'ombra
- * (Shadow DOM), dove le sue classi non si scontrano con quelle di ODS Corsi —
- * `.btn`, `.card`, `.row` ci sono in tutte e due — e dove la pagina è il
- * riquadro: `:host` al posto di `:root` e `body`, le misure del riquadro
- * (`cqh`, `cqw`) al posto di quelle della finestra, e le `@media` sulle
- * misure che diventano `@container`. Quelle sulle preferenze
- * (`prefers-reduced-motion`) restano sulla finestra, dove hanno senso.
- *
- * Le sostituzioni valgono sia sul file com'è scritto sia su quello
- * compresso della compilazione, che toglie spazi e virgolette.
- */
-export function perLaSala(css: string): string {
-  return (
-    css
-      .replace(/:root\[data-tema=(['"]?)chiaro\1\]/g, ':host([data-tema=chiaro])')
-      .replace(/:root/g, ':host')
-      // L'altezza della pagina: qui la dà il tablet, qualche riga più sotto.
-      .replace(/html\s*,\s*body\s*,\s*#root\s*\{[^}]*\}/g, '')
-      .replace(/(^|[}\s,;])body(\s*\{)/g, '$1:host$2')
-      .replace(/(-?(?:\d+\.)?\d+)[dsl]?vh\b/g, '$1cqh')
-      .replace(/(-?(?:\d+\.)?\d+)[dsl]?vw\b/g, '$1cqw')
-      .replace(/@media([^{]*)\{/g, (tutto, q: string) =>
-        /(width|height|orientation|aspect-ratio)/.test(q) && !/prefers-|hover|pointer|print|screen/.test(q) ? `@container${q}{` : tutto,
-      )
-  )
-}
+import { perLaSala } from '../../lib/timerNelRiquadro'
 
 /** Il riquadro, in cima al foglio del timer. */
 const RIQUADRO = `

@@ -12,7 +12,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/timerIstruttori'; export { timerDellaLezione } from './src/lib/aree'; export { lezioneDaIndirizzo } from './timer/src/lib/lezione'; export { strumentoDopo } from './timer/src/lib/gruppi'",
+      "export * from './src/lib/timerIstruttori'; export { timerDellaLezione } from './src/lib/aree'; export { lezioneDaIndirizzo } from './timer/src/lib/lezione'; export { strumentoDopo } from './timer/src/lib/gruppi'; export { perLaSala } from './src/lib/timerNelRiquadro'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -170,6 +170,18 @@ ok('allenamento fermo (idle): c\'è', vedi(() => m.tastoImpostazioni('idle')), t
 ok('allenamento in corso: non c\'è', vedi(() => m.tastoImpostazioni('running')), false)
 ok('in pausa: non c\'è', vedi(() => m.tastoImpostazioni('paused')), false)
 ok('finito, prima di OK: non c\'è', vedi(() => m.tastoImpostazioni('done')), false)
+
+// Il foglio del timer dentro un riquadro: le @media sulla finestra diventano @container sul riquadro,
+// e «di lato» vale solo da 560px di larghezza: un riquadro basso del telefono (375×360, con YouTube
+// sotto) non è un telefono girato, e due colonne lì non ci stanno.
+const css = (q) => vedi(() => m.perLaSala(q))
+ok('di lato: solo da 560px di larghezza', css('@media (orientation: landscape) { .a{} }'), '@container ((orientation: landscape) and (min-width: 560px)) { .a{} }')
+ok('di lato e basso: anche', css('@media (orientation: landscape) and (max-height: 560px) {'), '@container ((orientation: landscape) and (min-width: 560px)) and (max-height: 560px) {')
+ok('compresso dalla compilazione: anche', css('@media(orientation:landscape){'), '@container((orientation: landscape) and (min-width: 560px)){')
+ok('in verticale: anche un riquadro stretto, più largo che alto', css('@media (orientation: portrait) and (max-height: 740px) {'), '@container ((orientation: portrait) or (max-width: 559px)) and (max-height: 740px) {')
+ok('larghezza già detta: com\'è', css('@media (min-width: 640px) and (orientation: landscape) {'), '@container (min-width: 640px) and (orientation: landscape) {')
+ok('le preferenze restano sulla finestra', css('@media (prefers-reduced-motion: reduce) {'), '@media (prefers-reduced-motion: reduce) {')
+ok('vh diventa cqh', css('.a{height:34vh}'), '.a{height:34cqh}')
 
 // IMPOSTAZIONI dall'app istruttori: si cambia solo la scheda, un cronometro aperto resta aperto.
 ok('scheda chiesta da fuori: il cronometro aperto resta', vedi(() => m.strumentoDopo('crono', 'fuori')), 'crono')

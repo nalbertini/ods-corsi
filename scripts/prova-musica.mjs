@@ -171,5 +171,15 @@ ok('ACCENDI: si ricorda accesa, ma non parte da sola', az('accendi'), piano({ pa
 ok('ESCI: pausa e non più partita, lo spento resta com\'era', az('ferma'), piano({ parti: false, pausa: true }))
 ok('il lettore suona: è partita', az('suona'), piano({ parti: true, pausa: false }))
 
+console.log('\nLa forma della barra: con YouTube sul telefono il video sta accanto ai comandi')
+const forma = (dispositivo, fonte, attiva = true) => vedi(() => L.formaBarraMusica({ dispositivo, fonte, attiva }))
+ok('telefono con YouTube: il video accanto ai comandi', forma('telefono', 'youtube'), 'video-accanto')
+ok('telefono con Spotify: due righe', forma('telefono', 'spotify'), 'due-righe')
+ok('telefono con la radio: due righe', forma('telefono', 'radio'), 'due-righe')
+ok('telefono con i file: due righe', forma('telefono', 'file'), 'due-righe')
+ok('telefono, YouTube non ancora attivo: due righe (niente video da mostrare)', forma('telefono', 'youtube', false), 'due-righe')
+ok('tablet con YouTube: una riga, il video sta nel suo riquadro a destra', forma('tablet', 'youtube'), 'riga')
+ok('tablet con Spotify: una riga', forma('tablet', 'spotify'), 'riga')
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

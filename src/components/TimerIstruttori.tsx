@@ -313,11 +313,6 @@ export function BarraMusicaTelefono({ m }: { m: MusicaTelefono }) {
   if (!m.attiva) return null
   return (
     <div className="musica-telefono">
-      {m.conYoutube && (
-        <div className="musica-telefono-video" role="region" aria-label="Il lettore di YouTube">
-          <PostoPlayer />
-        </div>
-      )}
       {m.stato === 'spenta' ? (
         <button
           type="button"
@@ -338,6 +333,7 @@ export function BarraMusicaTelefono({ m }: { m: MusicaTelefono }) {
           discipline={discipline}
           dispositivo="telefono"
           stato={m.stato}
+          video={m.conYoutube ? <PostoPlayer /> : undefined}
         />
       )}
     </div>
