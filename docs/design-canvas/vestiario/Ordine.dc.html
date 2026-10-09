@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<!-- Un ordine aperto, a tutta pagina: le righe da correggere, IL PAGAMENTO col già pagato e SEGNA SALDATO in tre tasti (BONIFICO, SATISPAY, CONTANTI), e SPOSTA e ANNULLA in fondo. Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 1100px; background: #121212; color: #f2f2f0">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="VESTIARIO" numeri="RICHIESTE ONLINE:3, VESTIARIO:6" nome="Marco Rossi" ruolo="Segreteria" altezza="1100px" hint-size="240px,1100px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex"><dc-import name="Bottone" label="‹ GLI ORDINI" variante="linea" contesto="segreteria" hint-size="150px,48px"></dc-import></div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 34px; line-height: 1">PAOLA ROSSI</h1>
+        <dc-import name="Badge" tipo="segno" tono="rosso" label="DA SALDARE" hint-size="110px,26px"></dc-import>
+      </div>
+      <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Arrivato il 3 ottobre, 18:20 · dal link · 333 123 4567 · paola.rossi@esempio.it · raccolta che chiude il 31 ottobre</span>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">LE RIGHE · 3 CAPI</span>
+      <div style="display: flex; flex-direction: column">
+        <dc-import name="TestataTabella" colonne="PER CHI|CAPO|TAGLIA|QUANTI|PREZZO| " griglia="minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px" verso="niente" ultima-a-destra="{{ false }}" hint-size="100%,30px"></dc-import>
+        <dc-import name="RigaVestiario" contesto="segreteria" per-chi="Luca Rossi" capo="Judogi bianco" taglia="140" quantita="1" prezzo="35 €" guaio="" togli="{{ true }}" griglia="minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px" hint-size="100%,58px"></dc-import>
+        <dc-import name="RigaVestiario" contesto="segreteria" per-chi="Sara Rossi" capo="Costumino da lotta" taglia="8" quantita="1" prezzo="30 €" guaio="" togli="{{ true }}" griglia="minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px" hint-size="100%,58px"></dc-import>
+        <dc-import name="RigaVestiario" contesto="segreteria" per-chi="Sara Rossi" capo="Felpa ODS" taglia="8" quantita="1" prezzo="28 €" guaio="" togli="{{ true }}" griglia="minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px" hint-size="100%,58px"></dc-import>
+      </div>
+
+        <dc-import name="Bottone" label="+ AGGIUNGI UNA RIGA" variante="tratteggiato" contesto="segreteria" hint-size="220px,48px"></dc-import>
+      <div style="display: flex; align-items: baseline; gap: 12px; padding-top: 8px; border-top: 2px solid #333333">
+        <span style="flex-grow: 1; font-size: 17px; font-weight: 700">Totale</span>
+        <span style="font-size: 14px; color: #8c8c88; text-decoration: line-through"></span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">93 €</span>
+      </div>
+        <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Ogni riga tiene il prezzo di quando è arrivata: se il catalogo cambia, l’ordine no. Una riga nuova prende il prezzo di adesso.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 20px; min-width: 0">
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">IL PAGAMENTO</span>
+          <div style="display: flex; align-items: baseline; gap: 12px">
+            <dc-import name="Badge" tipo="segno" tono="rosso" label="DA SALDARE" hint-size="110px,26px"></dc-import>
+            <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">93 €</span>
+          </div>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px">Pagati 63 € · mancano 30 €</span>
+          <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Con bonifico (causale «Vestiario Rossi Paola»), Satispay o contanti. Il segno è a mano: niente ricevuta.</span>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">SEGNA SALDATO</span>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap"><dc-import name="Bottone" label="BONIFICO" variante="vai" contesto="segreteria" hint-size="130px,48px"></dc-import><dc-import name="Bottone" label="SATISPAY" variante="vai" contesto="segreteria" hint-size="130px,48px"></dc-import><dc-import name="Bottone" label="CONTANTI" variante="vai" contesto="segreteria" hint-size="130px,48px"></dc-import></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">ALTRO</span>
+          <div style="display: flex; align-items: flex-end; gap: 10px">
+            <div style="flex-grow: 1; min-width: 0"><dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="SPOSTA A UN’ALTRA RACCOLTA" valore="Chiude il 15 marzo 2027" hint-size="100%,72px"></dc-import></div>
+            <dc-import name="Bottone" label="SPOSTA" variante="linea" contesto="segreteria" hint-size="110px,48px"></dc-import>
+          </div>
+          <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Per chi paga dopo la chiusura: l’ordine passa alla raccolta scelta, coi suoi prezzi.</span>
+          <div style="display: flex"><dc-import name="Bottone" label="ANNULLA L’ORDINE" variante="linea" contesto="segreteria" hint-size="200px,48px"></dc-import></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

@@ -13,6 +13,9 @@ import { Statistiche } from './Statistiche'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Listino } from './Listino'
+import { LINK_ORDINI, Vestiario } from './Vestiario'
+import { datiVestiario } from '../../lib/vestiarioDati'
+import { numeriRaccolta } from '../../lib/vestiario'
 import { Richieste } from './Richieste'
 import { PresenzeIstruttori } from './PresenzeIstruttori'
 import { PresenzeSegnalate } from './PresenzeSegnalate'
@@ -75,6 +78,7 @@ const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: 
     voci: [
       ['statistiche', 'STATISTICHE'],
       ['listino', 'LISTINO'],
+      ['vestiario', 'VESTIARIO'],
       ['esercizi', 'ESERCIZI'],
       ['segnalazioni', 'SEGNALAZIONI'],
     ],
@@ -95,6 +99,7 @@ const GUIDE: Record<Voce, string> = {
   personale: 'segreteria/istruttori-e-accessi',
   esercizi: 'segreteria/esercizi',
   listino: 'segreteria/listino',
+  vestiario: 'segreteria/vestiario',
   regole: 'segreteria/regole',
   segnalazioni: 'segreteria/segnalazioni',
 }
@@ -114,7 +119,7 @@ const nelMenu = () => (window.history.state as { menu?: boolean } | null)?.menu 
 /** L'indirizzo della pagina pubblica per iscriversi, quello da mandare su WhatsApp. */
 const LINK_PUBBLICO = indirizzo(INDIRIZZI.iscrizioni)
 
-function CopiaLink() {
+function CopiaLink({ link, testo, perche }: { link: string; testo: string; perche: string }) {
   const [copiato, setCopiato] = useState(false)
   useEffect(() => {
     if (!copiato) return
@@ -124,15 +129,15 @@ function CopiaLink() {
   const copia = () => {
     // Senza appunti (una pagina non sicura, un browser vecchio) si fa vedere
     // l'indirizzo da copiare a mano.
-    if (!navigator.clipboard) return window.prompt('Il link per iscriversi:', LINK_PUBBLICO)
-    navigator.clipboard.writeText(LINK_PUBBLICO).then(
+    if (!navigator.clipboard) return window.prompt(perche, link)
+    navigator.clipboard.writeText(link).then(
       () => setCopiato(true),
-      () => window.prompt('Il link per iscriversi:', LINK_PUBBLICO),
+      () => window.prompt(perche, link),
     )
   }
   return (
-    <button type="button" className="num sg-voce" onClick={copia} title={LINK_PUBBLICO}>
-      {copiato ? 'LINK COPIATO ✓' : 'COPIA LINK ISCRIZIONI'}
+    <button type="button" className="num sg-voce" onClick={copia} title={link}>
+      {copiato ? 'LINK COPIATO ✓' : testo}
     </button>
   )
 }
@@ -305,6 +310,25 @@ export function Segreteria({
       vivo = false
     }
   }, [d, voce, giroConte])
+  // Gli ordini del vestiario da saldare, nella raccolta di adesso. Non vanno
+  // sul tasto MENU del telefono: restano lì per settimane e coprirebbero il resto.
+  const [daSaldare, setDaSaldare] = useState(0)
+  useEffect(() => {
+    if (!d) return
+    let vivo = true
+    datiVestiario()
+      .then(async (v) => {
+        const [r] = await v.raccolte()
+        return r ? numeriRaccolta(await v.ordini(r.id)).daSaldare : 0
+      })
+      .then(
+        (n) => vivo && setDaSaldare(n),
+        () => vivo && setDaSaldare(0),
+      )
+    return () => {
+      vivo = false
+    }
+  }, [d, voce, giroConte])
   // Il numero sul tasto MENU del telefono: la somma dei segni del menu. Giallo,
   // come in DA FARE: sono cose che aspettano una risposta, non guai.
   const daFare = richiesteNuove + daConfermare + daRispondere + (conSegnalate ? segnalateDaVedere : 0)
@@ -412,6 +436,7 @@ export function Segreteria({
                     {id === 'presenze' && conSegnalate && segno(segnalateDaVedere, 'segnalate da vedere')}
                     {id === 'istruttori' && segno(daConfermare, 'da confermare')}
                     {id === 'segnalazioni' && segno(daRispondere, 'da rispondere')}
+                    {id === 'vestiario' && segno(daSaldare, 'ordini da saldare')}
                   </button>
                 ))}
               </div>
@@ -425,7 +450,8 @@ export function Segreteria({
               ISTRUTTORI →
             </button>
           )}
-          <CopiaLink />
+          <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />
+          <CopiaLink link={LINK_ORDINI} testo="COPIA LINK ORDINI" perche="Il link per ordinare il vestiario:" />
         </div>
         <div className="sg-chi">
           <span style={{ fontSize: 14, fontWeight: 600 }}>{nome}</span>
@@ -438,13 +464,15 @@ export function Segreteria({
               onClick={async () => {
                 // Prima la bozza aperta, con la domanda di sempre; poi quella dei dati di prova.
                 if (!(await lasciare())) return
-                if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze e le richieste fatte in prova su questo dispositivo?", 'RIPARTI DALL’ORARIO VERO', { pericolo: true }))) return
-                void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino')]).then(([a, p, r, e, l]) => {
+                if (!(await chiedi("Rimettere l'orario vero e togliere i cambi, le presenze, le richieste e gli ordini fatti in prova su questo dispositivo?", 'RIPARTI DALL’ORARIO VERO', { pericolo: true }))) return
+                void Promise.all([import('../../lib/archivioProva'), import('../../lib/datiProva'), import('../../lib/richiesteProva'), import('../../lib/esempiProva'), import('../../lib/listino'), import('../../lib/vestiarioDati'), import('../../lib/vestiarioProva')]).then(([a, p, r, e, l, vd, vp]) => {
                   a.archivio.azzera()
                   l.scordaListinoProva()
                   p.scordaProva()
                   r.scordaRichiesteProva()
                   e.scordaEsempi()
+                  vp.scordaVestiarioProva()
+                  vd.scordaEsempiVestiario()
                   // La bozza è già stata lasciata: il browser non deve chiederlo di nuovo.
                   scordaBozze()
                   window.location.reload()
@@ -515,6 +543,7 @@ export function Segreteria({
         {d && voce === 'personale' && <Personale d={d} />}
         {d && voce === 'esercizi' && <EserciziPalestra d={d} />}
         {d && voce === 'listino' && <Listino d={d} />}
+        {d && voce === 'vestiario' && <Vestiario onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'regole' && <Regole d={d} onVai={vai} />}
         {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
       </main>

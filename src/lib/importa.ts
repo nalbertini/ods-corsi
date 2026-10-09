@@ -556,6 +556,9 @@ export interface RigaSistemare {
 
 export type Resoconto = Anteprima & { daSistemare: RigaSistemare[] }
 
+/** Un messaggio nostro è in italiano: quello che non lo sembra è del server, e non si mostra com'è. */
+export const sembraItaliano = (m: string) => /\b(non|già|è|di|il|la|un|una|serve|manca|questa|questo|controlla|riprova)\b/i.test(m)
+
 /** Il testo del database non dice alla segreteria cosa fare: lo si traduce, e un messaggio già chiaro resta com'è. */
 export function messaggioRiga(e: unknown): string {
   const m = e instanceof Error ? e.message : String(e)
@@ -563,8 +566,7 @@ export function messaggioRiga(e: unknown): string {
   if (/row-level|policy|permission denied|not authorized|jwt/i.test(m)) return 'non hai il permesso di scrivere questa riga: esci, rientra come segreteria e rilancia'
   if (/fetch|network|timeout|offline|load failed/i.test(m)) return 'la rete è caduta: controlla la connessione e rilancia, quello che è già entrato non si duplica'
   if (/violat|constraint|relation |column |syntax|null value|invalid input|pgrst|schema/i.test(m)) return 'il database non l\'ha accettata: controlla i dati della riga e rilancia; se si ripete, scrivilo in SEGNALAZIONI'
-  // Un messaggio nostro è in italiano; quello che non riconosciamo non si mostra com'è.
-  if (/\b(non|già|è|di|il|la|un|una|serve|manca|questa|questo|controlla|riprova)\b/i.test(m)) return m
+  if (sembraItaliano(m)) return m
   return 'la riga non è entrata: rilancia, e se si ripete scrivilo in SEGNALAZIONI'
 }
 

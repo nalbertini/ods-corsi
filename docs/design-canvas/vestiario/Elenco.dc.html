@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<!-- VESTIARIO, la voce nuova: raccolta, CHIUDE IL, i cinque numeri, i filtri e l’elenco degli ordini: sotto il nome quando e da dove è arrivato, STESSO TELEFONO in giallo, sotto il totale quel che manca a chi ha pagato una parte. DA SALDARE è rosso con la parola; l’annullato ha il testo grigio. Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 1350px; background: #121212; color: #f2f2f0">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="VESTIARIO" numeri="RICHIESTE ONLINE:3, VESTIARIO:6" nome="Marco Rossi" ruolo="Segreteria" altezza="1350px" hint-size="240px,1350px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+      <h1 style="margin: 0; flex-grow: 1; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 34px; line-height: 1">VESTIARIO</h1>
+      <dc-import name="Bottone" label="VEDI LA PAGINA ↗" variante="linea" contesto="segreteria" hint-size="200px,48px"></dc-import>
+    </div>
+    <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #8c8c88">Judogi, costumini e felpe. I genitori ordinano dal link, la segreteria segna chi ha pagato; al fornitore va solo il saldato.</p>
+    <div style="display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap">
+      <div style="width: 380px"><dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="RACCOLTA" valore="Chiude il 31 ottobre 2026 · aperta" hint-size="100%,72px"></dc-import></div>
+      <dc-import name="Bottone" label="CATALOGO E CHIUSURA" variante="linea" contesto="segreteria" hint-size="230px,48px"></dc-import>
+      <div style="flex-grow: 1"></div>
+      <dc-import name="Bottone" label="NUOVO ORDINE" variante="pieno" contesto="segreteria" hint-size="170px,48px"></dc-import>
+    </div>
+    <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #8c8c88">Chiude il 31 ottobre, fra 22 giorni: fino ad allora la pagina accetta ordini.</p>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px">
+      <dc-import name="Numero" titolo="ORDINI" valore="23" sotto="3 annullati a parte" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" titolo="SALDATI" valore="17" sotto="vanno al fornitore" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" titolo="DA SALDARE" valore="6" sotto="da chiamare" allarme="{{ true }}" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" titolo="INCASSATO" valore="1.046 €" sotto="dai saldati" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" titolo="MANCA" valore="312 €" sotto="dai da saldare" hint-size="100%,120px"></dc-import>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+      <div style="width: 320px"><dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="" valore="" segnaposto="Cerca per nome o telefono" hint-size="100%,44px"></dc-import></div>
+      <dc-import name="Chip" label="TUTTI" numero="24" acceso="{{ true }}" hint-size="100px,44px"></dc-import>
+      <dc-import name="Chip" label="DA SALDARE" numero="7" tono-numero="rosso" hint-size="150px,44px"></dc-import>
+      <dc-import name="Chip" label="SALDATI" numero="17" hint-size="120px,44px"></dc-import>
+      <dc-import name="Chip" label="ANNULLATI" numero="3" hint-size="140px,44px"></dc-import>
+    </div>
+      <div style="display: flex; flex-direction: column">
+        <dc-import name="TestataTabella" colonne="CHI ORDINA|CAPI|TELEFONO|STATO|TOTALE" griglia="1fr 1.6fr 130px 130px 70px" ordinata="CHI ORDINA" verso="su" hint-size="100%,30px"></dc-import>
+        <dc-import name="RigaOrdineVestiario" nome="Rossi Paola" capi="Luca: judogi 130 · Sara: costumino 8, felpa 8" telefono="333 123 4567" stato="da saldare" totale="93 €" arrivo="Arrivato il 3 ottobre, 18:20 · dal link" stesso-telefono="{{ false }}" resto="mancano 30 €" griglia="1fr 1.6fr 130px 130px 70px" hint-size="100%,70px"></dc-import>
+        <dc-import name="RigaOrdineVestiario" nome="Bianchi Marco" capi="Tommaso: judogi 140, cintura 240" telefono="347 555 0192" stato="saldato" totale="41 €" arrivo="Arrivato il 3 ottobre, 21:05 · dal link" stesso-telefono="{{ false }}" resto="" griglia="1fr 1.6fr 130px 130px 70px" hint-size="100%,62px"></dc-import>
+        <dc-import name="RigaOrdineVestiario" nome="Colombo Anna" capi="Giulia: felpa S" telefono="339 210 4488" stato="saldato" totale="28 €" arrivo="Arrivato il 4 ottobre, 09:40 · dal link" stesso-telefono="{{ false }}" resto="" griglia="1fr 1.6fr 130px 130px 70px" hint-size="100%,62px"></dc-import>
+        <dc-import name="RigaOrdineVestiario" nome="Ferrari Luca" capi="Pietro: costumino 10" telefono="320 781 1903" stato="da saldare" totale="30 €" arrivo="Arrivato il 5 ottobre, 13:12 · dal link" stesso-telefono="{{ false }}" resto="" griglia="1fr 1.6fr 130px 130px 70px" hint-size="100%,62px"></dc-import>
+        <dc-import name="RigaOrdineVestiario" nome="Greco Sara" capi="Emma: judogi 120 · Leo: judogi 110" telefono="348 902 3311" stato="saldato" totale="70 €" arrivo="Arrivato il 6 ottobre, 17:55 · dal banco" stesso-telefono="{{ false }}" resto="" griglia="1fr 1.6fr 130px 130px 70px" hint-size="100%,62px"></dc-import>
+        <dc-import name="RigaOrdineVestiario" nome="Marino Chiara" capi="Nicolò: judogi 150" telefono="333 640 2275" stato="annullato" totale="35 €" arrivo="Arrivato il 7 ottobre, 08:30 · dal link" stesso-telefono="{{ false }}" resto="" griglia="1fr 1.6fr 130px 130px 70px" hint-size="100%,62px"></dc-import>
+        <dc-import name="RigaOrdineVestiario" nome="Conti Davide" capi="Davide: felpa L" telefono="351 118 7740" stato="saldato" totale="28 €" arrivo="Arrivato l'8 ottobre, 18:02 · dal banco" stesso-telefono="{{ true }}" resto="" griglia="1fr 1.6fr 130px 130px 70px" hint-size="100%,62px"></dc-import>
+        <dc-import name="RigaOrdineVestiario" nome="Conti Marta" capi="Davide: cintura 260" telefono="351 118 7740" stato="da saldare" totale="6 €" arrivo="Arrivato il 9 ottobre, 16:10 · dal link" stesso-telefono="{{ true }}" resto="" griglia="1fr 1.6fr 130px 130px 70px" hint-size="100%,62px"></dc-import>
+        <dc-import name="RigaOrdineVestiario" nome="Ricci Elena" capi="Matteo: costumino 12, felpa 12" telefono="366 455 0091" stato="da saldare" totale="58 €" arrivo="Arrivato il 9 ottobre, 20:47 · dal link" stesso-telefono="{{ false }}" resto="" griglia="1fr 1.6fr 130px 130px 70px" hint-size="100%,62px"></dc-import>
+      </div>
+    <dc-import name="Titoletto" label="GLI ELENCHI" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap">
+      <dc-import name="Bottone" label="ELENCO PER IL FORNITORE · CSV" variante="linea" contesto="segreteria" hint-size="300px,48px"></dc-import>
+      <dc-import name="Bottone" label="ELENCO PER PERSONA · CSV" variante="linea" contesto="segreteria" hint-size="270px,48px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

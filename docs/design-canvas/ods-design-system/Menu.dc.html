@@ -75,6 +75,7 @@
 
   <div style="display: flex; flex-direction: column; gap: 2px">
     <div style="display: flex; align-items: center; min-height: 44px; padding: 0 8px 0 12px; border-left: 4px solid transparent; color: {{c.sec}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; letter-spacing: 0.1em">COPIA LINK ISCRIZIONI</div>
+    <div style="display: flex; align-items: center; min-height: 44px; padding: 0 8px 0 12px; border-left: 4px solid transparent; color: {{c.sec}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; letter-spacing: 0.1em">COPIA LINK ORDINI</div>
   </div>
 
   <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 12px; border: 2px solid {{c.lineSoft}}">
@@ -88,8 +89,8 @@
 </nav>
 </x-dc>
 <script data-dc-script data-props='{"attiva":{"editor":"text","default":"PRESENZE"},"numeri":{"editor":"text","default":"RICHIESTE ONLINE:3, PRESENZE:2"},"prova":{"editor":"boolean","default":false},"impostazioni":{"editor":"boolean","default":false},"nome":{"editor":"text","default":"Marco Rossi"},"ruolo":{"editor":"text","default":"Segreteria"},"altezza":{"editor":"text","default":"900px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":240,"height":900}}'>
-// Riproduzione 1:1 del menu di segreteria: src/components/segreteria/Segreteria.tsx (righe 378-460, GRUPPI alle
-// righe 47-80) con .sg-menu, .sg-voce, .sg-gruppo, .sg-chi e figli di src/styles.css (righe 1201-1270).
+// Riproduzione 1:1 del menu di segreteria: src/components/segreteria/Segreteria.tsx (righe 402-494, GRUPPI alle
+// righe 50-86) con .sg-menu, .sg-voce, .sg-gruppo, .sg-chi e figli di src/styles.css (righe 1201-1270).
 // Misure del computer (da 1001px): colonna di 240px su `menu`, padding 28px 12px 24px, gap 28px, bordo destro
 // 2px `line-soft`; voci Saira 16px, 0.1em, alte 44px, barra sinistra di 4px (la voce corrente la porta in
 // `text` su fondo `surface`, MAI rossa: il rosso e' per cio' che manca). I numeri accanto alle voci sono
@@ -101,6 +102,8 @@
 // impostazioni: il tasto coi cursori e' la pagina corrente (.icon-btn[aria-current='page']: bordo e icona in `text`).
 // altezza: l'altezza dello schermo. Il menu dell'app scorre (overflow-y: auto) e, su uno schermo da 900px, taglia
 // le ultime voci: qui il taglio e' lo stesso. Per vederlo intero basta "1140px".
+// VESTIARIO sta in LA PALESTRA dopo LISTINO: il suo numero (in `numeri`, "VESTIARIO:6") sono gli ordini da saldare della raccolta di
+// adesso, giallo come gli altri. In fondo COPIA LINK ISCRIZIONI e COPIA LINK ORDINI (`CopiaLink`, righe 453-454).
 // Non riprodotti: l'elenco della ricerca aperto, ISTRUTTORI →, il passaggio del mouse.
 const T = {
   scuro: { surface: '#1c1c1c', menu: '#161616', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', tasto: '#b8b8b2' },
@@ -110,7 +113,7 @@ const GRUPPI = [
   ['OGNI GIORNO', ['DA FARE', 'SETTIMANA', 'RICHIESTE ONLINE', 'PRESENZE']],
   ['PERSONE', ['ISCRITTI', 'CORSI']],
   ['ISTRUTTORI', ['PRESENZE ISTRUTTORI', 'ISTRUTTORI E ACCESSI']],
-  ['LA PALESTRA', ['STATISTICHE', 'LISTINO', 'ESERCIZI', 'SEGNALAZIONI']],
+  ['LA PALESTRA', ['STATISTICHE', 'LISTINO', 'VESTIARIO', 'ESERCIZI', 'SEGNALAZIONI']],
 ];
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {

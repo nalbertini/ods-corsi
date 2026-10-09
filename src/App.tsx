@@ -5,6 +5,7 @@ import { Sala } from './components/Sala'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { IscrizioneAPassi } from './components/IscrizioneAPassi'
+import { OrdinaVestiario, RiquadroVestiario } from './components/OrdinaVestiario'
 import { AreaIscritti, IscrittiChiusa } from './components/AreaIscritti'
 import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
@@ -20,6 +21,7 @@ import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
 import { ISTRUTTORE_PROVA, haUnServer, inProvaScelta, scegliProva } from './lib/dati'
 import { flussoNuovoAcceso } from './lib/passiIscrizione'
+import { INDIRIZZO_VESTIARIO } from './lib/cancelletti'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
 import { chiediPrimaDiSostituire, lezioneDelTimer, mostraStriscia, statoCambiato, timerAperto, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
 import type { Incorporato, StatoTimer } from '../timer/src/lib/incorporato'
@@ -197,12 +199,29 @@ function TutteLeAree() {
 }
 
 function Iscrizioni() {
+  // Gli ordini del vestiario stanno qui, a `#vestiario`: il riquadro IL VESTIARIO ci porta senza ricaricare.
+  const [hash, setHash] = useState(window.location.hash)
+  useEffect(() => {
+    const segui = () => {
+      setHash(window.location.hash)
+      document.querySelector('.scroll')?.scrollTo(0, 0)
+    }
+    window.addEventListener('hashchange', segui)
+    return () => window.removeEventListener('hashchange', segui)
+  }, [])
+  const vestiario = hash === INDIRIZZO_VESTIARIO
   return (
     <div className="app">
-      <Testata luogo="ISCRIZIONI" />
+      <Testata luogo={vestiario ? 'VESTIARIO' : 'ISCRIZIONI'} />
       <main className="scroll">
         {/* Il flusso a passi è solo in prova e solo con #nuova: il vecchio resta com'è. */}
-        {flussoNuovoAcceso(haUnServer, window.location.hash) ? <IscrizioneAPassi /> : <IscrizioniScreen pubblica />}
+        {vestiario ? <OrdinaVestiario /> : flussoNuovoAcceso(haUnServer, hash) ? <IscrizioneAPassi /> : (
+          <>
+            <IscrizioniScreen pubblica />
+            {/* Qui e non dentro: la pagina di oggi non cambia finché c'è il flusso a passi (prova:iscrizione-passi). */}
+            <RiquadroVestiario />
+          </>
+        )}
       </main>
     </div>
   )

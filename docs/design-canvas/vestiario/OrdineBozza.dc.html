@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<!-- Lo stesso ordine dopo una correzione (taglia di Luca 150, tolta la felpa): la bozza del listino, il totale ricalcolato e SALVA. Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212; color: #f2f2f0">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="VESTIARIO" numeri="RICHIESTE ONLINE:3, VESTIARIO:6" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex"><dc-import name="Bottone" label="‹ GLI ORDINI" variante="linea" contesto="segreteria" hint-size="150px,48px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 12px">
+      <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 34px; line-height: 1">PAOLA ROSSI</h1>
+      <dc-import name="Badge" tipo="segno" tono="rosso" label="DA SALDARE" hint-size="110px,26px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333; max-width: 860px">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">LE RIGHE · 2 CAPI</span>
+      <div style="display: flex; flex-direction: column">
+        <dc-import name="TestataTabella" colonne="PER CHI|CAPO|TAGLIA|QUANTI|PREZZO| " griglia="minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px" verso="niente" ultima-a-destra="{{ false }}" hint-size="100%,30px"></dc-import>
+        <dc-import name="RigaVestiario" contesto="segreteria" per-chi="Luca Rossi" capo="Judogi bianco" taglia="150" quantita="1" prezzo="35 €" guaio="" togli="{{ true }}" griglia="minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px" hint-size="100%,58px"></dc-import>
+        <dc-import name="RigaVestiario" contesto="segreteria" per-chi="Sara Rossi" capo="Costumino da lotta" taglia="8" quantita="1" prezzo="30 €" guaio="" togli="{{ true }}" griglia="minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px" hint-size="100%,58px"></dc-import>
+      </div>
+
+      <dc-import name="Bottone" label="+ AGGIUNGI UNA RIGA" variante="tratteggiato" contesto="segreteria" hint-size="220px,48px"></dc-import>
+      <div style="display: flex; align-items: baseline; gap: 12px; padding-top: 8px; border-top: 2px solid #333333">
+        <span style="flex-grow: 1; font-size: 17px; font-weight: 700">Totale</span>
+        <span style="font-size: 14px; color: #8c8c88; text-decoration: line-through">93 €</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">65 €</span>
+      </div>
+    </div>
+    <div style="max-width: 860px">
+      <dc-import name="BarraSalva" frase="Righe cambiate: il totale passa da 93 € a 65 €. Fino a SALVA l’ordine resta com’era." hint-size="100%,76px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

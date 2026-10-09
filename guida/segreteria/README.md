@@ -29,7 +29,7 @@ qualunque voce. Apostrofi, trattini e spazi nel cognome non contano: «d'am»,
 A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),
 **PERSONE** (ISCRITTI, CORSI), **ISTRUTTORI** (PRESENZE ISTRUTTORI, ISTRUTTORI
-E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, ESERCIZI, SEGNALAZIONI). Le
+E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, VESTIARIO, ESERCIZI, SEGNALAZIONI). Le
 **IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
 sua guida:
 
@@ -47,6 +47,7 @@ sua guida:
 | **ISTRUTTORI E ACCESSI** | Chi entra nell'app, con che ruolo, e i PIN del tablet | [Apri](istruttori-e-accessi.md) |
 | **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
 | **LISTINO** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
+| **VESTIARIO** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |
 | **IMPOSTAZIONI** | In quattro gruppi: la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa); in mezzo, **IMPORTA DA EXCEL**: corsi e iscritti dai fogli o dalle risposte del modulo Google | [Apri](regole.md) · [Importa](importa.md) |
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
 
@@ -59,6 +60,8 @@ In fondo al menu:
 
 - **COPIA LINK ISCRIZIONI** — copia l'indirizzo della pagina pubblica, da
   incollare su WhatsApp.
+- **COPIA LINK ORDINI** — copia l'indirizzo della pagina degli ordini di
+  vestiario (vedi [Vestiario](vestiario.md)).
 - Chi è entrato ed **Esci**.
 
 In prova c'è anche **Riparti

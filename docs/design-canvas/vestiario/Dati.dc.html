@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<!-- La stessa pagina, parte bassa: chi ordina, il riepilogo col totale e MANDA L’ORDINE. Il tasto si blocca finché il server non risponde (doppio tocco). Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1250px; background: #121212; color: #f2f2f0">
+  <dc-import name="Testata" luogo="VESTIARIO" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <dc-import name="Titoletto" label="CHI ORDINA" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 0 20px 16px">
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <dc-import name="Campo" tipo="testo" etichetta="NOME" valore="Paola" hint-size="100%,80px"></dc-import>
+        <dc-import name="Campo" tipo="testo" etichetta="COGNOME" valore="Rossi" hint-size="100%,80px"></dc-import>
+      </div>
+      <dc-import name="Campo" tipo="testo" etichetta="TELEFONO" valore="333 123 4567" nota="La segreteria ti chiama se manca qualcosa o il pagamento non arriva." nota-tono="avviso" hint-size="100%,110px"></dc-import>
+      <dc-import name="Campo" tipo="testo" etichetta="EMAIL · FACOLTATIVA" valore="" segnaposto="nome@esempio.it" hint-size="100%,80px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" label="IL RIEPILOGO" conto="3 CAPI" hint-size="100%,50px"></dc-import>
+    <div style="padding: 0 20px 16px">
+      <dc-import name="RiquadroPasso" titolo="" righe="Luca Rossi · Judogi bianco 130:35 €|Sara Rossi · Costumino da lotta 8:30 €|Sara Rossi · Felpa ODS 8:28 €|Totale:93 €" testo="Paghi dopo l’invio: ti diciamo come nella pagina che segue. Va al fornitore solo quello pagato entro il 31 ottobre." tasti="" hint-size="100%,300px"></dc-import>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <dc-import name="BarraPasso" nota="Tutto pronto: puoi mandare l’ordine." totale="93 €" totale-righe="3 capi" avanti="MANDA L’ORDINE" tono="vai" senza-indietro="{{ true }}" hint-size="100%,150px"></dc-import>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

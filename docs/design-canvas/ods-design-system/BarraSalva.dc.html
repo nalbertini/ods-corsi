@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; background: {{c.surface}}; border: 2px solid {{c.giallo}}; color: {{c.text}}">
+  <span style="flex-grow: 1; min-width: 0; font-size: 14px; color: {{coloreFrase}}">{{frase}}</span>
+  <sc-if value="{{haButta}}" hint-placeholder-val="{{ true }}">
+    <dc-import name="Bottone" label="{{butta}}" variante="linea" contesto="segreteria" tema="{{tema}}" hint-size="150px,48px"></dc-import>
+  </sc-if>
+  <dc-import name="Bottone" label="{{salva}}" variante="pieno" contesto="segreteria" disabled="{{spento}}" tema="{{tema}}" hint-size="100px,48px"></dc-import>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"frase":{"editor":"text","default":"Ci sono cambi da salvare: fino ad allora la pagina di iscrizione mostra quello di prima."},"guaio":{"editor":"text","default":""},"butta":{"editor":"text","default":"BUTTA I CAMBI"},"salva":{"editor":"text","default":"SALVA"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":900,"height":76}}'>
+// Riproduzione 1:1 della barra per salvare di LISTINO: <div className="sg-listino-salva"> di src/components/segreteria/Listino.tsx
+// (righe 360-372) con .sg-listino-salva di src/styles.css (righe 1920-1924). Nell'app e' sticky in fondo, e c'e' solo quando la bozza
+// e' diversa da quella salvata: fondo `surface`, bordo 2px `giallo`, padding 12px 16px, gap 10px, va a capo.
+// La frase (14px `sec`) dice che i cambi non sono ancora in pagina; `guaio` la sostituisce in rosso-testo e spegne SALVA (cosa non va).
+// Tasti: BUTTA I CAMBI (linea, chiede conferma) e SALVA (pieno). `butta` vuoto toglie il primo.
+const T = {
+  scuro: { surface: '#1c1c1c', text: '#f2f2f0', sec: '#c9c9c4', giallo: '#f4c31b', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', text: '#161616', sec: '#3d3d3a', giallo: '#f4c31b', rossoTesto: '#b81d1d' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const guaio = p.guaio ?? '';
+    const butta = p.butta ?? 'BUTTA I CAMBI';
+    return {
+      c, tema: p.tema || 'scuro',
+      frase: guaio || (p.frase ?? 'Ci sono cambi da salvare: fino ad allora la pagina di iscrizione mostra quello di prima.'),
+      coloreFrase: guaio ? c.rossoTesto : c.sec,
+      butta, haButta: butta !== '',
+      salva: p.salva ?? 'SALVA',
+      spento: guaio !== '',
+    };
+  }
+}
+</script>
+</body>
+</html>

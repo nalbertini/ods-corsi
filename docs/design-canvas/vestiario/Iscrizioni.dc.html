@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<!-- La pagina pubblica ISCRIZIONI (IscrizioniScreen pubblica): a sinistra com’era, a destra come l’ha costruita la funzione: il riquadro IL VESTIARIO in fondo, dopo i COSTI (qui non ripetuti), fuori da IscrizioniScreen.tsx che una prova protegge (prova:iscrizione-passi). C’è solo con una raccolta aperta. Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; gap: 40px; width: 900px; min-height: 1600px; padding: 30px 40px; background: #121212; color: #f2f2f0">
+  <div style="display: flex; flex-direction: column; gap: 10px; width: 390px">
+    <dc-import name="Titoletto" label="OGGI" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; width: 390px; min-height: 1500px; background: #121212; color: #f2f2f0">
+  <dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <dc-import name="Titoletto" label="ISCRIZIONI" conto="3 PASSI" hint-size="100%,50px"></dc-import>
+    <div style="padding: 0 20px 16px">
+      <dc-import name="RiquadroPasso" tono="prova" etichetta="PRIMA DI ISCRIVERTI" titolo="" righe="Una lezione di prova:3 €|Una settimana di prova:10 €" testo="Una lezione per provare un corso, o una settimana per provare tutti gli sport e scegliere quello giusto, prima di iscriversi. Per cominciare, passa in palestra o chiamaci." tasti="CHIAMA" hint-size="100%,250px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+      <dc-import name="PassoIscrizione" numero="1" titolo="Leggi il modulo" dettaglio="Quello per maggiorenni, o quello per minori che firma il genitore. Lo firmi col dito nell’ultimo passo, o lo stampi e ne fai una foto." tasti="MAGGIORENNI|MINORI" hint-size="100%,190px"></dc-import>
+      <dc-import name="PassoIscrizione" numero="2" titolo="Fai il pagamento" dettaglio="La quota associativa e il trimestre, oppure l’annuale. Tieni la ricevuta, o paga in segreteria." dettaglio2="Quota associativa 50 €, valida fino a luglio 2027. Bonifico a ASD Il Centro Judo:" iban="IT03 D076 0101 0000 0007 6350 339" tasti="COPIA IBAN|PAGA CON SATISPAY|VEDI I COSTI" hint-size="100%,330px"></dc-import>
+      <dc-import name="PassoIscrizione" numero="3" titolo="Manda la richiesta da qui" dettaglio="Le domande, la firma sul modulo, poi le foto della carta d’identità, e del certificato medico e della ricevuta se li hai." tasti="COMPILA LA RICHIESTA" primo-principale="{{ true }}" hint-size="100%,190px"></dc-import>
+    </div>
+    <div style="padding: 0 20px 16px">
+      <dc-import name="RiquadroPasso" titolo="Hai un dubbio? Chiamaci o passa in palestra." testo="Via Esempio 1, a pochi metri dalla metro Fermi. Telefono 346 329 2786." tasti="CHIAMA|MAPPA|INSTAGRAM" hint-size="100%,200px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" label="COSTI 2026-27" conto="…" hint-size="100%,50px"></dc-import>
+
+  </main>
+</div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px; width: 390px">
+    <dc-import name="Titoletto" label="PROPOSTA" giallo="{{ true }}" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; width: 390px; min-height: 1500px; background: #121212; color: #f2f2f0">
+  <dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <dc-import name="Titoletto" label="ISCRIZIONI" conto="3 PASSI" hint-size="100%,50px"></dc-import>
+    <div style="padding: 0 20px 16px">
+      <dc-import name="RiquadroPasso" tono="prova" etichetta="PRIMA DI ISCRIVERTI" titolo="" righe="Una lezione di prova:3 €|Una settimana di prova:10 €" testo="Una lezione per provare un corso, o una settimana per provare tutti gli sport e scegliere quello giusto, prima di iscriversi. Per cominciare, passa in palestra o chiamaci." tasti="CHIAMA" hint-size="100%,250px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+      <dc-import name="PassoIscrizione" numero="1" titolo="Leggi il modulo" dettaglio="Quello per maggiorenni, o quello per minori che firma il genitore. Lo firmi col dito nell’ultimo passo, o lo stampi e ne fai una foto." tasti="MAGGIORENNI|MINORI" hint-size="100%,190px"></dc-import>
+      <dc-import name="PassoIscrizione" numero="2" titolo="Fai il pagamento" dettaglio="La quota associativa e il trimestre, oppure l’annuale. Tieni la ricevuta, o paga in segreteria." dettaglio2="Quota associativa 50 €, valida fino a luglio 2027. Bonifico a ASD Il Centro Judo:" iban="IT03 D076 0101 0000 0007 6350 339" tasti="COPIA IBAN|PAGA CON SATISPAY|VEDI I COSTI" hint-size="100%,330px"></dc-import>
+      <dc-import name="PassoIscrizione" numero="3" titolo="Manda la richiesta da qui" dettaglio="Le domande, la firma sul modulo, poi le foto della carta d’identità, e del certificato medico e della ricevuta se li hai." tasti="COMPILA LA RICHIESTA" primo-principale="{{ true }}" hint-size="100%,190px"></dc-import>
+    </div>
+    <div style="padding: 0 20px 16px">
+      <dc-import name="RiquadroPasso" titolo="Hai un dubbio? Chiamaci o passa in palestra." testo="Via Esempio 1, a pochi metri dalla metro Fermi. Telefono 346 329 2786." tasti="CHIAMA|MAPPA|INSTAGRAM" hint-size="100%,200px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" label="COSTI 2026-27" conto="…" hint-size="100%,50px"></dc-import>
+    <div style="padding: 16px 20px 28px">
+      <dc-import name="RiquadroPasso" etichetta="IL VESTIARIO" titolo="Judogi, costumini e felpe della palestra" testo="Ordini aperti fino al 31 ottobre. Li paghi dopo, con bonifico, Satispay o in segreteria." tasti="ORDINA IL VESTIARIO" hint-size="100%,200px"></dc-import>
+    </div>
+
+  </main>
+</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
