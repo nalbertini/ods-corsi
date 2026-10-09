@@ -90,7 +90,9 @@ dell'allenamento in corso sempre in vista; resta anche l'app a sé in `timer/`
   lezione il PIN segna anche la sua presenza, da sola se era previsto su
   quella lezione, se no da confermare in segreteria
   (`supabase/15-presenze-istruttori.sql`); la segna anche fare l'appello,
-  dall'app o col PIN (`supabase/23-istruttori-dalle-lezioni.sql`). Si apre con
+  dall'app o col PIN (`supabase/23-istruttori-dalle-lezioni.sql`), e chi fa
+  l'appello dal telefono segna presente anche il collega previsto che
+  insegnava con lui (`supabase/46-istruttore-collega.sql`). Si apre con
   `sala/` in fondo all'indirizzo, e da lì il dispositivo resta un tablet.
 - **La segreteria**: per il computer della reception, a chi ha il ruolo di
   segreteria. Si apre su **DA FARE**: gli appelli che mancano, le richieste nuove, le presenze degli istruttori da confermare, i certificati e i pagamenti da sistemare, contati, ognuno col tasto per andare a sistemarlo. La **settimana** in una griglia, con gli appelli che mancano in
