@@ -87,7 +87,10 @@ lanciare `07-certificati-pagamenti.sql`: finché non c'è, l'elenco degli
 iscritti si vede lo stesso, e salvare un certificato dice che manca. Per il
 documento su carta si rilanciano `06-iscrizioni.sql` e
 `07-certificati-pagamenti.sql`: dopo, il documento arriva col modulo e la
-segreteria lo stampa e lo cancella. Per il certificato nell'app, al posto
+segreteria lo stampa e lo cancella. Perché il limite delle richieste di
+iscrizione regga anche quando ne arrivano tante insieme si rilancia
+`06-iscrizioni.sql`, e dopo `45-certificati-online.sql`: finché non c'è, il
+modulo funziona come prima. Per il certificato nell'app, al posto
 della carta, basta `45-certificati-online.sql` (vedi «Il certificato medico
 nell'app», più sotto). Per la sala dei singoli giorni
 (la colonna `ricorrenze.sala_id`) sono `01-schema.sql`, `03-funzioni.sql`,
