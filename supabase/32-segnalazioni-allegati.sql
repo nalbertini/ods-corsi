@@ -69,6 +69,41 @@ create or replace function puo_caricare_allegato(nome_file text)
          where o.bucket_id = 'segnalazioni' and o.name like split_part(nome_file, '/', 1) || '/%') < 3
 $$;
 
+-- I due conteggi qui sopra, da soli, non tengono: due allegati caricati
+-- insieme vedono lo stesso numero e passano tutti e due, e dall'API di Storage
+-- la policy si prova con una insert annullata mentre la riga vera la scrive
+-- Storage da superutente, senza RLS. I trigger scattano sulle righe vere e
+-- tengono in fila gli allegati di uno stesso messaggio fino al commit. Quello
+-- su `storage.objects` sta su una tabella di Supabase: se un suo
+-- aggiornamento lo togliesse, lo dice `controllo.sql`, e si rilancia questo file.
+create or replace function limita_file_allegati() returns trigger
+  language plpgsql security definer set search_path = public, extensions as $$
+declare
+  cartella text := split_part(new.name, '/', 1);
+begin
+  -- Un file che cambia nome nella sua cartella non ne aggiunge uno.
+  if tg_op = 'UPDATE' and old.bucket_id = 'segnalazioni' and split_part(old.name, '/', 1) = cartella then return new; end if;
+  perform pg_advisory_xact_lock(hashtext('allegati:' || cartella));
+  if (select count(*) from storage.objects o where o.bucket_id = 'segnalazioni' and o.name like cartella || '/%') >= 3 then
+    raise exception 'Questo messaggio ha già 3 allegati: per un altro file, scrivi un altro messaggio' using errcode = '42501';
+  end if;
+  return new;
+end $$;
+create or replace function limita_allegati() returns trigger
+  language plpgsql security definer set search_path = public, extensions as $$
+begin
+  perform pg_advisory_xact_lock(hashtext('allegati:' || new.messaggio_id));
+  if (select count(*) from segnalazioni_allegati a where a.messaggio_id = new.messaggio_id) >= 3 then
+    raise exception 'Questo messaggio ha già 3 allegati: per un altro file, scrivi un altro messaggio' using errcode = '42501';
+  end if;
+  return new;
+end $$;
+revoke all on function limita_file_allegati(), limita_allegati() from public, anon, authenticated;
+create or replace trigger limita_file_allegati before insert or update of bucket_id, name on storage.objects
+  for each row when (new.bucket_id = 'segnalazioni') execute function limita_file_allegati();
+create or replace trigger limita_allegati before insert on segnalazioni_allegati
+  for each row execute function limita_allegati();
+
 alter table segnalazioni_allegati enable row level security;
 alter table segnalazioni_allegati_tolti enable row level security;
 
