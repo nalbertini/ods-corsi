@@ -164,7 +164,10 @@ Per i file nelle segnalazioni basta `32-segnalazioni-allegati.sql` (dopo
 finché non c'è, le segnalazioni funzionano come prima e il tasto per allegare
 dice che va lanciato. La pulizia dopo 30 giorni gira ogni notte con pg_cron
 (Database → Extensions); se non è acceso, `select pulisci_allegati();` si
-lancia a mano di tanto in tanto.
+lancia a mano di tanto in tanto. Perché i 3 allegati per messaggio restino 3
+anche caricandoli insieme si rilancia `32-segnalazioni-allegati.sql`: lo fa un
+trigger su `storage.objects`, una tabella di Supabase, e se un suo
+aggiornamento lo togliesse `controllo.sql` lo dice.
 Per i corsi rossi che passano al viola basta `26-colori-corsi.sql` (dopo
 `01-schema.sql`), una volta sola, che non chiede di rilanciare
 `06-iscrizioni.sql`: finché non c'è, i corsi che erano rossi restano rossi.

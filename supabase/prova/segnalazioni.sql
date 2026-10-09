@@ -257,6 +257,12 @@ select atteso('10 MB giusti vanno',
 select atteso('un byte di più no',
   tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso)
     values ('eeeeeeee-0000-0000-0000-0000000000a1', 'troppo.pdf', 'application/pdf', 10485761)$$), 'NEGATO: …');
+-- Due righe insieme vedevano tutte e due lo stesso conteggio: dieci in
+-- parallelo entravano tutte, e così due in una insert sola.
+select atteso('due insieme, oltre il terzo, no',
+  tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso)
+    values ('eeeeeeee-0000-0000-0000-0000000000a1', 'terzo.webp', 'image/webp', 10), ('eeeeeeee-0000-0000-0000-0000000000a1', 'quarto.jpg', 'image/jpeg', 10)$$),
+  'NEGATO: Questo messaggio ha già 3 allegati…');
 select atteso('il terzo va',
   tenta($$insert into segnalazioni_allegati (messaggio_id, nome, tipo, peso)
     values ('eeeeeeee-0000-0000-0000-0000000000a1', 'terzo.webp', 'image/webp', 10)$$), 'FATTO (1 righe)');
@@ -368,6 +374,17 @@ select atteso('il secondo va', tenta($$insert into storage.objects (bucket_id, n
 select atteso('il terzo va', tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000b1/f3.png')$$), 'FATTO (1 righe)');
 select atteso('il quarto no, anche senza righe', tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000b1/f4.png')$$), 'NEGATO: …');
 reset role;
+-- L'app carica dall'API di Storage, che prova la policy con una insert
+-- annullata e scrive la riga vera da superutente, senza RLS: il limite deve
+-- tenere anche lì. Il parallelo vero in psql non si fa: si guarda che il turno
+-- venga prima del conteggio.
+select atteso('il quarto no nemmeno dalla porta di Storage',
+  tenta($$insert into storage.objects (bucket_id, name) values ('segnalazioni', 'eeeeeeee-0000-0000-0000-0000000000b1/f5.png')$$),
+  'NEGATO: Questo messaggio ha già 3 allegati…');
+select atteso('file e righe degli allegati si contano uno alla volta',
+  (select string_agg(proname || ' ' || (strpos(prosrc, 'pg_advisory_xact_lock') between 1 and strpos(prosrc, 'count(*)'))::text, ', ' order by proname)
+     from pg_proc where proname in ('limita_allegati', 'limita_file_allegati')),
+  'limita_allegati true, limita_file_allegati true');
 
 -- Su un filo chiuso non si allega più.
 insert into segnalazioni (id, autore_id, titolo, testo, chiusa_il) values

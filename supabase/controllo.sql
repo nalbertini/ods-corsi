@@ -249,6 +249,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('32-segnalazioni-allegati.sql', 'un allegato lo toglie solo chi l''ha mandato',
     exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'togli_allegato')
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'pulisci_allegati')),
+  ('32-segnalazioni-allegati.sql', 'gli allegati di un messaggio contati uno alla volta',
+    exists (select 1 from pg_trigger where tgname = 'limita_file_allegati' and not tgisinternal)
+    and exists (select 1 from pg_trigger where tgname = 'limita_allegati' and not tgisinternal)),
   ('13-voce-esercizi.sql', 'la voce e gli esercizi dei tablet, decisi dalla segreteria',
     exists (select 1 from information_schema.columns
             where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'esercizi')
