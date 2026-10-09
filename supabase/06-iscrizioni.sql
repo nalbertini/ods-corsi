@@ -388,6 +388,31 @@ begin
          where o.bucket_id = 'iscrizioni' and o.name like cartella::text || '/%') < (regole->>'file_per_richiesta')::int;
 end $$;
 
+-- La policy qui sopra, dall'API di Storage, si prova con una insert annullata:
+-- la riga vera la scrive Storage da superutente, senza RLS, e due file
+-- caricati insieme passano tutti e due il conteggio. Il trigger scatta sulla
+-- riga vera, e tiene in fila i file di una stessa cartella fino al commit.
+-- Sta su una tabella di Supabase: se un suo aggiornamento lo togliesse, lo
+-- dice `controllo.sql`, e si rilancia questo file.
+create or replace function limita_file_iscrizione() returns trigger
+  language plpgsql security definer set search_path = public, extensions as $$
+declare
+  cartella text := split_part(new.name, '/', 1);
+begin
+  -- Un file che cambia nome nella sua cartella non ne aggiunge uno.
+  if tg_op = 'UPDATE' and old.bucket_id = 'iscrizioni' and split_part(old.name, '/', 1) = cartella then return new; end if;
+  perform pg_advisory_xact_lock(hashtext('file_iscrizione:' || cartella));
+  if (select count(*) from storage.objects o where o.bucket_id = 'iscrizioni' and o.name like cartella || '/%')
+     >= (iscrizioni_regole()->>'file_per_richiesta')::int then
+    raise exception 'Questa richiesta ha già tutti i suoi file: se ne manca uno, scrivi alla segreteria' using errcode = '42501';
+  end if;
+  return new;
+end $$;
+revoke all on function limita_file_iscrizione() from public, anon, authenticated;
+-- Anche un file spostato dentro da un altro contenitore o da un'altra cartella.
+create or replace trigger limita_file_iscrizione before insert or update of bucket_id, name on storage.objects
+  for each row when (new.bucket_id = 'iscrizioni') execute function limita_file_iscrizione();
+
 drop policy if exists iscrizioni_carica on storage.objects;
 drop policy if exists iscrizioni_legge on storage.objects;
 drop policy if exists iscrizioni_cancella on storage.objects;
