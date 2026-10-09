@@ -3292,6 +3292,20 @@ console.log('\nsotto i 6 anni il certificato non serve')
   const basso = await m.tutteLeRighe(fonte(1131, 500).pagina)
   ok('a pagine: col tetto del server a 500 non si perde niente', [basso.data.length, new Set(basso.data).size], [1131, 1131])
   ok('a pagine: un errore alla seconda pagina arriva a chi legge', (await m.tutteLeRighe(fonte(1131, 1000, 2).pagina)).error, 'giù')
+  // Una lettura che ignora `.range()` rimanda sempre le stesse righe: prima girava
+  // per sempre (nell'app e nelle prove). Le pagine arrivano con un setTimeout,
+  // così l'orologio della prova scatta anche se il giro non finisce.
+  const ripete = () => new Promise((v) => setTimeout(() => v({ data: [{ id: 'a' }, { id: 'b' }], error: null }), 0))
+  const giro = await Promise.race([
+    m.tutteLeRighe(ripete).then(() => 'finita senza errore', (e) => e.message),
+    new Promise((v) => setTimeout(() => v('gira a vuoto'), 2000)),
+  ])
+  ok('a pagine: una lettura che ignora le pagine si ferma e lo dice', giro, "L'elenco non si è letto per intero. Riprova; se succede ancora, scrivilo in SEGNALAZIONI.")
+  // Ma due pagine giuste possono cominciare con la stessa riga: le presenze si leggono senza id
+  // (`sessione_id, stato`), e due presenti alla stessa lezione hanno lo stesso testo.
+  const uguali = Array.from({ length: 1131 }, (_, i) => ({ sessione_id: i === 1000 ? 's0' : `s${i}`, stato: 'presente' }))
+  const doppia = await m.tutteLeRighe(async (da, a) => ({ data: uguali.slice(da, a + 1), error: null })).catch((e) => e.message)
+  ok('a pagine: una pagina che comincia come la prima non è un giro a vuoto', doppia.data?.length, 1131)
 }
 
 // Le tabelle che crescono con gli anni si leggono a pagine: un elenco che
