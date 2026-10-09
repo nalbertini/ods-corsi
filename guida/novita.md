@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.50.3 — 9 ottobre 2026
+
+### Risolto
+
+- Sul telefono il video di YouTube schiacciava il timer
+
 ## 0.50.2 — 9 ottobre 2026
 
 ### Risolto
