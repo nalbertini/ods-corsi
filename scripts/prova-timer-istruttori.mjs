@@ -152,6 +152,25 @@ ok(
   ok('il timer del telefono suona la musica scelta sul telefono', inc?.musica, musica)
 }
 
+// YouTube fuori dal TIMER: il riquadro nell'angolo c'è solo se la musica suona o è in pausa,
+// e allora le pagine fanno spazio sotto, così non copre CHIUDI né i nomi.
+ok('YouTube che suona su un\'altra pagina: lettore nell\'angolo, con lo spazio', vedi(() => m.youtubeNellAngolo({ stato: 'suona', pagina: 'calendario', youtube: true })), true)
+ok('YouTube in pausa su un\'altra pagina: idem', vedi(() => m.youtubeNellAngolo({ stato: 'pausa', pagina: 'ore', youtube: true })), true)
+ok('YouTube fermo dopo un ricaricamento: niente riquadro fuori dal TIMER', vedi(() => m.youtubeNellAngolo({ stato: 'ferma', pagina: 'calendario', youtube: true })), false)
+ok('musica spenta: niente riquadro', vedi(() => m.youtubeNellAngolo({ stato: 'spenta', pagina: 'calendario', youtube: true })), false)
+ok('nel TIMER il video ha il suo posto: niente angolo', vedi(() => m.youtubeNellAngolo({ stato: 'suona', pagina: 'timer', youtube: true })), false)
+ok('una radio: niente riquadro', vedi(() => m.youtubeNellAngolo({ stato: 'suona', pagina: 'calendario', youtube: false })), false)
+ok('il lettore si monta nel TIMER anche a musica ferma (il video si vede nel suo posto)', vedi(() => m.lettoreYoutube({ stato: 'ferma', pagina: 'timer', youtube: true })), true)
+ok('fuori dal TIMER a musica ferma il lettore non c\'è', vedi(() => m.lettoreYoutube({ stato: 'ferma', pagina: 'calendario', youtube: true })), false)
+ok('fuori dal TIMER mentre suona il lettore resta (non si ricarica)', vedi(() => m.lettoreYoutube({ stato: 'suona', pagina: 'calendario', youtube: true })), true)
+
+// IMPOSTAZIONI con un allenamento in corso: il timer mostrerebbe l'allenamento, non le impostazioni.
+ok('niente allenamento: il tasto IMPOSTAZIONI c\'è', vedi(() => m.tastoImpostazioni(null)), true)
+ok('allenamento fermo (idle): c\'è', vedi(() => m.tastoImpostazioni('idle')), true)
+ok('allenamento in corso: non c\'è', vedi(() => m.tastoImpostazioni('running')), false)
+ok('in pausa: non c\'è', vedi(() => m.tastoImpostazioni('paused')), false)
+ok('finito, prima di OK: non c\'è', vedi(() => m.tastoImpostazioni('done')), false)
+
 // IMPOSTAZIONI dall'app istruttori: si cambia solo la scheda, un cronometro aperto resta aperto.
 ok('scheda chiesta da fuori: il cronometro aperto resta', vedi(() => m.strumentoDopo('crono', 'fuori')), 'crono')
 ok('scheda toccata nel timer: lo strumento si chiude, come sempre', vedi(() => m.strumentoDopo('crono', 'tasto')), null)

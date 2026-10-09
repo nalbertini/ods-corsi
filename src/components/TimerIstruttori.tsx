@@ -9,7 +9,7 @@ import { PlayerYoutube, PostoPlayer } from '../../timer/src/components/PlayerYou
 import { PlayerAudio } from '../../timer/src/components/PlayerAudio'
 import type { Dati } from '../lib/dati'
 import { azioneMusica, fonteDelLink, listaRicordata, musicaScelta, type AzioneMusica, ricordaLista, ricordaSpenta, spentaRicordata, statoMusica, type ListaMusica, type StatoMusica } from '../lib/musica'
-import { avvisoSenzaRete, statoStriscia, type PaginaIstruttori } from '../lib/timerIstruttori'
+import { avvisoSenzaRete, lettoreYoutube, statoStriscia, type PaginaIstruttori } from '../lib/timerIstruttori'
 import { MusicaSala } from './tablet/MusicaSala'
 import { Back, Nota } from './Icons'
 import { Gear, Pause, Play } from '../../timer/src/components/Icons'
@@ -120,6 +120,8 @@ export function PaginaTimer({
   onIndietro,
   conMusica = false,
   musica,
+  impostazioni,
+  onImpostazioni,
 }: {
   incorporato: Incorporato
   visibile: boolean
@@ -128,15 +130,21 @@ export function PaginaTimer({
   conMusica?: boolean
   /** La barra della musica, in fondo alla pagina. */
   musica?: ReactNode
+  /**
+   * Le impostazioni del timer (Spotify, i file della musica), che restano su
+   * questo telefono: aperte o no, e il tasto per aprirle (null: niente tasto,
+   * c'è un allenamento aperto).
+   */
+  impostazioni: boolean
+  onImpostazioni: ((aperte: boolean) => void) | null
 }) {
   const avviso = avvisoSenzaRete(useOnline(), conMusica)
-  // Le impostazioni del timer (Spotify, i file della musica) restano su questo telefono.
-  const [impostazioni, setImpostazioni] = useState(false)
   const conScheda = useMemo<Incorporato>(() => ({ ...incorporato, scheda: impostazioni ? 'impostazioni' : 'timer' }), [incorporato, impostazioni])
   return (
     <div className="faccia-timer" hidden={!visibile}>
       <div className="row pad" style={{ gap: 10, paddingTop: 16, paddingBottom: 6 }}>
-        {indietro && (
+        {/* Aperte le impostazioni, l'unico ritorno è ‹ TIMER: due «indietro» affiancati confondono. */}
+        {indietro && !impostazioni && (
           <button type="button" className="icon-btn testo" onClick={onIndietro} style={{ gap: 6 }}>
             <Back />
             <span className="num" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.12em' }}>APPELLO</span>
@@ -145,10 +153,19 @@ export function PaginaTimer({
         <h1 className="ob appello-titolo grow" style={{ margin: 0 }}>
           {impostazioni ? 'IMPOSTAZIONI' : 'TIMER'}
         </h1>
-        <button type="button" className="icon-btn testo" onClick={() => setImpostazioni((x) => !x)} aria-pressed={impostazioni} style={{ gap: 6 }}>
-          {impostazioni ? <Back /> : <Gear />}
-          <span className="num" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.12em' }}>{impostazioni ? 'TIMER' : 'IMPOSTAZIONI'}</span>
-        </button>
+        {onImpostazioni && (
+          <button
+            type="button"
+            className="icon-btn testo"
+            onClick={() => onImpostazioni(!impostazioni)}
+            aria-pressed={impostazioni}
+            aria-label={impostazioni ? 'Torna al timer' : 'Impostazioni del timer'}
+            style={{ gap: 6 }}
+          >
+            {impostazioni ? <Back /> : <Gear />}
+            <span className="num tasto-impostazioni-testo">{impostazioni ? 'TIMER' : 'IMPOSTAZIONI'}</span>
+          </button>
+        )}
       </div>
       {avviso && (
         <div className="pad" style={{ paddingBottom: 8 }}>
@@ -181,7 +198,8 @@ export interface MusicaTelefono {
   spegni: () => void
   /** All'uscita dall'app: la musica si ferma, anche quella che suona nell'app di Spotify. */
   ferma: () => void
-  lettori: ReactNode
+  /** I lettori, fermi alla radice: YouTube solo dove serve (vedi `lettoreYoutube`). */
+  lettori: (pagina: PaginaIstruttori) => ReactNode
   conYoutube: boolean
   /** Il timer ha cambiato le sue impostazioni (la musica compresa): restano su questo telefono. */
   onSettings: (s: Settings) => void
@@ -275,9 +293,9 @@ export function useMusicaTelefono(d: Dati | null): MusicaTelefono {
     conYoutube,
     onSettings: setSettings,
     // Uno solo e fermo alla radice: cambiando pagina non si ricarica.
-    lettori: (
+    lettori: (pagina) => (
       <>
-        {conYoutube && <PlayerYoutube link={perIlTimer.youtube} parti={parti} />}
+        {conYoutube && lettoreYoutube({ stato, pagina, youtube: true }) && <PlayerYoutube link={perIlTimer.youtube} parti={parti} />}
         {fonteAudio && musica.attiva && <PlayerAudio fonte={fonteAudio} link={perIlTimer.radio} nome={lista && fonteLista === 'radio' ? lista.nome : ''} parti={parti} />}
       </>
     ),

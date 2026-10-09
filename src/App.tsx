@@ -21,7 +21,7 @@ import { ARRIVO } from './lib/invito'
 import { ISTRUTTORE_PROVA, dati as caricaDati, haUnServer, inProvaScelta, scegliProva, type Dati } from './lib/dati'
 import { flussoNuovoAcceso } from './lib/passiIscrizione'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
-import { chiediPrimaDiSostituire, esciConMusica, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, timerAperto, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
+import { SPAZIO_YOUTUBE, chiediPrimaDiSostituire, esciConMusica, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, tastoImpostazioni, timerAperto, vociNavigazione, youtubeNellAngolo, type PaginaIstruttori } from './lib/timerIstruttori'
 import type { Incorporato, StatoTimer } from '../timer/src/lib/incorporato'
 import { oraDi, type SessioneVista } from './lib/sala'
 
@@ -260,6 +260,9 @@ function Istruttori() {
     caricaDati().then(setD, () => {})
   }, [])
   const musica = useMusicaTelefono(d)
+  const [impostazioni, setImpostazioni] = useState(false)
+  // Con un allenamento aperto il timer mostra quello: il tasto IMPOSTAZIONI non c'è, e le impostazioni si chiudono.
+  const conTastoImpostazioni = tastoImpostazioni(allenamento?.stato.status ?? null)
 
   // Sul telefono le pagine scorrono nello stesso riquadro: ognuna riparte da dove era.
   const corpo = useRef<HTMLElement>(null)
@@ -277,6 +280,8 @@ function Istruttori() {
   }
   // Dal menu il timer si apre senza lezione, a meno che non ce ne sia una in corso: quella non si tocca.
   const dalMenu = (p: PaginaIstruttori) => {
+    // TIMER toccato dentro le impostazioni: si torna all'elenco dei timer.
+    if (p === 'timer') setImpostazioni(false)
     if (p === pagina) return
     if (p === 'timer' && lezioneDelTimer(allenamento && { lezioneId: allenamento.lezione?.id ?? null, status: allenamento.stato.status }, null, true) === null) setLezioneTimer(null)
     setDaAppello(false)
@@ -372,7 +377,12 @@ function Istruttori() {
             <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
           )}
           {!largo && striscia}
-          <main ref={corpo} className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
+          <main
+            ref={corpo}
+            className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}
+            // YouTube nell'angolo: la pagina si allunga sotto, così CHIUDI e i nomi salgono sopra il video.
+            style={youtubeNellAngolo({ stato: musica.stato, pagina, youtube: musica.conYoutube }) ? { paddingBottom: SPAZIO_YOUTUBE } : undefined}
+          >
             {largo && striscia}
             {!largo && chi && pagina !== 'timer' && <ChiSei chi={chi} onEsci={onEsci} />}
             <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
@@ -386,6 +396,8 @@ function Istruttori() {
                 onIndietro={() => dalMenu('calendario')}
                 conMusica={musica.attiva && musica.stato !== 'spenta'}
                 musica={<BarraMusicaTelefono m={musica} />}
+                impostazioni={impostazioni && conTastoImpostazioni}
+                onImpostazioni={conTastoImpostazioni ? setImpostazioni : null}
               />
             )}
             {pagina === 'mieiTimer' && <MieiTimer soloDi={mio} onTimer={() => dalMenu('timer')} />}
@@ -395,7 +407,7 @@ function Istruttori() {
           {!largo && mini}
           {!largo && <BarraNavigazione voci={voci} attiva={pagina} onPagina={dalMenu} />}
           <Conferme />
-          {musica.lettori}
+          {musica.lettori(pagina)}
         </div>
         )
       }}
