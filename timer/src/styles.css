@@ -827,6 +827,17 @@ a.navitem { text-decoration: none; }
   .tf-riga { min-height: 44px; }
   .tf-barra { padding-top: 10px; }
 }
+/* Ancora più bassi (nell'app istruttori, col video di YouTube sotto): la scaletta
+   lascia il posto, così INDIETRO e AVANTI non escono dal fondo. */
+@media (orientation: portrait) and (max-height: 460px) {
+  .tf-sinistra { padding-top: 4px; }
+  .tf-stato { font-size: 22px; }
+  .tf-cifre { font-size: min(26vw, 24vh); }
+  .tf-esercizio { font-size: 22px; }
+  .tf-comandi { padding-top: 6px; }
+  .tf-avvia { height: 52px; }
+  .tf-scaletta, .tf-maurizio-p { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .tf-adesivo { animation: none; }
 }

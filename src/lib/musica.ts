@@ -190,3 +190,16 @@ export function azioneMusica(a: AzioneMusica): { parti: boolean; pausa: boolean;
       return { parti: false, pausa: true }
   }
 }
+
+export type FormaBarraMusica = 'riga' | 'due-righe' | 'video-accanto'
+
+/**
+ * Come si dispone la barra della musica. Il tablet ha spazio: una riga, e il
+ * video di YouTube nel suo riquadro a destra. Il telefono va su due righe; con
+ * YouTube il video (200×200, il minimo che YouTube vuole visibile) entra nella
+ * barra, a destra, e i comandi gli stanno accanto: sopra il video schiaccerebbe il timer.
+ */
+export function formaBarraMusica({ dispositivo, fonte, attiva }: { dispositivo: Dispositivo; fonte: string; attiva: boolean }): FormaBarraMusica {
+  if (dispositivo === 'tablet') return 'riga'
+  return fonte === 'youtube' && attiva ? 'video-accanto' : 'due-righe'
+}

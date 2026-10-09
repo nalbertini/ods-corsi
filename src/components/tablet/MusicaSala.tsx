@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import type { Musica } from '../../../timer/src/lib/useMusica'
 import { PostoPlayer } from '../../../timer/src/components/PlayerYoutube'
 import { TESTI_MUSICA } from '../../../timer/src/lib/musicaLocale'
-import { rigaLista, sottoMusica, type Dispositivo, type ListaMusica, type StatoMusica } from '../../lib/musica'
+import { formaBarraMusica, rigaLista, sottoMusica, type Dispositivo, type ListaMusica, type StatoMusica } from '../../lib/musica'
 import { type Disciplina, dellaDisciplina, disciplineConVoci, filtroValido } from '../../../timer/src/lib/discipline'
 
 type P = { size?: number }
@@ -70,6 +70,7 @@ export function MusicaSala({
   discipline,
   dispositivo = 'tablet',
   stato,
+  video,
 }: {
   musica: Musica
   liste: ListaMusica[]
@@ -84,6 +85,8 @@ export function MusicaSala({
   dispositivo?: Dispositivo
   /** Ferma dopo un ricaricamento: la riga sotto dice di toccare ▶. Senza, vale quello che dice il lettore. */
   stato?: StatoMusica
+  /** Il posto del video di YouTube sul telefono: entra nella barra, accanto ai comandi. */
+  video?: ReactNode
 }) {
   const [aperte, setAperte] = useState(false)
   const [disciplina, setDisciplina] = useState<string | null>(null)
@@ -99,6 +102,7 @@ export function MusicaSala({
   const yt = musica.fonte === 'youtube'
   const nomeLista = liste.find((x) => x.id === scelta)?.nome
   const telefono = dispositivo === 'telefono'
+  const forma = formaBarraMusica({ dispositivo, fonte: musica.fonte, attiva: musica.attiva })
   const dettaglio =
     (locale && l && !suonando
       ? 'Tocca ▶ per farla partire'
@@ -161,7 +165,7 @@ export function MusicaSala({
         <>
           <button
             type="button"
-            className="tb-musica-tasto"
+            className="tb-musica-tasto tb-musica-prec"
             onClick={() => void musica.comandi.indietro()}
             disabled={!l || musica.fonte === 'radio'}
             aria-label="Brano precedente"
@@ -178,7 +182,7 @@ export function MusicaSala({
           </button>
           <button
             type="button"
-            className="tb-musica-tasto"
+            className="tb-musica-tasto tb-musica-succ"
             onClick={() => void musica.comandi.avanti()}
             disabled={!l || musica.fonte === 'radio'}
             aria-label="Brano successivo"
@@ -190,7 +194,7 @@ export function MusicaSala({
       {liste.length > 0 && (
         <button
           type="button"
-          className="tb-musica-tasto"
+          className="tb-musica-tasto tb-musica-liste"
           data-on={aperte}
           onClick={() => setAperte((a) => !a)}
           aria-expanded={aperte}
@@ -200,7 +204,7 @@ export function MusicaSala({
         </button>
       )}
 
-      <button type="button" className="tb-musica-tasto" onClick={onSpegni} aria-label="Spegni la musica e nascondi il lettore">
+      <button type="button" className="tb-musica-tasto tb-musica-spegni" onClick={onSpegni} aria-label="Spegni la musica e nascondi il lettore">
         <Spegni />
       </button>
 
@@ -208,7 +212,12 @@ export function MusicaSala({
   )
 
   return (
-    <div className="tb-musica" data-telefono={telefono || undefined} data-ferma={(stato === 'ferma' && !musica.errore) || undefined}>
+    <div className="tb-musica" data-telefono={telefono || undefined} data-forma={forma} data-ferma={(stato === 'ferma' && !musica.errore) || undefined}>
+      {forma === 'video-accanto' && video && (
+        <div className="tb-musica-video" role="region" aria-label="Il lettore di YouTube">
+          {video}
+        </div>
+      )}
       {telefono ? (
         <>
           <div className="tb-musica-riga">{brano}</div>
