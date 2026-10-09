@@ -20,7 +20,12 @@
     <span style="font-size: 16px; font-weight: 600; color: {{c.text}}">{{corso}}</span>
     <span style="font-size: 15px; color: {{c.sec}}">{{quando}}</span>
   </span>
-  <span style="font-size: 15px; color: {{c.sec}}; opacity: {{opacita}}">{{previsti}}</span>
+  <span style="display: flex; flex-direction: column; gap: 2px">
+    <span style="font-size: 15px; color: {{c.sec}}; opacity: {{opacita}}">{{previsti}}</span>
+    <sc-for list="{{nonSegnati}}" as="x" hint-placeholder-count="1">
+      <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; color: {{c.text}}; text-decoration: underline; text-underline-offset: 3px">+ {{x.nome}} c’era</span>
+    </sc-for>
+  </span>
   <span style="display: flex; flex-direction: column; gap: 2px; opacity: {{opacita}}">
     <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; color: {{c.text}}">{{entrata}}</span>
     <span style="font-size: 15px; color: {{c.dim}}">{{come}}</span>
@@ -40,7 +45,7 @@
   </span>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"nome":{"editor":"text","default":"Marco Rossi"},"corso":{"editor":"text","default":"Judo kids"},"quando":{"editor":"text","default":"lunedì 5 ottobre, 17:30–18:30"},"previsti":{"editor":"text","default":"Marco Rossi"},"entrata":{"editor":"text","default":"17:24"},"come":{"editor":"text","default":"col PIN"},"tinta":{"editor":"text","default":"#1b8ac4"},"stato":{"editor":"enum","options":["da_confermare","confermata","rifiutata"],"default":"da_confermare"},"gestita":{"editor":"text","default":"da Elena, ieri"},"griglia":{"editor":"text","default":"1fr 1.5fr 1fr 130px 240px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":80}}'>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Marco Rossi"},"corso":{"editor":"text","default":"Judo kids"},"quando":{"editor":"text","default":"lunedì 5 ottobre, 17:30–18:30"},"previsti":{"editor":"text","default":"Marco Rossi"},"entrata":{"editor":"text","default":"17:24"},"come":{"editor":"text","default":"col PIN"},"tinta":{"editor":"text","default":"#1b8ac4"},"stato":{"editor":"enum","options":["da_confermare","confermata","rifiutata"],"default":"da_confermare"},"gestita":{"editor":"text","default":"da Elena, ieri"},"griglia":{"editor":"text","default":"1fr 1.5fr 1fr 130px 240px"},"nonSegnati":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1000,"height":80}}'>
 // Riproduzione 1:1 della riga di PRESENZE ISTRUTTORI: .sg-riga-presenza-istr + .sg-presenza-istr (src/styles.css
 // righe 1596-1604) in src/components/segreteria/PresenzeIstruttori.tsx (righe 317-372). Griglia 1fr 1.5fr 1fr 130px
 // 240px, gap 14px, alta almeno 64px, padding 8px 14px, filetto sotto 1px `surface-2`, barra a sinistra di 6px nel
@@ -51,6 +56,8 @@
 // confermata / rifiutata: la parola in Saira 15px 700 0.12em (verde-testo / rosso-testo), chi e quando sotto, e il
 // ripensamento a link (.sg-link a 15px, alto 44px, sottolineato): "Rifiuta" su una confermata e viceversa.
 // Una rifiutata ha tutto spento (opacita' 0.5) tranne la colonna delle azioni (data-spento).
+// nonSegnati: PROPOSTA «istruttore-collega», i previsti senza presenza su quella lezione, separati da `|`: sotto i
+// previsti un .sg-link «+ Nome c’era» alto 44px per ciascuno, che la segna confermata dalla segreteria.
 // gestita: il testo sotto la parola ("da Elena, ieri"); vuoto con stato da_confermare. La testata e' TestataTabella
 // con griglia uguale e grande acceso.
 const T = {
@@ -78,6 +85,7 @@ const stato = p.stato || 'da_confermare';
       coloreStato: conf ? c.verdeTesto : c.rossoTesto,
       dettoGestita: p.gestita ?? 'da Elena, ieri',
       ripensa: conf ? 'Rifiuta' : 'Conferma',
+      nonSegnati: String(p.nonSegnati ?? '').split('|').map((x) => x.trim()).filter(Boolean).map((nome) => ({ nome })),
     };
   }
 }
