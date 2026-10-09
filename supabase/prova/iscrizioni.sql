@@ -171,6 +171,35 @@ select atteso('il sesto file no',
 select atteso('i file non si rileggono', (select count(*)::text from storage.objects), '0');
 select atteso('né si cancellano', tenta($$delete from storage.objects$$), 'a vuoto (0 righe)');
 reset role;
+-- I file caricati insieme vedevano tutti lo stesso conteggio: 35 nello stesso
+-- istante ne lasciavano passare più di trenta. Una insert sola di sei file fa
+-- lo stesso, e in psql si prova.
+create temp table sei_file as select invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Sei', 'codice_fiscale', cf_prova('RSSSEI', (current_date - interval '30 years')::date), 'email', 'sei@esempio.it'))) as id;
+grant select on sei_file to anon;
+set role anon;
+select atteso('sei file insieme non passano il limite di cinque',
+  tenta(format($$insert into storage.objects (bucket_id, name) select 'iscrizioni', '%s/' || n from unnest(array['modulo.jpg', 'documento.pdf', 'documento-retro.png', 'certificato.pdf', 'ricevuta.jpg', 'ricevuta.pdf']) n$$, (select id from sei_file))),
+  'NEGATO: …');
+reset role;
+-- L'app carica dall'API di Storage: la policy la prova con una insert
+-- annullata, e la riga vera la scrive lei da superutente, senza RLS. Il
+-- limite deve tenere anche lì, e tenere in fila i caricamenti paralleli (che
+-- in psql non si fanno: si guarda che il turno venga prima del conteggio).
+select atteso('il sesto file non entra nemmeno dalla porta di Storage',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/ricevuta.pdf')$$, (select id from la_richiesta))),
+  'NEGATO: Questa richiesta ha già tutti i suoi file…');
+insert into storage.buckets (id, name) values ('spostato', 'spostato') on conflict do nothing;
+insert into storage.objects (bucket_id, name) values ('spostato', 'x/ricevuta.pdf');
+select atteso('né spostandocene uno da un altro contenitore',
+  tenta(format($$update storage.objects set bucket_id = 'iscrizioni', name = '%s/ricevuta.pdf' where bucket_id = 'spostato'$$, (select id from la_richiesta))),
+  'NEGATO: Questa richiesta ha già tutti i suoi file…');
+delete from storage.objects where bucket_id = 'spostato';
+select atteso('i file di una cartella si contano uno alla volta',
+  (select (strpos(prosrc, 'pg_advisory_xact_lock') between 1 and strpos(prosrc, 'file_per_richiesta'))::text
+     from pg_proc where proname = 'limita_file_iscrizione'), 'true');
+-- Le prove qui sotto contano le richieste: questa non c'era.
+delete from richieste_iscrizione where id = (select id from sei_file);
 update richieste_iscrizione set creata_il = now() - interval '2 hours' where nome = 'Giulia';
 create temp table vecchia as select id from richieste_iscrizione where nome = 'Giulia';
 grant select on vecchia to anon;

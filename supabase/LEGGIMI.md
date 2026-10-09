@@ -91,7 +91,10 @@ documento su carta si rilanciano `06-iscrizioni.sql` e
 segreteria lo stampa e lo cancella. Perché il limite delle richieste di
 iscrizione regga anche quando ne arrivano tante insieme si rilancia
 `06-iscrizioni.sql`, e dopo `45-certificati-online.sql`: finché non c'è, il
-modulo funziona come prima. Per il certificato nell'app, al posto
+modulo funziona come prima. Lo stesso rilancio tiene i file di una richiesta
+dentro il limite anche quando si caricano tutti insieme: lo fa un trigger su
+`storage.objects`, una tabella di Supabase, e se un suo aggiornamento lo
+togliesse `controllo.sql` lo dice e si rilancia `06-iscrizioni.sql`. Per il certificato nell'app, al posto
 della carta, basta `45-certificati-online.sql` (vedi «Il certificato medico
 nell'app», più sotto). Per la sala dei singoli giorni
 (la colonna `ricorrenze.sala_id`) sono `01-schema.sql`, `03-funzioni.sql`,

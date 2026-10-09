@@ -87,6 +87,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('06-iscrizioni.sql', 'documento e certificato col modulo, da stampare',
     exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%certificato%')
     and exists (select 1 from dentro where nome = 'richieste_con_documento')),
+  ('06-iscrizioni.sql', 'i file di una richiesta contati uno alla volta',
+    exists (select 1 from pg_trigger where tgname = 'limita_file_iscrizione' and not tgisinternal)),
   ('07-certificati-pagamenti.sql', 'certificati e pagamenti',
     to_regclass('public.schede_iscritti') is not null),
   ('07-certificati-pagamenti.sql', 'certificato e documento su carta',
