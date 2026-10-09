@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI: la lezione di Nicola è «coperta» e non va fra quelle senza istruttore: Giulia non si può più segnare. Copia di Pagina.dc.html. Tavola modello, schermo largo: la segreteria (menu fisso di 240px + corpo). Una schermata nuova si fa copiando
+     questo file e sostituendo il contenuto di <main>: il menu e lo sfondo restano quelli dell'app, non si ridisegnano.
+     Qui il corpo e' PRESENZE (calendario e appello affiancati, `.sala-due` da 960px: minmax(380px, 460px) + resto,
+     ciascun lato col suo scorrimento, `.sg-corpo-sala` senza margine). Le altre sezioni hanno invece il margine
+     di .sg-corpo: 36px ai lati, 28px in alto e in basso, 18px fra i blocchi, titolo 34px (.sg-titolo).
+     Per il tema chiaro: sfondo #f4f4f1 qui sotto e tema="chiaro" su ogni <dc-import>. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="PRESENZE ISTRUTTORI" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">PRESENZE ISTRUTTORI</h1>
+    <div style="border: 2px solid #333333">
+      <dc-import name="TestataTabella" colonne="ISTRUTTORE|LEZIONE|PREVISTO|ENTRATO|STATO" griglia="1fr 1.5fr 1fr 130px 240px" ordinata="LEZIONE" verso="giu" grande="{{ true }}" hint-size="100%,40px"></dc-import>
+      <dc-import name="RigaPresenzaIstruttore" nome="Nicola Albertini" corso="Lotta adulti" quando="giovedì 8 ottobre, 19:30–21:00" previsti="Nicola Albertini, Giulia Bianchi" entrata="19:34" come="ha fatto l’appello" tinta="#16a54a" stato="confermata" gestita="da sé: appello, era previsto" hint-size="100%,80px"></dc-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

@@ -226,6 +226,49 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .faccia-timer { display: flex; flex-direction: column; height: 100%; min-height: 0; }
 .avviso-rete { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: var(--surface); border: 2px solid var(--line); border-left: 6px solid var(--giallo); font-size: 14px; line-height: 1.4; color: var(--sec); }
 .avviso-rete-titolo { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--giallo-testo); }
+/* La musica del telefono, in fondo alla pagina TIMER: la barra del tablet su due righe (design: timer-musica). */
+.musica-telefono { position: sticky; bottom: 0; z-index: 4; flex-shrink: 0; margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px 20px 14px; border-top: 2px solid var(--line-soft); background: var(--bg); }
+.musica-accendi { justify-content: flex-start; gap: 12px; min-height: 52px; font-size: 17px; letter-spacing: 0.12em; }
+.tb-musica[data-telefono] { flex-direction: column; align-items: stretch; gap: 10px; width: 100%; max-width: 560px; }
+.musica-telefono .tb-lista .tb-musica-sotto { white-space: normal; }
+.tb-musica-riga { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.tb-musica[data-telefono] .tb-musica-testo { flex-grow: 1; max-width: none; }
+.tb-musica[data-telefono] .tb-musica-copertina { width: 44px; height: 44px; }
+.tb-musica[data-telefono] .tb-musica-tasto { width: 52px; height: 52px; }
+.tb-musica[data-telefono] .tb-musica-riga:first-child .tb-musica-tasto { width: 44px; height: 44px; }
+.tb-musica[data-telefono] .tb-musica-suona { flex-grow: 1; }
+/* Con YouTube sul telefono il video (200×200, il minimo che YouTube vuole visibile) entra nella barra a destra
+   e i comandi gli stanno accanto, in colonna: sopra, schiaccerebbe il timer (design: timer-youtube). */
+.tb-musica[data-forma='video-accanto'] {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 200px; grid-template-rows: 1fr repeat(3, 44px);
+  grid-template-areas: 'testo testo video' 'suona suona video' 'prec succ video' 'liste spegni video'; gap: 8px 8px; align-items: stretch;
+}
+.tb-musica[data-forma='video-accanto'] .tb-musica-riga { display: contents; }
+.tb-musica[data-forma='video-accanto'] .tb-musica-testo { grid-area: testo; align-self: start; }
+.tb-musica[data-forma='video-accanto'] .tb-musica-tasto { width: auto; height: 44px; }
+.tb-musica[data-forma='video-accanto'] .tb-musica-suona { grid-area: suona; }
+.tb-musica[data-forma='video-accanto'] .tb-musica-prec { grid-area: prec; }
+.tb-musica[data-forma='video-accanto'] .tb-musica-succ { grid-area: succ; }
+.tb-musica[data-forma='video-accanto'] .tb-musica-liste { grid-area: liste; }
+.tb-musica[data-forma='video-accanto'] .tb-musica-spegni { grid-area: spegni; }
+.tb-musica[data-forma='video-accanto'] .tb-musica-sotto { white-space: normal; }
+.tb-musica-video { grid-area: video; }
+.tb-musica-video .musica-video { width: 200px; height: 200px; background: var(--surface-2); border: 2px solid var(--line); }
+.tb-musica[data-ferma] .tb-musica-suona { background: var(--verde); border-color: var(--verde); color: var(--su-colore); }
+/* Il pannello ☰ sale dalle due righe dei comandi, non dal video sopra: così resta nello schermo e scorre. */
+.tb-musica[data-telefono] { position: relative; }
+.musica-telefono .tb-liste { left: 0; right: 0; bottom: calc(100% + 10px); width: auto; max-width: none; max-height: min(60vh, calc(100dvh - 320px)); overflow-y: auto; }
+.tasto-impostazioni-testo { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; }
+/* A 320px titolo, APPELLO e IMPOSTAZIONI non stanno: resta l'ingranaggio (il nome lo dice aria-label). */
+@media (max-width: 380px) { .tasto-impostazioni-testo { display: none; } }
+/* La barra piccola della musica, fuori dal TIMER: sopra la barra delle pagine, lontana dalla striscia in alto. */
+.musica-mini { display: flex; align-items: center; flex-shrink: 0; min-height: 56px; padding-right: 8px; border-top: 2px solid var(--line-soft); background: var(--surface); }
+.sg-corpo .musica-mini { position: sticky; bottom: 0; margin-top: auto; }
+.musica-mini-apri { display: flex; align-items: center; gap: 12px; flex-grow: 1; min-width: 0; min-height: 56px; padding: 0 8px 0 20px; text-align: left; color: var(--text); }
+.musica-mini-apri > svg { flex-shrink: 0; color: var(--dim); }
+.musica-mini-titolo { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.musica-mini-stato { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+.musica-mini-tasto { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid var(--line); color: var(--text); }
 
 /* ---------- impalcatura ---------- */
 
@@ -460,6 +503,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .riga-appello[data-stato='assente'] { border-color: var(--rosso); }
 .riga-appello[data-stato='assente'] .segno { color: var(--rosso-testo); }
 .riga-appello[data-stato='assente'] .nome-appello { color: var(--dim); text-decoration: line-through; }
+.riga-appello:disabled { cursor: default; }
+.riga-appello:disabled .nome-appello { color: var(--sec); }
 .elenco-appello { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
 
 /* Le prove: chi viene a provare, aggiunto da chi fa l'appello (`Prove.tsx`).

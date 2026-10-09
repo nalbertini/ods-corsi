@@ -5,7 +5,7 @@ import { chiaveGiorno } from './sala'
 import { emailDi, ORDINE_SPARITO, type Capo, type Catalogo, type DatiVestiario, RACCOLTA_SPARITA, type Ordine, type OrdineNuovo, type Pagamento, type RigaCorretta, type Riga } from './vestiario'
 
 /**
- * Gli ordini di vestiario col database vero (`supabase/46-vestiario.sql`), e
+ * Gli ordini di vestiario col database vero (`supabase/47-vestiario.sql`), e
  * la scelta fra quello e la prova, come per le richieste di iscrizione.
  *
  * Chi ordina dal link non ha un accesso: parla solo con `vestiario()` e
@@ -14,17 +14,17 @@ import { emailDi, ORDINE_SPARITO, type Capo, type Catalogo, type DatiVestiario, 
  * il resto: prezzi e totale li mette sempre il database.
  *
  * Gli `as` sulle risposte: supabase-js qui non conosce lo schema (non ci sono
- * tipi generati), e i tipi scritti sotto sono quelli di 46-vestiario.sql.
+ * tipi generati), e i tipi scritti sotto sono quelli di 47-vestiario.sql.
  */
 
-/** Come la pagina senza catalogo: la funzione c'è ma anon non la può chiamare (06-iscrizioni.sql rilanciato dopo il 46). */
+/** Come la pagina senza catalogo: la funzione c'è ma anon non la può chiamare (06-iscrizioni.sql rilanciato dopo il 47). */
 export const NON_ANCORA_APERTI = 'In questo momento non si ordina il vestiario: gli ordini non sono ancora aperti'
 
-export const MANCA_VESTIARIO = 'Il vestiario non è attivo sul database: va lanciato 46-vestiario.sql (anche dopo ogni volta che si rilancia 06-iscrizioni.sql)'
+export const MANCA_VESTIARIO = 'Il vestiario non è attivo sul database: va lanciato 47-vestiario.sql (anche dopo ogni volta che si rilancia 06-iscrizioni.sql)'
 
 type ErroreDb = { message?: string; code?: string } | null
 
-// La funzione, la tabella o la colonna che mancano: il file 46 non è stato lanciato.
+// La funzione, la tabella o la colonna che mancano: il file 47 non è stato lanciato.
 const manca = (e: ErroreDb) => ['PGRST202', 'PGRST205', '42883', '42P01', 'PGRST200'].includes(e?.code ?? '') && /vestiario/.test(e?.message ?? '')
 
 /**
@@ -94,8 +94,8 @@ export function creaVestiarioSupabase(db: SupabaseClient): DatiVestiario {
   return {
     async catalogo() {
       const r = await db.rpc('vestiario')
-      // Senza il file 46 la pagina pubblica è semplicemente «non ancora aperta». Anche col 42501:
-      // rilanciare 06-iscrizioni.sql dopo il 46 toglie `vestiario()` ad anon.
+      // Senza il file 47 la pagina pubblica è semplicemente «non ancora aperta». Anche col 42501:
+      // rilanciare 06-iscrizioni.sql dopo il 47 toglie `vestiario()` ad anon.
       if (r.error && (manca(r.error) || r.error.code === '42501')) {
         aperti = false
         return null

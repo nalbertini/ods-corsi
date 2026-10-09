@@ -10,7 +10,7 @@ import { AreaIscritti, IscrittiChiusa } from './components/AreaIscritti'
 import { Guida } from './components/Guida'
 import { MieiTimer } from './components/MieiTimer'
 import { MieOre } from './components/MieOre'
-import { BarraNavigazione, PaginaTimer, StrisciaTimer } from './components/TimerIstruttori'
+import { BarraMusicaTelefono, BarraNavigazione, MusicaMini, PaginaTimer, StrisciaTimer, useMusicaTelefono } from './components/TimerIstruttori'
 import { Conferme, chiedi } from './components/segreteria/comune'
 import { Tablet } from './components/tablet/Tablet'
 import { Segreteria } from './components/segreteria/Segreteria'
@@ -19,11 +19,11 @@ import { account, esci, nomeDelRuolo, passaA, serveAccesso, type Account, type P
 import { useLargo } from './lib/largo'
 import { INDIRIZZO_GUIDA, indirizzoPagina } from './lib/guida'
 import { ARRIVO } from './lib/invito'
-import { ISTRUTTORE_PROVA, haUnServer, inProvaScelta, scegliProva } from './lib/dati'
+import { ISTRUTTORE_PROVA, dati as caricaDati, haUnServer, inProvaScelta, scegliProva, type Dati } from './lib/dati'
 import { flussoNuovoAcceso } from './lib/passiIscrizione'
 import { INDIRIZZO_VESTIARIO } from './lib/cancelletti'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
-import { chiediPrimaDiSostituire, lezioneDelTimer, mostraStriscia, statoCambiato, timerAperto, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
+import { SPAZIO_YOUTUBE, chiediPrimaDiSostituire, esciConMusica, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, tastoImpostazioni, timerAperto, vociNavigazione, youtubeNellAngolo, type PaginaIstruttori } from './lib/timerIstruttori'
 import type { Incorporato, StatoTimer } from '../timer/src/lib/incorporato'
 import { oraDi, type SessioneVista } from './lib/sala'
 
@@ -257,9 +257,6 @@ function Iscritti() {
  */
 type LezioneTimer = Pick<SessioneVista, 'id' | 'corsoId' | 'corso' | 'inizio'>
 
-/** Il timer incorporato non ha impostazioni da dire a nessuno: qui non c'è una barra della musica che le legga. */
-const nessuno = () => {}
-
 function Istruttori() {
   const largo = useLargo()
   // Il calendario (e con lui l'appello) e il timer restano montati cambiando
@@ -275,6 +272,16 @@ function Istruttori() {
   const [ferma, setFerma] = useState(0)
   const lezioneRef = useRef(lezioneTimer)
   lezioneRef.current = lezioneTimer
+  // La musica del telefono: le liste della segreteria e la barra nella pagina TIMER.
+  const [d, setD] = useState<Dati | null>(null)
+  useEffect(() => {
+    // Senza dati non ci sono liste, ma la musica delle impostazioni del timer suona lo stesso.
+    caricaDati().then(setD, () => {})
+  }, [])
+  const musica = useMusicaTelefono(d)
+  const [impostazioni, setImpostazioni] = useState(false)
+  // Con un allenamento aperto il timer mostra quello: il tasto IMPOSTAZIONI non c'è, e le impostazioni si chiudono.
+  const conTastoImpostazioni = tastoImpostazioni(allenamento?.stato.status ?? null)
 
   // Sul telefono le pagine scorrono nello stesso riquadro: ognuna riparte da dove era.
   const corpo = useRef<HTMLElement>(null)
@@ -292,6 +299,8 @@ function Istruttori() {
   }
   // Dal menu il timer si apre senza lezione, a meno che non ce ne sia una in corso: quella non si tocca.
   const dalMenu = (p: PaginaIstruttori) => {
+    // TIMER toccato dentro le impostazioni: si torna all'elenco dei timer.
+    if (p === 'timer') setImpostazioni(false)
     if (p === pagina) return
     if (p === 'timer' && lezioneDelTimer(allenamento && { lezioneId: allenamento.lezione?.id ?? null, status: allenamento.stato.status }, null, true) === null) setLezioneTimer(null)
     setDaAppello(false)
@@ -318,26 +327,23 @@ function Istruttori() {
     vaiA('timer')
   }
 
+  const { perIlTimer, onSettings } = musica
   const incorporato = useMemo<Incorporato>(
-    () => ({
-      lezione: timerAperto(lezioneTimer),
-      // Nessuna musica: il timer qui è per la lezione, e la musica la comanda la sala.
-      musica: { musicaFonte: 'spotify', youtube: '', radio: '', musica: false },
-      sala: null,
-      clip: null,
-      visibile: pagina === 'timer',
-      conImpostazioni: false,
-      senzaTestata: true,
-      ferma,
-      onStato: (s) => {
-        // La lezione è quella di quando l'allenamento è partito: poi la pagina può cambiare, lui no.
-        const lezione = lezioneRef.current
-        // Il timer manda lo stato a ogni secondo: la pagina si ridisegna solo se cambia qualcosa che si vede.
-        setAllenamento((x) => (statoCambiato(x?.stato ?? null, s) ? (s ? { stato: s, lezione: x ? x.lezione : lezione } : null) : x))
-      },
-      onSettings: nessuno,
-    }),
-    [lezioneTimer, pagina, ferma],
+    () =>
+      incorporatoIstruttori({
+        lezione: timerAperto(lezioneTimer),
+        musica: perIlTimer,
+        visibile: pagina === 'timer',
+        ferma,
+        onStato: (s) => {
+          // La lezione è quella di quando l'allenamento è partito: poi la pagina può cambiare, lui no.
+          const lezione = lezioneRef.current
+          // Il timer manda lo stato a ogni secondo: la pagina si ridisegna solo se cambia qualcosa che si vede.
+          setAllenamento((x) => (statoCambiato(x?.stato ?? null, s) ? (s ? { stato: s, lezione: x ? x.lezione : lezione } : null) : x))
+        },
+        onSettings,
+      }),
+    [lezioneTimer, pagina, ferma, perIlTimer, onSettings],
   )
 
   // Di chi sono le lezioni da mostrare: dell'istruttore entrato (anche della
@@ -355,7 +361,8 @@ function Istruttori() {
           <main className="scroll">{x}</main>
         </div>
       )}
-      dentro={(chi, onEsci) => {
+      dentro={(chi, esciDallaPorta) => {
+        const onEsci = esciConMusica(musica.ferma, esciDallaPorta)
         const mio = soloDi(chi)
         const voci = vociNavigazione({ ruolo: chi?.ruolo === 'staff' ? 'staff' : 'istruttore', ancheIstruttore: chi?.ancheIstruttore })
         // In flusso: sul telefono sotto la testata, sullo schermo largo in cima al corpo.
@@ -369,26 +376,57 @@ function Istruttori() {
             onFerma={() => setFerma((f) => f + 1)}
           />
         )
+        // Sotto, sopra la barra delle pagine; sullo schermo largo in fondo al corpo.
+        const mini = mostraMusicaMini(musica.stato, pagina) && (
+          <MusicaMini
+            m={musica}
+            onApri={() => {
+              setDaAppello(false)
+              vaiA('timer')
+            }}
+          />
+        )
+        // Il lettore di YouTube, fuori dal TIMER, sta in un angolo: sopra la barra delle pagine e quella piccola, non sui loro tasti.
+        const angolo = (largo ? 0 : 66) + (mini ? 56 : 0)
         return (
-        <div className={largo ? 'sg' : 'app'}>
+        <div className={largo ? 'sg' : 'app'} style={{ ['--angolo-player' as string]: `${angolo}px` }}>
           {largo ? (
             <MenuIstruttori chi={chi} onEsci={onEsci} voci={voci} pagina={pagina} onPagina={dalMenu} />
           ) : (
             <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
           )}
           {!largo && striscia}
-          <main ref={corpo} className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
+          <main
+            ref={corpo}
+            className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}
+            // YouTube nell'angolo: la pagina si allunga sotto, così CHIUDI e i nomi salgono sopra il video.
+            style={youtubeNellAngolo({ stato: musica.stato, pagina, youtube: musica.conYoutube }) ? { paddingBottom: SPAZIO_YOUTUBE } : undefined}
+          >
             {largo && striscia}
             {!largo && chi && pagina !== 'timer' && <ChiSei chi={chi} onEsci={onEsci} />}
             <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
               <Sala soloDi={mio} onTimer={(l) => void apriTimer(l)} />
             </div>
-            {timerMontato && <PaginaTimer incorporato={incorporato} visibile={pagina === 'timer'} indietro={daAppello} onIndietro={() => dalMenu('calendario')} />}
+            {timerMontato && (
+              <PaginaTimer
+                incorporato={incorporato}
+                visibile={pagina === 'timer'}
+                indietro={daAppello}
+                onIndietro={() => dalMenu('calendario')}
+                conMusica={musica.attiva && musica.stato !== 'spenta'}
+                musica={<BarraMusicaTelefono m={musica} />}
+                impostazioni={impostazioni && conTastoImpostazioni}
+                onImpostazioni={conTastoImpostazioni ? setImpostazioni : null}
+              />
+            )}
             {pagina === 'mieiTimer' && <MieiTimer soloDi={mio} onTimer={() => dalMenu('timer')} />}
             {pagina === 'ore' && mio && <MieOre personaId={mio} />}
+            {largo && mini}
           </main>
+          {!largo && mini}
           {!largo && <BarraNavigazione voci={voci} attiva={pagina} onPagina={dalMenu} />}
           <Conferme />
+          {musica.lettori(pagina)}
         </div>
         )
       }}

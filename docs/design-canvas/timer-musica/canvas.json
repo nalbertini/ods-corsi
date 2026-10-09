@@ -1,0 +1,78 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Proposta"
+    }
+  ],
+  "annotations": [],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  },
+  "artboards": [
+    {
+      "file": "Spenta.dc.html",
+      "title": "Proposta · Spenta",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "Ferma.dc.html",
+      "title": "Proposta · Ferma",
+      "x": 510,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "Allenamento.dc.html",
+      "title": "Proposta · Allenamento",
+      "x": 1020,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "Liste.dc.html",
+      "title": "Proposta · Liste",
+      "x": 1530,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "Youtube.dc.html",
+      "title": "Proposta · Youtube",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "Appello.dc.html",
+      "title": "Proposta · Appello",
+      "x": 510,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "SenzaRete.dc.html",
+      "title": "Proposta · SenzaRete",
+      "x": 1020,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    }
+  ]
+}

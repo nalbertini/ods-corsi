@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import type { Musica } from '../../../timer/src/lib/useMusica'
 import { PostoPlayer } from '../../../timer/src/components/PlayerYoutube'
 import { TESTI_MUSICA } from '../../../timer/src/lib/musicaLocale'
-import { fonteDelLink, type ListaMusica } from '../../lib/musica'
-import { type Disciplina, dellaDisciplina, disciplineConVoci, filtroValido, nomeDisciplina } from '../../../timer/src/lib/discipline'
+import { formaBarraMusica, rigaLista, sottoMusica, type Dispositivo, type ListaMusica, type StatoMusica } from '../../lib/musica'
+import { type Disciplina, dellaDisciplina, disciplineConVoci, filtroValido } from '../../../timer/src/lib/discipline'
 
 type P = { size?: number }
 const Prec = ({ size = 22 }: P) => (
@@ -55,6 +55,10 @@ const NOME_FONTE = {
  * mai: per questo anche YouTube, che suona dentro la pagina, continua a
  * suonare passando dall'una all'altra. Il suo lettore sta nel riquadro a
  * destra (`VideoSala`), perché YouTube vuole che si veda.
+ *
+ * Sul telefono (app istruttori, pagina TIMER) è la stessa barra su due righe:
+ * sopra il brano e il volume, sotto ⏮ ▶ ⏭ ☰ ✕. Le liste sono tutte quelle
+ * della segreteria e il pannello sale dal basso.
  */
 export function MusicaSala({
   musica,
@@ -64,6 +68,9 @@ export function MusicaSala({
   onScegli,
   onSpegni,
   discipline,
+  dispositivo = 'tablet',
+  stato,
+  video,
 }: {
   musica: Musica
   liste: ListaMusica[]
@@ -75,6 +82,11 @@ export function MusicaSala({
   onSpegni: () => void
   /** Le discipline della palestra: il filtro delle liste. */
   discipline: Disciplina[]
+  dispositivo?: Dispositivo
+  /** Ferma dopo un ricaricamento: la riga sotto dice di toccare ▶. Senza, vale quello che dice il lettore. */
+  stato?: StatoMusica
+  /** Il posto del video di YouTube sul telefono: entra nella barra, accanto ai comandi. */
+  video?: ReactNode
 }) {
   const [aperte, setAperte] = useState(false)
   const [disciplina, setDisciplina] = useState<string | null>(null)
@@ -89,8 +101,9 @@ export function MusicaSala({
   const suonando = l?.inRiproduzione ?? false
   const yt = musica.fonte === 'youtube'
   const nomeLista = liste.find((x) => x.id === scelta)?.nome
-  const sotto =
-    musica.errore ??
+  const telefono = dispositivo === 'telefono'
+  const forma = formaBarraMusica({ dispositivo, fonte: musica.fonte, attiva: musica.attiva })
+  const dettaglio =
     (locale && l && !suonando
       ? 'Tocca ▶ per farla partire'
       : l
@@ -100,13 +113,15 @@ export function MusicaSala({
           : musica.fonte === 'file'
             ? 'Scegli i file nelle impostazioni del timer'
             : 'Scegli una lista')
+  const sotto = sottoMusica({ stato: stato ?? 'suona', errore: musica.errore ?? null, dettaglio })
 
-  return (
-    <div className="tb-musica">
+  // Le due righe: il brano (e il volume) sopra, i comandi sotto. Sul tablet stanno in fila in una.
+  const brano = (
+    <>
       {musica.attiva && !yt && (l?.copertina ? <img className="tb-musica-copertina" src={l.copertina} alt="" /> : musica.fonte === 'spotify' && <span className="tb-musica-copertina" />)}
       <span className="stack tb-musica-testo">
         <span className="tb-musica-titolo">
-          {l?.titolo || nomeLista || (musica.attiva ? NOME_FONTE[musica.fonte] : 'Musica della sala')}
+          {l?.titolo || nomeLista || (musica.attiva ? (telefono && musica.fonte === 'file' ? 'File del telefono' : NOME_FONTE[musica.fonte]) : telefono ? 'Musica' : 'Musica della sala')}
         </span>
         <span className="tb-musica-sotto" style={musica.errore ? { color: 'var(--rosso-testo)', whiteSpace: 'normal' } : undefined}>
           {sotto}
@@ -140,9 +155,17 @@ export function MusicaSala({
               </button>
             </>
           )}
+        </>
+      )}
+    </>
+  )
+  const comandi = (
+    <>
+      {musica.attiva && (
+        <>
           <button
             type="button"
-            className="tb-musica-tasto"
+            className="tb-musica-tasto tb-musica-prec"
             onClick={() => void musica.comandi.indietro()}
             disabled={!l || musica.fonte === 'radio'}
             aria-label="Brano precedente"
@@ -151,7 +174,7 @@ export function MusicaSala({
           </button>
           <button
             type="button"
-            className="tb-musica-tasto"
+            className="tb-musica-tasto tb-musica-suona"
             onClick={() => void (suonando ? musica.comandi.pausa() : musica.comandi.suona())}
             aria-label={suonando ? 'Metti in pausa la musica' : 'Fai partire la musica'}
           >
@@ -159,7 +182,7 @@ export function MusicaSala({
           </button>
           <button
             type="button"
-            className="tb-musica-tasto"
+            className="tb-musica-tasto tb-musica-succ"
             onClick={() => void musica.comandi.avanti()}
             disabled={!l || musica.fonte === 'radio'}
             aria-label="Brano successivo"
@@ -171,23 +194,44 @@ export function MusicaSala({
       {liste.length > 0 && (
         <button
           type="button"
-          className="tb-musica-tasto"
+          className="tb-musica-tasto tb-musica-liste"
           data-on={aperte}
           onClick={() => setAperte((a) => !a)}
           aria-expanded={aperte}
-          aria-label="Le liste della sala"
+          aria-label={telefono ? 'Le liste della musica' : 'Le liste della sala'}
         >
           <Liste />
         </button>
       )}
 
-      <button type="button" className="tb-musica-tasto" onClick={onSpegni} aria-label="Spegni la musica e nascondi il lettore">
+      <button type="button" className="tb-musica-tasto tb-musica-spegni" onClick={onSpegni} aria-label="Spegni la musica e nascondi il lettore">
         <Spegni />
       </button>
 
+    </>
+  )
+
+  return (
+    <div className="tb-musica" data-telefono={telefono || undefined} data-forma={forma} data-ferma={(stato === 'ferma' && !musica.errore) || undefined}>
+      {forma === 'video-accanto' && video && (
+        <div className="tb-musica-video" role="region" aria-label="Il lettore di YouTube">
+          {video}
+        </div>
+      )}
+      {telefono ? (
+        <>
+          <div className="tb-musica-riga">{brano}</div>
+          <div className="tb-musica-riga">{comandi}</div>
+        </>
+      ) : (
+        <>
+          {brano}
+          {comandi}
+        </>
+      )}
       {aperte && (
-        <div className="tb-liste" role="dialog" aria-label="La musica della sala">
-          <span className="tb-etichetta">LA MUSICA DELLA SALA</span>
+        <div className="tb-liste" role="dialog" aria-label={telefono ? 'La musica' : 'La musica della sala'}>
+          <span className="tb-etichetta">{telefono ? 'LA MUSICA' : 'LA MUSICA DELLA SALA'}</span>
           {usate.length > 0 && (
             <div className="tb-filtro" role="group" aria-label="Categoria">
               <button type="button" className="tb-filtro-tasto" aria-pressed={filtro === null} onClick={() => setDisciplina(null)}>
@@ -201,9 +245,7 @@ export function MusicaSala({
             </div>
           )}
           {dellaDisciplina(liste, filtro).map((x) => {
-            const fonte = fonteDelLink(x.link)
-            const nomeDisc = nomeDisciplina(x.disciplina, discipline)
-            const spenta = !fonte || (fonte === 'spotify' && !spotifyCollegato)
+            const { spenta, sotto: riga } = rigaLista(x, { dispositivo, spotifyCollegato, discipline })
             return (
               <button
                 key={x.id}
@@ -218,13 +260,7 @@ export function MusicaSala({
               >
                 <span className="stack grow" style={{ gap: 2, minWidth: 0 }}>
                   <span className="ob tb-lista-nome">{x.nome.toUpperCase()}</span>
-                  <span className="tb-musica-sotto">
-                    {fonte === 'spotify' && !spotifyCollegato
-                      ? 'Spotify non è collegato su questo tablet'
-                      : fonte
-                        ? `${fonte === 'radio' ? 'Radio' : `Playlist ${NOME_FONTE[fonte]}`}${x.salaId ? '' : ' · tutte le sale'}${nomeDisc ? ` · ${nomeDisc}` : ''}`
-                        : 'Link non valido'}
-                  </span>
+                  <span className="tb-musica-sotto">{riga}</span>
                 </span>
               </button>
             )

@@ -10,6 +10,36 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.50.3 — 9 ottobre 2026
+
+### Risolto
+
+- Sul telefono il video di YouTube schiacciava il timer
+
+## 0.50.2 — 9 ottobre 2026
+
+### Risolto
+
+- Il limite delle richieste di iscrizione non si aggira più mandandone tante insieme
+
+## 0.50.1 — 9 ottobre 2026
+
+### Risolto
+
+- Nel timer dell'app istruttori il video di YouTube copriva CHIUDI dell'appello
+
+## 0.50.0 — 9 ottobre 2026
+
+### Novità
+
+- La musica nel timer dell'app istruttori
+
+## 0.49.0 — 9 ottobre 2026
+
+### Novità
+
+- Nell'appello segni presente anche il collega che insegnava con te
+
 ## 0.48.14 — 8 ottobre 2026
 
 ### Modificato

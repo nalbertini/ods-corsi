@@ -44,6 +44,12 @@ export interface Incorporato {
    */
   conImpostazioni?: boolean
   /**
+   * La scheda la sceglie la pagina che lo contiene, con un tasto suo: il timer
+   * la segue e non mostra la sua barra delle schede. Lo fa l'app istruttori,
+   * che in basso ha già la barra delle pagine.
+   */
+  scheda?: 'timer' | 'impostazioni'
+  /**
    * La pagina che lo contiene ha già la sua testata, col titolo TIMER e il
    * suo ritorno: niente marchio e niente titolo del timer. Lo fa l'app
    * istruttori, sul telefono e sul computer.

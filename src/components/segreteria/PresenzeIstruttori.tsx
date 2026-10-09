@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { DatiSegreteria, LezioneSenzaIstruttore, PresenzaIstruttoreSeg } from '../../lib/segreteria'
+import { comeArrivata, previstiSenzaPresenza, type DatiSegreteria, type LezioneSenzaIstruttore, type PresenzaIstruttoreSeg } from '../../lib/segreteria'
 import type { StatoPresenzaIstruttore } from '../../lib/tablet'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { mesi } from '../../lib/ore'
@@ -114,7 +114,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
     istruttore: (x) => x.nome,
     lezione: (x) => x.inizio,
     previsto: (x) => x.previsti,
-    entrato: (x) => (x.come === 'segreteria' ? null : x.entratoIl),
+    entrato: (x) => (x.come === 'segreteria' || x.come === 'collega' ? null : x.entratoIl),
     stato: (x) => ORDINE_STATI[x.stato],
   })
 
@@ -128,6 +128,9 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
     daConfermare: lista.filter((x) => x.stato === 'da_confermare').length,
   }
 
+  // Quelle che si vedono, coi filtri e nell'ordine scelto: il «c'era» va sulla prima di ogni lezione.
+  const viste = ordina(lista)
+
   const ricarica = async () => {
     await Promise.all([elenco.ricarica(), proposte.ricarica()])
     onCambiato?.()
@@ -140,6 +143,9 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
       ricarica,
     )
   }
+
+  const cera = (x: PresenzaIstruttoreSeg, p: { id: string; nome: string }) =>
+    void fai(() => d.segnaIstruttorePrevisto(x.sessioneId, p.id), `${x.corso}: ${p.nome} c’era`, ricarica)
 
   const gestisci = (x: PresenzaIstruttoreSeg, conferma: boolean) =>
     void fai(
@@ -313,7 +319,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
               {nelMese.length ? 'Nessuna presenza con questi filtri.' : `Nessun istruttore è entrato col PIN durante una lezione ${m ? (m.chiave.startsWith('anno-') ? `nell’${m.nome.toLowerCase()}` : `in ${m.nome.toLowerCase()}`) : 'negli ultimi dodici mesi'}.`}
             </p>
           )}
-          {ordina(lista).map((x) => (
+          {viste.map((x) => (
             <div
               key={x.id}
               role="row"
@@ -328,14 +334,23 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
                   {giornoPerEsteso(chiaveGiorno(new Date(x.inizio)))}, {oraDi(x.inizio)}–{oraDi(x.fine)}
                 </span>
               </span>
-              <span role="cell" style={{ fontSize: 15, color: 'var(--sec)' }}>{x.previsti || 'nessuno'}</span>
               <span role="cell" className="stack" style={{ gap: 2 }}>
-                {x.come === 'segreteria' ? (
-                  <span style={{ fontSize: 15, color: 'var(--sec)' }}>scelto in segreteria</span>
+                <span style={{ fontSize: 15, color: 'var(--sec)' }}>{x.previsti || 'nessuno'}</span>
+                {/* Il collega che c'era e non si è segnato, anche se la lezione è già coperta. */}
+                {previstiSenzaPresenza(x, viste, tutte).map((p) => (
+                  <button key={p.id} type="button" className="sg-link" style={{ alignSelf: 'flex-start', color: 'var(--text)' }} disabled={lavora} onClick={() => cera(x, p)}>
+                    + {p.nome} c’era
+                  </button>
+                ))}
+              </span>
+              <span role="cell" className="stack" style={{ gap: 2 }}>
+                {/* Scelto in segreteria o segnato da un collega: nessuna ora d'entrata vera da mostrare. */}
+                {x.come === 'segreteria' || x.come === 'collega' ? (
+                  <span style={{ fontSize: 15, color: 'var(--sec)' }}>{comeArrivata(x).come}</span>
                 ) : (
                   <>
                     <span className="num" style={{ fontSize: 15 }}>{oraDi(x.entratoIl)}</span>
-                    <span style={{ fontSize: 15, color: 'var(--dim)' }}>{x.come === 'appello' ? 'ha fatto l’appello' : x.sala ? `tablet ${x.sala}` : 'col PIN'}</span>
+                    <span style={{ fontSize: 15, color: 'var(--dim)' }}>{comeArrivata(x).come}</span>
                   </>
                 )}
               </span>
@@ -359,7 +374,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
                         {x.stato === 'confermata' ? 'CONFERMATA' : 'RIFIUTATA'}
                       </span>
                       <span style={{ fontSize: 15, color: 'var(--dim)' }}>
-                        {x.gestitaIl ? `${x.gestitaDa ? `da ${x.gestitaDa}, ` : ''}${quando(x.gestitaIl)}` : x.prevista ? (x.come === 'appello' ? 'da sé: appello, era previsto' : 'da sé: era previsto') : ''}
+                        {x.gestitaIl ? `${x.gestitaDa ? `da ${x.gestitaDa}, ` : ''}${quando(x.gestitaIl)}` : comeArrivata(x).nota}
                       </span>
                     </span>
                     {/* Ci si ripensa: una confermata per sbaglio si rifiuta, e viceversa. */}

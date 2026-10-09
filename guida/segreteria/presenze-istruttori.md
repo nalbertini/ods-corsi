@@ -44,7 +44,15 @@ prima.
 
 Per ogni presenza: l'**ISTRUTTORE**, la **LEZIONE** (corso, giorno e orario),
 chi era **PREVISTO** su quella lezione, e **ENTRATO**: quando e da quale
-tablet, «ha fatto l'appello», o «scelto in segreteria».
+tablet, «ha fatto l'appello», «segnata da … nell'appello» (un collega l'ha
+segnato dall'appello del telefono: è confermata da sola), o «scelto in
+segreteria».
+
+Sotto **PREVISTO**, se uno dei previsti non ha una presenza su quella lezione,
+c'è **+ Nome c'era**: un tocco e risulta presente, confermato dalla
+segreteria. Serve quando la lezione la fanno in due, uno si è segnato e
+l'altro no: la lezione è coperta e non arriva fra quelle senza istruttore.
+Compare solo sulle lezioni delle ultime due settimane.
 
 Si vedono tutte, **confermate** e **da confermare** (e le rifiutate, in
 grigio), dalla lezione più recente, con chi le ha decise (o **da sé: era

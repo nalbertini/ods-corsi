@@ -110,8 +110,8 @@ la segreteria caso per caso: si sposta nella raccolta dopo, oppure si annulla.
 Solo la segreteria, e chi è segreteria e istruttore. Gli istruttori e il tablet
 di sala no.
 
-## Se dice che manca 46-vestiario.sql
+## Se dice che manca 47-vestiario.sql
 
-Sul database non è ancora stato lanciato `supabase/46-vestiario.sql` (vedi
+Sul database non è ancora stato lanciato `supabase/47-vestiario.sql` (vedi
 `supabase/LEGGIMI.md`). Finché non c'è, la pagina degli ordini dice che non sono
 ancora aperti: nell'avviso su WhatsApp si continua col modulo Google.

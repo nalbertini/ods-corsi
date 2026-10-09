@@ -44,7 +44,7 @@ Google, e vale solo per i mockup.
 | `CercaPersona` | La pagina «Aggiungi chi prova» (`CercaPersona.tsx`) |
 | `TestataTabella` | La testata delle tabelle di segreteria (`.sg-lista-testa`, `.sg-ordina`) |
 | `RigaIscritto` | La riga della tabella ISCRITTI: normale, scelta, spenta |
-| `RigaPresenzaIstruttore` | La riga di PRESENZE ISTRUTTORI, con CONFERMA e RIFIUTA |
+| `RigaPresenzaIstruttore` | La riga di PRESENZE ISTRUTTORI, con CONFERMA e RIFIUTA; `nonSegnati` (nomi separati da `\|`) mette sotto PREVISTO i link «+ Nome c’era» |
 | `FiltriIscritti` | La barra sopra la tabella ISCRITTI: ricerca, corso, chip |
 | `CercaIscritto` | La ricerca in cima al menu di segreteria, anche con l'elenco aperto |
 | `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`) |
@@ -78,6 +78,9 @@ Google, e vale solo per i mockup.
 | `RigaChiama` | La riga CHIAMA sotto l'avanzamento di ogni passo (`.passo-chiama`): la frase «Un dubbio? Chiama la segreteria.» e il tasto, nel flusso e non sticky |
 | `Riepilogo` | `Riepilogo` di `ds.tsx` (`.riepilogo`): una riga per cosa col segno ✓ verde, – giallo (facoltativa non data), ! rosso o il numero, e il tasto MODIFICA o CARICA da 44px |
 | `RiquadroPasso` | Il riquadro con titolo da 17px, righe `Titolo:cifra`, frasi e tasti (`Riquadro` di `ds.tsx`): PRIMA DI ISCRIVERTI, contatti, nucleo, il guaio sopra MANDA LA RICHIESTA |
+| `MusicaTelefono` | la barra della musica nella pagina TIMER del telefono, su due righe (brano e volume; ⏮ ▶ ⏭ ☰ ✕); `musica` suona, pausa, ferma, errore, spenta |
+| `MusicaMini` | la barra piccola della musica fuori dal TIMER, sopra la barra delle pagine: titolo, MUSICA scritto e ⏸/▶ |
+| `MusicaYoutubeTelefono` | con YouTube il video 200×200 dentro la barra, a destra, e i comandi in una colonna accanto |
 | `CaricaFile` | La riga di un file del modulo (`CaricaFile` di `ds.tsx`): SCEGLI o CAMBIA, file scelto in verde, errore |
 | `TavolaFirma` | Il riquadro della firma (`TavolaFirma.tsx`): vuoto con FIRMA QUI COL DITO, o firmato |
 | `FirmaSchermoIntero` | La firma a schermo intero (`FirmaSchermoIntero` in `TavolaFirma.tsx`, `.firma-intera*`): ANNULLA, nome e FATTO in cima, il riquadro con la riga a un quarto dal fondo, la frase e CANCELLA E RIFAI; `orientamento` verticale o orizzontale, `firmata` |

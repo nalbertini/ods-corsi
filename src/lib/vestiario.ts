@@ -8,7 +8,7 @@ import { dataLunga } from './sala'
  * Qui stanno le regole, in funzioni pure: aperti o chiusi, cosa non va in un
  * catalogo o in un ordine, il totale, gli elenchi per il fornitore e per
  * persona, i numeri della raccolta e il riepilogo per il genitore. Il
- * database (`supabase/46-vestiario.sql`) fa le stesse cose con gli stessi
+ * database (`supabase/47-vestiario.sql`) fa le stesse cose con gli stessi
  * messaggi, e la modalità prova (`vestiarioProva.ts`) le prende da qui.
  *
  * I prezzi sono in euro, come nel listino.
@@ -125,7 +125,7 @@ export interface DatiVestiario {
   correggiRighe(id: string, righe: RigaCorretta[], togliSegno?: boolean): Promise<void>
 }
 
-// I limiti sono quelli di `vestiario_regole()` in 46-vestiario.sql: la pagina pubblica
+// I limiti sono quelli di `vestiario_regole()` in 47-vestiario.sql: la pagina pubblica
 // la può chiamare anche un programma, e un ordine o un catalogo senza fondo pesa su tutti.
 
 /** Quanti dello stesso capo e taglia in una riga: oltre, è un errore di battitura. */
@@ -255,7 +255,7 @@ export function cosaNonVaRighe(righe: RigaNuova[], capi: Capo[] | ((r: RigaNuova
 /**
  * Le cifre di un telefono, senza il prefisso dell'Italia: «+39 333 1234567» e
  * «333 123 4567» sono lo stesso. Il 39 (o 0039) si toglie solo se restano
- * 9-10 cifre, come `vestiario_cifre()` in 46-vestiario.sql: «393 123 4567» è
+ * 9-10 cifre, come `vestiario_cifre()` in 47-vestiario.sql: «393 123 4567» è
  * un cellulare che comincia per 39, non un prefisso.
  */
 export function cifreTelefono(t: string): string {

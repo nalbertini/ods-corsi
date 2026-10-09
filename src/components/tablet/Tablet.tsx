@@ -13,7 +13,7 @@ import { useMusica, useSpotify } from '../../../timer/src/lib/useMusica'
 import { leggiLinkSpotify, suonaLista } from '../../../timer/src/lib/spotify'
 import { PlayerYoutube } from '../../../timer/src/components/PlayerYoutube'
 import { PlayerAudio } from '../../../timer/src/components/PlayerAudio'
-import { fonteDelLink, musicaDellaSala, type ListaMusica } from '../../lib/musica'
+import { fonteDelLink, listaRicordata, musicaScelta, ricordaLista, ricordaSpenta, spentaRicordata, type ListaMusica } from '../../lib/musica'
 import { trattieniAggiornamento } from '../../lib/aggiornamento'
 import { Accensione, Cronometro, Nota, Persone } from '../Icons'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -168,41 +168,6 @@ const testoDi = (t: StatoTimer) =>
 /** Un allenamento che conta: avviato e non finito. */
 const inCorso = (t: StatoTimer | null): t is StatoTimer => !!t && (t.status === 'running' || t.status === 'paused')
 
-/** Se la musica è spenta su questo tablet: come la lista, resta dopo un ricaricamento. */
-const DOVE_SPENTA = 'ods-corsi:musica-spenta'
-function spentaRicordata(): boolean {
-  try {
-    return localStorage.getItem(DOVE_SPENTA) === '1'
-  } catch {
-    return false
-  }
-}
-function ricordaSpenta(spenta: boolean) {
-  try {
-    if (spenta) localStorage.setItem(DOVE_SPENTA, '1')
-    else localStorage.removeItem(DOVE_SPENTA)
-  } catch {
-    // Si perde solo la scelta al prossimo ricaricamento.
-  }
-}
-
-/** La lista della musica scelta su questo tablet: resta anche dopo un ricaricamento. */
-const DOVE_MUSICA = 'ods-corsi:musica-sala'
-function listaRicordata(): string | null {
-  try {
-    return localStorage.getItem(DOVE_MUSICA)
-  } catch {
-    return null
-  }
-}
-function ricordaLista(id: string | null) {
-  try {
-    if (id) localStorage.setItem(DOVE_MUSICA, id)
-    else localStorage.removeItem(DOVE_MUSICA)
-  } catch {
-    // Si perde solo la scelta al prossimo ricaricamento.
-  }
-}
 
 function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: Postazione; onScollega: () => Promise<void> }) {
   const adesso = useAdesso(d)
@@ -289,26 +254,16 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   // --- La musica --------------------------------------------------------------
   // Una lista della sala, se se n'è scelta una; altrimenti quella delle
   // impostazioni del timer. La barra, il lettore e il timer suonano questa.
-  const [sceltaId, setSceltaId] = useState<string | null>(() => listaRicordata())
+  const [sceltaId, setSceltaId] = useState<string | null>(() => listaRicordata('tablet'))
   const [parti, setParti] = useState(false)
   const lista = liste.find((l) => l.id === sceltaId) ?? null
   const fonteLista = lista ? fonteDelLink(lista.link) : null
   // Chi è in sala può spegnere la musica dal tablet anche se nelle impostazioni
   // è accesa: sparisce la barra, sparisce il lettore, e non parte più niente.
-  const [spenta, setSpenta] = useState(spentaRicordata)
+  const [spenta, setSpenta] = useState(() => spentaRicordata('tablet'))
   const musicaSala = useMemo(
-    () =>
-      musicaDellaSala<Pick<Settings, 'musicaFonte' | 'youtube' | 'radio'>>(
-        lista && fonteLista
-          ? {
-              musicaFonte: fonteLista,
-              youtube: fonteLista === 'youtube' ? lista.link : settingsTimer.youtube,
-              radio: fonteLista === 'radio' ? lista.link : settingsTimer.radio,
-            }
-          : { musicaFonte: settingsTimer.musicaFonte, youtube: settingsTimer.youtube, radio: settingsTimer.radio },
-        spenta,
-      ),
-    [lista, fonteLista, settingsTimer.musicaFonte, settingsTimer.youtube, settingsTimer.radio, spenta],
+    () => musicaScelta(lista, settingsTimer, spenta),
+    [lista, settingsTimer, spenta],
   )
   const conSala = useMemo(() => ({ ...settingsTimer, ...musicaSala }), [settingsTimer, musicaSala])
   const musica = useMusica(conSala)
@@ -317,11 +272,11 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   const fonteAudio = musica.fonte === 'file' || musica.fonte === 'radio' ? musica.fonte : null
   const spegniMusica = () => {
     void musica.comandi.pausa()
-    ricordaSpenta(true)
+    ricordaSpenta('tablet', true)
     setSpenta(true)
   }
   const accendiMusica = () => {
-    ricordaSpenta(false)
+    ricordaSpenta('tablet', false)
     setSpenta(false)
   }
   // Le impostazioni del timer si cambiano anche dall'altra app, sullo stesso
@@ -344,7 +299,7 @@ function TabletSala({ d, postazione, onScollega }: { d: DatiTablet; postazione: 
   }, [])
   const scegliLista = (l: ListaMusica | null) => {
     setSceltaId(l?.id ?? null)
-    ricordaLista(l?.id ?? null)
+    ricordaLista('tablet', l?.id ?? null)
     const uri = l ? leggiLinkSpotify(l.link) : null
     if (uri) void suonaLista(uri)
     setParti(true)

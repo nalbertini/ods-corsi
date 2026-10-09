@@ -29,7 +29,7 @@ import {
 
 /**
  * Gli ordini di vestiario senza server: sul dispositivo, in `localStorage`,
- * come le richieste di prova. Fa quello che fa `supabase/46-vestiario.sql`,
+ * come le richieste di prova. Fa quello che fa `supabase/47-vestiario.sql`,
  * con gli stessi messaggi: aperti fino alla data della raccolta compresa,
  * capi e taglie del catalogo, il totale coi prezzi del catalogo, la proroga
  * che tiene la raccolta e la data nuova a raccolta chiusa che ne apre

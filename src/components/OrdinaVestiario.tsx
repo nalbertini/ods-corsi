@@ -487,7 +487,7 @@ function Arrivato({ o, chiude, onAltro }: { o: Ordine; chiude: string; onAltro: 
   )
 }
 
-/** Dopo CHIUDE IL (`chiuso`), o senza data o senza catalogo (anche senza 46-vestiario.sql). */
+/** Dopo CHIUDE IL (`chiuso`), o senza data o senza catalogo (anche senza 47-vestiario.sql). */
 function Chiusi({ chiuso }: { chiuso: string | null }) {
   return (
     <div className="pad stack esito">

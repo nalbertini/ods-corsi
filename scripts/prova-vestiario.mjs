@@ -6,7 +6,7 @@
 // Le regole stanno in `src/lib/vestiario.ts` (funzioni pure: aperti o chiusi,
 // cosa non va in un ordine, totale, elenchi, numeri, riepilogo) e la modalità
 // prova in `src/lib/vestiarioProva.ts`, che deve fare quello che fa il
-// database (`supabase/46-vestiario.sql`, provato da
+// database (`supabase/47-vestiario.sql`, provato da
 // `supabase/prova/vestiario.sql`): stessi casi, stessi messaggi.
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'

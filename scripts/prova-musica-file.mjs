@@ -218,7 +218,8 @@ prova('Spotify non collegato, non compare', () => m.musicaPronta(impostazioni(tr
 prova('l\'interruttore di prima vale ancora', () => m.musicaAttiva({ musica: false }, true), false)
 
 console.log('\nLe parole')
-prova('nelle impostazioni: FILE DEL TABLET', () => m.TESTI_MUSICA.file, 'FILE DEL TABLET')
+// Il timer sta anche sul telefono (app istruttori): «del tablet» lì sarebbe sbagliato.
+prova('nelle impostazioni: FILE, su tablet e telefono', () => m.TESTI_MUSICA.file, 'FILE')
 prova('nelle impostazioni: RADIO', () => m.TESTI_MUSICA.radio, 'RADIO')
 prova('sotto i file: «File su questo apparecchio»', () => m.TESTI_MUSICA.fileQui, 'File su questo apparecchio')
 prova('niente parole da tecnici nei testi per chi usa l\'app', () => {

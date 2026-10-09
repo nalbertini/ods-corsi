@@ -171,8 +171,15 @@ Fare l'appello segna anche **la vostra presenza** in quella lezione: se è un
 vostro corso, o siete il sostituto di quel giorno, è confermata da sola; se
 no la conferma la segreteria. Una lezione con dei presenti in cui nessun
 istruttore si è segnato (né con l'appello né col PIN sul tablet) la segreteria
-la ritrova, e sceglie chi c'era. Se la fate in due, basta che si segni uno:
-l'altro, se c'era, mette il PIN sul tablet o lo dice alla segreteria.
+la ritrova, e sceglie chi c'era.
+
+Se la lezione la fate in due (o in tre), in fondo all'appello, prima di
+**CHIUDI**, c'è **ISTRUTTORI**: chi doveva farla con voi. Appena cominciate
+l'appello risultate segnati («· tu»); da lì un tocco su un collega che non si
+è segnato e risulta presente anche lui, senza PIN. Un altro tocco lo toglie, se l'avete segnato
+per sbaglio, finché la segreteria non lo conferma o lo rifiuta. Chi si è già segnato col
+PIN ha la ✓ e non si tocca. Con un sostituto, il previsto è solo lui: un
+altro che c'era lo dice alla segreteria.
 
 ## Le presenze segnalate
 
@@ -277,8 +284,27 @@ quelli che vengono, con **+ ALTRI** per il resto. La barra in fondo mostra tutto
 l'allenamento e si colora mentre passa. Sul telefono in verticale la scaletta
 è corta; se lo schermo è basso non c'è, e la barra dice comunque dove siete.
 
-Qui il timer non ha musica: non c'è la sua barra, e non parte né si ferma
-niente. La musica è del tablet di sala.
+**La musica.** In fondo alla pagina **TIMER** c'è la musica, la stessa del
+tablet di sala, da far uscire da una cassa bluetooth collegata al telefono. Parte
+spenta: toccate **ACCENDI LA MUSICA**. Con **☰** scegliete fra le liste che ha
+preparato la segreteria (tutte, col filtro per categoria): un tocco e parte.
+Quelle che il telefono non sa suonare sono spente e dicono perché. Le liste
+YouTube si fermano se bloccate il telefono: YouTube vuole che il video si veda,
+e fuori dal **TIMER** il video sta in un angolo in basso; scorrendo, la pagina
+lascia libero quello che c'è sotto.
+Sotto il brano ci sono il volume, **⏮ ▶ ⏭** e **✕**, che la spegne.
+
+Una volta accesa, la musica segue le impostazioni del timer: parte e si ferma
+con l'allenamento, e si abbassa nel recupero, se lo avete scelto. Fuori dal
+**TIMER** continua a suonare, e sopra la barra delle pagine c'è una barra
+piccola col titolo e **⏸**; toccandola tornate al timer. Dopo un ricaricamento
+non riparte da sola: toccate **▶**. Con **ESCI** si ferma.
+
+Spotify si collega e i file del telefono si scelgono da **IMPOSTAZIONI**,
+accanto al titolo **TIMER**, nella parte Musica (con un allenamento aperto il
+tasto non c'è). Quello che scegliete lì e la
+lista che fate partire valgono solo per il vostro telefono: il tablet di sala
+non cambia.
 
 **L'allenamento in corso** non si perde cambiando pagina: il timer resta aperto
 e il tempo si ricalcola dall'orologio. In tutte le pagine tranne **TIMER**, sotto
@@ -363,7 +389,8 @@ mentre la rete non c'è, parte solo l'ultimo segno.
 
 Il timer, aperto dentro l'app, lo dice quando manca la rete: un riquadro giallo
 **SENZA RETE** sopra l'elenco. Le illustrazioni di Maurizio non compaiono e la
-voce incisa può essere quella del telefono, ma il timer parte lo stesso.
+voce incisa può essere quella del telefono, ma il timer parte lo stesso. Con la
+musica accesa, YouTube, Spotify e la radio non partono; i file del telefono sì.
 
 ## Se qualcosa non torna
 

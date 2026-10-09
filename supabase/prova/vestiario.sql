@@ -3,7 +3,7 @@
 -- manda un ordine da `invia_ordine_vestiario()`, e da nient'altro. Gli ordini
 -- li vede e li cambia solo la segreteria (e il ruolo doppio).
 -- Gli stessi casi, con gli stessi messaggi, di `scripts/prova-vestiario.mjs`.
--- Si lancia dopo finto-supabase.sql, i file dello schema e 46-vestiario.sql.
+-- Si lancia dopo finto-supabase.sql, i file dello schema e 47-vestiario.sql.
 -- Le date sono contate da oggi: «chiude oggi» è aperto, «chiude ieri» no.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';

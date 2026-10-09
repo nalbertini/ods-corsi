@@ -1,7 +1,18 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, type ReactNode, Suspense, useEffect, useMemo, useState } from 'react'
 import type { Incorporato, StatoTimer } from '../../timer/src/lib/incorporato'
-import { avvisoSenzaRete, statoStriscia, type PaginaIstruttori } from '../lib/timerIstruttori'
-import { Back } from './Icons'
+import type { Settings } from '../../timer/src/types'
+import { loadSettings } from '../../timer/src/lib/storage'
+import { loadDiscipline } from '../../timer/src/lib/discipline'
+import { useMusica, useSpotify, type Musica } from '../../timer/src/lib/useMusica'
+import { leggiLinkSpotify, suonaLista } from '../../timer/src/lib/spotify'
+import { PlayerYoutube, PostoPlayer } from '../../timer/src/components/PlayerYoutube'
+import { PlayerAudio } from '../../timer/src/components/PlayerAudio'
+import type { Dati } from '../lib/dati'
+import { azioneMusica, fonteDelLink, listaRicordata, musicaScelta, type AzioneMusica, ricordaLista, ricordaSpenta, spentaRicordata, statoMusica, type ListaMusica, type StatoMusica } from '../lib/musica'
+import { avvisoSenzaRete, lettoreYoutube, statoStriscia, type PaginaIstruttori } from '../lib/timerIstruttori'
+import { MusicaSala } from './tablet/MusicaSala'
+import { Back, Nota } from './Icons'
+import { Gear, Pause, Play } from '../../timer/src/components/Icons'
 
 /**
  * Il timer dentro l'app degli istruttori: la navigazione, la striscia
@@ -102,20 +113,59 @@ function useOnline(): boolean {
  * componente, senza la sua testata. Resta montato anche nascosto: un
  * allenamento avviato continua mentre si guardano le altre pagine.
  */
-export function PaginaTimer({ incorporato, visibile, indietro, onIndietro }: { incorporato: Incorporato; visibile: boolean; indietro: boolean; onIndietro: () => void }) {
-  const avviso = avvisoSenzaRete(useOnline())
+export function PaginaTimer({
+  incorporato,
+  visibile,
+  indietro,
+  onIndietro,
+  conMusica = false,
+  musica,
+  impostazioni,
+  onImpostazioni,
+}: {
+  incorporato: Incorporato
+  visibile: boolean
+  indietro: boolean
+  onIndietro: () => void
+  conMusica?: boolean
+  /** La barra della musica, in fondo alla pagina. */
+  musica?: ReactNode
+  /**
+   * Le impostazioni del timer (Spotify, i file della musica), che restano su
+   * questo telefono: aperte o no, e il tasto per aprirle (null: niente tasto,
+   * c'è un allenamento aperto).
+   */
+  impostazioni: boolean
+  onImpostazioni: ((aperte: boolean) => void) | null
+}) {
+  const avviso = avvisoSenzaRete(useOnline(), conMusica)
+  const conScheda = useMemo<Incorporato>(() => ({ ...incorporato, scheda: impostazioni ? 'impostazioni' : 'timer' }), [incorporato, impostazioni])
   return (
     <div className="faccia-timer" hidden={!visibile}>
       <div className="row pad" style={{ gap: 10, paddingTop: 16, paddingBottom: 6 }}>
-        {indietro && (
+        {/* Aperte le impostazioni, l'unico ritorno è ‹ TIMER: due «indietro» affiancati confondono. */}
+        {indietro && !impostazioni && (
           <button type="button" className="icon-btn testo" onClick={onIndietro} style={{ gap: 6 }}>
             <Back />
             <span className="num" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.12em' }}>APPELLO</span>
           </button>
         )}
-        <h1 className="ob appello-titolo" style={{ margin: 0 }}>
-          TIMER
+        <h1 className="ob appello-titolo grow" style={{ margin: 0 }}>
+          {impostazioni ? 'IMPOSTAZIONI' : 'TIMER'}
         </h1>
+        {onImpostazioni && (
+          <button
+            type="button"
+            className="icon-btn testo"
+            onClick={() => onImpostazioni(!impostazioni)}
+            aria-pressed={impostazioni}
+            aria-label={impostazioni ? 'Torna al timer' : 'Impostazioni del timer'}
+            style={{ gap: 6 }}
+          >
+            {impostazioni ? <Back /> : <Gear />}
+            <span className="num tasto-impostazioni-testo">{impostazioni ? 'TIMER' : 'IMPOSTAZIONI'}</span>
+          </button>
+        )}
       </div>
       {avviso && (
         <div className="pad" style={{ paddingBottom: 8 }}>
@@ -126,8 +176,195 @@ export function PaginaTimer({ incorporato, visibile, indietro, onIndietro }: { i
         </div>
       )}
       <Suspense fallback={<p className="pad" style={{ color: 'var(--dim)' }}>Un attimo…</p>}>
-        <TimerSala incorporato={incorporato} visibile={visibile} />
+        <TimerSala incorporato={conScheda} visibile={visibile} />
       </Suspense>
+      {musica}
+    </div>
+  )
+}
+
+/** La lista scelta, lo «spenta» e il lettore della musica del telefono. */
+export interface MusicaTelefono {
+  musica: Musica
+  stato: StatoMusica
+  /** Fonte e link per il timer: la lista scelta o le impostazioni, `musica: false` se spenta. */
+  perIlTimer: Incorporato['musica']
+  liste: ListaMusica[]
+  scelta: string | null
+  spotifyCollegato: boolean
+  attiva: boolean
+  scegli: (l: ListaMusica | null) => void
+  accendi: () => void
+  spegni: () => void
+  /** All'uscita dall'app: la musica si ferma, anche quella che suona nell'app di Spotify. */
+  ferma: () => void
+  /** I lettori, fermi alla radice: YouTube solo dove serve (vedi `lettoreYoutube`). */
+  lettori: (pagina: PaginaIstruttori) => ReactNode
+  conYoutube: boolean
+  /** Il timer ha cambiato le sue impostazioni (la musica compresa): restano su questo telefono. */
+  onSettings: (s: Settings) => void
+}
+
+/**
+ * La musica nel timer del telefono: come quella del tablet di sala (stesse
+ * liste della segreteria, stessa barra), ma ricordata a parte, e spenta finché
+ * chi insegna non la accende. Le liste sono tutte: il telefono non sta in una sala.
+ */
+export function useMusicaTelefono(d: Dati | null): MusicaTelefono {
+  const [liste, setListe] = useState<ListaMusica[]>([])
+  useEffect(() => {
+    if (!d) return
+    // Senza rete restano quelle che c'erano (la musica delle impostazioni c'è sempre):
+    // si rileggono quando la rete torna o il telefono torna in primo piano.
+    const leggi = () => void d.listeMusica().then(setListe, () => {})
+    const torna = () => {
+      if (document.visibilityState === 'visible') leggi()
+    }
+    leggi()
+    window.addEventListener('online', leggi)
+    document.addEventListener('visibilitychange', torna)
+    return () => {
+      window.removeEventListener('online', leggi)
+      document.removeEventListener('visibilitychange', torna)
+    }
+  }, [d])
+  const [settings, setSettings] = useState<Settings>(() => loadSettings())
+  // Le impostazioni cambiano nella scheda IMPOSTAZIONI del timer (arrivano da `onSettings`), o nell'altra app sullo stesso telefono.
+  useEffect(() => {
+    const rileggi = () => setSettings(loadSettings())
+    const siCambia = (e: StorageEvent) => {
+      if (e.key === null || e.key === 'ods-timer:settings') rileggi()
+    }
+    const torna = () => {
+      if (document.visibilityState === 'visible') rileggi()
+    }
+    window.addEventListener('storage', siCambia)
+    document.addEventListener('visibilitychange', torna)
+    return () => {
+      window.removeEventListener('storage', siCambia)
+      document.removeEventListener('visibilitychange', torna)
+    }
+  }, [])
+  const [sceltaId, setSceltaId] = useState<string | null>(() => listaRicordata('telefono'))
+  const [spenta, setSpenta] = useState(() => spentaRicordata('telefono'))
+  // Partita: un ▶ o una lista toccata da quando la pagina è aperta. Prima la musica è ferma.
+  const [parti, setParti] = useState(false)
+  const lista = liste.find((l) => l.id === sceltaId) ?? null
+  const perIlTimer = useMemo(() => musicaScelta(lista, settings, spenta), [lista, settings, spenta])
+  const conScelta = useMemo(() => ({ ...settings, ...perIlTimer }), [settings, perIlTimer])
+  const musica = useMusica(conScelta)
+  const spotify = useSpotify()
+  const suonando = musica.lettore?.inRiproduzione ?? false
+  // I tasti dicono cosa ricordare e se la musica è partita (vedi `azioneMusica`).
+  const fa = (a: AzioneMusica) => {
+    const r = azioneMusica(a)
+    if (r.pausa) void musica.comandi.pausa()
+    if (r.spenta !== undefined) {
+      ricordaSpenta('telefono', r.spenta)
+      setSpenta(r.spenta)
+    }
+    setParti(r.parti)
+  }
+  useEffect(() => {
+    if (suonando) setParti(azioneMusica('suona').parti)
+  }, [suonando])
+  const stato = statoMusica({ spenta, partita: parti, inRiproduzione: suonando })
+  const conYoutube = musica.fonte === 'youtube' && musica.attiva
+  const fonteAudio = musica.fonte === 'file' || musica.fonte === 'radio' ? musica.fonte : null
+  const fonteLista = lista ? fonteDelLink(lista.link) : null
+  return {
+    musica,
+    stato,
+    perIlTimer,
+    liste,
+    scelta: lista ? lista.id : null,
+    spotifyCollegato: spotify.collegato,
+    attiva: settings.musica,
+    scegli: (l) => {
+      setSceltaId(l?.id ?? null)
+      ricordaLista('telefono', l?.id ?? null)
+      const uri = l ? leggiLinkSpotify(l.link) : null
+      if (uri) void suonaLista(uri)
+      fa('scegli')
+    },
+    accendi: () => fa('accendi'),
+    spegni: () => fa('spegni'),
+    ferma: () => fa('ferma'),
+    conYoutube,
+    onSettings: setSettings,
+    // Uno solo e fermo alla radice: cambiando pagina non si ricarica.
+    lettori: (pagina) => (
+      <>
+        {conYoutube && lettoreYoutube({ stato, pagina, youtube: true }) && <PlayerYoutube link={perIlTimer.youtube} parti={parti} />}
+        {fonteAudio && musica.attiva && <PlayerAudio fonte={fonteAudio} link={perIlTimer.radio} nome={lista && fonteLista === 'radio' ? lista.nome : ''} parti={parti} />}
+      </>
+    ),
+  }
+}
+
+/**
+ * La musica in fondo alla pagina TIMER del telefono: spenta resta solo
+ * ACCENDI LA MUSICA; accesa la barra del tablet su due righe, e sopra il
+ * riquadro di YouTube, che vuole che il video si veda.
+ */
+export function BarraMusicaTelefono({ m }: { m: MusicaTelefono }) {
+  // Le categorie come le ha viste il timer di questo telefono: servono solo al filtro delle liste.
+  const discipline = useMemo(loadDiscipline, [])
+  if (!m.attiva) return null
+  return (
+    <div className="musica-telefono">
+      {m.stato === 'spenta' ? (
+        <button
+          type="button"
+          className="btn btn-ghost musica-accendi"
+          onClick={m.accendi}
+        >
+          <Nota size={22} />
+          <span className="ob">ACCENDI LA MUSICA</span>
+        </button>
+      ) : (
+        <MusicaSala
+          musica={m.musica}
+          liste={m.liste}
+          scelta={m.scelta}
+          spotifyCollegato={m.spotifyCollegato}
+          onScegli={m.scegli}
+          onSpegni={m.spegni}
+          discipline={discipline}
+          dispositivo="telefono"
+          stato={m.stato}
+          video={m.conYoutube ? <PostoPlayer /> : undefined}
+        />
+      )}
+    </div>
+  )
+}
+
+/**
+ * La barra piccola della musica fuori dalla pagina TIMER, sopra la barra delle
+ * pagine: il titolo, MUSICA scritto, e ⏸/▶. Il resto porta al TIMER.
+ */
+export function MusicaMini({ m, onApri }: { m: MusicaTelefono; onApri: () => void }) {
+  const l = m.musica.lettore
+  const suona = m.stato === 'suona'
+  const titolo = l?.titolo || m.liste.find((x) => x.id === m.scelta)?.nome || 'Musica'
+  return (
+    <div className="musica-mini">
+      <button type="button" className="musica-mini-apri" onClick={onApri} aria-label={`Torna al timer: musica, ${titolo}`}>
+        <Nota size={22} />
+        <span className="stack" style={{ gap: 1, minWidth: 0 }}>
+          <span className="musica-mini-titolo">{titolo}</span>
+          <span className="num musica-mini-stato">{suona ? 'MUSICA' : 'MUSICA IN PAUSA'}</span>
+        </span>
+      </button>
+      <button
+        type="button"
+        className="musica-mini-tasto"
+        onClick={() => void (suona ? m.musica.comandi.pausa() : m.musica.comandi.suona())}
+        aria-label={suona ? 'Metti in pausa la musica' : 'Fai partire la musica'}
+      >
+        {suona ? <Pause size={18} /> : <Play size={18} />}
+      </button>
     </div>
   )
 }

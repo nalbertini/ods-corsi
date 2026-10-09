@@ -307,7 +307,12 @@ begin
     raise exception 'Serve accettare il Regolamento Sociale' using errcode = '22023';
   end if;
 
-  -- La porta.
+  -- La porta, una richiesta alla volta: senza, quelle mandate insieme vedono
+  -- tutte lo stesso conteggio e passano oltre il limite. Il turno dura fino
+  -- alla fine della transazione, cioè fino all'insert. Si prende solo qui,
+  -- dopo i controlli: una richiesta enorme e sbagliata non lo tiene mentre
+  -- la si legge, fermando il modulo per tutti.
+  perform pg_advisory_xact_lock(hashtext('invia_iscrizione'));
   if (select count(*) from richieste_iscrizione where email = mail and creata_il > now() - interval '1 day')
      >= (regole->>'per_email_al_giorno')::int then
     raise exception 'Da questa email sono già arrivate % richieste oggi: se serve, scrivi alla segreteria', regole->>'per_email_al_giorno' using errcode = '54000';
@@ -553,7 +558,7 @@ begin
   end if;
 end $$;
 -- Il catalogo e l'ordine di vestiario della pagina pubblica, se
--- 46-vestiario.sql è già stato lanciato.
+-- 47-vestiario.sql è già stato lanciato.
 do $$
 begin
   if to_regprocedure('public.vestiario()') is not null then

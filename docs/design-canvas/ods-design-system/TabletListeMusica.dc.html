@@ -14,8 +14,8 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 18px; background: {{c.surface}}; border: 2px solid {{c.text}}; box-shadow: {{c.ombra}}; color: {{c.text}}" role="dialog" aria-label="La musica della sala">
-  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}">LA MUSICA DELLA SALA</span>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 18px; background: {{c.surface}}; border: 2px solid {{c.text}}; box-shadow: {{c.ombra}}; color: {{c.text}}" role="dialog" aria-label="{{titolo}}">
+  <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}">{{titolo}}</span>
   <sc-if value="{{haFiltri}}" hint-placeholder-val="{{ true }}">
     <div style="display: flex; flex-wrap: wrap; gap: 8px">
       <sc-for list="{{filtri}}" as="f" hint-placeholder-count="3">
@@ -33,13 +33,14 @@
   </sc-for>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"filtri":{"editor":"text","default":"Riscaldamento, Randori"},"filtro":{"editor":"text","default":""},"liste":{"editor":"text","default":"Riscaldamento|Playlist Spotify · tutte le sale · Riscaldamento; Randori|Playlist YouTube · Randori; Radio della palestra|Radio · tutte le sale; Defaticamento|Spotify non è collegato su questo tablet|spenta"},"scelta":{"editor":"text","default":"Riscaldamento"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":440,"height":480}}'>
+<script data-dc-script data-props='{"filtri":{"editor":"text","default":"Riscaldamento, Randori"},"filtro":{"editor":"text","default":""},"liste":{"editor":"text","default":"Riscaldamento|Playlist Spotify · tutte le sale · Riscaldamento; Randori|Playlist YouTube · Randori; Radio della palestra|Radio · tutte le sale; Defaticamento|Spotify non è collegato su questo tablet|spenta"},"scelta":{"editor":"text","default":"Riscaldamento"},"titolo":{"editor":"text","default":"LA MUSICA DELLA SALA"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":440,"height":480}}'>
 // Riproduzione 1:1 del pannello LA MUSICA DELLA SALA, quello che si apre dal tasto ☰: <div className="tb-liste"> di MusicaSala.tsx (righe
 // 187-243) con .tb-liste, .tb-lista, .tb-filtro-tasto, .tb-lista-nome di src/styles.css (righe 1000-1018). Nell'app sta sopra la barra, a destra
 // (position absolute, 440px, ombra scura); qui e' un riquadro da 440px da mettere sopra il piede.
 // - filtri: le categorie delle liste, separate da virgole; i pulsanti TUTTE + queste, solo se ce n'e' almeno una (vuoto = niente
 //   filtro). filtro: quale e' premuta (vuoto = TUTTE; bordo `text` e fondo `surface-2`).
 // - liste: «nome|sotto» separate da ';'; un terzo pezzo `spenta` spegne la riga (opacita' 0.45: Spotify non collegato, link non valido).
+// - titolo: LA MUSICA DELLA SALA sul tablet; PROPOSTA «musica nel timer istruttori»: LA MUSICA sul telefono, dove il pannello sale dal basso a tutta larghezza.
 // - scelta: il nome della lista che suona (bordo verde e fondo `surface-2`). In fondo c'e' sempre DALLE IMPOSTAZIONI DEL TIMER
 //   (« Quella scelta in Impostazioni › Musica»), acceso se scelta e' vuoto.
 const T = {
@@ -61,6 +62,7 @@ class Component extends DCLogic {
     righe.push({ nome: 'DALLE IMPOSTAZIONI DEL TIMER', sotto: 'Quella scelta in Impostazioni › Musica', spenta: false, premuta: scelta === '' });
     return {
       c,
+      titolo: p.titolo || 'LA MUSICA DELLA SALA',
       haFiltri: nomiFiltri.length > 0,
       filtri: ['TUTTE', ...nomiFiltri.map((n) => n.toUpperCase())].map((nome, i) => {
         const premuto = filtro === '' ? i === 0 : nome === filtro.toUpperCase();

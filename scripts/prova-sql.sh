@@ -23,7 +23,7 @@ prima() {
     presenze-istruttori | prove) echo tablet ;;
     istruttori-dalle-lezioni) echo tablet presenze-istruttori ;;
     prove-per-nome) echo tablet prove ;;
-    cerca-persone) echo tablet ;;
+    cerca-persone | istruttore-collega) echo tablet ;;
     timer-lezioni) echo timer ;;
   esac
 }

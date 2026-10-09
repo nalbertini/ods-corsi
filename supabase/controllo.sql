@@ -65,6 +65,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'corsi_aperti')),
   ('06-iscrizioni.sql', 'le richieste rifiutate fuori dal limite',
     exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%<> ''rifiutata''%')),
+  ('06-iscrizioni.sql', 'le richieste contate una alla volta',
+    exists (select 1 from dentro where nome = 'invia_iscrizione' and corpo like '%pg_advisory_xact_lock%')),
   ('06-iscrizioni.sql', 'il codice fiscale controllato',
     exists (select 1 from dentro where nome = 'cf_controllo')),
   -- Chi non ha un accesso chiama solo le funzioni del modulo. Se ce n'è
@@ -217,17 +219,21 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%certificati%')
     and exists (select 1 from dentro where nome = 'unisci_persone' and corpo like '%togli_file_certificato%')
     and not exists (select 1 from dentro where nome = 'richieste_con_documento' and corpo like '%certificato%')),
-  ('46-vestiario.sql', 'gli ordini di vestiario, letti e mandati dalla pagina pubblica',
+  ('46-istruttore-collega.sql', 'il collega segnato dall''appello, e il previsto aggiunto dalla segreteria',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'presenze_istruttori' and column_name = 'segnata_da')
+    and exists (select 1 from dentro where nome = 'segna_collega')
+    and exists (select 1 from dentro where nome = 'segna_istruttore_previsto')),
+  ('47-vestiario.sql', 'gli ordini di vestiario, letti e mandati dalla pagina pubblica',
     to_regclass('public.ordini_vestiario') is not null
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'vestiario')
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'invia_ordine_vestiario'
                 and has_function_privilege('anon', p.oid, 'execute'))
     and exists (select 1 from dentro where nome = 'correggi_ordine_vestiario')),
-  ('46-vestiario.sql', 'gli ordini dal link contati uno alla volta',
+  ('47-vestiario.sql', 'gli ordini dal link contati uno alla volta',
     exists (select 1 from dentro where nome = 'invia_ordine_vestiario' and corpo like '%pg_advisory_xact_lock%')),
-  ('46-vestiario.sql', 'un ordine troppo grande rifiutato prima della fila',
+  ('47-vestiario.sql', 'un ordine troppo grande rifiutato prima della fila',
     exists (select 1 from dentro where nome = 'invia_ordine_vestiario' and corpo like '%pg_column_size(dati)%')),
-  ('46-vestiario.sql', 'il pagato e il banco: saldato solo da segna_vestiario',
+  ('47-vestiario.sql', 'il pagato e il banco: saldato solo da segna_vestiario',
     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'ordini_vestiario' and column_name = 'dal_banco')
     and exists (select 1 from dentro where nome = 'segna_vestiario')
     and exists (select 1 from dentro where nome = 'vestiario_gia_mandato' and corpo like '%vestiario_cifre%')
