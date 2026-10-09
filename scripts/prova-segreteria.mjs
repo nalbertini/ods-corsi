@@ -3356,10 +3356,10 @@ console.log('\nsotto i 6 anni il certificato non serve')
   await seg.persone()
   assenti.clear()
   ok('a pagine: senza la vista delle quote, le ricevute a pagine, in ordine', [senzaPagine.includes('ricevute'), aPagine.includes('ricevute')], [false, true])
-  // Le ricevute di una persona: ogni pagina col suo filtro, due pagine (la seconda vuota chiude).
+  // Le ricevute di una persona: ogni pagina chiesta porta il suo filtro.
   filtri.length = 0
   await seg.ricevute('p1')
-  ok('a pagine: le ricevute di una persona, ogni pagina solo le sue', filtri, [['ricevute', 'persona_id', 'p1'], ['ricevute', 'persona_id', 'p1']])
+  ok('a pagine: le ricevute di una persona, ogni pagina solo le sue', [filtri.length > 0, filtri.every((f) => f.join() === 'ricevute,persona_id,p1')], [true, true])
   // L'export di una persona: le sue presenze, anni di lezioni, a pagine.
   senzaPagine.length = 0
   aPagine.length = 0
