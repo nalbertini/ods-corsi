@@ -30,6 +30,7 @@ const SEZIONI = [
   { id: 'timer-musica', nome: 'Musica nel timer istruttori', cartella: 'timer-musica' },
   { id: 'certificati-online', nome: 'Certificati online', cartella: 'certificati-online' },
   { id: 'certificato-piccoli', nome: 'Certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
+  { id: 'istruttore-collega', nome: 'Istruttore che insegna con te', cartella: 'istruttore-collega' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

@@ -483,6 +483,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .riga-appello[data-stato='assente'] { border-color: var(--rosso); }
 .riga-appello[data-stato='assente'] .segno { color: var(--rosso-testo); }
 .riga-appello[data-stato='assente'] .nome-appello { color: var(--dim); text-decoration: line-through; }
+.riga-appello:disabled { cursor: default; }
+.riga-appello:disabled .nome-appello { color: var(--sec); }
 .elenco-appello { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; }
 
 /* Le prove: chi viene a provare, aggiunto da chi fa l'appello (`Prove.tsx`).

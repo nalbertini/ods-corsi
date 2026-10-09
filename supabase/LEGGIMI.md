@@ -73,6 +73,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 43. `43-cerca-persone.sql` — «Aggiungi chi prova» cerca per nome fra tutte le persone iscritte e attive, anche di altri corsi, dalla terza lettera di una parola e al massimo ventuno risultati, con i corsi di oggi e mai il telefono; solo il personale
 44. `44-email-contatto.sql` — l'email di contatto delle persone (`persone.email_contatto`): facoltativa, può ripetersi fra parenti, la scrive la segreteria e la legge il personale come l'email di accesso, che resta una per persona; accogliere una richiesta e unire due schede la tengono in conto
 45. `45-certificati-online.sql` — il certificato medico resta nell'app: un file per persona (foto o PDF, 10 MB) in un contenitore privato che apre solo la segreteria, caricato insieme alla data in un passaggio solo, cancellato 30 giorni dopo la scadenza o quando la persona è disattivata; accogliendo una richiesta il certificato passa alla scheda, e unire due schede non si ferma più sul file
+46. `46-istruttore-collega.sql` — il collega che insegnava con te: chi fa l'appello vede gli altri istruttori previsti e ne segna uno presente (confermato, «segnata da …»), e lo toglie finché la segreteria non l'ha guardato; la segreteria segna «c'era» un previsto anche su una lezione già coperta
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -246,6 +247,11 @@ a com'erano: va rilanciato anche il `45` (e lo stesso dopo `44-email-contatto.sq
 va lanciato questo file; caricare un certificato non funziona, e il certificato
 resta su carta come prima. Va lanciato prima di pubblicare l'app che non
 stampa più il certificato.
+Per segnare il collega che insegnava con te basta `46-istruttore-collega.sql`
+(dopo `23-istruttori-dalle-lezioni.sql`), che non chiede di rilanciare
+`06-iscrizioni.sql`: finché non c'è, l'appello non mostra gli istruttori e
+PRESENZE ISTRUTTORI non ha «c'era» sulle lezioni già coperte; il resto
+dell'appello va come prima.
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -980,7 +986,10 @@ o rifiutata solo dalla segreteria; `istruttori-dalle-lezioni.sql`, dopo
 confermare se no, la segreteria al banco no), le lezioni tenute senza
 l'istruttore segnato, la scelta di chi c'era fatta solo dalla segreteria e
 solo fra i previsti, da quando si propongono, e che un istruttore vede solo
-quelle dove era previsto (`37-mie-ore.sql`); `informativa-mesi.sql` prova
+quelle dove era previsto (`37-mie-ore.sql`); `istruttore-collega.sql`, dopo
+`tablet.sql`, prova il collega segnato dall'appello (solo da chi insegna la
+lezione, solo fra i previsti, mai se stesso, tolto solo da chi l'ha segnato) e
+la segreteria che segna un previsto su una lezione già coperta; `informativa-mesi.sql` prova
 che chi non ha un accesso legga i mesi delle presenze, quelli che la segreteria
 ha appena salvato, e nient'altro della tabella, anche dopo aver rilanciato
 `06-iscrizioni.sql`; `ricevute.sql` prova le ricevute: le fa e le

@@ -44,7 +44,7 @@ Google, e vale solo per i mockup.
 | `CercaPersona` | La pagina «Aggiungi chi prova» (`CercaPersona.tsx`) |
 | `TestataTabella` | La testata delle tabelle di segreteria (`.sg-lista-testa`, `.sg-ordina`) |
 | `RigaIscritto` | La riga della tabella ISCRITTI: normale, scelta, spenta |
-| `RigaPresenzaIstruttore` | La riga di PRESENZE ISTRUTTORI, con CONFERMA e RIFIUTA |
+| `RigaPresenzaIstruttore` | La riga di PRESENZE ISTRUTTORI, con CONFERMA e RIFIUTA; `nonSegnati` (nomi separati da `\|`) mette sotto PREVISTO i link «+ Nome c’era» |
 | `FiltriIscritti` | La barra sopra la tabella ISCRITTI: ricerca, corso, chip |
 | `CercaIscritto` | La ricerca in cima al menu di segreteria, anche con l'elenco aperto |
 | `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`) |
