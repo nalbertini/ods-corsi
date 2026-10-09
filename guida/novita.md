@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.50.1 — 9 ottobre 2026
+
+### Risolto
+
+- Nel timer dell'app istruttori il video di YouTube copriva CHIUDI dell'appello
+
 ## 0.50.0 — 9 ottobre 2026
 
 ### Novità
