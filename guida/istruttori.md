@@ -277,8 +277,24 @@ quelli che vengono, con **+ ALTRI** per il resto. La barra in fondo mostra tutto
 l'allenamento e si colora mentre passa. Sul telefono in verticale la scaletta
 è corta; se lo schermo è basso non c'è, e la barra dice comunque dove siete.
 
-Qui il timer non ha musica: non c'è la sua barra, e non parte né si ferma
-niente. La musica è del tablet di sala.
+**La musica.** In fondo alla pagina **TIMER** c'è la musica, la stessa del
+tablet di sala, da far uscire da una cassa bluetooth collegata al telefono. Parte
+spenta: toccate **ACCENDI LA MUSICA**. Con **☰** scegliete fra le liste che ha
+preparato la segreteria (tutte, col filtro per categoria): un tocco e parte.
+Quelle che il telefono non sa suonare sono spente e dicono perché. Le liste
+YouTube si fermano se bloccate il telefono: YouTube vuole che il video si veda.
+Sotto il brano ci sono il volume, **⏮ ▶ ⏭** e **✕**, che la spegne.
+
+Una volta accesa, la musica segue le impostazioni del timer: parte e si ferma
+con l'allenamento, e si abbassa nel recupero, se lo avete scelto. Fuori dal
+**TIMER** continua a suonare, e sopra la barra delle pagine c'è una barra
+piccola col titolo e **⏸**; toccandola tornate al timer. Dopo un ricaricamento
+non riparte da sola: toccate **▶**. Con **ESCI** si ferma.
+
+Spotify si collega e i file del telefono si scelgono da **IMPOSTAZIONI**,
+accanto al titolo **TIMER**, nella parte Musica. Quello che scegliete lì e la
+lista che fate partire valgono solo per il vostro telefono: il tablet di sala
+non cambia.
 
 **L'allenamento in corso** non si perde cambiando pagina: il timer resta aperto
 e il tempo si ricalcola dall'orologio. In tutte le pagine tranne **TIMER**, sotto
@@ -363,7 +379,8 @@ mentre la rete non c'è, parte solo l'ultimo segno.
 
 Il timer, aperto dentro l'app, lo dice quando manca la rete: un riquadro giallo
 **SENZA RETE** sopra l'elenco. Le illustrazioni di Maurizio non compaiono e la
-voce incisa può essere quella del telefono, ma il timer parte lo stesso.
+voce incisa può essere quella del telefono, ma il timer parte lo stesso. Con la
+musica accesa, YouTube, Spotify e la radio non partono; i file del telefono sì.
 
 ## Se qualcosa non torna
 
