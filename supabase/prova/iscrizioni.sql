@@ -126,9 +126,12 @@ select atteso('la quarta nello stesso giorno no', tenta($$select invia_iscrizion
 reset role;
 -- Venti richieste mandate insieme vedevano tutte lo stesso conteggio e ne
 -- passavano tredici invece di tre: in psql il parallelo non si fa, quindi si
--- guarda che la funzione prenda il suo turno prima di contare.
-select atteso('le richieste si contano una alla volta',
-  (select (strpos(prosrc, 'pg_advisory_xact_lock(hashtext(''invia_iscrizione''))') between 1 and strpos(prosrc, 'per_email_al_giorno'))::text
+-- guarda che la funzione prenda il suo turno prima di contare. E solo dopo i
+-- controlli sui dati: se no una richiesta enorme e sbagliata tiene il turno
+-- mentre la si legge, e il modulo si ferma per tutti.
+select atteso('le richieste si contano una alla volta, quelle già valide',
+  (select (strpos(prosrc, 'pg_advisory_xact_lock(hashtext(''invia_iscrizione''))')
+           between strpos(prosrc, 'Serve accettare il Regolamento') + 1 and strpos(prosrc, 'per_email_al_giorno'))::text
      from pg_proc where proname = 'invia_iscrizione'), 'true');
 select atteso('email e codice fiscale messi in ordine',
   (select email || ' ' || (codice_fiscale = cf_prova('RSSLCU', (current_date - interval '30 years')::date)) from richieste_iscrizione where nome = 'Luca'), 'luca@esempio.it true');
