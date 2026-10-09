@@ -216,6 +216,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     exists (select 1 from dentro where nome = 'accogli_iscrizione' and corpo like '%certificati%')
     and exists (select 1 from dentro where nome = 'unisci_persone' and corpo like '%togli_file_certificato%')
     and not exists (select 1 from dentro where nome = 'richieste_con_documento' and corpo like '%certificato%')),
+  ('46-istruttore-collega.sql', 'il collega segnato dall''appello, e il previsto aggiunto dalla segreteria',
+    exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'presenze_istruttori' and column_name = 'segnata_da')
+    and exists (select 1 from dentro where nome = 'segna_collega')
+    and exists (select 1 from dentro where nome = 'segna_istruttore_previsto')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

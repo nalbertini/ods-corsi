@@ -373,9 +373,50 @@ export interface PresenzaIstruttoreSeg {
   gestitaDa?: string
   /** Come è arrivata: dal PIN, dall'appello che ha fatto, o scelta dalla segreteria fra i previsti. */
   come: ComePresenzaIstruttore
+  /** Il nome del collega che l'ha segnata dall'appello, se `come` è 'collega'. */
+  segnataDa?: string
+  /** Gli stessi di `previsti`, con l'id: per segnare «c'era» chi non ha una presenza. */
+  previstiElenco?: Array<{ id: string; nome: string }>
+  /** La lezione è stata annullata: non si segna più nessuno. */
+  annullata?: boolean
 }
 
-export type ComePresenzaIstruttore = 'pin' | 'appello' | 'segreteria'
+/**
+ * I previsti senza una presenza su quella lezione, per il «+ Nome c'era» di
+ * PRESENZE ISTRUTTORI: solo sulla prima riga della lezione fra quelle che si
+ * vedono (`viste`, coi filtri e l'ordine), così due righe non lo ripetono; chi
+ * ha già una presenza lo dicono `tutte`, anche quelle nascoste dai filtri.
+ * Solo le lezioni già cominciate delle ultime due settimane: dove gli
+ * istruttori si alternano chi non c'era resta senza presenza, e su mesi di
+ * lezioni il link sarebbe ovunque.
+ */
+/** Per quanti giorni indietro la segreteria trova «+ Nome c'era». */
+export const GIORNI_CERA = 14
+
+export function previstiSenzaPresenza(x: PresenzaIstruttoreSeg, viste: PresenzaIstruttoreSeg[], tutte: PresenzaIstruttoreSeg[]): Array<{ id: string; nome: string }> {
+  const inizio = new Date(x.inizio).getTime()
+  if (inizio > Date.now() || inizio < Date.now() - GIORNI_CERA * 24 * 60 * 60_000) return []
+  if (x.annullata || viste.find((y) => y.sessioneId === x.sessioneId)?.id !== x.id) return []
+  return (x.previstiElenco ?? []).filter((p) => !tutte.some((y) => y.sessioneId === x.sessioneId && y.personaId === p.id))
+}
+
+/** Dal PIN, dall'appello che ha fatto, segnata da un collega nell'appello, o scelta dalla segreteria. */
+export type ComePresenzaIstruttore = 'pin' | 'appello' | 'segreteria' | 'collega'
+
+/**
+ * Come è arrivata una presenza, per la riga di PRESENZE ISTRUTTORI: `come`
+ * sotto l'ora d'entrata, `nota` sotto lo stato quando nessuno della
+ * segreteria l'ha ancora guardata (chi l'ha guardata lo scrive la riga).
+ */
+export function comeArrivata(x: Pick<PresenzaIstruttoreSeg, 'come' | 'sala' | 'prevista' | 'segnataDa'>): { come: string; nota: string } {
+  if (x.come === 'collega') {
+    const chi = x.segnataDa ?? 'un collega'
+    return { come: `segnata da ${chi} nell’appello`, nota: `da ${chi}: era prevista` }
+  }
+  if (x.come === 'segreteria') return { come: 'scelto in segreteria', nota: '' }
+  const come = x.come === 'appello' ? 'ha fatto l’appello' : x.sala ? `tablet ${x.sala}` : 'col PIN'
+  return { come, nota: x.prevista ? (x.come === 'appello' ? 'da sé: appello, era previsto' : 'da sé: era previsto') : '' }
+}
 
 /**
  * Una lezione tenuta (passata, con qualcuno presente) in cui nessun
@@ -614,6 +655,8 @@ export interface DatiSegreteria {
   lezioniSenzaIstruttore(): Promise<LezioneSenzaIstruttore[]>
   /** Chi, fra i previsti senza presenza, ha fatto la lezione: confermati loro, rifiutati gli altri. */
   segnaIstruttoriLezione(sessioneId: string, presenti: string[]): Promise<void>
+  /** Un previsto senza presenza c'era, anche se la lezione è già coperta da un collega: confermato. */
+  segnaIstruttorePrevisto(sessioneId: string, personaId: string): Promise<void>
   /** Gli ultimi timer fatti partire, dal più recente. */
   allenamenti(quanti: number): Promise<AllenamentoSeg[]>
   impostazioni(): Promise<Impostazioni>

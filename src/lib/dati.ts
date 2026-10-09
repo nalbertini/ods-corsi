@@ -2,7 +2,8 @@ import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from '.
 import type { ChiProva, GiaProvato, PersonaTrovata } from './prove'
 import type { SegnalataVista } from './segnalate'
 import type { MiaPresenza } from './ore'
-import type { LezioneSenzaIstruttore } from './segreteria'
+import type { ComePresenzaIstruttore, LezioneSenzaIstruttore } from './segreteria'
+import type { StatoPresenzaIstruttore } from './tablet'
 
 /**
  * Da dove arrivano corsi, lezioni e presenze.
@@ -58,6 +59,17 @@ export interface Dati {
    * li fa `delMese` di `ore.ts`.
    */
   mieOre?(personaId: string, da: Date, a: Date): Promise<{ presenze: MiaPresenza[]; senzaIstruttore: LezioneSenzaIstruttore[] }>
+  /**
+   * Gli istruttori previsti su una lezione, con la loro presenza se c'è: la
+   * parte ISTRUTTORI dell'appello. Vuota se il database non ha ancora
+   * `46-istruttore-collega.sql`: l'appello va come prima.
+   */
+  istruttoriLezione(sessioneId: string): Promise<IstruttoreLezione[]>
+  /**
+   * Chi fa l'appello segna presente (o toglie) un collega previsto che non si
+   * è segnato. Passa dalla coda come gli altri tocchi.
+   */
+  segnaCollega(sessioneId: string, personaId: string, presente: boolean): Promise<void>
   /** Quante scritture non sono ancora arrivate al server. Sempre 0 in prova. */
   guardaCoda?(f: (n: number) => void): () => void
   /**
@@ -66,6 +78,66 @@ export interface Dati {
    * non sono arrivate.
    */
   guardaScartate?(f: (n: number) => void): () => void
+}
+
+/** Un istruttore previsto su una lezione, per l'appello. */
+export interface IstruttoreLezione {
+  id: string
+  nome: string
+  /** Senza: non ha una presenza su questa lezione. */
+  stato?: StatoPresenzaIstruttore
+  come?: ComePresenzaIstruttore
+  /** Chi l'ha segnata dall'appello, se `come` è 'collega'. */
+  segnataDa?: string
+  /** Segnata da questo telefono e ancora in coda: è di chi fa l'appello. */
+  daInviare?: boolean
+  /** La segreteria l'ha già confermata o rifiutata: chi l'ha segnata non la toglie più. */
+  gestita?: boolean
+}
+
+/** Una riga della parte ISTRUTTORI dell'appello. */
+export interface RigaIstruttore {
+  id: string
+  nome: string
+  tu: boolean
+  /** La segreteria ha rifiutato questa presenza. */
+  rifiutata: boolean
+  /** Ha una presenza che vale: ✓. Una rifiutata no, e non si tocca. */
+  segnato: boolean
+  /** Cosa fa un tocco: segnarlo, togliere il segno messo da chi fa l'appello, o niente. */
+  tocco: 'segna' | 'togli' | null
+}
+
+/**
+ * La parte ISTRUTTORI dell'appello per chi lo fa (`io`): c'è solo se `io` è
+ * fra i previsti e non è solo. `io` risulta segnato appena l'appello è
+ * cominciato (`appelloFatto`: il server lo segna da sé), a meno che la
+ * segreteria l'abbia rifiutato; un collega si segna solo dopo, come vuole il
+ * database. Si toglie solo quello che `io` ha segnato; le altre presenze (PIN,
+ * appello, segreteria, rifiutata) si guardano soltanto.
+ */
+export function righeIstruttori(elenco: IstruttoreLezione[], io: string | undefined, appelloFatto = false): RigaIstruttore[] {
+  const mia = elenco.find((x) => x.id === io)
+  if (!io || !mia || elenco.length < 2) return []
+  const valida = (x: IstruttoreLezione) => !!x.stato && x.stato !== 'rifiutata'
+  const ioSegnato = valida(mia) || (!mia.stato && appelloFatto)
+  return elenco.map((x) => ({
+    id: x.id,
+    nome: x.nome,
+    tu: x.id === io,
+    rifiutata: x.stato === 'rifiutata',
+    segnato: x.id === io ? ioSegnato : valida(x),
+    tocco: x.id === io ? null : !x.stato ? (ioSegnato ? 'segna' : null) : x.come === 'collega' && (x.segnataDa === io || x.daInviare) && !x.gestita && x.stato !== 'rifiutata' ? 'togli' : null,
+  }))
+}
+
+/**
+ * Dopo il primo segno dell'appello la presenza di chi lo fa c'è (il server la
+ * mette da sé): si mostra subito, e resta anche se poi si azzera l'appello.
+ * Una presenza che c'era già, anche rifiutata, resta com'è.
+ */
+export function conMioAppello(elenco: IstruttoreLezione[], io: string | undefined): IstruttoreLezione[] {
+  return elenco.map((x) => (x.id === io && !x.stato ? { ...x, stato: 'confermata', come: 'appello' } : x))
 }
 
 const URL_SUPABASE = import.meta.env.VITE_SUPABASE_URL as string | undefined
