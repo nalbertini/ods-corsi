@@ -11,7 +11,8 @@ import { leggiLink, monta } from '../lib/youtube'
  * del timer. Cambiando schermata cambia il posto, non il lettore.
  *
  * Dove un posto non c'è (l'editor, lo storico…) il lettore resta visibile in
- * un angolo, come YouTube vuole: nascosto, smetterebbe di suonare.
+ * un angolo, come YouTube vuole: nascosto, smetterebbe di suonare. Chi ha
+ * delle barre in basso alza l'angolo con `--angolo-player`.
  */
 
 /* ---------- i posti ---------- */
@@ -71,7 +72,7 @@ export function PlayerYoutube({ link, parti = false }: { link: string; parti?: b
       const visibile = r && r.width > 0 && r.height > 0
       const stile = visibile
         ? `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px`
-        : 'right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);width:200px;height:200px'
+        : 'right:12px;bottom:calc(var(--angolo-player, 0px) + env(safe-area-inset-bottom) + 12px);width:200px;height:200px'
       if (stile !== prima) {
         prima = stile
         h.setAttribute('style', stile)

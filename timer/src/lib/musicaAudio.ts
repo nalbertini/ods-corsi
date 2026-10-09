@@ -228,7 +228,7 @@ function leggiStato() {
       artista: '',
       copertina: null,
       volume: VOLUME_BLOCCATO ? null : Math.round(a.volume * 100),
-      dispositivo: radio ? 'Radio' : 'File del tablet',
+      dispositivo: radio ? 'Radio' : 'File',
     },
   })
 }

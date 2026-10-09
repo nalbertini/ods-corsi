@@ -296,7 +296,7 @@ export function BarraMusicaTelefono({ m }: { m: MusicaTelefono }) {
   return (
     <div className="musica-telefono">
       {m.conYoutube && (
-        <div className="musica-telefono-video" aria-label="Il lettore di YouTube">
+        <div className="musica-telefono-video" role="region" aria-label="Il lettore di YouTube">
           <PostoPlayer />
         </div>
       )}

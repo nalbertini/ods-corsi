@@ -229,9 +229,10 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 /* La musica del telefono, in fondo alla pagina TIMER: la barra del tablet su due righe (design: timer-musica). */
 .musica-telefono { position: sticky; bottom: 0; z-index: 4; flex-shrink: 0; margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding: 12px 20px 14px; border-top: 2px solid var(--line-soft); background: var(--bg); }
 .musica-telefono-video { align-self: flex-end; }
-.musica-telefono-video .musica-video { width: 200px; height: 200px; background: #000; }
+.musica-telefono-video .musica-video { width: 200px; height: 200px; background: var(--surface-2); border: 2px solid var(--line); }
 .musica-accendi { justify-content: flex-start; gap: 12px; min-height: 52px; font-size: 17px; letter-spacing: 0.12em; }
-.tb-musica[data-telefono] { flex-direction: column; align-items: stretch; gap: 10px; }
+.tb-musica[data-telefono] { flex-direction: column; align-items: stretch; gap: 10px; width: 100%; max-width: 560px; }
+.musica-telefono .tb-lista .tb-musica-sotto { white-space: normal; }
 .tb-musica-riga { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .tb-musica[data-telefono] .tb-musica-testo { flex-grow: 1; max-width: none; }
 .tb-musica[data-telefono] .tb-musica-copertina { width: 44px; height: 44px; }

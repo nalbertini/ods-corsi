@@ -362,8 +362,10 @@ function Istruttori() {
             }}
           />
         )
+        // Il lettore di YouTube, fuori dal TIMER, sta in un angolo: sopra la barra delle pagine e quella piccola, non sui loro tasti.
+        const angolo = (largo ? 0 : 66) + (mini ? 56 : 0)
         return (
-        <div className={largo ? 'sg' : 'app'}>
+        <div className={largo ? 'sg' : 'app'} style={{ ['--angolo-player' as string]: `${angolo}px` }}>
           {largo ? (
             <MenuIstruttori chi={chi} onEsci={onEsci} voci={voci} pagina={pagina} onPagina={dalMenu} />
           ) : (

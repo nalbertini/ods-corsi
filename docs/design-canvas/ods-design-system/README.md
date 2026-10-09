@@ -78,8 +78,8 @@ Google, e vale solo per i mockup.
 | `RigaChiama` | La riga CHIAMA sotto l'avanzamento di ogni passo (`.passo-chiama`): la frase «Un dubbio? Chiama la segreteria.» e il tasto, nel flusso e non sticky |
 | `Riepilogo` | `Riepilogo` di `ds.tsx` (`.riepilogo`): una riga per cosa col segno ✓ verde, – giallo (facoltativa non data), ! rosso o il numero, e il tasto MODIFICA o CARICA da 44px |
 | `RiquadroPasso` | Il riquadro con titolo da 17px, righe `Titolo:cifra`, frasi e tasti (`Riquadro` di `ds.tsx`): PRIMA DI ISCRIVERTI, contatti, nucleo, il guaio sopra MANDA LA RICHIESTA |
-| `MusicaTelefono` | PROPOSTA «musica nel timer istruttori»: la barra della musica nella pagina TIMER del telefono, su due righe (brano e volume; ⏮ ▶ ⏭ ☰ ✕); `musica` suona, pausa, ferma, errore, spenta |
-| `MusicaMini` | PROPOSTA «musica nel timer istruttori»: la barra piccola della musica fuori dal TIMER, sopra la barra delle pagine: titolo, MUSICA scritto e ⏸/▶ |
+| `MusicaTelefono` | la barra della musica nella pagina TIMER del telefono, su due righe (brano e volume; ⏮ ▶ ⏭ ☰ ✕); `musica` suona, pausa, ferma, errore, spenta |
+| `MusicaMini` | la barra piccola della musica fuori dal TIMER, sopra la barra delle pagine: titolo, MUSICA scritto e ⏸/▶ |
 | `CaricaFile` | La riga di un file del modulo (`CaricaFile` di `ds.tsx`): SCEGLI o CAMBIA, file scelto in verde, errore |
 | `TavolaFirma` | Il riquadro della firma (`TavolaFirma.tsx`): vuoto con FIRMA QUI COL DITO, o firmato |
 | `FirmaSchermoIntero` | La firma a schermo intero (`FirmaSchermoIntero` in `TavolaFirma.tsx`, `.firma-intera*`): ANNULLA, nome e FATTO in cima, il riquadro con la riga a un quarto dal fondo, la frase e CANCELLA E RIFAI; `orientamento` verticale o orizzontale, `firmata` |

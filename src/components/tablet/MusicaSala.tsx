@@ -208,7 +208,7 @@ export function MusicaSala({
   )
 
   return (
-    <div className="tb-musica" data-telefono={telefono || undefined} data-ferma={stato === 'ferma' || undefined}>
+    <div className="tb-musica" data-telefono={telefono || undefined} data-ferma={(stato === 'ferma' && !musica.errore) || undefined}>
       {telefono ? (
         <>
           <div className="tb-musica-riga">{brano}</div>

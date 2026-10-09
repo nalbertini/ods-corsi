@@ -21,6 +21,9 @@
       <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 44px; height: 44px; padding: 0 10px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.12em; gap: 6px"><span style="font-size: 22px; line-height: 1">&#8249;</span>{{indietro}}</span>
     </sc-if>
     <span style="flex-grow: 1; font-family: {{cond}}; font-style: oblique 9deg; font-size: 22px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.05">TIMER</span>
+    <sc-if value="{{conImpostazioni}}" hint-placeholder-val="{{ false }}">
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 44px; height: 44px; padding: 0 10px; border: 2px solid {{c.line}}; color: {{c.tasto}}; font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.12em; gap: 6px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>IMPOSTAZIONI</span>
+    </sc-if>
   </div>
   </sc-if>
 
@@ -96,7 +99,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"lezione":{"editor":"text","default":"Judo kids · martedì 18:30 · Sala 1"},"conLezione":{"editor":"boolean","default":true},"conCorso":{"editor":"boolean","default":true},"corso":{"editor":"text","default":"DEL CORSO · JUDO KIDS"},"indietro":{"editor":"text","default":"APPELLO"},"senzaRete":{"editor":"boolean","default":false},"conMusica":{"editor":"boolean","default":false},"conTitolo":{"editor":"boolean","default":true},"conBarra":{"editor":"boolean","default":true},"tutti":{"editor":"text","default":""},"cronometro":{"editor":"boolean","default":false},"altezza":{"editor":"text","default":"780px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":780}}'>
+<script data-dc-script data-props='{"lezione":{"editor":"text","default":"Judo kids · martedì 18:30 · Sala 1"},"conLezione":{"editor":"boolean","default":true},"conCorso":{"editor":"boolean","default":true},"corso":{"editor":"text","default":"DEL CORSO · JUDO KIDS"},"indietro":{"editor":"text","default":"APPELLO"},"senzaRete":{"editor":"boolean","default":false},"conMusica":{"editor":"boolean","default":false},"conImpostazioni":{"editor":"boolean","default":false},"conTitolo":{"editor":"boolean","default":true},"conBarra":{"editor":"boolean","default":true},"tutti":{"editor":"text","default":""},"cronometro":{"editor":"boolean","default":false},"altezza":{"editor":"text","default":"780px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":780}}'>
 // PROPOSTA (non ancora nell'app): la pagina TIMER dentro l'app istruttori, elenco dei timer (la «casa» di timer/src/App.tsx,
 // vedi timer/design/Home.dc.html per le righe: tipo 10px 0.16em su fondo tinta, durata cond 14px, nome .ob 21px, tasto ▶ 52px).
 // Senza marchio, senza SALA e senza versione (la testata e il menu sono quelli dell'app che la contiene). In cima, se si arriva dal
@@ -128,6 +131,8 @@ class Component extends DCLogic {
       haIndietro: ind !== '', indietro: ind,
       senzaRete: truthy(p.senzaRete),
       // PROPOSTA «musica nel timer istruttori»: con la musica, l'avviso dice anche cosa suona senza rete.
+      // Nell'app (musica nel timer istruttori): il tasto IMPOSTAZIONI accanto al titolo apre le impostazioni del timer, che restano sul telefono; aperte, diventa ‹ TIMER.
+      conImpostazioni: truthy(p.conImpostazioni),
       testoRete: truthy(p.conMusica) ? 'Il timer funziona lo stesso. YouTube, Spotify e la radio non partono, i file del telefono sì. La voce incisa lascia il posto a quella del telefono e le illustrazioni degli esercizi non si vedono.' : 'Il timer funziona lo stesso. La voce incisa lascia il posto a quella del telefono e le illustrazioni degli esercizi non si vedono.',
       conTitolo: truthy(p.conTitolo ?? true), conBarra: truthy(p.conBarra ?? true), cronometro: truthy(p.cronometro),
       altezza: p.altezza || '780px',

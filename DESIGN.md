@@ -321,6 +321,11 @@ La lezione è una riga con barra sinistra 6px nella tinta del corso, ora e nome 
 - **Testata:** i tasti tema e Accensione (esci dal tablet) sono da 60px con icone da 28px, solo dentro `.tb-testata`; la testata sta su una riga a 1280px e in verticale.
 - **Piede:** `.tb-btn-quadro` è un tasto da 60px quadrato con la sola icona (la nota della musica).
 
+### Musica del telefono
+- **Barra della musica** (`.musica-telefono`, in fondo alla pagina TIMER dell'app istruttori, sticky sopra la barra delle pagine): la barra del tablet (`MusicaSala`) su due righe, larga al massimo 560px. Sopra il brano e il volume − N + a 44px; sotto ⏮ ▶ ⏭ ☰ ✕ a 52px, con ▶ che prende il resto. Ferma dopo un ricaricamento, ▶ è verde pieno e la riga sotto dice «Tocca ▶ per farla partire» (non con un errore). Spenta, resta solo **ACCENDI LA MUSICA** (`.musica-accendi`, 52px). Con YouTube il riquadro del video (200×200, `surface-2` con bordo 2px `line`) sta sopra, a destra. Il pannello ☰ sale dal basso a tutta larghezza, titolo LA MUSICA.
+- **Barra piccola** (`.musica-mini`): fuori dal TIMER, sopra la barra delle pagine (sullo schermo largo in fondo al corpo), alta 56px su `surface`: la nota, il titolo, **MUSICA** o **MUSICA IN PAUSA** scritto, e un solo tasto ⏸/▶ da 44px. Il resto riporta al TIMER. La striscia dell'allenamento sta in alto: le due non si toccano. Il lettore di YouTube nell'angolo si alza con `--angolo-player` per non coprire queste barre.
+- **IMPOSTAZIONI** accanto al titolo TIMER (`.icon-btn.testo`, 44px): apre le impostazioni del timer (Spotify, i file) senza la barra delle schede del timer; aperte, diventa ‹ TIMER.
+
 ### Timbro kanji
 Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un serif giapponese di sistema; tre misure (22, 32, 56px).
 
