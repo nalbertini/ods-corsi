@@ -906,9 +906,17 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       )
     },
     async ricevute(personaId) {
-      let q = db.from('ricevute').select(CAMPI_RICEVUTA)
-      if (personaId) q = q.eq('persona_id', personaId)
-      const righe = ok(await q.order('data', { ascending: false }).order('anno', { ascending: false }).order('numero', { ascending: false }).limit(500)) as unknown as RigaRicevuta[]
+      // Tutte, come in prova: un tetto qui accorciava l'elenco senza dirlo.
+      const leggi = (prima: number, ultima: number) => {
+        const q = db.from('ricevute').select(CAMPI_RICEVUTA)
+        return (personaId ? q.eq('persona_id', personaId) : q)
+          .order('data', { ascending: false })
+          .order('anno', { ascending: false })
+          .order('numero', { ascending: false })
+          .order('id')
+          .range(prima, ultima)
+      }
+      const righe = ok(await tutteLeRighe(leggi)) as unknown as RigaRicevuta[]
       return righe.map(ricevuta)
     },
 

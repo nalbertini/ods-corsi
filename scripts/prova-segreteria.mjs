@@ -3304,6 +3304,8 @@ console.log('\nsotto i 6 anni il certificato non serve')
   const aPagine = []
   // Le tabelle che rispondono «non c'è», per provare i ripieghi.
   const assenti = new Set()
+  // I filtri `.eq()` chiesti, per tabella: una pagina senza il suo filtro leggerebbe le righe di tutti.
+  const filtri = []
   const db = {
     auth: { getSession: async () => ({ data: { session: null } }) },
     rpc: async () => ({ data: null, error: null }),
@@ -3311,7 +3313,7 @@ console.log('\nsotto i 6 anni il certificato non serve')
       const fatto = new Set()
       const c = new Proxy(() => c, {
         get: (_, k) => {
-          if (k !== 'then') return (...x) => (fatto.add(k), k === 'select' && x[1]?.head && fatto.add('head'), c)
+          if (k !== 'then') return (...x) => (fatto.add(k), k === 'select' && x[1]?.head && fatto.add('head'), k === 'eq' && filtri.push([t, ...x]), c)
           const una = fatto.has('single') || fatto.has('maybeSingle')
           if (fatto.has('select') && CRESCONO.includes(t) && !una && !['range', 'limit', 'head'].some((x) => fatto.has(x))) senzaPagine.push(t)
           // A pagine senza un ordine fisso le pagine si accavallano: conta come senza.
@@ -3336,6 +3338,9 @@ console.log('\nsotto i 6 anni il certificato non serve')
     presenzeIstruttori: [() => seg.presenzeIstruttori(30), ['presenze_istruttori']],
     calendario: [() => m.creaDatiSupabase(db).calendario(IN, IN), ['sessioni', 'iscrizioni', 'presenze']],
     richieste: [() => m.creaRichiesteSupabase(db).richieste(), ['richieste_iscrizione']],
+    // Le ricevute si fermavano a 500, senza avviso; quelle di una persona e quelle di tutti.
+    ricevute: [() => seg.ricevute(), ['ricevute']],
+    'ricevute di una persona': [() => seg.ricevute('p1'), ['ricevute']],
   }
   for (const [nome, [leggi, tabelle]] of Object.entries(letture)) {
     senzaPagine.length = 0
@@ -3351,6 +3356,10 @@ console.log('\nsotto i 6 anni il certificato non serve')
   await seg.persone()
   assenti.clear()
   ok('a pagine: senza la vista delle quote, le ricevute a pagine, in ordine', [senzaPagine.includes('ricevute'), aPagine.includes('ricevute')], [false, true])
+  // Le ricevute di una persona: ogni pagina col suo filtro, due pagine (la seconda vuota chiude).
+  filtri.length = 0
+  await seg.ricevute('p1')
+  ok('a pagine: le ricevute di una persona, ogni pagina solo le sue', filtri, [['ricevute', 'persona_id', 'p1'], ['ricevute', 'persona_id', 'p1']])
   // L'export di una persona: le sue presenze, anni di lezioni, a pagine.
   senzaPagine.length = 0
   aPagine.length = 0
