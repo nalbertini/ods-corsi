@@ -7,6 +7,7 @@ import { attivitaPerMenu, mancaAttivita, type ComePresenzaIstruttore } from './s
 import type { StatoPresenzaIstruttore } from './tablet'
 import { contiDellAppello, giornoDi, perCognome, valeIl } from './sala'
 import { Coda } from './coda'
+import { tutteLeRighe } from './tutteLeRighe'
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import type { GiaProvato, NuovaProva, PersonaTrovata } from './prove'
 import { bastaPerCercare, eGiaVenuto, nuovoId, pulisciProva, RICERCA_NON_ATTIVA } from './prove'
@@ -152,7 +153,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
     const ids = sessioni.map((s) => s.id)
     const [{ data: isc, error: e1 }, { data: pres, error: e2 }] = await Promise.all([
       db.from('iscrizioni').select(ISCRIZIONE).in('corso_id', corsi.length ? corsi : ['-']),
-      db.from('presenze').select('sessione_id, persona_id, stato').in('sessione_id', ids.length ? ids : ['-']),
+      tutteLeRighe((da, a) => db.from('presenze').select('sessione_id, persona_id, stato').in('sessione_id', ids.length ? ids : ['-']).order('id').range(da, a)),
     ])
     if (e1) throw e1
     if (e2) throw e2

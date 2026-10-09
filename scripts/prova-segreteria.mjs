@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { dellaDisciplina } from './timer/src/lib/discipline'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { dellaDisciplina } from './timer/src/lib/discipline'; export { tutteLeRighe } from './src/lib/tutteLeRighe'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -3231,6 +3231,64 @@ console.log('\nsotto i 6 anni il certificato non serve')
   await s.salvaAnagrafica(chi.id, { natoIl: '2021-03-10' })
   ok('la data di nascita della scheda arriva alla persona', (await s.persone()).find((p) => p.id === chi.id).natoIl, '2021-03-10')
   ok('senza data di nascita la persona resta come prima', (await s.persone()).filter((p) => p.id !== chi.id).some((p) => p.natoIl === undefined), true)
+}
+
+// Supabase dà al massimo 1000 righe per richiesta, senza errore: il resto si
+// perde. Con 1131 presenze in un mese, le lezioni in fondo all'elenco
+// risultavano senza appello anche con l'appello fatto (Lotta 3, 9 ottobre).
+{
+  const MAX = 1000
+  const sessione = (id) => ({
+    id, corso_id: 'c1', ricorrenza_id: 'r1', inizio: '2026-10-09T16:00:00.000Z', fine: '2026-10-09T17:00:00.000Z', stato: 'prevista', sala_id: null, istruttore_id: null,
+    corsi: { nome: 'Lotta 3', colore: null, capienza: null, sala_id: null, istruttore_id: null, corsi_istruttori: [] }, sale: null, persone: null, ricorrenze: null,
+  })
+  // 1000 segni sulla prima lezione, 131 sulla seconda: una richiesta sola si ferma alla prima.
+  const presenze = [
+    ...Array.from({ length: 1000 }, (_, i) => ({ sessione_id: 's1', persona_id: `p${i}`, stato: 'presente' })),
+    ...Array.from({ length: 131 }, (_, i) => ({ sessione_id: 's2', persona_id: `p${1000 + i}`, stato: 'presente' })),
+  ]
+  const tabelle = {
+    sessioni: [sessione('s1'), sessione('s2')],
+    presenze,
+    iscrizioni: [{ corso_id: 'c1', persona_id: 'p1130', dal: '2026-01-01', al: null, persone: { nome: 'Ultimo', cognome: 'Segnato', attiva: true } }],
+  }
+  const db = {
+    auth: { getSession: async () => ({ data: { session: null } }) },
+    rpc: async () => ({ data: null, error: null }),
+    from: (t) => {
+      let da = 0
+      let a = Infinity
+      const c = new Proxy(() => c, {
+        get: (_, k) =>
+          k === 'then' ? (f, ko) => Promise.resolve({ data: (tabelle[t] ?? []).slice(da, Math.min(a + 1, da + MAX)), error: null }).then(f, ko)
+          : k === 'range' ? (x, y) => ((da = x), (a = y), c)
+          : () => c,
+        apply: () => c,
+      })
+      return c
+    },
+  }
+  const IN = new Date(2026, 9, 9, 12, 0)
+  const seg = m.creaSegreteriaSupabase(db)
+  ok('oltre le 1000 presenze: DA FARE conta i segni di ogni lezione', (await seg.settimana(IN, IN)).map((l) => l.segnati), [1000, 131])
+  ok('oltre le 1000 presenze: il registro ha il segno dell\'ultima', (await seg.registro(IN, IN))[1].appello.map((x) => x.stato), ['presente'])
+  ok('oltre le 1000 presenze: il calendario conta i presenti', (await m.creaDatiSupabase(db).calendario(IN, IN)).map((l) => l.presenti), [1000, 131])
+  // La lettura a pagine da sola: si ferma solo su una pagina vuota, così regge anche un tetto del server più basso.
+  const fonte = (n, tetto, guasto) => {
+    const chieste = []
+    const pagina = async (da, a) => {
+      chieste.push(da)
+      if (guasto && chieste.length === guasto) return { data: null, error: 'giù' }
+      return { data: Array.from({ length: Math.max(0, Math.min(n, a + 1, da + tetto) - da) }, (_, i) => da + i), error: null }
+    }
+    return { pagina, chieste }
+  }
+  const esatte = fonte(1000, 1000)
+  const r1 = await m.tutteLeRighe(esatte.pagina)
+  ok('a pagine: esattamente 1000 righe, tutte e poi si ferma', [r1.data.length, esatte.chieste.length], [1000, 2])
+  const basso = await m.tutteLeRighe(fonte(1131, 500).pagina)
+  ok('a pagine: col tetto del server a 500 non si perde niente', [basso.data.length, new Set(basso.data).size], [1131, 1131])
+  ok('a pagine: un errore alla seconda pagina arriva a chi legge', (await m.tutteLeRighe(fonte(1131, 1000, 2).pagina)).error, 'giù')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

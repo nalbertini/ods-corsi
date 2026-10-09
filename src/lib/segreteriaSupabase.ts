@@ -5,6 +5,7 @@ import { allungaCalendario } from './allunga'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
+import { tutteLeRighe } from './tutteLeRighe'
 import { ESTENSIONI } from './richieste'
 import { insegna, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
@@ -450,7 +451,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const vuoto = ['00000000-0000-0000-0000-000000000000']
       const [isc, pres, chi] = await Promise.all([
         db.from('iscrizioni').select('corso_id, persona_id, dal, al, persone ( attiva )').in('corso_id', corsi.length ? corsi : vuoto),
-        db.from('presenze').select('sessione_id, stato').in('sessione_id', ids.length ? ids : vuoto),
+        tutteLeRighe((da, fino) => db.from('presenze').select('sessione_id, stato').in('sessione_id', ids.length ? ids : vuoto).order('id').range(da, fino)),
         insegnanti(corsi),
       ])
       // Chi è disattivato non conta fra gli iscritti, come nell'appello e in prova.
@@ -1012,7 +1013,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       const vuoto = ['00000000-0000-0000-0000-000000000000']
       const [isc, pres, chi] = await Promise.all([
         db.from('iscrizioni').select('corso_id, persona_id, dal, al, persone ( nome, cognome, attiva )').in('corso_id', corsi.length ? corsi : vuoto),
-        db.from('presenze').select('sessione_id, persona_id, stato').in('sessione_id', sessioni.length ? sessioni.map((x) => x.id) : vuoto),
+        tutteLeRighe((da, fino) => db.from('presenze').select('sessione_id, persona_id, stato').in('sessione_id', sessioni.length ? sessioni.map((x) => x.id) : vuoto).order('id').range(da, fino)),
         insegnanti(corsi),
       ])
       const iscrizioni = ok(isc) as unknown as Array<Iscrizione & { persone: { nome: string; cognome: string; attiva: boolean } | null }>
