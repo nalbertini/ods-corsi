@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DatiRichieste, FileRichiesta, Richiesta, StatoRichiesta, TipoFile } from './richieste'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
+import { tutteLeRighe } from './tutteLeRighe'
 
 /**
  * Le richieste di iscrizione col database vero (`supabase/06-iscrizioni.sql`).
@@ -146,10 +147,14 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
 
     async richieste() {
       const righe = ok(
-        await db
-          .from('richieste_iscrizione')
-          .select('*, gestore:persone!gestita_da ( nome, cognome )')
-          .order('creata_il', { ascending: false }),
+        await tutteLeRighe((prima, ultima) =>
+          db
+            .from('richieste_iscrizione')
+            .select('*, gestore:persone!gestita_da ( nome, cognome )')
+            .order('creata_il', { ascending: false })
+            .order('id')
+            .range(prima, ultima),
+        ),
       ) as unknown as Riga[]
       return righe.map(vista)
     },

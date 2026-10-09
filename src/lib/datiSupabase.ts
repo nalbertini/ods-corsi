@@ -152,7 +152,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
     const corsi = [...new Set(sessioni.map((s) => s.corso_id))]
     const ids = sessioni.map((s) => s.id)
     const [{ data: isc, error: e1 }, { data: pres, error: e2 }] = await Promise.all([
-      db.from('iscrizioni').select(ISCRIZIONE).in('corso_id', corsi.length ? corsi : ['-']),
+      tutteLeRighe((prima, ultima) => db.from('iscrizioni').select(ISCRIZIONE).in('corso_id', corsi.length ? corsi : ['-']).order('id').range(prima, ultima)),
       tutteLeRighe((da, a) => db.from('presenze').select('sessione_id, persona_id, stato').in('sessione_id', ids.length ? ids : ['-']).order('id').range(da, a)),
     ])
     if (e1) throw e1
@@ -238,7 +238,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       const fino = new Date(a)
       fino.setHours(23, 59, 59, 999)
       const { data, error } = await leggiSessioni((sel) =>
-        db.from('sessioni').select(sel).gte('inizio', da.toISOString()).lte('inizio', fino.toISOString()).order('inizio'),
+        tutteLeRighe((prima, ultima) => db.from('sessioni').select(sel).gte('inizio', da.toISOString()).lte('inizio', fino.toISOString()).order('inizio').order('id').range(prima, ultima)),
       )
       if (error) throw error
       return conta((data ?? []) as unknown as RigaSessione[])

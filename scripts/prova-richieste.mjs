@@ -350,6 +350,8 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
       const c = {
         select: (...a) => (reg.push(['select', ...a]), c),
         order: (...a) => (reg.push(['order', ...a]), c),
+        // Come Supabase: oltre la prima pagina l'elenco finto è finito.
+        range: (...a) => (reg.push(['range', ...a]), a[0] ? { then: (bene) => bene({ data: [], error: null }) } : c),
         delete: () => ((cancellando = true), reg.push(['delete']), c),
         eq: (...a) => (reg.push(['eq', ...a]), c),
         then: (bene, male) => Promise.resolve(cancellando ? cancella : tabella).then(bene, male),
@@ -442,7 +444,7 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     })
     const { v, reg } = finto({ tabella: { data: [riga(), riga({ id: 'r-2', stato: 'accolta', persona_id: 'p-1', gestita_il: '2026-09-27T09:00:00Z', gestore: { nome: 'Anna', cognome: 'Bianchi' }, telefono_2: '011 1', note: 'ciao', genitore_nome: 'Paola', genitore_cognome: 'Rossi', genitore_codice_fiscale: 'RSSPLA80A41L219P' })], error: null } })
     const [a, b] = await v.richieste()
-    ok('elenco: dalla tabella richieste_iscrizione, col gestore, dalla più recente', reg, [['from', 'richieste_iscrizione'], ['select', '*, gestore:persone!gestita_da ( nome, cognome )'], ['order', 'creata_il', { ascending: false }]])
+    ok('elenco: dalla tabella richieste_iscrizione, col gestore, dalla più recente, a pagine', reg, [0, 2].flatMap((da) => [['from', 'richieste_iscrizione'], ['select', '*, gestore:persone!gestita_da ( nome, cognome )'], ['order', 'creata_il', { ascending: false }], ['order', 'id'], ['range', da, da + 999]]))
     ok('elenco: i campi, coi nomi dell’app', [a.id, a.creataIl, a.stato, a.natoIl, a.natoA, a.codiceFiscale, a.corsi, a.formula, a.regolamento], ['r-1', '2026-09-26T10:00:00Z', 'nuova', '1996-01-01', 'TORINO (TO)', 'RSSLCU96A01L219K', ['judo-adulti'], 'annuale', true])
     ok('elenco: i campi vuoti del database sono assenti, non null', [a.telefono2, a.genitoreNome, a.genitoreCognome, a.genitoreCodiceFiscale, a.note, a.personaId, a.gestitaIl, a.gestitaDa], [undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined])
     ok('elenco: una richiesta gestita porta chi, quando e la scheda', [b.stato, b.personaId, b.gestitaIl, b.gestitaDa], ['accolta', 'p-1', '2026-09-27T09:00:00Z', 'Anna Bianchi'])

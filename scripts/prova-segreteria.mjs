@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { dellaDisciplina } from './timer/src/lib/discipline'; export { tutteLeRighe } from './src/lib/tutteLeRighe'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { dellaDisciplina } from './timer/src/lib/discipline'; export { tutteLeRighe } from './src/lib/tutteLeRighe'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -26,6 +26,9 @@ const { outputFiles } = await build({
 })
 const modulo = 'data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64')
 
+// Come Supabase: dalla seconda pagina (`.range()` oltre la prima) un elenco
+// finto è finito. Senza, `tutteLeRighe` rileggerebbe le stesse righe per sempre.
+const oltre = { then: (f, ko) => Promise.resolve({ data: [], error: null }).then(f, ko) }
 const memoria = new Map()
 globalThis.localStorage = {
   getItem: (k) => (memoria.has(k) ? memoria.get(k) : null),
@@ -1108,7 +1111,7 @@ console.log('\nle segnalazioni della segreteria')
 
   // Col database senza 38-segnalazioni-categoria.sql: la colonna non c'è.
   const risposta = (r) => {
-    const c = new Proxy(() => c, { get: (_, k) => (k === 'then' ? (fatto) => fatto(r) : () => c), apply: () => c })
+    const c = new Proxy(() => c, { get: (_, k) => (k === 'range' ? (da) => (da ? oltre : c) : k === 'then' ? (fatto) => fatto(r) : () => c), apply: () => c })
     return c
   }
   const lette = []
@@ -1126,7 +1129,7 @@ console.log('\nle segnalazioni della segreteria')
     }),
   })
   const fili = await senzaCategoria.segnalazioni()
-  ok('senza 38-…: si rilegge senza, e il filo non ha categoria', [lette.length, fili.map((y) => [y.id, y.categoria])], [2, [['v1', undefined]]])
+  ok('senza 38-…: si rilegge senza, e il filo non ha categoria', [lette.map((c) => c.includes('categoria')), fili.map((y) => [y.id, y.categoria])], [[true, false, false], [['v1', undefined]]])
   ok('senza 38-…: aprire dice quale file lanciare', await errore(() => senzaCategoria.apriSegnalazione('T', 'x', 'idea')),
     'Le categorie delle segnalazioni non sono ancora attive sul database: va lanciato 38-segnalazioni-categoria.sql')
 }
@@ -1886,7 +1889,7 @@ console.log('\npossibili doppioni')
   // Una richiesta finta: ogni metodo la rilancia, e attesa dà la risposta della tabella.
   const richiestaFinta = (t) => {
     const q = new Proxy(() => q, {
-      get: (_, k) => (k === 'then' ? (ok, ko) => Promise.resolve(risposta(t)).then(ok, ko) : () => q),
+      get: (_, k) => (k === 'range' ? (da) => (da ? oltre : q) : k === 'then' ? (ok, ko) => Promise.resolve(risposta(t)).then(ok, ko) : () => q),
       apply: () => q,
     })
     return q
@@ -2290,7 +2293,7 @@ console.log('\ntogliere un «non sono doppioni»')
       : { data: [], error: null }
   const richiestaFinta = (t) => {
     const q = new Proxy(() => q, {
-      get: (_, k) => (k === 'then' ? (ok, ko) => Promise.resolve(risposta(t)).then(ok, ko) : () => q),
+      get: (_, k) => (k === 'range' ? (da) => (da ? oltre : q) : k === 'then' ? (ok, ko) => Promise.resolve(risposta(t)).then(ok, ko) : () => q),
       apply: () => q,
     })
     return q
@@ -2787,7 +2790,7 @@ try {
 console.log('\nl’«Attività» con un database senza 41-attivita.sql: la segreteria e gli istruttori leggono come prima')
 {
   const risposta = (r) => {
-    const c = new Proxy(() => c, { get: (_, k) => (k === 'then' ? (f, ko) => Promise.resolve(r).then(f, ko) : () => c), apply: () => c })
+    const c = new Proxy(() => c, { get: (_, k) => (k === 'range' ? (da) => (da ? oltre : c) : k === 'then' ? (f, ko) => Promise.resolve(r).then(f, ko) : () => c), apply: () => c })
     return c
   }
   const senzaRpc = async () => ({ data: null, error: { code: 'PGRST202', message: 'Could not find the function' } })
@@ -2861,7 +2864,7 @@ console.log('\nl’«Attività» con un database senza 41-attivita.sql: la segre
           // `calendario` aspetta una lista, `dettaglio` chiama `.single()` e aspetta la riga.
           const c = new Proxy(() => c, {
             get: (_, k) =>
-              k === 'then' ? (f, ko) => Promise.resolve({ data: [riga(conKanji, conAttivita)], error: null }).then(f, ko)
+              k === 'range' ? (da) => (da ? oltre : c) : k === 'then' ? (f, ko) => Promise.resolve({ data: [riga(conKanji, conAttivita)], error: null }).then(f, ko)
               : k === 'single' ? () => risposta({ data: riga(conKanji, conAttivita), error: null })
               : () => c,
             apply: () => c,
@@ -3071,7 +3074,7 @@ const valore = async (f) => { try { return await f() } catch (e) { return `ERROR
     const catena = (tab, cols) => {
       const c = new Proxy(() => c, {
         get: (_, k) =>
-          k === 'then' ? (f, ko) => Promise.resolve(risposta(tab, cols)).then(f, ko)
+          k === 'range' ? (da) => (da ? oltre : c) : k === 'then' ? (f, ko) => Promise.resolve(risposta(tab, cols)).then(f, ko)
           : k === 'single' || k === 'maybeSingle' ? async () => risposta(tab, cols)
           : () => c,
         apply: () => c,
@@ -3210,7 +3213,7 @@ console.log('\nsotto i 6 anni il certificato non serve')
   const persona1 = { id: 'p1', nome: 'Leo', cognome: 'Conti', email: null, telefono: null, attiva: true, creata_il: '2026-09-01T10:00:00Z', iscrizioni: [], schede_iscritti: null }
   const dbFinto = (tabelle) => m.creaSegreteriaSupabase({
     from: (t) => {
-      const c = new Proxy(() => c, { get: (_, k) => (k === 'then' ? (fatto) => fatto(tabelle[t] ?? { data: [], error: null }) : () => c), apply: () => c })
+      const c = new Proxy(() => c, { get: (_, k) => (k === 'range' ? (da) => (da ? oltre : c) : k === 'then' ? (fatto) => fatto(tabelle[t] ?? { data: [], error: null }) : () => c), apply: () => c })
       return c
     },
   })
@@ -3289,6 +3292,70 @@ console.log('\nsotto i 6 anni il certificato non serve')
   const basso = await m.tutteLeRighe(fonte(1131, 500).pagina)
   ok('a pagine: col tetto del server a 500 non si perde niente', [basso.data.length, new Set(basso.data).size], [1131, 1131])
   ok('a pagine: un errore alla seconda pagina arriva a chi legge', (await m.tutteLeRighe(fonte(1131, 1000, 2).pagina)).error, 'giù')
+}
+
+// Le tabelle che crescono con gli anni si leggono a pagine: un elenco che
+// passa le 1000 righe di Supabase, letto in una richiesta sola, si accorcia
+// senza errore. Il database finto si segna ogni lettura di un elenco
+// (niente `.single()`, `.limit()`, conteggi) fatta senza `.range()`.
+{
+  const CRESCONO = ['presenze', 'iscrizioni', 'sessioni', 'persone', 'anagrafiche', 'richieste_iscrizione', 'ricevute', 'quote_ricevute', 'segnalazioni', 'segnalazioni_allegati', 'segnalazioni_allegati_tolti', 'presenze_istruttori']
+  const senzaPagine = []
+  const aPagine = []
+  // Le tabelle che rispondono «non c'è», per provare i ripieghi.
+  const assenti = new Set()
+  const db = {
+    auth: { getSession: async () => ({ data: { session: null } }) },
+    rpc: async () => ({ data: null, error: null }),
+    from: (t) => {
+      const fatto = new Set()
+      const c = new Proxy(() => c, {
+        get: (_, k) => {
+          if (k !== 'then') return (...x) => (fatto.add(k), k === 'select' && x[1]?.head && fatto.add('head'), c)
+          const una = fatto.has('single') || fatto.has('maybeSingle')
+          if (fatto.has('select') && CRESCONO.includes(t) && !una && !['range', 'limit', 'head'].some((x) => fatto.has(x))) senzaPagine.push(t)
+          // A pagine senza un ordine fisso le pagine si accavallano: conta come senza.
+          if (fatto.has('range')) (fatto.has('order') ? aPagine : senzaPagine).push(t)
+          const r = assenti.has(t) ? { data: null, error: { code: '42P01', message: `relation "${t}" does not exist` } } : { data: una ? null : [], error: null }
+          return (f, ko) => Promise.resolve(r).then(f, ko)
+        },
+        apply: () => c,
+      })
+      return c
+    },
+  }
+  const IN = new Date(2026, 9, 9, 12, 0)
+  const seg = m.creaSegreteriaSupabase(db)
+  // Con le tabelle che ognuna deve leggere a pagine: se una funzione si fermasse prima, la prova lo vede.
+  const letture = {
+    persone: [() => seg.persone(), ['quote_ricevute', 'persone', 'anagrafiche', 'richieste_iscrizione']],
+    settimana: [() => seg.settimana(IN, IN), ['sessioni', 'iscrizioni', 'presenze']],
+    registro: [() => seg.registro(new Date(2025, 9, 1), IN), ['sessioni', 'iscrizioni', 'presenze']],
+    indiziDoppioni: [() => seg.indiziDoppioni(), ['anagrafiche', 'richieste_iscrizione']],
+    segnalazioni: [() => seg.segnalazioni(), ['segnalazioni', 'segnalazioni_allegati', 'segnalazioni_allegati_tolti']],
+    presenzeIstruttori: [() => seg.presenzeIstruttori(30), ['presenze_istruttori']],
+    calendario: [() => m.creaDatiSupabase(db).calendario(IN, IN), ['sessioni', 'iscrizioni', 'presenze']],
+    richieste: [() => m.creaRichiesteSupabase(db).richieste(), ['richieste_iscrizione']],
+  }
+  for (const [nome, [leggi, tabelle]] of Object.entries(letture)) {
+    senzaPagine.length = 0
+    aPagine.length = 0
+    await leggi()
+    ok(`a pagine: ${nome} non legge elenchi che crescono in una richiesta sola`, [...new Set(senzaPagine)], [])
+    ok(`a pagine: ${nome} legge a pagine, in ordine, quel che deve`, tabelle.filter((t) => !aPagine.includes(t)), [])
+  }
+  // Senza la vista delle quote (27-pagamento-dalle-ricevute.sql) si ripiega sulle ricevute: a pagine anche quelle.
+  senzaPagine.length = 0
+  aPagine.length = 0
+  assenti.add('quote_ricevute')
+  await seg.persone()
+  assenti.clear()
+  ok('a pagine: senza la vista delle quote, le ricevute a pagine, in ordine', [senzaPagine.includes('ricevute'), aPagine.includes('ricevute')], [false, true])
+  // L'export di una persona: le sue presenze, anni di lezioni, a pagine.
+  senzaPagine.length = 0
+  aPagine.length = 0
+  await seg.esporta('p1')
+  ok('a pagine: esporta legge le presenze di una persona a pagine, in ordine', [senzaPagine.includes('presenze'), aPagine.includes('presenze')], [false, true])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
