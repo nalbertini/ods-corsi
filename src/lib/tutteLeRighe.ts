@@ -6,6 +6,12 @@
  * pagina «corta» perderebbe di nuovo righe se il tetto del server fosse più
  * basso della pagina chiesta. La richiesta deve avere un ordine fisso
  * (`.order('id')`), se no le pagine si accavallano.
+ *
+ * Una pagina uguale alle prime righe già lette vuol dire che `.range()` non è
+ * arrivato e il server riparte dall'inizio: senza fermarsi, si rileggerebbe
+ * tutto per sempre. Si guarda la pagina intera, non la prima riga: le righe
+ * lette senza id (le presenze, `sessione_id, stato`) si ripetono anche quando
+ * le pagine sono giuste. Questo lancia, non torna in `error`.
  */
 const PAGINA = 1000
 
@@ -17,6 +23,9 @@ export async function tutteLeRighe<T, E>(
     const { data, error } = await pagina(righe.length, righe.length + PAGINA - 1)
     if (error) return { data: righe, error }
     if (!data?.length) return { data: righe, error: null }
+    if (righe.length && JSON.stringify(data) === JSON.stringify(righe.slice(0, data.length))) {
+      throw new Error("L'elenco non si è letto per intero. Riprova; se succede ancora, scrivilo in SEGNALAZIONI.")
+    }
     righe.push(...data)
   }
 }
