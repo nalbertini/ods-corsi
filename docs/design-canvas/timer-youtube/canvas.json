@@ -1,0 +1,33 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Ora e proposta"
+    }
+  ],
+  "annotations": [],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  },
+  "artboards": [
+    {
+      "file": "Ora.dc.html",
+      "title": "Ora · YouTube sopra la barra",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    },
+    {
+      "file": "Proposta.dc.html",
+      "title": "Proposta · YouTube accanto ai comandi",
+      "x": 510,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1"
+    }
+  ]
+}

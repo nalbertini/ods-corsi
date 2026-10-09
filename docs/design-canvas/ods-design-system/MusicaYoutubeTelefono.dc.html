@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 10px; width: 100%; padding: 12px 20px 14px; border-top: 2px solid {{c.lineSoft}}; background: {{c.bg}}; color: {{c.text}}">
+  <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1; min-width: 0">
+    <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+      <span style="font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{titolo}}</span>
+      <span style="font-size: 14px; line-height: 1.3; color: {{coloreSotto}}">{{sotto}}</span>
+    </span>
+    <span style="flex-grow: 1"></span>
+    <span style="display: flex; align-items: center; justify-content: center; height: 44px; border: 2px solid {{bordoPlay}}; background: {{fondoPlay}}; color: {{colorePlay}}">
+      <sc-if value="{{inRiproduzione}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></sc-if>
+      <sc-if value="{{inPausa}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></sc-if>
+    </span>
+    <span style="display: flex; gap: 8px">
+      <span style="display: flex; align-items: center; justify-content: center; flex: 1; height: 44px; border: 2px solid {{c.line}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"></polygon><rect x="4" y="5" width="2.5" height="14"></rect></svg></span>
+      <span style="display: flex; align-items: center; justify-content: center; flex: 1; height: 44px; border: 2px solid {{c.line}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"></polygon><rect x="17.5" y="5" width="2.5" height="14"></rect></svg></span>
+    </span>
+    <span style="display: flex; gap: 8px">
+      <span style="display: flex; align-items: center; justify-content: center; flex: 1; height: 44px; border: 2px solid {{c.line}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 6h16M4 12h16M4 18h10"></path></svg></span>
+      <span style="display: flex; align-items: center; justify-content: center; flex: 1; height: 44px; border: 2px solid {{c.line}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"></path></svg></span>
+    </span>
+  </div>
+  <div style="width: 200px; height: 200px; flex-shrink: 0; background: {{c.surface2}}; border: 2px solid {{c.line}}; display: flex; align-items: center; justify-content: center; color: {{c.dim}}; font-size: 12px; font-weight: 600; letter-spacing: 0.12em">VIDEO YOUTUBE</div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"musica":{"editor":"enum","options":["suona","pausa","ferma","errore"],"default":"suona"},"titolo":{"editor":"text","default":"Randori"},"sotto":{"editor":"text","default":"Playlist YouTube"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":230}}'>
+// PROPOSTA «YouTube accanto ai comandi» (non ancora nell'app): la barra della musica del telefono quando suona YouTube. Il video
+// (200x200, il minimo che YouTube vuole visibile) sta a destra, DENTRO la barra, e i comandi gli stanno accanto in una colonna
+// larga quanto resta (circa 125px a 390): il brano, ▶/⏸ largo, ⏮ ⏭, ☰ ✕, tutti alti 44px. Niente volume: YouTube non lo da' (come
+// in MusicaTelefono). La barra e' alta 226px invece dei circa 340 di video + MusicaTelefono: il timer sopra guadagna circa 115px.
+// musica: come MusicaTelefono (ferma: ▶ verde e «Tocca ▶ per farla partire»; errore: sotto in rosso e ▶ normale).
+const T = {
+  scuro: { bg: '#121212', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', dim: '#8c8c88', verde: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212' },
+  chiaro: { bg: '#f4f4f1', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', dim: '#656561', verde: '#12913f', rossoTesto: '#b81d1d', suColore: '#121212' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const m = ['suona', 'pausa', 'ferma', 'errore'].includes(p.musica) ? p.musica : 'suona';
+    const ferma = m === 'ferma';
+    const errore = m === 'errore';
+    return {
+      c, titolo: p.titolo ?? 'Randori',
+      sotto: errore ? 'YouTube non si carica: controlla la rete.' : ferma ? 'Tocca ▶ per farla partire' : (p.sotto ?? 'Playlist YouTube'),
+      coloreSotto: errore ? c.rossoTesto : c.dim,
+      inRiproduzione: m === 'suona', inPausa: m !== 'suona',
+      bordoPlay: ferma ? c.verde : c.line, fondoPlay: ferma ? c.verde : 'transparent', colorePlay: ferma ? c.suColore : c.text,
+    };
+  }
+}
+</script>
+
+</body>
+</html>

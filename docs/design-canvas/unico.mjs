@@ -28,6 +28,7 @@ const SEZIONI = [
   { id: 'timer-desktop', nome: 'Timer desktop · proposte', cartella: 'timer-desktop' },
   { id: 'timer-istruttori', nome: 'Timer nell\'app istruttori', cartella: 'timer-istruttori' },
   { id: 'timer-musica', nome: 'Musica nel timer istruttori', cartella: 'timer-musica' },
+  { id: 'timer-youtube', nome: 'YouTube accanto ai comandi', cartella: 'timer-youtube' },
   { id: 'certificati-online', nome: 'Certificati online', cartella: 'certificati-online' },
   { id: 'certificato-piccoli', nome: 'Certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
   { id: 'istruttore-collega', nome: 'Istruttore che insegna con te', cartella: 'istruttore-collega' },

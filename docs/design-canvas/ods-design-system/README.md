@@ -80,6 +80,7 @@ Google, e vale solo per i mockup.
 | `RiquadroPasso` | Il riquadro con titolo da 17px, righe `Titolo:cifra`, frasi e tasti (`Riquadro` di `ds.tsx`): PRIMA DI ISCRIVERTI, contatti, nucleo, il guaio sopra MANDA LA RICHIESTA |
 | `MusicaTelefono` | la barra della musica nella pagina TIMER del telefono, su due righe (brano e volume; ⏮ ▶ ⏭ ☰ ✕); `musica` suona, pausa, ferma, errore, spenta |
 | `MusicaMini` | la barra piccola della musica fuori dal TIMER, sopra la barra delle pagine: titolo, MUSICA scritto e ⏸/▶ |
+| `MusicaYoutubeTelefono` | PROPOSTA «YouTube accanto ai comandi»: con YouTube il video 200×200 dentro la barra, a destra, e i comandi in una colonna accanto |
 | `CaricaFile` | La riga di un file del modulo (`CaricaFile` di `ds.tsx`): SCEGLI o CAMBIA, file scelto in verde, errore |
 | `TavolaFirma` | Il riquadro della firma (`TavolaFirma.tsx`): vuoto con FIRMA QUI COL DITO, o firmato |
 | `FirmaSchermoIntero` | La firma a schermo intero (`FirmaSchermoIntero` in `TavolaFirma.tsx`, `.firma-intera*`): ANNULLA, nome e FATTO in cima, il riquadro con la riga a un quarto dal fondo, la frase e CANCELLA E RIFAI; `orientamento` verticale o orizzontale, `firmata` |
