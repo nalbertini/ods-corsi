@@ -1,9 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
-import type { Dati } from './dati'
+import type { Dati, IstruttoreLezione } from './dati'
 import { daSenzaIstruttore, type MiaPresenza } from './ore'
 import type { DettaglioSessione, Persona, SessioneVista, StatoPresenza } from './sala'
-import { attivitaPerMenu, mancaAttivita } from './segreteria'
+import { attivitaPerMenu, mancaAttivita, type ComePresenzaIstruttore } from './segreteria'
+import type { StatoPresenzaIstruttore } from './tablet'
 import { contiDellAppello, giornoDi, perCognome, valeIl } from './sala'
 import { Coda } from './coda'
 import type { GiaProvato, NuovaProva, PersonaTrovata } from './prove'
@@ -120,6 +121,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       else if (op.tipo === 'chiudi') await chiudiSessione(db, a)
       else if (op.tipo === 'prova') await scriviProva(db, a, b, op.args[2] as NuovaProva | null)
       else if (op.tipo === 'togliProva') await togliProva(db, a, b)
+      else if (op.tipo === 'collega') await scriviCollega(db, a, b, op.args[2] as boolean)
     } catch (e) {
       if (definitivo(e)) {
         // Scartata: riprovarla non cambierebbe niente.
@@ -359,6 +361,35 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       coda.accoda(`segna:${sessioneId}:${personaId}`, 'segna', [sessioneId, personaId, null])
     },
 
+    async istruttoriLezione(sessioneId) {
+      const { data, error } = await db.rpc('istruttori_lezione', { sessione: sessioneId })
+      // Senza 46-istruttore-collega.sql la parte ISTRUTTORI non c'è, e l'appello va come prima.
+      if (error && (error.code === 'PGRST202' || error.code === '42883')) return []
+      if (error) throw error
+      // supabase-js non conosce il tipo di ritorno della funzione: lo dice questa riga.
+      const righe = (data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; stato: StatoPresenzaIstruttore | null; come: ComePresenzaIstruttore | null; segnata_da: string | null }>
+      const elenco: IstruttoreLezione[] = righe.map((r) => ({
+        id: r.persona_id,
+        nome: `${r.nome} ${r.cognome}`.trim(),
+        stato: r.stato ?? undefined,
+        come: r.come ?? undefined,
+        segnataDa: r.segnata_da ?? undefined,
+      }))
+      // Quello ancora in coda, come per gli iscritti: un collega segnato senza rete resta segnato riaprendo.
+      for (const op of coda.operazioni) {
+        const [s, chi, presente] = op.args as [string, string, boolean]
+        const x = op.tipo === 'collega' && s === sessioneId ? elenco.find((i) => i.id === chi) : undefined
+        if (!x || (x.come && x.come !== 'collega')) continue
+        Object.assign(x, presente ? { stato: 'confermata', come: 'collega' } : { stato: undefined, come: undefined })
+      }
+      return elenco
+    },
+
+    async segnaCollega(sessioneId, personaId, presente) {
+      // Una chiave per lezione e persona: segnato e tolto senza rete diventa una scrittura sola.
+      coda.accoda(`collega:${sessioneId}:${personaId}`, 'collega', [sessioneId, personaId, presente])
+    },
+
     guardaCoda: (f) => coda.guarda(f),
     guardaScartate: (f) => {
       chiScarta.add(f)
@@ -403,6 +434,12 @@ async function scriviTutti(db: SupabaseClient, sessioneId: string, stato: StatoP
     iscritti.map((p) => ({ sessione_id: sessioneId, persona_id: p.id, stato })),
     { onConflict: 'sessione_id,persona_id' },
   )
+  if (error) throw error
+}
+
+/** Segna o toglie il collega: «gia» (aveva già una presenza) non è un errore, e non va fra le rifiutate. */
+async function scriviCollega(db: SupabaseClient, sessioneId: string, personaId: string, presente: boolean) {
+  const { error } = await db.rpc(presente ? 'segna_collega' : 'togli_collega', { sessione: sessioneId, persona: personaId })
   if (error) throw error
 }
 

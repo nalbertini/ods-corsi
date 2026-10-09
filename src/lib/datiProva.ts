@@ -195,6 +195,57 @@ export function istruttoreDallAppello(sessioneId: string, personaId: string, sal
 /** Chi fa l'appello dall'app, in prova: l'istruttore di prova nell'area istruttori, nessuno dalla segreteria. */
 const chiFaLAppello = () => (typeof window !== 'undefined' && areaDelPercorso() === 'istruttori' ? ISTRUTTORE_PROVA.id : null)
 
+const nuovoIdPresenza = () => `pi-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+
+/**
+ * Come `segna_collega` e `togli_collega` (46-istruttore-collega.sql), stessi
+ * messaggi: chi fa l'appello ed è previsto segna un altro previsto, confermato
+ * da sé; lo toglie solo chi l'ha segnato, finché la segreteria non l'ha guardato.
+ */
+export function segnaCollegaProva(sessioneId: string, personaId: string, presente: boolean, chi: string | null) {
+  const tutte = archivio.dati.presenzeIstruttori ?? []
+  const c = tutte.find((x) => x.sessioneId === sessioneId && x.personaId === personaId)
+  if (!presente) {
+    if (!c) return
+    if (c.come !== 'collega' || c.segnataDa !== chi || c.gestitaIl) throw new Error('si toglie solo un collega segnato da te')
+    archivio.dati.presenzeIstruttori = tutte.filter((x) => x !== c)
+    archivio.salva()
+    return
+  }
+  const l = trovaLezione(sessioneId)
+  if (!l) throw new Error('lezione inesistente')
+  const io = archivio.dati.persone.find((p) => p.id === chi)
+  const previsti = comeE(l).istruttori
+  if (!io || io.ruolo === 'iscritto' || (io.ruolo === 'staff' && !io.ancheIstruttore) || !previsti.includes(io.id))
+    throw new Error('segna un collega solo chi insegna questa lezione')
+  if (comeE(l).stato === 'annullata') throw new Error('la lezione è annullata')
+  if (personaId === io.id) throw new Error("te stesso ti segna l'appello")
+  if (!previsti.includes(personaId)) throw new Error('si segnano solo gli istruttori previsti')
+  // Chi una presenza ce l'ha già (PIN, appello, rifiutata) resta com'è.
+  if (c) return
+  archivio.dati.presenzeIstruttori = [
+    ...tutte,
+    { id: nuovoIdPresenza(), sessioneId, personaId, stato: 'confermata', prevista: true, entratoIl: new Date().toISOString(), sala: comeE(l).sala, come: 'collega', segnataDa: io.id },
+  ]
+  archivio.salva()
+}
+
+/** Come `segna_istruttore_previsto`: la segreteria segna un previsto anche su una lezione già coperta. */
+export function segnaIstruttorePrevistoProva(sessioneId: string, personaId: string, da: string) {
+  const l = trovaLezione(sessioneId)
+  if (!l) throw new Error('lezione inesistente')
+  if (comeE(l).stato === 'annullata') throw new Error('la lezione è annullata')
+  if (!comeE(l).istruttori.includes(personaId)) throw new Error('si sceglie fra gli istruttori previsti')
+  const tutte = archivio.dati.presenzeIstruttori ?? []
+  if (tutte.some((x) => x.sessioneId === sessioneId && x.personaId === personaId)) return
+  const adesso = new Date().toISOString()
+  archivio.dati.presenzeIstruttori = [
+    ...tutte,
+    { id: nuovoIdPresenza(), sessioneId, personaId, stato: 'confermata', prevista: true, entratoIl: adesso, sala: comeE(l).sala, gestitaDa: da, gestitaIl: adesso, come: 'segreteria' },
+  ]
+  archivio.salva()
+}
+
 /** Come `lezioni_senza_istruttore` del database. */
 export function lezioniSenzaIstruttoreProva(): LezioneSenzaIstruttore[] {
   const ora = new Date()
@@ -547,6 +598,20 @@ export function creaDatiProva(): Dati {
       togliProvaDa(sessioneId, personaId)
       daAppello(sessioneId, personaId)
       salva()
+    },
+
+    async istruttoriLezione(sessioneId) {
+      const l = trovaLezione(sessioneId)
+      if (!l) return []
+      const presenze = archivio.dati.presenzeIstruttori ?? []
+      return comeE(l).istruttori.map((id) => {
+        const x = presenze.find((p) => p.sessioneId === sessioneId && p.personaId === id)
+        return { id, nome: nomeIstruttore(id), stato: x?.stato, come: x ? (x.come ?? 'pin') : undefined, segnataDa: x?.segnataDa }
+      })
+    },
+
+    async segnaCollega(sessioneId, personaId, presente) {
+      segnaCollegaProva(sessioneId, personaId, presente, chiFaLAppello())
     },
 
     async chiudi(sessioneId) {

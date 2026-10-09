@@ -6,7 +6,7 @@ import { nomeProprio } from './nomi'
 import { insegna, type RuoloPersonale } from './ruoli'
 import { contattoDopoUnione, type IndiziDoppioni } from './doppioni'
 import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, STAGIONE, type LezioneProva, type PersonaProva } from './archivioProva'
-import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, trovaLezione, type LezioneTrovata } from './datiProva'
+import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
@@ -1308,6 +1308,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
               personaId: x.personaId,
               nome: chi ? nomeDi(chi) : '—',
               previsti: comeE(l).istruttori.map(nomeIstruttore).join(', '),
+              previstiElenco: comeE(l).istruttori.map((id) => ({ id, nome: nomeIstruttore(id) })),
               sala: x.sala,
               stato: x.stato,
               prevista: x.prevista,
@@ -1315,6 +1316,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
               gestitaIl: x.gestitaIl,
               gestitaDa: x.gestitaDa,
               come: x.come ?? 'pin',
+              segnataDa: x.segnataDa ? nomeIstruttore(x.segnataDa) : undefined,
             },
           ]
         })
@@ -1338,6 +1340,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async segnaIstruttoriLezione(sessioneId, presenti) {
       // In prova chi usa la segreteria è la segreteria di prova.
       segnaIstruttoriLezioneProva(sessioneId, presenti, 'Segreteria di prova')
+    },
+
+    async segnaIstruttorePrevisto(sessioneId, personaId) {
+      segnaIstruttorePrevistoProva(sessioneId, personaId, 'Segreteria di prova')
     },
 
     async allenamenti(quanti) {

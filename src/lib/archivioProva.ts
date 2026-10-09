@@ -179,7 +179,9 @@ export interface PresenzaIstruttoreProva {
   gestitaDa?: string
   gestitaIl?: string
   /** Come è arrivata; senza, dal PIN, come le righe di prima. */
-  come?: 'pin' | 'appello' | 'segreteria'
+  come?: 'pin' | 'appello' | 'segreteria' | 'collega'
+  /** Il collega che l'ha segnata dall'appello (`come` = 'collega'). */
+  segnataDa?: string
 }
 
 // ---------------------------------------------------------------------------

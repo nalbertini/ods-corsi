@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { Dati } from '../lib/dati'
+import { righeIstruttori, type Dati, type IstruttoreLezione } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
 import { cercaNellElenco, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { Back, Cronometro } from './Icons'
@@ -206,6 +206,26 @@ export function AppelloScreen({
   }, [dati, sessioneId, giro])
 
   useEffect(ricarica, [ricarica])
+
+  // Gli istruttori della lezione, per segnare il collega che insegnava con te.
+  // Se non si leggono (niente rete, database da aggiornare) la parte non c'è.
+  const [istruttori, setIstruttori] = useState<IstruttoreLezione[]>([])
+  const [guaioIstruttore, setGuaioIstruttore] = useState<string | null>(null)
+  useEffect(() => {
+    let vivo = true
+    if (soloDi) dati.istruttoriLezione(sessioneId).then((l) => vivo && setIstruttori(l), () => {})
+    return () => {
+      vivo = false
+    }
+  }, [dati, sessioneId, soloDi, giro])
+  const toccaIstruttore = (id: string, presente: boolean) => {
+    setGuaioIstruttore(null)
+    setIstruttori((v) => v.map((x) => (x.id === id ? (presente ? { ...x, stato: 'confermata', come: 'collega', segnataDa: soloDi } : { ...x, stato: undefined, come: undefined, segnataDa: undefined }) : x)))
+    dati.segnaCollega(sessioneId, id, presente).catch((e: unknown) => {
+      setGuaioIstruttore(e instanceof Error && e.message ? `Non l’ho segnato: ${e.message}.` : 'Non l’ho segnato: riprova.')
+      setGiro((g) => g + 1)
+    })
+  }
 
   const presenti = d?.elenco.filter((p) => p.stato === 'presente').length
   const presentiProve = d?.elenco.filter((p) => p.prova && p.stato === 'presente').length ?? 0
@@ -547,6 +567,42 @@ export function AppelloScreen({
           + AGGIUNGI CHI PROVA
         </button>
       </div>
+
+      {righeIstruttori(istruttori, soloDi).length > 0 && (
+        <>
+          <div className="rule">
+            <span className="rule-label">ISTRUTTORI</span>
+            <div className="rule-line" />
+            <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{istruttori.length}</span>
+          </div>
+          <p className="pad appello-aiuto">
+            {righeIstruttori(istruttori, soloDi).some((x) => x.tocco === 'togli')
+              ? 'Un altro tocco lo toglie, finché la segreteria non l’ha guardato.'
+              : 'Chi insegnava con te e non si è segnato: un tocco e risulta presente.'}
+          </p>
+          {guaioIstruttore && (
+            <p className="pad" role="alert" style={{ margin: '0 0 8px', fontSize: 14, color: 'var(--rosso-testo)' }}>
+              {guaioIstruttore}
+            </p>
+          )}
+          <div className="pad elenco-appello">
+            {righeIstruttori(istruttori, soloDi).map((x) => (
+              <button
+                key={x.id}
+                type="button"
+                className="riga-appello"
+                data-stato={x.segnato ? 'presente' : 'niente'}
+                disabled={!x.tocco}
+                onClick={() => x.tocco && toccaIstruttore(x.id, x.tocco === 'segna')}
+                aria-label={`${x.nome}${x.tu ? ', tu' : ''}: ${x.segnato ? 'presente' : 'non segnato'}`}
+              >
+                <span className="segno" aria-hidden="true">{x.segnato ? '✓' : ''}</span>
+                <span className="nome-appello grow">{x.tu ? `${x.nome} · tu` : x.nome}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {onChiudi && (
         <div className="pad stack appello-fine" ref={fine}>

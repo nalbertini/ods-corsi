@@ -121,6 +121,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
   [/ricevute|emetti_ricevuta/, 'Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql'],
   [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
+  [/segna_istruttore_previsto/, 'Segnare un istruttore su una lezione già coperta non è ancora attivo sul database: va lanciato 46-istruttore-collega.sql'],
   [/lezioni_senza_istruttore|segna_istruttori_lezione/, 'Le lezioni tenute da confermare non sono ancora attive sul database: va lanciato 23-istruttori-dalle-lezioni.sql'],
   [/presenze_istruttori/, 'Le presenze degli istruttori non sono ancora attive sul database: va lanciato 15-presenze-istruttori.sql'],
 ]
@@ -1359,6 +1360,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         entrato_il: string
         gestita_il: string | null
         come?: ComePresenzaIstruttore
+        segnata_da?: string | null
         sessioni: {
           corso_id: string
           inizio: string
@@ -1372,11 +1374,20 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         postazioni: { sale: { nome: string } | null } | null
       }>
       const chi = await insegnanti([...new Set(righe.flatMap((r) => (r.sessioni ? [r.sessioni.corso_id] : [])))])
+      // Chi ha segnato un collega dall'appello: `segnata_da` c'è solo dopo 46-istruttore-collega.sql, e con `*` si legge lo stesso.
+      const daSegnatori = [...new Set(righe.flatMap((r) => (r.segnata_da ? [r.segnata_da] : [])))]
+      const segnatori = new Map(
+        daSegnatori.length
+          ? (ok(await db.from('persone').select('id, nome, cognome').in('id', daSegnatori)) as Array<{ id: string; nome: string; cognome: string }>).map((p) => [p.id, nome(p)])
+          : [],
+      )
       return righe.flatMap((r): PresenzaIstruttoreSeg[] => {
         const s = r.sessioni
         if (!s) return []
         // Chi doveva farla, come nella settimana: il sostituto, o chi insegna il corso.
         const sostituto = s.istruttore_id && s.istruttore_id !== s.corsi?.istruttore_id
+        const delCorso = chi.get(s.corso_id) ?? []
+        const previstiElenco = sostituto || !delCorso.length ? (s.istruttore_id ? [{ id: s.istruttore_id, nome: nome(s.persone) }] : []) : delCorso
         return [
           {
             id: r.id,
@@ -1395,6 +1406,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             gestitaIl: r.gestita_il ?? undefined,
             gestitaDa: r.gestore ? nome(r.gestore) : undefined,
             come: r.come ?? 'pin',
+            segnataDa: r.segnata_da ? segnatori.get(r.segnata_da) : undefined,
+            previstiElenco,
           },
         ]
       })
@@ -1498,6 +1511,10 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async segnaIstruttoriLezione(sessioneId, presenti) {
       ok(await db.rpc('segna_istruttori_lezione', { sessione: sessioneId, presenti }))
+    },
+
+    async segnaIstruttorePrevisto(sessioneId, personaId) {
+      ok(await db.rpc('segna_istruttore_previsto', { sessione: sessioneId, persona: personaId }))
     },
 
     async allenamenti(quanti) {
