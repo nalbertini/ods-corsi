@@ -3048,6 +3048,11 @@ const valore = async (f) => { try { return await f() } catch (e) { return `ERROR
     [['Bambini (tel.)', 'Tatami', undefined], ['Randori (tel.)', 'Lotta', 'judo'], ['Riscaldamento (tel.)', null, 'tutte']])
   ok('prova: il filtro per categoria, come sul tablet', Array.isArray(liste) ? nomi(m.dellaDisciplina(liste, 'judo')) : liste, ['Randori (tel.)', 'Riscaldamento (tel.)'])
   ok('prova: leggere le liste non cambia l\'archivio', JSON.stringify(m.archivio.dati) === prima, true)
+  // Una categoria tolta dalla segreteria: il database la ripulisce, la prova deve fare lo stesso.
+  const tolta = m.archivio.dati.musica.find((l) => l.nome === 'Bambini (tel.)')
+  tolta.disciplina = 'karate'
+  const conTolta = await valore(async () => (await app.listeMusica()).find((l) => l.nome === 'Bambini (tel.)')?.disciplina)
+  ok('prova: una categoria che non c\'è più si toglie, come col database', conTolta, undefined)
   for (const id of [id1, id2, id3]) await s.togliListaMusica(id)
 }
 

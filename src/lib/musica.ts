@@ -169,3 +169,24 @@ export function rigaLista(
   ]
   return { spenta: false, sotto: pezzi.filter(Boolean).join(' · ') }
 }
+
+export type AzioneMusica = 'scegli' | 'spegni' | 'accendi' | 'ferma' | 'suona'
+
+/**
+ * Cosa fa un tasto della musica: se la musica è partita, se va messa in pausa
+ * e cosa ricordare dello spento (assente: resta com'era). Accesa non vuol dire
+ * partita: dopo ACCENDI si tocca ▶ o una lista.
+ */
+export function azioneMusica(a: AzioneMusica): { parti: boolean; pausa: boolean; spenta?: boolean } {
+  switch (a) {
+    case 'scegli':
+    case 'suona':
+      return { parti: true, pausa: false }
+    case 'spegni':
+      return { parti: false, pausa: true, spenta: true }
+    case 'accendi':
+      return { parti: false, pausa: false, spenta: false }
+    case 'ferma':
+      return { parti: false, pausa: true }
+  }
+}

@@ -143,7 +143,6 @@ export function incorporatoIstruttori({
   ferma,
   onStato = () => {},
   onSettings = () => {},
-  scheda = 'timer',
 }: {
   lezione: Lezione | null
   musica: Incorporato['musica']
@@ -151,8 +150,18 @@ export function incorporatoIstruttori({
   ferma: number
   onStato?: (s: StatoTimer | null) => void
   onSettings?: Incorporato['onSettings']
-  /** Le impostazioni (la musica: Spotify, i file) si aprono dal tasto accanto al titolo TIMER. */
-  scheda?: Incorporato['scheda']
 }): Incorporato {
-  return { lezione, musica, sala: null, clip: null, visibile, conImpostazioni: true, scheda, senzaTestata: true, ferma, onStato, onSettings }
+  // La scheda (TIMER o IMPOSTAZIONI) la sceglie PaginaTimer, col tasto accanto al titolo.
+  return { lezione, musica, sala: null, clip: null, visibile, conImpostazioni: true, senzaTestata: true, ferma, onStato, onSettings }
+}
+
+/** ESCI ferma la musica prima di uscire: Spotify suonerebbe ancora nella sua app. Senza ESCI, niente tasto. */
+export function esciConMusica(ferma: () => void, esci: (() => void) | undefined): (() => void) | undefined {
+  return (
+    esci &&
+    (() => {
+      ferma()
+      esci()
+    })
+  )
 }

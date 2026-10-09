@@ -162,5 +162,13 @@ ok('telefono: YouTube dice che col telefono bloccato si ferma', riga(listaYt, 't
 ok('telefono: Spotify collegato', riga(listaSp, 'telefono', true), [false, 'Playlist Spotify'])
 ok('telefono: radio', riga(listaRadio, 'telefono', false), [false, 'Radio'])
 
+console.log('\nCosa fanno i tasti della musica: cosa si ricorda e se la musica è partita')
+const az = (a) => piano(vedi(() => L.azioneMusica(a)))
+ok('una lista toccata: parte, e non si ricorda niente sullo spento', az('scegli'), piano({ parti: true, pausa: false }))
+ok('✕: pausa, si ricorda spenta, non è più partita', az('spegni'), piano({ parti: false, pausa: true, spenta: true }))
+ok('ACCENDI: si ricorda accesa, ma non parte da sola', az('accendi'), piano({ parti: false, pausa: false, spenta: false }))
+ok('ESCI: pausa e non più partita, lo spento resta com\'era', az('ferma'), piano({ parti: false, pausa: true }))
+ok('il lettore suona: è partita', az('suona'), piano({ parti: true, pausa: false }))
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

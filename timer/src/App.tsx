@@ -179,6 +179,7 @@ export default function App({ incorporato }: { incorporato?: Incorporato } = {})
   const voci = comandata ? 1 : schede.length
   useEffect(() => {
     if (comandata) vaiA(comandata)
+    // Si segue solo il cambio di scheda chiesto da fuori: vaiA cambia a ogni render ma fa sempre lo stesso.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [comandata])
   // Letto una volta all'apertura: è la fotografia di com'era quando l'app è morta.

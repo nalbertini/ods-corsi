@@ -152,5 +152,14 @@ ok(
   ok('il timer del telefono suona la musica scelta sul telefono', inc?.musica, musica)
 }
 
+// ESCI ferma la musica, prima di uscire: anche quella che suona nell'app di Spotify.
+{
+  const fatto = []
+  const esci = vedi(() => m.esciConMusica(() => fatto.push('ferma'), () => fatto.push('esci')))
+  if (typeof esci === 'function') esci()
+  ok('ESCI: prima si ferma la musica, poi si esce', fatto, ['ferma', 'esci'])
+  ok('senza ESCI (prova senza account): niente tasto', vedi(() => m.esciConMusica(() => fatto.push('ferma'), undefined)), undefined)
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

@@ -8,10 +8,11 @@ import { leggiLinkSpotify, suonaLista } from '../../timer/src/lib/spotify'
 import { PlayerYoutube, PostoPlayer } from '../../timer/src/components/PlayerYoutube'
 import { PlayerAudio } from '../../timer/src/components/PlayerAudio'
 import type { Dati } from '../lib/dati'
-import { fonteDelLink, listaRicordata, musicaScelta, ricordaLista, ricordaSpenta, spentaRicordata, statoMusica, type ListaMusica, type StatoMusica } from '../lib/musica'
+import { azioneMusica, fonteDelLink, listaRicordata, musicaScelta, type AzioneMusica, ricordaLista, ricordaSpenta, spentaRicordata, statoMusica, type ListaMusica, type StatoMusica } from '../lib/musica'
 import { avvisoSenzaRete, statoStriscia, type PaginaIstruttori } from '../lib/timerIstruttori'
 import { MusicaSala } from './tablet/MusicaSala'
-import { Back } from './Icons'
+import { Back, Nota } from './Icons'
+import { Gear, Pause, Play } from '../../timer/src/components/Icons'
 
 /**
  * Il timer dentro l'app degli istruttori: la navigazione, la striscia
@@ -145,7 +146,7 @@ export function PaginaTimer({
           {impostazioni ? 'IMPOSTAZIONI' : 'TIMER'}
         </h1>
         <button type="button" className="icon-btn testo" onClick={() => setImpostazioni((x) => !x)} aria-pressed={impostazioni} style={{ gap: 6 }}>
-          {impostazioni ? <Back /> : <Ingranaggio />}
+          {impostazioni ? <Back /> : <Gear />}
           <span className="num" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.12em' }}>{impostazioni ? 'TIMER' : 'IMPOSTAZIONI'}</span>
         </button>
       </div>
@@ -195,8 +196,19 @@ export function useMusicaTelefono(d: Dati | null): MusicaTelefono {
   const [liste, setListe] = useState<ListaMusica[]>([])
   useEffect(() => {
     if (!d) return
-    // Senza rete restano quelle che c'erano: la musica delle impostazioni c'è sempre.
-    d.listeMusica().then(setListe, () => {})
+    // Senza rete restano quelle che c'erano (la musica delle impostazioni c'è sempre):
+    // si rileggono quando la rete torna o il telefono torna in primo piano.
+    const leggi = () => void d.listeMusica().then(setListe, () => {})
+    const torna = () => {
+      if (document.visibilityState === 'visible') leggi()
+    }
+    leggi()
+    window.addEventListener('online', leggi)
+    document.addEventListener('visibilitychange', torna)
+    return () => {
+      window.removeEventListener('online', leggi)
+      document.removeEventListener('visibilitychange', torna)
+    }
   }, [d])
   const [settings, setSettings] = useState<Settings>(() => loadSettings())
   // Le impostazioni cambiano nella scheda IMPOSTAZIONI del timer (arrivano da `onSettings`), o nell'altra app sullo stesso telefono.
@@ -225,8 +237,18 @@ export function useMusicaTelefono(d: Dati | null): MusicaTelefono {
   const musica = useMusica(conScelta)
   const spotify = useSpotify()
   const suonando = musica.lettore?.inRiproduzione ?? false
+  // I tasti dicono cosa ricordare e se la musica è partita (vedi `azioneMusica`).
+  const fa = (a: AzioneMusica) => {
+    const r = azioneMusica(a)
+    if (r.pausa) void musica.comandi.pausa()
+    if (r.spenta !== undefined) {
+      ricordaSpenta('telefono', r.spenta)
+      setSpenta(r.spenta)
+    }
+    setParti(r.parti)
+  }
   useEffect(() => {
-    if (suonando) setParti(true)
+    if (suonando) setParti(azioneMusica('suona').parti)
   }, [suonando])
   const stato = statoMusica({ spenta, partita: parti, inRiproduzione: suonando })
   const conYoutube = musica.fonte === 'youtube' && musica.attiva
@@ -245,22 +267,11 @@ export function useMusicaTelefono(d: Dati | null): MusicaTelefono {
       ricordaLista('telefono', l?.id ?? null)
       const uri = l ? leggiLinkSpotify(l.link) : null
       if (uri) void suonaLista(uri)
-      setParti(true)
+      fa('scegli')
     },
-    accendi: () => {
-      ricordaSpenta('telefono', false)
-      setSpenta(false)
-    },
-    spegni: () => {
-      void musica.comandi.pausa()
-      ricordaSpenta('telefono', true)
-      setSpenta(true)
-      setParti(false)
-    },
-    ferma: () => {
-      void musica.comandi.pausa()
-      setParti(false)
-    },
+    accendi: () => fa('accendi'),
+    spegni: () => fa('spegni'),
+    ferma: () => fa('ferma'),
     conYoutube,
     onSettings: setSettings,
     // Uno solo e fermo alla radice: cambiando pagina non si ricarica.
@@ -273,27 +284,14 @@ export function useMusicaTelefono(d: Dati | null): MusicaTelefono {
   }
 }
 
-const Ingranaggio = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
-  </svg>
-)
-
-const Nota = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M9 18V5l12-2v13" />
-    <circle cx="6" cy="18" r="3" />
-    <circle cx="18" cy="16" r="3" />
-  </svg>
-)
-
 /**
  * La musica in fondo alla pagina TIMER del telefono: spenta resta solo
  * ACCENDI LA MUSICA; accesa la barra del tablet su due righe, e sopra il
  * riquadro di YouTube, che vuole che il video si veda.
  */
 export function BarraMusicaTelefono({ m }: { m: MusicaTelefono }) {
+  // Le categorie come le ha viste il timer di questo telefono: servono solo al filtro delle liste.
+  const discipline = useMemo(loadDiscipline, [])
   if (!m.attiva) return null
   return (
     <div className="musica-telefono">
@@ -308,7 +306,7 @@ export function BarraMusicaTelefono({ m }: { m: MusicaTelefono }) {
           className="btn btn-ghost musica-accendi"
           onClick={m.accendi}
         >
-          <Nota />
+          <Nota size={22} />
           <span className="ob">ACCENDI LA MUSICA</span>
         </button>
       ) : (
@@ -319,7 +317,7 @@ export function BarraMusicaTelefono({ m }: { m: MusicaTelefono }) {
           spotifyCollegato={m.spotifyCollegato}
           onScegli={m.scegli}
           onSpegni={m.spegni}
-          discipline={loadDiscipline()}
+          discipline={discipline}
           dispositivo="telefono"
           stato={m.stato}
         />
@@ -339,7 +337,7 @@ export function MusicaMini({ m, onApri }: { m: MusicaTelefono; onApri: () => voi
   return (
     <div className="musica-mini">
       <button type="button" className="musica-mini-apri" onClick={onApri} aria-label={`Torna al timer: musica, ${titolo}`}>
-        <Nota />
+        <Nota size={22} />
         <span className="stack" style={{ gap: 1, minWidth: 0 }}>
           <span className="musica-mini-titolo">{titolo}</span>
           <span className="num musica-mini-stato">{suona ? 'MUSICA' : 'MUSICA IN PAUSA'}</span>
@@ -351,16 +349,7 @@ export function MusicaMini({ m, onApri }: { m: MusicaTelefono; onApri: () => voi
         onClick={() => void (suona ? m.musica.comandi.pausa() : m.musica.comandi.suona())}
         aria-label={suona ? 'Metti in pausa la musica' : 'Fai partire la musica'}
       >
-        {suona ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <rect x="6" y="4" width="4" height="16" />
-            <rect x="14" y="4" width="4" height="16" />
-          </svg>
-        ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <polygon points="6 3 21 12 6 21 6 3" />
-          </svg>
-        )}
+        {suona ? <Pause size={18} /> : <Play size={18} />}
       </button>
     </div>
   )

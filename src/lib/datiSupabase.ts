@@ -257,6 +257,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       if (r.error?.code === '42P01' || r.error?.code === 'PGRST205') return []
       if (r.error) throw r.error
       const d = await db.from('impostazioni').select('discipline').maybeSingle()
+      // Senza i tipi generati di supabase-js le righe arrivano senza forma: la si dice qui, come nel resto del file.
       const discipline = disciplineDa(d.error ? null : (d.data as { discipline?: unknown } | null)?.discipline)
       return ((r.data ?? []) as Riga[]).map((x) => {
         const disciplina = ripulisciDisciplina(x.disciplina, discipline)

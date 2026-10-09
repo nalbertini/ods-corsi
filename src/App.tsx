@@ -21,7 +21,7 @@ import { ARRIVO } from './lib/invito'
 import { ISTRUTTORE_PROVA, dati as caricaDati, haUnServer, inProvaScelta, scegliProva, type Dati } from './lib/dati'
 import { flussoNuovoAcceso } from './lib/passiIscrizione'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
-import { chiediPrimaDiSostituire, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, timerAperto, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
+import { chiediPrimaDiSostituire, esciConMusica, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, timerAperto, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
 import type { Incorporato, StatoTimer } from '../timer/src/lib/incorporato'
 import { oraDi, type SessioneVista } from './lib/sala'
 
@@ -256,6 +256,7 @@ function Istruttori() {
   // La musica del telefono: le liste della segreteria e la barra nella pagina TIMER.
   const [d, setD] = useState<Dati | null>(null)
   useEffect(() => {
+    // Senza dati non ci sono liste, ma la musica delle impostazioni del timer suona lo stesso.
     caricaDati().then(setD, () => {})
   }, [])
   const musica = useMusicaTelefono(d)
@@ -337,11 +338,7 @@ function Istruttori() {
         </div>
       )}
       dentro={(chi, esciDallaPorta) => {
-        // Uscendo la musica si ferma: anche quella che suona nell'app di Spotify.
-        const onEsci = esciDallaPorta && (() => {
-          musica.ferma()
-          esciDallaPorta()
-        })
+        const onEsci = esciConMusica(musica.ferma, esciDallaPorta)
         const mio = soloDi(chi)
         const voci = vociNavigazione({ ruolo: chi?.ruolo === 'staff' ? 'staff' : 'istruttore', ancheIstruttore: chi?.ancheIstruttore })
         // In flusso: sul telefono sotto la testata, sullo schermo largo in cima al corpo.
