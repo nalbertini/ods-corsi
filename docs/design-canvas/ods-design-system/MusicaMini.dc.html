@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 0 8px 0 20px; border-top: 2px solid {{c.lineSoft}}; background: {{c.surface}}; color: {{c.text}}">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: {{c.dim}}"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+  <span style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+    <span style="font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{titolo}}</span>
+    <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: {{c.dim}}">{{stato}}</span>
+  </span>
+  <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid {{c.line}}">
+    <sc-if value="{{suona}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></sc-if>
+    <sc-if value="{{inPausa}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></sc-if>
+  </span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"musica":{"editor":"enum","options":["suona","pausa"],"default":"suona"},"titolo":{"editor":"text","default":"Riscaldamento"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":56}}'>
+// PROPOSTA «musica nel timer istruttori» (non ancora nell'app): la barra piccola della musica fuori dalla pagina TIMER (CALENDARIO, I MIEI,
+// ORE, appello). Sta in basso, appena sopra BarraNavigazione: la striscia dell'allenamento sta in alto, cosi' le due non si confondono e
+// non si toccano. Alta 56px, fondo `surface`, bordo sopra `line-soft`: la nota, il titolo, MUSICA / IN PAUSA scritto (mai solo l'icona)
+// e un solo tasto ⏸/▶ da 44px. Toccare il resto della barra porta alla pagina TIMER, dove ci sono tutti i comandi.
+// C'e' solo quando la musica e' accesa (suona o in pausa); spenta o ferma dopo un ricaricamento non c'e'.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', dim: '#8c8c88' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', dim: '#656561' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const suona = (p.musica || 'suona') === 'suona';
+    return { c, cond: COND, suona, inPausa: !suona, titolo: p.titolo ?? 'Riscaldamento', stato: suona ? 'MUSICA' : 'MUSICA IN PAUSA' };
+  }
+}
+</script>
+</body>
+</html>

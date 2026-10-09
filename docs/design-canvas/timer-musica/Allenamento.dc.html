@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «musica nel timer istruttori»: l'allenamento in pagina con la musica che suona sotto. Con «parte e si ferma col timer» acceso, AVVIA e PAUSA del timer comandano anche lei, ma solo se e' accesa. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212">
+  <dc-import name="Testata" luogo="ISTRUTTORI" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column; flex-grow: 1">
+    <dc-import name="TimerAllenamento" altezza="560px" hint-size="100%,560px"></dc-import>
+  </main>
+  <dc-import name="MusicaTelefono" musica="suona" hint-size="100%,140px"></dc-import>
+  <dc-import name="BarraNavigazione" voci="CALENDARIO|TIMER|I MIEI|ORE" attiva="TIMER" hint-size="100%,66px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>
