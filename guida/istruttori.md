@@ -289,7 +289,9 @@ tablet di sala, da far uscire da una cassa bluetooth collegata al telefono. Part
 spenta: toccate **ACCENDI LA MUSICA**. Con **☰** scegliete fra le liste che ha
 preparato la segreteria (tutte, col filtro per categoria): un tocco e parte.
 Quelle che il telefono non sa suonare sono spente e dicono perché. Le liste
-YouTube si fermano se bloccate il telefono: YouTube vuole che il video si veda.
+YouTube si fermano se bloccate il telefono: YouTube vuole che il video si veda,
+e fuori dal **TIMER** il video sta in un angolo in basso; scorrendo, la pagina
+lascia libero quello che c'è sotto.
 Sotto il brano ci sono il volume, **⏮ ▶ ⏭** e **✕**, che la spegne.
 
 Una volta accesa, la musica segue le impostazioni del timer: parte e si ferma
@@ -299,7 +301,8 @@ piccola col titolo e **⏸**; toccandola tornate al timer. Dopo un ricaricamento
 non riparte da sola: toccate **▶**. Con **ESCI** si ferma.
 
 Spotify si collega e i file del telefono si scelgono da **IMPOSTAZIONI**,
-accanto al titolo **TIMER**, nella parte Musica. Quello che scegliete lì e la
+accanto al titolo **TIMER**, nella parte Musica (con un allenamento aperto il
+tasto non c'è). Quello che scegliete lì e la
 lista che fate partire valgono solo per il vostro telefono: il tablet di sala
 non cambia.
 

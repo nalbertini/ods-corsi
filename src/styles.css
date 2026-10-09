@@ -240,7 +240,12 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .tb-musica[data-telefono] .tb-musica-riga:first-child .tb-musica-tasto { width: 44px; height: 44px; }
 .tb-musica[data-telefono] .tb-musica-suona { flex-grow: 1; }
 .tb-musica[data-ferma] .tb-musica-suona { background: var(--verde); border-color: var(--verde); color: var(--su-colore); }
-.musica-telefono .tb-liste { left: 0; right: 0; bottom: 100%; width: auto; max-width: none; max-height: 70vh; border-width: 2px 0 0; }
+/* Il pannello ☰ sale dalle due righe dei comandi, non dal video sopra: così resta nello schermo e scorre. */
+.tb-musica[data-telefono] { position: relative; }
+.musica-telefono .tb-liste { left: 0; right: 0; bottom: calc(100% + 10px); width: auto; max-width: none; max-height: min(60vh, calc(100dvh - 320px)); overflow-y: auto; }
+.tasto-impostazioni-testo { font-size: 15px; font-weight: 700; letter-spacing: 0.12em; }
+/* A 320px titolo, APPELLO e IMPOSTAZIONI non stanno: resta l'ingranaggio (il nome lo dice aria-label). */
+@media (max-width: 380px) { .tasto-impostazioni-testo { display: none; } }
 /* La barra piccola della musica, fuori dal TIMER: sopra la barra delle pagine, lontana dalla striscia in alto. */
 .musica-mini { display: flex; align-items: center; flex-shrink: 0; min-height: 56px; padding-right: 8px; border-top: 2px solid var(--line-soft); background: var(--surface); }
 .sg-corpo .musica-mini { position: sticky; bottom: 0; margin-top: auto; }

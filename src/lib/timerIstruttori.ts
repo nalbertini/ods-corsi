@@ -165,3 +165,28 @@ export function esciConMusica(ferma: () => void, esci: (() => void) | undefined)
     })
   )
 }
+
+/**
+ * YouTube fuori dal TIMER: suonando, il lettore resta visibile in un angolo
+ * (nascosto smetterebbe) e le pagine fanno spazio sotto, così non copre CHIUDI
+ * né i nomi. Fermo o spento non serve: niente riquadro.
+ */
+export function youtubeNellAngolo({ stato, pagina, youtube }: { stato: StatoMusica; pagina: PaginaIstruttori; youtube: boolean }): boolean {
+  return youtube && pagina !== 'timer' && (stato === 'suona' || stato === 'pausa')
+}
+
+/** Il lettore di YouTube c'è nel TIMER (il video ha il suo posto) o nell'angolo mentre suona. */
+export function lettoreYoutube(m: { stato: StatoMusica; pagina: PaginaIstruttori; youtube: boolean }): boolean {
+  return m.youtube && m.stato !== 'spenta' && (m.pagina === 'timer' || youtubeNellAngolo(m))
+}
+
+/** Lo spazio sotto le pagine quando YouTube sta nell'angolo: il riquadro (200) e il suo margine (12). */
+export const SPAZIO_YOUTUBE = 212
+
+/**
+ * Il tasto IMPOSTAZIONI c'è solo senza un allenamento aperto: il timer lo
+ * mostrerebbe sopra le impostazioni, e il titolo direbbe una cosa che non si vede.
+ */
+export function tastoImpostazioni(status: Status | null): boolean {
+  return status === null || status === 'idle'
+}
