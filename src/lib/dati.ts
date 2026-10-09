@@ -3,6 +3,7 @@ import type { ChiProva, GiaProvato, PersonaTrovata } from './prove'
 import type { SegnalataVista } from './segnalate'
 import type { MiaPresenza } from './ore'
 import type { LezioneSenzaIstruttore } from './segreteria'
+import type { ListaMusica } from './musica'
 
 /**
  * Da dove arrivano corsi, lezioni e presenze.
@@ -20,6 +21,8 @@ export interface Dati {
   dettaglio(sessioneId: string): Promise<DettaglioSessione | null>
   /** Le attività in uso, in ordine, da offrire per una lezione. L'elenco lo scrive solo la segreteria. */
   attivita(): Promise<Array<{ id: string; nome: string }>>
+  /** Le liste della musica preparate dalla segreteria, tutte: il telefono non sta in una sala. */
+  listeMusica(): Promise<ListaMusica[]>
   /** Cosa si fa in una sua lezione; `null` per nessuna attività. */
   cambiaAttivita(sessioneId: string, attivitaId: string | null): Promise<void>
   /** `null` toglie il segno: serve a correggere un tocco sbagliato. */

@@ -481,6 +481,10 @@ export function creaDatiProva(): Dati {
       return attivitaPerMenu(archivio.dati.attivita ?? []).map(({ id, nome }) => ({ id, nome }))
     },
 
+    async listeMusica() {
+      return (archivio.dati.musica ?? []).map((l) => ({ id: l.id, nome: l.nome, link: l.link, salaId: l.sala, ...(l.disciplina ? { disciplina: l.disciplina } : {}) }))
+    },
+
     async cambiaAttivita(sessioneId, attivitaId) {
       const t = trovaLezione(sessioneId)
       if (!t) throw new Error('Lezione inesistente')

@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { dellaDisciplina } from './timer/src/lib/discipline'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -3029,6 +3029,64 @@ console.log('\nl’«Attività» con un database senza 41-attivita.sql: la segre
     await m.creaSegreteriaSupabase(scrive(true, scritti)).salvaListaMusica({ id: 'l1', nome: 'Randori', link: yt, salaId: null, disciplina: null })
     ok('con la colonna, nulla toglie la disciplina (null nella riga)', scritti.map((r) => r.disciplina), [null])
   }
+}
+
+// Le liste della musica nel timer dell'app istruttori: TUTTE quelle della
+// segreteria (il telefono non sta in una sala), col filtro per categoria.
+// `errore` dà solo il messaggio: qui serve il valore, o l'errore se c'è.
+const valore = async (f) => { try { return await f() } catch (e) { return `ERRORE: ${e.message}` } }
+{
+  const yt = (n) => `https://www.youtube.com/playlist?list=PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPbo${n}Z`
+  const id1 = await s.salvaListaMusica({ nome: 'Randori (tel.)', link: yt(1), salaId: 'Lotta', disciplina: 'judo' })
+  const id2 = await s.salvaListaMusica({ nome: 'Bambini (tel.)', link: yt(2), salaId: 'Tatami' })
+  const id3 = await s.salvaListaMusica({ nome: 'Riscaldamento (tel.)', link: yt(3), salaId: null, disciplina: 'tutte' })
+  const prima = JSON.stringify(m.archivio.dati)
+  const liste = await valore(async () => (await app.listeMusica()).filter((l) => l.nome.endsWith('(tel.)')))
+  const nomi = (x) => (Array.isArray(x) ? x.map((l) => l.nome).sort() : x)
+  ok('prova: il telefono vede le liste di tutte le sale, come la segreteria', nomi(liste), ['Bambini (tel.)', 'Randori (tel.)', 'Riscaldamento (tel.)'])
+  ok('prova: ogni lista ha sala e categoria', Array.isArray(liste) ? liste.map((l) => [l.nome, l.salaId, l.disciplina]).sort() : liste,
+    [['Bambini (tel.)', 'Tatami', undefined], ['Randori (tel.)', 'Lotta', 'judo'], ['Riscaldamento (tel.)', null, 'tutte']])
+  ok('prova: il filtro per categoria, come sul tablet', Array.isArray(liste) ? nomi(m.dellaDisciplina(liste, 'judo')) : liste, ['Randori (tel.)', 'Riscaldamento (tel.)'])
+  ok('prova: leggere le liste non cambia l\'archivio', JSON.stringify(m.archivio.dati) === prima, true)
+  for (const id of [id1, id2, id3]) await s.togliListaMusica(id)
+}
+
+// Lo stesso col database, finto: la tabella o la colonna disciplina possono mancare.
+{
+  const righe = [{ id: 'l1', nome: 'Randori', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: 'Lotta', disciplina: 'judo' }, { id: 'l2', nome: 'Varie', link: 'https://youtu.be/dQw4w9WgXcQ', sala_id: null, disciplina: null }]
+  const scritture = []
+  const finto = ({ tabella, colonna, codice = '42P01' }) => {
+    const risposta = (tab, cols) => {
+      if (tab === 'impostazioni') return { data: { discipline: [{ id: 'judo', nome: 'Judo' }] }, error: null }
+      if (tab !== 'musica_sale') return { data: [], error: null }
+      if (!tabella) return { data: null, error: { code: codice, message: 'relation "musica_sale" does not exist' } }
+      if (/disciplina/.test(cols) && !colonna) return { data: null, error: { code: '42703', message: 'column musica_sale.disciplina does not exist' } }
+      return { data: righe.map(({ disciplina, ...r }) => (/disciplina/.test(cols) ? { ...r, disciplina } : r)), error: null }
+    }
+    const catena = (tab, cols) => {
+      const c = new Proxy(() => c, {
+        get: (_, k) =>
+          k === 'then' ? (f, ko) => Promise.resolve(risposta(tab, cols)).then(f, ko)
+          : k === 'single' || k === 'maybeSingle' ? async () => risposta(tab, cols)
+          : () => c,
+        apply: () => c,
+      })
+      return c
+    }
+    const scrive = (tab) => () => { scritture.push(tab); return catena(tab, '') }
+    return {
+      from: (tab) => ({ select: (cols = '*') => catena(tab, cols), insert: scrive(tab), update: scrive(tab), upsert: scrive(tab), delete: scrive(tab) }),
+      rpc: async (nome) => (nome === 'musica_sala' ? { data: null, error: { code: '42501', message: 'solo il tablet' } } : { data: null, error: null }),
+    }
+  }
+  const leggi = async (o) => {
+    return valore(async () => (await m.creaDatiSupabase(finto(o)).listeMusica()).map((l) => [l.nome, l.salaId, l.disciplina]))
+  }
+  ok('database: tutte le liste, con sala e categoria', await leggi({ tabella: true, colonna: true }), [['Randori', 'Lotta', 'judo'], ['Varie', null, undefined]])
+  ok('database senza la colonna disciplina (42703): le liste, senza categoria', await leggi({ tabella: true, colonna: false }), [['Randori', 'Lotta', undefined], ['Varie', null, undefined]])
+  ok('database senza la tabella (42P01): nessuna lista, nessun errore', await leggi({ tabella: false, codice: '42P01' }), [])
+  ok('database senza la tabella (PGRST205): nessuna lista, nessun errore', await leggi({ tabella: false, codice: 'PGRST205' }), [])
+  ok('database: leggere le liste non scrive niente', scritture, [])
 }
 
 console.log('\nsotto i 6 anni il certificato non serve')
