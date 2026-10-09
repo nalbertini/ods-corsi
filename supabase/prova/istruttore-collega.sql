@@ -86,8 +86,12 @@ select atteso('non un iscritto', tenta($$select segna_collega('eeeeeeee-0000-000
 select atteso('non su una lezione dove Maura non insegna', tenta($$select segna_collega('eeeeeeee-0000-0000-0000-000000000005', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: segna un collega solo chi insegna questa lezione');
 -- Col sostituto la lezione la fa lui solo (`previsti_su`): Maura lì non è prevista.
 select atteso('non dove c''è un sostituto al suo posto', tenta($$select segna_collega('eeeeeeee-0000-0000-0000-000000000012', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: segna un collega solo chi insegna questa lezione');
+-- Dall'appello: prima la sua presenza, poi il collega. Non su una lezione di due giorni fa senza appello.
+select atteso('non prima del suo appello', tenta($$select segna_collega('eeeeeeee-0000-0000-0000-000000000013', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: prima fai l''appello: il collega si segna dopo');
 select atteso('non su una lezione annullata', tenta($$select segna_collega('eeeeeeee-0000-0000-0000-000000000011', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: la lezione è annullata');
 select atteso('né su una che non c''è', tenta($$select segna_collega('00000000-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: lezione inesistente');
+-- La chiama la coda del telefono: 23503, che la coda non riprova (P0002 la fermerebbe per sempre), come aggiungi_prova.
+do $$ begin perform segna_collega('00000000-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-000000000006'); raise exception 'nessun errore'; exception when foreign_key_violation then null; end $$;
 select atteso('e a mano nella tabella no', tenta($$insert into presenze_istruttori (sessione_id, persona_id, stato, prevista, come) values ('eeeeeeee-0000-0000-0000-000000000013', 'aaaaaaaa-0000-0000-0000-000000000006', 'confermata', true, 'collega')$$), 'NEGATO: permission denied…');
 reset role;
 select chi('44444444-4444-4444-4444-444444444444');
@@ -114,6 +118,28 @@ select atteso('senza accesso', tenta($$select segna_collega('eeeeeeee-0000-0000-
 select atteso('senza accesso, nemmeno la lettura', istruttori_di('eeeeeeee-0000-0000-0000-000000000010'), 'NEGATO: permission denied…');
 select atteso('né il togliere', tenta($$select togli_collega('eeeeeeee-0000-0000-0000-000000000010', 'aaaaaaaa-0000-0000-0000-000000000006')::text$$), 'NEGATO: permission denied…');
 reset role;
+-- Gli istruttori di una lezione li legge chi la insegna, o la segreteria: non un altro istruttore.
+select chi('44444444-4444-4444-4444-444444444444');
+set role authenticated;
+select atteso('Federico non legge gli istruttori di Kick, dove non insegna', istruttori_di('eeeeeeee-0000-0000-0000-000000000014'), 'NEGATO: gli istruttori della lezione li vede chi fa l''appello');
+reset role;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria sì', istruttori_di('eeeeeeee-0000-0000-0000-000000000010'), 'Federico confermata, Maura confermata');
+reset role;
+-- Chi l'aveva segnato non c'è più (`segnata_da` nullo): il tablet o un iscritto non la tolgono.
+insert into presenze_istruttori (sessione_id, persona_id, stato, prevista, come) values ('eeeeeeee-0000-0000-0000-000000000013', 'aaaaaaaa-0000-0000-0000-000000000006', 'confermata', true, 'collega');
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('il tablet non toglie un segno senza chi l''ha messo', tenta($$select togli_collega('eeeeeeee-0000-0000-0000-000000000013', 'aaaaaaaa-0000-0000-0000-000000000006')::text$$), 'NEGATO: si toglie solo un collega segnato da te');
+reset role;
+select chi('88888888-8888-8888-8888-888888888888');
+set role authenticated;
+select atteso('un iscritto nemmeno', tenta($$select togli_collega('eeeeeeee-0000-0000-0000-000000000013', 'aaaaaaaa-0000-0000-0000-000000000006')::text$$), 'NEGATO: si toglie solo un collega segnato da te');
+select atteso('e non scopre se c''è una presenza', tenta($$select togli_collega('eeeeeeee-0000-0000-0000-000000000014', 'aaaaaaaa-0000-0000-0000-000000000006')::text$$), 'NEGATO: si toglie solo un collega segnato da te');
+reset role;
+select atteso('la riga resta', di('eeeeeeee-0000-0000-0000-000000000013', 'aaaaaaaa-0000-0000-0000-000000000006'), 'confermata collega true');
+delete from presenze_istruttori where sessione_id = 'eeeeeeee-0000-0000-0000-000000000013';
 select atteso('nessuna riga dai rifiuti', (select count(*)::text from presenze_istruttori where sessione_id in ('eeeeeeee-0000-0000-0000-000000000005', 'eeeeeeee-0000-0000-0000-000000000011', 'eeeeeeee-0000-0000-0000-000000000012', 'eeeeeeee-0000-0000-0000-000000000014')), '0');
 
 \echo ''

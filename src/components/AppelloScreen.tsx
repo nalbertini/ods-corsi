@@ -221,11 +221,13 @@ export function AppelloScreen({
   const toccaIstruttore = (id: string, presente: boolean) => {
     setGuaioIstruttore(null)
     setIstruttori((v) => v.map((x) => (x.id === id ? (presente ? { ...x, stato: 'confermata', come: 'collega', segnataDa: soloDi } : { ...x, stato: undefined, come: undefined, segnataDa: undefined }) : x)))
-    dati.segnaCollega(sessioneId, id, presente).catch((e: unknown) => {
-      setGuaioIstruttore(e instanceof Error && e.message ? `Non l’ho segnato: ${e.message}.` : 'Non l’ho segnato: riprova.')
+    dati.segnaCollega(sessioneId, id, presente).catch(() => {
+      setGuaioIstruttore(presente ? 'Non sono riuscito a segnarlo: riprova, o dillo alla segreteria.' : 'Non si può più togliere: se è un errore, dillo alla segreteria.')
       setGiro((g) => g + 1)
     })
   }
+
+  const colleghi = righeIstruttori(istruttori, soloDi, !!d?.elenco.some((p) => p.stato !== null))
 
   const presenti = d?.elenco.filter((p) => p.stato === 'presente').length
   const presentiProve = d?.elenco.filter((p) => p.prova && p.stato === 'presente').length ?? 0
@@ -568,7 +570,7 @@ export function AppelloScreen({
         </button>
       </div>
 
-      {righeIstruttori(istruttori, soloDi).length > 0 && (
+      {colleghi.length > 0 && (
         <>
           <div className="rule">
             <span className="rule-label">ISTRUTTORI</span>
@@ -576,9 +578,13 @@ export function AppelloScreen({
             <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{istruttori.length}</span>
           </div>
           <p className="pad appello-aiuto">
-            {righeIstruttori(istruttori, soloDi).some((x) => x.tocco === 'togli')
-              ? 'Un altro tocco lo toglie, finché la segreteria non l’ha guardato.'
-              : 'Chi insegnava con te e non si è segnato: un tocco e risulta presente.'}
+            {!colleghi.some((x) => x.tu && x.segnato)
+              ? 'Comincia l’appello: poi un tocco segna chi insegnava con te.'
+              : colleghi.some((x) => x.tocco === 'segna')
+                ? 'Chi insegnava con te e non si è segnato: un tocco e risulta presente.'
+                : ''}
+            {colleghi.some((x) => x.tocco === 'togli') &&
+              ` Un altro tocco su ${colleghi.filter((x) => x.tocco === 'togli').map((x) => x.nome).join(', ')} toglie il segno, finché la segreteria non l’ha guardato.`}
           </p>
           {guaioIstruttore && (
             <p className="pad" role="alert" style={{ margin: '0 0 8px', fontSize: 14, color: 'var(--rosso-testo)' }}>
@@ -586,7 +592,7 @@ export function AppelloScreen({
             </p>
           )}
           <div className="pad elenco-appello">
-            {righeIstruttori(istruttori, soloDi).map((x) => (
+            {colleghi.map((x) => (
               <button
                 key={x.id}
                 type="button"

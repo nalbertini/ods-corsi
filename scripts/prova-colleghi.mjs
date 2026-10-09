@@ -126,15 +126,15 @@ const metti = (riga) => {
 
 console.log('\n1. chi fa l\'appello vede gli istruttori della lezione')
 {
-  await prova('prima dell\'appello nessuno è segnato', () => istruttori(OGGI_ID), [['i-maurizio', null], ['i-maura', null]])
+  await prova('prima dell\'appello nessuno è segnato', () => istruttori(OGGI_ID), [['i-maura', null], ['i-maurizio', null]])
   await app.segna(OGGI_ID, iscritto, 'presente')
-  await prova('fatto l\'appello: Maurizio sì, Maura no', () => istruttori(OGGI_ID), [['i-maurizio', 'confermata'], ['i-maura', null]])
+  await prova('fatto l\'appello: Maurizio sì, Maura no', () => istruttori(OGGI_ID), [['i-maura', null], ['i-maurizio', 'confermata']])
 }
 
 console.log('\n2. Maurizio segna Maura')
 {
   await prova('Maurizio segna Maura', () => segnaCollega(OGGI_ID, 'i-maura'), undefined)
-  await prova('e la vede segnata', () => istruttori(OGGI_ID), [['i-maurizio', 'confermata'], ['i-maura', 'confermata']])
+  await prova('e la vede segnata', () => istruttori(OGGI_ID), [['i-maura', 'confermata'], ['i-maurizio', 'confermata']])
   ok('Maura confermata, da collega, era prevista', di(OGGI_ID, 'i-maura'), 'confermata collega true')
   ok('segnata da Maurizio', righe().find((p) => p.sessioneId === OGGI_ID && p.personaId === 'i-maura')?.segnataDa, 'i-maurizio')
   ok('non è una decisione della segreteria', righe().find((p) => p.sessioneId === OGGI_ID && p.personaId === 'i-maura')?.gestitaIl ?? null, null)
@@ -154,6 +154,7 @@ console.log('\n3. chi non può, e chi non si segna')
   ok('non su una lezione dove Maurizio non insegna', await errore(() => segnaCollega('s@lotta-2@2026-09-25@17:00', 'i-maura')), 'segna un collega solo chi insegna questa lezione')
   ok('non dove c\'è un sostituto al suo posto', await errore(() => segnaCollega(SOSTITUITA, 'i-maura')), 'segna un collega solo chi insegna questa lezione')
   ok('non su una lezione annullata', await errore(() => segnaCollega(ANNULLATA, 'i-maura')), 'la lezione è annullata')
+  ok('non prima del suo appello', await errore(() => segnaCollega(COPERTA, 'i-maura')), "prima fai l'appello: il collega si segna dopo")
   ok('né su una che non c\'è', await errore(() => segnaCollega('s@niente@2026-09-26@11:30', 'i-maura')), 'lezione inesistente')
   area('segreteria')
   ok('dalla segreteria non è un collega', await errore(() => segnaCollega(OGGI_ID, 'i-maura')), 'segna un collega solo chi insegna questa lezione')
@@ -165,7 +166,7 @@ console.log('\n4. togliere il segno')
 {
   await prova('Maurizio toglie Maura, segnata da lui', () => segnaCollega(OGGI_ID, 'i-maura', false), undefined)
   ok('la riga se ne va', di(OGGI_ID, 'i-maura'), 'nessuna')
-  await prova('e non è più segnata', () => istruttori(OGGI_ID), [['i-maurizio', 'confermata'], ['i-maura', null]])
+  await prova('e non è più segnata', () => istruttori(OGGI_ID), [['i-maura', null], ['i-maurizio', 'confermata']])
   ok('toglierla di nuovo: niente', await errore(() => segnaCollega(OGGI_ID, 'i-maura', false)), 'nessun errore')
   ok('non toglie la propria presenza', await errore(() => segnaCollega(OGGI_ID, 'i-maurizio', false)), 'si toglie solo un collega segnato da te')
 
@@ -227,9 +228,12 @@ console.log('\n6. la riga di PRESENZE ISTRUTTORI')
 {
   const riga = (id, personaId, sessioneId = 's') => ({ id, personaId, sessioneId, previstiElenco: [{ id: 'n', nome: 'Nicola' }, { id: 'g', nome: 'Giulia' }] })
   const tutte = [riga('1', 'n'), riga('2', 'x'), riga('3', 'g', 'altra')]
-  ok('c\'era: Giulia, sulla prima riga della lezione', m.segreteriaLib.previstiSenzaPresenza(tutte[0], tutte).map((p) => p.id), ['g'])
-  ok('non ripetuto sulla seconda', m.segreteriaLib.previstiSenzaPresenza(tutte[1], tutte), [])
-  ok('su un\'altra lezione Nicola manca', m.segreteriaLib.previstiSenzaPresenza(tutte[2], tutte).map((p) => p.id), ['n'])
+  const c = (x, viste) => m.segreteriaLib.previstiSenzaPresenza(x, viste, tutte).map((p) => p.id)
+  ok('c\'era: Giulia, sulla prima riga della lezione', c(tutte[0], tutte), ['g'])
+  ok('non ripetuto sulla seconda', c(tutte[1], tutte), [])
+  ok('su un\'altra lezione Nicola manca', c(tutte[2], tutte), ['n'])
+  ok('ordinate al contrario: va sulla prima che si vede', c(tutte[1], [tutte[1], tutte[0]]), ['g'])
+  ok('la prima nascosta da un filtro: va sulla seconda, e Nicola resta segnato', c(tutte[1], [tutte[1]]), ['g'])
 }
 
 console.log('\n6b. la parte ISTRUTTORI dell\'appello')
@@ -242,6 +246,9 @@ console.log('\n6b. la parte ISTRUTTORI dell\'appello')
   ok('segnata da te: si toglie', r([nicola, { id: 'g', nome: 'Giulia', stato: 'confermata', come: 'collega', segnataDa: 'n' }], 'n'), [['n', true, true, null], ['g', false, true, 'togli']])
   ok('col PIN: si guarda', r([nicola, { id: 'g', nome: 'Giulia', stato: 'confermata', come: 'pin' }], 'n'), [['n', true, true, null], ['g', false, true, null]])
   ok('segnata da un altro: si guarda', r([nicola, { id: 'g', nome: 'Giulia', stato: 'confermata', come: 'collega', segnataDa: 'z' }], 'n')[1], ['g', false, true, null])
+  ok('appello cominciato: tu hai la ✓ anche prima di rileggere', m.righeIstruttori([{ id: 'n', nome: 'Nicola' }, { id: 'g', nome: 'Giulia' }], 'n', true).map((x) => [x.id, x.segnato]), [['n', true], ['g', false]])
+  ok('appello non cominciato: ancora no', m.righeIstruttori([{ id: 'n', nome: 'Nicola' }, { id: 'g', nome: 'Giulia' }], 'n', false)[0].segnato, false)
+  ok('tu rifiutato: l\'appello non ti rimette', m.righeIstruttori([{ id: 'n', nome: 'Nicola', stato: 'rifiutata' }, { id: 'g', nome: 'Giulia' }], 'n', true)[0].segnato, false)
   ok('rifiutata: non è segnata e non si tocca', r([nicola, { id: 'g', nome: 'Giulia', stato: 'rifiutata', come: 'collega', segnataDa: 'n' }], 'n')[1], ['g', false, false, null])
 }
 
@@ -296,6 +303,31 @@ console.log('\n7. col database: la coda delle scritture')
   await prova('senza il file sul database: nessun istruttore, l\'appello va come prima', async () =>
     m.creaDatiSupabase(rispondi(null, { code: 'PGRST202', message: 'Could not find the function public.istruttori_lezione(sessione) in the schema cache' })).istruttoriLezione('s1'),
   [])
+  memoria.delete(DOVE)
+
+  // Riaperto senza rete: il collega in coda si vede segnato, e si toglie ancora.
+  memoria.delete(DOVE)
+  const elenco = [
+    { persona_id: 'p1', nome: 'Maura', cognome: 'Uno', stato: 'confermata', come: 'appello', segnata_da: null },
+    { persona_id: 'p2', nome: 'Federico', cognome: 'Due', stato: null, come: null, segnata_da: null },
+  ]
+  const r = finto((nome) => (nome === 'istruttori_lezione' ? { data: elenco, error: null } : senzaRete))
+  const d4 = m.creaDatiSupabase(r.db)
+  await d4.segnaCollega('s1', 'p2', true)
+  await attesa()
+  await prova('segnato senza rete, riaperto: ✓ e si toglie', async () => m.righeIstruttori(await d4.istruttoriLezione('s1'), 'p1').map((x) => [x.id, x.segnato, x.tocco]), [['p1', true, null], ['p2', true, 'togli']])
+  await d4.segnaCollega('s1', 'p2', false)
+  await attesa()
+  await prova('tolto senza rete, riaperto: da segnare', async () => m.righeIstruttori(await d4.istruttoriLezione('s1'), 'p1').map((x) => [x.id, x.segnato, x.tocco]), [['p1', true, null], ['p2', false, 'segna']])
+  memoria.delete(DOVE)
+
+  // Un «togli» in coda non nasconde una presenza col PIN: il database lo rifiuterà.
+  const conPin = [{ ...elenco[0] }, { persona_id: 'p2', nome: 'Federico', cognome: 'Due', stato: 'confermata', come: 'pin', segnata_da: null }]
+  const q = finto((nome) => (nome === 'istruttori_lezione' ? { data: conPin, error: null } : senzaRete))
+  const d5 = m.creaDatiSupabase(q.db)
+  await d5.segnaCollega('s1', 'p2', false)
+  await attesa()
+  await prova('togli in coda su uno col PIN: resta col PIN', async () => (await d5.istruttoriLezione('s1')).map((x) => [x.id, x.stato ?? null, x.come ?? null]), [['p1', 'confermata', 'appello'], ['p2', 'confermata', 'pin']])
   memoria.delete(DOVE)
 
   const s = finto(() => ({ data: 'segnata', error: null }))

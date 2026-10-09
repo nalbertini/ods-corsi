@@ -1398,7 +1398,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             fine: s.fine,
             personaId: r.persona_id,
             nome: nome(r.persona) || '—',
-            previsti: sostituto ? nome(s.persone) : (chi.get(s.corso_id) ?? []).map((x) => x.nome).join(', ') || nome(s.persone),
+            previsti: previstiElenco.map((x) => x.nome).join(', '),
             sala: r.postazioni?.sale?.nome,
             stato: r.stato,
             prevista: r.prevista,

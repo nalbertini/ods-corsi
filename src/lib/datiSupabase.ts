@@ -121,6 +121,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       else if (op.tipo === 'chiudi') await chiudiSessione(db, a)
       else if (op.tipo === 'prova') await scriviProva(db, a, b, op.args[2] as NuovaProva | null)
       else if (op.tipo === 'togliProva') await togliProva(db, a, b)
+      // Per 'collega' il terzo argomento è `presente`, non uno stato.
       else if (op.tipo === 'collega') await scriviCollega(db, a, b, op.args[2] as boolean)
     } catch (e) {
       if (definitivo(e)) {
@@ -377,10 +378,12 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       }))
       // Quello ancora in coda, come per gli iscritti: un collega segnato senza rete resta segnato riaprendo.
       for (const op of coda.operazioni) {
+        if (op.tipo !== 'collega') continue
+        // La coda tiene gli argomenti come `unknown[]`: per 'collega' sono lezione, persona e presente.
         const [s, chi, presente] = op.args as [string, string, boolean]
-        const x = op.tipo === 'collega' && s === sessioneId ? elenco.find((i) => i.id === chi) : undefined
+        const x = s === sessioneId ? elenco.find((i) => i.id === chi) : undefined
         if (!x || (x.come && x.come !== 'collega')) continue
-        Object.assign(x, presente ? { stato: 'confermata', come: 'collega' } : { stato: undefined, come: undefined })
+        Object.assign(x, presente ? { stato: 'confermata', come: 'collega', daInviare: true } : { stato: undefined, come: undefined, segnataDa: undefined, daInviare: undefined })
       }
       return elenco
     },

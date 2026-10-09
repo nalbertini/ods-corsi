@@ -128,6 +128,9 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
     daConfermare: lista.filter((x) => x.stato === 'da_confermare').length,
   }
 
+  // Quelle che si vedono, coi filtri e nell'ordine scelto: il «c'era» va sulla prima di ogni lezione.
+  const viste = ordina(lista)
+
   const ricarica = async () => {
     await Promise.all([elenco.ricarica(), proposte.ricarica()])
     onCambiato?.()
@@ -316,7 +319,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
               {nelMese.length ? 'Nessuna presenza con questi filtri.' : `Nessun istruttore è entrato col PIN durante una lezione ${m ? (m.chiave.startsWith('anno-') ? `nell’${m.nome.toLowerCase()}` : `in ${m.nome.toLowerCase()}`) : 'negli ultimi dodici mesi'}.`}
             </p>
           )}
-          {ordina(lista).map((x) => (
+          {viste.map((x) => (
             <div
               key={x.id}
               role="row"
@@ -334,8 +337,8 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
               <span role="cell" className="stack" style={{ gap: 2 }}>
                 <span style={{ fontSize: 15, color: 'var(--sec)' }}>{x.previsti || 'nessuno'}</span>
                 {/* Il collega che c'era e non si è segnato, anche se la lezione è già coperta. */}
-                {previstiSenzaPresenza(x, tutte).map((p) => (
-                  <button key={p.id} type="button" className="sg-link" style={{ alignSelf: 'flex-start' }} disabled={lavora} onClick={() => cera(x, p)}>
+                {previstiSenzaPresenza(x, viste, tutte).map((p) => (
+                  <button key={p.id} type="button" className="sg-link" style={{ alignSelf: 'flex-start', color: 'var(--text)' }} disabled={lavora} onClick={() => cera(x, p)}>
                     + {p.nome} c’era
                   </button>
                 ))}

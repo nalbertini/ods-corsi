@@ -381,13 +381,13 @@ export interface PresenzaIstruttoreSeg {
 
 /**
  * I previsti senza una presenza su quella lezione, per il «+ Nome c'era» di
- * PRESENZE ISTRUTTORI: solo sulla prima riga della lezione in `tutte`, così
- * due righe della stessa lezione non lo ripetono.
+ * PRESENZE ISTRUTTORI: solo sulla prima riga della lezione fra quelle che si
+ * vedono (`viste`, coi filtri e l'ordine), così due righe non lo ripetono; chi
+ * ha già una presenza lo dicono `tutte`, anche quelle nascoste dai filtri.
  */
-export function previstiSenzaPresenza(x: PresenzaIstruttoreSeg, tutte: PresenzaIstruttoreSeg[]): Array<{ id: string; nome: string }> {
-  const stessa = tutte.filter((y) => y.sessioneId === x.sessioneId)
-  if (stessa[0]?.id !== x.id) return []
-  return (x.previstiElenco ?? []).filter((p) => !stessa.some((y) => y.personaId === p.id))
+export function previstiSenzaPresenza(x: PresenzaIstruttoreSeg, viste: PresenzaIstruttoreSeg[], tutte: PresenzaIstruttoreSeg[]): Array<{ id: string; nome: string }> {
+  if (viste.find((y) => y.sessioneId === x.sessioneId)?.id !== x.id) return []
+  return (x.previstiElenco ?? []).filter((p) => !tutte.some((y) => y.sessioneId === x.sessioneId && y.personaId === p.id))
 }
 
 /** Dal PIN, dall'appello che ha fatto, segnata da un collega nell'appello, o scelta dalla segreteria. */

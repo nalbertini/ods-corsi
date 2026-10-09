@@ -89,6 +89,8 @@ export interface IstruttoreLezione {
   come?: ComePresenzaIstruttore
   /** Chi l'ha segnata dall'appello, se `come` è 'collega'. */
   segnataDa?: string
+  /** Segnata da questo telefono e ancora in coda: è di chi fa l'appello. */
+  daInviare?: boolean
 }
 
 /** Una riga della parte ISTRUTTORI dell'appello. */
@@ -104,18 +106,23 @@ export interface RigaIstruttore {
 
 /**
  * La parte ISTRUTTORI dell'appello per chi lo fa (`io`): c'è solo se `io` è
- * fra i previsti e non è solo. Si segna chi non ha una presenza; si toglie
- * solo quella che `io` ha segnato da collega. Le altre (PIN, appello,
- * segreteria, rifiutata) si guardano soltanto.
+ * fra i previsti e non è solo. `io` risulta segnato appena l'appello è
+ * cominciato (`appelloFatto`: il server lo segna da sé), a meno che la
+ * segreteria l'abbia rifiutato; un collega si segna solo dopo, come vuole il
+ * database. Si toglie solo quello che `io` ha segnato; le altre presenze (PIN,
+ * appello, segreteria, rifiutata) si guardano soltanto.
  */
-export function righeIstruttori(elenco: IstruttoreLezione[], io: string | undefined): RigaIstruttore[] {
-  if (!io || elenco.length < 2 || !elenco.some((x) => x.id === io)) return []
+export function righeIstruttori(elenco: IstruttoreLezione[], io: string | undefined, appelloFatto = false): RigaIstruttore[] {
+  const mia = elenco.find((x) => x.id === io)
+  if (!io || !mia || elenco.length < 2) return []
+  const valida = (x: IstruttoreLezione) => !!x.stato && x.stato !== 'rifiutata'
+  const ioSegnato = valida(mia) || (!mia.stato && appelloFatto)
   return elenco.map((x) => ({
     id: x.id,
     nome: x.nome,
     tu: x.id === io,
-    segnato: !!x.stato && x.stato !== 'rifiutata',
-    tocco: x.id === io ? null : !x.stato ? 'segna' : x.come === 'collega' && x.segnataDa === io && x.stato !== 'rifiutata' ? 'togli' : null,
+    segnato: x.id === io ? ioSegnato : valida(x),
+    tocco: x.id === io ? null : !x.stato ? (ioSegnato ? 'segna' : null) : x.come === 'collega' && (x.segnataDa === io || x.daInviare) && x.stato !== 'rifiutata' ? 'togli' : null,
   }))
 }
 

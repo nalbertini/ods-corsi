@@ -160,6 +160,8 @@ export const nomeIstruttore = (id: string) => {
 
 const kanjiIstruttore = (id: string) => archivio.dati.persone.find((x) => x.id === id)?.kanji ?? ''
 
+const nuovoIdPresenza = () => `pi-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+
 /**
  * Chi ha fatto l'appello di una lezione c'era, come col trigger
  * `istruttore_dall_appello` (23-istruttori-dalle-lezioni.sql): confermato se
@@ -176,7 +178,7 @@ export function istruttoreDallAppello(sessioneId: string, personaId: string, sal
   const c = tutte.findIndex((x) => x.sessioneId === sessioneId && x.personaId === personaId)
   if (c < 0) {
     tutte.push({
-      id: `pi-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      id: nuovoIdPresenza(),
       sessioneId,
       personaId,
       stato: previsto ? 'confermata' : 'da_confermare',
@@ -195,14 +197,12 @@ export function istruttoreDallAppello(sessioneId: string, personaId: string, sal
 /** Chi fa l'appello dall'app, in prova: l'istruttore di prova nell'area istruttori, nessuno dalla segreteria. */
 const chiFaLAppello = () => (typeof window !== 'undefined' && areaDelPercorso() === 'istruttori' ? ISTRUTTORE_PROVA.id : null)
 
-const nuovoIdPresenza = () => `pi-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
-
 /**
  * Come `segna_collega` e `togli_collega` (46-istruttore-collega.sql), stessi
  * messaggi: chi fa l'appello ed è previsto segna un altro previsto, confermato
  * da sé; lo toglie solo chi l'ha segnato, finché la segreteria non l'ha guardato.
  */
-export function segnaCollegaProva(sessioneId: string, personaId: string, presente: boolean, chi: string | null) {
+function segnaCollegaProva(sessioneId: string, personaId: string, presente: boolean, chi: string | null) {
   const tutte = archivio.dati.presenzeIstruttori ?? []
   const c = tutte.find((x) => x.sessioneId === sessioneId && x.personaId === personaId)
   if (!presente) {
@@ -221,6 +221,7 @@ export function segnaCollegaProva(sessioneId: string, personaId: string, present
   if (comeE(l).stato === 'annullata') throw new Error('la lezione è annullata')
   if (personaId === io.id) throw new Error("te stesso ti segna l'appello")
   if (!previsti.includes(personaId)) throw new Error('si segnano solo gli istruttori previsti')
+  if (!tutte.some((x) => x.sessioneId === sessioneId && x.personaId === io.id && x.stato !== 'rifiutata')) throw new Error("prima fai l'appello: il collega si segna dopo")
   // Chi una presenza ce l'ha già (PIN, appello, rifiutata) resta com'è.
   if (c) return
   archivio.dati.presenzeIstruttori = [
@@ -274,7 +275,7 @@ export function segnaIstruttoriLezioneProva(sessioneId: string, presenti: string
   for (const id of previsti) {
     if (tutte.some((x) => x.sessioneId === sessioneId && x.personaId === id)) continue
     const nuova: PresenzaIstruttoreProva = {
-      id: `pi-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      id: nuovoIdPresenza(),
       sessioneId,
       personaId: id,
       stato: presenti.includes(id) ? 'confermata' : 'rifiutata',
@@ -604,10 +605,13 @@ export function creaDatiProva(): Dati {
       const l = trovaLezione(sessioneId)
       if (!l) return []
       const presenze = archivio.dati.presenzeIstruttori ?? []
-      return comeE(l).istruttori.map((id) => {
-        const x = presenze.find((p) => p.sessioneId === sessioneId && p.personaId === id)
-        return { id, nome: nomeIstruttore(id), stato: x?.stato, come: x ? (x.come ?? 'pin') : undefined, segnataDa: x?.segnataDa }
-      })
+      // Per nome, come `istruttori_lezione`.
+      return comeE(l)
+        .istruttori.map((id) => {
+          const x = presenze.find((p) => p.sessioneId === sessioneId && p.personaId === id)
+          return { id, nome: nomeIstruttore(id), stato: x?.stato, come: x ? (x.come ?? 'pin') : undefined, segnataDa: x?.segnataDa }
+        })
+        .sort((a, b) => a.nome.localeCompare(b.nome))
     },
 
     async segnaCollega(sessioneId, personaId, presente) {
