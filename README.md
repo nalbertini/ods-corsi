@@ -38,7 +38,8 @@ segreteria e istruttore (`persone.anche_istruttore`, in
 nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer** è una pagina dell'area istruttori
 (barra in basso sul telefono, menu a sinistra su schermo largo: CALENDARIO, TIMER, I MIEI, ORE), con la striscia
 dell'allenamento in corso sempre in vista; resta anche l'app a sé in `timer/`
-(`nalbertini.github.io/ods-corsi/timer/`).
+(`nalbertini.github.io/ods-corsi/timer/`). Nel timer del telefono c'è anche la musica del tablet di sala:
+le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefono.
 
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello
   scelto, in ordine di orario, con sala, istruttore e iscritti.
