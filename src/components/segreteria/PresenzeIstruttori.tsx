@@ -145,7 +145,7 @@ export function PresenzeIstruttori({ d, onCambiato }: { d: DatiSegreteria; onCam
   }
 
   const cera = (x: PresenzaIstruttoreSeg, p: { id: string; nome: string }) =>
-    void fai(() => d.segnaIstruttorePrevisto(x.sessioneId, p.id), `${x.corso}: ${p.nome} c'era`, ricarica)
+    void fai(() => d.segnaIstruttorePrevisto(x.sessioneId, p.id), `${x.corso}: ${p.nome} c’era`, ricarica)
 
   const gestisci = (x: PresenzaIstruttoreSeg, conferma: boolean) =>
     void fai(

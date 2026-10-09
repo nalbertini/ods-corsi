@@ -64,6 +64,7 @@ select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 select atteso('Maura segna Federico', tenta($$select segna_collega('eeeeeeee-0000-0000-0000-000000000010', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'segnata');
 select atteso('e lo vede segnato', istruttori_di('eeeeeeee-0000-0000-0000-000000000010'), 'Federico confermata, Maura confermata');
+select atteso('non ancora guardato dalla segreteria', tenta($$select string_agg(nome || ' ' || gestita::text, ', ' order by nome) from istruttori_lezione('eeeeeeee-0000-0000-0000-000000000010')$$), 'Federico false, Maura false');
 select atteso('una seconda volta: già segnato', tenta($$select segna_collega('eeeeeeee-0000-0000-0000-000000000010', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'gia');
 reset role;
 select atteso('Federico confermato, da collega, era previsto', di('eeeeeeee-0000-0000-0000-000000000010', 'aaaaaaaa-0000-0000-0000-000000000006'), 'confermata collega true');
@@ -88,6 +89,7 @@ select atteso('non su una lezione dove Maura non insegna', tenta($$select segna_
 select atteso('non dove c''è un sostituto al suo posto', tenta($$select segna_collega('eeeeeeee-0000-0000-0000-000000000012', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: segna un collega solo chi insegna questa lezione');
 -- Dall'appello: prima la sua presenza, poi il collega. Non su una lezione di due giorni fa senza appello.
 select atteso('non prima del suo appello', tenta($$select segna_collega('eeeeeeee-0000-0000-0000-000000000013', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: prima fai l''appello: il collega si segna dopo');
+select atteso('su una lezione annullata nessun istruttore', tenta($$select count(*)::text from istruttori_lezione('eeeeeeee-0000-0000-0000-000000000011')$$), '0');
 select atteso('non su una lezione annullata', tenta($$select segna_collega('eeeeeeee-0000-0000-0000-000000000011', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: la lezione è annullata');
 select atteso('né su una che non c''è', tenta($$select segna_collega('00000000-0000-0000-0000-000000000000', 'aaaaaaaa-0000-0000-0000-000000000006')$$), 'NEGATO: lezione inesistente');
 -- La chiama la coda del telefono: 23503, che la coda non riprova (P0002 la fermerebbe per sempre), come aggiungi_prova.

@@ -28,15 +28,17 @@ alter table presenze_istruttori drop constraint if exists presenze_istruttori_co
 alter table presenze_istruttori add constraint presenze_istruttori_come check (come in ('pin', 'appello', 'segreteria', 'collega'));
 
 create or replace function istruttori_lezione(sessione uuid)
-  returns table (persona_id uuid, nome text, cognome text, stato stato_presenza_istruttore, come text, segnata_da uuid)
+  returns table (persona_id uuid, nome text, cognome text, stato stato_presenza_istruttore, come text, segnata_da uuid, gestita boolean)
   language plpgsql stable security definer set search_path = public, extensions as $$
 begin
   -- Solo chi insegna questa lezione, o la segreteria: un altro istruttore non legge le presenze dei colleghi.
   if not (e_staff() or coalesce(persona_corrente() = any (previsti_su(sessione)), false)) then
     raise exception 'gli istruttori della lezione li vede chi fa l''appello' using errcode = '42501'; end if;
-  return query select pe.id, pe.nome, pe.cognome, pi.stato, pi.come, pi.segnata_da
+  -- Su una lezione annullata nessuno: non c'è niente da segnare.
+  return query select pe.id, pe.nome, pe.cognome, pi.stato, pi.come, pi.segnata_da, pi.gestita_il is not null
     from unnest(previsti_su(sessione)) x join persone pe on pe.id = x
     left join presenze_istruttori pi on pi.sessione_id = sessione and pi.persona_id = x
+    where not exists (select 1 from sessioni s where s.id = sessione and s.stato = 'annullata')
     order by pe.nome, pe.cognome;
 end $$;
 

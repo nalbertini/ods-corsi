@@ -1346,7 +1346,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           .select(
             // Con `*`: `come` c'è solo dopo 23-istruttori-dalle-lezioni.sql, e senza si legge lo stesso.
             '*, ' +
-              'sessioni ( corso_id, inizio, fine, istruttore_id, corsi ( nome, colore, istruttore_id ), persone ( nome, cognome ) ), ' +
+              'sessioni ( corso_id, inizio, fine, istruttore_id, stato, corsi ( nome, colore, istruttore_id ), persone ( nome, cognome ) ), ' +
               'persona:persone!persona_id ( nome, cognome ), gestore:persone!gestita_da ( nome, cognome ), postazioni ( sale ( nome ) )',
           )
           .or(`stato.eq.da_confermare,entrato_il.gte.${da}`)
@@ -1366,6 +1366,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           inizio: string
           fine: string
           istruttore_id: string | null
+          stato: string
           corsi: { nome: string; colore: string | null; istruttore_id: string | null } | null
           persone: { nome: string; cognome: string } | null
         } | null
@@ -1408,6 +1409,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
             come: r.come ?? 'pin',
             segnataDa: r.segnata_da ? segnatori.get(r.segnata_da) : undefined,
             previstiElenco,
+            annullata: s.stato === 'annullata',
           },
         ]
       })

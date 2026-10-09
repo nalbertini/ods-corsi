@@ -603,13 +603,13 @@ export function creaDatiProva(): Dati {
 
     async istruttoriLezione(sessioneId) {
       const l = trovaLezione(sessioneId)
-      if (!l) return []
+      if (!l || comeE(l).stato === 'annullata') return []
       const presenze = archivio.dati.presenzeIstruttori ?? []
       // Per nome, come `istruttori_lezione`.
       return comeE(l)
         .istruttori.map((id) => {
           const x = presenze.find((p) => p.sessioneId === sessioneId && p.personaId === id)
-          return { id, nome: nomeIstruttore(id), stato: x?.stato, come: x ? (x.come ?? 'pin') : undefined, segnataDa: x?.segnataDa }
+          return { id, nome: nomeIstruttore(id), stato: x?.stato, come: x ? (x.come ?? 'pin') : undefined, segnataDa: x?.segnataDa, gestita: x ? !!x.gestitaIl : undefined }
         })
         .sort((a, b) => a.nome.localeCompare(b.nome))
     },

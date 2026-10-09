@@ -368,13 +368,14 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       if (error && (error.code === 'PGRST202' || error.code === '42883')) return []
       if (error) throw error
       // supabase-js non conosce il tipo di ritorno della funzione: lo dice questa riga.
-      const righe = (data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; stato: StatoPresenzaIstruttore | null; come: ComePresenzaIstruttore | null; segnata_da: string | null }>
+      const righe = (data ?? []) as Array<{ persona_id: string; nome: string; cognome: string; stato: StatoPresenzaIstruttore | null; come: ComePresenzaIstruttore | null; segnata_da: string | null; gestita?: boolean | null }>
       const elenco: IstruttoreLezione[] = righe.map((r) => ({
         id: r.persona_id,
         nome: `${r.nome} ${r.cognome}`.trim(),
         stato: r.stato ?? undefined,
         come: r.come ?? undefined,
         segnataDa: r.segnata_da ?? undefined,
+        gestita: r.gestita ?? undefined,
       }))
       // Quello ancora in coda, come per gli iscritti: un collega segnato senza rete resta segnato riaprendo.
       for (const op of coda.operazioni) {

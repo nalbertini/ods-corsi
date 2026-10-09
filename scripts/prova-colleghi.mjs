@@ -19,7 +19,7 @@ process.env.TZ = 'Europe/Rome'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaDatiProva, istruttoreDallAppello } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * as segreteriaLib from './src/lib/segreteria'; export * as oreLib from './src/lib/ore'; export { righeIstruttori } from './src/lib/dati'",
+      "export { creaDatiProva, istruttoreDallAppello } from './src/lib/datiProva'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { archivio } from './src/lib/archivioProva'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * as segreteriaLib from './src/lib/segreteria'; export * as oreLib from './src/lib/ore'; export { righeIstruttori, conMioAppello } from './src/lib/dati'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -159,6 +159,7 @@ console.log('\n3. chi non può, e chi non si segna')
   area('segreteria')
   ok('dalla segreteria non è un collega', await errore(() => segnaCollega(OGGI_ID, 'i-maura')), 'segna un collega solo chi insegna questa lezione')
   area('istruttori')
+  await prova('su una lezione annullata la parte ISTRUTTORI non c\'è', () => app.istruttoriLezione(ANNULLATA), [])
   ok('nessuna riga dai rifiuti', righe().filter((p) => [ANNULLATA, SOSTITUITA, 's@lotta-2@2026-09-25@17:00'].includes(p.sessioneId)).length, 0)
 }
 
@@ -199,6 +200,7 @@ console.log('\n5. la segreteria segna un previsto su una lezione già coperta')
   await prova('la lezione è coperta: fra le senza istruttore non c\'è', async () => (await seg.lezioniSenzaIstruttore()).some((l) => l.sessioneId === COPERTA), false)
   await prova('la segreteria segna Maura: c\'era', () => seg.segnaIstruttorePrevisto(COPERTA, 'i-maura'), undefined)
   ok('Maura confermata dalla segreteria', di(COPERTA, 'i-maura'), 'confermata segreteria true')
+  ok('la riga della segreteria sa se la lezione è annullata', (await seg.presenzeIstruttori(365)).find((x) => x.sessioneId === COPERTA)?.annullata ?? false, false)
   ok('decisa dalla segreteria di prova', righe().find((p) => p.sessioneId === COPERTA && p.personaId === 'i-maura')?.gestitaDa, 'Segreteria di prova')
   ok('Maurizio resta dall\'appello', di(COPERTA, 'i-maurizio'), 'confermata appello true')
   ok('Maurizio c\'è già: niente', await errore(() => seg.segnaIstruttorePrevisto(COPERTA, 'i-maurizio')), 'nessun errore')
@@ -232,6 +234,7 @@ console.log('\n6. la riga di PRESENZE ISTRUTTORI')
   ok('c\'era: Giulia, sulla prima riga della lezione', c(tutte[0], tutte), ['g'])
   ok('non ripetuto sulla seconda', c(tutte[1], tutte), [])
   ok('su un\'altra lezione Nicola manca', c(tutte[2], tutte), ['n'])
+  ok('lezione annullata: niente c\'era', m.segreteriaLib.previstiSenzaPresenza({ ...tutte[0], annullata: true }, tutte, tutte), [])
   ok('ordinate al contrario: va sulla prima che si vede', c(tutte[1], [tutte[1], tutte[0]]), ['g'])
   ok('la prima nascosta da un filtro: va sulla seconda, e Nicola resta segnato', c(tutte[1], [tutte[1]]), ['g'])
 }
@@ -249,6 +252,10 @@ console.log('\n6b. la parte ISTRUTTORI dell\'appello')
   ok('appello cominciato: tu hai la ✓ anche prima di rileggere', m.righeIstruttori([{ id: 'n', nome: 'Nicola' }, { id: 'g', nome: 'Giulia' }], 'n', true).map((x) => [x.id, x.segnato]), [['n', true], ['g', false]])
   ok('appello non cominciato: ancora no', m.righeIstruttori([{ id: 'n', nome: 'Nicola' }, { id: 'g', nome: 'Giulia' }], 'n', false)[0].segnato, false)
   ok('tu rifiutato: l\'appello non ti rimette', m.righeIstruttori([{ id: 'n', nome: 'Nicola', stato: 'rifiutata' }, { id: 'g', nome: 'Giulia' }], 'n', true)[0].segnato, false)
+  ok('guardata dalla segreteria: non si toglie più', r([nicola, { id: 'g', nome: 'Giulia', stato: 'confermata', come: 'collega', segnataDa: 'n', gestita: true }], 'n')[1], ['g', false, true, null])
+  ok('tu rifiutato: si dice', m.righeIstruttori([{ id: 'n', nome: 'Nicola', stato: 'rifiutata' }, { id: 'g', nome: 'Giulia' }], 'n', true)[0].rifiutata, true)
+  ok('dopo il primo segno la tua presenza c\'è, anche se poi azzeri', m.conMioAppello([{ id: 'n', nome: 'Nicola' }, { id: 'g', nome: 'Giulia' }], 'n').map((x) => [x.id, x.stato ?? null, x.come ?? null]), [['n', 'confermata', 'appello'], ['g', null, null]])
+  ok('una rifiutata resta rifiutata', m.conMioAppello([{ id: 'n', nome: 'Nicola', stato: 'rifiutata', come: 'pin' }], 'n')[0].stato, 'rifiutata')
   ok('rifiutata: non è segnata e non si tocca', r([nicola, { id: 'g', nome: 'Giulia', stato: 'rifiutata', come: 'collega', segnataDa: 'n' }], 'n')[1], ['g', false, false, null])
 }
 

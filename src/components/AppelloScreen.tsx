@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { righeIstruttori, type Dati, type IstruttoreLezione } from '../lib/dati'
+import { conMioAppello, righeIstruttori, type Dati, type IstruttoreLezione } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
 import { cercaNellElenco, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { Back, Cronometro } from './Icons'
@@ -284,6 +284,7 @@ export function AppelloScreen({
     // e, senza rete, aspetta in coda. Chi fa l'appello non deve aspettare un
     // server per toccare il nome dopo.
     setD((v) => v && { ...v, elenco: v.elenco.map((p) => (p.id === personaId ? { ...p, stato } : p)) })
+    if (stato !== null) setIstruttori((v) => conMioAppello(v, soloDi))
     void dati.segna(sessioneId, personaId, stato)
   }
 
@@ -296,6 +297,7 @@ export function AppelloScreen({
   const tuttiGliAltri = () => {
     if (segnati === 0 || tuttiAssenti) {
       setD((v) => v && { ...v, elenco: v.elenco.map((p) => ({ ...p, stato: 'presente' })) })
+      setIstruttori((v) => conMioAppello(v, soloDi))
       void dati.segnaTutti(sessioneId, 'presente')
     } else for (const p of d.elenco) if (p.stato === null) tocca(p.id, 'presente')
   }
@@ -578,7 +580,9 @@ export function AppelloScreen({
             <span className="num" style={{ fontSize: 15, fontWeight: 600, color: 'var(--dim)' }}>{istruttori.length}</span>
           </div>
           <p className="pad appello-aiuto">
-            {!colleghi.some((x) => x.tu && x.segnato)
+            {colleghi.some((x) => x.tu && x.rifiutata)
+              ? 'La segreteria ha rifiutato la tua presenza: i colleghi li segna lei.'
+              : !colleghi.some((x) => x.tu && x.segnato)
               ? 'Comincia l’appello: poi un tocco segna chi insegnava con te.'
               : colleghi.some((x) => x.tocco === 'segna')
                 ? 'Chi insegnava con te e non si è segnato: un tocco e risulta presente.'

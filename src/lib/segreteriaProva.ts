@@ -1309,6 +1309,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
               nome: chi ? nomeDi(chi) : '—',
               previsti: comeE(l).istruttori.map(nomeIstruttore).join(', '),
               previstiElenco: comeE(l).istruttori.map((id) => ({ id, nome: nomeIstruttore(id) })),
+              annullata: comeE(l).stato === 'annullata',
               sala: x.sala,
               stato: x.stato,
               prevista: x.prevista,

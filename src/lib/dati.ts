@@ -91,6 +91,8 @@ export interface IstruttoreLezione {
   segnataDa?: string
   /** Segnata da questo telefono e ancora in coda: è di chi fa l'appello. */
   daInviare?: boolean
+  /** La segreteria l'ha già confermata o rifiutata: chi l'ha segnata non la toglie più. */
+  gestita?: boolean
 }
 
 /** Una riga della parte ISTRUTTORI dell'appello. */
@@ -98,6 +100,8 @@ export interface RigaIstruttore {
   id: string
   nome: string
   tu: boolean
+  /** La segreteria ha rifiutato questa presenza. */
+  rifiutata: boolean
   /** Ha una presenza che vale: ✓. Una rifiutata no, e non si tocca. */
   segnato: boolean
   /** Cosa fa un tocco: segnarlo, togliere il segno messo da chi fa l'appello, o niente. */
@@ -121,9 +125,19 @@ export function righeIstruttori(elenco: IstruttoreLezione[], io: string | undefi
     id: x.id,
     nome: x.nome,
     tu: x.id === io,
+    rifiutata: x.stato === 'rifiutata',
     segnato: x.id === io ? ioSegnato : valida(x),
-    tocco: x.id === io ? null : !x.stato ? (ioSegnato ? 'segna' : null) : x.come === 'collega' && (x.segnataDa === io || x.daInviare) && x.stato !== 'rifiutata' ? 'togli' : null,
+    tocco: x.id === io ? null : !x.stato ? (ioSegnato ? 'segna' : null) : x.come === 'collega' && (x.segnataDa === io || x.daInviare) && !x.gestita && x.stato !== 'rifiutata' ? 'togli' : null,
   }))
+}
+
+/**
+ * Dopo il primo segno dell'appello la presenza di chi lo fa c'è (il server la
+ * mette da sé): si mostra subito, e resta anche se poi si azzera l'appello.
+ * Una presenza che c'era già, anche rifiutata, resta com'è.
+ */
+export function conMioAppello(elenco: IstruttoreLezione[], io: string | undefined): IstruttoreLezione[] {
+  return elenco.map((x) => (x.id === io && !x.stato ? { ...x, stato: 'confermata', come: 'appello' } : x))
 }
 
 const URL_SUPABASE = import.meta.env.VITE_SUPABASE_URL as string | undefined

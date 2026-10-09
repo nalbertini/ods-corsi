@@ -377,6 +377,8 @@ export interface PresenzaIstruttoreSeg {
   segnataDa?: string
   /** Gli stessi di `previsti`, con l'id: per segnare «c'era» chi non ha una presenza. */
   previstiElenco?: Array<{ id: string; nome: string }>
+  /** La lezione è stata annullata: non si segna più nessuno. */
+  annullata?: boolean
 }
 
 /**
@@ -386,7 +388,7 @@ export interface PresenzaIstruttoreSeg {
  * ha già una presenza lo dicono `tutte`, anche quelle nascoste dai filtri.
  */
 export function previstiSenzaPresenza(x: PresenzaIstruttoreSeg, viste: PresenzaIstruttoreSeg[], tutte: PresenzaIstruttoreSeg[]): Array<{ id: string; nome: string }> {
-  if (viste.find((y) => y.sessioneId === x.sessioneId)?.id !== x.id) return []
+  if (x.annullata || viste.find((y) => y.sessioneId === x.sessioneId)?.id !== x.id) return []
   return (x.previstiElenco ?? []).filter((p) => !tutte.some((y) => y.sessioneId === x.sessioneId && y.personaId === p.id))
 }
 
