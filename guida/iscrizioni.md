@@ -137,6 +137,36 @@ ognuna c'è una riga che dice «mandata insieme alla richiesta di…, sconto
 famiglia da applicare», così la segreteria le lega. Le note che scrive chi
 compila sono al massimo 900 caratteri, per fare posto a quella riga.
 
+## Ordinare il vestiario
+
+Judogi, costumini da lotta e vestiario della palestra si ordinano da una pagina
+pubblica, al posto del modulo Google. L'indirizzo è
+<https://nalbertini.github.io/ods-corsi/iscrizioni/#vestiario>: in segreteria
+si copia con **COPIA LINK ORDINI**, in fondo al menu. Finché gli ordini sono
+aperti, anche la pagina delle iscrizioni ha in fondo il riquadro **IL
+VESTIARIO** con **ORDINA IL VESTIARIO**.
+
+1. **IL CATALOGO** — i capi col prezzo, le taglie e la nota per scegliere la
+   taglia.
+2. **IL TUO ORDINE** — una riga per capo: per chi è (nome e cognome del
+   bambino), il capo, la taglia, quanti. **+ UN ALTRO CAPO** aggiunge una riga
+   per lo stesso bambino, **+ PER UN ALTRO FIGLIO** una per un altro: i fratelli
+   stanno in un ordine solo, con un totale solo.
+3. **CHI ORDINA** — nome, cognome e telefono di chi ordina (la segreteria
+   chiama chi non ha pagato); l'email è facoltativa.
+4. **MANDA L'ORDINE**. Il totale lo calcola l'app coi prezzi del catalogo.
+
+**ORDINE ARRIVATO** ripete l'ordine e dice come pagare: bonifico (**COPIA
+IBAN**, **COPIA CAUSALE**), Satispay o contanti in segreteria. **CONDIVIDI IL
+RIEPILOGO** lo manda dove si vuole, per esempio a sé stessi su WhatsApp: dopo
+non si può più rileggere dalla pagina. Al fornitore va solo quello che è
+pagato entro la data di chiusura.
+
+Un ordine mandato non si cambia dalla pagina: per una taglia sbagliata si
+chiama la segreteria. Dopo la data di chiusura la pagina dice **ORDINI CHIUSI**
+e dà il telefono; prima che la segreteria li apra dice **ORDINI NON ANCORA
+APERTI**.
+
 ## Cosa dire a chi chiede
 
 - «Ti mando il link: ci sono i passi, i costi e il modulo.»

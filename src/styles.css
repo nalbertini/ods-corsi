@@ -2159,3 +2159,47 @@ html.firma-aperta, html.firma-aperta body { overflow: hidden; overscroll-behavio
 .firma-gira svg { flex-shrink: 0; transform-origin: center; animation: firma-gira 2.4s ease-in-out infinite; }
 @keyframes firma-gira { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
 @media (prefers-reduced-motion: reduce) { .firma-gira svg { animation: none; transform: rotate(-90deg); } }
+
+/* Il vestiario. La pagina degli ordini: taglia e quanti affiancati anche sul telefono, e «Togli» alto quanto un dito. */
+.vestiario-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.vestiario-togli { min-height: 44px; padding: 0 4px; font-size: 14px; color: var(--sec); text-decoration: underline; text-underline-offset: 3px; }
+/* VESTIARIO in segreteria: cinque numeri, la tabella degli ordini con le sue colonne, le righe da correggere. */
+.sg-numeri[data-cinque] { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.sg-vestiario-testa { gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+.sg-vestiario-ordine { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.sg-vestiario-capo { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 12px; }
+.sg-vestiario-totale { gap: 12px; align-items: baseline; padding-top: 8px; border-top: 2px solid var(--line); }
+.sg-righe-vestiario { display: grid; gap: 10px; align-items: center; }
+.sg-riga-vestiario-campi { padding: 6px 0; border-bottom: 1px solid var(--surface-2); }
+.sg-riga-vestiario-campi .sg-campo { width: 100%; }
+.sg-link-alto { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; }
+@media (min-width: 1001px) {
+  .sg-riga-vestiario { grid-template-columns: 1fr 1.6fr 130px 130px 70px; }
+  .sg-righe-vestiario { grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) 104px 68px 64px 44px; }
+  /* Sul computer la testata della tabella dice già cosa c'è in ogni colonna. */
+  .sg-etichetta-campo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+@media (max-width: 1000px) {
+  .sg-numeri[data-cinque] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-vestiario-ordine { grid-template-columns: minmax(0, 1fr); }
+  /* Sul telefono una riga da correggere va su due righe: per chi e capo, poi taglia, quanti, prezzo e Togli. */
+  .sg-righe-vestiario { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .sg-lista-testa.sg-righe-vestiario { display: none; }
+  /* Il pagamento prima delle righe: al telefono si apre un ordine per segnarlo saldato. */
+  .sg-vestiario-pagamento { order: -1; }
+}
+@media (max-width: 767px) {
+  /* Cinque numeri in due colonne: l'ultimo prende la riga intera, invece di lasciarne mezza vuota. */
+  .sg-numeri[data-cinque] > :last-child { grid-column: 1 / -1; }
+}
+.sg-cella-riga { gap: 4px; min-width: 0; }
+/* Un ordine annullato si legge ancora: niente trasparenza, il testo spento. */
+.sg-riga-vestiario.sg-iscritto[data-spento='true'] { opacity: 1; color: var(--dim); }
+/* L'errore del server resta col tasto MANDA L'ORDINE, nel fondo che non scorre via. */
+.vestiario-fondo { position: sticky; bottom: 0; z-index: 1; }
+.vestiario-guaio { padding-top: 10px; padding-bottom: 10px; background: var(--bg); }
+/* Un nome lungo senza spazi va a capo invece di allargare la pagina. */
+.vestiario-arrivato, .sg-riga-vestiario [role='cell'] { overflow-wrap: anywhere; min-width: 0; }
+.sg-vestiario-sola-lettura { gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 15px; color: var(--sec); overflow-wrap: anywhere; }
+.sg-vestiario-arrivo { display: block; font-size: 12px; font-weight: 400; color: var(--dim); }
+.sg-vestiario-manca { display: block; font-size: 12px; font-weight: 600; color: var(--rosso-testo); }

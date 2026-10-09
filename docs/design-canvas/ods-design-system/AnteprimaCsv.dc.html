@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<div style="display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: 0; color: {{c.text}}">
+  <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">{{file}}</span>
+  <div style="display: flex; flex-direction: column; padding: 10px 12px; background: {{c.bg}}; border: 2px solid {{c.line}}; font-family: {{mono}}; font-size: 13px; line-height: 1.5; white-space: pre; overflow: hidden">
+    <sc-for list="{{righe}}" as="r" hint-placeholder-count="4"><span style="color: {{r.colore}}">{{r.testo}}</span></sc-for>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"file":{"editor":"text","default":"vestiario-fornitore.csv"},"righe":{"editor":"text","default":"capo;taglia;quanti;;Judogi bianco;120;3;;Judogi bianco;130;5"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":480,"height":160}}'>
+// PROPOSTA «ordini vestiario»: le prime righe di un CSV scaricato, per far vedere cosa contiene. Non c'e' nel codice: l'elenco e' quello di
+// .sg-mono del resoconto di IMPORTA (Resoconto.dc.html: ui-monospace 13px, interlinea 1.5) in una scatola .sg-voce-elenco (fondo `bg`,
+// bordo 2px `line`, padding 10px 12px); sopra il nome del file come .sg-etichetta (Saira 12px 0.18em `dim`).
+// righe: separate da ;; (il ; resta quello del CSV); la prima e' l'intestazione, in `dim`.
+const T = {
+  scuro: { bg: '#121212', line: '#333333', text: '#f2f2f0', dim: '#8c8c88' },
+  chiaro: { bg: '#f4f4f1', line: '#d4d4ce', text: '#161616', dim: '#656561' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const righe = String(p.righe ?? 'capo;taglia;quanti;;Judogi bianco;120;3;;Judogi bianco;130;5').split(';;').map((testo, i) => ({ testo, colore: i === 0 ? c.dim : c.text }));
+    return { c, cond: COND, mono: MONO, file: p.file ?? 'vestiario-fornitore.csv', righe };
+  }
+}
+</script>
+</body>
+</html>

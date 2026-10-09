@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<!-- I due scarichi CSV di VESTIARIO, con le prime righe di ciascuno. Nell’app sono due tasti in fondo all’elenco (tavola Elenco); qui la pagina li spiega. Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212; color: #f2f2f0">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="VESTIARIO" numeri="RICHIESTE ONLINE:3, VESTIARIO:6" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex"><dc-import name="Bottone" label="‹ GLI ORDINI" variante="linea" contesto="segreteria" hint-size="150px,48px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+      <h1 style="margin: 0; flex-grow: 1; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 34px; line-height: 1">GLI ELENCHI</h1>
+      
+    </div>
+    <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #8c8c88">In fondo a VESTIARIO, per la raccolta scelta. Si aprono con Excel o Fogli.</p>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 20px">PER IL FORNITORE</span>
+        <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Solo gli ordini saldati e non annullati, contati per capo e taglia. Quello da mandare al fornitore.</span>
+        <dc-import name="AnteprimaCsv" file="vestiario-fornitore-31-10-2026.csv" righe="capo;taglia;quanti;;Judogi bianco;110;1;;Judogi bianco;120;3;;Judogi bianco;140;2;;Costumino da lotta;10;2;;Felpa ODS;S;4;;Felpa ODS;L;1;;Cintura;240;2" hint-size="100%,230px"></dc-import>
+        <div style="display: flex"><dc-import name="Bottone" label="SCARICA · CSV" variante="linea" contesto="segreteria" hint-size="170px,48px"></dc-import></div>
+        <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">6 ordini da saldare non ci sono: 312 €.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 20px">PER PERSONA</span>
+        <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Una riga per capo, con per chi è, chi l’ha ordinato e lo stato: per distribuire quando arriva la merce.</span>
+        <dc-import name="AnteprimaCsv" file="vestiario-persone-31-10-2026.csv" righe="per chi;capo;taglia;quanti;chi ordina;telefono;stato;;Bianchi Tommaso;Judogi bianco;140;1;Bianchi Marco;347 555 0192;saldato;;Bianchi Tommaso;Cintura;240;1;Bianchi Marco;347 555 0192;saldato;;Colombo Giulia;Felpa ODS;S;1;Colombo Anna;339 210 4488;saldato;;Rossi Luca;Judogi bianco;130;1;Rossi Paola;333 123 4567;da saldare" hint-size="100%,190px"></dc-import>
+        <div style="display: flex"><dc-import name="Bottone" label="SCARICA · CSV" variante="linea" contesto="segreteria" hint-size="170px,48px"></dc-import></div>
+        <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">In ordine di cognome di chi riceve. Gli annullati non ci sono; i da saldare sì, con lo stato.</span>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

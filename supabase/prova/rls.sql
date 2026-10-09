@@ -15,7 +15,7 @@ end $$;
 select pg_temp.atteso('le funzioni che chiama anon',
   (select string_agg(p.proname, ', ' order by p.proname) from pg_proc p
     where p.pronamespace = 'public'::regnamespace and has_function_privilege('anon', p.oid, 'execute')),
-  'corsi_aperti, invia_iscrizione, iscrizioni_regole, listino, mesi_presenze_pubblici, puo_caricare');
+  'corsi_aperti, invia_iscrizione, invia_ordine_vestiario, iscrizioni_regole, listino, mesi_presenze_pubblici, puo_caricare, vestiario');
 -- Ogni funzione dice dove cerca le tabelle: se no le cerca nel search_path di
 -- chi la chiama, che se lo può cambiare (l'avviso di Supabase).
 select pg_temp.atteso('le funzioni senza search_path',

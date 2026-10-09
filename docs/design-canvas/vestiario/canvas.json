@@ -1,0 +1,160 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Ordini vestiario"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Main.dc.html",
+   "title": "Le note: cosa decide il canvas, cosa è cambiato costruendo, domande aperte",
+   "x": 0,
+   "y": 0,
+   "w": 1200,
+   "h": 2700,
+   "page": "page-1"
+  },
+  {
+   "file": "Iscrizioni.dc.html",
+   "title": "Telefono · ISCRIZIONI prima e costruita",
+   "x": 0,
+   "y": 3060,
+   "w": 900,
+   "h": 1600,
+   "page": "page-1"
+  },
+  {
+   "file": "Ordina.dc.html",
+   "title": "Telefono · ORDINA: catalogo e righe",
+   "x": 1020,
+   "y": 3060,
+   "w": 390,
+   "h": 2150,
+   "page": "page-1"
+  },
+  {
+   "file": "Dati.dc.html",
+   "title": "Telefono · ORDINA: chi ordina e totale",
+   "x": 1530,
+   "y": 3060,
+   "w": 390,
+   "h": 1250,
+   "page": "page-1"
+  },
+  {
+   "file": "Arrivato.dc.html",
+   "title": "Telefono · ORDINE ARRIVATO",
+   "x": 2040,
+   "y": 3060,
+   "w": 390,
+   "h": 1350,
+   "page": "page-1"
+  },
+  {
+   "file": "Chiusi.dc.html",
+   "title": "Telefono · ordini chiusi e non ancora aperti",
+   "x": 2550,
+   "y": 3060,
+   "w": 900,
+   "h": 960,
+   "page": "page-1"
+  },
+  {
+   "file": "MenuOggi.dc.html",
+   "title": "Menu di segreteria · costruito",
+   "x": 0,
+   "y": 5630,
+   "w": 340,
+   "h": 1340,
+   "page": "page-1"
+  },
+  {
+   "file": "Elenco.dc.html",
+   "title": "VESTIARIO · numeri ed elenco",
+   "x": 780,
+   "y": 5630,
+   "w": 1440,
+   "h": 1350,
+   "page": "page-1"
+  },
+  {
+   "file": "Ordine.dc.html",
+   "title": "VESTIARIO · un ordine aperto",
+   "x": 2340,
+   "y": 5630,
+   "w": 1440,
+   "h": 1100,
+   "page": "page-1"
+  },
+  {
+   "file": "OrdineBozza.dc.html",
+   "title": "VESTIARIO · righe corrette, bozza e SALVA",
+   "x": 3900,
+   "y": 5630,
+   "w": 1440,
+   "h": 900,
+   "page": "page-1"
+  },
+  {
+   "file": "Stati.dc.html",
+   "title": "IL PAGAMENTO: tre stati, e la conferma di ANNULLA",
+   "x": 0,
+   "y": 7090,
+   "w": 1440,
+   "h": 900,
+   "page": "page-1"
+  },
+  {
+   "file": "Catalogo.dc.html",
+   "title": "VESTIARIO · CATALOGO E CHIUSURA",
+   "x": 1560,
+   "y": 7090,
+   "w": 1440,
+   "h": 1300,
+   "page": "page-1"
+  },
+  {
+   "file": "NuovoOrdine.dc.html",
+   "title": "VESTIARIO · NUOVO ORDINE dal banco",
+   "x": 3120,
+   "y": 7090,
+   "w": 1440,
+   "h": 1600,
+   "page": "page-1"
+  },
+  {
+   "file": "Elenchi.dc.html",
+   "title": "VESTIARIO · gli elenchi CSV (anteprima scartata)",
+   "x": 4680,
+   "y": 7090,
+   "w": 1440,
+   "h": 900,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "n1",
+   "x": 0,
+   "y": 2780,
+   "text": "TELEFONO · il genitore, dal link COPIA LINK ORDINI",
+   "kind": "title1",
+   "maxW": 6120,
+   "page": "page-1"
+  },
+  {
+   "id": "n2",
+   "x": 0,
+   "y": 5350,
+   "text": "SCHERMO LARGO · la segreteria, voce VESTIARIO",
+   "kind": "title1",
+   "maxW": 6120,
+   "page": "page-1"
+  }
+ ],
+ "launch": {
+  "view": "canvas",
+  "page": "page-1"
+ }
+}

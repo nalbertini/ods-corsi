@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<div style="width: 100%; min-width: 0; color: {{c.text}}">
+  <sc-if value="{{app}}" hint-placeholder-val="{{ true }}">
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; background: {{c.surface}}; border: 2px solid {{c.line}}">
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 24px">
+        <span style="flex-grow: 1; font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}">{{titolo}}</span>
+        <sc-if value="{{togli}}" hint-placeholder-val="{{ false }}">
+          <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-size: 14px; color: {{c.sec}}; text-decoration: underline; text-underline-offset: 3px">Togli</span>
+        </sc-if>
+      </div>
+      <dc-import name="Campo" tipo="testo" etichetta="PER CHI · NOME E COGNOME" valore="{{perChi}}" segnaposto="Nome e cognome" tema="{{tema}}" hint-size="100%,76px"></dc-import>
+      <dc-import name="Campo" tipo="select" etichetta="CAPO" valore="{{capoApp}}" segnaposto="Scegli il capo" tema="{{tema}}" hint-size="100%,76px"></dc-import>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px">
+        <dc-import name="Campo" tipo="select" etichetta="TAGLIA" valore="{{taglia}}" segnaposto="Scegli" nota="{{guaio}}" tema="{{tema}}" hint-size="100%,100px"></dc-import>
+        <dc-import name="Campo" tipo="select" etichetta="QUANTI" valore="{{quantita}}" tema="{{tema}}" hint-size="100%,76px"></dc-import>
+      </div>
+      <sc-if value="{{haPrezzo}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; align-items: center; gap: 12px; padding-top: 6px; border-top: 2px solid {{c.line}}; font-size: 17px; font-weight: 700">
+          <span style="flex-grow: 1; font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{conto}}</span>
+          <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums">{{prezzo}}</span>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+  <sc-if value="{{sg}}" hint-placeholder-val="{{ false }}">
+    <div style="display: grid; grid-template-columns: {{griglia}}; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid {{c.surface2}}">
+      <sc-for list="{{celle}}" as="k" hint-placeholder-count="4">
+        <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <sc-if value="{{etichette}}" hint-placeholder-val="{{ false }}">
+            <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">{{k.etichetta}}</span>
+          </sc-if>
+          <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 44px; padding: 0 12px; background: {{c.bg}}; border: 2px solid {{k.bordo}}; font-family: {{k.famiglia}}; font-variant-numeric: tabular-nums; font-size: 15px; color: {{k.colore}}; white-space: nowrap; overflow: hidden">{{k.valore}}<sc-if value="{{k.select}}" hint-placeholder-val="{{ true }}"><span style="color: {{c.dim}}; font-size: 12px">&#9662;</span></sc-if></span>
+        </span>
+      </sc-for>
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right">{{prezzoSg}}</span>
+      <span style="display: inline-flex; align-items: center; justify-content: flex-end; min-height: 44px; font-size: 13px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">{{togliTesto}}</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"numero":{"editor":"text","default":"1"},"perChi":{"editor":"text","default":"Luca Rossi"},"capo":{"editor":"text","default":"Judogi bianco"},"prezzoCapo":{"editor":"text","default":"35 €"},"taglia":{"editor":"text","default":"130"},"quantita":{"editor":"text","default":"1"},"prezzo":{"editor":"text","default":"35 €"},"conto":{"editor":"text","default":"1 × 35 €"},"guaio":{"editor":"text","default":""},"togli":{"editor":"boolean","default":false},"etichette":{"editor":"boolean","default":false},"griglia":{"editor":"text","default":"minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":400}}'>
+// Riproduzione 1:1 di una riga di un ordine di vestiario, nei due contesti.
+// contesto "app": `RigaOrdine` di src/components/OrdinaVestiario.tsx (righe 324-404), la pagina degli ordini sul telefono. Un .card.stack.riquadro
+//   (fondo `surface`, bordo 2px `line`, padding 14px, gap 8px). In cima «RIGA N» (.rule-label: Saira 15px 700 0.24em `dim`) e, dalla seconda
+//   riga, «Togli» (.vestiario-togli in src/styles.css riga 2120: alto 44px, padding 0 4px, 14px `sec`, sottolineato). Sotto i Campo del modulo:
+//   PER CHI · NOME E COGNOME, CAPO (select, la voce dice «capo · prezzo») e TAGLIA e QUANTI affiancati (.vestiario-due: due colonne, gap 10px;
+//   QUANTI e' .num, una select da 1 a MAX_QUANTI). guaio = la nota rossa sotto TAGLIA (NotaCampo) e il bordo rosso del campo, non del riquadro.
+//   In fondo, solo con un capo scelto, .stima-riga.stima-totale (righe 899-901: filo 2px `line` sopra, padding-top 6px, 17px 700): «N × prezzo»
+//   in .passo-dettaglio (14px `dim`) e il prezzo della riga in .num.
+// contesto "segreteria": una riga di `RigheTabella` di src/components/segreteria/Vestiario.tsx (righe 328-420), nell'ordine aperto e nel NUOVO
+//   ORDINE. .sg-righe-vestiario (righe 2131 e 2137: griglia minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px, gap 10px) con
+//   .sg-riga-vestiario-campi (padding 6px 0, filetto 1px `surface-2`). I campi sono .sg-campo (44px, padding 0 12px, fondo `bg`, bordo 2px
+//   `line`, 15px; la ▾ qui disegnata): PER CHI, CAPO (solo il nome), TAGLIA, QUANTI (.num). guaio = TAGLIA col bordo `rosso` (aria-invalid:
+//   la taglia non c'e' nel capo), senza frase: la frase sta sotto le righe («Manca: la taglia della riga 2»). Prezzo .num 16px 700 a destra
+//   («—» senza capo); «Togli» .sg-link.sg-link-alto (13px `dim`, alto 44px) solo se le righe sono piu' d'una.
+//   Da 1001px le etichette dei campi sono nascoste (le dice la TestataTabella sopra, stessa griglia, colonne PER CHI|CAPO|TAGLIA|QUANTI|PREZZO);
+//   sotto i 1000px la testata sparisce, le etichette (.sg-etichetta) si vedono e la riga va su due colonne: `etichette` vero e
+//   griglia="minmax(0, 1fr) minmax(0, 1fr)".
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const BODY = "Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const sg = p.contesto === 'segreteria';
+    const guaio = p.guaio ?? '';
+    const capo = p.capo ?? 'Judogi bianco';
+    const prezzoCapo = p.prezzoCapo ?? '35 €';
+    const taglia = p.taglia ?? '130';
+    const prezzo = p.prezzo ?? '35 €';
+    const cella = (etichetta, valore, vuoto, select, num, rosso) => ({
+      etichetta, valore: valore || vuoto, select,
+      colore: valore ? c.text : c.dim, famiglia: num ? COND : BODY, bordo: rosso ? c.rosso : c.line,
+    });
+    return {
+      c, cond: COND, tema: p.tema || 'scuro',
+      app: !sg, sg,
+      titolo: 'RIGA ' + (p.numero ?? '1'),
+      perChi: p.perChi ?? 'Luca Rossi',
+      capoApp: capo ? capo + (prezzoCapo ? ' · ' + prezzoCapo : '') : '',
+      taglia, quantita: p.quantita ?? '1',
+      prezzo, haPrezzo: !!capo && prezzo !== '', conto: p.conto ?? '1 × 35 €',
+      prezzoSg: capo ? prezzo : '—',
+      guaio,
+      togli: truthy(p.togli), togliTesto: truthy(p.togli) ? 'Togli' : '',
+      etichette: truthy(p.etichette),
+      griglia: p.griglia || 'minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px',
+      celle: [
+        cella('PER CHI', p.perChi ?? 'Luca Rossi', 'Nome e cognome', false, false, false),
+        cella('CAPO', capo, 'Scegli', true, false, false),
+        cella('TAGLIA', taglia, 'Scegli', true, false, guaio !== ''),
+        cella('QUANTI', p.quantita ?? '1', '1', true, true, false),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

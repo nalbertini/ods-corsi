@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<!-- I tre stati del riquadro IL PAGAMENTO (da saldare con una parte pagata, saldato col bordo verde di .sg-riquadro[data-fatto], annullato) e la conferma di ANNULLA L’ORDINE. Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; flex-direction: column; gap: 30px; width: 1440px; min-height: 900px; padding: 40px; background: #121212; color: #f2f2f0">
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <dc-import name="Titoletto" label="DA SALDARE" hint-size="100%,50px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">IL PAGAMENTO</span>
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <dc-import name="Badge" tipo="segno" tono="rosso" label="DA SALDARE" hint-size="110px,26px"></dc-import>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">93 €</span>
+        </div>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 15px">Pagati 63 € · mancano 30 €</span><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Con bonifico (causale «Vestiario Rossi Paola»), Satispay o contanti. Il segno è a mano: niente ricevuta.</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">SEGNA SALDATO</span><div style="display: flex; gap: 8px; flex-wrap: wrap"><dc-import name="Bottone" label="BONIFICO" variante="vai" contesto="segreteria" hint-size="130px,48px"></dc-import><dc-import name="Bottone" label="SATISPAY" variante="vai" contesto="segreteria" hint-size="130px,48px"></dc-import><dc-import name="Bottone" label="CONTANTI" variante="vai" contesto="segreteria" hint-size="130px,48px"></dc-import></div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <dc-import name="Titoletto" label="SALDATO" hint-size="100%,50px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #16a54a">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">IL PAGAMENTO</span>
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <dc-import name="Badge" tipo="segno" tono="verde" label="SALDATO" hint-size="110px,26px"></dc-import>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">93 €</span>
+        </div>
+        <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Saldato con bonifico il 5 ottobre. Va nell’elenco per il fornitore.</span>
+        <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 13px; color: #8c8c88; text-decoration: underline; text-underline-offset: 3px">Togli il segno</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <dc-import name="Titoletto" label="ANNULLATO" hint-size="100%,50px"></dc-import>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">IL PAGAMENTO</span>
+        <div style="display: flex; align-items: baseline; gap: 12px">
+          <dc-import name="Badge" tipo="segno" tono="spento" label="ANNULLATO" hint-size="110px,26px"></dc-import>
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">93 €</span>
+        </div>
+        <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Resta qui, ma non va al fornitore e non conta nei numeri.</span>
+        <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 13px; color: #8c8c88; text-decoration: underline; text-underline-offset: 3px">Rimetti l’ordine</span>
+      </div>
+    </div>
+  </div>
+  <dc-import name="Titoletto" label="ANNULLA L’ORDINE" hint-size="100%,50px"></dc-import>
+  <div style="width: 640px">
+    <dc-import name="Dialogo" tipo="conferma" domanda="Annullare l’ordine di Paola Rossi?" resto="L’ordine resta nell’elenco, segnato ANNULLATO: non va al fornitore e non conta nei numeri. Se ha già pagato, il rimborso si fa a mano." no="LASCIA STARE" si="ANNULLA L’ORDINE" altezza="440px" hint-size="640px,440px"></dc-import>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

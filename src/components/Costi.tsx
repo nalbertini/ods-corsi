@@ -3,6 +3,7 @@ import { saldoAperto, STAGIONE } from '../lib/costi'
 import { LISTINO, PAGAMENTO } from '../lib/iscrizione'
 import { caricaListino, type ListinoLetto } from '../lib/listino'
 import { chiaveGiorno } from '../lib/sala'
+import { inEuro } from '../lib/vestiario'
 import { paginaSito, presentazione } from '../lib/sito'
 import { Cifra, Costo, Dettaglio, Etichetta, Riquadro, Tasto, Titoletto } from './ds'
 
@@ -19,8 +20,8 @@ export function useListino(): ListinoLetto | null {
   return letto
 }
 
-/** «50 €», «12,50 €». */
-export const inEuro = (n: number) => `${n.toLocaleString('it-IT', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 })} €`
+// «50 €», «12,50 €»: uno solo per tutta l'app, e chi lo prendeva da qui continua a trovarlo.
+export { inEuro }
 
 /**
  * Il listino della stagione, corso per corso.

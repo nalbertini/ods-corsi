@@ -74,6 +74,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 44. `44-email-contatto.sql` — l'email di contatto delle persone (`persone.email_contatto`): facoltativa, può ripetersi fra parenti, la scrive la segreteria e la legge il personale come l'email di accesso, che resta una per persona; accogliere una richiesta e unire due schede la tengono in conto
 45. `45-certificati-online.sql` — il certificato medico resta nell'app: un file per persona (foto o PDF, 10 MB) in un contenitore privato che apre solo la segreteria, caricato insieme alla data in un passaggio solo, cancellato 30 giorni dopo la scadenza o quando la persona è disattivata; accogliendo una richiesta il certificato passa alla scheda, e unire due schede non si ferma più sul file
 46. `46-istruttore-collega.sql` — il collega che insegnava con te: chi fa l'appello vede gli altri istruttori previsti e ne segna uno presente (confermato, «segnata da …»), e lo toglie finché la segreteria non l'ha guardato; la segreteria segna «c'era» un previsto anche su una lezione già coperta
+47. `47-vestiario.sql` — gli ordini di vestiario, judogi e costumini: il catalogo (capo, taglie, prezzo, nota) in `impostazioni.vestiario` e la data di chiusura nella raccolta, li salva la segreteria; chi non ha un accesso legge il catalogo da `vestiario()` e manda un ordine da `invia_ordine_vestiario()` fino alla data compresa, coi prezzi e il totale messi dal database; gli ordini li vede e li cambia solo la segreteria, che corregge le righe e scrive dal banco anche a raccolta chiusa
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -250,11 +251,19 @@ a com'erano: va rilanciato anche il `45` (e lo stesso dopo `44-email-contatto.sq
 va lanciato questo file; caricare un certificato non funziona, e il certificato
 resta su carta come prima. Va lanciato prima di pubblicare l'app che non
 stampa più il certificato.
+
 Per segnare il collega che insegnava con te basta `46-istruttore-collega.sql`
 (dopo `23-istruttori-dalle-lezioni.sql`), che non chiede di rilanciare
 `06-iscrizioni.sql`: finché non c'è, l'appello non mostra gli istruttori e
 PRESENZE ISTRUTTORI non ha «c'era» sulle lezioni già coperte; il resto
 dell'appello va come prima.
+
+Per gli ordini di vestiario basta `47-vestiario.sql` (dopo `06-iscrizioni.sql`),
+che non chiede di rilanciare `06-iscrizioni.sql`: se lo si rilancia dopo,
+rimette lui il permesso ad `anon` su `vestiario()` e `invia_ordine_vestiario()`.
+Finché non c'è, la pagina pubblica dice «ordini non ancora aperti» e VESTIARIO
+dice che manca l'aggiornamento.
+
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
 venuto a provare a tutto il personale, ora solo alla segreteria. Finché non
@@ -1019,5 +1028,5 @@ nome: dalla terza lettera di una parola, al massimo venti, come la ricerca
 dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno.
 `cerca-persone.sql`, dopo `tablet.sql`, prova che «Aggiungi chi prova» trovi anche chi è iscritto a un altro corso o non ha mai provato, con i corsi di oggi e senza telefono per nessuno; che personale e disattivati non compaiano; la soglia delle tre lettere, il tetto di ventuno e che tablet, iscritti e `anon` non la usino. `tablet-conto-prove.sql` prova che il tablet sappia quanti dei presenti sono
 prove, cioè non iscritti quel giorno (chi ha provato e poi si è iscritto no,
-chi ha l'iscrizione finita sì), e che nessun altro lo chieda. `finto-supabase.sql` rifà anche le due
+chi ha l'iscrizione finita sì), e che nessun altro lo chieda. `vestiario.sql` prova gli ordini di vestiario: il catalogo lo salva solo la segreteria e lo legge chi non ha un accesso, aperti fino alla data compresa, i rifiuti di un ordine, il totale fatto dal catalogo, proroga e raccolta nuova, e che gli ordini li veda e li cambi solo la segreteria, che corregge le righe e scrive dal banco. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.

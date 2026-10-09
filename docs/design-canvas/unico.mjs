@@ -32,6 +32,7 @@ const SEZIONI = [
   { id: 'certificati-online', nome: 'Certificati online', cartella: 'certificati-online' },
   { id: 'certificato-piccoli', nome: 'Certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
   { id: 'istruttore-collega', nome: 'Istruttore che insegna con te', cartella: 'istruttore-collega' },
+  { id: 'vestiario', nome: 'Ordini vestiario · proposta', cartella: 'vestiario' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')
@@ -133,7 +134,8 @@ for (const s of SEZIONI) {
   }
   for (const n of c?.annotations ?? []) {
     if (n.page && n.page !== 'page-1') continue
-    notes[`${s.id}-${n.id}`] = { x: n.x, y: n.y, w: n.w, text: n.text, page: s.id }
+    // Un titolo (`kind`) resta titolo: un post-it largo si allunga a 4/3 e copre le tavole sotto.
+    notes[`${s.id}-${n.id}`] = { x: n.x, y: n.y, w: n.w, text: n.text, page: s.id, ...(n.kind && { kind: n.kind, maxW: n.maxW }) }
   }
 }
 

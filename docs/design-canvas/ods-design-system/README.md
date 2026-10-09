@@ -23,7 +23,7 @@ Google, e vale solo per i mockup.
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
 | `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola` |
-| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`); `impostazioni` accende il tasto coi cursori |
+| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): VESTIARIO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
@@ -84,7 +84,7 @@ Google, e vale solo per i mockup.
 | `CaricaFile` | La riga di un file del modulo (`CaricaFile` di `ds.tsx`): SCEGLI o CAMBIA, file scelto in verde, errore |
 | `TavolaFirma` | Il riquadro della firma (`TavolaFirma.tsx`): vuoto con FIRMA QUI COL DITO, o firmato |
 | `FirmaSchermoIntero` | La firma a schermo intero (`FirmaSchermoIntero` in `TavolaFirma.tsx`, `.firma-intera*`): ANNULLA, nome e FATTO in cima, il riquadro con la riga a un quarto dal fondo, la frase e CANCELLA E RIFAI; `orientamento` verticale o orizzontale, `firmata` |
-| `StimaCosto` | QUANTO COSTA di una persona del nucleo: righe, sconto famiglia, totale, IBAN, causale, tasti |
+| `StimaCosto` | QUANTO COSTA di una persona del nucleo: righe, sconto famiglia, totale, IBAN, causale, tasti; `etichetta` e `stima` cambiano il titolo e la frase prima dell'IBAN |
 | `TitoloEsito` | `TitoloEsito` di `ds.tsx` con le frasi `.esito-testo`: RICHIESTA ARRIVATA e MANCA QUALCHE FILE |
 | `MembroNucleo` | Una persona del nucleo (`.mio-membro`): IN REGOLA, DA SISTEMARE, in attesa o rifiutata |
 | `RigaNucleoPagamento` | Una riga di PAGAMENTI DEL NUCLEO, con la variante «Tutto il nucleo» |
@@ -104,6 +104,13 @@ Google, e vale solo per i mockup.
 | `TimerInterruttore` | `Toggle` delle impostazioni del timer: nome, nota, acceso o spento |
 | `TabletTendina` | La tendina CORSO aperta dell'area istruttore (`.tb-select`); il `<select>` vero è del sistema |
 | `TabletProvaPannello` | `PannelloProve` con stile tablet (`Prove.tsx`): CHI VIENE A PROVARE alzato per il dito, campi su tre colonne e già venuti sotto |
+| `Numero` | `Numero` di `Presenze.tsx` (`.sg-numero`): titolo, cifra da 44px e riga sotto; `allarme` col bordo rosso. Quattro in fila in `.sg-numeri`, cinque in VESTIARIO (`data-cinque`) |
+| `BarraSalva` | La barra per salvare di LISTINO (`.sg-listino-salva`): frase, BUTTA I CAMBI e SALVA, bordo giallo; `guaio` la frase in rosso e SALVA spento |
+| `VoceElenco` | Una voce chiusa di LISTINO > I CORSI (`.sg-voce-elenco`): nome, riga rossa se manca qualcosa, riassunto e il chip CAMBIA |
+| `RigaVestiario` | Una riga di un ordine di vestiario (`RigaOrdine` di `OrdinaVestiario.tsx`, `RigheTabella` di `Vestiario.tsx`): `contesto` app (riquadro a campi del telefono: RIGA N, PER CHI, CAPO, TAGLIA e QUANTI, il conto) o segreteria (una riga di campi sotto `TestataTabella`; `etichette` sotto i 1000px) |
+| `RigaOrdineVestiario` | La riga della tabella degli ordini in VESTIARIO: chi ordina (sotto, quando e da dove è arrivato; `stessoTelefono` il bollino giallo STESSO TELEFONO), capi, telefono, DA SALDARE / SALDATO / ANNULLATO, totale (sotto, in rosso, `resto`: «mancano 7 €»); l'annullato ha il testo spento, non è trasparente |
+| `Chip` | `.sg-chip`: il tasto piccolo della segreteria (filtri, CAMBIA, SCHEDA); `acceso` (aria-pressed), `pieno`, `disabled`, e un numero dentro |
+| `AnteprimaCsv` | PROPOSTA «ordini vestiario», non costruita: le prime righe di un CSV scaricato, in `.sg-mono`, col nome del file sopra. Nell'app ci sono solo i due tasti, con una frase sotto |
 | `canvas.json` | Layout del canvas: pagina "Design System" (Foundations, le due cornici) e pagina "Libreria" |
 | `verifica.mjs` | Il controllo da lanciare prima di pubblicare |
 

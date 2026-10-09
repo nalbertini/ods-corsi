@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<!-- La pagina degli ordini (link COPIA LINK ORDINI), parte alta: la nota della raccolta, il catalogo da leggere e le righe dell’ordine. La barra in fondo è sticky, col totale. Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 2150px; background: #121212; color: #f2f2f0">
+  <dc-import name="Testata" luogo="VESTIARIO" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <dc-import name="Titoletto" label="ORDINA IL VESTIARIO" hint-size="100%,50px"></dc-import>
+    <div style="padding: 0 20px 16px">
+      <dc-import name="RiquadroPasso" tono="prova" etichetta="ORDINI APERTI FINO AL 31 OTTOBRE" titolo="" testo="Scegli i capi qui sotto, per uno o più figli. Paghi dopo, con bonifico, Satispay o in segreteria: al fornitore va solo quello pagato entro il 31 ottobre." tasti="" hint-size="100%,140px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" label="IL CATALOGO" conto="4 CAPI" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+      <dc-import name="RiquadroPasso" titolo="" righe="Judogi bianco:35 €" testo="Taglie 110, 120, 130, 140, 150, 160, 170, 180, 190, 200.|Prendi l’altezza del bambino e aggiungi 10 cm. I campioni sono in segreteria." tasti="" hint-size="100%,150px"></dc-import>
+      <dc-import name="RiquadroPasso" titolo="" righe="Costumino da lotta:30 €" testo="Taglie 6, 8, 10, 12, 14, XS, S, M, L.|Fino ai 14 anni la taglia è l’età: a 8 anni, la 8." tasti="" hint-size="100%,150px"></dc-import>
+      <dc-import name="RiquadroPasso" titolo="" righe="Felpa ODS:28 €" testo="Taglie 6, 8, 10, 12, XS, S, M, L, XL." tasti="" hint-size="100%,110px"></dc-import>
+      <dc-import name="RiquadroPasso" titolo="" righe="Cintura:6 €" testo="Lunghezze 220, 240, 260, 280.|Per i bambini va bene la 240." tasti="" hint-size="100%,150px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" label="IL TUO ORDINE" conto="3 CAPI" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+      <dc-import name="RigaVestiario" numero="1" per-chi="Luca Rossi" capo="Judogi bianco" prezzo-capo="35 €" taglia="130" quantita="1" conto="1 × 35 €" prezzo="35 €" hint-size="100%,420px"></dc-import>
+      <dc-import name="RigaVestiario" numero="2" per-chi="Sara Rossi" capo="Costumino da lotta" prezzo-capo="30 €" taglia="8" quantita="1" conto="1 × 30 €" prezzo="30 €" togli="{{ true }}" hint-size="100%,420px"></dc-import>
+      <dc-import name="RigaVestiario" numero="3" per-chi="Sara Rossi" capo="Felpa ODS" prezzo-capo="28 €" taglia="" quantita="1" conto="1 × 28 €" prezzo="28 €" guaio="Scegli la taglia" togli="{{ true }}" hint-size="100%,450px"></dc-import>
+      <dc-import name="Bottone" label="+ UN ALTRO CAPO" variante="tratteggiato" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import>
+      <dc-import name="Bottone" label="+ PER UN ALTRO FIGLIO" variante="tratteggiato" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import>
+    </div>
+    <dc-import name="BarraPasso" compatta="{{ true }}" manca="La taglia della riga 3|Il tuo nome|Il telefono" totale="93 €" totale-righe="3 capi" avanti="MANDA L’ORDINE" tono="vai" senza-indietro="{{ true }}" hint-size="100%,150px"></dc-import>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

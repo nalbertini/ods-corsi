@@ -8,3 +8,6 @@ export const INDIRIZZO_GUIDA = '#guida'
 export const eIndirizzoGuida = (hash: string) => hash === INDIRIZZO_GUIDA || hash.startsWith(`${INDIRIZZO_GUIDA}/`)
 
 export const INDIRIZZO_AREE = '#aree'
+
+/** Gli ordini del vestiario, dentro `iscrizioni/`: il link di COPIA LINK ORDINI. */
+export const INDIRIZZO_VESTIARIO = '#vestiario'

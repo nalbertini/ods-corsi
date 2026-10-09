@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<!-- La pagina degli ordini fuori raccolta: a sinistra dopo CHIUDE IL, a destra senza data o senza catalogo (anche senza 47-vestiario.sql). Cornice copiata da Pagina.dc.html / PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; gap: 40px; width: 900px; min-height: 960px; padding: 30px 40px; background: #121212; color: #f2f2f0">
+  <div style="display: flex; flex-direction: column; gap: 10px; width: 390px">
+    <dc-import name="Titoletto" label="DOPO IL 31 OTTOBRE" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+  <dc-import name="Testata" luogo="VESTIARIO" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 28px">
+      <dc-import name="TitoloEsito" titolo="ORDINI CHIUSI" tono="avviso" testi="Gli ordini del vestiario si sono chiusi il 31 ottobre.|La prossima raccolta la annuncia la palestra." hint-size="100%,200px"></dc-import>
+      <dc-import name="RiquadroPasso" titolo="Ti serve un capo?" testo="Chiama la segreteria al 346 329 2786, o passa in palestra." tasti="CHIAMA" hint-size="100%,170px"></dc-import>
+      <dc-import name="Bottone" label="VAI ALLE ISCRIZIONI" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import>
+    </div>
+  </main>
+</div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 10px; width: 390px">
+    <dc-import name="Titoletto" label="SENZA DATA O CATALOGO" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+  <dc-import name="Testata" luogo="VESTIARIO" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column">
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 28px">
+      <dc-import name="TitoloEsito" titolo="ORDINI NON ANCORA APERTI" tono="avviso" testi="In questo momento non si ordina il vestiario.|Quando si apre una raccolta, la palestra manda il link." hint-size="100%,200px"></dc-import>
+      <dc-import name="RiquadroPasso" titolo="Ti serve un capo?" testo="Chiama la segreteria al 346 329 2786, o passa in palestra." tasti="CHIAMA" hint-size="100%,170px"></dc-import>
+      <dc-import name="Bottone" label="VAI ALLE ISCRIZIONI" variante="linea" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import>
+    </div>
+  </main>
+</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

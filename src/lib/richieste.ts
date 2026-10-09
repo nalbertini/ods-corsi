@@ -1,6 +1,13 @@
 import { haUnServer } from './dati'
 import { cfNatoIl, cfTornaColNome, cfTornaConLaData, cfValido } from './codiceFiscale'
 
+// Le forme di email e telefono, le stesse del database: le usano anche gli ordini del vestiario.
+export const FORMA_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+export const telefonoGiusto = (t: string) => {
+  const cifre = t.replace(/\D/g, '').length
+  return /^\+?[0-9 ./()-]+$/.test(t) && cifre >= 6 && cifre <= 15
+}
+
 /**
  * Il modulo di iscrizione, quello che prima stava su Google Form.
  *
@@ -362,12 +369,11 @@ function guai(d: DatiRichiesta, oggi: Date): Guaio[] {
   else if (d.corsi.length > 6) metti({ campo: 'corsi', messaggio: 'Un campo non va: si possono scegliere al massimo sei corsi', testo: 'Al massimo sei' })
 
   if (d.cap.trim() && !/^\d{5}$/.test(d.cap.trim())) metti({ campo: 'cap', messaggio: 'Un campo non va: il CAP ha 5 cifre', testo: 'Sono 5 cifre' })
-  if (d.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email.trim()))
+  if (d.email.trim() && !FORMA_EMAIL.test(d.email.trim()))
     metti({ campo: 'email', messaggio: "Un campo non va: l'email non sembra giusta", testo: 'Non sembra giusta' })
   for (const campo of ['telefono', 'telefono2'] as const) {
     const tel = (d[campo] ?? '').trim()
-    const cifre = tel.replace(/\D/g, '').length
-    if (tel && (!/^\+?[0-9 ./()-]+$/.test(tel) || cifre < 6 || cifre > 15))
+    if (tel && !telefonoGiusto(tel))
       metti({
         campo,
         messaggio: `Un campo non va: il ${campo === 'telefono' ? 'telefono' : 'secondo telefono'} non sembra giusto`,

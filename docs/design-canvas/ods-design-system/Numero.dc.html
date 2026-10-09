@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+<div style="display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; padding: 16px 18px; background: {{c.surface}}; border: 2px solid {{bordo}}; color: {{c.text}}">
+  <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: {{coloreTitolo}}">{{titolo}}</span>
+  <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 44px; font-weight: 700; line-height: 0.95">{{valore}}</span>
+  <span style="font-size: 13px; color: {{c.dim}}">{{sotto}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"titolo":{"editor":"text","default":"PRESENZE"},"valore":{"editor":"text","default":"128"},"sotto":{"editor":"text","default":"in ottobre"},"allarme":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":220,"height":120}}'>
+// Riproduzione 1:1 di `Numero` di src/components/segreteria/Presenze.tsx (righe 385-393) con .sg-numero e .sg-numeri di
+// src/styles.css (righe 1805-1807): fondo `surface`, bordo 2px `line`, padding 16px 18px, gap 6px. Titolo .sg-etichetta (Saira 12px
+// 700) con spaziatura 0.2em, `dim`; valore .num 44px 700, interlinea 0.95; sotto 13px `dim`.
+// allarme: bordo `rosso` e titolo rosso-testo (data-allarme). Nell'app stanno in .sg-numeri: quattro in una griglia, gap 14px
+// (PRESENZE, STATISTICHE, ISTRUTTORI E ACCESSI, IMPOSTAZIONI); in VESTIARIO cinque (.sg-numeri[data-cinque], src/styles.css riga 2122).
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', rosso: '#e4292a', rossoTesto: '#ff5a52' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', rosso: '#e4292a', rossoTesto: '#b81d1d' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const allarme = truthy(p.allarme);
+    return {
+      c, cond: COND,
+      titolo: p.titolo ?? 'PRESENZE', valore: p.valore ?? '128', sotto: p.sotto ?? 'in ottobre',
+      bordo: allarme ? c.rosso : c.line,
+      coloreTitolo: allarme ? c.rossoTesto : c.dim,
+    };
+  }
+}
+</script>
+</body>
+</html>

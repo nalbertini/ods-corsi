@@ -15,7 +15,7 @@
   </style>
 </helmet>
 <div style="display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; color: {{c.text}}">
-  <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">QUANTO COSTA</span>
+  <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">{{etichetta}}</span>
   <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px; background: {{c.surface}}; border: 2px solid {{c.line}}">
     <sc-if value="{{nessuna}}" hint-placeholder-val="{{ false }}">
       <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">Scegli i corsi per vedere quanto costa.</span>
@@ -49,13 +49,16 @@
   </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"righe":{"editor":"text","default":"Quota associativa:50 €|Judo kids · trimestre:105 €|Sconto famiglia 20% su Judo kids di Ginevra:−21 €"},"totale":{"editor":"text","default":"134 €"},"frasi":{"editor":"text","default":"Lo sconto famiglia va sull annuale che costa meno nel nucleo: Judo kids di Ginevra, che l ha già avuto o lo avrà in segreteria."},"avviso":{"editor":"text","default":""},"intestatario":{"editor":"text","default":"ASD Il Centro Judo"},"iban":{"editor":"text","default":"IT00 X000 0000 0000 0000 0000 000"},"causale":{"editor":"text","default":"Iscrizione Giulia Rossi · Judo kids"},"tasti":{"editor":"text","default":"COPIA IBAN|COPIA CAUSALE|PAGA CON SATISPAY"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":420}}'>
+<script data-dc-script data-props='{"righe":{"editor":"text","default":"Quota associativa:50 €|Judo kids · trimestre:105 €|Sconto famiglia 20% su Judo kids di Ginevra:−21 €"},"totale":{"editor":"text","default":"134 €"},"frasi":{"editor":"text","default":"Lo sconto famiglia va sull annuale che costa meno nel nucleo: Judo kids di Ginevra, che l ha già avuto o lo avrà in segreteria."},"avviso":{"editor":"text","default":""},"intestatario":{"editor":"text","default":"ASD Il Centro Judo"},"iban":{"editor":"text","default":"IT00 X000 0000 0000 0000 0000 000"},"causale":{"editor":"text","default":"Iscrizione Giulia Rossi · Judo kids"},"tasti":{"editor":"text","default":"COPIA IBAN|COPIA CAUSALE|PAGA CON SATISPAY"},"etichetta":{"editor":"text","default":"QUANTO COSTA"},"stima":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":420}}'>
 // Riproduzione 1:1 di QuantoCosta di src/components/ModuloIscrizione.tsx (righe 832-885): la voce QUANTO COSTA di una persona in piu' nel
 // nucleo. Il guscio e' Riquadro stretto (.card.stack.riquadro[data-stretto]: padding 14px, gap 4px) preceduto da .modulo-etichetta (12px 0.18em);
 // le righe sono .stima (src/styles.css righe 788-791): .stima-riga 15px, importo in Saira tabulare, riga di sconto in `verde`, .stima-totale
 // con filo 2px `line` sopra, 17px 700; le frasi sono .passo-dettaglio (14px `dim`, avviso giallo-testo); l'IBAN e' la scatola .iban; i tasti .passo-btn.
 // righe = `Voce:importo` separate da `|` (un importo che comincia per «−» e' lo sconto: verde); totale = la cifra del Totale;
 // frasi = .passo-dettaglio separate da `|`; avviso = riga gialla; causale = il testo dopo «Causale:» (in `text`); tasti separati da `|`.
+// La stessa scatola fa IL TUO ORDINE di ORDINE ARRIVATO del vestiario (`Arrivato` di src/components/OrdinaVestiario.tsx, righe 407-472):
+// `etichetta` = IL TUO ORDINE, `stima` = «Paga entro il … con un bonifico a …:» (il totale lo calcola il server, non e' una stima), `frasi` vuoto.
+// Vuoti, restano quelli dell'iscrizione.
 // Vuoto `righe`: «Scegli i corsi per vedere quanto costa» (nessun corso scelto).
 const T = {
   scuro: { bg: '#121212', surface: '#1c1c1c', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', faint: '#5a5a56', tasto: '#b8b8b2', tratteggio: '#4a4a46', blu: '#1b8ac4', rosso: '#e4292a', giallo: '#f4c31b', verde: '#16a54a', gialloTesto: '#f4c31b', verdeTesto: '#16a54a', rossoTesto: '#ff5a52', suColore: '#121212', suRosso: '#ffffff' },
@@ -73,7 +76,8 @@ const righe = lista(p.righe ?? 'Quota associativa:50 €|Judo kids · trimestre:
     return {
       c, cond: COND, righe, nessuna: righe.length === 0, totale: p.totale ?? '134 €',
       frasi: lista(p.frasi ?? 'Lo sconto famiglia va sull annuale che costa meno nel nucleo: Judo kids di Ginevra, che l ha già avuto o lo avrà in segreteria.', '|'), avviso, haAvviso: avviso !== '',
-      stima: 'È una stima dal listino: le altre offerte e l importo giusto li conferma la segreteria. Bonifico a ' + (p.intestatario ?? 'ASD Il Centro Judo') + ':',
+      etichetta: p.etichetta || 'QUANTO COSTA',
+      stima: p.stima ? p.stima : 'È una stima dal listino: le altre offerte e l importo giusto li conferma la segreteria. Bonifico a ' + (p.intestatario ?? 'ASD Il Centro Judo') + ':',
       iban: p.iban ?? 'IT00 X000 0000 0000 0000 0000 000', causale: p.causale ?? 'Iscrizione Giulia Rossi · Judo kids',
       tasti: lista(p.tasti ?? 'COPIA IBAN|COPIA CAUSALE|PAGA CON SATISPAY', '|'),
     };
