@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.51.3 — 9 ottobre 2026
+
+### Modificato
+
+- Gli elenchi lunghi della segreteria restano interi anche oltre le 1000 righe
+
 ## 0.51.2 — 9 ottobre 2026
 
 ### Risolto
