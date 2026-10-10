@@ -120,12 +120,29 @@ RICHIESTA** la manda.
 **LA FAMIGLIA** viene dopo i documenti, prima di QUANTO PAGHI: «Iscrivi anche
 qualcuno della tua famiglia?» (o «qualcun altro della famiglia?» per chi
 iscrive un bambino), il riquadro verde **−20% SCONTO FAMIGLIA** e due carte.
-Chi si iscrive da adulto trova **UN FIGLIO O UNA FIGLIA** (con il corso per
-bambini alla stessa ora del suo, se c'è) e **UN ALTRO ADULTO** (lo stesso
-corso, gli stessi giorni); chi iscrive un bambino trova **UN FRATELLO O UNA
-SORELLA** e **TU O UN ALTRO ADULTO** (un corso per te mentre il bambino si
-allena). Sotto **STESSA ORA** la carta nomina il corso coi giorni e l'ora
-(da tre corsi in su li conta), e in verde quanto si risparmia con l'annuale.
+Chi si iscrive da adulto trova **UN FIGLIO O UNA FIGLIA** (i corsi per
+bambini vicini al suo orario, se ci sono) e **UN ALTRO ADULTO** (lo stesso
+corso, o uno per adulti alla stessa ora); chi iscrive un bambino trova **UN
+FRATELLO O UNA SORELLA** e **TU O UN ALTRO ADULTO** (i corsi vicini
+all'orario del bambino). La carta propone fino a tre corsi, dal più comodo,
+ognuno con l'etichetta, l'orario e una nota:
+
+- **STESSA ORA**: le lezioni si sovrappongono almeno un giorno; se non in
+  tutti, la nota dice quali («solo il lunedì e il mercoledì»).
+- **SUBITO PRIMA** o **SUBITO DOPO**: lo stesso giorno, finisce o comincia
+  entro mezz'ora dall'altro («finisce quando cominci tu, il lunedì»,
+  «comincia 15 minuti dopo di te, il venerdì»).
+- **STESSI GIORNI**: un'altra ora, ma negli stessi giorni, così si viene in
+  palestra una volta sola («un'ora prima di te, gli stessi giorni»). La
+  distanza è l'attesa fra la fine di una lezione e l'inizio dell'altra; se
+  cambia da un giorno all'altro la nota dice «a un'altra ora».
+- **STESSO CORSO**: per un altro adulto, il corso di chi si è iscritto.
+
+Se succede in tutti i giorni in cui vieni tu, la nota non li elenca e dice
+«ogni volta» («finisce quando cominci tu, ogni volta»); alla stessa ora, in
+quel caso, non c'è nota.
+
+In verde quanto si risparmia con l'annuale, col primo corso della carta.
 Il tasto tratteggiato aggiunge la persona: per un adulto, chi iscrive un
 bambino sceglie fra **IO** col suo nome (**IO, PAOLO**: si iscrive anche lui, e nome, codice
 fiscale, residenza, contatti, carta d'identità e firma sono quelli già scritti
@@ -141,7 +158,12 @@ i corsi per la sua età che si fanno mentre lui è in palestra (basta che le
 lezioni si sovrappongano, anche solo in parte, almeno un giorno; lo dice il
 calendario dei corsi): se è uno solo è già spuntato, e un altro adulto trova
 già spuntati i corsi di chi si è iscritto per primo. Si può togliere e
-sceglierne un altro. Finiti i suoi documenti, AVANTI porta di nuovo a LA
+sceglierne un altro. Poi **SUBITO PRIMA O DOPO** e **NEGLI STESSI GIORNI**,
+con le stesse regole della carta, e infine **GLI ALTRI CORSI PER LA SUA
+ETÀ**. Sotto l'orario di ogni corso proposto c'è il perché («Si sovrappone il
+lunedì e il mercoledì», «Finisce quando comincia Nicola, il lunedì», «Un'ora
+prima di Nicola, il mercoledì e il venerdì»; «ogni volta» se sono tutti i
+giorni di Nicola). Finiti i suoi documenti, AVANTI porta di nuovo a LA
 FAMIGLIA (per aggiungere qualcun altro) e poi a QUANTO PAGHI, col conto di
 tutti.
 

@@ -737,14 +737,22 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   ok('senza listino nessun corso alla stessa ora', m.corsiPerEtaConStessaOra(corsi, undefined, GENITORE, ['judo-3'], orari).stessaOra, [])
   const riga = (id) => ep.stessaOra.find((c) => c.id === id)?.riga
   const rigaListino = (id) => [...perEta.adatti, ...perEta.senzaAnni].find((c) => c.id === id)?.riga
-  ok('stessaOra: gli stessi corsi di corsiParalleli', ids(ep.stessaOra), ids(solo))
-  ok('stessaOra: tolti dagli adatti', ep.adatti.map((c) => c.id), perEta.adatti.filter((c) => !ids(solo).includes(c.id)).map((c) => c.id))
-  // Dai senza anni escono solo quelli alla stessa ora e quelli del figlio: il genitore li vede già, o non sono per lui.
-  ok('senza anni: tolti quelli alla stessa ora e quelli del figlio', ep.senzaAnni.map((c) => c.id), perEta.senzaAnni.map((c) => c.id).filter((id) => !ids(solo).includes(id) && id !== 'judo-3'))
+  // I corsi vicini (subito prima o dopo, negli stessi giorni) hanno gruppi loro: le regole sono in 42.
+  const proposti = (x) => [...ids(x.stessaOra ?? []), ...ids(x.vicini ?? []), ...ids(x.stessiGiorni ?? [])]
+  ok('stessaOra: gli stessi corsi di corsiParalleli', ids(ep.stessaOra).sort(), ids(solo).sort())
+  // Nel gruppo, prima chi si sovrappone più giorni, poi per nome.
+  const quanti = (c) => c.vicinanza?.giorni.length ?? NaN
+  const inOrdine = (x) => x.every((c, k) => !k || quanti(x[k - 1]) > quanti(c) || (quanti(x[k - 1]) === quanti(c) && x[k - 1].nome.localeCompare(c.nome, 'it') < 0))
+  ok('stessaOra: prima i corsi con più giorni in comune, poi per nome', [ep.stessaOra.length > 2, inOrdine(ep.stessaOra)], [true, true])
+  ok('stessaOra: tolti dagli adatti, coi corsi vicini', ep.adatti.map((c) => c.id), perEta.adatti.filter((c) => !proposti(ep).includes(c.id)).map((c) => c.id))
+  // Dai senza anni escono solo quelli proposti in cima e quelli del figlio: il genitore li vede già, o non sono per lui.
+  ok('senza anni: tolti quelli proposti in cima e quelli del figlio', ep.senzaAnni.map((c) => c.id), perEta.senzaAnni.map((c) => c.id).filter((id) => !proposti(ep).includes(id) && id !== 'judo-3'))
   ok('altri: come corsiPerEta, senza i corsi del figlio', ep.altri.map((c) => c.id), perEta.altri.map((c) => c.id).filter((id) => id !== 'judo-3'))
   ok('nascosti come corsiPerEta', ep.nascosti, perEta.nascosti)
-  ok('riga, giorni in parte: «stessa ora il lunedì» e la riga del listino', riga('aikido-3'), `stessa ora il lunedì · ${rigaListino('aikido-3')}`)
-  ok('riga, tre giorni: «il lunedì, il mercoledì e il venerdì»', riga('lotta-3'), `stessa ora il lunedì, il mercoledì e il venerdì · ${rigaListino('lotta-3')}`)
+  // I giorni in comune non stanno più nella riga: li dice il perché (`vicinanza`), la riga resta l'orario.
+  const giorni = (id) => ep.stessaOra.find((c) => c.id === id)?.vicinanza?.giorni
+  ok('riga, giorni in parte: la riga del listino, e il lunedì in comune', [riga('aikido-3'), giorni('aikido-3')], [rigaListino('aikido-3'), [1]])
+  ok('riga, tre giorni: la riga del listino, e lunedì, mercoledì e venerdì', [riga('lotta-3'), giorni('lotta-3')], [rigaListino('lotta-3'), [1, 3, 5]])
   // Con Judo 3 e agonisti, Aikido 3 (lun, gio) ha tutti i giorni in comune.
   ok('riga, tutti i giorni e una riga del listino: quella, senza «stessa ora di»', conOra(['judo-3', 'judo-agonisti']).stessaOra.find((c) => c.id === 'aikido-3')?.riga, rigaListino('aikido-3'))
   ok('riga, senza voce nel listino: l’orario del calendario', riga('prep-atletica-3'), 'lunedì, mercoledì e venerdì 18.00-19.00')
@@ -767,8 +775,8 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   const ep3 = conOra(['judo-3', 'judo-agonisti'], orariInventati, inventati)
   const riga3 = (id) => ep3.stessaOra.find((c) => c.id === id)?.riga
   ok('orari diversi fra i giorni: un pezzo per orario, dal lunedì', riga3('yoga'), 'lunedì e mercoledì 18.00-19.00 · venerdì 18.30-19.30')
-  ok('due giorni in parte: «il lunedì e il giovedì», poi l’orario del calendario', riga3('pilates'), 'stessa ora il lunedì e il giovedì · lunedì, giovedì e sabato 18.00-19.00')
-  ok('il corso coi giorni in parte viene dopo quelli con tutti i giorni', ids(ep3.stessaOra).slice(-1), ['pilates'])
+  ok('due giorni in parte: l’orario del calendario, e il lunedì e il giovedì in comune', [riga3('pilates'), ep3.stessaOra.find((c) => c.id === 'pilates')?.vicinanza?.giorni], ['lunedì, giovedì e sabato 18.00-19.00', [1, 4]])
+  ok('il corso coi giorni in parte: nell’ordine dei giorni in comune', inOrdine(ep3.stessaOra), true)
 
   ok('senza orari: stessaOra vuoto', conOra(['judo-3'], []).stessaOra, [])
   const senzaOrari = conOra(['judo-3'], [])
@@ -784,7 +792,7 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   ok('e così per gli altri senza voce: Pesistica 1', rigaDi(ag.senzaAnni, 'pesi-1'), 'lunedì, mercoledì e venerdì 17.00-18.00')
   ok('«prezzo da confermare» non sta nella riga: lo dice la schermata', ag.senzaAnni.some((c) => c.riga?.includes('prezzo da confermare')), false)
   ok('gli adatti tengono la riga del listino', rigaDi(ag.adatti, 'judo-adulti'), rigaDi(perEta.adatti, 'judo-adulti'))
-  ok('senza anni: tolti quelli alla stessa ora e quelli del figlio', ag.senzaAnni.map((c) => c.id), perEta.senzaAnni.map((c) => c.id).filter((id) => !ids(ag.stessaOra).includes(id) && id !== 'judo-agonisti'))
+  ok('senza anni: tolti quelli proposti in cima e quelli del figlio', ag.senzaAnni.map((c) => c.id), perEta.senzaAnni.map((c) => c.id).filter((id) => !proposti(ag).includes(id) && id !== 'judo-agonisti'))
   // Il listino non dice per che anni è Psicomotricità («3-4-5 anni» scritto): resta dov'è, non si propone e basta.
   ok('Psicomotricità resta nei senza anni, non negli altri', [ag.senzaAnni.some((c) => c.id === 'psicomotricita'), ag.altri.some((c) => c.id === 'psicomotricita')], [true, false])
   ok('il corso del figlio non è né nei senza anni né alla stessa ora', [ag.senzaAnni.some((c) => c.id === 'judo-agonisti'), ag.stessaOra.some((c) => c.id === 'judo-agonisti')], [false, false])
@@ -2171,35 +2179,38 @@ console.log('\n40. LA FAMIGLIA')
   // Luca, Judo adulti lunedì e giovedì alle 18: Judo 3 alla stessa ora.
   const a = carte([luca()])
   ok('persona 0 adulta: le due carte, coi titoli e i tasti del design', forma(a), ADULTA)
-  ok('persona 0 adulta: la stessa ora, il corso per bambini e i suoi', campo(a, 'stessaOra'), ['Judo 3 · lunedì e giovedì 18.00', 'Judo adulti · lunedì e giovedì 18.00'])
+  // Le righe: etichetta, corso, l'orario intero e la nota (le regole dei gruppi sono in 42).
+  const righe = (x) => (x?.righe ?? []).map((r) => [r.etichetta, r.corso, r.quando, r.nota])
+  ok('persona 0 adulta: la stessa ora, il corso per bambini e i suoi', a.map(righe), [[['STESSA ORA', 'Judo 3', 'lunedì e giovedì 18.00-19.00', undefined]], [['STESSO CORSO', 'Judo adulti', 'lunedì e giovedì 18.00-19.30', undefined]]])
   ok('persona 0 adulta: quanto risparmiate, con tutti e due ad annuale', campo(a, 'risparmio'), ['Con Judo 3 annuale risparmiate 60 €', 'Con Judo adulti annuale risparmiate 72 €'])
-  ok('persona 0 adulta: le frasi del design', frasi(a), ["Mentre fai Judo adulti, si allena anche lui: c'è un corso per bambini alla stessa ora.", 'Venite insieme: Judo adulti, lo stesso corso, gli stessi giorni.'])
+  ok('persona 0 adulta: le frasi del design', frasi(a), ['Mentre fai Judo adulti, si allena anche lui: ecco i corsi per bambini vicini al tuo orario.', 'Venite insieme: Judo adulti, lo stesso corso, gli stessi giorni.'])
   ok('il risparmio fa i conti con l’annuale anche se Luca paga a trimestre', campo(carte([luca({ formula: 'trimestre' })]), 'risparmio'), ['Con Judo 3 annuale risparmiate 60 €', 'Con Judo adulti annuale risparmiate 72 €'])
 
   // Luca a Pilates, il martedì alle 20: nessun corso per bambini a quell'ora.
   const p1 = carte([luca({ corsi: ['pilates'] })])
   ok('senza corsi per bambini alla stessa ora: le carte restano', forma(p1), ADULTA)
-  ok('…senza la riga STESSA ORA né il risparmio per il figlio', [campo(p1, 'stessaOra')[0], campo(p1, 'risparmio')[0]], [undefined, undefined])
+  ok('…senza righe né il risparmio per il figlio', [campo(p1, 'righe')[0], campo(p1, 'risparmio')[0]], [[], undefined])
   ok('…e la frase non parla di stessa ora', [typeof p1[0]?.frase === 'string' && p1[0].frase.length > 0, /stessa ora/i.test(p1[0]?.frase ?? '')], [true, false])
-  ok('…il secondo adulto, a Pilates con lui', [campo(p1, 'stessaOra')[1], campo(p1, 'risparmio')[1]], ['Pilates · martedì 20.00', 'Con Pilates annuale risparmiate 60 €'])
+  ok('…il secondo adulto, a Pilates con lui', [righe(p1[1]), campo(p1, 'risparmio')[1]], [[['STESSO CORSO', 'Pilates', 'martedì 20.00-21.00', undefined]], 'Con Pilates annuale risparmiate 60 €'])
   // Yoga non ha prezzo: il risparmio non si sa, e non si scrive.
   ok('un corso senza prezzo: niente risparmio', campo(carte([luca({ corsi: ['yoga'] })]), 'risparmio')[1], undefined)
-  ok('un corso senza prezzo: la stessa ora sì', campo(carte([luca({ corsi: ['yoga'] })]), 'stessaOra')[1], 'Yoga · venerdì 20.00')
-  // Due corsi si nominano, da tre in su si contano; il risparmio solo con un corso solo.
+  ok('un corso senza prezzo: la riga sì', righe(carte([luca({ corsi: ['yoga'] })])[1]), [['STESSO CORSO', 'Yoga', 'venerdì 20.00-21.00', undefined]])
+  // Ogni corso una riga, fino a tre; il risparmio è quello del primo.
   const due = carte([luca({ corsi: ['judo-adulti', 'pilates'] })])
-  ok('due corsi di Luca: tutti e due nominati, niente risparmio', [['Judo adulti', 'Pilates'].every((n) => (due[1]?.stessaOra ?? '').includes(n)), due[1]?.risparmio], [true, undefined])
+  // Lo sconto è quello di contoFamiglia: il 20% dell'annuale più basso, Pilates di Luca (300 €).
+  ok('due corsi di Luca: una riga per corso, il risparmio del primo', [righe(due[1]).map((r) => r[1]), due[1]?.risparmio], [['Judo adulti', 'Pilates'], 'Con Judo adulti annuale risparmiate 60 €'])
   const tre = carte([luca({ corsi: ['aikido-adulti'] })])
-  ok('tre corsi per bambini alla stessa ora: si contano, senza nomi', [(tre[0]?.stessaOra ?? '').includes('3 corsi'), /Lotta|Judo piccoli|Psicomotricità/.test(tre[0]?.stessaOra ?? '')], [true, false])
-  ok('tre corsi: niente risparmio', tre[0]?.risparmio, undefined)
+  ok('tre corsi per bambini alla stessa ora: tre righe, per nome', righe(tre[0]).map((r) => [r[0], r[1]]), [['STESSA ORA', 'Judo piccoli'], ['STESSA ORA', 'Lotta 3'], ['STESSA ORA', 'Psicomotricità']])
+  ok('tre corsi: il risparmio del primo', tre[0]?.risparmio, 'Con Judo piccoli annuale risparmiate 50 €')
 
   // Matteo, Judo 3 lunedì e giovedì alle 18: Judo 2 per un fratello, Judo adulti per te.
   const b = carte([matteo], orariB)
   ok('persona 0 bambino: le due carte, coi titoli e i tasti del design', forma(b), BAMBINO)
-  ok('persona 0 bambino: la stessa ora, per un fratello e per un adulto', campo(b, 'stessaOra'), ['Judo 2 · lunedì e giovedì 18.00', 'Judo adulti · lunedì e giovedì 18.00'])
+  ok('persona 0 bambino: la stessa ora, per un fratello e per un adulto', b.map(righe), [[['STESSA ORA', 'Judo 2', 'lunedì e giovedì 18.00-19.00', undefined]], [['STESSA ORA', 'Judo adulti', 'lunedì e giovedì 18.00-19.30', undefined]]])
   ok('persona 0 bambino: quanto risparmiate', campo(b, 'risparmio'), ['Con Judo 2 annuale risparmiate 56 €', 'Con Judo adulti annuale risparmiate 60 €'])
-  ok('persona 0 bambino: le frasi del design', frasi(b), ["Un solo viaggio in palestra: alla stessa ora di Matteo c'è un corso anche per lui.", 'Mentre Matteo fa Judo 3, ti alleni anche tu, alla stessa ora.'])
+  ok('persona 0 bambino: le frasi del design', frasi(b), ["Un solo viaggio in palestra: ecco i corsi vicini all'orario di Matteo.", 'Mentre Matteo fa Judo 3, ti alleni anche tu: ecco i corsi vicini al suo orario.'])
   const b2 = carte([matteo], orariB2)
-  ok('due corsi per adulti alla stessa ora di Matteo: nominati, niente risparmio', [['Judo adulti', 'Pilates'].every((n) => (b2[1]?.stessaOra ?? '').includes(n)), b2[1]?.risparmio], [true, undefined])
+  ok('due corsi per adulti alla stessa ora di Matteo: due righe, il risparmio del primo', [righe(b2[1]), b2[1]?.risparmio], [[['STESSA ORA', 'Judo adulti', 'lunedì e giovedì 18.00-19.30', undefined], ['STESSA ORA', 'Pilates', 'martedì 20.00-21.00 · giovedì 18.00-19.00', 'solo il giovedì']], 'Con Judo adulti annuale risparmiate 60 €'])
 
   // --- il corso già spuntato quando il familiare arriva al passo del corso ---
   const gia = (persone, i, o = orari) => chiama(() => m.corsiGiaScelti(persone, i, corsi, listino, o))
@@ -2314,6 +2325,215 @@ console.log('\n41. LA FAMIGLIA: le regole scoperte nelle revisioni')
   const luca2 = adulto({ nome: 'Luca' })
   const lucia = { ...m.nuovoStato('figlio'), firmatario: 0, risposte: { ...m.nuovoStato('figlio').risposte, nome: 'Lucia' } }
   ok('la frase dice di scrivere il genitore nel passo IL GENITORE CHE FIRMA di Luca', chiama(() => m.fermoDellaFamiglia([m.cambiaScelta(luca2, 'figlio'), lucia])), 'Per Lucia firma chi compila: scrivi i tuoi dati nel passo IL GENITORE CHE FIRMA di Luca, oppure chiama la segreteria.')
+}
+
+// ---------------------------------------------------------------------------
+// CORSI VICINI: per chi si aggiunge, oltre ai corsi alla stessa ora, quelli che
+// finiscono o cominciano entro mezz'ora dalla persona 0 lo stesso giorno, e
+// quelli negli stessi giorni a un'altra ora. Il design è in
+// docs/design-canvas/corsi-vicini/. La distanza è il tempo fra la fine di una
+// lezione e l'inizio dell'altra: «un’ora prima di te» è un’ora di attesa.
+// ---------------------------------------------------------------------------
+console.log('\n42. CORSI VICINI')
+{
+  const ora = (corsoId, g, o, durata = 60) => ({ corsoId, giorno: g, ora: o, durata })
+  // Nicola: Judo adulti lunedì, mercoledì e venerdì 19.00-20.30.
+  const NICOLA = ['judo-adulti']
+  const orari = [
+    ora('judo-adulti', 1, '19:00', 90), ora('judo-adulti', 3, '19:00', 90), ora('judo-adulti', 5, '19:00', 90),
+    // si sovrappone tutti i giorni, suoi e di Nicola
+    ora('lotta-3', 1, '19:00'), ora('lotta-3', 3, '19:00'), ora('lotta-3', 5, '19:00'),
+    // si sovrappone il lunedì; il giovedì Nicola non c'è
+    ora('karate-3', 1, '19:30'), ora('karate-3', 4, '19:30'),
+    // a filo prima il lunedì (il giovedì Nicola non c'è)
+    ora('judo-3', 1, '18:00'), ora('judo-3', 4, '18:00'),
+    // a filo dopo il mercoledì
+    ora('aikido-3', 3, '20:30'),
+    // finisce 15 minuti prima, il venerdì
+    ora('ginnastica-3', 5, '17:45'),
+    // comincia 30 minuti dopo, il lunedì: ancora vicino
+    ora('pesi-3', 1, '21:00'),
+    // finisce 31 minuti prima, il mercoledì: non più vicino, gli stessi giorni
+    ora('boxe-3', 3, '17:29'),
+    // un'ora prima, mercoledì e venerdì: gli stessi giorni, un'ora tonda
+    ora('judo-kids', 3, '17:00'), ora('judo-kids', 5, '17:00'),
+    // un'ora e un quarto prima il lunedì, e il sabato, quando Nicola non c'è
+    ora('scherma-3', 1, '16:45'), ora('scherma-3', 6, '10:00'),
+    // un'ora prima il lunedì, due ore prima il mercoledì: un'altra ora, non la stessa
+    ora('danza-3', 1, '17:00'), ora('danza-3', 3, '16:00'),
+    // due ore e mezza dopo il venerdì
+    ora('nuoto-3', 5, '23:00'),
+    // giorni diversi
+    ora('calcio-3', 2, '19:00'), ora('calcio-3', 4, '19:00'),
+  ]
+  const nomi = { 'lotta-3': 'Lotta 3', 'karate-3': 'Karate 3', 'judo-3': 'Judo 3', 'aikido-3': 'Aikido 3', 'ginnastica-3': 'Ginnastica 3', 'pesi-3': 'Pesi 3', 'boxe-3': 'Boxe 3', 'judo-kids': 'Judo kids', 'scherma-3': 'Scherma 3', 'danza-3': 'Danza 3', 'nuoto-3': 'Nuoto 3', 'calcio-3': 'Calcio 3', 'judo-adulti': 'Judo adulti' }
+  const corsi = Object.entries(nomi).map(([id, nome]) => ({ id, nome }))
+  const vic = (id, suoi = NICOLA, o = orari) => chiama(() => m.vicinanza(id, suoi, o))
+
+  ok('la mezz’ora è una costante', m.MINUTI_VICINI, 30)
+
+  // --- i gruppi ---
+  ok('sovrapposto tutti i giorni: stessa ora, tutti', vic('lotta-3'), { gruppo: 'stessaOra', giorni: [1, 3, 5], tutti: true, ogniVolta: true })
+  ok('sovrapposto un giorno solo: stessa ora, il lunedì', vic('karate-3'), { gruppo: 'stessaOra', giorni: [1], tutti: false, ogniVolta: false })
+  ok('a filo prima: vicino, prima, 0 minuti, il lunedì', vic('judo-3'), { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1], tutti: false, ogniVolta: false })
+  ok('a filo dopo: vicino, dopo, 0 minuti, il mercoledì', vic('aikido-3'), { gruppo: 'vicino', verso: 'dopo', minuti: 0, giorni: [3], tutti: true, ogniVolta: false })
+  ok('15 minuti prima: vicino', vic('ginnastica-3'), { gruppo: 'vicino', verso: 'prima', minuti: 15, giorni: [5], tutti: true, ogniVolta: false })
+  ok('30 minuti dopo: ancora vicino', vic('pesi-3'), { gruppo: 'vicino', verso: 'dopo', minuti: 30, giorni: [1], tutti: true, ogniVolta: false })
+  ok('31 minuti prima: non vicino, gli stessi giorni', vic('boxe-3'), { gruppo: 'stessiGiorni', verso: 'prima', minuti: 31, giorni: [3], tutti: true, ogniVolta: false })
+  ok('un’ora prima, mercoledì e venerdì: gli stessi giorni', vic('judo-kids'), { gruppo: 'stessiGiorni', verso: 'prima', minuti: 60, giorni: [3, 5], tutti: true, ogniVolta: false })
+  ok('il sabato Nicola non c’è: gli stessi giorni solo il lunedì', vic('scherma-3'), { gruppo: 'stessiGiorni', verso: 'prima', minuti: 75, giorni: [1], tutti: false, ogniVolta: false })
+  ok('un’ora il lunedì, due il mercoledì: gli stessi giorni, senza distanza', vic('danza-3'), { gruppo: 'stessiGiorni', giorni: [1, 3], tutti: true, ogniVolta: false })
+  ok('giorni diversi: nessun gruppo', vic('calcio-3'), undefined)
+  ok('il corso di Nicola non è vicino a sé stesso', vic('judo-adulti'), undefined)
+  ok('senza corsi della persona 0: niente', vic('lotta-3', []), undefined)
+  ok('senza orari: niente', vic('lotta-3', NICOLA, []), undefined)
+  // Un corso che è sia a filo sia sovrapposto sta nel primo gruppo: la stessa ora.
+  const misto = [...orari, ora('judo-3', 3, '19:00')]
+  ok('un giorno sovrapposto e uno a filo: stessa ora', vic('judo-3', NICOLA, misto), { gruppo: 'stessaOra', giorni: [3], tutti: false, ogniVolta: false })
+  // A filo il lunedì e 20 minuti prima il venerdì: la nota parla del giorno più vicino, così è vera.
+  const due = [...orari, ora('judo-3', 5, '17:40')]
+  ok('vicino due giorni a distanze diverse: il giorno più vicino', vic('judo-3', NICOLA, due), { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1], tutti: false, ogniVolta: false })
+  const dueUguali = [...orari, ora('judo-3', 5, '18:00')]
+  ok('a filo due giorni: tutti e due', vic('judo-3', NICOLA, dueUguali), { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1, 5], tutti: false, ogniVolta: false })
+
+  // --- l'ordine: per gruppo, poi più giorni, poi il nome ---
+  const elenco = chiama(() => m.corsiVicini(corsi, NICOLA, orari))
+  ok('l’ordine: stessa ora, vicini, stessi giorni; dentro, più giorni e poi il nome', Array.isArray(elenco) ? elenco.map((c) => c.id) : elenco, [
+    'lotta-3', 'karate-3',
+    'aikido-3', 'ginnastica-3', 'judo-3', 'pesi-3',
+    'danza-3', 'judo-kids', 'boxe-3', 'nuoto-3', 'scherma-3',
+  ])
+  ok('ogni corso tiene i suoi campi e la sua vicinanza', Array.isArray(elenco) ? [elenco[0].nome, elenco[0].vicinanza.gruppo] : elenco, ['Lotta 3', 'stessaOra'])
+
+  // --- le etichette e le note della carta ---
+  const tutti = (f) => Object.fromEntries(['lotta-3', 'karate-3', 'judo-3', 'aikido-3', 'ginnastica-3', 'pesi-3', 'boxe-3', 'judo-kids', 'scherma-3', 'danza-3', 'nuoto-3'].map((id) => [id, chiama(() => f(m.vicinanza(id, NICOLA, orari)))]))
+  ok('le etichette', tutti((v) => m.etichettaVicino(v)), {
+    'lotta-3': 'STESSA ORA', 'karate-3': 'STESSA ORA', 'judo-3': 'SUBITO PRIMA', 'aikido-3': 'SUBITO DOPO', 'ginnastica-3': 'SUBITO PRIMA', 'pesi-3': 'SUBITO DOPO',
+    'boxe-3': 'STESSI GIORNI', 'judo-kids': 'STESSI GIORNI', 'scherma-3': 'STESSI GIORNI', 'danza-3': 'STESSI GIORNI', 'nuoto-3': 'STESSI GIORNI',
+  })
+  ok('le note nella carta', tutti((v) => m.notaNellaCarta(v)), {
+    'lotta-3': undefined,
+    'karate-3': 'solo il lunedì',
+    'judo-3': 'finisce quando cominci tu, il lunedì',
+    'aikido-3': 'comincia quando finisci tu, il mercoledì',
+    'ginnastica-3': 'finisce 15 minuti prima di te, il venerdì',
+    'pesi-3': 'comincia 30 minuti dopo di te, il lunedì',
+    'boxe-3': '31 minuti prima di te, gli stessi giorni',
+    'judo-kids': 'un’ora prima di te, gli stessi giorni',
+    'scherma-3': 'un’ora e 15 minuti prima di te, il lunedì',
+    'danza-3': 'a un’altra ora, gli stessi giorni',
+    'nuoto-3': 'due ore e mezza dopo di te, gli stessi giorni',
+  })
+  ok('il perché al corso, col nome di chi c’è già', tutti((v) => m.percheNelCorso(v, 'Nicola')), {
+    'lotta-3': 'Si sovrappone ogni volta',
+    'karate-3': 'Si sovrappone il lunedì',
+    'judo-3': 'Finisce quando comincia Nicola, il lunedì',
+    'aikido-3': 'Comincia quando finisce Nicola, il mercoledì',
+    'ginnastica-3': 'Finisce 15 minuti prima di Nicola, il venerdì',
+    'pesi-3': 'Comincia 30 minuti dopo Nicola, il lunedì',
+    'boxe-3': '31 minuti prima di Nicola, il mercoledì',
+    'judo-kids': 'Un’ora prima di Nicola, il mercoledì e il venerdì',
+    'scherma-3': 'Un’ora e 15 minuti prima di Nicola, il lunedì',
+    'danza-3': 'A un’altra ora, il lunedì e il mercoledì',
+    'nuoto-3': 'Due ore e mezza dopo Nicola, il venerdì',
+  })
+  // Quando i giorni sono tutti quelli della persona 0 non si elencano: «ogni volta».
+  const ogni = [...orari, ora('judo-3', 3, '18:00'), ora('judo-3', 5, '18:00'), ora('ginnastica-3', 1, '17:45'), ora('ginnastica-3', 3, '17:45'), ora('pesi-3', 3, '21:00'), ora('pesi-3', 5, '21:00'), ora('boxe-3', 1, '17:29'), ora('boxe-3', 5, '17:29'), ora('karate-3', 3, '19:30'), ora('karate-3', 5, '19:30')]
+  const ogniVolta = (id) => chiama(() => { const v = m.vicinanza(id, NICOLA, ogni); return [v.ogniVolta, m.notaNellaCarta(v), m.percheNelCorso(v, 'Paolo')] })
+  ok('a filo prima ogni volta', ogniVolta('judo-3'), [true, 'finisce quando cominci tu, ogni volta', 'Finisce quando comincia Paolo, ogni volta'])
+  ok('15 minuti prima ogni volta', ogniVolta('ginnastica-3'), [true, 'finisce 15 minuti prima di te, ogni volta', 'Finisce 15 minuti prima di Paolo, ogni volta'])
+  ok('30 minuti dopo ogni volta', ogniVolta('pesi-3'), [true, 'comincia 30 minuti dopo di te, ogni volta', 'Comincia 30 minuti dopo Paolo, ogni volta'])
+  ok('stessi giorni ogni volta', ogniVolta('boxe-3'), [true, '31 minuti prima di te, ogni volta', '31 minuti prima di Paolo, ogni volta'])
+  ok('stessa ora ogni volta, anche col giovedì in più: niente «solo»', ogniVolta('karate-3'), [true, undefined, 'Si sovrappone ogni volta'])
+  ok('a filo dopo ogni volta', chiama(() => m.notaNellaCarta(m.vicinanza('aikido-3', NICOLA, [...orari, ora('aikido-3', 1, '20:30'), ora('aikido-3', 5, '20:30')]))), 'comincia quando finisci tu, ogni volta')
+  // Due lezioni della persona 0 lo stesso giorno: conta la più vicina, non la prima che si trova.
+  const dueLezioni = [ora('zero', 1, '17:00', 15), ora('zero', 1, '19:30'), ora('x', 1, '18:00')]
+  ok('due lezioni lo stesso giorno: l’attesa più corta, 30 minuti prima', chiama(() => m.vicinanza('x', ['zero'], dueLezioni)), { gruppo: 'vicino', verso: 'prima', minuti: 30, giorni: [1], tutti: true, ogniVolta: true })
+  // A filo prima il lunedì e a filo dopo il mercoledì: a pari minuti vince «prima».
+  const pari = [...orari, ora('pari', 1, '18:00'), ora('pari', 3, '20:30')]
+  const vp = chiama(() => m.vicinanza('pari', NICOLA, pari))
+  ok('a pari minuti: prima, il lunedì', vp, { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1], tutti: false, ogniVolta: false })
+  ok('a pari minuti: SUBITO PRIMA', chiama(() => m.etichettaVicino(vp)), 'SUBITO PRIMA')
+  // La domenica vuole «la» (la persona 0 viene anche il sabato: se no sarebbe «ogni volta»).
+  ok('la domenica', chiama(() => m.notaNellaCarta(m.vicinanza('x', ['y'], [ora('y', 0, '10:00'), ora('y', 6, '10:00'), ora('x', 0, '11:00')]))), 'comincia quando finisci tu, la domenica')
+
+  // --- le carte di LA FAMIGLIA: il canvas Carta ---
+  const voce = (corso, corsoId, natiDal, natiAl, annuale) => ({ corso, corsoId, eta: '', orari: [], natiDal, natiAl, prezzi: [{ saldo: annuale, annuale, trimestre: 100 }] })
+  const listino = {
+    quota: 50, saldoEntro: '2026-08-31', offerte: [],
+    corsi: [
+      voce('Judo adulti', 'judo-adulti', undefined, 2008, 360),
+      voce('Pilates', 'pilates', undefined, 2008, 300),
+      voce('Lotta 3', 'lotta-3', 2013, 2016, 280),
+      voce('Judo 3', 'judo-3', 2013, 2016, 300),
+      voce('Judo kids', 'judo-kids', 2013, 2016, 260),
+      voce('Aikido 3', 'aikido-3', 2013, 2016, 300),
+      voce('Psicomotricità', 'psico', 2020, 2022, 200),
+    ],
+  }
+  const corsiC = listino.corsi.map((v) => ({ id: v.corsoId, nome: v.corso }))
+  const orariC = [
+    ora('judo-adulti', 1, '19:00', 90), ora('judo-adulti', 3, '19:00', 90), ora('judo-adulti', 5, '19:00', 90),
+    ora('pilates', 2, '19:00'), ora('pilates', 5, '19:00'),
+    ora('lotta-3', 1, '18:00', 90), ora('lotta-3', 3, '18:00', 90),
+    ora('judo-3', 1, '18:00'), ora('judo-3', 4, '18:00'),
+    ora('judo-kids', 3, '17:00'), ora('judo-kids', 5, '17:00'),
+    ora('aikido-3', 2, '17:00'), ora('aikido-3', 4, '17:00'),
+    ora('psico', 6, '10:00'),
+  ]
+  const nicola = adulto({ nome: 'Nicola', corsi: ['judo-adulti'] })
+  const carte = (persone, o = orariC) => lista(() => m.carteDellaFamiglia(persone, corsiC, listino, o, '2026-10-06'))
+  const c = carte([nicola])
+  ok('UN FIGLIO: la frase del canvas', c[0]?.frase, 'Mentre fai Judo adulti, si allena anche lui: ecco i corsi per bambini vicini al tuo orario.')
+  ok('UN FIGLIO: tre righe, una per gruppo, con l’orario intero e la nota', c[0]?.righe, [
+    { etichetta: 'STESSA ORA', corso: 'Lotta 3', quando: 'lunedì e mercoledì 18.00-19.30', nota: 'solo il lunedì e il mercoledì' },
+    { etichetta: 'SUBITO PRIMA', corso: 'Judo 3', quando: 'lunedì e giovedì 18.00-19.00', nota: 'finisce quando cominci tu, il lunedì' },
+    { etichetta: 'STESSI GIORNI', corso: 'Judo kids', quando: 'mercoledì e venerdì 17.00-18.00', nota: 'un’ora prima di te, gli stessi giorni' },
+  ])
+  ok('UN FIGLIO: il risparmio del primo corso', c[0]?.risparmio, 'Con Lotta 3 annuale risparmiate 56 €')
+  ok('UN ALTRO ADULTO: la frase del canvas', c[1]?.frase, 'Venite insieme: lo stesso corso, o uno alla stessa ora.')
+  ok('UN ALTRO ADULTO: prima lo stesso corso, poi gli altri per adulti alla stessa ora', c[1]?.righe, [
+    { etichetta: 'STESSO CORSO', corso: 'Judo adulti', quando: 'lunedì, mercoledì e venerdì 19.00-20.30' },
+    { etichetta: 'STESSA ORA', corso: 'Pilates', quando: 'martedì e venerdì 19.00-20.00', nota: 'solo il venerdì' },
+  ])
+  ok('UN ALTRO ADULTO: il risparmio dello stesso corso', c[1]?.risparmio, 'Con Judo adulti annuale risparmiate 72 €')
+  // Per l'adulto solo la stessa ora: un adulto che viene con te non aspetta un'ora.
+  const conVicinoAdulto = [...orariC, ora('aikido-adulti', 1, '20:30')]
+  const listinoAA = { ...listino, corsi: [...listino.corsi, voce('Aikido adulti', 'aikido-adulti', undefined, 2008, 300)] }
+  const aa = lista(() => m.carteDellaFamiglia([nicola], [...corsiC, { id: 'aikido-adulti', nome: 'Aikido adulti' }], listinoAA, conVicinoAdulto, '2026-10-06'))
+  ok('UN ALTRO ADULTO: un corso per adulti subito dopo non c’è', (aa[1]?.righe ?? []).map((r) => r.corso), ['Judo adulti', 'Pilates'])
+  // Più di tre corsi: le prime tre righe.
+  const quattro = [...orariC, ora('psico', 1, '19:00')]
+  const listinoQ = { ...listino, corsi: listino.corsi.map((v) => (v.corsoId === 'psico' ? { ...v, natiDal: 2013, natiAl: 2016 } : v)) }
+  const q = lista(() => m.carteDellaFamiglia([nicola], corsiC, listinoQ, quattro, '2026-10-06'))
+  ok('più di tre corsi: tre righe, le prime', (q[0]?.righe ?? []).map((r) => [r.etichetta, r.corso]), [['STESSA ORA', 'Lotta 3'], ['STESSA ORA', 'Psicomotricità'], ['SUBITO PRIMA', 'Judo 3']])
+  // Un corso per bambini senza saperne l'età resta fuori: Calcio 3 non ha anni nel listino.
+  const conCalcio = lista(() => m.carteDellaFamiglia([nicola], [...corsiC, { id: 'calcio-3', nome: 'Calcio 3' }], listino, [...orariC, ora('calcio-3', 1, '19:00')], '2026-10-06'))
+  ok('un corso senza anni nel listino non va nella carta UN FIGLIO', (conCalcio[0]?.righe ?? []).some((r) => r.corso === 'Calcio 3'), false)
+  // Senza nessun corso vicino: niente righe, la frase di prima.
+  const solo = carte([adulto({ nome: 'Nicola', corsi: ['pilates'] })], [ora('pilates', 0, '09:00'), ora('lotta-3', 6, '10:00')])
+  ok('niente vicino: nessuna riga, la frase di sempre', [solo[0]?.righe, solo[0]?.frase, solo[0]?.risparmio], [[], 'Un figlio o una figlia nello stesso modulo: scegli il suo corso, per la sua età.', undefined])
+
+  // Senza listino non si sa per che età sono i corsi: niente righe per il figlio.
+  const senzaListino = lista(() => m.carteDellaFamiglia([nicola], corsiC, undefined, orariC, '2026-10-06'))
+  ok('senza listino: la carta del figlio senza righe', [senzaListino[0]?.chi, senzaListino[0]?.righe], ['figlio', []])
+
+  // --- il passo del corso del figlio aggiunto: il canvas Corso ---
+  const marco = figlio({ nome: 'Marco', natoIl: '2015-02-02', codiceFiscale: cfDi('Marco', 'Rossi', '2015-02-02'), corsi: [] }, { firmatario: 0 })
+  const ep = chiama(() => m.corsiDelFamiliare([nicola, marco], 1, corsiC, listino, orariC)) ?? {}
+  const voci = (x) => (Array.isArray(x) ? x.map((c) => [c.nome, c.perche]) : x)
+  ok('ALLA STESSA ORA DI NICOLA: Lotta 3, e perché', voci(ep.stessaOra), [['Lotta 3', 'Si sovrappone il lunedì e il mercoledì']])
+  ok('SUBITO PRIMA O DOPO: Judo 3, e perché', voci(ep.vicini), [['Judo 3', 'Finisce quando comincia Nicola, il lunedì']])
+  ok('NEGLI STESSI GIORNI: Judo kids, e perché', voci(ep.stessiGiorni), [['Judo kids', 'Un’ora prima di Nicola, il mercoledì e il venerdì']])
+  ok('GLI ALTRI CORSI PER LA SUA ETÀ: gli altri, senza perché', voci(ep.adatti), [['Aikido 3', undefined]])
+  ok('la riga sotto il nome è l’orario, il perché sta a parte', (ep.vicini ?? [])[0]?.riga, 'lunedì e giovedì 18.00-19.00')
+  ok('fuori età resta negli altri', (ep.altri ?? []).some((c) => c.id === 'psico'), true)
+  ok('si spunta solo il corso alla stessa ora, se è uno', chiama(() => m.corsiGiaScelti([nicola, marco], 1, corsiC, listino, orariC)), ['lotta-3'])
+  // Un altro adulto: in cima lo stesso corso, col suo perché, poi la stessa ora.
+  const marta = adulto({ nome: 'Marta', natoIl: '1990-03-03', codiceFiscale: cfDi('Marta', 'Rossi', '1990-03-03', true), corsi: [] })
+  const am = chiama(() => m.corsiDelFamiliare([nicola, marta], 1, corsiC, listino, orariC)) ?? {}
+  ok('un altro adulto: lo stesso corso, poi Pilates alla stessa ora', voci(am.stessaOra), [['Judo adulti', 'Lo stesso corso di Nicola'], ['Pilates', 'Si sovrappone il venerdì']])
+  ok('la persona 0: nessun gruppo', ['stessaOra', 'vicini', 'stessiGiorni'].map((k) => (chiama(() => m.corsiDelFamiliare([nicola], 0, corsiC, listino, orariC)) ?? {})[k]), [[], [], []])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
