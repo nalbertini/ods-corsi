@@ -42,6 +42,7 @@ const SEZIONI = [
   { id: 'famiglia-passo', nome: 'La famiglia, un passo a sé', cartella: 'famiglia-passo' },
   { id: 'vestiario-modulo', nome: 'Vestiario come il modulo · proposta', cartella: 'vestiario-modulo' },
   { id: 'corsi-vicini', nome: 'Corsi vicini e altre idee', cartella: 'corsi-vicini' },
+  { id: 'orari-evidenziati', nome: 'Orari compatibili evidenziati', cartella: 'orari-evidenziati' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')
