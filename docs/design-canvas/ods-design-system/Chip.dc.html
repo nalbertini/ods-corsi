@@ -13,13 +13,13 @@
     * { box-sizing: border-box; }
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
-<span style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; background: {{sfondo}}; border: 2px solid {{bordo}}; color: {{colore}}; font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; opacity: {{opacita}}">{{label}}<sc-if value="{{haNumero}}" hint-placeholder-val="{{ false }}"><span style="padding: 0 4px; background: {{fondoNumero}}; color: {{testoNumero}}; font-size: 12px; letter-spacing: 0.12em">{{numero}}</span></sc-if></span>
+<span style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; background: {{sfondo}}; border: 2px solid {{bordo}}; color: {{colore}}; font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; max-width: 100%; overflow: hidden; opacity: {{opacita}}"><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis">{{label}}</span><sc-if value="{{haNumero}}" hint-placeholder-val="{{ false }}"><span style="flex: none; padding: 0 4px; background: {{fondoNumero}}; color: {{testoNumero}}; font-size: 12px; letter-spacing: 0.12em">{{numero}}</span></sc-if></span>
 </x-dc>
 <script data-dc-script data-props='{"label":{"editor":"text","default":"DA PAGARE"},"acceso":{"editor":"boolean","default":false},"pieno":{"editor":"boolean","default":false},"disabled":{"editor":"boolean","default":false},"numero":{"editor":"text","default":""},"tonoNumero":{"editor":"enum","options":["neutro","rosso","giallo"],"default":"neutro"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":180,"height":50}}'>
 // Riproduzione 1:1 di .sg-chip di src/styles.css (righe 1462-1467), il tasto piccolo della segreteria: filtri sopra le tabelle
 // (Iscritti.tsx, Richieste.tsx), CAMBIA e ↑ SU / ↓ GIÙ del LISTINO, SCHEDA di PRESENZE. Alto 44px, padding 0 12px, bordo 2px `line`,
 // Saira 13px 700 0.12em, testo `sec`. acceso = aria-pressed (bordo e testo `text`, fondo `surface-2`); pieno = .sg-chip-pieno (fondo
-// `text`, testo `bg`); disabled = opacita' 0.4. numero: un .sg-tag dentro il chip (tonoNumero neutro / rosso / giallo, come Badge tag).
+// `text`, testo `bg`); disabled = opacita' 0.4. numero: un .sg-tag dentro il chip (tonoNumero neutro / rosso / giallo, come Badge tag). Un nome lungo si taglia con «…» (max-width 100%), il numero resta.
 const T = {
   scuro: { bg: '#121212', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', giallo: '#f4c31b', suColore: '#121212', suRosso: '#ffffff' },
   chiaro: { bg: '#f4f4f1', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', giallo: '#f4c31b', suColore: '#121212', suRosso: '#ffffff' },

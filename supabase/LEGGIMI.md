@@ -76,6 +76,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 46. `46-istruttore-collega.sql` — il collega che insegnava con te: chi fa l'appello vede gli altri istruttori previsti e ne segna uno presente (confermato, «segnata da …»), e lo toglie finché la segreteria non l'ha guardato; la segreteria segna «c'era» un previsto anche su una lezione già coperta
 47. `47-vestiario.sql` — gli ordini di vestiario, judogi e costumini: il catalogo (capo, taglie, prezzo, nota) in `impostazioni.vestiario` e la data di chiusura nella raccolta, li salva la segreteria; chi non ha un accesso legge il catalogo da `vestiario()` e manda un ordine da `invia_ordine_vestiario()` fino alla data compresa, coi prezzi e il totale messi dal database; gli ordini li vede e li cambia solo la segreteria, che corregge le righe e scrive dal banco anche a raccolta chiusa
 48. `48-orari-aperti.sql` — gli orari dei corsi aperti (giorno, ora e durata delle ricorrenze non finite) per chi non ha un accesso, da `orari_aperti()`: il modulo a passi ci propone al genitore i corsi alla stessa ora del figlio; le tabelle restano chiuse
+49. `49-richieste-per-email.sql` — sei richieste al giorno dalla stessa email, non più tre: una famiglia di sei persone le manda tutte con una email sola; cambia solo il numero in `iscrizioni_regole()`
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -276,6 +277,12 @@ Per i corsi «alla stessa ora» del genitore nell'iscrizione a passi basta
 `06-iscrizioni.sql`: se lo si rilancia dopo, è `06` a rimettere il permesso
 ad `anon` su `orari_aperti()`. Finché non c'è, il modulo
 non propone corsi alla stessa ora e fa scegliere fra tutti i corsi per l'età.
+
+Per mandare più di tre richieste al giorno dalla stessa email basta
+`49-richieste-per-email.sql` (dopo `06-iscrizioni.sql`), che non chiede di
+rilanciarlo: se lo si rilancia dopo, `06` rimette il limite a tre e va
+rilanciato anche il `49`. Finché non c'è, la quarta richiesta dalla stessa email
+è rifiutata e l'iscrizione di una famiglia si ferma a metà.
 
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
@@ -510,8 +517,8 @@ Cosa fa `06-iscrizioni.sql`:
 - `richieste_con_documento()` dice alla segreteria quali richieste hanno
   ancora il documento d'identità caricato: RICHIESTE ONLINE le segna **DA
   STAMPARE** (il certificato no: dal `45` resta nell'app, vedi più sotto);
-- la porta non è spalancata: tre richieste al giorno dalla stessa email, trenta
-  all'ora in tutto. I numeri stanno in `iscrizioni_regole()`;
+- la porta non è spalancata: sei richieste al giorno dalla stessa email (tre fino al `49`),
+  sessanta all'ora in tutto. I numeri stanno in `iscrizioni_regole()`;
 - accogliere (`accogli_iscrizione`) mette la persona in elenco e la iscrive ai
   corsi scelti. Se c'era già la ritrova: dal codice fiscale di una richiesta
   accolta prima o dei dati anagrafici importati, oppure da nome e cognome con
@@ -984,7 +991,7 @@ prova il tablet di sala: le finestre di tempo, il recupero, l'annullo, il PIN
 e il blocco, e che il tablet non veda niente più di quel che deve;
 `categorie-esercizi.sql` prova la categoria unica degli esercizi: le cinque voci in più, la conversione dei dati vecchi, il rilancio, e che il database accetti ancora una copia vecchia dell'app; `attivita.sql` prova l'elenco delle attività, le lezioni che seguono il giorno e chi può cambiarle; `segreteria.sql` prova cosa succede alle lezioni quando un corso, o uno dei
 suoi giorni, cambia sala, quando cambiano istruttore o giorni, o si archivia, e il primo accesso; `iscrizioni.sql`
-prova il modulo di iscrizione: cosa può fare chi non ha un accesso, i limiti
+prova il modulo di iscrizione: cosa può fare chi non ha un accesso, le sei richieste al giorno per email (la settima no), i limiti
 sui file (il documento, che si trovi da stampare; il certificato, che passi alla scheda accogliendo), e chi accoglie le richieste;
 `certificati.sql` prova che certificati, documento e pagamenti li veda e li
 cambi solo la segreteria, che il file del certificato stia in un contenitore

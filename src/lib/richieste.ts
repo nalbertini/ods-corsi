@@ -330,6 +330,9 @@ function guaiCf(campo: 'codiceFiscale' | 'genitoreCodiceFiscale', grezzo: string
   return null
 }
 
+/** Quanto può essere lunga una nota: `check (length(note) <= 1000)` di `06-iscrizioni.sql`. */
+export const NOTE_NEL_DATABASE = 1000
+
 /**
  * Tutto quello che non va, nell'ordine in cui lo guarda `invia_iscrizione`,
  * con al massimo una cosa per campo.
@@ -408,7 +411,8 @@ export function controlla(d: DatiRichiesta, oggi = new Date()): string | null {
   const tutti = guai(d, oggi)
   const vuoti = tutti.filter((x) => !x.messaggio)
   if (vuoti.length) return `Mancano: ${vuoti.map((x) => NOMI_CAMPI[x.campo]).join(', ')}`
-  return tutti[0]?.messaggio ?? null
+  // Come il database: il vincolo sulle note scatta dopo gli altri controlli, a note già pulite dagli spazi.
+  return tutti[0]?.messaggio ?? ((d.note ?? '').trim().length > NOTE_NEL_DATABASE ? 'Un campo non va: un testo è troppo lungo' : null)
 }
 
 /** Cosa non va campo per campo, da scrivere sotto ognuno. */

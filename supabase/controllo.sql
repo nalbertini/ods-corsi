@@ -243,6 +243,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('48-orari-aperti.sql', 'gli orari dei corsi aperti, per «stessa ora» nelle iscrizioni',
     exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'orari_aperti'
             and has_function_privilege('anon', p.oid, 'execute'))),
+  ('49-richieste-per-email.sql', 'sei richieste al giorno dalla stessa email',
+    iscrizioni_regole()->>'per_email_al_giorno' = '6'),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. L ultimo passo con piu persone: una riga per persona (MODIFICA porta a quella persona, la mancanza dice di chi e) e il conto della famiglia con le righe per persona, la quota una per persona, lo sconto in una riga a parte e in euro, e il totale. I numeri sono d esempio; lo sconto e quello di oggi: 20% sull annuale col costo minore. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1500px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<dc-import name="RigaChiama" hint-size="100%,62px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1"><dc-import name="Avanzamento" numero="6" totale="6" titolo="CONTROLLA E INVIA" hint-size="100%,120px"></dc-import><dc-import name="Titoletto" label="LE PERSONE" conto="3" hint-size="100%,50px"></dc-import><div style="padding: 0 20px 4px"><dc-import name="Riepilogo" righe="fatto~Luca Rossi~Judo kids · trimestre~MODIFICA|fatto~Matteo Rossi~Judo adulti · annuale~MODIFICA|manca~Paola Rossi~manca la firma sul modulo~VAI A" hint-size="100%,230px"></dc-import></div><dc-import name="Titoletto" label="IL CONTO DELLA FAMIGLIA" hint-size="100%,50px"></dc-import><div style="padding: 0 20px 4px"><dc-import name="StimaCosto" etichetta="" righe="Quota associativa · 3 persone:150 €|Luca · Judo kids trimestre:105 €|Matteo · Judo adulti annuale:360 €|Paola · Pilates annuale:300 €|Sconto famiglia 20% su Pilates di Paola:−60 €" totale="855 €" frasi="Lo sconto va sull annuale che costa meno: Pilates di Paola, 300 €. Vale una volta sola, la quota non si sconta." causale="Iscrizione famiglia Rossi · Luca, Matteo, Paola" hint-size="100%,520px"></dc-import></div></main>
+<dc-import name="BarraPasso" manca="LA FIRMA DI PAOLA" avanti="MANDA LA RICHIESTA PER TUTTI" tono="vai" compatta="{{ true }}" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

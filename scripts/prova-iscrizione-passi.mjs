@@ -491,10 +491,10 @@ console.log('\n12. mandare: il PDF, le richieste, i file')
     ok('note al massimo (900) più il legame: restano sotto i 1000 del database', [m.MASSIMO_NOTE, d.inviati.map((x) => x.note.length <= 1000)], [900, [true, true]])
     ok('nel legame il nome è scritto come lo scrive invia: nomeProprio', d.inviati[0].note.endsWith('\nmandata insieme alla richiesta di Paola Rossi, sconto famiglia da applicare'), true)
   }
-  // La seconda si ferma (3 richieste al giorno per email): la prima è arrivata.
+  // La seconda si ferma (6 richieste al giorno per email, e questa è la settima): la prima è arrivata.
   {
     const d = finto()
-    const MSG = 'Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria'
+    const MSG = 'Da questa email sono già arrivate 6 richieste oggi: se serve, scrivi alla segreteria'
     d.guasti.invia = (dati) => (dati.nome === 'Paola' ? new Error(MSG) : null)
     const e = await m.mandaRichieste(d, duePersone(d))
     ok('la seconda no: prima arrivata, seconda no, con il motivo', [e.esito, e.perche, e.ids], ['secondaNo', MSG, ['r1']])
@@ -524,17 +524,24 @@ console.log('\n12. mandare: il PDF, le richieste, i file')
     await e.riprova()
     ok('RIPROVA rimanda solo quello', d.log, ['file r2 certificato'])
   }
-  // La prova vera: la seconda incontra il limite di tre al giorno per email.
+  // La prova vera: il limite per email è sei al giorno (come `per_email_al_giorno` di 49-richieste-per-email.sql), non più tre.
   {
     memoria.clear()
     const r = m.creaRichiesteProva()
-    for (const [nome, cognome, cf] of [['Luca', 'Rossi', CF_LUCA], ['Marco', 'Verdi', cfDi('Marco', 'Verdi', '1990-03-03')]])
-      await r.invia({ ...adulto({ nome, cognome, codiceFiscale: cf, natoIl: cf === CF_LUCA ? '1996-01-01' : '1990-03-03', email: 'famiglia@esempio.it' }).risposte })
+    const MSG6 = 'Da questa email sono già arrivate 6 richieste oggi: se serve, scrivi alla segreteria'
+    const adultoDi = (nome, cognome, natoIl, email = 'famiglia@esempio.it') =>
+      adulto({ nome, cognome, natoIl, codiceFiscale: cfDi(nome, cognome, natoIl), email }).risposte
+    for (const [nome, cognome, natoIl] of [['Luca', 'Rossi', '1996-01-01'], ['Marco', 'Verdi', '1990-03-03'], ['Elio', 'Verdi', '1992-03-03'], ['Dino', 'Verdi', '1994-03-03']])
+      // Col limite di oggi (3) il quarto si ferma: la prova non deve cadere qui, ma sotto, dove si conta.
+      await r.invia(adultoDi(nome, cognome, natoIl)).catch(() => {})
     const bambino = m.risposteDaiPassi(figlio({ email: 'famiglia@esempio.it' }))
     const lui = m.richiestaDelGenitore(bambino, { corsi: ['judo-adulti'], formula: 'annuale', natoA: 'TORINO (TO)' })
     const e = await m.mandaRichieste(r, [{ dati: bambino, file: {} }, { dati: lui, file: {} }])
-    ok('con la prova vera: la terza passa, la quarta si ferma', [e.esito, e.perche], ['secondaNo', 'Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria'])
-    ok('e in elenco ci sono tre richieste nuove', (await r.richieste()).map((x) => x.stato), ['nuova', 'nuova', 'nuova'])
+    ok('con la prova vera: la quinta e la sesta passano, tutte e due', [e.esito, e.ids?.length], ['fatto', 2])
+    ok('e in elenco ci sono sei richieste nuove', (await r.richieste()).map((x) => x.stato), ['nuova', 'nuova', 'nuova', 'nuova', 'nuova', 'nuova'])
+    const settima = await m.mandaRichieste(r, [{ dati: adultoDi('Ugo', 'Verdi', '1993-03-03'), file: {} }])
+    ok('la settima dalla stessa email si ferma, col numero giusto', [settima.esito, settima.perche], ['fermo', MSG6])
+    ok('un’altra email non è toccata', (await m.mandaRichieste(r, [{ dati: adultoDi('Ugo', 'Verdi', '1993-03-03', 'altra@esempio.it'), file: {} }])).esito, 'fatto')
     ok('ancora niente rete', chiamateDiRete, 0)
   }
 }
@@ -1309,6 +1316,558 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('nessuno dei due: niente frase', f('', ''), undefined)
   ok('spazi soltanto: come vuoti', f('  ', ' '), undefined)
   ok('spazi attorno: tagliati', f(' luca@esempio.it ', ''), 'La segreteria ti scrive a luca@esempio.it, se manca qualcosa.')
+}
+
+// ---------------------------------------------------------------------------
+// L'iscrizione di famiglia: più persone nello stesso flusso, un conto solo.
+// Il design è in docs/design-canvas/iscrizione-famiglia/. Le funzioni nuove
+// (`MASSIMO_PERSONE`, `puoiAggiungere`, `aggiungiFamiliare`) e le forme
+// dell'esito (`aMeta`) sono quelle che queste prove fissano.
+// ---------------------------------------------------------------------------
+const chiama = (f) => {
+  try {
+    return f()
+  } catch (e) {
+    return `ERRORE: ${e.message}`
+  }
+}
+// Una famiglia (elenco di persone): se la funzione manca o rifiuta, un elenco vuoto, così le altre prove cadono sul loro valore atteso e non su un TypeError.
+const lista = (f) => {
+  try {
+    return f()
+  } catch {
+    return []
+  }
+}
+const errore = async (f) => {
+  try {
+    await f()
+    return 'nessun errore'
+  } catch (e) {
+    return e.message
+  }
+}
+
+console.log('\n31. la famiglia: il conto unico e lo sconto una volta sola')
+{
+  const voce = (corso, corsoId, orari, annuale, trimestre) => ({ corso, corsoId, eta: '', orari, prezzi: [{ saldo: annuale, annuale, trimestre }] })
+  // Orari tutti diversi: in famiglia non serve che si somiglino.
+  const listino = {
+    quota: 50,
+    saldoEntro: '2026-08-31',
+    offerte: [],
+    corsi: [
+      voce('Judo kids', 'judo-kids', ['lunedì 17.00-18.00'], 280, 105),
+      voce('Judo adulti', 'judo-adulti', ['martedì 20.00-21.00'], 360, 140),
+      voce('Pilates', 'pilates', ['giovedì 19.00-20.00'], 300, 120),
+      voce('Aikido adulti', 'aikido-adulti', ['venerdì 20.00-21.00'], 340, 130),
+      voce('Judo 3', 'judo-3', ['sabato 10.00-11.00'], 300, 120),
+    ],
+  }
+  const C = Object.fromEntries(listino.corsi.map((v) => [v.corsoId, { id: v.corsoId, nome: v.corso }]))
+  const giorno = '2026-10-06'
+  const luca = { chi: 'Luca', corsi: [C['judo-kids']], formula: 'trimestre' }
+  const matteo = { chi: 'Matteo', corsi: [C['judo-adulti']], formula: 'annuale' }
+  const paola = { chi: 'Paola', corsi: [C.pilates], formula: 'annuale' }
+  const neg = (c) => c.righe.filter((r) => r.importo < 0)
+
+  // Il caso dell'utente: l'annuale che costa meno è dell'ultima persona.
+  const tre = m.contoFamiglia([luca, matteo, paola], giorno, listino)
+  ok('famiglia di 3: lo sconto è 60 € sul Pilates, il 20% di 300', tre.sconto, 6000)
+  ok('famiglia di 3: 150 di quote + 105 + 360 + 300 − 60 = 855 €', tre.totale, 85500)
+  ok('famiglia di 3: lo sconto è una riga sola, di −60 €', neg(tre).map((r) => r.importo), [-6000])
+  ok('famiglia di 3: la riga dello sconto è quella del Pilates, di Paola', neg(tre).map((r) => r.testo.startsWith('Paola: ') && r.testo.includes('Pilates')), [true])
+  ok('famiglia di 3: le righe sommano al totale', tre.righe.reduce((t, r) => t + r.importo, 0), tre.totale)
+  ok('famiglia di 3: una quota per persona', tre.righe.filter((r) => r.testo.includes('Quota')).map((r) => [r.testo.split(':')[0], r.importo]), [['Luca', 5000], ['Matteo', 5000], ['Paola', 5000]])
+
+  // L'ordine in cui si scrivono le persone non cambia il conto.
+  const ordini = [[luca, matteo, paola], [luca, paola, matteo], [matteo, luca, paola], [matteo, paola, luca], [paola, luca, matteo], [paola, matteo, luca]]
+  ok('in ogni ordine: stesso totale, 855 €', ordini.map((o) => m.contoFamiglia(o, giorno, listino).totale), ordini.map(() => 85500))
+  ok('in ogni ordine: una sola riga di sconto, −60 €', ordini.map((o) => neg(m.contoFamiglia(o, giorno, listino)).map((r) => r.importo)), ordini.map(() => [-6000]))
+
+  // Due persone: l'annuale più basso è della seconda (oggi lo sconto sparisce dal totale).
+  const due = m.contoFamiglia([matteo, paola], giorno, listino)
+  ok('due persone, il più basso è della seconda: 100 + 360 + 300 − 60 = 700 €', [due.totale, due.sconto, neg(due).map((r) => r.importo)], [70000, 6000, [-6000]])
+
+  // A pari prezzo lo sconto si toglie una volta sola.
+  const pari = m.contoFamiglia([{ chi: 'Matteo', corsi: [C['judo-3']], formula: 'annuale' }, paola], giorno, listino)
+  ok('due annuali da 300: 100 + 600 − 60 = 640 €, una riga di sconto', [pari.totale, neg(pari).length], [64000, 1])
+
+  // Sei persone: l'annuale più basso è della quarta, tra annuali e trimestri.
+  const sei = m.contoFamiglia(
+    [luca, matteo, paola, { chi: 'Sofia', corsi: [C['judo-kids']], formula: 'annuale' }, { chi: 'Marta', corsi: [C.pilates], formula: 'trimestre' }, { chi: 'Elena', corsi: [C['aikido-adulti']], formula: 'annuale' }],
+    giorno,
+    listino,
+  )
+  ok('sei persone: lo sconto è il 20% di 280 (Judo kids di Sofia), 56 €', sei.sconto, 5600)
+  ok('sei persone: 300 di quote + 1505 di corsi − 56 = 1749 €', sei.totale, 174900)
+  ok('sei persone: una riga di sconto sola, e le righe sommano al totale', [neg(sei).map((r) => r.importo), sei.righe.reduce((t, r) => t + r.importo, 0)], [[-5600], 174900])
+
+  // Con un annuale solo, o nessuno, non c'è sconto; la quota non si sconta mai.
+  const unico = m.contoFamiglia([luca, matteo, { chi: 'Elena', corsi: [C.pilates], formula: 'trimestre' }], giorno, listino)
+  ok('un solo annuale in famiglia: nessuno sconto, 150 + 105 + 360 + 120 = 735 €', [unico.sconto, unico.totale, neg(unico).length], [undefined, 73500, 0])
+
+  // Il totale si aggiorna: aggiungere una persona somma la sua stima, e basta.
+  const duePrima = m.contoFamiglia([luca, matteo], giorno, listino)
+  ok('con Luca e Matteo (un annuale): 100 + 105 + 360 = 565 €, nessuno sconto', [duePrima.totale, duePrima.sconto], [56500, undefined])
+  ok('aggiungere Paola: 565 + 50 + 300 = 915 €, meno lo sconto di 60 = 855 €', tre.totale, duePrima.totale + 5000 + 30000 - 6000)
+
+  // Sul corso senza prezzo il conto non si inventa niente.
+  const senza = m.contoFamiglia([luca, { chi: 'Ugo', corsi: [{ id: 'yoga', nome: 'Yoga' }], formula: 'annuale' }], giorno, listino)
+  ok('un corso fuori listino è segnalato, e di lui si conta solo la quota (155 + 50 = 205 €)', [senza.senzaPrezzo, senza.totale], [['Yoga'], 20500])
+
+  // Le prove di prima restano vere (stesso conto per due, il più basso della prima).
+  ok('due annuali, il più basso è della prima: 100 + 280 + 360 − 56 = 684 €', m.contoFamiglia([{ chi: 'Sofia', corsi: [C['judo-kids']], formula: 'annuale' }, matteo], giorno, listino).totale, 68400)
+}
+
+console.log('\n32. la famiglia: al massimo sei persone, e chi si aggiunge')
+{
+  ok('il massimo è sei, in un posto solo', m.MASSIMO_PERSONE, 6)
+  ok('con cinque persone se ne aggiunge una', chiama(() => m.puoiAggiungere(5)), true)
+  ok('con sei no', chiama(() => m.puoiAggiungere(6)), false)
+  ok('con una sola persona sì', chiama(() => m.puoiAggiungere(1)), true)
+
+  const luca = adulto()
+  const prima = JSON.stringify(luca.risposte)
+  const conAdulto = lista(() => m.aggiungiFamiliare([luca], 'adulto', 0))
+  ok('si aggiunge un adulto: due persone, la prima com’era', [conAdulto.length, JSON.stringify(conAdulto[0]?.risposte)], [2, prima])
+  const nuovo = conAdulto[1]
+  ok('l’adulto nuovo è un adulto, senza nome né corsi', [nuovo?.chi, nuovo?.risposte.nome, nuovo?.risposte.corsi], ['adulto', '', []])
+  ok('indirizzo ed email non si copiano all’aggiunta: si prendono da Luca quando servono', [nuovo?.risposte.indirizzo, nuovo?.risposte.email], ['', ''])
+  const inFamiglia = lista(() => m.conDatiDellaFamiglia(conAdulto))[1]
+  ok('indirizzo ed email sono quelli di Luca, e se lui li cambia cambiano anche qui', [inFamiglia?.risposte.indirizzo, inFamiglia?.risposte.cap, inFamiglia?.risposte.comune, inFamiglia?.risposte.email, inFamiglia?.risposte.telefono], ['Via Roma 1', '10093', 'Collegno', 'paola@esempio.it', '347 111 2233'])
+  ok('la sua data di nascita e il suo codice fiscale non sono quelli di Luca', [nuovo?.risposte.natoIl, nuovo?.risposte.codiceFiscale], ['', ''])
+
+  const conBambino = lista(() => m.aggiungiFamiliare([luca], 'figlio', 0))
+  const b = conBambino[1]
+  const bDaLuca = lista(() => m.conDatiDellaFamiglia(conBambino))[1]
+  ok('si aggiunge un bambino: firma Luca, che è nella famiglia, e il posto di chi firma si ricorda', [b?.chi, b?.firmatario, bDaLuca?.risposte.genitoreNome, bDaLuca?.risposte.genitoreCognome, bDaLuca?.risposte.genitoreCodiceFiscale], ['figlio', 0, 'Luca', 'Rossi', CF_LUCA])
+  ok('il bambino ha i contatti di Luca e il suo nome da scrivere', [bDaLuca?.risposte.email, bDaLuca?.risposte.comune, bDaLuca?.risposte.nome], ['paola@esempio.it', 'Collegno', ''])
+  const dopoBambino = lista(() => m.aggiungiFamiliare(conBambino, 'adulto', 0))
+  ok('si può aggiungere anche dopo un bambino', dopoBambino.length, 3)
+  ok('chi firma per un bambino è un adulto della famiglia: un bambino no', chiama(() => m.aggiungiFamiliare([luca, b], 'figlio', 1)), 'ERRORE: Per firmare serve un adulto della famiglia: scegline un altro.')
+  ok('e uno che non c’è nemmeno', chiama(() => m.aggiungiFamiliare([luca], 'figlio', 4)), 'ERRORE: Per firmare serve un adulto della famiglia: scegline un altro.')
+
+  let sei = [luca]
+  for (let i = 1; i < 6; i++) sei = lista(() => m.aggiungiFamiliare(sei, i % 2 ? 'adulto' : 'figlio', 0))
+  ok('con sei persone: la sesta c’è', sei.length, 6)
+  ok('la settima non si aggiunge, e la frase manda alla segreteria', chiama(() => m.aggiungiFamiliare(sei, 'adulto', 0)), 'ERRORE: In un solo modulo ci sono al massimo sei persone.')
+  ok('la famiglia rifiutata non cambia: restano sei', sei.length, 6)
+
+  // Senza sovrapposizioni di orari: l'adulto sceglie fra tutti i corsi della sua età, non solo quelli «stessa ora».
+  const listino = {
+    quota: 50, saldoEntro: '2026-08-31', offerte: [],
+    corsi: [
+      { corso: 'Judo 3', corsoId: 'judo-3', eta: '', orari: ['martedì 17.30-18.30'], natiDal: 2013, natiAl: 2016, prezzi: [{ saldo: 300, annuale: 300, trimestre: 120 }] },
+      { corso: 'Pilates', corsoId: 'pilates', eta: '', orari: ['giovedì 19.00-20.00'], natiAl: 2012, prezzi: [{ saldo: 300, annuale: 300, trimestre: 120 }] },
+    ],
+  }
+  const corsi = [{ id: 'judo-3', nome: 'Judo 3' }, { id: 'pilates', nome: 'Pilates' }]
+  const sceglie = m.corsiPerEtaConStessaOra(corsi, listino, '1984-05-05', ['judo-3'], [
+    { corsoId: 'judo-3', giorno: 2, ora: '17:30', durata: 60 },
+    { corsoId: 'pilates', giorno: 4, ora: '19:00', durata: 60 },
+  ])
+  ok('un orario diverso da quello del bambino resta fra i corsi, senza «stessa ora»', [sceglie.adatti.map((c) => c.id), sceglie.adatti.some((c) => c.riga?.includes('stessa ora'))], [['pilates'], false])
+}
+
+console.log('\n33. la famiglia: ogni richiesta nomina le altre')
+{
+  const d0 = () => {
+    const inviati = []
+    return {
+      inviati, modo: 'prova',
+      async invia(dati) {
+        inviati.push(dati)
+        return `r${inviati.length}`
+      },
+      async caricaFile() {},
+    }
+  }
+  const GENTE = [['Luca', 'rossi'], ['MATTEO', 'Rossi'], ['paola', 'ROSSI'], ['Sofia', 'Rossi'], ['Marta', 'Rossi'], ['Elena', 'Rossi']]
+  const persone = (n, note = '') =>
+    GENTE.slice(0, n).map(([nome, cognome], i) => ({
+      dati: { ...m.risposteDaiPassi(adulto({ nome, cognome, codiceFiscale: `CF${i}` })), note: note || undefined },
+      file: {},
+    }))
+  const proprio = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+  const NOMI = GENTE.map(([n]) => proprio(n))
+
+  // Con tre persone ogni nota nomina le altre due, mai se stessa.
+  {
+    const d = d0()
+    const e = await m.mandaRichieste(d, persone(3))
+    ok('tre persone: tutte arrivate', [e.esito, e.ids], ['fatto', ['r1', 'r2', 'r3']])
+    d.inviati.forEach((x, i) => {
+      const altri = NOMI.slice(0, 3).filter((_, j) => j !== i)
+      ok(`tre persone: la nota di ${NOMI[i]} nomina ${altri.join(' e ')}`, altri.map((a) => (x.note ?? '').includes(`${a} Rossi`)), [true, true])
+      ok(`tre persone: la nota di ${NOMI[i]} non nomina se stessa`, (x.note ?? '').includes(`${NOMI[i]} Rossi`), false)
+      ok(`tre persone: la nota di ${NOMI[i]} dice che è una famiglia`, (x.note ?? '').includes('sconto famiglia da applicare'), true)
+    })
+    ok('tre persone: una nota sola, mai due righe uguali', d.inviati.every((x) => (x.note ?? '').split('\n').length === 1), true)
+  }
+  // Con due il testo di oggi non cambia (provato anche sopra, nel punto 12).
+  {
+    const d = d0()
+    await m.mandaRichieste(d, persone(2))
+    ok('due persone: il testo di oggi, per tutte e due', d.inviati.map((x) => (x.note ?? '')), ['mandata insieme alla richiesta di Matteo Rossi, sconto famiglia da applicare', 'mandata insieme alla richiesta di Luca Rossi, sconto famiglia da applicare'])
+  }
+  // Una persona sola: nessun legame.
+  {
+    const d = d0()
+    await m.mandaRichieste(d, persone(1))
+    ok('una persona: le note non si toccano', d.inviati[0].note, undefined)
+  }
+  // Le note scritte restano, il legame va a capo.
+  {
+    const d = d0()
+    await m.mandaRichieste(d, persone(4, 'Preferiamo il martedì'))
+    ok('quattro persone: le note scritte restano, il legame va a capo', d.inviati.map((x) => (x.note ?? '').startsWith('Preferiamo il martedì\n')), [true, true, true, true])
+    ok('quattro persone: ognuna nomina le altre tre', d.inviati.map((x, i) => NOMI.slice(0, 4).filter((_, j) => j !== i).every((a) => (x.note ?? '').includes(a))), [true, true, true, true])
+  }
+  // Sei persone, con le note al massimo: il database accetta 1000 caratteri e chi scrive ne ha 900.
+  {
+    const d = d0()
+    const scritto = 'x'.repeat(m.MASSIMO_NOTE)
+    await m.mandaRichieste(d, persone(6, scritto))
+    ok('il massimo delle note scritte resta 900', m.MASSIMO_NOTE, 900)
+    ok('sei persone, note da 900: nessuna supera i 1000 del database', d.inviati.map((x) => (x.note ?? '').length <= 1000), [true, true, true, true, true, true])
+    ok('sei persone: quello che hanno scritto non si taglia', d.inviati.map((x) => (x.note ?? '').startsWith(scritto)), [true, true, true, true, true, true])
+    ok('sei persone: ognuna nomina le altre cinque, e non se stessa', d.inviati.map((x, i) => NOMI.filter((a, j) => j !== i).every((a) => (x.note ?? '').slice(900).includes(a)) && !(x.note ?? '').slice(900).includes(NOMI[i])), [true, true, true, true, true, true])
+    ok('sei persone: il legame dice ancora «sconto famiglia»', d.inviati.map((x) => (x.note ?? '').slice(900).includes('sconto famiglia')), [true, true, true, true, true, true])
+  }
+  // Nomi da 60 + 60 caratteri, il massimo dei campi: la riga con i nomi si usa solo se ci sta, se no una riga corta fissa.
+  {
+    const lunghi = (n, note) =>
+      Array.from({ length: n }, (_, i) => ({
+        dati: { ...m.risposteDaiPassi(adulto({ nome: String.fromCharCode(97 + i).repeat(60), cognome: String.fromCharCode(97 + i).repeat(60), codiceFiscale: `CF${i}` })), note: note || undefined },
+        file: {},
+      }))
+    const scritto = 'x'.repeat(m.MASSIMO_NOTE)
+    const SCONTO = 'sconto famiglia da applicare'
+    for (const n of [2, 3, 6]) {
+      const d = d0()
+      await m.mandaRichieste(d, lunghi(n, scritto))
+      ok(`${n} persone, nomi lunghi, note da 900: nessuna supera i 1000 del database`, d.inviati.map((x) => (x.note ?? '').length <= 1000), Array(n).fill(true))
+      ok(`${n} persone, nomi lunghi, note da 900: le note scritte restano e il legame dice lo sconto famiglia`, d.inviati.map((x) => (x.note ?? '').startsWith(scritto + '\n') && (x.note ?? '').endsWith(SCONTO)), Array(n).fill(true))
+    }
+    const sei = d0()
+    await m.mandaRichieste(sei, lunghi(6, scritto))
+    ok('sei persone, nomi lunghi: la riga corta fissa, ≤ 100 caratteri', sei.inviati.map((x) => x.note.slice(901)), Array(6).fill('con altre cinque persone della famiglia: sconto famiglia da applicare'))
+    const due = d0()
+    await m.mandaRichieste(due, lunghi(2, scritto))
+    ok('due persone, nomi lunghi: la riga corta dice «un’altra persona»', due.inviati.map((x) => x.note.slice(901)), Array(2).fill('con un’altra persona della famiglia: sconto famiglia da applicare'))
+    const tre = d0()
+    await m.mandaRichieste(tre, lunghi(3, scritto))
+    ok('tre persone, nomi lunghi: la riga corta dice «altre due»', tre.inviati.map((x) => x.note.slice(901)), Array(3).fill('con altre due persone della famiglia: sconto famiglia da applicare'))
+    // Senza note i nomi ci stanno, e restano.
+    const libere = d0()
+    await m.mandaRichieste(libere, lunghi(6, ''))
+    ok('sei persone, nomi lunghi, senza note: i nomi ci stanno e restano', libere.inviati.map((x) => x.note.startsWith('con ') && !x.note.includes('persone della famiglia') && x.note.split(', ').length === 5), Array(6).fill(true))
+    ok('sei persone, nomi lunghi, senza note: sotto i 1000', libere.inviati.map((x) => x.note.length <= 1000), Array(6).fill(true))
+    // Le note del database, tutte: nessuna richiesta di un invio supera quanto accetta `invia`.
+    ok('le note mandate passano il controllo di `invia` della prova', sei.inviati.map((x) => m.controlla({ ...m.risposteDaiPassi(adulto()), note: x.note })), Array(6).fill(null))
+  }
+  // Il legame è lo stesso quando una richiesta si rimanda: chi arriva dopo nomina anche chi era già arrivato.
+  {
+    const d = d0()
+    let rifiuta = true
+    d.invia = async (dati) => {
+      if (rifiuta && dati.nome.toLowerCase() === 'paola') throw new Error('giù')
+      d.inviati.push(dati)
+      return `r${d.inviati.length}`
+    }
+    const e = await m.mandaRichieste(d, persone(3))
+    rifiuta = false
+    await e.riprova()
+    const nota = d.inviati.find((x) => x.nome.toLowerCase() === 'paola')?.note ?? ''
+    ok('riprovando, la nota di chi mancava nomina chi era già arrivato', ['Luca Rossi', 'Matteo Rossi'].map((a) => nota.includes(a)), [true, true])
+  }
+}
+
+console.log('\n34. la famiglia: l’invio si ferma a metà')
+{
+  const finto = () => {
+    const log = []
+    const inviati = []
+    const guasti = { invia: null, file: null }
+    let n = 0
+    return {
+      log, inviati, guasti, modo: 'prova',
+      async invia(dati) {
+        log.push(`invia ${dati.nome}`)
+        const g = guasti.invia?.(dati)
+        if (g !== undefined && g !== null) throw g
+        inviati.push(dati)
+        return `r${++n}`
+      },
+      async caricaFile(id, tipo) {
+        log.push(`file ${id} ${tipo}`)
+        const g = guasti.file?.(tipo, id)
+        if (g !== undefined && g !== null) throw g
+      },
+    }
+  }
+  const NOMI = ['Luca', 'Matteo', 'Paola', 'Sofia']
+  const quattro = (d) =>
+    NOMI.map((nome, i) => ({
+      dati: m.risposteDaiPassi(adulto({ nome, cognome: 'Rossi', codiceFiscale: `CF${i}` })),
+      file: { documento: F('d.jpg') },
+      faiPdf: async () => {
+        d.log.push(`pdf ${nome}`)
+        return F('modulo.pdf')
+      },
+    }))
+  const MSG = 'Da questa email sono già arrivate 6 richieste oggi: se serve, scrivi alla segreteria'
+
+  // Paola e Sofia non partono: Luca e Matteo sì.
+  {
+    const d = finto()
+    d.guasti.invia = (dati) => (dati.nome === 'Paola' ? new Error(MSG) : null)
+    const e = await m.mandaRichieste(d, quattro(d))
+    ok('a metà: l’esito dice chi è arrivato e chi no, per nome', [e.esito, e.arrivati, e.mancanti], ['aMeta', ['Luca Rossi', 'Matteo Rossi'], ['Paola Rossi', 'Sofia Rossi']])
+    ok('a metà: il motivo e gli id di chi è arrivato', [e.perche, e.ids], [MSG, ['r1', 'r2']])
+    ok('a metà: dopo il primo rifiuto non si prova con Sofia', d.log.includes('invia Sofia'), false)
+    ok('a metà: i file di chi è arrivato sono partiti', d.log.filter((x) => x.startsWith('file')), ['file r1 modulo', 'file r1 documento', 'file r2 modulo', 'file r2 documento'])
+    d.guasti.invia = null
+    d.log.length = 0
+    const e2 = await e.riprova()
+    ok('RIPROVA rimanda solo Paola e Sofia, con i loro file, senza rifare i PDF', d.log, ['invia Paola', 'file r3 modulo', 'file r3 documento', 'invia Sofia', 'file r4 modulo', 'file r4 documento'])
+    ok('RIPROVA: finisce bene, con le quattro richieste in ordine', [e2.esito, e2.ids], ['fatto', ['r1', 'r2', 'r3', 'r4']])
+    ok('mai un doppione: ognuno è stato mandato una volta sola', NOMI.map((n) => d.inviati.filter((x) => x.nome === n).length), [1, 1, 1, 1])
+  }
+  // Si riprova e si ferma di nuovo: ora manca solo Sofia.
+  {
+    const d = finto()
+    d.guasti.invia = (dati) => (dati.nome === 'Matteo' ? new Error(MSG) : null)
+    const e = await m.mandaRichieste(d, quattro(d))
+    ok('si ferma alla seconda: arrivata solo Luca', [e.esito, e.arrivati, e.mancanti], ['aMeta', ['Luca Rossi'], ['Matteo Rossi', 'Paola Rossi', 'Sofia Rossi']])
+    d.guasti.invia = (dati) => (dati.nome === 'Sofia' ? new Error(MSG) : null)
+    d.log.length = 0
+    const e2 = await e.riprova()
+    ok('riprovando si ferma di nuovo: ora manca solo Sofia', [e2.esito, e2.arrivati, e2.mancanti, e2.ids], ['aMeta', ['Luca Rossi', 'Matteo Rossi', 'Paola Rossi'], ['Sofia Rossi'], ['r1', 'r2', 'r3']])
+    d.guasti.invia = null
+    d.log.length = 0
+    const e3 = await e2.riprova()
+    ok('il secondo RIPROVA manda solo Sofia', d.log.filter((x) => x.startsWith('invia')), ['invia Sofia'])
+    ok('e finisce bene', [e3.esito, e3.ids.length], ['fatto', 4])
+  }
+  // Un solo RIPROVA alla volta: due tocchi non mandano due volte.
+  {
+    const d = finto()
+    d.guasti.invia = (dati) => (dati.nome === 'Paola' ? new Error(MSG) : null)
+    const e = await m.mandaRichieste(d, quattro(d))
+    d.guasti.invia = null
+    d.log.length = 0
+    await Promise.all([e.riprova(), e.riprova()])
+    ok('due tocchi su RIPROVA: Paola e Sofia una volta sola', d.log.filter((x) => x.startsWith('invia')), ['invia Paola', 'invia Sofia'])
+  }
+  // Non parte nemmeno la prima: non nasce niente.
+  {
+    const d = finto()
+    d.guasti.invia = () => new Error(MSG)
+    const e = await m.mandaRichieste(d, quattro(d))
+    ok('la prima non parte: «fermo», e nessun’altra provata', [e.esito, d.log.filter((x) => x.startsWith('invia'))], ['fermo', ['invia Luca']])
+  }
+  // Tutte arrivate, ma un file della terza no: si dice di chi, e RIPROVA manda solo quello.
+  {
+    const d = finto()
+    d.guasti.file = (tipo, id) => (id === 'r3' && tipo === 'documento' ? new Error('troppo grande') : null)
+    const e = await m.mandaRichieste(d, quattro(d))
+    ok('un file della terza non parte: si dice quale e di chi', [e.esito, e.mancati], ['file', [{ richiesta: 2, tipo: 'documento' }]])
+    d.guasti.file = null
+    d.log.length = 0
+    await e.riprova()
+    ok('RIPROVA rimanda solo quel file', d.log, ['file r3 documento'])
+  }
+  // Il vecchio caso a due resta com'era: la seconda no.
+  {
+    const d = finto()
+    d.guasti.invia = (dati) => (dati.nome === 'Matteo' ? new Error(MSG) : null)
+    const e = await m.mandaRichieste(d, quattro(d).slice(0, 2))
+    ok('con due persone resta «secondaNo», come prima', [e.esito, e.ids], ['secondaNo', ['r1']])
+  }
+}
+
+console.log('\n35. la famiglia nella schermata: pastiglie, cosa manca a tutti, il totale, il riepilogo, l’esito a metà')
+{
+  const voce = (corso, corsoId, orari, annuale, trimestre) => ({ corso, corsoId, eta: '', orari, prezzi: [{ saldo: annuale, annuale, trimestre }] })
+  const listino = {
+    quota: 50, saldoEntro: '2026-08-31', offerte: [],
+    corsi: [voce('Judo kids', 'judo-kids', ['lunedì 17.00-18.00'], 280, 105), voce('Judo adulti', 'judo-adulti', ['martedì 20.00-21.00'], 360, 140), voce('Pilates', 'pilates', ['giovedì 19.00-20.00'], 300, 120)],
+  }
+  const corsi = listino.corsi.map((v) => ({ id: v.corsoId, nome: v.corso }))
+  const giorno = '2026-10-06'
+  const luca = adulto({ nome: 'Luca', corsi: ['judo-kids'], formula: 'trimestre' })
+  // Ognuno col suo codice fiscale, che torna col nome.
+  const dati = (nome, natoIl, donna = false) => ({ nome, natoIl, codiceFiscale: cfDi(nome, 'Rossi', natoIl, donna) })
+  const matteo = adulto({ ...dati('Matteo', '1990-03-03'), corsi: ['judo-adulti'], formula: 'annuale' })
+  const paola = adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'annuale' })
+  const tre = [luca, matteo, paola]
+  const senzaFirma = adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'annuale' }, { tratti: 0 })
+
+  // Chi è, sulla pastiglia e nelle frasi.
+  ok('il nome scritto, con la maiuscola', chiama(() => m.nomeDellaPersona(adulto({ nome: 'luca' }), 0)), 'Luca')
+  ok('senza nome: «Adulto 2» o «Bambino 3», col posto nella famiglia', [chiama(() => m.nomeDellaPersona(adulto({ nome: '' }), 1)), chiama(() => m.nomeDellaPersona(figlio({ nome: '' }), 2))], ['Adulto 2', 'Bambino 3'])
+
+  // Chi può firmare per un bambino: gli adulti della famiglia, con il loro posto.
+  ok('firmano gli adulti, non i bambini', chiama(() => m.chiPuoFirmare([luca, figlio(), paola])), [{ indice: 0, nome: 'Luca' }, { indice: 2, nome: 'Paola' }])
+  ok('con un bambino solo, nessuno può firmare per un altro', chiama(() => m.chiPuoFirmare([figlio()])), [])
+
+  // In famiglia nessuno chiede «anche te?»: ogni persona decide da sé, il conto è uno.
+  const conBambino = lista(() => m.aggiungiFamiliare([figlio({}, { ancheTu: undefined }), adulto()], 'figlio', 1))
+  ok('un bambino in famiglia non chiede «anche te?»', [conBambino.length, conBambino.map((p) => p.ancheTu)], [3, [false, undefined, false]])
+  ok('e il passo del corso non glielo chiede', conBambino.map((p) => (p.chi === 'figlio' ? m.mancaNelPasso({ ...p, risposte: { ...p.risposte, corsi: ['x'], formula: 'annuale' } }, 3).includes('SCEGLI: ANCHE TE?') : false)), [false, false, false])
+
+  // Cosa manca a tutti, per l'ultimo passo: ogni voce dice di chi è, e la chiave porta a quella persona.
+  ok('una sola persona: le voci di sempre, senza nome', chiama(() => m.mancantiFamiglia([senzaFirma])), [{ chiave: 'firma', nome: 'FIRMA' }])
+  ok('più persone: «FIRMA DI PAOLA», e la chiave ha il posto di Paola', chiama(() => m.mancantiFamiglia([luca, matteo, senzaFirma])), [{ chiave: '2:firma', nome: 'FIRMA DI PAOLA' }])
+  ok('tutto a posto: niente', chiama(() => m.mancantiFamiglia(tre)), [])
+  ok('chi non ha scritto niente: le sue voci, di lui', chiama(() => m.mancantiFamiglia([luca, adulto({ nome: '', corsi: [] })]).filter((x) => x.chiave === '1:corsi')), [{ chiave: '1:corsi', nome: 'CORSO DI ADULTO 2' }])
+  ok('quante cose mancano a una persona, per la pastiglia', [chiama(() => m.quantoManca(luca)), chiama(() => m.quantoManca(senzaFirma)), chiama(() => m.quantoManca(adulto({ corsi: [] }, { tratti: 0 })))], [0, 1, 2])
+
+  // A quale passo porta una voce.
+  const vuota = adulto({ nome: '', corsi: [] }, { file: {}, tratti: 0 })
+  ok('il passo di ciò che manca: nome 1, corso 2, firma 3, carta 4', ['nome', 'corsi', 'firma', 'documento'].map((k) => chiama(() => m.passoDelCampo(vuota, k))), [1, 2, 3, 4])
+  ok('una cosa che non manca non porta da nessuna parte', chiama(() => m.passoDelCampo(luca, 'nome')), undefined)
+  ok('il passo di un campo del genitore, nel flusso del figlio', [chiama(() => m.passoDelCampo(figlio({ genitoreNome: '' }), 'genitoreNome')), chiama(() => m.passoDelCampo(figlio({}, { privacy: false }), 'privacy'))], [2, 4])
+
+  // Il conto della famiglia, con le persone che hanno già un corso.
+  const conto = chiama(() => m.contoDellaFamiglia(tre, corsi, listino, giorno))
+  ok('il conto: 150 di quote + 105 + 360 + 300 − 60 = 855 €', [conto.totale, conto.sconto], [85500, 6000])
+  ok('chi non ha un corso ancora non entra nel conto', chiama(() => m.contoDellaFamiglia([luca, adulto({ nome: 'Paola', corsi: [] })], corsi, listino, giorno).totale), 15500)
+  ok('senza listino, nessun conto', chiama(() => m.contoDellaFamiglia(tre, corsi, undefined, giorno)), undefined)
+  ok('due con lo stesso nome non si confondono: due righe di quota', chiama(() => m.contoDellaFamiglia([adulto({ nome: 'Marco', corsi: ['judo-adulti'], formula: 'annuale' }), adulto({ nome: 'Marco', corsi: ['pilates'], formula: 'annuale' })], corsi, listino, giorno).righe.filter((r) => r.testo.includes('Quota')).length), 2)
+
+  // Il totale sopra la barra: di tutta la famiglia, con lo sconto, nei passi del corso e dei documenti.
+  const t = (persone, attivo, passo) => chiama(() => m.totaleDellaFamiglia(persone, attivo, passo, corsi, listino, giorno))
+  ok('famiglia di tre, passo del corso: ognuno con la sua cifra, lo sconto a parte', t(tre, 0, 2), { righe: 'Luca 155 € + Matteo 410 € + Paola 350 € − sconto famiglia 60 €', totale: '855 €' })
+  ok('lo stesso nel passo dei documenti', t(tre, 1, 4)?.totale, '855 €')
+  ok('negli altri passi non c’è', [t(tre, 0, 1), t(tre, 0, 3), t(tre, 0, 5)], [undefined, undefined, undefined])
+  ok('senza sconto la riga non lo nomina', t([luca, adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'trimestre' })], 0, 2), { righe: 'Luca 155 € + Paola 170 €', totale: '325 €' })
+  ok('una persona sola: com’era, il suo totale', t([matteo], 0, 2), chiama(() => m.totaleDelPasso(matteo, 2, corsi, listino, giorno)))
+  // «Anche tu» (un bambino e il genitore, una persona sola nel modulo) e famiglia (più persone) non si pestano i piedi: il totale è uno solo, quello giusto per ognuno.
+  const conAncheTu = figlio({ corsi: ['judo-kids'], formula: 'annuale' }, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
+  ok('anche tu con una persona sola nel modulo: il totale è quello della famiglia di «Anche tu», con lo sconto', t([conAncheTu], 0, 3), chiama(() => m.totaleDelPasso(conAncheTu, 3, corsi, listino, giorno)))
+  ok('e vale 684 €: 50 + 280 + 50 + 360 − 56', t([conAncheTu], 0, 3)?.totale, '684 €')
+  ok('l’esito con «Anche tu» e una persona sola: lo stesso conto, con lo sconto', [chiama(() => m.riassuntoEsito(conAncheTu, corsi, listino, giorno, [conAncheTu])).importo, chiama(() => m.riassuntoEsito(conAncheTu, corsi, listino, giorno, [conAncheTu])).conSconto], ['684 €', true])
+  ok('aggiungere un familiare a chi non ha ancora risposto a «anche te?»: non lo chiede più, e il conto è quello della famiglia', chiama(() => m.aggiungiFamiliare([figlio({}, { ancheTu: undefined }), adulto()], 'adulto', 1)[0].ancheTu), false)
+
+  // Il riepilogo: una riga per persona, e se manca qualcosa lo dice.
+  const righe = chiama(() => m.righeDellaFamiglia([luca, matteo, senzaFirma], corsi))
+  ok('tre righe, coi nomi', righe.map((r) => r.titolo), ['Luca Rossi', 'Matteo Rossi', 'Paola Rossi'])
+  ok('a posto: il corso e come paga; manca: cosa', righe.map((r) => r.dettaglio), ['Judo kids · trimestre', 'Judo adulti · annuale', 'manca: firma'])
+  ok('chi manca è segnato, e MODIFICA o VAI A porta al passo giusto', righe.map((r) => [r.manca, r.passo]), [[false, 1], [false, 1], [true, 3]])
+  ok('più di tre cose: le prime tre e quante altre', chiama(() => m.righeDellaFamiglia([adulto({ nome: '', cognome: '', corsi: [] }, { tratti: 0, scelte: {}, privacy: false, file: {} })], corsi)[0].dettaglio.startsWith('manca: ') && m.righeDellaFamiglia([adulto({ nome: '', cognome: '', corsi: [] }, { tratti: 0, scelte: {}, privacy: false, file: {} })], corsi)[0].dettaglio.includes(' e altre ')), true)
+
+  // L'esito di una famiglia: l'importo è quello del conto, la ricevuta di uno basta.
+  const r = (persone) => chiama(() => m.riassuntoEsito(persone[0], corsi, listino, giorno, persone))
+  ok('famiglia: 855 € con lo sconto, da pagare', [r(tre).importo, r(tre).famiglia, r(tre).conSconto, r(tre).daPagare, r(tre).pagamento], ['855 €', true, true, true, 'importo'])
+  ok('famiglia: la ricevuta di una persona basta', [r([luca, matteo, adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'annuale' }, { file: { documento: F('d.jpg'), ricevuta: F('r.jpg') } })]).daPagare, r([luca, matteo, paola]).pagamento], [false, 'importo'])
+
+  // Al massimo: il riquadro che prende il posto di AGGIUNGI UN FAMILIARE dice lo stesso numero della regola, in lettere.
+  ok('il riquadro dei sei: etichetta, titolo e testo', m.frasiDelMassimo, { etichetta: 'SIETE IN SEI', titolo: 'Di più, chiamaci: vi iscriviamo insieme.', testo: 'In un solo modulo ci sono al massimo sei persone.' })
+  ok('il testo del riquadro è la frase dell’errore, una sola', m.frasiDelMassimo.testo, chiama(() => m.aggiungiFamiliare(Array.from({ length: m.MASSIMO_PERSONE }, () => adulto()), 'adulto', 0)).replace('ERRORE: ', ''))
+
+  // Uscire dalla famiglia perde le risposte di tutti, anche di chi non ha scritto niente.
+  ok('una persona che non ha scritto niente: si esce senza domande', chiama(() => m.uscitaDellaFamiglia([m.nuovoStato('adulto')])), undefined)
+  ok('una persona con qualcosa di scritto: la domanda', chiama(() => m.uscitaDellaFamiglia([luca])), DOMANDA)
+  ok('due persone, anche vuote: la domanda', chiama(() => m.uscitaDellaFamiglia([m.nuovoStato('adulto'), m.nuovoStato('adulto')])), DOMANDA)
+
+  // L'invio a metà, detto: chi è arrivato, chi no. Le richieste, non le persone: così il genere non conta.
+  const meta = (a, x) => chiama(() => m.fraseAMeta(a, x))
+  ok('2 su 4', meta(['Luca Rossi', 'Matteo Rossi'], ['Paola Rossi', 'Sofia Rossi']), {
+    titolo: 'ARRIVATE 2 RICHIESTE SU 4',
+    arrivate: 'Le richieste di Luca Rossi e Matteo Rossi sono arrivate e restano: non le rimandiamo.',
+    mancano: 'Quelle di Paola Rossi e Sofia Rossi non sono partite. Riprova ora, oppure chiama la segreteria.',
+  })
+  ok('1 su 3: il singolare', meta(['Luca Rossi'], ['Matteo Rossi', 'Paola Rossi']), {
+    titolo: 'ARRIVATA 1 RICHIESTA SU 3',
+    arrivate: 'La richiesta di Luca Rossi è arrivata e resta: non la rimandiamo.',
+    mancano: 'Quelle di Matteo Rossi e Paola Rossi non sono partite. Riprova ora, oppure chiama la segreteria.',
+  })
+  ok('2 su 3: manca una sola, e tre nomi si elencano con la virgola', [meta(['Luca Rossi', 'Matteo Rossi'], ['Paola Rossi']).mancano, meta(['Luca Rossi'], ['A B', 'C D', 'E F']).mancano], [
+    'Quella di Paola Rossi non è partita. Riprova ora, oppure chiama la segreteria.',
+    'Quelle di A B, C D e E F non sono partite. Riprova ora, oppure chiama la segreteria.',
+  ])
+}
+
+console.log('\n36. la famiglia: i dati si prendono quando servono, e le regole che stavano nella schermata')
+{
+  const luca = adulto()
+  const vuoto = (cambi = {}) => adulto({ nome: '', cognome: '', codiceFiscale: '', indirizzo: '', cap: '', comune: '', email: '', telefono: '', ...cambi }, { tratti: 0, file: {}, scelte: {}, privacy: false })
+  const lei = (persone, i) => chiama(() => m.conDatiDellaFamiglia(persone))[i]
+
+  // I dati del familiare vengono dalla prima persona e da chi firma, al momento dell'invio e del conto: se Luca li scrive o li corregge dopo, arrivano.
+  const aggiunto = lista(() => m.aggiungiFamiliare([vuoto()], 'adulto', 0))
+  ok('Luca non ha ancora scritto: il familiare non ha niente', [lei(aggiunto, 1).risposte.indirizzo, lei(aggiunto, 1).risposte.email], ['', ''])
+  const dopo = [{ ...aggiunto[0], risposte: { ...aggiunto[0].risposte, indirizzo: 'Via Nuova 5', cap: '10093', comune: 'Collegno', email: 'luca@esempio.it', telefono: '347 999 8877' } }, aggiunto[1]]
+  ok('Luca compila dopo: il familiare ha i suoi dati', [lei(dopo, 1).risposte.indirizzo, lei(dopo, 1).risposte.email, lei(dopo, 1).risposte.telefono], ['Via Nuova 5', 'luca@esempio.it', '347 999 8877'])
+  const corretto = [{ ...dopo[0], risposte: { ...dopo[0].risposte, indirizzo: 'Via Giusta 9' } }, dopo[1]]
+  ok('Luca corregge: il familiare ha quello corretto, non quello vecchio', lei(corretto, 1).risposte.indirizzo, 'Via Giusta 9')
+  const suoi = [corretto[0], { ...corretto[1], risposte: { ...corretto[1].risposte, indirizzo: 'Via Sua 2', email: '' } }]
+  ok('ciò che il familiare ha scritto lui resta suo; quello che ha lasciato vuoto è di Luca', [lei(suoi, 1).risposte.indirizzo, lei(suoi, 1).risposte.email], ['Via Sua 2', 'luca@esempio.it'])
+  ok('Luca, la prima persona, non cambia', JSON.stringify(lei(suoi, 0)), JSON.stringify(suoi[0]))
+  const sola = [luca]
+  ok('una persona sola: la stessa lista, niente da prendere', chiama(() => m.conDatiDellaFamiglia(sola)) === sola, true)
+  ok('non si cambiano gli stati di partenza', JSON.stringify(aggiunto[1].risposte.indirizzo), '""')
+
+  // Il bambino prende il genitore da chi firma, anche se chi firma scrive dopo.
+  const conFiglio = lista(() => m.aggiungiFamiliare([vuoto()], 'figlio', 0))
+  ok('chi firma non ha scritto ancora: il bambino non ha il genitore', [lei(conFiglio, 1).risposte.genitoreNome, lei(conFiglio, 1).risposte.genitoreCodiceFiscale], [undefined, undefined].map((x) => x ?? ''))
+  const firmato = [{ ...conFiglio[0], risposte: { ...conFiglio[0].risposte, nome: 'Luca', cognome: 'Rossi', codiceFiscale: CF_LUCA } }, conFiglio[1]]
+  ok('chi firma scrive dopo: il bambino ha nome, cognome e codice di chi firma', [lei(firmato, 1).risposte.genitoreNome, lei(firmato, 1).risposte.genitoreCognome, lei(firmato, 1).risposte.genitoreCodiceFiscale], ['Luca', 'Rossi', CF_LUCA])
+  const corretto2 = [{ ...firmato[0], risposte: { ...firmato[0].risposte, nome: 'Luciano' } }, firmato[1]]
+  ok('e se lo corregge, il bambino ha il nome corretto', lei(corretto2, 1).risposte.genitoreNome, 'Luciano')
+  const proprio = [firmato[0], { ...firmato[1], risposte: { ...firmato[1].risposte, genitoreNome: 'Altro' } }]
+  ok('un genitore scritto sul bambino resta quello', lei(proprio, 1).risposte.genitoreNome, 'Altro')
+  const secondo = lista(() => m.aggiungiFamiliare([vuoto(), vuoto()], 'figlio', 1))
+  const secondoFirma = [secondo[0], { ...secondo[1], risposte: { ...secondo[1].risposte, nome: 'Paola' } }, secondo[2]]
+  ok('il bambino firmato dalla seconda persona prende i dati della seconda', lei(secondoFirma, 2).risposte.genitoreNome, 'Paola')
+
+  // Se chi firma non è più un adulto (cambiaScelta), il bambino è fermato, con una frase per chi usa l'app.
+  const famiglia = [{ ...firmato[0] }, { ...firmato[1], risposte: { ...firmato[1].risposte, nome: 'Matteo' } }]
+  ok('chi firma è un adulto: nessun fermo', chiama(() => m.fermoDellaFamiglia(famiglia)), undefined)
+  const luiBambino = [m.cambiaScelta(famiglia[0], 'figlio'), famiglia[1]]
+  ok('chi firma non è più un adulto: il bambino si ferma, e la frase dice cosa fare', chiama(() => m.fermoDellaFamiglia(luiBambino)), 'Luca non è più un adulto, e Matteo ha bisogno di un adulto che firmi: rimetti Luca come adulto, oppure chiama la segreteria.')
+  ok('e i dati di chi non è più adulto non passano al bambino', lei(luiBambino, 1).risposte.genitoreNome, '')
+  ok('una persona sola non si ferma mai', chiama(() => m.fermoDellaFamiglia([luca])), undefined)
+  ok('un bambino senza firmatario (era un adulto che ha cambiato scelta) non si ferma', chiama(() => m.fermoDellaFamiglia([luca, m.cambiaScelta(adulto(), 'figlio', true)])), undefined)
+
+  // Aggiungere un familiare azzera la foto del modulo di tutti: in famiglia si firma qui.
+  const inFoto = adulto({}, { file: { documento: F('d.jpg'), modulo: F('foglio.jpg') } })
+  const conFoto = lista(() => m.aggiungiFamiliare([inFoto], 'adulto', 0))
+  ok('la foto del foglio firmato non vale più, il documento resta', [conFoto[0].file.modulo, !!conFoto[0].file.documento], [undefined, true])
+  ok('e il bambino aggiunto: il foglio non c’è', conFoto[1].file.modulo, undefined)
+  ok('lo stato di partenza non si tocca', !!inFoto.file.modulo, true)
+
+  // «Anche te?» non si chiede in famiglia: una regola sola, per chi si aggiunge e per chi cambia scelta.
+  ok('si cambia scelta in famiglia: un bambino non chiede «anche te?»', [chiama(() => m.cambiaScelta(luca, 'figlio', true).ancheTu), chiama(() => m.cambiaScelta(luca, 'figlio').ancheTu)], [false, undefined])
+  ok('e un adulto resta com’era', chiama(() => m.cambiaScelta(figlio(), 'adulto', true).ancheTu), undefined)
+  ok('un bambino che ha già risposto «anche te» non cambia aggiungendo un familiare', chiama(() => m.aggiungiFamiliare([figlio({}, { ancheTu: true }), adulto()], 'adulto', 1)[0].ancheTu), true)
+
+  // Il foglio si firma in foto solo da soli, e solo se si è scelto così.
+  ok('foto: da soli, scelta la foto', chiama(() => m.firmaInFoto(luca, true, 1)), true)
+  ok('foto: non scelta', chiama(() => m.firmaInFoto(luca, false, 1)), false)
+  ok('foto: in famiglia no', chiama(() => m.firmaInFoto(luca, true, 2)), false)
+  ok('foto: con «Anche te» no', chiama(() => m.firmaInFoto(figlio({}, { ancheTu: true }), true, 1)), false)
+
+  // La sigla della provincia del genitore: la dice il codice fiscale, se no quella scritta.
+  const luoghi = { L219: [['TORINO', 'TO']] }
+  ok('sigla: la dice il codice del genitore', chiama(() => m.siglaDelGenitore(figlio(), luoghi, 'MI')), 'TO')
+  ok('sigla: un luogo che l’elenco non ha: quella scritta', chiama(() => m.siglaDelGenitore(figlio({ genitoreCodiceFiscale: 'RSSPLA80A41Z999X' }), luoghi, 'MI')), 'MI')
+  ok('sigla: senza elenco dei luoghi, quella scritta', chiama(() => m.siglaDelGenitore(figlio(), null, 'MI')), 'MI')
+  ok('sigla: senza codice, quella scritta', chiama(() => m.siglaDelGenitore(figlio({ genitoreCodiceFiscale: '' }), luoghi, 'MI')), 'MI')
+
+  // La pastiglia, per chi legge lo schermo: «manca 1 cosa» / «mancano N cose».
+  ok('manca 1 cosa', chiama(() => m.fraseCoseCheMancano(1)), 'manca 1 cosa')
+  ok('mancano 3 cose', chiama(() => m.fraseCoseCheMancano(3)), 'mancano 3 cose')
+  ok('l’etichetta della pastiglia: nome e cosa manca', [chiama(() => m.etichettaPastiglia('PAOLA', 1)), chiama(() => m.etichettaPastiglia('PAOLA', 2)), chiama(() => m.etichettaPastiglia('PAOLA', 0))], ['PAOLA: manca 1 cosa', 'PAOLA: mancano 2 cose', 'PAOLA'])
+
+  // Il tasto dell'esito a metà: per chi è rimasto, o per i mancanti.
+  ok('riprova per uno', chiama(() => m.etichettaRiprova(['Paola'])), 'RIPROVA PER PAOLA')
+  ok('riprova per due', chiama(() => m.etichettaRiprova(['Paola', 'Sofia'])), 'RIPROVA PER PAOLA E SOFIA')
+  ok('riprova per più di due: i mancanti', chiama(() => m.etichettaRiprova(['Paola', 'Sofia', 'Elena'])), 'RIPROVA PER I MANCANTI')
+  ok('riprova per cinque: i mancanti', chiama(() => m.etichettaRiprova(['A', 'B', 'C', 'D', 'E'])), 'RIPROVA PER I MANCANTI')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
