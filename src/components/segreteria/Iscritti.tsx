@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import type { Destinazione } from './Segreteria'
 import type { Nota } from '../ds'
 import type { Anagrafica, ComePaga, CorsoSeg, DatiPersona, DatiSegreteria, Frequenza, PersonaSeg, StatoCertificato, Timbro, Tono } from '../../lib/segreteria'
 import { avvisiGesto, campoDelGuaio, cercaNellElenco, certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, certificatoPronto, comePaga, fuoriRegola, confermaDisattiva, confermaUnione, cosaNonVaAnagrafica, gestoIniziale, inCorso, pagamentoDi, paroleInRegola, presentaCertificato, pulisciAnagrafica, senzaCertificatoValido, senzaEmail, statoCertificato, timbriScheda } from '../../lib/segreteria'
 import { VALIDITA } from '../../lib/costi'
 import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFiscale'
+import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
@@ -1247,6 +1248,8 @@ function ModificaAnagrafica({
 }) {
   const pulita = pulisciAnagrafica(dati)
   const no = cosaNonVaAnagrafica(pulita)
+  // Il comune dal CAP, come nel modulo di iscrizione (provincia di Torino): un aiuto, il campo resta scrivibile.
+  const dalCap = comuneDalCap(dati.cap ?? '', dati.comune)
   const cf = pulita.codiceFiscale
   const avviso =
     cf && cf.length === 16 && !no
@@ -1263,18 +1266,42 @@ function ModificaAnagrafica({
       <Riga titolo="DATI ANAGRAFICI" />
       <div className="sg-due">
         {CAMPI_ANAGRAFICA.map((c) => (
-          <Campo key={c.k} id={`an-${c.k}`} etichetta={c.etichetta} largo={c.largo}>
-            <input
-              id={`an-${c.k}`}
-              className={c.codice ? 'sg-campo num' : 'sg-campo'}
-              type={c.tipo ?? 'text'}
-              maxLength={c.tipo ? undefined : c.max}
-              inputMode={c.k === 'cap' ? 'numeric' : undefined}
-              autoCapitalize={c.codice ? 'characters' : undefined}
-              value={dati[c.k] ?? ''}
-              onChange={(e) => onCambia({ ...dati, [c.k]: c.codice ? e.target.value.toUpperCase() : e.target.value })}
-            />
-          </Campo>
+          <Fragment key={c.k}>
+            <Campo id={`an-${c.k}`} etichetta={c.etichetta} largo={c.largo} nota={c.k === 'comune' && dalCap.nota ? { testo: dalCap.nota, guaio: false } : undefined}>
+              <input
+                id={`an-${c.k}`}
+                className={c.codice ? 'sg-campo num' : 'sg-campo'}
+                type={c.tipo ?? 'text'}
+                maxLength={c.tipo ? undefined : c.max}
+                inputMode={c.k === 'cap' ? 'numeric' : undefined}
+                autoCapitalize={c.codice ? 'characters' : undefined}
+                value={dati[c.k] ?? ''}
+                onChange={(e) => onCambia(c.k === 'cap' ? conIlComune(dati, e.target.value) : { ...dati, [c.k]: c.codice ? e.target.value.toUpperCase() : e.target.value })}
+              />
+            </Campo>
+            {c.k === 'comune' && dalCap.scelte.length > 0 && (
+              <Campo id={dalCap.tendina ? 'an-comune-tendina' : undefined} etichetta={dalCap.tendina ? etichettaTendina(dati.cap ?? '', dalCap.scelte.length) : fraseDellaScelta(dati.cap ?? '', dalCap.scelte.length)} largo>
+                {dalCap.tendina ? (
+                  <select id="an-comune-tendina" className="sg-campo" value="" onChange={(e) => e.target.value && onCambia({ ...dati, comune: e.target.value })}>
+                    <option value="">Scegli il comune</option>
+                    {dalCap.scelte.map((x) => (
+                      <option key={x} value={x}>
+                        {x}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+                    {dalCap.scelte.map((x) => (
+                      <button key={x} type="button" className="sg-chip" onClick={() => onCambia({ ...dati, comune: x })}>
+                        {x}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </Campo>
+            )}
+          </Fragment>
         ))}
       </div>
       {no && <span style={{ fontSize: 13, color: 'var(--rosso-testo)' }}>{no}.</span>}

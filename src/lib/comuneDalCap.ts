@@ -20,7 +20,7 @@ const uguale = (a: string, b: string) => a.trim().toLocaleLowerCase('it') === b.
  * comune solo), la `nota` sotto il campo quando il comune è quello del CAP, o
  * le `scelte` quando il CAP è di più comuni e il campo non ne ha già uno.
  */
-export function comuneDalCap(cap: string, comune: string, elenco: ElencoCap = ELENCO_CAP): { scrivi?: string; scelte: string[]; tendina: boolean; nota?: string } {
+export function comuneDalCap(cap: string, comune = '', elenco: ElencoCap = ELENCO_CAP): { scrivi?: string; scelte: string[]; tendina: boolean; nota?: string } {
   const c = cap.trim()
   const comuni = /^\d{5}$/.test(c) ? (elenco[c] ?? []) : []
   if (comuni.length === 1) {
@@ -33,8 +33,8 @@ export function comuneDalCap(cap: string, comune: string, elenco: ElencoCap = EL
   return { scelte: [], tendina: false }
 }
 
-/** Il CAP nuovo, e con lui il comune quando il CAP è di un comune solo e il campo è vuoto. */
-export function conIlComune<T extends { cap: string; comune: string }>(dati: T, cap: string, elenco: ElencoCap = ELENCO_CAP): T {
+/** Il CAP nuovo, e con lui il comune quando il CAP è di un comune solo e il campo è vuoto (o non c'è, nella scheda iscritto). */
+export function conIlComune<T extends { cap?: string; comune?: string }>(dati: T, cap: string, elenco: ElencoCap = ELENCO_CAP): T {
   const scrivi = comuneDalCap(cap, dati.comune, elenco).scrivi
   return { ...dati, cap, ...(scrivi && { comune: scrivi }) }
 }

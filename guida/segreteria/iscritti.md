@@ -126,6 +126,10 @@ scheda è disattivata, nessuno.
   carattere, il nome o la data) l'app lo dice in giallo, e si può salvare lo
   stesso. Senza codice fiscale si salva, ma la ricevuta non si fa: vedi
   [Un pagamento e la sua ricevuta](#un-pagamento-e-la-sua-ricevuta).
+  Scritto il **CAP**, il comune lo propone l'app come nel modulo di iscrizione
+  (solo provincia di Torino): un comune solo si scrive da sé se **COMUNE** è
+  vuoto; se il CAP è di più comuni, sotto compaiono i comuni da toccare o una
+  tendina. Un comune già scritto non si tocca, e si corregge sempre a mano.
 - **CERTIFICATO MEDICO** — il file e fino a quando vale. Il file sta
   nell'app e lo vede **solo la segreteria**: **APRI** lo apre con un link che
   dura 10 minuti (se scade, si riapre con APRI), e nessun altro, né un
