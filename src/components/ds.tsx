@@ -408,6 +408,23 @@ export function DueTocchi({
 }
 
 /**
+ * La pastiglia di una persona della famiglia: quella di adesso è accesa, le altre hanno il numero delle cose
+ * che mancano (giallo). Fonte: docs/design-canvas/ods-design-system/Chip.dc.html.
+ */
+export function Chip({ children, acceso, numero, onClick }: { children: string; acceso?: boolean; numero?: number; onClick: () => void }) {
+  return (
+    <button type="button" className="sg-chip chip-persona" aria-pressed={acceso} aria-label={numero ? `${children}: mancano ${numero} cose` : children} onClick={onClick}>
+      {children}
+      {numero ? (
+        <span className="sg-tag" data-tipo="aspetta" aria-hidden>
+          {numero}
+        </span>
+      ) : null}
+    </button>
+  )
+}
+
+/**
  * Dove si è nel modulo a passi: un segmento per passo (fatti verdi, quello di
  * adesso in tinta testo, gli altri `line`), il numero grande e «DI N» col nome
  * del passo. Fonte: docs/design-canvas/ods-design-system/Avanzamento.dc.html.

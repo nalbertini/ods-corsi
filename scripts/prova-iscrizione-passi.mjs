@@ -1477,5 +1477,102 @@ console.log('\n34. la famiglia: l’invio si ferma a metà')
   }
 }
 
+console.log('\n35. la famiglia nella schermata: pastiglie, cosa manca a tutti, il totale, il riepilogo, l’esito a metà')
+{
+  const voce = (corso, corsoId, orari, annuale, trimestre) => ({ corso, corsoId, eta: '', orari, prezzi: [{ saldo: annuale, annuale, trimestre }] })
+  const listino = {
+    quota: 50, saldoEntro: '2026-08-31', offerte: [],
+    corsi: [voce('Judo kids', 'judo-kids', ['lunedì 17.00-18.00'], 280, 105), voce('Judo adulti', 'judo-adulti', ['martedì 20.00-21.00'], 360, 140), voce('Pilates', 'pilates', ['giovedì 19.00-20.00'], 300, 120)],
+  }
+  const corsi = listino.corsi.map((v) => ({ id: v.corsoId, nome: v.corso }))
+  const giorno = '2026-10-06'
+  const luca = adulto({ nome: 'Luca', corsi: ['judo-kids'], formula: 'trimestre' })
+  // Ognuno col suo codice fiscale, che torna col nome.
+  const dati = (nome, natoIl, donna = false) => ({ nome, natoIl, codiceFiscale: cfDi(nome, 'Rossi', natoIl, donna) })
+  const matteo = adulto({ ...dati('Matteo', '1990-03-03'), corsi: ['judo-adulti'], formula: 'annuale' })
+  const paola = adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'annuale' })
+  const tre = [luca, matteo, paola]
+  const senzaFirma = adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'annuale' }, { tratti: 0 })
+
+  // Chi è, sulla pastiglia e nelle frasi.
+  ok('il nome scritto, con la maiuscola', chiama(() => m.nomeDellaPersona(adulto({ nome: 'luca' }), 0)), 'Luca')
+  ok('senza nome: «Adulto 2» o «Bambino 3», col posto nella famiglia', [chiama(() => m.nomeDellaPersona(adulto({ nome: '' }), 1)), chiama(() => m.nomeDellaPersona(figlio({ nome: '' }), 2))], ['Adulto 2', 'Bambino 3'])
+
+  // Chi può firmare per un bambino: gli adulti della famiglia, con il loro posto.
+  ok('firmano gli adulti, non i bambini', chiama(() => m.chiPuoFirmare([luca, figlio(), paola])), [{ indice: 0, nome: 'Luca' }, { indice: 2, nome: 'Paola' }])
+  ok('con un bambino solo, nessuno può firmare per un altro', chiama(() => m.chiPuoFirmare([figlio()])), [])
+
+  // In famiglia nessuno chiede «anche te?»: ogni persona decide da sé, il conto è uno.
+  const conBambino = lista(() => m.aggiungiFamiliare([figlio({}, { ancheTu: undefined }), adulto()], 'figlio', 1))
+  ok('un bambino in famiglia non chiede «anche te?»', [conBambino.length, conBambino.map((p) => p.ancheTu)], [3, [false, undefined, false]])
+  ok('e il passo del corso non glielo chiede', conBambino.map((p) => (p.chi === 'figlio' ? m.mancaNelPasso({ ...p, risposte: { ...p.risposte, corsi: ['x'], formula: 'annuale' } }, 3).includes('SCEGLI: ANCHE TE?') : false)), [false, false, false])
+
+  // Cosa manca a tutti, per l'ultimo passo: ogni voce dice di chi è, e la chiave porta a quella persona.
+  ok('una sola persona: le voci di sempre, senza nome', chiama(() => m.mancantiFamiglia([senzaFirma])), [{ chiave: 'firma', nome: 'FIRMA' }])
+  ok('più persone: «FIRMA DI PAOLA», e la chiave ha il posto di Paola', chiama(() => m.mancantiFamiglia([luca, matteo, senzaFirma])), [{ chiave: '2:firma', nome: 'FIRMA DI PAOLA' }])
+  ok('tutto a posto: niente', chiama(() => m.mancantiFamiglia(tre)), [])
+  ok('chi non ha scritto niente: le sue voci, di lui', chiama(() => m.mancantiFamiglia([luca, adulto({ nome: '', corsi: [] })]).filter((x) => x.chiave === '1:corsi')), [{ chiave: '1:corsi', nome: 'CORSO DI ADULTO 2' }])
+  ok('quante cose mancano a una persona, per la pastiglia', [chiama(() => m.quantoManca(luca)), chiama(() => m.quantoManca(senzaFirma)), chiama(() => m.quantoManca(adulto({ corsi: [] }, { tratti: 0 })))], [0, 1, 2])
+
+  // A quale passo porta una voce.
+  const vuota = adulto({ nome: '', corsi: [] }, { file: {}, tratti: 0 })
+  ok('il passo di ciò che manca: nome 1, corso 2, firma 3, carta 4', ['nome', 'corsi', 'firma', 'documento'].map((k) => chiama(() => m.passoDelCampo(vuota, k))), [1, 2, 3, 4])
+  ok('una cosa che non manca non porta da nessuna parte', chiama(() => m.passoDelCampo(luca, 'nome')), undefined)
+  ok('il passo di un campo del genitore, nel flusso del figlio', [chiama(() => m.passoDelCampo(figlio({ genitoreNome: '' }), 'genitoreNome')), chiama(() => m.passoDelCampo(figlio({}, { privacy: false }), 'privacy'))], [2, 4])
+
+  // Il conto della famiglia, con le persone che hanno già un corso.
+  const conto = chiama(() => m.contoDellaFamiglia(tre, corsi, listino, giorno))
+  ok('il conto: 150 di quote + 105 + 360 + 300 − 60 = 855 €', [conto.totale, conto.sconto], [85500, 6000])
+  ok('chi non ha un corso ancora non entra nel conto', chiama(() => m.contoDellaFamiglia([luca, adulto({ nome: 'Paola', corsi: [] })], corsi, listino, giorno).totale), 15500)
+  ok('senza listino, nessun conto', chiama(() => m.contoDellaFamiglia(tre, corsi, undefined, giorno)), undefined)
+  ok('due con lo stesso nome non si confondono: due righe di quota', chiama(() => m.contoDellaFamiglia([adulto({ nome: 'Marco', corsi: ['judo-adulti'], formula: 'annuale' }), adulto({ nome: 'Marco', corsi: ['pilates'], formula: 'annuale' })], corsi, listino, giorno).righe.filter((r) => r.testo.includes('Quota')).length), 2)
+
+  // Il totale sopra la barra: di tutta la famiglia, con lo sconto, nei passi del corso e dei documenti.
+  const t = (persone, attivo, passo) => chiama(() => m.totaleDellaFamiglia(persone, attivo, passo, corsi, listino, giorno))
+  ok('famiglia di tre, passo del corso: ognuno con la sua cifra, lo sconto a parte', t(tre, 0, 2), { righe: 'Luca 155 € + Matteo 410 € + Paola 350 € − sconto famiglia 60 €', totale: '855 €' })
+  ok('lo stesso nel passo dei documenti', t(tre, 1, 4)?.totale, '855 €')
+  ok('negli altri passi non c’è', [t(tre, 0, 1), t(tre, 0, 3), t(tre, 0, 5)], [undefined, undefined, undefined])
+  ok('senza sconto la riga non lo nomina', t([luca, adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'trimestre' })], 0, 2), { righe: 'Luca 155 € + Paola 170 €', totale: '325 €' })
+  ok('una persona sola: com’era, il suo totale', t([matteo], 0, 2), chiama(() => m.totaleDelPasso(matteo, 2, corsi, listino, giorno)))
+
+  // Il riepilogo: una riga per persona, e se manca qualcosa lo dice.
+  const righe = chiama(() => m.righeDellaFamiglia([luca, matteo, senzaFirma], corsi))
+  ok('tre righe, coi nomi', righe.map((r) => r.titolo), ['Luca Rossi', 'Matteo Rossi', 'Paola Rossi'])
+  ok('a posto: il corso e come paga; manca: cosa', righe.map((r) => r.dettaglio), ['Judo kids · trimestre', 'Judo adulti · annuale', 'manca: firma'])
+  ok('chi manca è segnato, e MODIFICA o VAI A porta al passo giusto', righe.map((r) => [r.manca, r.passo]), [[false, 1], [false, 1], [true, 3]])
+  ok('più di tre cose: le prime tre e quante altre', chiama(() => m.righeDellaFamiglia([adulto({ nome: '', cognome: '', corsi: [] }, { tratti: 0, scelte: {}, privacy: false, file: {} })], corsi)[0].dettaglio.startsWith('manca: ') && m.righeDellaFamiglia([adulto({ nome: '', cognome: '', corsi: [] }, { tratti: 0, scelte: {}, privacy: false, file: {} })], corsi)[0].dettaglio.includes(' e altre ')), true)
+
+  // L'esito di una famiglia: l'importo è quello del conto, la ricevuta di uno basta.
+  const r = (persone) => chiama(() => m.riassuntoEsito(persone[0], corsi, listino, giorno, persone))
+  ok('famiglia: 855 € con lo sconto, da pagare', [r(tre).importo, r(tre).famiglia, r(tre).conSconto, r(tre).daPagare, r(tre).pagamento], ['855 €', true, true, true, 'importo'])
+  ok('famiglia: la ricevuta di una persona basta', [r([luca, matteo, adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'annuale' }, { file: { documento: F('d.jpg'), ricevuta: F('r.jpg') } })]).daPagare, r([luca, matteo, paola]).pagamento], [false, 'importo'])
+
+  // Al massimo: il riquadro che prende il posto di AGGIUNGI UN FAMILIARE dice lo stesso numero della regola, in lettere.
+  ok('il riquadro dei sei: etichetta, titolo e testo', chiama(() => m.frasiDelMassimo()), { etichetta: 'SIETE IN SEI', titolo: 'Di più, chiamaci: vi iscriviamo insieme.', testo: 'In un solo modulo ci sono al massimo sei persone.' })
+  ok('il testo del riquadro è la frase dell’errore, una sola', chiama(() => m.frasiDelMassimo().testo), chiama(() => m.aggiungiFamiliare(Array.from({ length: m.MASSIMO_PERSONE }, () => adulto()), 'adulto')).replace('ERRORE: ', ''))
+
+  // Uscire dalla famiglia perde le risposte di tutti, anche di chi non ha scritto niente.
+  ok('una persona che non ha scritto niente: si esce senza domande', chiama(() => m.uscitaDellaFamiglia([m.nuovoStato('adulto')])), undefined)
+  ok('una persona con qualcosa di scritto: la domanda', chiama(() => m.uscitaDellaFamiglia([luca])), DOMANDA)
+  ok('due persone, anche vuote: la domanda', chiama(() => m.uscitaDellaFamiglia([m.nuovoStato('adulto'), m.nuovoStato('adulto')])), DOMANDA)
+
+  // L'invio a metà, detto: chi è arrivato, chi no. Le richieste, non le persone: così il genere non conta.
+  const meta = (a, x) => chiama(() => m.fraseAMeta(a, x))
+  ok('2 su 4', meta(['Luca Rossi', 'Matteo Rossi'], ['Paola Rossi', 'Sofia Rossi']), {
+    titolo: 'ARRIVATE 2 RICHIESTE SU 4',
+    arrivate: 'Le richieste di Luca Rossi e Matteo Rossi sono arrivate e restano: non le rimandiamo.',
+    mancano: 'Quelle di Paola Rossi e Sofia Rossi non sono partite. Riprova ora, oppure chiama la segreteria.',
+  })
+  ok('1 su 3: il singolare', meta(['Luca Rossi'], ['Matteo Rossi', 'Paola Rossi']), {
+    titolo: 'ARRIVATA 1 RICHIESTA SU 3',
+    arrivate: 'La richiesta di Luca Rossi è arrivata e resta: non la rimandiamo.',
+    mancano: 'Quelle di Matteo Rossi e Paola Rossi non sono partite. Riprova ora, oppure chiama la segreteria.',
+  })
+  ok('2 su 3: manca una sola, e tre nomi si elencano con la virgola', [meta(['Luca Rossi', 'Matteo Rossi'], ['Paola Rossi']).mancano, meta(['Luca Rossi'], ['A B', 'C D', 'E F']).mancano], [
+    'Quella di Paola Rossi non è partita. Riprova ora, oppure chiama la segreteria.',
+    'Quelle di A B, C D e E F non sono partite. Riprova ora, oppure chiama la segreteria.',
+  ])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

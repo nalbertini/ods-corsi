@@ -338,13 +338,23 @@ export const MASSIMO_PERSONE = 6
 
 export const puoiAggiungere = (quante: number): boolean => quante < MASSIMO_PERSONE
 
+const NUMERI = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove', 'dieci']
+const massimo = NUMERI[MASSIMO_PERSONE] ?? String(MASSIMO_PERSONE)
+
+/** Il riquadro che prende il posto di AGGIUNGI UN FAMILIARE al massimo: il numero è quello della regola, scritto in lettere. */
+export const frasiDelMassimo = () => ({
+  etichetta: `SIETE IN ${massimo.toUpperCase()}`,
+  titolo: 'Di più, chiamaci: vi iscriviamo insieme.',
+  testo: `In un solo modulo ci sono al massimo ${massimo} persone.`,
+})
+
 /**
  * Una persona in più nella famiglia: l'indirizzo e i contatti sono quelli della
  * prima (li cambia dopo, se serve), il resto si scrive da capo. Il bambino lo
  * firma un adulto della famiglia, `indiceFirmatario`, di cui prende i dati.
  */
 export function aggiungiFamiliare(persone: StatoPassi[], chi: Chi, indiceFirmatario = 0): StatoPassi[] {
-  if (!puoiAggiungere(persone.length)) throw new Error('In un solo modulo ci sono al massimo sei persone.')
+  if (!puoiAggiungere(persone.length)) throw new Error(frasiDelMassimo().testo)
   const firma = persone[indiceFirmatario]
   if (chi === 'figlio' && firma?.chi !== 'adulto') throw new Error('Per firmare serve un adulto della famiglia: scegline un altro.')
   const base = persone[0].risposte
@@ -359,8 +369,41 @@ export function aggiungiFamiliare(persone: StatoPassi[], chi: Chi, indiceFirmata
     telefono2: base.telefono2,
     ...(chi === 'figlio' ? { genitoreNome: firma.risposte.nome, genitoreCognome: firma.risposte.cognome, genitoreCodiceFiscale: firma.risposte.codiceFiscale } : {}),
   }
-  return [...persone, { ...nuovoStato(chi), risposte, inizio: { ...risposte, corsi: [] } }]
+  // In famiglia ognuno decide da sé il suo corso: nessun bambino chiede «anche te?», il conto è uno solo.
+  return [...persone, { ...nuovoStato(chi), risposte, inizio: { ...risposte, corsi: [] } }].map((p) => (p.chi === 'figlio' && p.ancheTu === undefined ? { ...p, ancheTu: false } : p))
 }
+
+/** Chi è sulla pastiglia e nelle frasi: il nome scritto, o «Adulto 2» / «Bambino 3» (il posto in famiglia) finché non c'è. */
+export const nomeDellaPersona = (s: StatoPassi, indice: number): string => nomeProprio(s.risposte.nome) || `${s.chi === 'figlio' ? 'Bambino' : 'Adulto'} ${indice + 1}`
+
+/** Chi può firmare per un bambino: gli adulti della famiglia, col loro posto (`indiceFirmatario` di `aggiungiFamiliare`). */
+export const chiPuoFirmare = (persone: StatoPassi[]): Array<{ indice: number; nome: string }> =>
+  persone.flatMap((p, indice) => (p.chi === 'adulto' ? [{ indice, nome: nomeDellaPersona(p, indice) }] : []))
+
+const ultimoPasso = (s: StatoPassi) => passiDi(s.chi, s.ancheTu === true).length
+
+/** Quante cose mancano a una persona in tutto, come all'ultimo passo: il numero sulla sua pastiglia. */
+export const quantoManca = (s: StatoPassi, oggi = new Date()): number => mancaNelPasso(s, ultimoPasso(s), oggi).length
+
+/**
+ * Cosa manca a tutta la famiglia, per l'ultimo passo. Con una persona sola sono le voci di `mancanti`; con
+ * più persone ogni voce dice di chi è («FIRMA DI PAOLA») e la chiave comincia dal posto di quella persona
+ * («2:firma»), così il tocco porta da lei.
+ */
+export function mancantiFamiglia(persone: StatoPassi[], oggi = new Date()): Array<{ chiave: string; nome: string }> {
+  if (persone.length === 1) return mancanti(persone[0], ultimoPasso(persone[0]), oggi)
+  return persone.flatMap((s, i) => mancanti(s, ultimoPasso(s), oggi).map((p) => ({ chiave: `${i}:${p.chiave}`, nome: `${p.nome} DI ${nomeDellaPersona(s, i).toUpperCase()}` })))
+}
+
+/** In quale passo di `s` si scrive una cosa che manca; `undefined` se non manca. */
+export function passoDelCampo(s: StatoPassi, chiave: string, oggi = new Date()): number | undefined {
+  for (let passo = 1; passo < ultimoPasso(s); passo++) if (sezione(s, passo, oggi).some((p) => p.chiave === chiave)) return passo
+  return undefined
+}
+
+/** La domanda di INDIETRO dal primo passo: con più persone si perdono le risposte di tutte, anche se nessuna ha scritto ancora. */
+export const uscitaDellaFamiglia = (persone: StatoPassi[]): string | undefined =>
+  persone.length > 1 ? domandaUscita({ ...perDomandaUscita(persone[0]), privacy: true }) : domandaUscita(perDomandaUscita(persone[0]))
 
 // --- i file, la firma, il riepilogo -----------------------------------------
 
@@ -451,6 +494,8 @@ export function riassuntoEsito(
   corsi: CorsoRef[],
   listino: Listino | undefined,
   giorno: string,
+  /** Più persone nello stesso modulo (`s` è la prima): il conto è quello della famiglia, e la ricevuta di una basta. */
+  persone?: StatoPassi[],
 ): {
   importo?: string
   pagamento: 'ricevuta' | 'importo' | 'senzaImporto'
@@ -460,10 +505,11 @@ export function riassuntoEsito(
   senzaPrezzo: string[]
   contatti: { email: string; telefono: string }
 } {
-  const famiglia = listino && s.chi === 'figlio' && s.ancheTu && s.suo ? contoDelloStato(s, corsi, listino, giorno) : undefined
-  const solo = famiglia ? undefined : contoDiChiSiIscrive(s, corsi, listino, giorno)
+  const piu = persone && persone.length > 1
+  const famiglia = piu ? contoDellaFamiglia(persone, corsi, listino, giorno) : listino && s.chi === 'figlio' && s.ancheTu && s.suo ? contoDelloStato(s, corsi, listino, giorno) : undefined
+  const solo = famiglia || piu ? undefined : contoDiChiSiIscrive(s, corsi, listino, giorno)
   const importo = famiglia ? euroBreve(famiglia.totale) : solo?.totale
-  const daPagare = !s.file.ricevuta
+  const daPagare = !(piu ? persone : [s]).some((p) => p.file.ricevuta)
   return {
     importo,
     pagamento: !daPagare ? 'ricevuta' : importo ? 'importo' : 'senzaImporto',
@@ -667,6 +713,59 @@ export function contoDelloStato(s: StatoPassi, corsi: CorsoRef[], listino: Listi
   )
 }
 
+/**
+ * Il conto di tutta la famiglia, di chi ha già scelto un corso: `contoFamiglia` con le persone dello stato.
+ * `persone` dice quanto fa ognuno (quota e corsi, lo sconto resta a parte). Due con lo stesso nome si
+ * distinguono col posto, se no le righe e le cifre si confondono.
+ */
+export function contoDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], listino: Listino | undefined, giorno: string) {
+  if (!listino) return undefined
+  const dentro = persone
+    .map((s, i) => {
+      const nome = nomeDellaPersona(s, i)
+      const chi = persone.some((x, j) => j !== i && nomeDellaPersona(x, j) === nome) ? `${nome} ${i + 1}` : nome
+      return { chi, corsi: corsi.filter((c) => s.risposte.corsi.includes(c.id)), formula: s.risposte.formula }
+    })
+    .filter((x) => x.corsi.length)
+  if (!dentro.length) return undefined
+  const conto = contoFamiglia(dentro, giorno, listino)
+  const quanto = (chi: string) => conto.righe.filter((r) => r.importo > 0 && r.testo.startsWith(`${chi}: `)).reduce((t, r) => t + r.importo, 0)
+  return { ...conto, persone: dentro.map((x) => ({ chi: x.chi, importo: quanto(x.chi) })) }
+}
+
+/**
+ * Il totale sopra la barra quando le persone sono più d'una: quello di tutta la famiglia, ognuno con la sua
+ * cifra e lo sconto a parte. Negli stessi passi di `totaleDelPasso` (corso e documenti, di chi è aperto);
+ * con una persona sola è `totaleDelPasso`.
+ */
+export function totaleDellaFamiglia(persone: StatoPassi[], attivo: number, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
+  if (persone.length < 2) return totaleDelPasso(persone[0], passo, corsi, listino, giorno)
+  const tipo = tipiDiPassi(persone[attivo].chi, persone[attivo].ancheTu === true)[passo - 1]
+  if (tipo !== 'corso' && tipo !== 'documenti') return undefined
+  const c = contoDellaFamiglia(persone, corsi, listino, giorno)
+  if (!c) return undefined
+  const righe = [...c.persone.map((x) => `${x.chi} ${euroBreve(x.importo)}`), ...c.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`)].join(' + ')
+  return { righe: c.sconto ? `${righe} − sconto famiglia ${euroBreve(c.sconto)}` : righe, totale: euroBreve(c.totale) }
+}
+
+/**
+ * Una riga per persona nell'ultimo passo di una famiglia: chi è, il corso e come paga, o cosa manca (le prime
+ * tre cose); `passo` è dove porta MODIFICA, o VAI A se manca qualcosa: dove va scritta la prima cosa che manca.
+ */
+export function righeDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], oggi = new Date()): Array<{ titolo: string; dettaglio: string; manca: boolean; passo: number }> {
+  return persone.map((s, i) => {
+    const manca = mancanti(s, ultimoPasso(s), oggi)
+    const nomi = manca.map((p) => p.nome.toLowerCase())
+    const corsiScelti = corsi.filter((c) => s.risposte.corsi.includes(c.id)).map((c) => c.nome)
+    return {
+      titolo: `${nomeDellaPersona(s, i)} ${nomeProprio(s.risposte.cognome)}`.trim(),
+      dettaglio: manca.length ? `manca: ${nomi.slice(0, 3).join(', ')}${nomi.length > 3 ? ` e altre ${nomi.length - 3}` : ''}` : `${corsiScelti.join(', ')} · ${s.risposte.formula}`,
+      manca: manca.length > 0,
+      passo: (manca.length && passoDelCampo(s, manca[0].chiave, oggi)) || 1,
+    }
+  })
+}
+
 // --- mandare ------------------------------------------------------------------
 
 /**
@@ -730,6 +829,20 @@ export type Esito =
   // Da tre persone in su: `arrivati` e `mancanti` sono i nomi, nell'ordine in cui si mandano; `ids` quelli di chi è arrivato.
   | { esito: 'aMeta'; perche: string; arrivati: string[]; mancanti: string[]; ids: string[]; riprova: () => Promise<Esito> }
   | { esito: 'file'; perche: string; mancati: Mancato[]; riprova: () => Promise<Esito> }
+
+/**
+ * L'esito a metà detto per nome: quante richieste sono arrivate su quante, di chi, e di chi no. Si parla
+ * di richieste e non di persone («arrivate», «partite»), così il genere dei nomi non conta.
+ */
+export function fraseAMeta(arrivati: string[], mancanti: string[]): { titolo: string; arrivate: string; mancano: string } {
+  const elenco = (n: string[]) => (n.length < 2 ? n.join('') : `${n.slice(0, -1).join(', ')} e ${n[n.length - 1]}`)
+  const una = (n: string[]) => n.length === 1
+  return {
+    titolo: `${una(arrivati) ? 'ARRIVATA 1 RICHIESTA' : `ARRIVATE ${arrivati.length} RICHIESTE`} SU ${arrivati.length + mancanti.length}`,
+    arrivate: una(arrivati) ? `La richiesta di ${elenco(arrivati)} è arrivata e resta: non la rimandiamo.` : `Le richieste di ${elenco(arrivati)} sono arrivate e restano: non le rimandiamo.`,
+    mancano: `${una(mancanti) ? 'Quella' : 'Quelle'} di ${elenco(mancanti)} ${una(mancanti) ? 'non è partita' : 'non sono partite'}. Riprova ora, oppure chiama la segreteria.`,
+  }
+}
 
 /**
  * Come `ModuloIscrizione.manda`, per una o più persone: prima i PDF (se uno

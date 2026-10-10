@@ -775,6 +775,20 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 /* La riga CHIAMA sotto l'avanzamento: nel flusso, non sticky, così non copre né AVANTI né i campi. */
 .passo-chiama { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px; padding-bottom: 4px; }
 .passo-chiama-testo { font-size: 14px; line-height: 1.3; color: var(--sec); }
+/* La famiglia sotto l'avanzamento: le pastiglie a capo, e AGGIUNGI UN FAMILIARE tratteggiato (.btn-dashed) a tutta riga. */
+.famiglia-chip { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-persona { display: inline-flex; align-items: center; gap: 8px; background: none; }
+/* Il foglio «CHI AGGIUNGI?»: sale dal fondo sopra il velo (.sg-velo); con più adulti le scelte vanno a capo. */
+.foglio {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 11; width: min(100%, 520px); margin: 0 auto; max-height: 90dvh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 14px; padding: 18px 20px calc(var(--safe-b) + 22px);
+  background: var(--surface); border-top: 2px solid var(--line); color: var(--text);
+}
+.foglio:focus { outline: none; }
+.foglio .passo-btn { align-self: stretch; }
+.foglio-titolo { font-size: 26px; font-weight: 700; letter-spacing: 0.04em; color: var(--text); }
+.foglio .modulo-scelte-una { flex-wrap: wrap; }
+.foglio .modulo-scelte-una > * { flex: 1 1 40%; }
 /* Il totale sopra la barra: da bordo a bordo del telefono, cosa lo compone e la cifra grande. */
 .barra-totale { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: -12px -20px 0; padding: 10px 20px; background: var(--surface); border-bottom: 2px solid var(--line); }
 .barra-totale-righe { font-size: 14px; line-height: 1.35; color: var(--sec); }
