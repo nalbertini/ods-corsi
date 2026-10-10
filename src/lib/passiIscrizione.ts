@@ -1,5 +1,5 @@
 import type { CorsoPerEta, CorsoRef, Listino } from './listino'
-import { corsiPerEta } from './listino'
+import { corsiPerEta, voceDelCorso } from './listino'
 import type { VoceCosto } from './costi'
 import type { Abbonamento, RigaStima } from './nucleo'
 import { stimaIscrizione } from './nucleo'
@@ -580,7 +580,10 @@ export function corsiParalleli(corsi: CorsoRef[], voci: VoceCosto[], natoIlGenit
   const delFiglio = orari.filter((o) => corsiFiglio.includes(o.corsoId))
   if (!delFiglio.length) return []
   const perEta = corsiPerEta(corsi, voci, natoIlGenitore)
-  const trovati = [...perEta.adatti, ...perEta.senzaAnni].flatMap((c): CorsoParallelo[] => {
+  // Senza fascia d'età si propongono solo i corsi che il listino non ha (Preparazione atletica 1, 2, 3):
+  // una voce senza anni di nascita ha l'età scritta a parole, spesso dei piccoli («3-4-5 anni»).
+  const senzaVoce = perEta.senzaAnni.filter((c) => !voceDelCorso(voci, c))
+  const trovati = [...perEta.adatti, ...senzaVoce].flatMap((c): CorsoParallelo[] => {
     if (corsiFiglio.includes(c.id)) return []
     const suoi = orari.filter((o) => o.corsoId === c.id)
     const giorni = [...new Set(suoi.map((o) => o.giorno))]
@@ -604,7 +607,10 @@ export function orarioDetto(orari: OrarioAperto[], corsoId: string): string {
     const fascia = `${orologio(minuti(o.ora))}-${orologio(minuti(o.ora) + o.durata)}`
     pezzi.set(fascia, [...(pezzi.get(fascia) ?? []), o.giorno])
   }
-  return [...pezzi].map(([fascia, giorni]) => `${elenco([...new Set(giorni)].sort(perSettimana).map((g) => GIORNI[g]))} ${fascia}`).join(' · ')
+  const ordinati = [...pezzi].map(([fascia, giorni]): [string, number[]] => [fascia, [...new Set(giorni)].sort(perSettimana)])
+  // Anche i pezzi in ordine di settimana: chi legge parte dal lunedì.
+  ordinati.sort((a, b) => perSettimana(a[1][0], b[1][0]))
+  return ordinati.map(([fascia, giorni]) => `${elenco(giorni.map((g) => GIORNI[g]))} ${fascia}`).join(' · ')
 }
 
 /**
