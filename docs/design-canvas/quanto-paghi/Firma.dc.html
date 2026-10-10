@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Dove si parla di chi firma, il suo nome al posto di «tu»: nel passo del genitore, quando a firmare e' un altro adulto della famiglia (qui Paola, mentre compila Nicola), e il titolo IL TUO OK che diventa L'OK DI PAOLA (come LA FIRMA DI, che c'e' gia'). Con un figlio solo, chi compila e' chi firma: la frase del genitore resta «Firma tu». -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 620px; background: #121212; color: #f2f2f0">
+<dc-import name="Avanzamento" numero="2" totale="7" titolo="IL GENITORE" hint-size="100%,120px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 16px"><span style="font-size: 16px; line-height: 1.45; color: #f2f2f0">Firma Paola, che è maggiorenne. I suoi dati servono anche per il modulo.</span><dc-import name="Campo" etichetta="NOME" valore="Paola" hint-size="100%,80px"></dc-import></div>
+<div style="height: 2px; background: #333333; margin: 8px 0"></div>
+<dc-import name="Avanzamento" numero="4" totale="7" titolo="IL MODULO" hint-size="100%,120px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 20px 4px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">LA FIRMA DI <span style="color: #f2f2f0">PAOLA ROSSI</span></span><div style="height: 120px; border: 2px dashed #4a4a46; background: #1c1c1c"></div></div>
+<dc-import name="Titoletto" label="L’OK DI PAOLA" hint-size="100%,50px"></dc-import>
+<div style="display: flex; gap: 10px; padding: 0 20px 16px; font-size: 15px; line-height: 1.4; color: #c9c9c4"><span style="flex-shrink: 0; width: 22px; height: 22px; border: 2px solid #333333"></span><span>Ho letto e accetto lo Statuto e il Regolamento Sociale dell’associazione.</span></div>
+</div>
+</x-dc>
+</body>
+</html>

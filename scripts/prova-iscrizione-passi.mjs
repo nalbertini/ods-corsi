@@ -811,14 +811,15 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   // Il corso del genitore si sceglie al passo del corso, subito; «Anche tu» chiede solo tesseramento e foto.
   const famiglia = (suo) => figlio({}, { ancheTu: true, suo })
   const chiavi = (stato, passo) => m.mancanti(stato, passo).map((p) => [p.chiave, p.nome])
-  ok('passo 3, anche tu senza il suo corso: IL TUO CORSO', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: { tesseramento: true, foto: true } }), 3), [['suoCorsi', 'IL TUO CORSO']])
-  ok('passo 3, anche tu senza ancora un foglio suo: IL TUO CORSO', chiavi(famiglia(undefined), 3), [['suoCorsi', 'IL TUO CORSO']])
+  ok('passo 3, anche tu senza il suo corso: CORSO DI PAOLA', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: { tesseramento: true, foto: true } }), 3), [['suoCorsi', 'CORSO DI PAOLA']])
+  ok('passo 3, anche tu senza ancora un foglio suo: CORSO DI PAOLA', chiavi(famiglia(undefined), 3), [['suoCorsi', 'CORSO DI PAOLA']])
+  ok('passo 3, il genitore senza nome: CORSO DEL GENITORE', chiavi(figlio({ genitoreNome: ' ' }, { ancheTu: true, suo: undefined }), 3), [['suoCorsi', 'CORSO DEL GENITORE']])
   ok('passo 3, AVANTI lo conta come CORSO', m.mancaNelPasso(famiglia({ corsi: [], formula: 'trimestre', scelte: {} }), 3), ['CORSO'])
   ok('passo 3, col suo corso scelto: niente', chiavi(famiglia({ corsi: ['prep-atletica-3'], formula: 'trimestre', scelte: {} }), 3), [])
   ok('passo 3, senza «anche tu»: il suo corso non si chiede', chiavi(figlio(), 3), [])
   ok('passo 3, «anche tu» non ancora risposto: il suo corso non si chiede', chiavi(figlio({}, { ancheTu: undefined }), 3).map(([k]) => k), ['ancheTu'])
-  ok('passo «anche tu» (6): tesseramento e foto, il corso no', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: {} }), 6), [['suoTesseramento', 'TESSERAMENTO DEL GENITORE'], ['suoFoto', 'FOTO DEL GENITORE']])
-  ok('ultimo passo: il suo corso c’è ancora, una volta', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: { tesseramento: true, foto: true } }), 7), [['suoCorsi', 'IL TUO CORSO']])
+  ok('passo «anche tu» (6): tesseramento e foto, il corso no', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: {} }), 6), [['suoTesseramento', 'TESSERAMENTO DI PAOLA'], ['suoFoto', 'FOTO DI PAOLA']])
+  ok('ultimo passo: il suo corso c’è ancora, una volta', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: { tesseramento: true, foto: true } }), 7), [['suoCorsi', 'CORSO DI PAOLA']])
 }
 
 // ---------------------------------------------------------------------------
@@ -902,13 +903,20 @@ console.log('\n16. l’ordine di «manca» è quello della pagina: il focus va a
 // ---------------------------------------------------------------------------
 console.log('\n16b. le parole per il genitore, nel flusso del figlio')
 {
-  const t = (chi, tipo, nome) => m.testoFile(chi, tipo, nome)
+  const t = (chi, tipo, nome, firma = 'Paola') => m.testoFile(chi, tipo, nome, firma)
   const adultoDoc = m.FILE.find((f) => f.tipo === 'documento')
-  ok('figlio: la carta d’identità è del genitore', t('figlio', 'documento', 'Matteo').etichetta, 'LA TUA CARTA D’IDENTITÀ')
-  ok('figlio: il fronte lo firma il genitore', t('figlio', 'documento', 'Matteo').dettaglio, 'Il fronte. Firmi tu, genitore: serve la tua, non quella di Matteo.')
+  ok('figlio: la carta d’identità dice di chi è, col nome di chi firma', t('figlio', 'documento', 'Matteo').etichetta, 'LA CARTA D’IDENTITÀ DI PAOLA')
+  ok('figlio: il fronte lo firma il genitore, col suo nome', t('figlio', 'documento', 'Matteo').dettaglio, 'Il fronte. È Paola che firma: serve la sua carta, non quella di Matteo.')
   // «di il bambino» non è italiano: senza nome si dice «del bambino».
-  ok('figlio senza nome: «non quella del bambino»', t('figlio', 'documento', ' ').dettaglio, 'Il fronte. Firmi tu, genitore: serve la tua, non quella del bambino.')
-  ok('figlio: il retro è della carta del genitore', t('figlio', 'documento-retro', 'Matteo').etichetta, 'IL RETRO DELLA TUA CARTA')
+  ok('figlio senza nome: «non quella del bambino»', t('figlio', 'documento', ' ').dettaglio, 'Il fronte. È Paola che firma: serve la sua carta, non quella del bambino.')
+  ok('figlio: il retro è della carta di chi firma', t('figlio', 'documento-retro', 'Matteo').etichetta, 'IL RETRO DELLA CARTA DI PAOLA')
+  // Senza il nome di chi firma (non scritto, o cancellato dopo): «del genitore», mai «DI » e niente.
+  ok('genitore senza nome: la carta è del genitore', t('figlio', 'documento', 'Matteo', ' ').etichetta, 'LA CARTA D’IDENTITÀ DEL GENITORE')
+  ok('genitore senza nome: il retro è del genitore', t('figlio', 'documento-retro', 'Matteo', '').etichetta, 'IL RETRO DELLA CARTA DEL GENITORE')
+  ok('genitore senza nome: il fronte dice «il genitore»', t('figlio', 'documento', 'Matteo', '').dettaglio, 'Il fronte. È il genitore che firma: serve la sua carta, non quella di Matteo.')
+  ok('il nome di chi firma senza spazi intorno', t('figlio', 'documento', 'Matteo', ' Paola ').etichetta, 'LA CARTA D’IDENTITÀ DI PAOLA')
+  ok('nessuna etichetta dice più «TUA»', ['documento', 'documento-retro', 'certificato'].flatMap((x) => [t('figlio', x, 'Matteo'), t('figlio', x, '', '')]).some((x) => /\bTU[AOE]?\b|\btua\b|\btu\b/i.test(x.etichetta + ' ' + x.dettaglio)), false)
+  ok('«di chi firma»: col nome e senza', [m.diChiFirma('Paola'), m.diChiFirma(' '), m.diChiFirma(undefined)], ['di Paola', 'del genitore', 'del genitore'])
   ok('figlio: il retro, cosa caricare', t('figlio', 'documento-retro', 'Matteo').dettaglio, 'Il retro. Una foto o il PDF.')
   ok('figlio: il certificato col nome in maiuscolo', t('figlio', 'certificato', 'Matteo').etichetta, 'IL CERTIFICATO DI MATTEO')
   ok('figlio: il certificato senza nome', t('figlio', 'certificato', '').etichetta, 'IL CERTIFICATO DEL BAMBINO')
@@ -986,7 +994,7 @@ console.log('\n18. la barra di quel che manca: una riga, e ogni voce è un tasto
   ok('anche tu, ultimo passo: corso del bambino e corso del genitore sono due voci', riepilogo.filter((v) => v.chiave === 'corsi' || v.chiave === 'suoCorsi').map((v) => v.chiave), ['corsi', 'suoCorsi'])
   ok('anche tu, ultimo passo: tesseramento e foto, due volte ciascuno', riepilogo.filter((v) => /tesseramento|foto/i.test(v.chiave)).map((v) => v.chiave).sort(), ['foto', 'suoFoto', 'suoTesseramento', 'tesseramento'])
   ok('anche tu, ultimo passo: nessun nome ripetuto, si distinguono a parole', riepilogo.length > 0 && new Set(riepilogo.map((v) => v.nome)).size === riepilogo.length, true)
-  ok('anche tu: il corso del genitore si chiama «IL TUO CORSO»', riepilogo.find((v) => v.chiave === 'suoCorsi')?.nome, 'IL TUO CORSO')
+  ok('anche tu, nome del genitore non ancora scritto: CORSO DEL GENITORE', riepilogo.find((v) => v.chiave === 'suoCorsi')?.nome, 'CORSO DEL GENITORE')
   ok('anche tu, passo 6: tesseramento e foto, il corso non più', m.mancaNelPasso(anche, 6), ['TESSERAMENTO', 'FOTO'])
   ok('anche tu, ultimo passo: la barra conta le persone, AVANTI i nomi', riepilogo.length > m.mancaNelPasso(anche, 7).length, true)
 
@@ -1170,7 +1178,7 @@ console.log('\n19. la barra compatta: markup e stile')
   const scritti = codice.match(/\b\d+\s+passi\b|\bpass[oi]\s+\d+\b|\bpassi\s+\d+\s+e\s+\d+\b/gi) ?? []
   ok('niente «N passi» né «passo N» scritti a mano', scritti, [])
   ok('la scelta iniziale conta i passi da passiDi', /passiDi\(\s*'adulto'[^)]*\)\.length/.test(codice) && /passiDi\(\s*'figlio'[^)]*\)\.length/.test(codice), true)
-  const rigaCarta = codice.split('\n').find((r) => r.includes('Carta d’identità')) ?? ''
+  const rigaCarta = codice.split('\n').find((r) => r.includes('cartaNelRiepilogo')) ?? ''
   ok('la riga «Carta d’identità» del riepilogo non manda al modulo', rigaCarta !== '' && !rigaCarta.includes("modifica('modulo')"), true)
 }
 
@@ -1884,6 +1892,44 @@ console.log('\n36. la famiglia: i dati si prendono quando servono, e le regole c
   ok('riprova per due', chiama(() => m.etichettaRiprova(['Paola', 'Sofia'])), 'RIPROVA PER PAOLA E SOFIA')
   ok('riprova per più di due: i mancanti', chiama(() => m.etichettaRiprova(['Paola', 'Sofia', 'Elena'])), 'RIPROVA PER I MANCANTI')
   ok('riprova per cinque: i mancanti', chiama(() => m.etichettaRiprova(['A', 'B', 'C', 'D', 'E'])), 'RIPROVA PER I MANCANTI')
+}
+
+// ---------------------------------------------------------------------------
+console.log('\n37. chi firma, col nome: in famiglia «tu» non è sempre chi compila')
+{
+  const nicola = adulto({ nome: 'Nicola', cognome: 'Albertini' })
+  const paola = adulto({ nome: 'Paola', cognome: 'Rossi' })
+  // Manuela la firma Paola (la seconda), Matteo la firma Nicola (chi compila).
+  const famiglia = [nicola, paola, figlio({ nome: 'Manuela', genitoreNome: 'Paola' }, { firmatario: 1 }), figlio({ genitoreNome: 'Nicola' }, { firmatario: 0 })]
+  ok('chi compila: «tu»', chiama(() => m.chiFirma(famiglia, 0)), undefined)
+  ok('un altro adulto della famiglia: il suo nome', chiama(() => m.chiFirma(famiglia, 1)), 'Paola')
+  ok('un bambino firmato da un altro adulto: il nome di chi firma', chiama(() => m.chiFirma(famiglia, 2)), 'Paola')
+  ok('un bambino firmato da chi compila: «tu»', chiama(() => m.chiFirma(famiglia, 3)), undefined)
+  ok('da soli, un figlio: «tu»', chiama(() => m.chiFirma([figlio()], 0)), undefined)
+  // Il nome di chi firma il bambino arriva da conDatiDellaFamiglia, quando il suo campo è vuoto.
+  const vera = m.conDatiDellaFamiglia([nicola, paola, figlio({ nome: 'Manuela', genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '' }, { firmatario: 1 })])
+  ok('il bambino prende il nome di chi firma dalla famiglia', chiama(() => m.chiFirma(vera, 2)), 'Paola')
+  ok('…e la carta porta quel nome', m.testoFile('figlio', 'documento', 'Manuela', vera[2].risposte.genitoreNome).etichetta, 'LA CARTA D’IDENTITÀ DI PAOLA')
+  // Il genitore mette per primo il bambino, poi aggiunge sé stesso: firma lui, quindi «tu».
+  const primaIlBambino = m.conDatiDellaFamiglia([figlio({ nome: 'Manuela', genitoreNome: 'Nicola' }), nicola, figlio({ genitoreNome: '' }, { firmatario: 1 })])
+  ok('persona 0 bambina, chi compila si aggiunge: «tu» per lui e per chi firma lui', [1, 2].map((i) => m.chiFirma(primaIlBambino, i)), [undefined, undefined])
+  // Un adulto aggiunto che diventa bambino non ha un firmatario: i dati del genitore li scrive chi compila.
+  ok('bambino senza firmatario, genitore un altro: il suo nome', chiama(() => m.chiFirma([nicola, figlio({ genitoreNome: 'Paola' })], 1)), 'Paola')
+  ok('bambino senza firmatario, genitore chi compila: «tu»', chiama(() => m.chiFirma([nicola, figlio({ genitoreNome: 'nicola ' })], 1)), undefined)
+  ok('chi compila senza nome resta «tu»', [m.chiFirma([adulto({ nome: '' }), paola], 0), m.chiFirma([figlio({ genitoreNome: '' }), paola], 0)], [undefined, undefined])
+  ok('un bambino firmato da chi compila è «tu» anche senza nomi', chiama(() => m.chiFirma([adulto({ nome: '' }), figlio({ genitoreNome: '' }, { firmatario: 0 })], 1)), undefined)
+  ok('…e anche se il nome nel bambino è scritto diverso', chiama(() => m.chiFirma([nicola, figlio({ genitoreNome: 'Nico' }, { firmatario: 0 })], 1)), undefined)
+  ok('il nome cancellato: vuoto, non «tu»', chiama(() => m.chiFirma([nicola, adulto({ nome: '  ' })], 1)), '')
+
+  ok('passo del genitore, chi compila: «Firma tu»', chiama(() => m.fraseDelGenitore(undefined)), 'Firma tu, che sei maggiorenne. I tuoi dati servono anche per il modulo.')
+  ok('passo del genitore, un altro adulto: il suo nome', chiama(() => m.fraseDelGenitore('Paola')), 'Firma Paola, che è maggiorenne. I suoi dati servono anche per il modulo.')
+  ok('passo del genitore, un altro adulto senza nome: «il genitore»', chiama(() => m.fraseDelGenitore('')), 'Firma il genitore, che è maggiorenne. I suoi dati servono anche per il modulo.')
+
+  ok('le foto del genitore, col nome e senza', [m.etichettaSueFoto('Nicola'), m.etichettaSueFoto('')], ['LE FOTO E I VIDEO DI NICOLA', 'LE FOTO E I VIDEO DEL GENITORE'])
+  ok('la carta nel riepilogo: di chi firma, del genitore, o di un adulto', [m.cartaNelRiepilogo('figlio', 'Nicola'), m.cartaNelRiepilogo('figlio', ' '), m.cartaNelRiepilogo('adulto', 'Nicola')], ['Carta d’identità di Nicola', 'Carta d’identità del genitore', 'Carta d’identità'])
+  ok('il titolo dell’ok, chi compila: IL TUO OK', chiama(() => m.titoloDellOk(undefined)), 'IL TUO OK')
+  ok('il titolo dell’ok, un altro adulto: col suo nome', chiama(() => m.titoloDellOk('Paola')), 'L’OK DI PAOLA')
+  ok('il titolo dell’ok, senza nome: di chi firma', chiama(() => m.titoloDellOk(' ')), 'L’OK DI CHI FIRMA')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

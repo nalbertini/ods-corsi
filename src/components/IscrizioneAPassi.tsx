@@ -462,6 +462,8 @@ function Flusso({
   const comeEff = ancheTu || famiglia ? 'qui' : come
   const nomeFirmatario = (figlio ? `${(r.genitoreNome ?? '').trim()} ${(r.genitoreCognome ?? '').trim()}` : `${r.nome.trim()} ${r.cognome.trim()}`).trim()
   const nomeBambino = r.nome.trim() || 'il bambino'
+  // In famiglia chi firma può non essere chi compila: allora il suo nome, non «tu».
+  const altroFirma = P.chiFirma(tutte, attivo)
 
   const controllo = P.controlloScelta(v)
   const mancaOra = P.mancaNelPasso(v, passo)
@@ -917,7 +919,7 @@ function Flusso({
         <>
           <div className="pad modulo-griglia passo-prima">
             <span className="modulo-largo">
-              <Dettaglio tono="testo">Firma tu, che sei maggiorenne. I tuoi dati servono anche per il modulo.</Dettaglio>
+              <Dettaglio tono="testo">{P.fraseDelGenitore(altroFirma)}</Dettaglio>
             </span>
             <Campo id="n-genitoreNome" nota={nota('genitoreNome')} etichetta="NOME">
               <input id="n-genitoreNome" maxLength={60} {...segna('genitoreNome')} className="campo" value={r.genitoreNome ?? ''} onChange={metti('genitoreNome')} />
@@ -1122,7 +1124,7 @@ function Flusso({
               </>
             )}
           </div>
-          <Titoletto>IL TUO OK</Titoletto>
+          <Titoletto>{P.titoloDellOk(altroFirma)}</Titoletto>
           <div className="pad modulo-griglia modulo-consensi passo-dopo">
             <div className="modulo-largo">
               <label className="modulo-privacy">
@@ -1175,17 +1177,17 @@ function Flusso({
           <div className="pad modulo-griglia passo-dopo">
             {certificato !== 'nessuno' && !figlio && (
               <div className="modulo-campo modulo-largo">
-                <span className="modulo-etichetta">{figlio ? P.testoFile(v.chi, 'certificato', r.nome).etichetta : certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
+                <span className="modulo-etichetta">{figlio ? P.testoFile(v.chi, 'certificato', r.nome, r.genitoreNome).etichetta : certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
                 <Dettaglio tono="avviso">
                   {certificato === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico' : 'Dai 6 anni serve il certificato medico'} per partecipare alle lezioni.{' '}
-                  {figlio ? P.testoFile(v.chi, 'certificato', r.nome).dettaglio : 'Se non ce l’hai ancora, lo porti in segreteria prima della prima lezione.'}
+                  {figlio ? P.testoFile(v.chi, 'certificato', r.nome, r.genitoreNome).dettaglio : 'Se non ce l’hai ancora, lo porti in segreteria prima della prima lezione.'}
                 </Dettaglio>
               </div>
             )}
             {daChiedere.file
               .filter((f) => f.tipo === 'documento' || f.tipo === 'documento-retro' || f.tipo === 'certificato')
               .map((f) => {
-                const testi = P.testoFile(v.chi, f.tipo, r.nome)
+                const testi = P.testoFile(v.chi, f.tipo, r.nome, r.genitoreNome)
                 // Il perché del certificato è già detto sopra: qui solo cosa caricare.
                 const dettaglio = testi.dettaglio
                 return figlio ? (
@@ -1254,7 +1256,7 @@ function Flusso({
             />
             <Casella
               id="n-suoFoto"
-              etichetta="LE TUE FOTO E I TUOI VIDEO"
+              etichetta={P.etichettaSueFoto(r.genitoreNome)}
               dettaglio="Le foto che ti ritraggono, sui social della palestra."
               si="Autorizzo"
               no="Non autorizzo"
@@ -1301,7 +1303,7 @@ function Flusso({
       ...righe.filter((x) => !x.manca && !x.suo && x.cosa !== 'ricevuta').map(vistaDi),
       ...(suo ? [{ stato: 'fatto' as const, titolo: nomeLui || 'Il genitore', dettaglio: `${nomiDei(suo.corsi)} · ${suo.formula} · ${scelteDette(suo.scelte)}`, tasto: modifica('anche') }] : []),
       { stato: 'fatto', titolo: figlio ? 'Firma del genitore' : 'Firma sul modulo', dettaglio: v.file.modulo ? 'foglio firmato, in foto' : scelteDette(v.scelte), tasto: modifica(P.passoDelRiepilogo('firma')) },
-      { stato: 'fatto', titolo: figlio ? 'Carta d’identità del genitore' : 'Carta d’identità', dettaglio: v.file.documento?.name, tasto: modifica(P.passoDelRiepilogo('carta')) },
+      { stato: 'fatto', titolo: P.cartaNelRiepilogo(v.chi, r.genitoreNome), dettaglio: v.file.documento?.name, tasto: modifica(P.passoDelRiepilogo('carta')) },
       ...righe.filter((x) => x.manca || x.suo || x.cosa === 'ricevuta').map(vistaDi),
     ]
     const senzaCertificato = famiglia ? tutte.some((p) => P.certificatiMancanti(p, corsi ?? []).includes('chi')) : righe.some((x) => x.carica === 'certificato')

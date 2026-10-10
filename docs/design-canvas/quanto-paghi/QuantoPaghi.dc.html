@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Il passo QUANTO PAGHI, dopo l'ultima persona e prima di CONTROLLA E INVIA: il conto di tutti con lo sconto famiglia, una cifra da pagare, IBAN, causale con tutti i nomi (cognome uguale una volta), Satispay, una sola ricevuta per tutti. Il totale sopra la barra dice che e' della famiglia. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1180px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<dc-import name="RigaChiama" hint-size="100%,62px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1"><dc-import name="Avanzamento" numero="6" totale="7" titolo="QUANTO PAGHI" hint-size="100%,120px"></dc-import><dc-import name="Titoletto" label="LA FAMIGLIA" conto="2" hint-size="100%,50px"></dc-import><div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 4px"><dc-import name="Chip" label="MANUELA" acceso="{{ true }}" hint-size="130px,44px"></dc-import><dc-import name="Chip" label="NICOLA" hint-size="130px,44px"></dc-import></div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 16px"><span style="font-size: 16px; line-height: 1.45; color: #f2f2f0">Un pagamento solo per tutti. Pagare in segreteria va benissimo: non serve il bonifico né caricare niente.</span><dc-import name="StimaCosto" etichetta="IL CONTO DELLA FAMIGLIA" righe="Manuela: quota associativa:50 €|Manuela: Judo 3 · trimestre:180 €|Nicola: quota associativa:50 €|Nicola: Judo adulti · annuale:360 €|Sconto famiglia 10% su Judo 3 di Manuela:−18 €" totale="622 €" frasi="" stima="Paga questo totale: lo sconto è già dentro. Se la segreteria trova una differenza, te lo dice lei. Bonifico a ASD Il Centro Judo:" causale="Iscrizione Manuela e Nicola Albertini" iban="IT03 D076 0101 0000 0007 6350 339" hint-size="100%,470px"></dc-import></div>
+<dc-import name="Titoletto" label="LA RICEVUTA · FACOLTATIVA" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 16px"><dc-import name="CaricaFile" etichetta="RICEVUTA DEL PAGAMENTO" seManca="PUOI PAGARE IN SEGRETERIA" dettaglio="Una sola, per tutta la famiglia. Una foto o il PDF." hint-size="100%,100px"></dc-import></div></main>
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 20px; background: #1c1c1c; border-top: 2px solid #333333"><span style="font-size: 14px; line-height: 1.35; color: #c9c9c4">Totale famiglia · Manuela 212 € + Nicola 410 €</span><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 28px; font-weight: 700; color: #f2f2f0; flex-shrink: 0">622 €</span></div><dc-import name="BarraPasso" nota="Tutto a posto in questo passo." avanti="AVANTI" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>
