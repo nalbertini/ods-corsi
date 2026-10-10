@@ -700,7 +700,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .modulo-corsi-tutti { scroll-margin-top: 16px; }
 /* ALLA STESSA ORA DI …: il gruppo della proposta al genitore, in giallo come il riquadro che lo tiene. */
 .modulo-etichetta-stessa-ora { color: var(--giallo-testo); }
-.modulo-corso-avviso { font-size: 13px; font-weight: 600; color: var(--giallo-testo); line-height: 1.35; }
 .modulo-corso {
   display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;
   background: var(--surface); border: 2px solid var(--riga-campo); text-align: left; font-size: 15px; font-weight: 600;
@@ -797,6 +796,15 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .foglio-titolo { font-size: 26px; font-weight: 700; letter-spacing: 0.04em; color: var(--text); }
 .foglio .modulo-scelte-una { flex-wrap: wrap; }
 .foglio .modulo-scelte-una > * { flex: 1 1 40%; }
+/* LA FAMIGLIA: lo sconto famiglia col bordo verde, e le carte con la riga STESSA ORA e quanto si risparmia. */
+.famiglia-sconto { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-color: var(--verde); }
+.famiglia-sconto-cifra { flex: none; font-family: var(--cond); font-size: 30px; font-weight: 700; line-height: 1; color: var(--verde-testo); }
+.famiglia-sconto-titolo { font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: var(--verde-testo); }
+.famiglia-sconto-testo { font-size: 14px; line-height: 1.4; }
+.famiglia-carta-titolo { font-family: var(--cond); font-size: 22px; font-weight: 700; letter-spacing: 0.04em; }
+.famiglia-carta-ora { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--sec); }
+.famiglia-carta-tag { font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.16em; padding: 3px 6px; border: 2px solid var(--line); }
+.famiglia-carta-risparmio { font-size: 13px; font-weight: 600; color: var(--verde-testo); }
 /* Il totale nella barra, nella colonna del modulo: TOTALE e cosa lo compone a sinistra, la cifra grande a destra, un filo sotto. */
 .barra-totale { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--line); }
 .barra-totale-testo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

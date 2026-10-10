@@ -5,7 +5,7 @@ import { anniScritti, dataDaCf, datiRichieste, ESTENSIONI, ETICHETTA_FILE, FILE,
 import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
-import { corsiAmmessi, corsiPerEta, type CorsoPerEta, type Listino } from '../lib/listino'
+import { corsiAmmessi, type CorsoPerEta, type Listino } from '../lib/listino'
 import { elenco, euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import * as P from '../lib/passiIscrizione'
@@ -162,8 +162,8 @@ function Scelta({ prova, onScegli }: { prova: boolean; onScegli: (chi: P.Chi) =>
           etichetta="Chi si iscrive"
           una
           voci={[
-            { id: 'adulto', testo: 'IO, SONO ADULTO', riga: `Ti servono: il tuo codice fiscale e la tua carta d’identità. ${P.passiDi('adulto', false).length} passi.` },
-            { id: 'figlio', testo: 'MIO FIGLIO O MIA FIGLIA', riga: `Ti servono: il codice fiscale del bambino e il tuo, e la tua carta d’identità. ${P.passiDi('figlio', false).length} passi.` },
+            { id: 'adulto', testo: 'IO, SONO ADULTO', riga: `Ti servono: il tuo codice fiscale e la tua carta d’identità. ${P.passiDi('adulto').length} passi.` },
+            { id: 'figlio', testo: 'MIO FIGLIO O MIA FIGLIA', riga: `Ti servono: il codice fiscale del bambino e il tuo, e la tua carta d’identità. ${P.passiDi('figlio').length} passi.` },
           ]}
           scelti={[]}
           onScegli={(c) => onScegli(c === 'figlio' ? 'figlio' : 'adulto')}
@@ -220,10 +220,9 @@ function ElencoCorsi({
   nota,
   caricando,
   stessaOraDi,
-  avvisoPer,
 }: {
   id: string
-  /** `stessaOra`: i corsi del genitore mentre il figlio è in palestra, in un gruppo loro in cima. */
+  /** `stessaOra`: i corsi di un familiare alla stessa ora della persona 0, in un gruppo loro in cima. */
   perEta: { stessaOra?: CorsoPerEta[]; adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[] }
   scelti: readonly string[]
   onScegli: (id: string) => void
@@ -233,14 +232,12 @@ function ElencoCorsi({
   nota?: Nota
   caricando?: string
   stessaOraDi?: string
-  /** L'avviso sotto un corso scelto: «non è più alla stessa ora». */
-  avvisoPer?: (id: string) => string | undefined
 }) {
   const [aperti, setAperti] = useState(false)
   const fuoriEta = perEta.altri.filter((c) => scelti.includes(c.id)).map((c) => c.nome)
   // Un corso fuori età già scelto non si nasconde: si vede cosa c'è nella richiesta.
   const mostraAltri = aperti || fuoriEta.length > 0
-  const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined, avviso: avvisoPer?.(c.id) })
+  const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined })
   const descritto = nota ? `${id}-nota` : undefined
   return (
     <div id={id} tabIndex={-1} className="modulo-campo modulo-largo modulo-corsi-tutti">
@@ -304,44 +301,45 @@ function Conto({ righe, totale }: { righe: ReadonlyArray<{ testo: string; import
 }
 
 /**
- * Il foglio «CHI AGGIUNGI?»: un adulto o un bambino e, per un bambino, quale adulto della famiglia firma.
- * Sta sopra il passo di adesso, sotto un velo: ANNULLA (o fuori, o Esc) e non cambia niente.
+ * Il foglio di AGGIUNGI, quando c'è da scegliere: per un adulto chi è (IO, PAOLA o UN ALTRO ADULTO, `scelteAdulto`),
+ * per un bambino chi firma per lui. Sta sopra il passo, sotto un velo: ANNULLA (o fuori, o Esc) e non cambia niente.
  */
-function FoglioFamiliare({ primo, firmano, onAggiungi, onChiudi }: { primo: string; firmano: Array<{ indice: number; nome: string }>; onAggiungi: (chi: P.Chi, firma: number) => void; onChiudi: () => void }) {
+function FoglioFamiliare({
+  chi,
+  primo,
+  scelte,
+  firmano,
+  onAggiungi,
+  onChiudi,
+}: {
+  chi: P.Chi
+  primo: string
+  scelte: Array<{ io: boolean; testo: string }>
+  firmano: Array<{ indice: number; nome: string }>
+  onAggiungi: (firma: number, io: boolean) => void
+  onChiudi: () => void
+}) {
   const ref = useDialogo<HTMLDivElement>(onChiudi)
-  const [chi, setChi] = useState<P.Chi>('adulto')
+  const [io, setIo] = useState(chi === 'adulto' && !!scelte[0]?.io)
   const [firma, setFirma] = useState(firmano[0]?.indice ?? 0)
-  const senzaFirmatario = chi === 'figlio' && firmano.length === 0
   return (
     <>
       <button type="button" className="sg-velo" tabIndex={-1} aria-label="ANNULLA" onClick={onChiudi} />
       <div ref={ref} role="dialog" aria-modal="true" aria-labelledby="foglio-titolo" tabIndex={-1} className="foglio">
         <span id="foglio-titolo" className="ob foglio-titolo">
-          CHI AGGIUNGI?
+          {chi === 'adulto' ? 'CHI AGGIUNGI?' : 'CHI FIRMA PER LUI?'}
         </span>
-        <SceltaCorsi
-          id="n-chi-aggiungi"
-          etichetta="Chi aggiungi"
-          una
-          voci={[
-            { id: 'adulto', testo: 'UN ADULTO' },
-            { id: 'figlio', testo: 'UN BAMBINO' },
-          ]}
-          scelti={[chi]}
-          onScegli={(c) => setChi(c === 'figlio' ? 'figlio' : 'adulto')}
-        />
-        {chi === 'figlio' && firmano.length > 0 && (
-          <>
-            <span className="modulo-etichetta">CHI FIRMA PER LUI?</span>
-            <SceltaCorsi id="n-chi-firma" etichetta="Chi firma per lui" una voci={firmano.map((f) => ({ id: String(f.indice), testo: f.nome.toUpperCase() }))} scelti={[String(firma)]} onScegli={(i) => setFirma(Number(i))} />
-          </>
-        )}
-        {senzaFirmatario ? (
-          <Dettaglio tono="guaio">Per un bambino serve un adulto che firma: aggiungi prima un adulto.</Dettaglio>
+        {chi === 'adulto' ? (
+          <SceltaCorsi id="n-chi-aggiungi" etichetta="Chi aggiungi" una voci={scelte.map((x) => ({ id: x.io ? 'io' : 'altro', testo: x.testo }))} scelti={[io ? 'io' : 'altro']} onScegli={(x) => setIo(x === 'io')} />
         ) : (
-          <Dettaglio>Indirizzo, telefono ed email restano quelli di {primo}: li cambi dopo, se serve. Quello che hai scritto finora non si perde.</Dettaglio>
+          <SceltaCorsi id="n-chi-firma" etichetta="Chi firma per lui" una voci={firmano.map((f) => ({ id: String(f.indice), testo: f.nome.toUpperCase() }))} scelti={[String(firma)]} onScegli={(i) => setFirma(Number(i))} />
         )}
-        <Tasto variante="principale" disabled={senzaFirmatario} onClick={() => onAggiungi(chi, firma)}>
+        <Dettaglio>
+          {io
+            ? `Nome, codice fiscale, carta d’identità e firma sono quelli che hai scritto per ${primo}: scegli solo il tuo corso.`
+            : `Indirizzo, telefono ed email restano quelli di ${primo}: li cambi dopo, se serve. Quello che hai scritto finora non si perde.`}
+        </Dettaglio>
+        <Tasto variante="principale" onClick={() => onAggiungi(firma, io)}>
           AGGIUNGI
         </Tasto>
         <Tasto onClick={onChiudi}>ANNULLA</Tasto>
@@ -380,7 +378,8 @@ function Flusso({
   const [passi, setPassi] = useState([1])
   // I tratti servono per disegnare la firma; lo stato dei passi ne tiene il conto.
   const [trattiDi, setTrattiDi] = useState<Tratto[][]>([[]])
-  const [foglio, setFoglio] = useState(false)
+  // Il foglio di AGGIUNGI aperto da una carta di LA FAMIGLIA: per un adulto o per un bambino.
+  const [foglio, setFoglio] = useState<P.Chi | null>(null)
   const passo = passi[attivo]
   const tratti = trattiDi[attivo]
   const famiglia = persone.length > 1
@@ -412,7 +411,7 @@ function Flusso({
         // Un corso «dai N anni» scelto prima di correggere la data non parte con la richiesta.
         risposte: { ...r, natoIl, natoA: luogo ? scriviLuogo(luogo) : r.natoA, corsi: listino && corsi ? corsiAmmessi(r.corsi, corsi, listino.corsi, natoIl) : r.corsi },
         natoAGenitore: luogoG?.nome ?? grezzo.natoAGenitore,
-        firmaInFoto: P.firmaInFoto(grezzo, come === 'foto', persone.length),
+        firmaInFoto: P.firmaInFoto(come === 'foto', persone.length),
       }
       }),
     [persone, luoghi, come, corsi, listino],
@@ -420,18 +419,19 @@ function Flusso({
   const v = tutte[attivo]
   const r = v.risposte
   const figlio = v.chi === 'figlio'
-  const ancheTu = !!v.ancheTu
   const luogoGenitore = luoghi && luogoDaCf(luoghi, pulisciCf(r.genitoreCodiceFiscale ?? ''))
   const provinciaGenitore = P.siglaDelGenitore(v, luoghi, provincia)
   const natoIlGenitore = dataDaCf(r.genitoreCodiceFiscale ?? '', '') ?? ''
 
-  const tipi = P.tipiDiPassi(v.chi, ancheTu)
+  const tipi = P.tipiDiPassi(v.chi)
   const nomiPassi = P.nomiDeiPassi(v, attivo)
   const tipo = tipi[passo - 1] ?? 'dati'
   const ultimo = passo === tipi.length
-  // Da soli la famiglia sta solo all'ultimo passo; in famiglia le pastiglie in ogni passo.
-  const vistaFamiglia = P.famigliaNelPasso({ ultimo, quante: persone.length, ancheTu })
+  // AGGIUNGI sta in LA FAMIGLIA; in famiglia le pastiglie in ogni passo.
+  const vistaFamiglia = P.famigliaNelPasso({ tipo, quante: persone.length })
   const passoDi = (t: P.TipoPasso) => tipi.indexOf(t) + 1
+  // Il bambino 0, per l'io: i suoi dati, la sua firma e la sua carta sono anche dell'io.
+  const primo = P.nomeDellaPersona(tutte[0], 0)
 
   const errori = problemi(r)
   const nota = (k: CampoModulo): Nota | undefined => {
@@ -448,7 +448,6 @@ function Flusso({
   }
   const setR = (c: Partial<DatiRichiesta>) => setGrezzo((p) => ({ ...p, risposte: { ...p.risposte, ...c } }))
   const metti = (k: keyof DatiRichiesta) => (e: { target: { value: string } }) => setR({ [k]: e.target.value })
-  const setSuo = (c: Partial<P.Suo>) => setGrezzo((p) => ({ ...p, suo: { ...(p.suo ?? P.SUO_VUOTO), ...c } }))
   const setFile = (tipoFile: TipoFile, f: File | undefined) => setGrezzo((p) => ({ ...p, file: { ...p.file, [tipoFile]: f } }))
   const scegliCorso = (id: string) => setR({ corsi: r.corsi.includes(id) ? r.corsi.filter((c) => c !== id) : [...r.corsi, id] })
 
@@ -458,13 +457,9 @@ function Flusso({
       .filter(Boolean)
       .join(', ')
   const refDei = (ids: readonly string[]) => (corsi ?? []).filter((c) => ids.includes(c.id))
-  const perEta = (natoIl: string) => corsiPerEta(corsi ?? [], listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
-  const paralleli = listino ? P.corsiParalleli(corsi ?? [], listino.corsi, natoIlGenitore, r.corsi, orari) : []
-  const suo = v.suo
   const daChiedere = P.fileDaChiedere(r.natoIl, refDei(r.corsi).map((c) => c.nome))
-  const daChiedereSuo = P.fileDaChiedere(natoIlGenitore, refDei(suo?.corsi ?? []).map((c) => c.nome))
-  // Con «Anche tu» il foglio è uno solo da firmare qui, per tutti e due i moduli.
-  const comeEff = ancheTu || famiglia ? 'qui' : come
+  // In famiglia ogni modulo si firma qui.
+  const comeEff = famiglia ? 'qui' : come
   const nomeFirmatario = (figlio ? `${(r.genitoreNome ?? '').trim()} ${(r.genitoreCognome ?? '').trim()}` : `${r.nome.trim()} ${r.cognome.trim()}`).trim()
   const nomeBambino = r.nome.trim() || 'il bambino'
   // In famiglia chi firma può non essere chi compila: allora il suo nome, non «tu».
@@ -499,7 +494,10 @@ function Flusso({
     titoloRef.current?.focus({ preventScroll: true })
   }, [passo])
 
+  // Al passo del corso di un familiare, la prima volta, il corso alla stessa ora è già spuntato (`alPassoDelCorso`).
+  const spunta = (i: number, p: number) => setPersone((ps) => P.alPassoDelCorso(ps, i, p, corsi ?? [], listino, orari))
   const vai = (p: number) => {
+    spunta(attivo, p)
     setPasso(p)
     setProvato(false)
     setGuaio(null)
@@ -507,7 +505,7 @@ function Flusso({
   }
   const cambiaScelta = (a: P.Chi) => {
     // Si parte da quello che la persona ha scritto, non dai dati presi dagli altri.
-    setGrezzo((p) => P.cambiaScelta(p, a, famiglia))
+    setGrezzo((p) => P.cambiaScelta(p, a))
     setTratti([])
     setCome('qui')
     setGuaioFirma(null)
@@ -515,6 +513,7 @@ function Flusso({
   }
   /** Da un'altra persona, al passo `p`: la sua pastiglia, MODIFICA o VAI A nell'ultimo passo. */
   const vaiA = (i: number, p: number, dopoIlTentativo = false) => {
+    spunta(i, p)
     setAttivo(i)
     setPassi((a) => a.map((x, k) => (k === i ? p : x)))
     setVisti(new Set())
@@ -523,14 +522,26 @@ function Flusso({
     setGuaioFirma(null)
     vaiInCima()
   }
-  const aggiungi = (chiNuovo: P.Chi, firma: number) => {
-    const nuove = P.aggiungiFamiliare(persone, chiNuovo, firma)
+  const aggiungi = (chiNuovo: P.Chi, firma: number, io = false) => {
+    setFoglio(null)
+    let nuove: P.StatoPassi[]
+    try {
+      nuove = P.aggiungiFamiliare(persone, chiNuovo, firma, io)
+    } catch (e) {
+      // Le frasi di aggiungiFamiliare sono per chi usa l'app.
+      return setGuaio(e instanceof Error ? e.message : 'Non riesco ad aggiungerlo: chiama la segreteria.')
+    }
     setPersone(nuove)
     setPassi((a) => [...a, 1])
     setTrattiDi((a) => [...a, []])
     setCome('qui')
-    setFoglio(false)
     vaiA(nuove.length - 1, 1)
+  }
+  // Le carte di LA FAMIGLIA: il foglio solo se c'è da scegliere (chi è l'adulto, chi firma per il bambino).
+  const aggiungiAdulto = () => (P.scelteAdulto(tutte).length > 1 ? setFoglio('adulto') : aggiungi('adulto', 0))
+  const aggiungiBambino = () => {
+    const firmano = P.firmatariPossibili(tutte)
+    return firmano.length > 1 ? setFoglio('figlio') : aggiungi('figlio', firmano[0]?.indice ?? 0)
   }
   const focus = (voce: string | undefined) => {
     if (!voce) return
@@ -589,7 +600,7 @@ function Flusso({
       // Chi usa l'app non legge il testo dell'errore: ci serve solo in console.
       console.error(e)
       scheda?.close()
-      setGuaioFirma(P.moduloNonSiPrepara(!ancheTu && !famiglia))
+      setGuaioFirma(P.moduloNonSiPrepara(!famiglia))
     }
   }
 
@@ -614,10 +625,10 @@ function Flusso({
     stoInviando.current = true
     setGuaio(null)
     setFase({ tipo: 'invio' })
-    // Ogni persona ha la sua richiesta, e il suo modulo con la sua firma.
+    // Ogni persona ha la sua richiesta, e il suo modulo con la sua firma: quella dell'io è la firma data per il bambino 0.
     // La ricevuta è una per tutto il modulo: richiesteDelModulo la mette in ogni richiesta.
     const daMandare = P.richiesteDelModulo(tutte, (p, i) =>
-      P.richiesteDaMandare(p, P.siglaDelGenitore(p, luoghi, provincia), (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[i])),
+      P.richiesteDaMandare(p, P.siglaDelGenitore(p, luoghi, provincia), (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[p.io ? 0 : i])),
     )
     try {
       gestisci(await P.mandaRichieste(d, daMandare))
@@ -664,7 +675,6 @@ function Flusso({
 
   if (fase.tipo === 'esito') {
     const e = fase.esito
-    const due = e.esito === 'fatto' ? e.ids.length > 1 : !!suo
     // Con la famiglia la prima persona è quella da cui si è partiti, non quella aperta adesso.
     const prima = tutte[0]
     const aChi = prima.chi === 'figlio' ? prima.risposte.genitoreNome?.trim() || 'genitore' : prima.risposte.nome.trim()
@@ -672,24 +682,22 @@ function Flusso({
     if (e.esito === 'fatto') {
       const certificati = famiglia
         ? tutte.flatMap((p, i) => (P.certificatiMancanti(p, corsi ?? []).includes('chi') ? [nomiFamiglia[i]] : []))
-        : P.certificatiMancanti(v, corsi ?? []).map((x) => (x === 'chi' ? nomeBambino : r.genitoreNome?.trim() || 'il genitore'))
+        : P.certificatiMancanti(v, corsi ?? []).map(() => nomeBambino)
       const riassunto = P.riassuntoEsito(famiglia ? prima : v, corsi ?? [], listino, chiaveGiorno(new Date()), famiglia ? tutte : undefined)
       const frase = P.fraseContatti(riassunto.contatti.email, riassunto.contatti.telefono)
       const ultimaVolta = figlio ? 'ISCRIVI UN ALTRO FIGLIO' : 'ISCRIVI UN’ALTRA PERSONA'
       const righe: RigaRiepilogo[] = [
         ...(certificati.length
-          ? [{ stato: 'numero' as const, titolo: certificati.length > 1 ? 'Portate i certificati medici' : `Porti il certificato medico${famiglia ? ` di ${certificati[0]}` : figlio && !due ? ` di ${nomeBambino}` : ''}`, dettaglio: 'in segreteria, prima della prima lezione' }]
+          ? [{ stato: 'numero' as const, titolo: certificati.length > 1 ? 'Portate i certificati medici' : `Porti il certificato medico${famiglia ? ` di ${certificati[0]}` : figlio ? ` di ${nomeBambino}` : ''}`, dettaglio: 'in segreteria, prima della prima lezione' }]
           : []),
       ]
       return (
         <div className="stack esito">
-          <TitoloEsito tono="fatto">{due ? 'RICHIESTE ARRIVATE' : 'RICHIESTA ARRIVATA'}</TitoloEsito>
+          <TitoloEsito tono="fatto">{famiglia ? 'RICHIESTE ARRIVATE' : 'RICHIESTA ARRIVATA'}</TitoloEsito>
           <span className="esito-testo">
             Grazie, {aChi}.{' '}
             {famiglia
               ? `La segreteria ha ricevuto le iscrizioni di ${elenco(tutte.map((p, i) => `${nomiFamiglia[i]} (${nomiDei(p.risposte.corsi)})`))}.`
-              : due
-              ? `La segreteria ha ricevuto le iscrizioni di ${nomeBambino} (${nomiDei(r.corsi)}) e la tua (${nomiDei(suo?.corsi ?? [])}).`
               : figlio
                 ? `La segreteria ha ricevuto l’iscrizione di ${nomeBambino} al corso di ${nomiDei(r.corsi)}, e controlla il modulo, il documento e il pagamento.`
                 : `La segreteria ha ricevuto la tua richiesta per ${nomiDei(r.corsi)}, e controlla il modulo, il documento e il pagamento.`}
@@ -755,9 +763,9 @@ function Flusso({
         </div>
       )
     }
-    // Due persone: in famiglia sono le prime due, con «Anche tu» il bambino e il genitore.
-    const nomeLui = famiglia ? nomiFamiglia[1] : r.genitoreNome?.trim() || 'il genitore'
-    const nomePrima = famiglia ? nomiFamiglia[0] : nomeBambino
+    // Due richieste: le prime due persone della famiglia.
+    const nomeLui = nomiFamiglia[1] ?? ''
+    const nomePrima = nomiFamiglia[0]
     return (
       <div className="stack esito">
         {e.esito === 'secondaNo' ? (
@@ -800,7 +808,6 @@ function Flusso({
   const inVolo = fase.tipo === 'invio'
   const uscita = P.uscitaDellaFamiglia(tutte)
   const ind = P.indietro(passo, uscita)
-  const dueRichieste = figlio && !!suo
 
   const cf = (chiave: 'codiceFiscale' | 'genitoreCodiceFiscale', etichetta: string, nascita: string) => {
     const a = nascita ? `${anniScritti(nascita)}: lo dice il codice fiscale` : undefined
@@ -883,8 +890,79 @@ function Flusso({
     </>
   )
 
+  // Una riga per persona (LA FAMIGLIA e il riepilogo): MODIFICA porta da lei, e se le manca qualcosa VAI A porta a quella cosa.
+  const righePersone = (): RigaRiepilogo[] =>
+    P.righeDellaFamiglia(tutte, corsi ?? []).map((x, i) => ({
+      stato: x.manca ? 'manca' : 'fatto',
+      titolo: x.titolo,
+      dettaglio: x.dettaglio,
+      tasto: { testo: x.manca ? 'VAI A' : 'MODIFICA', onFai: () => vaiA(i, x.passo, x.manca) },
+    }))
+
   /** Cosa chiedere in ogni passo. */
   const corpo = () => {
+    // L'io (chi compila il bambino 0 e si iscrive anche lui): dati, firma e carta sono quelli scritti per il bambino.
+    if (v.io && tipo === 'dati') {
+      const alGenitore = P.tipiDiPassi(tutte[0].chi).indexOf('genitore') + 1 || 1
+      return (
+        <div className="pad stack passo-prima">
+          <Dettaglio tono="testo">Sei tu, che iscrivi {primo}: i tuoi dati li hai già scritti.</Dettaglio>
+          <Riepilogo
+            righe={[
+              {
+                stato: 'fatto',
+                titolo: `${r.nome.trim()} ${r.cognome.trim()}`.trim() || 'Il genitore',
+                dettaglio: [r.codiceFiscale, r.comune, r.email].filter((x) => x.trim()).join(' · ') || undefined,
+                tasto: { testo: 'MODIFICA', onFai: () => vaiA(0, alGenitore) },
+              },
+            ]}
+          />
+        </div>
+      )
+    }
+    if (v.io && tipo === 'modulo') {
+      return (
+        <div className="pad modulo-griglia passo-prima">
+          <span className="modulo-largo">
+            <Dettaglio tono="testo">La firma, il regolamento e la privacy sono quelli che hai dato per {primo}: valgono anche per te. Qui le tue risposte.</Dettaglio>
+          </span>
+          <Casella
+            id="n-tesseramento"
+            etichetta="IL TESSERAMENTO ALLA FIJLKAM E/O FIPE"
+            dettaglio={`Per la stagione ${STAGIONE}. Questa risposta è tua, non quella di ${primo}.`}
+            si="Acconsento"
+            no="Non acconsento"
+            scelta={v.scelte.tesseramento}
+            onScegli={(x) => setGrezzo((p) => ({ ...p, scelte: { ...p.scelte, tesseramento: x } }))}
+          />
+          <Casella
+            id="n-foto"
+            etichetta={P.etichettaSueFoto(r.nome)}
+            dettaglio="Le foto che ti ritraggono, sui social della palestra."
+            si="Autorizzo"
+            no="Non autorizzo"
+            scelta={v.scelte.foto}
+            onScegli={(x) => setGrezzo((p) => ({ ...p, scelte: { ...p.scelte, foto: x } }))}
+          />
+        </div>
+      )
+    }
+    if (v.io && tipo === 'documenti') {
+      return (
+        <>
+          <Titoletto>I DOCUMENTI</Titoletto>
+          <div className="pad modulo-griglia passo-dopo">
+            <span className="modulo-largo">
+              <Dettaglio tono="testo">La carta d’identità è quella che hai caricato per {primo}: vale anche per te.</Dettaglio>
+            </span>
+            {daChiedere.certificato !== 'nessuno' && (
+              <SceltaFile tipo="certificato" file={v.file.certificato} onFile={(f) => setFile('certificato', f)} dettaglio="Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria." facoltativo />
+            )}
+          </div>
+        </>
+      )
+    }
+
     if (tipo === 'dati') {
       return (
         <>
@@ -952,12 +1030,9 @@ function Flusso({
     }
 
     if (tipo === 'corso') {
-      const ep = perEta(r.natoIl)
+      // In famiglia, per chi si aggiunge, in cima i corsi alla stessa ora della persona 0.
+      const ep = P.corsiDelFamiliare(persone, attivo, corsi ?? [], listino, orari)
       const fraseNascosti = figlio ? P.fraseCorsiNascosti(ep.nascosti, r.nome) : undefined
-      const nome = r.nome.trim() || 'Chi si iscrive'
-      const frase = P.fraseAncheTu(nome, nomiDei(r.corsi), paralleli)
-      const suoi = P.corsiPerEtaConStessaOra(corsi ?? [], listino, natoIlGenitore, r.corsi, orari)
-      const nonPiu = P.nonPiuAllaStessaOra(suo, paralleli)
       return (
         <>
           <div className="pad modulo-griglia passo-prima">
@@ -970,50 +1045,10 @@ function Flusso({
               di={famiglia ? P.nomeDellaPersona(v, attivo) : undefined}
               nota={nota('corsi')}
               caricando={guaioCorsi ? `I corsi non si leggono: ${guaioCorsi}` : !corsi ? 'Un attimo…' : undefined}
+              stessaOraDi={attivo > 0 ? P.nomeDellaPersona(tutte[0], 0) : undefined}
             />
             {fraseNascosti && <Dettaglio>{fraseNascosti}</Dettaglio>}
           </div>
-          {figlio && !famiglia && (
-            <>
-              <Titoletto>TI ISCRIVI ANCHE TU?</Titoletto>
-              <div className="pad stack">
-                <Riquadro tono="prova">
-                  <span className="passo-titolo">{frase.titolo}</span>
-                  <Dettaglio>{frase.dettaglio}</Dettaglio>
-                  <SceltaCorsi
-                    id="n-ancheTu"
-                    etichetta="Ti iscrivi anche tu"
-                    una
-                    voci={[
-                      { id: 'si', testo: 'ISCRIVO ANCHE ME' },
-                      { id: 'no', testo: `NO, SOLO ${nome.toUpperCase()}` },
-                    ]}
-                    scelti={v.ancheTu === undefined ? [] : [v.ancheTu ? 'si' : 'no']}
-                    onScegli={(x) => {
-                      if (x === 'si') {
-                        setCome('qui')
-                        setGrezzo((p) => ({ ...p, ancheTu: true, suo: P.suoDopoIscrivoAncheMe(p.suo, paralleli), file: { ...p.file, modulo: undefined } }))
-                      } else setGrezzo((p) => ({ ...p, ancheTu: false, suo: undefined }))
-                    }}
-                  />
-                  {ancheTu && (
-                    <ElencoCorsi
-                      id="n-suoCorsi"
-                      perEta={suoi}
-                      scelti={suo?.corsi ?? []}
-                      onScegli={(id) => setGrezzo((p) => ({ ...p, suo: P.scegliSuoCorso(p.suo, id, paralleli) }))}
-                      etaDi="tua"
-                      stessaOraDi={nome}
-                      // Sotto il corso di cui parla: in fondo all'elenco si perderebbe.
-                      avvisoPer={(id) => (nonPiu.includes(id) ? P.fraseNonPiuAllaStessaOra(refDei([id]).map((c) => c.nome), nome) : undefined)}
-                    />
-                  )}
-                  {/* Il conto della famiglia è il totale sopra la barra, uno solo: qui solo la regola dello sconto. */}
-                  {ancheTu && !!suo?.corsi.length && <Dettaglio>Lo sconto famiglia vale sull’annuale: con il trimestre non c’è.</Dettaglio>}
-                </Riquadro>
-              </div>
-            </>
-          )}
           <Titoletto>{famiglia ? `QUANDO PAGA ${P.nomeDellaPersona(v, attivo).toUpperCase()}` : figlio ? 'QUANDO PAGA' : 'QUANDO PAGHI'}</Titoletto>
           <div className="pad stack passo-dopo">
             <SceltaCorsi
@@ -1043,7 +1078,7 @@ function Flusso({
                 .
               </Dettaglio>
             </div>
-            {!ancheTu && !famiglia && (
+            {!famiglia && (
               <div className="modulo-campo modulo-largo">
                 <span className="modulo-etichetta">2 · COME FIRMI?</span>
                 <SceltaCorsi
@@ -1249,108 +1284,90 @@ function Flusso({
       )
     }
 
-    if (tipo === 'anche') {
-      const s = suo ?? P.SUO_VUOTO
-      // Il suo elenco è in fondo al passo 3: si va lì, non in cima.
-      const alSuoCorso = () => {
-        vai(passoDi('corso'))
-        focus('suoCorsi')
-      }
-      const nomeLui = `${(r.genitoreNome ?? '').trim()} ${(r.genitoreCognome ?? '').trim()}`.trim()
+    if (tipo === 'famiglia') {
+      const frasi = P.frasiDellaFamiglia(tutte[0])
       return (
-        <>
-          <div className="pad modulo-griglia passo-prima">
-            <span className="modulo-largo">
-              <Dettaglio tono="testo">I tuoi dati li hai già scritti: ne mancano pochi. La carta d’identità e la firma valgono anche per te.</Dettaglio>
+        <div className="pad stack passo-prima">
+          <span className="passo-titolo">{frasi.domanda}</span>
+          <div className="card famiglia-sconto">
+            <span className="famiglia-sconto-cifra">{frasi.percentuale}</span>
+            <span className="stack">
+              <span className="famiglia-sconto-titolo">SCONTO FAMIGLIA</span>
+              <span className="famiglia-sconto-testo">{frasi.sconto}</span>
             </span>
-            <div className="modulo-largo">
-              <Riepilogo
-                righe={[
-                  { stato: 'fatto', titolo: nomeLui || 'Il genitore', dettaglio: 'nome, cognome, codice fiscale, residenza e contatti, scritti nel passo ' + passoDi('dati') + ' e nel passo ' + passoDi('genitore') },
-                  s.corsi.length
-                    ? { stato: 'fatto', titolo: `Il tuo corso: ${nomiDei(s.corsi)}`, dettaglio: `scelto al passo ${passoDi('corso')}`, tasto: { testo: 'MODIFICA', onFai: () => alSuoCorso() } }
-                    : { stato: 'guaio', titolo: 'Il tuo corso', dettaglio: `non scelto: lo scegli al passo ${passoDi('corso')}`, tasto: { testo: 'SCEGLI', onFai: () => alSuoCorso() } },
-                ]}
-              />
-            </div>
-            <div className="modulo-campo modulo-largo">
-              <span className="modulo-etichetta">COME PAGHI</span>
-              <SceltaCorsi
-                id="n-suaFormula"
-                etichetta="Come paghi"
-                una
-                voci={FORMULE.map(([f, testo]) => ({ id: f, testo }))}
-                scelti={[s.formula]}
-                onScegli={(f) => setSuo({ formula: f === 'annuale' ? 'annuale' : 'trimestre' })}
-              />
-            </div>
-            <Casella
-              id="n-suoTesseramento"
-              etichetta="IL TESSERAMENTO ALLA FIJLKAM E/O FIPE"
-              dettaglio={`Per la stagione ${STAGIONE}. Questa risposta è tua, non quella di ${nomeBambino}.`}
-              si="Acconsento"
-              no="Non acconsento"
-              scelta={s.scelte.tesseramento}
-              onScegli={(x) => setSuo({ scelte: { ...s.scelte, tesseramento: x } })}
-            />
-            <Casella
-              id="n-suoFoto"
-              etichetta={P.etichettaSueFoto(r.genitoreNome)}
-              dettaglio="Le foto che ti ritraggono, sui social della palestra."
-              si="Autorizzo"
-              no="Non autorizzo"
-              scelta={s.scelte.foto}
-              onScegli={(x) => setSuo({ scelte: { ...s.scelte, foto: x } })}
-            />
-            {daChiedereSuo.certificato !== 'nessuno' && (
-              <SceltaFile tipo="certificato" file={s.certificato} onFile={(f) => setSuo({ certificato: f })} dettaglio="Se ce l’hai già: una foto o il PDF. Se no, lo porti in segreteria." facoltativo />
-            )}
           </div>
-        </>
+          {vistaFamiglia.aggiungi &&
+            P.carteDellaFamiglia(tutte, corsi ?? [], listino, orari, chiaveGiorno(new Date())).map((c) => (
+              <Riquadro key={c.chi}>
+                <span className="famiglia-carta-titolo">{c.titolo}</span>
+                <Dettaglio tono="testo">{c.frase}</Dettaglio>
+                {c.stessaOra && (
+                  <span className="famiglia-carta-ora">
+                    <span className="famiglia-carta-tag">STESSA ORA</span>
+                    {c.stessaOra}
+                  </span>
+                )}
+                {c.risparmio && <span className="famiglia-carta-risparmio">{c.risparmio}</span>}
+                <button type="button" className="btn btn-dashed passo-btn" onClick={c.chi === 'adulto' ? aggiungiAdulto : aggiungiBambino}>
+                  {c.tasto}
+                </button>
+              </Riquadro>
+            ))}
+          {vistaFamiglia.massimo && (
+            <Riquadro tono="prova">
+              <span className="modulo-etichetta">{P.frasiDelMassimo.etichetta}</span>
+              <span className="passo-titolo">{P.frasiDelMassimo.titolo}</span>
+              <Dettaglio>{P.frasiDelMassimo.testo}</Dettaglio>
+              <Tasti>
+                <Tasto variante="principale" href={chiama} qui>
+                  CHIAMA
+                </Tasto>
+              </Tasti>
+            </Riquadro>
+          )}
+          {famiglia && (
+            <>
+              <span className="modulo-etichetta">NEL MODULO</span>
+              <Riepilogo righe={righePersone()} />
+            </>
+          )}
+          {guaio && (
+            <div role="alert">
+              <Riquadro tono="guaio">{guaio}</Riquadro>
+            </div>
+          )}
+        </div>
       )
     }
 
     // riepilogo
     const righe = P.righeRiepilogo(v, corsi ?? [])
     const maiuscola = (t: string) => t.charAt(0) + t.slice(1).toLowerCase()
-    const nomeLui = `${(r.genitoreNome ?? '').trim()} ${(r.genitoreCognome ?? '').trim()}`.trim()
-    const conto = famiglia
-      ? P.contoDellaFamiglia(tutte, corsi ?? [], listino, chiaveGiorno(new Date()))
-      : listino && dueRichieste
-        ? P.contoDelloStato(v, corsi ?? [], listino, chiaveGiorno(new Date()))
-        : undefined
+    const conto = famiglia ? P.contoDellaFamiglia(tutte, corsi ?? [], listino, chiaveGiorno(new Date())) : undefined
     const modifica = (t: P.TipoPasso) => ({ testo: 'MODIFICA', onFai: () => vai(passoDi(t)) })
     const vistaDi = (x: (typeof righe)[number]): RigaRiepilogo => {
       const tasto = x.carica ? { testo: 'CARICA', onFai: () => vai(passoDi(x.passo)) } : modifica(x.passo)
       if (x.cosa === 'corso') return { stato: 'fatto', titolo: `${x.valore} · ${r.formula}`, dettaglio: 'Corso', tasto }
       if (x.cosa === 'genitore') return { stato: 'fatto', titolo: `Genitore: ${x.valore}`, dettaglio: `${r.telefono} · ${r.email}`, tasto }
-      // Il certificato dice di chi è, quando le persone sono due.
-      const di = x.cosa === 'certificato' && figlio ? ` di ${x.suo ? r.genitoreNome?.trim() || 'il genitore' : nomeBambino}` : ''
+      // Il certificato del bambino dice di chi è: il genitore legge la riga.
+      const di = x.cosa === 'certificato' && figlio ? ` di ${nomeBambino}` : ''
       const dettaglio = x.manca ? (x.carica === 'certificato' ? 'non caricato: lo porti in segreteria' : 'non caricata: paghi in segreteria') : x.valore
       return { stato: x.manca ? 'manca' : 'fatto', titolo: maiuscola(x.etichetta) + di, dettaglio, tasto }
     }
     const scelteDette = (sc: P.StatoPassi['scelte']) => `tesseramento: ${sc.tesseramento ? 'autorizzo' : 'non autorizzo'} · foto: ${sc.foto ? 'autorizzo' : 'non autorizzo'}`
-    // In famiglia una riga per persona: MODIFICA porta da lei, e se le manca qualcosa VAI A porta a quella cosa.
-    const righePersone: RigaRiepilogo[] = P.righeDellaFamiglia(tutte, corsi ?? []).map((x, i) => ({
-      stato: x.manca ? 'manca' : 'fatto',
-      titolo: x.titolo,
-      dettaglio: x.dettaglio,
-      tasto: { testo: x.manca ? 'VAI A' : 'MODIFICA', onFai: () => vaiA(i, x.passo, x.manca) },
-    }))
     // La ricevuta è una per tutto il modulo (sta nella prima persona): in famiglia una riga sola, sotto le persone.
     const rigaRicevuta = [vistaDi(P.rigaDellaRicevuta(tutte))]
-    const righeVista: RigaRiepilogo[] = famiglia ? [...righePersone, ...rigaRicevuta] : [
+    const righeVista: RigaRiepilogo[] = famiglia ? [...righePersone(), ...rigaRicevuta] : [
       { stato: 'fatto', titolo: `${r.nome.trim()} ${r.cognome.trim()}`, dettaglio: r.natoIl ? `nato il ${r.natoIl.split('-').reverse().join('/')} · ${anniScritti(r.natoIl)}` : undefined, tasto: modifica('dati') },
-      ...righe.filter((x) => !x.manca && !x.suo && x.cosa !== 'ricevuta').map(vistaDi),
-      ...(suo ? [{ stato: 'fatto' as const, titolo: nomeLui || 'Il genitore', dettaglio: `${nomiDei(suo.corsi)} · ${suo.formula} · ${scelteDette(suo.scelte)}`, tasto: modifica('anche') }] : []),
+      ...righe.filter((x) => !x.manca && x.cosa !== 'ricevuta').map(vistaDi),
       { stato: 'fatto', titolo: figlio ? 'Firma del genitore' : 'Firma sul modulo', dettaglio: v.file.modulo ? 'foglio firmato, in foto' : scelteDette(v.scelte), tasto: modifica(P.passoDelRiepilogo('firma')) },
       { stato: 'fatto', titolo: P.cartaNelRiepilogo(v.chi, r.genitoreNome), dettaglio: v.file.documento?.name, tasto: modifica(P.passoDelRiepilogo('carta')) },
-      ...righe.filter((x) => x.manca || x.suo || x.cosa === 'ricevuta').map(vistaDi),
+      ...righe.filter((x) => x.manca || x.cosa === 'ricevuta').map(vistaDi),
     ]
     const senzaCertificato = famiglia ? tutte.some((p) => P.certificatiMancanti(p, corsi ?? []).includes('chi')) : righe.some((x) => x.carica === 'certificato')
     return (
       <div className="pad stack passo-prima">
-        <Dettaglio tono="testo">{famiglia ? `${tutte.length} iscrizioni, ${tutte.length} richieste.` : dueRichieste ? 'Due iscrizioni, due richieste.' : 'Ecco cosa stai mandando.'} Tocca MODIFICA per cambiare qualcosa.</Dettaglio>
+        <Dettaglio tono="testo">{famiglia ? `${tutte.length} iscrizioni, ${tutte.length} richieste.` : 'Ecco cosa stai mandando.'} Tocca MODIFICA per cambiare qualcosa.</Dettaglio>
         <Riepilogo righe={righeVista} />
         {conto && (
           <Riquadro>
@@ -1376,7 +1393,7 @@ function Flusso({
             <Riquadro tono="guaio">{guaio}</Riquadro>
           </div>
         )}
-        <Dettaglio>{famiglia || dueRichieste ? 'Mandale una volta sola' : 'Mandala una volta sola'}: ogni invio è una richiesta per la segreteria</Dettaglio>
+        <Dettaglio>{famiglia ? 'Mandale una volta sola' : 'Mandala una volta sola'}: ogni invio è una richiesta per la segreteria</Dettaglio>
       </div>
     )
   }
@@ -1414,34 +1431,16 @@ function Flusso({
         </>
       )}
       {corpo()}
-      {(vistaFamiglia.aggiungi || vistaFamiglia.massimo) && (
-        <>
-          <Titoletto>LA FAMIGLIA</Titoletto>
-          <div className="pad stack passo-famiglia">
-            {vistaFamiglia.aggiungi ? (
-              <>
-                <span className="passo-titolo">Iscrivi anche qualcun altro della famiglia?</span>
-                <Dettaglio>Indirizzo e contatti li scrivi una volta sola. Ognuno sceglie i suoi corsi, anche a orari diversi.</Dettaglio>
-                <button type="button" className="btn btn-dashed passo-btn" onClick={() => setFoglio(true)}>
-                  + AGGIUNGI UN FAMILIARE
-                </button>
-              </>
-            ) : (
-              <Riquadro tono="prova">
-                <span className="modulo-etichetta">{P.frasiDelMassimo.etichetta}</span>
-                <span className="passo-titolo">{P.frasiDelMassimo.titolo}</span>
-                <Dettaglio>{P.frasiDelMassimo.testo}</Dettaglio>
-                <Tasti>
-                  <Tasto variante="principale" href={chiama} qui>
-                    CHIAMA
-                  </Tasto>
-                </Tasti>
-              </Riquadro>
-            )}
-          </div>
-        </>
+      {foglio && (
+        <FoglioFamiliare
+          chi={foglio}
+          primo={primo}
+          scelte={P.scelteAdulto(tutte)}
+          firmano={P.firmatariPossibili(tutte)}
+          onAggiungi={(firma, io) => aggiungi(foglio, firma, io)}
+          onChiudi={() => setFoglio(null)}
+        />
       )}
-      {foglio && <FoglioFamiliare primo={P.nomeDellaPersona(tutte[0], 0)} firmano={P.chiPuoFirmare(tutte)} onAggiungi={aggiungi} onChiudi={() => setFoglio(false)} />}
       <BarraPasso
         // Un passo nuovo riparte con l'elenco chiuso.
         key={passo}
@@ -1449,8 +1448,8 @@ function Flusso({
         totale={P.totaleDellaFamiglia(tutte, attivo, passo, corsi ?? [], listino, chiaveGiorno(new Date()))}
         onVai={focus}
         // Il «tutto a posto» solo se davvero non manca niente: a passo vuoto, prima di provare, non c'è né elenco né ✓.
-        nota={mancaOra.length === 0 ? (ultimo ? undefined : 'Tutto a posto in questo passo.') : undefined}
-        avanti={inVolo ? 'MANDO…' : ultimo ? (famiglia ? 'MANDA LA RICHIESTA PER TUTTI' : dueRichieste ? 'MANDA LE RICHIESTE' : 'MANDA LA RICHIESTA') : 'AVANTI'}
+        nota={mancaOra.length === 0 ? (ultimo ? undefined : tipo === 'famiglia' ? 'Nessuno da aggiungere? Vai avanti.' : 'Tutto a posto in questo passo.') : undefined}
+        avanti={inVolo ? 'MANDO…' : ultimo ? (famiglia ? 'MANDA LA RICHIESTA PER TUTTI' : 'MANDA LA RICHIESTA') : tipo === 'famiglia' ? P.avantiDellaFamiglia(tutte) : 'AVANTI'}
         tono={ultimo ? 'vai' : 'principale'}
         occupato={inVolo || (ultimo && !d)}
         chiede={ind.a === 'scelta' ? ind.chiede : undefined}

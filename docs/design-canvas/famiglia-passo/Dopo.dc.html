@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Dopo AGGIUNGI: come oggi, il nuovo familiare ha i suoi passi (pastiglie in cima) e il suo corso parte gia dalla proposta alla stessa ora, spuntata. Dopo l ultimo familiare si torna a LA FAMIGLIA (per aggiungerne un altro) e poi a QUANTO PAGHI, col conto di tutti e lo sconto. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 820px; background: #f4f4f1; color: #161616">
+<dc-import name="Avanzamento" numero="3" totale="7" titolo="SCEGLI IL CORSO" tema="chiaro" hint-size="100%,120px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 8px 20px 20px; flex-grow: 1"><dc-import name="Titoletto" label="LA FAMIGLIA" conto="2" tema="chiaro" hint-size="100%,50px"></dc-import><div style="display: flex; gap: 8px"><dc-import name="Chip" label="NICOLA" tema="chiaro" hint-size="130px,44px"></dc-import><dc-import name="Chip" label="MANUELA" acceso="{{ true }}" tema="chiaro" hint-size="130px,44px"></dc-import></div><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #656561">ALLA STESSA ORA DI NICOLA</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Judo 3" riga="lunedì, mercoledì e venerdì 19.00-20.00" scelto="{{ true }}" tema="chiaro" hint-size="100%,72px"></dc-import><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #656561">GLI ALTRI CORSI PER LA SUA ETÀ</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Lotta 3" riga="martedì e venerdì 18.00-19.00" tema="chiaro" hint-size="100%,72px"></dc-import></div>
+<div style="border-top: 2px solid #d4d4ce; background: #f4f4f1; display: flex; flex-direction: column; gap: 10px; padding: 12px 20px 20px"><div style="display: flex; gap: 8px; font-size: 14px; color: #3d3d3a"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; color: #0b7a33">✓</span><span>Tutto a posto in questo passo.</span></div><div style="display: flex; gap: 10px"><span style="display: flex; align-items: center; justify-content: center; width: 110px; min-height: 56px; border: 2px solid #8a8a85; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.16em; color: #3d3d3a">INDIETRO</span><span style="display: flex; align-items: center; justify-content: center; flex: 1; min-height: 56px; background: #e4292a; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.16em; color: #fff">AVANTI</span></div></div>
+</div>
+</x-dc>
+</body>
+</html>
