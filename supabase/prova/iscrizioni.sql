@@ -122,7 +122,7 @@ select atteso('il genitore di un altro nome', tenta($$select invia_iscrizione(ad
   'nome', 'Anna', 'codice_fiscale', cf_prova('RSSNNA', (current_date - interval '9 years')::date, true), 'nato_il', current_date - interval '9 years',
   'genitore_nome', 'Marta', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPLA80A41L219P')))::text$$),
   'NEGATO: Il codice fiscale del genitore non torna con il suo nome e cognome…');
--- Una famiglia di sei manda tutte le richieste (`48-richieste-per-email.sql`: da tre a sei al giorno).
+-- Una famiglia di sei manda tutte le richieste (`49-richieste-per-email.sql`: da tre a sei al giorno).
 select atteso('la quarta dalla stessa email passa', tenta($$select (invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Quarto', 'codice_fiscale', cf_prova('RSSQRT', (current_date - interval '30 years')::date)))) is not null)::text$$), 'true');
 select atteso('la quinta dalla stessa email passa', tenta($$select (invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Quinto', 'codice_fiscale', cf_prova('RSSQNT', (current_date - interval '30 years')::date)))) is not null)::text$$), 'true');
 select atteso('la sesta dalla stessa email passa', tenta($$select (invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Sesto', 'codice_fiscale', cf_prova('RSSSST', (current_date - interval '30 years')::date)))) is not null)::text$$), 'true');

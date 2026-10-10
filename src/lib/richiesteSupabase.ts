@@ -107,6 +107,23 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
       return ok(await db.rpc('corsi_aperti')) as Array<{ id: string; nome: string }>
     },
 
+    async orariAperti() {
+      // Prima di 48-orari-aperti.sql (o senza rete) non c'è «stessa ora»: il modulo va avanti lo stesso.
+      try {
+        const { data, error } = await db.rpc('orari_aperti')
+        if (error || !Array.isArray(data)) return []
+        // Le colonne di orari_aperti() in 48-orari-aperti.sql: il client non le conosce.
+        return (data as Array<{ corso_id: string; giorno: number; ora: string; durata_min: number }>).map((r) => ({
+          corsoId: r.corso_id,
+          giorno: r.giorno,
+          ora: r.ora.slice(0, 5),
+          durata: r.durata_min,
+        }))
+      } catch {
+        return []
+      }
+    },
+
     async invia(d) {
       return ok(
         await db.rpc('invia_iscrizione', {

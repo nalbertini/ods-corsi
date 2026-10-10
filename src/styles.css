@@ -696,6 +696,9 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 /* Sul fondo del tasto scelto il testo spento non arriva a 4,5:1 nel tema chiaro. */
 .modulo-corso[aria-pressed='true'] .modulo-corso-riga { color: var(--sec); }
 .modulo-altri { margin-top: 10px; }
+/* ALLA STESSA ORA DI …: il gruppo della proposta al genitore, in giallo come il riquadro che lo tiene. */
+.modulo-etichetta-stessa-ora { color: var(--giallo-testo); }
+.modulo-corso-avviso { font-size: 13px; font-weight: 600; color: var(--giallo-testo); line-height: 1.35; }
 .modulo-corso {
   display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;
   background: var(--surface); border: 2px solid var(--riga-campo); text-align: left; font-size: 15px; font-weight: 600;

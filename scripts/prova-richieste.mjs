@@ -78,6 +78,21 @@ console.log('\n1. i corsi fra cui scegliere')
   const judo = (await s.corsi()).find((x) => x.id === 'judo-principianti')
   await s.archiviaCorso(judo.id, false)
   ok('un corso archiviato non si sceglie', (await r.corsiAperti()).some((x) => x.id === 'judo-principianti'), false)
+
+  // Gli orari dei corsi aperti, per «Ti iscrivi anche tu?»: come `orari_aperti()` di 48-orari-aperti.sql.
+  const orari = await r.orariAperti()
+  const judo3 = orari.filter((o) => o.corsoId === 'judo-3')
+  ok('gli orari: Judo 3 il lunedì, mercoledì e venerdì alle 18, un’ora', judo3, [1, 3, 5].map((giorno) => ({ corsoId: 'judo-3', giorno, ora: '18:00', durata: 60 })))
+  ok('gli orari: solo corso, giorno, ora e durata', [...new Set(orari.map((o) => Object.keys(o).sort().join()))], ['corsoId,durata,giorno,ora'])
+  ok('gli orari: un corso archiviato non c’è', orari.some((o) => o.corsoId === 'judo-principianti'), false)
+  // Un giorno chiuso dalla segreteria (al = ieri) non c'è più; gli altri giorni del corso restano.
+  const mercoledi = (await s.corsi()).find((x) => x.id === 'judo-3').ricorrenze.find((x) => x.giorno === 3)
+  await s.togliRicorrenza(mercoledi.id)
+  // Cominciata prima di oggi: togliRicorrenza la chiude a ieri invece di cancellarla, e la segreteria non la vede più.
+  ok('il mercoledì di Judo 3 era già cominciato: si chiude, non sparisce', mercoledi.dal < '2026-09-26', true)
+  ok('chiuso: la segreteria non lo vede più fra i giorni del corso', (await s.corsi()).find((x) => x.id === 'judo-3').ricorrenze.some((x) => x.id === mercoledi.id), false)
+  ok('una ricorrenza finita ieri non c’è; il lunedì e il venerdì restano', (await r.orariAperti()).filter((o) => o.corsoId === 'judo-3').map((o) => o.giorno), [1, 5])
+  ok('gli orari: ci sono tutti i corsi aperti che hanno un orario', [...new Set(orari.map((o) => o.corsoId))].sort(), (await r.corsiAperti()).map((c) => c.id).sort())
 }
 
 console.log('\n2. cosa passa e cosa no: gli stessi messaggi del database')
@@ -189,7 +204,7 @@ const giulia = await r.invia(adulto({ nome: 'Giulia', codiceFiscale: 'RSSGLI17C4
 const marco = await r.invia(adulto({ nome: 'Marco', codiceFiscale: 'RSSMRC15E05L219V', natoIl: '2015-05-05', email: 'MAMMA@esempio.it', corsi: ['judo-3'], ...genitore }))
 const terzo = await r.invia(adulto({ nome: 'Terzo', codiceFiscale: 'RSSTRZ96A01L219A', email: 'mamma@esempio.it' }))
 {
-  // Sei richieste al giorno per email (`per_email_al_giorno` di 48-richieste-per-email.sql): una famiglia di sei le manda tutte.
+  // Sei richieste al giorno per email (`per_email_al_giorno` di 49-richieste-per-email.sql): una famiglia di sei le manda tutte.
   const MSG6 = 'Da questa email sono già arrivate 6 richieste oggi: se serve, scrivi alla segreteria'
   const cfDi = (nome, cognome, natoIl) => {
     const [a, mese, g] = natoIl.split('-')
@@ -399,6 +414,16 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     ok('i corsi: senza permesso lo dice per la segreteria', await errore(() => finto({ rpc: { corsi_aperti: ERR('42501') } }).v.corsiAperti()), PERMESSO)
     ok('i corsi: funzione assente, dice cosa lanciare', await errore(() => finto({ rpc: { corsi_aperti: ERR('PGRST202') } }).v.corsiAperti()), NON_ATTIVO)
     ok('i corsi: errore senza testo, il server non risponde', await errore(() => finto({ rpc: { corsi_aperti: { data: null, error: {} } } }).v.corsiAperti()), 'Il server non risponde')
+  }
+
+  // --- gli orari: per una proposta in più, mai un guaio che ferma l'iscrizione
+  {
+    const { v, reg } = finto({ rpc: { orari_aperti: { data: [{ corso_id: 'judo-3', giorno: 1, ora: '18:00:00', durata_min: 60 }, { corso_id: 'judo-agonisti', giorno: 4, ora: '18:30:00', durata_min: 90 }], error: null } } })
+    ok('gli orari: li chiede a orari_aperti, senza argomenti', [await v.orariAperti(), reg[0]], [[{ corsoId: 'judo-3', giorno: 1, ora: '18:00', durata: 60 }, { corsoId: 'judo-agonisti', giorno: 4, ora: '18:30', durata: 90 }], ['rpc', 'orari_aperti', undefined]])
+    ok('gli orari: funzione assente (48-orari-aperti.sql non lanciato), nessun orario', await finto({ rpc: { orari_aperti: ERR('PGRST202') } }).v.orariAperti(), [])
+    ok('gli orari: senza permesso, nessun orario', await finto({ rpc: { orari_aperti: ERR('42501') } }).v.orariAperti(), [])
+    ok('gli orari: errore senza testo, nessun orario', await finto({ rpc: { orari_aperti: { data: null, error: {} } } }).v.orariAperti(), [])
+    ok('gli orari: senza rete, nessun orario', await finto({ rpc: { orari_aperti: { then: (_, male) => male(new TypeError('Failed to fetch')) } } }).v.orariAperti(), [])
   }
 
   // --- invia

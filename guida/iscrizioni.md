@@ -119,6 +119,19 @@ RICHIESTA** la manda. Chi iscrive il figlio può iscriversi anche lui, con
 **ISCRIVO ANCHE ME**: sono poche domande in più, e la segreteria vede il
 conto della famiglia con lo sconto.
 
+Nel passo del corso del figlio, il riquadro **TI ISCRIVI ANCHE TU?** propone
+al genitore i corsi per la sua età che si fanno mentre il figlio è in palestra:
+basta che le lezioni si sovrappongano, anche solo in parte, almeno un giorno
+(un corso che comincia quando quello del figlio finisce non conta). Lo dice il
+calendario dei corsi, non gli orari scritti nel listino. Con **ISCRIVO ANCHE
+ME** l'elenco dei corsi del genitore si apre lì: in cima, sotto **ALLA STESSA
+ORA DI** e il nome del figlio, quelli alla stessa ora (se è uno solo è già
+spuntato; se i giorni in comune non sono tutti, la riga dice quali), poi gli
+altri corsi per la sua età. Se nessun corso è alla stessa ora, c'è l'elenco
+intero. Se dopo il figlio cambia corso, sotto compare quale corso del genitore
+non è più alla stessa ora. Nel passo **ANCHE TU: POCHE COSE** il corso è già
+scritto, con **MODIFICA**: lì restano come paga il genitore e i suoi consensi.
+
 Quando c'è da scegliere fra due cose (**IO, SONO ADULTO** o **MIO FIGLIO**, **TRIMESTRE** o **ANNUALE**, **AUTORIZZO** o **NON AUTORIZZO**) la scelta fatta si riempie: è il tasto pieno. I corsi, dove se ne possono scegliere più d'uno, hanno invece la casella con la spunta. I bordi dei campi sono più chiari, anche nel tema scuro.
 
 I corsi per grandi (quelli che la segreteria segna con un'età minima in **LISTINO**, per esempio la Pesistica dai 16 anni) non compaiono per un bambino troppo piccolo: sotto l'elenco una frase dice quali e di chiamare la segreteria. Per chi ha l'età compare fra i corsi per lui, con scritto «dai 16 anni».

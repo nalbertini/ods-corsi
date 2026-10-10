@@ -1,6 +1,6 @@
 ---
 name: nuova-migrazione
-description: Use when adding a new numbered SQL file under supabase/ (NN-nome.sql), or changing an existing one: new table, column, policy, function or trigger on the Supabase database of ODS Corsi.
+description: "Use when adding a new numbered SQL file under supabase/ (NN-nome.sql), or changing an existing one: new table, column, policy, function or trigger on the Supabase database of ODS Corsi."
 ---
 
 # Nuova migrazione

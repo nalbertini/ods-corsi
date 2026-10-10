@@ -3,7 +3,7 @@ import { corsiPerEta, voceDelCorso } from './listino'
 import type { VoceCosto } from './costi'
 import type { Abbonamento, RigaStima } from './nucleo'
 import { stimaIscrizione } from './nucleo'
-import type { CampoModulo, DatiRichiesta, DatiRichieste, Formula, TipoFile } from './richieste'
+import type { CampoModulo, DatiRichiesta, DatiRichieste, Formula, OrarioAperto, TipoFile } from './richieste'
 import { certificatoDaPortare, dataDaCf, NOTE_NEL_DATABASE, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf } from './richieste'
 import type { Luoghi } from './codiceFiscale'
 import { cfValido, luogoDaCf, scriviLuogo } from './codiceFiscale'
@@ -41,8 +41,19 @@ export interface StatoPassi {
   /** In famiglia, per un bambino: il posto dell'adulto che firma per lui (`conDatiDellaFamiglia` ne prende i dati). */
   firmatario?: number
   /** Il genitore che si iscrive con il figlio: decide da sé corso, formula e consensi. */
-  suo?: { corsi: string[]; formula: Formula; scelte: Scelte; certificato?: File }
+  suo?: Suo
 }
+
+export interface Suo {
+  corsi: string[]
+  formula: Formula
+  scelte: Scelte
+  certificato?: File
+  /** I suoi corsi che erano alla stessa ora del figlio quando li ha scelti: se il figlio cambia, lo si dice. */
+  allaStessaOra?: string[]
+}
+
+export const SUO_VUOTO: Suo = { corsi: [], formula: 'trimestre', scelte: {} }
 
 /** Il foglio vuoto, com'è quello del modulo di oggi. */
 const VUOTO: DatiRichiesta = {
@@ -181,10 +192,9 @@ function documenti(s: StatoPassi): Pastiglia[] {
   return FILE.filter((f) => f.obbligatorio && f.tipo !== 'modulo' && !s.file[f.tipo]).map((f) => ({ chiave: f.tipo, nome: f.etichetta }))
 }
 
-/** «Anche tu»: il corso e i consensi del genitore, che decide da sé. */
+/** «Anche tu»: i consensi del genitore, che decide da sé. Il suo corso lo sceglie al passo dei corsi. */
 function ilSuo(s: StatoPassi): Pastiglia[] {
   const m: Pastiglia[] = []
-  if (!s.suo?.corsi.length) m.push({ chiave: 'suoCorsi', nome: 'CORSO' })
   if (s.suo?.scelte.tesseramento === undefined) m.push({ chiave: 'suoTesseramento', nome: 'TESSERAMENTO' })
   if (s.suo?.scelte.foto === undefined) m.push({ chiave: 'suoFoto', nome: 'FOTO' })
   return m
@@ -202,6 +212,7 @@ function sezione(s: StatoPassi, passo: number, oggi: Date): Pastiglia[] {
       return [
         ...campi(s, oggi, ['corsi']),
         ...(s.chi === 'figlio' && s.ancheTu === undefined ? [{ chiave: 'ancheTu', nome: 'SCEGLI: ANCHE TE?' }] : []),
+        ...(s.chi === 'figlio' && s.ancheTu === true && !s.suo?.corsi.length ? [{ chiave: 'suoCorsi', nome: 'CORSO' }] : []),
         ...campi(s, oggi, ['formula']),
       ]
     case 'modulo':
@@ -340,7 +351,7 @@ export function perUnAltroFiglio(s: StatoPassi): StatoPassi {
 
 // --- la famiglia: chi si aggiunge ----------------------------------------------
 
-/** Quante persone stanno in un solo modulo: come le richieste al giorno per email (`48-richieste-per-email.sql`). */
+/** Quante persone stanno in un solo modulo: come le richieste al giorno per email (`49-richieste-per-email.sql`). */
 export const MASSIMO_PERSONE = 6
 
 export const puoiAggiungere = (quante: number): boolean => quante < MASSIMO_PERSONE
@@ -516,15 +527,21 @@ const euroBreve = (cent: number) => `${cent < 0 ? '−' : ''}${Math.abs(cent) % 
 export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
   const tipo = tipiDiPassi(s.chi, s.ancheTu === true)[passo - 1]
   if (tipo !== 'corso' && tipo !== 'documenti') return undefined
-  const c = contoDiChiSiIscrive(s, corsi, listino, giorno)
+  const c = contoCorto(persona(s, corsi), listino, giorno)
+  // Col genitore che ha scelto il suo corso il totale è uno solo, quello della famiglia: lo stesso del riepilogo.
+  const famiglia = c && listino && s.chi === 'figlio' && s.ancheTu && s.suo?.corsi.length ? contoDelloStato(s, corsi, listino, giorno) : undefined
+  const suo = famiglia && s.suo && contoCorto({ corsi: corsi.filter((x) => s.suo?.corsi.includes(x.id)), formula: s.suo.formula }, listino, giorno)
+  if (c && famiglia && suo) {
+    const sconto = famiglia.sconto ? ` · Sconto famiglia ${euroBreve(-famiglia.sconto)}` : ''
+    return { righe: `${persona(s, corsi).chi}: ${c.righe} · Tu: ${suo.righe}${sconto}`, totale: euroBreve(famiglia.totale) }
+  }
   return c && { righe: c.righe, totale: c.totale }
 }
 
-/** Il conto di chi si iscrive (non della famiglia), scritto corto; `undefined` senza listino o senza un corso che c'è nell'elenco. */
-function contoDiChiSiIscrive(s: StatoPassi, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string; senzaPrezzo: string[] } | undefined {
-  const lui = persona(s, corsi)
+/** Il conto di una persona, scritto corto; `undefined` senza listino o senza un corso che c'è nell'elenco. */
+function contoCorto(lui: { corsi: CorsoRef[]; formula: Formula }, listino: Listino | undefined, giorno: string): { righe: string; totale: string; senzaPrezzo: string[] } | undefined {
   if (!listino || !lui.corsi.length) return undefined
-  const conto = stimaIscrizione(lui, [], giorno, listino)
+  const conto = stimaIscrizione({ chi: '', ...lui }, [], giorno, listino)
   // Un corso senza prezzo nel listino non vale 0: lo dice la riga, e il totale è quello che si sa.
   const daConfermare = conto.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`)
   // Le righe si accorciano: «Quota associativa» → «Quota», «Annuale Judo adulti» → «Judo adulti annuale».
@@ -562,7 +579,7 @@ export function riassuntoEsito(
 } {
   const piu = persone && persone.length > 1
   const famiglia = piu ? contoDellaFamiglia(persone, corsi, listino, giorno) : listino && s.chi === 'figlio' && s.ancheTu && s.suo ? contoDelloStato(s, corsi, listino, giorno) : undefined
-  const solo = famiglia || piu ? undefined : contoDiChiSiIscrive(s, corsi, listino, giorno)
+  const solo = famiglia || piu ? undefined : contoCorto(persona(s, corsi), listino, giorno)
   const importo = famiglia ? euroBreve(famiglia.totale) : solo?.totale
   const daPagare = !(piu ? persone : [s]).some((p) => p.file.ricevuta)
   return {
@@ -682,26 +699,113 @@ export function richiestaDelGenitore(figlio: DatiRichiesta, suo: { corsi: string
   }
 }
 
-/** I corsi per l'età del genitore che hanno lo stesso orario scritto di uno del figlio: «stessa ora». */
-export function corsiParalleli(corsi: CorsoRef[], voci: VoceCosto[], natoIlGenitore: string, corsiFiglio: string[]): Array<CorsoPerEta & { stessaOra: true }> {
-  const orari = new Set(
-    corsiFiglio.flatMap((id) => {
-      const c = corsi.find((x) => x.id === id)
-      return (c && voceDelCorso(voci, c)?.orari.map((o) => o.trim())) || []
-    }),
-  )
-  return corsiPerEta(corsi, voci, natoIlGenitore)
-    .adatti.filter((c) => !corsiFiglio.includes(c.id) && voceDelCorso(voci, c)?.orari.some((o) => orari.has(o.trim())))
-    .map((c) => ({ ...c, stessaOra: true as const }))
+const minuti = (ora: string) => {
+  const [h, m] = ora.split(':').map(Number)
+  return h * 60 + (m || 0)
+}
+/** Due lezioni lo stesso giorno che si sovrappongono anche in parte: una che comincia quando l'altra finisce no. */
+const siToccano = (a: OrarioAperto, b: OrarioAperto) =>
+  a.giorno === b.giorno && minuti(a.ora) < minuti(b.ora) + b.durata && minuti(b.ora) < minuti(a.ora) + a.durata
+
+export type CorsoParallelo = CorsoPerEta & { stessaOra: true; giorni?: number[] }
+
+/**
+ * I corsi per l'età del genitore che si fanno mentre il figlio è in palestra:
+ * dal calendario, almeno un giorno in comune. `giorni` c'è solo se non tutti i
+ * giorni del corso del genitore lo sono. Prima quelli con tutti i giorni.
+ */
+export function corsiParalleli(corsi: CorsoRef[], voci: VoceCosto[], natoIlGenitore: string, corsiFiglio: string[], orari: OrarioAperto[]): CorsoParallelo[] {
+  const delFiglio = orari.filter((o) => corsiFiglio.includes(o.corsoId))
+  if (!delFiglio.length) return []
+  const perEta = corsiPerEta(corsi, voci, natoIlGenitore)
+  // Senza fascia d'età si propongono solo i corsi che il listino non ha (Preparazione atletica 1, 2, 3):
+  // una voce senza anni di nascita ha l'età scritta a parole, spesso dei piccoli («3-4-5 anni»).
+  const senzaVoce = perEta.senzaAnni.filter((c) => !voceDelCorso(voci, c))
+  const trovati = [...perEta.adatti, ...senzaVoce].flatMap((c): CorsoParallelo[] => {
+    if (corsiFiglio.includes(c.id)) return []
+    const suoi = orari.filter((o) => o.corsoId === c.id)
+    const giorni = [...new Set(suoi.map((o) => o.giorno))]
+    const comuni = giorni.filter((g) => suoi.some((o) => o.giorno === g && delFiglio.some((f) => siToccano(o, f))))
+    if (!comuni.length) return []
+    return [{ ...c, stessaOra: true, ...(comuni.length < giorni.length && { giorni: comuni.sort(perSettimana) }) }]
+  })
+  return [...trovati.filter((c) => !c.giorni), ...trovati.filter((c) => c.giorni)]
 }
 
-/** Il corso d'un orario scritto uguale a quello del figlio va in cima, con «stessa ora di <di>» sotto il nome. */
-export function corsiPerEtaConStessaOra(corsi: CorsoRef[], listino: Listino | undefined, natoIl: string, corsiFiglio: string[], di: string) {
-  const perEta = corsiPerEta(corsi, listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
-  const ids = new Set((listino ? corsiParalleli(corsi, listino.corsi, natoIl, corsiFiglio) : []).map((c) => c.id))
-  const segna = (c: CorsoPerEta): CorsoPerEta => (ids.has(c.id) ? { ...c, riga: [c.riga, `stessa ora di ${di}`].filter(Boolean).join(' · ') } : c)
-  return { ...perEta, adatti: [...perEta.adatti.filter((c) => ids.has(c.id)), ...perEta.adatti.filter((c) => !ids.has(c.id))].map(segna) }
+const GIORNI = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato']
+/** La settimana della palestra comincia il lunedì. */
+const perSettimana = (a: number, b: number) => ((a + 6) % 7) - ((b + 6) % 7)
+const orologio = (m: number) => `${Math.floor(m / 60)}.${String(m % 60).padStart(2, '0')}`
+
+/** L'orario di un corso dal calendario, come lo scrive il volantino: «lunedì, mercoledì e venerdì 18.00-19.00». */
+export function orarioDetto(orari: OrarioAperto[], corsoId: string): string {
+  const pezzi = new Map<string, number[]>()
+  for (const o of orari.filter((x) => x.corsoId === corsoId)) {
+    const fascia = `${orologio(minuti(o.ora))}-${orologio(minuti(o.ora) + o.durata)}`
+    pezzi.set(fascia, [...(pezzi.get(fascia) ?? []), o.giorno])
+  }
+  const ordinati = [...pezzi].map(([fascia, giorni]): [string, number[]] => [fascia, [...new Set(giorni)].sort(perSettimana)])
+  // Anche i pezzi in ordine di settimana: chi legge parte dal lunedì.
+  ordinati.sort((a, b) => perSettimana(a[1][0], b[1][0]))
+  return ordinati.map(([fascia, giorni]) => `${elenco(giorni.map((g) => GIORNI[g]))} ${fascia}`).join(' · ')
 }
+
+/**
+ * I corsi per l'età del genitore, con quelli alla stessa ora del figlio a
+ * parte, in cima: il gruppo dice «alla stessa ora di <di>», la riga solo i
+ * giorni quando non sono tutti, poi età e orari del listino (o del calendario).
+ */
+export function corsiPerEtaConStessaOra(corsi: CorsoRef[], listino: Listino | undefined, natoIl: string, corsiFiglio: string[], orari: OrarioAperto[]) {
+  const perEta = corsiPerEta(corsi, listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
+  const paralleli = listino ? corsiParalleli(corsi, listino.corsi, natoIl, corsiFiglio, orari) : []
+  const ids = new Set(paralleli.map((c) => c.id))
+  const tutti = new Map([...perEta.adatti, ...perEta.senzaAnni].map((c) => [c.id, c]))
+  const stessaOra = paralleli.map((p): CorsoPerEta => {
+    const c = tutti.get(p.id) ?? p
+    const giorni = p.giorni && `stessa ora ${elenco(p.giorni.map((g) => `il ${GIORNI[g]}`))}`
+    const riga = [giorni, c.riga ?? (orarioDetto(orari, c.id) || undefined)].filter(Boolean).join(' · ')
+    return { id: c.id, nome: c.nome, ...(riga && { riga }), ...(c.prezzoDaConfermare && { prezzoDaConfermare: true as const }) }
+  })
+  // Fuori dalla stessa ora restano i corsi per lui; quelli del figlio no. Senza riga del listino, l'orario del calendario.
+  const resto = (elenco: CorsoPerEta[]) =>
+    elenco.filter((c) => !ids.has(c.id) && !corsiFiglio.includes(c.id)).map((c) => (c.riga ? c : { ...c, ...(orarioDetto(orari, c.id) && { riga: orarioDetto(orari, c.id) }) }))
+  return { ...perEta, stessaOra, adatti: resto(perEta.adatti), senzaAnni: resto(perEta.senzaAnni) }
+}
+
+/** Il titolo e la frase di «Ti iscrivi anche tu?»: uno o due corsi alla stessa ora si nominano, da tre in su si contano. */
+export function fraseAncheTu(nome: string, corsiDelFiglio: string, paralleli: ReadonlyArray<{ nome: string }>): { titolo: string; dettaglio: string } {
+  const famiglia = 'Nello stesso modulo, con lo sconto famiglia sull’annuale.'
+  if (!paralleli.length) return { titolo: 'Ti iscrivi anche tu?', dettaglio: 'Se vuoi, scegli un corso anche per te: nello stesso modulo, con lo sconto famiglia sull’annuale.' }
+  if (paralleli.length > 2) return { titolo: `Mentre ${nome} è in palestra, ci sono ${paralleli.length} corsi per te alla stessa ora`, dettaglio: `Sono per la tua età e sono in cima all’elenco. ${famiglia}` }
+  const quali = paralleli.map((p) => p.nome).join(' o ')
+  const chi = paralleli.length === 1 ? `${quali} è` : 'Sono'
+  return { titolo: `Mentre ${nome} fa ${corsiDelFiglio}, tu puoi fare ${quali}`, dettaglio: `${chi} per la tua età, alla stessa ora di ${nome}. ${famiglia}` }
+}
+
+/** ISCRIVO ANCHE ME: con un solo corso alla stessa ora lo spunta già; quel che il genitore aveva scelto resta. */
+export function suoDopoIscrivoAncheMe(suo: Suo | undefined, paralleli: ReadonlyArray<{ id: string }>): Suo {
+  const s = suo ?? SUO_VUOTO
+  if (paralleli.length !== 1 || s.corsi.length) return s
+  return { ...s, corsi: [paralleli[0].id], allaStessaOra: [paralleli[0].id] }
+}
+
+/** Spunta o toglie un corso del genitore, e si ricorda se era alla stessa ora del figlio. */
+export function scegliSuoCorso(suo: Suo | undefined, id: string, paralleli: ReadonlyArray<{ id: string }>): Suo {
+  const s = suo ?? SUO_VUOTO
+  const prima = s.allaStessaOra ?? []
+  if (s.corsi.includes(id)) return { ...s, corsi: s.corsi.filter((c) => c !== id), allaStessaOra: prima.filter((c) => c !== id) }
+  return { ...s, corsi: [...s.corsi, id], allaStessaOra: paralleli.some((p) => p.id === id) ? [...prima, id] : prima }
+}
+
+/** L'avviso sotto l'elenco del genitore, se il figlio ha cambiato corso. */
+export function fraseNonPiuAllaStessaOra(nomi: string[], nome: string): string | undefined {
+  if (!nomi.length) return undefined
+  return `${elenco(nomi)} ${nomi.length > 1 ? 'non sono' : 'non è'} più alla stessa ora di ${nome}.`
+}
+
+/** I corsi del genitore che erano alla stessa ora quando li ha scelti, e col figlio cambiato non lo sono più. */
+export const nonPiuAllaStessaOra = (suo: Suo | undefined, paralleli: ReadonlyArray<{ id: string }>): string[] =>
+  (suo?.corsi ?? []).filter((id) => suo?.allaStessaOra?.includes(id) && !paralleli.some((p) => p.id === id))
 
 /**
  * Il conto della famiglia: ognuno con la sua stima, gli annuali degli altri
@@ -742,10 +846,9 @@ export function contoFamiglia(
 }
 
 /**
- * Il conto di bambino e genitore, dallo stato: lo stesso per la proposta del
- * passo «corsi» (`proposta`: il corso parallelo, con la formula del figlio) e
- * per il riepilogo (il corso e la formula scelti dal genitore). Senza genitore
- * e senza proposta non c'è un conto di famiglia.
+ * Il conto di bambino e genitore, dallo stato: lo stesso nel riquadro del
+ * passo «corsi» e nel riepilogo, col corso e la formula scelti dal genitore.
+ * Senza genitore non c'è un conto di famiglia.
  */
 /** Chi si iscrive nello stato dei passi, come entra in ogni conto: nome (o «Il bambino» / «Chi si iscrive»), corsi e formula. */
 const persona = (s: StatoPassi, corsi: CorsoRef[]) => ({
@@ -754,9 +857,9 @@ const persona = (s: StatoPassi, corsi: CorsoRef[]) => ({
   formula: s.risposte.formula,
 })
 
-export function contoDelloStato(s: StatoPassi, corsi: CorsoRef[], listino: Listino, giorno: string, proposta?: CorsoRef) {
+export function contoDelloStato(s: StatoPassi, corsi: CorsoRef[], listino: Listino, giorno: string) {
   const ref = (ids: string[]) => corsi.filter((c) => ids.includes(c.id))
-  const lui = proposta ? { corsi: [proposta], formula: s.risposte.formula } : s.chi === 'figlio' && s.ancheTu && s.suo ? { corsi: ref(s.suo.corsi), formula: s.suo.formula } : undefined
+  const lui = s.chi === 'figlio' && s.ancheTu && s.suo ? { corsi: ref(s.suo.corsi), formula: s.suo.formula } : undefined
   if (!lui) return undefined
   return contoFamiglia(
     [

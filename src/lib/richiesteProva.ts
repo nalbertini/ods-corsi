@@ -19,7 +19,7 @@ import { MASSIMO_PERSONE } from './passiIscrizione'
 
 const DOVE = 'ods-corsi:prova-richieste'   // vedi la nota in coda.ts
 
-/** Come `per_email_al_giorno` di `48-richieste-per-email.sql`: una famiglia le manda tutte con una email, quante sono le persone di un modulo. */
+/** Come `per_email_al_giorno` di `49-richieste-per-email.sql`: una famiglia le manda tutte con una email, quante sono le persone di un modulo. */
 const PER_EMAIL_AL_GIORNO = MASSIMO_PERSONE
 
 function leggi(): Richiesta[] {
@@ -94,6 +94,14 @@ export function creaRichiesteProva(): DatiRichieste {
         .filter((c) => c.attivo)
         .map((c) => ({ id: c.id, nome: c.nome }))
         .sort((a, b) => a.nome.localeCompare(b.nome, 'it'))
+    },
+
+    async orariAperti() {
+      // Come orari_aperti() in 48-orari-aperti.sql: corsi attivi, ricorrenze non finite.
+      const oggi = chiaveGiorno(new Date())
+      return archivio.dati.corsi
+        .filter((c) => c.attivo)
+        .flatMap((c) => c.ricorrenze.filter((x) => !x.al || x.al >= oggi).map((x) => ({ corsoId: c.id, giorno: x.giorno, ora: x.ora, durata: x.durata })))
     },
 
     async invia(dati) {

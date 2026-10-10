@@ -85,11 +85,24 @@ export interface CorsoAperto {
   nome: string
 }
 
+/** Una ricorrenza di un corso aperto, dal calendario: per la «stessa ora» del genitore. */
+export interface OrarioAperto {
+  corsoId: string
+  /** 0 = domenica, come `getDay()`. */
+  giorno: number
+  /** 'HH:MM' */
+  ora: string
+  /** Minuti. */
+  durata: number
+}
+
 export interface DatiRichieste {
   readonly modo: 'prova' | 'supabase'
 
   // Per chi si iscrive, senza accesso.
   corsiAperti(): Promise<CorsoAperto[]>
+  /** Mai un errore: senza orari (file SQL non lanciato, rete) non c'è «stessa ora», e si va avanti. */
+  orariAperti(): Promise<OrarioAperto[]>
   /** Le risposte: torna l'id della richiesta, che fa da cartella ai file. */
   invia(dati: DatiRichiesta): Promise<string>
   /** Un file alla volta, così se uno non passa si riprova solo quello. */
