@@ -124,27 +124,6 @@ function SceltaFileGenitore({ tipo, file, onFile, etichetta, dettaglio }: { tipo
   )
 }
 
-/** L'IBAN su una riga sua, da copiare: per le due richieste, dove non c'è il conto di una persona sola (`QuantoCosta`). */
-function CopiaIban() {
-  const [copiato, setCopiato] = useState(false)
-  const copia = () =>
-    navigator.clipboard?.writeText(PAGAMENTO.iban.replace(/\s/g, '')).then(
-      () => {
-        setCopiato(true)
-        setTimeout(() => setCopiato(false), 2000)
-      },
-      () => {},
-    )
-  return (
-    <>
-      <span className="num iban iban-riga">{PAGAMENTO.iban}</span>
-      <Tasti>
-        <Tasto onClick={() => void copia()}>{copiato ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
-      </Tasti>
-    </>
-  )
-}
-
 /** L'IBAN, la causale di tutto il modulo e i tasti per copiarli (e Satispay): il bonifico di QUANTO PAGHI. */
 function ComePagare({ causale }: { causale: string }) {
   const [copiato, setCopiato] = useState<string | null>(null)
@@ -158,7 +137,7 @@ function ComePagare({ causale }: { causale: string }) {
     )
   return (
     <>
-      <span className="num iban">{PAGAMENTO.iban}</span>
+      <span className="num iban iban-riga">{PAGAMENTO.iban}</span>
       <Dettaglio>
         Causale: <span className="testo-pieno">{causale}</span>
       </Dettaglio>
@@ -729,7 +708,8 @@ function Flusso({
                     {riassunto.importo ? `In tutto ${riassunto.importo}${riassunto.conSconto ? ', con lo sconto famiglia' : ''}. ` : ''}
                     Paghi in segreteria, oppure con un bonifico a {PAGAMENTO.intestatario}; poi mandi la ricevuta.
                   </span>
-                  <CopiaIban />
+                  {/* La stessa causale di QUANTO PAGHI: con più persone ha i nomi di tutti. */}
+                  <ComePagare causale={P.causaleDelModulo(tutte, corsi ?? [])} />
                 </>
               )}
               {riassunto.famiglia && riassunto.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">{riassunto.senzaPrezzo.join(', ')}: prezzo da confermare, lo dice la segreteria.</Dettaglio>}
