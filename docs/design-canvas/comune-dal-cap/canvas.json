@@ -1,0 +1,13 @@
+{
+ "pages": [{ "id": "page-1", "name": "Il comune dal CAP" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "Oggi · CAP e comune a mano", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Uno.dc.html", "title": "Proposta · un comune: si scrive da sé", "x": 510, "y": 300, "page": "page-1" },
+  { "file": "Pochi.dc.html", "title": "Proposta · pochi comuni: i tasti", "x": 1020, "y": 300, "page": "page-1" },
+  { "file": "Tanti.dc.html", "title": "Proposta · molti comuni: la tendina", "x": 1530, "y": 300, "page": "page-1" },
+  { "file": "Fuori.dc.html", "title": "Proposta · fuori provincia: come oggi", "x": 2040, "y": 300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 2430, "text": "Il comune dal CAP · provincia di Torino" }
+ ]
+}
