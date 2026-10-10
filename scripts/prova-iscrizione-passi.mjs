@@ -2373,28 +2373,28 @@ console.log('\n42. CORSI VICINI')
   ok('la mezz’ora è una costante', m.MINUTI_VICINI, 30)
 
   // --- i gruppi ---
-  ok('sovrapposto tutti i giorni: stessa ora, tutti', vic('lotta-3'), { gruppo: 'stessaOra', giorni: [1, 3, 5], tutti: true })
-  ok('sovrapposto un giorno solo: stessa ora, il lunedì', vic('karate-3'), { gruppo: 'stessaOra', giorni: [1], tutti: false })
-  ok('a filo prima: vicino, prima, 0 minuti, il lunedì', vic('judo-3'), { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1], tutti: false })
-  ok('a filo dopo: vicino, dopo, 0 minuti, il mercoledì', vic('aikido-3'), { gruppo: 'vicino', verso: 'dopo', minuti: 0, giorni: [3], tutti: true })
-  ok('15 minuti prima: vicino', vic('ginnastica-3'), { gruppo: 'vicino', verso: 'prima', minuti: 15, giorni: [5], tutti: true })
-  ok('30 minuti dopo: ancora vicino', vic('pesi-3'), { gruppo: 'vicino', verso: 'dopo', minuti: 30, giorni: [1], tutti: true })
-  ok('31 minuti prima: non vicino, gli stessi giorni', vic('boxe-3'), { gruppo: 'stessiGiorni', verso: 'prima', minuti: 31, giorni: [3], tutti: true })
-  ok('un’ora prima, mercoledì e venerdì: gli stessi giorni', vic('judo-kids'), { gruppo: 'stessiGiorni', verso: 'prima', minuti: 60, giorni: [3, 5], tutti: true })
-  ok('il sabato Nicola non c’è: gli stessi giorni solo il lunedì', vic('scherma-3'), { gruppo: 'stessiGiorni', verso: 'prima', minuti: 75, giorni: [1], tutti: false })
-  ok('un’ora il lunedì, due il mercoledì: gli stessi giorni, senza distanza', vic('danza-3'), { gruppo: 'stessiGiorni', giorni: [1, 3], tutti: true })
+  ok('sovrapposto tutti i giorni: stessa ora, tutti', vic('lotta-3'), { gruppo: 'stessaOra', giorni: [1, 3, 5], tutti: true, ogniVolta: true })
+  ok('sovrapposto un giorno solo: stessa ora, il lunedì', vic('karate-3'), { gruppo: 'stessaOra', giorni: [1], tutti: false, ogniVolta: false })
+  ok('a filo prima: vicino, prima, 0 minuti, il lunedì', vic('judo-3'), { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1], tutti: false, ogniVolta: false })
+  ok('a filo dopo: vicino, dopo, 0 minuti, il mercoledì', vic('aikido-3'), { gruppo: 'vicino', verso: 'dopo', minuti: 0, giorni: [3], tutti: true, ogniVolta: false })
+  ok('15 minuti prima: vicino', vic('ginnastica-3'), { gruppo: 'vicino', verso: 'prima', minuti: 15, giorni: [5], tutti: true, ogniVolta: false })
+  ok('30 minuti dopo: ancora vicino', vic('pesi-3'), { gruppo: 'vicino', verso: 'dopo', minuti: 30, giorni: [1], tutti: true, ogniVolta: false })
+  ok('31 minuti prima: non vicino, gli stessi giorni', vic('boxe-3'), { gruppo: 'stessiGiorni', verso: 'prima', minuti: 31, giorni: [3], tutti: true, ogniVolta: false })
+  ok('un’ora prima, mercoledì e venerdì: gli stessi giorni', vic('judo-kids'), { gruppo: 'stessiGiorni', verso: 'prima', minuti: 60, giorni: [3, 5], tutti: true, ogniVolta: false })
+  ok('il sabato Nicola non c’è: gli stessi giorni solo il lunedì', vic('scherma-3'), { gruppo: 'stessiGiorni', verso: 'prima', minuti: 75, giorni: [1], tutti: false, ogniVolta: false })
+  ok('un’ora il lunedì, due il mercoledì: gli stessi giorni, senza distanza', vic('danza-3'), { gruppo: 'stessiGiorni', giorni: [1, 3], tutti: true, ogniVolta: false })
   ok('giorni diversi: nessun gruppo', vic('calcio-3'), undefined)
   ok('il corso di Nicola non è vicino a sé stesso', vic('judo-adulti'), undefined)
   ok('senza corsi della persona 0: niente', vic('lotta-3', []), undefined)
   ok('senza orari: niente', vic('lotta-3', NICOLA, []), undefined)
   // Un corso che è sia a filo sia sovrapposto sta nel primo gruppo: la stessa ora.
   const misto = [...orari, ora('judo-3', 3, '19:00')]
-  ok('un giorno sovrapposto e uno a filo: stessa ora', vic('judo-3', NICOLA, misto), { gruppo: 'stessaOra', giorni: [3], tutti: false })
+  ok('un giorno sovrapposto e uno a filo: stessa ora', vic('judo-3', NICOLA, misto), { gruppo: 'stessaOra', giorni: [3], tutti: false, ogniVolta: false })
   // A filo il lunedì e 20 minuti prima il venerdì: la nota parla del giorno più vicino, così è vera.
   const due = [...orari, ora('judo-3', 5, '17:40')]
-  ok('vicino due giorni a distanze diverse: il giorno più vicino', vic('judo-3', NICOLA, due), { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1], tutti: false })
+  ok('vicino due giorni a distanze diverse: il giorno più vicino', vic('judo-3', NICOLA, due), { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1], tutti: false, ogniVolta: false })
   const dueUguali = [...orari, ora('judo-3', 5, '18:00')]
-  ok('a filo due giorni: tutti e due', vic('judo-3', NICOLA, dueUguali), { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1, 5], tutti: false })
+  ok('a filo due giorni: tutti e due', vic('judo-3', NICOLA, dueUguali), { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1, 5], tutti: false, ogniVolta: false })
 
   // --- l'ordine: per gruppo, poi più giorni, poi il nome ---
   const elenco = chiama(() => m.corsiVicini(corsi, NICOLA, orari))
@@ -2425,7 +2425,7 @@ console.log('\n42. CORSI VICINI')
     'nuoto-3': 'due ore e mezza dopo di te, gli stessi giorni',
   })
   ok('il perché al corso, col nome di chi c’è già', tutti((v) => m.percheNelCorso(v, 'Nicola')), {
-    'lotta-3': 'Si sovrappone il lunedì, il mercoledì e il venerdì',
+    'lotta-3': 'Si sovrappone ogni volta',
     'karate-3': 'Si sovrappone il lunedì',
     'judo-3': 'Finisce quando comincia Nicola, il lunedì',
     'aikido-3': 'Comincia quando finisce Nicola, il mercoledì',
@@ -2437,6 +2437,15 @@ console.log('\n42. CORSI VICINI')
     'danza-3': 'A un’altra ora, il lunedì e il mercoledì',
     'nuoto-3': 'Due ore e mezza dopo Nicola, il venerdì',
   })
+  // Quando i giorni sono tutti quelli della persona 0 non si elencano: «ogni volta».
+  const ogni = [...orari, ora('judo-3', 3, '18:00'), ora('judo-3', 5, '18:00'), ora('ginnastica-3', 1, '17:45'), ora('ginnastica-3', 3, '17:45'), ora('pesi-3', 3, '21:00'), ora('pesi-3', 5, '21:00'), ora('boxe-3', 1, '17:29'), ora('boxe-3', 5, '17:29'), ora('karate-3', 3, '19:30'), ora('karate-3', 5, '19:30')]
+  const ogniVolta = (id) => chiama(() => { const v = m.vicinanza(id, NICOLA, ogni); return [v.ogniVolta, m.notaNellaCarta(v), m.percheNelCorso(v, 'Paolo')] })
+  ok('a filo prima ogni volta', ogniVolta('judo-3'), [true, 'finisce quando cominci tu, ogni volta', 'Finisce quando comincia Paolo, ogni volta'])
+  ok('15 minuti prima ogni volta', ogniVolta('ginnastica-3'), [true, 'finisce 15 minuti prima di te, ogni volta', 'Finisce 15 minuti prima di Paolo, ogni volta'])
+  ok('30 minuti dopo ogni volta', ogniVolta('pesi-3'), [true, 'comincia 30 minuti dopo di te, ogni volta', 'Comincia 30 minuti dopo Paolo, ogni volta'])
+  ok('stessi giorni ogni volta', ogniVolta('boxe-3'), [true, '31 minuti prima di te, ogni volta', '31 minuti prima di Paolo, ogni volta'])
+  ok('stessa ora ogni volta, anche col giovedì in più: niente «solo»', ogniVolta('karate-3'), [true, undefined, 'Si sovrappone ogni volta'])
+  ok('a filo dopo ogni volta', chiama(() => m.notaNellaCarta(m.vicinanza('aikido-3', NICOLA, [...orari, ora('aikido-3', 1, '20:30'), ora('aikido-3', 5, '20:30')]))), 'comincia quando finisci tu, ogni volta')
   // La domenica vuole «la».
   ok('la domenica', chiama(() => m.notaNellaCarta(m.vicinanza('x', ['y'], [ora('y', 0, '10:00'), ora('x', 0, '11:00')]))), 'comincia quando finisci tu, la domenica')
 
