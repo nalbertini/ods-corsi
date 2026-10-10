@@ -974,7 +974,7 @@ export function contoDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], lis
 
 /**
  * Il totale sopra la barra quando le persone sono più d'una: quello di tutta la famiglia, ognuno con la sua
- * cifra e lo sconto a parte. Negli stessi passi di `totaleDelPasso` (corso e documenti, di chi è aperto);
+ * cifra e lo sconto a parte. Negli stessi passi di `totaleDelPasso` (corso e QUANTO PAGHI, di chi è aperto);
  * con una persona sola è `totaleDelPasso`.
  */
 export function totaleDellaFamiglia(persone: StatoPassi[], attivo: number, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
