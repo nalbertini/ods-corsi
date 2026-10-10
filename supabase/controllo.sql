@@ -247,7 +247,7 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     iscrizioni_regole()->>'per_email_al_giorno' = '6'),
   ('50-file-rimandato.sql', 'un file rimandato non è un file di troppo',
     exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%o.name = nome_file%')
-    and exists (select 1 from pg_proc where proname = 'limita_file_iscrizione' and prosrc like '%o.name = new.name%')),
+    and exists (select 1 from dentro where nome = 'limita_file_iscrizione' and corpo like '%o.name = new.name%')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

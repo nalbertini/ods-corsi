@@ -145,6 +145,8 @@ export function creaRichiesteProva(): DatiRichieste {
       una(richiestaId)
       const suoi = file.get(richiestaId) ?? new Map<TipoFile, FileRichiesta>()
       // Come nel database: un file rimandato è arrivato, e caricato è caricato.
+      // Qui un file si riconosce dal tipo, non dal nome con l'estensione: un
+      // modulo in JPG dopo uno in PDF nel database entrerebbe come secondo file.
       if (suoi.has(tipo)) return
       const url = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(f) : ''
       suoi.set(tipo, { tipo, url, pdf: f.type === 'application/pdf' })
