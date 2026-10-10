@@ -15,6 +15,7 @@ const { outputFiles } = await build({
   stdin: {
     contents: [
       "export * from './src/lib/passiIscrizione'",
+      "export { corsiPerEta, LISTINO_PREDEFINITO } from './src/lib/listino'",
       "export { creaRichiesteProva } from './src/lib/richiesteProva'",
       "export { controlla, datiRichieste, domandaUscita, FILE } from './src/lib/richieste'",
       "export { carattereControllo, lettereCognome, lettereNome } from './src/lib/codiceFiscale'",
@@ -580,12 +581,7 @@ console.log('\n13. anche tu: il conto, il corso parallelo, la richiesta del geni
   ok('con un trimestre: 50+300+50+140 = 540 €, nessuno sconto', [trimestre.totale, trimestre.sconto], [54000, undefined])
   ok('con due trimestri nessuno sconto', m.contoFamiglia([{ chi: 'Matteo', corsi: [corsi[0]], formula: 'trimestre' }, { chi: 'Paola', corsi: [corsi[1]], formula: 'trimestre' }], giorno, listino).sconto, undefined)
 
-  const paralleli = m.corsiParalleli(corsi, listino.corsi, '1984-05-05', ['judo-3'])
-  ok('corso parallelo: per la sua età con lo stesso orario del figlio', paralleli.map((c) => c.id), ['judo-adulti'])
-  ok('corso parallelo: «stessa ora»', paralleli.map((c) => c.stessaOra), [true])
-  ok('niente corsi di un altro orario', paralleli.some((c) => c.id === 'aikido-adulti'), false)
-  ok('niente corsi fuori età', paralleli.some((c) => c.id === 'judo-2'), false)
-  ok('il figlio senza corsi: nessun parallelo', m.corsiParalleli(corsi, listino.corsi, '1984-05-05', []), [])
+  // I corsi alla stessa ora ora si contano dal calendario: le prove sono in 13b.
 
   const bambino = m.risposteDaiPassi(figlio())
   const lui = m.richiestaDelGenitore(bambino, { corsi: ['judo-adulti'], formula: 'trimestre', natoA: 'TORINO (TO)' })
@@ -604,14 +600,8 @@ console.log('\n13. anche tu: il conto, il corso parallelo, la richiesta del geni
   ok('senza genitore e senza proposta non c’è un conto di famiglia', m.contoDelloStato(figlio(), corsi, listino, giorno), undefined)
   ok('il genitore sceglie un’altra formula: nel riepilogo conta la sua', m.contoDelloStato(figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'trimestre', scelte: {} } }), corsi, listino, giorno)?.sconto, undefined)
 
-  // «Stessa ora» in cima: lo decide la lib, non la schermata.
-  const rovesciato = { ...listino, corsi: [listino.corsi[3], listino.corsi[1], listino.corsi[0], listino.corsi[2]] }
-  const ep = m.corsiPerEtaConStessaOra(corsi, rovesciato, '1984-05-05', ['judo-3'], 'Matteo')
-  ok('stessa ora: il corso con lo stesso orario del figlio passa in cima', ep.adatti.map((c) => c.id), ['judo-adulti', 'aikido-adulti'])
-  ok('stessa ora: la riga lo dice, solo su quello', ep.adatti.map((c) => c.riga?.includes('stessa ora di Matteo') ?? false), [true, false])
   const grandi = { ...listino, corsi: listino.corsi.map((v, i) => (i === 0 ? { ...v, etaMinima: 16 } : v)) }
-  ok('stessa ora: i corsi per grandi nascosti arrivano alla schermata', m.corsiPerEtaConStessaOra(corsi, grandi, '2016-04-12', [], 'Luca').nascosti.length, 1)
-  ok('senza listino niente corsi per età e nessun «stessa ora»', m.corsiPerEtaConStessaOra(corsi, undefined, '1984-05-05', ['judo-3'], 'Matteo').adatti.some((c) => c.riga?.includes('stessa ora')), false)
+  ok('stessa ora: i corsi per grandi nascosti arrivano alla schermata', m.corsiPerEtaConStessaOra(corsi, grandi, '2016-04-12', [], []).nascosti.length, 1)
 
   // Cosa parte per ognuno: il file di ogni richiesta e i dati del PDF.
   const chiamate = []
@@ -647,6 +637,162 @@ console.log('\n13. anche tu: il conto, il corso parallelo, la richiesta del geni
   await solo[0].faiPdf()
   ok('un adulto: una richiesta, il PDF per maggiorenni con le sue scelte', [solo.length, chiamate], [1, [['Luca', false, { tesseramento: true, foto: false }, '', '']]])
   ok('col foglio firmato in foto non si fa il PDF', m.richiesteDaMandare(adulto({}, { file: { documento: doc, modulo: F('foglio.jpg') } }), '', faiPdf)[0].faiPdf, undefined)
+}
+
+// ---------------------------------------------------------------------------
+console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calendario vero')
+{
+  // Una funzione che manca ancora si dice come un guaio, senza fermare le altre prove.
+  const prova = (f) => {
+    try {
+      return f()
+    } catch (e) {
+      return `errore: ${e.message}`
+    }
+  }
+  const ids = (x) => (Array.isArray(x) ? x.map((c) => c.id) : x)
+  const r = m.creaRichiesteProva()
+  const corsi = await r.corsiAperti()
+  const orari = await (async () => {
+    try {
+      return await r.orariAperti()
+    } catch (e) {
+      return []
+    }
+  })()
+  ok('in prova gli orari ci sono (creaRichiesteProva().orariAperti)', orari.length > 0, true)
+  const voci = m.LISTINO_PREDEFINITO.corsi
+  const GENITORE = '1985-03-03'
+  const paralleli = (figlio, o = orari, c = corsi, v = voci) => prova(() => m.corsiParalleli(c, v, GENITORE, figlio, o))
+
+  // R1/R2/R11: Judo 3 (lun, mer, ven 18-19) e Judo agonisti (mar, gio 18-19.30).
+  const due = paralleli(['judo-3', 'judo-agonisti'])
+  ok('Judo 3 + agonisti: c’è Preparazione atletica 3 (lun, mer, ven 18-19)', ids(due)?.includes?.('prep-atletica-3'), true)
+  ok('Judo 3 + agonisti: c’è Preparazione atletica 1, che nel listino non ha una voce sua', ids(due)?.includes?.('prep-atletica-1'), true)
+  ok('Judo 3 + agonisti: non Preparazione atletica 2, che comincia alle 19.30 quando agonisti finisce', ids(due)?.includes?.('prep-atletica-2'), false)
+  ok('Judo 3 + agonisti: non Judo adulti, che comincia alle 19 quando Judo 3 finisce', ids(due)?.includes?.('judo-adulti'), false)
+  ok('Judo 3 + agonisti: tutti e soli i corsi del genitore che si sovrappongono, nell’ordine dei corsi per età', ids(due), ['aikido-3', 'lotta-3', 'psicomotricita', 'body-functional', 'pesi-2', 'prep-atletica-1', 'prep-atletica-3'])
+  ok('ognuno è «stessa ora», e nessuno ha giorni a parte (si sovrappongono tutti i giorni)', Array.isArray(due) ? [...new Set(due.map((c) => `${c.stessaOra}/${c.giorni ?? '-'}`))] : due, ['true/-'])
+  // Gli orari scritti nel listino non contano più: Judo adulti con l'orario scritto di Judo 3 resta fuori.
+  const scritto = voci.map((v) => (v.corso === 'Judo adulti' ? { ...v, orari: ['lunedì, mercoledì e venerdì 18.00-19.00'] } : v))
+  ok('l’orario scritto uguale nel listino non basta: conta il calendario', ids(paralleli(['judo-3'], orari, corsi, scritto))?.includes?.('judo-adulti'), false)
+
+  // Solo Judo 3: i corsi del martedì e giovedì non ci sono più.
+  const solo = paralleli(['judo-3'])
+  ok('solo Judo 3: Preparazione atletica 3 sì', ids(solo)?.includes?.('prep-atletica-3'), true)
+  ok('solo Judo 3: Preparazione atletica 1 (mar, gio) no', ids(solo)?.includes?.('prep-atletica-1'), false)
+  // Giorni in parte: Aikido 3 è lun e gio, Judo 3 il lunedì sì e il giovedì no.
+  ok('solo Judo 3: prima quelli con tutti i giorni, poi quelli in parte', ids(solo), ['psicomotricita', 'body-functional', 'pesi-2', 'prep-atletica-3', 'aikido-3', 'lotta-3'])
+  ok('giorni in parte: Aikido 3 (lun, gio) col figlio solo il lunedì → [1]', Array.isArray(solo) ? solo.find((c) => c.id === 'aikido-3')?.giorni : solo, [1])
+  ok('giorni in parte: Lotta 3 (lun, mar, mer, ven) → [1, 3, 5]', Array.isArray(solo) ? solo.find((c) => c.id === 'lotta-3')?.giorni : solo, [1, 3, 5])
+  ok('tutti i giorni: niente «giorni»', Array.isArray(solo) ? 'giorni' in (solo.find((c) => c.id === 'prep-atletica-3') ?? {}) : solo, false)
+
+  // R3: mai fuori età, mai nascosto per età minima, mai un corso del figlio.
+  const fuori = [
+    { corso: 'Pesistica 2', corsoId: 'pesi-2', eta: '', orari: [], natiDal: 2010, natiAl: 2012, prezzi: [{ annuale: 300, trimestre: 120 }] },
+    { corso: 'Body functional', corsoId: 'body-functional', eta: '', orari: [], etaMinima: 50, prezzi: [{ annuale: 300, trimestre: 120 }] },
+    ...voci,
+  ]
+  const r3 = paralleli(['judo-3', 'prep-atletica-3'], orari, corsi, fuori)
+  ok('non propone un corso fuori età per il genitore (altri)', ids(r3)?.includes?.('pesi-2'), false)
+  ok('non propone un corso nascosto per età minima', ids(r3)?.includes?.('body-functional'), false)
+  ok('non propone un corso già scelto per il figlio', ids(r3)?.includes?.('prep-atletica-3'), false)
+  ok('gli altri alla stessa ora restano', ids(r3)?.includes?.('psicomotricita'), true)
+
+  // R4: senza orari non c'è stessa ora.
+  const nuovo = [...corsi, { id: 'corso-nuovo', nome: 'Corso nuovo' }]
+  ok('un corso senza orari non è mai alla stessa ora', ids(paralleli(['judo-3'], orari, nuovo))?.includes?.('corso-nuovo'), false)
+  ok('il figlio senza corsi: nessun parallelo', paralleli([]), [])
+  ok('senza orari: nessun parallelo', paralleli(['judo-3'], []), [])
+
+  // Le righe sotto il nome, nel gruppo «ALLA STESSA ORA DI MATTEO».
+  const listino = m.LISTINO_PREDEFINITO
+  const perEta = m.corsiPerEta(corsi, listino.corsi, GENITORE, listino.senzaPrezzoVaBene)
+  const conOra = (figlio, o = orari, c = corsi) => prova(() => m.corsiPerEtaConStessaOra(c, listino, GENITORE, figlio, o))
+  const ep = conOra(['judo-3'])
+  const riga = (id) => ep?.stessaOra?.find((c) => c.id === id)?.riga
+  const rigaListino = (id) => [...perEta.adatti, ...perEta.senzaAnni].find((c) => c.id === id)?.riga
+  ok('stessaOra: gli stessi corsi di corsiParalleli', ids(ep?.stessaOra), ids(solo))
+  ok('stessaOra: tolti dagli adatti', ep?.adatti?.map((c) => c.id), perEta.adatti.filter((c) => !ids(solo).includes?.(c.id)).map((c) => c.id))
+  ok('stessaOra: tolti dai senza anni', ep?.senzaAnni?.map((c) => c.id), perEta.senzaAnni.filter((c) => !ids(solo).includes?.(c.id)).map((c) => c.id))
+  ok('altri e nascosti come corsiPerEta', [ep?.altri, ep?.nascosti], [perEta.altri, perEta.nascosti])
+  ok('riga, giorni in parte: «stessa ora il lunedì» e la riga del listino', riga('aikido-3'), `stessa ora il lunedì · ${rigaListino('aikido-3')}`)
+  ok('riga, tre giorni: «il lunedì, il mercoledì e il venerdì»', riga('lotta-3'), `stessa ora il lunedì, il mercoledì e il venerdì · ${rigaListino('lotta-3')}`)
+  ok('riga, tutti i giorni e una riga del listino: quella, senza «stessa ora di»', riga('psicomotricita'), rigaListino('psicomotricita'))
+  ok('riga, senza voce nel listino: l’orario del calendario', riga('prep-atletica-3'), 'lunedì, mercoledì e venerdì 18.00-19.00')
+  ok('riga, un giorno solo dal calendario', riga('body-functional'), 'mercoledì 18.00-19.00')
+  ok('nessuna riga ripete «stessa ora di Matteo»', Array.isArray(ep?.stessaOra) ? ep.stessaOra.some((c) => c.riga?.includes('stessa ora di')) : ep, false)
+  const ep2 = conOra(['judo-3', 'judo-agonisti'])
+  ok('riga, mar e gio dal calendario', ep2?.stessaOra?.find((c) => c.id === 'prep-atletica-1')?.riga, 'martedì e giovedì 18.00-19.00')
+
+  // Corsi inventati, senza voce nel listino: orari diversi fra i giorni, e due giorni in parte.
+  const inventati = [...corsi, { id: 'yoga', nome: 'Yoga' }, { id: 'pilates', nome: 'Pilates' }]
+  const orariInventati = [
+    ...orari,
+    { corsoId: 'yoga', giorno: 5, ora: '18:30', durata: 60 },
+    { corsoId: 'yoga', giorno: 1, ora: '18:00', durata: 60 },
+    { corsoId: 'yoga', giorno: 3, ora: '18:00', durata: 60 },
+    { corsoId: 'pilates', giorno: 1, ora: '18:00', durata: 60 },
+    { corsoId: 'pilates', giorno: 4, ora: '18:00', durata: 60 },
+    { corsoId: 'pilates', giorno: 6, ora: '18:00', durata: 60 },
+  ]
+  const ep3 = conOra(['judo-3', 'judo-agonisti'], orariInventati, inventati)
+  const riga3 = (id) => ep3?.stessaOra?.find((c) => c.id === id)?.riga
+  ok('orari diversi fra i giorni: un pezzo per orario, dal lunedì', riga3('yoga'), 'lunedì e mercoledì 18.00-19.00 · venerdì 18.30-19.30')
+  ok('due giorni in parte: «il lunedì e il giovedì», poi l’orario del calendario', riga3('pilates'), 'stessa ora il lunedì e il giovedì · lunedì, giovedì e sabato 18.00-19.00')
+  ok('il corso coi giorni in parte viene dopo quelli con tutti i giorni', ids(ep3?.stessaOra)?.slice?.(-1), ['pilates'])
+
+  ok('senza orari: stessaOra vuoto', conOra(['judo-3'], [])?.stessaOra, [])
+  ok('senza orari: gli altri elenchi come corsiPerEta', ((x) => [x?.adatti, x?.senzaAnni, x?.altri, x?.nascosti])(conOra(['judo-3'], [])), [perEta.adatti, perEta.senzaAnni, perEta.altri, perEta.nascosti])
+
+  // Il riquadro «Ti iscrivi anche tu?»: il titolo dice cosa c'è alla stessa ora.
+  const frase = (nome, del, par) => prova(() => m.fraseAncheTu(nome, del, par.map((n) => ({ nome: n }))))
+  ok('nessun corso alla stessa ora: la domanda e basta', frase('Luca', 'Judo 2', [])?.titolo, 'Ti iscrivi anche tu?')
+  const uno = frase('Luca', 'Judo 2', ['Pesistica 1'])
+  ok('un corso: «Mentre Luca fa Judo 2, tu puoi fare Pesistica 1»', uno?.titolo, 'Mentre Luca fa Judo 2, tu puoi fare Pesistica 1')
+  ok('un corso: il dettaglio lo dice per la sua età e alla stessa ora', uno?.dettaglio?.startsWith?.('Pesistica 1 è per la tua età, alla stessa ora di Luca.'), true)
+  const coppia = frase('Luca', 'Judo 2', ['Pesistica 1', 'Lotta 3'])
+  ok('due corsi: «tu puoi fare A o B»', coppia?.titolo, 'Mentre Luca fa Judo 2, tu puoi fare Pesistica 1 o Lotta 3')
+  ok('due corsi: il dettaglio al plurale', coppia?.dettaglio?.startsWith?.('Sono per la tua età, alla stessa ora di Luca.'), true)
+  ok('tre o più: si contano', frase('Manuela', 'Judo 3', ['a', 'b', 'c', 'd', 'e', 'f'])?.titolo, 'Mentre Manuela è in palestra, ci sono 6 corsi per te alla stessa ora')
+
+  // R7: ISCRIVO ANCHE ME con una sola proposta la spunta già.
+  const P3 = { id: 'prep-atletica-3' }
+  const dopo = (suo, par) => prova(() => m.suoDopoIscrivoAncheMe(suo, par))
+  const essenziale = (x) => (typeof x === 'string' ? x : [x.corsi, x.formula, x.scelte])
+  ok('nessuna proposta: il foglio del genitore vuoto', essenziale(dopo(undefined, [])), [[], 'trimestre', {}])
+  ok('una proposta: già spuntata', essenziale(dopo(undefined, [P3])), [['prep-atletica-3'], 'trimestre', {}])
+  ok('due proposte: non si sceglie per lui', essenziale(dopo(undefined, [P3, { id: 'pesi-2' }])), [[], 'trimestre', {}])
+  const giaScelto = { corsi: ['judo-adulti'], formula: 'annuale', scelte: { foto: true } }
+  ok('una proposta ma un corso già scelto: non lo tocca', essenziale(dopo(giaScelto, [P3])), [['judo-adulti'], 'annuale', { foto: true }])
+  ok('una proposta, il suo foglio già aperto ma senza corsi: la spunta e tiene il resto', essenziale(dopo({ corsi: [], formula: 'annuale', scelte: { foto: false } }, [P3])), [['prep-atletica-3'], 'annuale', { foto: false }])
+
+  // R9: il figlio cambia corso dopo che il genitore ha scelto.
+  const scegli = (suo, id, par) => prova(() => m.scegliSuoCorso(suo, id, par))
+  const vuoto = { corsi: [], formula: 'trimestre', scelte: {} }
+  const s1 = scegli(vuoto, 'prep-atletica-3', solo)
+  ok('sceglie Preparazione atletica 3 mentre è alla stessa ora: segnato', [s1?.corsi, s1?.allaStessaOra], [['prep-atletica-3'], ['prep-atletica-3']])
+  const s2 = typeof s1 === 'string' ? s1 : scegli(s1, 'judo-adulti', solo)
+  ok('sceglie Judo adulti, che non è alla stessa ora: non segnato', [s2?.corsi, s2?.allaStessaOra], [['prep-atletica-3', 'judo-adulti'], ['prep-atletica-3']])
+  ok('finché i corsi del figlio restano, niente da dire', typeof s2 === 'string' ? s2 : prova(() => m.nonPiuAllaStessaOra(s2, solo)), [])
+  const senzaJudo3 = paralleli([])
+  ok('il figlio toglie Judo 3: Preparazione atletica 3 resta scelta', s2?.corsi, ['prep-atletica-3', 'judo-adulti'])
+  ok('il figlio toglie Judo 3: Preparazione atletica 3 non è più alla stessa ora', typeof s2 === 'string' ? s2 : prova(() => m.nonPiuAllaStessaOra(s2, senzaJudo3)), ['prep-atletica-3'])
+  ok('un corso scelto fuori dai paralleli non compare mai', typeof s2 === 'string' ? s2 : prova(() => m.nonPiuAllaStessaOra(s2, senzaJudo3)).includes?.('judo-adulti'), false)
+  const s3 = typeof s2 === 'string' ? s2 : scegli(s2, 'prep-atletica-3', solo)
+  ok('togliendolo, esce dai corsi e dai segnati', [s3?.corsi, (s3?.allaStessaOra ?? []).includes?.('prep-atletica-3')], [['judo-adulti'], false])
+
+  // Il corso del genitore si sceglie al passo del corso, subito; «Anche tu» chiede solo tesseramento e foto.
+  const famiglia = (suo) => figlio({}, { ancheTu: true, suo })
+  const chiavi = (stato, passo) => m.mancanti(stato, passo).map((p) => [p.chiave, p.nome])
+  ok('passo 3, anche tu senza il suo corso: IL TUO CORSO', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: { tesseramento: true, foto: true } }), 3), [['suoCorsi', 'IL TUO CORSO']])
+  ok('passo 3, anche tu senza ancora un foglio suo: IL TUO CORSO', chiavi(famiglia(undefined), 3), [['suoCorsi', 'IL TUO CORSO']])
+  ok('passo 3, AVANTI lo conta come CORSO', m.mancaNelPasso(famiglia({ corsi: [], formula: 'trimestre', scelte: {} }), 3), ['CORSO'])
+  ok('passo 3, col suo corso scelto: niente', chiavi(famiglia({ corsi: ['prep-atletica-3'], formula: 'trimestre', scelte: {} }), 3), [])
+  ok('passo 3, senza «anche tu»: il suo corso non si chiede', chiavi(figlio(), 3), [])
+  ok('passo 3, «anche tu» non ancora risposto: il suo corso non si chiede', chiavi(figlio({}, { ancheTu: undefined }), 3).map(([k]) => k), ['ancheTu'])
+  ok('passo «anche tu» (6): tesseramento e foto, il corso no', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: {} }), 6), [['suoTesseramento', 'TESSERAMENTO DEL GENITORE'], ['suoFoto', 'FOTO DEL GENITORE']])
+  ok('ultimo passo: il suo corso c’è ancora, una volta', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: { tesseramento: true, foto: true } }), 7), [['suoCorsi', 'IL TUO CORSO']])
 }
 
 // ---------------------------------------------------------------------------
@@ -724,7 +870,7 @@ console.log('\n16. l’ordine di «manca» è quello della pagina: il focus va a
   ok('bambino, passo 5 (i documenti): la carta del genitore', chiavi(figlio({}, { file: {} }), 5), ['CARTA D\'IDENTITÀ'])
   ok('bambino, passo 2: «dove sei nato» sta dopo il codice del genitore, prima dei contatti', chiavi(figlio({ genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '', email: '', telefono: '' }, { natoAGenitore: '' }), 2), ['NOME DEL GENITORE', 'COGNOME DEL GENITORE', 'CODICE FISCALE DEL GENITORE', 'DOVE SEI NATO', 'EMAIL', 'TELEFONO'])
   ok('bambino, l’ultimo passo: «dove sei nato» una volta sola', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 6), ['DOVE SEI NATO'])
-  ok('anche tu, passo 6: corso, tesseramento, foto', chiavi({ ...vuoto('figlio'), ancheTu: true, suo: { corsi: [], formula: 'trimestre', scelte: {} } }, 6), ['CORSO', 'TESSERAMENTO', 'FOTO'])
+  ok('anche tu, passo 6: tesseramento e foto (il corso si sceglie al passo 3)', chiavi({ ...vuoto('figlio'), ancheTu: true, suo: { corsi: [], formula: 'trimestre', scelte: {} } }, 6), ['TESSERAMENTO', 'FOTO'])
 }
 
 // ---------------------------------------------------------------------------
@@ -815,7 +961,7 @@ console.log('\n18. la barra di quel che manca: una riga, e ogni voce è un tasto
   ok('anche tu, ultimo passo: tesseramento e foto, due volte ciascuno', riepilogo.filter((v) => /tesseramento|foto/i.test(v.chiave)).map((v) => v.chiave).sort(), ['foto', 'suoFoto', 'suoTesseramento', 'tesseramento'])
   ok('anche tu, ultimo passo: nessun nome ripetuto, si distinguono a parole', riepilogo.length > 0 && new Set(riepilogo.map((v) => v.nome)).size === riepilogo.length, true)
   ok('anche tu: il corso del genitore si chiama «IL TUO CORSO»', riepilogo.find((v) => v.chiave === 'suoCorsi')?.nome, 'IL TUO CORSO')
-  ok('anche tu, passo 6: i nomi di sempre', m.mancaNelPasso(anche, 6), ['CORSO', 'TESSERAMENTO', 'FOTO'])
+  ok('anche tu, passo 6: tesseramento e foto, il corso non più', m.mancaNelPasso(anche, 6), ['TESSERAMENTO', 'FOTO'])
   ok('anche tu, ultimo passo: la barra conta le persone, AVANTI i nomi', riepilogo.length > m.mancaNelPasso(anche, 7).length, true)
 
   // Ogni chiave porta a un id che c'è nella pagina.
