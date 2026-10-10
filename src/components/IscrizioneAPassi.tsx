@@ -410,7 +410,8 @@ function Flusso({
       if (!el) return
       el.focus({ preventScroll: true })
       // Al centro: in cima starebbe sotto l'avanzamento, in fondo sotto la barra dei tasti.
-      el.scrollIntoView({ block: 'center' })
+      // Un elenco più alto di mezzo schermo (i corsi del genitore) al centro perderebbe la sua cima: si vede da dove comincia.
+      el.scrollIntoView({ block: el.getBoundingClientRect().height > window.innerHeight / 2 ? 'start' : 'center' })
     }, 0)
   }
 
