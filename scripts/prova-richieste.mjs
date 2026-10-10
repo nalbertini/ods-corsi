@@ -88,8 +88,9 @@ console.log('\n1. i corsi fra cui scegliere')
   // Un giorno chiuso dalla segreteria (al = ieri) non c'è più; gli altri giorni del corso restano.
   const mercoledi = (await s.corsi()).find((x) => x.id === 'judo-3').ricorrenze.find((x) => x.giorno === 3)
   await s.togliRicorrenza(mercoledi.id)
-  const chiusa = (await s.corsi()).find((x) => x.id === 'judo-3').ricorrenze.find((x) => x.id === mercoledi.id)
-  ok('il mercoledì di Judo 3 si chiude a ieri', chiusa?.al, '2026-09-25')
+  // Cominciata prima di oggi: togliRicorrenza la chiude a ieri invece di cancellarla, e la segreteria non la vede più.
+  ok('il mercoledì di Judo 3 era già cominciato: si chiude, non sparisce', mercoledi.dal < '2026-09-26', true)
+  ok('chiuso: la segreteria non lo vede più fra i giorni del corso', (await s.corsi()).find((x) => x.id === 'judo-3').ricorrenze.some((x) => x.id === mercoledi.id), false)
   ok('una ricorrenza finita ieri non c’è; il lunedì e il venerdì restano', (await r.orariAperti()).filter((o) => o.corsoId === 'judo-3').map((o) => o.giorno), [1, 5])
   ok('gli orari: ci sono tutti i corsi aperti che hanno un orario', [...new Set(orari.map((o) => o.corsoId))].sort(), (await r.corsiAperti()).map((c) => c.id).sort())
 }

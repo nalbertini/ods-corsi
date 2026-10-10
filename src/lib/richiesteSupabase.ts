@@ -116,7 +116,7 @@ export function creaRichiesteSupabase(db: SupabaseClient): DatiRichieste {
         return (data as Array<{ corso_id: string; giorno: number; ora: string; durata_min: number }>).map((r) => ({
           corsoId: r.corso_id,
           giorno: r.giorno,
-          ora: String(r.ora).slice(0, 5),
+          ora: r.ora.slice(0, 5),
           durata: r.durata_min,
         }))
       } catch {

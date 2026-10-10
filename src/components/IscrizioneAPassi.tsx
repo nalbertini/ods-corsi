@@ -202,8 +202,8 @@ function ElencoCorsi({
       {caricando && <Dettaglio tono="guaio">{caricando}</Dettaglio>}
       {!!perEta.stessaOra?.length && (
         <>
-          <span className="modulo-etichetta">ALLA STESSA ORA DI {(stessaOraDi ?? '').toUpperCase()}</span>
-          <SceltaCorsi id={`${id}-stessa-ora`} etichetta={`Corsi alla stessa ora di ${stessaOraDi ?? ''}`} voci={perEta.stessaOra.map(tasto)} scelti={scelti} onScegli={onScegli} descritto={descritto} />
+          <span className="modulo-etichetta">{stessaOraDi ? `ALLA STESSA ORA DI ${stessaOraDi.toUpperCase()}` : 'ALLA STESSA ORA'}</span>
+          <SceltaCorsi id={`${id}-stessa-ora`} etichetta={stessaOraDi ? `Corsi alla stessa ora di ${stessaOraDi}` : 'Corsi alla stessa ora'} voci={perEta.stessaOra.map(tasto)} scelti={scelti} onScegli={onScegli} descritto={descritto} />
         </>
       )}
       {perEta.adatti.length > 0 && <span className="modulo-etichetta">{`${perEta.stessaOra?.length ? 'GLI ALTRI CORSI ' : ''}PER LA ${etaDi.toUpperCase()} ETÀ`}</span>}
@@ -775,7 +775,7 @@ function Flusso({
       const conto = listino && ancheTu && suo?.corsi.length && r.corsi.length ? P.contoDelloStato(v, corsi ?? [], listino, chiaveGiorno(new Date())) : undefined
       const frase = P.fraseAncheTu(nome, nomiDei(r.corsi), paralleli)
       const suoi = P.corsiPerEtaConStessaOra(corsi ?? [], listino, natoIlGenitore, r.corsi, orari)
-      const nonPiu = P.nonPiuAllaStessaOra(suo, paralleli)
+      const fraseNonPiu = P.fraseNonPiuAllaStessaOra(refDei(P.nonPiuAllaStessaOra(suo, paralleli)).map((c) => c.nome), nome)
       return (
         <>
           <div className="pad modulo-griglia passo-prima">
@@ -823,11 +823,7 @@ function Flusso({
                       stessaOraDi={nome}
                     />
                   )}
-                  {nonPiu.length > 0 && (
-                    <Dettaglio tono="avviso">
-                      {nomiDei(nonPiu)} {nonPiu.length > 1 ? 'non sono' : 'non è'} più alla stessa ora di {nome}.
-                    </Dettaglio>
-                  )}
+                  {fraseNonPiu && <Dettaglio tono="avviso">{fraseNonPiu}</Dettaglio>}
                   {conto && <Conto righe={conto.righe} totale={conto.totale} />}
                   {/* Sempre: chi sceglie il trimestre non deve aspettarsi lo sconto che vede qui. */}
                   {conto && <Dettaglio>Lo sconto famiglia vale sull’annuale: con il trimestre non c’è.</Dettaglio>}
@@ -1054,7 +1050,9 @@ function Flusso({
               <Riepilogo
                 righe={[
                   { stato: 'fatto', titolo: nomeLui || 'Il genitore', dettaglio: 'nome, cognome, codice fiscale, residenza e contatti, scritti nel passo ' + passoDi('dati') + ' e nel passo ' + passoDi('genitore') },
-                  { stato: 'fatto', titolo: `Il tuo corso: ${nomiDei(s.corsi)}`, dettaglio: `scelto al passo ${passoDi('corso')}`, tasto: { testo: 'MODIFICA', onFai: () => vai(passoDi('corso')) } },
+                  s.corsi.length
+                    ? { stato: 'fatto', titolo: `Il tuo corso: ${nomiDei(s.corsi)}`, dettaglio: `scelto al passo ${passoDi('corso')}`, tasto: { testo: 'MODIFICA', onFai: () => vai(passoDi('corso')) } }
+                    : { stato: 'guaio', titolo: 'Il tuo corso', dettaglio: `non scelto: lo scegli al passo ${passoDi('corso')}`, tasto: { testo: 'SCEGLI', onFai: () => vai(passoDi('corso')) } },
                 ]}
               />
             </div>
