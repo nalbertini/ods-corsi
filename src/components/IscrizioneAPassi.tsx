@@ -222,8 +222,8 @@ function ElencoCorsi({
   stessaOraDi,
 }: {
   id: string
-  /** `stessaOra`: i corsi di un familiare alla stessa ora della persona 0, in un gruppo loro in cima. */
-  perEta: { stessaOra?: CorsoPerEta[]; adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[] }
+  /** `stessaOra`, `vicini`, `stessiGiorni`: i corsi di un familiare vicini alla persona 0, in gruppi loro in cima. */
+  perEta: { stessaOra?: P.CorsoProposto[]; vicini?: P.CorsoProposto[]; stessiGiorni?: P.CorsoProposto[]; adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[] }
   scelti: readonly string[]
   onScegli: (id: string) => void
   etaDi: 'tua' | 'sua'
@@ -237,7 +237,8 @@ function ElencoCorsi({
   const fuoriEta = perEta.altri.filter((c) => scelti.includes(c.id)).map((c) => c.nome)
   // Un corso fuori età già scelto non si nasconde: si vede cosa c'è nella richiesta.
   const mostraAltri = aperti || fuoriEta.length > 0
-  const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined })
+  const tasto = (c: P.CorsoProposto) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined, perche: c.perche })
+  const inCima = !!(perEta.stessaOra?.length || perEta.vicini?.length || perEta.stessiGiorni?.length)
   const descritto = nota ? `${id}-nota` : undefined
   return (
     <div id={id} tabIndex={-1} className="modulo-campo modulo-largo modulo-corsi-tutti">
@@ -249,7 +250,19 @@ function ElencoCorsi({
           <SceltaCorsi id={`${id}-stessa-ora`} etichetta={stessaOraDi ? `Corsi alla stessa ora di ${stessaOraDi}` : 'Corsi alla stessa ora'} voci={perEta.stessaOra.map(tasto)} scelti={scelti} onScegli={onScegli} descritto={descritto} />
         </>
       )}
-      {perEta.adatti.length > 0 && <span className={perEta.stessaOra?.length ? 'modulo-etichetta modulo-altri' : 'modulo-etichetta'}>{`${perEta.stessaOra?.length ? 'GLI ALTRI CORSI ' : ''}PER LA ${etaDi.toUpperCase()} ETÀ${di ? ` · ${di.toUpperCase()}` : ''}`}</span>}
+      {!!perEta.vicini?.length && (
+        <>
+          <span className="modulo-etichetta modulo-altri">SUBITO PRIMA O DOPO</span>
+          <SceltaCorsi id={`${id}-vicini`} etichetta="Corsi subito prima o dopo" voci={perEta.vicini.map(tasto)} scelti={scelti} onScegli={onScegli} descritto={descritto} />
+        </>
+      )}
+      {!!perEta.stessiGiorni?.length && (
+        <>
+          <span className="modulo-etichetta modulo-altri">NEGLI STESSI GIORNI</span>
+          <SceltaCorsi id={`${id}-stessi-giorni`} etichetta="Corsi negli stessi giorni" voci={perEta.stessiGiorni.map(tasto)} scelti={scelti} onScegli={onScegli} descritto={descritto} />
+        </>
+      )}
+      {perEta.adatti.length > 0 && <span className={inCima ? 'modulo-etichetta modulo-altri' : 'modulo-etichetta'}>{`${inCima ? 'GLI ALTRI CORSI ' : ''}PER LA ${etaDi.toUpperCase()} ETÀ${di ? ` · ${di.toUpperCase()}` : ''}`}</span>}
       <SceltaCorsi id={`${id}-adatti`} etichetta="Corsi" voci={perEta.adatti.map(tasto)} scelti={scelti} onScegli={onScegli} descritto={descritto} />
       {perEta.senzaAnni.length > 0 && (
         <>
@@ -1301,12 +1314,16 @@ function Flusso({
               <Riquadro key={c.chi}>
                 <span className="famiglia-carta-titolo">{c.titolo}</span>
                 <Dettaglio tono="testo">{c.frase}</Dettaglio>
-                {c.stessaOra && (
-                  <span className="famiglia-carta-ora">
-                    <span className="famiglia-carta-tag">STESSA ORA</span>
-                    {c.stessaOra}
+                {c.righe.map((r) => (
+                  <span key={r.corso} className="famiglia-carta-ora">
+                    <span className="famiglia-carta-tag">{r.etichetta}</span>
+                    <span className="stack famiglia-carta-corso">
+                      <span className="famiglia-carta-nome">{r.corso}</span>
+                      {r.quando && <span>{r.quando}</span>}
+                      {r.nota && <span className="famiglia-carta-nota">{r.nota}</span>}
+                    </span>
                   </span>
-                )}
+                ))}
                 {c.risparmio && <span className="famiglia-carta-risparmio">{c.risparmio}</span>}
                 <button type="button" className="btn btn-dashed passo-btn" onClick={c.chi === 'adulto' ? aggiungiAdulto : aggiungiBambino}>
                   {c.tasto}

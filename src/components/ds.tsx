@@ -163,8 +163,8 @@ export function SceltaCorsi({
 }: {
   id: string
   etichetta: string
-  /** `riga`: età e orari, sotto il nome. */
-  voci: ReadonlyArray<{ id: string; testo: string; riga?: string }>
+  /** `riga`: età e orari, sotto il nome; `perche`: perché si propone, sotto la riga. */
+  voci: ReadonlyArray<{ id: string; testo: string; riga?: string; perche?: string }>
   scelti: readonly string[]
   onScegli: (id: string) => void
   una?: boolean
@@ -189,10 +189,11 @@ export function SceltaCorsi({
                 {on ? '✓' : ''}
               </span>
             )}
-            {v.riga ? (
+            {v.riga || v.perche ? (
               <span className="stack modulo-corso-testo">
                 {v.testo}
-                <span className="modulo-corso-riga">{v.riga}</span>
+                {v.riga && <span className="modulo-corso-riga">{v.riga}</span>}
+                {v.perche && <span className="modulo-corso-perche">{v.perche}</span>}
               </span>
             ) : (
               v.testo
