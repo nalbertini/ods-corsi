@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA, passo ANCHE TU: il corso del genitore e' gia' scelto al passo 3, qui si vede in una riga con MODIFICA (che riporta al passo 3). Restano come paga il genitore e i suoi consensi; il certificato come oggi. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1400px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<dc-import name="RigaChiama" hint-size="100%,62px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1"><dc-import name="Avanzamento" numero="6" totale="7" titolo="ANCHE TU: POCHE COSE" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 4px"><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">I tuoi dati li hai già scritti: ne mancano pochi. La carta d’identità e la firma valgono anche per te.</span><dc-import name="Riepilogo" righe="fatto~Paolo Rossi~nome, cognome, codice fiscale, residenza e contatti, scritti nei passi 1 e 2~|fatto~Il tuo corso: Preparazione atletica 3~stessa ora di Manuela, scelto al passo 3~MODIFICA" hint-size="100%,190px"></dc-import></div><dc-import name="Titoletto" label="COME PAGHI" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Annuale" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Trimestre" hint-size="50%,52px"></dc-import></div></div></div><dc-import name="Titoletto" label="I TUOI CONSENSI" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #c9c9c4">IL TESSERAMENTO ALLA FIJLKAM E/O FIPE</span><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Per la stagione 2026/27. Questa risposta è tua, non quella di Manuela.</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Acconsento" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Non acconsento" hint-size="50%,52px"></dc-import></div></div><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #c9c9c4">LE TUE FOTO E I TUOI VIDEO</span><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Le foto che ti ritraggono, sui social della palestra.</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Autorizzo" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Non autorizzo" hint-size="50%,52px"></dc-import></div></div></div></main>
+<dc-import name="BarraPasso" manca="IL TESSERAMENTO" avanti="AVANTI" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

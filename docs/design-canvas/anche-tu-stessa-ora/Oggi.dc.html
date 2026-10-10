@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI, come nello screenshot di Nicola. Manuela fa Judo 3 e Judo agonisti: nessuna proposta, perché i corsi di Preparazione atletica non hanno una voce loro nel listino e l'app confronta gli orari scritti li'. Toccato ISCRIVO ANCHE ME non compare niente: il corso del genitore si sceglie due passi dopo. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1500px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<dc-import name="RigaChiama" hint-size="100%,62px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1"><dc-import name="Avanzamento" numero="3" totale="7" titolo="SCEGLI IL CORSO" hint-size="100%,120px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 4px"><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">PER LA SUA ETÀ</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Judo 3" riga="nati 2016-2015-2014-2013 · lunedì, mercoledì e venerdì 18.00-19.00" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Judo agonisti" riga="solo judoka agonisti (2015-2014 e prima) · martedì e giovedì 18.00-19.30" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Lotta 3" riga="nati 2016-2015-2014 e prima · lunedì e mercoledì 18.00-19.30" hint-size="100%,72px"></dc-import></div><dc-import name="Bottone" label="+ ALTRI 7 CORSI, NON PER LA SUA ETÀ" variante="tratteggiato" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import></div><dc-import name="Titoletto" label="TI ISCRIVI ANCHE TU?" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; background: #1c1c1c; border: 2px solid #333333; border-left: 6px solid #f4c31b"><span style="font-size: 17px; font-weight: 600; line-height: 1.3; color: #f2f2f0">Ti iscrivi anche tu?</span><span style="font-size: 15px; line-height: 1.45; color: #c9c9c4">Se vuoi, scegli un corso anche per te: nello stesso modulo, con lo sconto famiglia sull’annuale.</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="ISCRIVO ANCHE ME" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="NO, SOLO MANUELA" hint-size="50%,52px"></dc-import></div></div></div></div><dc-import name="Titoletto" label="QUANDO PAGA" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Annuale" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Trimestre" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div></div></div></main>
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 20px; background: #1c1c1c; border-top: 2px solid #333333"><span style="font-size: 14px; line-height: 1.35; color: #c9c9c4">Quota 50 € + Judo 3 trimestre 180 € + Judo agonisti trimestre 230 €</span><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 0.02em; color: #f2f2f0; flex-shrink: 0">460 €</span></div><dc-import name="BarraPasso" nota="Tutto a posto in questo passo." avanti="AVANTI" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

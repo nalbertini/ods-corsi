@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA, il figlio cambia corso dopo che il genitore ha scelto il suo: il corso del genitore resta scelto, e sotto compare in giallo che non e' piu' alla stessa ora. Qui Manuela ha tolto Judo 3: Preparazione atletica 3 (lun-mer-ven) non si sovrappone a Judo agonisti (mar-gio). -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1000px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<dc-import name="RigaChiama" hint-size="100%,62px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1"><dc-import name="Titoletto" label="TI ISCRIVI ANCHE TU?" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 4px"><div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; background: #1c1c1c; border: 2px solid #333333; border-left: 6px solid #f4c31b"><span style="font-size: 17px; font-weight: 600; line-height: 1.3; color: #f2f2f0">Mentre Manuela è in palestra, ci sono 4 corsi per te alla stessa ora</span><span style="font-size: 15px; line-height: 1.45; color: #c9c9c4">Sono per la tua età e sono in cima all’elenco. Nello stesso modulo, con lo sconto famiglia sull’annuale.</span><div style="display: flex; gap: 8px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="ISCRIVO ANCHE ME" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="NO, SOLO MANUELA" hint-size="50%,52px"></dc-import></div></div><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #f4c31b">ALLA STESSA ORA DI MANUELA</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Preparazione atletica 1" riga="martedì e giovedì 18.00-19.00 · prezzo da confermare" hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Aikido 3" riga="il giovedì: lunedì e giovedì 18.00-19.00" hint-size="100%,72px"></dc-import></div><div style="display: flex; flex-direction: column; gap: 6px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">GLI ALTRI CORSI PER LA TUA ETÀ</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Preparazione atletica 3" riga="lunedì, mercoledì e venerdì 18.00-19.00 · prezzo da confermare" scelto="{{ true }}" nota="Non è più alla stessa ora di Manuela." notaTono="avviso" hint-size="100%,104px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Judo adulti" riga="nati nel 2012 o prima · lunedì, mercoledì e venerdì 19.00-20.30" hint-size="100%,72px"></dc-import></div></div></div></main>
+
+</div>
+</x-dc>
+</body>
+</html>

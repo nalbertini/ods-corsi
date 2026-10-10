@@ -1,0 +1,14 @@
+{
+ "pages": [{ "id": "page-1", "name": "Anche tu · stessa ora" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "Oggi · ISCRIVO ANCHE ME e non compare niente", "x": 0, "y": 140, "page": "page-1" },
+  { "file": "Molte.dc.html", "title": "Proposta · Manuela, 6 corsi alla stessa ora", "x": 510, "y": 140, "page": "page-1" },
+  { "file": "Una.dc.html", "title": "Proposta · una sola, già spuntata", "x": 1020, "y": 140, "page": "page-1" },
+  { "file": "Nessuna.dc.html", "title": "Proposta · nessuna: tutti i corsi per la tua età", "x": 1530, "y": 140, "page": "page-1" },
+  { "file": "Cambiato.dc.html", "title": "Proposta · il figlio cambia corso", "x": 2040, "y": 140, "page": "page-1" },
+  { "file": "AncheTu.dc.html", "title": "Proposta · passo «Anche tu», corso già scelto", "x": 2550, "y": 140, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "w": 3000, "maxW": 3000, "text": "Ti iscrivi anche tu? · la stessa ora dal calendario, e il corso del genitore scelto subito" }
+ ]
+}
