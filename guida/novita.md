@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.54.4 — 10 ottobre 2026
+
+### Modificato
+
+- Il totale del modulo di iscrizione si legge meglio, sopra AVANTI
+
 ## 0.54.3 — 10 ottobre 2026
 
 ### Risolto
