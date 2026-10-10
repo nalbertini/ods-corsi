@@ -40,6 +40,7 @@ const SEZIONI = [
   { id: 'quanto-paghi', nome: 'Quanto paghi e le carte col nome', cartella: 'quanto-paghi' },
   { id: 'totale-barra', nome: 'Il totale del modulo', cartella: 'totale-barra' },
   { id: 'famiglia-passo', nome: 'La famiglia, un passo a sé', cartella: 'famiglia-passo' },
+  { id: 'vestiario-modulo', nome: 'Vestiario come il modulo · proposta', cartella: 'vestiario-modulo' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

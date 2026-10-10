@@ -202,15 +202,30 @@ si copia con **COPIA LINK ORDINI**, in fondo al menu. Finché gli ordini sono
 aperti, anche la pagina delle iscrizioni ha in fondo il riquadro **IL
 VESTIARIO** con **ORDINA IL VESTIARIO**.
 
-1. **IL CATALOGO** — i capi col prezzo, le taglie e la nota per scegliere la
-   taglia.
-2. **IL TUO ORDINE** — una riga per capo: per chi è (nome e cognome del
-   bambino), il capo, la taglia, quanti. **+ UN ALTRO CAPO** aggiunge una riga
-   per lo stesso bambino, **+ PER UN ALTRO FIGLIO** una per un altro: i fratelli
-   stanno in un ordine solo, con un totale solo.
-3. **CHI ORDINA** — nome, cognome e telefono di chi ordina (la segreteria
-   chiama chi non ha pagato); l'email è facoltativa.
-4. **MANDA L'ORDINE**. Il totale lo calcola l'app coi prezzi del catalogo.
+I passi sono quelli del vecchio modulo Google:
+
+1. **PER CHI È** — nome e cognome di chi indossa i capi: il bambino, o
+   l'adulto che ordina per sé.
+2. **IL TIPO** — **JUDOGI**, **COSTUMINI LOTTA** o **VESTIARIO LOGATO**. Ci
+   sono solo i tipi che hanno capi; se ce n'è uno solo, il passo si salta.
+3. **La pagina del tipo** — in cima la tabella delle taglie, poi ogni capo
+   con la foto, il prezzo e la nota. Toccando una foto o la tabella si apre
+   grande, e si ingrandisce con le dita. Un capo si ordina scegliendo la
+   **TAGLIA**: **QUANTI** parte da 1, e rimettere «Scegli» lo toglie.
+4. **TI SERVE ALTRO?** — un altro tipo, **+ PER UN'ALTRA PERSONA** (un
+   fratello: si riparte da PER CHI È, nello stesso ordine) o **NO, HO
+   FINITO**.
+5. **CHI ORDINA** — nome, cognome e telefono di chi ordina (la segreteria
+   chiama chi non ha pagato); l'email è facoltativa. Sotto c'è il riepilogo,
+   persona per persona: taglia e quantità si cambiano lì, e **Togli** toglie
+   una riga.
+6. **MANDA L'ORDINE**. Il totale lo calcola l'app coi prezzi del catalogo.
+
+Le scelte restano se si torna indietro o la pagina si ricarica. Riaprendo il
+link con un ordine lasciato a metà, in cima si legge cosa c'è già («Hai già
+scelto 2 capi per Luca Rossi»), con **VEDI IL RIEPILOGO** e **RICOMINCIA DA
+CAPO**. Scrivere di nuovo il nome di una persona già nell'ordine continua con
+le sue scelte. Una foto che non arriva (rete debole) non blocca l'ordine.
 
 **ORDINE ARRIVATO** ripete l'ordine e dice come pagare: bonifico (**COPIA
 IBAN**, **COPIA CAUSALE**), Satispay o contanti in segreteria. **CONDIVIDI IL

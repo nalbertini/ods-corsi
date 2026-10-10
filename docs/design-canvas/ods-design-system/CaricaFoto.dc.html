@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: flex-start; gap: 14px; width: 100%; min-width: 0; color: {{c.text}}">
+  <div style="position: relative; flex-shrink: 0; width: 96px; height: 96px">
+    <sc-if value="{{conFoto}}" hint-placeholder-val="{{ true }}">
+      <dc-import name="FotoCapo" nome="{{nome}}" icona="{{icona}}" alto="96px" tasto="{{ false }}" tema="{{tema}}" hint-size="96px,96px"></dc-import>
+    </sc-if>
+    <sc-if value="{{vuota}}" hint-placeholder-val="{{ false }}">
+      <span style="display: flex; align-items: center; justify-content: center; width: 96px; height: 96px; padding: 4px; border: 2px dashed {{c.line}}; background: {{c.surface2}}; font-family: {{cond}}; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: {{c.dim}}; text-align: center">NESSUNA {{cosa}}</span>
+    </sc-if>
+    <sc-if value="{{nuova}}" hint-placeholder-val="{{ false }}">
+      <span style="position: absolute; top: 4px; left: 4px; padding: 1px 6px; background: {{c.giallo}}; color: {{c.suColore}}; font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; letter-spacing: 0.16em">NUOVA</span>
+    </sc-if>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0">
+    <span style="font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: {{c.dim}}">{{etichetta}}</span>
+    <span style="font-size: 14px; color: {{c.sec}}; overflow-wrap: anywhere">{{frase}}</span>
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+      <span style="display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 18px; border: 2px solid {{c.line}}; color: {{c.sec}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 15px; font-weight: 700; letter-spacing: 0.14em">{{tasto}}</span>
+      <sc-if value="{{conTogli}}" hint-placeholder-val="{{ true }}">
+        <span style="display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px">Togli la foto</span>
+      </sc-if>
+    </div>
+    <sc-if value="{{haAvviso}}" hint-placeholder-val="{{ true }}">
+      <span style="font-size: 14px; font-weight: 600; color: {{c.gialloTesto}}">{{avviso}}</span>
+    </sc-if>
+    <sc-if value="{{haErrore}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 14px; color: {{c.rossoTesto}}">{{errore}}</span>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"cosa":{"editor":"enum","options":["FOTO","TABELLA"],"default":"FOTO"},"etichetta":{"editor":"text","default":"FOTO · FACOLTATIVA"},"nome":{"editor":"text","default":"Judogi bianco"},"icona":{"editor":"enum","options":["judogi","costume","felpa","tabella"],"default":"judogi"},"stato":{"editor":"enum","options":["foto","nuova","senza"],"default":"foto"},"frase":{"editor":"text","default":""},"avviso":{"editor":"text","default":"Solo il capo, niente persone: la foto è pubblica"},"errore":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":560,"height":150}}'>
+// `CaricaFoto` di src/components/segreteria/Vestiario.tsx con .sg-carica-foto* di src/styles.css: la foto di un capo (cosa FOTO) o la
+// tabella delle taglie di un tipo (cosa TABELLA) in CATALOGO E CHIUSURA.
+// A sinistra la miniatura 96px (.sg-carica-foto-mini: `surface-2`, bordo 2px `line`, immagine intera; qui FotoCapo senza ⤢). Vuota:
+// tratteggiata, «NESSUNA FOTO» o «NESSUNA TABELLA» in Saira 11px 700 0.12em `dim`. nuova = il bollino NUOVA (.sg-carica-foto-nuova:
+// `giallo`, testo `su-colore`, 11px 700 0.16em, in alto a sinistra a 4px): scelta nella bozza, va sul server solo con SALVA.
+// A destra: .sg-etichetta, la frase in 14px `sec`, il tasto .sg-btn.sg-btn-linea (CARICA FOTO / CARICA LA TABELLA, SOSTITUISCI se c'e')
+// e «Togli la foto» (.sg-link.sg-link-alto, anche per le tabelle). avviso = 14px 600 `giallo-testo`, solo per i capi (per le tabelle
+// avviso=""); errore = 14px `rosso-testo`.
+// frase di default come il codice: «La foto che vede chi ordina» (o «La tabella…»), «<nome del file> · va sulla pagina con SALVA»,
+// «Nessuna foto» / «Nessuna tabella»; per una foto tolta si passa «Tolta: il file si cancella con SALVA».
+const T = {
+  scuro: { surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', suColore: '#121212', gialloTesto: '#f4c31b', rossoTesto: '#ff5a52' },
+  chiaro: { surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', suColore: '#121212', gialloTesto: '#8f6a00', rossoTesto: '#b81d1d' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const stato = p.stato || 'foto';
+    const cosa = p.cosa === 'TABELLA' ? 'TABELLA' : 'FOTO';
+    const parola = cosa === 'FOTO' ? 'foto' : 'tabella';
+    const avviso = p.avviso ?? 'Solo il capo, niente persone: la foto è pubblica';
+    const errore = p.errore ?? '';
+    const frase = p.frase || (stato === 'senza' ? 'Nessuna ' + parola : stato === 'nuova' ? 'IMG_2041.jpg · va sulla pagina con SALVA' : 'La ' + parola + ' che vede chi ordina');
+    return {
+      c, cond: COND, tema: p.tema || 'scuro', cosa,
+      etichetta: p.etichetta ?? 'FOTO · FACOLTATIVA',
+      nome: p.nome ?? 'Judogi bianco', icona: p.icona || 'judogi',
+      conFoto: stato !== 'senza', vuota: stato === 'senza', nuova: stato === 'nuova',
+      frase,
+      tasto: stato !== 'senza' ? 'SOSTITUISCI' : cosa === 'FOTO' ? 'CARICA FOTO' : 'CARICA LA TABELLA',
+      conTogli: stato !== 'senza',
+      avviso, haAvviso: avviso !== '',
+      errore, haErrore: errore !== '',
+    };
+  }
+}
+</script>
+</body>
+</html>

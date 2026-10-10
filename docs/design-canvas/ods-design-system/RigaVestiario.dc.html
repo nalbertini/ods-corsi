@@ -53,6 +53,8 @@
 </div>
 </x-dc>
 <script data-dc-script data-props='{"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"numero":{"editor":"text","default":"1"},"perChi":{"editor":"text","default":"Luca Rossi"},"capo":{"editor":"text","default":"Judogi bianco"},"prezzoCapo":{"editor":"text","default":"35 €"},"taglia":{"editor":"text","default":"130"},"quantita":{"editor":"text","default":"1"},"prezzo":{"editor":"text","default":"35 €"},"conto":{"editor":"text","default":"1 × 35 €"},"guaio":{"editor":"text","default":""},"togli":{"editor":"boolean","default":false},"etichette":{"editor":"boolean","default":false},"griglia":{"editor":"text","default":"minmax(0, 1fr) minmax(0, 1.7fr) 84px 68px 64px 44px"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":400}}'>
+// NON PIU' USATO il contesto "app": la pagina degli ordini ora va a passi (SchedaCapo nella pagina del tipo, RigaRiepilogoVestiario in
+// IL RIEPILOGO) e `RigaOrdine` non c'e' piu' in OrdinaVestiario.tsx; resta come storia delle tavole di ../vestiario/. Vale il contesto "segreteria".
 // Riproduzione 1:1 di una riga di un ordine di vestiario, nei due contesti.
 // contesto "app": `RigaOrdine` di src/components/OrdinaVestiario.tsx (righe 324-404), la pagina degli ordini sul telefono. Un .card.stack.riquadro
 //   (fondo `surface`, bordo 2px `line`, padding 14px, gap 8px). In cima «RIGA N» (.rule-label: Saira 15px 700 0.24em `dim`) e, dalla seconda

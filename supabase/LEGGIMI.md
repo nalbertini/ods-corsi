@@ -78,6 +78,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 48. `48-orari-aperti.sql` — gli orari dei corsi aperti (giorno, ora e durata delle ricorrenze non finite) per chi non ha un accesso, da `orari_aperti()`: il modulo a passi ci propone al genitore i corsi alla stessa ora del figlio; le tabelle restano chiuse
 49. `49-richieste-per-email.sql` — sei richieste al giorno dalla stessa email, non più tre: una famiglia di sei persone le manda tutte con una email sola; cambia solo il numero in `iscrizioni_regole()`
 50. `50-file-rimandato.sql` — un file rimandato non è un file di troppo: se il quinto file di una richiesta è arrivato ma la risposta si è persa, RIPROVA lo rimanda e sbatte sul doppione (che l'app legge «arrivato»), non sul limite di cinque; il file già caricato resta quello
+51. `51-vestiario-foto.sql` — il vestiario come il modulo: ogni capo con un tipo facoltativo (judogi, costumini, vestiario) e una foto, e una tabella delle taglie per tipo in `impostazioni.vestiario_tabelle`; le immagini stanno nel contenitore pubblico «vestiario» (1 MB, jpeg, png, webp), le carica, cambia e cancella solo la segreteria, chi non ha un accesso le vede dall'URL pubblico ma non le elenca; `salva_vestiario()` e `vestiario()` cambiano dentro, non nella firma
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -291,6 +292,12 @@ rilanciarlo: se lo si rilancia dopo, `06` rimette le versioni vecchie di
 `puo_caricare()` e `limita_file_iscrizione()` e va rilanciato anche il `50`.
 Finché non c'è, il quinto file rimandato dopo una risposta persa dice «scrivi
 alla segreteria», anche se è arrivato.
+
+Per tipi, foto e tabelle delle taglie del vestiario basta `51-vestiario-foto.sql`
+(dopo `47-vestiario.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
+se si rilancia il `47`, riporta `salva_vestiario()` e `vestiario()` a
+com'erano e va rilanciato anche il `51`. Finché non c'è, VESTIARIO dice che
+manca l'aggiornamento e la pagina pubblica mostra il catalogo senza tipi né foto.
 
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
@@ -1056,5 +1063,5 @@ nome: dalla terza lettera di una parola, al massimo venti, come la ricerca
 dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno.
 `cerca-persone.sql`, dopo `tablet.sql`, prova che «Aggiungi chi prova» trovi anche chi è iscritto a un altro corso o non ha mai provato, con i corsi di oggi e senza telefono per nessuno; che personale e disattivati non compaiano; la soglia delle tre lettere, il tetto di ventuno e che tablet, iscritti e `anon` non la usino. `tablet-conto-prove.sql` prova che il tablet sappia quanti dei presenti sono
 prove, cioè non iscritti quel giorno (chi ha provato e poi si è iscritto no,
-chi ha l'iscrizione finita sì), e che nessun altro lo chieda. `vestiario.sql` prova gli ordini di vestiario: il catalogo lo salva solo la segreteria e lo legge chi non ha un accesso, aperti fino alla data compresa, i rifiuti di un ordine, il totale fatto dal catalogo, proroga e raccolta nuova, e che gli ordini li veda e li cambi solo la segreteria, che corregge le righe e scrive dal banco. `finto-supabase.sql` rifà anche le due
+chi ha l'iscrizione finita sì), e che nessun altro lo chieda. `vestiario.sql` prova gli ordini di vestiario: il catalogo lo salva solo la segreteria e lo legge chi non ha un accesso, aperti fino alla data compresa, i rifiuti di un ordine, il totale fatto dal catalogo, proroga e raccolta nuova, e che gli ordini li veda e li cambi solo la segreteria, che corregge le righe e scrive dal banco; con `51-vestiario-foto.sql`, che tipi, foto e tabelle delle taglie entrino solo come nomi di file del contenitore, e che il contenitore «vestiario» lo riempia e lo svuoti solo la segreteria, senza che chi non ha un accesso ne elenchi i file. `finto-supabase.sql` rifà anche le due
 tabelle dello Storage che le policy dei file guardano.
