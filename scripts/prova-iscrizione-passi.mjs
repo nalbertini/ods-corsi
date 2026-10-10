@@ -1127,48 +1127,48 @@ console.log('\n19. la barra compatta: markup e stile')
   const listino = { quota: 50, saldoEntro: '2026-08-31', offerte: [], corsi: [voce('Judo 3', 'judo-3', 2013, 2016, 300, 120), voce('Judo adulti', 'judo-adulti', undefined, 2012, 360, 140)] }
   const corsi = [{ id: 'judo-3', nome: 'Judo 3' }, { id: 'judo-adulti', nome: 'Judo adulti' }]
   const giorno = '2026-10-06'
-  // Firma attesa: totaleDelPasso(stato, passo, corsi, listino, giorno) → { righe, totale } | undefined.
+  // Firma attesa: totaleDelPasso(stato, passo, corsi, listino, giorno) → { etichetta, righe, totale } | undefined.
+  // Il totale sta solo al passo del corso: a QUANTO PAGHI il conto è il contenuto del passo.
   // Euro interi senza decimali («50 €»), con i centesimi la virgola («50,50 €»); le righe sono «<voce> <prezzo> €» unite da « + ».
   const t = (stato, passo, l = listino) => m.totaleDelPasso(stato, passo, corsi, l, giorno)
 
-  ok('adulto, passo del corso: la riga e il totale', t(adulto(), 2), { righe: 'Quota 50 € + Judo adulti annuale 360 €', totale: '410 €' })
-  ok('adulto, passo del pagamento (5): lo stesso', t(adulto(), 5), t(adulto(), 2))
-  ok('con la formula trimestre: la riga dice trimestre e il prezzo cambia', t(adulto({ formula: 'trimestre' }), 2), { righe: 'Quota 50 € + Judo adulti trimestre 140 €', totale: '190 €' })
+  ok('adulto, passo del corso: la riga e il totale', t(adulto(), 2), { etichetta: 'TOTALE', righe: 'Quota 50 € + Judo adulti annuale 360 €', totale: '410 €' })
+  ok('adulto, passo del pagamento (5): niente, il conto è nel passo', t(adulto(), 5), undefined)
+  ok('con la formula trimestre: la riga dice trimestre e il prezzo cambia', t(adulto({ formula: 'trimestre' }), 2), { etichetta: 'TOTALE', righe: 'Quota 50 € + Judo adulti trimestre 140 €', totale: '190 €' })
   ok('adulto: il totale è quello della stima di oggi, stessi centesimi', t(adulto(), 2)?.totale, `${m.contoFamiglia([{ chi: 'Luca', corsi: [corsi[1]], formula: 'annuale' }], giorno, listino).totale / 100} €`)
   ok('senza corso scelto: niente totale', t(adulto({ corsi: [] }), 2), undefined)
   ok('senza listino: niente totale', t(adulto(), 2, null), undefined)
   for (const passo of [1, 3, 4, 6]) ok(`adulto, passo ${passo}: il totale non c’è`, t(adulto(), passo), undefined)
 
-  ok('figlio, passo del corso (3): il conto del bambino', t(figlio(), 3), { righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
-  ok('figlio, passo del pagamento (6): lo stesso', t(figlio(), 6), t(figlio(), 3))
+  ok('figlio, passo del corso (3): il conto del bambino', t(figlio(), 3), { etichetta: 'TOTALE', righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
+  ok('figlio, passo del pagamento (6): niente', t(figlio(), 6), undefined)
   for (const passo of [1, 2, 4, 5, 7]) ok(`figlio, passo ${passo}: il totale non c’è`, t(figlio(), passo), undefined)
 
   // Con «Anche tu» e il corso del genitore scelto, il totale sopra la barra è quello della famiglia, con lo sconto: lo stesso del riepilogo.
   const famiglia = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
-  const FAMIGLIA = { righe: 'Totale famiglia · Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Judo adulti annuale 360 € · Sconto famiglia −60 €', totale: '700 €' }
+  const FAMIGLIA = { etichetta: 'TOTALE FAMIGLIA', righe: 'Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Judo adulti annuale 360 € · Sconto famiglia −60 €', totale: '700 €' }
   ok('anche tu, passo del corso (3): il conto della famiglia, con lo sconto', t(famiglia, 3), FAMIGLIA)
-  // QUANTO PAGHI dice il conto di tutti e due, con una causale sola: il totale sopra la barra è lo stesso del passo del corso.
-  ok('anche tu, passo del pagamento (7): il conto della famiglia, come al passo del corso', t(famiglia, 7), FAMIGLIA)
+  ok('anche tu, passo del pagamento (7): niente, il conto è nel passo', t(famiglia, 7), undefined)
   ok('anche tu: il totale è quello di contoDelloStato', t(famiglia, 3)?.totale, `${m.contoDelloStato(famiglia, corsi, listino, giorno).totale / 100} €`)
   // Lo sconto è uno solo: quello di contoDelloStato, non anche dentro le righe del bambino.
   const dueAnnuali = figlio({ corsi: ['judo-3', 'judo-adulti'] }, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
   ok('anche tu, il bambino con due annuali: «Sconto» una volta sola nelle righe', (t(dueAnnuali, 3)?.righe.match(/[Ss]conto/g) ?? []).length, 1)
   ok('anche tu, il bambino con due annuali: il totale è quello di contoDelloStato', t(dueAnnuali, 3)?.totale, `${m.contoDelloStato(dueAnnuali, corsi, listino, giorno).totale / 100} €`)
   const famTrim = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'trimestre', scelte: {} } })
-  ok('anche tu, il genitore a trimestre: nessuno sconto, nessuna riga di sconto', t(famTrim, 3), { righe: 'Totale famiglia · Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Judo adulti trimestre 140 €', totale: '540 €' })
+  ok('anche tu, il genitore a trimestre: nessuno sconto, nessuna riga di sconto', t(famTrim, 3), { etichetta: 'TOTALE FAMIGLIA', righe: 'Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Judo adulti trimestre 140 €', totale: '540 €' })
   const conPsico = [...corsi, { id: 'psico', nome: 'Psicomotricità' }]
   const famPsico = figlio({}, { ancheTu: true, suo: { corsi: ['psico'], formula: 'annuale', scelte: {} } })
   const psico = m.totaleDelPasso(famPsico, 3, conPsico, listino, giorno)
-  ok('anche tu, il corso del genitore senza prezzo: lo dice la sua parte', psico?.righe?.startsWith('Totale famiglia · Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Psicomotricità prezzo da confermare'), true)
+  ok('anche tu, il corso del genitore senza prezzo: lo dice la sua parte', psico?.righe?.startsWith('Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Psicomotricità prezzo da confermare'), true)
   ok('anche tu, il corso del genitore senza prezzo: il totale è quello di contoDelloStato', psico?.totale, `${m.contoDelloStato(famPsico, conPsico, listino, giorno).totale / 100} €`)
-  ok('senza «anche tu»: solo il bambino', t(figlio({}, { ancheTu: false, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } }), 3), { righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
+  ok('senza «anche tu»: solo il bambino', t(figlio({}, { ancheTu: false, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } }), 3), { etichetta: 'TOTALE', righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
   ok('anche tu: il passo «anche tu» (6) non lo mostra', t(famiglia, 6), undefined)
   // Un corso senza prezzo nel listino non vale 0: la riga lo dice, e il totale è solo quello che si sa.
   const senzaPrezzo = (l = listino) => m.totaleDelPasso(adulto({ corsi: ['psico'] }), 2, [...corsi, { id: 'psico', nome: 'Psicomotricità' }], l, giorno)
   ok('corso senza prezzo: la riga dice «prezzo da confermare»', senzaPrezzo()?.righe, 'Quota 50 € + Psicomotricità prezzo da confermare')
   ok('corso senza prezzo: il totale è la sola quota', senzaPrezzo()?.totale, '50 €')
   const senzaSuo = figlio({}, { ancheTu: true, suo: { corsi: [], formula: 'annuale', scelte: {} } })
-  ok('anche tu, ma il corso del genitore non è ancora scelto: solo il bambino', t(senzaSuo, 7), { righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
+  ok('anche tu, ma il corso del genitore non è ancora scelto: solo il bambino', t(senzaSuo, 3), { etichetta: 'TOTALE', righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
 }
 
 // 25. La riga del riepilogo e le parole del componente: i numeri dei passi si calcolano, non si scrivono.
@@ -1765,10 +1765,10 @@ console.log('\n35. la famiglia nella schermata: pastiglie, cosa manca a tutti, i
 
   // Il totale sopra la barra: di tutta la famiglia, con lo sconto, nei passi del corso e del pagamento.
   const t = (persone, attivo, passo) => chiama(() => m.totaleDellaFamiglia(persone, attivo, passo, corsi, listino, giorno))
-  ok('famiglia di tre, passo del corso: ognuno con la sua cifra, lo sconto a parte', t(tre, 0, 2), { righe: 'Totale famiglia · Luca 155 € + Matteo 410 € + Paola 350 € − sconto famiglia 60 €', totale: '855 €' })
-  ok('lo stesso nel passo del pagamento', t(tre, 1, 5)?.totale, '855 €')
+  ok('famiglia di tre, passo del corso: ognuno con la sua cifra, lo sconto a parte', t(tre, 0, 2), { etichetta: 'TOTALE FAMIGLIA', righe: 'Luca 155 € + Matteo 410 € + Paola 350 € − sconto famiglia 60 €', totale: '855 €' })
+  ok('nel passo del pagamento no: il conto è nel passo', t(tre, 1, 5), undefined)
   ok('negli altri passi non c’è', [t(tre, 0, 1), t(tre, 0, 3), t(tre, 0, 4), t(tre, 0, 6)], [undefined, undefined, undefined, undefined])
-  ok('senza sconto la riga non lo nomina', t([luca, adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'trimestre' })], 0, 2), { righe: 'Totale famiglia · Luca 155 € + Paola 170 €', totale: '325 €' })
+  ok('senza sconto la riga non lo nomina', t([luca, adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'trimestre' })], 0, 2), { etichetta: 'TOTALE FAMIGLIA', righe: 'Luca 155 € + Paola 170 €', totale: '325 €' })
   ok('una persona sola: com’era, il suo totale', t([matteo], 0, 2), chiama(() => m.totaleDelPasso(matteo, 2, corsi, listino, giorno)))
   // «Anche tu» (un bambino e il genitore, una persona sola nel modulo) e famiglia (più persone) non si pestano i piedi: il totale è uno solo, quello giusto per ognuno.
   const conAncheTu = figlio({ corsi: ['judo-kids'], formula: 'annuale' }, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
@@ -1973,12 +1973,12 @@ console.log('\n38. QUANTO PAGHI')
 
   // --- il totale sopra la barra ---
   const tFam = (persone, attivo, passo) => chiama(() => m.totaleDellaFamiglia(persone, attivo, passo, corsi, listino, giorno))
-  ok('in famiglia, al passo del corso: «Totale famiglia · » davanti', tFam(tre, 0, 2)?.righe?.startsWith('Totale famiglia · Manuela '), true)
-  ok('in famiglia, a QUANTO PAGHI: lo stesso totale del passo del corso', tFam(tre, 0, PAGA.adulto), tFam(tre, 0, 2))
+  ok('in famiglia, al passo del corso: TOTALE FAMIGLIA, e le righe cominciano dalle persone', [tFam(tre, 0, 2)?.etichetta, tFam(tre, 0, 2)?.righe?.startsWith('Manuela ')], ['TOTALE FAMIGLIA', true])
+  ok('in famiglia, a QUANTO PAGHI: niente totale sopra la barra', tFam(tre, 0, PAGA.adulto), undefined)
   ok('in famiglia, ai documenti: niente totale', tFam(tre, 0, 4), undefined)
-  ok('da soli: niente «Totale famiglia»', tFam([luca], 0, PAGA.adulto)?.righe?.startsWith('Totale famiglia'), false)
-  ok('con anche tu, al corso e a QUANTO PAGHI: «Totale famiglia · » davanti', [3, PAGA.anche].map((p) => tFam([conAncheTu], 0, p)?.righe?.startsWith('Totale famiglia · ')), [true, true])
-  ok('con anche tu, a QUANTO PAGHI: il totale di contoDelloStato, con lo sconto', tFam([conAncheTu], 0, PAGA.anche)?.totale, euro(m.contoDelloStato(conAncheTu, corsi, listino, giorno).totale))
+  ok('da soli: TOTALE', tFam([luca], 0, 2)?.etichetta, 'TOTALE')
+  ok('con anche tu, al corso: TOTALE FAMIGLIA; a QUANTO PAGHI niente', [tFam([conAncheTu], 0, 3)?.etichetta, tFam([conAncheTu], 0, PAGA.anche)], ['TOTALE FAMIGLIA', undefined])
+  ok('con anche tu, al corso: il totale di contoDelloStato, con lo sconto', tFam([conAncheTu], 0, 3)?.totale, euro(m.contoDelloStato(conAncheTu, corsi, listino, giorno).totale))
   ok('con anche tu, ai documenti: niente totale', tFam([conAncheTu], 0, 5), undefined)
 
   // --- il conto del modulo ---
@@ -2000,10 +2000,10 @@ console.log('\n38. QUANTO PAGHI')
   ok('senza nessun corso scelto: niente conto', [conto([adulto({ corsi: [] })]), conto([adulto({ corsi: [] }), adulto({ nome: 'Paola', corsi: [] })])], [undefined, undefined])
 
   // B5: una cifra sola, al centesimo: il conto del modulo, il totale sopra la barra a QUANTO PAGHI, l'importo dell'esito.
-  for (const [nome, persone, paga] of [['adulto solo', [luca], PAGA.adulto], ['anche tu', [conAncheTu], PAGA.anche], ['famiglia di 3', tre, PAGA.adulto]]) {
+  for (const [nome, persone, paga] of [['adulto solo', [luca], 2], ['anche tu', [conAncheTu], 3], ['famiglia di 3', tre, 2]]) {
     const c = conto(persone)
     const esito = chiama(() => m.riassuntoEsito(persone[0], corsi, listino, giorno, persone))
-    ok(`${nome}: il conto del modulo, il totale a QUANTO PAGHI e l’esito dicono la stessa cifra`, [c?.totale === undefined ? 'nessun conto' : euro(c.totale), tFam(persone, 0, paga)?.totale, esito?.importo], [esito?.importo, esito?.importo, esito?.importo])
+    ok(`${nome}: il conto del modulo, il totale al passo del corso e l’esito dicono la stessa cifra`, [c?.totale === undefined ? 'nessun conto' : euro(c.totale), tFam(persone, 0, paga)?.totale, esito?.importo], [esito?.importo, esito?.importo, esito?.importo])
   }
 
   // --- la causale ---

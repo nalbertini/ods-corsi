@@ -111,7 +111,7 @@ accoglie.
 
 ## Il modulo a passi (solo in prova)
 
-È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa sei passi (**I TUOI DATI**, **SCEGLI IL CORSO**, **IL MODULO E LA FIRMA**, **I DOCUMENTI**, **QUANTO PAGHI**, **CONTROLLA E INVIA**); per un figlio sono sette, perché c'è anche **IL GENITORE CHE FIRMA**. Nei passi del corso e di QUANTO PAGHI, sopra i tasti, c'è sempre il **totale** da pagare: con più persone è quello di tutti, e lo dice («Totale famiglia»). Prima
+È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa sei passi (**I TUOI DATI**, **SCEGLI IL CORSO**, **IL MODULO E LA FIRMA**, **I DOCUMENTI**, **QUANTO PAGHI**, **CONTROLLA E INVIA**); per un figlio sono sette, perché c'è anche **IL GENITORE CHE FIRMA**. Nel passo del corso, sopra i tasti, c'è sempre il **TOTALE** da pagare, che cambia a ogni scelta: con più persone è quello di tutti, e lo dice (**TOTALE FAMIGLIA**). A QUANTO PAGHI il conto è nel passo. Prima
 si sceglie **IO, SONO ADULTO** o **MIO FIGLIO O MIA FIGLIA**, poi si va avanti
 con **AVANTI**. Se tocchi AVANTI e manca qualcosa, in fondo allo schermo una riga dice quante cose mancano e **VAI A** la prima: un tocco e il cursore è già nel campo. La freccia accanto apre l'elenco di tutto quel che manca, e ogni voce porta al suo campo. L'ultimo passo
 è il riepilogo: da lì **MODIFICA** riporta al passo da cambiare, e **MANDA LA

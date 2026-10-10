@@ -591,13 +591,14 @@ export const passoDelRiepilogo = (riga: 'carta' | 'firma'): TipoPasso => (riga =
 const euroBreve = (cent: number) => `${cent < 0 ? '−' : ''}${Math.abs(cent) % 100 === 0 ? Math.abs(cent) / 100 : (Math.abs(cent) / 100).toFixed(2).replace('.', ',')} €`
 
 /**
- * Il totale che sta sempre sopra la barra, nei passi del corso e di QUANTO PAGHI: la stessa stima
- * del riepilogo (stessi centesimi), solo scritta corta. Col genitore che si iscrive anche lui è quello
- * dei due, con lo sconto: lo stesso di `contoDelModulo`. Senza corso scelto, senza listino e negli altri passi non c'è.
+ * Il totale che sta sempre nella barra al passo del corso, dove ogni scelta lo cambia: la stessa stima del
+ * riepilogo (stessi centesimi), solo scritta corta. Col genitore che si iscrive anche lui è quello dei due,
+ * con lo sconto: lo stesso di `contoDelModulo`. A QUANTO PAGHI no: lì il conto è il contenuto del passo.
+ * Senza corso scelto, senza listino e negli altri passi non c'è.
  */
-export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
+export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): TotaleDelPasso | undefined {
   const tipo = tipiDiPassi(s.chi, s.ancheTu === true)[passo - 1]
-  if (tipo !== 'corso' && tipo !== 'pagamento') return undefined
+  if (tipo !== 'corso') return undefined
   const c = contoCorto(persona(s, corsi), listino, giorno)
   // Col genitore che ha scelto il suo corso, il totale è quello dei due: lo stesso del riepilogo e di QUANTO PAGHI.
   const famiglia = c && listino && s.chi === 'figlio' && s.ancheTu && s.suo?.corsi.length ? contoDelloStato(s, corsi, listino, giorno) : undefined
@@ -605,13 +606,17 @@ export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], 
   const delBambino = famiglia && contoCorto(persona(s, corsi), listino, giorno, true)
   if (delBambino && famiglia && suo) {
     const sconto = famiglia.sconto ? ` · Sconto famiglia ${euroBreve(-famiglia.sconto)}` : ''
-    return { righe: `${TOTALE_FAMIGLIA}${persona(s, corsi).chi}: ${delBambino.righe} · Tu: ${suo.righe}${sconto}`, totale: euroBreve(famiglia.totale) }
+    return { etichetta: 'TOTALE FAMIGLIA', righe: `${persona(s, corsi).chi}: ${delBambino.righe} · Tu: ${suo.righe}${sconto}`, totale: euroBreve(famiglia.totale) }
   }
-  return c && { righe: c.righe, totale: c.totale }
+  return c && { etichetta: 'TOTALE', righe: c.righe, totale: c.totale }
 }
 
-/** Davanti alle righe del totale quando le persone sono più d'una: la cifra è di tutti, non di chi è aperto. */
-const TOTALE_FAMIGLIA = 'Totale famiglia · '
+/** Il totale della barra: l'etichetta dice se la cifra è di tutti (TOTALE FAMIGLIA) o di chi si iscrive. */
+export interface TotaleDelPasso {
+  etichetta: 'TOTALE' | 'TOTALE FAMIGLIA'
+  righe: string
+  totale: string
+}
 
 /** Il conto di una persona, scritto corto; `undefined` senza listino o senza un corso che c'è nell'elenco. */
 /** `senzaSconto`: nel conto di famiglia lo sconto è uno solo, quello di `contoDelloStato`, scritto una volta in fondo. */
@@ -974,17 +979,17 @@ export function contoDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], lis
 
 /**
  * Il totale sopra la barra quando le persone sono più d'una: quello di tutta la famiglia, ognuno con la sua
- * cifra e lo sconto a parte. Negli stessi passi di `totaleDelPasso` (corso e QUANTO PAGHI, di chi è aperto);
+ * cifra e lo sconto a parte. Nello stesso passo di `totaleDelPasso` (il corso, di chi è aperto);
  * con una persona sola è `totaleDelPasso`.
  */
-export function totaleDellaFamiglia(persone: StatoPassi[], attivo: number, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
+export function totaleDellaFamiglia(persone: StatoPassi[], attivo: number, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): TotaleDelPasso | undefined {
   if (persone.length < 2) return totaleDelPasso(persone[0], passo, corsi, listino, giorno)
   const tipo = tipiDiPassi(persone[attivo].chi, persone[attivo].ancheTu === true)[passo - 1]
-  if (tipo !== 'corso' && tipo !== 'pagamento') return undefined
+  if (tipo !== 'corso') return undefined
   const c = contoDellaFamiglia(persone, corsi, listino, giorno)
   if (!c) return undefined
-  const righe = TOTALE_FAMIGLIA + [...c.persone.map((x) => `${x.chi} ${euroBreve(x.importo)}`), ...c.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`)].join(' + ')
-  return { righe: c.sconto ? `${righe} − sconto famiglia ${euroBreve(c.sconto)}` : righe, totale: euroBreve(c.totale) }
+  const righe = [...c.persone.map((x) => `${x.chi} ${euroBreve(x.importo)}`), ...c.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`)].join(' + ')
+  return { etichetta: 'TOTALE FAMIGLIA', righe: c.sconto ? `${righe} − sconto famiglia ${euroBreve(c.sconto)}` : righe, totale: euroBreve(c.totale) }
 }
 
 /**
