@@ -41,6 +41,10 @@ ok('conIlComune: il CAP e il comune insieme', m.conIlComune({ cap: '', comune: '
 ok('conIlComune: un comune già scritto resta', m.conIlComune({ cap: '', comune: 'Grugliasco' }, '10093'), { cap: '10093', comune: 'Grugliasco' })
 ok('conIlComune: CAP a metà, solo il CAP', m.conIlComune({ cap: '100', comune: '' }, '1009'), { cap: '1009', comune: '' })
 
+// La scheda iscritto della segreteria: CAP e comune possono non esserci.
+ok('conIlComune: scheda senza comune, il comune si scrive', m.conIlComune({ indirizzo: 'Via Roma 1' }, '10093'), { indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno' })
+ok('comuneDalCap: comune che non c’è, come vuoto', m.comuneDalCap('10046', undefined).scelte, ['Isolabella', 'Poirino'])
+
 console.log('\n3. più comuni')
 ok('pochi comuni: i tasti', m.comuneDalCap('10046', ''), { scelte: ['Isolabella', 'Poirino'], tendina: false })
 ok('molti comuni (più di sei): la tendina', [m.comuneDalCap('10040', '').scelte.length, m.comuneDalCap('10040', '').tendina], [21, true])
