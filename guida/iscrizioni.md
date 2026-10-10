@@ -138,6 +138,10 @@ ognuno con l'etichetta, l'orario e una nota:
   cambia da un giorno all'altro la nota dice «a un'altra ora».
 - **STESSO CORSO**: per un altro adulto, il corso di chi si è iscritto.
 
+Se succede in tutti i giorni in cui vieni tu, la nota non li elenca e dice
+«ogni volta» («finisce quando cominci tu, ogni volta»); alla stessa ora, in
+quel caso, non c'è nota.
+
 In verde quanto si risparmia con l'annuale, col primo corso della carta.
 Il tasto tratteggiato aggiunge la persona: per un adulto, chi iscrive un
 bambino sceglie fra **IO** col suo nome (**IO, PAOLO**: si iscrive anche lui, e nome, codice
@@ -158,7 +162,8 @@ sceglierne un altro. Poi **SUBITO PRIMA O DOPO** e **NEGLI STESSI GIORNI**,
 con le stesse regole della carta, e infine **GLI ALTRI CORSI PER LA SUA
 ETÀ**. Sotto l'orario di ogni corso proposto c'è il perché («Si sovrappone il
 lunedì e il mercoledì», «Finisce quando comincia Nicola, il lunedì», «Un'ora
-prima di Nicola, il mercoledì e il venerdì»). Finiti i suoi documenti, AVANTI porta di nuovo a LA
+prima di Nicola, il mercoledì e il venerdì»; «ogni volta» se sono tutti i
+giorni di Nicola). Finiti i suoi documenti, AVANTI porta di nuovo a LA
 FAMIGLIA (per aggiungere qualcun altro) e poi a QUANTO PAGHI, col conto di
 tutti.
 

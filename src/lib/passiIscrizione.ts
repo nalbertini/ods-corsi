@@ -885,11 +885,10 @@ export interface Vicinanza {
   minuti?: number
   /** I giorni di cui parla la nota: dove si sovrappone, dove l'attesa è la più corta, o quelli in comune. */
   giorni: number[]
-  /**
-   * La nota non ha bisogno di dire i giorni. Alla stessa ora: si sovrappone in tutti i giorni, suoi e della
-   * persona 0 (chi viene il venerdì da solo lo deve sapere); negli altri gruppi: sono tutti i suoi giorni.
-   */
+  /** `giorni` sono tutti i giorni del corso: negli stessi giorni la nota dice «gli stessi giorni». */
   tutti: boolean
+  /** `giorni` sono tutti i giorni della persona 0: la nota dice «ogni volta», l'elenco sarebbe solo più lungo. */
+  ogniVolta: boolean
 }
 
 type Attesa = { giorno: number; verso: 'prima' | 'dopo'; minuti: number }
@@ -906,8 +905,9 @@ export function vicinanza(corsoId: string, dellaPersona0: readonly string[], ora
   const insieme = [...giorniSuoi].filter((g) => giorniZero.has(g)).sort(perSettimana)
   if (!insieme.length) return undefined
   const tuttiSuoi = (giorni: number[]) => giorni.length === giorniSuoi.size
+  const ogniVolta = (giorni: number[]) => giorni.length === giorniZero.size
   const toccati = insieme.filter((g) => suoi.some((o) => o.giorno === g && sue.some((x) => siToccano(o, x))))
-  if (toccati.length) return { gruppo: 'stessaOra', giorni: toccati, tutti: tuttiSuoi(toccati) && toccati.length === giorniZero.size }
+  if (toccati.length) return { gruppo: 'stessaOra', giorni: toccati, tutti: tuttiSuoi(toccati), ogniVolta: ogniVolta(toccati) }
   // Qui nessuna lezione si tocca: ogni coppia dello stesso giorno è una prima dell'altra. Di ogni giorno, l'attesa più corta.
   const attese = insieme.map((g) => {
     const coppie = suoi.flatMap((o) =>
@@ -924,10 +924,10 @@ export function vicinanza(corsoId: string, dellaPersona0: readonly string[], ora
   if (corta.minuti <= MINUTI_VICINI) {
     // Solo i giorni con l'attesa più corta: «finisce quando cominci tu, il lunedì» è vero anche se il giovedì c'è da aspettare.
     const giorni = attese.filter((a) => a.verso === corta.verso && a.minuti === corta.minuti).map((a) => a.giorno)
-    return { gruppo: 'vicino', verso: corta.verso, minuti: corta.minuti, giorni, tutti: tuttiSuoi(giorni) }
+    return { gruppo: 'vicino', verso: corta.verso, minuti: corta.minuti, giorni, tutti: tuttiSuoi(giorni), ogniVolta: ogniVolta(giorni) }
   }
   const uguali = attese.every((a) => a.verso === attese[0].verso && a.minuti === attese[0].minuti)
-  return { gruppo: 'stessiGiorni', ...(uguali && { verso: attese[0].verso, minuti: attese[0].minuti }), giorni: insieme, tutti: tuttiSuoi(insieme) }
+  return { gruppo: 'stessiGiorni', ...(uguali && { verso: attese[0].verso, minuti: attese[0].minuti }), giorni: insieme, tutti: tuttiSuoi(insieme), ogniVolta: ogniVolta(insieme) }
 }
 
 const ORDINE_DEI_GRUPPI: Array<Vicinanza['gruppo']> = ['stessaOra', 'vicino', 'stessiGiorni']
@@ -970,20 +970,20 @@ const conMaiuscola = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 /** La nota sotto una riga della carta, a chi compila: «solo il lunedì», «finisce quando cominci tu, il lunedì», «un’ora prima di te, gli stessi giorni». */
 export function notaNellaCarta(v: Vicinanza): string | undefined {
-  const quali = giorniDetti(v.giorni)
-  if (v.gruppo === 'stessaOra') return v.tutti ? undefined : `solo ${quali}`
+  const quali = v.ogniVolta ? 'ogni volta' : giorniDetti(v.giorni)
+  if (v.gruppo === 'stessaOra') return v.ogniVolta ? undefined : `solo ${quali}`
   const attesa = attesaDetta(v.minuti ?? 0)
   if (v.gruppo === 'vicino') {
     if (v.verso === 'prima') return v.minuti ? `finisce ${attesa} prima di te, ${quali}` : `finisce quando cominci tu, ${quali}`
     return v.minuti ? `comincia ${attesa} dopo di te, ${quali}` : `comincia quando finisci tu, ${quali}`
   }
   const quando = v.minuti === undefined ? 'a un’altra ora' : `${attesa} ${v.verso} di te`
-  return `${quando}, ${v.tutti ? 'gli stessi giorni' : quali}`
+  return `${quando}, ${v.tutti && !v.ogniVolta ? 'gli stessi giorni' : quali}`
 }
 
-/** Il perché di un corso proposto al passo del corso, col nome della persona 0: «Finisce quando comincia Nicola, il lunedì». Dice sempre i giorni. */
+/** Il perché di un corso proposto al passo del corso, col nome della persona 0: «Finisce quando comincia Nicola, il lunedì», o «ogni volta». */
 export function percheNelCorso(v: Vicinanza, nome: string): string {
-  const quali = giorniDetti(v.giorni)
+  const quali = v.ogniVolta ? 'ogni volta' : giorniDetti(v.giorni)
   if (v.gruppo === 'stessaOra') return `Si sovrappone ${quali}`
   const attesa = attesaDetta(v.minuti ?? 0)
   if (v.gruppo === 'vicino') {

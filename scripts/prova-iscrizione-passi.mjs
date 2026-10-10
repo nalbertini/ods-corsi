@@ -2446,8 +2446,8 @@ console.log('\n42. CORSI VICINI')
   ok('stessi giorni ogni volta', ogniVolta('boxe-3'), [true, '31 minuti prima di te, ogni volta', '31 minuti prima di Paolo, ogni volta'])
   ok('stessa ora ogni volta, anche col giovedì in più: niente «solo»', ogniVolta('karate-3'), [true, undefined, 'Si sovrappone ogni volta'])
   ok('a filo dopo ogni volta', chiama(() => m.notaNellaCarta(m.vicinanza('aikido-3', NICOLA, [...orari, ora('aikido-3', 1, '20:30'), ora('aikido-3', 5, '20:30')]))), 'comincia quando finisci tu, ogni volta')
-  // La domenica vuole «la».
-  ok('la domenica', chiama(() => m.notaNellaCarta(m.vicinanza('x', ['y'], [ora('y', 0, '10:00'), ora('x', 0, '11:00')]))), 'comincia quando finisci tu, la domenica')
+  // La domenica vuole «la» (la persona 0 viene anche il sabato: se no sarebbe «ogni volta»).
+  ok('la domenica', chiama(() => m.notaNellaCarta(m.vicinanza('x', ['y'], [ora('y', 0, '10:00'), ora('y', 6, '10:00'), ora('x', 0, '11:00')]))), 'comincia quando finisci tu, la domenica')
 
   // --- le carte di LA FAMIGLIA: il canvas Carta ---
   const voce = (corso, corsoId, natiDal, natiAl, annuale) => ({ corso, corsoId, eta: '', orari: [], natiDal, natiAl, prezzi: [{ saldo: annuale, annuale, trimestre: 100 }] })
