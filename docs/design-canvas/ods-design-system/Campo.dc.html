@@ -34,6 +34,9 @@
         <sc-if value="{{haRiga}}" hint-placeholder-val="{{ false }}">
           <span style="font-size: 13px; font-weight: 400; line-height: 1.35; color: {{coloreRiga}}">{{riga}}</span>
         </sc-if>
+        <sc-if value="{{haAvviso}}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 13px; font-weight: 600; line-height: 1.35; color: {{c.gialloTesto}}">{{avviso}}</span>
+        </sc-if>
       </span>
     </div>
   </sc-if>
@@ -56,7 +59,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["testo","select","area","sola-lettura","scelta","spunta"],"default":"testo"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"etichetta":{"editor":"text","default":"NOME"},"valore":{"editor":"text","default":""},"segnaposto":{"editor":"text","default":""},"codice":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"notaTono":{"editor":"enum","options":["guaio","avviso"],"default":"guaio"},"acceso":{"editor":"boolean","default":false},"manca":{"editor":"boolean","default":false},"scelto":{"editor":"boolean","default":false},"una":{"editor":"boolean","default":false},"riga":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":90}}'>
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["testo","select","area","sola-lettura","scelta","spunta"],"default":"testo"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"etichetta":{"editor":"text","default":"NOME"},"valore":{"editor":"text","default":""},"segnaposto":{"editor":"text","default":""},"codice":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"notaTono":{"editor":"enum","options":["guaio","avviso"],"default":"guaio"},"acceso":{"editor":"boolean","default":false},"manca":{"editor":"boolean","default":false},"scelto":{"editor":"boolean","default":false},"una":{"editor":"boolean","default":false},"riga":{"editor":"text","default":""},"avviso":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":90}}'>
 // Riproduzione 1:1 dei campi, nei due contesti.
 // contesto "app" (il modulo di iscrizione: Campo, NotaCampo e SceltaCorsi di src/components/ds.tsx righe 122-200,
 //   usati da src/components/ModuloIscrizione.tsx; src/styles.css righe 575-665 e 1201-1205): .modulo-campo = colonna, gap 6px;
@@ -69,7 +72,8 @@
 // nota = NotaCampo (.modulo-nota, 14px, interlinea 1.35): guaio rosso-testo e il campo prende il bordo `rosso` (aria-invalid), avviso giallo-testo.
 // PROPOSTA (rifinitura iscrizione): con `una` la scelta e' un SEGMENTO PIENO, senza quadratino: la scelta prende il fondo `text` e il testo `bg`, le altre il bordo `riga-campo`; il quadratino con ✓ resta solo per le scelte multiple. I bordi dei campi e delle scelte usano `riga-campo` (3:1 sul fondo), non `line`.
 // scelta = .modulo-corso (52px, fondo `surface`, 15px 600) con la spunta .modulo-spunta (22px): ✓ per piu' d'una, ● con `una` (come paghi);
-//   scelto = bordo `text`, fondo `surface-2`; riga = eta' e orari sotto il nome (13px `dim`, `sec` sul scelto).
+//   scelto = bordo `text`, fondo `surface-2`; riga = eta' e orari sotto il nome (13px `dim`, `sec` sul scelto);
+//   avviso = sotto la riga, 13px 600 `giallo-testo` (.modulo-corso-avviso): un corso del genitore che non e' piu' alla stessa ora.
 // spunta = .modulo-privacy: la casella 22px (qui disegnata: la nativa dipende dal browser) e il testo 15px `sec`.
 // Per scelta e spunta il testo e' `valore`.
 // Il fuoco, il segnaposto del browser e il cursore non sono riprodotti (stati dinamici).
@@ -120,6 +124,7 @@ class Component extends DCLogic {
       bordoScelta: scelto ? c.text : c.lineCampo,
       segno: scelto ? (una ? '●' : '✓') : '',
       haRiga: riga !== '', riga, coloreRiga: scelto ? c.sec : c.dim,
+      haAvviso: (p.avviso ?? '') !== '', avviso: p.avviso ?? '',
       bordoSpunta: scelto ? c.text : c.lineCampo,
       sfondoSpunta: scelto ? c.text : 'transparent',
       segnoSpunta: scelto ? '✓' : '',
