@@ -1230,7 +1230,7 @@ function Flusso({
 
     if (tipo === 'pagamento') {
       const conto = P.contoDelModulo(tutte, corsi ?? [], listino, chiaveGiorno(new Date()))
-      const insieme = tutte.length > 1 || (ancheTu && !!suo)
+      const insieme = P.insieme(tutte)
       const avviso = P.avvisoRicevuta(tutte, conto?.totale)
       return (
         <>
@@ -1246,7 +1246,7 @@ function Flusso({
                     <Conto righe={conto.righe} totale={conto.totale} />
                     {conto.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">Senza prezzo nel listino: {conto.senzaPrezzo.join(', ')}. Lo dice la segreteria.</Dettaglio>}
                     <Dettaglio>
-                      Paga questo totale{conto.righe.some((x) => x.importo < 0) ? ': lo sconto è già dentro' : ''}. Se la segreteria trova una differenza, te lo dice lei. Bonifico a {PAGAMENTO.intestatario}:
+                      Paga questo totale{conto.conSconto ? ': lo sconto è già dentro' : ''}. Se la segreteria trova una differenza, te lo dice lei. Bonifico a {PAGAMENTO.intestatario}:
                     </Dettaglio>
                   </>
                 ) : (
@@ -1359,7 +1359,7 @@ function Flusso({
       tasto: { testo: x.manca ? 'VAI A' : 'MODIFICA', onFai: () => vaiA(i, x.passo, x.manca) },
     }))
     // La ricevuta è una per tutto il modulo (sta nella prima persona): in famiglia una riga sola, sotto le persone.
-    const rigaRicevuta = P.righeRiepilogo(tutte[0], corsi ?? []).filter((x) => x.cosa === 'ricevuta').map(vistaDi)
+    const rigaRicevuta = [vistaDi(P.rigaDellaRicevuta(tutte))]
     const righeVista: RigaRiepilogo[] = famiglia ? [...righePersone, ...rigaRicevuta] : [
       { stato: 'fatto', titolo: `${r.nome.trim()} ${r.cognome.trim()}`, dettaglio: r.natoIl ? `nato il ${r.natoIl.split('-').reverse().join('/')} · ${anniScritti(r.natoIl)}` : undefined, tasto: modifica('dati') },
       ...righe.filter((x) => !x.manca && !x.suo && x.cosa !== 'ricevuta').map(vistaDi),

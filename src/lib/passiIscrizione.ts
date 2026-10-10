@@ -742,12 +742,16 @@ export function righeRiepilogo(s: StatoPassi, corsi: CorsoRef[], oggi = new Date
   righe.push(...certificato(r.natoIl, r.corsi, s.file.certificato))
   if (s.chi === 'figlio' && s.ancheTu && s.suo)
     righe.push(...certificato(dataDaCf(r.genitoreCodiceFiscale ?? '', '', oggi) ?? '', s.suo.corsi, s.suo.certificato, true))
-  righe.push(
-    s.file.ricevuta
-      ? { etichetta: ETICHETTA_FILE.ricevuta, valore: s.file.ricevuta.name, cosa: 'ricevuta', passo: 'pagamento' }
-      : { etichetta: ETICHETTA_FILE.ricevuta, valore: seManca('ricevuta'), cosa: 'ricevuta', passo: 'pagamento', manca: true, carica: 'ricevuta' },
-  )
+  righe.push(rigaDellaRicevuta([s]))
   return righe
+}
+
+/** La riga della ricevuta nel riepilogo: una per tutto il modulo, chiunque l'abbia caricata; porta a QUANTO PAGHI. */
+export function rigaDellaRicevuta(persone: StatoPassi[]): RigaRiepilogo {
+  const ricevuta = ricevutaDelModulo(persone)
+  return ricevuta
+    ? { etichetta: ETICHETTA_FILE.ricevuta, valore: ricevuta.name, cosa: 'ricevuta', passo: 'pagamento' }
+    : { etichetta: ETICHETTA_FILE.ricevuta, valore: FILE.find((f) => f.tipo === 'ricevuta')?.seManca ?? '', cosa: 'ricevuta', passo: 'pagamento', manca: true, carica: 'ricevuta' }
 }
 
 // --- anche tu: il genitore che si iscrive col figlio -------------------------
@@ -1196,19 +1200,28 @@ async function mandaDavvero(d: DatiRichieste, daMandare: DaMandare[]): Promise<E
  * che si iscrive anche lui quello di `contoDelloStato`, da soli la stima della persona. Lo stesso totale del
  * riepilogo e dell'esito. `undefined` senza listino o senza un corso scelto.
  */
-export function contoDelModulo(persone: StatoPassi[], corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: RigaStima[]; totale: number; senzaPrezzo: string[]; famiglia: boolean } | undefined {
+export function contoDelModulo(persone: StatoPassi[], corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: RigaStima[]; totale: number; senzaPrezzo: string[]; conSconto: boolean } | undefined {
   if (!listino || !persone.length) return undefined
+  const conto = (c: { righe: RigaStima[]; totale: number; senzaPrezzo: string[] }) => ({ righe: c.righe, totale: c.totale, senzaPrezzo: c.senzaPrezzo, conSconto: c.righe.some((x) => x.importo < 0) })
   if (persone.length > 1) {
     const c = contoDellaFamiglia(persone, corsi, listino, giorno)
-    return c && { righe: c.righe, totale: c.totale, senzaPrezzo: c.senzaPrezzo, famiglia: true }
+    return c && conto(c)
   }
   const s = persone[0]
   const lui = persona(s, corsi)
   if (!lui.corsi.length) return undefined
-  const stato = contoDelloStato(s, corsi, listino, giorno)
-  if (stato) return { righe: stato.righe, totale: stato.totale, senzaPrezzo: stato.senzaPrezzo, famiglia: true }
-  const stima = stimaIscrizione(lui, [], giorno, listino)
-  return { righe: stima.righe, totale: stima.totale, senzaPrezzo: stima.senzaPrezzo, famiglia: false }
+  const stato = insieme(persone) ? contoDelloStato(s, corsi, listino, giorno) : undefined
+  return conto(stato ?? stimaIscrizione(lui, [], giorno, listino))
+}
+
+/**
+ * Il modulo è di più persone: una famiglia, o il bambino col genitore che ha scelto il suo corso. Decide il
+ * titolo del conto, la causale coi nomi e il «Totale famiglia»: tutti dalla stessa regola.
+ */
+export function insieme(persone: StatoPassi[]): boolean {
+  if (persone.length > 1) return true
+  const s = persone[0]
+  return !!s && s.chi === 'figlio' && s.ancheTu === true && !!s.suo?.corsi.length
 }
 
 /** Il bonifico SEPA tiene 140 caratteri di causale. */
@@ -1223,7 +1236,7 @@ export function causaleDelModulo(persone: StatoPassi[], corsi: CorsoRef[]): stri
   const chi = persone.flatMap((s) => {
     const r = s.risposte
     const lui = { nome: r.nome.trim(), cognome: r.cognome.trim() }
-    return s.chi === 'figlio' && s.ancheTu && s.suo ? [lui, { nome: (r.genitoreNome ?? '').trim(), cognome: (r.genitoreCognome ?? '').trim() }] : [lui]
+    return insieme([s]) ? [lui, { nome: (r.genitoreNome ?? '').trim(), cognome: (r.genitoreCognome ?? '').trim() }] : [lui]
   })
   if (chi.length === 1) {
     const r = persone[0].risposte

@@ -1986,15 +1986,15 @@ console.log('\n38. QUANTO PAGHI')
   const fam = chiama(() => m.contoDellaFamiglia(tre, corsi, listino, giorno))
   const cTre = conto(tre)
   ok('più persone: le righe del conto della famiglia', soloTestoEImporto(cTre?.righe), soloTestoEImporto(fam?.righe))
-  ok('più persone: il totale, i corsi senza prezzo, ed è una famiglia', [cTre?.totale, cTre?.senzaPrezzo, cTre?.famiglia], [fam?.totale, fam?.senzaPrezzo, true])
+  ok('più persone: il totale, i corsi senza prezzo, e se c’è lo sconto', [cTre?.totale, cTre?.senzaPrezzo, cTre?.conSconto], [fam?.totale, fam?.senzaPrezzo, fam?.righe.some((r) => r.importo < 0)])
   const stato = m.contoDelloStato(conAncheTu, corsi, listino, giorno)
   const cAnche = conto([conAncheTu])
   ok('anche tu: le righe di contoDelloStato', soloTestoEImporto(cAnche?.righe), soloTestoEImporto(stato.righe))
-  ok('anche tu: il totale di contoDelloStato, ed è una famiglia', [cAnche?.totale, cAnche?.senzaPrezzo, cAnche?.famiglia], [stato.totale, stato.senzaPrezzo, true])
+  ok('anche tu: il totale di contoDelloStato, e se c’è lo sconto', [cAnche?.totale, cAnche?.senzaPrezzo, cAnche?.conSconto], [stato.totale, stato.senzaPrezzo, stato.righe.some((r) => r.importo < 0)])
   const stima = m.stimaIscrizione({ chi: 'Luca', corsi: [corsi.find((c) => c.id === 'judo-adulti')], formula: 'annuale' }, [], giorno, listino)
   const cLuca = conto([luca])
   ok('una persona sola: le righe della sua stima', soloTestoEImporto(cLuca?.righe), soloTestoEImporto(stima.righe))
-  ok('una persona sola: il totale della stima, e non è una famiglia', [cLuca?.totale, cLuca?.senzaPrezzo, cLuca?.famiglia], [stima.totale, [], false])
+  ok('una persona sola: il totale della stima, senza sconto', [cLuca?.totale, cLuca?.senzaPrezzo, cLuca?.conSconto], [stima.totale, [], false])
   ok('un corso senza prezzo: lo dice', conto([adulto({ corsi: ['psico'] })])?.senzaPrezzo, ['Psicomotricità'])
   ok('senza listino: niente conto', [conto([luca], undefined), conto(tre, undefined)], [undefined, undefined])
   ok('senza nessun corso scelto: niente conto', [conto([adulto({ corsi: [] })]), conto([adulto({ corsi: [] }), adulto({ nome: 'Paola', corsi: [] })])], [undefined, undefined])
@@ -2075,6 +2075,28 @@ console.log('\n38. QUANTO PAGHI')
   ok('nessuna persona nuova, il totale cresce', avviso(per(62200, 3, [manuela, nicola, luca3]), 80200), `Hai caricato la ricevuta quando il totale era 622 €: ora è 802 €, cioè 180 € in più. ${PIU}`)
   ok('il totale scende', avviso(per(80200, 3, [manuela, nicola, luca3]), 62200), 'Hai caricato la ricevuta quando il totale era 802 €: ora è 622 €, cioè 180 € in meno. La differenza la sistema la segreteria.')
   ok('le cifre coi centesimi, come euroBreve', avviso(per(5000, 1, [luca]), 10050), `Hai caricato la ricevuta quando il totale era 50 €: ora è 100,50 €, cioè 50,50 € in più. ${PIU}`)
+}
+
+// ---------------------------------------------------------------------------
+console.log('\n39. QUANTO PAGHI: «più persone» è una regola sola, e la riga della ricevuta')
+{
+  const corsi = [{ id: 'judo-adulti', nome: 'Judo adulti' }, { id: 'judo-3', nome: 'Judo 3' }]
+  const conCorso = { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} }
+  ok('una persona sola: no', chiama(() => m.insieme([adulto()])), false)
+  ok('un figlio senza anche tu: no', chiama(() => m.insieme([figlio()])), false)
+  ok('anche tu col corso del genitore: sì', chiama(() => m.insieme([figlio({}, { ancheTu: true, suo: conCorso })])), true)
+  ok('anche tu senza il corso del genitore: non ancora', chiama(() => m.insieme([figlio({}, { ancheTu: true, suo: { ...conCorso, corsi: [] } })])), false)
+  ok('una famiglia: sì', chiama(() => m.insieme([adulto(), adulto({ nome: 'Paola' })])), true)
+  // Senza il corso del genitore, causale e conto dicono la stessa cosa: solo il bambino.
+  const senzaSuo = [figlio({}, { ancheTu: true, suo: { ...conCorso, corsi: [] } })]
+  ok('anche tu senza il suo corso: la causale è del solo bambino', chiama(() => m.causaleDelModulo(senzaSuo, corsi)), 'Iscrizione Matteo Rossi · Judo 3')
+
+  const ric = F('ricevuta.pdf')
+  const riga = (persone) => chiama(() => m.rigaDellaRicevuta(persone))
+  ok('la riga della ricevuta: caricata, porta a QUANTO PAGHI', [riga(m.conLaRicevuta([adulto(), adulto({ nome: 'Paola' })], ric, 1000))?.valore, riga([adulto()])?.passo], ['ricevuta.pdf', 'pagamento'])
+  ok('la riga della ricevuta: chiunque l’abbia, la trova', riga([adulto(), adulto({ nome: 'Paola' }, { file: { ricevuta: ric } })])?.manca, undefined)
+  ok('la riga della ricevuta: non caricata, CARICA', [riga([adulto()])?.manca, riga([adulto()])?.carica], [true, 'ricevuta'])
+  ok('il riepilogo di uno solo usa la stessa riga', m.righeRiepilogo(adulto(), corsi).find((x) => x.cosa === 'ricevuta'), riga([adulto()]))
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
