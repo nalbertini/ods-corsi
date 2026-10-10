@@ -92,6 +92,14 @@ export function creaRichiesteProva(): DatiRichieste {
         .sort((a, b) => a.nome.localeCompare(b.nome, 'it'))
     },
 
+    async orariAperti() {
+      // Come orari_aperti() in 48-orari-aperti.sql: corsi attivi, ricorrenze non finite.
+      const oggi = chiaveGiorno(new Date())
+      return archivio.dati.corsi
+        .filter((c) => c.attivo)
+        .flatMap((c) => c.ricorrenze.filter((x) => !x.al || x.al >= oggi).map((x) => ({ corsoId: c.id, giorno: x.giorno, ora: x.ora, durata: x.durata })))
+    },
+
     async invia(dati) {
       const guaio = controlla(dati)
       if (guaio) throw new Error(guaio)

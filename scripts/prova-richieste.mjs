@@ -63,6 +63,15 @@ const errore = async (f) => {
   }
 }
 
+// Una funzione che manca ancora si dice come un guaio della prova, senza fermare le altre.
+const provaA = async (f) => {
+  try {
+    return await f()
+  } catch (e) {
+    return `errore: ${e.message}`
+  }
+}
+
 const adulto = (cambi = {}) => ({
   nome: 'Luca', cognome: 'Rossi', natoIl: '1996-01-01', natoA: 'Torino', codiceFiscale: 'rsslcu96a01 l219k',
   indirizzo: 'Via Roma 1', cap: '10093', comune: 'Collegno', email: 'Luca@Esempio.it', telefono: '347 111 2233',
@@ -78,6 +87,14 @@ console.log('\n1. i corsi fra cui scegliere')
   const judo = (await s.corsi()).find((x) => x.id === 'judo-principianti')
   await s.archiviaCorso(judo.id, false)
   ok('un corso archiviato non si sceglie', (await r.corsiAperti()).some((x) => x.id === 'judo-principianti'), false)
+
+  // Gli orari dei corsi aperti, per «Ti iscrivi anche tu?»: come `orari_aperti()` di 48-orari-aperti.sql.
+  const orari = await provaA(() => r.orariAperti())
+  const judo3 = Array.isArray(orari) ? orari.filter((o) => o.corsoId === 'judo-3') : orari
+  ok('gli orari: Judo 3 il lunedì, mercoledì e venerdì alle 18, un’ora', judo3, [1, 3, 5].map((giorno) => ({ corsoId: 'judo-3', giorno, ora: '18:00', durata: 60 })))
+  ok('gli orari: solo corso, giorno, ora e durata', Array.isArray(orari) ? [...new Set(orari.map((o) => Object.keys(o).sort().join()))] : orari, ['corsoId,durata,giorno,ora'])
+  ok('gli orari: un corso archiviato non c’è', Array.isArray(orari) ? orari.some((o) => o.corsoId === 'judo-principianti') : orari, false)
+  ok('gli orari: ci sono tutti i corsi aperti che hanno un orario', Array.isArray(orari) ? [...new Set(orari.map((o) => o.corsoId))].sort() : orari, (await r.corsiAperti()).map((c) => c.id).sort())
 }
 
 console.log('\n2. cosa passa e cosa no: gli stessi messaggi del database')
@@ -384,6 +401,16 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     ok('i corsi: senza permesso lo dice per la segreteria', await errore(() => finto({ rpc: { corsi_aperti: ERR('42501') } }).v.corsiAperti()), PERMESSO)
     ok('i corsi: funzione assente, dice cosa lanciare', await errore(() => finto({ rpc: { corsi_aperti: ERR('PGRST202') } }).v.corsiAperti()), NON_ATTIVO)
     ok('i corsi: errore senza testo, il server non risponde', await errore(() => finto({ rpc: { corsi_aperti: { data: null, error: {} } } }).v.corsiAperti()), 'Il server non risponde')
+  }
+
+  // --- gli orari: per una proposta in più, mai un guaio che ferma l'iscrizione
+  {
+    const { v, reg } = finto({ rpc: { orari_aperti: { data: [{ corso_id: 'judo-3', giorno: 1, ora: '18:00:00', durata_min: 60 }, { corso_id: 'judo-agonisti', giorno: 4, ora: '18:30:00', durata_min: 90 }], error: null } } })
+    ok('gli orari: li chiede a orari_aperti, senza argomenti', [await provaA(() => v.orariAperti()), reg[0]], [[{ corsoId: 'judo-3', giorno: 1, ora: '18:00', durata: 60 }, { corsoId: 'judo-agonisti', giorno: 4, ora: '18:30', durata: 90 }], ['rpc', 'orari_aperti', undefined]])
+    ok('gli orari: funzione assente (48-orari-aperti.sql non lanciato), nessun orario', await provaA(() => finto({ rpc: { orari_aperti: ERR('PGRST202') } }).v.orariAperti()), [])
+    ok('gli orari: senza permesso, nessun orario', await provaA(() => finto({ rpc: { orari_aperti: ERR('42501') } }).v.orariAperti()), [])
+    ok('gli orari: errore senza testo, nessun orario', await provaA(() => finto({ rpc: { orari_aperti: { data: null, error: {} } } }).v.orariAperti()), [])
+    ok('gli orari: senza rete, nessun orario', await provaA(() => finto({ rpc: { orari_aperti: { then: (_, male) => male(new TypeError('Failed to fetch')) } } }).v.orariAperti()), [])
   }
 
   // --- invia

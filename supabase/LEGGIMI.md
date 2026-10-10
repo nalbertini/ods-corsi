@@ -75,6 +75,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 45. `45-certificati-online.sql` — il certificato medico resta nell'app: un file per persona (foto o PDF, 10 MB) in un contenitore privato che apre solo la segreteria, caricato insieme alla data in un passaggio solo, cancellato 30 giorni dopo la scadenza o quando la persona è disattivata; accogliendo una richiesta il certificato passa alla scheda, e unire due schede non si ferma più sul file
 46. `46-istruttore-collega.sql` — il collega che insegnava con te: chi fa l'appello vede gli altri istruttori previsti e ne segna uno presente (confermato, «segnata da …»), e lo toglie finché la segreteria non l'ha guardato; la segreteria segna «c'era» un previsto anche su una lezione già coperta
 47. `47-vestiario.sql` — gli ordini di vestiario, judogi e costumini: il catalogo (capo, taglie, prezzo, nota) in `impostazioni.vestiario` e la data di chiusura nella raccolta, li salva la segreteria; chi non ha un accesso legge il catalogo da `vestiario()` e manda un ordine da `invia_ordine_vestiario()` fino alla data compresa, coi prezzi e il totale messi dal database; gli ordini li vede e li cambia solo la segreteria, che corregge le righe e scrive dal banco anche a raccolta chiusa
+48. `48-orari-aperti.sql` — gli orari dei corsi aperti (giorno, ora e durata delle ricorrenze non finite) per chi non ha un accesso, da `orari_aperti()`: il modulo a passi ci propone al genitore i corsi alla stessa ora del figlio; le tabelle restano chiuse
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -269,6 +270,12 @@ che non chiede di rilanciare `06-iscrizioni.sql`: se lo si rilancia dopo,
 rimette lui il permesso ad `anon` su `vestiario()` e `invia_ordine_vestiario()`.
 Finché non c'è, la pagina pubblica dice «ordini non ancora aperti» e VESTIARIO
 dice che manca l'aggiornamento.
+
+Per i corsi «alla stessa ora» del genitore nell'iscrizione a passi basta
+`48-orari-aperti.sql` (dopo `06-iscrizioni.sql`), che non chiede di rilanciare
+`06-iscrizioni.sql`: se lo si rilancia dopo, va rilanciato anche questo, che
+rimette ad `anon` il permesso su `orari_aperti()`. Finché non c'è, il modulo
+non propone corsi alla stessa ora e fa scegliere fra tutti i corsi per l'età.
 
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
@@ -496,8 +503,8 @@ Cosa fa `06-iscrizioni.sql`:
 - la tabella `richieste_iscrizione`, che legge e cambia solo la segreteria;
 - il contenitore **`iscrizioni`** nello Storage, privato: niente link
   pubblici, la segreteria apre i file con un link che dura dieci minuti;
-- chi non ha un accesso può solo chiamare `corsi_aperti()` e
-  `invia_iscrizione()`, e caricare al massimo cinque file (modulo,
+- chi non ha un accesso può solo chiamare `corsi_aperti()`,
+  `orari_aperti()` (con `48-orari-aperti.sql`) e `invia_iscrizione()`, e caricare al massimo cinque file (modulo,
   documento fronte e retro, certificato, ricevuta: foto o PDF, fino a 10 MB), nella cartella della richiesta appena mandata,
   entro un'ora. Non li può rileggere né sostituire;
 - `richieste_con_documento()` dice alla segreteria quali richieste hanno

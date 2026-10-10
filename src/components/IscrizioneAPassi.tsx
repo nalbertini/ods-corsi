@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { chiama } from '../lib/sito'
-import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
+import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, OrarioAperto, TipoFile } from '../lib/richieste'
 import { anniScritti, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
@@ -38,6 +38,7 @@ export function IscrizioneAPassi() {
   const [d, setD] = useState<DatiRichieste | null>(null)
   const [corsi, setCorsi] = useState<CorsoAperto[] | null>(null)
   const [guaioCorsi, setGuaioCorsi] = useState<string | null>(null)
+  const [orari, setOrari] = useState<OrarioAperto[]>([])
   const [luoghi, setLuoghi] = useState<Luoghi | null>(null)
   const listino = useListino()?.listino
   // Da dove si parte: la scelta (null), o un flusso (`n` lo rimette a zero).
@@ -49,6 +50,8 @@ export function IscrizioneAPassi() {
       .then((x) => {
         if (!vivo) return
         setD(x)
+        // Gli orari non fermano niente: senza, nessuna «stessa ora» (orariAperti non rifiuta mai).
+        void x.orariAperti().then((o) => vivo && setOrari(o))
         return x.corsiAperti().then((c) => vivo && setCorsi(c))
       })
       .catch((e) => {
@@ -74,6 +77,7 @@ export function IscrizioneAPassi() {
           d={d}
           corsi={corsi}
           guaioCorsi={guaioCorsi}
+          orari={orari}
           luoghi={luoghi}
           listino={listino}
           onEsci={() => setAvvio(null)}
@@ -174,14 +178,17 @@ function ElencoCorsi({
   etaDi,
   nota,
   caricando,
+  stessaOraDi,
 }: {
   id: string
-  perEta: { adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[] }
+  /** `stessaOra`: i corsi del genitore mentre il figlio è in palestra, in un gruppo loro in cima. */
+  perEta: { stessaOra?: CorsoPerEta[]; adatti: CorsoPerEta[]; senzaAnni: CorsoPerEta[]; altri: CorsoPerEta[] }
   scelti: readonly string[]
   onScegli: (id: string) => void
   etaDi: 'tua' | 'sua'
   nota?: Nota
   caricando?: string
+  stessaOraDi?: string
 }) {
   const [aperti, setAperti] = useState(false)
   const fuoriEta = perEta.altri.filter((c) => scelti.includes(c.id)).map((c) => c.nome)
@@ -193,7 +200,13 @@ function ElencoCorsi({
     <div id={id} tabIndex={-1} className="modulo-campo modulo-largo modulo-corsi-tutti">
       <NotaCampo id={`${id}-nota`} nota={nota} />
       {caricando && <Dettaglio tono="guaio">{caricando}</Dettaglio>}
-      {perEta.adatti.length > 0 && <span className="modulo-etichetta">PER LA {etaDi.toUpperCase()} ETÀ</span>}
+      {!!perEta.stessaOra?.length && (
+        <>
+          <span className="modulo-etichetta">ALLA STESSA ORA DI {(stessaOraDi ?? '').toUpperCase()}</span>
+          <SceltaCorsi id={`${id}-stessa-ora`} etichetta={`Corsi alla stessa ora di ${stessaOraDi ?? ''}`} voci={perEta.stessaOra.map(tasto)} scelti={scelti} onScegli={onScegli} descritto={descritto} />
+        </>
+      )}
+      {perEta.adatti.length > 0 && <span className="modulo-etichetta">{`${perEta.stessaOra?.length ? 'GLI ALTRI CORSI ' : ''}PER LA ${etaDi.toUpperCase()} ETÀ`}</span>}
       <SceltaCorsi id={`${id}-adatti`} etichetta="Corsi" voci={perEta.adatti.map(tasto)} scelti={scelti} onScegli={onScegli} descritto={descritto} />
       {perEta.senzaAnni.length > 0 && (
         <>
@@ -244,15 +257,13 @@ function Conto({ righe, totale }: { righe: ReadonlyArray<{ testo: string; import
   )
 }
 
-type Suo = NonNullable<P.StatoPassi['suo']>
-const SUO_VUOTO: Suo = { corsi: [], formula: 'trimestre', scelte: {} }
-
 function Flusso({
   chi,
   iniziale,
   d,
   corsi,
   guaioCorsi,
+  orari,
   luoghi,
   listino,
   onEsci,
@@ -263,6 +274,7 @@ function Flusso({
   d: DatiRichieste | null
   corsi: CorsoAperto[] | null
   guaioCorsi: string | null
+  orari: OrarioAperto[]
   luoghi: Luoghi | null
   listino?: Listino
   onEsci: () => void
@@ -326,7 +338,7 @@ function Flusso({
   }
   const setR = (c: Partial<DatiRichiesta>) => setGrezzo((p) => ({ ...p, risposte: { ...p.risposte, ...c } }))
   const metti = (k: keyof DatiRichiesta) => (e: { target: { value: string } }) => setR({ [k]: e.target.value })
-  const setSuo = (c: Partial<Suo>) => setGrezzo((p) => ({ ...p, suo: { ...(p.suo ?? SUO_VUOTO), ...c } }))
+  const setSuo = (c: Partial<P.Suo>) => setGrezzo((p) => ({ ...p, suo: { ...(p.suo ?? P.SUO_VUOTO), ...c } }))
   const setFile = (tipoFile: TipoFile, f: File | undefined) => setGrezzo((p) => ({ ...p, file: { ...p.file, [tipoFile]: f } }))
   const scegliCorso = (id: string) => setR({ corsi: r.corsi.includes(id) ? r.corsi.filter((c) => c !== id) : [...r.corsi, id] })
 
@@ -337,7 +349,7 @@ function Flusso({
       .join(', ')
   const refDei = (ids: readonly string[]) => (corsi ?? []).filter((c) => ids.includes(c.id))
   const perEta = (natoIl: string) => corsiPerEta(corsi ?? [], listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
-  const paralleli = listino ? P.corsiParalleli(corsi ?? [], listino.corsi, natoIlGenitore, r.corsi) : []
+  const paralleli = listino ? P.corsiParalleli(corsi ?? [], listino.corsi, natoIlGenitore, r.corsi, orari) : []
   const suo = v.suo
   const daChiedere = P.fileDaChiedere(r.natoIl, refDei(r.corsi).map((c) => c.nome))
   const daChiedereSuo = P.fileDaChiedere(natoIlGenitore, refDei(suo?.corsi ?? []).map((c) => c.nome))
@@ -759,8 +771,11 @@ function Flusso({
       const ep = perEta(r.natoIl)
       const fraseNascosti = figlio ? P.fraseCorsiNascosti(ep.nascosti, r.nome) : undefined
       const nome = r.nome.trim() || 'Chi si iscrive'
-      // Alla famiglia si propone un corso parallelo per il genitore, con lo stesso orario.
-      const conto = listino && paralleli[0] && r.corsi.length ? P.contoDelloStato(v, corsi ?? [], listino, chiaveGiorno(new Date()), paralleli[0]) : undefined
+      // Il conto della famiglia, appena il genitore ha scelto il suo corso.
+      const conto = listino && ancheTu && suo?.corsi.length && r.corsi.length ? P.contoDelloStato(v, corsi ?? [], listino, chiaveGiorno(new Date())) : undefined
+      const frase = P.fraseAncheTu(nome, nomiDei(r.corsi), paralleli)
+      const suoi = P.corsiPerEtaConStessaOra(corsi ?? [], listino, natoIlGenitore, r.corsi, orari)
+      const nonPiu = P.nonPiuAllaStessaOra(suo, paralleli)
       return (
         <>
           <div className="pad modulo-griglia passo-prima">
@@ -780,15 +795,8 @@ function Flusso({
               <Titoletto>TI ISCRIVI ANCHE TU?</Titoletto>
               <div className="pad stack">
                 <Riquadro tono="prova">
-                  <span className="passo-titolo">{paralleli[0] ? `Mentre ${nome} fa ${nomiDei(r.corsi)}, tu puoi fare ${paralleli[0].nome}` : 'Ti iscrivi anche tu?'}</span>
-                  <Dettaglio>
-                    {paralleli[0]
-                      ? `${paralleli[0].nome} è per la tua età. Stessa ora di ${nome}.`
-                      : 'Se vuoi, scegli un corso anche per te: nello stesso modulo, con lo sconto famiglia sull’annuale.'}
-                  </Dettaglio>
-                  {conto && <Conto righe={conto.righe} totale={conto.totale} />}
-                  {/* Sempre: chi sceglie il trimestre più sotto non deve aspettarsi lo sconto che vede qui. */}
-                  {conto && <Dettaglio>Lo sconto famiglia vale sull’annuale: con il trimestre non c’è.</Dettaglio>}
+                  <span className="passo-titolo">{frase.titolo}</span>
+                  <Dettaglio>{frase.dettaglio}</Dettaglio>
                   <SceltaCorsi
                     id="n-ancheTu"
                     etichetta="Ti iscrivi anche tu"
@@ -801,10 +809,28 @@ function Flusso({
                     onScegli={(x) => {
                       if (x === 'si') {
                         setCome('qui')
-                        setGrezzo((p) => ({ ...p, ancheTu: true, suo: p.suo ?? SUO_VUOTO, file: { ...p.file, modulo: undefined } }))
+                        setGrezzo((p) => ({ ...p, ancheTu: true, suo: P.suoDopoIscrivoAncheMe(p.suo, paralleli), file: { ...p.file, modulo: undefined } }))
                       } else setGrezzo((p) => ({ ...p, ancheTu: false, suo: undefined }))
                     }}
                   />
+                  {ancheTu && (
+                    <ElencoCorsi
+                      id="n-suoCorsi"
+                      perEta={suoi}
+                      scelti={suo?.corsi ?? []}
+                      onScegli={(id) => setGrezzo((p) => ({ ...p, suo: P.scegliSuoCorso(p.suo, id, paralleli) }))}
+                      etaDi="tua"
+                      stessaOraDi={nome}
+                    />
+                  )}
+                  {nonPiu.length > 0 && (
+                    <Dettaglio tono="avviso">
+                      {nomiDei(nonPiu)} {nonPiu.length > 1 ? 'non sono' : 'non è'} più alla stessa ora di {nome}.
+                    </Dettaglio>
+                  )}
+                  {conto && <Conto righe={conto.righe} totale={conto.totale} />}
+                  {/* Sempre: chi sceglie il trimestre non deve aspettarsi lo sconto che vede qui. */}
+                  {conto && <Dettaglio>Lo sconto famiglia vale sull’annuale: con il trimestre non c’è.</Dettaglio>}
                 </Riquadro>
               </div>
             </>
@@ -1016,8 +1042,7 @@ function Flusso({
     }
 
     if (tipo === 'anche') {
-      const s = suo ?? SUO_VUOTO
-      const ep = P.corsiPerEtaConStessaOra(corsi ?? [], listino, natoIlGenitore, r.corsi, nomeBambino)
+      const s = suo ?? P.SUO_VUOTO
       const nomeLui = `${(r.genitoreNome ?? '').trim()} ${(r.genitoreCognome ?? '').trim()}`.trim()
       return (
         <>
@@ -1026,19 +1051,13 @@ function Flusso({
               <Dettaglio tono="testo">I tuoi dati li hai già scritti: ne mancano pochi. La carta d’identità e la firma valgono anche per te.</Dettaglio>
             </span>
             <div className="modulo-largo">
-              <Riepilogo righe={[{ stato: 'fatto', titolo: nomeLui || 'Il genitore', dettaglio: 'nome, cognome, codice fiscale, residenza e contatti, scritti nel passo ' + passoDi('dati') + ' e nel passo ' + passoDi('genitore') }]} />
+              <Riepilogo
+                righe={[
+                  { stato: 'fatto', titolo: nomeLui || 'Il genitore', dettaglio: 'nome, cognome, codice fiscale, residenza e contatti, scritti nel passo ' + passoDi('dati') + ' e nel passo ' + passoDi('genitore') },
+                  { stato: 'fatto', titolo: `Il tuo corso: ${nomiDei(s.corsi)}`, dettaglio: `scelto al passo ${passoDi('corso')}`, tasto: { testo: 'MODIFICA', onFai: () => vai(passoDi('corso')) } },
+                ]}
+              />
             </div>
-            <div className="modulo-campo modulo-largo">
-              <span className="modulo-etichetta">IL TUO CORSO</span>
-              <Dettaglio>Corsi per la tua età.{paralleli.length ? ` Quello con la stessa ora di ${nomeBambino} è in cima.` : ''}</Dettaglio>
-            </div>
-            <ElencoCorsi
-              id="n-suoCorsi"
-              perEta={ep}
-              scelti={s.corsi}
-              onScegli={(id) => setSuo({ corsi: s.corsi.includes(id) ? s.corsi.filter((c) => c !== id) : [...s.corsi, id] })}
-              etaDi="tua"
-            />
             <div className="modulo-campo modulo-largo">
               <span className="modulo-etichetta">COME PAGHI</span>
               <SceltaCorsi
