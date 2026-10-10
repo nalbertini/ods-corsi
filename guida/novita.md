@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.53.0 — 10 ottobre 2026
+
+### Novità
+
+- Nell'iscrizione il comune si propone dal CAP, per la provincia di Torino
+
 ## 0.52.3 — 10 ottobre 2026
 
 ### Modificato
