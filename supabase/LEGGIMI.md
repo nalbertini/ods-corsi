@@ -292,6 +292,7 @@ rilanciarlo: se lo si rilancia dopo, `06` rimette le versioni vecchie di
 `puo_caricare()` e `limita_file_iscrizione()` e va rilanciato anche il `50`.
 Finché non c'è, il quinto file rimandato dopo una risposta persa dice «scrivi
 alla segreteria», anche se è arrivato.
+
 Per tipi, foto e tabelle delle taglie del vestiario basta `51-vestiario-foto.sql`
 (dopo `47-vestiario.sql`), che non chiede di rilanciare `06-iscrizioni.sql`:
 se si rilancia il `47`, riporta `salva_vestiario()` e `vestiario()` a
