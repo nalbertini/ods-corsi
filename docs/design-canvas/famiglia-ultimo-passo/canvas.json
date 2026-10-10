@@ -1,0 +1,12 @@
+{
+ "pages": [{ "id": "page-1", "name": "La famiglia all'ultimo passo" }],
+ "artboards": [
+  { "file": "Oggi.dc.html", "title": "Oggi · da solo, AGGIUNGI UN FAMILIARE in ogni passo", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Passo.dc.html", "title": "Proposta · da solo, nei passi niente famiglia", "x": 510, "y": 300, "page": "page-1" },
+  { "file": "Ultimo.dc.html", "title": "Proposta · all'ultimo passo, prima di mandare", "x": 1020, "y": 300, "page": "page-1" },
+  { "file": "FamigliaPasso.dc.html", "title": "Proposta · in famiglia, le pastiglie restano", "x": 1530, "y": 300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1920, "text": "AGGIUNGI UN FAMILIARE solo all'ultimo passo" }
+ ]
+}

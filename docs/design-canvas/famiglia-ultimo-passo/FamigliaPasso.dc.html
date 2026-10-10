@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Con piu persone le pastiglie restano in ogni passo, per passare dall una all altra; AGGIUNGI UN FAMILIARE solo all ultimo passo. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1000px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<dc-import name="RigaChiama" hint-size="100%,62px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1"><dc-import name="Avanzamento" numero="2" totale="5" titolo="SCEGLI IL CORSO" hint-size="100%,120px"></dc-import><dc-import name="Titoletto" label="LA FAMIGLIA" conto="2" hint-size="100%,50px"></dc-import><div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 4px"><dc-import name="Chip" label="PAOLO" acceso="{{ true }}" hint-size="130px,44px"></dc-import><dc-import name="Chip" label="MANUELA" numero="3" tonoNumero="giallo" hint-size="130px,44px"></dc-import></div><div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 20px 4px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88">PER LA TUA ETÀ</span><dc-import name="Campo" tipo="scelta" etichetta="" valore="Judo adulti" riga="nati nel 2012 o prima · lunedì, mercoledì e venerdì 19.00-20.30" scelto="{{ true }}" hint-size="100%,72px"></dc-import><dc-import name="Campo" tipo="scelta" etichetta="" valore="Aikido 3" riga="nati 2015-2014-2013 e prima · lunedì e giovedì 18.00-19.00" hint-size="100%,72px"></dc-import></div><dc-import name="Titoletto" label="QUANDO PAGHI" hint-size="100%,50px"></dc-import><div style="display: flex; gap: 8px; padding: 0 20px 4px"><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Annuale" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div><div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Trimestre" hint-size="50%,52px"></dc-import></div></div></main>
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 20px; background: #1c1c1c; border-top: 2px solid #333333"><span style="font-size: 14px; line-height: 1.35; color: #c9c9c4">Quota 50 € + Judo adulti annuale 360 €</span><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 28px; font-weight: 700; color: #f2f2f0; flex-shrink: 0">410 €</span></div><dc-import name="BarraPasso" nota="Tutto a posto in questo passo." avanti="AVANTI" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>
