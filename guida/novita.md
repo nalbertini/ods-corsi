@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.56.0 — 10 ottobre 2026
+
+### Novità
+
+- Nel modulo di iscrizione, LA FAMIGLIA propone chi iscrivere insieme, alla stessa ora, con lo sconto famiglia
+
 ## 0.55.0 — 10 ottobre 2026
 
 ### Novità
