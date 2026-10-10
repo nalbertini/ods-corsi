@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.52.2 — 10 ottobre 2026
+
+### Risolto
+
+- Nell'iscrizione di famiglia il secondo adulto leggeva «I TUOI DATI»
+
 ## 0.52.1 — 10 ottobre 2026
 
 ### Modificato
