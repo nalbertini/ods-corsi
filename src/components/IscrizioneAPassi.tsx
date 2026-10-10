@@ -390,6 +390,8 @@ function Flusso({
   const nomiPassi = P.passiDi(v.chi, ancheTu)
   const tipo = tipi[passo - 1] ?? 'dati'
   const ultimo = passo === tipi.length
+  // Da soli la famiglia sta solo all'ultimo passo; in famiglia le pastiglie in ogni passo.
+  const vistaFamiglia = P.famigliaNelPasso({ ultimo, quante: persone.length, ancheTu })
   const passoDi = (t: P.TipoPasso) => tipi.indexOf(t) + 1
 
   const errori = problemi(r)
@@ -1318,27 +1320,37 @@ function Flusso({
           CHIAMA
         </Tasto>
       </div>
-      {!ultimo && !(ancheTu && !famiglia) && (
+      {vistaFamiglia.pastiglie && (
         <>
-          <Titoletto conto={famiglia ? persone.length : undefined}>LA FAMIGLIA</Titoletto>
+          <Titoletto conto={persone.length}>LA FAMIGLIA</Titoletto>
           <div className="pad stack passo-famiglia">
-            {famiglia && (
-              <div className="famiglia-chip">
-                {tutte.map((p, i) => {
-                  const nome = P.nomeDellaPersona(p, i).toUpperCase()
-                  const mancano = i === attivo ? 0 : P.quantoManca(p)
-                  return (
-                    <Chip key={i} acceso={i === attivo} numero={mancano} etichetta={P.etichettaPastiglia(nome, mancano)} onClick={() => i !== attivo && vaiA(i, passi[i])}>
-                      {nome}
-                    </Chip>
-                  )
-                })}
-              </div>
-            )}
-            {P.puoiAggiungere(persone.length) ? (
-              <button type="button" className="btn btn-dashed passo-btn" onClick={() => setFoglio(true)}>
-                + AGGIUNGI UN FAMILIARE
-              </button>
+            <div className="famiglia-chip">
+              {tutte.map((p, i) => {
+                const nome = P.nomeDellaPersona(p, i).toUpperCase()
+                const mancano = i === attivo ? 0 : P.quantoManca(p)
+                return (
+                  <Chip key={i} acceso={i === attivo} numero={mancano} etichetta={P.etichettaPastiglia(nome, mancano)} onClick={() => i !== attivo && vaiA(i, passi[i])}>
+                    {nome}
+                  </Chip>
+                )
+              })}
+            </div>
+          </div>
+        </>
+      )}
+      {corpo()}
+      {(vistaFamiglia.aggiungi || vistaFamiglia.massimo) && (
+        <>
+          <Titoletto>LA FAMIGLIA</Titoletto>
+          <div className="pad stack passo-famiglia">
+            {vistaFamiglia.aggiungi ? (
+              <>
+                <span className="passo-titolo">Iscrivi anche qualcun altro della famiglia?</span>
+                <Dettaglio>Indirizzo e contatti li scrivi una volta sola. Ognuno sceglie i suoi corsi, anche a orari diversi.</Dettaglio>
+                <button type="button" className="btn btn-dashed passo-btn" onClick={() => setFoglio(true)}>
+                  + AGGIUNGI UN FAMILIARE
+                </button>
+              </>
             ) : (
               <Riquadro tono="prova">
                 <span className="modulo-etichetta">{P.frasiDelMassimo.etichetta}</span>
@@ -1351,11 +1363,9 @@ function Flusso({
                 </Tasti>
               </Riquadro>
             )}
-            {P.puoiAggiungere(persone.length) && <Dettaglio>Indirizzo e contatti li scrivi una volta sola. Ognuno sceglie i suoi corsi, anche a orari diversi.</Dettaglio>}
           </div>
         </>
       )}
-      {corpo()}
       {foglio && <FoglioFamiliare primo={P.nomeDellaPersona(tutte[0], 0)} firmano={P.chiPuoFirmare(tutte)} onAggiungi={aggiungi} onChiudi={() => setFoglio(false)} />}
       <BarraPasso
         // Un passo nuovo riparte con l'elenco chiuso.
