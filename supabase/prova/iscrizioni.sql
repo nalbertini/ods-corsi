@@ -180,6 +180,15 @@ select atteso('documento, retro, certificato e ricevuta entrano',
   tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%1$s/documento.pdf'), ('iscrizioni', '%1$s/documento-retro.png'), ('iscrizioni', '%1$s/certificato.pdf'), ('iscrizioni', '%1$s/ricevuta.jpg')$$, (select id from la_richiesta))), 'FATTO (4 righe)');
 select atteso('il sesto file no',
   tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/ricevuta.pdf')$$, (select id from la_richiesta))), 'NEGATO: …');
+-- Il quinto file arrivato con la risposta persa: chi riprova lo rimanda.
+-- Deve sbattere sul doppione, che l'app legge «è arrivato», non sul limite.
+select atteso('il quinto file rimandato è un doppione, non uno di troppo',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/ricevuta.jpg')$$, (select id from la_richiesta))), 'NEGATO: duplicate key…');
+-- Storage chiede prima alla policy: deve lasciarlo passare fino al doppione.
+select atteso('la policy lascia rimandare un file che c''è già',
+  (select puo_caricare(id || '/ricevuta.jpg')::text from la_richiesta), 'true');
+select atteso('ma non un sesto file',
+  (select puo_caricare(id || '/ricevuta.pdf')::text from la_richiesta), 'false');
 select atteso('i file non si rileggono', (select count(*)::text from storage.objects), '0');
 select atteso('né si cancellano', tenta($$delete from storage.objects$$), 'a vuoto (0 righe)');
 reset role;
@@ -201,6 +210,11 @@ reset role;
 select atteso('il sesto file non entra nemmeno dalla porta di Storage',
   tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/ricevuta.pdf')$$, (select id from la_richiesta))),
   'NEGATO: Questa richiesta ha già tutti i suoi file…');
+select atteso('il quinto file rimandato è un doppione anche dalla porta di Storage',
+  tenta(format($$insert into storage.objects (bucket_id, name) values ('iscrizioni', '%s/ricevuta.jpg')$$, (select id from la_richiesta))),
+  'NEGATO: duplicate key…');
+select atteso('e i file restano cinque',
+  (select count(*)::text from storage.objects where name like (select id from la_richiesta) || '/%'), '5');
 insert into storage.buckets (id, name) values ('spostato', 'spostato') on conflict do nothing;
 insert into storage.objects (bucket_id, name) values ('spostato', 'x/ricevuta.pdf');
 select atteso('né spostandocene uno da un altro contenitore',
