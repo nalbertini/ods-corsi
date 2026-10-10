@@ -33,6 +33,7 @@ const SEZIONI = [
   { id: 'certificato-piccoli', nome: 'Certificato sotto i 6 anni', cartella: 'certificato-piccoli' },
   { id: 'istruttore-collega', nome: 'Istruttore che insegna con te', cartella: 'istruttore-collega' },
   { id: 'vestiario', nome: 'Ordini vestiario · proposta', cartella: 'vestiario' },
+  { id: 'anche-tu', nome: 'Anche tu · stessa ora', cartella: 'anche-tu-stessa-ora' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')
