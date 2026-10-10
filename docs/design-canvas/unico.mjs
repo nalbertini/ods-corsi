@@ -38,6 +38,7 @@ const SEZIONI = [
   { id: 'famiglia-ultimo', nome: 'La famiglia all\'ultimo passo', cartella: 'famiglia-ultimo-passo' },
   { id: 'comune-dal-cap', nome: 'Il comune dal CAP', cartella: 'comune-dal-cap' },
   { id: 'quanto-paghi', nome: 'Quanto paghi e le carte col nome', cartella: 'quanto-paghi' },
+  { id: 'totale-barra', nome: 'Il totale del modulo', cartella: 'totale-barra' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')
