@@ -696,6 +696,8 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   const perEta = m.corsiPerEta(corsi, listino.corsi, GENITORE, listino.senzaPrezzoVaBene)
   const conOra = (figlio, o = orari, c = corsi) => m.corsiPerEtaConStessaOra(c, listino, GENITORE, figlio, o)
   const ep = conOra(['judo-3'])
+  // Senza listino non si sa l'età dei corsi: proporre «stessa ora» metterebbe in cima anche quelli dei piccoli.
+  ok('senza listino nessun corso alla stessa ora', m.corsiPerEtaConStessaOra(corsi, undefined, GENITORE, ['judo-3'], orari).stessaOra, [])
   const riga = (id) => ep.stessaOra.find((c) => c.id === id)?.riga
   const rigaListino = (id) => [...perEta.adatti, ...perEta.senzaAnni].find((c) => c.id === id)?.riga
   ok('stessaOra: gli stessi corsi di corsiParalleli', ids(ep.stessaOra), ids(solo))
