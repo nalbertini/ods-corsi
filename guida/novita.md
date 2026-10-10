@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.54.0 — 10 ottobre 2026
+
+### Novità
+
+- Il passo QUANTO PAGHI, con il conto di tutta la famiglia e una sola ricevuta
+
 ## 0.53.2 — 10 ottobre 2026
 
 ### Modificato
