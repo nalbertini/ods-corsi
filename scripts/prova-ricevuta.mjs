@@ -302,6 +302,9 @@ ok('mancano due', prova(() => m.motivoBlocca([manca('genitore', 'il genitore'), 
 ok('uno sbagliato non «manca»', prova(() => m.motivoBlocca([manca('codiceFiscale', 'il codice fiscale non è giusto')])), 'Il codice fiscale non è giusto: correggilo nei DATI DEL SOCIO')
 ok('uno che manca e uno sbagliato', prova(() => m.motivoBlocca([manca('codiceFiscale', 'il codice fiscale del socio non è giusto'), manca('genitore', 'il genitore')])), 'Manca il genitore e il codice fiscale del socio non è giusto: correggili nei DATI DEL SOCIO')
 ok('niente', prova(() => m.motivoBlocca([])), '')
+// L'elenco «a, b e c» è uno solo (lo usa anche l'iscrizione a passi): i pezzi restano interi, anche con una virgola dentro.
+ok('elenco: uno, due, tre', [m.elenco(['a']), m.elenco(['a', 'b']), m.elenco(['a', 'b', 'c']), m.elenco([])], ['a', 'a e b', 'a, b e c', ''])
+ok('elenco: un pezzo con la virgola non si spezza', m.elenco(['Luca (Judo, Pilates)', 'Paola (Yoga)']), 'Luca (Judo, Pilates) e Paola (Yoga)')
 
 console.log('A chi va la ricevuta')
 ok('un adulto: lui col suo codice fiscale', prova(() => m.ricevutaPer(adulto, false)), 'RICEVUTA PER ALBERTINI NICOLA · LBRNCL80C02L219F')

@@ -199,9 +199,14 @@ const terzo = await r.invia(adulto({ nome: 'Terzo', codiceFiscale: 'RSSTRZ96A01L
   for (const [nome, anno] of [['Quarto', '1990'], ['Quinto', '1991'], ['Sesto', '1992']])
     ok(`la ${nome === 'Quarto' ? 'quarta' : nome === 'Quinto' ? 'quinta' : 'sesta'} dalla stessa email passa`, await errore(() => r.invia(adulto({ nome, codiceFiscale: cfDi(nome, 'Rossi', `${anno}-03-03`), natoIl: `${anno}-03-03`, email: 'mamma@esempio.it' }))), 'nessun errore')
   ok('la settima dalla stessa email no', await errore(() => r.invia(adulto({ nome: 'Ultimo', codiceFiscale: cfDi('Ultimo', 'Rossi', '1993-03-03'), natoIl: '1993-03-03', email: 'mamma@esempio.it' }))), MSG6)
+  // Le note: 1000 caratteri come `check (length(note) <= 1000)` di 06-iscrizioni.sql, che `invia_iscrizione` dice «un testo è troppo lungo».
+  const conNote = (note, nome, anno) => adulto({ nome, codiceFiscale: cfDi(nome, 'Rossi', `${anno}-03-03`), natoIl: `${anno}-03-03`, email: 'note@esempio.it', note })
+  ok('note di 1001 caratteri: no, come il database', await errore(() => r.invia(conNote('x'.repeat(1001), 'Notaa', '1994'))), 'Un campo non va: un testo è troppo lungo')
+  ok('note di 1000 caratteri: passano', await errore(() => r.invia(conNote('x'.repeat(1000), 'Notab', '1995'))), 'nessun errore')
+  ok('gli spazi attorno non contano, il database li toglie', await errore(() => r.invia(conNote(`  ${'x'.repeat(1000)}  `, 'Notac', '1996'))), 'nessun errore')
   const tutte = await r.richieste()
-  // Luca scrive da un'altra email: sono sei da mamma@ (Giulia, Marco, Terzo, Quarto, Quinto, Sesto) più lui.
-  ok('sono sette, nuove', tutte.map((x) => x.stato), ['nuova', 'nuova', 'nuova', 'nuova', 'nuova', 'nuova', 'nuova'])
+  // Luca scrive da un'altra email: sono sei da mamma@ (Giulia, Marco, Terzo, Quarto, Quinto, Sesto), le due delle note che passano, più lui.
+  ok('sono nove, nuove', tutte.map((x) => x.stato), Array(9).fill('nuova'))
   const l = tutte.find((x) => x.id === luca)
   ok('email e codice fiscale messi in ordine', `${l.email} ${l.codiceFiscale}`, 'luca@esempio.it RSSLCU96A01L219K')
   ok('il genitore di un adulto non si tiene', l.genitoreNome, undefined)
@@ -415,7 +420,7 @@ console.log('\n10. la metà vera, con un database finto: cosa parte e come si di
     await b.v.invia(adulto({ regolamento: 'sì' }))
     ok('invia: il regolamento vale solo se è proprio vero', b.reg[0][2].dati.regolamento, false)
     ok('invia: il rifiuto del database arriva com’è, è già detto per chi si iscrive', await errore(() => finto({ rpc: { invia_iscrizione: ERR('P0001', 'Mancano: cognome') } }).v.invia(adulto({ cognome: ' ' }))), 'Mancano: cognome')
-    ok('invia: la quarta email del giorno, stesso messaggio della finta', await errore(() => finto({ rpc: { invia_iscrizione: ERR('P0001', 'Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria') } }).v.invia(adulto())), 'Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria')
+    ok('invia: la settima email del giorno, stesso messaggio della finta', await errore(() => finto({ rpc: { invia_iscrizione: ERR('P0001', 'Da questa email sono già arrivate 6 richieste oggi: se serve, scrivi alla segreteria') } }).v.invia(adulto())), 'Da questa email sono già arrivate 6 richieste oggi: se serve, scrivi alla segreteria')
     ok('invia: funzione assente, dice cosa lanciare', await errore(() => finto({ rpc: { invia_iscrizione: ERR('PGRST202') } }).v.invia(adulto())), NON_ATTIVO)
     ok('invia: errore senza testo, il server non risponde', await errore(() => finto({ rpc: { invia_iscrizione: { data: null, error: {} } } }).v.invia(adulto())), 'Il server non risponde')
   }

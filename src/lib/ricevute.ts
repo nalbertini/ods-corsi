@@ -333,7 +333,8 @@ export function mancanoDatiSocio(i: IntestatarioRicevuta, giorno = new Date()) {
 }
 
 const NON_GIUSTO = ' non è giusto'
-const elenco = (x: string[]) => x.join(', ').replace(/, ([^,]*)$/, ' e $1')
+/** «a, b e c»: i pezzi si uniscono interi, anche se dentro hanno una virgola. */
+export const elenco = (x: string[]): string => (x.length > 1 ? `${x.slice(0, -1).join(', ')} e ${x[x.length - 1]}` : x.join(''))
 
 /** Perché la ricevuta non si fa, da `mancanoDatiSocio(…).blocca`; vuoto se si fa. */
 export function motivoBlocca(blocca: CampoCheManca[]): string {

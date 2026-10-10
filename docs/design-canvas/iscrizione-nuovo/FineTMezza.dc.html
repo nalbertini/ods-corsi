@@ -14,11 +14,11 @@
     body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<!-- Il server accetta al massimo 3 richieste al giorno per email (iscrizioni_regole). Se la seconda richiesta di «Anche tu» si ferma, l’esito lo dice in italiano semplice e RIPROVA manda solo quella: la prima non si rimanda, creerebbe un doppione. -->
+<!-- Il server accetta al massimo 6 richieste al giorno per email (iscrizioni_regole). Se la seconda richiesta di «Anche tu» si ferma, l’esito lo dice in italiano semplice e RIPROVA manda solo quella: la prima non si rimanda, creerebbe un doppione. -->
 <div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
 <dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
 <main style="display: flex; flex-direction: column; flex-grow: 1">
-<div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 28px"><dc-import name="TitoloEsito" titolo="MANCA UNA RICHIESTA" tono="avviso" testi="La richiesta di Matteo è arrivata. Quella di Giulia no: Da questa email sono già arrivate 3 richieste oggi. Riprova domani, o chiama la segreteria." hint-size="100%,330px"></dc-import><dc-import name="Bottone" label="RIPROVA" variante="principale" hint-size="100%,56px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Riprova rimanda solo quella di Giulia: quella di Matteo è già arrivata e non si rimanda.</span></div>
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 28px"><dc-import name="TitoloEsito" titolo="MANCA UNA RICHIESTA" tono="avviso" testi="La richiesta di Matteo è arrivata. Quella di Giulia no: Da questa email sono già arrivate 6 richieste oggi. Riprova domani, o chiama la segreteria." hint-size="100%,330px"></dc-import><dc-import name="Bottone" label="RIPROVA" variante="principale" hint-size="100%,56px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Riprova rimanda solo quella di Giulia: quella di Matteo è già arrivata e non si rimanda.</span></div>
 </main>
 
 </div>

@@ -409,12 +409,14 @@ export function DueTocchi({
 
 /**
  * La pastiglia di una persona della famiglia: quella di adesso è accesa, le altre hanno il numero delle cose
- * che mancano (giallo). Fonte: docs/design-canvas/ods-design-system/Chip.dc.html.
+ * che mancano (giallo). `etichetta` è quello che legge lo schermo (la frase sta in `passiIscrizione.ts`).
+ * Fonte: docs/design-canvas/ods-design-system/Chip.dc.html.
  */
-export function Chip({ children, acceso, numero, onClick }: { children: string; acceso?: boolean; numero?: number; onClick: () => void }) {
+export function Chip({ children, acceso, numero, etichetta, onClick }: { children: string; acceso?: boolean; numero?: number; etichetta?: string; onClick: () => void }) {
+  // Il nome intero sta nel title: sulla pastiglia, se è lungo, si taglia con «…».
   return (
-    <button type="button" className="sg-chip chip-persona" aria-pressed={acceso} aria-label={numero ? `${children}: mancano ${numero} cose` : children} onClick={onClick}>
-      {children}
+    <button type="button" className="sg-chip chip-persona" aria-pressed={acceso} aria-label={etichetta ?? children} title={children} onClick={onClick}>
+      <span className="chip-nome">{children}</span>
       {numero ? (
         <span className="sg-tag" data-tipo="aspetta" aria-hidden>
           {numero}

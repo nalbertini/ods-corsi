@@ -510,8 +510,8 @@ Cosa fa `06-iscrizioni.sql`:
 - `richieste_con_documento()` dice alla segreteria quali richieste hanno
   ancora il documento d'identità caricato: RICHIESTE ONLINE le segna **DA
   STAMPARE** (il certificato no: dal `45` resta nell'app, vedi più sotto);
-- la porta non è spalancata: sei richieste al giorno dalla stessa email (tre fino al `48`), trenta
-  all'ora in tutto. I numeri stanno in `iscrizioni_regole()`;
+- la porta non è spalancata: sei richieste al giorno dalla stessa email (tre fino al `48`),
+  sessanta all'ora in tutto. I numeri stanno in `iscrizioni_regole()`;
 - accogliere (`accogli_iscrizione`) mette la persona in elenco e la iscrive ai
   corsi scelti. Se c'era già la ritrova: dal codice fiscale di una richiesta
   accolta prima o dei dati anagrafici importati, oppure da nome e cognome con

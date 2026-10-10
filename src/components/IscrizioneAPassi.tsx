@@ -6,7 +6,7 @@ import { riduciFoto } from '../lib/foto'
 import { caricaLuoghi, cfValido, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
 import { corsiAmmessi, corsiPerEta, type CorsoPerEta, type Listino } from '../lib/listino'
-import { euro } from '../lib/ricevute'
+import { elenco, euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import * as P from '../lib/passiIscrizione'
 import { useListino } from './Costi'
@@ -344,10 +344,11 @@ function Flusso({
   // Il blocco «sto inviando» vale subito: lo stato `fase` si aggiorna dopo il tocco, e due tocchi insieme manderebbero due richieste.
   const stoInviando = useRef(false)
 
-  // Data e luogo di nascita li dice il codice fiscale: si calcolano a ogni disegno, non si scrivono.
+  // Data e luogo di nascita li dice il codice fiscale: si calcolano a ogni disegno, non si scrivono. Così i dati
+  // che un familiare prende da chi firma e dalla prima persona sono sempre quelli di adesso.
   const tutte = useMemo<P.StatoPassi[]>(
     () =>
-      persone.map((grezzo) => {
+      P.conDatiDellaFamiglia(persone).map((grezzo) => {
       const r = grezzo.risposte
       const natoIl = dataDaCf(r.codiceFiscale, '') ?? ''
       const luogo = luoghi && luogoDaCf(luoghi, pulisciCf(r.codiceFiscale), natoIl)
@@ -357,8 +358,7 @@ function Flusso({
         // Un corso «dai N anni» scelto prima di correggere la data non parte con la richiesta.
         risposte: { ...r, natoIl, natoA: luogo ? scriviLuogo(luogo) : r.natoA, corsi: listino && corsi ? corsiAmmessi(r.corsi, corsi, listino.corsi, natoIl) : r.corsi },
         natoAGenitore: luogoG?.nome ?? grezzo.natoAGenitore,
-        // Con «Anche tu», o in famiglia, il foglio si firma sempre qui.
-        firmaInFoto: come === 'foto' && !grezzo.ancheTu && persone.length === 1,
+        firmaInFoto: P.firmaInFoto(grezzo, come === 'foto', persone.length),
       }
       }),
     [persone, luoghi, come, corsi, listino],
@@ -368,7 +368,7 @@ function Flusso({
   const figlio = v.chi === 'figlio'
   const ancheTu = !!v.ancheTu
   const luogoGenitore = luoghi && luogoDaCf(luoghi, pulisciCf(r.genitoreCodiceFiscale ?? ''))
-  const provinciaGenitore = luogoGenitore?.sigla ?? provincia
+  const provinciaGenitore = P.siglaDelGenitore(v, luoghi, provincia)
   const natoIlGenitore = dataDaCf(r.genitoreCodiceFiscale ?? '', '') ?? ''
 
   const tipi = P.tipiDiPassi(v.chi, ancheTu)
@@ -448,8 +448,8 @@ function Flusso({
     vaiInCima()
   }
   const cambiaScelta = (a: P.Chi) => {
-    // In famiglia nessuno chiede «anche te?».
-    setGrezzo(() => ({ ...P.cambiaScelta(v, a), ...(famiglia ? { ancheTu: false } : {}) }))
+    // Si parte da quello che la persona ha scritto, non dai dati presi dagli altri.
+    setGrezzo((p) => P.cambiaScelta(p, a, famiglia))
     setTratti([])
     setCome('qui')
     setGuaioFirma(null)
@@ -467,8 +467,7 @@ function Flusso({
   }
   const aggiungi = (chiNuovo: P.Chi, firma: number) => {
     const nuove = P.aggiungiFamiliare(persone, chiNuovo, firma)
-    // In famiglia il foglio si firma qui, per ognuno: la foto del foglio firmato di prima non vale più.
-    setPersone(come === 'foto' ? nuove.map((p) => ({ ...p, file: { ...p.file, modulo: undefined } })) : nuove)
+    setPersone(nuove)
     setPassi((a) => [...a, 1])
     setTrattiDi((a) => [...a, []])
     setCome('qui')
@@ -558,8 +557,7 @@ function Flusso({
     setFase({ tipo: 'invio' })
     // Ogni persona ha la sua richiesta, e il suo modulo con la sua firma.
     const daMandare = tutte.flatMap((p, i) => {
-      const sigla = (luoghi && luogoDaCf(luoghi, pulisciCf(p.risposte.genitoreCodiceFiscale ?? ''))?.sigla) ?? provincia
-      return P.richiesteDaMandare(p, sigla, (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[i]))
+      return P.richiesteDaMandare(p, P.siglaDelGenitore(p, luoghi, provincia), (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[i]))
     })
     try {
       gestisci(await P.mandaRichieste(d, daMandare))
@@ -591,6 +589,8 @@ function Flusso({
   const avanti = () => {
     setProvato(true)
     if (ultimo && famiglia) {
+      const fermo = P.fermoDellaFamiglia(tutte)
+      if (fermo) return setGuaio(fermo)
       const tutteLeMancanze = P.mancantiFamiglia(tutte)
       return tutteLeMancanze.length ? focus(tutteLeMancanze[0].chiave) : void manda()
     }
@@ -627,7 +627,7 @@ function Flusso({
           <span className="esito-testo">
             Grazie, {aChi}.{' '}
             {famiglia
-              ? `La segreteria ha ricevuto le iscrizioni di ${new Intl.ListFormat('it', { type: 'conjunction' }).format(tutte.map((p, i) => `${nomiFamiglia[i]} (${nomiDei(p.risposte.corsi)})`))}.`
+              ? `La segreteria ha ricevuto le iscrizioni di ${elenco(tutte.map((p, i) => `${nomiFamiglia[i]} (${nomiDei(p.risposte.corsi)})`))}.`
               : due
               ? `La segreteria ha ricevuto le iscrizioni di ${nomeBambino} (${nomiDei(r.corsi)}) e la tua (${nomiDei(suo?.corsi ?? [])}).`
               : figlio
@@ -686,7 +686,7 @@ function Flusso({
             </div>
           )}
           <Tasto variante="principale" onClick={() => void riprova(e)}>
-            RIPROVA
+            {P.etichettaRiprova(e.mancanti)}
           </Tasto>
           <Tasto href={chiama} qui>
             CHIAMA LA SEGRETERIA
@@ -1303,11 +1303,15 @@ function Flusso({
           <div className="pad stack passo-famiglia">
             {famiglia && (
               <div className="famiglia-chip">
-                {tutte.map((p, i) => (
-                  <Chip key={i} acceso={i === attivo} numero={i === attivo ? 0 : P.quantoManca(p)} onClick={() => i !== attivo && vaiA(i, passi[i])}>
-                    {P.nomeDellaPersona(p, i).toUpperCase()}
-                  </Chip>
-                ))}
+                {tutte.map((p, i) => {
+                  const nome = P.nomeDellaPersona(p, i).toUpperCase()
+                  const mancano = i === attivo ? 0 : P.quantoManca(p)
+                  return (
+                    <Chip key={i} acceso={i === attivo} numero={mancano} etichetta={P.etichettaPastiglia(nome, mancano)} onClick={() => i !== attivo && vaiA(i, passi[i])}>
+                      {nome}
+                    </Chip>
+                  )
+                })}
               </div>
             )}
             {P.puoiAggiungere(persone.length) ? (
@@ -1316,9 +1320,9 @@ function Flusso({
               </button>
             ) : (
               <Riquadro tono="prova">
-                <span className="modulo-etichetta">{P.frasiDelMassimo().etichetta}</span>
-                <span className="passo-titolo">{P.frasiDelMassimo().titolo}</span>
-                <Dettaglio>{P.frasiDelMassimo().testo}</Dettaglio>
+                <span className="modulo-etichetta">{P.frasiDelMassimo.etichetta}</span>
+                <span className="passo-titolo">{P.frasiDelMassimo.titolo}</span>
+                <Dettaglio>{P.frasiDelMassimo.testo}</Dettaglio>
                 <Tasti>
                   <Tasto variante="principale" href={chiama} qui>
                     CHIAMA

@@ -29,6 +29,14 @@ un minore), email, telefono e l'eventuale telefono 2, corsi (con «fuori età: n
 accanto a un corso che non è per la sua età, secondo
 **NATI DAL / AL** del [listino](listino.md) coi sei mesi di tolleranza), come paga (trimestre o annuale), note.
 
+Una famiglia può iscriversi in più persone insieme, fino a sei: ognuna ha la
+sua richiesta, e nelle note di ognuna c'è una riga che le lega, «mandata
+insieme alla richiesta di…» se sono due, i nomi delle altre se sono di più, o
+«con altre cinque persone della famiglia» quando i nomi non ci stanno. Dice
+sempre «sconto famiglia da applicare»: lo applicate voi. Dalla stessa email
+arrivano al massimo sei richieste al giorno; la settima il modulo la rifiuta e
+chi la manda deve chiamare o scrivere alla segreteria.
+
 Sotto, **I FILE**: modulo firmato e ricevuta. La ricevuta non è obbligatoria:
 se non c'è, una riga dice «Nessuna ricevuta: il pagamento si fa in
 segreteria», e la richiesta si accoglie lo stesso. La carta d'identità sta in un riquadro giallo,

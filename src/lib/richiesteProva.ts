@@ -4,6 +4,7 @@ import { caricaLuoghi, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { archivio, certificatiProva, scordaCertificato } from './archivioProva'
 import { nomeProprio } from './nomi'
 import { chiaveGiorno } from './sala'
+import { MASSIMO_PERSONE } from './passiIscrizione'
 
 /**
  * Le richieste di iscrizione senza server.
@@ -18,8 +19,8 @@ import { chiaveGiorno } from './sala'
 
 const DOVE = 'ods-corsi:prova-richieste'   // vedi la nota in coda.ts
 
-/** Come `per_email_al_giorno` di `48-richieste-per-email.sql`: una famiglia di sei persone le manda tutte con una email. */
-const PER_EMAIL_AL_GIORNO = 6
+/** Come `per_email_al_giorno` di `48-richieste-per-email.sql`: una famiglia le manda tutte con una email, quante sono le persone di un modulo. */
+const PER_EMAIL_AL_GIORNO = MASSIMO_PERSONE
 
 function leggi(): Richiesta[] {
   try {

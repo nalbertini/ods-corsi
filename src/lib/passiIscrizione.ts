@@ -4,10 +4,11 @@ import type { VoceCosto } from './costi'
 import type { Abbonamento, RigaStima } from './nucleo'
 import { stimaIscrizione } from './nucleo'
 import type { CampoModulo, DatiRichiesta, DatiRichieste, Formula, TipoFile } from './richieste'
-import { certificatoDaPortare, dataDaCf, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf } from './richieste'
+import { certificatoDaPortare, dataDaCf, NOTE_NEL_DATABASE, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf } from './richieste'
 import type { Luoghi } from './codiceFiscale'
 import { cfValido, luogoDaCf, scriviLuogo } from './codiceFiscale'
 import { nomeProprio } from './nomi'
+import { elenco } from './ricevute'
 
 /**
  * L'iscrizione a passi (`iscrizioni/#nuova`, solo in prova): le regole di
@@ -37,6 +38,8 @@ export interface StatoPassi {
   /** Dove è nato il genitore, che le domande non chiedono ma il modulo sì. */
   natoAGenitore: string
   avvisoFirma?: string
+  /** In famiglia, per un bambino: il posto dell'adulto che firma per lui (`conDatiDellaFamiglia` ne prende i dati). */
+  firmatario?: number
   /** Il genitore che si iscrive con il figlio: decide da sé corso, formula e consensi. */
   suo?: { corsi: string[]; formula: Formula; scelte: Scelte; certificato?: File }
 }
@@ -266,11 +269,14 @@ export function notaSottoIlCampo(errore: string | undefined, provato: boolean, v
 const quanteCaselle = (sc: Scelte) => Object.values(sc).filter((v) => v !== undefined).length
 const quantiFile = (f: StatoPassi['file']) => Object.values(f).filter(Boolean).length
 
+/** In famiglia nessun bambino chiede «anche te?»: ognuno decide da sé il suo corso. Chi ha già risposto resta com'è. */
+const senzaAncheTu = (s: StatoPassi): StatoPassi => (s.chi === 'figlio' && s.ancheTu === undefined ? { ...s, ancheTu: false } : s)
+
 /** Si tiene chi è (nome, codice, residenza, contatti) e il documento; il foglio, firmato da un altro, si rifà. */
-export function cambiaScelta(s: StatoPassi, a: Chi): StatoPassi {
+export function cambiaScelta(s: StatoPassi, a: Chi, inFamiglia = false): StatoPassi {
   const r = s.risposte
   const { modulo, ...file } = s.file
-  return {
+  const nuovo: StatoPassi = {
     ...nuovoStato(a),
     inizio: s.inizio,
     risposte: {
@@ -290,6 +296,7 @@ export function cambiaScelta(s: StatoPassi, a: Chi): StatoPassi {
     privacy: s.privacy,
     avvisoFirma: firmaDaRifare(a === 'figlio', { tratti: s.tratti, scelte: quanteCaselle(s.scelte), foto: !!modulo, avvisato: !!s.avvisoFirma }),
   }
+  return inFamiglia ? senzaAncheTu(nuovo) : nuovo
 }
 
 export const perDomandaUscita = (s: StatoPassi): Parameters<typeof domandaUscita>[0] => ({
@@ -339,39 +346,78 @@ export const MASSIMO_PERSONE = 6
 export const puoiAggiungere = (quante: number): boolean => quante < MASSIMO_PERSONE
 
 const NUMERI = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove', 'dieci']
-const massimo = NUMERI[MASSIMO_PERSONE] ?? String(MASSIMO_PERSONE)
+const massimo = NUMERI[MASSIMO_PERSONE]
 
 /** Il riquadro che prende il posto di AGGIUNGI UN FAMILIARE al massimo: il numero è quello della regola, scritto in lettere. */
-export const frasiDelMassimo = () => ({
+export const frasiDelMassimo = {
   etichetta: `SIETE IN ${massimo.toUpperCase()}`,
   titolo: 'Di più, chiamaci: vi iscriviamo insieme.',
   testo: `In un solo modulo ci sono al massimo ${massimo} persone.`,
-})
+}
 
 /**
- * Una persona in più nella famiglia: l'indirizzo e i contatti sono quelli della
- * prima (li cambia dopo, se serve), il resto si scrive da capo. Il bambino lo
- * firma un adulto della famiglia, `indiceFirmatario`, di cui prende i dati.
+ * Una persona in più nella famiglia, da scrivere da capo: l'indirizzo, i contatti e, per un bambino, i dati di
+ * chi firma non si copiano ora, si prendono quando servono (`conDatiDellaFamiglia`). Il bambino lo firma un
+ * adulto della famiglia, `indiceFirmatario`. In famiglia il foglio si firma qui, per ognuno: la foto del foglio
+ * firmato prima non vale più.
  */
-export function aggiungiFamiliare(persone: StatoPassi[], chi: Chi, indiceFirmatario = 0): StatoPassi[] {
-  if (!puoiAggiungere(persone.length)) throw new Error(frasiDelMassimo().testo)
-  const firma = persone[indiceFirmatario]
-  if (chi === 'figlio' && firma?.chi !== 'adulto') throw new Error('Per firmare serve un adulto della famiglia: scegline un altro.')
-  const base = persone[0].risposte
-  const risposte: DatiRichiesta = {
-    ...VUOTO,
-    corsi: [],
-    indirizzo: base.indirizzo,
-    cap: base.cap,
-    comune: base.comune,
-    email: base.email,
-    telefono: base.telefono,
-    telefono2: base.telefono2,
-    ...(chi === 'figlio' ? { genitoreNome: firma.risposte.nome, genitoreCognome: firma.risposte.cognome, genitoreCodiceFiscale: firma.risposte.codiceFiscale } : {}),
-  }
-  // In famiglia ognuno decide da sé il suo corso: nessun bambino chiede «anche te?», il conto è uno solo.
-  return [...persone, { ...nuovoStato(chi), risposte, inizio: { ...risposte, corsi: [] } }].map((p) => (p.chi === 'figlio' && p.ancheTu === undefined ? { ...p, ancheTu: false } : p))
+export function aggiungiFamiliare(persone: StatoPassi[], chi: Chi, indiceFirmatario: number): StatoPassi[] {
+  if (!puoiAggiungere(persone.length)) throw new Error(frasiDelMassimo.testo)
+  if (chi === 'figlio' && persone[indiceFirmatario]?.chi !== 'adulto') throw new Error('Per firmare serve un adulto della famiglia: scegline un altro.')
+  const nuova: StatoPassi = { ...nuovoStato(chi), ...(chi === 'figlio' ? { firmatario: indiceFirmatario } : {}) }
+  return [...persone, nuova].map((p) => {
+    const { modulo, ...file } = p.file
+    return senzaAncheTu({ ...p, file })
+  })
 }
+
+/** Quello che un familiare lascia vuoto: lo prende da un altro. Quello che ha scritto lui resta suo. */
+const oppure = (suo: string | undefined, altro: string | undefined): string => (suo?.trim() ? suo : (altro ?? ''))
+
+/**
+ * Le persone della famiglia coi dati che prendono dagli altri, al momento di usarli (il conto, l'invio):
+ * indirizzo e contatti dalla prima persona, e per un bambino nome, cognome e codice di chi firma. Così quello
+ * che chi firma scrive o corregge dopo arriva anche a loro. Se chi firma non è più un adulto, non si prende.
+ */
+export function conDatiDellaFamiglia(persone: StatoPassi[]): StatoPassi[] {
+  if (persone.length < 2) return persone
+  const prima = persone[0].risposte
+  return persone.map((s, i) => {
+    if (i === 0) return s
+    const r = s.risposte
+    const firma = s.chi === 'figlio' && s.firmatario !== undefined && persone[s.firmatario]?.chi === 'adulto' ? persone[s.firmatario].risposte : undefined
+    return {
+      ...s,
+      risposte: {
+        ...r,
+        indirizzo: oppure(r.indirizzo, prima.indirizzo),
+        cap: oppure(r.cap, prima.cap),
+        comune: oppure(r.comune, prima.comune),
+        email: oppure(r.email, prima.email),
+        telefono: oppure(r.telefono, prima.telefono),
+        telefono2: oppure(r.telefono2, prima.telefono2),
+        ...(firma ? { genitoreNome: oppure(r.genitoreNome, firma.nome), genitoreCognome: oppure(r.genitoreCognome, firma.cognome), genitoreCodiceFiscale: oppure(r.genitoreCodiceFiscale, firma.codiceFiscale) } : {}),
+      },
+    }
+  })
+}
+
+/** Una famiglia che non può partire: un bambino il cui adulto che firma ha cambiato scelta. Una frase per chi usa l'app. */
+export function fermoDellaFamiglia(persone: StatoPassi[]): string | undefined {
+  for (const [i, s] of persone.entries()) {
+    if (s.chi !== 'figlio' || s.firmatario === undefined || persone[s.firmatario]?.chi === 'adulto') continue
+    const lui = nomeDellaPersona(persone[s.firmatario], s.firmatario)
+    return `${lui} non è più un adulto, e ${nomeDellaPersona(s, i)} ha bisogno di un adulto che firmi: rimetti ${lui} come adulto, oppure chiama la segreteria.`
+  }
+  return undefined
+}
+
+/** Il foglio si firma in foto solo da soli, per chi l'ha scelto, e senza «Anche te»: in famiglia si firma qui. */
+export const firmaInFoto = (s: StatoPassi, sceltaLaFoto: boolean, quante: number): boolean => sceltaLaFoto && !s.ancheTu && quante === 1
+
+/** La provincia di chi firma per un bambino: la dice il suo codice fiscale, se no quella scritta a mano. */
+export const siglaDelGenitore = (s: StatoPassi, luoghi: Luoghi | null | undefined, scritta: string): string =>
+  (luoghi && luogoDaCf(luoghi, pulisciCf(s.risposte.genitoreCodiceFiscale ?? ''))?.sigla) || scritta
 
 /** Chi è sulla pastiglia e nelle frasi: il nome scritto, o «Adulto 2» / «Bambino 3» (il posto in famiglia) finché non c'è. */
 export const nomeDellaPersona = (s: StatoPassi, indice: number): string => nomeProprio(s.risposte.nome) || `${s.chi === 'figlio' ? 'Bambino' : 'Adulto'} ${indice + 1}`
@@ -381,6 +427,15 @@ export const chiPuoFirmare = (persone: StatoPassi[]): Array<{ indice: number; no
   persone.flatMap((p, indice) => (p.chi === 'adulto' ? [{ indice, nome: nomeDellaPersona(p, indice) }] : []))
 
 const ultimoPasso = (s: StatoPassi) => passiDi(s.chi, s.ancheTu === true).length
+
+/** «manca 1 cosa» / «mancano 3 cose»: per chi legge lo schermo. */
+export const fraseCoseCheMancano = (n: number): string => (n === 1 ? 'manca 1 cosa' : `mancano ${n} cose`)
+
+/** Cosa legge lo schermo sulla pastiglia di una persona: il nome, e quante cose le mancano se ne mancano. */
+export const etichettaPastiglia = (nome: string, mancano: number): string => (mancano ? `${nome}: ${fraseCoseCheMancano(mancano)}` : nome)
+
+/** Il tasto RIPROVA dell'esito a metà: per nome se sono uno o due, se no per i mancanti. */
+export const etichettaRiprova = (mancanti: string[]): string => `RIPROVA PER ${mancanti.length > 2 ? 'I MANCANTI' : mancanti.map((n) => n.toUpperCase()).join(' E ')}`
 
 /** Quante cose mancano a una persona in tutto, come all'ultimo passo: il numero sulla sua pastiglia. */
 export const quantoManca = (s: StatoPassi, oggi = new Date()): number => mancaNelPasso(s, ultimoPasso(s), oggi).length
@@ -774,6 +829,19 @@ export function righeDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], ogg
  */
 export const MASSIMO_NOTE = 900
 
+/**
+ * Le note di una richiesta con la riga che la lega alle altre della famiglia, a capo. La riga coi nomi si usa
+ * solo se ci sta nei 1000 caratteri del database (due nomi da 60 + 60 e note da 900 non ci stanno); se no
+ * una riga corta fissa, che dice solo quante sono.
+ */
+export function conIlLegame(note: string | undefined, altri: string[]): string {
+  const sconto = 'sconto famiglia da applicare'
+  const coiNomi = altri.length === 1 ? `mandata insieme alla richiesta di ${altri[0]}, ${sconto}` : `con ${altri.join(', ')}: ${sconto}`
+  const corta = `con ${altri.length === 1 ? 'un’altra persona' : `altre ${NUMERI[altri.length]} persone`} della famiglia: ${sconto}`
+  const con = (riga: string) => (note ? `${note}\n${riga}` : riga)
+  return con(coiNomi).length <= NOTE_NEL_DATABASE ? con(coiNomi) : con(corta)
+}
+
 /** Una richiesta da mandare: i suoi dati, i file, e come si fa il suo PDF se il foglio non è in foto. */
 export interface DaMandare {
   dati: DatiRichiesta
@@ -835,7 +903,6 @@ export type Esito =
  * di richieste e non di persone («arrivate», «partite»), così il genere dei nomi non conta.
  */
 export function fraseAMeta(arrivati: string[], mancanti: string[]): { titolo: string; arrivate: string; mancano: string } {
-  const elenco = (n: string[]) => (n.length < 2 ? n.join('') : `${n.slice(0, -1).join(', ')} e ${n[n.length - 1]}`)
   const una = (n: string[]) => n.length === 1
   return {
     titolo: `${una(arrivati) ? 'ARRIVATA 1 RICHIESTA' : `ARRIVATE ${arrivati.length} RICHIESTE`} SU ${arrivati.length + mancanti.length}`,
@@ -885,10 +952,7 @@ async function mandaDavvero(d: DatiRichieste, daMandare: DaMandare[]): Promise<E
   const nome = (x: DatiRichiesta) => `${nomeProprio(x.nome)} ${nomeProprio(x.cognome)}`
   const dati = daMandare.map(({ dati: x }, i) => {
     if (daMandare.length < 2) return x
-    const altri = daMandare.filter((_, j) => j !== i).map((y) => nome(y.dati))
-    // Con più di due la riga è corta, solo i nomi: con sei persone e le note scritte al massimo deve stare nei 1000 caratteri del database.
-    const legame = altri.length === 1 ? `mandata insieme alla richiesta di ${altri[0]}, sconto famiglia da applicare` : `con ${altri.join(', ')}: sconto famiglia da applicare`
-    return { ...x, note: x.note ? `${x.note}\n${legame}` : legame }
+    return { ...x, note: conIlLegame(x.note, daMandare.filter((_, j) => j !== i).map((y) => nome(y.dati))) }
   })
 
   const ids: string[] = []
