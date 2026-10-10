@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.52.0 — 10 ottobre 2026
+
+### Novità
+
+- Iscrivi tutta la famiglia in una volta, con il conto e lo sconto che si aggiornano
+
 ## 0.51.5 — 9 ottobre 2026
 
 ### Risolto
