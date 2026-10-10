@@ -1,0 +1,48 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "La famiglia, un passo a sé"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · AGGIUNGI solo all'ultimo passo",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Adulto.dc.html",
+   "title": "Proposta · passo 5, chi si iscrive da adulto",
+   "x": 510,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Bambino.dc.html",
+   "title": "Proposta · passo 5, chi iscrive un bambino",
+   "x": 1020,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Dopo.dc.html",
+   "title": "Proposta · dopo AGGIUNGI, il corso alla stessa ora già proposto",
+   "x": 1530,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1920,
+   "text": "LA FAMIGLIA: il passo 5, prima di QUANTO PAGHI"
+  }
+ ]
+}

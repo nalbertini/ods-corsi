@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI: chi si iscrive da solo trova AGGIUNGI UN FAMILIARE solo all ultimo passo, sotto il riepilogo, dopo aver gia visto il conto. Lo sconto non si vede finche non si aggiunge qualcuno. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 760px; background: #f4f4f1; color: #161616">
+<dc-import name="Avanzamento" numero="6" totale="6" titolo="CONTROLLA E INVIA" tema="chiaro" hint-size="100%,120px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 8px 20px 20px; flex-grow: 1"><span style="font-size: 15px; color: #161616">Ecco cosa stai mandando. Tocca MODIFICA per cambiare qualcosa.</span><div style="padding: 14px; background: #fff; border: 2px solid #d4d4ce; font-size: 15px">Nicola Albertini · Judo adulti · annuale</div><div style="padding: 14px; background: #fff; border: 2px solid #d4d4ce; font-size: 15px; color: #3d3d3a">Ricevuta del pagamento · non caricata</div><div style="height: 8px"></div><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #656561">LA FAMIGLIA</span><span style="font-size: 16px; font-weight: 600">Iscrivi anche qualcun altro della famiglia?</span><span style="display: flex; align-items: center; justify-content: center; min-height: 52px; border: 2px dashed #8a8a85; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 17px; font-weight: 700; letter-spacing: 0.16em">+ AGGIUNGI UN FAMILIARE</span></div>
+<div style="border-top: 2px solid #d4d4ce; background: #f4f4f1; display: flex; flex-direction: column; gap: 10px; padding: 12px 20px 20px"><div style="display: flex; gap: 8px; font-size: 14px; color: #3d3d3a"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; color: #0b7a33">✓</span><span>Tutto a posto in questo passo.</span></div><div style="display: flex; gap: 10px"><span style="display: flex; align-items: center; justify-content: center; width: 110px; min-height: 56px; border: 2px solid #8a8a85; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.16em; color: #3d3d3a">INDIETRO</span><span style="display: flex; align-items: center; justify-content: center; flex: 1; min-height: 56px; background: #e4292a; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.16em; color: #fff">MANDA LA RICHIESTA</span></div></div>
+</div>
+</x-dc>
+</body>
+</html>
