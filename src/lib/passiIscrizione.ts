@@ -356,6 +356,21 @@ export const MASSIMO_PERSONE = 6
 
 export const puoiAggiungere = (quante: number): boolean => quante < MASSIMO_PERSONE
 
+/**
+ * Cosa della famiglia si vede in un passo. Chi si iscrive da solo pensa a una persona alla volta: AGGIUNGI UN
+ * FAMILIARE (o, al massimo, il riquadro che lo dice) sta solo all'ultimo passo, prima di mandare. In famiglia le
+ * pastiglie restano in ogni passo, per passare dall'una all'altra; all'ultimo le persone sono nel riepilogo.
+ * Con «Anche tu» da soli la famiglia non c'è: il genitore è già nello stesso modulo.
+ */
+export function famigliaNelPasso({ ultimo, quante, ancheTu }: { ultimo: boolean; quante: number; ancheTu: boolean }): { pastiglie: boolean; aggiungi: boolean; massimo: boolean } {
+  const conLaFamiglia = !(ancheTu && quante === 1)
+  return {
+    pastiglie: !ultimo && quante > 1,
+    aggiungi: ultimo && conLaFamiglia && puoiAggiungere(quante),
+    massimo: ultimo && conLaFamiglia && !puoiAggiungere(quante),
+  }
+}
+
 const NUMERI = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette', 'otto', 'nove', 'dieci']
 const massimo = NUMERI[MASSIMO_PERSONE]
 

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. All ultimo passo, CONTROLLA E INVIA, dopo il riepilogo e prima di mandare: «Iscrivi anche qualcun altro della famiglia?» con AGGIUNGI UN FAMILIARE e la frase di oggi. Chi aggiunge una persona torna ai suoi passi; LA FAMIGLIA con le pastiglie compare da li in poi. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 1250px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<dc-import name="RigaChiama" hint-size="100%,62px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1"><dc-import name="Avanzamento" numero="5" totale="5" titolo="CONTROLLA E INVIA" hint-size="100%,120px"></dc-import><div style="padding: 14px 20px 4px"><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">Ecco cosa stai mandando. Tocca MODIFICA per cambiare qualcosa.</span></div><div style="padding: 8px 20px 4px"><dc-import name="Riepilogo" righe="fatto~Paolo Rossi~nato il 01/01/1985 · 41 anni~MODIFICA|fatto~Judo adulti · annuale~Corso~MODIFICA|fatto~Firma sul modulo~tesseramento: autorizzo · foto: autorizzo~MODIFICA|fatto~Carta d’identità~carta.jpg~MODIFICA|manca~Ricevuta del pagamento~non caricata: paghi in segreteria~CARICA" hint-size="100%,300px"></dc-import></div><dc-import name="Titoletto" label="LA FAMIGLIA" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><span style="font-size: 17px; font-weight: 600; line-height: 1.3; color: #f2f2f0">Iscrivi anche qualcun altro della famiglia?</span><span style="font-size: 14px; line-height: 1.4; color: #c9c9c4">Indirizzo e contatti li scrivi una volta sola. Ognuno sceglie i suoi corsi, anche a orari diversi.</span><dc-import name="Bottone" label="+ AGGIUNGI UN FAMILIARE" variante="tratteggiato" alto="48px" corpo="16px" hint-size="100%,48px"></dc-import></div></main>
+<dc-import name="BarraPasso" nota="Tutto a posto: puoi mandare." avanti="MANDA LA RICHIESTA" tono="vai" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>
