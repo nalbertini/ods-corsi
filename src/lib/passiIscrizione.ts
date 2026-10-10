@@ -246,16 +246,57 @@ function senzaDoppioni(s: StatoPassi, passo: number, oggi: Date, per: 'nome' | '
  */
 export function mancanti(s: StatoPassi, passo: number, oggi = new Date()): Pastiglia[] {
   const bambino = s.risposte.nome.trim().toUpperCase()
+  const genitore = diChiFirma(s.risposte.genitoreNome).toUpperCase()
   return senzaDoppioni(s, passo, oggi, 'chiave').map((p) => ({
     ...p,
-    nome: NOMI_DEL_GENITORE[p.chiave] ?? (p.chiave === 'corsi' && s.ancheTu && bambino ? `CORSO DI ${bambino}` : p.nome),
+    nome: Object.hasOwn(COSE_DEL_GENITORE, p.chiave) ? `${COSE_DEL_GENITORE[p.chiave]} ${genitore}` : p.chiave === 'corsi' && s.ancheTu && bambino ? `CORSO DI ${bambino}` : p.nome,
   }))
 }
 
-const NOMI_DEL_GENITORE: Record<string, string> = {
-  suoCorsi: 'IL TUO CORSO',
-  suoTesseramento: 'TESSERAMENTO DEL GENITORE',
-  suoFoto: 'FOTO DEL GENITORE',
+const COSE_DEL_GENITORE: Record<string, string> = {
+  suoCorsi: 'CORSO',
+  suoTesseramento: 'TESSERAMENTO',
+  suoFoto: 'FOTO',
+}
+
+/** Di chi è una cosa del genitore: «di Nicola», o «del genitore» finché il nome non c'è (mai «di» e niente). */
+export const diChiFirma = (nome: string | undefined): string => (nome?.trim() ? `di ${nome.trim()}` : 'del genitore')
+
+/**
+ * Chi firma la persona `i`, quando non è chi compila: il suo nome (vuoto se non c'è). `undefined` vuol dire
+ * «tu». In famiglia compila la prima persona: un altro adulto firma per sé, un bambino lo firma il suo
+ * `firmatario`. Le persone sono quelle di `conDatiDellaFamiglia`, col nome di chi firma già nel bambino.
+ */
+export function chiFirma(persone: StatoPassi[], i: number): string | undefined {
+  const s = persone[i]
+  if (!s || i === 0) return undefined
+  if (s.chi === 'figlio' && s.firmatario === 0) return undefined
+  const nome = (s.chi === 'adulto' ? s.risposte.nome : (s.risposte.genitoreNome ?? '')).trim()
+  // Chi compila può essere il genitore di un bambino messo per primo, che poi aggiunge sé stesso: resta «tu».
+  const prima = persone[0]
+  const io = (prima.chi === 'adulto' ? prima.risposte.nome : (prima.risposte.genitoreNome ?? '')).trim()
+  return nome && nome.toLocaleLowerCase('it') === io.toLocaleLowerCase('it') ? undefined : nome
+}
+
+/** Nel passo «Anche tu», la casella delle foto del genitore. */
+export const etichettaSueFoto = (genitoreNome: string | undefined): string => `LE FOTO E I VIDEO ${diChiFirma(genitoreNome).toUpperCase()}`
+
+/** La riga della carta d'identità nel riepilogo: di chi firma per un bambino, senza nome per un adulto. */
+export const cartaNelRiepilogo = (chi: Chi, genitoreNome: string | undefined): string => (chi === 'figlio' ? `Carta d’identità ${diChiFirma(genitoreNome)}` : 'Carta d’identità')
+
+/** La frase in cima al passo del genitore: «tu» se firma chi compila, se no il nome di chi firma. */
+export function fraseDelGenitore(chi: string | undefined): string {
+  if (chi === undefined) return 'Firma tu, che sei maggiorenne. I tuoi dati servono anche per il modulo.'
+  return `Firma ${chi.trim() || 'il genitore'}, che è maggiorenne. I suoi dati servono anche per il modulo.`
+}
+
+/**
+ * Il titolo sopra regolamento e privacy: come «LA FIRMA DI», dice di chi è l'ok quando non è di chi compila.
+ * Senza nome «DI CHI FIRMA», non «DEL GENITORE»: l'ok può essere di un adulto che firma per sé.
+ */
+export function titoloDellOk(chi: string | undefined): string {
+  if (chi === undefined) return 'IL TUO OK'
+  return `L’OK DI ${chi.trim().toUpperCase() || 'CHI FIRMA'}`
 }
 
 /** Le pastiglie di «MANCA N COSE»: lista viva, conta anche «scritto male». */
@@ -499,12 +540,14 @@ export const uscitaDellaFamiglia = (persone: StatoPassi[]): string | undefined =
  * Etichetta e dettaglio di un file nel flusso a passi. Per chi iscrive il figlio parlano al genitore
  * («il certificato di Luca», «la tua carta»); per l'adulto restano quelli di `FILE`, come nel modulo di oggi.
  */
-export function testoFile(chi: Chi, tipo: TipoFile, nome: string): { etichetta: string; dettaglio: string } {
+export function testoFile(chi: Chi, tipo: TipoFile, nome: string, firma: string | undefined): { etichetta: string; dettaglio: string } {
   const f = FILE.find((x) => x.tipo === tipo)!
   const n = nome.trim()
+  // La carta è di chi firma, che non sempre è chi compila (in famiglia): il suo nome, non «tua».
+  const di = diChiFirma(firma).toUpperCase()
   if (chi === 'figlio') {
-    if (tipo === 'documento') return { etichetta: 'LA TUA CARTA D’IDENTITÀ', dettaglio: `Il fronte. Firmi tu, genitore: serve la tua, non quella ${n ? `di ${n}` : 'del bambino'}.` }
-    if (tipo === 'documento-retro') return { etichetta: 'IL RETRO DELLA TUA CARTA', dettaglio: 'Il retro. Una foto o il PDF.' }
+    if (tipo === 'documento') return { etichetta: `LA CARTA D’IDENTITÀ ${di}`, dettaglio: `Il fronte. È ${firma?.trim() || 'il genitore'} che firma: serve la sua carta, non quella ${n ? `di ${n}` : 'del bambino'}.` }
+    if (tipo === 'documento-retro') return { etichetta: `IL RETRO DELLA CARTA ${di}`, dettaglio: 'Il retro. Una foto o il PDF.' }
     if (tipo === 'certificato') {
       return {
         etichetta: `IL CERTIFICATO ${n ? `DI ${n.toUpperCase()}` : 'DEL BAMBINO'}`,
