@@ -132,6 +132,14 @@ intero. Se dopo il figlio cambia corso, sotto compare quale corso del genitore
 non è più alla stessa ora. Nel passo **ANCHE TU: POCHE COSE** il corso è già
 scritto, con **MODIFICA**: lì restano come paga il genitore e i suoi consensi.
 
+Chi si iscrive da solo pensa a una persona alla volta: nei passi la famiglia
+non c'è. All'ultimo passo, **CONTROLLA E INVIA**, dopo il riepilogo, sotto **LA
+FAMIGLIA** c'è «Iscrivi anche qualcun altro della famiglia?» con **+ AGGIUNGI UN
+FAMILIARE**: indirizzo e contatti restano quelli già scritti, e ognuno sceglie i
+suoi corsi. Da lì in poi, in ogni passo, sotto il numero ci sono i nomi di tutti,
+per passare dall'uno all'altro; il tasto per aggiungerne un altro resta
+all'ultimo passo.
+
 Quando c'è da scegliere fra due cose (**IO, SONO ADULTO** o **MIO FIGLIO**, **TRIMESTRE** o **ANNUALE**, **AUTORIZZO** o **NON AUTORIZZO**) la scelta fatta si riempie: è il tasto pieno. I corsi, dove se ne possono scegliere più d'uno, hanno invece la casella con la spunta. I bordi dei campi sono più chiari, anche nel tema scuro.
 
 I corsi per grandi (quelli che la segreteria segna con un'età minima in **LISTINO**, per esempio la Pesistica dai 16 anni) non compaiono per un bambino troppo piccolo: sotto l'elenco una frase dice quali e di chiamare la segreteria. Per chi ha l'età compare fra i corsi per lui, con scritto «dai 16 anni».
