@@ -1043,7 +1043,7 @@ function Flusso({
     }
 
     if (tipo === 'corso') {
-      // In famiglia, per chi si aggiunge, in cima i corsi alla stessa ora della persona 0.
+      // In famiglia, per chi si aggiunge, in cima i corsi vicini alla persona 0: alla stessa ora, subito prima o dopo, negli stessi giorni.
       const ep = P.corsiDelFamiliare(persone, attivo, corsi ?? [], listino, orari)
       const fraseNascosti = figlio ? P.fraseCorsiNascosti(ep.nascosti, r.nome) : undefined
       return (

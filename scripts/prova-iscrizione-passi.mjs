@@ -2446,6 +2446,14 @@ console.log('\n42. CORSI VICINI')
   ok('stessi giorni ogni volta', ogniVolta('boxe-3'), [true, '31 minuti prima di te, ogni volta', '31 minuti prima di Paolo, ogni volta'])
   ok('stessa ora ogni volta, anche col giovedì in più: niente «solo»', ogniVolta('karate-3'), [true, undefined, 'Si sovrappone ogni volta'])
   ok('a filo dopo ogni volta', chiama(() => m.notaNellaCarta(m.vicinanza('aikido-3', NICOLA, [...orari, ora('aikido-3', 1, '20:30'), ora('aikido-3', 5, '20:30')]))), 'comincia quando finisci tu, ogni volta')
+  // Due lezioni della persona 0 lo stesso giorno: conta la più vicina, non la prima che si trova.
+  const dueLezioni = [ora('zero', 1, '17:00', 15), ora('zero', 1, '19:30'), ora('x', 1, '18:00')]
+  ok('due lezioni lo stesso giorno: l’attesa più corta, 30 minuti prima', chiama(() => m.vicinanza('x', ['zero'], dueLezioni)), { gruppo: 'vicino', verso: 'prima', minuti: 30, giorni: [1], tutti: true, ogniVolta: true })
+  // A filo prima il lunedì e a filo dopo il mercoledì: a pari minuti vince «prima».
+  const pari = [...orari, ora('pari', 1, '18:00'), ora('pari', 3, '20:30')]
+  const vp = chiama(() => m.vicinanza('pari', NICOLA, pari))
+  ok('a pari minuti: prima, il lunedì', vp, { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1], tutti: false, ogniVolta: false })
+  ok('a pari minuti: SUBITO PRIMA', chiama(() => m.etichettaVicino(vp)), 'SUBITO PRIMA')
   // La domenica vuole «la» (la persona 0 viene anche il sabato: se no sarebbe «ogni volta»).
   ok('la domenica', chiama(() => m.notaNellaCarta(m.vicinanza('x', ['y'], [ora('y', 0, '10:00'), ora('y', 6, '10:00'), ora('x', 0, '11:00')]))), 'comincia quando finisci tu, la domenica')
 
@@ -2505,6 +2513,10 @@ console.log('\n42. CORSI VICINI')
   // Senza nessun corso vicino: niente righe, la frase di prima.
   const solo = carte([adulto({ nome: 'Nicola', corsi: ['pilates'] })], [ora('pilates', 0, '09:00'), ora('lotta-3', 6, '10:00')])
   ok('niente vicino: nessuna riga, la frase di sempre', [solo[0]?.righe, solo[0]?.frase, solo[0]?.risparmio], [[], 'Un figlio o una figlia nello stesso modulo: scegli il suo corso, per la sua età.', undefined])
+
+  // Senza listino non si sa per che età sono i corsi: niente righe per il figlio.
+  const senzaListino = lista(() => m.carteDellaFamiglia([nicola], corsiC, undefined, orariC, '2026-10-06'))
+  ok('senza listino: la carta del figlio senza righe', [senzaListino[0]?.chi, senzaListino[0]?.righe], ['figlio', []])
 
   // --- il passo del corso del figlio aggiunto: il canvas Corso ---
   const marco = figlio({ nome: 'Marco', natoIl: '2015-02-02', codiceFiscale: cfDi('Marco', 'Rossi', '2015-02-02'), corsi: [] }, { firmatario: 0 })

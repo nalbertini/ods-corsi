@@ -1077,25 +1077,29 @@ export function carteDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], lis
   const nomiSuoi = elenco(suoi.map((c) => c.nome))
   const voci = listino?.corsi ?? []
   const anno = Number(giorno.slice(0, 4))
-  const proposta = (c: CorsoRef, etichetta: EtichettaRiga, nota?: string): { corso: CorsoRef; riga: RigaCarta } => ({
-    corso: c,
-    riga: { etichetta, corso: c.nome, quando: orarioDetto(orari, c.id), ...(nota && { nota }) },
-  })
-  const vicine = (candidati: CorsoRef[]) => corsiVicini(candidati, zero.risposte.corsi, orari).map((c) => proposta(c, etichettaVicino(c.vicinanza), notaNellaCarta(c.vicinanza)))
+  type Proposta = { corso: CorsoRef; riga: RigaCarta; vicinanza?: Vicinanza }
+  const proposta = (c: CorsoRef, etichetta: EtichettaRiga, vicinanza?: Vicinanza): Proposta => {
+    const nota = vicinanza && notaNellaCarta(vicinanza)
+    return { corso: c, riga: { etichetta, corso: c.nome, quando: orarioDetto(orari, c.id), ...(nota && { nota }) }, ...(vicinanza && { vicinanza }) }
+  }
+  const vicine = (candidati: CorsoRef[]) => corsiVicini(candidati, zero.risposte.corsi, orari).map((c) => proposta(c, etichettaVicino(c.vicinanza), c.vicinanza))
+  const allaStessaOra = (p: Proposta) => p.vicinanza?.gruppo === 'stessaOra'
   const perFiglio = listino ? vicine(corsi.filter((c) => perBambini(voci, c, anno))) : []
   const natoIlGenitore = dataDaCf(zero.risposte.genitoreCodiceFiscale ?? '', '') ?? ''
   const perAdulto = bambino
     ? listino
       ? vicine(candidatiPerEta(corsi, voci, natoIlGenitore))
       : []
-    : [...suoi.map((c) => proposta(c, 'STESSO CORSO')), ...(listino ? vicine(candidatiPerEta(corsi, voci, risposteDaiPassi(zero).natoIl)).filter((p) => p.riga.etichetta === 'STESSA ORA') : [])]
+    : // L'età dell'altro adulto non si sa ancora: si prendono i corsi per l'età della persona 0, un adulto anche lei,
+      // così non si propongono corsi per ragazzi. Al suo passo del corso i corsi si rifanno sulla sua età.
+      [...suoi.map((c) => proposta(c, 'STESSO CORSO')), ...(listino ? vicine(candidatiPerEta(corsi, voci, risposteDaiPassi(zero).natoIl)).filter(allaStessaOra) : [])]
   // Lo sconto si conta come se tutti e due facessero l'annuale: è quello che si risparmia scegliendolo.
   const risparmio = (c: CorsoRef | undefined) => {
     if (!c || !listino || !suoi.length) return undefined
     const sconto = contoFamiglia([{ chi: '0', corsi: suoi, formula: 'annuale' }, { chi: '1', corsi: [c], formula: 'annuale' }], giorno, listino).sconto
     return sconto ? `Con ${c.nome} annuale risparmiate ${euroBreve(sconto)}` : undefined
   }
-  const carta = (chi: Chi, titolo: string, frase: string, proposte: Array<{ corso: CorsoRef; riga: RigaCarta }>, tasto: string): CartaFamiglia => {
+  const carta = (chi: Chi, titolo: string, frase: string, proposte: Proposta[], tasto: string): CartaFamiglia => {
     const quanto = risparmio(proposte[0]?.corso)
     return { chi, titolo, frase, righe: proposte.slice(0, RIGHE_NELLA_CARTA).map((p) => p.riga), ...(quanto && { risparmio: quanto }), tasto }
   }
@@ -1111,7 +1115,7 @@ export function carteDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], lis
         '+ AGGIUNGI UN ADULTO',
       ),
     ]
-  const fraseAdulto = perAdulto.some((p) => p.riga.etichetta === 'STESSA ORA')
+  const fraseAdulto = perAdulto.some(allaStessaOra)
     ? 'Venite insieme: lo stesso corso, o uno alla stessa ora.'
     : suoi.length
       ? `Venite insieme: ${nomiSuoi}, ${suoi.length > 1 ? 'gli stessi corsi' : 'lo stesso corso'}, gli stessi giorni.`
