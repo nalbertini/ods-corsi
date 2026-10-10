@@ -448,6 +448,13 @@ export const siglaDelGenitore = (s: StatoPassi, luoghi: Luoghi | null | undefine
 /** Chi è sulla pastiglia e nelle frasi: il nome scritto, o «Adulto 2» / «Bambino 3» (il posto in famiglia) finché non c'è. */
 export const nomeDellaPersona = (s: StatoPassi, indice: number): string => nomeProprio(s.risposte.nome) || `${s.chi === 'figlio' ? 'Bambino' : 'Adulto'} ${indice + 1}`
 
+/** I nomi dei passi di una persona della famiglia: i dati di un adulto aggiunto non sono di chi compila, il titolo dice di chi sono. */
+export function nomiDeiPassi(s: StatoPassi, indice: number): string[] {
+  const nomi = passiDi(s.chi, s.ancheTu === true)
+  if (s.chi !== 'adulto' || indice === 0) return nomi
+  return [`I DATI DI ${nomeDellaPersona(s, indice).toUpperCase()}`, ...nomi.slice(1)]
+}
+
 /** Chi può firmare per un bambino: gli adulti della famiglia, col loro posto (`indiceFirmatario` di `aggiungiFamiliare`). */
 export const chiPuoFirmare = (persone: StatoPassi[]): Array<{ indice: number; nome: string }> =>
   persone.flatMap((p, indice) => (p.chi === 'adulto' ? [{ indice, nome: nomeDellaPersona(p, indice) }] : []))

@@ -387,7 +387,7 @@ function Flusso({
   const natoIlGenitore = dataDaCf(r.genitoreCodiceFiscale ?? '', '') ?? ''
 
   const tipi = P.tipiDiPassi(v.chi, ancheTu)
-  const nomiPassi = P.passiDi(v.chi, ancheTu)
+  const nomiPassi = P.nomiDeiPassi(v, attivo)
   const tipo = tipi[passo - 1] ?? 'dati'
   const ultimo = passo === tipi.length
   // Da soli la famiglia sta solo all'ultimo passo; in famiglia le pastiglie in ogni passo.

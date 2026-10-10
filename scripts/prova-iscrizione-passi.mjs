@@ -167,6 +167,13 @@ console.log('\n4. i passi')
   ok('adulto: cinque passi', m.passiDi('adulto', false), ADULTO)
   ok('figlio: sei passi', m.passiDi('figlio', false), FIGLIO)
   ok('figlio e anche tu: sette passi', m.passiDi('figlio', true), [...FIGLIO.slice(0, 5), 'ANCHE TU: POCHE COSE', 'CONTROLLA E INVIA'])
+  // In famiglia i dati del secondo adulto non sono «tuoi»: il titolo dice di chi sono.
+  const conNome = (nome) => ({ ...m.nuovoStato('adulto'), risposte: { ...m.nuovoStato('adulto').risposte, nome } })
+  ok('chi compila: I TUOI DATI', m.nomiDeiPassi(conNome('Paolo'), 0)[0], 'I TUOI DATI')
+  ok('il secondo adulto, col nome: I DATI DI MARIA', m.nomiDeiPassi(conNome('maria'), 1)[0], 'I DATI DI MARIA')
+  ok('il secondo adulto, senza nome: I DATI DI ADULTO 2', m.nomiDeiPassi(conNome(''), 1)[0], 'I DATI DI ADULTO 2')
+  ok('gli altri passi non cambiano', m.nomiDeiPassi(conNome('Maria'), 1).slice(1), ADULTO.slice(1))
+  ok('un bambino aggiunto: come sempre', m.nomiDeiPassi(m.nuovoStato('figlio'), 2), FIGLIO)
   ok('un adulto non ha un «anche tu»', m.passiDi('adulto', true), ADULTO)
   // Cosa si fa in ogni passo lo dice la lib: la schermata non ripete l'ordine.
   ok('tipi: adulto', m.tipiDiPassi('adulto', false), ['dati', 'corso', 'modulo', 'documenti', 'riepilogo'])
