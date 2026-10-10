@@ -636,11 +636,10 @@ function Flusso({
     setGuaio(null)
     setFase({ tipo: 'invio' })
     // Ogni persona ha la sua richiesta, e il suo modulo con la sua firma.
-    const perPersona = tutte.flatMap((p, i) => {
-      return P.richiesteDaMandare(p, P.siglaDelGenitore(p, luoghi, provincia), (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[i]))
-    })
-    // La ricevuta è una per tutto il modulo: va in ogni richiesta.
-    const daMandare = P.conLaRicevutaInTutte(perPersona, P.ricevutaDelModulo(tutte))
+    // La ricevuta è una per tutto il modulo: richiesteDelModulo la mette in ogni richiesta.
+    const daMandare = P.richiesteDelModulo(tutte, (p, i) =>
+      P.richiesteDaMandare(p, P.siglaDelGenitore(p, luoghi, provincia), (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[i])),
+    )
     try {
       gestisci(await P.mandaRichieste(d, daMandare))
     } catch (e) {

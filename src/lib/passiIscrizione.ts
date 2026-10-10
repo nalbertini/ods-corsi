@@ -1074,6 +1074,10 @@ export const conLaRicevutaInTutte = (daMandare: DaMandare[], ricevuta: File | un
     return { ...x, file: ricevuta ? { ...file, ricevuta } : file }
   })
 
+/** Le richieste di tutto il modulo: quelle di ogni persona (`perPersona`), con la ricevuta del modulo in ognuna. */
+export const richiesteDelModulo = (persone: StatoPassi[], perPersona: (s: StatoPassi, i: number) => DaMandare[]): DaMandare[] =>
+  conLaRicevutaInTutte(persone.flatMap(perPersona), ricevutaDelModulo(persone))
+
 /** Cosa dire se il PDF non viene: «Ho il foglio firmato» c'è tra le scelte solo senza «Anche tu». */
 export const moduloNonSiPrepara = (conFoglioInFoto: boolean) =>
   'Non riesco a preparare il modulo con la tua firma. Riprova fra un momento. ' +

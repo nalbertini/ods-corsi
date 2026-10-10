@@ -2096,6 +2096,13 @@ console.log('\n39. QUANTO PAGHI: «più persone» è una regola sola, e la riga 
   ok('la riga della ricevuta: caricata, porta a QUANTO PAGHI', [riga(m.conLaRicevuta([adulto(), adulto({ nome: 'Paola' })], ric, 1000))?.valore, riga([adulto()])?.passo], ['ricevuta.pdf', 'pagamento'])
   ok('la riga della ricevuta: chiunque l’abbia, la trova', riga([adulto(), adulto({ nome: 'Paola' }, { file: { ricevuta: ric } })])?.manca, undefined)
   ok('la riga della ricevuta: non caricata, CARICA', [riga([adulto()])?.manca, riga([adulto()])?.carica], [true, 'ricevuta'])
+  // L'invio passa da qui: la famiglia diventa richieste, e la ricevuta del modulo va in ognuna.
+  const pdf = async () => F('modulo.pdf')
+  const tre = m.conLaRicevuta([adulto(), adulto({ nome: 'Paola' }), figlio({ genitoreNome: 'Luca' }, { firmatario: 0 })], ric, 1000)
+  const inviate = chiama(() => m.richiesteDelModulo(tre, (p) => m.richiesteDaMandare(p, 'TO', pdf)))
+  ok('l’invio di una famiglia di 3: tre richieste, ognuna con la ricevuta', Array.isArray(inviate) ? inviate.map((x) => x.file.ricevuta?.name) : inviate, ['ricevuta.pdf', 'ricevuta.pdf', 'ricevuta.pdf'])
+  const senza = chiama(() => m.richiesteDelModulo([adulto(), adulto({ nome: 'Paola' })], (p) => m.richiesteDaMandare(p, 'TO', pdf)))
+  ok('senza ricevuta, nessuna la porta', Array.isArray(senza) ? senza.map((x) => 'ricevuta' in x.file) : senza, [false, false])
   ok('il riepilogo di uno solo usa la stessa riga', m.righeRiepilogo(adulto(), corsi).find((x) => x.cosa === 'ricevuta'), riga([adulto()]))
 }
 
