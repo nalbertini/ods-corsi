@@ -4,7 +4,8 @@
 -- dei corsi attivi, delle ricorrenze non finite; le tabelle restano chiuse.
 -- Gli stessi orari, nella metà di prova, li dà `orariAperti()` di
 -- `src/lib/richiesteProva.ts` (scripts/prova-richieste.mjs).
--- Si lancia dopo finto-supabase.sql, i file dello schema e 48-orari-aperti.sql.
+-- Si lancia dopo finto-supabase.sql, i file dello schema e 48-orari-aperti.sql;
+-- alla fine rilancia 06-iscrizioni.sql.
 \set ON_ERROR_STOP on
 set timezone = 'Europe/Rome';
 
@@ -73,4 +74,19 @@ select chi('11111111-1111-1111-1111-111111111111');
 set role authenticated;
 select atteso('la segreteria vede gli stessi orari',
   tenta($$select count(*)::text from orari_aperti()$$), '3');
+reset role;
+
+\echo ''
+\echo '--- 4. dopo aver rilanciato 06-iscrizioni.sql ---'
+-- 06 toglie ad `anon` le funzioni che non conosce: se il 48 c'è già, deve
+-- ridargli orari_aperti(), come fa per il vestiario.
+\ir ../06-iscrizioni.sql
+-- 06 toglie ad `anon` anche gli aiuti della prova, che stanno in `public`:
+-- glieli si ridà, e solo quelli.
+grant execute on function tenta(text), atteso(text, text, text), chi(text) to anon, authenticated;
+select chi('');
+set role anon;
+select atteso('anon chiama ancora orari_aperti()',
+  tenta($$select count(*)::text from orari_aperti()$$), '3');
+select atteso('e le ricorrenze restano chiuse', tenta($$select count(*)::text from ricorrenze$$), 'NEGATO: …');
 reset role;

@@ -657,6 +657,12 @@ export function scegliSuoCorso(suo: Suo | undefined, id: string, paralleli: Read
   return { ...s, corsi: [...s.corsi, id], allaStessaOra: paralleli.some((p) => p.id === id) ? [...prima, id] : prima }
 }
 
+/** L'avviso sotto l'elenco del genitore, se il figlio ha cambiato corso. */
+export function fraseNonPiuAllaStessaOra(nomi: string[], nome: string): string | undefined {
+  if (!nomi.length) return undefined
+  return `${elenco(nomi)} ${nomi.length > 1 ? 'non sono' : 'non è'} più alla stessa ora di ${nome}.`
+}
+
 /** I corsi del genitore che erano alla stessa ora quando li ha scelti, e col figlio cambiato non lo sono più. */
 export const nonPiuAllaStessaOra = (suo: Suo | undefined, paralleli: ReadonlyArray<{ id: string }>): string[] =>
   (suo?.corsi ?? []).filter((id) => suo?.allaStessaOra?.includes(id) && !paralleli.some((p) => p.id === id))
@@ -696,10 +702,9 @@ export function contoFamiglia(
 }
 
 /**
- * Il conto di bambino e genitore, dallo stato: lo stesso per la proposta del
- * passo «corsi» (`proposta`: il corso parallelo, con la formula del figlio) e
- * per il riepilogo (il corso e la formula scelti dal genitore). Senza genitore
- * e senza proposta non c'è un conto di famiglia.
+ * Il conto di bambino e genitore, dallo stato: lo stesso nel riquadro del
+ * passo «corsi» e nel riepilogo, col corso e la formula scelti dal genitore.
+ * Senza genitore non c'è un conto di famiglia.
  */
 /** Chi si iscrive nello stato dei passi, come entra in ogni conto: nome (o «Il bambino» / «Chi si iscrive»), corsi e formula. */
 const persona = (s: StatoPassi, corsi: CorsoRef[]) => ({
@@ -708,9 +713,9 @@ const persona = (s: StatoPassi, corsi: CorsoRef[]) => ({
   formula: s.risposte.formula,
 })
 
-export function contoDelloStato(s: StatoPassi, corsi: CorsoRef[], listino: Listino, giorno: string, proposta?: CorsoRef) {
+export function contoDelloStato(s: StatoPassi, corsi: CorsoRef[], listino: Listino, giorno: string) {
   const ref = (ids: string[]) => corsi.filter((c) => ids.includes(c.id))
-  const lui = proposta ? { corsi: [proposta], formula: s.risposte.formula } : s.chi === 'figlio' && s.ancheTu && s.suo ? { corsi: ref(s.suo.corsi), formula: s.suo.formula } : undefined
+  const lui = s.chi === 'figlio' && s.ancheTu && s.suo ? { corsi: ref(s.suo.corsi), formula: s.suo.formula } : undefined
   if (!lui) return undefined
   return contoFamiglia(
     [
