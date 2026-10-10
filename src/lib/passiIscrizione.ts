@@ -398,15 +398,21 @@ const euroBreve = (cent: number) => `${cent < 0 ? '−' : ''}${Math.abs(cent) % 
 export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
   const tipo = tipiDiPassi(s.chi, s.ancheTu === true)[passo - 1]
   if (tipo !== 'corso' && tipo !== 'documenti') return undefined
-  const c = contoDiChiSiIscrive(s, corsi, listino, giorno)
+  const c = contoCorto(persona(s, corsi), listino, giorno)
+  // Col genitore che ha scelto il suo corso il totale è uno solo, quello della famiglia: lo stesso del riepilogo.
+  const famiglia = c && listino && s.chi === 'figlio' && s.ancheTu && s.suo?.corsi.length ? contoDelloStato(s, corsi, listino, giorno) : undefined
+  const suo = famiglia && s.suo && contoCorto({ corsi: corsi.filter((x) => s.suo?.corsi.includes(x.id)), formula: s.suo.formula }, listino, giorno)
+  if (c && famiglia && suo) {
+    const sconto = famiglia.sconto ? ` · Sconto famiglia ${euroBreve(-famiglia.sconto)}` : ''
+    return { righe: `${persona(s, corsi).chi}: ${c.righe} · Tu: ${suo.righe}${sconto}`, totale: euroBreve(famiglia.totale) }
+  }
   return c && { righe: c.righe, totale: c.totale }
 }
 
-/** Il conto di chi si iscrive (non della famiglia), scritto corto; `undefined` senza listino o senza un corso che c'è nell'elenco. */
-function contoDiChiSiIscrive(s: StatoPassi, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string; senzaPrezzo: string[] } | undefined {
-  const lui = persona(s, corsi)
+/** Il conto di una persona, scritto corto; `undefined` senza listino o senza un corso che c'è nell'elenco. */
+function contoCorto(lui: { corsi: CorsoRef[]; formula: Formula }, listino: Listino | undefined, giorno: string): { righe: string; totale: string; senzaPrezzo: string[] } | undefined {
   if (!listino || !lui.corsi.length) return undefined
-  const conto = stimaIscrizione(lui, [], giorno, listino)
+  const conto = stimaIscrizione({ chi: '', ...lui }, [], giorno, listino)
   // Un corso senza prezzo nel listino non vale 0: lo dice la riga, e il totale è quello che si sa.
   const daConfermare = conto.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`)
   // Le righe si accorciano: «Quota associativa» → «Quota», «Annuale Judo adulti» → «Judo adulti annuale».
@@ -441,7 +447,7 @@ export function riassuntoEsito(
   contatti: { email: string; telefono: string }
 } {
   const famiglia = listino && s.chi === 'figlio' && s.ancheTu && s.suo ? contoDelloStato(s, corsi, listino, giorno) : undefined
-  const solo = famiglia ? undefined : contoDiChiSiIscrive(s, corsi, listino, giorno)
+  const solo = famiglia ? undefined : contoCorto(persona(s, corsi), listino, giorno)
   const importo = famiglia ? euroBreve(famiglia.totale) : solo?.totale
   const daPagare = !s.file.ricevuta
   return {
@@ -629,7 +635,10 @@ export function corsiPerEtaConStessaOra(corsi: CorsoRef[], listino: Listino | un
     const riga = [giorni, c.riga ?? (orarioDetto(orari, c.id) || undefined)].filter(Boolean).join(' · ')
     return { id: c.id, nome: c.nome, ...(riga && { riga }), ...(c.prezzoDaConfermare && { prezzoDaConfermare: true as const }) }
   })
-  return { ...perEta, stessaOra, adatti: perEta.adatti.filter((c) => !ids.has(c.id)), senzaAnni: perEta.senzaAnni.filter((c) => !ids.has(c.id)) }
+  // Fuori dalla stessa ora restano i corsi per lui; quelli del figlio no. Senza riga del listino, l'orario del calendario.
+  const resto = (elenco: CorsoPerEta[]) =>
+    elenco.filter((c) => !ids.has(c.id) && !corsiFiglio.includes(c.id)).map((c) => (c.riga ? c : { ...c, ...(orarioDetto(orari, c.id) && { riga: orarioDetto(orari, c.id) }) }))
+  return { ...perEta, stessaOra, adatti: resto(perEta.adatti), senzaAnni: resto(perEta.senzaAnni) }
 }
 
 /** Il titolo e la frase di «Ti iscrivi anche tu?»: uno o due corsi alla stessa ora si nominano, da tre in su si contano. */

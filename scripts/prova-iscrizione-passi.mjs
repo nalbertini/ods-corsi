@@ -696,12 +696,16 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   const perEta = m.corsiPerEta(corsi, listino.corsi, GENITORE, listino.senzaPrezzoVaBene)
   const conOra = (figlio, o = orari, c = corsi) => m.corsiPerEtaConStessaOra(c, listino, GENITORE, figlio, o)
   const ep = conOra(['judo-3'])
+  // Senza listino non si sa l'età dei corsi: proporre «stessa ora» metterebbe in cima anche quelli dei piccoli.
+  ok('senza listino nessun corso alla stessa ora', m.corsiPerEtaConStessaOra(corsi, undefined, GENITORE, ['judo-3'], orari).stessaOra, [])
   const riga = (id) => ep.stessaOra.find((c) => c.id === id)?.riga
   const rigaListino = (id) => [...perEta.adatti, ...perEta.senzaAnni].find((c) => c.id === id)?.riga
   ok('stessaOra: gli stessi corsi di corsiParalleli', ids(ep.stessaOra), ids(solo))
   ok('stessaOra: tolti dagli adatti', ep.adatti.map((c) => c.id), perEta.adatti.filter((c) => !ids(solo).includes(c.id)).map((c) => c.id))
-  ok('stessaOra: tolti dai senza anni', ep.senzaAnni.map((c) => c.id), perEta.senzaAnni.filter((c) => !ids(solo).includes(c.id)).map((c) => c.id))
-  ok('altri e nascosti come corsiPerEta', [ep.altri, ep.nascosti], [perEta.altri, perEta.nascosti])
+  // Dai senza anni escono solo quelli alla stessa ora e quelli del figlio: il genitore li vede già, o non sono per lui.
+  ok('senza anni: tolti quelli alla stessa ora e quelli del figlio', ep.senzaAnni.map((c) => c.id), perEta.senzaAnni.map((c) => c.id).filter((id) => !ids(solo).includes(id) && id !== 'judo-3'))
+  ok('altri: come corsiPerEta', ep.altri.map((c) => c.id), perEta.altri.map((c) => c.id))
+  ok('nascosti come corsiPerEta', ep.nascosti, perEta.nascosti)
   ok('riga, giorni in parte: «stessa ora il lunedì» e la riga del listino', riga('aikido-3'), `stessa ora il lunedì · ${rigaListino('aikido-3')}`)
   ok('riga, tre giorni: «il lunedì, il mercoledì e il venerdì»', riga('lotta-3'), `stessa ora il lunedì, il mercoledì e il venerdì · ${rigaListino('lotta-3')}`)
   // Con Judo 3 e agonisti, Aikido 3 (lun, gio) ha tutti i giorni in comune.
@@ -730,7 +734,23 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   ok('il corso coi giorni in parte viene dopo quelli con tutti i giorni', ids(ep3.stessaOra).slice(-1), ['pilates'])
 
   ok('senza orari: stessaOra vuoto', conOra(['judo-3'], []).stessaOra, [])
-  ok('senza orari: gli altri elenchi come corsiPerEta', ((x) => [x.adatti, x.senzaAnni, x.altri, x.nascosti])(conOra(['judo-3'], [])), [perEta.adatti, perEta.senzaAnni, perEta.altri, perEta.nascosti])
+  const senzaOrari = conOra(['judo-3'], [])
+  ok('senza orari: adatti come corsiPerEta', senzaOrari.adatti, perEta.adatti)
+  ok('senza orari: senza anni come corsiPerEta, tolto il corso del figlio', senzaOrari.senzaAnni.map((c) => [c.id, c.riga]), perEta.senzaAnni.filter((c) => c.id !== 'judo-3').map((c) => [c.id, c.riga]))
+  ok('senza orari: altri e nascosti', [senzaOrari.altri, senzaOrari.nascosti], [perEta.altri, perEta.nascosti])
+
+  // B e C, col figlio solo in Judo agonisti (mar, gio 18-19.30).
+  const ag = conOra(['judo-agonisti'])
+  const rigaDi = (elenco, id) => elenco.find((c) => c.id === id)?.riga
+  ok('Body functional (mer) non è alla stessa ora: resta nei senza anni', [ag.stessaOra.some((c) => c.id === 'body-functional'), ag.senzaAnni.some((c) => c.id === 'body-functional')], [false, true])
+  ok('senza riga del listino, la riga è l’orario del calendario', rigaDi(ag.senzaAnni, 'body-functional'), 'mercoledì 18.00-19.00')
+  ok('e così per gli altri senza voce: Pesistica 1', rigaDi(ag.senzaAnni, 'pesi-1'), 'lunedì, mercoledì e venerdì 17.00-18.00')
+  ok('«prezzo da confermare» non sta nella riga: lo dice la schermata', ag.senzaAnni.some((c) => c.riga?.includes('prezzo da confermare')), false)
+  ok('gli adatti tengono la riga del listino', rigaDi(ag.adatti, 'judo-adulti'), rigaDi(perEta.adatti, 'judo-adulti'))
+  ok('senza anni: tolti quelli alla stessa ora e quelli del figlio', ag.senzaAnni.map((c) => c.id), perEta.senzaAnni.map((c) => c.id).filter((id) => !ids(ag.stessaOra).includes(id) && id !== 'judo-agonisti'))
+  // Il listino non dice per che anni è Psicomotricità («3-4-5 anni» scritto): resta dov'è, non si propone e basta.
+  ok('Psicomotricità resta nei senza anni, non negli altri', [ag.senzaAnni.some((c) => c.id === 'psicomotricita'), ag.altri.some((c) => c.id === 'psicomotricita')], [true, false])
+  ok('il corso del figlio non è né nei senza anni né alla stessa ora', [ag.senzaAnni.some((c) => c.id === 'judo-agonisti'), ag.stessaOra.some((c) => c.id === 'judo-agonisti')], [false, false])
 
   // Il riquadro «Ti iscrivi anche tu?»: il titolo dice cosa c'è alla stessa ora.
   const frase = (nome, del, par) => m.fraseAncheTu(nome, del, par.map((n) => ({ nome: n })))
@@ -1100,17 +1120,27 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('figlio, passo dei documenti (5): lo stesso', t(figlio(), 5), t(figlio(), 3))
   for (const passo of [1, 2, 4, 6]) ok(`figlio, passo ${passo}: il totale non c’è`, t(figlio(), passo), undefined)
 
-  // Con «Anche tu» il totale sopra la barra resta quello del bambino: la famiglia, con lo sconto, è nel riepilogo.
+  // Con «Anche tu» e il corso del genitore scelto, il totale sopra la barra è quello della famiglia, con lo sconto: lo stesso del riepilogo.
   const famiglia = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
-  // Il totale sopra la barra è di chi si iscrive, come QUANTO COSTA nello stesso passo; il conto della famiglia con lo sconto sta nel riepilogo.
-  ok('anche tu, passo dei documenti (5): il totale è quello del bambino, come QUANTO COSTA', t(famiglia, 5)?.totale, '350 €')
+  const FAMIGLIA = { righe: 'Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Judo adulti annuale 360 € · Sconto famiglia −60 €', totale: '700 €' }
+  ok('anche tu, passo del corso (3): il conto della famiglia, con lo sconto', t(famiglia, 3), FAMIGLIA)
+  ok('anche tu, passo dei documenti (5): lo stesso', t(famiglia, 5), FAMIGLIA)
+  ok('anche tu: il totale è quello di contoDelloStato', t(famiglia, 3)?.totale, `${m.contoDelloStato(famiglia, corsi, listino, giorno).totale / 100} €`)
+  const famTrim = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'trimestre', scelte: {} } })
+  ok('anche tu, il genitore a trimestre: nessuno sconto, nessuna riga di sconto', t(famTrim, 3), { righe: 'Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Judo adulti trimestre 140 €', totale: '540 €' })
+  const conPsico = [...corsi, { id: 'psico', nome: 'Psicomotricità' }]
+  const famPsico = figlio({}, { ancheTu: true, suo: { corsi: ['psico'], formula: 'annuale', scelte: {} } })
+  const psico = m.totaleDelPasso(famPsico, 3, conPsico, listino, giorno)
+  ok('anche tu, il corso del genitore senza prezzo: lo dice la sua parte', psico?.righe?.startsWith('Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Psicomotricità prezzo da confermare'), true)
+  ok('anche tu, il corso del genitore senza prezzo: il totale è quello di contoDelloStato', psico?.totale, `${m.contoDelloStato(famPsico, conPsico, listino, giorno).totale / 100} €`)
+  ok('senza «anche tu»: solo il bambino', t(figlio({}, { ancheTu: false, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } }), 3), { righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
   ok('anche tu: il passo «anche tu» (6) non lo mostra', t(famiglia, 6), undefined)
   // Un corso senza prezzo nel listino non vale 0: la riga lo dice, e il totale è solo quello che si sa.
   const senzaPrezzo = (l = listino) => m.totaleDelPasso(adulto({ corsi: ['psico'] }), 2, [...corsi, { id: 'psico', nome: 'Psicomotricità' }], l, giorno)
   ok('corso senza prezzo: la riga dice «prezzo da confermare»', senzaPrezzo()?.righe, 'Quota 50 € + Psicomotricità prezzo da confermare')
   ok('corso senza prezzo: il totale è la sola quota', senzaPrezzo()?.totale, '50 €')
   const senzaSuo = figlio({}, { ancheTu: true, suo: { corsi: [], formula: 'annuale', scelte: {} } })
-  ok('anche tu, ma il corso del genitore non è ancora scelto: solo il bambino', t(senzaSuo, 5)?.totale, '350 €')
+  ok('anche tu, ma il corso del genitore non è ancora scelto: solo il bambino', t(senzaSuo, 5), { righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
 }
 
 // 25. La riga del riepilogo e le parole del componente: i numeri dei passi si calcolano, non si scrivono.
