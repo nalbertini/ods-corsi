@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.57.0 — 11 ottobre 2026
+
+### Novità
+
+- Per iscrivere la famiglia, anche i corsi subito prima o dopo il tuo e negli stessi giorni
+
 ## 0.56.0 — 10 ottobre 2026
 
 ### Novità
