@@ -131,7 +131,8 @@ bambino sceglie fra **IO** col suo nome (**IO, PAOLO**: si iscrive anche lui, e 
 fiscale, residenza, contatti, carta d'identità e firma sono quelli già scritti
 per il bambino, e restano da dare solo il corso, come paga, il tesseramento,
 le foto e il certificato) e **UN ALTRO ADULTO**; per un bambino, se può
-firmare più di un adulto, si sceglie chi firma per lui. Nessuno da
+firmare più di un adulto, si sceglie chi firma per lui. Un fratello che firmi tu ha già
+la tua carta d'identità, il tuo ok e dove sei nato: si firma solo il suo modulo. Nessuno da
 aggiungere? **AVANTI, SOLO IO** (o **AVANTI**) e si va a QUANTO PAGHI.
 
 Chi si aggiunge parte dal suo primo passo. Al suo passo del corso, in cima,

@@ -2,7 +2,7 @@ import type { CorsoPerEta, CorsoRef, Listino } from './listino'
 import { corsiPerEta, voceDelCorso } from './listino'
 import type { VoceCosto } from './costi'
 import type { Abbonamento, RigaStima } from './nucleo'
-import { causale, stimaIscrizione } from './nucleo'
+import { causale, SCONTO_FAMIGLIA, stimaIscrizione } from './nucleo'
 import type { CampoModulo, DatiRichiesta, DatiRichieste, Formula, OrarioAperto, TipoFile } from './richieste'
 import { certificatoDaPortare, dataDaCf, NOTE_NEL_DATABASE, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf } from './richieste'
 import type { Luoghi } from './codiceFiscale'
@@ -44,6 +44,8 @@ export interface StatoPassi {
   avvisoFirma?: string
   /** In famiglia, per un bambino: il posto dell'adulto che firma per lui (`conDatiDellaFamiglia` ne prende i dati). 0 con la persona 0 bambino: chi compila. */
   firmatario?: number
+  /** Il corso alla stessa ora gli è già stato proposto (`alPassoDelCorso`): se l'ha tolto, resta tolto. */
+  corsoProposto?: true
   /** Solo nella prima persona, con la ricevuta del modulo: il totale (centesimi) e quante persone c'erano quando si è caricata. */
   ricevutaPer?: { totale: number; persone: number }
 }
@@ -259,7 +261,7 @@ export function chiFirma(persone: StatoPassi[], i: number): string | undefined {
 }
 
 /** Nel passo del modulo dell’io, la casella delle sue foto: col suo nome. */
-export const etichettaSueFoto = (genitoreNome: string | undefined): string => `LE FOTO E I VIDEO ${diChiFirma(genitoreNome).toUpperCase()}`
+export const etichettaSueFoto = (nome: string | undefined): string => `LE FOTO E I VIDEO ${diChiFirma(nome).toUpperCase()}`
 
 /** La riga della carta d'identità nel riepilogo: di chi firma per un bambino, senza nome per un adulto. */
 export const cartaNelRiepilogo = (chi: Chi, genitoreNome: string | undefined): string => (chi === 'figlio' ? `Carta d’identità ${diChiFirma(genitoreNome)}` : 'Carta d’identità')
@@ -410,7 +412,8 @@ const firmaChiCompila = (persone: StatoPassi[], indice: number) => indice === 0 
  */
 export function aggiungiFamiliare(persone: StatoPassi[], chi: Chi, indiceFirmatario: number, io = false): StatoPassi[] {
   if (!puoiAggiungere(persone.length)) throw new Error(frasiDelMassimo.testo)
-  if (io && (chi !== 'adulto' || persone[0]?.chi !== 'figlio')) throw new Error('Ti aggiungi così solo quando iscrivi un bambino: scegli UN ALTRO ADULTO.')
+  if (io && chi !== 'adulto') throw new Error('Ti aggiungi come adulto: un bambino si aggiunge con + AGGIUNGI UN BAMBINO.')
+  if (io && persone[0]?.chi !== 'figlio') throw new Error('Ti aggiungi così solo quando iscrivi un bambino: scegli UN ALTRO ADULTO.')
   if (io && persone.some((p) => p.io)) throw new Error('Ci sei già, nel modulo: scegli UN ALTRO ADULTO.')
   if (chi === 'figlio' && persone[indiceFirmatario]?.chi !== 'adulto' && !firmaChiCompila(persone, indiceFirmatario))
     throw new Error('Per firmare serve un adulto della famiglia: scegline un altro.')
@@ -508,8 +511,16 @@ export function conDatiDellaFamiglia(persone: StatoPassi[]): StatoPassi[] {
     if (s.io) return conDatiDelBambino(s, persone[0])
     const r = s.risposte
     const firma = datiDiChiFirma(persone, s)
+    // Un fratello firmato da chi compila ha lo stesso genitore del bambino 0: la sua carta, il suo ok e dove è nato.
+    // La firma no: il modulo del fratello si firma per lui.
+    const genitore0 = s.chi === 'figlio' && firma && s.firmatario !== undefined && (firmaChiCompila(persone, s.firmatario) || persone[s.firmatario]?.io) ? persone[0] : undefined
     return {
       ...s,
+      ...(genitore0 && {
+        privacy: s.privacy || genitore0.privacy,
+        natoAGenitore: oppure(s.natoAGenitore, genitore0.natoAGenitore),
+        file: { ...s.file, documento: s.file.documento ?? genitore0.file.documento, 'documento-retro': s.file['documento-retro'] ?? genitore0.file['documento-retro'] },
+      }),
       risposte: {
         ...r,
         indirizzo: oppure(r.indirizzo, prima.indirizzo),
@@ -519,6 +530,7 @@ export function conDatiDellaFamiglia(persone: StatoPassi[]): StatoPassi[] {
         telefono: oppure(r.telefono, prima.telefono),
         telefono2: oppure(r.telefono2, prima.telefono2),
         ...(firma ? { genitoreNome: oppure(r.genitoreNome, firma.nome), genitoreCognome: oppure(r.genitoreCognome, firma.cognome), genitoreCodiceFiscale: oppure(r.genitoreCodiceFiscale, firma.codiceFiscale) } : {}),
+        ...(genitore0 && { regolamento: r.regolamento || genitore0.risposte.regolamento }),
       },
     }
   })
@@ -536,13 +548,16 @@ export function fermoDellaFamiglia(persone: StatoPassi[]): string | undefined {
     }
     if (s.chi !== 'figlio' || s.firmatario === undefined || datiDiChiFirma(persone, s)) continue
     const lui = nomeDellaPersona(persone[s.firmatario], s.firmatario)
+    // Il posto 0 è un bambino: per il fratello firma chi compila, e manca solo che scriva i suoi dati di genitore.
+    if (firmaChiCompila(persone, s.firmatario))
+      return `Per ${nomeDellaPersona(s, i)} firma chi compila: scrivi i tuoi dati nel passo IL GENITORE CHE FIRMA di ${lui}, oppure chiama la segreteria.`
     return `${lui} non è più un adulto, e ${nomeDellaPersona(s, i)} ha bisogno di un adulto che firmi: rimetti ${lui} come adulto, oppure chiama la segreteria.`
   }
   return undefined
 }
 
-/** Il foglio si firma in foto solo da soli, per chi l'ha scelto: in famiglia si firma qui. La persona non conta più (era per «Anche tu»), il posto resta per chi chiama. */
-export const firmaInFoto = (_s: StatoPassi, sceltaLaFoto: boolean, quante: number): boolean => sceltaLaFoto && quante === 1
+/** Il foglio si firma in foto solo da soli, per chi l'ha scelto: in famiglia si firma qui. */
+export const firmaInFoto = (sceltaLaFoto: boolean, quante: number): boolean => sceltaLaFoto && quante === 1
 
 /** La provincia di chi firma per un bambino: la dice il suo codice fiscale, se no quella scritta a mano. */
 export const siglaDelGenitore = (s: StatoPassi, luoghi: Luoghi | null | undefined, scritta: string): string =>
@@ -808,19 +823,19 @@ const siToccano = (a: OrarioAperto, b: OrarioAperto) =>
 export type CorsoParallelo = CorsoPerEta & { stessaOra: true; giorni?: number[] }
 
 /**
- * I corsi per l'età del genitore che si fanno mentre il figlio è in palestra:
+ * I corsi per l'età di chi si aggiunge (`natoIl`) che si fanno mentre la persona 0 è in palestra:
  * dal calendario, almeno un giorno in comune. `giorni` c'è solo se non tutti i
- * giorni del corso del genitore lo sono. Prima quelli con tutti i giorni.
+ * giorni del corso proposto lo sono. Prima quelli con tutti i giorni.
  */
-export function corsiParalleli(corsi: CorsoRef[], voci: VoceCosto[], natoIlGenitore: string, corsiFiglio: string[], orari: OrarioAperto[]): CorsoParallelo[] {
-  const delFiglio = orari.filter((o) => corsiFiglio.includes(o.corsoId))
+export function corsiParalleli(corsi: CorsoRef[], voci: VoceCosto[], natoIl: string, corsiDellaPersona0: string[], orari: OrarioAperto[]): CorsoParallelo[] {
+  const delFiglio = orari.filter((o) => corsiDellaPersona0.includes(o.corsoId))
   if (!delFiglio.length) return []
-  const perEta = corsiPerEta(corsi, voci, natoIlGenitore)
+  const perEta = corsiPerEta(corsi, voci, natoIl)
   // Senza fascia d'età si propongono solo i corsi che il listino non ha (Preparazione atletica 1, 2, 3):
   // una voce senza anni di nascita ha l'età scritta a parole, spesso dei piccoli («3-4-5 anni»).
   const senzaVoce = perEta.senzaAnni.filter((c) => !voceDelCorso(voci, c))
   const trovati = [...perEta.adatti, ...senzaVoce].flatMap((c): CorsoParallelo[] => {
-    if (corsiFiglio.includes(c.id)) return []
+    if (corsiDellaPersona0.includes(c.id)) return []
     const suoi = orari.filter((o) => o.corsoId === c.id)
     const giorni = [...new Set(suoi.map((o) => o.giorno))]
     const comuni = giorni.filter((g) => suoi.some((o) => o.giorno === g && delFiglio.some((f) => siToccano(o, f))))
@@ -852,13 +867,13 @@ export function orarioDetto(orari: OrarioAperto[], corsoId: string, soloInizio =
 }
 
 /**
- * I corsi per l'età del genitore, con quelli alla stessa ora del figlio a
- * parte, in cima: il gruppo dice «alla stessa ora di <di>», la riga solo i
+ * I corsi per l'età `natoIl`, con quelli alla stessa ora della persona 0 a
+ * parte, in cima: il gruppo dice «alla stessa ora di <nome>», la riga solo i
  * giorni quando non sono tutti, poi età e orari del listino (o del calendario).
  */
-export function corsiPerEtaConStessaOra(corsi: CorsoRef[], listino: Listino | undefined, natoIl: string, corsiFiglio: string[], orari: OrarioAperto[]) {
+export function corsiPerEtaConStessaOra(corsi: CorsoRef[], listino: Listino | undefined, natoIl: string, corsiDellaPersona0: string[], orari: OrarioAperto[]) {
   const perEta = corsiPerEta(corsi, listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
-  const paralleli = listino ? corsiParalleli(corsi, listino.corsi, natoIl, corsiFiglio, orari) : []
+  const paralleli = listino ? corsiParalleli(corsi, listino.corsi, natoIl, corsiDellaPersona0, orari) : []
   const ids = new Set(paralleli.map((c) => c.id))
   const tutti = new Map([...perEta.adatti, ...perEta.senzaAnni].map((c) => [c.id, c]))
   const stessaOra = paralleli.map((p): CorsoPerEta => {
@@ -867,22 +882,25 @@ export function corsiPerEtaConStessaOra(corsi: CorsoRef[], listino: Listino | un
     const riga = [giorni, c.riga ?? (orarioDetto(orari, c.id) || undefined)].filter(Boolean).join(' · ')
     return { id: c.id, nome: c.nome, ...(riga && { riga }), ...(c.prezzoDaConfermare && { prezzoDaConfermare: true as const }) }
   })
-  // Fuori dalla stessa ora restano i corsi per lui; quelli del figlio no, nemmeno fra gli altri. Senza riga del listino, l'orario del calendario.
+  // Fuori dalla stessa ora restano i corsi per la sua età; quelli della persona 0 no, nemmeno fra gli altri. Senza riga del listino, l'orario del calendario.
   const resto = (elenco: CorsoPerEta[]) =>
-    elenco.filter((c) => !ids.has(c.id) && !corsiFiglio.includes(c.id)).map((c) => (c.riga ? c : { ...c, ...(orarioDetto(orari, c.id) && { riga: orarioDetto(orari, c.id) }) }))
-  return { ...perEta, stessaOra, adatti: resto(perEta.adatti), senzaAnni: resto(perEta.senzaAnni), altri: perEta.altri.filter((c) => !corsiFiglio.includes(c.id)) }
+    elenco.filter((c) => !ids.has(c.id) && !corsiDellaPersona0.includes(c.id)).map((c) => (c.riga ? c : { ...c, ...(orarioDetto(orari, c.id) && { riga: orarioDetto(orari, c.id) }) }))
+  return { ...perEta, stessaOra, adatti: resto(perEta.adatti), senzaAnni: resto(perEta.senzaAnni), altri: perEta.altri.filter((c) => !corsiDellaPersona0.includes(c.id)) }
 }
 
 // --- LA FAMIGLIA: le carte e il corso già spuntato -----------------------------
 
-/** I corsi di `ids` che si fanno mentre la persona 0 è in palestra: almeno una lezione che si tocca con una delle sue. */
+/**
+ * I corsi di `ids` che si fanno mentre la persona 0 è in palestra: almeno una lezione che si tocca con una delle sue.
+ * La carta non usa `corsiParalleli`: chi si aggiungerà non c'è ancora, e la sua età non si sa.
+ */
 function allaStessaOraDi(ids: readonly string[], dellaPersona0: readonly string[], orari: OrarioAperto[]): string[] {
   const sue = orari.filter((o) => dellaPersona0.includes(o.corsoId))
   return ids.filter((id) => !dellaPersona0.includes(id) && orari.some((o) => o.corsoId === id && sue.some((x) => siToccano(o, x))))
 }
 
 /**
- * Un corso per bambini: il listino gli dà anni di nascita, e un minorenne ci sta (l'ultimo anno è di chi ha meno di
+ * Un corso per bambini, senza sapere l'età del bambino che si aggiungerà (per questo non `corsiPerEta`): il listino gli dà anni di nascita, e un minorenne ci sta (l'ultimo anno è di chi ha meno di
  * 18 anni). Senza anni non si sa: non si propone a un bambino.
  */
 function perBambini(voci: VoceCosto[], corso: CorsoRef, anno: number): boolean {
@@ -959,10 +977,15 @@ export function carteDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], lis
 }
 
 /** La domanda in cima a LA FAMIGLIA, e cosa dice lo sconto: con la persona 0 bambino si parla di fratelli. */
-export const frasiDellaFamiglia = (zero: StatoPassi) =>
-  zero.chi === 'figlio'
+export const frasiDellaFamiglia = (zero: StatoPassi) => ({
+  percentuale: `−${Math.round(SCONTO_FAMIGLIA * 100)}%`,
+  ...(zero.chi === 'figlio'
     ? { domanda: 'Iscrivi anche qualcun altro della famiglia?', sconto: 'Sull’annuale che costa meno della famiglia, anche fra fratelli.' }
-    : { domanda: 'Iscrivi anche qualcuno della tua famiglia?', sconto: 'Sull’annuale che costa meno della famiglia. Più siete, più conviene.' }
+    : { domanda: 'Iscrivi anche qualcuno della tua famiglia?', sconto: 'Sull’annuale che costa meno della famiglia. Più siete, più conviene.' }),
+})
+
+/** AVANTI a LA FAMIGLIA: da soli, chi si iscrive da adulto lo legge come «nessun altro»; per il bambino e in famiglia resta AVANTI. */
+export const avantiDellaFamiglia = (persone: StatoPassi[]): string => (persone.length === 1 && persone[0]?.chi === 'adulto' ? 'AVANTI, SOLO IO' : 'AVANTI')
 
 /**
  * I corsi da spuntare quando un familiare arriva al suo passo del corso senza averne scelto uno: un adulto con la
@@ -980,6 +1003,18 @@ export function corsiGiaScelti(persone: StatoPassi[], i: number, corsi: CorsoRef
 }
 
 /**
+ * Un familiare arriva a un passo: se è il suo passo del corso e non gli è ancora stato proposto, si spuntano
+ * `corsiGiaScelti` (se ce ne sono) e si segna `corsoProposto`, così se li toglie restano tolti. Le persone
+ * aggiornate; com'erano negli altri casi.
+ */
+export function alPassoDelCorso(persone: StatoPassi[], i: number, passo: number, corsi: CorsoRef[], listino: Listino | undefined, orari: OrarioAperto[]): StatoPassi[] {
+  const lui = persone[i]
+  if (i === 0 || !lui || lui.corsoProposto || tipiDiPassi(lui.chi)[passo - 1] !== 'corso') return persone
+  const ids = corsiGiaScelti(persone, i, corsi, listino, orari)
+  return persone.map((p, k) => (k === i ? { ...p, corsoProposto: true as const, ...(ids.length && { risposte: { ...p.risposte, corsi: ids } }) } : p))
+}
+
+/**
  * I corsi di un familiare, coi corsi alla stessa ora della persona 0 in cima: per un adulto con la persona 0 adulta
  * i suoi corsi, per gli altri quelli per la sua età che si toccano coi suoi (`corsiPerEtaConStessaOra`). Gli altri
  * restano quelli per l'età, compresi i corsi della persona 0: un fratello può fare lo stesso.
@@ -994,12 +1029,6 @@ export function corsiDelFamiliare(persone: StatoPassi[], i: number, corsi: Corso
   const stessaOra = lui.chi === 'adulto' && persone[0].chi === 'adulto' ? tutti.filter((c) => zero.includes(c.id)) : corsiPerEtaConStessaOra(corsi, listino, natoIl, zero, orari).stessaOra
   const fuori = (elenco: CorsoPerEta[]) => elenco.filter((c) => !stessaOra.some((x) => x.id === c.id))
   return { ...perEta, stessaOra, adatti: fuori(perEta.adatti), senzaAnni: fuori(perEta.senzaAnni), altri: fuori(perEta.altri) }
-}
-
-/** L'avviso sotto l'elenco del genitore, se il figlio ha cambiato corso. */
-export function fraseNonPiuAllaStessaOra(nomi: string[], nome: string): string | undefined {
-  if (!nomi.length) return undefined
-  return `${elenco(nomi)} ${nomi.length > 1 ? 'non sono' : 'non è'} più alla stessa ora di ${nome}.`
 }
 
 /**

@@ -790,13 +790,9 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   ok('il corso del figlio non è né nei senza anni né alla stessa ora', [ag.senzaAnni.some((c) => c.id === 'judo-agonisti'), ag.stessaOra.some((c) => c.id === 'judo-agonisti')], [false, false])
 
   // «Ti iscrivi anche tu?» e il foglio del genitore (`fraseAncheTu`, `suoDopoIscrivoAncheMe`, `scegliSuoCorso`,
-  // `nonPiuAllaStessaOra`) non ci sono più: chi compila si aggiunge in LA FAMIGLIA come l'io, e il corso già
+  // `nonPiuAllaStessaOra`, `fraseNonPiuAllaStessaOra`) non ci sono più: chi compila si aggiunge in LA FAMIGLIA come l'io, e il corso già
   // spuntato lo dice `corsiGiaScelti` (sezione 40).
 
-  // L'avviso quando il figlio cambia corso: i nomi dei corsi del genitore non più alla stessa ora.
-  ok('nessun corso: nessun avviso', m.fraseNonPiuAllaStessaOra([], 'Manuela'), undefined)
-  ok('un corso: «… non è più alla stessa ora di Manuela.»', m.fraseNonPiuAllaStessaOra(['Preparazione atletica 3'], 'Manuela'), 'Preparazione atletica 3 non è più alla stessa ora di Manuela.')
-  ok('due corsi: «A e B non sono più…»', m.fraseNonPiuAllaStessaOra(['Preparazione atletica 3', 'Pesistica 2'], 'Manuela'), 'Preparazione atletica 3 e Pesistica 2 non sono più alla stessa ora di Manuela.')
 
   // Il corso dell'io si sceglie al suo passo del corso, come per ogni adulto della famiglia.
   ok('l’io senza corso: il suo passo del corso (2) chiede CORSO', nomi(io({ corsi: [] }), 2), ['CORSO'])
@@ -1810,10 +1806,13 @@ console.log('\n36. la famiglia: i dati si prendono quando servono, e le regole c
   const famiglia = [{ ...firmato[0] }, { ...firmato[1], risposte: { ...firmato[1].risposte, nome: 'Matteo' } }]
   ok('chi firma è un adulto: nessun fermo', chiama(() => m.fermoDellaFamiglia(famiglia)), undefined)
   const luiBambino = [m.cambiaScelta(famiglia[0], 'figlio'), famiglia[1]]
-  ok('chi firma non è più un adulto: il bambino si ferma, e la frase dice cosa fare', chiama(() => m.fermoDellaFamiglia(luiBambino)), 'Luca non è più un adulto, e Matteo ha bisogno di un adulto che firmi: rimetti Luca come adulto, oppure chiama la segreteria.')
+  // Luca ora è un bambino: Matteo, firmato dal posto 0, lo firma chi compila, che scrive i suoi dati di genitore (sezione 41).
+  ok('chi firma non è più un adulto: il bambino si ferma, e la frase dice cosa fare', chiama(() => m.fermoDellaFamiglia(luiBambino)), 'Per Matteo firma chi compila: scrivi i tuoi dati nel passo IL GENITORE CHE FIRMA di Luca, oppure chiama la segreteria.')
+  const paolaAdulta = adulto({ nome: 'Paola', codiceFiscale: CF_PAOLA })
+  ok('chi firma è un altro adulto che non lo è più: «rimetti … come adulto»', chiama(() => m.fermoDellaFamiglia([luca, m.cambiaScelta(paolaAdulta, 'figlio'), { ...famiglia[1], firmatario: 1 }])), 'Paola non è più un adulto, e Matteo ha bisogno di un adulto che firmi: rimetti Paola come adulto, oppure chiama la segreteria.')
   ok('e i dati di chi non è più adulto non passano al bambino', lei(luiBambino, 1).risposte.genitoreNome, '')
   ok('una persona sola non si ferma mai', chiama(() => m.fermoDellaFamiglia([luca])), undefined)
-  ok('un bambino senza firmatario (era un adulto che ha cambiato scelta) non si ferma', chiama(() => m.fermoDellaFamiglia([luca, m.cambiaScelta(adulto(), 'figlio', true)])), undefined)
+  ok('un bambino senza firmatario (era un adulto che ha cambiato scelta) non si ferma', chiama(() => m.fermoDellaFamiglia([luca, m.cambiaScelta(adulto(), 'figlio')])), undefined)
 
   // Aggiungere un familiare azzera la foto del modulo di tutti: in famiglia si firma qui.
   const inFoto = adulto({}, { file: { documento: F('d.jpg'), modulo: F('foglio.jpg') } })
@@ -1823,9 +1822,9 @@ console.log('\n36. la famiglia: i dati si prendono quando servono, e le regole c
   ok('lo stato di partenza non si tocca', !!inFoto.file.modulo, true)
 
   // Il foglio si firma in foto solo da soli, e solo se si è scelto così.
-  ok('foto: da soli, scelta la foto', chiama(() => m.firmaInFoto(luca, true, 1)), true)
-  ok('foto: non scelta', chiama(() => m.firmaInFoto(luca, false, 1)), false)
-  ok('foto: in famiglia no', chiama(() => m.firmaInFoto(luca, true, 2)), false)
+  ok('foto: da soli, scelta la foto', chiama(() => m.firmaInFoto(true, 1)), true)
+  ok('foto: non scelta', chiama(() => m.firmaInFoto(false, 1)), false)
+  ok('foto: in famiglia no', chiama(() => m.firmaInFoto(true, 2)), false)
 
   // La sigla della provincia del genitore: la dice il codice fiscale, se no quella scritta.
   const luoghi = { L219: [['TORINO', 'TO']] }
@@ -1995,7 +1994,7 @@ console.log('\n38. QUANTO PAGHI')
   const due = lista(() => m.conLaRicevuta([manuela, nicola], ric, 62200))
   const conLuca = lista(() => m.aggiungiFamiliare(due, 'adulto', 0))
   ok('dopo AGGIUNGI UN FAMILIARE la ricevuta resta, con il totale di quando si è caricata', [chiama(() => m.ricevutaDelModulo(conLuca)) === ric, conLuca[0]?.ricevutaPer], [true, { totale: 62200, persone: 2 }])
-  const cambiata = due.length ? [m.cambiaScelta(due[0], 'figlio', true), ...due.slice(1)] : []
+  const cambiata = due.length ? [m.cambiaScelta(due[0], 'figlio'), ...due.slice(1)] : []
   ok('dopo aver cambiato scelta alla prima persona la ricevuta resta', [chiama(() => m.ricevutaDelModulo(cambiata)) === ric, cambiata[0]?.ricevutaPer], [true, { totale: 62200, persone: 2 }])
 
   // B9: all'invio ogni richiesta porta la stessa ricevuta.
@@ -2233,6 +2232,88 @@ console.log('\n40. LA FAMIGLIA')
   ok('il conto di Matteo (Judo 3) e Paola (Judo adulti), annuali: 700 €, sconto 60 €', [modulo?.totale, modulo?.conSconto, fam?.totale, fam?.sconto], [70000, true, 70000, 6000])
   ok('ognuno la sua cifra, coi nomi', fam?.persone, [{ chi: 'Matteo', importo: 35000 }, { chi: 'Paola', importo: 41000 }])
   ok('la causale: i due nomi, il cognome una volta', chiama(() => m.causaleDelModulo(persone, corsi)), 'Iscrizione Matteo e Paola Rossi')
+}
+
+// ---------------------------------------------------------------------------
+console.log('\n41. LA FAMIGLIA: le regole scoperte nelle revisioni')
+{
+  const voce = (corso, corsoId, natiDal, natiAl, annuale, trimestre) => ({ corso, corsoId, eta: '', orari: [], natiDal, natiAl, prezzi: [{ saldo: annuale, annuale, trimestre }] })
+  const listino = {
+    quota: 50, saldoEntro: '2026-08-31', offerte: [],
+    corsi: [voce('Judo 3', 'judo-3', 2013, 2016, 300, 120), voce('Judo 2', 'judo-2', 2017, 2019, 280, 110), voce('Judo adulti', 'judo-adulti', undefined, 2008, 360, 140), voce('Pilates', 'pilates', undefined, 2008, 300, 120)],
+  }
+  const corsi = listino.corsi.map((v) => ({ id: v.corsoId, nome: v.corso }))
+  const ora = (corsoId, g, o, durata = 60) => ({ corsoId, giorno: g, ora: o, durata })
+  const orari = [ora('judo-3', 1, '18:00'), ora('judo-3', 4, '18:00'), ora('judo-2', 1, '18:00'), ora('judo-2', 4, '18:00'), ora('judo-adulti', 1, '18:00', 90), ora('judo-adulti', 4, '18:00', 90), ora('pilates', 2, '20:00')]
+  const pdf = async () => F('modulo.pdf')
+  const matteo = figlio()
+  const conCf = (nome, natoIl, donna = false, cambi = {}, sul = {}) => figlio({ nome, natoIl, codiceFiscale: cfDi(nome, 'Rossi', natoIl, donna), genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '', ...cambi }, { firmatario: 0, ...sul })
+
+  // 1. La provincia si aggiunge solo al luogo dell'io, e mai due volte.
+  const natoA = (persone, i) => chiama(() => m.richiesteDaMandare(m.conDatiDellaFamiglia(persone)[i], 'TO', pdf)[0].dati.natoA)
+  ok('l’io col luogo che ha già la provincia: resta «Torino (TO)»', natoA([figlio({}, { natoAGenitore: 'Torino (TO)' }), io()], 1), 'Torino (TO)')
+  ok('l’io col luogo senza provincia: «Torino (TO)»', natoA([figlio(), io()], 1), 'Torino (TO)')
+  ok('un adulto che non è l’io: il suo luogo com’è', chiama(() => m.richiesteDaMandare(adulto({ natoA: 'Collegno' }), 'TO', pdf)[0].dati.natoA), 'Collegno')
+  ok('un bambino: il suo luogo com’è', chiama(() => m.richiesteDaMandare(figlio({ natoA: 'Collegno' }), 'TO', pdf)[0].dati.natoA), 'Collegno')
+
+  // 2. Chi può firmare per un bambino che si aggiunge.
+  ok('persona 0 bambino: firma chi compila, col nome del genitore', chiama(() => m.firmatariPossibili([figlio()])), [{ indice: 0, nome: 'Paola' }])
+  ok('con l’io: non c’è due volte, è già chi compila', chiama(() => m.firmatariPossibili(m.conDatiDellaFamiglia([figlio(), io()]))), [{ indice: 0, nome: 'Paola' }])
+  const luca = adulto(), paola = adulto({ nome: 'Paola', codiceFiscale: CF_PAOLA })
+  ok('persona 0 adulta: come chiPuoFirmare', chiama(() => m.firmatariPossibili([luca, figlio(), paola])), m.chiPuoFirmare([luca, figlio(), paola]))
+
+  // 3. Un bambino firmato dall'io prende il genitore dal bambino 0.
+  const sara = { ...m.nuovoStato('figlio'), firmatario: 1, risposte: { ...m.nuovoStato('figlio').risposte, nome: 'Sara' } }
+  const g = lista(() => m.conDatiDellaFamiglia([matteo, io(), sara]))[2]?.risposte ?? {}
+  ok('firmato dall’io: il genitore è Paola Rossi, col suo codice', [g.genitoreNome, g.genitoreCognome, g.genitoreCodiceFiscale], ['Paola', 'Rossi', CF_PAOLA])
+
+  // 4. L'io è un adulto: chiederlo come bambino si rifiuta, dicendo cosa fare.
+  ok('l’io come bambino: si rifiuta, e dice come aggiungere un bambino', chiama(() => m.aggiungiFamiliare([matteo], 'figlio', 0, true)), 'ERRORE: Ti aggiungi come adulto: un bambino si aggiunge con + AGGIUNGI UN BAMBINO.')
+
+  // 5. I corsi di chi si aggiunge: quelli alla stessa ora in cima, e i corsi della persona 0 restano da scegliere.
+  const del = (persone, i) => chiama(() => m.corsiDelFamiliare(persone, i, corsi, listino, orari)) ?? {}
+  const ids = (x) => (x ?? []).map((c) => c.id)
+  const marta = adulto({ nome: 'Marta', natoIl: '1990-03-03', codiceFiscale: cfDi('Marta', 'Rossi', '1990-03-03', true), corsi: [] })
+  const aa = del([adulto({ corsi: ['judo-adulti'] }), marta], 1)
+  ok('adulto con persona 0 adulta: in cima i suoi corsi, e non anche sotto', [ids(aa.stessaOra), ids(aa.adatti).includes('judo-adulti')], [['judo-adulti'], false])
+  const fr = del([matteo, conCf('Sara', '2018-05-05', true)], 1)
+  ok('un fratello di 8 anni: Judo 2 alla stessa ora di Matteo', ids(fr.stessaOra), ['judo-2'])
+  const fr2 = del([matteo, conCf('Marco', '2015-02-02')], 1)
+  ok('un fratello di 11 anni: il corso di Matteo (Judo 3) resta da scegliere', ids(fr2.adatti).includes('judo-3'), true)
+  ok('l’io: Judo adulti alla stessa ora di Matteo', ids(del([matteo, io({ corsi: [] })], 1).stessaOra), ['judo-adulti'])
+  ok('la persona 0: niente stessa ora', ids(del([matteo], 0).stessaOra), [])
+
+  // 6. Il corso alla stessa ora si spunta una volta sola: se lo togli, resta tolto.
+  const al = (persone, i, passo) => lista(() => m.alPassoDelCorso(persone, i, passo, corsi, listino, orari))
+  const marco = conCf('Marco', '2015-02-02', false, { corsi: [] })
+  const prima = al([adulto({ corsi: ['judo-adulti'] }), marco], 1, 3)
+  ok('la prima volta al passo del corso: Judo 3 spuntato, e segnato', [prima[1]?.risposte.corsi, prima[1]?.corsoProposto], [['judo-3'], true])
+  const tolto = prima.length ? [prima[0], { ...prima[1], risposte: { ...prima[1].risposte, corsi: [] } }] : []
+  ok('tolto e tornato al passo del corso: resta tolto', al(tolto, 1, 3)[1]?.risposte.corsi, [])
+  ok('un altro passo: niente cambia', al([adulto({ corsi: ['judo-adulti'] }), marco], 1, 2)[1]?.corsoProposto, undefined)
+  ok('la persona 0: niente cambia', al([adulto({ corsi: [] })], 0, 2)[0]?.corsoProposto, undefined)
+  ok('niente da spuntare: segnato lo stesso, così non si riprova', al([adulto({ corsi: ['pilates'] }), marco], 1, 3)[1]?.corsoProposto, true)
+
+  // 7. AVANTI a LA FAMIGLIA: da soli, chi si iscrive da adulto dice «solo io».
+  const av = (persone) => chiama(() => m.avantiDellaFamiglia(persone))
+  ok('adulto da solo: AVANTI, SOLO IO', av([adulto()]), 'AVANTI, SOLO IO')
+  ok('bambino da solo: AVANTI', av([figlio()]), 'AVANTI')
+  ok('in famiglia: AVANTI', av([adulto(), figlio()]), 'AVANTI')
+
+  // 8. Un fratello firmato da chi compila prende dal bambino 0 quello che è del genitore: carta, ok e luogo di nascita.
+  const doc = F('carta.jpg'), retro = F('retro.jpg')
+  const zero = figlio({}, { file: { documento: doc, 'documento-retro': retro } })
+  const lei = conCf('Lucia', '2017-06-06', true, { corsi: ['judo-2'], regolamento: false }, { privacy: false, natoAGenitore: '', file: {} })
+  const l = lista(() => m.conDatiDellaFamiglia([zero, lei]))[1]
+  ok('il fratello: la carta del genitore, fronte e retro', [l?.file.documento === doc, l?.file['documento-retro'] === retro], [true, true])
+  ok('il fratello: regolamento, privacy e dove è nato il genitore', [l?.risposte.regolamento, l?.privacy, l?.natoAGenitore], [true, true, 'Torino'])
+  ok('il fratello: la firma resta sua', l?.tratti, 5)
+  ok('il fratello: a CONTROLLA E INVIA non gli si chiedono di nuovo', chiama(() => m.mancantiFamiglia(m.conDatiDellaFamiglia([zero, lei])).filter((x) => x.chiave.startsWith('1:')).map((x) => x.chiave)), [])
+
+  // 9. La persona 0 passa da adulto a bambino: chi firma il fratello è ora chi compila, che scrive il genitore.
+  const luca2 = adulto({ nome: 'Luca' })
+  const lucia = { ...m.nuovoStato('figlio'), firmatario: 0, risposte: { ...m.nuovoStato('figlio').risposte, nome: 'Lucia' } }
+  ok('la frase dice di scrivere il genitore nel passo IL GENITORE CHE FIRMA di Luca', chiama(() => m.fermoDellaFamiglia([m.cambiaScelta(luca2, 'figlio'), lucia])), 'Per Lucia firma chi compila: scrivi i tuoi dati nel passo IL GENITORE CHE FIRMA di Luca, oppure chiama la segreteria.')
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
