@@ -19,6 +19,7 @@ const { outputFiles } = await build({
       "export { creaRichiesteProva } from './src/lib/richiesteProva'",
       "export { controlla, datiRichieste, domandaUscita, FILE } from './src/lib/richieste'",
       "export { carattereControllo, lettereCognome, lettereNome } from './src/lib/codiceFiscale'",
+      "export { causale, stimaIscrizione } from './src/lib/nucleo'",
     ].join('\n'),
     resolveDir: '.',
     loader: 'ts',
@@ -162,11 +163,11 @@ console.log('\n3. il modulo di oggi non cambia: solo la parola export')
 // ---------------------------------------------------------------------------
 console.log('\n4. i passi')
 {
-  const ADULTO = ['I TUOI DATI', 'SCEGLI IL CORSO', 'IL MODULO E LA FIRMA', 'I DOCUMENTI E IL PAGAMENTO', 'CONTROLLA E INVIA']
-  const FIGLIO = ['IL BAMBINO', 'IL GENITORE CHE FIRMA', 'SCEGLI IL CORSO', 'IL MODULO E LA FIRMA', 'I DOCUMENTI E IL PAGAMENTO', 'CONTROLLA E INVIA']
-  ok('adulto: cinque passi', m.passiDi('adulto', false), ADULTO)
-  ok('figlio: sei passi', m.passiDi('figlio', false), FIGLIO)
-  ok('figlio e anche tu: sette passi', m.passiDi('figlio', true), [...FIGLIO.slice(0, 5), 'ANCHE TU: POCHE COSE', 'CONTROLLA E INVIA'])
+  const ADULTO = ['I TUOI DATI', 'SCEGLI IL CORSO', 'IL MODULO E LA FIRMA', 'I DOCUMENTI', 'QUANTO PAGHI', 'CONTROLLA E INVIA']
+  const FIGLIO = ['IL BAMBINO', 'IL GENITORE CHE FIRMA', 'SCEGLI IL CORSO', 'IL MODULO E LA FIRMA', 'I DOCUMENTI', 'QUANTO PAGHI', 'CONTROLLA E INVIA']
+  ok('adulto: sei passi', m.passiDi('adulto', false), ADULTO)
+  ok('figlio: sette passi', m.passiDi('figlio', false), FIGLIO)
+  ok('figlio e anche tu: otto passi', m.passiDi('figlio', true), [...FIGLIO.slice(0, 5), 'ANCHE TU: POCHE COSE', 'QUANTO PAGHI', 'CONTROLLA E INVIA'])
   // In famiglia i dati del secondo adulto non sono «tuoi»: il titolo dice di chi sono.
   const conNome = (nome) => ({ ...m.nuovoStato('adulto'), risposte: { ...m.nuovoStato('adulto').risposte, nome } })
   ok('chi compila: I TUOI DATI', m.nomiDeiPassi(conNome('Paolo'), 0)[0], 'I TUOI DATI')
@@ -176,10 +177,10 @@ console.log('\n4. i passi')
   ok('un bambino aggiunto: come sempre', m.nomiDeiPassi(m.nuovoStato('figlio'), 2), FIGLIO)
   ok('un adulto non ha un «anche tu»', m.passiDi('adulto', true), ADULTO)
   // Cosa si fa in ogni passo lo dice la lib: la schermata non ripete l'ordine.
-  ok('tipi: adulto', m.tipiDiPassi('adulto', false), ['dati', 'corso', 'modulo', 'documenti', 'riepilogo'])
-  ok('tipi: figlio', m.tipiDiPassi('figlio', false), ['dati', 'genitore', 'corso', 'modulo', 'documenti', 'riepilogo'])
-  ok('tipi: figlio e anche tu', m.tipiDiPassi('figlio', true), ['dati', 'genitore', 'corso', 'modulo', 'documenti', 'anche', 'riepilogo'])
-  ok('tipi: un adulto non ha un «anche tu»', m.tipiDiPassi('adulto', true), ['dati', 'corso', 'modulo', 'documenti', 'riepilogo'])
+  ok('tipi: adulto', m.tipiDiPassi('adulto', false), ['dati', 'corso', 'modulo', 'documenti', 'pagamento', 'riepilogo'])
+  ok('tipi: figlio', m.tipiDiPassi('figlio', false), ['dati', 'genitore', 'corso', 'modulo', 'documenti', 'pagamento', 'riepilogo'])
+  ok('tipi: figlio e anche tu', m.tipiDiPassi('figlio', true), ['dati', 'genitore', 'corso', 'modulo', 'documenti', 'anche', 'pagamento', 'riepilogo'])
+  ok('tipi: un adulto non ha un «anche tu»', m.tipiDiPassi('adulto', true), ['dati', 'corso', 'modulo', 'documenti', 'pagamento', 'riepilogo'])
   for (const [chi, anche] of [['adulto', false], ['figlio', false], ['figlio', true]])
     ok(`tipi e nomi dei passi sono tanti uguali (${chi}${anche ? ' + anche tu' : ''})`, m.tipiDiPassi(chi, anche).length, m.passiDi(chi, anche).length)
 }
@@ -206,9 +207,9 @@ console.log('\n5. ogni AVANTI guarda solo il suo passo')
   ok('passo 3: col foglio firmato non serve la firma', nomi(adulto({}, { tratti: 0, scelte: {}, file: { documento: F('d.jpg'), modulo: F('m.jpg') } }), 3), [])
   ok('il retro, il certificato e la ricevuta non fermano (modulo e documenti)', [nomi(adulto(), 3), nomi(adulto(), 4)], [[], []])
   ok('i documenti: a posto con la sola carta', nomi(adulto({}, { tratti: 0, scelte: {}, privacy: false }), 4), [])
-  ok('l’ultimo passo rimette insieme tutto: a posto', nomi(adulto(), 5), [])
-  ok('l’ultimo passo rimette insieme tutto: manca un nome', nomi(adulto({ nome: '' }), 5), ['NOME'])
-  ok('l’ultimo passo rimette insieme tutto: modulo e documenti, senza doppioni', nomi(adulto({}, { file: {}, privacy: false }), 5), ["CARTA D'IDENTITÀ", 'INFORMATIVA PRIVACY'])
+  ok('l’ultimo passo rimette insieme tutto: a posto', nomi(adulto(), 6), [])
+  ok('l’ultimo passo rimette insieme tutto: manca un nome', nomi(adulto({ nome: '' }), 6), ['NOME'])
+  ok('l’ultimo passo rimette insieme tutto: modulo e documenti, senza doppioni', nomi(adulto({}, { file: {}, privacy: false }), 6), ["CARTA D'IDENTITÀ", 'INFORMATIVA PRIVACY'])
   ok('il passo del corso non chiede più il pagamento: la ricevuta non manca mai', nomi(adulto(), 2), [])
 
   ok('figlio, passo 1 a posto', nomi(figlio(), 1), [])
@@ -255,7 +256,7 @@ console.log('\n6. la scelta e il codice fiscale: combaciano?')
   ok('diciotto anni ieri: adulto', m.controlloScelta(conCf(nato('2008-09-25'))), null)
   ok('diciotto anni domani: ancora minore', m.controlloScelta(conCf(nato('2008-09-27'))), MINORE)
   ok('diciotto anni domani: per «mio figlio» va bene', m.controlloScelta(nel(nato('2008-09-27'))), null)
-  ok('ricontrollo all’invio: l’ultimo passo lo vede', nomi(conCf(CF_MATTEO), 5).includes('CODICE FISCALE'), true)
+  ok('ricontrollo all’invio: l’ultimo passo lo vede', nomi(conCf(CF_MATTEO), 6).includes('CODICE FISCALE'), true)
 }
 
 // ---------------------------------------------------------------------------
@@ -313,7 +314,7 @@ console.log('\n9. nessuna bozza')
 {
   const prima = [...memoria.keys()].sort().join()
   const s = figlio({}, { tratti: 3 })
-  for (let p = 1; p <= 6; p++) m.mancaNelPasso(s, p)
+  for (let p = 1; p <= 7; p++) m.mancaNelPasso(s, p)
   m.controlloScelta(s)
   m.cambiaScelta(s, 'adulto')
   m.righeRiepilogo(s, [{ id: 'judo-3', nome: 'Judo 3' }])
@@ -819,7 +820,7 @@ console.log('\n13b. «Ti iscrivi anche tu?»: i corsi alla stessa ora, dal calen
   ok('passo 3, senza «anche tu»: il suo corso non si chiede', chiavi(figlio(), 3), [])
   ok('passo 3, «anche tu» non ancora risposto: il suo corso non si chiede', chiavi(figlio({}, { ancheTu: undefined }), 3).map(([k]) => k), ['ancheTu'])
   ok('passo «anche tu» (6): tesseramento e foto, il corso no', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: {} }), 6), [['suoTesseramento', 'TESSERAMENTO DI PAOLA'], ['suoFoto', 'FOTO DI PAOLA']])
-  ok('ultimo passo: il suo corso c’è ancora, una volta', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: { tesseramento: true, foto: true } }), 7), [['suoCorsi', 'CORSO DI PAOLA']])
+  ok('ultimo passo: il suo corso c’è ancora, una volta', chiavi(famiglia({ corsi: [], formula: 'trimestre', scelte: { tesseramento: true, foto: true } }), 8), [['suoCorsi', 'CORSO DI PAOLA']])
 }
 
 // ---------------------------------------------------------------------------
@@ -836,7 +837,7 @@ console.log('\n14. il riepilogo')
   const f = m.righeRiepilogo(figlio(), corsi)
   ok('figlio: la riga del genitore', f.find((r) => r.etichetta === 'GENITORE')?.valore, 'Paola Rossi')
   const t = m.righeRiepilogo(figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: { tesseramento: true, foto: true }, certificato: undefined } }), corsi)
-  ok('ogni riga dice a quale passo manda MODIFICA o CARICA', [f.find((r) => r.cosa === 'corso')?.passo, f.find((r) => r.cosa === 'genitore')?.passo, f.find((r) => r.cosa === 'certificato')?.passo, f.find((r) => r.cosa === 'ricevuta')?.passo], ['corso', 'genitore', 'documenti', 'documenti'])
+  ok('ogni riga dice a quale passo manda MODIFICA o CARICA', [f.find((r) => r.cosa === 'corso')?.passo, f.find((r) => r.cosa === 'genitore')?.passo, f.find((r) => r.cosa === 'certificato')?.passo, f.find((r) => r.cosa === 'ricevuta')?.passo], ['corso', 'genitore', 'documenti', 'pagamento'])
   ok('il certificato del genitore rimanda al passo «anche tu»', t.filter((r) => r.cosa === 'certificato').map((r) => [!!r.suo, r.passo]), [[false, 'documenti'], [true, 'anche']])
   ok('la riga «Carta d’identità» manda ai documenti, quella «Firma» al modulo', (m.passoDelRiepilogo ? [m.passoDelRiepilogo('carta'), m.passoDelRiepilogo('firma')] : 'passoDelRiepilogo non c’è'), ['documenti', 'modulo'])
   // Chi deve portare il certificato: lo stesso conto per il riepilogo e per l'esito.
@@ -888,7 +889,7 @@ console.log('\n16. l’ordine di «manca» è quello della pagina: il focus va a
     'TESSERAMENTO', 'FOTO', 'FIRMA', 'REGOLAMENTO', 'INFORMATIVA PRIVACY',
   ])
   ok('adulto, passo 4 (i documenti): la carta d’identità', chiavi(vuoto('adulto'), 4), ['CARTA D\'IDENTITÀ'])
-  ok('adulto, l’ultimo passo: prima il modulo, poi i documenti', chiavi({ ...vuoto('adulto'), risposte: { ...vuoto('adulto').risposte, regolamento: false } }, 5).slice(-6), [
+  ok('adulto, l’ultimo passo: prima il modulo, poi i documenti', chiavi({ ...vuoto('adulto'), risposte: { ...vuoto('adulto').risposte, regolamento: false } }, 6).slice(-6), [
     'TESSERAMENTO', 'FOTO', 'FIRMA', 'REGOLAMENTO', 'INFORMATIVA PRIVACY', 'CARTA D\'IDENTITÀ',
   ])
   ok('adulto, passo 3: il focus va alla prima casella', m.primoDaCorreggere(vuoto('adulto'), 3), 'tesseramento')
@@ -896,7 +897,7 @@ console.log('\n16. l’ordine di «manca» è quello della pagina: il focus va a
   ok('bambino, passo 4 (il modulo): dove è nato il genitore prima della firma', chiavi(figlio({}, { scelte: {}, tratti: 0, file: {}, privacy: false, natoAGenitore: '' }), 4), ['TESSERAMENTO', 'FOTO', 'FIRMA', 'INFORMATIVA PRIVACY'])
   ok('bambino, passo 5 (i documenti): la carta del genitore', chiavi(figlio({}, { file: {} }), 5), ['CARTA D\'IDENTITÀ'])
   ok('bambino, passo 2: «dove sei nato» sta dopo il codice del genitore, prima dei contatti', chiavi(figlio({ genitoreNome: '', genitoreCognome: '', genitoreCodiceFiscale: '', email: '', telefono: '' }, { natoAGenitore: '' }), 2), ['NOME DEL GENITORE', 'COGNOME DEL GENITORE', 'CODICE FISCALE DEL GENITORE', 'DOVE SEI NATO', 'EMAIL', 'TELEFONO'])
-  ok('bambino, l’ultimo passo: «dove sei nato» una volta sola', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 6), ['DOVE SEI NATO'])
+  ok('bambino, l’ultimo passo: «dove sei nato» una volta sola', m.mancaNelPasso(figlio({}, { natoAGenitore: '' }), 7), ['DOVE SEI NATO'])
   ok('anche tu, passo 6: tesseramento e foto (il corso si sceglie al passo 3)', chiavi({ ...vuoto('figlio'), ancheTu: true, suo: { corsi: [], formula: 'trimestre', scelte: {} } }, 6), ['TESSERAMENTO', 'FOTO'])
 }
 
@@ -990,13 +991,13 @@ console.log('\n18. la barra di quel che manca: una riga, e ogni voce è un tasto
   ok('mancanti: la data di nascita ha la sua chiave', voci(vuoto('adulto'), 1).find((v) => v.nome === 'DATA DI NASCITA')?.chiave, 'natoIl')
 
   // «Anche tu»: all'ultimo passo il riepilogo mette insieme tutto, ma due persone non diventano una voce.
-  const riepilogo = voci(anche, 7)
+  const riepilogo = voci(anche, 8)
   ok('anche tu, ultimo passo: corso del bambino e corso del genitore sono due voci', riepilogo.filter((v) => v.chiave === 'corsi' || v.chiave === 'suoCorsi').map((v) => v.chiave), ['corsi', 'suoCorsi'])
   ok('anche tu, ultimo passo: tesseramento e foto, due volte ciascuno', riepilogo.filter((v) => /tesseramento|foto/i.test(v.chiave)).map((v) => v.chiave).sort(), ['foto', 'suoFoto', 'suoTesseramento', 'tesseramento'])
   ok('anche tu, ultimo passo: nessun nome ripetuto, si distinguono a parole', riepilogo.length > 0 && new Set(riepilogo.map((v) => v.nome)).size === riepilogo.length, true)
   ok('anche tu, nome del genitore non ancora scritto: CORSO DEL GENITORE', riepilogo.find((v) => v.chiave === 'suoCorsi')?.nome, 'CORSO DEL GENITORE')
   ok('anche tu, passo 6: tesseramento e foto, il corso non più', m.mancaNelPasso(anche, 6), ['TESSERAMENTO', 'FOTO'])
-  ok('anche tu, ultimo passo: la barra conta le persone, AVANTI i nomi', riepilogo.length > m.mancaNelPasso(anche, 7).length, true)
+  ok('anche tu, ultimo passo: la barra conta le persone, AVANTI i nomi', riepilogo.length > m.mancaNelPasso(anche, 8).length, true)
 
   // Ogni chiave porta a un id che c'è nella pagina.
   const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
@@ -1117,9 +1118,9 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('senza corsi nascosti niente frase', f([]), undefined)
 }
 
-// 24. Il totale sempre in vista: nel passo del corso e in quello dei documenti, dalla stessa stima del riepilogo.
+// 24. Il totale sempre in vista: nel passo del corso e in QUANTO PAGHI, dalla stessa stima del riepilogo.
 {
-  console.log('\n24. il totale nei passi del corso e dei documenti')
+  console.log('\n24. il totale nei passi del corso e del pagamento')
   const voce = (corso, corsoId, natiDal, natiAl, annuale, trimestre) => ({
     corso, corsoId, eta: '', orari: ['martedì 18.00'], natiDal, natiAl, prezzi: [{ saldo: annuale, annuale, trimestre }],
   })
@@ -1131,34 +1132,34 @@ console.log('\n19. la barra compatta: markup e stile')
   const t = (stato, passo, l = listino) => m.totaleDelPasso(stato, passo, corsi, l, giorno)
 
   ok('adulto, passo del corso: la riga e il totale', t(adulto(), 2), { righe: 'Quota 50 € + Judo adulti annuale 360 €', totale: '410 €' })
-  ok('adulto, passo dei documenti: lo stesso', t(adulto(), 4), t(adulto(), 2))
+  ok('adulto, passo del pagamento (5): lo stesso', t(adulto(), 5), t(adulto(), 2))
   ok('con la formula trimestre: la riga dice trimestre e il prezzo cambia', t(adulto({ formula: 'trimestre' }), 2), { righe: 'Quota 50 € + Judo adulti trimestre 140 €', totale: '190 €' })
   ok('adulto: il totale è quello della stima di oggi, stessi centesimi', t(adulto(), 2)?.totale, `${m.contoFamiglia([{ chi: 'Luca', corsi: [corsi[1]], formula: 'annuale' }], giorno, listino).totale / 100} €`)
   ok('senza corso scelto: niente totale', t(adulto({ corsi: [] }), 2), undefined)
   ok('senza listino: niente totale', t(adulto(), 2, null), undefined)
-  for (const passo of [1, 3, 5]) ok(`adulto, passo ${passo}: il totale non c’è`, t(adulto(), passo), undefined)
+  for (const passo of [1, 3, 4, 6]) ok(`adulto, passo ${passo}: il totale non c’è`, t(adulto(), passo), undefined)
 
   ok('figlio, passo del corso (3): il conto del bambino', t(figlio(), 3), { righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
-  ok('figlio, passo dei documenti (5): lo stesso', t(figlio(), 5), t(figlio(), 3))
-  for (const passo of [1, 2, 4, 6]) ok(`figlio, passo ${passo}: il totale non c’è`, t(figlio(), passo), undefined)
+  ok('figlio, passo del pagamento (6): lo stesso', t(figlio(), 6), t(figlio(), 3))
+  for (const passo of [1, 2, 4, 5, 7]) ok(`figlio, passo ${passo}: il totale non c’è`, t(figlio(), passo), undefined)
 
   // Con «Anche tu» e il corso del genitore scelto, il totale sopra la barra è quello della famiglia, con lo sconto: lo stesso del riepilogo.
   const famiglia = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
-  const FAMIGLIA = { righe: 'Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Judo adulti annuale 360 € · Sconto famiglia −60 €', totale: '700 €' }
+  const FAMIGLIA = { righe: 'Totale famiglia · Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Judo adulti annuale 360 € · Sconto famiglia −60 €', totale: '700 €' }
   ok('anche tu, passo del corso (3): il conto della famiglia, con lo sconto', t(famiglia, 3), FAMIGLIA)
-  // Al passo dei documenti c'è QUANTO COSTA del bambino, con la sua causale: il totale sopra la barra è quello, non due cifre diverse.
-  ok('anche tu, passo dei documenti (5): il conto del bambino, come QUANTO COSTA', t(famiglia, 5), t(figlio(), 5))
+  // QUANTO PAGHI dice il conto di tutti e due, con una causale sola: il totale sopra la barra è lo stesso del passo del corso.
+  ok('anche tu, passo del pagamento (7): il conto della famiglia, come al passo del corso', t(famiglia, 7), FAMIGLIA)
   ok('anche tu: il totale è quello di contoDelloStato', t(famiglia, 3)?.totale, `${m.contoDelloStato(famiglia, corsi, listino, giorno).totale / 100} €`)
   // Lo sconto è uno solo: quello di contoDelloStato, non anche dentro le righe del bambino.
   const dueAnnuali = figlio({ corsi: ['judo-3', 'judo-adulti'] }, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
   ok('anche tu, il bambino con due annuali: «Sconto» una volta sola nelle righe', (t(dueAnnuali, 3)?.righe.match(/[Ss]conto/g) ?? []).length, 1)
   ok('anche tu, il bambino con due annuali: il totale è quello di contoDelloStato', t(dueAnnuali, 3)?.totale, `${m.contoDelloStato(dueAnnuali, corsi, listino, giorno).totale / 100} €`)
   const famTrim = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'trimestre', scelte: {} } })
-  ok('anche tu, il genitore a trimestre: nessuno sconto, nessuna riga di sconto', t(famTrim, 3), { righe: 'Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Judo adulti trimestre 140 €', totale: '540 €' })
+  ok('anche tu, il genitore a trimestre: nessuno sconto, nessuna riga di sconto', t(famTrim, 3), { righe: 'Totale famiglia · Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Judo adulti trimestre 140 €', totale: '540 €' })
   const conPsico = [...corsi, { id: 'psico', nome: 'Psicomotricità' }]
   const famPsico = figlio({}, { ancheTu: true, suo: { corsi: ['psico'], formula: 'annuale', scelte: {} } })
   const psico = m.totaleDelPasso(famPsico, 3, conPsico, listino, giorno)
-  ok('anche tu, il corso del genitore senza prezzo: lo dice la sua parte', psico?.righe?.startsWith('Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Psicomotricità prezzo da confermare'), true)
+  ok('anche tu, il corso del genitore senza prezzo: lo dice la sua parte', psico?.righe?.startsWith('Totale famiglia · Matteo: Quota 50 € + Judo 3 annuale 300 € · Tu: Quota 50 € + Psicomotricità prezzo da confermare'), true)
   ok('anche tu, il corso del genitore senza prezzo: il totale è quello di contoDelloStato', psico?.totale, `${m.contoDelloStato(famPsico, conPsico, listino, giorno).totale / 100} €`)
   ok('senza «anche tu»: solo il bambino', t(figlio({}, { ancheTu: false, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } }), 3), { righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
   ok('anche tu: il passo «anche tu» (6) non lo mostra', t(famiglia, 6), undefined)
@@ -1167,7 +1168,7 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('corso senza prezzo: la riga dice «prezzo da confermare»', senzaPrezzo()?.righe, 'Quota 50 € + Psicomotricità prezzo da confermare')
   ok('corso senza prezzo: il totale è la sola quota', senzaPrezzo()?.totale, '50 €')
   const senzaSuo = figlio({}, { ancheTu: true, suo: { corsi: [], formula: 'annuale', scelte: {} } })
-  ok('anche tu, ma il corso del genitore non è ancora scelto: solo il bambino', t(senzaSuo, 5), { righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
+  ok('anche tu, ma il corso del genitore non è ancora scelto: solo il bambino', t(senzaSuo, 7), { righe: 'Quota 50 € + Judo 3 annuale 300 €', totale: '350 €' })
 }
 
 // 25. La riga del riepilogo e le parole del componente: i numeri dei passi si calcolano, non si scrivono.
@@ -1762,12 +1763,12 @@ console.log('\n35. la famiglia nella schermata: pastiglie, cosa manca a tutti, i
   ok('senza listino, nessun conto', chiama(() => m.contoDellaFamiglia(tre, corsi, undefined, giorno)), undefined)
   ok('due con lo stesso nome non si confondono: due righe di quota', chiama(() => m.contoDellaFamiglia([adulto({ nome: 'Marco', corsi: ['judo-adulti'], formula: 'annuale' }), adulto({ nome: 'Marco', corsi: ['pilates'], formula: 'annuale' })], corsi, listino, giorno).righe.filter((r) => r.testo.includes('Quota')).length), 2)
 
-  // Il totale sopra la barra: di tutta la famiglia, con lo sconto, nei passi del corso e dei documenti.
+  // Il totale sopra la barra: di tutta la famiglia, con lo sconto, nei passi del corso e del pagamento.
   const t = (persone, attivo, passo) => chiama(() => m.totaleDellaFamiglia(persone, attivo, passo, corsi, listino, giorno))
-  ok('famiglia di tre, passo del corso: ognuno con la sua cifra, lo sconto a parte', t(tre, 0, 2), { righe: 'Luca 155 € + Matteo 410 € + Paola 350 € − sconto famiglia 60 €', totale: '855 €' })
-  ok('lo stesso nel passo dei documenti', t(tre, 1, 4)?.totale, '855 €')
-  ok('negli altri passi non c’è', [t(tre, 0, 1), t(tre, 0, 3), t(tre, 0, 5)], [undefined, undefined, undefined])
-  ok('senza sconto la riga non lo nomina', t([luca, adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'trimestre' })], 0, 2), { righe: 'Luca 155 € + Paola 170 €', totale: '325 €' })
+  ok('famiglia di tre, passo del corso: ognuno con la sua cifra, lo sconto a parte', t(tre, 0, 2), { righe: 'Totale famiglia · Luca 155 € + Matteo 410 € + Paola 350 € − sconto famiglia 60 €', totale: '855 €' })
+  ok('lo stesso nel passo del pagamento', t(tre, 1, 5)?.totale, '855 €')
+  ok('negli altri passi non c’è', [t(tre, 0, 1), t(tre, 0, 3), t(tre, 0, 4), t(tre, 0, 6)], [undefined, undefined, undefined, undefined])
+  ok('senza sconto la riga non lo nomina', t([luca, adulto({ ...dati('Paola', '1980-01-01', true), corsi: ['pilates'], formula: 'trimestre' })], 0, 2), { righe: 'Totale famiglia · Luca 155 € + Paola 170 €', totale: '325 €' })
   ok('una persona sola: com’era, il suo totale', t([matteo], 0, 2), chiama(() => m.totaleDelPasso(matteo, 2, corsi, listino, giorno)))
   // «Anche tu» (un bambino e il genitore, una persona sola nel modulo) e famiglia (più persone) non si pestano i piedi: il totale è uno solo, quello giusto per ognuno.
   const conAncheTu = figlio({ corsi: ['judo-kids'], formula: 'annuale' }, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: {} } })
@@ -1930,6 +1931,150 @@ console.log('\n37. chi firma, col nome: in famiglia «tu» non è sempre chi com
   ok('il titolo dell’ok, chi compila: IL TUO OK', chiama(() => m.titoloDellOk(undefined)), 'IL TUO OK')
   ok('il titolo dell’ok, un altro adulto: col suo nome', chiama(() => m.titoloDellOk('Paola')), 'L’OK DI PAOLA')
   ok('il titolo dell’ok, senza nome: di chi firma', chiama(() => m.titoloDellOk(' ')), 'L’OK DI CHI FIRMA')
+}
+
+// ---------------------------------------------------------------------------
+// QUANTO PAGHI: un passo suo fra i documenti e il riepilogo, un conto e una
+// causale per tutto il modulo, una ricevuta sola. Il design è in
+// docs/design-canvas/quanto-paghi/.
+// ---------------------------------------------------------------------------
+console.log('\n38. QUANTO PAGHI')
+{
+  const voce = (corso, corsoId, annuale, trimestre) => ({ corso, corsoId, eta: '', orari: ['martedì 18.00'], prezzi: [{ saldo: annuale, annuale, trimestre }] })
+  const listino = {
+    quota: 50, saldoEntro: '2026-08-31', offerte: [],
+    corsi: [voce('Judo 3', 'judo-3', 300, 120), voce('Judo adulti', 'judo-adulti', 360, 140), voce('Pilates', 'pilates', 300, 120), voce('Judo kids', 'judo-kids', 280, 105)],
+  }
+  const corsi = [...listino.corsi.map((v) => ({ id: v.corsoId, nome: v.corso })), { id: 'psico', nome: 'Psicomotricità' }]
+  const giorno = '2026-10-06'
+  // Come euroBreve: euro interi senza decimali, i centesimi con la virgola.
+  const euro = (cent) => `${cent % 100 === 0 ? cent / 100 : (cent / 100).toFixed(2).replace('.', ',')} €`
+  const soloTestoEImporto = (righe) => (righe ?? []).map((r) => ({ testo: r.testo, importo: r.importo }))
+  const dati = (nome, cognome, natoIl, donna = false) => ({ nome, cognome, natoIl, codiceFiscale: cfDi(nome, cognome, natoIl, donna) })
+
+  const luca = adulto({ corsi: ['judo-adulti'], formula: 'annuale' })
+  const conAncheTu = figlio({}, { ancheTu: true, suo: { corsi: ['judo-adulti'], formula: 'annuale', scelte: { tesseramento: true, foto: true } } })
+  const manuela = adulto({ ...dati('Manuela', 'Albertini', '1985-05-05', true), corsi: ['pilates'], formula: 'annuale' })
+  const nicola = adulto({ ...dati('Nicola', 'Albertini', '1984-04-04'), corsi: ['judo-adulti'], formula: 'annuale' })
+  const sara = adulto({ ...dati('Sara', 'Albertini', '1990-01-01', true), corsi: ['judo-kids'], formula: 'trimestre' })
+  const tre = [manuela, nicola, sara]
+  // Il passo QUANTO PAGHI è il penultimo: 5 per l'adulto, 6 per il figlio, 7 con «anche tu».
+  const PAGA = { adulto: 5, figlio: 6, anche: 7 }
+
+  // --- il passo ---
+  ok('il passo del pagamento non ferma mai: adulto senza ricevuta', m.mancaNelPasso(adulto(), PAGA.adulto), [])
+  ok('il passo del pagamento non ferma mai: nemmeno con tutto vuoto', m.mancaNelPasso(m.nuovoStato('adulto'), PAGA.adulto), [])
+  ok('il passo del pagamento non ferma mai: figlio, e figlio con anche tu', [m.mancaNelPasso(m.nuovoStato('figlio'), PAGA.figlio), m.mancaNelPasso({ ...m.nuovoStato('figlio'), ancheTu: true, suo: { corsi: [], formula: 'trimestre', scelte: {} } }, PAGA.anche)], [[], []])
+  ok('il passo del pagamento: la barra non ha voci', m.mancanti(m.nuovoStato('adulto'), PAGA.adulto), [])
+  ok('quanto manca non cambia: 17 cose a un adulto vuoto, 19 a un figlio vuoto, 0 a chi ha fatto tutto', [m.quantoManca(m.nuovoStato('adulto')), m.quantoManca(m.nuovoStato('figlio')), m.quantoManca(adulto())], [17, 19, 0])
+  ok('l’ultimo passo è il riepilogo, dopo QUANTO PAGHI', [m.passiDi('adulto', false).at(-2), m.passiDi('adulto', false).at(-1)], ['QUANTO PAGHI', 'CONTROLLA E INVIA'])
+  ok('la riga della ricevuta nel riepilogo porta a QUANTO PAGHI, caricata o no', [adulto(), adulto({}, { file: { documento: F('d.jpg'), ricevuta: F('r.jpg') } })].map((s) => m.righeRiepilogo(s, corsi).find((r) => r.cosa === 'ricevuta')?.passo), ['pagamento', 'pagamento'])
+  ok('la carta e la firma del riepilogo restano ai documenti e al modulo', [m.passoDelRiepilogo('carta'), m.passoDelRiepilogo('firma')], ['documenti', 'modulo'])
+
+  // --- il totale sopra la barra ---
+  const tFam = (persone, attivo, passo) => chiama(() => m.totaleDellaFamiglia(persone, attivo, passo, corsi, listino, giorno))
+  ok('in famiglia, al passo del corso: «Totale famiglia · » davanti', tFam(tre, 0, 2)?.righe?.startsWith('Totale famiglia · Manuela '), true)
+  ok('in famiglia, a QUANTO PAGHI: lo stesso totale del passo del corso', tFam(tre, 0, PAGA.adulto), tFam(tre, 0, 2))
+  ok('in famiglia, ai documenti: niente totale', tFam(tre, 0, 4), undefined)
+  ok('da soli: niente «Totale famiglia»', tFam([luca], 0, PAGA.adulto)?.righe?.startsWith('Totale famiglia'), false)
+  ok('con anche tu, al corso e a QUANTO PAGHI: «Totale famiglia · » davanti', [3, PAGA.anche].map((p) => tFam([conAncheTu], 0, p)?.righe?.startsWith('Totale famiglia · ')), [true, true])
+  ok('con anche tu, a QUANTO PAGHI: il totale di contoDelloStato, con lo sconto', tFam([conAncheTu], 0, PAGA.anche)?.totale, euro(m.contoDelloStato(conAncheTu, corsi, listino, giorno).totale))
+  ok('con anche tu, ai documenti: niente totale', tFam([conAncheTu], 0, 5), undefined)
+
+  // --- il conto del modulo ---
+  const conto = (persone, ...l) => chiama(() => m.contoDelModulo(persone, corsi, l.length ? l[0] : listino, giorno))
+  const fam = chiama(() => m.contoDellaFamiglia(tre, corsi, listino, giorno))
+  const cTre = conto(tre)
+  ok('più persone: le righe del conto della famiglia', soloTestoEImporto(cTre?.righe), soloTestoEImporto(fam?.righe))
+  ok('più persone: il totale, i corsi senza prezzo, ed è una famiglia', [cTre?.totale, cTre?.senzaPrezzo, cTre?.famiglia], [fam?.totale, fam?.senzaPrezzo, true])
+  const stato = m.contoDelloStato(conAncheTu, corsi, listino, giorno)
+  const cAnche = conto([conAncheTu])
+  ok('anche tu: le righe di contoDelloStato', soloTestoEImporto(cAnche?.righe), soloTestoEImporto(stato.righe))
+  ok('anche tu: il totale di contoDelloStato, ed è una famiglia', [cAnche?.totale, cAnche?.senzaPrezzo, cAnche?.famiglia], [stato.totale, stato.senzaPrezzo, true])
+  const stima = m.stimaIscrizione({ chi: 'Luca', corsi: [corsi.find((c) => c.id === 'judo-adulti')], formula: 'annuale' }, [], giorno, listino)
+  const cLuca = conto([luca])
+  ok('una persona sola: le righe della sua stima', soloTestoEImporto(cLuca?.righe), soloTestoEImporto(stima.righe))
+  ok('una persona sola: il totale della stima, e non è una famiglia', [cLuca?.totale, cLuca?.senzaPrezzo, cLuca?.famiglia], [stima.totale, [], false])
+  ok('un corso senza prezzo: lo dice', conto([adulto({ corsi: ['psico'] })])?.senzaPrezzo, ['Psicomotricità'])
+  ok('senza listino: niente conto', [conto([luca], undefined), conto(tre, undefined)], [undefined, undefined])
+  ok('senza nessun corso scelto: niente conto', [conto([adulto({ corsi: [] })]), conto([adulto({ corsi: [] }), adulto({ nome: 'Paola', corsi: [] })])], [undefined, undefined])
+
+  // B5: una cifra sola, al centesimo: il conto del modulo, il totale sopra la barra a QUANTO PAGHI, l'importo dell'esito.
+  for (const [nome, persone, paga] of [['adulto solo', [luca], PAGA.adulto], ['anche tu', [conAncheTu], PAGA.anche], ['famiglia di 3', tre, PAGA.adulto]]) {
+    const c = conto(persone)
+    const esito = chiama(() => m.riassuntoEsito(persone[0], corsi, listino, giorno, persone))
+    ok(`${nome}: il conto del modulo, il totale a QUANTO PAGHI e l’esito dicono la stessa cifra`, [c?.totale === undefined ? 'nessun conto' : euro(c.totale), tFam(persone, 0, paga)?.totale, esito?.importo], [esito?.importo, esito?.importo, esito?.importo])
+  }
+
+  // --- la causale ---
+  const causale = (persone) => chiama(() => m.causaleDelModulo(persone, corsi))
+  const chi = (nome, cognome) => adulto({ nome, cognome, corsi: ['judo-adulti'] })
+  ok('una persona: come oggi, nome, cognome e corsi', causale([luca]), 'Iscrizione Luca Rossi · Judo adulti')
+  ok('una persona: la stessa di causale()', causale([luca]), m.causale('Luca', 'Rossi', ['Judo adulti']))
+  ok('due con lo stesso cognome: i nomi, il cognome una volta, niente corsi', causale([chi('Manuela', 'Albertini'), chi('Nicola', 'Albertini')]), 'Iscrizione Manuela e Nicola Albertini')
+  ok('tre con lo stesso cognome', causale([chi('Manuela', 'Albertini'), chi('Luca', 'Albertini'), chi('Nicola', 'Albertini')]), 'Iscrizione Manuela, Luca e Nicola Albertini')
+  ok('cognomi diversi: a gruppi, nell’ordine in cui compaiono', causale([chi('Manuela', 'Albertini'), chi('Paola', 'Rossi'), chi('Nicola', 'Albertini')]), 'Iscrizione Manuela e Nicola Albertini, Paola Rossi')
+  const scritti = causale([chi('Manuela', 'Albertini'), chi('Nicola', ' ALBERTINI ')])
+  ok('il cognome uguale senza badare a maiuscole e spazi: una volta sola', [typeof scritti === 'string' && scritti.startsWith('Iscrizione Manuela e Nicola '), (String(scritti).match(/albertini/gi) ?? []).length], [true, 1])
+  ok('anche tu: prima il bambino, poi il genitore, senza corsi', causale([conAncheTu]), 'Iscrizione Matteo e Paola Rossi')
+  const lunghi = Array.from({ length: 6 }, (_, i) => chi(String.fromCharCode(65 + i) + 'a'.repeat(59), String.fromCharCode(65 + i) + 'b'.repeat(59)))
+  const seiLunghi = causale(lunghi)
+  ok('sei persone dai nomi lunghi: la causale sta nei 140 caratteri del bonifico', [typeof seiLunghi === 'string' && seiLunghi.startsWith('Iscrizione '), String(seiLunghi).length <= 140], [true, true])
+  const unaLunga = causale([adulto({ nome: 'a'.repeat(60), cognome: 'b'.repeat(60), corsi: ['judo-adulti', 'pilates', 'judo-kids'] })])
+  ok('una persona dal nome lungo, con tanti corsi: anche lei nei 140', [typeof unaLunga === 'string' && unaLunga.startsWith('Iscrizione '), String(unaLunga).length <= 140], [true, true])
+
+  // --- la ricevuta, una per modulo ---
+  const ric = F('ricevuta.jpg')
+  const doc = F('d.jpg')
+  ok('nessuno l’ha caricata: niente ricevuta', chiama(() => m.ricevutaDelModulo(tre)), undefined)
+  ok('la ricevuta del modulo, chiunque l’abbia', chiama(() => m.ricevutaDelModulo([manuela, nicola, { ...sara, file: { ...sara.file, ricevuta: ric } }])) === ric, true)
+
+  const caricata = lista(() => m.conLaRicevuta([manuela, nicola, { ...sara, file: { documento: doc, ricevuta: F('vecchia.jpg') } }], ric, 80200))
+  ok('caricata: sta nella prima persona', caricata[0]?.file?.ricevuta === ric, true)
+  ok('caricata: in nessun’altra, nemmeno in chi ne aveva una', caricata.slice(1).map((p) => p.file.ricevuta), [undefined, undefined])
+  ok('caricata: gli altri file restano', [!!caricata[0]?.file?.documento, caricata[2]?.file?.documento === doc], [true, true])
+  ok('caricata: il totale e quante persone c’erano', caricata[0]?.ricevutaPer, { totale: 80200, persone: 3 })
+  ok('caricata: tre persone restano tre', caricata.length, 3)
+  const tolta = lista(() => m.conLaRicevuta(caricata, undefined, 80200))
+  ok('tolta: nessuno ha la ricevuta', [tolta.length, tolta.map((p) => p.file.ricevuta)], [3, [undefined, undefined, undefined]])
+  ok('tolta: niente più «ricevutaPer»', tolta.map((p) => p.ricevutaPer), [undefined, undefined, undefined])
+
+  // B8: la ricevuta resta quando la famiglia cambia.
+  const due = lista(() => m.conLaRicevuta([manuela, nicola], ric, 62200))
+  const conLuca = lista(() => m.aggiungiFamiliare(due, 'adulto', 0))
+  ok('dopo AGGIUNGI UN FAMILIARE la ricevuta resta, con il totale di quando si è caricata', [chiama(() => m.ricevutaDelModulo(conLuca)) === ric, conLuca[0]?.ricevutaPer], [true, { totale: 62200, persone: 2 }])
+  const cambiata = due.length ? [m.cambiaScelta(due[0], 'figlio', true), ...due.slice(1)] : []
+  ok('dopo aver cambiato scelta alla prima persona la ricevuta resta', [chiama(() => m.ricevutaDelModulo(cambiata)) === ric, cambiata[0]?.ricevutaPer], [true, { totale: 62200, persone: 2 }])
+
+  // B9: all'invio ogni richiesta porta la stessa ricevuta.
+  const faiPdf = async () => F('modulo.pdf')
+  const daMandare = lista(() => m.conLaRicevuta(tre, ric, 80200)).flatMap((p) => m.richiesteDaMandare(p, '', faiPdf))
+  ok('famiglia di 3: tre richieste da mandare', daMandare.length, 3)
+  const conRic = lista(() => m.conLaRicevutaInTutte(daMandare, ric))
+  ok('ogni richiesta ha la ricevuta del modulo', [conRic.length, conRic.map((d) => d.file.ricevuta === ric)], [3, [true, true, true]])
+  ok('gli altri file di ogni richiesta restano', conRic.map((d) => !!d.file.documento), [true, true, true])
+  const senzaRic = lista(() => m.conLaRicevutaInTutte(daMandare, undefined))
+  ok('senza ricevuta nessuna richiesta la ha', [senzaRic.length, senzaRic.map((d) => d.file.ricevuta)], [3, [undefined, undefined, undefined]])
+  const anche = lista(() => m.conLaRicevutaInTutte(m.richiesteDaMandare(conAncheTu, '', faiPdf), ric))
+  ok('anche tu: il bambino e il genitore hanno la stessa ricevuta', anche.map((d) => d.file.ricevuta === ric), [true, true])
+
+  // L'avviso quando il totale cambia dopo che la ricevuta è caricata.
+  const avviso = (persone, ora) => chiama(() => m.avvisoRicevuta(persone, ora))
+  const per = (totale, persone, lista) => [{ ...lista[0], ricevutaPer: { totale, persone } }, ...lista.slice(1)]
+  const luca3 = adulto({ ...dati('Luca', 'Albertini', '2000-02-02'), corsi: ['judo-kids'] })
+  const sara4 = adulto({ ...dati('Sara', 'Albertini', '2001-02-02', true), corsi: ['judo-kids'] })
+  const ugo5 = adulto({ ...dati('Ugo', 'Albertini', '2002-02-02'), corsi: ['judo-kids'] })
+  const PIU = 'La differenza la paghi in segreteria o con un altro bonifico.'
+  ok('senza ricevuta caricata: niente avviso', avviso([manuela, nicola, luca3], 80200), undefined)
+  ok('stesso totale: niente avviso', avviso(per(62200, 2, [manuela, nicola]), 62200), undefined)
+  ok('totale che non si sa: niente avviso', avviso(per(62200, 2, [manuela, nicola, luca3]), undefined), undefined)
+  ok('una persona aggiunta dopo, il totale cresce', avviso(per(62200, 2, [manuela, nicola, luca3]), 80200), `Hai caricato la ricevuta prima di aggiungere Luca: ora il totale è 802 €, cioè 180 € in più. ${PIU}`)
+  ok('due persone aggiunte: «Luca e Sara»', avviso(per(62200, 2, [manuela, nicola, luca3, sara4]), 98200), `Hai caricato la ricevuta prima di aggiungere Luca e Sara: ora il totale è 982 €, cioè 360 € in più. ${PIU}`)
+  ok('tre persone aggiunte: «Luca, Sara e Ugo»', avviso(per(62200, 2, [manuela, nicola, luca3, sara4, ugo5]), 116200), `Hai caricato la ricevuta prima di aggiungere Luca, Sara e Ugo: ora il totale è 1162 €, cioè 540 € in più. ${PIU}`)
+  ok('una persona aggiunta senza nome: «Adulto 3»', avviso(per(62200, 2, [manuela, nicola, adulto({ nome: '' })]), 80200), `Hai caricato la ricevuta prima di aggiungere Adulto 3: ora il totale è 802 €, cioè 180 € in più. ${PIU}`)
+  ok('nessuna persona nuova, il totale cresce', avviso(per(62200, 3, [manuela, nicola, luca3]), 80200), `Hai caricato la ricevuta quando il totale era 622 €: ora è 802 €, cioè 180 € in più. ${PIU}`)
+  ok('il totale scende', avviso(per(80200, 3, [manuela, nicola, luca3]), 62200), 'Hai caricato la ricevuta quando il totale era 802 €: ora è 622 €, cioè 180 € in meno. La differenza la sistema la segreteria.')
+  ok('le cifre coi centesimi, come euroBreve', avviso(per(5000, 1, [luca]), 10050), `Hai caricato la ricevuta quando il totale era 50 €: ora è 100,50 €, cioè 50,50 € in più. ${PIU}`)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
