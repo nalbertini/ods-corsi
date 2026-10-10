@@ -483,11 +483,12 @@ export function BarraPasso({
   /** Il totale della richiesta, sempre in vista nei passi del corso e dei documenti. */
   totale?: { righe: string; totale: string }
   onVai: (chiave: string) => void
-  onAvanti: () => void
+  /** Senza, niente AVANTI né riga di quel che manca: un passo che si lascia con un tocco altrove (IL TIPO del vestiario). */
+  onAvanti?: () => void
   onIndietro?: () => void
 }) {
   const [elenco, setElenco] = useState(aperta)
-  const prima = manca[0]
+  const prima = onAvanti ? manca[0] : undefined
   return (
     <div className="barra-passo">
       {totale && (
@@ -551,9 +552,11 @@ export function BarraPasso({
             INDIETRO
           </DueTocchi>
         )}
-        <button type="button" className={`btn ${VARIANTI[tono]} barra-avanti`} disabled={occupato} onClick={onAvanti}>
-          {avanti}
-        </button>
+        {onAvanti && (
+          <button type="button" className={`btn ${VARIANTI[tono]} barra-avanti`} disabled={occupato} onClick={onAvanti}>
+            {avanti}
+          </button>
+        )}
       </div>
     </div>
   )

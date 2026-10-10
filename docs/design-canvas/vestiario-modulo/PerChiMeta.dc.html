@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITA: PER CHI È con un ordine a metà (OrdinaVestiario.tsx). Tornando sulla pagina con delle scelte salvate (sessionStorage), in cima a PER CHI È il Riquadro UN ORDINE A METÀ dice quanti capi e per chi, con VEDI IL RIEPILOGO (principale, porta a CHI ORDINA) e RICOMINCIA DA CAPO (chiede prima: i capi scelti e chi ordina si perdono). Cornice copiata da PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+  <dc-import name="Testata" luogo="VESTIARIO" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column; flex-grow: 1">
+    <dc-import name="Titoletto" label="ORDINA IL VESTIARIO" hint-size="100%,50px"></dc-import>
+    <div style="padding: 0 20px 16px">
+      <dc-import name="RiquadroPasso" tono="prova" etichetta="ORDINI APERTI FINO AL 31 OTTOBRE" titolo="" testo="Una persona alla volta: per chi è, il tipo, poi i capi con la taglia. Paghi dopo, con bonifico, Satispay o in segreteria: al fornitore va solo quello pagato entro il 31 ottobre." tasti="" hint-size="100%,160px"></dc-import>
+    </div>
+    <div style="padding: 0 20px 16px">
+      <dc-import name="RiquadroPasso" etichetta="UN ORDINE A METÀ" titolo="" testo="Hai già scelto 1 capo per Luca Rossi." tono-testo="testo" tasti="VEDI IL RIEPILOGO|RICOMINCIA DA CAPO" primo-principale="{{ true }}" hint-size="100%,200px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" label="PER CHI È" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 20px 16px">
+      <dc-import name="Campo" tipo="testo" etichetta="NOME E COGNOME" valore="" segnaposto="Nome e cognome" hint-size="100%,80px"></dc-import>
+      <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #8c8c88">Chi indossa i capi. Per un’altra persona te lo chiediamo dopo.</p>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <dc-import name="BarraPasso" compatta="{{ true }}" totale="35 €" totale-righe="1 capo" avanti="AVANTI" senza-indietro="{{ true }}" hint-size="100%,150px"></dc-import>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

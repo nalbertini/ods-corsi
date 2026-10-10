@@ -1,29 +1,28 @@
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { INDIRIZZO_VESTIARIO } from '../lib/cancelletti'
 import { INFORMATIVA_PUBBLICA, PAGAMENTO } from '../lib/iscrizione'
 import { CONTATTI, chiama } from '../lib/sito'
 import { chiaveGiorno } from '../lib/sala'
 import { indirizzo, INDIRIZZI } from '../lib/aree'
-import { alGiorno, causaleVestiario, cosaNonVaOrdine, ilGiorno, inEuro, MAX_QUANTI, MAX_RIGHE, MAX_RIGHE_DETTO, prezzoDi, riepilogoOrdine, totaleOrdine, type Capo, type Catalogo, type DatiVestiario, type Ordine, type RigaNuova } from '../lib/vestiario'
-import { mancaNellOrdine, statoPagina, tagliaDopo } from '../lib/vestiarioPagina'
+import { alGiorno, causaleVestiario, cosaNonVaOrdine, ilGiorno, inEuro, MAX_QUANTI, MAX_RIGHE, MAX_RIGHE_DETTO, nomeTipo, prezzoDi, riepilogoOrdine, totaleOrdine, type Capo, type Catalogo, type DatiVestiario, type Ordine, type RigaNuova, type Tabelle } from '../lib/vestiario'
+import { applicaScelte, capiDelTipo, mancaNellOrdine, nomeGiaUsato, ordineAMeta, stessaPersona, passoDopoPerChi, ripresaDa, righePerPersona, rinomina, sceltePagina, statoPagina, tabelleDellaPagina, tipiDaMostrare, type Passo, type Ripresa, type Scelte } from '../lib/vestiarioPagina'
+import { chiedi, useDialogo } from './segreteria/comune'
 import { apertiLetti, datiVestiario } from '../lib/vestiarioDati'
 import { BarraPasso, Campo, Dettaglio, type Nota, Etichetta, Riquadro, Tasti, Tasto, TitoloEsito, Titoletto } from './ds'
 
 /**
  * La pagina degli ordini di vestiario, dal link COPIA LINK ORDINI
- * (`iscrizioni/#vestiario`): il catalogo da leggere, le righe dell'ordine (per
- * chi, capo, taglia, quanti), chi ordina e il totale in vista nella barra in
- * fondo. Una pagina sola, senza passi: è un ordine, non un'iscrizione.
+ * (`iscrizioni/#vestiario`), coi passi del modulo Google «ORDINI MIZUNO»: per
+ * chi è, il tipo, i capi del tipo con foto e tabella delle taglie, ti serve
+ * altro, chi ordina col riepilogo. Il totale resta in vista nella barra in
+ * fondo. Con un capo senza tipo (o il database senza il 50) i capi stanno
+ * tutti su una pagina sola.
  *
  * Mandato, l'ordine non si rilegge da qui: ORDINE ARRIVATO dice come pagare e
  * dà il riepilogo da condividere. Le regole (aperti o chiusi, cosa non va, il
  * totale) stanno in `vestiario.ts`; il totale vero lo fa il server.
  */
 
-type RigaScritta = RigaNuova & { chiave: number }
-
-let contatore = 0
-const rigaVuota = (perChi = ''): RigaScritta => ({ chiave: ++contatore, perChi, capo: '', taglia: '', quanti: 1 })
 const CHI_VUOTO = { nome: '', cognome: '', telefono: '', email: '' }
 
 /** «fino al 31 ottobre», «fino all'8 ottobre». */
@@ -54,8 +53,8 @@ function useCopia() {
 
 /** La nota rossa sotto un campo che manca, dopo il primo MANDA L'ORDINE: dice cosa fare. */
 const NOTE: Record<string, string> = {
-  perChi: 'Scrivi per chi è: nome e cognome',
-  capo: 'Scegli il capo',
+  perChi: 'Scrivi nome e cognome',
+  capo: 'Questo capo non c’è più: toglilo',
   taglia: 'Scegli la taglia',
   nome: 'Scrivi il nome di chi ordina',
   cognome: 'Scrivi il cognome di chi ordina',
@@ -120,6 +119,7 @@ export function OrdinaVestiario() {
       chi={chi}
       onChi={setChi}
       capi={catalogo.capi}
+      tabelle={catalogo.tabelle ?? {}}
       chiude={catalogo.chiude}
       onArrivato={(o) => {
         setArrivato(o)
@@ -129,11 +129,31 @@ export function OrdinaVestiario() {
   )
 }
 
+/** Quel che resta se si torna indietro o la pagina si ricarica: in questa scheda sola, fino a ORDINE ARRIVATO. */
+const RIPRESA = 'ods-corsi:vestiario-scelte'
+
+function leggiRipresa(): string | null {
+  try {
+    return sessionStorage.getItem(RIPRESA)
+  } catch {
+    return null
+  }
+}
+function scriviRipresa(r: Ripresa | null) {
+  try {
+    if (r) sessionStorage.setItem(RIPRESA, JSON.stringify(r))
+    else sessionStorage.removeItem(RIPRESA)
+  } catch {
+    /* senza sessionStorage le scelte restano finché la pagina è aperta */
+  }
+}
+
 function Ordina({
   d,
   chi,
   onChi: setChi,
   capi,
+  tabelle,
   chiude,
   onArrivato,
 }: {
@@ -141,29 +161,61 @@ function Ordina({
   chi: typeof CHI_VUOTO
   onChi: (c: typeof CHI_VUOTO) => void
   capi: Capo[]
+  tabelle: Tabelle
   chiude: string
   onArrivato: (o: Ordine) => void
 }) {
-  const [righe, setRighe] = useState<RigaScritta[]>(() => [rigaVuota()])
-  // L'id dell'ordine nasce qui, una volta: rimandato dopo un «Non c'è rete» è lo stesso
-  // ordine, non un secondo. FAI UN ALTRO ORDINE rimonta il modulo e ne fa uno nuovo.
-  const [id] = useState(() => crypto.randomUUID())
+  // L'id dell'ordine nasce una volta, e resta anche ricaricando: rimandato dopo un «Non c'è rete»
+  // è lo stesso ordine, non un secondo. FAI UN ALTRO ORDINE riparte da capo e ne fa uno nuovo.
+  const [r] = useState<Ripresa>(() => ripresaDa(leggiRipresa(), capi) ?? { id: crypto.randomUUID(), righe: [], storia: [{ a: 'perChi' }] })
+  const [id, setId] = useState(r.id)
+  const [righe, setRighe] = useState<RigaNuova[]>(r.righe)
+  const [storia, setStoria] = useState<Passo[]>(r.storia)
+  // Il nome scritto in PER CHI È, e quello di prima se ci si è tornati: cambiato, le sue righe lo seguono.
+  const [nomeScritto, setNomeScritto] = useState('')
+  const [vecchio, setVecchio] = useState('')
   const [inVolo, setInVolo] = useState(false)
   const [guaio, setGuaio] = useState<string | null>(null)
   const [provato, setProvato] = useState(false)
+  const [grande, setGrande] = useState<{ url: string; nome: string } | null>(null)
+  // Chi ordina torna con le scelte dopo una ricarica (lo tiene la pagina di sopra, per FAI UN ALTRO ORDINE).
+  useEffect(() => {
+    if (r.chi) setChi({ ...r.chi, email: r.chi.email ?? '' })
+    // Una volta, all'apertura: dopo comanda quel che si scrive.
+  }, [])
+  useEffect(() => scriviRipresa({ id, righe, storia, chi }), [id, righe, storia, chi])
 
-  const ordine = { id, ...chi, righe: righe.map(({ chiave: _, ...r }) => r) }
-  // «Il nome di chi ordina»: più chiaro di «il tuo» quando ordina un nonno o una zia.
-  const manca = mancaNellOrdine(ordine, capi)
-  /** Rosso e la nota, ma solo dopo aver provato a mandare: un modulo appena aperto non è sbagliato. */
-  const nota = (chiave: string): Nota | undefined => {
-    const m = provato ? manca.find((x) => x.chiave === chiave) : undefined
-    if (!m) return undefined
-    // Scritto male non è vuoto: la nota dice cosa non va, con le parole della barra.
-    return { testo: m.scrittoMale ? m.nome : NOTE[chiave.replace(/^r\d+-/, '')], guaio: true }
+  const passo = storia[storia.length - 1]
+  // Ogni passo porta la sua persona: INDIETRO fino ai passi di Luca rimette Luca, con le sue scelte.
+  const perChi = 'perChi' in passo ? passo.perChi : ''
+  const tipi = tipiDaMostrare(capi)
+  const vaiA = (p: Passo) => {
+    setGuaio(null)
+    setProvato(false)
+    setStoria((s) => [...s, p])
+    document.querySelector('.scroll')?.scrollTo(0, 0)
   }
-  const scelte = righe.filter((r) => r.capo)
-  const totale = totaleOrdine(scelte.map((r) => ({ quanti: r.quanti, prezzo: prezzoDi(capi, r.capo) })))
+  const indietro =
+    storia.length > 1
+      ? () => {
+          setGuaio(null)
+          setProvato(false)
+          const lasciato = storia[storia.length - 1]
+          const torna = storia[storia.length - 2]
+          // Tornando a PER CHI È il nome c'è ancora, ed è quello da seguire se si cambia.
+          if (torna.a === 'perChi') {
+            const nome = 'perChi' in lasciato ? lasciato.perChi : ''
+            setNomeScritto(nome)
+            setVecchio(nome)
+          }
+          setStoria(storia.slice(0, -1))
+        }
+      : undefined
+
+  const ordine = { id, ...chi, righe }
+  const totale = totaleOrdine(righe.map((x) => ({ quanti: x.quanti, prezzo: prezzoDi(capi, x.capo) })))
+  // Con zero capi la riga del totale non dice niente: compare col primo capo scelto.
+  const conto = righe.length ? { righe: capiDetti(contaCapi(righe)), totale: inEuro(totale) } : undefined
   const entro = ilGiorno(chiude)
 
   const vai = (chiave: string) => {
@@ -171,25 +223,36 @@ function Ordina({
     x?.scrollIntoView({ block: 'center', behavior: 'smooth' })
     x?.focus({ preventScroll: true })
   }
-  const cambia = (chiave: number, x: Partial<RigaNuova>) => setRighe((rr) => rr.map((r) => (r.chiave === chiave ? { ...r, ...x } : r)))
-  // Il campo da scrivere della riga nuova: il capo se il nome è già quello di sopra, se no il nome.
-  const aggiungi = (perChi: string) => {
-    const nuova = rigaVuota(perChi)
-    setRighe((rr) => [...rr, nuova])
-    setTimeout(() => vai(`r${righe.length}-${perChi ? 'capo' : 'perChi'}`), 0)
+  /** Una foto o una tabella grande; il tasto indietro del telefono la chiude, non la pagina. */
+  const apri = (url: string, nome: string) => {
+    window.history.pushState({ fotoVestiario: true }, '')
+    setGrande({ url, nome })
+  }
+  useEffect(() => {
+    const chiudi = () => setGrande(null)
+    window.addEventListener('popstate', chiudi)
+    return () => window.removeEventListener('popstate', chiudi)
+  }, [])
+  const chiudiGrande = () => {
+    // `history.state` è `any`: qui ci scrive solo `apri`.
+    if ((window.history.state as { fotoVestiario?: boolean } | null)?.fotoVestiario) window.history.back()
+    else setGrande(null)
   }
 
   const manda = async () => {
     if (inVolo) return
     setGuaio(null)
     setProvato(true)
+    const manca = mancaNellOrdine(ordine, capi)
     if (manca[0]) return vai(manca[0].chiave)
     const no = cosaNonVaOrdine(ordine, capi)
     if (no) return setGuaio(no)
     // Il tasto si spegne finché il server non risponde: un secondo tocco non fa un secondo ordine.
     setInVolo(true)
     try {
-      onArrivato(await d.inviaOrdine(ordine))
+      const fatto = await d.inviaOrdine(ordine)
+      scriviRipresa(null)
+      onArrivato(fatto)
     } catch (e) {
       // Le risposte restano: si riprova con lo stesso tasto.
       setGuaio(e instanceof Error ? e.message : 'Non è andata: riprova fra poco')
@@ -198,54 +261,249 @@ function Ordina({
     }
   }
 
+  const fondo = (barra: ReactNode) => (
+    // L'errore sta col tasto, nel fondo che resta in vista: in fondo alla pagina non lo vedeva nessuno.
+    <div className="vestiario-fondo">
+      {guaio && (
+        <div className="pad vestiario-guaio" role="alert">
+          <Riquadro tono="guaio">{guaio}</Riquadro>
+        </div>
+      )}
+      {barra}
+    </div>
+  )
+  const foto = grande && <FotoGrande {...grande} onChiudi={chiudiGrande} />
+  const perChiDetto = `PER ${perChi.toUpperCase()}`
+
+  if (passo.a === 'perChi') {
+    const nuovo = nomeScritto.trim()
+    const vuoto = !nuovo
+    // Lo stesso bambino scritto due volte farebbe due gruppi: chi si sta correggendo può tenere il suo nome.
+    // Una persona nuova col nome di una che c'è già è quella: si continua con lei, scritta come la prima volta.
+    // Si rifiuta solo correggendo un nome (tornati con INDIETRO) per farlo diventare quello di un'altra.
+    const giaQui = righe.find((x) => stessaPersona(x.perChi, nuovo))?.perChi
+    const doppio = vuoto || !vecchio ? null : nomeGiaUsato(righe, nuovo, vecchio)
+    const notaNome = provato && vuoto ? 'Scrivi nome e cognome' : provato && doppio ? doppio : null
+    const avanti = () => {
+      setProvato(true)
+      if (vuoto || doppio) return vai('perChi')
+      if (vecchio && vecchio !== nuovo) setRighe(rinomina(righe, vecchio, nuovo))
+      vaiA(passoDopoPerChi(capi, !vecchio && giaQui ? giaQui : nuovo))
+    }
+    // Riaperta la pagina con un ordine a metà: lo si dice, e si sceglie se riprenderlo o ricominciare.
+    const aMeta = storia.length === 1 ? ordineAMeta(righe) : null
+    const ricomincia = async () => {
+      if (!(await chiedi('Ricominciare da capo? I capi scelti e chi ordina si perdono.', 'RICOMINCIA DA CAPO', { no: 'NO, TIENILI', pericolo: true }))) return
+      scriviRipresa(null)
+      setRighe([])
+      setChi(CHI_VUOTO)
+      setId(crypto.randomUUID())
+      setNomeScritto('')
+      setVecchio('')
+      setProvato(false)
+    }
+    return (
+      <div className="modulo stack vestiario">
+        <Titoletto>ORDINA IL VESTIARIO</Titoletto>
+        <div className="pad passo-dopo">
+          <Riquadro tono="prova">
+            <Etichetta>ORDINI APERTI {finoA(chiude).toUpperCase()}</Etichetta>
+            <Dettaglio>
+              Una persona alla volta: per chi è{Array.isArray(tipi) && tipi.length > 1 ? ', il tipo' : ''}, poi i capi con la taglia. Paghi dopo, con bonifico, Satispay o in segreteria: al fornitore va solo quello pagato entro {entro}.
+            </Dettaglio>
+          </Riquadro>
+        </div>
+        {aMeta && (
+          <div className="pad passo-dopo">
+            <Riquadro>
+              <Etichetta>UN ORDINE A METÀ</Etichetta>
+              <Dettaglio tono="testo">{aMeta}.</Dettaglio>
+              <Tasti>
+                <Tasto variante="principale" onClick={() => vaiA({ a: 'chiOrdina' })}>
+                  VEDI IL RIEPILOGO
+                </Tasto>
+                <Tasto onClick={() => void ricomincia()}>RICOMINCIA DA CAPO</Tasto>
+              </Tasti>
+            </Riquadro>
+          </div>
+        )}
+        <Titoletto>PER CHI È</Titoletto>
+        <div className="pad stack passo-dopo">
+          <Campo id="v-perChi" etichetta="NOME E COGNOME" nota={notaNome ? { testo: notaNome, guaio: true } : undefined}>
+            <input
+              id="v-perChi"
+              className="campo"
+              maxLength={160}
+              placeholder="Nome e cognome"
+              aria-invalid={!!notaNome}
+              aria-describedby="v-perChi-dopo v-perChi-nota"
+              value={nomeScritto}
+              onChange={(e) => setNomeScritto(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && avanti()}
+            />
+            <span id="v-perChi-dopo" className="passo-dettaglio">
+              Chi indossa i capi.{righe.length ? '' : ' Per un’altra persona te lo chiediamo dopo.'}
+            </span>
+          </Campo>
+        </div>
+        {fondo(<BarraPasso manca={notaNome ? [{ nome: vuoto ? 'Per chi è' : 'Un nome già nell’ordine', chiave: 'perChi' }] : []} totale={conto} onVai={vai} onAvanti={avanti} onIndietro={indietro} />)}
+      </div>
+    )
+  }
+
+  if (passo.a === 'tipo' && tipi !== 'pagina sola') {
+    return (
+      <div className="modulo stack vestiario">
+        <Titoletto conto={perChiDetto}>IL TIPO</Titoletto>
+        <div className="pad stack passo-dopo" style={{ gap: 8 }}>
+          {/* Un tocco porta alla pagina del tipo: una scelta sola, senza AVANTI. */}
+          {tipi.map((t) => {
+            const suoi = capiDelTipo(capi, t)
+            const prezzi = suoi.map((c) => c.prezzo)
+            const da = Math.min(...prezzi)
+            return (
+              <button key={t} type="button" className="modulo-corso" onClick={() => vaiA({ a: 'pagina', perChi, tipo: t })}>
+                <span className="stack modulo-corso-testo grow">
+                  <span>{nomeTipo(t)}</span>
+                  <span className="modulo-corso-riga">
+                    {capiDetti(suoi.length)} · {prezzi.length > 1 && prezzi.some((p) => p !== da) ? `dai ${inEuro(da)}` : inEuro(da)}
+                  </span>
+                </span>
+                <span aria-hidden>›</span>
+              </button>
+            )
+          })}
+        </div>
+        {fondo(<BarraPasso totale={conto} onVai={vai} onIndietro={indietro} />)}
+      </div>
+    )
+  }
+
+  if (passo.a === 'pagina') {
+    const deiCapi = capiDelTipo(capi, passo.tipo)
+    const scelte = sceltePagina(righe, perChi, deiCapi)
+    const scegli = (capo: string, s: Scelte[string] | null) => {
+      const nuove = { ...scelte }
+      if (s?.taglia) nuove[capo] = s
+      else delete nuove[capo]
+      try {
+        setRighe(applicaScelte(righe, perChi, deiCapi, nuove))
+        setGuaio(null)
+      } catch (e) {
+        setGuaio(e instanceof Error ? e.message : MAX_RIGHE_DETTO)
+      }
+    }
+    // La pagina sola non ha un tipo: in cima vanno le tabelle dei tipi che le hanno.
+    const tabelleQui = tabelleDellaPagina(tabelle, passo.tipo).map((t) => ({ tipo: t.tipo, url: d.urlFoto(t.nome) }))
+    return (
+      <div className="modulo stack vestiario">
+        <Titoletto conto={perChiDetto}>{passo.tipo === 'pagina sola' ? 'I CAPI' : nomeTipo(passo.tipo)}</Titoletto>
+        {tabelleQui.map((t) => (
+          <div key={t.tipo} className="vestiario-tabella">
+            {/* Con più tabelle (la pagina sola) ognuna dice di che tipo è. */}
+            {tabelleQui.length > 1 && <span className="pad rule-label vestiario-tabella-tipo">{nomeTipo(t.tipo)}</span>}
+            <Foto url={t.url} nome={`Tabella delle taglie · ${nomeTipo(t.tipo)}`} tabella onApri={apri} />
+          </div>
+        ))}
+        <div className="pad stack passo-dopo" style={{ gap: 10 }}>
+          {deiCapi.map((c) => (
+            <SchedaCapo key={c.capo} c={c} url={c.foto ? d.urlFoto(c.foto) : ''} scelta={scelte[c.capo]} onScegli={(s) => scegli(c.capo, s)} onApri={apri} />
+          ))}
+        </div>
+        {fondo(<BarraPasso totale={conto} onVai={vai} onAvanti={() => vaiA({ a: 'altro', perChi })} onIndietro={indietro} />)}
+        {foto}
+      </div>
+    )
+  }
+
+  if (passo.a === 'altro') {
+    const suoi = righe.filter((x) => x.perChi === perChi)
+    const finito = () => {
+      setProvato(true)
+      if (righe.length) vaiA({ a: 'chiOrdina' })
+    }
+    return (
+      <div className="modulo stack vestiario">
+        <Titoletto>TI SERVE ALTRO?</Titoletto>
+        <div className="pad passo-dopo">
+          <Riquadro stretto>
+            <Persona nome={perChi} />
+            {suoi.length ? (
+              <ul className="stack stima">
+                {suoi.map((x) => (
+                  <li key={x.capo} className="row stima-riga">
+                    <span className="grow">
+                      {x.capo} {x.taglia}
+                      {x.quanti > 1 ? ` × ${x.quanti}` : ''}
+                    </span>
+                    <span className="num">{inEuro(x.quanti * prezzoDi(capi, x.capo))}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Dettaglio>Per ora niente.</Dettaglio>
+            )}
+          </Riquadro>
+        </div>
+        {tipi !== 'pagina sola' && (
+          <>
+            <Titoletto>ANCORA {perChiDetto}</Titoletto>
+            <div className="pad stack passo-dopo" style={{ gap: 8 }}>
+              {tipi.map((t) => {
+                const n = suoi.filter((x) => capiDelTipo(capi, t).some((c) => c.capo === x.capo)).length
+                return (
+                  <button key={t} type="button" className="btn btn-ghost vestiario-tasto" onClick={() => vaiA({ a: 'pagina', perChi, tipo: t })}>
+                    {nomeTipo(t)}
+                    {n ? ` · ${n} ${n === 1 ? 'SCELTO' : 'SCELTI'}` : ''}
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        )}
+        <Titoletto>PER UN’ALTRA PERSONA</Titoletto>
+        <div className="pad stack passo-dopo">
+          <button
+            type="button"
+            className="btn btn-dashed vestiario-tasto"
+            disabled={righe.length >= MAX_RIGHE}
+            onClick={() => {
+              setNomeScritto('')
+              setVecchio('')
+              vaiA({ a: 'perChi' })
+            }}
+          >
+            + PER UN’ALTRA PERSONA
+          </button>
+          {righe.length >= MAX_RIGHE && <Dettaglio tono="avviso">{MAX_RIGHE_DETTO}</Dettaglio>}
+        </div>
+        {fondo(
+          <BarraPasso
+            manca={provato && !righe.length ? [{ nome: 'Almeno un capo', chiave: 'perChi' }] : []}
+            totale={conto}
+            avanti="NO, HO FINITO"
+            onVai={() => indietro?.()}
+            onAvanti={finito}
+            onIndietro={indietro}
+          />,
+        )}
+      </div>
+    )
+  }
+
+  // CHI ORDINA e IL RIEPILOGO, raggruppato per persona: taglia e quanti si cambiano qui.
+  const manca = mancaNellOrdine(ordine, capi)
+  /** Rosso e la nota, ma solo dopo aver provato a mandare: un modulo appena aperto non è sbagliato. */
+  const nota = (chiave: string): Nota | undefined => {
+    const m = provato ? manca.find((x) => x.chiave === chiave) : undefined
+    if (!m) return undefined
+    // Scritto male non è vuoto: la nota dice cosa non va, con le parole della barra.
+    return { testo: m.scrittoMale ? m.nome : NOTE[chiave.replace(/^r\d+-/, '')], guaio: true }
+  }
+  const cambia = (i: number, x: Partial<RigaNuova>) => setRighe((rr) => rr.map((y, j) => (j === i ? { ...y, ...x } : y)))
+  const conIndice = righe.map((x, i) => ({ ...x, i }))
   return (
     <div className="modulo stack vestiario">
-      <Titoletto>ORDINA IL VESTIARIO</Titoletto>
-      <div className="pad passo-dopo">
-        <Riquadro tono="prova">
-          <Etichetta>ORDINI APERTI {finoA(chiude).toUpperCase()}</Etichetta>
-          <Dettaglio>
-            Scegli i capi qui sotto, per uno o più figli. Paghi dopo, con bonifico, Satispay o in segreteria: al fornitore va solo quello pagato entro {entro}.
-          </Dettaglio>
-        </Riquadro>
-      </div>
-
-      <Titoletto conto={capiDetti(capi.length).toUpperCase()}>IL CATALOGO</Titoletto>
-      <div className="pad stack passo-dopo" style={{ gap: 10 }}>
-        {capi.map((c) => (
-          <Riquadro key={c.capo} stretto>
-            <span className="row prova-testa">
-              <span className="grow passo-titolo">{c.capo}</span>
-              <span className="num cifra">{inEuro(c.prezzo)}</span>
-            </span>
-            <Dettaglio>Taglie {c.taglie.join(', ')}.</Dettaglio>
-            {c.nota && <Dettaglio>{c.nota}</Dettaglio>}
-          </Riquadro>
-        ))}
-      </div>
-
-      <Titoletto conto={capiDetti(contaCapi(scelte)).toUpperCase()}>IL TUO ORDINE</Titoletto>
-      <div className="pad stack passo-dopo" style={{ gap: 10 }}>
-        {righe.map((r, i) => (
-          <RigaOrdine
-            key={r.chiave}
-            r={r}
-            i={i}
-            capi={capi}
-            nota={nota}
-            togli={righe.length > 1 ? () => setRighe((rr) => rr.filter((x) => x.chiave !== r.chiave)) : undefined}
-            onCambia={(x) => cambia(r.chiave, x)}
-          />
-        ))}
-        <button type="button" className="btn btn-dashed passo-btn" disabled={righe.length >= MAX_RIGHE} onClick={() => aggiungi(righe[righe.length - 1]?.perChi ?? '')}>
-          + UN ALTRO CAPO
-        </button>
-        <button type="button" className="btn btn-dashed passo-btn" disabled={righe.length >= MAX_RIGHE} onClick={() => aggiungi('')}>
-          + PER UN ALTRO FIGLIO
-        </button>
-        {righe.length >= MAX_RIGHE && <Dettaglio tono="avviso">{MAX_RIGHE_DETTO}</Dettaglio>}
-      </div>
-
       <Titoletto>CHI ORDINA</Titoletto>
       <div className="pad modulo-griglia passo-dopo">
         <Campo id="v-nome" etichetta="NOME" nota={nota('nome')}>
@@ -276,31 +534,25 @@ function Ordina({
         </Campo>
       </div>
 
-      {scelte.length > 0 && (
-        <>
-          <Titoletto conto={capiDetti(contaCapi(scelte)).toUpperCase()}>IL RIEPILOGO</Titoletto>
-          <div className="pad passo-dopo">
-            <Riquadro stretto>
-              <ul className="stack stima">
-                {scelte.map((r) => (
-                  <li key={r.chiave} className="row stima-riga">
-                    <span className="grow">
-                      {r.perChi.trim() || 'Per chi?'} · {r.capo} {r.taglia}
-                      {r.quanti > 1 ? ` × ${r.quanti}` : ''}
-                    </span>
-                    <span className="num">{inEuro(r.quanti * prezzoDi(capi, r.capo))}</span>
-                  </li>
-                ))}
-                <li className="row stima-riga stima-totale">
-                  <span className="grow">Totale</span>
-                  <span className="num">{inEuro(totale)}</span>
-                </li>
-              </ul>
-              <Dettaglio>Paghi dopo l’invio: ti diciamo come nella pagina che segue. Va al fornitore solo quello pagato entro {entro}.</Dettaglio>
-            </Riquadro>
+      <Titoletto conto={capiDetti(contaCapi(righe)).toUpperCase()}>IL RIEPILOGO</Titoletto>
+      <div className="pad stack passo-dopo" style={{ gap: 10 }}>
+        {righePerPersona(conIndice).map((g) => (
+          <div key={g.perChi} className="stack" style={{ gap: 8 }}>
+            <Persona nome={g.perChi} />
+            {g.righe.map((x) => (
+              <RigaRiepilogo key={`${x.perChi}-${x.capo}`} r={x} capo={capi.find((c) => c.capo === x.capo)} nota={nota} onCambia={(y) => cambia(x.i, y)} onTogli={() => setRighe((rr) => rr.filter((_, j) => j !== x.i))} />
+            ))}
           </div>
-        </>
-      )}
+        ))}
+        {!righe.length && <Dettaglio>Nessun capo: torna indietro e sceglilo.</Dettaglio>}
+        <Riquadro stretto>
+          <span className="row stima-riga stima-totale">
+            <span className="grow">Totale</span>
+            <span className="num">{inEuro(totale)}</span>
+          </span>
+          <Dettaglio>Paghi dopo l’invio: ti diciamo come nella pagina che segue. Va al fornitore solo quello pagato entro {entro}.</Dettaglio>
+        </Riquadro>
+      </div>
 
       {INFORMATIVA_PUBBLICA && (
         <p className="pad iscrizioni-nota">
@@ -312,83 +564,163 @@ function Ordina({
         </p>
       )}
 
-      {/* L'errore del server sta col tasto, nel fondo che resta in vista: in fondo alla pagina non lo vedeva nessuno. */}
-      <div className="vestiario-fondo">
-        {guaio && (
-          <div className="pad vestiario-guaio" role="alert">
-            <Riquadro tono="guaio">{guaio}</Riquadro>
-          </div>
-        )}
-      <BarraPasso
-        manca={manca}
-        nota={manca.length ? undefined : 'Tutto pronto: puoi mandare l’ordine.'}
-        // Con zero capi la riga del totale non dice niente: compare col primo capo scelto.
-        totale={scelte.length ? { righe: capiDetti(contaCapi(scelte)), totale: inEuro(totale) } : undefined}
-        avanti={inVolo ? 'MANDO…' : 'MANDA L’ORDINE'}
-        tono="vai"
-        occupato={inVolo}
-        onVai={vai}
-        onAvanti={() => void manda()}
-      />
+      {fondo(
+        <BarraPasso
+          manca={manca}
+          nota={manca.length ? undefined : 'Tutto pronto: puoi mandare l’ordine.'}
+          totale={conto}
+          avanti={inVolo ? 'MANDO…' : 'MANDA L’ORDINE'}
+          tono="vai"
+          occupato={inVolo}
+          onVai={vai}
+          onAvanti={() => void manda()}
+          onIndietro={indietro}
+        />,
+      )}
+    </div>
+  )
+}
+
+/** Per chi è, in chiaro: l'etichetta PER e il nome come si scrive, non in maiuscolo spaziato. */
+function Persona({ nome }: { nome: string }) {
+  return (
+    <span className="stack" style={{ gap: 2 }}>
+      <span className="rule-label">PER</span>
+      <span className="vestiario-persona">{nome}</span>
+    </span>
+  )
+}
+
+/**
+ * La foto di un capo o una tabella delle taglie, che si apre grande. Senza
+ * foto non c'è niente; una foto che non si carica lascia il nome, e si ordina
+ * lo stesso.
+ */
+function Foto({ url, nome, tabella, onApri }: { url: string; nome: string; tabella?: boolean; onApri: (url: string, nome: string) => void }) {
+  const [rotta, setRotta] = useState(false)
+  if (!url) return null
+  if (rotta)
+    return (
+      <span className="vestiario-foto" data-tabella={tabella || undefined}>
+        <span className="vestiario-foto-nome">{nome}</span>
+      </span>
+    )
+  return (
+    <button type="button" className="vestiario-foto" data-tabella={tabella || undefined} onClick={() => onApri(url, nome)} aria-label={`Apri grande: ${nome}`}>
+      <img src={url} alt={nome} onError={() => setRotta(true)} />
+      <span className="vestiario-foto-apri" aria-hidden>
+        ⤢
+      </span>
+    </button>
+  )
+}
+
+/** La foto grande, a tutto schermo: si allarga con due dita (lo zoom del telefono), CHIUDI o indietro la chiude. */
+function FotoGrande({ url, nome, onChiudi }: { url: string; nome: string; onChiudi: () => void }) {
+  const ref = useDialogo<HTMLDivElement>(onChiudi)
+  return (
+    <div ref={ref} role="dialog" aria-modal="true" aria-label={nome} tabIndex={-1} className="vestiario-grande">
+      <div className="pad vestiario-grande-testa">
+        <span className="grow passo-titolo">{nome}</span>
+        <button type="button" className="btn btn-ghost passo-btn" onClick={onChiudi}>
+          CHIUDI ✕
+        </button>
+      </div>
+      <span className="pad passo-dettaglio vestiario-grande-come">Allarga con due dita</span>
+      <div className="vestiario-grande-zoom">
+        <img src={url} alt={nome} />
       </div>
     </div>
   )
 }
 
-/** Una riga dell'ordine, a campi uno sotto l'altro: col pollice, sul telefono. */
-function RigaOrdine({
-  r,
-  i,
-  capi,
-  nota,
-  togli,
-  onCambia,
+/** Un capo nella pagina del tipo: foto, nome, prezzo, nota, TAGLIA e QUANTI. Scelta una taglia è nell'ordine: bordo verde. */
+function SchedaCapo({
+  c,
+  url,
+  scelta,
+  onScegli,
+  onApri,
 }: {
-  r: RigaScritta
-  i: number
-  capi: Capo[]
-  nota: (chiave: string) => Nota | undefined
-  togli?: () => void
-  onCambia: (x: Partial<RigaNuova>) => void
+  c: Capo
+  url: string
+  scelta?: Scelte[string]
+  onScegli: (s: Scelte[string] | null) => void
+  onApri: (url: string, nome: string) => void
 }) {
-  const id = (k: string) => `v-r${i}-${k}`
-  const n = (k: string) => nota(`r${i}-${k}`)
-  const capo = capi.find((c) => c.capo === r.capo)
+  const id = `v-c-${c.capo.replace(/\W+/g, '-')}`
+  const quanti = scelta?.quanti ?? 1
+  return (
+    <div className="card stack riquadro vestiario-scheda" data-scelto={!!scelta?.taglia}>
+      <Foto url={url} nome={c.capo} onApri={onApri} />
+      <span className="row prova-testa">
+        <span className="grow passo-titolo">{c.capo}</span>
+        <span className="num cifra">{inEuro(c.prezzo)}</span>
+      </span>
+      {c.nota && <Dettaglio>{c.nota}</Dettaglio>}
+      <div className="vestiario-due">
+        <Campo id={`${id}-taglia`} etichetta="TAGLIA">
+          {/* Scelta la taglia QUANTI parte da 1; «Scegli» toglie il capo dall'ordine. */}
+          <select id={`${id}-taglia`} className="campo" value={scelta?.taglia ?? ''} onChange={(e) => onScegli(e.target.value ? { taglia: e.target.value, quanti } : null)}>
+            <option value="">Scegli</option>
+            {c.taglie.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </Campo>
+        <Campo id={`${id}-quanti`} etichetta="QUANTI">
+          <select id={`${id}-quanti`} className="campo num" value={scelta?.taglia ? quanti : ''} disabled={!scelta?.taglia} onChange={(e) => scelta && onScegli({ ...scelta, quanti: Number(e.target.value) })}>
+            {!scelta?.taglia && <option value="">—</option>}
+            {Array.from({ length: MAX_QUANTI }, (_, n) => (
+              <option key={n} value={n + 1}>
+                {n + 1}
+              </option>
+            ))}
+          </select>
+        </Campo>
+      </div>
+      {scelta?.taglia && (
+        <span className="row stima-riga stima-totale">
+          <span className="grow passo-dettaglio">
+            {quanti} × {inEuro(c.prezzo)}
+          </span>
+          <span className="num">{inEuro(quanti * c.prezzo)}</span>
+        </span>
+      )}
+    </div>
+  )
+}
+
+/** Una riga di IL RIEPILOGO: il capo, TAGLIA e QUANTI da cambiare qui, «Togli» e il conto. */
+function RigaRiepilogo({
+  r,
+  capo,
+  nota,
+  onCambia,
+  onTogli,
+}: {
+  r: RigaNuova & { i: number }
+  capo?: Capo
+  nota: (chiave: string) => Nota | undefined
+  onCambia: (x: Partial<RigaNuova>) => void
+  onTogli: () => void
+}) {
+  const id = (k: string) => `v-r${r.i}-${k}`
+  const n = (k: string) => nota(`r${r.i}-${k}`)
   return (
     <div className="card stack riquadro">
-      <span className="row" style={{ gap: 10, minHeight: 24 }}>
-        <span className="grow rule-label">RIGA {i + 1}</span>
-        {togli && (
-          <button type="button" className="vestiario-togli" onClick={togli} aria-label={`Togli la riga ${i + 1}`}>
-            Togli
-          </button>
-        )}
+      <span className="row" style={{ gap: 10 }}>
+        <span className="grow passo-titolo">{r.capo}</span>
+        <button type="button" className="vestiario-togli" onClick={onTogli} aria-label={`Togli ${r.capo} di ${r.perChi}`}>
+          Togli
+        </button>
       </span>
-      <Campo id={id('perChi')} etichetta="PER CHI · NOME E COGNOME" nota={n('perChi')}>
-        <input id={id('perChi')} className="campo" aria-invalid={!!n('perChi')} aria-describedby={`${id('perChi')}-nota`} maxLength={160} placeholder="Nome e cognome" value={r.perChi} onChange={(e) => onCambia({ perChi: e.target.value })} />
-      </Campo>
-      <Campo id={id('capo')} etichetta="CAPO" nota={n('capo')}>
-        <select
-          id={id('capo')}
-          className="campo"
-          aria-invalid={!!n('capo')}
-          aria-describedby={`${id('capo')}-nota`}
-          value={r.capo}
-          // Un capo nuovo tiene la taglia solo se ce l'ha anche lui.
-          onChange={(e) => onCambia({ capo: e.target.value, taglia: tagliaDopo(capi, e.target.value, r.taglia) })}
-        >
-          <option value="">Scegli il capo</option>
-          {capi.map((c) => (
-            <option key={c.capo} value={c.capo}>
-              {c.capo} · {inEuro(c.prezzo)}
-            </option>
-          ))}
-        </select>
-      </Campo>
       <div className="vestiario-due">
         <Campo id={id('taglia')} etichetta="TAGLIA" nota={n('taglia')}>
-          <select id={id('taglia')} className="campo" aria-invalid={!!n('taglia')} aria-describedby={`${id('taglia')}-nota`} value={r.taglia} disabled={!capo} onChange={(e) => onCambia({ taglia: e.target.value })}>
-            <option value="">Scegli</option>
+          <select id={id('taglia')} className="campo" aria-invalid={!!n('taglia')} aria-describedby={`${id('taglia')}-nota`} value={r.taglia} onChange={(e) => onCambia({ taglia: e.target.value })}>
+            {/* Per togliere una riga c'è Togli: qui la taglia si cambia, non si svuota. */}
             {capo?.taglie.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -398,9 +730,9 @@ function RigaOrdine({
         </Campo>
         <Campo id={id('quanti')} etichetta="QUANTI">
           <select id={id('quanti')} className="campo num" value={r.quanti} onChange={(e) => onCambia({ quanti: Number(e.target.value) })}>
-            {Array.from({ length: MAX_QUANTI }, (_, n) => (
-              <option key={n} value={n + 1}>
-                {n + 1}
+            {Array.from({ length: MAX_QUANTI }, (_, k) => (
+              <option key={k} value={k + 1}>
+                {k + 1}
               </option>
             ))}
           </select>

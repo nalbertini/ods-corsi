@@ -61,6 +61,8 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
 - **Il vestiario**: judogi, costumini e vestiario si ordinano da `iscrizioni/#vestiario`,
   al posto del modulo Google; la segreteria tiene catalogo e chiusura, segna chi ha
   pagato e scarica l'elenco per il fornitore, solo coi capi saldati (`supabase/47-vestiario.sql`).
+  La pagina segue i passi del vecchio modulo (per chi è, il tipo, i capi con foto e tabella delle taglie,
+  ti serve altro?), e le foto le carica la segreteria (`supabase/51-vestiario-foto.sql`).
 - **I miei timer**: nell'area istruttori, quali timer partono con ogni corso e
   con ogni singola lezione delle prossime due settimane, anche più d'uno;
   quelli di una lezione vengono prima di quelli del corso, dall'appello e sul tablet di sala
@@ -419,7 +421,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
 | `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
 | `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già, e sei richieste al giorno dalla stessa email (la settima no). Il certificato non si stampa: accolta la richiesta passa alla scheda, e uno sbagliato si toglie prima. |
-| `supabase/prova/vestiario.sql` | Gli ordini di vestiario: il catalogo lo salva solo la segreteria e lo legge chi non ha un accesso da `vestiario()`; chi non ha un accesso manda un ordine solo da `invia_ordine_vestiario()`, rifiutato a raccolta chiusa, fuori catalogo, senza righe, con quantità sbagliate o senza telefono; il totale dal catalogo; proroga e raccolta nuova; gli ordini li vede e li cambia solo la segreteria (e il ruolo doppio), che corregge le righe e scrive dal banco anche a raccolta chiusa. |
+| `supabase/prova/vestiario.sql` | Gli ordini di vestiario: il catalogo lo salva solo la segreteria e lo legge chi non ha un accesso da `vestiario()`; chi non ha un accesso manda un ordine solo da `invia_ordine_vestiario()`, rifiutato a raccolta chiusa, fuori catalogo, senza righe, con quantità sbagliate o senza telefono; il totale dal catalogo; proroga e raccolta nuova; gli ordini li vede e li cambia solo la segreteria (e il ruolo doppio), che corregge le righe e scrive dal banco anche a raccolta chiusa; tipi, foto e tabelle delle taglie solo come nomi di file, e il contenitore «vestiario» lo riempie e lo svuota solo la segreteria, senza che chi non ha un accesso ne elenchi i file. |
 | `supabase/prova/timer.sql` | Il timer: la libreria della palestra, i timer personali e dei corsi, il tablet che li apre e non li scrive, lo storico, le preferenze. |
 | `supabase/prova/certificati.sql` | Certificati medici, documento e pagamenti: li vede e li cambia solo la segreteria. Il file del certificato sta in un contenitore privato (foto e PDF, 10 MB) che apre solo lei: istruttori, iscritti, tablet e chi non ha un accesso non lo leggono né ne vedono la presenza; un file nuovo prende il posto del vecchio con la data in un passaggio solo, si cancella da sé 30 giorni dopo la scadenza e con la persona disattivata. |
 | `supabase/prova/ricevute.sql` | Le ricevute: le fa e le annulla solo la segreteria, il numero va avanti da sé e riparte ogni anno, i conti li fa il server, e una ricevuta fatta non si cambia. |

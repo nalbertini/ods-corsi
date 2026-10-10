@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITA: la foto aperta grande (FotoGrande di OrdinaVestiario.tsx, .vestiario-grande*), sopra la pagina, a tutto schermo su fondo del tema. In cima il nome e CHIUDI ✕ (48px) sopra un filo; sotto «Allarga con due dita»: lo zoom è quello del telefono, non c'è un ingrandimento disegnato. L'immagine sta intera nel resto dello schermo. Anche il tasto indietro del telefono la chiude, non la pagina. A sinistra un capo, a destra la tabella delle taglie. Solo <dc-import>; le foto sono segnaposto. -->
+<div style="display: flex; gap: 120px; width: 900px; min-height: 844px; background: transparent">
+  <div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 2px solid #333333">
+      <span style="flex-grow: 1; font-size: 17px; font-weight: 600; line-height: 1.3">Judogi bianco</span>
+      <dc-import name="Bottone" label="CHIUDI ✕" variante="linea" alto="48px" corpo="16px" spazio="0 16px" hint-size="130px,48px"></dc-import>
+    </div>
+    <p style="margin: 0; padding: 8px 20px 0; font-size: 14px; line-height: 1.4; color: #8c8c88">Allarga con due dita</p>
+    <div style="display: flex; flex-grow: 1; align-items: center; justify-content: center">
+      <dc-import name="FotoCapo" nome="Judogi bianco" icona="judogi" alto="560px" tasto="{{ false }}" hint-size="100%,560px"></dc-import>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 2px solid #333333">
+      <span style="flex-grow: 1; font-size: 17px; font-weight: 600; line-height: 1.3">Tabella delle taglie · JUDOGI</span>
+      <dc-import name="Bottone" label="CHIUDI ✕" variante="linea" alto="48px" corpo="16px" spazio="0 16px" hint-size="130px,48px"></dc-import>
+    </div>
+    <p style="margin: 0; padding: 8px 20px 0; font-size: 14px; line-height: 1.4; color: #8c8c88">Allarga con due dita</p>
+    <div style="display: flex; flex-grow: 1; align-items: center; justify-content: center">
+      <dc-import name="FotoCapo" nome="Tabella delle taglie · JUDOGI" icona="tabella" alto="360px" tasto="{{ false }}" hint-size="100%,360px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

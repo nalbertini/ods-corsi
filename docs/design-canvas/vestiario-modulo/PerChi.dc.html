@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITA, passo 1: PER CHI È (OrdinaVestiario.tsx). Nome e cognome di chi indossa i capi, obbligatorio: vale per tutte le righe che seguono, finché non si sceglie «+ PER UN'ALTRA PERSONA». Qui dopo un AVANTI col campo vuoto: bordo rosso, nota e la barra che lo dice. La prima volta non c'è INDIETRO. Cornice copiata da PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 844px; background: #121212; color: #f2f2f0">
+  <dc-import name="Testata" luogo="VESTIARIO" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column; flex-grow: 1">
+    <dc-import name="Titoletto" label="ORDINA IL VESTIARIO" hint-size="100%,50px"></dc-import>
+    <div style="padding: 0 20px 16px">
+      <dc-import name="RiquadroPasso" tono="prova" etichetta="ORDINI APERTI FINO AL 31 OTTOBRE" titolo="" testo="Una persona alla volta: per chi è, il tipo, poi i capi con la taglia. Paghi dopo, con bonifico, Satispay o in segreteria: al fornitore va solo quello pagato entro il 31 ottobre." tasti="" hint-size="100%,160px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" label="PER CHI È" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 20px 16px">
+      <dc-import name="Campo" tipo="testo" etichetta="NOME E COGNOME" valore="" segnaposto="Nome e cognome" nota="Scrivi nome e cognome" hint-size="100%,110px"></dc-import>
+      <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #8c8c88">Chi indossa i capi. Per un’altra persona te lo chiediamo dopo.</p>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <dc-import name="BarraPasso" compatta="{{ true }}" manca="Per chi è" avanti="AVANTI" senza-indietro="{{ true }}" hint-size="100%,130px"></dc-import>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

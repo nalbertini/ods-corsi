@@ -1,8 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { haUnServer } from './dati'
+import { haUnServer, URL_SUPABASE } from './dati'
+import { riduciFoto } from './foto'
 import { sembraItaliano } from './importa'
 import { chiaveGiorno } from './sala'
-import { emailDi, ORDINE_SPARITO, type Capo, type Catalogo, type DatiVestiario, RACCOLTA_SPARITA, type Ordine, type OrdineNuovo, type Pagamento, type RigaCorretta, type Riga } from './vestiario'
+import { emailDi, fotoPubblica, MANCA_FOTO, ORDINE_SPARITO, type Tabelle, type Capo, type Catalogo, type DatiVestiario, RACCOLTA_SPARITA, type Ordine, type OrdineNuovo, type Pagamento, type RigaCorretta, type Riga } from './vestiario'
 
 /**
  * Gli ordini di vestiario col database vero (`supabase/47-vestiario.sql`), e
@@ -22,7 +23,15 @@ export const NON_ANCORA_APERTI = 'In questo momento non si ordina il vestiario: 
 
 export const MANCA_VESTIARIO = 'Il vestiario non è attivo sul database: va lanciato 47-vestiario.sql (anche dopo ogni volta che si rilancia 06-iscrizioni.sql)'
 
+/** Le foto del vestiario: lato 1600, al massimo 1 MB, sempre JPEG (il contenitore prende fino a 1 MB). */
+export const FOTO_VESTIARIO = { lato: 1600, basta: 1_000_000, sempreJpeg: true }
+
+const CONTENITORE = 'vestiario'
+
 type ErroreDb = { message?: string; code?: string } | null
+
+// Il contenitore o la colonna delle tabelle che mancano: il file 50 non è stato lanciato.
+const mancaFoto = (e: ErroreDb) => /bucket not found/i.test(e?.message ?? '') || (['42703', 'PGRST204'].includes(e?.code ?? '') && /vestiario_tabelle/.test(e?.message ?? ''))
 
 // La funzione, la tabella o la colonna che mancano: il file 47 non è stato lanciato.
 const manca = (e: ErroreDb) => ['PGRST202', 'PGRST205', '42883', '42P01', 'PGRST200'].includes(e?.code ?? '') && /vestiario/.test(e?.message ?? '')
@@ -34,6 +43,7 @@ const manca = (e: ErroreDb) => ['PGRST202', 'PGRST205', '42883', '42P01', 'PGRST
  */
 function guaio(e: ErroreDb): Error {
   if (manca(e)) return new Error(MANCA_VESTIARIO)
+  if (mancaFoto(e)) return new Error(MANCA_FOTO)
   const m = e?.message ?? ''
   if (m && (e?.code === 'P0001' || (['22023', '54000'].includes(e?.code ?? '') && sembraItaliano(m)))) return new Error(m)
   if (e?.code === '42501') return new Error(/segreteria/.test(m) ? m : 'Non hai il permesso: serve un accesso da segreteria')
@@ -91,7 +101,34 @@ export function creaVestiarioSupabase(db: SupabaseClient): DatiVestiario {
     if (!ok(r)?.length) throw new Error(ORDINE_SPARITO)
   }
 
-  return {
+  // Se questo database ha il 51: si sa alla prima lettura del catalogo, per ogni collegamento.
+  let conFoto: boolean | undefined
+  const d: DatiVestiario = {
+    async caricaFoto(file) {
+      const ridotta = await riduciFoto(new File([file], 'foto', { type: file.type }), FOTO_VESTIARIO)
+      const nome = `${crypto.randomUUID()}.jpg`
+      const { error } = await db.storage.from(CONTENITORE).upload(nome, ridotta, { contentType: 'image/jpeg', upsert: false })
+      // Le regole del contenitore respingono chi non è segreteria con un 403: lo stesso messaggio del 42501.
+      // Il cast: `StorageError` di supabase-js non dichiara `statusCode`, ma la risposta del server ce l'ha.
+      const vietato = error && ((error as { statusCode?: string }).statusCode === '403' || /row-level security/i.test(error.message))
+      if (error) throw guaio(vietato ? { code: '42501', message: '' } : { message: error.message })
+      return nome
+    },
+
+    async togliFoto(nomi) {
+      if (!nomi.length) return
+      try {
+        const { error } = await db.storage.from(CONTENITORE).remove(nomi)
+        if (error) console.error(error.message)
+      } catch (e) {
+        // Un file rimasto nel contenitore non rompe niente: il catalogo non lo usa più.
+        console.error(e)
+      }
+    },
+
+    urlFoto: (nome) => (nome ? fotoPubblica(URL_SUPABASE ?? '', nome) : ''),
+    fotoAttive: () => conFoto,
+
     async catalogo() {
       const r = await db.rpc('vestiario')
       // Senza il file 47 la pagina pubblica è semplicemente «non ancora aperta». Anche col 42501:
@@ -100,13 +137,29 @@ export function creaVestiarioSupabase(db: SupabaseClient): DatiVestiario {
         aperti = false
         return null
       }
-      const x = ok(r) as { chiude: string | null; capi: Array<Capo & { nota?: string | null }>; aperti?: boolean } | null
+      const x = ok(r) as {
+        chiude: string | null
+        capi: Array<Omit<Capo, 'nota' | 'tipo' | 'foto'> & { nota?: string | null; tipo?: Capo['tipo'] | null; foto?: string | null }>
+        aperti?: boolean
+        tabelle?: Tabelle | null
+      } | null
       aperti = typeof x?.aperti === 'boolean' ? x.aperti : undefined
+      // Il 50 aggiunge la chiave 'tabelle' a vestiario(): senza, niente tipi né foto.
+      conFoto = !!x && 'tabelle' in x
       if (!x) return null
-      return { chiude: x.chiude, capi: (x.capi ?? []).map((c) => ({ capo: c.capo, taglie: c.taglie, prezzo: Number(c.prezzo), ...(c.nota && { nota: c.nota }) })) }
+      return {
+        chiude: x.chiude,
+        capi: (x.capi ?? []).map((c) => ({ capo: c.capo, taglie: c.taglie, prezzo: Number(c.prezzo), ...(c.nota && { nota: c.nota }), ...(c.tipo && { tipo: c.tipo }), ...(c.foto && { foto: c.foto }) })),
+        ...(x.tabelle && Object.keys(x.tabelle).length ? { tabelle: x.tabelle } : {}),
+      }
     },
 
     async salvaCatalogo(c: Catalogo) {
+      // Senza il 51 il database butterebbe via in silenzio tipi, foto e tabelle: se non si sa ancora, si chiede.
+      if (c.capi.some((x) => x.tipo || x.foto) || Object.keys(c.tabelle ?? {}).length) {
+        if (conFoto === undefined) await d.catalogo()
+        if (!conFoto) throw new Error(MANCA_FOTO)
+      }
       ok(await db.rpc('salva_vestiario', { catalogo: c }))
     },
 
@@ -186,6 +239,7 @@ export function creaVestiarioSupabase(db: SupabaseClient): DatiVestiario {
       ok(await db.rpc('correggi_ordine_vestiario', { ordine: id, righe: righe.map(perDb), togli_segno: togliSegno }))
     },
   }
+  return d
 }
 
 /**
@@ -195,6 +249,15 @@ export function creaVestiarioSupabase(db: SupabaseClient): DatiVestiario {
  */
 let aperti: boolean | undefined
 export const apertiLetti = () => aperti
+
+/**
+ * Per le schermate: se il database ha `51-vestiario-foto.sql` (tipi, foto e
+ * tabelle delle taglie), dall'istanza di `datiVestiario()`. Sempre sì in
+ * prova; `undefined` prima di leggere il catalogo. Senza, la pagina pubblica
+ * è una sola e CATALOGO non mostra tipi e foto.
+ */
+let istanza: DatiVestiario | undefined
+export const fotoAttive = () => istanza?.fotoAttive()
 
 const SEMINATO = 'ods-corsi:prova-esempi-vestiario'   // vedi la nota in coda.ts
 
@@ -221,10 +284,10 @@ async function semina(d: DatiVestiario) {
   }
   const fra = (giorni: number) => chiaveGiorno(new Date(Date.now() + giorni * 86_400_000))
   const capi: Capo[] = [
-    { capo: 'Judogi bianco', taglie: ['110', '120', '130', '140', '150', '160', '170', '180', '190', '200'], prezzo: 35, nota: 'Prendi l’altezza del bambino e aggiungi 10 cm. I campioni sono in segreteria.' },
-    { capo: 'Costumino da lotta', taglie: ['6', '8', '10', '12', '14', 'XS', 'S', 'M', 'L'], prezzo: 30, nota: 'Fino ai 14 anni la taglia è l’età: a 8 anni, la 8.' },
-    { capo: 'Felpa ODS', taglie: ['6', '8', '10', '12', 'XS', 'S', 'M', 'L', 'XL'], prezzo: 28 },
-    { capo: 'Cintura', taglie: ['220', '240', '260', '280'], prezzo: 6, nota: 'Per i bambini va bene la 240.' },
+    { capo: 'Judogi bianco', taglie: ['110', '120', '130', '140', '150', '160', '170', '180', '190', '200'], prezzo: 35, nota: 'Prendi l’altezza del bambino e aggiungi 10 cm. I campioni sono in segreteria.', tipo: 'judogi' },
+    { capo: 'Cintura', taglie: ['220', '240', '260', '280'], prezzo: 6, nota: 'Per i bambini va bene la 240.', tipo: 'judogi' },
+    { capo: 'Costumino da lotta', taglie: ['6', '8', '10', '12', '14', 'XS', 'S', 'M', 'L'], prezzo: 30, nota: 'Fino ai 14 anni la taglia è l’età: a 8 anni, la 8.', tipo: 'costumini' },
+    { capo: 'Felpa ODS', taglie: ['6', '8', '10', '12', 'XS', 'S', 'M', 'L', 'XL'], prezzo: 28, tipo: 'vestiario' },
   ]
   const ordine = (nome: string, cognome: string, telefono: string, righe: Array<[string, string, string]>) => ({
     nome,
@@ -252,7 +315,8 @@ export function datiVestiario(): Promise<DatiVestiario> {
           const d = m.creaVestiarioProva()
           await semina(d)
           return d
-        }))
+        })
+    ).then((d) => (istanza = d))
       // Se il pezzo non arriva (rete, o un aggiornamento pubblicato nel
       // frattempo), la volta dopo si riprova invece di restare rotti.
       .catch((e) => {

@@ -20,9 +20,23 @@ fornitore va solo quello che è **saldato**.
      + 10 cm, i campioni sono in segreteria»).
    Due prezzi per lo stesso capo, per esempio la felpa da bambino e da adulto,
    vogliono due capi con due nomi diversi.
-4. **SALVA**. Come nel listino, i cambi restano in una bozza finché non si
-   salva, e se qualcosa non va la barra lo dice in rosso.
-5. **COPIA LINK ORDINI**, in fondo al menu, copia il link da mandare nel gruppo
+   - il **TIPO**: **JUDOGI**, **COSTUMINI LOTTA** o **VESTIARIO LOGATO**. È il
+     passo «che tipo di capi ti serve?» della pagina. Finché anche un solo
+     capo è senza tipo, le famiglie vedono tutti i capi in una pagina sola:
+     la riga del capo lo dice con **SENZA TIPO**, e prima di **SALVA** un
+     avviso giallo elenca i capi senza tipo;
+   - la **FOTO**, con **CARICA FOTO**: va bene anche quella del telefono,
+     l'app la rimpicciolisce da sola. Solo il capo, niente persone: la foto è
+     pubblica.
+4. **LE TABELLE DELLE TAGLIE**: un'immagine per tipo, in cima alla pagina
+   di quel tipo. Una tabella in PDF va prima fotografata o salvata come
+   immagine.
+5. **SALVA**. Come nel listino, i cambi restano in una bozza finché non si
+   salva, e se qualcosa non va la barra lo dice in rosso. Le foto nuove vanno
+   sulla pagina solo con **SALVA**; quelle sostituite o tolte si cancellano,
+   e la barra lo dice prima. **VEDI LA PAGINA** apre la pagina come la vede
+   la famiglia, con quello che è salvato.
+6. **COPIA LINK ORDINI**, in fondo al menu, copia il link da mandare nel gruppo
    WhatsApp.
 
 Senza data o senza capi, la pagina degli ordini è chiusa.
@@ -115,3 +129,10 @@ di sala no.
 Sul database non è ancora stato lanciato `supabase/47-vestiario.sql` (vedi
 `supabase/LEGGIMI.md`). Finché non c'è, la pagina degli ordini dice che non sono
 ancora aperti: nell'avviso su WhatsApp si continua col modulo Google.
+
+## Se dice che manca 51-vestiario-foto.sql
+
+Sul database non è ancora stato lanciato `supabase/51-vestiario-foto.sql`.
+Finché non c'è, il catalogo si salva senza tipi e foto e la pagina mostra
+tutti i capi in una pagina sola. Se si rilancia `47-vestiario.sql`, va
+rilanciato anche il 51.

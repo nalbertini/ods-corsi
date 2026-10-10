@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export * from './src/lib/vestiario'; export { creaVestiarioProva } from './src/lib/vestiarioProva'; export { PAGAMENTO } from './src/lib/iscrizione'; export * from './src/lib/vestiarioPagina'; export { creaVestiarioSupabase } from './src/lib/vestiarioDati'",
+      "export * from './src/lib/vestiario'; export { creaVestiarioProva } from './src/lib/vestiarioProva'; export { PAGAMENTO } from './src/lib/iscrizione'; export * from './src/lib/vestiarioPagina'; export { creaVestiarioSupabase, datiVestiario } from './src/lib/vestiarioDati'; export { riduciFoto, TROPPO_GRANDE, NON_SI_APRE } from './src/lib/foto'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -810,6 +810,309 @@ console.log('\n22. dalla rilettura del codice')
   ok('alGiorno', ['2026-10-17', '2026-10-08', '2027-05-01', '2026-11-11'].map((d) => prova(() => m.alGiorno(d))), ['al 17 ottobre', "all'8 ottobre", 'al 1° maggio', "all'11 novembre"])
   ok('tagliaDopo: la taglia resta se il capo nuovo ce l’ha', prova(() => m.tagliaDopo(CAPI, 'Costumino', 'S')), 'S')
   ok('altrimenti si sceglie di nuovo', prova(() => [m.tagliaDopo(CAPI, 'Judogi', 'S'), m.tagliaDopo(CAPI, 'Felpa', 'S')]), ['', ''])
+}
+
+console.log('\n23. come il modulo: i tipi, le foto, le tabelle delle taglie')
+{
+  ok('i tre tipi, con le parole del modulo', prova(() => m.TIPI.map((t) => [t.id, t.nome])), [['judogi', 'JUDOGI'], ['costumini', 'COSTUMINI LOTTA'], ['vestiario', 'VESTIARIO LOGATO']])
+  const no = (capi, tabelle) => prova(() => m.cosaNonVaCatalogo({ chiude: '2026-10-17', capi, ...(tabelle && { tabelle }) }))
+  const FOTO = 'La foto di "Judogi" non si capisce: ricaricala'
+  ok('tipo e foto giusti vanno', no([{ ...judogi, tipo: 'judogi', foto: 'judogi-1.jpg' }, { ...costumino, tipo: 'costumini', foto: 'c.webp' }], { judogi: 'tabella-judogi.png' }), null)
+  ok('il tipo non è obbligatorio', no([{ ...judogi, foto: 'judogi-1.jpeg' }, costumino]), null)
+  ok('un tipo fuori dai tre no', no([{ ...judogi, tipo: 'felpe' }]), '"Judogi": il tipo non si capisce')
+  for (const [cosa, foto] of [['con la barra', 'cartella/judogi.jpg'], ['un indirizzo', 'http://esempio.it/judogi.jpg'], ['con i due punti', 'c:judogi.jpg'], ['con ..', 'su..giu.jpg'], ['una gif', 'judogi.gif'], ['senza estensione', 'judogi']])
+    ok(`una foto ${cosa} no`, no([{ ...judogi, foto }]), FOTO)
+  ok('una tabella che non è un file del contenitore no', no([judogi], { judogi: 'http://esempio.it/t.png' }), 'La tabella delle taglie di "JUDOGI" non si capisce: ricaricala')
+  ok('una tabella di un tipo che non c’è no', no([judogi], { felpe: 't.png' }), 'La tabella delle taglie non si capisce: ricaricala')
+  ok('fotoPubblica', prova(() => m.fotoPubblica('https://xyz.supabase.co', 'judogi-1.jpg')), 'https://xyz.supabase.co/storage/v1/object/public/vestiario/judogi-1.jpg')
+}
+{
+  const J = { ...judogi, tipo: 'judogi' }
+  const C = { ...costumino, tipo: 'costumini' }
+  const F = { capo: 'Felpa', taglie: ['S', 'M'], prezzo: 28, tipo: 'vestiario' }
+  const B = { capo: 'Cintura', taglie: ['240'], prezzo: 6, tipo: 'judogi' }
+  ok('tipiDaMostrare: solo i tipi con capi, nell’ordine dei tipi', prova(() => m.tipiDaMostrare([F, J, B])), ['judogi', 'vestiario'])
+  ok('un capo senza tipo: pagina sola', prova(() => m.tipiDaMostrare([J, { ...costumino }])), 'pagina sola')
+  ok('nessun capo: pagina sola', prova(() => m.tipiDaMostrare([])), 'pagina sola')
+  ok('capiDelTipo', prova(() => m.capiDelTipo([F, J, C, B], 'judogi').map((c) => c.capo)), ['Judogi', 'Cintura'])
+  ok('capiDelTipo della pagina sola: tutti', prova(() => m.capiDelTipo([F, J, C], 'pagina sola').map((c) => c.capo)), ['Felpa', 'Judogi', 'Costumino'])
+
+  const righe = [riga('Luca Rossi', 'Judogi', '130', 2), riga('Sara Rossi', 'Judogi', '120'), riga('Luca Rossi', 'Costumino', 'S')]
+  ok('sceltePagina: quel che Luca ha già scelto fra i judogi', prova(() => m.sceltePagina(righe, 'Luca Rossi', [J, B])), { Judogi: { taglia: '130', quanti: 2 } })
+  ok('per chi non ha scelto niente: vuoto', prova(() => m.sceltePagina(righe, 'Ugo Neri', [J, B])), {})
+  const testo = (rr) => rr.map((x) => `${x.perChi}|${x.capo}|${x.taglia}|${x.quanti}`).sort()
+  ok('applicaScelte: toglie le righe di Luca per quei capi e mette le scelte; il resto resta',
+    prova(() => testo(m.applicaScelte(righe, 'Luca Rossi', [J, B], { Judogi: { taglia: '140', quanti: 3 }, Cintura: { taglia: '240', quanti: 1 } }))),
+    ['Luca Rossi|Cintura|240|1', 'Luca Rossi|Costumino|S|1', 'Luca Rossi|Judogi|140|3', 'Sara Rossi|Judogi|120|1'])
+  ok('una taglia vuota toglie la riga', prova(() => testo(m.applicaScelte(righe, 'Luca Rossi', [J], { Judogi: { taglia: '', quanti: 2 } }))), ['Luca Rossi|Costumino|S|1', 'Sara Rossi|Judogi|120|1'])
+  ok('quanti, se non c’è, è 1', prova(() => testo(m.applicaScelte([], 'Ugo Neri', [J], { Judogi: { taglia: '130' } }))), ['Ugo Neri|Judogi|130|1'])
+  const venti = Array.from({ length: 20 }, () => riga('Sara Rossi', 'Costumino', 'S'))
+  ok('oltre 20 righe: rifiutato col messaggio delle 20 righe', await errore(() => m.applicaScelte(venti, 'Luca Rossi', [J], { Judogi: { taglia: '130', quanti: 1 } })), m.MAX_RIGHE_DETTO)
+  ok('e il messaggio c’è', typeof m.MAX_RIGHE_DETTO, 'string')
+  ok('righePerPersona: raggruppate, nell’ordine in cui arrivano', prova(() => m.righePerPersona(righe).map((g) => [g.perChi, g.righe.map((x) => x.capo)])), [['Luca Rossi', ['Judogi', 'Costumino']], ['Sara Rossi', ['Judogi']]])
+
+  const prima = { chiude: '2026-10-17', capi: [{ ...J, foto: 'a.jpg' }, { ...C, foto: 'b.jpg' }, { ...F, foto: 'x.png' }], tabelle: { judogi: 't.png', costumini: 'u.png' } }
+  const dopo = { chiude: '2026-10-17', capi: [{ ...J, foto: 'a.jpg' }, { ...C, foto: 'c.jpg' }, F], tabelle: { judogi: 't.png', vestiario: 'x.png' } }
+  ok('fotoDaTogliere: i file che nessun capo e nessuna tabella usano più', prova(() => [...m.fotoDaTogliere(prima, dopo)].sort()), ['b.jpg', 'u.png'])
+  ok('niente cambiato: niente da togliere', prova(() => m.fotoDaTogliere(prima, prima)), [])
+}
+{
+  const { v } = nuova('2026-10-10')
+  const cat = { chiude: '2026-10-17', capi: [{ ...judogi, tipo: 'judogi', foto: 'judogi-1.jpg' }, { ...costumino, tipo: 'costumini' }], tabelle: { judogi: 'tabella-judogi.png' } }
+  await aspetta(() => v.salvaCatalogo(cat))
+  const letto = await aspetta(() => v.catalogo())
+  ok('in prova si tengono tipo, foto e tabelle', prova(() => [letto.capi.map((c) => [c.capo, c.tipo ?? null, c.foto ?? null]), letto.tabelle]),
+    [[['Judogi', 'judogi', 'judogi-1.jpg'], ['Costumino', 'costumini', null]], { judogi: 'tabella-judogi.png' }])
+  await aspetta(() => v.salvaCatalogo({ chiude: cat.chiude, capi: cat.capi }))
+  ok('salvato senza tabelle: restano com’erano', (await aspetta(() => v.catalogo()))?.tabelle, { judogi: 'tabella-judogi.png' })
+  ok('e rifiuta un tipo sbagliato', await errore(() => v.salvaCatalogo({ ...cat, capi: [{ ...judogi, tipo: 'felpe' }] })), '"Judogi": il tipo non si capisce')
+  memoria.clear()
+  const d = await aspetta(() => m.datiVestiario())
+  const esempi = await aspetta(() => d.catalogo())
+  ok('ci sono gli esempi', prova(() => esempi.capi.length > 0), true)
+  ok('gli esempi di prova hanno tutti un tipo dei tre', prova(() => esempi.capi.length > 0 && esempi.capi.every((c) => ['judogi', 'costumini', 'vestiario'].includes(c.tipo))), true)
+}
+
+console.log('\n24. dal custode-dati: foto, spazio pieno, database senza il 50')
+{
+  const FOTO = 'La foto di "Judogi" non si capisce: ricaricala'
+  const no = (foto) => prova(() => m.cosaNonVaCatalogo({ chiude: '2026-10-17', capi: [{ ...judogi, foto }] }))
+  ok('un nome di foto di 120 caratteri va', no('a'.repeat(116) + '.jpg'), null)
+  ok('di 121 no, come nel database', no('a'.repeat(117) + '.jpg'), FOTO)
+  ok('le maiuscole vanno', no('JUDOGI-1.JPG'), null)
+  ok('spazi, accenti, ? e #, il punto davanti: no', ['foto judogi.jpg', 'fötö.jpg', 'a?b#c.jpg', '.x.jpg'].map(no), [FOTO, FOTO, FOTO, FOTO])
+}
+{
+  // Lo spazio della prova pieno: salvare non deve dire «fatto».
+  const PIENO = 'Lo spazio della prova su questo dispositivo è pieno: premi Riparti dall\'orario vero'
+  const { v } = nuova('2026-10-10')
+  await aspetta(() => v.salvaCatalogo({ chiude: '2026-10-17', capi: CAPI }))
+  const scrivi = localStorage.setItem
+  localStorage.setItem = () => { throw new Error('QuotaExceededError') }
+  const cat = await errore(() => v.salvaCatalogo({ chiude: '2026-10-24', capi: CAPI }))
+  const ord = await errore(() => v.inviaOrdine(ordine([riga('Luca Rossi', 'Judogi', '130')])))
+  localStorage.setItem = scrivi
+  ok('spazio pieno: salvaCatalogo lo dice', cat, PIENO)
+  ok('spazio pieno: inviaOrdine lo dice', ord, PIENO)
+}
+{
+  const finto = ({ rpc = {}, upload = { error: null } } = {}) => {
+    const reg = []
+    const db = {
+      from: () => ({ select() { return this }, order() { return this }, eq() { return this }, update() { return this }, then: (b) => Promise.resolve({ data: [], error: null }).then(b) }),
+      rpc: async (nome, args) => (reg.push(['rpc', nome, args]), rpc[nome] ?? { data: null, error: null }),
+      storage: { from: () => ({ upload: async (nome) => (reg.push(['upload', nome]), upload), remove: async () => ({ error: null }) }) },
+    }
+    return { v: m.creaVestiarioSupabase(db), reg }
+  }
+  ok('urlFoto di nessun nome: niente', prova(() => finto().v.urlFoto('')), '')
+
+  // Il browser che rimpicciolisce la foto, finto: qui interessa cosa dice il contenitore.
+  const prima = { c: globalThis.createImageBitmap, d: globalThis.document }
+  globalThis.createImageBitmap = async () => ({ width: 10, height: 10, close() {} })
+  globalThis.document = { createElement: () => ({ getContext: () => ({ drawImage() {} }), toBlob: (fatto) => fatto(new Blob(['x'], { type: 'image/jpeg' })) }) }
+  const foto = new Blob(['x'], { type: 'image/jpeg' })
+  const zitto = console.error
+  console.error = () => {}
+  const rls = await errore(() => finto({ upload: { error: { message: 'new row violates row-level security policy', statusCode: '403' } } }).v.caricaFoto(foto))
+  const vietato = await errore(() => finto({ upload: { error: { message: 'Unauthorized', statusCode: '403' } } }).v.caricaFoto(foto))
+  console.error = zitto
+  globalThis.createImageBitmap = prima.c
+  globalThis.document = prima.d
+  ok('caricaFoto respinta dalle regole: serve un accesso da segreteria', rls, 'Non hai il permesso: serve un accesso da segreteria')
+  ok('e così col 403', vietato, 'Non hai il permesso: serve un accesso da segreteria')
+
+  // Senza aver mai letto il catalogo, su un database senza il 50: tipi e foto non si buttano via.
+  const { v, reg } = finto({ rpc: { vestiario: { data: { chiude: null, capi: [], aperti: false }, error: null }, salva_vestiario: { data: 'rc-1', error: null } } })
+  ok('salvaCatalogo con tipi e foto, senza il 50: lo dice', await errore(() => v.salvaCatalogo({ chiude: '2026-10-17', capi: [{ ...judogi, tipo: 'judogi', foto: 'judogi-1.jpg' }] })), m.MANCA_FOTO)
+  ok('e non salva', reg.some((c) => c[1] === 'salva_vestiario'), false)
+}
+
+console.log('\n25. i passi del modulo, le foto al salvataggio, riduciFoto')
+// Gli oggetti si confrontano con le chiavi in ordine: conta cosa c'è, non in che ordine è scritto.
+const ordinato = (x) => (Array.isArray(x) ? x.map(ordinato) : x && typeof x === 'object' ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, ordinato(x[k])])) : x)
+const okO = (cosa, avuto, voluto) => ok(cosa, ordinato(avuto), ordinato(voluto))
+{
+  const J = { ...judogi, tipo: 'judogi' }
+  const C = { ...costumino, tipo: 'costumini' }
+  const senzaTipo = { capo: 'Felpa', taglie: ['S'], prezzo: 28 }
+  okO('dopo PER CHI È, coi tipi: si sceglie il tipo', prova(() => m.passoDopoPerChi([J, C], 'Luca Rossi')), { a: 'tipo', perChi: 'Luca Rossi' })
+  okO('con un tipo solo: dritti alla sua pagina', prova(() => m.passoDopoPerChi([J], 'Luca Rossi')), { a: 'pagina', tipo: 'judogi', perChi: 'Luca Rossi' })
+  okO('con un capo senza tipo: la pagina sola', prova(() => m.passoDopoPerChi([J, senzaTipo], 'Luca Rossi')), { a: 'pagina', tipo: 'pagina sola', perChi: 'Luca Rossi' })
+
+  const storia = [
+    { a: 'perChi' }, { a: 'tipo', perChi: 'Luca Rossi' }, { a: 'pagina', tipo: 'judogi', perChi: 'Luca Rossi' }, { a: 'altro', perChi: 'Luca Rossi' },
+    { a: 'perChi' }, { a: 'tipo', perChi: 'Anna Verdi' }, { a: 'pagina', tipo: 'costumini', perChi: 'Anna Verdi' },
+  ]
+  const righe = [riga('Luca Rossi', 'Judogi', '130', 2), riga('Anna Verdi', 'Costumino', 'S'), riga('Luca Rossi', 'Felpa vecchia', 'M')]
+  const salvato = JSON.stringify({ storia, righe, id: 'dev-1' })
+  const ripresa = prova(() => m.ripresaDa(salvato, [J, C]))
+  okO('ripresaDa: storia e id restano, le righe di capi che non ci sono più se ne vanno', prova(() => [ripresa.storia, ripresa.righe.map((x) => x.capo), ripresa.id]), [storia, ['Judogi', 'Costumino'], 'dev-1'])
+  const indietro = prova(() => ripresa.storia[2])
+  ok('tornando alla pagina dei judogi, la persona è Luca', prova(() => indietro.perChi), 'Luca Rossi')
+  okO('e le scelte sono quelle di Luca', prova(() => m.sceltePagina(ripresa.righe, indietro.perChi, m.capiDelTipo([J, C], indietro.tipo))), { Judogi: { taglia: '130', quanti: 2 } })
+  okO('una pagina di un tipo senza capi: la storia riparte', prova(() => m.ripresaDa(salvato, [J]).storia), [{ a: 'perChi' }])
+  okO('un passo del tipo, ora che è pagina sola: riparte', prova(() => m.ripresaDa(JSON.stringify({ storia: storia.slice(0, 3), righe: [], id: 'x' }), [J, senzaTipo]).storia), [{ a: 'perChi' }])
+  okO('la pagina sola, ora che ci sono i tipi: riparte', prova(() => m.ripresaDa(JSON.stringify({ storia: [{ a: 'perChi' }, { a: 'pagina', tipo: 'pagina sola', perChi: 'Luca Rossi' }], righe: [], id: 'x' }), [J, C]).storia), [{ a: 'perChi' }])
+  ok('e le righe restano', prova(() => m.ripresaDa(salvato, [J]).righe.map((x) => x.capo)), ['Judogi'])
+  ok('JSON rotto: niente', prova(() => m.ripresaDa('{rotto', [J, C])), null)
+  ok('niente salvato: niente', prova(() => m.ripresaDa(null, [J, C])), null)
+
+  ok('rinomina: le righe di Luca prendono il nome nuovo, le altre no', prova(() => m.rinomina(righe, 'Luca Rossi', 'Luca Bianchi').map((x) => x.perChi)), ['Luca Bianchi', 'Anna Verdi', 'Luca Bianchi'])
+
+  const diciannove = Array.from({ length: 19 }, () => riga('Sara Rossi', 'Costumino', 'S'))
+  ok('applicaScelte: 19 righe più una scelta fanno 20, vanno', prova(() => m.applicaScelte(diciannove, 'Luca Rossi', [J], { Judogi: { taglia: '130' } }).length), 20)
+}
+{
+  // Dalla bozza: tipo, foto e tabelle restano, anche le tabelle vuote.
+  const bozza = { chiude: '2026-10-17', capi: [{ capo: 'Judogi', taglie: '120, 130', prezzo: '35', nota: '', tipo: 'judogi', foto: 'judogi-1.jpg' }, { capo: 'Costumino', taglie: 'S', prezzo: '30', nota: '', tipo: 'costumini' }] }
+  const c = prova(() => m.catalogoDaBozza({ ...bozza, tabelle: { judogi: 't.png' } }).catalogo)
+  okO('catalogoDaBozza tiene tipo, foto e tabelle', prova(() => [c.capi.map((x) => [x.tipo ?? null, x.foto ?? null]), c.tabelle]), [[['judogi', 'judogi-1.jpg'], ['costumini', null]], { judogi: 't.png' }])
+  ok('tabelle vuote nella bozza: tabelle vuote nel catalogo', prova(() => m.catalogoDaBozza({ ...bozza, tabelle: {} }).catalogo.tabelle), {})
+  ok('niente tabelle nella bozza: niente tabelle', prova(() => 'tabelle' in m.catalogoDaBozza(bozza).catalogo), false)
+  const { v } = nuova('2026-10-10')
+  await aspetta(() => v.salvaCatalogo({ chiude: '2026-10-17', capi: CAPI, tabelle: { judogi: 't.png' } }))
+  await aspetta(() => v.salvaCatalogo({ chiude: '2026-10-17', capi: CAPI, tabelle: {} }))
+  ok('in prova, tabelle vuote le tolgono', Object.keys((await aspetta(() => v.catalogo()))?.tabelle ?? {}).length, 0)
+
+  okO('tabelleDellaPagina: per un tipo la sua', prova(() => m.tabelleDellaPagina({ vestiario: 'v.png', judogi: 't.png' }, 'judogi')), [{ tipo: 'judogi', nome: 't.png' }])
+  okO('un tipo senza tabella: nessuna', prova(() => m.tabelleDellaPagina({ judogi: 't.png' }, 'costumini')), [])
+  okO('la pagina sola: tutte, nell’ordine dei tipi', prova(() => m.tabelleDellaPagina({ vestiario: 'v.png', judogi: 't.png' }, 'pagina sola')), [{ tipo: 'judogi', nome: 't.png' }, { tipo: 'vestiario', nome: 'v.png' }])
+  okO('nessuna tabella', prova(() => m.tabelleDellaPagina(undefined, 'pagina sola')), [])
+
+  const prima = { chiude: '2026-10-17', capi: [{ capo: 'Judogi bianco', taglie: ['130'], prezzo: 35, tipo: 'judogi', foto: 'a.jpg' }], tabelle: { judogi: 't.png' } }
+  const conFoto = (foto, tabelle) => ({ ...prima, capi: [{ ...prima.capi[0], foto }], tabelle })
+  ok('cosaSiCancella: niente', prova(() => m.cosaSiCancella(prima, prima)), '')
+  ok('una foto', prova(() => m.cosaSiCancella(prima, conFoto('b.jpg', { judogi: 't.png' }))), 'Con SALVA si cancella la foto di prima di Judogi bianco.')
+  ok('una foto e una tabella', prova(() => m.cosaSiCancella(prima, conFoto('b.jpg', {}))), 'Con SALVA si cancellano la foto di prima di Judogi bianco e la tabella delle taglie di JUDOGI.')
+  ok('nomeTipo', prova(() => ['judogi', 'costumini', 'vestiario'].map(m.nomeTipo)), ['JUDOGI', 'COSTUMINI LOTTA', 'VESTIARIO LOGATO'])
+  ok('un nome di foto con un’altra estensione dopo, o una barra dopo: no', ['a.jpg.html', 'a.jpg/x'].map((foto) => prova(() => m.cosaNonVaCatalogo({ chiude: '2026-10-17', capi: [{ ...judogi, foto }] }))),
+    ['La foto di "Judogi" non si capisce: ricaricala', 'La foto di "Judogi" non si capisce: ricaricala'])
+}
+{
+  // salvaConFoto con un DatiVestiario finto che registra le chiamate.
+  const A = new Blob(['a']), B = new Blob(['b']), Cn = new Blob(['c'])
+  const nomeDi = (b) => (b === A ? 'vero-a.jpg' : b === B ? 'vero-b.jpg' : 'vero-c.jpg')
+  const finto = ({ salva = true, cadeAlla = 0 } = {}) => {
+    const reg = []
+    let n = 0
+    const d = {
+      caricaFoto: async (b) => { n++; if (n === cadeAlla) throw new Error('rete'); reg.push(['carica', nomeDi(b)]); return nomeDi(b) },
+      salvaCatalogo: async (c) => { reg.push(['salva', c]); if (!salva) throw new Error('non salvato') },
+      togliFoto: async (nomi) => { reg.push(['togli', [...nomi].sort()]) },
+    }
+    return { d, reg }
+  }
+  const salvato = { chiude: '2026-10-17', capi: [{ ...judogi, tipo: 'judogi', foto: 'vecchia-j.jpg' }, { ...costumino, tipo: 'costumini', foto: 'vecchia-c.jpg' }] }
+  const catalogo = { chiude: '2026-10-17', capi: [{ ...judogi, tipo: 'judogi', foto: 'nuova-1.jpg' }, { ...costumino, tipo: 'costumini', foto: 'vecchia-c.jpg' }], tabelle: { judogi: 'nuova-2.jpg' } }
+  const nuove = { 'nuova-1.jpg': A, 'nuova-2.jpg': B, 'nuova-3.jpg': Cn }
+
+  const bene = finto()
+  await aspetta(() => m.salvaConFoto(bene.d, catalogo, nuove, salvato))
+  ok('carica solo le foto nuove usate', bene.reg.filter((c) => c[0] === 'carica').map((c) => c[1]).sort(), ['vero-a.jpg', 'vero-b.jpg'])
+  const salvatoOra = bene.reg.find((c) => c[0] === 'salva')?.[1]
+  okO('e salva coi nomi veri', prova(() => [salvatoOra.capi.map((x) => x.foto), salvatoOra.tabelle]), [['vero-a.jpg', 'vecchia-c.jpg'], { judogi: 'vero-b.jpg' }])
+  ok('poi toglie la foto di prima che non serve più', bene.reg.filter((c) => c[0] === 'togli').map((c) => c[1]), [['vecchia-j.jpg']])
+  ok('nell’ordine: carica, salva, togli', bene.reg.map((c) => c[0]), ['carica', 'carica', 'salva', 'togli'])
+
+  const male = finto({ salva: false })
+  ok('il salvataggio fallisce: lo dice', await errore(() => m.salvaConFoto(male.d, catalogo, nuove, salvato)), 'non salvato')
+  ok('e toglie i file appena caricati, mai i vecchi', male.reg.filter((c) => c[0] === 'togli').map((c) => c[1]), [['vero-a.jpg', 'vero-b.jpg']])
+
+  const cade = finto({ cadeAlla: 2 })
+  ok('caricaFoto cade alla seconda: lo dice', await errore(() => m.salvaConFoto(cade.d, catalogo, nuove, salvato)), 'rete')
+  const prima = cade.reg.find((c) => c[0] === 'carica')?.[1]
+  ok('toglie la prima, e non salva', [cade.reg.filter((c) => c[0] === 'togli').map((c) => c[1]), cade.reg.some((c) => c[0] === 'salva')], [[[prima]], false])
+}
+{
+  // creaVestiarioSupabase: catalogo con tipi, foto e tabelle; togliFoto che non riesce non fa danni.
+  const finto = ({ rpc = {}, remove } = {}) => {
+    const db = {
+      from: () => ({ select() { return this }, order() { return this }, eq() { return this }, then: (b) => Promise.resolve({ data: [], error: null }).then(b) }),
+      rpc: async (nome) => rpc[nome] ?? { data: null, error: null },
+      storage: { from: () => ({ remove }) },
+    }
+    return m.creaVestiarioSupabase(db)
+  }
+  const v = finto({ rpc: { vestiario: { data: { chiude: '2026-10-17', aperti: true, capi: [{ capo: 'Judogi', taglie: ['130'], prezzo: '35.00', tipo: 'judogi', foto: 'judogi-1.jpg' }, { capo: 'Felpa', taglie: ['S'], prezzo: 28, tipo: null, foto: null }], tabelle: { judogi: 't.png' } }, error: null } } })
+  const c = await aspetta(() => v.catalogo())
+  okO('catalogo() dal database: tipo, foto e tabelle', prova(() => [c.capi.map((x) => [x.capo, x.tipo ?? null, x.foto ?? null]), c.tabelle]), [[['Judogi', 'judogi', 'judogi-1.jpg'], ['Felpa', null, null]], { judogi: 't.png' }])
+  const zitto = console.error
+  console.error = () => {}
+  const lancia = await errore(() => finto({ remove: async () => { throw new Error('rete') } }).togliFoto(['a.jpg']))
+  const sbaglia = await errore(() => finto({ remove: async () => ({ data: null, error: { message: 'no' } }) }).togliFoto(['a.jpg']))
+  console.error = zitto
+  ok('togliFoto con remove che lancia, o che dà errore: si risolve lo stesso', [lancia, sbaglia], ['nessun errore', 'nessun errore'])
+}
+{
+  // riduciFoto, col browser finto: i blob che dà la tela si scelgono qui.
+  const conBrowser = async (blobs, f, { apre = true } = {}) => {
+    const prima = { c: globalThis.createImageBitmap, d: globalThis.document }
+    const coda = [...blobs]
+    globalThis.createImageBitmap = async () => { if (!apre) throw new Error('non si apre'); return { width: 4000, height: 3000, close() {} } }
+    globalThis.document = { createElement: () => ({ getContext: () => ({ drawImage() {} }), toBlob: (fatto) => fatto(coda.length ? coda.shift() : null) }) }
+    try { return await f() } catch (e) { return `ERRORE: ${e.message}` } finally { globalThis.createImageBitmap = prima.c; globalThis.document = prima.d }
+  }
+  const peso = (n) => new Blob(['x'.repeat(n)], { type: 'image/jpeg' })
+  const file = (n, type = 'image/jpeg', nome = 'foto.heic') => new File(['x'.repeat(n)], nome, { type })
+  const di = (r) => (typeof r === 'string' ? r : [r.name, r.type, r.size])
+
+  const piccola = file(10)
+  ok('piccola: resta com’è', await conBrowser([peso(5)], async () => (await m.riduciFoto(piccola, { basta: 50 })) === piccola), true)
+  const pdf = file(100, 'application/pdf', 'modulo.pdf')
+  ok('non un’immagine: resta com’è', await conBrowser([peso(5)], async () => (await m.riduciFoto(pdf, { basta: 50 })) === pdf), true)
+  ok('grande: diventa un .jpg più leggero', di(await conBrowser([peso(20)], () => m.riduciFoto(file(100), { basta: 50 }))), ['foto.jpg', 'image/jpeg', 20])
+  const grande = file(100)
+  ok('se rimpicciolita pesa di più: resta l’originale', await conBrowser([peso(200)], async () => (await m.riduciFoto(grande, { basta: 50 })) === grande), true)
+  ok('se non si apre: resta l’originale', await conBrowser([], async () => (await m.riduciFoto(grande, { basta: 50 })) === grande, { apre: false }), true)
+
+  ok('sempreJpeg: il primo troppo grande, il secondo va → un .jpg', di(await conBrowser([peso(100), peso(30)], () => m.riduciFoto(file(10), { basta: 50, sempreJpeg: true }))), ['foto.jpg', 'image/jpeg', 30])
+  ok('sempreJpeg: tutti troppo grandi → TROPPO_GRANDE', await conBrowser([peso(100), peso(90), peso(80)], () => m.riduciFoto(file(10), { basta: 50, sempreJpeg: true })), `ERRORE: ${m.TROPPO_GRANDE}`)
+  ok('sempreJpeg: non si apre → NON_SI_APRE', await conBrowser([], () => m.riduciFoto(file(10), { basta: 50, sempreJpeg: true }), { apre: false }), `ERRORE: ${m.NON_SI_APRE}`)
+  ok('sempreJpeg: la tela non dà niente → NON_SI_APRE, non TROPPO_GRANDE', await conBrowser([], () => m.riduciFoto(file(10), { basta: 50, sempreJpeg: true })), `ERRORE: ${m.NON_SI_APRE}`)
+}
+
+console.log('\n26. dal collaudo: la stessa persona scritta in due modi, chi ordina che resta')
+{
+  const J = { ...judogi, tipo: 'judogi' }
+  const C = { ...costumino, tipo: 'costumini' }
+  ok('stessaPersona: maiuscole e spazi non contano', prova(() => [m.stessaPersona('luca  rossini', 'Luca Rossini'), m.stessaPersona(' Luca Rossini ', 'luca rossini'), m.stessaPersona('Luca Rossini', 'Luca Rossi')]), [true, true, false])
+
+  const righe = [riga('Luca Rossini', 'Judogi', '130'), riga('luca  rossini', 'Costumino', 'S'), riga('Anna Verdi', 'Costumino', 'M')]
+  ok('nomeGiaUsato: rinominare «luca  rossini» in «Luca Rossini» no, c’è già', prova(() => m.nomeGiaUsato([riga('Luca Rossini', 'Judogi', '130'), riga('Sara Neri', 'Costumino', 'S')], 'luca rossini', 'Sara Neri')),
+    '"Luca Rossini" è già in quest\'ordine: torna ai suoi passi con INDIETRO')
+  ok('il caso del collaudo: due modi di scrivere Luca, la seconda rinominata come la prima', prova(() => m.nomeGiaUsato([riga('Luca Rossini', 'Judogi', '130'), riga('Mario Bianchi', 'Costumino', 'S')], 'Luca Rossini', 'Mario Bianchi')),
+    '"Luca Rossini" è già in quest\'ordine: torna ai suoi passi con INDIETRO')
+  ok('la persona stessa, scritta in un altro modo: va', prova(() => m.nomeGiaUsato(righe, 'LUCA ROSSINI', 'Luca Rossini')), null)
+  ok('un nome nuovo: va', prova(() => m.nomeGiaUsato(righe, 'Ugo Neri')), null)
+  ok('senza «tranne», un nome che c’è già: no', prova(() => m.nomeGiaUsato(righe, 'anna verdi')), '"Anna Verdi" è già in quest\'ordine: torna ai suoi passi con INDIETRO')
+
+  ok('sceltePagina: «luca  rossini» è Luca Rossini', prova(() => Object.keys(m.sceltePagina(righe, 'Luca Rossini', [J, C])).sort()), ['Costumino', 'Judogi'])
+  ok('applicaScelte: toglie anche le righe scritte con le minuscole', prova(() => m.applicaScelte(righe, 'Luca Rossini', [J, C], { Judogi: { taglia: '140' } }).map((x) => `${x.perChi}|${x.capo}|${x.taglia}`).sort()),
+    ['Anna Verdi|Costumino|M', 'Luca Rossini|Judogi|140'])
+  ok('righePerPersona: una persona sola', prova(() => m.righePerPersona(righe).map((g) => [g.righe.length])), [[2], [1]])
+
+  const chi = { nome: 'Paola', cognome: 'Rossi', telefono: '333 123 4567', email: 'paola@esempio.it' }
+  const testo = (x) => JSON.stringify({ storia: [{ a: 'perChi' }], righe: [], id: 'dev-1', ...x })
+  ok('ripresaDa tiene chi ordina', prova(() => m.ripresaDa(testo({ chi }), [J, C]).chi), chi)
+  ok('con una forma sbagliata la ignora', prova(() => [m.ripresaDa(testo({ chi: 'Paola' }), [J, C]).chi ?? null, m.ripresaDa(testo({ chi: { nome: 3 } }), [J, C]).chi ?? null]), [null, null])
+  ok('senza, niente', prova(() => m.ripresaDa(testo({}), [J, C]).chi ?? null), null)
+}
+
+console.log('\n27. dalla prova del cliente')
+{
+  const vuoto = { capo: '', taglie: '', prezzo: '', nota: '' }
+  ok('un capo nuovo ancora vuoto: prima il nome', prova(() => m.catalogoDaBozza({ chiude: '2026-10-17', capi: [vuoto] })), { guaio: 'Ogni capo ha un nome' })
+  ok('anche dopo un capo giusto', prova(() => m.catalogoDaBozza({ chiude: '2026-10-17', capi: [{ capo: 'Judogi', taglie: '130', prezzo: '35', nota: '' }, vuoto] })), { guaio: 'Ogni capo ha un nome' })
+
+  const senza = [{ ...judogi, tipo: 'judogi' }, { ...costumino }, { capo: 'Felpa', taglie: ['S'], prezzo: 28 }, { capo: 'Cintura', taglie: ['240'], prezzo: 6, tipo: 'judogi' }]
+  ok('capiSenzaTipo: i nomi, nell’ordine del catalogo', prova(() => m.capiSenzaTipo(senza)), ['Costumino', 'Felpa'])
+  ok('tutti col tipo: nessuno', prova(() => m.capiSenzaTipo([{ ...judogi, tipo: 'judogi' }])), [])
+
+  ok('ordineAMeta: senza righe niente', prova(() => m.ordineAMeta([])), null)
+  ok('un capo per una persona', prova(() => m.ordineAMeta([riga('Luca Rossi', 'Judogi', '130')])), 'Hai già scelto 1 capo per Luca Rossi')
+  ok('i capi sono la somma di quanti, le persone come nel riepilogo', prova(() => m.ordineAMeta([riga('Luca Rossi', 'Judogi', '130', 2), riga('Sara Rossi', 'Costumino', 'S')])), 'Hai già scelto 3 capi per Luca Rossi e Sara Rossi')
+  ok('tre persone: virgola e «e»', prova(() => m.ordineAMeta([riga('Luca Rossi', 'Judogi', '130'), riga('Sara Rossi', 'Costumino', 'S'), riga('Ugo Neri', 'Costumino', 'M'), riga('luca  rossi', 'Costumino', 'S')])), 'Hai già scelto 4 capi per Luca Rossi, Sara Rossi e Ugo Neri')
 }
 
 if (guai) {

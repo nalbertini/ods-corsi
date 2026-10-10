@@ -245,6 +245,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
             and has_function_privilege('anon', p.oid, 'execute'))),
   ('49-richieste-per-email.sql', 'sei richieste al giorno dalla stessa email',
     iscrizioni_regole()->>'per_email_al_giorno' = '6'),
+  ('51-vestiario-foto.sql', 'il vestiario come il modulo: tipi, foto e tabelle delle taglie',
+    exists (select 1 from storage.buckets where id = 'vestiario' and public)
+    and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'vestiario_tabelle')
+    and exists (select 1 from dentro where nome = 'vestiario' and corpo like '%tabelle%')
+    and exists (select 1 from pg_constraint where conname = 'impostazioni_vestiario_capi_check')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

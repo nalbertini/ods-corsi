@@ -1,0 +1,135 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Vestiario come il modulo"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Main.dc.html",
+   "title": "Le note: cosa decide il canvas, domande aperte",
+   "x": 0,
+   "y": 0,
+   "page": "page-1"
+  },
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · ORDINA, catalogo e righe in una pagina",
+   "x": 0,
+   "y": 3120,
+   "page": "page-1"
+  },
+  {
+   "file": "PerChiMeta.dc.html",
+   "title": "Costruita · PER CHI È con un ordine a metà",
+   "x": 510,
+   "y": 4084,
+   "page": "page-1"
+  },
+  {
+   "file": "PerChi.dc.html",
+   "title": "Costruita · PER CHI È",
+   "x": 510,
+   "y": 3120,
+   "page": "page-1"
+  },
+  {
+   "file": "Tipo.dc.html",
+   "title": "Costruita · IL TIPO, un tocco per tipo",
+   "x": 1020,
+   "y": 3120,
+   "page": "page-1"
+  },
+  {
+   "file": "TipoPagina.dc.html",
+   "title": "Costruita · JUDOGI: tabella delle taglie e capi",
+   "x": 1530,
+   "y": 3120,
+   "page": "page-1"
+  },
+  {
+   "file": "FotoAperta.dc.html",
+   "title": "Costruita · la foto e la tabella aperte grandi",
+   "x": 2040,
+   "y": 3120,
+   "page": "page-1"
+  },
+  {
+   "file": "Altro.dc.html",
+   "title": "Costruita · TI SERVE ALTRO?",
+   "x": 3060,
+   "y": 3120,
+   "page": "page-1"
+  },
+  {
+   "file": "OggiDati.dc.html",
+   "title": "Oggi · CHI ORDINA e il riepilogo",
+   "x": 3570,
+   "y": 3120,
+   "page": "page-1"
+  },
+  {
+   "file": "ChiOrdina.dc.html",
+   "title": "Costruita · CHI ORDINA, il riepilogo per persona",
+   "x": 4080,
+   "y": 3120,
+   "page": "page-1"
+  },
+  {
+   "file": "PaginaSola.dc.html",
+   "title": "Costruita · la pagina sola, senza tipi",
+   "x": 4590,
+   "y": 3120,
+   "page": "page-1"
+  },
+  {
+   "file": "CatalogoOggi.dc.html",
+   "title": "Oggi · CATALOGO E CHIUSURA",
+   "x": 0,
+   "y": 6150,
+   "page": "page-1"
+  },
+  {
+   "file": "Catalogo.dc.html",
+   "title": "Costruita · CATALOGO E CHIUSURA con tipo, foto e tabelle",
+   "x": 1560,
+   "y": 6150,
+   "page": "page-1"
+  },
+  {
+   "file": "Bozza.dc.html",
+   "title": "Costruita · la bozza con una foto nuova",
+   "x": 3120,
+   "y": 6150,
+   "page": "page-1"
+  },
+  {
+   "file": "Vedi.dc.html",
+   "title": "Costruita · VEDI LA PAGINA con una bozza aperta",
+   "x": 4680,
+   "y": 6150,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "telefono",
+   "kind": "title1",
+   "x": 0,
+   "y": 2840,
+   "maxW": 4980,
+   "text": "TELEFONO · il genitore, dal link COPIA LINK ORDINI: oggi e i passi nuovi",
+   "page": "page-1"
+  },
+  {
+   "id": "segreteria",
+   "kind": "title1",
+   "x": 0,
+   "y": 5870,
+   "maxW": 6120,
+   "text": "SCHERMO LARGO · la segreteria, CATALOGO E CHIUSURA",
+   "page": "page-1"
+  }
+ ]
+}

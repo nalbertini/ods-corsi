@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITA: la pagina sola. Se anche un solo capo non ha tipo, o il database non ha ancora il 50, dopo PER CHI È (che non nomina il tipo) viene I CAPI: tutti i capi in una pagina, e in cima tutte le tabelle delle taglie che ci sono. Poi TI SERVE ALTRO? senza tipi (solo + PER UN'ALTRA PERSONA e NO, HO FINITO) e CHI ORDINA come sopra. La Felpa ha una foto che non si carica: resta il nome, e si ordina lo stesso; la Cintura non ha foto. Cornice copiata da PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 2000px; background: #121212; color: #f2f2f0">
+  <dc-import name="Testata" luogo="VESTIARIO" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column; flex-grow: 1">
+    <dc-import name="Titoletto" label="I CAPI" conto="PER LUCA ROSSI" hint-size="100%,50px"></dc-import>
+    <div style="padding: 0 0 16px">
+      <dc-import name="FotoCapo" nome="Tabella delle taglie · JUDOGI" icona="tabella" tabella="{{ true }}" hint-size="100%,200px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+      <dc-import name="SchedaCapo" capo="Judogi bianco" prezzo="35 €" nota="Prendi l’altezza del bambino e aggiungi 10 cm." icona="judogi" taglia="130" quanti="1" conto="1 × 35 €" totale="35 €" hint-size="100%,510px"></dc-import>
+      <dc-import name="SchedaCapo" capo="Costumino da lotta" prezzo="30 €" nota="Fino ai 14 anni la taglia è l’età: a 8 anni, la 8." icona="costume" taglia="" hint-size="100%,470px"></dc-import>
+      <dc-import name="SchedaCapo" capo="Felpa ODS" prezzo="28 €" nota="" icona="felpa" foto="errore" taglia="" hint-size="100%,430px"></dc-import>
+      <dc-import name="SchedaCapo" capo="Cintura" prezzo="6 €" nota="Per i bambini va bene la 240." foto="nessuna" taglia="" hint-size="100%,220px"></dc-import>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <dc-import name="BarraPasso" totale="35 €" totale-righe="1 capo" avanti="AVANTI" hint-size="100%,150px"></dc-import>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

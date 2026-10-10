@@ -56,12 +56,15 @@
     <sc-if value="{{haIndietro}}" hint-placeholder-val="{{ true }}">
       <span style="display: flex; align-items: center; justify-content: center; width: {{larghezzaIndietro}}; min-height: 56px; border: 2px solid {{bordoIndietro}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.16em; color: {{coloreIndietro}}">{{indietro}}</span>
     </sc-if>
-    <span style="display: flex; align-items: center; justify-content: center; flex: 1 1 {{baseAvanti}}; min-width: 0; min-height: 56px; padding: 0 22px; background: {{fondoAvanti}}; border: 2px solid {{bordoAvanti}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.16em; text-align: center; color: {{coloreAvanti}}">{{avanti}}</span>
+    <sc-if value="{{haAvanti}}" hint-placeholder-val="{{ true }}">
+      <span style="display: flex; align-items: center; justify-content: center; flex: 1 1 {{baseAvanti}}; min-width: 0; min-height: 56px; padding: 0 22px; background: {{fondoAvanti}}; border: 2px solid {{bordoAvanti}}; font-family: {{cond}}; font-style: oblique 9deg; font-size: 19px; font-weight: 700; letter-spacing: 0.16em; text-align: center; color: {{coloreAvanti}}">{{avanti}}</span>
+    </sc-if>
   </div>
 </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"avanti":{"editor":"text","default":"AVANTI"},"indietro":{"editor":"text","default":"INDIETRO"},"manca":{"editor":"text","default":""},"nota":{"editor":"text","default":""},"tono":{"editor":"enum","options":["principale","vai"],"default":"principale"},"indietroChiede":{"editor":"boolean","default":false},"compatta":{"editor":"boolean","default":false},"aperta":{"editor":"boolean","default":false},"totale":{"editor":"text","default":""},"totaleRighe":{"editor":"text","default":""},"senzaIndietro":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":150}}'>
+<script data-dc-script data-props='{"avanti":{"editor":"text","default":"AVANTI"},"indietro":{"editor":"text","default":"INDIETRO"},"manca":{"editor":"text","default":""},"nota":{"editor":"text","default":""},"tono":{"editor":"enum","options":["principale","vai"],"default":"principale"},"indietroChiede":{"editor":"boolean","default":false},"compatta":{"editor":"boolean","default":false},"aperta":{"editor":"boolean","default":false},"totale":{"editor":"text","default":""},"totaleRighe":{"editor":"text","default":""},"senzaIndietro":{"editor":"boolean","default":false},"senzaAvanti":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":150}}'>
+// `senzaAvanti`: BarraPasso senza onAvanti (ds.tsx): niente AVANTI ne' riga del mancante, restano il totale e INDIETRO. E' IL TIPO del vestiario, dove un tocco su un tipo porta avanti.
 // PROPOSTA (rifinitura iscrizione): `compatta` = la barra del mancante in una riga sola (MANCANO N, il tasto VAI A: la prima voce, e ▾ che apre l'elenco; `aperta` lo mostra, una voce = un tasto che porta al campo); le voci mancanti sono la lista `manca` come prima, la prima e' la prossima. Il bordo di INDIETRO usa `riga-campo`. Nell'app e' sempre compatta (`compatta` vero); la pastiglia per cosa resta per le proposte vecchie.
 // PROPOSTA (rifinitura iscrizione): `totale` (e `totaleRighe`, cosa lo compone) e' la riga del totale sopra la barra, nei passi del corso e dei documenti: fondo `surface`, bordo sopra 2px `line`, cifra Saira 28px.
 // Il fondo di ogni passo: `BarraPasso` di src/components/ds.tsx e `.barra-passo*` di src/styles.css (modulo a passi, solo in prova). Nell'app e' sticky: resta in fondo allo schermo, sotto il pollice; qui e' ferma. Se manca qualcosa dice cosa (MANCA 1 COSA: + una pastiglia da 44px per cosa,
@@ -79,7 +82,9 @@ class Component extends DCLogic {
   renderVals() {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
-    const manca = lista(p.manca, '|').map((testo) => ({ testo }));
+    const senzaAvanti = truthy(p.senzaAvanti);
+    // Senza AVANTI non c'e' nemmeno la riga di quel che manca: in ds.tsx `prima` esiste solo con onAvanti.
+    const manca = senzaAvanti ? [] : lista(p.manca, '|').map((testo) => ({ testo }));
     const chiede = truthy(p.indietroChiede);
     const vai = p.tono === 'vai';
     return {
@@ -91,7 +96,7 @@ class Component extends DCLogic {
       haNota: manca.length === 0 && String(p.nota ?? '') !== '', nota: p.nota ?? '',
       haIndietro: !truthy(p.senzaIndietro), indietro: chiede ? 'LE RISPOSTE SI PERDONO · ESCI?' : (p.indietro ?? 'INDIETRO'),
       coloreIndietro: chiede ? c.rossoTesto : c.tasto, bordoIndietro: chiede ? c.rosso : c.lineCampo, larghezzaIndietro: chiede ? '100%' : '110px', baseAvanti: chiede ? '100%' : '0',
-      avanti: p.avanti ?? 'AVANTI',
+      avanti: p.avanti ?? 'AVANTI', haAvanti: !senzaAvanti,
       fondoAvanti: vai ? c.verde : c.rosso, bordoAvanti: vai ? c.verde : c.rosso, coloreAvanti: vai ? c.suColore : c.suRosso,
     };
   }

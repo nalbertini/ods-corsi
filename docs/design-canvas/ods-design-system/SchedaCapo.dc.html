@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: 0; padding: 14px; background: {{c.surface}}; border: 2px solid {{bordo}}; color: {{c.text}}">
+  <sc-if value="{{conFoto}}" hint-placeholder-val="{{ true }}">
+    <dc-import name="FotoCapo" nome="{{capo}}" icona="{{icona}}" stato="{{foto}}" alto="{{altoFoto}}" tema="{{tema}}" hint-size="100%,220px"></dc-import>
+  </sc-if>
+  <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; ">
+    <span style="flex-grow: 1; font-size: 17px; font-weight: 600; line-height: 1.3">{{capo}}</span>
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">{{prezzo}}</span>
+  </div>
+  <sc-if value="{{haNota}}" hint-placeholder-val="{{ true }}">
+    <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">{{nota}}</span>
+  </sc-if>
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px">
+    <dc-import name="Campo" tipo="select" etichetta="TAGLIA" valore="{{taglia}}" segnaposto="Scegli" tema="{{tema}}" hint-size="100%,76px"></dc-import>
+    <dc-import name="Campo" tipo="select" etichetta="QUANTI" valore="{{quanti}}" segnaposto="—" tema="{{tema}}" hint-size="100%,76px"></dc-import>
+  </div>
+  <sc-if value="{{scelto}}" hint-placeholder-val="{{ false }}">
+    <div style="display: flex; align-items: center; gap: 12px; padding-top: 6px; border-top: 2px solid {{c.line}}; font-size: 17px; font-weight: 700">
+      <span style="flex-grow: 1; font-size: 14px; font-weight: 400; line-height: 1.4; color: {{c.dim}}">{{conto}}</span>
+      <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums">{{totale}}</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"capo":{"editor":"text","default":"Judogi bianco"},"prezzo":{"editor":"text","default":"35 €"},"nota":{"editor":"text","default":"Prendi l’altezza del bambino e aggiungi 10 cm."},"icona":{"editor":"enum","options":["judogi","costume","felpa","tabella"],"default":"judogi"},"foto":{"editor":"enum","options":["foto","errore","nessuna"],"default":"foto"},"altoFoto":{"editor":"text","default":"220px"},"taglia":{"editor":"text","default":""},"quanti":{"editor":"text","default":""},"conto":{"editor":"text","default":"1 × 35 €"},"totale":{"editor":"text","default":"35 €"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":440}}'>
+// `SchedaCapo` di src/components/OrdinaVestiario.tsx: un capo nella pagina del tipo (JUDOGI, COSTUMINI LOTTA, VESTIARIO LOGATO, o I CAPI
+// nella pagina sola). .card.stack.riquadro.vestiario-scheda (fondo `surface`, bordo 2px `line`, padding 14px, gap 8px): la foto (FotoCapo,
+// apribile grande), il nome (.passo-titolo 17px 600) col prezzo (.num.cifra, Saira 26px 700), la nota (.passo-dettaglio 14px `dim`),
+// TAGLIA e QUANTI su due colonne (.vestiario-due, gap 10px) e, con la taglia, il conto .stima-riga.stima-totale.
+// taglia vuota = «Scegli», QUANTI spento a «—»: il capo non e' nell'ordine. Scelta la taglia, QUANTI parte da 1 e la scheda prende il bordo
+// `verde` (data-scelto: e' nell'ordine, come un file caricato). Rimettere «Scegli» toglie il capo.
+// foto: foto; errore = non si carica, resta il nome e si ordina lo stesso; nessuna = il capo non ha foto e la scheda comincia dal nome.
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88', verde: '#16a54a' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561', verde: '#12913f' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const taglia = p.taglia ?? '';
+    const scelto = taglia !== '';
+    const nota = p.nota ?? 'Prendi l’altezza del bambino e aggiungi 10 cm.';
+    return {
+      c, cond: COND, tema: p.tema || 'scuro',
+      capo: p.capo ?? 'Judogi bianco', prezzo: p.prezzo ?? '35 €',
+      nota, haNota: nota !== '',
+      icona: p.icona || 'judogi', foto: p.foto || 'foto', conFoto: p.foto !== 'nessuna', altoFoto: p.altoFoto || '220px',
+      taglia, quanti: scelto ? (p.quanti || '1') : '',
+      scelto, bordo: scelto ? c.verde : c.line,
+      conto: p.conto ?? '1 × 35 €', totale: p.totale ?? '35 €',
+    };
+  }
+}
+</script>
+</body>
+</html>

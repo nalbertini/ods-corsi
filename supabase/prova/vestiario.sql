@@ -656,4 +656,98 @@ select atteso('a raccolta chiusa, lo stesso ordine rimandato risponde con quello
 reset role;
 
 \echo ''
+\echo '--- 11. come il modulo: tipi, foto e tabelle delle taglie (51-vestiario-foto.sql) ---'
+-- Il catalogo coi tipi e le foto: un capo senza tipo va lo stesso.
+create or replace function cat_foto(capo0 jsonb default '{}', tabelle jsonb default '{"judogi": "tabella-judogi.png"}') returns jsonb language sql as $$
+  select jsonb_set(jsonb_set(cat(current_date + 30), '{capi,0}', (cat(current_date + 30)->'capi'->0) || '{"tipo": "judogi", "foto": "judogi-1.jpg"}' || capo0), '{tabelle}', tabelle)
+$$;
+grant execute on function cat_foto(jsonb, jsonb) to anon, authenticated;
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('tipo, foto e tabelle si salvano; il costumino senza tipo va', tenta($$select (salva_vestiario(cat_foto()) is not null)::text$$), 'true');
+select atteso('un tipo fuori dai tre no', tenta($$select salva_vestiario(cat_foto('{"tipo": "felpe"}'))::text$$), 'NEGATO: "Judogi": il tipo non si capisce');
+select atteso('una foto con la barra no', tenta($$select salva_vestiario(cat_foto('{"foto": "cartella/judogi.jpg"}'))::text$$), 'NEGATO: La foto di "Judogi" non si capisce: ricaricala');
+select atteso('una foto che è un indirizzo no', tenta($$select salva_vestiario(cat_foto('{"foto": "http://esempio.it/judogi.jpg"}'))::text$$), 'NEGATO: La foto di "Judogi" non si capisce: ricaricala');
+select atteso('una foto con .. no', tenta($$select salva_vestiario(cat_foto('{"foto": "su..giu.jpg"}'))::text$$), 'NEGATO: La foto di "Judogi" non si capisce: ricaricala');
+select atteso('la regola del nome del file, come nell''app',
+  (select string_agg(n || '=' || vestiario_nome_file(n)::text, ' ' order by k)
+   from unnest(array['JUDOGI-1.JPG', 'a.b_c-d.webp', 'foto judogi.jpg', 'fötö.jpg', 'a?b#c.jpg', '.x.jpg']) with ordinality u(n, k)),
+  'JUDOGI-1.JPG=true a.b_c-d.webp=true foto judogi.jpg=false fötö.jpg=false a?b#c.jpg=false .x.jpg=false');
+select atteso('un''altra estensione dopo, o una barra dopo: no', concat_ws(' ', vestiario_nome_file('a.jpg.html')::text, vestiario_nome_file('a.jpg/x')::text), 'false false');
+select atteso('un nome di 120 caratteri va, di 121 no', concat_ws(' ', vestiario_nome_file(repeat('a', 116) || '.jpg')::text, vestiario_nome_file(repeat('a', 117) || '.jpg')::text), 'true false');
+select atteso('una foto con lo spazio no', tenta($$select salva_vestiario(cat_foto('{"foto": "foto judogi.jpg"}'))::text$$), 'NEGATO: La foto di "Judogi" non si capisce: ricaricala');
+select atteso('una foto che non è un''immagine no', tenta($$select salva_vestiario(cat_foto('{"foto": "judogi.gif"}'))::text$$), 'NEGATO: La foto di "Judogi" non si capisce: ricaricala');
+select atteso('una tabella che è un indirizzo no', tenta($$select salva_vestiario(cat_foto('{}', '{"judogi": "http://esempio.it/t.png"}'))::text$$), 'NEGATO: La tabella delle taglie di "JUDOGI" non si capisce: ricaricala');
+select atteso('una tabella di un tipo che non c''è no', tenta($$select salva_vestiario(cat_foto('{}', '{"felpe": "t.png"}'))::text$$), 'NEGATO: La tabella delle taglie non si capisce: ricaricala');
+reset role;
+select chi('');
+set role anon;
+select atteso('la pagina vede tipo e foto', (select concat_ws(' · ', c->>'tipo', c->>'foto') from (select vestiario()->'capi'->0 c) x), 'judogi · judogi-1.jpg');
+select atteso('il capo senza tipo resta senza', coalesce(vestiario()->'capi'->1->>'tipo', 'nessuno'), 'nessuno');
+select atteso('e le tabelle delle taglie', vestiario()->'tabelle'->>'judogi', 'tabella-judogi.png');
+reset role;
+-- Le stesse regole valgono anche per il catalogo scritto a mano nelle impostazioni.
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('a mano, una foto che è un indirizzo no', tenta($$update impostazioni set vestiario = '[{"capo": "J", "foto": "https://x.it/a.jpg"}]' where id$$), 'NEGATO: …');
+select atteso('a mano, un tipo fuori dai tre no', tenta($$update impostazioni set vestiario = '[{"capo": "J", "tipo": "felpe"}]' where id$$), 'NEGATO: …');
+select atteso('a mano, la tabella di un tipo che non c''è no', tenta($$update impostazioni set vestiario_tabelle = '{"felpe": "t.png"}' where id$$), 'NEGATO: …');
+select atteso('a mano, una tabella che è un indirizzo no', tenta($$update impostazioni set vestiario_tabelle = '{"judogi": "http://x/t.png"}' where id$$), 'NEGATO: …');
+select atteso('a mano, tabelle oltre i 1000 byte no', tenta(format($$update impostazioni set vestiario_tabelle = jsonb_build_object('judogi', %L) where id$$, repeat('a', 1000) || '.png')), 'NEGATO: …');
+-- Senza la chiave «tabelle» restano com'erano; con un oggetto vuoto si tolgono.
+select salva_vestiario(cat_foto() - 'tabelle');
+select atteso('salvato senza «tabelle»: restano com''erano', vestiario()->'tabelle'->>'judogi', 'tabella-judogi.png');
+select salva_vestiario(cat_foto('{}', '{}'));
+select atteso('salvato con «tabelle» vuote: si tolgono', vestiario()->>'tabelle', '{}');
+select salva_vestiario(cat_foto());
+reset role;
+
+-- Il contenitore delle foto: pubblico in lettura, piccolo, solo immagini.
+select atteso('il contenitore «vestiario» c''è ed è pubblico', (select public::text from storage.buckets where id = 'vestiario'), 'true');
+select atteso('pesa al massimo 1 MB', (select file_size_limit::text from storage.buckets where id = 'vestiario'), '1048576');
+select atteso('solo jpeg, png e webp', (select array_to_string(array(select unnest(allowed_mime_types) order by 1), ',') from storage.buckets where id = 'vestiario'), 'image/jpeg,image/png,image/webp');
+insert into storage.objects (bucket_id, name) values ('vestiario', 'tabella-judogi.png');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('la segreteria carica una foto', tenta($$insert into storage.objects (bucket_id, name) values ('vestiario', 'judogi-1.jpg')$$), 'FATTO (1 righe)');
+select atteso('la cambia', tenta($$update storage.objects set name = 'judogi-2.jpg' where bucket_id = 'vestiario' and name = 'judogi-1.jpg'$$), 'FATTO (1 righe)');
+select atteso('e la cancella', tenta($$delete from storage.objects where bucket_id = 'vestiario' and name = 'judogi-2.jpg'$$), 'FATTO (1 righe)');
+select atteso('un nome che non è una foto del catalogo no, nemmeno dalla segreteria', tenta($$insert into storage.objects (bucket_id, name) values ('vestiario', 'cartella/pagina.html')$$), 'NEGATO: …');
+select atteso('né rinominarla così', tenta($$update storage.objects set name = 'cartella/pagina.html' where bucket_id = 'vestiario' and name = 'tabella-judogi.png'$$), 'NEGATO: …');
+reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select atteso('un istruttore non carica', tenta($$insert into storage.objects (bucket_id, name) values ('vestiario', 'mia.jpg')$$), 'NEGATO: …');
+select atteso('senza where non cancella niente', tenta($$delete from storage.objects$$), 'a vuoto (0 righe)');
+select atteso('senza where non rinomina niente', tenta($$update storage.objects set name = 'x.jpg'$$), 'a vuoto (0 righe)');
+select atteso('non cambia', tenta($$update storage.objects set name = 'altra.png' where bucket_id = 'vestiario'$$), 'a vuoto (0 righe)');
+select atteso('non cancella', tenta($$delete from storage.objects where bucket_id = 'vestiario'$$), 'a vuoto (0 righe)');
+reset role;
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select atteso('un iscritto non carica', tenta($$insert into storage.objects (bucket_id, name) values ('vestiario', 'mia.jpg')$$), 'NEGATO: …');
+select atteso('senza where non cancella niente', tenta($$delete from storage.objects$$), 'a vuoto (0 righe)');
+select atteso('senza where non rinomina niente', tenta($$update storage.objects set name = 'x.jpg'$$), 'a vuoto (0 righe)');
+select atteso('non cambia', tenta($$update storage.objects set name = 'altra.png' where bucket_id = 'vestiario'$$), 'a vuoto (0 righe)');
+select atteso('non cancella', tenta($$delete from storage.objects where bucket_id = 'vestiario'$$), 'a vuoto (0 righe)');
+select atteso('non elenca', (select count(*)::text from storage.objects where bucket_id = 'vestiario'), '0');
+reset role;
+select chi('66666666-6666-6666-6666-666666666666');
+set role authenticated;
+select atteso('il tablet non carica', tenta($$insert into storage.objects (bucket_id, name) values ('vestiario', 'mia.jpg')$$), 'NEGATO: …');
+select atteso('senza where non cancella niente', tenta($$delete from storage.objects$$), 'a vuoto (0 righe)');
+select atteso('senza where non rinomina niente', tenta($$update storage.objects set name = 'x.jpg'$$), 'a vuoto (0 righe)');
+select atteso('non cambia', tenta($$update storage.objects set name = 'altra.png' where bucket_id = 'vestiario'$$), 'a vuoto (0 righe)');
+select atteso('non cancella', tenta($$delete from storage.objects where bucket_id = 'vestiario'$$), 'a vuoto (0 righe)');
+select atteso('non elenca', (select count(*)::text from storage.objects where bucket_id = 'vestiario'), '0');
+reset role;
+select chi('');
+set role anon;
+select atteso('chi non ha un accesso non carica', tenta($$insert into storage.objects (bucket_id, name) values ('vestiario', 'mia.jpg')$$), 'NEGATO: …');
+select atteso('e non elenca i file', (select count(*)::text from storage.objects where bucket_id = 'vestiario'), '0');
+select atteso('né li cancella', tenta($$delete from storage.objects where bucket_id = 'vestiario'$$), 'a vuoto (0 righe)');
+reset role;
+select atteso('la tabella è ancora lì', (select count(*)::text from storage.objects where bucket_id = 'vestiario'), '1');
+
+\echo ''
 \echo 'Vestiario: tutto a posto.'

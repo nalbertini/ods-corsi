@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: {{gap}}; width: 100%; min-width: 0; padding: {{padding}}; background: {{sfondo}}; border: {{bordo}}; color: {{c.text}}">
+  <span style="display: flex; flex-direction: column; gap: 2px">
+    <span style="font-family: {{cond}}; font-size: 15px; font-weight: 700; letter-spacing: 0.24em; color: {{c.dim}}">PER</span>
+    <span style="font-size: 17px; font-weight: 600; color: {{c.text}}; overflow-wrap: anywhere">{{nome}}</span>
+  </span>
+  <sc-if value="{{riquadro}}" hint-placeholder-val="{{ false }}">
+    <sc-for list="{{righe}}" as="r" hint-placeholder-count="2">
+      <span style="display: flex; gap: 12px; font-size: 15px"><span style="flex-grow: 1">{{r.cosa}}</span><span style="font-family: {{cond}}; font-variant-numeric: tabular-nums">{{r.prezzo}}</span></span>
+    </sc-for>
+    <sc-if value="{{vuoto}}" hint-placeholder-val="{{ false }}">
+      <span style="font-size: 14px; line-height: 1.4; color: {{c.dim}}">Per ora niente.</span>
+    </sc-if>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Luca Rossi"},"riquadro":{"editor":"boolean","default":false},"righe":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":60}}'>
+// `Persona` di src/components/OrdinaVestiario.tsx: per chi e', in chiaro. L'etichetta PER (.rule-label: Saira 15px 700 0.24em `dim`) e sotto
+// il nome come si scrive (.vestiario-persona: Barlow 17px 600 `text`), non in maiuscolo spaziato. In IL RIEPILOGO sta sopra le righe
+// di quella persona.
+// riquadro = il Riquadro stretto di TI SERVE ALTRO? (fondo `surface`, bordo 2px `line`, padding 14px, gap 4px): il nome e sotto quel che
+// c'e' gia' (.stima-riga 15px, cifra in .num), righe «cosa:prezzo» separate da |; senza righe «Per ora niente.».
+const T = {
+  scuro: { surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', dim: '#8c8c88' },
+  chiaro: { surface: '#ffffff', line: '#d4d4ce', text: '#161616', dim: '#656561' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const riquadro = truthy(p.riquadro);
+    const righe = String(p.righe ?? '').split('|').map((s) => s.trim()).filter(Boolean).map((s) => {
+      const i = s.lastIndexOf(':');
+      return { cosa: s.slice(0, i), prezzo: s.slice(i + 1) };
+    });
+    return {
+      c, cond: COND, nome: p.nome ?? 'Luca Rossi', riquadro, righe, vuoto: riquadro && !righe.length,
+      gap: riquadro ? '4px' : '0', padding: riquadro ? '14px' : '0',
+      sfondo: riquadro ? c.surface : 'transparent', bordo: riquadro ? '2px solid ' + c.line : '0',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -143,7 +143,7 @@ export function conMioAppello(elenco: IstruttoreLezione[], io: string | undefine
   return elenco.map((x) => (x.id === io && !x.stato ? { ...x, stato: 'confermata', come: 'appello' } : x))
 }
 
-const URL_SUPABASE = import.meta.env.VITE_SUPABASE_URL as string | undefined
+export const URL_SUPABASE = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const CHIAVE_SUPABASE = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 
 /** Vero quando il pacchetto è stato compilato con un database vero. */
