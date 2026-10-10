@@ -480,8 +480,8 @@ export function BarraPasso({
   occupato?: boolean
   chiede?: string
   aperta?: boolean
-  /** Il totale della richiesta, sempre in vista nei passi del corso e dei documenti. */
-  totale?: { righe: string; totale: string }
+  /** Il totale della richiesta, sempre in vista al passo del corso: TOTALE (o TOTALE FAMIGLIA), cosa lo compone, la cifra. */
+  totale?: { etichetta?: string; righe: string; totale: string }
   onVai: (chiave: string) => void
   /** Senza, niente AVANTI né riga di quel che manca: un passo che si lascia con un tocco altrove (IL TIPO del vestiario). */
   onAvanti?: () => void
@@ -493,7 +493,10 @@ export function BarraPasso({
     <div className="barra-passo">
       {totale && (
         <div className="barra-totale">
-          <span className="barra-totale-righe">{totale.righe}</span>
+          <span className="barra-totale-testo">
+            <span className="barra-totale-etichetta">{totale.etichetta ?? 'TOTALE'}</span>
+            <span className="barra-totale-righe">{totale.righe}</span>
+          </span>
           <span className="barra-totale-cifra">{totale.totale}</span>
         </div>
       )}

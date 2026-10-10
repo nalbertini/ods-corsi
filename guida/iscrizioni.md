@@ -111,13 +111,25 @@ accoglie.
 
 ## Il modulo a passi (solo in prova)
 
-È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa cinque passi (**I TUOI DATI**, **SCEGLI IL CORSO**, **IL MODULO E LA FIRMA**, **I DOCUMENTI E IL PAGAMENTO**, **CONTROLLA E INVIA**); per un figlio sono sei, perché c'è anche **IL GENITORE CHE FIRMA**. Nei passi del corso e dei documenti, sopra i tasti, c'è sempre il **totale** da pagare. Prima
+È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa sei passi (**I TUOI DATI**, **SCEGLI IL CORSO**, **IL MODULO E LA FIRMA**, **I DOCUMENTI**, **QUANTO PAGHI**, **CONTROLLA E INVIA**); per un figlio sono sette, perché c'è anche **IL GENITORE CHE FIRMA**. Nel passo del corso, sopra i tasti, c'è sempre il **TOTALE** da pagare, che cambia a ogni scelta: con più persone è quello di tutti, e lo dice (**TOTALE FAMIGLIA**). A QUANTO PAGHI il conto è nel passo. Prima
 si sceglie **IO, SONO ADULTO** o **MIO FIGLIO O MIA FIGLIA**, poi si va avanti
 con **AVANTI**. Se tocchi AVANTI e manca qualcosa, in fondo allo schermo una riga dice quante cose mancano e **VAI A** la prima: un tocco e il cursore è già nel campo. La freccia accanto apre l'elenco di tutto quel che manca, e ogni voce porta al suo campo. L'ultimo passo
 è il riepilogo: da lì **MODIFICA** riporta al passo da cambiare, e **MANDA LA
 RICHIESTA** la manda. Chi iscrive il figlio può iscriversi anche lui, con
 **ISCRIVO ANCHE ME**: sono poche domande in più, e la segreteria vede il
 conto della famiglia con lo sconto.
+
+**QUANTO PAGHI** viene dopo l'ultima persona, prima del riepilogo, ed è uno
+solo per tutto il modulo: il conto di tutti con lo sconto famiglia, la cifra da
+pagare, l'IBAN con **COPIA IBAN**, la causale con **COPIA CAUSALE** e **PAGA CON
+SATISPAY**. La causale ha i nomi di tutti, il cognome uguale una volta sola
+(«Iscrizione Manuela e Nicola Albertini»); da soli resta col corso. La
+**ricevuta** del bonifico è facoltativa e una sola per tutti: chi la carica
+prima di aggiungere un familiare, o prima di cambiare corso, legge sotto di
+quanto è cambiato il totale e che la differenza si paga in segreteria o con un
+altro bonifico. Nel riepilogo, la riga **Ricevuta del pagamento** porta qui. Se la ricevuta non c'è, la
+schermata finale, sotto **DA PAGARE**, ripete IBAN e causale, con i tasti per
+copiarli.
 
 Nel passo del corso del figlio, il riquadro **TI ISCRIVI ANCHE TU?** propone
 al genitore i corsi per la sua età che si fanno mentre il figlio è in palestra:
@@ -132,19 +144,32 @@ intero. Se dopo il figlio cambia corso, sotto compare quale corso del genitore
 non è più alla stessa ora. Nel passo **ANCHE TU: POCHE COSE** il corso è già
 scritto, con **MODIFICA**: lì restano come paga il genitore e i suoi consensi.
 
+Nel passo dei dati, scritto il **CAP**, il comune lo propone l'app, per i CAP
+della provincia di Torino: se il CAP è di un comune solo e **COMUNE** è vuoto si
+scrive da sé, con sotto «Dal CAP …»; se è di più comuni compaiono i comuni da
+toccare (fino a sei) o una tendina. Il comune si può sempre correggere a mano, e
+uno già scritto non si tocca. Fuori provincia si scrive come prima. L'elenco dei
+CAP non è di Poste (che non lo pubblica): se un comune manca o è sbagliato, va
+corretto in `scripts/cap-torino.mjs`.
+
 Chi si iscrive da solo pensa a una persona alla volta: nei passi la famiglia
 non c'è. All'ultimo passo, **CONTROLLA E INVIA**, dopo il riepilogo, sotto **LA
 FAMIGLIA** c'è «Iscrivi anche qualcun altro della famiglia?» con **+ AGGIUNGI UN
 FAMILIARE**: indirizzo e contatti restano quelli già scritti, e ognuno sceglie i
 suoi corsi. Da lì in poi, in ogni passo, sotto il numero ci sono i nomi di tutti,
 per passare dall'uno all'altro; il tasto per aggiungerne un altro resta
-all'ultimo passo.
+all'ultimo passo. Quando chi firma non è chi compila (un altro adulto, o il bambino
+firmato da un altro adulto), il modulo lo chiama per nome: «Firma Paola, che è
+maggiorenne», **L'OK DI PAOLA**, **LA CARTA D'IDENTITÀ DI PAOLA**. Con «Anche tu»,
+nella barra di quel che manca, il corso, il tesseramento e le foto del genitore
+portano il suo nome (**CORSO DI NICOLA**), e così la casella **LE FOTO E I VIDEO
+DI NICOLA**.
 
 Quando c'è da scegliere fra due cose (**IO, SONO ADULTO** o **MIO FIGLIO**, **TRIMESTRE** o **ANNUALE**, **AUTORIZZO** o **NON AUTORIZZO**) la scelta fatta si riempie: è il tasto pieno. I corsi, dove se ne possono scegliere più d'uno, hanno invece la casella con la spunta. I bordi dei campi sono più chiari, anche nel tema scuro.
 
 I corsi per grandi (quelli che la segreteria segna con un'età minima in **LISTINO**, per esempio la Pesistica dai 16 anni) non compaiono per un bambino troppo piccolo: sotto l'elenco una frase dice quali e di chiamare la segreteria. Per chi ha l'età compare fra i corsi per lui, con scritto «dai 16 anni».
 
-Chi iscrive un figlio trova le parole rivolte a lui, il genitore: **LA TUA CARTA D'IDENTITÀ** (la sua, non quella del bambino), **IL CERTIFICATO DI** e il nome del bambino (con cosa succede se manca), e l'errore sul codice fiscale dice «Metti il tuo codice fiscale, non quello di» e il nome. Il luogo di nascita del genitore (**DOVE SEI NATO**, **PROVINCIA**) si chiede solo nei suoi dati e solo se il suo codice fiscale non lo dice da sé.
+Chi iscrive un figlio trova scritto di chi è ogni cosa: **LA CARTA D'IDENTITÀ DI** e **IL RETRO DELLA CARTA DI** col nome di chi firma (la sua, non quella del bambino; finché il nome non c'è, **DEL GENITORE**), **IL CERTIFICATO DI** e il nome del bambino (con cosa succede se manca), e l'errore sul codice fiscale dice «Metti il tuo codice fiscale, non quello di» e il nome. Il luogo di nascita del genitore (**DOVE SEI NATO**, **PROVINCIA**) si chiede solo nei suoi dati e solo se il suo codice fiscale non lo dice da sé.
 
 In ogni passo, sotto il numero, c'è **CHIAMA**: un tocco e si telefona alla segreteria. A ogni passo nuovo il cursore va al titolo, così chi usa uno screen reader sente dove si trova. Se si esce o si ricarica la pagina dopo aver scritto qualcosa, il browser chiede conferma. Alla fine, **RICHIESTA ARRIVATA** dice dove la segreteria ti scrive o ti chiama, e se non hai caricato la ricevuta quanto devi pagare e come (l'IBAN, e per una persona sola anche la causale), con **CHIAMA LA SEGRETERIA** a portata di mano.
 
@@ -155,7 +180,8 @@ la prova nulla va a un server. Il modulo di sopra resta quello di oggi.
 Cosa arriva in **RICHIESTE ONLINE**: una richiesta, o due se c'è «Anche tu»
 (una del bambino, una del genitore). Le due sono separate, e nelle note di
 ognuna c'è una riga che dice «mandata insieme alla richiesta di…, sconto
-famiglia da applicare», così la segreteria le lega. Le note che scrive chi
+famiglia da applicare», così la segreteria le lega. La ricevuta del
+bonifico, se c'è, arriva in ognuna: è un pagamento solo per tutte. Le note che scrive chi
 compila sono al massimo 900 caratteri, per fare posto a quella riga.
 
 ## Ordinare il vestiario

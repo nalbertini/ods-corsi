@@ -10,6 +10,60 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.54.4 — 10 ottobre 2026
+
+### Modificato
+
+- Il totale del modulo di iscrizione si legge meglio, sopra AVANTI
+
+## 0.54.3 — 10 ottobre 2026
+
+### Risolto
+
+- Nell'iscrizione online, rimandare un file già arrivato non dà più «ha già tutti i suoi file»
+
+## 0.54.2 — 10 ottobre 2026
+
+### Modificato
+
+- Anche la schermata finale ha la causale del bonifico, con i nomi di tutti
+
+## 0.54.1 — 10 ottobre 2026
+
+### Modificato
+
+- QUANTO PAGHI: conto, causale e ricevuta seguono la stessa regola
+
+## 0.54.0 — 10 ottobre 2026
+
+### Novità
+
+- Il passo QUANTO PAGHI, con il conto di tutta la famiglia e una sola ricevuta
+
+## 0.53.2 — 10 ottobre 2026
+
+### Modificato
+
+- Nel modulo di iscrizione la carta d'identità e l'ok dicono il nome di chi firma
+
+## 0.53.1 — 10 ottobre 2026
+
+### Modificato
+
+- Anche nella scheda iscritto il comune si propone dal CAP
+
+## 0.53.0 — 10 ottobre 2026
+
+### Novità
+
+- Nell'iscrizione il comune si propone dal CAP, per la provincia di Torino
+
+## 0.52.3 — 10 ottobre 2026
+
+### Modificato
+
+- Design: il comune dal CAP, provincia di Torino
+
 ## 0.52.2 — 10 ottobre 2026
 
 ### Risolto

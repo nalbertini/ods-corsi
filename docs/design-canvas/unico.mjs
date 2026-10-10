@@ -36,6 +36,9 @@ const SEZIONI = [
   { id: 'anche-tu', nome: 'Anche tu · stessa ora', cartella: 'anche-tu-stessa-ora' },
   { id: 'iscrizione-famiglia', nome: 'Iscrizione di famiglia · proposta', cartella: 'iscrizione-famiglia' },
   { id: 'famiglia-ultimo', nome: 'La famiglia all\'ultimo passo', cartella: 'famiglia-ultimo-passo' },
+  { id: 'comune-dal-cap', nome: 'Il comune dal CAP', cartella: 'comune-dal-cap' },
+  { id: 'quanto-paghi', nome: 'Quanto paghi e le carte col nome', cartella: 'quanto-paghi' },
+  { id: 'totale-barra', nome: 'Il totale del modulo', cartella: 'totale-barra' },
   { id: 'vestiario-modulo', nome: 'Vestiario come il modulo · proposta', cartella: 'vestiario-modulo' },
 ]
 

@@ -14,6 +14,7 @@ import { Avanzamento, BarraPasso, Bollino, CaricaFile, Campo, Chip, Dettaglio, N
 import { Contatti, Prova } from './IscrizioniScreen'
 import { useDialogo } from './segreteria/comune'
 import { Casella, QuantoCosta, SceltaFile } from './ModuloIscrizione'
+import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../lib/comuneDalCap'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
 
 /**
@@ -123,22 +124,27 @@ function SceltaFileGenitore({ tipo, file, onFile, etichetta, dettaglio }: { tipo
   )
 }
 
-/** L'IBAN su una riga sua, da copiare: per le due richieste, dove non c'è il conto di una persona sola (`QuantoCosta`). */
-function CopiaIban() {
-  const [copiato, setCopiato] = useState(false)
-  const copia = () =>
-    navigator.clipboard?.writeText(PAGAMENTO.iban.replace(/\s/g, '')).then(
+/** L'IBAN, la causale di tutto il modulo e i tasti per copiarli (e Satispay): il bonifico di QUANTO PAGHI. */
+function ComePagare({ causale }: { causale: string }) {
+  const [copiato, setCopiato] = useState<string | null>(null)
+  const copia = (cosa: string, valore: string) =>
+    navigator.clipboard?.writeText(valore).then(
       () => {
-        setCopiato(true)
-        setTimeout(() => setCopiato(false), 2000)
+        setCopiato(cosa)
+        setTimeout(() => setCopiato(null), 2000)
       },
       () => {},
     )
   return (
     <>
       <span className="num iban iban-riga">{PAGAMENTO.iban}</span>
+      <Dettaglio>
+        Causale: <span className="testo-pieno">{causale}</span>
+      </Dettaglio>
       <Tasti>
-        <Tasto onClick={() => void copia()}>{copiato ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+        <Tasto onClick={() => void copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+        <Tasto onClick={() => void copia('causale', causale)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>
+        {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
       </Tasti>
     </>
   )
@@ -166,6 +172,39 @@ function Scelta({ prova, onScegli }: { prova: boolean; onScegli: (chi: P.Chi) =>
       </div>
       <Prova />
       <Contatti />
+    </>
+  )
+}
+
+/**
+ * Il COMUNE coi suggerimenti del CAP (`comuneDalCap`): sotto il campo la nota quando il comune è quello del CAP,
+ * o i comuni del CAP da scegliere, coi tasti o, se sono tanti, con la tendina. Il campo resta scrivibile.
+ */
+function CampoComune({ id, cap, comune, nota, segna, onComune }: { id: string; cap: string; comune: string; nota?: Nota; segna: object; onComune: (c: string) => void }) {
+  const dal = comuneDalCap(cap, comune)
+  return (
+    <>
+      <Campo id={id} nota={nota ?? (dal.nota ? { testo: dal.nota, guaio: false } : undefined)} etichetta="COMUNE">
+        <input id={id} maxLength={60} {...segna} className="campo" autoComplete="address-level2" value={comune} onChange={(e) => onComune(e.target.value)} />
+      </Campo>
+      {dal.scelte.length > 0 &&
+        (dal.tendina ? (
+          <Campo id={`${id}-tendina`} etichetta={etichettaTendina(cap, dal.scelte.length)} largo>
+            <select id={`${id}-tendina`} className="campo" value="" onChange={(e) => e.target.value && onComune(e.target.value)}>
+              <option value="">Scegli il tuo comune</option>
+              {dal.scelte.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </Campo>
+        ) : (
+          <div className="modulo-campo modulo-largo">
+            <Dettaglio>{fraseDellaScelta(cap, dal.scelte.length)}</Dettaglio>
+            <SceltaCorsi id={`${id}-tasti`} etichetta="Il tuo comune" una voci={dal.scelte.map((c) => ({ id: c, testo: c }))} scelti={[]} onScegli={onComune} />
+          </div>
+        ))}
     </>
   )
 }
@@ -428,6 +467,8 @@ function Flusso({
   const comeEff = ancheTu || famiglia ? 'qui' : come
   const nomeFirmatario = (figlio ? `${(r.genitoreNome ?? '').trim()} ${(r.genitoreCognome ?? '').trim()}` : `${r.nome.trim()} ${r.cognome.trim()}`).trim()
   const nomeBambino = r.nome.trim() || 'il bambino'
+  // In famiglia chi firma può non essere chi compila: allora il suo nome, non «tu».
+  const altroFirma = P.chiFirma(tutte, attivo)
 
   const controllo = P.controlloScelta(v)
   const mancaOra = P.mancaNelPasso(v, passo)
@@ -574,9 +615,10 @@ function Flusso({
     setGuaio(null)
     setFase({ tipo: 'invio' })
     // Ogni persona ha la sua richiesta, e il suo modulo con la sua firma.
-    const daMandare = tutte.flatMap((p, i) => {
-      return P.richiesteDaMandare(p, P.siglaDelGenitore(p, luoghi, provincia), (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[i]))
-    })
+    // La ricevuta è una per tutto il modulo: richiesteDelModulo la mette in ogni richiesta.
+    const daMandare = P.richiesteDelModulo(tutte, (p, i) =>
+      P.richiesteDaMandare(p, P.siglaDelGenitore(p, luoghi, provincia), (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[i])),
+    )
     try {
       gestisci(await P.mandaRichieste(d, daMandare))
     } catch (e) {
@@ -666,7 +708,8 @@ function Flusso({
                     {riassunto.importo ? `In tutto ${riassunto.importo}${riassunto.conSconto ? ', con lo sconto famiglia' : ''}. ` : ''}
                     Paghi in segreteria, oppure con un bonifico a {PAGAMENTO.intestatario}; poi mandi la ricevuta.
                   </span>
-                  <CopiaIban />
+                  {/* La stessa causale di QUANTO PAGHI: con più persone ha i nomi di tutti. */}
+                  <ComePagare causale={P.causaleDelModulo(tutte, corsi ?? [])} />
                 </>
               )}
               {riassunto.famiglia && riassunto.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">{riassunto.senzaPrezzo.join(', ')}: prezzo da confermare, lo dice la segreteria.</Dettaglio>}
@@ -816,11 +859,9 @@ function Flusso({
           <input id="n-indirizzo" maxLength={100} {...segna('indirizzo')} className="campo" autoComplete="street-address" value={r.indirizzo} onChange={metti('indirizzo')} />
         </Campo>
         <Campo id="n-cap" nota={nota('cap')} etichetta="CAP">
-          <input id="n-cap" {...segna('cap')} className="campo num" inputMode="numeric" autoComplete="postal-code" maxLength={5} value={r.cap} onChange={metti('cap')} />
+          <input id="n-cap" {...segna('cap')} className="campo num" inputMode="numeric" autoComplete="postal-code" maxLength={5} value={r.cap} onChange={(e) => setR(conIlComune(r, e.target.value))} />
         </Campo>
-        <Campo id="n-comune" nota={nota('comune')} etichetta="COMUNE">
-          <input id="n-comune" maxLength={60} {...segna('comune')} className="campo" autoComplete="address-level2" value={r.comune} onChange={metti('comune')} />
-        </Campo>
+        <CampoComune id="n-comune" cap={r.cap} comune={r.comune} nota={nota('comune')} segna={segna('comune')} onComune={(comune) => setR({ comune })} />
       </div>
     </>
   )
@@ -885,7 +926,7 @@ function Flusso({
         <>
           <div className="pad modulo-griglia passo-prima">
             <span className="modulo-largo">
-              <Dettaglio tono="testo">Firma tu, che sei maggiorenne. I tuoi dati servono anche per il modulo.</Dettaglio>
+              <Dettaglio tono="testo">{P.fraseDelGenitore(altroFirma)}</Dettaglio>
             </span>
             <Campo id="n-genitoreNome" nota={nota('genitoreNome')} etichetta="NOME">
               <input id="n-genitoreNome" maxLength={60} {...segna('genitoreNome')} className="campo" value={r.genitoreNome ?? ''} onChange={metti('genitoreNome')} />
@@ -1090,7 +1131,7 @@ function Flusso({
               </>
             )}
           </div>
-          <Titoletto>IL TUO OK</Titoletto>
+          <Titoletto>{P.titoloDellOk(altroFirma)}</Titoletto>
           <div className="pad modulo-griglia modulo-consensi passo-dopo">
             <div className="modulo-largo">
               <label className="modulo-privacy">
@@ -1136,24 +1177,23 @@ function Flusso({
 
     if (tipo === 'documenti') {
       const certificato = daChiedere.certificato
-      const nome = r.nome.trim() || 'Chi si iscrive'
       return (
         <>
           <Titoletto>I DOCUMENTI</Titoletto>
           <div className="pad modulo-griglia passo-dopo">
             {certificato !== 'nessuno' && !figlio && (
               <div className="modulo-campo modulo-largo">
-                <span className="modulo-etichetta">{figlio ? P.testoFile(v.chi, 'certificato', r.nome).etichetta : certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
+                <span className="modulo-etichetta">{figlio ? P.testoFile(v.chi, 'certificato', r.nome, r.genitoreNome).etichetta : certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
                 <Dettaglio tono="avviso">
                   {certificato === 'agonistico' ? 'Per judo, aikido e lotta, dai 12 anni serve il certificato medico agonistico' : 'Dai 6 anni serve il certificato medico'} per partecipare alle lezioni.{' '}
-                  {figlio ? P.testoFile(v.chi, 'certificato', r.nome).dettaglio : 'Se non ce l’hai ancora, lo porti in segreteria prima della prima lezione.'}
+                  {figlio ? P.testoFile(v.chi, 'certificato', r.nome, r.genitoreNome).dettaglio : 'Se non ce l’hai ancora, lo porti in segreteria prima della prima lezione.'}
                 </Dettaglio>
               </div>
             )}
             {daChiedere.file
               .filter((f) => f.tipo === 'documento' || f.tipo === 'documento-retro' || f.tipo === 'certificato')
               .map((f) => {
-                const testi = P.testoFile(v.chi, f.tipo, r.nome)
+                const testi = P.testoFile(v.chi, f.tipo, r.nome, r.genitoreNome)
                 // Il perché del certificato è già detto sopra: qui solo cosa caricare.
                 const dettaglio = testi.dettaglio
                 return figlio ? (
@@ -1163,14 +1203,47 @@ function Flusso({
                 )
               })}
           </div>
-          <Titoletto>QUANTO PAGHI</Titoletto>
-          <div className="pad stack passo-dopo">
-            <Dettaglio>Pagare in segreteria va benissimo: non serve il bonifico né caricare niente.</Dettaglio>
-            <QuantoCosta nome={nome} cognome={r.cognome.trim()} corsi={refDei(r.corsi)} formula={r.formula} abbonamenti={[]} />
+        </>
+      )
+    }
+
+    if (tipo === 'pagamento') {
+      const conto = P.contoDelModulo(tutte, corsi ?? [], listino, chiaveGiorno(new Date()))
+      const insieme = P.insieme(tutte)
+      const avviso = P.avvisoRicevuta(tutte, conto?.totale)
+      return (
+        <>
+          <div className="pad stack passo-prima">
+            <Dettaglio tono="testo">
+              {insieme ? 'Un pagamento solo per tutti. ' : ''}Pagare in segreteria va benissimo: non serve il bonifico né caricare niente.
+            </Dettaglio>
+            <div className="modulo-campo modulo-largo">
+              <span className="modulo-etichetta">{insieme ? 'IL CONTO DELLA FAMIGLIA' : 'IL CONTO'}</span>
+              <Riquadro stretto>
+                {conto ? (
+                  <>
+                    <Conto righe={conto.righe} totale={conto.totale} />
+                    {conto.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">Senza prezzo nel listino: {conto.senzaPrezzo.join(', ')}. Lo dice la segreteria.</Dettaglio>}
+                    <Dettaglio>
+                      Paga questo totale{conto.conSconto ? ': lo sconto è già dentro' : ''}. Se la segreteria trova una differenza, te lo dice lei. Bonifico a {PAGAMENTO.intestatario}:
+                    </Dettaglio>
+                  </>
+                ) : (
+                  <Dettaglio>L’importo te lo conferma la segreteria. Bonifico a {PAGAMENTO.intestatario}:</Dettaglio>
+                )}
+                <ComePagare causale={P.causaleDelModulo(tutte, corsi ?? [])} />
+              </Riquadro>
+            </div>
           </div>
           <Titoletto>LA RICEVUTA · FACOLTATIVA</Titoletto>
           <div className="pad stack passo-dopo">
-            <SceltaFile tipo="ricevuta" file={v.file.ricevuta} onFile={(f) => setFile('ricevuta', f)} />
+            <SceltaFile
+              tipo="ricevuta"
+              file={P.ricevutaDelModulo(tutte)}
+              onFile={(f) => setPersone((ps) => P.conLaRicevuta(ps, f, conto?.totale))}
+              dettaglio={insieme ? 'Una sola, per tutta la famiglia. Una foto o il PDF.' : undefined}
+            />
+            {avviso && <Dettaglio tono="avviso">{avviso}</Dettaglio>}
           </div>
         </>
       )
@@ -1222,7 +1295,7 @@ function Flusso({
             />
             <Casella
               id="n-suoFoto"
-              etichetta="LE TUE FOTO E I TUOI VIDEO"
+              etichetta={P.etichettaSueFoto(r.genitoreNome)}
               dettaglio="Le foto che ti ritraggono, sui social della palestra."
               si="Autorizzo"
               no="Non autorizzo"
@@ -1264,12 +1337,14 @@ function Flusso({
       dettaglio: x.dettaglio,
       tasto: { testo: x.manca ? 'VAI A' : 'MODIFICA', onFai: () => vaiA(i, x.passo, x.manca) },
     }))
-    const righeVista: RigaRiepilogo[] = famiglia ? righePersone : [
+    // La ricevuta è una per tutto il modulo (sta nella prima persona): in famiglia una riga sola, sotto le persone.
+    const rigaRicevuta = [vistaDi(P.rigaDellaRicevuta(tutte))]
+    const righeVista: RigaRiepilogo[] = famiglia ? [...righePersone, ...rigaRicevuta] : [
       { stato: 'fatto', titolo: `${r.nome.trim()} ${r.cognome.trim()}`, dettaglio: r.natoIl ? `nato il ${r.natoIl.split('-').reverse().join('/')} · ${anniScritti(r.natoIl)}` : undefined, tasto: modifica('dati') },
       ...righe.filter((x) => !x.manca && !x.suo && x.cosa !== 'ricevuta').map(vistaDi),
       ...(suo ? [{ stato: 'fatto' as const, titolo: nomeLui || 'Il genitore', dettaglio: `${nomiDei(suo.corsi)} · ${suo.formula} · ${scelteDette(suo.scelte)}`, tasto: modifica('anche') }] : []),
       { stato: 'fatto', titolo: figlio ? 'Firma del genitore' : 'Firma sul modulo', dettaglio: v.file.modulo ? 'foglio firmato, in foto' : scelteDette(v.scelte), tasto: modifica(P.passoDelRiepilogo('firma')) },
-      { stato: 'fatto', titolo: figlio ? 'Carta d’identità del genitore' : 'Carta d’identità', dettaglio: v.file.documento?.name, tasto: modifica(P.passoDelRiepilogo('carta')) },
+      { stato: 'fatto', titolo: P.cartaNelRiepilogo(v.chi, r.genitoreNome), dettaglio: v.file.documento?.name, tasto: modifica(P.passoDelRiepilogo('carta')) },
       ...righe.filter((x) => x.manca || x.suo || x.cosa === 'ricevuta').map(vistaDi),
     ]
     const senzaCertificato = famiglia ? tutte.some((p) => P.certificatiMancanti(p, corsi ?? []).includes('chi')) : righe.some((x) => x.carica === 'certificato')

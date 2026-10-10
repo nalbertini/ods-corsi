@@ -245,6 +245,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
             and has_function_privilege('anon', p.oid, 'execute'))),
   ('49-richieste-per-email.sql', 'sei richieste al giorno dalla stessa email',
     iscrizioni_regole()->>'per_email_al_giorno' = '6'),
+  ('50-file-rimandato.sql', 'un file rimandato non è un file di troppo',
+    exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%o.name = nome_file%')
+    and exists (select 1 from dentro where nome = 'limita_file_iscrizione' and corpo like '%o.name = new.name%')),
   ('51-vestiario-foto.sql', 'il vestiario come il modulo: tipi, foto e tabelle delle taglie',
     exists (select 1 from storage.buckets where id = 'vestiario' and public)
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'vestiario_tabelle')

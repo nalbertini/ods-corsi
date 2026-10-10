@@ -2,7 +2,7 @@ import type { CorsoPerEta, CorsoRef, Listino } from './listino'
 import { corsiPerEta, voceDelCorso } from './listino'
 import type { VoceCosto } from './costi'
 import type { Abbonamento, RigaStima } from './nucleo'
-import { stimaIscrizione } from './nucleo'
+import { causale, stimaIscrizione } from './nucleo'
 import type { CampoModulo, DatiRichiesta, DatiRichieste, Formula, OrarioAperto, TipoFile } from './richieste'
 import { certificatoDaPortare, dataDaCf, NOTE_NEL_DATABASE, domandaUscita, ETICHETTA_FILE, FILE, firmaDaRifare, minorenne, problemi, pulisciCf } from './richieste'
 import type { Luoghi } from './codiceFiscale'
@@ -42,6 +42,8 @@ export interface StatoPassi {
   firmatario?: number
   /** Il genitore che si iscrive con il figlio: decide da sé corso, formula e consensi. */
   suo?: Suo
+  /** Solo nella prima persona, con la ricevuta del modulo: il totale (centesimi) e quante persone c'erano quando si è caricata. */
+  ricevutaPer?: { totale: number; persone: number }
 }
 
 export interface Suo {
@@ -91,20 +93,23 @@ export const nuovoStato = (chi: Chi): StatoPassi => ({
 })
 
 /** Cosa si fa in ogni passo: l'ordine sta qui, e solo qui. */
-export type TipoPasso = 'dati' | 'genitore' | 'corso' | 'modulo' | 'documenti' | 'anche' | 'riepilogo'
+export type TipoPasso = 'dati' | 'genitore' | 'corso' | 'modulo' | 'documenti' | 'anche' | 'pagamento' | 'riepilogo'
 
 export const tipiDiPassi = (chi: Chi, ancheTu: boolean): TipoPasso[] =>
-  chi === 'adulto' ? ['dati', 'corso', 'modulo', 'documenti', 'riepilogo'] : ['dati', 'genitore', 'corso', 'modulo', 'documenti', ...(ancheTu ? (['anche'] as const) : []), 'riepilogo']
+  chi === 'adulto'
+    ? ['dati', 'corso', 'modulo', 'documenti', 'pagamento', 'riepilogo']
+    : ['dati', 'genitore', 'corso', 'modulo', 'documenti', ...(ancheTu ? (['anche'] as const) : []), 'pagamento', 'riepilogo']
 
 const NOME_PASSO: Record<Chi, Partial<Record<TipoPasso, string>>> = {
-  adulto: { dati: 'I TUOI DATI', corso: 'SCEGLI IL CORSO', modulo: 'IL MODULO E LA FIRMA', documenti: 'I DOCUMENTI E IL PAGAMENTO', riepilogo: 'CONTROLLA E INVIA' },
+  adulto: { dati: 'I TUOI DATI', corso: 'SCEGLI IL CORSO', modulo: 'IL MODULO E LA FIRMA', documenti: 'I DOCUMENTI', pagamento: 'QUANTO PAGHI', riepilogo: 'CONTROLLA E INVIA' },
   figlio: {
     dati: 'IL BAMBINO',
     genitore: 'IL GENITORE CHE FIRMA',
     corso: 'SCEGLI IL CORSO',
     modulo: 'IL MODULO E LA FIRMA',
-    documenti: 'I DOCUMENTI E IL PAGAMENTO',
+    documenti: 'I DOCUMENTI',
     anche: 'ANCHE TU: POCHE COSE',
+    pagamento: 'QUANTO PAGHI',
     riepilogo: 'CONTROLLA E INVIA',
   },
 }
@@ -246,16 +251,57 @@ function senzaDoppioni(s: StatoPassi, passo: number, oggi: Date, per: 'nome' | '
  */
 export function mancanti(s: StatoPassi, passo: number, oggi = new Date()): Pastiglia[] {
   const bambino = s.risposte.nome.trim().toUpperCase()
+  const genitore = diChiFirma(s.risposte.genitoreNome).toUpperCase()
   return senzaDoppioni(s, passo, oggi, 'chiave').map((p) => ({
     ...p,
-    nome: NOMI_DEL_GENITORE[p.chiave] ?? (p.chiave === 'corsi' && s.ancheTu && bambino ? `CORSO DI ${bambino}` : p.nome),
+    nome: Object.hasOwn(COSE_DEL_GENITORE, p.chiave) ? `${COSE_DEL_GENITORE[p.chiave]} ${genitore}` : p.chiave === 'corsi' && s.ancheTu && bambino ? `CORSO DI ${bambino}` : p.nome,
   }))
 }
 
-const NOMI_DEL_GENITORE: Record<string, string> = {
-  suoCorsi: 'IL TUO CORSO',
-  suoTesseramento: 'TESSERAMENTO DEL GENITORE',
-  suoFoto: 'FOTO DEL GENITORE',
+const COSE_DEL_GENITORE: Record<string, string> = {
+  suoCorsi: 'CORSO',
+  suoTesseramento: 'TESSERAMENTO',
+  suoFoto: 'FOTO',
+}
+
+/** Di chi è una cosa del genitore: «di Nicola», o «del genitore» finché il nome non c'è (mai «di» e niente). */
+export const diChiFirma = (nome: string | undefined): string => (nome?.trim() ? `di ${nome.trim()}` : 'del genitore')
+
+/**
+ * Chi firma la persona `i`, quando non è chi compila: il suo nome (vuoto se non c'è). `undefined` vuol dire
+ * «tu». In famiglia compila la prima persona: un altro adulto firma per sé, un bambino lo firma il suo
+ * `firmatario`. Le persone sono quelle di `conDatiDellaFamiglia`, col nome di chi firma già nel bambino.
+ */
+export function chiFirma(persone: StatoPassi[], i: number): string | undefined {
+  const s = persone[i]
+  if (!s || i === 0) return undefined
+  if (s.chi === 'figlio' && s.firmatario === 0) return undefined
+  const nome = (s.chi === 'adulto' ? s.risposte.nome : (s.risposte.genitoreNome ?? '')).trim()
+  // Chi compila può essere il genitore di un bambino messo per primo, che poi aggiunge sé stesso: resta «tu».
+  const prima = persone[0]
+  const io = (prima.chi === 'adulto' ? prima.risposte.nome : (prima.risposte.genitoreNome ?? '')).trim()
+  return nome && nome.toLocaleLowerCase('it') === io.toLocaleLowerCase('it') ? undefined : nome
+}
+
+/** Nel passo «Anche tu», la casella delle foto del genitore. */
+export const etichettaSueFoto = (genitoreNome: string | undefined): string => `LE FOTO E I VIDEO ${diChiFirma(genitoreNome).toUpperCase()}`
+
+/** La riga della carta d'identità nel riepilogo: di chi firma per un bambino, senza nome per un adulto. */
+export const cartaNelRiepilogo = (chi: Chi, genitoreNome: string | undefined): string => (chi === 'figlio' ? `Carta d’identità ${diChiFirma(genitoreNome)}` : 'Carta d’identità')
+
+/** La frase in cima al passo del genitore: «tu» se firma chi compila, se no il nome di chi firma. */
+export function fraseDelGenitore(chi: string | undefined): string {
+  if (chi === undefined) return 'Firma tu, che sei maggiorenne. I tuoi dati servono anche per il modulo.'
+  return `Firma ${chi.trim() || 'il genitore'}, che è maggiorenne. I suoi dati servono anche per il modulo.`
+}
+
+/**
+ * Il titolo sopra regolamento e privacy: come «LA FIRMA DI», dice di chi è l'ok quando non è di chi compila.
+ * Senza nome «DI CHI FIRMA», non «DEL GENITORE»: l'ok può essere di un adulto che firma per sé.
+ */
+export function titoloDellOk(chi: string | undefined): string {
+  if (chi === undefined) return 'IL TUO OK'
+  return `L’OK DI ${chi.trim().toUpperCase() || 'CHI FIRMA'}`
 }
 
 /** Le pastiglie di «MANCA N COSE»: lista viva, conta anche «scritto male». */
@@ -304,6 +350,8 @@ export function cambiaScelta(s: StatoPassi, a: Chi, inFamiglia = false): StatoPa
       telefono2: r.telefono2,
     },
     file,
+    // La ricevuta è del modulo, non della scelta: resta, e col suo totale per l'avviso.
+    ...(s.ricevutaPer && { ricevutaPer: s.ricevutaPer }),
     privacy: s.privacy,
     avvisoFirma: firmaDaRifare(a === 'figlio', { tratti: s.tratti, scelte: quanteCaselle(s.scelte), foto: !!modulo, avvisato: !!s.avvisoFirma }),
   }
@@ -499,12 +547,14 @@ export const uscitaDellaFamiglia = (persone: StatoPassi[]): string | undefined =
  * Etichetta e dettaglio di un file nel flusso a passi. Per chi iscrive il figlio parlano al genitore
  * («il certificato di Luca», «la tua carta»); per l'adulto restano quelli di `FILE`, come nel modulo di oggi.
  */
-export function testoFile(chi: Chi, tipo: TipoFile, nome: string): { etichetta: string; dettaglio: string } {
+export function testoFile(chi: Chi, tipo: TipoFile, nome: string, firma: string | undefined): { etichetta: string; dettaglio: string } {
   const f = FILE.find((x) => x.tipo === tipo)!
   const n = nome.trim()
+  // La carta è di chi firma, che non sempre è chi compila (in famiglia): il suo nome, non «tua».
+  const di = diChiFirma(firma).toUpperCase()
   if (chi === 'figlio') {
-    if (tipo === 'documento') return { etichetta: 'LA TUA CARTA D’IDENTITÀ', dettaglio: `Il fronte. Firmi tu, genitore: serve la tua, non quella ${n ? `di ${n}` : 'del bambino'}.` }
-    if (tipo === 'documento-retro') return { etichetta: 'IL RETRO DELLA TUA CARTA', dettaglio: 'Il retro. Una foto o il PDF.' }
+    if (tipo === 'documento') return { etichetta: `LA CARTA D’IDENTITÀ ${di}`, dettaglio: `Il fronte. È ${firma?.trim() || 'il genitore'} che firma: serve la sua carta, non quella ${n ? `di ${n}` : 'del bambino'}.` }
+    if (tipo === 'documento-retro') return { etichetta: `IL RETRO DELLA CARTA ${di}`, dettaglio: 'Il retro. Una foto o il PDF.' }
     if (tipo === 'certificato') {
       return {
         etichetta: `IL CERTIFICATO ${n ? `DI ${n.toUpperCase()}` : 'DEL BAMBINO'}`,
@@ -541,25 +591,31 @@ export const passoDelRiepilogo = (riga: 'carta' | 'firma'): TipoPasso => (riga =
 const euroBreve = (cent: number) => `${cent < 0 ? '−' : ''}${Math.abs(cent) % 100 === 0 ? Math.abs(cent) / 100 : (Math.abs(cent) / 100).toFixed(2).replace('.', ',')} €`
 
 /**
- * Il totale che sta sempre sopra la barra, nei passi del corso e dei documenti: la stessa stima
- * del riepilogo (stessi centesimi), solo scritta corta, di chi si iscrive: come QUANTO COSTA nello stesso passo.
- * Il conto della famiglia, con lo sconto, sta nel riepilogo.
+ * Il totale che sta sempre nella barra al passo del corso, dove ogni scelta lo cambia: la stessa stima del
+ * riepilogo (stessi centesimi), solo scritta corta. Col genitore che si iscrive anche lui è quello dei due,
+ * con lo sconto: lo stesso di `contoDelModulo`. A QUANTO PAGHI no: lì il conto è il contenuto del passo.
  * Senza corso scelto, senza listino e negli altri passi non c'è.
  */
-export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
+export function totaleDelPasso(s: StatoPassi, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): TotaleDelPasso | undefined {
   const tipo = tipiDiPassi(s.chi, s.ancheTu === true)[passo - 1]
-  if (tipo !== 'corso' && tipo !== 'documenti') return undefined
+  if (tipo !== 'corso') return undefined
   const c = contoCorto(persona(s, corsi), listino, giorno)
-  // Al passo del corso, col genitore che ha scelto il suo corso, il totale è quello della famiglia: lo stesso del riepilogo.
-  // Al passo dei documenti no: lì QUANTO COSTA e la causale sono del bambino, e il totale deve dire la stessa cifra.
-  const famiglia = c && listino && tipo === 'corso' && s.chi === 'figlio' && s.ancheTu && s.suo?.corsi.length ? contoDelloStato(s, corsi, listino, giorno) : undefined
+  // Col genitore che ha scelto il suo corso, il totale è quello dei due: lo stesso del riepilogo e di QUANTO PAGHI.
+  const famiglia = c && listino && s.chi === 'figlio' && s.ancheTu && s.suo?.corsi.length ? contoDelloStato(s, corsi, listino, giorno) : undefined
   const suo = famiglia && s.suo && contoCorto({ corsi: corsi.filter((x) => s.suo?.corsi.includes(x.id)), formula: s.suo.formula }, listino, giorno, true)
   const delBambino = famiglia && contoCorto(persona(s, corsi), listino, giorno, true)
   if (delBambino && famiglia && suo) {
     const sconto = famiglia.sconto ? ` · Sconto famiglia ${euroBreve(-famiglia.sconto)}` : ''
-    return { righe: `${persona(s, corsi).chi}: ${delBambino.righe} · Tu: ${suo.righe}${sconto}`, totale: euroBreve(famiglia.totale) }
+    return { etichetta: 'TOTALE FAMIGLIA', righe: `${persona(s, corsi).chi}: ${delBambino.righe} · Tu: ${suo.righe}${sconto}`, totale: euroBreve(famiglia.totale) }
   }
-  return c && { righe: c.righe, totale: c.totale }
+  return c && { etichetta: 'TOTALE', righe: c.righe, totale: c.totale }
+}
+
+/** Il totale della barra: l'etichetta dice se la cifra è di tutti (TOTALE FAMIGLIA) o di chi si iscrive. */
+export interface TotaleDelPasso {
+  etichetta: 'TOTALE' | 'TOTALE FAMIGLIA'
+  righe: string
+  totale: string
 }
 
 /** Il conto di una persona, scritto corto; `undefined` senza listino o senza un corso che c'è nell'elenco. */
@@ -653,7 +709,7 @@ export interface RigaRiepilogo {
   /** Di cosa parla la riga: la schermata sceglie da qui il titolo, non dall'etichetta. */
   cosa: 'corso' | 'genitore' | 'certificato' | 'ricevuta'
   /** A quale passo manda MODIFICA o CARICA. */
-  passo: 'dati' | 'genitore' | 'corso' | 'modulo' | 'documenti' | 'anche'
+  passo: 'dati' | 'genitore' | 'corso' | 'modulo' | 'documenti' | 'anche' | 'pagamento'
   manca?: boolean
   carica?: TipoFile
   /** La riga è del genitore che si iscrive con il figlio. */
@@ -691,12 +747,16 @@ export function righeRiepilogo(s: StatoPassi, corsi: CorsoRef[], oggi = new Date
   righe.push(...certificato(r.natoIl, r.corsi, s.file.certificato))
   if (s.chi === 'figlio' && s.ancheTu && s.suo)
     righe.push(...certificato(dataDaCf(r.genitoreCodiceFiscale ?? '', '', oggi) ?? '', s.suo.corsi, s.suo.certificato, true))
-  righe.push(
-    s.file.ricevuta
-      ? { etichetta: ETICHETTA_FILE.ricevuta, valore: s.file.ricevuta.name, cosa: 'ricevuta', passo: 'documenti' }
-      : { etichetta: ETICHETTA_FILE.ricevuta, valore: seManca('ricevuta'), cosa: 'ricevuta', passo: 'documenti', manca: true, carica: 'ricevuta' },
-  )
+  righe.push(rigaDellaRicevuta([s]))
   return righe
+}
+
+/** La riga della ricevuta nel riepilogo: una per tutto il modulo, chiunque l'abbia caricata; porta a QUANTO PAGHI. */
+export function rigaDellaRicevuta(persone: StatoPassi[]): RigaRiepilogo {
+  const ricevuta = ricevutaDelModulo(persone)
+  return ricevuta
+    ? { etichetta: ETICHETTA_FILE.ricevuta, valore: ricevuta.name, cosa: 'ricevuta', passo: 'pagamento' }
+    : { etichetta: ETICHETTA_FILE.ricevuta, valore: FILE.find((f) => f.tipo === 'ricevuta')?.seManca ?? '', cosa: 'ricevuta', passo: 'pagamento', manca: true, carica: 'ricevuta' }
 }
 
 // --- anche tu: il genitore che si iscrive col figlio -------------------------
@@ -919,17 +979,17 @@ export function contoDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], lis
 
 /**
  * Il totale sopra la barra quando le persone sono più d'una: quello di tutta la famiglia, ognuno con la sua
- * cifra e lo sconto a parte. Negli stessi passi di `totaleDelPasso` (corso e documenti, di chi è aperto);
+ * cifra e lo sconto a parte. Nello stesso passo di `totaleDelPasso` (il corso, di chi è aperto);
  * con una persona sola è `totaleDelPasso`.
  */
-export function totaleDellaFamiglia(persone: StatoPassi[], attivo: number, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: string; totale: string } | undefined {
+export function totaleDellaFamiglia(persone: StatoPassi[], attivo: number, passo: number, corsi: CorsoRef[], listino: Listino | undefined, giorno: string): TotaleDelPasso | undefined {
   if (persone.length < 2) return totaleDelPasso(persone[0], passo, corsi, listino, giorno)
   const tipo = tipiDiPassi(persone[attivo].chi, persone[attivo].ancheTu === true)[passo - 1]
-  if (tipo !== 'corso' && tipo !== 'documenti') return undefined
+  if (tipo !== 'corso') return undefined
   const c = contoDellaFamiglia(persone, corsi, listino, giorno)
   if (!c) return undefined
   const righe = [...c.persone.map((x) => `${x.chi} ${euroBreve(x.importo)}`), ...c.senzaPrezzo.map((nome) => `${nome} prezzo da confermare`)].join(' + ')
-  return { righe: c.sconto ? `${righe} − sconto famiglia ${euroBreve(c.sconto)}` : righe, totale: euroBreve(c.totale) }
+  return { etichetta: 'TOTALE FAMIGLIA', righe: c.sconto ? `${righe} − sconto famiglia ${euroBreve(c.sconto)}` : righe, totale: euroBreve(c.totale) }
 }
 
 /**
@@ -1011,6 +1071,17 @@ export function richiesteDaMandare(s: StatoPassi, provincia: string, faiPdf: (c:
   }
   return daMandare
 }
+
+/** La ricevuta del modulo va in ogni richiesta: un bonifico solo per tutti, e nessuna richiesta dice «nessuna ricevuta». */
+export const conLaRicevutaInTutte = (daMandare: DaMandare[], ricevuta: File | undefined): DaMandare[] =>
+  daMandare.map((x) => {
+    const { ricevuta: _, ...file } = x.file
+    return { ...x, file: ricevuta ? { ...file, ricevuta } : file }
+  })
+
+/** Le richieste di tutto il modulo: quelle di ogni persona (`perPersona`), con la ricevuta del modulo in ognuna. */
+export const richiesteDelModulo = (persone: StatoPassi[], perPersona: (s: StatoPassi, i: number) => DaMandare[]): DaMandare[] =>
+  conLaRicevutaInTutte(persone.flatMap(perPersona), ricevutaDelModulo(persone))
 
 /** Cosa dire se il PDF non viene: «Ho il foglio firmato» c'è tra le scelte solo senza «Anche tu». */
 export const moduloNonSiPrepara = (conFoglioInFoto: boolean) =>
@@ -1129,4 +1200,91 @@ async function mandaDavvero(d: DatiRichieste, daMandare: DaMandare[]): Promise<E
     return finale()
   }
   return manda(0)
+}
+
+// --- QUANTO PAGHI: il conto, la causale e la ricevuta di tutto il modulo -----
+
+/**
+ * Il conto di tutto il modulo, quello che si paga: in famiglia quello di `contoDellaFamiglia`, col genitore
+ * che si iscrive anche lui quello di `contoDelloStato`, da soli la stima della persona. Lo stesso totale del
+ * riepilogo e dell'esito. `undefined` senza listino o senza un corso scelto.
+ */
+export function contoDelModulo(persone: StatoPassi[], corsi: CorsoRef[], listino: Listino | undefined, giorno: string): { righe: RigaStima[]; totale: number; senzaPrezzo: string[]; conSconto: boolean } | undefined {
+  if (!listino || !persone.length) return undefined
+  const conto = (c: { righe: RigaStima[]; totale: number; senzaPrezzo: string[] }) => ({ righe: c.righe, totale: c.totale, senzaPrezzo: c.senzaPrezzo, conSconto: c.righe.some((x) => x.importo < 0) })
+  if (persone.length > 1) {
+    const c = contoDellaFamiglia(persone, corsi, listino, giorno)
+    return c && conto(c)
+  }
+  const s = persone[0]
+  const lui = persona(s, corsi)
+  if (!lui.corsi.length) return undefined
+  const stato = insieme(persone) ? contoDelloStato(s, corsi, listino, giorno) : undefined
+  return conto(stato ?? stimaIscrizione(lui, [], giorno, listino))
+}
+
+/**
+ * Il modulo è di più persone: una famiglia, o il bambino col genitore che ha scelto il suo corso. Decide il
+ * titolo del conto, la causale coi nomi e il «Totale famiglia»: tutti dalla stessa regola.
+ */
+export function insieme(persone: StatoPassi[]): boolean {
+  if (persone.length > 1) return true
+  const s = persone[0]
+  return !!s && s.chi === 'figlio' && s.ancheTu === true && !!s.suo?.corsi.length
+}
+
+/** Il bonifico SEPA tiene 140 caratteri di causale. */
+const MASSIMO_CAUSALE = 140
+
+/**
+ * La causale del bonifico di tutto il modulo. Da soli come sempre, coi corsi; in più persone (famiglia, o il
+ * bambino col genitore) solo i nomi, il cognome uguale scritto una volta: «Iscrizione Manuela e Nicola Albertini,
+ * Paola Rossi». Mai più lunga di quanto il bonifico tiene.
+ */
+export function causaleDelModulo(persone: StatoPassi[], corsi: CorsoRef[]): string {
+  const chi = persone.flatMap((s) => {
+    const r = s.risposte
+    const lui = { nome: r.nome.trim(), cognome: r.cognome.trim() }
+    return insieme([s]) ? [lui, { nome: (r.genitoreNome ?? '').trim(), cognome: (r.genitoreCognome ?? '').trim() }] : [lui]
+  })
+  if (chi.length === 1) {
+    const r = persone[0].risposte
+    return causale(r.nome.trim(), r.cognome.trim(), corsi.filter((c) => r.corsi.includes(c.id)).map((c) => c.nome)).slice(0, MASSIMO_CAUSALE)
+  }
+  const gruppi: Array<{ cognome: string; nomi: string[] }> = []
+  for (const x of chi) {
+    const chiave = x.cognome.toLocaleLowerCase('it')
+    const g = gruppi.find((y) => y.cognome.toLocaleLowerCase('it') === chiave)
+    if (g) g.nomi.push(x.nome)
+    else gruppi.push({ cognome: x.cognome, nomi: [x.nome] })
+  }
+  const testo = gruppi.map((g) => `${elenco(g.nomi.filter(Boolean))} ${g.cognome}`.trim()).filter(Boolean).join(', ')
+  return `Iscrizione ${testo}`.trim().slice(0, MASSIMO_CAUSALE)
+}
+
+/** La ricevuta del modulo, chiunque l'abbia: è una sola per tutti. */
+export const ricevutaDelModulo = (persone: StatoPassi[]): File | undefined => persone.find((p) => p.file.ricevuta)?.file.ricevuta
+
+/**
+ * La ricevuta caricata (o tolta) a QUANTO PAGHI: sta nella prima persona e in nessun'altra, col totale e quante
+ * persone c'erano, così se dopo il conto cambia lo si dice (`avvisoRicevuta`).
+ */
+export function conLaRicevuta(persone: StatoPassi[], ricevuta: File | undefined, totale: number | undefined): StatoPassi[] {
+  return persone.map((p, i) => {
+    const { ricevuta: _, ...file } = p.file
+    const { ricevutaPer: __, ...resto } = p
+    if (i > 0 || !ricevuta) return { ...resto, file }
+    return { ...resto, file: { ...file, ricevuta }, ...(totale !== undefined && { ricevutaPer: { totale, persone: persone.length } }) }
+  })
+}
+
+/** Se il conto è cambiato dopo la ricevuta: quanto, perché e cosa fare. `undefined` se torna. */
+export function avvisoRicevuta(persone: StatoPassi[], totaleOra: number | undefined): string | undefined {
+  const per = persone[0]?.ricevutaPer
+  if (!per || totaleOra === undefined || totaleOra === per.totale) return undefined
+  const differenza = euroBreve(Math.abs(totaleOra - per.totale))
+  if (totaleOra < per.totale) return `Hai caricato la ricevuta quando il totale era ${euroBreve(per.totale)}: ora è ${euroBreve(totaleOra)}, cioè ${differenza} in meno. La differenza la sistema la segreteria.`
+  const aggiunti = persone.slice(per.persone).map((p, i) => nomeDellaPersona(p, per.persone + i))
+  const prima = aggiunti.length ? `Hai caricato la ricevuta prima di aggiungere ${elenco(aggiunti)}: ora il totale è` : `Hai caricato la ricevuta quando il totale era ${euroBreve(per.totale)}: ora è`
+  return `${prima} ${euroBreve(totaleOra)}, cioè ${differenza} in più. La differenza la paghi in segreteria o con un altro bonifico.`
 }

@@ -797,10 +797,13 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .foglio-titolo { font-size: 26px; font-weight: 700; letter-spacing: 0.04em; color: var(--text); }
 .foglio .modulo-scelte-una { flex-wrap: wrap; }
 .foglio .modulo-scelte-una > * { flex: 1 1 40%; }
-/* Il totale sopra la barra: da bordo a bordo del telefono, cosa lo compone e la cifra grande. */
-.barra-totale { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: -12px -20px 0; padding: 10px 20px; background: var(--surface); border-bottom: 2px solid var(--line); }
-.barra-totale-righe { font-size: 14px; line-height: 1.35; color: var(--sec); }
-.barra-totale-cifra { flex-shrink: 0; font-family: var(--cond); font-size: 28px; font-weight: 700; letter-spacing: 0.02em; color: var(--text); }
+/* Il totale nella barra, nella colonna del modulo: TOTALE e cosa lo compone a sinistra, la cifra grande a destra, un filo sotto. */
+.barra-totale { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--line); }
+.barra-totale-testo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.barra-totale-etichetta { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
+/* Cosa compone il totale, in una riga: se non ci sta si taglia, la cifra resta intera. */
+.barra-totale-righe { font-size: 13px; line-height: 1.35; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.barra-totale-cifra { flex-shrink: 0; font-family: var(--cond); font-size: 34px; font-weight: 700; line-height: 1; letter-spacing: 0.02em; color: var(--text); }
 /* Cosa manca, in una riga sola: quanti, VAI A la prima voce, ▾ per l'elenco. L'altezza non dipende da quante voci mancano. */
 .barra-manca { display: flex; flex-direction: column; gap: 6px; }
 .barra-manca-riga { display: flex; align-items: center; gap: 8px; }

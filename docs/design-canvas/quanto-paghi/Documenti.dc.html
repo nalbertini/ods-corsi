@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Il passo I DOCUMENTI chiede solo i documenti, e ogni carta dice di chi e': il nome di chi firma (qui Nicola), il certificato di Manuela. Niente conto, niente totale sopra la barra. Senza nome del genitore: DEL GENITORE. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 860px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<dc-import name="RigaChiama" hint-size="100%,62px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1"><dc-import name="Avanzamento" numero="5" totale="7" titolo="I DOCUMENTI" hint-size="100%,120px"></dc-import><dc-import name="Titoletto" label="LA FAMIGLIA" conto="2" hint-size="100%,50px"></dc-import><div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 4px"><dc-import name="Chip" label="MANUELA" acceso="{{ true }}" hint-size="130px,44px"></dc-import><dc-import name="Chip" label="NICOLA" hint-size="130px,44px"></dc-import></div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 16px"><dc-import name="CaricaFile" etichetta="LA CARTA D’IDENTITÀ DI NICOLA" dettaglio="Il fronte. È Nicola che firma: serve la sua carta, non quella di Manuela." hint-size="100%,100px"></dc-import><dc-import name="CaricaFile" etichetta="IL RETRO DELLA CARTA DI NICOLA" seManca="FACOLTATIVO" dettaglio="Il retro. Una foto o il PDF." hint-size="100%,100px"></dc-import><dc-import name="CaricaFile" etichetta="IL CERTIFICATO DI MANUELA" seManca="PUOI PORTARLO DOPO" dettaglio="Lo porti in segreteria prima della prima lezione: senza, Manuela non può partecipare." hint-size="100%,100px"></dc-import></div></main>
+<dc-import name="BarraPasso" nota="Tutto a posto in questo passo." avanti="AVANTI" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

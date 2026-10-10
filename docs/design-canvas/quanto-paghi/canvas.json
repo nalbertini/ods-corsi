@@ -1,0 +1,55 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Quanto paghi e le carte col nome"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · LA TUA CARTA e il conto di una persona sola",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Documenti.dc.html",
+   "title": "Proposta · I DOCUMENTI, ogni carta col nome",
+   "x": 510,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Firma.dc.html",
+   "title": "Proposta · chi firma, col nome",
+   "x": 1020,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "QuantoPaghi.dc.html",
+   "title": "Proposta · QUANTO PAGHI, il conto di tutti",
+   "x": 1530,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Avviso.dc.html",
+   "title": "Proposta · ricevuta caricata prima di un familiare",
+   "x": 2040,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 2430,
+   "text": "QUANTO PAGHI a parte, e le carte col nome di chi firma"
+  }
+ ]
+}

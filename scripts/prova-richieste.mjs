@@ -228,6 +228,10 @@ const terzo = await r.invia(adulto({ nome: 'Terzo', codiceFiscale: 'RSSTRZ96A01L
   ok('il luogo di nascita è quello del codice', l.natoA, 'TORINO (TO)')
   await r.caricaFile(luca, 'modulo', new File(['x'], 'modulo.pdf', { type: 'application/pdf' }))
   ok('il file si ritrova, come PDF', (await r.file(luca)).map((f) => [f.tipo, f.pdf]), [['modulo', true]])
+  // Come nel database: un file rimandato (la risposta si era persa) è arrivato, e caricato è caricato.
+  const primo = (await r.file(luca))[0].url
+  ok('il modulo rimandato non dà errore', await errore(() => r.caricaFile(luca, 'modulo', new File(['y'], 'modulo.pdf', { type: 'application/pdf' }))), 'nessun errore')
+  ok('e resta quello di prima', (await r.file(luca)).map((f) => [f.tipo, f.url !== '' && f.url === primo]), [['modulo', true]])
   // Il documento arriva col modulo: si stampa e si cancella. Il certificato no: resta nell'app e passa alla scheda (prova-certificati.mjs).
   await r.caricaFile(luca, 'documento', new File(['x'], 'documento.jpg', { type: 'image/jpeg' }))
   await r.caricaFile(luca, 'certificato', new File(['x'], 'certificato.pdf', { type: 'application/pdf' }))

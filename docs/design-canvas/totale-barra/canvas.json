@@ -1,0 +1,55 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Il totale del modulo"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · telefono",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "OggiLargo.dc.html",
+   "title": "Oggi · schermo largo",
+   "x": 510,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Riga.dc.html",
+   "title": "A · il totale nella barra, in una riga",
+   "x": 1630,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "RigaLargo.dc.html",
+   "title": "A · schermo largo",
+   "x": 2140,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Contenuto.dc.html",
+   "title": "B · il totale nel passo, la barra solo i tasti",
+   "x": 3260,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 3650,
+   "text": "Il totale del modulo a passi: dove e come"
+  }
+ ]
+}
