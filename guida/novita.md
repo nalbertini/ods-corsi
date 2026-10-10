@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.53.2 — 10 ottobre 2026
+
+### Modificato
+
+- Nel modulo di iscrizione la carta d'identità e l'ok dicono il nome di chi firma
+
 ## 0.53.1 — 10 ottobre 2026
 
 ### Modificato
