@@ -179,6 +179,7 @@ function ElencoCorsi({
   nota,
   caricando,
   stessaOraDi,
+  avvisoPer,
 }: {
   id: string
   /** `stessaOra`: i corsi del genitore mentre il figlio è in palestra, in un gruppo loro in cima. */
@@ -189,12 +190,14 @@ function ElencoCorsi({
   nota?: Nota
   caricando?: string
   stessaOraDi?: string
+  /** L'avviso sotto un corso scelto: «non è più alla stessa ora». */
+  avvisoPer?: (id: string) => string | undefined
 }) {
   const [aperti, setAperti] = useState(false)
   const fuoriEta = perEta.altri.filter((c) => scelti.includes(c.id)).map((c) => c.nome)
   // Un corso fuori età già scelto non si nasconde: si vede cosa c'è nella richiesta.
   const mostraAltri = aperti || fuoriEta.length > 0
-  const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined })
+  const tasto = (c: CorsoPerEta) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined, avviso: avvisoPer?.(c.id) })
   const descritto = nota ? `${id}-nota` : undefined
   return (
     <div id={id} tabIndex={-1} className="modulo-campo modulo-largo modulo-corsi-tutti">
@@ -202,11 +205,11 @@ function ElencoCorsi({
       {caricando && <Dettaglio tono="guaio">{caricando}</Dettaglio>}
       {!!perEta.stessaOra?.length && (
         <>
-          <span className="modulo-etichetta">{stessaOraDi ? `ALLA STESSA ORA DI ${stessaOraDi.toUpperCase()}` : 'ALLA STESSA ORA'}</span>
+          <span className="modulo-etichetta modulo-etichetta-stessa-ora">{stessaOraDi ? `ALLA STESSA ORA DI ${stessaOraDi.toUpperCase()}` : 'ALLA STESSA ORA'}</span>
           <SceltaCorsi id={`${id}-stessa-ora`} etichetta={stessaOraDi ? `Corsi alla stessa ora di ${stessaOraDi}` : 'Corsi alla stessa ora'} voci={perEta.stessaOra.map(tasto)} scelti={scelti} onScegli={onScegli} descritto={descritto} />
         </>
       )}
-      {perEta.adatti.length > 0 && <span className="modulo-etichetta">{`${perEta.stessaOra?.length ? 'GLI ALTRI CORSI ' : ''}PER LA ${etaDi.toUpperCase()} ETÀ`}</span>}
+      {perEta.adatti.length > 0 && <span className={perEta.stessaOra?.length ? 'modulo-etichetta modulo-altri' : 'modulo-etichetta'}>{`${perEta.stessaOra?.length ? 'GLI ALTRI CORSI ' : ''}PER LA ${etaDi.toUpperCase()} ETÀ`}</span>}
       <SceltaCorsi id={`${id}-adatti`} etichetta="Corsi" voci={perEta.adatti.map(tasto)} scelti={scelti} onScegli={onScegli} descritto={descritto} />
       {perEta.senzaAnni.length > 0 && (
         <>
@@ -771,11 +774,9 @@ function Flusso({
       const ep = perEta(r.natoIl)
       const fraseNascosti = figlio ? P.fraseCorsiNascosti(ep.nascosti, r.nome) : undefined
       const nome = r.nome.trim() || 'Chi si iscrive'
-      // Il conto della famiglia, appena il genitore ha scelto il suo corso.
-      const conto = listino && ancheTu && suo?.corsi.length && r.corsi.length ? P.contoDelloStato(v, corsi ?? [], listino, chiaveGiorno(new Date())) : undefined
       const frase = P.fraseAncheTu(nome, nomiDei(r.corsi), paralleli)
       const suoi = P.corsiPerEtaConStessaOra(corsi ?? [], listino, natoIlGenitore, r.corsi, orari)
-      const fraseNonPiu = P.fraseNonPiuAllaStessaOra(refDei(P.nonPiuAllaStessaOra(suo, paralleli)).map((c) => c.nome), nome)
+      const nonPiu = P.nonPiuAllaStessaOra(suo, paralleli)
       return (
         <>
           <div className="pad modulo-griglia passo-prima">
@@ -821,12 +822,12 @@ function Flusso({
                       onScegli={(id) => setGrezzo((p) => ({ ...p, suo: P.scegliSuoCorso(p.suo, id, paralleli) }))}
                       etaDi="tua"
                       stessaOraDi={nome}
+                      // Sotto il corso di cui parla: in fondo all'elenco si perderebbe.
+                      avvisoPer={(id) => (nonPiu.includes(id) ? P.fraseNonPiuAllaStessaOra(refDei([id]).map((c) => c.nome), nome) : undefined)}
                     />
                   )}
-                  {fraseNonPiu && <Dettaglio tono="avviso">{fraseNonPiu}</Dettaglio>}
-                  {conto && <Conto righe={conto.righe} totale={conto.totale} />}
-                  {/* Sempre: chi sceglie il trimestre non deve aspettarsi lo sconto che vede qui. */}
-                  {conto && <Dettaglio>Lo sconto famiglia vale sull’annuale: con il trimestre non c’è.</Dettaglio>}
+                  {/* Il conto della famiglia è il totale sopra la barra, uno solo: qui solo la regola dello sconto. */}
+                  {ancheTu && !!suo?.corsi.length && <Dettaglio>Lo sconto famiglia vale sull’annuale: con il trimestre non c’è.</Dettaglio>}
                 </Riquadro>
               </div>
             </>
@@ -860,9 +861,6 @@ function Flusso({
                 .
               </Dettaglio>
             </div>
-            {ancheTu && (
-              <Dettaglio tono="testo">Il tuo corso lo scegli al passo {passoDi('anche')}.</Dettaglio>
-            )}
             {!ancheTu && (
               <div className="modulo-campo modulo-largo">
                 <span className="modulo-etichetta">2 · COME FIRMI?</span>
@@ -1039,6 +1037,11 @@ function Flusso({
 
     if (tipo === 'anche') {
       const s = suo ?? P.SUO_VUOTO
+      // Il suo elenco è in fondo al passo 3: si va lì, non in cima.
+      const alSuoCorso = () => {
+        vai(passoDi('corso'))
+        focus('suoCorsi')
+      }
       const nomeLui = `${(r.genitoreNome ?? '').trim()} ${(r.genitoreCognome ?? '').trim()}`.trim()
       return (
         <>
@@ -1051,8 +1054,8 @@ function Flusso({
                 righe={[
                   { stato: 'fatto', titolo: nomeLui || 'Il genitore', dettaglio: 'nome, cognome, codice fiscale, residenza e contatti, scritti nel passo ' + passoDi('dati') + ' e nel passo ' + passoDi('genitore') },
                   s.corsi.length
-                    ? { stato: 'fatto', titolo: `Il tuo corso: ${nomiDei(s.corsi)}`, dettaglio: `scelto al passo ${passoDi('corso')}`, tasto: { testo: 'MODIFICA', onFai: () => vai(passoDi('corso')) } }
-                    : { stato: 'guaio', titolo: 'Il tuo corso', dettaglio: `non scelto: lo scegli al passo ${passoDi('corso')}`, tasto: { testo: 'SCEGLI', onFai: () => vai(passoDi('corso')) } },
+                    ? { stato: 'fatto', titolo: `Il tuo corso: ${nomiDei(s.corsi)}`, dettaglio: `scelto al passo ${passoDi('corso')}`, tasto: { testo: 'MODIFICA', onFai: () => alSuoCorso() } }
+                    : { stato: 'guaio', titolo: 'Il tuo corso', dettaglio: `non scelto: lo scegli al passo ${passoDi('corso')}`, tasto: { testo: 'SCEGLI', onFai: () => alSuoCorso() } },
                 ]}
               />
             </div>
