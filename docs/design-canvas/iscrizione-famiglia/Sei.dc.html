@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Con sei persone AGGIUNGI UN FAMILIARE sparisce e al suo posto c e la frase che manda a chiamare la segreteria. Il numero massimo sta scritto in un posto solo. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 700px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<dc-import name="RigaChiama" hint-size="100%,62px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1"><dc-import name="Avanzamento" numero="3" totale="6" titolo="SCEGLI IL CORSO" hint-size="100%,120px"></dc-import><dc-import name="Titoletto" label="LA FAMIGLIA" conto="6" hint-size="100%,50px"></dc-import><div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px"><div style="display: flex; flex-wrap: wrap; gap: 8px"><dc-import name="Chip" label="LUCA" acceso="{{ true }}" hint-size="130px,44px"></dc-import><dc-import name="Chip" label="SOFIA" hint-size="130px,44px"></dc-import><dc-import name="Chip" label="MARTA" hint-size="130px,44px"></dc-import><dc-import name="Chip" label="MATTEO" hint-size="130px,44px"></dc-import><dc-import name="Chip" label="PAOLA" hint-size="130px,44px"></dc-import><dc-import name="Chip" label="ELENA" hint-size="130px,44px"></dc-import></div><dc-import name="RiquadroPasso" etichetta="SIETE IN SEI" titolo="Di più, chiamaci: vi iscriviamo insieme." testo="In un solo modulo ci sono al massimo sei persone." tasti="CHIAMA" primoPrincipale="{{ true }}" hint-size="100%,190px"></dc-import></div></main>
+<dc-import name="BarraPasso" manca="IL CORSO DI SOFIA" avanti="AVANTI" compatta="{{ true }}" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

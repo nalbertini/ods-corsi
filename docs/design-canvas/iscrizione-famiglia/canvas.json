@@ -1,0 +1,73 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Iscrizione di famiglia"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Passo.dc.html",
+   "title": "Proposta · la famiglia in ogni passo, con il totale di tutti",
+   "x": 0,
+   "y": 140,
+   "page": "page-1",
+   "w": 390,
+   "h": 1180
+  },
+  {
+   "file": "Aggiungi.dc.html",
+   "title": "Proposta · AGGIUNGI UN FAMILIARE: adulto o bambino, e chi firma",
+   "x": 510,
+   "y": 140,
+   "page": "page-1",
+   "w": 390,
+   "h": 900
+  },
+  {
+   "file": "Conto.dc.html",
+   "title": "Proposta · l'ultimo passo: una riga per persona e il conto della famiglia",
+   "x": 1020,
+   "y": 140,
+   "page": "page-1",
+   "w": 390,
+   "h": 1500
+  },
+  {
+   "file": "Sei.dc.html",
+   "title": "Proposta · con sei persone: chiama la segreteria",
+   "x": 1530,
+   "y": 140,
+   "page": "page-1",
+   "w": 390,
+   "h": 700
+  },
+  {
+   "file": "Esito.dc.html",
+   "title": "Proposta · l'invio si ferma a metà: chi è arrivato e chi no",
+   "x": 2040,
+   "y": 140,
+   "page": "page-1",
+   "w": 390,
+   "h": 900
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "w": 2500,
+   "maxW": 2500,
+   "text": "Iscrizione di famiglia · più persone nello stesso flusso, con il conto che si aggiorna"
+  },
+  {
+   "id": "oggi",
+   "x": 2510,
+   "y": 140,
+   "w": 360,
+   "text": "Oggi: un adulto, oppure un bambino col genitore («Anche tu»). Un altro figlio si aggiunge solo dopo aver mandato. Il flusso attuale (ModuloIscrizione) non cambia."
+  }
+ ]
+}

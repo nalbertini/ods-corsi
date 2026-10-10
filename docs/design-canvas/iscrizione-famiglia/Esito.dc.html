@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. Se l invio si ferma a meta, l esito dice per nome chi e arrivato e chi no. RIPROVA rimanda solo chi manca, mai chi e gia arrivato. Se non parte nemmeno la prima richiesta non nasce niente e la schermata dice solo che non e partito niente. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 900px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<dc-import name="RigaChiama" hint-size="100%,62px"></dc-import>
+<main style="display: flex; flex-direction: column; flex-grow: 1"><div style="display: flex; flex-direction: column; gap: 14px; padding: 18px 20px"><dc-import name="TitoloEsito" titolo="ARRIVATE 2 RICHIESTE SU 4" tono="avviso" testi="Luca e Matteo sono arrivati e restano: non li rimandiamo.|Paola e Sofia non sono partite. Riprova ora, oppure chiama la segreteria." hint-size="100%,170px"></dc-import><div style="display: flex; flex-direction: column; gap: 8px"><dc-import name="MembroNucleo" nome="Luca Rossi" corsi="Judo kids" stato="ARRIVATA" tono="fatto" hint-size="100%,70px"></dc-import><dc-import name="MembroNucleo" nome="Matteo Rossi" corsi="Judo adulti" stato="ARRIVATA" tono="fatto" hint-size="100%,70px"></dc-import><dc-import name="MembroNucleo" nome="Paola Rossi" corsi="Pilates" stato="NON È PARTITA" tono="guaio" hint-size="100%,70px"></dc-import><dc-import name="MembroNucleo" nome="Sofia Rossi" corsi="Judo kids" stato="NON È PARTITA" tono="guaio" hint-size="100%,70px"></dc-import></div><dc-import name="Bottone" label="RIPROVA PER PAOLA E SOFIA" variante="principale" hint-size="100%,56px"></dc-import><dc-import name="Bottone" label="CHIAMA LA SEGRETERIA" variante="linea" hint-size="100%,52px"></dc-import></div></main>
+
+</div>
+</x-dc>
+</body>
+</html>
