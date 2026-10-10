@@ -34,6 +34,7 @@ const SEZIONI = [
   { id: 'istruttore-collega', nome: 'Istruttore che insegna con te', cartella: 'istruttore-collega' },
   { id: 'vestiario', nome: 'Ordini vestiario · proposta', cartella: 'vestiario' },
   { id: 'anche-tu', nome: 'Anche tu · stessa ora', cartella: 'anche-tu-stessa-ora' },
+  { id: 'iscrizione-famiglia', nome: 'Iscrizione di famiglia · proposta', cartella: 'iscrizione-famiglia' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')
