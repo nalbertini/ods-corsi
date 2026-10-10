@@ -132,6 +132,14 @@ intero. Se dopo il figlio cambia corso, sotto compare quale corso del genitore
 non è più alla stessa ora. Nel passo **ANCHE TU: POCHE COSE** il corso è già
 scritto, con **MODIFICA**: lì restano come paga il genitore e i suoi consensi.
 
+Nel passo dei dati, scritto il **CAP**, il comune lo propone l'app, per i CAP
+della provincia di Torino: se il CAP è di un comune solo e **COMUNE** è vuoto si
+scrive da sé, con sotto «Dal CAP …»; se è di più comuni compaiono i comuni da
+toccare (fino a sei) o una tendina. Il comune si può sempre correggere a mano, e
+uno già scritto non si tocca. Fuori provincia si scrive come prima. L'elenco dei
+CAP non è di Poste (che non lo pubblica): se un comune manca o è sbagliato, va
+corretto in `scripts/cap-torino.mjs`.
+
 Chi si iscrive da solo pensa a una persona alla volta: nei passi la famiglia
 non c'è. All'ultimo passo, **CONTROLLA E INVIA**, dopo il riepilogo, sotto **LA
 FAMIGLIA** c'è «Iscrivi anche qualcun altro della famiglia?» con **+ AGGIUNGI UN
