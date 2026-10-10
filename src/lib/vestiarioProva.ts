@@ -1,3 +1,4 @@
+import { NON_SI_APRE, riduciFoto } from './foto'
 import { chiaveGiorno } from './sala'
 import { capiPerRiga, effettoSalvataggio, prezzoRiga } from './vestiarioPagina'
 import {
@@ -18,6 +19,7 @@ import {
   pulisciCatalogo,
   totaleOrdine,
   type Capo,
+  type Tabelle,
   type Catalogo,
   type DatiVestiario,
   type Ordine,
@@ -44,11 +46,45 @@ import {
  */
 
 const DOVE = 'ods-corsi:prova-vestiario'   // vedi la nota in coda.ts
+/**
+ * Le foto di prova, a parte: nome del file → data URL. Nel catalogo resta un
+ * nome di file, come col database, così le stesse regole valgono uguali.
+ */
+const FOTO = 'ods-corsi:prova-vestiario-foto'
+/** Più piccole che sul server: `localStorage` tiene pochi MB in tutto. */
+const FOTO_PROVA = { lato: 600, basta: 100_000, sempreJpeg: true }
+
+/** Salvare senza spazio non deve dire «fatto»: la prova si svuota da lì. */
+export const SPAZIO_PIENO = "Lo spazio della prova su questo dispositivo è pieno: premi Riparti dall'orario vero"
+
+function leggiFoto(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem(FOTO) ?? '{}') as Record<string, string>
+  } catch {
+    return {}
+  }
+}
+function scriviFoto(f: Record<string, string>) {
+  try {
+    localStorage.setItem(FOTO, JSON.stringify(f))
+  } catch {
+    throw new Error(SPAZIO_PIENO)
+  }
+}
+
+const comeDataUrl = (b: Blob) =>
+  new Promise<string>((ok, no) => {
+    const r = new FileReader()
+    r.onload = () => ok(String(r.result))
+    r.onerror = () => no(new Error(NON_SI_APRE))
+    r.readAsDataURL(b)
+  })
 
 /** Per «Riparti dall'orario vero»: catalogo, raccolte e ordini fatti in prova. */
 export function scordaVestiarioProva() {
   try {
     localStorage.removeItem(DOVE)
+    localStorage.removeItem(FOTO)
   } catch {
     /* pazienza */
   }
@@ -57,6 +93,7 @@ export function scordaVestiarioProva() {
 interface Stato {
   /** I capi del catalogo; `null` se non è mai stato salvato. La data sta nella raccolta. */
   capi: Capo[] | null
+  tabelle?: Tabelle
   /** La più recente in fondo: è quella in cui arrivano gli ordini. */
   raccolte: Raccolta[]
   ordini: Ordine[]
@@ -65,7 +102,7 @@ interface Stato {
 function leggi(): Stato {
   try {
     const s = JSON.parse(localStorage.getItem(DOVE) ?? 'null') as Partial<Stato> | null
-    return { capi: s?.capi ?? null, raccolte: s?.raccolte ?? [], ordini: s?.ordini ?? [] }
+    return { capi: s?.capi ?? null, tabelle: s?.tabelle, raccolte: s?.raccolte ?? [], ordini: s?.ordini ?? [] }
   } catch {
     return { capi: null, raccolte: [], ordini: [] }
   }
@@ -92,7 +129,7 @@ export function creaVestiarioProva(oggi: () => string = () => chiaveGiorno(new D
     try {
       localStorage.setItem(DOVE, JSON.stringify(s))
     } catch {
-      /* resta per questa sessione */
+      throw new Error(SPAZIO_PIENO)
     }
   }
   const uno = (id: string) => {
@@ -103,7 +140,7 @@ export function creaVestiarioProva(oggi: () => string = () => chiaveGiorno(new D
   const ultima = (): Raccolta | undefined => s.raccolte[s.raccolte.length - 1]
   const capi = () => s.capi ?? []
   // Come `vestiario()`: la data è quella della raccolta di adesso.
-  const catalogo = (): Catalogo | null => (s.capi ? { chiude: ultima()?.chiude ?? null, capi: s.capi } : null)
+  const catalogo = (): Catalogo | null => (s.capi ? { chiude: ultima()?.chiude ?? null, capi: s.capi, ...(s.tabelle && { tabelle: s.tabelle }) } : null)
 
   /** Come il database: niente codice fiscale né altro che non serve, e i prezzi del catalogo. */
   const entra = (o: OrdineNuovo, come: Pagamento | null, dalBanco: boolean): Ordine => {
@@ -148,6 +185,29 @@ export function creaVestiarioProva(oggi: () => string = () => chiaveGiorno(new D
   }
 
   return {
+    async caricaFoto(file) {
+      const ridotta = await riduciFoto(new File([file], 'foto', { type: file.type }), FOTO_PROVA)
+      const nome = `${crypto.randomUUID()}.jpg`
+      scriviFoto({ ...leggiFoto(), [nome]: await comeDataUrl(ridotta) })
+      return nome
+    },
+
+    async togliFoto(nomi) {
+      try {
+        const f = leggiFoto()
+        for (const n of nomi) delete f[n]
+        scriviFoto(f)
+      } catch {
+        /* una foto rimasta non rompe niente */
+      }
+    },
+
+    urlFoto(nome) {
+      return leggiFoto()[nome] ?? ''
+    },
+
+    fotoAttive: () => true,
+
     async catalogo() {
       s = leggi()
       return catalogo()
@@ -157,7 +217,10 @@ export function creaVestiarioProva(oggi: () => string = () => chiaveGiorno(new D
       s = leggi()
       const guaio = cosaNonVaCatalogo(c)
       if (guaio) throw new Error(guaio)
-      s.capi = pulisciCatalogo(c).capi
+      const pulito = pulisciCatalogo(c)
+      s.capi = pulito.capi
+      // Senza la chiave le tabelle restano com'erano: chi salva solo i capi non le cancella.
+      if ('tabelle' in c) s.tabelle = pulito.tabelle
       const r = ultima()
       // La stessa regola che la segreteria legge prima di SALVA.
       const { cosa } = effettoSalvataggio(r, c.chiude, oggi())

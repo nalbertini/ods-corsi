@@ -2187,7 +2187,7 @@ html.firma-aperta, html.firma-aperta body { overflow: hidden; overscroll-behavio
 
 /* Il vestiario. La pagina degli ordini: taglia e quanti affiancati anche sul telefono, e «Togli» alto quanto un dito. */
 .vestiario-due { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.vestiario-togli { min-height: 44px; padding: 0 4px; font-size: 14px; color: var(--sec); text-decoration: underline; text-underline-offset: 3px; }
+.vestiario-togli { min-height: 44px; min-width: 44px; padding: 0 4px; font-size: 14px; color: var(--sec); text-decoration: underline; text-underline-offset: 3px; }
 /* VESTIARIO in segreteria: cinque numeri, la tabella degli ordini con le sue colonne, le righe da correggere. */
 .sg-numeri[data-cinque] { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .sg-vestiario-testa { gap: 12px; flex-wrap: wrap; align-items: flex-end; }
@@ -2228,3 +2228,50 @@ html.firma-aperta, html.firma-aperta body { overflow: hidden; overscroll-behavio
 .sg-vestiario-sola-lettura { gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 15px; color: var(--sec); overflow-wrap: anywhere; }
 .sg-vestiario-arrivo { display: block; font-size: 12px; font-weight: 400; color: var(--dim); }
 .sg-vestiario-manca { display: block; font-size: 12px; font-weight: 600; color: var(--rosso-testo); }
+
+/* Il vestiario come il modulo: le schede dei capi, le foto e la tabella delle taglie, la foto grande. */
+.vestiario-scheda[data-scelto='true'] { border-color: var(--verde); }
+.vestiario-tasto { width: 100%; min-height: 56px; }
+/* I tipi sono scelte, come nel modulo: il bordo dei campi. */
+.vestiario-tasto.btn-ghost { border-color: var(--riga-campo); }
+.vestiario-persona { font-family: var(--body); font-size: 17px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+.vestiario-grande-come { padding-top: 8px; }
+.vestiario-tabella { padding: 0 0 16px; }
+.vestiario-foto {
+  position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 220px; padding: 0;
+  background: var(--surface-2); border: 2px solid var(--line); overflow: hidden;
+}
+.vestiario-foto[data-tabella] { height: auto; border-left: 0; border-right: 0; }
+/* La tabella è larga quanto la colonna e alta quanto l'immagine: si legge senza aprirla. */
+.vestiario-foto[data-tabella] img { height: auto; max-height: 70vh; }
+.vestiario-tabella-tipo { display: block; padding-bottom: 6px; font-size: 12px; }
+/* Un nome lungo nella testata «PER …» si accorcia coi puntini: il titoletto resta su una riga. */
+.vestiario .rule-label { flex-shrink: 0; white-space: nowrap; }
+.vestiario .rule-line { min-width: 12px; }
+.vestiario .rule-conto { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Un avviso in basso (lo spazio pieno della prova, un errore) non copre BUTTA I CAMBI e SALVA: la barra sale sopra il suo posto. */
+.sg-corpo:has(.sg-avviso) .sg-listino-salva { bottom: 96px; }
+.vestiario-foto img { width: 100%; height: 100%; object-fit: contain; }
+.vestiario-foto-nome { padding: 8px; font-size: 14px; font-weight: 600; color: var(--dim); text-align: center; overflow-wrap: anywhere; }
+.vestiario-foto-apri {
+  position: absolute; right: 6px; bottom: 6px; display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; background: var(--bg); border: 2px solid var(--line); color: var(--text); font-size: 20px;
+}
+.vestiario-foto:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+/* Sopra tutto, come la firma a schermo intero; qui però le dita allargano: lo zoom del telefono resta acceso. */
+.vestiario-grande { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; background: var(--bg); }
+.vestiario-grande:focus { outline: none; }
+.vestiario-grande-testa { display: flex; align-items: center; gap: 12px; padding-top: calc(var(--safe-t) + 12px); padding-bottom: 12px; border-bottom: 2px solid var(--line); }
+.vestiario-grande-zoom { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: auto; touch-action: pinch-zoom pan-x pan-y; }
+.vestiario-grande-zoom img { max-width: 100%; max-height: 100%; object-fit: contain; }
+/* CATALOGO E CHIUSURA: la foto di un capo o la tabella di un tipo, con la miniatura da 96px. */
+.sg-carica-foto { display: flex; align-items: flex-start; gap: 14px; min-width: 0; }
+.sg-carica-foto-mini {
+  position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 96px; height: 96px;
+  background: var(--surface-2); border: 2px solid var(--line); overflow: hidden;
+}
+.sg-carica-foto-mini[data-vuota] { border-style: dashed; font-family: var(--cond); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); text-align: center; }
+.sg-carica-foto-mini img { width: 100%; height: 100%; object-fit: contain; }
+.sg-carica-foto-nuova { position: absolute; top: 4px; left: 4px; padding: 1px 6px; background: var(--giallo); color: var(--su-colore); font-size: 11px; font-weight: 700; letter-spacing: 0.16em; }
+label.sg-btn { cursor: pointer; }
+.sg-carica-foto:has(input:focus-visible) label.sg-btn { outline: 2px solid var(--text); outline-offset: 2px; }

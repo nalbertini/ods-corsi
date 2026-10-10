@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { chiaveGiorno, oraDi } from '../../lib/sala'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { INDIRIZZO_VESTIARIO } from '../../lib/cancelletti'
@@ -28,11 +28,16 @@ import {
   type DatiVestiario,
   type Ordine,
   type Raccolta,
+  type Tabelle,
+  TIPI,
+  MANCA_FOTO,
+  nomeTipo,
   type RigaCorretta,
   type StatoOrdine,
 } from '../../lib/vestiario'
-import { avvisoSaldato, doveSpostare, raccoltaAperta, tagliaDopo, type CosaManca, capiPerCorreggere, capiPerRiga, effettoSalvataggio, catalogoDaBozza, cercaOrdine, mancaNellOrdine, prezzoRiga, totaleCorretto, type BozzaCatalogo as BozzaScritta } from '../../lib/vestiarioPagina'
-import { datiVestiario } from '../../lib/vestiarioDati'
+import { avvisoSaldato, doveSpostare, raccoltaAperta, tagliaDopo, type CosaManca, capiPerCorreggere, capiPerRiga, effettoSalvataggio, catalogoDaBozza, cercaOrdine, mancaNellOrdine, prezzoRiga, totaleCorretto, type BozzaCatalogo as BozzaScritta, capiSenzaTipo, cosaSiCancella, salvaConFoto } from '../../lib/vestiarioPagina'
+import { datiVestiario, fotoAttive, FOTO_VESTIARIO } from '../../lib/vestiarioDati'
+import { NON_SI_APRE, riduciFoto, TROPPO_GRANDE } from '../../lib/foto'
 import { Numero } from './Presenze'
 import { chiedi, Campo, lasciare, Guaio, Riga as Titolo, SchedaPiena, Testa, useAvviso, useBozza, useCarica, useOrdina } from './comune'
 
@@ -833,14 +838,101 @@ function NuovoOrdine({
 }
 
 /** La bozza del catalogo di `vestiarioPagina.ts`, con una chiave per capo: per React e per CAMBIA. */
-type CapoScritto = BozzaScritta['capi'][number] & { chiave: number }
-type BozzaCatalogo = { chiude: string; capi: CapoScritto[] }
+type CapoScritto = BozzaScritta['capi'][number] & {
+  chiave: number
+  /** La foto salvata, per dire «tolta: si cancella con SALVA». */
+  fotoPrima?: string
+}
+type BozzaCatalogo = { chiude: string; capi: CapoScritto[]; tabelle: Tabelle }
 
 const scritto = (n: number) => n.toLocaleString('it-IT', { maximumFractionDigits: 2, useGrouping: false })
 const bozzaDa = (c: Catalogo | null): BozzaCatalogo => ({
   chiude: c?.chiude ?? '',
-  capi: (c?.capi ?? []).map((x) => ({ chiave: chiave(), capo: x.capo, prezzo: scritto(x.prezzo), taglie: x.taglie.join(', '), nota: x.nota ?? '' })),
+  capi: (c?.capi ?? []).map((x) => ({
+    chiave: chiave(),
+    capo: x.capo,
+    prezzo: scritto(x.prezzo),
+    taglie: x.taglie.join(', '),
+    nota: x.nota ?? '',
+    tipo: x.tipo ?? '',
+    ...(x.foto && { foto: x.foto, fotoPrima: x.foto }),
+  })),
+  tabelle: { ...c?.tabelle },
 })
+
+/**
+ * Una foto scelta e non ancora salvata: nella bozza c'è un nome finto
+ * (`nuova-….jpg`, della stessa forma di un file vero, così le regole del
+ * catalogo valgono uguali), e il file vero va sul server solo con SALVA.
+ */
+interface FotoNuova {
+  blob: Blob
+  /** `URL.createObjectURL`, rilasciato quando la foto si sostituisce, si toglie o si esce. */
+  url: string
+  nomeFile: string
+}
+
+/** La foto di un capo o la tabella di un tipo: miniatura, cosa c'è, CARICA FOTO / SOSTITUISCI e «Togli la foto». */
+function CaricaFoto({
+  id,
+  etichetta,
+  url,
+  frase,
+  nuova,
+  cosa = 'FOTO',
+  avviso,
+  errore,
+  onFile,
+  onTogli,
+}: {
+  id: string
+  etichetta: string
+  /** La parola sui tasti e nel riquadro vuoto: FOTO per un capo, TABELLA per un tipo. */
+  cosa?: 'FOTO' | 'TABELLA'
+  url: string
+  frase: string
+  nuova: boolean
+  avviso?: string
+  errore?: string
+  onFile: (f: File) => void
+  onTogli?: () => void
+}) {
+  return (
+    <div className="sg-carica-foto">
+      <span className="sg-carica-foto-mini" data-vuota={!url || undefined}>
+        {url ? <img src={url} alt="" /> : <span>NESSUNA {cosa}</span>}
+        {nuova && <span className="num sg-carica-foto-nuova">NUOVA</span>}
+      </span>
+      <span className="stack grow" style={{ gap: 6, minWidth: 0 }}>
+        <span className="sg-etichetta">{etichetta}</span>
+        <span style={{ fontSize: 14, color: 'var(--sec)', overflowWrap: 'anywhere' }}>{frase}</span>
+        <span className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+          <label className="sg-btn sg-btn-linea" htmlFor={id}>
+            {url ? 'SOSTITUISCI' : cosa === 'FOTO' ? 'CARICA FOTO' : 'CARICA LA TABELLA'}
+          </label>
+          <input
+            id={id}
+            type="file"
+            accept="image/*"
+            className="vh"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              e.target.value = ''
+              if (f) onFile(f)
+            }}
+          />
+          {onTogli && (
+            <button type="button" className="sg-link sg-link-alto" onClick={onTogli}>
+              {cosa === 'FOTO' ? 'Togli la foto' : 'Togli la tabella'}
+            </button>
+          )}
+        </span>
+        {avviso && <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--giallo-testo)' }}>{avviso}</span>}
+        {errore && <span style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{errore}</span>}
+      </span>
+    </div>
+  )
+}
 
 /** Sotto CHIUDE IL: cosa farà SALVA alle raccolte, e poi cosa dirà la pagina con quella data. */
 function notaChiude(cosa: 'solo capi' | 'proroga' | 'raccolta nuova', chiude: string | undefined, raccolta: Raccolta | undefined, conCapi: boolean, oggi: string) {
@@ -885,14 +977,68 @@ function CatalogoChiusura({
   const base = useMemo(() => bozzaDa(salvato), [salvato])
   const [bozza, setBozza] = useState<BozzaCatalogo | null>(null)
   const [aperto, setAperto] = useState<number | null>(null)
+  // Senza il 50 niente tipi né foto: il database li butterebbe via.
+  const conFoto = fotoAttive() !== false
+  const [nuove, setNuove] = useState<Record<string, FotoNuova>>({})
+  const [guaiFoto, setGuaiFoto] = useState<Record<string, string>>({})
+  const tutteLeNuove = useRef(nuove)
+  tutteLeNuove.current = nuove
+  // Uscendo dalla pagina le anteprime si rilasciano: il browser le terrebbe in memoria.
+  useEffect(() => () => Object.values(tutteLeNuove.current).forEach((f) => URL.revokeObjectURL(f.url)), [])
   const b = bozza ?? base
-  const cambia = (x: Partial<BozzaCatalogo>) => setBozza({ ...b, ...x })
-  const cambiaCapo = (k: number, x: Partial<CapoScritto>) => cambia({ capi: b.capi.map((c) => (c.chiave === k ? { ...c, ...x } : c)) })
+  // Sulla bozza di adesso, non su quella di quando è partito il cambio: una foto entra dopo un'attesa.
+  const cambia = (x: Partial<BozzaCatalogo> | ((b: BozzaCatalogo) => Partial<BozzaCatalogo>)) =>
+    setBozza((ora) => {
+      const di = ora ?? base
+      return { ...di, ...(typeof x === 'function' ? x(di) : x) }
+    })
+  const cambiaCapo = (k: number, x: Partial<CapoScritto>) => cambia((di) => ({ capi: di.capi.map((c) => (c.chiave === k ? { ...c, ...x } : c)) }))
   const pronto = catalogoDaBozza(b)
   const guaio = 'guaio' in pronto ? pronto.guaio : null
   const senza = (x: BozzaCatalogo) => JSON.stringify({ ...x, capi: x.capi.map(({ chiave: _, ...c }) => c) })
   const cambiato = !!bozza && senza(bozza) !== senza(base)
   useBozza(cambiato, 'Catalogo del vestiario')
+  const urlDi = (nome?: string) => (!nome ? '' : (nuove[nome]?.url ?? d.urlFoto(nome)))
+  /** Le anteprime che la bozza non usa più si rilasciano; con `tutte` anche le altre (dopo SALVA o BUTTA). */
+  const rilascia = (usati: Set<string>) => {
+    const restano: Record<string, FotoNuova> = {}
+    for (const [nome, f] of Object.entries(nuove)) {
+      if (usati.has(nome)) restano[nome] = f
+      else URL.revokeObjectURL(f.url)
+    }
+    setNuove(restano)
+  }
+  /**
+   * Una foto scelta: si riduce subito (JPEG, lato 1600, 1 MB), così un'immagine che non si apre o resta
+   * troppo grande lo dice sulla foto giusta; poi entra nella bozza col suo nome finto. Il server la vede solo con SALVA.
+   */
+  const scegliFoto = async (posto: string, scelta: File, metti: (nome: string | undefined) => void, prima?: string) => {
+    let f: File
+    try {
+      f = await riduciFoto(scelta, FOTO_VESTIARIO)
+    } catch (e) {
+      return setGuaiFoto((g) => ({ ...g, [posto]: e instanceof Error && e.message === TROPPO_GRANDE ? TROPPO_GRANDE : NON_SI_APRE }))
+    }
+    const url = URL.createObjectURL(f)
+    setGuaiFoto(({ [posto]: _, ...g }) => g)
+    const nome = `nuova-${crypto.randomUUID()}.jpg`
+    setNuove((n) => {
+      // Una foto nuova al posto di un'altra nuova: la vecchia anteprima non serve più.
+      if (prima && n[prima]) URL.revokeObjectURL(n[prima].url)
+      const { [prima ?? '']: _, ...resto } = n
+      return { ...resto, [nome]: { blob: f, url, nomeFile: scelta.name } }
+    })
+    metti(nome)
+  }
+  const togliNuova = (nome?: string) => {
+    if (!nome || !nuove[nome]) return
+    URL.revokeObjectURL(nuove[nome].url)
+    setNuove(({ [nome]: _, ...resto }) => resto)
+  }
+  /** Cosa SALVA cancellerà, per nome: la segreteria lo sa prima. */
+  const siCancella = 'catalogo' in pronto && salvato ? cosaSiCancella(salvato, pronto.catalogo) : ''
+  // Non blocca SALVA: la segreteria può volere la pagina sola, ma deve saperlo prima.
+  const senzaTipo = 'catalogo' in pronto ? capiSenzaTipo(pronto.catalogo.capi) : b.capi.filter((c) => !c.tipo && c.capo.trim()).map((c) => c.capo.trim())
   const sposta = (i: number, verso: -1 | 1) => {
     const capi = [...b.capi]
     ;[capi[i], capi[i + verso]] = [capi[i + verso], capi[i]]
@@ -910,14 +1056,22 @@ function CatalogoChiusura({
         : effetto.cosa === 'raccolta nuova' && nuovo.chiude
           ? `Catalogo salvato. Raccolta nuova, chiude ${ilGiorno(nuovo.chiude)}`
           : 'Catalogo salvato'
-    void fai(() => d.salvaCatalogo(nuovo), fatto, async () => {
-      await onSalvato()
-      setBozza(null)
-      setAperto(null)
-    })
+    void fai(
+      // Prima le foto nuove della bozza, poi il catalogo coi nomi veri, poi via i file di prima; se cade, via quelli appena caricati.
+      () => salvaConFoto(d, nuovo, Object.fromEntries(Object.entries(nuove).map(([n, f]) => [n, f.blob])), salvato),
+      fatto,
+      async () => {
+        await onSalvato()
+        rilascia(new Set())
+        setBozza(null)
+        setAperto(null)
+      },
+    )
   }
   const butta = async () => {
     if (!(await chiedi('Buttare i cambi al catalogo? Torna com’è salvato, quello che vede la pagina degli ordini.', 'BUTTA I CAMBI', { pericolo: true }))) return
+    rilascia(new Set())
+    setGuaiFoto({})
     setBozza(null)
     setAperto(null)
   }
@@ -927,7 +1081,14 @@ function CatalogoChiusura({
       <Testa titolo="CATALOGO E CHIUSURA" sotto="Quello che vede chi ordina dal link. Si cambia in una bozza e si salva tutto insieme, come il listino.">
         {vedi}
       </Testa>
+      {cambiato && <span className="sg-sotto" style={{ color: 'var(--giallo-testo)' }}>VEDI LA PAGINA mostra quello salvato: i cambi e le foto nuove si vedono dopo SALVA.</span>}
       <div className="stack sg-listino" style={{ gap: 20 }}>
+        {!conFoto && (
+          <section aria-label="Tipi e foto" className="sg-riquadro">
+            <span className="ob sg-riquadro-titolo">TIPI E FOTO</span>
+            <span className="sg-sotto">{MANCA_FOTO}. Fino ad allora i capi stanno tutti su una pagina, senza foto.</span>
+          </section>
+        )}
         <section aria-label="La raccolta" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">LA RACCOLTA</span>
           <div style={{ width: 280, maxWidth: '100%' }}>
@@ -942,7 +1103,10 @@ function CatalogoChiusura({
 
         <section aria-label="I capi" className="sg-riquadro">
           <span className="ob sg-riquadro-titolo">I CAPI · {b.capi.length}</span>
-          <span className="sg-sotto">In quest’ordine nella pagina. Un prezzo per capo, uguale per tutte le taglie: due prezzi sono due capi. Un prezzo cambiato vale per gli ordini nuovi.</span>
+          <span className="sg-sotto">
+            In quest’ordine nella pagina. Un prezzo per capo, uguale per tutte le taglie: due prezzi sono due capi. Un prezzo cambiato vale per gli ordini nuovi.
+            {conFoto && ' Il TIPO dice in che pagina sta il capo; se anche un capo solo è senza tipo, la pagina non chiede il tipo e mostra tutti i capi insieme.'}
+          </span>
           {b.capi.map((c, i) => {
             const id = (k: string) => `vc-${c.chiave}-${k}`
             return aperto === c.chiave ? (
@@ -954,6 +1118,18 @@ function CatalogoChiusura({
                   <Campo id={id('prezzo')} etichetta="PREZZO · €">
                     <input id={id('prezzo')} className="sg-campo num" inputMode="decimal" maxLength={10} value={c.prezzo} onChange={(e) => cambiaCapo(c.chiave, { prezzo: e.target.value })} />
                   </Campo>
+                  {conFoto && (
+                    <Campo id={id('tipo')} etichetta="TIPO · FACOLTATIVO">
+                      <select id={id('tipo')} className="sg-campo" value={c.tipo ?? ''} onChange={(e) => cambiaCapo(c.chiave, { tipo: TIPI.find((t) => t.id === e.target.value)?.id ?? '' })}>
+                        <option value="">Senza tipo</option>
+                        {TIPI.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </Campo>
+                  )}
                 </div>
                 <Campo id={id('taglie')} etichetta="TAGLIE · SEPARATE DA VIRGOLA">
                   <input id={id('taglie')} className="sg-campo" maxLength={600} placeholder="110, 120, 130" value={c.taglie} onChange={(e) => cambiaCapo(c.chiave, { taglie: e.target.value })} />
@@ -961,6 +1137,34 @@ function CatalogoChiusura({
                 <Campo id={id('nota')} etichetta="NOTA SULLE TAGLIE · FACOLTATIVA">
                   <input id={id('nota')} className="sg-campo" maxLength={300} placeholder="Altezza del bambino + 10 cm" value={c.nota} onChange={(e) => cambiaCapo(c.chiave, { nota: e.target.value })} />
                 </Campo>
+                {conFoto && (
+                  <CaricaFoto
+                    id={id('foto')}
+                    etichetta="FOTO · FACOLTATIVA"
+                    url={urlDi(c.foto)}
+                    nuova={!!(c.foto && nuove[c.foto])}
+                    frase={
+                      c.foto && nuove[c.foto]
+                        ? `${nuove[c.foto].nomeFile} · va sulla pagina con SALVA`
+                        : c.foto
+                          ? 'La foto che vede chi ordina'
+                          : c.fotoPrima
+                            ? 'Tolta: il file si cancella con SALVA'
+                            : 'Nessuna foto'
+                    }
+                    avviso="Solo il capo, niente persone: la foto è pubblica"
+                    errore={guaiFoto[`capo-${c.chiave}`]}
+                    onFile={(f) => void scegliFoto(`capo-${c.chiave}`, f, (nome) => cambiaCapo(c.chiave, { foto: nome }), c.foto)}
+                    onTogli={
+                      c.foto
+                        ? () => {
+                            togliNuova(c.foto)
+                            cambiaCapo(c.chiave, { foto: undefined })
+                          }
+                        : undefined
+                    }
+                  />
+                )}
                 <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
                   <button type="button" className="num sg-chip" disabled={i === 0} onClick={() => sposta(i, -1)} aria-label="Più su">
                     ↑ SU
@@ -986,8 +1190,22 @@ function CatalogoChiusura({
             ) : (
               <div key={c.chiave} className="sg-voce-elenco">
                 <span className="stack grow" style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>{c.capo || 'Senza nome'}</span>
-                  <span style={{ fontSize: 12, color: 'var(--dim)' }}>{[c.prezzo && `${c.prezzo} €`, c.taglie && `taglie ${c.taglie}`, c.nota].filter(Boolean).join(' · ') || 'Senza prezzo né taglie'}</span>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>
+                    {c.capo || 'Senza nome'}
+                    {/* Basta un capo senza tipo e la pagina li mostra tutti insieme: si deve vedere senza aprirlo. */}
+                    {conFoto && !c.tipo && (
+                      <>
+                        {' '}
+                        <span className="num sg-tag" data-tipo="presto">
+                          SENZA TIPO
+                        </span>
+                      </>
+                    )}
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--dim)' }}>
+                    {[conFoto && c.tipo && nomeTipo(c.tipo), c.prezzo && `${c.prezzo} €`, c.taglie && `taglie ${c.taglie}`, c.nota, conFoto && (c.foto ? 'con foto' : 'senza foto')].filter(Boolean).join(' · ') ||
+                      'Senza prezzo né taglie'}
+                  </span>
                 </span>
                 <button type="button" className="num sg-chip" onClick={() => setAperto(c.chiave)}>
                   CAMBIA
@@ -1009,10 +1227,53 @@ function CatalogoChiusura({
           </button>
         </section>
 
+        {conFoto && (
+          <section aria-label="Le tabelle delle taglie" className="sg-riquadro">
+            <span className="ob sg-riquadro-titolo">LE TABELLE DELLE TAGLIE</span>
+            <span className="sg-sotto">Una per tipo, facoltativa: sta in cima alla pagina del tipo e chi ordina la apre grande. Anche la tabella è pubblica. Con la pagina sola sta in cima ai capi.</span>
+            {TIPI.map((t) => {
+              const file = b.tabelle[t.id]
+              const prima = salvato?.tabelle?.[t.id]
+              const metti = (nome: string | undefined) =>
+                cambia((di) => {
+                  const { [t.id]: _, ...resto } = di.tabelle
+                  return { tabelle: nome ? { ...resto, [t.id]: nome } : resto }
+                })
+              return (
+                <CaricaFoto
+                  key={t.id}
+                  id={`vt-${t.id}`}
+                  etichetta={t.nome}
+                  url={urlDi(file)}
+                  nuova={!!(file && nuove[file])}
+                  frase={file && nuove[file] ? `${nuove[file].nomeFile} · va sulla pagina con SALVA` : file ? 'La tabella che vede chi ordina' : prima ? 'Tolta: il file si cancella con SALVA' : 'Nessuna tabella'}
+                  errore={guaiFoto[`tabella-${t.id}`]}
+                  cosa="TABELLA"
+                  onFile={(f) => void scegliFoto(`tabella-${t.id}`, f, metti, file)}
+                  onTogli={
+                    file
+                      ? () => {
+                          togliNuova(file)
+                          metti(undefined)
+                        }
+                      : undefined
+                  }
+                />
+              )
+            })}
+          </section>
+        )}
+
+        {cambiato && conFoto && senzaTipo.length > 0 && (
+          <span className="sg-sotto" style={{ color: 'var(--giallo-testo)', fontWeight: 600 }}>
+            Senza tipo: {senzaTipo.join(', ')}. La pagina mostrerà tutti i capi insieme.
+          </span>
+        )}
         {cambiato && (
           <div className="sg-listino-salva">
             <span className="grow" style={{ fontSize: 14, color: guaio ? 'var(--rosso-testo)' : 'var(--sec)' }}>
-              {guaio ?? 'Ci sono cambi da salvare: fino ad allora la pagina degli ordini mostra il catalogo di prima.'}
+              {guaio ??
+                `Ci sono cambi da salvare: fino ad allora la pagina degli ordini mostra il catalogo di prima.${siCancella ? ` ${siCancella}` : ''}`}
             </span>
             <button type="button" className="sg-btn sg-btn-linea" disabled={lavora} onClick={() => void butta()}>
               BUTTA I CAMBI

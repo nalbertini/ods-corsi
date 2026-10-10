@@ -16,7 +16,7 @@
 </helmet>
 <button type="button" onClick="{{click}}" style="display: inline-flex; align-items: center; justify-content: center; gap: {{s.gap}}; min-height: {{s.minHeight}}; min-width: {{s.minWidth}}; width: {{s.width}}; padding: {{s.padding}}; border: {{s.border}}; background: {{s.bg}}; color: {{s.fg}}; font-family: {{s.family}}; font-style: {{s.fontStyle}}; font-size: {{s.fontSize}}; font-weight: {{s.weight}}; letter-spacing: {{s.spacing}}; line-height: normal; white-space: nowrap; opacity: {{s.opacity}}; cursor: {{s.cursor}}">{{label}}</button>
 </x-dc>
-<script data-dc-script data-props='{"label":{"editor":"text","default":"SEGNA LA PRESENZA"},"variante":{"editor":"enum","options":["principale","vai","linea","tratteggiato","pieno","rosso","icona"],"default":"principale"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"disabled":{"editor":"boolean","default":false},"alto":{"editor":"text","default":""},"corpo":{"editor":"text","default":""},"spazio":{"editor":"text","default":""},"larghezza":{"editor":"text","default":""},"onClick":{"editor":null},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":260,"height":80}}'>
+<script data-dc-script data-props='{"label":{"editor":"text","default":"SEGNA LA PRESENZA"},"variante":{"editor":"enum","options":["principale","vai","linea","tratteggiato","pieno","rosso","icona"],"default":"principale"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"disabled":{"editor":"boolean","default":false},"alto":{"editor":"text","default":""},"corpo":{"editor":"text","default":""},"spazio":{"editor":"text","default":""},"larghezza":{"editor":"text","default":""},"bordo":{"editor":"enum","options":["","riga-campo"],"default":""},"onClick":{"editor":null},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":260,"height":80}}'>
 // Riproduzione 1:1 di .btn / .icon-btn / .sg-btn in src/styles.css (righe 224-247 e 1295-1314) e dei tasti di
 // src/components/ds.tsx (Tasto).
 // contesto "app": .btn, 56px, 19px, 0.16em. contesto "segreteria": .sg-btn, 48px, 15px, 0.14em.
@@ -26,11 +26,12 @@
 // icona = .icon-btn: 44px quadrati, bordo 2px; con piu' di un carattere si allarga (.icon-btn.testo).
 // alto / corpo / spazio / larghezza: gli style inline del codice (es. il tasto ‹ del calendario: minHeight 44,
 // minWidth 44, fontSize 22, padding 0).
+// bordo = "riga-campo": il bordo dei campi e delle scelte del modulo (i tipi di TI SERVE ALTRO?, .vestiario-tasto.btn-ghost).
 // disabled: nell'app opacita' 0.4; in segreteria un blocco `surface-2` senza bordo, testo `dim`.
 // Il fuoco e il passaggio del mouse non sono riprodotti (stati dinamici).
 const T = {
-  scuro: { bg: '#121212', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', verde: '#16a54a', tasto: '#b8b8b2', tratteggio: '#4a4a46', suColore: '#121212', suRosso: '#ffffff' },
-  chiaro: { bg: '#f4f4f1', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', verde: '#12913f', tasto: '#4a4a46', tratteggio: '#b0b0aa', suColore: '#121212', suRosso: '#ffffff' },
+  scuro: { bg: '#121212', surface2: '#242424', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', rosso: '#e4292a', verde: '#16a54a', tasto: '#b8b8b2', tratteggio: '#4a4a46', rigaCampo: '#6e6e6a', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', rosso: '#e4292a', verde: '#12913f', tasto: '#4a4a46', tratteggio: '#b0b0aa', rigaCampo: '#8a8a85', suColore: '#121212', suRosso: '#ffffff' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 const truthy = (v) => v === true || v === 'true';
@@ -78,6 +79,7 @@ class Component extends DCLogic {
     if (p.corpo) s.fontSize = p.corpo;
     if (p.spazio) s.padding = p.spazio;
     if (p.larghezza) s.minWidth = p.larghezza;
+    if (p.bordo === 'riga-campo' && border !== '0') border = border.replace(/#[0-9a-f]{6}$/, c.rigaCampo);
     if (p.alto && v === 'icona') s.width = 'auto';
 
     return {

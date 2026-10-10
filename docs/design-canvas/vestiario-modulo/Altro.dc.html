@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITA, passo 4: TI SERVE ALTRO? In cima, in un riquadro, cosa c'è già per questa persona (PersonaVestiario: PER e il nome in Barlow 600). I tipi come tasti a tutta riga col bordo riga-campo (anche lo stesso: le scelte ci sono ancora); «+ PER UN'ALTRA PERSONA» torna a PER CHI È col campo vuoto; NO, HO FINITO sta nella barra e porta a CHI ORDINA. Cornice copiata da PaginaTelefono.dc.html, solo <dc-import>; dati inventati. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 950px; background: #121212; color: #f2f2f0">
+  <dc-import name="Testata" luogo="VESTIARIO" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+  <main style="display: flex; flex-direction: column; flex-grow: 1">
+    <dc-import name="Titoletto" label="TI SERVE ALTRO?" hint-size="100%,50px"></dc-import>
+    <div style="padding: 0 20px 16px">
+      <dc-import name="PersonaVestiario" nome="Luca Rossi" riquadro="{{ true }}" righe="Judogi bianco 130:35 €|Cintura 240 × 2:12 €" hint-size="100%,130px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" label="ANCORA PER LUCA ROSSI" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px 16px">
+      <dc-import name="Bottone" label="JUDOGI · 2 SCELTI" variante="linea" bordo="riga-campo" larghezza="100%" hint-size="100%,56px"></dc-import>
+      <dc-import name="Bottone" label="COSTUMINI LOTTA" variante="linea" bordo="riga-campo" larghezza="100%" hint-size="100%,56px"></dc-import>
+      <dc-import name="Bottone" label="VESTIARIO LOGATO" variante="linea" bordo="riga-campo" larghezza="100%" hint-size="100%,56px"></dc-import>
+    </div>
+    <dc-import name="Titoletto" label="PER UN’ALTRA PERSONA" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px">
+      <dc-import name="Bottone" label="+ PER UN’ALTRA PERSONA" variante="tratteggiato" hint-size="100%,56px"></dc-import>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <dc-import name="BarraPasso" totale="47 €" totale-righe="3 capi" avanti="NO, HO FINITO" hint-size="100%,150px"></dc-import>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

@@ -21,13 +21,48 @@ export interface Capo {
   prezzo: number
   /** Una nota libera, es. «altezza + 10 cm, campioni in segreteria». */
   nota?: string
+  /** La pagina del modulo in cui sta. Facoltativo: con un capo senza tipo, la pagina pubblica è una sola. */
+  tipo?: Tipo
+  /** Il nome del file nel contenitore `vestiario` (mai un indirizzo): la foto è pubblica. */
+  foto?: string
 }
 
 export interface Catalogo {
   /** L'ultimo giorno in cui si ordina, compreso: `AAAA-MM-GG`. Senza, è chiuso. */
   chiude: string | null
   capi: Capo[]
+  /** La tabella delle taglie di ogni tipo che ce l'ha: nome del file nel contenitore. */
+  tabelle?: Tabelle
 }
+
+/** I tipi del modulo Google «ORDINI MIZUNO», con le sue parole. Fissi. */
+export type Tipo = 'judogi' | 'costumini' | 'vestiario'
+export const TIPI: ReadonlyArray<{ id: Tipo; nome: string }> = [
+  { id: 'judogi', nome: 'JUDOGI' },
+  { id: 'costumini', nome: 'COSTUMINI LOTTA' },
+  { id: 'vestiario', nome: 'VESTIARIO LOGATO' },
+]
+export type Tabelle = Partial<Record<Tipo, string>>
+
+/** «JUDOGI», «COSTUMINI LOTTA», «VESTIARIO LOGATO»; `undefined` per quel che non è un tipo. */
+export function nomeTipo(t: Tipo): string
+export function nomeTipo(t: unknown): string | undefined
+export function nomeTipo(t: unknown): string | undefined {
+  return TIPI.find((x) => x.id === t)?.nome
+}
+
+/**
+ * Un file del contenitore come lo accetta `salva_vestiario()`: lettere,
+ * cifre, trattini e punti fra un pezzo e l'altro, e un'estensione da foto.
+ * Niente barre, due punti o «..»: mai un indirizzo o un'altra cartella.
+ */
+const fileGiusto = (f: unknown) => typeof f === 'string' && f.length <= 120 && /^[\w-]+(\.[\w-]+)*\.(jpe?g|png|webp)$/i.test(f)
+
+export const MANCA_FOTO = 'Per tipi e foto va lanciato 51-vestiario-foto.sql'
+
+/** L'indirizzo pubblico di una foto del catalogo, dal progetto Supabase. */
+export const fotoPubblica = (urlProgetto: string, nome: string) =>
+  `${urlProgetto.replace(/\/+$/, '')}/storage/v1/object/public/vestiario/${encodeURIComponent(nome)}`
 
 /** Una raccolta di ordini: ha un suo id perché una proroga le cambia la data. */
 export interface Raccolta {
@@ -123,6 +158,14 @@ export interface DatiVestiario {
    * totale sale, torna da saldare e tiene il pagato di prima (con come e quando).
    */
   correggiRighe(id: string, righe: RigaCorretta[], togliSegno?: boolean): Promise<void>
+  /** Una foto del catalogo, rimpicciolita in JPEG: torna il nome del file nuovo, da mettere nella bozza. */
+  caricaFoto(file: Blob): Promise<string>
+  /** Toglie i file che il catalogo non usa più. Non lancia mai: un file rimasto non rompe niente. */
+  togliFoto(nomi: string[]): Promise<void>
+  /** L'indirizzo da mettere in `<img>`; vuoto se la foto non c'è. */
+  urlFoto(nome: string): string
+  /** Se il database ha il 51 (tipi, foto, tabelle): sempre sì in prova, `undefined` finché non si è letto. */
+  fotoAttive(): boolean | undefined
 }
 
 // I limiti sono quelli di `vestiario_regole()` in 47-vestiario.sql: la pagina pubblica
@@ -173,8 +216,9 @@ export function pulisciCatalogo(c: Catalogo): Catalogo {
     chiude: c.chiude,
     capi: c.capi.map((x) => {
       const nota = x.nota?.trim().slice(0, 300)
-      return { capo: x.capo.trim(), taglie: pulisciTaglie(x.taglie), prezzo: x.prezzo, ...(nota ? { nota } : {}) }
+      return { capo: x.capo.trim(), taglie: pulisciTaglie(x.taglie), prezzo: x.prezzo, ...(nota ? { nota } : {}), ...(x.tipo && { tipo: x.tipo }), ...(x.foto && { foto: x.foto }) }
     }),
+    ...(c.tabelle && Object.keys(c.tabelle).length ? { tabelle: { ...c.tabelle } } : {}),
   }
 }
 
@@ -207,6 +251,16 @@ export function cosaNonVaCatalogo(c: Catalogo): string | null {
     const taglie = pulisciTaglie(x.taglie)
     if (!taglie.length) return `«${nome}» non ha taglie: scrivile separate da virgola`
     if (taglie.length > MAX_TAGLIE || taglie.some((t) => t.length > 20)) return `Le taglie del capo «${nome}» sono troppe o troppo lunghe`
+    if (x.tipo != null && !nomeTipo(x.tipo)) return `"${nome}": il tipo non si capisce`
+    if (x.foto != null && !fileGiusto(x.foto)) return `La foto di "${nome}" non si capisce: ricaricala`
+  }
+  if (c.tabelle != null) {
+    if (typeof c.tabelle !== 'object') return 'La tabella delle taglie non si capisce: ricaricala'
+    for (const [chiave, file] of Object.entries(c.tabelle)) {
+      const nome = nomeTipo(chiave)
+      if (!nome) return 'La tabella delle taglie non si capisce: ricaricala'
+      if (!fileGiusto(file)) return `La tabella delle taglie di "${nome}" non si capisce: ricaricala`
+    }
   }
   return null
 }

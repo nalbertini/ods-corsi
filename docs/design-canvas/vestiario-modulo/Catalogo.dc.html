@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- COSTRUITA: CATALOGO E CHIUSURA con i tipi e le foto (CatalogoChiusura di segreteria/Vestiario.tsx). Nel capo aperto TIPO · FACOLTATIVO va a capo sotto CAPO (.sg-vestiario-capo ha due colonne) e la FOTO è una riga CaricaFoto con l'avviso «Solo il capo, niente persone»; le voci chiuse dicono il tipo e se c'è la foto. Sotto i capi LE TABELLE DELLE TAGLIE, una per tipo. Senza il 50 sul database al posto di tipi e foto c'è il riquadro TIPI E FOTO. Cornice copiata da Pagina.dc.html, solo <dc-import>; dati inventati, foto segnaposto. -->
+<div style="display: flex; width: 1440px; min-height: 1950px; background: #121212; color: #f2f2f0">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="VESTIARIO" numeri="RICHIESTE ONLINE:3, VESTIARIO:6" nome="Marco Rossi" ruolo="Segreteria" altezza="1950px" hint-size="240px,1950px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex"><dc-import name="Bottone" label="‹ GLI ORDINI" variante="linea" contesto="segreteria" hint-size="150px,48px"></dc-import></div>
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+      <h1 style="margin: 0; flex-grow: 1; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 34px; line-height: 1">CATALOGO E CHIUSURA</h1>
+      <dc-import name="Bottone" label="VEDI LA PAGINA ↗" variante="linea" contesto="segreteria" hint-size="200px,48px"></dc-import>
+    </div>
+    <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #8c8c88">Quello che vede chi ordina dal link. Si cambia in una bozza e si salva tutto insieme, come il listino.</p>
+    <div style="display: flex; flex-direction: column; gap: 20px; max-width: 980px">
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 20px">LA RACCOLTA</span>
+        <div style="width: 280px"><dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="CHIUDE IL" valore="31/10/2026" hint-size="100%,72px"></dc-import></div>
+        <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Cambia la data per prorogare o aprire una raccolta nuova; senza cambiarla SALVA cambia solo i capi (la raccolta chiude il 31 ottobre). Fino al 31 ottobre compreso la pagina accetta ordini; dopo dice che sono chiusi.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 20px">I CAPI · 4</span>
+        <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">In quest’ordine nella pagina. Un prezzo per capo, uguale per tutte le taglie: due prezzi sono due capi. Un prezzo cambiato vale per gli ordini nuovi. Il TIPO dice in che pagina sta il capo; se anche un capo solo è senza tipo, la pagina non chiede il tipo e mostra tutti i capi insieme.</span>
+        <dc-import name="VoceElenco" nome="Judogi bianco" riassunto="JUDOGI · 35 € · taglie 110, 120, 130, 140, 150, 160, 170, 180, 190, 200 · con foto" hint-size="100%,64px"></dc-import>
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 14px; background: #121212; border: 2px solid #f2f2f0">
+          <div style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 12px">
+            <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="CAPO" valore="Costumino da lotta" hint-size="100%,72px"></dc-import>
+            <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="PREZZO · €" valore="30" hint-size="100%,72px"></dc-import>
+            <dc-import name="Campo" tipo="select" contesto="segreteria" etichetta="TIPO · FACOLTATIVO" valore="COSTUMINI LOTTA" hint-size="100%,72px"></dc-import>
+          </div>
+          <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="TAGLIE · SEPARATE DA VIRGOLA" valore="6, 8, 10, 12, 14, XS, S, M, L" hint-size="100%,72px"></dc-import>
+          <dc-import name="Campo" tipo="testo" contesto="segreteria" etichetta="NOTA SULLE TAGLIE · FACOLTATIVA" valore="Fino ai 14 anni la taglia è l’età: a 8 anni, la 8." hint-size="100%,72px"></dc-import>
+          <dc-import name="CaricaFoto" nome="Costumino da lotta" icona="costume" stato="foto" hint-size="100%,150px"></dc-import>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+            <dc-import name="Chip" label="↑ SU" hint-size="70px,44px"></dc-import>
+            <dc-import name="Chip" label="↓ GIÙ" hint-size="80px,44px"></dc-import>
+            <span style="display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; font-size: 13px; color: #8c8c88; text-decoration: underline; text-underline-offset: 3px">Togli dal catalogo</span>
+            <div style="flex-grow: 1"></div>
+            <dc-import name="Bottone" label="CHIUDI" variante="linea" contesto="segreteria" hint-size="110px,48px"></dc-import>
+          </div>
+        </div>
+        <dc-import name="VoceElenco" nome="Felpa ODS" riassunto="VESTIARIO LOGATO · 28 € · taglie 6, 8, 10, 12, xs, s, m, l, xl · con foto" hint-size="100%,64px"></dc-import>
+        <dc-import name="VoceElenco" nome="Cintura" riassunto="JUDOGI · 6 € · taglie 220, 240, 260, 280 · Per i bambini va bene la 240. · senza foto" hint-size="100%,64px"></dc-import>
+        <dc-import name="Bottone" label="+ AGGIUNGI UN CAPO" variante="tratteggiato" contesto="segreteria" hint-size="100%,48px"></dc-import>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; min-width: 0; background: #1c1c1c; border: 2px solid #333333">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-weight: 700; letter-spacing: 0.04em; font-size: 20px">LE TABELLE DELLE TAGLIE</span>
+        <span style="font-size: 14px; line-height: 1.4; color: #8c8c88">Una per tipo, facoltativa: sta in cima alla pagina del tipo e chi ordina la apre grande. Anche la tabella è pubblica. Con la pagina sola sta in cima ai capi.</span>
+        <dc-import name="CaricaFoto" cosa="TABELLA" etichetta="JUDOGI" nome="Tabella JUDOGI" icona="tabella" stato="foto" avviso="" hint-size="100%,110px"></dc-import>
+        <dc-import name="CaricaFoto" cosa="TABELLA" etichetta="COSTUMINI LOTTA" nome="Tabella COSTUMINI LOTTA" icona="tabella" stato="senza" frase="Nessuna tabella" avviso="" hint-size="100%,110px"></dc-import>
+        <dc-import name="CaricaFoto" cosa="TABELLA" etichetta="VESTIARIO LOGATO" nome="Tabella VESTIARIO LOGATO" icona="tabella" stato="senza" avviso="" hint-size="100%,110px"></dc-import>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

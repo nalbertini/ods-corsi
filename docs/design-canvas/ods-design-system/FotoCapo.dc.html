@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: {{larghezza}}; height: {{alto}}; padding: 8px; background: {{c.surface2}}; border: 2px solid {{c.line}}; border-left-width: {{lati}}; border-right-width: {{lati}}; color: {{c.dim}}; overflow: hidden">
+  <sc-if value="{{conIcona}}" hint-placeholder-val="{{ true }}">
+    <svg viewBox="0 0 64 64" width="{{lato}}" height="{{lato}}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="{{percorso}}"></path></svg>
+  </sc-if>
+  <sc-if value="{{conNome}}" hint-placeholder-val="{{ true }}">
+    <span style="max-width: 100%; font-size: 14px; font-weight: 600; line-height: 1.3; color: {{c.dim}}; text-align: center; overflow-wrap: anywhere">{{nome}}</span>
+  </sc-if>
+  <sc-if value="{{apri}}" hint-placeholder-val="{{ true }}">
+    <span style="position: absolute; right: 6px; bottom: 6px; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: {{c.bg}}; border: 2px solid {{c.line}}; color: {{c.text}}; font-size: 20px">&#10530;</span>
+  </sc-if>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"nome":{"editor":"text","default":"Judogi bianco"},"icona":{"editor":"enum","options":["judogi","costume","felpa","tabella"],"default":"judogi"},"stato":{"editor":"enum","options":["foto","errore"],"default":"foto"},"tabella":{"editor":"boolean","default":false},"tasto":{"editor":"boolean","default":true},"alto":{"editor":"text","default":""},"larghezza":{"editor":"text","default":"100%"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":220}}'>
+// `Foto` di src/components/OrdinaVestiario.tsx con .vestiario-foto, .vestiario-foto-nome e .vestiario-foto-apri di src/styles.css (blocco
+// «Il vestiario come il modulo»): la foto di un capo nella scheda, o la tabella delle taglie in cima alla pagina del tipo.
+// Nel canvas non ci sono immagini: la foto e' l'icona a linea del tipo (judogi, costume, felpa, tabella) col nome del capo, su `surface-2`
+// col bordo 2px `line`, alta 220px. tabella = alta 200px e senza bordi ai lati (larga quanto lo schermo, fuori dal margine di 20px).
+// L'immagine vera sta intera (object-fit contain). In basso a destra il tasto ⤢ da 44px (fondo `bg`, bordo `line`): tutto il riquadro e'
+// un tasto che apre la foto grande. stato = errore: la foto non si carica, resta il nome (14px 600 `dim`, il testo alternativo), senza ⤢.
+// Un capo senza foto non ha niente, nessun segnaposto: in SchedaCapo e' `foto="nessuna"`.
+// tasto = falso: senza ⤢, per la foto aperta (l'immagine nella zona dello zoom di FotoGrande) e la miniatura di CaricaFoto.
+// Sotto i 120px di altezza il nome non c'e'.
+const T = {
+  scuro: { bg: '#121212', surface2: '#242424', line: '#333333', text: '#f2f2f0', dim: '#8c8c88' },
+  chiaro: { bg: '#f4f4f1', surface2: '#e9e9e5', line: '#d4d4ce', text: '#161616', dim: '#656561' },
+};
+const truthy = (v) => v === true || v === 'true';
+const ICONE = {
+  judogi: 'M22 8 L32 20 L42 8 L56 16 L50 30 L46 28 L46 56 L18 56 L18 28 L14 30 L8 16 Z M32 20 L26 56 M32 20 L38 38 M18 38 H46',
+  costume: 'M22 8 C22 18 42 18 42 8 L48 8 C48 18 52 22 52 30 L52 56 L12 56 L12 30 C12 22 16 18 16 8 Z',
+  felpa: 'M24 8 C26 15 38 15 40 8 L54 16 L58 36 L50 38 L48 28 L48 56 L16 56 L16 28 L14 38 L6 36 L10 16 Z M24 42 H40',
+  tabella: 'M8 12 H56 V52 H8 Z M8 22 H56 M8 32 H56 M8 42 H56 M24 12 V52 M40 12 V52',
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const errore = p.stato === 'errore';
+    const tabella = truthy(p.tabella);
+    const alto = p.alto || (tabella ? '200px' : '220px');
+    const px = parseInt(alto, 10) || 220;
+    return {
+      c, alto, larghezza: p.larghezza || '100%',
+      lati: tabella ? '0' : '2px',
+      conIcona: !errore,
+      lato: String(Math.min(96, Math.round(px * 0.4))),
+      percorso: ICONE[p.icona] || ICONE.judogi,
+      nome: p.nome ?? 'Judogi bianco',
+      conNome: errore || px >= 120,
+      apri: !errore && p.tasto !== false && p.tasto !== 'false',
+    };
+  }
+}
+</script>
+</body>
+</html>

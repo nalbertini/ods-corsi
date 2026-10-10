@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 8px 12px; background: {{c.surface}}; border: 2px solid {{c.rigaCampo}}; color: {{c.text}}; font-size: 15px; font-weight: 600; text-align: left">
+  <span style="display: flex; flex-direction: column; flex-grow: 1; gap: 2px; min-width: 0">
+    <span>{{tipo}}</span>
+    <span style="font-size: 13px; font-weight: 400; line-height: 1.35; color: {{c.dim}}">{{riga}}</span>
+  </span>
+  <span aria-hidden="true">&#8250;</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tipo":{"editor":"text","default":"JUDOGI"},"riga":{"editor":"text","default":"3 capi · dai 6 €"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":350,"height":60}}'>
+// Un tipo nel passo IL TIPO della pagina degli ordini (src/components/OrdinaVestiario.tsx): un <button class="modulo-corso"> senza spunta.
+// .modulo-corso (min 52px, padding 8px 12px, fondo `surface`, bordo 2px `riga-campo`, 15px 600), .modulo-corso-riga sotto il nome (13px
+// `dim`: «3 capi · dai 6 €», o il prezzo solo se e' uno) e › a destra. Un tocco porta alla pagina del tipo: niente scelta accesa, niente
+// AVANTI (BarraPasso con `senzaAvanti`).
+const T = {
+  scuro: { surface: '#1c1c1c', rigaCampo: '#6e6e6a', text: '#f2f2f0', dim: '#8c8c88' },
+  chiaro: { surface: '#ffffff', rigaCampo: '#8a8a85', text: '#161616', dim: '#656561' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    return { c: T[p.tema] || T.scuro, tipo: p.tipo ?? 'JUDOGI', riga: p.riga ?? '3 capi · dai 6 €' };
+  }
+}
+</script>
+</body>
+</html>
