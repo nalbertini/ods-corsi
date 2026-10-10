@@ -273,8 +273,8 @@ dice che manca l'aggiornamento.
 
 Per i corsi «alla stessa ora» del genitore nell'iscrizione a passi basta
 `48-orari-aperti.sql` (dopo `06-iscrizioni.sql`), che non chiede di rilanciare
-`06-iscrizioni.sql`: se lo si rilancia dopo, va rilanciato anche questo, che
-rimette ad `anon` il permesso su `orari_aperti()`. Finché non c'è, il modulo
+`06-iscrizioni.sql`: se lo si rilancia dopo, è `06` a rimettere il permesso
+ad `anon` su `orari_aperti()`. Finché non c'è, il modulo
 non propone corsi alla stessa ora e fa scegliere fra tutti i corsi per l'età.
 
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di

@@ -590,6 +590,14 @@ begin
     grant execute on function vestiario(), invia_ordine_vestiario(jsonb) to anon, authenticated;
   end if;
 end $$;
+-- Gli orari dei corsi aperti, per la «stessa ora» del genitore, se
+-- 48-orari-aperti.sql è già stato lanciato.
+do $$
+begin
+  if to_regprocedure('public.orari_aperti()') is not null then
+    grant execute on function orari_aperti() to anon, authenticated;
+  end if;
+end $$;
 -- Le tabelle restano chiuse, anche quelle che verranno: Supabase per default
 -- le dà ad `anon`, e l'RLS da sola è una porta sola invece di due.
 revoke all on all tables in schema public from anon;

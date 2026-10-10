@@ -14,8 +14,8 @@
 --     `corsi`, `ricorrenze` e `sessioni` restano chiuse come prima.
 --
 -- Si lancia dopo `06-iscrizioni.sql`, e non chiede di rilanciarlo. Se lo si
--- rilancia dopo, toglie ad `anon` `orari_aperti()`: va rilanciato anche
--- questo. Finché non c'è, il modulo non propone corsi alla stessa ora e fa
+-- rilancia dopo, è `06` a rimettere il permesso ad `anon` su `orari_aperti()`.
+-- Finché non c'è, il modulo non propone corsi alla stessa ora e fa
 -- scegliere al genitore fra tutti i corsi per la sua età.
 -- ---------------------------------------------------------------------------
 
