@@ -111,13 +111,23 @@ accoglie.
 
 ## Il modulo a passi (solo in prova)
 
-È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa cinque passi (**I TUOI DATI**, **SCEGLI IL CORSO**, **IL MODULO E LA FIRMA**, **I DOCUMENTI E IL PAGAMENTO**, **CONTROLLA E INVIA**); per un figlio sono sei, perché c'è anche **IL GENITORE CHE FIRMA**. Nei passi del corso e dei documenti, sopra i tasti, c'è sempre il **totale** da pagare. Prima
+È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa sei passi (**I TUOI DATI**, **SCEGLI IL CORSO**, **IL MODULO E LA FIRMA**, **I DOCUMENTI**, **QUANTO PAGHI**, **CONTROLLA E INVIA**); per un figlio sono sette, perché c'è anche **IL GENITORE CHE FIRMA**. Nei passi del corso e di QUANTO PAGHI, sopra i tasti, c'è sempre il **totale** da pagare: con più persone è quello di tutti, e lo dice («Totale famiglia»). Prima
 si sceglie **IO, SONO ADULTO** o **MIO FIGLIO O MIA FIGLIA**, poi si va avanti
 con **AVANTI**. Se tocchi AVANTI e manca qualcosa, in fondo allo schermo una riga dice quante cose mancano e **VAI A** la prima: un tocco e il cursore è già nel campo. La freccia accanto apre l'elenco di tutto quel che manca, e ogni voce porta al suo campo. L'ultimo passo
 è il riepilogo: da lì **MODIFICA** riporta al passo da cambiare, e **MANDA LA
 RICHIESTA** la manda. Chi iscrive il figlio può iscriversi anche lui, con
 **ISCRIVO ANCHE ME**: sono poche domande in più, e la segreteria vede il
 conto della famiglia con lo sconto.
+
+**QUANTO PAGHI** viene dopo l'ultima persona, prima del riepilogo, ed è uno
+solo per tutto il modulo: il conto di tutti con lo sconto famiglia, la cifra da
+pagare, l'IBAN con **COPIA IBAN**, la causale con **COPIA CAUSALE** e **PAGA CON
+SATISPAY**. La causale ha i nomi di tutti, il cognome uguale una volta sola
+(«Iscrizione Manuela e Nicola Albertini»); da soli resta col corso. La
+**ricevuta** del bonifico è facoltativa e una sola per tutti: chi la carica
+prima di aggiungere un familiare, o prima di cambiare corso, legge sotto di
+quanto è cambiato il totale e che la differenza si paga in segreteria o con un
+altro bonifico. Nel riepilogo, la riga **Ricevuta del pagamento** porta qui.
 
 Nel passo del corso del figlio, il riquadro **TI ISCRIVI ANCHE TU?** propone
 al genitore i corsi per la sua età che si fanno mentre il figlio è in palestra:
@@ -168,7 +178,8 @@ la prova nulla va a un server. Il modulo di sopra resta quello di oggi.
 Cosa arriva in **RICHIESTE ONLINE**: una richiesta, o due se c'è «Anche tu»
 (una del bambino, una del genitore). Le due sono separate, e nelle note di
 ognuna c'è una riga che dice «mandata insieme alla richiesta di…, sconto
-famiglia da applicare», così la segreteria le lega. Le note che scrive chi
+famiglia da applicare», così la segreteria le lega. La ricevuta del
+bonifico, se c'è, arriva in ognuna: è un pagamento solo per tutte. Le note che scrive chi
 compila sono al massimo 900 caratteri, per fare posto a quella riga.
 
 ## Ordinare il vestiario

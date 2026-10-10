@@ -145,6 +145,32 @@ function CopiaIban() {
   )
 }
 
+/** L'IBAN, la causale di tutto il modulo e i tasti per copiarli (e Satispay): il bonifico di QUANTO PAGHI. */
+function ComePagare({ causale }: { causale: string }) {
+  const [copiato, setCopiato] = useState<string | null>(null)
+  const copia = (cosa: string, valore: string) =>
+    navigator.clipboard?.writeText(valore).then(
+      () => {
+        setCopiato(cosa)
+        setTimeout(() => setCopiato(null), 2000)
+      },
+      () => {},
+    )
+  return (
+    <>
+      <span className="num iban">{PAGAMENTO.iban}</span>
+      <Dettaglio>
+        Causale: <span className="testo-pieno">{causale}</span>
+      </Dettaglio>
+      <Tasti>
+        <Tasto onClick={() => void copia('iban', PAGAMENTO.iban.replace(/\s/g, ''))}>{copiato === 'iban' ? 'COPIATO' : 'COPIA IBAN'}</Tasto>
+        <Tasto onClick={() => void copia('causale', causale)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>
+        {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
+      </Tasti>
+    </>
+  )
+}
+
 function Scelta({ prova, onScegli }: { prova: boolean; onScegli: (chi: P.Chi) => void }) {
   return (
     <>
@@ -610,9 +636,11 @@ function Flusso({
     setGuaio(null)
     setFase({ tipo: 'invio' })
     // Ogni persona ha la sua richiesta, e il suo modulo con la sua firma.
-    const daMandare = tutte.flatMap((p, i) => {
+    const perPersona = tutte.flatMap((p, i) => {
       return P.richiesteDaMandare(p, P.siglaDelGenitore(p, luoghi, provincia), (c) => faiModulo(c.dati, c.minore, c.scelte, c.natoA, c.provincia, trattiDi[i]))
     })
+    // La ricevuta è una per tutto il modulo: va in ogni richiesta.
+    const daMandare = P.conLaRicevutaInTutte(perPersona, P.ricevutaDelModulo(tutte))
     try {
       gestisci(await P.mandaRichieste(d, daMandare))
     } catch (e) {
@@ -1170,7 +1198,6 @@ function Flusso({
 
     if (tipo === 'documenti') {
       const certificato = daChiedere.certificato
-      const nome = r.nome.trim() || 'Chi si iscrive'
       return (
         <>
           <Titoletto>I DOCUMENTI</Titoletto>
@@ -1197,14 +1224,47 @@ function Flusso({
                 )
               })}
           </div>
-          <Titoletto>QUANTO PAGHI</Titoletto>
-          <div className="pad stack passo-dopo">
-            <Dettaglio>Pagare in segreteria va benissimo: non serve il bonifico né caricare niente.</Dettaglio>
-            <QuantoCosta nome={nome} cognome={r.cognome.trim()} corsi={refDei(r.corsi)} formula={r.formula} abbonamenti={[]} />
+        </>
+      )
+    }
+
+    if (tipo === 'pagamento') {
+      const conto = P.contoDelModulo(tutte, corsi ?? [], listino, chiaveGiorno(new Date()))
+      const insieme = tutte.length > 1 || (ancheTu && !!suo)
+      const avviso = P.avvisoRicevuta(tutte, conto?.totale)
+      return (
+        <>
+          <div className="pad stack passo-prima">
+            <Dettaglio tono="testo">
+              {insieme ? 'Un pagamento solo per tutti. ' : ''}Pagare in segreteria va benissimo: non serve il bonifico né caricare niente.
+            </Dettaglio>
+            <div className="modulo-campo modulo-largo">
+              <span className="modulo-etichetta">{insieme ? 'IL CONTO DELLA FAMIGLIA' : 'IL CONTO'}</span>
+              <Riquadro stretto>
+                {conto ? (
+                  <>
+                    <Conto righe={conto.righe} totale={conto.totale} />
+                    {conto.senzaPrezzo.length > 0 && <Dettaglio tono="avviso">Senza prezzo nel listino: {conto.senzaPrezzo.join(', ')}. Lo dice la segreteria.</Dettaglio>}
+                    <Dettaglio>
+                      Paga questo totale{conto.righe.some((x) => x.importo < 0) ? ': lo sconto è già dentro' : ''}. Se la segreteria trova una differenza, te lo dice lei. Bonifico a {PAGAMENTO.intestatario}:
+                    </Dettaglio>
+                  </>
+                ) : (
+                  <Dettaglio>L’importo te lo conferma la segreteria. Bonifico a {PAGAMENTO.intestatario}:</Dettaglio>
+                )}
+                <ComePagare causale={P.causaleDelModulo(tutte, corsi ?? [])} />
+              </Riquadro>
+            </div>
           </div>
           <Titoletto>LA RICEVUTA · FACOLTATIVA</Titoletto>
           <div className="pad stack passo-dopo">
-            <SceltaFile tipo="ricevuta" file={v.file.ricevuta} onFile={(f) => setFile('ricevuta', f)} />
+            <SceltaFile
+              tipo="ricevuta"
+              file={P.ricevutaDelModulo(tutte)}
+              onFile={(f) => setPersone((ps) => P.conLaRicevuta(ps, f, conto?.totale))}
+              dettaglio={insieme ? 'Una sola, per tutta la famiglia. Una foto o il PDF.' : undefined}
+            />
+            {avviso && <Dettaglio tono="avviso">{avviso}</Dettaglio>}
           </div>
         </>
       )
@@ -1298,7 +1358,9 @@ function Flusso({
       dettaglio: x.dettaglio,
       tasto: { testo: x.manca ? 'VAI A' : 'MODIFICA', onFai: () => vaiA(i, x.passo, x.manca) },
     }))
-    const righeVista: RigaRiepilogo[] = famiglia ? righePersone : [
+    // La ricevuta è una per tutto il modulo (sta nella prima persona): in famiglia una riga sola, sotto le persone.
+    const rigaRicevuta = P.righeRiepilogo(tutte[0], corsi ?? []).filter((x) => x.cosa === 'ricevuta').map(vistaDi)
+    const righeVista: RigaRiepilogo[] = famiglia ? [...righePersone, ...rigaRicevuta] : [
       { stato: 'fatto', titolo: `${r.nome.trim()} ${r.cognome.trim()}`, dettaglio: r.natoIl ? `nato il ${r.natoIl.split('-').reverse().join('/')} · ${anniScritti(r.natoIl)}` : undefined, tasto: modifica('dati') },
       ...righe.filter((x) => !x.manca && !x.suo && x.cosa !== 'ricevuta').map(vistaDi),
       ...(suo ? [{ stato: 'fatto' as const, titolo: nomeLui || 'Il genitore', dettaglio: `${nomiDei(suo.corsi)} · ${suo.formula} · ${scelteDette(suo.scelte)}`, tasto: modifica('anche') }] : []),
