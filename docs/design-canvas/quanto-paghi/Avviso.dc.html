@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA. La ricevuta caricata quando il conto era piu' piccolo: resta, e un avviso giallo dice la differenza e cosa fare. Con una persona sola e' lo stesso passo, senza pastiglie, con IL CONTO e la causale di oggi. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 560px; background: #121212; color: #f2f2f0">
+<dc-import name="Avanzamento" numero="6" totale="7" titolo="QUANTO PAGHI" hint-size="100%,120px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 20px 4px"><span style="font-size: 14px; line-height: 1.4; color: #8c8c88">… il conto, l’IBAN e la causale, come accanto, con Luca: totale 802 €.</span></div>
+<dc-import name="Titoletto" label="LA RICEVUTA · FACOLTATIVA" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 20px 16px"><dc-import name="CaricaFile" etichetta="RICEVUTA DEL PAGAMENTO" nome="bonifico-albertini.pdf" kb="96" hint-size="100%,100px"></dc-import><span style="font-size: 14px; line-height: 1.4; color: #f4c31b">Hai caricato la ricevuta prima di aggiungere Luca: ora il totale è 802 €, cioè 180 € in più. La differenza la paghi in segreteria o con un altro bonifico.</span></div>
+<div style="flex-grow: 1"></div>
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 20px; background: #1c1c1c; border-top: 2px solid #333333"><span style="font-size: 14px; line-height: 1.35; color: #c9c9c4">Totale famiglia · Manuela 212 € + Nicola 410 € + Luca 180 €</span><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 28px; font-weight: 700; color: #f2f2f0; flex-shrink: 0">802 €</span></div><dc-import name="BarraPasso" nota="Tutto a posto in questo passo." avanti="AVANTI" hint-size="100%,150px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

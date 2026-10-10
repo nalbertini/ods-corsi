@@ -37,6 +37,7 @@ const SEZIONI = [
   { id: 'iscrizione-famiglia', nome: 'Iscrizione di famiglia · proposta', cartella: 'iscrizione-famiglia' },
   { id: 'famiglia-ultimo', nome: 'La famiglia all\'ultimo passo', cartella: 'famiglia-ultimo-passo' },
   { id: 'comune-dal-cap', nome: 'Il comune dal CAP', cartella: 'comune-dal-cap' },
+  { id: 'quanto-paghi', nome: 'Quanto paghi e le carte col nome', cartella: 'quanto-paghi' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')
