@@ -18,6 +18,9 @@ import { chiaveGiorno } from './sala'
 
 const DOVE = 'ods-corsi:prova-richieste'   // vedi la nota in coda.ts
 
+/** Come `per_email_al_giorno` di `48-richieste-per-email.sql`: una famiglia di sei persone le manda tutte con una email. */
+const PER_EMAIL_AL_GIORNO = 6
+
 function leggi(): Richiesta[] {
   try {
     const r = JSON.parse(localStorage.getItem(DOVE) ?? '[]')
@@ -101,8 +104,8 @@ export function creaRichiesteProva(): DatiRichieste {
         throw new Error('Il nucleo per cui iscrivi non c’è più: ricarica la pagina')
       const email = dati.email.trim().toLowerCase()
       const ieri = Date.now() - 24 * 60 * 60_000
-      if (tutte.filter((r) => r.email === email && new Date(r.creataIl).getTime() > ieri).length >= 3)
-        throw new Error('Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria')
+      if (tutte.filter((r) => r.email === email && new Date(r.creataIl).getTime() > ieri).length >= PER_EMAIL_AL_GIORNO)
+        throw new Error(`Da questa email sono già arrivate ${PER_EMAIL_AL_GIORNO} richieste oggi: se serve, scrivi alla segreteria`)
       const minore = minorenne(dati.natoIl)
       // Come il database: il luogo di nascita, se l'elenco lo conosce, è quello del codice.
       const luogo = luogoDaCf(await caricaLuoghi(), pulisciCf(dati.codiceFiscale), dati.natoIl)

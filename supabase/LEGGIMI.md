@@ -75,6 +75,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 45. `45-certificati-online.sql` — il certificato medico resta nell'app: un file per persona (foto o PDF, 10 MB) in un contenitore privato che apre solo la segreteria, caricato insieme alla data in un passaggio solo, cancellato 30 giorni dopo la scadenza o quando la persona è disattivata; accogliendo una richiesta il certificato passa alla scheda, e unire due schede non si ferma più sul file
 46. `46-istruttore-collega.sql` — il collega che insegnava con te: chi fa l'appello vede gli altri istruttori previsti e ne segna uno presente (confermato, «segnata da …»), e lo toglie finché la segreteria non l'ha guardato; la segreteria segna «c'era» un previsto anche su una lezione già coperta
 47. `47-vestiario.sql` — gli ordini di vestiario, judogi e costumini: il catalogo (capo, taglie, prezzo, nota) in `impostazioni.vestiario` e la data di chiusura nella raccolta, li salva la segreteria; chi non ha un accesso legge il catalogo da `vestiario()` e manda un ordine da `invia_ordine_vestiario()` fino alla data compresa, coi prezzi e il totale messi dal database; gli ordini li vede e li cambia solo la segreteria, che corregge le righe e scrive dal banco anche a raccolta chiusa
+48. `48-richieste-per-email.sql` — sei richieste al giorno dalla stessa email, non più tre: una famiglia di sei persone le manda tutte con una email sola; cambia solo il numero in `iscrizioni_regole()`
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -269,6 +270,12 @@ che non chiede di rilanciare `06-iscrizioni.sql`: se lo si rilancia dopo,
 rimette lui il permesso ad `anon` su `vestiario()` e `invia_ordine_vestiario()`.
 Finché non c'è, la pagina pubblica dice «ordini non ancora aperti» e VESTIARIO
 dice che manca l'aggiornamento.
+
+Per mandare più di tre richieste al giorno dalla stessa email basta
+`48-richieste-per-email.sql` (dopo `06-iscrizioni.sql`), che non chiede di
+rilanciarlo: se lo si rilancia dopo, `06` rimette il limite a tre e va
+rilanciato anche il `48`. Finché non c'è, la quarta richiesta dalla stessa email
+è rifiutata e l'iscrizione di una famiglia si ferma a metà.
 
 Chi aveva già lanciato `21-prove.sql` lo rilancia, che non chiede di
 rilanciare `06-iscrizioni.sql`: la prima versione dava il telefono di chi è
@@ -503,7 +510,7 @@ Cosa fa `06-iscrizioni.sql`:
 - `richieste_con_documento()` dice alla segreteria quali richieste hanno
   ancora il documento d'identità caricato: RICHIESTE ONLINE le segna **DA
   STAMPARE** (il certificato no: dal `45` resta nell'app, vedi più sotto);
-- la porta non è spalancata: tre richieste al giorno dalla stessa email, trenta
+- la porta non è spalancata: sei richieste al giorno dalla stessa email (tre fino al `48`), trenta
   all'ora in tutto. I numeri stanno in `iscrizioni_regole()`;
 - accogliere (`accogli_iscrizione`) mette la persona in elenco e la iscrive ai
   corsi scelti. Se c'era già la ritrova: dal codice fiscale di una richiesta
@@ -977,7 +984,7 @@ prova il tablet di sala: le finestre di tempo, il recupero, l'annullo, il PIN
 e il blocco, e che il tablet non veda niente più di quel che deve;
 `categorie-esercizi.sql` prova la categoria unica degli esercizi: le cinque voci in più, la conversione dei dati vecchi, il rilancio, e che il database accetti ancora una copia vecchia dell'app; `attivita.sql` prova l'elenco delle attività, le lezioni che seguono il giorno e chi può cambiarle; `segreteria.sql` prova cosa succede alle lezioni quando un corso, o uno dei
 suoi giorni, cambia sala, quando cambiano istruttore o giorni, o si archivia, e il primo accesso; `iscrizioni.sql`
-prova il modulo di iscrizione: cosa può fare chi non ha un accesso, i limiti
+prova il modulo di iscrizione: cosa può fare chi non ha un accesso, le sei richieste al giorno per email (la settima no), i limiti
 sui file (il documento, che si trovi da stampare; il certificato, che passi alla scheda accogliendo), e chi accoglie le richieste;
 `certificati.sql` prova che certificati, documento e pagamenti li veda e li
 cambi solo la segreteria, che il file del certificato stia in un contenitore

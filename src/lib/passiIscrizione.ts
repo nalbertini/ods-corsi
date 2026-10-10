@@ -331,6 +331,37 @@ export function perUnAltroFiglio(s: StatoPassi): StatoPassi {
   return { ...nuovoStato('figlio'), risposte, inizio: { ...risposte } }
 }
 
+// --- la famiglia: chi si aggiunge ----------------------------------------------
+
+/** Quante persone stanno in un solo modulo: come le richieste al giorno per email (`48-richieste-per-email.sql`). */
+export const MASSIMO_PERSONE = 6
+
+export const puoiAggiungere = (quante: number): boolean => quante < MASSIMO_PERSONE
+
+/**
+ * Una persona in più nella famiglia: l'indirizzo e i contatti sono quelli della
+ * prima (li cambia dopo, se serve), il resto si scrive da capo. Il bambino lo
+ * firma un adulto della famiglia, `indiceFirmatario`, di cui prende i dati.
+ */
+export function aggiungiFamiliare(persone: StatoPassi[], chi: Chi, indiceFirmatario = 0): StatoPassi[] {
+  if (!puoiAggiungere(persone.length)) throw new Error('In un solo modulo ci sono al massimo sei persone.')
+  const firma = persone[indiceFirmatario]
+  if (chi === 'figlio' && firma?.chi !== 'adulto') throw new Error('Per firmare serve un adulto della famiglia: scegline un altro.')
+  const base = persone[0].risposte
+  const risposte: DatiRichiesta = {
+    ...VUOTO,
+    corsi: [],
+    indirizzo: base.indirizzo,
+    cap: base.cap,
+    comune: base.comune,
+    email: base.email,
+    telefono: base.telefono,
+    telefono2: base.telefono2,
+    ...(chi === 'figlio' ? { genitoreNome: firma.risposte.nome, genitoreCognome: firma.risposte.cognome, genitoreCodiceFiscale: firma.risposte.codiceFiscale } : {}),
+  }
+  return [...persone, { ...nuovoStato(chi), risposte, inizio: { ...risposte, corsi: [] } }]
+}
+
 // --- i file, la firma, il riepilogo -----------------------------------------
 
 /**
@@ -574,7 +605,8 @@ export function corsiPerEtaConStessaOra(corsi: CorsoRef[], listino: Listino | un
 /**
  * Il conto della famiglia: ognuno con la sua stima, gli annuali degli altri
  * contano per lo sconto (20% sul più basso, quota esclusa), che si toglie una
- * volta sola anche a prezzi uguali. Centesimi; lo sconto è positivo.
+ * volta sola anche a prezzi uguali, e sulla riga di chi ha quell'annuale: in
+ * qualunque ordine stiano le persone. Centesimi; lo sconto è positivo.
  */
 export function contoFamiglia(
   persone: Array<{ chi: string; corsi: Array<string | CorsoRef>; formula: Formula }>,
@@ -592,11 +624,14 @@ export function contoFamiglia(
   const righe: RigaStima[] = []
   let totale = 0
   let sconto: number | undefined
+  // Lo sconto passa da `sconto` anche quando sta sulla riga di un altro: «già tolto» è solo se una riga di sconto è già entrata, se no chi viene dopo lo perde.
+  let tolto = false
   const senzaPrezzo: string[] = []
   persone.forEach((p, i) => {
     const st = stimaIscrizione(p, persone.flatMap((x, j) => (j === i ? [] : annuali(x))), giorno, listino)
-    const doppio = st.sconto?.qui && sconto !== undefined
+    const doppio = st.sconto?.qui && tolto
     const mie = doppio ? st.righe.slice(0, -1) : st.righe
+    if (st.sconto?.qui) tolto = true
     righe.push(...mie.map((r) => ({ ...r, testo: `${p.chi}: ${r.testo}` })))
     totale += mie.reduce((t, r) => t + r.importo, 0)
     sconto = sconto ?? st.sconto?.importo
@@ -692,13 +727,16 @@ export type Esito =
   | { esito: 'fatto'; ids: string[] }
   | { esito: 'fermo'; perche: string }
   | { esito: 'secondaNo'; perche: string; ids: string[]; riprova: () => Promise<Esito> }
+  // Da tre persone in su: `arrivati` e `mancanti` sono i nomi, nell'ordine in cui si mandano; `ids` quelli di chi è arrivato.
+  | { esito: 'aMeta'; perche: string; arrivati: string[]; mancanti: string[]; ids: string[]; riprova: () => Promise<Esito> }
   | { esito: 'file'; perche: string; mancati: Mancato[]; riprova: () => Promise<Esito> }
 
 /**
- * Come `ModuloIscrizione.manda`, per una o due persone: prima i PDF (se uno
+ * Come `ModuloIscrizione.manda`, per una o più persone: prima i PDF (se uno
  * non viene non nasce niente), poi per ognuna la richiesta e i suoi file uno
- * alla volta. Se la seconda richiesta si ferma la prima è arrivata: RIPROVA
- * rimanda solo la seconda, mai la prima (sarebbe un doppione).
+ * alla volta. Se una richiesta dopo la prima si ferma, quelle prima sono
+ * arrivate: RIPROVA rimanda solo da quella in poi, mai le arrivate (sarebbero
+ * doppioni).
  */
 export function mandaRichieste(d: DatiRichieste, daMandare: DaMandare[]): Promise<Esito> {
   // Due tocchi nello stesso istante: la seconda chiamata ha gli stessi dati e aspetta la prima, non manda un doppione.
@@ -729,12 +767,14 @@ async function mandaDavvero(d: DatiRichieste, daMandare: DaMandare[]): Promise<E
       return { esito: 'fermo', perche: moduloNonSiPrepara(daMandare.length === 1) }
     }
   }
-  // Le due richieste arrivano separate: la segreteria le lega da questa riga.
+  // Le richieste arrivano separate: la segreteria le lega da questa riga.
+  // Il nome come lo scrive `invia`: la segreteria lo ritrova uguale in elenco.
+  const nome = (x: DatiRichiesta) => `${nomeProprio(x.nome)} ${nomeProprio(x.cognome)}`
   const dati = daMandare.map(({ dati: x }, i) => {
-    const altro = daMandare.length === 2 ? daMandare[1 - i].dati : null
-    if (!altro) return x
-    // Il nome come lo scrive `invia`: la segreteria lo ritrova uguale in elenco.
-    const legame = `mandata insieme alla richiesta di ${nomeProprio(altro.nome)} ${nomeProprio(altro.cognome)}, sconto famiglia da applicare`
+    if (daMandare.length < 2) return x
+    const altri = daMandare.filter((_, j) => j !== i).map((y) => nome(y.dati))
+    // Con più di due la riga è corta, solo i nomi: con sei persone e le note scritte al massimo deve stare nei 1000 caratteri del database.
+    const legame = altri.length === 1 ? `mandata insieme alla richiesta di ${altri[0]}, sconto famiglia da applicare` : `con ${altri.join(', ')}: sconto famiglia da applicare`
     return { ...x, note: x.note ? `${x.note}\n${legame}` : legame }
   })
 
@@ -773,7 +813,10 @@ async function mandaDavvero(d: DatiRichieste, daMandare: DaMandare[]): Promise<E
         ids[i] = await d.invia(dati[i])
       } catch (e) {
         const motivo = e instanceof Error ? e.message : 'Il server non risponde: riprova fra poco'
-        return i === 0 ? { esito: 'fermo', perche: motivo } : { esito: 'secondaNo', perche: motivo, ids: ids.slice(0, i), riprova: unaAlla(() => manda(i)) }
+        if (i === 0) return { esito: 'fermo', perche: motivo }
+        const riprova = unaAlla(() => manda(i))
+        if (dati.length === 2) return { esito: 'secondaNo', perche: motivo, ids: ids.slice(0, i), riprova }
+        return { esito: 'aMeta', perche: motivo, arrivati: dati.slice(0, i).map(nome), mancanti: dati.slice(i).map(nome), ids: ids.slice(0, i), riprova }
       }
       await carica(i, FILE.map((f) => f.tipo))
     }

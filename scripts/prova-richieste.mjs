@@ -189,9 +189,19 @@ const giulia = await r.invia(adulto({ nome: 'Giulia', codiceFiscale: 'RSSGLI17C4
 const marco = await r.invia(adulto({ nome: 'Marco', codiceFiscale: 'RSSMRC15E05L219V', natoIl: '2015-05-05', email: 'MAMMA@esempio.it', corsi: ['judo-3'], ...genitore }))
 const terzo = await r.invia(adulto({ nome: 'Terzo', codiceFiscale: 'RSSTRZ96A01L219A', email: 'mamma@esempio.it' }))
 {
-  ok('la quarta dalla stessa email no', await errore(() => r.invia(adulto({ nome: 'Quarto', codiceFiscale: 'RSSQRT96A01L219R', email: 'mamma@esempio.it' }))), 'Da questa email sono già arrivate 3 richieste oggi: se serve, scrivi alla segreteria')
+  // Sei richieste al giorno per email (`per_email_al_giorno` di 48-richieste-per-email.sql): una famiglia di sei le manda tutte.
+  const MSG6 = 'Da questa email sono già arrivate 6 richieste oggi: se serve, scrivi alla segreteria'
+  const cfDi = (nome, cognome, natoIl) => {
+    const [a, mese, g] = natoIl.split('-')
+    const q = m.lettereCognome(cognome) + m.lettereNome(nome) + a.slice(2) + 'ABCDEHLMPRST'[Number(mese) - 1] + g + 'L219'
+    return q + m.carattereControllo(q)
+  }
+  for (const [nome, anno] of [['Quarto', '1990'], ['Quinto', '1991'], ['Sesto', '1992']])
+    ok(`la ${nome === 'Quarto' ? 'quarta' : nome === 'Quinto' ? 'quinta' : 'sesta'} dalla stessa email passa`, await errore(() => r.invia(adulto({ nome, codiceFiscale: cfDi(nome, 'Rossi', `${anno}-03-03`), natoIl: `${anno}-03-03`, email: 'mamma@esempio.it' }))), 'nessun errore')
+  ok('la settima dalla stessa email no', await errore(() => r.invia(adulto({ nome: 'Ultimo', codiceFiscale: cfDi('Ultimo', 'Rossi', '1993-03-03'), natoIl: '1993-03-03', email: 'mamma@esempio.it' }))), MSG6)
   const tutte = await r.richieste()
-  ok('sono quattro, nuove', tutte.map((x) => x.stato), ['nuova', 'nuova', 'nuova', 'nuova'])
+  // Luca scrive da un'altra email: sono sei da mamma@ (Giulia, Marco, Terzo, Quarto, Quinto, Sesto) più lui.
+  ok('sono sette, nuove', tutte.map((x) => x.stato), ['nuova', 'nuova', 'nuova', 'nuova', 'nuova', 'nuova', 'nuova'])
   const l = tutte.find((x) => x.id === luca)
   ok('email e codice fiscale messi in ordine', `${l.email} ${l.codiceFiscale}`, 'luca@esempio.it RSSLCU96A01L219K')
   ok('il genitore di un adulto non si tiene', l.genitoreNome, undefined)

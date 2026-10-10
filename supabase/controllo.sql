@@ -240,6 +240,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from dentro where nome = 'segna_vestiario')
     and exists (select 1 from dentro where nome = 'vestiario_gia_mandato' and corpo like '%vestiario_cifre%')
     and not has_column_privilege('authenticated', 'public.ordini_vestiario', 'saldato', 'update')),
+  ('48-richieste-per-email.sql', 'sei richieste al giorno dalla stessa email',
+    iscrizioni_regole()->>'per_email_al_giorno' = '6'),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

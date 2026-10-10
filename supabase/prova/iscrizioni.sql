@@ -122,8 +122,17 @@ select atteso('il genitore di un altro nome', tenta($$select invia_iscrizione(ad
   'nome', 'Anna', 'codice_fiscale', cf_prova('RSSNNA', (current_date - interval '9 years')::date, true), 'nato_il', current_date - interval '9 years',
   'genitore_nome', 'Marta', 'genitore_cognome', 'Rossi', 'genitore_codice_fiscale', 'RSSPLA80A41L219P')))::text$$),
   'NEGATO: Il codice fiscale del genitore non torna con il suo nome e cognome…');
-select atteso('la quarta nello stesso giorno no', tenta($$select invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Quarto', 'codice_fiscale', cf_prova('RSSQRT', (current_date - interval '30 years')::date))))::text$$), 'NEGATO: Da questa email sono già arrivate 3 richieste oggi…');
+-- Una famiglia di sei manda tutte le richieste (`48-richieste-per-email.sql`: da tre a sei al giorno).
+select atteso('la quarta dalla stessa email passa', tenta($$select (invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Quarto', 'codice_fiscale', cf_prova('RSSQRT', (current_date - interval '30 years')::date)))) is not null)::text$$), 'true');
+select atteso('la quinta dalla stessa email passa', tenta($$select (invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Quinto', 'codice_fiscale', cf_prova('RSSQNT', (current_date - interval '30 years')::date)))) is not null)::text$$), 'true');
+select atteso('la sesta dalla stessa email passa', tenta($$select (invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Sesto', 'codice_fiscale', cf_prova('RSSSST', (current_date - interval '30 years')::date)))) is not null)::text$$), 'true');
+select atteso('la settima nello stesso giorno no', tenta($$select invia_iscrizione(adulto(jsonb_build_object('email', 'mamma@esempio.it', 'nome', 'Ultimo', 'codice_fiscale', cf_prova('RSSLTM', (current_date - interval '30 years')::date))))::text$$), 'NEGATO: Da questa email sono già arrivate 6 richieste oggi…');
+select atteso('un''altra email non è toccata dal limite di mamma@', tenta($$select (invia_iscrizione(adulto(jsonb_build_object('email', 'zii@esempio.it', 'nome', 'Ultimo', 'codice_fiscale', cf_prova('RSSLTM', (current_date - interval '30 years')::date)))) is not null)::text$$), 'true');
 reset role;
+select atteso('il limite per email è sei al giorno', (select iscrizioni_regole()->>'per_email_al_giorno'), '6');
+select atteso('il limite all''ora per tutti resta sessanta', (select iscrizioni_regole()->>'in_tutto_all_ora'), '60');
+-- Le quattro richieste del limite si tolgono: le prove di sotto contano quelle di Luca, Giulia, Marco e Terzo.
+delete from richieste_iscrizione where nome in ('Quarto', 'Quinto', 'Sesto', 'Ultimo');
 -- Venti richieste mandate insieme vedevano tutte lo stesso conteggio e ne
 -- passavano tredici invece di tre: in psql il parallelo non si fa, quindi si
 -- guarda che la funzione prenda il suo turno prima di contare. E solo dopo i
