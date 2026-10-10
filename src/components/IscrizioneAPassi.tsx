@@ -14,6 +14,7 @@ import { Avanzamento, BarraPasso, Bollino, CaricaFile, Campo, Chip, Dettaglio, N
 import { Contatti, Prova } from './IscrizioniScreen'
 import { useDialogo } from './segreteria/comune'
 import { Casella, QuantoCosta, SceltaFile } from './ModuloIscrizione'
+import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../lib/comuneDalCap'
 import { firmaPng, firmaVera, TavolaFirma, type Tratto } from './TavolaFirma'
 
 /**
@@ -166,6 +167,39 @@ function Scelta({ prova, onScegli }: { prova: boolean; onScegli: (chi: P.Chi) =>
       </div>
       <Prova />
       <Contatti />
+    </>
+  )
+}
+
+/**
+ * Il COMUNE coi suggerimenti del CAP (`comuneDalCap`): sotto il campo la nota quando il comune è quello del CAP,
+ * o i comuni del CAP da scegliere, coi tasti o, se sono tanti, con la tendina. Il campo resta scrivibile.
+ */
+function CampoComune({ id, cap, comune, nota, segna, onComune }: { id: string; cap: string; comune: string; nota?: Nota; segna: object; onComune: (c: string) => void }) {
+  const dal = comuneDalCap(cap, comune)
+  return (
+    <>
+      <Campo id={id} nota={nota ?? (dal.nota ? { testo: dal.nota, guaio: false } : undefined)} etichetta="COMUNE">
+        <input id={id} maxLength={60} {...segna} className="campo" autoComplete="address-level2" value={comune} onChange={(e) => onComune(e.target.value)} />
+      </Campo>
+      {dal.scelte.length > 0 &&
+        (dal.tendina ? (
+          <Campo id={`${id}-tendina`} etichetta={etichettaTendina(cap, dal.scelte.length)} largo>
+            <select id={`${id}-tendina`} className="campo" value="" onChange={(e) => e.target.value && onComune(e.target.value)}>
+              <option value="">Scegli il tuo comune</option>
+              {dal.scelte.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </Campo>
+        ) : (
+          <div className="modulo-campo modulo-largo">
+            <Dettaglio>{fraseDellaScelta(cap, dal.scelte.length)}</Dettaglio>
+            <SceltaCorsi id={`${id}-tasti`} etichetta="Il tuo comune" una voci={dal.scelte.map((c) => ({ id: c, testo: c }))} scelti={[]} onScegli={onComune} />
+          </div>
+        ))}
     </>
   )
 }
@@ -816,11 +850,9 @@ function Flusso({
           <input id="n-indirizzo" maxLength={100} {...segna('indirizzo')} className="campo" autoComplete="street-address" value={r.indirizzo} onChange={metti('indirizzo')} />
         </Campo>
         <Campo id="n-cap" nota={nota('cap')} etichetta="CAP">
-          <input id="n-cap" {...segna('cap')} className="campo num" inputMode="numeric" autoComplete="postal-code" maxLength={5} value={r.cap} onChange={metti('cap')} />
+          <input id="n-cap" {...segna('cap')} className="campo num" inputMode="numeric" autoComplete="postal-code" maxLength={5} value={r.cap} onChange={(e) => setR(conIlComune(r, e.target.value))} />
         </Campo>
-        <Campo id="n-comune" nota={nota('comune')} etichetta="COMUNE">
-          <input id="n-comune" maxLength={60} {...segna('comune')} className="campo" autoComplete="address-level2" value={r.comune} onChange={metti('comune')} />
-        </Campo>
+        <CampoComune id="n-comune" cap={r.cap} comune={r.comune} nota={nota('comune')} segna={segna('comune')} onComune={(comune) => setR({ comune })} />
       </div>
     </>
   )
