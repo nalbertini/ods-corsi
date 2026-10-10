@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- OGGI: la carta propone solo i corsi che si sovrappongono al tuo; uno che finisce quando cominci tu, o che si fa negli stessi giorni a un altra ora, non compare. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 620px; background: #f4f4f1; color: #161616">
+<dc-import name="Avanzamento" numero="5" totale="7" titolo="LA FAMIGLIA" tema="chiaro" hint-size="100%,120px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 8px 20px 20px; flex-grow: 1"><span style="font-size: 17px; font-weight: 600">Iscrivi anche qualcuno della tua famiglia?</span><div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #ffffff; border: 2px solid #d4d4ce"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.04em">UN FIGLIO O UNA FIGLIA</span><span style="font-size: 15px; line-height: 1.45">Mentre fai Judo adulti, si allena anche lui: c'è un corso per bambini alla stessa ora.</span><div style="display: flex; gap: 8px; align-items: flex-start"><span style="flex-shrink: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; padding: 3px 6px; border: 2px solid #d4d4ce; color: #3d3d3a">STESSA ORA</span><span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 14px; font-weight: 600">Lotta 3</span><span style="font-size: 13px; color: #3d3d3a">lunedì e mercoledì 18.00</span></span></div><span style="font-size: 13px; color: #0b7a33; font-weight: 600">Con Lotta 3 annuale risparmiate 56 €</span><span style="display: flex; align-items: center; justify-content: center; min-height: 52px; border: 2px dashed #8a8a85; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 17px; font-weight: 700; letter-spacing: 0.16em">+ AGGIUNGI UN FIGLIO</span></div></div>
+</div>
+</x-dc>
+</body>
+</html>

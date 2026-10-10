@@ -1,0 +1,41 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Corsi vicini e altre idee"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · solo i corsi sovrapposti",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Carta.dc.html",
+   "title": "Proposta · LA FAMIGLIA, tre gruppi",
+   "x": 510,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Corso.dc.html",
+   "title": "Proposta · il corso del familiare, gli stessi gruppi",
+   "x": 1020,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1410,
+   "text": "Corsi vicini al tuo orario, e altre idee"
+  }
+ ]
+}
