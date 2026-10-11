@@ -290,8 +290,8 @@ spenta: toccate **ACCENDI LA MUSICA**. Con **☰** scegliete fra le liste che ha
 preparato la segreteria (tutte, col filtro per categoria): un tocco e parte.
 Quelle che il telefono non sa suonare sono spente e dicono perché. Le liste
 YouTube si fermano se bloccate il telefono: YouTube vuole che il video si veda,
-e fuori dal **TIMER** il video sta in un angolo in basso; scorrendo, la pagina
-lascia libero quello che c'è sotto.
+e fuori dal **TIMER** il video sta nella barra piccola in basso, che si alza:
+la pagina sopra si accorcia, ma niente resta coperto.
 Sotto il brano ci sono il volume, **⏮ ▶ ⏭** e **✕**, che la spegne.
 
 Una volta accesa, la musica segue le impostazioni del timer: parte e si ferma

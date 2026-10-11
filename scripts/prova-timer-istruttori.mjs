@@ -152,14 +152,18 @@ ok(
   ok('il timer del telefono suona la musica scelta sul telefono', inc?.musica, musica)
 }
 
-// YouTube fuori dal TIMER: il riquadro nell'angolo c'è solo se la musica suona o è in pausa,
-// e allora le pagine fanno spazio sotto, così non copre CHIUDI né i nomi.
-ok('YouTube che suona su un\'altra pagina: lettore nell\'angolo, con lo spazio', vedi(() => m.youtubeNellAngolo({ stato: 'suona', pagina: 'calendario', youtube: true })), true)
-ok('YouTube in pausa su un\'altra pagina: idem', vedi(() => m.youtubeNellAngolo({ stato: 'pausa', pagina: 'ore', youtube: true })), true)
-ok('YouTube fermo dopo un ricaricamento: niente riquadro fuori dal TIMER', vedi(() => m.youtubeNellAngolo({ stato: 'ferma', pagina: 'calendario', youtube: true })), false)
-ok('musica spenta: niente riquadro', vedi(() => m.youtubeNellAngolo({ stato: 'spenta', pagina: 'calendario', youtube: true })), false)
-ok('nel TIMER il video ha il suo posto: niente angolo', vedi(() => m.youtubeNellAngolo({ stato: 'suona', pagina: 'timer', youtube: true })), false)
-ok('una radio: niente riquadro', vedi(() => m.youtubeNellAngolo({ stato: 'suona', pagina: 'calendario', youtube: false })), false)
+// YouTube fuori dal TIMER: il video entra nella barra piccola, in fondo e in flusso, solo se la musica
+// suona o è in pausa. Non galleggia più sopra la pagina: niente è coperto.
+ok('YouTube che suona su un\'altra pagina: video nella barra piccola', vedi(() => m.videoNellaBarraPiccola({ stato: 'suona', pagina: 'calendario', youtube: true })), true)
+ok('YouTube in pausa su un\'altra pagina: idem', vedi(() => m.videoNellaBarraPiccola({ stato: 'pausa', pagina: 'ore', youtube: true })), true)
+ok('YouTube fermo dopo un ricaricamento: niente video fuori dal TIMER', vedi(() => m.videoNellaBarraPiccola({ stato: 'ferma', pagina: 'calendario', youtube: true })), false)
+ok('musica spenta: niente video', vedi(() => m.videoNellaBarraPiccola({ stato: 'spenta', pagina: 'calendario', youtube: true })), false)
+ok('nel TIMER il video sta nella barra grande: non nella piccola', vedi(() => m.videoNellaBarraPiccola({ stato: 'suona', pagina: 'timer', youtube: true })), false)
+ok('una radio: barra piccola senza video', vedi(() => m.videoNellaBarraPiccola({ stato: 'suona', pagina: 'calendario', youtube: false })), false)
+ok('il video nella barra piccola c\'è solo dove c\'è la barra piccola', vedi(() => {
+  const casi = [['suona', 'calendario', true], ['pausa', 'ore', true], ['ferma', 'calendario', true], ['suona', 'timer', true]]
+  return casi.every(([stato, pagina, youtube]) => !m.videoNellaBarraPiccola({ stato, pagina, youtube }) || m.mostraMusicaMini(stato, pagina))
+}), true)
 ok('il lettore si monta nel TIMER anche a musica ferma (il video si vede nel suo posto)', vedi(() => m.lettoreYoutube({ stato: 'ferma', pagina: 'timer', youtube: true })), true)
 ok('fuori dal TIMER a musica ferma il lettore non c\'è', vedi(() => m.lettoreYoutube({ stato: 'ferma', pagina: 'calendario', youtube: true })), false)
 ok('fuori dal TIMER mentre suona il lettore resta (non si ricarica)', vedi(() => m.lettoreYoutube({ stato: 'suona', pagina: 'calendario', youtube: true })), true)

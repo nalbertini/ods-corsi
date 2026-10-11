@@ -23,7 +23,7 @@ import { ISTRUTTORE_PROVA, dati as caricaDati, haUnServer, inProvaScelta, scegli
 import { flussoNuovoAcceso } from './lib/passiIscrizione'
 import { INDIRIZZO_VESTIARIO } from './lib/cancelletti'
 import { VERSIONE, VERSIONE_ESTESA } from './lib/versione'
-import { SPAZIO_YOUTUBE, chiediPrimaDiSostituire, esciConMusica, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, tastoImpostazioni, timerAperto, vociNavigazione, youtubeNellAngolo, type PaginaIstruttori } from './lib/timerIstruttori'
+import { chiediPrimaDiSostituire, esciConMusica, incorporatoIstruttori, lezioneDelTimer, mostraMusicaMini, mostraStriscia, statoCambiato, tastoImpostazioni, timerAperto, videoNellaBarraPiccola, vociNavigazione, type PaginaIstruttori } from './lib/timerIstruttori'
 import type { Incorporato, StatoTimer } from '../timer/src/lib/incorporato'
 import { oraDi, type SessioneVista } from './lib/sala'
 
@@ -380,28 +380,22 @@ function Istruttori() {
         const mini = mostraMusicaMini(musica.stato, pagina) && (
           <MusicaMini
             m={musica}
+            conVideo={videoNellaBarraPiccola({ stato: musica.stato, pagina, youtube: musica.conYoutube })}
             onApri={() => {
               setDaAppello(false)
               vaiA('timer')
             }}
           />
         )
-        // Il lettore di YouTube, fuori dal TIMER, sta in un angolo: sopra la barra delle pagine e quella piccola, non sui loro tasti.
-        const angolo = (largo ? 0 : 66) + (mini ? 56 : 0)
         return (
-        <div className={largo ? 'sg' : 'app'} style={{ ['--angolo-player' as string]: `${angolo}px` }}>
+        <div className={largo ? 'sg' : 'app'}>
           {largo ? (
             <MenuIstruttori chi={chi} onEsci={onEsci} voci={voci} pagina={pagina} onPagina={dalMenu} />
           ) : (
             <Testata luogo="ISTRUTTORI" guida={indirizzoPagina('istruttori')} />
           )}
           {!largo && striscia}
-          <main
-            ref={corpo}
-            className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}
-            // YouTube nell'angolo: la pagina si allunga sotto, così CHIUDI e i nomi salgono sopra il video.
-            style={youtubeNellAngolo({ stato: musica.stato, pagina, youtube: musica.conYoutube }) ? { paddingBottom: SPAZIO_YOUTUBE } : undefined}
-          >
+          <main ref={corpo} className={largo ? 'sg-corpo sg-corpo-sala' : 'scroll'}>
             {largo && striscia}
             {!largo && chi && pagina !== 'timer' && <ChiSei chi={chi} onEsci={onEsci} />}
             <div className="faccia-corsi" hidden={pagina !== 'calendario'}>

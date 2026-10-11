@@ -342,14 +342,15 @@ export function BarraMusicaTelefono({ m }: { m: MusicaTelefono }) {
 
 /**
  * La barra piccola della musica fuori dalla pagina TIMER, sopra la barra delle
- * pagine: il titolo, MUSICA scritto, e ⏸/▶. Il resto porta al TIMER.
+ * pagine: il titolo, MUSICA scritto, e ⏸/▶. Il resto porta al TIMER. Con
+ * YouTube che suona c'è anche il video, a destra: la barra si alza a 200px.
  */
-export function MusicaMini({ m, onApri }: { m: MusicaTelefono; onApri: () => void }) {
+export function MusicaMini({ m, onApri, conVideo = false }: { m: MusicaTelefono; onApri: () => void; conVideo?: boolean }) {
   const l = m.musica.lettore
   const suona = m.stato === 'suona'
   const titolo = l?.titolo || m.liste.find((x) => x.id === m.scelta)?.nome || 'Musica'
   return (
-    <div className="musica-mini">
+    <div className="musica-mini" data-video={conVideo || undefined}>
       <button type="button" className="musica-mini-apri" onClick={onApri} aria-label={`Torna al timer: musica, ${titolo}`}>
         <Nota size={22} />
         <span className="stack" style={{ gap: 1, minWidth: 0 }}>
@@ -365,6 +366,12 @@ export function MusicaMini({ m, onApri }: { m: MusicaTelefono; onApri: () => voi
       >
         {suona ? <Pause size={18} /> : <Play size={18} />}
       </button>
+      {/* YouTube vuole il video visibile: in fondo, nella barra, non sopra la pagina (vedi `videoNellaBarraPiccola`). */}
+      {conVideo && (
+        <div className="musica-mini-video" role="region" aria-label="Il lettore di YouTube">
+          <PostoPlayer />
+        </div>
+      )}
     </div>
   )
 }

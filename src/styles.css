@@ -268,6 +268,14 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .musica-mini-apri > svg { flex-shrink: 0; color: var(--dim); }
 .musica-mini-titolo { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .musica-mini-stato { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+.musica-mini[data-video] {
+  display: grid; grid-template-columns: minmax(0, 1fr) 200px; grid-template-rows: 1fr 44px; gap: 8px 10px;
+  grid-template-areas: 'apri video' 'tasto video'; padding: 12px 20px 14px; align-items: stretch;
+}
+.musica-mini[data-video] .musica-mini-apri { grid-area: apri; align-items: flex-start; padding: 0; min-height: 0; }
+.musica-mini[data-video] .musica-mini-tasto { grid-area: tasto; width: auto; height: 44px; }
+.musica-mini-video { grid-area: video; }
+.musica-mini-video .musica-video { width: 200px; height: 200px; background: var(--surface-2); border: 2px solid var(--line); }
 .musica-mini-tasto { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border: 2px solid var(--line); color: var(--text); }
 
 /* ---------- impalcatura ---------- */
