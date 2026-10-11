@@ -2998,11 +2998,12 @@ console.log('\n47. ESCI DALLA PROVA')
   const iscrizioni = app.slice(app.indexOf('function Iscrizioni('), app.indexOf('\nfunction ', app.indexOf('function Iscrizioni(') + 1))
   const ds = senzaCommenti('src/components/ds.tsx')
   const nastro = ds.slice(ds.indexOf('export function NastroProva('), ds.indexOf('\nexport ', ds.indexOf('export function NastroProva(') + 1))
-  ok('il nastro della prova sta in ds.tsx, col tasto ESCI DALLA PROVA', [nastro.includes('nastro-prova'), /ESCI DALLA PROVA/.test(nastro)], [true, true])
+  ok('il nastro della prova sta in ds.tsx, col tasto ESCI DALLA PROVA', [nastro.includes('nastro-prova'), /ESCI DALLA PROVA/.test(nastro), /onClick=\{onEsci\}/.test(nastro), /\{onEsci && \(/.test(nastro)], [true, true, true, true])
   ok('nella pagina Iscrizioni il nastro c’è solo con la prova scelta', /\{\s*inProvaScelta\s*&&\s*\(?\s*<NastroProva\b/.test(iscrizioni), true)
   ok('…e ESCI DALLA PROVA la spegne', /<NastroProva\b[^>]*onEsci=\{\(\)\s*=>\s*scegliProva\(false\)\}/.test(iscrizioni), true)
   ok('…dice che le richieste non arrivano in segreteria', /<NastroProva\b[^>]*testo="PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA"/.test(iscrizioni), true)
-  ok('la sala usa lo stesso nastro', /<NastroProva\b/.test(senzaCommenti('src/components/Sala.tsx')), true)
+  // In sala solo coi dati di prova, ed ESCI solo con la prova scelta.
+  ok('la sala usa lo stesso nastro, solo in prova', /\{d\.modo === 'prova' && <NastroProva testo="DATI DI PROVA · ISCRITTI INVENTATI" onEsci=\{inProvaScelta \? \(\) => scegliProva\(false\) : undefined\} \/>\}/.test(senzaCommenti('src/components/Sala.tsx')), true)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

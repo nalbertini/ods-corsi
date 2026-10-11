@@ -214,7 +214,6 @@ function Iscrizioni() {
   return (
     <div className="app">
       <Testata luogo={vestiario ? 'VESTIARIO' : 'ISCRIZIONI'} />
-      {/* La prova scelta resta accesa su questo telefono: il nastro lo dice e la spegne. */}
       {inProvaScelta && <NastroProva testo="PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA" onEsci={() => scegliProva(false)} />}
       <main className="scroll">
         {/* Il flusso a passi è solo in prova e solo con #nuova: il vecchio resta com'è. */}
