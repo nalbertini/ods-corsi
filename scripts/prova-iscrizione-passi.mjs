@@ -1439,7 +1439,7 @@ console.log('\n32. la famiglia: al massimo sei persone, e chi si aggiunge')
   ok('da solo, all’ultimo passo: niente AGGIUNGI', fam({ tipo: 'riepilogo', quante: 1 }), { pastiglie: false, aggiungi: false, massimo: false })
   ok('in famiglia, in un passo: le pastiglie, ma non il tasto', fam({ tipo: 'corso', quante: 3 }), { pastiglie: true, aggiungi: false, massimo: false })
   ok('in famiglia, all’ultimo passo: niente tasto (le persone sono nel riepilogo)', fam({ tipo: 'riepilogo', quante: 3 }), { pastiglie: false, aggiungi: false, massimo: false })
-  ok('al massimo, a LA FAMIGLIA: il riquadro del massimo al posto del tasto', fam({ tipo: 'famiglia', quante: m.MASSIMO_PERSONE }), { pastiglie: true, aggiungi: false, massimo: true })
+  ok('al massimo, a LA FAMIGLIA: il riquadro del massimo al posto del tasto, senza pastiglie', fam({ tipo: 'famiglia', quante: m.MASSIMO_PERSONE }), { pastiglie: false, aggiungi: false, massimo: true })
   ok('al massimo, all’ultimo passo: nemmeno il riquadro', fam({ tipo: 'riepilogo', quante: m.MASSIMO_PERSONE }), { pastiglie: false, aggiungi: false, massimo: false })
   ok('al massimo, in un passo: solo le pastiglie', fam({ tipo: 'corso', quante: m.MASSIMO_PERSONE }), { pastiglie: true, aggiungi: false, massimo: false })
 
@@ -2137,7 +2137,8 @@ console.log('\n40. LA FAMIGLIA')
   ok('LA FAMIGLIA non ferma mai: adulto vuoto', m.mancaNelPasso(m.nuovoStato('adulto'), 5), [])
   ok('LA FAMIGLIA non ferma mai: figlio vuoto', m.mancaNelPasso(m.nuovoStato('figlio'), 6), [])
   ok('LA FAMIGLIA non ha voci nella barra', [m.mancanti(m.nuovoStato('adulto'), 5), m.mancanti(m.nuovoStato('figlio'), 6)], [[], []])
-  ok('in famiglia, a LA FAMIGLIA: le pastiglie e AGGIUNGI', chiama(() => m.famigliaNelPasso({ tipo: 'famiglia', quante: 3 })), { pastiglie: true, aggiungi: true, massimo: false })
+  // FAMIGLIA, PAGAMENTO e INVIO sono un passo solo per tutti: niente pastiglie (sezione 45).
+  ok('in famiglia, a LA FAMIGLIA: AGGIUNGI, senza pastiglie', chiama(() => m.famigliaNelPasso({ tipo: 'famiglia', quante: 3 })), { pastiglie: false, aggiungi: true, massimo: false })
 
   // --- chi si aggiunge ---
   const conFratello = lista(() => m.aggiungiFamiliare([matteo], 'figlio', 0))
@@ -2733,7 +2734,7 @@ console.log('\n44. LE TRE TAPPE')
   const flusso = codice.slice(codice.indexOf('function Flusso('))
   const passi = flusso.slice(flusso.lastIndexOf('return (', flusso.lastIndexOf('<Avanzamento')))
   const testa = passi.slice(0, passi.indexOf('<Avanzamento'))
-  ok('il componente chiede le tappe alla lib', /P\.tappeDelPasso\(/.test(codice), true)
+  ok('il componente chiede le tappe alla lib', /P\.avanzamentoDelPasso\(/.test(codice), true)
   // In cima, una riga sola: il titolo a sinistra, il bollino corto a destra.
   const titolo = testa.indexOf('RICHIESTA DI ISCRIZIONE')
   const bollino = testa.indexOf('<Bollino>PROVA</Bollino>')
@@ -2984,6 +2985,120 @@ console.log('\n45. RIEMPI, solo in prova')
   ok('RIEMPI sa del foglio in foto come la schermata (v.firmaInFoto)', /riempiPerProva\([^)]*fotoDelFoglio:\s*v\.firmaInFoto/.test(codice), true)
   ok('se il pezzo non arriva, RIEMPI lo dice', /import\(\s*['"]\.\.\/lib\/riempiPerProva['"]\s*\)[\s\S]{0,600}\.catch\(/.test(codice), true)
   ok('…e nessun import statico', /^\s*import\b[^;]*['"]\.\.\/lib\/riempiPerProva['"]/m.test(codice), false)
+}
+
+// ---------------------------------------------------------------------------
+// I PASSI COMUNI: con due o più persone FAMIGLIA, PAGAMENTO e INVIO sono un
+// passo solo per tutti. Niente pastiglie, la testa è quella della persona 0
+// qualunque sia attiva, e le note per la segreteria sono una per il modulo.
+// ---------------------------------------------------------------------------
+console.log('\n46. I PASSI COMUNI')
+{
+  const COMUNI = ['famiglia', 'pagamento', 'riepilogo']
+  const SUOI = ['dati', 'genitore', 'corso', 'modulo', 'documenti']
+  const passoDi = (s, tipo) => m.tipiDiPassi(s.chi).indexOf(tipo) + 1
+
+  // --- le pastiglie ---
+  const fam = (o) => chiama(() => m.famigliaNelPasso(o))
+  for (let quante = 2; quante <= m.MASSIMO_PERSONE; quante++) {
+    ok(`in ${quante}, nei passi comuni niente pastiglie`, COMUNI.map((tipo) => fam({ tipo, quante })?.pastiglie), [false, false, false])
+    ok(`in ${quante}, nei passi di ognuno le pastiglie`, SUOI.map((tipo) => fam({ tipo, quante })?.pastiglie), [true, true, true, true, true])
+  }
+  ok('da solo, in nessun passo le pastiglie', [...SUOI, ...COMUNI].map((tipo) => fam({ tipo, quante: 1 })?.pastiglie), Array(8).fill(false))
+
+  // --- la testa: numero, totale e tappe ---
+  // Un adulto ha 7 passi e un bambino 8: nei passi comuni la testa non deve cambiare con la persona attiva.
+  const av = (persone, attivo, passo) => chiama(() => m.avanzamentoDelPasso(persone, attivo, passo))
+  const della = (s, passo) => ({ numero: passo, totale: m.tipiDiPassi(s.chi).length, tappe: m.tappeDelPasso(s.chi, passo) })
+  for (const [nome, persone] of [['bambino e adulto', [figlio(), adulto()]], ['adulto e bambino', [adulto(), figlio()]]]) {
+    for (const tipo of COMUNI) {
+      // Un errore resta un errore, non un falso «uguali».
+      const [uno, zero] = [av(persone, 1, passoDi(persone[1], tipo)), av(persone, 0, passoDi(persone[0], tipo))]
+      ok(`${nome}, ${tipo}: la testa è la stessa con l’una o l’altra attiva`, typeof uno === 'string' ? uno : JSON.stringify(uno) === JSON.stringify(zero), true)
+      ok(`${nome}, ${tipo}: la testa è quella della persona 0`, av(persone, 1, passoDi(persone[1], tipo)), della(persone[0], passoDi(persone[0], tipo)))
+    }
+    ok(`${nome}, fuori dai passi comuni: la testa della persona attiva`, [av(persone, 1, 2), av(persone, 1, passoDi(persone[1], 'documenti'))], [della(persone[1], 2), della(persone[1], passoDi(persone[1], 'documenti'))])
+  }
+  ok('da solo, a FAMIGLIA: la sua testa', av([adulto()], 0, 5), della(adulto(), 5))
+
+  // --- il messaggio di SCRIVI (guardia: i nomi dei passi comuni sono già uguali per tutti) ---
+  for (const [nome, persone] of [['bambino e adulto', [figlio(), adulto()]], ['adulto e bambino', [adulto(), figlio()]]])
+    ok(`${nome}: nei passi comuni SCRIVI dice lo stesso passo con l’una o l’altra attiva`,
+      COMUNI.map((tipo) => m.messaggioAiuto(m.nomiDeiPassi(persone[1], 1)[passoDi(persone[1], tipo) - 1])),
+      COMUNI.map((tipo) => m.messaggioAiuto(m.nomiDeiPassi(persone[0], 0)[passoDi(persone[0], tipo) - 1])))
+
+  // --- INDIETRO da FAMIGLIA (guardia) ---
+  for (const s of [adulto(), figlio()]) {
+    const ind = m.indietro(passoDi(s, 'famiglia'), DOMANDA)
+    ok(`${s.chi}: INDIETRO da FAMIGLIA porta a DOCUMENTI`, ind.a === 'passo' ? m.tipiDiPassi(s.chi)[ind.passo - 1] : ind, 'documenti')
+  }
+
+  // --- VAI A non porta mai a un passo comune (guardia) ---
+  const incompleti = [
+    m.nuovoStato('adulto'), m.nuovoStato('figlio'),
+    adulto({}, { tratti: 0 }), figlio({}, { file: {} }), adulto({ corsi: [] }), figlio({ genitoreCodiceFiscale: '' }), adulto({}, { privacy: false }),
+  ]
+  const conCorsi = [{ id: 'judo-adulti', nome: 'Judo adulti' }, { id: 'judo-3', nome: 'Judo 3' }]
+  const righe = lista(() => m.righeDellaFamiglia(incompleti, conCorsi))
+  ok('chi manca di qualcosa: VAI A porta a un passo suo, mai a uno comune', righe.map((r, i) => (r.manca ? m.tipiDiPassi(incompleti[i].chi)[r.passo - 1] : 'a posto')).filter((t) => COMUNI.includes(t)), [])
+  ok('le righe di prova mancano tutte di qualcosa', righe.map((r) => r.manca), Array(incompleti.length).fill(true))
+
+  // --- le note per la segreteria: una per il modulo ---
+  // Come la ricevuta: scritta una volta in INVIO, la stessa in ogni richiesta della famiglia.
+  const NOTA = 'Preferiamo il martedì'
+  const tre = [figlio(), io(), figlio({ nome: 'Sara', codiceFiscale: cfDi('Sara', 'Rossi', '2018-03-03', true) })]
+  const conNota = lista(() => m.conLaNota(tre, NOTA))
+  ok('la nota scritta una volta si rilegge uguale', chiama(() => m.notaDelModulo(conNota)), NOTA)
+  ok('la nota resta coi dati della famiglia', chiama(() => m.notaDelModulo(m.conDatiDellaFamiglia(conNota))), NOTA)
+  ok('la nota resta aggiungendo una persona', chiama(() => m.notaDelModulo(m.aggiungiFamiliare(m.conLaNota(tre, NOTA), 'figlio', 0))), NOTA)
+  ok('togliendo la nota non ce n’è più', chiama(() => m.notaDelModulo(m.conLaNota(conNota, ''))), undefined)
+  // Una nota vecchia, scritta da una persona sola: quella del modulo la sostituisce in tutte.
+  const conVecchia = lista(() => m.conLaNota([tre[0], { ...tre[1], risposte: { ...tre[1].risposte, note: 'vecchia' } }, tre[2]], NOTA))
+  const pdfFinto = async () => F('m.pdf')
+  const daMandare = (persone) => lista(() => m.richiesteDelModulo(m.conDatiDellaFamiglia(persone), (p) => m.richiesteDaMandare(p, 'TO', pdfFinto)))
+  ok('la nota del modulo arriva uguale in ogni richiesta', daMandare(conVecchia).map((x) => x.dati.note), [NOTA, NOTA, NOTA])
+  ok('senza nota, nessuna richiesta ne porta una', daMandare(lista(() => m.conLaNota(tre, ''))).map((x) => x.dati.note || ''), ['', '', ''])
+  ok('da solo, la nota è nella sua richiesta', daMandare(lista(() => m.conLaNota([adulto()], NOTA))).map((x) => x.dati.note), [NOTA])
+
+  // All'invio: la nota, a capo il legame, sotto i 1000 del database.
+  const d0 = () => {
+    const inviati = []
+    return { inviati, modo: 'prova', async invia(dati) { inviati.push(dati); return `r${inviati.length}` }, async caricaFile() {} }
+  }
+  {
+    const d = d0()
+    const tutte = daMandare(conVecchia)
+    if (tutte.length) await m.mandaRichieste(d, tutte)
+    ok('all’invio, tre richieste: ognuna con la nota e a capo il legame', d.inviati.map((x) => (x.note ?? '').startsWith(`${NOTA}\n`) && (x.note ?? '').endsWith('sconto famiglia da applicare')), [true, true, true])
+  }
+  {
+    const d = d0()
+    const lunga = 'y'.repeat(m.MASSIMO_NOTE)
+    let sei = tre
+    for (let i = 0; i < 3; i++) sei = lista(() => m.aggiungiFamiliare(sei, 'figlio', 0))
+    const tutte = daMandare(lista(() => m.conLaNota(sei, lunga)))
+    if (tutte.length) await m.mandaRichieste(d, tutte)
+    ok('sei persone, nota da 900: tutte la portano intera, col legame, sotto i 1000', d.inviati.map((x) => (x.note ?? '').startsWith(`${lunga}\n`) && (x.note ?? '').includes('sconto famiglia') && (x.note ?? '').length <= 1000), Array(6).fill(true))
+  }
+  // Una nota vecchia in un'altra persona, e quella del modulo vuota: non parte.
+  ok('una nota vecchia di un’altra persona non parte', daMandare([tre[0], { ...tre[1], risposte: { ...tre[1].risposte, note: 'vecchia' } }, tre[2]]).map((x) => x.dati.note || ''), ['', '', ''])
+
+  // --- la pastiglia di chi è fermo in un passo comune ---
+  // Tocco Tommaso dal CORSO di Giulia, e Tommaso era a FAMIGLIA: va al suo CORSO, non a un passo senza PER.
+  const coppia = [adulto(), figlio()]
+  const pastiglia = (i, salvato, attivo, passo) => chiama(() => m.passoDellaPastiglia(coppia, i, salvato, attivo, passo))
+  for (const tipo of COMUNI)
+    ok(`pastiglia, fermo a ${tipo}: va allo stesso passo di chi è attivo`, pastiglia(1, passoDi(coppia[1], tipo), 0, passoDi(coppia[0], 'corso')), passoDi(coppia[1], 'corso'))
+  ok('pastiglia, fermo a FAMIGLIA, da DATI (il bambino ha BAMBINO): il suo primo passo', pastiglia(1, passoDi(coppia[1], 'famiglia'), 0, 1), 1)
+  ok('pastiglia, da CHI FIRMA verso un adulto, che non ce l’ha: il suo primo passo', pastiglia(0, passoDi(coppia[0], 'pagamento'), 1, passoDi(coppia[1], 'genitore')), 1)
+  ok('pastiglia, fermo in un passo suo: torna lì', pastiglia(1, passoDi(coppia[1], 'modulo'), 0, passoDi(coppia[0], 'corso')), passoDi(coppia[1], 'modulo'))
+  const codicePer = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  ok('la pastiglia chiede alla lib dove andare', /vaiA\(i, P\.passoDellaPastiglia\(/.test(codicePer), true)
+
+  // --- la schermata: il campo NOTE è quello del modulo ---
+  const sorgente = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  const note = sorgente.slice(sorgente.indexOf('id="n-note"'), sorgente.indexOf('/>', sorgente.indexOf('id="n-note"')))
+  ok('il campo NOTE legge e scrive la nota del modulo', [/P\.notaDelModulo\(/.test(note), /P\.conLaNota\(/.test(note), /metti\('note'\)/.test(note)], [true, true, false])
 }
 
 // ---------------------------------------------------------------------------

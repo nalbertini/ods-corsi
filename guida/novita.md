@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.58.2 — 11 ottobre 2026
+
+### Modificato
+
+- Nell'iscrizione di più persone, famiglia, pagamento e invio sono un passo solo per tutti
+
 ## 0.58.1 — 11 ottobre 2026
 
 ### Modificato

@@ -1421,8 +1421,8 @@ function Flusso({
             rows={3}
             maxLength={P.MASSIMO_NOTE}
             placeholder="Niente dati sulla salute: quelli si portano in segreteria."
-            value={r.note ?? ''}
-            onChange={metti('note')}
+            value={P.notaDelModulo(tutte) ?? ''}
+            onChange={(e) => setPersone((ps) => P.conLaNota(ps, e.target.value))}
           />
         </Campo>
         {guaio && (
@@ -1454,7 +1454,7 @@ function Flusso({
           <Dettaglio tono="avviso">RIEMPI non si è caricato: ricarica la pagina.</Dettaglio>
         </div>
       )}
-      <Avanzamento rif={titoloRef} numero={passo} totale={tipi.length} titolo={nomePasso} tappe={P.tappeDelPasso(v.chi, passo)} />
+      <Avanzamento rif={titoloRef} {...P.avanzamentoDelPasso(tutte, attivo, passo)} titolo={nomePasso} />
       {vistaFamiglia.pastiglie && (
         <div className="pad passo-per">
           <span className="passo-per-etichetta">PER</span>
@@ -1463,7 +1463,7 @@ function Flusso({
               const nome = P.nomeDellaPersona(p, i).toUpperCase()
               const mancano = i === attivo ? 0 : P.quantoManca(p)
               return (
-                <Chip key={i} acceso={i === attivo} numero={mancano} etichetta={P.etichettaPastiglia(nome, mancano)} onClick={() => i !== attivo && vaiA(i, passi[i])}>
+                <Chip key={i} acceso={i === attivo} numero={mancano} etichetta={P.etichettaPastiglia(nome, mancano)} onClick={() => i !== attivo && vaiA(i, P.passoDellaPastiglia(tutte, i, passi[i], attivo, passo))}>
                   {nome}
                 </Chip>
               )
