@@ -3080,6 +3080,13 @@ console.log('\n46. I PASSI COMUNI')
     if (tutte.length) await m.mandaRichieste(d, tutte)
     ok('sei persone, nota da 900: tutte la portano intera, col legame, sotto i 1000', d.inviati.map((x) => (x.note ?? '').startsWith(`${lunga}\n`) && (x.note ?? '').includes('sconto famiglia') && (x.note ?? '').length <= 1000), Array(6).fill(true))
   }
+  // Una nota vecchia in un'altra persona, e quella del modulo vuota: non parte.
+  ok('una nota vecchia di un’altra persona non parte', daMandare([tre[0], { ...tre[1], risposte: { ...tre[1].risposte, note: 'vecchia' } }, tre[2]]).map((x) => x.dati.note || ''), ['', '', ''])
+
+  // --- la schermata: il campo NOTE è quello del modulo ---
+  const sorgente = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  const note = sorgente.slice(sorgente.indexOf('id="n-note"'), sorgente.indexOf('/>', sorgente.indexOf('id="n-note"')))
+  ok('il campo NOTE legge e scrive la nota del modulo', [/P\.notaDelModulo\(/.test(note), /P\.conLaNota\(/.test(note), /metti\('note'\)/.test(note)], [true, true, false])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
