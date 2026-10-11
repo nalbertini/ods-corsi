@@ -125,10 +125,10 @@ bambini vicini al suo orario, se ci sono) e **UN ALTRO ADULTO** (lo stesso
 corso, o uno per adulti alla stessa ora); chi iscrive un bambino trova **UN
 FRATELLO O UNA SORELLA** e **TU O UN ALTRO ADULTO** (i corsi vicini
 all'orario del bambino). La carta propone fino a tre corsi, dal più comodo,
-ognuno con l'etichetta e l'orario. Sopra i corsi una riga dice «In **nero** i
+ognuno con l'etichetta e l'orario. Sopra i corsi una riga dice «In **grassetto** i
 giorni che vanno col tuo orario.»: nell'orario di ogni corso i giorni che
-vanno sono in nero e grassetto, gli altri grigi; l'ora di una fascia
-(«lunedì e giovedì 18.00-19.00») è in nero se almeno uno dei suoi giorni va.
+vanno sono in grassetto, gli altri grigi; l'ora di una fascia
+(«lunedì e giovedì 18.00-19.00») è in grassetto se almeno uno dei suoi giorni va.
 Quali giorni vanno lo dice l'etichetta:
 
 - **STESSA ORA**: le lezioni si sovrappongono almeno un giorno; vanno i
@@ -139,7 +139,7 @@ Quali giorni vanno lo dice l'etichetta:
 - **STESSI GIORNI**: un'altra ora, ma negli stessi giorni, così si viene in
   palestra una volta sola; vanno i giorni in comune.
 - **STESSO CORSO**: per un altro adulto, il corso di chi si è iscritto; tutto
-  l'orario è in nero.
+  l'orario è in grassetto.
 
 In verde quanto si risparmia con l'annuale, col primo corso della carta.
 Il tasto tratteggiato aggiunge la persona: per un adulto, chi iscrive un
@@ -160,7 +160,7 @@ già spuntati i corsi di chi si è iscritto per primo. Si può togliere e
 sceglierne un altro. Poi **SUBITO PRIMA O DOPO** e **NEGLI STESSI GIORNI**,
 con le stesse regole della carta, e infine **GLI ALTRI CORSI PER LA SUA
 ETÀ**. Sotto il nome di ogni corso proposto ci sono l'età del listino e
-l'orario, coi giorni che vanno con chi si è iscritto per primo in nero, come
+l'orario, coi giorni che vanno con chi si è iscritto per primo in grassetto, come
 nella carta. Finiti i suoi documenti, AVANTI porta di nuovo a LA
 FAMIGLIA (per aggiungere qualcun altro) e poi a QUANTO PAGHI, col conto di
 tutti.

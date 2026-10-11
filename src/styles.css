@@ -695,8 +695,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .modulo-corso-riga { font-size: 13px; font-weight: 400; color: var(--dim); line-height: 1.35; }
 /* Sul fondo del tasto scelto il testo spento non arriva a 4,5:1 nel tema chiaro. */
 .modulo-corso[aria-pressed='true'] .modulo-corso-riga { color: var(--sec); }
-/* Perché un corso è proposto in cima («Finisce quando comincia Nicola, il lunedì»): sotto l'orario, più scuro, si legge per primo. */
-/* Nell'orario a pezzi (TestoAPezzi) i giorni che vanno col tuo orario: in nero, gli altri restano spenti. */
+/* Nell'orario a pezzi (TestoAPezzi) i giorni che vanno col tuo orario: in grassetto, gli altri restano spenti. */
 .orario-evidenza { font-weight: 700; color: var(--text); }
 .modulo-altri { margin-top: 10px; }
 /* Portato in vista da VAI A o MODIFICA: un po' d'aria sopra la sua etichetta. */
@@ -811,7 +810,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .famiglia-carta-corso { gap: 1px; min-width: 0; }
 .famiglia-carta-nome { font-size: 14px; font-weight: 600; color: var(--text); }
 .famiglia-carta-corso .testo-a-pezzi { color: var(--dim); }
-/* Sopra le righe: cosa vuol dire il nero. */
+/* Sopra le righe: cosa vuol dire il grassetto. */
 .famiglia-carta-legenda { font-size: 13px; color: var(--sec); }
 .famiglia-carta-risparmio { font-size: 13px; font-weight: 600; color: var(--verde-testo); }
 /* Il totale nella barra, nella colonna del modulo: TOTALE e cosa lo compone a sinistra, la cifra grande a destra, un filo sotto. */
