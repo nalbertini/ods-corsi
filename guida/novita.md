@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.58.1 — 11 ottobre 2026
+
+### Modificato
+
+- Modulo a passi, in prova: un tasto RIEMPI scrive dati finti nel passo
+
 ## 0.58.0 — 11 ottobre 2026
 
 ### Novità
