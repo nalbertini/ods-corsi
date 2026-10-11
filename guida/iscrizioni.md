@@ -111,13 +111,13 @@ accoglie.
 
 ## Il modulo a passi (solo in prova)
 
-È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa sette passi (**I TUOI DATI**, **SCEGLI IL CORSO**, **IL MODULO E LA FIRMA**, **I DOCUMENTI**, **LA FAMIGLIA**, **QUANTO PAGHI**, **CONTROLLA E INVIA**); per un figlio sono otto, perché c'è anche **IL GENITORE CHE FIRMA**. Nel passo del corso, sopra i tasti, c'è sempre il **TOTALE** da pagare, che cambia a ogni scelta: con più persone è quello di tutti, e lo dice (**TOTALE FAMIGLIA**). A QUANTO PAGHI il conto è nel passo. Prima
+È un modulo nuovo, che fa le stesse domande una schermata alla volta. Chi si iscrive fa sette passi (**DATI**, **CORSO**, **FIRMA**, **DOCUMENTI**, **FAMIGLIA**, **PAGAMENTO**, **INVIO**); per un figlio sono otto (**BAMBINO** al posto di DATI, e in più **CHI FIRMA**). In cima i passi sono raggruppati in tre tappe, **CHI**, **IL CORSO** e **PAGA E MANDA**, ognuna con un segmento per passo (verde quelli fatti, scuro quello di adesso) e il nome sotto, con ✓ quando è finita; sotto le tappe c'è il nome del passo. Per un altro adulto della famiglia il primo passo si chiama **DATI DI** e il suo nome. Nel passo del corso, sopra i tasti, c'è sempre il **TOTALE** da pagare, che cambia a ogni scelta: con più persone è quello di tutti, e lo dice (**TOTALE FAMIGLIA**). A PAGAMENTO il conto è nel passo. Prima
 si sceglie **IO, SONO ADULTO** o **MIO FIGLIO O MIA FIGLIA**, poi si va avanti
 con **AVANTI**. Se tocchi AVANTI e manca qualcosa, in fondo allo schermo una riga dice quante cose mancano e **VAI A** la prima: un tocco e il cursore è già nel campo. La freccia accanto apre l'elenco di tutto quel che manca, e ogni voce porta al suo campo. L'ultimo passo
 è il riepilogo: da lì **MODIFICA** riporta al passo da cambiare, e **MANDA LA
 RICHIESTA** la manda.
 
-**LA FAMIGLIA** viene dopo i documenti, prima di QUANTO PAGHI: «Iscrivi anche
+**FAMIGLIA** viene dopo i documenti, prima di PAGAMENTO: «Iscrivi anche
 qualcuno della tua famiglia?» (o «qualcun altro della famiglia?» per chi
 iscrive un bambino), il riquadro verde **−20% SCONTO FAMIGLIA** e due carte.
 Chi si iscrive da adulto trova **UN FIGLIO O UNA FIGLIA** (i corsi per
@@ -150,7 +150,7 @@ per il bambino, e restano da dare solo il corso, come paga, il tesseramento,
 le foto e il certificato) e **UN ALTRO ADULTO**; per un bambino, se può
 firmare più di un adulto, si sceglie chi firma per lui. Un fratello che firmi tu ha già
 la tua carta d'identità, il tuo ok e dove sei nato: si firma solo il suo modulo. Nessuno da
-aggiungere? **AVANTI, SOLO IO** (o **AVANTI**) e si va a QUANTO PAGHI.
+aggiungere? **AVANTI, SOLO IO** (o **AVANTI**) e si va a PAGAMENTO.
 
 Chi si aggiunge parte dal suo primo passo. Al suo passo del corso, in cima,
 sotto **ALLA STESSA ORA DI** e il nome di chi si è iscritto per primo, ci sono
@@ -163,11 +163,11 @@ con le stesse regole della carta, e infine **GLI ALTRI CORSI PER LA SUA
 ETÀ**. Sotto l'orario di ogni corso proposto c'è il perché («Si sovrappone il
 lunedì e il mercoledì», «Finisce quando comincia Nicola, il lunedì», «Un'ora
 prima di Nicola, il mercoledì e il venerdì»; «ogni volta» se sono tutti i
-giorni di Nicola). Finiti i suoi documenti, AVANTI porta di nuovo a LA
-FAMIGLIA (per aggiungere qualcun altro) e poi a QUANTO PAGHI, col conto di
+giorni di Nicola). Finiti i suoi documenti, AVANTI porta di nuovo a
+FAMIGLIA (per aggiungere qualcun altro) e poi a PAGAMENTO, col conto di
 tutti.
 
-**QUANTO PAGHI** viene dopo LA FAMIGLIA, prima del riepilogo, ed è uno
+**PAGAMENTO** viene dopo FAMIGLIA, prima del riepilogo, ed è uno
 solo per tutto il modulo: il conto di tutti con lo sconto famiglia, la cifra da
 pagare, l'IBAN con **COPIA IBAN**, la causale con **COPIA CAUSALE** e **PAGA CON
 SATISPAY**. La causale ha i nomi di tutti, il cognome uguale una volta sola
@@ -188,8 +188,8 @@ CAP non è di Poste (che non lo pubblica): se un comune manca o è sbagliato, va
 corretto in `scripts/cap-torino.mjs`.
 
 Chi si aggiunge prende indirizzo e contatti già scritti, e ognuno sceglie i
-suoi corsi. Da lì in poi, in ogni passo, sotto il numero ci sono i nomi di
-tutti, per passare dall'uno all'altro; per aggiungerne un altro si torna a LA
+suoi corsi. Da lì in poi, in ogni passo, sotto il nome del passo c'è **PER** coi nomi di
+tutti, per passare dall'uno all'altro; per aggiungerne un altro si torna a
 FAMIGLIA, non all'ultimo passo. Quando chi firma non è chi compila (un altro adulto, o il bambino
 firmato da un altro adulto), il modulo lo chiama per nome: «Firma Paola, che è
 maggiorenne», **L'OK DI PAOLA**, **LA CARTA D'IDENTITÀ DI PAOLA**. Per chi si è aggiunto con **IO**, la
@@ -201,7 +201,7 @@ I corsi per grandi (quelli che la segreteria segna con un'età minima in **LISTI
 
 Chi iscrive un figlio trova scritto di chi è ogni cosa: **LA CARTA D'IDENTITÀ DI** e **IL RETRO DELLA CARTA DI** col nome di chi firma (la sua, non quella del bambino; finché il nome non c'è, **DEL GENITORE**), **IL CERTIFICATO DI** e il nome del bambino (con cosa succede se manca), e l'errore sul codice fiscale dice «Metti il tuo codice fiscale, non quello di» e il nome. Il luogo di nascita del genitore (**DOVE SEI NATO**, **PROVINCIA**) si chiede solo nei suoi dati e solo se il suo codice fiscale non lo dice da sé.
 
-In ogni passo, sotto il numero, c'è **CHIAMA**: un tocco e si telefona alla segreteria. A ogni passo nuovo il cursore va al titolo, così chi usa uno screen reader sente dove si trova. Se si esce o si ricarica la pagina dopo aver scritto qualcosa, il browser chiede conferma. Alla fine, **RICHIESTA ARRIVATA** dice dove la segreteria ti scrive o ti chiama, e se non hai caricato la ricevuta quanto devi pagare e come (l'IBAN, e per una persona sola anche la causale), con **CHIAMA LA SEGRETERIA** a portata di mano.
+In fondo a ogni passo, sopra INDIETRO e AVANTI, «Hai bisogno di aiuto? Chiama o scrivi.»: **CHIAMA** telefona alla segreteria, **SCRIVI** apre WhatsApp allo stesso numero col messaggio già scritto, che dice a che passo si è («Ciao, sto compilando l'iscrizione e ho un dubbio sul passo DOCUMENTI»). A ogni passo nuovo il cursore va al titolo, così chi usa uno screen reader sente dove si trova. Se si esce o si ricarica la pagina dopo aver scritto qualcosa, il browser chiede conferma. Alla fine, **RICHIESTA ARRIVATA** dice dove la segreteria ti scrive o ti chiama, e se non hai caricato la ricevuta quanto devi pagare e come (l'IBAN, e per una persona sola anche la causale), con **CHIAMA LA SEGRETERIA** a portata di mano.
 
 Per ora si apre solo in prova, con l'indirizzo `iscrizioni/?prova#nuova`.
 Non salva niente: se si esce prima di mandare, le risposte si perdono, e con

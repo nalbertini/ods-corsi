@@ -1,4 +1,5 @@
 import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react'
+import type { Tappa } from '../lib/passiIscrizione'
 
 /**
  * I pezzi del design system ODS Corsi che servono alle iscrizioni: le stesse
@@ -428,26 +429,32 @@ export function Chip({ children, acceso, numero, etichetta, onClick }: { childre
 }
 
 /**
- * Dove si è nel modulo a passi: un segmento per passo (fatti verdi, quello di
- * adesso in tinta testo, gli altri `line`), il numero grande e «DI N» col nome
- * del passo. Fonte: docs/design-canvas/ods-design-system/Avanzamento.dc.html.
+ * Dove si è nel modulo a passi: tre tappe, ognuna coi segmenti dei suoi passi
+ * (fatti verdi, quello di adesso in tinta testo, gli altri `line`) e il nome
+ * sotto, poi il nome del passo. Il numero resta solo per lo screen reader. Fonte: docs/design-canvas/ods-design-system/Avanzamento.dc.html.
  */
-export function Avanzamento({ numero, totale, titolo, rif }: { numero: number; totale: number; titolo: string; rif?: RefObject<HTMLDivElement> }) {
+export function Avanzamento({ numero, totale, titolo, tappe, rif }: { numero: number; totale: number; titolo: string; tappe: Tappa[]; rif?: RefObject<HTMLDivElement> }) {
   return (
     // tabIndex -1: a ogni cambio di passo il fuoco viene qui, e chi usa uno screen reader sente «Passo N di N: nome».
+    // A schermo il numero non c'è: le tre tappe dicono dove si è senza contare.
     <div ref={rif} tabIndex={-1} className="avanza" role="group" aria-label={`Passo ${numero} di ${totale}: ${titolo}`}>
-      <div className="avanza-segmenti" aria-hidden>
-        {Array.from({ length: totale }, (_, i) => (
-          <div key={i} className="avanza-segmento" data-stato={i + 1 < numero ? 'fatto' : i + 1 === numero ? 'adesso' : undefined} />
+      <div className="avanza-tappe" aria-hidden>
+        {tappe.map((t) => (
+          <div key={t.nome} className="avanza-tappa" style={{ flexGrow: t.segmenti.length }}>
+            <div className="avanza-segmenti">
+              {t.segmenti.map((x, i) => (
+                <div key={i} className="avanza-segmento" data-stato={x} />
+              ))}
+            </div>
+            <span className="avanza-tappa-nome" data-stato={t.stato}>
+              {t.etichetta}
+            </span>
+          </div>
         ))}
       </div>
-      <div className="avanza-testa" aria-hidden>
-        <span className="num ob avanza-numero">{numero}</span>
-        <span className="avanza-nome">
-          <span>DI {totale}</span>
-          <span>{titolo}</span>
-        </span>
-      </div>
+      <span className="avanza-nome" aria-hidden>
+        {titolo}
+      </span>
     </div>
   )
 }

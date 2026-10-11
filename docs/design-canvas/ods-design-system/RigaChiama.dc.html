@@ -14,22 +14,25 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 20px">
+<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 12px; padding: 10px 20px; border-top: 2px solid {{c.lineSoft}}">
   <span style="font-size: 14px; line-height: 1.3; color: {{c.sec}}">{{testo}}</span>
-  <dc-import name="Bottone" label="CHIAMA" variante="linea" tema="{{ tema }}" hint-size="120px,48px"></dc-import>
+  <div style="display: flex; gap: 8px">
+    <dc-import name="Bottone" label="CHIAMA" variante="linea" tema="{{ tema }}" hint-size="120px,48px"></dc-import>
+    <dc-import name="Bottone" label="SCRIVI" variante="linea" tema="{{ tema }}" hint-size="110px,48px"></dc-import>
+  </div>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"testo":{"editor":"text","default":"Un dubbio? Chiama la segreteria."},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":60}}'>
-// La riga CHIAMA del modulo a passi (`.passo-chiama` di src/styles.css, `IscrizioneAPassi.tsx`): sotto l'avanzamento di ogni passo, nel flusso (non sticky),
-// la frase a sinistra (14px `sec`) e il tasto CHIAMA a destra (href `chiama` di src/lib/sito.ts).
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"Hai bisogno di aiuto? Chiama o scrivi."},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":72}}'>
+// La riga d'aiuto del modulo a passi (`.passo-aiuto` di src/styles.css, `IscrizioneAPassi.tsx`): in fondo a ogni passo, sopra la barra, nel flusso (non sticky),
+// con un filo 2px `lineSoft` sopra; la frase a sinistra (14px `sec`), a destra CHIAMA (`chiama`) e SCRIVI (`scrivi`, WhatsApp col messaggio del passo) di src/lib/sito.ts.
 const T = {
-  scuro: { sec: '#c9c9c4' },
-  chiaro: { sec: '#3d3d3a' },
+  scuro: { sec: '#c9c9c4', lineSoft: '#2a2a2a' },
+  chiaro: { sec: '#3d3d3a', lineSoft: '#e2e2dd' },
 };
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
-    return { c: T[p.tema] || T.scuro, testo: p.testo ?? 'Un dubbio? Chiama la segreteria.' };
+    return { c: T[p.tema] || T.scuro, testo: p.testo ?? 'Hai bisogno di aiuto? Chiama o scrivi.' };
   }
 }
 </script>

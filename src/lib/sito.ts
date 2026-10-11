@@ -76,5 +76,11 @@ export const CONTATTI = {
   facebook: 'https://www.facebook.com/ilCentroJudo/',
 }
 
-/** Il numero per il tasto CHIAMA: senza spazi e col prefisso. */
-export const chiama = `tel:+39${CONTATTI.telefono.replace(/\s/g, '')}`
+// Col prefisso e senza spazi, per CHIAMA e per SCRIVI.
+const numero = `39${CONTATTI.telefono.replace(/\s/g, '')}`
+
+/** Il numero per il tasto CHIAMA. */
+export const chiama = `tel:+${numero}`
+
+/** Il tasto SCRIVI: WhatsApp allo stesso numero, col messaggio già scritto. */
+export const scrivi = (testo: string) => `https://wa.me/${numero}?text=${encodeURIComponent(testo)}`

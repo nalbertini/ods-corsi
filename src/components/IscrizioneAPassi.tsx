@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { chiama } from '../lib/sito'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { chiama, scrivi } from '../lib/sito'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, OrarioAperto, TipoFile } from '../lib/richieste'
 import { anniScritti, dataDaCf, datiRichieste, ESTENSIONI, ETICHETTA_FILE, FILE, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { riduciFoto } from '../lib/foto'
@@ -70,7 +70,8 @@ export function IscrizioneAPassi() {
 
   return (
     <div className="iscrizioni-modulo">
-      <Titoletto>RICHIESTA DI ISCRIZIONE</Titoletto>
+      {/* Nei passi il titolo sta nella testa, accanto a PROVA; l'esito lo rimette da sé (`Esito`). */}
+      {!avvio && <Titoletto>RICHIESTA DI ISCRIZIONE</Titoletto>}
       {avvio ? (
         <Flusso
           key={avvio.n}
@@ -146,6 +147,16 @@ function ComePagare({ causale }: { causale: string }) {
         <Tasto onClick={() => void copia('causale', causale)}>{copiato === 'causale' ? 'COPIATA' : 'COPIA CAUSALE'}</Tasto>
         {PAGAMENTO.satispay && <Tasto href={PAGAMENTO.satispay}>PAGA CON SATISPAY</Tasto>}
       </Tasti>
+    </>
+  )
+}
+
+/** L'esito di una richiesta, sotto il titolo del modulo come la scelta iniziale. */
+function Esito({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <Titoletto>RICHIESTA DI ISCRIZIONE</Titoletto>
+      <div className="stack esito">{children}</div>
     </>
   )
 }
@@ -438,6 +449,8 @@ function Flusso({
 
   const tipi = P.tipiDiPassi(v.chi)
   const nomiPassi = P.nomiDeiPassi(v, attivo)
+  // Uno solo per la testa e per il messaggio di SCRIVI: dicono lo stesso passo.
+  const nomePasso = nomiPassi[passo - 1] ?? ''
   const tipo = tipi[passo - 1] ?? 'dati'
   const ultimo = passo === tipi.length
   // AGGIUNGI sta in LA FAMIGLIA; in famiglia le pastiglie in ogni passo.
@@ -705,7 +718,7 @@ function Flusso({
           : []),
       ]
       return (
-        <div className="stack esito">
+        <Esito>
           <TitoloEsito tono="fatto">{famiglia ? 'RICHIESTE ARRIVATE' : 'RICHIESTA ARRIVATA'}</TitoloEsito>
           <span className="esito-testo">
             Grazie, {aChi}.{' '}
@@ -744,14 +757,14 @@ function Flusso({
           {!famiglia && <Tasto onClick={() => (figlio ? onAltroFiglio(v) : onEsci())}>{ultimaVolta}</Tasto>}
           {figlio && !famiglia && <Dettaglio>I tuoi dati di genitore restano: non li riscrivi.</Dettaglio>}
           {(figlio || famiglia) && <Tasto onClick={onEsci}>FINITO</Tasto>}
-        </div>
+        </Esito>
       )
     }
     if (e.esito === 'aMeta') {
       // Le richieste partono nell'ordine delle persone: chi è arrivato sono le prime.
       const f = P.fraseAMeta(e.arrivati, e.mancanti)
       return (
-        <div className="stack esito">
+        <Esito>
           <TitoloEsito tono="avviso">{f.titolo}</TitoloEsito>
           <span className="esito-testo">{f.arrivate}</span>
           <span className="esito-testo">{f.mancano}</span>
@@ -773,14 +786,14 @@ function Flusso({
           <Tasto href={chiama} qui>
             CHIAMA LA SEGRETERIA
           </Tasto>
-        </div>
+        </Esito>
       )
     }
     // Due richieste: le prime due persone della famiglia.
     const nomeLui = nomiFamiglia[1] ?? ''
     const nomePrima = nomiFamiglia[0]
     return (
-      <div className="stack esito">
+      <Esito>
         {e.esito === 'secondaNo' ? (
           <>
             <TitoloEsito tono="avviso">MANCA UNA RICHIESTA</TitoloEsito>
@@ -812,7 +825,7 @@ function Flusso({
             ? `Riprova rimanda solo quella di ${nomeLui}: quella di ${nomePrima} è già arrivata e non si rimanda. Oppure chiama la segreteria.`
             : 'Si può riprovare per un’ora. Se non va, porta i fogli in segreteria.'}
         </Dettaglio>
-      </div>
+      </Esito>
     )
   }
 
@@ -963,8 +976,7 @@ function Flusso({
     if (v.io && tipo === 'documenti') {
       return (
         <>
-          <Titoletto>I DOCUMENTI</Titoletto>
-          <div className="pad modulo-griglia passo-dopo">
+          <div className="pad modulo-griglia passo-prima passo-dopo">
             <span className="modulo-largo">
               <Dettaglio tono="testo">La carta d’identità è quella che hai caricato per {primo}: vale anche per te.</Dettaglio>
             </span>
@@ -1227,8 +1239,7 @@ function Flusso({
       const certificato = daChiedere.certificato
       return (
         <>
-          <Titoletto>I DOCUMENTI</Titoletto>
-          <div className="pad modulo-griglia passo-dopo">
+          <div className="pad modulo-griglia passo-prima passo-dopo">
             {certificato !== 'nessuno' && !figlio && (
               <div className="modulo-campo modulo-largo">
                 <span className="modulo-etichetta">{figlio ? P.testoFile(v.chi, 'certificato', r.nome, r.genitoreNome).etichetta : certificato === 'agonistico' ? 'IL CERTIFICATO MEDICO AGONISTICO' : 'IL CERTIFICATO MEDICO'}</span>
@@ -1417,35 +1428,26 @@ function Flusso({
 
   return (
     <div className="modulo stack">
-      {d?.modo === 'prova' && (
-        <div className="pad modulo-testa">
-          <Bollino>PROVA: RESTA SU QUESTO DISPOSITIVO</Bollino>
-        </div>
-      )}
-      <Avanzamento rif={titoloRef} numero={passo} totale={tipi.length} titolo={nomiPassi[passo - 1] ?? ''} />
-      <div className="pad passo-chiama">
-        <span className="passo-chiama-testo">Un dubbio? Chiama la segreteria.</span>
-        <Tasto href={chiama} qui>
-          CHIAMA
-        </Tasto>
+      <div className="pad passo-intesta">
+        <span className="passo-intesta-testo">RICHIESTA DI ISCRIZIONE</span>
+        {d?.modo === 'prova' && <Bollino>PROVA</Bollino>}
       </div>
+      <Avanzamento rif={titoloRef} numero={passo} totale={tipi.length} titolo={nomePasso} tappe={P.tappeDelPasso(v.chi, passo)} />
       {vistaFamiglia.pastiglie && (
-        <>
-          <Titoletto conto={persone.length}>LA FAMIGLIA</Titoletto>
-          <div className="pad stack passo-famiglia">
-            <div className="famiglia-chip">
-              {tutte.map((p, i) => {
-                const nome = P.nomeDellaPersona(p, i).toUpperCase()
-                const mancano = i === attivo ? 0 : P.quantoManca(p)
-                return (
-                  <Chip key={i} acceso={i === attivo} numero={mancano} etichetta={P.etichettaPastiglia(nome, mancano)} onClick={() => i !== attivo && vaiA(i, passi[i])}>
-                    {nome}
-                  </Chip>
-                )
-              })}
-            </div>
+        <div className="pad passo-per">
+          <span className="passo-per-etichetta">PER</span>
+          <div className="famiglia-chip">
+            {tutte.map((p, i) => {
+              const nome = P.nomeDellaPersona(p, i).toUpperCase()
+              const mancano = i === attivo ? 0 : P.quantoManca(p)
+              return (
+                <Chip key={i} acceso={i === attivo} numero={mancano} etichetta={P.etichettaPastiglia(nome, mancano)} onClick={() => i !== attivo && vaiA(i, passi[i])}>
+                  {nome}
+                </Chip>
+              )
+            })}
           </div>
-        </>
+        </div>
       )}
       {corpo()}
       {foglio && (
@@ -1458,6 +1460,17 @@ function Flusso({
           onChiudi={() => setFoglio(null)}
         />
       )}
+      {/* Nel flusso, non sticky: si vede in fondo al passo e non alza la barra sopra i campi. */}
+      <div className="pad passo-aiuto">
+        <span className="passo-aiuto-testo">Hai bisogno di aiuto? Chiama o scrivi.</span>
+        <Tasti>
+          <Tasto href={chiama} qui>
+            CHIAMA
+          </Tasto>
+          {/* Fuori dalla pagina: il modulo vive in memoria, uscire perderebbe le risposte. */}
+          <Tasto href={scrivi(P.messaggioAiuto(nomePasso))}>SCRIVI</Tasto>
+        </Tasti>
+      </div>
       <BarraPasso
         // Un passo nuovo riparte con l'elenco chiuso.
         key={passo}
