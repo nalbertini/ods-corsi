@@ -785,6 +785,12 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 /* Sopra le tappe: RICHIESTA DI ISCRIZIONE piccolo e, in prova, il bollino PROVA a destra. */
 .passo-intesta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 16px; }
 .passo-intesta-testo { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: var(--dim); }
+/* RIEMPI accanto a PROVA, solo in prova: tratteggiato giallo come il bollino, da 44px. */
+.passo-intesta-prova { display: flex; align-items: center; gap: 8px; }
+/* Il bollino di segreteria sta in alto per il menu: qui va a metà di RIEMPI. */
+.passo-intesta-prova > .sg-bollino { align-self: center; margin-top: 0; }
+/* Bordo e testo `giallo-testo`: il giallo puro sul chiaro non si vede (1,5:1). */
+.passo-riempi { min-height: 44px; padding: 0 12px; border: 2px dashed var(--giallo-testo); color: var(--giallo-testo); background: none; font-size: 14px; letter-spacing: 0.14em; }
 /* PER e le pastiglie di chi c'è in famiglia, al posto del titoletto LA FAMIGLIA. */
 .passo-per { display: flex; align-items: flex-start; gap: 8px; padding-top: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--line-soft); }
 .passo-per-etichetta { flex: none; display: flex; align-items: center; min-height: 44px; font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: var(--dim); }

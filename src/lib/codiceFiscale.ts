@@ -124,3 +124,11 @@ export function luogoDaCf(elenco: Luoghi, cf: string, quando = ''): { nome: stri
 
 /** Come si scrive nel modulo: «TORINO (TO)», ma «ROMANIA». */
 export const scriviLuogo = (l: { nome: string; sigla: string }) => (l.sigla === 'EE' ? l.nome : `${l.nome} (${l.sigla})`)
+
+/** Il codice fiscale vero di una persona inventata, carattere di controllo compreso: per gli esempi e RIEMPI della prova. */
+export function codiceFinto(cognome: string, nome: string, natoIl: string, donna: boolean, comune: string): string {
+  const [anno, mese, giorno] = natoIl.split('-').map(Number)
+  const g = String(giorno + (donna ? 40 : 0)).padStart(2, '0')
+  const base = `${lettereCognome(cognome)}${lettereNome(nome)}${String(anno % 100).padStart(2, '0')}${'ABCDEHLMPRST'[mese - 1]}${g}${comune}`
+  return base + carattereControllo(base)
+}

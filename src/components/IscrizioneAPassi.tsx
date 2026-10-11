@@ -410,6 +410,15 @@ function Flusso({
   const setGrezzo = (cambia: (p: P.StatoPassi) => P.StatoPassi) => setPersone((ps) => ps.map((p, i) => (i === attivo ? cambia(p) : p)))
   const setPasso = (n: number) => setPassi((a) => a.map((x, i) => (i === attivo ? n : x)))
   const setTratti = (t: Tratto[]) => setTrattiDi((a) => a.map((x, i) => (i === attivo ? t : x)))
+  const [riempiNonVa, setRiempiNonVa] = useState(false)
+  // RIEMPI, solo in prova: i dati finti si caricano al tocco, così fuori prova non sono nel pacchetto.
+  const riempi = () =>
+    void import('../lib/riempiPerProva').then(({ riempiPerProva }) => {
+      // «Ho il foglio firmato» la schermata lo calcola da `come` (in `tutte`), il grezzo non lo tiene.
+      const { stato, firma } = riempiPerProva(persone, attivo, tipo, { corsi: corsi ?? [], listino, fotoDelFoglio: v.firmaInFoto })
+      setPersone((ps) => ps.map((p, i) => (i === attivo ? stato : p)))
+      if (firma) setTratti(firma)
+    }).catch(() => setRiempiNonVa(true))
   const [come, setCome] = useState<'qui' | 'foto'>('qui')
   const [provincia, setProvincia] = useState('')
   const [guaioFirma, setGuaioFirma] = useState<string | null>(null)
@@ -1430,8 +1439,21 @@ function Flusso({
     <div className="modulo stack">
       <div className="pad passo-intesta">
         <span className="passo-intesta-testo">RICHIESTA DI ISCRIZIONE</span>
-        {d?.modo === 'prova' && <Bollino>PROVA</Bollino>}
+        <span className="passo-intesta-prova">
+          {d?.modo === 'prova' && P.riempibile(tipo) && (
+            // Non è un `Tasto`: il tratteggiato giallo è del bollino PROVA, e c'è solo qui.
+            <button type="button" className="btn passo-riempi" onClick={riempi}>
+              RIEMPI
+            </button>
+          )}
+          {d?.modo === 'prova' && <Bollino>PROVA</Bollino>}
+        </span>
       </div>
+      {d?.modo === 'prova' && riempiNonVa && (
+        <div className="pad">
+          <Dettaglio tono="avviso">RIEMPI non si è caricato: ricarica la pagina.</Dettaglio>
+        </div>
+      )}
       <Avanzamento rif={titoloRef} numero={passo} totale={tipi.length} titolo={nomePasso} tappe={P.tappeDelPasso(v.chi, passo)} />
       {vistaFamiglia.pastiglie && (
         <div className="pad passo-per">

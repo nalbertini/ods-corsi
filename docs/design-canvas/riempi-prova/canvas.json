@@ -1,0 +1,48 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Riempi per prova"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi \u00b7 in prova DOCUMENTI non si passa",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "A-InCima.dc.html",
+   "title": "A \u00b7 RIEMPI accanto a PROVA",
+   "x": 510,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "A-Dopo.dc.html",
+   "title": "A \u00b7 dopo il tocco",
+   "x": 1020,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "B-InFondo.dc.html",
+   "title": "B \u00b7 in fondo, prima dell\u2019aiuto",
+   "x": 1530,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1920,
+   "text": "Riempi per prova: dove sta il tasto"
+  }
+ ]
+}
