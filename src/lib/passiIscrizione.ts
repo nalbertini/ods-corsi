@@ -378,14 +378,18 @@ export const MASSIMO_PERSONE = 6
 
 export const puoiAggiungere = (quante: number): boolean => quante < MASSIMO_PERSONE
 
+/** I passi di PAGA E MANDA: in famiglia sono uno solo per tutti, chiunque sia la persona attiva. */
+const PASSI_COMUNI: TipoPasso[] = ['famiglia', 'pagamento', 'riepilogo']
+
 /**
  * Cosa della famiglia si vede in un passo. Chi aggiungere (o, al massimo, il riquadro che lo dice) sta nel suo
  * passo, LA FAMIGLIA, prima di QUANTO PAGHI: così chi si aggiunge entra nel conto. In famiglia le pastiglie
- * restano in ogni passo, per passare dall'una all'altra; all'ultimo le persone sono nel riepilogo.
+ * stanno nei passi di ognuno, per passare dall'una all'altra; nei passi comuni no: sono di tutti, e alle
+ * persone si torna da NEL MODULO.
  */
 export function famigliaNelPasso({ tipo, quante }: { tipo: TipoPasso; quante: number }): { pastiglie: boolean; aggiungi: boolean; massimo: boolean } {
   return {
-    pastiglie: tipo !== 'riepilogo' && quante > 1,
+    pastiglie: !PASSI_COMUNI.includes(tipo) && quante > 1,
     aggiungi: tipo === 'famiglia' && puoiAggiungere(quante),
     massimo: tipo === 'famiglia' && !puoiAggiungere(quante),
   }
@@ -604,6 +608,18 @@ export function tappeDelPasso(chi: Chi, passo: number): Tappa[] {
     const stato = segmenti.every((x) => x === 'fatto') ? 'fatta' : segmenti.includes('adesso') ? 'adesso' : 'dopo'
     return { nome, etichetta: stato === 'fatta' ? `✓ ${nome}` : nome, stato, segmenti }
   })
+}
+
+/**
+ * La testa del passo `passo` (da 1) della persona attiva. Nei passi comuni, in famiglia, è quella della persona 0:
+ * un adulto ha 7 passi e un bambino 8, e lo stesso passo non deve dire due numeri.
+ */
+export function avanzamentoDelPasso(persone: StatoPassi[], attivo: number, passo: number): { numero: number; totale: number; tappe: Tappa[] } {
+  const tipo = tipiDiPassi(persone[attivo].chi)[passo - 1]
+  const chi = persone.length > 1 && PASSI_COMUNI.includes(tipo) ? persone[0].chi : persone[attivo].chi
+  const tipi = tipiDiPassi(chi)
+  const numero = chi === persone[attivo].chi ? passo : tipi.indexOf(tipo) + 1
+  return { numero, totale: tipi.length, tappe: tappeDelPasso(chi, numero) }
 }
 
 /** Il messaggio già scritto di SCRIVI: la segreteria legge subito a che passo si è fermati. */
@@ -1396,9 +1412,13 @@ export const conLaRicevutaInTutte = (daMandare: DaMandare[], ricevuta: File | un
     return { ...x, file: ricevuta ? { ...file, ricevuta } : file }
   })
 
-/** Le richieste di tutto il modulo: quelle di ogni persona (`perPersona`), con la ricevuta del modulo in ognuna. */
-export const richiesteDelModulo = (persone: StatoPassi[], perPersona: (s: StatoPassi, i: number) => DaMandare[]): DaMandare[] =>
-  conLaRicevutaInTutte(persone.flatMap(perPersona), ricevutaDelModulo(persone))
+/** Le richieste di tutto il modulo: quelle di ogni persona (`perPersona`), con la ricevuta e la nota del modulo in ognuna. */
+export const richiesteDelModulo = (persone: StatoPassi[], perPersona: (s: StatoPassi, i: number) => DaMandare[]): DaMandare[] => {
+  const nota = notaDelModulo(persone)
+  return conLaRicevutaInTutte(persone.flatMap(perPersona), ricevutaDelModulo(persone))
+    // La nota di ogni persona si scarta: una vecchia, scritta prima che fosse del modulo, non deve partire.
+    .map(({ dati: { note: _, ...dati }, ...x }) => ({ ...x, dati: nota ? { ...dati, note: nota } : dati }))
+}
 
 /** Cosa dire se il PDF non viene: «Ho il foglio firmato» c'è tra le scelte solo da soli. */
 export const moduloNonSiPrepara = (conFoglioInFoto: boolean) =>
@@ -1571,6 +1591,13 @@ export function causaleDelModulo(persone: StatoPassi[], corsi: CorsoRef[]): stri
 
 /** La ricevuta del modulo, chiunque l'abbia: è una sola per tutti. */
 export const ricevutaDelModulo = (persone: StatoPassi[]): File | undefined => persone.find((p) => p.file.ricevuta)?.file.ricevuta
+
+/** La nota per la segreteria, una per tutto il modulo come la ricevuta: sta nella persona 0. */
+export const notaDelModulo = (persone: StatoPassi[]): string | undefined => persone[0]?.risposte.note || undefined
+
+/** La nota scritta all'invio: nella persona 0 e in nessun'altra, così si rilegge uguale chiunque sia attivo. */
+export const conLaNota = (persone: StatoPassi[], nota: string): StatoPassi[] =>
+  persone.map((p, i) => ({ ...p, risposte: { ...p.risposte, note: i === 0 ? nota : '' } }))
 
 /**
  * La ricevuta caricata (o tolta) a QUANTO PAGHI: sta nella prima persona e in nessun'altra, col totale e quante

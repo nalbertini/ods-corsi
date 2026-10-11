@@ -1412,8 +1412,8 @@ function Flusso({
             rows={3}
             maxLength={P.MASSIMO_NOTE}
             placeholder="Niente dati sulla salute: quelli si portano in segreteria."
-            value={r.note ?? ''}
-            onChange={metti('note')}
+            value={P.notaDelModulo(tutte) ?? ''}
+            onChange={(e) => setPersone((ps) => P.conLaNota(ps, e.target.value))}
           />
         </Campo>
         {guaio && (
@@ -1432,7 +1432,7 @@ function Flusso({
         <span className="passo-intesta-testo">RICHIESTA DI ISCRIZIONE</span>
         {d?.modo === 'prova' && <Bollino>PROVA</Bollino>}
       </div>
-      <Avanzamento rif={titoloRef} numero={passo} totale={tipi.length} titolo={nomePasso} tappe={P.tappeDelPasso(v.chi, passo)} />
+      <Avanzamento rif={titoloRef} {...P.avanzamentoDelPasso(tutte, attivo, passo)} titolo={nomePasso} />
       {vistaFamiglia.pastiglie && (
         <div className="pad passo-per">
           <span className="passo-per-etichetta">PER</span>
