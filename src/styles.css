@@ -573,6 +573,14 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
   font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.18em;
   color: var(--su-colore); background: var(--giallo); text-align: center; padding: 4px;
 }
+/* ESCI DALLA PROVA: alto 44px per il dito, il nastro cresce con lui. Senza «·» davanti: a capo resta pulito.
+   Il fuoco è `su-colore` perché il nastro è giallo in tutti e due i temi. */
+.nastro-prova-esci {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; margin-left: 4px;
+  font: inherit; letter-spacing: inherit; color: inherit; white-space: nowrap;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.nastro-prova-esci:focus-visible { outline-color: var(--su-colore); }
 
 /* ---------- iscrizioni ---------- */
 

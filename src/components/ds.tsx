@@ -120,12 +120,9 @@ export function NastroProva({ testo, onEsci }: { testo: string; onEsci?: () => v
     <div className="nastro-prova">
       {testo}
       {onEsci && (
-        <>
-          {' · '}
-          <button type="button" style={{ textDecoration: 'underline', font: 'inherit', letterSpacing: 'inherit', color: 'inherit' }} onClick={onEsci}>
-            ESCI DALLA PROVA
-          </button>
-        </>
+        <button type="button" className="nastro-prova-esci" onClick={onEsci}>
+          ESCI DALLA PROVA
+        </button>
       )}
     </div>
   )
