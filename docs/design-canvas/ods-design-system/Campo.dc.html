@@ -32,10 +32,7 @@
       <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
         {{testo}}
         <sc-if value="{{haRiga}}" hint-placeholder-val="{{ false }}">
-          <span style="font-size: 13px; font-weight: 400; line-height: 1.35; color: {{coloreRiga}}">{{riga}}</span>
-        </sc-if>
-        <sc-if value="{{haPerche}}" hint-placeholder-val="{{ false }}">
-          <span style="font-size: 13px; font-weight: 600; line-height: 1.35; color: {{c.sec}}">{{perche}}</span>
+          <span style="font-size: 13px; font-weight: 400; line-height: 1.35; color: {{coloreRiga}}">{{rigaPrima}}<sc-for list="{{orario}}" as="o" hint-placeholder-count="0"><span style="font-weight: {{o.peso}}; color: {{o.colore}}">{{o.testo}}</span></sc-for></span>
         </sc-if>
       </span>
     </div>
@@ -59,7 +56,7 @@
   </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["testo","select","area","sola-lettura","scelta","spunta"],"default":"testo"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"etichetta":{"editor":"text","default":"NOME"},"valore":{"editor":"text","default":""},"segnaposto":{"editor":"text","default":""},"codice":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"notaTono":{"editor":"enum","options":["guaio","avviso"],"default":"guaio"},"acceso":{"editor":"boolean","default":false},"manca":{"editor":"boolean","default":false},"scelto":{"editor":"boolean","default":false},"una":{"editor":"boolean","default":false},"riga":{"editor":"text","default":""},"perche":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":90}}'>
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["testo","select","area","sola-lettura","scelta","spunta"],"default":"testo"},"contesto":{"editor":"enum","options":["app","segreteria"],"default":"app"},"etichetta":{"editor":"text","default":"NOME"},"valore":{"editor":"text","default":""},"segnaposto":{"editor":"text","default":""},"codice":{"editor":"boolean","default":false},"nota":{"editor":"text","default":""},"notaTono":{"editor":"enum","options":["guaio","avviso"],"default":"guaio"},"acceso":{"editor":"boolean","default":false},"manca":{"editor":"boolean","default":false},"scelto":{"editor":"boolean","default":false},"una":{"editor":"boolean","default":false},"riga":{"editor":"text","default":""},"orario":{"editor":"text","default":""},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":360,"height":90}}'>
 // Riproduzione 1:1 dei campi, nei due contesti.
 // contesto "app" (il modulo di iscrizione: Campo, NotaCampo e SceltaCorsi di src/components/ds.tsx righe 122-200,
 //   usati da src/components/ModuloIscrizione.tsx; src/styles.css righe 575-665 e 1201-1205): .modulo-campo = colonna, gap 6px;
@@ -73,7 +70,8 @@
 // PROPOSTA (rifinitura iscrizione): con `una` la scelta e' un SEGMENTO PIENO, senza quadratino: la scelta prende il fondo `text` e il testo `bg`, le altre il bordo `riga-campo`; il quadratino con ✓ resta solo per le scelte multiple. I bordi dei campi e delle scelte usano `riga-campo` (3:1 sul fondo), non `line`.
 // scelta = .modulo-corso (52px, fondo `surface`, 15px 600) con la spunta .modulo-spunta (22px): ✓ per piu' d'una, ● con `una` (come paghi);
 //   scelto = bordo `text`, fondo `surface-2`; riga = eta' e orari sotto il nome (13px `dim`, `sec` sul scelto);
-//   perche = perche' il corso e' proposto in cima, sotto la riga (.modulo-corso-perche, 13px 600 `sec`): «Finisce quando comincia Nicola, il lunedì»;
+//   orario = l'orario a pezzi dei corsi proposti in cima (TestoAPezzi di ds.tsx), sulla riga dopo l'eta' e « · »: i pezzi fra asterischi
+//   in .orario-evidenza (700 `text`), gli altri col colore della riga: «*lunedì* e giovedì *18.00-19.00*»;
 // spunta = .modulo-privacy: la casella 22px (qui disegnata: la nativa dipende dal browser) e il testo 15px `sec`.
 // Per scelta e spunta il testo e' `valore`.
 // Il fuoco, il segnaposto del browser e il cursore non sono riprodotti (stati dinamici).
@@ -100,7 +98,10 @@ class Component extends DCLogic {
     const scelto = truthy(p.scelto);
     const una = truthy(p.una);
     const riga = p.riga ?? '';
-    const perche = p.perche ?? '';
+    const orarioScritto = p.orario ?? '';
+    const coloreRiga = scelto ? c.sec : c.dim;
+    // «*lunedì* e giovedì *18.00-19.00*»: fra asterischi i pezzi in evidenza (le posizioni dispari dopo lo split).
+    const orario = orarioScritto.split('*').map((testo, i) => ({ testo, peso: i % 2 ? 700 : 400, colore: i % 2 ? c.text : coloreRiga })).filter((x) => x.testo !== '');
     return {
       c, cond: COND,
       etichetta, conEtichetta: etichetta !== '',
@@ -124,7 +125,7 @@ class Component extends DCLogic {
       sfondoScelta: scelto ? c.surface2 : c.surface,
       bordoScelta: scelto ? c.text : c.lineCampo,
       segno: scelto ? (una ? '●' : '✓') : '',
-      haRiga: riga !== '', riga, coloreRiga: scelto ? c.sec : c.dim, haPerche: perche !== '', perche,
+      haRiga: riga !== '' || orario.length > 0, riga, rigaPrima: riga !== '' && orario.length ? `${riga} · ` : riga, orario, coloreRiga,
       bordoSpunta: scelto ? c.text : c.lineCampo,
       sfondoSpunta: scelto ? c.text : 'transparent',
       segnoSpunta: scelto ? '✓' : '',

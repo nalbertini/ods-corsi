@@ -125,22 +125,21 @@ bambini vicini al suo orario, se ci sono) e **UN ALTRO ADULTO** (lo stesso
 corso, o uno per adulti alla stessa ora); chi iscrive un bambino trova **UN
 FRATELLO O UNA SORELLA** e **TU O UN ALTRO ADULTO** (i corsi vicini
 all'orario del bambino). La carta propone fino a tre corsi, dal più comodo,
-ognuno con l'etichetta, l'orario e una nota:
+ognuno con l'etichetta e l'orario. Sopra i corsi una riga dice «In **nero** i
+giorni che vanno col tuo orario.»: nell'orario di ogni corso i giorni che
+vanno sono in nero e grassetto, gli altri grigi; l'ora di una fascia
+(«lunedì e giovedì 18.00-19.00») è in nero se almeno uno dei suoi giorni va.
+Quali giorni vanno lo dice l'etichetta:
 
-- **STESSA ORA**: le lezioni si sovrappongono almeno un giorno; se non in
-  tutti, la nota dice quali («solo il lunedì e il mercoledì»).
+- **STESSA ORA**: le lezioni si sovrappongono almeno un giorno; vanno i
+  giorni in cui si sovrappongono.
 - **SUBITO PRIMA** o **SUBITO DOPO**: lo stesso giorno, finisce o comincia
-  entro mezz'ora dall'altro («finisce quando cominci tu, il lunedì»,
-  «comincia 15 minuti dopo di te, il venerdì»).
+  entro mezz'ora dall'altro (l'attesa fra la fine di una lezione e l'inizio
+  dell'altra); vanno i giorni in cui si aspetta mezz'ora o meno.
 - **STESSI GIORNI**: un'altra ora, ma negli stessi giorni, così si viene in
-  palestra una volta sola («un'ora prima di te, gli stessi giorni»). La
-  distanza è l'attesa fra la fine di una lezione e l'inizio dell'altra; se
-  cambia da un giorno all'altro la nota dice «a un'altra ora».
-- **STESSO CORSO**: per un altro adulto, il corso di chi si è iscritto.
-
-Se succede in tutti i giorni in cui vieni tu, la nota non li elenca e dice
-«ogni volta» («finisce quando cominci tu, ogni volta»); alla stessa ora, in
-quel caso, non c'è nota.
+  palestra una volta sola; vanno i giorni in comune.
+- **STESSO CORSO**: per un altro adulto, il corso di chi si è iscritto; tutto
+  l'orario è in nero.
 
 In verde quanto si risparmia con l'annuale, col primo corso della carta.
 Il tasto tratteggiato aggiunge la persona: per un adulto, chi iscrive un
@@ -160,10 +159,9 @@ calendario dei corsi): se è uno solo è già spuntato, e un altro adulto trova
 già spuntati i corsi di chi si è iscritto per primo. Si può togliere e
 sceglierne un altro. Poi **SUBITO PRIMA O DOPO** e **NEGLI STESSI GIORNI**,
 con le stesse regole della carta, e infine **GLI ALTRI CORSI PER LA SUA
-ETÀ**. Sotto l'orario di ogni corso proposto c'è il perché («Si sovrappone il
-lunedì e il mercoledì», «Finisce quando comincia Nicola, il lunedì», «Un'ora
-prima di Nicola, il mercoledì e il venerdì»; «ogni volta» se sono tutti i
-giorni di Nicola). Finiti i suoi documenti, AVANTI porta di nuovo a LA
+ETÀ**. Sotto il nome di ogni corso proposto ci sono l'età del listino e
+l'orario, coi giorni che vanno con chi si è iscritto per primo in nero, come
+nella carta. Finiti i suoi documenti, AVANTI porta di nuovo a LA
 FAMIGLIA (per aggiungere qualcun altro) e poi a QUANTO PAGHI, col conto di
 tutti.
 
