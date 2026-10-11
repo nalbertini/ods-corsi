@@ -186,9 +186,12 @@ CAP non è di Poste (che non lo pubblica): se un comune manca o è sbagliato, va
 corretto in `scripts/cap-torino.mjs`.
 
 Chi si aggiunge prende indirizzo e contatti già scritti, e ognuno sceglie i
-suoi corsi. Da lì in poi, in ogni passo, sotto il nome del passo c'è **PER** coi nomi di
-tutti, per passare dall'uno all'altro; per aggiungerne un altro si torna a
-FAMIGLIA, non all'ultimo passo. Quando chi firma non è chi compila (un altro adulto, o il bambino
+suoi corsi. Nei passi di ognuno (CHI e IL CORSO), sotto il nome del passo c'è **PER** coi nomi di
+tutti, per passare dall'uno all'altro. FAMIGLIA, PAGAMENTO e INVIO invece sono
+uno solo per tutti, senza PER: per tornare ai dati di qualcuno si tocca
+**MODIFICA** accanto al suo nome in **NEL MODULO** (o nell'elenco di INVIO). Le
+note per la segreteria sono una per tutto il modulo e arrivano in ogni
+richiesta. Per aggiungerne un altro si torna a FAMIGLIA, non all'ultimo passo. Quando chi firma non è chi compila (un altro adulto, o il bambino
 firmato da un altro adulto), il modulo lo chiama per nome: «Firma Paola, che è
 maggiorenne», **L'OK DI PAOLA**, **LA CARTA D'IDENTITÀ DI PAOLA**. Per chi si è aggiunto con **IO**, la
 casella delle foto porta il suo nome (**LE FOTO E I VIDEO DI NICOLA**).
