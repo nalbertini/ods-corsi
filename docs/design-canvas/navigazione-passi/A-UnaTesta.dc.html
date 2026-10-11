@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f4f1; color: #161616; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- A · UNA TESTA SOLA: il nome del passo e il numero su una riga, CHIAMA piccolo a destra della stessa riga, PROVA dentro la riga del titolo. Le pastiglie restano ma senza il titoletto LA FAMIGLIA: «PER» davanti. Il titoletto I DOCUMENTI sparisce, il nome lo dice gia la testa. Stesse cose di oggi, meta dell altezza. -->
+<div style="display: flex; flex-direction: column; width: 390px; min-height: 900px; background: #f4f4f1; color: #161616">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 20px 0">
+<span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #656561">RICHIESTA DI ISCRIZIONE</span>
+<dc-import name="Badge" tipo="prova" label="PROVA" tema="chiaro" hint-size="70px,26px"></dc-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 20px 4px">
+<div style="display: flex; gap: 4px"><div style="flex: 1; height: 6px; background: #12913f"></div><div style="flex: 1; height: 6px; background: #12913f"></div><div style="flex: 1; height: 6px; background: #12913f"></div><div style="flex: 1; height: 6px; background: #12913f"></div><div style="flex: 1; height: 6px; background: #161616"></div><div style="flex: 1; height: 6px; background: #d4d4ce"></div><div style="flex: 1; height: 6px; background: #d4d4ce"></div><div style="flex: 1; height: 6px; background: #d4d4ce"></div></div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; align-items: baseline; gap: 10px"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; line-height: 1; letter-spacing: 0.02em">5<span style="font-size: 17px; color: #656561">/8</span></span><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 0.14em">I DOCUMENTI</span></div>
+<span style="display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 12px; border: 2px solid #d4d4ce; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 14px; font-weight: 700; letter-spacing: 0.14em; color: #3d3d3a">CHIAMA</span>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; padding: 8px 20px 12px; border-bottom: 2px solid #e2e2dd"><span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: #656561">PER</span><span style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 2px solid #d4d4ce; background: transparent; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: #161616">NICOLA</span><span style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 2px solid #161616; background: #e2e2dd; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: #161616">MANUELA</span></div>
+<div style="height: 12px"></div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 4px 20px 20px; flex-grow: 1">
+<dc-import name="CaricaFile" etichetta="LA CARTA D’IDENTITÀ DI NICOLA" se-manca="" dettaglio="Il fronte. È Nicola che firma: serve la sua carta, non quella di Manuela." nome="" tema="chiaro" hint-size="100%,100px"></dc-import>
+<dc-import name="CaricaFile" etichetta="IL RETRO DELLA CARTA DI NICOLA" se-manca="FACOLTATIVO" dettaglio="Il retro. Una foto o il PDF." nome="" tema="chiaro" hint-size="100%,100px"></dc-import>
+<dc-import name="CaricaFile" etichetta="IL CERTIFICATO DI MANUELA" se-manca="PUOI PORTARLO DOPO" dettaglio="Lo porti in segreteria prima della prima lezione: senza, Manuela non può partecipare." nome="" tema="chiaro" hint-size="100%,100px"></dc-import>
+</div>
+<dc-import name="BarraPasso" avanti="AVANTI" manca="" nota="" tema="chiaro" hint-size="100%,110px"></dc-import>
+</div>
+</x-dc>
+</body>
+</html>

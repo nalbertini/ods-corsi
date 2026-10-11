@@ -1,0 +1,103 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "La navigazione del modulo"
+  },
+  {
+   "id": "page-2",
+   "name": "Dal C · l aiuto"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · sei righe prima del passo",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "A-UnaTesta.dc.html",
+   "title": "A · Una testa sola",
+   "x": 510,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "B-PrimaLaPersona.dc.html",
+   "title": "B · Prima la persona",
+   "x": 1020,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "C-TreTappe.dc.html",
+   "title": "C · Tre tappe",
+   "x": 1530,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "D-Elenco.dc.html",
+   "title": "D · L’elenco dei passi (aperto)",
+   "x": 2040,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Nomi.dc.html",
+   "title": "I nomi dei passi",
+   "x": 0,
+   "y": 1400,
+   "page": "page-1"
+  },
+  {
+   "file": "C1-AiutoSottoIlPasso.dc.html",
+   "title": "C1 · Aiuto sotto il passo",
+   "x": 0,
+   "y": 300,
+   "page": "page-2"
+  },
+  {
+   "file": "C2-AiutoInCima.dc.html",
+   "title": "C2 · Aiuto in cima",
+   "x": 510,
+   "y": 300,
+   "page": "page-2"
+  },
+  {
+   "file": "C3-ContoNellaTappa.dc.html",
+   "title": "C3 · Il conto nella tappa",
+   "x": 1020,
+   "y": 300,
+   "page": "page-2"
+  },
+  {
+   "file": "C4-AiutoInFondo.dc.html",
+   "title": "C4 · Aiuto in fondo",
+   "x": 1530,
+   "y": 300,
+   "page": "page-2"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 2400,
+   "text": "La testa del modulo a passi: quattro ipotesi e i nomi"
+  },
+  {
+   "id": "titolo-c",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1920,
+   "text": "Dal C: dove sta l aiuto",
+   "page": "page-2"
+  }
+ ]
+}

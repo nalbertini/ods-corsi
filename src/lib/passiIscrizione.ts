@@ -94,17 +94,18 @@ export const tipiDiPassi = (chi: Chi): TipoPasso[] =>
     ? ['dati', 'corso', 'modulo', 'documenti', 'famiglia', 'pagamento', 'riepilogo']
     : ['dati', 'genitore', 'corso', 'modulo', 'documenti', 'famiglia', 'pagamento', 'riepilogo']
 
+// Corti e senza articolo: stanno sotto le tre tappe e nel messaggio di SCRIVI.
 const NOME_PASSO: Record<Chi, Partial<Record<TipoPasso, string>>> = {
-  adulto: { dati: 'I TUOI DATI', corso: 'SCEGLI IL CORSO', modulo: 'IL MODULO E LA FIRMA', documenti: 'I DOCUMENTI', famiglia: 'LA FAMIGLIA', pagamento: 'QUANTO PAGHI', riepilogo: 'CONTROLLA E INVIA' },
+  adulto: { dati: 'DATI', corso: 'CORSO', modulo: 'FIRMA', documenti: 'DOCUMENTI', famiglia: 'FAMIGLIA', pagamento: 'PAGAMENTO', riepilogo: 'INVIO' },
   figlio: {
-    dati: 'IL BAMBINO',
-    genitore: 'IL GENITORE CHE FIRMA',
-    corso: 'SCEGLI IL CORSO',
-    modulo: 'IL MODULO E LA FIRMA',
-    documenti: 'I DOCUMENTI',
-    famiglia: 'LA FAMIGLIA',
-    pagamento: 'QUANTO PAGHI',
-    riepilogo: 'CONTROLLA E INVIA',
+    dati: 'BAMBINO',
+    genitore: 'CHI FIRMA',
+    corso: 'CORSO',
+    modulo: 'FIRMA',
+    documenti: 'DOCUMENTI',
+    famiglia: 'FAMIGLIA',
+    pagamento: 'PAGAMENTO',
+    riepilogo: 'INVIO',
   },
 }
 
@@ -550,7 +551,7 @@ export function fermoDellaFamiglia(persone: StatoPassi[]): string | undefined {
     const lui = nomeDellaPersona(persone[s.firmatario], s.firmatario)
     // Il posto 0 è un bambino: per il fratello firma chi compila, e manca solo che scriva i suoi dati di genitore.
     if (firmaChiCompila(persone, s.firmatario))
-      return `Per ${nomeDellaPersona(s, i)} firma chi compila: scrivi i tuoi dati nel passo IL GENITORE CHE FIRMA di ${lui}, oppure chiama la segreteria.`
+      return `Per ${nomeDellaPersona(s, i)} firma chi compila: scrivi i tuoi dati nel passo ${NOME_PASSO.figlio.genitore} di ${lui}, oppure chiama la segreteria.`
     return `${lui} non è più un adulto, e ${nomeDellaPersona(s, i)} ha bisogno di un adulto che firmi: rimetti ${lui} come adulto, oppure chiama la segreteria.`
   }
   return undefined
@@ -571,7 +572,7 @@ export function nomiDeiPassi(s: StatoPassi, indice: number): string[] {
   const nomi = passiDi(s.chi)
   // L'io è chi compila: i dati sono «tuoi».
   if (s.chi !== 'adulto' || indice === 0 || s.io) return nomi
-  return [`I DATI DI ${nomeDellaPersona(s, indice).toUpperCase()}`, ...nomi.slice(1)]
+  return [`DATI DI ${nomeDellaPersona(s, indice).toUpperCase()}`, ...nomi.slice(1)]
 }
 
 /** Chi può firmare per un bambino: gli adulti della famiglia, col loro posto (`indiceFirmatario` di `aggiungiFamiliare`). */
@@ -579,6 +580,34 @@ export const chiPuoFirmare = (persone: StatoPassi[]): Array<{ indice: number; no
   persone.flatMap((p, indice) => (p.chi === 'adulto' ? [{ indice, nome: nomeDellaPersona(p, indice) }] : []))
 
 const ultimoPasso = (s: StatoPassi) => passiDi(s.chi).length
+
+/** Le tre tappe sopra il nome del passo: gli 8 passi in tre gruppi, così si vede dove si è senza contare. */
+const TAPPE: Array<{ nome: string; tipi: TipoPasso[] }> = [
+  { nome: 'CHI', tipi: ['dati', 'genitore'] },
+  { nome: 'IL CORSO', tipi: ['corso', 'modulo', 'documenti'] },
+  { nome: 'PAGA E MANDA', tipi: ['famiglia', 'pagamento', 'riepilogo'] },
+]
+export type StatoSegmento = 'fatto' | 'adesso' | 'dopo'
+export interface Tappa {
+  nome: string
+  /** Il nome a schermo: con ✓ davanti quando la tappa è finita. */
+  etichetta: string
+  stato: 'fatta' | 'adesso' | 'dopo'
+  segmenti: StatoSegmento[]
+}
+
+/** Le tappe al passo `passo` (da 1): conta la posizione, non quel che manca, come i segmenti di prima. */
+export function tappeDelPasso(chi: Chi, passo: number): Tappa[] {
+  const tipi = tipiDiPassi(chi)
+  return TAPPE.map(({ nome, tipi: suoi }) => {
+    const segmenti = tipi.flatMap((t, i): StatoSegmento[] => (suoi.includes(t) ? [i + 1 < passo ? 'fatto' : i + 1 === passo ? 'adesso' : 'dopo'] : []))
+    const stato = segmenti.every((x) => x === 'fatto') ? 'fatta' : segmenti.includes('adesso') ? 'adesso' : 'dopo'
+    return { nome, etichetta: stato === 'fatta' ? `✓ ${nome}` : nome, stato, segmenti }
+  })
+}
+
+/** Il messaggio già scritto di SCRIVI: la segreteria legge subito a che passo si è fermati. */
+export const messaggioAiuto = (nomePasso: string): string => `Ciao, sto compilando l’iscrizione e ho un dubbio sul passo ${nomePasso}`
 
 /** «manca 1 cosa» / «mancano 3 cose»: per chi legge lo schermo. */
 export const fraseCoseCheMancano = (n: number): string => (n === 1 ? 'manca 1 cosa' : `mancano ${n} cose`)

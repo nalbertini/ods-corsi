@@ -20,6 +20,8 @@ const { outputFiles } = await build({
       "export { controlla, datiRichieste, domandaUscita, FILE } from './src/lib/richieste'",
       "export { carattereControllo, lettereCognome, lettereNome } from './src/lib/codiceFiscale'",
       "export { causale, stimaIscrizione } from './src/lib/nucleo'",
+      // Tutta lib/sito, come spazio di nomi: una funzione che ancora manca cade sulla sua prova, non sul bundle.
+      "export * as sito from './src/lib/sito'",
     ].join('\n'),
     resolveDir: '.',
     loader: 'ts',
@@ -196,15 +198,19 @@ console.log('\n3. il modulo di oggi non cambia: solo la parola export')
 // ---------------------------------------------------------------------------
 console.log('\n4. i passi')
 {
-  const ADULTO = ['I TUOI DATI', 'SCEGLI IL CORSO', 'IL MODULO E LA FIRMA', 'I DOCUMENTI', 'LA FAMIGLIA', 'QUANTO PAGHI', 'CONTROLLA E INVIA']
-  const FIGLIO = ['IL BAMBINO', 'IL GENITORE CHE FIRMA', 'SCEGLI IL CORSO', 'IL MODULO E LA FIRMA', 'I DOCUMENTI', 'LA FAMIGLIA', 'QUANTO PAGHI', 'CONTROLLA E INVIA']
+  // Il nome del passo è corto e senza articolo: sta sotto le tre tappe (docs/design-canvas/navigazione-passi/).
+  const ADULTO = ['DATI', 'CORSO', 'FIRMA', 'DOCUMENTI', 'FAMIGLIA', 'PAGAMENTO', 'INVIO']
+  const FIGLIO = ['BAMBINO', 'CHI FIRMA', 'CORSO', 'FIRMA', 'DOCUMENTI', 'FAMIGLIA', 'PAGAMENTO', 'INVIO']
   ok('adulto: sette passi', m.passiDi('adulto'), ADULTO)
   ok('figlio: otto passi', m.passiDi('figlio'), FIGLIO)
-  // In famiglia i dati del secondo adulto non sono «tuoi»: il titolo dice di chi sono.
+  const articolo = /^(IL|LA|I|LE|GLI|LO) |^L[’']/
+  for (const chi of ['adulto', 'figlio']) ok(`nessun nome di passo comincia con un articolo (${chi})`, m.passiDi(chi).filter((n) => articolo.test(n)), [])
+  // In famiglia i dati del secondo adulto non sono di chi compila: il titolo dice di chi sono.
   const conNome = (nome) => ({ ...m.nuovoStato('adulto'), risposte: { ...m.nuovoStato('adulto').risposte, nome } })
-  ok('chi compila: I TUOI DATI', m.nomiDeiPassi(conNome('Paolo'), 0)[0], 'I TUOI DATI')
-  ok('il secondo adulto, col nome: I DATI DI MARIA', m.nomiDeiPassi(conNome('maria'), 1)[0], 'I DATI DI MARIA')
-  ok('il secondo adulto, senza nome: I DATI DI ADULTO 2', m.nomiDeiPassi(conNome(''), 1)[0], 'I DATI DI ADULTO 2')
+  ok('chi compila: DATI', m.nomiDeiPassi(conNome('Paolo'), 0)[0], 'DATI')
+  ok('l’io, anche se non è al posto 0: DATI', m.nomiDeiPassi({ ...conNome('Paolo'), io: true }, 1)[0], 'DATI')
+  ok('il secondo adulto, col nome: DATI DI MARIA', m.nomiDeiPassi(conNome('maria'), 1)[0], 'DATI DI MARIA')
+  ok('il secondo adulto, senza nome: DATI DI ADULTO 2', m.nomiDeiPassi(conNome(''), 1)[0], 'DATI DI ADULTO 2')
   ok('gli altri passi non cambiano', m.nomiDeiPassi(conNome('Maria'), 1).slice(1), ADULTO.slice(1))
   ok('un bambino aggiunto: come sempre', m.nomiDeiPassi(m.nuovoStato('figlio'), 2), FIGLIO)
   // Cosa si fa in ogni passo lo dice la lib: la schermata non ripete l'ordine.
@@ -1201,38 +1207,56 @@ console.log('\n19. la barra compatta: markup e stile')
   ok('il browser chiede con preventDefault', effetto.includes('preventDefault()'), true)
 }
 
-// 27. Il fuoco sul titolo del passo, a ogni cambio di passo (e non a ogni lettera).
+// 27. Il fuoco sulla testa del passo, a ogni cambio di passo (e non a ogni lettera).
 {
-  console.log('\n27. il fuoco va al titolo del passo')
+  console.log('\n27. il fuoco va alla testa del passo')
   const ds = readFileSync('src/components/ds.tsx', 'utf8')
-  const avanza = ds.slice(ds.indexOf('export function Avanzamento'), ds.indexOf('export function Avanzamento') + 1500).split(/\n}\n/)[0]
+  const avanza = ds.slice(ds.indexOf('export function Avanzamento'), ds.indexOf('export function Avanzamento') + 2500).split(/\n}\n/)[0]
   ok('Avanzamento (ds.tsx) prende il fuoco da codice: tabIndex={-1}', avanza.includes('tabIndex={-1}'), true)
   ok('Avanzamento (ds.tsx) riceve un ref', /\bref\b/.test(avanza), true)
+  // Il numero a schermo sparisce, ma chi usa uno screen reader sente ancora «Passo N di N: nome».
+  ok('Avanzamento (ds.tsx): aria-label «Passo ${numero} di ${totale}: ${titolo}»', avanza.includes('aria-label={`Passo ${numero} di ${totale}: ${titolo}`}'), true)
+  ok('Avanzamento (ds.tsx): niente più numero grande (avanza-numero)', avanza.includes('avanza-numero'), false)
+  ok('Avanzamento (ds.tsx): niente più «DI {totale}» a schermo', /DI \{totale\}/.test(avanza), false)
   const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
   const codice = pagina.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((r) => !/^\s*\/\//.test(r)).join('\n')
   const effetto = codice.split('useEffect(').find((b) => /\.focus\(/.test(b) && /Ref\.current/.test(b) && /titolo|Titolo|avanz/i.test(b)) ?? ''
-  ok('un useEffect mette a fuoco il titolo del passo', effetto !== '', true)
+  ok('un useEffect mette a fuoco la testa del passo', effetto !== '', true)
   ok('dipende solo da passo: non scatta a ogni lettera', /\[\s*passo\s*\]\s*\)/.test(effetto), true)
   ok('<Avanzamento> riceve il ref', /<Avanzamento[^>]*\bref=/.test(codice) || /<Avanzamento[^>]*\b(titoloRef|rif)=/.test(codice), true)
 }
 
-// 28. La riga CHIAMA sotto la testata dei passi: lo stesso numero di «Contatti».
+// 28. L'aiuto in fondo al passo, sopra INDIETRO e AVANTI: CHIAMA col numero di «Contatti», SCRIVI su WhatsApp.
 {
-  console.log('\n28. CHIAMA nel flusso')
+  console.log('\n28. CHIAMA e SCRIVI nel flusso')
   const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
   const codice = pagina.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((r) => !/^\s*\/\//.test(r)).join('\n')
   const sito = readFileSync('src/lib/sito.ts', 'utf8')
   const schermata = readFileSync('src/components/IscrizioniScreen.tsx', 'utf8')
   ok('il numero sta in lib/sito: CONTATTI.telefono e chiama', /export const CONTATTI/.test(sito) && /export const chiama/.test(sito), true)
   ok('IscrizioniScreen usa la stessa fonte (chiama)', /import \{[^}]*\bchiama\b[^}]*\} from '..\/lib\/sito'/.test(schermata), true)
-  ok('il flusso importa chiama da lib/sito', /import \{[^}]*\bchiama\b[^}]*\} from '..\/lib\/sito'/.test(codice), true)
-  ok('c’è un tasto CHIAMA che usa href={chiama}', /<Tasto[^>]*href=\{chiama\}[^>]*>\s*CHIAMA/.test(codice), true)
-  ok('il numero non è scritto a mano nel flusso', /\btel:|\b\d{3}\s\d{3}\s\d{4}\b/.test(codice), false)
-  // Sta nel flusso, sotto la testata: prima di <Avanzamento> non c'è, e non dentro <BarraPasso>.
-  const dopoAvanzamento = codice.slice(codice.indexOf('<Avanzamento'))
-  ok('CHIAMA viene dopo la testata <Avanzamento>', /CHIAMA/.test(dopoAvanzamento), true)
-  const barra = codice.slice(codice.indexOf('<BarraPasso'), codice.indexOf('/>', codice.indexOf('<BarraPasso')))
-  ok('CHIAMA non sta dentro la barra del passo', /CHIAMA/.test(barra), false)
+  ok('il flusso importa chiama e scrivi da lib/sito', /import \{[^}]*\bchiama\b[^}]*\} from '..\/lib\/sito'/.test(codice) && /import \{[^}]*\bscrivi\b[^}]*\} from '..\/lib\/sito'/.test(codice), true)
+  // Il numero col prefisso è uno solo, per CHIAMA e SCRIVI: viene da CONTATTI.telefono.
+  ok('scrivi (lib/sito) è costruito da CONTATTI.telefono', /const numero = [^\n]*CONTATTI\.telefono/.test(sito) && /export (const|function) scrivi[^\n]*\$\{numero\}/.test(sito) && /export const chiama[^\n]*\$\{numero\}/.test(sito), true)
+  ok('il numero non è scritto a mano nel flusso (niente wa.me, tel:, dieci cifre)', /wa\.me|\btel:|\b\d{3}\s?\d{3}\s?\d{4}\b/.test(codice), false)
+  // Il passo: la testa, il contenuto, l'aiuto, la barra. Fra la testa e il contenuto non c'è più niente dell'aiuto.
+  const passi = codice.slice(codice.lastIndexOf('<Avanzamento'))
+  const corpo = passi.indexOf('{corpo()}')
+  const barra = passi.indexOf('<BarraPasso')
+  const aiuto = passi.indexOf('Hai bisogno di aiuto? Chiama o scrivi.')
+  ok('sparisce «Un dubbio? Chiama la segreteria.»', codice.includes('Un dubbio? Chiama la segreteria.'), false)
+  ok('fra la testa e il contenuto niente aiuto (passo-chiama, CHIAMA)', /passo-chiama|CHIAMA|SCRIVI/.test(passi.slice(0, corpo)), false)
+  ok('«Hai bisogno di aiuto? Chiama o scrivi.» viene dopo {corpo()} e prima di <BarraPasso', corpo > 0 && aiuto > corpo && aiuto < barra, true)
+  const fraAiutoEBarra = aiuto > 0 && barra > aiuto ? passi.slice(aiuto, barra) : ''
+  ok('c’è un tasto CHIAMA che usa href={chiama}, nello stesso posto', /<Tasto href=\{chiama\} qui>\s*CHIAMA/.test(fraAiutoEBarra), true)
+  // SCRIVI apre WhatsApp fuori: il modulo vive in memoria, aprirlo «qui» perderebbe le risposte.
+  const tastoScrivi = fraAiutoEBarra.match(/<Tasto[^>]*>\s*SCRIVI/)?.[0] ?? ''
+  ok('c’è un tasto SCRIVI col link dalla lib (href={scrivi(…)})', /href=\{scrivi\(/.test(tastoScrivi), true)
+  ok('SCRIVI non ha «qui»: si apre fuori dal modulo', tastoScrivi !== '' && !/\bqui\b/.test(tastoScrivi), true)
+  // Lo stesso nome nella testa e nel messaggio: `nomePasso`, il nome del passo a schermo.
+  ok('il messaggio di SCRIVI è messaggioAiuto col nome del passo a schermo', /scrivi\(\s*P\.messaggioAiuto\(\s*nomePasso\s*\)/.test(tastoScrivi) && /const nomePasso = nomiPassi\[passo - 1\]/.test(codice) && /<Avanzamento[^>]*titolo=\{nomePasso\}/.test(codice), true)
+  const dentroBarra = barra > 0 ? passi.slice(barra, passi.indexOf('/>', barra)) : ''
+  ok('l’aiuto non sta dentro la barra del passo: scorre col contenuto', /CHIAMA|SCRIVI|aiuto/i.test(dentroBarra), false)
 }
 
 // 29. «RICHIESTA ARRIVATA»: l'importo e i contatti li dà la lib, la schermata mostra.
@@ -1815,7 +1839,8 @@ console.log('\n36. la famiglia: i dati si prendono quando servono, e le regole c
   ok('chi firma è un adulto: nessun fermo', chiama(() => m.fermoDellaFamiglia(famiglia)), undefined)
   const luiBambino = [m.cambiaScelta(famiglia[0], 'figlio'), famiglia[1]]
   // Luca ora è un bambino: Matteo, firmato dal posto 0, lo firma chi compila, che scrive i suoi dati di genitore (sezione 41).
-  ok('chi firma non è più un adulto: il bambino si ferma, e la frase dice cosa fare', chiama(() => m.fermoDellaFamiglia(luiBambino)), 'Per Matteo firma chi compila: scrivi i tuoi dati nel passo IL GENITORE CHE FIRMA di Luca, oppure chiama la segreteria.')
+  ok('chi firma non è più un adulto: il bambino si ferma, e la frase dice cosa fare', chiama(() => m.fermoDellaFamiglia(luiBambino)), 'Per Matteo firma chi compila: scrivi i tuoi dati nel passo CHI FIRMA di Luca, oppure chiama la segreteria.')
+  ok('la frase prende il nome del passo da passiDi, non lo scrive a parte', String(chiama(() => m.fermoDellaFamiglia(luiBambino))).includes(`nel passo ${m.passiDi('figlio')[1]} di`), true)
   const paolaAdulta = adulto({ nome: 'Paola', codiceFiscale: CF_PAOLA })
   ok('chi firma è un altro adulto che non lo è più: «rimetti … come adulto»', chiama(() => m.fermoDellaFamiglia([luca, m.cambiaScelta(paolaAdulta, 'figlio'), { ...famiglia[1], firmatario: 1 }])), 'Paola non è più un adulto, e Matteo ha bisogno di un adulto che firmi: rimetti Paola come adulto, oppure chiama la segreteria.')
   ok('e i dati di chi non è più adulto non passano al bambino', lei(luiBambino, 1).risposte.genitoreNome, '')
@@ -1926,7 +1951,7 @@ console.log('\n38. QUANTO PAGHI')
   ok('il passo del pagamento non ferma mai: figlio', m.mancaNelPasso(m.nuovoStato('figlio'), PAGA.figlio), [])
   ok('il passo del pagamento: la barra non ha voci', m.mancanti(m.nuovoStato('adulto'), PAGA.adulto), [])
   ok('quanto manca non cambia: 17 cose a un adulto vuoto, 18 a un figlio vuoto (non più «anche te?»), 0 a chi ha fatto tutto', [m.quantoManca(m.nuovoStato('adulto')), m.quantoManca(m.nuovoStato('figlio')), m.quantoManca(adulto())], [17, 18, 0])
-  ok('l’ultimo passo è il riepilogo, dopo QUANTO PAGHI', [m.passiDi('adulto').at(-2), m.passiDi('adulto').at(-1)], ['QUANTO PAGHI', 'CONTROLLA E INVIA'])
+  ok('l’ultimo passo è il riepilogo, dopo QUANTO PAGHI', [m.passiDi('adulto').at(-2), m.passiDi('adulto').at(-1)], ['PAGAMENTO', 'INVIO'])
   ok('la riga della ricevuta nel riepilogo porta a QUANTO PAGHI, caricata o no', [adulto(), adulto({}, { file: { documento: F('d.jpg'), ricevuta: F('r.jpg') } })].map((s) => m.righeRiepilogo(s, corsi).find((r) => r.cosa === 'ricevuta')?.passo), ['pagamento', 'pagamento'])
   ok('la carta e la firma del riepilogo restano ai documenti e al modulo', [m.passoDelRiepilogo('carta'), m.passoDelRiepilogo('firma')], ['documenti', 'modulo'])
 
@@ -2104,7 +2129,7 @@ console.log('\n40. LA FAMIGLIA')
   const ric = F('ricevuta.jpg')
 
   // --- i passi ---
-  ok('il passo si chiama LA FAMIGLIA: il 5 per l’adulto, il 6 per il figlio', [m.passiDi('adulto')[4], m.passiDi('figlio')[5]], ['LA FAMIGLIA', 'LA FAMIGLIA'])
+  ok('il passo si chiama FAMIGLIA: il 5 per l’adulto, il 6 per il figlio', [m.passiDi('adulto')[4], m.passiDi('figlio')[5]], ['FAMIGLIA', 'FAMIGLIA'])
   ok('LA FAMIGLIA non ferma mai: adulto vuoto', m.mancaNelPasso(m.nuovoStato('adulto'), 5), [])
   ok('LA FAMIGLIA non ferma mai: figlio vuoto', m.mancaNelPasso(m.nuovoStato('figlio'), 6), [])
   ok('LA FAMIGLIA non ha voci nella barra', [m.mancanti(m.nuovoStato('adulto'), 5), m.mancanti(m.nuovoStato('figlio'), 6)], [[], []])
@@ -2325,7 +2350,7 @@ console.log('\n41. LA FAMIGLIA: le regole scoperte nelle revisioni')
   // 9. La persona 0 passa da adulto a bambino: chi firma il fratello è ora chi compila, che scrive il genitore.
   const luca2 = adulto({ nome: 'Luca' })
   const lucia = { ...m.nuovoStato('figlio'), firmatario: 0, risposte: { ...m.nuovoStato('figlio').risposte, nome: 'Lucia' } }
-  ok('la frase dice di scrivere il genitore nel passo IL GENITORE CHE FIRMA di Luca', chiama(() => m.fermoDellaFamiglia([m.cambiaScelta(luca2, 'figlio'), lucia])), 'Per Lucia firma chi compila: scrivi i tuoi dati nel passo IL GENITORE CHE FIRMA di Luca, oppure chiama la segreteria.')
+  ok('la frase dice di scrivere il genitore nel passo CHI FIRMA di Luca', chiama(() => m.fermoDellaFamiglia([m.cambiaScelta(luca2, 'figlio'), lucia])), 'Per Lucia firma chi compila: scrivi i tuoi dati nel passo CHI FIRMA di Luca, oppure chiama la segreteria.')
 }
 
 // ---------------------------------------------------------------------------
@@ -2632,6 +2657,108 @@ console.log('\n43. ORARI EVIDENZIATI')
   ok('la carta mostra l’orario a pezzi e la frase, non più la nota', [/famiglia-carta-nota|r\.nota/.test(sorgente), /<TestoAPezzi[^>]*pezzi=\{r\.pezzi\}/.test(sorgente), /c\.legenda/.test(sorgente)], [false, true, true])
   const css = readFileSync('src/styles.css', 'utf8')
   ok('lo stile della nota e del perché non c’è più; il nero sì', [/\.famiglia-carta-nota|\.modulo-corso-perche/.test(css), /\.orario-evidenza\s*\{[^}]*font-weight:\s*700[^}]*color:\s*var\(--text\)/.test(css)], [false, true])
+}
+
+// ---------------------------------------------------------------------------
+// LE TRE TAPPE: la testa del passo dice in quale delle tre parti si è (CHI · IL
+// CORSO · PAGA E MANDA), il passo col suo nome corto, e l'aiuto sta in fondo.
+// Il design è in docs/design-canvas/navigazione-passi/C4-AiutoInFondo.dc.html.
+// ---------------------------------------------------------------------------
+console.log('\n44. LE TRE TAPPE')
+{
+  // Firma attesa: tappeDelPasso(chi, passo) → [{ nome, etichetta, stato: 'fatta'|'adesso'|'dopo', segmenti: Array<'fatto'|'adesso'|'dopo'> }], passo da 1.
+  // Se la funzione manca, ogni prova mostra l'errore al posto delle tappe.
+  const t = (chi, passo) => chiama(() => m.tappeDelPasso(chi, passo))
+  const ogni = (tappe, f) => (Array.isArray(tappe) ? tappe.map(f) : tappe)
+  const corta = (tappe) => ogni(tappe, (x) => [x.etichetta, x.stato, x.segmenti])
+  const NOMI = ['CHI', 'IL CORSO', 'PAGA E MANDA']
+  for (const chi of ['adulto', 'figlio']) {
+    const tappe = t(chi, 1)
+    ok(`tre tappe, coi loro nomi (${chi})`, ogni(tappe, (x) => x.nome), NOMI)
+    ok(`i segmenti sono tanti quanti i passi (${chi})`, Array.isArray(tappe) ? tappe.reduce((n, x) => n + (x.segmenti?.length ?? 0), 0) : tappe, m.tipiDiPassi(chi).length)
+  }
+  ok('adulto: segmenti 1, 3, 3', ogni(t('adulto', 1), (x) => x.segmenti?.length), [1, 3, 3])
+  ok('figlio: segmenti 2, 3, 3', ogni(t('figlio', 1), (x) => x.segmenti?.length), [2, 3, 3])
+  // Quale passo sta in quale tappa: CHI = dati e genitore, IL CORSO = corso, modulo, documenti, PAGA E MANDA = famiglia, pagamento, riepilogo.
+  const TAPPA = { dati: 'CHI', genitore: 'CHI', corso: 'IL CORSO', modulo: 'IL CORSO', documenti: 'IL CORSO', famiglia: 'PAGA E MANDA', pagamento: 'PAGA E MANDA', riepilogo: 'PAGA E MANDA' }
+  for (const chi of ['adulto', 'figlio'])
+    ok(`ogni passo è nella sua tappa (${chi})`, m.tipiDiPassi(chi).map((_, i) => { const x = t(chi, i + 1); return Array.isArray(x) ? x.find((y) => y.stato === 'adesso')?.nome : x }), m.tipiDiPassi(chi).map((tipo) => TAPPA[tipo]))
+
+  ok('adulto, passo 1: CHI adesso, il resto dopo', corta(t('adulto', 1)), [
+    ['CHI', 'adesso', ['adesso']],
+    ['IL CORSO', 'dopo', ['dopo', 'dopo', 'dopo']],
+    ['PAGA E MANDA', 'dopo', ['dopo', 'dopo', 'dopo']],
+  ])
+  ok('figlio, passo 5 (DOCUMENTI): CHI fatta, IL CORSO al terzo segmento', corta(t('figlio', 5)), [
+    ['✓ CHI', 'fatta', ['fatto', 'fatto']],
+    ['IL CORSO', 'adesso', ['fatto', 'fatto', 'adesso']],
+    ['PAGA E MANDA', 'dopo', ['dopo', 'dopo', 'dopo']],
+  ])
+  ok('adulto, ultimo passo: due tappe fatte, PAGA E MANDA all’ultimo segmento', corta(t('adulto', 7)), [
+    ['✓ CHI', 'fatta', ['fatto']],
+    ['✓ IL CORSO', 'fatta', ['fatto', 'fatto', 'fatto']],
+    ['PAGA E MANDA', 'adesso', ['fatto', 'fatto', 'adesso']],
+  ])
+  ok('figlio, ultimo passo: due tappe fatte, PAGA E MANDA all’ultimo segmento', corta(t('figlio', 8)), [
+    ['✓ CHI', 'fatta', ['fatto', 'fatto']],
+    ['✓ IL CORSO', 'fatta', ['fatto', 'fatto', 'fatto']],
+    ['PAGA E MANDA', 'adesso', ['fatto', 'fatto', 'adesso']],
+  ])
+
+  // Il messaggio di SCRIVI: chi lo riceve sa a che passo si è fermati.
+  const msg = (nome) => chiama(() => m.messaggioAiuto(nome))
+  ok('il messaggio di SCRIVI dice il passo', msg('DOCUMENTI'), 'Ciao, sto compilando l’iscrizione e ho un dubbio sul passo DOCUMENTI')
+  const maria = { ...m.nuovoStato('adulto'), risposte: { ...m.nuovoStato('adulto').risposte, nome: 'maria' } }
+  ok('per un adulto aggiunto, il nome del passo come a schermo', msg(m.nomiDeiPassi(maria, 1)[0]), 'Ciao, sto compilando l’iscrizione e ho un dubbio sul passo DATI DI MARIA')
+  // Firma attesa: scrivi(testo) in lib/sito → il link di WhatsApp al numero della palestra, col testo già scritto.
+  const link = chiama(() => m.sito.scrivi('Ciao, sto compilando l’iscrizione e ho un dubbio sul passo DATI DI MARIA'))
+  const wa = String(link).startsWith('https://wa.me/')
+  ok('SCRIVI va al WhatsApp della palestra', wa ? String(link).split('?text=')[0] + '?text=' : link, 'https://wa.me/393463292786?text=')
+  ok('il testo arriva identico, accenti e apostrofi compresi', wa ? chiama(() => decodeURIComponent(String(link).split('?text=')[1])) : link, 'Ciao, sto compilando l’iscrizione e ho un dubbio sul passo DATI DI MARIA')
+  ok('il numero di wa.me è quello di CONTATTI', wa ? String(link).slice('https://wa.me/'.length).split('?')[0] : link, '39' + m.sito.CONTATTI.telefono.replace(/\s/g, ''))
+  // CHIAMA e SCRIVI prendono lo stesso numero: senza il «+» il telefono compone un numero sbagliato.
+  ok('CHIAMA va al numero di CONTATTI, col +39', m.sito.chiama, 'tel:+39' + m.sito.CONTATTI.telefono.replace(/\s/g, ''))
+  // Un nome con & o # taglierebbe il messaggio se il testo non fosse codificato.
+  const conE = chiama(() => m.sito.scrivi('DATI DI ANNA & LUCA #2'))
+  ok('il testo nel link è codificato: niente spazi, & né #', /[\s&#]/.test(String(conE).split('?text=')[1] ?? ' '), false)
+  ok('un nome con & arriva intero', chiama(() => new URL(String(conE)).searchParams.get('text')), 'DATI DI ANNA & LUCA #2')
+
+  // La schermata: la testa e l'esito.
+  const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  const codice = pagina.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((r) => !/^\s*\/\//.test(r)).join('\n')
+  const flusso = codice.slice(codice.indexOf('function Flusso('))
+  const passi = flusso.slice(flusso.lastIndexOf('return (', flusso.lastIndexOf('<Avanzamento')))
+  const testa = passi.slice(0, passi.indexOf('<Avanzamento'))
+  ok('il componente chiede le tappe alla lib', /P\.tappeDelPasso\(/.test(codice), true)
+  // In cima, una riga sola: il titolo a sinistra, il bollino corto a destra.
+  const titolo = testa.indexOf('RICHIESTA DI ISCRIZIONE')
+  const bollino = testa.indexOf('<Bollino>PROVA</Bollino>')
+  ok('nei passi, RICHIESTA DI ISCRIZIONE e il bollino PROVA stanno prima della testa', titolo >= 0 && bollino >= 0, true)
+  ok('stanno nello stesso contenitore', titolo >= 0 && bollino > titolo && !testa.slice(titolo, bollino).includes('</div>'), true)
+  ok('il bollino corto c’è solo in prova', /d\?\.modo === 'prova' &&\s*(\(\s*)?<Bollino>PROVA<\/Bollino>/.test(testa), true)
+  ok('nei passi niente bollino lungo', passi.includes('PROVA: RESTA SU QUESTO DISPOSITIVO'), false)
+  ok('la scelta iniziale tiene il bollino lungo', /function Scelta[\s\S]*?<Bollino>PROVA: RESTA SU QUESTO DISPOSITIVO<\/Bollino>/.test(codice), true)
+  const fuori = codice.slice(codice.indexOf('export function IscrizioneAPassi'), codice.indexOf('function SceltaFileGenitore'))
+  ok('il titolo non è doppio nei passi: quello di fuori non c’è sempre', /^\s*<Titoletto>RICHIESTA DI ISCRIZIONE<\/Titoletto>\s*$/m.test(fuori), false)
+  // Le persone: una riga che comincia con PER, senza il titoletto LA FAMIGLIA.
+  ok('niente titoletto LA FAMIGLIA sopra le pastiglie', /<Titoletto[^>]*>\s*LA FAMIGLIA/.test(codice), false)
+  const pastiglie = passi.slice(passi.indexOf('vistaFamiglia.pastiglie'), passi.indexOf('{corpo()}'))
+  ok('dentro vistaFamiglia.pastiglie, PER viene prima delle pastiglie', /\bPER\b/.test(pastiglie) && pastiglie.indexOf('PER') < pastiglie.indexOf('<Chip'), true)
+  // Il nome del passo sta già nella testa: DOCUMENTI non lo ripete.
+  ok('il passo DOCUMENTI non ripete il suo nome in un titoletto', /<Titoletto>I DOCUMENTI<\/Titoletto>/.test(codice), false)
+  // L'esito non è un passo: niente testa, niente aiuto in fondo.
+  const esito = codice.slice(codice.indexOf("if (fase.tipo === 'esito')"), codice.indexOf("const inVolo = fase.tipo === 'invio'"))
+  ok('l’esito non ha la testa dei passi', esito.includes('<Avanzamento'), false)
+  ok('l’esito non ha la riga d’aiuto', esito.includes('Hai bisogno di aiuto'), false)
+  // Il titolo di fuori non c'è più nei passi: l'esito lo rimette da sé.
+  // Dentro la riga PER le pastiglie si stringono: un nome lungo si taglia con «…» e il numero di quel che manca resta a schermo.
+  const css = readFileSync('src/styles.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+  const regola = (sel) => css.match(new RegExp(sel.replace(/\./g, '\\.') + '\\s*\\{([^}]*)\\}'))?.[1] ?? ''
+  ok('nella riga PER le pastiglie si stringono (min-width: 0)', /min-width:\s*0/.test(regola('.passo-per .famiglia-chip')), true)
+  // Un nome senza spazi a 24px non esce di lato: va a capo.
+  ok('il nome del passo va a capo anche senza spazi', /overflow-wrap:\s*anywhere/.test(regola('.avanza-nome')), true)
+  ok('l’esito rimette il titolo RICHIESTA DI ISCRIZIONE', /function Esito[\s\S]*?<Titoletto>RICHIESTA DI ISCRIZIONE<\/Titoletto>/.test(codice), true)
+  ok('i tre esiti passano da <Esito>', [(esito.match(/<Esito>/g) ?? []).length, esito.includes('<div className="stack esito">')], [3, false])
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
