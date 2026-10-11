@@ -1,0 +1,41 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Esci dalla prova"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · in prova non si esce",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Proposta.dc.html",
+   "title": "Proposta · ESCI DALLA PROVA nel nastro",
+   "x": 510,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Proposta-Passi.dc.html",
+   "title": "Proposta · nel modulo a passi",
+   "x": 1020,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1500,
+   "text": "Iscrizioni: uscire dalla prova"
+  }
+ ]
+}

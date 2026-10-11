@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { type Dati, dati as caricaDati, inProvaScelta, scegliProva } from '../lib/dati'
 import type { SessioneVista } from '../lib/sala'
+import { NastroProva } from './ds'
 import { Arretrato, CalendarioScreen } from './CalendarioScreen'
 import { AppelloScreen, type Conto } from './AppelloScreen'
 import { useLargo } from '../lib/largo'
@@ -103,23 +104,7 @@ export function Sala({ soloDi, onTimer }: { soloDi?: string; onTimer?: (l: Sessi
 
   return (
     <div ref={qui} style={{ display: 'contents' }}>
-      {d.modo === 'prova' && (
-        <div className="nastro-prova">
-          DATI DI PROVA · ISCRITTI INVENTATI
-          {inProvaScelta && (
-            <>
-              {' · '}
-              <button
-                type="button"
-                style={{ textDecoration: 'underline', font: 'inherit', letterSpacing: 'inherit', color: 'inherit' }}
-                onClick={() => scegliProva(false)}
-              >
-                ESCI DALLA PROVA
-              </button>
-            </>
-          )}
-        </div>
-      )}
+      {d.modo === 'prova' && <NastroProva testo="DATI DI PROVA · ISCRITTI INVENTATI" onEsci={inProvaScelta ? () => scegliProva(false) : undefined} />}
       {/* Con un appello aperto la coda la dice la sua testa: qui sopra,
           comparendo, farebbe scendere i nomi sotto il dito. */}
       {inCoda > 0 && !chiuso && !aperta && <SpiaCoda n={inCoda} />}

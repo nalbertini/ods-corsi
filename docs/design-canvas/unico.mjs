@@ -44,6 +44,7 @@ const SEZIONI = [
   { id: 'corsi-vicini', nome: 'Corsi vicini e altre idee', cartella: 'corsi-vicini' },
   { id: 'orari-evidenziati', nome: 'Orari compatibili evidenziati', cartella: 'orari-evidenziati' },
   { id: 'riempi-prova', nome: 'Riempi per prova · proposta', cartella: 'riempi-prova' },
+  { id: 'esci-dalla-prova', nome: 'Esci dalla prova · proposta', cartella: 'esci-dalla-prova' },
   { id: 'navigazione-passi', nome: 'La testa del modulo a passi · ipotesi', cartella: 'navigazione-passi' },
 ]
 

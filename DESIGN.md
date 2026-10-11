@@ -344,6 +344,9 @@ Il carattere dell'istruttore in un quadrato con bordo rosso e raggio 3px, in un 
 ### Timbri della scheda
 In cima alla scheda di un iscritto (`.sg-timbro`), da non confondere col timbro kanji: rettangoli squadrati che sono tasti e portano alla loro sezione. Bordo 2px del tono dello stato con barra sinistra 4px, fondo `nero-palestra`; titoletto Label 12px in `testo-spento`, parola Title 22px nel `-testo` del tono (verde a posto, giallo da guardare, rosso manca), righe Saira 14px a 0.12em in `testo-secondario`; una riga che è un avviso a sé (DA STAMPARE) ha il suo riquadro giallo. Le parole sono quelle della colonna IN REGOLA, dalla stessa funzione (`timbriScheda`). **Piccolo** (il documento, che non serve per entrare): colonna più stretta, parola 19px, righe 12px spente. **Spento** (scheda disattivata): bordo `riga`, testo `testo-spento`, stesse parole; sopra, un avviso a bordo tratteggiato `testo` con DISATTIVATA in Saira e la frase in Barlow 15px, mai rosso perché si annulla. Al passaggio il bordo passa a `testo`. Sotto i 1000px si mettono uno sotto l'altro.
 
+### Nastro della prova
+In cima quando i dati sono di prova (`NastroProva` di `ds.tsx`, `.nastro-prova`): area iscritti, sala e pagina Iscrizioni. Saira 12px 700 a 0.18em, `su-colore` su `giallo` in tutti e due i temi, centrato, padding 4px. Con la prova scelta da chi usa l'app (resta accesa su quel telefono) c'è **ESCI DALLA PROVA** (`.nastro-prova-esci`): sottolineato, alto 44px per il dito (il nastro cresce con lui), senza «·» davanti così a capo resta pulito, contorno di fuoco `su-colore`.
+
 ## Do's and Don'ts
 
 ### Do:

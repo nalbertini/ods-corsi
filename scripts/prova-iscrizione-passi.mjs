@@ -3101,5 +3101,25 @@ console.log('\n46. I PASSI COMUNI')
   ok('il campo NOTE legge e scrive la nota del modulo', [/P\.notaDelModulo\(/.test(note), /P\.conLaNota\(/.test(note), /metti\('note'\)/.test(note)], [true, true, false])
 }
 
+// ---------------------------------------------------------------------------
+// ESCI DALLA PROVA: aperto una volta il link con ?prova, la prova resta accesa
+// su quel telefono. Nella pagina Iscrizioni il nastro giallo della sala lo dice
+// e la spegne. Design in docs/design-canvas/esci-dalla-prova/Proposta.dc.html.
+// ---------------------------------------------------------------------------
+console.log('\n47. ESCI DALLA PROVA')
+{
+  const senzaCommenti = (f) => readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((x) => !/^\s*\/\//.test(x)).join('\n')
+  const app = senzaCommenti('src/App.tsx')
+  const iscrizioni = app.slice(app.indexOf('function Iscrizioni('), app.indexOf('\nfunction ', app.indexOf('function Iscrizioni(') + 1))
+  const ds = senzaCommenti('src/components/ds.tsx')
+  const nastro = ds.slice(ds.indexOf('export function NastroProva('), ds.indexOf('\nexport ', ds.indexOf('export function NastroProva(') + 1))
+  ok('il nastro della prova sta in ds.tsx, col tasto ESCI DALLA PROVA', [nastro.includes('nastro-prova'), /ESCI DALLA PROVA/.test(nastro), /onClick=\{onEsci\}/.test(nastro), /\{onEsci && \(/.test(nastro)], [true, true, true, true])
+  ok('nella pagina Iscrizioni il nastro c’è solo con la prova scelta', /\{\s*inProvaScelta\s*&&\s*\(?\s*<NastroProva\b/.test(iscrizioni), true)
+  ok('…e ESCI DALLA PROVA la spegne', /<NastroProva\b[^>]*onEsci=\{\(\)\s*=>\s*scegliProva\(false\)\}/.test(iscrizioni), true)
+  ok('…dice che le richieste non arrivano in segreteria', /<NastroProva\b[^>]*testo="PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA"/.test(iscrizioni), true)
+  // In sala solo coi dati di prova, ed ESCI solo con la prova scelta.
+  ok('la sala usa lo stesso nastro, solo in prova', /\{d\.modo === 'prova' && <NastroProva testo="DATI DI PROVA · ISCRITTI INVENTATI" onEsci=\{inProvaScelta \? \(\) => scegliProva\(false\) : undefined\} \/>\}/.test(senzaCommenti('src/components/Sala.tsx')), true)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

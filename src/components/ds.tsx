@@ -111,6 +111,23 @@ export function Bollino({ children }: { children: ReactNode }) {
   return <span className="num sg-bollino">{children}</span>
 }
 
+/**
+ * Il nastro giallo in cima quando i dati sono di prova. Con `onEsci` (la prova scelta da chi usa l'app, che resta
+ * accesa su quel telefono) c'è anche ESCI DALLA PROVA.
+ */
+export function NastroProva({ testo, onEsci }: { testo: string; onEsci?: () => void }) {
+  return (
+    <div className="nastro-prova">
+      {testo}
+      {onEsci && (
+        <button type="button" className="nastro-prova-esci" onClick={onEsci}>
+          ESCI DALLA PROVA
+        </button>
+      )}
+    </div>
+  )
+}
+
 /** Il titolo di un esito, grande e obliquo: verde se è andata, giallo se manca qualcosa. */
 export function TitoloEsito({ children, tono }: { children: ReactNode; tono: 'fatto' | 'avviso' }) {
   return (
