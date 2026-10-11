@@ -1,5 +1,5 @@
 import type { CorsoPerEta, CorsoRef, Listino } from './listino'
-import { corsiPerEta, voceDelCorso } from './listino'
+import { corsiPerEta, etaDelListino, voceDelCorso } from './listino'
 import type { VoceCosto } from './costi'
 import type { Abbonamento, RigaStima } from './nucleo'
 import { causale, SCONTO_FAMIGLIA, stimaIscrizione } from './nucleo'
@@ -856,8 +856,8 @@ const GIORNI = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 've
 const perSettimana = (a: number, b: number) => ((a + 6) % 7) - ((b + 6) % 7)
 const orologio = (m: number) => `${Math.floor(m / 60)}.${String(m % 60).padStart(2, '0')}`
 
-/** L'orario di un corso dal calendario, come lo scrive il volantino: «lunedì, mercoledì e venerdì 18.00-19.00». */
-export function orarioDetto(orari: OrarioAperto[], corsoId: string): string {
+/** Le fasce orarie di un corso dal calendario, ognuna coi suoi giorni, in ordine di settimana. */
+function fasceDelCorso(orari: OrarioAperto[], corsoId: string): Array<[string, number[]]> {
   const pezzi = new Map<string, number[]>()
   for (const o of orari.filter((x) => x.corsoId === corsoId)) {
     const fascia = `${orologio(minuti(o.ora))}-${orologio(minuti(o.ora) + o.durata)}`
@@ -865,9 +865,52 @@ export function orarioDetto(orari: OrarioAperto[], corsoId: string): string {
   }
   const ordinati = [...pezzi].map(([fascia, giorni]): [string, number[]] => [fascia, [...new Set(giorni)].sort(perSettimana)])
   // Anche i pezzi in ordine di settimana: chi legge parte dal lunedì.
-  ordinati.sort((a, b) => perSettimana(a[1][0], b[1][0]))
-  return ordinati.map(([fascia, giorni]) => `${elenco(giorni.map((g) => GIORNI[g]))} ${fascia}`).join(' · ')
+  return ordinati.sort((a, b) => perSettimana(a[1][0], b[1][0]))
 }
+
+/** L'orario di un corso dal calendario, come lo scrive il volantino: «lunedì, mercoledì e venerdì 18.00-19.00». */
+export function orarioDetto(orari: OrarioAperto[], corsoId: string): string {
+  return fasceDelCorso(orari, corsoId)
+    .map(([fascia, giorni]) => `${elenco(giorni.map((g) => GIORNI[g]))} ${fascia}`)
+    .join(' · ')
+}
+
+/** Un pezzo di testo, in evidenza (in nero, grassetto) o spento. */
+export interface PezzoOrario {
+  testo: string
+  evidenza: boolean
+}
+
+/**
+ * Lo stesso testo di `orarioDetto`, a pezzi: in evidenza i `giorniCompatibili` e l'ora delle fasce che ne hanno
+ * almeno uno. Una virgola o una «e» sta in evidenza solo fra due pezzi in evidenza, così «lunedì, mercoledì e
+ * venerdì 18.00-19.00» tutto compatibile resta un pezzo solo; i pezzi vicini uguali si uniscono.
+ */
+export function orarioAPezzi(orari: OrarioAperto[], corsoId: string, giorniCompatibili: readonly number[]): PezzoOrario[] {
+  // `null`: un pezzo che lega, in evidenza solo se lo sono quelli prima e dopo.
+  const grezzi: Array<{ testo: string; evidenza: boolean | null }> = []
+  const lega = (testo: string) => grezzi.push({ testo, evidenza: null })
+  fasceDelCorso(orari, corsoId).forEach(([fascia, giorni], i) => {
+    if (i) lega(' · ')
+    giorni.forEach((g, k) => {
+      if (k) lega(k === giorni.length - 1 ? ' e ' : ', ')
+      grezzi.push({ testo: GIORNI[g], evidenza: giorniCompatibili.includes(g) })
+    })
+    lega(' ')
+    grezzi.push({ testo: fascia, evidenza: giorni.some((g) => giorniCompatibili.includes(g)) })
+  })
+  const pezzi: PezzoOrario[] = []
+  grezzi.forEach((p, i) => {
+    const evidenza = p.evidenza ?? (!!grezzi[i - 1]?.evidenza && !!grezzi[i + 1]?.evidenza)
+    const ultimo = pezzi[pezzi.length - 1]
+    if (ultimo?.evidenza === evidenza) ultimo.testo += p.testo
+    else pezzi.push({ testo: p.testo, evidenza })
+  })
+  return pezzi
+}
+
+/** I giorni in cui un corso si fa, dal calendario. */
+const giorniDelCorso = (orari: OrarioAperto[], corsoId: string) => [...new Set(orari.filter((o) => o.corsoId === corsoId).map((o) => o.giorno))]
 
 /** Mezz'ora: chi finisce o comincia entro questi minuti dalla persona 0, lo stesso giorno, aspetta poco. */
 export const MINUTI_VICINI = 30
@@ -879,16 +922,12 @@ export const MINUTI_VICINI = 30
  */
 export interface Vicinanza {
   gruppo: 'stessaOra' | 'vicino' | 'stessiGiorni'
-  /** Il corso viene prima o dopo quello della persona 0. Negli stessi giorni solo se uguale in tutti. */
+  /** Solo `vicino`: il corso viene prima o dopo quello della persona 0, il giorno dell'attesa più corta (l'etichetta). */
   verso?: 'prima' | 'dopo'
-  /** L'attesa fra la fine di una lezione e l'inizio dell'altra: 0 è a filo. Negli stessi giorni solo se uguale in tutti. */
+  /** Solo `vicino`: l'attesa più corta fra la fine di una lezione e l'inizio dell'altra; 0 è a filo. */
   minuti?: number
-  /** I giorni di cui parla la nota: dove si sovrappone, dove l'attesa è la più corta, o quelli in comune. */
+  /** I giorni che vanno col gruppo, quelli in nero nell'orario: dove si sovrappone, dove l'attesa sta nella mezz'ora, o quelli in comune. */
   giorni: number[]
-  /** `giorni` sono tutti i giorni del corso: negli stessi giorni la nota dice «gli stessi giorni». */
-  tutti: boolean
-  /** `giorni` sono tutti i giorni della persona 0: la nota dice «ogni volta», l'elenco sarebbe solo più lungo. */
-  ogniVolta: boolean
 }
 
 type Attesa = { giorno: number; verso: 'prima' | 'dopo'; minuti: number }
@@ -904,10 +943,8 @@ export function vicinanza(corsoId: string, dellaPersona0: readonly string[], ora
   const giorniZero = new Set(sue.map((o) => o.giorno))
   const insieme = [...giorniSuoi].filter((g) => giorniZero.has(g)).sort(perSettimana)
   if (!insieme.length) return undefined
-  const tuttiSuoi = (giorni: number[]) => giorni.length === giorniSuoi.size
-  const ogniVolta = (giorni: number[]) => giorni.length === giorniZero.size
   const toccati = insieme.filter((g) => suoi.some((o) => o.giorno === g && sue.some((x) => siToccano(o, x))))
-  if (toccati.length) return { gruppo: 'stessaOra', giorni: toccati, tutti: tuttiSuoi(toccati), ogniVolta: ogniVolta(toccati) }
+  if (toccati.length) return { gruppo: 'stessaOra', giorni: toccati }
   // Qui nessuna lezione si tocca: ogni coppia dello stesso giorno è una prima dell'altra. Di ogni giorno, l'attesa più corta.
   const attese = insieme.map((g) => {
     const coppie = suoi.flatMap((o) =>
@@ -922,12 +959,10 @@ export function vicinanza(corsoId: string, dellaPersona0: readonly string[], ora
   })
   const corta = [...attese].sort(perAttesa)[0]
   if (corta.minuti <= MINUTI_VICINI) {
-    // Solo i giorni con l'attesa più corta: «finisce quando cominci tu, il lunedì» è vero anche se il giovedì c'è da aspettare.
-    const giorni = attese.filter((a) => a.verso === corta.verso && a.minuti === corta.minuti).map((a) => a.giorno)
-    return { gruppo: 'vicino', verso: corta.verso, minuti: corta.minuti, giorni, tutti: tuttiSuoi(giorni), ogniVolta: ogniVolta(giorni) }
+    // I giorni entro la mezz'ora, prima o dopo che sia: in quei giorni si aspetta poco, negli altri no.
+    return { gruppo: 'vicino', verso: corta.verso, minuti: corta.minuti, giorni: attese.filter((a) => a.minuti <= MINUTI_VICINI).map((a) => a.giorno) }
   }
-  const uguali = attese.every((a) => a.verso === attese[0].verso && a.minuti === attese[0].minuti)
-  return { gruppo: 'stessiGiorni', ...(uguali && { verso: attese[0].verso, minuti: attese[0].minuti }), giorni: insieme, tutti: tuttiSuoi(insieme), ogniVolta: ogniVolta(insieme) }
+  return { gruppo: 'stessiGiorni', giorni: insieme }
 }
 
 const ORDINE_DEI_GRUPPI: Array<Vicinanza['gruppo']> = ['stessaOra', 'vicino', 'stessiGiorni']
@@ -956,49 +991,12 @@ export type EtichettaRiga = 'STESSO CORSO' | 'STESSA ORA' | 'SUBITO PRIMA' | 'SU
 export const etichettaVicino = (v: Vicinanza): EtichettaRiga =>
   v.gruppo === 'stessaOra' ? 'STESSA ORA' : v.gruppo === 'stessiGiorni' ? 'STESSI GIORNI' : v.verso === 'prima' ? 'SUBITO PRIMA' : 'SUBITO DOPO'
 
-/** «il lunedì e il mercoledì»; la domenica vuole «la». */
-const giorniDetti = (giorni: number[]) => elenco(giorni.map((g) => `${g === 0 ? 'la' : 'il'} ${GIORNI[g]}`))
-/** L'attesa come si dice: «15 minuti», «un’ora», «un’ora e mezza», «due ore e 15 minuti». */
-function attesaDetta(m: number): string {
-  const ore = Math.floor(m / 60)
-  const resto = m % 60
-  if (!ore) return `${resto} minuti`
-  const intere = ore === 1 ? 'un’ora' : `${NUMERI[ore] ?? ore} ore`
-  return resto === 0 ? intere : resto === 30 ? `${intere} e mezza` : `${intere} e ${resto} minuti`
-}
-const conMaiuscola = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-
-/** La nota sotto una riga della carta, a chi compila: «solo il lunedì», «finisce quando cominci tu, il lunedì», «un’ora prima di te, gli stessi giorni». */
-export function notaNellaCarta(v: Vicinanza): string | undefined {
-  const quali = v.ogniVolta ? 'ogni volta' : giorniDetti(v.giorni)
-  if (v.gruppo === 'stessaOra') return v.ogniVolta ? undefined : `solo ${quali}`
-  const attesa = attesaDetta(v.minuti ?? 0)
-  if (v.gruppo === 'vicino') {
-    if (v.verso === 'prima') return v.minuti ? `finisce ${attesa} prima di te, ${quali}` : `finisce quando cominci tu, ${quali}`
-    return v.minuti ? `comincia ${attesa} dopo di te, ${quali}` : `comincia quando finisci tu, ${quali}`
-  }
-  const quando = v.minuti === undefined ? 'a un’altra ora' : `${attesa} ${v.verso} di te`
-  return `${quando}, ${v.tutti && !v.ogniVolta ? 'gli stessi giorni' : quali}`
-}
-
-/** Il perché di un corso proposto al passo del corso, col nome della persona 0: «Finisce quando comincia Nicola, il lunedì», o «ogni volta». */
-export function percheNelCorso(v: Vicinanza, nome: string): string {
-  const quali = v.ogniVolta ? 'ogni volta' : giorniDetti(v.giorni)
-  if (v.gruppo === 'stessaOra') return `Si sovrappone ${quali}`
-  const attesa = attesaDetta(v.minuti ?? 0)
-  if (v.gruppo === 'vicino') {
-    if (v.verso === 'prima') return v.minuti ? `Finisce ${attesa} prima di ${nome}, ${quali}` : `Finisce quando comincia ${nome}, ${quali}`
-    return v.minuti ? `Comincia ${attesa} dopo ${nome}, ${quali}` : `Comincia quando finisce ${nome}, ${quali}`
-  }
-  return conMaiuscola(`${v.minuti === undefined ? 'a un’altra ora' : `${attesa} ${v.verso === 'prima' ? 'prima di' : 'dopo'} ${nome}`}, ${quali}`)
-}
-
 export type CorsoVicino = CorsoPerEta & { vicinanza: Vicinanza }
 
 /**
  * I corsi per l'età `natoIl`, con quelli vicini alla persona 0 a parte, in cima: alla stessa ora, subito prima o
- * dopo, negli stessi giorni (`corsiVicini`). La riga è quella del listino, o l'orario del calendario: il perché lo
- * dice la `vicinanza`.
+ * dopo, negli stessi giorni (`corsiVicini`). La riga è quella del listino, o l'orario del calendario; i giorni che
+ * vanno li dice la `vicinanza`.
  */
 export function corsiPerEtaConStessaOra(corsi: CorsoRef[], listino: Listino | undefined, natoIl: string, corsiDellaPersona0: string[], orari: OrarioAperto[]) {
   const perEta = corsiPerEta(corsi, listino?.corsi ?? [], natoIl, listino?.senzaPrezzoVaBene)
@@ -1040,14 +1038,22 @@ function perBambini(voci: VoceCosto[], corso: CorsoRef, anno: number): boolean {
   return v.natiAl === undefined || Number(v.natiAl) > anno - 18
 }
 
-/** Una riga della carta: un corso proposto, il suo orario intero e, se serve, perché («solo il lunedì»). */
+/** Una riga della carta: un corso proposto e il suo orario intero, anche a pezzi coi giorni che vanno in evidenza. */
 export interface RigaCarta {
   etichetta: EtichettaRiga
   corso: string
   /** «lunedì e mercoledì 18.00-19.30»; vuoto se il corso non ha orari nel calendario. */
   quando: string
-  nota?: string
+  /** `quando` a pezzi (`orarioAPezzi`): l'etichetta dice come va col tuo orario, il nero in quali giorni. */
+  pezzi: PezzoOrario[]
 }
+
+/** Sopra le righe di una carta: cosa vuol dire il nero negli orari. */
+const LEGENDA: PezzoOrario[] = [
+  { testo: 'In ', evidenza: false },
+  { testo: 'nero', evidenza: true },
+  { testo: ' i giorni che vanno col tuo orario.', evidenza: false },
+]
 
 /** Quante righe ha al massimo una carta: le altre si vedono al passo del corso. */
 const RIGHE_NELLA_CARTA = 3
@@ -1059,6 +1065,8 @@ export interface CartaFamiglia {
   frase: string
   /** I corsi da proporre, in ordine di gruppo, fino a tre; nessuna se non ce ne sono. */
   righe: RigaCarta[]
+  /** «In nero i giorni che vanno col tuo orario.», solo se ci sono righe. */
+  legenda?: PezzoOrario[]
   /** Col primo corso delle righe e il suo prezzo: lo sconto famiglia se tutti e due fanno l'annuale. */
   risparmio?: string
   tasto: string
@@ -1078,10 +1086,12 @@ export function carteDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], lis
   const voci = listino?.corsi ?? []
   const anno = Number(giorno.slice(0, 4))
   type Proposta = { corso: CorsoRef; riga: RigaCarta; vicinanza?: Vicinanza }
-  const proposta = (c: CorsoRef, etichetta: EtichettaRiga, vicinanza?: Vicinanza): Proposta => {
-    const nota = vicinanza && notaNellaCarta(vicinanza)
-    return { corso: c, riga: { etichetta, corso: c.nome, quando: orarioDetto(orari, c.id), ...(nota && { nota }) }, ...(vicinanza && { vicinanza }) }
-  }
+  // Lo stesso corso va tutti i suoi giorni.
+  const proposta = (c: CorsoRef, etichetta: EtichettaRiga, vicinanza?: Vicinanza): Proposta => ({
+    corso: c,
+    riga: { etichetta, corso: c.nome, quando: orarioDetto(orari, c.id), pezzi: orarioAPezzi(orari, c.id, vicinanza?.giorni ?? giorniDelCorso(orari, c.id)) },
+    ...(vicinanza && { vicinanza }),
+  })
   const vicine = (candidati: CorsoRef[]) => corsiVicini(candidati, zero.risposte.corsi, orari).map((c) => proposta(c, etichettaVicino(c.vicinanza), c.vicinanza))
   const allaStessaOra = (p: Proposta) => p.vicinanza?.gruppo === 'stessaOra'
   const perFiglio = listino ? vicine(corsi.filter((c) => perBambini(voci, c, anno))) : []
@@ -1101,7 +1111,7 @@ export function carteDellaFamiglia(persone: StatoPassi[], corsi: CorsoRef[], lis
   }
   const carta = (chi: Chi, titolo: string, frase: string, proposte: Proposta[], tasto: string): CartaFamiglia => {
     const quanto = risparmio(proposte[0]?.corso)
-    return { chi, titolo, frase, righe: proposte.slice(0, RIGHE_NELLA_CARTA).map((p) => p.riga), ...(quanto && { risparmio: quanto }), tasto }
+    return { chi, titolo, frase, righe: proposte.slice(0, RIGHE_NELLA_CARTA).map((p) => p.riga), ...(proposte.length && { legenda: LEGENDA }), ...(quanto && { risparmio: quanto }), tasto }
   }
   const conLio = persone.some((p) => p.io)
   if (bambino)
@@ -1164,11 +1174,11 @@ export function alPassoDelCorso(persone: StatoPassi[], i: number, passo: number,
   return persone.map((p, k) => (k === i ? { ...p, corsoProposto: true as const, ...(ids.length && { risposte: { ...p.risposte, corsi: ids } }) } : p))
 }
 
-/** Un corso proposto al passo del corso, con la riga di perché sotto l'orario. */
-export type CorsoProposto = CorsoPerEta & { perche?: string }
+/** Un corso proposto al passo del corso; quelli vicini alla persona 0 con l'orario a pezzi (`orarioAPezzi`). */
+export type CorsoProposto = CorsoPerEta & { orario?: PezzoOrario[] }
 
 /**
- * I corsi di un familiare, coi corsi vicini alla persona 0 in cima, ognuno col suo perché: alla stessa ora (per un
+ * I corsi di un familiare, coi corsi vicini alla persona 0 in cima, ognuno col suo orario a pezzi: alla stessa ora (per un
  * adulto con la persona 0 adulta prima i suoi corsi), subito prima o dopo, negli stessi giorni
  * (`corsiPerEtaConStessaOra`). Gli altri restano quelli per l'età, compresi i corsi della persona 0: un fratello può
  * fare lo stesso.
@@ -1180,14 +1190,22 @@ export function corsiDelFamiliare(persone: StatoPassi[], i: number, corsi: Corso
   const vuoto: CorsoProposto[] = []
   if (i === 0) return { ...perEta, stessaOra: vuoto, vicini: vuoto, stessiGiorni: vuoto }
   const zero = persone[0].risposte.corsi
-  const nome = nomeDellaPersona(persone[0], 0)
   const tutti = [...perEta.adatti, ...perEta.senzaAnni, ...perEta.altri]
   const gruppi = corsiPerEtaConStessaOra(corsi, listino, natoIl, zero, orari)
-  const conPerche = (elenco: CorsoVicino[]): CorsoProposto[] => elenco.map(({ vicinanza: v, ...c }) => ({ ...c, perche: percheNelCorso(v, nome) }))
-  const stessoCorso = lui.chi === 'adulto' && persone[0].chi === 'adulto' ? tutti.filter((c) => zero.includes(c.id)).map((c) => ({ ...c, perche: `Lo stesso corso di ${nome}` })) : []
-  const stessaOra = [...stessoCorso, ...conPerche(gruppi.stessaOra)]
-  const vicini = conPerche(gruppi.vicini)
-  const stessiGiorni = conPerche(gruppi.stessiGiorni)
+  // Sotto il nome l'età del listino, poi l'orario del calendario a pezzi: l'orario scritto nel listino lo ripeterebbe.
+  const conOrario = (c: CorsoPerEta, giorni: readonly number[]): CorsoProposto => {
+    const orario = orarioAPezzi(orari, c.id, giorni)
+    if (!orario.length) return c
+    const v = voceDelCorso(listino?.corsi ?? [], c)
+    const eta = v && etaDelListino(v)
+    return { id: c.id, nome: c.nome, ...(eta && { riga: eta }), ...(c.prezzoDaConfermare && { prezzoDaConfermare: true as const }), orario }
+  }
+  const conPezzi = (elenco: CorsoVicino[]): CorsoProposto[] => elenco.map(({ vicinanza: v, ...c }) => conOrario(c, v.giorni))
+  // Lo stesso corso va tutti i suoi giorni.
+  const stessoCorso = lui.chi === 'adulto' && persone[0].chi === 'adulto' ? tutti.filter((c) => zero.includes(c.id)).map((c) => conOrario(c, giorniDelCorso(orari, c.id))) : []
+  const stessaOra = [...stessoCorso, ...conPezzi(gruppi.stessaOra)]
+  const vicini = conPezzi(gruppi.vicini)
+  const stessiGiorni = conPezzi(gruppi.stessiGiorni)
   const proposti = new Set([...stessaOra, ...vicini, ...stessiGiorni].map((c) => c.id))
   const fuori = (elenco: CorsoPerEta[]) => elenco.filter((c) => !proposti.has(c.id))
   return { ...perEta, stessaOra, vicini, stessiGiorni, adatti: fuori(perEta.adatti), senzaAnni: fuori(perEta.senzaAnni), altri: fuori(perEta.altri) }

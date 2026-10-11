@@ -149,6 +149,22 @@ export function Campo({ id, etichetta, children, largo, nota }: { id: string; et
 }
 
 /**
+ * Un testo a pezzi, uno per `<span>`: quelli in evidenza in grassetto e col colore del testo, gli altri spenti.
+ * Chi legge con lo screen reader sente il testo intero: l'evidenza è solo per gli occhi.
+ */
+export function TestoAPezzi({ pezzi, className }: { pezzi: ReadonlyArray<{ testo: string; evidenza: boolean }>; className?: string }) {
+  return (
+    <span className={className ? `testo-a-pezzi ${className}` : 'testo-a-pezzi'}>
+      {pezzi.map((p, i) => (
+        <span key={i} className={p.evidenza ? 'orario-evidenza' : undefined}>
+          {p.testo}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+/**
  * Le scelte del modulo, col pollice: più di una (i corsi, due colonne, la
  * spunta) o una sola (`una`: come paghi, affiancate, il pallino).
  */
@@ -163,8 +179,8 @@ export function SceltaCorsi({
 }: {
   id: string
   etichetta: string
-  /** `riga`: età e orari, sotto il nome; `perche`: perché si propone, sotto la riga. */
-  voci: ReadonlyArray<{ id: string; testo: string; riga?: string; perche?: string }>
+  /** `riga`: età e orari, sotto il nome; `orario`: l'orario a pezzi, dopo la riga, coi giorni che vanno in evidenza. */
+  voci: ReadonlyArray<{ id: string; testo: string; riga?: string; orario?: ReadonlyArray<{ testo: string; evidenza: boolean }> }>
   scelti: readonly string[]
   onScegli: (id: string) => void
   una?: boolean
@@ -189,11 +205,14 @@ export function SceltaCorsi({
                 {on ? '✓' : ''}
               </span>
             )}
-            {v.riga || v.perche ? (
+            {v.riga || v.orario?.length ? (
               <span className="stack modulo-corso-testo">
                 {v.testo}
-                {v.riga && <span className="modulo-corso-riga">{v.riga}</span>}
-                {v.perche && <span className="modulo-corso-perche">{v.perche}</span>}
+                <span className="modulo-corso-riga">
+                  {v.riga}
+                  {v.riga && v.orario?.length ? ' · ' : ''}
+                  {!!v.orario?.length && <TestoAPezzi pezzi={v.orario} />}
+                </span>
               </span>
             ) : (
               v.testo

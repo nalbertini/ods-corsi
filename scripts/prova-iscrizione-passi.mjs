@@ -2431,10 +2431,10 @@ console.log('\n42. CORSI VICINI')
   // Due lezioni della persona 0 lo stesso giorno: conta la più vicina, non la prima che si trova.
   const dueLezioni = [ora('zero', 1, '17:00', 15), ora('zero', 1, '19:30'), ora('x', 1, '18:00')]
   ok('due lezioni lo stesso giorno: l’attesa più corta, 30 minuti prima', chiama(() => m.vicinanza('x', ['zero'], dueLezioni)), { gruppo: 'vicino', verso: 'prima', minuti: 30, giorni: [1] })
-  // A filo prima il lunedì e a filo dopo il mercoledì: a pari minuti vince «prima».
+  // A filo prima il lunedì e a filo dopo il mercoledì: a pari minuti vince «prima»; vanno tutti e due i giorni.
   const pari = [...orari, ora('pari', 1, '18:00'), ora('pari', 3, '20:30')]
   const vp = chiama(() => m.vicinanza('pari', NICOLA, pari))
-  ok('a pari minuti: prima, il lunedì', vp, { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1] })
+  ok('a pari minuti: prima; i giorni sono il lunedì e il mercoledì', vp, { gruppo: 'vicino', verso: 'prima', minuti: 0, giorni: [1, 3] })
   ok('a pari minuti: SUBITO PRIMA', chiama(() => m.etichettaVicino(vp)), 'SUBITO PRIMA')
 
   // --- le carte di LA FAMIGLIA: il canvas Carta ---
