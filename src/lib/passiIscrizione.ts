@@ -1051,7 +1051,7 @@ export interface RigaCarta {
 /** Sopra le righe di una carta: cosa vuol dire il nero negli orari. */
 const LEGENDA: PezzoOrario[] = [
   { testo: 'In ', evidenza: false },
-  { testo: 'nero', evidenza: true },
+  { testo: 'grassetto', evidenza: true },
   { testo: ' i giorni che vanno col tuo orario.', evidenza: false },
 ]
 
@@ -1065,7 +1065,7 @@ export interface CartaFamiglia {
   frase: string
   /** I corsi da proporre, in ordine di gruppo, fino a tre; nessuna se non ce ne sono. */
   righe: RigaCarta[]
-  /** «In nero i giorni che vanno col tuo orario.», solo se ci sono righe. */
+  /** «In grassetto i giorni che vanno col tuo orario.», solo se ci sono righe. */
   legenda?: PezzoOrario[]
   /** Col primo corso delle righe e il suo prezzo: lo sconto famiglia se tutti e due fanno l'annuale. */
   risparmio?: string

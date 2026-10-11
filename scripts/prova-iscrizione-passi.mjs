@@ -2569,7 +2569,7 @@ console.log('\n43. ORARI EVIDENZIATI')
   const stessi = [...nicola, ora('x', 1, '16:00'), ora('x', 2, '16:00')]
   ok('STESSI GIORNI: va il giorno in comune', chiama(() => m.vicinanza('x', ['zero'], stessi).giorni), [1])
 
-  // --- le carte di LA FAMIGLIA: la riga «In nero …» solo con righe ---
+  // --- le carte di LA FAMIGLIA: la riga «In grassetto …» solo con righe ---
   const voce = (corso, corsoId, natiDal, natiAl, eta = '', orariListino = []) => ({ corso, corsoId, eta, orari: orariListino, natiDal, natiAl, prezzi: [{ saldo: 300, annuale: 300, trimestre: 100 }] })
   const listino = {
     quota: 50, saldoEntro: '2026-08-31', offerte: [],
@@ -2585,12 +2585,12 @@ console.log('\n43. ORARI EVIDENZIATI')
   const luca = adulto({ nome: 'Luca', corsi: ['judo-adulti'] })
   const carte = lista(() => m.carteDellaFamiglia([luca], corsi, listino, orariC, '2026-10-06'))
   const legenda = (c) => (Array.isArray(c?.legenda) ? [unito(c.legenda), c.legenda.filter((p) => p.evidenza).map((p) => p.testo)] : c?.legenda)
-  ok('con righe: sopra, «In nero i giorni che vanno col tuo orario.», con «nero» in nero', legenda(carte[0]), ['In nero i giorni che vanno col tuo orario.', ['nero']])
+  ok('con righe: sopra, «In grassetto i giorni che vanno col tuo orario.», con «grassetto» in grassetto', legenda(carte[0]), ['In grassetto i giorni che vanno col tuo orario.', ['grassetto']])
   ok('la riga di Aikido 3: niente nota, l’orario a pezzi', carte[0]?.righe?.find((r) => r.corso === 'Aikido 3'), { etichetta: 'STESSA ORA', corso: 'Aikido 3', quando: 'lunedì e martedì 18.00-19.00', pezzi: [T('lunedì'), S(' e martedì '), T('18.00-19.00')] })
   ok('nessuna riga ha più la nota', (carte[0]?.righe ?? []).concat(carte[1]?.righe ?? []).some((r) => 'nota' in r), false)
   const solo = lista(() => m.carteDellaFamiglia([adulto({ nome: 'Luca', corsi: ['pilates'] })], corsi, listino, orariC, '2026-10-06'))
-  ok('senza righe: niente frase «In nero …»', [solo[0]?.righe, 'legenda' in (solo[0] ?? {})], [[], false])
-  ok('la carta dell’adulto ha la riga dello stesso corso: la frase c’è', legenda(solo[1]), ['In nero i giorni che vanno col tuo orario.', ['nero']])
+  ok('senza righe: niente frase «In grassetto …»', [solo[0]?.righe, 'legenda' in (solo[0] ?? {})], [[], false])
+  ok('la carta dell’adulto ha la riga dello stesso corso: la frase c’è', legenda(solo[1]), ['In grassetto i giorni che vanno col tuo orario.', ['grassetto']])
 
   // --- il passo del corso del figlio: l'età del listino, poi l'orario a pezzi ---
   const marco = figlio({ nome: 'Marco', natoIl: '2015-02-02', codiceFiscale: cfDi('Marco', 'Rossi', '2015-02-02'), corsi: [] }, { firmatario: 0 })
