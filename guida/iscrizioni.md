@@ -205,6 +205,11 @@ Per ora si apre solo in prova, con l'indirizzo `iscrizioni/?prova#nuova`. In pro
 Non salva niente: se si esce prima di mandare, le risposte si perdono, e con
 la prova nulla va a un server. Il modulo di sopra resta quello di oggi.
 
+Aperto una volta un indirizzo con `?prova`, la prova resta accesa su quel
+telefono. Finché è accesa, sotto la testata della pagina Iscrizioni c'è il
+nastro giallo **PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA**, con
+**ESCI DALLA PROVA**: un tocco la spegne e riapre la pagina vera, come in sala.
+
 Cosa arriva in **RICHIESTE ONLINE**: una richiesta per persona (anche per chi
 iscrive il bambino e si è aggiunto con **IO**: la sua ha i suoi dati, la sua
 carta d'identità e il suo modulo, con la firma data per il bambino). Sono

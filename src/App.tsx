@@ -2,6 +2,7 @@ import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState }
 import { Logo } from './components/Logo'
 import { TastoTema } from './components/TastoTema'
 import { Sala } from './components/Sala'
+import { NastroProva } from './components/ds'
 import { Accesso, ChiSei, Porta, SceltaArea, ScegliPassword, UnAttimo, useChi } from './components/Porta'
 import { IscrizioniScreen } from './components/IscrizioniScreen'
 import { IscrizioneAPassi } from './components/IscrizioneAPassi'
@@ -213,6 +214,8 @@ function Iscrizioni() {
   return (
     <div className="app">
       <Testata luogo={vestiario ? 'VESTIARIO' : 'ISCRIZIONI'} />
+      {/* La prova scelta resta accesa su questo telefono: il nastro lo dice e la spegne. */}
+      {inProvaScelta && <NastroProva testo="PROVA · LE RICHIESTE NON ARRIVANO IN SEGRETERIA" onEsci={() => scegliProva(false)} />}
       <main className="scroll">
         {/* Il flusso a passi è solo in prova e solo con #nuova: il vecchio resta com'è. */}
         {vestiario ? <OrdinaVestiario /> : flussoNuovoAcceso(haUnServer, hash) ? <IscrizioneAPassi /> : (

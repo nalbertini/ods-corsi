@@ -90,7 +90,7 @@ Google, e vale solo per i mockup.
 | `TitoloEsito` | `TitoloEsito` di `ds.tsx` con le frasi `.esito-testo`: RICHIESTA ARRIVATA e MANCA QUALCHE FILE |
 | `MembroNucleo` | Una persona del nucleo (`.mio-membro`): IN REGOLA, DA SISTEMARE, in attesa o rifiutata |
 | `RigaNucleoPagamento` | Una riga di PAGAMENTI DEL NUCLEO, con la variante «Tutto il nucleo» |
-| `NastroProva` | Il nastro giallo DATI DI PROVA in cima all'area iscritti (`.nastro-prova`) |
+| `NastroProva` | Il nastro giallo di prova (`.nastro-prova`, `NastroProva` di `ds.tsx`): area iscritti, sala e pagina Iscrizioni; `esci` aggiunge ESCI DALLA PROVA |
 | `MiaChip` | `.mia-chip` (corso col colore) e `.mia-chip-tasto` (TU, nome di chi è nel nucleo) |
 | `TabletTestataSala` | La testata completa del tablet (`Tablet.tsx`): come `TabletTestata`, più il chip del timer in corso, SI SEGNA ORA, IN ATTESA DI RETE e i bollini IMPOSTAZIONI APERTE e AREA ISTRUTTORE |
 | `TabletPiedeMusica` | La barra in basso: PRESENZE / TIMER e la musica (`MusicaSala.tsx`): suona, pausa, errore, spenta; Spotify, radio, YouTube |
