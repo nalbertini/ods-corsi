@@ -38,7 +38,7 @@ Google, e vale solo per i mockup.
 | `Resoconto.dc.html` | Il resoconto di fine import: riquadro a bordo giallo o verde, elenco monospazio e i tre tasti |
 | `TestaAppello` | La testa dell'appello (`.appello-testa`): indietro, titolo con kanji, conto, TUTTI PRESENTI e AZZERA |
 | `Riquadro` | `Riquadro`, `Etichetta`, `Cifra`, `Dettaglio` di `ds.tsx` e `.sg-riquadro`; toni normale, prova, guaio |
-| `Campo` | I campi del modulo e di segreteria: testo, select, area, sola lettura, scelta, spunta, con nota ed errore. Bordo `riga-campo`; con `una` la scelta è un segmento pieno, senza quadratino; `avviso` mette sotto la riga di una scelta la frase in `giallo-testo` («non è più alla stessa ora di …») |
+| `Campo` | I campi del modulo e di segreteria: testo, select, area, sola lettura, scelta, spunta, con nota ed errore. Bordo `riga-campo`; con `una` la scelta è un segmento pieno, senza quadratino; `avviso` mette sotto la riga di una scelta la frase in `giallo-testo` («non è più alla stessa ora di …»); `orario` aggiunge alla riga l'orario a pezzi, coi pezzi fra asterischi in evidenza |
 | `Dialogo` | Il pannello sul velo: conferma, dialogo (lezione straordinaria) e cassetto della lezione |
 | `ProvaPannello` | `Prove.tsx`: CHI VIENE A PROVARE, con campi, già venuti e i due tasti |
 | `CercaPersona` | La pagina «Aggiungi chi prova» (`CercaPersona.tsx`) |
@@ -85,7 +85,7 @@ Google, e vale solo per i mockup.
 | `TavolaFirma` | Il riquadro della firma (`TavolaFirma.tsx`): vuoto con FIRMA QUI COL DITO, o firmato |
 | `FirmaSchermoIntero` | La firma a schermo intero (`FirmaSchermoIntero` in `TavolaFirma.tsx`, `.firma-intera*`): ANNULLA, nome e FATTO in cima, il riquadro con la riga a un quarto dal fondo, la frase e CANCELLA E RIFAI; `orientamento` verticale o orizzontale, `firmata` |
 | `StimaCosto` | QUANTO COSTA di una persona del nucleo: righe, sconto famiglia, totale, IBAN, causale, tasti; `etichetta` e `stima` cambiano il titolo e la frase prima dell'IBAN |
-| `CartaFamiglia` | Il passo LA FAMIGLIA del modulo a passi (`.famiglia-*`): `tipo=sconto` il riquadro −20% SCONTO FAMIGLIA a bordo verde; `tipo=carta` una carta di `carteDellaFamiglia` con titolo, frase, riga STESSA ORA, risparmio in verde e il tasto tratteggiato |
+| `CartaFamiglia` | Il passo LA FAMIGLIA del modulo a passi (`.famiglia-*`): `tipo=sconto` il riquadro −20% SCONTO FAMIGLIA a bordo verde; `tipo=carta` una carta di `carteDellaFamiglia` con titolo, frase, «In grassetto i giorni che vanno col tuo orario.», le righe (STESSA ORA, SUBITO PRIMA…) con l'orario a pezzi, risparmio in verde e il tasto tratteggiato |
 | `TitoloEsito` | `TitoloEsito` di `ds.tsx` con le frasi `.esito-testo`: RICHIESTA ARRIVATA e MANCA QUALCHE FILE |
 | `MembroNucleo` | Una persona del nucleo (`.mio-membro`): IN REGOLA, DA SISTEMARE, in attesa o rifiutata |
 | `RigaNucleoPagamento` | Una riga di PAGAMENTI DEL NUCLEO, con la variante «Tutto il nucleo» |

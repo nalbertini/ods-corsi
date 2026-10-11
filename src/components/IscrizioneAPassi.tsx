@@ -10,7 +10,7 @@ import { elenco, euro } from '../lib/ricevute'
 import { chiaveGiorno } from '../lib/sala'
 import * as P from '../lib/passiIscrizione'
 import { useListino } from './Costi'
-import { Avanzamento, BarraPasso, Bollino, CaricaFile, Campo, Chip, Dettaglio, NotaCampo, Riepilogo, Riquadro, SceltaCorsi, Tasti, Tasto, TitoloEsito, Titoletto, type Nota, type RigaRiepilogo } from './ds'
+import { Avanzamento, BarraPasso, Bollino, CaricaFile, Campo, Chip, Dettaglio, NotaCampo, Riepilogo, Riquadro, SceltaCorsi, Tasti, Tasto, TestoAPezzi, TitoloEsito, Titoletto, type Nota, type RigaRiepilogo } from './ds'
 import { Contatti, Prova } from './IscrizioniScreen'
 import { useDialogo } from './segreteria/comune'
 import { Casella, QuantoCosta, SceltaFile } from './ModuloIscrizione'
@@ -237,7 +237,7 @@ function ElencoCorsi({
   const fuoriEta = perEta.altri.filter((c) => scelti.includes(c.id)).map((c) => c.nome)
   // Un corso fuori età già scelto non si nasconde: si vede cosa c'è nella richiesta.
   const mostraAltri = aperti || fuoriEta.length > 0
-  const tasto = (c: P.CorsoProposto) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined, perche: c.perche })
+  const tasto = (c: P.CorsoProposto) => ({ id: c.id, testo: c.nome, riga: [c.riga, c.prezzoDaConfermare && 'prezzo da confermare'].filter(Boolean).join(' · ') || undefined, orario: c.orario })
   const inCima = !!(perEta.stessaOra?.length || perEta.vicini?.length || perEta.stessiGiorni?.length)
   const descritto = nota ? `${id}-nota` : undefined
   return (
@@ -1314,13 +1314,13 @@ function Flusso({
               <Riquadro key={c.chi}>
                 <span className="famiglia-carta-titolo">{c.titolo}</span>
                 <Dettaglio tono="testo">{c.frase}</Dettaglio>
+                {c.legenda && <TestoAPezzi pezzi={c.legenda} className="famiglia-carta-legenda" />}
                 {c.righe.map((r) => (
                   <span key={r.corso} className="famiglia-carta-ora">
                     <span className="famiglia-carta-tag">{r.etichetta}</span>
                     <span className="stack famiglia-carta-corso">
                       <span className="famiglia-carta-nome">{r.corso}</span>
-                      {r.quando && <span>{r.quando}</span>}
-                      {r.nota && <span className="famiglia-carta-nota">{r.nota}</span>}
+                      {r.quando && <TestoAPezzi pezzi={r.pezzi} />}
                     </span>
                   </span>
                 ))}
