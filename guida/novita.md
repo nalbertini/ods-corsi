@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.57.1 — 11 ottobre 2026
+
+### Risolto
+
+- Fuori dal timer il video di YouTube copriva il calendario
+
 ## 0.57.0 — 11 ottobre 2026
 
 ### Novità
