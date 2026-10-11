@@ -14,7 +14,7 @@
     body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
   </style>
 </helmet>
-<div style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 0 8px 0 20px; border-top: 2px solid {{c.lineSoft}}; background: {{c.surface}}; color: {{c.text}}">
+<div style="{{forma}}; width: 100%; min-height: 56px; border-top: 2px solid {{c.lineSoft}}; background: {{c.surface}}; color: {{c.text}}">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: {{c.dim}}"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
   <span style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
     <span style="font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{titolo}}</span>
@@ -24,17 +24,22 @@
     <sc-if value="{{suona}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></sc-if>
     <sc-if value="{{inPausa}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 21 12 6 21 6 3"></polygon></svg></sc-if>
   </span>
+  <sc-if value="{{video}}" hint-placeholder-val="{{ false }}">
+    <span style="grid-area: video; width: 200px; height: 200px; background: {{c.surface2}}; border: 2px solid {{c.line}}; display: flex; align-items: center; justify-content: center; color: {{c.dim}}; font-size: 12px; font-weight: 600; letter-spacing: 0.12em">VIDEO YOUTUBE</span>
+  </sc-if>
 </div>
 </x-dc>
-<script data-dc-script data-props='{"musica":{"editor":"enum","options":["suona","pausa"],"default":"suona"},"titolo":{"editor":"text","default":"Riscaldamento"},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":56}}'>
+<script data-dc-script data-props='{"musica":{"editor":"enum","options":["suona","pausa"],"default":"suona"},"titolo":{"editor":"text","default":"Riscaldamento"},"video":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":390,"height":56}}'>
 // Nell'app (BarraMusicaTelefono / MusicaMini di src/components/TimerIstruttori.tsx, .musica-telefono / .musica-mini di styles.css): la barra piccola della musica fuori dalla pagina TIMER (CALENDARIO, I MIEI,
 // ORE, appello). Sta in basso, appena sopra BarraNavigazione: la striscia dell'allenamento sta in alto, cosi' le due non si confondono e
 // non si toccano. Alta 56px, fondo `surface`, bordo sopra `line-soft`: la nota, il titolo, MUSICA / IN PAUSA scritto (mai solo l'icona)
 // e un solo tasto ⏸/▶ da 44px. Toccare il resto della barra porta alla pagina TIMER, dove ci sono tutti i comandi.
 // C'e' solo quando la musica e' accesa (suona o in pausa); spenta o ferma dopo un ricaricamento non c'e'.
+// video: con YouTube che suona il video (200x200, YouTube lo vuole visibile) entra nella barra, a destra, e la barra si alza a
+// 200px in flusso (.musica-mini[data-video]): nota e titolo sopra, ⏸ largo sotto. Non galleggia sopra la pagina: non copre niente.
 const T = {
-  scuro: { surface: '#1c1c1c', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', dim: '#8c8c88' },
-  chiaro: { surface: '#ffffff', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', dim: '#656561' },
+  scuro: { surface: '#1c1c1c', surface2: '#242424', line: '#333333', lineSoft: '#2a2a2a', text: '#f2f2f0', dim: '#8c8c88' },
+  chiaro: { surface: '#ffffff', surface2: '#e9e9e5', line: '#d4d4ce', lineSoft: '#e2e2dd', text: '#161616', dim: '#656561' },
 };
 const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
 class Component extends DCLogic {
@@ -42,7 +47,11 @@ class Component extends DCLogic {
     const p = this.props;
     const c = T[p.tema] || T.scuro;
     const suona = (p.musica || 'suona') === 'suona';
-    return { c, cond: COND, suona, inPausa: !suona, titolo: p.titolo ?? 'Riscaldamento', stato: suona ? 'MUSICA' : 'MUSICA IN PAUSA' };
+    const video = p.video === true || p.video === 'true';
+    const forma = video
+      ? "display: grid; grid-template-columns: 20px minmax(0, 1fr) 200px; grid-template-rows: 1fr 44px; grid-template-areas: 'nota titolo video' 'tasto tasto video'; gap: 8px 10px; padding: 12px 20px 14px"
+      : 'display: flex; align-items: center; gap: 12px; padding: 0 8px 0 20px';
+    return { c, cond: COND, suona, inPausa: !suona, video, forma, titolo: p.titolo ?? 'Riscaldamento', stato: suona ? 'MUSICA' : 'MUSICA IN PAUSA' };
   }
 }
 </script>
