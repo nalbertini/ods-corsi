@@ -22,6 +22,10 @@ const { outputFiles } = await build({
       "export { causale, stimaIscrizione } from './src/lib/nucleo'",
       // Tutta lib/sito, come spazio di nomi: una funzione che ancora manca cade sulla sua prova, non sul bundle.
       "export * as sito from './src/lib/sito'",
+      "export { cfNatoIl, cfValido, codiceFinto } from './src/lib/codiceFiscale'",
+      "export { dataDaCf, ESTENSIONI, MASSIMO_FILE, minorenne, problemi } from './src/lib/richieste'",
+      "export { firmaVera } from './src/lib/tratti'",
+      "export * as riempi from './src/lib/riempiPerProva'",
     ].join('\n'),
     resolveDir: '.',
     loader: 'ts',
@@ -2763,11 +2767,232 @@ console.log('\n44. LE TRE TAPPE')
 }
 
 // ---------------------------------------------------------------------------
+// RIEMPI: solo in prova, un tasto in cima accanto al bollino PROVA riempie con
+// dati finti validi il passo in cui si è, per la persona attiva. Corregge quel
+// che è scritto male, quel che è giusto resta. Design in
+// docs/design-canvas/riempi-prova/A-InCima.dc.html e A-Dopo.dc.html.
+// ---------------------------------------------------------------------------
+console.log('\n45. RIEMPI, solo in prova')
+{
+  // Firma attesa, in src/lib/riempiPerProva.ts:
+  //   riempiPerProva(persone, i, tipo, { corsi, listino, oggi, fotoDelFoglio? }) → { stato, firma? }
+  // `persone` è il grezzo (senza `conDatiDellaFamiglia`), `stato` è la persona `i` riempita, `firma` i tratti da
+  // mettere nel riquadro (con `stato.tratti === firma.length`). `fotoDelFoglio`: «Ho il foglio firmato» vale
+  // (`firmaInFoto`), il modulo va come file. Nei passi senza tasto (famiglia, pagamento, riepilogo) lo stato resta com'è.
+  // `riempibile(tipo)` sta in passiIscrizione: la schermata lo chiama senza caricare il modulo dei dati finti.
+  const voce = (corso, corsoId, extra = {}) => ({ corso, corsoId, eta: '', orari: [], prezzi: [{ saldo: 300, annuale: 300, trimestre: 120 }], ...extra })
+  const listino = {
+    quota: 50, saldoEntro: '2026-08-31', offerte: [],
+    // Il primo del listino è «dai 16 anni»: chi prende il primo corso a caso, a un bambino lo sbaglia.
+    corsi: [voce('Pesi', 'pesi', { etaMinima: 16 }), voce('Judo ragazzi', 'judo-ragazzi', { natiDal: 2008, natiAl: 2022 }), voce('Judo adulti', 'judo-adulti', { natiAl: 2008 })],
+  }
+  const corsi = listino.corsi.map((v) => ({ id: v.corsoId, nome: v.corso }))
+  const r = (persone, i, tipo, opz = {}) => chiama(() => m.riempi.riempiPerProva(persone, i, tipo, { corsi, listino, oggi: new Date(), ...opz }))
+  const S = (x) => (x && typeof x === 'object' ? x.stato : x)
+  const vero = (x) => !!x && typeof x === 'object'
+  const passoDi = (s, tipo) => m.tipiDiPassi(s?.chi ?? 'adulto').indexOf(tipo) + 1
+  const manca = (s, tipo) => chiama(() => m.mancaNelPasso(s, passoDi(s, tipo)))
+  // Lo stato come si confronta: i file per nome, tipo e grandezza (JSON.stringify di un File è {}), le chiavi in ordine.
+  const scritto = (s) =>
+    JSON.stringify(s, (_, v) =>
+      v instanceof File ? { file: v.name, tipo: v.type, grande: v.size } : v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([x], [y]) => x.localeCompare(y))) : v)
+  const RIEMPIBILI = ['dati', 'genitore', 'corso', 'modulo', 'documenti']
+  /** Una persona riempita passo per passo dall'inizio, come chi tocca RIEMPI a ogni passo. */
+  const tuttoRiempito = (chi) => {
+    let s = m.nuovoStato(chi)
+    for (const tipo of m.tipiDiPassi(chi)) if (RIEMPIBILI.includes(tipo)) s = vero(S(r([s], 0, tipo))) ? S(r([s], 0, tipo)) : s
+    return s
+  }
+
+  // --- dove c'è il tasto ---
+  ok('il tasto c’è nei passi dati, genitore, corso, modulo, documenti; non a famiglia, pagamento, riepilogo',
+    ['dati', 'genitore', 'corso', 'modulo', 'documenti', 'famiglia', 'pagamento', 'riepilogo'].map((t) => chiama(() => m.riempibile(t))),
+    [true, true, true, true, true, false, false, false])
+  ok('il modulo dei dati finti c’è (src/lib/riempiPerProva.ts)', typeof m.riempi?.riempiPerProva, 'function')
+
+  // --- 1. l'adulto al passo DATI ---
+  const a = S(r([m.nuovoStato('adulto')], 0, 'dati'))
+  ok('adulto, DATI: dopo RIEMPI non manca niente', manca(a, 'dati'), [])
+  ok('adulto, DATI: il codice fiscale non chiede «Stai iscrivendo un bambino?»', chiama(() => m.controlloScelta(a)), null)
+  ok('adulto, DATI: il codice fiscale è di un maggiorenne', chiama(() => m.minorenne(m.dataDaCf(a.risposte.codiceFiscale, a.risposte.natoIl))), false)
+  ok('adulto, DATI: CAP 10093, comune Collegno', [a?.risposte?.cap, a?.risposte?.comune], ['10093', 'Collegno'])
+
+  // --- 2. il bambino e chi firma ---
+  const b1 = S(r([m.nuovoStato('figlio')], 0, 'dati'))
+  const b = S(r([b1], 0, 'genitore'))
+  ok('bambino, BAMBINO: dopo RIEMPI non manca niente', manca(b1, 'dati'), [])
+  ok('bambino, CHI FIRMA: dopo RIEMPI non manca niente', manca(b, 'genitore'), [])
+  ok('bambino, BAMBINO resta a posto dopo CHI FIRMA', manca(b, 'dati'), [])
+  ok('il bambino è minorenne', chiama(() => m.minorenne(m.dataDaCf(b.risposte.codiceFiscale, b.risposte.natoIl))), true)
+  ok('chi firma è maggiorenne', chiama(() => m.minorenne(m.cfNatoIl(b.risposte.genitoreCodiceFiscale))), false)
+  ok('bambino e chi firma hanno codici fiscali diversi', chiama(() => b.risposte.codiceFiscale !== b.risposte.genitoreCodiceFiscale), true)
+  ok('i due codici fiscali sono veri (carattere di controllo compreso)', chiama(() => [m.cfValido(b.risposte.codiceFiscale), m.cfValido(b.risposte.genitoreCodiceFiscale)]), [true, true])
+  ok('bambino: CAP 10093, comune Collegno', [b?.risposte?.cap, b?.risposte?.comune], ['10093', 'Collegno'])
+
+  // --- 3 e 4. quel che è giusto resta, quel che non va si corregge ---
+  const marta = { ...m.nuovoStato('adulto'), risposte: { ...m.nuovoStato('adulto').risposte, nome: 'Marta' } }
+  const dm = S(r([marta], 0, 'dati'))
+  ok('il nome già scritto resta: Marta', dm?.risposte?.nome, 'Marta')
+  ok('il codice fiscale torna con Marta', chiama(() => m.problemi(m.risposteDaiPassi(dm)).codiceFiscale), undefined)
+  ok('…e non manca niente', manca(dm, 'dati'), [])
+  const scritteMale = { ...m.nuovoStato('adulto'), risposte: { ...m.nuovoStato('adulto').risposte, email: 'luca@', telefono: '347 111 2233' } }
+  const sm = S(r([scritteMale], 0, 'dati'))
+  ok('l’email scritta male si corregge', chiama(() => sm.risposte.email !== 'luca@' && !m.problemi(m.risposteDaiPassi(sm)).email), true)
+  ok('il telefono giusto resta', sm?.risposte?.telefono, '347 111 2233')
+  const daMinore = { ...m.nuovoStato('adulto'), risposte: { ...m.nuovoStato('adulto').risposte, nome: 'Matteo', cognome: 'Rossi', codiceFiscale: CF_MATTEO } }
+  ok('prima: «IO, SONO ADULTO» col codice di un bambino non torna', chiama(() => m.controlloScelta(daMinore)?.verdetto), 'minore')
+  const dmi = S(r([daMinore], 0, 'dati'))
+  ok('il codice da minorenne cambia', dmi?.risposte?.codiceFiscale !== CF_MATTEO && typeof dmi?.risposte?.codiceFiscale === 'string', true)
+  ok('…e la domanda «Stai iscrivendo un bambino?» non c’è più', chiama(() => m.controlloScelta(dmi)), null)
+  ok('…e non manca niente, «Non torna» compreso', manca(dmi, 'dati'), [])
+
+  // --- 5. il corso ---
+  const matteo = figlio({ corsi: [] })
+  const cm = S(r([matteo], 0, 'corso'))
+  const adatti = m.corsiPerEta(corsi, listino.corsi, matteo.risposte.natoIl).adatti.map((c) => c.id)
+  ok('bambino, CORSO: dopo RIEMPI non manca niente', manca(cm, 'corso'), [])
+  ok('il corso scelto è fra gli adatti alla sua età', chiama(() => cm.risposte.corsi.length > 0 && cm.risposte.corsi.every((c) => adatti.includes(c))), true)
+  ok('…e non quello dai 16 anni', chiama(() => cm.risposte.corsi.includes('pesi')), false)
+  ok('un corso già scelto e ammesso resta', S(r([figlio({ corsi: ['judo-ragazzi'] })], 0, 'corso'))?.risposte?.corsi, ['judo-ragazzi'])
+  const conPesi = S(r([figlio({ corsi: ['pesi'] })], 0, 'corso'))
+  ok('un corso «dai 16 anni» scelto per un bambino si toglie, e ne resta uno adatto', chiama(() => !conPesi.risposte.corsi.includes('pesi') && conPesi.risposte.corsi.every((c) => adatti.includes(c)) && conPesi.risposte.corsi.length > 0), true)
+
+  // Con due corsi adatti, quello scelto è il secondo: resta lui, non il primo adatto.
+  const dueAdatti = { ...listino, corsi: [...listino.corsi, voce('Lotta ragazzi', 'lotta-ragazzi', { natiDal: 2008, natiAl: 2022 })] }
+  const corsiDue = dueAdatti.corsi.map((v) => ({ id: v.corsoId, nome: v.corso }))
+  ok('un corso adatto già scelto resta anche se non è il primo', S(chiama(() => m.riempi.riempiPerProva([figlio({ corsi: ['lotta-ragazzi'] })], 0, 'corso', { corsi: corsiDue, listino: dueAdatti, oggi: new Date() })))?.risposte?.corsi, ['lotta-ragazzi'])
+  // Chi firma prende il cognome del bambino, se c'è.
+  const conCognome = { ...m.nuovoStato('figlio'), risposte: { ...m.nuovoStato('figlio').risposte, cognome: 'Bianchi' } }
+  // Come nell'app: prima i dati del bambino (così è minorenne e chi firma serve), poi CHI FIRMA.
+  ok('chi firma prende il cognome del bambino', S(r([S(r([conCognome], 0, 'dati'))], 0, 'genitore'))?.risposte?.genitoreCognome, 'Bianchi')
+  // Il secondo telefono scritto male si svuota: è facoltativo.
+  const tel2 = S(r([{ ...m.nuovoStato('adulto'), risposte: { ...m.nuovoStato('adulto').risposte, telefono2: 'abc' } }], 0, 'dati'))
+  ok('il secondo telefono scritto male si svuota', [tel2?.risposte?.telefono2, manca(tel2, 'dati')], ['', []])
+  // Il codice di una donna ha il giorno più 40: cfValido guarda solo il carattere di controllo.
+  ok('codiceFinto: il giorno di una donna è più 40', chiama(() => [m.codiceFinto('Prova', 'Giulia', '1990-03-10', true, 'L219').slice(9, 11), m.codiceFinto('Prova', 'Marco', '1990-03-10', false, 'L219').slice(9, 11)]), ['50', '10'])
+
+  // --- 6. la firma ---
+  const vuoto = adulto({}, { scelte: {}, tratti: 0, privacy: false })
+  vuoto.risposte.regolamento = false
+  const fr = r([vuoto], 0, 'modulo')
+  const f = S(fr)
+  ok('FIRMA vuota: dopo RIEMPI non manca niente', manca(f, 'modulo'), [])
+  ok('il modulo si può firmare', chiama(() => m.mancaPerFirmare(f)), null)
+  ok('la firma finta è una firma vera', chiama(() => m.firmaVera(fr.firma)), true)
+  ok('i tratti contati sono quelli della firma', chiama(() => f.tratti === fr.firma.length), true)
+  ok('tesseramento e foto su AUTORIZZO', f?.scelte, { tesseramento: true, foto: true })
+
+  // --- 7. il foglio firmato in foto ---
+  // Nell'app «Ho il foglio firmato» non sta nello stato grezzo (la schermata lo ricalcola da `come`): arriva solo come opzione.
+  const inFoto = adulto({}, { scelte: {}, tratti: 0, file: { documento: F('documento.jpg') } })
+  const fo = S(r([inFoto], 0, 'modulo', { fotoDelFoglio: true }))
+  ok('«Ho il foglio firmato»: nessuna firma da disegnare', r([inFoto], 0, 'modulo', { fotoDelFoglio: true })?.firma, undefined)
+  ok('«Ho il foglio firmato»: il modulo firmato c’è, ed è un PDF', chiama(() => [fo.file.modulo instanceof File, fo.file.modulo.type, fo.file.modulo.name.endsWith('.pdf')]), [true, 'application/pdf', true])
+  ok('…e non manca niente, col foglio in foto come lo vede la schermata', manca(fo && { ...fo, firmaInFoto: true }, 'modulo'), [])
+
+  // --- 8. i documenti: solo la carta d'identità ---
+  const d0 = adulto({}, { file: {} })
+  const dd = S(r([d0], 0, 'documenti'))
+  const doc = dd?.file?.documento
+  ok('DOCUMENTI: la carta d’identità c’è', doc instanceof File, true)
+  ok('…di un tipo che il contenitore accetta, col nome giusto', chiama(() => [doc.type in m.ESTENSIONI, doc.name.endsWith('.' + m.ESTENSIONI[doc.type])]), [true, true])
+  ok('…sotto il massimo, e non vuota', chiama(() => doc.size > 0 && doc.size <= m.MASSIMO_FILE), true)
+  ok('DOCUMENTI: dopo RIEMPI non manca niente', manca(dd, 'documenti'), [])
+  ok('retro, certificato e ricevuta restano vuoti', chiama(() => ['documento-retro', 'certificato', 'ricevuta'].filter((t) => t in dd.file)), [])
+  ok('a PAGAMENTO RIEMPI non c’è, e la ricevuta resta vuota', chiama(() => scritto(S(r([d0], 0, 'pagamento')))), scritto(d0))
+  for (const tipo of ['famiglia', 'riepilogo']) ok(`a ${tipo.toUpperCase()} lo stato resta com’è`, chiama(() => scritto(S(r([d0], 0, tipo)))), scritto(d0))
+
+  // --- 9. il fratello firmato da chi compila: prende dalla famiglia, non si copia ---
+  let fam = lista(() => m.aggiungiFamiliare([figlio()], 'figlio', 0))
+  for (const tipo of RIEMPIBILI) {
+    const x = S(r(fam, 1, tipo))
+    if (vero(x)) fam = fam.map((p, k) => (k === 1 ? x : p))
+  }
+  const fratello = fam[1]
+  ok('fratello: nel grezzo genitore, indirizzo e carta restano vuoti', chiama(() => [fratello.risposte.genitoreNome, fratello.risposte.genitoreCognome, fratello.risposte.genitoreCodiceFiscale, fratello.risposte.indirizzo, fratello.risposte.cap, fratello.risposte.comune, fratello.file.documento]), ['', '', '', '', '', '', undefined])
+  const visto = lista(() => m.conDatiDellaFamiglia(fam))[1]
+  ok('…e la famiglia gli dà quelli di Matteo', chiama(() => [visto.risposte.genitoreNome, visto.risposte.indirizzo, visto.file.documento === fam[0].file.documento]), ['Paola', 'Via Roma 1', true])
+  ok('fratello: nessun passo riempito ha mancanze', chiama(() => RIEMPIBILI.map((t) => manca(visto, t))), RIEMPIBILI.map(() => []))
+  ok('il fratello ha un nome suo', chiama(() => fratello.risposte.nome.trim() !== '' && fratello.risposte.nome !== 'Matteo'), true)
+
+  // --- 10. l'io: è già scritto nel bambino 0 ---
+  const conIo = [figlio(), io({}, { scelte: {} })]
+  ok('io, DATI: lo stato non cambia', chiama(() => scritto(S(r(conIo, 1, 'dati')))), scritto(conIo[1]))
+  ok('io, DOCUMENTI: lo stato non cambia', chiama(() => scritto(S(r(conIo, 1, 'documenti')))), scritto(conIo[1]))
+  // Per l'io mancaNelPasso chiede solo tesseramento e foto: firma, ok e foglio sono del bambino 0.
+  const ioFirma = r(conIo, 1, 'modulo')
+  ok('io, FIRMA: cambiano solo le scelte', chiama(() => scritto(S(ioFirma))), scritto({ ...conIo[1], scelte: { tesseramento: true, foto: true } }))
+  ok('io, FIRMA: nessuna firma da disegnare', vero(ioFirma) && ioFirma.firma === undefined, true)
+  ok('io, FIRMA: non manca niente', manca(S(ioFirma), 'modulo'), [])
+
+  // --- 11. due volte di fila come una ---
+  for (const [chi, fresco] of [['adulto', () => m.nuovoStato('adulto')], ['figlio', () => m.nuovoStato('figlio')]])
+    for (const tipo of m.tipiDiPassi(chi).filter((t) => RIEMPIBILI.includes(t))) {
+      const una = S(r([fresco()], 0, tipo))
+      ok(`${chi}, ${tipo}: RIEMPI due volte è come una`, [vero(una), chiama(() => scritto(S(r([una], 0, tipo))))], [true, scritto(una)])
+    }
+
+  // --- 12. gli altri passi non cambiano ---
+  // Il passo DATI del bambino no: con la data di un minore, CHI FIRMA chiede (giustamente) i dati del genitore.
+  for (const chi of ['adulto', 'figlio']) {
+    const tipi = m.tipiDiPassi(chi)
+    const prima = m.nuovoStato(chi)
+    for (const tipo of tipi.filter((t) => RIEMPIBILI.includes(t) && !(chi === 'figlio' && t === 'dati'))) {
+      const dopo = S(r([prima], 0, tipo))
+      const altri = tipi.slice(0, -1).filter((t) => t !== tipo)
+      ok(`${chi}, ${tipo}: gli altri passi hanno le mancanze di prima`, altri.map((t) => manca(dopo, t)), altri.map((t) => manca(prima, t)))
+    }
+  }
+
+  // --- 13. riempito dall'inizio, la richiesta parte ---
+  for (const chi of ['adulto', 'figlio']) {
+    const s = tuttoRiempito(chi)
+    ok(`${chi} riempito passo per passo: all’INVIO non manca niente`, chiama(() => m.mancantiFamiglia([s])), [])
+    ok(`${chi} riempito passo per passo: la richiesta passa i controlli`, chiama(() => m.controlla(m.richiesteDaMandare(s, 'TO', async () => F('modulo.pdf'))[0].dati)), null)
+  }
+
+  // --- 14. in famiglia nomi diversi ---
+  let due = lista(() => m.aggiungiFamiliare([m.nuovoStato('adulto')], 'adulto', 0))
+  for (const i of [0, 1]) {
+    const x = S(r(due, i, 'dati'))
+    if (vero(x)) due = due.map((p, k) => (k === i ? x : p))
+  }
+  ok('due adulti riempiti hanno nomi diversi', chiama(() => due[0].risposte.nome.trim() !== '' && due[0].risposte.nome !== due[1].risposte.nome), true)
+  ok('…e codici fiscali diversi', chiama(() => due[0].risposte.codiceFiscale !== due[1].risposte.codiceFiscale), true)
+  ok('il secondo adulto non ha mancanze ai DATI', manca(lista(() => m.conDatiDellaFamiglia(due))[1], 'dati'), [])
+
+  // --- 15. la schermata ---
+  const pagina = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  const codice = pagina.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((x) => !/^\s*\/\//.test(x)).join('\n')
+  const flusso = codice.slice(codice.indexOf('function Flusso('))
+  const passi = flusso.slice(flusso.lastIndexOf('return (', flusso.lastIndexOf('<Avanzamento')))
+  const testa = passi.slice(0, passi.indexOf('<Avanzamento'))
+  // Le espressioni {d?.modo === 'prova' && …} della testa, intere: dalla graffa alla sua chiusa.
+  const soloInProva = [...testa.matchAll(/\{\s*d\?\.modo === 'prova' &&/g)].map((x) => {
+    let n = 0
+    for (let k = x.index; k < testa.length; k++) {
+      n += testa[k] === '{' ? 1 : testa[k] === '}' ? -1 : 0
+      if (!n) return testa.slice(x.index, k + 1)
+    }
+    return ''
+  })
+  ok('nella testa dei passi, accanto al bollino PROVA, c’è RIEMPI', /\bRIEMPI\b/.test(testa), true)
+  // Ogni espressione «solo in prova» si toglie da sola: due di fila non sono un pezzo unico del sorgente.
+  ok('RIEMPI c’è solo in prova', soloInProva.some((e) => /\bRIEMPI\b/.test(e)) && !soloInProva.reduce((t, e) => t.replace(e, ''), testa).includes('RIEMPI'), true)
+  ok('RIEMPI solo dove serve: chiede P.riempibile', soloInProva.some((e) => /\bRIEMPI\b/.test(e) && /P\.riempibile\(/.test(e)), true)
+  ok('riempiPerProva si carica quando si tocca: import() dinamico', /import\(\s*['"]\.\.\/lib\/riempiPerProva['"]\s*\)/.test(codice), true)
+  // «Ho il foglio firmato» la schermata lo sa da `come` (in `tutte`), non dal grezzo: RIEMPI lo prende da lì.
+  ok('RIEMPI sa del foglio in foto come la schermata (v.firmaInFoto)', /riempiPerProva\([^)]*fotoDelFoglio:\s*v\.firmaInFoto/.test(codice), true)
+  ok('se il pezzo non arriva, RIEMPI lo dice', /import\(\s*['"]\.\.\/lib\/riempiPerProva['"]\s*\)[\s\S]{0,600}\.catch\(/.test(codice), true)
+  ok('…e nessun import statico', /^\s*import\b[^;]*['"]\.\.\/lib\/riempiPerProva['"]/m.test(codice), false)
+}
+
+// ---------------------------------------------------------------------------
 // I PASSI COMUNI: con due o più persone FAMIGLIA, PAGAMENTO e INVIO sono un
 // passo solo per tutti. Niente pastiglie, la testa è quella della persona 0
 // qualunque sia attiva, e le note per la segreteria sono una per il modulo.
 // ---------------------------------------------------------------------------
-console.log('\n45. I PASSI COMUNI')
+console.log('\n46. I PASSI COMUNI')
 {
   const COMUNI = ['famiglia', 'pagamento', 'riepilogo']
   const SUOI = ['dati', 'genitore', 'corso', 'modulo', 'documenti']

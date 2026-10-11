@@ -204,7 +204,7 @@ Chi iscrive un figlio trova scritto di chi è ogni cosa: **LA CARTA D'IDENTITÀ 
 
 In fondo a ogni passo, sopra INDIETRO e AVANTI, «Hai bisogno di aiuto? Chiama o scrivi.»: **CHIAMA** telefona alla segreteria, **SCRIVI** apre WhatsApp allo stesso numero col messaggio già scritto, che dice a che passo si è («Ciao, sto compilando l'iscrizione e ho un dubbio sul passo DOCUMENTI»). A ogni passo nuovo il cursore va al titolo, così chi usa uno screen reader sente dove si trova. Se si esce o si ricarica la pagina dopo aver scritto qualcosa, il browser chiede conferma. Alla fine, **RICHIESTA ARRIVATA** dice dove la segreteria ti scrive o ti chiama, e se non hai caricato la ricevuta quanto devi pagare e come (l'IBAN, e per una persona sola anche la causale), con **CHIAMA LA SEGRETERIA** a portata di mano.
 
-Per ora si apre solo in prova, con l'indirizzo `iscrizioni/?prova#nuova`.
+Per ora si apre solo in prova, con l'indirizzo `iscrizioni/?prova#nuova`. In prova, accanto al bollino PROVA, c'è **RIEMPI**: un tocco scrive dati finti ma validi nel passo in cui sei (nomi diversi per ogni persona della famiglia, codice fiscale vero, CAP di Collegno, corso adatto all'età, firma disegnata, una carta d'identità di esempio), così si arriva all'invio solo con RIEMPI e AVANTI. Quello che è già giusto resta; retro, certificato e ricevuta restano vuoti. Non c'è nei passi FAMIGLIA, PAGAMENTO e INVIO, e col database vero non c'è mai.
 Non salva niente: se si esce prima di mandare, le risposte si perdono, e con
 la prova nulla va a un server. Il modulo di sopra resta quello di oggi.
 
