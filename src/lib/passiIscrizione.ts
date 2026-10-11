@@ -109,6 +109,9 @@ const NOME_PASSO: Record<Chi, Partial<Record<TipoPasso, string>>> = {
   },
 }
 
+/** I passi dove RIEMPI (solo in prova) ha qualcosa da scrivere: FAMIGLIA non chiede niente, a PAGAMENTO la ricevuta resta facoltativa, INVIO rimette insieme. */
+export const riempibile = (tipo: TipoPasso): boolean => tipo === 'dati' || tipo === 'genitore' || tipo === 'corso' || tipo === 'modulo' || tipo === 'documenti'
+
 export const passiDi = (chi: Chi): string[] => tipiDiPassi(chi).map((t) => NOME_PASSO[chi][t] ?? '')
 
 /** Le risposte come partono: il regolamento è accettato iscrivendosi, la data dice il codice fiscale, l'adulto non ha genitore. */

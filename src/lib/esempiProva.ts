@@ -2,7 +2,7 @@ import { archivio, STAGIONE, type LezioneProva, type PresenzaIstruttoreProva } f
 import { comeE, iscrittiIl, lezioniFra, memoria, type LezioneTrovata } from './datiProva'
 import { aggiungiRichiesteProva } from './richiesteProva'
 import type { Richiesta } from './richieste'
-import { carattereControllo, lettereCognome, lettereNome } from './codiceFiscale'
+import { codiceFinto as codice } from './codiceFiscale'
 import { chiaveGiorno, type StatoPresenza } from './sala'
 import { conti, ENTE_PREDEFINITO, voceQuota, vociDelCorso, type Ricevuta, type VoceRicevuta } from './ricevute'
 
@@ -200,14 +200,6 @@ function telefoni() {
     const n = String(Math.floor(numero(`tel|${p.id}`) * 1e7)).padStart(7, '0')
     return { ...p, telefono: `3${['33', '35', '38', '40', '47'][Math.floor(numero(p.id) * 5)]} ${n.slice(0, 3)} ${n.slice(3)}` }
   })
-}
-
-/** Il codice fiscale vero di una persona inventata, carattere di controllo compreso. */
-function codice(cognome: string, nome: string, natoIl: string, donna: boolean, comune: string) {
-  const [anno, mese, giorno] = natoIl.split('-').map(Number)
-  const g = String(giorno + (donna ? 40 : 0)).padStart(2, '0')
-  const base = `${lettereCognome(cognome)}${lettereNome(nome)}${String(anno % 100).padStart(2, '0')}${'ABCDEHLMPRST'[mese - 1]}${g}${comune}`
-  return base + carattereControllo(base)
 }
 
 /** Le richieste online: tre da guardare, un minore col genitore, e una già rifiutata. */
