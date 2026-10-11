@@ -1,0 +1,41 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Orari compatibili evidenziati"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "Oggi.dc.html",
+   "title": "Oggi · la nota sotto ogni corso",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Carta.dc.html",
+   "title": "Proposta · i giorni compatibili in nero",
+   "x": 450,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "Corso.dc.html",
+   "title": "Proposta · lo stesso al corso del familiare",
+   "x": 900,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1300,
+   "text": "Gli orari compatibili evidenziati, al posto della nota"
+  }
+ ]
+}

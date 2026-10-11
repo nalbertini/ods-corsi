@@ -213,6 +213,9 @@ export function anniDiNascita(v: { natiDal?: number | string; natiAl?: number | 
 /** Se un corso non è per la data di nascita di chi si iscrive: lo dice il listino, coi suoi anni e i sei mesi di tolleranza. */
 export const fuoriEta = (corso: string | CorsoRef, natoIl: string, voci: VoceCosto[]) => fuori(voceDelCorso(voci, corso), meseDi(natoIl))
 
+/** L'età di un corso come la scrive il listino, o «dai N anni»; vuota se non la dice. */
+export const etaDelListino = (v: VoceCosto): string => (v.eta.trim() ? v.eta : v.etaMinima !== undefined ? `dai ${v.etaMinima} anni` : '')
+
 export interface CorsoPerEta {
   id: string
   nome: string
@@ -257,8 +260,7 @@ export function corsiPerEta(
       nascosti.push(c.nome)
       continue
     }
-    const eta = v?.eta.trim() ? v.eta : v?.etaMinima !== undefined ? `dai ${v.etaMinima} anni` : ''
-    const riga = v ? [eta, ...v.orari].filter((t) => t.trim()).join(' · ') || undefined : undefined
+    const riga = v ? [etaDelListino(v), ...v.orari].filter((t) => t.trim()).join(' · ') || undefined : undefined
     const conAnni = a !== undefined && (v?.natiDal !== undefined || v?.natiAl !== undefined || v?.etaMinima !== undefined)
     const daConfermare = !v && !senzaPrezzoVaBene.includes(c.id)
     ;(fuori(v, a) ? altri : conAnni ? giusti : perTutti).push({ id: c.id, nome: c.nome, riga, ...(daConfermare && { prezzoDaConfermare: true as const }) })
