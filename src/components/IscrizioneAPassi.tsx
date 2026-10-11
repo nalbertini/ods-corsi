@@ -1463,7 +1463,7 @@ function Flusso({
               const nome = P.nomeDellaPersona(p, i).toUpperCase()
               const mancano = i === attivo ? 0 : P.quantoManca(p)
               return (
-                <Chip key={i} acceso={i === attivo} numero={mancano} etichetta={P.etichettaPastiglia(nome, mancano)} onClick={() => i !== attivo && vaiA(i, passi[i])}>
+                <Chip key={i} acceso={i === attivo} numero={mancano} etichetta={P.etichettaPastiglia(nome, mancano)} onClick={() => i !== attivo && vaiA(i, P.passoDellaPastiglia(tutte, i, passi[i], attivo, passo))}>
                   {nome}
                 </Chip>
               )

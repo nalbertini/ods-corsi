@@ -3083,6 +3083,18 @@ console.log('\n46. I PASSI COMUNI')
   // Una nota vecchia in un'altra persona, e quella del modulo vuota: non parte.
   ok('una nota vecchia di un’altra persona non parte', daMandare([tre[0], { ...tre[1], risposte: { ...tre[1].risposte, note: 'vecchia' } }, tre[2]]).map((x) => x.dati.note || ''), ['', '', ''])
 
+  // --- la pastiglia di chi è fermo in un passo comune ---
+  // Tocco Tommaso dal CORSO di Giulia, e Tommaso era a FAMIGLIA: va al suo CORSO, non a un passo senza PER.
+  const coppia = [adulto(), figlio()]
+  const pastiglia = (i, salvato, attivo, passo) => chiama(() => m.passoDellaPastiglia(coppia, i, salvato, attivo, passo))
+  for (const tipo of COMUNI)
+    ok(`pastiglia, fermo a ${tipo}: va allo stesso passo di chi è attivo`, pastiglia(1, passoDi(coppia[1], tipo), 0, passoDi(coppia[0], 'corso')), passoDi(coppia[1], 'corso'))
+  ok('pastiglia, fermo a FAMIGLIA, da DATI (il bambino ha BAMBINO): il suo primo passo', pastiglia(1, passoDi(coppia[1], 'famiglia'), 0, 1), 1)
+  ok('pastiglia, da CHI FIRMA verso un adulto, che non ce l’ha: il suo primo passo', pastiglia(0, passoDi(coppia[0], 'pagamento'), 1, passoDi(coppia[1], 'genitore')), 1)
+  ok('pastiglia, fermo in un passo suo: torna lì', pastiglia(1, passoDi(coppia[1], 'modulo'), 0, passoDi(coppia[0], 'corso')), passoDi(coppia[1], 'modulo'))
+  const codicePer = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
+  ok('la pastiglia chiede alla lib dove andare', /vaiA\(i, P\.passoDellaPastiglia\(/.test(codicePer), true)
+
   // --- la schermata: il campo NOTE è quello del modulo ---
   const sorgente = readFileSync('src/components/IscrizioneAPassi.tsx', 'utf8')
   const note = sorgente.slice(sorgente.indexOf('id="n-note"'), sorgente.indexOf('/>', sorgente.indexOf('id="n-note"')))

@@ -625,6 +625,16 @@ export function avanzamentoDelPasso(persone: StatoPassi[], attivo: number, passo
   return { numero, totale: tipi.length, tappe: tappeDelPasso(chi, numero) }
 }
 
+/**
+ * Dove porta la pastiglia della persona `i`: al passo dov'era. Se era in un passo comune, dove la pastiglia non c'è,
+ * allo stesso passo di chi è attivo (`attivo` al `passo`), o al suo primo se lei non ce l'ha (CHI FIRMA per un adulto).
+ */
+export function passoDellaPastiglia(persone: StatoPassi[], i: number, salvato: number, attivo: number, passo: number): number {
+  const suoi = tipiDiPassi(persone[i].chi)
+  if (!PASSI_COMUNI.includes(suoi[salvato - 1])) return salvato
+  return suoi.indexOf(tipiDiPassi(persone[attivo].chi)[passo - 1]) + 1 || 1
+}
+
 /** Il messaggio già scritto di SCRIVI: la segreteria legge subito a che passo si è fermati. */
 export const messaggioAiuto = (nomePasso: string): string => `Ciao, sto compilando l’iscrizione e ho un dubbio sul passo ${nomePasso}`
 
