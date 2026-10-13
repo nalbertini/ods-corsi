@@ -55,6 +55,7 @@ Google, e vale solo per i mockup.
 | `SchedeTimer` | Variante A scartata: le schede DA FARE / I MIEI in cima alla pagina TIMER: tasti da 52px, quella attiva con bordo, quadratino e bordo sotto spesso |
 | `TimerRiga` | La riga di un timer nell'elenco (tipo, durata, nome, nota, ▶), per le sezioni CREATI DA TE e le copie; `TimerPagina` ha `conTitolo`, `conBarra`, `tutti` e `cronometro`: nella B la pagina TIMER è `conBarra` falso, `tutti="LIBRERIA"`, `cronometro` vero |
 | `RigaDaFare` | Una riga di DA FARE (`.sg-dafare-riga`): numero grande rosso (`blocca`) o giallo (`presto`), titolo, frase e tasto VEDI CHI |
+| `SegnalazioneListino` | Una riga di `Segnalazioni` in LISTINO: in rosso cosa manca a un corso («senza prezzo nel listino», «manca il prezzo del trimestre»…), col link «Va bene senza prezzo» che non va a capo; `rosso` falso per «…, va bene così» col link «Rimetti il rosso» |
 | `TabletTasto` | `.tb-btn`: linea, verde, rosso, grande, quadro |
 | `TabletTastiera` | I pallini e il tastierino del PIN |
 | `TabletTessera` | Il nome da toccare nella lista della sala |

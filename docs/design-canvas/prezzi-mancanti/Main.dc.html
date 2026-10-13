@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Prezzi mancanti: un corso attivo a cui manca il prezzo dell'annuale o del trimestre fa uscire «prezzo da confermare»
+     nel modulo. Oggi LISTINO segnala solo i corsi senza voce, e DA FARE niente. Proposta: una riga gialla (presto) in
+     DA FARE che porta a LISTINO, e in LISTINO la stessa frase in rosso, con «Va bene senza prezzo» che la spegne. -->
+<div style="display: flex; flex-direction: column; width: 1100px; background: #121212; padding: 28px 36px 36px; gap: 8px">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b; margin-bottom: 6px">COSTRUITO · DA FARE</span>
+  <dc-import name="RigaDaFare" n="1" titolo="corso con un prezzo mancante" sotto="Manca il prezzo del trimestre: Psicomotricità. Nel conto del modulo il prezzo resta da confermare." tasto="APRI LISTINO" livello="presto" hint-size="100%,100px"></dc-import>
+  <dc-import name="RigaDaFare" n="3" titolo="corsi con un prezzo mancante" sotto="Senza prezzo nel listino: Judo principianti, Body functional. Manca il prezzo del trimestre: Psicomotricità. Nel conto del modulo il prezzo resta da confermare." tasto="APRI LISTINO" livello="presto" hint-size="100%,100px"></dc-import>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88; margin-top: 24px">OGGI · LISTINO</span>
+  <dc-import name="SegnalazioneListino" testo="Judo principianti: senza prezzo nel listino" hint-size="100%,44px"></dc-import>
+  <span style="font-size: 14px; color: #8c8c88">Psicomotricità senza trimestre: in LISTINO non si vede niente.</span>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b; margin-top: 24px">COSTRUITO · LISTINO</span>
+  <dc-import name="SegnalazioneListino" testo="Judo principianti: senza prezzo nel listino" hint-size="100%,44px"></dc-import>
+  <dc-import name="SegnalazioneListino" testo="Psicomotricità: manca il prezzo del trimestre" hint-size="100%,44px"></dc-import>
+  <dc-import name="SegnalazioneListino" testo="Lotta 2: manca il prezzo dell'annuale" hint-size="100%,44px"></dc-import>
+  <dc-import name="SegnalazioneListino" testo="Prova gratuita: senza prezzo nel listino, va bene così" link="Rimetti il rosso" rosso="false" hint-size="100%,44px"></dc-import>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1100,"height":640}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

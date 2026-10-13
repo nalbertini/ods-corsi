@@ -268,6 +268,72 @@ console.log('\n5. l’età minima di un corso («dai N anni»)')
   ok('costi: Prepugilistica costa come un corso da un giorno', m.COSTI.find((c) => c.corso === 'Prepugilistica').prezzi, [{ saldo: 320, annuale: 340, trimestre: 130 }])
 }
 
+console.log('\n11. DA FARE e LISTINO: i corsi a cui manca un prezzo')
+{
+  // saldoEntro 2026-08-31: il 31/08 il saldo vale ancora, dal 01/09 no.
+  const ENTRO = '2026-08-31'
+  const DOPO = '2026-09-01'
+  const manca = (l, corsi, giorno = GIORNO) => prova(() => m.prezziMancanti(l, corsi, giorno))
+  const psico = { id: 'c-psico', nome: 'Psicomotricità', attivo: true }
+  const soloAnnuale = lista(voce('Psicomotricità', 'c-psico', [{ annuale: 300 }]))
+  const stima = (formula) => prova(() => m.stimaIscrizione({ chi: 'A', corsi: [psico], formula }, [], GIORNO, soloAnnuale).senzaPrezzo)
+
+  ok('a. un corso attivo senza voce è «senza prezzo nel listino»', manca(L, [judo3, lotta]), [{ id: 'c-lotta', nome: 'Lotta 3', frase: 'senza prezzo nel listino' }])
+  ok('a. con il suo id fra i «va bene così» non c’è', manca({ ...L, senzaPrezzoVaBene: ['c-lotta'] }, [judo3, lotta]), [])
+
+  ok('b. Psicomotricità con solo l’annuale: «manca il prezzo del trimestre»', manca(soloAnnuale, [psico]), [{ id: 'c-psico', nome: 'Psicomotricità', frase: 'manca il prezzo del trimestre' }])
+  ok('b. come il modulo: col trimestre la stima la dà senza prezzo', stima('trimestre'), ['Psicomotricità'])
+  ok('b. come il modulo: con l’annuale la stima ha il prezzo', stima('annuale'), [])
+
+  const saldoTrimestre = lista(voce('Judo 3', 'c-judo3', [{ saldo: 350, trimestre: 150 }]))
+  ok('c. solo saldo e trimestre: l’ultimo giorno del saldo non è segnalato', manca(saldoTrimestre, [judo3], ENTRO), [])
+  ok('c. il giorno dopo «manca il prezzo dell’annuale»', manca(saldoTrimestre, [judo3], DOPO), [{ id: 'c-judo3', nome: 'Judo 3', frase: 'manca il prezzo dell’annuale' }])
+
+  const dueRighe = lista({ corso: 'Preparazione atletica', corsoId: 'c-pa', eta: '', orari: [], prezzi: [{ etichetta: '1 GIORNO', annuale: 300, trimestre: 110 }, { etichetta: '2 GIORNI', annuale: 450 }] })
+  ok('d. due righe, una sola col trimestre: basta, non è segnalato', manca(dueRighe, [pa]), [])
+
+  ok('e. un corso disattivato senza voce non è segnalato', manca(L, [judo3, { ...lotta, attivo: false }]), [])
+
+  const soloSaldo = lista(voce('Judo 3', 'c-judo3', [{ saldo: 350 }]))
+  ok('f. una riga senza nessun prezzo non si salva', prova(() => m.cosaNonVaListino(lista(voce('Judo 3', 'c-judo3', [{}])), [judo3])) !== null, true)
+  ok('f. solo il saldo, scaduto: «manca il prezzo dell’annuale e del trimestre», una volta', manca(soloSaldo, [judo3], DOPO), [{ id: 'c-judo3', nome: 'Judo 3', frase: 'manca il prezzo dell’annuale e del trimestre' }])
+
+  ok('g. manca il trimestre ma è fra i «va bene così»: non è segnalato', manca({ ...soloAnnuale, senzaPrezzoVaBene: ['c-psico'] }, [psico]), [])
+
+  // Come in produzione: 17 corsi attivi, tutti con annuale e trimestre tranne Psicomotricità.
+  const altri = Array.from({ length: 16 }, (_, i) => ({ id: `c-${i}`, nome: `Corso ${i}`, attivo: true }))
+  const corsi = [altri[0], psico, ...altri.slice(1)]
+  const produzione = lista(...corsi.map((c) => voce(c.nome, c.id, c === psico ? [{ annuale: 300 }] : undefined)))
+  ok('h. come in produzione: solo Psicomotricità', manca(produzione, corsi), [{ id: 'c-psico', nome: 'Psicomotricità', frase: 'manca il prezzo del trimestre' }])
+  const unaAnnuale = lista({ corso: 'Preparazione atletica', corsoId: 'c-pa', eta: '', orari: [], prezzi: [{ etichetta: '1 GIORNO', annuale: 300, trimestre: 110 }, { etichetta: '2 GIORNI', trimestre: 160 }] })
+  ok('i. due righe, una sola con l’annuale e tutte e due col trimestre: non è segnalato', manca(unaAnnuale, [pa]), [])
+
+  // Il saldo dura fino al saldoEntro del listino, non fino a SALDO_ENTRO.
+  const saldoMetaSettembre = { ...saldoTrimestre, saldoEntro: '2026-09-15' }
+  ok('j. saldo fino al 15/09 nel listino: il 10/09 solo saldo e trimestre non è segnalato', manca(saldoMetaSettembre, [judo3], '2026-09-10'), [])
+
+  // Segnalato qui se e solo se il modulo, con l’annuale o col trimestre, lo dà senza prezzo.
+  const parita = [
+    ['b', soloAnnuale, psico, GIORNO],
+    ['c, l’ultimo giorno del saldo', saldoTrimestre, judo3, ENTRO],
+    ['c, il giorno dopo', saldoTrimestre, judo3, DOPO],
+    ['d', dueRighe, pa, GIORNO],
+    ['f', soloSaldo, judo3, DOPO],
+    ['i', unaAnnuale, pa, GIORNO],
+    ['j', saldoMetaSettembre, judo3, '2026-09-10'],
+  ]
+  for (const [caso, l, corso, giorno] of parita) {
+    const nelModulo = prova(() => ['annuale', 'trimestre'].some((formula) => m.stimaIscrizione({ chi: 'x', corsi: [corso], formula }, [], giorno, l).senzaPrezzo.length > 0))
+    const qui = manca(l, [corso], giorno)
+    ok(`come il modulo (${caso}): segnalato solo se il modulo lo dà senza prezzo`, Array.isArray(qui) ? qui.length > 0 : qui, nelModulo)
+  }
+  const inBreve = (x) => prova(() => m.prezziMancantiInBreve(x))
+  ok('in breve: raggruppati per frase, nell’ordine della prima comparsa', inBreve([{ nome: 'A', frase: 'senza prezzo nel listino' }, { nome: 'Psicomotricità', frase: 'manca il prezzo del trimestre' }, { nome: 'B', frase: 'senza prezzo nel listino' }]), 'Senza prezzo nel listino: A, B. Manca il prezzo del trimestre: Psicomotricità.')
+  ok('in breve: un solo corso', inBreve([{ nome: 'Psicomotricità', frase: 'manca il prezzo del trimestre' }]), 'Manca il prezzo del trimestre: Psicomotricità.')
+  ok('in breve: nessun corso, nessuna frase', inBreve([]), '')
+  ok('l’ordine è quello dei corsi', manca(lista(voce('Judo 3', 'c-judo3', [{ annuale: 300 }])), [pa, judo3, lotta]).map?.((x) => x.nome), ['Preparazione atletica', 'Judo 3', 'Lotta 3'])
+}
+
 if (guai) {
   console.log(`\n${guai} cose non tornano`)
   process.exit(1)

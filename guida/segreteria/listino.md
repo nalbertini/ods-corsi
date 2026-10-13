@@ -82,6 +82,14 @@ Sopra l'elenco dei corsi, a parole:
   «prezzo da confermare»: lo confermi tu. Se il corso non ha davvero un prezzo
   (una prova gratuita, un corso interno) premi **Va bene senza prezzo**: il
   rosso si spegne, e **Rimetti il rosso** lo riaccende.
+- **«… manca il prezzo del trimestre»** (o **dell'annuale**, o **dell'annuale
+  e del trimestre**) — il corso ha la voce, ma non il prezzo di quella
+  formula: chi la sceglie nel modulo trova il prezzo da confermare. Il prezzo
+  **A SALDO** vale come annuale fino a **SALDO FINO AL**: dopo, un corso che ha
+  solo quello comincia a mancare dell'annuale. Si scrive il prezzo in
+  **CAMBIA**; se va bene così, **Va bene senza prezzo** spegne anche questo.
+
+Gli stessi corsi li conta [DA FARE](da-fare.md), in giallo.
 - **«senza corso: scegli il suo corso da CAMBIA»** — una voce di un listino
   salvato prima di questo legame, il cui nome non è lo stesso di nessun corso
   (o è di due). Le voci col nome uguale a un corso si agganciano da sole al

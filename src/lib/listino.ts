@@ -1,4 +1,4 @@
-import { COSTI, OFFERTE, QUOTA_ASSOCIATIVA, SALDO_ENTRO, type Prezzi, type VoceCosto } from './costi'
+import { COSTI, OFFERTE, QUOTA_ASSOCIATIVA, SALDO_ENTRO, saldoAperto, type Prezzi, type VoceCosto } from './costi'
 import { haUnServer } from './dati'
 import { anni as anniDi } from './richieste'
 
@@ -305,6 +305,31 @@ export const corsiScegliibili = <T extends { id: string }>(corsi: readonly T[], 
  */
 export const corsiSenzaPrezzo = (l: Listino, corsi: ReadonlyArray<CorsoDi>): CorsoDi[] =>
   corsi.filter((c) => c.attivo && !voceDelCorso(l.corsi, c) && !l.senzaPrezzoVaBene?.includes(c.id))
+
+/**
+ * I corsi attivi che nel modulo d'iscrizione uscirebbero «prezzo da confermare»,
+ * con la frase che dice cosa manca: la voce intera, o il prezzo dell'annuale
+ * (l'a saldo vale finché il saldo è aperto) o del trimestre. Le stesse regole
+ * di `stimaIscrizione`. «Va bene senza prezzo» li toglie tutti.
+ */
+export function prezziMancanti(l: Listino, corsi: ReadonlyArray<CorsoDi>, giorno: string): Array<{ id: string; nome: string; frase: string }> {
+  return corsi.flatMap((c) => {
+    if (!c.attivo || l.senzaPrezzoVaBene?.includes(c.id)) return []
+    const v = voceDelCorso(l.corsi, c)
+    if (!v) return [{ id: c.id, nome: c.nome, frase: 'senza prezzo nel listino' }]
+    const annuale = v.prezzi.some((p) => p.annuale !== undefined || (p.saldo !== undefined && saldoAperto(giorno, l.saldoEntro)))
+    const trimestre = v.prezzi.some((p) => p.trimestre !== undefined)
+    const manca = [!annuale && 'dell’annuale', !trimestre && 'del trimestre'].filter(Boolean).join(' e ')
+    return manca ? [{ id: c.id, nome: c.nome, frase: `manca il prezzo ${manca}` }] : []
+  })
+}
+
+/** I corsi di `prezziMancanti` in poche frasi, una per cosa manca: in DA FARE si legge di colpo anche con tanti corsi. */
+export function prezziMancantiInBreve(m: ReadonlyArray<{ nome: string; frase: string }>): string {
+  const gruppi = new Map<string, string[]>()
+  for (const c of m) gruppi.set(c.frase, [...(gruppi.get(c.frase) ?? []), c.nome])
+  return [...gruppi].map(([frase, nomi]) => `${frase[0].toUpperCase()}${frase.slice(1)}: ${nomi.join(', ')}.`).join(' ')
+}
 
 export function segnalazioniListino(l: Listino, corsi: ReadonlyArray<CorsoDi>) {
   const ids = new Set(corsi.map((c) => c.id))

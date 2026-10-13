@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { DatiSegreteria, LezioneSeg } from '../../lib/segreteria'
 import { certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, comePaga, senzaCertificatoValido } from '../../lib/segreteria'
 import { datiRichieste } from '../../lib/richieste'
+import { prezziMancanti, prezziMancantiInBreve } from '../../lib/listino'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { dataLunga, Testa } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
@@ -27,6 +28,8 @@ export interface ContiDaFare {
   pagare: number | null
   certificatiDaStampare: number | null
   documentiDaStampare: number | null
+  /** I corsi attivi a cui manca un prezzo nel listino, con cosa manca: nel modulo escono «prezzo da confermare». */
+  listino: Array<{ nome: string; frase: string }> | null
   /** Contato tutto almeno una volta: da qui un `null` vuol dire che non si è riusciti, non che si aspetta. */
   contato: boolean
 }
@@ -42,6 +45,7 @@ const VUOTI: ContiDaFare = {
   pagare: null,
   certificatiDaStampare: null,
   documentiDaStampare: null,
+  listino: null,
 }
 
 const oppure = <T,>(p: Promise<T>): Promise<T | null> => p.then((x) => x, () => null)
@@ -66,8 +70,9 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
     const richieste = datiRichieste().then(async (r) => ({ tutte: await r.richieste(), conDocumento: tutto ? await r.conDocumento() : null }))
     const persone = tutto ? d.persone() : Promise.resolve(null)
     const lezioni = tutto ? d.settimana(new Date(adesso - GIORNI_APPELLI * 24 * 60 * 60_000), new Date(adesso)) : Promise.resolve(null)
-    void Promise.all([oppure(istruttori), oppure(richieste), oppure(persone), oppure(lezioni), d.segnalate ? oppure(d.segnalate()) : null]).then(
-      ([istr, ric, pers, lez, segn]) => {
+    const listino = tutto ? Promise.all([d.listino(), d.corsi()]).then(([l, corsi]) => prezziMancanti(l.listino, corsi, oggi)) : Promise.resolve(null)
+    void Promise.all([oppure(istruttori), oppure(richieste), oppure(persone), oppure(lezioni), d.segnalate ? oppure(d.segnalate()) : null, oppure(listino)]).then(
+      ([istr, ric, pers, lez, segn, list]) => {
         if (!vivo) return
         const attive = pers?.filter((p) => p.attiva) ?? null
         setConti((prima) => ({
@@ -88,6 +93,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
           pagare: tutto ? (attive ? attive.filter((p) => comePaga(p, oggi) !== 'pagato').length : null) : prima.pagare,
           certificatiDaStampare: tutto ? (pers ? pers.filter((p) => certificatoDaStampare(p.certificato)).length : null) : prima.certificatiDaStampare,
           documentiDaStampare: tutto ? (ric?.conDocumento ? ric.conDocumento.size : null) : prima.documentiDaStampare,
+          listino: tutto ? list : prima.listino,
         }))
       },
     )
@@ -127,6 +133,7 @@ const LIVELLO: Record<string, Livello> = {
   segnalate: 'presto',
   scadenza: 'presto',
   arrivo: 'presto',
+  listino: 'presto',
   'file-di-prima': 'faccenda',
   'documenti-stampa': 'faccenda',
 }
@@ -223,6 +230,15 @@ export function DaFare({ conti, onVai, onRiprova }: { conti: ContiDaFare; onVai:
       tasto: 'VEDI CHI',
       voce: 'iscritti',
       dove: { filtro: 'pagare' },
+    },
+    {
+      chiave: 'listino',
+      n: conti.listino ? conti.listino.length : null,
+      titolo: (n) => uno(n, 'corso con un prezzo mancante', 'corsi con un prezzo mancante'),
+      sotto: `${prezziMancantiInBreve(conti.listino ?? [])} Nel conto del modulo il prezzo resta da confermare.`,
+      aPosto: 'listino',
+      tasto: 'APRI LISTINO',
+      voce: 'listino',
     },
     {
       chiave: 'file-di-prima',

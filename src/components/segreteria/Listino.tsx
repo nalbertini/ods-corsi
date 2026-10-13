@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import type { Prezzi, VoceCosto } from '../../lib/costi'
 import { STAGIONE } from '../../lib/costi'
-import { agganciaPerNome, anniDiNascita, annoScritto, cambiNellaBozza, corsiScegliibili, domandaButta, cosaNonVaListino, etaMinimaScritta, LIMITI, listinoCambiato, corsiSenzaPrezzo, segnalazioniListino, type CorsoRef, type Listino as DatiListino } from '../../lib/listino'
+import { agganciaPerNome, anniDiNascita, annoScritto, cambiNellaBozza, corsiScegliibili, domandaButta, cosaNonVaListino, etaMinimaScritta, LIMITI, listinoCambiato, prezziMancanti, segnalazioniListino, type CorsoRef, type Listino as DatiListino } from '../../lib/listino'
 import { centesimi } from '../../lib/ricevute'
+import { chiaveGiorno } from '../../lib/sala'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { chiedi, Campo, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 
@@ -373,7 +374,10 @@ export function Listino({ d }: { d: DatiSegreteria }) {
 
 /** Cosa non quadra fra CORSI e listino, in rosso e a parole. */
 function Segnalazioni({ l, vaBene, corsi, onCambia }: { l: DatiListino; vaBene: string[]; corsi: Array<CorsoRef & { attivo: boolean }>; onCambia: (vaBene: string[]) => void }) {
-  const mancano = corsiSenzaPrezzo(l, corsi)
+  const oggi = chiaveGiorno(new Date())
+  const mancano = prezziMancanti(l, corsi, oggi)
+  // Dei corsi spenti si dice lo stesso cosa manca: «senza prezzo» su un corso che ha l'annuale non è vero.
+  const spenti = prezziMancanti({ ...l, senzaPrezzoVaBene: [] }, corsi, oggi)
   const tolti = segnalazioniListino(l, corsi).tolti
   const scelti = corsi.filter((c) => vaBene.includes(c.id))
   if (!mancano.length && !tolti.length && !scelti.length) return null
@@ -381,8 +385,11 @@ function Segnalazioni({ l, vaBene, corsi, onCambia }: { l: DatiListino; vaBene: 
     <div className="stack" style={{ gap: 0 }}>
       {mancano.map((c) => (
         <span key={c.id} className="row" style={{ gap: 8, color: 'var(--rosso-testo)', fontSize: 14, minHeight: 44, alignItems: 'center' }}>
-          <span className="grow">{c.nome}: senza prezzo nel listino</span>
-          <button type="button" className="sg-link" onClick={() => onCambia([...vaBene, c.id])}>
+          <span className="grow">
+            {c.nome}: {c.frase}
+          </span>
+          {/* Va a capo il nome, non il link: sul telefono i link restano in colonna. */}
+          <button type="button" className="sg-link" style={{ whiteSpace: 'nowrap' }} aria-label={`Va bene senza prezzo: ${c.nome}`} onClick={() => onCambia([...vaBene, c.id])}>
             Va bene senza prezzo
           </button>
         </span>
@@ -394,8 +401,10 @@ function Segnalazioni({ l, vaBene, corsi, onCambia }: { l: DatiListino; vaBene: 
       ))}
       {scelti.map((c) => (
         <span key={c.id} className="row" style={{ gap: 8, fontSize: 14, color: 'var(--sec)', minHeight: 44, alignItems: 'center' }}>
-          <span className="grow">{c.nome}: senza prezzo, va bene così</span>
-          <button type="button" className="sg-link" onClick={() => onCambia(vaBene.filter((i) => i !== c.id))}>
+          <span className="grow">
+            {c.nome}: {spenti.find((x) => x.id === c.id)?.frase ?? 'senza prezzo'}, va bene così
+          </span>
+          <button type="button" className="sg-link" style={{ whiteSpace: 'nowrap' }} aria-label={`Rimetti il rosso: ${c.nome}`} onClick={() => onCambia(vaBene.filter((i) => i !== c.id))}>
             Rimetti il rosso
           </button>
         </span>

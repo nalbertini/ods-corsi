@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; font-size: 14px; color: {{colore}}">
+  <span style="flex-grow: 1">{{testo}}</span>
+  <span style="font-size: 13px; color: {{c.dim}}; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; display: {{mostraLink}}">{{link}}</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"testo":{"editor":"text","default":"Judo principianti: senza prezzo nel listino"},"link":{"editor":"text","default":"Va bene senza prezzo"},"rosso":{"editor":"boolean","default":true},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":700,"height":44}}'>
+// Riproduzione 1:1 di una riga di `Segnalazioni` in src/components/segreteria/Listino.tsx: riga alta 44px, 14px,
+// rosso-testo quando manca qualcosa, `sec` quando la segreteria ha detto «va bene così». Il link a destra e' un
+// .sg-link (src/styles.css riga 1534): 13px, `dim`, sottolineato con offset 3px. Senza `link` non c'e' (la riga
+// di un corso tolto da CORSI). Il link non va a capo (`nowrap`): sul telefono va a capo il testo e i link restano in
+// colonna. Il testo e' `nome: frase` di `prezziMancanti` (src/lib/listino.ts), anche per i corsi «va bene cosi'».
+const T = {
+  scuro: { sec: '#c9c9c4', dim: '#8c8c88', rossoTesto: '#ff5a52' },
+  chiaro: { sec: '#3d3d3a', dim: '#656561', rossoTesto: '#b81d1d' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const link = p.link ?? 'Va bene senza prezzo';
+    return {
+      c, testo: p.testo ?? 'Judo principianti: senza prezzo nel listino', link,
+      mostraLink: link ? 'inline' : 'none',
+      colore: p.rosso === false ? c.sec : c.rossoTesto,
+    };
+  }
+}
+</script>
+</body>
+</html>
