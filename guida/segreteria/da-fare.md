@@ -29,6 +29,11 @@ si sistema:
   contate qui. Gli stessi numeri li dice la testata di ISCRITTI. Il filtro, e
   la ricerca scritta sopra, restano finché si resta negli iscritti, anche
   aprendo una scheda e tornando dal menu.
+- **Corsi con un prezzo mancante**: i corsi attivi senza la voce nel
+  [listino](listino.md), o senza il prezzo dell'annuale o del trimestre. Nel
+  modulo d'iscrizione, chi li sceglie trova il prezzo da confermare. Sotto
+  c'è cosa manca a chi; **APRI LISTINO** porta dove si sistema, e lì
+  **Va bene senza prezzo** toglie un corso anche da qui.
 - **Certificati non archiviati** (file caricati prima della nuova gestione: si
   aprono dalla scheda come gli altri e si cancellano da soli) e **richieste
   con documenti da stampare** (il documento d'identità arrivato col modulo):
@@ -39,7 +44,7 @@ Le righe sono in ordine di quanto premono. Prima, col numero **rosso**,
 quello che è già un guaio: lezioni senza appello, chi entra in sala senza
 certificato valido o senza la quota. Poi, col numero **giallo**, quello che
 aspetta una risposta o scade fra poco: richieste, presenze da confermare,
-certificati in scadenza, chi sta per compiere 6 anni. Le stampe stanno in una riga sola, **QUANDO C'È UN
+certificati in scadenza, chi sta per compiere 6 anni, i corsi con un prezzo mancante. Le stampe stanno in una riga sola, **QUANDO C'È UN
 MOMENTO**. I numeri del menu sono gialli per la stessa ragione.
 
 Sotto, in una riga, **A POSTO** dice quello in cui non c'è niente da fare.
