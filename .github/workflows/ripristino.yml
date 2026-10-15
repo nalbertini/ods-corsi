@@ -62,6 +62,10 @@ jobs:
             echo "::error::Manca il segreto BACKUP_PASSWORD: la copia è cifrata e non si apre."
             exit 1
           fi
+          if [ "${#BACKUP_PASSWORD}" -lt 24 ]; then
+            echo "::error::Il segreto BACKUP_PASSWORD è troppo corto (meno di 24 caratteri): il repository è pubblico e chiunque può scaricare la copia e provare a indovinarla. Generane una nuova con «openssl rand -base64 32» e mettila in Settings → Secrets (vedi supabase/LEGGIMI.md, «Il backup»)."
+            exit 1
+          fi
           echo "pronto=si" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v5

@@ -51,6 +51,10 @@ jobs:
             echo "::error::Manca il segreto BACKUP_PASSWORD: senza, la copia uscirebbe in chiaro e non la si fa."
             exit 1
           fi
+          if [ "${#BACKUP_PASSWORD}" -lt 24 ]; then
+            echo "::error::Il segreto BACKUP_PASSWORD è troppo corto (meno di 24 caratteri): il repository è pubblico e chiunque può scaricare la copia e provare a indovinarla. Generane una nuova con «openssl rand -base64 32» e mettila in Settings → Secrets (vedi supabase/LEGGIMI.md, «Il backup»)."
+            exit 1
+          fi
           echo "pronto=si" >> "$GITHUB_OUTPUT"
           # I file dei certificati servono altri due segreti: senza, la copia
           # del database si fa lo stesso e si dice cosa manca.
@@ -153,13 +157,18 @@ jobs:
       # Il repository è pubblico, e gli artefatti di un repository pubblico li
       # scarica chiunque abbia un account GitHub. Dentro ci sono nomi,
       # contatti, presenze e certificati medici: si cifrano con AES-256 e la
-      # password sta solo nei segreti (e, a parte, alla segreteria).
+      # password sta solo nei segreti (e, a parte, alla segreteria). Chi scarica
+      # la copia può provare a indovinarla senza limiti, quindi oltre alla
+      # lunghezza minima (passo «Controlla i segreti») la derivazione della
+      # chiave è la più dura che gpg offre: 65 milioni di giri di SHA-512 per
+      # ogni tentativo.
       - name: Cifra
         if: steps.segreti.outputs.pronto == 'si'
         run: |
           tar czf "backup-$GIORNO.tar.gz" "backup-$GIORNO"
           printf '%s' "$BACKUP_PASSWORD" | gpg --batch --yes --pinentry-mode loopback \
             --passphrase-fd 0 --symmetric --cipher-algo AES256 \
+            --s2k-mode 3 --s2k-count 65011712 --s2k-digest-algo SHA512 \
             -o "backup-$GIORNO.tar.gz.gpg" "backup-$GIORNO.tar.gz"
           rm -rf "backup-$GIORNO" "backup-$GIORNO.tar.gz"
           ls -l "backup-$GIORNO.tar.gz.gpg"

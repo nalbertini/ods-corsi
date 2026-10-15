@@ -866,14 +866,34 @@ Servono due *repository secrets* in **Settings → Secrets → Actions**:
   e per ODS-Sala la regione è `eu-north-1`. Il numero dopo `aws-` e la
   regione non vanno indovinati: si copia quella del pannello. Il *Session pooler* e non la
   *Direct connection*: quella parla solo IPv6, e le macchine di GitHub no.
-- **`BACKUP_PASSWORD`**: una password lunga, inventata per questo, da tenere
-  anche fuori da GitHub (la segreteria, un gestore di password). Il
-  repository è pubblico e le copie le scarica chiunque abbia un account
+- **`BACKUP_PASSWORD`**: una password casuale di almeno 24 caratteri, da
+  generare così (sul Mac, nel Terminale) e da tenere anche fuori da GitHub
+  (la segreteria, un gestore di password):
+
+  ```sh
+  openssl rand -base64 32
+  ```
+
+  Il repository è pubblico e le copie le scarica chiunque abbia un account
   GitHub: per questo escono cifrate, e senza questa password non le apre
-  nessuno, palestra compresa.
+  nessuno, palestra compresa. Ma chi scarica una copia può provare a
+  indovinare la password quante volte vuole, a casa sua: la sicurezza è tutta
+  nella password. Per questo i workflow si fermano rossi sotto i 24
+  caratteri, e la cifratura usa la derivazione della chiave più dura di gpg.
 
 Senza `SUPABASE_DB_URL` il workflow passa senza fare niente; con l'indirizzo e
-senza password si ferma rosso, invece di mettere fuori i dati in chiaro.
+senza password, o con una password sotto i 24 caratteri, si ferma rosso,
+invece di mettere fuori i dati in chiaro o poco protetti.
+
+**Se la password era corta**, o l'hai scritta altrove: le copie già fatte
+restano scaricabili da chiunque per novanta giorni, cifrate con quella password.
+Cambia il segreto (Settings → Secrets → Actions → `BACKUP_PASSWORD`, con una
+nuova da `openssl rand -base64 32`), poi cancella a mano le copie vecchie da
+**Actions** (nella pagina di ogni lancio, in fondo, il cestino accanto
+all'artefatto) e fai subito **FAI UN BACKUP ORA**: la prova di ripristino del
+lunedì apre l'ultima copia con la password di quel momento, quindi una copia
+cifrata con la vecchia non si aprirebbe più. La vecchia password va conservata
+finché esiste una copia fatta con quella.
 
 Per i certificati servono altri due segreti, **che aggiunge l'utente** (il
 codice non può farlo):
