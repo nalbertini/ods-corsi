@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Ricerca universale, proposta. Il campo in cima al menu resta quello di oggi (216px, «/» ci porta il fuoco); cambia
+     l'elenco: un pannello da 368px che esce sul corpo, a gruppi (ISCRITTI, RICHIESTE ONLINE, CORSI, ISTRUTTORI), al più
+     3 righe per gruppo e «ALTRI N ›» che apre la pagina intera. Sotto ogni nome una riga che dice chi è o perché è uscito. -->
+<div style="display: grid; grid-template-columns: repeat(3, 376px); gap: 40px 48px; width: 1280px; background: #121212; padding: 28px 36px 40px">
+  <span style="grid-column: 1 / -1; font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · LA RICERCA IN CIMA AL MENU, A GRUPPI</span>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 14px; color: #8c8c88">1 · «ros»: un nome. Iscritti, poi richieste, poi corsi.</span>
+    <dc-import name="CercaUniversale" testo="ros" gruppi="ISCRITTI:6=Rossi Giulia~Yoga|Rossi Marco~9 anni · Judo kids~non attiva|Rossi Marco~41 anni · Lotta adulti;RICHIESTE ONLINE:2=Rossi Elena~arrivata ieri~DA ACCOGLIERE|Rossi Paolo~accolta il 3 ottobre~accolta;CORSI:1=Rossetti Sala 2~Mercoledì 19:30" scelto="0" hint-size="376px,520px"></dc-import>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 14px; color: #8c8c88">2 · «338 12»: un telefono, scritto come viene. Sotto il nome si vede il numero trovato.</span>
+    <dc-import name="CercaUniversale" testo="338 12" gruppi="ISCRITTI:2=Bianchi Luca~9 anni · Judo kids · numero di un genitore|Verdi Sara~tel. 338 123 4567;RICHIESTE ONLINE:1=Neri Chiara~tel. 338 129 0011~DA ACCOGLIERE" scelto="0" hint-size="376px,330px"></dc-import>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 14px; color: #8c8c88">3 · «gio»: i corsi del giovedì. Iscritti e richieste non c'entrano, non compaiono.</span>
+    <dc-import name="CercaUniversale" testo="gio" gruppi="CORSI:3=Judo kids~Giovedì 18:30 · Sala 1|Pilates~Giovedì 16:30 · Sala 2|Yoga~Giovedì 20:30 · Sala 2;ISTRUTTORI:1=Gioia Elena~Pilates, Yoga" scelto="0" hint-size="376px,420px"></dc-import>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 14px; color: #8c8c88">4 · «ma»: troppi. Tre righe a gruppo e ALTRI N, le richieste non spariscono sotto gli iscritti.</span>
+    <dc-import name="CercaUniversale" testo="ma" gruppi="ISCRITTI:38=Marino Pietro~Lotta adulti|Martini Sofia~7 anni · Judo kids|Masi Luca~Yoga;RICHIESTE ONLINE:3=Mancini Ada~ieri~DA ACCOGLIERE|Marchi Teo~oggi~DA ACCOGLIERE|Manni Eva~accolta il 2 ottobre~accolta;CORSI:2=Mattina libera~Sabato 10:00 · Sala 1|Masters~Lunedì 21:00 · Sala 2" scelto="0" hint-size="376px,740px"></dc-import>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 14px; color: #8c8c88">5 · Senza rete: non dice «nessuno», dice che i dati sono quelli di prima.</span>
+    <dc-import name="CercaUniversale" testo="ros" offline="true" gruppi="ISCRITTI:1=Rossi Giulia~Yoga" scelto="0" hint-size="376px,200px"></dc-import>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 14px; color: #8c8c88">6 · Niente: «Non trovo niente.» (Se la lettura è fallita: «riprova».)</span>
+    <dc-import name="CercaUniversale" testo="zzz" gruppi="" hint-size="376px,120px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1280,"height":1020}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

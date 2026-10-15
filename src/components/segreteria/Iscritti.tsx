@@ -9,6 +9,8 @@ import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '.
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
 import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
+import { FiltroRicerca } from './FiltroRicerca'
+import type { Ricercata } from '../../lib/ricerca'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
 import { euro, QUOTA } from '../../lib/ricevute'
 import { altraDellaCoppia, campiDiversi, coppieDoppioni, indirizziPersi, MOTIVI, motivoDoppione, possibiliDoppioni, scambiati, segnateCon, stessoContatto, vicina, type IndiziDoppioni } from '../../lib/doppioni'
@@ -89,6 +91,8 @@ export function Iscritti({
   onScelta,
   onNuovo,
   filtroIniziale,
+  ricerca,
+  onTogliRicerca,
 }: {
   d: DatiSegreteria
   /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
@@ -99,6 +103,9 @@ export function Iscritti({
   onScelta: (id: string | null, passo: 'push' | 'replace') => void
   onNuovo: () => void
   filtroIniziale?: Destinazione['filtro']
+  /** Aperta da «ALTRI N» della ricerca: l'elenco è solo di chi è uscito. */
+  ricerca?: Ricercata
+  onTogliRicerca: () => void
 }) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
@@ -134,6 +141,7 @@ export function Iscritti({
   const soloDoppi = doppi && coppie.length > 0
   const trovati = tutti.filter(
     (p) =>
+      (!ricerca || ricerca.ids.includes(p.id)) &&
       cercaNellElenco(p, cerca) &&
       (!corso || p.iscrizioni.some((i) => i.corsoId === corso && inCorso(i, oggi))) &&
       (!soloSenzaEmail || senzaEmail(p)) &&
@@ -236,6 +244,7 @@ export function Iscritti({
           </button>
         </Testa>
 
+        {ricerca && <FiltroRicerca ricerca={ricerca} onTogli={onTogliRicerca} />}
         <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
           <label htmlFor="cerca" className="vh">
             Cerca un iscritto

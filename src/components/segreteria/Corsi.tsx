@@ -1,3 +1,5 @@
+import { FiltroRicerca } from './FiltroRicerca'
+import type { Ricercata } from '../../lib/ricerca'
 import { useEffect, useState } from 'react'
 import type { CorsoSeg, DatiCorso, DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { COLORI, corsoCambiato, GIORNI_LUNGHI, inCorso, ricorrenzaCambiata, ricorrenzaIniziale, vociAttivita, type RicorrenzaNuova } from '../../lib/segreteria'
@@ -42,8 +44,13 @@ export function Corsi({
   nuovo = false,
   onScelta,
   onNuovo,
+  ricerca,
+  onTogliRicerca,
 }: {
   d: DatiSegreteria
+  /** Aperta da «ALTRI N» della ricerca: l'elenco è solo dei corsi usciti. */
+  ricerca?: Ricercata
+  onTogliRicerca: () => void
   /** Il corso aperto: sta nell'indirizzo, così Indietro lo chiude anche quando prende tutta la pagina. */
   scelto?: string
   /** Il modulo del nuovo corso: sta nell'indirizzo anche lui. */
@@ -60,10 +67,11 @@ export function Corsi({
 
   const attivi = (corsi.dato ?? []).filter((c) => c.attivo).sort((a, b) => a.nome.localeCompare(b.nome, 'it'))
   const vecchi = (corsi.dato ?? []).filter((c) => !c.attivo)
+  const visti = ricerca ? attivi.filter((c) => ricerca.ids.includes(c.id)) : attivi
   // Sullo schermo stretto la scheda non sta accanto all'elenco: si apre al
   // suo posto quando si tocca un corso, e nessuno è aperto da sé.
   const stretto = useSchermo(STRETTO)
-  const corso = nuovo ? null : (attivi.find((c) => c.id === scelto) ?? (stretto ? null : attivi[0]) ?? null)
+  const corso = nuovo ? null : (attivi.find((c) => c.id === scelto) ?? (stretto ? null : visti[0]) ?? null)
   const piena = stretto && (nuovo || !!corso)
   // Un'altra scheda prende il posto di questa: prima si chiede di quel che non è salvato.
   const apri = async (id: string | null, comeNuovo = false) => {
@@ -120,6 +128,7 @@ export function Corsi({
           </button>
         </Testa>
 
+        {ricerca && <FiltroRicerca ricerca={ricerca} onTogli={onTogliRicerca} />}
         {corsi.guaio && <Guaio testo={corsi.guaio} />}
         {incompleti > 0 && (
           <span className="sg-manca" style={{ fontSize: 14 }}>
@@ -135,7 +144,7 @@ export function Corsi({
               <span className="sg-etichetta" style={{ textAlign: 'right' }}>ISCRITTI</span>
             </div>
             {corsi.dato === null && !corsi.guaio && <p className="sg-sotto">Sto leggendo i corsi…</p>}
-            {attivi.map((c) => {
+            {visti.map((c) => {
               const n = iscrittiA(c.id).length
               const manca = mancano(c)
               return (

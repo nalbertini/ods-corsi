@@ -125,7 +125,7 @@ export const valeIl = (i: { dal: string; al: string | null }, g: string) => i.da
 export const oraDi = (iso: string) =>
   new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
-const GIORNI = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato']
+export const GIORNI = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato']
 const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno',
   'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre']
 

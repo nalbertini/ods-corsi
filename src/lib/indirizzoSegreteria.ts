@@ -99,12 +99,12 @@ export function scriviIndirizzo(p: Posto): string {
  * ritoccata chiude la scheda, il modulo nuovo o la lezione e tiene il resto (settimana e
  * sala); una voce diversa riparte da capo.
  */
-export function postoDelMenu(ora: Posto, voce: Voce, dest: Pick<Posto, 'persona' | 'lezione'> = {}): Posto {
-  if (voce === ora.voce && !dest.persona && !dest.lezione) {
+export function postoDelMenu(ora: Posto, voce: Voce, dest: Pick<Posto, 'persona' | 'corso' | 'lezione'> = {}): Posto {
+  if (voce === ora.voce && !dest.persona && !dest.corso && !dest.lezione) {
     const { persona: _p, corso: _c, lezione: _l, nuovo: _n, ...resto } = ora
     return resto
   }
-  return { voce, ...(dest.persona && { persona: dest.persona }), ...(dest.lezione && { lezione: dest.lezione }) }
+  return { voce, ...(dest.persona && { persona: dest.persona }), ...(dest.corso && { corso: dest.corso }), ...(dest.lezione && { lezione: dest.lezione }) }
 }
 
 /**
