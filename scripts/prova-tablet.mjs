@@ -365,6 +365,17 @@ console.log('\n13. il conto della lezione: gli iscritti presenti, chi prova a pa
 }
 
 console.log('\nl’«Attività» di ogni giorno sul tablet di sala')
+// La segreteria dà l'attività del giorno solo alle lezioni future, e «futuro» lo
+// decide l'orologio vero: fermato al 1° ottobre, il 14 resta futuro anche tra un anno.
+const DateVera = Date
+globalThis.Date = class extends DateVera {
+  constructor(...a) {
+    super(...(a.length ? a : [2026, 9, 1]))
+  }
+  static now() {
+    return new DateVera(2026, 9, 1).getTime()
+  }
+}
 try {
   const s = m.creaSegreteriaProva()
   const sacco = await s.salvaAttivita({ nome: 'Sacco' })
@@ -393,6 +404,8 @@ try {
   await s.aggiornaLezione(lezione.id, { stato: 'prevista' })
 } catch (e) {
   ok('il tablet di prova legge l’«Attività» senza fermarsi', e.message, 'nessun errore')
+} finally {
+  globalThis.Date = DateVera
 }
 
 console.log('\nl’«Attività» sul tablet con il database: le due letture facoltative, kanji e attività, non si mascherano')
