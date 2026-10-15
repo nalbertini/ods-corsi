@@ -401,7 +401,7 @@ function Istruttori() {
             {largo && striscia}
             {!largo && chi && pagina !== 'timer' && <ChiSei chi={chi} onEsci={onEsci} />}
             <div className="faccia-corsi" hidden={pagina !== 'calendario'}>
-              <Sala soloDi={mio} onTimer={(l) => void apriTimer(l)} />
+              <Sala soloDi={mio} senzaLimiti={chi?.ruolo === 'staff'} onTimer={(l) => void apriTimer(l)} />
             </div>
             {timerMontato && (
               <PaginaTimer
