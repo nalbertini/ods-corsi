@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { conMioAppello, righeIstruttori, type Dati, type IstruttoreLezione } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
-import { appelloAperto, eFuoriFinestra, fraseFuoriFinestra } from '../lib/finestra'
+import { appelloAperto, eFuoriFinestra, etichettaFuoriFinestra, fraseFuoriFinestra } from '../lib/finestra'
 import { cercaNellElenco, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
@@ -291,6 +291,7 @@ export function AppelloScreen({
   // Il secondo tocco veloce sulla stessa riga non conta: con tre stati, un
   // presente toccato due volte «per sicurezza» finiva non segnato.
   const toccaRiga = (personaId: string, stato: StatoPresenza | null) => {
+    if (soloLettura) return
     const ora = Date.now()
     if (ora - (toccataIl.current.get(personaId) ?? 0) < 400) return
     toccataIl.current.set(personaId, ora)
@@ -463,7 +464,7 @@ export function AppelloScreen({
       {soloLettura && (
         <div className="pad" style={{ paddingTop: 12 }}>
           <div className="spia-coda" role="status">
-            <span className="num spia-coda-quante">{finestra === 'aperta' ? 'IL SERVER NON ACCETTA CAMBI' : finestra === 'vecchia' ? 'LEZIONE TROPPO VECCHIA' : 'LEZIONE TROPPO LONTANA'}</span>
+            <span className="num spia-coda-quante">{etichettaFuoriFinestra(finestra)}</span>
             <span>{fraseFuoriFinestra(finestra)}</span>
           </div>
         </div>
@@ -551,7 +552,7 @@ export function AppelloScreen({
             data-stato={p.stato ?? 'niente'}
             disabled={soloLettura}
             onClick={() => toccaRiga(p.id, p.stato)}
-            aria-label={`${perEsteso(p)}: ${p.stato ?? 'non segnato'}`}
+            aria-label={`${perEsteso(p)}: ${p.stato ?? 'non segnato'}${soloLettura ? ', sola lettura' : ''}`}
           >
             <span className="segno" aria-hidden="true">
               {p.stato === 'presente' ? '✓' : p.stato === 'assente' ? '✕' : ''}
@@ -586,7 +587,7 @@ export function AppelloScreen({
                   data-stato={p.stato ?? 'niente'}
                   disabled={soloLettura}
                   onClick={() => toccaRiga(p.id, p.stato)}
-                  aria-label={`${perEsteso(p)}, in prova: ${p.stato ?? 'non segnato'}`}
+                  aria-label={`${perEsteso(p)}, in prova: ${p.stato ?? 'non segnato'}${soloLettura ? ', sola lettura' : ''}`}
                 >
                   <span className="segno" aria-hidden="true">
                     {p.stato === 'presente' ? '✓' : p.stato === 'assente' ? '✕' : ''}

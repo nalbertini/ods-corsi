@@ -25,12 +25,13 @@ export const accreditaOraIstruttore = (inizio: string | number | Date, adesso: n
   new Date(inizio).getTime() <= adesso + REGOLE.primaMin * MIN
 
 /** Il messaggio del server (e della modalità prova) per una lezione fuori finestra. */
-export const MESSAGGIO_FUORI_FINESTRA = 'La lezione è troppo vecchia o troppo lontana per cambiare le presenze: scrivete alla segreteria'
+const TESTO_FUORI_FINESTRA = 'troppo vecchia o troppo lontana per cambiare le presenze'
+export const MESSAGGIO_FUORI_FINESTRA = `La lezione è ${TESTO_FUORI_FINESTRA}: scrivete alla segreteria`
 
 /** L'errore del trigger `presenze_a_finestra`: 42501 con quella frase, non un permesso negato qualunque. */
 export const eFuoriFinestra = (e: unknown) => {
   const x = e as { code?: string; message?: string } | null
-  return x?.code === '42501' && (x.message ?? '').includes('troppo vecchia o troppo lontana')
+  return x?.code === '42501' && (x.message ?? '').includes(TESTO_FUORI_FINESTRA)
 }
 
 /**
@@ -43,3 +44,7 @@ export const fraseFuoriFinestra = (f: Finestra) =>
     : f === 'lontana'
       ? 'Questa lezione comincia fra troppo tempo: le presenze si segnano da mezz’ora prima dell’inizio. Per cambiarle prima, scrivete alla segreteria.'
       : 'Il server non accetta più cambi alle presenze di questa lezione: sono tornate com’erano. Scrivete alla segreteria.'
+
+/** Il titolo del riquadro che accompagna la frase. */
+export const etichettaFuoriFinestra = (f: Finestra) =>
+  f === 'vecchia' ? 'LEZIONE TROPPO VECCHIA' : f === 'lontana' ? 'LEZIONE TROPPO LONTANA' : 'IL SERVER NON ACCETTA CAMBI'
