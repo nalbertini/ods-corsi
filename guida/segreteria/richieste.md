@@ -69,7 +69,11 @@ aprono più, riaprire la richiesta.
 ## Decidere
 
 - **ACCOGLI** — la persona entra in elenco, iscritta ai corsi che ha scelto. Se
-  c'era già (stessa persona), non si crea un doppione. Se l'email della richiesta
+  c'era già (stessa persona), non si crea un doppione. Il codice fiscale da solo
+  non basta a riconoscerla: se nome e cognome sono diversi da quelli della
+  scheda, ACCOGLI ne fa una nuova (se era la stessa persona scritta in modo
+  diverso, le due schede si uniscono poi con **UNISCI…** in
+  [Iscritti](iscritti.md)). Se l'email della richiesta
   è già di un'altra persona (un fratello, il genitore), la nuova scheda entra
   senza email di accesso e con quell'indirizzo come **email di contatto**: lì
   trovate l'indirizzo da richiamare. **APRI LA SCHEDA** porta

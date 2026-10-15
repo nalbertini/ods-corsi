@@ -79,6 +79,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 49. `49-richieste-per-email.sql` — sei richieste al giorno dalla stessa email, non più tre: una famiglia di sei persone le manda tutte con una email sola; cambia solo il numero in `iscrizioni_regole()`
 50. `50-file-rimandato.sql` — un file rimandato non è un file di troppo: se il quinto file di una richiesta è arrivato ma la risposta si è persa, RIPROVA lo rimanda e sbatte sul doppione (che l'app legge «arrivato»), non sul limite di cinque; il file già caricato resta quello
 51. `51-vestiario-foto.sql` — il vestiario come il modulo: ogni capo con un tipo facoltativo (judogi, costumini, vestiario) e una foto, e una tabella delle taglie per tipo in `impostazioni.vestiario_tabelle`; le immagini stanno nel contenitore pubblico «vestiario» (1 MB, jpeg, png, webp), le carica, cambia e cancella solo la segreteria, chi non ha un accesso le vede dall'URL pubblico ma non le elenca; `salva_vestiario()` e `vestiario()` cambiano dentro, non nella firma
+53. `53-codice-fiscale-stesso-nome.sql` — accogliendo una richiesta, il codice fiscale aggancia una scheda già in elenco solo se anche nome e cognome sono gli stessi (prima bastava il codice, che sanno in tanti): con un altro nome nasce una scheda nuova, e la segreteria che sa che è la stessa persona la sceglie a mano; `accogli_iscrizione()` cambia dentro, non nella firma
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
