@@ -253,6 +253,9 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'impostazioni' and column_name = 'vestiario_tabelle')
     and exists (select 1 from dentro where nome = 'vestiario' and corpo like '%tabelle%')
     and exists (select 1 from pg_constraint where conname = 'impostazioni_vestiario_capi_check')),
+  ('52-presenze-finestra.sql', 'le presenze si toccano solo nelle lezioni di questi giorni',
+    exists (select 1 from pg_trigger where tgname = 'presenze_a_finestra' and not tgisinternal)
+    and exists (select 1 from dentro where nome = 'istruttore_dall_appello' and corpo like '%tablet_regole%')),
   ('25-segnalazioni.sql', 'le segnalazioni della segreteria, con le risposte',
     to_regclass('public.segnalazioni') is not null),
   ('25-segnalazioni.sql', 'un filo senza titolo non entra',

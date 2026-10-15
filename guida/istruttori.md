@@ -93,7 +93,10 @@ il conto grande degli iscritti presenti (`18 / 20`, con **+1 PROVA** a parte) e
 quanti iscritti restano da segnare; quando hanno tutti un segno, **CHIUDI IN
 FONDO ↓**, che si tocca e porta al tasto per chiudere. Tutti i conti sono degli iscritti: chi prova è sempre detto a
 parte. Se la lezione non è ancora
-cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare lo stesso.
+cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare da mezz'ora
+prima dell'inizio. Le presenze si correggono fino a 14 giorni dopo la lezione:
+per una lezione più vecchia, o che comincia fra più di mezz'ora, scrivete alla
+segreteria.
 
 Se la segreteria ha scelto un'attività per quella lezione («Karate», «Open
 mat»), la leggete accanto all'ora. Se la lezione è vostra, sotto la testata c'è
@@ -386,6 +389,14 @@ telefono. Dentro la lezione, sotto quanti restano da segnare, compare in giallo
 **N DA INVIARE**; fuori, sopra il calendario, **N PRESENZE DA INVIARE**.
 Spariscono quando è tutto arrivato. Se toccate più volte la stessa persona
 mentre la rete non c'è, parte solo l'ultimo segno.
+
+**ESCI** prima prova a mandare quello che aspetta, ancora col vostro account.
+Se qualcosa non riesce ad arrivare (manca la rete), non esce da solo: un avviso
+dice quante cose mancano. **TORNA** lascia tutto com'è e le scritture
+partono appena la rete torna; **ESCI LO STESSO** le butta: se potete,
+aspettate la rete prima di uscire. Le presenze e le altre scritture dell'appello
+rimaste in coda non passano mai al prossimo che entra sullo stesso dispositivo. Lo stesso vale per **ESCI** sul
+tablet di sala.
 
 Il timer, aperto dentro l'app, lo dice quando manca la rete: un riquadro giallo
 **SENZA RETE** sopra l'elenco. Le illustrazioni di Maurizio non compaiono e la

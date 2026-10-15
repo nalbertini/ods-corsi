@@ -298,6 +298,11 @@ console.log('\n6. lo stesso codice fiscale, l’altro genitore')
   ok('ritrova Giulia, non ne fa un’altra', await r.accogli(id), prima)
   ok('nessuna Giulia in più', await quante(), primaDi)
   ok('con la mail di prima', (await s.persone()).find((x) => x.id === prima).email, 'mamma@esempio.it')
+  // Il codice fiscale lo sanno in tanti: con un altro nome (le sei lettere tornano lo stesso) non si finisce sulla scheda di Giulia.
+  const altro = await r.invia(adulto({ nome: 'Giulio', codiceFiscale: 'rssgli17c41l219g', natoIl: '2017-03-01', email: 'giulio@esempio.it', corsi: ['psicomotricita'], ...genitore }))
+  const nuovo = await r.accogli(altro)
+  ok('Giulio non finisce sulla scheda di Giulia', nuovo !== prima, true)
+  ok('una scheda sua', (await s.persone()).find((x) => x.id === nuovo)?.nome, 'Giulio')
 }
 
 console.log('\n7. la mamma con la sua email: la scheda la sceglie la segreteria')

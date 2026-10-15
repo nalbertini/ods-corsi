@@ -125,6 +125,10 @@ create policy iscrizioni_cancella on iscrizioni for delete to authenticated usin
 -- Togliere un segno («non segnato», AZZERA nell'appello) lo può fare chi fa
 -- l'appello, come cambiarlo: senza, per un istruttore il tocco sembrava
 -- andato e sul database restava il segno di prima.
+-- Per un istruttore la finestra di tempo (da 30 minuti prima a 14 giorni dopo la
+-- lezione) la fa un trigger, in `52-presenze-finestra.sql`: queste policy
+-- restano larghe di proposito, perché una policy fuori finestra toglierebbe le
+-- righe in silenzio, e l'app crederebbe di aver tolto un segno che resta.
 create policy presenze_legge on presenze for select to authenticated
   using (e_personale() or persona_id = persona_corrente());
 create policy presenze_scrive on presenze for insert to authenticated with check (e_personale());

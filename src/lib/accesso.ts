@@ -8,6 +8,8 @@ import { areaDelPercorso } from './percorso'
 import { emailDellaSala, smettiTablet } from './tablet'
 import { areeDi, type AreaDiAccount } from './ruoli'
 import { sessione, svuotaBozze } from './segnalazioni'
+import { svuotaTutte } from './coda'
+import { uscita } from './uscita'
 
 export { areeDi, nomeDelRuolo, type AreaDiAccount } from './ruoli'
 
@@ -288,14 +290,19 @@ function perchéPassword(e: { message?: string; code?: string }): string {
 
 /** Esce, e torna alla porta: l'area la sceglie il prossimo account. */
 export async function esci(): Promise<void> {
-  // Le bozze delle segnalazioni restano nella scheda: al banco il computer è
-  // di tutti. Prima di tutto, così le toglie anche se il client non arriva.
-  svuotaBozze(sessione())
-  const c = await db()
-  ricorda('', null)
-  await c.auth.signOut()
-  smettiTablet()
-  window.location.assign(indirizzo('./'))
+  // Le scritture non ancora arrivate non passano al prossimo account: vedi `uscita.ts`.
+  await uscita(async () => {
+    // Le bozze delle segnalazioni restano nella scheda: al banco il computer è
+    // di tutti. Prima di tutto, così le toglie anche se il client non arriva.
+    svuotaBozze(sessione())
+    const c = await db()
+    ricorda('', null)
+    await c.auth.signOut()
+    smettiTablet()
+    // Un tocco arrivato mentre si usciva non deve restare al prossimo account.
+    svuotaTutte()
+    window.location.assign(indirizzo('./'))
+  })
 }
 
 /**
