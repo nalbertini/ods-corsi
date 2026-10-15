@@ -14,6 +14,7 @@ import { leggiLinkSpotify, suonaLista } from '../../../timer/src/lib/spotify'
 import { PlayerYoutube } from '../../../timer/src/components/PlayerYoutube'
 import { PlayerAudio } from '../../../timer/src/components/PlayerAudio'
 import { fonteDelLink, listaRicordata, musicaScelta, ricordaLista, ricordaSpenta, spentaRicordata, type ListaMusica } from '../../lib/musica'
+import { svuotaTutte } from '../../lib/coda'
 import { uscita } from '../../lib/uscita'
 import { trattieniAggiornamento } from '../../lib/aggiornamento'
 import { Accensione, Cronometro, Nota, Persone } from '../Icons'
@@ -134,6 +135,7 @@ export function Tablet() {
           // ancora arrivate non restano al prossimo account: vedi `uscita.ts`.
           await uscita(async () => {
             await d.scollega()
+            svuotaTutte()
             lasciaTablet()
           })
         }}

@@ -8,6 +8,7 @@ import { areaDelPercorso } from './percorso'
 import { emailDellaSala, smettiTablet } from './tablet'
 import { areeDi, type AreaDiAccount } from './ruoli'
 import { sessione, svuotaBozze } from './segnalazioni'
+import { svuotaTutte } from './coda'
 import { uscita } from './uscita'
 
 export { areeDi, nomeDelRuolo, type AreaDiAccount } from './ruoli'
@@ -298,6 +299,8 @@ export async function esci(): Promise<void> {
     ricorda('', null)
     await c.auth.signOut()
     smettiTablet()
+    // Un tocco arrivato mentre si usciva non deve restare al prossimo account.
+    svuotaTutte()
     window.location.assign(indirizzo('./'))
   })
 }

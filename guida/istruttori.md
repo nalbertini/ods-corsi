@@ -391,8 +391,8 @@ mentre la rete non c'è, parte solo l'ultimo segno.
 Se qualcosa non riesce ad arrivare (manca la rete), non esce da solo: un avviso
 dice quante cose mancano. **TORNA** lascia tutto com'è e le scritture
 partono appena la rete torna; **ESCI LO STESSO** le butta: se potete,
-aspettate la rete prima di uscire. Quello che resta in coda non passa mai al
-prossimo che entra sullo stesso dispositivo. Lo stesso vale per **ESCI** sul
+aspettate la rete prima di uscire. Le presenze e le altre scritture dell'appello
+rimaste in coda non passano mai al prossimo che entra sullo stesso dispositivo. Lo stesso vale per **ESCI** sul
 tablet di sala.
 
 Il timer, aperto dentro l'app, lo dice quando manca la rete: un riquadro giallo
