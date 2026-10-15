@@ -84,9 +84,11 @@ export interface Dati {
   /**
    * Avvisa quando il server rifiuta una scrittura perché la lezione è fuori
    * dalla finestra delle presenze (vedi `finestra.ts`): dice quale lezione, che
-   * va riletta com'è sul server. Non conta fra le scartate.
+   * va riletta com'è sul server. Chi ascolta risponde `true` se se ne occupa
+   * (ha quella lezione aperta); se nessuno lo fa il rifiuto conta fra le scartate,
+   * così non si perde in silenzio.
    */
-  guardaFuoriFinestra?(f: (sessioneId: string) => void): () => void
+  guardaFuoriFinestra?(f: (sessioneId: string) => boolean): () => void
 }
 
 /** Un istruttore previsto su una lezione, per l'appello. */

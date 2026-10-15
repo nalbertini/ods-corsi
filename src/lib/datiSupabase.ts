@@ -118,7 +118,7 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
   const chiScarta = new Set<(n: number) => void>()
   // Il rifiuto della finestra (52-presenze-finestra.sql) ha un posto suo: non
   // è un guasto da dire alla segreteria, è una lezione da rileggere com'è.
-  const chiFuori = new Set<(sessioneId: string) => void>()
+  const chiFuori = new Set<(sessioneId: string) => boolean>()
   const coda = new Coda(async (op) => {
     const [a, b, c] = op.args as [string, string, StatoPresenza | null]
     try {
@@ -130,10 +130,8 @@ export function creaDatiSupabase(db: SupabaseClient): Dati {
       // Per 'collega' il terzo argomento è `presente`, non uno stato.
       else if (op.tipo === 'collega') await scriviCollega(db, a, b, op.args[2] as boolean)
     } catch (e) {
-      if (eFuoriFinestra(e)) {
-        for (const f of chiFuori) f(a)
-        return
-      }
+      // Se nessun appello di quella lezione è aperto a dirlo, resta una presenza rifiutata come le altre.
+      if (eFuoriFinestra(e) && [...chiFuori].map((f) => f(a)).some(Boolean)) return
       if (definitivo(e)) {
         // Scartata: riprovarla non cambierebbe niente.
         scartate++

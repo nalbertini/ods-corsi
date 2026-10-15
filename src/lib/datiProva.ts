@@ -628,7 +628,7 @@ export function creaDatiProva(): Dati {
       // Senza segno si tocca solo `prove`, e fuori finestra resta permesso.
       const t = trovaLezione(sessioneId)
       const iscritto = !!t && iscrittiIl(t.corso.id, chiaveGiorno(t.inizio)).some((p) => p.id === personaId)
-      if (!iscritto && personaId in (memoria.segnate[sessioneId] ?? {})) dentroLaFinestra(sessioneId)
+      if (!iscritto && personaId in (memoria.segnate[sessioneId] ?? {}) && (archivio.dati.prove ?? []).some((x) => x.sessioneId === sessioneId && x.personaId === personaId)) dentroLaFinestra(sessioneId)
       togliProvaDa(sessioneId, personaId)
       daAppello(sessioneId, personaId)
       salva()

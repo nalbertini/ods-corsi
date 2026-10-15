@@ -171,7 +171,7 @@ console.log('\n3. col database: il rifiuto non lascia il segno «salvato»')
   let scartate = 0
   const fuoriFinestra = []
   d.guardaScartate?.((n) => { scartate = n })
-  d.guardaFuoriFinestra?.((s) => fuoriFinestra.push(s))
+  d.guardaFuoriFinestra?.((s) => (fuoriFinestra.push(s), true))
   await d.segna('s1', 'p1', 'presente')
   await attesa()
   ok('il rifiuto della finestra: la coda si svuota', inCoda(), 0)
@@ -179,11 +179,20 @@ console.log('\n3. col database: il rifiuto non lascia il segno «salvato»')
   ok('…e non è una «presenza rifiutata» generica', scartate, 0)
 
   memoria.delete(DOVE)
+  const d1 = m.creaDatiSupabase(database(fuori))
+  let scartate1 = 0
+  d1.guardaScartate?.((n) => { scartate1 = n })
+  d1.guardaFuoriFinestra?.(() => false)
+  await d1.segna('s1', 'p1', 'presente')
+  await attesa()
+  ok('nessun appello di quella lezione aperto: non si perde, è una presenza rifiutata', [inCoda(), scartate1], [0, 1])
+
+  memoria.delete(DOVE)
   const d2 = m.creaDatiSupabase(database(negato))
   let scartate2 = 0
   const fuori2 = []
   d2.guardaScartate?.((n) => { scartate2 = n })
-  d2.guardaFuoriFinestra?.((s) => fuori2.push(s))
+  d2.guardaFuoriFinestra?.((s) => (fuori2.push(s), true))
   await d2.segna('s1', 'p1', 'presente')
   await attesa()
   ok('un altro 42501 (permesso) resta una presenza rifiutata', [scartate2, fuori2], [1, []])

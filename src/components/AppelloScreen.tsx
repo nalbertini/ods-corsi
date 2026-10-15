@@ -175,7 +175,15 @@ export function AppelloScreen({
     setRifiutata(true)
     setGiro((g) => g + 1)
   }
-  useEffect(() => dati.guardaFuoriFinestra?.((s) => s === sessioneId && fuoriFinestra()), [dati, sessioneId])
+  useEffect(
+    () =>
+      dati.guardaFuoriFinestra?.((s) => {
+        if (s !== sessioneId) return false
+        fuoriFinestra()
+        return true
+      }),
+    [dati, sessioneId],
+  )
   // In prova lo stesso rifiuto arriva subito, dalla scrittura; col database dalla coda.
   const conRifiuto = (p: Promise<unknown>) =>
     void p.catch((e) => {
