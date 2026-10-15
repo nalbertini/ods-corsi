@@ -421,5 +421,44 @@ select atteso('Ivo: la stessa scheda, email vuota e l''indirizzo come contatto',
 select atteso('Lia aveva già un contatto: resta quello', (select coalesce(email::text, 'senza email') || ' · ' || email_contatto::text from persone where nome = 'Lia'), 'senza email · casa@esempio.it');
 reset role;
 
+-- Il codice fiscale lo sanno anche altri genitori: chi lo scrive con un altro
+-- nome (le lettere possono tornare lo stesso: «Saro» ha le stesse di «Sara»)
+-- non finisce sulla scheda di Sara, né iscrive lei ai suoi corsi, né le
+-- cambia il certificato scaduto.
+reset role;
+insert into storage.objects (bucket_id, name) values ('certificati', 'aaaaaaaa-0000-0000-0000-000000000003/certificato-1.pdf');
+insert into schede_iscritti (persona_id, certificato_scade, certificato_file) values
+  ('aaaaaaaa-0000-0000-0000-000000000003', current_date - 60, 'aaaaaaaa-0000-0000-0000-000000000003/certificato-1.pdf')
+  on conflict (persona_id) do update set certificato_scade = excluded.certificato_scade, certificato_file = excluded.certificato_file;
+set role anon;
+select atteso('Saro manda il codice di Sara', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Saro', 'cognome', 'Bianchi', 'codice_fiscale', cf_prova('BNCSRA', (current_date - interval '30 years')::date, true),
+  'email', 'saro@esempio.it', 'telefono', '347 888 1234'))) is not null)::text$$), 'true');
+reset role;
+insert into storage.objects (bucket_id, name) select 'iscrizioni', id || '/certificato.pdf' from richieste_iscrizione where email = 'saro@esempio.it';
+set role authenticated;
+select atteso('Saro accolto: non sulla scheda di Sara', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'saro@esempio.it')) <> 'aaaaaaaa-0000-0000-0000-000000000003')::text$$), 'true');
+select atteso('una scheda nuova per Saro, una per Sara', (select string_agg(nome, ' ' order by nome) from persone where cognome = 'Bianchi'), 'Sara Saro');
+select atteso('Sara non è iscritta al corso di Saro',
+  (select count(*)::text from iscrizioni where persona_id = 'aaaaaaaa-0000-0000-0000-000000000003' and corso_id = 'cccccccc-0000-0000-0000-000000000001'), '0');
+select atteso('il certificato scaduto di Sara resta il suo',
+  (select certificato_file from schede_iscritti where persona_id = 'aaaaaaaa-0000-0000-0000-000000000003'), 'aaaaaaaa-0000-0000-0000-000000000003/certificato-1.pdf');
+select atteso('il certificato di Saro passa alla scheda di Saro',
+  (select count(*)::text from schede_iscritti s join persone p on p.id = s.persona_id where p.nome = 'Saro' and s.certificato_file is not null), '1');
+reset role;
+-- Lo stesso per chi è arrivato dal modulo Google (anagrafiche): Dino ritrovato dal suo codice, Dini no.
+insert into persone (id, nome, cognome, ruolo) values ('aaaaaaaa-0000-0000-0000-000000000010', 'Dino', 'Verdi', 'iscritto');
+insert into anagrafiche (persona_id, codice_fiscale) values ('aaaaaaaa-0000-0000-0000-000000000010', cf_prova('VRDDNI', (current_date - interval '30 years')::date));
+set role anon;
+select atteso('Dini manda il codice di Dino', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'Dini', 'cognome', 'Verdi', 'codice_fiscale', cf_prova('VRDDNI', (current_date - interval '30 years')::date), 'email', 'dini@esempio.it', 'telefono', '347 777 0001'))) is not null)::text$$), 'true');
+select atteso('Dino manda il suo', tenta($$select (invia_iscrizione(adulto(jsonb_build_object(
+  'nome', 'dino', 'cognome', 'VERDI', 'codice_fiscale', cf_prova('VRDDNI', (current_date - interval '30 years')::date), 'email', 'dino@esempio.it', 'telefono', '347 777 0002'))) is not null)::text$$), 'true');
+reset role;
+set role authenticated;
+select atteso('Dini non finisce su Dino', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'dini@esempio.it')) <> 'aaaaaaaa-0000-0000-0000-000000000010')::text$$), 'true');
+select atteso('Dino ritrovato dal codice', tenta($$select (accogli_iscrizione((select id from richieste_iscrizione where email = 'dino@esempio.it')) = 'aaaaaaaa-0000-0000-0000-000000000010')::text$$), 'true');
+reset role;
+
 \echo ''
 \echo 'TUTTO A POSTO'

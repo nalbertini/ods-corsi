@@ -80,6 +80,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 50. `50-file-rimandato.sql` — un file rimandato non è un file di troppo: se il quinto file di una richiesta è arrivato ma la risposta si è persa, RIPROVA lo rimanda e sbatte sul doppione (che l'app legge «arrivato»), non sul limite di cinque; il file già caricato resta quello
 51. `51-vestiario-foto.sql` — il vestiario come il modulo: ogni capo con un tipo facoltativo (judogi, costumini, vestiario) e una foto, e una tabella delle taglie per tipo in `impostazioni.vestiario_tabelle`; le immagini stanno nel contenitore pubblico «vestiario» (1 MB, jpeg, png, webp), le carica, cambia e cancella solo la segreteria, chi non ha un accesso le vede dall'URL pubblico ma non le elenca; `salva_vestiario()` e `vestiario()` cambiano dentro, non nella firma
 52. `52-presenze-finestra.sql` — le presenze degli allievi si toccano solo nelle lezioni di questi giorni: un istruttore da 30 minuti prima dell'inizio a 14 giorni dopo (gli stessi numeri del tablet, `tablet_regole()`), la segreteria sempre; fuori finestra il database risponde con un errore che dice di scrivere alla segreteria (un trigger su `presenze`, non una policy, perché una policy toglierebbe le righe in silenzio); l'appello non accredita più l'ora dell'istruttore per una lezione che inizia fra più di mezz'ora
+53. `53-codice-fiscale-stesso-nome.sql` — accogliendo una richiesta, il codice fiscale aggancia una scheda già in elenco solo se anche nome e cognome sono gli stessi (prima bastava il codice, che sanno in tanti): con un altro nome nasce una scheda nuova, e la segreteria che sa che è la stessa persona la sceglie a mano; `accogli_iscrizione()` cambia dentro, non nella firma
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -867,14 +868,34 @@ Servono due *repository secrets* in **Settings → Secrets → Actions**:
   e per ODS-Sala la regione è `eu-north-1`. Il numero dopo `aws-` e la
   regione non vanno indovinati: si copia quella del pannello. Il *Session pooler* e non la
   *Direct connection*: quella parla solo IPv6, e le macchine di GitHub no.
-- **`BACKUP_PASSWORD`**: una password lunga, inventata per questo, da tenere
-  anche fuori da GitHub (la segreteria, un gestore di password). Il
-  repository è pubblico e le copie le scarica chiunque abbia un account
+- **`BACKUP_PASSWORD`**: una password casuale di almeno 24 caratteri, da
+  generare così (sul Mac, nel Terminale) e da tenere anche fuori da GitHub
+  (la segreteria, un gestore di password):
+
+  ```sh
+  openssl rand -base64 32
+  ```
+
+  Il repository è pubblico e le copie le scarica chiunque abbia un account
   GitHub: per questo escono cifrate, e senza questa password non le apre
-  nessuno, palestra compresa.
+  nessuno, palestra compresa. Ma chi scarica una copia può provare a
+  indovinare la password quante volte vuole, a casa sua: la sicurezza è tutta
+  nella password. Per questo i workflow si fermano rossi sotto i 24
+  caratteri, e la cifratura usa la derivazione della chiave più dura di gpg.
 
 Senza `SUPABASE_DB_URL` il workflow passa senza fare niente; con l'indirizzo e
-senza password si ferma rosso, invece di mettere fuori i dati in chiaro.
+senza password, o con una password sotto i 24 caratteri, si ferma rosso,
+invece di mettere fuori i dati in chiaro o poco protetti.
+
+**Se la password era corta**, o l'hai scritta altrove: le copie già fatte
+restano scaricabili da chiunque per novanta giorni, cifrate con quella password.
+Cambia il segreto (Settings → Secrets → Actions → `BACKUP_PASSWORD`, con una
+nuova da `openssl rand -base64 32`), poi cancella a mano le copie vecchie da
+**Actions** (nella pagina di ogni lancio, in fondo, il cestino accanto
+all'artefatto) e fai subito **FAI UN BACKUP ORA**: la prova di ripristino del
+lunedì apre l'ultima copia con la password di quel momento, quindi una copia
+cifrata con la vecchia non si aprirebbe più. La vecchia password va conservata
+finché esiste una copia fatta con quella.
 
 Per i certificati servono altri due segreti, **che aggiunge l'utente** (il
 codice non può farlo):
