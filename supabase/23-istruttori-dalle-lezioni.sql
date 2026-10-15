@@ -46,6 +46,9 @@ create or replace function previsti_su(sessione uuid) returns uuid[]
 $$;
 
 /**
+ * (`52-presenze-finestra.sql` la ridefinisce con il tetto sulle lezioni future:
+ * se si rilancia questo file, si rilancia anche quello.)
+ *
  * Dopo ogni segno dell'appello: chi l'ha segnato, se è un istruttore, quella
  * lezione l'ha fatta. Una da confermare di prima si conferma, se era previsto;
  * una rifiutata resta com'è, come col PIN.

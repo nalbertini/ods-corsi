@@ -38,7 +38,7 @@ insert into sale (id, nome) values ('bbbbbbbb-0000-0000-0000-000000000001', 'Sal
 insert into corsi (id, nome, sala_id, istruttore_id) values
   ('cccccccc-0000-0000-0000-000000000001', 'Spinning', 'bbbbbbbb-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000002');
 insert into ricorrenze (corso_id, giorno, ora, durata_min, dal)
-  values ('cccccccc-0000-0000-0000-000000000001', 2, '19:00', 50, '2026-10-01');
+  values ('cccccccc-0000-0000-0000-000000000001', 2, '19:00', 50, current_date - 30);
 -- Un secondo corso, tenuto da un'altra persona: serve a provare il rovescio
 -- della policy, cioè che l'istruttore non metta le mani sulle lezioni altrui.
 insert into persone (id, nome, cognome, ruolo) values
@@ -46,15 +46,22 @@ insert into persone (id, nome, cognome, ruolo) values
 insert into corsi (id, nome, istruttore_id) values
   ('cccccccc-0000-0000-0000-000000000002', 'Pilates', 'aaaaaaaa-0000-0000-0000-000000000005');
 insert into ricorrenze (corso_id, giorno, ora, durata_min, dal)
-  values ('cccccccc-0000-0000-0000-000000000002', 4, '10:00', 55, '2026-10-01');
+  values ('cccccccc-0000-0000-0000-000000000002', 4, '10:00', 55, current_date - 30);
 insert into iscrizioni (corso_id, persona_id) values
   ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000003'),
   ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000004');
-select materializza_sessioni('2026-10-01', '2026-10-31');
-insert into presenze (sessione_id, persona_id, stato)
-  select id, 'aaaaaaaa-0000-0000-0000-000000000003', 'presente' from sessioni order by inizio limit 1;
-insert into presenze (sessione_id, persona_id, stato)
-  select id, 'aaaaaaaa-0000-0000-0000-000000000004', 'assente' from sessioni order by inizio limit 1;
+-- Le lezioni stanno attorno ad adesso: un istruttore segna le presenze solo di
+-- quelle da 14 giorni fa a mezz'ora avanti (52-presenze-finestra.sql), e con
+-- date fisse la prova fra qualche mese non direbbe più niente. Con l'istruttore
+-- sopra, come le lascia `materializza_sessioni`: la policy delle lezioni guarda lì.
+insert into sessioni (id, corso_id, inizio, fine, istruttore_id) values
+  ('eeeeeeee-0000-0000-0000-000000000101', 'cccccccc-0000-0000-0000-000000000001', now() - interval '3 days', now() - interval '3 days' + interval '50 minutes', 'aaaaaaaa-0000-0000-0000-000000000002'),
+  ('eeeeeeee-0000-0000-0000-000000000102', 'cccccccc-0000-0000-0000-000000000001', now() - interval '2 days', now() - interval '2 days' + interval '50 minutes', 'aaaaaaaa-0000-0000-0000-000000000002'),
+  ('eeeeeeee-0000-0000-0000-000000000103', 'cccccccc-0000-0000-0000-000000000001', now() - interval '1 day',  now() - interval '1 day' + interval '50 minutes', 'aaaaaaaa-0000-0000-0000-000000000002'),
+  ('eeeeeeee-0000-0000-0000-000000000104', 'cccccccc-0000-0000-0000-000000000002', now() - interval '1 day',  now() - interval '1 day' + interval '55 minutes', 'aaaaaaaa-0000-0000-0000-000000000005');
+insert into presenze (sessione_id, persona_id, stato) values
+  ('eeeeeeee-0000-0000-0000-000000000101', 'aaaaaaaa-0000-0000-0000-000000000003', 'presente'),
+  ('eeeeeeee-0000-0000-0000-000000000101', 'aaaaaaaa-0000-0000-0000-000000000004', 'assente');
 
 create or replace function chi(u text) returns void language plpgsql as $$
 begin perform set_config('prova.utente', u, false); end $$;
@@ -82,7 +89,7 @@ union all select 'presenze', count(*), coalesce(string_agg(stato::text, ', '), '
 select tenta($$insert into corsi (nome) values ('Corso abusivo')$$) as "crea un corso",
        tenta($$update presenze set stato = 'presente'$$)            as "cambia una presenza",
        tenta($$select * from presenze_scadute$$)                    as "righe nella vista",
-       tenta($$select materializza_sessioni('2026-11-01','2026-11-30')$$) as "rigenera il calendario";
+       tenta($$select materializza_sessioni(current_date + 60, current_date + 90)$$) as "rigenera il calendario";
 reset role;
 select stato as "la presenza di Sara dopo il tentativo dell'iscritto" from presenze pr
   where pr.persona_id = 'aaaaaaaa-0000-0000-0000-000000000004';
@@ -94,7 +101,7 @@ set role authenticated;
 select 'persone che vede' t, count(*) n from persone
 union all select 'presenze', count(*) from presenze;
 select tenta($$insert into presenze (sessione_id, persona_id, stato)
-               select id, 'aaaaaaaa-0000-0000-0000-000000000004', 'presente' from sessioni order by inizio offset 1 limit 1$$) as "segna una presenza",
+               values ('eeeeeeee-0000-0000-0000-000000000102', 'aaaaaaaa-0000-0000-0000-000000000004', 'presente')$$) as "segna una presenza",
        tenta($$insert into corsi (nome) values ('Corso abusivo')$$)  as "crea un corso",
        tenta($$delete from presenze where persona_id = 'aaaaaaaa-0000-0000-0000-000000000004'$$) as "toglie il segno di Sara",
        tenta($$update sessioni set stato = 'svolta' where corso_id = 'cccccccc-0000-0000-0000-000000000001'$$) as "chiude le sue lezioni",
@@ -112,7 +119,7 @@ set role authenticated;
 select 'persone che vede' t, count(*) n from persone;
 select tenta($$insert into corsi (nome) values ('Corso nuovo')$$)   as "crea un corso",
        tenta($$delete from presenze where false$$)                  as "cancella le presenze",
-       tenta($$select materializza_sessioni('2026-11-01','2026-11-30')$$) as "rigenera il calendario";
+       tenta($$select materializza_sessioni(current_date + 60, current_date + 90)$$) as "rigenera il calendario";
 reset role;
 
 \echo ''
@@ -130,8 +137,7 @@ select chi('22222222-2222-2222-2222-222222222222');
 set role authenticated;
 -- Maurizio prova a dare la colpa ad Anna
 insert into presenze (sessione_id, persona_id, stato, segnata_da)
-  select id, 'aaaaaaaa-0000-0000-0000-000000000003', 'assente', 'aaaaaaaa-0000-0000-0000-000000000001'
-  from sessioni order by inizio offset 2 limit 1
+  values ('eeeeeeee-0000-0000-0000-000000000103', 'aaaaaaaa-0000-0000-0000-000000000003', 'assente', 'aaaaaaaa-0000-0000-0000-000000000001')
   on conflict (sessione_id, persona_id) do update set stato = excluded.stato, segnata_da = excluded.segnata_da;
 reset role;
 select p.cognome as "risulta segnata da" from presenze pr join persone p on p.id = pr.segnata_da

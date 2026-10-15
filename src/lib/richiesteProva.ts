@@ -185,13 +185,15 @@ export function creaRichiesteProva(): DatiRichieste {
       if (personaId && !scelta) throw new Error('Questa scheda non c’è più')
       // Come nel database: prima il codice fiscale di una richiesta già
       // accolta, poi stesso nome e cognome, e la stessa email, nessuna o lo
-      // stesso telefono.
+      // stesso telefono. Il codice vale solo con lo stesso nome e cognome: lo
+      // sanno in tanti, e un nome diverso la segreteria lo sceglie a mano.
+      const stessoNome = (p: { nome: string; cognome: string }) => stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome)
       const perCf = tutte
         .filter((x) => x.id !== r.id && x.codiceFiscale === r.codiceFiscale && x.personaId)
         .map((x) => a.persone.find((p) => p.id === x.personaId))
-        .find(Boolean)
+        .find((p) => p && stessoNome(p))
       // O quello dei dati anagrafici, di chi è arrivato dalle risposte del modulo Google.
-      const perAnagrafica = a.persone.find((p) => a.anagrafiche?.[p.id]?.codiceFiscale === r.codiceFiscale)
+      const perAnagrafica = a.persone.find((p) => a.anagrafiche?.[p.id]?.codiceFiscale === r.codiceFiscale && stessoNome(p))
       const perNome = a.persone
         .filter((p) => stesso(p.nome, r.nome) && stesso(p.cognome, r.cognome) && (!p.email || p.email.toLowerCase() === email || (cifre(r.telefono).length >= 9 && cifre(p.telefono) === cifre(r.telefono))))
         .sort((x, y) => Number(!!y.email) - Number(!!x.email))[0]
