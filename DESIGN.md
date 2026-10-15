@@ -34,6 +34,25 @@ colors:
   verde-chiaro: "#12913f"
   verde-testo-chiaro: "#0b7a33"
   giallo-testo-chiaro: "#8f6a00"
+  paglia: "#ebe6d0"
+  paglia-chiara: "#f6f3e4"
+  paglia-scura: "#d9d2b0"
+  cucitura-paglia: "#bdb68f"
+  cucitura-tenue: "#cfc9a8"
+  riga-campo-paglia: "#6b6a5c"
+  orlo: "#1d1d1b"
+  muschio: "#2f3d2b"
+  testo-secondario-paglia: "#3d3d3a"
+  testo-spento-paglia: "#5a594c"
+  tratteggio-paglia: "#a39d7c"
+  testo-flebile-paglia: "#646350"
+  blu-su-muschio: "#6cc0ec"
+  verde-testo-paglia: "#096228"
+  giallo-testo-paglia: "#6f5200"
+  rosso-testo-paglia: "#a81a1a"
+  su-muschio: "#cfd6c0"
+  riga-muschio: "#5d6e58"
+  riga-tenue-muschio: "#44543f"
 typography:
   display:
     fontFamily: "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif"
@@ -160,7 +179,7 @@ components:
 
 ODS Corsi è segnaletica di sala prima che interfaccia. Si usa in piedi, col telefono in una mano durante l'appello, da un tablet appeso al muro guardato da due metri, dal computer della reception tra una telefonata e l'altra. Ogni scelta visiva risponde a quella scena: fondo nero pieno, i cinque colori degli ingranaggi del marchio usati come segnali, lettere condensate in maiuscolo obliquo che si leggono dalla porta, bersagli alti quanto un dito di fretta. *Prima si legge da lontano, poi si fa bello* (lo dice il codice stesso).
 
-La densità è quella di un tabellone: poche cose, grandi, con contrasto netto. Niente angoli arrotondati, niente ombre decorative, niente sfumature: la profondità la fanno i bordi da 2px e il passaggio da `superficie` a `superficie-alta`. Lo stato si capisce dal colore del bordo e dal segno grande a sinistra prima ancora di leggere il nome. Il tema chiaro esiste per la reception illuminata: stessi segnali, carta calda invece del nero.
+La densità è quella di un tabellone: poche cose, grandi, con contrasto netto. Niente angoli arrotondati, niente ombre decorative, niente sfumature: la profondità la fanno i bordi da 2px e il passaggio da `superficie` a `superficie-alta`. Lo stato si capisce dal colore del bordo e dal segno grande a sinistra prima ancora di leggere il nome. Il tema chiaro esiste per la reception illuminata: stessi segnali, carta calda invece del nero. Il terzo tema, **Tatami**, è anch'esso chiaro: fondo `paglia` (la stuoia del dojo), superfici `paglia-chiara` e `paglia-scura`, testo e bordi `orlo` (il nero della stoffa che orla i tatami), menu `muschio` con testo chiaro (`su-muschio`). I segnali sono gli stessi; i testi scritti in giallo, verde e rosso sono più scuri di quelli del chiaro (`giallo-testo-paglia`, `verde-testo-paglia`, `rosso-testo-paglia`) perché sulla paglia quelli del bianco non arrivano a 4,5:1. Si sceglie dal tasto del tema, che passa nero → bianco → Tatami, ed è uno solo per app e timer. Cambiano solo i colori: layout e componenti sono gli stessi.
 
 Il sistema rifiuta l'aspetto da SaaS generico: niente card morbide con ombra, niente pillole arrotondate, niente gradienti, niente icone decorative dove basta una parola in maiuscolo.
 

@@ -67,6 +67,44 @@
   color-scheme: light;
 }
 
+/* Il tema Tatami, lo stesso di ODS Corsi (paglia e verde muschio): vedi `src/styles.css` dell'app,
+   i valori comuni sono gli stessi e `prova:tema` lo controlla. */
+:root[data-tema='tatami'] {
+  --bg: #ebe6d0;
+  --surface: #f6f3e4;
+  --surface-2: #d9d2b0;
+  --line: #bdb68f;
+  --line-soft: #cfc9a8;
+  --text: #1d1d1b;
+  --dim: #5a594c;
+  --faint: #646350;
+
+  --verde: #12913f;
+  --giallo-testo: #6f5200;
+  --tasto: #3d3d3a;
+  --tratteggio: #a39d7c;
+  --menu: #2f3d2b;
+  --spento: #c4be9d;
+  --caldo: #f1e6b8;
+
+  color-scheme: light;
+}
+/* Le barre del timer sono verdi: lì dentro il testo è chiaro. */
+:root[data-tema='tatami'] .sidebar,
+:root[data-tema='tatami'] .tabbar {
+  --text: #f6f3e4;
+  --sec: #cfd6c0;
+  --dim: #cfd6c0;
+  --tasto: #cfd6c0;
+  --line: #5d6e58;
+  --line-soft: #44543f;
+  --faint: #cfd6c0;
+  color: #f6f3e4;
+}
+:root[data-tema='tatami'] .navitem[aria-current='page'] { background: #f6f3e4; color: #1d1d1b; }
+/* La scheda accesa in basso: il blu del marchio sul verde muschio si ferma a 3:1, un blu più chiaro arriva a 6:1. */
+:root[data-tema='tatami'] .tabbar .tab[data-on='true'] { color: #6cc0ec; }
+
 * { box-sizing: border-box; }
 
 /* A pieno schermo la finestra cresce quando la barra del browser si ritrae, ma

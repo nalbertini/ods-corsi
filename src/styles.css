@@ -172,6 +172,53 @@
   color-scheme: light;
 }
 
+/* Il tema Tatami: la paglia del pavimento del dojo, il bordo nero di stoffa dei
+   tatami, il menu verde muschio. È un tema chiaro: segue le regole del bianco, ma
+   i colori scritti (giallo, verde, rosso, testo spento) sono un po' più scuri,
+   perché sulla paglia i valori del bianco non arrivano a 4,5:1 (`prova:tema`
+   lo calcola). Si sceglie dal tasto del tema (vedi `lib/tema.ts`). */
+:root[data-tema='tatami'] {
+  --bg: #ebe6d0;
+  --surface: #f6f3e4;
+  --surface-2: #d9d2b0;
+  --line: #bdb68f;
+  --line-soft: #cfc9a8;
+  --riga-campo: #6b6a5c;
+  --text: #1d1d1b;
+  --sec: #3d3d3a;
+  --dim: #5a594c;
+  --faint: #646350;
+
+  --verde: #12913f;
+  --giallo-testo: #6f5200;
+  --verde-testo: #096228;
+  --rosso-testo: #a81a1a;
+  --tasto: #3d3d3a;
+  --tratteggio: #a39d7c;
+  --menu: #2f3d2b;
+
+  color-scheme: light;
+}
+/* Il menu è verde scuro dentro una pagina chiara: lì dentro il testo è chiaro. */
+:root[data-tema='tatami'] .sg-menu,
+:root[data-tema='tatami'] .barra-nav,
+:root[data-tema='tatami'] .sg-barra-tel {
+  --text: #f6f3e4;
+  --sec: #cfd6c0;
+  --dim: #cfd6c0;
+  --tasto: #cfd6c0;
+  --line: #5d6e58;
+  --line-soft: #44543f;
+  /* Il testo senza colore suo (il marchio) eredita dal body: lì dentro va chiaro anche lui. */
+  color: #f6f3e4;
+}
+/* La voce corrente e il campo di ricerca restano due tatami chiari nel menu verde. */
+:root[data-tema='tatami'] .sg-voce[aria-current='page'] { border-left-color: #1d1d1b; background: #f6f3e4; color: #1d1d1b; }
+:root[data-tema='tatami'] .sg-menu .sg-campo { background: #f6f3e4; border-color: #1d1d1b; color: #1d1d1b; }
+:root[data-tema='tatami'] .sg-menu .sg-campo::placeholder { color: #5a594c; }
+/* Come la voce del menu: nella barra in basso la scheda corrente è chiara, quindi il testo e il segno scuri. */
+:root[data-tema='tatami'] .barra-voce[aria-current='page'] { border-top-color: #1d1d1b; color: #1d1d1b; }
+
 * { box-sizing: border-box; }
 
 /* A pieno schermo la finestra cresce quando la barra del browser si ritrae, ma
@@ -507,7 +554,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 }
 .nome-appello { font-size: 17px; font-weight: 500; }
 .riga-appello[data-stato='presente'] { border-color: var(--verde); }
-.riga-appello[data-stato='presente'] .segno { color: var(--verde); }
+.riga-appello[data-stato='presente'] .segno { color: var(--verde-testo); }
 .riga-appello[data-stato='assente'] { border-color: var(--rosso); }
 .riga-appello[data-stato='assente'] .segno { color: var(--rosso-testo); }
 .riga-appello[data-stato='assente'] .nome-appello { color: var(--dim); text-decoration: line-through; }
@@ -649,7 +696,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visib
 .una-riga { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .esito { gap: 14px; padding: 20px 20px 28px; }
 .esito-titolo { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; }
-.esito-titolo[data-tono='fatto'] { color: var(--verde); }
+.esito-titolo[data-tono='fatto'] { color: var(--verde-testo); }
 .esito-titolo[data-tono='avviso'] { font-size: 26px; color: var(--giallo-testo); }
 .esito-testo { font-size: 16px; color: var(--dim); line-height: 1.4; }
 
@@ -1010,7 +1057,7 @@ a.btn { text-decoration: none; }
 .mia-lezione-cosa { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: right; max-width: 40%; }
 .mia-lezione-cosa[data-tono='guaio'] { color: var(--rosso-testo); }
 .mia-lezione-cosa[data-tono='avviso'] { color: var(--giallo-testo); }
-.mia-lezione-cosa[data-tono='fatto'] { color: var(--verde); }
+.mia-lezione-cosa[data-tono='fatto'] { color: var(--verde-testo); }
 /* Il nucleo familiare: di chi si guarda la pagina, e le persone del nucleo. */
 .mio-nucleo-scelta { padding-top: 4px; padding-bottom: 6px; }
 .mia-chip-tasto { cursor: pointer; color: var(--dim); min-height: 36px; padding: 6px 12px; border-left-width: 2px; }
@@ -1020,7 +1067,7 @@ a.btn { text-decoration: none; }
 /* Quanto costa una persona in più: le righe della stima, e il totale. */
 .stima { list-style: none; margin: 0; padding: 0; gap: 4px; }
 .stima-riga { gap: 12px; font-size: 15px; }
-.stima-riga[data-sconto] { color: var(--verde); }
+.stima-riga[data-sconto] { color: var(--verde-testo); }
 .stima-totale { border-top: 2px solid var(--line); padding-top: 6px; font-weight: 700; font-size: 17px; }
 .mie-presenze { list-style: none; margin: 0; padding: 4px 14px; gap: 0; }
 .mia-presenza { gap: 12px; padding: 8px 0; align-items: center; }
@@ -1036,7 +1083,7 @@ a.btn { text-decoration: none; }
 .mia-segnala-modulo .campo { width: 100%; }
 .mia-presenza-segno { font-size: 20px; font-weight: 700; width: 22px; text-align: center; color: var(--faint); }
 .mia-presenza-detto { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--faint); }
-.mia-presenza[data-stato='presente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--verde); }
+.mia-presenza[data-stato='presente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--verde-testo); }
 .mia-presenza[data-stato='assente'] :is(.mia-presenza-segno, .mia-presenza-detto) { color: var(--rosso-testo); }
 .mie-schede { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; padding-bottom: 12px; }
 .mia-ricevuta { gap: 12px; padding: 10px 14px; align-items: center; }
@@ -1291,7 +1338,8 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .tb-fascia[data-tipo='errore'] { border-color: var(--rosso); }
 .tb-fascia[data-attesa] { border-color: var(--giallo); }
 /* Sul tema chiaro un'ombra così scura diventa una fascia grigia. */
-:root[data-tema='chiaro'] .tb-fascia { box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.16); }
+:root[data-tema='chiaro'] .tb-fascia,
+:root[data-tema='tatami'] .tb-fascia { box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.16); }
 /* Un tasto che apre un pannello si accende finché è aperto (PROVE). */
 .tb-btn-linea[aria-expanded='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 /* Le prove sono dell'app e della segreteria: sul tablet il loro testo sale al minimo della sala. */
@@ -1365,7 +1413,7 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .tb-riga-segno { width: 26px; display: flex; justify-content: center; }
 .tb-riga-nome { font-size: 18px; font-weight: 500; }
 .tb-riga[data-stato='presente'] { border-color: var(--verde); }
-.tb-riga[data-stato='presente'] .tb-riga-segno { color: var(--verde); }
+.tb-riga[data-stato='presente'] .tb-riga-segno { color: var(--verde-testo); }
 .tb-riga[data-stato='assente'] { border-color: var(--rosso); }
 .tb-riga[data-stato='assente'] .tb-riga-segno { color: var(--rosso-testo); }
 .tb-riga[data-stato='assente'] .tb-riga-nome { color: var(--dim); text-decoration: line-through; }

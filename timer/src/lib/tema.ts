@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Il tema: nero, come il marchio, o bianco.
+ * Il tema: nero, come il marchio, bianco, o Tatami (paglia e verde muschio).
  *
  * Finché nessuno sceglie segue il dispositivo; chi sceglie sceglie per quel
  * dispositivo, e la scelta resta. Il tema sta su `<html data-tema>`: i colori
@@ -12,7 +12,22 @@ import { useEffect, useState } from 'react'
  * `localStorage`, e il tema scelto in una vale anche nell'altra. Se una delle
  * due è aperta in un'altra scheda, cambia anche lì (l'evento `storage`).
  */
-export type Tema = 'scuro' | 'chiaro'
+export type Tema = 'scuro' | 'chiaro' | 'tatami'
+
+/** In quest'ordine passa il tasto: ogni tocco porta al successivo, dopo l'ultimo si ricomincia. */
+export const TEMI: readonly Tema[] = ['scuro', 'chiaro', 'tatami']
+
+/** Il colore della barra del browser e del telefono per ogni tema: quello del fondo. */
+export const COLORE_BARRA: Record<Tema, string> = { scuro: '#121212', chiaro: '#f4f4f1', tatami: '#ebe6d0' }
+
+/** Un valore salvato che non è esattamente uno dei temi (un altro nome, una versione più nuova) non conta. */
+export function leggiTema(valore: unknown): Tema | null {
+  return TEMI.find((t) => t === valore) ?? null
+}
+
+export function prossimoTema(t: Tema): Tema {
+  return TEMI[(TEMI.indexOf(t) + 1) % TEMI.length]
+}
 
 const DOVE = 'ods-tema'
 const sistema = typeof window !== 'undefined' ? window.matchMedia?.('(prefers-color-scheme: light)') : undefined
@@ -22,8 +37,8 @@ let inMemoria: Tema | null = null
 
 function scelto(): Tema | null {
   try {
-    const t = localStorage.getItem(DOVE)
-    if (t === 'scuro' || t === 'chiaro') return t
+    const t = leggiTema(localStorage.getItem(DOVE))
+    if (t) return t
   } catch {
     // niente: resta quella in memoria
   }
@@ -57,7 +72,7 @@ export function avviaTema() {
 
 /** Il colore del fondo, per la barra del browser quando nessuno la colora. */
 export function coloreFondo(): string {
-  return document.documentElement.dataset.tema === 'chiaro' ? '#f4f4f1' : '#121212'
+  return COLORE_BARRA[leggiTema(document.documentElement.dataset.tema) ?? 'scuro']
 }
 
 export function scegliTema(t: Tema) {
@@ -71,7 +86,7 @@ export function scegliTema(t: Tema) {
 }
 
 export function useTema(): [Tema, (t: Tema) => void] {
-  const [t, setT] = useState<Tema>(() => (document.documentElement.dataset.tema as Tema | undefined) ?? attuale())
+  const [t, setT] = useState<Tema>(() => leggiTema(document.documentElement.dataset.tema) ?? attuale())
   useEffect(() => {
     ascoltatori.add(setT)
     return () => {

@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 14px; width: 100%; padding: 20px; background: {{t.sup}}; border: 2px solid {{t.orlo}}; border-left: 6px solid {{tinta}}; color: {{t.ink}}">
+  <div style="display: flex; align-items: flex-start; gap: 10px">
+    <span style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: {{t.dim}}">{{quando}}</span>
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1; text-transform: uppercase">{{corso}}</span>
+      <span style="font-size: 16px; color: {{t.dim}}">{{dove}}</span>
+    </span>
+    <span style="display: inline-grid; place-items: center; width: 46px; height: 46px; border: 1.5px solid #e4292a; border-radius: 3px; color: {{t.rossoT}}; font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif CJK JP', 'Noto Serif JP', serif; font-size: 30px; font-weight: 700; line-height: 1">{{kanji}}</span>
+  </div>
+  <div style="display: flex; gap: 8px">
+    <span style="display: flex; flex-grow: 1; align-items: center; justify-content: center; height: 56px; background: #16a54a; color: {{t.su}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 21px; font-weight: 700; letter-spacing: 0.16em">TUTTI PRESENTI</span>
+    <span style="display: flex; align-items: center; justify-content: center; height: 56px; padding: 0 16px; border: 2px solid {{t.orlo}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 17px; font-weight: 700; letter-spacing: 0.16em">AZZERA</span>
+  </div>
+  <div style="display: flex; gap: 6px">
+    <sc-for list="{{conti}}" as="c" hint-placeholder-count="3">
+      <div style="display: flex; flex: 1 1 auto; align-items: center; justify-content: center; gap: 5px; height: 48px; padding: 0 6px; white-space: nowrap; background: {{c.sfondo}}; border: {{c.spessore}} solid {{c.bordo}}">
+        <span style="align-self: center; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; line-height: 1; color: {{c.colore}}">{{c.segno}} {{c.n}}</span>
+        <span style="align-self: center; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: {{t.dim}}">{{c.testo}}</span>
+      </div>
+    </sc-for>
+  </div>
+  <span style="display: flex; align-items: center; gap: 10px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: {{t.ink}}">{{titoloLista}}<span style="flex-grow: 1; border-top: 2px solid {{t.cuci}}"></span></span>
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <sc-for list="{{lista}}" as="r" hint-placeholder-count="3">
+      <div style="display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 14px; background: {{t.sup}}; border: 2px solid {{r.bordo}}">
+        <span style="width: 32px; text-align: center; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 32px; font-weight: 700; line-height: 1; color: {{r.colore}}">{{r.segno}}</span>
+        <span style="flex-grow: 1; font-size: 20px; font-weight: 500">{{r.nome}}</span>
+        <sc-if value="{{r.azioni}}" hint-placeholder-val="{{ true }}">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 44px; background: #16a54a; color: {{t.su}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 700">✓</span>
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 44px; border: 2px solid #e4292a; color: {{t.rossoT}}; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 22px; font-weight: 700">✕</span>
+        </sc-if>
+        <sc-if value="{{r.senzaAzioni}}" hint-placeholder-val="{{ false }}">
+          <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: {{r.colore}}">{{r.testo}}</span>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+  <span style="display: flex; align-items: center; gap: 10px; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.2em; color: {{t.dim}}">PROVE 1<span style="flex-grow: 1; border-top: 2px solid {{t.cuci}}"></span></span>
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <sc-for list="{{prove}}" as="r" hint-placeholder-count="1">
+      <div style="display: flex; align-items: center; gap: 14px; height: 64px; padding: 0 14px; background: {{r.sfondo}}; border: 2px solid {{r.bordo}}">
+        <span style="width: 32px; text-align: center; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 32px; font-weight: 700; line-height: 1; color: {{r.colore}}">{{r.segno}}</span>
+        <span style="flex-grow: 1; font-size: 20px; font-weight: 500">{{r.nome}}</span>
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: {{r.colore}}">{{r.testo}}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tema":{"editor":"enum","options":["tatami","scuro","chiaro"],"default":"tatami","section":"Tema"},"quando":{"editor":"text","default":"MAR 6 OTTOBRE · 19:30"},"corso":{"editor":"text","default":"Lotta adulti"},"dove":{"editor":"text","default":"Sala 1 · Davide T. · 14 iscritti"},"kanji":{"editor":"text","default":"闘"},"tinta":{"editor":"text","default":"#16a54a"},"nomi":{"editor":"text","default":"Marino Pietro|n, Gallo Marta|n, Esposito Luca|n, Fontana Sara|n, Conti Marco|n, Villa Anna|n, Riva Paolo|n, Mauri Chiara|n, Longo Davide|n, Bianchi Luca|p, Colombo Sara|p, Greco Anna|p, Rossi Giulia|p, Ferrari Tommaso|a, Neri Chiara|prova"},"scelta":{"editor":"enum","options":["n","p","a"],"default":"n"},"$preview":{"width":380,"height":1000}}'>
+// PROPOSTA «Tatami»: il pannello dell'appello accanto alla settimana (AppelloScreen, vista larga: oggi sta a destra del
+// calendario, `.sala-due`). Righe alte 56px (come `.riga-appello`); la lista e' sempre completa, scorre con la pagina come `.riga-appello`; lo stato e' un segno grande a sinistra + una parola,
+// I tre conti sono i tasti DA SEGNARE, PRESENTI, ASSENTI (in quest'ordine, 48px, il premuto ha fondo `paglia-scura` e bordo 4px).
+// Sotto c'e' solo la lista del tasto premuto, di default il primo (`scelta` n | p | a). In DA SEGNARE ogni riga ha ✓ e ✕:
+// un tocco sposta il nome fra i presenti o gli assenti.
+// Stato di una riga: segno grande a sinistra + una parola, poi il colore (✓ PRESENTE verde, ✕ ASSENTE rosso, ○ NON SEGNATO spento, + PROVA giallo).
+// nomi: "Nome|stato" separati da virgola; stato p | a | n | prova.
+const T = {
+  tatami: { fondo: '#ebe6d0', sup: '#f6f3e4', supAlta: '#d9d2b0', cuci: '#bdb68f', orlo: '#1d1d1b', ink: '#1d1d1b', dim: '#5d5c4f', su: '#1d1d1b', verdeT: '#0b7a33', rossoT: '#b81d1d', gialloT: '#8f6a00', menu: '#2f3d2b', menuTesto: '#f6f3e4', menuSec: '#cfd6c0' },
+  scuro: { fondo: '#121212', sup: '#1c1c1c', supAlta: '#242424', cuci: '#333333', orlo: '#4a4a46', ink: '#f2f2f0', dim: '#8c8c88', su: '#121212', verdeT: '#16a54a', rossoT: '#ff5a52', gialloT: '#f4c31b', menu: '#161616', menuTesto: '#f2f2f0', menuSec: '#c9c9c4' },
+  chiaro: { fondo: '#f4f4f1', sup: '#ffffff', supAlta: '#e9e9e5', cuci: '#d4d4ce', orlo: '#8a8a85', ink: '#161616', dim: '#656561', su: '#121212', verdeT: '#0b7a33', rossoT: '#b81d1d', gialloT: '#8f6a00', menu: '#ebebe7', menuTesto: '#161616', menuSec: '#3d3d3a' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const t = T[p.tema] || T.tatami;
+    const S = {
+      p: { segno: '✓', testo: 'PRESENTE', colore: t.verdeT, bordo: '#16a54a' },
+      a: { segno: '✕', testo: 'ASSENTE', colore: t.rossoT, bordo: '#e4292a' },
+      n: { segno: '○', testo: 'NON SEGNATO', colore: t.dim, bordo: t.cuci },
+      prova: { segno: '+', testo: 'PROVA', colore: t.gialloT, bordo: '#f4c31b' },
+    };
+    const tutte = String(p.nomi ?? '').split(',').map((x) => x.split('|').map((y) => y.trim())).filter((w) => w[0]).map(([nome, st]) => ({ nome, st, ...(S[st] || S.n) }));
+    const righe = tutte.filter((r) => r.st !== 'prova');
+    const conta = (st) => righe.filter((r) => r.st === st).length;
+    const scelta = ['n', 'p', 'a'].includes(p.scelta) ? p.scelta : 'n';
+    const TASTI = [
+      { st: 'n', n: conta('n'), segno: '○', testo: 'DA SEGNARE', colore: t.dim, bordo: t.orlo },
+      { st: 'p', n: conta('p'), segno: '✓', testo: 'PRESENTI', colore: t.verdeT, bordo: '#16a54a' },
+      { st: 'a', n: conta('a'), segno: '✕', testo: 'ASSENTI', colore: t.rossoT, bordo: '#e4292a' },
+    ];
+    const tasto = TASTI.find((x) => x.st === scelta);
+    return {
+      t,
+      quando: p.quando ?? '', corso: p.corso ?? '', dove: p.dove ?? '', kanji: p.kanji ?? '', tinta: p.tinta || '#16a54a',
+      conti: TASTI.map((x) => ({ ...x, sfondo: x.st === scelta ? t.supAlta : t.sup, spessore: x.st === scelta ? '4px' : '2px' })),
+      titoloLista: tasto.testo + ' ' + tasto.n,
+      lista: righe.filter((r) => r.st === scelta).map((r) => ({ ...r, azioni: scelta === 'n', senzaAzioni: scelta !== 'n' })),
+      prove: tutte.filter((r) => r.st === 'prova'),
+    };
+  }
+}
+</script>
+</body>
+</html>

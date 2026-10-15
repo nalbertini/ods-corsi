@@ -22,7 +22,7 @@
 export function perLaSala(css: string): string {
   return (
     css
-      .replace(/:root\[data-tema=(['"]?)chiaro\1\]/g, ':host([data-tema=chiaro])')
+      .replace(/:root\[data-tema=(['"]?)(chiaro|tatami)\1\]/g, ':host([data-tema=$2])')
       .replace(/:root/g, ':host')
       // L'altezza della pagina: qui la dà il tablet, qualche riga più sotto.
       .replace(/html\s*,\s*body\s*,\s*#root\s*\{[^}]*\}/g, '')
