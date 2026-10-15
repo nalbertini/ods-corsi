@@ -368,16 +368,21 @@ console.log('\nl’«Attività» di ogni giorno sul tablet di sala')
 try {
   const s = m.creaSegreteriaProva()
   const sacco = await s.salvaAttivita({ nome: 'Sacco' })
-  // Body functional è il mercoledì alle 18 in Motricità; il 14 ottobre è un mercoledì.
+  // Body functional è il mercoledì alle 18 in Motricità. Il mercoledì è il prossimo, oggi compreso:
+  // il calendario di prova parte da oggi, e con un giorno fisso la prova scadeva col tempo.
+  const mercoledi = new Date()
+  mercoledi.setHours(0, 0, 0, 0)
+  mercoledi.setDate(mercoledi.getDate() + ((3 - mercoledi.getDay() + 7) % 7))
+  const giornoIso = `${mercoledi.getFullYear()}-${String(mercoledi.getMonth() + 1).padStart(2, '0')}-${String(mercoledi.getDate()).padStart(2, '0')}`
   const giorno = (await s.corsi()).find((c) => c.id === 'body-functional').ricorrenze[0]
   await s.attivitaRicorrenza(giorno.id, sacco)
-  const il14 = [new Date(2026, 9, 14), new Date(2026, 9, 14)]
-  const bf = async (sala = 'Motricità') => (await (await alle('2026-10-14T17:40', sala)).lezioni(...il14)).find((l) => l.corsoId === 'body-functional')
+  const il14 = [mercoledi, mercoledi]
+  const bf = async (sala = 'Motricità') => (await (await alle(`${giornoIso}T17:40`, sala)).lezioni(...il14)).find((l) => l.corsoId === 'body-functional')
   const lezione = (await s.settimana(...il14)).find((l) => l.corsoId === 'body-functional')
 
   ok('il tablet della sala vede l\'attività del giorno', (await bf())?.attivita, 'Sacco')
-  ok('le altre lezioni della sala, senza attività, non ne hanno', (await (await alle('2026-10-14T17:40', 'Motricità')).lezioni(...il14)).filter((l) => l.corsoId !== 'body-functional').every((l) => l.attivita === undefined), true)
-  ok('quello di un\'altra sala non vede la lezione, e quindi nemmeno l\'attività', [await bf('Tatami'), (await (await alle('2026-10-14T17:40', 'Tatami')).lezioni(...il14)).some((l) => l.attivita === 'Sacco')], [undefined, false])
+  ok('le altre lezioni della sala, senza attività, non ne hanno', (await (await alle(`${giornoIso}T17:40`, 'Motricità')).lezioni(...il14)).filter((l) => l.corsoId !== 'body-functional').every((l) => l.attivita === undefined), true)
+  ok('quello di un\'altra sala non vede la lezione, e quindi nemmeno l\'attività', [await bf('Tatami'), (await (await alle(`${giornoIso}T17:40`, 'Tatami')).lezioni(...il14)).some((l) => l.attivita === 'Sacco')], [undefined, false])
   await s.salvaAttivita({ id: sacco, nome: 'Sacco pesante' })
   ok('rinominata, il tablet legge il nome nuovo', (await bf())?.attivita, 'Sacco pesante')
   await s.attivaAttivita(sacco, false)
