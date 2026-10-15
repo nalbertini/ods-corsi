@@ -46,7 +46,8 @@ Google, e vale solo per i mockup.
 | `RigaIscritto` | La riga della tabella ISCRITTI: normale, scelta, spenta |
 | `RigaPresenzaIstruttore` | La riga di PRESENZE ISTRUTTORI, con CONFERMA e RIFIUTA; `nonSegnati` (nomi separati da `\|`) mette sotto PREVISTO i link «+ Nome c’era» |
 | `FiltriIscritti` | La barra sopra la tabella ISCRITTI: ricerca, corso, chip |
-| `CercaIscritto` | La ricerca in cima al menu di segreteria, anche con l'elenco aperto |
+| `CercaIscritto` | La ricerca in cima al menu di segreteria (campo da 216px) con l'elenco aperto, da 368px, a gruppi ISCRITTI / RICHIESTE ONLINE / CORSI / ISTRUTTORI (`gruppi` = `TITOLO:totale=nome~sotto~nota\|…;…`, tre righe e «ALTRI N ›», nota in maiuscole = bollino giallo), riga scelta con la barra a sinistra, `leggo`, `offline` |
+| `FiltroRicerca` | La riga sopra ISCRITTI, CORSI e RICHIESTE ONLINE aperti da «ALTRI N» della ricerca (`.sg-filtro-ricerca`): «Cercato «gio»: 17 trovati.» e il chip MOSTRA TUTTI |
 | `Timbro` | Un timbro della scheda iscritto (`.sg-timbro`) |
 | `SchedaCertificato` | PROPOSTA «certificati online»: il blocco CERTIFICATO MEDICO della scheda iscritto (`Certificato` di `Iscritti.tsx`) col file online: titolo + bollino, frase di stato, riga del file con APRI, CARICA / SOSTITUISCI e TOGLI; `stato` nessuno, valido, in_scadenza, scaduto_con_file, scaduto_senza_file, valido_senza_file, file_vecchio; `gesto` apre file + VALIDO FINO AL + un solo SALVA; `telefono` mette i tasti in colonna |
 | `MenuIstruttori` | Il menu degli istruttori sullo schermo largo (`App.tsx`) |

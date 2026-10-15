@@ -26,6 +26,7 @@ import { DaFare, useDaFare } from './DaFare'
 import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio, lasciare, scordaBozze } from './comune'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { CercaIscritto } from './CercaIscritto'
+import type { Ricercata } from '../../lib/ricerca'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
@@ -37,6 +38,11 @@ export type { Voce }
 /** Dove portare la segreteria da un'altra sezione: la scheda di qualcuno, una lezione da aprire. */
 export interface Destinazione {
   persona?: string
+  corso?: string
+  /** Una richiesta da aprire, scelta dalla ricerca. */
+  richiesta?: string
+  /** Cosa si è cercato e chi è uscito: la voce mostra solo quelli, finché non si dice MOSTRA TUTTI. */
+  ricerca?: Ricercata
   lezione?: { id: string; inizio: string }
   /** Un filtro già acceso: chi ha il certificato da sistemare, chi deve pagare, chi ha un file di prima, cosa c'è da stampare. */
   filtro?: 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'file-di-prima' | 'stampare' | 'fuori-regola' | 'senza-appello'
@@ -171,6 +177,9 @@ export function Segreteria({
   const voce = posto.voce
   // Il filtro acceso da DA FARE resta fuori dall'indirizzo: è un punto di partenza, non un posto.
   const [filtro, setFiltro] = useState<Destinazione['filtro']>()
+  // Come il filtro: un punto di partenza dato dalla ricerca, non un posto dell'indirizzo.
+  const [ricerca, setRicerca] = useState<Ricercata>()
+  const [richiesta, setRichiesta] = useState<string>()
   // Il menu del telefono, aperto o chiuso; sul computer non conta.
   const [aperto, setAperto] = useState(false)
   // Sul telefono il menu aperto è un passo della cronologia, sullo stesso
@@ -200,6 +209,8 @@ export function Segreteria({
     // un clic sul menu. Chi resta torna al modulo: sul telefono il menu lo coprirebbe.
     if (!(await lasciare())) return chiudiMenu()
     setFiltro(filtroDopo(ora.current.voce, v, filtro, d.filtro))
+    setRicerca(d.ricerca)
+    setRichiesta(d.richiesta)
     // Dal menu del telefono la voce scelta prende il posto del passo del
     // menu: Indietro poi torna alla voce di prima, non al menu aperto.
     segna(postoDelMenu(ora.current, v, d), nelMenu() ? 'replace' : 'push')
@@ -415,7 +426,7 @@ export function Segreteria({
           {/* Fra DATI e DI uno spazio che non va a capo: in 56px si spezza solo prima di PROVA. */}
           {prova && <Bollino>DATI{'\u00a0'}DI PROVA</Bollino>}
         </div>
-        {d && <CercaIscritto d={d} onApri={(id) => void vai('iscritti', { persona: id })} />}
+        {d && <CercaIscritto d={d} onVai={(v, dest) => void vai(v, dest)} />}
         <div className="sg-gruppi">
           {GRUPPI.map((g) => (
             <div key={g.titolo} role="group" aria-label={g.titolo} className="sg-gruppo" data-secondario={g.secondario}>
@@ -507,7 +518,10 @@ export function Segreteria({
         {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} />}
         {d && voce === 'corsi' && (
           <Corsi
+            key={ricerca?.testo ?? ''}
             d={d}
+            ricerca={ricerca}
+            onTogliRicerca={() => setRicerca(undefined)}
             scelto={posto.corso}
             nuovo={posto.nuovo}
             onScelta={(id, passo) => segna({ voce: 'corsi', ...(id && { corso: id }) }, passo)}
@@ -516,8 +530,10 @@ export function Segreteria({
         )}
         {d && voce === 'iscritti' && (
           <Iscritti
-            key={filtro ?? ''}
+            key={`${filtro ?? ''}|${ricerca?.testo ?? ''}`}
             d={d}
+            ricerca={ricerca}
+            onTogliRicerca={() => setRicerca(undefined)}
             scelta={posto.persona}
             nuovo={posto.nuovo}
             onScelta={(id, passo) => segna({ voce: 'iscritti', ...(id && { persona: id }) }, passo)}
@@ -525,7 +541,7 @@ export function Segreteria({
             filtroIniziale={filtro}
           />
         )}
-        {d && voce === 'richieste' && <Richieste key={filtro ?? ''} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} />}
+        {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta} onTogliRicerca={() => setRicerca(undefined)} />}
         {d && inPresenze && conSegnalate && (
           <div role="tablist" aria-label="Presenze" className="schede sg-schede">
             <button type="button" role="tab" aria-selected={voce === 'presenze'} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>

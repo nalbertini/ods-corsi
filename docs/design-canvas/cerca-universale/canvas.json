@@ -1,0 +1,11 @@
+{
+ "pages": [
+  { "id": "page-1", "name": "Ricerca universale · proposta" }
+ ],
+ "artboards": [
+  { "file": "Main.dc.html", "title": "Proposta · la ricerca a gruppi", "x": 0, "y": 300, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1280, "text": "Ricerca universale in cima al menu di segreteria" }
+ ]
+}

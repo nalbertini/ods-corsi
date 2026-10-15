@@ -52,6 +52,10 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   liste di musica (Judo, Lotta, Pilates, Yoga, A corpo libero, Attrezzi, Core,
   Cardio, Mobilità…), che la segreteria cura in ESERCIZI; un filtro e gruppi
   per categoria in segreteria e nel timer (`supabase/42-categorie-esercizi.sql`).
+- **La ricerca in segreteria**: il campo in cima al menu trova, a gruppi,
+  iscritti (per nome, telefono o email), richieste online, corsi (anche per
+  giorno) e istruttori, senza chiamare il database; «ALTRI N» apre la voce già
+  filtrata (`src/lib/ricerca.ts`).
 - **L'email di contatto**: l'email di accesso resta di una sola persona; chi usa
   l'indirizzo di un altro (fratelli, un genitore, a volte un istruttore) ha una
   seconda, l'email di contatto, che può ripetersi e dove la palestra scrive alla
@@ -405,6 +409,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:iscritti` | L'area degli iscritti: le lezioni annullate, i sostituti e le sale cambiate, le presenze, le ricevute, gli avvisi; e che di un altro non si vede niente. Il nucleo familiare: chi lo vede, la persona in più coi dati del titolare, lo sconto famiglia, e i cambi dalla scheda della segreteria. Le presenze segnalate: chi le manda, chi le vede e chi le accoglie. |
 | `npm run prova:indirizzi` | Gli indirizzi della segreteria: voce, scheda iscritto, lezione, settimana e sala che si rileggono uguali; gli indirizzi sbagliati che portano a DA FARE; quelli di Supabase, della guida e delle aree che non sono della segreteria. |
 | `npm run prova:cerca-persone` | «Aggiungi chi prova» cerca fra tutte le persone: anche chi è iscritto altrove o non ha mai provato, coi corsi di oggi e senza telefono; mai personale né disattivati; dalla terza lettera, massimo ventuno, tetto di cento lettere; cosa dice la pagina (poco scritto, nessuno, ce ne sono altri, già nell'appello, senza rete, ricerca non disponibile) e l'avviso di chi ha già quel nome. |
+| `npm run prova:ricerca` | La ricerca universale di «Cerca iscritto» (`cercaTutto`): i gruppi nell'ordine e solo quelli con risultati; gli iscritti per nome come `trovaIscritti`, per telefono (comunque scritto) ed email, con il perché; il minore trovato dal genitore senza mai mostrarne i dati; corsi per nome, sala e giorno; richieste online con lo stato e le da accogliere prima; istruttori coi corsi; tre righe per gruppo col totale vero; testo vuoto; lettura fallita distinta da «nessun risultato»; i dati della modalità prova, senza rete. |
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome (sul tablet al massimo venti, cercate scrivendo), tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:timer-istruttori` | Il timer nell'app istruttori: le voci di navigazione per ruolo (CALENDARIO, TIMER, I MIEI, ORE), il timer aperto dall'appello con la lezione, lo stato dell'allenamento per la striscia (calcolato dall'orologio), la domanda prima di sostituire un allenamento in corso, l'avviso senza rete. |
 | `npm run prova:informativa` | Per quanto si tengono le presenze nell'informativa: solo un numero di mesi valido dal database cambia il testo; un errore, il tempo scaduto o l'app senza database lasciano quello della pagina, che non dice un numero. |

@@ -21,10 +21,31 @@ con **ISTRUTTORI →** nel menu, senza uscire.
 
 ## Il menu
 
-In cima al menu c'è **Cerca iscritto**: si scrive un pezzo del nome o del
-cognome, si sceglie con le frecce (o col mouse) e Invio apre la sua scheda, da
-qualunque voce. Apostrofi, trattini e spazi nel cognome non contano: «d'am»,
-«dam» e «amico» trovano D'Amico, «deluca» trova De Luca. Il tasto **/** ci porta subito, senza mouse.
+In cima al menu c'è **Cerca**: si scrive e i risultati escono a gruppi,
+nell'ordine **ISCRITTI**, **RICHIESTE ONLINE**, **CORSI**, **ISTRUTTORI**. Un
+gruppo senza risultati non compare. Si sceglie con le frecce (o col mouse) e
+Invio apre: la scheda di un iscritto o di un corso, oppure la voce delle
+richieste o degli istruttori. Di ogni gruppo si vedono tre righe; **ALTRI 14**
+apre ISCRITTI, CORSI o RICHIESTE ONLINE già filtrati su quelli trovati («Cercato
+«gio»: 17 trovati»), e **MOSTRA TUTTI** toglie il filtro. Il tasto **/** porta il fuoco nel campo, senza mouse. Il
+testo resta scritto anche dopo aver aperto un risultato, così se ne guardano
+due o tre di fila; **Esc** lo svuota.
+
+- **Iscritti**: per nome e cognome. Apostrofi, trattini e spazi non contano:
+  «d'am», «dam» e «amico» trovano D'Amico, «deluca» trova De Luca. Anche per
+  **telefono** (comunque sia scritto, con o senza +39 e spazi: bastano tre
+  cifre, anche le ultime) e per **email**. Sotto il nome si vede chi è, o perché
+  è uscito («tel. 338 123 4567»). Chi non è più iscritto si trova ancora, con
+  «non attiva». Se il telefono o l'email sono di un genitore esce il bambino, con
+  «numero di un genitore», senza i dati del genitore.
+- **Richieste online**: per il nome di chi chiede, anche quelle già accolte o
+  rifiutate; Invio la apre. Quelle ancora da accogliere vengono prima, col bollino.
+- **Corsi**: per nome, sala o giorno: «gio» trova i corsi del giovedì.
+- **Istruttori**: per nome, coi corsi che insegnano.
+
+Se non si riesce a leggere un elenco, il campo lo dice («Non riesco ad
+aggiornare l'elenco: questi sono i dati di prima»), non scrive «niente».
+Dentro ISCRITTI c'è sempre il campo per cercare e filtrare l'elenco.
 
 A sinistra il menu, a destra la voce scelta. Le voci sono in quattro gruppi:
 **OGNI GIORNO** (DA FARE, SETTIMANA, RICHIESTE ONLINE, PRESENZE),

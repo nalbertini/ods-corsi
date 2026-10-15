@@ -1537,14 +1537,21 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-cerca .sg-campo { width: 100%; background: var(--surface); }
 .sg-campo::placeholder { color: var(--dim); opacity: 1; }
 .sg-cerca-elenco {
-  position: absolute; left: 4px; right: 4px; top: calc(100% + 4px); z-index: 25; margin: 0; padding: 4px; list-style: none;
+  position: fixed; width: 368px; max-width: calc(100vw - 16px); overflow-y: auto; z-index: 25; margin: 0; padding: 4px; list-style: none;
   background: var(--surface); border: 2px solid var(--text); box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
 }
-.sg-cerca-voce { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; padding: 0 10px; font-size: 15px; cursor: pointer; }
-.sg-cerca-voce[aria-selected='true'] { background: var(--surface-2); }
+.sg-cerca-righe { margin: 0; padding: 0; list-style: none; }
+.sg-cerca-gruppo { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: var(--dim); }
+.sg-cerca-filo { flex-grow: 1; height: 1px; background: var(--line-soft); }
+.sg-cerca-voce { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; padding: 6px 10px; font-size: 15px; cursor: pointer; }
+.sg-cerca-voce[aria-selected='true'] { background: var(--surface-2); box-shadow: inset 4px 0 0 var(--text); }
 .sg-cerca-voce[data-spento] { color: var(--dim); }
-.sg-cerca-nota { font-size: 12px; color: var(--dim); }
+.sg-cerca-testo { display: flex; flex-direction: column; min-width: 0; }
+.sg-cerca-sotto { font-size: 12px; color: var(--dim); }
+.sg-cerca-altri { min-height: 44px; font-size: 14px; font-weight: 600; color: var(--sec); }
+.sg-cerca-nota { flex-shrink: 0; font-size: 12px; color: var(--dim); }
 .sg-cerca-vuoto { padding: 10px; font-size: 14px; color: var(--dim); }
+.sg-filtro-ricerca { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 14px; color: var(--sec); }
 .sg-gruppi { display: flex; flex-direction: column; gap: 18px; }
 .sg-gruppo { display: flex; flex-direction: column; gap: 4px; }
 .sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }

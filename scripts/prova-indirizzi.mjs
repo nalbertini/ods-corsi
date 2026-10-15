@@ -82,6 +82,8 @@ ok('Indietro dal corso torna all\'elenco CORSI', m.dopoIndietro({ voce: 'corsi',
 ok('Avanti riapre il corso', piatto(m.dopoIndietro({ voce: 'corsi' }, '#corsi/X', { prova: false })), { corso: 'X', voce: 'corsi' })
 ok('Indietro dal corso nuovo torna all\'elenco CORSI', m.dopoIndietro({ voce: 'corsi', nuovo: true }, '#corsi', { prova: false }), { voce: 'corsi' })
 ok('CORSI ritoccato chiude il corso', m.postoDelMenu({ voce: 'corsi', corso: 'X' }, 'corsi'), { voce: 'corsi' })
+ok('la ricerca apre la scheda di un corso, da un\'altra voce', m.postoDelMenu({ voce: 'iscritti' }, 'corsi', { corso: 'c1' }), { voce: 'corsi', corso: 'c1' })
+ok('e dai CORSI stessi', m.postoDelMenu({ voce: 'corsi', corso: 'X' }, 'corsi', { corso: 'c1' }), { voce: 'corsi', corso: 'c1' })
 ok('un\'altra voce chiude il corso', m.postoDelMenu({ voce: 'corsi', corso: 'X' }, 'iscritti'), { voce: 'iscritti' })
 ok('il corso non va nell\'indirizzo di ISCRITTI', m.scriviIndirizzo({ voce: 'iscritti', corso: 'X' }), '#iscritti')
 ok('la persona non va nell\'indirizzo di CORSI', m.scriviIndirizzo({ voce: 'corsi', persona: 'X' }), '#corsi')
