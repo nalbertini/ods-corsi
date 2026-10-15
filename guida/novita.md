@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.60.5 — 15 ottobre 2026
+
+### Risolto
+
+- Gli istruttori segnano le presenze solo delle lezioni di questi giorni
+
 ## 0.60.4 — 15 ottobre 2026
 
 ### Risolto
