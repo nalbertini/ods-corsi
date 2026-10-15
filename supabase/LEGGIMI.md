@@ -79,6 +79,7 @@ Nel **SQL Editor** del progetto, si incollano e si lanciano **in quest'ordine**:
 49. `49-richieste-per-email.sql` — sei richieste al giorno dalla stessa email, non più tre: una famiglia di sei persone le manda tutte con una email sola; cambia solo il numero in `iscrizioni_regole()`
 50. `50-file-rimandato.sql` — un file rimandato non è un file di troppo: se il quinto file di una richiesta è arrivato ma la risposta si è persa, RIPROVA lo rimanda e sbatte sul doppione (che l'app legge «arrivato»), non sul limite di cinque; il file già caricato resta quello
 51. `51-vestiario-foto.sql` — il vestiario come il modulo: ogni capo con un tipo facoltativo (judogi, costumini, vestiario) e una foto, e una tabella delle taglie per tipo in `impostazioni.vestiario_tabelle`; le immagini stanno nel contenitore pubblico «vestiario» (1 MB, jpeg, png, webp), le carica, cambia e cancella solo la segreteria, chi non ha un accesso le vede dall'URL pubblico ma non le elenca; `salva_vestiario()` e `vestiario()` cambiano dentro, non nella firma
+52. `52-presenze-finestra.sql` — le presenze degli allievi si toccano solo nelle lezioni di questi giorni: un istruttore da 30 minuti prima dell'inizio a 14 giorni dopo (gli stessi numeri del tablet, `tablet_regole()`), la segreteria sempre; fuori finestra il database risponde con un errore che dice di scrivere alla segreteria (un trigger su `presenze`, non una policy, perché una policy toglierebbe le righe in silenzio); l'appello non accredita più l'ora dell'istruttore per una lezione che inizia fra più di mezz'ora
 
 Si possono rilanciare tutti quante volte si vuole: non distruggono niente.
 Rilanciarne uno dei primi cinque rimette i permessi di default alle sue
@@ -124,7 +125,7 @@ che avevano. Per cambiare il timer delle sale da un tablet basta
 `14-timer-dal-tablet.sql` (dopo `10-timer-sale.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, quello che si sceglie su un
 tablet non si salva, e al giro dopo il tablet torna a quello del database.
-Per la presenza degli istruttori dal PIN del tablet basta
+Per le presenze degli allievi solo nella finestra di questi giorni basta `52-presenze-finestra.sql` (dopo `23-istruttori-dalle-lezioni.sql`), che non chiede di rilanciare `06-iscrizioni.sql`: finché non c'è, un istruttore può ancora toccare le presenze di ogni data; se si rilancia `23` va rilanciato anche `52`. Per la presenza degli istruttori dal PIN del tablet basta
 `15-presenze-istruttori.sql` (dopo `04-tablet.sql`), che non chiede di
 rilanciare `06-iscrizioni.sql`: finché non c'è, il tablet apre l'area
 istruttore come prima senza segnare niente, e PRESENZE ISTRUTTORI in
@@ -1064,4 +1065,4 @@ dell'app, e non più di cento ricerche in dieci minuti e trecento al giorno.
 `cerca-persone.sql`, dopo `tablet.sql`, prova che «Aggiungi chi prova» trovi anche chi è iscritto a un altro corso o non ha mai provato, con i corsi di oggi e senza telefono per nessuno; che personale e disattivati non compaiano; la soglia delle tre lettere, il tetto di ventuno e che tablet, iscritti e `anon` non la usino. `tablet-conto-prove.sql` prova che il tablet sappia quanti dei presenti sono
 prove, cioè non iscritti quel giorno (chi ha provato e poi si è iscritto no,
 chi ha l'iscrizione finita sì), e che nessun altro lo chieda. `vestiario.sql` prova gli ordini di vestiario: il catalogo lo salva solo la segreteria e lo legge chi non ha un accesso, aperti fino alla data compresa, i rifiuti di un ordine, il totale fatto dal catalogo, proroga e raccolta nuova, e che gli ordini li veda e li cambi solo la segreteria, che corregge le righe e scrive dal banco; con `51-vestiario-foto.sql`, che tipi, foto e tabelle delle taglie entrino solo come nomi di file del contenitore, e che il contenitore «vestiario» lo riempia e lo svuoti solo la segreteria, senza che chi non ha un accesso ne elenchi i file. `finto-supabase.sql` rifà anche le due
-tabelle dello Storage che le policy dei file guardano.
+tabelle dello Storage che le policy dei file guardano. `presenze-finestra.sql`, dopo `tablet.sql`, prova che un istruttore tocchi le presenze (inserire, cambiare, togliere, spostare) solo da 30 minuti prima a 14 giorni dopo, con un errore chiaro e mai «0 righe» fuori finestra, anche con «Aggiungi chi prova»; che la segreteria, ruolo doppio compreso, non abbia limiti; che l'appello non accrediti l'ora dell'istruttore per una lezione futura.
