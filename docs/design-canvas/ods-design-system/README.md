@@ -216,3 +216,12 @@ esadecimali a 6 cifre: i file della libreria scrivono sempre così.
 
 Un mockup che vuole una cosa che manca la aggiunge alla libreria come
 `<Nome>.dc.html`, copiando i valori dal codice, prima di usarla.
+
+## Il tema Tatami
+
+L'app ha tre temi: nero, bianco e **Tatami** (paglia e verde muschio). I componenti di questa libreria sono
+disegnati nel nero e nel bianco (`tema`). I valori del Tatami e il confronto fra i tre temi stanno in
+`../segreteria-tatami/token-proposta.md` e nei componenti `Tatami*.dc.html` della stessa sezione, che hanno il `tema`
+a tre valori. I token veri sono nel blocco `:root[data-tema='tatami']` di `src/styles.css` (valori finali, un po' più
+scuri per giallo, verde, rosso e testo spento: vedi `DESIGN.md`). Il canvas della sezione conserva i valori della
+proposta, che per quei quattro colori sono precedenti ai valori finali.

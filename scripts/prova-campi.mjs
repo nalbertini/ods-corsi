@@ -62,7 +62,7 @@ const contrasto = (a, b) => {
   return (x + 0.05) / (y + 0.05)
 }
 
-const TEMI = { scuro: ':root', chiaro: ":root[data-tema='chiaro']" }
+const TEMI = { scuro: ':root', chiaro: ":root[data-tema='chiaro']", tatami: ":root[data-tema='tatami']" }
 
 console.log('Il token --riga-campo')
 const valore = {}
@@ -72,6 +72,7 @@ for (const [tema, sel] of Object.entries(TEMI)) {
 }
 ok('scuro: --riga-campo è #6e6e6a', valore.scuro, '#6e6e6a')
 ok('chiaro: --riga-campo è #8a8a85', valore.chiaro, '#8a8a85')
+// Il Tatami non ha un valore fisso: basta che il bordo si veda (3:1, sotto).
 
 console.log('Il contrasto contro lo sfondo (almeno 3:1)')
 for (const [tema, sel] of Object.entries(TEMI))

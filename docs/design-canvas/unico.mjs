@@ -48,6 +48,7 @@ const SEZIONI = [
   { id: 'navigazione-passi', nome: 'La testa del modulo a passi · ipotesi', cartella: 'navigazione-passi' },
   { id: 'prezzi-mancanti', nome: 'Prezzi mancanti in DA FARE · proposta', cartella: 'prezzi-mancanti' },
   { id: 'cerca-universale', nome: 'Ricerca universale · proposta', cartella: 'cerca-universale' },
+  { id: 'segreteria-tatami', nome: 'Segreteria · Tatami · proposta', cartella: 'segreteria-tatami' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

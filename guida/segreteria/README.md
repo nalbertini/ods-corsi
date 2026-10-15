@@ -73,8 +73,9 @@ sua guida:
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
 
 In cima al menu, sotto il nome, si vedono subito senza scorrere tre tasti:
-**?**, la guida della voce aperta, in un'altra scheda; il **sole** (o la
-luna), il tema bianco per questo computer; i **cursori**, le IMPOSTAZIONI. In
+**?**, la guida della voce aperta, in un'altra scheda; il tasto del **tema**
+(sole, tatami o luna: mostra dove porta; nero, bianco, Tatami) per questo
+computer; i **cursori**, le IMPOSTAZIONI. In
 prova, accanto, il bollino **DATI DI PROVA**.
 
 In fondo al menu:

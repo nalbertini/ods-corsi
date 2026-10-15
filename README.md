@@ -194,10 +194,12 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   altre aree (segreteria, sala, iscrizioni), nemmeno in prova; al primo accesso l'account si lega da sé alla persona con la
   stessa email. Chi vuole iscriversi ha la pagina pubblica (`iscrizioni/`),
   che la segreteria copia con **COPIA LINK ISCRIZIONI**.
-- **Il tema bianco**, oltre al nero del marchio: il tasto col sole in
-  testata (in segreteria «Tema bianco», nel riquadro in basso) lo sceglie per
-  quel dispositivo; finché nessuno sceglie, l'app segue il tema del
-  dispositivo. Sul tablet di sala il tasto sta accanto all'ora.
+- **Tre temi**: il nero del marchio, il bianco e il **Tatami** (paglia chiara
+  e menu verde scuro). Il tasto in testata (in segreteria nel riquadro in
+  basso) passa al successivo a ogni tocco e lo sceglie per quel dispositivo,
+  anche per il timer; finché nessuno sceglie, l'app segue il tema del
+  dispositivo (nero o bianco, mai Tatami). Sul tablet di sala il tasto sta
+  accanto all'ora.
 - **Senza rete non si perde niente**: ogni presenza è scritta sul dispositivo
   prima di partire e resta in coda finché il server non l'ha presa. Anche sul
   tablet di sala, dove il nome toccato resta segnato con IN ATTESA DI RETE.
@@ -411,6 +413,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `npm run prova:prove` | Le prove dell'app di prova: aggiunte dall'appello e dal tablet, ritrovate per nome (sul tablet al massimo venti, cercate scrivendo), tolte per sbaglio, e l'elenco della segreteria. |
 | `npm run prova:timer-istruttori` | Il timer nell'app istruttori: le voci di navigazione per ruolo (CALENDARIO, TIMER, I MIEI, ORE), il timer aperto dall'appello con la lezione, lo stato dell'allenamento per la striscia (calcolato dall'orologio), la domanda prima di sostituire un allenamento in corso, l'avviso senza rete. |
 | `npm run prova:informativa` | Per quanto si tengono le presenze nell'informativa: solo un numero di mesi valido dal database cambia il testo; un errore, il tempo scaduto o l'app senza database lasciano quello della pagina, che non dice un numero. |
+| `npm run prova:tema` | I tre temi (nero, bianco, Tatami): quale resta dopo l'avvio, un valore salvato che non si conosce, il tasto che passa al successivo, il colore della barra del browser, il timer già pubblicato che trova un tema che non conosce, i contrasti dei colori del Tatami (anche nel menu verde) e i blocchi uguali fra app e timer. |
 | `npm run prova:ore` | LE MIE ORE dell'area istruttori: ognuno vede solo le sue, nel mese della lezione (non di quando è stata confermata), lezioni e ore delle confermate, le da confermare contate come in PRESENZE, le rifiutate con chi e quando, le lezioni tenute dove era previsto e nessuno si è segnato; e le decisioni della segreteria di prova che arrivano a `mieOre`. |
 | `npm run prova:tablet` | Le regole del tablet di prova: finestre di tempo, recupero, annullo, PIN, il tablet che non scavalca l'istruttore, la presenza dell'istruttore col PIN e dall'appello, le lezioni tenute da confermare. L'«Attività» della lezione sul tablet della sua sala e di nessun'altra, e la lettura del database che non perde né kanji né attività se manca una delle due. |
 | `npm run prova:email-contatto` | L'email di contatto: l'email di accesso doppia si rifiuta dicendo di chi è e di mettere l'altra come contatto, il contatto no; la forma e le 160 lettere; l'import dei fogli e il modulo online che mettono nel contatto l'indirizzo che non si può tenere; unire due schede e gli indirizzi che non si possono tenere, da dire prima; «stesso contatto di…», la ricerca, il database senza `44-email-contatto.sql`, gli esempi con un contatto in comune. |
