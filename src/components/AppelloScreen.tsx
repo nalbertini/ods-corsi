@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { conMioAppello, righeIstruttori, type Dati, type IstruttoreLezione } from '../lib/dati'
 import type { DettaglioSessione, SessioneVista, StatoPresenza } from '../lib/sala'
+import { appelloAperto, eFuoriFinestra, fraseFuoriFinestra } from '../lib/finestra'
 import { cercaNellElenco, giornoPerEsteso, oraDi, perEsteso } from '../lib/sala'
 import { Back, Cronometro } from './Icons'
 import { Kanji } from './Kanji'
@@ -111,6 +112,7 @@ export function AppelloScreen({
   onIndietro,
   onChiudi,
   inCoda = 0,
+  senzaLimiti = false,
 }: {
   dati: Dati
   sessioneId: string
@@ -127,6 +129,8 @@ export function AppelloScreen({
   onChiudi?: (s: SessioneVista, c: { presenti: number; assenti: number; prove: number }) => void
   /** Le scritture che aspettano la rete: si dicono nella testa, che non cambia altezza. */
   inCoda?: number
+  /** La segreteria (ruolo doppio compreso) tocca le presenze di ogni lezione; un istruttore solo nella finestra di `finestra.ts`. */
+  senzaLimiti?: boolean
 }) {
   const [d, setD] = useState<DettaglioSessione | null>(null)
   const [segnalate, setSegnalate] = useState<SegnalataVista[]>([])
@@ -164,6 +168,20 @@ export function AppelloScreen({
     }
   }
   const [guaio, setGuaio] = useState<string | null>(null)
+  // Il server ha detto no perché la lezione è fuori dai tempi: l'appello si
+  // rilegge com'è sul server e resta in sola lettura (vedi `guardaFuoriFinestra`).
+  const [rifiutata, setRifiutata] = useState(false)
+  const fuoriFinestra = () => {
+    setRifiutata(true)
+    setGiro((g) => g + 1)
+  }
+  useEffect(() => dati.guardaFuoriFinestra?.((s) => s === sessioneId && fuoriFinestra()), [dati, sessioneId])
+  // In prova lo stesso rifiuto arriva subito, dalla scrittura; col database dalla coda.
+  const conRifiuto = (p: Promise<unknown>) =>
+    void p.catch((e) => {
+      if (eFuoriFinestra(e)) fuoriFinestra()
+      else throw e
+    })
   // La pagina «Aggiungi chi prova» al posto dell'appello: lo stato resta qui
   // (i segni, la coda, i conti), ma la schermata si ridisegna da capo, e
   // tornando senza aver aggiunto nessuno lo scorrimento riparte dall'alto.
@@ -285,7 +303,7 @@ export function AppelloScreen({
     // server per toccare il nome dopo.
     setD((v) => v && { ...v, elenco: v.elenco.map((p) => (p.id === personaId ? { ...p, stato } : p)) })
     if (stato !== null) setIstruttori((v) => conMioAppello(v, soloDi))
-    void dati.segna(sessioneId, personaId, stato)
+    conRifiuto(dati.segna(sessioneId, personaId, stato))
   }
 
   // Solo chi non è ancora segnato: le assenze già messe restano. Tranne
@@ -298,12 +316,15 @@ export function AppelloScreen({
     if (segnati === 0 || tuttiAssenti) {
       setD((v) => v && { ...v, elenco: v.elenco.map((p) => ({ ...p, stato: 'presente' })) })
       setIstruttori((v) => conMioAppello(v, soloDi))
-      void dati.segnaTutti(sessioneId, 'presente')
+      conRifiuto(dati.segnaTutti(sessioneId, 'presente'))
     } else for (const p of d.elenco) if (p.stato === null) tocca(p.id, 'presente')
   }
 
   const aggiungiProva = async (chi: ChiProva) => {
-    const p = await dati.aggiungiProva(sessioneId, chi)
+    const p = await dati.aggiungiProva(sessioneId, chi).catch((e) => {
+      if (eFuoriFinestra(e)) fuoriFinestra()
+      throw e
+    })
     setD((v) => v && (v.elenco.some((x) => x.id === p.id) ? v : { ...v, elenco: [...v.elenco, { ...p, stato: 'presente', prova: true }] }))
     // Una ricerca ancora scritta nascondrebbe chi è appena entrato.
     setCerca('')
@@ -313,12 +334,12 @@ export function AppelloScreen({
 
   const togliProva = (personaId: string) => {
     setD((v) => v && { ...v, elenco: v.elenco.filter((p) => p.id !== personaId) })
-    void dati.togliProva(sessioneId, personaId)
+    conRifiuto(dati.togliProva(sessioneId, personaId))
   }
 
   const azzera = () => {
     setD((v) => v && { ...v, elenco: v.elenco.map((p) => ({ ...p, stato: null })) })
-    for (const p of d.elenco) if (p.stato !== null) void dati.segna(sessioneId, p.id, null)
+    for (const p of d.elenco) if (p.stato !== null) conRifiuto(dati.segna(sessioneId, p.id, null))
   }
 
   // Chiudere vuol dire che chi non è segnato non c'era: così in segreteria
@@ -338,6 +359,9 @@ export function AppelloScreen({
   const proveMancano = inProva.filter((p) => p.stato === null).length
   const presentiIscritti = iscritti.filter((p) => p.stato === 'presente').length
   const futura = new Date(d.sessione.inizio).getTime() > Date.now()
+  // Fuori finestra l'istruttore vede i segni e basta: il server rifiuterebbe ogni tocco.
+  const finestra = appelloAperto(d.sessione.inizio, senzaLimiti)
+  const soloLettura = finestra !== 'aperta' || rifiutata
   const assentiDetti = `${mancano === 1 ? 'UN ASSENTE' : `${mancano} ASSENTI`}${proveMancano ? ` · +${proveMancano} PROVA` : ''}`
   // Quando chiudere vuole un secondo tocco, e cosa chiede: prima di tutto
   // quanti diventerebbero assenti, che è il fatto che conta.
@@ -381,7 +405,7 @@ export function AppelloScreen({
             {/* Il nome intero, qui c'è posto: nel calendario si accorcia. */}
             <EtichettaAttivita nome={d.sessione.attivita} intera />
             {/* Si può già segnare (chi lo sa prima, un recupero), ma si vede. */}
-            {futura && <span className="num appello-futura">NON ANCORA COMINCIATA</span>}
+            {futura && !soloLettura && <span className="num appello-futura">NON ANCORA COMINCIATA</span>}
           </span>
           {/* Il timer della lezione: si apre con i timer del corso in cima. */}
           {/* Dentro l'app: l'appello resta montato sotto, e tornando è dov'era. */}
@@ -399,7 +423,9 @@ export function AppelloScreen({
           <span className="grow" />
           <span className="stack" style={{ alignItems: 'flex-end', gap: 2, alignSelf: 'center' }}>
             {/* Con tutti segnati il tasto qui sotto lo dice già: qui il passo dopo. */}
-            {tuttiSegnati && !tuttiAssenti && onChiudi ? (
+            {soloLettura ? (
+              <span className="num appello-stato" data-fatto="false">SOLO LETTURA</span>
+            ) : tuttiSegnati && !tuttiAssenti && onChiudi ? (
               // Si legge come un invito, e allora si tocca: porta al tasto in fondo.
               <button type="button" className="num appello-stato appello-vai" data-fatto="true" onClick={vaiAChiudere}>
                 CHIUDI IN FONDO ↓
@@ -415,7 +441,7 @@ export function AppelloScreen({
             </span>
           </span>
         </div>
-        <div className="row pad" style={{ gap: 8, paddingTop: 10 }}>
+        {!soloLettura && <div className="row pad" style={{ gap: 8, paddingTop: 10 }}>
           {/* Sempre lo stesso tasto: un altro comparso al suo posto (CHIUDI)
               prendeva il secondo tocco di chi ritocca «per sicurezza». Con
               tutti assenti torna TUTTI PRESENTI anche se tutti hanno un
@@ -431,15 +457,24 @@ export function AppelloScreen({
           <DueTocchi className="btn btn-ghost azzera" disabled={segnati === 0} chiede="SICURO?" onFai={azzera}>
             AZZERA
           </DueTocchi>
-        </div>
+        </div>}
       </div>
+
+      {soloLettura && (
+        <div className="pad" style={{ paddingTop: 12 }}>
+          <div className="spia-coda" role="status">
+            <span className="num spia-coda-quante">{finestra === 'aperta' ? 'IL SERVER NON ACCETTA CAMBI' : finestra === 'vecchia' ? 'LEZIONE TROPPO VECCHIA' : 'LEZIONE TROPPO LONTANA'}</span>
+            <span>{fraseFuoriFinestra(finestra)}</span>
+          </div>
+        </div>
+      )}
 
       {soloDi && d.sessione.insegnanti?.includes(soloDi) && <CambiaAttivita dati={dati} sessione={d.sessione} onCambiata={() => {
         setGiro((g) => g + 1)
         onAttivitaCambiata?.()
       }} />}
 
-      {segnalate.length > 0 && (
+      {segnalate.length > 0 && !soloLettura && (
         <>
           <div className="rule">
             <span className="rule-label" style={{ color: 'var(--giallo-testo)' }}>DICONO DI ESSERCI STATI</span>
@@ -507,13 +542,14 @@ export function AppelloScreen({
         )}
       </div>
 
-      <p className="pad appello-aiuto">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>
+      {!soloLettura && <p className="pad appello-aiuto">Un tocco sul nome: presente, poi assente, poi di nuovo da segnare.</p>}
       <div className="pad elenco-appello">
         {iscrittiTrovati.map((p) => (
           <button
             key={p.id}
             className="riga-appello"
             data-stato={p.stato ?? 'niente'}
+            disabled={soloLettura}
             onClick={() => toccaRiga(p.id, p.stato)}
             aria-label={`${perEsteso(p)}: ${p.stato ?? 'non segnato'}`}
           >
@@ -548,6 +584,7 @@ export function AppelloScreen({
                 <button
                   className="riga-appello"
                   data-stato={p.stato ?? 'niente'}
+                  disabled={soloLettura}
                   onClick={() => toccaRiga(p.id, p.stato)}
                   aria-label={`${perEsteso(p)}, in prova: ${p.stato ?? 'non segnato'}`}
                 >
@@ -557,7 +594,7 @@ export function AppelloScreen({
                   <span className="nome-appello grow">{perEsteso(p)}</span>
                   <MarchioProva />
                 </button>
-                <TogliProva chi={perEsteso(p)} onTogli={() => togliProva(p.id)} />
+                {!soloLettura && <TogliProva chi={perEsteso(p)} onTogli={() => togliProva(p.id)} />}
               </div>
             ))}
           </div>
@@ -566,11 +603,11 @@ export function AppelloScreen({
 
       {/* Chi viene a provare si cerca fra tutte le persone in una pagina a
           parte (`CercaPersona`); qui sotto il tasto, in fondo, dove entra. */}
-      <div className="pad" style={{ paddingTop: 4 }}>
+      {!soloLettura && <div className="pad" style={{ paddingTop: 4 }}>
         <button type="button" className="btn btn-dashed" style={{ minHeight: 52, fontSize: 16 }} onClick={() => setAggiungendo(true)}>
           + AGGIUNGI CHI PROVA
         </button>
-      </div>
+      </div>}
 
       {colleghi.length > 0 && (
         <>
@@ -614,7 +651,7 @@ export function AppelloScreen({
         </>
       )}
 
-      {onChiudi && (
+      {onChiudi && !soloLettura && (
         <div className="pad stack appello-fine" ref={fine}>
           {/* Verde quando è tutto segnato; rosso quando chiudere vuol dire
               segnare assenti, e il tasto lo dice. Chiede un secondo tocco una

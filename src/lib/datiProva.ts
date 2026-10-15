@@ -3,6 +3,7 @@ import type { Persona, SessioneVista, StatoPresenza, StatoSessione } from './sal
 import { chiaveGiorno, contiDellAppello, perCognome } from './sala'
 import { archivio, nomeDi, type CorsoProva, type PresenzaIstruttoreProva, type RicorrenzaProva } from './archivioProva'
 import { ISTRUTTORE_PROVA } from './dati'
+import { MESSAGGIO_FUORI_FINESTRA, accreditaOraIstruttore, appelloAperto } from './finestra'
 import { areaDelPercorso } from './percorso'
 import type { LezioneSenzaIstruttore } from './segreteria'
 import { attivitaPerMenu } from './segreteria'
@@ -173,6 +174,9 @@ export function istruttoreDallAppello(sessioneId: string, personaId: string, sal
   const l = trovaLezione(sessioneId)
   const chi = archivio.dati.persone.find((p) => p.id === personaId)
   if (!l || !chi || chi.ruolo === 'iscritto' || comeE(l).stato === 'annullata') return
+  // Come `istruttore_dall_appello` (52-presenze-finestra.sql): per una lezione
+  // che comincia fra più di mezz'ora l'ora dell'istruttore non si registra.
+  if (!accreditaOraIstruttore(l.inizio)) return
   const previsto = comeE(l).istruttori.includes(personaId)
   if (chi.ruolo === 'staff' && !(chi.ancheIstruttore && previsto)) return
   const tutte = [...(archivio.dati.presenzeIstruttori ?? [])]
@@ -197,6 +201,17 @@ export function istruttoreDallAppello(sessioneId: string, personaId: string, sal
 
 /** Chi fa l'appello dall'app, in prova: l'istruttore di prova nell'area istruttori, nessuno dalla segreteria. */
 const chiFaLAppello = () => (typeof window !== 'undefined' && areaDelPercorso() === 'istruttori' ? ISTRUTTORE_PROVA.id : null)
+
+/**
+ * Come il trigger `presenze_a_finestra` (52-presenze-finestra.sql): l'istruttore
+ * tocca le presenze da 30 minuti prima a 14 giorni dopo l'inizio, con lo stesso
+ * messaggio del server. In prova chi è nell'area istruttori è un istruttore
+ * semplice; la segreteria non ha limiti.
+ */
+function dentroLaFinestra(sessioneId: string) {
+  const l = chiFaLAppello() ? trovaLezione(sessioneId) : null
+  if (l && appelloAperto(l.inizio, false) !== 'aperta') throw new Error(MESSAGGIO_FUORI_FINESTRA)
+}
 
 /**
  * Come `segna_collega` e `togli_collega` (46-istruttore-collega.sql), stessi
@@ -566,6 +581,7 @@ export function creaDatiProva(): Dati {
     },
 
     async segna(sessioneId, personaId, stato) {
+      dentroLaFinestra(sessioneId)
       const mie = { ...(memoria.segnate[sessioneId] ?? {}) }
       if (stato === null) delete mie[personaId]
       else mie[personaId] = stato
@@ -577,6 +593,7 @@ export function creaDatiProva(): Dati {
     },
 
     async segnaTutti(sessioneId, stato) {
+      dentroLaFinestra(sessioneId)
       const t = trovaLezione(sessioneId)
       if (!t) return
       const mie: Record<string, StatoPresenza> = {}
@@ -599,6 +616,7 @@ export function creaDatiProva(): Dati {
     },
 
     async aggiungiProva(sessioneId, chi) {
+      dentroLaFinestra(sessioneId)
       const p = mettiProva(sessioneId, chi)
       daAppello(sessioneId, p.id)
       salva()
@@ -606,6 +624,11 @@ export function creaDatiProva(): Dati {
     },
 
     async togliProva(sessioneId, personaId) {
+      // Il database toglie anche il segno di chi non è iscritto al corso: lì scatta la finestra.
+      // Senza segno si tocca solo `prove`, e fuori finestra resta permesso.
+      const t = trovaLezione(sessioneId)
+      const iscritto = !!t && iscrittiIl(t.corso.id, chiaveGiorno(t.inizio)).some((p) => p.id === personaId)
+      if (!iscritto && personaId in (memoria.segnate[sessioneId] ?? {})) dentroLaFinestra(sessioneId)
       togliProvaDa(sessioneId, personaId)
       daAppello(sessioneId, personaId)
       salva()

@@ -81,6 +81,12 @@ export interface Dati {
    * non sono arrivate.
    */
   guardaScartate?(f: (n: number) => void): () => void
+  /**
+   * Avvisa quando il server rifiuta una scrittura perché la lezione è fuori
+   * dalla finestra delle presenze (vedi `finestra.ts`): dice quale lezione, che
+   * va riletta com'è sul server. Non conta fra le scartate.
+   */
+  guardaFuoriFinestra?(f: (sessioneId: string) => void): () => void
 }
 
 /** Un istruttore previsto su una lezione, per l'appello. */
