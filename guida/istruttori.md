@@ -93,7 +93,10 @@ il conto grande degli iscritti presenti (`18 / 20`, con **+1 PROVA** a parte) e
 quanti iscritti restano da segnare; quando hanno tutti un segno, **CHIUDI IN
 FONDO ↓**, che si tocca e porta al tasto per chiudere. Tutti i conti sono degli iscritti: chi prova è sempre detto a
 parte. Se la lezione non è ancora
-cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare lo stesso.
+cominciata c'è scritto **NON ANCORA COMINCIATA**: si può segnare da mezz'ora
+prima dell'inizio. Le presenze si correggono fino a 14 giorni dopo la lezione:
+per una lezione più vecchia, o che comincia fra più di mezz'ora, scrivete alla
+segreteria.
 
 Se la segreteria ha scelto un'attività per quella lezione («Karate», «Open
 mat»), la leggete accanto all'ora. Se la lezione è vostra, sotto la testata c'è
