@@ -387,6 +387,14 @@ telefono. Dentro la lezione, sotto quanti restano da segnare, compare in giallo
 Spariscono quando è tutto arrivato. Se toccate più volte la stessa persona
 mentre la rete non c'è, parte solo l'ultimo segno.
 
+**ESCI** prima prova a mandare quello che aspetta, ancora col vostro account.
+Se qualcosa non riesce ad arrivare (manca la rete), non esce da solo: un avviso
+dice quante cose mancano. **TORNA** lascia tutto com'è e le scritture
+partono appena la rete torna; **ESCI LO STESSO** le butta: se potete,
+aspettate la rete prima di uscire. Le presenze e le altre scritture dell'appello
+rimaste in coda non passano mai al prossimo che entra sullo stesso dispositivo. Lo stesso vale per **ESCI** sul
+tablet di sala.
+
 Il timer, aperto dentro l'app, lo dice quando manca la rete: un riquadro giallo
 **SENZA RETE** sopra l'elenco. Le illustrazioni di Maurizio non compaiono e la
 voce incisa può essere quella del telefono, ma il timer parte lo stesso. Con la
