@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.61.0 — 15 ottobre 2026
+
+### Novità
+
+- Terzo tema Tatami (paglia e verde muschio), a scelta accanto a nero e bianco, anche nel timer
+
 ## 0.60.5 — 15 ottobre 2026
 
 ### Risolto
