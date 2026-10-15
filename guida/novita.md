@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.62.2 — 15 ottobre 2026
+
+### Risolto
+
+- Nel tema Tatami l'elenco della ricerca iscritto si legge
+
 ## 0.62.1 — 15 ottobre 2026
 
 ### Risolto
