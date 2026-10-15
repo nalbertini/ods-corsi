@@ -230,6 +230,7 @@ const dimmi = (s) => { console.log('  ✗', s); guai++ }
   smetti()
   console.log(`11 server muto: avviso dopo ${Date.now() - via} ms per ${pendenza?.quante}`)
   if (!pendenza) dimmi('è rimasto appeso invece di avvisare')
+  c.svuota()
 }
 
 // --- 11b. senza nessuno che mostri l'avviso non si esce e non si perde ------
