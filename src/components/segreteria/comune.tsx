@@ -104,7 +104,7 @@ export function Bozza({ children }: { children: ReactNode }) {
   )
 }
 
-interface Domanda {
+export interface Domanda {
   testo: string
   si: string
   no: string
@@ -146,7 +146,7 @@ export function Conferme() {
   return <Conferma d={d} fine={fine} />
 }
 
-function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean) => void }) {
+export function Conferma({ d, fine }: { d: Domanda; fine: (si: boolean) => void }) {
   const ref = useDialogo<HTMLDivElement>(() => fine(false))
   const no = useRef<HTMLButtonElement>(null)
   // Dopo `useDialogo`, che mette il fuoco sul dialogo: si parte dalla risposta sicura.
