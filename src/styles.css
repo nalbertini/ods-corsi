@@ -216,6 +216,15 @@
 :root[data-tema='tatami'] .sg-voce[aria-current='page'] { border-left-color: #1d1d1b; background: #f6f3e4; color: #1d1d1b; }
 :root[data-tema='tatami'] .sg-menu .sg-campo { background: #f6f3e4; border-color: #1d1d1b; color: #1d1d1b; }
 :root[data-tema='tatami'] .sg-menu .sg-campo::placeholder { color: #5a594c; }
+/* L'elenco della ricerca sta dentro il menu verde ma ha il fondo chiaro: lì i token tornano quelli della pagina, se no il testo sparisce. */
+:root[data-tema='tatami'] .sg-cerca-elenco {
+  --text: #1d1d1b;
+  --sec: #3d3d3a;
+  --dim: #5a594c;
+  --line: #bdb68f;
+  --line-soft: #cfc9a8;
+  color: #1d1d1b;
+}
 /* Come la voce del menu: nella barra in basso la scheda corrente è chiara, quindi il testo e il segno scuri. */
 :root[data-tema='tatami'] .barra-voce[aria-current='page'] { border-top-color: #1d1d1b; color: #1d1d1b; }
 
