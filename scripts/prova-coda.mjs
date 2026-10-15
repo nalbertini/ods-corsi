@@ -142,7 +142,6 @@ const dimmi = (s) => { console.log('  ✗', s); guai++ }
 // token. Per questo ESCI manda quel che può, e se resta qualcosa lo dice.
 {
   memoria.clear()
-  const c = new CodaDiUscita(async () => {})
   let uscito = 0
   let avvisi = 0
   const smetti = guardaUscita((p) => { if (p) avvisi++ })
@@ -151,7 +150,6 @@ const dimmi = (s) => { console.log('  ✗', s); guai++ }
   console.log(`7 coda vuota: uscito ${uscito}, avvisi ${avvisi}`)
   if (uscito !== 1) dimmi('non è uscito con la coda vuota')
   if (avvisi) dimmi('ha avvisato senza motivo')
-  void c
 }
 
 // --- 8. con la rete, prima le manda, poi esce senza chiedere ---------------
@@ -232,6 +230,28 @@ const dimmi = (s) => { console.log('  ✗', s); guai++ }
   smetti()
   console.log(`11 server muto: avviso dopo ${Date.now() - via} ms per ${pendenza?.quante}`)
   if (!pendenza) dimmi('è rimasto appeso invece di avvisare')
+}
+
+// --- 11b. senza nessuno che mostri l'avviso non si esce e non si perde ------
+{
+  memoria.clear()
+  const c = new CodaDiUscita(async () => { throw new Error('niente rete') }, 'ods-corsi:coda')
+  c.accoda('k1', 'segna', ['s1', 'p1', 'presente'])
+  await attesa()
+  let uscito = 0
+  const risposta = await uscita(async () => { uscito++ })
+  console.log(`11b nessun avviso montato: uscito ${uscito}, risposta ${risposta}, in coda ${c.inAttesa}`)
+  if (uscito || risposta !== false) dimmi('è uscito senza poter chiedere')
+  if (c.inAttesa !== 1) dimmi('ha toccato la coda')
+  c.svuota()   // non resti nel registro a sporcare le prove dopo
+}
+
+// --- 11c. dice se è uscito -------------------------------------------------
+{
+  memoria.clear()
+  const vuota = await uscita(async () => {})
+  console.log(`11c coda vuota: risposta ${vuota}`)
+  if (vuota !== true) dimmi('con la coda vuota doveva dire di essere uscito')
 }
 
 // --- 12. le parole dell'avviso ---------------------------------------------

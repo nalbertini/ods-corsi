@@ -29,17 +29,21 @@ export const avvisoUscita = (n: number) =>
 
 /**
  * Esegue `fai` (l'uscita vera) se non si perde niente, altrimenti chiede.
+ * Dice se è uscito: `false` vuol dire che aspetta la risposta all'avviso.
  * `attesaMs`: quanto aspettare il server prima di dire che non risponde.
  */
-export async function uscita(fai: () => Promise<void>, attesaMs = 4000): Promise<void> {
+export async function uscita(fai: () => Promise<void>, attesaMs = 4000): Promise<boolean> {
   await mandaTutto(attesaMs)
   const quante = inCodaDiTutte()
   const esciComunque = async () => {
     svuotaTutte()
     await fai()
   }
-  if (!quante) return esciComunque()
+  if (!quante) {
+    await esciComunque()
+    return true
+  }
   // Senza nessuno che mostri l'avviso non si esce: meglio restare che perdere.
-  if (!ascoltatori.size) throw new Error('Ci sono scritture non ancora arrivate: aspetta che torni la rete e riprova')
   for (const f of ascoltatori) f({ quante, esciComunque })
+  return false
 }

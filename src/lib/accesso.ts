@@ -288,9 +288,9 @@ function perchéPassword(e: { message?: string; code?: string }): string {
 }
 
 /** Esce, e torna alla porta: l'area la sceglie il prossimo account. */
-export function esci(): Promise<void> {
+export async function esci(): Promise<void> {
   // Le scritture non ancora arrivate non passano al prossimo account: vedi `uscita.ts`.
-  return uscita(async () => {
+  await uscita(async () => {
     // Le bozze delle segnalazioni restano nella scheda: al banco il computer è
     // di tutti. Prima di tutto, così le toglie anche se il client non arriva.
     svuotaBozze(sessione())
