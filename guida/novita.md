@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.62.0 — 15 ottobre 2026
+
+### Novità
+
+- La ricerca in cima al menu trova anche richieste, corsi e istruttori, e gli iscritti dal telefono
+
 ## 0.61.0 — 15 ottobre 2026
 
 ### Novità
