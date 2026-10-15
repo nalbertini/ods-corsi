@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import AvvisoUscita from './components/AvvisoUscita'
 import './styles.css'
 import { registraAggiornamenti } from './lib/aggiornamento'
 import { avviaTema } from './lib/tema'
@@ -19,6 +20,7 @@ if (verso) {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />
+      <AvvisoUscita />
     </StrictMode>,
   )
 }

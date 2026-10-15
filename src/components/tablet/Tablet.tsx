@@ -14,6 +14,7 @@ import { leggiLinkSpotify, suonaLista } from '../../../timer/src/lib/spotify'
 import { PlayerYoutube } from '../../../timer/src/components/PlayerYoutube'
 import { PlayerAudio } from '../../../timer/src/components/PlayerAudio'
 import { fonteDelLink, listaRicordata, musicaScelta, ricordaLista, ricordaSpenta, spentaRicordata, type ListaMusica } from '../../lib/musica'
+import { uscita } from '../../lib/uscita'
 import { trattieniAggiornamento } from '../../lib/aggiornamento'
 import { Accensione, Cronometro, Nota, Persone } from '../Icons'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
@@ -129,9 +130,12 @@ export function Tablet() {
         d={d}
         postazione={postazione}
         onScollega={async () => {
-          // Si esce, e si torna alla porta di tutta l'app.
-          await d.scollega()
-          lasciaTablet()
+          // Si esce, e si torna alla porta di tutta l'app. Le scritture non
+          // ancora arrivate non restano al prossimo account: vedi `uscita.ts`.
+          await uscita(async () => {
+            await d.scollega()
+            lasciaTablet()
+          })
         }}
       />
     </div>
@@ -582,6 +586,8 @@ function ConfermaUscita({ nome, onEsci, onAnnulla }: { nome: string; onEsci: () 
     setGuaio(null)
     try {
       await onEsci()
+      // Con scritture in sospeso non si è usciti: l'avviso chiede, e qui si può ripremere.
+      setAspetta(false)
     } catch (e) {
       setGuaio(messaggio(e, 'Uscita non riuscita'))
       setAspetta(false)

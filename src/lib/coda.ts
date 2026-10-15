@@ -50,6 +50,11 @@ const scrivi = (dove: string, lista: Operazione[]) => {
   }
 }
 
+/** Le code che questa pagina ha aperto: serve a mandarle o a svuotarle quando si esce. */
+const vive = new Set<Coda>()
+
+const pausa = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+
 export class Coda {
   private lista: Operazione[]
   private sta = false
@@ -62,8 +67,9 @@ export class Coda {
    */
   constructor(
     private esegui: (op: Operazione) => Promise<void>,
-    private dove = DOVE,
+    readonly dove = DOVE,
   ) {
+    vive.add(this)
     this.lista = leggi(dove)
     window.addEventListener('online', () => void this.scarica())
     // Quello rimasto dall'ultima volta (l'app chiusa senza rete, o ricaricata
@@ -102,6 +108,22 @@ export class Coda {
     for (const f of this.ascoltatori) f(this.inAttesa)
   }
 
+  /** Come `scarica`, ma se ne sta già scaricando un'altra giro aspetta che finisca. */
+  async scaricaEAspetta(ms: number): Promise<void> {
+    const fine = Date.now() + ms
+    do {
+      await this.scarica()
+      if (this.sta) await pausa(50)
+    } while (this.sta && Date.now() < fine)
+  }
+
+  /** Butta le scritture ancora in coda, in memoria e su disco. Solo uscendo: vedi `uscita.ts`. */
+  svuota() {
+    this.lista = []
+    scrivi(this.dove, this.lista)
+    this.avvisa()
+  }
+
   /** Mette in coda e prova subito. Non aspetta il server: l'interfaccia va avanti. */
   accoda(chiave: string, tipo: string, args: unknown[]) {
     this.lista = this.lista.filter((o) => o.chiave !== chiave)
@@ -138,4 +160,28 @@ export class Coda {
       this.sta = false
     }
   }
+}
+
+// Le code dell'app dei corsi (non quella del timer, che ha la sua app e il
+// suo esecutore): quelle che il prossimo account del dispositivo si
+// ritroverebbe e rieseguirebbe col suo token.
+const CODE_DELL_APP = ['ods-corsi:coda', 'ods-corsi:coda-sala']
+
+/** Quante scritture non sono arrivate, su disco o in memoria (la memoria piena non le fa sparire). */
+export function inCodaDiTutte(): number {
+  return CODE_DELL_APP.reduce(
+    (tot, dove) => tot + Math.max(leggi(dove).length, ...[...vive].filter((c) => c.dove === dove).map((c) => c.inAttesa)),
+    0,
+  )
+}
+
+/** Prova a mandare tutto ora, per al massimo `ms`: un server muto non deve tenere ferma l'uscita. */
+export async function mandaTutto(ms: number): Promise<void> {
+  await Promise.race([Promise.all([...vive].map((c) => c.scaricaEAspetta(ms))), pausa(ms)])
+}
+
+/** Dimentica le scritture ancora in coda, di tutte le code dell'app. */
+export function svuotaTutte(): void {
+  for (const c of vive) if (CODE_DELL_APP.includes(c.dove)) c.svuota()
+  for (const dove of CODE_DELL_APP) scrivi(dove, [])
 }
