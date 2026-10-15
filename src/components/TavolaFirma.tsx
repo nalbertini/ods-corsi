@@ -89,7 +89,7 @@ function Tela({ id, tratti, onTratti, onTocco, limita, descritto }: { id?: strin
     misura()
     const o = typeof ResizeObserver === 'function' ? new ResizeObserver(misura) : null
     o?.observe(c)
-    // Il tema scuro o chiaro cambia il colore dell'inchiostro sullo schermo.
+    // Il tema cambia il colore dell'inchiostro sullo schermo.
     const tema = new MutationObserver(ridisegna)
     tema.observe(document.documentElement, { attributes: true })
     return () => {

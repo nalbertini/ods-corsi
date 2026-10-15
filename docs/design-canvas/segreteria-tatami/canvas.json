@@ -1,0 +1,99 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Segreteria · Tatami"
+    },
+    {
+      "id": "page-2",
+      "name": "Componenti nuovi"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Settimana · segreteria, 1600px",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1080,
+      "page": "page-1"
+    },
+    {
+      "file": "MainData.dc.html",
+      "title": "Settimana · scegliere un'altra data",
+      "x": 1700,
+      "y": 0,
+      "w": 1600,
+      "h": 1080,
+      "page": "page-1"
+    },
+    {
+      "file": "MainScuro.dc.html",
+      "title": "Settimana · tema scuro",
+      "x": 3400,
+      "y": 0,
+      "w": 1600,
+      "h": 1200,
+      "page": "page-1"
+    },
+    {
+      "file": "MainChiaro.dc.html",
+      "title": "Settimana · tema chiaro",
+      "x": 5100,
+      "y": 0,
+      "w": 1600,
+      "h": 1200,
+      "page": "page-1"
+    },
+    {
+      "file": "TatamiMenu.dc.html",
+      "title": "TatamiMenu",
+      "x": 0,
+      "y": 0,
+      "w": 260,
+      "h": 960,
+      "page": "page-2"
+    },
+    {
+      "file": "TatamiMancano.dc.html",
+      "title": "TatamiMancano",
+      "x": 380,
+      "y": 0,
+      "w": 1284,
+      "h": 108,
+      "page": "page-2"
+    },
+    {
+      "file": "TatamiSettimana.dc.html",
+      "title": "TatamiSettimana",
+      "x": 380,
+      "y": 240,
+      "w": 880,
+      "h": 850,
+      "page": "page-2"
+    },
+    {
+      "file": "TatamiAppello.dc.html",
+      "title": "TatamiAppello",
+      "x": 1380,
+      "y": 240,
+      "w": 380,
+      "h": 640,
+      "page": "page-2"
+    },
+    {
+      "file": "TatamiCalendario.dc.html",
+      "title": "TatamiCalendario",
+      "x": 1380,
+      "y": 1340,
+      "w": 460,
+      "h": 520,
+      "page": "page-2"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
+}

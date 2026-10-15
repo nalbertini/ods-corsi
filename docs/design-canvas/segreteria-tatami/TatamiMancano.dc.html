@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; background: {{c.sup}}; border: 2px solid {{c.orlo}}">
+  <sc-for list="{{voci}}" as="v" hint-placeholder-count="4">
+    <div style="display: flex; align-items: center; gap: 18px; min-height: 100px; padding: 14px 22px; border-left: {{v.cucitura}}; border-bottom: 8px solid {{v.segno}}; color: {{c.ink}}">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 64px; font-weight: 700; line-height: 0.95; color: {{v.colore}}">{{v.n}}</span>
+      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 0.12em">{{v.titolo}}</span>
+        <span style="font-size: 16px; color: {{c.dim}}">{{v.nota}}</span>
+      </span>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tema":{"editor":"enum","options":["tatami","scuro","chiaro"],"default":"tatami","section":"Tema"},"voci":{"editor":"text","default":"2|APPELLI NON FATTI|ieri e oggi|r, 5|CERTIFICATI SCADUTI|da richiamare|r, 7|PAGAMENTI|quote non in regola|r, 3|RICHIESTE ONLINE|da accogliere|g"},"$preview":{"width":1284,"height":108}}'>
+// PROPOSTA «Tatami»: la striscia COSA MANCA, fissa in cima a ogni pagina di segreteria (principio 1 di PRODUCT.md:
+// cio' che manca si vede subito, senza cercarlo). Quattro caselle come quattro tatami affiancati; ogni casella e' un
+// collegamento alla sua pagina (DA FARE). voci: "numero|titolo|nota|tono" separate da virgola; tono `r` = manca
+// (cifra rosso-testo, segno rosso sotto), `g` = da accogliere (cifra giallo-testo, segno giallo), `v` = tutto a posto
+// (segno verde, cifra orlo, e' spunta ✓ davanti al numero). Un numero 0 e' sempre verde: lo stato non e' solo colore,
+// c'e' il titolo e la nota.
+const T = {
+  tatami: { fondo: '#ebe6d0', sup: '#f6f3e4', supAlta: '#d9d2b0', cuci: '#bdb68f', orlo: '#1d1d1b', ink: '#1d1d1b', dim: '#5d5c4f', su: '#1d1d1b', verdeT: '#0b7a33', rossoT: '#b81d1d', gialloT: '#8f6a00', menu: '#2f3d2b', menuTesto: '#f6f3e4', menuSec: '#cfd6c0' },
+  scuro: { fondo: '#121212', sup: '#1c1c1c', supAlta: '#242424', cuci: '#333333', orlo: '#4a4a46', ink: '#f2f2f0', dim: '#8c8c88', su: '#121212', verdeT: '#16a54a', rossoT: '#ff5a52', gialloT: '#f4c31b', menu: '#161616', menuTesto: '#f2f2f0', menuSec: '#c9c9c4' },
+  chiaro: { fondo: '#f4f4f1', sup: '#ffffff', supAlta: '#e9e9e5', cuci: '#d4d4ce', orlo: '#8a8a85', ink: '#161616', dim: '#656561', su: '#121212', verdeT: '#0b7a33', rossoT: '#b81d1d', gialloT: '#8f6a00', menu: '#ebebe7', menuTesto: '#161616', menuSec: '#3d3d3a' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const c = T[this.props.tema] || T.tatami;
+    const TONI = {
+      r: { colore: c.rossoT, segno: '#e4292a' },
+      g: { colore: c.gialloT, segno: '#f4c31b' },
+      v: { colore: c.verdeT, segno: '#16a54a' },
+    };
+    const voci = String(this.props.voci ?? '')
+      .split(',')
+      .map((s, i) => {
+        const [n, titolo, nota, tono] = s.split('|').map((x) => x.trim());
+        const t = TONI[Number(n) === 0 ? 'v' : tono] || TONI.r;
+        return { n: Number(n) === 0 ? '✓ 0' : n, titolo, nota, colore: t.colore, segno: t.segno, cucitura: i === 0 ? '0' : '2px solid ' + c.cuci };
+      })
+      .filter((v) => v.titolo);
+    return { c, voci };
+  }
+}
+</script>
+</body>
+</html>

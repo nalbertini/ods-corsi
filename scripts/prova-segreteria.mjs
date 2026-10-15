@@ -1499,6 +1499,13 @@ console.log('\ngli errori del server e le voci dei tablet, detti per la segreter
     const chiaro = tema(":root[data-tema='chiaro']")
     for (const fondo of ['menu', 'surface-2'].filter((f) => chiaro[f])) ok(`${file}, tema chiaro: testo spento su --${fondo}`, contrasto(chiaro.dim, chiaro[fondo]), 4.5)
     ok(`${file}, tema scuro: il testo spento resta quello`, tema(':root').dim, '#8c8c88')
+    // Il Tatami: il testo spento si legge su tutti i fondi chiari, e sul menu
+    // verde muschio si legge quello che il menu rimappa (i token di testo lì
+    // tornano chiari). Il blocco mancante è un caso rosso, non un errore.
+    const tatami = tema(":root[data-tema='tatami']")
+    for (const fondo of ['bg', 'surface', 'surface-2']) ok(`${file}, tema tatami: testo spento su --${fondo}`, tatami.dim && tatami[fondo] ? contrasto(tatami.dim, tatami[fondo]) : 0, 4.5)
+    const nelMenu = [...css.matchAll(/:root\[data-tema=['"]?tatami['"]?\]\s+[^{}]+\{([^}]*)\}/g)].map((m) => m[1].match(/--dim:\s*(#[0-9a-f]{6})/i)?.[1]).find(Boolean)
+    ok(`${file}, tema tatami: il testo spento nel menu su --menu`, nelMenu && tatami.menu ? contrasto(nelMenu, tatami.menu) : 0, 4.5)
   }
 }
 
