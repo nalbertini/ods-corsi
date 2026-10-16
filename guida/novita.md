@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.64.0 — 16 ottobre 2026
+
+### Novità
+
+- In cima a ogni pagina della segreteria la striscia COSA MANCA, con appelli non fatti, certificati scaduti, pagamenti e richieste online
+
 ## 0.63.0 — 16 ottobre 2026
 
 ### Novità
