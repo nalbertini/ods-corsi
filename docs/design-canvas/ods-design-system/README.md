@@ -217,6 +217,13 @@ esadecimali a 6 cifre: i file della libreria scrivono sempre così.
 Un mockup che vuole una cosa che manca la aggiunge alla libreria come
 `<Nome>.dc.html`, copiando i valori dal codice, prima di usarla.
 
+## La striscia COSA MANCA
+
+`../segreteria-tatami/TatamiMancano.dc.html` è il riferimento della striscia in cima alle pagine di segreteria
+(`CosaManca.tsx`, regole in `src/lib/cosaManca.ts`): quattro caselle, numero da 64px, segno spesso sotto. Il canvas la
+mostra a 1284px in una riga. Nell'app sotto i 1240px va due per due, sotto i 768px il numero sta sopra il testo, e su
+uno schermo basso (fino a 800px, da 768px di larghezza) è una riga sola senza nota; sul telefono sparisce con una scheda aperta.
+
 ## L'appello a tre tasti
 
 `../segreteria-tatami/TatamiAppello.dc.html` è il riferimento dell'appello della segreteria (`Appello` di
