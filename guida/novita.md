@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.63.0 — 16 ottobre 2026
+
+### Novità
+
+- Nell'appello della segreteria tre tasti (DA SEGNARE, PRESENTI, ASSENTI) con una lista alla volta e ✓ ✕ per segnare chi manca
+
 ## 0.62.2 — 15 ottobre 2026
 
 ### Risolto
