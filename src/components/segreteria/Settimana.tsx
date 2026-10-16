@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { attivitaDelGiorno, COME_IL_GIORNO, NESSUNA_ATTIVITA, sceltaAttivitaLezione, vociAttivita, type DatiSegreteria, type LezioneSeg } from '../../lib/segreteria'
 import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso, lunedi, oraDi, perEsteso } from '../../lib/sala'
@@ -10,24 +10,16 @@ import { unaVolta } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
 import { settimanaDi, type Posto } from '../../lib/indirizzoSegreteria'
 import { annuncio, chiSegnaTuttiPresenti, segnaNonSegnati, contiListe, dividiElenco, dopoIlTocco, LISTE, messaggioVuoto, nomeLista, parolaDiStato, serveConferma, statoDaTocco, tastoIniziale, type Azione, type Lista } from '../../lib/appelloListe'
+import { finestraDelMese, giorniDellaSettimana, meseDellaSettimana, nomeTitoloSettimana, postoDopoIlGiorno, titoloSettimana, type MeseDelCalendario } from '../../lib/calendarioSettimana'
+import { CalendarioSettimana } from './CalendarioSettimana'
 import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
-const MESI_CORTI = ['GEN', 'FEB', 'MAR', 'APR', 'MAG', 'GIU', 'LUG', 'AGO', 'SET', 'OTT', 'NOV', 'DIC']
 
 const piu = (d: Date, giorni: number) => {
   const x = new Date(d)
   x.setDate(x.getDate() + giorni)
   return x
-}
-
-/** «21 – 27 SETTEMBRE», o «28 SET – 4 OTTOBRE» quando cambia il mese. */
-function titolo(primo: Date) {
-  const ultimo = piu(primo, 6)
-  const mese = (d: Date) => giornoPerEsteso(chiaveGiorno(d)).split(' ').at(-1)!.toUpperCase()
-  return primo.getMonth() === ultimo.getMonth()
-    ? `${primo.getDate()} – ${ultimo.getDate()} ${mese(ultimo)}`
-    : `${primo.getDate()} ${MESI_CORTI[primo.getMonth()]} – ${ultimo.getDate()} ${mese(ultimo)}`
 }
 
 /**
@@ -60,7 +52,7 @@ export function Settimana({
   const [nuova, setNuova] = useState(false)
   const { avviso, avvisa, fai } = useAvviso()
 
-  const giorni = useMemo(() => Array.from({ length: 7 }, (_, i) => piu(primo, i)), [primo])
+  const giorni = useMemo(() => giorniDellaSettimana(primo), [primo])
   const sett = useCarica(() => d.settimana(giorni[0], giorni[6]), [d, giorni])
   const sale = useCarica(() => d.sale(), [d])
   const pronto = useCarica(() => d.prontoFino(), [d])
@@ -119,6 +111,48 @@ export function Settimana({
   // dalla striscia dei giorni; da sé oggi, se è in questa settimana.
   const telefono = useSchermo('(max-width: 767px)')
   const [giornoTel, setGiornoTel] = useState<string | null>(null)
+
+  // Il calendario delle date: si apre sul mese della settimana in griglia; le frecce cambiano solo il mese che si vede.
+  const tastoDate = useRef<HTMLButtonElement>(null)
+  const [calAperto, setCalAperto] = useState(false)
+  const [meseVisto, setMeseVisto] = useState<MeseDelCalendario>(() => meseDellaSettimana(primo))
+  const apriCalendario = () => {
+    if (!calAperto) setMeseVisto(meseDellaSettimana(primo))
+    setCalAperto(!calAperto)
+  }
+  const chiudiCalendario = useCallback((fuoco: boolean) => {
+    setCalAperto(false)
+    if (fuoco) tastoDate.current?.focus()
+  }, [])
+  // Una lezione aperta (link, Indietro) ha il suo cassetto sopra: il calendario si chiude.
+  useEffect(() => {
+    if (aperta) setCalAperto(false)
+  }, [aperta])
+  // I giorni con lezioni, una lettura per mese: finché la griglia non cambia, riaprire o tornare a un mese già visto non rilegge.
+  // Se la lettura fallisce restano i giorni senza quadratino, senza errori, e riaprendo si riprova.
+  const [giorniMesi, setGiorniMesi] = useState<Record<string, Set<string>>>({})
+  const inLettura = useRef(new Set<string>())
+  // I giorni con lezioni cambiano solo quando cambiano le lezioni (una annullata, una straordinaria): `giroLezioni` svuota la
+  // memoria dei mesi, e una lettura partita prima dello svuotamento non ci scrive i giorni vecchi.
+  const [giroLezioni, setGiroLezioni] = useState(0)
+  const generazione = useRef(0)
+  const chiaveMese = `${meseVisto.anno}-${meseVisto.mese}`
+  useEffect(() => {
+    generazione.current += 1
+    inLettura.current.clear()
+    setGiorniMesi({})
+  }, [giroLezioni])
+  useEffect(() => {
+    if (!calAperto || giorniMesi[chiaveMese] || inLettura.current.has(chiaveMese)) return
+    inLettura.current.add(chiaveMese)
+    const mia = generazione.current
+    const { da, a } = finestraDelMese(meseVisto)
+    d.giorniConLezioni(da, a)
+      .then((l) => mia === generazione.current && setGiorniMesi((p) => ({ ...p, [chiaveMese]: new Set(l) })))
+      .catch(() => undefined)
+      .finally(() => mia === generazione.current && inLettura.current.delete(chiaveMese))
+  }, [calAperto, chiaveMese, giorniMesi, d])
+  const conLezioniDelMese = giorniMesi[chiaveMese] ?? null
   const chiavi = giorni.map(chiaveGiorno)
   const delGiorno = giornoTel && chiavi.includes(giornoTel) ? giornoTel : chiavi.includes(oggi) ? oggi : chiavi[0]
   const lezioniDelGiorno = lezioni.filter((l) => chiaveGiorno(new Date(l.inizio)) === delGiorno)
@@ -135,11 +169,43 @@ export function Settimana({
         </button>
       </Testa>
 
-      <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+      <div className="row sg-sett-barra" style={{ gap: 8, flexWrap: 'wrap' }}>
         <button type="button" className="icon-btn" aria-label="Settimana prima" onClick={() => sfoglia(piu(primo, -7))}>
           <Back />
         </button>
-        <span className="ob sg-sett-titolo">{titolo(primo)}</span>
+        <div className="sg-sett-titolo-box">
+          <button
+            ref={tastoDate}
+            type="button"
+            className="ob sg-sett-titolo"
+            aria-haspopup="dialog"
+            aria-expanded={calAperto}
+            aria-label={nomeTitoloSettimana(primo)}
+            onClick={apriCalendario}
+          >
+            {titoloSettimana(primo)}
+            <span className="sg-sett-freccia" aria-hidden="true">
+              ▾
+            </span>
+          </button>
+          {calAperto && (
+            <CalendarioSettimana
+              mese={meseVisto}
+              onMese={setMeseVisto}
+              lunediScelto={primo}
+              conLezioni={conLezioniDelMese}
+              prontoFino={pronto.dato ?? null}
+              titolo={tastoDate}
+              onChiudi={chiudiCalendario}
+              onScegli={(g) => {
+                onPosto(postoDopoIlGiorno({ settimana: chiaveGiorno(primo), sala: sala || undefined, lezione: aperta }, g), 'replace')
+                // Sul telefono il giorno toccato è anche il giorno della striscia.
+                setGiornoTel(chiaveGiorno(g))
+                chiudiCalendario(true)
+              }}
+            />
+          )}
+        </div>
         <button type="button" className="icon-btn" aria-label="Settimana dopo" onClick={() => sfoglia(piu(primo, 7))}>
           <span style={{ transform: 'scaleX(-1)', display: 'flex' }}>
             <Back />
@@ -254,6 +320,7 @@ export function Settimana({
           sale={sale.dato ?? []}
           onCambiato={() => {
             void sett.ricarica()
+            setGiroLezioni((g) => g + 1)
             onConti?.()
           }}
           onChiudi={() => vai({ lezione: undefined }, 'push')}
@@ -270,6 +337,7 @@ export function Settimana({
             setNuova(false)
             sfoglia(lunedi(inizio))
             void sett.ricarica()
+            setGiroLezioni((g) => g + 1)
           }}
         />
       )}

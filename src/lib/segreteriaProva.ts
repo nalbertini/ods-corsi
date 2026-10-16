@@ -1,5 +1,6 @@
 import type { Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ProvaSeg, RigaRegistro, Statistiche, StoricoSeg } from './segreteria'
 import { attivitaCambiata, cancellaFileIl, contattoNonValido, cosaNonVaAnagrafica, cosaNonVaCertificato, cosaNonVaScadenza, emailGiaDi, cosaNonVaAttivita, lezioniCheSeguonoIlGiorno, motivoAttivitaUsata, ordinaAttivita, pulisciAnagrafica } from './segreteria'
+import { giorniConLezioni } from './calendarioSettimana'
 import { cosaNonVaNucleo, nuovoTitolare } from './nucleo'
 import { gestisciSegnalataProva, segnalateProva } from './segnalateProva'
 import { nomeProprio } from './nomi'
@@ -235,6 +236,10 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async settimana(da, fino) {
       return lezioniFra(da, fino).map(vista)
+    },
+
+    async giorniConLezioni(da, fino) {
+      return [...giorniConLezioni(lezioniFra(da, fino).map((l) => l.inizio.toISOString()))]
     },
 
     async aggiornaLezione(sessioneId, cambi) {
