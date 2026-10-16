@@ -217,6 +217,12 @@ esadecimali a 6 cifre: i file della libreria scrivono sempre così.
 Un mockup che vuole una cosa che manca la aggiunge alla libreria come
 `<Nome>.dc.html`, copiando i valori dal codice, prima di usarla.
 
+## L'appello a tre tasti
+
+`../segreteria-tatami/TatamiAppello.dc.html` è il riferimento dell'appello della segreteria (`Appello` di
+`Settimana.tsx`, regole in `src/lib/appelloListe.ts`): tre tasti DA SEGNARE / PRESENTI / ASSENTI, una lista sola sotto,
+✓ e ✕ in DA SEGNARE. Il canvas ha sempre tutta la lista; nell'app il pannello scorre con la pagina.
+
 ## Il tema Tatami
 
 L'app ha tre temi: nero, bianco e **Tatami** (paglia e verde muschio). I componenti di questa libreria sono

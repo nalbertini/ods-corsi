@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { attivitaDelGiorno, COME_IL_GIORNO, NESSUNA_ATTIVITA, sceltaAttivitaLezione, vociAttivita, type DatiSegreteria, type LezioneSeg } from '../../lib/segreteria'
 import type { DettaglioSessione, StatoPresenza, StatoSessione } from '../../lib/sala'
 import { chiaveGiorno, giornoPerEsteso, lunedi, oraDi, perEsteso } from '../../lib/sala'
@@ -9,6 +9,7 @@ import type { ChiProva } from '../../lib/prove'
 import { unaVolta } from '../../lib/prove'
 import { MarchioProva, PannelloProve, TogliProva } from '../Prove'
 import { settimanaDi, type Posto } from '../../lib/indirizzoSegreteria'
+import { annuncio, chiSegnaTuttiPresenti, segnaNonSegnati, contiListe, dividiElenco, dopoIlTocco, LISTE, messaggioVuoto, nomeLista, parolaDiStato, serveConferma, statoDaTocco, tastoIniziale, type Azione, type Lista } from '../../lib/appelloListe'
 import { chiedi, Campo, dataLunga, Guaio, messaggio, Riga, Testa, useAvviso, useCarica, useDialogo } from './comune'
 
 const CORTI = ['DOM', 'LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB']
@@ -535,14 +536,13 @@ function Attivita({
   )
 }
 
-// presente → assente → non segnato, e si ricomincia: come nell'appello.
-const prossimo = (s: StatoPresenza | null): StatoPresenza | null => (s === null ? 'presente' : s === 'presente' ? 'assente' : null)
-
 /**
- * L'appello dalla segreteria: lo stesso dell'app, un tocco per riga, per
- * segnare al banco le presenze che l'istruttore ha preso su carta o
- * correggere un tocco sbagliato. Scrive con gli stessi `dati` dell'appello,
- * quindi anche da qui senza rete non si perde niente.
+ * L'appello dalla segreteria, a tre tasti (DA SEGNARE, PRESENTI, ASSENTI): sotto
+ * c'è una lista sola, quella del tasto premuto, e in DA SEGNARE ogni riga ha ✓ e ✕.
+ * Serve a segnare al banco le presenze che l'istruttore ha preso su carta o a
+ * correggere un tocco sbagliato (un tocco sul nome in PRESENTI o ASSENTI lo
+ * rimette da segnare). Le regole stanno in `lib/appelloListe.ts`. Scrive con gli
+ * stessi `dati` dell'appello, quindi anche da qui senza rete non si perde niente.
  *
  * Si apre quando la lezione è cominciata: prima non c'è niente da segnare,
  * e una presenza messa in anticipo sporcherebbe le medie. Da lì c'è anche il
@@ -553,6 +553,16 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
   const [elenco, setElenco] = useState<DettaglioSessione['elenco'] | null>(null)
   const [guaio, setGuaio] = useState<string | null>(null)
   const [conProve, setConProve] = useState(false)
+  // Il tasto premuto si decide quando l'elenco arriva e poi non cambia da solo: se
+  // DA SEGNARE si svuota mentre si segna, non si passa a un'altra lista senza chiederlo.
+  const [lista, setLista] = useState<Lista>('da_segnare')
+  const [annunciato, setAnnunciato] = useState('')
+  // Dove va il fuoco dopo un tocco: su una riga, o (id null) sul tasto premuto se la lista si è svuotata.
+  const [fuoco, setFuoco] = useState<{ id: string | null } | null>(null)
+  const tastiLista = useRef<HTMLDivElement>(null)
+  // L'altezza della lista a ogni segno: la lista si accorcia, ma il cassetto non deve scorrere sotto il dito.
+  const listaRef = useRef<HTMLDivElement>(null)
+  const [altezzaLista, setAltezzaLista] = useState<number | null>(null)
   const cominciata = Date.parse(l.inizio) <= Date.now()
   const annullata = l.stato === 'annullata'
   const aperto = cominciata && !annullata
@@ -565,6 +575,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
         if (!vivo) return
         setStrato(x)
         setElenco(det?.elenco ?? [])
+        setLista(tastoIniziale(det?.elenco ?? []))
       })
       .catch((e: unknown) => vivo && setGuaio(messaggio(e, 'Non riesco a leggere l\'appello')))
     return () => {
@@ -586,11 +597,33 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
     setElenco((v) => v && v.map((p) => (p.id === personaId ? { ...p, stato } : p)))
     scritto(strato.segna(l.id, personaId, stato))
   }
+  // Solo chi non è segnato: le assenze già messe non si toccano.
   const tutti = () => {
-    if (!strato) return
-    setElenco((v) => v && v.map((p) => ({ ...p, stato: 'presente' })))
-    scritto(strato.segnaTutti(l.id, 'presente'))
+    if (!strato || !elenco) return
+    const chi = chiSegnaTuttiPresenti(elenco)
+    if (chi.length === 0) return
+    setElenco((v) => v && v.map((p) => (chi.includes(p.id) ? { ...p, stato: 'presente' } : p)))
+    scritto(segnaNonSegnati(strato, l.id, elenco))
   }
+  // ✓, ✕ o «rimetti da segnare»: la riga cambia lista, il fuoco va a quella che prende il suo posto.
+  const segna = async (personaId: string, azione: Azione) => {
+    if (!strato || !elenco) return
+    const chi = elenco.find((p) => p.id === personaId)
+    if (chi && serveConferma(chi, azione) && !(await chiedi(`Togliere la giustificazione di ${perEsteso(chi)}?`, 'TOGLI', { pericolo: true }))) return
+    const r = dopoIlTocco(elenco, personaId, azione, lista)
+    setAltezzaLista(listaRef.current?.offsetHeight ?? null)
+    setElenco(r.elenco)
+    setFuoco({ id: r.prossimoFuoco })
+    if (chi) setAnnunciato(annuncio(chi, azione, contiListe(r.elenco).da_segnare))
+    scritto(strato.segna(l.id, personaId, statoDaTocco(azione)))
+  }
+  useEffect(() => {
+    if (fuoco === null) return
+    const riga = fuoco.id ? document.querySelector<HTMLElement>(`[data-fuoco="${CSS.escape(fuoco.id)}"]`) : null
+    // preventScroll: il fuoco non deve far scorrere il cassetto, se no il tocco dopo cade su un'altra riga.
+    ;(riga ?? tastiLista.current?.querySelector<HTMLElement>('button[aria-pressed="true"]'))?.focus({ preventScroll: true })
+    setFuoco(null)
+  }, [fuoco])
   const aggiungiProva = async (chi: ChiProva) => {
     if (!strato) return
     const p = await strato.aggiungiProva(l.id, chi)
@@ -603,12 +636,17 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
     scritto(strato.togliProva(l.id, personaId))
   }
   const iscritti = elenco?.filter((p) => !p.prova)
+  const conti = contiListe(elenco ?? [])
+  const qui = dividiElenco(elenco ?? [])[lista]
   const prove = elenco?.filter((p) => p.prova) ?? []
 
   const azzera = async () => {
     if (!strato || !elenco) return
     if (segnati && !(await chiedi(`Togliere i ${segnati} segni di questa lezione?`, 'TOGLI I SEGNI', { pericolo: true }))) return
     setElenco(elenco.map((p) => ({ ...p, stato: null })))
+    // Senza segni la lista premuta (PRESENTI, ASSENTI) è vuota e non serve a niente: si torna a DA SEGNARE.
+    setLista('da_segnare')
+    setAltezzaLista(null)
     scritto(Promise.all(elenco.filter((p) => p.stato !== null).map((p) => strato.segna(l.id, p.id, null))).then(() => undefined))
   }
 
@@ -665,25 +703,82 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
         {guaio && <Guaio testo={guaio} />}
         {!elenco && !guaio && <span className="sg-sotto">Sto leggendo l'appello…</span>}
         {iscritti && iscritti.length === 0 && <span className="sg-sotto">Nessun iscritto.</span>}
-        {iscritti && iscritti.length > 0 && (
+        {iscritti && iscritti.length > 0 && !aperto && (
           <div className="sg-elenco-appello">
             {iscritti.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className="riga-appello"
-                data-stato={p.stato ?? 'niente'}
-                disabled={!aperto}
-                onClick={() => tocca(p.id, prossimo(p.stato))}
-                aria-label={`${perEsteso(p)}: ${p.stato ?? 'non segnato'}`}
-              >
+              <div key={p.id} className="riga-appello" data-stato={p.stato ?? 'niente'}>
                 <span className="segno" aria-hidden="true">
                   {p.stato === 'presente' ? '✓' : p.stato === 'assente' ? '✕' : ''}
                 </span>
                 <span className="nome-appello grow">{perEsteso(p)}</span>
-              </button>
+              </div>
             ))}
           </div>
+        )}
+        {iscritti && iscritti.length > 0 && aperto && elenco && (
+          <>
+            {/* conti e liste si calcolano una volta per disegno */}
+            <div className="sg-liste" role="group" aria-label="Chi vedere" ref={tastiLista}>
+              {LISTE.map((x) => {
+                const n = conti[x]
+                return (
+                  <button key={x} type="button" className="sg-lista-tasto" data-lista={x} aria-pressed={lista === x} onClick={() => {
+                      setLista(x)
+                      setAltezzaLista(null)
+                    }}>
+                    <span className="sg-lista-segno" aria-hidden="true">
+                      {x === 'da_segnare' ? '○' : x === 'presenti' ? '✓' : '✕'}
+                    </span>
+                    <span className="sg-lista-n">{n}</span>
+                    <span className="sg-lista-nome">{nomeLista(x)}</span>
+                  </button>
+                )
+              })}
+            </div>
+            <Riga titolo={nomeLista(lista)}>
+              <span className="num" style={{ fontSize: 14, fontWeight: 700 }}>
+                {conti[lista]}
+              </span>
+            </Riga>
+            {qui.length === 0 && <span className="sg-sotto">{messaggioVuoto(lista)}</span>}
+            <div className="sg-elenco-appello" ref={listaRef} style={altezzaLista ? { minHeight: altezzaLista } : undefined}>
+              {qui.map((p) =>
+                lista === 'da_segnare' ? (
+                  <div key={p.id} className="riga-appello riga-segna" data-stato="niente">
+                    <span className="segno" aria-hidden="true">
+                      ○
+                    </span>
+                    <span className="nome-appello grow">{perEsteso(p)}</span>
+                    <button type="button" className="sg-segna sg-segna-si" data-fuoco={p.id} onClick={() => segna(p.id, 'presente')} aria-label={`${perEsteso(p)}: presente`}>
+                      ✓
+                    </button>
+                    <button type="button" className="sg-segna sg-segna-no" onClick={() => segna(p.id, 'assente')} aria-label={`${perEsteso(p)}: assente`}>
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className="riga-appello"
+                    data-stato={p.stato ?? 'niente'}
+                    data-fuoco={p.id}
+                    onClick={() => segna(p.id, 'rimetti')}
+                    aria-label={`${perEsteso(p)}: ${parolaDiStato(p.stato).toLowerCase()}. Tocca per rimetterlo da segnare`}
+                  >
+                    <span className="segno" aria-hidden="true">
+                      {p.stato === 'presente' ? '✓' : '✕'}
+                    </span>
+                    <span className="nome-appello grow">{perEsteso(p)}</span>
+                    <span className="sg-parola-stato">{parolaDiStato(p.stato)}</span>
+                  </button>
+                ),
+              )}
+            </div>
+            <span role="status" className="vh">
+              {annunciato}
+            </span>
+          </>
         )}
         {prove.length > 0 && (
           <>
@@ -700,7 +795,7 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
                     className="riga-appello"
                     data-stato={p.stato ?? 'niente'}
                     disabled={!aperto}
-                    onClick={() => tocca(p.id, prossimo(p.stato))}
+                    onClick={() => tocca(p.id, p.stato === 'presente' ? 'assente' : 'presente')}
                     aria-label={`${perEsteso(p)}, in prova: ${p.stato ?? 'non segnato'}`}
                   >
                     <span className="segno" aria-hidden="true">
@@ -714,9 +809,6 @@ function Appello({ l, onCambiato }: { l: LezioneSeg; onCambiato: () => void }) {
               ))}
             </div>
           </>
-        )}
-        {aperto && elenco && elenco.length > 0 && (
-          <span style={{ fontSize: 12, color: 'var(--faint)' }}>Un clic: presente, due: assente, tre: non segnato.</span>
         )}
       </div>
     </>

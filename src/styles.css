@@ -1766,9 +1766,43 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-appello { display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--bg); border: 2px solid var(--line); }
 .sg-appello[data-manca='true'] { border-color: var(--rosso); }
 .sg-elenco-appello { display: flex; flex-direction: column; gap: 6px; }
-.sg-elenco-appello .riga-appello { min-height: 44px; }
-.sg-elenco-appello .nome-appello { font-size: 15px; }
+.sg-elenco-appello .riga-appello { min-height: 56px; }
+.sg-elenco-appello { gap: 8px; }
+.sg-elenco-appello .riga-appello { gap: 14px; }
+.sg-elenco-appello .riga-appello .segno { font-size: 32px; width: 32px; }
+.sg-elenco-appello .nome-appello { font-size: 20px; }
+.sg-elenco-appello div.riga-appello { cursor: default; }
 .sg-elenco-appello .riga-appello:disabled { cursor: default; color: var(--sec); }
+/* I tre tasti dell'appello: DA SEGNARE, PRESENTI, ASSENTI. Il conto e la parola stanno su una riga sola; il premuto ha il bordo
+   doppio (un'ombra dentro, così la riga non si sposta). */
+.sg-appello .sg-btn { min-height: 56px; }
+.sg-liste { display: flex; gap: 6px; }
+.sg-lista-tasto {
+  display: flex; flex: 1 1 auto; align-items: center; justify-content: center; gap: 5px; min-height: 48px; padding: 0 6px;
+  white-space: nowrap; background: var(--surface); border: 2px solid var(--line); color: var(--text);
+}
+.sg-lista-tasto[data-lista='da_segnare'] { border-color: var(--text); }
+.sg-lista-tasto[data-lista='presenti'] { border-color: var(--verde); }
+.sg-lista-tasto[data-lista='assenti'] { border-color: var(--rosso); }
+.sg-lista-tasto[aria-pressed='true'] { background: var(--surface-2); box-shadow: inset 0 0 0 2px var(--text); }
+.sg-lista-tasto[data-lista='presenti'][aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--verde); }
+.sg-lista-tasto[data-lista='assenti'][aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--rosso); }
+.sg-lista-segno, .sg-lista-n { font-family: var(--cond); font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 700; line-height: 1; }
+.sg-lista-tasto[data-lista='da_segnare'] :is(.sg-lista-segno, .sg-lista-n) { color: var(--dim); }
+.sg-lista-tasto[data-lista='presenti'] :is(.sg-lista-segno, .sg-lista-n) { color: var(--verde-testo); }
+.sg-lista-tasto[data-lista='assenti'] :is(.sg-lista-segno, .sg-lista-n) { color: var(--rosso-testo); }
+.sg-lista-nome { font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: var(--dim); }
+/* In DA SEGNARE ogni riga ha ✓ e ✕ da 44px; in PRESENTI e ASSENTI la riga è un tasto che la rimette da segnare. */
+.riga-segna { padding-right: 6px; cursor: default; }
+.sg-segna {
+  flex-shrink: 0; width: 52px; height: 44px; display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--cond); font-size: 22px; font-weight: 700; line-height: 1;
+}
+.sg-segna-si { background: var(--verde); color: var(--su-colore); }
+.sg-segna-no { background: transparent; border: 2px solid var(--rosso); color: var(--rosso-testo); }
+.sg-parola-stato { font-family: var(--cond); font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--dim); }
+.riga-appello[data-stato='presente'] .sg-parola-stato { color: var(--verde-testo); }
+.riga-appello[data-stato='assente'] .sg-parola-stato { color: var(--rosso-testo); }
 .sg-nomi { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px 16px; font-size: 14px; color: var(--sec); }
 
 /* Corsi e iscritti: la lista a sinistra, la scheda a destra. */
