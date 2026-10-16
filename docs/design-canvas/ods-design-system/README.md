@@ -217,6 +217,13 @@ esadecimali a 6 cifre: i file della libreria scrivono sempre così.
 Un mockup che vuole una cosa che manca la aggiunge alla libreria come
 `<Nome>.dc.html`, copiando i valori dal codice, prima di usarla.
 
+## Il calendario dalle date
+
+`../segreteria-tatami/TatamiCalendario.dc.html` (e `TatamiSettimana.dc.html` per il titolo che diventa un tasto con ▾) è il
+riferimento del calendario della SETTIMANA (`CalendarioSettimana.tsx`, regole in `src/lib/calendarioSettimana.ts`): 460px, celle
+da 52px, sei righe da sette, settimana evidenziata, oggi in giallo-testo, quadratino blu sui giorni con lezioni (assente finché non
+si sa). Nell'app si aggancia sotto il tasto delle date e non esce mai dallo schermo.
+
 ## La striscia COSA MANCA
 
 `../segreteria-tatami/TatamiMancano.dc.html` è il riferimento della striscia in cima alle pagine di segreteria

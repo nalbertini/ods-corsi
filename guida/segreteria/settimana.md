@@ -23,6 +23,15 @@ della disciplina, la sala e l'istruttore. Il numero in basso dice:
 In alto:
 
 - le frecce spostano di una settimana, **OGGI** riporta a quella corrente;
+- le **date** (es. «12 – 18 OTTOBRE», col ▾) sono un tasto: aprono un **calendario** del mese,
+  con la settimana che si vede evidenziata e oggi in giallo. Un tocco su un giorno porta alla
+  sua settimana (sul telefono, a quel giorno) e chiude il calendario; le frecce del calendario
+  cambiano solo il mese che si guarda. Un quadratino blu sotto un giorno dice che ha lezioni
+  (anche annullate, e di **qualunque sala**, anche se in griglia ne hai scelta una); se non c'è,
+  può essere che non si sia ancora letto: non vuol dire che non ce ne siano. Scegliere un
+  giorno non aggiunge un passo per Indietro. **OGGI** nel calendario porta alla settimana di oggi. Si
+  chiude con **Esc**, con un tocco fuori o ritoccando le date. Dopo la data fino a cui il
+  calendario ha le lezioni lo dice sotto il mese;
 - i tasti delle sale (**TUTTE**, **TATAMI**, …) fanno vedere una sala sola;
 - sotto il titolo c'è scritto fino a che giorno è pronto il calendario, cioè
   fin dove ci sono le lezioni dell'orario (le straordinarie non contano).

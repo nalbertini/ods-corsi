@@ -465,6 +465,8 @@ export interface DatiSegreteria {
 
   /** Le lezioni fra due giorni, estremi inclusi, anche annullate. */
   settimana(da: Date, a: Date): Promise<LezioneSeg[]>
+  /** I giorni (`AAAA-MM-GG`) con almeno una lezione fra due date, anche annullata: per il calendario. Più leggera di `settimana`: legge solo le date, non scrive. */
+  giorniConLezioni(da: Date, a: Date): Promise<string[]>
   aggiornaLezione(
     sessioneId: string,
     cambi: { stato?: StatoSessione; sostitutoId?: string | null; salaId?: string | null; attivitaId?: string | null },

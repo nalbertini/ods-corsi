@@ -2,6 +2,7 @@ import { daSenzaIstruttore } from './ore'
 import type { IndiziDoppioni } from './doppioni'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { allungaCalendario } from './allunga'
+import { giorniConLezioni } from './calendarioSettimana'
 import type { AllenamentoSeg, Anagrafica, AnagraficaDi, CorsoSeg, DatiSegreteria, EsitoDate, FonteNascita, Impostazioni, LezioneSeg, PersonaSeg, PersonaleSeg, PresenzaIstruttoreSeg, ComePresenzaIstruttore, ProvaSeg, RigaRegistro, Statistiche, StatoBackup, StatoPagamento, StoricoSeg } from './segreteria'
 import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, cosaNonVaAttivita, cosaNonVaCertificato, cosaNonVaScadenza, mancaAttivita, motivoAttivitaUsata, nascitaDelleFonti, ordinaAttivita, pulisciAnagrafica } from './segreteria'
 import { nomeProprio } from './nomi'
@@ -433,6 +434,16 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         id: string; nome: string; cognome: string; ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean
       }>
       return righe.filter((r) => insegna({ ruolo: r.ruolo, ancheIstruttore: r.anche_istruttore })).map((r) => ({ id: r.id, nome: nome(r) }))
+    },
+
+    async giorniConLezioni(da, a) {
+      // Sola lettura delle date, senza `allungaCalendario`: il calendario si apre spesso e non deve scrivere.
+      const fino = new Date(a)
+      fino.setHours(23, 59, 59, 999)
+      const righe = ok(
+        await tutteLeRighe((prima, ultima) => db.from('sessioni').select('inizio').gte('inizio', da.toISOString()).lte('inizio', fino.toISOString()).order('inizio').order('id').range(prima, ultima)),
+      ) as unknown as Array<{ inizio: string }>
+      return [...giorniConLezioni(righe.map((r) => r.inizio))]
     },
 
     async settimana(da, a) {
