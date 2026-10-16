@@ -288,5 +288,30 @@ console.log('\nI quattro conti, sui dati di prova veri')
   // quindi i conti sono questi e non ne ha altri: se ne avesse, andrebbero portati in `cosaManca.ts`.
 }
 
+console.log('\nNascondere la striscia da IMPOSTAZIONI (la scelta sta sul dispositivo)')
+{
+  // Una funzione che manca non fa crollare lo script: è un caso rosso come gli altri.
+  const prova = (f, ...a) => {
+    try {
+      return m[f](...a)
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  ok('di default la striscia si vede: niente salvato', prova('leggiPreferenzaStriscia', null), true)
+  ok('anche con valori che non si conoscono', ['', 'mostrata', 'Nascosta', 'NASCOSTA', '1', 'false', ' nascosta', undefined, 0, {}].map((v) => prova('leggiPreferenzaStriscia', v)), Array(10).fill(true))
+  ok('solo «nascosta» la nasconde', prova('leggiPreferenzaStriscia', 'nascosta'), false)
+  ok('cosa si salva: nascosta o mostrata', [prova('valorePreferenzaStriscia', false), prova('valorePreferenzaStriscia', true)], ['nascosta', 'mostrata'])
+  ok('si rilegge quello che si è salvato', [true, false].map((v) => prova('leggiPreferenzaStriscia', prova('valorePreferenzaStriscia', v))), [true, false])
+  // Cosa si vede quando il salvataggio non riesce (quota piena, navigazione privata): la scelta fatta in questa pagina vince su
+  // quello che c'è salvato, se no Impostazioni e il resto della segreteria vedrebbero due cose diverse.
+  ok('niente salvato e niente scelto: si vede', prova('preferenzaStriscia', null, null), true)
+  ok('salvata nascosta: nascosta', prova('preferenzaStriscia', 'nascosta', null), false)
+  ok('scelta in questa pagina senza poter salvare: vince lei', [prova('preferenzaStriscia', null, false), prova('preferenzaStriscia', 'mostrata', false), prova('preferenzaStriscia', 'nascosta', true)], [false, false, true])
+  ok('salvato e scelto uguali: lo stesso', [prova('preferenzaStriscia', 'nascosta', false), prova('preferenzaStriscia', 'mostrata', true)], [false, true])
+  ok('nascosta per scelta: mai, in nessuna voce, sul computer e sul telefono', ['presenze', 'iscritti', 'settimana', 'richieste', 'corsi'].flatMap((v) => [prova('strisciaVisibile', v, false, false, false), prova('strisciaVisibile', v, true, false, false)]), Array(10).fill(false))
+  ok('voluta (o senza dirlo): le regole di prima', [prova('strisciaVisibile', 'iscritti', false, false, true), prova('strisciaVisibile', 'iscritti', false, false), prova('strisciaVisibile', 'dafare', false, false, true), prova('strisciaVisibile', 'iscritti', true, true, true)], [true, true, false, false])
+}
+
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

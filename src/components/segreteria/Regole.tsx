@@ -3,6 +3,7 @@ import { confermaDateCorsi, confermaMesiPresenze, cosaNonVaAttivita, motivoAttiv
 import { erroreDelLink, fonteDelLink, MAX_NOME_LISTA } from '../../lib/musica'
 import { INFORMATIVA, INFORMATIVA_BOZZA } from '../../lib/iscrizione'
 import { Spunta } from '../Icons'
+import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
 import { chiedi, Campo, ComeFunziona, dataLunga, Guaio, Testa, useAvviso, useBozza, useCarica } from './comune'
 import { StoricoTimer, VoceSale } from './TimerPalestra'
 import { EnteRicevute } from './Ricevute'
@@ -13,6 +14,7 @@ import { SelectDisciplina } from './TimerPalestra'
 
 /** I gruppi della pagina, da quello che si tocca a inizio stagione a quello che si tocca quasi mai. */
 const GRUPPI = {
+  'imp-schermo': 'QUESTO SCHERMO',
   'imp-stagione': 'LA STAGIONE',
   'imp-sale': 'LE SALE E I TABLET',
   'imp-ricevute': 'LE RICEVUTE',
@@ -46,6 +48,7 @@ function Gruppo({ id, children }: { id: IdGruppo; children: ReactNode }) {
  * fa le ricevute; per quanto si tengono le presenze, il backup, la privacy.
  */
 export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?: Destinazione) => void }) {
+  const [strisciaVoluta, scegliStriscia] = useStrisciaVoluta()
   const imp = useCarica(() => d.impostazioni(), [d])
   const scadute = useCarica(() => d.scadute(), [d, imp.dato?.mesiPresenze])
   const pronto = useCarica(() => d.prontoFino(), [d])
@@ -97,6 +100,23 @@ export function Regole({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce, dove?
         ))}
       </nav>
       {imp.guaio && <Guaio testo={`Le impostazioni non si leggono: ${imp.guaio}`} />}
+
+      <Gruppo id="imp-schermo">
+        <section aria-label="La striscia COSA MANCA" className="sg-riquadro">
+          <span className="ob sg-riquadro-titolo">LA STRISCIA COSA MANCA</span>
+          <span className="sg-sotto">
+            Le quattro caselle in cima alle pagine (appelli non fatti, certificati, pagamenti, richieste). Vale solo per questo schermo: DA FARE ha sempre gli stessi conti.
+          </span>
+          <div role="radiogroup" aria-label="Mostra o nascondi la striscia" className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" role="radio" aria-checked={strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(true)}>
+              MOSTRALA
+            </button>
+            <button type="button" role="radio" aria-checked={!strisciaVoluta} className="sg-btn sg-scelta" onClick={() => scegliStriscia(false)}>
+              NASCONDILA
+            </button>
+          </div>
+        </section>
+      </Gruppo>
 
       <Gruppo id="imp-stagione">
         <section aria-label="Il calendario" className="sg-riquadro">

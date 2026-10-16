@@ -157,9 +157,30 @@ export function contiDaRileggere(ultima: number | undefined, ora: number, motivo
   return ultima === undefined || ora - ultima >= SECONDI_RILETTURA * 1000
 }
 
-/** DA FARE ha già gli stessi conti, più grandi; sul telefono una scheda o un modulo aperti hanno bisogno di tutto lo spazio. */
-export function strisciaVisibile(voce: string, telefono: boolean, schedaAperta: boolean): boolean {
-  return voce !== 'dafare' && !(telefono && schedaAperta)
+/**
+ * DA FARE ha già gli stessi conti, più grandi; sul telefono una scheda o un modulo aperti hanno bisogno di tutto lo spazio;
+ * e chi l'ha nascosta da IMPOSTAZIONI (`voluta` falso) non la vede da nessuna parte.
+ */
+export function strisciaVisibile(voce: string, telefono: boolean, schedaAperta: boolean, voluta = true): boolean {
+  return voluta && voce !== 'dafare' && !(telefono && schedaAperta)
+}
+
+/** La striscia si vede finché non la si nasconde: un valore salvato che non è «nascosta» (vuoto, vecchio, sconosciuto) non la toglie. */
+export function leggiPreferenzaStriscia(valore: unknown): boolean {
+  return valore !== 'nascosta'
+}
+
+/**
+ * Quello che si vede: la scelta fatta in questa pagina, se c'è, vince su quello che è salvato. Se il salvataggio non riesce
+ * (quota piena, navigazione privata) il salvato resta quello di prima, e senza questa regola IMPOSTAZIONI e il resto della
+ * segreteria vedrebbero due cose diverse.
+ */
+export function preferenzaStriscia(salvato: unknown, scelta: boolean | null): boolean {
+  return scelta ?? leggiPreferenzaStriscia(salvato)
+}
+
+export function valorePreferenzaStriscia(voluta: boolean): string {
+  return voluta ? 'mostrata' : 'nascosta'
 }
 
 /**
