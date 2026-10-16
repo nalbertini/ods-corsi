@@ -93,6 +93,7 @@ export function Iscritti({
   filtroIniziale,
   ricerca,
   onTogliRicerca,
+  onConti,
 }: {
   d: DatiSegreteria
   /** La scheda aperta: sta nell'indirizzo, e la apre e chiude la segreteria. */
@@ -106,6 +107,8 @@ export function Iscritti({
   /** Aperta da «ALTRI N» della ricerca: l'elenco è solo di chi è uscito. */
   ricerca?: Ricercata
   onTogliRicerca: () => void
+  /** Una scheda cambiata (certificato, pagamento, archiviata, nuova): i conti di COSA MANCA si rileggono. */
+  onConti?: () => void
 }) {
   const persone = useCarica(() => d.persone(), [d])
   const corsi = useCarica(() => d.corsi(), [d])
@@ -205,6 +208,7 @@ export function Iscritti({
               // Al posto del modulo: Indietro dalla scheda nuova torna all'elenco, non a un modulo vuoto.
               onScelta(id, 'replace')
               void ricarica()
+              onConti?.()
             }}
           />
           </Bozza>
@@ -219,7 +223,10 @@ export function Iscritti({
             attivi={attivi}
             f={freq.dato?.get(persona.id)}
             fai={fai}
-            onCambiato={() => void ricarica()}
+            onCambiato={() => {
+              void ricarica()
+              onConti?.()
+            }}
             onApri={(id) => {
               setUnisciCon(null)
               onScelta(id, 'push')

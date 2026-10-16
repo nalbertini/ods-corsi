@@ -29,6 +29,7 @@
     "prova:cerca-persone": "node scripts/prova-cerca-persone.mjs",
     "prova:appello-cerca": "node scripts/prova-appello-cerca.mjs",
     "prova:appello-liste": "node scripts/prova-appello-liste.mjs",
+    "prova:cosa-manca": "node scripts/prova-cosa-manca.mjs",
     "prova:iscritti": "node scripts/prova-iscritti.mjs",
     "prova:listino": "node scripts/prova-listino.mjs",
     "prova:indirizzi": "node scripts/prova-indirizzi.mjs",

@@ -46,6 +46,7 @@ export function Corsi({
   onNuovo,
   ricerca,
   onTogliRicerca,
+  onConti,
 }: {
   d: DatiSegreteria
   /** Aperta da «ALTRI N» della ricerca: l'elenco è solo dei corsi usciti. */
@@ -58,6 +59,8 @@ export function Corsi({
   /** `push` è un passo per Indietro, `replace` corregge l'indirizzo di adesso. */
   onScelta: (id: string | null, passo: 'push' | 'replace') => void
   onNuovo: () => void
+  /** Un corso archiviato, salvato o con un iscritto in più: i conti di COSA MANCA si rileggono. */
+  onConti?: () => void
 }) {
   const corsi = useCarica(() => d.corsi(), [d])
   const persone = useCarica(() => d.persone(), [d])
@@ -105,10 +108,17 @@ export function Corsi({
         // Al posto del modulo: Indietro dal corso nuovo torna all'elenco, non a un modulo vuoto.
         onScelta(id, 'replace')
         void corsi.ricarica()
+        onConti?.()
       }}
-      onCambiato={() => void Promise.all([corsi.ricarica(), persone.ricarica()])}
+      onCambiato={() => {
+        void Promise.all([corsi.ricarica(), persone.ricarica()])
+        onConti?.()
+      }}
       // Archiviato non è più fra i corsi: si torna all'elenco senza un passo per Indietro.
-      onArchiviato={() => onScelta(null, 'replace')}
+      onArchiviato={() => {
+        onScelta(null, 'replace')
+        onConti?.()
+      }}
       onLasciaStare={() => onScelta(null, 'push')}
     />
   )

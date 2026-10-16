@@ -54,6 +54,20 @@ E ACCESSI) e **LA PALESTRA** (STATISTICHE, LISTINO, VESTIARIO, ESERCIZI, SEGNALA
 **IMPOSTAZIONI** sono il tasto coi due cursori in cima al menu. Ogni voce ha la
 sua guida:
 
+## La striscia COSA MANCA
+
+In cima a ogni pagina, tranne **DA FARE**, ci sono quattro caselle con un numero grande:
+**APPELLI NON FATTI** (lezioni degli ultimi 30 giorni senza appello), **CERTIFICATI
+SCADUTI** (scaduti o mancanti), **PAGAMENTI** (quote non in regola) e **RICHIESTE
+ONLINE** (da accogliere). Sono gli stessi numeri di [DA FARE](da-fare.md). Il segno
+sotto dice lo stato: rosso, qualcosa manca; giallo, c'è da accogliere; verde con **✓ 0**,
+a posto. Se il numero non si sa (la lettura non è riuscita) c'è «—», mai uno zero verde, e
+un tasto **RICONTA**; se una lettura fallisce dopo una riuscita resta l'ultimo numero,
+con scritto a che ora era. Toccando una casella si va alla pagina giusta, già filtrata.
+I conti si rileggono quando si segna un appello, si accoglie una richiesta o si cambia
+una scheda, e cambiando voce solo se l'ultima lettura ha più di due minuti. Sul telefono la
+striscia sta due caselle per riga e si nasconde quando c'è una scheda aperta.
+
 | Voce | A cosa serve | Guida |
 |---|---|---|
 | **DA FARE** | La prima pagina: appelli mancanti, richieste nuove, presenze da confermare, certificati e pagamenti, contati, con il tasto per sistemarli | [Apri](da-fare.md) |

@@ -23,6 +23,8 @@ import { Segnalazioni } from './Segnalazioni'
 import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
+import { CosaManca } from './CosaManca'
+import { strisciaVisibile } from '../../lib/cosaManca'
 import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio, lasciare, scordaBozze } from './comune'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { CercaIscritto } from './CercaIscritto'
@@ -30,7 +32,7 @@ import type { Ricercata } from '../../lib/ricerca'
 import { indirizzoPagina } from '../../lib/guida'
 import { indirizzo, INDIRIZZI } from '../../lib/aree'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
-import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
+import { dopoIndietro, filtroDopo, indirizzoCorretto, leggiIndirizzo, postoDelMenu, scriviIndirizzo, type FiltroSegreteria, type Posto, type Voce } from '../../lib/indirizzoSegreteria'
 import { cambiaVoce, scorre } from '../../lib/scorri'
 
 export type { Voce }
@@ -45,7 +47,7 @@ export interface Destinazione {
   ricerca?: Ricercata
   lezione?: { id: string; inizio: string }
   /** Un filtro già acceso: chi ha il certificato da sistemare, chi deve pagare, chi ha un file di prima, cosa c'è da stampare. */
-  filtro?: 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'file-di-prima' | 'stampare' | 'fuori-regola' | 'senza-appello'
+  filtro?: FiltroSegreteria
 }
 
 /**
@@ -287,7 +289,13 @@ export function Segreteria({
   // di istruttori e segnalate, da qualunque voce; DA FARE conta tutto. Si
   // riconta cambiando voce, e quando una sezione dice che è cambiato qualcosa.
   const [giroConte, setGiroConte] = useState(0)
-  const conti = useDaFare(d, voce === 'dafare', `${voce}-${giroConte}`)
+  // Quando i conti della striscia vanno riletti per forza: un appello segnato, una richiesta accolta, una scheda cambiata, RICONTA.
+  const [giroStriscia, setGiroStriscia] = useState(0)
+  const contiCambiati = () => {
+    setGiroConte((g) => g + 1)
+    setGiroStriscia((g) => g + 1)
+  }
+  const conti = useDaFare(d, voce === 'dafare', `${voce}-${giroConte}`, giroStriscia)
   const richiesteNuove = conti.richieste ?? 0
   const daConfermare = conti.istruttori ?? 0
   const segnalateDaVedere = conti.segnalate ?? 0
@@ -514,8 +522,11 @@ export function Segreteria({
             </button>
           </div>
         )}
+        {d && strisciaVisibile(voce, telefono, !!(posto.persona || posto.corso || posto.nuovo || richiesta || posto.lezione)) && (
+          <CosaManca conti={conti.striscia} onVai={vai} onRiprova={contiCambiati} />
+        )}
         {d && voce === 'dafare' && <DaFare conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}
-        {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} />}
+        {d && voce === 'settimana' && <Settimana d={d} posto={posto} onPosto={(p, passo) => segna({ ...p, voce: 'settimana' }, passo)} onConti={contiCambiati} />}
         {d && voce === 'corsi' && (
           <Corsi
             key={ricerca?.testo ?? ''}
@@ -526,6 +537,7 @@ export function Segreteria({
             nuovo={posto.nuovo}
             onScelta={(id, passo) => segna({ voce: 'corsi', ...(id && { corso: id }) }, passo)}
             onNuovo={() => segna({ voce: 'corsi', nuovo: true }, 'push')}
+            onConti={contiCambiati}
           />
         )}
         {d && voce === 'iscritti' && (
@@ -538,10 +550,11 @@ export function Segreteria({
             nuovo={posto.nuovo}
             onScelta={(id, passo) => segna({ voce: 'iscritti', ...(id && { persona: id }) }, passo)}
             onNuovo={() => segna({ voce: 'iscritti', nuovo: true }, 'push')}
+            onConti={contiCambiati}
             filtroIniziale={filtro}
           />
         )}
-        {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta} onTogliRicerca={() => setRicerca(undefined)} />}
+        {d && voce === 'richieste' && <Richieste key={`${filtro ?? ''}|${ricerca?.testo ?? ''}|${richiesta ?? ''}`} d={d} onVai={vai} stampareIniziale={filtro === 'stampare'} ricerca={ricerca} aperta={richiesta} onTogliRicerca={() => setRicerca(undefined)} onConti={contiCambiati} />}
         {d && inPresenze && conSegnalate && (
           <div role="tablist" aria-label="Presenze" className="schede sg-schede">
             <button type="button" role="tab" aria-selected={voce === 'presenze'} className="scheda" data-on={voce === 'presenze'} onClick={() => vai('presenze')}>

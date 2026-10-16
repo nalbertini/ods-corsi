@@ -39,11 +39,14 @@ export function Settimana({
   d,
   posto,
   onPosto,
+  onConti,
 }: {
   d: DatiSegreteria
   /** Settimana, sala e lezione aperta stanno nell'indirizzo: le tiene la segreteria. */
   posto: Posto
   onPosto: (p: Omit<Posto, 'voce'>, passo: 'push' | 'replace') => void
+  /** Un appello segnato o una lezione cambiata: i conti di COSA MANCA si rileggono. */
+  onConti?: () => void
 }) {
   const { lezione: aperta, sala = '' } = posto
   // Una chiave e non la data: la stessa settimana a ogni giro non rilegge la griglia.
@@ -84,6 +87,8 @@ export function Settimana({
   // Le presenze segnate dal cassetto viaggiano nella coda dell'appello: la
   // griglia si rilegge quando la coda si svuota, cioè quando sono arrivate.
   const rileggi = sett.ricarica
+  const contiRef = useRef(onConti)
+  contiRef.current = onConti
   useEffect(() => {
     let vivo = true
     let via: (() => void) | undefined
@@ -91,7 +96,10 @@ export function Settimana({
       if (!vivo) return
       let prima = 0
       via = x.guardaCoda?.((n) => {
-        if (prima > 0 && n === 0) void rileggi()
+        if (prima > 0 && n === 0) {
+          void rileggi()
+          contiRef.current?.()
+        }
         prima = n
       })
     })
@@ -244,7 +252,10 @@ export function Settimana({
           d={d}
           l={lezione}
           sale={sale.dato ?? []}
-          onCambiato={() => void sett.ricarica()}
+          onCambiato={() => {
+            void sett.ricarica()
+            onConti?.()
+          }}
           onChiudi={() => vai({ lezione: undefined }, 'push')}
           fai={fai}
         />

@@ -1,14 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, LezioneSeg } from '../../lib/segreteria'
-import { certificatoDaStampare, certificatoInArrivo, certificatoInScadenza, comePaga, senzaCertificatoValido } from '../../lib/segreteria'
+import { certificatoDaStampare, certificatoInArrivo, certificatoInScadenza } from '../../lib/segreteria'
 import { datiRichieste } from '../../lib/richieste'
 import { prezziMancanti, prezziMancantiInBreve } from '../../lib/listino'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
+import { appelliSenzaSegni, certificatiDaSistemare, contiDaRileggere, contiDellaStriscia, GIORNI_APPELLI, mantieniIPrecedenti, pagamentiNonInRegola, type ContiCosaManca } from '../../lib/cosaManca'
 import { dataLunga, Testa } from './comune'
 import type { Destinazione, Voce } from './Segreteria'
-
-/** Fin dove si guarda indietro per gli appelli che mancano. */
-const GIORNI_APPELLI = 30
 
 /**
  * Quello che aspetta la segreteria, contato. `null` finché non si sa, o se
@@ -32,6 +30,8 @@ export interface ContiDaFare {
   listino: Array<{ nome: string; frase: string }> | null
   /** Contato tutto almeno una volta: da qui un `null` vuol dire che non si è riusciti, non che si aspetta. */
   contato: boolean
+  /** I quattro conti della striscia COSA MANCA, con l'ultimo numero buono se una lettura fallisce. */
+  striscia: ContiCosaManca
 }
 
 const VUOTI: ContiDaFare = {
@@ -46,20 +46,35 @@ const VUOTI: ContiDaFare = {
   certificatiDaStampare: null,
   documentiDaStampare: null,
   listino: null,
+  striscia: { appelli: null, certificati: null, pagamenti: null, richieste: null, contato: false },
 }
 
 const oppure = <T,>(p: Promise<T>): Promise<T | null> => p.then((x) => x, () => null)
 
 /**
  * I conti di DA FARE. Quelli del menu (richieste, istruttori, segnalate) si
- * contano sempre; gli altri, che leggono iscritti e lezioni, solo con `tutto`,
- * cioè quando DA FARE è aperta. Si rileggono a ogni `giro`.
+ * contano sempre. Quelli che leggono iscritti e lezioni (appelli, certificati,
+ * pagamenti: anche la striscia COSA MANCA) si contano con DA FARE aperta, a ogni
+ * `forza` (un cambiamento, RICONTA) e cambiando voce solo se l'ultima lettura è
+ * vecchia (`contiDaRileggere`): leggere tutte le persone a ogni tocco sul menu è
+ * troppo. Quelli di DA FARE soltanto (listino, documenti) solo con `tutto`.
+ * Si rileggono a ogni `giro`.
  */
-export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknown): ContiDaFare {
+export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknown, forza = 0): ContiDaFare {
   const [conti, setConti] = useState<ContiDaFare>(VUOTI)
+  const ultimaLettura = useRef<number | undefined>(undefined)
+  const forzaPrima = useRef(forza)
+  // Una lettura forzata (un appello segnato, RICONTA) resta da fare finché non ne finisce una pesante: se prima arriva un
+  // cambio di voce e la lettura viene annullata, la prossima la rifà.
+  const daRileggere = useRef(false)
   useEffect(() => {
     if (!d) return
     let vivo = true
+    if (forza !== forzaPrima.current) {
+      forzaPrima.current = forza
+      daRileggere.current = true
+    }
+    const pesante = tutto || daRileggere.current || contiDaRileggere(ultimaLettura.current, Date.now(), 'voce')
     const adesso = Date.now()
     const oggi = chiaveGiorno(new Date())
     // Le lezioni tenute senza istruttore contano anche loro; se il database
@@ -68,30 +83,42 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
       ([l, lezioni]) => l.filter((x) => x.stato === 'da_confermare').length + lezioni.length,
     )
     const richieste = datiRichieste().then(async (r) => ({ tutte: await r.richieste(), conDocumento: tutto ? await r.conDocumento() : null }))
-    const persone = tutto ? d.persone() : Promise.resolve(null)
-    const lezioni = tutto ? d.settimana(new Date(adesso - GIORNI_APPELLI * 24 * 60 * 60_000), new Date(adesso)) : Promise.resolve(null)
+    const persone = pesante ? d.persone() : Promise.resolve(null)
+    const lezioni = pesante ? d.settimana(new Date(adesso - GIORNI_APPELLI * 24 * 60 * 60_000), new Date(adesso)) : Promise.resolve(null)
     const listino = tutto ? Promise.all([d.listino(), d.corsi()]).then(([l, corsi]) => prezziMancanti(l.listino, corsi, oggi)) : Promise.resolve(null)
     void Promise.all([oppure(istruttori), oppure(richieste), oppure(persone), oppure(lezioni), d.segnalate ? oppure(d.segnalate()) : null, oppure(listino)]).then(
       ([istr, ric, pers, lez, segn, list]) => {
         if (!vivo) return
         const attive = pers?.filter((p) => p.attiva) ?? null
+        const appelliMancanti = lez ? appelliSenzaSegni(lez, adesso) : null
+        const richiesteNuove = ric ? ric.tutte.filter((x) => x.stato === 'nuova').length : null
+        const nuova = Date.now()
+        // Pesante finita bene (tutte e due le letture): da qui i conti sono freschi.
+        if (pesante && pers && lez) {
+          ultimaLettura.current = nuova
+          daRileggere.current = false
+        }
         setConti((prima) => ({
           contato: prima.contato || tutto,
+          // La striscia: gli stessi numeri di DA FARE; senza lettura pesante cambiano solo le richieste.
+          striscia: pesante
+            ? mantieniIPrecedenti(
+                prima.striscia,
+                contiDellaStriscia({ persone: pers, lezioni: lez, richieste: richiesteNuove }, adesso, oggi),
+                nuova,
+              )
+            : { ...prima.striscia, richieste: richiesteNuove ?? prima.striscia.richieste },
           istruttori: istr,
-          richieste: ric ? ric.tutte.filter((x) => x.stato === 'nuova').length : null,
+          richieste: richiesteNuove,
           segnalate: d.segnalate ? (segn ? segn.filter((x) => x.stato === 'da_vedere').length : null) : undefined,
           // Senza `tutto` restano i conti di prima: tornando a DA FARE non lampeggiano.
-          appelli: tutto
-            ? lez
-              ? lez.filter((l) => Date.parse(l.fine) < adesso && l.stato !== 'annullata' && l.segnati === 0).sort((a, b) => b.inizio.localeCompare(a.inizio))
-              : null
-            : prima.appelli,
+          appelli: pesante ? appelliMancanti : prima.appelli,
           // Contati come i filtri di ISCRITTI che apre VEDI CHI: il numero è quello delle righe che si vedono.
-          certificati: tutto ? (attive ? attive.filter((p) => senzaCertificatoValido(p, oggi)).length : null) : prima.certificati,
-          scadenza: tutto ? (attive ? attive.filter((p) => certificatoInScadenza(p, oggi)).length : null) : prima.scadenza,
-          arrivo: tutto ? (attive ? attive.filter((p) => certificatoInArrivo(p, oggi)).length : null) : prima.arrivo,
-          pagare: tutto ? (attive ? attive.filter((p) => comePaga(p, oggi) !== 'pagato').length : null) : prima.pagare,
-          certificatiDaStampare: tutto ? (pers ? pers.filter((p) => certificatoDaStampare(p.certificato)).length : null) : prima.certificatiDaStampare,
+          certificati: pesante ? (pers ? certificatiDaSistemare(pers, oggi) : null) : prima.certificati,
+          scadenza: pesante ? (attive ? attive.filter((p) => certificatoInScadenza(p, oggi)).length : null) : prima.scadenza,
+          arrivo: pesante ? (attive ? attive.filter((p) => certificatoInArrivo(p, oggi)).length : null) : prima.arrivo,
+          pagare: pesante ? (pers ? pagamentiNonInRegola(pers, oggi) : null) : prima.pagare,
+          certificatiDaStampare: pesante ? (pers ? pers.filter((p) => certificatoDaStampare(p.certificato)).length : null) : prima.certificatiDaStampare,
           documentiDaStampare: tutto ? (ric?.conDocumento ? ric.conDocumento.size : null) : prima.documentiDaStampare,
           listino: tutto ? list : prima.listino,
         }))
@@ -100,7 +127,7 @@ export function useDaFare(d: DatiSegreteria | null, tutto: boolean, giro: unknow
     return () => {
       vivo = false
     }
-  }, [d, tutto, giro])
+  }, [d, tutto, giro, forza])
   return conti
 }
 

@@ -49,6 +49,7 @@ export function Richieste({
   ricerca,
   aperta,
   onTogliRicerca,
+  onConti,
 }: {
   d: DatiSegreteria
   onVai: (v: Voce, d?: Destinazione) => void
@@ -58,6 +59,8 @@ export function Richieste({
   /** Una richiesta scelta dalla ricerca: si apre da sola. */
   aperta?: string
   onTogliRicerca: () => void
+  /** Una richiesta accolta, rifiutata o eliminata: i conti di COSA MANCA si rileggono. */
+  onConti?: () => void
 }) {
   const [r, setR] = useState<DatiRichieste | null>(null)
   const elenco = useCarica(async () => {
@@ -103,11 +106,15 @@ export function Richieste({
       titolare={richiesta.nucleoDi ? (chi.get(richiesta.nucleoDi) ?? 'un iscritto') : undefined}
       omonimi={(persone.dato ?? []).filter((p) => piatto(p.nome) === piatto(richiesta.nome) && piatto(p.cognome) === piatto(richiesta.cognome))}
       fai={fai}
-      onCambiato={() => void elenco.ricarica()}
+      onCambiato={() => {
+        void elenco.ricarica()
+        onConti?.()
+      }}
       onStampato={() => void conDocumento.ricarica()}
       onEliminata={() => {
         setScelta(null)
         void elenco.ricarica()
+        onConti?.()
       }}
       onApri={(persona) => onVai('iscritti', { persona })}
     />
