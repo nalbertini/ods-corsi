@@ -25,6 +25,7 @@ import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
 import { CosaManca } from './CosaManca'
 import { strisciaVisibile } from '../../lib/cosaManca'
+import { useStrisciaVoluta } from '../../lib/preferenzaStriscia'
 import { bozzaAperta, chiedi, Conferme, dialogoAperto, Guaio, lasciare, scordaBozze } from './comune'
 import { TELEFONO, useSchermo } from '../../lib/largo'
 import { CercaIscritto } from './CercaIscritto'
@@ -295,6 +296,7 @@ export function Segreteria({
     setGiroConte((g) => g + 1)
     setGiroStriscia((g) => g + 1)
   }
+  const [strisciaVoluta] = useStrisciaVoluta()
   const conti = useDaFare(d, voce === 'dafare', `${voce}-${giroConte}`, giroStriscia)
   const richiesteNuove = conti.richieste ?? 0
   const daConfermare = conti.istruttori ?? 0
@@ -522,7 +524,7 @@ export function Segreteria({
             </button>
           </div>
         )}
-        {d && strisciaVisibile(voce, telefono, !!(posto.persona || posto.corso || posto.nuovo || richiesta || posto.lezione)) && (
+        {d && strisciaVisibile(voce, telefono, !!(posto.persona || posto.corso || posto.nuovo || richiesta || posto.lezione), strisciaVoluta) && (
           <CosaManca conti={conti.striscia} onVai={vai} onRiprova={contiCambiati} />
         )}
         {d && voce === 'dafare' && <DaFare conti={conti} onVai={vai} onRiprova={() => setGiroConte((g) => g + 1)} />}

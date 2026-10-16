@@ -66,7 +66,8 @@ un tasto **RICONTA**; se una lettura fallisce dopo una riuscita resta l'ultimo n
 con scritto a che ora era. Toccando una casella si va alla pagina giusta, già filtrata.
 I conti si rileggono quando si segna un appello, si accoglie una richiesta o si cambia
 una scheda, e cambiando voce solo se l'ultima lettura ha più di due minuti. Sul telefono la
-striscia sta due caselle per riga e si nasconde quando c'è una scheda aperta.
+striscia sta due caselle per riga e si nasconde quando c'è una scheda aperta. Chi non la vuole
+la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scelta resta su quel dispositivo.
 
 | Voce | A cosa serve | Guida |
 |---|---|---|
@@ -83,7 +84,7 @@ striscia sta due caselle per riga e si nasconde quando c'è una scheda aperta.
 | **ESERCIZI** | L'elenco degli esercizi della palestra, per i timer dei tablet | [Apri](esercizi.md) |
 | **LISTINO** | I costi della stagione: quota, saldo, i prezzi dei corsi e le offerte, per la pagina di iscrizione e le ricevute | [Apri](listino.md) |
 | **VESTIARIO** | Gli ordini di vestiario, judogi e costumini: il catalogo, la chiusura, chi ha saldato, l'elenco per il fornitore | [Apri](vestiario.md) |
-| **IMPOSTAZIONI** | In quattro gruppi: la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa); in mezzo, **IMPORTA DA EXCEL**: corsi e iscritti dai fogli o dalle risposte del modulo Google | [Apri](regole.md) · [Importa](importa.md) |
+| **IMPOSTAZIONI** | In sei gruppi: questo schermo; la stagione; le sale e i tablet (musica, voce, storico dei timer); le ricevute; dati e privacy (presenze, backup, informativa); in mezzo, **IMPORTA DA EXCEL**: corsi e iscritti dai fogli o dalle risposte del modulo Google | [Apri](regole.md) · [Importa](importa.md) |
 | **SEGNALAZIONI** | Cosa non va o cosa servirebbe nell'app, con le risposte nello stesso filo, e un file allegato | [Apri](segnalazioni.md) |
 
 In cima al menu, sotto il nome, si vedono subito senza scorrere tre tasti:

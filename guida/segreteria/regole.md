@@ -4,10 +4,20 @@
 
 Le scelte che spettano alla palestra, non al programma.
 
-La pagina ha cinque gruppi: **LA STAGIONE**, **LE SALE E I TABLET**, **LE
+La pagina ha sei gruppi: **QUESTO SCHERMO**, **LA STAGIONE**, **LE SALE E I TABLET**, **LE
 RICEVUTE**, **IMPORTA DA EXCEL** (la [guida](importa.md)), **DATI E PRIVACY**. In cima, un tasto per ognuno porta dritto al
 gruppo. Le spiegazioni lunghe di un riquadro stanno dietro **COME
 FUNZIONA?**: si tocca per aprirle; i numeri e gli avvisi restano sempre in vista.
+
+## Questo schermo
+
+Le scelte che valgono solo per il computer (o il telefono) che si sta usando, non per la
+segreteria intera: restano su questo dispositivo, come il tema.
+
+- **LA STRISCIA COSA MANCA** — **MOSTRALA** (com'è all'inizio) o **NASCONDILA**: le quattro
+  caselle in cima alle pagine ([guida](README.md#la-striscia-cosa-manca)) spariscono da
+  tutte le pagine. **DA FARE** ha sempre gli stessi conti, quindi non si perde niente: ci si
+  torna quando si vuole. Per rimetterla basta **MOSTRALA**.
 
 ## La stagione
 
