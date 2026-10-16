@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.65.0 — 16 ottobre 2026
+
+### Novità
+
+- Nella SETTIMANA, toccando le date si apre un calendario del mese per saltare a un'altra settimana, con un quadratino sui giorni che hanno lezioni
+
 ## 0.64.0 — 16 ottobre 2026
 
 ### Novità
