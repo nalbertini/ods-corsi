@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.74.0 — 17 ottobre 2026
+
+### Novità
+
+- Nel pannello Sito puoi caricare le foto e metterle nelle pagine
+
 ## 0.73.4 — 17 ottobre 2026
 
 ### Modificato

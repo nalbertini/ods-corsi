@@ -390,15 +390,38 @@ console.log('\nDopo la revisione')
   const home = c(r, 'index.html')
   ok('un\'immagine di un altro sito nel testo non entra (il sito non chiama servizi esterni)', home.includes('tracker.example'), false)
   ok('una del sito sì', home.includes('/risorse/x.webp'), true)
-  const con = genera(dati({ pagine: [pag('home', { testo: '<img src="https://img.officinedellosport.example/a.webp" alt="a">' })], ospitiImmagini: ['img.officinedellosport.example'] }))
-  ok('un\'immagine di un host dichiarato sì (per quando ci saranno le immagini del sito)', c(con, 'index.html').includes('img.officinedellosport.example/a.webp'), true)
+  const P = 'https://abc.supabase.co/storage/v1/object/public/sito/'
+  const img = (src, alt = 'a') => `<img src="${src}" alt="${alt}">`
+  const homeCon = (testo, prefissi = [P]) => c(genera(dati({ pagine: [pag('home', { testo })], ospitiImmagini: prefissi })), 'index.html')
+  ok('un\'immagine col prefisso dichiarato e un nome semplice passa', homeCon(img(`${P}0b9f6c1e.jpg`)).includes(`${P}0b9f6c1e.jpg`), true)
+  ok('l\'host si confronta senza maiuscole', homeCon(img('https://ABC.supabase.co/storage/v1/object/public/sito/a.png')).includes('/storage/v1/object/public/sito/a.png'), true)
+  ok('stesso host, bucket «certificati» → tolta', homeCon(img('https://abc.supabase.co/storage/v1/object/public/certificati/a.jpg')).includes('certificati'), false)
+  ok('stesso host, /object/sign/ → tolta', homeCon(img('https://abc.supabase.co/storage/v1/object/sign/sito/a.jpg?token=x')).includes('abc.supabase.co'), false)
+  ok('nome con «..» → tolta', homeCon(img(`${P}..%2Fcertificati%2Fa.jpg`)).includes('abc.supabase.co'), false)
+  ok('nome con «..» (letterale) → tolta', homeCon(img(`${P}../a.jpg`)).includes('abc.supabase.co'), false)
+  ok('stesso host, un altro contenitore col nome lungo uguale («abcd» come «sito») → tolta', homeCon(img(P.replace('/sito/', '/abcd/') + 'a.jpg')).includes('abc.supabase.co'), false)
+  ok('stesso host, /object/sign/ di pari lunghezza → tolta', homeCon(img(P.replace('/public/', '/signn/') + 'a.jpg')).includes('abc.supabase.co'), false)
+  ok('un nome fatto solo di punti → tolta', homeCon(img(`${P}..`)).includes('abc.supabase.co'), false)
+  ok('un nome con «..» in mezzo → tolta', homeCon(img(`${P}a..b.jpg`)).includes('abc.supabase.co'), false)
+  ok('nome con «?token=» → tolta', homeCon(img(`${P}a.jpg?token=x`)).includes('abc.supabase.co'), false)
+  ok('nome con «#» → tolta', homeCon(img(`${P}a.jpg#x`)).includes('abc.supabase.co'), false)
+  ok('nome con sottocartella → tolta', homeCon(img(`${P}a/b.jpg`)).includes('abc.supabase.co'), false)
+  ok('un altro progetto Supabase → tolta', homeCon(img('https://altro.supabase.co/storage/v1/object/public/sito/a.jpg')).includes('altro.supabase.co'), false)
+  ok('senza prefissi dichiarati nessuna immagine esterna', homeCon(img(`${P}a.jpg`), []).includes('abc.supabase.co'), false)
+  ok('le immagini «/…» del sito passano come prima', homeCon(img('/risorse/x.webp')).includes('/risorse/x.webp'), true)
+  ok('un host qualunque non dichiarato resta fuori', homeCon(img('https://tracker.example/p.png')).includes('tracker.example'), false)
+  ok('l\'alt con virgolette resta escapato', homeCon(img(`${P}a.jpg`, 'Il &quot;dojo&quot; &lt;b&gt;')).includes('alt="Il &quot;dojo&quot; &lt;b&gt;"'), true)
+  const t0 = img('/risorse/x.webp') + img('https://tracker.example/p.png')
+  const senzaOpz = genera(dati({ pagine: [pag('home', { testo: t0 })] }))
+  const conVuoto = genera(dati({ pagine: [pag('home', { testo: t0 })], ospitiImmagini: [] }))
+  ok('senza ospitiImmagini i file sono identici a quelli con elenco vuoto', JSON.stringify(senzaOpz), JSON.stringify(conVuoto))
 }
 for (const [nome, dom] of [['con un a capo (iniettava righe in robots.txt)', 'https://x.it\nDisallow: /'], ['con una virgoletta', 'https://x.it"><script>'], ['javascript:', 'javascript:alert(1)'], ['senza schema', 'www.x.it'], ['con una barra in fondo', 'https://www.x.it/']]) {
   ok(`il dominio ${nome} è rifiutato`, /ERRORE: /.test(String(prova(() => g.generaSito(dati({ dominio: dom }))))), true)
 }
 ok('il dominio giusto va', typeof prova(() => g.generaSito(dati({ dominio: 'https://www.officinedellosport.it' }))), 'object')
 {
-  const { mkdtempSync, writeFileSync, existsSync, readdirSync } = await import('node:fs')
+  const { mkdtempSync, writeFileSync, existsSync, readdirSync, readFileSync } = await import('node:fs')
   const { tmpdir } = await import('node:os')
   const { join } = await import('node:path')
   const { spawnSync } = await import('node:child_process')
@@ -439,6 +462,21 @@ ok('il dominio giusto va', typeof prova(() => g.generaSito(dati({ dominio: 'http
   ok('pagine che non sono un elenco: una frase', x2.status !== 0 && !/\n\s+at /.test(x2.stderr), true)
   ok('e la cartella di prima resta', existsSync(join(dentro, 'index.html')), true)
   ok('nessuna cartella .nuovo né .vecchio in giro', readdirSync(cartella).filter((n) => /\.(nuovo|vecchio)$/.test(n)), [])
+  {
+    const P = 'https://abc.supabase.co/storage/v1/object/public/sito/'
+    const conImg = join(cartella, 'immagini.json')
+    const testo = `<p>x</p><img src="${P}mia.jpg" alt="mia"><img src="https://altro.supabase.co/storage/v1/object/public/sito/loro.jpg" alt="loro">`
+    writeFileSync(conImg, JSON.stringify({ pagine: [{ slug: 'home', titolo: 'C', descrizione: '', testo, pubblicata_il: null }], menu: [], rinvii: [] }))
+    const letto = (u) => (existsSync(join(u, 'index.html')) ? readFileSync(join(u, 'index.html'), 'utf8') : '')
+    const u1 = join(cartella, 'u-con-url')
+    const r1 = spawnSync('node', [join(radiceRepo, 'scripts/genera-sito.mjs'), u1, '--da-file', conImg], { encoding: 'utf8', cwd: radiceRepo, env: { PATH: process.env.PATH, SUPABASE_URL: 'https://abc.supabase.co/' } })
+    ok('con SUPABASE_URL (e --da-file) lo script riesce', r1.status, 0)
+    ok('l\'immagine del bucket «sito» di quel progetto compare', letto(u1).includes(`${P}mia.jpg`), true)
+    ok('quella di un altro progetto no', letto(u1).includes('altro.supabase.co'), false)
+    const u2 = join(cartella, 'u-senza-url')
+    const r2 = lancia(radiceRepo, u2, '--da-file', conImg)
+    ok('senza SUPABASE_URL nessuna immagine esterna', r2.status === 0 && !letto(u2).includes('supabase.co'), true)
+  }
   const altrove = mkdtempSync(join(tmpdir(), 'altrove-'))
   ok('lanciato da un\'altra cartella funziona lo stesso (sanitize-html si trova)', lancia(altrove, join(altrove, 'sito'), '--da-file', buoni).status, 0)
 }

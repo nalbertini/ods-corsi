@@ -1,3 +1,4 @@
+import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
 import { CONTATTI } from './sito'
@@ -11,7 +12,7 @@ import { CONTATTI } from './sito'
  * scrivono sempre escapati. Il sito non ha codice (niente `<script>`) né
  * richieste a servizi esterni: carattere e logo sono file suoi, in `/risorse/`
  * (la cartella `sito/risorse/`), e un'immagine nel testo entra solo se è del
- * sito o di un host dichiarato (`ospitiImmagini`).
+ * sito o del contenitore delle immagini dichiarato (`ospitiImmagini`).
  *
  * Nessuna data di oggi nei file: gli stessi dati danno gli stessi file.
  */
@@ -39,7 +40,7 @@ export interface DatiSito {
   pagine: PaginaGenerata[]
   menu: VoceGenerata[]
   rinvii: Array<{ da: string; a: string }>
-  /** Host da cui le immagini del testo sono ammesse (per esempio quello del contenitore delle immagini). Vuoto: solo quelle del sito. */
+  /** Prefissi di indirizzo da cui le immagini del testo sono ammesse: il contenitore delle immagini (`…/storage/v1/object/public/sito/`). Vuoto: solo quelle del sito. */
   ospitiImmagini?: string[]
 }
 
@@ -176,12 +177,19 @@ const lista = (v: Array<{ etichetta: string; href: string }>) => v.map((x) => `<
  * («/…») e quelle di un host dichiarato. Un'immagine di un altro sito farebbe
  * chiamare un servizio esterno a chi visita la pagina.
  */
+/** Dove stanno le immagini delle pagine (il contenitore «sito» del progetto): l'unico prefisso che lo script dichiara. */
+export const prefissoImmagini = (urlProgetto: string): string => urlImmagine(urlProgetto, '')
+
 function testoDellaPagina(testo: string, ospiti: string[]): string {
   return pulisciTesto(testo).replace(/<img\b[^>]*>/gi, (tag) => {
     const src = tag.match(/\bsrc="([^"]*)"/i)?.[1] ?? ''
     if (/^\/(?![/\\])/.test(src)) return tag
-    const host = src.match(/^https:\/\/([^/?#:]+)/i)?.[1]?.toLowerCase()
-    return host && ospiti.map((o) => o.toLowerCase()).includes(host) ? tag : ''
+    // Il prefisso deve coincidere (l'host senza badare alle maiuscole) e il resto è un nome semplice: niente cartelle, `..`, `?token=`.
+    const dentro = ospiti.some((o) => {
+      const [, host, percorso] = o.match(/^(https:\/\/[^/]+)(\/.*)$/i) ?? []
+      return !!host && src.length > o.length && src.slice(0, host.length).toLowerCase() === host.toLowerCase() && src.slice(host.length).startsWith(percorso) && /^[A-Za-z0-9._-]+$/.test(src.slice(o.length)) && !src.slice(o.length).includes('..')
+    })
+    return dentro ? tag : ''
   })
 }
 

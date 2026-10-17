@@ -22,6 +22,9 @@ import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quote
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
+import { CONTENITORE as CONTENITORE_SITO, controllaImmagine, cosaNonVaImmagini, eNomeDelContenitore, MASSIMO_BYTE, nomeNelContenitore, urlImmagine } from './sitoImmagini'
+import { riduciFoto } from './foto'
+import { URL_SUPABASE } from './dati'
 import { AllegatiNonPartiti, cosaNonVaSegnalazione, eCategoria, SCEGLI, type Categoria, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 
 /**
@@ -136,6 +139,8 @@ const NUCLEO_SOLO_PROVA = 'Il nucleo familiare c’è solo in prova, per ora: il
 const DURATA_LINK = 600
 const ALLEGATI = 'segnalazioni'
 const MANCANO_PAGAMENTI_A_MANO = 'I pagamenti a mano non sono ancora attivi sul database: va lanciato 54-pagamenti-diretti.sql'
+/** Lo Storage risponde con errori suoi: si traducono in frasi per chi usa l'app (`cosaNonVaImmagini`). */
+const immaginiNonAttive = (e: { message: string; statusCode?: string }) => new Error(cosaNonVaImmagini(e.message, e.statusCode))
 const MANCA_SITO = 'Il pannello del sito non è ancora attivo sul database: va lanciato 56-sito.sql'
 const MANCANO_ALLEGATI = 'Gli allegati non sono ancora attivi sul database: va lanciato 32-segnalazioni-allegati.sql'
 
@@ -1707,6 +1712,33 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async salvaMenuSito(dove, voci) {
       ok(await db.rpc('salva_menu_sito', { p_dove: dove, p_voci: voci.map((v) => ({ etichetta: v.etichetta, pagina_id: v.paginaId, indirizzo: v.indirizzo })) }))
+    },
+
+    async sitoImmagini() {
+      // Mille bastano a un sito di palestra; oltre, le più vecchie non comparirebbero.
+      const { data, error } = await db.storage.from(CONTENITORE_SITO).list('', { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } })
+      if (error) throw immaginiNonAttive(error)
+      return (data ?? []).filter((f) => eNomeDelContenitore(f.name)).map((f) => ({ nome: f.name, url: urlImmagine(URL_SUPABASE ?? '', f.name) }))
+    },
+
+    async caricaImmagineSito(file) {
+      // Il tipo si controlla prima di rimpicciolire: un SVG non diventa una foto.
+      const noTipo = controllaImmagine({ type: file.type, size: 0 })
+      if (noTipo) throw new Error(noTipo)
+      // Fino a 1 MB resta com'è (anche una PNG con la trasparenza); più grande si rimpicciolisce in JPEG.
+      const pronta = file.size <= MASSIMO_BYTE ? file : await riduciFoto(file, { basta: MASSIMO_BYTE, sempreJpeg: true })
+      const no = controllaImmagine(pronta)
+      const nome = nomeNelContenitore(crypto.randomUUID(), pronta.type)
+      if (no || !nome) throw new Error(no ?? cosaNonVaImmagini(''))
+      const { error } = await db.storage.from(CONTENITORE_SITO).upload(nome, pronta, { contentType: pronta.type, upsert: false })
+      if (error) throw immaginiNonAttive(error)
+      return { nome, url: urlImmagine(URL_SUPABASE ?? '', nome) }
+    },
+
+    async cancellaImmagineSito(nome) {
+      const { data, error } = await db.storage.from(CONTENITORE_SITO).remove([nome])
+      if (error) throw immaginiNonAttive(error)
+      if (!data?.length) throw new Error('Questa immagine non si cancella: o non c’è più, o non hai il permesso')
     },
 
     async gestisciPresenzaIstruttore(id, conferma) {

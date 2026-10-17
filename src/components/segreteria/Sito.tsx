@@ -18,6 +18,7 @@ import {
   type VoceMenu,
 } from '../../lib/sitoPagine'
 import { pulisciTesto } from '../../lib/sitoTesto'
+import { Immagini } from './ImmaginiSito'
 import { Campo, chiedi, Guaio, lasciare, Testa, useAvviso, useBozza, useCarica } from './comune'
 
 // L'editor porta con sé una libreria grossa: si scarica solo quando si apre una pagina da scrivere.
@@ -119,7 +120,7 @@ function Scrivi({ d, pagina, altri, onChiudi, ricarica }: { d: DatiSegreteria; p
             <div className="sito-testo sito-anteprima" aria-label="Com’è sul sito" dangerouslySetInnerHTML={{ __html: pulisciTesto(bozza) }} />
           ) : (
             <Suspense fallback={<span className="sg-sotto">Apro l’editor…</span>}>
-              <EditorTesto valore={bozza} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} />
+              <EditorTesto valore={bozza} onCambia={setBozza} etichetta={`Testo di ${pagina.titolo}`} d={d} />
             </Suspense>
           )}
           {noTesto && <Guaio testo={noTesto} />}
@@ -273,14 +274,16 @@ function ElencoVoci({ d, dove, titolo, voci, pagine, ricarica }: { d: DatiSegret
 export function Sito({ d }: { d: DatiSegreteria }) {
   const pagine = useCarica(() => d.sitoPagine(), [d])
   const menu = useCarica(() => d.sitoMenu(), [d])
-  const [scheda, setScheda] = useState<'pagine' | 'menu'>('pagine')
+  const [scheda, setScheda] = useState<'pagine' | 'menu' | 'immagini'>('pagine')
   const [aperta, setAperta] = useState<string | 'nuova' | null>(null)
   const tutte = pagine.dato ?? []
   const lei = tutte.find((p) => p.id === aperta)
 
   // Cambiando scheda con voci a metà (menu o footer) si chiede prima, come cambiando voce del menu a sinistra.
-  const cambiaScheda = async (dopo: 'pagine' | 'menu') => {
+  const cambiaScheda = async (dopo: 'pagine' | 'menu' | 'immagini') => {
     if (dopo === scheda || !(await lasciare())) return
+    // IMMAGINI dice dove sono usate: le pagine si rileggono, o «in uso» resterebbe quello di prima.
+    if (dopo === 'immagini') await pagine.ricarica()
     setScheda(dopo)
   }
 
@@ -294,7 +297,7 @@ export function Sito({ d }: { d: DatiSegreteria }) {
 
   return (
     <>
-      <Testa titolo={lei ? lei.titolo.toUpperCase() : 'SITO'} sotto={lei ? 'SITO · PAGINE' : 'Le pagine del sito della palestra, il menu e il footer'}>
+      <Testa titolo={lei ? lei.titolo.toUpperCase() : 'SITO'} sotto={lei ? 'SITO · PAGINE' : 'Le pagine del sito della palestra, il menu, il footer e le immagini'}>
         {!lei && scheda === 'pagine' && aperta !== 'nuova' && (
           <button type="button" className="sg-btn sg-btn-pieno" onClick={() => setAperta('nuova')}>
             NUOVA PAGINA
@@ -309,6 +312,7 @@ export function Sito({ d }: { d: DatiSegreteria }) {
           <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
             <button type="button" className="sg-chip num" aria-pressed={scheda === 'pagine'} onClick={() => void cambiaScheda('pagine')}>PAGINE</button>
             <button type="button" className="sg-chip num" aria-pressed={scheda === 'menu'} onClick={() => void cambiaScheda('menu')}>MENU E FOOTER</button>
+            <button type="button" className="sg-chip num" aria-pressed={scheda === 'immagini'} onClick={() => void cambiaScheda('immagini')}>IMMAGINI</button>
           </div>
 
           {scheda === 'pagine' && aperta === 'nuova' && (
@@ -335,6 +339,8 @@ export function Sito({ d }: { d: DatiSegreteria }) {
               <span className="sg-sotto">Le pagine di legge (privacy, cookie, contributi pubblici) non si possono nascondere né cancellare.</span>
             </>
           )}
+
+          {scheda === 'immagini' && <Immagini d={d} pagine={tutte} />}
 
           {scheda === 'menu' && (
             menu.guaio ? <Guaio testo={menu.guaio} /> : menu.dato ? (

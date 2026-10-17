@@ -1,6 +1,7 @@
 import type { Segnalata } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 import type { StatoSito } from './sitoProva'
+import type { ImmagineSito } from './sitoImmagini'
 import type { Ruolo, StatoSessione } from './sala'
 import type { PagamentoDiretto } from './pagamenti'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
@@ -160,6 +161,8 @@ export interface Archivio {
   segnalazioni?: Segnalazione[]
   /** Le pagine, il menu e il footer del sito (vedi `sitoProva.ts`); nasce al primo uso. */
   sito?: StatoSito
+  /** Le immagini del sito (vedi `sitoImmagini.ts`); nascono al primo uso. */
+  sitoImmagini?: ImmagineSito[]
 }
 
 /** Come una riga di `prove` (21-prove.sql). */
