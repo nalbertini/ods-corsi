@@ -65,7 +65,7 @@ jobs:
             echo "certificati=si" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1
         if: steps.segreti.outputs.pronto == 'si'
         with:
           version: latest
@@ -176,7 +176,7 @@ jobs:
       # Novanta giorni è il massimo che GitHub tiene per un repository
       # pubblico: restano le ultime tredici settimane, e le più vecchie se ne
       # vanno da sole.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: steps.segreti.outputs.pronto == 'si'
         with:
           name: backup-${{ env.GIORNO }}
