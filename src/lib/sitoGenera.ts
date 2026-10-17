@@ -107,7 +107,7 @@ const CSS = `
 :root{--display:"Big Shoulders Display","Arial Narrow",Arial,sans-serif;--fondo:#eef5fa;--inchiostro:#0d2a3d;--blu:#14709f;--chiara:#cfe6f4;--giallo:#f4c31b;--margine:clamp(16px,3.4vw,48px)}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--fondo);color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:clamp(17px,1rem + .25vw,19px);line-height:1.55;-webkit-font-smoothing:antialiased}
+body{margin:0 auto;max-width:1440px;background:var(--fondo);color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:clamp(17px,1rem + .25vw,19px);line-height:1.55;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset:3px}
 .invito:focus-visible{outline-color:var(--inchiostro)}
@@ -177,11 +177,6 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .tessera.tessera:has(h3 a){justify-content:space-between;padding:22px 24px}
 .tessera h3 a{text-decoration:none}
 .tessera:has(h3 a) p{font-size:16px;line-height:1.4;max-width:300px}
-.tessera:has(h3 a) .etichette{max-width:none;margin-top:12px}
-.corso-foto{display:none}
-.etichette{display:flex;flex-wrap:wrap;gap:6px}
-.etichetta{display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--chiara);color:var(--inchiostro);font-size:14px;font-weight:600;line-height:1}
-.etichetta svg{display:block;flex-shrink:0}
 .sotto{display:none}
 .tessere.n-4 .tessera{padding:26px 30px}
 .tessere.n-4 h3{font-size:58px;line-height:.92}
@@ -200,10 +195,6 @@ ${GRIGLIE_LUNGHE}
 .tessera.citazione>p:first-child::before{content:"«"}
 .tessera.citazione>p:first-child::after{content:"»"}
 .firma{display:flex;align-items:center;gap:14px;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(26px,2.4vw,34px);line-height:1}
-.citazioni-foto{display:flex;gap:6px;margin:0 calc(var(--margine) * -1) 0 0}
-.citazioni-foto figure{position:relative}
-.citazioni-foto figure img{position:absolute;inset:0;height:100%;aspect-ratio:auto}
-.citazioni-foto .citazioni{flex:1;min-width:0;margin:0}
 .citazioni{display:flex;gap:6px;margin:0 0 6px;overflow-x:auto;scroll-snap-type:x mandatory}
 .citazioni{scroll-marker-group:after}
 .citazioni::scroll-marker-group{display:flex;gap:8px;margin-top:14px;padding-right:var(--margine)}
@@ -213,6 +204,16 @@ ${GRIGLIE_LUNGHE}
 .citazioni .tessera{flex:0 0 min(560px,85%);scroll-snap-align:start}
 .foto{position:relative;padding:0;overflow:hidden}
 .foto img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:0}
+.foto-citazioni{display:grid;grid-template-columns:minmax(0,640px) minmax(0,1fr);gap:6px;height:clamp(400px,39vw,560px);margin:0 0 6px}
+.foto-citazioni .foto{grid-column:auto}
+.foto-citazioni .foto img{height:100%;aspect-ratio:auto;object-fit:cover}
+.foto-citazioni .citazioni{height:100%;margin:0}
+.foto-citazioni .citazione{padding:clamp(24px,2.8vw,40px)}
+.pillole{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:12px}
+.corso-foto{display:none}
+.pillola{display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--chiara);color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;line-height:1}
+.pillola svg{display:block;flex:none;width:20px;height:20px}
+.tessera.chiara .pillola{background:var(--blu);color:#fff}
 .foto-fila{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .foto-fila.quattro{grid-template-columns:repeat(4,1fr)}
 .foto-fila.quattro img{aspect-ratio:auto;height:540px}
@@ -249,8 +250,6 @@ ${GRIGLIE_LUNGHE}
 .testata nav a{padding:0}
 .testata nav a:hover{background:none;text-decoration:underline;text-underline-offset:4px}
 .pagina-hero>.collage{align-self:start}
-.citazioni-foto{min-height:560px}
-.citazioni-foto .foto{flex:0 0 640px}
 .pagina-hero .collage.pieno>.tessera:nth-child(1){grid-column:1 / span 3;grid-row:1 / span 4}
 .pagina-hero .collage.pieno>.tessera:nth-child(2){grid-column:4;grid-row:1 / span 2}
 .pagina-hero .collage.pieno>.tessera:nth-child(3){grid-column:5 / span 2;grid-row:1}
@@ -267,6 +266,8 @@ ${GRIGLIE_LUNGHE}
 .collage.pieno>figure img{position:absolute;inset:0;height:100%;aspect-ratio:auto}
 }
 @media (max-width:900px){
+.corso-foto{display:block;height:150px;overflow:hidden;border-radius:6px}
+.corso-foto img{width:100%;height:100%;object-fit:cover;border-radius:0}
 .testata{flex-wrap:wrap;gap:8px 16px}
 .tessere{grid-template-columns:1fr}
 .tessere .tessera{grid-column:auto}
@@ -277,6 +278,9 @@ ${GRIGLIE_LUNGHE}
 .pagina-hero .tessere.tessere .numero.ultima,.collage .numero.ultima{grid-column:span 2}
 .collage .foto.grande,.collage .foto.larga,.collage .foto.meta,.collage .foto.meta:nth-last-child(2),.collage .foto.meta:last-child{grid-column:1 / span 2;grid-row:auto;order:2}
 .collage .foto.grande img{aspect-ratio:3/2;height:auto;flex:none}
+.foto-citazioni{grid-template-columns:1fr;height:auto}
+.foto-citazioni .foto img{height:auto;aspect-ratio:3/2}
+.foto-citazioni .citazioni{height:auto}
 .foto-fila,.foto-fila.quattro{grid-template-columns:repeat(2,1fr)}
 .foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
@@ -315,8 +319,6 @@ h1{font-size:84px;line-height:.84}
 .tessera:has(h3 a) p{max-width:none;line-height:1.45}
 .tessera:has(h3 a) h3{display:flex;justify-content:space-between;align-items:flex-start}
 .tessera:has(h3 a) h3::after{content:"↗";font-size:36px;line-height:1}
-.corso-foto{display:block;height:150px;overflow:hidden;border-radius:6px}
-.corso-foto img{width:100%;height:100%;object-fit:cover;border-radius:0}
 .sotto{display:block;font-size:16px;line-height:1.45}
 .tessere.n-9 .tessera.tessera:nth-child(1){background:var(--giallo);color:var(--inchiostro)}
 .tessere.n-9 .tessera.tessera:nth-child(2){background:var(--blu);color:#fff}
@@ -335,8 +337,6 @@ h1{font-size:84px;line-height:.84}
 .tessera.citazione{min-height:300px;padding:22px;gap:20px;font-size:19px;line-height:1.35}
 .avatar{width:48px;height:48px;font-size:24px;background:var(--chiara)}
 .firma{gap:12px;font-size:28px;line-height:.95}
-.citazioni-foto{margin:0;display:block}
-.citazioni-foto .foto{display:none}
 .invito{margin:48px var(--margine) 6px;min-height:260px;padding:22px;gap:20px}
 .invito .frase{font-size:17px;line-height:1.35}
 .invito .parola{font-size:120px}

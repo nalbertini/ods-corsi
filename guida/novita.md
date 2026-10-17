@@ -10,6 +10,34 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.83.0 — 17 ottobre 2026
+
+### Novità
+
+- La contabilità per chi cura i conti, con movimenti, voci e casse
+
+### Modificato
+
+- La pagina del sito resta centrata sugli schermi larghi
+
+## 0.82.0 — 17 ottobre 2026
+
+### Novità
+
+- Le tessere dei corsi hanno la fascia d'età e le pillole bambini, adulti, anziani, agonisti
+
+## 0.81.0 — 17 ottobre 2026
+
+### Novità
+
+- La Home del sito ha la foto a sinistra e il carosello dei clienti a destra
+
+## 0.80.1 — 17 ottobre 2026
+
+### Risolto
+
+- Il sito pubblico mostra l'icona nella scheda del browser
+
 ## 0.80.0 — 17 ottobre 2026
 
 ### Novità

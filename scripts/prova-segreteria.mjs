@@ -3495,5 +3495,290 @@ console.log('\nsotto i 6 anni il certificato non serve')
   ok('a pagine: esporta legge le presenze di una persona a pagine, in ordine', [senzaPagine.includes('presenze'), aPagine.includes('presenze')], [false, true])
 }
 
+// ---------------------------------------------------------------------------
+// La contabilità (59-contabilita.sql): voci, casse e movimenti a mano. In
+// prova stanno in memoria e rifiutano quel che rifiuta il database
+// (supabase/prova/contabilita.sql), con gli stessi messaggi. Gli incassi degli
+// iscritti non sono qui: si ricavano da ricevute e pagamenti (prova-contabilita.mjs).
+// ---------------------------------------------------------------------------
+// Ogni sezione si ferma da sé: se i metodi non ci sono ancora, una riga rossa per sezione e non un crollo.
+const sezione = async (titolo, f) => {
+  console.log(`\n${titolo}`)
+  try {
+    await f()
+  } catch (e) {
+    ok(`${titolo}: si fa senza fermarsi`, e.message, 'nessun errore')
+  }
+}
+// Gli oggetti si confrontano senza badare all'ordine dei campi.
+const stabile = (x) => JSON.stringify(x, (_, v) => (v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1))) : v))
+const cx = {}
+const SOLO_AMM = 'Le voci di sistema non si cambiano'
+const sembra = (v) => ({ nome: v?.nome, tipo: v?.tipo, diSistema: v?.diSistema, attiva: v?.attiva })
+
+await sezione('la contabilità di prova: le due casse e le due voci di sistema', async () => {
+  const casse = await s.casse()
+  ok('le due casse, a zero e senza data', casse.map((c) => [c.nome, c.saldoIniziale, c.dal ?? null]).sort(), [['Cassa Contanti', 0, null], ['Conto Corrente', 0, null]])
+  cx.contanti = casse.find((c) => c.nome === 'Cassa Contanti').id
+  cx.conto = casse.find((c) => c.nome === 'Conto Corrente').id
+  const di = (await s.voci()).filter((v) => v.diSistema)
+  ok('le voci di sistema, attive', di.map((v) => [v.nome, v.tipo, v.attiva]).sort(), [['Corsi e altri pagamenti', 'entrata', true], ['Quota associativa', 'entrata', true]])
+  cx.quota = di.find((v) => v.nome === 'Quota associativa').id
+  cx.corsi = di.find((v) => v.nome === 'Corsi e altri pagamenti').id
+  ok('la quota associativa non si rinomina', await errore(() => s.rinominaVoce(cx.quota, 'Tessera')), SOLO_AMM)
+  ok('«Corsi e altri pagamenti» nemmeno', await errore(() => s.rinominaVoce(cx.corsi, 'Corsi')), SOLO_AMM)
+  ok('la quota associativa non si disattiva', await errore(() => s.attivaVoce(cx.quota, false)), SOLO_AMM)
+  ok('«Corsi e altri pagamenti» nemmeno', await errore(() => s.attivaVoce(cx.corsi, false)), SOLO_AMM)
+  ok('un doppione della quota no', await errore(() => s.salvaVoce({ nome: 'QUOTA ASSOCIATIVA', tipo: 'entrata' })), 'C’è già una voce «QUOTA ASSOCIATIVA» tra le entrate')
+  ok('né di «Corsi e altri pagamenti», con spazi', await errore(() => s.salvaVoce({ nome: '  corsi e altri pagamenti ', tipo: 'entrata' })), 'C’è già una voce «corsi e altri pagamenti» tra le entrate')
+  ok('sono rimaste com\'erano', (await s.voci()).filter((v) => v.diSistema).map((v) => [v.nome, v.attiva]).sort(), [['Corsi e altri pagamenti', true], ['Quota associativa', true]])
+})
+
+await sezione('le voci: il nome è unico per tipo, una voce si disattiva', async () => {
+  cx.aff = await s.salvaVoce({ nome: 'Affitto sala', tipo: 'uscita' })
+  ok('salvaVoce rende l\'id', typeof cx.aff, 'string')
+  const voce = async (id) => (await s.voci()).find((v) => v.id === id)
+  ok('…di uscita, attiva e non di sistema', stabile(sembra(await voce(cx.aff))), stabile({ nome: 'Affitto sala', tipo: 'uscita', diSistema: false, attiva: true }))
+  cx.don = await s.salvaVoce({ nome: 'Donazioni', tipo: 'entrata' })
+  const bigl = await s.salvaVoce({ nome: '  Biglietti  ', tipo: 'entrata' })
+  ok('il nome si ripulisce dagli spazi', (await voce(bigl))?.nome, 'Biglietti')
+  ok('«affitto sala» c\'è già, senza badare alle maiuscole', await errore(() => s.salvaVoce({ nome: 'affitto sala', tipo: 'uscita' })), 'C’è già una voce «affitto sala» tra le uscite')
+  ok('«Affitto sala » c\'è già, senza badare agli spazi', await errore(() => s.salvaVoce({ nome: 'Affitto sala ', tipo: 'uscita' })), 'C’è già una voce «Affitto sala» tra le uscite')
+  await s.salvaVoce({ nome: 'Rimborsi', tipo: 'entrata' })
+  await s.salvaVoce({ nome: 'Rimborsi', tipo: 'uscita' })
+  ok('lo stesso nome in due tipi va bene', (await s.voci()).filter((v) => v.nome === 'Rimborsi').map((v) => v.tipo).sort(), ['entrata', 'uscita'])
+  ok('…ma non due volte fra le entrate', await errore(() => s.salvaVoce({ nome: 'RIMBORSI', tipo: 'entrata' })), 'C’è già una voce «RIMBORSI» tra le entrate')
+  ok('il nome vuoto no', await errore(() => s.salvaVoce({ nome: '   ', tipo: 'entrata' })), 'Scrivi il nome della voce')
+  await s.salvaVoce({ nome: 'x'.repeat(60), tipo: 'entrata' })
+  ok('sessantuna lettere no', await errore(() => s.salvaVoce({ nome: 'y'.repeat(61), tipo: 'entrata' })), 'Il nome della voce è troppo lungo: al massimo 60 caratteri')
+  ok('il tipo giroconto non è di una voce', await errore(() => s.salvaVoce({ nome: 'Giro', tipo: 'giroconto' })), 'Scegli se è un’entrata o un’uscita')
+  await s.rinominaVoce(bigl, 'Biglietti ingresso')
+  ok('si rinomina', (await voce(bigl))?.nome, 'Biglietti ingresso')
+  await s.rinominaVoce(bigl, 'BIGLIETTI INGRESSO')
+  ok('si può cambiare solo le maiuscole del proprio nome', (await voce(bigl))?.nome, 'BIGLIETTI INGRESSO')
+  ok('rinominare in un nome già preso no', await errore(() => s.rinominaVoce(cx.don, ' rimborsi')), 'C’è già una voce «rimborsi» tra le entrate')
+  ok('rinominare in un nome di un altro tipo sì', await errore(() => s.rinominaVoce(cx.don, 'Affitto sala')), 'nessun errore')
+  await s.rinominaVoce(cx.don, 'Donazioni')
+  ok('rinominare in vuoto no', await errore(() => s.rinominaVoce(cx.don, ' ')), 'Scrivi il nome della voce')
+  ok('rinominare in un nome lungo no', await errore(() => s.rinominaVoce(cx.don, 'z'.repeat(61))), 'Il nome della voce è troppo lungo: al massimo 60 caratteri')
+  ok('una voce che non c\'è', await errore(() => s.rinominaVoce('non-c-e', 'X')), 'La voce non c’è')
+  ok('né si disattiva', await errore(() => s.attivaVoce('non-c-e', false)), 'La voce non c’è')
+})
+
+await sezione('il saldo iniziale è un campo della cassa, con la data da cui si conta', async () => {
+  const cassa = async (id) => (await s.casse()).find((c) => c.id === id)
+  await s.salvaSaldoCassa(cx.contanti, 10000, '2026-09-01')
+  ok('si imposta il saldo di Cassa Contanti, con la data', stabile(await cassa(cx.contanti)), stabile({ id: cx.contanti, nome: 'Cassa Contanti', saldoIniziale: 10000, dal: '2026-09-01' }))
+  await s.salvaSaldoCassa(cx.conto, 0)
+  ok('la data può mancare: allora si conta tutto', stabile(await cassa(cx.conto)), stabile({ id: cx.conto, nome: 'Conto Corrente', saldoIniziale: 0 }))
+  ok('un saldo negativo no', await errore(() => s.salvaSaldoCassa(cx.contanti, -100, '2026-09-01')), 'Il saldo iniziale non può essere negativo')
+  ok('una cassa che non c\'è', await errore(() => s.salvaSaldoCassa('non-c-e', 0)), 'La cassa non c’è')
+  ok('un saldo enorme no', await errore(() => s.salvaSaldoCassa(cx.contanti, 100_000_001, '2026-09-01')), 'Il saldo iniziale è troppo alto: controlla le cifre')
+  ok('l\'inizio della cassa non può essere domani', await errore(() => s.salvaSaldoCassa(cx.contanti, 10000, '2026-09-27')), 'L’inizio della cassa non può essere nel futuro')
+  ok('il saldo rifiutato non ha cambiato niente', [(await cassa(cx.contanti)).saldoIniziale, (await cassa(cx.contanti)).dal], [10000, '2026-09-01'])
+})
+
+// Oggi, in questa prova, è il 26 settembre 2026.
+await sezione('i movimenti: entrano solo se hanno senso', async () => {
+  const buono = { tipo: 'entrata', data: '2026-09-10', importo: 4000, voceId: cx.don, cassaId: cx.contanti, descrizione: 'Offerta di Rossi' }
+  const per = async (descrizione) => (await s.movimenti()).find((x) => x.descrizione === descrizione)
+  cx.prima = (await s.movimenti()).length
+  cx.offerta = await s.registraMovimento(buono)
+  ok('registraMovimento rende l\'id', typeof cx.offerta, 'string')
+  const x = await per('Offerta di Rossi')
+  ok('un\'entrata entra, com\'è stata scritta', stabile([x?.id === cx.offerta, x?.tipo, x?.data, x?.importo, x?.voceId === cx.don, x?.cassaId === cx.contanti, x?.cassaAId ?? null, x?.nota ?? null, x?.annullatoIl ?? null, typeof x?.creatoIl]), stabile([true, 'entrata', '2026-09-10', 4000, true, true, null, null, null, 'string']))
+  await s.registraMovimento({ tipo: 'uscita', data: '2026-09-12', importo: 2500, voceId: cx.aff, cassaId: cx.contanti, descrizione: 'Affitto sala di settembre', nota: 'Pagato a mano' })
+  ok('una uscita con la nota entra', (await per('Affitto sala di settembre'))?.nota, 'Pagato a mano')
+  await s.registraMovimento({ ...buono, data: '2026-09-01', importo: 1000, descrizione: 'Primo giorno' })
+  await s.registraMovimento({ tipo: 'uscita', data: '2026-08-31', importo: 700, voceId: cx.aff, cassaId: cx.conto, descrizione: 'Commissioni di agosto' })
+  ok('il primo giorno della cassa va, e sul conto senza «dal» anche prima', [!!(await per('Primo giorno')), !!(await per('Commissioni di agosto'))], [true, true])
+  await s.registraMovimento({ ...buono, data: '2026-09-26', importo: 100, cassaId: cx.conto, descrizione: 'Oggi' })
+  ok('oggi va', !!(await per('Oggi')), true)
+  const entrati = (await s.movimenti()).length
+  const rifiuti = [
+    ['importo zero', { importo: 0 }, 'L’importo deve essere più di zero'],
+    ['importo negativo', { importo: -500 }, 'L’importo deve essere più di zero'],
+    ['importo con la virgola', { importo: 12.5 }, 'L’importo non si capisce'],
+    ['importo oltre i centomila euro', { importo: 10_000_001 }, 'L’importo è troppo alto: controlla le cifre'],
+    ['il 30 febbraio', { data: '2026-02-30', cassaId: cx.conto }, 'La data non si capisce'],
+    ['senza data', { data: '', cassaId: cx.conto }, 'La data non si capisce'],
+    ['domani', { data: '2026-09-27' }, 'La data è nel futuro: si registra quel che è già successo'],
+    ['una data di secoli fa', { data: '1999-12-31', cassaId: cx.conto }, 'La data non si capisce'],
+    ['un\'entrata con la voce di un\'uscita', { voceId: cx.aff }, 'La voce scelta non va con questo tipo di movimento'],
+    ['una uscita con la voce di un\'entrata', { tipo: 'uscita' }, 'La voce scelta non va con questo tipo di movimento'],
+    ['senza voce', { voceId: undefined }, 'Scegli la voce'],
+    ['con una voce che non c\'è', { voceId: 'non-c-e' }, 'Scegli la voce'],
+    ['descrizione vuota', { descrizione: '   ' }, 'Scrivi una descrizione'],
+    ['descrizione di 201 lettere', { descrizione: 'd'.repeat(201) }, 'La descrizione è troppo lunga: al massimo 200 caratteri'],
+    ['nota di 301 lettere', { nota: 'n'.repeat(301) }, 'La nota è troppo lunga: al massimo 300 caratteri'],
+    ['senza cassa', { cassaId: '' }, 'Scegli la cassa'],
+    ['una cassa che non c\'è', { cassaId: 'non-c-e' }, 'Scegli la cassa'],
+    ['il 31 agosto sulla cassa che comincia il 1 settembre', { data: '2026-08-31' }, 'La data è prima dell’inizio della cassa'],
+    ['il giroconto non passa da qui', { tipo: 'giroconto' }, 'Scegli se è un’entrata o un’uscita'],
+    ['un tipo che non c\'è', { tipo: 'prestito' }, 'Scegli se è un’entrata o un’uscita'],
+  ]
+  for (const [cosa, cambio, messaggio] of rifiuti) ok(cosa, await errore(() => s.registraMovimento({ ...buono, ...cambio })), messaggio)
+  ok('dei rifiuti non è entrato niente', (await s.movimenti()).length, entrati)
+  ok('l\'inizio di una cassa non salta i movimenti già registrati (il conto ha quello del 31 agosto)', await errore(() => s.salvaSaldoCassa(cx.conto, 0, '2026-09-01')), 'Ci sono movimenti prima di quella data: annullali o scegli una data più vecchia')
+  ok('…e il conto è rimasto com\'era', (await s.casse()).find((c) => c.id === cx.conto)?.dal, undefined)
+
+  // Una voce disattivata non si offre ai movimenti nuovi, e resta sui vecchi.
+  await s.attivaVoce(cx.aff, false)
+  ok('si disattiva una voce usata, e risulta spenta', (await s.voci()).find((v) => v.id === cx.aff)?.attiva, false)
+  const aOttobre = { tipo: 'uscita', data: '2026-09-20', importo: 600, voceId: cx.aff, cassaId: cx.conto, descrizione: 'Affitto di ottobre' }
+  ok('con quella voce non si registra più', await errore(() => s.registraMovimento(aOttobre)), 'La voce non è più in uso: scegline un’altra')
+  ok('i movimenti vecchi ce l\'hanno ancora', (await s.movimenti()).filter((y) => y.voceId === cx.aff).length, 2)
+  await s.attivaVoce(cx.aff, true)
+  await s.registraMovimento(aOttobre)
+  ok('riattivata, si usa di nuovo', !!(await per('Affitto di ottobre')), true)
+})
+
+await sezione('il giroconto sposta denaro fra le due casse', async () => {
+  const giro = { daCassaId: cx.contanti, aCassaId: cx.conto, data: '2026-09-15', importo: 1000, nota: 'Versamento in banca' }
+  const giroconti = async () => (await s.movimenti()).filter((x) => x.tipo === 'giroconto')
+  const id = await s.registraGiroconto(giro)
+  ok('registraGiroconto rende l\'id', typeof id, 'string')
+  const g = (await giroconti())[0]
+  ok('entra senza voce, fra le due casse', stabile([g?.id === id, g?.data, g?.importo, g?.voceId ?? null, g?.cassaId === cx.contanti, g?.cassaAId === cx.conto, g?.nota]), stabile([true, '2026-09-15', 1000, null, true, true, 'Versamento in banca']))
+  ok('…con una descrizione che dice fra quali casse', g?.descrizione, 'Giroconto da Cassa Contanti a Conto Corrente')
+  const rifiuti = [
+    ['dalla stessa cassa alla stessa', { aCassaId: cx.contanti }, 'Scegli due casse diverse'],
+    ['importo zero', { importo: 0 }, 'L’importo deve essere più di zero'],
+    ['importo troppo alto', { importo: 10_000_001 }, 'L’importo è troppo alto: controlla le cifre'],
+    ['una cassa che non c\'è', { aCassaId: 'non-c-e' }, 'Scegli le due casse'],
+    ['senza casse', { daCassaId: '', aCassaId: '' }, 'Scegli le due casse'],
+    ['data impossibile', { data: '2026-02-30' }, 'La data non si capisce'],
+    ['data nel futuro', { data: '2026-09-27' }, 'La data è nel futuro: si registra quel che è già successo'],
+    ['prima dell\'inizio di una delle due casse', { data: '2026-08-31' }, 'La data è prima dell’inizio della cassa'],
+    ['nota di 301 lettere', { nota: 'n'.repeat(301) }, 'La nota è troppo lunga: al massimo 300 caratteri'],
+  ]
+  for (const [cosa, cambio, messaggio] of rifiuti) ok(cosa, await errore(() => s.registraGiroconto({ ...giro, ...cambio })), messaggio)
+  ok('un solo giroconto, nient\'altro', (await giroconti()).length, 1)
+  cx.giro = id
+})
+
+await sezione('un movimento non si cancella e non si cambia: si annulla', async () => {
+  const per = async (descrizione) => (await s.movimenti()).find((x) => x.descrizione === descrizione)
+  const prima = (await s.movimenti()).length
+  await s.registraMovimento({ tipo: 'entrata', data: '2026-09-11', importo: 300, voceId: cx.don, cassaId: cx.conto, descrizione: 'Offerta anonima' })
+  const anonima = (await per('Offerta anonima')).id
+  await s.annullaMovimento(anonima)
+  const a = await per('Offerta anonima')
+  ok('si annulla un movimento: resta in elenco, annullato, com\'era', [!!a?.annullatoIl, a?.importo, a?.data, a?.tipo], [true, 300, '2026-09-11', 'entrata'])
+  ok('due volte no', await errore(() => s.annullaMovimento(anonima)), 'Il movimento è già annullato')
+  ok('uno che non c\'è no', await errore(() => s.annullaMovimento('non-c-e')), 'Il movimento non c’è')
+  await s.annullaMovimento(cx.giro)
+  ok('si annulla anche un giroconto, e resta', !!(await s.movimenti()).find((x) => x.id === cx.giro)?.annullatoIl, true)
+  ok('i movimenti sono ancora tutti', (await s.movimenti()).length, prima + 1)
+
+  // Descrizione e nota si correggono, il resto no.
+  const o = await per('Offerta di Rossi')
+  const resto = (x) => stabile([x.tipo, x.data, x.importo, x.voceId, x.cassaId, x.cassaAId ?? null, x.creatoIl, x.annullatoIl ?? null])
+  await s.correggiTestoMovimento(o.id, '  Offerta della famiglia Rossi ', 'Per la gara')
+  const dopo = (await s.movimenti()).find((x) => x.id === o.id)
+  ok('si corregge il testo, ripulito', [dopo.descrizione, dopo.nota], ['Offerta della famiglia Rossi', 'Per la gara'])
+  ok('…e tutto il resto è come prima', resto(dopo), resto(o))
+  await s.correggiTestoMovimento(o.id, 'Offerta della famiglia Rossi')
+  ok('la nota si toglie', (await s.movimenti()).find((x) => x.id === o.id)?.nota ?? null, null)
+  ok('descrizione vuota no', await errore(() => s.correggiTestoMovimento(o.id, ' ')), 'Scrivi una descrizione')
+  ok('descrizione di 201 lettere no', await errore(() => s.correggiTestoMovimento(o.id, 'd'.repeat(201))), 'La descrizione è troppo lunga: al massimo 200 caratteri')
+  ok('descrizione di 200 lettere sì', await errore(() => s.correggiTestoMovimento(o.id, 'd'.repeat(200))), 'nessun errore')
+  ok('nota di 301 lettere no', await errore(() => s.correggiTestoMovimento(o.id, 'Offerta', 'n'.repeat(301))), 'La nota è troppo lunga: al massimo 300 caratteri')
+  ok('un movimento annullato non si corregge', await errore(() => s.correggiTestoMovimento(anonima, 'Cambiata')), 'Un movimento annullato non si corregge')
+  ok('uno che non c\'è no', await errore(() => s.correggiTestoMovimento('non-c-e', 'X')), 'Il movimento non c’è')
+  ok('l\'annullato è rimasto com\'era', (await s.movimenti()).find((x) => x.id === anonima)?.descrizione, 'Offerta anonima')
+})
+
+// ---- Il database vero: le chiamate giuste, e il file 59 che può mancare.
+const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
+const tabelleContab = {
+  voci_contabili: [
+    { id: 'v1', nome: 'Quota associativa', tipo: 'entrata', di_sistema: true, attiva: true },
+    { id: 'v2', nome: 'Affitto sala', tipo: 'uscita', di_sistema: false, attiva: false },
+  ],
+  casse: [
+    { id: 'c1', nome: 'Cassa Contanti', saldo_iniziale: 10000, dal: '2026-09-01' },
+    { id: 'c2', nome: 'Conto Corrente', saldo_iniziale: 0, dal: null },
+  ],
+  movimenti: [
+    { id: 'm1', tipo: 'uscita', data: '2026-09-12', importo: 2500, voce_id: 'v2', cassa_id: 'c1', cassa_a_id: null, descrizione: 'Affitto', nota: 'Pagato a mano', creato_il: '2026-09-12T08:00:00+00:00', annullato_il: null },
+    { id: 'm2', tipo: 'giroconto', data: '2026-09-15', importo: 1000, voce_id: null, cassa_id: 'c1', cassa_a_id: 'c2', descrizione: 'Giroconto da Cassa Contanti a Conto Corrente', nota: null, creato_il: '2026-09-15T08:00:00+00:00', annullato_il: '2026-09-16T08:00:00+00:00' },
+  ],
+}
+// Un client finto: le tabelle rispondono con `lettura(nome)`, le funzioni con `funzione(nome)`.
+const clientContab = ({ lettura = (t) => ({ data: tabelleContab[t] ?? [], error: null }), funzione = (f) => ({ data: ['salva_voce', 'registra_movimento', 'registra_giroconto'].includes(f) ? { id: 'nuovo-1' } : null, error: null }) } = {}) => {
+  const chiamate = []
+  const risposta = (r) => {
+    const c = new Proxy(() => c, { get: (_, k) => (k === 'range' ? (da) => (da ? oltre : c) : k === 'then' ? (f, ko) => Promise.resolve(r).then(f, ko) : () => c), apply: () => c })
+    return c
+  }
+  const db = { from: (t) => risposta(lettura(t)), rpc: async (f, x) => (chiamate.push([f, x]), funzione(f)) }
+  return { db: m.creaSegreteriaSupabase(db), chiamate }
+}
+
+await sezione('la contabilità sul database (client finto): le letture', async () => {
+  const { db } = clientContab()
+  const perId = (a, b) => (a.id < b.id ? -1 : 1)
+  ok('le voci, dai nomi del database', stabile((await db.voci()).sort(perId)), stabile([{ id: 'v1', nome: 'Quota associativa', tipo: 'entrata', diSistema: true, attiva: true }, { id: 'v2', nome: 'Affitto sala', tipo: 'uscita', diSistema: false, attiva: false }]))
+  ok('le casse: la data che manca non c\'è', stabile((await db.casse()).sort(perId)), stabile([{ id: 'c1', nome: 'Cassa Contanti', saldoIniziale: 10000, dal: '2026-09-01' }, { id: 'c2', nome: 'Conto Corrente', saldoIniziale: 0 }]))
+  ok('i movimenti: voce e nota che mancano non ci sono, l\'annullo sì', stabile((await db.movimenti()).sort(perId)), stabile([
+    { id: 'm1', tipo: 'uscita', data: '2026-09-12', importo: 2500, voceId: 'v2', cassaId: 'c1', descrizione: 'Affitto', nota: 'Pagato a mano', creatoIl: '2026-09-12T08:00:00+00:00' },
+    { id: 'm2', tipo: 'giroconto', data: '2026-09-15', importo: 1000, cassaId: 'c1', cassaAId: 'c2', descrizione: 'Giroconto da Cassa Contanti a Conto Corrente', creatoIl: '2026-09-15T08:00:00+00:00', annullatoIl: '2026-09-16T08:00:00+00:00' },
+  ]))
+})
+
+await sezione('la contabilità sul database (client finto): le funzioni giuste coi parametri giusti', async () => {
+  const { db, chiamate } = clientContab()
+  const ultima = () => stabile(chiamate.at(-1))
+  ok('salvaVoce rende l\'id e manda nome ripulito e tipo', [await db.salvaVoce({ nome: ' Pulizie ', tipo: 'uscita' }), ultima()], ['nuovo-1', stabile(['salva_voce', { dati: { nome: 'Pulizie', tipo: 'uscita' } }])])
+  await db.rinominaVoce('v2', 'Affitto locali')
+  ok('rinominaVoce', ultima(), stabile(['rinomina_voce', { id: 'v2', nome: 'Affitto locali' }]))
+  await db.attivaVoce('v2', true)
+  ok('attivaVoce', ultima(), stabile(['imposta_voce_attiva', { id: 'v2', attiva: true }]))
+  await db.salvaSaldoCassa('c1', 12000, '2026-09-01')
+  ok('salvaSaldoCassa con la data', ultima(), stabile(['imposta_saldo_cassa', { id: 'c1', saldo: 12000, dal: '2026-09-01' }]))
+  await db.salvaSaldoCassa('c2', 0)
+  ok('…e senza: la data è null', ultima(), stabile(['imposta_saldo_cassa', { id: 'c2', saldo: 0, dal: null }]))
+  const mov = { tipo: 'entrata', data: '2026-09-10', importo: 4000, voceId: 'v1', cassaId: 'c2', descrizione: ' Offerta di Rossi ' }
+  ok('registraMovimento rende l\'id e manda i campi del database', [await db.registraMovimento(mov), ultima()], ['nuovo-1', stabile(['registra_movimento', { dati: { tipo: 'entrata', data: '2026-09-10', importo: 4000, voce_id: 'v1', cassa_id: 'c2', descrizione: 'Offerta di Rossi', nota: null } }])])
+  await db.registraMovimento({ ...mov, nota: ' per la gara ' })
+  ok('…con la nota ripulita', ultima(), stabile(['registra_movimento', { dati: { tipo: 'entrata', data: '2026-09-10', importo: 4000, voce_id: 'v1', cassa_id: 'c2', descrizione: 'Offerta di Rossi', nota: 'per la gara' } }]))
+  ok('registraGiroconto rende l\'id e manda da, a, data, importo, nota', [await db.registraGiroconto({ daCassaId: 'c1', aCassaId: 'c2', data: '2026-09-15', importo: 1000 }), ultima()], ['nuovo-1', stabile(['registra_giroconto', { dati: { da: 'c1', a: 'c2', data: '2026-09-15', importo: 1000, nota: null } }])])
+  await db.annullaMovimento('m1')
+  ok('annullaMovimento', ultima(), stabile(['annulla_movimento', { id: 'm1' }]))
+  await db.correggiTestoMovimento('m1', ' Affitto di settembre ')
+  ok('correggiTestoMovimento, senza nota', ultima(), stabile(['correggi_testo_movimento', { id: 'm1', descrizione: 'Affitto di settembre', nota: null }]))
+  await db.correggiTestoMovimento('m1', 'Affitto', ' pagato ')
+  ok('…e con la nota ripulita', ultima(), stabile(['correggi_testo_movimento', { id: 'm1', descrizione: 'Affitto', nota: 'pagato' }]))
+})
+
+await sezione('la contabilità sul database (client finto): gli errori', async () => {
+  const guasto = (error) => clientContab({ funzione: () => ({ data: null, error }) }).db
+  ok('un rifiuto del database arriva com\'è', await errore(() => guasto({ code: '22023', message: 'La data non si capisce' }).annullaMovimento('m1')), 'La data non si capisce')
+  ok('«già annullato» arriva com\'è', await errore(() => guasto({ code: 'P0002', message: 'Il movimento è già annullato' }).annullaMovimento('m1')), 'Il movimento è già annullato')
+  const vietato = await errore(() => guasto({ code: '42501', message: 'la contabilità la cura l’amministrazione' }).annullaMovimento('m1'))
+  ok('chi non è amministrazione sente dire amministrazione, non segreteria', [/amministrazione/.test(vietato), /segreteria/.test(vietato)], [true, false])
+})
+
+await sezione('la contabilità sul database (client finto): senza 59-contabilita.sql', async () => {
+  const senzaFunzioni = (codice, messaggio) => clientContab({ funzione: (f) => ({ data: null, error: { code: codice, message: messaggio(f) } }) }).db
+  const senzaTabelle = (codice, messaggio) => clientContab({ lettura: (t) => ({ data: null, error: { code: codice, message: messaggio(t) } }) }).db
+  const scritture = {
+    salvaVoce: (d) => d.salvaVoce({ nome: 'Pulizie', tipo: 'uscita' }),
+    rinominaVoce: (d) => d.rinominaVoce('v2', 'Affitto locali'),
+    attivaVoce: (d) => d.attivaVoce('v2', false),
+    salvaSaldoCassa: (d) => d.salvaSaldoCassa('c1', 100, '2026-09-01'),
+    registraMovimento: (d) => d.registraMovimento({ tipo: 'entrata', data: '2026-09-10', importo: 4000, voceId: 'v1', cassaId: 'c2', descrizione: 'Offerta' }),
+    registraGiroconto: (d) => d.registraGiroconto({ daCassaId: 'c1', aCassaId: 'c2', data: '2026-09-15', importo: 1000 }),
+    annullaMovimento: (d) => d.annullaMovimento('m1'),
+    correggiTestoMovimento: (d) => d.correggiTestoMovimento('m1', 'Affitto'),
+  }
+  const letture = { voci: (d) => d.voci(), casse: (d) => d.casse(), movimenti: (d) => d.movimenti() }
+  for (const [codice, messaggio] of [['PGRST202', (f) => `Could not find the function public.${f} in the schema cache`], ['42883', (f) => `function ${f}(jsonb) does not exist`]])
+    for (const [nome, chiama] of Object.entries(scritture)) ok(`senza 59: ${nome} (${codice}) dice quale file lanciare`, await errore(() => chiama(senzaFunzioni(codice, messaggio))), MANCA_CONTABILITA)
+  for (const [codice, messaggio] of [['PGRST205', (t) => `Could not find the table 'public.${t}' in the schema cache`], ['42P01', (t) => `relation "${t}" does not exist`]])
+    for (const [nome, chiama] of Object.entries(letture)) ok(`senza 59: ${nome} (${codice}) dice quale file lanciare`, await errore(() => chiama(senzaTabelle(codice, messaggio))), MANCA_CONTABILITA)
+})
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

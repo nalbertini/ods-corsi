@@ -40,6 +40,7 @@ Il testo sta in [`home.html`](home.html): è quello che va incollato.
 - Le firme delle citazioni stanno dentro la citazione, in corsivo: così il sito
   le mette in basso, con l'iniziale come avatar.
 - Tolta la sezione «Vieni a trovarci»: la mappa e l'indirizzo stanno nella pagina Contatti e nel piede.
+- Una foto di judo prima delle citazioni dei clienti: sul sito sta a sinistra del carosello.
 - Quattro foto (judo, lotta, preparazione atletica, psicomotricità) sotto «Perché unirti a noi?»: sul sito sono una fascia alta.
 - Una foto sola subito sotto «Cosa dicono i nostri clienti», davanti alle citazioni: sul sito sta a sinistra, con le citazioni che scorrono a fianco.
 - Tutto il resto è identico al testo pubblicato.
@@ -53,3 +54,4 @@ Il testo sta in [`home.html`](home.html): è quello che va incollato.
 
 ## Le schede dei corsi
 Ogni voce dell'elenco sotto «I nostri corsi» può avere, dopo il titolo col link: una foto (si vede solo sul telefono), una riga in grassetto (l'età) seguita da a capo e dal testo, e in fondo un corsivo con le etichette separate da « · » (Bambini · Adulti · Agonisti · Anziani), che sul sito diventano pastiglie con l'icona. La voce «1 settimana di prova: 5 €» può avere sotto, a capo, un corsivo: si vede solo sul telefono.
+- Corsi con fascia d'età e pillole (Bambini, Adulti, Anziani, Agonisti), prese dal design: da controllare con la segreteria.

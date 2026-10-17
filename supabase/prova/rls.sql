@@ -223,3 +223,41 @@ set role anon;
 select pg_temp.atteso('chi non ha l''accesso non legge i contatti', contatti_letti(), 'non lo legge');
 reset role;
 select pg_temp.atteso('il contatto di Sara è quello scritto dalla segreteria', (select email_contatto::text from persone where id = 'aaaaaaaa-0000-0000-0000-000000000004'), 'mamma.bianchi@esempio.it');
+
+\echo ''
+\echo '--- CONTABILITÀ (59-contabilita.sql) ---'
+-- Voci, casse e movimenti sono dell'amministrazione (`e_amministrazione()`): in
+-- questa prova nessuno ha quel ruolo, quindi nessuno vede una riga (le due casse
+-- e le due voci di sistema ci sono, messe dal file) e nessuno ci scrive.
+-- Anon non ha nemmeno il permesso di guardare, né di chiamare le funzioni (la
+-- lista di cosa può chiamare anon, in cima, non cambia).
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select pg_temp.atteso('la segreteria senza il ruolo non vede le casse', (select count(*)::text from casse), '0');
+select pg_temp.atteso('…né le voci', (select count(*)::text from voci_contabili), '0');
+select pg_temp.atteso('…né i movimenti', (select count(*)::text from movimenti), '0');
+select pg_temp.atteso('…e non crea una voce', tenta($$select salva_voce('{"nome": "Abusiva", "tipo": "entrata"}')$$), 'NEGATO');
+reset role;
+select chi('22222222-2222-2222-2222-222222222222');
+set role authenticated;
+select pg_temp.atteso('l''istruttore non vede le casse', (select count(*)::text from casse), '0');
+select pg_temp.atteso('…né i movimenti', (select count(*)::text from movimenti), '0');
+select pg_temp.atteso('…e non scrive sulle tabelle', tenta($$insert into casse (nome) values ('Abusiva')$$), 'NEGATO');
+select pg_temp.atteso('…né registra un movimento', tenta($$select registra_movimento('{}')$$), 'NEGATO');
+reset role;
+select chi('33333333-3333-3333-3333-333333333333');
+set role authenticated;
+select pg_temp.atteso('l''iscritto non vede i movimenti', (select count(*)::text from movimenti), '0');
+select pg_temp.atteso('…e non annulla niente', tenta($$select annulla_movimento('00000000-0000-0000-0000-000000000000')$$), 'NEGATO');
+reset role;
+select chi('');
+set role anon;
+select pg_temp.atteso('anon non legge le casse', tenta($$select count(*) from casse$$), 'NEGATO');
+select pg_temp.atteso('…né le voci', tenta($$select count(*) from voci_contabili$$), 'NEGATO');
+select pg_temp.atteso('…né i movimenti', tenta($$select count(*) from movimenti$$), 'NEGATO');
+select pg_temp.atteso('…non scrive', tenta($$insert into movimenti (descrizione) values ('Abusivo')$$), 'NEGATO');
+select pg_temp.atteso('…non cambia un saldo', tenta($$select imposta_saldo_cassa('00000000-0000-0000-0000-000000000000', 0, null)$$), 'NEGATO');
+reset role;
+select pg_temp.atteso('le tre tabelle hanno la RLS accesa e nessun permesso ad anon',
+  (select count(*)::text from pg_class c where c.relnamespace = 'public'::regnamespace and c.relname in ('voci_contabili', 'casse', 'movimenti') and c.relrowsecurity
+     and not has_table_privilege('anon', c.oid, 'select, insert, update, delete')), '3');

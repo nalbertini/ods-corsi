@@ -23,14 +23,6 @@ const COLORI_DEL_DESIGN: Record<number, string[]> = {
   9: ['blu', 'giallo', 'inchiostro', 'giallo', 'inchiostro', 'blu', 'inchiostro', 'blu', 'giallo'],
 }
 const coloreDi = (k: number, n: number) => COLORI_DEL_DESIGN[n]?.[k] ?? ROTAZIONE[k % ROTAZIONE.length]
-/** Le icone delle etichette dei corsi (Phosphor, come nel design): il nome dell'etichetta → i tracciati dell'svg. */
-const ICONE: Record<string, string> = {
-  Bambini: '<path d="M92,140a12,12,0,1,1,12-12A12,12,0,0,1,92,140Zm72-24a12,12,0,1,0,12,12A12,12,0,0,0,164,116Zm-12.27,45.23a45,45,0,0,1-47.46,0,8,8,0,0,0-8.54,13.54,61,61,0,0,0,64.54,0,8,8,0,0,0-8.54-13.54ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.11,88.11,0,0,0-84.09-87.91C120.32,56.38,120,71.88,120,72a8,8,0,0,0,16,0,8,8,0,0,1,16,0,24,24,0,0,1-48,0c0-.73.13-14.3,8.46-30.63A88,88,0,1,0,216,128Z"/>',
-  Adulti: '<path d="M128,80A32,32,0,1,0,96,48,32,32,0,0,0,128,80Zm0-48a16,16,0,1,1-16,16A16,16,0,0,1,128,32ZM230.86,132.12a8,8,0,0,1-11,2.74c-.35-.21-35.11-20.59-83.88-22.67V149l62,69.73a8,8,0,1,1-12,10.62L128,164,70,229.31a8,8,0,1,1-12-10.62L120,149V112.18c-49,2.08-83.52,22.46-83.88,22.68a8,8,0,1,1-8.23-13.72C29.6,120.11,70.45,96,128,96s98.4,24.11,100.12,25.14A8,8,0,0,1,230.86,132.12Z"/>',
-  Agonisti: '<path d="M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8Zm144-8.9c0,35.52-29,64.64-64,64.9a64,64,0,0,1-64-64V56H192ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z"/>',
-  Anziani: '<path d="M128,80A32,32,0,1,0,96,48,32,32,0,0,0,128,80Zm0-48a16,16,0,1,1-16,16A16,16,0,0,1,128,32Zm96,72a8,8,0,0,1-8,8H136v26.72l51.15,21.93A8,8,0,0,1,192,168v48a8,8,0,0,1-16,0V173.28l-46.45-19.91L53.35,222a8,8,0,1,1-10.7-11.9L120,140.44V112H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,104Z"/>',
-}
-
 /** Le citazioni alternano questi due. */
 const CITAZIONI = ['blu', 'inchiostro'] as const
 
@@ -117,6 +109,11 @@ function citazione(b: Blocco, colore: string, larga: boolean): string {
   return `<blockquote class="tessera citazione ${colore}${larga ? ' larga' : ''}">${corpo}</blockquote>`
 }
 
+/** Più citazioni di fila: un carosello che scorre di lato, con il nome della sezione per chi usa la tastiera. */
+function carosello(q: Blocco[], titolo: string): string {
+  return `<div class="citazioni" tabindex="0" role="region" aria-label="${esc(testoSolo(titolo) || 'Citazioni')}">${q.map((y, k) => citazione(y, CITAZIONI[k % CITAZIONI.length], false)).join('')}</div>`
+}
+
 /** Le griglie che hanno la loro classe `n-N` (e le loro regole di larghezza nel CSS del sito): da 1 a 16 tessere. */
 export const GRIGLIA_MASSIMA = 16
 
@@ -138,7 +135,28 @@ function griglie(tessere: string[]): string {
 }
 
 /** Un `ul` corto (2–12 voci, al massimo 200 caratteri) si legge come tessere: il grassetto iniziale è il titolo. */
-function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string }> | null {
+/** Le pillole dei corsi: l'icona (Phosphor, MIT, riempita) di ogni etichetta. */
+const PILLOLE: Record<string, string> = {
+  Bambini: '<path d="M92,140a12,12,0,1,1,12-12A12,12,0,0,1,92,140Zm72-24a12,12,0,1,0,12,12A12,12,0,0,0,164,116Zm-12.27,45.23a45,45,0,0,1-47.46,0,8,8,0,0,0-8.54,13.54,61,61,0,0,0,64.54,0,8,8,0,0,0-8.54-13.54ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.11,88.11,0,0,0-84.09-87.91C120.32,56.38,120,71.88,120,72a8,8,0,0,0,16,0,8,8,0,0,1,16,0,24,24,0,0,1-48,0c0-.73.13-14.3,8.46-30.63A88,88,0,1,0,216,128Z"/>',
+  Adulti: '<path d="M128,80A32,32,0,1,0,96,48,32,32,0,0,0,128,80Zm0-48a16,16,0,1,1-16,16A16,16,0,0,1,128,32ZM230.86,132.12a8,8,0,0,1-11,2.74c-.35-.21-35.11-20.59-83.88-22.67V149l62,69.73a8,8,0,1,1-12,10.62L128,164,70,229.31a8,8,0,1,1-12-10.62L120,149V112.18c-49,2.08-83.52,22.46-83.88,22.68a8,8,0,1,1-8.23-13.72C29.6,120.11,70.45,96,128,96s98.4,24.11,100.12,25.14A8,8,0,0,1,230.86,132.12Z"/>',
+  Anziani: '<path d="M128,80A32,32,0,1,0,96,48,32,32,0,0,0,128,80Zm0-48a16,16,0,1,1-16,16A16,16,0,0,1,128,32Zm96,72a8,8,0,0,1-8,8H136v26.72l51.15,21.93A8,8,0,0,1,192,168v48a8,8,0,0,1-16,0V173.28l-46.45-19.91L53.35,222a8,8,0,1,1-10.7-11.9L120,140.44V112H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,104Z"/>',
+  Agonisti: '<path d="M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8Zm144-8.9c0,35.52-29,64.64-64,64.9a64,64,0,0,1-64-64V56H192ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z"/>',
+}
+
+/** Un `<em>` in fondo alla voce che ha solo etichette note (Bambini, Adulti, Anziani, Agonisti) diventa le pillole: il resto del testo e l'html delle pillole. */
+function pilloleDiUnaVoce(x: string): { testo: string; pillole: string } {
+  const m = /^([\s\S]*?)\s*<em>([^<]+)<\/em>\s*$/i.exec(x)
+  if (!m) return { testo: x, pillole: '' }
+  const nomi = m[2].split(/\s*[·,/]\s*/).map((e) => e.trim().toLowerCase()).filter(Boolean)
+  const note = Object.keys(PILLOLE).filter((n) => nomi.includes(n.toLowerCase()))
+  const tutte = nomi.length > 0 && nomi.every((e) => note.some((n) => n.toLowerCase() === e))
+  if (!tutte) return { testo: x, pillole: '' }
+  const ordine = [...new Set(nomi)].map((e) => note.find((n) => n.toLowerCase() === e) ?? '')
+  const html = ordine.map((n) => `<span class="pillola"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${PILLOLE[n]}</svg>${n}</span>`).join('')
+  return { testo: m[1], pillole: `<span class="pillole">${html}</span>` }
+}
+
+function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string; pillole: string }> | null {
   if (b.tag !== 'ul') return null
   const li = [...b.html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1])
   if (li.length < VOCI_MIN || li.length > VOCI_MAX) return null
@@ -146,33 +164,16 @@ function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string }> | n
   if (li.some((x) => testoSolo(x).length > VOCE_LUNGA || /<(ul|ol)\b/i.test(x))) return null
   if (/<(ul|ol)\b/i.test(b.html.slice(b.html.indexOf('>') + 1))) return null
   return li.map((x) => {
-    const g = /^\s*<strong>([\s\S]*?)<\/strong>\s*:?\s*([\s\S]*)$/i.exec(x)
-    return g ? { titolo: g[1], testo: g[2].replace(/^[\s:,;–-]+/, '') } : { titolo: '', testo: x }
+    const { testo, pillole } = pilloleDiUnaVoce(x)
+    const g = /^\s*<strong>([\s\S]*?)<\/strong>\s*:?\s*([\s\S]*)$/i.exec(testo)
+    return g ? { titolo: g[1], testo: g[2].replace(/^[\s:,;–-]+/, ''), pillole } : { titolo: '', testo, pillole }
   })
 }
 
-/** Il paragrafo con le etichette di una scheda: «Bambini · Adulti» in pastiglie, con l'icona se la conosciamo. */
-function etichette(elenco: string): string {
-  const voci = elenco.split(/\s*·\s*/).map((x) => x.trim()).filter((x) => x && x.length <= 24 && !/[<>]/.test(x))
-  if (!voci.length) return ''
-  return `<p class="etichette">${voci.map((x) => `<span class="etichetta">${ICONE[x] ? `<svg width="20" height="20" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${ICONE[x]}</svg>` : ''}${x}</span>`).join('')}</p>`
-}
-
-/**
- * Il corpo di una scheda di un elenco: una foto dentro la voce va prima del titolo (si vede sul telefono), un corsivo
- * in fondo («Bambini · Adulti») diventa le etichette, il resto è il testo.
- */
-function corpoScheda(testo: string): { prima: string; corpo: string } {
+/** Una foto dentro la voce va prima del titolo: sul telefono la scheda ha la foto in alto (design); sul desktop non si vede. */
+function conFotoDellaVoce(testo: string): { prima: string; testo: string } {
   const foto = /<img\b[^>]*>/i.exec(testo)?.[0]
-  let resto = foto ? testo.replace(foto, '') : testo
-  let tag = ''
-  const fine = /\s*<em>([^<]*)<\/em>\s*$/i.exec(resto)
-  if (fine) {
-    tag = etichette(fine[1])
-    if (tag) resto = resto.slice(0, fine.index)
-  }
-  resto = resto.trim()
-  return { prima: foto ? `<div class="corso-foto">${foto}</div>` : '', corpo: `${resto ? `<p>${resto}</p>` : ''}${tag}` }
+  return foto ? { prima: `<div class="corso-foto">${foto}</div>`, testo: testo.replace(foto, '').trim() } : { prima: '', testo }
 }
 
 const tessera = (colore: string, titolo: string, resto: string, prima = '') =>
@@ -188,11 +189,6 @@ function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>
     return tessera(colore, g.titolo, resto, foto.join(''))
   })
   return griglie(html)
-}
-
-/** Due o più citazioni di fila: scorrono di lato, alternando blu e inchiostro. */
-function citazioniScorrevoli(q: Blocco[], titolo: string): string {
-  return `<div class="citazioni" tabindex="0" role="region" aria-label="${esc(testoSolo(titolo) || 'Citazioni')}">${q.map((y, k) => citazione(y, CITAZIONI[k % CITAZIONI.length], false)).join('')}</div>`
 }
 
 /** Un pezzo di sezione senza sottotitoli (o prima del primo): colonna, citazioni, foto, elenco a tessere. */
@@ -212,21 +208,23 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
       chiudiColonna()
       const q = b.slice(i, j)
       if (q.length === 1) fuori.push(griglia(1, citazione(q[0], 'blu', true)))
-      else fuori.push(citazioniScorrevoli(q, titolo))
+      else fuori.push(carosello(q, titolo))
       i = j
       continue
     }
     if (immagine(x) !== null) {
       let j = i
       while (j < b.length && immagine(b[j]) !== null) j++
-      // Una foto sola davanti a due o più citazioni: la foto sta a sinistra e le citazioni scorrono a fianco (design).
-      if (j === i + 1 && b[j]?.tag === 'blockquote' && b[j + 1]?.tag === 'blockquote') {
-        let k = j
-        while (k < b.length && b[k].tag === 'blockquote') k++
-        chiudiColonna()
-        fuori.push(`<div class="citazioni-foto"><figure class="tessera foto">${immagine(x)}</figure>${citazioniScorrevoli(b.slice(j, k), titolo)}</div>`)
-        i = k
-        continue
+      // Una sola foto in apertura seguita da almeno due citazioni: la foto a sinistra e il carosello a destra.
+      if (i === 0 && j === 1) {
+        let q = j
+        while (q < b.length && b[q].tag === 'blockquote') q++
+        if (q - j >= 2) {
+          chiudiColonna()
+          fuori.push(`<div class="foto-citazioni"><figure class="tessera foto">${immagine(x)}</figure>${carosello(b.slice(j, q), titolo)}</div>`)
+          i = q
+          continue
+        }
       }
       // Una foto in mezzo a un testo in colonna resta com'è: è tessera solo se apre o chiude la parte.
       if (i === 0 || j === b.length) {
@@ -249,7 +247,7 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
     const voci = elenchi === 1 ? vociDiUnElenco(x) : null
     if (voci) {
       chiudiColonna()
-      fuori.push(griglie(voci.map((v, k) => { const c = corpoScheda(v.testo); return tessera(coloreDi(k, voci.length), v.titolo, c.corpo, c.prima) })))
+      fuori.push(griglie(voci.map((v, k) => { const f = conFotoDellaVoce(v.testo); return tessera(coloreDi(k, voci.length), v.titolo, `${f.testo ? `<p>${f.testo}</p>` : ''}${v.pillole}`, f.prima) })))
       i++
       continue
     }

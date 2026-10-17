@@ -26,6 +26,7 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { cosaNonVaDiretto, trovaPagatori, type PagamentoDiretto } from './pagamenti'
+import { cosaNonVaGiroconto, cosaNonVaMovimento, cosaNonVaSaldo, cosaNonVaVoce, NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, oggiARoma, primoMovimentoManuale, righeMovimenti, VOCE_CORSI, VOCE_QUOTA } from './contabilita'
 import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 
 /**
@@ -75,6 +76,18 @@ export function creaSegreteriaProva(): DatiSegreteria {
   const oggi = () => chiaveGiorno(new Date())
   const ieri = () => chiaveGiorno(new Date(Date.now() - GIORNO))
   const salva = () => archivio.salva()
+  // Le casse e le voci di partenza, finché la segreteria non ne cambia: due casse a zero e le due voci degli incassi.
+  const contabilita = () => ({
+    casse: a().casse ?? [
+      { id: 'cassa-contanti', nome: NOME_CASSA_CONTANTI, saldoIniziale: 0 },
+      { id: 'cassa-conto', nome: NOME_CASSA_CONTO, saldoIniziale: 0 },
+    ],
+    voci: a().voci ?? [
+      { id: 'voce-quota', nome: VOCE_QUOTA, tipo: 'entrata' as const, diSistema: true, attiva: true },
+      { id: 'voce-corsi', nome: VOCE_CORSI, tipo: 'entrata' as const, diSistema: true, attiva: true },
+    ],
+    movimenti: a().movimenti ?? [],
+  })
   /** Trenta giorni dopo la scadenza il file se ne va, la data resta: come `pulisci_certificati` del database. */
   const potaCertificati = () => {
     const g = oggi()
@@ -904,6 +917,106 @@ export function creaSegreteriaProva(): DatiSegreteria {
 
     async cercaPagatori(scritto) {
       return trovaPagatori(a().persone, scritto)
+    },
+
+    async casse() {
+      return contabilita().casse.map((c) => ({ ...c }))
+    },
+
+    async voci() {
+      return contabilita().voci.map((v) => ({ ...v }))
+    },
+
+    async movimenti() {
+      return contabilita().movimenti.map((m) => ({ ...m }))
+    },
+
+    async salvaVoce(d) {
+      const no = cosaNonVaVoce(d.nome, d.tipo, contabilita().voci)
+      if (no) throw new Error(no)
+      const id = `v-${unico()}`
+      a().voci = [...contabilita().voci, { id, nome: d.nome.trim(), tipo: d.tipo, diSistema: false, attiva: true }]
+      salva()
+      return id
+    },
+
+    async rinominaVoce(id, nome) {
+      const voce = contabilita().voci.find((v) => v.id === id)
+      if (!voce) throw new Error('La voce non c’è')
+      if (voce.diSistema) throw new Error('Le voci di sistema non si cambiano')
+      const no = cosaNonVaVoce(nome, voce.tipo, contabilita().voci.filter((v) => v.id !== id))
+      if (no) throw new Error(no)
+      a().voci = contabilita().voci.map((v) => (v.id === id ? { ...v, nome: nome.trim() } : v))
+      salva()
+    },
+
+    async attivaVoce(id, attiva) {
+      const voce = contabilita().voci.find((v) => v.id === id)
+      if (!voce) throw new Error('La voce non c’è')
+      if (voce.diSistema) throw new Error('Le voci di sistema non si cambiano')
+      a().voci = contabilita().voci.map((v) => (v.id === id ? { ...v, attiva } : v))
+      salva()
+    },
+
+    async salvaSaldoCassa(id, saldo, dal) {
+      if (!contabilita().casse.some((c) => c.id === id)) throw new Error('La cassa non c’è')
+      const manuali = righeMovimenti([], contabilita().movimenti, contabilita().voci)
+      const no = cosaNonVaSaldo(saldo, dal, { oggi: oggiARoma(), primoMovimento: primoMovimentoManuale(manuali, id) })
+      if (no) throw new Error(no)
+      a().casse = contabilita().casse.map((c) => {
+        if (c.id !== id) return c
+        const { dal: _vecchia, ...resto } = c
+        return { ...resto, saldoIniziale: saldo, ...(dal ? { dal } : {}) }
+      })
+      salva()
+    },
+
+    async registraMovimento(d) {
+      const { voci, casse } = contabilita()
+      const no = cosaNonVaMovimento(d, voci, casse, oggiARoma())
+      if (no) throw new Error(no)
+      const id = `m-${unico()}`
+      a().movimenti = [
+        ...contabilita().movimenti,
+        { id, tipo: d.tipo, data: d.data, importo: d.importo, voceId: d.voceId, cassaId: d.cassaId, descrizione: d.descrizione.trim(), ...(d.nota?.trim() ? { nota: d.nota.trim() } : {}), creatoIl: new Date().toISOString() },
+      ]
+      salva()
+      return id
+    },
+
+    async registraGiroconto(d) {
+      const { casse } = contabilita()
+      const no = cosaNonVaGiroconto(d, casse, oggiARoma())
+      if (no) throw new Error(no)
+      const nome = (id: string) => casse.find((c) => c.id === id)?.nome ?? ''
+      const id = `m-${unico()}`
+      a().movimenti = [
+        ...contabilita().movimenti,
+        { id, tipo: 'giroconto', data: d.data, importo: d.importo, cassaId: d.daCassaId, cassaAId: d.aCassaId, descrizione: `Giroconto da ${nome(d.daCassaId)} a ${nome(d.aCassaId)}`, ...(d.nota?.trim() ? { nota: d.nota.trim() } : {}), creatoIl: new Date().toISOString() },
+      ]
+      salva()
+      return id
+    },
+
+    async annullaMovimento(id) {
+      const m = contabilita().movimenti.find((x) => x.id === id)
+      if (!m) throw new Error('Il movimento non c’è')
+      if (m.annullatoIl) throw new Error('Il movimento è già annullato')
+      a().movimenti = contabilita().movimenti.map((x) => (x.id === id ? { ...x, annullatoIl: new Date().toISOString() } : x))
+      salva()
+    },
+
+    async correggiTestoMovimento(id, descrizione, nota) {
+      const m = contabilita().movimenti.find((x) => x.id === id)
+      if (!m) throw new Error('Il movimento non c’è')
+      if (m.annullatoIl) throw new Error('Un movimento annullato non si corregge')
+      const testo = descrizione.trim()
+      if (!testo) throw new Error('Scrivi una descrizione')
+      if (testo.length > 200) throw new Error('La descrizione è troppo lunga: al massimo 200 caratteri')
+      if ((nota?.trim() ?? '').length > 300) throw new Error('La nota è troppo lunga: al massimo 300 caratteri')
+      const { nota: _vecchia, ...resto } = m
+      a().movimenti = contabilita().movimenti.map((x) => (x.id === id ? { ...resto, descrizione: testo, ...(nota?.trim() ? { nota: nota.trim() } : {}) } : x))
+      salva()
     },
 
     async registraPagamentoDiretto(dati) {

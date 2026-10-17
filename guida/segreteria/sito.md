@@ -120,6 +120,7 @@ il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA
   sono tutte tessere chiare (le domande frequenti).
 - **Elenco** (`ul`) di 2–12 voci corte, in una sezione senza sottotitoli: una tessera per voce. Il
   **grassetto** all'inizio della voce è il titolo della tessera. Un elenco più lungo, o numerato, resta un elenco.
+- **Fascia d'età e pillole sui corsi**: nell'elenco dei corsi, dopo il nome in grassetto scrivi un secondo grassetto con l'età («Dai 7 anni agli adulti»), vai a capo, la descrizione, e in fondo un corsivo con le etichette: `Bambini`, `Adulti`, `Anziani`, `Agonisti`, separate da «·» o da virgole. Diventano le pillole con l'icona in fondo alla tessera. Se nel corsivo c'è un'altra parola, resta un corsivo normale.
 - **Citazioni** (`blockquote`): più citazioni di fila scorrono di lato (col dito o con le frecce, senza
   codice); una sola è una tessera larga. L'ultima riga della citazione tutta in *corsivo* o in **grassetto**,
   o che comincia con «—», è la firma.
@@ -128,6 +129,7 @@ il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA
   3:2: teste e piedi vicini ai bordi possono tagliarsi, scegli foto con spazio intorno. Per le foto con
   minori vale la regola di sempre: serve il permesso dei genitori, mai documenti.
 - **Quattro foto** di fila (all'inizio o in fondo a una sezione) sono una **fascia alta** a quattro colonne, ritagliata in verticale: scegli foto con la persona al centro. Con 5, 6 o 7 foto restano le file da tre.
+- **Una foto e due o più citazioni** (la foto per prima, subito sotto il titolo grande): sul computer la foto sta a sinistra e le citazioni scorrono a destra; sul telefono una sotto l'altra.
 - La **firma** di una citazione ha un cerchio giallo con le **iniziali** del nome (le prime due parole, prima di « - »: «Nicola A.» diventa NA, «Serena - Stud. di Medicina» diventa S).
 - Un sottotitolo **senza testo** sotto (i «valori») è una tessera col titolo grande in basso.
 - Una foto dentro una tessera con sottotitolo va **in cima alla tessera**, sopra il titolo, anche se l'hai scritta dopo.

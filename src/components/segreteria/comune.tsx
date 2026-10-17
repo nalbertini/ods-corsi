@@ -496,3 +496,13 @@ export function useOrdina<T, K extends string>(colonne: Record<K, (x: T) => Valo
 
   return { ordina, colonna }
 }
+
+/** Il foglio CSV scaricato dal browser, col BOM perché Excel legga gli accenti (PRESENZE, PAGAMENTI, CONTABILITÀ). */
+export function scaricaCsv(nome: string, testo: string) {
+  const url = URL.createObjectURL(new Blob(['\ufeff' + testo], { type: 'text/csv;charset=utf-8' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nome
+  a.click()
+  URL.revokeObjectURL(url)
+}
