@@ -22,7 +22,7 @@ const PERMESSI: Array<[string, Permesso]> = [
   ['Vedere PAGAMENTI e scaricare il CSV', 'pagina-pagamenti'],
   ['Cambiare il listino', 'listino'],
   ['Vedere le STATISTICHE (presenze e iscritti)', 'statistiche'],
-  ['Contabilità: movimenti, casse, rendiconto (quando ci sarà)', 'contabilita'],
+  ['Contabilità: movimenti, voci e casse', 'contabilita'],
   ['Creare account, cambiare i ruoli, scaricare il backup', 'account'],
 ]
 

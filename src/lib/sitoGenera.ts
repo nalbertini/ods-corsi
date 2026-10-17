@@ -104,7 +104,7 @@ const CSS = `
 :root{--display:"Big Shoulders Display","Arial Narrow",Arial,sans-serif;--fondo:#eef5fa;--inchiostro:#0d2a3d;--blu:#14709f;--chiara:#cfe6f4;--giallo:#f4c31b;--margine:clamp(16px,3.4vw,48px)}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--fondo);color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:clamp(17px,1rem + .25vw,19px);line-height:1.55;-webkit-font-smoothing:antialiased}
+body{margin:0 auto;max-width:1440px;background:var(--fondo);color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:clamp(17px,1rem + .25vw,19px);line-height:1.55;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset:3px}
 .invito:focus-visible{outline-color:var(--inchiostro)}
@@ -187,6 +187,10 @@ ${GRIGLIE_LUNGHE}
 .foto-citazioni .foto img{height:100%;aspect-ratio:auto;object-fit:cover}
 .foto-citazioni .citazioni{height:100%;margin:0}
 .foto-citazioni .citazione{padding:clamp(24px,2.8vw,40px)}
+.pillole{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:12px}
+.pillola{display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--chiara);color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;line-height:1}
+.pillola svg{display:block;flex:none;width:20px;height:20px}
+.tessera.chiara .pillola{background:var(--blu);color:#fff}
 .foto-fila{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .foto-fila.quattro{grid-template-columns:repeat(4,1fr)}
 .foto-fila.quattro img{aspect-ratio:3/5}
