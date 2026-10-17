@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; width: 100%; min-height: {{altezza}}; margin-left: {{rientro}}; padding: {{padding}}; background: {{sfondo}}; border: 2px solid {{bordo}}; border-left-width: {{barra}}; color: {{c.text}}">
+  <span style="display: flex; flex-direction: column; flex: 1 1 0; min-width: 0">
+    <span style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 15px; font-weight: {{peso}}; color: {{coloreTitolo}}; text-decoration: {{taglio}}">{{titolo}}<sc-if value="{{haTag}}" hint-placeholder-val="{{ true }}"><span style="padding: 0 4px; background: {{fondoTag}}; color: {{testoTag}}; font-family: {{cond}}; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; text-decoration: none">{{tag}}</span></sc-if></span>
+    <span style="font-size: 12px; color: {{c.dim}}">{{sotto}}</span>
+  </span>
+  <sc-if value="{{haImporto}}" hint-placeholder-val="{{ true }}">
+    <span style="font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: {{corpoImporto}}; font-weight: 700; color: {{coloreImporto}}; text-decoration: {{taglio}}; white-space: nowrap">{{importo}}</span>
+  </sc-if>
+  <sc-for list="{{tasti}}" as="t" hint-placeholder-count="2">
+    <span style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border: 2px solid {{c.line}}; color: {{c.sec}}; font-family: {{cond}}; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap">{{t}}</span>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"tipo":{"editor":"enum","options":["ricevuta","pagamento"],"default":"ricevuta"},"titolo":{"editor":"text","default":"N. 12/2026 · 14 ottobre 2026"},"sotto":{"editor":"text","default":"QUOTA ASSOCIATIVA, ANNUALE JUDO KIDS"},"importo":{"editor":"text","default":"80,00 €"},"tag":{"editor":"text","default":""},"tagTono":{"editor":"enum","options":["neutro","giallo","rosso"],"default":"neutro"},"tasti":{"editor":"text","default":"PDF|ANNULLA RICEVUTA"},"annullato":{"editor":"boolean","default":false},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":700,"height":120}}'>
+// PROPOSTA «storico pagamenti»: una riga dello STORICO della scheda iscritto (e delle tabelle di PAGAMENTI). Nell'app sostituisce
+// l'elenco RICEVUTE di `RicevuteIscritto` (src/components/segreteria/Ricevute.tsx), che usa .sg-voce-elenco.
+// tipo "ricevuta": la testata di una ricevuta: come .sg-voce-elenco (src/styles.css riga 2119: fondo `bg`, bordo 2px `line`, min 48px,
+//   padding 6px 12px, gap 12px); titolo 15px 700, sotto 12px `dim`, importo (il totale) Saira 20px 700, tasti .sg-chip.
+// tipo "pagamento": un pagamento di quella ricevuta, rientrato di 24px sotto la testata, con la barra a sinistra 4px `line`, fondo
+//   `surface`, titolo 15px 600 («14 ottobre 2026 · Contanti»), importo Saira 18px 700 in `verde-testo`.
+// tag: un .sg-tag (12px 0.12em, padding 0 4px): giallo «MANCA 30,00 €», neutro «SENZA RICEVUTA», rosso «ANNULLATA».
+// annullato: la riga come l'annullata di oggi, barrata e in `dim`, non in rosso: e' storia, non qualcosa che manca.
+// tasti: i testi dei .sg-chip separati da |. Vuoto = nessuno.
+const T = {
+  scuro: { bg: '#121212', surface: '#1c1c1c', line: '#333333', text: '#f2f2f0', sec: '#c9c9c4', dim: '#8c8c88', giallo: '#f4c31b', rosso: '#e4292a', verdeTesto: '#16a54a', suColore: '#121212', suRosso: '#ffffff' },
+  chiaro: { bg: '#f4f4f1', surface: '#ffffff', line: '#d4d4ce', text: '#161616', sec: '#3d3d3a', dim: '#656561', giallo: '#f4c31b', rosso: '#e4292a', verdeTesto: '#0b7a33', suColore: '#121212', suRosso: '#ffffff' },
+};
+const COND = "'Saira Condensed', 'Helvetica Neue', Arial, sans-serif";
+const truthy = (v) => v === true || v === 'true';
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const c = T[p.tema] || T.scuro;
+    const pag = p.tipo === 'pagamento';
+    const ann = truthy(p.annullato);
+    const tag = p.tag ?? '';
+    const tono = p.tagTono || 'neutro';
+    const importo = p.importo ?? '80,00 €';
+    return {
+      c, cond: COND,
+      titolo: p.titolo ?? 'N. 12/2026 · 14 ottobre 2026', sotto: p.sotto ?? '',
+      importo, haImporto: importo !== '',
+      tag, haTag: tag !== '',
+      fondoTag: tono === 'rosso' ? c.rosso : tono === 'giallo' ? c.giallo : c.dim,
+      testoTag: tono === 'rosso' ? c.suRosso : tono === 'giallo' ? c.suColore : c.bg,
+      tasti: String(p.tasti ?? 'PDF|ANNULLA RICEVUTA').split('|').map((s) => s.trim()).filter(Boolean),
+      altezza: pag ? '44px' : '48px', padding: pag ? '4px 12px' : '6px 12px', rientro: pag ? '24px' : '0',
+      sfondo: pag ? c.surface : c.bg, bordo: c.line, barra: pag ? '4px' : '2px',
+      peso: pag ? '600' : '700', corpoImporto: pag ? '18px' : '20px',
+      coloreTitolo: ann ? c.dim : c.text,
+      coloreImporto: ann ? c.dim : pag ? c.verdeTesto : c.text,
+      taglio: ann ? 'line-through' : 'none',
+    };
+  }
+}
+</script>
+</body>
+</html>

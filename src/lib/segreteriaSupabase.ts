@@ -17,6 +17,7 @@ import { indirizzoDiRitorno } from './invito'
 import { eserciziDellaPalestra, voceDellaSala } from '../../timer/src/lib/impostazioniSala'
 import { disciplineDa, ripulisciDisciplina } from '../../timer/src/lib/discipline'
 import { CONTENITORE_VOCE, chiaveValida, chiaviSulServer, scaricaClip } from '../../timer/src/lib/clipSala'
+import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } from './pagamenti'
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
@@ -51,6 +52,31 @@ interface RigaSessione {
 }
 
 type Iscrizione = { corso_id: string; persona_id: string; dal: string; al: string | null }
+
+/** Una riga di `pagamenti_diretti` (54-pagamenti-diretti.sql). */
+interface RigaPagamentoDiretto {
+  id: string
+  persona_id: string
+  data: string
+  importo: number
+  metodo: string
+  voce: string
+  nota: string | null
+  creato_il: string
+  annullato_il: string | null
+}
+const CAMPI_DIRETTO = 'id, persona_id, data, importo, metodo, voce, nota, creato_il, annullato_il'
+const pagamentoDiretto = (r: RigaPagamentoDiretto): PagamentoDiretto => ({
+  id: r.id,
+  personaId: r.persona_id,
+  data: r.data,
+  importo: r.importo,
+  metodo: r.metodo,
+  voce: r.voce,
+  nota: r.nota ?? undefined,
+  creatoIl: r.creato_il,
+  annullatoIl: r.annullato_il ?? undefined,
+})
 
 /** Una riga di `ricevute` (16-ricevute.sql): le voci sono il JSON che scrive `emetti_ricevuta`. */
 interface RigaRicevuta {
@@ -108,6 +134,7 @@ const MANCA_CERTIFICATI = 'I certificati nell’app non sono ancora attivi sul d
 const NUCLEO_SOLO_PROVA = 'Il nucleo familiare c’è solo in prova, per ora: il database non lo tiene ancora'
 const DURATA_LINK = 600
 const ALLEGATI = 'segnalazioni'
+const MANCANO_PAGAMENTI_A_MANO = 'I pagamenti a mano non sono ancora attivi sul database: va lanciato 54-pagamenti-diretti.sql'
 const MANCANO_ALLEGATI = 'Gli allegati non sono ancora attivi sul database: va lanciato 32-segnalazioni-allegati.sql'
 
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
@@ -121,6 +148,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],
   [/musica_sale/, 'La musica delle sale non è ancora attiva sul database: va lanciato 09-musica.sql'],
   [/allenamenti/, 'Lo storico dei timer non è ancora attivo sul database: va lanciato 08-timer.sql'],
+  [/pagamenti_diretti|pagamento_diretto/, MANCANO_PAGAMENTI_A_MANO],
   [/ricevute|emetti_ricevuta/, 'Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql'],
   [/anagrafiche/, 'Nascita, residenza e genitore degli iscritti non sono ancora attivi sul database: va lanciato 18-anagrafiche.sql'],
   [/segna_istruttore_previsto/, 'Segnare un istruttore su una lezione già coperta non è ancora attivo sul database: va lanciato 46-istruttore-collega.sql'],
@@ -190,6 +218,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   // Una radio nelle liste della musica: il vincolo del link la ammette dal 39.
   if (e?.code === '23514' && /musica_sale_link_check/.test(e.message ?? ''))
     return new Error('Le radio nelle liste non sono ancora attive sul database: va lanciato 39-musica-radio.sql')
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /pagamento_diretto/.test(e.message ?? '')) return new Error(MANCANO_PAGAMENTI_A_MANO)
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /ricevut/.test(e.message ?? ''))
     return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
   if (e?.code === '42703' && /ricevute/.test(e.message ?? '')) return new Error('Le ricevute non sono ancora attive sul database: va lanciato 16-ricevute.sql')
@@ -222,6 +251,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /email_contatto/.test(e.message ?? ''))
     return new Error('L’email di contatto non è ancora attiva sul database: va lanciato 44-email-contatto.sql')
   if (e?.code === '23514' && /email_contatto/.test(e.message ?? '')) return new Error(CONTATTO_SBAGLIATO)
+  // `pagamenti_diretti` non lascia cancellare chi ne ha (54-pagamenti-diretti.sql).
+  if (e?.code === '23503' && /pagamenti_diretti/.test(e.message ?? '')) return new Error('Ha dei pagamenti registrati: non si elimina, gli si toglie l’accesso')
   if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
@@ -985,6 +1016,30 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       ok(await db.rpc('annulla_ricevuta', { ricevuta: id }))
     },
 
+    async pagamentiDiretti(personaId) {
+      const leggi = (prima: number, ultima: number) => {
+        const q = db.from('pagamenti_diretti').select(CAMPI_DIRETTO)
+        return (personaId ? q.eq('persona_id', personaId) : q).order('data', { ascending: false }).order('creato_il', { ascending: false }).order('id').range(prima, ultima)
+      }
+      // `as`: Supabase tipa la riga a modo suo, la forma è quella di `CAMPI_DIRETTO`.
+      return (ok(await tutteLeRighe(leggi)) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)
+    },
+
+    async registraPagamentoDiretto(d: DatiPagamentoDiretto) {
+      const no = cosaNonVaDiretto(d)
+      if (no) throw new Error(no)
+      const riga = ok(
+        await db.rpc('registra_pagamento_diretto', {
+          dati: { persona_id: d.personaId, data: d.data, importo: d.importo, metodo: d.metodo.trim(), voce: d.voce.trim(), nota: d.nota?.trim() || null },
+        }),
+      ) as RigaPagamentoDiretto
+      return pagamentoDiretto(riga)
+    },
+
+    async annullaPagamentoDiretto(id) {
+      ok(await db.rpc('annulla_pagamento_diretto', { pagamento: id }))
+    },
+
     async enteRicevute() {
       const r = await db.from('impostazioni').select('ricevute').maybeSingle()
       // Senza 16-ricevute.sql la colonna non c'è: valgono quelli scritti nell'app.
@@ -1619,7 +1674,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     },
 
     async esporta(personaId) {
-      const [persona, isc, pres, rich, scheda, ric, anag] = await Promise.all([
+      const [persona, isc, pres, rich, scheda, ric, dir, anag] = await Promise.all([
         db.from('persone').select('nome, cognome, email, telefono, ruolo, attiva, creata_il').eq('id', personaId).single(),
         db.from('iscrizioni').select('dal, al, corsi ( nome )').eq('persona_id', personaId),
         tutteLeRighe((prima, ultima) => db.from('presenze').select('stato, origine, segnata_il, sessioni ( inizio, corsi ( nome ) )').eq('persona_id', personaId).order('id').range(prima, ultima)),
@@ -1630,6 +1685,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         db.from('schede_iscritti').select('*').eq('persona_id', personaId).maybeSingle(),
         // Le ricevute: col socio e le voci così come sono stampate.
         db.from('ricevute').select('anno, numero, data, intestatario, voci, totale, pagato, anticipo, note, creata_il, annullata_il').eq('persona_id', personaId),
+        // I pagamenti fatti a mano.
+        db.from('pagamenti_diretti').select('data, importo, metodo, voce, nota, creato_il, annullato_il').eq('persona_id', personaId),
         // Nascita, residenza e genitore di chi è entrato dall'import.
         db.from('anagrafiche').select(`${CAMPI_ANAGRAFICA}, cambiata_il`).eq('persona_id', personaId).maybeSingle(),
       ])
@@ -1642,6 +1699,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
         certificato_e_pagamento: ok(scheda),
         // Senza 16-ricevute.sql non ce ne sono.
         ricevute: ric.error?.code === '42P01' || ric.error?.code === 'PGRST205' ? [] : ok(ric),
+        // Senza 54-pagamenti-diretti.sql non ce ne sono.
+        pagamenti_a_mano: dir.error?.code === '42P01' || dir.error?.code === 'PGRST205' ? [] : ok(dir),
         // Senza 18-anagrafiche.sql non ce n'è.
         dati_anagrafici: anag.error?.code === '42P01' || anag.error?.code === 'PGRST205' ? null : ok(anag),
       }

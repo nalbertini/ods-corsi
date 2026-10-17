@@ -44,7 +44,7 @@ ok('senza cancelletto si apre DA FARE', leggi('')?.voce, 'dafare')
 ok('il cancelletto da solo apre DA FARE', leggi('#')?.voce, 'dafare')
 ok('#dafare apre DA FARE', leggi('#dafare')?.voce, 'dafare')
 ok('ogni voce scritta si rilegge uguale',
-  ['dafare', 'settimana', 'corsi', 'iscritti', 'richieste', 'presenze', 'statistiche', 'istruttori', 'personale', 'esercizi', 'listino', 'regole', 'segnalazioni']
+  ['dafare', 'settimana', 'corsi', 'iscritti', 'pagamenti', 'richieste', 'presenze', 'statistiche', 'istruttori', 'personale', 'esercizi', 'listino', 'regole', 'segnalazioni']
     .filter((voce) => andataRitorno({ voce })?.voce !== voce),
   [])
 // L'import da Excel sta dentro IMPOSTAZIONI: un vecchio link a #importa non porta a una voce che non c'è più.

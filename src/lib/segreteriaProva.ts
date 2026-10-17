@@ -22,6 +22,7 @@ import { chiaveValida } from '../../timer/src/lib/clipSala'
 import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
+import { cosaNonVaDiretto, type PagamentoDiretto } from './pagamenti'
 import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 
 /**
@@ -801,6 +802,30 @@ export function creaSegreteriaProva(): DatiSegreteria {
       salva()
     },
 
+    async pagamentiDiretti(personaId) {
+      return (a().pagamentiDiretti ?? [])
+        .filter((x) => !personaId || x.personaId === personaId)
+        .sort((x, y) => y.data.localeCompare(x.data) || y.creatoIl.localeCompare(x.creatoIl))
+    },
+
+    async registraPagamentoDiretto(dati) {
+      // Prima la persona, poi il resto: come `registra_pagamento_diretto`.
+      if (dati.personaId && !a().persone.some((x) => x.id === dati.personaId)) throw new Error('Questa scheda non c’è più')
+      const no = cosaNonVaDiretto(dati)
+      if (no) throw new Error(no)
+      const nuovo: PagamentoDiretto = { ...dati, metodo: dati.metodo.trim(), voce: dati.voce.trim(), nota: dati.nota?.trim() || undefined, id: `pd-${unico()}`, creatoIl: new Date().toISOString() }
+      a().pagamentiDiretti = [...(a().pagamentiDiretti ?? []), nuovo]
+      salva()
+      return nuovo
+    },
+
+    async annullaPagamentoDiretto(id) {
+      const x = (a().pagamentiDiretti ?? []).find((y) => y.id === id)
+      if (!x || x.annullatoIl) throw new Error('Pagamento inesistente o già annullato')
+      a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((y) => (y.id === id ? { ...y, annullatoIl: new Date().toISOString() } : y))
+      salva()
+    },
+
     async enteRicevute() {
       return { ...ENTE_PREDEFINITO, ...(a().enteRicevute ?? {}) }
     },
@@ -1046,6 +1071,9 @@ export function creaSegreteriaProva(): DatiSegreteria {
         throw new Error(`${nome} ha delle presenze da istruttore: non si elimina, gli si toglie l'accesso`)
       if (a().iscrizioni.some((x) => x.personaId === personaId) || (a().ricevute ?? []).some((x) => x.personaId === personaId))
         throw new Error(`${nome} è anche allievo: non si elimina, gli si toglie l'accesso`)
+      // Come il database: `pagamenti_diretti` non lascia cancellare chi ne ha.
+      if ((a().pagamentiDiretti ?? []).some((x) => x.personaId === personaId))
+        throw new Error(`${nome} ha dei pagamenti registrati: non si elimina, gli si toglie l'accesso`)
       a().persone = a().persone.filter((x) => x.id !== personaId)
       if (a().pin) {
         const { [personaId]: _, ...altri } = a().pin!
@@ -1140,6 +1168,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       a().iscrizioni = [...a().iscrizioni, ...sue.filter((y) => !a().iscrizioni.some((x) => x.personaId === resta && x.corsoId === y.corsoId)).map((y) => ({ ...y, personaId: resta }))]
 
       a().ricevute = (a().ricevute ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
+      a().pagamentiDiretti = (a().pagamentiDiretti ?? []).map((x) => (x.personaId === via ? { ...x, personaId: resta } : x))
       const an = a().anagrafiche ?? {}
       if (an[via]) {
         const { [via]: suaA, ...altre } = an
@@ -1415,6 +1444,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         richieste_di_iscrizione: richiesteDi(personaId).map(({ id: _id, personaId: _p, ...r }) => r),
         certificato_e_pagamento: { certificato_scade: p.certificato?.scade ?? null, certificato_file: p.certificato?.file ?? null, documento_in_segreteria: !!p.documento, ...(p.pagamento ?? { stato: 'da_pagare' }) },
         ricevute: (a().ricevute ?? []).filter((r) => r.personaId === personaId).map(({ id: _id, personaId: _p, ...r }) => r),
+        pagamenti_a_mano: (a().pagamentiDiretti ?? []).filter((x) => x.personaId === personaId).map(({ id: _id, personaId: _p, ...x }) => x),
         dati_anagrafici: a().anagrafiche?.[personaId] ?? null,
       }
     },
