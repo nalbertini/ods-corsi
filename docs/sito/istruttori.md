@@ -36,3 +36,18 @@ I nomi, i cognomi e i corsi sono quelli letti dal database negli stessi canvas d
 - «Tiziano Bartocci: Body functional, pesistica, prepugilistica», «Manuel Tagini: … Mobility»: i corsi sono quelli del database, con le parole del design.
 - **Foto dei ritratti: DA SCEGLIERE.** Servono i permessi delle persone ritratte.
 - Le pagine personali (ramo `claude/sito-istruttore-d4f7dd`) hanno bisogno di testi per ognuno: non li ho scritti, sono nomi, storie e titoli di persone vere che solo loro o la segreteria possono dare.
+
+## La regola del sito
+
+Un testo **senza titoli grandi (`h2`)** che **comincia con un titolo piccolo (`h3`)** ed ha almeno due `h3` è una griglia di ritratti (`ritratti()` in `src/lib/sitoLayout.ts`), tre per riga sul computer e due sul telefono. Ogni ritratto è:
+
+1. un `h3`: il nome (grande, in basso nella tessera);
+2. una foto, se c'è: va nel cerchio; senza foto il cerchio ha l'iniziale del nome;
+3. un paragrafo: il ruolo («Cognome · discipline»), sotto il nome.
+
+Il primo blocco che non segue un ritratto, e tutto quel che viene dopo, resta testo sotto la griglia (sul telefono non si vede, come nel design). I colori sono quelli del design, uno per uno. Se il nome è un link, tutta la tessera è cliccabile e compare la freccia ↗.
+
+## Differenze dal design
+
+- Senza foto il cerchio ha l'iniziale del nome: la scritta «Foto» del design è il segnaposto del disegno.
+- Il ruolo di Maurizio nel design telefono è accorciato: sul sito il testo è uno solo, quindi la sua tessera è più alta di 17px.
