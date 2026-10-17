@@ -1,13 +1,14 @@
 import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
-import { GRIGLIA_MASSIMA, impagina } from './sitoLayout'
+import { GRIGLIA_MASSIMA, collage, impagina } from './sitoLayout'
 import { CONTATTI } from './sito'
 
 /**
  * Il sito pubblico: dalle pagine pubblicate nel pannello SITO ai file statici.
  *
- * Il testo pulito si mette in pagina a sezioni e tessere in `sitoLayout.ts` (`impagina`).
+ * Il testo pulito si mette in pagina a sezioni e tessere in `sitoLayout.ts` (`impagina`), e la testata della Home con
+ * collage di foto e numeri è `collage` (le foto sul telefono vanno dopo i numeri: `order:2` nel CSS).
  *
  * Qui si pulisce il testo un'altra volta (`pulisciTesto`): è la pulizia di cui
  * ci si fida, perché chi scrive all'API salta il pannello e il filtro del
@@ -92,6 +93,9 @@ const GRIGLIE_LUNGHE = Array.from({ length: GRIGLIA_MASSIMA - 7 }, (_, i) => i +
  * aggiungono senza cambiare prima il design. Regola dei colori: il giallo è uno
  * sfondo (pulsante «Prova», invito) con l'inchiostro sopra; sul piede scuro serve solo come colore del focus;
  * il bianco sta solo sul blu e sull'inchiostro.
+ *
+ * Sul telefono ogni tessera della testata occupa una colonna e l'ultimo numero dispari due: le classi doppie
+ * (`.tessere.tessere .tessera.tessera`) alzano la specificità sopra le regole `n-N` delle sezioni.
  */
 const CSS = `
 @font-face{font-family:"Big Shoulders Display";font-weight:800;font-display:swap;src:url(/risorse/big-shoulders-display-800.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
@@ -115,9 +119,9 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .testata .pulsante{background:var(--giallo);color:var(--inchiostro)}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
-h1{margin:0;font-size:clamp(56px,12vw,200px);letter-spacing:-.01em;line-height:.84;overflow-wrap:anywhere}
-.pagina-hero{padding:24px var(--margine) 64px;display:flex;flex-direction:column;gap:28px}
-.pagina-hero .intro{display:flex;flex-direction:column;gap:24px;max-width:min(980px,100%)}
+h1{margin:0;font-size:clamp(56px,9vw,150px);letter-spacing:-.01em;line-height:.84;overflow-wrap:anywhere}
+.pagina-hero{padding:24px var(--margine) 64px;display:flex;flex-wrap:wrap;align-items:flex-start;gap:28px 48px}
+.pagina-hero .intro{flex:1 1 440px;display:flex;flex-direction:column;gap:24px;max-width:min(980px,100%)}
 .intro p{margin:0;font-size:clamp(18px,1.6vw,22px);line-height:1.45;max-width:34em}
 .pagina-testo{padding:40px var(--margine) 24px}
 .pagina-testo h1{font-size:clamp(48px,8vw,120px);max-width:14em}
@@ -181,12 +185,32 @@ ${GRIGLIE_LUNGHE}
 .due{grid-template-columns:repeat(2,1fr)}
 .foto-fila figure{grid-column:auto}
 .sezione>*+*{margin-top:6px}
+.pagina-hero>.collage,.pagina-hero>.tessere{flex:1.2 1 460px;max-width:680px;margin-top:0}
+.collage{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(110px,auto);gap:6px}
+.collage .foto.grande{grid-column:1 / span 4;grid-row:1 / span 3}
+.collage .foto.grande img{flex:1;min-height:0;height:100%}
+.collage .numero{grid-column:span 2}
+.collage .foto.larga{grid-column:span 6}
+.collage .foto.meta{grid-column:span 3}
+.collage .foto.meta:nth-last-child(2){grid-column:1 / span 3}
+.collage .foto.meta:last-child{grid-column:4 / span 3}
+.numero{justify-content:space-between;min-width:0}
+.numero .cifra{font-family:var(--display);font-weight:800;font-size:clamp(40px,5vw,88px);line-height:.85;letter-spacing:-.01em;white-space:nowrap}
+.numero .scritta{font-size:16px;line-height:1.3}
+.numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}
 @media (max-width:900px){
 .testata{flex-wrap:wrap;gap:8px 16px}
 .tessere{grid-template-columns:1fr}
 .tessere .tessera{grid-column:auto}
+.pagina-hero{flex-direction:column;align-items:stretch}
+.pagina-hero>.collage,.pagina-hero>.tessere{flex:none;max-width:none}
+.pagina-hero .tessere,.collage{grid-template-columns:repeat(2,1fr);grid-auto-rows:auto}
+.pagina-hero .tessere.tessere .tessera.tessera,.collage .numero{grid-column:auto}
+.pagina-hero .tessere.tessere .numero.ultima,.collage .numero.ultima{grid-column:span 2}
+.collage .foto.grande,.collage .foto.larga,.collage .foto.meta,.collage .foto.meta:nth-last-child(2),.collage .foto.meta:last-child{grid-column:1 / span 2;grid-row:auto;order:2}
+.collage .foto.grande img{aspect-ratio:3/2;height:auto;flex:none}
 .foto-fila{grid-template-columns:repeat(2,1fr)}
 .testata nav{order:3;width:100%}
 .invito{margin-top:48px}
@@ -263,11 +287,14 @@ function documento(c: Contesto, o: { titolo: string; descrizione: string; percor
 }
 
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
-  const testo = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
+  const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
+  // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
+  const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
+  const testo = inTestata.resto
   const t = testata(c, conContatti)
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
-    : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div></section>`
+    : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
   const corpo = `${t}<main>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
 }

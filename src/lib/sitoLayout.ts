@@ -223,3 +223,76 @@ export function impagina(testoPulito: string): string {
   }
   return fuori.join('')
 }
+
+/** Nel collage della Home: al massimo tre foto e sei numeri; il resto resta nel testo, com'era scritto. */
+const COLLAGE_FOTO = 3
+const NUMERI_MIN = 2
+const NUMERI_MAX = 6
+/** Un numero è «lungo» (scritta piccola) se il grassetto supera 30 caratteri o il resto supera 40. */
+const CIFRA_LUNGA = 30
+const SCRITTA_LUNGA = 40
+
+/**
+ * Le foto del collage: la prima si carica subito, le altre quando servono. Gli attributi li mette il generatore, dopo la
+ * pulizia (che ammette solo `src` e `alt`): così un testo non può scriverli. Il tag esce con `>` anche se arrivava con `/>`.
+ */
+function conCaricamento(tag: string, prima: boolean): string {
+  const attributi = prima ? ' fetchpriority="high" decoding="async"' : ' loading="lazy" decoding="async"'
+  return tag.replace(/\s*\/?>$/, `${attributi}>`)
+}
+
+/** Un `ul` di 2–6 voci che cominciano tutte con un grassetto: il grassetto è il numero, il resto la scritta. */
+function numeriDiUnElenco(b: Blocco): Array<{ cifra: string; scritta: string }> | null {
+  if (b.tag !== 'ul') return null
+  const li = [...b.html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1])
+  if (li.length < NUMERI_MIN || li.length > NUMERI_MAX || /<(ul|ol)\b/i.test(b.html.slice(b.html.indexOf('>') + 1))) return null
+  const fuori: Array<{ cifra: string; scritta: string }> = []
+  for (const x of li) {
+    const m = /^\s*<strong>([\s\S]*?)<\/strong>([\s\S]*)$/i.exec(x)
+    if (!m || !testoSolo(m[1])) return null
+    fuori.push({ cifra: m[1], scritta: m[2].trim() })
+  }
+  return fuori
+}
+
+/**
+ * La testata della Home: dall'introduzione (il testo prima del primo `h2`) prende le prime tre foto e, se c'è un solo
+ * elenco di 2–6 voci con il grassetto iniziale, i numeri. Restituisce la griglia e il testo che resta (le altre foto,
+ * i paragrafi, gli elenchi che non sono numeri, e tutte le sezioni). Senza foto né numeri: niente collage.
+ */
+export function collage(testoPulito: string): { html: string; resto: string } {
+  const b = blocchi(testoPulito)
+  const primoTitolo = b.findIndex((x) => x.tag === 'h2')
+  const finePresentazione = primoTitolo < 0 ? b.length : primoTitolo
+  const intro = b.slice(0, finePresentazione)
+  const usati = new Set<number>()
+  const foto: string[] = []
+  intro.forEach((x, i) => {
+    const img = immagine(x)
+    if (img !== null && foto.length < COLLAGE_FOTO) { foto.push(img); usati.add(i) }
+  })
+  const elenchi = intro.map((x, i) => ({ x, i })).filter((y) => y.x.tag === 'ul')
+  const numeri = elenchi.length === 1 ? numeriDiUnElenco(elenchi[0].x) : null
+  if (numeri) usati.add(elenchi[0].i)
+  if (!foto.length && !numeri) return { html: '', resto: testoPulito }
+
+  const tessereFoto = foto.map((img, k) => {
+    const tipo = k === 0 ? 'grande' : foto.length === 2 ? 'larga' : 'meta'
+    const classe = foto.length === 1 && !numeri ? 'larga' : tipo
+    return `<figure class="tessera foto ${classe}">${conCaricamento(img, k === 0)}</figure>`
+  })
+  const elencoNumeri = numeri ?? []
+  const tessereNumeri = elencoNumeri.map((n, k) => {
+    const lunga = testoSolo(n.cifra).length > CIFRA_LUNGA || testoSolo(n.scritta).length > SCRITTA_LUNGA
+    // Sul telefono i numeri stanno a due colonne: con un numero dispari l'ultimo occupa tutte e due.
+    const ultima = k === elencoNumeri.length - 1 && elencoNumeri.length % 2 === 1
+    return `<article class="tessera ${ROTAZIONE[k % ROTAZIONE.length]} numero${lunga ? ' lunga' : ''}${ultima ? ' ultima' : ''}"><strong class="cifra">${n.cifra}</strong>${n.scritta ? ` <span class="scritta">${n.scritta}</span>` : ''}</article>`
+  })
+  const html = foto.length
+    ? foto.length === 1 && !numeri
+      ? griglia(1, tessereFoto[0])
+      : `<div class="collage">${tessereFoto[0]}${tessereNumeri.join('')}${tessereFoto.slice(1).join('')}</div>`
+    : griglia(tessereNumeri.length, tessereNumeri.join(''))
+  const resto = b.filter((_, i) => !usati.has(i)).map((x) => x.html).join('')
+  return { html, resto }
+}

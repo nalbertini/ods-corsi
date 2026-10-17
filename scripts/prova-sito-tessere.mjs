@@ -161,13 +161,16 @@ const pseudoOk = (comp, i, n) => {
 }
 const nDi = (comp) => comp.match(/\.n-(\d+)/)?.[1]
 /** La regola vale per il contenitore di N tessere? (ultima parte `.tessere`, e se ha `.n-x` deve essere N.) */
+// Le griglie della testata (`.pagina-hero …`) hanno la loro prova in prova-sito-collage: qui contano solo quelle delle sezioni.
 const delContenitore = (sel, n) => {
+  if (/\.pagina-hero/.test(sel)) return false
   const p = parti(sel)
   const ultima = p[p.length - 1]
   if (!/\.tessere\b/.test(ultima) || /:/.test(ultima.replace(/\([^)]*\)/g, ''))) return false
   return p.every((c) => nDi(c) === undefined || nDi(c) === String(n))
 }
 const dellaTessera = (sel, i, n, N) => {
+  if (/\.pagina-hero/.test(sel)) return false
   const p = parti(sel)
   const ultima = p[p.length - 1]
   if (!/\.tessera\b/.test(ultima)) return false
