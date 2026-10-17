@@ -110,13 +110,14 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .invito:focus-visible{outline-color:var(--inchiostro)}
 .piede a:focus-visible{outline-color:var(--giallo)}
 .logo{display:block;flex-shrink:0}
-.logo img{display:block;height:96px;width:auto;mix-blend-mode:multiply}
-.testata{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:14px var(--margine)}
-.testata nav ul{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none;font-size:17px;font-weight:500}
-.testata nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:6px;text-decoration:none}
+.logo img{display:block;height:110px;width:auto;mix-blend-mode:multiply}
+.testata{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:22px var(--margine)}
+.testata nav ul{display:flex;flex-wrap:wrap;gap:10px;margin:0;padding:0;list-style:none;font-size:17px;font-weight:500}
+.testata nav a{display:inline-flex;align-items:center;min-height:38px;padding:0 16px;border-radius:6px;text-decoration:none}
 .testata nav a:hover{background:var(--chiara)}
+.testata nav a[aria-current="page"]{background:var(--giallo)}
 .pulsante,.testo a.pulsante,.colonna a.pulsante{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 32px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;font-weight:600;text-decoration:none}
-.pulsante.piccolo{min-height:48px;padding:0 24px;font-size:16px}
+.pulsante.piccolo{min-height:48px;padding:0 26px;font-size:16px}
 .testata .pulsante{background:var(--giallo);color:var(--inchiostro)}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
@@ -138,13 +139,11 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .testo blockquote{padding-left:18px;border-left:4px solid var(--blu);font-size:1.15em}
 .testo a,.colonna a{text-underline-offset:3px}
 .testo img,.colonna img{max-width:100%;height:auto;border-radius:6px}
-.invito{display:flex;flex-direction:column;justify-content:space-between;gap:20px;margin:96px 12px 6px;padding:28px var(--margine);min-height:clamp(240px,26vw,360px);border-radius:6px;background:var(--giallo);color:var(--inchiostro);text-decoration:none}
-.invito .riga{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
-.invito .frase{max-width:min(520px,80%);font-size:clamp(16px,1.4vw,20px);line-height:1.35}
-.invito .freccia{font-size:clamp(32px,3.4vw,48px);line-height:1}
-.invito .parola{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(96px,16vw,230px);line-height:.8;letter-spacing:-.01em}
-.piede{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px;margin:0 12px 12px;padding:40px var(--margine) 24px;background:var(--inchiostro);color:#fff;border-radius:6px}
-.piede .nome{margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(44px,7vw,96px);line-height:.9}
+.invito{display:flex;flex-direction:column;justify-content:space-between;gap:20px;margin:96px var(--margine) 6px;padding:36px 40px;min-height:300px;border-radius:6px;background:var(--giallo);color:var(--inchiostro);text-decoration:none}
+.invito .frase{max-width:520px;font-size:22px;line-height:1.35}
+.invito .parola{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(120px,11.8vw,170px);line-height:.8;letter-spacing:-.01em}
+.piede{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px;margin:0 var(--margine) 48px;padding:40px;background:var(--inchiostro);color:#fff;border-radius:6px}
+.piede .nome{margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(44px,3.9vw,56px);line-height:.9}
 .piede .colonne{display:flex;flex-wrap:wrap;gap:32px clamp(32px,7vw,96px);font-size:16px;line-height:1.9}
 .piede h2{margin:0;font-family:inherit;text-transform:none;font-size:16px;font-weight:400;color:var(--chiara)}
 .piede ul{margin:0;padding:0;list-style:none}
@@ -255,7 +254,11 @@ ${GRIGLIE_LUNGHE}
 .collage.pieno>figure img{height:100%;aspect-ratio:auto}
 }
 @media (max-width:900px){
-.testata{flex-wrap:wrap;gap:8px 16px}
+.testata{flex-wrap:wrap;gap:10px 16px;padding:12px var(--margine) 0}
+.logo img{height:82px}
+.testata nav ul{gap:6px;margin-top:0}
+.testata nav a{min-height:44px;padding:0 14px;background:var(--chiara);font-size:16px}
+.testata .pulsante{padding:0 22px}
 .tessere{grid-template-columns:1fr}
 .tessere .tessera{grid-column:auto}
 .pagina-hero{flex-direction:column;align-items:stretch}
@@ -271,7 +274,9 @@ ${GRIGLIE_LUNGHE}
 .foto-fila,.foto-fila.quattro{grid-template-columns:repeat(2,1fr)}
 .foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
-.invito{margin-top:48px}
+.invito{margin-top:48px;padding:22px;min-height:260px}
+.invito .frase{font-size:17px}
+.piede{margin-bottom:24px;padding:24px}
 .pagina-hero.solo{padding:20px var(--margine) 36px}
 .pagina-hero.solo .intro{grid-template-columns:1fr}
 .pagina-hero.solo h1{grid-row:auto;line-height:.84;margin-bottom:20px}
@@ -312,7 +317,8 @@ function voci(dove: 'menu' | 'footer', c: Contesto): Array<{ etichetta: string; 
 }
 
 const rel = (href: string) => (/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : '')
-const lista = (v: Array<{ etichetta: string; href: string }>) => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a></li>`).join('')
+/** La voce che porta alla pagina aperta (`corrente`) è segnata per chi usa un lettore di schermo e colorata di giallo. */
+const lista = (v: Array<{ etichetta: string; href: string }>, corrente = '') => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}${x.href === corrente ? ' aria-current="page"' : ''}>${esc(x.etichetta)}</a></li>`).join('')
 
 /**
  * Il testo di una pagina, ripulito, con solo le immagini ammesse: quelle del sito
@@ -335,8 +341,8 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
-function testata(c: Contesto, conContatti: boolean): string {
-  const menu = lista(voci('menu', c))
+function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
+  const menu = lista(voci('menu', c), corrente)
   return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.provaTestata}</a>` : ''}</header>`
 }
 
@@ -348,7 +354,7 @@ function piede(c: Contesto): string {
 
 function invito(conContatti: boolean): string {
   if (!conContatti) return ''
-  return `<a class="invito" href="${TESTI.contatti}"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}.</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
+  return `<a class="invito" href="${TESTI.contatti}"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}.</span><span class="parola">${TESTI.prova}</span></a>`
 }
 
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean }): string {
@@ -364,7 +370,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   // Una pagina che comincia con più `h3` (e senza `h2`) è la griglia dei ritratti degli istruttori.
   const tecnici = !p.diLegge && !/<h2[\s>]/i.test(inTestata.resto) ? ritratti(inTestata.resto) : null
   const testo = tecnici ? tecnici.resto : inTestata.resto
-  const t = testata(c, conContatti)
+  const t = testata(c, conContatti, percorso(p.slug))
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
     : `<section class="pagina-hero${inTestata.html ? '' : ' solo'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`

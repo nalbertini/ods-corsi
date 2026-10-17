@@ -31,5 +31,8 @@ pulsante «Contattaci».
 - Senza foto il cerchio ha l'iniziale, non la scritta «Foto» del segnaposto.
 - I colori dalla decima tessera non sono quelli disegnati a mano nel design: la
   rotazione evita due colori uguali nella stessa riga.
+- Il pulsante in testata dice «Prova una settimana · 5 €» anche sul telefono (il design telefono ha «Prova»): il testo è uno solo.
+- L'invito in fondo ha la frase di oggi con l'indirizzo, più corta di quella del design.
+- Il piede ha le sue colonne con i titoli e la riga «©»: il design ha solo nome, recapiti e link (a 1440px è alto 286px contro 202).
 - Sul telefono il design non ha il paragrafo sotto la griglia, il sito lo tiene.
 - Il ruolo di Maurizio nel design telefono è accorciato: sul sito il testo è uno.

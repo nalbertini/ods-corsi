@@ -136,5 +136,27 @@ console.log('\n7. Le misure del design: telefono')
   ok('sul telefono non c’è la freccia', /\.ritratto:has\(h3 a\)::after\{[^}]*display:\s*none/.test(TELEFONO), true)
 }
 
+console.log('\n8. La cornice (testata, invito, piede) con le misure del design')
+{
+  const ri = (re) => dentro(re)
+  const logo = ri(/^\s*\.logo img\s*$/)
+  ok('testata: 22px sopra e sotto, logo alto 110px (82px sul telefono)', [/padding:\s*22px var\(--margine\)/.test(ri(/^\s*\.testata\s*$/)), px(/^\s*\.logo img\s*$/, 'height'), /\.logo img\{[^}]*height:\s*82px/.test(TELEFONO)], [true, 110, true])
+  ok('menu: 10px tra le voci, voci alte 38px con 16px di fianco', [px(/^\s*\.testata nav ul\s*$/, 'gap'), px(/^\s*\.testata nav a\s*$/, 'min-height'), /padding:\s*0 16px/.test(ri(/^\s*\.testata nav a\s*$/))], [10, 38, true])
+  ok('la voce della pagina aperta è gialla (aria-current)', /\.testata nav a\[aria-current="?page"?\]\{[^}]*background:\s*var\(--giallo\)/.test(CSS), true)
+  ok('sul telefono le voci sono alte 44px, 14px di fianco, su fondo chiaro, con 6px tra loro', [/\.testata nav a\{[^}]*min-height:\s*44px/.test(TELEFONO), /\.testata nav a\{[^}]*padding:\s*0 14px/.test(TELEFONO), /\.testata nav a\{[^}]*background:\s*var\(--chiara\)/.test(TELEFONO), /\.testata nav ul\{[^}]*gap:\s*6px/.test(TELEFONO)], [true, true, true, true])
+  ok('pulsante in testata: 26px di fianco, 22 sul telefono', [/padding:\s*0 26px/.test(ri(/^\s*\.pulsante\.piccolo\s*$/)), /\.testata \.pulsante\{[^}]*padding:\s*0 22px/.test(TELEFONO)], [true, true])
+  const h = pagina(tredici)
+  const conMenu = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'istruttori', titolo: 'T', descrizione: '', testo: '' }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Chi siamo', slug: 'istruttori', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }], rinvii: [] })['istruttori/index.html']
+  ok('la voce del menu della pagina aperta ha aria-current, le altre no', [conta(conMenu, /<a [^>]*aria-current="page"/g), /<a href="\/istruttori\/" aria-current="page">Chi siamo<\/a>/.test(conMenu)], [1, true])
+  const inv = ri(/^\s*\.invito\s*$/)
+  ok('invito: allineato alla pagina (margine 96px sopra, 6 sotto), alto 300px, padding 36px 40px', [/margin:\s*96px var\(--margine\) 6px/.test(inv), px(/^\s*\.invito\s*$/, 'min-height'), /padding:\s*36px 40px/.test(inv)], [true, 300, true])
+  ok('invito: frase 22px larga al massimo 520px, «Prova» 170px', [px(/^\s*\.invito \.frase\s*$/, 'font-size'), px(/^\s*\.invito \.frase\s*$/, 'max-width'), /clamp\(120px,\s*11\.8vw,\s*170px\)/.test(ri(/^\s*\.invito \.parola\s*$/))], [22, 520, true])
+  ok('invito sul telefono: 22px di padding, alto 260px, frase 17px', [/\.invito\{[^}]*padding:\s*22px/.test(TELEFONO), /\.invito\{[^}]*min-height:\s*260px/.test(TELEFONO), /\.invito \.frase\{[^}]*font-size:\s*17px/.test(TELEFONO)], [true, true, true])
+  ok('invito: due scritte, senza freccia (il design non ce l’ha)', [/<a class="invito"[^>]*><span class="frase">/.test(h), /freccia/.test(h)], [true, false])
+  const pie = ri(/^\s*\.piede\s*$/)
+  ok('piede: allineato alla pagina (margine sotto 48px), padding 40px, nome 56px', [/margin:\s*0 var\(--margine\) 48px/.test(pie), /padding:\s*40px[;}]|padding:\s*40px$/.test(pie), /clamp\(44px,\s*3\.9vw,\s*56px\)/.test(ri(/^\s*\.piede \.nome\s*$/))], [true, true, true])
+  ok('piede sul telefono: 24px di padding e di margine sotto', [/\.piede\{[^}]*margin-bottom:\s*24px/.test(TELEFONO), /\.piede\{[^}]*padding:\s*24px/.test(TELEFONO)], [true, true])
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)
