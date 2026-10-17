@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { EditorContent, useEditor, type Editor } from '@tiptap/react'
+import { EditorContent, Node, useEditor, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import { indirizzoValido } from '../../lib/sitoPagine'
+import type { DatiSegreteria } from '../../lib/segreteria'
+import { ScegliImmagine } from './ImmaginiSito'
 
 /**
  * L'editor del testo di una pagina del sito. Sa fare solo quello che il sito
@@ -26,6 +28,24 @@ const LinkPulsante = Link.extend({
   },
 })
 
+// L'immagine è un blocco con indirizzo e testo alternativo, e nient'altro: è quello che il sito ammette (`sitoTesto.ts`).
+// `alt=""` (solo decorativa) resta com'è, non sparisce; un'immagine che arriva senza `alt` si salva come decorativa.
+const Immagine = Node.create({
+  name: 'immagine',
+  group: 'block',
+  atom: true,
+  draggable: true,
+  addAttributes() {
+    return { src: { default: '' }, alt: { default: '' } }
+  },
+  parseHTML() {
+    return [{ tag: 'img[src]' }]
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['img', { src: HTMLAttributes.src, alt: HTMLAttributes.alt ?? '' }]
+  },
+})
+
 // `getAttributes` dà un oggetto senza tipo: qui si legge solo quello che il link porta (`pulsante` lo aggiunge `LinkPulsante`).
 const attributiLink = (editor: Editor) => editor.getAttributes('link') as { href?: string; pulsante?: boolean }
 
@@ -37,7 +57,8 @@ function Tasto({ nome, etichetta, acceso, onClick, larghezzaPiena }: { nome: str
   )
 }
 
-function Barra({ editor }: { editor: Editor }) {
+function Barra({ editor, d }: { editor: Editor; d: DatiSegreteria }) {
+  const [immagine, setImmagine] = useState(false)
   const [link, setLink] = useState<{ indirizzo: string; pulsante: boolean; guaio?: string } | null>(null)
   // La barra segue il cursore: i tasti accesi dicono come è scritto il punto dove si è.
   const [, giro] = useState(0)
@@ -72,8 +93,20 @@ function Barra({ editor }: { editor: Editor }) {
         <Tasto nome="Elenco numerato" etichetta="1." acceso={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} />
         <Tasto nome="Citazione" etichetta="“" acceso={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} />
         <Tasto nome="Link" etichetta="LINK" acceso={editor.isActive('link') && !attributiLink(editor).pulsante} onClick={apriLink} />
+        <Tasto nome="Immagine" etichetta="IMMAGINE" onClick={() => setImmagine(true)} />
         <Tasto nome="Pulsante" etichetta="PULSANTE" acceso={editor.isActive('link') && !!attributiLink(editor).pulsante} onClick={() => { apriLink(); setLink((l) => (l ? { ...l, pulsante: true } : l)) }} />
       </div>
+      {immagine && (
+        <ScegliImmagine
+          d={d}
+          onChiudi={() => { setImmagine(false); editor.commands.focus() }}
+          onScelta={(url, alt) => {
+            // Dopo la selezione, non al suo posto: con un'immagine appena messa (selezionata) `insertContent` la sostituirebbe.
+            editor.chain().focus().insertContentAt(editor.state.selection.to, { type: 'immagine', attrs: { src: url, alt } }).run()
+            setImmagine(false)
+          }}
+        />
+      )}
       {link && (
         <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
           <label className="sg-etichetta" htmlFor="sito-link">
@@ -117,7 +150,7 @@ function Barra({ editor }: { editor: Editor }) {
   )
 }
 
-export function EditorTesto({ valore, onCambia, etichetta }: { valore: string; onCambia: (html: string) => void; etichetta: string }) {
+export function EditorTesto({ valore, onCambia, etichetta, d }: { valore: string; onCambia: (html: string) => void; etichetta: string; d: DatiSegreteria }) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -130,6 +163,7 @@ export function EditorTesto({ valore, onCambia, etichetta }: { valore: string; o
         link: false,
         underline: false,
       }),
+      Immagine,
       LinkPulsante.configure({ openOnClick: false, autolink: false, HTMLAttributes: { rel: null, target: null } }),
     ],
     content: valore,
@@ -143,7 +177,7 @@ export function EditorTesto({ valore, onCambia, etichetta }: { valore: string; o
   if (!editor) return null
   return (
     <div className="stack" style={{ gap: 8 }}>
-      <Barra editor={editor} />
+      <Barra editor={editor} d={d} />
       <EditorContent editor={editor} />
     </div>
   )

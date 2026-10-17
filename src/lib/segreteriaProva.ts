@@ -14,6 +14,7 @@ import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 // La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
 const sitoProva = () => import('./sitoProva')
+import { controllaImmagine, cosaNonVaImmagini, nomeNelContenitore } from './sitoImmagini'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { richiesteDi, spostaRichieste } from './richiesteProva'
 import { ESTENSIONI } from './richieste'
@@ -780,6 +781,27 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async salvaMenuSito(dove, voci) {
       const sito = await sitoProva()
       a().sito = sito.salvaMenu((a().sito ??= sito.sitoIniziale()), dove, voci)
+      salva()
+    },
+
+    async sitoImmagini() {
+      return a().sitoImmagini ?? []
+    },
+
+    async caricaImmagineSito(file) {
+      // In prova niente riduzione (nel canvas non c'è): un file sopra 1 MB si rifiuta, nel database si rimpicciolisce.
+      const no = controllaImmagine(file)
+      const nome = nomeNelContenitore(crypto.randomUUID(), file.type)
+      if (no || !nome) throw new Error(no ?? cosaNonVaImmagini(''))
+      // Nel canvas non c'è niente da scaricare: un riquadro grigio col nome fa da immagine.
+      const immagine = { nome, url: `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#444"/><text x="20" y="150" fill="#fff" font-size="16">${nome.slice(0, 8)}</text></svg>`)}` }
+      a().sitoImmagini = [immagine, ...(a().sitoImmagini ?? [])]
+      salva()
+      return immagine
+    },
+
+    async cancellaImmagineSito(nome) {
+      a().sitoImmagini = (a().sitoImmagini ?? []).filter((x) => x.nome !== nome)
       salva()
     },
 

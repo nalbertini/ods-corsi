@@ -23,7 +23,7 @@ usato, o uno che serve al sito (`admin`, `api`, `privacy`…), non va.
 Toccando una pagina si apre per scriverla:
 
 - Il testo ha i tasti **TITOLO**, **SOTTOTITOLO**, **G** (grassetto), **C**
-  (corsivo), gli elenchi, la citazione, **LINK** e **PULSANTE**. **LINK** e
+  (corsivo), gli elenchi, la citazione, **LINK**, **IMMAGINE** e **PULSANTE**. **LINK** e
   **PULSANTE** chiedono dove portano: un indirizzo che comincia con `https://`,
   `mailto:`, `tel:` o con `/` per una pagina del sito. Altro non si può
   scrivere: se incolli un testo da Word o da un altro sito, quello che il sito
@@ -47,6 +47,27 @@ Le pagine di legge (**privacy, cookie, contributi pubblici**) non si
 nascondono né si cancellano.
 
 Se esci con qualcosa scritto e non salvato, l'app chiede prima.
+
+## Le immagini
+
+**IMMAGINI** è la libreria delle immagini caricate per le pagine. **CARICA
+UN'IMMAGINE** prende uno o più file JPEG, PNG o WebP; una foto che pesa più di
+1 MB si rimpicciolisce da sola, una piccola resta com'è (una PNG con la
+trasparenza non la perde). Ogni immagine dice in quali pagine è usata, anche
+nella bozza: finché è usata non si cancella; se non lo è, **TOGLI** la toglie.
+
+Per metterne una nel testo, in una pagina tocca **IMMAGINE**: scegli una di
+quelle caricate (o **+ CARICA UN'IMMAGINE NUOVA**, che la sceglie da sola),
+scrivi nel **testo alternativo** cosa si vede, per chi non la vede, oppure
+spunta **solo decorativa**; poi **INSERISCI**. Senza testo e senza la spunta
+non si inserisce. Nel testo l'immagine va a tutta la larghezza e si sposta o si
+cancella come un paragrafo.
+
+Le immagini sono **pubbliche**: chiunque conosca l'indirizzo le vede, anche se
+la pagina è nascosta. Niente foto di persone senza il loro permesso, per i
+minorenni quello dei genitori; niente documenti. Finché sul database non c'è
+`58-sito-immagini.sql`, **IMMAGINI** dice che non sono ancora attive e le
+pagine si scrivono come prima.
 
 ## Menu e footer
 

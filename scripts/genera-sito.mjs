@@ -67,7 +67,7 @@ const { outputFiles } = await build({
   define: { 'import.meta.env': '{}' },
   banner: { js: `import { createRequire as __cr } from 'node:module'; const require = __cr(${JSON.stringify(`${radice}/`)});` },
 })
-const { generaSito, datiDaRisposte } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
+const { generaSito, datiDaRisposte, prefissoImmagini } = await import('data:text/javascript;base64,' + Buffer.from(outputFiles[0].text).toString('base64'))
 
 async function leggi() {
   if (daFile) {
@@ -108,6 +108,16 @@ for (const nome of ['pagine', 'menu', 'rinvii']) {
   if (!Array.isArray(risposte[nome])) fine(`I dati non sono fatti come si aspetta il generatore: «${nome}» dovrebbe essere un elenco.`)
 }
 const dati = datiDaRisposte(dominio, risposte.pagine, risposte.menu, risposte.rinvii)
+// Le immagini delle pagine stanno nel contenitore «sito» del progetto: solo quelle entrano nel sito (vedi `supabase/58-sito-immagini.sql`).
+if (process.env.SUPABASE_URL) {
+  let origine
+  try {
+    origine = new URL(process.env.SUPABASE_URL).origin
+  } catch {
+    fine('SUPABASE_URL non è un indirizzo valido (deve cominciare con https://).')
+  }
+  dati.ospitiImmagini = [prefissoImmagini(origine)]
+}
 if (!dati.pagine.some((p) => p.slug === 'home')) {
   // Codice 2: «non c'è ancora niente da pubblicare». Chi pubblica il sito lo distingue da un guasto (codice 1).
   console.error('✗ La pagina iniziale (home) non è pubblicata: non genero un sito senza prima pagina.')

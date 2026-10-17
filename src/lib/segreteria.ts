@@ -16,6 +16,7 @@ import { nomeProprio, paroleCercate, somiglia } from './nomi'
 import type { SegnalataVista } from './segnalate'
 import type { Categoria, Segnalazione } from './segnalazioni'
 import type { PaginaSito, VoceMenu } from './sitoPagine'
+import type { ImmagineSito } from './sitoImmagini'
 
 export type { ListaMusica } from './musica'
 import type { IndiziDoppioni } from './doppioni'
@@ -569,6 +570,11 @@ export interface DatiSegreteria {
   cancellaPaginaSito(id: string): Promise<void>
   /** Riscrive il menu o il footer con queste voci, nell'ordine dato. */
   salvaMenuSito(dove: 'menu' | 'footer', voci: VoceMenu[]): Promise<void>
+  /** Le immagini caricate per le pagine del sito, la più recente prima (vedi `sitoImmagini.ts`). */
+  sitoImmagini(): Promise<ImmagineSito[]>
+  /** Carica un'immagine (JPEG, PNG o WebP; se pesa troppo la rimpicciolisce); il nome lo decide l'app. */
+  caricaImmagineSito(file: File): Promise<ImmagineSito>
+  cancellaImmagineSito(nome: string): Promise<void>
 
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>

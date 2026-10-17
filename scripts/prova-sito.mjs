@@ -358,5 +358,89 @@ ok('testo di 200001 lettere → una frase', frase(prova(() => p.testoTroppoLungo
   ok('bozza oltre 200000 → rifiutata (prova)', nega(() => sp.salvaBozza(s, id, v, { titolo: 'x', descrizione: '', bozza: 'a'.repeat(200001) })) !== 'NON HA LANCIATO', true)
 }
 
+// ---------------------------------------------------------------------------
+console.log('\nImmagini: regole (src/lib/sitoImmagini.ts)')
+const im = await carica('src/lib/sitoImmagini.ts')
+ok('pulisciAlt: via virgolette, < e > (il filtro del database rifiuta le entità), spazi in ordine', im.pulisciAlt('  Il "ring" <b>  di   sala '), 'Il ring b di sala')
+ok('pulisciAlt: & resta (il database ammette &amp;)', im.pulisciAlt('Judo & lotta'), 'Judo & lotta')
+ok('eNomeDelContenitore: uuid.png sì, pagina.html no', [im.eNomeDelContenitore('a.png'), im.eNomeDelContenitore('a.html')], [true, false])
+ok('cosaNonVaImmagini: 404 = file 58 da lanciare', /58-sito-immagini/.test(im.cosaNonVaImmagini('Bucket not found', '404')), true)
+ok('cosaNonVaImmagini: 403 = solo la segreteria', im.cosaNonVaImmagini('new row violates row-level security policy', '403'), 'Solo la segreteria può caricare le immagini')
+ok('cosaNonVaImmagini: troppo grande = la frase del peso', im.cosaNonVaImmagini('Payload too large', '413'), "L'immagine pesa più di 1 MB: prova con una più piccola")
+ok('cosaNonVaImmagini: altro = connessione, mai il testo grezzo', /connessione/.test(im.cosaNonVaImmagini('boom: ECONNRESET')), true)
+ok('pagineCheUsano: un indirizzo con &amp; nel testo si riconosce', im.pagineCheUsano('https://a.it/x?a=1&b=2', [{ titolo: 'P', bozza: '<img src="https://a.it/x?a=1&amp;b=2" alt="">', pubblicato: null }]), ['P'])
+ok('un alt fatto di sole virgolette, ripulito, non basta', im.controllaAlt(im.pulisciAlt('""'), false) !== null, true)
+const UUID = '0b9f6c1e-3a4d-4c1b-8e2a-5d7f9a1c2b3e'
+ok('contenitore «sito»', im.CONTENITORE, 'sito')
+ok('massimo 1 MB', im.MASSIMO_BYTE, 1048576)
+ok('tipi ammessi', im.TIPI_AMMESSI, ['image/jpeg', 'image/png', 'image/webp'])
+for (const [tipo, est] of [['image/jpeg', 'jpg'], ['image/png', 'png'], ['image/webp', 'webp']]) {
+  ok(`nome per ${tipo}: uuid.${est}`, prova(() => im.nomeNelContenitore(UUID, tipo)), `${UUID}.${est}`)
+}
+for (const tipo of ['image/svg+xml', 'image/gif', 'application/pdf', 'image/heic', '']) {
+  ok(`nome per «${tipo}» → null (non ammesso)`, prova(() => im.nomeNelContenitore(UUID, tipo)), null)
+}
+// Il nome del file di chi carica non entra mai nel contenitore: si usa l'uuid.
+ok('«Foto Mario Rossi (1).JPG» non è mai il nome nel bucket', /^[0-9a-f-]{36}\.jpg$/.test(String(prova(() => im.nomeNelContenitore(UUID, 'image/jpeg')))), true)
+ok('tipo ammesso e piccolo → nessun messaggio', prova(() => im.controllaImmagine({ type: 'image/png', size: 500000 })), null)
+ok('esattamente 1 MB → va bene', prova(() => im.controllaImmagine({ type: 'image/webp', size: 1048576 })), null)
+ok('SVG → «solo JPEG, PNG o WebP»', prova(() => im.controllaImmagine({ type: 'image/svg+xml', size: 100 })), 'Vanno bene solo immagini JPEG, PNG o WebP')
+ok('oltre 1 MB → «prova con una più piccola»', prova(() => im.controllaImmagine({ type: 'image/jpeg', size: 1048577 })), "L'immagine pesa più di 1 MB: prova con una più piccola")
+ok('senza testo e non decorativa → una frase', prova(() => im.controllaAlt('  ', false)), 'Scrivi cosa si vede nell\'immagine, oppure scegli «solo decorativa»')
+ok('con testo → nessun messaggio', prova(() => im.controllaAlt('Il tatami', false)), null)
+ok('decorativa senza testo → nessun messaggio', prova(() => im.controllaAlt('', true)), null)
+ok('immaginiNelTesto: src in ordine, senza doppioni', prova(() => im.immaginiNelTesto('<p>a</p><img src="u1" alt="x"><img alt="" src="u2"><img src="u1" alt="y">')), ['u1', 'u2'])
+ok('immaginiNelTesto: senza immagini → vuoto', prova(() => im.immaginiNelTesto('<p>solo testo</p>')), [])
+{
+  const U = 'https://x.supabase.co/storage/v1/object/public/sito/a.jpg'
+  const pagine = [
+    { titolo: 'Solo bozza', bozza: `<img src="${U}" alt="">`, pubblicato: null },
+    { titolo: 'Solo pubblicato', bozza: '<p>tolta</p>', pubblicato: `<img src="${U}" alt="">` },
+    { titolo: 'Tutte e due', bozza: `<img src="${U}" alt="">`, pubblicato: `<img src="${U}" alt="">` },
+    { titolo: 'Nessuna', bozza: '<p>x</p>', pubblicato: null },
+  ]
+  ok('pagineCheUsano: bozza O pubblicato, una volta sola', prova(() => im.pagineCheUsano(U, pagine)), ['Solo bozza', 'Solo pubblicato', 'Tutte e due'])
+  ok('pagineCheUsano: altra immagine → nessuna', prova(() => im.pagineCheUsano(U.replace('a.jpg', 'b.jpg'), pagine)), [])
+}
+ok('urlImmagine', prova(() => im.urlImmagine('https://x.supabase.co', 'a.jpg')), 'https://x.supabase.co/storage/v1/object/public/sito/a.jpg')
+ok('urlImmagine: barra finale tolta', prova(() => im.urlImmagine('https://x.supabase.co/', 'a.jpg')), 'https://x.supabase.co/storage/v1/object/public/sito/a.jpg')
+
+console.log('\nImmagini: segreteria in modalità prova')
+{
+  const mem = new Map()
+  globalThis.localStorage = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) }
+  globalThis.window = { location: { search: '', hash: '' }, addEventListener() {} }
+  const sg = await carica('src/lib/segreteriaProva.ts')
+  const s = prova(() => sg.creaSegreteriaProva())
+  const chiama = async (f) => {
+    try {
+      return await f()
+    } catch (e) {
+      return `ERRORE: ${e.message}`
+    }
+  }
+  const png = (n) => new File([new Uint8Array(10)], n, { type: 'image/png' })
+  const elenco = async () => await chiama(() => s.sitoImmagini())
+  const nomi = async () => {
+    const e = await elenco()
+    return Array.isArray(e) ? e.map((x) => x.nome) : e
+  }
+  ok('all\'inizio l\'elenco è vuoto', await nomi(), [])
+  const a = await chiama(() => s.caricaImmagineSito(png('Foto Mario Rossi (1).PNG')))
+  await new Promise((r) => setTimeout(r, 5))
+  const b = await chiama(() => s.caricaImmagineSito(png('seconda.png')))
+  ok('caricata: nome come uuid.png, non quello del file', /^[0-9a-f-]{36}\.png$/.test(String(a?.nome)), true)
+  ok('caricata: url è una stringa non vuota', typeof a?.url === 'string' && a.url.length > 0, true)
+  ok('l\'elenco le ha, la più recente prima', await nomi(), [b?.nome, a?.nome])
+  ok('ogni voce dell\'elenco ha un url', (await elenco()).every?.((x) => typeof x.url === 'string' && x.url.length > 0), true)
+  const svg = await chiama(() => s.caricaImmagineSito(new File(['<svg/>'], 'a.svg', { type: 'image/svg+xml' })))
+  ok('un SVG è rifiutato con la frase', svg, 'ERRORE: Vanno bene solo immagini JPEG, PNG o WebP')
+  const grande = await chiama(() => s.caricaImmagineSito(new File([new Uint8Array(2 * 1024 * 1024)], 'g.png', { type: 'image/png' })))
+  ok('un file da 2 MB è rifiutato con la frase', grande, "ERRORE: L'immagine pesa più di 1 MB: prova con una più piccola")
+  ok('dopo i rifiuti l\'elenco non cambia', await nomi(), [b?.nome, a?.nome])
+  await chiama(() => s.cancellaImmagineSito(a?.nome))
+  ok('cancella ne toglie una', await nomi(), [b?.nome])
+}
+
 console.log(guai ? `\n${guai} ✗` : '\nTutto ✓')
 process.exit(guai ? 1 : 0)
