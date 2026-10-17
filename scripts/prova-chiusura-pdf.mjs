@@ -9,6 +9,7 @@
 // ---------------------------------------------------------------------------
 import { build } from 'esbuild'
 import { writeFileSync } from 'node:fs'
+import { inflateSync } from 'node:zlib'
 
 const { outputFiles } = await build({
   stdin: {
@@ -38,6 +39,21 @@ const prova = (f) => {
   } catch (e) {
     return `ERRORE: ${e.message}`
   }
+}
+// Il testo scritto nel PDF: gli stream si aprono e le stringhe esadecimali dei `Tj` si rileggono byte per byte.
+const testoDelPdf = (bytes) => {
+  const b = Buffer.from(bytes)
+  const s = b.toString('latin1')
+  let fuori = ''
+  for (const x of s.matchAll(/stream\r?\n/g)) {
+    const da = x.index + x[0].length
+    try {
+      fuori += inflateSync(b.subarray(da, s.indexOf('endstream', da))).toString('latin1')
+    } catch {
+      /* non è un contenuto di pagina */
+    }
+  }
+  return [...fuori.matchAll(/<([0-9A-F]+)> Tj/g)].map((t) => Buffer.from(t[1], 'hex').toString('latin1')).join('\n')
 }
 const provaA = async (f) => {
   try {
@@ -89,6 +105,10 @@ console.log('\n2. il PDF')
   const nonInRegola = await provaA(() => m.chiusuraCassaPdf({ ente, cassa: 'Cassa Contanti', chiusura, righe: mov(8), nonPiuInRegola: true }))
   const docR = await provaA(() => m.PDFDocument.load(nonInRegola))
   ok('un foglio rifatto dopo che un incasso è cambiato lo dice nel titolo', prova(() => docR.getTitle()), 'Chiusura di cassa · Cassa Contanti · dal 08/09/2026 al 14/09/2026 · NON PIÙ IN REGOLA')
+  // Il font standard non scrive il «−» (U+2212): i segni nel foglio sono il trattino «-» e il «+».
+  const scritto = testoDelPdf(normale)
+  ok('le uscite hanno il trattino dritto, le entrate il più', [scritto.includes('- 1,01 \x80'), scritto.includes('+ 1,00 \x80'), scritto.includes('\u2212')], [true, true, false])
+  ok('la differenza è in parole, mai con un segno', [scritto.includes('5,00 \x80 in meno'), scritto.includes('\u2212')], [true, false])
   const vuota = await fai({ ...chiusura, differenza: 0, movimentoId: undefined }, [])
   ok('…senza movimenti va', (await provaA(() => m.PDFDocument.load(vuota))).getPageCount?.(), 1)
   const tanti = await fai(chiusura, mov(120))

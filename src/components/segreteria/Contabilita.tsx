@@ -16,6 +16,7 @@ import {
   differenzaInParole,
   elencoMovimenti,
   filtraMovimenti,
+  giornoChiuso,
   giornoRoma,
   importoPerCassa,
   NOME_CASSA_CONTANTI,
@@ -364,6 +365,7 @@ function NuovoMovimento({ d, voci, casse, chiusure, fai, onFatto, onChiudi }: { 
           <textarea id="mv-nota" className="sg-campo" rows={2} maxLength={300} value={nota} onChange={(e) => setNota(e.target.value)} />
         </Campo>
       </div>
+      {giornoChiuso(chiusure, [cassaId], data) && <span role="status" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>Quel giorno la cassa è già chiusa: scegli una data dopo la chiusura.</span>}
       <span className="sg-sotto">Un solo importo, senza IVA. Registrato, non si cambia: si annulla e si rifà (la descrizione e la nota sì). Niente dati personali che non servono.</span>
       {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
@@ -423,6 +425,7 @@ function NuovoGiroconto({ d, casse, chiusure, fai, onFatto, onChiudi }: { d: Dat
           <textarea id="gc-nota" className="sg-campo" rows={2} maxLength={300} value={nota} onChange={(e) => setNota(e.target.value)} />
         </Campo>
       </div>
+      {giornoChiuso(chiusure, [da, a], data) && <span role="status" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>Quel giorno una delle casse è già chiusa: scegli una data dopo la chiusura.</span>}
       <span className="sg-sotto">Sposta soldi fra le due casse: non è un’entrata né un’uscita, e non entra nei totali per voce. Si annulla come un movimento.</span>
       {guaio && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
@@ -645,10 +648,12 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
   const manca = cent === null || !!guaio
   const chiudi = async () => {
     if (cent === null || differenza === null) return
-    if (serveConfermaDifferenza(differenza)) {
-      const domanda = `Differenza di ${differenzaInParole(differenza)}, sopra i ${soldi(SOGLIA_DIFFERENZA)}. ${nota.trim() ? '' : 'Scrivi nella nota perché. '}Chiudo la cassa fino al ${dataRicevuta(data)}?`
-      if (!(await chiedi(domanda, 'SÌ, CHIUDI LA CASSA', { no: 'NO, CONTROLLO ANCORA' }))) return
-    }
+    // Si chiede sempre conferma: una chiusura si annulla, ma chi la fa per errore non deve doverla cercare.
+    const sopra = serveConfermaDifferenza(differenza)
+    const domanda = sopra
+      ? `Differenza di ${differenzaInParole(differenza)}, sopra i ${soldi(SOGLIA_DIFFERENZA)}. ${nota.trim() ? '' : 'Scrivi nella nota perché. '}Chiudo la cassa fino al ${dataRicevuta(data)}, contati ${soldi(cent)}?`
+      : `Chiudo la cassa fino al ${dataRicevuta(data)}: contati ${soldi(cent)}, ${differenza === 0 ? 'i conti tornano' : differenzaInParole(differenza)}?`
+    if (!(await chiedi(domanda, 'SÌ, CHIUDI LA CASSA', { no: 'NO, CONTROLLO ANCORA' }))) return
     // Se la risposta si perde ma la chiusura è stata scritta, rileggere l'elenco la mostra: il riprova non sembra un errore a vuoto.
     void fai(() => d.chiudiCassa({ cassaId: cassa.id, data, contato: cent, nota: nota.trim() || undefined }), 'Cassa chiusa', onFatto).then((fatto) => !fatto && onRileggi())
   }
@@ -661,7 +666,7 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi
           <Campo id="ch-data" etichetta="FINO AL">
             <input id="ch-data" className="sg-campo" type="date" value={data} min={dal} max={oggi} onChange={(e) => setData(e.target.value)} />
           </Campo>
-          <span className="sg-sotto">{ultima ? `Da ${dataRicevuta(dal)}, dopo l’ultima chiusura.` : `Dall’inizio della cassa, il ${dataRicevuta(dal)}.`}</span>
+          <span className="sg-sotto">{ultima ? `Da ${dataRicevuta(dal)}, dopo l’ultima chiusura.` : `Dall’inizio della cassa, il ${dataRicevuta(dal)}.`} Il giorno scelto è compreso.</span>
         </div>
         <div className="stack" style={{ gap: 4 }}>
           <span className="sg-etichetta">IN CASSA SECONDO I CONTI</span>
@@ -742,6 +747,7 @@ function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: {
           <span style={{ fontSize: 14, color: 'var(--sec)', flex: 1, minWidth: 220 }}>
             Contati {soldi(k.contato)} · {differenzaInParole(k.differenza)} · {k.chiusaDa ?? '—'}, {dataRicevuta(giornoRoma(k.chiusaIl))}
             {k.annullataIl && ` · annullata${k.annullataDa ? ` da ${k.annullataDa}` : ''}`}
+            {k.nota && <span style={{ display: 'block', paddingTop: 2 }}>Nota: {k.nota}</span>}
           </span>
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => foglio(k), 'Foglio PDF scaricato')}>
             PDF
@@ -790,7 +796,7 @@ function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiud
           <input id={`dal-${cassa.id}`} className="sg-campo" type="date" value={dal} disabled={!!chiusura} onChange={(e) => setDal(e.target.value)} />
         </Campo>
       </div>
-      <span className="sg-sotto">Da questa data si contano i movimenti: uno più vecchio non si registra. Residuo = saldo iniziale + entrate − uscite.</span>
+      <span className="sg-sotto">Da questa data si contano i movimenti e gli incassi: quelli più vecchi non entrano nei conti, e un movimento più vecchio non si registra. Quanto c’è = saldo iniziale + entrate − uscite.</span>
       {guaio && !chiusura && <span role="alert" style={{ fontSize: 14, color: 'var(--rosso-testo)' }}>{guaio}</span>}
       {chiusura && <span className="sg-sotto">La cassa ha una chiusura: per cambiare il saldo iniziale annullala prima.</span>}
       <div>
