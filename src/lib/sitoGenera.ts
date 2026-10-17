@@ -2,6 +2,8 @@ import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
 import { GRIGLIA_MASSIMA, collage, impagina, testataCorso } from './sitoLayout'
+import { CSS_CORSI } from './sitoCorsi'
+import { CSS_INTERNE } from './sitoInterne'
 import { CONTATTI } from './sito'
 
 /**
@@ -445,6 +447,8 @@ h1{font-size:84px;line-height:.84}
 .pagina-contatti .sezione:not(.apertura) .tessera h3{font-size:30px}
 .pagina-contatti .sezione:not(.apertura) .tessere{grid-auto-rows:minmax(160px,auto)}
 }
+${CSS_CORSI}
+${CSS_INTERNE}
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
 
@@ -645,8 +649,8 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const t = testata(c, conContatti, corso ? percorso('corsi') : percorso(p.slug))
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
-    : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main${corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo, corso !== null, p.slug === 'contatti') : `<div class="testo">${testo}</div>`) : ''}</main>${invito(conContatti)}${piede(c)}`
+    : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
+  const corpo = `${t}<main${corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? impagina(testo, corso !== null, p.slug === 'contatti') : `<div class="testo">${testo}</div>`) : ''}</main>${invito(conContatti)}${piede(c)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null })
 }
 
