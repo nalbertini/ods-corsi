@@ -407,7 +407,7 @@ export function Iscritti({
                     {p.telefono ?? p.email ?? p.emailContatto ?? 'nessun contatto'}
                   </span>
                   <span role="cell" className="sg-in-regola">
-                    {paroleConTessera(paroleInRegola(p, oggi), tesseraDi(p), oggi).map((b) => (
+                    {paroleConTessera(paroleInRegola(p, oggi), tesseraDi(p)).map((b) => (
                       <Bollino key={b.parola} tono={b.tono}>{b.parola}</Bollino>
                     ))}
                   </span>

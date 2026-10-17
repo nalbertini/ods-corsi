@@ -21,7 +21,7 @@ import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } fr
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
-import { enteDaDati, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
+import { enteDaDati, fineAnno, mancaTessere, type EsitoImportTessere, type TesseraSeg } from './tessere'
 import { AllegatiNonPartiti, cosaNonVaSegnalazione, eCategoria, SCEGLI, type Categoria, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 
 /**
@@ -731,7 +731,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async aggiungiTessera(t) {
       const ente = enteDaDati(t.ente)
       if (!ente || !t.codice.trim()) throw new Error('Scrivi l’ente e il numero della tessera')
-      ok(await db.from('tessere').insert({ persona_id: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: `${t.dal.slice(0, 4)}-12-31`, origine: 'manuale' }))
+      ok(await db.from('tessere').insert({ persona_id: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: fineAnno(t.dal), origine: 'manuale' }))
     },
 
     async togliTessera(id) {

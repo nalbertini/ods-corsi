@@ -41,7 +41,7 @@ function Segno({ tono, children }: { tono: 'rosso' | 'giallo' | 'verde' | 'spent
 /** La parola di una tessera nella sua riga: lo stato dalle sue date, senza «TESSERA» davanti. */
 function segnoDiUna(t: TesseraSeg, oggi: string) {
   const stato = statoDiUna(t, oggi)
-  const p = parolaTessera(stato === 'valida' ? 'valida' : stato, t.al, oggi)
+  const p = parolaTessera(stato, t.al)
   return p ? <Segno tono={p.tono}>{p.parola.replace('TESSERA ', '')}</Segno> : <Segno tono="verde">IN REGOLA</Segno>
 }
 
@@ -210,7 +210,7 @@ export function PaginaTessere({ d, onVai }: { d: DatiSegreteria; onVai: (v: Voce
           ) : (
             <div className="stack" style={{ gap: 0 }}>
               {visibili.map((r) => {
-                const t = r.esito === 'non_iscritto' ? null : parolaTessera(r.esito, r.tesseraAl, oggi)
+                const t = r.esito === 'non_iscritto' ? null : parolaTessera(r.esito, r.tesseraAl)
                 return (
                   <button
                     key={`${r.personaId}|${r.ente}`}

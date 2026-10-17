@@ -10,7 +10,7 @@ import { archivio, certificatiProva, idRicorrenza, nomeDi, scordaCertificato, ST
 import { attivitaDi, comeE, iscrittiIl, lezioniFra, lezioniSenzaIstruttoreProva, nomeIstruttore, salaDelGiorno, segnaIstruttoriLezioneProva, segnaIstruttorePrevistoProva, trovaLezione, type LezioneTrovata } from './datiProva'
 import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
-import { enteDaDati, importaTessereProva } from './tessere'
+import { enteDaDati, fineAnno, importaTessereProva } from './tessere'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
@@ -530,7 +530,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const ente = t.ente.trim().toUpperCase()
       if (!ente || !t.codice.trim()) throw new Error('Scrivi l’ente e il numero della tessera')
       if ((a().tessere ?? []).some((x) => x.personaId === t.personaId && x.ente === ente && x.tipo === t.tipo && x.dal === t.dal)) throw new Error('Questa tessera c’è già')
-      a().tessere = [...(a().tessere ?? []), { id: `t-${unico()}`, personaId: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: `${t.dal.slice(0, 4)}-12-31`, origine: 'manuale' }]
+      a().tessere = [...(a().tessere ?? []), { id: `t-${unico()}`, personaId: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: fineAnno(t.dal), origine: 'manuale' }]
       salva()
     },
 

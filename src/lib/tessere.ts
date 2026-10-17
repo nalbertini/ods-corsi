@@ -109,25 +109,33 @@ export function righeDalFoglio(testo: string): { righe: RigaRasd[]; saltate: Rig
     // Una tessera può valere da una data futura (un rinnovo già fatto): la data di «oggi» è lontana.
     const dal = leggiData(dalScritto, new Date(2100, 0, 1))
     if (!dal) return salta(`La data «${dalScritto}» non si legge.`)
-    righe.push({ ente, nome, codice_fiscale: cf, tipo: tipoDaRasd(cella('tipo')), codice, dal, al: `${dal.slice(0, 4)}-12-31` })
+    righe.push({ ente, nome, codice_fiscale: cf, tipo: tipoDaRasd(cella('tipo')), codice, dal, al: fineAnno(dal) })
   })
   return { righe, saltate }
 }
 
 export type StatoTessera = 'manca' | 'scaduta' | 'in_scadenza' | 'valida'
 
+/** Le tessere finiscono il 31 dicembre dell'anno di «valida dal». */
+export const fineAnno = (dal: string) => `${dal.slice(0, 4)}-12-31`
+
 const giorniTra = (da: string, a: string) => Math.round((Date.parse(a) - Date.parse(da)) / 86_400_000)
 
 /** Copre chi pratica solo una tessera da praticante o da agonista: un dirigente o un tecnico non basta. */
 const daAtleta = (t: Pick<TesseraSeg, 'tipo'>) => t.tipo === 'praticante' || t.tipo === 'agonista'
+
+/** Fin dove vale la tessera da atleta più lontana di un ente, o niente se non ne ha mai avuta una. */
+export function fineTessera(tessere: Array<Pick<TesseraSeg, 'ente' | 'tipo' | 'al'>>, ente: string): string | undefined {
+  return tessere.filter((t) => t.ente === ente && daAtleta(t)).reduce<string | undefined>((m, t) => (m === undefined || t.al > m ? t.al : m), undefined)
+}
 
 /**
  * Come sta una persona con la tessera di un ente. Conta la più lontana; un
  * rinnovo che comincia più avanti vale già (non è «in scadenza»).
  */
 export function statoTessera(tessere: Array<Pick<TesseraSeg, 'ente' | 'tipo' | 'al'>>, ente: string, oggi: string): StatoTessera {
-  const fine = tessere.filter((t) => t.ente === ente && daAtleta(t)).reduce<string | null>((m, t) => (m === null || t.al > m ? t.al : m), null)
-  if (fine === null) return 'manca'
+  const fine = fineTessera(tessere, ente)
+  if (fine === undefined) return 'manca'
   if (fine < oggi) return 'scaduta'
   return giorniTra(oggi, fine) <= GIORNI_IN_SCADENZA ? 'in_scadenza' : 'valida'
 }
@@ -135,7 +143,7 @@ export function statoTessera(tessere: Array<Pick<TesseraSeg, 'ente' | 'tipo' | '
 const MESI = ['GENNAIO', 'FEBBRAIO', 'MARZO', 'APRILE', 'MAGGIO', 'GIUGNO', 'LUGLIO', 'AGOSTO', 'SETTEMBRE', 'OTTOBRE', 'NOVEMBRE', 'DICEMBRE']
 
 /** La parola nella colonna IN REGOLA di ISCRITTI; niente se la tessera è valida (IN REGOLA lo dice già). */
-export function parolaTessera(stato: StatoTessera, al: string | undefined, _oggi: string): { tono: 'rosso' | 'giallo'; parola: string } | null {
+export function parolaTessera(stato: StatoTessera, al: string | undefined): { tono: 'rosso' | 'giallo'; parola: string } | null {
   if (stato === 'manca') return { tono: 'rosso', parola: 'NO TESSERA' }
   if (stato === 'scaduta') return { tono: 'rosso', parola: 'TESSERA SCADUTA' }
   if (stato === 'in_scadenza') return { tono: 'giallo', parola: `TESSERA SCADE A ${MESI[Number((al ?? '').slice(5, 7)) - 1] ?? ''}`.trim() }
@@ -187,19 +195,18 @@ export function incrocioTessere(persone: PersonaPerTessere[], corsi: Array<Pick<
     for (const [ente, nomi] of richieste) {
       const stato = statoTessera(tessere, ente, oggi)
       if (stato === 'valida') continue
-      const fine = tessere.filter((t) => t.ente === ente && daAtleta(t)).reduce<string | undefined>((m, t) => (m === undefined || t.al > m ? t.al : m), undefined)
-      righe.push({ personaId: p.id, ente, esito: stato, corsi: [...new Set(nomi)].sort((a, b) => a.localeCompare(b)).join(', '), tesseraAl: fine })
+      righe.push({ personaId: p.id, ente, esito: stato, corsi: [...new Set(nomi)].sort((a, b) => a.localeCompare(b)).join(', '), tesseraAl: fineTessera(tessere, ente) })
     }
     if (iscritta) continue
     for (const ente of new Set(tessere.filter((t) => daAtleta(t) && t.dal <= oggi && t.al >= oggi).map((t) => t.ente))) {
-      righe.push({ personaId: p.id, ente, esito: 'non_iscritto', tesseraAl: tessere.filter((t) => t.ente === ente && daAtleta(t)).reduce((m, t) => (t.al > m ? t.al : m), '') })
+      righe.push({ personaId: p.id, ente, esito: 'non_iscritto', tesseraAl: fineTessera(tessere, ente) })
     }
   }
   return righe
 }
 
 /** Le persone senza una tessera valida (manca o scaduta): il numero della casella TESSERE di COSA MANCA e le righe del filtro. */
-export const contaTessere = (righe: RigaIncrocio[]) => new Set(righe.filter((r) => r.esito === 'manca' || r.esito === 'scaduta').map((r) => r.personaId)).size
+export const contaTessere = (righe: RigaIncrocio[]) => new Set(righe.filter((r) => senzaTessera([r])).map((r) => r.personaId)).size
 
 /** Attacca a ogni persona le sue tessere. */
 export function conTessere<T extends { id: string }>(persone: T[], tessere: TesseraSeg[]): Array<T & { tessere: TesseraSeg[] }> {
@@ -299,11 +306,11 @@ export const senzaTessera = (righe: RigaIncrocio[]) => righe.some((r) => r.esito
  * Le righe sono quelle dell'incrocio della persona: senza corsi che la
  * chiedono non c'è niente da dire.
  */
-export function paroleConTessera<P extends { tono: string; parola: string }>(parole: P[], righe: RigaIncrocio[], oggi: string): Array<P | { tono: 'rosso' | 'giallo'; parola: string }> {
+export function paroleConTessera<P extends { tono: string; parola: string }>(parole: P[], righe: RigaIncrocio[]): Array<P | { tono: 'rosso' | 'giallo'; parola: string }> {
   const nuove: Array<{ tono: 'rosso' | 'giallo'; parola: string }> = []
   for (const r of righe) {
     if (r.esito === 'non_iscritto') continue
-    const p = parolaTessera(r.esito, r.tesseraAl, oggi)
+    const p = parolaTessera(r.esito, r.tesseraAl)
     if (p && !nuove.some((x) => x.parola === p.parola)) nuove.push(p)
   }
   if (!nuove.length) return parole
