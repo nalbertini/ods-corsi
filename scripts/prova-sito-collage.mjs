@@ -468,5 +468,21 @@ console.log('\n14. Niente di nuovo fuori dal generatore')
   }
 }
 
+console.log('\n15. Il testo della Home in docs/sito/home.html fa il collage del design')
+{
+  const html = readFileSync('docs/sito/home.html', 'utf8').replace(/^<!doctype[^>]*>\s*<meta[^>]*>\s*<title>.*?<\/title>\s*/s, '')
+  const md = readFileSync('docs/sito/home.md', 'utf8')
+  const titolo = md.match(/## Titolo\s+(.+)/)?.[1] ?? ''
+  const frase = md.match(/## Descrizione\s+(.+)/)?.[1] ?? ''
+  const h = (() => { const r = prova(() => g.generaSito({ dominio: DOMINIO, pagine: [{ slug: 'home', titolo, descrizione: frase, testo: html }], menu: [], rinvii: [], ospitiImmagini: ['https://qfejpnkryrvjubcxvuco.supabase.co/storage/v1/object/public/sito/'] })); return r?.['index.html'] ?? '' })()
+  const e = hero(h)
+  ok('il titolo è breve e sta nella testata', [titolo.length < 30, e.includes(`<h1>${titolo}</h1>`)], [true, true])
+  ok('la frase della descrizione sta nella testata', e.includes(frase), true)
+  ok('3 foto nel collage, la prima grande', [conta(e, /<figure class="tessera foto/g), /<figure class="tessera foto grande/.test(e)], [3, true])
+  ok('5 numeri nel collage', conta(e, /tessera [a-z]+ numero/g), 5)
+  ok('le foto e l’elenco dei numeri non restano sotto la testata', [/<img/.test(dopoHero(h).split('<h2')[0]), /<ul/.test(dopoHero(h).split('<h2')[0])], [false, false])
+  ok('tutte e 9 le righe dei corsi diventano tessere', conta(dopoHero(h), /<a href="\/[a-z-]+\/">/g) >= 9, true)
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)
