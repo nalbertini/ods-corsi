@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.77.0 — 17 ottobre 2026
+
+### Novità
+
+- La Home del sito ha in cima un collage di foto e numeri accanto al titolo
+
 ## 0.76.0 — 17 ottobre 2026
 
 ### Novità
