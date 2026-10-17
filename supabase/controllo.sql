@@ -257,6 +257,15 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('52-presenze-finestra.sql', 'le presenze si toccano solo nelle lezioni di questi giorni',
     exists (select 1 from pg_trigger where tgname = 'presenze_a_finestra' and not tgisinternal)
     and exists (select 1 from dentro where nome = 'istruttore_dall_appello' and corpo like '%tablet_regole%')),
+  ('57-accessi-piu-stretti.sql', 'sessioni e impostazioni solo a chi lavora, e le funzioni del calendario non passano senza accesso',
+    exists (select 1 from dentro where nome = 'materializza_sessioni' and corpo like '%e_di_sistema%')
+    and exists (select 1 from dentro where nome = 'imposta_pin' and corpo like '%e_di_sistema%')
+    and exists (select 1 from dentro where nome = 'pulisci_presenze' and corpo like '%e_di_sistema%')
+    and exists (select 1 from dentro where nome = 'chiudi_ricorrenza' and corpo like '%e_di_sistema%')
+    and exists (select 1 from dentro where nome = 'salva_date_corsi' and corpo like '%e_di_sistema%')
+    and exists (select 1 from dentro where nome = 'allunga_calendario' and corpo like '%e_personale%')
+    and exists (select 1 from pg_policies where schemaname = 'public' and policyname = 'impostazioni_legge' and qual like '%e_personale%')
+    and exists (select 1 from pg_policies where schemaname = 'public' and policyname = 'sessioni_legge' and qual like '%e_personale%')),
   ('56-sito.sql', 'le pagine del sito, col menu e i rinvii, scritte dalla segreteria',
     to_regclass('public.sito_pagine') is not null
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'salva_bozza_sito')

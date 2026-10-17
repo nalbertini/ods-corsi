@@ -1,0 +1,8 @@
+# Tiene aggiornati gli SHA delle azioni nei workflow, che sono fissati
+# (non a un tag) perché un tag spostato farebbe girare codice non riletto.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

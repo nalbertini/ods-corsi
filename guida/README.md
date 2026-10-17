@@ -7,21 +7,21 @@ Dello Sport. Prende il posto del registro di carta: chi viene a lezione viene
 segnato, e la segreteria vede chi viene, chi manca e quali appelli non sono
 stati fatti.
 
-Non si installa niente: è una pagina web, <https://nalbertini.github.io/ods-corsi/>,
+Non si installa niente: è una pagina web, <https://app.officinedellosport.it/>,
 che si apre dal telefono, dal tablet o dal computer. Si può anche aggiungere alla schermata Home del telefono
 («Aggiungi alla schermata Home») e allora si apre come un'app.
 
 La guida si legge anche dentro l'app: il tasto **?** in alto, nella pagina
 iniziale, in fondo al menu degli istruttori, in cima a quello della segreteria
 (dal telefono nella barra in alto): in segreteria apre la guida della voce in cui siete. L'indirizzo è
-<https://nalbertini.github.io/ods-corsi/#guida>.
+<https://app.officinedellosport.it/#guida>.
 
 Cosa cambia a ogni versione, le novità e i problemi risolti, è nelle
 [Novità](novita.md).
 
 ## Un accesso solo
 
-Si entra da <https://nalbertini.github.io/ods-corsi/>, con l'email e la
+Si entra da <https://app.officinedellosport.it/>, con l'email e la
 password che vi ha dato la palestra, e l'app vi porta da sola nella vostra
 parte: la segreteria alla reception, voi istruttori al calendario e
 all'appello, il tablet di una sala (col suo nome utente, es. `lotta`) nella
