@@ -236,6 +236,14 @@ console.log('\n7. il nucleo familiare')
     rifiuto = e.message
   }
   ok('chi non è titolare non fa da nucleo', rifiuto, 'Il nucleo per cui iscrivi non c’è più: ricarica la pagina')
+
+  // Il genitore del modulo è il titolare solo se è maggiorenne (o senza data di nascita).
+  await s.salvaAnagrafica(titolareId, { natoIl: '1980-05-01' })
+  const adultoT = await io.datiDelNucleo(titolareId)
+  ok('titolare maggiorenne: genitore col titolare', [adultoT.genitoreNome, adultoT.genitoreCognome], [titolare.nome, titolare.cognome])
+  await s.salvaAnagrafica(titolareId, { natoIl: g(nato) })
+  const minoreT = await io.datiDelNucleo(titolareId)
+  ok('titolare minorenne: nessun genitore', ['genitoreNome' in minoreT, 'genitoreCognome' in minoreT, 'genitoreCodiceFiscale' in minoreT, minoreT.nucleoDi], [false, false, false, titolareId])
 }
 
 console.log('\n8. quanto costa una persona in più')

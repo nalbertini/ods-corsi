@@ -441,6 +441,13 @@ export function mancaPerInviare(
   )
 }
 
+/**
+ * Un campo ancora com'era all'apertura (precompilato dal nucleo) si seleziona
+ * tutto al primo tocco: la prima lettera lo sostituisce invece di attaccarsi.
+ * Cambiato, o vuoto, no: il cursore va dove si tocca.
+ */
+export const daSelezionare = (valore: string, iniziale: string): boolean => valore.trim() !== '' && valore === iniziale
+
 /** Cosa non va campo per campo, da scrivere sotto ognuno. */
 export function problemi(d: DatiRichiesta, oggi = new Date()): Partial<Record<CampoModulo, string>> {
   return Object.fromEntries(guai(d, oggi).map((x) => [x.campo, x.testo]))

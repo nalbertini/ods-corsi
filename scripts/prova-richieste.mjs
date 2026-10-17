@@ -13,7 +13,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { anni, anniScritti, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
+      "export { creaRichiesteProva } from './src/lib/richiesteProva'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'; export { anni, anniScritti, daSelezionare, certificatoDaPortare, chiFirma, dataDaCf, controlla, domandaUscita, mancaPerInviare, FILE, firmaDaRifare, minorenne, problemi } from './src/lib/richieste'; export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { caricaLuoghi, carattereControllo, lettereCognome, lettereNome, luogoDaCf } from './src/lib/codiceFiscale'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -599,6 +599,18 @@ console.log('\n11. il riquadro rosso in fondo: il primo messaggio che blocca, a 
   const minoreSenza = adulto({ natoIl: '2017-03-01', codiceFiscale: 'RSSGLI17C41L219G' })
   ok('minore senza dati del genitore', manca({ dati: minoreSenza }), 'Per un minore servono nome, cognome e codice fiscale del genitore')
   ok('la data cambia a maggiorenne: il blocco sparisce', manca({ dati: adulto({ natoIl: '1996-01-01' }) }), null)
+}
+
+console.log('\n12. il campo precompilato: al primo tocco si seleziona tutto')
+{
+  // Il modulo aperto da «aggiungi una persona» parte coi dati del nucleo: toccando il campo la prima lettera
+  // deve sostituire il testo, non attaccarsi. Se la persona l'ha già cambiato, il tocco mette il cursore.
+  ok('precompilato e non toccato: si seleziona', m.daSelezionare('Rossi', 'Rossi'), true)
+  ok('vuoto: niente da selezionare', m.daSelezionare('', 'Rossi'), false)
+  ok('vuoto anche all\'apertura: niente da selezionare', m.daSelezionare('', ''), false)
+  ok('cambiato dalla persona: il cursore va dove si tocca', m.daSelezionare('Rossini', 'Rossi'), false)
+  ok('cambiato e riportato uguale: si seleziona di nuovo', m.daSelezionare('Rossi', 'Rossi'), true)
+  ok('solo spazi: niente da selezionare', m.daSelezionare('   ', '   '), false)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
