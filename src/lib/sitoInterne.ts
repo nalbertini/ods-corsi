@@ -32,6 +32,8 @@ export const CSS_INTERNE = `
 .piede .col{font-size:16px;line-height:1.9}
 .piede h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .piede .col ul{margin:0;padding:0;list-style:none}
+.piede .col:first-of-type li:nth-child(n+3){display:inline}
+.piede .col:first-of-type li:nth-child(4)::before{content:" · "}
 @media (max-width:900px){
 .testata{padding:12px var(--margine) 0;gap:10px 16px}
 .logo img{height:82px}
@@ -52,8 +54,6 @@ export const CSS_INTERNE = `
 .piede .col+.col{margin-top:12px}
 .piede .col+.col li{display:inline}
 .piede .col+.col li+li::before{content:" · "}
-.piede .col:first-of-type li:nth-child(n+3){display:inline}
-.piede .col:first-of-type li:nth-child(4)::before{content:" · "}
 .piede .col+.col+.col{opacity:.85}
 }
 `

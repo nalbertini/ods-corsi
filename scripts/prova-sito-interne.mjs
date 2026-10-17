@@ -108,7 +108,7 @@ ok('desktop: padding 40px, 40px tra le colonne, nome da 56px', [D('.piede', 'pad
 ok('margini come l’invito, 48px sotto', [D('.piede', 'margin')], ['0 var(--margine) 48px'])
 ok('i titoli di colonna sono nascosti alla vista (restano per chi legge lo schermo)', D('.piede h2', 'position'), 'absolute')
 ok('telefono: colonna sola, padding 24px, nome da 44px', [T('.piede', 'flex-direction'), T('.piede', 'padding'), T('.piede .nome', 'font-size')], ['column', '24px', '44px'])
-ok('telefono: Instagram e Facebook sulla stessa riga («Instagram · Facebook»)', [T('.piede .col:first-of-type li:nth-child(n+3)', 'display'), T('.piede .col:first-of-type li:nth-child(4)::before', 'content')], ['inline', '" · "'])
+ok('Instagram e Facebook sulla stessa riga («Instagram · Facebook»), anche sul computer', [D('.piede .col:first-of-type li:nth-child(n+3)', 'display'), D('.piede .col:first-of-type li:nth-child(4)::before', 'content')], ['inline', '" · "'])
 ok('telefono: la terza colonna (i link di legge) è più tenue', T('.piede .col+.col+.col', 'opacity'), '.85')
 
 console.log('\n5. Le differenze tolte dopo il primo giro')
