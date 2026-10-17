@@ -7,24 +7,27 @@ import { TastoTema } from '../TastoTema'
 import { Conferme, Guaio, lasciare } from './comune'
 import { Pagamenti } from './Pagamenti'
 import { Listino } from './Listino'
+import { Contabilita } from './Contabilita'
 import { indirizzoPagina } from '../../lib/guida'
 import { VERSIONE, VERSIONE_ESTESA } from '../../lib/versione'
 
-type VoceAmministrazione = 'pagamenti' | 'listino'
+type VoceAmministrazione = 'contabilita' | 'pagamenti' | 'listino'
 
 /** Il menu dell'amministrazione: i conti, e basta. Le persone, le presenze e le statistiche non ci sono. */
 const VOCI: Array<[VoceAmministrazione, string]> = [
+  ['contabilita', 'CONTABILITÀ'],
   ['pagamenti', 'PAGAMENTI'],
   ['listino', 'LISTINO'],
 ]
 
 const GUIDE: Record<VoceAmministrazione, string> = {
+  contabilita: 'amministrazione/contabilita',
   pagamenti: 'amministrazione/pagamenti',
   listino: 'segreteria/listino',
 }
 
 /**
- * L'area di chi cura i conti (`amministrazione/`): PAGAMENTI e LISTINO, nella
+ * L'area di chi cura i conti (`amministrazione/`): CONTABILITÀ, PAGAMENTI e LISTINO, nella
  * cornice della segreteria (`.sg`). Non legge le persone: il database non gliele
  * dà (`55-amministrazione.sql`), e dei pagamenti vede il nome, a cosa servono,
  * come e quanto, senza contatti né scheda.
@@ -47,7 +50,7 @@ export function Amministrazione({
   onIstruttori?: () => void
 }) {
   const [d, setD] = useState<DatiSegreteria | null>(null)
-  const [voce, setVoce] = useState<VoceAmministrazione>('pagamenti')
+  const [voce, setVoce] = useState<VoceAmministrazione>('contabilita')
   // Il menu del telefono, aperto o chiuso; sul computer non conta.
   const [aperto, setAperto] = useState(false)
   const [guaio, setGuaio] = useState(false)
@@ -156,6 +159,7 @@ export function Amministrazione({
             </button>
           </div>
         )}
+        {d && voce === 'contabilita' && <Contabilita d={d} />}
         {d && voce === 'pagamenti' && <Pagamenti d={d} soloNomi />}
         {d && voce === 'listino' && <Listino d={d} />}
       </main>

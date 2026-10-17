@@ -120,6 +120,7 @@ il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA
   sono tutte tessere chiare (le domande frequenti).
 - **Elenco** (`ul`) di 2–12 voci corte, in una sezione senza sottotitoli: una tessera per voce. Il
   **grassetto** all'inizio della voce è il titolo della tessera. Un elenco più lungo, o numerato, resta un elenco.
+- **Fascia d'età e pillole sui corsi**: nell'elenco dei corsi, dopo il nome in grassetto scrivi un secondo grassetto con l'età («Dai 7 anni agli adulti»), vai a capo, la descrizione, e in fondo un corsivo con le etichette: `Bambini`, `Adulti`, `Anziani`, `Agonisti`, separate da «·» o da virgole. Diventano le pillole con l'icona in fondo alla tessera. Se nel corsivo c'è un'altra parola, resta un corsivo normale.
 - **Citazioni** (`blockquote`): più citazioni di fila scorrono di lato (col dito o con le frecce, senza
   codice); una sola è una tessera larga. L'ultima riga della citazione tutta in *corsivo* o in **grassetto**,
   o che comincia con «—», è la firma.
