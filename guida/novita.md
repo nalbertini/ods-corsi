@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.73.1 — 17 ottobre 2026
+
+### Modificato
+
+- Gli accessi al database più stretti: calendario e impostazioni solo a chi lavora
+
 ## 0.73.0 — 17 ottobre 2026
 
 ### Novità
