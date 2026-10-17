@@ -71,7 +71,7 @@ grant select, insert, update, delete on tessere to authenticated;
 -- La mappa dei corsi esistenti si scrive una volta sola, quando la colonna
 -- nasce: rilanciando il file non si rimette sopra una scelta della segreteria.
 -- Judo, Lotta, Aikido, MGA e Avviamento chiedono FIJLKAM; la sala Pesi FIPE;
--- Giocomotricità, Psicomotricità (e per ora Prepugilistica) nessuna.
+-- Giocomotricità, Psicomotricità (e Prepugilistica, deciso con la segreteria) nessuna.
 do $$
 begin
   if not exists (select 1 from information_schema.columns
