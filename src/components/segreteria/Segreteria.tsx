@@ -170,6 +170,7 @@ export function Segreteria({
   prova,
   onEsci,
   onIstruttori,
+  onAmministrazione,
 }: {
   nome: string
   ruolo?: string
@@ -177,6 +178,8 @@ export function Segreteria({
   onEsci?: () => void
   /** Per chi è di segreteria e insegna anche: il passaggio al calendario, senza uscire. */
   onIstruttori?: () => void
+  /** Per chi è di segreteria e cura anche i conti: il passaggio all'amministrazione, senza uscire. */
+  onAmministrazione?: () => void
 }) {
   const [d, setD] = useState<DatiSegreteria | null>(null)
   // Dove si è sta nell'indirizzo (vedi `indirizzoSegreteria.ts`): si parte
@@ -474,6 +477,11 @@ export function Segreteria({
           {onIstruttori && (
             <button type="button" className="num sg-voce" onClick={onIstruttori}>
               ISTRUTTORI →
+            </button>
+          )}
+          {onAmministrazione && (
+            <button type="button" className="num sg-voce" onClick={onAmministrazione}>
+              AMMINISTRAZIONE →
             </button>
           )}
           <CopiaLink link={LINK_PUBBLICO} testo="COPIA LINK ISCRIZIONI" perche="Il link per iscriversi:" />

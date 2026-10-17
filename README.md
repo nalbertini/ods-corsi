@@ -11,13 +11,14 @@ si pubblica insieme a ODS Corsi, nella sottocartella `timer/` dello stesso sito.
 
 ## Cosa fa oggi
 
-L'app ha cinque indirizzi veri, ognuno con il suo accesso
+L'app ha sei indirizzi veri, ognuno con il suo accesso
 (`nalbertini.github.io/ods-corsi/segreteria/` e così via):
 
 | | |
 |---|---|
 | `istruttori/` | Il calendario e l'appello, per istruttori e segreteria. |
-| `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria (anche insieme a quello di istruttore). |
+| `segreteria/` | L'area della reception, solo per chi ha il ruolo di segreteria (anche insieme a quello di istruttore o di amministrazione). |
+| `amministrazione/` | L'area dei conti: PAGAMENTI e LISTINO, per chi ha il ruolo di amministrazione. Non vede le persone (`supabase/55-amministrazione.sql`). |
 | `iscrizioni/` | La pagina pubblica per chi vuole iscriversi, senza accesso. |
 | `iscritti/` | La pagina di chi frequenta i corsi. Il pilota, per ora solo in prova. |
 | `sala/` | Il tablet di sala. |
@@ -146,6 +147,13 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   su tutti i tablet), lo storico dei timer, il **backup** e l'esportazione
   dei dati di una persona. Gli **esercizi** della palestra, che i tablet
   propongono scrivendo un timer.
+- **L'amministrazione** (`amministrazione/`): per chi cura i conti. Ha il ruolo
+  **Amministrazione**, da solo o insieme alla segreteria e all'insegnamento
+  (tre spunte in ISTRUTTORI E ACCESSI), e vede PAGAMENTI e LISTINO, non le persone:
+  dei pagatori il nome, senza contatti. Registra un pagamento a mano (cercando chi
+  ha pagato per nome) e annulla un pagamento o una ricevuta senza aprire la scheda;
+  le ricevute nuove, per ora, le fa la segreteria. Account, ruoli, PIN e backup
+  restano alla segreteria (`supabase/55-amministrazione.sql`, `src/lib/ruoli.ts`).
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
   iscrive risponde alle domande dal telefono, **firma col dito** il modulo
   delle autorizzazioni (il PDF della palestra, compilato coi suoi dati da
@@ -403,6 +411,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 |---|---|
 | `npm run prova:coda` | La coda delle scritture offline, senza browser: i sei casi che contano. |
 | `npm run prova:segreteria` | La segreteria di prova: i cambi di un corso che arrivano al calendario, all'appello e al tablet. Unire due schede della stessa persona, e i possibili doppioni da proporre. L'«Attività» di ogni giorno scelta da un elenco: nomi, rinomina, eliminazione, NON PIÙ IN USO, giorno e lezioni, l'istruttore che cambia la sua, il database senza `41-attivita.sql`. SALVA LE DATE che toglie le lezioni fuori dalle date dei corsi, tranne quelle con l'appello o una prova: la conferma prima, col conto, e l'avviso dopo, con corso e ora di quelle rimaste. |
+| `npm run prova:ruoli` | I ruoli del personale: le tre spunte (segreteria, amministrazione, istruttore) in tutte le combinazioni e il ruolo che ne esce, le aree, chi insegna, il nome del ruolo, un ruolo sconosciuto che non va in nessuna area, e chi può cosa (l'amministrazione solo ricevute, pagamenti, listino e contabilità). |
 | `npm run prova:certificati` | I certificati medici che restano nell'app: gli stati della scheda (nessuno, valido, in scadenza, scaduto con o senza file, valido senza file, file di prima), sotto i 6 anni che non manca, un file per persona che prende il posto del vecchio con la data, i rifiuti (tipo, 10 MB, data) che non cambiano niente, il file che se ne va 30 giorni dopo la scadenza o con la persona disattivata, il file che passa a chi resta unendo due schede e dalla richiesta accolta alla scheda, il link di dieci minuti e il database non aggiornato col Supabase finto; cosa dice la scheda in ogni stato e quando SALVA è pronto, una sola regola per «in regola» (sotto i 6 anni, anche il 29 febbraio) in DA FARE, ISCRITTI, statistiche e area iscritti, la data che viaggia con l'accoglimento e il rollback che dice di avvisare chi gestisce il database. |
 | `npm run prova:richieste` | Il modulo di iscrizione di prova: gli stessi rifiuti del database (sei richieste al giorno per email, la settima no), e una richiesta accolta che diventa un iscritto. |
 | `npm run prova:iscrizione-passi` | L'iscrizione a passi (`#nuova`, solo in prova), senza browser: i passi, il conto e lo sconto famiglia una volta sola in qualunque ordine e fino a sei persone, chi si aggiunge alla famiglia (adulto o bambino, e chi firma), la nota che lega le richieste nominando le altre dentro i 1000 caratteri del database, e l'invio che si ferma a metà: chi è arrivato, chi no, e RIPROVA che manda solo le mancanti. |
@@ -435,6 +444,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/attivita.sql` | L'«Attività» dei giorni e delle lezioni: il nome valido e unico, l'elenco che parte vuoto, chi lo scrive e chi lo legge, l'istruttore che sceglie solo per le sue lezioni, le lezioni future che seguono il giorno tranne quelle con l'appello, una prova o cambiate a mano, le nuove che nascono con quella del giorno, l'attività che non si elimina finché è usata, il tablet che legge solo la sua sala. |
 | `supabase/prova/categorie-esercizi.sql` | Una sola categorizzazione degli esercizi: l'elenco delle discipline si completa con A corpo libero, Attrezzi, Core, Cardio, Mobilità (senza duplicare né rimettere quelle tolte), e il catalogo perde la `categoria` (vince la disciplina, se no la categoria diventa la voce; «tutte» e gli esercizi senza voce restano). Si può rilanciare; la segreteria lo scrive, gli altri lo leggono. |
 | `supabase/prova/rls.sql` | Gli accessi dal punto di vista di un iscritto, di un istruttore, della segreteria e di chi non ha fatto l'accesso. |
+| `supabase/prova/amministrazione.sql` | Il ruolo amministrazione: `e_staff()` ed `e_amministrazione()` mai nulle, ricevute e pagamenti per amministrazione e segreteria (e a nessun altro), listino come la segreteria, niente su persone, schede, corsi, iscrizioni, lezioni e tablet, niente statistiche, PIN e cambio ruoli solo alla segreteria, presenze solo se insegna anche, i vincoli dei ruoli doppi. |
 | `supabase/prova/segreteria.sql` | Le lezioni che seguono i cambi dei corsi, i giorni tolti, gli archiviati, il primo accesso. |
 | `supabase/prova/iscrizioni.sql` | Il modulo di iscrizione: cosa può fare chi non ha un accesso, i file, chi accoglie le richieste e come ritrova chi c'era già, e sei richieste al giorno dalla stessa email (la settima no). Il certificato non si stampa: accolta la richiesta passa alla scheda, e uno sbagliato si toglie prima. |
 | `supabase/prova/vestiario.sql` | Gli ordini di vestiario: il catalogo lo salva solo la segreteria e lo legge chi non ha un accesso da `vestiario()`; chi non ha un accesso manda un ordine solo da `invia_ordine_vestiario()`, rifiutato a raccolta chiusa, fuori catalogo, senza righe, con quantità sbagliate o senza telefono; il totale dal catalogo; proroga e raccolta nuova; gli ordini li vede e li cambia solo la segreteria (e il ruolo doppio), che corregge le righe e scrive dal banco anche a raccolta chiusa; tipi, foto e tabelle delle taglie solo come nomi di file, e il contenitore «vestiario» lo riempie e lo svuota solo la segreteria, senza che chi non ha un accesso ne elenchi i file. |

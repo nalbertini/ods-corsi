@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 22px; width: 1060px; padding: 28px 36px 36px; background: #121212">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · toccando una riga di PAGAMENTI si apre il pagamento (non la persona)</span>
+  <div style="display: flex; gap: 40px; align-items: flex-start">
+    <section style="width: 460px; display: flex; flex-direction: column; gap: 14px; padding: 24px 24px 22px; background: #1c1c1c; border: 2px solid #333333">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">IL PAGAMENTO</span>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">Rossi Giulia</span>
+  <div style="display: flex; flex-direction: column"><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">CHI</span><span style="font-size: 15px; font-weight: 700; color: #f2f2f0">Rossi Giulia</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">DATA</span><span style="font-size: 15px;  color: #f2f2f0">14 ott 2026</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">A COSA SERVE</span><span style="font-size: 15px;  color: #f2f2f0">ANNUALE JUDO KIDS</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">COME</span><span style="font-size: 15px;  color: #f2f2f0">POS</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">RICEVUTA</span><span style="font-size: 15px;  color: #f2f2f0">12/2026</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">IMPORTO</span><span style="font-size: 15px; font-weight: 700; color: #f2f2f0">20,00 €</span></div></div>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.45">Il pagamento sta nella ricevuta 12/2026 (totale 340,00 €, pagato 20,00 €). Non si annulla da solo: si annulla la ricevuta intera, che resta in elenco col suo numero e dice ANNULLATA.</span>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+    <dc-import name="Bottone" label="ANNULLA LA RICEVUTA 12/2026" variante="rosso" contesto="segreteria" hint-size="300px,48px"></dc-import>
+    <dc-import name="Bottone" label="CHIUDI" variante="linea" contesto="segreteria" hint-size="140px,48px"></dc-import>
+  </div>
+</section>
+    <section style="width: 460px; display: flex; flex-direction: column; gap: 14px; padding: 24px 24px 22px; background: #1c1c1c; border: 2px solid #333333">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">IL PAGAMENTO</span>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">Bianchi Marco</span>
+  <div style="display: flex; flex-direction: column"><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">CHI</span><span style="font-size: 15px; font-weight: 700; color: #f2f2f0">Bianchi Marco</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">DATA</span><span style="font-size: 15px;  color: #f2f2f0">9 ott 2026</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">A COSA SERVE</span><span style="font-size: 15px;  color: #f2f2f0">QUOTA ASSOCIATIVA</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">COME</span><span style="font-size: 15px;  color: #f2f2f0">Contanti</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">RICEVUTA</span><span style="font-size: 15px;  color: #f2f2f0">SENZA RICEVUTA</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">IMPORTO</span><span style="font-size: 15px; font-weight: 700; color: #f2f2f0">30,00 €</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a"><span style="font-family: 'Saira Condensed', Arial, sans-serif; width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.18em; color: #8c8c88; padding-top: 3px">NOTA</span><span style="font-size: 15px;  color: #f2f2f0">Pagato in palestra</span></div></div>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.45">Pagamento fatto a mano, senza ricevuta. Annullato, resta in elenco e non si conta più.</span>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+    <dc-import name="Bottone" label="ANNULLA IL PAGAMENTO" variante="rosso" contesto="segreteria" hint-size="260px,48px"></dc-import>
+    <dc-import name="Bottone" label="CHIUDI" variante="linea" contesto="segreteria" hint-size="140px,48px"></dc-import>
+  </div>
+</section>
+  </div>
+  <span style="font-size: 14px; color: #8c8c88; line-height: 1.4; max-width: 960px">Le righe già annullate si aprono lo stesso, ma senza il tasto rosso: dicono ANNULLATO. La segreteria, dalla scheda della persona, vede e fa le stesse cose.</span>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1060,"height":640}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

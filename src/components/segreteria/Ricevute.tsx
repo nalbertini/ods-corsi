@@ -2,7 +2,7 @@ import { listinoUsabile, type CorsoRef } from '../../lib/listino'
 import { useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria, PersonaSeg } from '../../lib/segreteria'
 import { etichettaQuota, pagamentoDi, tastoPrincipale } from '../../lib/segreteria'
-import { cosaNonVaDiretto, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, vociSuggerite, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
+import { cosaNonVaDiretto, domandaAnnullaPagamento, domandaAnnullaRicevuta, importoNonVa, METODI_A_MANO, righeDaRicevute, righeDirette, riassunto, vociSuggerite, type PagamentoDiretto, type RigaPagamento } from '../../lib/pagamenti'
 import {
   centesimi,
   conti,
@@ -54,7 +54,7 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
   // Annullata una ricevuta con la quota che nessun'altra copre: la quota torna da pagare, o era pagata fuori dall'app?
   const [scoperta, setScoperta] = useState<{ numero: string; al?: string } | null>(null)
   const annulla = async (r: Ricevuta) => {
-    if (!(await chiedi(`Annullare la ricevuta ${r.numero}/${r.anno}? Resta in elenco col suo numero, e il PDF dirà ANNULLATA. Se copriva la quota, la quota torna da pagare.`, 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
+    if (!(await chiedi(domandaAnnullaRicevuta(r), 'SÌ, ANNULLA LA RICEVUTA', { no: 'NO, LASCIALA', pericolo: true }))) return
     const oggi = chiaveGiorno(new Date())
     const altre = (ricevute.dato ?? []).filter((x) => x.id !== r.id)
     const quota = quoteDi([r]).find((q) => (!q.dal || q.dal <= oggi) && (!q.al || q.al >= oggi))
@@ -66,7 +66,7 @@ export function StoricoIscritto({ d, p, corsi, fai, onNuova, onCambiato }: { d: 
     })
   }
   const annullaPagamento = async (x: PagamentoDiretto) => {
-    if (!(await chiedi(`Annullare il pagamento di ${euro(x.importo)} € del ${dataLunga(x.data)}? Resta in elenco, annullato, e non si conta più.`, 'SÌ, ANNULLA IL PAGAMENTO', { no: 'NO, LASCIALO', pericolo: true }))) return
+    if (!(await chiedi(domandaAnnullaPagamento(x), 'SÌ, ANNULLA IL PAGAMENTO', { no: 'NO, LASCIALO', pericolo: true }))) return
     void fai(() => d.annullaPagamentoDiretto(x.id), 'Pagamento annullato', () => diretti.ricarica())
   }
 
@@ -223,8 +223,10 @@ function RigaDelloStorico({ riga, aMano, onAnnulla }: { riga: RigaPagamento; aMa
 /**
  * Un pagamento già avvenuto senza ricevuta (in palestra, in contanti, prima
  * dell'app). Resta nello storico, SENZA RICEVUTA, e non cambia se è in regola.
+ * La persona serve solo per registrare: il modulo va anche senza la sua scheda
+ * (l'amministrazione).
  */
-function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: DatiSegreteria; p: PersonaSeg; corsi: string[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
+export function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: DatiSegreteria; p: { id: string; nome: string; cognome: string }; corsi: string[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
   const [data, setData] = useState(chiaveGiorno(new Date()))
   const [importo, setImporto] = useState('')
   const [metodo, setMetodo] = useState(METODI_A_MANO[0])
@@ -245,7 +247,7 @@ function RegistraPagamento({ d, p, corsi, fai, onFatto, onChiudi }: { d: DatiSeg
           <input id="pd-data" className="sg-campo" type="date" value={data} onChange={(e) => setData(e.target.value)} />
         </Campo>
         <Campo id="pd-importo" etichetta="IMPORTO" manca={importo === ''}>
-          <input id="pd-importo" className="sg-campo" inputMode="decimal" placeholder="40,00" value={importo} onChange={(e) => setImporto(e.target.value)} aria-invalid={!!guaio || undefined} />
+          <input id="pd-importo" className="sg-campo" inputMode="decimal" placeholder="40,00" value={importo} onChange={(e) => setImporto(e.target.value)} aria-invalid={(cent === null || importoNonVa({ personaId: p.id, data, importo: cent, metodo, voce, nota })) || undefined} />
         </Campo>
         <Campo id="pd-metodo" etichetta="COME HA PAGATO">
           <select id="pd-metodo" className="sg-campo" value={metodo} onChange={(e) => setMetodo(e.target.value)}>

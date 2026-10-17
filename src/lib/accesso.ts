@@ -6,12 +6,12 @@ import { PERSONA_VISTA } from './sessioni'
 import { indirizzo, INDIRIZZI } from './aree'
 import { areaDelPercorso } from './percorso'
 import { emailDellaSala, smettiTablet } from './tablet'
-import { areeDi, type AreaDiAccount } from './ruoli'
+import { areeDi, segniDi, type AreaDiAccount } from './ruoli'
 import { sessione, svuotaBozze } from './segnalazioni'
 import { svuotaTutte } from './coda'
 import { uscita } from './uscita'
 
-export { areeDi, nomeDelRuolo, type AreaDiAccount } from './ruoli'
+export { altreAree, areeDi, nomeDelRuolo, type AreaDiAccount } from './ruoli'
 
 /**
  * Chi sta usando l'app: con il database vero il calendario e l'appello sono
@@ -37,8 +37,10 @@ export interface Personale {
   nome: string
   cognome: string
   ruolo: Exclude<Ruolo, 'iscritto'>
-  /** Di segreteria, e insegna anche: entra in tutte e due le aree. */
+  /** Di segreteria o di amministrazione, e insegna anche: entra anche nell'area istruttori. */
   ancheIstruttore?: boolean
+  /** Di segreteria, e cura anche i conti: entra anche nell'area amministrazione. */
+  ancheAmministrazione?: boolean
 }
 
 /**
@@ -51,9 +53,14 @@ export interface Account {
   persona: Personale | null
 }
 
-/** L'account di una persona, nell'area scelta se è una delle sue. */
-function accountDellaPersona(persona: Personale, scelta?: AreaDiAccount): Account {
+/**
+ * L'account di una persona, nell'area scelta se è una delle sue. Un ruolo che
+ * l'app non conosce (un database più nuovo dell'app) non ha aree: `null`, e non
+ * si entra in segreteria per ripiego.
+ */
+function accountDellaPersona(persona: Personale, scelta?: AreaDiAccount): Account | null {
   const aree = areeDi(persona)
+  if (!aree.length) return null
   return { area: scelta && aree.includes(scelta) ? scelta : aree[0], aree, persona }
 }
 
@@ -73,7 +80,7 @@ function ricordato(utente: string): Account | null {
       | ({ utente: string; area?: AreaDiAccount } & Partial<Personale>)
       | null
     if (!r || r.utente !== utente) return null
-    const persona = r.nome && r.ruolo ? { id: r.id, nome: r.nome, cognome: r.cognome ?? '', ruolo: r.ruolo, ancheIstruttore: !!r.ancheIstruttore } : null
+    const persona = r.nome && r.ruolo ? { id: r.id, nome: r.nome, cognome: r.cognome ?? '', ruolo: r.ruolo, ancheIstruttore: !!r.ancheIstruttore, ancheAmministrazione: !!r.ancheAmministrazione } : null
     if (persona) return accountDellaPersona(persona, r.area)
     return r.area === 'sala' ? { area: 'sala', aree: ['sala'], persona: null } : null
   } catch {
@@ -180,9 +187,15 @@ async function personaDi(c: SupabaseClient, utente: string): Promise<Personale |
     if (legato) ({ data, error } = await leggi())
   }
   if (error) return undefined
-  const riga = data as { id: string; nome: string; cognome: string; ruolo: Ruolo; anche_istruttore?: boolean } | null
+  const riga = data as { id: string; nome: string; cognome: string; ruolo: Ruolo; anche_istruttore?: boolean; anche_amministrazione?: boolean } | null
   if (!riga || riga.ruolo === 'iscritto') return null
-  return { id: riga.id, nome: riga.nome, cognome: riga.cognome, ruolo: riga.ruolo, ancheIstruttore: riga.ruolo === 'staff' && !!riga.anche_istruttore }
+  return {
+    id: riga.id,
+    nome: riga.nome,
+    cognome: riga.cognome,
+    ruolo: riga.ruolo,
+    ...segniDi(riga.ruolo, riga.anche_istruttore, riga.anche_amministrazione),
+  }
 }
 
 /**
@@ -215,7 +228,7 @@ export async function accedi(utente: string, password: string): Promise<Entrato>
   }
   if (!a) {
     await c.auth.signOut()
-    throw new Error('Questo account non è di un istruttore, della segreteria o del tablet di una sala: chiedi alla segreteria')
+    throw new Error('Questo account non è di un istruttore, della segreteria, dell’amministrazione o del tablet di una sala: chiedi alla segreteria, o aggiorna l’app se il ruolo è nuovo')
   }
   if (id) ricorda(id, a)
   if (a.persona && a.aree.length > 1) return { persona: a.persona, scegli: a.aree }

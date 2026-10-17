@@ -57,8 +57,10 @@ export interface PersonaProva {
   nome: string
   cognome: string
   ruolo: Ruolo
-  /** Di segreteria, e insegna anche (vedi `ruoli.ts`). */
+  /** Di segreteria o di amministrazione, e insegna anche (vedi `ruoli.ts`). */
   ancheIstruttore?: boolean
+  /** Di segreteria, e cura anche i conti (vedi `ruoli.ts`). */
+  ancheAmministrazione?: boolean
   /** Il suo segno, per riconoscerlo (vedi `kanji.ts`). */
   kanji?: string
   email?: string
@@ -336,6 +338,7 @@ function iniziale(): Archivio {
   }
   // Chi usa la prova: la segreteria che vede tutto.
   persone.set('s-prova', { id: 's-prova', nome: 'Segreteria', cognome: 'di prova', ruolo: 'staff', email: 'segreteria@esempio.it', attiva: true, creataIl: STAGIONE.dal })
+  persone.set('a-prova', { id: 'a-prova', nome: 'Amministrazione', cognome: 'di prova', ruolo: 'amministrazione', email: 'amministrazione@esempio.it', attiva: true, creataIl: STAGIONE.dal })
   const iscrizioni: IscrizioneProva[] = []
   for (const c of CORSI) {
     for (const p of elenco(...c.iscritti)) {

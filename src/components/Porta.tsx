@@ -3,6 +3,7 @@ import {
   accedi,
   account,
   accountDalLink,
+  altreAree,
   areeDi,
   eUnaSua,
   esci,
@@ -98,11 +99,12 @@ export function ChiSei({ chi, onEsci }: { chi: Personale; onEsci?: () => void })
       <span className="grow" style={{ minWidth: 0 }}>
         {chi.nome.toUpperCase()} {chi.cognome.toUpperCase()} · {nomeDelRuolo(chi).toUpperCase()}
       </span>
-      {chi.ancheIstruttore && areaDelPercorso() === 'istruttori' && (
-        <button type="button" className="chi-esci" onClick={() => passaA('segreteria')}>
-          SEGRETERIA
-        </button>
-      )}
+      {areaDelPercorso() === 'istruttori' &&
+        altreAree(chi, 'istruttori').map((a) => (
+          <button key={a} type="button" className="chi-esci" onClick={() => passaA(a)}>
+            {AREE[a][0]}
+          </button>
+        ))}
       <button type="button" className="chi-esci" onClick={onEsci}>
         ESCI
       </button>
@@ -113,6 +115,7 @@ export function ChiSei({ chi, onEsci }: { chi: Personale; onEsci?: () => void })
 /** Cosa c'è in ogni area, per chi sceglie dove andare. */
 const AREE: Record<AreaDiAccount, [string, string]> = {
   segreteria: ['SEGRETERIA', 'Corsi, iscritti, presenze e richieste, dal computer della reception.'],
+  amministrazione: ['AMMINISTRAZIONE', 'I conti della palestra: i pagamenti e il listino.'],
   istruttori: ['ISTRUTTORI', 'Il calendario delle tue lezioni e l’appello, i tuoi timer.'],
   sala: ['SALA', 'Il tablet appeso al muro della sala.'],
 }
@@ -130,7 +133,7 @@ export function SceltaArea({ persona, aree, onScelta }: { persona: Personale; ar
       </div>
       <div className="pad stack" style={{ gap: 10, paddingBottom: 16 }}>
         <span className="passo-dettaglio" style={{ fontSize: 15 }}>
-          Ciao {persona.nome}: sei della segreteria e insegni anche. Scegli dove entrare; poi si cambia dal menu, senza
+          Ciao {persona.nome}: il tuo ruolo è {nomeDelRuolo(persona).toLowerCase()}. Scegli dove entrare; poi si cambia dal menu, senza
           uscire.
         </span>
         {aree.map((a) => (

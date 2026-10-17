@@ -8,7 +8,7 @@ import { attivitaCambiata, CONTATTO_SBAGLIATO, cosaNonVaAnagrafica, emailGiaDi, 
 import { nomeProprio } from './nomi'
 import { tutteLeRighe } from './tutteLeRighe'
 import { ESTENSIONI } from './richieste'
-import { insegna, type RuoloPersonale } from './ruoli'
+import { insegna, RUOLI_DEL_PERSONALE, segniDi, type RuoloPersonale } from './ruoli'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { StatoPresenza, StatoSessione } from './sala'
 import { chiaveGiorno, giornoDi, valeIl } from './sala'
@@ -158,6 +158,7 @@ const TABELLE_DOPO: Array<[RegExp, string]> = [
 
 const MANCA_ATTIVITA = 'Le attività non sono ancora attive sul database: va lanciato 41-attivita.sql'
 
+const MANCA_AMMINISTRAZIONE = 'Il ruolo amministrazione non è ancora attivo sul database: va lanciato 55-amministrazione.sql'
 const MANCA_DOPPIO = 'Il ruolo doppio, segreteria e istruttore, non è ancora attivo sul database: va rilanciato 01-schema.sql'
 
 /**
@@ -166,9 +167,12 @@ const MANCA_DOPPIO = 'Il ruolo doppio, segreteria e istruttore, non è ancora at
  * `Personale.tsx`), così un database che non ha ancora la colonna salva lo
  * stesso istruttori e segreteria.
  */
-function ruoloDaScrivere(p: RuoloPersonale): { ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean } {
-  if (p.ancheIstruttore === undefined) return { ruolo: p.ruolo }
-  return { ruolo: p.ruolo, anche_istruttore: p.ruolo === 'staff' && p.ancheIstruttore }
+function ruoloDaScrivere(p: RuoloPersonale): { ruolo: 'istruttore' | 'staff' | 'amministrazione'; anche_istruttore?: boolean; anche_amministrazione?: boolean } {
+  return {
+    ruolo: p.ruolo,
+    ...(p.ancheIstruttore === undefined ? {} : { anche_istruttore: segniDi(p.ruolo, p.ancheIstruttore).ancheIstruttore }),
+    ...(p.ancheAmministrazione === undefined ? {} : { anche_amministrazione: segniDi(p.ruolo, false, p.ancheAmministrazione).ancheAmministrazione }),
+  }
 }
 
 /** `anagrafiche` (18-anagrafiche.sql): i nomi delle colonne e dei campi, nello stesso ordine. */
@@ -230,6 +234,14 @@ function guaio(e: { message?: string; code?: string } | null): Error {
     return new Error('La voce e gli esercizi dei tablet non sono ancora attivi sul database: va lanciato 13-voce-esercizi.sql')
   // La colonna del ruolo doppio, che arriva con 01-schema.sql: 42703 leggendo, PGRST204 scrivendo.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /anche_istruttore/.test(e.message ?? '')) return new Error(MANCA_DOPPIO)
+  // Il ruolo amministrazione arriva con 55-amministrazione.sql: la colonna che non c'è, o il valore che l'enum non conosce (22P02).
+  if (
+    ((e?.code === '42703' || e?.code === 'PGRST204') && /anche_amministrazione/.test(e.message ?? '')) ||
+    (e?.code === '22P02' && /amministrazione/.test(e.message ?? ''))
+  )
+    return new Error(MANCA_AMMINISTRAZIONE)
+  // Le funzioni dell'amministrazione, che arrivano con lo stesso file.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /cerca_pagatori|nomi_persone/.test(e.message ?? '')) return new Error(MANCA_AMMINISTRAZIONE)
   // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
   // Il file del certificato e la data insieme arrivano con 45-certificati-online.sql.
@@ -255,6 +267,7 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === '23503' && /pagamenti_diretti/.test(e.message ?? '')) return new Error('Ha dei pagamenti registrati: non si elimina, gli si toglie l’accesso')
   if (e?.code === '23505' && /kanji/.test(e.message ?? '')) return new Error('Questo kanji è già di un’altra persona: scegline un altro')
   if (e?.code === '23505') return new Error('C’è già: due righe uguali non si possono avere (un’email già usata, un corso già iscritto)')
+  if (e?.code === '42501' && /troppe ricerche/.test(e.message ?? '')) return new Error('Hai fatto troppe ricerche: riprova fra qualche minuto')
   if (e?.code === '42501') return new Error('Non hai il permesso: serve un accesso da segreteria')
   // I nostri `raise exception` (P0001 quando non hanno un codice; P0002 «non c'è più»; 22023 e 54000)
   // sono già scritti per la segreteria: passano così come sono.
@@ -461,8 +474,8 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Anche la segreteria che insegna. Con `*` e il filtro qui, non nella
       // richiesta: su un database senza la colonna del ruolo doppio
       // (`01-schema.sql` non rilanciato) l'elenco degli istruttori c'è lo stesso.
-      const righe = ok(await db.from('persone').select('*').in('ruolo', ['istruttore', 'staff']).eq('attiva', true).order('nome')) as Array<{
-        id: string; nome: string; cognome: string; ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean
+      const righe = ok(await db.from('persone').select('*').in('ruolo', [...RUOLI_DEL_PERSONALE]).eq('attiva', true).order('nome')) as Array<{
+        id: string; nome: string; cognome: string; ruolo: 'istruttore' | 'staff' | 'amministrazione'; anche_istruttore?: boolean
       }>
       return righe.filter((r) => insegna({ ruolo: r.ruolo, ancheIstruttore: r.anche_istruttore })).map((r) => ({ id: r.id, nome: nome(r) }))
     },
@@ -1025,6 +1038,21 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       return (ok(await tutteLeRighe(leggi)) as unknown as RigaPagamentoDiretto[]).map(pagamentoDiretto)
     },
 
+    async nomiPersone(ids) {
+      // Cinquecento alla volta: l'elenco va nell'indirizzo, e uno lungo non passa.
+      const unici = [...new Set(ids)]
+      const fuori: Array<{ id: string; nome: string; cognome: string }> = []
+      for (let i = 0; i < unici.length; i += 500) {
+        fuori.push(...(ok(await db.rpc('nomi_persone', { ids: unici.slice(i, i + 500) })) as Array<{ id: string; nome: string; cognome: string }>))
+      }
+      return fuori
+    },
+
+    async cercaPagatori(scritto) {
+      const righe = ok(await db.rpc('cerca_pagatori', { scritto })) as Array<{ persona_id: string; nome: string; cognome: string }>
+      return righe.map((r) => ({ id: r.persona_id, nome: r.nome, cognome: r.cognome }))
+    },
+
     async registraPagamentoDiretto(d: DatiPagamentoDiretto) {
       const no = cosaNonVaDiretto(d)
       if (no) throw new Error(no)
@@ -1198,12 +1226,12 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async personale() {
       const [righe, legami, pin] = await Promise.all([
         // `*` e non l'elenco delle colonne: `anche_istruttore` può non esserci ancora (vedi `istruttori`).
-        db.from('persone').select('*').in('ruolo', ['istruttore', 'staff']).order('nome'),
+        db.from('persone').select('*').in('ruolo', [...RUOLI_DEL_PERSONALE]).order('nome'),
         db.from('corsi_istruttori').select('persona_id, corsi ( nome, attivo )'),
         db.rpc('pin_impostati'),
       ])
       const persone = ok(righe) as Array<{
-        id: string; nome: string; cognome: string; email: string | null; ruolo: 'istruttore' | 'staff'; anche_istruttore?: boolean; attiva: boolean; utente_id: string | null
+        id: string; nome: string; cognome: string; email: string | null; ruolo: 'istruttore' | 'staff' | 'amministrazione'; anche_istruttore?: boolean; anche_amministrazione?: boolean; attiva: boolean; utente_id: string | null
         kanji?: string | null
       }>
       const corsi = ok(legami) as unknown as Array<{ persona_id: string; corsi: { nome: string; attivo: boolean } | null }>
@@ -1215,7 +1243,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
           cognome: p.cognome,
           email: p.email ?? undefined,
           ruolo: p.ruolo,
-          ancheIstruttore: p.ruolo === 'staff' && !!p.anche_istruttore,
+          ...segniDi(p.ruolo, p.anche_istruttore, p.anche_amministrazione),
           attiva: p.attiva,
           collegato: !!p.utente_id,
           haPin: conPin.has(p.id),
@@ -1237,7 +1265,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       // Un'iscritta con la stessa email diventa personale, invece di un doppione.
       if (email) {
         const c = ok(await db.from('persone').select('id, ruolo').eq('email', email).maybeSingle()) as { id: string; ruolo: string } | null
-        if (c && c.ruolo !== 'iscritto') throw new Error('Questa email è già di un istruttore o della segreteria')
+        if (c && c.ruolo !== 'iscritto') throw new Error('Questa email è già di una persona del personale')
         if (c) {
           ok(await db.from('persone').update({ ...ruolo, attiva: true }).eq('id', c.id))
           return c.id
@@ -1245,7 +1273,7 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
       }
       // Già in elenco senza email (dall'import, per esempio): gliela si dà, invece di rifarla.
       const senza = ok(
-        await db.from('persone').select('id').in('ruolo', ['istruttore', 'staff']).is('email', null).ilike('nome', riga.nome).ilike('cognome', riga.cognome).limit(1),
+        await db.from('persone').select('id').in('ruolo', [...RUOLI_DEL_PERSONALE]).is('email', null).ilike('nome', riga.nome).ilike('cognome', riga.cognome).limit(1),
       ) as Array<{ id: string }>
       if (senza[0]) {
         ok(await db.from('persone').update({ email, ...ruolo, attiva: true }).eq('id', senza[0].id))
