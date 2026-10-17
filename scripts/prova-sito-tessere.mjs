@@ -437,11 +437,16 @@ console.log('\n12. Stessi dati, stessi file; testi strani non rompono')
 
 console.log('\n13. Niente di nuovo fuori dal generatore')
 {
-  const dip = (j) => JSON.stringify({ d: j.dependencies, v: j.devDependencies })
-  const prima = JSON.parse(execSync('git show main:package.json', { encoding: 'utf8' }))
-  ok('nessuna dipendenza nuova', dip(JSON.parse(readFileSync('package.json', 'utf8'))), dip(prima))
-  const toccati = execSync('git diff --name-only main -- src/lib/sito.ts src/lib/sitoPagine.ts src/lib/sitoTesto.ts supabase', { encoding: 'utf8' }).trim()
-  ok('il pannello (sito.ts, sitoPagine.ts, sitoTesto.ts) e supabase/ non cambiano', toccati, '')
+  // Il confronto è con `main`: su GitHub il checkout è corto e `main` non c'è (né `origin/main`), e lì il confronto non si può fare.
+  const base = ['main', 'origin/main'].find((r) => { try { execSync(`git rev-parse --verify --quiet ${r}`, { stdio: 'ignore' }); return true } catch { return false } })
+  if (!base) console.log('  (nessun `main` in questo checkout: confronto saltato; in locale e nelle PR si fa)')
+  else {
+    const dip = (j) => JSON.stringify({ d: j.dependencies, v: j.devDependencies })
+    const prima = JSON.parse(execSync(`git show ${base}:package.json`, { encoding: 'utf8' }))
+    ok('nessuna dipendenza nuova', dip(JSON.parse(readFileSync('package.json', 'utf8'))), dip(prima))
+    const toccati = execSync(`git diff --name-only ${base} -- src/lib/sito.ts src/lib/sitoPagine.ts src/lib/sitoTesto.ts supabase`, { encoding: 'utf8' }).trim()
+    ok('il pannello (sito.ts, sitoPagine.ts, sitoTesto.ts) e supabase/ non cambiano', toccati, '')
+  }
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
