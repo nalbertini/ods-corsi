@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.77.1 — 17 ottobre 2026
+
+### Modificato
+
+- Nomi veri dei tredici istruttori nei disegni del sito
+
 ## 0.77.0 — 17 ottobre 2026
 
 ### Novità
