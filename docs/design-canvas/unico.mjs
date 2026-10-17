@@ -52,6 +52,7 @@ const SEZIONI = [
   { id: 'iscritti-del-corso', nome: 'Iscritti del corso · proposta', cartella: 'iscritti-del-corso' },
   { id: 'iscritti-riepilogo', nome: 'Iscritti del corso · riepilogo', cartella: 'iscritti-riepilogo' },
   { id: 'storico-pagamenti', nome: 'Storico pagamenti · proposta', cartella: 'storico-pagamenti' },
+  { id: 'tessere', nome: 'Tessere e incrocio · proposta', cartella: 'tessere' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

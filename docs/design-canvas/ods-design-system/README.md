@@ -111,6 +111,7 @@ Google, e vale solo per i mockup.
 | `TimerInterruttore` | `Toggle` delle impostazioni del timer: nome, nota, acceso o spento |
 | `TabletTendina` | La tendina CORSO aperta dell'area istruttore (`.tb-select`); il `<select>` vero è del sistema |
 | `TabletProvaPannello` | `PannelloProve` con stile tablet (`Prove.tsx`): CHI VIENE A PROVARE alzato per il dito, campi su tre colonne e già venuti sotto |
+| `CosaManca` | `CosaManca` di `CosaManca.tsx` (`.sg-mancano*`): la striscia COSA MANCA in cima alle pagine di segreteria, `voci` «numero\|titolo\|nota\|tono» separate da `;` (tono r manca, g da accogliere, v a posto, n non si sa; 0 è sempre ✓ verde); `colonne` 4 come oggi, 5 o 2 per le proposte |
 | `Numero` | `Numero` di `Presenze.tsx` (`.sg-numero`): titolo, cifra da 44px e riga sotto; `allarme` col bordo rosso. Quattro in fila in `.sg-numeri`, cinque in VESTIARIO (`data-cinque`) |
 | `BarraSalva` | La barra per salvare di LISTINO (`.sg-listino-salva`): frase, BUTTA I CAMBI e SALVA, bordo giallo; `guaio` la frase in rosso e SALVA spento |
 | `VoceElenco` | Una voce chiusa di LISTINO > I CORSI (`.sg-voce-elenco`): nome, riga rossa se manca qualcosa, riassunto e il chip CAMBIA; `bollino` il `.sg-tag` giallo accanto al nome (SENZA TIPO nel catalogo del vestiario) |

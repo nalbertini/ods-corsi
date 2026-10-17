@@ -51,7 +51,8 @@
     "prova:backup": "node scripts/prova-backup.mjs",
     "prova:tema": "node scripts/prova-tema.mjs",
     "prova:sql": "bash scripts/prova-sql.sh",
-    "prova:comune-cap": "node scripts/prova-comune-cap.mjs"
+    "prova:comune-cap": "node scripts/prova-comune-cap.mjs",
+    "prova:tessere": "node scripts/prova-tessere.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.1",

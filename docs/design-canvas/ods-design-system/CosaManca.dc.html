@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: transparent; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: grid; grid-template-columns: repeat({{colonne}}, minmax(0, 1fr)); width: 100%; background: {{c.surface}}; border: 2px solid {{c.rigaCampo}}">
+  <sc-for list="{{voci}}" as="v" hint-placeholder-count="4">
+    <div style="display: flex; align-items: flex-start; gap: 18px; min-height: 100px; min-width: 0; padding: 14px 22px; border-left: {{v.cucitura}}; border-top: {{v.sopra}}; border-bottom: 8px solid {{v.segno}}; color: {{c.text}}; text-align: left">
+      <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 64px; font-weight: 700; line-height: 0.95; white-space: nowrap; color: {{v.colore}}">{{v.n}}</span>
+      <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 0.12em">{{v.titolo}}</span>
+        <span style="font-size: 16px; color: {{c.dim}}">{{v.nota}}</span>
+      </span>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"voci":{"editor":"text","default":"2|APPELLI NON FATTI|senza appello, ultimi 30 giorni|r; 5|CERTIFICATI SCADUTI|scaduti o mancanti|r; 7|PAGAMENTI|quote non in regola|r; 3|RICHIESTE ONLINE|da accogliere|g"},"colonne":{"editor":"int","default":4,"min":2,"max":5},"tema":{"editor":"enum","options":["scuro","chiaro"],"default":"scuro","section":"Tema"},"$preview":{"width":1284,"height":108}}'>
+// Riproduzione 1:1 della striscia COSA MANCA (`CosaManca` di src/components/segreteria/CosaManca.tsx; .sg-mancano,
+// .sg-mancano-casella, -n, -testi, -titolo, -nota di src/styles.css righe 1546-1565): griglia di caselle, fondo `surface`,
+// bordo 2px `riga-campo`; ogni casella min 100px, padding 14px 22px, gap 18px, filetto a sinistra 2px `tratteggio`,
+// segno sotto 8px (rosso = manca, giallo = da accogliere, verde = a posto, `tratteggio` = non si sa). Cifra Saira 64px
+// 700; titolo Saira 19px 700 0.12em; nota 16px `dim`.
+// voci: "numero|titolo|nota|tono" separate da punto e virgola. tono r = manca (cifra rosso-testo), g = da accogliere (giallo-testo),
+// v = a posto (verde-testo), n = non si sa (cifra `dim`, «—»). Un numero 0 e' sempre verde con ✓ davanti (mai uno 0 verde
+// quando il conto non si sa: lo dice la regola di src/lib/cosaManca.ts). Con 2 colonne (sotto i 1240px) la riga dopo ha
+// il filetto sopra.
+// Non riprodotti: il tasto RICONTA e le due misure intermedie (1241-1480px e schermo basso).
+const T = {
+  scuro: { surface: '#1c1c1c', rigaCampo: '#6e6e6a', tratteggio: '#4a4a46', text: '#f2f2f0', dim: '#8c8c88', rossoTesto: '#ff5a52', gialloTesto: '#f4c31b', verdeTesto: '#16a54a' },
+  chiaro: { surface: '#ffffff', rigaCampo: '#8a8a85', tratteggio: '#b0b0aa', text: '#161616', dim: '#656561', rossoTesto: '#b81d1d', gialloTesto: '#8f6a00', verdeTesto: '#0b7a33' },
+};
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const t = T[p.tema] || T.scuro;
+    const colonne = Number(p.colonne) || 4;
+    const c = { ...t };
+    const TONI = {
+      r: { colore: t.rossoTesto, segno: '#e4292a' },
+      g: { colore: t.gialloTesto, segno: '#f4c31b' },
+      v: { colore: t.verdeTesto, segno: '#16a54a' },
+      n: { colore: t.dim, segno: t.tratteggio },
+    };
+    const righe = String(p.voci ?? '').split(';').map((s) => s.trim()).filter(Boolean);
+    const voci = righe.map((s, i) => {
+      const [n, titolo, nota, tono] = s.split('|').map((x) => x.trim());
+      const zero = n === '0';
+      const k = TONI[zero ? 'v' : tono] || TONI.r;
+      const inPrimaRiga = i < colonne;
+      return {
+        n: zero ? '✓ 0' : n, titolo, nota, colore: k.colore, segno: k.segno,
+        cucitura: i % colonne === 0 ? '0' : '2px solid ' + t.tratteggio,
+        sopra: inPrimaRiga ? '0' : '2px solid ' + t.tratteggio,
+      };
+    });
+    return { c, voci, colonne };
+  }
+}
+</script>
+</body>
+</html>
