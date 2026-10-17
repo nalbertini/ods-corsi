@@ -113,7 +113,7 @@ console.log('\n5. Le differenze tolte dopo il primo giro')
 ok('menu: alto come nel design (padding 9px 16px, interlinea normale), non più 44px', [D('.testata nav a', 'min-height'), D('.testata nav a', 'padding'), D('.testata nav a', 'line-height')], ['0', '9px 16px', 'normal'])
 ok('telefono: le voci del menu restano alte 44px (nel design)', T('.testata nav a', 'min-height'), '44px')
 ok('il piede non ha la riga «©»', /class="fine"/.test(h), false)
-ok('telefono: le tessere dei corsi sono a contatto, come nel design', T('.tessere.corsi', 'gap'), '0')
+ok('telefono: tra le tessere dei corsi 6px, come sul computer', [T('.tessere.corsi', 'gap'), D('.tessere', 'gap')], [null, '6px'])
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)

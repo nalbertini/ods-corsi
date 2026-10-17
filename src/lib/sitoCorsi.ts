@@ -39,7 +39,6 @@ ${FASCE.map((f) => `.fasce .${f}{--icona:${maschera(ICONE[f])}}`).join('\n')}
 .corsi + .fascia.due{grid-template-columns:1fr 420px}
 .corsi + .fascia img{height:100%;aspect-ratio:auto}
 @media (max-width:900px){
-.tessere.corsi{gap:0}
 .sezione.senza-titolo .colonna{padding-bottom:14px}
 .sezione.senza-titolo .colonna p{font-size:18px;line-height:1.4}
 .sezione .corsi .corso{min-height:200px}
