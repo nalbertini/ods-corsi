@@ -40,6 +40,7 @@
     "prova:listino": "node scripts/prova-listino.mjs",
     "prova:sito": "node scripts/prova-sito.mjs",
     "prova:sito-aspetto": "node scripts/prova-sito-aspetto.mjs",
+    "prova:sito-tessere": "node scripts/prova-sito-tessere.mjs",
     "prova:sito-genera": "node scripts/prova-sito-genera.mjs",
     "prova:sito-pubblica": "node scripts/prova-sito-pubblica.mjs",
     "prova:indirizzi": "node scripts/prova-indirizzi.mjs",
