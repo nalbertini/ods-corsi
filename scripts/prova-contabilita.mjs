@@ -429,5 +429,256 @@ console.log('\n16. l\'elenco dei movimenti, messo insieme dalla lib')
   ok('il totale dei residui', prova(() => m.totaleResidui(m.residui(casse, elenco))), 10000 + 3000 + 1500 - 2500)
 }
 
+// ---------------------------------------------------------------------------
+// La chiusura di cassa (60-chiusura-cassa.sql, provato da supabase/prova/chiusura-cassa.sql):
+// le stesse regole, con gli stessi messaggi e gli stessi numeri.
+// ---------------------------------------------------------------------------
+const vociD = [
+  ...voci,
+  { id: 'v-dife', nome: 'Differenza di cassa', tipo: 'entrata', diSistema: true, attiva: true },
+  { id: 'v-difu', nome: 'Differenza di cassa', tipo: 'uscita', diSistema: true, attiva: true },
+]
+const man = (id, tipo, data, importo, cassaId, extra = {}) => ({
+  id, tipo, data, importo, cassaId, descrizione: id, creatoIl: `${data}T10:00:00Z`,
+  ...(tipo === 'giroconto' ? {} : { voceId: tipo === 'entrata' ? 'v-don' : 'v-aff' }),
+  ...extra,
+})
+// Una chiusura già fatta, della Cassa Contanti.
+const chiusa = (id, data, extra = {}) => ({ id, cassaId: 'c1', dal: '2026-09-01', data, previsto: 10000, contato: 9500, differenza: -500, chiusaDa: 'Ada Conti', chiusaIl: `${data}T18:00:00Z`, ...extra })
+const MSG_CHIUSO = 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e la voce «Rettifica»'
+const MSG_ANNULLA_CHIUSO = 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica di oggi'
+const MSG_SALDO_CHIUSA = 'La cassa ha una chiusura: annullala prima di cambiare il saldo iniziale'
+
+// Il dataset del previsto è lo STESSO di supabase/prova/chiusura-cassa.sql (sezione 2): se cambia là, cambia qui.
+//   Cassa Contanti dal 2026-09-01, saldo iniziale 100,00
+//   + ricevuta contanti 30,00 (3/9); − uscita a mano 10,00 (4/9); − giroconto 20,00 da Contanti a Conto (5/9)
+//   non contano: ricevuta POS 50,00, ricevuta contanti 40,00 ANNULLATA, uscita 44,44 annullata, entrata 7,00 sul Conto
+//   all'8/9: + pagamento a mano «  contanti» 20,00 + 15,00 in contanti di una ricevuta (voce a «CONTANTI »)
+//     non contano: bonifico 10,00 della stessa ricevuta, anticipo 50,00, «pagato fino al», assegno 7,00, contanti 9,00 annullato
+//   al 20/9: + 8,88 (ricevuta contanti); non contano 7,77 (31/8, prima del «dal») e 9,99 (25/9, dopo)
+// `cambi`: annullaR6, annullaD1 (annullati dopo la chiusura), diff1 e diff2 (i movimenti di differenza delle chiusure del 7 e del 20).
+const datiPrevisto = (cambi = {}) => {
+  const rcv = (numero, vv, extra = {}) => ricevuta(numero, 'Luca', 'Rossi', vv, extra)
+  const annullata = { annullataIl: '2026-09-26T10:00:00Z' }
+  const ricevute = [
+    rcv(1, [voce('QUOTA ASSOCIATIVA', 3000, [pag('2026-09-03', 3000)])]),
+    rcv(2, [voce('ANNUALE JUDO', 5000, [pag('2026-09-03', 5000, 'POS')])]),
+    rcv(3, [voce('ANNUALE JUDO', 4000, [pag('2026-09-03', 4000)])], annullata),
+    rcv(4, [
+      voce('TRIMESTRE KARATE', 3000, [pag('2026-09-08', 1500, 'CONTANTI ')]),
+      voce('QUOTA ASSOCIATIVA', 1000, [pag('2026-09-08', 1000, 'Bonifico')]),
+      voce('ANNUALE JUDO', 8000, [], 1, { dal: '2026-09-01', al: '2027-07-31' }),
+    ], { anticipo: 5000 }),
+    rcv(5, [voce('ALTRO', 777, [pag('2026-08-31', 777)])]),
+    rcv(6, [voce('ALTRO', 888, [pag('2026-09-20', 888, 'contanti')])], cambi.annullaR6 ? annullata : {}),
+    rcv(7, [voce('ALTRO', 999, [pag('2026-09-25', 999)])]),
+  ]
+  const diretti = [
+    diretto('dd1', 'p-Rossi', '2026-09-08', 2000, { metodo: '  contanti', ...(cambi.annullaD1 ? { annullatoIl: '2026-09-26T10:00:00Z' } : {}) }),
+    diretto('dd2', 'p-Rossi', '2026-09-08', 700, { metodo: 'Assegno' }),
+    diretto('dd3', 'p-Rossi', '2026-09-08', 900, { annullatoIl: '2026-09-09T10:00:00Z' }),
+  ]
+  const manuali = [
+    man('u1', 'uscita', '2026-09-04', 1000, 'c1'),
+    man('u2', 'uscita', '2026-09-04', 4444, 'c1', { annullatoIl: '2026-09-04T12:00:00Z' }),
+    man('e1', 'entrata', '2026-09-05', 700, 'c2'),
+    man('g1', 'giroconto', '2026-09-05', 2000, 'c1', { cassaAId: 'c2' }),
+    ...(cambi.diff1 ? [man('mdiff1', 'uscita', '2026-09-07', 500, 'c1', { voceId: 'v-difu' })] : []),
+    ...(cambi.diff2 ? [man('mdiff2', 'entrata', '2026-09-20', 300, 'c1', { voceId: 'v-dife' })] : []),
+  ]
+  return m.elencoMovimenti(ricevute, diretti, [{ id: 'p-Rossi', nome: 'Luca', cognome: 'Rossi' }], casse, manuali, vociD)
+}
+
+console.log('\n17. le due costanti della chiusura')
+ok('la voce della differenza', prova(() => m.VOCE_DIFFERENZA), 'Differenza di cassa')
+ok('sopra venti euro la schermata chiede conferma', prova(() => m.SOGLIA_DIFFERENZA), 2000)
+
+console.log('\n18. il previsto di cassa: lo stesso numero del database')
+{
+  const righe = prova(() => datiPrevisto())
+  const al = (giorno, r = righe) => prova(() => m.previstoCassa(casse, r, 'c1', giorno))
+  ok('al 7 settembre: 100,00 + 30,00 − 10,00 − 20,00', al('2026-09-07'), 10000)
+  ok('all\'8: + 20,00 a mano + 15,00 in contanti della ricevuta', al('2026-09-08'), 13500)
+  ok('al 20: + 8,88', al('2026-09-20'), 14388)
+  ok('fino al 24, prima dei 9,99 del 25: lo stesso', al('2026-09-24'), 14388)
+  ok('il 25 entrano i 9,99', al('2026-09-25'), 15387)
+  ok('il 3: solo i 30,00 della ricevuta', al('2026-09-03'), 13000)
+  const con = prova(() => datiPrevisto({ diff1: true, diff2: true }))
+  ok('la differenza di una chiusura (−5,00 il 7) conta: a fine giorno in cassa c\'è quel che si è contato', al('2026-09-07', con), 9500)
+  ok('…e il +3,00 del 20: 143,88 − 5,00 + 3,00 = 141,88', al('2026-09-20', con), 14188)
+  ok('senza righe c\'è il saldo iniziale', prova(() => m.previstoCassa(casse, [], 'c1', '2026-09-07')), 10000)
+  ok('non cambia le righe che riceve', prova(() => { const x = [...righe]; m.previstoCassa(casse, x, 'c1', '2026-09-20'); return x.map((r) => r.id) }), prova(() => righe.map((r) => r.id)))
+}
+
+console.log('\n19. l\'ultima chiusura e i giorni chiusi')
+{
+  const c7 = chiusa('k7', '2026-09-07')
+  const c20 = chiusa('k20', '2026-09-20')
+  const c22 = chiusa('k22', '2026-09-22', { annullataIl: '2026-09-23T10:00:00Z' })
+  const conto = chiusa('kc', '2026-09-30', { cassaId: 'c2' })
+  const tutte = [c20, c7, c22, conto]
+  ok('l\'ultima è quella con la data più grande tra le attive', prova(() => m.ultimaChiusura(tutte, 'c1')?.id), 'k20')
+  ok('…qualunque sia l\'ordine', prova(() => m.ultimaChiusura([...tutte].reverse(), 'c1')?.id), 'k20')
+  ok('ogni cassa ha la sua', prova(() => m.ultimaChiusura(tutte, 'c2')?.id), 'kc')
+  ok('un\'annullata non è l\'ultima', prova(() => m.ultimaChiusura([c7, c22], 'c1')?.id), 'k7')
+  ok('senza chiusure attive, niente', prova(() => [m.ultimaChiusura([], 'c1'), m.ultimaChiusura([c22], 'c1'), m.ultimaChiusura([conto], 'c1')].map((x) => x ?? null)), [null, null, null])
+  const chiuso = (cassaIds, data, lista = [c7]) => prova(() => m.giornoChiuso(lista, cassaIds, data))
+  ok('il giorno della chiusura è chiuso', chiuso(['c1'], '2026-09-07'), true)
+  ok('…e quelli di prima', chiuso(['c1'], '2026-09-03'), true)
+  ok('…il giorno dopo no', chiuso(['c1'], '2026-09-08'), false)
+  ok('il Conto Corrente non è chiuso', chiuso(['c2'], '2026-09-03'), false)
+  ok('un giroconto è chiuso se lo è una delle due casse', [chiuso(['c2', 'c1'], '2026-09-05'), chiuso(['c1', 'c2'], '2026-09-05'), chiuso(['c2', 'c2'], '2026-09-05')], [true, true, false])
+  ok('una chiusura annullata riapre i giorni', chiuso(['c1'], '2026-09-03', [{ ...c7, annullataIl: '2026-09-08T10:00:00Z' }]), false)
+  ok('senza chiusure niente è chiuso', chiuso(['c1'], '2026-09-03', []), false)
+}
+
+console.log('\n20. cosa non va in una chiusura (gli stessi rifiuti del database, nello stesso ordine)')
+{
+  const oggi = '2026-09-26'
+  const buono = { cassaId: 'c1', data: '2026-09-07', contato: 9500 }
+  const di = (cambio, chiusure = []) => prova(() => m.cosaNonVaChiusura({ ...buono, ...cambio }, casse, chiusure, oggi))
+  ok('il caso giusto va', di({}), null)
+  ok('con la nota va', di({ nota: 'Contati in cassa' }), null)
+  ok('nota di 300 lettere, con spazi ai bordi, va', di({ nota: ` ${'n'.repeat(300)} ` }), null)
+  ok('zero contanti vanno: la cassa può essere vuota', di({ contato: 0 }), null)
+  ok('oggi va', di({ data: oggi }), null)
+  ok('il primo giorno della cassa va', di({ data: '2026-09-01' }), null)
+  ok('dopo l\'ultima chiusura va', di({ data: '2026-09-08' }, [chiusa('k7', '2026-09-07')]), null)
+  ok('una chiusura annullata non pesa', di({ data: '2026-09-10' }, [chiusa('k7', '2026-09-07'), chiusa('k20', '2026-09-20', { annullataIl: '2026-09-21T10:00:00Z' })]), null)
+  const mancano = [
+    ['senza cassa', { cassaId: '' }, 'Scegli la cassa'],
+    ['una cassa che non c\'è', { cassaId: 'cX' }, 'Scegli la cassa'],
+    ['il Conto Corrente non si chiude', { cassaId: 'c2' }, 'Si chiude solo la Cassa Contanti'],
+    ['…prima di guardare la data', { cassaId: 'c2', data: '2026-02-30' }, 'Si chiude solo la Cassa Contanti'],
+    ['il 30 febbraio', { data: '2026-02-30' }, 'La data non si capisce'],
+    ['senza data', { data: '' }, 'La data non si capisce'],
+    ['data scritta male', { data: '07/09/2026' }, 'La data non si capisce'],
+    ['una data di secoli fa', { data: '1999-12-31' }, 'La data non si capisce'],
+    ['domani', { data: '2026-09-27' }, 'La data è nel futuro: si chiude quel che è già successo'],
+    ['il 31 agosto, prima dell\'inizio della cassa', { data: '2026-08-31' }, 'La data è prima dell’inizio della cassa'],
+    ['…la data prima dei contanti', { data: '2026-02-30', contato: -5 }, 'La data non si capisce'],
+    ['contanti con la virgola', { contato: 95.5 }, 'I contanti contati non si capiscono'],
+    ['contanti che non sono un numero', { contato: Number.NaN }, 'I contanti contati non si capiscono'],
+    ['senza contanti', { contato: undefined }, 'I contanti contati non si capiscono'],
+    ['contanti negativi', { contato: -1 }, 'I contanti contati non possono essere negativi'],
+    ['contanti oltre un milione di euro', { contato: 100_000_001 }, 'I contanti contati sono troppi: controlla le cifre'],
+    ['nota di 301 lettere', { nota: 'n'.repeat(301) }, 'La nota è troppo lunga: al massimo 300 caratteri'],
+    ['…dopo i contanti', { contato: -1, nota: 'n'.repeat(301) }, 'I contanti contati non possono essere negativi'],
+  ]
+  for (const [cosa, cambio, messaggio] of mancano) ok(cosa, di(cambio), messaggio)
+  const k7 = chiusa('k7', '2026-09-07')
+  ok('il giorno dell\'ultima chiusura è già chiuso, e dice da quando si può', di({ data: '2026-09-07' }, [k7]), 'Quel giorno è già chiuso: scegli un giorno dopo il 07/09/2026')
+  ok('…anche un giorno prima', di({ data: '2026-09-03' }, [k7]), 'Quel giorno è già chiuso: scegli un giorno dopo il 07/09/2026')
+  ok('…con due chiusure vale l\'ultima', di({ data: '2026-09-10' }, [k7, chiusa('k20', '2026-09-20')]), 'Quel giorno è già chiuso: scegli un giorno dopo il 20/09/2026')
+  ok('…e vale in qualunque ordine', di({ data: '2026-09-10' }, [chiusa('k20', '2026-09-20'), k7]), 'Quel giorno è già chiuso: scegli un giorno dopo il 20/09/2026')
+  ok('una data impossibile vince su una chiusura', di({ data: '2026-02-30' }, [k7]), 'La data non si capisce')
+  ok('una chiusura del Conto non pesa sui contanti', di({ data: '2026-09-10' }, [chiusa('kc', '2026-09-30', { cassaId: 'c2' })]), null)
+}
+
+console.log('\n21. quanto sono tornati i conti, e annullare una chiusura')
+{
+  ok('zero: tornano', prova(() => m.differenzaInParole(0)), 'tornano')
+  ok('cinque euro in più', prova(() => m.differenzaInParole(500)), '5,00 € in più')
+  ok('cinque euro in meno', prova(() => m.differenzaInParole(-500)), '5,00 € in meno')
+  ok('un centesimo', prova(() => [m.differenzaInParole(1), m.differenzaInParole(-1)]), ['0,01 € in più', '0,01 € in meno'])
+  ok('le migliaia all\'italiana', prova(() => m.differenzaInParole(123456)), '1.234,56 € in più')
+  const k7 = chiusa('k7', '2026-09-07')
+  const k20 = chiusa('k20', '2026-09-20')
+  const di = (id, lista) => prova(() => m.cosaNonVaAnnulloChiusura(id, lista))
+  ok('l\'ultima si annulla', di('k20', [k7, k20]), null)
+  ok('l\'unica pure', di('k7', [k7]), null)
+  ok('una che non c\'è', di('zz', [k7, k20]), 'La chiusura non c’è')
+  ok('senza id', di('', [k7, k20]), 'La chiusura non c’è')
+  ok('una che non è l\'ultima no', di('k7', [k7, k20]), 'Si annulla solo l’ultima chiusura della cassa')
+  ok('…in qualunque ordine', di('k7', [k20, k7]), 'Si annulla solo l’ultima chiusura della cassa')
+  ok('una già annullata', di('k20', [k7, { ...k20, annullataIl: '2026-09-21T10:00:00Z' }]), 'La chiusura è già annullata')
+  ok('…e allora l\'altra diventa l\'ultima', di('k7', [k7, { ...k20, annullataIl: '2026-09-21T10:00:00Z' }]), null)
+  ok('ogni cassa ha la sua ultima', di('k7', [k7, chiusa('kc', '2026-09-30', { cassaId: 'c2' })]), null)
+}
+
+console.log('\n22. ricevute e pagamenti annullati dopo la chiusura: l\'app avvisa')
+{
+  const k7 = chiusa('k7', '2026-09-07', { previsto: 10000, movimentoId: 'mdiff1' })
+  const k20 = chiusa('k20', '2026-09-20', { dal: '2026-09-08', previsto: 13888, contato: 14188, differenza: 300, movimentoId: 'mdiff2' })
+  const k22 = chiusa('k22', '2026-09-22', { dal: '2026-09-21', previsto: 14188, contato: 14188, differenza: 0 })
+  const casi = (cambi) => {
+    const righe = prova(() => datiPrevisto({ diff1: true, diff2: true, ...cambi }))
+    return prova(() => [k7, k20, k22].map((k) => m.chiusuraNonPiuInRegola(k, casse, righe)))
+  }
+  ok('com\'erano, le chiusure sono in regola (il movimento di differenza non conta nel ricalcolo)', casi({}), [false, false, false])
+  ok('una ricevuta del 20 annullata: la chiusura del 20 e quella del 22 non tornano più, quella del 7 sì', casi({ annullaR6: true }), [false, true, true])
+  ok('un pagamento a mano dell\'8 annullato: idem', casi({ annullaD1: true }), [false, true, true])
+  const righe = prova(() => datiPrevisto({ diff1: true, diff2: true, annullaR6: true }))
+  ok('una chiusura annullata non avvisa', prova(() => m.chiusuraNonPiuInRegola({ ...k20, annullataIl: '2026-09-21T10:00:00Z' }, casse, righe)), false)
+}
+
+console.log('\n23. un movimento in un giorno chiuso, o la «Differenza di cassa» scritta a mano')
+{
+  const oggi = '2026-10-17'
+  const k20 = chiusa('k20', '2026-09-20')
+  const buono = { tipo: 'entrata', data: '2026-09-10', importo: 4000, voceId: 'v-don', cassaId: 'c1', descrizione: 'Offerta di Rossi' }
+  const di = (cambio, chiusure = [k20]) => prova(() => m.cosaNonVaMovimento({ ...buono, ...cambio }, vociD, casse, oggi, chiusure))
+  ok('senza chiusure va com\'era', prova(() => m.cosaNonVaMovimento(buono, vociD, casse, oggi)), null)
+  ok('…anche con l\'elenco vuoto', prova(() => m.cosaNonVaMovimento(buono, vociD, casse, oggi, [])), null)
+  ok('il giorno dopo la chiusura va', di({ data: '2026-09-21' }), null)
+  ok('sul conto, che non è chiuso, va', di({ cassaId: 'c2' }), null)
+  ok('una chiusura annullata non chiude', di({}, [{ ...k20, annullataIl: '2026-09-21T10:00:00Z' }]), null)
+  ok('un giorno prima della chiusura no', di({}), MSG_CHIUSO)
+  ok('il giorno stesso no', di({ data: '2026-09-20' }), MSG_CHIUSO)
+  ok('una uscita nemmeno', di({ tipo: 'uscita', voceId: 'v-aff' }), MSG_CHIUSO)
+  ok('l\'inizio della cassa viene prima del giorno chiuso', di({ data: '2026-08-31' }), 'La data è prima dell’inizio della cassa')
+  ok('una cassa che non c\'è viene prima', di({ cassaId: 'cX' }), 'Scegli la cassa')
+  ok('l\'importo viene prima', di({ importo: 0 }), 'L’importo deve essere più di zero')
+  ok('il giorno chiuso viene prima della descrizione', di({ descrizione: '   ' }), MSG_CHIUSO)
+  const DIFF = 'La «Differenza di cassa» si scrive da sola chiudendo la cassa'
+  ok('«Differenza di cassa» in entrata a mano no', di({ voceId: 'v-dife', cassaId: 'c2' }), DIFF)
+  ok('…e in uscita', di({ tipo: 'uscita', voceId: 'v-difu', cassaId: 'c2' }), DIFF)
+  ok('…anche senza chiusure', prova(() => m.cosaNonVaMovimento({ ...buono, voceId: 'v-dife' }, vociD, casse, oggi)), DIFF)
+  ok('prima si guarda se la voce va col tipo', di({ voceId: 'v-difu', cassaId: 'c2' }), 'La voce scelta non va con questo tipo di movimento')
+  ok('prima si guarda se la voce è in uso', prova(() => m.cosaNonVaMovimento({ ...buono, voceId: 'v-dife', cassaId: 'c2' }, vociD.map((v) => (v.id === 'v-dife' ? { ...v, attiva: false } : v)), casse, oggi, [])), 'La voce non è più in uso: scegline un’altra')
+  // Il giroconto: basta una delle due casse.
+  const giro = { daCassaId: 'c1', aCassaId: 'c2', data: '2026-09-15', importo: 1000 }
+  const g = (cambio, chiusure = [k20]) => prova(() => m.cosaNonVaGiroconto({ ...giro, ...cambio }, casse, oggi, chiusure))
+  ok('un giroconto senza chiusure va com\'era', prova(() => m.cosaNonVaGiroconto(giro, casse, oggi)), null)
+  ok('dopo la chiusura va', g({ data: '2026-09-21' }), null)
+  ok('prima no', g({}), MSG_CHIUSO)
+  ok('…nemmeno all\'indietro, dal conto ai contanti', g({ daCassaId: 'c2', aCassaId: 'c1' }), MSG_CHIUSO)
+  ok('una chiusura annullata non chiude', g({}, [{ ...k20, annullataIl: '2026-09-21T10:00:00Z' }]), null)
+  ok('l\'inizio della cassa viene prima', g({ data: '2026-08-31' }), 'La data è prima dell’inizio della cassa')
+  ok('l\'importo viene prima', g({ importo: 0 }), 'L’importo deve essere più di zero')
+  ok('le casse vengono prima', g({ aCassaId: 'c1' }), 'Scegli due casse diverse')
+}
+
+console.log('\n24. annullare un movimento di un giorno chiuso, il saldo di una cassa chiusa, le voci da offrire')
+{
+  const k7 = chiusa('k7', '2026-09-07')
+  const mano = (id, data, extra = {}) => riga(id, 'uscita', data, 1000, 'c1', extra)
+  const di = (r, chiusure = [k7]) => prova(() => m.cosaNonVaAnnulloMovimento(r, chiusure))
+  ok('un movimento di un giorno chiuso no', di(mano('a', '2026-09-04')), MSG_ANNULLA_CHIUSO)
+  ok('…il giorno stesso', di(mano('a', '2026-09-07')), MSG_ANNULLA_CHIUSO)
+  ok('…nemmeno quello di differenza', di(mano('d', '2026-09-07', { voce: 'Differenza di cassa' })), MSG_ANNULLA_CHIUSO)
+  ok('dopo la chiusura sì', di(mano('a', '2026-09-08')), null)
+  ok('sul conto sì', di(riga('c', 'entrata', '2026-09-04', 100, 'c2')), null)
+  ok('un giroconto con una cassa chiusa no', di(riga('g', 'giroconto', '2026-09-05', 100, 'c2', { cassaAId: 'c1' })), MSG_ANNULLA_CHIUSO)
+  ok('…un giroconto fra casse aperte sì', di(riga('g', 'giroconto', '2026-09-05', 100, 'c2', { cassaAId: 'c3' })), null)
+  ok('con la chiusura annullata sì', di(mano('a', '2026-09-04'), [{ ...k7, annullataIl: '2026-09-08T10:00:00Z' }]), null)
+  ok('senza chiusure sì', di(mano('a', '2026-09-04'), []), null)
+  ok('un incasso di un iscritto si annulla dalle ricevute: qui non lo ferma', di(mano('r', '2026-09-04', { origine: 'ricevuta' })), null)
+  const con = (saldo, dal, contesto) => prova(() => m.cosaNonVaSaldo(saldo, dal, contesto))
+  const ctx = { oggi: '2026-10-17', chiusa: true }
+  ok('il saldo di una cassa chiusa no', con(10000, '2026-09-01', ctx), MSG_SALDO_CHIUSA)
+  ok('…anche senza data', con(10000, null, ctx), MSG_SALDO_CHIUSA)
+  ok('…prima di ogni altro controllo (saldo negativo)', con(-5, '2026-09-01', ctx), MSG_SALDO_CHIUSA)
+  ok('…(saldo con la virgola)', con(10.5, null, ctx), MSG_SALDO_CHIUSA)
+  ok('…(data impossibile)', con(0, '2026-02-30', ctx), MSG_SALDO_CHIUSA)
+  ok('non chiusa va com\'era', [con(10000, '2026-09-01', { oggi: '2026-10-17', chiusa: false }), con(-5, null, { oggi: '2026-10-17', chiusa: false })], [null, 'Il saldo iniziale non può essere negativo'])
+  ok('senza contesto va com\'era', con(10000, '2026-09-01'), null)
+  // Nel «Nuovo movimento» la differenza non si offre.
+  const nomi = (tipo) => prova(() => m.vociOfferte(vociD, tipo).map((v) => v.nome))
+  ok('le entrate da offrire: attive, senza la differenza, in ordine', nomi('entrata'), ['Corsi e altri pagamenti', 'Donazioni', 'Quota associativa'])
+  ok('le uscite: senza la differenza e senza le voci spente', nomi('uscita'), ['Affitto sala'])
+  ok('l\'elenco delle voci non cambia', prova(() => { m.vociOfferte(vociD, 'entrata'); return vociD.length }), 7)
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)
