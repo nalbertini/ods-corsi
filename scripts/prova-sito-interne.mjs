@@ -93,7 +93,7 @@ ok('solo le pagine interne hanno la classe «interna», la Home no', [conta(h, /
 ok('desktop: padding 40 e 72px sotto, titolo a sinistra e colonna da 520px a destra', [D('.pagina-hero.interna', 'padding'), D('.pagina-hero.interna', 'grid-template-columns'), D('.pagina-hero.interna', 'align-items')], ['40px var(--margine) 72px', '1fr 520px', 'end'])
 ok('titolo da 200px, interlinea .82', [D('.interna h1', 'font-size'), D('.interna h1', 'line-height')], ['200px', '.82'])
 ok('frase da 22px con 28px sotto', [D('.interna .intro p', 'font-size'), D('.interna .intro p', 'margin')], ['22px', '0 0 28px'])
-ok('telefono: padding 20 e 36px sotto; titolo da 84px; frase 18px; pulsante 52px', [T('.pagina-hero.interna', 'padding'), T('.interna h1', 'font-size'), T('.interna .intro p', 'font-size'), T('.interna .intro .pulsante', 'min-height')], ['20px var(--margine) 36px', '84px', '18px', '52px'])
+ok('telefono: padding 20 e 36px sotto; titolo da 84px; frase 18px', [T('.pagina-hero.interna', 'padding'), T('.interna h1', 'font-size'), T('.interna .intro p', 'font-size')], ['20px var(--margine) 36px', '84px', '18px'])
 
 console.log('\n3. Invito «Prova»')
 ok('desktop: 96px sopra, margini della pagina, alto 300px, padding 36px 40px', [D('.invito', 'margin'), D('.invito', 'min-height'), D('.invito', 'padding')], ['96px var(--margine) 6px', '300px', '36px 40px'])

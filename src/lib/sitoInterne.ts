@@ -44,7 +44,6 @@ export const CSS_INTERNE = `
 .pagina-hero.interna{padding:20px var(--margine) 36px}
 .interna h1{font-size:84px;line-height:.84}
 .interna .intro p{margin:0 0 22px;font-size:18px}
-.interna .intro .pulsante{min-height:52px;padding:0 26px;font-size:17px}
 .invito{margin-top:48px;min-height:260px;padding:22px}
 .invito .frase{font-size:17px}
 .invito .parola{font-size:120px}
