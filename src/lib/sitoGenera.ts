@@ -143,6 +143,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .pulsante.piccolo{min-height:48px;padding:0 26px;font-size:16px}
 .intro .pulsante{min-height:60px;padding:0 34px}
 .testata .pulsante{background:var(--giallo);color:var(--inchiostro)}
+.testata .estensione{margin-left:.3em}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
 h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.82;overflow-wrap:anywhere}
