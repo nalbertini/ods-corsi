@@ -123,6 +123,7 @@ console.log('\n4. Una foto e il carosello dei clienti: affiancati')
   ok('sul computer il carosello riempie l’altezza e la foto è tagliata a misura', [/\.foto-citazioni \.citazioni\{[^}]*height:\s*100%/.test(CSS), /\.foto-citazioni \.foto img\{[^}]*aspect-ratio:\s*auto/.test(CSS)], [true, true])
   ok('tra foto e carosello 6px, sotto 6px', [/\.foto-citazioni\{[^}]*gap:\s*6px/.test(CSS), /\.foto-citazioni\{[^}]*margin:\s*0 0 6px/.test(CSS)], [true, true])
   ok('sul telefono foto e carosello vanno una sotto l’altra', /@media\s*\(max-width:\s*900px\)[\s\S]*\.foto-citazioni\{[^}]*grid-template-columns:\s*1fr/.test(CSS), true)
+}
 
 console.log('\n5. Le tessere dei corsi: fascia d’età e pillole')
 {
