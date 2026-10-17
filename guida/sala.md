@@ -249,7 +249,7 @@ Uscito, il tablet torna alla pagina di accesso di tutta l'app.
 
 Lo fa la segreteria:
 
-1. Sul tablet aprire <https://nalbertini.github.io/ods-corsi/sala/>. Da quel
+1. Sul tablet aprire <https://app.officinedellosport.it/sala/>. Da quel
    momento il dispositivo si riapre sempre come tablet di sala.
 2. Scrivere il **nome utente della sala** (es. `lotta`) e la password, e
    premere **COLLEGA IL TABLET**. È lo stesso accesso di tutta l'app: si può

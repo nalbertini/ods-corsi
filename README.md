@@ -12,7 +12,7 @@ si pubblica insieme a ODS Corsi, nella sottocartella `timer/` dello stesso sito.
 ## Cosa fa oggi
 
 L'app ha sei indirizzi veri, ognuno con il suo accesso
-(`nalbertini.github.io/ods-corsi/segreteria/` e così via):
+(`app.officinedellosport.it/segreteria/` e così via):
 
 | | |
 |---|---|
@@ -39,7 +39,7 @@ segreteria e istruttore (`persone.anche_istruttore`, in
 nel calendario, e poi passa dall'uno all'altra dal menu senza uscire. Il **timer** è una pagina dell'area istruttori
 (barra in basso sul telefono, menu a sinistra su schermo largo: CALENDARIO, TIMER, I MIEI, ORE), con la striscia
 dell'allenamento in corso sempre in vista; resta anche l'app a sé in `timer/`
-(`nalbertini.github.io/ods-corsi/timer/`). Nel timer del telefono c'è anche la musica del tablet di sala:
+(`app.officinedellosport.it/timer/`). Nel timer del telefono c'è anche la musica del tablet di sala:
 le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefono.
 
 - **Il calendario**: una striscia di sette giorni e sotto le lezioni di quello

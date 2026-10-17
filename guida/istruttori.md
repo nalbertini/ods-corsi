@@ -9,7 +9,7 @@ dentro ogni lezione, l'appello.
 
 ## Entrare
 
-1. Aprite <https://nalbertini.github.io/ods-corsi/> (va bene anche
+1. Aprite <https://app.officinedellosport.it/> (va bene anche
    `…/istruttori/`).
 2. Scrivete **email** e **password** dell'account che vi ha dato la palestra e
    premete **ENTRA**: l'app vi porta da sola nel calendario.

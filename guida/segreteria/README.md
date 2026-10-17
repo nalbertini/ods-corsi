@@ -10,7 +10,7 @@ che entra da questo indirizzo finisce nel calendario degli istruttori.
 
 ## Entrare
 
-1. Aprire <https://nalbertini.github.io/ods-corsi/> (va bene anche
+1. Aprire <https://app.officinedellosport.it/> (va bene anche
    `…/segreteria/`).
 2. Email e password, **ENTRA**: con l'account della segreteria si arriva
    qui. Si resta collegati finché non si preme **Esci**, in fondo al menu.

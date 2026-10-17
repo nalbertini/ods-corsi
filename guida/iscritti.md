@@ -10,7 +10,7 @@ qualcosa si passa in segreteria.
 
 È un **pilota**: per ora si vede solo con i dati inventati, per far vedere
 alla palestra com'è prima di aprirla agli iscritti veri. L'indirizzo è
-<https://nalbertini.github.io/ods-corsi/iscritti/>: col database vero dice
+<https://app.officinedellosport.it/iscritti/>: col database vero dice
 che l'area è in arrivo, e il tasto **GUARDALA IN PROVA** la apre con i dati
 inventati.
 

@@ -7,7 +7,7 @@
 È la pagina pubblica da mandare a chi chiede come ci si iscrive, al posto della
 lista di passi scritta ogni volta su WhatsApp. Non chiede nessun accesso.
 
-L'indirizzo è <https://nalbertini.github.io/ods-corsi/iscrizioni/>. In
+L'indirizzo è <https://app.officinedellosport.it/iscrizioni/>. In
 segreteria si copia al volo con **COPIA LINK ISCRIZIONI**, in fondo al menu.
 
 ## Cosa c'è nella pagina
@@ -225,7 +225,7 @@ compila sono al massimo 900 caratteri, per fare posto a quella riga.
 
 Judogi, costumini da lotta e vestiario della palestra si ordinano da una pagina
 pubblica, al posto del modulo Google. L'indirizzo è
-<https://nalbertini.github.io/ods-corsi/iscrizioni/#vestiario>: in segreteria
+<https://app.officinedellosport.it/iscrizioni/#vestiario>: in segreteria
 si copia con **COPIA LINK ORDINI**, in fondo al menu. Finché gli ordini sono
 aperti, anche la pagina delle iscrizioni ha in fondo il riquadro **IL
 VESTIARIO** con **ORDINA IL VESTIARIO**.

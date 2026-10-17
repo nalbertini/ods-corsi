@@ -15,7 +15,7 @@ delle persone come ogni istruttore, nell'area degli istruttori.
 
 ## Entrare
 
-1. Aprire <https://nalbertini.github.io/ods-corsi/> (va bene anche
+1. Aprire <https://app.officinedellosport.it/> (va bene anche
    `…/amministrazione/`).
 2. Email e password, **ENTRA**. Si resta collegati finché non si preme **Esci**,
    in fondo al menu.
