@@ -781,8 +781,9 @@ function ElencoChiusure({ d, cassa, casse, chiusure, righe, fai, onCambiato }: {
 function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiudi, nonSiChiude }: { d: DatiSegreteria; cassa: Cassa; righe: RigaMovimento[]; chiusura?: ChiusuraCassa; conto?: { entrate: number; uscite: number; residuo: number }; fai: Fai; onCambiato: () => void; onChiudi?: () => void; nonSiChiude?: string }) {
   const [saldo, setSaldo] = useState(euro(cassa.saldoIniziale))
   const [dal, setDal] = useState(cassa.dal ?? '')
-  useBozza(saldo !== euro(cassa.saldoIniziale) || dal !== (cassa.dal ?? ''), `Il saldo di ${cassa.nome}`)
   const cent = centesimi(saldo)
+  // Il saldo si confronta in centesimi: «100» e «100,00» sono lo stesso saldo, e salvato non è una bozza.
+  useBozza(cent !== cassa.saldoIniziale || dal !== (cassa.dal ?? ''), `Il saldo di ${cassa.nome}`)
   const guaio = cosaNonVaSaldoTesto(saldo, dal || null, { oggi: oggiARoma(), primoMovimento: primoMovimentoManuale(righe, cassa.id), chiusa: !!chiusura })
   return (
     <section aria-label={cassa.nome} className="sg-riquadro" style={{ flex: '1 1 340px', maxWidth: 520 }}>
