@@ -101,6 +101,11 @@ questo **← INDIETRO**, se c'è già qualcosa di scritto, firmato o scelto, al
 primo tocco chiede «LE RISPOSTE SI PERDONO · ESCI?» e esce solo al secondo;
 senza il secondo tocco, dopo qualche secondo torna com'era.
 
+Se **MANDA LA RICHIESTA** trova qualcosa che manca, in fondo al modulo
+compare un avviso rosso con la prima cosa da sistemare. L'avviso si aggiorna
+da solo: sistemata quella passa alla successiva, e sparisce quando non manca
+più niente, senza premere di nuovo il tasto.
+
 Premuto **MANDA LA RICHIESTA**, compare **RICHIESTA ARRIVATA**. Se un file non
 è partito compare **MANCA QUALCHE FILE**, con il tasto per riprovare (per
 un'ora); altrimenti i fogli si portano in segreteria.
@@ -108,6 +113,8 @@ un'ora); altrimenti i fogli si portano in segreteria.
 La richiesta **non è ancora un'iscrizione**: arriva in segreteria, in
 [RICHIESTE ONLINE](segreteria/richieste.md), dove qualcuno guarda i file e la
 accoglie.
+
+Il modulo ha l'aspetto del sito della palestra: sfondo chiaro, blu e giallo, anche se il telefono è in tema scuro. Il tasto del tema in alto c'è ancora: cambia il tema dell'app per quando si torna indietro, non il modulo.
 
 ## Il modulo a passi (solo in prova)
 

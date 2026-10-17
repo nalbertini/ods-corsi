@@ -102,6 +102,24 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+/* Big Shoulders Display e Inter sono i caratteri del sito pubblico: il modulo di
+   iscrizione li usa (vedi `:root[data-modulo='sito']`). Stessi file del sito,
+   locali come gli altri, licenza SIL OFL 1.1 (public/fonts). */
+@font-face {
+  font-family: 'Big Shoulders Display';
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/big-shoulders-display-800.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-variable.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* I colori del marchio Officine Dello Sport. */
 :root {
   --bg: #121212;
@@ -2627,3 +2645,72 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 
 /* Le cifre grandi delle casse, a telefono, una per riga: affiancate toccavano il bordo. */
 @media (max-width: 480px) { .sg-numeri { grid-template-columns: minmax(0, 1fr); } }
+
+/* Il modulo di iscrizione con l'aspetto del sito pubblico (tatami blu e giallo,
+   `docs/design-canvas/iscrizione-sito/`). Sempre chiaro: lo accende
+   `lib/aspettoModulo.ts` finché il modulo è aperto, anche aperto dall'area
+   iscritti. I colori sono i cinque del sito più i toni degli stati del tema
+   bianco; `--dim` è l'inchiostro attenuato, perché sul fondo e sulla tessera
+   chiara nessun colore del sito arriva a 4,5:1 (`prova:iscrizione-sito` li calcola). */
+:root[data-modulo='sito'] {
+  --bg: #eef5fa;
+  --surface: #ffffff;
+  --surface-2: #cfe6f4;
+  --line: #cfe6f4;
+  --line-soft: #cfe6f4;
+  --riga-campo: #14709f;
+  --text: #0d2a3d;
+  --sec: #0d2a3d;
+  --dim: #46606f;
+  --faint: #46606f;
+
+  --blu: #14709f;
+  --rosso: #e4292a;
+  --giallo: #f4c31b;
+  --verde: #12913f;
+  --giallo-testo: #8f6a00;
+  --verde-testo: #0b7a33;
+  --rosso-testo: #b81d1d;
+  --su-colore: #0d2a3d;
+  --su-rosso: #ffffff;
+  --tasto: #0d2a3d;
+  --tratteggio: #14709f;
+  --menu: #cfe6f4;
+
+  --cond: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
+  --body: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  color-scheme: light;
+}
+/* Il carattere di Big Shoulders è dritto e ha un solo peso: niente obliquo finto. */
+:root[data-modulo='sito'] .btn,
+:root[data-modulo='sito'] .ob,
+:root[data-modulo='sito'] .testata-nome { font-style: normal; }
+:root[data-modulo='sito'] .btn { font-size: 22px; letter-spacing: 0.06em; }
+:root[data-modulo='sito'] .modulo-etichetta { font-size: 15px; letter-spacing: 0.08em; }
+:root[data-modulo='sito'] .rule-label { font-size: 26px; letter-spacing: 0.04em; }
+/* I tasti principali del modulo (MANDA LA RICHIESTA, RIPROVA) sono il giallo del sito con l'inchiostro sopra. */
+:root[data-modulo='sito'] .btn-primary { background: var(--giallo); color: var(--su-colore); }
+/* La firma a schermo intero: bordo dei controlli come i campi, non il filo decorativo; FATTO resta rosso. */
+:root[data-modulo='sito'] .firma-intera-tasto { font-style: normal; border-color: var(--riga-campo); }
+:root[data-modulo='sito'] .firma-intera-fatto { border-color: var(--rosso); }
+:root[data-modulo='sito'] .firma-intera-fatto:disabled { border-color: var(--line); }
+/* Il raggio del sito. */
+:root[data-modulo='sito'] .campo,
+:root[data-modulo='sito'] .modulo-corso,
+:root[data-modulo='sito'] .btn,
+:root[data-modulo='sito'] .modulo-file,
+:root[data-modulo='sito'] .card { border-radius: 6px; }
+:root[data-modulo='sito'] .modulo-spunta { border-radius: 4px; }
+/* Il bordo di un file non caricato non è quello decorativo `--line` (1,2:1): è il bordo dei campi. */
+:root[data-modulo='sito'] .modulo-file,
+:root[data-modulo='sito'] .btn-ghost { border-color: var(--riga-campo); }
+:root[data-modulo='sito'] .modulo-file[data-fatto='true'] { border-color: var(--verde); }
+:root[data-modulo='sito'] :focus-visible,
+:root[data-modulo='sito'] .modulo-file:focus-within .modulo-scegli { outline: 3px solid var(--blu); outline-offset: 3px; }
+/* A 320px l'etichetta di un file («RICEVUTA DEL PAGAMENTO · PUOI PAGARE IN SEGRETERIA») è più larga della sua colonna: va a capo, non sotto SCEGLI. */
+:root[data-modulo='sito'] .modulo-file-testo,
+:root[data-modulo='sito'] .modulo-file .modulo-etichetta { min-width: 0; overflow-wrap: anywhere; }
+/* Codice fiscale, CAP e telefono in Big Shoulders confondono 1 e I: si leggono e si controllano in Inter. */
+:root[data-modulo='sito'] .campo.campo-codice,
+:root[data-modulo='sito'] .campo.num { font-family: var(--body); font-variant-numeric: tabular-nums; }
