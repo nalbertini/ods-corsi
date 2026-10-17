@@ -614,6 +614,10 @@ h1{font-size:84px;line-height:.84}
 }
 ${CSS_CORSI}
 ${CSS_INTERNE}
+.interna h1.medio{font-size:clamp(56px,12.2vw,175px)}
+.interna h1.lungo{font-size:clamp(56px,9.2vw,132px)}
+.interna h1.lunghissimo{font-size:clamp(44px,8.7vw,125px)}
+@media (max-width:900px){.interna h1.medio{font-size:76px}}
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
 
@@ -814,6 +818,15 @@ function documento(c: Contesto, o: { titolo: string; descrizione: string; percor
   return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
 }
 
+/**
+ * La parola più lunga del titolo decide la misura: a 200px la colonna del titolo regge 9–10 lettere, e una parola più lunga
+ * si spezzerebbe a metà. La M e la W sono larghe e contano 1,3. Da 14: «lunghissimo», da 12: «lungo», da 10,3: «medio».
+ */
+function classeTitolo(titolo: string): string {
+  const peso = Math.max(0, ...titolo.split(/\s+/).map((w) => [...w].reduce((t, c) => t + (/[mw]/i.test(c) ? 1.3 : 1), 0)))
+  return peso >= 14 ? ' class="lunghissimo"' : peso >= 12 ? ' class="lungo"' : peso >= 10.3 ? ' class="medio"' : ''
+}
+
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
@@ -831,7 +844,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
     ? `<section class="pagina-hero persona-hero"><h1>${esc(p.titolo)}</h1><div class="lato">${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div></section>${dellaPersona.html}`
     : p.diLegge
       ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
-      : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div>${inTestata.html}</section>`
+      : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}${inTestata.html ? '' : ' solo'}"><div class="intro"><h1${classeTitolo(p.titolo)}>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${contattaci}</div>${inTestata.html}</section>`
   const corpo = `${t}<main${dellaPersona ? ' class="persona"' : corso ? ' class="corso"' : p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${corso?.html ?? ''}${tecnici?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? (dellaPersona ? conFila(impagina(testo, false, false, true)) : impagina(testo, corso !== null, p.slug === 'contatti')) : `<div class="testo">${testo}</div>`) : ''}</main>${invito(conContatti)}${piede(c)}`
   const dati = datiStrutturati({ dominio: c.d.dominio, nome: NOME, slug: p.slug, titolo: p.titolo, descrizione: p.descrizione, testo: pulito, titoloCorsi: c.d.pagine.find((x) => x.slug === 'corsi')?.titolo, eUnCorso: c.corsi.has(p.slug) })
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null, dati })

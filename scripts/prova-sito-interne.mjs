@@ -115,5 +115,16 @@ ok('telefono: le voci del menu restano alte 44px (nel design)', T('.testata nav 
 ok('il piede non ha la riga «©»', /class="fine"/.test(h), false)
 ok('telefono: le tessere dei corsi sono a contatto, come nel design', T('.tessere.corsi', 'gap'), '0')
 
+console.log('\n9. Titoli con una parola lunga non si spezzano a metà')
+{
+  const titolo = (t) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'Home', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'corso', titolo: t, descrizione: 'd', testo: '<p>x</p>' }], menu: [], rinvii: [] })['corso/index.html'].match(/<section class="pagina-hero[^"]*"><div class="intro"><h1([^>]*)>/)?.[1] ?? 'MANCA'
+  ok('parole corte: titolo come sempre («Judo», «Contattaci», «Metodo Globale di Autodifesa»)', [titolo('Judo'), titolo('Contattaci'), titolo('Metodo Globale di Autodifesa')], ['', '', ''])
+  ok('12 o 13 lettere: classe «lungo» («Preparazione atletica», «Sollevamento pesi»)', [titolo('Preparazione atletica'), titolo('Sollevamento pesi')], [' class="lungo"', ' class="lungo"'])
+  ok('14 lettere o più: classe «lunghissimo» («Giocomotricità e psicomotricità»)', titolo('Giocomotricità e psicomotricità'), ' class="lunghissimo"')
+  ok('una parola da 10 lettere larghe (M, W contano di più) è «medio»: scende a 175px sul desktop e a 76px sul telefono («Avviamento»)', titolo('Avviamento alle arti marziali'), ' class="medio"')
+  const css = pagina().match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+  ok('«lungo» scende a 132px sul desktop, «lunghissimo» a 125px (mai sotto 56 e 44px), «medio» a 175px sul desktop e 76px sul telefono', [/\.interna h1\.medio\{font-size:clamp\(56px,12\.2vw,175px\)\}/.test(css), /\.interna h1\.lungo\{font-size:clamp\(56px,9\.2vw,132px\)\}/.test(css), /\.interna h1\.lunghissimo\{font-size:clamp\(44px,8\.7vw,125px\)\}/.test(css), /@media \(max-width:900px\)\{\.interna h1\.medio\{font-size:76px\}\}/.test(css)], [true, true, true, true])
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)
