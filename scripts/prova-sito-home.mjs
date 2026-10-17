@@ -12,6 +12,10 @@
 //     `<p class="firma"><span class="avatar" aria-hidden="true">NA</span><span class="nome">Nicola A.</span></p>`
 //     (iniziali delle prime due parole del nome, prima di « - » o «—»).
 //  3. Le tessere che hanno solo il titolo (i valori) lo tengono in basso, grande.
+//  4. Il collage pieno della testata: 4 foto e un elenco di 9 voci sono le 13 tessere
+//     del design (foto grande, 9 voci, 3 foto), ognuna al suo posto sulla griglia a 6x6.
+//  5. Il pulsante in testata dice «Prova una settimana · 5 €» (l'invito in fondo resta «Prova»).
+//  6. Il piede è una scheda scura in riga: nome a sinistra, poi gli elenchi.
 //
 // Il CSS si legge come testo e i `clamp()` si calcolano a 1440px.
 // ---------------------------------------------------------------------------
@@ -123,6 +127,70 @@ console.log('\n4. Una foto e il carosello dei clienti: affiancati')
   ok('sul computer il carosello riempie l’altezza e la foto è tagliata a misura', [/\.foto-citazioni \.citazioni\{[^}]*height:\s*100%/.test(CSS), /\.foto-citazioni \.foto img\{[^}]*aspect-ratio:\s*auto/.test(CSS)], [true, true])
   ok('tra foto e carosello 6px, sotto 6px', [/\.foto-citazioni\{[^}]*gap:\s*6px/.test(CSS), /\.foto-citazioni\{[^}]*margin:\s*0 0 6px/.test(CSS)], [true, true])
   ok('sul telefono foto e carosello vanno una sotto l’altra', /@media\s*\(max-width:\s*900px\)[\s\S]*\.foto-citazioni\{[^}]*grid-template-columns:\s*1fr/.test(CSS), true)
+}
+
+console.log('\n5. Il collage pieno della testata (design TatamiBlu)')
+{
+  const VOCI = [
+    '<strong>35+</strong> anni di sport',
+    '<strong>1 settimana di prova: 5 €</strong>',
+    '<strong>8</strong> attività',
+    '<strong>300+</strong> atleti',
+    '<strong>13</strong> tecnici',
+    'Via Sassi 26, Collegno<br>vicino alla metro Fermi',
+    '<strong>Il corso giusto, il gruppo giusto</strong>',
+    'Armonia nel movimento, rispetto nelle relazioni.',
+    '<strong>Bambini, ragazzi, adulti</strong>',
+  ]
+  const elenco = (v) => `<ul>${v.map((x) => `<li>${x}</li>`).join('')}</ul>`
+  const testata = (testo) => pagina(testo).match(/<section class="pagina-hero">[\s\S]*?<\/section>/)?.[0] ?? ''
+  const h = testata(`<p>Intro</p>${[1, 2, 3, 4].map(img).join('')}${elenco(VOCI)}<h2>S</h2><p>x</p>`)
+  const tess = [...h.matchAll(/<(figure|article) class="tessera ([^"]*)">([\s\S]*?)<\/\1>/g)].map((m) => ({ classi: m[2].split(' '), html: m[3] }))
+  ok('la griglia è «collage pieno»', /<div class="collage pieno">/.test(h), true)
+  ok('13 tessere: foto grande, 9 voci, 3 foto', tess.map((t) => (t.classi.includes('foto') ? 'f' : 'v')).join(''), 'fvvvvvvvvvfff')
+  ok('la prima foto è «grande», le altre «meta»', tess.filter((t) => t.classi.includes('foto')).map((t) => t.classi[1]), ['grande', 'meta', 'meta', 'meta'])
+  const voci = tess.filter((t) => !t.classi.includes('foto'))
+  ok('colori come nel design: blu, giallo, giallo, inchiostro, giallo, blu, inchiostro, giallo, blu', voci.map((t) => t.classi[0]), ['blu', 'giallo', 'giallo', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu'])
+  ok('numero (grassetto + resto), titolo (solo grassetto), nota (niente grassetto)', voci.map((t) => t.classi[1]), ['numero', 'titolo', 'numero', 'numero', 'numero', 'nota', 'titolo', 'nota', 'titolo'])
+  ok('la nota tiene l’a capo dell’indirizzo', /Via Sassi 26, Collegno<br ?\/?>vicino/.test((voci[5]?.html ?? '')), true)
+  ok('le foto portano gli attributi di caricamento (la prima subito)', [/fetchpriority="high"/.test((tess[0]?.html ?? '')), /loading="lazy"/.test((tess[10]?.html ?? ''))], [true, true])
+  ok('nessun elenco resta nella testata', /<ul|<li/.test(h), false)
+  ok('con 3 foto e 9 voci: come prima (non è «pieno»)', /collage pieno/.test(testata(`${[1, 2, 3].map(img).join('')}${elenco(VOCI)}`)), false)
+  ok('con 4 foto e 4 numeri: come prima (non è «pieno»)', /collage pieno/.test(testata(`${[1, 2, 3, 4].map(img).join('')}${elenco(VOCI.slice(0, 4))}`)), false)
+  ok('con 4 foto e 8 voci: come prima (non è «pieno»)', /collage pieno/.test(testata(`${[1, 2, 3, 4].map(img).join('')}${elenco(VOCI.slice(0, 8))}`)), false)
+  ok('il testo in più prima delle foto sta sotto la testata, non dentro', /Intro/.test(h), false)
+  // Il CSS: i posti sulla griglia a 6 colonne (desktop). Tessera n → [colonna, righe]
+  const CSS = pagina('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+  const desk = CSS.match(/@media \(min-width:901px\)\{(.*?)\}\}/)?.[1] ?? ''
+  const posto = (n) => {
+    const r = [...desk.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => m[1].split(',').some((s) => new RegExp(`\\.collage\\.pieno\\s*>?\\s*\\.tessera:nth-child\\(${n}\\)$`).test(s.trim()))).map((m) => m[2]).join(';')
+    return [(r.match(/grid-column:\s*([^;]+)/) || [, ''])[1].trim(), (r.match(/grid-row:\s*([^;]+)/) || [, ''])[1].trim()]
+  }
+  const ATTESI = [['1 / span 3', '1 / span 4'], ['4', '1 / span 2'], ['5 / span 2', '1'], ['5 / span 2', '2'], ['4 / span 2', '3'], ['6', '3 / span 2'], ['4 / span 2', '4'], ['3 / span 2', '5'], ['5 / span 2', '5'], ['1 / span 2', '6'], ['1 / span 2', '5'], ['3 / span 2', '6'], ['5 / span 2', '6']]
+  ATTESI.forEach((a, i) => ok(`tessera ${i + 1}: colonna ${a[0]}, riga ${a[1]}`, posto(i + 1), a))
+  ok('le righe sono 6 da almeno 128px', /\.collage\.pieno\{[^}]*grid-template-rows:\s*repeat\(6,\s*minmax\(128px,\s*auto\)\)/.test(CSS), true)
+  ok('sul telefono i posti non valgono (il blocco è solo per i 901px in su)', /@media \(max-width:900px\)\{[\s\S]*nth-child\(1[0-3]\)/.test(CSS), false)
+  const cifra = CSS.match(/\.collage\.pieno \.cifra\{[^}]*font-size:\s*([^;}]+)/)?.[1]
+  ok('la cifra è da 60px come nel design', cifra, '60px')
+  ok('il titolo della tessera è in display da 32px', /\.collage\.pieno \.titolo\{[^}]*font-size:\s*32px/.test(CSS), true)
+  ok('la nota è da 15px', /\.collage\.pieno \.nota[^{]*\{[^}]*font-size:\s*15px/.test(CSS), true)
+}
+
+console.log('\n5. Il pulsante in testata')
+{
+  const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [], rinvii: [] })['index.html'] ?? ''
+  ok('in testata: «Prova una settimana · 5 €» verso /contatti/', /<header class="testata">[\s\S]*<a class="pulsante piccolo" href="\/contatti\/">Prova una settimana · 5 €<\/a>/.test(h), true)
+  ok('l’invito in fondo resta «Prova»', /class="parola">Prova</.test(h), true)
+}
+
+console.log('\n6. Il piede è una scheda scura in riga')
+{
+  const CSS = pagina('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+  const r = (re) => [...CSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => re.test(m[1].trim())).map((m) => m[2]).join(';')
+  ok('il piede ha il fondo scuro e gli angoli da 6px', [/background:\s*var\(--inchiostro\)/.test(r(/^\.piede$/)), /border-radius:\s*6px/.test(r(/^\.piede$/))], [true, true])
+  ok('sul desktop il piede è una riga: nome, elenchi', [/display:\s*flex/.test(r(/^\.piede$/)), /justify-content:\s*space-between/.test(r(/^\.piede$/))], [true, true])
+  ok('la riga finale («©») va a capo, a tutta larghezza', /flex-basis:\s*100%/.test(r(/^\.piede \.fine$/)), true)
+  ok('il nome nel piede non ha margine sotto', /margin:\s*0/.test(r(/^\.piede \.nome$/)), true)
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
