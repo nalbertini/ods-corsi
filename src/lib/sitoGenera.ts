@@ -59,6 +59,7 @@ const TESTI = {
   provaTestata: 'Prova una settimana · 5 €',
   contattaci: 'Contattaci',
   invito: 'Vieni a provare: ti aspettiamo in',
+  settimana: 'Una settimana a 5 euro: provi tutte le discipline e scegli.',
   altriLink: 'Altri link',
   trovarci: 'Vieni a trovarci',
   contatti: '/contatti/',
@@ -144,15 +145,29 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .invito .freccia{font-size:clamp(32px,3.4vw,48px);line-height:1}
 .invito .parola{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(96px,16vw,230px);line-height:.8;letter-spacing:-.01em}
 .piede{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px;margin:0 12px 12px;padding:40px var(--margine) 24px;background:var(--inchiostro);color:#fff;border-radius:6px}
-.piede .nome{margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(44px,7vw,96px);line-height:.9}
+.piede .nome{margin:0;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(44px,3.9vw,56px);line-height:.9}
 .piede .colonne{display:flex;flex-wrap:wrap;gap:32px clamp(32px,7vw,96px);font-size:16px;line-height:1.9}
 .piede h2{margin:0;font-family:inherit;text-transform:none;font-size:16px;font-weight:400;color:var(--chiara)}
 .piede ul{margin:0;padding:0;list-style:none}
 .piede a{text-decoration:none}
 .piede a:hover{text-decoration:underline}
 .piede .fine{flex-basis:100%;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;margin-top:0;font-size:14px;color:var(--chiara)}
+.testata{padding:22px var(--margine)}
+.logo img{height:110px}
+.testata nav ul{gap:10px}
+.pulsante.piccolo{padding:0 26px}
+.testata nav a[aria-current]{background:var(--giallo)}
+.invito{margin:96px var(--margine) 6px;padding:36px 40px;min-height:300px}
+.invito .frase{max-width:520px;font-size:22px}
+.invito .freccia{display:none}
+.invito .parola{font-size:clamp(96px,11.8vw,170px)}
+.piede{margin:0 var(--margine) 48px}
+.invito{gap:0}
+.colonna:has(+.tessere){max-width:900px}
+.colonna:has(+.tessere) p{font-size:clamp(19px,1.67vw,24px);line-height:1.4}
+.colonna:has(+.tessere)+.tessere>*{padding:26px 30px;font-size:clamp(17px,1.32vw,19px)}
 .sezione{padding:0 var(--margine) 96px}
-.sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 28px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.88;overflow-wrap:anywhere}
+.sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 28px;font-size:clamp(56px,9vw,120px);letter-spacing:-.01em;line-height:.88;overflow-wrap:anywhere}
 .testo + .sezione{padding-top:24px}
 .colonna{max-width:calc(62ch + var(--margine) * 2);padding-bottom:24px}
 .tessere{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
@@ -270,6 +285,18 @@ ${GRIGLIE_LUNGHE}
 .foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
 .invito{margin-top:48px}
+.testata{padding:12px var(--margine) 0;gap:10px 16px}
+.logo img{height:82px}
+.testata nav ul{gap:6px}
+.testata nav a{background:var(--chiara);padding:0 14px}
+.invito{padding:22px;min-height:260px}
+.invito .frase{font-size:17px}
+.invito .parola{font-size:clamp(96px,31vw,170px)}
+.piede{margin-bottom:24px}
+.testata .pulsante{padding:0 14px;font-size:15px}
+.sezione h2{margin-bottom:20px}
+.colonna:has(+.tessere)+.tessere>*{padding:20px;font-size:16px;min-height:150px}
+.colonna:has(+.tessere)+.tessere h3{font-size:36px}
 .pagina-hero:has(>.intro:only-child) .intro h1{font-size:clamp(56px,21.5vw,200px)}
 .foto-citazioni.slogan{height:auto;grid-template-columns:1fr}
 .foto-citazioni.slogan .foto img{height:300px;aspect-ratio:auto}
@@ -307,7 +334,7 @@ function voci(dove: 'menu' | 'footer', c: Contesto): Array<{ etichetta: string; 
 }
 
 const rel = (href: string) => (/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : '')
-const lista = (v: Array<{ etichetta: string; href: string }>) => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a></li>`).join('')
+const lista = (v: Array<{ etichetta: string; href: string }>, corrente = '') => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}${x.href === corrente ? ' aria-current="page"' : ''}>${esc(x.etichetta)}</a></li>`).join('')
 
 /**
  * Il testo di una pagina, ripulito, con solo le immagini ammesse: quelle del sito
@@ -330,8 +357,8 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
-function testata(c: Contesto, conContatti: boolean): string {
-  const menu = lista(voci('menu', c))
+function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
+  const menu = lista(voci('menu', c), corrente)
   return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.provaTestata}</a>` : ''}</header>`
 }
 
@@ -343,7 +370,7 @@ function piede(c: Contesto): string {
 
 function invito(conContatti: boolean): string {
   if (!conContatti) return ''
-  return `<a class="invito" href="${TESTI.contatti}"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}.</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
+  return `<a class="invito" href="${TESTI.contatti}"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}. ${TESTI.settimana}</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
 }
 
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean }): string {
@@ -357,7 +384,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
   const testo = inTestata.resto
-  const t = testata(c, conContatti)
+  const t = testata(c, conContatti, percorso(p.slug))
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
     : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`

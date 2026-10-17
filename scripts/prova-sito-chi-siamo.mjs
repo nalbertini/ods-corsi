@@ -79,5 +79,29 @@ console.log('\n6. Il CSS: titolo a sinistra e testo a destra senza collage')
   ok('titolo a 200px a 1440px', /\.intro h1\{grid-row:1 \/ span 2;font-size:clamp\(56px,13\.9vw,200px\)/.test(css), true)
 }
 
+console.log('\n7. Testata e invito come nel design')
+{
+  const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'chi-siamo', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Chi siamo', slug: 'chi-siamo', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contattaci', slug: 'contatti', indirizzo: null }], rinvii: [] })['chi-siamo/index.html']
+  ok('nella testata la pagina aperta è segnata (aria-current) e una sola', [conta(h, /aria-current="page"/g), /<a href="\/chi-siamo\/" aria-current="page">/.test(h)], [1, true])
+  ok('l’invito dice anche della settimana a 5 euro', h.includes('Collegno. Una settimana a 5 euro: provi tutte le discipline e scegli.'), true)
+  const css = h.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+  ok('l’invito alto 300px, con margini della pagina e 36px 40px dentro', /\.invito\{margin:96px var\(--margine\) 6px;padding:36px 40px;min-height:300px\}/.test(css), true)
+  ok('«Prova» a 170px a 1440px', /\.invito \.parola\{font-size:clamp\(96px,11\.8vw,170px\)\}/.test(css), true)
+  ok('logo alto 110px e testata con 22px sopra e sotto', [/\.logo img\{height:110px\}/.test(css), /\.testata\{padding:22px var\(--margine\)\}/.test(css)], [true, true])
+  ok('la pagina aperta è gialla', /\.testata nav a\[aria-current\]\{background:var\(--giallo\)\}/.test(css), true)
+  ok('sul telefono le voci sono tessere azzurre da 44px con 14px ai lati e il logo è alto 82px', [/\.testata nav a\{background:var\(--chiara\);padding:0 14px\}/.test(css), /\.logo img\{height:82px\}/.test(css)], [true, true])
+}
+
+console.log('\n8. Valori, invito e piede come nel design')
+{
+  const css = html('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+  ok('il paragrafo prima delle tessere è da 24px a 1440px, largo 900px al massimo', [/\.colonna:has\(\+\.tessere\) p\{font-size:clamp\(19px,1\.67vw,24px\);line-height:1\.4\}/.test(css), /\.colonna:has\(\+\.tessere\)\{max-width:900px\}/.test(css)], [true, true])
+  ok('le tessere dopo quel paragrafo hanno 26px 30px dentro, sul telefono 20px e titolo da 36px', [/\.colonna:has\(\+\.tessere\)\+\.tessere>\*\{padding:26px 30px;/.test(css), /\.colonna:has\(\+\.tessere\)\+\.tessere>\*\{padding:20px;font-size:16px;min-height:150px\}/.test(css), /\.colonna:has\(\+\.tessere\)\+\.tessere h3\{font-size:36px\}/.test(css)], [true, true, true])
+  ok('il titolo di sezione sul telefono: almeno 56px, 20px sotto', [/\.sezione h2\{[^}]*font-size:clamp\(56px,9vw,120px\)/.test(css), /\.sezione h2\{margin-bottom:20px\}/.test(css)], [true, true])
+  ok('sul telefono il pulsante della testata sta accanto al logo (padding stretto, 15px)', /\.testata \.pulsante\{padding:0 14px;font-size:15px\}/.test(css), true)
+  ok('l’invito non ha spazio tra frase e «Prova» oltre a quello che li separa', /\.invito\{gap:0\}/.test(css), true)
+  ok('il nome nel piede è 56px a 1440px e 44px sul telefono', /\.piede \.nome\{[^}]*font-size:clamp\(44px,3\.9vw,56px\)/.test(css), true)
+}
+
 console.log(guai ? `\n${guai} da sistemare` : '\nTutto bene')
 process.exit(guai ? 1 : 0)
