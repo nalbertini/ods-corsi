@@ -27,7 +27,7 @@ I nomi, i cognomi e i corsi sono quelli letti dal database negli stessi canvas d
 
 - Pagina nuova (non c’è sul sito di oggi).
 - Nessuna foto per ora: il cerchio del ritratto mostra l’iniziale del nome. Quando le foto ci sono, vanno messe subito sotto ogni nome (`<img>` col nome in `alt`), nella libreria IMMAGINI.
-- I nomi non sono link: le pagine personali (`/istruttori/<nome>/`) non ci sono ancora. Quando esistono, il nome diventa `<h3><a href="/istruttori/<nome>/">Nome</a></h3>` e compare la freccia ↗.
+- I nomi non sono link: le pagine personali (un indirizzo solo, per esempio `/maurizio-innella/`) non ci sono ancora. Quando esistono, il nome diventa `<h3><a href="/maurizio-innella/">Maurizio</a></h3>` e compare la freccia ↗.
 
 ## Da controllare prima di pubblicare
 
@@ -51,3 +51,12 @@ Il primo blocco che non segue un ritratto, e tutto quel che viene dopo, resta te
 
 - Senza foto il cerchio ha l'iniziale del nome: la scritta «Foto» del design è il segnaposto del disegno.
 - Il ruolo di Maurizio nel design telefono è accorciato: sul sito il testo è uno solo, quindi la sua tessera è più alta di 17px.
+
+## La pagina di Maurizio
+
+`docs/sito/maurizio-innella.html` (indirizzo `maurizio-innella`, titolo «Maurizio Innella», descrizione «Maestro di Judo, docente di Educazione Fisica e presidente di ASD Il Centro Judo.»). I testi sono quelli del design, dal sito di oggi. Due cose da mettere prima di pubblicare:
+
+- **la foto**: ora c'è la foto di gruppo come segnaposto; sostituiscila con il ritratto (testo alternativo «Maurizio Innella — Maestro di Judo V Dan»);
+- **la frase**: è ancora la riga tra parentesi quadre del design, non inventata.
+
+`istruttori.html` ha già il link dal nome di Maurizio: crea prima questa pagina, altrimenti il link dà 404.
