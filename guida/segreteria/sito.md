@@ -78,6 +78,11 @@ un nome e dice dove porta: una pagina del sito o un indirizzo. Il nome arriva a 
 **↑** e **↓** la spostano, **TOGLI** la toglie, **+ AGGIUNGI UNA VOCE**
 ne aggiunge una. **SALVA** salva, **BUTTA I CAMBI** torna a prima. Se passi da **PAGINE** a **MENU E FOOTER** con voci a metà, l'app chiede prima.
 
+Sul sito la voce che porta ai contatti non sta nel menu in alto: diventa il
+pulsante scuro **CONTATTACI**, accanto a **PROVA**. Nel piede resta tra le
+pagine. Sul telefono il menu sta su una riga se i nomi sono corti: «I corsi»
+entra, «I nostri corsi» rischia di andare a capo.
+
 L'app non ti lascia salvare se una voce non va, e dice quale:
 
 - una voce senza nome;

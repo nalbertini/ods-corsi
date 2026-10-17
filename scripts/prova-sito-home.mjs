@@ -219,7 +219,7 @@ console.log('\n9. Telefono: le misure del design')
   ok('piede: nome da 44px, 24px di imbottitura', [ha(mobile, '.piede .nome', 'font-size:44px'), ha(mobile, '.piede', 'padding:24px')], [true, true])
   const m = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: 'home', indirizzo: null }, { dove: 'menu', ordine: 2, etichetta: 'Contatti', slug: 'contatti', indirizzo: null }], rinvii: [] })
   ok('domande: una gialla e una chiara, a turno', ha(mobile, '.tessere .tessera.chiara:nth-child(odd)', 'background:var(--giallo)'), true)
-  ok('la voce della pagina aperta ha aria-current="page", solo quella', [/<a href="\/" aria-current="page">Home/.test(m['index.html']), /<a href="\/contatti\/" aria-current="page">Contatti/.test(m['contatti/index.html']), (m['index.html'].match(/aria-current="page"/g) ?? []).length], [true, true, 1])
+  ok('la voce della pagina aperta ha aria-current="page", solo quella', [/<a href="\/" aria-current="page">Home/.test(m['index.html']), /<a class="contattaci" href="\/contatti\/" aria-current="page">Contattaci/.test(m['contatti/index.html']), (m['index.html'].match(/aria-current="page"/g) ?? []).length], [true, true, 1])
 }
 
 console.log('\n10. I colori delle tessere come nel design')
