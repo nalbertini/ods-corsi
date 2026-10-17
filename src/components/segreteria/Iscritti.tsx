@@ -8,7 +8,7 @@ import { cfTornaColNome, cfTornaConLaData, cfValido } from '../../lib/codiceFisc
 import { comuneDalCap, conIlComune, etichettaTendina, fraseDellaScelta } from '../../lib/comuneDalCap'
 import { chiaveGiorno, giornoPerEsteso, oraDi } from '../../lib/sala'
 import { Bozza, chiedi, Campo, useBozza, dataLunga, Guaio, lasciare, messaggio, Riga, SchedaPiena, Testa, useAvviso, useCarica, useOrdina } from './comune'
-import { NuovaRicevuta, RicevuteIscritto } from './Ricevute'
+import { NuovaRicevuta, StoricoIscritto } from './Ricevute'
 import { FiltroRicerca } from './FiltroRicerca'
 import type { Ricercata } from '../../lib/ricerca'
 import { abbonamentiDalleRicevute, doveVaLoSconto, cosaNonVaNucleo, SCONTO_FAMIGLIA } from '../../lib/nucleo'
@@ -622,7 +622,7 @@ function Scheda({
           </div>
           <div id="sez-quota" className="stack" style={{ gap: 20 }}>
             <Pagamento key={`p-${p.id}-${p.pagamento.stato}-${p.pagamento.fino ?? ''}-${giroRicevute}-${(p.quote ?? []).length}`} d={d} p={p} fai={fai} onCambiato={onCambiato} />
-            <RicevuteIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
+            <StoricoIscritto key={`r-${p.id}-${giroRicevute}`} d={d} p={p} corsi={attivi.map((c) => c.nome)} fai={fai} onNuova={() => setPagando(true)} onCambiato={onCambiato} />
           </div>
           {d.modo === 'prova' && <NucleoFamiliare d={d} p={p} tutti={tutti} fai={fai} onCambiato={onCambiato} onApri={onApri} />}
           {nonDoppioni.length > 0 && (

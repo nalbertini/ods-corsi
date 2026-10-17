@@ -8,6 +8,7 @@ import type { Disciplina } from '../../timer/src/lib/discipline'
 import type { StatoPresenzaIstruttore } from './tablet'
 import type { DatiRicevuta, EnteRicevuta, IntestatarioRicevuta, QuotaRicevuta, Ricevuta } from './ricevute'
 import { euro } from './ricevute'
+import type { DatiPagamentoDiretto, PagamentoDiretto } from './pagamenti'
 import { VALIDITA } from './costi'
 import { ESTENSIONI, MASSIMO_FILE } from './richieste'
 import type { Listino, ListinoLetto } from './listino'
@@ -580,6 +581,12 @@ export interface DatiSegreteria {
   emettiRicevuta(r: DatiRicevuta): Promise<Ricevuta>
   /** La annulla: resta, col suo numero, e il PDF dice ANNULLATA. */
   annullaRicevuta(id: string): Promise<void>
+  /** I pagamenti fatti a mano, di una persona o di tutti, dal più recente; anche gli annullati (`54-pagamenti-diretti.sql`). */
+  pagamentiDiretti(personaId?: string): Promise<PagamentoDiretto[]>
+  /** Registra un pagamento fatto a mano, senza ricevuta. */
+  registraPagamentoDiretto(d: DatiPagamentoDiretto): Promise<PagamentoDiretto>
+  /** Lo annulla: resta in elenco, segnato annullato. */
+  annullaPagamentoDiretto(id: string): Promise<void>
   /** I dati dell'associazione in testa alle ricevute. */
   enteRicevute(): Promise<EnteRicevuta>
   salvaEnteRicevute(e: EnteRicevuta): Promise<void>
@@ -993,6 +1000,9 @@ export function pagamentoDi(p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: st
   const finite = [...quote.map((q) => q.al).filter((x): x is string => !!x && x < oggi), ...(m.stato !== 'da_pagare' && m.fino && m.fino < oggi ? [m.fino] : [])].sort()
   return finite.length ? { come: 'scaduto', fino: finite[finite.length - 1] } : { come: 'da_pagare' }
 }
+
+/** La quota in una parola, per il riquadro QUOTA della scheda. */
+export const etichettaQuota = (come: ComePaga) => (come === 'pagato' ? 'PAGATA' : come === 'in_parte' ? 'IN PARTE' : come === 'scaduto' ? 'SCADUTA' : 'DA PAGARE')
 
 export const comePaga = (p: Pick<PersonaSeg, 'pagamento' | 'quote'>, oggi: string): ComePaga => pagamentoDi(p, oggi).come
 

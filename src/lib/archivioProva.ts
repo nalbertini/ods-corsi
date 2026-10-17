@@ -1,6 +1,7 @@
 import type { Segnalata } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 import type { Ruolo, StatoSessione } from './sala'
+import type { PagamentoDiretto } from './pagamenti'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
 import type { Anagrafica, FileSeg } from './segreteria'
 
@@ -140,6 +141,8 @@ export interface Archivio {
   dateCorsiDal?: string
   /** Le ricevute dei pagamenti, come le righe di `ricevute` (16-ricevute.sql). */
   ricevute?: Ricevuta[]
+  /** I pagamenti fatti a mano, senza ricevuta (54-pagamenti-diretti.sql). */
+  pagamentiDiretti?: PagamentoDiretto[]
   /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */
   enteRicevute?: EnteRicevuta
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */
