@@ -97,7 +97,8 @@ console.log('\n2. Il ritmo delle sezioni')
 
 console.log('\n3. Le tessere sono alte come nel design')
 {
-  const alte = R.filter((r) => r.sel.some((x) => /\.tessera/.test(x)) && 'min-height' in r.dich).map((r) => px(r.dich['min-height']))
+  // Le schede dei corsi (con un link nel titolo) sono alte 340px come nel design: non contano tra le tessere di sezione.
+  const alte = R.filter((r) => r.sel.some((x) => /\.tessera/.test(x) && !/:has\(h3 a\)/.test(x)) && 'min-height' in r.dich).map((r) => px(r.dich['min-height']))
   ok('una tessera di sezione è alta almeno 190px a 1440px', Math.max(0, ...alte) >= 190, true)
   ok('e al massimo 300px', Math.max(0, ...alte) <= 300, true)
   ok('l’altezza vale solo dal computer in su: sul telefono la tessera resta com’è', /@media\s*\(min-width:\s*\d+px\)\s*\{[^@]*\.tessera[^}]*min-height/.test(CSS), true)
@@ -107,7 +108,7 @@ console.log('\n3. Le tessere sono alte come nel design')
 console.log('\n3b. Il titolo e le tessere reggono anche a 1100px e a 1920px')
 {
   const h1 = dich((x) => x === 'h1', 'font-size')
-  const tess = R.filter((r) => r.sel.some((x) => /\.tessera/.test(x)) && 'min-height' in r.dich).map((r) => r.dich['min-height'])
+  const tess = R.filter((r) => r.sel.some((x) => /\.tessera/.test(x) && !/:has\(h3 a\)/.test(x)) && 'min-height' in r.dich).map((r) => r.dich['min-height'])
   const a = (larghezza, f) => { const v = L; L = larghezza; const r = f(); L = v; return r }
   ok('a 1920px il titolo si ferma a 228px (non cresce oltre il design)', a(1920, () => px(h1)), 228)
   ok('a 1100px il titolo è almeno 160px (non cade al minimo del telefono)', a(1100, () => px(h1) ?? 0) >= 160, true)

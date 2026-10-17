@@ -260,7 +260,7 @@ console.log('\n1. Il collage c’è solo nella home che non è di legge (R1)')
   const leggeAltra = pag(testo, { slug: 'privacy', diLegge: true })
   ok('home di legge: il testo c’è tutto (foto e voci dell’elenco), come in un’altra pagina di legge', [main(legge) === main(leggeAltra), main(legge).includes('f1.webp'), conta(main(legge), /<li>/g)], [true, true, 3])
   const solo = '<p>Solo parole</p>' + SEZIONI
-  ok('introduzione senza foto né elenco: il main della home è identico a quello di un’altra pagina (R13)', main(pag(solo)) === main(pag(solo, { slug: 'chi-siamo' })) && main(pag(solo)).includes('Solo parole'), true)
+  ok('introduzione senza foto né elenco: il main della home è identico a quello di un’altra pagina (R13)', main(pag(solo)) === main(pag(solo, { slug: 'chi-siamo' })).replace(' interna', '') && main(pag(solo)).includes('Solo parole'), true)
   ok('…e la testata non ha tessere', tessere(hero(pag(solo))).length, 0)
 }
 
@@ -480,8 +480,8 @@ console.log('\n15. Il testo della Home in docs/sito/home.html fa il collage del 
   const e = hero(h)
   ok('il titolo è breve e sta nella testata', [titolo.length < 30, e.includes(`<h1>${titolo}</h1>`)], [true, true])
   ok('la frase della descrizione sta nella testata', e.includes(frase), true)
-  ok('3 foto nel collage, la prima grande', [conta(e, /<figure class="tessera foto/g), /<figure class="tessera foto grande/.test(e)], [3, true])
-  ok('5 numeri nel collage', conta(e, /tessera [a-z]+ numero/g), 5)
+  ok('collage pieno: 4 foto, la prima grande', [conta(e, /<figure class="tessera foto/g), /<figure class="tessera foto grande/.test(e), /class="collage pieno"/.test(e)], [4, true, true])
+  ok('9 voci nel collage: 4 numeri, 3 titoli, 2 note', [conta(e, /tessera [a-z]+ numero/g), conta(e, /tessera [a-z]+ titolo/g), conta(e, /tessera [a-z]+ nota/g)], [4, 3, 2])
   ok('le foto e l’elenco dei numeri non restano sotto la testata', [/<img/.test(dopoHero(h).split('<h2')[0]), /<ul/.test(dopoHero(h).split('<h2')[0])], [false, false])
   ok('tutte e 9 le righe dei corsi diventano tessere', conta(dopoHero(h), /<a href="\/[a-z-]+\/">/g) >= 9, true)
 }
