@@ -258,11 +258,13 @@ export function importaTessereProva(
   schede: Array<{ personaId: string; nome: string; cognome: string; codiceFiscale?: string }>,
   esistenti: Array<Pick<TesseraSeg, 'personaId' | 'ente' | 'tipo' | 'dal' | 'al'>>,
 ): { esito: EsitoImportTessere; daScrivere: Array<Omit<TesseraSeg, 'id'> & { personaId: string; codice: string }> } {
+  if (righe.length > 2000) throw new Error('Il foglio ha più di 2000 righe: dividilo in due')
   const non_abbinate: EsitoImportTessere['non_abbinate'] = []
   const daScrivere: Array<Omit<TesseraSeg, 'id'> & { personaId: string; codice: string }> = []
   const viste = new Set(esistenti.map((t) => `${t.personaId}|${t.ente}|${t.tipo}|${t.dal}`))
   let gia = 0
-  const dataVera = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d)) && d >= '2000-01-01' && d <= '2100-12-31'
+  // Una data che non c'è (30 febbraio) il database la rifiuta: Date la sposterebbe a marzo, quindi si rilegge.
+  const dataVera = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d)) && new Date(d).toISOString().slice(0, 10) === d && d >= '2000-01-01' && d <= '2100-12-31'
   for (const r of righe) {
     const ente = r.ente.trim().toUpperCase()
     const cf = r.codice_fiscale.trim().toUpperCase()

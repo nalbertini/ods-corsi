@@ -144,6 +144,7 @@ const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
+  [/tessere/, 'Le tessere non sono ancora attive sul database: va lanciato 55-tessere.sql'],
   [/non_doppioni/, 'Segnare due schede «non sono doppioni» non è ancora attivo sul database: va lanciato 33-non-doppioni.sql'],
   [/segnalazioni/, 'Le segnalazioni non sono ancora attive sul database: va lanciato 25-segnalazioni.sql'],
   [/schede_iscritti/, 'Certificati e pagamenti non sono ancora attivi sul database: va lanciato 07-certificati-pagamenti.sql'],

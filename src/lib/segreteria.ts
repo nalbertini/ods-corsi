@@ -1435,13 +1435,16 @@ export function corsoCambiato(corso: CorsoSeg | null, bozza: DatiCorso, salaIniz
     istruttori: corso?.istruttori.map((i) => i.id) ?? [],
     capienza: corso?.capienza,
     colore: corso?.colore ?? COLORI[0].hex,
+    enteTessera: corso?.enteTessera ?? '',
   }
   return (
     bozza.nome.trim() !== salvato.nome.trim() ||
     (bozza.salaId ?? '') !== (salvato.salaId ?? '') ||
     istruttoriDetti(bozza.istruttori) !== istruttoriDetti(salvato.istruttori) ||
     bozza.capienza !== salvato.capienza ||
-    (bozza.colore ?? COLORI[0].hex) !== salvato.colore
+    (bozza.colore ?? COLORI[0].hex) !== salvato.colore ||
+    // Senza tessera è vuota o assente, lo stesso.
+    (bozza.enteTessera ?? '') !== salvato.enteTessera
   )
 }
 

@@ -94,7 +94,7 @@ create or replace function parole_nome(t text) returns text
   language sql immutable set search_path = public as $$
   select coalesce(string_agg(w, ' ' order by w), '')
     from unnest(string_to_array(
-           regexp_replace(translate(upper(coalesce(t, '')), 'ÀÁÂÈÉÊÌÍÒÓÙÚ', 'AAAEEEIIOOUU'), '[^A-Z ]', '', 'g'),
+           regexp_replace(translate(upper(coalesce(t, '')), 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÑÇÝŠŽ', 'AAAAAAEEEEIIIIOOOOOUUUUNCYSZ'), '[^A-Z ]', '', 'g'),
            ' ')) as w
    where w <> '';
 $$;
@@ -157,6 +157,8 @@ begin
     v_dal := null;
     v_al := null;
     begin
+      -- Solo la forma AAAA-MM-GG: «01/09/2026» il database lo leggerebbe a modo suo, e sbagliando.
+      if (r ->> 'dal') !~ '^\d{4}-\d{2}-\d{2}$' or (r ->> 'al') !~ '^\d{4}-\d{2}-\d{2}$' then raise exception 'data'; end if;
       v_dal := (r ->> 'dal')::date;
       v_al := (r ->> 'al')::date;
     exception when others then v_motivo := 'riga_non_valida';
@@ -174,11 +176,11 @@ begin
     chi := null;
     if v_motivo is null then
       select a.persona_id into chi
-        from anagrafiche a join persone p on p.id = a.persona_id
+        from anagrafiche a join persone p on p.id = a.persona_id and p.ruolo = 'iscritto'
        where a.codice_fiscale = v_cf and parole_nome(p.nome || ' ' || p.cognome) = parole_nome(v_nome)
        limit 1;
       if chi is null then
-        v_motivo := case when exists (select 1 from anagrafiche where codice_fiscale = v_cf)
+        v_motivo := case when exists (select 1 from anagrafiche a join persone p on p.id = a.persona_id and p.ruolo = 'iscritto' where a.codice_fiscale = v_cf)
                          then 'nome_diverso' else 'nessuna_scheda' end;
       end if;
     end if;
@@ -245,6 +247,7 @@ begin
     select u.persona_id, u.ente, 'non_iscritto', null::text, u.al
       from ultima u
      where u.vale_oggi
+       and exists (select 1 from persone q where q.id = u.persona_id and q.attiva)
        and not exists (select 1 from iscrizioni i join persone p on p.id = i.persona_id and p.attiva
                         where i.persona_id = u.persona_id and i.dal <= oggi and (i.al is null or i.al >= oggi));
 end $$;

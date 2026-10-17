@@ -242,6 +242,41 @@ delete from tessere where codice in ('D-1', 'D-2');
 delete from persone where id in ('aaaaaaaa-0000-0000-0000-000000000030', 'aaaaaaaa-0000-0000-0000-000000000031');
 
 \echo ''
+\echo '--- 4b. gli stessi casi della prova dell''app ---'
+insert into persone (id, nome, cognome, ruolo) values
+  ('aaaaaaaa-0000-0000-0000-000000000040', 'Hans', 'Müller', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000041', 'José', 'Núñez', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000042', 'Ali', 'Çelik', 'iscritto');
+insert into anagrafiche (persona_id, codice_fiscale) values
+  ('aaaaaaaa-0000-0000-0000-000000000040', 'MLLHNS85A01L219X'),
+  ('aaaaaaaa-0000-0000-0000-000000000041', 'NNZJSO85A01L219X'),
+  ('aaaaaaaa-0000-0000-0000-000000000042', 'CLKLIA85A01L219X'),
+  -- Un istruttore con il codice fiscale: non è una scheda da iscritto.
+  ('aaaaaaaa-0000-0000-0000-000000000002', 'MRAUNO80A01L219X');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('con le dieresi, le tilde e la cediglia il nome si ritrova (come nell''app)',
+  (importa_tessere('[
+    {"ente":"FIJLKAM","nome":"MULLER HANS","codice_fiscale":"MLLHNS85A01L219X","tipo":"praticante","codice":"U-1","dal":"2026-09-01","al":"2026-12-31"},
+    {"ente":"FIJLKAM","nome":"NUNEZ JOSE","codice_fiscale":"NNZJSO85A01L219X","tipo":"praticante","codice":"U-2","dal":"2026-09-01","al":"2026-12-31"},
+    {"ente":"FIJLKAM","nome":"CELIK ALI","codice_fiscale":"CLKLIA85A01L219X","tipo":"praticante","codice":"U-3","dal":"2026-09-01","al":"2026-12-31"}]'::jsonb, true) ->> 'nuove'), '3');
+select atteso('un istruttore con il codice fiscale non è una scheda da iscritto',
+  (importa_tessere('[{"ente":"FIJLKAM","nome":"UNO MAURA","codice_fiscale":"MRAUNO80A01L219X","tipo":"praticante","codice":"U-4","dal":"2026-09-01","al":"2026-12-31"}]'::jsonb, true) -> 'non_abbinate' -> 0 ->> 'esito'), 'nessuna_scheda');
+select atteso('una data che non c''è, o scritta all''italiana, non entra',
+  (select string_agg(e ->> 'esito', ',') from jsonb_array_elements(importa_tessere('[
+    {"ente":"FIJLKAM","nome":"MULLER HANS","codice_fiscale":"MLLHNS85A01L219X","tipo":"praticante","codice":"U-5","dal":"2026-02-30","al":"2026-12-31"},
+    {"ente":"FIJLKAM","nome":"MULLER HANS","codice_fiscale":"MLLHNS85A01L219X","tipo":"praticante","codice":"U-6","dal":"01/09/2026","al":"2026-12-31"}]'::jsonb, true) -> 'non_abbinate') e), 'riga_non_valida,riga_non_valida');
+reset role;
+-- Una scheda archiviata con una tessera che vale: non è un «tesserato senza corso».
+update persone set attiva = false where id = 'aaaaaaaa-0000-0000-0000-000000000040';
+insert into tessere (persona_id, ente, tipo, codice, dal, al) values ('aaaaaaaa-0000-0000-0000-000000000040', 'FIJLKAM', 'praticante', 'U-7', '2026-09-01', '2026-12-31');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('una scheda archiviata con la tessera valida non è «non iscritto»', (select count(*)::text from incrocio_tessere('2026-10-17') where persona_id = 'aaaaaaaa-0000-0000-0000-000000000040'), '0');
+reset role;
+delete from tessere where codice = 'U-7';
+
+\echo ''
 \echo '--- 5. unire due schede porta le tessere, anche la stessa su tutte e due ---'
 -- Teo ha la stessa tessera FIJLKAM sulle due schede; la seconda ha anche una FIPE.
 insert into tessere (id, persona_id, ente, tipo, codice, dal, al, origine) values

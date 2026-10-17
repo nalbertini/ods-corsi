@@ -529,6 +529,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async aggiungiTessera(t) {
       const ente = t.ente.trim().toUpperCase()
       if (!ente || !t.codice.trim()) throw new Error('Scrivi l’ente e il numero della tessera')
+      // Gli stessi limiti della tabella `tessere`.
+      if (ente.length > 40 || t.codice.trim().length > 20 || !/^(20\d\d|2100)-\d{2}-\d{2}$/.test(t.dal)) throw new Error('La tessera ha dei dati che non vanno: controlla ente, numero e data')
       if ((a().tessere ?? []).some((x) => x.personaId === t.personaId && x.ente === ente && x.tipo === t.tipo && x.dal === t.dal)) throw new Error('Questa tessera c’è già')
       a().tessere = [...(a().tessere ?? []), { id: `t-${unico()}`, personaId: t.personaId, ente, tipo: t.tipo, codice: t.codice.trim(), dal: t.dal, al: fineAnno(t.dal), origine: 'manuale' }]
       salva()

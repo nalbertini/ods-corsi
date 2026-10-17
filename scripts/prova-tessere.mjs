@@ -179,6 +179,21 @@ console.log('\nL\'import in prova: come `importa_tessere`')
   ok('il codice fiscale in minuscolo e l\'ente con lo spazio si trovano lo stesso', m.importaTessereProva([R('ROSSI MARIO', 'rssmra10a01l219x', 'agonista', 'X', '2026-09-01', '2026-12-31', ' fijlkam ')], schede, []).daScrivere.map((x) => [x.personaId, x.ente]), [['mario', 'FIJLKAM']])
 }
 
+{
+  const R = (nome, cf, dal) => ({ ente: 'FIJLKAM', nome, codice_fiscale: cf, tipo: 'praticante', codice: 'U-1', dal, al: '2026-12-31' })
+  const schede = [{ personaId: 'hans', nome: 'Hans', cognome: 'Müller', codiceFiscale: 'MLLHNS85A01L219X' }, { personaId: 'jose', nome: 'José', cognome: 'Núñez', codiceFiscale: 'NNZJSO85A01L219X' }, { personaId: 'ali', nome: 'Ali', cognome: 'Çelik', codiceFiscale: 'CLKLIA85A01L219X' }]
+  ok('con le dieresi, le tilde e la cediglia il nome si ritrova (come nel database)', m.importaTessereProva([R('MULLER HANS', 'MLLHNS85A01L219X', '2026-09-01'), R('NUNEZ JOSE', 'NNZJSO85A01L219X', '2026-09-01'), R('CELIK ALI', 'CLKLIA85A01L219X', '2026-09-01')], schede, []).esito.nuove, 3)
+  ok('una data che non c\'è (30 febbraio) non entra', m.importaTessereProva([R('MULLER HANS', 'MLLHNS85A01L219X', '2026-02-30')], schede, []).esito.non_abbinate.map((x) => x.esito), ['riga_non_valida'])
+  ok('una data scritta all\'italiana non entra: il database la leggerebbe a modo suo', m.importaTessereProva([R('MULLER HANS', 'MLLHNS85A01L219X', '01/09/2026')], schede, []).esito.non_abbinate.map((x) => x.esito), ['riga_non_valida'])
+  let guaio = ''
+  try {
+    m.importaTessereProva(Array.from({ length: 2001 }, () => R('MULLER HANS', 'MLLHNS85A01L219X', '2026-09-01')), schede, [])
+  } catch (e) {
+    guaio = e.message
+  }
+  ok('più di 2000 righe: si ferma, come il database', guaio, 'Il foglio ha più di 2000 righe: dividilo in due')
+}
+
 console.log('\nL\'esito dell\'import, in parole di chi lo legge')
 ok('nome diverso: dice cosa fare', m.motivoNonAbbinata('nome_diverso'), 'Il codice fiscale è di un’altra persona: controlla il nome.')
 ok('nessuna scheda: dice cosa fare', m.motivoNonAbbinata('nessuna_scheda'), 'Nessuna scheda ha questo codice fiscale: scrivilo nella scheda della persona.')
