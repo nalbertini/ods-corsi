@@ -274,6 +274,12 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     to_regclass('public.pagamenti_diretti') is not null
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto')
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'annulla_pagamento_diretto')),
+  ('59-contabilita.sql', 'la contabilità: voci, casse e movimenti, solo per chi cura i conti',
+    to_regclass('public.movimenti') is not null
+    and to_regclass('public.casse') is not null
+    and to_regclass('public.voci_contabili') is not null
+    and exists (select 1 from dentro where nome = 'registra_movimento' and corpo like '%contabilita_porta()%')
+    and exists (select 1 from dentro where nome = 'registra_giroconto')),
   ('55-amministrazione.sql', 'il ruolo amministrazione, per chi cura i conti',
     exists (select 1 from pg_enum e where e.enumtypid = 'ruolo'::regtype and e.enumlabel = 'amministrazione')
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'anche_amministrazione')

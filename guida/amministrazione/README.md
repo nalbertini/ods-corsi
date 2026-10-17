@@ -27,6 +27,7 @@ all'altra dal menu (**SEGRETERIA →**, **ISTRUTTORI →**) senza uscire.
 
 | Voce | Cosa fa |
 |---|---|
+| **CONTABILITÀ** | Le entrate e le uscite in due casse: movimenti, voci, saldi iniziali. [Apri](contabilita.md) |
 | **PAGAMENTI** | Tutto quello che è stato pagato: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV. [Apri](pagamenti.md) |
 | **LISTINO** | I costi della stagione, gli stessi della [segreteria](../segreteria/listino.md): si cambiano da qui. |
 
