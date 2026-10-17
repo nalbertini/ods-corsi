@@ -24,6 +24,7 @@ prima() {
     istruttori-dalle-lezioni) echo tablet presenze-istruttori ;;
     prove-per-nome) echo tablet prove ;;
     cerca-persone | istruttore-collega | presenze-finestra) echo tablet ;;
+    accessi-piu-stretti) echo tablet ;;
     timer-lezioni) echo timer ;;
   esac
 }

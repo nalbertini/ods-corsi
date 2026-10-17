@@ -5,8 +5,8 @@
 -- Pilates, Yoga…), oltre che per tipo. La lista delle discipline la tiene la
 -- segreteria, ed è una sola per tutte le sale. Sta in una colonna della riga
 -- delle impostazioni, come il catalogo degli esercizi (13-voce-esercizi.sql):
--- chi la legge e chi la cambia è già deciso da 05-segreteria.sql, la legge
--- chiunque abbia un accesso, tablet compresi, la cambia la segreteria. È un
+-- chi la legge e chi la cambia è deciso da 05-segreteria.sql e 57-accessi-piu-stretti.sql: la legge
+-- chi lavora (istruttori, segreteria, tablet compresi), la cambia la segreteria. È un
 -- array di `{id, nome}`; la ripulisce l'app (`timer/src/lib/discipline.ts`).
 --
 -- Una voce — un esercizio, un timer, una lista di musica — ha una disciplina

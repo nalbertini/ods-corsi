@@ -7,7 +7,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  *
  * Una volta ogni qualche ora per client, non a ogni settimana sfogliata; e
  * non una volta sola, perché il tablet di sala resta aperto per settimane.
- * Se non riesce — senza rete, senza accesso, o su un database che non ha
+ * Se non riesce — senza rete, senza un accesso di lavoro, o su un database che non ha
  * ancora il file 12 — si legge il calendario com'è: non è un motivo per non
  * mostrarlo.
  */
