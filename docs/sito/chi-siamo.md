@@ -1,37 +1,40 @@
-# La pagina Chi siamo del sito come nel design
+# Chi siamo: la pagina come nel design
 
-Testo da incollare nel pannello SITO (PAGINE › Chi siamo), per avere la pagina
-del design «tatami blu e giallo»: titolo grande a sinistra e testo a destra,
-foto con la frase grande, due tessere, i numeri, il pannello degli istruttori,
-la fascia di quattro foto e il pannello della missione.
+Testo da incollare nel pannello SITO (PAGINE › Chi siamo), per avere la pagina del design «tatami blu e giallo» (`TatamiBlu-ChiSiamo`, desktop, e `TatamiBluM-ChiSiamo`, telefono). Le regole del layout sono in `chi-siamo.md` del ramo `claude/sito-chi-siamo-abf4d2`.
 
 Come si fa:
 
 1. Apri **PAGINE › Chi siamo**.
-2. Nei campi a destra: **titolo** «Chi siamo» e **descrizione** qui sotto.
-3. Apri `docs/sito/chi-siamo.html` nel browser, seleziona tutto (Cmd+A), copia.
-   Nel pannello clicca nel testo, cancella tutto e incolla (Cmd+V).
+2. Nei campi a destra: **titolo** e **descrizione** qui sotto.
+3. Apri `docs/sito/chi-siamo.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello clicca nel testo, cancella tutto e incolla (Cmd+V).
 4. **ANTEPRIMA** per controllare, poi **PUBBLICA**.
+
+## Titolo
+
+Chi siamo
 
 ## Descrizione
 
 Le Officine dello Sport di Collegno sono uno spazio dove allenarsi con metodo e passione, mettendosi alla prova ogni giorno.
 
-## Come il sito legge il testo (prima del primo titolo grande)
+## Testo
 
-Il testo prima di «I nostri valori» si legge in ordine, a fasce:
+Il testo sta in [`chi-siamo.html`](chi-siamo.html): è quello che va incollato. Ordine: foto con la frase grande, due tessere («Chi siamo oggi», «Come tutto è iniziato»), i quattro numeri, il pannello «Gli istruttori» col pulsante, la fascia di quattro foto, il pannello della missione, poi «I nostri valori» con quattro tessere.
 
-- **una foto e una citazione sole**: la foto a sinistra, la frase grande gialla a destra;
-- **uno o più `h3` di fila**, ognuno con i suoi paragrafi: più di uno sono tessere larghe (azzurra e blu); uno solo è un pannello a tutta riga (inchiostro il primo, giallo il secondo);
-- **un elenco con il grassetto iniziale**: i numeri grandi (giallo, blu, inchiostro, giallo);
-- **foto di fila**: la fila di foto, a quattro la fascia alta.
+## Cosa cambia rispetto a oggi
 
-Un `h3` finisce al primo blocco che non è un paragrafo: per questo il
-pulsante «Conosci gli istruttori» sta in un suo paragrafo (`a.pulsante`) e le
-foto che seguono aprono una fascia nuova.
+- La frase sotto il titolo diventa più corta (oggi aggiunge «Arti marziali e preparazione atletica per ogni età e livello, tra crescita, disciplina e divertimento»).
+- «Nasciamo dal judo e oggi siamo un Associazione Sportiva che mette al centro la persona, ad ogni età» diventa la frase grande sulla foto: «Nasciamo dal judo, mettiamo al centro la persona».
+- In cima la foto del gruppo e i quattro numeri (300+ atleti, 13 tecnici, 8 attività, 35+ anni di sport), nuovi: oggi non ci sono.
+- Nuovo pannello «Gli istruttori» col pulsante «Conosci gli istruttori» (porta a `/istruttori/`) e la fascia di quattro foto.
+- Le tre frasi di «I nostri valori» sono quelle di oggi, con un «Accompagniamo» al posto di «Accompagna» (errore di oggi).
+- Piccole correzioni di grammatica: «un’Associazione Sportiva», «un’associazione sportiva di judo, A.s.d. il Centro Judo».
+- Il resto è identico al testo pubblicato.
 
-## Cosa resta diverso dal design
+## Da controllare prima di pubblicare
 
-- I tre cerchi «Foto» tonde nel pannello degli istruttori non ci sono: il testo della segreteria non può mettere foto rotonde accanto a un titolo.
-- «I nostri valori»: i colori delle quattro tessere ruotano blu, giallo, inchiostro, azzurro come in tutte le sezioni del sito (il design ha giallo, blu, inchiostro, giallo); sul telefono le tessere hanno titolo da 32px e non da 36px.
-- L'invito «Prova» in fondo, il piede e il logo sono quelli comuni a tutte le pagine: li allineano le sessioni della Home e delle altre pagine.
+- **Tecnici: 13 o 9?** Il design di Chi siamo dice «9» nei numeri e «Tredici» nella frase sotto; la Home dice 13 (i tecnici nel database sono 13). Ho scritto 13 in tutti e due i punti.
+- «35+ anni di sport», «300+ atleti», «8 attività»: numeri della Home, da confermare.
+- «Nasciamo dal judo»: vero secondo il testo di oggi (A.s.d. il Centro Judo); il nome «Centro Judo» resta com’è.
+- Le foto: gruppo di bambini, istruttori, lezione di judo, presa di judo, aikido con una bambina, lotta, preparazione atletica, psicomotricità. Alcune ritraggono minori: servono i permessi dei genitori. FOTO DA SCEGLIERE: la sessione «sito-foto» (`docs/sito/foto.md`) può proporne altre per la fascia di quattro.
+- Nella fascia di quattro foto e nel pannello degli istruttori compare una foto già usata nella Home (aikido): se ne vuole una diversa, decide la segreteria.

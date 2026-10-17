@@ -1,57 +1,40 @@
-# La pagina Contatti del sito come nel design
+# Contatti: la pagina come nel design
 
-Testo da scrivere nel pannello SITO (PAGINE › Contatti) per avere la pagina del
-design «tatami blu e giallo». Il titolo grande e la frase accanto sono **titolo**
-e **descrizione** della pagina; il resto è il testo.
+Testo da incollare nel pannello SITO (PAGINE › Contatti), per avere la pagina del design «tatami blu e giallo» (`TatamiBlu-Contatti`, desktop, e `TatamiBluM-Contatti`, telefono). Le regole del layout sono in `contatti.md` del ramo `claude/sito-contatti-955302`.
 
-## Come si scrive il testo
+Come si fa:
 
-In ordine, tutto prima del primo titolo grande (`h2`):
+1. Apri **PAGINE › Contatti**.
+2. Nei campi a destra: **titolo** e **descrizione** qui sotto.
+3. Apri `docs/sito/contatti.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello clicca nel testo, cancella tutto e incolla (Cmd+V).
+4. **ANTEPRIMA** per controllare, poi **PUBBLICA**.
 
-1. **I recapiti**: un sottotitolo (`h3`) per ognuno e sotto il valore. Sul sito
-   sono quattro tessere in fila, nei colori giallo, blu, inchiostro, chiaro.
-   Il primo paragrafo è il valore in grande (un valore di al massimo 14
-   caratteri, come un telefono, esce ancora più grande); un secondo paragrafo è
-   una nota piccola. Un recapito arriva fino alla prima foto.
-2. **La mappa**: la prima foto dopo i recapiti. Una foto della mappa (da
-   caricare nella libreria IMMAGINI), larga quanto la pagina e alta 520px.
-3. **Le indicazioni**: un paragrafo con un solo link `pulsante` («Ottieni
-   indicazioni», verso Google Maps). Sul sito il pulsante sta sopra la mappa,
-   in basso a sinistra.
-4. **Le foto**: tre foto di fila, alte 536px (sul telefono due, alte 200px).
-5. **Le domande**: un titolo grande («Hai qualche domanda?»), un paragrafo e un
-   sottotitolo (`h3`) con la risposta sotto per ogni domanda; le tessere vanno
-   a tre per riga, gialle e chiare a scacchiera.
+## Titolo
 
-La regola vale solo per la pagina con indirizzo `contatti`: `impagina(testo,
-true)` in `src/lib/sitoLayout.ts`, `main.pagina-contatti` nel CSS.
+Contattaci
 
-## La mappa
+## Descrizione
 
-`sito/risorse/mappa.webp` è la mappa di OpenStreetMap (zoom 17, 1344×520,
-centrata su Via Sassi 26, Collegno: 45.0785534, 7.5936698) ricomposta da 18
-tessere. Nel testo si usa come una foto: `<img src="/risorse/mappa.webp"
-alt="Mappa: Officine dello Sport, Via Sassi 26, Collegno">`. Segnaposto,
-targhetta e «© OpenStreetMap contributors» li mette il sito sopra la prima foto
-dopo i recapiti, quindi la mappa va sempre al centro dell'immagine.
+Siamo qui per accompagnarti nella scelta giusta. Scrivici senza impegno: ti aiutiamo a capire quale percorso è più adatto a te o alla tua famiglia.
 
-## Il paragrafo dopo il pulsante
+## Testo
 
-Il secondo paragrafo accanto a «Ottieni indicazioni» («A pochi metri dalla
-metropolitana Fermi») è la pillola bianca sulla mappa. Sul telefono, come nel
-design, non si vede (né quella né la nota dell'Indirizzo), e nemmeno la frase
-sotto «Hai qualche domanda?» e la terza foto.
+Il testo sta in [`contatti.html`](contatti.html). Ordine: quattro recapiti (telefono, Instagram, Facebook, indirizzo), la mappa, il pulsante «Ottieni indicazioni», tre foto, «Hai qualche domanda?» con le sei risposte.
 
-## Cosa resta diverso dal design
+## Cosa cambia rispetto a oggi
 
-- Il pulsante in testata dice «Prova una settimana · 5 €» sul computer e
-  «Prova» sul telefono, come nel design.
-- Il testo delle risposte è uno solo: nel design del telefono due risposte sono
-  più corte. Si scrive il testo del computer.
-- Il sito centra le foto con `object-position` come nel design (50% 55%, la
-  terza 50% 30%).
+- La descrizione di oggi (la lunga frase sui corsi) diventa la frase «Siamo qui per accompagnarti…», che oggi sta nel testo. Titolo uguale: «Contattaci».
+- «Come trovarci» sparisce come titolo: i quattro recapiti sono quattro tessere, con gli stessi link di oggi (telefono, Instagram, Facebook, indicazioni).
+- Nuova mappa (`/risorse/mappa.webp`, nel sito dal ramo `claude/sito-contatti-955302`), con il pulsante «Ottieni indicazioni» sopra.
+- Nuova frase «A pochi metri dalla metropolitana Fermi» (nota dell’indirizzo e pillola sulla mappa), dal design.
+- Tre foto di fila prima delle domande.
+- Le sei domande e risposte hanno le stesse informazioni di oggi, con parole più brevi (come nel design): «Sì», «1 settimana di prova al costo di 5 euro», «lezione di prova senza impegno». Corretto «Si,» in «Sì:».
 
 ## Da controllare prima di pubblicare
 
-- Le foto ritraggono minori: servono i permessi dei genitori.
-- La mappa: i dati sono di OpenStreetMap contributors (ODbL); il credito resta sulla mappa.
+- **«A pochi metri dalla metropolitana Fermi»**: viene dal design, non dal testo di oggi. La distanza («pochi metri») va confermata dalla segreteria.
+- Il link di Facebook è quello di oggi (`facebook.com/ilCentroJudo`): il nome è «Officine dello Sport» ma la pagina è del Centro Judo. Conferma che sia quella giusta.
+- Il numero di telefono, Instagram e l’indirizzo sono quelli di oggi (346 329 2786, officine.dellosport, Via Sassi 26).
+- La mappa è di OpenStreetMap: il credito «© OpenStreetMap contributors» resta sopra la mappa (lo mette il sito).
+- «Posso fare una prova…» e «Posso provare un corso…» dicono quasi la stessa cosa (una settimana a 5 euro, una lezione di prova senza impegno): oggi sono due domande, le ho tenute. La segreteria dice se sono due offerte diverse.
+- Le foto (lezione di judo, psicomotricità, preparazione atletica): ritraggono minori, servono i permessi. FOTO DA SCEGLIERE: la sessione «sito-foto» può proporne di meglio.

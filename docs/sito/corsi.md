@@ -1,50 +1,37 @@
-# I nostri corsi del sito come nel design
+# I nostri corsi: la pagina come nel design
 
-Testo da incollare nel pannello SITO (PAGINE › I nostri corsi) per avere la
-pagina del design «tatami blu e giallo» (`TatamiBlu-Corsi`, desktop 1440px, e
-`TatamiBluM-Corsi`, telefono). Il testo sta in [`corsi.html`](corsi.html): si
-apre nel browser, Cmd+A, copia, e si incolla nel pannello (come per la Home).
-Le foto di prova sono quelle già nella libreria IMMAGINI: vanno sostituite
-con una foto per corso.
+Testo da incollare nel pannello SITO (PAGINE › I nostri corsi, indirizzo `/corsi/`), per avere la pagina del design «tatami blu e giallo» (`TatamiBlu-Corsi`, desktop, e `TatamiBluM-Corsi`, telefono). Le regole del layout sono in `corsi.md` del ramo `claude/sito-corsi-f6b354`.
 
-## Come si scrive
+Come si fa:
 
-Nessun `h2`: nel design il titolo grande è già il titolo della pagina.
+1. Apri **PAGINE › I nostri corsi**.
+2. Nei campi a destra: **titolo** e **descrizione** qui sotto.
+3. Apri `docs/sito/corsi.html` nel browser, seleziona tutto (Cmd+A), copia. Nel pannello clicca nel testo, cancella tutto e incolla (Cmd+V).
+4. **ANTEPRIMA** per controllare, poi **PUBBLICA**.
 
-1. Un paragrafo di apertura: è la frase grande sopra le tessere.
-2. Per ogni corso, nell'ordine:
-   - un titolo (`h3`) **che è un link** alla pagina del corso;
-   - una foto (facoltativa: senza, resta il vuoto sopra il titolo, così le
-     tessere restano allineate);
-   - un paragrafo con la fascia d'età **in grassetto** e poi la descrizione;
-   - un elenco di fasce: «Bambini», «Adulti», «Agonisti», «Anziani» hanno
-     la loro icona; altre voci brevi (fino a 20 caratteri) sono pillole senza icona.
-3. In fondo, due foto di fila: sono la fascia larga sotto le tessere (la
-   seconda sparisce sul telefono, come nel design).
+## Titolo
 
-## La regola nel codice
+I nostri corsi
 
-- Un `h3` con un link dentro è un corso. Se lo sono tutti quelli di una
-  sezione, la griglia è «corsi» (`.tessere.corsi`): tre colonne, tessere da
-  400px, colori sfalsati giallo/blu/inchiostro, freccia ↗ dopo il titolo.
-  Tutta la tessera porta alla pagina del corso.
-- Il testo prima del primo `h2` (o senza alcun `h2`) che segue questa regola
-  è una sezione senza titolo.
-- Esattamente due foto alla fine dell'ultima tessera sono la fascia
-  (`foto-fila due fascia`, alta 620px, la seconda larga 420px).
-- Un `h3` senza link resta una tessera normale (nessuna regola nuova).
+## Descrizione
 
-Codice: `src/lib/sitoLayout.ts` (la regola), `src/lib/sitoCorsi.ts` (misure e
-icone). Prove: `npm run prova:sito-corsi`.
+Judo, lotta, aikido, pre pugilistica, autodifesa, preparazione atletica, pesi e psicomotricità per bambini, ragazzi e adulti a Collegno.
 
-## Cosa resta diverso dal design
+## Testo
 
-- La posizione della foto dentro la tessera (`object-position`) è sempre al
-  centro: il testo non può dirla.
-- Tra le tessere ci sono 6px come in tutto il sito; nel design sul telefono
-  sono a contatto.
-- Il paragrafo di apertura è quello lungo del desktop anche sul telefono.
-- Il menu resta alto 44px (nel design 38px) per il tocco da telefono.
-- Il pulsante in testata dice «Prova una settimana · 5 €» anche sul telefono; nel design è «Prova».
-- Il piede ha in più la riga «© Officine dello Sport» e i titoli delle colonne (nascosti alla vista).
-- Sotto i 1280px il titolo grande sta sopra la frase, come sul telefono: a 200px le due colonne non ci stanno.
+Il testo sta in [`corsi.html`](corsi.html). Nessun titolo grande: una frase di apertura, poi nove corsi. Ognuno ha il nome (che è il link alla sua pagina), la foto se c’è, l’età in grassetto con la frase, e le fasce (Bambini, Adulti, Agonisti, Anziani). In fondo due foto di fila.
+
+## Cosa cambia rispetto a oggi
+
+- Titolo e descrizione: identici a oggi.
+- La frase di apertura è quella di oggi.
+- I nove corsi: oggi sono un elenco di nomi con una frase; ora hanno anche l’età e le fasce, prese dal design (le stesse della Home).
+- Due foto di fila in fondo, come nel design.
+- I link vanno alle pagine vere di oggi (`/judo/`, `/lotta/`, `/aikido/`, `/pre-pugilistica/`, `/mga-metodo-globale-di-autodifesa/`, `/preparazione-atletica/`, `/giocomotricita-e-psicomotricita/`, `/avviamento-alle-arti-marziali/`, `/sollevamenti-pesi/`).
+
+## Da controllare prima di pubblicare
+
+- **Età e fasce (Bambini, Adulti, Agonisti, Anziani)**: sono quelle del design e della Home. Non sempre coincidono col testo delle pagine: pre pugilistica «Dai 18 anni» contro «dal 2015 in poi» di oggi; Metodo Globale di Autodifesa «Dai 15 anni» contro «da 2015 in poi»; «Anziani» per aikido e preparazione atletica, che le pagine non dicono. Vedi i «Da controllare» di ogni disciplina.
+- FOTO DA SCEGLIERE: pugilistica, autodifesa, pesi (senza foto la tessera resta con il vuoto sopra il titolo, ed è giusto). Le altre foto sono le stesse delle pagine dei corsi.
+- Le due foto di fila in fondo (istruttori in judogi, gruppo di bambini) sono già nella Home.
+- Le foto ritraggono minori: servono i permessi dei genitori.
