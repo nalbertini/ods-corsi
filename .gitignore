@@ -10,3 +10,9 @@ supabase/.temp/
 
 # Grafo di conoscenza generato da graphify
 graphify-out/
+
+# Il sito generato (scripts/genera-sito.mjs) e i file di lavoro della skill di design.
+dist-sito/
+dist-sito.nuovo/
+dist-sito.vecchio/
+.taste-skill/

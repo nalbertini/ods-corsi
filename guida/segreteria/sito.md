@@ -65,10 +65,17 @@ L'app non ti lascia salvare se una voce non va, e dice quale:
 
 ## Il sito vero
 
-Per ora il pannello scrive le pagine; il sito su `officinedellosport.it` si
-genera dalle pagine pubblicate, e passa dal sito di prima a quello nuovo in
-un secondo momento. Finché non è fatto, **PUBBLICA** prepara il testo ma il
-sito che si vede è ancora quello vecchio.
+Il sito nuovo, su `www.officinedellosport.it`, si genera dalle pagine
+**pubblicate**: quelle in bozza, nascoste o mai pubblicate non ci sono. Il
+passaggio dal sito di prima a quello nuovo, e le immagini, arrivano in un
+secondo momento: finché non è fatto, **PUBBLICA** prepara il testo ma il sito
+che si vede è ancora quello vecchio.
+
+Il sito nuovo ha sempre una **Home**: senza una Home pubblicata non si genera.
+Le pagine di legge (privacy, cookie, contributi pubblici) hanno l'impaginazione
+solo testo; le altre hanno in cima il titolo grande e, sotto, la frase della
+**descrizione**. Il pulsante «Contattaci» e l'invito «Prova» in fondo
+compaiono se esiste una pagina pubblicata con indirizzo `contatti`.
 
 Se compare «Il pannello del sito non è ancora attivo sul database», manca un
 aggiornamento del database: va chiesto a chi cura l'app.

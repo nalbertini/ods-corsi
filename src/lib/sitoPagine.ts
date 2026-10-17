@@ -53,6 +53,9 @@ export function slugDaTitolo(titolo: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
+/** La forma di un indirizzo (minuscole, numeri e trattini, al massimo 80 lettere): quella che il sito e il database ammettono, senza guardare i riservati. */
+export const slugValido = (s: string) => s.length > 0 && s.length <= LIMITE_INDIRIZZO && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(s)
+
 /** Cosa non va in un indirizzo, a parole; `null` se va bene. `altri` sono gli indirizzi delle altre pagine. */
 export function controllaSlug(slug: string, altri: string[]): string | null {
   if (!slug) return 'Scrivi l’indirizzo della pagina'

@@ -1,0 +1,55 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Sito pubblico"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Home.dc.html",
+      "title": "1 · Home",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 5400,
+      "page": "page-1"
+    },
+    {
+      "file": "Corso.dc.html",
+      "title": "2 · Pagina di un corso",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 3400,
+      "page": "page-1"
+    },
+    {
+      "file": "Testo.dc.html",
+      "title": "3 · Pagina di solo testo",
+      "x": 3120,
+      "y": 0,
+      "w": 1440,
+      "h": 2500,
+      "page": "page-1"
+    },
+    {
+      "file": "HomeTelefono.dc.html",
+      "title": "4 · Home sul telefono",
+      "x": 4680,
+      "y": 0,
+      "w": 390,
+      "h": 5600,
+      "page": "page-1"
+    },
+    {
+      "file": "CorsoTelefono.dc.html",
+      "title": "5 · Un corso sul telefono",
+      "x": 5190,
+      "y": 0,
+      "w": 390,
+      "h": 3700,
+      "page": "page-1"
+    }
+  ]
+}
