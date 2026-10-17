@@ -445,7 +445,7 @@ const man = (id, tipo, data, importo, cassaId, extra = {}) => ({
 })
 // Una chiusura già fatta, della Cassa Contanti.
 const chiusa = (id, data, extra = {}) => ({ id, cassaId: 'c1', dal: '2026-09-01', data, previsto: 10000, contato: 9500, differenza: -500, chiusaDa: 'Ada Conti', chiusaIl: `${data}T18:00:00Z`, ...extra })
-const MSG_CHIUSO = 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e la voce «Rettifica»'
+const MSG_CHIUSO = 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)'
 const MSG_ANNULLA_CHIUSO = 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica di oggi'
 const MSG_SALDO_CHIUSA = 'La cassa ha una chiusura: annullala prima di cambiare il saldo iniziale'
 
@@ -701,6 +701,17 @@ console.log('\n25. le piccole regole della schermata di chiusura, in lib dove si
     m.descrizioneRiga(riga('i', 'entrata', '2026-09-10', 300, 'c1', { origine: 'ricevuta', descrizione: 'Rossi Giulia', voce: 'Quota associativa' })),
   ]), ['Detersivo', 'Incasso iscritto · Quota associativa'])
   ok('il giorno di una chiusura è quello di Roma: alle 23:30 UTC è già il giorno dopo', prova(() => [m.giornoRoma('2026-09-14T21:59:00Z'), m.giornoRoma('2026-09-14T22:30:00Z')]), ['2026-09-14', '2026-09-15'])
+}
+
+console.log('\n26. una cassa senza giorno di partenza non si chiude, e un previsto che non torna')
+{
+  const senzaDal = [{ id: 'c1', nome: 'Cassa Contanti', saldoIniziale: 0 }, casse[1]]
+  ok('senza «dal» il previsto conterebbe tutti i contanti di sempre: prima si imposta la cassa', prova(() => m.cosaNonVaChiusura({ cassaId: 'c1', data: '2026-09-07', contato: 0 }, senzaDal, [], '2026-09-26')), 'Imposta prima il saldo iniziale e il giorno di partenza della Cassa Contanti')
+  ok('…ma il Conto Corrente viene prima', prova(() => m.cosaNonVaChiusura({ cassaId: 'c2', data: '2026-09-07', contato: 0 }, senzaDal, [], '2026-09-26')), 'Si chiude solo la Cassa Contanti')
+  const NON_TORNA = 'Il previsto della Cassa Contanti non torna: controlla le ricevute in contanti'
+  ok('un previsto normale va', prova(() => [m.cosaNonVaPrevisto(13000, 12500), m.cosaNonVaPrevisto(0, 0)]), [null, null])
+  ok('una differenza oltre un milione di euro no', prova(() => [m.cosaNonVaPrevisto(100_000_001 + 5, 5), m.cosaNonVaPrevisto(0, 100_000_001)]), [NON_TORNA, NON_TORNA])
+  ok('un previsto oltre dieci milioni di euro no', prova(() => m.cosaNonVaPrevisto(1_000_000_001, 1_000_000_001)), NON_TORNA)
 }
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

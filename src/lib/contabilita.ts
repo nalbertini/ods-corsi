@@ -219,7 +219,7 @@ export const differenzaInParole = (differenza: number): string =>
 export const vociOfferte = (voci: VoceContabile[], tipo: 'entrata' | 'uscita'): VoceContabile[] =>
   voci.filter((v) => v.tipo === tipo && v.attiva && v.nome !== VOCE_DIFFERENZA).sort((x, y) => x.nome.localeCompare(y.nome, 'it'))
 
-const MSG_GIORNO_CHIUSO = 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e la voce «Rettifica»'
+const MSG_GIORNO_CHIUSO = 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)'
 
 /** Un movimento a mano di un giorno chiuso non si annulla: si annulla la chiusura, o si scrive una rettifica di oggi. */
 export function cosaNonVaAnnulloMovimento(riga: RigaMovimento, chiusure: ChiusuraCassa[]): string | null {
@@ -433,11 +433,17 @@ export function cosaNonVaSaldo(saldo: number, dal?: string | null, contesto?: { 
   return null
 }
 
+/** Ricevute da cifre assurde: il previsto non torna e la chiusura non si fa (come `chiudi_cassa`). */
+export function cosaNonVaPrevisto(previsto: number, contato: number): string | null {
+  return Math.abs(contato - previsto) > 100_000_000 || Math.abs(previsto) > 1_000_000_000 ? 'Il previsto della Cassa Contanti non torna: controlla le ricevute in contanti' : null
+}
+
 /** Gli stessi rifiuti di `chiudi_cassa` (60-chiusura-cassa.sql), nello stesso ordine. */
 export function cosaNonVaChiusura(d: { cassaId: string; data: string; contato: number; nota?: string }, casse: Cassa[], chiusure: ChiusuraCassa[], oggi: string): string | null {
   const cassa = casse.find((c) => c.id === d.cassaId)
   if (!cassa) return 'Scegli la cassa'
   if (cassa.nome !== NOME_CASSA_CONTANTI) return 'Si chiude solo la Cassa Contanti'
+  if (!cassa.dal) return 'Imposta prima il saldo iniziale e il giorno di partenza della Cassa Contanti'
   if (!dataVera(d.data) || d.data < '2000-01-01') return 'La data non si capisce'
   if (d.data > oggi) return 'La data è nel futuro: si chiude quel che è già successo'
   const ultima = ultimaChiusura(chiusure, cassa.id)

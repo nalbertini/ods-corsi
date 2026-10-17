@@ -91,7 +91,7 @@ Il Conto Corrente non si conta: si confronta con l'estratto della banca.
 **Dopo la chiusura quei giorni sono chiusi**: non si registrano né si annullano più movimenti con
 quella data, e il saldo iniziale della cassa non cambia. La descrizione e la nota si possono ancora
 correggere. Per correggere uno sbaglio di un giorno chiuso si scrive un movimento **di oggi** con
-la voce «Rettifica» (la crea chi cura i conti, in VOCI). Un versamento in banca fatto dopo la
+una voce di rettifica (la crea chi cura i conti, in VOCI: per esempio «Rettifica»). Un versamento in banca fatto dopo la
 chiusura va datato oggi.
 
 Sotto le casse c'è l'elenco delle **chiusure**: chi ha chiuso e quando, quanto si è contato, la

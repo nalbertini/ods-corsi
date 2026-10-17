@@ -599,7 +599,7 @@ function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato }: { 
       {guaioChiusure && <Guaio testo={guaioChiusure} />}
       {chiudo && contanti && (
         <InVista>
-          <ChiudiCassa d={d} cassa={contanti} casse={casse} chiusure={chiusure} righe={righe} fai={fai} onFatto={() => { setChiudo(false); onCambiato() }} onChiudi={() => setChiudo(false)} />
+          <ChiudiCassa d={d} cassa={contanti} casse={casse} chiusure={chiusure} righe={righe} fai={fai} onFatto={() => { setChiudo(false); onCambiato() }} onRileggi={onCambiato} onChiudi={() => setChiudo(false)} />
         </InVista>
       )}
       {contanti && chiusure.length > 0 && <ElencoChiusure d={d} cassa={contanti} chiusure={chiusure} righe={righe} fai={fai} onCambiato={onCambiato} />}
@@ -609,7 +609,7 @@ function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato }: { 
 }
 
 /** Chiudere la Cassa Contanti fino a un giorno: l'app dice quanto c'è «secondo i conti», si scrive quanto si è contato. */
-function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onChiudi }: { d: DatiSegreteria; cassa: Cassa; casse: Cassa[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
+function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onRileggi, onChiudi }: { d: DatiSegreteria; cassa: Cassa; casse: Cassa[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onFatto: () => void; onRileggi: () => void; onChiudi: () => void }) {
   const oggi = oggiARoma()
   const ultima = ultimaChiusura(chiusure, cassa.id)
   const dal = dalDellaChiusura(cassa, ultima)
@@ -629,7 +629,8 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onChiudi 
       const domanda = `La differenza è di ${differenzaInParole(differenza)}: è più di ${soldi(SOGLIA_DIFFERENZA)}. Se vuoi, scrivi nella nota perché. Chiudo la cassa fino al ${dataRicevuta(data)}?`
       if (!(await chiedi(domanda, 'SÌ, CHIUDI LA CASSA', { no: 'NO, CONTROLLO ANCORA', pericolo: true }))) return
     }
-    void fai(() => d.chiudiCassa({ cassaId: cassa.id, data, contato: cent, nota: nota.trim() || undefined }), 'Cassa chiusa', onFatto)
+    // Se la risposta si perde ma la chiusura è stata scritta, rileggere l'elenco la mostra: il riprova non sembra un errore a vuoto.
+    void fai(() => d.chiudiCassa({ cassaId: cassa.id, data, contato: cent, nota: nota.trim() || undefined }), 'Cassa chiusa', onFatto).then((fatto) => !fatto && onRileggi())
   }
   return (
     <section aria-label="Chiusura di cassa" className="sg-riquadro">
@@ -698,7 +699,7 @@ function ElencoChiusure({ d, cassa, chiusure, righe, fai, onCambiato }: { d: Dat
   const annulla = async (k: ChiusuraCassa) => {
     const domanda = `Annullare la chiusura del ${dataRicevuta(k.data)}? Si toglie anche la sua «Differenza di cassa» e i giorni tornano aperti. Il foglio PDF già stampato non vale più.`
     if (!(await chiedi(domanda, 'SÌ, ANNULLA LA CHIUSURA', { no: 'NO, LASCIALA', pericolo: true }))) return
-    void fai(() => d.annullaChiusuraCassa(k.id), 'Chiusura annullata', onCambiato)
+    void fai(() => d.annullaChiusuraCassa(k.id), 'Chiusura annullata', onCambiato).then((fatto) => !fatto && onCambiato())
   }
   return (
     <section aria-label="Le chiusure" className="sg-riquadro">

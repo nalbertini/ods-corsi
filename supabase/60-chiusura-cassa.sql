@@ -4,13 +4,16 @@
 -- A fine settimana l'amministrazione conta i contanti e li confronta con quel che
 -- c'è «secondo i conti» nella Cassa Contanti. Se non tornano, la differenza si
 -- scrive da sola come movimento «Differenza di cassa», e da lì in poi quei giorni
--- sono chiusi: non si scrive né si annulla più niente con una data fino a quel
--- giorno (si fa una rettifica di oggi, o si annulla la chiusura). Si annulla solo
+-- sono chiusi: non si scrive né si annulla più nessun movimento a mano con una data
+-- fino a quel giorno (si fa una rettifica di oggi, o si annulla la chiusura). Si annulla solo
 -- l'ultima chiusura, col suo movimento. Le stesse regole di src/lib/contabilita.ts
 -- e della modalità prova, provate da supabase/prova/chiusura-cassa.sql.
 --
 -- Il 59 non si tocca: le sue funzioni che ora sanno dei giorni chiusi sono
--- ridefinite qui sotto con `create or replace`.
+-- ridefinite qui sotto con `create or replace`. Rilanciare il 59 dopo il 60 rimette le
+-- versioni vecchie: va rilanciato anche il 60 (controllo.sql lo dice).
+-- Le ricevute e i pagamenti a mano in contanti non seguono i giorni chiusi (sono documenti):
+-- se ne cambia uno di quei giorni, l'app avvisa che la chiusura non è più in regola.
 
 create table if not exists chiusure_cassa (
   id          uuid primary key default gen_random_uuid(),
@@ -33,6 +36,8 @@ create table if not exists chiusure_cassa (
 -- Una sola chiusura attiva per cassa e giorno.
 create unique index if not exists chiusure_cassa_giorno on chiusure_cassa (cassa_id, data) where annullata_il is null;
 
+-- Se qualcuno l'aveva già scritta a mano, diventa quella di sistema (il rilancio la rimette a posto).
+update voci_contabili set di_sistema = true, attiva = true where nome = 'Differenza di cassa';
 insert into voci_contabili (nome, tipo, di_sistema) values
   ('Differenza di cassa', 'entrata', true),
   ('Differenza di cassa', 'uscita', true)
@@ -55,10 +60,10 @@ $$;
 -- e i contanti incassati dagli iscritti (ricevute e pagamenti a mano non annullati). Dal giorno di
 -- partenza della cassa. Esclusi POS e altri metodi, l'anticipo e «pagato fino al».
 -- La stessa regola è `previstoCassa` in src/lib/contabilita.ts: le prove le confrontano su un dataset.
-create or replace function previsto_cassa(cassa uuid, giorno date) returns integer
+create or replace function previsto_cassa(cassa uuid, giorno date) returns bigint
   language sql stable security definer set search_path = public as $$
   with c as (select id, nome, saldo_iniziale, dal from casse where id = cassa)
-  select (select saldo_iniziale from c)
+  select (select saldo_iniziale from c)::bigint
     + coalesce((select sum(case
         when m.tipo = 'giroconto' then case when m.cassa_id = cassa then -m.importo else m.importo end
         when m.tipo = 'entrata' then m.importo
@@ -67,11 +72,11 @@ create or replace function previsto_cassa(cassa uuid, giorno date) returns integ
       where m.annullato_il is null and cassa in (m.cassa_id, m.cassa_a_id) and m.data <= giorno
         and (c.dal is null or m.data >= c.dal)), 0)
     + case when (select nome from c) = 'Cassa Contanti' then
-        coalesce((select sum((p->>'importo')::integer)
+        coalesce((select sum((p->>'importo')::bigint)
           from ricevute r, c, jsonb_array_elements(r.voci) v, jsonb_array_elements(coalesce(v->'pagamenti', '[]'::jsonb)) p
           where r.annullata_il is null and lower(btrim(p->>'metodo')) = 'contanti'
             and coalesce((p->>'data')::date, r.data) <= giorno and (c.dal is null or coalesce((p->>'data')::date, r.data) >= c.dal)), 0)
-        + coalesce((select sum(d.importo) from pagamenti_diretti d, c
+        + coalesce((select sum(d.importo)::bigint from pagamenti_diretti d, c
           where d.annullato_il is null and lower(btrim(d.metodo)) = 'contanti'
             and d.data <= giorno and (c.dal is null or d.data >= c.dal)), 0)
       else 0 end
@@ -85,8 +90,8 @@ declare
   giorno date;
   cont integer;
   nt text;
-  prev integer;
-  dif integer;
+  prev bigint;
+  dif bigint;
   mid uuid;
   r chiusure_cassa;
 begin
@@ -95,6 +100,8 @@ begin
   select * into ca from casse where id = contabilita_id(dati, 'cassa_id', 'Scegli la cassa') for update;
   if not found then raise exception 'Scegli la cassa' using errcode = '22023'; end if;
   if ca.nome <> 'Cassa Contanti' then raise exception 'Si chiude solo la Cassa Contanti' using errcode = '22023'; end if;
+  -- senza giorno di partenza il previsto conterebbe tutti i contanti di sempre, mai contati: prima si imposta la cassa
+  if ca.dal is null then raise exception 'Imposta prima il saldo iniziale e il giorno di partenza della Cassa Contanti' using errcode = '22023'; end if;
   begin giorno := (dati->>'data')::date; exception when others then
     raise exception 'La data non si capisce' using errcode = '22023';
   end;
@@ -117,6 +124,10 @@ begin
 
   prev := previsto_cassa(ca.id, giorno);
   dif := cont - prev;
+  -- ricevute da cifre assurde: il rifiuto è per chi usa l'app, non un «integer out of range»
+  if abs(dif) > 100000000 or abs(prev) > 1000000000 then
+    raise exception 'Il previsto della Cassa Contanti non torna: controlla le ricevute in contanti' using errcode = '22023';
+  end if;
   if dif <> 0 then
     insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, nota, creato_da)
     values (case when dif > 0 then 'entrata' else 'uscita' end, giorno, abs(dif),
@@ -172,7 +183,7 @@ begin
   select * into ca from casse where id = contabilita_id(dati, 'cassa_id', 'Scegli la cassa') for share;
   if not found then raise exception 'Scegli la cassa' using errcode = '22023'; end if;
   if ca.dal is not null and c.giorno < ca.dal then raise exception 'La data è prima dell’inizio della cassa' using errcode = '22023'; end if;
-  if cassa_giorno_chiuso(ca.id, c.giorno) then raise exception 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e la voce «Rettifica»' using errcode = '22023'; end if;
+  if cassa_giorno_chiuso(ca.id, c.giorno) then raise exception 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)' using errcode = '22023'; end if;
   if d = '' then raise exception 'Scrivi una descrizione' using errcode = '22023'; end if;
   if char_length(d) > 200 then raise exception 'La descrizione è troppo lunga: al massimo 200 caratteri' using errcode = '22023'; end if;
   insert into movimenti (tipo, data, importo, voce_id, cassa_id, descrizione, nota, creato_da)
@@ -199,7 +210,7 @@ begin
     raise exception 'La data è prima dell’inizio della cassa' using errcode = '22023';
   end if;
   if cassa_giorno_chiuso(da.id, c.giorno) or cassa_giorno_chiuso(a.id, c.giorno) then
-    raise exception 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e la voce «Rettifica»' using errcode = '22023';
+    raise exception 'Quel giorno è già chiuso: scrivi il movimento con la data di oggi e una voce di rettifica (si crea in VOCI)' using errcode = '22023';
   end if;
   insert into movimenti (tipo, data, importo, cassa_id, cassa_a_id, descrizione, nota, creato_da)
   values ('giroconto', c.giorno, c.importo, da.id, a.id, 'Giroconto da ' || da.nome || ' a ' || a.nome, c.nota, persona_corrente())
@@ -212,8 +223,11 @@ create or replace function annulla_movimento(id uuid) returns void
 declare m movimenti;
 begin
   perform contabilita_porta();
-  select * into m from movimenti x where x.id = annulla_movimento.id for update;
+  select * into m from movimenti x where x.id = annulla_movimento.id;
   if not found then raise exception 'Il movimento non c’è' using errcode = 'P0002'; end if;
+  -- le casse in fila con chi chiude nello stesso momento (come `registra_movimento`), poi si rilegge il movimento
+  perform 1 from casse c where c.id in (m.cassa_id, m.cassa_a_id) order by c.id for share;
+  select * into m from movimenti x where x.id = annulla_movimento.id for update;
   if m.annullato_il is not null then raise exception 'Il movimento è già annullato' using errcode = 'P0002'; end if;
   if cassa_giorno_chiuso(m.cassa_id, m.data) or (m.cassa_a_id is not null and cassa_giorno_chiuso(m.cassa_a_id, m.data)) then
     raise exception 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica di oggi' using errcode = '22023';

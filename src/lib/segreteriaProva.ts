@@ -32,6 +32,7 @@ import {
   cosaNonVaChiusura,
   cosaNonVaGiroconto,
   cosaNonVaMovimento,
+  cosaNonVaPrevisto,
   cosaNonVaSaldo,
   cosaNonVaVoce,
   dalDellaChiusura,
@@ -1055,6 +1056,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
       // Gli incassi in contanti si ricavano da ricevute e pagamenti a mano, come nell'elenco della schermata.
       const elenco = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci)
       const previsto = previstoCassa(casse, elenco, cassa.id, d.data)
+      const troppo = cosaNonVaPrevisto(previsto, d.contato)
+      if (troppo) throw new Error(troppo)
       const differenza = d.contato - previsto
       let movimentoId: string | undefined
       if (differenza !== 0) {
