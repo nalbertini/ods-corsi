@@ -165,7 +165,8 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   (`src/lib/sitoTesto.ts`, `src/lib/sitoPagine.ts`). Le pagine di legge (privacy, cookie, contributi pubblici)
   restano sempre sul sito. Le scrive solo la segreteria; chi non ha l'accesso legge solo il pubblicato
   (`supabase/56-sito.sql`). Le pagine pubblicate diventano il sito vero con `npm run sito:genera`
-  (`src/lib/sitoGenera.ts`, `scripts/genera-sito.mjs`): file statici senza codice né servizi esterni, con
+  (`src/lib/sitoGenera.ts`, `scripts/genera-sito.mjs`): file statici senza codice né servizi esterni (c'è solo un blocco di dati strutturati JSON-LD per Google e gli assistenti AI:
+  sede, corsi, domande frequenti, briciole, in `src/lib/sitoDati.ts`), con
   carattere (Big Shoulders Display e Inter, licenza OFL accanto) e logo propri in `sito/risorse/`, nell'aspetto «tatami blu e giallo»
   (i colori e le regole sono in `docs/design-canvas/sito-rebrand/token-proposta.md`, A2); il testo si ripulisce un'altra volta quando si genera, perché
   è la pulizia di cui ci si fida. Il sito sta su www.officinedellosport.it con GitHub Pages, nel
