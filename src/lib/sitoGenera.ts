@@ -1,7 +1,7 @@
 import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
-import { GRIGLIA_MASSIMA, collage, impagina } from './sitoLayout'
+import { GRIGLIA_MASSIMA, collage, impagina, testataCorso } from './sitoLayout'
 import { CONTATTI } from './sito'
 
 /**
@@ -235,6 +235,83 @@ ${GRIGLIE_LUNGHE}
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
 
+/**
+ * Le regole della pagina di un corso, in un `<style>` a parte che solo quelle pagine hanno (docs/sito/corso.md):
+ * tutto dentro `main.corso` e `.corso-testata`, così le altre pagine non cambiano e non lo portano.
+ */
+const CSS_CORSO = `
+/* La pagina di un corso (docs/sito/corso.md): tutto dentro main.corso, le altre pagine non cambiano. */
+.corso-testata{padding:0 var(--margine) 96px}
+.corso-testata>*+*{margin-top:6px}
+.corso .tessere .tessera.orario{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr;align-items:start;gap:0 12px}
+.corso .orario .ora{font-family:var(--display);text-transform:uppercase;font-weight:800;line-height:1}
+.corso .orario .dettagli{grid-column:1 / -1;align-self:end}
+.corso .banda-int p{margin:0}
+@media (min-width:901px){
+.corso .pagina-hero{padding-bottom:72px}
+.corso .tessere .tessera.orario{grid-column:auto;min-height:170px;font-size:17px}
+.corso .orario .ora{font-size:clamp(26px,2.8vw,40px)}
+.corso .orario .dettagli{display:flex;justify-content:space-between;gap:12px}
+.corso .pagina-hero .intro{display:grid;grid-template-columns:minmax(0,1fr) 520px;gap:0 56px;align-items:end;flex-basis:100%;max-width:none}
+.corso .pagina-hero h1{grid-row:1 / span 2;margin:0;font-size:clamp(56px,13.9vw,200px);line-height:.82}
+.corso .pagina-hero .intro p{grid-column:2;margin-bottom:28px}
+.corso .pagina-hero .intro>div{grid-column:2}
+.corso .corso-testata .foto img{height:clamp(300px,43vw,620px);aspect-ratio:auto;object-fit:cover}
+.corso .tessere .tessera.tessera:not(.foto){padding:24px 26px;justify-content:space-between;gap:12px;line-height:1.45}
+.corso .tessere.dati{grid-template-columns:repeat(4,1fr)}
+.corso .tessere.dati .tessera.tessera{grid-column:span 1;min-height:190px;font-size:18px}
+.corso .corso-testata .tessere.n-3 .tessera{min-height:330px;font-size:19px}
+.corso .dati h3,.corso .corso-testata .n-3 h3{font-size:clamp(28px,3.61vw,52px)}
+.corso .sezione h2{line-height:.85}
+.corso .sezione .tessera:not(.foto):not(.orario){min-height:300px;padding:28px 30px;font-size:20px}
+.corso .sezione .tessera:not(.orario) h3{font-size:clamp(34px,4.45vw,64px)}
+.corso .sezione .tessera:not(.foto):not(.orario):has(>h3:only-child){min-height:190px;padding:26px 30px;justify-content:flex-start}
+.corso .sezione .tessera:has(>h3:only-child) h3{font-size:clamp(30px,3.75vw,54px)}
+.corso .foto-fila img{height:clamp(240px,35.8vw,516px);aspect-ratio:auto}
+.corso .tessere:has(.orario){grid-template-columns:repeat(2,1fr)}
+.corso .orario h3{font-size:clamp(28px,3.2vw,46px)}
+.corso .banda-int{display:flex;justify-content:space-between;align-items:flex-end;gap:48px;padding:48px;border-radius:6px;background:var(--blu);color:#fff}
+.corso .banda-int h2{max-width:560px;margin:0;font-size:clamp(56px,8.33vw,120px)}
+.corso .banda-int p{max-width:640px;font-size:clamp(20px,2.22vw,32px);line-height:1.25;font-weight:500}
+}
+@media (max-width:900px){
+.corso .pagina-hero{padding:20px var(--margine) 36px}
+.corso .pagina-hero .intro{display:block}
+.corso .pagina-hero h1{margin:0 0 20px;font-size:clamp(56px,29.3vw,110px);line-height:.84}
+.corso .pagina-hero .intro p{margin:0 0 22px;font-size:18px}
+.corso .pagina-hero .pulsante{min-height:52px;padding:0 26px;font-size:17px}
+.corso .corso-testata .foto img{height:360px;aspect-ratio:auto;object-fit:cover}
+.corso-testata{padding-bottom:48px}
+.corso .tessere .tessera.tessera:not(.foto){grid-column:auto;padding:20px;justify-content:space-between;gap:12px;font-size:16px;line-height:1.45}
+.corso .tessere.dati{grid-template-columns:repeat(2,1fr)}
+.corso .tessere.dati .tessera.tessera{min-height:190px;padding:16px;font-size:15px}
+.corso .dati h3{font-size:34px}
+.corso .corso-testata .n-3{margin-top:40px}
+.corso .corso-testata .n-3 .tessera{min-height:220px}
+.corso .corso-testata .n-3 h3{font-size:40px}
+.corso .sezione{padding-bottom:48px}
+.corso .sezione h2{font-size:56px;line-height:.88;margin-bottom:20px}
+.corso .sezione .tessera:not(.foto):not(.orario){min-height:190px}
+.corso .sezione .tessera:not(.orario) h3{font-size:38px}
+.corso .sezione .tessera:not(.foto):not(.orario):has(>h3:only-child){min-height:110px;padding:18px}
+.corso .sezione .tessera:has(>h3:only-child) h3{font-size:36px}
+.corso .foto-fila img{height:180px;aspect-ratio:auto}
+.corso .foto-fila:not(.due):not(.quattro) figure:first-child{grid-column:1 / -1}
+.corso .foto-fila:not(.due):not(.quattro) figure:first-child img{height:260px}
+.corso .tessere:has(.orario){grid-template-columns:1fr}
+.corso .tessere .tessera.orario{min-height:140px;padding:20px;font-size:15px}
+.corso .orario h3{font-size:min(34px,8.4vw)}
+.corso .orario .ora{white-space:nowrap}
+.corso .orario .ora{font-size:30px}
+.corso .orario .dettagli{display:block}
+.corso .orario .dettagli p{display:inline}
+.corso .orario .dettagli p+p::before{content:" · "}
+.corso .banda-int{display:flex;flex-direction:column;justify-content:space-between;gap:12px;min-height:240px;padding:22px;border-radius:6px;background:var(--blu);color:#fff}
+.corso .banda-int h2{margin:0;font-size:56px;line-height:.95}
+.corso .banda-int p{font-size:20px;line-height:1.45}
+}
+`.replace(/\n/g, '')
+
 interface Contesto {
   d: DatiSito
   slugs: Set<string>
@@ -297,23 +374,25 @@ function invito(conContatti: boolean): string {
   return `<a class="invito" href="${TESTI.contatti}"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}.</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
 }
 
-function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean }): string {
+function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : ''}<style>${CSS}</style></head><body>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}</head><body>${o.corpo}</body></html>`
 }
 
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const pulito = testoDellaPagina(p.testo, c.d.ospitiImmagini ?? [])
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
-  const testo = inTestata.resto
+  // La pagina di un corso (foto, dati, presentazione prima del primo h2) ha la sua testata; le regole stanno in `main.corso`.
+  const corso = p.slug !== 'home' && !p.diLegge ? testataCorso(pulito) : null
+  const testo = corso ? corso.resto : inTestata.resto
   const t = testata(c, conContatti)
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
     : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
-  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
+  const corpo = `${t}<main${corso ? ' class="corso"' : ''}>${intro}${corso?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo, corso !== null) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
+  return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null })
 }
 
 function nonTrovata(c: Contesto, conContatti: boolean): string {

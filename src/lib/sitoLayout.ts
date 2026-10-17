@@ -145,11 +145,25 @@ function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string }> | n
 const tessera = (colore: string, titolo: string, resto: string, prima = '') =>
   `<article class="tessera ${colore}">${prima}${titolo.trim() ? `<h3>${titolo}</h3>` : ''}${resto}</article>`
 
+/** Nella pagina di un corso i colori ripartono dal giallo e la quarta tessera torna al giallo (docs/sito/corso.md). */
+const ROTAZIONE_CORSO = ['giallo', 'blu', 'inchiostro'] as const
+
+/** Un orario: il primo paragrafo è solo un grassetto (l'ora), i paragrafi dopo sono i dettagli (giorni, età). */
+const ORA = /^<p[^>]*>\s*<strong>[\s\S]*<\/strong>\s*<\/p>$/i
+const inOrario = (corpo: Blocco[]) => corpo.length > 0 && ORA.test(corpo[0].html)
+function tesseraOrario(colore: string, titolo: string, corpo: Blocco[]): string {
+  const dettagli = corpo.slice(1).map((b) => b.html).join('')
+  return `<article class="tessera ${colore} orario"><h3>${titolo}</h3><p class="ora">${contenuto(corpo[0])}</p>${dettagli ? `<div class="dettagli">${dettagli}</div>` : ''}</article>`
+}
+
 /** Le tessere di una sezione con sottotitoli: una per `h3`, con quel che lo segue. */
-function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>): string {
+function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>, corso = false): string {
   const domande = gruppi.length > 0 && gruppi.every((g) => /\?\s*$/.test(testoSolo(g.titolo)))
+  const orari = corso && gruppi.length > 0 && gruppi.every((g) => inOrario(g.corpo))
+  const palette = corso ? ROTAZIONE_CORSO : ROTAZIONE
   const html = gruppi.map((g, i) => {
-    const colore = domande ? 'chiara' : ROTAZIONE[i % ROTAZIONE.length]
+    if (orari) return tesseraOrario(i === gruppi.length - 1 ? 'giallo' : 'chiara', g.titolo, g.corpo)
+    const colore = domande ? 'chiara' : palette[i % palette.length]
     const foto = g.corpo.map(immagine).filter((x): x is string => x !== null)
     const resto = g.corpo.filter((b) => immagine(b) === null).map((b) => b.html).join('')
     return tessera(colore, g.titolo, resto, foto.join(''))
@@ -224,7 +238,11 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
   return fuori.join('')
 }
 
-function sezione(titolo: string, corpo: Blocco[]): string {
+/** Una sezione con un solo paragrafo breve, in un corso, è la banda blu con la frase grande. */
+const BANDA_MAX = 160
+
+function sezione(titolo: string, corpo: Blocco[], corso = false): string {
+  if (corso && corpo.length === 1 && corpo[0].tag === 'p' && testoSolo(corpo[0].html).length <= BANDA_MAX) return `<section class="sezione banda"><div class="banda-int"><h2>${titolo}</h2>${corpo[0].html}</div></section>`
   const primo = corpo.findIndex((b) => b.tag === 'h3')
   if (primo < 0) return `<section class="sezione"><h2>${titolo}</h2>${corpoSenzaSottotitoli(corpo, titolo)}</section>`
   const prima = corpo.slice(0, primo)
@@ -233,14 +251,14 @@ function sezione(titolo: string, corpo: Blocco[]): string {
     if (b.tag === 'h3') gruppi.push({ titolo: contenuto(b), corpo: [] })
     else gruppi[gruppi.length - 1].corpo.push(b)
   }
-  return `<section class="sezione"><h2>${titolo}</h2>${prima.length ? corpoSenzaSottotitoli(prima, titolo) : ''}${tessereDaSottotitoli(gruppi)}</section>`
+  return `<section class="sezione"><h2>${titolo}</h2>${prima.length ? corpoSenzaSottotitoli(prima, titolo) : ''}${tessereDaSottotitoli(gruppi, corso)}</section>`
 }
 
 /**
  * Il testo di una pagina a tessere. Il chiamante lo usa solo per le pagine non di legge che hanno almeno un `h2`:
  * senza titoli il testo resta una colonna, come prima. Quello che precede il primo `h2` è l'introduzione, in colonna.
  */
-export function impagina(testoPulito: string): string {
+export function impagina(testoPulito: string, corso = false): string {
   const b = blocchi(testoPulito)
   const primo = b.findIndex((x) => x.tag === 'h2')
   if (primo < 0) return testoPulito.trim() ? `<div class="testo">${testoPulito}</div>` : ''
@@ -252,7 +270,7 @@ export function impagina(testoPulito: string): string {
     const titolo = contenuto(b[i])
     let j = i + 1
     while (j < b.length && b[j].tag !== 'h2') j++
-    fuori.push(sezione(titolo, b.slice(i + 1, j)))
+    fuori.push(sezione(titolo, b.slice(i + 1, j), corso))
     i = j
   }
   return fuori.join('')
@@ -329,4 +347,32 @@ export function collage(testoPulito: string): { html: string; resto: string } {
     : griglia(tessereNumeri.length, tessereNumeri.join(''))
   const resto = b.filter((_, i) => !usati.has(i)).map((x) => x.html).join('')
   return { html, resto }
+}
+
+/**
+ * La testata della pagina di un corso: il testo prima del primo `h2` che comincia con una foto, poi un elenco di dati
+ * (2–6 voci col grassetto iniziale) e poi solo `h3` con il loro testo. La foto è a tutta larghezza, i dati sono una
+ * riga di tessere, gli `h3` la presentazione. Se la forma non è questa non è un corso: `null`, e la pagina resta com'era.
+ * `resto` è il testo dal primo `h2` in poi.
+ */
+export function testataCorso(testoPulito: string): { html: string; resto: string } | null {
+  const b = blocchi(testoPulito)
+  const fine = b.findIndex((x) => x.tag === 'h2')
+  const intro = fine < 0 ? b : b.slice(0, fine)
+  const foto = intro[0] ? immagine(intro[0]) : null
+  const dati = intro[1] ? vociDiUnElenco(intro[1]) : null
+  const presentazione = intro.slice(2)
+  if (foto === null || !dati || dati.length > NUMERI_MAX || presentazione.length === 0 || presentazione[0].tag !== 'h3') return null
+  const gruppi: Array<{ titolo: string; corpo: Blocco[] }> = []
+  for (const x of presentazione) {
+    if (x.tag === 'h3') gruppi.push({ titolo: contenuto(x), corpo: [] })
+    else gruppi[gruppi.length - 1].corpo.push(x)
+  }
+  const colore = (k: number) => ROTAZIONE_CORSO[k % ROTAZIONE_CORSO.length]
+  const html = [
+    griglia(1, `<figure class="tessera foto larga">${foto}</figure>`),
+    `<div class="tessere n-${dati.length} dati">${dati.map((v, k) => tessera(colore(k), v.titolo, v.testo ? `<p>${v.testo}</p>` : '')).join('')}</div>`,
+    griglia(gruppi.length, gruppi.map((g, k) => tessera(colore(k), g.titolo, g.corpo.map((x) => x.html).join(''))).join('')),
+  ].join('')
+  return { html: `<section class="corso-testata">${html}</section>`, resto: b.slice(fine < 0 ? b.length : fine).map((x) => x.html).join('') }
 }
