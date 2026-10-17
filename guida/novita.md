@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.69.0 — 17 ottobre 2026
+
+### Novità
+
+- Gli iscritti di un corso in una scheda a parte, con ricerca, ordinamento e clic sulla persona
+
 ## 0.68.0 — 17 ottobre 2026
 
 ### Novità
