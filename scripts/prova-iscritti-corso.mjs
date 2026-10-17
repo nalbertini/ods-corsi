@@ -11,7 +11,7 @@ import { build } from 'esbuild'
 
 const { outputFiles } = await build({
   stdin: {
-    contents: "export { iscrittiDelCorso, cercaFraGliIscritti, valoriIscrittoCorso, contoCorso, avvisoPosti } from './src/lib/segreteria'",
+    contents: "export { iscrittiDelCorso, cercaFraGliIscritti, valoriIscrittoCorso, contoCorso, avvisoPosti, riepilogoCorso, corsoDiProvenienza, nonInRegola, soloNonInRegola, fuoriRegola } from './src/lib/segreteria'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -55,7 +55,10 @@ const gente = [
   persona('scad', 'Scaduto', 'Sergio', { certificato: { scade: '2026-09-01', conFile: false } }),
   persona('sca', 'Inscadenza', 'Ines', { certificato: { scade: '2026-10-25', conFile: false } }),
   persona('nopaga', 'Nonpaga', 'Nino', { pagamento: { stato: 'da_pagare' } }),
+  // Compie 6 anni fra un mese: il certificato è «in arrivo», giallo, e in regola come per la pagina ISCRITTI.
+  persona('arrivo', 'Prossimo', 'Pino', { natoIl: '2020-11-20', certificato: { conFile: false } }),
   persona('mini', 'Piccolo', 'Pio', { natoIl: '2022-03-10', certificato: { conFile: false } }),
+  persona('parte', 'Parziale', 'Pia', { pagamento: { stato: 'in_parte', fino: '2027-07-31' } }),
 ]
 const riga = (righe, id) => righe.find((r) => r.persona.id === id)
 
@@ -63,7 +66,7 @@ console.log('\n1. chi c’è oggi nel corso')
 {
   const r = m.iscrittiDelCorso(gente, 'judo', OGGI)
   const ids = r.map((x) => x.persona.id)
-  ok('solo attivi con un’iscrizione in corso a quel corso', [...ids].sort(), ['mini', 'nocert', 'nopaga', 'p1', 'p2', 'p3', 'p4', 'sca', 'scad', 'due'].sort())
+  ok('solo attivi con un’iscrizione in corso a quel corso', [...ids].sort(), ['mini', 'nocert', 'nopaga', 'parte', 'p1', 'p2', 'p3', 'p4', 'sca', 'scad', 'due', 'arrivo'].sort())
   ok('non l’archiviato', ids.includes('arch'), false)
   ok('non chi ha finito', ids.includes('fin'), false)
   ok('non chi comincia domani', ids.includes('dom'), false)
@@ -132,6 +135,74 @@ console.log('\n5. il conto sul titolo')
   ok('avviso: persone non lette, niente', m.avvisoPosti(null, 20), null)
   ok('avviso: corso pieno', m.avvisoPosti(25, 25), 'Il corso è pieno (25 posti): puoi iscrivere ancora, ma i posti sono finiti.')
   ok('avviso: oltre la capienza', m.avvisoPosti(26, 25), 'Il corso ha 26 iscritti su 25 posti: puoi iscrivere ancora, ma i posti sono finiti.')
+}
+
+console.log('\n6. chi non è in regola')
+{
+  const r = m.iscrittiDelCorso(gente, 'judo', OGGI)
+  ok('come la pagina ISCRITTI: stessa definizione di fuoriRegola, per ogni riga',
+    r.filter((x) => m.nonInRegola(x) !== m.fuoriRegola(x.persona, OGGI)).map((x) => x.persona.id), [])
+  ok('certificato in scadenza e quota pagata: in regola', m.nonInRegola(riga(r, 'sca')), false)
+  ok('minore sotto i 6 anni (certificato spento) e quota pagata: in regola', m.nonInRegola(riga(r, 'mini')), false)
+  ok('certificato verde e quota IN PARTE (gialla): non in regola', [riga(r, 'parte').quota.tono, m.nonInRegola(riga(r, 'parte'))], ['giallo', true])
+  ok('certificato rosso: non in regola', m.nonInRegola(riga(r, 'nocert')), true)
+  ok('quota da pagare: non in regola', m.nonInRegola(riga(r, 'nopaga')), true)
+  ok('tutto a posto: in regola', m.nonInRegola(riga(r, 'p1')), false)
+  const ids = (l) => l.map((x) => x.persona.id)
+  const soli = m.soloNonInRegola(r)
+  ok('solo chi non è in regola, nello stesso ordine', ids(soli), ids(r.filter((x) => m.nonInRegola(x))))
+  ok('e sono proprio quelli giusti', [...ids(soli)].sort(), ['nocert', 'nopaga', 'parte', 'scad'].sort())
+  ok('nessuno fuori regola: elenco vuoto', m.soloNonInRegola(r.filter((x) => !m.nonInRegola(x))), [])
+  ok('elenco vuoto: vuoto', m.soloNonInRegola([]), [])
+  ok('con la ricerca in AND, in qualunque ordine',
+    [ids(m.cercaFraGliIscritti(m.soloNonInRegola(r), 'pi')), ids(m.soloNonInRegola(m.cercaFraGliIscritti(r, 'pi')))],
+    [['parte'], ['parte']])
+  ok('la ricerca che trova solo chi è in regola non dà niente', ids(m.soloNonInRegola(m.cercaFraGliIscritti(r, 'mario'))), [])
+}
+
+console.log('\n7. il riepilogo del corso')
+{
+  const T = (testo, tono) => ({ testo, tono })
+  // Una riga fatta apposta: conta solo il tono di certificato e quota.
+  const rg = (cert = 'verde', quota = 'verde') => ({ certificato: { tono: cert, parola: 'X' }, quota: { tono: quota, parola: 'Y' } })
+  const tanti = (n, ...a) => Array.from({ length: n }, () => rg(...a))
+  const R = m.riepilogoCorso
+  ok('16 su 20, tutto in regola', R(tanti(16), 20), [T('16/20', 'neutro'), T('TUTTO IN REGOLA', 'verde')])
+  ok('corso pieno: giallo, con la voce', R(tanti(25), 25), [T('25/25', 'giallo'), T('CORSO PIENO', 'giallo'), T('TUTTO IN REGOLA', 'verde')])
+  ok('oltre di 1: rosso, «1 IN PIÙ DEI POSTI»', R(tanti(26), 25), [T('26/25', 'rosso'), T('1 IN PIÙ DEI POSTI', 'rosso'), T('TUTTO IN REGOLA', 'verde')])
+  ok('oltre di 3', R(tanti(28), 25).slice(0, 2), [T('28/25', 'rosso'), T('3 IN PIÙ DEI POSTI', 'rosso')])
+  ok('senza capienza: «14 ISCRITTI», niente posti', R(tanti(14)), [T('14 ISCRITTI', 'neutro'), T('TUTTO IN REGOLA', 'verde')])
+  ok('senza capienza e uno solo: «1 ISCRITTO»', R(tanti(1), undefined)[0], T('1 ISCRITTO', 'neutro'))
+  ok('capienza 0: come senza', R(tanti(3), 0)[0], T('3 ISCRITTI', 'neutro'))
+  ok('capienza 0 non fa «pieno» con zero iscritti', R([], 0)[0], T('0 ISCRITTI', 'neutro'))
+  ok('zero iscritti: «0/20», tutto in regola', R([], 20), [T('0/20', 'neutro'), T('TUTTO IN REGOLA', 'verde')])
+  ok('solo certificati: niente voce DA PAGARE', R([rg('rosso'), rg('rosso'), ...tanti(3)], 20),
+    [T('5/20', 'neutro'), T('2 SENZA CERTIFICATO', 'rosso')])
+  ok('un solo senza certificato: singolare', R([rg('rosso')], 20).slice(1), [T('1 SENZA CERTIFICATO', 'rosso')])
+  ok('solo quote: niente voce SENZA CERTIFICATO', R([rg('verde', 'rosso'), ...tanti(2)], 20),
+    [T('3/20', 'neutro'), T('1 DA PAGARE', 'rosso')])
+  ok('entrambe, in quest’ordine', R([rg('rosso'), rg('verde', 'rosso'), rg('verde', 'rosso'), rg()], 20),
+    [T('4/20', 'neutro'), T('1 SENZA CERTIFICATO', 'rosso'), T('2 DA PAGARE', 'rosso')])
+  ok('certificato giallo da solo: TUTTO IN REGOLA', R([rg('giallo')], 20), [T('1/20', 'neutro'), T('TUTTO IN REGOLA', 'verde')])
+  ok('certificato spento non conta', R([rg('spento')], 20), [T('1/20', 'neutro'), T('TUTTO IN REGOLA', 'verde')])
+  ok('IN PARTE conta come da pagare', R([rg('verde', 'giallo')], 20), [T('1/20', 'neutro'), T('1 DA PAGARE', 'rosso')])
+  ok('pieno e con guai: conto, pieno, poi i guai', R([rg('rosso'), ...tanti(1)], 2),
+    [T('2/2', 'giallo'), T('CORSO PIENO', 'giallo'), T('1 SENZA CERTIFICATO', 'rosso')])
+  const r = m.iscrittiDelCorso(gente, 'judo', OGGI)
+  ok('sulle righe vere del judo: 12 iscritti, 2 senza certificato, 2 da pagare + IN PARTE',
+    R(r, 20), [T('12/20', 'neutro'), T('2 SENZA CERTIFICATO', 'rosso'), T('2 DA PAGARE', 'rosso')])
+  ok('il minore sotto i 6 anni non conta come senza certificato',
+    R([riga(r, 'mini')], 20), [T('1/20', 'neutro'), T('TUTTO IN REGOLA', 'verde')])
+}
+
+console.log('\n8. il corso da cui si è aperta la scheda')
+{
+  const corsi = [{ id: 'judo', attivo: true }, { id: 'vecchio', attivo: false }]
+  ok('corso in calendario: si torna lì', m.corsoDiProvenienza('judo', corsi), 'judo')
+  ok('corso archiviato: niente', m.corsoDiProvenienza('vecchio', corsi), undefined)
+  ok('corso inventato: niente', m.corsoDiProvenienza('zzz', corsi), undefined)
+  ok('nessun corso di provenienza: niente', m.corsoDiProvenienza(undefined, corsi), undefined)
+  ok('corsi non ancora letti: niente', m.corsoDiProvenienza('judo', []), undefined)
 }
 
 console.log(guai ? `\n${guai} ${guai === 1 ? 'cosa non torna' : 'cose non tornano'}` : '\nTUTTO A POSTO')

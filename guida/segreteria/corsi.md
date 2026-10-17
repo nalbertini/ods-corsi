@@ -95,15 +95,29 @@ In **ISCRITTI** c'è una persona per riga: cognome, nome, **ISCRITTO DAL**,
 certificato e quota, a parole (come in [Iscritti](iscritti.md)), così si vede
 subito chi ha qualcosa che non va.
 
+Sopra l'elenco una riga dice come sta il corso: `16/20 · 3 SENZA CERTIFICATO ·
+4 DA PAGARE`, oppure `TUTTO IN REGOLA`. Conta tutto il corso, anche mentre
+cerchi o filtri. «Senza certificato» è chi non ce l'ha o ce l'ha scaduto; «da
+pagare» è chi non ha pagato tutto, anche a metà: sono gli stessi conti della
+pagina [Iscritti](iscritti.md). Il certificato in scadenza non è un guaio: lo
+vedi nella colonna. A corso pieno la riga dice `CORSO PIENO` (giallo), oltre i
+posti `2 IN PIÙ DEI POSTI` (rosso); senza posti indicati, `16 ISCRITTI`.
+
 - **Cerca** per nome o cognome: maiuscole, accenti, apostrofi e trattini non
-  contano («dangelo» trova D'Angelo). Se non trova nessuno lo dice. Accanto
-  si legge quanti sono, «3 DI 22».
+  contano («dangelo» trova D'Angelo). Se non trova nessuno lo dice. Con una
+  ricerca accesa si legge quanti sono, «3 DI 22».
+- **NON IN REGOLA** mostra solo chi ha il certificato scaduto o mancante, o la
+  quota da pagare (anche a metà): come il tasto della pagina Iscritti. Va
+  insieme alla ricerca. Se non c'è nessuno, l'elenco dice «Tutti in regola.» e
+  il tasto resta premuto: toccalo di nuovo per spegnerlo.
 - **Ordina** toccando l'intestazione di una colonna: un secondo tocco rovescia,
   un terzo torna all'ordine per cognome. Con CERTIFICATO o QUOTA in cima ci
   sono quelli che hanno il guaio.
 - Un clic su un iscritto apre **la sua scheda** in ISCRITTI. **Indietro** torna
-  al corso, sulla scheda ISCRITTI, con la ricerca e l'ordine che avevi. Se nel
-  corso hai modifiche non salvate l'app chiede prima.
+  al corso, sulla scheda ISCRITTI, con la ricerca, il filtro e l'ordine che
+  avevi. Lo stesso fa **CORSO** in alto nella scheda della persona (se la
+  apri da un altro posto, dice ISCRITTI e torna all'elenco). Se nel corso hai
+  modifiche non salvate l'app chiede prima.
 - Il menu «Iscrivi qualcuno…» con **ISCRIVI** sta in questa
   scheda. A corso pieno lo dice, ma si può iscrivere lo stesso.
 - Se l'app non riesce a leggere le persone lo dice, invece di mostrare zero
