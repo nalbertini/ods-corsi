@@ -320,6 +320,28 @@ function numeriDiUnElenco(b: Blocco): Array<{ cifra: string; scritta: string }> 
   return fuori
 }
 
+/** Il collage pieno del design: 4 foto e un elenco di 9 voci sono le 13 tessere (foto grande, 9 voci, 3 foto). */
+const PIENO_FOTO = 4
+const PIENO_VOCI = 9
+/** I colori delle 9 voci, come nel design (A2 «TatamiBlu»): non seguono la rotazione. */
+const COLORI_PIENO = ['blu', 'giallo', 'giallo', 'inchiostro', 'giallo', 'blu', 'inchiostro', 'giallo', 'blu']
+
+function vociPiene(b: Blocco): string[] | null {
+  if (b.tag !== 'ul') return null
+  const li = [...b.html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1])
+  if (li.length !== PIENO_VOCI || /<(ul|ol)\b/i.test(b.html.slice(b.html.indexOf('>') + 1))) return null
+  return li
+}
+
+/** Grassetto e resto: un numero; solo il grassetto: un titolo; niente grassetto: una nota. */
+function tesseraPiena(voce: string, colore: string): string {
+  const m = /^\s*<strong>([\s\S]*?)<\/strong>([\s\S]*)$/i.exec(voce)
+  if (!m || !testoSolo(m[1])) return `<article class="tessera ${colore} nota"><span class="scritta">${voce.trim()}</span></article>`
+  const resto = m[2].trim()
+  if (!resto) return `<article class="tessera ${colore} titolo"><strong class="titolo">${m[1]}</strong></article>`
+  return `<article class="tessera ${colore} numero"><strong class="cifra">${m[1]}</strong> <span class="scritta">${resto}</span></article>`
+}
+
 /**
  * La testata della Home: dall'introduzione (il testo prima del primo `h2`) prende le prime tre foto e, se c'è un solo
  * elenco di 2–6 voci con il grassetto iniziale, i numeri. Restituisce la griglia e il testo che resta (le altre foto,
@@ -331,6 +353,14 @@ export function collage(testoPulito: string): { html: string; resto: string } {
   const finePresentazione = primoTitolo < 0 ? b.length : primoTitolo
   const intro = b.slice(0, finePresentazione)
   const usati = new Set<number>()
+  const fotoTutte = intro.map((x, i) => ({ img: immagine(x), i })).filter((y): y is { img: string; i: number } => y.img !== null)
+  const liste = intro.map((x, i) => ({ voci: vociPiene(x), i })).filter((y) => y.voci !== null)
+  if (fotoTutte.length === PIENO_FOTO && liste.length === 1 && intro.filter((x) => x.tag === 'ul').length === 1) {
+    const tessere = (liste[0].voci ?? []).map((v, k) => tesseraPiena(v, COLORI_PIENO[k]))
+    const f = fotoTutte.map((y, k) => `<figure class="tessera foto ${k === 0 ? 'grande' : 'meta'}">${conCaricamento(y.img, k === 0)}</figure>`)
+    const dentro = new Set([...fotoTutte.map((y) => y.i), liste[0].i])
+    return { html: `<div class="collage pieno">${f[0]}${tessere.join('')}${f.slice(1).join('')}</div>`, resto: b.filter((_, i) => !dentro.has(i)).map((x) => x.html).join('') }
+  }
   const foto: string[] = []
   intro.forEach((x, i) => {
     const img = immagine(x)
