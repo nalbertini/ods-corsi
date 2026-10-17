@@ -46,6 +46,7 @@
     "prova:sito-scala": "node scripts/prova-sito-scala.mjs",
     "prova:sito-home": "node scripts/prova-sito-home.mjs",
     "prova:sito-contatti": "node scripts/prova-sito-contatti.mjs",
+    "prova:sito-corso": "node scripts/prova-sito-corso.mjs",
     "prova:sito-genera": "node scripts/prova-sito-genera.mjs",
     "prova:sito-pubblica": "node scripts/prova-sito-pubblica.mjs",
     "prova:indirizzi": "node scripts/prova-indirizzi.mjs",
