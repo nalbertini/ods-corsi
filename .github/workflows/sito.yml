@@ -22,6 +22,7 @@ on:
       - sito/**
       - src/lib/sito.ts
       - src/lib/sitoGenera.ts
+      - 'src/lib/sitoLayout.ts'
       - src/lib/sitoPagine.ts
       - src/lib/sitoTesto.ts
       - scripts/genera-sito.mjs

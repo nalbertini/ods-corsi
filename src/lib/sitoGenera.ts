@@ -1,10 +1,13 @@
 import { urlImmagine } from './sitoImmagini'
 import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
+import { GRIGLIA_MASSIMA, impagina } from './sitoLayout'
 import { CONTATTI } from './sito'
 
 /**
  * Il sito pubblico: dalle pagine pubblicate nel pannello SITO ai file statici.
+ *
+ * Il testo pulito si mette in pagina a sezioni e tessere in `sitoLayout.ts` (`impagina`).
  *
  * Qui si pulisce il testo un'altra volta (`pulisciTesto`): è la pulizia di cui
  * ci si fida, perché chi scrive all'API salta il pannello e il filtro del
@@ -77,6 +80,11 @@ const fileDi = (slug: string) => (slug === 'home' ? 'index.html' : `${slug}/inde
  */
 const MARCHIO = '<img src="/risorse/logo.webp" alt="Officine dello Sport" width="1060" height="1040" decoding="async">'
 
+/** L'ultima riga di una griglia da 8 a 16 tessere si allarga: con una in più l'ultima è a tutta riga, con due in più sono due larghe. */
+const GRIGLIE_LUNGHE = Array.from({ length: GRIGLIA_MASSIMA - 7 }, (_, i) => i + 8)
+  .flatMap((n) => (n % 3 === 1 ? [`.tessere.n-${n} .tessera:last-child{grid-column:span 6}`] : n % 3 === 2 ? [`.tessere.n-${n} .tessera:nth-last-child(1),.tessere.n-${n} .tessera:nth-last-child(2){grid-column:span 3}`] : []))
+  .join('\n')
+
 /**
  * L'aspetto «A2 · Tatami blu e giallo» (docs/design-canvas/sito-rebrand/, token in
  * token-proposta.md): tessere a filo con angoli di 6px, titoli in Big Shoulders
@@ -102,7 +110,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .testata nav ul{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none;font-size:17px;font-weight:500}
 .testata nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:6px;text-decoration:none}
 .testata nav a:hover{background:var(--chiara)}
-.pulsante,.testo a.pulsante{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 32px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;font-weight:600;text-decoration:none}
+.pulsante,.testo a.pulsante,.colonna a.pulsante{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 32px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:18px;font-weight:600;text-decoration:none}
 .pulsante.piccolo{min-height:48px;padding:0 24px;font-size:16px}
 .testata .pulsante{background:var(--giallo);color:var(--inchiostro)}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
@@ -115,15 +123,15 @@ h1{margin:0;font-size:clamp(56px,12vw,200px);letter-spacing:-.01em;line-height:.
 .pagina-testo h1{font-size:clamp(48px,8vw,120px);max-width:14em}
 .testo{padding:24px var(--margine) 40px;max-width:calc(62ch + var(--margine) * 2)}
 .pagina-testo + .testo{padding-top:8px}
-.testo>*+*{margin-top:16px}
+.testo>*+*,.colonna>*+*{margin-top:16px}
 .testo h2{font-family:var(--display);text-transform:uppercase;margin:clamp(40px,5vw,64px) 0 14px;font-size:clamp(40px,5vw,72px);letter-spacing:-.005em;line-height:.9}
 .testo h3{margin:32px 0 10px;font-size:clamp(28px,3vw,40px);line-height:.95}
-.testo p,.testo ul,.testo ol,.testo blockquote{margin-top:0;margin-bottom:0}
-.testo ul,.testo ol{padding-left:1.3em}
-.testo li+li{margin-top:6px}
+.testo p,.testo ul,.testo ol,.testo blockquote,.colonna p,.colonna ul,.colonna ol{margin-top:0;margin-bottom:0}
+.testo ul,.testo ol,.colonna ul,.colonna ol{padding-left:1.3em}
+.testo li+li,.colonna li+li{margin-top:6px}
 .testo blockquote{padding-left:18px;border-left:4px solid var(--blu);font-size:1.15em}
-.testo a{text-underline-offset:3px}
-.testo img{max-width:100%;height:auto;border-radius:6px}
+.testo a,.colonna a{text-underline-offset:3px}
+.testo img,.colonna img{max-width:100%;height:auto;border-radius:6px}
 .invito{display:flex;flex-direction:column;justify-content:space-between;gap:20px;margin:96px 12px 6px;padding:28px var(--margine);min-height:clamp(240px,26vw,360px);border-radius:6px;background:var(--giallo);color:var(--inchiostro);text-decoration:none}
 .invito .riga{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
 .invito .frase{max-width:min(520px,80%);font-size:clamp(16px,1.4vw,20px);line-height:1.35}
@@ -137,10 +145,49 @@ h1{margin:0;font-size:clamp(56px,12vw,200px);letter-spacing:-.01em;line-height:.
 .piede a{text-decoration:none}
 .piede a:hover{text-decoration:underline}
 .piede .fine{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;margin-top:32px;font-size:14px;color:var(--chiara)}
+.sezione{padding:48px var(--margine) 0}
+.sezione h2{font-family:var(--display);text-transform:uppercase;margin:0 0 24px;font-size:clamp(48px,9vw,120px);letter-spacing:-.01em;line-height:.88;overflow-wrap:anywhere}
+.testo + .sezione{padding-top:24px}
+.colonna{max-width:calc(62ch + var(--margine) * 2);padding-bottom:24px}
+.tessere{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.tessera{grid-column:span 2;display:flex;flex-direction:column;gap:14px;margin:0;padding:24px;border-radius:6px;font-size:clamp(17px,1.2vw,19px);line-height:1.5}
+.tessera>*{margin:0}
+.tessera h3{margin:0;font-size:clamp(32px,3.6vw,52px);line-height:.95;overflow-wrap:anywhere}
+.tessera ul,.tessera ol{padding-left:1.3em}
+.tessera li+li{margin-top:6px}
+.tessera a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+.tessera img{display:block;max-width:100%;border-radius:6px}
+.tessera.blu{background:var(--blu);color:#fff}
+.tessera.giallo{background:var(--giallo);color:var(--inchiostro)}
+.tessera.inchiostro{background:var(--inchiostro);color:#fff}
+.tessera.chiara{background:var(--chiara);color:var(--inchiostro)}
+.tessera.blu a:focus-visible,.tessera.inchiostro a:focus-visible{outline-color:var(--giallo)}
+.tessera.giallo a:focus-visible,.tessera.chiara a:focus-visible{outline-color:var(--inchiostro)}
+.tessera.blu a.pulsante,.tessera.inchiostro a.pulsante{background:var(--giallo);color:var(--inchiostro);text-decoration:none}
+.tessera.giallo a.pulsante,.tessera.chiara a.pulsante{background:var(--inchiostro);color:#fff;text-decoration:none}
+.tessere.n-1 .tessera{grid-column:span 6}
+.tessere.n-2 .tessera,.tessere.n-4 .tessera{grid-column:span 3}
+.tessere.n-5 .tessera:nth-child(4),.tessere.n-5 .tessera:nth-child(5){grid-column:span 3}
+.tessere.n-7 .tessera:last-child{grid-column:span 6}
+${GRIGLIE_LUNGHE}
+.tessera.citazione{font-size:clamp(20px,2vw,28px);line-height:1.3;font-weight:500;justify-content:space-between}
+.firma{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(26px,2.4vw,34px);line-height:1}
+.citazioni{display:flex;gap:6px;margin:0 0 6px;overflow-x:auto;scroll-snap-type:x mandatory}
+.citazioni:focus-visible{outline:3px solid var(--blu);outline-offset:3px}
+.citazioni .tessera{flex:0 0 min(560px,85%);scroll-snap-align:start}
+.foto{padding:0;overflow:hidden}
+.foto img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:0}
+.foto-fila{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.due{grid-template-columns:repeat(2,1fr)}
+.foto-fila figure{grid-column:auto}
+.sezione>*+*{margin-top:6px}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}
 @media (max-width:900px){
 .testata{flex-wrap:wrap;gap:8px 16px}
+.tessere{grid-template-columns:1fr}
+.tessere .tessera{grid-column:auto}
+.foto-fila{grid-template-columns:repeat(2,1fr)}
 .testata nav{order:3;width:100%}
 .invito{margin-top:48px}
 }
@@ -221,7 +268,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
     : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div></section>`
-  const corpo = `${t}<main>${intro}${testo.trim() ? `<div class="testo">${testo}</div>` : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
+  const corpo = `${t}<main>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
 }
 

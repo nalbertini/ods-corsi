@@ -100,9 +100,34 @@ solo testo; le altre hanno in cima il titolo grande (in maiuscolo) e, sotto, la 
 **descrizione**. Il pulsante «Contattaci» e l'invito giallo «Prova» in fondo
 compaiono se esiste una pagina pubblicata con indirizzo `contatti`.
 
-**L'aspetto** è sempre lo stesso per tutte le pagine, e non si cambia da qui: sfondo azzurro chiaro,
-titoli neri stretti, pulsante «Prova» giallo in alto a destra, il logo intero in cima e, in fondo, una
-tessera scura con i recapiti. Cambiano solo i testi che scrivi tu, che prendono da soli i colori e il carattere.
+**L'aspetto** è sempre lo stesso per tutte le pagine e non si cambia da qui: sfondo azzurro chiaro,
+titoli neri stretti in maiuscolo, pulsante «Prova» giallo in alto a destra, il logo intero in cima e, in
+fondo, l'invito giallo e una tessera scura con i recapiti.
 
 Se compare «Il pannello del sito non è ancora attivo sul database», manca un
 aggiornamento del database: va chiesto a chi cura l'app.
+
+## Come il testo diventa tessere
+
+Il sito mette in pagina da solo quello che scrivi, secondo come lo scrivi. Nell'ANTEPRIMA del pannello vedi
+il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA** e una decina di minuti.
+
+- **Titolo grande** (`h2`): apre una **sezione** col titolo in grande, in maiuscolo. Quello che scrivi
+  prima del primo titolo grande è l'introduzione, in colonna.
+- **Sottotitolo** (`h3`) e il testo che lo segue: una **tessera**. I sottotitoli di una sezione fanno una
+  griglia (1 tessera a tutta riga, 2 a coppie, 3 su una riga, 4 come 2×2, 5 come 3+2, 6 come 3×2…). I
+  colori ruotano blu, giallo, scuro, chiaro; se **tutti** i sottotitoli di una sezione finiscono con «?»,
+  sono tutte tessere chiare (le domande frequenti).
+- **Elenco** (`ul`) di 2–12 voci corte, in una sezione senza sottotitoli: una tessera per voce. Il
+  **grassetto** all'inizio della voce è il titolo della tessera. Un elenco più lungo, o numerato, resta un elenco.
+- **Citazioni** (`blockquote`): più citazioni di fila scorrono di lato (col dito o con le frecce, senza
+  codice); una sola è una tessera larga. L'ultima riga della citazione tutta in *corsivo* o in **grassetto**,
+  o che comincia con «—», è la firma.
+- **Foto**: una foto sola in una sezione (all'inizio o in fondo) è una tessera a tutta larghezza; più foto
+  di fila sono una fila di tessere. Una foto in mezzo a un testo resta com'è. La foto viene ritagliata a
+  3:2: teste e piedi vicini ai bordi possono tagliarsi, scegli foto con spazio intorno. Per le foto con
+  minori vale la regola di sempre: serve il permesso dei genitori, mai documenti.
+- Una foto dentro una tessera con sottotitolo va **in cima alla tessera**, sopra il titolo, anche se l'hai scritta dopo.
+- Il paragrafo scritto **dopo l'ultimo sottotitolo** finisce nell'ultima tessera: per chiudere la griglia e
+  scrivere altro, apri un nuovo titolo grande.
+- Le pagine di legge e le pagine senza titoli grandi restano testo in colonna, come prima.
