@@ -21,6 +21,7 @@ import { cosaNonVaDiretto, type DatiPagamentoDiretto, type PagamentoDiretto } fr
 import { cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type EnteRicevuta, type IntestatarioRicevuta, type QuotaRicevuta, type Ricevuta, type VoceRicevuta } from './ricevute'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, scordaListino } from './listino'
 import { kanjiScritto } from './kanji'
+import type { PaginaSito, VoceMenu } from './sitoPagine'
 import { AllegatiNonPartiti, cosaNonVaSegnalazione, eCategoria, SCEGLI, type Categoria, guaioAllegati, mandaAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 
 /**
@@ -135,6 +136,7 @@ const NUCLEO_SOLO_PROVA = 'Il nucleo familiare c’è solo in prova, per ora: il
 const DURATA_LINK = 600
 const ALLEGATI = 'segnalazioni'
 const MANCANO_PAGAMENTI_A_MANO = 'I pagamenti a mano non sono ancora attivi sul database: va lanciato 54-pagamenti-diretti.sql'
+const MANCA_SITO = 'Il pannello del sito non è ancora attivo sul database: va lanciato 56-sito.sql'
 const MANCANO_ALLEGATI = 'Gli allegati non sono ancora attivi sul database: va lanciato 32-segnalazioni-allegati.sql'
 
 const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `${p.nome} ${p.cognome}`.trim() : '')
@@ -142,6 +144,7 @@ const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `
 /** Le tabelle che arrivano dopo lo schema, col file che le crea. */
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
+  [/sito_pagine|sito_menu|sito_redirect|salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito/, MANCA_SITO],
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
   [/non_doppioni/, 'Segnare due schede «non sono doppioni» non è ancora attivo sul database: va lanciato 33-non-doppioni.sql'],
   [/segnalazioni/, 'Le segnalazioni non sono ancora attive sul database: va lanciato 25-segnalazioni.sql'],
@@ -253,6 +256,16 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if (e?.code === 'P0002' && /allegato/.test(e.message ?? '')) return new Error('Questo allegato non c’è più')
   if (e?.code === '42501' && /allegato/.test(e.message ?? '')) return new Error('Un allegato lo toglie solo chi l’ha mandato')
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /allegato/.test(e.message ?? '')) return new Error(MANCANO_ALLEGATI)
+  // Il sito arriva con 56-sito.sql: le funzioni che mancano, il testo che il sito non ammette, la pagina ancora nel menu.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /(salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito)/.test(e.message ?? '')) return new Error(MANCA_SITO)
+  if (e?.code === '23514' && /sito_pagine_(bozza|pubblicato)_check/.test(e.message ?? '')) return new Error('Il testo contiene cose che il sito non ammette (script, moduli, stili): toglile e riprova')
+  if (e?.code === '23514' && /sito_pagine_slug_check/.test(e.message ?? '')) return new Error('Questo indirizzo non va bene: solo lettere minuscole senza accenti, numeri e trattini, e non uno che serve al sito')
+  if (e?.code === '23514' && /sito_pagine_legge_visibile/.test(e.message ?? '')) return new Error('Le pagine di legge devono restare sul sito: non si possono nascondere')
+  if (e?.code === '23514' && /sito_pagine_titolo_check/.test(e.message ?? '')) return new Error('Il titolo va da 1 a 120 lettere')
+  if (e?.code === '23514' && /sito_pagine_descrizione_check/.test(e.message ?? '')) return new Error('La descrizione arriva al massimo a 300 lettere')
+  if (e?.code === '23514' && /sito_menu/.test(e.message ?? '')) return new Error('Una voce del menu ha un nome o un indirizzo che il sito non ammette')
+  if (e?.code === '23505' && /sito_pagine_slug_key/.test(e.message ?? '')) return new Error('Questo indirizzo è già di un’altra pagina')
+  if (e?.code === '23503' && /sito_menu/.test(e.message ?? '')) return new Error('La pagina è nel menu o nel footer del sito: toglila da lì, poi si cancella')
   // Le discipline arrivano con 40-discipline.sql.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /disciplin/.test(e.message ?? ''))
     return new Error('Le discipline non sono ancora attive sul database: va lanciato 40-discipline.sql')
@@ -1617,6 +1630,83 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
     async categoriaSegnalazione(id, categoria: Categoria) {
       if (!eCategoria(categoria)) throw new Error(SCEGLI)
       ok(await db.from('segnalazioni').update({ categoria }).eq('id', id))
+    },
+
+    async sitoPagine() {
+      const righe = ok(await db.from('sito_pagine').select('id, slug, titolo, descrizione, titolo_pubblicato, descrizione_pubblicata, bozza, pubblicato, nascosta, di_legge, versione, pubblicata_il').order('slug')) as unknown as Array<{
+        id: string
+        slug: string
+        titolo: string
+        descrizione: string
+        titolo_pubblicato: string | null
+        descrizione_pubblicata: string | null
+        bozza: string
+        pubblicato: string | null
+        nascosta: boolean
+        di_legge: boolean
+        versione: number
+        pubblicata_il: string | null
+      }>
+      return righe.map((r): PaginaSito => ({
+        id: r.id,
+        slug: r.slug,
+        titolo: r.titolo,
+        descrizione: r.descrizione,
+        titoloPubblicato: r.titolo_pubblicato,
+        descrizionePubblicata: r.descrizione_pubblicata,
+        bozza: r.bozza,
+        pubblicato: r.pubblicato,
+        nascosta: r.nascosta,
+        diLegge: r.di_legge,
+        versione: r.versione,
+        pubblicataIl: r.pubblicata_il ?? undefined,
+      }))
+    },
+
+    async sitoMenu() {
+      const righe = ok(await db.from('sito_menu').select('dove, etichetta, pagina_id, indirizzo').order('dove').order('ordine')) as unknown as Array<{
+        dove: 'menu' | 'footer'
+        etichetta: string
+        pagina_id: string | null
+        indirizzo: string | null
+      }>
+      const voci = (dove: 'menu' | 'footer'): VoceMenu[] => righe.filter((r) => r.dove === dove).map((r) => ({ etichetta: r.etichetta, paginaId: r.pagina_id, indirizzo: r.indirizzo }))
+      return { menu: voci('menu'), footer: voci('footer') }
+    },
+
+    async nuovaPaginaSito(titolo, slug) {
+      const r = await db.from('sito_pagine').insert({ titolo: titolo.trim(), slug }).select('id').single()
+      // Un indirizzo che è il vecchio di una pagina cambiata: la regola lo ferma come «permesso negato».
+      if (r.error?.code === '42501') throw new Error('Questo indirizzo era di una pagina che ha cambiato indirizzo: scegline un altro')
+      return (ok(r) as { id: string }).id
+    },
+
+    async salvaBozzaSito(id, versione, dati) {
+      return ok(await db.rpc('salva_bozza_sito', { p_id: id, p_versione: versione, p_titolo: dati.titolo.trim(), p_descrizione: dati.descrizione.trim(), p_bozza: dati.bozza })) as number
+    },
+
+    async pubblicaPaginaSito(id, versione) {
+      return ok(await db.rpc('pubblica_pagina_sito', { p_id: id, p_versione: versione })) as number
+    },
+
+    async cambiaIndirizzoSito(id, slug) {
+      ok(await db.rpc('cambia_indirizzo_sito', { p_id: id, p_slug: slug }))
+    },
+
+    async nascondiPaginaSito(id, nascosta) {
+      // Senza `select`, una pagina che non c'è più (o di legge) darebbe 0 righe e nessun errore: sembrerebbe fatto.
+      const fatte = ok(await db.from('sito_pagine').update({ nascosta }).eq('id', id).select('id')) as unknown as unknown[]
+      if (!fatte.length) throw new Error('La pagina non c’è più')
+    },
+
+    async cancellaPaginaSito(id) {
+      // Come sopra: una pagina di legge o già cancellata dà 0 righe, e va detto.
+      const fatte = ok(await db.from('sito_pagine').delete().eq('id', id).select('id')) as unknown as unknown[]
+      if (!fatte.length) throw new Error('Questa pagina non si cancella: o non c’è più, o è una pagina di legge')
+    },
+
+    async salvaMenuSito(dove, voci) {
+      ok(await db.rpc('salva_menu_sito', { p_dove: dove, p_voci: voci.map((v) => ({ etichetta: v.etichetta, pagina_id: v.paginaId, indirizzo: v.indirizzo })) }))
     },
 
     async gestisciPresenzaIstruttore(id, conferma) {

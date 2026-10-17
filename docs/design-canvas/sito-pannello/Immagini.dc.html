@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «sito»: SITO > IMMAGINI. Griglia delle immagini caricate (nel canvas niente foto: riquadro con il nome, come
+     FotoCapo). Ogni immagine dice dove e' usata e, se manca, il testo alternativo in rosso. Una usata in una pagina
+     pubblicata non si cancella. Dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="MenuSito" attiva="SITO" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" tema="scuro" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">SITO</h1>
+        <span style="font-size: 14px; color: #8c8c88">officinedellosport.it · le immagini delle pagine</span>
+      </div>
+      <dc-import name="Bottone" label="CARICA UN'IMMAGINE" variante="pieno" contesto="segreteria" tema="scuro" hint-size="230px,48px"></dc-import>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+      <dc-import name="Chip" label="PAGINE" tema="scuro" hint-size="110px,44px"></dc-import>
+      <dc-import name="Chip" label="MENU E FOOTER" tema="scuro" hint-size="170px,44px"></dc-import>
+      <dc-import name="Chip" label="IMMAGINI" acceso="{{ true }}" tema="scuro" hint-size="120px,44px"></dc-import>
+      <dc-import name="Chip" label="REDIRECT" tema="scuro" hint-size="120px,44px"></dc-import>
+    </div>
+
+    <dc-import name="Riquadro" contesto="segreteria" tono="prova" etichetta="PRIMA DI CARICARE" titolo="Niente foto di persone senza il permesso" testo="Vale soprattutto per i minorenni: serve il consenso scritto di chi è nella foto o dei genitori. Vanno bene JPEG, PNG e WebP fino a 5 MB; si rimpiccioliscono da sole." tema="scuro" hint-size="100%,130px"></dc-import>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 2px solid #333333; background: #1c1c1c">
+        <dc-import name="FotoCapo" tipo="judogi" nome="tatami.jpg" tasto="{{ false }}" tema="scuro" hint-size="100%,220px"></dc-import>
+        <span style="font-size: 16px; font-weight: 600">tatami.jpg</span>
+        <span style="font-size: 14px; color: #c9c9c4">Usata in: Home, Judo</span>
+        <span style="font-size: 14px; color: #8c8c88">Testo alternativo: «Il tatami della sala 1»</span>
+        <dc-import name="Badge" tipo="tag" tono="spento" label="IN USO: NON SI CANCELLA" tema="scuro" hint-size="200px,24px"></dc-import>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 2px solid #333333; background: #1c1c1c">
+        <dc-import name="FotoCapo" tipo="felpa" nome="sala-pesi.webp" tasto="{{ false }}" tema="scuro" hint-size="100%,220px"></dc-import>
+        <span style="font-size: 16px; font-weight: 600">sala-pesi.webp</span>
+        <span style="font-size: 14px; color: #c9c9c4">Usata in: Chi siamo (bozza)</span>
+        <span style="font-size: 14px; color: #e4292a; font-weight: 600">Manca il testo alternativo: serve a chi non vede l'immagine.</span>
+        <div style="display: flex; gap: 8px">
+          <dc-import name="Chip" label="SCRIVI IL TESTO" tema="scuro" hint-size="170px,44px"></dc-import>
+          <dc-import name="Chip" label="TOGLI" tema="scuro" hint-size="90px,44px"></dc-import>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 2px solid #333333; background: #1c1c1c">
+        <dc-import name="FotoCapo" tipo="tabella" nome="ingresso.png" tasto="{{ false }}" tema="scuro" hint-size="100%,200px"></dc-import>
+        <span style="font-size: 16px; font-weight: 600">ingresso.png</span>
+        <span style="font-size: 14px; color: #c9c9c4">Non è usata in nessuna pagina</span>
+        <span style="font-size: 14px; color: #8c8c88">Testo alternativo: «L'ingresso della palestra in via Sassi»</span>
+        <div style="display: flex; gap: 8px">
+          <dc-import name="Chip" label="TOGLI" tema="scuro" hint-size="90px,44px"></dc-import>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>

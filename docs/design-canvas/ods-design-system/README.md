@@ -22,8 +22,8 @@ Google, e vale solo per i mockup.
 | `SchedaCorso.dc.html` | `Costo` di `ds.tsx`: la scheda di un corso nel listino |
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
-| `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola` |
-| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` è il menu di chi cura i conti (I CONTI: PAGAMENTI, LISTINO), senza ricerca né link da copiare |
+| `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag` (neutro, rosso, giallo e verde `fatto`: PUBBLICATA nel SITO), `.sg-segno-regola` |
+| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO e SITO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori; `area="amministrazione"` è il menu di chi cura i conti (I CONTI: PAGAMENTI, LISTINO), senza ricerca né link da copiare |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |

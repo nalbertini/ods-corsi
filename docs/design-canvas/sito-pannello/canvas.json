@@ -1,0 +1,12 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "Sito · pannello" }
+  ],
+  "artboards": [
+    { "file": "Elenco.dc.html", "title": "1 · SITO · le pagine", "x": 0, "y": 0, "w": 1440, "h": 900, "page": "page-1" },
+    { "file": "Editor.dc.html", "title": "2 · Una pagina in modifica", "x": 1560, "y": 0, "w": 1440, "h": 900, "page": "page-1" },
+    { "file": "Pubblica.dc.html", "title": "3 · Pubblicare e stato del sito", "x": 3120, "y": 0, "w": 1440, "h": 900, "page": "page-1" },
+    { "file": "MenuFooter.dc.html", "title": "4 · Menu e footer", "x": 0, "y": 1020, "w": 1440, "h": 1100, "page": "page-1" },
+    { "file": "Immagini.dc.html", "title": "5 · Immagini", "x": 1560, "y": 1020, "w": 1440, "h": 900, "page": "page-1" }
+  ]
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «sito»: PUBBLICA e cosa si vede dopo. Sopra, il dialogo di conferma; sotto, i tre stati del riquadro IL SITO
+     (in corso, riuscita, fallita). Quando fallisce il sito resta quello di prima e il testo dice cosa fare, mai l'errore
+     grezzo. Dati inventati. -->
+<div style="display: flex; width: 1440px; min-height: 900px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="MenuSito" attiva="SITO" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="900px" tema="scuro" hint-size="240px,900px"></dc-import>
+  </div>
+  <main style="display: flex; flex-direction: column; gap: 18px; flex: 1; min-width: 0; padding: 28px 36px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">PUBBLICARE</h1>
+      <span style="font-size: 14px; color: #8c8c88">SITO · conferma e stato del sito</span>
+    </div>
+
+    <dc-import name="Dialogo" tipo="conferma" domanda="Pubblicare «Pre pugilistica»?" resto="Chi visita il sito vedrà il testo nuovo entro 5 minuti. Prima di pubblicare, ANTEPRIMA mostra com'è." no="NON ANCORA" si="PUBBLICA" tema="scuro" hint-size="640px,260px"></dc-import>
+
+    <dc-import name="Titoletto" label="COME SI VEDE IL SITO" tema="scuro" hint-size="100%,50px"></dc-import>
+    <div style="display: flex; flex-direction: column; gap: 14px; max-width: 880px">
+      <dc-import name="Riquadro" contesto="segreteria" tono="normale" etichetta="IL SITO" titolo="Si sta aggiornando" testo="Hai pubblicato «Pre pugilistica» alle 10:45. Entro 5 minuti il sito ha il testo nuovo." tema="scuro" hint-size="100%,110px"></dc-import>
+      <dc-import name="Riquadro" contesto="segreteria" tono="normale" fatto="{{ true }}" etichetta="IL SITO" titolo="Aggiornato oggi alle 10:49" testo="Il sito ha tutte le tue modifiche." tema="scuro" hint-size="100%,110px"></dc-import>
+      <dc-import name="Riquadro" contesto="segreteria" tono="guaio" etichetta="IL SITO" titolo="Il sito non è stato aggiornato" testo="Chi visita il sito vede ancora la versione di prima. Le tue modifiche sono salvate: riprova tra qualche minuto con PUBBLICA. Se succede ancora, chiama chi cura l'app." tonoTesto="guaio" tema="scuro" hint-size="100%,130px"></dc-import>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <dc-import name="Bottone" label="RIPROVA" variante="pieno" contesto="segreteria" tema="scuro" hint-size="130px,48px"></dc-import>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+</body>
+</html>
