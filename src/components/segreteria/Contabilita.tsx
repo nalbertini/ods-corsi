@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import {
   cosaNonVaGiroconto,
@@ -72,7 +72,7 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
             ['casse', 'CASSE'],
           ] as const
         ).map(([id, testo]) => (
-          <button key={id} type="button" role="tab" aria-selected={scheda === id} className="num sg-chip" aria-pressed={scheda === id} onClick={() => setScheda(id)}>
+          <button key={id} type="button" role="tab" aria-selected={scheda === id} className="num sg-chip" onClick={() => setScheda(id)}>
             {testo}
           </button>
         ))}
@@ -89,6 +89,16 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
 }
 
 const soldi = (c: number) => `${euro(c)} €`
+const soldiConSegno = (c: number) => (c < 0 ? `− ${soldi(-c)}` : soldi(c))
+
+/** Un riquadro che si apre in fondo alla pagina (il tasto è lì) non si vede: all'apertura si porta in vista. */
+function InVista({ children }: { children: ReactNode }) {
+  const qui = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    qui.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }, [])
+  return <div ref={qui} style={{ scrollMarginTop: 12 }}>{children}</div>
+}
 
 function Movimenti({ d, casse, voci, righe, fai, onCambiato }: { d: DatiSegreteria; casse: Cassa[]; voci: VoceContabile[]; righe: RigaMovimento[]; fai: Fai; onCambiato: () => void }) {
   const oggi = oggiARoma()
@@ -126,9 +136,21 @@ function Movimenti({ d, casse, voci, righe, fai, onCambiato }: { d: DatiSegreter
         <Numero titolo="TOTALE" valore={soldi(totaleResidui(conti))} sotto="saldi iniziali compresi" />
       </div>
 
-      {scrivo === 'movimento' && <NuovoMovimento d={d} voci={voci} casse={casse} fai={fai} onFatto={fatto} onChiudi={chiudi} />}
-      {scrivo === 'giroconto' && <NuovoGiroconto d={d} casse={casse} fai={fai} onFatto={fatto} onChiudi={chiudi} />}
-      {aperto && <MovimentoAperto key={aperto.id} d={d} riga={aperto} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} fai={fai} onChiudi={chiudi} onFatto={fatto} />}
+      {scrivo === 'movimento' && <InVista><NuovoMovimento d={d} voci={voci} casse={casse} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
+      {scrivo === 'giroconto' && <InVista><NuovoGiroconto d={d} casse={casse} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
+      {aperto && <InVista key={aperto.id}><MovimentoAperto d={d} riga={aperto} cassa={nomeCassa(aperto.cassaId)} cassaA={nomeCassa(aperto.cassaAId)} fai={fai} onChiudi={chiudi} onFatto={fatto} /></InVista>}
+
+      <div className="row" style={{ gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <button type="button" className="sg-btn sg-btn-linea" disabled={!trovate.length} onClick={() => scaricaCsv(`movimenti-${oggi}.csv`, csvMovimenti(trovate, casse))}>
+          ESPORTA CSV
+        </button>
+        <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setAperto(null); setScrivo('giroconto') }}>
+          GIROCONTO
+        </button>
+        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => { setAperto(null); setScrivo('movimento') }}>
+          NUOVO MOVIMENTO
+        </button>
+      </div>
 
       <div className="row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         <label htmlFor="cerca-movimenti" className="vh">
@@ -147,7 +169,6 @@ function Movimenti({ d, casse, voci, righe, fai, onCambiato }: { d: DatiSegreter
             {etichetta}
           </button>
         ))}
-        <span aria-hidden="true" style={{ width: 2, height: 28, background: 'var(--line)' }} />
         {(
           [
             ['entrata', 'ENTRATE'],
@@ -169,16 +190,6 @@ function Movimenti({ d, casse, voci, righe, fai, onCambiato }: { d: DatiSegreter
         </button>
         <button type="button" className="num sg-chip" aria-pressed={annullati} onClick={() => setAnnullati(!annullati)}>
           ANNULLATI
-        </button>
-        <span className="grow" />
-        <button type="button" className="sg-btn sg-btn-linea" disabled={!trovate.length} onClick={() => scaricaCsv(`movimenti-${oggi}.csv`, csvMovimenti(trovate, casse))}>
-          ESPORTA CSV
-        </button>
-        <button type="button" className="sg-btn sg-btn-linea" onClick={() => { setAperto(null); setScrivo('giroconto') }}>
-          GIROCONTO
-        </button>
-        <button type="button" className="sg-btn sg-btn-pieno" onClick={() => { setAperto(null); setScrivo('movimento') }}>
-          NUOVO MOVIMENTO
         </button>
       </div>
 
@@ -211,14 +222,17 @@ function Movimenti({ d, casse, voci, righe, fai, onCambiato }: { d: DatiSegreter
               </p>
             )}
             {trovate.map((r) => (
-              <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} onClick={() => { setScrivo(null); setAperto(r) }}>
+              <div key={r.id} role="row" className="sg-riga-movimento sg-iscritto" data-spento={r.annullato} data-scelto={aperto?.id === r.id} onClick={() => { setScrivo(null); setAperto(r) }}>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{dataRicevuta(r.data)}</span>
                 <span role="cell" style={{ fontSize: 15, fontWeight: 600, textDecoration: r.annullato ? 'line-through' : undefined }}>
                   <button type="button" className="sg-riga-apri">{r.descrizione}</button>
                   {r.origine !== 'movimento' && <span className="num sg-tag" style={{ marginLeft: 8 }}>INCASSO ISCRITTO</span>}
                   {r.tipo === 'giroconto' && <span className="num sg-tag" style={{ marginLeft: 8 }}>GIROCONTO</span>}
                   {r.annullato && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>ANNULLATO</span>}
-                  {r.sotto && <span className="sg-sotto-nome"><span>{r.sotto}</span></span>}
+                  <span className="sg-sotto-movimento">
+                    <span className="sg-solo-telefono">{[dataRicevuta(r.data), r.voce, r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)].filter(Boolean).join(' · ')}</span>
+                    {r.sotto && <span>{r.sotto}</span>}
+                  </span>
                 </span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{r.voce ?? '—'}</span>
                 <span role="cell" style={{ fontSize: 13, color: 'var(--sec)' }}>{r.tipo === 'giroconto' ? `${nomeCassa(r.cassaId)} → ${nomeCassa(r.cassaAId)}` : nomeCassa(r.cassaId)}</span>
@@ -232,12 +246,18 @@ function Movimenti({ d, casse, voci, righe, fai, onCambiato }: { d: DatiSegreter
       )}
 
       <div className="row" style={{ padding: '6px 14px 0', gap: 24, alignItems: 'baseline', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-        <span className="sg-etichetta">ENTRATE</span>
-        <span className="num" style={{ fontSize: 24, fontWeight: 700, color: 'var(--verde-testo)' }}>+ {soldi(somme.entrate)}</span>
-        <span className="sg-etichetta">USCITE</span>
-        <span className="num" style={{ fontSize: 24, fontWeight: 700 }}>− {soldi(somme.uscite)}</span>
-        <span className="sg-etichetta">DIFFERENZA</span>
-        <span className="num" style={{ fontSize: 28, fontWeight: 700 }}>{soldi(somme.differenza)}</span>
+        <span className="row" style={{ gap: 10, alignItems: 'baseline', whiteSpace: 'nowrap' }}>
+          <span className="sg-etichetta">ENTRATE</span>
+          <span className="num" style={{ fontSize: 24, fontWeight: 700, color: somme.entrate > 0 ? 'var(--verde-testo)' : undefined }}>+ {soldi(somme.entrate)}</span>
+        </span>
+        <span className="row" style={{ gap: 10, alignItems: 'baseline', whiteSpace: 'nowrap' }}>
+          <span className="sg-etichetta">USCITE</span>
+          <span className="num" style={{ fontSize: 24, fontWeight: 700 }}>− {soldi(somme.uscite)}</span>
+        </span>
+        <span className="row" style={{ gap: 10, alignItems: 'baseline', whiteSpace: 'nowrap' }}>
+          <span className="sg-etichetta">DIFFERENZA</span>
+          <span className="num" style={{ fontSize: 28, fontWeight: 700 }}>{soldiConSegno(somme.differenza)}</span>
+        </span>
       </div>
       <span className="sg-sotto">
         I giroconti e gli annullati non contano in entrate e uscite. Un incasso degli iscritti si apre in PAGAMENTI, dove nasce; qui non si cambia. Contanti vanno in Cassa Contanti, tutto il resto in Conto Corrente.
@@ -488,7 +508,7 @@ function ColonnaVoci({ d, tipo, titolo, voci, usate, fai, onCambiato }: { d: Dat
           </span>
           <span style={{ fontSize: 13, color: 'var(--dim)' }}>{v.diSistema ? 'incassi degli iscritti' : usate(v) ? `${usate(v)} ${usate(v) === 1 ? 'movimento' : 'movimenti'}` : 'mai usata'}</span>
           {!v.diSistema && (
-            <button type="button" className="sg-link" onClick={() => void fai(() => d.attivaVoce(v.id, !v.attiva), v.attiva ? 'Voce disattivata' : 'Voce riattivata', onCambiato)}>
+            <button type="button" className="sg-link" style={{ fontSize: 15, minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '0 6px' }} onClick={() => void fai(() => d.attivaVoce(v.id, !v.attiva), v.attiva ? 'Voce disattivata' : 'Voce riattivata', onCambiato)}>
               {v.attiva ? 'DISATTIVA' : 'RIATTIVA'}
             </button>
           )}

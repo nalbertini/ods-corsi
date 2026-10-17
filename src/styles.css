@@ -1704,7 +1704,7 @@ a.sg-btn { text-decoration: none; }
   min-height: 44px; padding: 0 12px; border: 2px solid var(--line); color: var(--sec);
   font-family: var(--cond); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap;
 }
-.sg-chip[aria-pressed='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
+.sg-chip[aria-pressed='true'], .sg-chip[aria-selected='true'] { border-color: var(--text); background: var(--surface-2); color: var(--text); }
 .sg-chip-pieno { background: var(--text); border-color: var(--text); color: var(--bg); }
 .sg-spunte { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
 .sg-spunte .sg-scelta > span { flex-shrink: 0; }
@@ -1986,6 +1986,9 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 }
 .sg-riga-movimento { display: grid; grid-template-columns: 100px minmax(0, 1.6fr) minmax(0, 1fr) 150px 130px; gap: 14px; align-items: center; }
 .sg-riga-movimento[data-spento='true'] { opacity: 0.55; }
+/* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */
+.sg-sotto-movimento { display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere; }
+.sg-solo-telefono { display: none; }
 .sg-riga-pagamento-tab { display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; }
 .sg-riga-residuo { display: grid; grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px 160px; gap: 14px; align-items: center; }
 /* L'amministrazione non vede i contatti: una colonna in meno. */
@@ -2380,6 +2383,7 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-riga-pagamento-tab, .sg-riga-residuo, .sg-riga-residuo[data-senza-contatto] { grid-template-columns: minmax(0, 1fr) auto; }
   .sg-riga-movimento { grid-template-columns: minmax(0, 1fr) auto; }
   .sg-riga-movimento > :not(:nth-child(2)):not(:last-child) { display: none; }
+  .sg-solo-telefono { display: inline; }
   .sg-lista-testa.sg-riga-movimento { display: none; }
   .sg-riga-pagamento-tab > :not(:nth-child(2)):not(:last-child), .sg-riga-residuo > :not(:first-child):not(:nth-child(5)) { display: none; }
   .sg-sotto-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
@@ -2618,3 +2622,6 @@ button.sito-immagine[aria-pressed='true'] { border-color: var(--text); box-shado
 @media (max-width: 767px) { .sito-immagini-scelta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .sito-voce > .sg-campo { flex: 1 1 240px; min-width: 0; }
 .sito-voce-n { width: 28px; font-size: 20px; font-weight: 700; color: var(--dim); }
+
+/* Le cifre grandi delle casse, a telefono, una per riga: affiancate toccavano il bordo. */
+@media (max-width: 480px) { .sg-numeri { grid-template-columns: minmax(0, 1fr); } }
