@@ -145,6 +145,9 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--blu);outline-offset
 .intro .pulsante{min-height:60px;padding:0 34px}
 .testata .pulsante{background:var(--giallo);color:var(--inchiostro)}
 .testata .estensione{margin-left:.3em}
+.testata .azioni{display:flex;gap:8px;align-items:center}
+.testata .contattaci{display:inline-flex;align-items:center;min-height:48px;padding:0 26px;border-radius:6px;background:var(--inchiostro);color:#fff;font-size:16px;font-weight:600;text-decoration:none}
+.testata .contattaci:hover{text-decoration:underline;text-underline-offset:4px}
 .pulsante:hover{text-decoration:underline;text-underline-offset:4px}
 h1,h2,h3{font-family:var(--display);text-transform:uppercase;font-weight:800}
 h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height:.82;overflow-wrap:anywhere}
@@ -458,6 +461,7 @@ ${TINTE_PERSONA}
 .logo img{width:84px;height:82px}
 .testata .pulsante{padding:0 22px;font-size:0}
 .testata .pulsante::before{content:"Prova";font-size:16px}
+.testata .pulsante,.testata .contattaci{padding:0 16px}
 .testata nav a{background:var(--chiara);padding:0 14px;font-size:16px}
 .testata nav a[aria-current]{background:var(--giallo)}
 h1{font-size:84px;line-height:.84}
@@ -778,9 +782,12 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
+/** «Contattaci» sta accanto a «Prova», non nel menu: così sul telefono il menu entra in una riga. Nel piede resta tra le pagine. */
 function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
-  const menu = lista(voci('menu', c), corrente)
-  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.prova}<span class="estensione"> ${TESTI.provaCoda}</span></a>` : ''}</header>`
+  const menu = lista(voci('menu', c).filter((v) => !conContatti || v.href !== TESTI.contatti), corrente)
+  const segnata = corrente === TESTI.contatti ? ' aria-current="page"' : ''
+  const azioni = conContatti ? `<div class="azioni"><a class="contattaci" href="${TESTI.contatti}"${segnata}>${TESTI.contattaci}</a><a class="pulsante piccolo" href="${TESTI.iscrizione}" rel="noopener noreferrer">${TESTI.prova}<span class="estensione"> ${TESTI.provaCoda}</span></a></div>` : ''
+  return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${azioni}</header>`
 }
 
 function piede(c: Contesto): string {

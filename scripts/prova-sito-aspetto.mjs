@@ -243,6 +243,9 @@ console.log('\nTestata: logo intero, menu, pulsante «Prova»')
   ok('il logo non è ritagliato (niente overflow nascosto, spostamenti o larghezza oltre il 100%)', ritaglio.map((r) => r.sel.join()), [])
   ok('il menu è nella testata, senza icona a tre righe', [/<nav aria-label="Principale">/.test(t), /<button\b/.test(t), /burger|hamburger|menu-toggle/i.test(home)], [true, false, false])
   ok('con la pagina contatti: pulsante «Prova una settimana · 5 €» verso il modulo di iscrizione in testata', /<a class="[^"]*\bpulsante\b[^"]*" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/" rel="noopener noreferrer">Prova<span class="estensione"> una settimana · 5 €<\/span><\/a>/.test(t), true)
+  ok('con la pagina contatti: «Contattaci» è un pulsante accanto a «Prova», non una voce del menu', [/<div class="azioni"><a class="contattaci" href="\/contatti\/">Contattaci<\/a><a class="pulsante piccolo" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/"/.test(t), /\/contatti\//.test((t.match(/<nav[\s\S]*?<\/nav>/) || [''])[0])], [true, false])
+  ok('nel piede «Contatti» resta tra le pagine', /<nav class="piede-menu"[^>]*>[\s\S]*?href="\/contatti\/"/.test(piedeDi(home)), true)
+  ok('«Contattaci» in testata è inchiostro con il bianco sopra, alto 48px', [sfondo(dich(R, V, (x) => x === '.testata .contattaci')), hex(dich(R, V, (x) => x === '.testata .contattaci').color ?? ''), dich(R, V, (x) => x === '.testata .contattaci')['min-height']], [INCHIOSTRO, BIANCO, '48px'])
   ok('senza la pagina contatti: nessun pulsante «Prova» né link a /contatti/', c(senza, 'index.html') !== '' && !/\/contatti\//.test(c(senza, 'index.html')), true)
   const mob = blocco(CSS, '@media (max-width:900px)')
   const rm = mob ? regole(mob.dentro) : []
@@ -277,7 +280,7 @@ console.log('\nPiede e invito')
 console.log('\nPagine di legge: una colonna di testo')
 {
   const t = c(con, 'privacy/index.html')
-  ok('niente scena né pulsante «Contattaci» nell’intestazione', [/class="scena"/.test(t), /Contattaci/.test(t), /class="[^"]*pagina-hero/.test(t)], [false, false, false])
+  ok('niente scena né pulsante «Contattaci» nell’intestazione', [/class="scena"/.test(t), /Contattaci/.test(t.replace(testata(t), '')), /class="[^"]*pagina-hero/.test(t)], [false, false, false])
   ok('titolo e testo in una colonna: pagina-testo + .testo', [/class="pagina-testo"/.test(t), /<div class="testo">/.test(t)], [true, true])
 }
 

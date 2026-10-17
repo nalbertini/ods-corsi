@@ -89,7 +89,7 @@ console.log('\n4. Testata e piede come nel design')
 {
   const voce = (e, sl) => ({ dove: 'menu', ordine: 1, etichetta: e, slug: sl, indirizzo: null })
   const due = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [voce('Home', 'home'), { ...voce('Contattaci', 'contatti'), ordine: 2 }], rinvii: [] })
-  ok('la voce della pagina aperta è segnata (aria-current)', [/<a href="\/contatti\/" aria-current="page">Contattaci<\/a>/.test(due['contatti/index.html']), /<a [^>]*aria-current/.test(due['index.html'].replace(/<a href="\/" aria-current="page">Home<\/a>/, ''))], [true, false])
+  ok('la voce della pagina aperta è segnata (aria-current)', [/<a class="contattaci" href="\/contatti\/" aria-current="page">Contattaci<\/a>/.test(due['contatti/index.html']), /<a [^>]*aria-current/.test(due['index.html'].replace(/<a href="\/" aria-current="page">Home<\/a>/, ''))], [true, false])
   ok('la voce segnata ha il fondo giallo', /background:\s*var\(--giallo\)/.test(css('.testata nav a[aria-current]')), true)
   ok('testata: 22px sopra e sotto, marchio alto 110px, voci a 10px', [/padding:\s*22px var\(--margine\)/.test(css('.testata')), /height:\s*110px/.test(css('.logo img')), /gap:\s*10px/.test(css('.testata nav ul'))], [true, true, true])
   ok('il pulsante in testata ha 26px ai lati', /padding:\s*0 26px/.test(css('.testata .pulsante')), true)
