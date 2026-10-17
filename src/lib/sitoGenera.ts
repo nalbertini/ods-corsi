@@ -284,11 +284,6 @@ ${GRIGLIE_LUNGHE}
 .numero .cifra{font-family:var(--display);font-weight:800;font-size:clamp(40px,5vw,88px);line-height:.85;letter-spacing:-.01em;white-space:nowrap}
 .numero .scritta{font-size:16px;line-height:1.3}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
-.pagina-hero.solo{padding:40px var(--margine) 72px}
-.pagina-hero.solo .intro{display:grid;grid-template-columns:1fr 520px;gap:0 56px;align-items:end;max-width:none}
-.pagina-hero.solo h1{grid-row:1 / span 2;font-size:clamp(80px,13.9vw,200px);line-height:.82}
-.pagina-hero.solo .intro p{grid-column:2;margin-bottom:28px;max-width:none}
-.pagina-hero.solo .intro div{grid-column:2}
 .ritratti{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .ritratti article{grid-column:auto}
 .ritratti-sezione .ritratti article.ritratto{position:relative;justify-content:space-between;gap:12px;padding:24px 26px;min-height:380px}
@@ -333,11 +328,6 @@ ${GRIGLIE_LUNGHE}
 .apertura>.tessere+.colonna p+p{display:inline-flex;align-items:center;min-height:56px;padding:0 20px;border-radius:6px;background:#fff;font-size:16px;font-weight:500}
 .apertura .foto-fila img{object-position:50% 55%}
 .apertura .foto-fila figure:nth-child(3) img{object-position:50% 30%}
-.pagina-contatti .pagina-hero{flex-wrap:nowrap;align-items:flex-end;padding-bottom:72px}
-.pagina-contatti .pagina-hero .intro{flex:1;display:grid;grid-template-columns:1fr 520px;column-gap:56px;row-gap:0;align-items:end;max-width:none}
-.pagina-contatti .pagina-hero .intro h1{grid-column:1;grid-row:1 / span 2;margin:0;overflow-wrap:break-word}
-.pagina-contatti .pagina-hero .intro p{grid-column:2;margin-bottom:28px;font-size:22px}
-.pagina-contatti .pagina-hero .intro>div{grid-column:2}
 .sezione.apertura{padding-bottom:96px}
 .apertura>.tessere+*{margin-top:96px}
 .recapiti{grid-template-columns:repeat(12,1fr);grid-auto-rows:minmax(300px,auto)}
@@ -357,7 +347,6 @@ ${GRIGLIE_LUNGHE}
 .pagina-contatti .sezione:not(.apertura) .tessera h3{font-size:38px;line-height:.95}
 .pagina-contatti .sezione:not(.apertura) .tessere{grid-auto-rows:minmax(330px,auto)}
 .pagina-contatti .sezione:not(.apertura) .tessera:nth-child(odd){background:var(--giallo);color:var(--inchiostro)}
-.pagina-hero:has(>.intro:only-child) .intro{max-width:none;flex-basis:100%}
 .slogan.giallo{grid-column:auto;background:var(--giallo);color:var(--inchiostro);justify-content:flex-end;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(40px,5.3vw,76px);line-height:.9;padding:clamp(20px,2.5vw,36px)}
 .foto-citazioni.slogan{margin:0;grid-template-columns:minmax(0,1fr) minmax(0,clamp(300px,32vw,460px));height:clamp(300px,41.7vw,600px)}
 .ampie>*,.pannello>*{padding:clamp(20px,2.2vw,32px);justify-content:space-between;gap:12px;font-size:clamp(17px,1.46vw,21px);line-height:1.45}
@@ -393,13 +382,13 @@ ${GRIGLIE_LUNGHE}
 .persona .sezione:not(.apertura) .tessere>article:has(>img){min-height:250px}
 .persona .sezione:not(.apertura) .tessera:has(>img){padding:22px 24px}
 .persona .sezione:not(.apertura) .tessera:has(>img) h3{font-size:38px}
-.ritratto{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,560px);gap:6px;height:clamp(440px,44vw,620px)}
-.ritratto .foto{position:relative;grid-column:auto}
-.ritratto .foto img{width:100%;height:100%;object-fit:cover;object-position:50% 34%;border-radius:0}
-.ritratto figcaption{position:absolute;left:0;bottom:0;padding:18px 26px;background:var(--inchiostro);color:#fff;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:44px;line-height:.9}
-.ritratto .citazione{grid-column:auto;padding:36px;font-size:30px;line-height:1.25}
-.ritratto .firma{font-size:44px;line-height:.95}
-.ritratto .avatar{display:none}
+.persona .ritratto{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,560px);gap:6px;height:clamp(440px,44vw,620px)}
+.persona .ritratto .foto{position:relative;grid-column:auto}
+.persona .ritratto .foto img{width:100%;height:100%;object-fit:cover;object-position:50% 34%;border-radius:0}
+.persona .ritratto figcaption{position:absolute;left:0;bottom:0;padding:18px 26px;background:var(--inchiostro);color:#fff;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:44px;line-height:.9}
+.persona .ritratto .citazione{grid-column:auto;padding:36px;font-size:30px;line-height:1.25}
+.persona .ritratto .firma{font-size:44px;line-height:.95}
+.persona .ritratto .avatar{display:none}
 .solo-lettori{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .persona .sezione h2{line-height:.85}
 .persona .sezione:last-child{padding-bottom:0}
@@ -410,16 +399,13 @@ ${GRIGLIE_LUNGHE}
 .persona .tessera ul{list-style:none;padding:0}
 .persona .tessera li::before{content:"• "}
 ${TINTE_PERSONA}
-.ritratto figcaption{border-top-right-radius:6px}
-.ritratto figcaption span{display:block}
-.ritratto figcaption .ruolo{margin-top:6px;font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;text-transform:none;font-weight:400;font-size:16px;line-height:1.45}
+.persona .ritratto figcaption{border-top-right-radius:6px}
+.persona .ritratto figcaption span{display:block}
+.persona .ritratto figcaption .ruolo{margin-top:6px;font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;text-transform:none;font-weight:400;font-size:16px;line-height:1.45}
 @media (min-width:901px){
+.pagina-contatti .interna h1{white-space:nowrap}
 .fascia.fascia .ampie>*:not(.foto){min-height:clamp(280px,27.8vw,400px)}
 .fascia.fascia .numeri>*:not(.foto){min-height:clamp(150px,17.4vw,250px)}
-.pagina-hero:has(>.intro:only-child){padding-bottom:72px}
-.pagina-hero:has(>.intro:only-child) .intro{display:grid;grid-template-columns:1fr minmax(0,520px);gap:0 56px;align-items:end}
-.pagina-hero:has(>.intro:only-child) .intro h1{grid-row:1 / span 2;font-size:clamp(56px,13.9vw,200px);margin:0}
-.pagina-hero:has(>.intro:only-child) .intro p{margin-bottom:28px;font-size:22px}
 .sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
 .sezione .tessere.n-4 .tessera:not(.foto){min-height:190px}
 .sezione .tessera.chiara:not(.foto){min-height:260px}
@@ -526,11 +512,9 @@ h1{font-size:84px;line-height:.84}
 .tondi img{width:64px;height:64px}
 .colonna:has(+.tessere)+.tessere>*{padding:20px;font-size:16px;min-height:150px}
 .colonna:has(+.tessere)+.tessere h3{font-size:36px}
-.pagina-hero:has(>.intro:only-child) .intro h1{font-size:clamp(56px,21.5vw,200px)}
 .foto-citazioni.slogan{height:auto;grid-template-columns:1fr}
 .foto-citazioni.slogan .foto img{height:300px;aspect-ratio:auto}
 .slogan.giallo{min-height:200px}
-.pagina-hero:has(>.intro:only-child){padding:20px var(--margine) 36px}
 .fascia{padding-bottom:48px}
 .slogan.giallo{font-size:min(11.8vw,60px)}
 .fascia .foto-fila.quattro img{aspect-ratio:auto;height:200px}
@@ -540,11 +524,11 @@ h1{font-size:84px;line-height:.84}
 .persona-hero h1{font-size:70px;line-height:.84}
 .persona-hero .lato{flex:none}
 .persona-hero .lato p{margin-bottom:22px;font-size:18px}
-.ritratto{grid-template-columns:1fr;height:auto}
-.ritratto .foto{height:320px}
-.ritratto figcaption{display:none}
-.ritratto .citazione{min-height:200px;padding:22px;font-size:20px}
-.ritratto .firma{font-size:34px}
+.persona .ritratto{grid-template-columns:1fr;height:auto}
+.persona .ritratto .foto{height:320px}
+.persona .ritratto figcaption{display:none}
+.persona .ritratto .citazione{min-height:200px;padding:22px;font-size:20px}
+.persona .ritratto .firma{font-size:34px}
 .persona .fila-4{grid-template-columns:repeat(2,1fr)}
 .persona .apertura .tessere .tessera{padding:20px;font-size:16px}
 .persona .apertura .tessere h3{font-size:40px}
@@ -569,12 +553,6 @@ h1{font-size:84px;line-height:.84}
 .persona .sezione:not(.apertura) .fila-3>article:nth-child(3){min-height:340px}
 .ritratti-sezione + .testo{display:none}
 .ritratti-sezione{padding-bottom:0}
-.pagina-hero.solo{padding:20px var(--margine) 36px}
-.pagina-hero.solo .intro{grid-template-columns:1fr}
-.pagina-hero.solo h1{grid-row:auto;line-height:.84;margin-bottom:20px}
-.pagina-hero.solo .intro p,.pagina-hero.solo .intro div{grid-column:1}
-.pagina-hero.solo .intro p{margin-bottom:22px}
-.pagina-hero.solo .pulsante{min-height:52px;padding:0 26px;font-size:17px}
 .ritratti{grid-template-columns:repeat(2,1fr)}
 .ritratti-sezione .ritratti article.ritratto{padding:16px;min-height:230px}
 .ritratto-foto{width:84px;height:84px;font-size:40px}
@@ -610,12 +588,6 @@ h1{font-size:84px;line-height:.84}
 .mappa .targhetta span{margin-top:4px;font-size:14px}
 .mappa .credito{padding:2px 6px;font-size:11px}
 .pagina-contatti h1{font-size:19.5vw}
-.pagina-contatti .pagina-hero{padding:20px var(--margine) 36px}
-.pagina-contatti .pagina-hero .intro{grid-template-columns:1fr}
-.pagina-contatti .pagina-hero .intro h1{grid-row:auto;margin-bottom:20px}
-.pagina-contatti .pagina-hero .intro p{grid-column:1;margin-bottom:22px;font-size:18px}
-.pagina-contatti .pagina-hero .intro>div{grid-column:1}
-.pagina-contatti .pagina-hero .pulsante{min-height:52px;padding:0 26px;font-size:17px}
 .sezione.apertura{padding-bottom:48px}
 .apertura>.tessere+*,.apertura>.foto-fila{margin-top:48px}
 .recapiti{grid-template-columns:1fr;grid-auto-rows:minmax(130px,auto)}
@@ -670,14 +642,9 @@ const CSS_CORSO = `
 .corso .orario .dettagli{grid-column:1 / -1;align-self:end}
 .corso .banda-int p{margin:0}
 @media (min-width:901px){
-.corso .pagina-hero{padding-bottom:72px}
 .corso .tessere .tessera.orario{grid-column:auto;min-height:170px;font-size:17px}
 .corso .orario .ora{font-size:clamp(26px,2.8vw,40px)}
 .corso .orario .dettagli{display:flex;justify-content:space-between;gap:12px}
-.corso .pagina-hero .intro{display:grid;grid-template-columns:minmax(0,1fr) 520px;gap:0 56px;align-items:end;flex-basis:100%;max-width:none}
-.corso .pagina-hero h1{grid-row:1 / span 2;margin:0;font-size:clamp(56px,13.9vw,200px);line-height:.82}
-.corso .pagina-hero .intro p{grid-column:2;margin-bottom:28px}
-.corso .pagina-hero .intro>div{grid-column:2}
 .corso .corso-testata .foto img{height:clamp(300px,43vw,620px);aspect-ratio:auto;object-fit:cover;object-position:50% 58%}
 .corso .tessere .tessera.tessera:not(.foto){padding:24px 26px;justify-content:space-between;gap:12px;line-height:1.45}
 .corso .tessere.dati{grid-template-columns:repeat(4,1fr)}
@@ -717,11 +684,6 @@ const CSS_CORSO = `
 .pagina-corso .piede .legali{opacity:.85}
 }
 @media (max-width:900px){
-.corso .pagina-hero{padding:20px var(--margine) 36px}
-.corso .pagina-hero .intro{display:block}
-.corso .pagina-hero h1{margin:0 0 20px;font-size:clamp(56px,29.3vw,110px);line-height:.84}
-.corso .pagina-hero .intro p{margin:0 0 22px;font-size:18px}
-.corso .pagina-hero .pulsante{min-height:52px;padding:0 26px;font-size:17px}
 .corso .corso-testata .foto img{height:360px;aspect-ratio:auto;object-fit:cover}
 .corso-testata{padding-bottom:48px}
 .corso .tessere .tessera.tessera:not(.foto){grid-column:auto;padding:20px;justify-content:space-between;gap:12px;font-size:16px;line-height:1.45}

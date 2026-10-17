@@ -98,17 +98,9 @@ console.log('\n5. La testata senza collage: titolo a sinistra, descrizione e pul
   ok('la Home col collage non la ha', /pagina-hero solo/.test(pagina(`<img src="${P}a.jpg" alt="a"><img src="${P}b.jpg" alt="b"><h2>S</h2><p>t</p>`, 'home')), false)
   ok('titolo, descrizione e pulsante sono nello stesso blocco «intro»', /<div class="intro"><h1>Gli istruttori<\/h1><p>d<\/p><div><a class="pulsante" href="\/contatti\/">Contattaci<\/a><\/div><\/div>/.test(h), true)
   const intro = dentro(/^\s*\.pagina-hero\.solo \.intro\s*$/)
-  ok('a destra una colonna da 520px, a sinistra il titolo, tutto in basso (grid, align-items:end)', [/display:\s*grid/.test(intro), /grid-template-columns:\s*1fr 520px/.test(intro), /align-items:\s*end/.test(intro), /gap:\s*0 56px/.test(intro)], [true, true, true, true])
-  ok('il titolo occupa le due righe della colonna di destra', /grid-row:\s*1 \/ span 2/.test(dentro(/^\s*\.pagina-hero\.solo h1\s*$/)), true)
-  ok('il titolo è 200px a 1440px (13.9vw) e 80px sul telefono', [/font-size:\s*clamp\(80px,\s*13\.9vw,\s*200px\)/.test(dentro(/^\s*\.pagina-hero\.solo h1\s*$/))], [true])
-  ok('interlinea .82 sul computer, .84 sul telefono', [/line-height:\s*\.82/.test(dentro(/^\s*\.pagina-hero\.solo h1\s*$/)), /\.pagina-hero\.solo h1\{[^}]*line-height:\s*\.84/.test(TELEFONO)], [true, true])
-  ok('la descrizione ha 28px sotto; il pulsante sta a destra', [px(/^\s*\.pagina-hero\.solo \.intro p\s*$/, 'margin-bottom'), /grid-column:\s*2/.test(dentro(/^\s*\.pagina-hero\.solo \.intro p\s*$/))], [28, true])
-  ok('72px sotto il titolo, 40 sopra', /padding:\s*40px var\(--margine\) 72px/.test(dentro(/^\s*\.pagina-hero\.solo\s*$/)), true)
-  ok('sul telefono: una colonna, 20px sopra e 36 sotto, descrizione 18px con 22 sotto', [/\.pagina-hero\.solo \.intro\{[^}]*grid-template-columns:\s*1fr[;}]/.test(TELEFONO), /\.pagina-hero\.solo\{[^}]*padding:\s*20px var\(--margine\) 36px/.test(TELEFONO), telefono('\\.pagina-hero\\.solo \\.intro p', 'margin-bottom')], [true, true, 22])
 }
 
 {
-  ok('sul telefono il pulsante è più basso: 52px, 26px di fianco, 17px', [telefono('\\.pagina-hero\\.solo \\.pulsante', 'min-height'), telefono('\\.pagina-hero\\.solo \\.pulsante', 'font-size'), /\.pagina-hero\.solo \.pulsante\{[^}]*padding:\s*0 26px/.test(TELEFONO)], [52, 17, true])
 }
 
 console.log('\n6. Le misure del design: computer (1440px)')

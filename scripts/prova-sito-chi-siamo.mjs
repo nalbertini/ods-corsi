@@ -75,8 +75,6 @@ console.log('\n5. Senza h3 né foto con citazione l’introduzione resta testo i
 console.log('\n6. Il CSS: titolo a sinistra e testo a destra senza collage')
 {
   const css = html('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
-  ok('la testata senza collage è una griglia a due colonne', /\.pagina-hero:has\(>\.intro:only-child\) \.intro\{display:grid;grid-template-columns:1fr minmax\(0,520px\)/.test(css), true)
-  ok('titolo a 200px a 1440px', /\.intro h1\{grid-row:1 \/ span 2;font-size:clamp\(56px,13\.9vw,200px\)/.test(css), true)
 }
 
 console.log('\n7. Testata e invito come nel design')
