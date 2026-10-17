@@ -58,6 +58,7 @@ export interface DatiSito {
  */
 const TESTI = {
   nome: 'Officine dello Sport',
+  immagineAlt: 'Officine dello Sport: il marchio con i cinque ingranaggi colorati',
   prova: 'Prova',
   provaCoda: 'una settimana · 5 €',
   contattaci: 'Contattaci',
@@ -73,6 +74,8 @@ const TESTI = {
   iscrizione: 'https://app.officinedellosport.it/iscrizioni/',
 }
 const NOME = TESTI.nome
+/** L'immagine di condivisione, 1200×630, nella cartella delle risorse del sito. */
+const IMMAGINE_SOCIALE = '/risorse/social.png'
 const DOMINIO = /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i
 
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
@@ -786,10 +789,28 @@ function invito(conContatti: boolean): string {
   return `<a class="invito" href="${TESTI.iscrizione}" rel="noopener noreferrer"><span class="riga"><span class="frase">${TESTI.invito} ${esc(CONTATTI.indirizzo)}. ${TESTI.settimana}</span><span class="freccia" aria-hidden="true">↗</span></span><span class="parola">${TESTI.prova}</span></a>`
 }
 
+/** Le anteprime di condivisione (Open Graph e Twitter). Il 404 non si condivide: non le ha. */
+function social(c: Contesto, titolo: string, descrizione: string): string {
+  const m = (k: string, v: string) => `<meta ${k.startsWith('og:') ? 'property' : 'name'}="${k}" content="${esc(v)}">`
+  const immagine = `${c.d.dominio}${IMMAGINE_SOCIALE}`
+  return [
+    m('og:site_name', NOME),
+    m('og:locale', 'it_IT'),
+    m('og:image', immagine),
+    m('og:image:width', '1200'),
+    m('og:image:height', '630'),
+    m('og:image:alt', `${TESTI.immagineAlt}, ${CONTATTI.indirizzo}`),
+    m('twitter:card', 'summary_large_image'),
+    m('twitter:title', titolo),
+    ...(descrizione ? [m('twitter:description', descrizione)] : []),
+    m('twitter:image', immagine),
+  ].join('')
+}
+
 function documento(c: Contesto, o: { titolo: string; descrizione: string; percorso: string; corpo: string; noindex?: boolean; cssCorso?: boolean; dati?: string }): string {
   const url = `${c.d.dominio}${o.percorso}`
   const completo = o.percorso === '/' ? o.titolo : `${o.titolo} · ${NOME}`
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : ''}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(completo)}</title>${o.descrizione ? `<meta name="description" content="${esc(o.descrizione)}">` : ''}<link rel="icon" type="image/svg+xml" href="/risorse/icon.svg"><link rel="icon" type="image/png" sizes="192x192" href="/risorse/icon-192.png"><link rel="apple-touch-icon" href="/risorse/apple-touch-icon.png"><link rel="canonical" href="${esc(url)}"><meta property="og:title" content="${esc(o.titolo)}">${o.descrizione ? `<meta property="og:description" content="${esc(o.descrizione)}">` : ''}<meta property="og:type" content="website"><meta property="og:url" content="${esc(url)}">${o.noindex ? '<meta name="robots" content="noindex">' : social(c, o.titolo, o.descrizione)}${o.dati ?? ''}<style>${CSS}</style>${o.cssCorso ? `<style>${CSS_CORSO}</style>` : ''}</head><body${o.cssCorso ? ' class="pagina-corso"' : ''}>${o.corpo}</body></html>`
 }
 
 function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
@@ -837,6 +858,31 @@ function mappa(c: Contesto, pagine: PaginaGenerata[]): string {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${url}</urlset>\n`
 }
 
+/** Una riga di testo semplice: senza tag, a capo e parentesi quadre (un titolo non deve aprire un link). */
+const riga = (t: string) => t.replace(/<[^>]*>/g, ' ').replace(/[[\]]/g, '').replace(/\s+/g, ' ').trim()
+
+/**
+ * `llms.txt`: il sito raccontato agli assistenti AI (llmstxt.org). Solo quel che
+ * c'è nelle pagine pubblicate e in `CONTATTI`; in ordine di indirizzo, così gli
+ * stessi dati danno sempre lo stesso file.
+ */
+function llms(c: Contesto, pagine: PaginaGenerata[]): string {
+  const voce = (p: PaginaGenerata) => `- [${riga(p.titolo) || p.slug}](${c.d.dominio}${percorso(p.slug)})${riga(p.descrizione) ? `: ${riga(p.descrizione)}` : ''}`
+  const ordinate = pagine.filter((p) => p.slug !== 'home').sort((a, b) => (a.slug < b.slug ? -1 : 1))
+  const sezione = (nome: string, quali: PaginaGenerata[]) => (quali.length ? [`## ${nome}\n\n${quali.map(voce).join('\n')}`] : [])
+  const descrizione = riga(pagine.find((p) => p.slug === 'home')?.descrizione ?? '')
+  const corsi = [...c.corsi].flatMap((s) => ordinate.filter((p) => p.slug === s))
+  return (
+    [
+      `# ${NOME}${descrizione ? `\n\n> ${descrizione}` : ''}`,
+      ...sezione('Corsi', corsi),
+      ...sezione('Pagine', ordinate.filter((p) => !c.corsi.has(p.slug) && !p.diLegge)),
+      ...sezione('Opzionale', ordinate.filter((p) => p.diLegge)),
+      `## Contatti\n\n- Indirizzo: ${CONTATTI.indirizzo}\n- Telefono: ${CONTATTI.telefono}\n- Instagram: ${CONTATTI.instagram}\n- Facebook: ${CONTATTI.facebook}`,
+    ].join('\n\n') + '\n'
+  )
+}
+
 /**
  * Tutti i file del sito: percorso → contenuto. Una pagina con un indirizzo che
  * non va si salta, e le altre si generano lo stesso. Un dominio che non va
@@ -853,6 +899,7 @@ export function generaSito(d: DatiSito): Record<string, string> {
   for (const p of pagine) file[fileDi(p.slug)] = pagina(p, c, conContatti)
   file['404.html'] = nonTrovata(c, conContatti)
   file['sitemap.xml'] = mappa(c, pagine)
+  file['llms.txt'] = llms(c, pagine)
   file['robots.txt'] = `User-agent: *\nAllow: /\n\nSitemap: ${d.dominio}/sitemap.xml\n`
   for (const r of d.rinvii) {
     if (!slugValido(r.da) || c.slugs.has(r.da) || !c.slugs.has(r.a)) continue
