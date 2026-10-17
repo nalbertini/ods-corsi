@@ -38,16 +38,15 @@ ognuno, e il dispositivo si ricorda la scelta.
 - **Certificato e quota**: fino a quando vale il certificato medico (sotto i
   6 anni non è obbligatorio), e fino a quando è pagata la quota. Il file del
   certificato lo vede solo la segreteria: qui c'è solo la data.
-- **Ricevute**: quelle fatte dalla segreteria (**SEGRETERIA → RICEVUTE**),
-  dalla più recente, ognuna col suo **PDF** da scaricare: lo stesso che
-  stampa la segreteria.
+- **Ricevute**: quelle fatte dalla segreteria, dalla più recente, ognuna col
+  suo **PDF** da scaricare: lo stesso che stampa la segreteria.
 - **Qualcosa non torna?**: il telefono della palestra, per chi vede
   qualcosa di sbagliato.
 
 Tutto viene da quello che la segreteria e gli istruttori fanno già: una
 lezione annullata o un sostituto dalla **SETTIMANA**, le presenze
 dall'appello e dal tablet, il certificato e il pagamento dalla scheda di
-**ISCRITTI**, le ricevute da **RICEVUTE**. In prova si può provare: si annulla
+**ISCRITTI**, le ricevute e i pagamenti dalla scheda di **ISCRITTI** e da **PAGAMENTI**. In prova si può provare: si annulla
 una lezione in segreteria, e l'iscritto la vede annullata.
 
 ## Il nucleo familiare

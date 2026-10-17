@@ -23,7 +23,7 @@ Google, e vale solo per i mockup.
 | `RigaCalendario.dc.html` | La lezione nel calendario (`.lezione`): tinta, ora, kanji, conto e stato |
 | `RigaAppello.dc.html` | `.riga-appello`: presente, assente, non segnato, e la riga di una prova |
 | `Badge.dc.html` | `.prova-marchio`, `.sg-bollino`, `.sg-tag`, `.sg-segno-regola` |
-| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): VESTIARIO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori |
+| `Menu.dc.html` | Il menu di segreteria (`.sg-menu`): PAGAMENTI in PERSONE, VESTIARIO in LA PALESTRA, COPIA LINK ISCRIZIONI e COPIA LINK ORDINI in fondo; `impostazioni` accende il tasto coi cursori |
 | `StrisciaGiorni.dc.html` | I sette giorni del calendario (`.striscia-giorni`) |
 | `TimerAnello.dc.html` | L'anello del giro del timer (`Ring` e `DentroAnello` di `Quadrante.tsx`). Non è più nella schermata dell'allenamento, resta per il cronometro e il conto alla rovescia |
 | `TimerScaletta.dc.html` | `Scaletta`: i passi dell'allenamento, il primo in corso |
@@ -116,6 +116,7 @@ Google, e vale solo per i mockup.
 | `VoceElenco` | Una voce chiusa di LISTINO > I CORSI (`.sg-voce-elenco`): nome, riga rossa se manca qualcosa, riassunto e il chip CAMBIA; `bollino` il `.sg-tag` giallo accanto al nome (SENZA TIPO nel catalogo del vestiario) |
 | `RigaVestiario` | Una riga di un ordine di vestiario in segreteria (`RigheTabella` di `Vestiario.tsx`): `contesto="segreteria"`, una riga di campi sotto `TestataTabella` (`etichette` sotto i 1000px). Il `contesto` app (il riquadro RIGA N del telefono) **non è più usato**: la pagina degli ordini va a passi, con `SchedaCapo` e `RigaRiepilogoVestiario` |
 | `RigaOrdineVestiario` | La riga della tabella degli ordini in VESTIARIO: chi ordina (sotto, quando e da dove è arrivato; `stessoTelefono` il bollino giallo STESSO TELEFONO), capi, telefono, DA SALDARE / SALDATO / ANNULLATO, totale (sotto, in rosso, `resto`: «mancano 7 €»); l'annullato ha il testo spento, non è trasparente |
+| `RigaPagamento` | Una riga dello storico dei pagamenti (`RigaDelloStorico` e la testata della ricevuta in `StoricoIscritto`, `Ricevute.tsx`; `.sg-voce-elenco` e `.sg-pagamento` di `styles.css`): `tipo=ricevuta` la testata (N./anno, data, voci e totale, tag MANCA o ANNULLATA, PDF e ANNULLA RICEVUTA), `tipo=pagamento` un pagamento rientrato sotto la sua ricevuta, importo verde; `annullato` barra e spegne |
 | `Chip` | `.sg-chip`: il tasto piccolo della segreteria (filtri, CAMBIA, SCHEDA); `acceso` (aria-pressed), `pieno`, `disabled`, e un numero dentro |
 | `AnteprimaCsv` | PROPOSTA «ordini vestiario», non costruita: le prime righe di un CSV scaricato, in `.sg-mono`, col nome del file sopra. Nell'app ci sono solo i due tasti, con una frase sotto |
 | `FotoCapo` | La foto di un capo o la tabella delle taglie (`Foto` di `OrdinaVestiario.tsx`, `.vestiario-foto`). Nel canvas niente immagini: l'icona a linea del tipo (`judogi`, `costume`, `felpa`, `tabella`) e il nome, su `surface-2`, alta 220px col tasto ⤢ da 44px; `tabella` alta 200px senza bordi ai lati; `stato="errore"` resta il nome (il testo alternativo); `tasto` falso senza ⤢ (foto aperta, miniatura). Un capo senza foto non ne ha: niente segnaposto |

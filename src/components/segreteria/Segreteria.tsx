@@ -10,6 +10,7 @@ import { Corsi, riapriSuIscritti } from './Corsi'
 import { Iscritti } from './Iscritti'
 import { Presenze } from './Presenze'
 import { Statistiche } from './Statistiche'
+import { Pagamenti } from './Pagamenti'
 import { Personale } from './Personale'
 import { Regole } from './Regole'
 import { Listino } from './Listino'
@@ -72,6 +73,7 @@ const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: 
     titolo: 'PERSONE',
     voci: [
       ['iscritti', 'ISCRITTI'],
+      ['pagamenti', 'PAGAMENTI'],
       ['corsi', 'CORSI'],
     ],
   },
@@ -102,6 +104,7 @@ const GUIDE: Record<Voce, string> = {
   settimana: 'segreteria/settimana',
   corsi: 'segreteria/corsi',
   iscritti: 'segreteria/iscritti',
+  pagamenti: 'segreteria/pagamenti',
   richieste: 'segreteria/richieste',
   presenze: 'segreteria/presenze',
   segnalate: 'segreteria/presenze-segnalate',
@@ -576,6 +579,7 @@ export function Segreteria({
           </div>
         )}
         {d && voce === 'presenze' && <Presenze key={filtro ?? ''} d={d} onVai={vai} senzaAppello={filtro === 'senza-appello'} />}
+        {d && voce === 'pagamenti' && <Pagamenti d={d} onVai={vai} />}
         {d && voce === 'statistiche' && <Statistiche d={d} onVai={vai} />}
         {d && voce === 'segnalate' && <PresenzeSegnalate d={d} onVai={vai} onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'istruttori' && <PresenzeIstruttori d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
