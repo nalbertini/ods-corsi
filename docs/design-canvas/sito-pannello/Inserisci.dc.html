@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font stanno in public/fonts; un canvas e' un Artifact e li puo' caricare solo da Google Fonts: stessi file, stessa licenza OFL. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- PROPOSTA «sito»: il comando IMMAGINE della barra dell'editor apre questo pannello. Si sceglie fra le immagini già caricate
+     (o se ne carica una nuova, e torna qui), si scrive il testo alternativo (obbligatorio: serve a chi non vede l'immagine)
+     oppure si spunta «solo decorativa». INSERISCI resta spento finché una delle due cose non c'è. Nel testo l'immagine va
+     sempre a tutta colonna. Dati inventati. -->
+<div style="position: relative; width: 1440px; height: 900px; overflow: hidden; background: #121212">
+  <div style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6)"></div>
+  <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 760px; display: flex; flex-direction: column; gap: 16px; padding: 28px; background: #1c1c1c; border: 2px solid #333333">
+    <span style="font-family: 'Saira Condensed', 'Helvetica Neue', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">METTI UN'IMMAGINE NEL TESTO</span>
+    <span style="font-size: 14px; line-height: 1.5; color: #8c8c88">Scegli una di quelle già caricate. Nel testo andrà a tutta la larghezza.</span>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 2px solid #1b8ac4; background: #242424">
+        <dc-import name="FotoCapo" tipo="judogi" nome="tatami.jpg" tasto="{{ false }}" tema="scuro" hint-size="100%,130px"></dc-import>
+        <span style="font-size: 14px; font-weight: 600">tatami.jpg · scelta</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 2px solid #333333; background: #1c1c1c">
+        <dc-import name="FotoCapo" tipo="felpa" nome="sala-pesi.webp" tasto="{{ false }}" tema="scuro" hint-size="100%,130px"></dc-import>
+        <span style="font-size: 14px; font-weight: 600">sala-pesi.webp</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 2px solid #333333; background: #1c1c1c">
+        <dc-import name="FotoCapo" tipo="tabella" nome="ingresso.png" tasto="{{ false }}" tema="scuro" hint-size="100%,130px"></dc-import>
+        <span style="font-size: 14px; font-weight: 600">ingresso.png</span>
+      </div>
+    </div>
+    <dc-import name="Bottone" label="+ CARICA UN'IMMAGINE NUOVA" variante="tratteggiato" contesto="segreteria" tema="scuro" hint-size="100%,48px"></dc-import>
+    <dc-import name="Campo" contesto="segreteria" etichetta="TESTO ALTERNATIVO" valore="Il tatami della sala 1" nota="Descrivi l'immagine come a voce, per chi non la vede." tema="scuro" hint-size="100%,100px"></dc-import>
+    <dc-import name="Campo" tipo="scelta" contesto="segreteria" testo="Solo decorativa: non dice niente in più" tema="scuro" hint-size="100%,52px"></dc-import>
+    <div style="display: flex; justify-content: flex-end; gap: 10px">
+      <dc-import name="Bottone" label="LASCIA STARE" variante="linea" contesto="segreteria" tema="scuro" hint-size="170px,48px"></dc-import>
+      <dc-import name="Bottone" label="INSERISCI" variante="pieno" contesto="segreteria" tema="scuro" hint-size="170px,48px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
