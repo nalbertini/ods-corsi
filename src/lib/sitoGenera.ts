@@ -157,7 +157,7 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .tessere{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .tessera{grid-column:span 2;display:flex;flex-direction:column;gap:14px;margin:0;padding:24px;border-radius:6px;font-size:clamp(17px,1.2vw,19px);line-height:1.5}
 .tessera>*{margin:0}
-.tessera h3{margin:0;font-size:clamp(32px,3.6vw,52px);line-height:.95;overflow-wrap:anywhere}
+.tessera h3{margin:0;font-size:clamp(32px,4vw,58px);line-height:.95;overflow-wrap:anywhere}
 .tessera ul,.tessera ol{padding-left:1.3em}
 .tessera li+li{margin-top:6px}
 .tessera a{color:inherit;text-decoration:underline;text-underline-offset:3px}
@@ -176,13 +176,17 @@ h1{margin:0;font-size:clamp(56px,15.8vw,228px);letter-spacing:-.01em;line-height
 .tessere.n-7 .tessera:last-child{grid-column:span 6}
 ${GRIGLIE_LUNGHE}
 .tessera.citazione{font-size:clamp(20px,2vw,28px);line-height:1.3;font-weight:500;justify-content:space-between}
-.firma{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(26px,2.4vw,34px);line-height:1}
+.tessera:has(>h3:only-child){justify-content:flex-end}
+.firma{display:flex;align-items:center;gap:14px;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(26px,2.4vw,34px);line-height:1}
 .citazioni{display:flex;gap:6px;margin:0 0 6px;overflow-x:auto;scroll-snap-type:x mandatory}
 .citazioni:focus-visible{outline:3px solid var(--blu);outline-offset:3px}
 .citazioni .tessera{flex:0 0 min(560px,85%);scroll-snap-align:start}
 .foto{padding:0;overflow:hidden}
 .foto img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:0}
 .foto-fila{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.foto-fila.quattro{grid-template-columns:repeat(4,1fr)}
+.foto-fila.quattro img{aspect-ratio:3/5}
+.avatar{flex:none;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:var(--giallo);color:var(--inchiostro);font-size:28px;line-height:1}
 .due{grid-template-columns:repeat(2,1fr)}
 .foto-fila figure{grid-column:auto}
 .sezione>*+*{margin-top:6px}
@@ -215,7 +219,8 @@ ${GRIGLIE_LUNGHE}
 .pagina-hero .tessere.tessere .numero.ultima,.collage .numero.ultima{grid-column:span 2}
 .collage .foto.grande,.collage .foto.larga,.collage .foto.meta,.collage .foto.meta:nth-last-child(2),.collage .foto.meta:last-child{grid-column:1 / span 2;grid-row:auto;order:2}
 .collage .foto.grande img{aspect-ratio:3/2;height:auto;flex:none}
-.foto-fila{grid-template-columns:repeat(2,1fr)}
+.foto-fila,.foto-fila.quattro{grid-template-columns:repeat(2,1fr)}
+.foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
 .invito{margin-top:48px}
 }

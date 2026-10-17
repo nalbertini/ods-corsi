@@ -77,12 +77,29 @@ function immagine(b: Blocco): string | null {
   return null
 }
 
+/** Le iniziali (al massimo due) del nome di una firma: il ruolo dopo « - » o «—» non conta. */
+function iniziali(firma: string): string {
+  const nome = testoSolo(firma).replace(/^[\s—–-]+/, '').split(/\s+[-–—]\s+/)[0]
+  return nome
+    .split(/\s+/)
+    .filter((p) => /\p{L}/u.test(p))
+    .slice(0, 2)
+    .map((p) => p.match(/\p{L}/u)?.[0].toUpperCase() ?? '')
+    .join('')
+}
+
+/** La firma con l'avatar delle iniziali; senza lettere resta com'è. */
+function conAvatar(firma: string): string {
+  const sigla = iniziali(firma)
+  return sigla ? `<span class="avatar" aria-hidden="true">${sigla}</span><span class="nome">${firma}</span>` : firma
+}
+
 /** L'ultimo paragrafo di una citazione è la firma se è tutto in em o in strong, o comincia con «—». */
 function citazione(b: Blocco, colore: string, larga: boolean): string {
   const dentro = blocchi(contenuto(b))
   const ultimo = dentro[dentro.length - 1]
   const firma = ultimo && ultimo.tag === 'p' && (/^<p[^>]*>\s*<(em|strong)>[\s\S]*<\/\1>\s*<\/p>$/i.test(ultimo.html) || /^<p[^>]*>\s*—/.test(ultimo.html))
-  const corpo = dentro.map((x) => (x === ultimo && firma ? `<p class="firma">${contenuto(x)}</p>` : x.html)).join('')
+  const corpo = dentro.map((x) => (x === ultimo && firma ? `<p class="firma">${conAvatar(contenuto(x))}</p>` : x.html)).join('')
   return `<blockquote class="tessera citazione ${colore}${larga ? ' larga' : ''}">${corpo}</blockquote>`
 }
 
@@ -167,8 +184,9 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
           const resto = f.length - k
           if (resto === 1) { fuori.push(griglia(1, `<figure class="tessera foto larga">${f[k]}</figure>`)); k += 1 }
           else {
-            const n = Math.min(3, resto)
-            fuori.push(`<div class="foto-fila${n === 2 ? ' due' : ''}">${f.slice(k, k + n).map((y) => `<figure class="tessera foto">${y}</figure>`).join('')}</div>`)
+            // Quattro foto sono la fascia alta del design; con 5, 6 e 7 si resta sulle file da tre.
+            const n = resto === 4 || resto >= 8 ? 4 : Math.min(3, resto)
+            fuori.push(`<div class="foto-fila${n === 2 ? ' due' : n === 4 ? ' quattro' : ''}">${f.slice(k, k + n).map((y) => `<figure class="tessera foto">${y}</figure>`).join('')}</div>`)
             k += n
           }
         }
