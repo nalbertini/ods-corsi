@@ -150,6 +150,10 @@ console.log('\n6. Il pulsante in testata')
   const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [], rinvii: [] })['index.html'] ?? ''
   ok('in testata: «Prova una settimana · 5 €» verso il modulo di iscrizione', /<header class="testata">[\s\S]*<a class="pulsante piccolo" href="https:\/\/app\.officinedellosport\.it\/iscrizioni\/" rel="noopener noreferrer">Prova<span class="estensione"> una settimana · 5 €<\/span><\/a>/.test(h), true)
   ok('l’invito in fondo resta «Prova»', /class="parola">Prova</.test(h), true)
+  // Il pulsante è un flex: lo spazio all'inizio del `span` si perde e il testo diventa «Provauna settimana». Lo spazio lo dà il margine.
+  const css = h.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+  const base = css.split('@media')[0]
+  ok('lo spazio tra «Prova» e «una settimana» lo dà un margine sul span (il pulsante è un flex)', /\.testata \.estensione\{[^}]*margin-left:\s*\.3em/.test(base), true)
 }
 
 console.log('\n7. Il piede è una scheda scura in riga')
