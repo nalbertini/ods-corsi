@@ -44,6 +44,8 @@ const carica = async (file) => {
 const g = await carica('src/lib/sitoGenera.ts')
 const t = await carica('src/lib/sitoTesto.ts')
 
+// L'unico <script> ammesso è il blocco dei dati strutturati (ld+json): è JSON con ogni «<» escapato, e non può contenere altri tag.
+const senzaDati = (h) => h.replace(/<script type="application\/ld\+json">[^<]*<\/script>/g, '')
 let guai = 0
 const ok = (cosa, avuto, voluto) => {
   const va = JSON.stringify(avuto) === JSON.stringify(voluto)
@@ -350,7 +352,7 @@ console.log('\n7. Citazioni')
   const css = cssDi(h)
   ok('il contenitore ha scroll-snap-type', /x/.test(unaDichiarazione(css.base, css.V, (x) => classe.some((c) => c && x.includes('.' + c)))['scroll-snap-type'] ?? ''), true)
   ok('3 tessere citazione, blu e inchiostro alternate', tessere(s).map((x) => [x.classi.includes('citazione'), colore(x)]), [[true, 'blu'], [true, 'inchiostro'], [true, 'blu']])
-  ok('nessun <script> né gestore di eventi nella pagina', [/<script/i.test(h), /\son[a-z]+\s*=/i.test(main(h))], [false, false])
+  ok('nessun <script> né gestore di eventi nella pagina', [/<script/i.test(senzaDati(h)), /\son[a-z]+\s*=/i.test(main(h))], [false, false])
   const una = sezioni(pagina(`<h2>Dicono</h2>${bq(1)}`))[0] ?? ''
   const u = tessere(una)
   ok('una citazione sola: una tessera citazione larga blu, senza contenitore a scorrimento', [u.length, u[0]?.classi.includes('citazione'), u[0]?.classi.includes('larga'), colore(u[0] ?? { classi: [] }), /role="region"/.test(una)], [1, true, true, 'blu', false])
@@ -392,7 +394,7 @@ console.log('\n8. Immagini')
 console.log('\n9. Quello che scrive la segreteria si pulisce prima del layout')
 {
   const h = pagina('<h2>S</h2><div class="tessera blu">X</div><script>alert(1)</script><h3 class="tessera giallo" onclick="x()">A</h3><p onclick="y()">Z</p>')
-  ok('niente script né gestori di eventi', [/<script/i.test(h), /\son[a-z]+\s*=/i.test(main(h)), h.includes('alert(1)') && /<script/.test(h)], [false, false, false])
+  ok('niente script né gestori di eventi', [/<script/i.test(senzaDati(h)), /\son[a-z]+\s*=/i.test(main(h)), h.includes('alert(1)') && /<script/.test(senzaDati(h))], [false, false, false])
   ok('una sola tessera, la nostra (l’h3), blu: la classe della segreteria non conta', tessere(sezioni(h)[0] ?? '').map(colore), ['blu'])
   const senzaH3 = pagina('<h2>S</h2><div class="tessera blu">X</div><p>Y</p>')
   ok('senza h3 la classe «tessera» scritta a mano non crea tessere (e la sezione c’è)', [sezioni(senzaH3).length, tessere(sezioni(senzaH3)[0] ?? '').length], [1, 0])

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import type { CampoModulo, CorsoAperto, DatiRichiesta, DatiRichieste, TipoFile } from '../lib/richieste'
-import { anniScritti, certificatoDaPortare, chiFirma, controlla, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
+import { anniScritti, certificatoDaPortare, chiFirma, dataDaCf, datiRichieste, domandaUscita, ESTENSIONI, FILE, firmaDaRifare, FORMULE, mancaPerInviare, MASSIMO_FILE, problemi, pulisciCf } from '../lib/richieste'
 import { caricaLuoghi, luogoDaCf, scriviLuogo, type Luoghi } from '../lib/codiceFiscale'
+import { apriAspettoModulo } from '../lib/aspettoModulo'
 import { riduciFoto } from '../lib/foto'
 import { INFORMATIVA_PUBBLICA, MODULI, PAGAMENTO, REGOLAMENTO, STAGIONE } from '../lib/iscrizione'
 import { corsiPerEta, type CorsoPerEta, type CorsoRef } from '../lib/listino'
@@ -123,6 +124,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
   const [visti, setVisti] = useState<ReadonlySet<CampoModulo>>(new Set())
   const [provato, setProvato] = useState(false)
 
+  // Finché il modulo è aperto ha l'aspetto del sito, non quello del tema dell'app.
+  useEffect(() => apriAspettoModulo(), [])
+
   useEffect(() => {
     let vivo = true
     void datiRichieste()
@@ -217,6 +221,17 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     return null
   }
 
+  /** Cosa blocca l'invio adesso; il riquadro in fondo lo mostra dopo il primo tentativo e lo segue a ogni modifica. */
+  const blocco = mancaPerInviare({
+    dati: pronta,
+    privacy,
+    come,
+    firma: mancaPerFirmare(),
+    file,
+    obbligatori: daChiedere.filter((f) => f.obbligatorio).map((f) => f.tipo),
+  })
+  const riquadro = provato ? blocco ?? guaio : null
+
   /** Il PDF del modulo, compilato coi dati di adesso e firmato. */
   const faiModulo = async (): Promise<File> => {
     const [{ moduloFirmato }, originale, firma] = await Promise.all([
@@ -282,12 +297,7 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
     setProvato(true)
     const primo = (Object.keys(ID) as CampoModulo[]).find((k) => errori[k])
     if (primo) setTimeout(() => document.getElementById(ID[primo])?.focus(), 0)
-    const manca =
-      controlla(pronta) ??
-      (come === 'qui' ? mancaPerFirmare() : null) ??
-      FILE.filter((f) => obbligatorio(f.tipo) && !file[f.tipo] && !(f.tipo === 'modulo' && come === 'qui')).map((f) => `Manca: ${f.etichetta.toLowerCase()}`)[0]
-    if (manca) return setGuaio(manca)
-    if (!privacy) return setGuaio("Serve la conferma di aver letto l'informativa privacy")
+    if (blocco) return
     // Il modulo firmato si fa prima di mandare le risposte: se non viene, non
     // nasce una richiesta senza modulo.
     let tutti = file
@@ -725,9 +735,9 @@ export function ModuloIscrizione({ onChiudi, nucleo, torna = 'TORNA ALLE ISCRIZI
       </Sezione>
 
       <div className="pad stack modulo-piede">
-        {guaio && (
+        {riquadro && (
           <div role="alert">
-            <Riquadro tono="guaio">{guaio}</Riquadro>
+            <Riquadro tono="guaio">{riquadro}</Riquadro>
           </div>
         )}
         <Tasto variante="principale" type="submit" disabled={inVolo || !d}>

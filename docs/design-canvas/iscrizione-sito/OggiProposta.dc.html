@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <!-- Nell'app i font del modulo saranno file locali OFL (public/risorse, come Big Shoulders Display e Inter del sito pubblico, src/lib/sitoGenera.ts); un canvas e' un Artifact e li prende da Google Fonts: stessi file, stessa licenza. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;family=Big+Shoulders+Display:wght@800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef5fa; color: #0d2a3d; font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<!-- Oggi e Proposta: la stessa cima del modulo vero (campi, corsi, file, errore, tasto di invio) com'e' oggi, nel tema scuro (a sinistra, iscrizione/ModuloDati.dc.html, ModuloCorsi, ModuloFile e ModuloErrori), e nell'aspetto del sito (a destra, tema «sito»). Stessi componenti della libreria, stessi testi: cambiano carattere (Saira e Barlow -> Big Shoulders Display e Inter), colori, raggio (0 -> 6px) e il tasto di invio (rosso -> giallo con l'inchiostro). Col tema dell'app chiaro, oggi, il modulo sarebbe quello di ModuloLargo/ModuloDati in «chiaro»: la proposta lo rende uguale per tutti. -->
+<div style="display: flex; flex-direction: column; gap: 14px; width: 860px; min-height: 1560px; padding: 24px 24px 0; background: #eef5fa">
+  <div style="display: flex; gap: 20px">
+    <div style="width: 390px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: 0.04em; color: #0d2a3d">OGGI · TEMA SCURO DELL’APP</span></div>
+    <div style="width: 390px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: 0.04em; color: #14709f">PROPOSTA · ASPETTO DEL SITO</span></div>
+  </div>
+  <div style="display: flex; gap: 20px; align-items: flex-start">
+    <div style="display: flex; flex-direction: column; width: 390px; background: #121212; color: #f2f2f0">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" label="RICHIESTA DI ISCRIZIONE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 14px 20px 0">
+  <dc-import name="Bottone" label="← INDIETRO" variante="linea" alto="48px" corpo="16px" hint-size="160px,48px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="CHI SI ISCRIVE" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" etichetta="NOME" valore="Giulia" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="CODICE FISCALE" valore="RSSGLI17C54L219K" codice="{{ true }}" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" tipo="sola-lettura" etichetta="DATA DI NASCITA" valore="14/03/2017" nota="9 anni: lo dice il codice fiscale" notaTono="avviso" hint-size="100%,100px"></dc-import>
+<dc-import name="Campo" etichetta="EMAIL" valore="luca.bianchi@example" nota="Non sembra giusta" hint-size="100%,104px"></dc-import>
+<span style="font-size: 14px; line-height: 1.4; color: #f4c31b">È minorenne: servono i dati del genitore qui sotto, e il modulo per minori, che firma il genitore.</span>
+</div>
+<dc-import name="Titoletto" label="I CORSI" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px 4px">
+<dc-import name="Campo" tipo="scelta" etichetta="" valore="Judo 2" riga="nati 2019-2018-2017 · lunedì, mercoledì e venerdì 17.00-18.00" scelto="{{ true }}" hint-size="100%,72px"></dc-import>
+<dc-import name="Campo" tipo="scelta" etichetta="" valore="Aikido 2" riga="nati 2019-2018-2017-2016 · lunedì e giovedì 17.00-18.00" hint-size="100%,72px"></dc-import>
+<div style="display: flex; gap: 8px">
+  <div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Annuale" hint-size="50%,52px"></dc-import></div>
+  <div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Trimestre" scelto="{{ true }}" hint-size="50%,52px"></dc-import></div>
+</div>
+</div>
+<dc-import name="CaricaFile" etichetta="CARTA D’IDENTITÀ" nome="carta-identita-genitore.jpg" kb="412" hint-size="100%,84px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 20px 20px 28px">
+  <dc-import name="RiquadroPasso" tono="guaio" titolo="" testo="Mancano: nome, luogo di nascita, telefono" tonoTesto="testo" tasti="" hint-size="100%,80px"></dc-import>
+  <dc-import name="Bottone" label="MANDA LA RICHIESTA" variante="principale" hint-size="100%,56px"></dc-import>
+</div>
+</main>
+</div>
+    <div style="display: flex; flex-direction: column; width: 390px; background: #eef5fa; color: #0d2a3d">
+<dc-import name="Testata" luogo="ISCRIZIONI" guida="{{ false }}" tema="sito" hint-size="100%,72px"></dc-import>
+<main style="display: flex; flex-direction: column">
+<dc-import name="Titoletto" label="RICHIESTA DI ISCRIZIONE" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 14px 20px 0">
+  <dc-import name="Bottone" label="← INDIETRO" variante="linea" alto="48px" corpo="20px" tema="sito" hint-size="160px,48px"></dc-import>
+</div>
+<dc-import name="Titoletto" label="CHI SI ISCRIVE" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 0 20px 4px">
+<dc-import name="Campo" etichetta="NOME" valore="Giulia" tema="sito" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" etichetta="CODICE FISCALE" valore="RSSGLI17C54L219K" codice="{{ true }}" tema="sito" hint-size="100%,80px"></dc-import>
+<dc-import name="Campo" tipo="sola-lettura" etichetta="DATA DI NASCITA" valore="14/03/2017" nota="9 anni: lo dice il codice fiscale" notaTono="avviso" tema="sito" hint-size="100%,100px"></dc-import>
+<dc-import name="Campo" etichetta="EMAIL" valore="luca.bianchi@example" nota="Non sembra giusta" tema="sito" hint-size="100%,104px"></dc-import>
+<span style="font-size: 15px; line-height: 1.4; color: #8f6a00">! È minorenne: servono i dati del genitore qui sotto, e il modulo per minori, che firma il genitore.</span>
+</div>
+<dc-import name="Titoletto" label="I CORSI" tema="sito" hint-size="100%,50px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 0 20px 4px">
+<dc-import name="Campo" tipo="scelta" etichetta="" valore="Judo 2" riga="nati 2019-2018-2017 · lunedì, mercoledì e venerdì 17.00-18.00" scelto="{{ true }}" tema="sito" hint-size="100%,72px"></dc-import>
+<dc-import name="Campo" tipo="scelta" etichetta="" valore="Aikido 2" riga="nati 2019-2018-2017-2016 · lunedì e giovedì 17.00-18.00" tema="sito" hint-size="100%,72px"></dc-import>
+<div style="display: flex; gap: 8px">
+  <div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Annuale" tema="sito" hint-size="50%,52px"></dc-import></div>
+  <div style="flex: 1; min-width: 0"><dc-import name="Campo" tipo="scelta" una="{{ true }}" etichetta="" valore="Trimestre" scelto="{{ true }}" tema="sito" hint-size="50%,52px"></dc-import></div>
+</div>
+</div>
+<dc-import name="CaricaFile" etichetta="CARTA D’IDENTITÀ" nome="carta-identita-genitore.jpg" kb="412" tema="sito" hint-size="100%,84px"></dc-import>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 20px 20px 28px">
+  <dc-import name="RiquadroPasso" tono="guaio" titolo="" testo="Mancano: nome, luogo di nascita, telefono" tonoTesto="testo" tasti="" tema="sito" hint-size="100%,80px"></dc-import>
+  <dc-import name="Bottone" label="MANDA LA RICHIESTA" variante="vai" tema="sito" hint-size="100%,56px"></dc-import>
+</div>
+</main>
+</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
