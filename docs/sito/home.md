@@ -51,3 +51,5 @@ Il testo sta in [`home.html`](home.html): è quello che va incollato.
   gruppo era già nel testo di oggi).
 - «13 tecnici»: è il numero degli istruttori nel database. Se cambia, cambialo
   nell'elenco dei numeri e nella frase sotto il primo titolo.
+
+- Corsi con fascia d'età e pillole (Bambini, Adulti, Anziani, Agonisti), prese dal design: da controllare con la segreteria.

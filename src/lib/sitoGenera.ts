@@ -188,6 +188,10 @@ ${GRIGLIE_LUNGHE}
 .foto-citazioni .foto img{height:100%;aspect-ratio:auto;object-fit:cover}
 .foto-citazioni .citazioni{height:100%;margin:0}
 .foto-citazioni .citazione{padding:clamp(24px,2.8vw,40px)}
+.pillole{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:12px}
+.pillola{display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--chiara);color:var(--inchiostro);font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;line-height:1}
+.pillola svg{display:block;flex:none;width:20px;height:20px}
+.tessera.chiara .pillola{background:var(--blu);color:#fff}
 .foto-fila{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .foto-fila.quattro{grid-template-columns:repeat(4,1fr)}
 .foto-fila.quattro img{aspect-ratio:3/5}
