@@ -1620,7 +1620,7 @@ button.tb-giornata-riga { width: 100%; text-align: left; cursor: pointer; }
 .sg-gruppo-titolo { padding: 0 12px 0 16px; font-family: var(--cond); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; color: var(--dim); }
 /* Le schede di PRESENZE: larghe quanto serve, non quanto la sezione. */
 .sg-schede { flex-basis: auto; align-self: flex-start; grid-auto-columns: minmax(150px, auto); }
-.sg-schede .scheda { padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
+.sg-schede .scheda { min-height: 44px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; }
 .sg-voce {
   display: flex; align-items: center; min-height: 44px; padding: 0 12px;
   border-left: 4px solid transparent; color: var(--sec);
@@ -1969,6 +1969,18 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 
 .sg-tabella { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
 .sg-riga-iscritto { display: grid; grid-template-columns: 1.2fr 1.4fr 1.3fr 150px 80px; gap: 14px; align-items: center; }
+/* Il tab ISCRITTI di un corso: cognome, nome, da quando, certificato, quota. */
+.sg-riga-iscritto-corso { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 150px minmax(0, 170px) minmax(0, 170px); gap: 14px; align-items: center; }
+.sg-riga-iscritto-corso .sg-segno-regola { white-space: normal; }
+/* La scheda di un corso accanto all'elenco è stretta, sul telefono pure: le colonne vanno su due righe e «iscritto dal» sotto, le intestazioni restano e ordinano. */
+.sg-scheda { container-type: inline-size; }
+@container (max-width: 780px) {
+  .sg-riga-iscritto-corso { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 14px; padding-block: 8px; }
+  .sg-lista-testa.sg-riga-iscritto-corso { display: flex; flex-wrap: wrap; gap: 6px 16px; padding-block: 0 6px; }
+  .sg-lista-testa.sg-riga-iscritto-corso .sg-ordina { min-height: 44px; }
+  .sg-riga-iscritto-corso > :nth-child(3) { order: 5; grid-column: 1 / -1; }
+  .sg-riga-iscritto:not(.sg-lista-testa) > :nth-child(3)::before { content: 'Iscritto dal '; color: var(--dim); }
+}
 .sg-riga-pagamento-tab { display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; }
 .sg-riga-residuo { display: grid; grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px 160px; gap: 14px; align-items: center; }
 /* In regola o no: il certificato e il pagamento, in un bollino ciascuno. */

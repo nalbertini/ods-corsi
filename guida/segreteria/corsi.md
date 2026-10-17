@@ -85,8 +85,29 @@ rimette nella sala del suo giorno.
 
 ## Gli iscritti del corso
 
-In fondo alla scheda c'è l'elenco degli iscritti e il menu «Iscrivi qualcuno a
-questo corso…» con **ISCRIVI**.
+Nella scheda di un corso ci sono due schede: **DATI** (nome, sala, istruttori,
+ricorrenze: si apre questa) e **ISCRITTI**, col conto `14/20` scritto anche da
+chiusa. Il conto diventa giallo quando il corso è pieno e rosso quando gli
+iscritti sono più dei posti. Un corso nuovo ha solo DATI. Se hai modifiche non
+salvate, su DATI compare un **●** giallo, anche mentre guardi ISCRITTI.
+
+In **ISCRITTI** c'è una persona per riga: cognome, nome, **ISCRITTO DAL**,
+certificato e quota, a parole (come in [Iscritti](iscritti.md)), così si vede
+subito chi ha qualcosa che non va.
+
+- **Cerca** per nome o cognome: maiuscole, accenti, apostrofi e trattini non
+  contano («dangelo» trova D'Angelo). Se non trova nessuno lo dice. Accanto
+  si legge quanti sono, «3 DI 22».
+- **Ordina** toccando l'intestazione di una colonna: un secondo tocco rovescia,
+  un terzo torna all'ordine per cognome. Con CERTIFICATO o QUOTA in cima ci
+  sono quelli che hanno il guaio.
+- Un clic su un iscritto apre **la sua scheda** in ISCRITTI. **Indietro** torna
+  al corso, sulla scheda ISCRITTI, con la ricerca e l'ordine che avevi. Se nel
+  corso hai modifiche non salvate l'app chiede prima.
+- Il menu «Iscrivi qualcuno…» con **ISCRIVI** sta in questa
+  scheda. A corso pieno lo dice, ma si può iscrivere lo stesso.
+- Se l'app non riesce a leggere le persone lo dice, invece di mostrare zero
+  iscritti.
 
 ## Archiviare
 

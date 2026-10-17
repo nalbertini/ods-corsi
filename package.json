@@ -33,6 +33,7 @@
     "prova:cosa-manca": "node scripts/prova-cosa-manca.mjs",
     "prova:calendario": "node scripts/prova-calendario.mjs",
     "prova:iscritti": "node scripts/prova-iscritti.mjs",
+    "prova:iscritti-corso": "node scripts/prova-iscritti-corso.mjs",
     "prova:listino": "node scripts/prova-listino.mjs",
     "prova:indirizzi": "node scripts/prova-indirizzi.mjs",
     "prova:informativa": "node scripts/prova-informativa.mjs",
