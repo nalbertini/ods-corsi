@@ -26,7 +26,7 @@ export const CSS_CORSI = `
 .corsi .corso img{width:100%;height:170px;object-fit:cover}
 .corsi .senza-foto::before{content:"";flex:none;height:170px}
 .corsi .corso h3{display:flex;justify-content:space-between;align-items:flex-start;font-size:50px;line-height:.95}
-.corsi .corso h3::after{content:"↗";flex:none;font-size:44px;line-height:1}
+.corsi .corso h3::after{content:"↗\uFE0E";flex:none;font-size:44px;line-height:1}
 .corsi .corso h3 a{text-decoration-color:transparent}
 .corsi .corso h3 a::after{content:"";position:absolute;inset:0;border-radius:6px}
 .corsi .corso p{font-size:17px;line-height:1.45}
