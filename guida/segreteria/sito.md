@@ -128,6 +128,13 @@ il testo «com'è scritto»: le tessere si vedono solo sul sito, dopo **PUBBLICA
   3:2: teste e piedi vicini ai bordi possono tagliarsi, scegli foto con spazio intorno. Per le foto con
   minori vale la regola di sempre: serve il permesso dei genitori, mai documenti.
 - Una foto dentro una tessera con sottotitolo va **in cima alla tessera**, sopra il titolo, anche se l'hai scritta dopo.
+- **La Home ha in cima un collage** di foto e numeri accanto al titolo. Si ottiene scrivendo, **prima del
+  primo titolo grande**: fino a **3 foto** (una per riga; la prima è la grande) e **un solo elenco** di 2–6
+  voci che cominciano tutte con un **grassetto** (il numero) seguito dalla scritta, per esempio
+  «**35+** anni di sport». La frase sotto il titolo è la **descrizione** della pagina; i paragrafi scritti
+  prima del primo titolo restano sotto la testata. Foto e numeri oltre il limite, o un elenco che non
+  rispetta la regola, restano nel testo. Vale solo per la Home. La foto grande è più larga che alta: scegli
+  foto con spazio sopra e ai lati, e senza minori riconoscibili senza il permesso dei genitori.
 - Il paragrafo scritto **dopo l'ultimo sottotitolo** finisce nell'ultima tessera: per chiudere la griglia e
   scrivere altro, apri un nuovo titolo grande.
 - Le pagine di legge e le pagine senza titoli grandi restano testo in colonna, come prima.
