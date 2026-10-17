@@ -3,8 +3,8 @@
 Testo da incollare nel pannello SITO (PAGINE › Home), per avere la testata col
 collage del design «tatami blu e giallo». Le foto sono quelle già pubbliche
 nella libreria IMMAGINI; i numeri li controlla la segreteria prima di
-pubblicare (300+ atleti, 9 tecnici, 8 attività, 35+ anni: così nel testo di
-oggi).
+pubblicare (300+ atleti, 13 tecnici, 8 attività, 35+ anni; i tecnici sono 13 come gli
+istruttori nel database, il testo di oggi diceva 9).
 
 Come si fa:
 
@@ -45,5 +45,5 @@ Il testo sta in [`home.html`](home.html): è quello che va incollato.
 
 - Le tre foto ritraggono minori: servono i permessi dei genitori (la foto di
   gruppo era già nel testo di oggi).
-- «9 tecnici»: nel database gli istruttori attivi sono 13. Se il numero giusto
-  è un altro, cambialo qui e nella frase sotto il primo titolo.
+- «13 tecnici»: è il numero degli istruttori nel database. Se cambia, cambialo
+  nell'elenco dei numeri e nella frase sotto il primo titolo.
