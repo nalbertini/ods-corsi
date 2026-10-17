@@ -217,7 +217,14 @@ ${GRIGLIE_LUNGHE}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}
-.pagina-contatti h1{font-size:clamp(56px,13.9vw,200px)}
+.pagina-contatti h1{font-size:clamp(56px,13.9vw,200px);line-height:.82}
+.testata{padding:22px var(--margine)}
+.logo img{height:110px}
+.testata nav ul{gap:10px}
+.testata nav a[aria-current]{background:var(--giallo)}
+.testata .pulsante{padding:0 26px}
+.piede{margin:0 var(--margine) 48px}
+.piede .nome{font-size:clamp(44px,3.9vw,56px)}
 .pagina-contatti .pagina-hero{flex-wrap:nowrap;align-items:flex-end;padding-bottom:72px}
 .pagina-contatti .pagina-hero .intro{flex:1;flex-direction:row;align-items:flex-end;gap:56px;max-width:none}
 .pagina-contatti .pagina-hero .intro h1{flex:1;margin:0;overflow-wrap:break-word}
@@ -278,6 +285,13 @@ ${GRIGLIE_LUNGHE}
 .invito{margin-top:48px}
 }
 @media (max-width:900px){
+.testata{padding:12px var(--margine) 0}
+.logo img{height:82px}
+.testata nav ul{gap:6px}
+.testata nav a{background:var(--chiara);padding:0 14px}
+.testata nav a[aria-current]{background:var(--giallo)}
+.testata .pulsante{padding:0 22px}
+.piede{margin-bottom:24px;padding:24px}
 .pagina-contatti h1{font-size:19.5vw}
 .pagina-contatti .pagina-hero{padding:20px var(--margine) 36px}
 .pagina-contatti .pagina-hero .intro{flex-direction:column;align-items:stretch;gap:20px}
@@ -326,7 +340,8 @@ function voci(dove: 'menu' | 'footer', c: Contesto): Array<{ etichetta: string; 
 }
 
 const rel = (href: string) => (/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : '')
-const lista = (v: Array<{ etichetta: string; href: string }>) => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a></li>`).join('')
+/** `corrente` è l'indirizzo della pagina aperta: la sua voce è segnata, e nel design ha il fondo giallo. */
+const lista = (v: Array<{ etichetta: string; href: string }>, corrente = '') => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}${x.href === corrente ? ' aria-current="page"' : ''}>${esc(x.etichetta)}</a></li>`).join('')
 
 /**
  * Il testo di una pagina, ripulito, con solo le immagini ammesse: quelle del sito
@@ -349,8 +364,8 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
-function testata(c: Contesto, conContatti: boolean): string {
-  const menu = lista(voci('menu', c))
+function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
+  const menu = lista(voci('menu', c), corrente)
   return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.provaTestata}</a>` : ''}</header>`
 }
 
@@ -376,7 +391,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
   const testo = inTestata.resto
-  const t = testata(c, conContatti)
+  const t = testata(c, conContatti, percorso(p.slug))
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
     : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`

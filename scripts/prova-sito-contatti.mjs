@@ -89,5 +89,22 @@ console.log('\n3. Il telefono (≤900px)')
   ok('domande: titolo 30px, tessere alte 160px, padding 20px', [/font-size:\s*30px/.test(m('.pagina-contatti .sezione:not(.apertura) .tessera h3')), /minmax\(160px,\s*auto\)/.test(m('.pagina-contatti .sezione:not(.apertura) .tessere')), /padding:\s*20px/.test(m('.pagina-contatti .sezione:not(.apertura) .tessera'))], [true, true, true])
 }
 
+console.log('\n4. Testata e piede come nel design')
+{
+  const voce = (e, sl) => ({ dove: 'menu', ordine: 1, etichetta: e, slug: sl, indirizzo: null })
+  const due = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'H', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [voce('Home', 'home'), { ...voce('Contattaci', 'contatti'), ordine: 2 }], rinvii: [] })
+  ok('la voce della pagina aperta è segnata (aria-current)', [/<a href="\/contatti\/" aria-current="page">Contattaci<\/a>/.test(due['contatti/index.html']), /<a [^>]*aria-current/.test(due['index.html'].replace(/<a href="\/" aria-current="page">Home<\/a>/, ''))], [true, false])
+  ok('la voce segnata ha il fondo giallo', /background:\s*var\(--giallo\)/.test(css('.testata nav a[aria-current]')), true)
+  ok('testata: 22px sopra e sotto, marchio alto 110px, voci a 10px', [/padding:\s*22px var\(--margine\)/.test(css('.testata')), /height:\s*110px/.test(css('.logo img')), /gap:\s*10px/.test(css('.testata nav ul'))], [true, true, true])
+  ok('il pulsante in testata ha 26px ai lati', /padding:\s*0 26px/.test(css('.testata .pulsante')), true)
+  ok('titolo con interlinea .82', /line-height:\s*\.82/.test(css('.pagina-contatti h1')), true)
+  ok('piede: margini come la pagina e 48px sotto, nome da 56px', [/margin:\s*0 var\(--margine\) 48px/.test(css('.piede')), /clamp\(44px,\s*3\.9vw,\s*56px\)/.test(css('.piede .nome'))], [true, true])
+  const mob = CSS.slice(CSS.indexOf('@media (max-width:900px)'))
+  const m = (sel) => [...mob.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].filter((x) => x[1].trim() === sel).map((x) => x[2]).join(';')
+  ok('telefono: testata 12px 16px 0, marchio alto 82px, voci a pillola chiara da 14px', [/padding:\s*12px var\(--margine\) 0/.test(m('.testata')), /height:\s*82px/.test(m('.logo img')), /background:\s*var\(--chiara\)/.test(m('.testata nav a')), /padding:\s*0 14px/.test(m('.testata nav a'))], [true, true, true, true])
+  ok('telefono: la voce segnata resta gialla (più forte della chiara)', /background:\s*var\(--giallo\)/.test(m('.testata nav a[aria-current]')), true)
+  ok('telefono: pulsante con 22px ai lati, piede con 24px di margine sotto e 24px di spazio dentro', [/padding:\s*0 22px/.test(m('.testata .pulsante')), /margin-bottom:\s*24px/.test(m('.piede')), /padding:\s*24px/.test(m('.piede'))], [true, true, true])
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)
