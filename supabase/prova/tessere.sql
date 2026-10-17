@@ -106,7 +106,7 @@ create or replace function foglio() returns jsonb language sql as $$
 select '[
   {"ente":"FIJLKAM","nome":"ROSSI MARIO","codice_fiscale":"RSSMRA10A01L219X","tipo":"agonista","codice":"2026-0123","dal":"2026-09-01","al":"2026-12-31"},
   {"ente":"fijlkam ","nome":"GULLI'' ANNA","codice_fiscale":"gllnna80a41l219x","tipo":"praticante","codice":"2026-0777","dal":"2026-09-01","al":"2026-12-31"},
-  {"ente":"FIJLKAM","nome":"Tesserato Marco","codice_fiscale":"TSSMRC70C01L219Z","tipo":"dirigente","codice":"2026-0900","dal":"2026-09-01","al":"2026-12-31"},
+  {"ente":"FIJLKAM","nome":"Tesserato Marco","codice_fiscale":"TSSMRC70C01L219Z","tipo":"agonista","codice":"2026-0900","dal":"2026-09-01","al":"2026-12-31"},
   {"ente":"FIJLKAM","nome":"ROSSI GIANNI","codice_fiscale":"RSSMRA10A01L219X","tipo":"praticante","codice":"2026-0500","dal":"2026-09-01","al":"2026-12-31"},
   {"ente":"FIPE","nome":"BIANCHI SILVIA","codice_fiscale":"BNCSLV90E41L219V","tipo":"praticante","codice":"2026-0600","dal":"2026-09-01","al":"2026-12-31"},
   {"ente":"FIJLKAM","nome":"ROSSI MARIO","codice_fiscale":"RSSMRA10A01L219X","tipo":"agonista","codice":"2026-0123","dal":"2026-09-01","al":"2026-12-31"},
@@ -132,7 +132,7 @@ select atteso('scrive le tre nuove', tenta($$select (importa_tessere(foglio(), f
 select atteso('sono dell''RASD, con l''ente in maiuscolo e il codice fiscale in maiuscolo',
   (select string_agg(p.cognome || ' ' || t.ente || ' ' || t.tipo || ' ' || t.codice, ', ' order by p.cognome)
      from tessere t join persone p on p.id = t.persona_id where t.origine = 'rasd'),
-  'Gullì FIJLKAM praticante 2026-0777, Rossi FIJLKAM agonista 2026-0123, Tesserato FIJLKAM dirigente 2026-0900');
+  'Gullì FIJLKAM praticante 2026-0777, Rossi FIJLKAM agonista 2026-0123, Tesserato FIJLKAM agonista 2026-0900');
 select atteso('scritte da chi ha importato', (select count(*)::text from tessere where creata_da = 'aaaaaaaa-0000-0000-0000-000000000001'), '3');
 select atteso('lo stesso foglio di nuovo non crea doppioni',
   tenta($$select (importa_tessere(foglio(), false) - 'non_abbinate')::text$$),
@@ -225,6 +225,21 @@ select atteso('il rinnovo già fatto: a novembre Mario non è più in scadenza',
   'Doppio/FIPE/manca, Gullì/FIJLKAM/in_scadenza, Prossimo/FIJLKAM/manca, Tesserato/FIJLKAM/non_iscritto, Verdi/FIJLKAM/manca');
 reset role;
 delete from tessere where codice = '2027-0001';
+-- Una tessera da dirigente non copre chi pratica, e un dirigente senza corso non è un errore.
+insert into persone (id, nome, cognome, ruolo) values
+  ('aaaaaaaa-0000-0000-0000-000000000030', 'Dina', 'Dirigente', 'iscritto'),
+  ('aaaaaaaa-0000-0000-0000-000000000031', 'Tullio', 'Tecnico', 'iscritto');
+insert into iscrizioni (corso_id, persona_id, dal) values ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000030', '2026-09-14');
+insert into tessere (persona_id, ente, tipo, codice, dal, al) values
+  ('aaaaaaaa-0000-0000-0000-000000000030', 'FIJLKAM', 'dirigente', 'D-1', '2026-09-01', '2026-12-31'),
+  ('aaaaaaaa-0000-0000-0000-000000000031', 'FIJLKAM', 'tecnico', 'D-2', '2026-09-01', '2026-12-31');
+select chi('11111111-1111-1111-1111-111111111111');
+set role authenticated;
+select atteso('una tessera da dirigente non copre chi si iscrive a Judo: manca', (select string_agg(esito, ',') from incrocio_tessere('2026-10-17') where persona_id = 'aaaaaaaa-0000-0000-0000-000000000030'), 'manca');
+select atteso('un tecnico senza corso non è un «non iscritto»', (select count(*)::text from incrocio_tessere('2026-10-17') where persona_id = 'aaaaaaaa-0000-0000-0000-000000000031'), '0');
+reset role;
+delete from tessere where codice in ('D-1', 'D-2');
+delete from persone where id in ('aaaaaaaa-0000-0000-0000-000000000030', 'aaaaaaaa-0000-0000-0000-000000000031');
 
 \echo ''
 \echo '--- 5. unire due schede porta le tessere, anche la stessa su tutte e due ---'

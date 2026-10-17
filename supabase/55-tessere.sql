@@ -213,8 +213,9 @@ end $$;
 --   in_scadenza   vale ancora, ma finisce entro 60 giorni
 --   non_iscritto  ha una tessera che vale oggi, ma nessun corso attivo
 -- «Iscritto» = iscrizione in corso oggi, persona attiva. Una tessera che
--- comincia più avanti conta come valida (è un rinnovo già fatto). Il tipo non
--- si guarda: una tessera da dirigente copre come le altre (da confermare).
+-- comincia più avanti conta come valida (è un rinnovo già fatto). Contano solo
+-- le tessere da praticante e da agonista: chi pratica ha quelle, un dirigente o
+-- un tecnico può non avere nessun corso, e non è un errore.
 create or replace function incrocio_tessere(oggi date default (now() at time zone 'Europe/Rome')::date)
   returns table (persona_id uuid, ente text, esito text, corsi text, tessera_al date)
   language plpgsql stable security definer set search_path = public, extensions as $$
@@ -231,7 +232,7 @@ begin
     ), ultima as (
       select t.persona_id, t.ente, max(t.al) as al,
              bool_or(t.dal <= oggi and t.al >= oggi) as vale_oggi
-        from tessere t group by t.persona_id, t.ente
+        from tessere t where t.tipo in ('praticante', 'agonista') group by t.persona_id, t.ente
     )
     select r.persona_id, r.ente,
            case when u.al is null then 'manca'

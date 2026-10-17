@@ -1,6 +1,6 @@
 /**
- * La striscia COSA MANCA, in cima alle pagine di segreteria: quattro conti
- * (appelli non fatti, certificati scaduti, pagamenti, richieste online), ognuno
+ * La striscia COSA MANCA, in cima alle pagine di segreteria: cinque conti
+ * (appelli non fatti, certificati scaduti, pagamenti, tessere, richieste online), ognuno
  * col suo colore e la sua destinazione. Qui sta tutto quello che si decide
  * senza schermo: cosa dice ogni casella, quando il numero non si sa, quando
  * si rileggono i conti, quando la striscia si vede.
@@ -19,10 +19,10 @@ export const GIORNI_APPELLI = 30
 /** Cambiando voce i conti si rileggono solo se l'ultima lettura è più vecchia di così. */
 export const SECONDI_RILETTURA = 120
 
-export type IdCasella = 'appelli' | 'certificati' | 'pagamenti' | 'richieste'
+export type IdCasella = 'appelli' | 'certificati' | 'pagamenti' | 'tessere' | 'richieste'
 
 /** In quest'ordine, da sinistra. */
-export const CASELLE: readonly IdCasella[] = ['appelli', 'certificati', 'pagamenti', 'richieste']
+export const CASELLE: readonly IdCasella[] = ['appelli', 'certificati', 'pagamenti', 'tessere', 'richieste']
 
 /** manca: rosso. attesa: giallo, c'è da accogliere. aposto: verde. nonso: grigio, non si sa. */
 export type StatoCasella = 'manca' | 'attesa' | 'aposto' | 'nonso'
@@ -31,6 +31,8 @@ export interface ContiCosaManca {
   appelli: number | null
   certificati: number | null
   pagamenti: number | null
+  /** Chi è iscritto a un corso che chiede la tessera e non ne ha una valida (manca o scaduta). */
+  tessere: number | null
   richieste: number | null
   /** La prima lettura è finita (anche se fallita): da qui un `null` vuol dire «non si è riusciti», non «aspetto». */
   contato: boolean
@@ -58,6 +60,7 @@ const TITOLI: Record<IdCasella, string> = {
   appelli: 'APPELLI NON FATTI',
   certificati: 'CERTIFICATI SCADUTI',
   pagamenti: 'PAGAMENTI',
+  tessere: 'TESSERE',
   richieste: 'RICHIESTE ONLINE',
 }
 
@@ -66,6 +69,7 @@ const NOMI: Record<IdCasella, string> = {
   appelli: 'Appelli non fatti',
   certificati: 'Certificati scaduti',
   pagamenti: 'Pagamenti',
+  tessere: 'Tessere',
   richieste: 'Richieste online',
 }
 
@@ -73,6 +77,7 @@ const NOTE: Record<IdCasella, string> = {
   appelli: `senza appello, ultimi ${GIORNI_APPELLI} giorni`,
   certificati: 'scaduti o mancanti',
   pagamenti: 'quote non in regola',
+  tessere: 'senza tessera valida',
   richieste: 'da accogliere',
 }
 
@@ -80,6 +85,7 @@ const DESTINAZIONI: Record<IdCasella, { voce: Voce; filtro?: FiltroSegreteria }>
   appelli: { voce: 'presenze', filtro: 'senza-appello' },
   certificati: { voce: 'iscritti', filtro: 'certificato' },
   pagamenti: { voce: 'iscritti', filtro: 'pagare' },
+  tessere: { voce: 'iscritti', filtro: 'senza-tessera' },
   richieste: { voce: 'richieste' },
 }
 
@@ -96,6 +102,7 @@ function nomeAccessibile(id: IdCasella, n: number | null, contato: boolean): str
       appelli: 'Nessun appello non fatto: a posto',
       certificati: 'Nessun certificato scaduto o mancante: a posto',
       pagamenti: 'Nessun pagamento non in regola: a posto',
+      tessere: 'Nessuna tessera da sistemare: a posto',
       richieste: 'Nessuna richiesta online da accogliere: a posto',
     }[id]
   }
@@ -103,6 +110,7 @@ function nomeAccessibile(id: IdCasella, n: number | null, contato: boolean): str
     appelli: `${plurale(n, 'appello non fatto', 'appelli non fatti')}, ${NOTE.appelli}`,
     certificati: plurale(n, 'certificato scaduto o mancante', 'certificati scaduti o mancanti'),
     pagamenti: plurale(n, 'pagamento non in regola', 'pagamenti non in regola'),
+    tessere: plurale(n, 'persona senza tessera valida', 'persone senza tessera valida'),
     richieste: plurale(n, 'richiesta online da accogliere', 'richieste online da accogliere'),
   }[id]
 }
@@ -190,10 +198,10 @@ export function valorePreferenzaStriscia(voluta: boolean): string {
  */
 export function mantieniIPrecedenti(
   prima: ContiCosaManca,
-  letti: Pick<ContiCosaManca, 'appelli' | 'certificati' | 'pagamenti' | 'richieste'>,
+  letti: Pick<ContiCosaManca, 'appelli' | 'certificati' | 'pagamenti' | 'tessere' | 'richieste'>,
   ora: number,
 ): ContiCosaManca {
-  const dopo: ContiCosaManca = { appelli: null, certificati: null, pagamenti: null, richieste: null, contato: true }
+  const dopo: ContiCosaManca = { appelli: null, certificati: null, pagamenti: null, tessere: null, richieste: null, contato: true }
   let qualcunoNuovo = false
   let vecchio = false
   for (const id of CASELLE) {
@@ -231,18 +239,21 @@ export function pagamentiNonInRegola(persone: PersonaSeg[], oggi: string): numbe
 }
 
 /**
- * I quattro conti della striscia da quello che si è letto. Una lettura che manca
+ * I cinque conti della striscia da quello che si è letto. Una lettura che manca
  * (`null`) dà `null`, mai 0: «a posto» detto a chi non lo sa è l'errore peggiore.
+ * `tessere` sono quelle già lette con `incrocioTessere`: null se non si sa (la
+ * tabella non c'è ancora, o la lettura è fallita), e allora il conto è «non so».
  */
 export function contiDellaStriscia(
-  letti: { persone: PersonaSeg[] | null; lezioni: LezioneSeg[] | null; richieste: number | null },
+  letti: { persone: PersonaSeg[] | null; lezioni: LezioneSeg[] | null; richieste: number | null; tessere?: number | null },
   adesso: number,
   oggi: string,
-): Pick<ContiCosaManca, 'appelli' | 'certificati' | 'pagamenti' | 'richieste'> {
+): Pick<ContiCosaManca, 'appelli' | 'certificati' | 'pagamenti' | 'tessere' | 'richieste'> {
   return {
     appelli: letti.lezioni ? appelliSenzaSegni(letti.lezioni, adesso).length : null,
     certificati: letti.persone ? certificatiDaSistemare(letti.persone, oggi) : null,
     pagamenti: letti.persone ? pagamentiNonInRegola(letti.persone, oggi) : null,
+    tessere: letti.tessere ?? null,
     richieste: letti.richieste,
   }
 }

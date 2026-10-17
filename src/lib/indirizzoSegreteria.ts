@@ -20,7 +20,7 @@ export const VOCI = ['dafare', 'settimana', 'corsi', 'iscritti', 'pagamenti', 'r
 export type Voce = (typeof VOCI)[number]
 
 /** Un filtro già acceso quando si arriva a una voce: chi ha il certificato da sistemare, chi deve pagare, cosa c'è da stampare. */
-export type FiltroSegreteria = 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'file-di-prima' | 'stampare' | 'fuori-regola' | 'senza-appello'
+export type FiltroSegreteria = 'certificato' | 'scadenza' | 'arrivo' | 'pagare' | 'file-di-prima' | 'stampare' | 'fuori-regola' | 'senza-appello' | 'senza-tessera'
 
 export interface Posto {
   voce: Voce

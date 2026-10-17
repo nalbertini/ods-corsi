@@ -66,6 +66,7 @@ const FOGLIO = [
   ok('le colonne in un altro ordine e con altre maiuscole si trovano lo stesso',
     m.righeDalFoglio('Valido dal,CODICE TESS.,Tipo,Codice fiscale,Persona,Organismo\n01/09/2026,A1,Dirigente,RSSMRA10A01L219X,ROSSI MARIO,FIPE').righe[0],
     { ente: 'FIPE', nome: 'ROSSI MARIO', codice_fiscale: 'RSSMRA10A01L219X', tipo: 'dirigente', codice: 'A1', dal: '2026-09-01', al: '2026-12-31' })
+  ok('con la virgola e il BOM: lo stesso', m.righeDalFoglio('\uFEFFOrganismo,Persona,Codice fiscale,Tipo,Codice tess.,Valido dal\nFIPE,"ROSSI, MARIO",RSSMRA10A01L219X,Atleta Praticante,A1,01/09/2026').righe[0].nome, 'ROSSI, MARIO')
   ok('un foglio senza la colonna del codice fiscale dice quale manca',
     m.righeDalFoglio('Organismo;Persona;Tipo\nFIPE;X;Dirigente').errore, 'Nel foglio manca la colonna «Codice fiscale».')
   ok('un foglio vuoto non è un foglio del RASD', m.righeDalFoglio('').errore, 'Il foglio è vuoto.')
@@ -83,7 +84,7 @@ ok('l\'ultimo giorno vale ancora', m.statoTessera([T('FIJLKAM', '2026-09-01', '2
 ok('il giorno dopo è scaduta', m.statoTessera([T('FIJLKAM', '2026-09-01', '2026-12-31')], 'FIJLKAM', '2027-01-01'), 'scaduta')
 ok('una vecchia e una nuova: conta la più lontana', m.statoTessera([T('FIJLKAM', '2025-09-01', '2025-12-31'), T('FIJLKAM', '2026-09-01', '2026-12-31')], 'FIJLKAM', OGGI), 'valida')
 ok('il rinnovo già fatto (comincia l\'anno dopo) basta: non è in scadenza', m.statoTessera([T('FIJLKAM', '2026-09-01', '2026-12-31'), T('FIJLKAM', '2027-01-01', '2027-12-31')], 'FIJLKAM', '2026-11-10'), 'valida')
-ok('il tipo non si guarda (da confermare): un dirigente copre', m.statoTessera([T('FIJLKAM', '2026-09-01', '2026-12-31', 'dirigente')], 'FIJLKAM', OGGI), 'valida')
+ok('una tessera da dirigente o da tecnico non copre chi pratica: manca', [m.statoTessera([T('FIJLKAM', '2026-09-01', '2026-12-31', 'dirigente')], 'FIJLKAM', OGGI), m.statoTessera([T('FIJLKAM', '2026-09-01', '2026-12-31', 'tecnico')], 'FIJLKAM', OGGI)], ['manca', 'manca'])
 
 console.log('\nLe parole nella tabella ISCRITTI')
 ok('manca: rosso', m.parolaTessera('manca', undefined, OGGI), { tono: 'rosso', parola: 'NO TESSERA' })
@@ -110,7 +111,7 @@ const persone = [
   P('sara', 'Neri', [{ corsoId: 'psico', dal: '2026-09-14' }]),
   P('piero', 'Archiviato', [{ corsoId: 'judo', dal: '2025-09-14' }], [], false),
   P('elena', 'Prova', [], []), // è venuta a provare: una prova non è un'iscrizione
-  P('marco', 'Tesserato', [], [T('FIJLKAM', '2026-09-01', '2026-12-31', 'dirigente')]),
+  P('marco', 'Tesserato', [], [T('FIJLKAM', '2026-09-01', '2026-12-31', 'agonista')]),
   P('dario', 'Prossimo', [{ corsoId: 'lotta', dal: '2026-10-20' }]),
   P('teo', 'Doppio', [{ corsoId: 'pesi', dal: '2026-09-14' }]),
 ]
@@ -122,11 +123,50 @@ ok('a gennaio: scadute (chi non è più valido non è nemmeno «non iscritto»)'
 ok('Luigi: il corso che la chiede', m.incrocioTessere(persone, corsi, OGGI).find((x) => x.personaId === 'luigi').corsi, 'Lotta 2')
 ok('senza tessera nessuna scheda è tolta dal conto per errore: Sara (corso senza tessera), Piero (archiviato), Elena (prova) non ci sono',
   m.incrocioTessere(persone, corsi, OGGI).filter((x) => ['sara', 'piero', 'elena'].includes(x.personaId)).length, 0)
+{
+  const extra = [
+    P('dina', 'Dirigente', [{ corsoId: 'judo', dal: '2026-09-14' }], [T('FIJLKAM', '2026-09-01', '2026-12-31', 'dirigente')]),
+    P('tullio', 'Tecnico', [], [T('FIJLKAM', '2026-09-01', '2026-12-31', 'tecnico')]),
+  ]
+  const r = m.incrocioTessere(extra, corsi, OGGI)
+  ok('un dirigente iscritto a Judo senza una tessera da atleta: manca', r.filter((x) => x.personaId === 'dina').map((x) => x.esito), ['manca'])
+  ok('un tecnico senza corso non è un «non iscritto»', r.filter((x) => x.personaId === 'tullio').length, 0)
+}
 ok('il conto per COSA MANCA: manca + scaduta, non l\'in scadenza né i non iscritti',
   m.contaTessere(m.incrocioTessere(persone, corsi, '2026-11-01')), 3)
 
+console.log('\nL\'import in prova: come `importa_tessere`')
+{
+  // Lo stesso foglio e le stesse schede di supabase/prova/tessere.sql.
+  const R = (nome, cf, tipo, codice, dal, al, ente = 'FIJLKAM') => ({ ente, nome, codice_fiscale: cf, tipo, codice, dal, al })
+  const foglio = [
+    R('ROSSI MARIO', 'RSSMRA10A01L219X', 'agonista', '2026-0123', '2026-09-01', '2026-12-31'),
+    R('GULLI\' ANNA', 'GLLNNA80A41L219X', 'praticante', '2026-0777', '2026-09-01', '2026-12-31'),
+    R('Tesserato Marco', 'TSSMRC70C01L219Z', 'agonista', '2026-0900', '2026-09-01', '2026-12-31'),
+    R('ROSSI GIANNI', 'RSSMRA10A01L219X', 'praticante', '2026-0500', '2026-09-01', '2026-12-31'),
+    R('BIANCHI SILVIA', 'BNCSLV90E41L219V', 'praticante', '2026-0600', '2026-09-01', '2026-12-31', 'FIPE'),
+    R('ROSSI MARIO', 'RSSMRA10A01L219X', 'agonista', '2026-0123', '2026-09-01', '2026-12-31'),
+    R('ROSSI MARIO', 'RSSMRA10A01L219X', 'arbitro', '2026-0124', '2026-09-01', '2026-12-31'),
+    R('ROSSI MARIO', 'RSSMRA10A01L219X', 'praticante', '2026-0125', '2026-09-01', '2026-08-31'),
+  ]
+  const schede = [
+    { personaId: 'mario', nome: 'Mario', cognome: 'Rossi', codiceFiscale: 'RSSMRA10A01L219X' },
+    { personaId: 'anna', nome: 'Anna', cognome: 'Gullì', codiceFiscale: 'GLLNNA80A41L219X' },
+    { personaId: 'marco', nome: 'Marco', cognome: 'Tesserato', codiceFiscale: 'TSSMRC70C01L219Z' },
+  ]
+  const vecchie = [{ personaId: 'anna', ente: 'FIJLKAM', tipo: 'praticante', dal: '2025-09-01', al: '2025-12-31' }]
+  ok('le parole di un nome: accenti, apostrofi e ordine non contano', [m.paroleNome('GULLI\' ANNA'), m.paroleNome('Anna Gullì'), m.paroleNome('INNELLA  Rocco Maurizio'), m.paroleNome('Rocco Maurizio Innella')], ['ANNA GULLI', 'ANNA GULLI', 'INNELLA MAURIZIO ROCCO', 'INNELLA MAURIZIO ROCCO'])
+  const e = m.importaTessereProva(foglio, schede, vecchie)
+  ok('anteprima: tre nuove (la riga doppia una volta sola), una già presente', [e.esito.nuove, e.esito.gia_presenti, e.esito.scritto], [3, 1, false])
+  ok('i motivi, come nel database', e.esito.non_abbinate.map((x) => x.esito).sort(), ['nessuna_scheda', 'nome_diverso', 'riga_non_valida', 'riga_non_valida'])
+  ok('cosa si scrive: tre tessere, di chi giusto, ente in maiuscolo', e.daScrivere.map((x) => `${x.personaId} ${x.ente} ${x.tipo} ${x.codice}`), ['mario FIJLKAM agonista 2026-0123', 'anna FIJLKAM praticante 2026-0777', 'marco FIJLKAM agonista 2026-0900'])
+  const gia = m.importaTessereProva(foglio, schede, [...vecchie, ...e.daScrivere.map((x) => ({ ...x }))])
+  ok('lo stesso foglio di nuovo: niente di nuovo', [gia.esito.nuove, gia.esito.gia_presenti, gia.daScrivere.length], [0, 4, 0])
+  ok('il codice fiscale in minuscolo e l\'ente con lo spazio si trovano lo stesso', m.importaTessereProva([R('ROSSI MARIO', 'rssmra10a01l219x', 'agonista', 'X', '2026-09-01', '2026-12-31', ' fijlkam ')], schede, []).daScrivere.map((x) => [x.personaId, x.ente]), [['mario', 'FIJLKAM']])
+}
+
 console.log('\nL\'esito dell\'import, in parole di chi lo legge')
-ok('nome diverso: dice cosa fare', m.motivoNonAbbinata('nome_diverso'), 'Il codice fiscale è di un\'altra persona: controlla il nome.')
+ok('nome diverso: dice cosa fare', m.motivoNonAbbinata('nome_diverso'), 'Il codice fiscale è di un’altra persona: controlla il nome.')
 ok('nessuna scheda: dice cosa fare', m.motivoNonAbbinata('nessuna_scheda'), 'Nessuna scheda ha questo codice fiscale: scrivilo nella scheda della persona.')
 ok('riga non valida', m.motivoNonAbbinata('riga_non_valida'), 'La riga ha dei dati che non vanno: controllala nel foglio.')
 ok('un motivo che non conosciamo non è il testo grezzo', m.motivoNonAbbinata('boh').includes('boh'), false)
