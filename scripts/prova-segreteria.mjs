@@ -3521,7 +3521,8 @@ await sezione('la contabilità di prova: le due casse e le due voci di sistema',
   ok('le due casse, a zero e senza data', casse.map((c) => [c.nome, c.saldoIniziale, c.dal ?? null]).sort(), [['Cassa Contanti', 0, null], ['Conto Corrente', 0, null]])
   cx.contanti = casse.find((c) => c.nome === 'Cassa Contanti').id
   cx.conto = casse.find((c) => c.nome === 'Conto Corrente').id
-  const di = (await s.voci()).filter((v) => v.diSistema)
+  // «Differenza di cassa» arriva con 60-chiusura-cassa.sql e ha le sue prove (la chiusura di cassa, più sotto).
+  const di = (await s.voci()).filter((v) => v.diSistema && v.nome !== 'Differenza di cassa')
   ok('le voci di sistema, attive', di.map((v) => [v.nome, v.tipo, v.attiva]).sort(), [['Corsi e altri pagamenti', 'entrata', true], ['Quota associativa', 'entrata', true]])
   cx.quota = di.find((v) => v.nome === 'Quota associativa').id
   cx.corsi = di.find((v) => v.nome === 'Corsi e altri pagamenti').id
@@ -3531,7 +3532,7 @@ await sezione('la contabilità di prova: le due casse e le due voci di sistema',
   ok('«Corsi e altri pagamenti» nemmeno', await errore(() => s.attivaVoce(cx.corsi, false)), SOLO_AMM)
   ok('un doppione della quota no', await errore(() => s.salvaVoce({ nome: 'QUOTA ASSOCIATIVA', tipo: 'entrata' })), 'C’è già una voce «QUOTA ASSOCIATIVA» tra le entrate')
   ok('né di «Corsi e altri pagamenti», con spazi', await errore(() => s.salvaVoce({ nome: '  corsi e altri pagamenti ', tipo: 'entrata' })), 'C’è già una voce «corsi e altri pagamenti» tra le entrate')
-  ok('sono rimaste com\'erano', (await s.voci()).filter((v) => v.diSistema).map((v) => [v.nome, v.attiva]).sort(), [['Corsi e altri pagamenti', true], ['Quota associativa', true]])
+  ok('sono rimaste com\'erano', (await s.voci()).filter((v) => v.diSistema && v.nome !== 'Differenza di cassa').map((v) => [v.nome, v.attiva]).sort(), [['Corsi e altri pagamenti', true], ['Quota associativa', true]])
 })
 
 await sezione('le voci: il nome è unico per tipo, una voce si disattiva', async () => {
@@ -3689,6 +3690,191 @@ await sezione('un movimento non si cancella e non si cambia: si annulla', async 
   ok('l\'annullato è rimasto com\'era', (await s.movimenti()).find((x) => x.id === anonima)?.descrizione, 'Offerta anonima')
 })
 
+// ---------------------------------------------------------------------------
+// La chiusura di cassa (60-chiusura-cassa.sql): in prova gli incassi in contanti si
+// ricavano da ricevute e pagamenti a mano dell'archivio, e la chiusura scrive da sola
+// il movimento di differenza. Gli stessi casi e gli stessi messaggi di
+// supabase/prova/chiusura-cassa.sql; i numeri del previsto sono provati là e in
+// prova-contabilita.mjs. Qui il previsto di partenza si ricalcola a mano dall'archivio
+// (che ha già i suoi incassi di altre prove): contano le differenze che portano i
+// movimenti e gli incassi aggiunti dopo.
+// ---------------------------------------------------------------------------
+const D1 = '2026-09-21'
+const D2 = '2026-09-26'
+const MSG_CHIUSO = 'Quel giorno è già chiuso: per correggere scrivi il movimento con una data dopo la chiusura e una voce di rettifica (si crea in VOCI), oppure annulla la chiusura'
+const MSG_ANNULLA_CHIUSO = 'Quel giorno è già chiuso: annulla prima la chiusura, o scrivi una rettifica con una data dopo la chiusura'
+const MSG_SALDO_CHIUSA = 'La cassa ha una chiusura: annullala prima di cambiare il saldo iniziale'
+const MSG_DIFFERENZA = 'La «Differenza di cassa» si scrive da sola chiudendo la cassa'
+// Il previsto della Cassa Contanti, contato a mano dall'archivio: saldo iniziale, movimenti non annullati e incassi in contanti.
+const aMano = async (fino) => {
+  const c = (await s.casse()).find((x) => x.id === cx.contanti)
+  const dentro = (g) => (!c.dal || g >= c.dal) && g <= fino
+  let t = c.saldoIniziale
+  for (const x of await s.movimenti()) {
+    if (x.annullatoIl || !dentro(x.data)) continue
+    if (x.tipo === 'giroconto') {
+      if (x.cassaId === c.id) t -= x.importo
+      if (x.cassaAId === c.id) t += x.importo
+    } else if (x.cassaId === c.id) t += x.tipo === 'entrata' ? x.importo : -x.importo
+  }
+  const contanti = (metodo) => metodo.trim().toLowerCase() === 'contanti'
+  for (const r of await s.ricevute()) if (!r.annullataIl) for (const v of r.voci) for (const p of v.pagamenti) if (contanti(p.metodo) && dentro(p.data)) t += p.importo
+  for (const x of await s.pagamentiDiretti()) if (!x.annullatoIl && contanti(x.metodo) && dentro(x.data)) t += x.importo
+  return t
+}
+
+await sezione('la chiusura di cassa di prova: le voci della differenza e i rifiuti', async () => {
+  const dif = (await s.voci()).filter((v) => v.nome === 'Differenza di cassa')
+  ok('le voci della differenza: una di entrata e una di uscita, di sistema e attive', dif.map((v) => [v.tipo, v.diSistema, v.attiva]).sort(), [['entrata', true, true], ['uscita', true, true]])
+  cx.difE = dif.find((v) => v.tipo === 'entrata')?.id
+  cx.difU = dif.find((v) => v.tipo === 'uscita')?.id
+  ok('non si rinominano', await errore(() => s.rinominaVoce(cx.difU, 'Ammanco')), SOLO_AMM)
+  ok('non si disattivano', await errore(() => s.attivaVoce(cx.difE, false)), SOLO_AMM)
+  ok('un doppione nelle entrate no', await errore(() => s.salvaVoce({ nome: ' differenza di cassa', tipo: 'entrata' })), 'C’è già una voce «differenza di cassa» tra le entrate')
+  ok('né nelle uscite', await errore(() => s.salvaVoce({ nome: 'DIFFERENZA DI CASSA', tipo: 'uscita' })), 'C’è già una voce «DIFFERENZA DI CASSA» tra le uscite')
+  ok('all\'inizio non c\'è nessuna chiusura', await s.chiusure(), [])
+  cx.P1 = await aMano(D1)
+  const buona = { cassaId: cx.contanti, data: D1, contato: cx.P1 - 500 }
+  const rifiuti = [
+    ['senza cassa', { cassaId: '' }, 'Scegli la cassa'],
+    ['una cassa che non c\'è', { cassaId: 'non-c-e' }, 'Scegli la cassa'],
+    ['il Conto Corrente non si chiude', { cassaId: cx.conto }, 'Si chiude solo la Cassa Contanti'],
+    ['…prima di guardare la data', { cassaId: cx.conto, data: '2026-02-30' }, 'Si chiude solo la Cassa Contanti'],
+    ['il 30 febbraio', { data: '2026-02-30' }, 'La data non si capisce'],
+    ['senza data', { data: '' }, 'La data non si capisce'],
+    ['una data di secoli fa', { data: '1999-12-31' }, 'La data non si capisce'],
+    ['domani', { data: '2026-09-27' }, 'La data è nel futuro: si chiude quel che è già successo'],
+    ['il 31 agosto, prima dell\'inizio della cassa', { data: '2026-08-31' }, 'La data è prima dell’inizio della cassa'],
+    ['…la data prima dei contanti', { data: '2026-02-30', contato: -5 }, 'La data non si capisce'],
+    ['contanti con la virgola', { contato: 95.5 }, 'I contanti contati non si capiscono'],
+    ['contanti che non sono un numero', { contato: Number.NaN }, 'I contanti contati non si capiscono'],
+    ['contanti negativi', { contato: -1 }, 'I contanti contati non possono essere negativi'],
+    ['contanti oltre un milione di euro', { contato: 100_000_001 }, 'I contanti contati sono troppi: controlla le cifre'],
+    ['nota di 301 lettere', { nota: 'n'.repeat(301) }, 'La nota è troppo lunga: al massimo 300 caratteri'],
+    ['…dopo i contanti', { contato: -1, nota: 'n'.repeat(301) }, 'I contanti contati non possono essere negativi'],
+  ]
+  const movimentiPrima = (await s.movimenti()).length
+  for (const [cosa, cambio, messaggio] of rifiuti) ok(cosa, await errore(() => s.chiudiCassa({ ...buona, ...cambio })), messaggio)
+  ok('di tutti questi rifiuti non è entrato niente', [(await s.chiusure()).length, (await s.movimenti()).length], [0, movimentiPrima])
+})
+
+await sezione('si chiude fino al 21 settembre: i contanti sono 5,00 in meno', async () => {
+  cx.k1 = await s.chiudiCassa({ cassaId: cx.contanti, data: D1, contato: cx.P1 - 500, nota: 'Contati in cassa' })
+  ok('chiudiCassa rende l\'id', typeof cx.k1, 'string')
+  const k = (await s.chiusure()).find((x) => x.id === cx.k1)
+  ok('…della Cassa Contanti, dal primo giorno della cassa, con previsto, contato, differenza e nota',
+    stabile([k?.cassaId === cx.contanti, k?.dal, k?.data, k?.previsto, k?.contato, k?.differenza, k?.nota]),
+    stabile([true, '2026-09-01', D1, cx.P1, cx.P1 - 500, -500, 'Contati in cassa']))
+  ok('…chi e quando c\'è, non è annullata', [typeof k?.chiusaDa, typeof k?.chiusaIl, k?.annullataIl ?? null], ['string', 'string', null])
+  const mv = (await s.movimenti()).find((x) => x.id === k?.movimentoId)
+  const voce = (await s.voci()).find((v) => v.id === mv?.voceId)
+  ok('…con un\'uscita di 5,00 scritta da sola, voce «Differenza di cassa»',
+    stabile([mv?.tipo, mv?.data, mv?.importo, voce?.nome, voce?.tipo, mv?.cassaId === cx.contanti, mv?.descrizione, mv?.nota]),
+    stabile(['uscita', D1, 500, 'Differenza di cassa', 'uscita', true, 'Differenza di cassa', 'Contati in cassa']))
+  ok('…e a fine giorno in cassa c\'è quel che si è contato', await aMano(D1), cx.P1 - 500)
+  ok('il giorno stesso è chiuso: si dice da quando si può', await errore(() => s.chiudiCassa({ cassaId: cx.contanti, data: D1, contato: 0 })), 'Quel giorno è già chiuso: scegli un giorno dopo il 21/09/2026')
+  ok('…anche un giorno prima', await errore(() => s.chiudiCassa({ cassaId: cx.contanti, data: '2026-09-10', contato: 0 })), 'Quel giorno è già chiuso: scegli un giorno dopo il 21/09/2026')
+  ok('…e il Conto Corrente resta quello che non si chiude', await errore(() => s.chiudiCassa({ cassaId: cx.conto, data: D2, contato: 0 })), 'Si chiude solo la Cassa Contanti')
+})
+
+await sezione('i giorni chiusi: fino al 21 settembre non si scrive e non si annulla', async () => {
+  const mov = { tipo: 'entrata', data: '2026-09-10', importo: 100, voceId: cx.don, cassaId: cx.contanti, descrizione: 'Tardivo' }
+  const entrati = (await s.movimenti()).length
+  const rifiuti = [
+    ['un movimento il 21 settembre', { data: D1 }, MSG_CHIUSO],
+    ['…il 10', {}, MSG_CHIUSO],
+    ['una uscita nemmeno', { tipo: 'uscita', voceId: cx.aff }, MSG_CHIUSO],
+    ['l\'inizio della cassa viene prima del giorno chiuso', { data: '2026-08-31' }, 'La data è prima dell’inizio della cassa'],
+    ['una cassa che non c\'è viene prima', { cassaId: 'non-c-e' }, 'Scegli la cassa'],
+    ['l\'importo viene prima', { importo: 0 }, 'L’importo deve essere più di zero'],
+    ['il giorno chiuso viene prima della descrizione', { descrizione: '   ' }, MSG_CHIUSO],
+    ['«Differenza di cassa» in entrata a mano no', { voceId: cx.difE, cassaId: cx.conto, data: D2 }, MSG_DIFFERENZA],
+    ['…e in uscita', { tipo: 'uscita', voceId: cx.difU, cassaId: cx.conto, data: D2 }, MSG_DIFFERENZA],
+    ['prima si guarda se la voce va col tipo', { voceId: cx.difU, cassaId: cx.conto, data: D2 }, 'La voce scelta non va con questo tipo di movimento'],
+  ]
+  for (const [cosa, cambio, messaggio] of rifiuti) ok(cosa, await errore(() => s.registraMovimento({ ...mov, ...cambio })), messaggio)
+  ok('il Conto Corrente non è chiuso: il 10 settembre si scrive', await errore(() => s.registraMovimento({ ...mov, cassaId: cx.conto, descrizione: 'Sul conto' })), 'nessun errore')
+  ok('dei rifiuti non è entrato niente (solo il movimento sul conto)', (await s.movimenti()).length, entrati + 1)
+  const giro = { daCassaId: cx.conto, aCassaId: cx.contanti, data: '2026-09-15', importo: 100 }
+  ok('un giroconto dal conto ai contanti no', await errore(() => s.registraGiroconto(giro)), MSG_CHIUSO)
+  ok('…né dai contanti al conto', await errore(() => s.registraGiroconto({ ...giro, daCassaId: cx.contanti, aCassaId: cx.conto })), MSG_CHIUSO)
+  ok('l\'inizio della cassa viene prima', await errore(() => s.registraGiroconto({ ...giro, data: '2026-08-31' })), 'La data è prima dell’inizio della cassa')
+  ok('l\'importo viene prima', await errore(() => s.registraGiroconto({ ...giro, importo: 0 })), 'L’importo deve essere più di zero')
+  // Annullare.
+  const per = async (descrizione) => (await s.movimenti()).find((x) => x.descrizione === descrizione)
+  const k = (await s.chiusure()).find((x) => x.id === cx.k1)
+  ok('un movimento dei contanti di un giorno chiuso non si annulla', await errore(() => s.annullaMovimento(cx.offerta)), MSG_ANNULLA_CHIUSO)
+  ok('…nemmeno quello di differenza', await errore(() => s.annullaMovimento(k?.movimentoId)), MSG_ANNULLA_CHIUSO)
+  ok('…il suo testo si corregge', await errore(() => s.correggiTestoMovimento(cx.offerta, 'Offerta di Rossi', 'Per la gara')), 'nessun errore')
+  ok('…anche quello della differenza', await errore(() => s.correggiTestoMovimento(k?.movimentoId, 'Differenza di cassa')), 'nessun errore')
+  const ottobre = await per('Affitto di ottobre')
+  ok('un movimento del conto si annulla', await errore(() => s.annullaMovimento(ottobre?.id)), 'nessun errore')
+  // Il saldo.
+  ok('il saldo di una cassa chiusa no', await errore(() => s.salvaSaldoCassa(cx.contanti, 10000, '2026-09-01')), MSG_SALDO_CHIUSA)
+  ok('…prima degli altri controlli', await errore(() => s.salvaSaldoCassa(cx.contanti, -100, '2026-09-01')), MSG_SALDO_CHIUSA)
+  ok('…ma una cassa che non c\'è resta una cassa che non c\'è', await errore(() => s.salvaSaldoCassa('non-c-e', 0)), 'La cassa non c’è')
+  ok('il Conto Corrente non ha chiusure: il suo saldo si cambia', await errore(() => s.salvaSaldoCassa(cx.conto, 0)), 'nessun errore')
+  ok('il saldo dei contanti è rimasto', (await s.casse()).find((c) => c.id === cx.contanti)?.saldoIniziale, 10000)
+})
+
+await sezione('una chiusura che copre più giorni: +3,00', async () => {
+  // Dopo la chiusura del 21: incassi e movimenti dal 22 al 25. Contano 30,00 + 20,00 − 10,00 − 20,00 = 20,00; il resto no.
+  const pia = await s.salvaPersona({ nome: 'Ciro', cognome: 'Chiusure' })
+  const ente = await s.enteRicevute()
+  const intestatario = await s.intestatarioDi(pia)
+  const rcv = (voci, anticipo = 0) => s.emettiRicevuta({ data: '2026-09-22', personaId: pia, ente, intestatario, anticipo, voci })
+  const voce = (prezzo, pagamenti, altro = {}) => ({ descrizione: 'ALTRO', quantita: 1, prezzo, pagamenti, ...altro })
+  await rcv([voce(3000, [{ data: '2026-09-22', importo: 3000, metodo: 'Contanti' }])])
+  await rcv([voce(5000, [{ data: '2026-09-22', importo: 5000, metodo: 'POS' }])])
+  const annullata = await rcv([voce(4000, [{ data: '2026-09-23', importo: 4000, metodo: 'Contanti' }])])
+  await s.annullaRicevuta(annullata.id)
+  await rcv([voce(8000, [], { dal: '2026-09-01', al: '2027-07-31' })], 5000)
+  const diretto = (importo, extra = {}) => s.registraPagamentoDiretto({ personaId: pia, data: '2026-09-24', importo, metodo: 'Contanti', voce: 'ALTRO', ...extra })
+  await diretto(2000)
+  await diretto(700, { metodo: 'Assegno' })
+  await s.annullaPagamentoDiretto((await diretto(900)).id)
+  await s.registraMovimento({ tipo: 'uscita', data: '2026-09-25', importo: 1000, voceId: cx.aff, cassaId: cx.contanti, descrizione: 'Pulizie di settembre' })
+  await s.registraGiroconto({ daCassaId: cx.contanti, aCassaId: cx.conto, data: '2026-09-25', importo: 2000 })
+  const k1 = (await s.chiusure()).find((x) => x.id === cx.k1)
+  cx.C2 = k1.contato + 2000
+  cx.k2 = await s.chiudiCassa({ cassaId: cx.contanti, data: D2, contato: cx.C2 + 300 })
+  const k = (await s.chiusure()).find((x) => x.id === cx.k2)
+  ok('la seconda parte dal giorno dopo la prima, e il previsto riparte da quel che si è contato', stabile([k?.dal, k?.data, k?.previsto, k?.contato, k?.differenza, k?.nota ?? null]), stabile(['2026-09-22', D2, cx.C2, cx.C2 + 300, 300, null]))
+  const mv = (await s.movimenti()).find((x) => x.id === k?.movimentoId)
+  ok('…con un\'entrata di 3,00', stabile([mv?.tipo, mv?.data, mv?.importo, mv?.voceId === cx.difE, mv?.nota ?? null]), stabile(['entrata', D2, 300, true, null]))
+  ok('…e a fine giorno in cassa c\'è quel che si è contato', await aMano(D2), cx.C2 + 300)
+  ok('il 26 è chiuso, si dice da quando si può', await errore(() => s.chiudiCassa({ cassaId: cx.contanti, data: D2, contato: 0 })), 'Quel giorno è già chiuso: scegli un giorno dopo il 26/09/2026')
+  ok('le chiusure sono due, tutte attive', (await s.chiusure()).filter((x) => !x.annullataIl).length, 2)
+})
+
+await sezione('si annulla solo l\'ultima, e i giorni si riaprono', async () => {
+  const k2 = () => s.chiusure().then((l) => l.find((x) => x.id === cx.k2))
+  ok('una chiusura che non c\'è', await errore(() => s.annullaChiusuraCassa('non-c-e')), 'La chiusura non c’è')
+  ok('quella del 21 non è l\'ultima', await errore(() => s.annullaChiusuraCassa(cx.k1)), 'Si annulla solo l’ultima chiusura della cassa')
+  ok('l\'ultima, del 26, si annulla', await errore(() => s.annullaChiusuraCassa(cx.k2)), 'nessun errore')
+  const k = await k2()
+  const mv = (await s.movimenti()).find((x) => x.id === k?.movimentoId)
+  ok('…resta in elenco, annullata, e il suo movimento di differenza con lei', [!!k?.annullataIl, !!mv?.annullatoIl, mv?.importo], [true, true, 300])
+  ok('…e il previsto non conta più i 3,00', await aMano(D2), cx.C2)
+  ok('annullarla due volte no', await errore(() => s.annullaChiusuraCassa(cx.k2)), 'La chiusura è già annullata')
+  ok('il 22 settembre è di nuovo aperto', await errore(() => s.registraMovimento({ tipo: 'entrata', data: '2026-09-22', importo: 100, voceId: cx.don, cassaId: cx.contanti, descrizione: 'Dopo l\'annullo' })), 'nessun errore')
+  await s.annullaMovimento((await s.movimenti()).find((x) => x.descrizione === 'Dopo l\'annullo').id)
+  ok('il 21 è ancora chiuso', await errore(() => s.registraMovimento({ tipo: 'entrata', data: D1, importo: 100, voceId: cx.don, cassaId: cx.contanti, descrizione: 'Ancora no' })), MSG_CHIUSO)
+  // Si richiude lo stesso giorno: i conti ora tornano.
+  cx.k3 = await s.chiudiCassa({ cassaId: cx.contanti, data: D2, contato: cx.C2 })
+  const k3 = (await s.chiusure()).find((x) => x.id === cx.k3)
+  ok('si richiude il 26: un\'altra chiusura, senza differenza e senza movimento', stabile([cx.k3 !== cx.k2, k3?.previsto, k3?.differenza, k3?.movimentoId ?? null]), stabile([true, cx.C2, 0, null]))
+  ok('con le chiusure il saldo è bloccato', await errore(() => s.salvaSaldoCassa(cx.contanti, 10000, '2026-09-01')), MSG_SALDO_CHIUSA)
+  await s.annullaChiusuraCassa(cx.k3)
+  ok('…anche con una sola: resta quella del 21', await errore(() => s.salvaSaldoCassa(cx.contanti, 10000, '2026-09-01')), MSG_SALDO_CHIUSA)
+  await s.annullaChiusuraCassa(cx.k1)
+  ok('annullate tutte, il saldo si cambia', await errore(() => s.salvaSaldoCassa(cx.contanti, 10000, '2026-09-01')), 'nessun errore')
+  ok('…e i giorni di prima sono aperti', await errore(() => s.registraMovimento({ tipo: 'entrata', data: '2026-09-05', importo: 100, voceId: cx.don, cassaId: cx.contanti, descrizione: 'Tutto aperto' })), 'nessun errore')
+  ok('…il movimento del 10 settembre si annulla di nuovo', await errore(() => s.annullaMovimento(cx.offerta)), 'nessun errore')
+  const dopo1 = (await s.chiusure()).find((x) => x.id === cx.k1)
+  ok('…la chiusura del 21 è annullata, con la sua differenza', [!!dopo1?.annullataIl, !!(await s.movimenti()).find((x) => x.id === dopo1?.movimentoId)?.annullatoIl], [true, true])
+})
+
 // ---- Il database vero: le chiamate giuste, e il file 59 che può mancare.
 const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
 const tabelleContab = {
@@ -3778,6 +3964,57 @@ await sezione('la contabilità sul database (client finto): senza 59-contabilita
     for (const [nome, chiama] of Object.entries(scritture)) ok(`senza 59: ${nome} (${codice}) dice quale file lanciare`, await errore(() => chiama(senzaFunzioni(codice, messaggio))), MANCA_CONTABILITA)
   for (const [codice, messaggio] of [['PGRST205', (t) => `Could not find the table 'public.${t}' in the schema cache`], ['42P01', (t) => `relation "${t}" does not exist`]])
     for (const [nome, chiama] of Object.entries(letture)) ok(`senza 59: ${nome} (${codice}) dice quale file lanciare`, await errore(() => chiama(senzaTabelle(codice, messaggio))), MANCA_CONTABILITA)
+})
+
+// ---- La chiusura di cassa sul database vero: le chiamate giuste, e il file 60 che può mancare.
+const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura della cassa: va lanciato 60-chiusura-cassa.sql'
+const righeChiusure = [
+  { id: 'h1', cassa_id: 'c1', dal: '2026-09-01', data: '2026-09-07', previsto: 10000, contato: 9500, differenza: -500, nota: 'Contati in cassa', movimento_id: 'm9', chiusa_da: null, chiusa_il: '2026-09-07T18:00:00+00:00', annullata_il: '2026-09-08T09:00:00+00:00', annullata_da: null },
+  { id: 'h2', cassa_id: 'c1', dal: '2026-09-08', data: '2026-09-20', previsto: 9500, contato: 9500, differenza: 0, nota: null, movimento_id: null, chiusa_da: null, chiusa_il: '2026-09-20T18:00:00+00:00', annullata_il: null, annullata_da: null },
+]
+
+await sezione('la chiusura di cassa sul database (client finto): le letture', async () => {
+  const { db } = clientContab({ lettura: (t) => ({ data: t === 'chiusure_cassa' ? righeChiusure : [], error: null }) })
+  const perId = (a, b) => (a.id < b.id ? -1 : 1)
+  ok('le chiusure, dai nomi del database; chi ha chiuso e non c\'è più è un trattino; ciò che manca non c\'è', stabile((await db.chiusure()).sort(perId)), stabile([
+    { id: 'h1', cassaId: 'c1', dal: '2026-09-01', data: '2026-09-07', previsto: 10000, contato: 9500, differenza: -500, nota: 'Contati in cassa', movimentoId: 'm9', chiusaDa: '—', chiusaIl: '2026-09-07T18:00:00+00:00', annullataIl: '2026-09-08T09:00:00+00:00' },
+    { id: 'h2', cassaId: 'c1', dal: '2026-09-08', data: '2026-09-20', previsto: 9500, contato: 9500, differenza: 0, chiusaDa: '—', chiusaIl: '2026-09-20T18:00:00+00:00' },
+  ]))
+})
+
+await sezione('la chiusura di cassa sul database (client finto): le funzioni giuste coi parametri giusti', async () => {
+  const { db, chiamate } = clientContab({ funzione: () => ({ data: { id: 'nuovo-1' }, error: null }) })
+  const ultima = () => stabile(chiamate.at(-1))
+  ok('chiudiCassa rende l\'id e manda cassa, data, contanti e nota', [await db.chiudiCassa({ cassaId: 'c1', data: '2026-09-07', contato: 9500, nota: ' Contati in cassa ' }), ultima()],
+    ['nuovo-1', stabile(['chiudi_cassa', { dati: { cassa_id: 'c1', data: '2026-09-07', contato: 9500, nota: 'Contati in cassa' } }])])
+  await db.chiudiCassa({ cassaId: 'c1', data: '2026-09-07', contato: 0 })
+  ok('…senza nota è null', ultima(), stabile(['chiudi_cassa', { dati: { cassa_id: 'c1', data: '2026-09-07', contato: 0, nota: null } }]))
+  await db.annullaChiusuraCassa('h2')
+  ok('annullaChiusuraCassa', ultima(), stabile(['annulla_chiusura_cassa', { id: 'h2' }]))
+})
+
+await sezione('la chiusura di cassa sul database (client finto): gli errori', async () => {
+  const guasto = (error) => clientContab({ funzione: () => ({ data: null, error }) }).db
+  const chiudi = (d) => d.chiudiCassa({ cassaId: 'c1', data: '2026-09-07', contato: 9500 })
+  ok('un rifiuto del database arriva com\'è', await errore(() => chiudi(guasto({ code: '22023', message: 'Quel giorno è già chiuso: scegli un giorno dopo il 07/09/2026' }))), 'Quel giorno è già chiuso: scegli un giorno dopo il 07/09/2026')
+  ok('«già annullata» arriva com\'è', await errore(() => guasto({ code: 'P0002', message: 'La chiusura è già annullata' }).annullaChiusuraCassa('h1')), 'La chiusura è già annullata')
+  const vietato = await errore(() => chiudi(guasto({ code: '42501', message: 'la contabilità la cura l’amministrazione' })))
+  ok('chi non è amministrazione sente dire amministrazione, non segreteria', [/amministrazione/.test(vietato), /segreteria/.test(vietato)], [true, false])
+})
+
+await sezione('la chiusura di cassa sul database (client finto): senza 60-chiusura-cassa.sql', async () => {
+  const senzaFunzioni = (codice, messaggio) => clientContab({ funzione: (f) => ({ data: null, error: { code: codice, message: messaggio(f) } }) }).db
+  const senzaTabelle = (codice, messaggio) => clientContab({ lettura: (t) => ({ data: null, error: { code: codice, message: messaggio(t) } }) }).db
+  const scritture = {
+    chiudiCassa: (d) => d.chiudiCassa({ cassaId: 'c1', data: '2026-09-07', contato: 9500 }),
+    annullaChiusuraCassa: (d) => d.annullaChiusuraCassa('h1'),
+  }
+  for (const [codice, messaggio] of [['PGRST202', (f) => `Could not find the function public.${f} in the schema cache`], ['42883', (f) => `function ${f}(jsonb) does not exist`]])
+    for (const [nome, chiama] of Object.entries(scritture)) ok(`senza 60: ${nome} (${codice}) dice quale file lanciare`, await errore(() => chiama(senzaFunzioni(codice, messaggio))), MANCA_CHIUSURA)
+  for (const [codice, messaggio] of [['PGRST205', (t) => `Could not find the table 'public.${t}' in the schema cache`], ['42P01', (t) => `relation "${t}" does not exist`]])
+    ok(`senza 60: chiusure (${codice}) dice quale file lanciare`, await errore(() => senzaTabelle(codice, messaggio).chiusure()), MANCA_CHIUSURA)
+  // Il 59 manca davvero un'altra cosa: il messaggio resta quello della contabilità, non della chiusura.
+  ok('senza 59 le chiamate di prima dicono ancora 59', await errore(() => senzaFunzioni('PGRST202', (f) => `Could not find the function public.${f} in the schema cache`).registraMovimento({ tipo: 'entrata', data: '2026-09-10', importo: 4000, voceId: 'v1', cassaId: 'c2', descrizione: 'Offerta' })), MANCA_CONTABILITA)
 })
 
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')

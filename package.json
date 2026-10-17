@@ -28,6 +28,7 @@
     "prova:firma": "node scripts/prova-firma.mjs",
     "prova:firma-tratti": "node scripts/prova-firma-tratti.mjs",
     "prova:ricevuta": "node scripts/prova-ricevuta.mjs",
+    "prova:chiusura-pdf": "node scripts/prova-chiusura-pdf.mjs",
     "prova:pagamenti": "node scripts/prova-pagamenti.mjs",
     "prova:prove": "node scripts/prova-prove.mjs",
     "prova:ricerca": "node scripts/prova-ricerca.mjs",

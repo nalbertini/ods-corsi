@@ -1,0 +1,41 @@
+{
+ "pages": [
+  {
+   "id": "page-1",
+   "name": "Chiusura cassa · proposta"
+  }
+ ],
+ "artboards": [
+  {
+   "file": "ChiudiCassa.dc.html",
+   "title": "CASSE · chiudi la cassa (computer)",
+   "x": 0,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "ChiudiCassaTelefono.dc.html",
+   "title": "CASSE · chiudi la cassa (telefono)",
+   "x": 1520,
+   "y": 300,
+   "page": "page-1"
+  },
+  {
+   "file": "FoglioPdf.dc.html",
+   "title": "Il foglio PDF della chiusura",
+   "x": 2000,
+   "y": 300,
+   "page": "page-1"
+  }
+ ],
+ "annotations": [
+  {
+   "id": "titolo",
+   "kind": "title1",
+   "x": 0,
+   "y": 0,
+   "maxW": 1280,
+   "text": "Chiusura di cassa: il conteggio dei contanti, la differenza nei conti e il foglio PDF"
+  }
+ ]
+}

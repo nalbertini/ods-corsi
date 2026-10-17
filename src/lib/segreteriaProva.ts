@@ -26,7 +26,29 @@ import { loadHistory } from '../../timer/src/lib/storage'
 import { clipProva } from './voceProva'
 import { agganciaPerNome, cosaNonVaListino, LISTINO_PREDEFINITO, listinoDa, listinoProva, salvaListinoProva } from './listino'
 import { cosaNonVaDiretto, trovaPagatori, type PagamentoDiretto } from './pagamenti'
-import { cosaNonVaGiroconto, cosaNonVaMovimento, cosaNonVaSaldo, cosaNonVaVoce, NOME_CASSA_CONTANTI, NOME_CASSA_CONTO, oggiARoma, primoMovimentoManuale, righeMovimenti, VOCE_CORSI, VOCE_QUOTA } from './contabilita'
+import {
+  cosaNonVaAnnulloChiusura,
+  cosaNonVaAnnulloMovimento,
+  cosaNonVaChiusura,
+  cosaNonVaGiroconto,
+  cosaNonVaMovimento,
+  cosaNonVaPrevisto,
+  cosaNonVaSaldo,
+  cosaNonVaVoce,
+  dalDellaChiusura,
+  elencoMovimenti,
+  NOME_CASSA_CONTANTI,
+  NOME_CASSA_CONTO,
+  oggiARoma,
+  previstoCassa,
+  primoMovimentoManuale,
+  righeMovimenti,
+  ultimaChiusura,
+  VOCE_CORSI,
+  VOCE_DIFFERENZA,
+  VOCE_QUOTA,
+  type VoceContabile,
+} from './contabilita'
 import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 
 /**
@@ -77,16 +99,27 @@ export function creaSegreteriaProva(): DatiSegreteria {
   const ieri = () => chiaveGiorno(new Date(Date.now() - GIORNO))
   const salva = () => archivio.salva()
   // Le casse e le voci di partenza, finché la segreteria non ne cambia: due casse a zero e le due voci degli incassi.
+  // Le voci della segreteria, o quelle di partenza; la chiusura di cassa scrive da sola «Differenza di cassa»: c'è sempre, anche in un archivio fatto prima.
+  const vociDiPartenza = (): VoceContabile[] => {
+    const base: VoceContabile[] = a().voci ?? [
+      { id: 'voce-quota', nome: VOCE_QUOTA, tipo: 'entrata', diSistema: true, attiva: true },
+      { id: 'voce-corsi', nome: VOCE_CORSI, tipo: 'entrata', diSistema: true, attiva: true },
+    ]
+    if (base.some((v) => v.nome === VOCE_DIFFERENZA)) return base
+    return [
+      ...base,
+      { id: 'voce-differenza-entrata', nome: VOCE_DIFFERENZA, tipo: 'entrata', diSistema: true, attiva: true },
+      { id: 'voce-differenza-uscita', nome: VOCE_DIFFERENZA, tipo: 'uscita', diSistema: true, attiva: true },
+    ]
+  }
   const contabilita = () => ({
     casse: a().casse ?? [
       { id: 'cassa-contanti', nome: NOME_CASSA_CONTANTI, saldoIniziale: 0 },
       { id: 'cassa-conto', nome: NOME_CASSA_CONTO, saldoIniziale: 0 },
     ],
-    voci: a().voci ?? [
-      { id: 'voce-quota', nome: VOCE_QUOTA, tipo: 'entrata' as const, diSistema: true, attiva: true },
-      { id: 'voce-corsi', nome: VOCE_CORSI, tipo: 'entrata' as const, diSistema: true, attiva: true },
-    ],
+    voci: vociDiPartenza(),
     movimenti: a().movimenti ?? [],
+    chiusure: a().chiusure ?? [],
   })
   /** Trenta giorni dopo la scadenza il file se ne va, la data resta: come `pulisci_certificati` del database. */
   const potaCertificati = () => {
@@ -961,7 +994,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
     async salvaSaldoCassa(id, saldo, dal) {
       if (!contabilita().casse.some((c) => c.id === id)) throw new Error('La cassa non c’è')
       const manuali = righeMovimenti([], contabilita().movimenti, contabilita().voci)
-      const no = cosaNonVaSaldo(saldo, dal, { oggi: oggiARoma(), primoMovimento: primoMovimentoManuale(manuali, id) })
+      const chiusa = contabilita().chiusure.some((k) => k.cassaId === id && !k.annullataIl)
+      const no = cosaNonVaSaldo(saldo, dal, { oggi: oggiARoma(), primoMovimento: primoMovimentoManuale(manuali, id), chiusa })
       if (no) throw new Error(no)
       a().casse = contabilita().casse.map((c) => {
         if (c.id !== id) return c
@@ -972,8 +1006,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async registraMovimento(d) {
-      const { voci, casse } = contabilita()
-      const no = cosaNonVaMovimento(d, voci, casse, oggiARoma())
+      const { voci, casse, chiusure } = contabilita()
+      const no = cosaNonVaMovimento(d, voci, casse, oggiARoma(), chiusure)
       if (no) throw new Error(no)
       const id = `m-${unico()}`
       a().movimenti = [
@@ -985,8 +1019,8 @@ export function creaSegreteriaProva(): DatiSegreteria {
     },
 
     async registraGiroconto(d) {
-      const { casse } = contabilita()
-      const no = cosaNonVaGiroconto(d, casse, oggiARoma())
+      const { casse, chiusure } = contabilita()
+      const no = cosaNonVaGiroconto(d, casse, oggiARoma(), chiusure)
       if (no) throw new Error(no)
       const nome = (id: string) => casse.find((c) => c.id === id)?.nome ?? ''
       const id = `m-${unico()}`
@@ -1002,7 +1036,69 @@ export function creaSegreteriaProva(): DatiSegreteria {
       const m = contabilita().movimenti.find((x) => x.id === id)
       if (!m) throw new Error('Il movimento non c’è')
       if (m.annullatoIl) throw new Error('Il movimento è già annullato')
+      const chiuso = cosaNonVaAnnulloMovimento(righeMovimenti([], [m], contabilita().voci)[0], contabilita().chiusure)
+      if (chiuso) throw new Error(chiuso)
       a().movimenti = contabilita().movimenti.map((x) => (x.id === id ? { ...x, annullatoIl: new Date().toISOString() } : x))
+      salva()
+    },
+
+    async chiusure() {
+      return contabilita().chiusure.map((k) => ({ ...k }))
+    },
+
+    async chiudiCassa(d) {
+      const { casse, voci, movimenti, chiusure } = contabilita()
+      const no = cosaNonVaChiusura(d, casse, chiusure, oggiARoma())
+      if (no) throw new Error(no)
+      const cassa = casse.find((c) => c.id === d.cassaId)
+      if (!cassa) throw new Error('Scegli la cassa')
+      const nota = d.nota?.trim() || undefined
+      // Gli incassi in contanti si ricavano da ricevute e pagamenti a mano, come nell'elenco della schermata.
+      const elenco = elencoMovimenti(a().ricevute ?? [], a().pagamentiDiretti ?? [], [], casse, movimenti, voci)
+      const previsto = previstoCassa(casse, elenco, cassa.id, d.data)
+      const troppo = cosaNonVaPrevisto(previsto, d.contato)
+      if (troppo) throw new Error(troppo)
+      const differenza = d.contato - previsto
+      let movimentoId: string | undefined
+      if (differenza !== 0) {
+        const tipo = differenza > 0 ? 'entrata' : 'uscita'
+        const voce = voci.find((v) => v.nome === VOCE_DIFFERENZA && v.tipo === tipo)
+        movimentoId = `m-${unico()}`
+        a().movimenti = [
+          ...movimenti,
+          { id: movimentoId, tipo, data: d.data, importo: Math.abs(differenza), voceId: voce?.id, cassaId: cassa.id, descrizione: VOCE_DIFFERENZA, ...(nota ? { nota } : {}), creatoIl: new Date().toISOString() },
+        ]
+      }
+      const ultima = ultimaChiusura(chiusure, cassa.id)
+      const id = `k-${unico()}`
+      a().chiusure = [
+        ...chiusure,
+        {
+          id,
+          cassaId: cassa.id,
+          dal: dalDellaChiusura(cassa, ultima),
+          data: d.data,
+          previsto,
+          contato: d.contato,
+          differenza,
+          ...(nota ? { nota } : {}),
+          ...(movimentoId ? { movimentoId } : {}),
+          chiusaDa: 'Amministrazione',
+          chiusaIl: new Date().toISOString(),
+        },
+      ]
+      salva()
+      return id
+    },
+
+    async annullaChiusuraCassa(id) {
+      const { chiusure, movimenti } = contabilita()
+      const no = cosaNonVaAnnulloChiusura(id, chiusure)
+      if (no) throw new Error(no)
+      const adesso = new Date().toISOString()
+      const k = chiusure.find((x) => x.id === id)
+      a().chiusure = chiusure.map((x) => (x.id === id ? { ...x, annullataIl: adesso, annullataDa: 'Amministrazione' } : x))
+      if (k?.movimentoId) a().movimenti = movimenti.map((x) => (x.id === k.movimentoId ? { ...x, annullatoIl: adesso } : x))
       salva()
     },
 

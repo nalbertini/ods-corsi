@@ -148,8 +148,10 @@ const nome = (p: { nome: string; cognome: string } | null | undefined) => (p ? `
 
 /** Le tabelle che arrivano dopo lo schema, col file che le crea. */
 const MANCA_CONTABILITA = 'Il database non è ancora aggiornato per la contabilità: va lanciato 59-contabilita.sql'
+const MANCA_CHIUSURA = 'Il database non è ancora aggiornato per la chiusura della cassa: va lanciato 60-chiusura-cassa.sql'
 const TABELLE_DOPO: Array<[RegExp, string]> = [
   // Prima di `segnalazioni`, che le somiglia.
+  [/chiusure_cassa/, MANCA_CHIUSURA],
   [/voci_contabili|relation "(public\.)?(casse|movimenti)"|table 'public\.(casse|movimenti)'/, MANCA_CONTABILITA],
   [/sito_pagine|sito_menu|sito_redirect|salva_bozza_sito|pubblica_pagina_sito|cambia_indirizzo_sito|salva_menu_sito/, MANCA_SITO],
   [/segnalazioni_allegati/, MANCANO_ALLEGATI],
@@ -254,6 +256,8 @@ function guaio(e: { message?: string; code?: string } | null): Error {
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /cerca_pagatori|nomi_persone/.test(e.message ?? '')) return new Error(MANCA_AMMINISTRAZIONE)
   // Le funzioni della contabilità arrivano con 59-contabilita.sql.
   if ((e?.code === 'PGRST202' || e?.code === '42883') && /salva_voce|rinomina_voce|imposta_voce_attiva|imposta_saldo_cassa|registra_movimento|registra_giroconto|annulla_movimento|correggi_testo_movimento/.test(e.message ?? '')) return new Error(MANCA_CONTABILITA)
+  // Le funzioni della chiusura di cassa arrivano con 60-chiusura-cassa.sql.
+  if ((e?.code === 'PGRST202' || e?.code === '42883') && /chiudi_cassa|annulla_chiusura_cassa/.test(e.message ?? '')) return new Error(MANCA_CHIUSURA)
   if (e?.code === '42501' && /contabilità/.test(e.message ?? '')) return new Error('Non hai il permesso: la contabilità la cura l’amministrazione')
   // Il kanji arriva con 24-kanji.sql; due persone con lo stesso non si possono avere.
   if ((e?.code === '42703' || e?.code === 'PGRST204') && /kanji/.test(e.message ?? '')) return new Error('Il kanji non è ancora attivo sul database: va lanciato 24-kanji.sql')
@@ -1139,6 +1143,46 @@ export function creaSegreteriaSupabase(db: SupabaseClient): DatiSegreteria {
 
     async correggiTestoMovimento(id, descrizione, nota) {
       ok(await db.rpc('correggi_testo_movimento', { id, descrizione: descrizione.trim(), nota: nota?.trim() || null }))
+    },
+
+    async chiusure() {
+      // Le righe arrivano senza tipo dall'API: la forma è quella di 60-chiusura-cassa.sql.
+      const righe = ok(await tutteLeRighe((prima, ultima) => db.from('chiusure_cassa').select('*').order('data', { ascending: false }).order('id').range(prima, ultima))) as Array<{
+        id: string; cassa_id: string; dal: string; data: string; previsto: number; contato: number; differenza: number; nota: string | null
+        movimento_id: string | null; chiusa_da: string | null; chiusa_il: string; annullata_il: string | null; annullata_da: string | null
+      }>
+      // Chi ha chiuso (e chi ha annullato): nome e cognome, e un trattino se la persona non c'è più.
+      const ids = [...new Set(righe.flatMap((r) => [r.chiusa_da, r.annullata_da]).filter((x): x is string => !!x))]
+      const persone = ids.length ? (ok(await db.rpc('nomi_persone', { ids })) as Array<{ id: string; nome: string; cognome: string }>) : []
+      const chi = (id: string | null) => {
+        if (!id) return undefined
+        const p = persone.find((x) => x.id === id)
+        return p ? `${p.nome} ${p.cognome}` : '—'
+      }
+      return righe.map((r) => ({
+        id: r.id,
+        cassaId: r.cassa_id,
+        dal: r.dal,
+        data: r.data,
+        previsto: r.previsto,
+        contato: r.contato,
+        differenza: r.differenza,
+        ...(r.nota ? { nota: r.nota } : {}),
+        ...(r.movimento_id ? { movimentoId: r.movimento_id } : {}),
+        chiusaDa: chi(r.chiusa_da) ?? '—',
+        chiusaIl: r.chiusa_il,
+        ...(r.annullata_il ? { annullataIl: r.annullata_il } : {}),
+        ...(r.annullata_da ? { annullataDa: chi(r.annullata_da) } : {}),
+      }))
+    },
+
+    async chiudiCassa(d) {
+      const riga = ok(await db.rpc('chiudi_cassa', { dati: { cassa_id: d.cassaId, data: d.data, contato: d.contato, nota: d.nota?.trim() || null } })) as { id: string }
+      return riga.id
+    },
+
+    async annullaChiusuraCassa(id) {
+      ok(await db.rpc('annulla_chiusura_cassa', { id }))
     },
 
     async cercaPagatori(scritto) {

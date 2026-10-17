@@ -2,7 +2,7 @@ import type { Segnalata } from './segnalate'
 import type { Segnalazione } from './segnalazioni'
 import type { StatoSito } from './sitoProva'
 import type { ImmagineSito } from './sitoImmagini'
-import type { Cassa, MovimentoManuale, VoceContabile } from './contabilita'
+import type { Cassa, ChiusuraCassa, MovimentoManuale, VoceContabile } from './contabilita'
 import type { Ruolo, StatoSessione } from './sala'
 import type { PagamentoDiretto } from './pagamenti'
 import type { EnteRicevuta, Ricevuta } from './ricevute'
@@ -152,6 +152,8 @@ export interface Archivio {
   casse?: Cassa[]
   voci?: VoceContabile[]
   movimenti?: MovimentoManuale[]
+  /** Le chiusure della Cassa Contanti (60-chiusura-cassa.sql). */
+  chiusure?: ChiusuraCassa[]
   /** I dati dell'associazione per le ricevute, se la segreteria li ha cambiati. */
   enteRicevute?: EnteRicevuta
   /** Nascita, residenza e genitore degli iscritti importati, per persona (18-anagrafiche.sql). */

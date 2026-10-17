@@ -280,6 +280,11 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
     and to_regclass('public.voci_contabili') is not null
     and exists (select 1 from dentro where nome = 'registra_movimento' and corpo like '%contabilita_porta()%')
     and exists (select 1 from dentro where nome = 'registra_giroconto')),
+  ('60-chiusura-cassa.sql', 'la chiusura di cassa: il contato dei contanti, la differenza e i giorni chiusi',
+    to_regclass('public.chiusure_cassa') is not null
+    and exists (select 1 from dentro where nome = 'chiudi_cassa' and corpo like '%contabilita_porta()%')
+    and exists (select 1 from dentro where nome = 'annulla_chiusura_cassa')
+    and exists (select 1 from dentro where nome = 'registra_movimento' and corpo like '%cassa_giorno_chiuso%')),
   ('55-amministrazione.sql', 'il ruolo amministrazione, per chi cura i conti',
     exists (select 1 from pg_enum e where e.enumtypid = 'ruolo'::regtype and e.enumlabel = 'amministrazione')
     and exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'persone' and column_name = 'anche_amministrazione')
