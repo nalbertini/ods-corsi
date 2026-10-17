@@ -210,7 +210,26 @@ ${GRIGLIE_LUNGHE}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}
+.pagina-hero:has(>.intro:only-child) .intro{max-width:none;flex-basis:100%}
+.slogan.giallo{grid-column:auto;background:var(--giallo);color:var(--inchiostro);justify-content:flex-end;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:clamp(40px,5.3vw,76px);line-height:.9;padding:clamp(20px,2.5vw,36px)}
+.foto-citazioni.slogan{margin:0;grid-template-columns:minmax(0,1fr) minmax(0,clamp(300px,32vw,460px));height:clamp(300px,41.7vw,600px)}
+.ampie>*,.pannello>*{padding:clamp(20px,2.2vw,32px);justify-content:space-between;gap:12px;font-size:clamp(17px,1.46vw,21px);line-height:1.45}
+.ampie h3{font-size:clamp(44px,4.45vw,64px);line-height:.95}
+.pannello>*{padding:clamp(22px,3.3vw,48px);min-height:0;gap:20px;justify-content:flex-start}
+.pannello h3{font-size:clamp(66px,8.3vw,130px);line-height:.9}
+.pannello p{max-width:820px;font-size:clamp(17px,1.7vw,24px);line-height:1.4}
+.numeri{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:1fr}
+.numeri.numeri.numeri.numeri>*{grid-column:auto}
+.numeri>*{padding:clamp(16px,1.7vw,24px) clamp(16px,1.9vw,28px);gap:12px;justify-content:space-between}
+.numeri .cifra{font-size:clamp(70px,10.4vw,150px)}
+.numeri .scritta{font-size:clamp(16px,1.4vw,20px);line-height:1.45}
 @media (min-width:901px){
+.fascia.fascia .ampie>*:not(.foto){min-height:clamp(280px,27.8vw,400px)}
+.fascia.fascia .numeri>*:not(.foto){min-height:clamp(150px,17.4vw,250px)}
+.pagina-hero:has(>.intro:only-child){padding-bottom:72px}
+.pagina-hero:has(>.intro:only-child) .intro{display:grid;grid-template-columns:1fr minmax(0,520px);gap:0 56px;align-items:end}
+.pagina-hero:has(>.intro:only-child) .intro h1{grid-row:1 / span 2;font-size:clamp(56px,13.9vw,200px);margin:0}
+.pagina-hero:has(>.intro:only-child) .intro p{margin-bottom:28px;font-size:22px}
 .sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
 }
 @media (max-width:900px){
@@ -231,6 +250,16 @@ ${GRIGLIE_LUNGHE}
 .foto-fila.quattro img{aspect-ratio:3/4}
 .testata nav{order:3;width:100%}
 .invito{margin-top:48px}
+.pagina-hero:has(>.intro:only-child) .intro h1{font-size:clamp(56px,21.5vw,200px)}
+.foto-citazioni.slogan{height:auto;grid-template-columns:1fr}
+.foto-citazioni.slogan .foto img{height:300px;aspect-ratio:auto}
+.slogan.giallo{min-height:200px}
+.pagina-hero:has(>.intro:only-child){padding:20px var(--margine) 36px}
+.fascia{padding-bottom:48px}
+.slogan.giallo{font-size:min(11.8vw,60px)}
+.fascia .foto-fila.quattro img{aspect-ratio:auto;height:200px}
+.numeri{grid-auto-flow:row;grid-template-columns:repeat(2,1fr)}
+.numeri>*{min-height:150px}
 }
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')

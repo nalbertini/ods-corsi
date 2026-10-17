@@ -236,6 +236,76 @@ function sezione(titolo: string, corpo: Blocco[]): string {
   return `<section class="sezione"><h2>${titolo}</h2>${prima.length ? corpoSenzaSottotitoli(prima, titolo) : ''}${tessereDaSottotitoli(gruppi)}</section>`
 }
 
+/** I colori dei pannelli (un `h3` solo con il suo testo) e delle coppie di tessere dell'introduzione, nell'ordine del design. */
+const PANNELLI = ['inchiostro', 'giallo'] as const
+const COPPIE = ['chiara', 'blu'] as const
+const NUMERI_INTRO = ['giallo', 'blu', 'inchiostro'] as const
+
+/**
+ * L'introduzione (il testo prima del primo `h2`) a fasce, come la pagina Chi siamo del design. Si legge in ordine:
+ *  - una foto sola e una citazione sola: la foto a sinistra e la frase grande, gialla, a destra;
+ *  - uno o più `h3` di fila, ognuno con i suoi paragrafi: una sola è un pannello a tutta riga, più sono tessere larghe;
+ *  - un `ul` di 2–6 voci con il grassetto iniziale: i numeri grandi;
+ *  - altre foto di fila: la fila di foto;
+ *  - il resto è testo in colonna.
+ * Senza `h3` né foto con citazione l'introduzione resta testo in colonna (restituisce null).
+ */
+function introduzione(b: Blocco[]): string | null {
+  // Si attiva con un `h3` o con foto + citazione: una foto e un elenco da soli restano testo in colonna, come prima.
+  if (!b.some((x, i) => x.tag === 'h3' || (immagine(x) !== null && b[i + 1]?.tag === 'blockquote'))) return null
+  const fuori: string[] = []
+  let testo: string[] = []
+  let pannelli = 0
+  const fascia = (h: string) => fuori.push(`<section class="sezione fascia">${h}</section>`)
+  const chiudiTesto = () => {
+    if (testo.length) fuori.push(`<div class="testo">${testo.join('')}</div>`)
+    testo = []
+  }
+  for (let i = 0; i < b.length; ) {
+    const x = b[i]
+    if (immagine(x) !== null) {
+      let j = i
+      while (j < b.length && immagine(b[j]) !== null) j++
+      chiudiTesto()
+      if (j - i === 1 && b[j]?.tag === 'blockquote' && b[j + 1]?.tag !== 'blockquote') {
+        fascia(`<div class="foto-citazioni slogan"><figure class="tessera foto">${immagine(x)}</figure><blockquote class="tessera slogan giallo">${contenuto(b[j])}</blockquote></div>`)
+        i = j + 1
+      } else {
+        fascia(corpoSenzaSottotitoli(b.slice(i, j), ''))
+        i = j
+      }
+      continue
+    }
+    if (x.tag === 'h3') {
+      const gruppi: Array<{ titolo: string; corpo: string }> = []
+      let j = i
+      while (b[j]?.tag === 'h3') {
+        let k = j + 1
+        while (b[k]?.tag === 'p') k++
+        gruppi.push({ titolo: contenuto(b[j]), corpo: b.slice(j + 1, k).map((y) => y.html).join('') })
+        j = k
+      }
+      chiudiTesto()
+      const solo = gruppi.length === 1
+      const colore = (k: number) => (solo ? PANNELLI[pannelli++ % PANNELLI.length] : COPPIE[k % COPPIE.length])
+      fascia(`<div class="tessere n-${gruppi.length} ${solo ? 'pannello' : 'ampie'}">${gruppi.map((g, k) => tessera(colore(k), g.titolo, g.corpo)).join('')}</div>`)
+      i = j
+      continue
+    }
+    const numeri = numeriDiUnElenco(x)
+    if (numeri) {
+      chiudiTesto()
+      fascia(`<div class="tessere n-${numeri.length} numeri">${numeri.map((n, k) => `<article class="tessera ${NUMERI_INTRO[k % NUMERI_INTRO.length]} numero"><strong class="cifra">${n.cifra}</strong>${n.scritta ? ` <span class="scritta">${n.scritta}</span>` : ''}</article>`).join('')}</div>`)
+      i++
+      continue
+    }
+    testo.push(x.html)
+    i++
+  }
+  chiudiTesto()
+  return fuori.join('')
+}
+
 /**
  * Il testo di una pagina a tessere. Il chiamante lo usa solo per le pagine non di legge che hanno almeno un `h2`:
  * senza titoli il testo resta una colonna, come prima. Quello che precede il primo `h2` è l'introduzione, in colonna.
@@ -246,7 +316,9 @@ export function impagina(testoPulito: string): string {
   if (primo < 0) return testoPulito.trim() ? `<div class="testo">${testoPulito}</div>` : ''
   const intro = b.slice(0, primo).map((x) => x.html).join('')
   const fuori: string[] = []
-  if (intro.trim()) fuori.push(`<div class="testo">${intro}</div>`)
+  const fasce = introduzione(b.slice(0, primo))
+  if (fasce !== null) fuori.push(fasce)
+  else if (intro.trim()) fuori.push(`<div class="testo">${intro}</div>`)
   let i = primo
   while (i < b.length) {
     const titolo = contenuto(b[i])
