@@ -11,8 +11,8 @@
 // `incrocio_tessere` (supabase/prova/tessere.sql, stessi dati e stessi esiti).
 // Le prove gratuite non sono iscrizioni. I motivi delle righe non abbinate
 // non sono mai il testo grezzo dell'API.
-// Dopo il design approvato: la quinta casella di COSA MANCA (sezione 6) vale
-// solo per la «scelta A» del canvas docs/design-canvas/tessere.
+// La quinta casella di COSA MANCA (scelta A, confermata dall'utente) è la sezione 6:
+// canvas docs/design-canvas/tessere.
 // ---------------------------------------------------------------------------
 process.env.TZ = 'Europe/Rome'
 
@@ -134,7 +134,7 @@ ok('COSA ENTRA: i conti dell\'anteprima', m.contiImport({ nuove: 248, gia_presen
   [['248', 'tessere nuove'], ['6', 'già in app, non cambiano'], ['3', 'righe non abbinate']])
 ok('una nuova sola: singolare', m.contiImport({ nuove: 1, gia_presenti: 0, non_abbinate: [] })[0], ['1', 'tessera nuova'])
 
-console.log('\nLa quinta casella di COSA MANCA (scelta A del canvas, da confermare)')
+console.log('\nLa quinta casella di COSA MANCA (scelta A del canvas, confermata)')
 {
   const C = m.cosaManca
   ok('CASELLE: cinque, TESSERE prima delle richieste', C.CASELLE, ['appelli', 'certificati', 'pagamenti', 'tessere', 'richieste'])
