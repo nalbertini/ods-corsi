@@ -263,7 +263,8 @@ console.log('\nPiede e invito')
   const pie = dich(R, V, (x) => x === '.piede')
   ok('il piede è una tessera scura #0d2a3d', [sfondo(pie), piede !== ''], [INCHIOSTRO, true])
   ok('i recapiti di oggi: indirizzo, telefono, Instagram, Facebook', [piede.includes(C.indirizzo ?? '?'), piede.includes(C.telefono ?? '?'), piede.includes(C.instagram ?? '?'), piede.includes(C.facebook ?? '?')], [true, true, true, true])
-  ok('e niente di più: quattro voci senza voci di piede', conta(piede, /<li>/g), 4)
+  // Le pagine del menu stanno anche nel piede, in una colonna a parte (design): i recapiti sono comunque solo quattro.
+  ok('e niente di più: quattro voci senza voci di piede', conta(piede.replace(/<nav class="col"[\s\S]*?<\/nav>/, ''), /<li>/g), 4)
   const inv = (t) => (t.match(/<a class="invito"[\s\S]*?<\/a>/) || [''])[0]
   const j = c(con, 'judo/index.html')
   ok('l’invito in fondo: link a /contatti/ con «Prova», dopo il contenuto e prima del piede', [/href="\/contatti\/"/.test(inv(j)), />Prova</.test(inv(j)), j.indexOf('</main>') < j.indexOf('class="invito"'), j.indexOf('class="invito"') < j.indexOf('<footer')], [true, true, true, true])

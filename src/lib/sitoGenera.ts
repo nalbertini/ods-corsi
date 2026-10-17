@@ -3,6 +3,7 @@ import { indirizzoValido, slugValido } from './sitoPagine'
 import { pulisciTesto } from './sitoTesto'
 import { GRIGLIA_MASSIMA, collage, impagina } from './sitoLayout'
 import { CSS_CORSI } from './sitoCorsi'
+import { CSS_INTERNE } from './sitoInterne'
 import { CONTATTI } from './sito'
 
 /**
@@ -254,6 +255,7 @@ ${GRIGLIE_LUNGHE}
 .invito{margin-top:48px}
 }
 ${CSS_CORSI}
+${CSS_INTERNE}
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
 
@@ -280,7 +282,7 @@ function voci(dove: 'menu' | 'footer', c: Contesto): Array<{ etichetta: string; 
 }
 
 const rel = (href: string) => (/^https?:/i.test(href) ? ' rel="noopener noreferrer"' : '')
-const lista = (v: Array<{ etichetta: string; href: string }>) => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}>${esc(x.etichetta)}</a></li>`).join('')
+const lista = (v: Array<{ etichetta: string; href: string }>, corrente = '') => v.map((x) => `<li><a href="${esc(x.href)}"${rel(x.href)}${x.href === corrente ? ' aria-current="page"' : ''}>${esc(x.etichetta)}</a></li>`).join('')
 
 /**
  * Il testo di una pagina, ripulito, con solo le immagini ammesse: quelle del sito
@@ -303,15 +305,16 @@ function testoDellaPagina(testo: string, ospiti: string[]): string {
   })
 }
 
-function testata(c: Contesto, conContatti: boolean): string {
-  const menu = lista(voci('menu', c))
+function testata(c: Contesto, conContatti: boolean, corrente = ''): string {
+  const menu = lista(voci('menu', c), corrente)
   return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${TESTI.provaTestata}</a>` : ''}</header>`
 }
 
 function piede(c: Contesto): string {
   const f = lista(voci('footer', c))
+  const pagine = lista(voci('menu', c))
   const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
-  return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne">${f ? `<div><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}<div><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div></div><div class="fine"><span>© ${NOME}</span></div></footer>`
+  return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><div class="col"><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div>${pagine ? `<nav class="col" aria-label="Pagine"><ul>${pagine}</ul></nav>` : ''}${f ? `<div class="col"><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}<div class="fine"><span>© ${NOME}</span></div></footer>`
 }
 
 function invito(conContatti: boolean): string {
@@ -330,10 +333,10 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   // Solo la Home ha il collage di foto e numeri in testata; quello che non entra nel collage resta nel testo.
   const inTestata = p.slug === 'home' && !p.diLegge ? collage(pulito) : { html: '', resto: pulito }
   const testo = inTestata.resto
-  const t = testata(c, conContatti)
+  const t = testata(c, conContatti, percorso(p.slug))
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
-    : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
+    : `<section class="pagina-hero${p.slug === 'home' ? '' : ' interna'}"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
   const corpo = `${t}<main>${intro}${testo.trim() ? (!p.diLegge && /<h[23][\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
 }

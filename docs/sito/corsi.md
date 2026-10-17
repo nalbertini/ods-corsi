@@ -44,5 +44,7 @@ icone). Prove: `npm run prova:sito-corsi`.
 - Tra le tessere ci sono 6px come in tutto il sito; nel design sul telefono
   sono a contatto.
 - Il paragrafo di apertura è quello lungo del desktop anche sul telefono.
-- Testata della pagina (titolo da 200px con la frase a destra), invito
-  «Prova» e piede sono i pezzi comuni a tutte le pagine interne: non cambiano qui.
+- Il menu resta alto 44px (nel design 38px) per il tocco da telefono.
+- Il pulsante in testata dice «Prova una settimana · 5 €» anche sul telefono; nel design è «Prova».
+- Il piede ha in più la riga «© Officine dello Sport» e i titoli delle colonne (nascosti alla vista).
+- Sotto i 1280px il titolo grande sta sopra la frase, come sul telefono: a 200px le due colonne non ci stanno.

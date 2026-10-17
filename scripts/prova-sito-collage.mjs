@@ -258,7 +258,7 @@ console.log('\n1. Il collage c’è solo nella home che non è di legge (R1)')
   const leggeAltra = pag(testo, { slug: 'privacy', diLegge: true })
   ok('home di legge: il testo c’è tutto (foto e voci dell’elenco), come in un’altra pagina di legge', [main(legge) === main(leggeAltra), main(legge).includes('f1.webp'), conta(main(legge), /<li>/g)], [true, true, 3])
   const solo = '<p>Solo parole</p>' + SEZIONI
-  ok('introduzione senza foto né elenco: il main della home è identico a quello di un’altra pagina (R13)', main(pag(solo)) === main(pag(solo, { slug: 'chi-siamo' })) && main(pag(solo)).includes('Solo parole'), true)
+  ok('introduzione senza foto né elenco: il main della home è identico a quello di un’altra pagina (R13)', main(pag(solo)) === main(pag(solo, { slug: 'chi-siamo' })).replace(' interna"', '"') && main(pag(solo)).includes('Solo parole'), true)
   ok('…e la testata non ha tessere', tessere(hero(pag(solo))).length, 0)
 }
 
