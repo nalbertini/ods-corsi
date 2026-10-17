@@ -7,12 +7,17 @@
  *  - ogni `h2` apre una sezione col titolo grande;
  *  - ogni `h3` con quel che lo segue (fino al prossimo `h3` o `h2`) è una tessera,
  *    e le tessere di una sezione sono una griglia a filo;
+ *  - i `h3` prima del primo `h2` sono i recapiti (pagina Contatti): una griglia senza titolo, e quel che segue
+ *    la prima foto (la mappa, il pulsante delle indicazioni, le foto) sta nella stessa sezione;
  *  - in una sezione senza `h3`, un `ul` corto è una fila di tessere, più
  *    citazioni di fila scorrono di lato, una foto sola o una fila di foto sono
  *    tessere foto; il resto sta in colonna, come prima.
  * Niente script: lo scorrimento di lato è solo CSS (`scroll-snap`).
  */
 
+import { CONTATTI } from './sito'
+
+const NOME = 'Officine dello Sport'
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 
 /** I colori delle tessere, nell'ordine in cui ruotano; a ogni sezione si riparte da blu. */
@@ -118,18 +123,18 @@ function carosello(q: Blocco[], titolo: string): string {
 export const GRIGLIA_MASSIMA = 16
 
 /** Il contenitore di N tessere: la griglia si sceglie dalla classe `n-N`. */
-function griglia(n: number, figli: string): string {
-  return `<div class="tessere n-${n}">${figli}</div>`
+function griglia(n: number, figli: string, classe = ''): string {
+  return `<div class="tessere n-${n}${classe}">${figli}</div>`
 }
 
 /** Le tessere in una o più griglie: oltre le 16 si spezzano a gruppi di 12, così nessuna griglia ha celle vuote. */
 const TESSERE_PER_GRIGLIA = 12
-function griglie(tessere: string[]): string {
-  if (tessere.length <= GRIGLIA_MASSIMA) return griglia(tessere.length, tessere.join(''))
+function griglie(tessere: string[], classe = ''): string {
+  if (tessere.length <= GRIGLIA_MASSIMA) return griglia(tessere.length, tessere.join(''), classe)
   const fuori: string[] = []
   for (let i = 0; i < tessere.length; i += TESSERE_PER_GRIGLIA) {
     const pezzo = tessere.slice(i, i + TESSERE_PER_GRIGLIA)
-    fuori.push(griglia(pezzo.length, pezzo.join('')))
+    fuori.push(griglia(pezzo.length, pezzo.join(''), classe))
   }
   return fuori.join('')
 }
@@ -180,15 +185,41 @@ const tessera = (colore: string, titolo: string, resto: string, prima = '') =>
   `<article class="tessera ${colore}">${prima}${titolo.trim() ? `<h3>${titolo}</h3>` : ''}${resto}</article>`
 
 /** Le tessere di una sezione con sottotitoli: una per `h3`, con quel che lo segue. */
-function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>): string {
+function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>, recapiti = false): string {
   const domande = gruppi.length > 0 && gruppi.every((g) => /\?\s*$/.test(testoSolo(g.titolo)))
   const html = gruppi.map((g, i) => {
     const colore = domande ? 'chiara' : coloreDi(i, gruppi.length)
     const foto = g.corpo.map(immagine).filter((x): x is string => x !== null)
     const resto = g.corpo.filter((b) => immagine(b) === null).map((b) => b.html).join('')
-    return tessera(colore, g.titolo, resto, foto.join(''))
+    // Il valore di un recapito (il primo paragrafo) corto, come un numero di telefono, esce più grande.
+    const valore = g.corpo.find((b) => b.tag === 'p')
+    const breve = recapiti && valore && testoSolo(valore.html).length <= VALORE_BREVE ? ' breve' : ''
+    return tessera(colore + breve, g.titolo, resto, foto.join(''))
   })
-  return griglie(html)
+  return griglie(html, recapiti ? ' recapiti' : '')
+}
+
+/** I recapiti della pagina Contatti: i colori del design, dal giallo. */
+const RECAPITI = ['giallo', 'blu', 'inchiostro', 'chiara'] as const
+const VALORE_BREVE = 14
+
+/**
+ * L'apertura della pagina Contatti: i `h3` prima del primo `h2` sono tessere (il corpo di ognuna finisce alla prima
+ * foto); da lì in poi (mappa, indicazioni, foto) è una parte senza sottotitoli. Quel che precede il primo `h3` resta testo.
+ */
+function apertura(b: Blocco[], primo: number): string {
+  const gruppi: Array<{ titolo: string; corpo: Blocco[] }> = []
+  let fine = b.length
+  for (let i = primo; i < b.length; i++) {
+    if (b[i].tag === 'h3') gruppi.push({ titolo: contenuto(b[i]), corpo: [] })
+    else if (immagine(b[i]) !== null) { fine = i; break }
+    else gruppi[gruppi.length - 1].corpo.push(b[i])
+  }
+  const testa = b.slice(0, primo).map((x) => x.html).join('')
+  const resto = b.slice(fine)
+  // La prima foto dopo i recapiti è la mappa: il segnaposto, la targhetta e il credito sono fissi, come nel design.
+  const mappa = (x: string) => x.replace(/<figure class="tessera foto larga">([\s\S]*?)<\/figure>/, `<figure class="tessera foto larga mappa">$1<span class="segnaposto" aria-hidden="true"></span><span class="targhetta">${esc(NOME)}<span>${esc(CONTATTI.indirizzo)}</span></span><span class="credito">© OpenStreetMap contributors</span></figure>`)
+  return `${testa.trim() ? `<div class="testo">${testa}</div>` : ''}<section class="sezione apertura">${tessereDaSottotitoli(gruppi, true)}${resto.length ? mappa(corpoSenzaSottotitoli(resto, '')) : ''}</section>`
 }
 
 /** Un pezzo di sezione senza sottotitoli (o prima del primo): colonna, citazioni, foto, elenco a tessere. */
@@ -272,15 +303,20 @@ function sezione(titolo: string, corpo: Blocco[]): string {
 
 /**
  * Il testo di una pagina a tessere. Il chiamante lo usa solo per le pagine non di legge che hanno almeno un `h2`:
- * senza titoli il testo resta una colonna, come prima. Quello che precede il primo `h2` è l'introduzione, in colonna.
+ * senza titoli il testo resta una colonna, come prima. Quello che precede il primo `h2` è l'introduzione, in colonna;
+ * nella pagina Contatti (`conRecapiti`) i suoi `h3` sono invece i recapiti.
  */
-export function impagina(testoPulito: string): string {
+export function impagina(testoPulito: string, conRecapiti = false): string {
   const b = blocchi(testoPulito)
   const primo = b.findIndex((x) => x.tag === 'h2')
   if (primo < 0) return testoPulito.trim() ? `<div class="testo">${testoPulito}</div>` : ''
-  const intro = b.slice(0, primo).map((x) => x.html).join('')
   const fuori: string[] = []
-  if (intro.trim()) fuori.push(`<div class="testo">${intro}</div>`)
+  const h3 = conRecapiti ? b.slice(0, primo).findIndex((x) => x.tag === 'h3') : -1
+  if (h3 >= 0) fuori.push(apertura(b.slice(0, primo), h3))
+  else {
+    const intro = b.slice(0, primo).map((x) => x.html).join('')
+    if (intro.trim()) fuori.push(`<div class="testo">${intro}</div>`)
+  }
   let i = primo
   while (i < b.length) {
     const titolo = contenuto(b[i])

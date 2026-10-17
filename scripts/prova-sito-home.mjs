@@ -145,14 +145,14 @@ console.log('\n4. Il collage pieno della testata (design TatamiBlu)')
   ok('la nota è da 15px', /\.collage\.pieno \.nota[^{]*\{[^}]*font-size:\s*15px/.test(CSS), true)
 }
 
-console.log('\n5. Il pulsante in testata')
+console.log('\n6. Il pulsante in testata')
 {
   const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [], rinvii: [] })['index.html'] ?? ''
-  ok('in testata: «Prova una settimana · 5 €» verso /contatti/', /<header class="testata">[\s\S]*<a class="pulsante piccolo" href="\/contatti\/">Prova una settimana · 5 €<\/a>/.test(h), true)
+  ok('in testata: «Prova una settimana · 5 €» verso /contatti/', /<header class="testata">[\s\S]*<a class="pulsante piccolo" href="\/contatti\/">Prova<span class="estensione"> una settimana · 5 €<\/span><\/a>/.test(h), true)
   ok('l’invito in fondo resta «Prova»', /class="parola">Prova</.test(h), true)
 }
 
-console.log('\n6. Il piede è una scheda scura in riga')
+console.log('\n7. Il piede è una scheda scura in riga')
 {
   const CSS = pagina('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
   const r = (re) => [...CSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => re.test(m[1].trim())).map((m) => m[2]).join(';')

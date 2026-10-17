@@ -56,7 +56,7 @@ export interface DatiSito {
 const TESTI = {
   nome: 'Officine dello Sport',
   prova: 'Prova',
-  provaTestata: 'Prova una settimana · 5 €',
+  provaCoda: 'una settimana · 5 €',
   contattaci: 'Contattaci',
   invito: 'Vieni a provare: ti aspettiamo in',
   altriLink: 'Altri link',
@@ -101,6 +101,7 @@ const GRIGLIE_LUNGHE = Array.from({ length: GRIGLIA_MASSIMA - 7 }, (_, i) => i +
  * Sul telefono ogni tessera della testata occupa una colonna e l'ultimo numero dispari due: le classi doppie
  * (`.tessere.tessere .tessera.tessera`) alzano la specificità sopra le regole `n-N` delle sezioni.
  */
+// Le regole `.pagina-contatti`, `.recapiti` e `.apertura` sono la pagina Contatti (docs/sito/contatti.md).
 const CSS = `
 @font-face{font-family:"Big Shoulders Display";font-weight:800;font-display:swap;src:url(/risorse/big-shoulders-display-800.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Inter";font-weight:100 900;font-display:swap;src:url(/risorse/inter-variable.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
@@ -241,6 +242,56 @@ ${GRIGLIE_LUNGHE}
 .numero.lunga .cifra{font-size:clamp(26px,3vw,40px);line-height:.95;white-space:normal;overflow-wrap:anywhere}
 .non-trovata{padding:40px var(--margine) 96px}
 .non-trovata p{max-width:34em}
+.pagina-contatti h1{font-size:clamp(56px,13.9vw,200px);line-height:.82}
+.testata{padding:22px var(--margine)}
+.logo img{height:110px}
+.testata nav ul{gap:10px}
+.testata nav a[aria-current]{background:var(--giallo)}
+.testata .pulsante{padding:0 26px}
+.piede{margin:0 var(--margine) 48px}
+.piede .nome{font-size:clamp(44px,3.9vw,56px)}
+.piede{gap:40px;padding:40px;font-size:16px;line-height:1.9}
+.invito{margin:96px var(--margine) 6px;height:300px;min-height:0;padding:36px 40px}
+.invito .frase{max-width:520px;font-size:22px;line-height:1.35}
+.invito .freccia{display:none}
+.invito .parola{font-size:170px;line-height:.8}
+.piede-menu a{display:block}
+.recapiti-piede li:nth-child(n+3){display:inline}
+.recapiti-piede li:last-child::before{content:" · "}
+.mappa{position:relative}
+.mappa .segnaposto{position:absolute;left:calc(50% - 22px);top:calc(50% - 22px);width:44px;height:44px;border-radius:50%;background:var(--giallo);border:6px solid var(--inchiostro)}
+.mappa .targhetta{position:absolute;left:calc(50% + 34px);top:calc(50% - 52px);padding:12px 16px;border-radius:6px;background:var(--inchiostro);color:#fff;font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:30px;line-height:.95}
+.mappa .targhetta span{display:block;margin-top:6px;font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;text-transform:none;font-weight:500;font-size:16px;line-height:1.55}
+.mappa .credito{position:absolute;right:0;bottom:0;padding:3px 8px;background:#fff;color:var(--inchiostro);font-size:12px;line-height:1.55}
+.apertura>.tessere+.colonna{display:flex;gap:6px}
+.apertura>.tessere+.colonna>*{margin:0}
+.apertura>.tessere+.colonna p+p{display:inline-flex;align-items:center;min-height:56px;padding:0 20px;border-radius:6px;background:#fff;font-size:16px;font-weight:500}
+.apertura .foto-fila img{object-position:50% 55%}
+.apertura .foto-fila figure:nth-child(3) img{object-position:50% 30%}
+.pagina-contatti .pagina-hero{flex-wrap:nowrap;align-items:flex-end;padding-bottom:72px}
+.pagina-contatti .pagina-hero .intro{flex:1;display:grid;grid-template-columns:1fr 520px;column-gap:56px;row-gap:0;align-items:end;max-width:none}
+.pagina-contatti .pagina-hero .intro h1{grid-column:1;grid-row:1 / span 2;margin:0;overflow-wrap:break-word}
+.pagina-contatti .pagina-hero .intro p{grid-column:2;margin-bottom:28px;font-size:22px}
+.pagina-contatti .pagina-hero .intro>div{grid-column:2}
+.sezione.apertura{padding-bottom:96px}
+.apertura>.tessere+*{margin-top:96px}
+.recapiti{grid-template-columns:repeat(12,1fr);grid-auto-rows:minmax(300px,auto)}
+.recapiti .tessera{gap:0;padding:24px 26px}
+.recapiti h3{margin-bottom:auto;font-size:56px;line-height:.95}
+.recapiti p:first-of-type{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:36px;line-height:1}
+.recapiti .breve p:first-of-type{font-size:44px}
+.recapiti p:not(:first-of-type){margin-top:12px;font-size:17px;line-height:1.45}
+.apertura figure.larga img{height:520px}
+.apertura>.tessere+.colonna{position:relative;max-width:none;margin-top:-80px;padding:0 24px 24px}
+.apertura .colonna a.pulsante{background:var(--giallo);color:var(--inchiostro);padding:0 28px}
+.apertura>.foto-fila{margin-top:96px}
+.apertura .foto-fila img{height:536px}
+.pagina-contatti .sezione:not(.apertura) h2{line-height:.85}
+.pagina-contatti .sezione:not(.apertura) .colonna{padding-bottom:22px;font-size:22px}
+.pagina-contatti .sezione:not(.apertura) .tessera{justify-content:space-between;padding:26px 28px}
+.pagina-contatti .sezione:not(.apertura) .tessera h3{font-size:38px;line-height:.95}
+.pagina-contatti .sezione:not(.apertura) .tessere{grid-auto-rows:minmax(330px,auto)}
+.pagina-contatti .sezione:not(.apertura) .tessera:nth-child(odd){background:var(--giallo);color:var(--inchiostro)}
 @media (min-width:901px){
 .sezione .tessera:not(.foto){min-height:clamp(190px,16vw,260px)}
 .sezione .tessere.n-4 .tessera:not(.foto){min-height:190px}
@@ -343,6 +394,57 @@ h1{font-size:84px;line-height:.84}
 .piede{margin:0 var(--margine) 24px;padding:24px;gap:14px}
 .piede .nome{font-size:44px}
 }
+@media (max-width:900px){
+.testata{padding:12px var(--margine) 0}
+.logo img{height:82px}
+.testata nav ul{gap:6px}
+.testata nav a{background:var(--chiara);padding:0 14px}
+.testata nav a[aria-current]{background:var(--giallo)}
+.testata .pulsante{padding:0 22px}
+.piede{display:block;margin-bottom:24px;padding:24px}
+.piede .nome{margin-bottom:14px}
+.piede-menu,.piede-legale{margin-top:12px}
+.piede-menu a{display:inline}
+.piede-menu a+a::before{content:" · "}
+.piede-legale{opacity:.85}
+.invito{margin:48px var(--margine) 6px;height:auto;min-height:260px;padding:22px}
+.invito .frase{font-size:17px}
+.invito .parola{font-size:120px}
+.piede-legale li{display:inline}
+.piede-legale li+li::before{content:" · "}
+.testata .estensione{display:none}
+.recapiti p:not(:first-of-type){display:none}
+.apertura>.tessere+.colonna p+p{display:none}
+.mappa .segnaposto{left:calc(50% - 20px);top:calc(50% - 20px);width:40px;height:40px}
+.mappa .targhetta{left:16px;top:78px;padding:10px 14px;font-size:26px}
+.mappa .targhetta span{margin-top:4px;font-size:14px}
+.mappa .credito{padding:2px 6px;font-size:11px}
+.pagina-contatti h1{font-size:19.5vw}
+.pagina-contatti .pagina-hero{padding:20px var(--margine) 36px}
+.pagina-contatti .pagina-hero .intro{grid-template-columns:1fr}
+.pagina-contatti .pagina-hero .intro h1{grid-row:auto;margin-bottom:20px}
+.pagina-contatti .pagina-hero .intro p{grid-column:1;margin-bottom:22px;font-size:18px}
+.pagina-contatti .pagina-hero .intro>div{grid-column:1}
+.pagina-contatti .pagina-hero .pulsante{min-height:52px;padding:0 26px;font-size:17px}
+.sezione.apertura{padding-bottom:48px}
+.apertura>.tessere+*,.apertura>.foto-fila{margin-top:48px}
+.recapiti{grid-template-columns:1fr;grid-auto-rows:minmax(130px,auto)}
+.tessere.n-4.recapiti>*{grid-column:1}
+.recapiti .tessera{gap:12px;padding:20px}
+.recapiti h3{font-size:38px}
+.recapiti p:first-of-type,.recapiti .breve p:first-of-type{font-size:32px}
+.apertura figure.larga img{height:380px}
+.apertura>.tessere+.colonna{padding:0 12px 28px}
+.apertura .colonna a.pulsante{min-height:52px;padding:0 26px;font-size:17px}
+.apertura .foto-fila img{height:200px}
+.apertura .foto-fila figure:nth-child(3){display:none}
+.pagina-contatti .sezione:not(.apertura) h2{font-size:56px;line-height:.88}
+.pagina-contatti .sezione:not(.apertura) .colonna{display:none}
+.pagina-contatti .sezione:not(.apertura) h2{margin-bottom:20px}
+.pagina-contatti .sezione:not(.apertura) .tessera{gap:12px;padding:20px}
+.pagina-contatti .sezione:not(.apertura) .tessera h3{font-size:30px}
+.pagina-contatti .sezione:not(.apertura) .tessere{grid-auto-rows:minmax(160px,auto)}
+}
 @media (prefers-reduced-motion:no-preference){.pulsante,.testata nav a{transition:background-color .15s}}
 `.replace(/\n/g, '')
 
@@ -424,8 +526,8 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const t = testata(c, conContatti, percorso(p.slug))
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
-    : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
+    : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
+  const corpo = `${t}<main${p.slug === 'contatti' ? ' class="pagina-contatti"' : ''}>${intro}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo, p.slug === 'contatti') : `<div class="testo">${testo}</div>`) : ''}</main>${invito(conContatti)}${piede(c)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo })
 }
 
