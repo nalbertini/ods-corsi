@@ -129,7 +129,28 @@ function griglie(tessere: string[]): string {
 }
 
 /** Un `ul` corto (2–12 voci, al massimo 200 caratteri) si legge come tessere: il grassetto iniziale è il titolo. */
-function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string }> | null {
+/** Le pillole dei corsi: l'icona (Phosphor, MIT, riempita) di ogni etichetta. */
+const PILLOLE: Record<string, string> = {
+  Bambini: '<path d="M92,140a12,12,0,1,1,12-12A12,12,0,0,1,92,140Zm72-24a12,12,0,1,0,12,12A12,12,0,0,0,164,116Zm-12.27,45.23a45,45,0,0,1-47.46,0,8,8,0,0,0-8.54,13.54,61,61,0,0,0,64.54,0,8,8,0,0,0-8.54-13.54ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88.11,88.11,0,0,0-84.09-87.91C120.32,56.38,120,71.88,120,72a8,8,0,0,0,16,0,8,8,0,0,1,16,0,24,24,0,0,1-48,0c0-.73.13-14.3,8.46-30.63A88,88,0,1,0,216,128Z"/>',
+  Adulti: '<path d="M128,80A32,32,0,1,0,96,48,32,32,0,0,0,128,80Zm0-48a16,16,0,1,1-16,16A16,16,0,0,1,128,32ZM230.86,132.12a8,8,0,0,1-11,2.74c-.35-.21-35.11-20.59-83.88-22.67V149l62,69.73a8,8,0,1,1-12,10.62L128,164,70,229.31a8,8,0,1,1-12-10.62L120,149V112.18c-49,2.08-83.52,22.46-83.88,22.68a8,8,0,1,1-8.23-13.72C29.6,120.11,70.45,96,128,96s98.4,24.11,100.12,25.14A8,8,0,0,1,230.86,132.12Z"/>',
+  Anziani: '<path d="M128,80A32,32,0,1,0,96,48,32,32,0,0,0,128,80Zm0-48a16,16,0,1,1-16,16A16,16,0,0,1,128,32Zm96,72a8,8,0,0,1-8,8H136v26.72l51.15,21.93A8,8,0,0,1,192,168v48a8,8,0,0,1-16,0V173.28l-46.45-19.91L53.35,222a8,8,0,1,1-10.7-11.9L120,140.44V112H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,104Z"/>',
+  Agonisti: '<path d="M232,64H208V48a8,8,0,0,0-8-8H56a8,8,0,0,0-8,8V64H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64ZM48,120A24,24,0,0,1,24,96V80H48v32q0,4,.39,8Zm144-8.9c0,35.52-29,64.64-64,64.9a64,64,0,0,1-64-64V56H192ZM232,96a24,24,0,0,1-24,24h-.5a81.81,81.81,0,0,0,.5-8.9V80h24Z"/>',
+}
+
+/** Un `<em>` in fondo alla voce che ha solo etichette note (Bambini, Adulti, Anziani, Agonisti) diventa le pillole: il resto del testo e l'html delle pillole. */
+function pilloleDiUnaVoce(x: string): { testo: string; pillole: string } {
+  const m = /^([\s\S]*?)\s*<em>([^<]+)<\/em>\s*$/i.exec(x)
+  if (!m) return { testo: x, pillole: '' }
+  const nomi = m[2].split(/\s*[·,/]\s*/).map((e) => e.trim().toLowerCase()).filter(Boolean)
+  const note = Object.keys(PILLOLE).filter((n) => nomi.includes(n.toLowerCase()))
+  const tutte = nomi.length > 0 && nomi.every((e) => note.some((n) => n.toLowerCase() === e))
+  if (!tutte) return { testo: x, pillole: '' }
+  const ordine = [...new Set(nomi)].map((e) => note.find((n) => n.toLowerCase() === e) ?? '')
+  const html = ordine.map((n) => `<span class="pillola"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">${PILLOLE[n]}</svg>${n}</span>`).join('')
+  return { testo: m[1], pillole: `<span class="pillole">${html}</span>` }
+}
+
+function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string; pillole: string }> | null {
   if (b.tag !== 'ul') return null
   const li = [...b.html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1])
   if (li.length < VOCI_MIN || li.length > VOCI_MAX) return null
@@ -137,8 +158,9 @@ function vociDiUnElenco(b: Blocco): Array<{ titolo: string; testo: string }> | n
   if (li.some((x) => testoSolo(x).length > VOCE_LUNGA || /<(ul|ol)\b/i.test(x))) return null
   if (/<(ul|ol)\b/i.test(b.html.slice(b.html.indexOf('>') + 1))) return null
   return li.map((x) => {
-    const g = /^\s*<strong>([\s\S]*?)<\/strong>\s*:?\s*([\s\S]*)$/i.exec(x)
-    return g ? { titolo: g[1], testo: g[2].replace(/^[\s:,;–-]+/, '') } : { titolo: '', testo: x }
+    const { testo, pillole } = pilloleDiUnaVoce(x)
+    const g = /^\s*<strong>([\s\S]*?)<\/strong>\s*:?\s*([\s\S]*)$/i.exec(testo)
+    return g ? { titolo: g[1], testo: g[2].replace(/^[\s:,;–-]+/, ''), pillole } : { titolo: '', testo, pillole }
   })
 }
 
@@ -229,7 +251,7 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
     const voci = elenchi === 1 ? vociDiUnElenco(x) : null
     if (voci) {
       chiudiColonna()
-      fuori.push(griglie(voci.map((v, k) => tessera(ROTAZIONE[k % ROTAZIONE.length], v.titolo, v.testo ? `<p>${v.testo}</p>` : ''))))
+      fuori.push(griglie(voci.map((v, k) => tessera(ROTAZIONE[k % ROTAZIONE.length], v.titolo, `${v.testo ? `<p>${v.testo}</p>` : ''}${v.pillole}`))))
       i++
       continue
     }

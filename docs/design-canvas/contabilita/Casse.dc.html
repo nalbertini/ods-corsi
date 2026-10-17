@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; width: 1440px; min-height: 980px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" area="amministrazione" attiva="CONTABILITÀ" numeri="" nome="Chiara Bianchi" ruolo="Amministrazione" altezza="980px" hint-size="240px,980px"></dc-import>
+  </div>
+  <main style="flex: 1; min-width: 0; padding: 28px 36px; display: flex; flex-direction: column; gap: 18px">
+    <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">CASSE</span>
+    <div style="display: flex; gap: 10px">
+      <dc-import name="Chip" label="MOVIMENTI" acceso="{{ false }}" hint-size="150px,44px"></dc-import>
+      <dc-import name="Chip" label="VOCI" acceso="{{ false }}" hint-size="100px,44px"></dc-import>
+      <dc-import name="Chip" label="CASSE" acceso="{{ true }}" hint-size="110px,44px"></dc-import>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1100px"><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">CASSA</span>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">CASSA CONTANTI</span>
+  <div style="display: flex; gap: 24px; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">RESIDUO</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 40px; font-weight: 700">1.250,00 €</span></div>
+  <div style="display: flex; gap: 24px"><span style="font-size: 14px; color: #c9c9c4">entrate <b style="color: #16a54a">3.590,00 €</b></span><span style="font-size: 14px; color: #c9c9c4">uscite <b>2.840,00 €</b></span></div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px"><dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="SALDO INIZIALE" valore="500,00" hint-size="100%,80px"></dc-import><dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="DAL" valore="01/09/2026" hint-size="100%,80px"></dc-import></div>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Da questa data si contano i movimenti: uno più vecchio non si registra. Residuo = saldo iniziale + entrate − uscite.</span>
+  <div><dc-import name="Bottone" label="SALVA IL SALDO INIZIALE" variante="linea" contesto="segreteria" hint-size="280px,48px"></dc-import></div>
+</section><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">CASSA</span>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">CONTO CORRENTE</span>
+  <div style="display: flex; gap: 24px; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">RESIDUO</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 40px; font-weight: 700">8.420,00 €</span></div>
+  <div style="display: flex; gap: 24px"><span style="font-size: 14px; color: #c9c9c4">entrate <b style="color: #16a54a">12.300,00 €</b></span><span style="font-size: 14px; color: #c9c9c4">uscite <b>8.880,00 €</b></span></div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px"><dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="SALDO INIZIALE" valore="5.000,00" hint-size="100%,80px"></dc-import><dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="DAL" valore="01/09/2026" hint-size="100%,80px"></dc-import></div>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Da questa data si contano i movimenti: uno più vecchio non si registra. Residuo = saldo iniziale + entrate − uscite.</span>
+  <div><dc-import name="Bottone" label="SALVA IL SALDO INIZIALE" variante="linea" contesto="segreteria" hint-size="280px,48px"></dc-import></div>
+</section></div>
+    <span style="font-size: 14px; color: #8c8c88; line-height: 1.4; max-width: 980px">Il saldo iniziale cambia solo da qui e solo dall’amministrazione. La chiusura della cassa, col contato e la differenza, e la stampa PDF arrivano nella parte dopo.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
