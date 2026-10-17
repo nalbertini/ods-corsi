@@ -590,3 +590,22 @@ select atteso('i vincoli sul nascondere una pagina di legge hanno un nome che l'
   tenta($$update sito_pagine set nascosta = true where slug = 'privacy'$$),
   'NEGATO: new row for relation "sito_pagine" violates check constraint "sito_pagine_legge_visibile"');
 reset role;
+
+\echo ''
+\echo '--- 17. rilanciato 06-iscrizioni.sql: le tre funzioni pubbliche del sito restano aperte ---'
+-- 06 chiude a `anon` ogni funzione che non è una di quelle pubbliche: senza una sua riga per il
+-- sito, rilanciarlo chiuderebbe anche quelle da cui il sito si genera.
+\ir ../06-iscrizioni.sql
+-- 06 toglie ad `anon` anche gli aiuti della prova, che stanno in `public`: glieli si ridà, e solo quelli.
+grant execute on function tenta(text), atteso(text, text, text), chi(text) to anon, authenticated;
+select count(*)::text as n_pubbliche from sito_pagine where pubblicato is not null and not nascosta \gset
+select count(*)::text as n_voci from sito_menu \gset
+select count(*)::text as n_rinvii from sito_redirect r where exists (select 1 from sito_pagine p where p.slug = r.a and p.pubblicato is not null and not p.nascosta) \gset
+select chi('');
+set role anon;
+select atteso('anon legge ancora le pagine pubblicate',
+  tenta($$select count(*)::text from sito_pagine_pubbliche()$$), :'n_pubbliche');
+select atteso('anon legge ancora il menu', tenta($$select count(*)::text from sito_menu_pubblico()$$), :'n_voci');
+select atteso('anon legge ancora i rinvii', tenta($$select count(*)::text from sito_redirect_pubblici()$$), :'n_rinvii');
+select atteso('e continua a non scrivere', tenta($$select salva_menu_sito('menu', '[]'::jsonb)::text$$), 'NEGATO: permission denied for function salva_menu_sito');
+reset role;

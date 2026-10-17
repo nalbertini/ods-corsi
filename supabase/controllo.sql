@@ -83,7 +83,8 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
         and not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e')
         and has_function_privilege('anon', p.oid, 'execute')
         and p.proname not in ('corsi_aperti', 'invia_iscrizione', 'puo_caricare', 'iscrizioni_regole', 'listino', 'mesi_presenze_pubblici',
-                                'vestiario', 'invia_ordine_vestiario', 'orari_aperti'))),
+                                'vestiario', 'invia_ordine_vestiario', 'orari_aperti',
+                                'sito_pagine_pubbliche', 'sito_menu_pubblico', 'sito_redirect_pubblici'))),
   ('06-iscrizioni.sql', 'documento e certificato col modulo, da stampare',
     exists (select 1 from dentro where nome = 'puo_caricare' and corpo like '%certificato%')
     and exists (select 1 from dentro where nome = 'richieste_con_documento')),
