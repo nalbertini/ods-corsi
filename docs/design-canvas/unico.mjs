@@ -50,6 +50,7 @@ const SEZIONI = [
   { id: 'cerca-universale', nome: 'Ricerca universale · proposta', cartella: 'cerca-universale' },
   { id: 'segreteria-tatami', nome: 'Segreteria · Tatami · proposta', cartella: 'segreteria-tatami' },
   { id: 'iscritti-del-corso', nome: 'Iscritti del corso · proposta', cartella: 'iscritti-del-corso' },
+  { id: 'iscritti-riepilogo', nome: 'Iscritti del corso · riepilogo', cartella: 'iscritti-riepilogo' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

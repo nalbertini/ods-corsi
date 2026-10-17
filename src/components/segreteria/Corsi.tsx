@@ -3,7 +3,7 @@ import type { Ricercata } from '../../lib/ricerca'
 import { useEffect, useRef, useState } from 'react'
 import type { Destinazione, Voce } from './Segreteria'
 import type { CorsoSeg, DatiCorso, DatiSegreteria, PersonaSeg, RigaIscrittoCorso } from '../../lib/segreteria'
-import { avvisoPosti, cercaFraGliIscritti, COLORI, contoCorso, corsoCambiato, GIORNI_LUNGHI, iscrittiDelCorso, ricorrenzaCambiata, ricorrenzaIniziale, valoriIscrittoCorso, vociAttivita, type RicorrenzaNuova } from '../../lib/segreteria'
+import { avvisoPosti, cercaFraGliIscritti, COLORI, contoCorso, corsoCambiato, GIORNI_LUNGHI, iscrittiDelCorso, riepilogoCorso, ricorrenzaCambiata, ricorrenzaIniziale, soloNonInRegola, valoriIscrittoCorso, vociAttivita, type RicorrenzaNuova } from '../../lib/segreteria'
 import { chiaveGiorno } from '../../lib/sala'
 import { Croce } from '../Icons'
 import { STRETTO, useSchermo } from '../../lib/largo'
@@ -13,14 +13,19 @@ const CORTI = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab']
 
 type Colonna = 'cognome' | 'nome' | 'dal' | 'certificato' | 'quota'
 /**
- * Come si era lasciata la scheda di un corso: quale scheda, cosa si cercava, in che ordine.
+ * Come si era lasciata la scheda di un corso: quale scheda, cosa si cercava, se il chip NON IN REGOLA era acceso, in che ordine.
  * Aprire un iscritto smonta la scheda; con Indietro si ritrova com'era, senza rifare la ricerca.
  */
-const viste = new Map<string, { scheda: 'dati' | 'iscritti'; cerca: string; ordine: MemoriaOrdine<Colonna> }>()
+const viste = new Map<string, { scheda: 'dati' | 'iscritti'; cerca: string; fuori: boolean; ordine: MemoriaOrdine<Colonna> }>()
 const vistaDi = (corsoId: string) => {
   let v = viste.get(corsoId)
-  if (!v) viste.set(corsoId, (v = { scheda: 'dati', cerca: '', ordine: { ordine: null } }))
+  if (!v) viste.set(corsoId, (v = { scheda: 'dati', cerca: '', fuori: false, ordine: { ordine: null } }))
   return v
+}
+
+/** «‹ CORSO» dalla scheda di una persona: il corso si riapre sugli iscritti, anche dopo una ricarica (la memoria si è svuotata). */
+export const riapriSuIscritti = (corsoId: string) => {
+  vistaDi(corsoId).scheda = 'iscritti'
 }
 
 /** «lun mer ven 17:00», o gli orari uno per uno quando non sono tutti uguali. */
@@ -123,7 +128,7 @@ export function Corsi({
       persone={persone.dato ?? []}
       guaio={persone.dato === null ? persone.guaio : null}
       leggo={!letti && !persone.guaio}
-      onApriIscritto={(id) => onVai('iscritti', { persona: id })}
+      onApriIscritto={(id) => onVai('iscritti', { persona: id, daCorso: corso?.id })}
       fai={fai}
       onSalvato={(id) => {
         // Al posto del modulo: Indietro dal corso nuovo torna all'elenco, non a un modulo vuoto.
@@ -233,6 +238,10 @@ export function Corsi({
 }
 
 type Fai = ReturnType<typeof useAvviso>['fai']
+
+/** Il colore di una voce del riepilogo: neutro come il testo, rosso e giallo come un guaio, verde per «tutto in regola». */
+const coloreVoce = (tono: 'neutro' | 'giallo' | 'rosso' | 'verde') =>
+  tono === 'rosso' ? 'var(--rosso-testo)' : tono === 'giallo' ? 'var(--giallo-testo)' : tono === 'verde' ? 'var(--verde-testo)' : 'var(--sec)'
 
 const colorePosti = (tono: 'neutro' | 'giallo' | 'rosso') => (tono === 'rosso' ? 'var(--rosso-testo)' : tono === 'giallo' ? 'var(--giallo-testo)' : 'var(--text)')
 
@@ -688,8 +697,13 @@ function IscrittiDelCorso({
     },
     vista.ordine,
   )
-  const trovate = cercaFraGliIscritti(righe, cerca)
-  const conto = contoCorso(righe.length, corso.capienza)
+  const [fuori, setFuoriGiu] = useState(vista.fuori)
+  const setFuori = (v: boolean) => {
+    vista.fuori = v
+    setFuoriGiu(v)
+  }
+  const trovate = cercaFraGliIscritti(fuori ? soloNonInRegola(righe) : righe, cerca)
+  const filtrato = fuori || cerca.trim() !== ''
   const avviso = avvisoPosti(righe.length, corso.capienza)
 
   return (
@@ -700,6 +714,14 @@ function IscrittiDelCorso({
         <p className="sg-sotto">Sto leggendo gli iscritti…</p>
       ) : (
         <>
+          <div className="num" role="status" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 10px', fontSize: 13, fontWeight: 700, letterSpacing: '0.12em' }}>
+            {riepilogoCorso(righe, corso.capienza).map((v, i) => (
+              <span key={v.testo} style={{ color: coloreVoce(v.tono) }}>
+                {i > 0 && <span style={{ color: 'var(--dim)', marginRight: 10 }}>·</span>}
+                {v.testo}
+              </span>
+            ))}
+          </div>
           <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
             <label htmlFor="k-cerca-iscritti" className="vh">
               Cerca fra gli iscritti
@@ -707,15 +729,20 @@ function IscrittiDelCorso({
             <input
               id="k-cerca-iscritti"
               className="sg-campo"
-              style={{ width: 360, maxWidth: '100%' }}
+              style={{ flex: '1 1 200px', maxWidth: 360, minWidth: 0 }}
               type="search"
               placeholder="Cerca per nome o cognome"
               value={cerca}
               onChange={(e) => setCerca(e.target.value)}
             />
-            <span className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', color: colorePosti(conto.tono) }}>
-              {trovate.length === righe.length ? `${righe.length} ISCRITTI` : `${trovate.length} DI ${righe.length}`}
-            </span>
+            <button type="button" className="num sg-chip" aria-pressed={fuori} onClick={() => setFuori(!fuori)}>
+              NON IN REGOLA
+            </button>
+            {filtrato && (
+              <span className="num" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em' }}>
+                {trovate.length} DI {righe.length}
+              </span>
+            )}
           </div>
           <div role="table" aria-label="Iscritti del corso" className="sg-tabella">
             <div role="row" className="sg-lista-testa sg-riga-iscritto-corso">
@@ -727,7 +754,11 @@ function IscrittiDelCorso({
             </div>
             <div className="sg-tabella-corpo">
               {righe.length === 0 && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Nessun iscritto ancora.</p>}
-              {righe.length > 0 && trovate.length === 0 && <p className="sg-sotto" style={{ padding: '12px 14px' }}>Nessun iscritto trovato. Prova con meno lettere.</p>}
+              {righe.length > 0 && trovate.length === 0 && (
+                <p className="sg-sotto" style={{ padding: '12px 14px' }}>
+                  {fuori && cerca.trim() === '' ? 'Tutti in regola.' : 'Nessun iscritto trovato. Prova con meno lettere.'}
+                </p>
+              )}
               {ordina(trovate).map((r) => (
                 // Come in ISCRITTI: si clicca tutta la riga; dalla tastiera e per chi legge lo schermo c'è il tasto sul cognome.
                 <div key={r.persona.id} role="row" className="sg-riga-iscritto-corso sg-iscritto" onClick={() => onApri(r.persona.id)}>
