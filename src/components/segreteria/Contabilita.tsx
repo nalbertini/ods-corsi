@@ -4,7 +4,7 @@ import {
   cosaNonVaGiroconto,
   cosaNonVaImporto,
   cosaNonVaMovimento,
-  cosaNonVaSaldo,
+  cosaNonVaSaldoTesto,
   cosaNonVaVoce,
   csvMovimenti,
   elencoMovimenti,
@@ -80,9 +80,14 @@ export function Contabilita({ d }: { d: DatiSegreteria }) {
       {guaio && <Guaio testo={guaio} />}
       {pronto && incassi.guaio && <Guaio testo={`Gli incassi degli iscritti non si leggono, e i residui non li contano. ${incassi.guaio}`} />}
       {!guaio && !pronto && <p className="sg-sotto">Sto leggendo i conti…</p>}
-      {pronto && scheda === 'movimenti' && <Movimenti d={d} casse={casse.dato ?? []} voci={voci.dato ?? []} righe={elenco} fai={fai} onCambiato={rileggi} />}
-      {pronto && scheda === 'voci' && <Voci d={d} voci={voci.dato ?? []} righe={elenco} fai={fai} onCambiato={rileggi} />}
-      {pronto && scheda === 'casse' && <Casse d={d} casse={casse.dato ?? []} righe={elenco} fai={fai} onCambiato={rileggi} />}
+      {/* Le schede si nascondono, non si smontano: filtri e bozze restano dove sono. */}
+      {pronto && (
+        <>
+          <div hidden={scheda !== 'movimenti'}><Movimenti d={d} casse={casse.dato ?? []} voci={voci.dato ?? []} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
+          <div hidden={scheda !== 'voci'}><Voci d={d} voci={voci.dato ?? []} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
+          <div hidden={scheda !== 'casse'}><Casse d={d} casse={casse.dato ?? []} righe={elenco} fai={fai} onCambiato={rileggi} /></div>
+        </>
+      )}
       {avviso}
     </div>
   )
@@ -131,9 +136,9 @@ function Movimenti({ d, casse, voci, righe, fai, onCambiato }: { d: DatiSegreter
       <div className="sg-numeri">
         {casse.map((c) => {
           const r = conti.find((x) => x.cassaId === c.id)
-          return <Numero key={c.id} titolo={c.nome.toUpperCase()} valore={soldi(r?.residuo ?? 0)} sotto={`entrate ${soldi(r?.entrate ?? 0)} · uscite ${soldi(r?.uscite ?? 0)}`} />
+          return <Numero key={c.id} titolo={c.nome.toUpperCase()} valore={soldiConSegno(r?.residuo ?? 0)} sotto={`entrate ${soldi(r?.entrate ?? 0)} · uscite ${soldi(r?.uscite ?? 0)}`} />
         })}
-        <Numero titolo="TOTALE" valore={soldi(totaleResidui(conti))} sotto="saldi iniziali compresi" />
+        <Numero titolo="TOTALE" valore={soldiConSegno(totaleResidui(conti))} sotto="saldi iniziali compresi" />
       </div>
 
       {scrivo === 'movimento' && <InVista><NuovoMovimento d={d} voci={voci} casse={casse} fai={fai} onFatto={fatto} onChiudi={chiudi} /></InVista>}
@@ -556,14 +561,14 @@ function SaldoCassa({ d, cassa, conto, righe, fai, onCambiato }: { d: DatiSegret
   const [dal, setDal] = useState(cassa.dal ?? '')
   useBozza(saldo !== euro(cassa.saldoIniziale) || dal !== (cassa.dal ?? ''), `Il saldo di ${cassa.nome}`)
   const cent = centesimi(saldo)
-  const guaio = cent === null ? 'Il saldo non si capisce: scrivi un numero, per esempio 500,00.' : cosaNonVaSaldo(cent, dal || null, { oggi: oggiARoma(), primoMovimento: primoMovimentoManuale(righe, cassa.id) })
+  const guaio = cosaNonVaSaldoTesto(saldo, dal || null, { oggi: oggiARoma(), primoMovimento: primoMovimentoManuale(righe, cassa.id) })
   return (
     <section aria-label={cassa.nome} className="sg-riquadro" style={{ flex: '1 1 340px', maxWidth: 520 }}>
       <span className="sg-etichetta">CASSA</span>
       <span className="sg-riquadro-titolo ob">{cassa.nome.toUpperCase()}</span>
       <div className="row" style={{ gap: 24, alignItems: 'baseline' }}>
         <span className="sg-etichetta">RESIDUO</span>
-        <span className="num" style={{ fontSize: 40, fontWeight: 700 }}>{soldi(conto?.residuo ?? 0)}</span>
+        <span className="num" style={{ fontSize: 40, fontWeight: 700 }}>{soldiConSegno(conto?.residuo ?? 0)}</span>
       </div>
       <span className="sg-sotto">entrate {soldi(conto?.entrate ?? 0)} · uscite {soldi(conto?.uscite ?? 0)}</span>
       <div className="sg-due sg-scheda-campi">

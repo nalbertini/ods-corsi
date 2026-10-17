@@ -375,6 +375,10 @@ console.log('\n13. cosa non va nel saldo iniziale')
   ok('…il giorno stesso del movimento sì', con('2026-09-10'), null)
   ok('senza movimenti a mano qualunque data va', con('2026-10-17', { primoMovimento: undefined }), null)
   ok('senza data si conta tutto, movimenti compresi', con('', {}), null)
+  ok('un saldo scritto negativo dice «negativo», non «non si capisce»', prova(() => m.cosaNonVaSaldoTesto('-5', null)), 'Il saldo iniziale non può essere negativo')
+  ok('un testo che non è un numero', prova(() => m.cosaNonVaSaldoTesto('abc', null)), 'Il saldo non si capisce: scrivi un numero, per esempio 500,00.')
+  ok('un saldo scritto bene va', prova(() => m.cosaNonVaSaldoTesto('500,50', '2026-09-01')), null)
+  ok('l\'inizio della cassa nel 1999 no, come una data di movimento', di(0, '1999-12-31'), 'La data non si capisce')
   const rr = [
     riga('a', 'entrata', '2026-09-10', 100, 'c1'),
     riga('b', 'entrata', '2026-08-01', 100, 'c1', { annullato: true }),

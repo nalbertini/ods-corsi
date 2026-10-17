@@ -184,6 +184,7 @@ begin
   if not found then raise exception 'La cassa non c’è' using errcode = 'P0002'; end if;
   if saldo is null or saldo < 0 then raise exception 'Il saldo iniziale non può essere negativo' using errcode = '22023'; end if;
   if saldo > 100000000 then raise exception 'Il saldo iniziale è troppo alto: controlla le cifre' using errcode = '22023'; end if;
+  if dal is not null and dal < date '2000-01-01' then raise exception 'La data non si capisce' using errcode = '22023'; end if;
   if dal is not null and dal > contabilita_oggi() then raise exception 'L’inizio della cassa non può essere nel futuro' using errcode = '22023'; end if;
   -- i movimenti prima di quella data il saldo li ignorerebbe in silenzio
   if dal is not null and exists (select 1 from movimenti m where (m.cassa_id = imposta_saldo_cassa.id or m.cassa_a_id = imposta_saldo_cassa.id)

@@ -459,6 +459,7 @@ select atteso('niente di tutto questo è entrato', (select count(*)::text from m
 
 select atteso('un saldo enorme no', esito(format('select imposta_saldo_cassa(id => %L, saldo => 2000000000, dal => null)', id_cassa('Conto Corrente'))), '22023 Il saldo iniziale è troppo alto: controlla le cifre');
 select atteso('l''inizio della cassa non è nel futuro', esito(format('select imposta_saldo_cassa(id => %L, saldo => 0, dal => %L)', id_cassa('Conto Corrente'), current_date + 30)), '22023 L’inizio della cassa non può essere nel futuro');
+select atteso('l''inizio della cassa nel 1999 no', esito(format('select imposta_saldo_cassa(id => %L, saldo => 0, dal => %L)', id_cassa('Conto Corrente'), '1999-12-31')), '22023 La data non si capisce');
 select atteso('registro un movimento sul conto', esito(format('select registra_movimento(dati => %L::jsonb)', mov('entrata', '2026-09-12', 700, 'Donazioni', 'Conto Corrente', 'Bonifico di settembre'))), 'ok');
 select atteso('l''inizio della cassa non salta i movimenti già registrati', esito(format('select imposta_saldo_cassa(id => %L, saldo => 0, dal => %L)', id_cassa('Conto Corrente'), current_date)), '22023 Ci sono movimenti prima di quella data: annullali o scegli una data più vecchia');
 select atteso('…e la cassa non è cambiata', (select saldo_iniziale || ' ' || coalesce(dal::text, '—') from casse where nome = 'Conto Corrente'), '0 —');

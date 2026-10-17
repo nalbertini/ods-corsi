@@ -1989,6 +1989,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 /* Sotto la descrizione: la causale dell'incasso; sul telefono, davanti, anche data, voce e cassa che lì non hanno la loro colonna. */
 .sg-sotto-movimento { display: flex; flex-direction: column; font-size: 13px; color: var(--sec); font-weight: 400; overflow-wrap: anywhere; }
 .sg-solo-telefono { display: none; }
+/* Una descrizione lunga senza spazi va a capo invece di uscire dallo schermo. */
+.sg-riga-movimento .sg-riga-apri, .sg-riquadro-titolo { overflow-wrap: anywhere; }
 .sg-riga-pagamento-tab { display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; }
 .sg-riga-residuo { display: grid; grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px 160px; gap: 14px; align-items: center; }
 /* L'amministrazione non vede i contatti: una colonna in meno. */

@@ -298,6 +298,13 @@ export function cosaNonVaVoce(nome: string, tipo: string | undefined, voci: Voce
   return null
 }
 
+/** Il saldo come lo scrive chi lo imposta: `centesimi` scarta il «-», e il messaggio giusto è «negativo». */
+export function cosaNonVaSaldoTesto(testo: string, dal?: string | null, contesto?: { oggi: string; primoMovimento?: string }): string | null {
+  const cent = centesimi(testo)
+  if (cent === null) return testo.trim().startsWith('-') ? 'Il saldo iniziale non può essere negativo' : 'Il saldo non si capisce: scrivi un numero, per esempio 500,00.'
+  return cosaNonVaSaldo(cent, dal, contesto)
+}
+
 /** Il giorno del primo movimento a mano non annullato di una cassa (anche come seconda cassa di un giroconto): gli incassi degli iscritti non contano, come nel database. */
 export function primoMovimentoManuale(righe: RigaMovimento[], cassaId: string): string | undefined {
   return righe
@@ -311,7 +318,7 @@ export function cosaNonVaSaldo(saldo: number, dal?: string | null, contesto?: { 
   if (!Number.isInteger(saldo)) return 'Il saldo iniziale non si capisce'
   if (saldo < 0) return 'Il saldo iniziale non può essere negativo'
   if (saldo > 100_000_000) return 'Il saldo iniziale è troppo alto: controlla le cifre'
-  if (dal && !dataVera(dal)) return 'La data non si capisce'
+  if (dal && (!dataVera(dal) || dal < '2000-01-01')) return 'La data non si capisce'
   if (dal && contesto) {
     if (dal > contesto.oggi) return 'L’inizio della cassa non può essere nel futuro'
     if (contesto.primoMovimento && contesto.primoMovimento < dal) return 'Ci sono movimenti prima di quella data: annullali o scegli una data più vecchia'
