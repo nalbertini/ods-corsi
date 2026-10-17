@@ -111,5 +111,12 @@ ok('telefono: colonna sola, padding 24px, nome da 44px', [T('.piede', 'flex-dire
 ok('telefono: Instagram e Facebook sulla stessa riga («Instagram · Facebook»)', [T('.piede .col:first-of-type li:nth-child(n+3)', 'display'), T('.piede .col:first-of-type li:nth-child(4)::before', 'content')], ['inline', '" · "'])
 ok('telefono: la terza colonna (i link di legge) è più tenue', T('.piede .col+.col+.col', 'opacity'), '.85')
 
+console.log('\n5. Le differenze tolte dopo il primo giro')
+ok('menu: alto come nel design (padding 9px 16px, interlinea normale), non più 44px', [D('.testata nav a', 'min-height'), D('.testata nav a', 'padding'), D('.testata nav a', 'line-height')], ['0', '9px 16px', 'normal'])
+ok('telefono: le voci del menu restano alte 44px (nel design)', T('.testata nav a', 'min-height'), '44px')
+ok('pulsante in testata: «Prova» e, sul computer, «una settimana · 5 €»', [/<a class="pulsante piccolo" href="\/contatti\/">Prova<span class="piu"> una settimana · 5 €<\/span><\/a>/.test(h), D('.pulsante .piu', 'display') ?? 'inline', T('.pulsante .piu', 'display')], [true, 'inline', 'none'])
+ok('il piede non ha la riga «©»', /class="fine"/.test(h), false)
+ok('telefono: le tessere dei corsi sono a contatto, come nel design', T('.tessere.corsi', 'gap'), '0')
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)

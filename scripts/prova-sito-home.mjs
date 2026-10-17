@@ -179,7 +179,7 @@ console.log('\n4. Il collage pieno della testata (design TatamiBlu)')
 console.log('\n5. Il pulsante in testata')
 {
   const h = g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'home', titolo: 'T', descrizione: 'd', testo: '<p>x</p>' }, { slug: 'contatti', titolo: 'C', descrizione: 'd', testo: '<p>y</p>' }], menu: [], rinvii: [] })['index.html'] ?? ''
-  ok('in testata: «Prova una settimana · 5 €» verso /contatti/', /<header class="testata">[\s\S]*<a class="pulsante piccolo" href="\/contatti\/">Prova una settimana · 5 €<\/a>/.test(h), true)
+  ok('in testata: «Prova una settimana · 5 €» verso /contatti/', /<header class="testata">[\s\S]*<a class="pulsante piccolo" href="\/contatti\/">Prova<span class="piu"> una settimana · 5 €<\/span><\/a>/.test(h), true)
   ok('l’invito in fondo resta «Prova»', /class="parola">Prova</.test(h), true)
 }
 
@@ -189,7 +189,7 @@ console.log('\n6. Il piede è una scheda scura in riga')
   const r = (re) => [...CSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => re.test(m[1].trim())).map((m) => m[2]).join(';')
   ok('il piede ha il fondo scuro e gli angoli da 6px', [/background:\s*var\(--inchiostro\)/.test(r(/^\.piede$/)), /border-radius:\s*6px/.test(r(/^\.piede$/))], [true, true])
   ok('sul desktop il piede è una riga: nome, elenchi', [/display:\s*flex/.test(r(/^\.piede$/)), /justify-content:\s*space-between/.test(r(/^\.piede$/))], [true, true])
-  ok('la riga finale («©») va a capo, a tutta larghezza', /flex-basis:\s*100%/.test(r(/^\.piede \.fine$/)), true)
+  ok('il piede del design non ha la riga finale («©»)', /class="fine"/.test(pagina('<p>x</p>')), false)
   ok('il nome nel piede non ha margine sotto', /margin:\s*0/.test(r(/^\.piede \.nome$/)), true)
 }
 

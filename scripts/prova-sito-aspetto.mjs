@@ -240,7 +240,7 @@ console.log('\nTestata: logo intero, menu, pulsante «Prova»')
   const ritaglio = R.filter((r) => r.sel.some((x) => /logo/.test(x))).filter((r) => /overflow:\s*hidden|object-position|background-position|object-fit:\s*cover/.test(JSON.stringify(r.dich)) || /^-/.test(r.dich.left ?? '') || /^-/.test(r.dich.top ?? '') || /%/.test(r.dich.width ?? '') && /img/.test(r.sel.join()))
   ok('il logo non è ritagliato (niente overflow nascosto, spostamenti o larghezza oltre il 100%)', ritaglio.map((r) => r.sel.join()), [])
   ok('il menu è nella testata, senza icona a tre righe', [/<nav aria-label="Principale">/.test(t), /<button\b/.test(t), /burger|hamburger|menu-toggle/i.test(home)], [true, false, false])
-  ok('con la pagina contatti: pulsante «Prova una settimana · 5 €» verso /contatti/ in testata', /<a class="[^"]*\bpulsante\b[^"]*" href="\/contatti\/">Prova una settimana · 5 €<\/a>/.test(t), true)
+  ok('con la pagina contatti: pulsante «Prova una settimana · 5 €» verso /contatti/ in testata', /<a class="[^"]*\bpulsante\b[^"]*" href="\/contatti\/">Prova<span class="piu"> una settimana · 5 €<\/span><\/a>/.test(t), true)
   ok('senza la pagina contatti: nessun pulsante «Prova» né link a /contatti/', c(senza, 'index.html') !== '' && !/\/contatti\//.test(c(senza, 'index.html')), true)
   const mob = blocco(CSS, '@media (max-width:900px)')
   const rm = mob ? regole(mob.dentro) : []

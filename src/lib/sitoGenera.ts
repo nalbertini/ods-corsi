@@ -58,7 +58,7 @@ export interface DatiSito {
 const TESTI = {
   nome: 'Officine dello Sport',
   prova: 'Prova',
-  provaTestata: 'Prova una settimana · 5 €',
+  provaTestata: 'Prova<span class="piu"> una settimana · 5 €</span>',
   contattaci: 'Contattaci',
   invito: 'Vieni a provare: ti aspettiamo in',
   altriLink: 'Altri link',
@@ -314,7 +314,7 @@ function piede(c: Contesto): string {
   const f = lista(voci('footer', c))
   const pagine = lista(voci('menu', c))
   const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
-  return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><div class="col"><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div>${pagine ? `<nav class="col" aria-label="Pagine"><ul>${pagine}</ul></nav>` : ''}${f ? `<div class="col"><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}<div class="fine"><span>© ${NOME}</span></div></footer>`
+  return `<footer class="piede"><p class="nome">Officine<br>dello Sport</p><div class="col"><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div>${pagine ? `<nav class="col" aria-label="Pagine"><ul>${pagine}</ul></nav>` : ''}${f ? `<div class="col"><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}</footer>`
 }
 
 function invito(conContatti: boolean): string {
