@@ -160,7 +160,9 @@ function tesseraOrario(colore: string, titolo: string, corpo: Blocco[]): string 
 function tessereDaSottotitoli(gruppi: Array<{ titolo: string; corpo: Blocco[] }>, corso = false): string {
   const domande = gruppi.length > 0 && gruppi.every((g) => /\?\s*$/.test(testoSolo(g.titolo)))
   const orari = corso && gruppi.length > 0 && gruppi.every((g) => inOrario(g.corpo))
-  const palette = corso ? ROTAZIONE_CORSO : ROTAZIONE
+  // Con testo la quarta tessera è azzurra, con solo il titolo torna gialla (come nel design).
+  const soloTitoli = gruppi.every((g) => g.corpo.length === 0)
+  const palette = corso ? [...ROTAZIONE_CORSO, soloTitoli ? 'giallo' : 'chiara'] : ROTAZIONE
   const html = gruppi.map((g, i) => {
     if (orari) return tesseraOrario(i === gruppi.length - 1 ? 'giallo' : 'chiara', g.titolo, g.corpo)
     const colore = domande ? 'chiara' : palette[i % palette.length]
@@ -241,17 +243,22 @@ function corpoSenzaSottotitoli(b: Blocco[], titolo: string): string {
 /** Una sezione con un solo paragrafo breve, in un corso, è la banda blu con la frase grande. */
 const BANDA_MAX = 160
 
+/** Un titolo più lungo di così, in un corso, sul telefono si scrive più piccolo. */
+const TITOLO_LUNGO = 30
+
 function sezione(titolo: string, corpo: Blocco[], corso = false): string {
-  if (corso && corpo.length === 1 && corpo[0].tag === 'p' && testoSolo(corpo[0].html).length <= BANDA_MAX) return `<section class="sezione banda"><div class="banda-int"><h2>${titolo}</h2>${corpo[0].html}</div></section>`
+  // Un `h2` vuoto apre una sezione senza titolo (la fila di foto del corso).
+  const h2 = testoSolo(titolo) ? `<h2${corso && testoSolo(titolo).length > TITOLO_LUNGO ? ' class="lungo"' : ''}>${titolo}</h2>` : ''
+  if (corso && corpo.length === 1 && corpo[0].tag === 'p' && testoSolo(corpo[0].html).length <= BANDA_MAX) return `<section class="sezione banda"><div class="banda-int">${h2}${corpo[0].html}</div></section>`
   const primo = corpo.findIndex((b) => b.tag === 'h3')
-  if (primo < 0) return `<section class="sezione"><h2>${titolo}</h2>${corpoSenzaSottotitoli(corpo, titolo)}</section>`
+  if (primo < 0) return `<section class="sezione">${h2}${corpoSenzaSottotitoli(corpo, titolo)}</section>`
   const prima = corpo.slice(0, primo)
   const gruppi: Array<{ titolo: string; corpo: Blocco[] }> = []
   for (const b of corpo.slice(primo)) {
     if (b.tag === 'h3') gruppi.push({ titolo: contenuto(b), corpo: [] })
     else gruppi[gruppi.length - 1].corpo.push(b)
   }
-  return `<section class="sezione"><h2>${titolo}</h2>${prima.length ? corpoSenzaSottotitoli(prima, titolo) : ''}${tessereDaSottotitoli(gruppi, corso)}</section>`
+  return `<section class="sezione">${h2}${prima.length ? corpoSenzaSottotitoli(prima, titolo) : ''}${tessereDaSottotitoli(gruppi, corso)}</section>`
 }
 
 /**

@@ -273,12 +273,10 @@ const CSS_CORSO = `
 .pagina-corso .invito .parola{font-size:clamp(96px,11.8vw,170px)}
 .pagina-corso .invito .freccia{display:none}
 .pagina-corso .piede{margin:0 var(--margine) 48px;padding:40px;gap:40px}
-.pagina-corso .piede .nome{order:-2;max-width:5em;font-size:clamp(40px,3.89vw,56px)}
-.pagina-corso .piede h2,.pagina-corso .piede .fine{display:none}
+.pagina-corso .piede .nome{max-width:5em;font-size:clamp(40px,3.89vw,56px)}
 .pagina-corso .piede .colonne{display:contents}
-.pagina-corso .piede .colonne>div:last-child{order:-1}
-.pagina-corso .piede li:nth-last-child(-n+2){display:inline}
-.pagina-corso .piede li:last-child::before{content:" · "}
+.pagina-corso .piede .recapiti li:nth-last-child(-n+2){display:inline}
+.pagina-corso .piede .recapiti li:last-child::before{content:" · "}
 /* La pagina di un corso (docs/sito/corso.md): tutto dentro main.corso, le altre pagine non cambiano. */
 .corso-testata{padding:0 var(--margine) 96px}
 .corso-testata>*+*{margin-top:6px}
@@ -295,7 +293,7 @@ const CSS_CORSO = `
 .corso .pagina-hero h1{grid-row:1 / span 2;margin:0;font-size:clamp(56px,13.9vw,200px);line-height:.82}
 .corso .pagina-hero .intro p{grid-column:2;margin-bottom:28px}
 .corso .pagina-hero .intro>div{grid-column:2}
-.corso .corso-testata .foto img{height:clamp(300px,43vw,620px);aspect-ratio:auto;object-fit:cover}
+.corso .corso-testata .foto img{height:clamp(300px,43vw,620px);aspect-ratio:auto;object-fit:cover;object-position:50% 58%}
 .corso .tessere .tessera.tessera:not(.foto){padding:24px 26px;justify-content:space-between;gap:12px;line-height:1.45}
 .corso .tessere.dati{grid-template-columns:repeat(4,1fr)}
 .corso .tessere.dati .tessera.tessera{grid-column:span 1;min-height:190px;font-size:18px}
@@ -306,7 +304,9 @@ const CSS_CORSO = `
 .corso .sezione .tessera:not(.orario) h3{font-size:clamp(34px,4.45vw,64px)}
 .corso .sezione .tessera:not(.foto):not(.orario):has(>h3:only-child){min-height:190px;padding:26px 30px;justify-content:flex-start}
 .corso .sezione .tessera:has(>h3:only-child) h3{font-size:clamp(30px,3.75vw,54px)}
-.corso .foto-fila img{height:clamp(240px,35.8vw,516px);aspect-ratio:auto}
+.corso .foto-fila img{height:clamp(240px,35.8vw,516px);aspect-ratio:auto;object-position:50% 55%}
+.corso .foto-fila figure:first-child img{object-position:50% 30%}
+.corso .sezione h2.lungo{margin-bottom:22px}
 .corso .tessere:has(.orario){grid-template-columns:repeat(2,1fr)}
 .corso .orario h3{font-size:clamp(28px,3.2vw,46px)}
 .corso .banda-int{display:flex;justify-content:space-between;align-items:flex-end;gap:48px;padding:48px;border-radius:6px;background:var(--blu);color:#fff}
@@ -317,6 +317,7 @@ const CSS_CORSO = `
 .pagina-corso .testata{gap:0 16px;padding:12px var(--margine) 0}
 .pagina-corso .logo img{height:82px}
 .pagina-corso .testata nav{margin-top:10px;padding-bottom:0}
+.pagina-corso .testata nav ul{font-size:16px}
 .pagina-corso .testata nav a{min-height:44px;padding:0 14px;background:var(--chiara)}
 .pagina-corso .testata .pulsante{padding:0 22px}
 .pagina-corso .pulsante .lungo{display:none}
@@ -326,6 +327,9 @@ const CSS_CORSO = `
 .pagina-corso .invito .parola{font-size:clamp(80px,32vw,120px)}
 .pagina-corso .piede{display:flex;flex-direction:column;gap:12px;margin:0 var(--margine) 24px;padding:24px}
 .pagina-corso .piede .nome{font-size:44px;margin-bottom:2px}
+.pagina-corso .piede .menu li,.pagina-corso .piede .legali li{display:inline}
+.pagina-corso .piede .menu li+li::before,.pagina-corso .piede .legali li+li::before{content:" · "}
+.pagina-corso .piede .legali{opacity:.85}
 }
 @media (max-width:900px){
 .corso .pagina-hero{padding:20px var(--margine) 36px}
@@ -341,9 +345,11 @@ const CSS_CORSO = `
 .corso .dati h3{font-size:34px}
 .corso .corso-testata .n-3{margin-top:40px}
 .corso .corso-testata .n-3 .tessera{min-height:220px}
+.corso .corso-testata .n-3 .tessera:last-child{min-height:180px}
 .corso .corso-testata .n-3 h3{font-size:40px}
 .corso .sezione{padding-bottom:48px}
 .corso .sezione h2{font-size:56px;line-height:.88;margin-bottom:20px}
+.corso .sezione h2.lungo{font-size:48px;margin-bottom:20px}
 .corso .sezione .tessera:not(.foto):not(.orario){min-height:190px}
 .corso .sezione .tessera:not(.orario) h3{font-size:38px}
 .corso .sezione .tessera:not(.foto):not(.orario):has(>h3:only-child){min-height:110px;padding:18px}
@@ -417,9 +423,14 @@ function testata(c: Contesto, conContatti: boolean, corso = false): string {
   return `<header class="testata"><a class="logo" href="/" aria-label="${esc(NOME)}, pagina iniziale">${MARCHIO}</a>${menu ? `<nav aria-label="Principale"><ul>${menu}</ul></nav>` : ''}${conContatti ? `<a class="pulsante piccolo" href="${TESTI.contatti}">${corso ? `<span class="lungo">${TESTI.provaTestata}</span><span class="corto">${TESTI.prova}</span>` : TESTI.provaTestata}</a>` : ''}</header>`
 }
 
-function piede(c: Contesto): string {
+/** Nella pagina di un corso il piede ha tre colonne come nel design: recapiti, menu principale e link legali, senza titoli. */
+function piede(c: Contesto, corso = false): string {
   const f = lista(voci('footer', c))
   const recapiti = `<li>${esc(CONTATTI.indirizzo)}</li><li>${esc(CONTATTI.telefono)}</li><li><a href="${esc(CONTATTI.instagram)}" rel="noopener noreferrer">Instagram</a></li><li><a href="${esc(CONTATTI.facebook)}" rel="noopener noreferrer">Facebook</a></li>`
+  if (corso) {
+    const menu = lista(voci('menu', c))
+    return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne"><div class="recapiti"><ul>${recapiti}</ul></div>${menu ? `<div class="menu"><ul>${menu}</ul></div>` : ''}${f ? `<div class="legali"><ul>${f}</ul></div>` : ''}</div></footer>`
+  }
   return `<footer class="piede"><p class="nome">${NOME}</p><div class="colonne">${f ? `<div><h2>${TESTI.altriLink}</h2><ul>${f}</ul></div>` : ''}<div><h2>${TESTI.trovarci}</h2><ul>${recapiti}</ul></div></div><div class="fine"><span>© ${NOME}</span></div></footer>`
 }
 
@@ -445,7 +456,7 @@ function pagina(p: PaginaGenerata, c: Contesto, conContatti: boolean): string {
   const intro = p.diLegge
     ? `<section class="pagina-testo"><h1>${esc(p.titolo)}</h1></section>`
     : `<section class="pagina-hero"><div class="intro"><h1>${esc(p.titolo)}</h1>${p.descrizione ? `<p>${esc(p.descrizione)}</p>` : ''}${conContatti && p.slug !== 'contatti' ? `<div><a class="pulsante" href="${TESTI.contatti}">${TESTI.contattaci}</a></div>` : ''}</div>${inTestata.html}</section>`
-  const corpo = `${t}<main${corso ? ' class="corso"' : ''}>${intro}${corso?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo, corso !== null) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c)}`
+  const corpo = `${t}<main${corso ? ' class="corso"' : ''}>${intro}${corso?.html ?? ''}${testo.trim() ? (!p.diLegge && /<h2[\s>]/i.test(testo) ? impagina(testo, corso !== null) : `<div class="testo">${testo}</div>`) : ''}</main>${p.slug !== 'contatti' ? invito(conContatti) : ''}${piede(c, corso !== null)}`
   return documento(c, { titolo: p.titolo, descrizione: p.descrizione, percorso: percorso(p.slug), corpo, cssCorso: corso !== null })
 }
 

@@ -120,10 +120,41 @@ console.log('\n7. Testata, invito e piede come nel design (solo pagine di corso)
   ok('pulsante in testata: padding 0 26px', dec('.pagina-corso .testata .pulsante', 'padding'), '0 26px')
   ok('invito: alto 300px, padding 36px 40px, margini 96px e 6px', [px(dec('.pagina-corso .invito', 'min-height')), dec('.pagina-corso .invito', 'padding'), dec('.pagina-corso .invito', 'margin')], [300, '36px 40px', '96px var(--margine) 6px'])
   ok('invito: frase a 22px, «Prova» a 170px, senza freccia', [px(dec('.pagina-corso .invito .frase', 'font-size')), px(dec('.pagina-corso .invito .parola', 'font-size')), dec('.pagina-corso .invito .freccia', 'display')], [22, 170, 'none'])
-  ok('piede: margini 0 e 48px, nome a 56px, senza titoli né riga finale', [dec('.pagina-corso .piede', 'margin'), px(dec('.pagina-corso .piede .nome', 'font-size')), dec('.pagina-corso .piede h2', 'display'), dec('.pagina-corso .piede .fine', 'display')], ['0 var(--margine) 48px', 56, 'none', 'none'])
+  ok('piede: margini 0 e 48px, nome a 56px', [dec('.pagina-corso .piede', 'margin'), px(dec('.pagina-corso .piede .nome', 'font-size'))], ['0 var(--margine) 48px', 56])
   ok('piede: padding 40px, colonne senza riquadro (i recapiti prima delle altre)', [dec('.pagina-corso .piede', 'padding'), dec('.pagina-corso .piede .colonne', 'display')], ['40px', 'contents'])
   ok('telefono: logo 82px, menu a pillole chiare da 44px', [px(dec('.pagina-corso .logo img', 'height', 1)), dec('.pagina-corso .testata nav a', 'background')], [82, 'var(--chiara)'])
   ok('telefono: invito alto 260px, «Prova» a 120px; piede con nome a 44px e padding 24px', [px(dec('.pagina-corso .invito', 'min-height', 1)), px(dec('.pagina-corso .invito .parola', 'font-size', 1)), px(dec('.pagina-corso .piede .nome', 'font-size', 1)), dec('.pagina-corso .piede', 'padding', 1)], [260, 120, 44, '24px'])
+}
+
+console.log('\n8. Le differenze che restavano')
+{
+  const h = pagina(TESTA)
+  // 8.1 foto: dove si taglia
+  const CSS = [...h.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]).join('').replace(/\/\*[\s\S]*?\*\//g, '')
+  const regole = [...CSS.matchAll(/([^{}@]+)\{([^{}]*)\}/g)].map((m) => ({ s: m[1].trim(), d: m[2] }))
+  const dec = (sel, prop, n = 0) => regole.filter((r) => r.s.split(',').includes(sel)).map((r) => (r.d.match(new RegExp(`(?:^|;)${prop}:([^;]*)`)) || [])[1]).filter(Boolean)[n]
+  ok('foto di testata tagliata al 58%, fila: prima al 30%, le altre al 55%', [dec('.corso .corso-testata .foto img', 'object-position'), dec('.corso .foto-fila img', 'object-position'), dec('.corso .foto-fila figure:first-child img', 'object-position')], ['50% 58%', '50% 55%', '50% 30%'])
+  // 8.2 un h2 vuoto apre una sezione senza titolo (la fila di foto)
+  const f = main(pagina(TESTA + '<h2></h2><img src="/a.png" alt="a"><img src="/b.png" alt="b"><img src="/c.png" alt="c"><h2>Dopo</h2><h3>X</h3><p>y</p>'))
+  ok('h2 vuoto: la sezione ha la fila di foto e nessun h2 vuoto', [/<section class="sezione"><div class="foto-fila">/.test(f), /<h2><\/h2>/.test(f), conta(f, /<h2/g)], [true, false, 1])
+  ok('anche con un a capo dentro: nessun h2 vuoto', conta(main(pagina('<h2><br></h2><p>x</p><h2>S</h2><p>y</p>')), /<h2/g), 1)
+  // 8.3 colori: con testo il quarto è azzurro, senza testo torna giallo
+  const sez = (t) => colori(main(pagina(TESTA + '<h2>S</h2>' + t)).split('<h2>S</h2>')[1])
+  ok('quattro tessere con testo: giallo, blu, inchiostro, azzurro', sez('<h3>a</h3><p>1</p><h3>b</h3><p>2</p><h3>c</h3><p>3</p><h3>d</h3><p>4</p>'), ['giallo', 'blu', 'inchiostro', 'chiara'])
+  ok('quattro tessere senza testo: giallo, blu, inchiostro, giallo', sez('<h3>a</h3><h3>b</h3><h3>c</h3><h3>d</h3>'), ['giallo', 'blu', 'inchiostro', 'giallo'])
+  // 8.4 titoli lunghi
+  ok('un titolo oltre 30 caratteri ha la classe «lungo», uno corto no', [/<h2 class="lungo">Cosa può aspettarsi un genitore o un atleta<\/h2>/.test(main(pagina(TESTA + '<h2>Cosa può aspettarsi un genitore o un atleta</h2><h3>a</h3>'))), /<h2 class="lungo"/.test(main(pagina(TESTA + '<h2>Orario delle lezioni</h2><h3>a</h3>')))], [true, false])
+  ok('titolo lungo: 22px sotto sul computer, 48px sul telefono', [dec('.corso .sezione h2.lungo', 'margin-bottom'), dec('.corso .sezione h2.lungo', 'font-size')], ['22px', '48px'])
+  // 8.5 telefono: terza tessera di presentazione, menu
+  ok('telefono: la terza tessera di presentazione è alta 180px, il menu a 16px', [dec('.corso .corso-testata .n-3 .tessera:last-child', 'min-height'), dec('.pagina-corso .testata nav ul', 'font-size')], ['180px', '16px'])
+  // 8.6 piede: recapiti, menu, link legali
+  const pie = (h2) => h2.match(/<footer class="piede">[\s\S]*<\/footer>/)?.[0] ?? ''
+  const dati2 = (testo) => g.generaSito({ dominio: 'https://officinedellosport.it', pagine: [{ slug: 'judo', titolo: 'Judo', descrizione: 'd', testo }, { slug: 'contatti', titolo: 'C', descrizione: '', testo: '<p>c</p>' }, { slug: 'privacy', titolo: 'Privacy', descrizione: '', testo: '<p>p</p>', diLegge: true }], menu: [{ dove: 'menu', ordine: 1, etichetta: 'Home', slug: null, indirizzo: '/' }, { dove: 'footer', ordine: 1, etichetta: 'Privacy policy', slug: 'privacy', indirizzo: null }], rinvii: [] })['judo/index.html']
+  const p1 = pie(dati2(TESTA))
+  ok('piede del corso: recapiti, poi il menu, poi i link legali, senza titoli né riga finale', [p1.indexOf('class="recapiti"') < p1.indexOf('class="menu"'), p1.indexOf('class="menu"') < p1.indexOf('class="legali"'), /<h2|class="fine"/.test(p1)], [true, true, false])
+  ok('il menu del piede ripete quello in testata', /class="menu"><ul><li><a href="\/">Home<\/a><\/li><\/ul>/.test(p1), true)
+  ok('fuori dai corsi il piede resta com’era', /class="menu"|class="recapiti"/.test(pie(pagina('<p>x</p>'))), false)
+  ok('telefono: menu e link legali su una riga con «·»; i legali più tenui', [dec('.pagina-corso .piede .menu li', 'display'), dec('.pagina-corso .piede .legali', 'opacity')], ['inline', '.85'])
 }
 
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
