@@ -1,5 +1,5 @@
 import type { PDFFont, PDFPage } from 'pdf-lib'
-import { differenzaInParole, righeDelPeriodo, type ChiusuraCassa, type RigaMovimento } from './contabilita'
+import { descrizioneRiga, differenzaInParole, giornoRoma, importoPerCassa, righeDelPeriodo, type ChiusuraCassa, type RigaMovimento } from './contabilita'
 import { scrivibileCon } from './firma'
 import { dataRicevuta, euro, type EnteRicevuta } from './ricevute'
 
@@ -24,13 +24,6 @@ export const righePerPagina = 38
 const RIGHE_PRIMA = 22
 
 const ORA = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit' })
-const GIORNO = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' })
-
-/** Con il segno di chi guarda la cassa (il meno è un trattino: il font standard non scrive il «−»). */
-const conSegno = (r: RigaMovimento, cassaId: string): number => (r.tipo === 'entrata' || (r.tipo === 'giroconto' && r.cassaAId === cassaId) ? r.importo : -r.importo)
-
-/** Cosa si scrive nella riga: senza nomi di iscritti. */
-const voceDi = (r: RigaMovimento) => (r.origine === 'movimento' ? r.descrizione : `Incasso iscritto · ${r.voce ?? ''}`)
 
 export interface DatiFoglioChiusura {
   ente: EnteRicevuta
@@ -54,8 +47,8 @@ export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Arra
   const periodo = `dal ${dataRicevuta(k.dal)} al ${dataRicevuta(k.data)}`
   const cassaId = k.cassaId
   const movimenti = righeDelPeriodo(d.righe, k, cassaId)
-  const entrate = movimenti.map((r) => conSegno(r, cassaId)).filter((x) => x > 0).reduce((s, x) => s + x, 0)
-  const uscite = movimenti.map((r) => conSegno(r, cassaId)).filter((x) => x < 0).reduce((s, x) => s - x, 0)
+  const entrate = movimenti.map((r) => importoPerCassa(r, cassaId)).filter((x) => x > 0).reduce((s, x) => s + x, 0)
+  const uscite = movimenti.map((r) => importoPerCassa(r, cassaId)).filter((x) => x < 0).reduce((s, x) => s - x, 0)
 
   // Le pagine: la prima porta meno righe, le altre di più; sempre almeno una.
   const gruppi: RigaMovimento[][] = [movimenti.slice(0, RIGHE_PRIMA)]
@@ -107,7 +100,7 @@ export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Arra
     if (n === 0) {
       testo(p, 'CHIUSURA DI CASSA', MARGINE, t, { corpo: 22, f: grassetto })
       testo(p, `${d.cassa} · ${periodo}`, MARGINE, t + 20, { corpo: 11 })
-      if (k.annullataIl) testo(p, `ANNULLATA il ${dataRicevuta(GIORNO.format(new Date(k.annullataIl)))}${k.annullataDa ? ` da ${k.annullataDa}` : ''}`, MARGINE, t + 36, { corpo: 11, f: grassetto, colore: rosso })
+      if (k.annullataIl) testo(p, `ANNULLATA il ${dataRicevuta(giornoRoma(k.annullataIl))}${k.annullataDa ? ` da ${k.annullataDa}` : ''}`, MARGINE, t + 36, { corpo: 11, f: grassetto, colore: rosso })
       t += 62
       const cifre: Array<[string, string, boolean]> = [
         ['In cassa secondo i conti', `${euro(k.previsto)} €`, false],
@@ -121,7 +114,7 @@ export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Arra
         t += 24
       }
       const quando = new Date(k.chiusaIl)
-      testo(p, `Chiusa da ${k.chiusaDa ?? '—'} il ${dataRicevuta(GIORNO.format(quando))} alle ${ORA.format(quando)}.`, MARGINE, t + 4, { corpo: 9 })
+      testo(p, `Chiusa da ${k.chiusaDa ?? '—'} il ${dataRicevuta(giornoRoma(k.chiusaIl))} alle ${ORA.format(quando)}.`, MARGINE, t + 4, { corpo: 9 })
       t += 22
       if (k.nota) t = paragrafo(p, `Nota: ${k.nota}`, MARGINE, t, destra - MARGINE, 9) + 8
       t += 10
@@ -132,8 +125,8 @@ export async function chiusuraCassaPdf(d: DatiFoglioChiusura): Promise<Uint8Arra
     if (!movimenti.length) testo(p, 'Nessun movimento in contanti nel periodo.', MARGINE, t, { corpo: 9 })
     for (const r of righe) {
       testo(p, dataRicevuta(r.data), MARGINE, t, { corpo: 9 })
-      testo(p, voceDi(r), MARGINE + 62, t, { corpo: 9, largo: destra - MARGINE - 150 })
-      const c = conSegno(r, cassaId)
+      testo(p, descrizioneRiga(r), MARGINE + 62, t, { corpo: 9, largo: destra - MARGINE - 150 })
+      const c = importoPerCassa(r, cassaId)
       testo(p, `${c < 0 ? '- ' : '+ '}${euro(Math.abs(c))} €`, destra, t, { corpo: 9, destra: true })
       t += RIGA
     }

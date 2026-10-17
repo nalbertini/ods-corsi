@@ -34,8 +34,8 @@ import {
   cosaNonVaMovimento,
   cosaNonVaSaldo,
   cosaNonVaVoce,
+  dalDellaChiusura,
   elencoMovimenti,
-  giornoDopo,
   NOME_CASSA_CONTANTI,
   NOME_CASSA_CONTO,
   oggiARoma,
@@ -46,6 +46,7 @@ import {
   VOCE_CORSI,
   VOCE_DIFFERENZA,
   VOCE_QUOTA,
+  type VoceContabile,
 } from './contabilita'
 import { conti as contiRicevuta, cosaNonVa, ENTE_PREDEFINITO, intestatarioDa, pulisciIntestatario, quoteDi, type Ricevuta } from './ricevute'
 
@@ -97,25 +98,25 @@ export function creaSegreteriaProva(): DatiSegreteria {
   const ieri = () => chiaveGiorno(new Date(Date.now() - GIORNO))
   const salva = () => archivio.salva()
   // Le casse e le voci di partenza, finché la segreteria non ne cambia: due casse a zero e le due voci degli incassi.
+  // Le voci della segreteria, o quelle di partenza; la chiusura di cassa scrive da sola «Differenza di cassa»: c'è sempre, anche in un archivio fatto prima.
+  const vociDiPartenza = (): VoceContabile[] => {
+    const base: VoceContabile[] = a().voci ?? [
+      { id: 'voce-quota', nome: VOCE_QUOTA, tipo: 'entrata', diSistema: true, attiva: true },
+      { id: 'voce-corsi', nome: VOCE_CORSI, tipo: 'entrata', diSistema: true, attiva: true },
+    ]
+    if (base.some((v) => v.nome === VOCE_DIFFERENZA)) return base
+    return [
+      ...base,
+      { id: 'voce-differenza-entrata', nome: VOCE_DIFFERENZA, tipo: 'entrata', diSistema: true, attiva: true },
+      { id: 'voce-differenza-uscita', nome: VOCE_DIFFERENZA, tipo: 'uscita', diSistema: true, attiva: true },
+    ]
+  }
   const contabilita = () => ({
     casse: a().casse ?? [
       { id: 'cassa-contanti', nome: NOME_CASSA_CONTANTI, saldoIniziale: 0 },
       { id: 'cassa-conto', nome: NOME_CASSA_CONTO, saldoIniziale: 0 },
     ],
-    voci: [
-      ...(a().voci ?? [
-        { id: 'voce-quota', nome: VOCE_QUOTA, tipo: 'entrata' as const, diSistema: true, attiva: true },
-        { id: 'voce-corsi', nome: VOCE_CORSI, tipo: 'entrata' as const, diSistema: true, attiva: true },
-      ]),
-      // La chiusura di cassa le scrive da sola: ci sono sempre, anche in un archivio fatto prima.
-    ].concat(
-      (a().voci ?? []).some((v) => v.nome === VOCE_DIFFERENZA)
-        ? []
-        : [
-            { id: 'voce-differenza-entrata', nome: VOCE_DIFFERENZA, tipo: 'entrata' as const, diSistema: true, attiva: true },
-            { id: 'voce-differenza-uscita', nome: VOCE_DIFFERENZA, tipo: 'uscita' as const, diSistema: true, attiva: true },
-          ],
-    ),
+    voci: vociDiPartenza(),
     movimenti: a().movimenti ?? [],
     chiusure: a().chiusure ?? [],
   })
@@ -1072,7 +1073,7 @@ export function creaSegreteriaProva(): DatiSegreteria {
         {
           id,
           cassaId: cassa.id,
-          dal: ultima ? giornoDopo(ultima.data) : (cassa.dal ?? '2000-01-01'),
+          dal: dalDellaChiusura(cassa, ultima),
           data: d.data,
           previsto,
           contato: d.contato,

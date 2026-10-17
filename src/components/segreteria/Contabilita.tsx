@@ -11,10 +11,13 @@ import {
   cosaNonVaSaldoTesto,
   cosaNonVaVoce,
   csvMovimenti,
+  dalDellaChiusura,
+  descrizioneRiga,
   differenzaInParole,
   elencoMovimenti,
   filtraMovimenti,
-  giornoDopo,
+  giornoRoma,
+  importoPerCassa,
   NOME_CASSA_CONTANTI,
   oggiARoma,
   perVoce,
@@ -23,6 +26,7 @@ import {
   quanteUsate,
   residui,
   righeDelPeriodo,
+  serveConfermaDifferenza,
   SOGLIA_DIFFERENZA,
   totali,
   totaleResidui,
@@ -608,7 +612,7 @@ function Casse({ d, casse, chiusure, guaioChiusure, righe, fai, onCambiato }: { 
 function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onChiudi }: { d: DatiSegreteria; cassa: Cassa; casse: Cassa[]; chiusure: ChiusuraCassa[]; righe: RigaMovimento[]; fai: Fai; onFatto: () => void; onChiudi: () => void }) {
   const oggi = oggiARoma()
   const ultima = ultimaChiusura(chiusure, cassa.id)
-  const dal = ultima ? giornoDopo(ultima.data) : (cassa.dal ?? '2000-01-01')
+  const dal = dalDellaChiusura(cassa, ultima)
   const [data, setData] = useState(oggi)
   const [contati, setContati] = useState('')
   const [nota, setNota] = useState('')
@@ -621,7 +625,7 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onChiudi 
   const manca = cent === null || !!guaio
   const chiudi = async () => {
     if (cent === null || differenza === null) return
-    if (Math.abs(differenza) > SOGLIA_DIFFERENZA) {
+    if (serveConfermaDifferenza(differenza)) {
       const domanda = `La differenza è di ${differenzaInParole(differenza)}: è più di ${soldi(SOGLIA_DIFFERENZA)}. Se vuoi, scrivi nella nota perché. Chiudo la cassa fino al ${dataRicevuta(data)}?`
       if (!(await chiedi(domanda, 'SÌ, CHIUDI LA CASSA', { no: 'NO, CONTROLLO ANCORA', pericolo: true }))) return
     }
@@ -645,11 +649,11 @@ function ChiudiCassa({ d, cassa, casse, chiusure, righe, fai, onFatto, onChiudi 
         <span className="sg-etichetta">COSA C’È DENTRO · {dentro.length} {dentro.length === 1 ? 'MOVIMENTO' : 'MOVIMENTI'} IN CONTANTI</span>
         {dentro.length === 0 && <span className="sg-sotto" style={{ paddingTop: 6 }}>Nessun movimento in contanti nel periodo: il previsto è quello della chiusura di prima.</span>}
         {dentro.map((r) => {
-          const c = r.tipo === 'entrata' || (r.tipo === 'giroconto' && r.cassaAId === cassa.id) ? r.importo : -r.importo
+          const c = importoPerCassa(r, cassa.id)
           return (
             <div key={r.id} className="row" style={{ gap: 14, padding: '8px 0', borderBottom: '1px solid var(--line-soft)', alignItems: 'baseline' }}>
               <span style={{ fontSize: 13, color: 'var(--sec)', width: 90, flexShrink: 0 }}>{dataRicevuta(r.data)}</span>
-              <span style={{ fontSize: 15, flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>{r.origine === 'movimento' ? r.descrizione : `Incasso iscritto · ${r.voce ?? ''}`}</span>
+              <span style={{ fontSize: 15, flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>{descrizioneRiga(r)}</span>
               <span className="num" style={{ fontSize: 16, fontWeight: 700, color: c > 0 ? 'var(--verde-testo)' : undefined }}>{c < 0 ? '− ' : '+ '}{soldi(Math.abs(c))}</span>
             </div>
           )
@@ -706,7 +710,7 @@ function ElencoChiusure({ d, cassa, chiusure, righe, fai, onCambiato }: { d: Dat
             {k.annullataIl && <span className="num sg-tag" data-tipo="manca" style={{ marginLeft: 8 }}>ANNULLATA</span>}
           </span>
           <span style={{ fontSize: 14, color: 'var(--sec)', flex: 1, minWidth: 220 }}>
-            Contati {soldi(k.contato)} · {differenzaInParole(k.differenza)} · {k.chiusaDa ?? '—'}, {dataRicevuta(k.chiusaIl.slice(0, 10))}
+            Contati {soldi(k.contato)} · {differenzaInParole(k.differenza)} · {k.chiusaDa ?? '—'}, {dataRicevuta(giornoRoma(k.chiusaIl))}
           </span>
           <button type="button" className="sg-btn sg-btn-linea" onClick={() => void fai(() => foglio(k), 'Foglio PDF scaricato')}>
             PDF
@@ -734,7 +738,7 @@ function SaldoCassa({ d, cassa, conto, righe, chiusura, fai, onCambiato, onChiud
       <span className="sg-etichetta">CASSA</span>
       <span className="sg-riquadro-titolo ob">{cassa.nome.toUpperCase()}</span>
       <div className="row" style={{ gap: 24, alignItems: 'baseline' }}>
-        <span className="sg-etichetta">{onChiudi || chiusura ? 'IN CASSA SECONDO I CONTI' : 'SUL CONTO'}</span>
+        <span className="sg-etichetta">{cassa.nome === NOME_CASSA_CONTANTI ? 'IN CASSA SECONDO I CONTI' : 'SUL CONTO'}</span>
         <span className="num" style={{ fontSize: 40, fontWeight: 700 }}>{soldiConSegno(conto?.residuo ?? 0)}</span>
       </div>
       <span className="sg-sotto">entrate {soldi(conto?.entrate ?? 0)} · uscite {soldi(conto?.uscite ?? 0)}</span>

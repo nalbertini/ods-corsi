@@ -680,5 +680,28 @@ console.log('\n24. annullare un movimento di un giorno chiuso, il saldo di una c
   ok('l\'elenco delle voci non cambia', prova(() => { m.vociOfferte(vociD, 'entrata'); return vociD.length }), 7)
 }
 
+console.log('\n25. le piccole regole della schermata di chiusura, in lib dove si provano')
+{
+  const contanti = { id: 'c1', nome: 'Cassa Contanti', saldoIniziale: 10000, dal: '2026-09-01' }
+  const senzaDal = { id: 'c1', nome: 'Cassa Contanti', saldoIniziale: 0 }
+  ok('il periodo parte dal giorno dopo l\'ultima chiusura', prova(() => m.dalDellaChiusura(contanti, chiusa('k', '2026-09-30'))), '2026-10-01')
+  ok('…anche a cavallo dell\'anno e di febbraio', prova(() => [m.dalDellaChiusura(contanti, chiusa('k', '2026-12-31')), m.dalDellaChiusura(contanti, chiusa('k', '2028-02-28'))]), ['2027-01-01', '2028-02-29'])
+  ok('senza chiusure parte dall\'inizio della cassa', prova(() => m.dalDellaChiusura(contanti, undefined)), '2026-09-01')
+  ok('…e senza nemmeno quello, dal 2000', prova(() => m.dalDellaChiusura(senzaDal, undefined)), '2000-01-01')
+  ok('giusto fino a 20,00 la differenza non chiede conferma', prova(() => [m.serveConfermaDifferenza(0), m.serveConfermaDifferenza(2000), m.serveConfermaDifferenza(-2000)]), [false, false, false])
+  ok('sopra 20,00, in più o in meno, sì', prova(() => [m.serveConfermaDifferenza(2001), m.serveConfermaDifferenza(-2001)]), [true, true])
+  ok('il segno di una riga per la cassa: entrata +, uscita −, versamento che arriva +, che parte −', prova(() => [
+    m.importoPerCassa(riga('e', 'entrata', '2026-09-10', 300, 'c1'), 'c1'),
+    m.importoPerCassa(riga('u', 'uscita', '2026-09-10', 300, 'c1'), 'c1'),
+    m.importoPerCassa(riga('g', 'giroconto', '2026-09-10', 300, 'c2', { cassaAId: 'c1' }), 'c1'),
+    m.importoPerCassa(riga('g', 'giroconto', '2026-09-10', 300, 'c1', { cassaAId: 'c2' }), 'c1'),
+  ]), [300, -300, 300, -300])
+  ok('l\'etichetta: un movimento a mano si legge com\'è, un incasso non porta il nome dell\'iscritto', prova(() => [
+    m.descrizioneRiga(riga('m', 'uscita', '2026-09-10', 300, 'c1', { descrizione: 'Detersivo' })),
+    m.descrizioneRiga(riga('i', 'entrata', '2026-09-10', 300, 'c1', { origine: 'ricevuta', descrizione: 'Rossi Giulia', voce: 'Quota associativa' })),
+  ]), ['Detersivo', 'Incasso iscritto · Quota associativa'])
+  ok('il giorno di una chiusura è quello di Roma: alle 23:30 UTC è già il giorno dopo', prova(() => [m.giornoRoma('2026-09-14T21:59:00Z'), m.giornoRoma('2026-09-14T22:30:00Z')]), ['2026-09-14', '2026-09-15'])
+}
+
 console.log(guai ? `\n${guai} COSE NON TORNANO` : '\nTUTTO A POSTO')
 process.exit(guai ? 1 : 0)

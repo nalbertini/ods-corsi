@@ -160,6 +160,21 @@ export const totaleResidui = (conti: Array<{ residuo: number }>): number => cont
 /** Il giorno dopo, come `AAAA-MM-GG`. */
 export const giornoDopo = (giorno: string): string => new Date(new Date(`${giorno}T12:00:00Z`).getTime() + 86_400_000).toISOString().slice(0, 10)
 
+/** Da dove parte il periodo di una chiusura: dal giorno dopo l'ultima, se no dall'inizio della cassa (come `chiudi_cassa`). */
+export const dalDellaChiusura = (cassa: Cassa, ultima: ChiusuraCassa | undefined): string => (ultima ? giornoDopo(ultima.data) : (cassa.dal ?? '2000-01-01'))
+
+/** Sopra questa differenza (in più o in meno) la schermata chiede una conferma. */
+export const serveConfermaDifferenza = (differenza: number): boolean => Math.abs(differenza) > SOGLIA_DIFFERENZA
+
+/** L'importo di una riga visto da una cassa: un'entrata e un versamento che arriva sono +, un'uscita e un versamento che parte sono −. */
+export const importoPerCassa = (r: RigaMovimento, cassaId: string): number => (r.tipo === 'entrata' || (r.tipo === 'giroconto' && r.cassaAId === cassaId) ? r.importo : -r.importo)
+
+/** Cosa si legge in una riga di movimento: gli incassi degli iscritti senza il loro nome (il foglio di chiusura gira di mano in mano). */
+export const descrizioneRiga = (r: RigaMovimento): string => (r.origine === 'movimento' ? r.descrizione : `Incasso iscritto · ${r.voce ?? ''}`)
+
+/** Il giorno a Roma di un istante (`2026-09-14T22:30:00Z` è già il 15). */
+export const giornoRoma = (istante: string): string => oggiARoma(new Date(istante))
+
 /** L'ultima chiusura attiva di una cassa: quella con la data più grande. */
 export function ultimaChiusura(chiusure: ChiusuraCassa[], cassaId: string): ChiusuraCassa | undefined {
   return chiusure.filter((k) => k.cassaId === cassaId && !k.annullataIl).sort((a, b) => b.data.localeCompare(a.data))[0]
