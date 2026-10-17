@@ -1,0 +1,74 @@
+# Segreteria · Sito
+
+← [Torna alla segreteria](README.md)
+
+Le pagine del sito della palestra si scrivono qui: i testi, il menu in alto e
+il footer in fondo. Quello che scrivi resta **bozza** finché non premi
+**PUBBLICA**: salvare la bozza non cambia il sito.
+
+## Le pagine
+
+**PAGINE** è l'elenco. Ogni pagina ha il suo stato:
+
+- **PUBBLICATA**: il sito mostra quello che c'è scritto qui.
+- **MODIFICHE NON PUBBLICATE**: la bozza è diversa dal sito. Il sito mostra
+  ancora la versione di prima.
+- **SOLO BOZZA**: non è mai stata pubblicata, il sito non la mostra.
+- **NASCOSTA**: pubblicata o no, il sito non la mostra. Resta qui.
+
+**NUOVA PAGINA** chiede il titolo e propone l'indirizzo (senza accenti, con i
+trattini: «Chi siamo» diventa `chi-siamo`). Si può cambiare. Un indirizzo già
+usato, o uno che serve al sito (`admin`, `api`, `privacy`…), non va.
+
+Toccando una pagina si apre per scriverla:
+
+- Il testo ha i tasti **TITOLO**, **SOTTOTITOLO**, **G** (grassetto), **C**
+  (corsivo), gli elenchi, la citazione, **LINK** e **PULSANTE**. **LINK** e
+  **PULSANTE** chiedono dove portano: un indirizzo che comincia con `https://`,
+  `mailto:`, `tel:` o con `/` per una pagina del sito. Altro non si può
+  scrivere: se incolli un testo da Word o da un altro sito, quello che il sito
+  non ammette sparisce da solo.
+- **LINK** e **PULSANTE** non mettono un indirizzo che il sito non ammette: se è sbagliato dicono cosa scrivere.
+- Il testo di una pagina arriva a 200.000 caratteri: oltre, **SALVA BOZZA** e **PUBBLICA** aspettano e una riga dice di quanto.
+- A destra il **titolo per Google** (al massimo 60 lettere), la
+  **descrizione** (160) e l'**indirizzo della pagina**. Il numero sotto dice a
+  quanto sei; diventa rosso se superi il limite. Cambiando l'indirizzo di una
+  pagina pubblicata, il vecchio porta al nuovo.
+- **SALVA BOZZA** salva senza cambiare il sito. **ANTEPRIMA** mostra com'è
+  scritta; **TORNA A SCRIVERE** la richiude.
+- **PUBBLICA** salva la bozza, se serve, e la rende il testo del sito. Se
+  nel frattempo qualcun altro ha cambiato la pagina, non scrive niente e lo
+  dice: ricaricala per vedere le sue modifiche, poi rifai la tua.
+- **NASCONDI DAL SITO** toglie la pagina dal sito senza cancellarla;
+  **MOSTRA SUL SITO** la rimette. **CANCELLA LA PAGINA** la toglie per sempre;
+  non si cancella finché è nel menu o nel footer.
+
+Le pagine di legge (**privacy, cookie, contributi pubblici**) non si
+nascondono né si cancellano.
+
+Se esci con qualcosa scritto e non salvato, l'app chiede prima.
+
+## Menu e footer
+
+**MENU E FOOTER** ha due elenchi: **MENU IN ALTO** e **FOOTER**. Ogni voce ha
+un nome e dice dove porta: una pagina del sito o un indirizzo. Il nome arriva a 60 lettere. Le frecce
+**↑** e **↓** la spostano, **TOGLI** la toglie, **+ AGGIUNGI UNA VOCE**
+ne aggiunge una. **SALVA** salva, **BUTTA I CAMBI** torna a prima. Se passi da **PAGINE** a **MENU E FOOTER** con voci a metà, l'app chiede prima.
+
+L'app non ti lascia salvare se una voce non va, e dice quale:
+
+- una voce senza nome;
+- una voce che non porta da nessuna parte, o a una pagina nascosta o mai
+  pubblicata;
+- un indirizzo che non comincia con `https://`, `mailto:`, `tel:` o `/`;
+- nel footer, una pagina di legge mancante o non pubblicata.
+
+## Il sito vero
+
+Per ora il pannello scrive le pagine; il sito su `officinedellosport.it` si
+genera dalle pagine pubblicate, e passa dal sito di prima a quello nuovo in
+un secondo momento. Finché non è fatto, **PUBBLICA** prepara il testo ma il
+sito che si vede è ancora quello vecchio.
+
+Se compare «Il pannello del sito non è ancora attivo sul database», manca un
+aggiornamento del database: va chiesto a chi cura l'app.

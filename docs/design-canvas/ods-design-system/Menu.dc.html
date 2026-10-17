@@ -102,7 +102,7 @@
 // impostazioni: il tasto coi cursori e' la pagina corrente (.icon-btn[aria-current='page']: bordo e icona in `text`).
 // altezza: l'altezza dello schermo. Il menu dell'app scorre (overflow-y: auto) e, su uno schermo da 900px, taglia
 // le ultime voci: qui il taglio e' lo stesso. Per vederlo intero basta "1140px".
-// VESTIARIO sta in LA PALESTRA dopo LISTINO: il suo numero (in `numeri`, "VESTIARIO:6") sono gli ordini da saldare della raccolta di
+// SITO e' l'ultima voce di LA PALESTRA, dopo SEGNALAZIONI (Segreteria.tsx, GRUPPI). VESTIARIO sta in LA PALESTRA dopo LISTINO: il suo numero (in `numeri`, "VESTIARIO:6") sono gli ordini da saldare della raccolta di
 // adesso, giallo come gli altri. In fondo COPIA LINK ISCRIZIONI e COPIA LINK ORDINI (`CopiaLink`, righe 453-454).
 // PAGAMENTI sta in PERSONE, dopo ISCRITTI (Segreteria.tsx, GRUPPI).
 // Non riprodotti: l'elenco della ricerca aperto, ISTRUTTORI →, il passaggio del mouse.
@@ -114,7 +114,7 @@ const GRUPPI = [
   ['OGNI GIORNO', ['DA FARE', 'SETTIMANA', 'RICHIESTE ONLINE', 'PRESENZE']],
   ['PERSONE', ['ISCRITTI', 'PAGAMENTI', 'CORSI']],
   ['ISTRUTTORI', ['PRESENZE ISTRUTTORI', 'ISTRUTTORI E ACCESSI']],
-  ['LA PALESTRA', ['STATISTICHE', 'LISTINO', 'VESTIARIO', 'ESERCIZI', 'SEGNALAZIONI']],
+  ['LA PALESTRA', ['STATISTICHE', 'LISTINO', 'VESTIARIO', 'ESERCIZI', 'SEGNALAZIONI', 'SITO']],
 ];
 const truthy = (v) => v === true || v === 'true';
 class Component extends DCLogic {

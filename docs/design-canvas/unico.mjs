@@ -51,6 +51,7 @@ const SEZIONI = [
   { id: 'segreteria-tatami', nome: 'Segreteria · Tatami · proposta', cartella: 'segreteria-tatami' },
   { id: 'iscritti-del-corso', nome: 'Iscritti del corso · proposta', cartella: 'iscritti-del-corso' },
   { id: 'storico-pagamenti', nome: 'Storico pagamenti · proposta', cartella: 'storico-pagamenti' },
+  { id: 'sito-pannello', nome: 'Sito · pannello · proposta', cartella: 'sito-pannello' },
 ]
 
 const stem = (f) => f.replace(/\.dc\.html$/, '')

@@ -146,6 +146,14 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   su tutti i tablet), lo storico dei timer, il **backup** e l'esportazione
   dei dati di una persona. Gli **esercizi** della palestra, che i tablet
   propongono scrivendo un timer.
+- **Il sito della palestra** (voce SITO della segreteria): le pagine del sito, il menu in alto e il footer si
+  scrivono nell'app, senza WordPress. Ogni pagina ha una **bozza**, che non cambia il sito, e un testo
+  **pubblicato**, che cambia solo con PUBBLICA; il testo ricco passa da un editor che ammette solo titoli,
+  grassetto, corsivo, elenchi, citazione, link e pulsante, e viene ripulito prima di salvarlo
+  (`src/lib/sitoTesto.ts`, `src/lib/sitoPagine.ts`). Le pagine di legge (privacy, cookie, contributi pubblici)
+  restano sempre sul sito. Le scrive solo la segreteria; chi non ha l'accesso legge solo il pubblicato
+  (`supabase/55-sito.sql`). Per ora è il pannello: il sito sul dominio nuovo, le immagini e i rinvii dai
+  vecchi indirizzi arrivano dopo.
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
   iscrive risponde alle domande dal telefono, **firma col dito** il modulo
   delle autorizzazioni (il PDF della palestra, compilato coi suoi dati da
@@ -458,6 +466,7 @@ sono in [`supabase/LEGGIMI.md`](supabase/LEGGIMI.md#10-il-backup).
 | `supabase/prova/segnalazioni.sql` | Le segnalazioni: le legge e le scrive solo la segreteria, a nome suo; si risponde a un filo e non a una risposta; un messaggio scritto non si cambia, di un filo si cambia solo se è chiuso e la categoria (idea o correzione, obbligatoria per un filo nuovo, mai su una risposta), e niente si cancella. Istruttore, iscritto, tablet e chi non ha accesso non vedono niente. Gli allegati: bucket privato, max 3 per messaggio, tipi e 10 MB, li toglie solo chi li ha mandati (resta la traccia), si tolgono da soli 30 giorni dopo la chiusura. |
 | `supabase/prova/informativa-mesi.sql` | Per quanto si tengono le presenze, per l'informativa: chi non ha un accesso legge i mesi scelti dalla segreteria e nient'altro delle impostazioni, anche dopo aver rilanciato `06-iscrizioni.sql`. |
 | `supabase/prova/musica.sql` | La musica delle sale: la prepara la segreteria, il tablet vede solo quella della sua sala e non la cambia; anche le radio (indirizzi https). In fondo, il timer delle sale: uguale per tutti, lo cambia un tablet (o la segreteria) dalla sua funzione, e nient'altro della riga. |
+| `supabase/prova/sito.sql` | Il sito della palestra (SITO): pagine, menu, footer e rinvii li legge e li scrive solo la segreteria; chi non ha accesso, istruttore, iscritto e tablet vedono solo il pubblicato delle pagine non nascoste, mai una bozza, e il menu senza voci verso pagine nascoste o non pubblicate. Il testo con script, iframe, `on…=`, `style=` o link `javascript:`/`data:` si rifiuta; salvare con una versione vecchia dice che la pagina è cambiata; le pagine di legge non si nascondono né si cancellano, una pagina nel menu non si cancella; indirizzi (maiuscole, accenti, riservati), voci del menu e footer con le pagine di legge, e il rinvio lasciato da un cambio di indirizzo. |
 
 I file SQL girano su un Postgres qualunque con `supabase/prova/finto-supabase.sql`
 applicato prima: rifà il minimo che Supabase mette a disposizione.

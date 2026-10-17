@@ -15,6 +15,7 @@ import type { Listino, ListinoLetto } from './listino'
 import { nomeProprio, paroleCercate, somiglia } from './nomi'
 import type { SegnalataVista } from './segnalate'
 import type { Categoria, Segnalazione } from './segnalazioni'
+import type { PaginaSito, VoceMenu } from './sitoPagine'
 
 export type { ListaMusica } from './musica'
 import type { IndiziDoppioni } from './doppioni'
@@ -549,6 +550,23 @@ export interface DatiSegreteria {
   chiudiSegnalazione(id: string, chiusa: boolean): Promise<void>
   /** Cambia la categoria di un filo: una scelta sbagliata non resta sbagliata. */
   categoriaSegnalazione(id: string, categoria: Categoria): Promise<void>
+
+  /** Le pagine del sito della palestra, con bozza e pubblicato (vedi `sitoPagine.ts`). */
+  sitoPagine(): Promise<PaginaSito[]>
+  /** Il menu in alto e il footer del sito. */
+  sitoMenu(): Promise<{ menu: VoceMenu[]; footer: VoceMenu[] }>
+  /** Una pagina nuova, solo bozza; dice il suo id. */
+  nuovaPaginaSito(titolo: string, slug: string): Promise<string>
+  /** Salva la bozza; `versione` è quella che si aveva in mano, e dice la nuova. Se nel frattempo è cambiata lancia un errore. */
+  salvaBozzaSito(id: string, versione: number, dati: { titolo: string; descrizione: string; bozza: string }): Promise<number>
+  /** La bozza diventa il testo del sito. Dice la nuova versione. */
+  pubblicaPaginaSito(id: string, versione: number): Promise<number>
+  /** Cambia l'indirizzo; il vecchio porta al nuovo. */
+  cambiaIndirizzoSito(id: string, slug: string): Promise<void>
+  nascondiPaginaSito(id: string, nascosta: boolean): Promise<void>
+  cancellaPaginaSito(id: string): Promise<void>
+  /** Riscrive il menu o il footer con queste voci, nell'ordine dato. */
+  salvaMenuSito(dove: 'menu' | 'footer', voci: VoceMenu[]): Promise<void>
 
   mettiNelNucleo(personaId: string, titolareId: string): Promise<void>
   togliDalNucleo(personaId: string): Promise<void>

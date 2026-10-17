@@ -12,6 +12,8 @@ import { memoria, nomeAttivita } from './datiProva'
 import { chiaveGiorno } from './sala'
 import { PIN_PROVA } from './tabletProva'
 import { kanjiScritto } from './kanji'
+// La pulizia del testo del sito è una libreria grossa: si scarica solo aprendo il pannello SITO.
+const sitoProva = () => import('./sitoProva')
 import { allegatiScaduti, cosaNonVaSegnalazione, eCategoria, SCEGLI, guaioAllegati, nomiAllegati, type Allegato, type Segnalazione } from './segnalazioni'
 import { richiesteDi, spostaRichieste } from './richiesteProva'
 import { ESTENSIONI } from './richieste'
@@ -717,6 +719,67 @@ export function creaSegreteriaProva(): DatiSegreteria {
       a().segnalazioni = (a().segnalazioni ?? []).map((x) => (x.id === id ? { ...x, categoria } : x))
       salva()
     },
+
+    // Il sito: le stesse regole del database, in memoria (vedi `sitoProva.ts`).
+    async sitoPagine() {
+      const sito = await sitoProva()
+      return (a().sito ??= sito.sitoIniziale()).pagine
+    },
+
+    async sitoMenu() {
+      const sito = await sitoProva()
+      const { menu, footer } = (a().sito ??= sito.sitoIniziale())
+      return { menu, footer }
+    },
+
+    async nuovaPaginaSito(titolo, slug) {
+      const sito = await sitoProva()
+      const r = sito.nuovaPagina((a().sito ??= sito.sitoIniziale()), titolo, slug)
+      a().sito = r.stato
+      salva()
+      return r.id
+    },
+
+    async salvaBozzaSito(id, versione, dati) {
+      const sito = await sitoProva()
+      const r = sito.salvaBozza((a().sito ??= sito.sitoIniziale()), id, versione, dati)
+      a().sito = r.stato
+      salva()
+      return r.versione
+    },
+
+    async pubblicaPaginaSito(id, versione) {
+      const sito = await sitoProva()
+      const r = sito.pubblica((a().sito ??= sito.sitoIniziale()), id, versione)
+      a().sito = r.stato
+      salva()
+      return r.versione
+    },
+
+    async cambiaIndirizzoSito(id, slug) {
+      const sito = await sitoProva()
+      a().sito = sito.cambiaIndirizzo((a().sito ??= sito.sitoIniziale()), id, slug)
+      salva()
+    },
+
+    async nascondiPaginaSito(id, nascosta) {
+      const sito = await sitoProva()
+      a().sito = sito.nascondi((a().sito ??= sito.sitoIniziale()), id, nascosta)
+      salva()
+    },
+
+    async cancellaPaginaSito(id) {
+      const sito = await sitoProva()
+      a().sito = sito.cancella((a().sito ??= sito.sitoIniziale()), id)
+      salva()
+    },
+
+    async salvaMenuSito(dove, voci) {
+      const sito = await sitoProva()
+      a().sito = sito.salvaMenu((a().sito ??= sito.sitoIniziale()), dove, voci)
+      salva()
+    },
+
 
     async mettiNelNucleo(personaId, titolareId) {
       const iscritti = a().persone.filter((p) => p.ruolo === 'iscritto')

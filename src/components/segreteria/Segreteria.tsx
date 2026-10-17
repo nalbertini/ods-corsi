@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { DatiSegreteria } from '../../lib/segreteria'
 import { datiSegreteria } from '../../lib/segreteria'
 import { Logo } from '../Logo'
@@ -21,6 +21,8 @@ import { Richieste } from './Richieste'
 import { PresenzeIstruttori } from './PresenzeIstruttori'
 import { PresenzeSegnalate } from './PresenzeSegnalate'
 import { Segnalazioni } from './Segnalazioni'
+// Il pannello del sito porta con sé l'editor del testo e la sua pulizia: si scaricano solo aprendolo.
+const Sito = lazy(() => import('./Sito').then((m) => ({ default: m.Sito })))
 import { tocca } from '../../lib/segnalazioni'
 import { EserciziPalestra } from './TimerPalestra'
 import { DaFare, useDaFare } from './DaFare'
@@ -92,6 +94,7 @@ const GRUPPI: Array<{ titolo: string; voci: Array<[Voce, string]>; secondario?: 
       ['vestiario', 'VESTIARIO'],
       ['esercizi', 'ESERCIZI'],
       ['segnalazioni', 'SEGNALAZIONI'],
+      ['sito', 'SITO'],
     ],
   },
 ]
@@ -114,6 +117,7 @@ const GUIDE: Record<Voce, string> = {
   vestiario: 'segreteria/vestiario',
   regole: 'segreteria/regole',
   segnalazioni: 'segreteria/segnalazioni',
+  sito: 'segreteria/sito',
 }
 
 /** Scrive l'indirizzo della segreteria nella cronologia, senza ricaricare. */
@@ -582,6 +586,11 @@ export function Segreteria({
         {d && voce === 'vestiario' && <Vestiario onCambiato={() => setGiroConte((g) => g + 1)} />}
         {d && voce === 'regole' && <Regole d={d} onVai={vai} />}
         {d && voce === 'segnalazioni' && <Segnalazioni d={d} onCambiato={() => setGiroConte((g) => g + 1)} />}
+        {d && voce === 'sito' && (
+          <Suspense fallback={<span className="sg-sotto">Apro il sito…</span>}>
+            <Sito d={d} />
+          </Suspense>
+        )}
       </main>
       <Conferme />
     </div>

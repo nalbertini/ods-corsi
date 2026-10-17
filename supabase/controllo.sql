@@ -256,6 +256,10 @@ select file, cosa, case when c then 'ok' else 'DA LANCIARE' end as stato from (v
   ('52-presenze-finestra.sql', 'le presenze si toccano solo nelle lezioni di questi giorni',
     exists (select 1 from pg_trigger where tgname = 'presenze_a_finestra' and not tgisinternal)
     and exists (select 1 from dentro where nome = 'istruttore_dall_appello' and corpo like '%tablet_regole%')),
+  ('55-sito.sql', 'le pagine del sito, col menu e i rinvii, scritte dalla segreteria',
+    to_regclass('public.sito_pagine') is not null
+    and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'salva_bozza_sito')
+    and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'sito_pagine_pubbliche')),
   ('54-pagamenti-diretti.sql', 'i pagamenti fatti a mano, senza ricevuta',
     to_regclass('public.pagamenti_diretti') is not null
     and exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname = 'registra_pagamento_diretto')
