@@ -370,15 +370,15 @@ console.log('\n8. Immagini')
   const u = tessere(sezioni(h1)[0] ?? '')
   ok('una sola immagine = una tessera foto a tutta larghezza', [u.length, u[0]?.classi.includes('foto'), u[0]?.classi.includes('larga')], [1, true, true])
   const css = cssDi(h1)
-  const foto = unaDichiarazione(css.base, css.V, (x) => /\.foto\b/.test(x) && !/img/.test(x) && !/quattro/.test(x))
-  const fotoImg = unaDichiarazione(css.base, css.V, (x) => /\.foto\b.*img\b/.test(x) && !/quattro/.test(x))
+  const foto = unaDichiarazione(css.base, css.V, (x) => /\.foto\b/.test(x) && !/img/.test(x) && !/quattro|citazioni/.test(x))
+  const fotoImg = unaDichiarazione(css.base, css.V, (x) => /\.foto\b.*img\b/.test(x) && !/quattro|citazioni/.test(x))
   ok('la tessera foto ha un aspect-ratio fisso e l’immagine object-fit:cover', [/\d/.test(foto['aspect-ratio'] ?? fotoImg['aspect-ratio'] ?? ''), fotoImg['object-fit']], [true, 'cover'])
   ok('l’alt è quello originale', /<img[^>]*alt="Foto 1"/.test(u[0]?.html ?? ''), true)
   const h3f = pagina(`<h2>Foto</h2>${img(1)}${img(2)}${img(3, '')}`)
   const s3 = sezioni(h3f)[0] ?? ''
   ok('3 immagini di fila: una fila di 3 tessere foto', [tessere(s3).length, conta(s3, /class="[^"]*\bfoto-fila\b/g), tessere(s3).every((x) => x.classi.includes('foto'))], [3, 1, true])
   ok('gli alt restano com’erano, anche quello vuoto', [...s3.matchAll(/<img[^>]*>/g)].map((m) => m[0].match(/\balt="([^"]*)"/)?.[1]), ['Foto 1', 'Foto 2', ''])
-  const fila = (R) => unaDichiarazione(R, css.V, (x) => /\.foto-fila\b/.test(x) && !/quattro/.test(x))['grid-template-columns']
+  const fila = (R) => unaDichiarazione(R, css.V, (x) => /\.foto-fila\b/.test(x) && !/quattro|citazioni/.test(x))['grid-template-columns']
   ok('la fila: 3 colonne uguali, 2 sul telefono', [colonne(fila(css.base)), colonne(fila(css.tel))], [3, 2])
   const due = pagina(`<h2>Foto</h2>${img(1)}${img(2)}`)
   ok('due foto: una fila «due», con 2 colonne', [conta(due, /class="foto-fila due"/g), colonne(unaDichiarazione(cssDi(due).base, cssDi(due).V, (x) => /^\.due$|\.foto-fila\.due/.test(x))['grid-template-columns'])], [1, 2])

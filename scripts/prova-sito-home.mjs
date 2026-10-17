@@ -94,5 +94,36 @@ console.log('\n3. Le tessere col solo titolo (i valori) lo tengono in basso')
   ok('l’avatar è un cerchio giallo con l’inchiostro (#f4c31b su #0d2a3d)', [/border-radius:\s*50%/.test(av?.[2] ?? ''), /background:\s*var\(--giallo\)|background:\s*#f4c31b/.test(av?.[2] ?? '')], [true, true])
 }
 
+console.log('\n4. Una foto e il carosello dei clienti: affiancati')
+{
+  const Q = (n) => `<blockquote><p>Bravi ${n}</p><p><em>Anna ${n}</em></p></blockquote>`
+  const duo = (h) => (h.match(/<div class="foto-citazioni">([\s\S]*?)<\/div><\/div>/) || [, null])[1]
+  const h1 = sez(`${img(1)}${Q(1)}${Q(2)}${Q(3)}`)
+  ok('una foto seguita da 3 citazioni: un solo blocco foto-citazioni', conta(h1, /class="foto-citazioni"/g), 1)
+  ok('dentro: la tessera foto prima, poi il carosello con le 3 citazioni', (() => { const d = duo(h1) ?? ''; return [d.indexOf('class="tessera foto') < d.indexOf('class="citazioni"'), conta(d, /<blockquote/g)] })(), [true, 3])
+  ok('la foto non resta anche fuori, in una tessera a parte', conta(h1, /<figure class="tessera foto/g), 1)
+  ok('una foto e una sola citazione: come prima (foto larga e citazione larga)', [conta(sez(`${img(1)}${Q(1)}`), /foto-citazioni/g), conta(sez(`${img(1)}${Q(1)}`), /tessera foto larga/g)], [0, 1])
+  ok('due foto e le citazioni: non si affiancano', conta(sez(`${img(1)}${img(2)}${Q(1)}${Q(2)}`), /foto-citazioni/g), 0)
+  ok('le citazioni senza foto: il carosello di prima', [conta(sez(`${Q(1)}${Q(2)}`), /foto-citazioni/g), conta(sez(`${Q(1)}${Q(2)}`), /class="citazioni"/g)], [0, 1])
+  ok('il carosello ha ancora il nome per chi usa la tastiera (region con aria-label)', /class="citazioni" tabindex="0" role="region" aria-label="S"/.test(h1), true)
+  const h2c = sez(`${img(1)}${Q(1)}${Q(2)}`)
+  ok('una foto e solo 2 citazioni: si affiancano', [conta(h2c, /class="foto-citazioni"/g), conta(h2c, /<blockquote/g)], [1, 2])
+  ok('le citazioni compaiono una volta sola nella sezione (non anche fuori dal blocco)', conta(h1, /<blockquote/g), 3)
+  const hp = sez(`${img(1)}${Q(1)}${Q(2)}<p>Dopo</p>`)
+  ok('un paragrafo dopo le citazioni resta fuori dal carosello', [/<p>Dopo<\/p>/.test((duo(hp) ?? '')), /<p>Dopo<\/p>/.test(hp)], [false, true])
+  ok('la foto affiancata non è «larga»', /tessera foto larga/.test(h1), false)
+  const CSS = pagina('<p>x</p>').match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? ''
+  const regola = (re) => [...CSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find((m) => re.test(m[1]))
+  const dd = regola(/^\s*\.foto-citazioni\s*$/)
+  ok('sul computer la foto a sinistra (640px al massimo) e il carosello a destra', [/display:\s*grid/.test(dd?.[2] ?? ''), /grid-template-columns:\s*minmax\(0,\s*640px\)\s+minmax\(0,\s*1fr\)/.test(dd?.[2] ?? '')], [true, true])
+  ok('la foto sta nella sua colonna (non va a span 2 come le altre tessere)', /\.foto-citazioni \.foto\{[^}]*grid-column:\s*auto/.test(CSS), true)
+  ok('alti fino a 560px', /560px/.test(dd?.[2] ?? ''), true)
+  ok('la foto riempie l’altezza (object-fit:cover, height:100%)', /\.foto-citazioni \.foto img\{[^}]*height:\s*100%[^}]*object-fit:\s*cover|\.foto-citazioni \.foto img\{[^}]*object-fit:\s*cover[^}]*height:\s*100%/.test(CSS), true)
+  ok('sul telefono la foto è 3/2 e il blocco non ha altezza fissa', [/@media\s*\(max-width:\s*900px\)[\s\S]*\.foto-citazioni \.foto img\{[^}]*aspect-ratio:\s*3\s*\/\s*2/.test(CSS), /@media\s*\(max-width:\s*900px\)[\s\S]*\.foto-citazioni\{[^}]*height:\s*auto/.test(CSS), /@media\s*\(max-width:\s*900px\)[\s\S]*\.foto-citazioni \.citazioni\{[^}]*height:\s*auto/.test(CSS)], [true, true, true])
+  ok('sul computer il carosello riempie l’altezza e la foto è tagliata a misura', [/\.foto-citazioni \.citazioni\{[^}]*height:\s*100%/.test(CSS), /\.foto-citazioni \.foto img\{[^}]*aspect-ratio:\s*auto/.test(CSS)], [true, true])
+  ok('tra foto e carosello 6px, sotto 6px', [/\.foto-citazioni\{[^}]*gap:\s*6px/.test(CSS), /\.foto-citazioni\{[^}]*margin:\s*0 0 6px/.test(CSS)], [true, true])
+  ok('sul telefono foto e carosello vanno una sotto l’altra', /@media\s*\(max-width:\s*900px\)[\s\S]*\.foto-citazioni\{[^}]*grid-template-columns:\s*1fr/.test(CSS), true)
+}
+
 console.log(guai ? `\n✗ ${guai} casi falliti` : '\nTutto a posto.')
 process.exit(guai ? 1 : 0)
