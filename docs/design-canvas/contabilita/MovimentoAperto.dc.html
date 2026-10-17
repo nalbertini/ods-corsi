@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; gap: 32px; width: 1440px; padding: 28px 36px 36px; background: #121212; align-items: flex-start">
+<div style="width: 680px; display: flex; flex-direction: column; gap: 10px"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #f4c31b">PROPOSTA · MOVIMENTO APERTO DALL’ELENCO (si porta in vista quando si apre)</span><section style="display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; background: #1c1c1c; border: 2px solid #333333">
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">IL MOVIMENTO</span>
+  <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 26px; font-weight: 700; letter-spacing: 0.04em">Affitto palestra ottobre</span>
+  <div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88; width: 130px; flex-shrink: 0">DATA</span><span style="font-size: 15px">12/10/2026</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88; width: 130px; flex-shrink: 0">TIPO</span><span style="font-size: 15px">USCITA</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88; width: 130px; flex-shrink: 0">VOCE</span><span style="font-size: 15px">Affitto sala</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88; width: 130px; flex-shrink: 0">CASSA</span><span style="font-size: 15px">Cassa Contanti</span></div><div style="display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #2a2a2a; align-items: baseline"><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88; width: 130px; flex-shrink: 0">IMPORTO</span><span style="font-size: 15px">1.976,10 €</span></div>
+  <dc-import name="Campo" contesto="segreteria" tipo="testo" etichetta="DESCRIZIONE" valore="Affitto palestra ottobre" hint-size="100%,80px"></dc-import>
+  <dc-import name="Campo" contesto="segreteria" tipo="area" etichetta="NOTA" valore="Pagato a mano" hint-size="100%,80px"></dc-import>
+  <span style="font-size: 14px; color: #c9c9c4; line-height: 1.4">Importo, data, voce e cassa non si cambiano: si annulla e si rifà. Annullare chiede conferma e il movimento resta in elenco, annullato.</span>
+  <div style="display: flex; gap: 10px"><dc-import name="Bottone" label="SALVA IL TESTO" variante="pieno" contesto="segreteria" hint-size="240px,48px"></dc-import><dc-import name="Bottone" label="ANNULLA IL MOVIMENTO" variante="rosso" contesto="segreteria" hint-size="240px,48px"></dc-import><dc-import name="Bottone" label="CHIUDI" variante="linea" contesto="segreteria" hint-size="240px,48px"></dc-import></div>
+</section></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":700}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
