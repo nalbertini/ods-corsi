@@ -1,0 +1,14 @@
+{
+ "pages": [
+  { "id": "page-1", "name": "Storico pagamenti · proposta" }
+ ],
+ "artboards": [
+  { "file": "Scheda.dc.html", "title": "La scheda iscritto: oggi e proposta", "x": 0, "y": 300, "page": "page-1" },
+  { "file": "Registra.dc.html", "title": "Registra un pagamento a mano", "x": 1560, "y": 300, "page": "page-1" },
+  { "file": "Pagamenti.dc.html", "title": "La pagina PAGAMENTI", "x": 0, "y": 1500, "page": "page-1" },
+  { "file": "PagamentiResiduo.dc.html", "title": "PAGAMENTI · chi deve ancora pagare", "x": 1560, "y": 1500, "page": "page-1" }
+ ],
+ "annotations": [
+  { "id": "titolo", "kind": "title1", "x": 0, "y": 0, "maxW": 1280, "text": "Storico dei pagamenti: nella scheda e in una pagina PAGAMENTI" }
+ ]
+}

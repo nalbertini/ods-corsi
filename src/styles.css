@@ -1969,6 +1969,8 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 
 .sg-tabella { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
 .sg-riga-iscritto { display: grid; grid-template-columns: 1.2fr 1.4fr 1.3fr 150px 80px; gap: 14px; align-items: center; }
+.sg-riga-pagamento-tab { display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; }
+.sg-riga-residuo { display: grid; grid-template-columns: minmax(0, 1.2fr) 100px 110px 110px 110px 160px; gap: 14px; align-items: center; }
 /* In regola o no: il certificato e il pagamento, in un bollino ciascuno. */
 .sg-in-regola { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 0; }
 .sg-segno-regola {
@@ -2117,6 +2119,17 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
 .sg-riquadro[data-fatto='true'] { border-color: var(--verde); }
 .sg-riquadro-titolo { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 .sg-voce-elenco { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 12px; background: var(--bg); border: 2px solid var(--line); }
+/* Un pagamento sotto la sua ricevuta: rientrato, con la barra a sinistra. Quello fatto a mano sta da solo, come una ricevuta. */
+.sg-pagamento { margin-left: 24px; min-height: 44px; padding: 4px 12px; background: var(--surface); border-left-width: 4px; }
+.sg-pagamento[data-amano] { margin-left: 0; background: var(--bg); border-left-width: 2px; }
+/* Annullato è storia da poter verificare: leggibile, barrato e in grigio, non spento a metà. */
+.sg-riga-pagamento-tab.sg-iscritto[data-spento='true'] { opacity: 1; color: var(--dim); }
+/* Sotto il nome, per il telefono: data, a cosa serve, come, e i bollini. Sul computer stanno nelle loro colonne. */
+.sg-sotto-nome { overflow-wrap: anywhere; display: none; font-size: 13px; color: var(--sec); font-weight: 400; }
+/* Le tre cifre in cima allo storico della scheda; sul telefono una sotto l'altra, se no si tagliano. */
+.sg-numeri-tre { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+/* Le cifre grandi non vanno a capo: l'euro resterebbe da solo. */
+.sg-numero > .num { white-space: nowrap; }
 .sg-numeri { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .sg-numero { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; background: var(--surface); border: 2px solid var(--line); }
 .sg-numero[data-allarme='true'] { border-color: var(--rosso); }
@@ -2327,6 +2340,15 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-scheda { position: static; }
 }
 
+@media (max-width: 600px) {
+  /* Il modulo dei pagamenti a mano, in colonna: due colonne da 130px tagliano le parole. */
+  .sg-due.sg-scheda-campi { grid-template-columns: minmax(0, 1fr); }
+  /* Un campo «largo» chiede due colonne inline: in una colonna sola ne farebbe nascere un'altra. */
+  .sg-due.sg-scheda-campi > * { grid-column: auto !important; }
+  .sg-numeri-tre { grid-template-columns: minmax(0, 1fr); }
+  .sg-numero > .num { font-size: 34px !important; }
+}
+
 @media (max-width: 1000px) {
   .sg-scheda-piena { padding: 20px; }
   .sg-scheda-griglia { grid-template-columns: minmax(0, 1fr); }
@@ -2335,6 +2357,12 @@ textarea.sg-campo { height: auto; padding: 10px 12px; line-height: 1.4; resize: 
   .sg-ricevuta-voce { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sg-riga-iscritto { grid-template-columns: 1fr auto 70px; }
   .sg-riga-iscritto > :nth-child(2), .sg-riga-iscritto > :nth-child(3) { display: none; }
+  /* Sul telefono: chi con sotto il resto, e l'importo. */
+  .sg-riga-pagamento-tab, .sg-riga-residuo { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-riga-pagamento-tab > :not(:nth-child(2)):not(:last-child), .sg-riga-residuo > :not(:first-child):not(:nth-child(5)) { display: none; }
+  .sg-sotto-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+  .sg-pagamento { margin-left: 12px; }
+  .sg-lista-testa.sg-riga-pagamento-tab, .sg-lista-testa.sg-riga-residuo { display: none; }
   .sg-riga-presenza-istr { grid-template-columns: 1fr 1fr; }
   .sg-riga-presenza-istr > :nth-child(3), .sg-riga-presenza-istr > :nth-child(4) { display: none; }
   .sg-lista-testa.sg-riga-presenza-istr { display: none; }

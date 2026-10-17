@@ -176,7 +176,7 @@ scheda è disattivata, nessuno.
   solito la fine della stagione), una **NOTA** facoltativa e **SEGNA
   PAGATA**. In elenco e nella scheda si vede **FUORI APP**; alla sua data
   scade da sola, e **Togli «pagata fuori dall'app»** la toglie prima.
-- **RICEVUTE** — le ricevute dei pagamenti di questa persona (vedi sotto).
+- **PAGAMENTI** — lo storico di questa persona (vedi sotto): in cima **PAGATO**, **MANCA** e **QUOTA**; poi ogni ricevuta con i suoi pagamenti sotto, e dopo **SENZA RICEVUTA** quelli registrati a mano. Quelli di tutti sono in [PAGAMENTI](pagamenti.md).
 - **ISCRIZIONI** — i corsi che fa. **TERMINA** la toglie da un corso: da
   domani non è più nell'appello, il registro resta. «Iscrivi a un corso…» +
   **ISCRIVI** la aggiunge a un altro.
@@ -207,7 +207,7 @@ scheda è disattivata, nessuno.
 
 ## Un pagamento e la sua ricevuta
 
-Quando qualcuno paga, nella sua scheda **+ REGISTRA UN PAGAMENTO** prepara la
+Quando qualcuno paga, nella sua scheda **+ FAI LA RICEVUTA** prepara la
 ricevuta, la stessa «ricevuta semplice» di prima: due copie uguali su un
 foglio A4 in orizzontale, una per il socio e una per l'associazione.
 
@@ -262,8 +262,9 @@ foglio A4 in orizzontale, una per il socio e una per l'associazione.
 **FAI LA RICEVUTA** prima chiede di rileggere: a chi va (per un minore, il
 socio e il genitore), il totale e, con un acconto, quanto si paga ora e quanto
 resta. Confermato, le dà il numero e scarica il PDF, da stampare o mandare.
-Nell'elenco **RICEVUTE** della scheda ogni ricevuta si riscarica con **PDF**,
-uguale a com'era.
+Nello storico **PAGAMENTI** della scheda ogni ricevuta si riscarica con **PDF**,
+uguale a com'era, e sotto ci sono i suoi pagamenti: data, come, a cosa serve e importo.
+**MANCA** dice quanto resta da pagare di quella ricevuta.
 
 Una ricevuta fatta **non si cambia e non si cancella**: se è sbagliata,
 **ANNULLA RICEVUTA**, sotto la ricevuta (chiede conferma), e se ne fa un'altra. Se la ricevuta annullata
@@ -273,6 +274,22 @@ DALL'APP**. L'annullata resta in elenco
 col suo numero, e il suo PDF dice ANNULLATA, così nella numerazione non ci
 sono buchi. I dati dell'associazione in testa alle ricevute si cambiano da
 [Impostazioni](regole.md#le-ricevute).
+
+### Un pagamento fatto a mano
+
+Non tutto passa da una ricevuta: si paga in palestra, in contanti, o si è
+pagato prima dell'app. **+ REGISTRA UN PAGAMENTO** (sotto lo storico) apre un
+modulo: **DATA**, **IMPORTO**, **COME HA PAGATO**, **A COSA SERVE** (la quota
+associativa, un corso, altro: si sceglie dai suggerimenti o si scrive) e una
+**NOTA** facoltativa («pagato direttamente in palestra»). **REGISTRA IL
+PAGAMENTO** lo mette nello storico, sotto **SENZA RICEVUTA**, e lo conta in
+**PAGATO**. Come una ricevuta, non si cambia e non si cancella: se è sbagliato,
+**ANNULLA PAGAMENTO** (chiede conferma) e se ne registra un altro; l'annullato
+resta in elenco, barrato, e non si conta.
+
+**MANCA** si calcola sulle ricevute: un pagamento a mano **non lo riduce**, perché non si sa su quale ricevuta va (se paga il saldo di una ricevuta, il saldo si registra come pagamento di quella ricevuta, facendo una ricevuta nuova). Un pagamento a mano **non cambia se la persona è in regola**: la quota pagata
+fuori dall'app si segna dalla sezione **QUOTA** (**PAGATA SENZA RICEVUTA
+DELL'APP**), o con una ricevuta.
 
 Il certificato è un dato sulla salute: lo vede solo la segreteria, non gli
 istruttori, e non va scritto da nessun'altra parte (nemmeno nelle note). In

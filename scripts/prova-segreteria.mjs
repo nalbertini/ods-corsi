@@ -14,7 +14,7 @@ import { build } from 'esbuild'
 const { outputFiles } = await build({
   stdin: {
     contents:
-      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { dellaDisciplina } from './timer/src/lib/discipline'; export { tutteLeRighe } from './src/lib/tutteLeRighe'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'",
+      "export { creaSegreteriaProva } from './src/lib/segreteriaProva'; export { tocca, ordinaSegnalazioni, cosaNonVaSegnalazione, etichettaChiudi, chiudiConRisposta, visibili, troppoLungo, avvisoChiusura, rigaFilo, motivoSpento, segnapostoTesto, testoWhatsApp, avvisoCategoria, leggiBozza, scriviBozza, svuotaBozze, chiaveBozza, conBozza, cosaNonVaAllegato, allegatiScaduti, nomeAllegato, nomeUnico, motivoSenzaRete, scegliAllegati, haAnteprima, mandaAllegati, avvisoNonPartiti, MAX_ALLEGATI } from './src/lib/segnalazioni'; export { giornoPerEsteso, chiaveGiorno, oraDi } from './src/lib/sala'; export { comeCertificato, comePaga, confermaMesiPresenze, inRegola, pagamentoDi, paroleInRegola, timbriScheda, trovaIscritti, alGiorno, nomeVoce, corsoCambiato, personaCambiata, ricorrenzaIniziale, ricorrenzaCambiata, COLORI, tastoPrincipale } from './src/lib/segreteria'; export { quoteDi, enteCambiato } from './src/lib/ricevute'; export { cosaNonVaDiretto } from './src/lib/pagamenti'; export { listinoCambiato, cambiNellaBozza, domandaButta } from './src/lib/listino'; export { creaDatiProva } from './src/lib/datiProva'; export { creaTabletProva } from './src/lib/tabletProva'; export { leggiFogli, importa, leggiTabella, indovinaColonne, scelteCorsi, indovinaCorso, leggiRisposte, divideScelte, dividiNome, leggiData } from './src/lib/importa'; export * as importaLib from './src/lib/importa'; export { carattereControllo } from './src/lib/codiceFiscale'; export { arrivoDalLink } from './src/lib/invito'; export { areeDi, daRuoloScelto, nomeDelRuolo, ruoloScelto } from './src/lib/ruoli'; export { archivio } from './src/lib/archivioProva'; export { creaSegreteriaSupabase } from './src/lib/segreteriaSupabase'; export * from './src/lib/doppioni'; export { memoria, lezioniFra, trovaLezione, segnaIstruttoriLezioneProva } from './src/lib/datiProva'; export { testoDateSalvate, confermaDateCorsi } from './src/lib/segreteria'; export * from './src/lib/scorri'; export * as segreteriaLib from './src/lib/segreteria'; export { creaDatiSupabase } from './src/lib/datiSupabase'; export { dellaDisciplina } from './timer/src/lib/discipline'; export { tutteLeRighe } from './src/lib/tutteLeRighe'; export { creaRichiesteSupabase } from './src/lib/richiesteSupabase'",
     resolveDir: '.',
     loader: 'ts',
   },
@@ -293,7 +293,7 @@ console.log('\n9. sale e regole')
     [await conta.scadute(12), chiesto[1].tabella, chiesto[1].colonne.includes('sessioni!inner'), chiesto[1].filtri],
     [3, 'presenze', true, [['sessioni.inizio', dodiciFa.toISOString().slice(0, 10)]]])
   const dati = await s.esporta((await app.dettaglio((await lotta2([9, 2]))[0].id)).elenco[0].id)
-  ok('l\'esportazione ha anagrafica, iscrizioni, presenze, richieste, certificato, pagamento e ricevute', Object.keys(dati).sort(), ['certificato_e_pagamento', 'dati_anagrafici', 'esportato_il', 'iscrizioni', 'persona', 'presenze', 'ricevute', 'richieste_di_iscrizione'])
+  ok('l\'esportazione ha anagrafica, iscrizioni, presenze, richieste, certificato, pagamento, ricevute e pagamenti a mano', Object.keys(dati).sort(), ['certificato_e_pagamento', 'dati_anagrafici', 'esportato_il', 'iscrizioni', 'pagamenti_a_mano', 'persona', 'presenze', 'ricevute', 'richieste_di_iscrizione'])
 }
 
 console.log('\n9b. le ricevute')
@@ -329,6 +329,54 @@ console.log('\n9b. le ricevute')
   const dopo = await s.intestatarioDi(chi.id)
   ok('il codice fiscale scritto dopo la ricevuta vecchia: c\'è', dopo.codiceFiscale, 'RSSMRA80A01L219X')
   ok('e quel che la ricevuta dice già resta', dopo.indirizzo, 'via Vecchia 3')
+}
+
+console.log('\n9b. le parole della quota')
+ok('la quota, in una parola', ['pagato', 'in_parte', 'scaduto', 'da_pagare'].map((c) => m.segreteriaLib.etichettaQuota(c)), ['PAGATA', 'IN PARTE', 'SCADUTA', 'DA PAGARE'])
+
+console.log('\n9c. i pagamenti a mano')
+{
+  const a = await s.salvaPersona({ nome: 'Pia', cognome: 'Pagamenti' })
+  const b = await s.salvaPersona({ nome: 'Pia', cognome: 'Pagamenti' })
+  const dato = (personaId, data, importo, altro = {}) => ({ personaId, data, importo, metodo: 'Contanti', voce: 'QUOTA ASSOCIATIVA', ...altro })
+  const vecchio = await s.registraPagamentoDiretto(dato(a, '2026-09-10', 5000, { nota: 'in palestra' }))
+  const nuovo = await s.registraPagamentoDiretto(dato(a, '2026-10-01', 2000, { metodo: 'Satispay' }))
+  await s.registraPagamentoDiretto(dato(b, '2026-09-20', 1000))
+  ok('un pagamento registrato ha id e data di creazione', [typeof vecchio.id, !!vecchio.creatoIl, vecchio.annullatoIl ?? null], ['string', true, null])
+  ok('i suoi, il più recente in cima', (await s.pagamentiDiretti(a)).map((p) => [p.data, p.importo, p.metodo]), [['2026-10-01', 2000, 'Satispay'], ['2026-09-10', 5000, 'Contanti']])
+  ok('quelli di un\'altra scheda non ci sono', (await s.pagamentiDiretti(a)).every((p) => p.personaId === a), true)
+  ok('senza persona: tutti', (await s.pagamentiDiretti()).length >= 3, true)
+  ok('la nota resta', (await s.pagamentiDiretti(a)).find((p) => p.id === vecchio.id).nota, 'in palestra')
+  ok('data sbagliata no', await errore(() => s.registraPagamentoDiretto(dato(a, '10/09/2026', 100))), m.cosaNonVaDiretto(dato(a, '10/09/2026', 100)))
+  ok('importo a zero no', typeof (await errore(() => s.registraPagamentoDiretto(dato(a, '2026-09-10', 0)))), 'string')
+  ok('importo con i decimali no', (await errore(() => s.registraPagamentoDiretto(dato(a, '2026-09-10', 10.5)))) !== 'nessun errore', true)
+  ok('metodo vuoto no', (await errore(() => s.registraPagamentoDiretto(dato(a, '2026-09-10', 100, { metodo: '' })))) !== 'nessun errore', true)
+  ok('voce vuota no', (await errore(() => s.registraPagamentoDiretto(dato(a, '2026-09-10', 100, { voce: '' })))) !== 'nessun errore', true)
+  ok('nota oltre 300 caratteri no', (await errore(() => s.registraPagamentoDiretto(dato(a, '2026-09-10', 100, { nota: 'x'.repeat(301) })))) !== 'nessun errore', true)
+  ok('senza persona no', (await errore(() => s.registraPagamentoDiretto(dato('', '2026-09-10', 100)))) !== 'nessun errore', true)
+  ok('i rifiutati non sono entrati', (await s.pagamentiDiretti(a)).length, 2)
+
+  await s.annullaPagamentoDiretto(nuovo.id)
+  const dopo = await s.pagamentiDiretti(a)
+  ok('annullato resta in elenco, con annullatoIl', dopo.map((p) => [p.id === nuovo.id, !!p.annullatoIl]), [[true, true], [false, false]])
+  ok('annullarlo due volte no: già annullato', await errore(() => s.annullaPagamentoDiretto(nuovo.id)), 'Pagamento inesistente o già annullato')
+  ok('un id che non c\'è no', (await errore(() => s.annullaPagamentoDiretto('non-esiste'))) !== 'nessun errore', true)
+
+  ok('una persona che non c\'è: la frase del database', await errore(() => s.registraPagamentoDiretto(dato('p-non-esiste', '2026-09-10', 100))), 'Questa scheda non c’è più')
+  ok('una persona che non c\'è e un importo sbagliato: prima la persona, come il database', await errore(() => s.registraPagamentoDiretto(dato('p-non-esiste', '2026-09-10', 0))), 'Questa scheda non c’è più')
+  ok('annullare un id che non c\'è: la stessa frase', await errore(() => s.annullaPagamentoDiretto('non-esiste')), 'Pagamento inesistente o già annullato')
+
+  await s.unisciPersone(a, b)
+  ok('unite due schede, i pagamenti a mano passano a quella che resta', (await s.pagamentiDiretti(a)).map((p) => [p.data, p.importo]), [['2026-10-01', 2000], ['2026-09-20', 1000], ['2026-09-10', 5000]])
+  ok('e nessuno resta alla scheda che se ne va', (await s.pagamentiDiretti(b)).length, 0)
+  ok('l\'annullato resta annullato', (await s.pagamentiDiretti(a)).filter((p) => p.annullatoIl).length, 1)
+
+  // Come `registra_pagamento_diretto`: testo senza spazi attorno, la nota di soli spazi è vuota.
+  const c = await s.salvaPersona({ nome: 'Carla', cognome: 'Spazi' })
+  const pulito = await s.registraPagamentoDiretto(dato(c, '2026-10-02', 300, { metodo: '  POS  ', voce: '  ALTRO ', nota: '   ' }))
+  ok('metodo e voce senza spazi, la nota di soli spazi non c\'è', [pulito.metodo, pulito.voce, pulito.nota ?? null], ['POS', 'ALTRO', null])
+  const conNota = await s.registraPagamentoDiretto(dato(c, '2026-10-03', 300, { nota: '  ciao  ' }))
+  ok('la nota si pulisce dagli spazi attorno', conNota.nota, 'ciao')
 }
 
 console.log('\n10. l\'import dai fogli')
@@ -1241,6 +1289,9 @@ console.log('\neliminare un istruttore')
   await s.iscrivi(altro, 'lotta-2')
   ok('chi è anche allievo no', await errore(() => s.eliminaIstruttore(altro)), "Pina Giusta è anche allievo: non si elimina, gli si toglie l'accesso")
   ok('un iscritto nemmeno', (await errore(async () => s.eliminaIstruttore((await s.persone())[0].id))).startsWith('Si eliminano solo gli istruttori'), true)
+  const gino = await s.salvaPersonale({ nome: 'Gino', cognome: 'Pagato', email: 'gino@esempio.it', ruolo: 'istruttore' })
+  await s.registraPagamentoDiretto({ personaId: gino, data: '2026-09-10', importo: 1000, metodo: 'Contanti', voce: 'ALTRO' })
+  ok('chi ha pagamenti registrati no', await errore(() => s.eliminaIstruttore(gino)), "Gino Pagato ha dei pagamenti registrati: non si elimina, gli si toglie l'accesso")
 }
 
 console.log("\ncerca iscritto: D'Amico, De Luca, Rossi-Bianchi")

@@ -75,6 +75,7 @@ la nasconde da **IMPOSTAZIONI → QUESTO SCHERMO** ([guida](regole.md)): la scel
 | **SETTIMANA** | La griglia della settimana, gli appelli mancanti, annullare, sostituti, lezioni straordinarie | [Apri](settimana.md) |
 | **CORSI** | I corsi: sala, istruttori, posti, colore, giorni e orari | [Apri](corsi.md) |
 | **ISCRITTI** | L'elenco delle persone, iscriverle e toglierle dai corsi | [Apri](iscritti.md) |
+| **PAGAMENTI** | Tutti i pagamenti, delle ricevute e fatti a mano: cerca, periodo, modo di pagare, chi deve ancora pagare, il CSV | [Apri](pagamenti.md) |
 | **RICHIESTE ONLINE** | Le iscrizioni arrivate dal modulo, da accogliere o rifiutare | [Apri](richieste.md) |
 | **PRESENZE** | Le medie del mese, chi si sta perdendo, gli appelli mancanti, chi c'era a ogni lezione, il CSV | [Apri](presenze.md) |
 | **PRESENZE · SEGNALATE** | Una scheda di PRESENZE: gli iscritti che dicono di esserci stati e non risultano, da accogliere o rifiutare (solo in prova) | [Apri](presenze-segnalate.md) |

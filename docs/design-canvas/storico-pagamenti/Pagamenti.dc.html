@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Saira+Condensed:wght@500;600;700&amp;display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121212; color: #f2f2f0; font-family: Barlow, "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</helmet>
+<div style="display: flex; width: 1440px; min-height: 1100px; background: #121212">
+  <div style="width: 240px; flex-shrink: 0">
+    <dc-import name="Menu" attiva="PAGAMENTI" numeri="RICHIESTE ONLINE:3, PRESENZE:2" nome="Marco Rossi" ruolo="Segreteria" altezza="1100px" hint-size="240px,1100px"></dc-import>
+  </div>
+  <main style="flex: 1; min-width: 0; padding: 28px 36px 28px; display: flex; flex-direction: column; gap: 18px">
+    <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-style: oblique 9deg; font-size: 34px; font-weight: 700; letter-spacing: 0.04em; line-height: 1">PAGAMENTI</span>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+      <dc-import name="Numero" titolo="INCASSATO" valore="2.340 €" sotto="in ottobre 2026" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" titolo="PAGAMENTI" valore="41" sotto="3 senza ricevuta" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" titolo="CONTANTI" valore="820 €" sotto="POS 640 € · bonifico 880 €" hint-size="100%,120px"></dc-import>
+      <dc-import name="Numero" titolo="DA INCASSARE" valore="410 €" sotto="su 9 ricevute" allarme="{{ true }}" hint-size="100%,120px"></dc-import>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <div style="display: flex; align-items: center; width: 360px; height: 44px; padding: 0 12px; background: #121212; border: 2px solid #333333; font-size: 15px; color: #8c8c88">Cerca per nome o numero ricevuta</div>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <dc-import name="Chip" label="OTTOBRE 2026" acceso="{{ true }}" hint-size="170px,44px"></dc-import>
+      <dc-import name="Chip" label="SETTEMBRE" hint-size="130px,44px"></dc-import>
+      <dc-import name="Chip" label="TUTTO L'ANNO" hint-size="150px,44px"></dc-import>
+      <dc-import name="Chip" label="DAL – AL" hint-size="110px,44px"></dc-import>
+      <span style="width: 2px; height: 28px; background: #333333"></span>
+      <dc-import name="Chip" label="CONTANTI" hint-size="120px,44px"></dc-import>
+      <dc-import name="Chip" label="BONIFICO" hint-size="120px,44px"></dc-import>
+      <dc-import name="Chip" label="POS" hint-size="80px,44px"></dc-import>
+      <dc-import name="Chip" label="ASSEGNO" hint-size="120px,44px"></dc-import>
+      <span style="width: 2px; height: 28px; background: #333333"></span>
+      <dc-import name="Chip" label="CON RESIDUO DA PAGARE" numero="9" tonoNumero="giallo" hint-size="260px,44px"></dc-import>
+      <dc-import name="Chip" label="SENZA RICEVUTA" hint-size="170px,44px"></dc-import>
+      <dc-import name="Chip" label="ANNULLATI" hint-size="130px,44px"></dc-import>
+      <div style="flex: 1"></div>
+      <dc-import name="Bottone" label="ESPORTA CSV" variante="linea" contesto="segreteria" hint-size="170px,48px"></dc-import>
+    </div>
+    <div style="display: flex; flex-direction: column">
+      <dc-import name="TestataTabella" colonne="DATA|CHI|A COSA SERVE|COME|RICEVUTA|IMPORTO" griglia="110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px" ordinata="DATA" verso="giu" hint-size="100%,40px"></dc-import>
+      <div role="row" style="display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; min-height: 50px; padding: 0 14px; border-bottom: 1px solid #242424; text-decoration: none"><span style="font-size: 13px; color: #c9c9c4">14 ott 2026</span><span style="font-size: 15px; font-weight: 600; color: #f2f2f0">Rossi Giulia</span><span style="font-size: 13px; color: #c9c9c4">QUOTA ASSOCIATIVA</span><span style="font-size: 13px; color: #c9c9c4">Contanti</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 14px; font-weight: 700; color: #c9c9c4">12/2026</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: #16a54a">30,00 €</span></div>
+      <div role="row" style="display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; min-height: 50px; padding: 0 14px; border-bottom: 1px solid #242424; text-decoration: none"><span style="font-size: 13px; color: #c9c9c4">14 ott 2026</span><span style="font-size: 15px; font-weight: 600; color: #f2f2f0">Rossi Giulia</span><span style="font-size: 13px; color: #c9c9c4">ANNUALE JUDO KIDS</span><span style="font-size: 13px; color: #c9c9c4">POS</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 14px; font-weight: 700; color: #c9c9c4">12/2026</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: #16a54a">20,00 €</span></div>
+      <div role="row" style="display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; min-height: 50px; padding: 0 14px; border-bottom: 1px solid #242424; text-decoration: none"><span style="font-size: 13px; color: #c9c9c4">13 ott 2026</span><span style="font-size: 15px; font-weight: 600; color: #f2f2f0">Bianchi Luca</span><span style="font-size: 13px; color: #c9c9c4">ANNUALE LOTTA ADULTI</span><span style="font-size: 13px; color: #c9c9c4">Bonifico</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 14px; font-weight: 700; color: #c9c9c4">11/2026</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: #16a54a">310,00 €</span></div>
+      <div role="row" style="display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; min-height: 50px; padding: 0 14px; border-bottom: 1px solid #242424; text-decoration: none"><span style="font-size: 13px; color: #c9c9c4">12 ott 2026</span><span style="font-size: 15px; font-weight: 600; color: #f2f2f0">Colombo Sara</span><span style="font-size: 13px; color: #c9c9c4">TRIMESTRE PILATES<span style="margin-left: 8px; padding: 0 4px; background: #8c8c88; color: #121212; font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-decoration: none">SENZA RICEVUTA</span></span><span style="font-size: 13px; color: #c9c9c4">Contanti</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 14px; font-weight: 700; color: #c9c9c4">—</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: #16a54a">105,00 €</span></div>
+      <div role="row" style="display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; min-height: 50px; padding: 0 14px; border-bottom: 1px solid #242424; text-decoration: line-through"><span style="font-size: 13px; color: #8c8c88">12 ott 2026</span><span style="font-size: 15px; font-weight: 600; color: #8c8c88">Ferrari Tommaso</span><span style="font-size: 13px; color: #8c8c88">QUOTA ASSOCIATIVA<span style="margin-left: 8px; padding: 0 4px; background: #8c8c88; color: #121212; font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-decoration: none">ANNULLATA</span></span><span style="font-size: 13px; color: #8c8c88">Bonifico</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 14px; font-weight: 700; color: #8c8c88">10/2026</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: #8c8c88">30,00 €</span></div>
+      <div role="row" style="display: grid; grid-template-columns: 110px minmax(0, 1.2fr) minmax(0, 1.6fr) 110px 100px 110px; gap: 14px; align-items: center; min-height: 50px; padding: 0 14px; border-bottom: 1px solid #242424; text-decoration: none"><span style="font-size: 13px; color: #c9c9c4">9 ott 2026</span><span style="font-size: 15px; font-weight: 600; color: #f2f2f0">Greco Anna</span><span style="font-size: 13px; color: #c9c9c4">ANNUALE YOGA</span><span style="font-size: 13px; color: #c9c9c4">POS</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 14px; font-weight: 700; color: #c9c9c4">9/2026</span><span style="font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 700; text-align: right; color: #16a54a">290,00 €</span></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px; padding: 6px 14px 0">
+      <span style="font-size: 13px; color: #8c8c88; flex: 1">41 pagamenti in ottobre 2026 · pagina 1 di 3</span>
+      <dc-import name="Chip" label="‹ PRIMA" disabled="{{ true }}" hint-size="110px,44px"></dc-import>
+      <dc-import name="Chip" label="DOPO ›" hint-size="110px,44px"></dc-import>
+      <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.2em; color: #8c8c88">TOTALE DEL PERIODO</span>
+      <span style="font-family: 'Saira Condensed', Arial, sans-serif; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 700">2.340,00 €</span>
+    </div>
+    <span style="font-size: 14px; color: #8c8c88; line-height: 1.4">Si cerca per nome o per numero ricevuta («12/2026» e «12»), poi si gira pagina. Il totale è su tutto il periodo, non sulla pagina, e le annullate non ci sono. Tocca una riga: apre la scheda della persona. Il totale di ottobre è lo stesso di INCASSI in STATISTICHE.</span>
+  </main>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>
