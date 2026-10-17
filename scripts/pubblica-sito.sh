@@ -36,5 +36,6 @@ if git diff --cached --quiet; then
   exit 0
 fi
 git -c user.name="ODS Corsi" -c user.email="ods-corsi@users.noreply.github.com" commit -q -m "Il sito aggiornato dalle pagine pubblicate"
-git push -q origin HEAD
+# Sempre `main`: è il ramo che GitHub Pages serve. Un clone di un ramo diverso non pubblica altrove senza dirlo.
+git push -q origin HEAD:main
 echo "✓ Sito pubblicato."

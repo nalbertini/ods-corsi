@@ -169,7 +169,11 @@ le liste della segreteria, accesa da chi insegna, ricordata solo su quel telefon
   nel repository del sito solo quello che è cambiato (`scripts/pubblica-sito.sh`), con una chiave di
   scrittura che vale solo per quel repository (`SITO_DEPLOY_KEY`); `SUPABASE_URL` e `SUPABASE_ANON_KEY`
   sono variabili del repository. Senza una Home pubblicata non c'è niente da pubblicare e il sito di
-  prima resta com'è. Il dominio e l'app su app.officinedellosport.it, le immagini e i rinvii dai vecchi
+  prima resta com'è (anche se la Home sparisse per sbaglio: il giro resta verde, il sito non cambia).
+  Il repository del sito contiene solo il sito generato: quello che vi si scrive a mano, un README
+  compreso, al giro dopo sparisce. Se la chiave di scrittura si perde si toglie fra le *Deploy keys* di
+  quel repository e se ne fa una nuova (`SITO_DEPLOY_KEY`). I giri programmati si fermano dopo 60 giorni
+  senza attività nel repository: un lancio a mano (Actions → Sito → Run workflow) li riaccende. Il dominio e l'app su app.officinedellosport.it, le immagini e i rinvii dai vecchi
   indirizzi arrivano dopo.
 - **Il modulo di iscrizione**, al posto di quello su Google Form: chi si
   iscrive risponde alle domande dal telefono, **firma col dito** il modulo

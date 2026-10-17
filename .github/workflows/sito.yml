@@ -102,5 +102,5 @@ jobs:
         env:
           GIT_SSH_COMMAND: ssh -i ~/.ssh/sito -o IdentitiesOnly=yes
         run: |
-          git clone --depth 1 "git@github.com:${REPOSITORY_SITO}.git" repository-sito
+          git clone --depth 1 --branch main "git@github.com:${REPOSITORY_SITO}.git" repository-sito
           bash scripts/pubblica-sito.sh dist-sito repository-sito
