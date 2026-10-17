@@ -10,6 +10,12 @@ aggiorna da sola a ogni pubblicazione: le più recenti sono in cima.
 - **Risolto**: qualcosa che non funzionava e ora va.
 - **Modificato**: il resto, cose che funzionano in modo diverso o meglio.
 
+## 0.85.7 — 17 ottobre 2026
+
+### Risolto
+
+- Sul sito, da iPhone, la freccia dei corsi non è più un'emoji azzurra
+
 ## 0.85.6 — 17 ottobre 2026
 
 ### Risolto
